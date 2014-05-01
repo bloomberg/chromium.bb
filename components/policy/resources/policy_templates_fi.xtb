@@ -21,7 +21,6 @@
       ja äänikaappaus on käytettävissä vain AudioCaptureAllowedUrls-luettelossa määritellyille URL-osoitteille.
 
       Tätä käytäntöä sovelletaan kaikentyyppisiin äänilähteisiin, ei vain sisäänrakennettuun mikrofoniin.</translation>
-<translation id="7267809745244694722">Medianäppäimet toimivat oletuksena toimintonäppäiminä</translation>
 <translation id="9150416707757015439">Tämä käytäntö on vanhentunut. Käytä sen sijaan IncognitoModeAvailability-käytäntöä. Ottaa käyttöön incognito-tilan tuotteessa <ph name="PRODUCT_NAME"/>. Jos tämä asetus on käytössä tai sitä ei ole määritetty, käyttäjät voivat avata verkkosivuja incognito-tilassa. Jos tämä asetus ei ole käytössä, käyttäjät eivät voi avata verkkosivuja incognito-tilassa. Jos käytäntöä ei ole asetettu, se otetaan käyttöön ja käyttäjät voivat käyttää incognito-tilaa.</translation>
 <translation id="4203389617541558220">Rajoita laitteen käyttöaikaa ajoittamalla automaattisia uudelleenkäynnistyksiä.
 
@@ -537,6 +536,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
           Jos tämä asetus ei ole käytössä tai sitä ei ole määritetty, isäntiä voi jakaa kaikilla tileillä.</translation>
 <translation id="6417861582779909667">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka eivät saa asettaa evästeitä. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultCookiesSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
+<translation id="5457296720557564923">Antaa sivujen käyttää JavaScript-muistinkäyttötilastoja. Jos tämä asetus on käytössä, verkkosivu voi käyttää kehittäjän työkalujen profiilipaneelin muistitilastoja.</translation>
 <translation id="5776485039795852974">Kysy minulta aina, kun sivusto haluaa näyttää työpöytäilmoituksia</translation>
 <translation id="5047604665028708335">Salli sisältöpaketteihin kuulumattomien sivustojen käyttö</translation>
 <translation id="5052081091120171147">Tämä käytäntö pakottaa selaushistorian tuonnin nykyisestä oletusselaimesta. Jos käytäntö on käytössä, käytäntö vaikuttaa myös tuonti-ikkunaan. Jos käytäntö ei ole käytössä, selaushistoriaa ei tuoda. Jos käytäntöä ei ole määritetty, käyttäjiltä voidaan kysyä, haluavatko he tuoda selaushistorian, tai historia voidaan tuoda automaattisesti.</translation>
@@ -544,11 +544,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7132877481099023201">URL-osoitteet, joille sallitaan pääsy videon kaappauslaitteisiin erikseen lupaa kysymättä</translation>
 <translation id="8947415621777543415">Ilmoita laitteen sijainti</translation>
 <translation id="1655229863189977773">Aseta levyn välimuistin koko tavuina</translation>
-<translation id="3358275192586364144">Ottaa käyttöön WPAD-optimoinnin tuotteessa <ph name="PRODUCT_NAME"/> ja estää käyttäjiä muuttamasta tätä asetusta.
-
-      Jos asetus otetaan käyttöön, Chrome odottaa vastausta DNS-pohjaisilta WPAD-palvelimilta lyhyemmän aikaa.
-
-      Jos tätä käytäntöä ei määritetä, se otetaan käyttöön eikä käyttäjä voi muuttaa sitä.</translation>
 <translation id="6376842084200599664">Voit määrittää luettelon laajennuksia, jotka asennetaan hiljaisesti ilman käyttäjän päätöstä.
 
           Kaikki luettelon kohteet ovat merkkijonoja, jotka sisältävät laajennuksen tunnuksen ja puolipisteellä (<ph name="SEMICOLON"/>) rajatun päivitys-URL-osoitteen. Laajennuksen tunnus on 32-kirjaiminen merkkijono, joka löytyy esimerkiksi osoitteesta <ph name="CHROME_EXTENSIONS_LINK"/>, kun kehittäjätila on käytössä. Päivitys-URL-osoitteen tulee johtaa XML-päivitysluetteloasiakirjaan osoitteessa <ph name="LINK_TO_EXTENSION_DOC1"/> kuvatulla tavalla. Huomaa, että tässä käytännössä määritettyä päivitys-URL-osoitetta käytetään vain alkuperäisessä asennuksessa. Laajennuksen myöhemmät päivitykset käyttävät laajennuksen luettelossa ilmoitettua päivitys-URL-osoitetta.
@@ -646,7 +641,6 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 <translation id="1679420586049708690">Automaattisen kirjautumisen julkinen istunto</translation>
 <translation id="7625444193696794922">Määrittää julkaisuversion, jota tämän laitteen tulee käyttää.</translation>
 <translation id="2552966063069741410">Aikavyöhyke</translation>
-<translation id="3788662722837364290">Virransäästöasetukset laitteen ollessa käyttämättä</translation>
 <translation id="2240879329269430151">Voit määrittää, saavatko sivustot näyttää ponnahdusikkunoita. Ponnahdusikkunoiden näyttäminen voidaan sallia kaikille sivustoille tai kieltää kaikilta sivustoilta. Jos tätä käytäntöä ei ole määritetty, käytetään BlockPopups-asetusta, ja käyttäjä voi muuttaa asetusta.</translation>
 <translation id="2529700525201305165">Rajoita tuotteeseen <ph name="PRODUCT_NAME"/> kirjautumista</translation>
 <translation id="8971221018777092728">Julkisten istuntojen automaattisen kirjautumisen ajastin</translation>
@@ -725,6 +719,7 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 <translation id="8102913158860568230">Mediastreamin oletusasetus</translation>
 <translation id="6641981670621198190">Poista kolmiulotteisten grafiikka-sovellusliittymien tuki käytöstä</translation>
 <translation id="1265053460044691532">Rajoita sitä, kuinka kauan SAML-todennuksen käyttäjä voi kirjautua sisään offline-tilassa</translation>
+<translation id="7929480864713075819">Ota käyttöön muistitietojen ilmoittaminen (JS-pinon koko) sivulle</translation>
 <translation id="5703863730741917647">Määritä toiminto, joka suoritetaan, jos käyttäjä ei tee mitään määritetyn ajan kuluessa.
 
           Huomaa, että tämä käytäntö on vanhentunut ja se poistetaan tulevaisuudessa.
@@ -807,7 +802,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="4057110413331612451">Salli yrityskäyttäjän olla vain ensisijainen moniprofiilin käyttäjä</translation>
 <translation id="5365946944967967336">Näytä etusivupainike työkalupalkissa</translation>
 <translation id="3709266154059827597">Määritä, mitä laajennuksia ei saa asentaa</translation>
-<translation id="1933378685401357864">Taustakuva</translation>
 <translation id="8451988835943702790">Käytä Uusi välilehti -sivua etusivuna</translation>
 <translation id="4617338332148204752">Ohita sisällönkuvauskenttien kirjaaminen kohteessa <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="8469342921412620373">Ottaa oletushakupalvelun käyttöön. Jos otat tämän asetuksen käyttöön, oletushaku suoritetaan käyttäjän kirjoittaessa omniboxiin muuta tekstiä kuin URL-osoitteen. Voit määrittää käytettävän oletushakupalvelun määrittämällä muut oletushakukäytännöt. Jos asetuksia ei määritetä, käyttäjä voi itse valita oletushakupalvelun. Jos poistat asetuksen käytöstä, hakua ei suoriteta käyttäjän kirjoittaessa omniboxiin muuta tekstiä kuin URL-osoitteen. Valittuasi asetuksen käyttäjät eivät voi muuttaa tai ohittaa sitä tuotteessa <ph name="PRODUCT_NAME"/>. Jos käytäntöä ei ole määritetty, käytetään oletushakupalvelua, ja käyttäjä voi muokata hakupalveluluetteloa.</translation>
@@ -821,9 +815,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 
           Jos tätä käytäntöä ei ole määritetty, suuri osoitin ei ole käytössä aluksi, mutta käyttäjä voi ottaa sen käyttöön milloin tahansa.</translation>
 <translation id="2633084400146331575">Ota äänipalaute käyttöön</translation>
-<translation id="687046793986382807">Tämä käytäntö on poistettu käytöstä tuotteen <ph name="PRODUCT_NAME"/> versiosta 35 alkaen.
-
-      Muistitiedot ilmoitetaan sivulle huolimatta valitusta arvosta, mutta ilmoitetut koot pyöristetään ja päivitystiheyttä rajoitetaan turvallisuussyistä. Jos haluat tarkkoja reaaliaikaisia tietoja, käytä esimerkiksi Telemetry-työkalua.</translation>
 <translation id="8731693562790917685">Sisältöasetuksien avulla voit määrittää, miten tietyn tyyppistä sisältöä (kuten evästeitä, kuvia tai JavaScriptiä) käsitellään.</translation>
 <translation id="2411919772666155530">Estä ilmoitukset näillä sivustoilla</translation>
 <translation id="6923366716660828830">Määrittää oletushakupalvelun nimen. Jos nimi jätetään tyhjäksi tai käytäntöä ei ole määritetty, käytetään haku-URL-osoitteen määrittämää isäntänimeä. Tämä käytäntö on voimassa vain jos DefaultSearchProviderEnabled-käytäntö on käytössä.</translation>
@@ -833,7 +824,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 
           Jos käytännön asetus on epätosi, ruudun herätyksen lukituspyynnöt ohitetaan.</translation>
 <translation id="467236746355332046">Tuetut ominaisuudet:</translation>
-<translation id="5447306928176905178">Ota käyttöön muistitietojen ilmoittaminen (JS-pinon koko) sivulle (vanhentunut)</translation>
 <translation id="7632724434767231364">GSSAPI-kirjaston nimi</translation>
 <translation id="3038323923255997294">Jätä taustasovellukset käyntiin, kun <ph name="PRODUCT_NAME"/> suljetaan</translation>
 <translation id="8909280293285028130">Määrittää käyttämättömyysajan, jonka kuluttua ruutu lukitaan, kun laitetta käytetään verkkovirralla.
@@ -878,17 +868,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
           Tämä käytäntö on valinnainen. Jos sitä ei ole määritetty, pikahakupyyntö lähetetään GET-metodin avulla.
 
           Käytäntö on voimassa vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
-<translation id="6095999036251797924">Määrittää ajan, jonka jälkeen ruutu lukitaan verkko- tai akkuvirtaa käytettäessä, jos käyttäjä ei tee mitään.
-
-          Jos arvo on suurempi kuin nolla, se tarkoittaa aikaa, joka käyttäjän on oltava toimettomana ennen kuin <ph name="PRODUCT_OS_NAME"/> lukitsee ruudun.
-
-          Jos arvo on nolla, <ph name="PRODUCT_OS_NAME"/> ei lukitse ruutua, vaikka käyttäjä on toimettomana.
-
-          Jos arvoa ei ole määritetty, oletusarvoa käytetään sen sijasta.
-
-          Suositeltu tapa lukita ruutu käyttämättömänä on ottaa ruudun lukitus käyttöön jäädytyksen yhteydessä, jolloin <ph name="PRODUCT_OS_NAME"/> jäädyttää laitteen määritetyn ajan jälkeen. Käytäntöä tulee käyttää vain, jos ruudun lukitus tapahtuu huomattavasti aiemmin kuin jäädytys tai jos et halua laitetta jäädytettävän käyttämättömänä.
-
-          Käytännön arvo tulee antaa millisekunteina. Arvon on oltava pienempi kuin käyttämättömyyden viive.</translation>
 <translation id="1454846751303307294">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka eivät saa suorittaa JavaScriptiä. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultJavaScriptSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="538108065117008131">Anna tuotteen <ph name="PRODUCT_FRAME_NAME"/> käsitellä seuraavia sisältötyyppejä.</translation>
 <translation id="2312134445771258233">Voit määrittää käynnistettäessä avattavat sivut. Käynnistettäessä avattavat sivut -luettelo ohitetaan, jos et valitse Toiminto käynnistettäessä -asetukseksi vaihtoehtoa Avaa seuraavat sivut:.</translation>
@@ -911,32 +890,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
       Kun käytännön arvo on epätosi tai sitä ei ole asetettu, kuvakkeet ovat näkyvillä.</translation>
 <translation id="5085647276663819155">Poista tulostusesikatselu käytöstä</translation>
 <translation id="8672321184841719703">Automaattisen päivityksen version määrittäminen</translation>
-<translation id="553658564206262718">Määritä virransäästöasetukset, kun käyttäjä on toimettomana.
-
-          Tämä käytäntö ohjaa useita virransäästöstrategian asetuksia, kun käyttäjä on toimettomana.
-
-          Toimintotyyppejä on neljä:
-          * Ruutu himmennetään, jos käyttäjä on toimettomana |ScreenDim|-arvossa määritetyn ajan.
-          * Ruutu sammutetaan, jos käyttäjä on toimettomana |ScreenOff|-arvossa määritetyn ajan.
-          * Ruudulla näytetään ilmoitus, jos käyttäjä on toimettomana |IdleWarning|-arvossa määritetyn ajan. Viesti kertoo, että toimettomuuskäytännössä määritetty toiminto suoritetaan pian.
-          * |IdleAction|-arvossa määritetty toiminto suoritetaan, jos käyttäjä on toimettomana |Idle|-käytännössä määritetyn ajan.
-
-          Kunkin toiminnon arvo tulee määrittää millisekunneissa. Arvon on oltava suurempi kuin nolla, jotta määritetty toiminto suoritetaan. Jos viive on nolla, <ph name="PRODUCT_OS_NAME"/> ei suorita määritettyä toimintoa.
-
-          Jos viiveitä ei aseteta, oletusarvoa käytetään niiden sijasta.
-
-          Huomaathan, että |ScreenDim|-arvojen on oltava pienempiä tai yhtä suuria kuin |ScreenOff|-arvo, |ScreenOff|- ja |IdleWarning|-arvojen on oltava pienempiä tai yhtä suuria kuin |Idle|-arvo.
-
-          |IdleAction| voi olla jokin seuraavista:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          Jos |IdleAction|-arvoa ei ole asetettu, suoritetaan oletustoiminto, eli jäädytys.
-
-          Verkko- ja akkuvirralle on erilliset asetukset.
-          </translation>
 <translation id="1689963000958717134">Antaa määrittää tuotetta <ph name="PRODUCT_OS_NAME"/> käyttävien laitteiden verkkoasetukset kaikille käyttäjille. Verkkoasetukset määritetään JSON-muotoiltuna merkkijonona Open Network Configuration -muodossa, josta on lisätietoja osoitteessa <ph name="ONC_SPEC_URL"/></translation>
 <translation id="6699880231565102694">Ota kahden tekijän todennus käyttöön etäisännille</translation>
 <translation id="2030905906517501646">Oletushakupalvelun avainsana</translation>
@@ -1107,32 +1060,6 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
 
       Jos käytäntöä ei määritetä, <ph name="PRODUCT_NAME"/> käyttää oletusarvoa (5 000 millisekuntia).</translation>
 <translation id="8099880303030573137">Käyttämättömyysaika käytettäessä laitetta akkuvirralla</translation>
-<translation id="1709037111685927635">Määritä taustakuva.
-
-      Tämän käytännön avulla voit määrittää työpöydällä ja käyttäjän kirjautumisruudussa näytettävän taustakuvan. Käytäntö määritetään antamalla URL-osoite, josta <ph name="PRODUCT_OS_NAME"/> voi ladata taustakuvan, sekä kryptografinen tiiviste, jonka avulla tarkistetaan latauksen eheys. Kuvan täytyy olla JPEG-muodossa, ja sen koko saa olla korkeintaan 16 Mt. URL-osoitetta täytyy pystyä käyttämään ilman sisäänkirjautumista.
-
-      Taustakuva ladataan ja lisätään välimuistiin. Se ladataan uudelleen URL-osoitteen tai tiivisteen muuttuessa.
-
-      Käytäntö tulee määrittää merkkijonona, jossa URL-osoite ja tiiviste annetaan JSON-muodossa ja joka noudattaa seuraavaa mallia:
-      {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;url&quot;: {
-            &quot;description&quot;: &quot;URL-osoite, josta taustakuvan voi ladata.&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          },
-          &quot;hash&quot;: {
-            &quot;description&quot;: &quot;Taustakuvan SHA-256-tiiviste.&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          }
-        }
-      }
-
-      Jos tämä käytäntö määritetään, <ph name="PRODUCT_OS_NAME"/> lataa taustakuvan ja käyttää sitä.
-
-      Jos määrität tämän käytännön, käyttäjät eivät voi muuttaa tai ohittaa sitä.
-
-      Jos käytäntöä ei määritetä, käyttäjä voi valita työpöydällä ja kirjautumisruudussa näytettävän kuvan.</translation>
 <translation id="2761483219396643566">Käyttämättömyysvaroituksen viive käytettäessä laitetta akkuvirralla</translation>
 <translation id="6281043242780654992">Määrittää laitteen oman viestijärjestelmän käytännöt. Kiellettyjen luettelossa olevia laitteen omaa viestijärjestelmää käyttäviä isäntiä ei sallita, ellei niitä ole lisätty sallittujen luetteloon.</translation>
 <translation id="1468307069016535757">Määritä suuri kontrasti -tilan käytettävyysominaisuuden oletustila kirjautumisnäytössä.
@@ -1249,9 +1176,93 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
       Jos otat tämän asetuksen käyttöön tai pois käytöstä, käyttäjät eivät voi muuttaa tätä asetusta.
 
       Jos tätä käytäntöä ei ole määritetty, tietojen pakkauksen välitysominaisuuden käyttö on käyttäjän päätettävissä.</translation>
-<translation id="2170233653554726857">Ota WPAD-optimointi käyttöön</translation>
 <translation id="7424751532654212117">Käytöstä poistettujen laajennuksien poikkeukset</translation>
 <translation id="6233173491898450179">Aseta lataushakemisto</translation>
+<translation id="78524144210416006">Määritä virran hallinta tuotteen <ph name="PRODUCT_OS_NAME"/> kirjautumisruudussa.
+
+      Voit määrittää tämän käytännön avulla, miten <ph name="PRODUCT_OS_NAME"/> käyttäytyy, kun käyttäjä ei tee mitään tietyn ajan kuluessa kirjautumisruudun ollessa näkyvissä. Käytäntö hallinnoi useita asetuksia. Näet niiden yksittäiset rakenteet ja arvorajat tutustumalla käytäntöihin, joiden avulla muokataan käyttökertojen virran hallintaa. Ainoat poikkeukset näistä käytännöistä ovat seuraavat:
+      * Toiminto, joka tehdään laitteen ollessa käyttämätön tai kun laitteen kansi suljetaan, ei voi päättää käyttökertaa.
+      * Oletustoiminto, joka tehdään laitteen ollessa käyttämätön ja sen ollessa kytkettynä laturiin, on virran katkaisu.
+
+      Käytäntö tulee määrittää merkkijonona, joka ilmaisee yksittäiset asetukset JSON-muodossa ja noudattaa seuraavaa mallia:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;AC&quot;: {
+            &quot;description&quot;: &quot;Virranhallinta-asetukset, joita käytetään vain laitteen ollessa kytkettynä laturiin&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Aika millisekunneissa, jonka laite voi olla käyttämätön ennen kuin ruutu himmennetään&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Aika millisekunneissa, jonka laite voi olla käyttämätön ennen kuin ruutu sammutetaan&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Aika millisekunneissa, jonka jälkeen laitteen katsotaan olevan käyttämätön ja sitä vastaava toiminto suoritetaan&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Toiminto, joka suoritetaan, kun laitteen katsotaan olevan käyttämätön&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;Battery&quot;: {
+            &quot;description&quot;: &quot;Virranhallinta-asetukset, joita käytetään vain laitteen käyttäessä akun virtaa&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Aika millisekunneissa, jonka laite voi olla käyttämätön ennen kuin ruutu himmennetään&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Aika millisekunneissa, jonka laite voi olla käyttämätön ennen kuin ruutu sammutetaan&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Aika millisekunneissa, jonka jälkeen laitteen katsotaan olevan käyttämätön ja sitä vastaava toiminto suoritetaan&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Toiminto, joka suoritetaan, kun laitteen katsotaan olevan käyttämätön&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;LidCloseAction&quot;: {
+            &quot;description&quot;: &quot;Toiminto, joka suoritetaan, kun laitteen kansi suljetaan&quot;,
+            &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+          },
+          &quot;UserActivityScreenDimDelayScale&quot;: {
+            &quot;description&quot;: &quot;Prosenttiosuus, jonka verran ruudun himmennyksen viivettä skaalataan käyttäjän tehdessä jotain, kun ruutu on himmennetty tai pian ruudun sammuttamisen jälkeen&quot;,
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 100
+          }
+        }
+      }
+
+      Jos asetusta ei määritetä, käyttöön otetaan oletusarvo.
+
+      Jos tätä käytäntöä ei määritetä, kaikista asetuksista käytetään oletusarvoa.</translation>
 <translation id="8908294717014659003">Voit määrittää, mitkä sivut saavat käyttää mediantallennuslaitteita. Mediantallennuslaitteiden käyttö voidaan sallia oletuksena, tai käyttäjältä voidaan kysyä aina, kun sivusto haluaa käyttää tallennuslaitteita.
 
           Jos tätä käytäntöä ei ole määritetty, käytetään PromptOnAccess-menetelmää, ja käyttäjä voi muuttaa sitä.</translation>
@@ -1286,9 +1297,6 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
       Jos tätä käytäntöä ei ole asetettu, oletuskokoa käytetään ja käyttäjä voi ohittaa sen median välimuistin kokomerkinnällä (--media-cache-size).</translation>
 <translation id="5142301680741828703">Hahmonna aina seuraavat URL-mallit tuotteessa <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Määritä laajennukset, jotka saa asentaa</translation>
-<translation id="5893553533827140852">Jos asetus on käytössä, gnubby-todennuspyynnöt lähetetään välityspalvelimen kautta etäisäntäyhteyden avulla.
-
-          Jos asetus ei ole käytössä tai sitä ei ole määritetty, gnubby-todennuspyyntöjä ei lähetetä välityspalvelimen kautta.</translation>
 <translation id="187819629719252111">Myöntää tietokoneen tiedostojen käyttöoikeuden antamalla tuotteelle <ph name="PRODUCT_NAME"/> luvan näyttää tiedostonvalintaikkunoita. Jos otat tämän asetuksen käyttöön, käyttäjät voivat avata tiedostonvalintaikkunoita normaalisti. Jos poistat asetuksen käytöstä, käyttäjälle näytetään viesti ja hänen oletetaan valinneen Peruuta tiedostonvalintaikkunassa aina käyttäjän suorittaessa tiedoston avaamista vaativan toiminnon (kuten käyttäjän tuodessa kirjanmerkkejä, lähettäessä tiedostoja, tallentaessa linkkejä jne.). Jos asetusta ei ole määritetty, käyttäjät voivat avata tiedostonvalintaikkunoita normaalisti.</translation>
 <translation id="4507081891926866240">Muokkaa niiden URL-mallien luetteloa, jotka tuotteen <ph name="PRODUCT_FRAME_NAME"/> tulee aina hahmontaa. Jos käytäntöä ei ole määritetty, kaikki sivustot hahmonnetaan ChromeFrameRendererSettings-käytännön oletushahmonnusmäärityksien mukaan. Esimerkkimalleja on osoitteessa http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Valitse, miten välityspalvelimen asetukset määritetään</translation>
@@ -1355,11 +1363,6 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
 
           Jos RestoreOnStartup-käytäntö on määritetty palauttamaan edellisen käyttökerran URL-osoitteet, tätä käytäntöä ei noudateta ja kyseisten sivustojen evästeet tallennetaan pysyvästi.</translation>
 <translation id="2098658257603918882">Ota käyttö- ja kaatumistietojen raportointi käyttöön</translation>
-<translation id="4633786464238689684">Vaihtaa ylimmän näppäimistörivin oletustoiminnot toimintonäppäimiksi.
-
-          Jos tämän käytännön arvoksi asetetaan tosi, näppäimistön ylimmän rivin näppäimet toimivat oletuksena toimintonäppäiminä. Näppäimiä voi käyttää medianäppäiminä painamalla hakunäppäintä yhtä aikaa näppäimen kanssa.
-
-          Jos tämän käytännön arvoksi asetetaan epätosi tai arvoa ei aseteta, näppäimet toimivat oletuksena medianäppäiminä, ja niitä voi käyttää toimintonäppäiminä painamalla hakunäppäintä yhtä aikaa näppäimen kanssa.</translation>
 <translation id="2324547593752594014">Sallii Chromeen kirjautumisen</translation>
 <translation id="172374442286684480">Anna kaikkien sivustojen luoda tiedostoja tietokoneelle</translation>
 <translation id="1151353063931113432">Salli kuvat näissä sivustoissa</translation>
@@ -1410,7 +1413,6 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
 
           ExtensionInstallBlacklist ohittaa kuitenkin tämän käytännön. Kieltolistalla olevaa laajennusta ei siis asenneta, vaikka se olisi sivustoluettelossa.</translation>
 <translation id="2113068765175018713">Rajoita laitteen käyttöaikaa automaattisella uudelleenkäynnistyksellä</translation>
-<translation id="4224610387358583899">Ruudun lukituksen viiveet</translation>
 <translation id="7848840259379156480">Voit määrittää HTML-osoitteiden oletushahmontajan tuotteen <ph name="PRODUCT_FRAME_NAME"/> ollessa asennettu. Isäntäselain tekee hahmonnuksen oletuksena, mutta voit halutessasi ohittaa tämän asetuksen ja asettaa tuotteen <ph name="PRODUCT_FRAME_NAME"/> hahmontamaan HTML-sivut oletuksena.</translation>
 <translation id="186719019195685253">Toiminto, joka suoritetaan, jos käyttäjä ei tee mitään tietyn ajan kuluessa laitteen ollessa kytkettynä laturiin</translation>
 <translation id="7890264460280019664">Ilmoita palvelimelle luettelo verkon käyttöliittymistä, niiden tyypeistä sekä laitteisto-osoitteista.
@@ -1469,15 +1471,6 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
       Tämän käytännön arvoksi määritetään URL-osoite, josta <ph name="PRODUCT_OS_NAME"/> voi ladata käyttöehdot. Käyttöehtojen täytyy olla tavallista tekstiä (MIME-tyyppi text/plain). Muotoilua ei sallita.</translation>
 <translation id="2623014935069176671">Odota alkuperäisen käyttäjän toimintaa</translation>
 <translation id="2660846099862559570">Älä käytä välityspalvelinta</translation>
-<translation id="1956493342242507974">Määritä virranhallinta-asetukset tuotteen <ph name="PRODUCT_OS_NAME"/> kirjautumisruudulla.
-
-      Käytäntö määrittää tuotteen <ph name="PRODUCT_OS_NAME"/> toiminnan, kun käyttäjä ei tee mitään tietyn ajan kuluessa kirjautumisruudun ollessa avoinna. Käytäntö ohjaa useita asetuksia. Voit tarkastella yksittäisten asetusten tietoja ja arvoalueita tutustumalla käytäntöihin, jotka ohjaavat virranhallintaa käyttökerran aikana. Käytäntöjen ainoat poikkeukset ovat:
-      * Käyttämättömyyden tai kannen sulkemisen yhteydessä suoritettava toiminto ei voi olla käyttökerran lopettaminen.
-      * Käyttämättömyyden yhteydessä suoritettava toiminto verkkovirtaa käytettäessä on virran sammuttaminen.
-
-      Jos jotain asetusta ei ole määritetty, käytetään oletusarvoa.
-
-      Jos tätä käytäntöä ei ole määritetty, kaikille asetuksille käytetään oletusarvoja.</translation>
 <translation id="1435659902881071157">Laitetason verkon määritys</translation>
 <translation id="2131902621292742709">Ruudun himmennyksen viive käytettäessä laitetta akkuvirralla</translation>
 <translation id="5781806558783210276">Määrittää käyttämättömyysajan, jonka kuluttua suoritetaan käyttämättömyystoimenpide, kun laitetta käytetään akkuvirralla.
@@ -1584,6 +1577,5 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
       Tämä käytäntö koskee kaikentyyppistä äänentoistoa, ei vain laitteen omia kaiuttimia. Ääntä käyttävät esteettömyysominaisuudet eivät myöskään toimi. Älä ota tätä käytäntöä käyttöön, jos käyttäjän täytyy pystyä käyttämään näytönlukuohjelmaa.
 
       Jos tämän käytännön arvoksi on asetettu tosi tai käytäntöä ei ole määritetty, käyttäjät voivat käyttää laitteella kaikkia tuettuja äänentoistotapoja.</translation>
-<translation id="6517678361166251908">Salli gnubby-todennus</translation>
 <translation id="4858735034935305895">Salli koko ruudun tila</translation>
 </translationbundle>

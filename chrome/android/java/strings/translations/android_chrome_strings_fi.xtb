@@ -2,11 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
 <translation id="8588878054171169263">Tallenna kuva</translation>
-<translation id="4996978546172906250">Jaa tällä palvelulla:</translation>
 <translation id="5578795271662203820">Etsi tätä kuvaa palvelusta <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Käännä</translation>
 <translation id="7644305409888602715">Käännetään sivua kielelle <ph name="SOURCE_LANGUAGE"/>…</translation>
-<translation id="7015922086425404465">Hanki sovellus Google Play Kaupasta: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Päivitä tämä sivu</translation>
 <translation id="641643625718530986">Tulosta…</translation>
 <translation id="7658239707568436148">Peruuta</translation>
@@ -18,15 +16,12 @@
 Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata Chrome-profiiliasi. Chrome-tietosi yhdistetään tähän tiliin pysyvästi. Jos irrotat Chrome-tiedot tilistä, paikalliset Chrome-tiedot poistetaan.</translation>
 <translation id="1966710179511230534">Päivitä kirjautumistietosi.</translation>
 <translation id="1623104350909869708">Estä tätä sivua luomasta muita viestejä</translation>
-<translation id="1426410128494586442">Kyllä</translation>
 <translation id="8218346974737627104">Kirjautumisen vahvistaminen</translation>
 <translation id="624558823898732418">Käännöksen kieli: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Valitse todennuksen varmenne</translation>
 <translation id="3896036286668839683">Varmennetiedot</translation>
 <translation id="8583805026567836021">Poistetaan tilin tietoja</translation>
-<translation id="4250680216510889253">Ei</translation>
 <translation id="8073388330009372546">Avaa kuva uudessa välilehdessä</translation>
-<translation id="552553974213252141">Noudettiinko teksti oikein?</translation>
 <translation id="8730621377337864115">Valmis</translation>
 <translation id="4170011742729630528">Palvelu ei ole käytettävissä. Yritä myöhemmin uudelleen.</translation>
 <translation id="8627706565932943526">Synkronointivirhe</translation>
@@ -38,14 +33,11 @@ Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata 
 <translation id="907015151729920253">Älykortti</translation>
 <translation id="3063601790762993062">Tallenna video</translation>
 <translation id="6042308850641462728">Lisää</translation>
-<translation id="7267430310003164111">Kehote hankkia sovellus Google Play Kaupasta. Sovelluksen nimi: <ph name="APP_NAME"/>. Sovelluksen keskimääräinen arvio: <ph name="APP_RATING"/>.</translation>
-<translation id="4148957013307229264">Asennetaan...</translation>
 <translation id="3992315671621218278">Tallenna linkki</translation>
 <translation id="8034522405403831421">Sivu on kirjoitettu kielellä <ph name="SOURCE_LANGUAGE"/>. Haluatko kääntää sen kielelle <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="4195643157523330669">Avaa uudessa välilehdessä</translation>
 <translation id="3089395242580810162">Avaa incognito-välilehdessä</translation>
 <translation id="8725066075913043281">Yritä uudelleen</translation>
-<translation id="8909135823018751308">Jaa…</translation>
 <translation id="4269820728363426813">Kopioi linkin osoite</translation>
 <translation id="4510973599275542560">Älä päivitä</translation>
 <translation id="1206892813135768548">Kopioi linkin teksti</translation>
@@ -58,10 +50,8 @@ Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata 
 <translation id="1285320974508926690">Älä käännä tätä sivustoa</translation>
 <translation id="5164482624172255778">Haluatko Google Chromen ehdottavan sivuston kielellä <ph name="LANGUAGE"/> kirjoitettujen sivujen kääntämistä seuraavalla kerralla?</translation>
 <translation id="8528538445849828817">Sivun kieli: <ph name="SOURCE_LANGUAGE"/></translation>
-<translation id="4881695831933465202">Avaa</translation>
 <translation id="6512448926095770873">Poistu tältä sivulta</translation>
 <translation id="7947953824732555851">Hyväksy ja kirjaudu sisään</translation>
-<translation id="6333140779060797560">Jaa sovelluksella <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Sulje</translation>
 <translation id="969096075394517431">Vaihda kieltä</translation>
 <translation id="5032574515228824816">Kehote</translation>

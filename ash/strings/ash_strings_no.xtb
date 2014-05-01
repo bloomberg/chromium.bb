@@ -10,7 +10,6 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> ble rotert til <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth er deaktivert</translation>
-<translation id="6713285437468012787">Nå er Bluetooth-enheten «<ph name="DEVICE_NAME"/>» koblet til og tilgjengelig for alle brukere. Du kan oppheve denne tilkoblingen via Innstillinger.</translation>
 <translation id="7165320105431587207">Kunne ikke konfigurere nettverket</translation>
 <translation id="3775358506042162758">Du kan bare ha opptil tre kontoer i flerpålogging.</translation>
 <translation id="370649949373421643">Aktivér Wi-Fi</translation>
@@ -20,7 +19,6 @@
 <translation id="595202126637698455">Ytelsessporing er aktivert</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
 <translation id="7982789257301363584">Nettverk</translation>
-<translation id="2303600792989757991">Vis eller skjul vindusoversikten</translation>
 <translation id="5565793151875479467">Mellomtjener</translation>
 <translation id="938582441709398163">Tastaturbelegg</translation>
 <translation id="4387004326333427325">Autentiseringssertifikatet ble avvist eksternt</translation>
@@ -82,9 +80,7 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="3892641579809465218">Innebygd skjerm</translation>
 <translation id="7823564328645135659">Språket er endret fra <ph name="FROM_LOCALE"/> til <ph name="TO_LOCALE"/> etter synkronisering av innstillingene dine.</translation>
 <translation id="3368922792935385530">Tilkoblet</translation>
-<translation id="3606978283550408104">En leselist er tilkoblet.</translation>
 <translation id="8654520615680304441">Slå på Wi-Fi</translation>
-<translation id="6650933572246256093">Bluetooth-enheten «<ph name="DEVICE_NAME"/>» ber om tillatelse til å koble til. Skriv inn denne tilgangskoden på den aktuelle enheten: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Inndatametoden din er endret til <ph name="INPUT_METHOD_ID"/>.
 Trykk på Shift + Alt for å bytte.</translation>
@@ -137,7 +133,6 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Aktiverer <ph name="NAME"/></translation>
-<translation id="4527045527269911712">Bluetooth-enheten «<ph name="DEVICE_NAME"/>» ber om tillatelse til å koble til.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Automatiske klikk</translation>
 <translation id="1398853756734560583">Maksimer</translation>
@@ -188,15 +183,11 @@ Tjenermelding: <ph name="SERVER_MSG"/></translation>
 <translation id="479989351350248267">søk</translation>
 <translation id="8454013096329229812">Wi-Fi er slått på.</translation>
 <translation id="4872237917498892622">Alt + Søk eller Shift</translation>
-<translation id="2429753432712299108">Bluetooth-enheten «<ph name="DEVICE_NAME"/>» ber om tillatelse til å koble til. Før du godtar dette, må du bekrefte at denne tilgangskoden vises på den aktuelle enheten: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Batteriet er <ph name="PERCENTAGE"/> % fullt</translation>
 <translation id="2983818520079887040">Innstillinger</translation>
 <translation id="3871838685472846647">Mobil aktivert</translation>
-<translation id="6452181791372256707">Avslå</translation>
 <translation id="1195412055398077112">overscan</translation>
-<translation id="607652042414456612">Datamaskinen din kan registreres av Bluetooth-enheter i nærheten, og vises med navnet «<ph name="NAME"/>» og adressen <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Skjul hylle automatisk</translation>
-<translation id="6732801395666424405">Sertifikater er ikke lastet inn</translation>
 <translation id="7573962313813535744">Dokket modus</translation>
 <translation id="8927026611342028580">Tilkobling har blitt forespurt</translation>
 <translation id="8300849813060516376">OTASP mislyktes</translation>
@@ -209,7 +200,6 @@ Tjenermelding: <ph name="SERVER_MSG"/></translation>
 <translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE"/> % fullt og til lading.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: aktiveres …</translation>
 <translation id="4895488851634969361">Batteriet er fullt.</translation>
-<translation id="615957422585914272">Vis skjermtastaturet</translation>
 <translation id="5947494881799873997">Tilbakestill</translation>
 <translation id="7593891976182323525">Søk eller Shift</translation>
 <translation id="7649070708921625228">Hjelp</translation>
@@ -217,7 +207,6 @@ Tjenermelding: <ph name="SERVER_MSG"/></translation>
 Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="158849752021629804">Trenger hjemmenettverk</translation>
-<translation id="1013923882670373915">Bluetooth-enheten «<ph name="DEVICE_NAME"/>» ber om tillatelse til å koble til. Skriv inn denne PIN-koden på den aktuelle enheten: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">Aktiver <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP-oppslag mislyktes</translation>
 <translation id="2819276065543622893">Du blir nå logget av.</translation>
@@ -227,7 +216,6 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="973896785707726617">Denne økten slutter om <ph name="SESSION_TIME_REMAINING"/>. Du logges ut automatisk.</translation>
 <translation id="8372369524088641025">Feil WEP-nøkkel</translation>
 <translation id="6636709850131805001">Ikke gjenkjent tilstand</translation>
-<translation id="6406704438230478924">alt gr</translation>
 <translation id="3573179567135747900">Endre tilbake til <ph name="FROM_LOCALE"/> (krever omstart)</translation>
 <translation id="8103386449138765447">SMS-meldinger: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (muntlig tilbakemelding) er aktivert. Trykk på Ctrl+Alt+Z for å deaktivere.</translation>

@@ -2,11 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="8588878054171169263">Gem billede</translation>
-<translation id="4996978546172906250">Del via</translation>
 <translation id="5578795271662203820">Søg efter billedet på <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Oversæt</translation>
 <translation id="7644305409888602715">Oversætter siden til <ph name="SOURCE_LANGUAGE"/>...</translation>
-<translation id="7015922086425404465">Hent appen i Google Play Butik: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Genindlæs denne side</translation>
 <translation id="641643625718530986">Udskriv…</translation>
 <translation id="7658239707568436148">Annuller</translation>
@@ -18,15 +16,12 @@
 Du logger ind med en administreret konto, og du giver administratoren kontrol over din Chrome-profil. Dine Chrome-data vil blive knyttet permanent til denne konto. Hvis du logger ud af denne konto, slettes de lokale Chrome-data.</translation>
 <translation id="1966710179511230534">Opdater dine loginoplysninger.</translation>
 <translation id="1623104350909869708">Undgå, at denne side opretter yderligere dialogbokse</translation>
-<translation id="1426410128494586442">Ja</translation>
 <translation id="8218346974737627104">Bekræft login</translation>
 <translation id="624558823898732418">Sprog, der skal oversættes til: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Vælg certifikat til godkendelse</translation>
 <translation id="3896036286668839683">Certifikatvisning</translation>
 <translation id="8583805026567836021">Kontodataene ryddes</translation>
-<translation id="4250680216510889253">Nej</translation>
 <translation id="8073388330009372546">Åbn billede i ny fane</translation>
-<translation id="552553974213252141">Blev teksten trukket korrekt ud?</translation>
 <translation id="8730621377337864115">Udført</translation>
 <translation id="4170011742729630528">Tjenesten er ikke tilgængelig. Prøv igen senere.</translation>
 <translation id="8627706565932943526">Synkroniseringsfejl</translation>
@@ -38,14 +33,11 @@ Du logger ind med en administreret konto, og du giver administratoren kontrol ov
 <translation id="907015151729920253">Smart card</translation>
 <translation id="3063601790762993062">Gem video</translation>
 <translation id="6042308850641462728">Mere</translation>
-<translation id="7267430310003164111">Meddelelse om at hente appen fra Google Play Butik. Appnavn: <ph name="APP_NAME"/>. Appens gennemsnitlige bedømmelse: <ph name="APP_RATING"/>.</translation>
-<translation id="4148957013307229264">Installerer...</translation>
 <translation id="3992315671621218278">Gem link</translation>
 <translation id="8034522405403831421">Denne side er på <ph name="SOURCE_LANGUAGE"/>. Vil du oversætte den til <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="4195643157523330669">Åbn i ny fane</translation>
 <translation id="3089395242580810162">Åbn i inkognitofane</translation>
 <translation id="8725066075913043281">Forsøg igen</translation>
-<translation id="8909135823018751308">Del…</translation>
 <translation id="4269820728363426813">Kopiér linkadresse</translation>
 <translation id="4510973599275542560">Genindlæs ikke siden</translation>
 <translation id="1206892813135768548">Kopiér linktekst</translation>
@@ -58,10 +50,8 @@ Du logger ind med en administreret konto, og du giver administratoren kontrol ov
 <translation id="1285320974508926690">Oversæt aldrig dette website</translation>
 <translation id="5164482624172255778">Skal Google Chrome tilbyde at oversætte sider på <ph name="LANGUAGE"/> fra dette website næste gang?</translation>
 <translation id="8528538445849828817">Siden er på <ph name="SOURCE_LANGUAGE"/></translation>
-<translation id="4881695831933465202">Åbn</translation>
 <translation id="6512448926095770873">Forlad denne side</translation>
 <translation id="7947953824732555851">Acceptér og log ind</translation>
-<translation id="6333140779060797560">Del via <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Luk</translation>
 <translation id="969096075394517431">Skift sprog</translation>
 <translation id="5032574515228824816">Meddelelse</translation>

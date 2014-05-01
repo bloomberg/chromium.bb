@@ -2,11 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="8588878054171169263">Save image</translation>
-<translation id="4996978546172906250">Share via</translation>
 <translation id="5578795271662203820">Search <ph name="SEARCH_ENGINE"/> for this image</translation>
 <translation id="6831043979455480757">Translate</translation>
 <translation id="7644305409888602715">Translating page to <ph name="SOURCE_LANGUAGE"/>...</translation>
-<translation id="7015922086425404465">Get app from the Google Play Store: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Reload this Page</translation>
 <translation id="641643625718530986">Print…</translation>
 <translation id="7658239707568436148">Cancel</translation>
@@ -18,15 +16,12 @@
 You are signing in with a managed account and giving its administrator control over your Chrome profile. Your Chrome data will become permanently tied to this account. Disconnecting from this account will delete the local Chrome data.</translation>
 <translation id="1966710179511230534">Please update your sign-in details.</translation>
 <translation id="1623104350909869708">Prevent this page from creating additional dialogues</translation>
-<translation id="1426410128494586442">Yes</translation>
 <translation id="8218346974737627104">Confirm sign-in</translation>
 <translation id="624558823898732418">Translation Language: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Choose certificate for authentication</translation>
 <translation id="3896036286668839683">Certificate Viewer</translation>
 <translation id="8583805026567836021">Clearing account data</translation>
-<translation id="4250680216510889253">No</translation>
 <translation id="8073388330009372546">Open image in new tab</translation>
-<translation id="552553974213252141">Was the text extracted correctly?</translation>
 <translation id="8730621377337864115">Done</translation>
 <translation id="4170011742729630528">The service is not available; try again later.</translation>
 <translation id="8627706565932943526">Sync error</translation>
@@ -38,14 +33,11 @@ You are signing in with a managed account and giving its administrator control o
 <translation id="907015151729920253">Smart card</translation>
 <translation id="3063601790762993062">Save video</translation>
 <translation id="6042308850641462728">More</translation>
-<translation id="7267430310003164111">Prompt to get app from the Google Play Store.  App name: <ph name="APP_NAME"/>.  App average rating: <ph name="APP_RATING"/>.</translation>
-<translation id="4148957013307229264">Installing...</translation>
 <translation id="3992315671621218278">Save link</translation>
 <translation id="8034522405403831421">This page is in <ph name="SOURCE_LANGUAGE"/>. Translate it to <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="4195643157523330669">Open in new tab</translation>
 <translation id="3089395242580810162">Open in incognito tab</translation>
 <translation id="8725066075913043281">Try again</translation>
-<translation id="8909135823018751308">Share…</translation>
 <translation id="4269820728363426813">Copy link address</translation>
 <translation id="4510973599275542560">Don't reload</translation>
 <translation id="1206892813135768548">Copy link text</translation>
@@ -58,10 +50,8 @@ You are signing in with a managed account and giving its administrator control o
 <translation id="1285320974508926690">Never translate this site</translation>
 <translation id="5164482624172255778">Would you like Google Chrome to offer to translate <ph name="LANGUAGE"/> pages from this site next time?</translation>
 <translation id="8528538445849828817">Page Language: <ph name="SOURCE_LANGUAGE"/></translation>
-<translation id="4881695831933465202">Open</translation>
 <translation id="6512448926095770873">Leave this Page</translation>
 <translation id="7947953824732555851">Accept and sign in</translation>
-<translation id="6333140779060797560">Share via <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Close</translation>
 <translation id="969096075394517431">Change languages</translation>
 <translation id="5032574515228824816">Prompt</translation>

@@ -2,11 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
 <translation id="8588878054171169263">שמור תמונה</translation>
-<translation id="4996978546172906250">שתף באמצעות</translation>
 <translation id="5578795271662203820">חפש את התמונה הזו ב-<ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">תרגם</translation>
 <translation id="7644305409888602715">מתרגם את הדף ל<ph name="SOURCE_LANGUAGE"/>...</translation>
-<translation id="7015922086425404465">‏קבל את האפליקציה מחנות Google Play‏: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">טען מחדש דף זה</translation>
 <translation id="641643625718530986">הדפס…</translation>
 <translation id="7658239707568436148">ביטול</translation>
@@ -18,15 +16,12 @@
 אתה נכנס לחשבון מנוהל, ונותן למנהל המערכת שליטה על פרופיל Chrome שלך. נתוני Chrome שלך ייקשרו באופן קבוע לחשבון הזה. התנתקות מהחשבון הזה תמחק את נתוני Chrome המקומיים.</translation>
 <translation id="1966710179511230534">עדכן את פרטי הכניסה שלך.</translation>
 <translation id="1623104350909869708">מנע מהדף זה ליצור תיבות דו-שיח נוספות</translation>
-<translation id="1426410128494586442">כן</translation>
 <translation id="8218346974737627104">אשר את הכניסה</translation>
 <translation id="624558823898732418">שפת תרגום: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">בחירת אישור לאימות</translation>
 <translation id="3896036286668839683">מציג האישורים</translation>
 <translation id="8583805026567836021">מנקה נתוני חשבון</translation>
-<translation id="4250680216510889253">לא</translation>
 <translation id="8073388330009372546">פתח את התמונה בכרטיסייה חדשה</translation>
-<translation id="552553974213252141">האם הטקסט נשלף כראוי?</translation>
 <translation id="8730621377337864115">בוצע</translation>
 <translation id="4170011742729630528">השירות אינו זמין. נסה שוב מאוחר יותר.</translation>
 <translation id="8627706565932943526">שגיאת סנכרון</translation>
@@ -38,14 +33,11 @@
 <translation id="907015151729920253">כרטיס חכם</translation>
 <translation id="3063601790762993062">שמור סרטון</translation>
 <translation id="6042308850641462728">עוד</translation>
-<translation id="7267430310003164111">‏הצג בקשה להורדת האפליקציה מחנות Google Play.  שם אפליקציה: <ph name="APP_NAME"/>.  דירוג ממוצע של האפליקציה: <ph name="APP_RATING"/>.</translation>
-<translation id="4148957013307229264">מתקין...</translation>
 <translation id="3992315671621218278">שמור את הקישור</translation>
 <translation id="8034522405403831421">דף זה מוצג ב<ph name="SOURCE_LANGUAGE"/>. האם לתרגם אותו ל<ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="4195643157523330669">פתח בכרטיסייה חדשה</translation>
 <translation id="3089395242580810162">פתח בכרטיסיית גלישה בסתר</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
-<translation id="8909135823018751308">שתף…</translation>
 <translation id="4269820728363426813">העתק כתובת של קישור</translation>
 <translation id="4510973599275542560">אל תטען מחדש</translation>
 <translation id="1206892813135768548">העתק טקסט קישור</translation>
@@ -58,10 +50,8 @@
 <translation id="1285320974508926690">לעולם אל תתרגם אתר זה</translation>
 <translation id="5164482624172255778">‏האם ברצונך ש-Google Chrome יציע בפעם הבאה לתרגם דפים בשפה <ph name="LANGUAGE"/> מאתר זה?</translation>
 <translation id="8528538445849828817">שפת הדף: <ph name="SOURCE_LANGUAGE"/></translation>
-<translation id="4881695831933465202">פתח</translation>
 <translation id="6512448926095770873">צא מדף זה</translation>
 <translation id="7947953824732555851">קבל והיכנס</translation>
-<translation id="6333140779060797560">שתף באמצעות <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">סגור</translation>
 <translation id="969096075394517431">החלף שפות</translation>
 <translation id="5032574515228824816">בקשה</translation>

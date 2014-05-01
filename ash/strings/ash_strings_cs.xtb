@@ -10,7 +10,6 @@
 <translation id="6310121235600822547">Displej <ph name="DISPLAY_NAME"/> byl otočen o <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Rozhraní Bluetooth deaktivováno</translation>
-<translation id="6713285437468012787">Zařízení Bluetooth „<ph name="DEVICE_NAME"/>“ bylo spárováno a je nyní k dispozici všem uživatelům. Toto párování můžete odebrat pomocí Nastavení.</translation>
 <translation id="7165320105431587207">Konfigurace sítě se nezdařila</translation>
 <translation id="3775358506042162758">V rámci vícenásobného přihlášení lze používat maximálně tři účty.</translation>
 <translation id="370649949373421643">Povolit Wi-Fi</translation>
@@ -20,7 +19,6 @@
 <translation id="595202126637698455">Sledování výkonu aktivováno</translation>
 <translation id="8054466585765276473">Výpočet doby výdrže baterie.</translation>
 <translation id="7982789257301363584">Síť</translation>
-<translation id="2303600792989757991">Přepnutí přehledu okna</translation>
 <translation id="5565793151875479467">Server proxy...</translation>
 <translation id="938582441709398163">Překryvná klávesnice</translation>
 <translation id="4387004326333427325">Ověřovací certifikát byl vzdáleně odmítnut</translation>
@@ -80,9 +78,7 @@
 <translation id="3892641579809465218">Interní displej</translation>
 <translation id="7823564328645135659">Jazyk prohlížeče Chrome se po synchronizaci nastavení změnil z jazyka <ph name="FROM_LOCALE"/> na jazyk <ph name="TO_LOCALE"/>.</translation>
 <translation id="3368922792935385530">Připojeno</translation>
-<translation id="3606978283550408104">Je připojen hmatový displej.</translation>
 <translation id="8654520615680304441">Zapnout Wi-Fi...</translation>
-<translation id="6650933572246256093">Zařízení Bluetooth „<ph name="DEVICE_NAME"/>“ žádá o povolení ke spárování. V zařízení prosím zadejte následující přístupový klíč: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Metoda zadávání se změnila na metodu <ph name="INPUT_METHOD_ID"/>. Přepnout ji můžete stisknutím klávesové zkratky Shift + Alt.</translation>
 <translation id="2562916301614567480">Soukromá síť</translation>
@@ -134,7 +130,6 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Aktivace sítě <ph name="NAME"/></translation>
-<translation id="4527045527269911712">Zařízení Bluetooth „<ph name="DEVICE_NAME"/>“ žádá o povolení ke spárování.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Automatická kliknutí</translation>
 <translation id="1398853756734560583">Maximalizovat</translation>
@@ -185,15 +180,11 @@ Zpráva serveru: <ph name="SERVER_MSG"/></translation>
 <translation id="479989351350248267">vyhledat</translation>
 <translation id="8454013096329229812">Připojení Wi-Fi je zapnuto.</translation>
 <translation id="4872237917498892622">Alt + Vyhledávání nebo Shift</translation>
-<translation id="2429753432712299108">Zařízení Bluetooth „<ph name="DEVICE_NAME"/>“ žádá o povolení ke spárování. Než toto povolení schválíte, zkontrolujte si, zda je na zařízení zobrazen následující přístupový klíč: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Baterie je nabita na <ph name="PERCENTAGE"/> %.</translation>
 <translation id="2983818520079887040">Nastavení...</translation>
 <translation id="3871838685472846647">Mobil aktivován</translation>
-<translation id="6452181791372256707">Odmítnout</translation>
 <translation id="1195412055398077112">přesah obrazu</translation>
-<translation id="607652042414456612">Váš počítač mohou objevit okolní zařízení Bluetooth, ve kterých se bude zobrazovat s názvem „<ph name="NAME"/>“ a adresou <ph name="ADDRESS"/>.</translation>
 <translation id="112308213915226829">Automaticky skrývat poličku</translation>
-<translation id="6732801395666424405">Certifikáty nebyly načteny</translation>
 <translation id="7573962313813535744">Ukotvený režim</translation>
 <translation id="8927026611342028580">Je vyžadováno připojení</translation>
 <translation id="8300849813060516376">Selhání OTASP</translation>
@@ -206,14 +197,12 @@ Zpráva serveru: <ph name="SERVER_MSG"/></translation>
 <translation id="6785414152754474415">Baterie je nabita na <ph name="PERCENTAGE"/> % a nabíjí se.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Probíhá aktivace...</translation>
 <translation id="4895488851634969361">Baterie je plně nabita.</translation>
-<translation id="615957422585914272">Zobrazit klávesnici na obrazovce</translation>
 <translation id="5947494881799873997">Vrátit zpět</translation>
 <translation id="7593891976182323525">Vyhledávání nebo Shift</translation>
 <translation id="7649070708921625228">Nápověda</translation>
 <translation id="3050422059534974565">CAPS LOCK je zapnutý. Vypnete jej stisknutím klávesy Vyhledávání nebo Shift.</translation>
 <translation id="397105322502079400">Probíhá výpočet…</translation>
 <translation id="158849752021629804">Je potřeba domácí síť</translation>
-<translation id="1013923882670373915">Zařízení Bluetooth „<ph name="DEVICE_NAME"/>“ žádá o povolení ke spárování. Zadejte prosím v zařízení tento kód PIN: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">Aktivovat: <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Vyhledávání serveru DHCP selhalo.</translation>
 <translation id="2819276065543622893">Nyní budete odhlášeni.</translation>
@@ -223,7 +212,6 @@ Zpráva serveru: <ph name="SERVER_MSG"/></translation>
 <translation id="973896785707726617">Relace bude ukončena za <ph name="SESSION_TIME_REMAINING"/>. Poté budete automaticky odhlášeni.</translation>
 <translation id="8372369524088641025">Chybný klíč WEP</translation>
 <translation id="6636709850131805001">Neznámý stav</translation>
-<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Změnit zpět na jazyk <ph name="FROM_LOCALE"/> (vyžaduje restart)</translation>
 <translation id="8103386449138765447">Zprávy SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">Funkce ChromeVox (hlasová odezva) je aktivní.

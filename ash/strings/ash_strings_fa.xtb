@@ -10,7 +10,6 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> به <ph name="ROTATION"/> چرخانده شد</translation>
 <translation id="9074739597929991885">بلوتوث</translation>
 <translation id="2268130516524549846">بلوتوث غیرفعال است</translation>
-<translation id="6713285437468012787">دستگاه بلوتوث «<ph name="DEVICE_NAME"/>» مرتبط شده است و اکنون برای همه کاربران در دسترس است. می‌توانید این مرتبط‌سازی را با استفاده از تنظیمات حذف کنید.</translation>
 <translation id="7165320105431587207">پیکربندی شبکه انجام نشد</translation>
 <translation id="3775358506042162758">در ورود چندگانه به سیستم حداکثر می‌توانید از سه حساب استفاده کنید.</translation>
 <translation id="370649949373421643">‏فعال کردن Wi-Fi</translation>
@@ -20,7 +19,6 @@
 <translation id="595202126637698455">ردیابی عملکرد فعال شد</translation>
 <translation id="8054466585765276473">درحال محاسبه زمان شارژ باتری.</translation>
 <translation id="7982789257301363584">شبکه</translation>
-<translation id="2303600792989757991">مروری کلی بر پنجره تغییر حالت</translation>
 <translation id="5565793151875479467">پراکسی...</translation>
 <translation id="938582441709398163">هم پوشانی صفحه‌کلید</translation>
 <translation id="4387004326333427325">گواهینامه تأیید اعتبار، از راه دور، رد شد</translation>
@@ -80,9 +78,7 @@
 <translation id="3892641579809465218">صفحه نمایش داخلی</translation>
 <translation id="7823564328645135659">بعد از همگام‌سازی تنظیمات شما، زبان از «<ph name="FROM_LOCALE"/>» به «<ph name="TO_LOCALE"/>» تغییر کرد.</translation>
 <translation id="3368922792935385530">متصل</translation>
-<translation id="3606978283550408104">صفحه‌نمایش بریل متصل شد.</translation>
 <translation id="8654520615680304441">‏روشن کردن Wi-Fi در...</translation>
-<translation id="6650933572246256093">دستگاه بلوتوث «<ph name="DEVICE_NAME"/>» برای مرتبط‌سازی به مجوز نیاز دارد. لطفاً این کلید عبور را در آن دستگاه وارد کنید: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">۹۰°</translation>
 <translation id="5825747213122829519">‏روش ورودی شما به <ph name="INPUT_METHOD_ID"/> تغییر یافت. Shift + Alt را برای تعویض فشار دهید.</translation>
 <translation id="2562916301614567480">شبکه خصوصی</translation>
@@ -134,7 +130,6 @@
 <translation id="5543001071567407895">پیامک</translation>
 <translation id="1957803754585243749">۰ درجه</translation>
 <translation id="2354174487190027830">فعال‌سازی <ph name="NAME"/></translation>
-<translation id="4527045527269911712">دستگاه بلوتوث «<ph name="DEVICE_NAME"/>» برای مرتبط‌سازی به مجوز نیاز دارد.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">کلیک‌های خودکار</translation>
 <translation id="1398853756734560583">بزرگ کردن</translation>
@@ -185,15 +180,11 @@
 <translation id="479989351350248267">جستجو</translation>
 <translation id="8454013096329229812">‏Wi-Fi روشن است.</translation>
 <translation id="4872237917498892622">‏Alt+جستجو یا Shift</translation>
-<translation id="2429753432712299108">دستگاه بلوتوث «<ph name="DEVICE_NAME"/>» برای مرتبط‌سازی به مجوز نیاز دارد. قبل از پذیرش، لطفاً تأیید کنید که این کلید عبور در آن دستگاه نشان داده شده است: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">باتری <ph name="PERCENTAGE"/> درصد پر است.</translation>
 <translation id="2983818520079887040">تنظیمات...</translation>
 <translation id="3871838685472846647">شبکه تلفن همراه فعال شد</translation>
-<translation id="6452181791372256707">عدم پذیرش</translation>
 <translation id="1195412055398077112">بزرگتر از صفحه</translation>
-<translation id="607652042414456612">رایانه شما توسط دستگاه‌های بلوتوث نزدیک قابل شناسایی است و با نام «<ph name="NAME"/>» و آدرس <ph name="ADDRESS"/> نشان داده می‌شود</translation>
 <translation id="112308213915226829">پنهان کردن خودکار قفسه</translation>
-<translation id="6732801395666424405">گواهی‌ها بارگیری نشدند</translation>
 <translation id="7573962313813535744">حالت اتصال به پایه</translation>
 <translation id="8927026611342028580">درخواست اتصال</translation>
 <translation id="8300849813060516376">‏OTASP انجام نشد</translation>
@@ -206,7 +197,6 @@
 <translation id="6785414152754474415">باتری <ph name="PERCENTAGE"/> درصد پر و درحال شارژ است.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: در حال فعال‌سازی…</translation>
 <translation id="4895488851634969361">باتری پر است.</translation>
-<translation id="615957422585914272">نمایش صفحه‌کلید روی صفحه</translation>
 <translation id="5947494881799873997">برگرداندن</translation>
 <translation id="7593891976182323525">‏جستجو یا Shift</translation>
 <translation id="7649070708921625228">راهنما</translation>
@@ -214,7 +204,6 @@
 جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="397105322502079400">در حال محاسبه…</translation>
 <translation id="158849752021629804">شبکه خانگی مورد نیاز است</translation>
-<translation id="1013923882670373915">دستگاه بلوتوث «<ph name="DEVICE_NAME"/>» برای مرتبط‌سازی به مجوز نیاز دارد. لطفاً این کد پین را در آن دستگاه وارد کنید: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">فعال سازی <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">‏بررسی DHCP انجام نشد</translation>
 <translation id="2819276065543622893">هم‌اکنون از سیستم خارج خواهید شد.</translation>
@@ -224,7 +213,6 @@
 <translation id="973896785707726617">این جلسه در <ph name="SESSION_TIME_REMAINING"/> به اتمام خواهد رسید. به طور خودکار از سیستم خارج خواهید شد.</translation>
 <translation id="8372369524088641025">‏کلید WEP نادرست</translation>
 <translation id="6636709850131805001">حالت ناشناس</translation>
-<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">به &quot;<ph name="FROM_LOCALE"/>&quot; تغییر دهید (به راه‌اندازی دوباره نیاز دارد)</translation>
 <translation id="8103386449138765447">پیامک‌ها: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">‏ChromeVox (بازخورد گفتاری) فعال است.

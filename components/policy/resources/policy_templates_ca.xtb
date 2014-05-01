@@ -18,7 +18,6 @@
       Quan aquesta política estigui desactivada, no es demanarà mai a l'usuari que confirmi l'accés i la captura d'àudio només estarà disponible als URL configurats a AudioCaptureAllowedUrls.
 
       Aquesta política afecta tots els tipus d'entrada d'àudio i no només els del micròfon integrat.</translation>
-<translation id="7267809745244694722">De manera predeterminada, les tecles multimèdia actuen com les tecles de funció.</translation>
 <translation id="9150416707757015439">Aquesta política està obsoleta. En lloc seu, utilitzeu IncognitoModeAvailability. Activa el mode d'incògnit a <ph name="PRODUCT_NAME"/>. Si aquest paràmetre està activat o no està configurat, els usuaris podran obrir pàgines web en mode d'incògnit. Si està desactivat, els usuaris no podran obrir pàgines web en mode d'incògnit. Si no es defineix aquesta política, aquest paràmetre s'activarà i l'usuari podrà utilitzar el mode d'incògnit.</translation>
 <translation id="4203389617541558220">Limiteu el temps d'utilització del dispositiu mitjançant la planificació de reinicis automàtics.
 
@@ -541,6 +540,7 @@ Si aquesta política no s'ha establert, la neteja automàtica utilitza l'estrat�
 
           Si desactiveu aquest paràmetre o si no el definiu, els amfitrions es podran compartir amb qualsevol compte.</translation>
 <translation id="6417861582779909667">Permet definir una llista de patrons d'URL per especificar els llocs que no poden emmagatzemar galetes. Si no es defineix aquesta política, s'utilitzarà per a tots els llocs el valor global predeterminat indicat en la política &quot;'DefaultCookiesSetting&quot; (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.</translation>
+<translation id="5457296720557564923">Permet que les pàgines accedeixin a les estadístiques d'ús de memòria de JavaScript. Aquesta configuració fa que les estadístiques de memòria del tauler de perfils d'eines per a desenvolupadors estiguin disponibles per a la pàgina web.</translation>
 <translation id="5776485039795852974">Demana permís cada vegada que un lloc vulgui mostrar notificacions d'escriptori</translation>
 <translation id="5047604665028708335">Permet l'accés a llocs situats fora de paquets de contingut.</translation>
 <translation id="5052081091120171147">Si està activada, aquesta política fa que l'historial de navegació s'importi des del navegador predeterminat actual. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, no s'importarà cap historial de navegació. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
@@ -548,12 +548,6 @@ Si aquesta política no s'ha establert, la neteja automàtica utilitza l'estrat�
 <translation id="7132877481099023201">URL als quals els dispositius de captura de vídeo podran accedir sense confirmació.</translation>
 <translation id="8947415621777543415">Informa de la ubicació d'un dispositiu</translation>
 <translation id="1655229863189977773">Defineix la mida de la memòria cau del disc en bytes</translation>
-<translation id="3358275192586364144">Permet l'optimització WPAD a <ph name="PRODUCT_NAME"/> i impedeix que els usuaris canviïn aquest paràmetre.
-
-      Si s'activa, Chrome escurça els intervals d'espera per als servidors de WPAD basats en DNS.
-
-      Si la política no es defineix, l'optimització s'activarà i l'usuari no podrà
-      canviar-ho.</translation>
 <translation id="6376842084200599664">Permet especificar una llista d'extensions que s'instal·laran de manera silenciosa, sense la interacció de l'usuari.
 
           Cada element de la llista és una cadena que conté un ID d'extensió i un URL d'actualització delimitat per un punt i coma (<ph name="SEMICOLON"/>). L'ID d'extensió és la cadena de 32 lletres que es troba, per exemple, a <ph name="CHROME_EXTENSIONS_LINK"/> quan està en mode de desenvolupador. L'URL d'actualització ha d'apuntar a un document XML de manifest d'actualització segons es descriu a <ph name="LINK_TO_EXTENSION_DOC1"/>. Tingueu en compte que l'URL d'actualització definit en aquesta política només es fa servir per a la instal·lació inicial; les actualitzacions següents de l'extensió faran servir l'URL d'actualització indicat al manifest d'extensió.
@@ -655,7 +649,6 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="1679420586049708690">Sessió pública per a inici de sessió automàtic</translation>
 <translation id="7625444193696794922">Especifica el canal de llançament al qual aquest dispositiu s'hauria de bloquejar.</translation>
 <translation id="2552966063069741410">Zona horària</translation>
-<translation id="3788662722837364290">Configuració de la gestió de l'energia quan l'usuari està inactiu</translation>
 <translation id="2240879329269430151">Us permet definir si els llocs web poden mostrar finestres emergents. L'aparició de finestres emergents es pot autoritzar o denegar per a tots els llocs web. Si no es defineix aquesta política, s'utilitzarà el paràmetre &quot;BlockPopups&quot; i l'usuari podrà canviar-lo.</translation>
 <translation id="2529700525201305165">Restricció dels usuaris que poden iniciar la sessió a <ph name="PRODUCT_NAME"/></translation>
 <translation id="8971221018777092728">Cronometrador d'inici de sessió automàtic de sessió pública</translation>
@@ -735,6 +728,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="8102913158860568230">Configuració predeterminada de l'activitat multimèdia</translation>
 <translation id="6641981670621198190">Desactiva la compatibilitat amb API de gràfics en 3D</translation>
 <translation id="1265053460044691532">Limiteu el temps durant el qual un usuari autenticat mitjançant SAML pot iniciar la sessió fora de línia.</translation>
+<translation id="7929480864713075819">Activa els informes d'informació de memòria (mida de pila JS) a la pàgina</translation>
 <translation id="5703863730741917647">Especifica l'acció que s'ha d'emprendre quan s'està inactiu.
 
           Tingueu en compte que aquesta política està desactivada i que se suprimirà en un futur.
@@ -814,7 +808,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="4057110413331612451">Permet que l'usuari empresarial sigui només un usuari principal als perfils múltiples</translation>
 <translation id="5365946944967967336">Mostra el botó Pàgina d'inici a la barra d'eines</translation>
 <translation id="3709266154059827597">Configura la llista negra d'instal·lació d'extensions</translation>
-<translation id="1933378685401357864">Imatge de fons de pantalla</translation>
 <translation id="8451988835943702790">Fes servir la pàgina de pestanya nova com a pàgina d'inici</translation>
 <translation id="4617338332148204752">Omet la comprovació de metaetiquetes a <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="8469342921412620373">Activa la utilització d'un proveïdor de cerca predeterminat. Si activeu aquest paràmetre, es durà a terme una cerca predeterminada quan l'usuari escrigui text a la barra d'adreces que no sigui un URL. Podeu especificar el proveïdor de cerca predeterminat que vulgueu fer servir si configureu la resta de les polítiques de cerca predeterminades. Si es deixen buides, l'usuari podrà triar el proveïdor predeterminat. Si desactiveu el paràmetre, no es durà a terme cap cerca quan l'usuari introdueixi text que no siguin URL a la barra d'adreces. Tant si activeu com si desactiveu aquest paràmetre, els usuaris no podran modificar-lo ni substituir-lo a <ph name="PRODUCT_NAME"/>. Si no es defineix aquesta política, s'activarà el proveïdor de cerca predeterminat i l'usuari podrà definir la llista de proveïdors de cerca.</translation>
@@ -828,11 +821,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Si no s'estableix aquesta política, el cursor gran es desactivarà inicialment, però l'usuari el podrà activar en qualsevol moment.</translation>
 <translation id="2633084400146331575">Activa els comentaris per veu</translation>
-<translation id="687046793986382807">Aquesta política s'ha retirat a partir de la versió 35 de <ph name="PRODUCT_NAME"/>.
-
-      De tota manera, la informació de la memòria es notifica sense importar el valor de l'opció, però les mides de les quals s'envia la notificació es
-      quantifiquen i el percentatge d'actualitzacions es limita per motius de seguretat. Per obtenir dades precises en temps real,
-      utilitzeu eines com ara Telemetry.</translation>
 <translation id="8731693562790917685">Configuració del contingut us permet especificar la manera com es tracta el contingut d'un tipus determinat (per exemple, Galetes, Imatges o JavaScript).</translation>
 <translation id="2411919772666155530">Bloqueja les notificacions d'aquests llocs</translation>
 <translation id="6923366716660828830">Especifica el nom del proveïdor de cerca predeterminat. Si es deixa buit o no es defineix, s'utilitzarà el nom de l'amfitrió especificat a l'URL de cerca. Aquesta política només es tindrà en compte si la política &quot;DefaultSearchProviderEnabled&quot; està activada.</translation>
@@ -842,7 +830,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Si es defineix com a falsa, les sol·licituds de bloqueig d'activació de la pantalla es rebutjaran.</translation>
 <translation id="467236746355332046">Funcions compatibles:</translation>
-<translation id="5447306928176905178">Activa els informes d'informació de memòria (mida de pila JS) a la pàgina (no disponible)</translation>
 <translation id="7632724434767231364">Nom de la biblioteca GSSAPI</translation>
 <translation id="3038323923255997294">Continua executant les aplicacions en segon pla quan es tanqui <ph name="PRODUCT_NAME"/></translation>
 <translation id="8909280293285028130">Indica el temps sense activitat per part de l'usuari després del qual la pantalla es bloqueja quan el dispositiu funciona amb alimentació.
@@ -887,17 +874,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
           Aquesta política és opcional. Si no es defineix, la sol·licitud de cerca instantània s'enviarà mitjançant el mètode GET.
 
           Aquesta política només es respecta si la política &quot;DefaultSearchProviderEnabled&quot; està activada.</translation>
-<translation id="6095999036251797924">Especifica la quantitat de temps que ha de passar sense cap interacció de l'usuari abans que la pantalla no es bloquegi quan s'utilitza amb connexió a la corrent CA o amb una bateria.
-
-          Si aquesta quantitat de temps s'estableix en un valor més gran que zero, representa el temps d'inactivitat de l'usuari abans que no es bloquegi la pantalla de <ph name="PRODUCT_OS_NAME"/>.
-
-          Si s'estableix en zero, no es bloquejarà la pantalla de <ph name="PRODUCT_OS_NAME"/> quan l'usuari estigui inactiu.
-
-          Si no se n'estableix cap, s'utilitzarà una quantitat de temps predeterminada.
-
-          Per bloquejar la pantalla en mode inactiu, us recomanem que activeu el bloqueig de pantalla en mode de suspensió i que configureu <ph name="PRODUCT_OS_NAME"/> perquè se suspengui després del temps d'inactivitat. Aquesta política només s'ha d'utilitzar quan el bloqueig de pantalla s'hagi de produir molt abans que la suspensió o quan no vulgueu emprar la suspensió en mode inactiu.
-
-          El valor de la política s'ha d'especificar en mil·lisegons. Els valors es fixen perquè siguin inferiors al temps d'inactivitat.</translation>
 <translation id="1454846751303307294">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què no està permès executar JavaScript. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política &quot;DefaultJavaScriptSetting&quot;, si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="538108065117008131">Permet que <ph name="PRODUCT_FRAME_NAME"/> gestioni els tipus de contingut següents.</translation>
 <translation id="2312134445771258233">Us permet configurar les pàgines que es carreguen en iniciar. El contingut de la llista &quot;URL que s'han d'obrir en iniciar&quot; s'ignora tret que seleccioneu &quot;Obre una llista d'URL&quot; a &quot;Acció a l'inici&quot;.</translation>
@@ -922,32 +898,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
       Si aquesta política es defineix com a &quot;false&quot; o no es configura, les icones estan visibles.</translation>
 <translation id="5085647276663819155">Desactiva la visualització prèvia d'impressió</translation>
 <translation id="8672321184841719703">Versió objectiu de l'actualització automàtica</translation>
-<translation id="553658564206262718">Configuració de la gestió de l'energia quan l'usuari està inactiu
-
-          Amb aquesta política es controlen diversos paràmetres de l'estratègia de gestió de l'energia quan l'usuari està inactiu.
-
-          Hi ha quatre tipus d'accions:
-          * La il·luminació de la pantalla s'atenuarà si l'usuari està inactiu després del temps especificat per |ScreenDim|.
-          * La pantalla s'apagarà si l'usuari està inactiu després del temps especificat per |ScreenOff|.
-          * Es mostrarà un quadre de diàleg d'advertiment si l'usuari està inactiu després del temps especificat per |IdleWarning| i es comunicarà a l'usuari que s'està a punt d'aplicar l'acció d'inactivitat.
-          * S'efectuarà l'acció especificada per |IdleAction| si l'usuari està inactiu després del temps especificat per |Idle|.
-
-          Per a cadascuna de les accions anteriors, el temps d'inactivitat s'ha d'especificar en mil·lisegons i s'ha de definir en un valor superior a zero per activar l'acció corresponent. Si es defineix en zero, <ph name="PRODUCT_OS_NAME"/> no durà a terme l'acció corresponent.
-
-          Per a cadascun dels temps d'inactivitat anteriors, s'utilitzarà un valor predeterminat si la quantitat de temps no es defineix.
-
-          Tingueu en compte que els valors de |ScreenDim| es fixaran perquè siguin inferiors o iguals a |ScreenOff|, i que |ScreenOff| i |IdleWarning| es fixaran perquè siguin inferiors o iguals a |Idle|.
-
-          |IdleAction| pot ser una de quatre accions possibles:
-          * |Suspend| (suspensió)
-          * |Logout| (tancament)
-          * |Shutdown| (apagament)
-          * |DoNothing| (cap acció)
-
-          Quan |IdleAction| no es defineix, es duu a terme l'acció predeterminada, que és la suspensió.
-
-          També hi ha una configuració diferent per a la connexió a corrent CA i les bateries.
-          </translation>
 <translation id="1689963000958717134">Permet aplicar la configuració de la xarxa per a tots els usuaris d'un dispositiu <ph name="PRODUCT_OS_NAME"/>. La configuració de la xarxa és una cadena en format JSON, segons la definició del format de la configuració de xarxa oberta que apareix a <ph name="ONC_SPEC_URL"/></translation>
 <translation id="6699880231565102694">Activació de l'autenticació de dos factors per als amfitrions d'accés remot</translation>
 <translation id="2030905906517501646">Paraula clau del proveïdor de cerca predeterminat</translation>
@@ -1120,32 +1070,6 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 
       Si aquesta política no es defineix, <ph name="PRODUCT_NAME"/> utilitzarà el valor predeterminat de 5.000 mil·lisegons.</translation>
 <translation id="8099880303030573137">Retard d'inactivitat quan s'utilitza bateria</translation>
-<translation id="1709037111685927635">Configura la imatge de fons de pantalla.
-
-      Aquesta política us permet configurar la imatge de fons de pantalla que es mostra a l'escriptori i a la pantalla d'inici de sessió per a l'usuari. Per definir la política, s'especifica l'URL des del qual <ph name="PRODUCT_OS_NAME"/> pot baixar la imatge de fons de pantalla i un hash criptogràfic que s'utilitza per verificar la integritat de la baixada. La imatge ha d'estar en format JPEG i no pot superar els 16 MB de mida. L'URL ha de permetre-hi l'accés sense cap autenticació.
-
-      La imatge de fons de pantalla es baixa i s'emmagatzema a la memòria cau. Es tornarà a baixar sempre que l'URL o el hash canviïn.
-
-      La política s'ha d'especificar com una cadena que assenyala l'URL i el hash en format JSON, i que segueix l'esquema següent:
-      {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;url&quot;: {
-            &quot;description&quot;: &quot;L'URL des del qual es pot baixar la imatge de fons de pantalla.&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          },
-          &quot;hash&quot;: {
-            &quot;description&quot;: &quot;El hash SHA-256 de la imatge de fons de pantalla.&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          }
-        }
-      }
-
-      Si es defineix aquesta política, <ph name="PRODUCT_OS_NAME"/> baixarà i utilitzarà la imatge de fons de pantalla.
-
-      Si definiu la política, els usuaris no la poden canviar ni substituir.
-
-      Si la política es deixa sense definir, l'usuari pot triar una imatge perquè es mostri a l'escriptori i a la pantalla d'inici de sessió.</translation>
 <translation id="2761483219396643566">Retard d'advertiment d'inactivitat quan s'utilitza la bateria</translation>
 <translation id="6281043242780654992">Configura les polítiques per a la missatgeria nativa. Només es permetran els amfitrions de missatgeria nativa afegits a la llista negra si també apareixen a la llista blanca.</translation>
 <translation id="1468307069016535757">Estableix l'estat predeterminat de la funció d'accessibilitat de contrast elevat a la pantalla d'inici de sessió.
@@ -1262,9 +1186,93 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
       Si activeu o desactiveu aquesta política, els usuaris no la podran canviar ni anul·lar.
 
       Si no configureu aquesta política, els usuaris podran triar si volen fer servir la funció del servidor intermediari de compressió de dades.</translation>
-<translation id="2170233653554726857">Activa l'optimització WPAD</translation>
 <translation id="7424751532654212117">Llista d'excepcions de la llista de connectors desactivats</translation>
 <translation id="6233173491898450179">Estableix el directori de baixada</translation>
+<translation id="78524144210416006">Configura la gestió de l'alimentació a la pantalla d'inici de sessió a <ph name="PRODUCT_OS_NAME"/>.
+
+      Aquesta política permet configurar el comportament de <ph name="PRODUCT_OS_NAME"/> quan l'usuari no té cap activitat durant un cert temps mentre es mostra la pantalla d'inici de sessió. La política controla diverses configuracions. Per consultar-ne la semàntica concreta i els intervals de valors, vegeu les polítiques corresponents, que controlen la gestió de l'alimentació en una sessió. Les úniques desviacions d'aquestes polítiques són:
+      * Les accions que s'han d'emprendre quan s'està inactiu o en tancar la tapa no poden servir per finalitzar la sessió.
+      * L'acció predeterminada que s'han d'emprendre quan s'està inactiu mentre s'està connectat al CA és apagar el dispositiu.
+
+      La política s'hauria d'especificar com una cadena que expressa la configuració individual en format JSON, seguint l'esquema següent:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;AC&quot;: {
+            &quot;description&quot;: &quot;Configuració de la gestió de l'alimentació aplicable només quan s'està connectat al CA&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Període de temps sense cap entrada de l'usuari després del qual la pantalla s'atenua, en mil·lisegons&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Període de temps sense cap entrada de l'usuari després del qual la pantalla s'apaga, en mil·lisegons&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Període de temps sense cap entrada de l'usuari després del qual s'emprèn l'acció d'inactivitat, en mil·lisegons&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Acció que s'ha d'emprendre quan s'està inactiu&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;Battery&quot;: {
+            &quot;description&quot;: &quot;Configuració de la gestió de l'alimentació només quan s'està utilitzant la bateria&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Període de temps sense cap entrada de l'usuari després del qual la pantalla s'atenua, en mil·lisegons&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Període de temps sense cap entrada de l'usuari després del qual la pantalla s'apaga, en mil·lisegons&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Període de temps sense cap entrada de l'usuari després del qual s'emprèn l'acció d'inactivitat, en mil·lisegons&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Acció que s'ha d'emprendre quan s'està inactiu&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;LidCloseAction&quot;: {
+            &quot;description&quot;: &quot;Acció que s'ha d'emprendre quan es tanca la tapa&quot;,
+            &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+          },
+          &quot;UserActivityScreenDimDelayScale&quot;: {
+            &quot;description&quot;: &quot;Percentatge en què s'escala l'estat d'atenuació de la pantalla quan es detecta activitat de l'usuari amb la pantalla atenuada o just després d'haver-se apagat&quot;,
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 100
+          }
+        }
+      }
+
+      Si alguna configuració no s'especifica, s'utilitzarà el valor predeterminat.
+
+      Si aquesta política no es defineix, s'utilitzen els valors predeterminats per a totes les configuracions.</translation>
 <translation id="8908294717014659003">Us permet decidir si els llocs web poden accedir als vostres dispositius de captura multimèdia. Es pot proporcionar accés als dispositius de captura multimèdia de manera predeterminada o demanar permís a l'usuari cada vegada que un lloc web vol accedir als dispositius de captura multimèdia.
 
           Si no definiu aquesta política, s'utilitzarà &quot;PromptOnAccess&quot; i l'usuari podrà canviar-la.</translation>
@@ -1299,9 +1307,6 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
       Si no definiu aquesta política, s'utilitzarà la mida de memòria cau predeterminada i els usuaris podran substituir-la amb la marca &quot;--disk-cache-size&quot;.</translation>
 <translation id="5142301680741828703">Renderitza sempre els patrons URL següents a <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Configura la llista blanca d'instal·lació d'extensions</translation>
-<translation id="5893553533827140852">Si s'activa aquesta opció de configuració, les sol·licituds d'autenticació Gnubby s'enviaran per un servidor intermediari a través d'una connexió d'amfitrió remot.
-
-          Si es desactiva o no es configura aquesta opció, les sol·licituds d'autenticació Gnubby s'enviaran per un servidor intermediari.</translation>
 <translation id="187819629719252111">Permet que <ph name="PRODUCT_NAME"/> mostri diàlegs de selecció de fitxers per permetre l'accés als fitxers locals de l'equip. Si activeu aquest paràmetre, els usuaris podran obrir els diàlegs de selecció de fitxers de la manera habitual. Si el desactiveu, cada vegada que un usuari dugui a terme una acció que provoqui l'obertura d'un diàleg de selecció de fitxers (com ara la importació d'adreces d'interès, la càrrega de fitxers, el desament d'enllaços, etc.), li apareixerà un missatge que serà com si l'usuari fes clic a Cancel·la al diàleg de selecció de fitxers. Si no definiu aquest paràmetre, els usuaris podran obrir diàlegs de selecció de fitxers de la manera habitual.</translation>
 <translation id="4507081891926866240">Personalitzeu la llista dels patrons d'URL que sempre s'han de representar per <ph name="PRODUCT_FRAME_NAME"/>. Si no es defineix aquesta política, s'utilitzarà el processador predeterminat per a tots els llocs especificats per la política &quot;ChromeFrameRendererSettings&quot;. Per obtenir patrons d'exemple, consulteu http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Tria com vols especificar la configuració del servidor intermediari</translation>
@@ -1368,11 +1373,6 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 
           Si la política &quot;RestoreOnStartup&quot; es configura per restaurar els URL de les sessions anteriors, aquesta política no es respectarà i les galetes s'emmagatzemaran permanentment per a aquests llocs.</translation>
 <translation id="2098658257603918882">Activa la creació d'informes d'ús i de dades relacionades amb bloqueigs</translation>
-<translation id="4633786464238689684">Canvia el comportament predeterminat de les tecles de la fila superior perquè actuïn com a tecles de funció.
-
-          Si aquesta política es defineix com a &quot;true&quot;, la fila superior de tecles del teclat produirà ordres de tecles de funció de manera predeterminada. Per canviar-ne el comportament perquè tornin a actuar com a tecles multimèdia, heu de prémer la tecla de cerca.
-
-          Si aquesta política es defineix com a &quot;false&quot; o es deixa sense definir, el teclat produirà ordres de tecla multimèdia de manera predeterminada i ordres de tecla de funció quan es premi la tecla de cerca.</translation>
 <translation id="2324547593752594014">Permet l'inici de sessió a Chrome</translation>
 <translation id="172374442286684480">Permet que tots els llocs defineixin dades locals</translation>
 <translation id="1151353063931113432">Permet les imatges en aquests llocs</translation>
@@ -1423,7 +1423,6 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 
           ExtensionInstallBlacklist té prioritat davant d'aquesta política. Això vol dir que no s'instal·larà cap extensió de la llista negra, encara que provingui d'un lloc d'aquesta llista.</translation>
 <translation id="2113068765175018713">Limita el temps d'activitat del dispositiu mitjançant el reinici automàtic</translation>
-<translation id="4224610387358583899">Temps d'inactivitat per al bloqueig de pantalla</translation>
 <translation id="7848840259379156480">Us permet configurar el renderitzador HTML predeterminat quan <ph name="PRODUCT_FRAME_NAME"/> estigui instal·lat. De manera predeterminada, la configuració permet que el navegador amfitrió dugui a terme la renderització, però podeu substituir aquesta configuració de manera opcional i fer que <ph name="PRODUCT_FRAME_NAME"/> renderitzi les pàgines HTML de manera predeterminada.</translation>
 <translation id="186719019195685253">Acció que s'ha d'emprendre quan s'està inactiu mentre s'està connectat al CA</translation>
 <translation id="7890264460280019664">Informa al servidor de la llista d'interfícies de xarxa amb els seus tipus i adreces de maquinari.
@@ -1488,15 +1487,6 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
       La política s'ha de definir en un URL del qual <ph name="PRODUCT_OS_NAME"/> pugui baixar els Termes i condicions, que han de trobar-se com a text sense format proporcionat com a text/sense format de tipus MIME. No es permet el marcatge.</translation>
 <translation id="2623014935069176671">Espereu que hi hagi una activitat inicial de l'usuari.</translation>
 <translation id="2660846099862559570">No facis servir mai un servidor intermediari</translation>
-<translation id="1956493342242507974">Configuració de la gestió d'energia a la pantalla d'inici de <ph name="PRODUCT_OS_NAME"/>
-
-      Aquesta política us permet configurar de quina manera es comporta <ph name="PRODUCT_OS_NAME"/> quan no hi ha activitat de l'usuari durant un temps determinat quan es mostra la pantalla d'inici. La política controla diversos paràmetres. Per conèixer la semàntica i els intervals de valors, consulteu les polítiques corresponents que controlen la gestió d'energia d'una sessió. Les úniques desviacions d'aquestes polítiques són les següents:
-      * Les accions que s'han de dur a terme si l'usuari està inactiu o si es tanca la tapa no poden ser finalitzar la sessió.
-      * L'acció predeterminada que es duu a terme quan l'usuari està inactiu i el dispositiu està connectat al corrent és l'apagada.
-
-      Si no s'especifica un paràmetre, s'utilitza un valor predeterminat.
-
-      Si no es defineix aquesta política, s'utilitzen els valors predeterminats per a tots els paràmetres.</translation>
 <translation id="1435659902881071157">Configuració de la xarxa a nivell del dispositiu</translation>
 <translation id="2131902621292742709">Retard d'atenuació de pantalla quan s'utilitza bateria</translation>
 <translation id="5781806558783210276">Indica el temps sense activitat per part de l'usuari després del qual es duu a terme l'acció d'inactivitat quan el dispositiu funciona amb bateria.
@@ -1603,6 +1593,5 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
       Aquesta política afecta tots els tipus de sortida d'àudio i no només els altaveus integrats. Les funcions d'accessibilitat d'àudio també estan regides per aquesta política. No activeu aquesta política si l'usuari necessita un lector de pantalla.
 
       Si aquesta configuració es defineix com a &quot;true&quot; o no es configura, els usuaris podran fer servir totes les sortides d'àudio compatibles del dispositiu.</translation>
-<translation id="6517678361166251908">Permet l'autenticació Gnubby</translation>
 <translation id="4858735034935305895">Permet el mode de pantalla completa</translation>
 </translationbundle>

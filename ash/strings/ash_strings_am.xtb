@@ -10,7 +10,6 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> ወደ <ph name="ROTATION"/> ዞሯል</translation>
 <translation id="9074739597929991885">ብሉቱዝ</translation>
 <translation id="2268130516524549846">ብሉቱዝ ተሰናክሏል</translation>
-<translation id="6713285437468012787">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME"/>» ተጣምሯል፣ እና አሁን ለሁሉም ተጠቃሚዎች ይገኛል። ቅንብሮችን በመጠቀም ይህን ጥምረት ማስወገድ ይችላሉ።</translation>
 <translation id="7165320105431587207">አውታረ መረቡን ማዋቀር አልተሳካም</translation>
 <translation id="3775358506042162758">በአንድ ጊዜ ብዙ መግባት ላይ እስከ ሶስት መለያዎች ድረስ ብቻ ነው ሊኖርዎ የሚችለው።</translation>
 <translation id="370649949373421643">Wi-Fi ያንቁ</translation>
@@ -20,7 +19,6 @@
 <translation id="595202126637698455">አፈጻጸም መከታተያ ነቅቷል</translation>
 <translation id="8054466585765276473">የባትሪ ጊዜን በማስላት ላይ።</translation>
 <translation id="7982789257301363584">አውታረ መረብ</translation>
-<translation id="2303600792989757991">የመስኮት አጠቃላይ እይታን ቀያይር</translation>
 <translation id="5565793151875479467">ተኪ...</translation>
 <translation id="938582441709398163">የቁልፍ ሰሌዳ ተደራቢ</translation>
 <translation id="4387004326333427325">የማረጋገጫ ምስክር ወረቀት በርቀት ተቀባይነት አላገኘም</translation>
@@ -81,9 +79,7 @@
 <translation id="3892641579809465218">የውስጥ ማሳያ</translation>
 <translation id="7823564328645135659">ቅንብሮችዎ ከተመሳሰሉ በኋላ ቋንቋው ከ«<ph name="FROM_LOCALE"/> ወደ «<ph name="TO_LOCALE"/>» ተቀይሯል።</translation>
 <translation id="3368922792935385530">ተያይዟል</translation>
-<translation id="3606978283550408104">የብሬይል ማሳያ ተገናኝቷል።</translation>
 <translation id="8654520615680304441">Wi-Fi አብራ...</translation>
-<translation id="6650933572246256093">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME"/>» ለመጣመር ፍቃድ ይፈልጋል። እባክዎ ይህን የይለፍ ቁልፍ በዚህ መሣሪያ ላይ ያስገቡ፦ <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">የግቤት ስልትዎ ወደ <ph name="INPUT_METHOD_ID"/> ተቀይሯል።
 ለመቀየር Shift + Alt ይጫኑ።</translation>
@@ -136,7 +132,6 @@
 <translation id="5543001071567407895">ኤስ ኤም ኤስ</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/>ን በማግበር ላይ</translation>
-<translation id="4527045527269911712">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME"/>» ለመጣመር ፍቃድ ይፈልጋል።</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">ራስ-ሰር ጠቅታዎች</translation>
 <translation id="1398853756734560583">አስፋ</translation>
@@ -187,15 +182,11 @@
 <translation id="479989351350248267">ፈልግ</translation>
 <translation id="8454013096329229812">Wi-Fi በርቷል።</translation>
 <translation id="4872237917498892622">Alt+Search ወይም Shift</translation>
-<translation id="2429753432712299108">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME"/>» ለመጣመር ፍቃድ ይፈልጋል። ከመቀበልዎ በፊት እባክዎ ይህ የይለፍ ቃል በዚያ መሣሪያ ላይ የሚታይ መሆኑን ያረጋግጡ፦ <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">ባትሪው <ph name="PERCENTAGE"/>% ሙሉ ነው።</translation>
 <translation id="2983818520079887040">ቅንብሮች ...</translation>
 <translation id="3871838685472846647">በድምጸ ተያያዥ ሞደም የገበረ</translation>
-<translation id="6452181791372256707">አይቀበሉ</translation>
 <translation id="1195412055398077112">ትርፍ ቅኝት</translation>
-<translation id="607652042414456612">ኮምፒውተርዎ አቅራቢያ ባሉ የብሉቱዝ መሣሪያዎች ሊገኝ የሚችል ነው፣ እና በ<ph name="ADDRESS"/> አድራሻ እንደ «<ph name="NAME"/>» ሆኖ ይታያል</translation>
 <translation id="112308213915226829">መደርደሪያን በራስ ሰር ደብቅ</translation>
-<translation id="6732801395666424405">የእውቅና ማረጋገጫዎች አልተጫኑም</translation>
 <translation id="7573962313813535744">ትክል ሁነታ</translation>
 <translation id="8927026611342028580">መገናኘት ተጠይቋል</translation>
 <translation id="8300849813060516376">OTASP አልተሳካም</translation>
@@ -208,7 +199,6 @@
 <translation id="6785414152754474415">ባትሪው <ph name="PERCENTAGE"/>% ሙሉ ሆኖ በተጨማሪም ኃይል እየሞላ ነው።</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>፦ በማግበር ላይ...</translation>
 <translation id="4895488851634969361">ባትሪው ሙሉ ነው።</translation>
-<translation id="615957422585914272">የማያ ገጽ ላይ ቁልፍ ሰሌዳ አሳይ</translation>
 <translation id="5947494881799873997">አድህር</translation>
 <translation id="7593891976182323525">Search ወይም Shift</translation>
 <translation id="7649070708921625228">እገዛ</translation>
@@ -216,7 +206,6 @@
 ይቅር ለማለት Search ወይም Shift ይጫኑ።</translation>
 <translation id="397105322502079400">በማስላት ላይ...</translation>
 <translation id="158849752021629804">የቤት አውታረ መረብ ያስፈልጋል</translation>
-<translation id="1013923882670373915">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME"/>» ለመጣመር ፍቃድ ይፈልጋል። እባክዎ ይህን የፒን ኮድ በዚህ መሣሪያ ላይ ያስገቡ፦ <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/>ን አግብር</translation>
 <translation id="5864471791310927901">የDHCP ፍለጋ አልተሳካም</translation>
 <translation id="2819276065543622893">አሁን ዘግተው እንዲወጡ ይደረጋሉ።</translation>
@@ -226,7 +215,6 @@
 <translation id="973896785707726617">ይህ ክፍለ ጊዜ በ<ph name="SESSION_TIME_REMAINING"/> ጊዜ ውስጥ ያልቃል። በራስ-ሰር እንዲወጡ ይደረጋሉ።</translation>
 <translation id="8372369524088641025">መጥፎ የWEP ቁልፍ</translation>
 <translation id="6636709850131805001">ያልታወቀ ሁኔታ</translation>
-<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">ወደ «<ph name="FROM_LOCALE"/>» መልሰህ ቀይር (ዳግም ማስጀመር ይፈልጋል)</translation>
 <translation id="8103386449138765447">የኤስ ኤም ኤስ መልዕክቶች፦ <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (የቃል ግብረመልስ) ነቅቷል። 

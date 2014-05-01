@@ -10,7 +10,6 @@
 <translation id="6310121235600822547">Na-rotate ang <ph name="DISPLAY_NAME"/> sa <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Hindi pinagana ang Bluetooth</translation>
-<translation id="6713285437468012787">Naipares na ang bluetooth device na &quot;<ph name="DEVICE_NAME"/>&quot; at available na ngayon sa lahat ng user. Maaari mong alisin ang pagpapares na ito gamit ang Mga Setting.</translation>
 <translation id="7165320105431587207">Nabigong ma-configure ang network</translation>
 <translation id="3775358506042162758">Maaari ka lang magkaroon ng hanggang sa tatlong account sa multiple na pag-sign-in.</translation>
 <translation id="370649949373421643">Paganahin ang Wi-Fi</translation>
@@ -20,7 +19,6 @@
 <translation id="595202126637698455">Naka-enable ang pagte-trace sa pagganap</translation>
 <translation id="8054466585765276473">Kinakalkula ang oras ng baterya.</translation>
 <translation id="7982789257301363584">Network</translation>
-<translation id="2303600792989757991">I-toggle ang window ng pangkalahatang-ideya</translation>
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="938582441709398163">Overlay ng Keyboard</translation>
 <translation id="4387004326333427325">Remote na tinanggihan ang certificate sa pagpapatunay</translation>
@@ -81,9 +79,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="3892641579809465218">Panloob na Display</translation>
 <translation id="7823564328645135659">Nagbago ang wika mula &quot;<ph name="FROM_LOCALE"/>&quot; patungong &quot;<ph name="TO_LOCALE"/>&quot; pagkatapos i-sync ang iyong mga setting.</translation>
 <translation id="3368922792935385530">Nakakonekta</translation>
-<translation id="3606978283550408104">Nagkonekta ng braille display.</translation>
 <translation id="8654520615680304441">I-on ang Wi-Fi...</translation>
-<translation id="6650933572246256093">Gusto ng bluetooth device na &quot;<ph name="DEVICE_NAME"/>&quot; ng pahintulot na magpares. Pakilagay ang passkey na ito sa device na iyon: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Naging <ph name="INPUT_METHOD_ID"/> ang iyong pamamaraan ng pag-input.
 Pindutin ang Shift + Alt upang magpalit.</translation>
@@ -136,7 +132,6 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Ina-activate ang <ph name="NAME"/></translation>
-<translation id="4527045527269911712">Gusto ng bluetooth device na &quot;<ph name="DEVICE_NAME"/>&quot; na magpares.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Mga awtomatikong pag-click</translation>
 <translation id="1398853756734560583">Maximize</translation>
@@ -187,15 +182,11 @@ Mensahe mula sa server: <ph name="SERVER_MSG"/></translation>
 <translation id="479989351350248267">maghanap</translation>
 <translation id="8454013096329229812">Naka-on ang Wi-Fi.</translation>
 <translation id="4872237917498892622">Alt+Search o Shift</translation>
-<translation id="2429753432712299108">Gusto ng bluetooth device na &quot;<ph name="DEVICE_NAME"/>&quot; ng pahintulot na magpares . Bago tanggapin, pakikumpirma na ipinapakita ang passkey na ito sa device na iyon: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Ang baterya ay <ph name="PERCENTAGE"/>% na puno.</translation>
 <translation id="2983818520079887040">Mga Setting...</translation>
 <translation id="3871838685472846647">Na-activate ang Cellular</translation>
-<translation id="6452181791372256707">Tanggihan</translation>
 <translation id="1195412055398077112">overscan</translation>
-<translation id="607652042414456612">Ang iyong computer ay katuklas-tuklas sa mga kalapit na Bluetooth device at lalabas bilang &quot;<ph name="NAME"/>&quot; na may address na <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Awtomatikong itago ang shelf</translation>
-<translation id="6732801395666424405">Hindi na-load ang mga certificate</translation>
 <translation id="7573962313813535744">Mode na naka-dock</translation>
 <translation id="8927026611342028580">Hiniling ang Koneksyon</translation>
 <translation id="8300849813060516376">Nabigo ang OTASP</translation>
@@ -208,7 +199,6 @@ Mensahe mula sa server: <ph name="SERVER_MSG"/></translation>
 <translation id="6785414152754474415">Ang baterya ay <ph name="PERCENTAGE"/>% na puno at nagcha-charge.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Ina-activate...</translation>
 <translation id="4895488851634969361">Puno na ang baterya.</translation>
-<translation id="615957422585914272">Ipakita ang on-screen na keyboard</translation>
 <translation id="5947494881799873997">I-revert</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
 <translation id="7649070708921625228">Tulong</translation>
@@ -216,7 +206,6 @@ Mensahe mula sa server: <ph name="SERVER_MSG"/></translation>
 Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="397105322502079400">Kinakalkula...</translation>
 <translation id="158849752021629804">Kailangan ng home network</translation>
-<translation id="1013923882670373915">Gusto ng bluetooth device na &quot;<ph name="DEVICE_NAME"/>&quot; ng pahintulot na magpares. Pakilagay ang PIN na ito sa device na iyon: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">I-activate <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Nabigo ang paghanap ng DHCP</translation>
 <translation id="2819276065543622893">Masa-sign out ka ngayon.</translation>
@@ -226,7 +215,6 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="973896785707726617">Magtatapos ang session na ito sa <ph name="SESSION_TIME_REMAINING"/>. Awtomatiko kang masa-sign out.</translation>
 <translation id="8372369524088641025">Mahinang WEP key</translation>
 <translation id="6636709850131805001">Di-kilalang katayuan</translation>
-<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Palitan pabalik sa &quot;<ph name="FROM_LOCALE"/>&quot; (kailangang i-restart)</translation>
 <translation id="8103386449138765447">Mga mensaheng SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">Naka-enable ang ChromeVox (pasalitang feedback).

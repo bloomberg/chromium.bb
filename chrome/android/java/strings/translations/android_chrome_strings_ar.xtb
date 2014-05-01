@@ -2,11 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
 <translation id="8588878054171169263">حفظ الصورة</translation>
-<translation id="4996978546172906250">مشاركة عن طريق</translation>
 <translation id="5578795271662203820">البحث في <ph name="SEARCH_ENGINE"/> عن هذه الصورة</translation>
 <translation id="6831043979455480757">الترجمة</translation>
 <translation id="7644305409888602715">جارٍ ترجمة الصفحة إلى <ph name="SOURCE_LANGUAGE"/>...</translation>
-<translation id="7015922086425404465">‏الحصول على التطبيق من متجر Google Play: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">إعادة تحميل هذه الصفحة</translation>
 <translation id="641643625718530986">طباعة…</translation>
 <translation id="7658239707568436148">إلغاء</translation>
@@ -16,15 +14,12 @@
 <translation id="3358663646935160692">‏تتم إدارة هذا الحساب من خلال <ph name="DOMAIN_NAME"/>. لقد سجلت دخولك باستخدام حساب مُدار تمنح المشرف عليه إمكانية التحكم في ملفك الشخصي على Chrome. ستظل بياناتك على Chrome مرتبطة دائمًا بهذا الحساب. ويؤدي إلغاء الربط بهذا الحساب إلى حذف بيانات Chrome المحلية.</translation>
 <translation id="1966710179511230534">الرجاء تحديث تفاصيل تسجيل الدخول.</translation>
 <translation id="1623104350909869708">منع هذه الصفحة من إنشاء مربعات حوار إضافية.</translation>
-<translation id="1426410128494586442">نعم</translation>
 <translation id="8218346974737627104">تأكيد تسجيل الدخول</translation>
 <translation id="624558823898732418">لغة الترجمة: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">اختيار شهادة للمصادقة</translation>
 <translation id="3896036286668839683">عارض الشهادات</translation>
 <translation id="8583805026567836021">محو بيانات الحساب</translation>
-<translation id="4250680216510889253">لا</translation>
 <translation id="8073388330009372546">فتح الصورة بعلامة تبويب جديدة</translation>
-<translation id="552553974213252141">هل تم استخراج النص بشكل صحيح؟</translation>
 <translation id="8730621377337864115">انتهى</translation>
 <translation id="4170011742729630528">الخدمة غير متاحة، أعد المحاولة لاحقًا.</translation>
 <translation id="8627706565932943526">حدث خطأ أثناء المزامنة</translation>
@@ -36,14 +31,11 @@
 <translation id="907015151729920253">البطاقة الذكية</translation>
 <translation id="3063601790762993062">حفظ الفيديو</translation>
 <translation id="6042308850641462728">المزيد</translation>
-<translation id="7267430310003164111">‏طلب الحصول على تطبيق من متجر Google Play.  اسم التطبيق: <ph name="APP_NAME"/>.  معدل التطبيق المتوسط: <ph name="APP_RATING"/>.</translation>
-<translation id="4148957013307229264">جارٍ التثبيت...</translation>
 <translation id="3992315671621218278">حفظ الرابط</translation>
 <translation id="8034522405403831421">هذه الصفحة باللغة <ph name="SOURCE_LANGUAGE"/>. هل تريد ترجمتها إلى اللغة <ph name="TARGET_LANGUAGE"/>؟</translation>
 <translation id="4195643157523330669">فتح الإشارة في علامة تبويب جديدة</translation>
 <translation id="3089395242580810162">فتح في علامة تبويب تصفح متخفي</translation>
 <translation id="8725066075913043281">أعد المحاولة</translation>
-<translation id="8909135823018751308">مشاركة…</translation>
 <translation id="4269820728363426813">نسخ عنوان الرابط</translation>
 <translation id="4510973599275542560">عدم إعادة التحميل</translation>
 <translation id="1206892813135768548">نسخ نص الرابط</translation>
@@ -56,10 +48,8 @@
 <translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
 <translation id="5164482624172255778">‏هل تريد أن يعرض Google Chrome ترجمة الصفحات باللغة <ph name="LANGUAGE"/> من هذا الموقع مرة أخرى؟</translation>
 <translation id="8528538445849828817">لغة الصفحة: <ph name="SOURCE_LANGUAGE"/></translation>
-<translation id="4881695831933465202">فتح</translation>
 <translation id="6512448926095770873">مغادرة هذه الصفحة</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
-<translation id="6333140779060797560">مشاركة عن طريق <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="969096075394517431">تغيير اللغات</translation>
 <translation id="5032574515228824816">مطالبة</translation>

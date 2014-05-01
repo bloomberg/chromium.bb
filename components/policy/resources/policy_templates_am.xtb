@@ -25,7 +25,6 @@
       በAudioCaptureAllowedUrls ውስጥ በተዋቀሩ ዩ አር ኤሎች ብቻ ነው የሚገኘው።
 
       ይህ መመሪያ አብሮ በተሰራው ማይክሮፎን ላይ ብቻም ሳይሆን በሁሉም አይነት የድምጽ ግብዓቶች ላይ ነው ተጽዕኖ የሚኖረው።</translation>
-<translation id="7267809745244694722">የማህደረመረጃ ቁልፎች በነባሪነት ወደ የተግባር ቁልፎች ይቀየራሉ</translation>
 <translation id="9150416707757015439">ይህ መምሪያ ተቋርጧል። እባክዎ ከእሱ ይልቅ IncognitoModeAvailabilityን ይጠቀሙ።
       በ<ph name="PRODUCT_NAME"/> ውስጥ ስውር ሁነታን ያነቃል።
 
@@ -644,6 +643,9 @@
 <translation id="6417861582779909667">ኩኪዎችን እንዲያዘጋጁ ያልተፈቀደላቸው ጣቢያዎችን የሚገልጹ የዩ አር ኤል ስርዓተ ጥለቶችን እንዲያዘጋጁ ያስችልዎታል።
 
           ይህ መምሪያ እንዳልተዋቀረ ከተተወ፣ ከተዋቀረ «DefaultCookiesSetting»፣ አለበለዚያ ደግሞ የተጠቃሚው የግል ውቅር ሁለንተናዊው ነባሪ እሴት ለሁሉም ጣቢያዎች ስራ ላይ ይውላል።</translation>
+<translation id="5457296720557564923">ገጾች የJavaScript ማህደረ ትውስታ አጠቃቀም ስታቲስቲክስን እንዲደርሱ ያስችላቸዋል።
+
+      ይህ ቅንብር የገንቢ መሣሪያዎች መገለጫዎች ፓነል የማህደረ ትውስታ ስታቲስቲክሱ ድረ-ገጹ ላይ እንዲገኝ ያደርገዋል።</translation>
 <translation id="5776485039795852974">አንድ ጣቢያ የዴስክቶፕ ማሳወቂያዎችን ማሳየት በፈለገ ጊዜ ጠይቅ</translation>
 <translation id="5047604665028708335">ከይዘት ጥቅሎች ውጪ ያሉ የጣቢያዎች መዳረሻን ይፍቀዱ</translation>
 <translation id="5052081091120171147">ይህ መምሪያ ከነቃ የአሰሳ ታሪኩ ከአሁኑ ነባሪ አሳሽ እንዲመጣ ያስገድደዋል። ከነቃ ይህ መምሪያ የማስመጫ መልዕክቱ ላይም ተፅዕኖ ያሳርፋል።
@@ -655,11 +657,6 @@
 <translation id="7132877481099023201">የቪዲዮ ቀረጻ መሣሪያዎች መዳረሻ ያለጥያቄ የሚሰጣቸው ዩ አር ኤሎች</translation>
 <translation id="8947415621777543415">የመሣሪያ አካባቢ ሪፖርት አድርግ</translation>
 <translation id="1655229863189977773">የዲስክ መሸጎጫ መጠን በባይቶች ያስቀምጡ</translation>
-<translation id="3358275192586364144">በ<ph name="PRODUCT_NAME"/> ውስጥ የWPAD ማመቻቸትን የሚያነቃና ተጠቃሚዎች ይህን ቅንብር እንዳይቀይሩት የሚያግድ ነው።
-
-      ይህን ወደ ነቅቷል ማዋቀር Chrome ዲኤንኤስ ላይ የተመሠረቱ የWPAD አገልጋዮችን ለማግኘት ይበልጥ አጭር ለሆነ አላፊ ጊዜ እንዲጠብቅ ያደርገዋል።
-
-      ይህ መመሪያ እንዳልተዋቀረ ከተተወ ይሄ ይነቃና ተጠቃሚው ሊቀይረው አይችልም።</translation>
 <translation id="6376842084200599664">ያለተጠቃሚው ጣልቃ-ገብነት ጸጥ ብለው የሚጫኑ የቅጥያዎች ዝርዝርን እንዲገልጹ ያስችልዎታል።
 
           እያንዳንዱ የዝርዝሩ ንጥል በሰሚኮሎን (<ph name="SEMICOLON"/>) የተለዩ የቅጥያ መታወቂያ እና የዝማኔ ዩ አር ኤል የያዘ ሕብረቁምፊ ነው። የቅጥያ መታወቂያው ለምሳሌ በገንቢ ሁነታ ላይ በ<ph name="CHROME_EXTENSIONS_LINK"/> ላይ ያለ ባለ32-ፊደል ሕብረቁምፊ ነው። የዝማኔ ዩ አር ኤል <ph name="LINK_TO_EXTENSION_DOC1"/> ላይ በተብራራው መሠረት ወደ የዝማኔ አንጸባራቂ ኤክስ ኤም ኤል ሰነድ ማምራት አለበት። በዚህ መምሪያ ውስጥ የተዋቀረው ዩ አር ኤል ለመጀመሪያው ጭነት ብቻ የሚሰራ መሆኑን ልብ ይበሉ፤ የቅጥያው ተከታይ ዝማኔዎች በቅጥያው አንጸባራቂ ውስጥ የተመላከተው የዝማኔ ዩ አር ኤሉን ነው የሚጠቀመው።
@@ -781,7 +778,6 @@
 <translation id="1679420586049708690">ለራስ-ግባ ይፋዊ ክፍለ-ጊዜ</translation>
 <translation id="7625444193696794922">ይህ መሣሪያ አብሮ የሚታሰርበት የሚለቀቀው ሰርጥን ይገልጻል።</translation>
 <translation id="2552966063069741410">የሰዓት ሰቅ</translation>
-<translation id="3788662722837364290">ተጠቃሚው ስራ ሲፈታ የሚኖረው የኃይል አስተዳደር ቅንብሮች</translation>
 <translation id="2240879329269430151">ድር ጣቢያዎች ብቅ ባዮች ማሳየት እንዲችሉ ወይም እንዳይችሉ አድርገው እንዲያዋቅሩ ያስችልዎታል። ብቅ-ባዮችን ማሳየት ለሁሉም ድር ጣቢያዎች ሊፈቀድ ወይም ሊከለከል ይችላል።
 
           ይህ መምሪያ እንዳልተዋቀረ ከተተወ «BlockPopups» ስራ ላይ ይውላል፣ እና ተጠቃሚው ሊቀይረው ይችላል።</translation>
@@ -865,6 +861,7 @@
 <translation id="8102913158860568230">ነባሪው የሚዲያ ዥረት ቅንብር</translation>
 <translation id="6641981670621198190">የ3-ል ግራፊክስ ኤ ፒ አይዎች ድጋፍ ያሰናክሉ</translation>
 <translation id="1265053460044691532">በኤስኤኤምኤል በኩል ማረጋገጫ የተሰጠው ተጠቃሚ ከመስመር ውጭ በመለያ መግባት የሚችልበት ጊዜ ይገድቡ</translation>
+<translation id="7929480864713075819">የማህደረ ትውስታ መረጃ (JS ቁልል መጠን) ለገጽ ሪፖርት ማድረግ ያንቁ</translation>
 <translation id="5703863730741917647">ለረጅም ጊዜ ስራ የመፍታት መዘግየቱ ላይ ሲደረስ የሚወሰደውን እርምጃ ይጥቀሱ።
 
 ይህ መመሪያ የተቋረጠ እንደሆነና ለወደፊቱ እንደሚወገድ ያስታውሱ።
@@ -981,7 +978,6 @@
 <translation id="4057110413331612451">የድርጅት ተጠቃሚ ዋና ብዝሃ-ተጠቃሚ ብቻ እንዲሆን ይፍቀዱ</translation>
 <translation id="5365946944967967336">መነሻ አዝራር በመሳሪያ አሞሌው ላይ አሳይ</translation>
 <translation id="3709266154059827597">የተከለከሉ ቅጥያዎች ጭነት ዝርዝር ያዋቅሩ</translation>
-<translation id="1933378685401357864">የግድግዳ ወረቀት ምስል</translation>
 <translation id="8451988835943702790">አዲስ የትር ገጹን እንደ መነሻ ገጽ ተጠቀም</translation>
 <translation id="4617338332148204752">በ<ph name="PRODUCT_FRAME_NAME"/> ውስጥ የዲበ መለያ ማረጋገጥን ይዝለሉ</translation>
 <translation id="8469342921412620373">ነባሪ የፍለጋ አቅራቢ ስራ ላይ እንዲውል ያነቃል።
@@ -1005,11 +1001,6 @@
 
           ይህ መመሪያ እንዳልተዋቀረ ከተተወ ትልቅ ጠቋሚው መጀመሪያ ላይ ይሰናከላል ነገር ግን በማንኛውም ጊዜ በማንኛውም ጊዜ በተጠቃሚው ሊነቃ ይችላል።</translation>
 <translation id="2633084400146331575">የተነገረ ግብረ መልስን ያንቁ</translation>
-<translation id="687046793986382807">ይህ መመሪያ ከ<ph name="PRODUCT_NAME"/> ስሪት 35 ጀምሮ ስራ እንዲያቆም ተደርጓል።
-
-      ለማንኛውም የማህደረ ትውስታ መረጃ ለገጽ ሪፖርት ይደረጋል፣ የአማራጭ እሴቱ ምንም ይሁን ምን፣ ነገር ግን ሪፖርት የተደረጉት መጠኖች
-      ወጥ እሴት ግምታዊ ይቀመጥላቸውና የዝማኔዎች ፍጥነት ለደህንነት ሲባል የተገደበ ይሆናል። ቅጽበታዊ ትክክለኛ ውሂብ ለማግኘት
-      እባክዎ እንደ Telemetry ያሉ መሣሪያዎችን ይጠቀሙ።</translation>
 <translation id="8731693562790917685">የይዘት ቅንብሮች እንዴት የአንድ የተወሰነ አይነት ይዘቶች (ለምሳሌ፣ ኩኪዎች፣ ምስሎች ወይም JavaScript) እንደሚያዙ እንዲገልጹ ያስችለዎታል።</translation>
 <translation id="2411919772666155530">በእነዚህ ጣቢያዎች ላይ ማሳወቂያዎችን ያግዱ</translation>
 <translation id="6923366716660828830">የነባሪ ፍለጋ አቅራቢው ስም ይገልጻል። ባዶ ወይም እንዳልተዋቀረ ከተተወ በፍለጋ ዩአርኤሉ የተገለጸው የአስተናጋጅ ስም ስራ ላይ ይውላል።
@@ -1021,7 +1012,6 @@
 
           ይህ መመሪያ ወደ ሐሰት ከተዋቀረ የማያ ገጽ መክፈት ጥያቄዎች ችላ ይባላሉ።</translation>
 <translation id="467236746355332046">የተደገፉ ባህሪያት፦</translation>
-<translation id="5447306928176905178">የማህደረ ትውስታ መረጃ (JS ቁልል መጠን) ለገጽ ሪፖርት ማድረግን ያንቁ (የተቋረጠ)</translation>
 <translation id="7632724434767231364">የGSSAPI ቤተ-መጽሐፍት ስም</translation>
 <translation id="3038323923255997294"><ph name="PRODUCT_NAME"/> ሲዘጋ የጀርባ መተግበሪያዎችን ማሂዱን ይቀጥሉ</translation>
 <translation id="8909280293285028130">የሶኬት ኃይል ላይ ሲሆን ከሞላ በኋላ ማያ ገጹ የሚቆለፍበት የተጠቃሚ ግብዓት ሳይኖር የሚቆይበት የጊዜ ርዝመት።
@@ -1070,17 +1060,6 @@
 ይህ መመሪያ አስገዳጅ አይደለም። ካልተዘጋጀ፣ የፈጣን የፍለጋ ጥያቄ የGET ስልትን በመጠቀም ይላካል።
 
 ይህ መመሪያ የሚከበረው የ «DefaultSearchProviderEnabled» መመሪያው ሲነቃ ብቻ ነው።</translation>
-<translation id="6095999036251797924">በAC ኃይል ወይም ባትሪ ላይ ሆኖ የተጠቃሚ ግቤት ከሌለ ማያ ገጹ የሚቆለፍበት የጊዜ ርዝመት ይገልጻል።
-
-          የጊዜው ርዝመት ከዜሮ በላይ ወደሆነ እሴት ሲቀናበር <ph name="PRODUCT_OS_NAME"/> ማያ ገጹን ከመቆለፉ በፊት ተጠቃሚው ስራ ፈትቶ መቆየት ያለበትን ጊዜ ይወክላል።
-
-          ርዝመቱ ወደ ዜሮ ሲቀናበር ተጠቃሚው ስራ ሲፈታ <ph name="PRODUCT_OS_NAME"/> ማያ ገጹን አይቆልፈውም።
-
-          የጊዜ ርዝመቱ እንዳልተቀናበረ ከተተወ ነባሪ የጊዜ ርዝመት ስራ ላይ ይውላል።
-
-          ስራ ሲፈታ ማያ ገጹ እንዲቆለፍ የሚመከርበት መንገድ በማንጠልጠል ጊዜ ላይ ማያ ገጽ መቆለፍን ማንቃትና የስራ መፍታት ጊዜው ካለፈ <ph name="PRODUCT_OS_NAME"/> እንዲያንጠለጥል ማድረግ ነው። ይህ መመሪያ ስራ ላይ መዋል ያለበት ማያ ገጽ መቆለፍ ከመንጠልጠል ጉልህ ከሆነ ጊዜ በፊት መከሰት ሲኖርበት ወይም ስራ በተፈታበት ጊዜ ማንጠልጠል በጭራሽ ባልተፈለገበት ጊዜ ላይ ብቻ ነው።
-
-          የመመሪያ እሴቱ በሚሊሰከንዶች ነው መጠቀስ ያለበት። የእሴቶች ድምር ከስራ ፈት መዘግየቱ ያንሳሉ።</translation>
 <translation id="1454846751303307294">የትኛዎቹ ጣቢያዎች JavaScriptን እንዲያሂዱ የማይፈቀድላቸው ጣቢያዎች የሚገልጽ የዩ አር ኤል ስርዓተ ጥለቶች ዝርዝር እንዲያስቀምጡ ያስችልዎታል።
 
           ይህ መምሪያ እንዳልተዋቀረ ከተተወ ከተዋቀረ የ«DefaultJavaScriptSetting» መምሪያ፣ አለበለዚያ ደግሞ የተጠቃሚው የግል ውቅር ሁለንተናዊ ነባሪ ዋጋ ስራ ላይ ይውላል።</translation>
@@ -1115,32 +1094,6 @@
       ይህ መመሪያ ወደ ሐሰት ከተዋቀረ ወይም ካልተዋቀረ አዶዎቹ ይታያሉ።</translation>
 <translation id="5085647276663819155">የህትመት ቅድመ-እይታን ያሰናክሉ</translation>
 <translation id="8672321184841719703">ራስ-አዘምን ስሪቱን አነጣጥር</translation>
-<translation id="553658564206262718">ተጠቃሚው ስራ ሲፈታ የኃይል አስተዳደር ቅንብሮችን ያዋቅሩ።
-
-          ይህ መመሪያ ተጠቃሚው ስራ ሲፈታ ያለው በርካታ የኃይል አስተዳዳሪ ስትራተጂ ቅንብሮችን ይቆጣጠራል።
-
-          አራት አይነት እርምጃዎች አሉ፦
-          * ተጠቃሚው በ|ScreenDim| ለተገለጸው ያህል ጊዜ ስራ ሲፈታ ማያ ገጹ ይፈዝዛል።
-          * ተጠቃሚው በ|ScreenDim| ለተገለጸው ያህል ጊዜ ስራ ሲፈታ ማያ ገጹ ይጠፋል።
-          * ተጠቃሚው በ|IdleWarning| ለተገለጸው ያህል ጊዜ ስራ ሲፈታ ተጤቃሚው የስራ መፍታት እርምጃ ሊወሰድ ነው ብሎ ለተጠቃሚው የሚነግር የማስጠንቀቂያ መገናኛ ይታያል።
-          * ተጠቃሚው በ|Idle| ለተገለጸው ያህል ጊዜ ስራ በ|IdleAction| የተገለጸው እርምጃ ይወሰዳል።
-
-          ከላይ ላለው እያንዳንዱ እርምጃ መዘግየቱ በሚሊሰከንዶች ነው መገለጽ ያለበት፣ እና ተጓዳኝ እርምጃ ለመቀስቀስ ከዜሮ በላይ ወደሆነ እሴቱ መዋቀር አለበት። መዘግየቱ ወደ ዜሮ የተዋቀረ እንደሆነ <ph name="PRODUCT_OS_NAME"/> ተጓዳኝ እርምጃውን አይወስድም።
-
-          ከላይ ላለው እያንዳንዱ መዘግየት የጊዜው ርዝመት ካልተዋቀረ ነባሪ እሴት ስራ ላይ ይውላል።
-
-          የ|ScreenDim| እሴቶች ድምር ከ|ScreenOff|፣ |ScreenOff| እና |IdleWarning| ያነሰ ወይም እኩል ይሆናሉ፣ እና ድምራቸው ከ|Idle| ያነሰ ወይም እኩል ይሆናል።
-
-          |IdleAction| ሊወሰዱ ከሚችሉ አራት እርምጃዎች አንዱ ነው፦
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          የ|IdleAction| እንዳልተዋቀረ ከተተወ ነባሪው እርምጃ ይወሰዳል፣ እሱም ማንጠንጠል ነው።
-
-          እንዲሁም ለAC ኃይል እና ባትሪም የተለዩ ቅንብሮች አሉ።
-          </translation>
 <translation id="1689963000958717134">የአውታረ መረብ ውቅር መግፋት በሁሉም የ<ph name="PRODUCT_OS_NAME"/> መሣሪያ ተጠቃሚዎች ላይ እንዲተገበር ያስችላል። የአውታረ መረቡ ውቅር በ<ph name="ONC_SPEC_URL"/> ላይ እንደተብራራው በክፍት አውታረ መረብ ውቅር ቅርጸት የተገለጸ የJSON ቅርጸት ህብረቁምፊ ነው</translation>
 <translation id="6699880231565102694">ባለሁለት ክፍል ማረጋገጫ ለሩቅ መዳረሻ አስተናጋጆችን ያንቁ</translation>
 <translation id="2030905906517501646">ነባሪ የፍለጋ አቅራቢ ቁልፍ ቃል</translation>
@@ -1358,32 +1311,6 @@
 
 ይህ መመሪያ እንዳልተዘጋጀ መተው <ph name="PRODUCT_NAME"/> ነባሪውን 5000 ሚሊሰከንዶች ዋጋ እንዲጠቀም ያደርገዋል።</translation>
 <translation id="8099880303030573137">በባትሪ ኃያል ላይ ሲሆን የስራ ፈትቶ መዘግየት</translation>
-<translation id="1709037111685927635">የግድግዳ ወረቀት ምስልን ያዋቅሩ።
-
-      ይህ መመሪያ በዴስክቶፑ እና በመግቢያ ገጹ ጀርባ ላይ ለተጤቃሚው የሚታየውን የግድግዳ ወረቀት ምስል እንዲያዋቅሩት ያስችልዎታል። መመሪያው የሚዋቀረው <ph name="PRODUCT_OS_NAME"/> የግድግዳ ወረቀት ምስሉን ማውረድ የሚችልበትን ዩአርኤል እና የውርዱ ሙሉነት ለማረጋገጥ ስራ ላይ የሚውለውን የመረጃ አሰዋወር ሃሽ በመግለጽ ነው። ምስሉ በJPEG ቅርጸት፣ መጠኑ ከ16 ሜባ ያልበለጠ መሆን አለበት። ዩአርኤሉ ያለምንም ማረጋገጫ ተደራሽ መሆን አለበት።
-
-      የግድግዳ ወረቀት ምስሉ ይወርድና ይሸጎጣል። ዩአርኤሉ ወይም ሃሹ በተቀየረ ቁጥር ዳግም ይወርዳል።
-
-      መመሪያው የሚከተለውን ብያኔ በሚያከብር መልኩ ዩአርኤሉን እና ሃሹን በJSON ቅርጸት እንደሚገልጽ ሕብረቁምፊ ነው መገለጽ ያለበት፦
-      {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;url&quot;: {
-            &quot;description&quot;: &quot;የግድግዳ ወረቅት ምስሉ ሊወርድበት የሚችልበት ዩአርኤል።&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          },
-          &quot;hash&quot;: {
-            &quot;description&quot;: &quot;የግድግዳ ወረቀት ምስሉ SHA-256 ሃሽ።&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          }
-        }
-      }
-
-      ይህ መመሪያ ከተዋቀረ <ph name="PRODUCT_OS_NAME"/> የግድግዳ ወረቀት ምስሉን ያወርድና ይጠቀምበታል።
-
-      እርስዎ ይህን መመሪያ ካዋቀሩት ተጠቃሚዎች ሊቀይሩት ወይም ሊሽሩት አይችሉም።
-
-      መመሪያው እንዳልተዋቀረ ከተተወ ተጠቃሚው በዴስክቶፕ እና በመግቢያ ገጽ ጀርባው ላይ የሚታየውን ምስል መምረጥ ይችላል።</translation>
 <translation id="2761483219396643566">በባትሪ ኃይል ላይ ሲሆን የስራ መፍታት ማስጠንቀቂያ መዘግየት</translation>
 <translation id="6281043242780654992">የቤተኛ የመልዕክት መላላኪያ መመሪያዎችን ያዋቅራል። በተከለከሉ ዝርዝር ላይ ያሉ የመልዕክት መላላኪያ አስተናጋጆች በተፈቀደላቸው ዝርዝር ላይ ካልተካተቱ በስተቀር አይፈቀዱም።</translation>
 <translation id="1468307069016535757">የባለከፍተኛ ንፅፅር ሁነታ ተደራሽነት ባህሪው ነባሪ ሁኔታ በመግቢያ ገጹ ላይ ያዋቅሩት።
@@ -1522,9 +1449,93 @@
       ይህን ቅንብር ካነቁት ወይም ካሰናከሉት ተጠቃሚዎች ይህን ቅንብር ሊቀይሩት ወይም ሊሽሩት አይችሉም።
 
       ይህ መመሪያ እንዳልተዋቀረ ከተተወ ተጠቃሚው የውሂብ መጭመቂያ ተኪ ባህሪው ይጠቀም ወይም አይጠቀም መምረጥ ይችላል።</translation>
-<translation id="2170233653554726857">የWPAD ማመቻቸትን ያንቁ</translation>
 <translation id="7424751532654212117">በተሰናከሉ ተሰኪዎች ዝርዝር ውስጥ የማይካተቱት ዝርዝር</translation>
 <translation id="6233173491898450179">የውርድ አቃፊ ያስቀምጡ</translation>
+<translation id="78524144210416006">በ<ph name="PRODUCT_OS_NAME"/> ውስጥ በመግቢያ ማያ ገጹ ላይ የኃይል አስተዳደር ያዋቅሩ።.
+
+ይህ መመሪያ የመግቢያ ማያ ገጹ እየታየ እያለ ለተወሰነ ጊዜ ምንም አይነት የተጠቃሚ እንቅስቃሴ ሳይኖር ሲቀር <ph name="PRODUCT_OS_NAME"/> የሚያሳየውን ባህሪይ እንዲያዋቅሩ ያስችልዎታል። መመሪያው በርካታ ቅንብሮችን ይቆጣጠራል። ለተናጠል ትርጉሞቹ እና የእሴት ክልሎቹ፣ በአንድ ክፍለ ጊዜ ውስጥ የኃይል አስተዳደርን የሚቆጣጠሩትን ተዛማጅ መመሪያዎች ይመልከቱ። ከእነዚህ መመሪያዎች ያሉት ብቸኛ ልዩነቶች የሚከተሉት ናቸው፦
+* ለረጅም ጊዜ እንዲያርፍ ወይም እንዲዘጋ የተወሰደ እርምጃ ክፍለ ጊዜውን ለማብቃት ሊሆን አይችልም።
+* በኤ ሲ ሃይል እየሄደ እያለ ለረጅም ጊዜ እንዲያርፍ የተወሰደ ነባሪ እርምጃ ለማጥፋት እንደተወሰደ እርምጃ ነው።
+
+መመሪያው ነጠላ ቅንብሮችን በJSON ቅርጸት የሚገልጽ እና ከሚከተለው መርሃ ግብር ጋር የሚጣጣም ሕብረ ቁምፊ እንደሆነ ተደርጎ መገለጽ አለበት፦
+{
+&quot;type&quot;: &quot;object&quot;,
+&quot;properties&quot;: {
+&quot;AC&quot;: {
+&quot;description&quot;: &quot;Power management settings applicable only when running on AC power&quot;,
+&quot;type&quot;: &quot;object&quot;,
+&quot;properties&quot;: {
+&quot;Delays&quot;: {
+&quot;type&quot;: &quot;object&quot;,
+&quot;properties&quot;: {
+&quot;ScreenDim&quot;: {
+&quot;description&quot;: &quot;The length of time without user input after which the screen is dimmed, in milliseconds&quot;,
+&quot;type&quot;: &quot;integer&quot;,
+&quot;minimum&quot;: 0
+},
+&quot;ScreenOff&quot;: {
+&quot;description&quot;: &quot;The length of time without user input after which the screen is turned off, in milliseconds&quot;,
+&quot;type&quot;: &quot;integer&quot;,
+&quot;minimum&quot;: 0
+},
+&quot;Idle&quot;: {
+&quot;description&quot;: &quot;The length of time without user input after which the idle action is taken, in milliseconds&quot;,
+&quot;type&quot;: &quot;integer&quot;,
+&quot;minimum&quot;: 0
+}
+}
+},
+&quot;IdleAction&quot;: {
+&quot;description&quot;: &quot;Action to take when the idle delay is reached&quot;,
+&quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+}
+}
+},
+&quot;Battery&quot;: {
+&quot;description&quot;: &quot;Power management settings applicable only when running on battery power&quot;,
+&quot;type&quot;: &quot;object&quot;,
+&quot;properties&quot;: {
+&quot;Delays&quot;: {
+&quot;type&quot;: &quot;object&quot;,
+&quot;properties&quot;: {
+&quot;ScreenDim&quot;: {
+&quot;description&quot;: &quot;The length of time without user input after which the screen is dimmed, in milliseconds&quot;,
+&quot;type&quot;: &quot;integer&quot;,
+&quot;minimum&quot;: 0
+},
+&quot;ScreenOff&quot;: {
+&quot;description&quot;: &quot;The length of time without user input after which the screen is turned off, in milliseconds&quot;,
+&quot;type&quot;: &quot;integer&quot;,
+&quot;minimum&quot;: 0
+},
+&quot;Idle&quot;: {
+&quot;description&quot;: &quot;The length of time without user input after which the idle action is taken, in milliseconds&quot;,
+&quot;type&quot;: &quot;integer&quot;,
+&quot;minimum&quot;: 0
+}
+}
+},
+&quot;IdleAction&quot;: {
+&quot;description&quot;: &quot;Action to take when the idle delay is reached&quot;,
+&quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+}
+}
+},
+&quot;LidCloseAction&quot;: {
+&quot;description&quot;: &quot;Action to take when the lid is closed&quot;,
+&quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+},
+&quot;UserActivityScreenDimDelayScale&quot;: {
+&quot;description&quot;: &quot;Percentage by which the screen dim delay is scaled when user activity is observed while the screen is dimmed or soon after the screen has been turned off&quot;,
+&quot;type&quot;: &quot;integer&quot;,
+&quot;minimum&quot;: 100
+}
+}
+}
+
+አንድ ቅንብር ሳይገለጽ ከቆየ፣ ነባሪ እሴቱ ጥቅም ላይ ይውላል።
+
+መመሪያው ካልተዘጋጀ፣ ለሁሉም ቅንብሮች ነባሪዎች ጥቅም ላይ ይውላሉ።</translation>
 <translation id="8908294717014659003">ድር ጣቢያዎች የሚዲያ ያዢ መሣሪያዎች መዳረሻ ይኖራቸው ወይም አይኖራቸው እንደሆነ እንዲያዋቅሩ ያስችልዎታል። የሚዲያ ያዢ መሣሪያዎች መዳረሻ በነባሪነት ሊፈቀድ ይችላል ወይም አንድ ድር ጣቢያ የሚዲያ ያዢ መሣሪያ መዳረሻ በፈለገ ቁጥር ተጠቃሚውን ሊጠየቅ ይችላል።
 
           ይህ መምሪያ እንዳልተዋቀረ ከተተወ «PromptOnAccess» ስራ ላይ ይውላል፣ እና ተጠቃሚው ሊቀይረው ይችላል።</translation>
@@ -1559,9 +1570,6 @@
       ይህ መመሪያ ካልተዋቀረ ነባሪ መጠኑ ጥቅም ላይ የሚውል ሲሆን ተጠቃሚው በ--media-cache-size ጠቋሚ በመጠቀም ሊያግደው ይችላል።</translation>
 <translation id="5142301680741828703">በ<ph name="PRODUCT_FRAME_NAME"/> ውስጥ ያሉት የሚከተሉት የዩ አር ኤል ቅጦችን ሁልጊዜ አሳይ</translation>
 <translation id="4625915093043961294">የተፈቀደላቸው የቅጥያ ጭነቶችን ያዋቅሩ</translation>
-<translation id="5893553533827140852">ይህ ቅንብር ከነቃ የgnubby ማረጋገጫ ጣቄዎች በርቀት አስተናጋጅ ግንኙነት ላይ በተኪ ይተላለፋሉ።
-
-          ይህ ቅንብር ከተሰናከለ ወይም ካልተዋቀረ የgnubby ማረጋገጫ ጥያቄዎች በተኪ አይተላለፉም።</translation>
 <translation id="187819629719252111"><ph name="PRODUCT_NAME"/> የፋይል መምረጫ መገናኛዎችን እንዲያሳይ በመፍቀድ በማሽኑ ላይ ያሉ የአካባቢያዊ ፋይሎች መዳረሻ እንዲኖር ያስችላል።
 
       ይህን ቅንብር ካነቁት ተጠቃሚዎች የፋይል መምረጫ መገናኛዎች በመደበኛ መልኩ ሊከፍቱት ይችላሉ።
@@ -1650,11 +1658,6 @@
 
           የ«RestoreOnStartup» መመሪያ ከቀዳሚዎቹ ክፍለ-ጊዜዎች የመጡ ዩአርኤሎች ወደነበሩበት እንዲመልስ ከተቀናበሩ ይህ መመሪያ አይከበርም፣ እና ኩኪዎች ለእነዚያ ጣቢያዎች በዘላቂነት ይከማቻሉ።</translation>
 <translation id="2098658257603918882">የአጠቃቀም እና ከብልሽት ጋር የተያያዘ የውሂብ ሪፖርት ማድረግን ያንቁ</translation>
-<translation id="4633786464238689684">የላይኛው ረድፍ ቁልፎች በነባሪነት የተግባር ቁልፍ ያደርጋቸዋል።
-
-          ይህ መመሪያ ወደ እውነት ከተዋቀረ የቁልፍ ሰሌዳው ላይኛው ረድፍ ቁልፎች በነባሪነት የተግባር ቁልፍ ትዕዛዞችን ነው የሚፈጥሩት። ባህሪያቸውን ተመልሶ ወደ የማህደረመረጃ ቁልፎች ለማድህር የፍለጋ ቁልፉ መጫን አለበት።
-
-          ይህ መመሪያ ወደ ሐሰት ከተዋቀረ ወይም እንዳልተዋቀረ ከተተወ የቁልፍ ሰሌዳው በነባሪነት የማህደረመረጃ ቁልፍ ትዕዛዞችን ይፈጥራን፣ የፍለጋ ቁልፉ ሲያዝ የተግባር ቁልፍ ትዕዛዞችን ይፈጥራል።</translation>
 <translation id="2324547593752594014">ወደ Chrome መግባት ይፍቀዱ</translation>
 <translation id="172374442286684480">ሁሉም ጣቢያዎች የአካባቢ ውሂብ እንዲያዋቅሩ ይፍቀዱ</translation>
 <translation id="1151353063931113432">በእነዚህ ጣቢያዎች ላይ ምስሎችን ፍቀድ</translation>
@@ -1710,7 +1713,6 @@
 
           ExtensionInstallBlacklist ከዚህ መምሪያ ቅድሚያ ይሰጠዋል። ይህም ማለት በተከለከሉት ዝርዝር ውስጥ ያለ ቅጥያ አይጫንም፣ በዚህ ዝርዝር ውስጥ ካለ ጣቢያ የመጠ ቢሆንም እንኳ።</translation>
 <translation id="2113068765175018713">በራስ-ሰር ዳግም በማስነሳት መሳሪያ በርቶ የሚቆይበትን ጊዜ ይገድቡ</translation>
-<translation id="4224610387358583899">የማያ ገጽ መቆለፍ መዘግየቶች</translation>
 <translation id="7848840259379156480"><ph name="PRODUCT_FRAME_NAME"/> ሲጫን ነባሪውን የኤች ቲ ኤም ኤል ማሳያ እንዲያዋቅሩ ያስችልዎታል።
       ነባሪው ቅንብር አስተናጋጅ አሳሹ ማሳየቱን እንዲያደርግ ነው፣ ግን እንደ አማራጭ
       ይህንን ሽረው <ph name="PRODUCT_FRAME_NAME"/> የኤች ቲ ኤም ኤል ገጾች በነባሪነት እንዲያሳይ ማድረግ ይችላሉ።</translation>
@@ -1825,15 +1827,6 @@
       መምሪያው <ph name="PRODUCT_OS_NAME"/> የአገልግሎት ውሉን ሊያወርድበት ወደሚችል ዩ አር ኤል ነው መዋቀር ያለበት። የአገልግሎት ውሉ እንደ MIME አይነት ጽሑፍ/ግልጽ በቀረበ ስነጣ አልባ ጽሑፍ ነው መሆን ያለበት። ምንም ለውጥ ያዢ አይፈቀድም።</translation>
 <translation id="2623014935069176671">የመነሻ የተጠቃሚ እንቅስቃሴን ይጠብቁ</translation>
 <translation id="2660846099862559570">በጭራሽ ተኪ አይጠቀሙ</translation>
-<translation id="1956493342242507974"><ph name="PRODUCT_OS_NAME"/> ውስጥ በመግቢያ ገጹ ላይ የኃይል አስተዳደር ያዋቅሩ።
-
-      ይህ መመሪያ መግቢያ ገጹ እየታየ ሳለ ለተወሰነ ጊዜ ምንም የተጠቃሚ እንቅስቃሴ ከሌለ <ph name="PRODUCT_OS_NAME"/> ምን አይነት ባህሪ እንደሚያሳይ እንዲያዋቅሩ ያስችልዎታል። መመሪያው በርካታ ቅንብሮችን ይቆጣጠራል። ለግል የቃላት ትርጉም እና የእሴት ክልሎች በአንድ ክፍለ-ጊዜ ውስጥ የኃይል አስተዳደርን የሚቆጣጠሩ ተጓዳኞቹ መመሪያዎችን ይመልከቱ። ከእነዚህ መመሪያዎች የሚያፈነግጡ ነገሮች እነዚህ ብቻ ናቸው፦
-      * ስራ በተፈታበት ጊዜ ወይም መዝጊያው በተዘጋበት ጊዜ የሚወሰዱ እርምጃዎች ክፍለ-ጊዜውን የሚዘጉ መሆን አይችሉም።
-      * በAC ኃይል በሚሰራበት ጊዜ ስራ ሲፈታ ያለው ነባሪ እርምጃ መዝጋት ነው።
-
-      አንድ ቅንብር ሳይገለጽ ከተተወ ነባሪው ዋጋ ስራ ላይ ይውላል።
-
-      ይህ መመሪያ እንዳልተዋቀረ ከተተወ ነባሪዎቹ ለሁሉም ቅንብሮች ስራ ላይ ይውላሉ።</translation>
 <translation id="1435659902881071157">የመሣሪያ ደረጃ አውታረ መረብ ውቅር</translation>
 <translation id="2131902621292742709">በባትሪ ኃይል ላይ ሲሆን የማያ ገጽ መፍዘዝ መዘግየት</translation>
 <translation id="5781806558783210276">በባትሪ ኃይል ላይ ሲሆን የስራ መፍታት እርምጃ ከመወሰዱ በፊት ተጠቃሚው ግብዓት ሳያስገባ የሚቆየው የጊዜ ርዝመት ይገልጻል።
@@ -1954,6 +1947,5 @@
       ይህ መመሪያ አብሮ የተሰሩ ድምጽ ማጉያዎች ላይ ብቻ ሳይሆን በሁሉም የተሰሚ ውጽዓት አይነት ላይ ተፅዕኖ ያሳርፋል። የተሰሚ ተደራሽነት ባህሪዎችም በዚህ መመሪያ የሚገደቡ ናቸው። የማያ ገጽ አንባቢ ለተጠቃሚው የሚያስፈልግ ከሆነ ይህን መመሪያ አያንቁ።
 
       ይህ ቅንብር ወደ እውነት ከተቀናበረ ወይም ካልተዋቀረ ተጠቃሚዎች ሁሉንም የሚደገፉ የተሰሚ ውጽዓቶች በመሣሪያቸው ላይ ሊጠቀሙ ይችላሉ።</translation>
-<translation id="6517678361166251908">የgnubby ማረጋገጫ ይፍቀዱ</translation>
 <translation id="4858735034935305895">የሙሉ ማያ ገጽ ሁነታ ይፍቀዱ</translation>
 </translationbundle>

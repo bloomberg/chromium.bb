@@ -10,7 +10,6 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> を <ph name="ROTATION"/> に回転しました</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth オフ</translation>
-<translation id="6713285437468012787">Bluetooth デバイス「<ph name="DEVICE_NAME"/>」がペア設定されました。すべてのユーザーはこのデバイスを使用できます。[設定] から、このペア設定を削除することもできます。</translation>
 <translation id="7165320105431587207">ネットワークを設定できませんでした</translation>
 <translation id="3775358506042162758">マルチ ログインできるアカウントは 3 つまでです。</translation>
 <translation id="370649949373421643">Wi-Fi を有効にする</translation>
@@ -20,7 +19,6 @@
 <translation id="595202126637698455">パフォーマンス追跡機能が有効です</translation>
 <translation id="8054466585765276473">バッテリーの残り時間を計算しています。</translation>
 <translation id="7982789257301363584">ネットワーク</translation>
-<translation id="2303600792989757991">ウィンドウ切り替えの概要</translation>
 <translation id="5565793151875479467">プロキシ...</translation>
 <translation id="938582441709398163">キーボード オーバーレイ</translation>
 <translation id="4387004326333427325">認証証明書がリモートで拒否されました</translation>
@@ -81,9 +79,7 @@
 <translation id="3892641579809465218">内蔵ディスプレイ</translation>
 <translation id="7823564328645135659">設定の同期後に言語が「<ph name="FROM_LOCALE"/>」から「<ph name="TO_LOCALE"/>」に変更されました。</translation>
 <translation id="3368922792935385530">接続済み</translation>
-<translation id="3606978283550408104">ブライユ点字ディスプレイが接続されています。</translation>
 <translation id="8654520615680304441">Wi-Fi をオンにしています...</translation>
-<translation id="6650933572246256093">Bluetooth デバイス「<ph name="DEVICE_NAME"/>」がペア設定の権限をリクエストしています。このデバイスに次のパスキーを入力してください: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">入力方法を <ph name="INPUT_METHOD_ID"/> に変更しました。
 切り替えるには Shift+Alt キーを押します。</translation>
@@ -136,7 +132,6 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> を有効にしています</translation>
-<translation id="4527045527269911712">Bluetooth デバイス「<ph name="DEVICE_NAME"/>」がペア設定の権限をリクエストしています。</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">自動クリック</translation>
 <translation id="1398853756734560583">最大化</translation>
@@ -187,15 +182,11 @@
 <translation id="479989351350248267">検索</translation>
 <translation id="8454013096329229812">Wi-Fi が有効になりました。</translation>
 <translation id="4872237917498892622">Alt+ 検索/Shift</translation>
-<translation id="2429753432712299108">Bluetooth デバイス「<ph name="DEVICE_NAME"/>」がペア設定の権限をリクエストしています。許可するにあたっては、このデバイスで次のパスキーが表示されることを確認してください: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">バッテリー残量: <ph name="PERCENTAGE"/>%。</translation>
 <translation id="2983818520079887040">設定...</translation>
 <translation id="3871838685472846647">携帯電話が有効になりました</translation>
-<translation id="6452181791372256707">拒否</translation>
 <translation id="1195412055398077112">オーバースキャン</translation>
-<translation id="607652042414456612">お使いのパソコンは近くの Bluetooth デバイスで検出可能です。名前「<ph name="NAME"/>」、アドレス「<ph name="ADDRESS"/>」のデバイスとして表示されます</translation>
 <translation id="112308213915226829">シェルフを自動的に隠す</translation>
-<translation id="6732801395666424405">証明書が読み込まれていません</translation>
 <translation id="7573962313813535744">ドッキング モード</translation>
 <translation id="8927026611342028580">接続をリクエスト済み</translation>
 <translation id="8300849813060516376">OTASP に失敗しました</translation>
@@ -208,7 +199,6 @@
 <translation id="6785414152754474415">バッテリー残量: <ph name="PERCENTAGE"/>%、充電しています。</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: 有効にしています...</translation>
 <translation id="4895488851634969361">バッテリー残量: 満。</translation>
-<translation id="615957422585914272">画面キーボードを表示する</translation>
 <translation id="5947494881799873997">元に戻す</translation>
 <translation id="7593891976182323525">検索/Shift</translation>
 <translation id="7649070708921625228">ヘルプ</translation>
@@ -216,7 +206,6 @@
 検索/Shift キーを押すと解除されます。</translation>
 <translation id="397105322502079400">計算しています...</translation>
 <translation id="158849752021629804">ホーム ネットワークが必要です</translation>
-<translation id="1013923882670373915">Bluetooth デバイス「<ph name="DEVICE_NAME"/>」がペア設定の権限をリクエストしています。このデバイスに次の PIN コードを入力してください: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/> を有効にする</translation>
 <translation id="5864471791310927901">DHCP を検索できませんでした</translation>
 <translation id="2819276065543622893">ログアウトします。</translation>
@@ -226,7 +215,6 @@
 <translation id="973896785707726617">このセッションはあと <ph name="SESSION_TIME_REMAINING"/>で終了します。終了すると、自動的にログアウトします。</translation>
 <translation id="8372369524088641025">WEP キーが正しくありません</translation>
 <translation id="6636709850131805001">不明な状態</translation>
-<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">「<ph name="FROM_LOCALE"/>」に戻します（再起動が必要です）</translation>
 <translation id="8103386449138765447">SMS メッセージ: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox（音声フィードバック）が有効です。

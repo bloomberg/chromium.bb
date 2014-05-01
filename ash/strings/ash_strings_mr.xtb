@@ -10,7 +10,6 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> <ph name="ROTATION"/> वर फिरविले होते</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth अक्षम</translation>
-<translation id="6713285437468012787">&quot;<ph name="DEVICE_NAME"/>&quot; Bluetooth डिव्हाइस जोडले गेले आहे आणि सर्व वापरकर्त्यांसाठी आता उपलब्ध आहे. आपण सेटिंग्ज वापरून ही जोडणी काढू शकता.</translation>
 <translation id="7165320105431587207">नेटवर्क कॉन्फिगर करण्यात अयशस्वी</translation>
 <translation id="3775358506042162758">आपल्याकडे एकाधिक साइन इनमध्ये फक्त तीन पर्यंत खाती असू शकतात.</translation>
 <translation id="370649949373421643">Wi-fi सक्षम करा</translation>
@@ -20,7 +19,6 @@
 <translation id="595202126637698455">कार्यप्रदर्शन ट्रेसिंग सक्षम केले</translation>
 <translation id="8054466585765276473">बॅटरी वेळ गणना करत आहे.</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
-<translation id="2303600792989757991">विंडो विहंगावलोकन टॉगल करा</translation>
 <translation id="5565793151875479467">प्रॉक्सी...</translation>
 <translation id="938582441709398163">कीबोर्ड आच्छादन</translation>
 <translation id="4387004326333427325">प्रमाणीकरण प्रमाणपत्र दूरस्थपणे नाकारले</translation>
@@ -81,9 +79,7 @@
 <translation id="3892641579809465218">अंतर्गत डिस्प्ले</translation>
 <translation id="7823564328645135659">आपली सेटिंग्ज समक्रमित केल्यानंतर भाषा &quot;<ph name="FROM_LOCALE"/>&quot; मधून &quot;<ph name="TO_LOCALE"/>&quot; मध्ये बदलली आहे.</translation>
 <translation id="3368922792935385530">कनेक्ट केले</translation>
-<translation id="3606978283550408104">ब्रेल प्रदर्शन कनेक्ट केले.</translation>
 <translation id="8654520615680304441">Wi-Fi चालू करा...</translation>
-<translation id="6650933572246256093">&quot;<ph name="DEVICE_NAME"/>&quot; Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. कृपया त्या डिव्हाइसवर ही पासकी प्रविष्ट करा: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">आपली इनपुट पद्धत <ph name="INPUT_METHOD_ID"/> मध्ये बदलली आहे.
 स्विच करण्यासाठी Shift + Alt दाबा.</translation>
@@ -136,7 +132,6 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> सक्रिय करत आहे</translation>
-<translation id="4527045527269911712">&quot;<ph name="DEVICE_NAME"/>&quot; Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">स्वयंचलित क्लिक</translation>
 <translation id="1398853756734560583">वाढवा</translation>
@@ -187,15 +182,11 @@
 <translation id="479989351350248267">शोध</translation>
 <translation id="8454013096329229812">Wi-Fi चालू आहे.</translation>
 <translation id="4872237917498892622">Alt+Search किंवा Shift</translation>
-<translation id="2429753432712299108">&quot;<ph name="DEVICE_NAME"/>&quot; Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. स्वीकार करण्यापूर्वी, कृपया त्या डिव्हाइसवर ही पासकी दर्शविली असल्याची पुष्टी करा: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">बॅटरी <ph name="PERCENTAGE"/>% भरली आहे.</translation>
 <translation id="2983818520079887040">सेटिंग्ज...</translation>
 <translation id="3871838685472846647">सेल्युलर सक्रिय केले</translation>
-<translation id="6452181791372256707">नाकारा</translation>
 <translation id="1195412055398077112">ओव्हरस्कॅन</translation>
-<translation id="607652042414456612">आपला संगणक जवळपासच्या Bluetooth डिव्हाइसेसवर शोधण्यायोग्य आहे आणि <ph name="ADDRESS"/> पत्त्यासह &quot;<ph name="NAME"/>&quot; म्हणून दिसेल</translation>
 <translation id="112308213915226829">शेल्फ स्वयं लपवा</translation>
-<translation id="6732801395666424405">लोड न झालेली प्रमाणपत्रे</translation>
 <translation id="7573962313813535744">डॉक केलेला मोड</translation>
 <translation id="8927026611342028580">विनंती केलेले कनेक्ट करा</translation>
 <translation id="8300849813060516376">OTASP बिघडले</translation>
@@ -208,7 +199,6 @@
 <translation id="6785414152754474415">बॅटरी <ph name="PERCENTAGE"/>% भरली आहे आणि चार्ज होत आहे.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: सक्रिय करत आहे...</translation>
 <translation id="4895488851634969361">बॅटरी भरली आहे.</translation>
-<translation id="615957422585914272">ऑन-स्‍क्रीन कीबोर्ड दर्शवा</translation>
 <translation id="5947494881799873997">परत करा</translation>
 <translation id="7593891976182323525">Search किंवा Shift</translation>
 <translation id="7649070708921625228">मदत</translation>
@@ -216,7 +206,6 @@
 रद्द करण्यासाठी Search किंवा Shift दाबा.</translation>
 <translation id="397105322502079400">गणना करत आहे...</translation>
 <translation id="158849752021629804">मुख्यपृष्ठ नेटवर्क आवश्यक</translation>
-<translation id="1013923882670373915">&quot;<ph name="DEVICE_NAME"/>&quot; Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. कृपया त्या डिव्हाइसवर हा पिन प्रविष्ट करा: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">सक्रिय करा<ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP लुकअप अयशस्वी</translation>
 <translation id="2819276065543622893">आता आपल्याला साइन आउट केले जाईल.</translation>
@@ -226,7 +215,6 @@
 <translation id="973896785707726617">हे सत्र <ph name="SESSION_TIME_REMAINING"/> मध्ये समाप्त होईल. आपल्याला स्वयंचलितपणे साइन आउट केले जाईल.</translation>
 <translation id="8372369524088641025">खराब WEP की</translation>
 <translation id="6636709850131805001">अपरिचित राज्य</translation>
-<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">&quot;<ph name="FROM_LOCALE"/>&quot; मध्ये परत बदला (रीस्टार्ट करणे आवश्यक)</translation>
 <translation id="8103386449138765447">SMS संदेश: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (बोललेला अभिप्राय) सक्षम केलेला आहे. अक्षम करण्यासाठी Ctrl+Alt+Z दाबा.</translation>

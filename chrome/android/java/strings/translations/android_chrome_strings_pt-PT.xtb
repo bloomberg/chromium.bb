@@ -2,11 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
 <translation id="8588878054171169263">Guardar imagem</translation>
-<translation id="4996978546172906250">Partilhar através de</translation>
 <translation id="5578795271662203820">Pesquisar a imagem no <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Traduzir</translation>
 <translation id="7644305409888602715">A traduzir a página para <ph name="SOURCE_LANGUAGE"/>...</translation>
-<translation id="7015922086425404465">Obter aplicação da Google Play Store: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Atualizar esta Página</translation>
 <translation id="641643625718530986">Imprimir…</translation>
 <translation id="7658239707568436148">Cancelar</translation>
@@ -18,15 +16,12 @@
 Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administrador controlo sobre o seu perfil do Chrome. Os seus dados do Chrome ficarão associados permanentemente a esta conta. Desassociar esta conta irá eliminar os dados locais do Chrome.</translation>
 <translation id="1966710179511230534">Atualize os detalhes de início de sessão.</translation>
 <translation id="1623104350909869708">Evitar que esta página crie caixas de diálogo adicionais</translation>
-<translation id="1426410128494586442">Sim</translation>
 <translation id="8218346974737627104">Confirmar início de sessão</translation>
 <translation id="624558823898732418">Idioma de tradução: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Escolher o certificado para autenticação</translation>
 <translation id="3896036286668839683">Visualizador de certificados</translation>
 <translation id="8583805026567836021">A limpar os dados da conta</translation>
-<translation id="4250680216510889253">Não</translation>
 <translation id="8073388330009372546">Abrir imagem num novo separad.</translation>
-<translation id="552553974213252141">O texto foi extraído corretamente?</translation>
 <translation id="8730621377337864115">Concluído</translation>
 <translation id="4170011742729630528">O serviço não está disponível. Tente novamente mais tarde.</translation>
 <translation id="8627706565932943526">Erro de sincronização</translation>
@@ -38,14 +33,11 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="907015151729920253">Smart card</translation>
 <translation id="3063601790762993062">Guardar vídeo</translation>
 <translation id="6042308850641462728">Mais</translation>
-<translation id="7267430310003164111">Solicitação para obter aplicação da Google Play Store. Nome da aplicação: <ph name="APP_NAME"/>. Classificação média da aplicação: <ph name="APP_RATING"/>.</translation>
-<translation id="4148957013307229264">A instalar...</translation>
 <translation id="3992315671621218278">Guardar link</translation>
 <translation id="8034522405403831421">Esta página está em <ph name="SOURCE_LANGUAGE"/>. Pretende traduzi-la para <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="4195643157523330669">Abrir num novo separador</translation>
 <translation id="3089395242580810162">Abrir no separador de navegação anónima</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
-<translation id="8909135823018751308">Partilhar…</translation>
 <translation id="4269820728363426813">Copiar endereço do link</translation>
 <translation id="4510973599275542560">Não atualizar</translation>
 <translation id="1206892813135768548">Copiar texto do link</translation>
@@ -58,10 +50,8 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="5164482624172255778">Pretende que o Google Chrome se ofereça para traduzir as páginas em <ph name="LANGUAGE"/> deste site da próxima vez?</translation>
 <translation id="8528538445849828817">Idioma da página: <ph name="SOURCE_LANGUAGE"/></translation>
-<translation id="4881695831933465202">Abrir</translation>
 <translation id="6512448926095770873">Sair desta página</translation>
 <translation id="7947953824732555851">Aceitar e in. sessão</translation>
-<translation id="6333140779060797560">Partilhar através de <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="969096075394517431">Alterar idiomas</translation>
 <translation id="5032574515228824816">Mensagem</translation>

@@ -2,11 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
 <translation id="8588878054171169263">I-save ang larawan</translation>
-<translation id="4996978546172906250">Ibahagi gamit ang</translation>
 <translation id="5578795271662203820">Hanapin sa <ph name="SEARCH_ENGINE"/> ang larawan</translation>
 <translation id="6831043979455480757">Isaling-wika</translation>
 <translation id="7644305409888602715">Isinasalin ang pahina sa <ph name="SOURCE_LANGUAGE"/>...</translation>
-<translation id="7015922086425404465">Kunin ang app mula sa Google Play Store: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">I-reload ang Pahinang Ito</translation>
 <translation id="641643625718530986">I-print…</translation>
 <translation id="7658239707568436148">Kanselahin</translation>
@@ -18,15 +16,12 @@
 Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator nito ng kontrol sa iyong profile sa Chrome. Permanenteng mauugnay ang iyong data ng Chrome sa account na ito. Ang pagdiskonekta mula sa account na ito ay magtatanggal sa lokal na data ng Chrome.</translation>
 <translation id="1966710179511230534">Paki-update ang iyong mga detalye sa pag-sign in.</translation>
 <translation id="1623104350909869708">Pigilan ang pahinang ito sa paggawa ng mga karagdagang dialog</translation>
-<translation id="1426410128494586442">Oo</translation>
 <translation id="8218346974737627104">Kumpirmahin ang pag-sign in</translation>
 <translation id="624558823898732418">Wika ng Pagsasalin: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Piliin ang certificate para sa pagpapatotoo</translation>
 <translation id="3896036286668839683">Viewer ng Certificate</translation>
 <translation id="8583805026567836021">Kini-clear ang data ng account</translation>
-<translation id="4250680216510889253">Hindi</translation>
 <translation id="8073388330009372546">Buksan ang larawan sa bagong tab</translation>
-<translation id="552553974213252141">Nakuha ba nang tama ang text?</translation>
 <translation id="8730621377337864115">Tapos na</translation>
 <translation id="4170011742729630528">Hindi available ang serbisyo; subukang muli sa ibang pagkakataon.</translation>
 <translation id="8627706565932943526">Error sa pag-sync</translation>
@@ -38,14 +33,11 @@ Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator
 <translation id="907015151729920253">Smart card</translation>
 <translation id="3063601790762993062">I-save ang video</translation>
 <translation id="6042308850641462728">Higit pa</translation>
-<translation id="7267430310003164111">I-prompt na kunin ang app mula sa Google Play Store.  Pangalan ng app: <ph name="APP_NAME"/>.  Average na rating ng app: <ph name="APP_RATING"/>.</translation>
-<translation id="4148957013307229264">Ini-install...</translation>
 <translation id="3992315671621218278">I-save ang link</translation>
 <translation id="8034522405403831421">Nasa <ph name="SOURCE_LANGUAGE"/> ang pahinang ito. Isalin ito sa <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="4195643157523330669">Buksan sa bagong tab</translation>
 <translation id="3089395242580810162">Buksan sa tab na incognito</translation>
 <translation id="8725066075913043281">Muling subukan</translation>
-<translation id="8909135823018751308">Ibahagi…</translation>
 <translation id="4269820728363426813">Kopyahin ang address ng link</translation>
 <translation id="4510973599275542560">Huwag i-reload</translation>
 <translation id="1206892813135768548">Kopyahin ang text ng link</translation>
@@ -58,10 +50,8 @@ Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator
 <translation id="1285320974508926690">Huwag isalin kailanman ang site na ito</translation>
 <translation id="5164482624172255778">Gusto mo bang i-alok ng Google Chrome na isalin ang mga pahinang <ph name="LANGUAGE"/> mula sa site na ito sa susunod na pagkakataon?</translation>
 <translation id="8528538445849828817">Wika ng Pahina: <ph name="SOURCE_LANGUAGE"/></translation>
-<translation id="4881695831933465202">Buksan</translation>
 <translation id="6512448926095770873">Iwanan ang Pahinang ito</translation>
 <translation id="7947953824732555851">I-accept, mag-sign in</translation>
-<translation id="6333140779060797560">Ibahagi sa pamamagitan ng <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Isara</translation>
 <translation id="969096075394517431">Palitan ang mga wika</translation>
 <translation id="5032574515228824816">I-prompt</translation>

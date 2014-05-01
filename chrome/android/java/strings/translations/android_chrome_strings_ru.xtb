@@ -2,11 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
 <translation id="8588878054171169263">Сохранить изображение</translation>
-<translation id="4996978546172906250">Поделиться через</translation>
 <translation id="5578795271662203820">Найти это изображение в <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Перевести</translation>
 <translation id="7644305409888602715">Выполняется перевод на <ph name="SOURCE_LANGUAGE"/>…</translation>
-<translation id="7015922086425404465">Приобрести приложение в Google Play Маркете: <ph name="APP_ACTION"/>.</translation>
 <translation id="1491151370853475546">Обновить страницу</translation>
 <translation id="641643625718530986">Печать</translation>
 <translation id="7658239707568436148">Отмена</translation>
@@ -18,15 +16,12 @@
 Если вы войдете в аккаунт, администратор домена сможет управлять вашим профилем Chrome. Ваши данные будут связаны с этим аккаунтом. Если вы из него выйдете, все данные Chrome будут удалены с устройства.</translation>
 <translation id="1966710179511230534">Обновите учетные данные</translation>
 <translation id="1623104350909869708">Запретить создание дополнительных диалоговых окон на этой странице</translation>
-<translation id="1426410128494586442">Да</translation>
 <translation id="8218346974737627104">Подтвердите вход</translation>
 <translation id="624558823898732418">Перевести на <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Выберите сертификат</translation>
 <translation id="3896036286668839683">Средство просмотра сертификатов</translation>
 <translation id="8583805026567836021">Удаление данных аккаунта</translation>
-<translation id="4250680216510889253">Нет</translation>
 <translation id="8073388330009372546">Открыть в новой вкладке</translation>
-<translation id="552553974213252141">Правильно ли извлечен текст?</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="4170011742729630528">Сервис недоступен. Повторите попытку позже.</translation>
 <translation id="8627706565932943526">Ошибка синхронизации</translation>
@@ -38,14 +33,11 @@
 <translation id="907015151729920253">Смарт-карта</translation>
 <translation id="3063601790762993062">Сохранить видео</translation>
 <translation id="6042308850641462728">Подробнее...</translation>
-<translation id="7267430310003164111">Ссылка на приложение в Google Play Маркете. Название приложения: <ph name="APP_NAME"/>.  Средняя оценка: <ph name="APP_RATING"/>.</translation>
-<translation id="4148957013307229264">Установка...</translation>
 <translation id="3992315671621218278">Сохранить ссылку</translation>
 <translation id="8034522405403831421">Язык этой страницы: <ph name="SOURCE_LANGUAGE"/>. Перевести ее на <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="4195643157523330669">Открыть в новой вкладке</translation>
 <translation id="3089395242580810162">Открыть в режиме инкогнито</translation>
 <translation id="8725066075913043281">Повторить попытку</translation>
-<translation id="8909135823018751308">Отправка…</translation>
 <translation id="4269820728363426813">Копировать адрес ссылки</translation>
 <translation id="4510973599275542560">Отмена</translation>
 <translation id="1206892813135768548">Копировать текст ссылки</translation>
@@ -58,10 +50,8 @@
 <translation id="1285320974508926690">Никогда не переводить этот сайт</translation>
 <translation id="5164482624172255778">Хотите, чтобы Google Chrome всегда предлагал перевести этот сайт, когда на его страницах используется <ph name="LANGUAGE"/>?</translation>
 <translation id="8528538445849828817">Исходный язык: <ph name="SOURCE_LANGUAGE"/></translation>
-<translation id="4881695831933465202">Открыть</translation>
 <translation id="6512448926095770873">Покинуть эту страницу</translation>
 <translation id="7947953824732555851">Принять и войти</translation>
-<translation id="6333140779060797560">Отправить с помощью <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Закрыть</translation>
 <translation id="969096075394517431">Изменить языки</translation>
 <translation id="5032574515228824816">Запрос</translation>

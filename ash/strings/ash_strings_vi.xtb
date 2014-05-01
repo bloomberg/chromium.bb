@@ -10,7 +10,6 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> đã được xoay vòng sang <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Đã tắt bluetooth</translation>
-<translation id="6713285437468012787">Thiết bị Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot;đã được ghép nối và hiện khả dụng với tất cả người dùng. Bạn có thể xóa ghép nối này bằng Cài đặt.</translation>
 <translation id="7165320105431587207">Không định cấu hình mạng được</translation>
 <translation id="3775358506042162758">Bạn chỉ có thể có tối đa ba tài khoản khi đăng nhập nhiều tài khoản.</translation>
 <translation id="370649949373421643">Bật Wi-Fi</translation>
@@ -20,7 +19,6 @@
 <translation id="595202126637698455">Đã bật theo dõi hoạt động</translation>
 <translation id="8054466585765276473">Đang tính toán thời lượng pin.</translation>
 <translation id="7982789257301363584">Mạng</translation>
-<translation id="2303600792989757991">Tổng quan về chuyển đổi cửa sổ</translation>
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="938582441709398163">Lớp phủ bàn phím</translation>
 <translation id="4387004326333427325">Chứng chỉ xác thực bị từ chối từ xa</translation>
@@ -81,9 +79,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="3892641579809465218">Màn hình nội bộ</translation>
 <translation id="7823564328645135659">Ngôn ngữ đã chuyển từ &quot;<ph name="FROM_LOCALE"/>&quot; thành &quot;<ph name="TO_LOCALE"/>&quot; sau khi đồng bộ hóa cài đặt của bạn.</translation>
 <translation id="3368922792935385530">Đã kết nối</translation>
-<translation id="3606978283550408104">Đã kết nối màn hình Braille.</translation>
 <translation id="8654520615680304441">Bật Wi-Fi...</translation>
-<translation id="6650933572246256093">Thiết bị Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; muốn được phép ghép nối. Vui lòng nhập mã xác nhận này trên thiết bị đó: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Phương thức nhập của bạn đã thay đổi thành <ph name="INPUT_METHOD_ID"/>.
 Nhấn Shift + Alt để chuyển đổi.</translation>
@@ -136,7 +132,6 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Kích hoạt <ph name="NAME"/></translation>
-<translation id="4527045527269911712">Thiết bị Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot;muốn được phép ghép nối.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Nhấp chuột tự động</translation>
 <translation id="1398853756734560583">Phóng to</translation>
@@ -187,15 +182,11 @@ Thông báo máy chủ: <ph name="SERVER_MSG"/></translation>
 <translation id="479989351350248267">tìm kiếm</translation>
 <translation id="8454013096329229812">Wi-Fi đang bật.</translation>
 <translation id="4872237917498892622">Alt+Search hoặc Shift</translation>
-<translation id="2429753432712299108">Thiết bị Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; muốn được phép ghép nối. Trước khi chấp nhận, vui lòng xác nhận rằng mã xác nhận này đã hiển thị trên thiết bị đó: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Pin đầy <ph name="PERCENTAGE"/>%.</translation>
 <translation id="2983818520079887040">Cài đặt...</translation>
 <translation id="3871838685472846647">Đã kích hoạt di động</translation>
-<translation id="6452181791372256707">Từ chối</translation>
 <translation id="1195412055398077112">quét quá mức</translation>
-<translation id="607652042414456612">Máy tính của bạn có thể phát hiện thiết bị Bluetooth gần đó và hiện thị dưới tên &quot;<ph name="NAME"/>&quot; với địa chỉ là <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Tự động ẩn giá</translation>
-<translation id="6732801395666424405">Không tải được chứng chỉ</translation>
 <translation id="7573962313813535744">Chế độ được gắn đế</translation>
 <translation id="8927026611342028580">Yêu cầu kết nối</translation>
 <translation id="8300849813060516376">OTASP không thành công</translation>
@@ -208,7 +199,6 @@ Thông báo máy chủ: <ph name="SERVER_MSG"/></translation>
 <translation id="6785414152754474415">Pin đầy <ph name="PERCENTAGE"/>% và đang sạc.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Đang kích hoạt...</translation>
 <translation id="4895488851634969361">Pin đầy.</translation>
-<translation id="615957422585914272">Hiển thị bàn phím ảo</translation>
 <translation id="5947494881799873997">Hoàn nguyên</translation>
 <translation id="7593891976182323525">Search hoặc Shift</translation>
 <translation id="7649070708921625228">Trợ giúp</translation>
@@ -216,7 +206,6 @@ Thông báo máy chủ: <ph name="SERVER_MSG"/></translation>
 Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="397105322502079400">Đang tính...</translation>
 <translation id="158849752021629804">Cần mạng gia đình</translation>
-<translation id="1013923882670373915">Thiết bị Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; muốn được phép ghép nối. Vui lòng nhập mã PIN này trên thiết bị đó: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">Kích hoạt <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Không thể tra cứu DHCP</translation>
 <translation id="2819276065543622893">Bạn sẽ bị đăng xuất bây giờ.</translation>
@@ -226,7 +215,6 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="973896785707726617">Phiên này sẽ kết thúc sau <ph name="SESSION_TIME_REMAINING"/>. Bạn sẽ tự động bị đăng xuất.</translation>
 <translation id="8372369524088641025">Khóa WEP sai</translation>
 <translation id="6636709850131805001">Trạng thái không xác định</translation>
-<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Thay đổi lại thành &quot;<ph name="FROM_LOCALE"/>&quot; (yêu cầu khởi động lại)</translation>
 <translation id="8103386449138765447">Tin nhắn SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">Đã bật ChromeVox (phản hồi bằng giọng nói).

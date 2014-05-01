@@ -10,7 +10,6 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> käännettiin asentoon <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth pois käytöstä</translation>
-<translation id="6713285437468012787">Bluetooth-laitteeseen <ph name="DEVICE_NAME"/> on nyt muodostettu laitepariyhteys, ja se on kaikkien käyttäjien saatavilla. Voit poistaa laiteparin Asetuksien kautta.</translation>
 <translation id="7165320105431587207">Verkon asetuksien määrittäminen epäonnistui</translation>
 <translation id="3775358506042162758">Sinulla voi olla enintään kolme tiliä useaan tiliin kirjautuessasi.</translation>
 <translation id="370649949373421643">Ota wifi käyttöön</translation>
@@ -20,7 +19,6 @@
 <translation id="595202126637698455">Tehokkuuden seuranta on käytössä</translation>
 <translation id="8054466585765276473">Lasketaan akun kesto.</translation>
 <translation id="7982789257301363584">Verkko</translation>
-<translation id="2303600792989757991">Vaihda ikkunan yleiskatsausta</translation>
 <translation id="5565793151875479467">Välityspalvelin...</translation>
 <translation id="938582441709398163">Näppäimistön peitto</translation>
 <translation id="4387004326333427325">Todennusvarmenne on hylätty etäyhteyden kautta</translation>
@@ -81,9 +79,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3892641579809465218">Sisäinen näyttö</translation>
 <translation id="7823564328645135659">Käyttökieli on muutettu kielestä <ph name="FROM_LOCALE"/> kieleksi <ph name="TO_LOCALE"/> asetustesi synkronoinnin yhteydessä.</translation>
 <translation id="3368922792935385530">Yhdistetty</translation>
-<translation id="3606978283550408104">Pistekirjoitusnäyttö on yhdistetty.</translation>
 <translation id="8654520615680304441">Ota wifi käyttöön…</translation>
-<translation id="6650933572246256093">Bluetooth-laite <ph name="DEVICE_NAME"/> pyytää lupaa laiteparin muodostamiseen. Anna tämä avain kyseisellä laitteella: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Syöttötapa on vaihtunut. Uusi syöttötapa on <ph name="INPUT_METHOD_ID"/>.
 Vaihda syöttötapaa painamalla Shift + Alt.</translation>
@@ -136,7 +132,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="5543001071567407895">Tekstiviesti</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Aktivoidaan <ph name="NAME"/></translation>
-<translation id="4527045527269911712">Bluetooth-laite <ph name="DEVICE_NAME"/> pyytää lupaa laiteparin muodostamiseen.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Automaattiset klikkaukset</translation>
 <translation id="1398853756734560583">Suurenna</translation>
@@ -187,15 +182,11 @@ Palvelimen viesti: <ph name="SERVER_MSG"/></translation>
 <translation id="479989351350248267">haku</translation>
 <translation id="8454013096329229812">Wi-Fi on käytössä.</translation>
 <translation id="4872237917498892622">Alt + haku tai Shift</translation>
-<translation id="2429753432712299108">Bluetooth-laite <ph name="DEVICE_NAME"/> pyytää lupaa laiteparin muodostamiseen. Ennen kuin hyväksyt pyynnön, varmista, että laitteella näkyy tämä avain: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Akussa on virtaa <ph name="PERCENTAGE"/> %.</translation>
 <translation id="2983818520079887040">Asetukset...</translation>
 <translation id="3871838685472846647">Matkapuhelin aktivoitu</translation>
-<translation id="6452181791372256707">Hylkää</translation>
 <translation id="1195412055398077112">kuvasta rajataan pois osa</translation>
-<translation id="607652042414456612">Lähellä olevat Bluetooth-laitteet voivat löytää tietokoneesi. Tietokoneesi nimi on <ph name="NAME"/> ja osoite <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Piilota hylly automaattisesti</translation>
-<translation id="6732801395666424405">Varmenteita ei ole ladattu</translation>
 <translation id="7573962313813535744">Telakoitu tila</translation>
 <translation id="8927026611342028580">Yhdistä pyydetyt</translation>
 <translation id="8300849813060516376">OTASP epäonnistui</translation>
@@ -208,14 +199,12 @@ Palvelimen viesti: <ph name="SERVER_MSG"/></translation>
 <translation id="6785414152754474415">Akussa on virtaa <ph name="PERCENTAGE"/> %, ja laite on kytketty laturiin.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: aktivoidaan…</translation>
 <translation id="4895488851634969361">Akku on täynnä.</translation>
-<translation id="615957422585914272">Näytä ruutunäppäimistö</translation>
 <translation id="5947494881799873997">Palauta</translation>
 <translation id="7593891976182323525">Haku tai Shift</translation>
 <translation id="7649070708921625228">Ohje</translation>
 <translation id="3050422059534974565">CAPS LOCK on päällä. Peruuta painamalla haku- tai Shift-näppäintä.</translation>
 <translation id="397105322502079400">Lasketaan...</translation>
 <translation id="158849752021629804">Kotiverkko tarvitaan</translation>
-<translation id="1013923882670373915">Bluetooth-laite <ph name="DEVICE_NAME"/> pyytää lupaa laiteparin muodostamiseen. Anna tämä PIN-koodi kyseisellä laitteella: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">Aktivoi <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP-haku epäonnistui</translation>
 <translation id="2819276065543622893">Sinut kirjataan ulos nyt.</translation>
@@ -225,7 +214,6 @@ Palvelimen viesti: <ph name="SERVER_MSG"/></translation>
 <translation id="973896785707726617">Istunnon loppumiseen on <ph name="SESSION_TIME_REMAINING"/>. Sinut kirjataan automaattisesti ulos.</translation>
 <translation id="8372369524088641025">Väärä WEP-avain</translation>
 <translation id="6636709850131805001">Tunnistamaton tila</translation>
-<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Vaihda takaisin kieleksi <ph name="FROM_LOCALE"/> (vaatii uudelleenkäynnistyksen)</translation>
 <translation id="8103386449138765447">Tekstiviestit: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (äänipalaute) on käytössä. Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>

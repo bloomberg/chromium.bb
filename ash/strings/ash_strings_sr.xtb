@@ -10,7 +10,6 @@
 <translation id="6310121235600822547">Екран <ph name="DISPLAY_NAME"/> је промењен у <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth је онемогућен</translation>
-<translation id="6713285437468012787">Bluetooth уређај „<ph name="DEVICE_NAME"/>“ је упарен и сада је доступан свим корисницима. Можете да уклоните то упаривање помоћу Подешавања.</translation>
 <translation id="7165320105431587207">Конфигурација мреже није успела</translation>
 <translation id="3775358506042162758">Можете да имате највише три налога за вишеструко пријављивање.</translation>
 <translation id="370649949373421643">Омогући Wi-Fi</translation>
@@ -20,7 +19,6 @@
 <translation id="595202126637698455">Праћење учинка је омогућено</translation>
 <translation id="8054466585765276473">Израчунавање времена трајања батерије.</translation>
 <translation id="7982789257301363584">Мрежа</translation>
-<translation id="2303600792989757991">Укључи/искључи преглед прозора</translation>
 <translation id="5565793151875479467">Прокси...</translation>
 <translation id="938582441709398163">Постављени елемент тастатуре</translation>
 <translation id="4387004326333427325">Сертификат за потврду аутентичности је одбијен даљински</translation>
@@ -81,9 +79,7 @@
 <translation id="3892641579809465218">Интерни екран</translation>
 <translation id="7823564328645135659">Језик је промењен са језика „<ph name="FROM_LOCALE"/>“ на „<ph name="TO_LOCALE"/>“ након синхронизације подешавања.</translation>
 <translation id="3368922792935385530">Повезан</translation>
-<translation id="3606978283550408104">Повезан је екран са Брајевом азбуком.</translation>
 <translation id="8654520615680304441">Укључи Wi-Fi...</translation>
-<translation id="6650933572246256093">Bluetooth уређај „<ph name="DEVICE_NAME"/>“ жели дозволу за упаривање. Унесите ову шифру на том уређају: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Метод уноса је промењен у <ph name="INPUT_METHOD_ID"/>.
 Притисните Shift + Alt да бисте пребацили.</translation>
@@ -136,7 +132,6 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Активирање мреже <ph name="NAME"/></translation>
-<translation id="4527045527269911712">Bluetooth уређај „<ph name="DEVICE_NAME"/>“ жели дозволу за упаривање.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Аутоматски кликови</translation>
 <translation id="1398853756734560583">Увећај</translation>
@@ -187,15 +182,11 @@
 <translation id="479989351350248267">претражите</translation>
 <translation id="8454013096329229812">Wi-Fi је укључен.</translation>
 <translation id="4872237917498892622">Alt + тастер за претрагу или Shift</translation>
-<translation id="2429753432712299108">Bluetooth уређај „<ph name="DEVICE_NAME"/>“ жели дозволу за упаривање. Пре него што му је дате, уверите се да је ова шифра приказана на том уређају: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Батерија је <ph name="PERCENTAGE"/>% пуна.</translation>
 <translation id="2983818520079887040">Подешавања...</translation>
 <translation id="3871838685472846647">Мобилни уређај је активиран</translation>
-<translation id="6452181791372256707">Одбиј</translation>
 <translation id="1195412055398077112">ивично подручје екрана</translation>
-<translation id="607652042414456612">Оближњи Bluetooth уређаји могу да открију рачунар и он ће се приказивати као „<ph name="NAME"/>“ са адресом <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Аутоматски сакриј полицу</translation>
-<translation id="6732801395666424405">Сертификати нису отпремљени</translation>
 <translation id="7573962313813535744">Режим са базном станицом</translation>
 <translation id="8927026611342028580">Захтева се повезивање</translation>
 <translation id="8300849813060516376">OTASP није успео</translation>
@@ -208,7 +199,6 @@
 <translation id="6785414152754474415">Батерија је <ph name="PERCENTAGE"/>% пуна и још увек се пуни.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Активирање...</translation>
 <translation id="4895488851634969361">Батерија је пуна.</translation>
-<translation id="615957422585914272">Прикажи тастатуру на екрану</translation>
 <translation id="5947494881799873997">Врати</translation>
 <translation id="7593891976182323525">Тастер за претрагу или Shift</translation>
 <translation id="7649070708921625228">Помоћ</translation>
@@ -216,7 +206,6 @@
 Притисните тастер за претрагу или Shift да бисте га отказали.</translation>
 <translation id="397105322502079400">Израчунавање...</translation>
 <translation id="158849752021629804">Потребна је матична мрежа</translation>
-<translation id="1013923882670373915">Bluetooth уређај „<ph name="DEVICE_NAME"/>“ жели дозволу за упаривање. Унесите овај PIN кôд на том уређају: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">Активирај <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Проналажење DHCP-а није успело</translation>
 <translation id="2819276065543622893">Бићете одмах одјављени.</translation>
@@ -226,7 +215,6 @@
 <translation id="973896785707726617">Ова сесија ће се завршити за <ph name="SESSION_TIME_REMAINING"/>. Бићете аутоматски одјављени.</translation>
 <translation id="8372369524088641025">Неисправна WEP шифра</translation>
 <translation id="6636709850131805001">Непознато стање</translation>
-<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Врати на „<ph name="FROM_LOCALE"/>“ (потребно је поновно покретање)</translation>
 <translation id="8103386449138765447">SMS поруке: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (говорне повратне информације) је омогућен. Притисните Ctrl+Alt+Z да бисте га онемогућили.</translation>

@@ -25,7 +25,6 @@
       zvoka na voljo samo URL-jem na seznamu AudioCaptureAllowedUrls.
 
       Ta pravilnik vpliva na vse vrste zvočnih vhodov in ne samo na vgrajeni mikrofon.</translation>
-<translation id="7267809745244694722">Predstavnostne tipke privzeto delujejo kot funkcije tipke</translation>
 <translation id="9150416707757015439">Ta pravilnik je zastarel. Uporabite pravilnik »IncognitoModeAvailability«.
       Ta v brskalniku <ph name="PRODUCT_NAME"/> omogoča način brez beleženja zgodovine.
 
@@ -647,6 +646,9 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="6417861582779909667">Omogoča nastavitev seznama vzorcev URL-jev, ki določajo spletna mesta, ki jim ni dovoljeno nastavljati piškotkov.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultCookiesSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
+<translation id="5457296720557564923">Omogoča stranem dostop do statističnih podatkov o JavaScriptovi uporabi pomnilnika.
+
+      S to nastavitvijo so statistični podatki o pomnilniku iz plošče s profili v orodjih za razvijalce na voljo spletni strani.</translation>
 <translation id="5776485039795852974">Vprašaj me vsakič, ko želi mesto pokazati namizna obvestila</translation>
 <translation id="5047604665028708335">Omogoči dostop do spletnih mest zunaj paketov vsebine</translation>
 <translation id="5052081091120171147">Če je ta pravilnik omogočen, se zgodovina brskanja uvozi iz trenutnega privzetega brskalnika. Če je omogočen, ta pravilnik vpliva tudi na pogovorno okno za uvoz.
@@ -658,12 +660,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="7132877481099023201">URL-ji, ki jim bo brez poziva dovoljen dostop do naprav za zajem videa</translation>
 <translation id="8947415621777543415">Prijava lokacije naprave</translation>
 <translation id="1655229863189977773">Nastavi velikost predpomnilnika diska v bajtih</translation>
-<translation id="3358275192586364144">Omogoči optimizacijo WPAD v brskalniku <ph name="PRODUCT_NAME"/> in prepreči uporabnikom spreminjanje te nastavitve.
-
-      Če to možnost omogočite, bo Chrome manj časa čakal na strežnike WPAD, ki temeljijo na DNS-ju.
-
-      Če ta pravilnik ni nastavljen, bo ta možnost omogočena in je uporabnik ne bo
-      mogel spremeniti.</translation>
 <translation id="6376842084200599664">Omogoča določitev seznama razširitev, ki se namestijo v ozadju brez poseganja uporabnika.
 
            Vsak element na seznamu je niz, ki vsebuje ID razširitve in URL za posodobitev, ločen s podpičjem (<ph name="SEMICOLON"/>). ID razširitve je 32-mestni niz, ki ga je mogoče v načinu za razvijalce najti na primer na <ph name="CHROME_EXTENSIONS_LINK"/>. URL za posodobitev mora kazati na dokument XML manifesta za posodobitev, kot je opisano na <ph name="LINK_TO_EXTENSION_DOC1"/>. URL za posodobitev, nastavljen v tem pravilniku, se uporabi samo pri začetni namestitvi; pri vseh nadaljnjih posodobitvah razširitve je uporabljen URL za posodobitev, naveden v manifestu razširitve.
@@ -785,7 +781,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="1679420586049708690">Javna seja za samodejno prijavo</translation>
 <translation id="7625444193696794922">Določa kanal za izdajo, na katerega naj bo zaklenjena ta naprava.</translation>
 <translation id="2552966063069741410">Časovni pas</translation>
-<translation id="3788662722837364290">Nastavitve upravljanja energije, ko uporabnik postane nedejaven</translation>
 <translation id="2240879329269430151">Omogoča nastavitev, ali je spletnim mestom dovoljeno prikazovati pojavna okna. Prikazovanje pojavnih oken je mogoče dovoliti ali zavrniti za vsa spletna mesta.
 
          Če ta pravilnik ni nastavljen, bo uporabljen pravilnik »BlockPopups« in uporabnik ga bo lahko spremenil.</translation>
@@ -870,6 +865,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="8102913158860568230">Privzeta nastavitev »mediastream«</translation>
 <translation id="6641981670621198190">Onemogoči podporo za vmesnike API za 3D-grafiko</translation>
 <translation id="1265053460044691532">Omejitev časa, ki je uporabniku, katerega pristnost je preverjena prek SAML-ja, na voljo za prijavo brez internetne povezave</translation>
+<translation id="7929480864713075819">Omogoči poročanje o podatkih pomnilnika (velikost kopice JS) strani</translation>
 <translation id="5703863730741917647">Določanje dejanja, ki se izvede, ko je dosežena zakasnitev zaradi nedejavnosti.
 
           Upoštevajte, da je za pravilnik zastarel in bo v prihodnosti odstranjen.
@@ -980,7 +976,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="4057110413331612451">Dovoli uporabnikom v podjetjih, da so samo primarni večprofilni uporabniki</translation>
 <translation id="5365946944967967336">V orodni vrstici pokaži gumb »Domov«</translation>
 <translation id="3709266154059827597">Nastavi seznam razširitev, katerih namestitev je prepovedana</translation>
-<translation id="1933378685401357864">Slika za ozadje</translation>
 <translation id="8451988835943702790">Uporabi stran za nov zavihek kot domačo stran</translation>
 <translation id="4617338332148204752">Preskoči preverjanje metaoznak v izdelku <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="8469342921412620373">Omogoča uporabo privzetega ponudnika iskanja.
@@ -1004,11 +999,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Če pravilnika ne nastavite, je velik kazalec prvotno onemogočen, vendar ga lahko uporabniki kadar koli omogočijo.</translation>
 <translation id="2633084400146331575">Vklop izgovorjave</translation>
-<translation id="687046793986382807">Ta pravilnik je zastaral in se ne uporablja več od različice 35 brskalnika <ph name="PRODUCT_NAME"/>.
-
-      Podatki o pomnilniku se vseeno pošiljajo strani, ne glede na vrednost možnosti, vendar se poslane vrednosti
-      kvantizirajo in je hitrost posodobitev iz varnostnih razlogov omejena. Če želite sprotne natančne podatke,
-      uporabite orodja, kot je Telemetry.</translation>
 <translation id="8731693562790917685">Z nastavitvami vsebine lahko določite, kako se obravnava vsebina različnih vrst (npr. piškotki, slike ali JavaScript).</translation>
 <translation id="2411919772666155530">Blokiraj obvestila na teh mestih</translation>
 <translation id="6923366716660828830">Določa ime privzetega ponudnika iskanja. Če pravilnik ostane prazen ali če ni nastavljen, bo uporabljeno ime gostitelja, določeno z URL-jem iskanja.
@@ -1020,7 +1010,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Če je ta pravilnik nastavljen na »False«, bodo zahteve za zaklepanje preklopa zaslona iz mirovanja prezrta.</translation>
 <translation id="467236746355332046">Podprte funkcije:</translation>
-<translation id="5447306928176905178">Omogoči poročanje o podatkih pomnilnika (velikost kopice JS) strani (zastarelo)</translation>
 <translation id="7632724434767231364">Ime knjižnice GSSAPI</translation>
 <translation id="3038323923255997294">Nadaljuj izvajanje programov v ozadju, ko je <ph name="PRODUCT_NAME"/> zaprt</translation>
 <translation id="8909280293285028130">Določa trajanje uporabnikove nedejavnosti, po preteku katere se zaslon zaklene, če se napaja iz električnega omrežja.
@@ -1069,17 +1058,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Ta pravilnik je izbiren. Če ni nastavljen, bo zahteva za takojšnje iskanje poslana z metodo GET.
 
           Ta pravilnik se upošteva samo, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
-<translation id="6095999036251797924">Določi trajanje uporabnikove nedejavnosti, po preteku katere se zaslon zaklene, če se napaja iz električnega omrežja ali akumulatorja.
-
-          Če je trajanje nedejavnosti nastavljeno na vrednost, večjo od nič, izraža ta vrednost čas nedejavnosti uporabnika, preden <ph name="PRODUCT_OS_NAME"/> zaklene zaslon.
-
-          Če je trajanje nedejavnosti nastavljeno na nič, <ph name="PRODUCT_OS_NAME"/> ne zaklene zaslona, ko uporabnik postane nedejaven.
-
-          Če trajanje nedejavnosti ni nastavljeno, se uporabi privzeto trajanje.
-
-          Priporočljivo je, da za zaklep zaslona ob nedejavnosti omogočite zaklepanje ob prekinitvi, da se <ph name="PRODUCT_OS_NAME"/> prekine po preteku zakasnitve zaradi nedejavnosti. Ta pravilnik uporabite samo, če želite, da se zaslon zaklene bistveno prej pred prekinitvijo, ali če ne želite prekinitve ob nedejavnosti.
-
-          Vrednost pravilnika naj bo navedena v milisekundah. Vrednosti morajo biti manjše od zakasnitve zaradi nedejavnosti.</translation>
 <translation id="1454846751303307294">Omogoča nastavitev seznama vzorcev URL-jev, s katerimi so določena spletna mesta, ki jim ni dovoljeno izvajanje JavaScripta.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultJavaScriptSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
@@ -1114,32 +1092,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je ta pravilnik nastavljen na »False« ali ni konfiguriran, so ikone vidne.</translation>
 <translation id="5085647276663819155">Onemogoči predogled tiskanja</translation>
 <translation id="8672321184841719703">Ciljna različica za samodejne posodobitve</translation>
-<translation id="553658564206262718">Konfigurira nastavitve upravljanja energije, ko uporabnik postane nedejaven.
-
-          Ta pravilnik nadzira različne nastavitve za strategijo upravljanja energije, ko uporabnik postane nedejaven.
-
-          Obstajajo štiri vrste dejanj:
-          * Če je uporabnik nedejaven toliko časa, kot določa |ScreenDim|, se zaslon zatemni.
-          * Če je uporabnik nedejaven toliko časa, kot določa |ScreenOff|, se zaslon izklopi.
-          * Če je uporabnik nedejaven toliko časa, kot določa |IdleWarning|, se prikaže opozorilno pogovorno okno, ki uporabnika obvesti, da se bo izvedlo dejanje zaradi nedejavnosti.
-          * Če je uporabnik nedejaven toliko časa, kot določa |Idle|, se bo izvedlo dejanje, ki ga določa |IdleAction|.
-
-          Za vsako od navedenih dejanj mora biti zakasnitev navedena v milisekundah, ustrezno dejanje pa se bo sprožilo samo, če je nastavljena vrednost, večja od nič. Če je zakasnitev nastavljena na nič, <ph name="PRODUCT_OS_NAME"/> ne bo izvedel ustreznega dejanja.
-
-          Če za navedene zakasnitve trajanje ni določeno, bo uporabljena privzeta vrednost.
-
-          Upoštevajte, da morajo biti vrednosti za |ScreenDim| manjše ali enake kot vrednosti za |ScreenOff|, vrednosti za |ScreenOff| in |IdleWarning| pa manjše ali enake kot za |Idle|.
-
-          |IdleAction| je lahko eno od štirih dejanj:
-          * |Suspend| (prekinitev)
-          * |Logout| (odjava)
-          * |Shutdown| (zaustavitev)
-          * |DoNothing| (ne naredi ničesar)
-
-          Če vrednost za |IdleAction| ni nastavljena, se bo izvedlo privzeto dejanje, ki je prekinitev.
-
-          Obstajajo tudi ločene nastavitve za napajanje iz električnega omrežja in akumulatorja.
-          </translation>
 <translation id="1689963000958717134">Omogoča pošiljanje omrežne konfiguracije, ki se uporablja za vse uporabnike, v napravo s sistemom <ph name="PRODUCT_OS_NAME"/>. Omrežna konfiguracija je niz v obliki zapisa JSON, kot je določeno z obliko konfiguracije odprtega omrežja, opisano na <ph name="ONC_SPEC_URL"/></translation>
 <translation id="6699880231565102694">Omogočanje preverjanja pristnosti v dveh korakih za gostitelje oddaljenega dostopa</translation>
 <translation id="2030905906517501646">Privzeta ključna beseda iskalnika</translation>
@@ -1355,32 +1307,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Z nastavitvijo tega pravilnika se preglasi privzeta vrednost 5000 ms. Veljavne vrednosti za ta pravilnik so med 1000 (1 sekunda) do 300.000 (5 minut). Vrednosti, ki niso v tem obsegu, bodo spremenjene na ustrezno mejo obsega.
       Če tega pravilnika ne nastavite, bo <ph name="PRODUCT_NAME"/> uporabil privzeto vrednost 5000 ms.</translation>
 <translation id="8099880303030573137">Časovni zamik ob napajanju iz akumulatorja</translation>
-<translation id="1709037111685927635">Nastavitev slike za ozadje.
-
-      S tem pravilnikom lahko nastavite sliko za ozadje, prikazano na namizju in na prijavni strani za uporabnika. Pravilnik se nastavi tako, da navedete URL, s katerega lahko <ph name="PRODUCT_OS_NAME"/> prenese sliko za ozadje, in kriptografsko razpršilno vrednost, ki se uporabi za preverjanje celovitosti prenosa. Slika mora biti v obliki JPEG in njena velikost ne sme presegati 16 MB. URL mora biti dostopen brez preverjanja pristnosti.
-
-      Slika za ozadje se prenese in predpomni. Če se spremeni URL ali razpršilna vrednost, se znova prenese.
-
-      Pravilnik mora biti naveden kot niz, ki izraža URL in razpršilno vrednost v obliki JSON, skladno s to shemo:
-      {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;url&quot;: {
-            &quot;description&quot;: &quot;URL, s katerega se lahko prenese slika za ozadje.&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          },
-          &quot;hash&quot;: {
-            &quot;description&quot;: &quot;Razpršilna vrednost SHA-256 slike za ozadje.&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          }
-        }
-      }
-
-      Če je ta pravilnik nastavljen, <ph name="PRODUCT_OS_NAME"/> prenese in uporabi sliko za ozadje.
-
-      Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.
-
-      Če ta pravilnika ne nastavite, lahko uporabnik izbere sliko, ki bo prikazana na namizju in v ozadju zaslona za prijavo.</translation>
 <translation id="2761483219396643566">Časovni zamik opozorila o nedejavnosti ob napajanju iz akumulatorja</translation>
 <translation id="6281043242780654992">Konfigurira pravilnike za izvorno pošiljanje sporočil. Gostitelji izvornega pošiljanja sporočil s seznama blokiranih ne bodo dovoljeni, razen če bodo uvrščeni na seznam dovoljenih.</translation>
 <translation id="1468307069016535757">Nastavitev privzetega stanja visokokontrastnega načina funkcij za ljudi s posebnimi potrebami na prijavnem zaslonu.
@@ -1518,9 +1444,93 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če omogočite ali onemogočite to nastavitev, je uporabniki ne morejo spremeniti ali preglasiti.
 
       Če ta pravilnik ni nastavljen, bo lahko uporabnik sam izbiral, ali želi uporabiti funkcijo strežnika proxy za stiskanje podatkov.</translation>
-<translation id="2170233653554726857">Omogočanje optimizacije za WPAD</translation>
 <translation id="7424751532654212117">Seznam izjem za seznam onemogočenih vtičnikov</translation>
 <translation id="6233173491898450179">Določi imenik za prenos v računalnik</translation>
+<translation id="78524144210416006">Nastavitev upravljanja porabe na prijavnem zaslonu v sistemu <ph name="PRODUCT_OS_NAME"/>.
+
+      S tem pravilnikom lahko nastavite delovanje sistema <ph name="PRODUCT_OS_NAME"/>, ko je prikazan zaslon za prijavo in nekaj časa ni uporabniške dejavnosti. Pravilnik nadzira več nastavitev. Za semantiko in obsege vrednosti posameznih nastavitev glejte ustrezne pravilnike, ki nadzirajo upravljanje porabe med sejo. Edina odstopanja od teh pravilnikov so:
+      * Dejanja, ki se izvedejo ob nedejavnosti ali zaprtju pokrova naprave, ne morejo sprožiti konca seje.
+      * Privzeto dejanje pri nedejavnosti, ko se uporablja napajanje iz električnega omrežja, je zaustavitev.
+
+      Pravilnik mora biti določen kot niz, ki izraža posamezne nastavitve v obliki JSON in je skladen s to shemo:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;AC&quot;: {
+            &quot;description&quot;: &quot;Nastavitve upravljanja porabe, ki se uporabijo pri napajanju iz električnega omrežja&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Čas, ki mora poteči brez dejavnosti uporabnika, preden se zatemni zaslon (v milisekundah)&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Čas, ki mora poteči brez dejavnosti uporabnika, preden se izklopi zaslon (v milisekundah)&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Čas, ki mora poteči brez dejavnosti uporabnika, preden se izvede dejanje za nedejavnost (v milisekundah)&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Dejanje, ki se izvede, ko je dosežen čas nedejavnosti&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;Battery&quot;: {
+            &quot;description&quot;: &quot;Nastavitve upravljanja porabe, ki se uporabijo pri akumulatorskem napajanju&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Čas, ki mora poteči brez dejavnosti uporabnika, preden se zatemni zaslon (v milisekundah)&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Čas, ki mora poteči brez dejavnosti uporabnika, preden se izklopi zaslon (v milisekundah)&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Čas, ki mora poteči brez dejavnosti uporabnika, preden se izvede dejanje za nedejavnost (v milisekundah)&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Dejanje, ki se izvede, ko je dosežen čas nedejavnosti&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;LidCloseAction&quot;: {
+            &quot;description&quot;: &quot;Dejanje, ki se izvede, ko se zapre pokrov naprave&quot;,
+            &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+          },
+          &quot;UserActivityScreenDimDelayScale&quot;: {
+            &quot;description&quot;: &quot;Odstotek, za katerega se poveča zakasnitev zatemnitve zaslona, ko je opažena dejavnost uporabnika med zatemnitvijo zaslona ali kmalu po izklopu zaslona&quot;,
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 100
+          }
+        }
+      }
+
+      Če neka nastavitev ni določena, se uporabi privzeta vrednost.
+
+      Če ta pravilnik ni nastavljen, se za vse nastavitve uporabijo privzete vrednosti.</translation>
 <translation id="8908294717014659003">Omogoča nastavitev, ali je spletnim mestom dovoljen dostop do naprav za snemanje predstavnosti. Dostop do naprav za snemanje predstavnosti je lahko privzeto dovoljen ali pa uporabnik dobi poziv, kadar koli spletno mesto želi dostop do naprav za snemanje predstavnosti.
 
            Če ta pravilnik ni nastavljen, bo uporabljena nastavitev »PromptOnAccess« in uporabnik jo bo lahko spremenil.</translation>
@@ -1555,9 +1565,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 Če ta pravilnik ni nastavljen, bo uporabljena privzeta vrednost in jo bo uporabnik lahko preglasil z zastavico »--media-cache-size«.</translation>
 <translation id="5142301680741828703">Vedno upodobi te vzorce URL-jev v programu <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Nastavi seznam razširitev, katerih namestitev je dovoljena</translation>
-<translation id="5893553533827140852">Če je ta nastavitev omogočena, bodo zahteve za preverjanje pristnosti »gnubby« posredovane prek povezave z oddaljenim gostiteljem.
-
-          Če je ta nastavitev onemogočena ali ni konfigurirana, zahteve za preverjanje pristnosti »gnubby« ne bodo posredovane.</translation>
 <translation id="187819629719252111">Omogoča dostop do lokalnih datotek v računalniku, tako da programu <ph name="PRODUCT_NAME"/> dovoli prikaz pogovornih oken za izbiro datotek.
 
       Če to nastavitev omogočite, lahko uporabniki odpirajo pogovorna okna za izbiro datotek.
@@ -1646,11 +1653,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Če je pravilnik »RestoreOnStartup« nastavljen, da se obnovijo URL-ji prejšnjih sej, ta pravilnik ne bo upoštevan in piškotki za ta spletna mesta bodo trajno shranjeni.</translation>
 <translation id="2098658257603918882">Omogoči poročanje o uporabi in podatkih, povezanih z zrušitvami</translation>
-<translation id="4633786464238689684">Spremeni privzeti način delovanja zgornje vrstice tipk, da delujejo kot funkcijske tipke.
-
-          Če je ta pravilnik nastavljen na »true«, bo zgornja vrstica tipk privzeto pošiljala ukaze funkcijskih tipk. Če želite, da spet delujejo kot predstavnostne tipke, morate pritisniti tipko za iskanje.
-
-          Če je ta pravilnik nastavljen na »false« ali ni nastavljen, bo tipkovnica privzeto pošiljala ukaze predstavnostnih tipk, če je pritisnjena tipka za iskanje, pa ukaze funkcijskih tipk.</translation>
 <translation id="2324547593752594014">Dovoljuje prijavo v Chrome</translation>
 <translation id="172374442286684480">Vsem spletnim mestom je omogočeno nastavljanje lokalnih podatkov</translation>
 <translation id="1151353063931113432">Dovoli slike na teh mestih</translation>
@@ -1706,7 +1708,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Seznam ExtensionInstallBlacklist ima prednost pred tem pravilnikom. To pomeni, da razširitve s tega seznama ni mogoče namestiti, čeprav je za namestitev uporabljeno spletno mesto na tem seznamu.</translation>
 <translation id="2113068765175018713">Omejitev časa dejavnosti naprave samodejnim vnovičnim zagonom</translation>
-<translation id="4224610387358583899">Zakasnitve za zaklepanje zaslona</translation>
 <translation id="7848840259379156480">Omogoča nastavitev privzetega upodabljalnika HTML-ja, ko je nameščen <ph name="PRODUCT_FRAME_NAME"/>. Privzeta nastavitev je, da upodabljanje izvaja gostiteljski brskalnik, vendar lahko to preglasite in določite, da <ph name="PRODUCT_FRAME_NAME"/> privzeto upodablja strani HTML.</translation>
 <translation id="186719019195685253">Dejanje, ki se izvede, ko je pri napajanju iz električnega omrežja dosežena zakasnitev zaradi nedejavnosti</translation>
 <translation id="7890264460280019664">Poročanje strežniku o seznamu omrežnih vmesnikov z vrstami in naslovi strojne opreme.
@@ -1819,15 +1820,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Pravilnik naj bo nastavljen na URL, s katerega lahko <ph name="PRODUCT_OS_NAME"/> prenese pogoje storitve. Ti morajo biti v obliki navadnega besedila vrste MIME in brez označevanja.</translation>
 <translation id="2623014935069176671">Čakanje na začetno dejavnost uporabnika</translation>
 <translation id="2660846099862559570">Nikoli ne uporabi proxyja</translation>
-<translation id="1956493342242507974">Nastavitev upravljanja porabe na prijavnem zaslonu v sistemu <ph name="PRODUCT_OS_NAME"/>.
-
-      S tem pravilnikom lahko nastavite, kako deluje <ph name="PRODUCT_OS_NAME"/>, ko uporabnik nekaj časa ni dejaven in je prikazan prijavni zaslon. Pravilnik nadzira več nastavitev. Za podrobnosti posameznih nastavitev in njihove obsege vrednosti si oglejte ustrezne pravilnike, ki v seji nadzirajo upravljanje porabe. Edini odstopanji od teh pravilnikov sta:
-      * dejanja, ki se izvedejo v stanju nedejavnosti ali ob zapiranju pokrova, ne smejo končati seje;
-      * privzeto dejanje v stanju nedejavnosti, ko se računalnik napaja iz električnega omrežja, je zaustavitev.
-
-      Če nastavitev ni določena, se uporabi privzeta vrednost.
-
-      Če ta pravilnik ni nastavljen, se za vse nastavitve uporabijo privzete vrednosti.</translation>
 <translation id="1435659902881071157">Konfiguracija omrežja na ravni naprave</translation>
 <translation id="2131902621292742709">Časovni zamik zatemnitve zaslona ob napajanju iz akumulatorja</translation>
 <translation id="5781806558783210276">Določa trajanje uporabnikove nedejavnosti, po preteku katere se izvede dejanje ob nedejavnosti, če se naprava napaja iz električnega omrežja.
@@ -1949,6 +1941,5 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Ta pravilnik vpliva na vse vrste zvočnega predvajanja, ne samo na predvajanje iz vgrajenih zvočnikov. Onemogočene so tudi zvočne funkcije za ljudi s posebnimi potrebami. Če uporabnik potrebuje bralnik zaslona, tega pravilnika ne omogočite.
 
       Če je ta nastavitev nastavljena na »true« ali ni določena, lahko uporabniki uporabljajo vse podprte izhodne zvočne funkcije v napravi.</translation>
-<translation id="6517678361166251908">Dovoli preverjanje pristnosti »gnubby«</translation>
 <translation id="4858735034935305895">Dovoli celozaslonski način</translation>
 </translationbundle>

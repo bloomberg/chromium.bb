@@ -10,7 +10,6 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> vahetati valikule <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth on keelatud</translation>
-<translation id="6713285437468012787">Bluetoothi seade „<ph name="DEVICE_NAME"/>” on nüüd seotud ja saadaval kõikidele kasutajatele. Võite sidumise tühistada jaotises Seaded.</translation>
 <translation id="7165320105431587207">Võrgu seadistamine ebaõnnestus</translation>
 <translation id="3775358506042162758">Saate korraga sisse logida kuni kolmele kontole.</translation>
 <translation id="370649949373421643">Luba WiFi</translation>
@@ -20,7 +19,6 @@
 <translation id="595202126637698455">Toimivuse jälgimine on lubatud</translation>
 <translation id="8054466585765276473">Aku tööaja arvutamine.</translation>
 <translation id="7982789257301363584">Võrk</translation>
-<translation id="2303600792989757991">Akna ülevaate sisse- ja väljalülitamine</translation>
 <translation id="5565793151875479467">Puhverserver ...</translation>
 <translation id="938582441709398163">Klaviatuuri ülekate</translation>
 <translation id="4387004326333427325">Autentimissertifikaat lükati kaugühenduse kaudu tagasi</translation>
@@ -81,9 +79,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="3892641579809465218">Sisemine kuva</translation>
 <translation id="7823564328645135659">Pärast seadete sünkroonimist asendati <ph name="FROM_LOCALE"/> keel <ph name="TO_LOCALE"/> keelega.</translation>
 <translation id="3368922792935385530">Ühendatud</translation>
-<translation id="3606978283550408104">Punktkirja ekraanikuva on ühendatud.</translation>
 <translation id="8654520615680304441">Lülita WiFi sisse ...</translation>
-<translation id="6650933572246256093">Bluetoothi seade „<ph name="DEVICE_NAME"/>” küsib luba sidumiseks. Sisestage seadmesse see parool: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Teie sisestusmeetod on nüüd <ph name="INPUT_METHOD_ID"/>.
 Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
@@ -136,7 +132,6 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Võrgu <ph name="NAME"/> aktiveerimine</translation>
-<translation id="4527045527269911712">Bluetoothi seade „<ph name="DEVICE_NAME"/>” küsib luba sidumiseks.</translation>
 <translation id="8814190375133053267">WiFi</translation>
 <translation id="1923539912171292317">Automaatsed klikid</translation>
 <translation id="1398853756734560583">Maksimeeri</translation>
@@ -187,15 +182,11 @@ Serveri teade: <ph name="SERVER_MSG"/></translation>
 <translation id="479989351350248267">otsing</translation>
 <translation id="8454013096329229812">WiFi on sisse lülitatud.</translation>
 <translation id="4872237917498892622">Alt + otsinguklahv või tõstuklahv</translation>
-<translation id="2429753432712299108">Bluetoothi seade „<ph name="DEVICE_NAME"/>” küsib luba sidumiseks. Enne nõustumist veenduge, et selles seadmes oleks kuvatud see parool: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Aku on <ph name="PERCENTAGE"/>% täis.</translation>
 <translation id="2983818520079887040">Seaded...</translation>
 <translation id="3871838685472846647">Mobiil on aktiveeritud</translation>
-<translation id="6452181791372256707">Lükka tagasi</translation>
 <translation id="1195412055398077112">liighälvitus</translation>
-<translation id="607652042414456612">Lähedal olevad Bluetoothi seadmed saavad teie arvuti tuvastada ja see kuvatakse nimega „<ph name="NAME"/>” ja aadressiga <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Riiuli automaatne peitmine</translation>
-<translation id="6732801395666424405">Sertifikaate ei laaditud</translation>
 <translation id="7573962313813535744">Dokkimisrežiim</translation>
 <translation id="8927026611342028580">Ühenduse taotlus</translation>
 <translation id="8300849813060516376">OTASP nurjus</translation>
@@ -208,7 +199,6 @@ Serveri teade: <ph name="SERVER_MSG"/></translation>
 <translation id="6785414152754474415">Aku on <ph name="PERCENTAGE"/>% täis ja seda laetakse.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: aktiveerimine ...</translation>
 <translation id="4895488851634969361">Aku on täis.</translation>
-<translation id="615957422585914272">Ekraanil kuvatava klaviatuuri kuvamine</translation>
 <translation id="5947494881799873997">Ennista</translation>
 <translation id="7593891976182323525">Otsinguklahv või tõstuklahv</translation>
 <translation id="7649070708921625228">Abi</translation>
@@ -216,7 +206,6 @@ Serveri teade: <ph name="SERVER_MSG"/></translation>
 Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="397105322502079400">Arvutamine ...</translation>
 <translation id="158849752021629804">Vajalik koduvõrk</translation>
-<translation id="1013923882670373915">Bluetoothi seade „<ph name="DEVICE_NAME"/>” küsib luba sidumiseks. Sisestage seadmes järgmine PIN-kood: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">Aktiveeri <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP otsing nurjus</translation>
 <translation id="2819276065543622893">Teid logitakse nüüd välja.</translation>
@@ -226,7 +215,6 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="973896785707726617">Selle seansi lõpuni on jäänud <ph name="SESSION_TIME_REMAINING"/>. Teid logitakse automaatselt välja.</translation>
 <translation id="8372369524088641025">Halb WEP-võti</translation>
 <translation id="6636709850131805001">Tundmatu olek</translation>
-<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Muuda tagasi seadele <ph name="FROM_LOCALE"/> (nõuab taaskäivitust)</translation>
 <translation id="8103386449138765447">SMS-id: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (kõnena esitatud tagasiside) on lubatud.

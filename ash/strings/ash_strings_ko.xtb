@@ -10,7 +10,6 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/>(이)가 <ph name="ROTATION"/>(으)로 회전되었습니다.</translation>
 <translation id="9074739597929991885">블루투스</translation>
 <translation id="2268130516524549846">블루투스를 사용 안 함</translation>
-<translation id="6713285437468012787">블루투스 기기 '<ph name="DEVICE_NAME"/>'이(가) 페어링되어 이제 모든 사용자가 사용할 수 있습니다. 설정에서 이 페어링을 삭제할 수 있습니다.</translation>
 <translation id="7165320105431587207">네트워크를 설정하지 못했습니다.</translation>
 <translation id="3775358506042162758">멀티 로그인 시 계정은 최대 3개까지만 사용할 수 있습니다.</translation>
 <translation id="370649949373421643">Wi-Fi 사용</translation>
@@ -20,7 +19,6 @@
 <translation id="595202126637698455">성능 추적 사용 중</translation>
 <translation id="8054466585765276473">배터리 시간 계산 중</translation>
 <translation id="7982789257301363584">네트워크</translation>
-<translation id="2303600792989757991">창 전환 개요</translation>
 <translation id="5565793151875479467">프록시...</translation>
 <translation id="938582441709398163">키보드 오버레이</translation>
 <translation id="4387004326333427325">인증서가 원격으로 거부됨</translation>
@@ -81,9 +79,7 @@
 <translation id="3892641579809465218">내부 디스플레이</translation>
 <translation id="7823564328645135659">설정을 동기화한 뒤 Chrome의 언어가 '<ph name="FROM_LOCALE"/>'에서 '<ph name="TO_LOCALE"/>'(으)로 변경되었습니다.</translation>
 <translation id="3368922792935385530">연결됨</translation>
-<translation id="3606978283550408104">점자 디스플레이가 연결되었습니다.</translation>
 <translation id="8654520615680304441">Wi-Fi 사용...</translation>
-<translation id="6650933572246256093">블루투스 기기 '<ph name="DEVICE_NAME"/>'에서 페어링 허가를 요청합니다. 해당 기기에서 다음 패스키를 입력하세요. <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">입력 방법이 <ph name="INPUT_METHOD_ID"/>(으)로 변경되었습니다.
 전환하려면 Shift+Alt를 누르세요.</translation>
@@ -136,7 +132,6 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> 활성화 중</translation>
-<translation id="4527045527269911712">블루투스 기기 '<ph name="DEVICE_NAME"/>'에서 페어링 허가를 요청합니다.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">자동 클릭</translation>
 <translation id="1398853756734560583">최대화</translation>
@@ -187,15 +182,11 @@
 <translation id="479989351350248267">검색</translation>
 <translation id="8454013096329229812">Wi-Fi가 켜져 있습니다.</translation>
 <translation id="4872237917498892622">Alt+검색 또는 Shift 키</translation>
-<translation id="2429753432712299108">블루투스 기기 '<ph name="DEVICE_NAME"/>'에서 페어링 허가를 요청합니다. 허가하기 전에 다음 패스키가 기기에 표시되는지 확인하세요. <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">배터리가 <ph name="PERCENTAGE"/>% 남았습니다.</translation>
 <translation id="2983818520079887040">설정...</translation>
 <translation id="3871838685472846647">휴대전화 활성화</translation>
-<translation id="6452181791372256707">거부</translation>
 <translation id="1195412055398077112">오버스캔</translation>
-<translation id="607652042414456612">내 컴퓨터가 근처 블루투스 기기에서 검색할 수 있도록 설정되어 있으며 주소(<ph name="ADDRESS"/>)와 함께 '<ph name="NAME"/>'(으)로 표시됩니다.</translation>
 <translation id="112308213915226829">실행기 자동 숨김</translation>
-<translation id="6732801395666424405">인증서를 로드하지 못했습니다.</translation>
 <translation id="7573962313813535744">고정 모드</translation>
 <translation id="8927026611342028580">연결 요청됨</translation>
 <translation id="8300849813060516376">OTASP 실패</translation>
@@ -208,7 +199,6 @@
 <translation id="6785414152754474415">배터리가 <ph name="PERCENTAGE"/>% 충전되었으며 충전 중입니다.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: 활성화 중...</translation>
 <translation id="4895488851634969361">배터리 충전이 완료되었습니다.</translation>
-<translation id="615957422585914272">터치 키보드 표시</translation>
 <translation id="5947494881799873997">되돌리기</translation>
 <translation id="7593891976182323525">검색 또는 Shift 키</translation>
 <translation id="7649070708921625228">도움말</translation>
@@ -216,7 +206,6 @@
 취소하려면 검색 또는 Shift 키를 누릅니다.</translation>
 <translation id="397105322502079400">계산 중...</translation>
 <translation id="158849752021629804">홈 네크워크가 필요합니다.</translation>
-<translation id="1013923882670373915">블루투스 기기 '<ph name="DEVICE_NAME"/>'에서 페어링 허가를 요청합니다. 기기에서 다음 PIN 코드를 입력하세요. <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/> 활성화</translation>
 <translation id="5864471791310927901">DHCP 조회 실패</translation>
 <translation id="2819276065543622893">지금 로그아웃됩니다.</translation>
@@ -226,7 +215,6 @@
 <translation id="973896785707726617">이 세션은 <ph name="SESSION_TIME_REMAINING"/> 후에 종료되어 자동으로 로그아웃됩니다.</translation>
 <translation id="8372369524088641025">잘못된 WEP 키</translation>
 <translation id="6636709850131805001">인식할 수 없는 상태</translation>
-<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">'<ph name="FROM_LOCALE"/>'(으)로 다시 변경(다시 시작해야 함)</translation>
 <translation id="8103386449138765447">SMS 메시지: <ph name="MESSAGE_COUNT"/>개</translation>
 <translation id="7097613348211027502">ChromeVox(음성 피드백)를 사용하도록 설정했습니다.

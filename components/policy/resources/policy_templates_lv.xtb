@@ -25,7 +25,6 @@
       ierakstīšana būs pieejama tikai vietrāžiem URL, kas konfigurēti sarakstā AudioCaptureAllowedUrls.
 
       Šī politika attiecas uz visiem audio ievades veidiem, nevis tikai uz iebūvēto mikrofonu.</translation>
-<translation id="7267809745244694722">Multivides taustiņu noklusējuma darbības maiņa, lai tie darbotos kā funkciju taustiņi</translation>
 <translation id="9150416707757015439">Šī politika ir izbeigta. Tās vietā lietojiet IncognitoModeAvailability.
       Iespējo produktā <ph name="PRODUCT_NAME"/> inkognito režīmu.
 
@@ -646,6 +645,7 @@
 <translation id="6417861582779909667">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām nav atļauts iestatīt sīkfailus.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultCookiesSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
+<translation id="5457296720557564923">Ļauj lapām piekļūt JavaScript atmiņas lietošanas statistikai. Ar šo iestatījumu atmiņas statistika no paneļa Izstrādātāju rīku profili ir pieejama pašai tīmekļa lapai.</translation>
 <translation id="5776485039795852974">Vaicāt ikreiz, kad vietne vēlas rādīt paziņojumus darbvirsmā</translation>
 <translation id="5047604665028708335">Atļaut piekļuvi vietnēm, kas nav iekļautas satura pakotnēs.</translation>
 <translation id="5052081091120171147">Šī politika (ja tā ir iespējota) liek importēt pārlūkošanas vēsturi no pašreizējā noklusējuma pārlūka. Ja šī politika ir iespējota, tā arī maina importēšanas dialoglodziņu.
@@ -657,12 +657,6 @@
 <translation id="7132877481099023201">Vietrāži URL, kuriem tiks nodrošināta piekļuve video tveršanas ierīcēm bez uzvednes parādīšanas.</translation>
 <translation id="8947415621777543415">Ziņot par ierīces atrašanās vietu</translation>
 <translation id="1655229863189977773">Iestatīt diska kešatmiņas lielumu baitos</translation>
-<translation id="3358275192586364144">Pārlūkā <ph name="PRODUCT_NAME"/> tiek iespējota WPAD optimizācija, un lietotājiem tiek liegta iespēja mainīt šo iestatījumu.
-
-      Ja šī politika tiks iespējota, pārlūkā Chrome samazināsies to WPAD serveru gaidīšanas laiks, kuru pamatā ir sistēma DNS.
-
-      Ja šī politika vispār netiks iestatīta, tā tiks iespējota un lietotāji nevarēs
-      to mainīt.</translation>
 <translation id="6376842084200599664">Ļauj norādīt to paplašinājumu sarakstu, kuri ir jāinstalē fonā, lietotājam neveicot nekādas darbības.
 
           Katrs saraksta vienums ir virkne, kurā ir ietverts paplašinājuma ID un atjaunināšanas URL, kas ir atdalīti ar semikolu (<ph name="SEMICOLON"/>). Paplašinājuma ID ir 32 burtu virkne, kas ir redzama, piemēram, sadaļā <ph name="CHROME_EXTENSIONS_LINK"/> (izstrādātāja režīmā). Atjaunināšanas vietrādī URL ir jāietver norāde uz atjaunināšanas manifesta XML dokumentu, kā tas ir aprakstīts šeit: <ph name="LINK_TO_EXTENSION_DOC1"/>. Ņemiet vērā, ka šīs politikas ietvaros iestatītais atjaunināšanas URL tiek izmantots tikai sākotnējai instalēšanai. Turpmākajiem paplašinājuma atjauninājumiem tiks lietots paplašinājuma manifestā norādītais atjaunināšanas URL.
@@ -779,7 +773,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="1679420586049708690">Publiska sesija, kurā izmantot automātisko pieteikšanos</translation>
 <translation id="7625444193696794922">Norāda atbrīvošanas kanālu, pie kura jābūt piesaistītai šai ierīcei.</translation>
 <translation id="2552966063069741410">Laika josla</translation>
-<translation id="3788662722837364290">Barošanas pārvaldības iestatījumi, kad lietotājs ir neaktīvs</translation>
 <translation id="2240879329269430151">Ļauj iestatīt, vai vietnēm ir atļauts rādīt uznirstošos logus. Uznirstošo logu rādīšana var tikt atļauta visām vietnēm vai noraidīta visām vietnēm.
 
           Ja šī politika nav iestatīta, tiks lietota politika BlockPopups un lietotājs to varēs mainīt.</translation>
@@ -862,6 +855,7 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="8102913158860568230">Noklusējuma Mediastream iestatījums</translation>
 <translation id="6641981670621198190">Atspējo 3D grafikas API atbalstu</translation>
 <translation id="1265053460044691532">Ierobežojiet laiku, kad autentificēts lietotājs, izmantojot SAML, var pieteikties bezsaistē.</translation>
+<translation id="7929480864713075819">Iespējot pārskatu atmiņas informāciju (JS kaudzes lielumu) lapai</translation>
 <translation id="5703863730741917647">Darbība, kas ir jāveic, kad ir aizritējis laiks līdz dīkstāvei.
 
           Ņemiet vērā, ka šī politika ir novecojusi un vēlāk tiks noņemta.
@@ -974,7 +968,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="4057110413331612451">Atļaut korporatīvajam lietotājam būt tikai primārajam lietotājam vairākprofilu sesijā</translation>
 <translation id="5365946944967967336">Rīkjoslā parāda pogu Sākums</translation>
 <translation id="3709266154059827597">Konfigurē paplašinājumu instalēšanas melno sarakstu</translation>
-<translation id="1933378685401357864">Fona tapetes attēls</translation>
 <translation id="8451988835943702790">Jaunas cilnes lapu izmanto kā sākumlapu</translation>
 <translation id="4617338332148204752">Izlaist metataga pārbaudīšanu spraudnī <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="8469342921412620373">Iespējo noklusējuma meklētājprogrammas lietošanu.
@@ -998,11 +991,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 
           Ja šī politika nav iestatīta, lielais kursors sākotnēji ir atspējots, taču lietotājs var jebkurā brīdī to iespējot.</translation>
 <translation id="2633084400146331575">Iespējot izrunu</translation>
-<translation id="687046793986382807">Šī politika kopš <ph name="PRODUCT_NAME"/> versijas 35 vairs netiek izmantota.
-
-      Neatkarīgi no opcijas vērtības joprojām tiek sniegta informācija par katras lapas patērēto atmiņu, taču informācijas daudzums tiek
-      kvantēts, un atjauninājumu biežums drošības nolūkā tiek ierobežots. Lai iegūtu precīzus reāllaika datus,
-      lūdzu, izmantojiet tādus rīkus kā Telemetry.</translation>
 <translation id="8731693562790917685">Satura iestatījumi ļauj norādīt, kā jārīkojas ar noteikta veida saturu (piem., sīkfailiem, attēliem vai JavaScript).</translation>
 <translation id="2411919772666155530">Bloķēt paziņojumus šajās vietnēs</translation>
 <translation id="6923366716660828830">Norāda noklusējuma meklētājprogrammas nosaukumu. Ja nekas nav ievadīts vai šī politika nav iestatīta, tiks lietots ar meklēšanas URL norādītais saimniekdatora nosaukums.
@@ -1014,7 +1002,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 
           Ja politikai ir iestatīta vērtība “false”, ekrāna aktivizēšanas bloķēšana tiks ignorēta.</translation>
 <translation id="467236746355332046">Atbalstītās funkcijas</translation>
-<translation id="5447306928176905178">Lapas patērētās atmiņas uzskaites (JS kaudzes izmērs) iespējošana (izmantošana pārtraukta)</translation>
 <translation id="7632724434767231364">GSSAPI bibliotēkas nosaukums</translation>
 <translation id="3038323923255997294">Turpināt lietotņu izpildi fonā, kad produkts <ph name="PRODUCT_NAME"/> ir aizvērts</translation>
 <translation id="8909280293285028130">Tiek norādīts laika periods, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā ekrāns tiek bloķēts, ja ierīce darbojas ar maiņstrāvu.
@@ -1063,17 +1050,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
           Šī politika nav obligāta. Ja tā nav iestatīta, dinamiskās meklēšanas pieprasījums tiks nosūtīts, izmantojot metodi instant GET.
 
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
-<translation id="6095999036251797924">Norāda lietotāja neaktivitātes laiku, pēc kura ekrāns tiek bloķēts, kad ierīce darbojas ar maiņstrāvas barošanu vai akumulatoru.
-
-          Ja laikam ir iestatīta par nulli lielāka vērtība, tas apzīmē, cik ilgi lietotājam ir jābūt neaktīvam, pirms operētājsistēmā <ph name="PRODUCT_OS_NAME"/> tiek bloķēts ekrāns.
-
-          Ja kā laika vērtība ir iestatīta nulle, ekrāns operētājsistēmā <ph name="PRODUCT_OS_NAME"/> netiek bloķēts, ja lietotājs kļūst neaktīvs.
-
-          Ja laikam nav iestatīta nekāda vērtība, tiek izmantots noklusējuma laika periods.
-
-          Ieteicamais veids, kā bloķēt ekrānu pēc noteikta neaktivitātes perioda, ir iespējot ekrāna bloķēšanu, kad tiek apturēta darbība, un iestatīt operētājsistēmā <ph name="PRODUCT_OS_NAME"/> darbības apturēšanu pēc neaktivitātes atlikšanas. Šī politika ir jāizmanto tikai tad, ja ekrāns jābloķē ievērojami agrāk par darbības apturēšanu vai ja nav vēlams apturēt darbību neaktivitātes laikā.
-
-          Politikas vērtība ir jānorāda milisekundēs. Vērtības vienmēr būs mazākas nekā neaktivitātes atlikšana.</translation>
 <translation id="1454846751303307294">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām nav atļauts izpildīt JavaScript.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultJavaScriptSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
@@ -1106,32 +1082,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
       Ja šai politikai ir iestatīta vērtība “False” vai politika nav konfigurēta, ikonas ir redzamas.</translation>
 <translation id="5085647276663819155">Atspējot drukas priekšskatījumu</translation>
 <translation id="8672321184841719703">Automātiskā atjauninājuma vēlamā versija</translation>
-<translation id="553658564206262718">Konfigurējiet barošanas pārvaldības iestatījumus gadījumiem, kad lietotājs kļūst neaktīvs.
-
-          Šī politika nosaka vairākus iestatījumus barošanas pārvaldības stratēģijai, kura tiek iespējota pēc tam, kad lietotājs ir kļuvis neaktīvs.
-
-          Pastāv četri darbību veidi:
-          * Ekrāns tiks aptumšots, ja lietotājs būs neaktīvs tik ilgi, cik nosaka |ScreenDim|.
-          * Ekrāns tiks izslēgts, ja lietotājs būs neaktīvs tik ilgi, cik nosaka |ScreenOff|.
-          * Ja lietotājs būs neaktīvs tik ilgi, cik nosaka |IdleWarning|, tiks parādīts brīdinājuma dialogs ar paziņojumu, ka saistībā ar neaktivitāti tūlīt tiks veikta kāda no darbībām.
-          * |IdleAction| norādītā darbība tiks veikta, ja lietotājs būs neaktīvs tik ilgi, cik nosaka |Idle|.
-
-          Katrai iepriekš norādītajai darbībai atlikšana ir jānorāda milisekundēs, un, lai aktivizētu attiecīgo darbību, tai ir jāiestata par nulli lielāka vērtība. Šajā gadījumā atlikšana ir iestatīta uz nulli, un operētājsistēmā <ph name="PRODUCT_OS_NAME"/> netiks veikta attiecīgā darbība.
-
-          Neiestatot laiku iepriekš minētajiem atlikšanas iestatījumiem, tiks izmantots noklusējuma laiks.
-
-          Ņemiet vērā, ka |ScreenDim| vērtības vienmēr būs mazākas par |ScreenOff| vai vienādas ar to, savukārt |ScreenOff| un |IdleWarning| vērtība vienmēr būs mazāka par |Idle| vai vienāda ar to.
-
-          |IdleAction| var būt viena no četrām iespējamām darbībām:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          Ja |IdleAction| vērtība nav iestatīta, tiek izmantota noklusējuma darbība — apturēšana.
-
-          Ir pieejami arī atsevišķi iestatījumi maiņstrāvas barošanai un akumulatoram.
-          </translation>
 <translation id="1689963000958717134">Ļauj pārsūtīšanas tīkla konfigurāciju izmantot visiem ierīces <ph name="PRODUCT_OS_NAME"/> lietotājiem. Tīkla konfigurācija ir JSON formatēta virkne, kā tas definēts šeit aprakstītajā atvērtā tīkla konfigurācijas formātā: <ph name="ONC_SPEC_URL"/>.</translation>
 <translation id="6699880231565102694">Divu faktoru autentifikācijas iespējošana attālās piekļuves saimniekdatoriem</translation>
 <translation id="2030905906517501646">Noklusējuma meklētājprogrammas atslēgvārds</translation>
@@ -1346,32 +1296,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 
       Neiestatot šo politiku, <ph name="PRODUCT_NAME"/> izmantos noklusējuma vērtību (5000 milisekundes).</translation>
 <translation id="8099880303030573137">Aizkave līdz dīkstāvei, ja ierīce darbojas ar akumulatora jaudu</translation>
-<translation id="1709037111685927635">Konfigurējiet fona tapetes attēlu.
-
-      Izmantojot šo politiku, var konfigurēt fona tapetes attēlu, kas tiek rādīts darbvirsmā un lietotāja pieteikšanās ekrāna fonā. Politika tiek iestatīta, norādot vietrādi URL, no kura <ph name="PRODUCT_OS_NAME"/> var lejupielādēt fona tapetes attēlu un kriptogrāfisku jaucējkodu, kas tiek izmantots lejupielādes integritātes pārbaudei. Attēlam jābūt JPEG formātā, un tā lielums nedrīkst pārsniegt 16 MB. Vietrādim URL ir jābūt pieejamam bez autentificēšanas.
-
-      Fona tapetes attēls tiek lejupielādēts un saglabāts kešatmiņā. Tas tiks lejupielādēts atkārtoti, kad mainīsies URL vai jaucējkods.
-
-      Politika ir jānorāda kā virkne, kas attēlo URL un jaucējkodu JSON formātā atbilstoši tālāk minētajai shēmai.
-      {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;url&quot;: {
-            &quot;description&quot;: &quot;Vietrādis URL, no kura var lejupielādēt fona tapetes attēlu.&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          },
-          &quot;hash&quot;: {
-            &quot;description&quot;: &quot;Fona tapetes attēla SHA-256 jaucējkods.&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          }
-        }
-      }
-
-      Ja šī politika ir iestatīta, <ph name="PRODUCT_OS_NAME"/> lejupielādēs un izmantos fona tapetes attēlu.
-
-      Ja iestatīsiet šo politiku, lietotāji to nevarēs mainīt vai ignorēt.
-
-      Ja politika vispār netiks iestatīta, lietotājs varēs izvēlēties attēlu, kas tiks parādīts darbvirsmā un pieteikšanās ekrāna fonā.</translation>
 <translation id="2761483219396643566">Aizkave līdz dīkstāves brīdinājumam, ja ierīce darbojas ar akumulatora jaudu</translation>
 <translation id="6281043242780654992">Konfigurējiet vietējās ziņojumapmaiņas politikas. Melnajā sarakstā iekļauto vietējās ziņojumapmaiņas saimniekdatoru darbība netiks atļauta, ja vien tie nebūs iekļauti baltajā sarakstā.</translation>
 <translation id="1468307069016535757">Iestatiet augsta kontrasta pieejamības funkcijas noklusējuma stāvokli pieteikšanās ekrānā.
@@ -1510,9 +1434,93 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
       Ja šis iestatījums ir iespējots vai atspējots, lietotāji nevar mainīt vai ignorēt šo iestatījumu.
 
       Ja šī politika nav iestatīta, lietotājs varēs izvēlēties, izmantot vai neizmantot datu saspiešanas starpniekservera funkciju.</translation>
-<translation id="2170233653554726857">WPAD optimizācijas iespējošana</translation>
 <translation id="7424751532654212117">Atspējoto spraudņu saraksta izņēmumu saraksts</translation>
 <translation id="6233173491898450179">Iestata lejupielāžu direktoriju</translation>
+<translation id="78524144210416006">Konfigurējiet strāvas padeves pārvaldību <ph name="PRODUCT_OS_NAME"/> pieteikšanās ekrānā.
+
+      Izmantojot šo politiku, varat konfigurēt, kā operētājsistēma <ph name="PRODUCT_OS_NAME"/> reaģē, ja, kamēr tiek rādīts pieteikšanās ekrāns, noteiktu laiku lietotājs neveic nekādas darbības. Politika kontrolē vairākus iestatījumus. Atsevišķai semantikai un vērtību diapazoniem skatiet atbilstošās politikas, ar kurām sesijā tiek pārvaldīta strāvas padeves pārvaldība. Vienīgās novirzes no šīm politikām ir šādas:
+      * darbība, kas jāveic dīkstāves laikā vai ekrāna aizvēršanas gadījumā, nedrīkst būt sesijas beigšana;
+      * noklusējuma darbība, kas tiek veikta dīkstāves laikā, kamēr tiek izmantota maiņstrāva, ir ierīces izslēgšana.
+
+      Politika ir jānorāda kā virkne, kurā atsevišķie iestatījumi ir norādīti JSON formātā un kas atbilst tālāk norādītajai shēmai.
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;AC&quot;: {
+            &quot;description&quot;: &quot;Strāvas padeves pārvaldības iestatījumi, kas ir attiecināmi tikai tad, ja tiek izmantota maiņstrāva&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Laika posms (milisekundēs), kurā lietotājs neveic ievadi un pēc kura tiek aptumšots ekrāns&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Laika posms (milisekundēs), kurā lietotājs neveic ievadi un pēc kura tiek izslēgts ekrāns&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Laika posms (milisekundēs), kurā lietotājs neveic ievadi un pēc kura tiek aktivizēta dīkstāve&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Darbība, kas ir jāveic, kad ir aizritējis laiks līdz dīkstāvei&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;Battery&quot;: {
+            &quot;description&quot;: &quot;Strāvas padeves pārvaldības iestatījumi, kas ir attiecināmi tikai tad, ja tiek izmantota akumulatora jauda&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Laika posms (milisekundēs), kurā lietotājs neveic ievadi un pēc kura tiek aptumšots ekrāns&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Laika posms (milisekundēs), kurā lietotājs neveic ievadi un pēc kura tiek izslēgts ekrāns&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Laika posms (milisekundēs), kurā lietotājs neveic ievadi un pēc kura tiek aktivizēta dīkstāve&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Darbība, kas ir jāveic, kad ir aizritējis laiks līdz dīkstāvei&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;LidCloseAction&quot;: {
+            &quot;description&quot;: &quot;Darbība, kas ir jāveic, kad tiek aizvērts vāks&quot;,
+            &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+          },
+          &quot;UserActivityScreenDimDelayScale&quot;: {
+            &quot;description&quot;: &quot;Aizkaves līdz ekrāna aptumšošanai procentuālā vērtība, ja ekrāna aptumšošanas laikā vai drīzumā pēc ekrāna izslēgšanas tiek novērota lietotāja darbība&quot;,
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 100
+          }
+        }
+      }
+
+      Ja iestatījums netiek norādīts, tiek izmantota noklusējuma vērtība.
+
+      Ja politikas iestatījums ir noņemts, visiem iestatījumiem tiek izmantotas noklusējuma vērtības.</translation>
 <translation id="8908294717014659003">Ļauj iestatīt, vai vietnēm ir atļauts iegūt piekļuvi multivides tveršanas ierīcēm. Piekļuve multivides tveršanas ierīcēm var būt atļauta pēc noklusējuma, vai lietotājam var tikt parādīts atbilstošs jautājums katru reizi, kad vietne vēlas iegūt piekļuvi multivides tveršanas ierīcēm.
 
           Ja šī politika nav iestatīta, tiks izmantota politika PromptOnAccess un lietotājs varēs to mainīt.</translation>
@@ -1547,9 +1555,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
       Ja šī politika nav iestatīta, tiks izmantots noklusējuma kešatmiņas lielums, kuru lietotājs varēs ignorēt, izmantojot atzīmi “--media-cache-size”.</translation>
 <translation id="5142301680741828703">Norādītās URL struktūras vienmēr tiek renderētas produktā <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Konfigurē paplašinājumu instalēšanas balto sarakstu</translation>
-<translation id="5893553533827140852">Ja šis iestatījums ir iespējots, Gnubby autentifikācijas pieprasījumiem tiks izmantoti starpniekserveri attālā saimniekdatora tīklā.
-
-          Ja šis iestatījums ir atspējots vai nav konfigurēts, Gnubby autentifikācijas pieprasījumiem netiks izmantoti starpniekserveri.</translation>
 <translation id="187819629719252111">Ļauj piekļūt datora lokālajiem failiem, ļaujot produktam <ph name="PRODUCT_NAME"/> rādīt failu atlases dialoglodziņus.
 
       Ja šis iestatījums ir iespējots, lietotāji var atvērt failu atlases dialoglodziņus, kā ierasts.
@@ -1638,11 +1643,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 
           Ja politika RestoreOnStartup ir iestatīta vietrāžu URL atjaunošanai no iepriekšējām sesijām, šī politika netiek ņemta vērā un sīkfaili tiks pastāvīgi saglabāti šīm vietnēm.</translation>
 <translation id="2098658257603918882">Iespējo lietošanas un ar avārijām saistītu datu ziņošanu</translation>
-<translation id="4633786464238689684">Augšējās rindas taustiņu noklusējuma darbība tiek mainīta, un tie tiek izmantoti kā funkciju taustiņi.
-
-          Ja šai politikai tiek iestatīta vērtība “true”, tastatūras augšējā taustiņu rinda pēc noklusējuma izpildīs funkciju taustiņu komandas. Lai tos atkal izmantotu kā multivides taustiņus, jānospiež meklēšanas taustiņš.
-
-          Ja šai politikai tiek iestatīta vērtība “false” vai netiek iestatīta vispār, tastatūra pēc noklusējuma izpildīs multivides taustiņu komandas, savukārt funkciju taustiņu komandas tiks izpildītas, kad būs nospiests meklēšanas taustiņš.</translation>
 <translation id="2324547593752594014">Atļauj pierakstīšanos pārlūkā Chrome</translation>
 <translation id="172374442286684480">Atļauja visām vietnēm iestatīt lokālus datus</translation>
 <translation id="1151353063931113432">Atļauj attēlus šajās vietnēs</translation>
@@ -1698,7 +1698,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 
           Politika ExtensionInstallBlacklist ir svarīgāka par šo politiku. Tas nozīmē, ka melnajā sarakstā esošs paplašinājums netiks instalēts, pat ja tas atrodas šajā sarakstā minētā vietnē.</translation>
 <translation id="2113068765175018713">Ierobežot ierīces darbspējas laiku, veicot automātisku atsāknēšanu</translation>
-<translation id="4224610387358583899">Ekrāna bloķēšanas atlikšana</translation>
 <translation id="7848840259379156480">Ļauj konfigurēt noklusējuma HTML renderētāju, ja ir instalēts produkts <ph name="PRODUCT_FRAME_NAME"/>.
       Atbilstoši noklusējuma iestatījumam renderēšanu izpilda saimniekdatora pārlūks, taču
       pēc izvēles šo iestatījumu var ignorēt un likt, lai HTML lappuses pēc noklusējuma tiktu renderētas produktā <ph name="PRODUCT_FRAME_NAME"/>.</translation>
@@ -1811,14 +1810,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
       Politikā ir jāiestata vietrādis URL, kur operētājsistēma <ph name="PRODUCT_OS_NAME"/> var lejupielādēt pakalpojumu sniegšanas noteikumus. Tiem ir jābūt rakstītiem kā vienkāršam tekstam, kas jārāda kā MIME veids “teksts/vienkāršs”. Iezīmēšana nav atļauta.</translation>
 <translation id="2623014935069176671">Gaidīt sākotnējo lietotāja darbību</translation>
 <translation id="2660846099862559570">Nekad nelietot starpniekserveri</translation>
-<translation id="1956493342242507974">Konfigurējiet barošanas pārvaldību operētājsistēmas <ph name="PRODUCT_OS_NAME"/> pieteikšanās ekrānā.
-
-      Šī politika ļauj konfigurēt, kā operētājsistēma <ph name="PRODUCT_OS_NAME"/> darbosies, ja lietotājs noteiktā laika periodā neveiks nekādas darbības, kamēr tiek rādīts pieteikšanās ekrāns. Politika nosaka vairākus iestatījumus. Šo iestatījumu nozīmi un vērtību diapazonus skatiet atbilstošajās politikās, kas regulē barošanas pārvaldību sesijas ietvaros. Vienīgās novirzes no šīm politikām ir šādas:
-      * darbības, kas jāveic dīkstāves laikā vai tad, kad tiek aizvērts vāks, nevar ietvert sesijas beigšanu;
-      * noklusējuma darbība, kas jāveic dīkstāves laikā, ja ierīce tiek barota no maiņstrāvas tīkla, ir izslēgšana.
-
-      Ja iestatījums netiek norādīts, tiek izmantota noklusējuma vērtība.
-      Ja šī politika vispār netiek iestatīta, visiem iestatījumiem tiek izmantotas noklusējuma vērtības.</translation>
 <translation id="1435659902881071157">Ierīces līmeņa tīkla konfigurācija</translation>
 <translation id="2131902621292742709">Aizkave līdz ekrāna aptumšošanai, ja ierīce darbojas ar akumulatora jaudu</translation>
 <translation id="5781806558783210276">Tiek norādīts laika periods, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā rodas dīkstāve, ja ierīce darbojas ar akumulatora jaudu.
@@ -1940,6 +1931,5 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
       Šī politika ietekmē ne tikai iebūvētos skaļruņus, bet arī visu veidu audio izvadi. Neiespējojiet šo politiku, ja lietotājs izmanto ekrāna lasītāju.
 
       Ja ir iestatīta vērtība Patiesa vai iestatījums nav konfigurēts, lietotāji savā ierīcē var izmantot visas atbalstītās audio izvades iespējas.</translation>
-<translation id="6517678361166251908">Atļaut Gnubby autentifikāciju</translation>
 <translation id="4858735034935305895">Atļaut pilnekrāna režīmu</translation>
 </translationbundle>

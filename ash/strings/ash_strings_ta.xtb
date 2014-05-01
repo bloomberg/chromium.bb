@@ -10,7 +10,6 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> <ph name="ROTATION"/> ஆகச் சுழற்றப்பட்டது</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth முடக்கப்பட்டது</translation>
-<translation id="6713285437468012787">Bluetooth சாதனம் &quot;<ph name="DEVICE_NAME"/>&quot; ஆனது இணைக்கப்பட்டது மற்றும் இப்போது எல்லா பயனர்களுக்கும் கிடைக்கக்கூடியதாக உள்ளது. அமைப்புகளைப் பயன்படுத்தி இந்த இணைத்தலை நீங்கள் அகற்றலாம்.</translation>
 <translation id="7165320105431587207">பிணையத்தை உள்ளமைப்பது தோல்வியடைந்தது</translation>
 <translation id="3775358506042162758">பல உள்நுழைவில் மூன்று கணக்குகள் வரை மட்டுமே வைத்திருக்கலாம்.</translation>
 <translation id="370649949373421643">Wi-fi ஐ இயக்கு</translation>
@@ -20,7 +19,6 @@
 <translation id="595202126637698455">செயல்திறனைத் தடமறிதல் இயக்கப்பட்டுள்ளது</translation>
 <translation id="8054466585765276473">பேட்டரி நேரத்தைக் கணக்கிடுகிறது.</translation>
 <translation id="7982789257301363584">நெட்வொர்க்</translation>
-<translation id="2303600792989757991">சாளர மேலோட்டத்தை நிலைமாற்று</translation>
 <translation id="5565793151875479467">ப்ராக்ஸி...</translation>
 <translation id="938582441709398163">விசைப்பலகை மேல்தோற்றம்</translation>
 <translation id="4387004326333427325">அங்கீகரிப்புச் சான்றிதழ் தொலைநிலையில் நிராகரிக்கப்பட்டது</translation>
@@ -81,9 +79,7 @@
 <translation id="3892641579809465218">இணையக் காட்சி</translation>
 <translation id="7823564328645135659">உங்கள் அமைப்புகளை ஒத்திசைத்த பிறகு, மொழியானது &quot;<ph name="FROM_LOCALE"/>&quot; இலிருந்து &quot;<ph name="TO_LOCALE"/>&quot; க்கு மாற்றப்பட்டுள்ளது.</translation>
 <translation id="3368922792935385530">இணைக்கப்பட்டது</translation>
-<translation id="3606978283550408104">பிரெய்ல் திரை இணைக்கப்பட்டது.</translation>
 <translation id="8654520615680304441">Wi-Fi ஐ இயக்கு...</translation>
-<translation id="6650933572246256093">Bluetooth சாதனம் &quot;<ph name="DEVICE_NAME"/>&quot; இணைப்பதற்கான அனுமதியை விரும்புகிறது. அந்தச் சாதனத்தில் இந்தக் கடவுச்சொல்லை உள்ளிடவும்: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">உங்கள் உள்ளீட்டு முறையானது <ph name="INPUT_METHOD_ID"/> க்கு மாற்றப்பட்டது.
 மாற்ற Shift + Alt ஐ அழுத்தவும்.</translation>
@@ -136,7 +132,6 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> ஐச் செயல்படுத்துகிறது</translation>
-<translation id="4527045527269911712">Bluetooth சாதனம் &quot;<ph name="DEVICE_NAME"/>&quot;, இணைப்பதற்கான அனுமதியை விரும்புகிறது.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">தன்னியக்க கிளிக்குகள்</translation>
 <translation id="1398853756734560583">பெரிதாக்கு</translation>
@@ -187,15 +182,11 @@
 <translation id="479989351350248267">தேடு</translation>
 <translation id="8454013096329229812">Wi-Fi இயக்கத்தில் உள்ளது.</translation>
 <translation id="4872237917498892622">Alt+Search அல்லது Shift</translation>
-<translation id="2429753432712299108">Bluetooth சாதனம் &quot;<ph name="DEVICE_NAME"/>&quot;, இணைப்பதற்கான அனுமதியை விரும்புகிறது. ஏற்றுக்கொள்வதற்கு முன்னர், இந்தக் கடவுச்சொல் அந்தச் சாதனத்தில் காண்பிக்கப்பட்டது என்பதை உறுதிப்படுத்தவும்: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">பேட்டரி <ph name="PERCENTAGE"/>% நிரம்பியது.</translation>
 <translation id="2983818520079887040">அமைப்புகள்...</translation>
 <translation id="3871838685472846647">செல்லுலர் செயல்படுத்தப்பட்டது</translation>
-<translation id="6452181791372256707">நிராகரி</translation>
 <translation id="1195412055398077112">ஓவர்ஸ்கேன்</translation>
-<translation id="607652042414456612">உங்கள் கணினி அருகிலுள்ள Bluetooth சாதனங்களைக் கண்டறியக்கூடியது, மேலும் <ph name="ADDRESS"/> என்ற முகவரியுடன் &quot;<ph name="NAME"/>&quot; என்ற பெயரில் தோன்றும்</translation>
 <translation id="112308213915226829">அடுக்கைத் தானாக மறை</translation>
-<translation id="6732801395666424405">சான்றிதழ்கள் ஏற்றப்படவில்லை</translation>
 <translation id="7573962313813535744">டாக் செய்யப்பட்ட பயன்முறை</translation>
 <translation id="8927026611342028580">இணைக்க கோரப்பட்டது</translation>
 <translation id="8300849813060516376">OTASP தோல்வியுற்றது</translation>
@@ -208,7 +199,6 @@
 <translation id="6785414152754474415">பேட்டரி <ph name="PERCENTAGE"/>% நிரம்பியது, மேலும் சார்ஜ் ஆகிறது.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: செயல்படுத்துகிறது...</translation>
 <translation id="4895488851634969361">பேட்டரி நிரம்பியது.</translation>
-<translation id="615957422585914272">ஆன்-ஸ்கிரீன் விசைப்பலகையைக் காட்டு</translation>
 <translation id="5947494881799873997">மாற்றியமை</translation>
 <translation id="7593891976182323525">Search அல்லது Shift</translation>
 <translation id="7649070708921625228">உதவி</translation>
@@ -216,7 +206,6 @@
 ரத்துசெய்ய Search அல்லது Shift ஐ அழுத்தவும்.</translation>
 <translation id="397105322502079400">கணக்கிடுகிறது...</translation>
 <translation id="158849752021629804">உள்ளூர் பிணையம் தேவை</translation>
-<translation id="1013923882670373915">Bluetooth சாதனம் &quot;<ph name="DEVICE_NAME"/>&quot;, இணைப்பதற்கான அனுமதியை விரும்புகிறது. அந்தச் சாதனத்தில் இந்த PIN குறியீட்டை உள்ளிடவும்: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/> ஐ செயல்படுத்து</translation>
 <translation id="5864471791310927901">DHCP பார்வையிடுதல் தோல்வி</translation>
 <translation id="2819276065543622893">இப்போது வெளியேற்றப்படுவீர்கள்.</translation>
@@ -226,7 +215,6 @@
 <translation id="973896785707726617">இந்த அமர்வு <ph name="SESSION_TIME_REMAINING"/> நிமிடங்களில் முடியும். நீங்கள் தானாகவே வெளியேற்றப்படுவீர்கள்.</translation>
 <translation id="8372369524088641025">மோசமான WEP விசை</translation>
 <translation id="6636709850131805001">அறியப்படாத நிலை</translation>
-<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">&quot;<ph name="FROM_LOCALE"/>&quot; க்கு மீண்டும் மாற்று (மறுதொடக்கம் தேவை)</translation>
 <translation id="8103386449138765447">SMS செய்திகள்: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (பேச்சுவடிவ கருத்து) இயக்கப்பட்டது.

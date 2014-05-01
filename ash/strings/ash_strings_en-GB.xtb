@@ -10,7 +10,6 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> was rotated to <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth disabled</translation>
-<translation id="6713285437468012787">Bluetooth device &quot;<ph name="DEVICE_NAME"/>&quot; has been paired and is now available to all users. You may remove this pairing using Settings.</translation>
 <translation id="7165320105431587207">Failed to configure network</translation>
 <translation id="3775358506042162758">You can only have up to three accounts in multiple sign-in.</translation>
 <translation id="370649949373421643">Enable Wi-Fi</translation>
@@ -20,7 +19,6 @@
 <translation id="595202126637698455">Performance tracing enabled</translation>
 <translation id="8054466585765276473">Calculating battery time.</translation>
 <translation id="7982789257301363584">Network</translation>
-<translation id="2303600792989757991">Toggle window overview</translation>
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="938582441709398163">Keyboard Overlay</translation>
 <translation id="4387004326333427325">Authentication certificate rejected remotely</translation>
@@ -81,9 +79,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="3892641579809465218">Internal Display</translation>
 <translation id="7823564328645135659">The language has changed from &quot;<ph name="FROM_LOCALE"/>&quot; to &quot;<ph name="TO_LOCALE"/>&quot; after syncing your settings.</translation>
 <translation id="3368922792935385530">Connected</translation>
-<translation id="3606978283550408104">Braille display connected.</translation>
 <translation id="8654520615680304441">Turn Wi-Fi on...</translation>
-<translation id="6650933572246256093">Bluetooth device &quot;<ph name="DEVICE_NAME"/>&quot; would like permission to pair. Please enter this passkey on that device: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Your input method has changed to <ph name="INPUT_METHOD_ID"/>.
 Press Shift + Alt to switch.</translation>
@@ -136,7 +132,6 @@ Press Shift + Alt to switch.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Activating <ph name="NAME"/></translation>
-<translation id="4527045527269911712">Bluetooth device &quot;<ph name="DEVICE_NAME"/>&quot; would like permission to pair.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Automatic clicks</translation>
 <translation id="1398853756734560583">Maximise</translation>
@@ -187,15 +182,11 @@ Server message: <ph name="SERVER_MSG"/></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="8454013096329229812">Wi-Fi is turned on.</translation>
 <translation id="4872237917498892622">Alt+Search or Shift</translation>
-<translation id="2429753432712299108">Bluetooth device &quot;<ph name="DEVICE_NAME"/>&quot; would like permission to pair. Before accepting, please confirm that this passkey is shown on that device: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Battery is <ph name="PERCENTAGE"/>% full.</translation>
 <translation id="2983818520079887040">Settings...</translation>
 <translation id="3871838685472846647">Mobile Activated</translation>
-<translation id="6452181791372256707">Reject</translation>
 <translation id="1195412055398077112">overscan</translation>
-<translation id="607652042414456612">Your computer is discoverable to nearby Bluetooth devices and will appear as &quot;<ph name="NAME"/>&quot; with address <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Autohide shelf</translation>
-<translation id="6732801395666424405">Certificates not loaded</translation>
 <translation id="7573962313813535744">Docked mode</translation>
 <translation id="8927026611342028580">Connect Requested</translation>
 <translation id="8300849813060516376">OTASP failed</translation>
@@ -208,7 +199,6 @@ Server message: <ph name="SERVER_MSG"/></translation>
 <translation id="6785414152754474415">Battery is <ph name="PERCENTAGE"/>% full and charging.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Activating...</translation>
 <translation id="4895488851634969361">Battery is full.</translation>
-<translation id="615957422585914272">Show on-screen keyboard</translation>
 <translation id="5947494881799873997">Revert</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
 <translation id="7649070708921625228">Help</translation>
@@ -216,7 +206,6 @@ Server message: <ph name="SERVER_MSG"/></translation>
 Press Search or Shift to cancel.</translation>
 <translation id="397105322502079400">Calculating...</translation>
 <translation id="158849752021629804">Need home network</translation>
-<translation id="1013923882670373915">Bluetooth device &quot;<ph name="DEVICE_NAME"/>&quot; would like permission to pair. Please enter this PIN code on that device: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">Activate <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP look-up failed</translation>
 <translation id="2819276065543622893">You will be signed out now.</translation>
@@ -226,7 +215,6 @@ Press Search or Shift to cancel.</translation>
 <translation id="973896785707726617">This session will end in <ph name="SESSION_TIME_REMAINING"/>. You will be automatically signed out.</translation>
 <translation id="8372369524088641025">Bad WEP key</translation>
 <translation id="6636709850131805001">Unrecognised state</translation>
-<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Change back to &quot;<ph name="FROM_LOCALE"/>&quot; (requires restart)</translation>
 <translation id="8103386449138765447">SMS messages: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (spoken feedback) is enabled.

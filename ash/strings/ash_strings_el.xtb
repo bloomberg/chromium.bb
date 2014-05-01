@@ -10,7 +10,6 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> περιστράφηκε σε <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Το Bluetooth έχει απενεργοποιηθεί</translation>
-<translation id="6713285437468012787">Η συσκευή Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; έχει συζευχθεί και είναι πλέον διαθέσιμη σε όλους τους χρήστες. Μπορείτε να καταργήσετε αυτήν τη σύζευξη μέσω των Ρυθμίσεων.</translation>
 <translation id="7165320105431587207">Αποτυχία διαμόρφωσης δικτύου</translation>
 <translation id="3775358506042162758">Μπορείτε να συνδέεστε ταυτόχρονα με έως και τρεις λογαριασμούς.</translation>
 <translation id="370649949373421643">Ενεργοποίηση Wi-Fi</translation>
@@ -20,7 +19,6 @@
 <translation id="595202126637698455">Η παρακολούθηση απόδοσης έχει ενεργοποιηθεί</translation>
 <translation id="8054466585765276473">Υπολογισμός χρόνου μπαταρίας που απομένει.</translation>
 <translation id="7982789257301363584">Δίκτυο</translation>
-<translation id="2303600792989757991">Επισκόπηση εναλλαγής παραθύρων</translation>
 <translation id="5565793151875479467">Διακομιστής μεσολάβησης...</translation>
 <translation id="938582441709398163">Επικάλυψη πληκτρολογίου</translation>
 <translation id="4387004326333427325">Το πιστοποιητικό ελέγχου ταυτότητας απορρίφθηκε απομακρυσμένα</translation>
@@ -81,9 +79,7 @@
 <translation id="3892641579809465218">Εσωτερική οθόνη</translation>
 <translation id="7823564328645135659">Η γλώσσα του άλλαξε από &quot;<ph name="FROM_LOCALE"/>&quot; σε &quot;<ph name="TO_LOCALE"/>&quot; μετά τον συγχρονισμό των ρυθμίσεών σας.</translation>
 <translation id="3368922792935385530">Σε σύνδεση</translation>
-<translation id="3606978283550408104">Συνδέθηκε η οθόνη Braille.</translation>
 <translation id="8654520615680304441">Ενεργοποίηση Wi-Fi…</translation>
-<translation id="6650933572246256093">Η συσκευή Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; ζητά δικαιώματα σύζευξης. Καταχωρίστε αυτό το κλειδί πρόσβασης στη συγκεκριμένη συσκευή: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Η μέθοδος εισαγωγής σας έχει αλλάξει σε <ph name="INPUT_METHOD_ID"/>.
 Πατήστε Shift + Alt για εναλλαγή.</translation>
@@ -136,7 +132,6 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Ενεργοποίηση <ph name="NAME"/></translation>
-<translation id="4527045527269911712">Η συσκευή Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; ζητά δικαιώματα σύζευξης.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Αυτόματα κλικ</translation>
 <translation id="1398853756734560583">Μεγιστοποίηση</translation>
@@ -186,15 +181,11 @@
 <translation id="479989351350248267">αναζήτηση</translation>
 <translation id="8454013096329229812">Το Wi-Fi έχει ενεργοποιηθεί.</translation>
 <translation id="4872237917498892622">Alt+Search ή Shift</translation>
-<translation id="2429753432712299108">Η συσκευή Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; ζητά δικαιώματα σύζευξης. Προτού αποδεχτείτε, επιβεβαιώστε ότι αυτό το κλειδί πρόσβασης εμφανίζεται στη συγκεκριμένη συσκευή: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Η μπαταρία είναι πλήρης <ph name="PERCENTAGE"/>%.</translation>
 <translation id="2983818520079887040">Ρυθμίσεις...</translation>
 <translation id="3871838685472846647">Το κινητό ενεργοποιήθηκε</translation>
-<translation id="6452181791372256707">Απόρριψη</translation>
 <translation id="1195412055398077112">υπερσάρωση</translation>
-<translation id="607652042414456612">Ο υπολογιστής σας μπορεί να εντοπιστεί από κοντινές συσκευές Bluetooth και θα εμφανίζεται ως &quot;<ph name="NAME"/>&quot; με διεύθυνση <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Αυτόματη απόκρυψη ραφιού</translation>
-<translation id="6732801395666424405">Δεν έχουν φορτωθεί τα πιστοποιητικά</translation>
 <translation id="7573962313813535744">Λειτουργία βάσης σύνδεσης</translation>
 <translation id="8927026611342028580">Έχει υποβληθεί αίτημα σύνδεσης</translation>
 <translation id="8300849813060516376">Αποτυχία OTASP</translation>
@@ -207,7 +198,6 @@
 <translation id="6785414152754474415">Η μπαταρία είναι πλήρης <ph name="PERCENTAGE"/>% και φορτίζει.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Ενεργοποίηση…</translation>
 <translation id="4895488851634969361">Η μπαταρία είναι πλήρης.</translation>
-<translation id="615957422585914272">Εμφάνιση πληκτρολογίου οθόνης</translation>
 <translation id="5947494881799873997">Επαναφορά</translation>
 <translation id="7593891976182323525">Search ή Shift</translation>
 <translation id="7649070708921625228">Βοήθεια</translation>
@@ -215,7 +205,6 @@
 Πατήστε Search ή Shift για ακύρωση.</translation>
 <translation id="397105322502079400">Υπολογισμός…</translation>
 <translation id="158849752021629804">Απαιτείται εγχώριο δίκτυο</translation>
-<translation id="1013923882670373915">Η συσκευή Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; ζητά δικαιώματα σύζευξης. Καταχωρίστε αυτόν τον κωδικό PIN στη συγκεκριμένη συσκευή: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">Ενεργοποίηση <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Αποτυχία αναζήτησης DHCP</translation>
 <translation id="2819276065543622893">Θα αποσυνδεθείτε τώρα.</translation>
@@ -225,7 +214,6 @@
 <translation id="973896785707726617">Αυτή η περίοδος σύνδεσης θα λήξει αυτόματα σε <ph name="SESSION_TIME_REMAINING"/>. Θα αποσυνδεθείτε αυτόματα.</translation>
 <translation id="8372369524088641025">Εσφαλμένο κλειδί WEP</translation>
 <translation id="6636709850131805001">Μη αναγνωρίσιμη κατάσταση</translation>
-<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Αλλάξτε το πάλι σε &quot;<ph name="FROM_LOCALE"/>&quot; (απαιτείται επανεκκίνηση)</translation>
 <translation id="8103386449138765447">Μηνύματα SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">Το ChromeVox (προφορικά σχόλια) έχει ενεργοποιηθεί.

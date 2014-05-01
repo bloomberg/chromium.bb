@@ -2,11 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
 <translation id="8588878054171169263">Desa la imatge</translation>
-<translation id="4996978546172906250">Compartir mitjançant</translation>
 <translation id="5578795271662203820">Cerca aquesta imatge a <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Tradueix</translation>
 <translation id="7644305409888602715">La pàgina s'està traduint a <ph name="SOURCE_LANGUAGE"/>...</translation>
-<translation id="7015922086425404465">Baixeu aplicacions de Google Play Store: <ph name="APP_ACTION"/>.</translation>
 <translation id="1491151370853475546">Torna a carregar aquesta pàgina</translation>
 <translation id="641643625718530986">Imprimeix…</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
@@ -18,15 +16,12 @@
 Inicieu la sessió amb un compte gestionat, de manera que concediu al seu administrador el control sobre el vostre perfil de Chrome. Les vostres dades de Chrome estaran vinculades a aquest compte de manera permanent. Si desconnecteu aquest compte se suprimiran les dades de Chrome locals.</translation>
 <translation id="1966710179511230534">Actualitzeu les dades d'inici de sessió.</translation>
 <translation id="1623104350909869708">Impedeix que aquesta pàgina creï diàlegs addicionals.</translation>
-<translation id="1426410128494586442">Sí</translation>
 <translation id="8218346974737627104">Confirmació de l'inici de sessió</translation>
 <translation id="624558823898732418">Idioma de traducció: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Selecció del certificat per a l'autenticació</translation>
 <translation id="3896036286668839683">Lector de certificats</translation>
 <translation id="8583805026567836021">S'estan esborrant les dades del compte</translation>
-<translation id="4250680216510889253">No</translation>
 <translation id="8073388330009372546">Obre imatge en pestanya nova</translation>
-<translation id="552553974213252141">S'ha extret correctament el text?</translation>
 <translation id="8730621377337864115">Finalitzat</translation>
 <translation id="4170011742729630528">El servei no està disponible. Torneu-ho a provar més tard.</translation>
 <translation id="8627706565932943526">Error de sincronització</translation>
@@ -38,14 +33,11 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="907015151729920253">Targeta intel·ligent</translation>
 <translation id="3063601790762993062">Desa el vídeo</translation>
 <translation id="6042308850641462728">Més</translation>
-<translation id="7267430310003164111">Sol·licitud per baixar l'aplicació de Google Play Store. Nom de l'aplicació: <ph name="APP_NAME"/>. Puntuació mitjana de l'aplicació: <ph name="APP_RATING"/></translation>
-<translation id="4148957013307229264">S'està instal·lant...</translation>
 <translation id="3992315671621218278">Desa l'enllaç</translation>
 <translation id="8034522405403831421">Aquesta pàgina està escrita en <ph name="SOURCE_LANGUAGE"/>. Voleu traduir-la a <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="4195643157523330669">Obre en una pestanya nova</translation>
 <translation id="3089395242580810162">Obre en una pestanya d'incògnit</translation>
 <translation id="8725066075913043281">Torna-ho a provar</translation>
-<translation id="8909135823018751308">Comparteix...</translation>
 <translation id="4269820728363426813">Copia l'adreça de l'enllaç</translation>
 <translation id="4510973599275542560">No tornis a carregar</translation>
 <translation id="1206892813135768548">Copia el text de l'enllaç</translation>
@@ -58,10 +50,8 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="1285320974508926690">No tradueixis mai aquest lloc</translation>
 <translation id="5164482624172255778">Voleu que Google Chrome us ofereixi la possibilitat de traduir les pàgines en <ph name="LANGUAGE"/> d'aquest lloc la propera vegada?</translation>
 <translation id="8528538445849828817">Idioma de la pàgina: <ph name="SOURCE_LANGUAGE"/></translation>
-<translation id="4881695831933465202">Obre</translation>
 <translation id="6512448926095770873">Abandona aquesta pàgina</translation>
 <translation id="7947953824732555851">Acc. i inicia sessió</translation>
-<translation id="6333140779060797560">Comparteix mitjançant <ph name="APPLICATION"/>.</translation>
 <translation id="6040143037577758943">Tanca</translation>
 <translation id="969096075394517431">Canvia els idiomes</translation>
 <translation id="5032574515228824816">Sol·licitud</translation>

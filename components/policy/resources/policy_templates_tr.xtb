@@ -26,7 +26,6 @@
       kullanılabilir.
 
       Bu politika yalnızca dahili mikrofonu değil, her tür ses girişini etkiler.</translation>
-<translation id="7267809745244694722">Medya tuşları varsayılan olarak işlev tuşlarına ayarlanır</translation>
 <translation id="9150416707757015439">Bu politika uygun bulunmamaktadır. Lütfen, bunun yerine IncognitoModeAvailability politikasını kullanın.
       <ph name="PRODUCT_NAME"/> Gizli modunu etkinleştirir.
 
@@ -640,6 +639,9 @@ politikayı geçersiz kılamaz.
 <translation id="6417861582779909667">Çerezleri ayarlamalarına izin verilmeyen sitelerin belirtildiği bir URL kalıpları listesini ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultCookiesSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
+<translation id="5457296720557564923">Sayfaların, JavaScript belleği kullanım istatistiklerine erişmesine izin verir.
+
+      Bu ayarlar, Geliştirici Araçları Profilleri panelindeki bellek istatistiklerinin, web sayfasının kendisi tarafından kullanılabilmesini sağlar.</translation>
 <translation id="5776485039795852974">Bir site, masaüstü bildirimlerini her göstermek istediğinde sor.</translation>
 <translation id="5047604665028708335">İçerik paketlerinin dışındaki sitelere erişime izin ver</translation>
 <translation id="5052081091120171147">Bu politika, göz atma geçmişini etkin olması durumunda geçerli varsayılan tarayıcıdan içe aktarır. Bu politika etkinleştirilirse, içe aktarma iletişim kutusunu da etkiler.
@@ -651,11 +653,6 @@ politikayı geçersiz kılamaz.
 <translation id="7132877481099023201">Soru sorulmadan video yakalama cihazlarına erişim verilecek URL'ler</translation>
 <translation id="8947415621777543415">Cihaz konumunu bildir</translation>
 <translation id="1655229863189977773">Disk önbelleği boyutunu bayt olarak ayarla</translation>
-<translation id="3358275192586364144"><ph name="PRODUCT_NAME"/> ürününde WPAD optimizasyonunu etkinleştirir ve kullanıcıların bu ayarı değiştirmesini önler.
-
-      Bunun etkin değerine ayarlanması Chrome'un DNS tabanlı WPAD sunucularını bekleme aralığını kısaltır.
-
-      Bu politika ayarlanmadan bırakılırsa, politika etkinleştirilir ve bu ayar, kullanıcı tarafından değiştirilemez.</translation>
 <translation id="6376842084200599664">Kullanıcı etkileşimi olmadan, sessiz bir şekilde yüklenecek uzantıların bir listesini belirtmenize olanak tanır.
 
           Listenin her bir öğesi, birbirinden noktalı virgülle (<ph name="SEMICOLON"/>) ayrılmış bir uzantı kimliği ve bir güncelleme URL'si içerir. Uzantı kimliği, geliştirici modundayken, örneğin <ph name="CHROME_EXTENSIONS_LINK"/> konumunda bulunan 32 harfli dizedir. Güncelleme URL'si, <ph name="LINK_TO_EXTENSION_DOC1"/> dokümanında açıklandığı gibi bir Güncelleme Bildirisi XML dokümanını işaret etmelidir. Bu politikada ayarlanan güncelleme URL'sinin yalnızca ilk yükleme için kullanıldığını; uzantının sonraki güncellemelerinde, uzantının bildirisinde belirtilen güncelleme URL'sinin kullanılacağını unutmayın.
@@ -773,7 +770,6 @@ politikayı geçersiz kılamaz.
 <translation id="1679420586049708690">Otomatik giriş için herkese açık oturum</translation>
 <translation id="7625444193696794922">Bu cihazın kilitlenmesi gereken yayın kanalını belirtir.</translation>
 <translation id="2552966063069741410">Saat dilimi</translation>
-<translation id="3788662722837364290">Kullanıcının işlem yapmadığı zaman için güç yönetimi ayarları</translation>
 <translation id="2240879329269430151">Web sitelerinin pop-up göstermesine izin verilip verilmeyeceğini ayarlamanıza olanak tanır. Tüm web siteleri için pop-up'ların gösterilmesine izin verilebilir veya tüm web sitelerinin pop-up göstermesi reddedilebilir.
 
           Bu politika ayarlanmadan bırakılırsa, 'BlockPopups' kullanılır ve kullanıcı bu ayarı değiştirebilir.</translation>
@@ -856,6 +852,7 @@ NOT: Bu politika şu an yalnızca Kiosk modunda çalışırken desteklenir.</tra
 <translation id="8102913158860568230">Varsayılan medya akışı ayarı</translation>
 <translation id="6641981670621198190">3D grafik API'ları için desteği devre dışı bırak</translation>
 <translation id="1265053460044691532">SAML kullanarak kimlik doğrulaması yapmış kullanıcının çevrimdışı olarak giriş yapabileceği süreyi sınırla</translation>
+<translation id="7929480864713075819">Raporlama belleği bilgilerinin (JS yığın boyutu) sayfa tarafından kullanabilmesini etkinleştir</translation>
 <translation id="5703863730741917647">Boşta kalma süresine ulaşıldığında yapılacak işlemi belirtir.
 
           Bu politikanın artık kullanılmadığını ve gelecekte kaldırılacağını unutmayın.
@@ -973,7 +970,6 @@ NOT: Bu politika şu an yalnızca Kiosk modunda çalışırken desteklenir.</tra
 <translation id="4057110413331612451">Kurumsal kullanıcının sadece birincil çoklu oturum kullanıcısı olmasına izin ver</translation>
 <translation id="5365946944967967336">Araç çubuğunda Ana Sayfa düğmesini göster</translation>
 <translation id="3709266154059827597">Uzantı kurulum kara listesini yapılandır</translation>
-<translation id="1933378685401357864">Duvar kağıdı resmi</translation>
 <translation id="8451988835943702790">Ana sayfa olarak Yeni Sekme Sayfası'nı kullan</translation>
 <translation id="4617338332148204752"><ph name="PRODUCT_FRAME_NAME"/> cihazında meta etiket kontrolünü atla</translation>
 <translation id="8469342921412620373">Bir varsayılan arama sağlayıcısının kullanılabilmesini sağlar.
@@ -997,11 +993,6 @@ NOT: Bu politika şu an yalnızca Kiosk modunda çalışırken desteklenir.</tra
 
           Bu politika ayarlanmadan bırakılırsa, büyük imleç başta devre dışıdır, ancak istenildiğinde kullanıcı tarafından etkinleştirilebilir.</translation>
 <translation id="2633084400146331575">Sözlü geribildirimi etkinleştir</translation>
-<translation id="687046793986382807">Bu politika, <ph name="PRODUCT_NAME"/> sürüm 35 itibarı ile kullanımdan kaldırılmıştır.
-
-      Bellek bilgisi, seçenek değerinden bağımsız olarak her şekilde sayfada raporlanır, ancak
-      raporlanan boyutlar sayısal hale getirilir ve güncelleme hızı güvenlik nedeniyle sınırlanır. Gerçek zamanlı
-      doğru veriler edinmek için lütfen Telemetry gibi araçlar kullanın.</translation>
 <translation id="8731693562790917685">İçerik Ayarları belirli türdeki içeriklerin (ör. Çerezler, Resimler veya JavaScript) nasıl işleneceğini belirlemenize izin verir.</translation>
 <translation id="2411919772666155530">Bu sitelerde bildirimleri engelle</translation>
 <translation id="6923366716660828830">Varsayılan arama sağlayıcısının adını belirtir. Boş bırakılır veya ayarlanmazsa, arama URL'sinin belirttiği ana makine adı kullanılır.
@@ -1013,7 +1004,6 @@ NOT: Bu politika şu an yalnızca Kiosk modunda çalışırken desteklenir.</tra
 
           Bu politika yanlış seçeneğine ayarlanırsa, ekran uyandırma kilitleri için yapılan istekler dikkate alınmaz.</translation>
 <translation id="467236746355332046">Desteklenen özellikler:</translation>
-<translation id="5447306928176905178">Bellek bilgilerini (JS yığın boyutu) sayfada raporlamayı etkinleştir (kullanımdan kaldırıldı)</translation>
 <translation id="7632724434767231364">GSSAPI kitaplığı adı</translation>
 <translation id="3038323923255997294"><ph name="PRODUCT_NAME"/> kapandığında arka plan uygulamalarını çalıştırmaya devam et</translation>
 <translation id="8909280293285028130">AC güçle çalışırken, ekran kilitlenmeden önce kullanıcı girişi olmadan geçecek süreyi belirtir.
@@ -1062,17 +1052,6 @@ NOT: Bu politika şu an yalnızca Kiosk modunda çalışırken desteklenir.</tra
           Bu politika isteğe bağlıdır. Ayarlanmazsa, anında arama isteği, GET yöntemi kullanılarak gönderilir.
 
           Bu politika sadece is &quot;DefaultSearchProviderEnabled&quot; politikası etkinleştirilmişse dikkate alınır.</translation>
-<translation id="6095999036251797924">AC gücü veya pil gücü kullanılırken, ekranın kilitlenmesinden önce kullanıcı girişi olmadan geçmesi gereken süreyi belirtir.
-
-          Bu süre sıfırdan büyük bir değere ayarlanırsa <ph name="PRODUCT_OS_NAME"/> ekranı kilitlemeden önce, kullanıcının işlem yapmadan geçirmesi gereken süreyi gösterir.
-
-          Süre sıfır olarak ayarlanırsa <ph name="PRODUCT_OS_NAME"/>, kullanıcı işlem yapmadığında ekranı kilitlemez.
-
-          Süre ayarlanmazsa varsayılan süre kullanılır.
-
-          Boşta kalma durumunda ekranı kilitlemek için önerilen yöntem, askıya alındığında ekranın kilitlenmesini etkinleştirmek ve boşta kalma süresi beklendikten sonra <ph name="PRODUCT_OS_NAME"/> tarafından askıya alma işlemi yapılmasını sağlamaktır.
-
-          Politikanın değeri milisaniye olarak belirtilmelidir. Değerler boşta kalma bekleme süresinden az olacak şekilde ayarlanır.</translation>
 <translation id="1454846751303307294">JavaScript'i çalıştırmasına izin verilmeyen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultJavaScriptSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
@@ -1103,32 +1082,6 @@ NOT: Bu politika şu an yalnızca Kiosk modunda çalışırken desteklenir.</tra
       Bu politika yanlış (false) olarak ayarlandığında veya yapılandırılmadığında simgeler görünür.</translation>
 <translation id="5085647276663819155">Baskı Önizlemeyi Devre Dışı Bırak</translation>
 <translation id="8672321184841719703">Hedef Otomatik Güncelleme Sürümü</translation>
-<translation id="553658564206262718">Kullanıcı işlem yapmadığında geçerli olacak güç yönetimi ayarlarını yapılandır.
-
-          Bu politika, kullanıcı işlem yapmadığında güç yönetimi stratejisi için birden fazla ayarı kontrol eder.
-
-          Dört tür işlem vardır:
-          * Kullanıcı |ScreenDim| ile belirtilen süre boyunca işlem yapmazsa ekran karartılır.
-          * Kullanıcı |ScreenOff| ile belirtilen süre boyunca işlem yapmazsa ekran kapatılır.
-          * Kullanıcı |IdleWarning| ile belirtilen süre boyunca işlem yapmazsa boşta kalma işleminin yapılmak üzere olduğunu bildiren bir uyarı iletişim kutusu görüntülenir.
-          * Kullanıcı |Idle| ile belirtilen süre boyunca işlem yapmazsa |IdleAction| tarafından belirtilen işlem yapılır.
-
-          Yukarıdaki işlemlerin her biri için bekleme süresi milisaniye olarak belirtilmelidir ve ilgili işlemin devreye girmesi için sıfırdan büyük bir değere ayarlanmalıdır. Bekleme süresi sıfır olarak ayarlanırsa <ph name="PRODUCT_OS_NAME"/> ilgili işlemi yapmaz.
-
-          Yukarıdaki bekleme sürelerinin her biri için ayarlama yapılmaması durumda varsayılan değer kullanılır.
-
-          |ScreenDim| değerlerinin |ScreenOff| değerine eşit veya bundan küçük olacak şekilde; |ScreenOff| ve |IdleWarning| değerlerinin de |Idle| değerine eşit veya bundan küçük olacak şekilde ayarlanacağına dikkat edin.
-
-          |IdleAction| aşağıdaki dört işlemden biri olabilir:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          |IdleAction| ayarlanmadığında varsayılan işlem olan askıya alma işlemi gerçekleştirilir.
-
-          Ayrıca AC gücü ve pil için farklı ayarlar da vardır.
-          </translation>
 <translation id="1689963000958717134">Bir <ph name="PRODUCT_OS_NAME"/> cihazının tüm kullanıcıları için uygulanacak ağ yapılandırmasını iletmeye olanak sağlar. Ağ yapılandırması, Açık Ağ Yapılandırma biçimi tarafından <ph name="ONC_SPEC_URL"/> adresinde tanımlandığı gibi, JSON biçimli bir dizedir.</translation>
 <translation id="6699880231565102694">Uzaktan erişim ana makineleri için iki etmenli kimlik doğrulamayı etkinleştir</translation>
 <translation id="2030905906517501646">Varsayılan arama sağlayıcı anahtar kelimesi</translation>
@@ -1337,32 +1290,6 @@ NOT: Bu politika şu an yalnızca Kiosk modunda çalışırken desteklenir.</tra
 
       Bu politika ayarlanmazsa, <ph name="PRODUCT_NAME"/> varsayılan 5000 milisaniye değerini kullanır.</translation>
 <translation id="8099880303030573137">Pil gücüyle çalışırken boşta kalma gecikmesi</translation>
-<translation id="1709037111685927635">Duvar kağıdı resmini yapılandır.
-
-      Bu politika, masaüstünde ve giriş ekranı arka planında kullanıcı için gösterilen duvar kağıdı resmini yapılandırmanıza olanak tanır. Politika, <ph name="PRODUCT_OS_NAME"/> işletim sisteminin duvar kağıdı resmini indirebileceği URL ve indirmenin bütünlüğünü doğrulamak için kullanılan şifreli karma belirtilerek ayarlanır. Resim JPEG biçiminde olmalı ve boyutu 16 MB'ı geçmemelidir. URL'ye kimlik doğrulaması olmadan erişilebilmelidir.
-
-      Duvar kağıdı resmi indirilip önbelleğe alınır. URL veya karma her değiştiğinde yeniden indirilir.
-
-      Politika, URL'yi ve karmayı ifade eden JSON biçiminde bir dize olarak belirtilmeli ve aşağıdaki şemaya uymalıdır:
-      {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;url&quot;: {
-            &quot;description&quot;: &quot;Duvar kağıdı resminin indirilebileceği URL.&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          },
-          &quot;hash&quot;: {
-            &quot;description&quot;: &quot;Duvar kağıdı resminin SHA-256 karması.&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          }
-        }
-      }
-
-      Bu politika ayarlanırsa <ph name="PRODUCT_OS_NAME"/>, duvar kağıdı resmini indirir ve kullanır.
-
-      Bu politikayı ayarlarsanız kullanıcılar bu ayarı değiştiremez veya geçersiz kılamaz.
-
-      Politika ayarlanmadan bırakılırsa kullanıcı, masaüstünde ve giriş ekranı arka planında gösterilecek resmi seçebilir.</translation>
 <translation id="2761483219396643566">Pil gücüyle çalışırken boşta kalma uyarısı gecikmesi</translation>
 <translation id="6281043242780654992">Yerel Mesajlaşma için politikaları yapılandırır. Kara listeye alınan yerel mesajlaşma ana makinelerine, beyaz listeye eklenmedikçe izin verilmez.</translation>
 <translation id="1468307069016535757">Giriş ekranında yüksek kontrast modu erişilebilirlik özelliğinin varsayılan durumunu ayarla.
@@ -1501,9 +1428,95 @@ NOT: Bu politika şu an yalnızca Kiosk modunda çalışırken desteklenir.</tra
       Bu ayarı etkinleştirir veya devre dışı bırakırsanız, kullanıcılar bu ayarı değiştiremez veya geçersiz kılamaz.
 
       Bu politika hiç ayarlanmazsa; kullanıcı, veri sıkıştırma proxy'si özelliğinin kullanılıp kullanılmayacağını seçebilir.</translation>
-<translation id="2170233653554726857">WPAD optimizasyonunu etkinleştir</translation>
 <translation id="7424751532654212117">Devre dışı bırakılmış eklentiler listesinin istisnalar listesi</translation>
 <translation id="6233173491898450179">İndirme dizinini ayarla</translation>
+<translation id="78524144210416006"><ph name="PRODUCT_OS_NAME"/> oturum açma ekranında güç yönetimini yapılandırın.
+
+      Bu politika, giriş ekranı görüntülenirken belirli bir süre boyunca kullanıcı etkinliği olmadığında <ph name="PRODUCT_OS_NAME"/> cihazının çalışma biçimini yapılandırmanıza olanak verir. Politika birden fazla ayarı denetler. Tek tek semantikleri ve değer aralıkları için, bir oturumda güç yönetimini denetleyen ilgili politikalara bakın. Bu politikalara ilişkin istisnalar aşağıda verilmiştir:
+      * Cihaz boşta kaldığında veya kapağı kapatıldığında yapılacak işlemler arasında “oturumu kapatma” işlemi olamaz.
+      * Cihaz AC güçle çalışırken boşta kaldığında yapılan varsayılan işlem cihazı kapatmaktır.
+
+      Politika, bireysel ayarları aşağıdaki düzene uygun şekilde ve JSON biçiminde ifade eden bir dize olarak belirtilmelidir:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;AC&quot;: {
+            &quot;description&quot;: &quot;Sadece cihaz AC güçle çalışırken uygulanabilen güç yönetimi ayarları&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Ekranın karartılması için kullanıcı girişi olmadan geçmesi beklenecek milisaniye olarak süre&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Ekranın kapatılması için kullanıcı girişi olmadan geçmesi beklenecek milisaniye olarak süre)&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Boşta kalma işleminin yapılması için kullanıcı girişi olmadan geçmesi beklenecek milisaniye olarak süre)&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Boşta kalma süresine ulaşıldığında yapılacak işlem&quot;,
+                &quot;enum&quot;: [ &quot;Askıya Al&quot;, &quot;Kapat&quot;, &quot;Hiçbir Şey Yapma&quot; ]
+              }
+            }
+          },
+          &quot;Battery&quot;: {
+            &quot;description&quot;: &quot;Sadece cihaz pille çalışırken uygulanabilen güç yönetimi ayarları&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Ekranın karartılması için kullanıcı girişi olmadan geçmesi beklenecek milisaniye olarak süre)&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Ekranın kapatılması için kullanıcı girişi olmadan geçmesi beklenecek milisaniye olarak süre&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Boşta kalma işleminin yapılması için kullanıcı girişi olmadan geçmesi beklenecek milisaniye olarak süre&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Boşta kalma süresine ulaşıldığında yapılacak işlem&quot;,
+                &quot;enum&quot;: [ &quot;Askıya Al&quot;, &quot;Kapat&quot;, &quot;Hiçbir Şey Yapma&quot; ]
+              }
+            }
+          },
+          &quot;LidCloseAction&quot;: {
+            &quot;description&quot;: &quot;Kapak kapatıldığında yapılacak işlem&quot;,
+            &quot;enum&quot;: [ &quot;Askıya Al&quot;, &quot;Kapat&quot;, &quot;Hiçbir Şey Yapma&quot; ]
+          },
+          &quot;UserActivityScreenDimDelayScale&quot;: {
+            &quot;description&quot;: &quot;Ekran karardığında veya kapatıldıktan hemen sonra kullanıcı etkinliği gözlendiğinde ekran kararma gecikmesinin ayarlanma yüzdesi&quot;,
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 100
+          }
+        }
+      }
+
+      Bir ayar belirtilmeden bırakılırsa, varsayılan değer kullanılır.
+
+      Bu politika ayarlanmazsa, tüm ayarlar için varsayılanlar kullanılır.
+
+.</translation>
 <translation id="8908294717014659003">Web sitelerinin medya yakalama cihazlarına erişmelerine izin verilip verilmeyeceğini ayarlamanıza olanak sağlar. Medya yakalama cihazlarına erişime varsayılan olarak izin verilebilir veya bir web sitesinin medya yakalama cihazlarına erişmek istediği her defasında kullanıcıya sorulabilir.
 
           Bu politika ayarlanmadan bırakılırsa, 'PromptOnAccess' kullanılır ve kullanıcı, bu ayarı değiştirebilir.</translation>
@@ -1538,9 +1551,6 @@ NOT: Bu politika şu an yalnızca Kiosk modunda çalışırken desteklenir.</tra
       Bu politika ayarlanmazsa varsayılan boyut kullanılır ve kullanıcı --media-cache-size bayrağıyla bu değeri geçersiz kılabilir.</translation>
 <translation id="5142301680741828703"><ph name="PRODUCT_FRAME_NAME"/> içinde aşağıdaki URL kalıplarını her zaman oluştur</translation>
 <translation id="4625915093043961294">Uzantı yükleme beyaz listesini yapılandır</translation>
-<translation id="5893553533827140852">Bu ayar etkinleştirilirse gnubby kimlik doğrulama isteklerinde uzaktan ana bilgisayar bağlantısı üzerinden proxy kullanılır.
-
-          Bu ayar devre dışı bırakılır veya yapılandırılmazsa gnubby kimlik doğrulama isteklerinde proxy kullanılmaz.</translation>
 <translation id="187819629719252111"><ph name="PRODUCT_NAME"/> tarafından dosya seçme iletişim kutularının görüntülenmesine izin vererek makinedeki yerel dosyalara erişim olanağı sağlar.
 
       Bu ayarı etkinleştirirseniz, kullanıcılar dosya seçme iletişim kutularını normal olarak açabilirler.
@@ -1629,11 +1639,6 @@ NOT: Bu politika şu an yalnızca Kiosk modunda çalışırken desteklenir.</tra
 
           &quot;RestoreOnStartup&quot; politikası önceki oturumlardan URL'leri geri yükleyecek şekilde ayarlanırsa, bu politika dikkate alınmaz ve o siteler için çerezler kalıcı olarak depolanır.</translation>
 <translation id="2098658257603918882">Kullanım ve kilitlenme ile ilgili verilerin raporlanmasını etkinleştir</translation>
-<translation id="4633786464238689684">Üst sıra tuşlarının varsayılan davranışını işlev tuşları olarak değiştirir.
-
-          Bu politika true değerine ayarlanırsa klavyedeki tuşların en üst sırası, varsayılan ayara göre işlev tuşu komutları oluşturur. Bunların davranışını tekrar medya tuşlarına döndürmek için arama tuşuna basılması gerekir.
-
-          Bu politika false değerine ayarlanırsa veya ayarlanmadan bırakılırsa, klavye varsayılan ayara göre medya tuşu komutları ve arama tuşu basılı tutulduğunda işlev tuşu komutları oluşturur.</translation>
 <translation id="2324547593752594014">Chrome'da oturum açmaya izin verir</translation>
 <translation id="172374442286684480">Tüm sitelerin yerel verileri ayarlamasına izin verme</translation>
 <translation id="1151353063931113432">Bu sitelerdeki resimlere izin ver</translation>
@@ -1689,7 +1694,6 @@ NOT: Bu politika şu an yalnızca Kiosk modunda çalışırken desteklenir.</tra
 
           ExtensionInstallBlacklist, bu politikaya göre daha önceliklidir. Diğer bir deyişle, bu listedeki bir sitede bulunsa bile, kara listedeki bir uzantı yüklenmeyecektir.</translation>
 <translation id="2113068765175018713">Otomatik bir şekilde yeniden başlatarak cihazın açık kalma süresini sınırlandır</translation>
-<translation id="4224610387358583899">Ekran kilidi bekleme süresi</translation>
 <translation id="7848840259379156480"><ph name="PRODUCT_FRAME_NAME"/> yüklendiğinde varsayılan HTML oluşturucusunu yapılandırmanıza olanak verir. Varsayılan ayar, oluşturmayı ana makinenin tarayıcısının yapmasına izin vermektir, ancak isteğe bağlı olarak bunu geçersiz kılabilir ve HTML sayfalarının varsayılan olarak <ph name="PRODUCT_FRAME_NAME"/> tarafından oluşturulmasını sağlayabilirsiniz.</translation>
 <translation id="186719019195685253">Cihaz AC güçle çalışırken boşta kalma süresine ulaşıldığında yapılacak işlem</translation>
 <translation id="7890264460280019664">Türleri ve donanım adresleriyle ağ arayüzleri listesini sunucuya rapor edin.
@@ -1786,15 +1790,6 @@ NOT: Bu politika şu an yalnızca Kiosk modunda çalışırken desteklenir.</tra
       Politika, <ph name="PRODUCT_OS_NAME"/> tarafından Hizmet Şartları'nın indirilebileceği bir URL'ye ayarlanmalıdır. Hizmet Şartları'nda düz metin kullanılmalı, MIME türü metin/düz olarak sunulmalıdır. Herhangi bir işaretleme kullanılamaz.</translation>
 <translation id="2623014935069176671">İlk kullanıcı etkinliğini bekle</translation>
 <translation id="2660846099862559570">Hiçbir zaman proxy kullanma</translation>
-<translation id="1956493342242507974"><ph name="PRODUCT_OS_NAME"/> sisteminde güç yönetimini giriş ekranında yapılandır.
-
-      Bu politika, giriş ekranı gösterilirken belli bir süre hiçbir kullanıcı etkinliği olmadığında <ph name="PRODUCT_OS_NAME"/> sisteminin ne yapacağını yapılandırmanıza olanak verir. Bu politika çeşitli ayarları denetler. Tek tek anlamları ve değer aralıkları için bir oturum içinde güç yönetimini denetleyen ilgili politikalara bakın. Bu politikalardaki istisnalar şunlardır:
-      * Boşta veya kapak kapalıyken yapılan işlemler oturumu kapatma işlemleri olamaz.
-      * AC güçle çalıştığı sırada boşta iken yapılan varsayılan işlem kapatma işlemidir.
-
-      Bir ayar yapılandırılmadan bırakılırsa varsayılan bir değer kullanılır.
-
-      Bu politika ayarlanmazsa tüm ayarlar için varsayılanlar kullanılır.</translation>
 <translation id="1435659902881071157">Cihaz düzeyinde ağ yapılandırması</translation>
 <translation id="2131902621292742709">Pil gücüyle çalışırken ekran karartma gecikmesi</translation>
 <translation id="5781806558783210276">Pil gücüyle çalışırken, boşta kalma işlemi uygulanmadan önce kullanıcı girişi olmadan geçecek süreyi belirtir.
@@ -1914,6 +1909,5 @@ NOT: Bu politika şu an yalnızca Kiosk modunda çalışırken desteklenir.</tra
       Bu politika sadece dahili hoparlörleri değil, her tür ses çıkışını etkiler. Bu politikayla, ses erişilebilirliği özellikleri de engellenebilir. Kullanıcı için bir ekran okuyucusu gerekliyse bu politikayı etkinleştirmeyin.
 
       Bu ayar doğru seçeneğine ayarlanırsa veya hiç yapılandırılmazsa kullanıcılar cihazlarında desteklenen tüm ses çıkışlarını kullanabilirler.</translation>
-<translation id="6517678361166251908">Gnubby kimlik doğrulamasına izin ver</translation>
 <translation id="4858735034935305895">Tam ekran moduna izin ver</translation>
 </translationbundle>

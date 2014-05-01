@@ -10,7 +10,6 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> обернено на <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth вимкнено</translation>
-<translation id="6713285437468012787">Пристрій Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; підключено. Він доступний для всіх користувачів. Відключити пристрій можна в Налаштуваннях.</translation>
 <translation id="7165320105431587207">Помилка налаштування мережі</translation>
 <translation id="3775358506042162758">Паралельно можна входити не більше ніж у три облікові записи.</translation>
 <translation id="370649949373421643">Увімкнути Wi-Fi</translation>
@@ -20,7 +19,6 @@
 <translation id="595202126637698455">Відстеження ефективності ввімкнено</translation>
 <translation id="8054466585765276473">Обчислення часу роботи акумулятора.</translation>
 <translation id="7982789257301363584">Мережа</translation>
-<translation id="2303600792989757991">Увімкнення чи вимкнення вікна перегляду</translation>
 <translation id="5565793151875479467">Проксі-сервер...</translation>
 <translation id="938582441709398163">Розкладка клавіатури</translation>
 <translation id="4387004326333427325">Сертифікат автентифікації відхилений дистанційно</translation>
@@ -81,9 +79,7 @@
 <translation id="3892641579809465218">Внутрішній екран</translation>
 <translation id="7823564328645135659">Після синхронізації налаштувань мову змінено. Попередня: <ph name="FROM_LOCALE"/>, нова: <ph name="TO_LOCALE"/>.</translation>
 <translation id="3368922792935385530">Підключено</translation>
-<translation id="3606978283550408104">Брайлівський дисплей під’єднано.</translation>
 <translation id="8654520615680304441">Увімкнення Wi-Fi…</translation>
-<translation id="6650933572246256093">Пристрою Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; потрібен дозвіл на підключення. Введіть на пристрої цей ключ доступу: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Метод введення змінено на <ph name="INPUT_METHOD_ID"/>.
 Щоб переключитися, натисніть Shift + Alt.</translation>
@@ -136,7 +132,6 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Активація <ph name="NAME"/></translation>
-<translation id="4527045527269911712">Пристрою Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; потрібен дозвіл на підключення.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Автоматичні кліки</translation>
 <translation id="1398853756734560583">Збільшити</translation>
@@ -187,15 +182,11 @@
 <translation id="479989351350248267">пошук</translation>
 <translation id="8454013096329229812">Wi-Fi увімкнено.</translation>
 <translation id="4872237917498892622">Alt+клавіша пошуку або Shift</translation>
-<translation id="2429753432712299108">Пристрою Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; потрібен дозвіл на підключення. Перш ніж надати його, підтвердьте, що на пристрої відображається цей ключ доступу: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Акумулятор заряджений на <ph name="PERCENTAGE"/>%.</translation>
 <translation id="2983818520079887040">Налаштування...</translation>
 <translation id="3871838685472846647">Мобільне з’єднання активовано</translation>
-<translation id="6452181791372256707">Відхилити</translation>
 <translation id="1195412055398077112">облямівка екрана</translation>
-<translation id="607652042414456612">Ваш комп’ютер видимий для пристроїв Bluetooth поблизу та відображатиметься з назвою &quot;<ph name="NAME"/>&quot; та адресою <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Автоматично ховати полицю</translation>
-<translation id="6732801395666424405">Сертифікати не завантажено</translation>
 <translation id="7573962313813535744">Режим док-станції</translation>
 <translation id="8927026611342028580">Подано запит на під’єднання</translation>
 <translation id="8300849813060516376">Помилка OTASP</translation>
@@ -208,7 +199,6 @@
 <translation id="6785414152754474415">Акумулятор заряджений на <ph name="PERCENTAGE"/>% і заряджається.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: активація…</translation>
 <translation id="4895488851634969361">Акумулятор заряджений.</translation>
-<translation id="615957422585914272">Показувати екранну клавіатуру</translation>
 <translation id="5947494881799873997">Повернути</translation>
 <translation id="7593891976182323525">Клавіша пошуку або Shift</translation>
 <translation id="7649070708921625228">Довідка</translation>
@@ -216,7 +206,6 @@
 Натисніть клавішу пошуку або Shift, щоб скасувати.</translation>
 <translation id="397105322502079400">Обчислення...</translation>
 <translation id="158849752021629804">Потрібна домашня мережа</translation>
-<translation id="1013923882670373915">Пристрою Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; потрібен дозвіл на підключення. Введіть на пристрої цей PIN-код: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">Активувати <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Помилка пошуку DHCP</translation>
 <translation id="2819276065543622893">Зараз ви вийдете.</translation>
@@ -226,7 +215,6 @@
 <translation id="973896785707726617">Сеанс закінчиться за <ph name="SESSION_TIME_REMAINING"/>. Ви вийдете автоматично.</translation>
 <translation id="8372369524088641025">Поганий WEP-ключ</translation>
 <translation id="6636709850131805001">Нерозпізнаний стан</translation>
-<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Повернутися до мови &quot;<ph name="FROM_LOCALE"/>&quot; (потрібно перезавантажитися)</translation>
 <translation id="8103386449138765447">SMS повідомлень: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (голосові підказки) увімкнено.

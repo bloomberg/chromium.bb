@@ -25,7 +25,6 @@
       fiksavimas bus pasiekiamas tik sąraše „AudioCaptureAllowedUrls“ sukonfigūruotiems URL.
 
       Ši politika turi įtakos visoms garso įrašų įvestims, ne tik įdiegtam mikrofonui.</translation>
-<translation id="7267809745244694722">Medijos klavišai pagal numatytuosius nustatymus veikia kaip funkcijų klavišai</translation>
 <translation id="9150416707757015439">Ši politika nepatvirtinta. Vietoje jos naudokite „Inkognito režimo pasiekiamumas“.
       Įgalinamas inkognito režimas „<ph name="PRODUCT_NAME"/>“.
 
@@ -645,6 +644,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="6417861582779909667">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama nustatyti slapukų, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis slapukų nustatymas“ (jei nustatyta) ar naudotojo asmeninės konfigūracijos.</translation>
+<translation id="5457296720557564923">Leidžiama puslapiams pasiekti „JavaScript“ atminties naudojimo statistiką. Dėl šio nustatymo tinklalapis gali pasiekti kūrėjo įrankių profilių skydelio atminties statistiką.</translation>
 <translation id="5776485039795852974">Paklausti kaskart, kai svetainėje norima rodyti darbalaukio pranešimus</translation>
 <translation id="5047604665028708335">Leisti pasiekti svetaines, nesančias turinio paketuose</translation>
 <translation id="5052081091120171147">Pagal šią politiką naršymo istorija priverstinai importuojama iš esamos numatytosios naršyklės (jei įgalinta). Be to, jei įgalinta, ši politika turi įtakos importavimo dialogo langui.
@@ -656,12 +656,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="7132877481099023201">URL, kuriems bus suteikta prieiga prie vaizdo įrašų užfiksavimo įrenginių be paraginimo</translation>
 <translation id="8947415621777543415">Pranešti įrenginio vietą</translation>
 <translation id="1655229863189977773">Nustatyti disko talpyklos dydį baitais</translation>
-<translation id="3358275192586364144">Įgalinamas WPAD optimizavimas „<ph name="PRODUCT_NAME"/>“ ir naudotojams neleidžiama keisti šio nustatymo.
-
-      Įgalinus šį nustatymą „Chrome“ trumpiau lauks DNS pagrindu veikiančių WPAD serverių.
-
-      Nenustačius šios politikos, tai bus įgalinta ir naudotojas
-      negalės to pakeisti.</translation>
 <translation id="6376842084200599664">Leidžiama nurodyti plėtinių, kurie bus įdiegti be naudotojo veiksmų, sąrašą.
 
           Kiekvienas sąrašo elementas yra eilutė, kurioje pateiktas plėtinio ID ir naujinio URL, atskirti kabliataškiu (<ph name="SEMICOLON"/>). Plėtinio ID yra 32 raidžių eilutė, randama, pvz., <ph name="CHROME_EXTENSIONS_LINK"/>, kai įjungtas kūrėjo režimas. Naujinio URL turėtų nurodyti į naujinio aprašo XML dokumentą, kaip aprašyta šiuo adresu: <ph name="LINK_TO_EXTENSION_DOC1"/>. Atminkite, kad naujinio URL, nustatytas šioje politikoje, naudojamas tik atliekant pirminį diegimą. Kiti plėtinio naujiniai naudos naujinio URL, kuris nurodytas plėtinio apraše.
@@ -783,7 +777,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="1679420586049708690">Vieša automatinio prisijungimo sesija</translation>
 <translation id="7625444193696794922">Nurodomas leidimo kanalas, su kuriuo šis įrenginys turėtų būti sujungtas.</translation>
 <translation id="2552966063069741410">Laiko juosta</translation>
-<translation id="3788662722837364290">Maitinimo valdymo nustatymai, kai naudotojas tampa neaktyvus</translation>
 <translation id="2240879329269430151">Leidžiama nustatyti, ar svetainėse leidžiama rodyti iššokančiuosius langus. Iššokančiųjų langų rodymas gali būti leidžiamas arba draudžiamas visose svetainėse.
 
           Nenustačius šios politikos, bus naudojama „Blokuoti iššokančiuosius langus“ ir naudotojas (-a) galės tai pakeisti.</translation>
@@ -868,6 +861,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="8102913158860568230">Numatytasis medijos srautinio perdavimo nustatymas</translation>
 <translation id="6641981670621198190">Neleisti palaikyti trimatės grafikos API</translation>
 <translation id="1265053460044691532">Apribokite laiką, per kurį per SAML autentifikuotas naudotojas gali prisijungti neprisijungęs</translation>
+<translation id="7929480864713075819">Puslapyje įgalinti ataskaitų teikimo atminties informaciją (JS masyvo dydžio)</translation>
 <translation id="5703863730741917647">Nurodykite veiksmą, kuris bus atliktas, kai bus pasiektas neaktyvumo delsos laikas.
 
           Atminkite, kad ši politika nebenaudojama ir ateityje bus pašalinta.
@@ -980,7 +974,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="4057110413331612451">Leisti įmonei būti tik pirminiu kelių profilių naudotoju</translation>
 <translation id="5365946944967967336">Rodyti įrankių juostoje pagrindinio puslapio mygtuką</translation>
 <translation id="3709266154059827597">Konfigūruoti plėtinių diegimo juodąjį sąrašą</translation>
-<translation id="1933378685401357864">Ekrano fono vaizdas</translation>
 <translation id="8451988835943702790">Naudoti naujo skirtuko puslapį kaip pagrindinį puslapį</translation>
 <translation id="4617338332148204752">Praleisti metažymų tikrinimą „<ph name="PRODUCT_FRAME_NAME"/>“</translation>
 <translation id="8469342921412620373">Įgalinamas numatytojo paieškos teikėjo naudojimas.
@@ -1003,11 +996,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Jei nustatysite šią politiką, naudotojai negalės jos keisti arba nepaisyti.
           Jei ši politika nenustatyta, didelis žymeklis bus išjungtas, bet naudotojas galės jį bet kuriuo metu įgalinti.</translation>
 <translation id="2633084400146331575">Įgalinti žodinius atsiliepimus</translation>
-<translation id="687046793986382807">Ši politika nebegalioja išleidus „<ph name="PRODUCT_NAME"/>“ 35 versiją.
-
-      Vis tiek teikiamos atminties informacijos ataskaitos puslapyje, neatsižvelgiant į parinkties vertę, bet nurodomi dydžiai
-      suapvalinami ir naujinių dažnumas ribojamas saugumo sumetimais. Kad gautumėte tikslius duomenis realiuoju laiku,
-      naudokite tokius įrankius kaip telemetrija.</translation>
 <translation id="8731693562790917685">Turinio nustatymų skiltyje leidžiama nurodyti, kaip turi būti naudojamas konkretaus tipo turinys (pvz., slapukai, vaizdai arba „JavaScript“).</translation>
 <translation id="2411919772666155530">Blokuoti pranešimus šiose svetainėse</translation>
 <translation id="6923366716660828830">Nurodomas numatytojo paieškos teikėjo pavadinimas. Jei laukas paliekamas tuščias arba nenustatomas, naudojamas paieškos URL nurodytas prieglobos pavadinimas.
@@ -1019,7 +1007,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Jei ši politika nustatyta kaip „Netiesa“, ekrano pažadinimo užraktų užklausų nepaisoma.</translation>
 <translation id="467236746355332046">Palaikomos funkcijos:</translation>
-<translation id="5447306928176905178">Įgalinti ataskaitų teikimo atminties informaciją (JS masyvo dydžio) puslapyje (nepatvirtinta)</translation>
 <translation id="7632724434767231364">GSSAPI bibliotekos pavadinimas</translation>
 <translation id="3038323923255997294">Uždarius „<ph name="PRODUCT_NAME"/>“ toliau leisti fonines programas</translation>
 <translation id="8909280293285028130">Nurodoma laiko trukmė be naudotojo įvesties, po kurios ekranas užrakinamas, kai naudojama kintamosios srovės energija.
@@ -1068,17 +1055,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Ši politika pasirenkama. Jei nenustatyta, intuityviosios paieškos užklausa siunčiama naudojant GET metodą.
 
           Šios politikos laikomasi, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
-<translation id="6095999036251797924">Nurodo laikotarpį, per kurį naudotojas neatliko įvesties veiksmų ir po kurio užrakinamas ekranas, kai įrenginys veikia naudojant kintamosios srovės arba akumuliatoriaus maitinimą.
-
-          Kai laikotarpis nustatytas į didesnę nei nulis vertę, tai nurodo, kiek laiko naudotojas turi išlikti neaktyvus prieš „<ph name="PRODUCT_OS_NAME"/>“ užrakinant ekraną.
-
-          Kai laikotarpis nustatytas į nulį, „<ph name="PRODUCT_OS_NAME"/>“ neužrakina ekrano naudotojui tapus neaktyviam.
-
-          Kai laikotarpis nenustatytas, naudojama numatytoji laikotarpio vertė.
-
-          Rekomenduojamas būdas užrakinti ekraną, kai naudotojas tampa neaktyvus, – įgalinti ekrano užraktą, kai įrenginys laikinai sustabdomas, ir nustatyti, kad „<ph name="PRODUCT_OS_NAME"/>“ kad laikinai sustabdytų įrenginį po neaktyvumo laikotarpio. Ši politika turėtų būti naudojama tik norint, kad ekrano užraktas būtų suaktyvintas žymiai anksčiau nei laikinas sustabdymas arba kai įrenginys neturi būti laikinai sustabdomas po neaktyvumo laikotarpio.
-
-          Politikos vertė turėtų būti nurodyta milisekundėmis. Vertės apribojamos, kad būtų mažesnės nei neaktyvumo laikotarpis.</translation>
 <translation id="1454846751303307294">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama paleisti „JavaScript“, sąrašą.
 
           Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis „JavaScript“ nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
@@ -1113,32 +1089,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Kai ši politika negalioja arba nesukonfigūruota, piktogramos yra matomos.</translation>
 <translation id="5085647276663819155">Neleisti spaudinio peržiūros</translation>
 <translation id="8672321184841719703">Taikomo automatinio naujinio versija</translation>
-<translation id="553658564206262718">Maitinimo valdymo nustatymų, kai naudotojas tampa neaktyvus, konfigūravimas.
-
-          Ši politika valdo kelis maitinimo valdymo strategijos, kai naudotojas tampa neaktyvus, nustatymus.
-
-          Galimi keturių tipų veiksmai:
-          * Ekranas bus pritemdytas, jei naudotojas išliks neaktyvus laikotarpį, nurodytą kaip „|ScreenDim|“.
-          * Ekranas bus išjungtas, jei naudotojas išliks neaktyvus laikotarpį, nurodytą kaip „|ScreenOff|“.
-          * Jei naudotojas išliks neaktyvus laikotarpį, nurodytą kaip „|IdleWarning|“, bus pateiktas dialogo langas, kuriame nurodoma, kad netrukus bus atliekamas neaktyvumo veiksmas.
-          * Veiksmas, nurodytas kaip „|IdleAction|“, bus atliktas, jei naudotojas išliks neaktyvus laikotarpį, nurodytą kaip „|Idle|“.
-
-          Kiekvieno anksčiau nurodyto veiksmo delsos laikotarpis turėtų būti nurodytas milisekundėmis ir turi būti nustatytas į didesnę nei nulis vertę, kad būtų suaktyvintas atitinkamas veiksmas. Jei delsos laikotarpis nustatytas į nulį, „<ph name="PRODUCT_OS_NAME"/>“ neatliks atitinkamo veiksmo.
-
-          Jei laikotarpis nenustatytas, bus naudojama numatytoji vertė. Tai taikoma kiekvienam anksčiau nurodytam delsos laikotarpiui.
-
-          Atminkite, kad „|ScreenDim|“ vertės bus apribotos, kad būtų mažesnės arba lygios „|ScreenOff|“ ir „|ScreenOff|“ vertėms, o „|IdleWarning|“ vertė bus apribota, kad būtų mažesnė arba lygi „|Idle|“ vertei.
-
-          „|IdleAction|“ gali būti vienas iš keturių galimų veiksmų:
-          * „|Suspend|“
-          * „|Logout|“
-          * „|Shutdown|“
-          * „|DoNothing|“
-
-          Kai „|IdleAction|“ vertė nenustatyta, atliekamas numatytasis veiksmas – laikinai sustabdyti.
-
-          Kintamosios srovės ir akumuliatoriaus maitinimo nustatymai pasirenkami atskirai.
-          </translation>
 <translation id="1689963000958717134">Leidžiama naudoti tinklo konfigūraciją, kad būtų taikoma visiems „<ph name="PRODUCT_OS_NAME"/>“ įrenginio naudotojams. Tinklo konfigūracija yra JSON suformatuota eilutė, kaip nurodyta atvirojo tinklo konfigūracijos formato, aprašyto šiuo adresu: <ph name="ONC_SPEC_URL"/></translation>
 <translation id="6699880231565102694">Įgalinti nuotolinės prieigos prieglobų autentifikavimą dviem veiksniais</translation>
 <translation id="2030905906517501646">Numatytojo paieškos teikėjo raktinis žodis</translation>
@@ -1356,32 +1306,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
       Nenustačius šios politikos „<ph name="PRODUCT_NAME"/>“ bus naudojama numatytoji 5 000 milisekundžių vertė.</translation>
 <translation id="8099880303030573137">Neveikos delsa, kai naudojama akumuliatoriaus energija</translation>
-<translation id="1709037111685927635">Konfigūruoti ekrano fono vaizdą.
-
-      Pagal šią politiką leidžiama konfigūruoti ekrano fono vaizdą, kuris rodomas naudotojo darbalaukyje ir prisijungimo ekrano fone. Politika nustatoma nurodant URL, iš kurio „<ph name="PRODUCT_OS_NAME"/>“ gali atsisiųsti ekrano fono vaizdą ir kriptografinę maišą, naudojamą atsisiuntimo vientisumui patikrinti. Vaizdas turi būti JPEG formato, ne didesnis nei 16 MB. URL turi būti galima pasiekti nenustačius tapatybės.
-
-      Ekrano fono vaizdas atsisiųstas ir saugomas talpykloje. Jis bus pakartotinai atsisiųstas pakeitus URL ar maišą.
-
-      Politika turi būti nurodyta kaip eilutė, išreiškianti URL ir maišą JSON formatu, atitinkanti nurodytą schemą:
-      {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;url&quot;: {
-            &quot;description&quot;: &quot;URL adresas, kuriuo galima atsisiųsti ekrano fono vaizdą.&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          },
-          &quot;hash&quot;: {
-            &quot;description&quot;: &quot;Ekrano fono vaizdo SHA-256 maiša.&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          }
-        }
-      }
-
-       Nustačius šią politiką, „<ph name="PRODUCT_OS_NAME"/>“ atsisiųs ir naudos ekrano fono vaizdą.
-
-      Jei nustatysite šią politiką, naudotojai negalės jos pakeisti ar perrašyti.
-
-      Nenustačius politikos, naudotojas gali pasirinkti darbalaukyje ir prisijungimo ekrano fone rodytiną vaizdą.</translation>
 <translation id="2761483219396643566">Neveikos įspėjimo delsa, kai naudojama akumuliatoriaus energija</translation>
 <translation id="6281043242780654992">Konfigūruoja savosios susirašinėjimo pranešimais programos politiką. Į juodąjį sąrašą įtrauktos savųjų susirašinėjimo pranešimais programų prieglobos nebus leidžiamos, kol nebus įtrauktos į baltąjį sąrašą.</translation>
 <translation id="1468307069016535757">Nustatyti numatytąją didelio kontrasto pasiekiamumo funkciją prisijungimo ekrane.
@@ -1520,9 +1444,93 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei įgalinsite arba išjungsite šį nustatymą, naudotojai negalės jo keisti ar nepaisyti.
 
       Jei ši politika bus nenustatyta, duomenų glaudinimo tarpinio serverio funkcija bus pasiekiama, kad naudotojas pasirinktų, ar ją naudoti.</translation>
-<translation id="2170233653554726857">Įgalinti WPAD optimizavimą</translation>
 <translation id="7424751532654212117">Neleidžiamų papildinių sąrašo išimčių sąrašas</translation>
 <translation id="6233173491898450179">Nustatyti atsisiuntimo katalogą</translation>
+<translation id="78524144210416006">Konfigūruokite energijos valdymą prisijungimo ekrane „<ph name="PRODUCT_OS_NAME"/>“.
+
+      Naudodami šią politiką galite konfigūruoti „<ph name="PRODUCT_OS_NAME"/>“ veiksmus, kai naudotojas nėra aktyvus tam tikrą laikotarpį, kol rodomas prisijungimo ekranas. Politika valdo kelis nustatymus. Atskirą jų semantiką ir verčių diapazonus žr. atitinkamoje politikoje, kontroliuojančioje energijos valdymą per sesiją. Vieninteliai nukrypimai nuo šios politikos yra:
+      * Veiksmai, kurie atliekami esant neaktyvumo būsenai ar uždarius dangtį, negali būti sesijos nutraukimas.
+      * Numatytasis veiksmas, kuris atliekamas esant neaktyvumo būsenai, kai veikiama iš kintamosios srovės šaltinio, yra uždarymas.
+
+      Politika turi būti nurodyta kaip eilutė, kurioje pateikiami atskiri nustatymai JSON formatu, atitinkanti nurodytą schemą:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;AC&quot;: {
+            &quot;description&quot;: &quot;Energijos valdymo nustatymai taikomi tik veikiant iš kintamosios srovės šaltinio&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Laikotarpis milisekundėmis, kurį naudotojas neatlieka veiksmų ir kuriam pasibaigus ekranas užtemdomas&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Laikotarpis milisekundėmis, kurį naudotojas neatlieka veiksmų ir kuriam pasibaigus ekranas išjungiamas&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Laikotarpis milisekundėmis, kurį naudotojas neatlieka veiksmų ir kuriam pasibaigus atliekamas neaktyvumo veiksmas&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Veiksmas, kuris bus atliktas, kai bus pasiektas neaktyvumo delsos laikas&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;Battery&quot;: {
+            &quot;description&quot;: &quot;Energijos valdymo nustatymai, taikomi tik veikiant iš akumuliatoriaus energijos&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Laikotarpis milisekundėmis, kurį naudotojas neatlieka veiksmų ir kuriam pasibaigus ekranas užtemdomas&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Laikotarpis milisekundėmis, kurį naudotojas neatlieka veiksmų ir kuriam pasibaigus ekranas išjungiamas&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Laikotarpis milisekundėmis, kurį naudotojas neatlieka veiksmų ir kuriam pasibaigus atliekamas neaktyvumo veiksmas&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Veiksmas, kuris bus atliktas, kai bus pasiektas neaktyvumo delsos laikas&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;LidCloseAction&quot;: {
+            &quot;description&quot;: &quot;Veiksmas, kuris bus atliktas, kai bus uždarytas dangtis&quot;,
+            &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+          },
+          &quot;UserActivityScreenDimDelayScale&quot;: {
+            &quot;description&quot;: &quot;Procentinis dydis, pagal kurį skirstoma ekrano užtemdymo delsa, kai stebimas naudotojo aktyvumas, kol ekranas užtemdytas arba netrukus išjungus ekraną&quot;,
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 100
+          }
+        }
+      }
+
+      Jei nustatymas nenurodomas, naudojama numatytoji vertė.
+
+      Jei ši politika nenustatyta, visiems nustatymams naudojamos numatytosios vertės.</translation>
 <translation id="8908294717014659003">Leidžiama jums nustatyti, ar svetainėms leidžiama prieiga prie medijos vaizdų įvedimo įrenginių. Medijos vaizdų įvedimo įrenginių prieiga gali būti leidžiama pagal numatytuosius nustatymus arba naudotojo (-os) gali būti klausiama kiekvieną kartą, kai svetainė nori gauti prieigą prie medijos vaizdų įvedimo įrenginių.
 
           Nenustačius šios politikos naudojama „PromptOnAccess“ (paraginti pasiekiant) ir naudotojas (-a) gali tai pakeisti.</translation>
@@ -1557,9 +1565,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei ši politika nenustatyta, bus naudojamas numatytasis dydis, o naudotojas galės jį perrašyti naudodamas parametrą „--media-cache-size“.</translation>
 <translation id="5142301680741828703">„<ph name="PRODUCT_FRAME_NAME"/>“ visada pateikti šiuos URL šablonus</translation>
 <translation id="4625915093043961294">Konfigūruoti plėtinių diegimo baltąjį sąrašą</translation>
-<translation id="5893553533827140852">Jei šis nustatymas įgalintas, „Gnubby“ autentifikavimo užklausos bus perduotos įgaliotajam serveriui nuotolinės prieglobos ryšiu.
-
-          Jei šis nustatymas išjungtas arba nesukonfigūruotas, „Gnubby“ autentifikavimo užklausos nebus perduotos įgaliotajam serveriui.</translation>
 <translation id="187819629719252111">Leidžiama pasiekti įrenginyje saugomus vietinius failus leidžiant „<ph name="PRODUCT_NAME"/>“ pateikti failų pasirinkimo dialogo langus.
 
       Jei įgalinsite šį nustatymą, failų pasirinkimo dialogo langus naudotojai galės atidaryti kaip įprastai.
@@ -1648,11 +1653,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Jei politika „RestoreOnStartup“ nustatyta atkurti URL iš ankstesnių sesijų, į šią politiką nebus atsižvelgiama ir slapukai tose svetainėse bus išsaugomi visam laikui.</translation>
 <translation id="2098658257603918882">Įgalinti naudojimo ir su strigtimis susijusių duomenų ataskaitų kūrimą</translation>
-<translation id="4633786464238689684">Numatytasis viršutinės eilutės klavišų veikimas pakeičiamas į funkcijų klavišus.
-
-          Nustačius šią politiką į „true“, pagal numatytuosius nustatymus klaviatūros viršutinės eilutės klavišai vykdys funkcijų klavišų komandas. Norint, kad jie vėl veiktų kaip medijos klavišai, reikia paspausti paieškos klavišą.
-
-          Nustačius šią politiką į „false“ arba jos nenustačius, pagal numatytuosius nustatymus klaviatūra bus vykdomos medijos klavišų komandos ir funkcijų klavišų komandos, laikant nuspaudus paieškos klavišą.</translation>
 <translation id="2324547593752594014">Leidžiama prisijungti prie „Chrome“</translation>
 <translation id="172374442286684480">Leisti visose svetainėse nustatyti vietinius duomenis</translation>
 <translation id="1151353063931113432">Leisti vaizdus šiose svetainėse</translation>
@@ -1708,7 +1708,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Į „ExtensionInstallBlacklist“ (plėtinių diegimo juodąjį sąrašą) įtrauktiems plėtiniams ši politika negalioja. T. y. juodajame sąraše esantis plėtinys įdiegtas nebus, net jei tai atliekama iš šio sąrašo svetainės.</translation>
 <translation id="2113068765175018713">Apriboti įrenginio veiksenos laiką automatiškai įkeliant operacinę sistemą iš naujo</translation>
-<translation id="4224610387358583899">Ekrano užrakto delsos laikotarpiai</translation>
 <translation id="7848840259379156480">Įdiegus „<ph name="PRODUCT_FRAME_NAME"/>“ leidžiama sukonfigūruoti numatytąjį HTML teikėją.
       Pagal numatytuosius nustatymus teikti leidžiama prieglobos naršyklei, bet jūs savo nuožiūra šios nuostatos galite nepaisyti ir nustatyti, kad pagal numatytuosius nustatymus „<ph name="PRODUCT_FRAME_NAME"/>“ pateiktų HTML puslapius.</translation>
 <translation id="186719019195685253">Veiksmas, kuris bus atliktas, kai bus pasiektas neaktyvumo delsos laikas, veikiant iš kintamosios srovės šaltinio</translation>
@@ -1822,15 +1821,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Politika turėtų būti nustatyta į URL, kuriuo „<ph name="PRODUCT_OS_NAME"/>“ gali atsisiųsti paslaugų teikimo sąlygas. Paslaugų teikimo sąlygas turi sudaryti paprastasis tekstas, pateiktas kaip MIME tipo tekstas / paprastasis tekstas. Neleidžiamas joks žymėjimas.</translation>
 <translation id="2623014935069176671">Laukti pradinės naudotojo veiklos</translation>
 <translation id="2660846099862559570">Niekada nenaudoti tarpinio serverio</translation>
-<translation id="1956493342242507974">Konfigūruokite maitinimo tvarkymą „<ph name="PRODUCT_OS_NAME"/>“ prisijungimo ekrane.
-
-      Pagal šią politiką leidžiama konfigūruoti, kaip „<ph name="PRODUCT_OS_NAME"/>“ elgiasi, kai tam tikrą laiką naudotojas neatlieka jokių veiksmų, kol rodomas prisijungimo ekranas. Pagal politiką tvarkomi keli nustatymai. Jei norite nustatyti individualią semantiką ir verčių diapazonus, žr. atitinkamą politiką, pagal kurią tvarkomas maitinimas per sesiją. Yra tik du šios politikos nukrypimai:
-      * Veiksmai, kurių bus imtasi esant neveikos būsenai arba kai uždaromas dangtis, negali būti sesijos užbaigimas.
-      * Numatytasis veiksmas, atliekamas esant neveikos būsenai, kai naudojama kintamoji srovė, yra išjungimas.
-
-      Jei nustatymas nenurodytas, naudojama numatytoji vertė.
-
-      Jei ši politika nenustatyta, naudojami numatytieji nustatymai.</translation>
 <translation id="1435659902881071157">Įrenginio lygio tinklo konfigūracija</translation>
 <translation id="2131902621292742709">Ekrano pritemdymo delsa, kai naudojama akumuliatoriaus energija</translation>
 <translation id="5781806558783210276">Nurodoma laiko trukmė be naudotojo įvesties, po kurios neveikos veiksmai atliekami, kai naudojama akumuliatoriaus energija.
@@ -1952,6 +1942,5 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
       Ši politika turi įtakos visiems garso išvesties tipams, ne tik įtaisytiesiems garsiakalbiams. Garso pasiekiamumo funkcijos taip pat apibrėžtos šioje politikoje. Neįgalinkite šios politikos, jei naudotojui reikalingas ekrano skaitytuvas.
 
       Jei šio nustatymo vertė yra „true“ arba jis nėra sukonfigūruotas, naudotojai gali matyti visas palaikomas garso išvestis įrenginyje.</translation>
-<translation id="6517678361166251908">Leisti „Gnubby“ autentifikavimą</translation>
 <translation id="4858735034935305895">Leisti viso ekrano režimą</translation>
 </translationbundle>

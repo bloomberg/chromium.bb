@@ -2,11 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
 <translation id="8588878054171169263">儲存圖片</translation>
-<translation id="4996978546172906250">分享方式：</translation>
 <translation id="5578795271662203820">透過 <ph name="SEARCH_ENGINE"/> 搜尋這張圖片</translation>
 <translation id="6831043979455480757">翻譯</translation>
 <translation id="7644305409888602715">正在將網頁內容翻譯成<ph name="SOURCE_LANGUAGE"/>...</translation>
-<translation id="7015922086425404465">從 Google Play 商店取得應用程式：<ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">重新載入這個網頁</translation>
 <translation id="641643625718530986">列印…</translation>
 <translation id="7658239707568436148">取消</translation>
@@ -18,15 +16,12 @@
 您即將登入受管理的帳戶，並且讓帳戶管理員控制您的 Chrome 設定檔。您的 Chrome 資料將與這個帳戶建立永久連結。如果與這個帳戶解除連結，本機 Chrome 資料將會遭到刪除。</translation>
 <translation id="1966710179511230534">請更新您的登入詳細資料。</translation>
 <translation id="1623104350909869708">防止這個網頁產生其他對話方塊</translation>
-<translation id="1426410128494586442">是</translation>
 <translation id="8218346974737627104">確認登入</translation>
 <translation id="624558823898732418">翻譯語言：<ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">選擇用於驗證的憑證</translation>
 <translation id="3896036286668839683">憑證檢視者</translation>
 <translation id="8583805026567836021">正在清除帳戶資料</translation>
-<translation id="4250680216510889253">否</translation>
 <translation id="8073388330009372546">在新分頁中開啟圖片</translation>
-<translation id="552553974213252141">擷取的文字是否正確？</translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="4170011742729630528">服務無法使用，請稍後再試。</translation>
 <translation id="8627706565932943526">同步處理發生錯誤</translation>
@@ -38,14 +33,11 @@
 <translation id="907015151729920253">智慧卡</translation>
 <translation id="3063601790762993062">儲存影片</translation>
 <translation id="6042308850641462728">詳細資訊</translation>
-<translation id="7267430310003164111">提示從 Google Play 商店取得應用程式。應用程式名稱：<ph name="APP_NAME"/>。應用程式平均評分：<ph name="APP_RATING"/>。</translation>
-<translation id="4148957013307229264">安裝中...</translation>
 <translation id="3992315671621218278">儲存連結</translation>
 <translation id="8034522405403831421">這個網頁的內容是<ph name="SOURCE_LANGUAGE"/>，需要翻譯成<ph name="TARGET_LANGUAGE"/>嗎？</translation>
 <translation id="4195643157523330669">在新分頁中開啟</translation>
 <translation id="3089395242580810162">在無痕式分頁中開啟</translation>
 <translation id="8725066075913043281">再試一次</translation>
-<translation id="8909135823018751308">分享…</translation>
 <translation id="4269820728363426813">複製連結網址</translation>
 <translation id="4510973599275542560">不要重新載入</translation>
 <translation id="1206892813135768548">複製連結文字</translation>
@@ -58,10 +50,8 @@
 <translation id="1285320974508926690">永遠不要翻譯此網站</translation>
 <translation id="5164482624172255778">下次造訪這個網站時，需要 Google Chrome 為您翻譯其中的<ph name="LANGUAGE"/>網頁嗎？</translation>
 <translation id="8528538445849828817">網頁語言：<ph name="SOURCE_LANGUAGE"/></translation>
-<translation id="4881695831933465202">開啟</translation>
 <translation id="6512448926095770873">離開此頁</translation>
 <translation id="7947953824732555851">接受並登入</translation>
-<translation id="6333140779060797560">透過 <ph name="APPLICATION"/> 分享</translation>
 <translation id="6040143037577758943">關閉</translation>
 <translation id="969096075394517431">變更語言</translation>
 <translation id="5032574515228824816">提示</translation>

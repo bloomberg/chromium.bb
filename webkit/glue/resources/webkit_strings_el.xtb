@@ -20,7 +20,7 @@
 <translation id="8785498733064193001">έναρξη αναπαραγωγής</translation>
 <translation id="7057186640035488495">χρόνος ταινίας</translation>
 <translation id="8199524924445686405">εεεε</translation>
-<translation id="795667975304826397">Δεν έχει επιλεγεί κανένα αρχείο</translation>
+<translation id="795667975304826397">Δεν επιλέχθηκε κανένα αρχείο.</translation>
 <translation id="7789962463072032349">παύση</translation>
 <translation id="6853785296079745596">απόκρυψη υπότιτλων</translation>
 <translation id="4360991593054037559">Καταχωρίστε μια έγκυρη τιμή. Οι δύο πιο κοντινές έγκυρες τιμές είναι <ph name="VALID_VALUE_LOW"/> και <ph name="VALID_VALUE_HIGHER"/>.</translation>
@@ -80,7 +80,6 @@
 <translation id="2597378329261239068">Αυτό το έγγραφο προστατεύεται με κωδικό πρόσβασης.  Πληκτρολογήστε έναν κωδικό πρόσβασης.</translation>
 <translation id="5466621249238537318">Επιλέξτε ένα ή περισσότερα αρχεία.</translation>
 <translation id="9132465097189459683">Άλλες…</translation>
-<translation id="10623998915015855">κουμπί εναλλαγής</translation>
 <translation id="8750798805984357768">Ορίστε μία από αυτές τις επιλογές.</translation>
 <translation id="7740050170769002709">Περιεχόμενο HTML</translation>
 <translation id="6692633176391053278">stepper</translation>

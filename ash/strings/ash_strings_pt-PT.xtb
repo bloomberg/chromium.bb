@@ -10,7 +10,6 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> foi rodado para <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth desativado</translation>
-<translation id="6713285437468012787">O dispositivo Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; foi sincronizado e está agora disponível para todos os utilizadores. Pode remover esta sincronização através das Definições.</translation>
 <translation id="7165320105431587207">Não foi possível configurar a rede</translation>
 <translation id="3775358506042162758">Só pode ter três contas no máximo no início de sessão integrado.</translation>
 <translation id="370649949373421643">Ativar Wi-Fi</translation>
@@ -20,7 +19,6 @@
 <translation id="595202126637698455">Rastreio do desempenho ativado</translation>
 <translation id="8054466585765276473">A calcular tempo da bateria.</translation>
 <translation id="7982789257301363584">Rede</translation>
-<translation id="2303600792989757991">Ativar/desativar visão geral das janelas</translation>
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="938582441709398163">Sobreposição do teclado</translation>
 <translation id="4387004326333427325">Certificado de autenticação rejeitado remotamente</translation>
@@ -81,9 +79,7 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="3892641579809465218">Apresentação Interna</translation>
 <translation id="7823564328645135659">O idioma foi alterado de <ph name="FROM_LOCALE"/> para <ph name="TO_LOCALE"/> depois de sincronizar as suas definições.</translation>
 <translation id="3368922792935385530">Ligado</translation>
-<translation id="3606978283550408104">Visualização em braille ligada.</translation>
 <translation id="8654520615680304441">Ligar Wi-Fi...</translation>
-<translation id="6650933572246256093">O dispositivo Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; necessita de autorização para sincronizar. Introduza esta chave nesse dispositivo: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">O seu método de introdução foi alterado para <ph name="INPUT_METHOD_ID"/>.
 Prima Shift + Alt para mudar.</translation>
@@ -136,7 +132,6 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">A ativar <ph name="NAME"/></translation>
-<translation id="4527045527269911712">O dispositivo Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; necessita de autorização para sincronizar.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Cliques automáticos</translation>
 <translation id="1398853756734560583">Maximizar</translation>
@@ -187,15 +182,11 @@ Mensagem do servidor: <ph name="SERVER_MSG"/></translation>
 <translation id="479989351350248267">pesquisar</translation>
 <translation id="8454013096329229812">A ligação Wi-Fi está ativada.</translation>
 <translation id="4872237917498892622">Alt + Pesquisar ou Shift</translation>
-<translation id="2429753432712299108">O dispositivo Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; necessita de autorização para sincronizar. Antes de aceitar, confirme que esta chave está indicada nesse dispositivo: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">A bateria está <ph name="PERCENTAGE"/>% cheia.</translation>
 <translation id="2983818520079887040">Definições...</translation>
 <translation id="3871838685472846647">Telemóvel Ativado</translation>
-<translation id="6452181791372256707">Rejeitar</translation>
 <translation id="1195412055398077112">overscan</translation>
-<translation id="607652042414456612">O seu computador é detetável para os dispositivos Bluetooth nas proximidades e aparecerá como &quot;<ph name="NAME"/>&quot; com o endereço <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Ocultar automaticamente a prateleira</translation>
-<translation id="6732801395666424405">Certificados não carregados</translation>
 <translation id="7573962313813535744">Modo ancorado</translation>
 <translation id="8927026611342028580">Ligação Solicitada</translation>
 <translation id="8300849813060516376">O OTASP falhou</translation>
@@ -208,7 +199,6 @@ Mensagem do servidor: <ph name="SERVER_MSG"/></translation>
 <translation id="6785414152754474415">A bateria está <ph name="PERCENTAGE"/>% cheia e a carregar.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: a ativar...</translation>
 <translation id="4895488851634969361">A bateria está carregada.</translation>
-<translation id="615957422585914272">Mostrar teclado no ecrã</translation>
 <translation id="5947494881799873997">Reverter</translation>
 <translation id="7593891976182323525">Pesquisar ou Shift</translation>
 <translation id="7649070708921625228">Ajuda</translation>
@@ -216,7 +206,6 @@ Mensagem do servidor: <ph name="SERVER_MSG"/></translation>
 Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="397105322502079400">A calcular...</translation>
 <translation id="158849752021629804">Requer rede doméstica</translation>
-<translation id="1013923882670373915">O dispositivo Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; necessita de autorização para sincronizar. Introduza este código PIN nesse dispositivo: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">Activar <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">A procura DHCP falhou</translation>
 <translation id="2819276065543622893">A sessão será terminada agora.</translation>
@@ -226,7 +215,6 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="973896785707726617">Esta sessão irá terminar em <ph name="SESSION_TIME_REMAINING"/>. A sua sessão será automaticamente terminada.</translation>
 <translation id="8372369524088641025">Chave WEP incorrecta</translation>
 <translation id="6636709850131805001">Estado não reconhecido</translation>
-<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Reverter alteração para <ph name="FROM_LOCALE"/> (requer reinicio)</translation>
 <translation id="8103386449138765447">Mensagens SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">O ChromeVox (respostas faladas) está ativado.

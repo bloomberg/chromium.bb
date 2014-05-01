@@ -2,11 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
 <translation id="8588878054171169263">Resmi kaydet</translation>
-<translation id="4996978546172906250">Paylaşım yöntemi:</translation>
 <translation id="5578795271662203820">Bu resmi, <ph name="SEARCH_ENGINE"/> üzerinde ara</translation>
 <translation id="6831043979455480757">Çevir</translation>
 <translation id="7644305409888602715">Sayfa <ph name="SOURCE_LANGUAGE"/> diline çevriliyor...</translation>
-<translation id="7015922086425404465">Uygulamayı Google Play Store'dan alın: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Bu Sayfayı Yeniden Yükle</translation>
 <translation id="641643625718530986">Yazdır…</translation>
 <translation id="7658239707568436148">İptal</translation>
@@ -18,15 +16,12 @@
 Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilinizi denetleme olanağı veriyorsunuz. Chrome verileriniz bu hesaba kalıcı olarak bağlanır. Bu hesabın bağlantısı kesildiğinde yerel Chrome verileriniz silinir.</translation>
 <translation id="1966710179511230534">Lütfen oturum açma ayrıntılarınızı güncelleyin.</translation>
 <translation id="1623104350909869708">Bu sayfanın daha fazla iletişim kutusu oluşturmasını önle</translation>
-<translation id="1426410128494586442">Evet</translation>
 <translation id="8218346974737627104">Oturum açmayı onaylayın</translation>
 <translation id="624558823898732418">Çeviri Dili: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Kimlik doğrulama sertifikasını seçin</translation>
 <translation id="3896036286668839683">Sertifika Görüntüleyici</translation>
 <translation id="8583805026567836021">Hesap verileri temizleniyor</translation>
-<translation id="4250680216510889253">Hayır</translation>
 <translation id="8073388330009372546">Resmi yeni sekmede aç</translation>
-<translation id="552553974213252141">Metin doğru bir şekilde çıkarıldı mı?</translation>
 <translation id="8730621377337864115">Bitti</translation>
 <translation id="4170011742729630528">Hizmet kullanılamıyor, daha sonra tekrar deneyin.</translation>
 <translation id="8627706565932943526">Senkronizasyon hatası</translation>
@@ -38,14 +33,11 @@ Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilin
 <translation id="907015151729920253">Akıllı kart</translation>
 <translation id="3063601790762993062">Videoyu kaydet</translation>
 <translation id="6042308850641462728">Daha fazla</translation>
-<translation id="7267430310003164111">Uygulamanın Google Play Store'dan alınması için istem. Uygulamanın adı: <ph name="APP_NAME"/>. Uygulamanın ortalama kullanıcı oyu: <ph name="APP_RATING"/>.</translation>
-<translation id="4148957013307229264">Yükleniyor...</translation>
 <translation id="3992315671621218278">Bağlantıyı kaydet</translation>
 <translation id="8034522405403831421">Bu sayfa <ph name="SOURCE_LANGUAGE"/> dilinde. <ph name="TARGET_LANGUAGE"/> diline çevrilsin mi?</translation>
 <translation id="4195643157523330669">Yeni sekmede aç</translation>
 <translation id="3089395242580810162">Gizli sekmede aç</translation>
 <translation id="8725066075913043281">Yeniden dene</translation>
-<translation id="8909135823018751308">Paylaş…</translation>
 <translation id="4269820728363426813">Bağlantı adresini kopyala</translation>
 <translation id="4510973599275542560">Yeniden yükleme</translation>
 <translation id="1206892813135768548">Bağlantı metnini kopyala</translation>
@@ -58,10 +50,8 @@ Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilin
 <translation id="1285320974508926690">Bu siteyi hiçbir zaman çevirme</translation>
 <translation id="5164482624172255778">Google Chrome'un bir dahaki sefere bu siteden <ph name="LANGUAGE"/> dilindeki sayfaları çevirmeyi önermesini ister misiniz?</translation>
 <translation id="8528538445849828817">Sayfanın Dili: <ph name="SOURCE_LANGUAGE"/></translation>
-<translation id="4881695831933465202">Aç</translation>
 <translation id="6512448926095770873">Bu Sayfadan Ayrıl</translation>
 <translation id="7947953824732555851">Kabul et ve oturum aç</translation>
-<translation id="6333140779060797560">Paylaşım yöntemi: <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Kapat</translation>
 <translation id="969096075394517431">Dilleri değiştir</translation>
 <translation id="5032574515228824816">İstem</translation>

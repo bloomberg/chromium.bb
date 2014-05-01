@@ -18,7 +18,6 @@
       如果停用此政策，则系统一律不提示用户，且仅 AudioCaptureAllowedUrls 中配置的网址可以使用音频捕获设备。
 
       此政策会影响所有类型的音频输入（而不仅仅是内置麦克风）。</translation>
-<translation id="7267809745244694722">媒体键默认为功能键</translation>
 <translation id="9150416707757015439">此政策已弃用，请改用 IncognitoModeAvailability。在 <ph name="PRODUCT_NAME"/>中启用隐身模式。如果已启用或未配置此设置，用户就可以在隐身模式下打开网页。如果停用此设置，用户就无法在隐身模式下打开网页。如果未设置此政策，将会启用此设置，用户便能使用隐身模式。</translation>
 <translation id="4203389617541558220">安排自动重启以限制设备的正常运行时间。
 
@@ -529,6 +528,7 @@
 
           如果停用或未设置该设置，那么使用任何帐户都可以分享主机。</translation>
 <translation id="6417861582779909667">可让您设置网址格式的列表，这些网址格式用于指定不允许设置 Cookie 的网站。在未设置此政策的情况下，如果设置了“DefaultCookiesSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
+<translation id="5457296720557564923">允许网页访问 JavaScript 内存使用情况统计信息。此设置可让网页访问来自开发者工具分析面板的内存统计信息。</translation>
 <translation id="5776485039795852974">每次网站尝试显示桌面通知时都询问</translation>
 <translation id="5047604665028708335">允许访问非内容包内的网站</translation>
 <translation id="5052081091120171147">如果启用此政策，就会强制从当前默认浏览器导入浏览记录，还会影响导入对话框。如果停用此政策，就不会导入浏览记录。如果未设置此政策，系统就会询问用户是否导入浏览记录，或者系统自动进行导入。</translation>
@@ -536,11 +536,6 @@
 <translation id="7132877481099023201">无需提示用户即可使用视频捕获设备的网址</translation>
 <translation id="8947415621777543415">报告设备位置</translation>
 <translation id="1655229863189977773">设置磁盘缓存大小（字节）</translation>
-<translation id="3358275192586364144">在<ph name="PRODUCT_NAME"/>中启用WPAD优化并防止用户更改此设置。
-
-      此政策设为启用时，Chrome只需等待更短的时间，即可收到基于DNS的WPAD服务器的响应。
-
-      如果此政策未设置，系统会启用此政策，并且用户无法对其进行更改。</translation>
 <translation id="6376842084200599664">可让您指定要静默安装（无需用户干预）的扩展程序的列表。
 
           列表中的每一项都是一个字符串，其中包含由分号 (<ph name="SEMICOLON"/>) 分隔的扩展程序 ID 和更新网址。扩展程序 ID 为 32 个字母的字符串，示例如下：<ph name="CHROME_EXTENSIONS_LINK"/>（在开发者模式下）。更新网址应指向更新清单 XML 文档，具体如 <ph name="LINK_TO_EXTENSION_DOC1"/> 中所述。请注意，此策略中设置的更新网址仅用于首次安装，扩展程序的后续更新会使用扩展程序清单中指示的更新网址。
@@ -642,7 +637,6 @@
 <translation id="1679420586049708690">用于自动登录的公开会话</translation>
 <translation id="7625444193696794922">指定该设备应锁定到的发布渠道。</translation>
 <translation id="2552966063069741410">时区</translation>
-<translation id="3788662722837364290">设备闲置时的电源管理设置</translation>
 <translation id="2240879329269430151">可让您设置是否允许网站显示弹出式窗口。可以针对所有网站允许或拒绝显示弹出式窗口。如果未设置此政策，系统将使用“BlockPopups”并允许用户更改此设置。</translation>
 <translation id="2529700525201305165">限制哪些用户可登录 <ph name="PRODUCT_NAME"/></translation>
 <translation id="8971221018777092728">公开会话自动登录计时器</translation>
@@ -721,6 +715,7 @@
 <translation id="8102913158860568230">默认 mediastream 设置</translation>
 <translation id="6641981670621198190">停用对 3D 图形 API 的支持</translation>
 <translation id="1265053460044691532">限制通过SAML验证身份的用户可离线登录的时长</translation>
+<translation id="7929480864713075819">启用向网页报告内存信息（JS 堆大小）的功能</translation>
 <translation id="5703863730741917647">指定闲置延迟时间已过时执行的操作。
 
           请注意，此政策已弃用，不久就会删除。
@@ -800,7 +795,6 @@
 <translation id="4057110413331612451">仅允许企业用户成为多用户配置中的一级用户</translation>
 <translation id="5365946944967967336">在工具栏上显示“主页”按钮</translation>
 <translation id="3709266154059827597">配置扩展程序安装黑名单</translation>
-<translation id="1933378685401357864">壁纸图片</translation>
 <translation id="8451988835943702790">使用“新标签页”作为主页</translation>
 <translation id="4617338332148204752">跳过“<ph name="PRODUCT_FRAME_NAME"/>”中的元标记检查</translation>
 <translation id="8469342921412620373">启用默认搜索服务提供商。如果您启用了此设置，当用户在多功能框中输入非网址的文字时，系统会执行默认搜索。您可以设置其余的默认搜索政策，从而指定要使用的默认搜索服务提供商。如果这些选项都留空，用户就可以选择默认的服务提供商。如果您停用了此设置，当用户在多功能框中输入非网址的文字时，系统不会执行任何搜索。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，就会启用默认搜索服务提供商，而用户也可以设置搜索服务提供商的列表。</translation>
@@ -814,9 +808,6 @@
 
           如果未设置此政策，则大号光标最初处于停用状态，但用户可以随时启用该功能。</translation>
 <translation id="2633084400146331575">启用语音反馈</translation>
-<translation id="687046793986382807">此政策自35版<ph name="PRODUCT_NAME"/>起已停止使用。
-
-      无论选项值是什么，系统都会向网页报告内存信息，但出于安全考虑，系统会限制所报告的内存大小，并会限制更新率。要获取准确的实时数据，请使用遥测等工具。</translation>
 <translation id="8731693562790917685">“内容设置”可让您指定特定类型的内容（例如 Cookie、图片或 JavaScript）的处理方式。</translation>
 <translation id="2411919772666155530">阻止在这些网站上显示通知</translation>
 <translation id="6923366716660828830">指定默认搜索服务提供商的名称。如果留空或未设置，系统就会使用由搜索网址指定的主机名。要考虑此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
@@ -826,7 +817,6 @@
 
           如果将此政策设为 false，系统就会忽略屏幕唤醒锁定请求。</translation>
 <translation id="467236746355332046">支持的功能：</translation>
-<translation id="5447306928176905178">向网页报告内存信息（JS堆内存大小）（已停止使用）</translation>
 <translation id="7632724434767231364">GSSAPI 库名称</translation>
 <translation id="3038323923255997294">在<ph name="PRODUCT_NAME"/>关闭后继续运行后台应用</translation>
 <translation id="8909280293285028130">指定在使用交流电源供电时用户停止输入后隔多久才锁定屏幕。
@@ -871,17 +861,6 @@
           此为可选政策。如果未设置此政策，系统将使用 GET 方法发送“即搜即得”搜索请求。
 
           此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
-<translation id="6095999036251797924">指定在设备闲置多长时间后屏幕将锁定（使用交流电源或电池供电时）。
-
-          如果该时间长度设为大于0的值，那么只要设备闲置时间达到指定时长，<ph name="PRODUCT_OS_NAME"/>就会锁定屏幕。
-
-          如果该时间长度设为0，那么在设备闲置时，<ph name="PRODUCT_OS_NAME"/>不会锁定屏幕。
-
-          如果该时间长度未设置，那么系统将使用默认时间长度。
-
-          要在设备闲置时锁定屏幕，建议您采用以下方式：启用在系统处于暂停状态时锁定屏幕，并指示<ph name="PRODUCT_OS_NAME"/>在闲置延迟时间过后进入暂停状态。只有在以下情况下才应使用此政策：系统进入暂停状态之前的很长一段时间内便应锁定屏幕，或者完全不需要启用在设备闲置时暂停系统。
-
-          此政策的值应以毫秒为单位，且必须小于闲置延迟时间。</translation>
 <translation id="1454846751303307294">可让您设置网址格式的列表，这些网址格式用于指定不允许运行 JavaScript 的网站。在未设置此政策的情况下，如果设置了“DefaultJavaScriptSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="538108065117008131">允许“<ph name="PRODUCT_FRAME_NAME"/>”处理以下内容类型。</translation>
 <translation id="2312134445771258233">允许您配置在启动时加载的页面。除非您在“启动时的操作”中选择“打开网址列表”，否则系统会忽略“启动时打开的网址”列表中的内容。</translation>
@@ -906,32 +885,6 @@
       当此政策的值设置为 False 或未配置时，图标会显示出来。</translation>
 <translation id="5085647276663819155">停用打印预览</translation>
 <translation id="8672321184841719703">目标自动更新版本</translation>
-<translation id="553658564206262718">配置设备闲置时的电源管理设置。
-
-          此政策用于控制设备闲置时电源管理策略中的多个相关设置。
-
-          系统可执行以下四种闲置操作：
-          * 设备闲置的时间达到|ScreenDim|指定的值后，屏幕将变暗。
-          * 设备闲置的时间达到|ScreenOff|指定的值后，屏幕将关闭。
-          * 设备闲置的时间达到|IdleWarning|指定的值后，屏幕上将显示一个警告对话框，告诉用户系统将执行闲置操作。
-          * 设备闲置的时间达到|Idle|指定的值后，系统将执行|IdleAction|指定的操作。
-
-          对于上述各项操作，均应以毫秒为单位指定延迟时间，并且延迟时间需要设为大于0的值才能触发相应操作。如果延迟时间设为0，<ph name="PRODUCT_OS_NAME"/>将不会执行相应操作。
-
-          对于上述各个延迟时间，如果未设置时间长度，则会使用默认值。
-
-          请注意，|ScreenDim|的值不得大于|ScreenOff|的值，|ScreenOff|和|IdleWarning|的值不得大于|Idle|的值。
-
-          |IdleAction|可以是以下四种操作之一：
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          如果|IdleAction|未设置，系统将执行默认操作（即暂停系统）。
-
-          此外还有分别针对交流电源和电池的设置。
-          </translation>
 <translation id="1689963000958717134">允许将推送网络配置应用于安装了 <ph name="PRODUCT_OS_NAME"/>的设备的所有用户。网络配置为 JSON 格式的字符串，具体定义如 <ph name="ONC_SPEC_URL"/> 中的开放网络配置格式所述。</translation>
 <translation id="6699880231565102694">为远程访问主机启用双重身份验证</translation>
 <translation id="2030905906517501646">默认搜索服务提供商关键字</translation>
@@ -1104,32 +1057,6 @@
 
       如果未设置此政策，<ph name="PRODUCT_NAME"/> 将使用默认值（即5000毫秒）。</translation>
 <translation id="8099880303030573137">使用电池供电时的闲置延迟时间</translation>
-<translation id="1709037111685927635">指定壁纸图片。
-
-      通过此政策，您可以指定要显示在此用户桌面和登录屏幕背景上的壁纸图片。要设置此政策，请指定一个可供<ph name="PRODUCT_OS_NAME"/>下载壁纸图片的网址，并指定一个用于验证下载内容是否完整的加密哈希值。图片必须是JPEG格式，且大小不得超过16MB。网址必须可直接访问，而无需进行任何验证。
-
-      系统会下载并缓存该壁纸图片。网址或哈希值只要有任何变化，系统就会重新下载壁纸图片。
-
-      在设置此政策时，应按照以下范本，用以JSON格式表示网址和哈希值的字符串形式来指定：
-      {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;url&quot;: {
-            &quot;description&quot;: &quot;可供下载壁纸图片的网址。&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          },
-          &quot;hash&quot;: {
-            &quot;description&quot;: &quot;壁纸图片的SHA-256哈希值。&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          }
-        }
-      }
-
-      如果此政策已设置，<ph name="PRODUCT_OS_NAME"/>将下载并使用相应的壁纸图片。
-
-      如果此政策已设置，用户将无法对其进行更改或覆盖。
-
-      如果此政策未设置，则相关用户可以随意选择要在桌面和登录屏幕背景上显示的图片。</translation>
 <translation id="2761483219396643566">使用电池供电时的闲置警告延迟时间</translation>
 <translation id="6281043242780654992">配置本地消息传递政策。不允许黑名单中列出的本地消息传递主机（除非相应主机已列入白名单）。</translation>
 <translation id="1468307069016535757">设置登录屏幕上高反差模式辅助功能的默认状态。
@@ -1246,9 +1173,99 @@
       如果您启用或停用了该设置，用户将无法更改或覆盖该设置。
 
       如果该政策未设置，用户可选择是否使用数据压缩代理功能。</translation>
-<translation id="2170233653554726857">启用WPAD优化</translation>
 <translation id="7424751532654212117">已停用插件列表的例外情况</translation>
 <translation id="6233173491898450179">设置下载目录</translation>
+<translation id="78524144210416006">对 <ph name="PRODUCT_OS_NAME"/>的登录屏幕配置电源管理设置。
+
+
+
+      通过此政策，可配置当 <ph name="PRODUCT_OS_NAME"/>停留在登录屏幕且用户处于闲置状态的时间达到指定的时长时，系统应采取哪些操作。此政策可控制多个设置。要了解个别设置的语义和数值范围，请查看在会话内控制电源管理的相应政策。这些政策不能指定的只有以下两点：
+
+      * 无法指定在闲置或合上屏幕上盖时结束会话。
+
+      * 使用交流电源时，系统在闲置状态的默认操作是关机。
+
+
+
+      此政策应指定为以 JSON 格式表达个别设置的字符串，并符合以下架构：
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;AC&quot;: {
+            &quot;description&quot;: &quot;Power management settings applicable only when running on AC power&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;The length of time without user input after which the screen is dimmed, in milliseconds&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;The length of time without user input after which the screen is turned off, in milliseconds&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;The length of time without user input after which the idle action is taken, in milliseconds&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Action to take when the idle delay is reached&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;Battery&quot;: {
+            &quot;description&quot;: &quot;Power management settings applicable only when running on battery power&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;The length of time without user input after which the screen is dimmed, in milliseconds&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;The length of time without user input after which the screen is turned off, in milliseconds&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;The length of time without user input after which the idle action is taken, in milliseconds&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Action to take when the idle delay is reached&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;LidCloseAction&quot;: {
+            &quot;description&quot;: &quot;Action to take when the lid is closed&quot;,
+            &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+          },
+          &quot;UserActivityScreenDimDelayScale&quot;: {
+            &quot;description&quot;: &quot;Percentage by which the screen dim delay is scaled when user activity is observed while the screen is dimmed or soon after the screen has been turned off&quot;,
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 100
+          }
+        }
+      }
+
+      如果某个设置未指定，则采用其默认值。
+
+      如果不设置此政策，则所有设置都采用其默认值。</translation>
 <translation id="8908294717014659003">允许您设置是否允许网站访问媒体捕获设备。系统默认为允许访问媒体捕获设备，否则，每次有网站要访问媒体捕获设备时都要征询用户同意。
 
           如果未设置该策略，那么系统会使用“PromptOnAccess”，且用户可以更改此设置。</translation>
@@ -1283,9 +1300,6 @@
       如果未设置此政策，系统将使用默认缓存大小，并且用户可以使用“--media-cache-size”标记覆盖默认值。</translation>
 <translation id="5142301680741828703">总是通过“<ph name="PRODUCT_FRAME_NAME"/>”呈现以下网址格式</translation>
 <translation id="4625915093043961294">配置扩展程序安装白名单</translation>
-<translation id="5893553533827140852">如果启用此设置，系统将通过远程主机连接经由代理处理gnubby身份验证请求。
-
-          如果您已停用或未配置此设置，那么系统将不会经由代理处理gnubby身份验证请求。</translation>
 <translation id="187819629719252111">允许 <ph name="PRODUCT_NAME"/>显示文件选择对话框，从而允许用户访问计算机上的本地文件。如果您启用了此设置，用户就可以正常地打开文件选择对话框。如果您停用了此设置，那么只要用户执行了会触发文件选择对话框的操作（如导入书签、上传文件、保存链接等），系统就会显示一条讯息，并且假定用户已在该文件选择对话框中点击了“取消”。如果您未设定此设置，用户就可以正常地打开文件选择对话框。</translation>
 <translation id="4507081891926866240">自定义应始终由 <ph name="PRODUCT_FRAME_NAME"/>呈现的网址格式的列表。如果未设置此政策，系统将按照“ChromeFrameRendererSettings”政策的规定，对所有网站使用默认呈现器。要查看示例格式，请访问 http://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="3101501961102569744">选择如何指定代理服务器设置</translation>
@@ -1352,11 +1366,6 @@
 
           如果“RestoreOnStartup”政策设为恢复先前会话中打开的网址，系统将忽略此政策，并会永久存储这些网站的Cookie。</translation>
 <translation id="2098658257603918882">启用关于使用情况和崩溃相关数据的报告</translation>
-<translation id="4633786464238689684">将顶行按键的默认行为模式更改为功能键。
-
-          如果此政策设为“true”，默认情况下，按键盘的顶行按键将发出功能键命令。您必须按搜索键才能将其行为模式恢复为媒体键。
-
-          如果此政策设为false或未设置，默认情况下，按键盘的顶行按键将发出媒体键命令；在按住搜索键的同时，按键盘的顶行按键将发出功能键命令。</translation>
 <translation id="2324547593752594014">允许登录 Chrome</translation>
 <translation id="172374442286684480">允许所有网站设置本地数据</translation>
 <translation id="1151353063931113432">在这些网站上允许图片</translation>
@@ -1407,7 +1416,6 @@
 
           ExtensionInstallBlacklist（扩展程序安装黑名单）的优先级高于此策略。也就是说，黑名单上的扩展程序即使来自此列表中的网站也不能安装。</translation>
 <translation id="2113068765175018713">通过自动重启限制设备的正常运行时间</translation>
-<translation id="4224610387358583899">屏幕锁定延迟时间</translation>
 <translation id="7848840259379156480">可让您配置安装“<ph name="PRODUCT_FRAME_NAME"/>”时默认使用的 HTML 呈现器。默认设置是允许托管浏览器进行呈现，但您可以选择替换此设置，并默认让“<ph name="PRODUCT_FRAME_NAME"/>”呈现 HTML 页面。</translation>
 <translation id="186719019195685253">当闲置延迟时间已过且使用交流电源供电时执行的操作</translation>
 <translation id="7890264460280019664">将网络接口列表及其类型和硬件地址报告给服务器。
@@ -1472,15 +1480,6 @@
       该政策的值应设置为供 <ph name="PRODUCT_OS_NAME"/>下载服务条款的网址。该服务条款必须是纯文本，以 MIME 纯文本形式提供，不允许进行任何标记。</translation>
 <translation id="2623014935069176671">等待首个用户活动</translation>
 <translation id="2660846099862559570">从不使用代理</translation>
-<translation id="1956493342242507974">指定<ph name="PRODUCT_OS_NAME"/>中登录屏幕的电源管理设置。
-
-      此政策可让您指定在系统显示登录屏幕时用户停止操作一定时间后<ph name="PRODUCT_OS_NAME"/>的行为。此政策能够控制多个设置。有关各个设置的语义和值范围，请参见控制会话内电源管理的相应政策。此政策与这些政策之间仅存在以下差异：
-      * 设备闲置或合上屏幕上盖时采取的操作不能是结束会话。
-      * 若采用交流电源供电，设备闲置时采取的默认操作是关机。
-
-      如果某个设置未指定，系统会为其使用默认值。
-
-      如果此政策未设置，系统会为所有设置使用默认值。</translation>
 <translation id="1435659902881071157">设备级网络配置</translation>
 <translation id="2131902621292742709">使用电源供电时的屏幕变暗延迟时间</translation>
 <translation id="5781806558783210276">指定在使用电池供电时用户停止输入后隔多久系统才采取闲置操作。
@@ -1587,6 +1586,5 @@
       此政策会影响所有类型的音频输出，而不只是影响内置扬声器。音频辅助功能也受此政策约束。如果用户需要使用屏幕阅读器，请勿启用此政策。
 
       如果此政策设为true或未配置，用户将可以在其设备上使用所有受支持的音频输出。</translation>
-<translation id="6517678361166251908">允许gnubby身份验证</translation>
 <translation id="4858735034935305895">允许全屏模式</translation>
 </translationbundle>

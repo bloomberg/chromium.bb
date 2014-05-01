@@ -10,7 +10,6 @@
 <translation id="6310121235600822547">تم تدوير <ph name="DISPLAY_NAME"/> إلى <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">بلوتوث</translation>
 <translation id="2268130516524549846">تم تعطيل البلوتوث</translation>
-<translation id="6713285437468012787">تم إقران جهاز بلوتوث &quot;<ph name="DEVICE_NAME"/>&quot; وهو الآن متاح لجميع المستخدمين. يمكنك إزالة هذا الإقران باستخدام الإعدادات.</translation>
 <translation id="7165320105431587207">أخفقت تهيئة الشبكة</translation>
 <translation id="3775358506042162758">يُمكنك تسجيل الدخول المتعدد باستخدام ثلاثة حسابات كحد أقصى.</translation>
 <translation id="370649949373421643">‏تمكين Wi-Fi</translation>
@@ -20,7 +19,6 @@
 <translation id="595202126637698455">تم تمكين تتبع مستوى الأداء</translation>
 <translation id="8054466585765276473">يجري حساب وقت البطارية.</translation>
 <translation id="7982789257301363584">الشبكة</translation>
-<translation id="2303600792989757991">نظرة عامة لنافذة التبديل</translation>
 <translation id="5565793151875479467">الخادم الوكيل...</translation>
 <translation id="938582441709398163">تراكب لوحة المفاتيح</translation>
 <translation id="4387004326333427325">تم رفض شهادة المصادقة عن بُعد</translation>
@@ -81,9 +79,7 @@
 <translation id="3892641579809465218">العرض الداخلي</translation>
 <translation id="7823564328645135659">تم تغيير اللغة من &quot;<ph name="FROM_LOCALE"/>&quot; إلى &quot;<ph name="TO_LOCALE"/>&quot; بعد مزامنة إعداداتك.</translation>
 <translation id="3368922792935385530">متصل</translation>
-<translation id="3606978283550408104">تم توصيل شاشة برايل.</translation>
 <translation id="8654520615680304441">‏تشغيل شبكة Wi-Fi...</translation>
-<translation id="6650933572246256093">يريد جهاز بلوتوث &quot;<ph name="DEVICE_NAME"/>&quot; الحصول على إذن للإقران. الرجاء إدخال مفتاح المرور هذا في هذا الجهاز: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90 درجة</translation>
 <translation id="5825747213122829519">‏تم تغيير أسلوب الإدخال إلى <ph name="INPUT_METHOD_ID"/>.
 اضغط على Shift + Alt للتبديل.</translation>
@@ -136,7 +132,6 @@
 <translation id="5543001071567407895">‏الرسائل القصيرة SMS</translation>
 <translation id="1957803754585243749">0 درجة</translation>
 <translation id="2354174487190027830">تنشيط <ph name="NAME"/></translation>
-<translation id="4527045527269911712">يريد جهاز بلوتوث &quot;<ph name="DEVICE_NAME"/>&quot; الحصول على إذن للإقران.</translation>
 <translation id="8814190375133053267">‏لاسلكي، Wi-Fi</translation>
 <translation id="1923539912171292317">النقرات التلقائية</translation>
 <translation id="1398853756734560583">تكبير</translation>
@@ -186,15 +181,11 @@
 <translation id="479989351350248267">بحث</translation>
 <translation id="8454013096329229812">‏تم تشغيل Wi-Fi.</translation>
 <translation id="4872237917498892622">‏Alt+مفتاح البحث أو Shift</translation>
-<translation id="2429753432712299108">يريد جهاز بلوتوث &quot;<ph name="DEVICE_NAME"/>&quot; الحصول على إذن للإقران. قبل القبول، الرجاء التأكد أن مفتاح المرور هذا يظهر في هذا الجهاز: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">اكتمل شحن <ph name="PERCENTAGE"/>% من البطارية.</translation>
 <translation id="2983818520079887040">الإعدادات...</translation>
 <translation id="3871838685472846647">تم تنشيط الخلوي</translation>
-<translation id="6452181791372256707">رفض</translation>
 <translation id="1195412055398077112">الخروج عن إطار الشاشة</translation>
-<translation id="607652042414456612">يمكن لأجهزة بلوتوث القريبة اكتشاف جهاز الكمبيوتر وسيظهر كـ &quot;<ph name="NAME"/>&quot; بالعنوان <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">الإخفاء التلقائي للرف</translation>
-<translation id="6732801395666424405">لم يتم تحميل الشهادات</translation>
 <translation id="7573962313813535744">وضع الإرساء</translation>
 <translation id="8927026611342028580">الاتصال مطلوب</translation>
 <translation id="8300849813060516376">‏أخفقت OTASP</translation>
@@ -207,14 +198,12 @@
 <translation id="6785414152754474415">اكتمل شحن <ph name="PERCENTAGE"/>% من البطارية ويجري شحنها.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: جارٍ التنشيط...</translation>
 <translation id="4895488851634969361">البطارية مملوءة.</translation>
-<translation id="615957422585914272">إظهار لوحة مفاتيح على الشاشة</translation>
 <translation id="5947494881799873997">التراجع عن الإجراء</translation>
 <translation id="7593891976182323525">‏مفتاح البحث أو Shift</translation>
 <translation id="7649070708921625228">مساعدة</translation>
 <translation id="3050422059534974565">‏المفتاح CAPS LOCK في وضع التشغيل، اضغط على مفتاح البحث أو المفتاح Shift لإلغاء التشغيل.</translation>
 <translation id="397105322502079400">جارٍ الحساب...</translation>
 <translation id="158849752021629804">يلزم توفر الشبكة الرئيسية</translation>
-<translation id="1013923882670373915">يريد جهاز بلوتوث &quot;<ph name="DEVICE_NAME"/>&quot; الحصول على إذن للإقران. الرجاء إدخال رقم التعريف الشخصي هذا في هذا الجهاز: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">تنشيط <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">‏أخفق بحث DHCP</translation>
 <translation id="2819276065543622893">سيتم تسجيل خروجك الآن.</translation>
@@ -224,7 +213,6 @@
 <translation id="973896785707726617">ستنتهي هذه الجلسة في <ph name="SESSION_TIME_REMAINING"/>. سيتم الخروج تلقائيًا.</translation>
 <translation id="8372369524088641025">‏مفتاح WEP غير صالح</translation>
 <translation id="6636709850131805001">حالة غير معروفة</translation>
-<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">التغيير مرة أخرى إلى &quot;<ph name="FROM_LOCALE"/>&quot; (يتطلب إعادة التشغيل)</translation>
 <translation id="8103386449138765447">‏الرسائل القصيرة SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">‏تم تمكين ChromeVox (التعليقات المنطوقة). يمكنك الضغط على Ctrl+Alt+Z لتعطيلها.</translation>

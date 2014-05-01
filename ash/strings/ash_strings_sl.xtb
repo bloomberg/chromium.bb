@@ -10,7 +10,6 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> – zasuk na <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth onemogočen</translation>
-<translation id="6713285437468012787">Naprava Bluetooth »<ph name="DEVICE_NAME"/>« je seznanjena in je zdaj na voljo vsem uporabnikom. To seznanitev lahko odstranite v nastavitvah.</translation>
 <translation id="7165320105431587207">Omrežja ni bilo mogoče konfigurirati</translation>
 <translation id="3775358506042162758">S prijavo z več računi lahko uporabljate samo tri račune.</translation>
 <translation id="370649949373421643">Omogoči Wi-Fi</translation>
@@ -20,7 +19,6 @@
 <translation id="595202126637698455">Sledenje učinkovitosti delovanja je omogočeno</translation>
 <translation id="8054466585765276473">Izračunavanje časa trajanja akumulatorja.</translation>
 <translation id="7982789257301363584">Omrežje</translation>
-<translation id="2303600792989757991">Preklop pregleda okna</translation>
 <translation id="5565793151875479467">Proxy ...</translation>
 <translation id="938582441709398163">Prekrivna tipkovnica</translation>
 <translation id="4387004326333427325">Potrdilo za preverjanje pristnosti je bilo zavrnjeno na oddaljeni lokaciji</translation>
@@ -81,9 +79,7 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="3892641579809465218">Notranji zaslon</translation>
 <translation id="7823564328645135659">Po sinhronizaciji nastavitev se je jezik spremenil iz jezika »<ph name="FROM_LOCALE"/>« v jezik »<ph name="TO_LOCALE"/>«.</translation>
 <translation id="3368922792935385530">Povezano</translation>
-<translation id="3606978283550408104">Povezava z braillovo vrstico je vzpostavljena.</translation>
 <translation id="8654520615680304441">Vklop omrežja Wi-Fi ...</translation>
-<translation id="6650933572246256093">Naprava Bluetooth »<ph name="DEVICE_NAME"/>« želi vaše dovoljenje za seznanjanje. V napravi vnesite to geslo: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Način vnosa se je spremenil v <ph name="INPUT_METHOD_ID"/>.
 Pritisnite Shift + Alt, da ga preklopite.</translation>
@@ -136,7 +132,6 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Aktiviranje omrežja <ph name="NAME"/></translation>
-<translation id="4527045527269911712">Naprava Bluetooth »<ph name="DEVICE_NAME"/>« želi dovoljenje za seznanjanje.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Samodejni kliki</translation>
 <translation id="1398853756734560583">Povečaj</translation>
@@ -187,15 +182,11 @@ Sporočilo strežnika: <ph name="SERVER_MSG"/></translation>
 <translation id="479989351350248267">iskanje</translation>
 <translation id="8454013096329229812">Wi-Fi je vklopljen.</translation>
 <translation id="4872237917498892622">Alt + iskanje ali Shift</translation>
-<translation id="2429753432712299108">Naprava Bluetooth »<ph name="DEVICE_NAME"/>« želi dovoljenje za seznanjanje. Preden sprejmete, se prepričajte, da je na napravi prikazano to geslo: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Napolnjenost akumulatorja: <ph name="PERCENTAGE"/> %.</translation>
 <translation id="2983818520079887040">Nastavitve ...</translation>
 <translation id="3871838685472846647">Mobilna aktivirana</translation>
-<translation id="6452181791372256707">Zavrni</translation>
 <translation id="1195412055398077112">upodabljanje čez rob zaslona</translation>
-<translation id="607652042414456612">Vaš računalnik je viden bližnjim napravam Bluetooth in bo videti kot »<ph name="NAME"/>« z naslovom <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Samodejno skrivanje police</translation>
-<translation id="6732801395666424405">Potrdila niso naložena</translation>
 <translation id="7573962313813535744">Zasidran način</translation>
 <translation id="8927026611342028580">Povezava zahtevana</translation>
 <translation id="8300849813060516376">Storitev OTASP ni uspela</translation>
@@ -208,7 +199,6 @@ Sporočilo strežnika: <ph name="SERVER_MSG"/></translation>
 <translation id="6785414152754474415">Napolnjenost akumulatorja: <ph name="PERCENTAGE"/> % – polnjenje še poteka.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Aktiviranje ...</translation>
 <translation id="4895488851634969361">Akumulator je poln.</translation>
-<translation id="615957422585914272">Pokaži zaslonsko tipkovnico</translation>
 <translation id="5947494881799873997">Razveljavi</translation>
 <translation id="7593891976182323525">Iskanje ali Shift</translation>
 <translation id="7649070708921625228">Pomoč</translation>
@@ -216,7 +206,6 @@ Sporočilo strežnika: <ph name="SERVER_MSG"/></translation>
 Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="397105322502079400">Izračunavanje …</translation>
 <translation id="158849752021629804">Potrebno je domače omrežje</translation>
-<translation id="1013923882670373915">Naprava Bluetooth »<ph name="DEVICE_NAME"/>« želi dovoljenje za seznanjanje. V napravi vnesite ta PIN: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">Aktiviraj <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Iskanje DHCP-ja ni uspelo</translation>
 <translation id="2819276065543622893">Zdaj boste odjavljeni.</translation>
@@ -226,7 +215,6 @@ Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="973896785707726617">Ta seja se bo končala čez <ph name="SESSION_TIME_REMAINING"/>. Samodejno boste odjavljeni.</translation>
 <translation id="8372369524088641025">Napačen ključ WEP</translation>
 <translation id="6636709850131805001">Neprepoznano stanje</translation>
-<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Spremeni nazaj v jezik »<ph name="FROM_LOCALE"/>« (potreben vnovični zagon)</translation>
 <translation id="8103386449138765447">Sporočila SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (izgovorjava povratnih informacij) je omogočen.
