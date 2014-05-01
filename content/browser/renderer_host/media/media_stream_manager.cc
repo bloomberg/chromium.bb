@@ -742,6 +742,38 @@ void MediaStreamManager::OpenDevice(MediaStreamRequester* requester,
                  base::Unretained(this), label));
 }
 
+bool MediaStreamManager::TranslateSourceIdToDeviceId(
+    MediaStreamType stream_type,
+    const ResourceContext::SaltCallback& sc,
+    const GURL& security_origin,
+    const std::string& source_id,
+    std::string* device_id) const {
+  DCHECK(stream_type == MEDIA_DEVICE_AUDIO_CAPTURE ||
+         stream_type == MEDIA_DEVICE_VIDEO_CAPTURE);
+  // The source_id can be empty if the constraint is set but empty.
+  if (source_id.empty())
+    return false;
+
+  const EnumerationCache* cache =
+      stream_type == MEDIA_DEVICE_AUDIO_CAPTURE ?
+      &audio_enumeration_cache_ : &video_enumeration_cache_;
+
+  // If device monitoring hasn't started, the |device_guid| is not valid.
+  if (!cache->valid)
+    return false;
+
+  for (StreamDeviceInfoArray::const_iterator it = cache->devices.begin();
+       it != cache->devices.end();
+       ++it) {
+    if (content::DoesMediaDeviceIDMatchHMAC(sc, security_origin, source_id,
+                                            it->device.id)) {
+      *device_id = it->device.id;
+      return true;
+    }
+  }
+  return false;
+}
+
 void MediaStreamManager::EnsureDeviceMonitorStarted() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   StartMonitoring();
@@ -918,38 +950,6 @@ void MediaStreamManager::TranslateDeviceIdToSourceId(
         request->security_origin,
         device->id);
   }
-}
-
-bool MediaStreamManager::TranslateSourceIdToDeviceId(
-    MediaStreamType stream_type,
-    const ResourceContext::SaltCallback& sc,
-    const GURL& security_origin,
-    const std::string& source_id,
-    std::string* device_id) const {
-  DCHECK(stream_type == MEDIA_DEVICE_AUDIO_CAPTURE ||
-         stream_type == MEDIA_DEVICE_VIDEO_CAPTURE);
-  // The source_id can be empty if the constraint is set but empty.
-  if (source_id.empty())
-    return false;
-
-  const EnumerationCache* cache =
-      stream_type == MEDIA_DEVICE_AUDIO_CAPTURE ?
-      &audio_enumeration_cache_ : &video_enumeration_cache_;
-
-  // If device monitoring hasn't started, the |device_guid| is not valid.
-  if (!cache->valid)
-    return false;
-
-  for (StreamDeviceInfoArray::const_iterator it = cache->devices.begin();
-       it != cache->devices.end();
-       ++it) {
-    if (content::DoesMediaDeviceIDMatchHMAC(sc, security_origin, source_id,
-                                            it->device.id)) {
-      *device_id = it->device.id;
-      return true;
-    }
-  }
-  return false;
 }
 
 void MediaStreamManager::ClearEnumerationCache(EnumerationCache* cache) {

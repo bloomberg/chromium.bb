@@ -6,6 +6,8 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "content/browser/browser_main_loop.h"
+#include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "crypto/hmac.h"
 
 namespace content {
@@ -34,6 +36,22 @@ bool DoesMediaDeviceIDMatchHMAC(const ResourceContext::SaltCallback& sc,
   std::string guid_from_raw_device_id =
       GetHMACForMediaDeviceID(sc, security_origin, raw_unique_id);
   return guid_from_raw_device_id == device_guid;
+}
+
+bool GetMediaDeviceIDForHMAC(MediaStreamType stream_type,
+                             const ResourceContext::SaltCallback& rc,
+                             const GURL& security_origin,
+                             const std::string& source_id,
+                             std::string* device_id) {
+  content::MediaStreamManager* manager =
+      content::BrowserMainLoop::GetInstance()->media_stream_manager();
+
+  return manager->TranslateSourceIdToDeviceId(
+      content::MEDIA_DEVICE_VIDEO_CAPTURE,
+      rc,
+      security_origin,
+      source_id,
+      device_id);
 }
 
 }  // namespace content

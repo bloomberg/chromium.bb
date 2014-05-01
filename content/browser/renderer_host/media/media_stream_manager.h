@@ -148,6 +148,16 @@ class CONTENT_EXPORT MediaStreamManager
                   MediaStreamType type,
                   const GURL& security_origin);
 
+  // Finds and returns the device id corresponding to the given
+  // |source_id|. Returns true if there was a raw device id that matched the
+  // given |source_id|, false if nothing matched it.
+  bool TranslateSourceIdToDeviceId(
+      MediaStreamType stream_type,
+      const ResourceContext::SaltCallback& rc,
+      const GURL& security_origin,
+      const std::string& source_id,
+      std::string* device_id) const;
+
   // Called by UI to make sure the device monitor is started so that UI receive
   // notifications about device changes.
   void EnsureDeviceMonitorStarted();
@@ -334,16 +344,6 @@ class CONTENT_EXPORT MediaStreamManager
   // the webrtcLoggingPrivate API if requested.
   void AddLogMessageOnUIThread(const std::set<int>& render_process_ids,
                                const std::string& message);
-
-  // Finds and returns the device id corresponding to the given
-  // |source_id|. Returns true if there was a raw device id that matched the
-  // given |source_id|, false if nothing matched it.
-  bool TranslateSourceIdToDeviceId(
-      MediaStreamType stream_type,
-      const ResourceContext::SaltCallback& rc,
-      const GURL& security_origin,
-      const std::string& source_id,
-      std::string* device_id) const;
 
   // Handles the callback from MediaStreamUIProxy to receive the UI window id,
   // used for excluding the notification window in desktop capturing.

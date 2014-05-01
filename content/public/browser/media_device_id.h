@@ -14,6 +14,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/common/media_stream_request.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -32,6 +33,13 @@ CONTENT_EXPORT bool DoesMediaDeviceIDMatchHMAC(
     const GURL& security_origin,
     const std::string& device_guid,
     const std::string& raw_unique_id);
+
+CONTENT_EXPORT bool GetMediaDeviceIDForHMAC(
+    MediaStreamType stream_type,
+    const ResourceContext::SaltCallback& rc,
+    const GURL& security_origin,
+    const std::string& source_id,
+    std::string* device_id);
 
 }  // namespace content
 
