@@ -99,7 +99,7 @@ ExtensionSettingsWebUITestWithExtensionInstalled.prototype = {
   testGenPreamble: function() {
     GEN('  InstallGoodExtension();');
   }
-}
+};
 
 TEST_F('ExtensionSettingsWebUITestWithExtensionInstalled',
        'baseAccessibilityIsOk', function() {

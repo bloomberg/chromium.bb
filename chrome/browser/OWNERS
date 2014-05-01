@@ -18,3 +18,6 @@ per-file enumerate_modules_model*=finnur@chromium.org
 per-file shell_integration_win*=gab@chromium.org
 per-file shell_integration_win*=grt@chromium.org
 per-file shell_integration_linux*=erg@chromium.org
+
+per-file PRESUBMIT.py=dbeam@chromium.org
+per-file test_presubmit.py=dbeam@chromium.org

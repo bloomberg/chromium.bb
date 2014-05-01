@@ -61,98 +61,98 @@ SyncInternalsWebUITest.prototype = {
  * @const
  */
 var HARD_CODED_ALL_NODES = [{
-  "nodes": [{
-    "ATTACHMENT_METADATA": "",
-    "BASE_SERVER_SPECIFICS": {},
-    "BASE_VERSION": "1396470970810000",
-    "CTIME": "Wednesday, December 31, 1969 4:00:00 PM",
-    "ID": "sZ:ADqtAZwzF4GOIyvkI2enSI62AU5p/7MNmvuSSyf7yXJ1SkJwpp1YL" +
-      "6bbMkF8inzqW+EO6n2aPJ/uXccW9GHxorBlnKoZAWHVzg==",
-    "IS_DEL": false,
-    "IS_DIR": true,
-    "IS_UNAPPLIED_UPDATE": false,
-    "IS_UNSYNCED": false,
-    "LOCAL_EXTERNAL_ID": "0",
-    "META_HANDLE": "387",
-    "MTIME": "Wednesday, December 31, 1969 4:00:00 PM",
-    "NON_UNIQUE_NAME": "Autofill",
-    "PARENT_ID": "r",
-    "SERVER_CTIME": "Wednesday, December 31, 1969 4:00:00 PM",
-    "SERVER_IS_DEL": false,
-    "SERVER_IS_DIR": true,
-    "SERVER_MTIME": "Wednesday, December 31, 1969 4:00:00 PM",
-    "SERVER_NON_UNIQUE_NAME": "Autofill",
-    "SERVER_PARENT_ID": "r",
-    "SERVER_SPECIFICS": {
-      "autofill": {
-        "usage_timestamp": []
+  'nodes': [{
+    'ATTACHMENT_METADATA': '',
+    'BASE_SERVER_SPECIFICS': {},
+    'BASE_VERSION': '1396470970810000',
+    'CTIME': 'Wednesday, December 31, 1969 4:00:00 PM',
+    'ID': 'sZ:ADqtAZwzF4GOIyvkI2enSI62AU5p/7MNmvuSSyf7yXJ1SkJwpp1YL' +
+      '6bbMkF8inzqW+EO6n2aPJ/uXccW9GHxorBlnKoZAWHVzg==',
+    'IS_DEL': false,
+    'IS_DIR': true,
+    'IS_UNAPPLIED_UPDATE': false,
+    'IS_UNSYNCED': false,
+    'LOCAL_EXTERNAL_ID': '0',
+    'META_HANDLE': '387',
+    'MTIME': 'Wednesday, December 31, 1969 4:00:00 PM',
+    'NON_UNIQUE_NAME': 'Autofill',
+    'PARENT_ID': 'r',
+    'SERVER_CTIME': 'Wednesday, December 31, 1969 4:00:00 PM',
+    'SERVER_IS_DEL': false,
+    'SERVER_IS_DIR': true,
+    'SERVER_MTIME': 'Wednesday, December 31, 1969 4:00:00 PM',
+    'SERVER_NON_UNIQUE_NAME': 'Autofill',
+    'SERVER_PARENT_ID': 'r',
+    'SERVER_SPECIFICS': {
+      'autofill': {
+        'usage_timestamp': []
       }
     },
-    "SERVER_UNIQUE_POSITION": "INVALID[]",
-    "SERVER_VERSION": "1396470970810000",
-    "SPECIFICS": {
-      "autofill": {
-        "usage_timestamp": []
+    'SERVER_UNIQUE_POSITION': 'INVALID[]',
+    'SERVER_VERSION': '1396470970810000',
+    'SPECIFICS': {
+      'autofill': {
+        'usage_timestamp': []
       }
     },
-    "SYNCING": false,
-    "TRANSACTION_VERSION": "1",
-    "UNIQUE_BOOKMARK_TAG": "",
-    "UNIQUE_CLIENT_TAG": "",
-    "UNIQUE_POSITION": "INVALID[]",
-    "UNIQUE_SERVER_TAG": "google_chrome_autofill",
-    "isDirty": false,
-    "serverModelType": "Autofill"
+    'SYNCING': false,
+    'TRANSACTION_VERSION': '1',
+    'UNIQUE_BOOKMARK_TAG': '',
+    'UNIQUE_CLIENT_TAG': '',
+    'UNIQUE_POSITION': 'INVALID[]',
+    'UNIQUE_SERVER_TAG': 'google_chrome_autofill',
+    'isDirty': false,
+    'serverModelType': 'Autofill'
   }, {
-    "ATTACHMENT_METADATA": "",
-    "BASE_SERVER_SPECIFICS": {},
-    "BASE_VERSION": "1394241139528639",
-    "CTIME": "Friday, March 7, 2014 5:12:19 PM",
-    "ID": "sZ:ADqtAZwzc/ol1iaz+yNLjjWak9PBE0o/hATzpqJsyq/HX2xzV2f88" +
-      "FaOrT7HDE4tyn7zx2LWgkAFvZfCA5mOy4p0XFgiY0L+mw==",
-    "IS_DEL": false,
-    "IS_DIR": false,
-    "IS_UNAPPLIED_UPDATE": false,
-    "IS_UNSYNCED": false,
-    "LOCAL_EXTERNAL_ID": "0",
-    "META_HANDLE": "2989",
-    "MTIME": "Friday, March 7, 2014 5:12:19 PM",
-    "NON_UNIQUE_NAME": "autofill_entry|Email|rlsynctet2",
-    "PARENT_ID": "sZ:ADqtAZwzF4GOIyvkI2enSI62AU5p/7MNmvuSSyf7yXJ1Sk" +
-      "Jwpp1YL6bbMkF8inzqW+EO6n2aPJ/uXccW9GHxorBlnKoZAWHVzg==",
-    "SERVER_CTIME": "Friday, March 7, 2014 5:12:19 PM",
-    "SERVER_IS_DEL": false,
-    "SERVER_IS_DIR": false,
-    "SERVER_MTIME": "Friday, March 7, 2014 5:12:19 PM",
-    "SERVER_NON_UNIQUE_NAME": "autofill_entry|Email|rlsynctet2",
-    "SERVER_PARENT_ID": "sZ:ADqtAZwzF4GOIyvkI2enSI62AU5p/7MNmvuSSyf" +
-      "7yXJ1SkJwpp1YL6bbMkF8inzqW+EO6n2aPJ/uXccW9GHxorBlnKoZAWHVzg==",
-    "SERVER_SPECIFICS": {
-      "autofill": {
-        "name": "Email",
-        "usage_timestamp": ["13038713887000000", "13038713890000000"],
-        "value": "rlsynctet2"
+    'ATTACHMENT_METADATA': '',
+    'BASE_SERVER_SPECIFICS': {},
+    'BASE_VERSION': '1394241139528639',
+    'CTIME': 'Friday, March 7, 2014 5:12:19 PM',
+    'ID': 'sZ:ADqtAZwzc/ol1iaz+yNLjjWak9PBE0o/hATzpqJsyq/HX2xzV2f88' +
+      'FaOrT7HDE4tyn7zx2LWgkAFvZfCA5mOy4p0XFgiY0L+mw==',
+    'IS_DEL': false,
+    'IS_DIR': false,
+    'IS_UNAPPLIED_UPDATE': false,
+    'IS_UNSYNCED': false,
+    'LOCAL_EXTERNAL_ID': '0',
+    'META_HANDLE': '2989',
+    'MTIME': 'Friday, March 7, 2014 5:12:19 PM',
+    'NON_UNIQUE_NAME': 'autofill_entry|Email|rlsynctet2',
+    'PARENT_ID': 'sZ:ADqtAZwzF4GOIyvkI2enSI62AU5p/7MNmvuSSyf7yXJ1Sk' +
+      'Jwpp1YL6bbMkF8inzqW+EO6n2aPJ/uXccW9GHxorBlnKoZAWHVzg==',
+    'SERVER_CTIME': 'Friday, March 7, 2014 5:12:19 PM',
+    'SERVER_IS_DEL': false,
+    'SERVER_IS_DIR': false,
+    'SERVER_MTIME': 'Friday, March 7, 2014 5:12:19 PM',
+    'SERVER_NON_UNIQUE_NAME': 'autofill_entry|Email|rlsynctet2',
+    'SERVER_PARENT_ID': 'sZ:ADqtAZwzF4GOIyvkI2enSI62AU5p/7MNmvuSSyf' +
+      '7yXJ1SkJwpp1YL6bbMkF8inzqW+EO6n2aPJ/uXccW9GHxorBlnKoZAWHVzg==',
+    'SERVER_SPECIFICS': {
+      'autofill': {
+        'name': 'Email',
+        'usage_timestamp': ['13038713887000000', '13038713890000000'],
+        'value': 'rlsynctet2'
       }
     },
-    "SERVER_UNIQUE_POSITION": "INVALID[]",
-    "SERVER_VERSION": "1394241139528639",
-    "SPECIFICS": {
-      "autofill": {
-        "name": "Email",
-        "usage_timestamp": ["13038713887000000", "13038713890000000"],
-        "value": "rlsynctet2"
+    'SERVER_UNIQUE_POSITION': 'INVALID[]',
+    'SERVER_VERSION': '1394241139528639',
+    'SPECIFICS': {
+      'autofill': {
+        'name': 'Email',
+        'usage_timestamp': ['13038713887000000', '13038713890000000'],
+        'value': 'rlsynctet2'
       }
     },
-    "SYNCING": false,
-    "TRANSACTION_VERSION": "1",
-    "UNIQUE_BOOKMARK_TAG": "",
-    "UNIQUE_CLIENT_TAG": "EvliorKUf1rLjT+BGkNZp586Tsk=",
-    "UNIQUE_POSITION": "INVALID[]",
-    "UNIQUE_SERVER_TAG": "",
-    "isDirty": false,
-    "serverModelType": "Autofill"
+    'SYNCING': false,
+    'TRANSACTION_VERSION': '1',
+    'UNIQUE_BOOKMARK_TAG': '',
+    'UNIQUE_CLIENT_TAG': 'EvliorKUf1rLjT+BGkNZp586Tsk=',
+    'UNIQUE_POSITION': 'INVALID[]',
+    'UNIQUE_SERVER_TAG': '',
+    'isDirty': false,
+    'serverModelType': 'Autofill'
   }],
-  "type": "Autofill"
+  'type': 'Autofill'
 }];
 
 /**
@@ -160,73 +160,73 @@ var HARD_CODED_ALL_NODES = [{
  * @const
  */
 HARD_CODED_ABOUT_INFO = {
-  "actionable_error": [
+  'actionable_error': [
     {
-      "is_valid": false,
-      "stat_name": "Error Type",
-      "stat_value": "Uninitialized"
+      'is_valid': false,
+      'stat_name': 'Error Type',
+      'stat_value': 'Uninitialized'
     },
     {
-      "is_valid": false,
-      "stat_name": "Action",
-      "stat_value": "Uninitialized"
+      'is_valid': false,
+      'stat_name': 'Action',
+      'stat_value': 'Uninitialized'
     },
     {
-      "is_valid": false,
-      "stat_name": "URL",
-      "stat_value": "Uninitialized"
+      'is_valid': false,
+      'stat_name': 'URL',
+      'stat_value': 'Uninitialized'
     },
     {
-      "is_valid": false,
-      "stat_name": "Error Description",
-      "stat_value": "Uninitialized"
+      'is_valid': false,
+      'stat_name': 'Error Description',
+      'stat_value': 'Uninitialized'
     }
   ],
-  "actionable_error_detected": false,
-  "details": [
+  'actionable_error_detected': false,
+  'details': [
     {
-      "data": [
+      'data': [
         {
-          "is_valid": true,
-          "stat_name": "Summary",
-          "stat_value": "Sync service initialized"
+          'is_valid': true,
+          'stat_name': 'Summary',
+          'stat_value': 'Sync service initialized'
         }
       ],
-      "is_sensitive": false,
-      "title": "Summary"
+      'is_sensitive': false,
+      'title': 'Summary'
     },
   ],
-  "type_status": [
+  'type_status': [
     {
-      "name": "Model Type",
-      "num_entries": "Total Entries",
-      "num_live": "Live Entries",
-      "status": "header",
-      "value": "Group Type"
+      'name': 'Model Type',
+      'num_entries': 'Total Entries',
+      'num_live': 'Live Entries',
+      'status': 'header',
+      'value': 'Group Type'
     },
     {
-      "name": "Bookmarks",
-      "num_entries": 2793,
-      "num_live": 2793,
-      "status": "ok",
-      "value": "Active: GROUP_UI"
+      'name': 'Bookmarks',
+      'num_entries': 2793,
+      'num_live': 2793,
+      'status': 'ok',
+      'value': 'Active: GROUP_UI'
     },
   ],
-  "unrecoverable_error_detected": false
+  'unrecoverable_error_detected': false
 };
 
 NETWORK_EVENT_DETAILS_1 = {
-  "details":"Notified types: Bookmarks, Autofill",
-  "proto":{},
-  "time":1395874542192.407,
-  "type":"Normal GetUpdate request"
+  'details': 'Notified types: Bookmarks, Autofill',
+  'proto': {},
+  'time': 1395874542192.407,
+  'type': 'Normal GetUpdate request',
 };
 
 NETWORK_EVENT_DETAILS_2 = {
-  "details":"Received error: SYNC_AUTH_ERROR",
-  "proto":{},
-  "time":1395874542192.837,
-  "type":"GetUpdates Response"
+  'details': 'Received error: SYNC_AUTH_ERROR',
+  'proto': {},
+  'time': 1395874542192.837,
+  'type': 'GetUpdates Response',
 };
 
 TEST_F('SyncInternalsWebUITest', 'Uninitialized', function() {
@@ -375,7 +375,7 @@ TEST_F('SyncInternalsWebUITest', 'EventLogTest', function() {
 TEST_F('SyncInternalsWebUITest', 'DumpSyncEventsToText', function() {
   // Dispatch an event.
   var connectionEvent = new Event('onConnectionStatusChange');
-  connectionEvent.details = {'status': 'CONNECTION_OK'}
+  connectionEvent.details = {'status': 'CONNECTION_OK'};
   chrome.sync.events.dispatchEvent(connectionEvent);
 
   // Click the dump-to-text button.

@@ -1,13 +1,15 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Presubmit script for Chromium WebUI resources.
+"""Presubmit script for Chromium browser code.
+
+This script currently only checks HTML/CSS/JS files in resources/.
 
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into gcl/git cl, and see
 http://www.chromium.org/developers/web-development-style-guide for the rules
-we're checking against here.
+checked for here.
 """
 
 
@@ -22,18 +24,21 @@ def CheckChangeOnCommit(input_api, output_api):
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
-  resources = input_api.PresubmitLocalPath()
 
   path = input_api.os_path
+  cwd = input_api.PresubmitLocalPath()
+  resources = path.join(cwd, 'resources')
+  webui = path.join(cwd, 'ui', 'webui')
+
   affected_files = (f.AbsoluteLocalPath() for f in input_api.AffectedFiles())
   would_affect_tests = (
-      path.join(resources, 'PRESUBMIT.py'),
-      path.join(resources, 'test_presubmit.py'),
-      path.join(resources, 'web_dev_style', 'css_checker.py'),
-      path.join(resources, 'web_dev_style', 'js_checker.py'),
+      path.join(cwd, 'PRESUBMIT.py'),
+      path.join(cwd, 'test_presubmit.py'),
+      path.join(cwd, 'web_dev_style', 'css_checker.py'),
+      path.join(cwd, 'web_dev_style', 'js_checker.py'),
   )
   if any(f for f in affected_files if f in would_affect_tests):
-    tests = [path.join(resources, 'test_presubmit.py')]
+    tests = [path.join(cwd, 'test_presubmit.py')]
     results.extend(
         input_api.canned_checks.RunUnitTests(input_api, output_api, tests))
 
@@ -41,11 +46,12 @@ def _CommonChecks(input_api, output_api):
   old_path = sys.path
 
   try:
-    sys.path = [resources] + old_path
+    sys.path = [cwd] + old_path
     from web_dev_style import css_checker, js_checker
 
+    search_dirs = (resources, webui)
     def _html_css_js_resource(p):
-      return p.endswith(('.html', '.css', '.js')) and p.startswith(resources)
+      return p.endswith(('.html', '.css', '.js')) and p.startswith(search_dirs)
 
     BLACKLIST = ['chrome/browser/resources/pdf/index.html',
                  'chrome/browser/resources/pdf/index.js']

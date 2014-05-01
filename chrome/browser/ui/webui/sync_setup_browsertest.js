@@ -19,7 +19,7 @@ SyncSetupWebUITest.prototype = {
    */
   browsePreload: 'chrome://settings-frame',
 
-  /** @inheritDoc */
+  /** @override */
   preLoad: function() {
     this.makeAndRegisterMockHandler(['SyncSetupConfigure',
                                      'SyncSetupShowSetupUI',
@@ -54,7 +54,7 @@ function SyncSetupWebUITestAsync() {}
 SyncSetupWebUITestAsync.prototype = {
   __proto__: SyncSetupWebUITest.prototype,
 
-  /** @inheritDoc */
+  /** @override */
   isAsync: true,
 };
 

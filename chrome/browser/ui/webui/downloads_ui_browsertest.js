@@ -56,30 +56,31 @@ BaseDownloadsWebUITest.prototype = {
   /**
    * Creates a download object to be passed to the page, following the expected
    * backend format (see downloads_dom_handler.cc).
-   * @param {Number} A unique ID for the download.
-   * @param {Number} The time the download purportedly started.
+   * @param {number} A unique ID for the download.
+   * @param {number} The time the download purportedly started.
+   * @return {!Object} A fake download object.
+   * @private
    */
   createDownload_: function(id, timestamp) {
-    var download = {};
-    download.id = id;
-    download.started = timestamp;
-    download.otr = false;
-    download.state = Download.States.COMPLETE;
-    download.retry = false;
-    download.file_path = '/path/to/file';
-    download.file_url = 'http://google.com/' + timestamp;
-    download.file_name = 'download_' + timestamp;
-    download.url = 'http://google.com/' + timestamp;
-    download.file_externally_removed = false;
-    download.danger_type = Download.DangerType.NOT_DANGEROUS;
-    download.last_reason_text = '';
-    download.since_string = 'today';
-    download.date_string = 'today';
-    download.percent = 100;
-    download.progress_status_text = 'done';
-    download.received = 128;
-
-    return download;
+    return {
+      id: id,
+      started: timestamp,
+      otr: false,
+      state: Download.States.COMPLETE,
+      retry: false,
+      file_path: '/path/to/file',
+      file_url: 'http://google.com/' + timestamp,
+      file_name: 'download_' + timestamp,
+      url: 'http://google.com/' + timestamp,
+      file_externally_removed: false,
+      danger_type: Download.DangerType.NOT_DANGEROUS,
+      last_reason_text: '',
+      since_string: 'today',
+      date_string: 'today',
+      percent: 100,
+      progress_status_text: 'done',
+      received: 128,
+    };
   },
 
   /**

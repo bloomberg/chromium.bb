@@ -15,7 +15,7 @@ BluetoothWebUITest.prototype = {
   browsePreload: 'chrome://settings-frame/settings',
 
   /**
-   * @inheritDoc
+   * @override
    */
   preLoad: function() {
     this.makeAndRegisterMockHandler([
@@ -68,7 +68,7 @@ BluetoothWebUITest.prototype = {
 
 };
 
-TEST_F('BluetoothWebUITest','testEnableBluetooth', function() {
+TEST_F('BluetoothWebUITest', 'testEnableBluetooth', function() {
   assertEquals(this.browsePreload, document.location.href);
   expectFalse($('enable-bluetooth').checked);
   expectTrue($('bluetooth-paired-devices-list').parentNode.hidden);
@@ -82,7 +82,7 @@ TEST_F('BluetoothWebUITest','testEnableBluetooth', function() {
   expectFalse($('bluetooth-paired-devices-list').parentNode.hidden);
 });
 
-TEST_F('BluetoothWebUITest','testAddDevices', function() {
+TEST_F('BluetoothWebUITest', 'testAddDevices', function() {
   assertEquals(this.browsePreload, document.location.href);
 
   var pairedDeviceList = $('bluetooth-paired-devices-list');
@@ -166,7 +166,7 @@ TEST_F('BluetoothWebUITest','testAddDevices', function() {
   connectButton.click();
 });
 
-TEST_F('BluetoothWebUITest','testDevicePairing', function() {
+TEST_F('BluetoothWebUITest', 'testDevicePairing', function() {
   assertEquals(this.browsePreload, document.location.href);
 
   var pairedDeviceList = $('bluetooth-paired-devices-list');
@@ -224,7 +224,7 @@ TEST_F('BluetoothWebUITest','testDevicePairing', function() {
                                          fakeDevice.name));
 });
 
-TEST_F('BluetoothWebUITest','testConnectionState', function() {
+TEST_F('BluetoothWebUITest', 'testConnectionState', function() {
   assertEquals(this.browsePreload, document.location.href);
 
   var pairedDeviceList = $('bluetooth-paired-devices-list');
@@ -295,7 +295,7 @@ TEST_F('BluetoothWebUITest','testConnectionState', function() {
 });
 
 
-TEST_F('BluetoothWebUITest','testMaliciousInput', function() {
+TEST_F('BluetoothWebUITest', 'testMaliciousInput', function() {
   assertEquals(this.browsePreload, document.location.href);
 
   var unpairedDeviceList = $('bluetooth-unpaired-devices-list');

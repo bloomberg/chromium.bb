@@ -17,7 +17,7 @@ FontSettingsWebUITest.prototype = {
    */
   browsePreload: 'chrome://settings-frame/fonts',
 
-  /** @inheritDoc */
+  /** @override */
   preLoad: function() {
     this.makeAndRegisterMockHandler(['openAdvancedFontSettingsOptions']);
   }

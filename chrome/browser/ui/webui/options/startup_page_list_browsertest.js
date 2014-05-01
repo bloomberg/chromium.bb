@@ -27,7 +27,7 @@ StartupPageListWebUITest.prototype = {
 
   /**
    * Returns the list to be tested.
-   * @return {Element}
+   * @return {Element} The start-up pages list.
    * @protected
    */
   getList: function() {
@@ -103,7 +103,7 @@ MockDataTransfer.prototype = {
   /**
    * Gets data associated with this fake data transfer.
    * @param {string} type The type of data to get.
-   * @returns {string} The requested type of data or '' if not set.
+   * @return {string} The requested type of data or '' if not set.
    */
   getData: function(type) {
     return this.data_[type] || '';

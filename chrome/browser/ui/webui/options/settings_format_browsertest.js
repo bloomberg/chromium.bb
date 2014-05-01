@@ -151,7 +151,7 @@ TEST_F('SettingsFormatWebUITest', 'RadioButtonNameValueCheck', function() {
     if (!element.name)
       this.fail('MISSING_RADIO_BUTTON_NAME', element);
 
-    if (!element.getAttribute("value"))
+    if (!element.getAttribute('value'))
       this.fail('MISSING_RADIO_BUTTON_VALUE', element);
   }
 });

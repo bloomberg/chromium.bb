@@ -4,7 +4,7 @@
 
 """Presubmit script for Chromium JS resources.
 
-See chrome/browser/resources/PRESUBMIT.py
+See chrome/browser/PRESUBMIT.py
 """
 
 class JSChecker(object):
@@ -95,7 +95,7 @@ class JSChecker(object):
     # TODO(tbreisacher): Once we've cleaned up the style nits in all of
     # resources/ we can get rid of this function.
     path = self.input_api.os_path
-    resources = self.input_api.PresubmitLocalPath()
+    resources = path.join(self.input_api.PresubmitLocalPath(), 'resources')
     dirs = (
         path.join(resources, 'bookmark_manager'),
         path.join(resources, 'extensions'),

@@ -21,7 +21,7 @@ CertificateManagerWebUIBaseTest.prototype = {
    */
   browsePreload: 'chrome://settings-frame/certificates',
 
-  /** @inheritDoc */
+  /** @override */
   preLoad: function() {
     // We can't check cr.isChromeOS in the preLoad since "cr" doesn't exist yet.
     // This is copied from ui/webui/resources/js/cr.js, maybe
@@ -52,7 +52,7 @@ function CertificateManagerWebUIUnpopulatedTest() {}
 CertificateManagerWebUIUnpopulatedTest.prototype = {
   __proto__: CertificateManagerWebUIBaseTest.prototype,
 
-  /** @inheritDoc */
+  /** @override */
   preLoad: function() {
     CertificateManagerWebUIBaseTest.prototype.preLoad.call(this);
 
@@ -147,7 +147,7 @@ function CertificateManagerWebUITest() {}
 CertificateManagerWebUITest.prototype = {
   __proto__: CertificateManagerWebUIBaseTest.prototype,
 
-  /** @inheritDoc */
+  /** @override */
   preLoad: function() {
     CertificateManagerWebUIBaseTest.prototype.preLoad.call(this);
 

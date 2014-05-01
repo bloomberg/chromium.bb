@@ -71,8 +71,8 @@ ManageProfileUITest.prototype = {
     OptionsPage.showPageByName(mode + 'Profile');
 
     var defaultProfile = {
-      name: "Default Name",
-      iconURL: "/default/path",
+      name: 'Default Name',
+      iconURL: '/default/path',
     };
     this.defaultIconURLs = ['/some/path',
                             defaultProfile.iconURL,
@@ -140,7 +140,7 @@ TEST_F('ManageProfileUITest', 'DefaultCreateOptions', function() {
 
 // The checkbox label should change depending on whether the user is signed in.
 TEST_F('ManageProfileUITest', 'CreateManagedUserText', function() {
-  var signedInText =  $('create-profile-managed-signed-in');
+  var signedInText = $('create-profile-managed-signed-in');
   var notSignedInText = $('create-profile-managed-not-signed-in');
 
   ManageProfileOverlay.getInstance().initializePage();
@@ -338,7 +338,7 @@ TEST_F('ManageProfileUITest', 'NoCreateConfirmationOnError', function() {
 });
 
 // The name and email should be inserted into the confirmation dialog.
-TEST_F('ManageProfileUITest', 'CreateConfirmationText', function () {
+TEST_F('ManageProfileUITest', 'CreateConfirmationText', function() {
   var self = this;
   var custodianEmail = 'foo@example.com';
 

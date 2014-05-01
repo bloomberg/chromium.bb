@@ -9,6 +9,11 @@ GEN('#include "chrome/browser/ui/webui/options/options_browsertest.h"');
 /**
  * Wait for the method specified by |methodName|, on the |object| object, to be
  * called, then execute |afterFunction|.
+ * @param {*} object Object with callable property named |methodName|.
+ * @param {string} methodName The name of the property on |object| to use as a
+ *     callback.
+ * @param {!Function} afterFunction A function to call after object.methodName()
+ *     is called.
  */
 function waitForResponse(object, methodName, afterFunction) {
   var originalCallback = object[methodName];
@@ -24,6 +29,7 @@ function waitForResponse(object, methodName, afterFunction) {
 /**
   * Wait for the global window.onpopstate callback to be called (after a tab
   * history navigation), then execute |afterFunction|.
+  * @param {!Function} afterFunction A function to call after pop state events.
   */
 function waitForPopstate(afterFunction) {
   waitForResponse(window, 'onpopstate', afterFunction);
@@ -143,18 +149,22 @@ TEST_F('OptionsWebUITest', 'testDefaultZoomFactor', function() {
   this.mockHandler.expects(once()).defaultZoomFactorAction(NOT_NULL).
       will(callFunction(function() { }));
   defaultZoomFactor.selectedIndex = defaultZoomFactor.options.length - 1;
-  var event = { target: defaultZoomFactor };
+  var event = {target: defaultZoomFactor};
   if (defaultZoomFactor.onchange) defaultZoomFactor.onchange(event);
   testDone();
 });
 
-// If |confirmInterstitial| is true, the OK button of the Do Not Track
-// interstitial is pressed, otherwise the abort button is pressed.
+/**
+ * If |confirmInterstitial| is true, the OK button of the Do Not Track
+ * interstitial is pressed, otherwise the abort button is pressed.
+ * @param {boolean} confirmInterstitial Whether to confirm the Do Not Track
+ *     interstitial.
+ */
 OptionsWebUITest.prototype.testDoNotTrackInterstitial =
     function(confirmInterstitial) {
-  Preferences.prefsFetchedCallback({'enable_do_not_track': {'value': false } });
-  var buttonToClick = confirmInterstitial ? $('do-not-track-confirm-ok')
-                                          : $('do-not-track-confirm-cancel');
+  Preferences.prefsFetchedCallback({'enable_do_not_track': {'value': false}});
+  var buttonToClick = confirmInterstitial ? $('do-not-track-confirm-ok') :
+                                            $('do-not-track-confirm-cancel');
   var dntCheckbox = $('do-not-track-enabled');
   var dntOverlay = OptionsPage.registeredOverlayPages['donottrackconfirm'];
   assertFalse(dntCheckbox.checked);
@@ -180,7 +190,7 @@ OptionsWebUITest.prototype.testDoNotTrackInterstitial =
       default:
         assertTrue(false);
     }
-  }
+  };
   dntOverlay.addEventListener('visibleChange', visibleChangeHandler);
 
   if (confirmInterstitial) {
@@ -192,7 +202,7 @@ OptionsWebUITest.prototype.testDoNotTrackInterstitial =
   }
 
   dntCheckbox.click();
-}
+};
 
 TEST_F('OptionsWebUITest', 'EnableDoNotTrackAndConfirmInterstitial',
        function() {
@@ -207,9 +217,9 @@ TEST_F('OptionsWebUITest', 'EnableDoNotTrackAndCancelInterstitial',
 // Check that the "Do not Track" preference can be correctly disabled.
 // In order to do that, we need to enable it first.
 TEST_F('OptionsWebUITest', 'EnableAndDisableDoNotTrack', function() {
-  Preferences.prefsFetchedCallback({'enable_do_not_track': {'value': false } });
+  Preferences.prefsFetchedCallback({'enable_do_not_track': {'value': false}});
   var dntCheckbox = $('do-not-track-enabled');
-  var dntOverlay = OptionsPage.registeredOverlayPages['donottrackconfirm'];
+  var dntOverlay = OptionsPage.registeredOverlayPages.donottrackconfirm;
   assertFalse(dntCheckbox.checked);
 
   var visibleChangeCounter = 0;
@@ -237,17 +247,17 @@ TEST_F('OptionsWebUITest', 'EnableAndDisableDoNotTrack', function() {
   dntOverlay.addEventListener('visibleChange', visibleChangeHandler);
 
   this.mockHandler.expects(once()).setBooleanPref(
-      eq(["enable_do_not_track", true, 'Options_DoNotTrackCheckbox']));
+      eq(['enable_do_not_track', true, 'Options_DoNotTrackCheckbox']));
 
   var verifyCorrectEndState = function() {
     window.setTimeout(function() {
       assertFalse(dntOverlay.visible);
       assertFalse(dntCheckbox.checked);
       testDone();
-    }, 0)
+    }, 0);
   }
   this.mockHandler.expects(once()).setBooleanPref(
-      eq(["enable_do_not_track", false, 'Options_DoNotTrackCheckbox'])).will(
+      eq(['enable_do_not_track', false, 'Options_DoNotTrackCheckbox'])).will(
           callFunction(verifyCorrectEndState));
 
   dntCheckbox.click();
@@ -332,7 +342,7 @@ OptionsWebUIExtendedTest.prototype = {
   isAsync: true,
 
   /** @override */
-  setUp: function () {
+  setUp: function() {
       // user-image-stream is a streaming video element used for capturing a
       // user image during OOBE.
       this.accessibilityAuditConfig.ignoreSelectors('videoWithoutCaptions',
@@ -455,7 +465,7 @@ OptionsWebUIExtendedTest.prototype = {
   },
 };
 
-/*
+/**
  * Set by verifyHistory_ to incorporate a followup callback, then called by the
  * C++ fixture with the navigation history to be verified.
  * @type {Function}
