@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/local_discovery/service_discovery_client_utility.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/firewall_manager_win.h"
@@ -28,14 +29,16 @@ namespace {
 #if defined(OS_WIN)
 bool IsFirewallReady() {
   base::FilePath exe_path;
-  if (PathService::Get(base::FILE_EXE, &exe_path))
+  if (!PathService::Get(base::FILE_EXE, &exe_path))
     return false;
+  base::ElapsedTimer timer;
   scoped_ptr<installer::FirewallManager> manager =
       installer::FirewallManager::Create(BrowserDistribution::GetDistribution(),
                                          exe_path);
   if (!manager)
     return false;
   bool is_ready = manager->CanUseLocalPorts();
+  UMA_HISTOGRAM_TIMES("LocalDiscovery.FirewallAccessTime", timer.Elapsed());
   UMA_HISTOGRAM_BOOLEAN("LocalDiscovery.IsFirewallReady", is_ready);
   return is_ready;
 }

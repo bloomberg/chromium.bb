@@ -8571,13 +8571,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Records events related to devices page.</summary>
 </histogram>
 
+<histogram name="LocalDiscovery.FirewallAccessTime" units="milliseconds">
+  <owner>noamsml@chromium.org</owner>
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    Windows only histogram that reports request time spend accessing firewall
+    rules. It's logged once per browser process lifetime, when local discovery
+    is used first time.
+  </summary>
+</histogram>
+
 <histogram name="LocalDiscovery.FirewallState" enum="BooleanEnabled">
   <owner>noamsml@chromium.org</owner>
   <owner>vitalybuka@chromium.org</owner>
   <summary>
     Windows only histogram that reports, whether a firewall is set, so we can
     bind inbound sockets. It's logged once per browser process lifetime, when
-    local discovery is used.
+    local discovery is used first time.
   </summary>
 </histogram>
 
