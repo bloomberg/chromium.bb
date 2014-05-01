@@ -74,6 +74,15 @@ class BluetoothLowEnergyEventRouter
   bool GetService(const std::string& instance_id,
                   api::bluetooth_low_energy::Service* out_service) const;
 
+  // Populates |out_services| with the list of GATT services that are included
+  // by the GATT service with instance ID |instance_id|. Returns false, if not
+  // GATT service with the given ID is known. Returns true, on success. If
+  // the given service has no included services, then |out_service| will be
+  // empty. |out_service| must not be NULL. If it is non-empty, then its
+  // contents will be cleared.
+  bool GetIncludedServices(const std::string& instance_id,
+                           ServiceList* out_services) const;
+
   // Initializes the adapter for testing. Used by unit tests only.
   void SetAdapterForTesting(device::BluetoothAdapter* adapter);
 

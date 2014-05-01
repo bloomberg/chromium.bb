@@ -161,7 +161,7 @@ bool BluetoothLowEnergyGetServicesFunction::DoWork() {
     return false;
   }
 
-  results_ = apibtle::GetServices::Results::Create(service_list).Pass();
+  results_ = apibtle::GetServices::Results::Create(service_list);
   SendResponse(true);
 
   return true;
@@ -182,10 +182,37 @@ bool BluetoothLowEnergyGetCharacteristicsFunction::DoWork() {
 }
 
 bool BluetoothLowEnergyGetIncludedServicesFunction::DoWork() {
-  // TODO(armansito): Implement.
-  SetError("Call not supported.");
-  SendResponse(false);
-  return false;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BluetoothLowEnergyEventRouter* event_router =
+      GetEventRouter(browser_context());
+
+  // The adapter must be initialized at this point, but return an error instead
+  // of asserting.
+  if (!event_router->HasAdapter()) {
+    SetError(kErrorAdapterNotInitialized);
+    SendResponse(false);
+    return false;
+  }
+
+  scoped_ptr<apibtle::GetIncludedServices::Params> params(
+      apibtle::GetIncludedServices::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+
+  std::string service_id = params->service_id;
+
+  BluetoothLowEnergyEventRouter::ServiceList service_list;
+  if (!event_router->GetIncludedServices(service_id, &service_list)) {
+    SetError(
+        base::StringPrintf(kErrorServiceNotFoundFormat, service_id.c_str()));
+    SendResponse(false);
+    return false;
+  }
+
+  results_ = apibtle::GetIncludedServices::Results::Create(service_list);
+  SendResponse(true);
+
+  return true;
 }
 
 bool BluetoothLowEnergyGetDescriptorFunction::DoWork() {

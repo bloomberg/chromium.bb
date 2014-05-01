@@ -182,6 +182,41 @@ bool BluetoothLowEnergyEventRouter::GetService(
   return true;
 }
 
+bool BluetoothLowEnergyEventRouter::GetIncludedServices(
+    const std::string& instance_id,
+    ServiceList* out_services) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(out_services);
+  if (!adapter_) {
+    VLOG(1) << "BluetoothAdapter not ready.";
+    return false;
+  }
+
+  BluetoothGattService* service = FindServiceById(instance_id);
+  if (!service) {
+    VLOG(1) << "Service not found: " << instance_id;
+    return false;
+  }
+
+  out_services->clear();
+
+  const std::vector<BluetoothGattService*>& includes =
+      service->GetIncludedServices();
+  for (std::vector<BluetoothGattService*>::const_iterator iter =
+           includes.begin();
+       iter != includes.end();
+       ++iter) {
+    // Populate an API service and add it to the return value.
+    const BluetoothGattService* included = *iter;
+    linked_ptr<apibtle::Service> api_service(new apibtle::Service());
+    PopulateService(included, api_service.get());
+
+    out_services->push_back(api_service);
+  }
+
+  return true;
+}
+
 void BluetoothLowEnergyEventRouter::SetAdapterForTesting(
     device::BluetoothAdapter* adapter) {
   adapter_ = adapter;
@@ -313,7 +348,6 @@ void BluetoothLowEnergyEventRouter::OnGetAdapter(
   DCHECK(observed_devices_.empty());
   DCHECK(observed_gatt_services_.empty());
 
-  // TODO: Observe adapter and all devices.
   adapter_ = adapter;
 
   // Initialize instance ID mappings for all discovered GATT objects and add

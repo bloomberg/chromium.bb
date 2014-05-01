@@ -224,4 +224,45 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedService) {
   event_router()->DeviceRemoved(mock_adapter_, device_.get());
 }
 
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetIncludedServices) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
+      "bluetooth_low_energy/get_included_services")));
+
+  // Wait for initial call to end with failure as there is no mapping.
+  ExtensionTestMessageListener listener("ready", true);
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  // Set up for the rest of the calls before replying. Included services can be
+  // returned even if there is no instance ID mapping for them yet, so no need
+  // to call GattServiceAdded for |service1_| here.
+  event_router()->DeviceAdded(mock_adapter_, device_.get());
+  event_router()->GattServiceAdded(device_.get(), service0_.get());
+
+  std::vector<BluetoothGattService*> includes;
+  includes.push_back(service1_.get());
+  EXPECT_CALL(*mock_adapter_, GetDevice(kTestLeDeviceAddress))
+      .Times(2)
+      .WillRepeatedly(Return(device_.get()));
+  EXPECT_CALL(*device_, GetGattService(kTestServiceId0))
+      .Times(2)
+      .WillRepeatedly(Return(service0_.get()));
+  EXPECT_CALL(*service0_, GetIncludedServices())
+      .Times(2)
+      .WillOnce(Return(std::vector<BluetoothGattService*>()))
+      .WillOnce(Return(includes));
+
+  listener.Reply("go");
+  listener.Reset();
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  listener.Reply("go");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  event_router()->GattServiceRemoved(device_.get(), service0_.get());
+  event_router()->DeviceRemoved(mock_adapter_, device_.get());
+}
+
 }  // namespace
