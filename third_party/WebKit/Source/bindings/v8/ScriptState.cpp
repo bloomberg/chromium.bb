@@ -30,7 +30,7 @@ ScriptState::ScriptState(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperW
     : m_isolate(context->GetIsolate())
     , m_context(m_isolate, context)
     , m_world(world)
-    , m_perContextData(V8PerContextData::create(context, m_world))
+    , m_perContextData(V8PerContextData::create(context))
 {
     ASSERT(m_world);
     m_context.setWeak(this, &weakCallback);

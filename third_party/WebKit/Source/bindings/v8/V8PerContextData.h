@@ -48,7 +48,6 @@
 namespace WebCore {
 
 class CustomElementDefinition;
-class DOMWrapperWorld;
 class V8PerContextData;
 struct V8NPObject;
 typedef WTF::Vector<V8NPObject*> V8NPObjectVector;
@@ -61,7 +60,7 @@ enum V8ContextEmbedderDataField {
 
 class V8PerContextData {
 public:
-    static PassOwnPtr<V8PerContextData> create(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
+    static PassOwnPtr<V8PerContextData> create(v8::Handle<v8::Context>);
 
     static V8PerContextData* from(v8::Handle<v8::Context>);
 
@@ -95,7 +94,7 @@ public:
     CustomElementBinding* customElementBinding(CustomElementDefinition*);
 
 private:
-    V8PerContextData(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
+    V8PerContextData(v8::Handle<v8::Context>);
 
     v8::Local<v8::Object> createWrapperFromCacheSlowCase(const WrapperTypeInfo*);
     v8::Local<v8::Function> constructorForTypeSlowCase(const WrapperTypeInfo*);

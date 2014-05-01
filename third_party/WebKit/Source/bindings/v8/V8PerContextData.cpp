@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-V8PerContextData::V8PerContextData(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
+V8PerContextData::V8PerContextData(v8::Handle<v8::Context> context)
     : m_wrapperBoilerplates(context->GetIsolate())
     , m_constructorMap(context->GetIsolate())
     , m_activityLogger(0)
@@ -64,9 +64,9 @@ V8PerContextData::~V8PerContextData()
 {
 }
 
-PassOwnPtr<V8PerContextData> V8PerContextData::create(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
+PassOwnPtr<V8PerContextData> V8PerContextData::create(v8::Handle<v8::Context> context)
 {
-    return adoptPtr(new V8PerContextData(context, world));
+    return adoptPtr(new V8PerContextData(context));
 }
 
 V8PerContextData* V8PerContextData::from(v8::Handle<v8::Context> context)
