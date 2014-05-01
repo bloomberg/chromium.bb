@@ -32,7 +32,7 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         intent.putExtra(BatteryManager.EXTRA_SCALE, 100);
         intent.putExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_DISCHARGING);
 
-        mBatteryStatusManager.onReceive(getContext(), intent);
+        mBatteryStatusManager.onReceive(intent);
 
         mBatteryStatusManager.verifyCalls("gotBatteryStatus");
         mBatteryStatusManager.verifyValues(false, Double.POSITIVE_INFINITY,
@@ -46,7 +46,7 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         intent.putExtra(BatteryManager.EXTRA_SCALE, 100);
         intent.putExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_CHARGING);
 
-        mBatteryStatusManager.onReceive(getContext(), intent);
+        mBatteryStatusManager.onReceive(intent);
 
         mBatteryStatusManager.verifyCalls("gotBatteryStatus");
         mBatteryStatusManager.verifyValues(true, Double.POSITIVE_INFINITY,
@@ -60,7 +60,7 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         intent.putExtra(BatteryManager.EXTRA_SCALE, 100);
         intent.putExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_FULL);
 
-        mBatteryStatusManager.onReceive(getContext(), intent);
+        mBatteryStatusManager.onReceive(intent);
 
         mBatteryStatusManager.verifyCalls("gotBatteryStatus");
         mBatteryStatusManager.verifyValues(true, 0, Double.POSITIVE_INFINITY, 1);
@@ -71,7 +71,7 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         Intent intent = new Intent(Intent.ACTION_BATTERY_CHANGED);
         intent.putExtra(BatteryManager.EXTRA_PRESENT, false);
 
-        mBatteryStatusManager.onReceive(getContext(), intent);
+        mBatteryStatusManager.onReceive(intent);
 
         mBatteryStatusManager.verifyCalls("gotBatteryStatus");
         mBatteryStatusManager.verifyValues(true, 0, Double.POSITIVE_INFINITY, 1);

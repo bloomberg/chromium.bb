@@ -11,6 +11,8 @@ import android.content.IntentFilter;
 import android.os.BatteryManager;
 import android.util.Log;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
@@ -18,13 +20,19 @@ import org.chromium.base.JNINamespace;
  * Android implementation of the battery status APIs.
  */
 @JNINamespace("content")
-class BatteryStatusManager extends BroadcastReceiver {
+class BatteryStatusManager {
 
     private static final String TAG = "BatteryStatusManager";
 
     // A reference to the application context in order to acquire the SensorService.
     private final Context mAppContext;
     private final IntentFilter mFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            BatteryStatusManager.this.onReceive(intent);
+        }
+    };
 
     // Non-zero if and only if we're listening for events.
     // To avoid race conditions on the C++ side, access must be synchronized.
@@ -50,7 +58,7 @@ class BatteryStatusManager extends BroadcastReceiver {
     @CalledByNative
     boolean start(long nativePtr) {
         synchronized (mNativePtrLock) {
-            if (!mEnabled && mAppContext.registerReceiver(this, mFilter) != null) {
+            if (!mEnabled && mAppContext.registerReceiver(mReceiver, mFilter) != null) {
                 // success
                 mNativePtr = nativePtr;
                 mEnabled = true;
@@ -66,15 +74,15 @@ class BatteryStatusManager extends BroadcastReceiver {
     void stop() {
         synchronized (mNativePtrLock) {
             if (mEnabled) {
-                mAppContext.unregisterReceiver(this);
+                mAppContext.unregisterReceiver(mReceiver);
                 mNativePtr = 0;
                 mEnabled = false;
             }
         }
     }
 
-    @Override
-    public void onReceive(Context context, Intent intent) {
+    @VisibleForTesting
+    void onReceive(Intent intent) {
        if (!intent.getAction().equals(Intent.ACTION_BATTERY_CHANGED)) {
            Log.e(TAG, "Unexpected intent.");
            return;
