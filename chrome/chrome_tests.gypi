@@ -185,11 +185,6 @@
         }],
         ['OS=="linux" and use_aura==1 and chromeos==0', {
           'sources!': [
-            # TODO(port): These tests fail because they don't have a Screen,
-            # but expect one.
-            # TODO(port): I have no idea about the crashes in here; there's
-            # nothing obviously wrong. It doesn't run on gtk today, either.
-            'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
             # TODO(port): Everything here times out. Attempts have been made to
             # fix the individual failures, but each time I disable a test from
             # these suites, it seems like one or another starts timing out too.
