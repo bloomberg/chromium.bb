@@ -5,7 +5,6 @@
 #include "apps/shell/browser/shell_extensions_browser_client.h"
 
 #include "apps/shell/browser/shell_app_sorting.h"
-#include "apps/shell/browser/shell_app_window_api.h"
 #include "apps/shell/browser/shell_extension_system_factory.h"
 #include "apps/shell/browser/shell_extension_web_contents_observer.h"
 #include "apps/shell/common/api/generated_api.h"
@@ -234,9 +233,6 @@ void ShellExtensionsBrowserClient::RegisterExtensionFunctions(
 
   // Register chrome.shell APIs.
   apps::shell_api::GeneratedFunctionRegistry::RegisterAll(registry);
-
-  // Register our simplified implementation for chrome.app.window.create().
-  registry->RegisterFunction<ShellAppWindowCreateFunction>();
 }
 
 }  // namespace extensions

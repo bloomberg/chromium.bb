@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "apps/shell/browser/shell_app_runtime_api.h"
+#include "apps/shell/browser/api/shell/shell_api.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/browser_context.h"
@@ -71,8 +71,7 @@ bool ShellExtensionSystem::LoadAndLaunchApp(const base::FilePath& app_dir) {
       content::NotificationService::NoDetails());
 
   // Send the onLaunched event.
-  ShellAppRuntimeAPI::DispatchOnLaunchedEvent(event_router_.get(),
-                                              extension.get());
+  apps::ShellAPI::DispatchOnLaunchedEvent(event_router_.get(), extension.get());
 
   return true;
 }

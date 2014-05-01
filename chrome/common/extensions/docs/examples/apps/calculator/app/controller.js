@@ -4,15 +4,20 @@
  * found in the LICENSE file.
  **/
 
-// Checking for "chrome.app.runtime" availability allows this Chrome app code to
-// be tested in a regular web page (like tests/manual.html). Checking for
-// "chrome" and "chrome.app" availability further allows this code to be tested
-// in non-Chrome browsers, which is useful for example to test touch support
-// with a non-Chrome touch device.
-if (typeof chrome !== 'undefined' && chrome.app && chrome.app.runtime) {
+// Checking for "chrome" availability allows this app code to be tested in
+// non-Chrome browsers, which is useful for example to test touch support with
+// a non-Chrome touch device.
+// Checking for "chrome.shell" allows testing under app_shell, which does not
+// have chrome.app APIs.
+// Checking for "chrome.app.runtime" availability allows testing in a regular
+// web page (like tests/manual.html).
+if (typeof chrome !== 'undefined' &&
+    (chrome.shell || (chrome.app && chrome.app.runtime))) {
   // Compatibility for running under app_shell, which does not have app.window.
   var createWindow =
       chrome.shell ? chrome.shell.createWindow : chrome.app.window.create;
+  var onLaunched =
+      chrome.shell ? chrome.shell.onLaunched : chrome.app.runtime.onLaunched;
 
   var showCalculatorWindow = function () {
     createWindow('calculator.html', {
@@ -28,7 +33,7 @@ if (typeof chrome !== 'undefined' && chrome.app && chrome.app.runtime) {
     });
   }
 
-  chrome.app.runtime.onLaunched.addListener(showCalculatorWindow);
+  onLaunched.addListener(showCalculatorWindow);
 }
 
 function Controller(model, view) {

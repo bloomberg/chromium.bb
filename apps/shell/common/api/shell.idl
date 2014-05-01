@@ -47,4 +47,9 @@ namespace shell {
     [nocompile] static AppWindow currentWindow();
     [nocompile, nodoc] static void initializeAppWindow();
   };
+
+  interface Events {
+    // Fired when the app is launched at app_shell startup.
+    static void onLaunched(optional object launchDataPlaceholder);
+  };
 };

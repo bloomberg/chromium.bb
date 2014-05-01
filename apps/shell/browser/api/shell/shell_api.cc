@@ -7,11 +7,16 @@
 #include "apps/shell/browser/shell_app_window.h"
 #include "apps/shell/browser/shell_desktop_controller.h"
 #include "apps/shell/common/api/shell.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "extensions/browser/event_router.h"
+#include "extensions/common/extension.h"
 
 using base::DictionaryValue;
+using base::ListValue;
 
 namespace CreateWindow = apps::shell_api::shell::CreateWindow;
+namespace OnLaunched = apps::shell_api::shell::OnLaunched;
 
 namespace apps {
 namespace {
@@ -26,6 +31,17 @@ DictionaryValue* CreateResult(apps::ShellAppWindow* app_window) {
 }
 
 }  // namespace
+
+// static
+void ShellAPI::DispatchOnLaunchedEvent(extensions::EventRouter* event_router,
+                                       const extensions::Extension* extension) {
+  scoped_ptr<DictionaryValue> launch_data(new DictionaryValue());
+  scoped_ptr<ListValue> event_args(new ListValue());
+  event_args->Append(launch_data.release());
+  scoped_ptr<extensions::Event> event(
+      new extensions::Event(OnLaunched::kEventName, event_args.Pass()));
+  event_router->DispatchEventWithLazyListener(extension->id(), event.Pass());
+}
 
 ShellCreateWindowFunction::ShellCreateWindowFunction() {
 }
