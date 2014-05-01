@@ -29,7 +29,6 @@ ASH_EXPORT extern const char kAshDisableDockedWindows[];
 ASH_EXPORT extern const char kAshEnableAlternateFrameCaptionButtonStyle[];
 #if defined(OS_CHROMEOS)
 ASH_EXPORT extern const char kAshEnableMagnifierKeyScroller[];
-ASH_EXPORT extern const char kAshEnableMultiUserTray[];
 #endif
 ASH_EXPORT extern const char kAshEnableSoftwareMirroring[];
 ASH_EXPORT extern const char kAshEnableSystemSounds[];
