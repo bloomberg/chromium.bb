@@ -23,9 +23,7 @@ namespace content {
 // example the URLs of the documents and the values of any form fields.  This
 // information is used when navigating back & forward through session history.
 //
-// The browser process only sees the encoded form of the data, which is
-// designed as an archival format.  The renderer process can decode the data
-// using methods found in public/renderer/history_item_serialization.h.
+// The format of the encoded data is not exposed by the content API.
 class CONTENT_EXPORT PageState {
  public:
   static PageState CreateFromEncodedData(const std::string& data);
