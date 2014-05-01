@@ -34,6 +34,7 @@
 #include "chrome/browser/profiles/file_path_verifier_win.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/search_engines/default_search_pref_migration.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
@@ -431,7 +432,12 @@ scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
                          ->CreateProfilePrefStore(pref_io_task_runner)),
                  extension_prefs,
                  async);
-  return factory.CreateSyncable(pref_registry.get());
+  scoped_ptr<PrefServiceSyncable> pref_service =
+      factory.CreateSyncable(pref_registry.get());
+
+  ConfigureDefaultSearchPrefMigrationToDictionaryValue(pref_service.get());
+
+  return pref_service.Pass();
 }
 
 void SchedulePrefsFilePathVerification(const base::FilePath& profile_path) {

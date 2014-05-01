@@ -22821,6 +22821,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Search.MigratedPrefToDictionaryValue" enum="BooleanHit">
+  <owner>erikwright@chromium.org</owner>
+  <summary>
+    The number of times that a user-selected DSE was migrated from separate
+    String/List/..Value preferences to the new single DictionaryValue used in
+    M36.
+  </summary>
+</histogram>
+
 <histogram name="ServicesCustomization.LoadResult"
     enum="ServicesCustomizationLoadResult">
   <owner>dpolukhin@chromium.org</owner>

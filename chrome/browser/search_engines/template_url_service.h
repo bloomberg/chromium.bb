@@ -101,6 +101,22 @@ class TemplateURLService : public WebDataServiceConsumer,
   TemplateURLService(const Initializer* initializers, const int count);
   virtual ~TemplateURLService();
 
+  // Creates a TemplateURLData that was previously saved to |prefs| via
+  // SaveDefaultSearchProviderToPrefs or set via policy.
+  // Returns true if successful, false otherwise.
+  // If the user or the policy has opted for no default search, this
+  // returns true but default_provider is set to NULL.
+  // |*is_managed| specifies whether the default is managed via policy.
+  static bool LoadDefaultSearchProviderFromPrefs(
+      PrefService* prefs,
+      scoped_ptr<TemplateURLData>* default_provider_data,
+      bool* is_managed);
+
+  // Saves enough of url to |prefs| so that it can be loaded from preferences on
+  // start up.
+  static void SaveDefaultSearchProviderToPrefs(const TemplateURL* url,
+                                               PrefService* prefs);
+
   // Generates a suitable keyword for the specified url, which must be valid.
   // This is guaranteed not to return an empty string, since TemplateURLs should
   // never have an empty keyword.
@@ -459,20 +475,6 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Transitions to the loaded state.
   void ChangeToLoadedState();
-
-  // Saves enough of url to preferences so that it can be loaded from
-  // preferences on start up.
-  void SaveDefaultSearchProviderToPrefs(const TemplateURL* url);
-
-  // Creates a TemplateURLData that was previously saved to prefs via
-  // SaveDefaultSearchProviderToPrefs or set via policy.
-  // Returns true if successful, false otherwise.
-  // If the user or the policy has opted for no default search, this
-  // returns true but default_provider is set to NULL.
-  // |*is_managed| specifies whether the default is managed via policy.
-  bool LoadDefaultSearchProviderFromPrefs(
-      scoped_ptr<TemplateURLData>* default_provider,
-      bool* is_managed);
 
   // Clears user preferences describing the default search engine.
   void ClearDefaultProviderFromPrefs();

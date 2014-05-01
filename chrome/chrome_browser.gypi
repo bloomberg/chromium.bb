@@ -1949,6 +1949,8 @@
         'browser/search/suggestions/suggestions_source.h',
         'browser/search_engines/default_search_manager.cc',
         'browser/search_engines/default_search_manager.h',
+        'browser/search_engines/default_search_pref_migration.cc',
+        'browser/search_engines/default_search_pref_migration.h',
         'browser/search_engines/default_search_policy_handler.cc',
         'browser/search_engines/default_search_policy_handler.h',
         'browser/search_engines/search_engine_type.h',
