@@ -47,6 +47,7 @@ class DevToolsAndroidBridge
  public:
   typedef base::Callback<void(int result,
                               const std::string& response)> Callback;
+  typedef base::Callback<void(DevToolsTargetImpl*)> TargetCallback;
 
   class Wrapper : public KeyedService {
    public:
@@ -137,8 +138,8 @@ class DevToolsAndroidBridge
                              base::DictionaryValue* params,
                              const base::Closure callback);
 
-    void Open(const std::string& url);
-    void OpenAndInspect(const std::string& url, Profile* profile);
+    void Open(const std::string& url,
+              const TargetCallback& callback);
 
     scoped_refptr<AndroidWebSocket> CreateWebSocket(
         const std::string& url,
@@ -148,18 +149,22 @@ class DevToolsAndroidBridge
     friend class base::RefCounted<RemoteBrowser>;
     virtual ~RemoteBrowser();
 
-    void Open(const std::string& url,
-              const JsonRequestCallback& callback);
+    void InnerOpen(const std::string& url,
+                   const JsonRequestCallback& callback);
 
     void PageCreatedOnUIThread(
         const JsonRequestCallback& callback,
         const std::string& url, int result, const std::string& response);
 
     void NavigatePageOnUIThread(const JsonRequestCallback& callback,
-        int result, const std::string& response, const std::string& url);
+        int result,
+        const std::string& response,
+        const std::string& url);
 
-    void InspectAfterOpenOnUIThread(Profile* profile, int result,
-                                    const std::string& response);
+    void RespondToOpenOnUIThread(
+        const DevToolsAndroidBridge::TargetCallback& callback,
+        int result,
+        const std::string& response);
 
     scoped_refptr<DevToolsAndroidBridge> android_bridge_;
     const std::string serial_;

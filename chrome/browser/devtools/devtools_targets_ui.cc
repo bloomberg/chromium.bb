@@ -341,10 +341,8 @@ class AdbTargetsUIHandler
   virtual ~AdbTargetsUIHandler();
 
   virtual void Open(const std::string& browser_id,
-                    const std::string& url) OVERRIDE;
-  virtual void OpenAndInspect(const std::string& browser_id,
-                              const std::string& url,
-                              Profile* profile) OVERRIDE;
+                    const std::string& url,
+                    const DevToolsTargetsUIHandler::TargetCallback&) OVERRIDE;
 
  private:
   // DevToolsAndroidBridge::Listener overrides.
@@ -374,19 +372,13 @@ AdbTargetsUIHandler::~AdbTargetsUIHandler() {
     android_bridge->RemoveDeviceListListener(this);
 }
 
-void AdbTargetsUIHandler::Open(const std::string& browser_id,
-                           const std::string& url) {
+void AdbTargetsUIHandler::Open(
+    const std::string& browser_id,
+    const std::string& url,
+    const DevToolsTargetsUIHandler::TargetCallback& callback) {
   RemoteBrowsers::iterator it = remote_browsers_.find(browser_id);
   if (it !=  remote_browsers_.end())
-    it->second->Open(url);
-}
-
-void AdbTargetsUIHandler::OpenAndInspect(const std::string& browser_id,
-                                         const std::string& url,
-                                         Profile* profile) {
-  RemoteBrowsers::iterator it = remote_browsers_.find(browser_id);
-  if (it != remote_browsers_.end())
-    it->second->OpenAndInspect(url, profile);
+    it->second->Open(url, callback);
 }
 
 void AdbTargetsUIHandler::DeviceListChanged(
@@ -525,13 +517,9 @@ DevToolsTargetImpl* DevToolsTargetsUIHandler::GetTarget(
 }
 
 void DevToolsTargetsUIHandler::Open(const std::string& browser_id,
-                                    const std::string& url) {
-}
-
-void DevToolsTargetsUIHandler::OpenAndInspect(
-    const std::string& browser_id,
-    const std::string& url,
-    Profile* profile) {
+                                    const std::string& url,
+                                    const TargetCallback& callback) {
+  callback.Run(NULL);
 }
 
 base::DictionaryValue* DevToolsTargetsUIHandler::Serialize(

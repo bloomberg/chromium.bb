@@ -228,12 +228,14 @@ void InspectUI::Reload(const std::string& source_id,
     target->Reload();
 }
 
+static void NoOp(DevToolsTargetImpl*) {}
+
 void InspectUI::Open(const std::string& source_id,
                      const std::string& browser_id,
                      const std::string& url) {
   DevToolsTargetsUIHandler* handler = FindTargetHandler(source_id);
   if (handler)
-    handler->Open(browser_id, url);
+    handler->Open(browser_id, url, base::Bind(&NoOp));
 }
 
 void InspectUI::InspectDevices(Browser* browser) {

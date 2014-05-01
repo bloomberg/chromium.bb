@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chrome_page_zoom.h"
+#include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
@@ -537,11 +538,18 @@ void DevToolsUIBindings::ResetZoom() {
   chrome_page_zoom::Zoom(web_contents(), content::PAGE_ZOOM_RESET);
 }
 
+static void InspectTarget(Profile* profile, DevToolsTargetImpl* target) {
+  if (target)
+    target->Inspect(profile);
+}
+
 void DevToolsUIBindings::OpenUrlOnRemoteDeviceAndInspect(
     const std::string& browser_id,
     const std::string& url) {
-  if (remote_targets_handler_)
-    remote_targets_handler_->OpenAndInspect(browser_id, url, profile_);
+  if (remote_targets_handler_) {
+    remote_targets_handler_->Open(browser_id, url,
+        base::Bind(&InspectTarget, profile_));
+  }
 }
 
 void DevToolsUIBindings::StartRemoteDevicesListener() {

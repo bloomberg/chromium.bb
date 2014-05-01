@@ -24,6 +24,7 @@ class DevToolsTargetsUIHandler {
  public:
   typedef base::Callback<void(const std::string&,
                               scoped_ptr<base::ListValue>)> Callback;
+  typedef base::Callback<void(DevToolsTargetImpl*)> TargetCallback;
 
   DevToolsTargetsUIHandler(const std::string& source_id, Callback callback);
   virtual ~DevToolsTargetsUIHandler();
@@ -41,10 +42,8 @@ class DevToolsTargetsUIHandler {
 
   DevToolsTargetImpl* GetTarget(const std::string& target_id);
 
-  virtual void Open(const std::string& browser_id, const std::string& url);
-  virtual void OpenAndInspect(const std::string& browser_id,
-                              const std::string& url,
-                              Profile* profile);
+  virtual void Open(const std::string& browser_id, const std::string& url,
+                    const TargetCallback& callback);
 
  protected:
   base::DictionaryValue* Serialize(const DevToolsTargetImpl& target);

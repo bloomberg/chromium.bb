@@ -1015,20 +1015,32 @@ void DevToolsAndroidBridge::RemoteBrowser::SendProtocolCommand(
   new ProtocolCommand(this, debug_url, command.Serialize(), callback);
 }
 
-void DevToolsAndroidBridge::RemoteBrowser::Open(const std::string& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Open(url, JsonRequestCallback());
-}
-
-void DevToolsAndroidBridge::RemoteBrowser::OpenAndInspect(
-    const std::string& url,
-    Profile* profile) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Open(url,
-       base::Bind(&RemoteBrowser::InspectAfterOpenOnUIThread, this, profile));
-}
-
 void DevToolsAndroidBridge::RemoteBrowser::Open(
+    const std::string& url,
+    const DevToolsAndroidBridge::TargetCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  InnerOpen(url, base::Bind(&RemoteBrowser::RespondToOpenOnUIThread,
+                            this, callback));
+}
+
+void DevToolsAndroidBridge::RemoteBrowser::RespondToOpenOnUIThread(
+    const DevToolsAndroidBridge::TargetCallback& callback,
+    int result,
+    const std::string& response) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (result < 0) {
+    callback.Run(NULL);
+    return;
+  }
+  scoped_ptr<base::Value> value(base::JSONReader::Read(response));
+  base::DictionaryValue* dict;
+  if (value && value->GetAsDictionary(&dict)) {
+    RemotePageTarget new_page(this, *dict);
+    callback.Run(&new_page);
+  }
+}
+
+void DevToolsAndroidBridge::RemoteBrowser::InnerOpen(
     const std::string& input_url,
     const JsonRequestCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1052,19 +1064,6 @@ void DevToolsAndroidBridge::RemoteBrowser::Open(
     SendJsonRequest(kNewPageRequest,
         base::Bind(&RemoteBrowser::PageCreatedOnUIThread, this,
                    callback, url));
-  }
-}
-
-void DevToolsAndroidBridge::RemoteBrowser::InspectAfterOpenOnUIThread(
-    Profile* profile, int result, const std::string& response) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (result < 0)
-    return;
-  scoped_ptr<base::Value> value(base::JSONReader::Read(response));
-  base::DictionaryValue* dict;
-  if (value && value->GetAsDictionary(&dict)) {
-    RemotePageTarget new_page(this, *dict);
-    new_page.Inspect(profile);
   }
 }
 
