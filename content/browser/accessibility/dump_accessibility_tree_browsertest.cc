@@ -18,7 +18,7 @@
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/port/browser/render_widget_host_view_port.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -181,7 +181,7 @@ void DumpAccessibilityTreeTest::RunTest(
   NavigateToURL(shell(), url);
   waiter.WaitForNotification();
 
-  RenderWidgetHostViewPort* host_view = RenderWidgetHostViewPort::FromRWHV(
+  RenderWidgetHostViewBase* host_view = static_cast<RenderWidgetHostViewBase*>(
       shell()->web_contents()->GetRenderWidgetHostView());
   AccessibilityTreeFormatter formatter(
       host_view->GetBrowserAccessibilityManager()->GetRoot());

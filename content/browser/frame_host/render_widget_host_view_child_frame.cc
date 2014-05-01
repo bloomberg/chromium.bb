@@ -187,8 +187,19 @@ void RenderWidgetHostViewChildFrame::SelectionBoundsChanged(
 }
 
 #if defined(OS_ANDROID)
+void RenderWidgetHostViewChildFrame::ShowDisambiguationPopup(
+    const gfx::Rect& target_rect,
+    const SkBitmap& zoomed_bitmap) {
+}
+
 void RenderWidgetHostViewChildFrame::SelectionRootBoundsChanged(
     const gfx::Rect& bounds) {
+}
+
+void RenderWidgetHostViewChildFrame::LockCompositingSurface() {
+}
+
+void RenderWidgetHostViewChildFrame::UnlockCompositingSurface() {
 }
 #endif
 
@@ -284,13 +295,6 @@ bool RenderWidgetHostViewChildFrame::PostProcessEventForPluginIme(
   return false;
 }
 #endif // defined(OS_MACOSX)
-
-#if defined(OS_ANDROID)
-void RenderWidgetHostViewChildFrame::ShowDisambiguationPopup(
-    const gfx::Rect& target_rect,
-    const SkBitmap& zoomed_bitmap) {
-}
-#endif  // defined(OS_ANDROID)
 
 void RenderWidgetHostViewChildFrame::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,

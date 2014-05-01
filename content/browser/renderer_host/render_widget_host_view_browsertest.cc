@@ -10,8 +10,8 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"
-#include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -58,7 +58,7 @@ namespace {
 // high-DPI fails.
 #define PASS_TEST_IF_SCALE_FACTOR_NOT_SUPPORTED(factor) \
   if (ui::GetScaleForScaleFactor( \
-          GetScaleFactorForView(GetRenderWidgetHostViewPort())) != factor) {  \
+          GetScaleFactorForView(GetRenderWidgetHostView())) != factor) {  \
     LOG(WARNING) << "Blindly passing this test: failed to set up "  \
                     "scale factor: " << factor;  \
     return false;  \
@@ -112,11 +112,9 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
     return rwh;
   }
 
-  RenderWidgetHostViewPort* GetRenderWidgetHostViewPort() const {
-    RenderWidgetHostViewPort* const view =
-        RenderWidgetHostViewPort::FromRWHV(GetRenderViewHost()->GetView());
-    CHECK(view);
-    return view;
+  RenderWidgetHostViewBase* GetRenderWidgetHostView() const {
+    return static_cast<RenderWidgetHostViewBase*>(
+        GetRenderViewHost()->GetView());
   }
 
   // Callback when using CopyFromBackingStore() API.
@@ -188,7 +186,7 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
  protected:
   // Waits until the source is available for copying.
   void WaitForCopySourceReady() {
-    while (!GetRenderWidgetHostViewPort()->IsSurfaceAvailableForCopy())
+    while (!GetRenderWidgetHostView()->IsSurfaceAvailableForCopy())
       GiveItSomeTime();
   }
 
@@ -318,7 +316,7 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
                  run_loop.QuitClosure()),
       SkBitmap::kARGB_8888_Config);
   // Delete the surface before the callback is run.
-  GetRenderWidgetHostViewPort()->AcceleratedSurfaceRelease();
+  GetRenderWidgetHostView()->AcceleratedSurfaceRelease();
   run_loop.Run();
 
   EXPECT_EQ(1, callback_invoke_count());
@@ -339,7 +337,7 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
                        MAYBE_CopyFromCompositingSurface_CallbackDespiteDelete) {
   SET_UP_SURFACE_OR_PASS_TEST(NULL);
-  RenderWidgetHostViewPort* const view = GetRenderWidgetHostViewPort();
+  RenderWidgetHostViewBase* const view = GetRenderWidgetHostView();
   if (!view->CanCopyToVideoFrame()) {
     LOG(WARNING) <<
         ("Blindly passing this test: CopyFromCompositingSurfaceToVideoFrame() "
@@ -366,7 +364,7 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
                        FrameSubscriberTest) {
   SET_UP_SURFACE_OR_PASS_TEST(NULL);
-  RenderWidgetHostViewPort* const view = GetRenderWidgetHostViewPort();
+  RenderWidgetHostViewBase* const view = GetRenderWidgetHostView();
   if (!view->CanSubscribeFrame()) {
     LOG(WARNING) << ("Blindly passing this test: Frame subscription not "
                      "supported on this platform.");
@@ -391,7 +389,7 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
 // Test that we can copy twice from an accelerated composited page.
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest, CopyTwice) {
   SET_UP_SURFACE_OR_PASS_TEST(NULL);
-  RenderWidgetHostViewPort* const view = GetRenderWidgetHostViewPort();
+  RenderWidgetHostViewBase* const view = GetRenderWidgetHostView();
   if (!view->CanCopyToVideoFrame()) {
     LOG(WARNING) << ("Blindly passing this test: "
                      "CopyFromCompositingSurfaceToVideoFrame() not supported "
@@ -593,7 +591,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     if (!ShouldContinueAfterTestURLLoad())
       return;
 
-    RenderWidgetHostViewPort* rwhvp = GetRenderWidgetHostViewPort();
+    RenderWidgetHostViewBase* rwhvp = GetRenderWidgetHostView();
     if (video_frame && !rwhvp->CanCopyToVideoFrame()) {
       // This should only happen on Mac when using the software compositor.
       // Otherwise, raise an error. This can be removed when Mac is moved to a

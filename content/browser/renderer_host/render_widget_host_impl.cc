@@ -42,6 +42,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/cursors/webcursor.h"
@@ -49,7 +50,6 @@
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
-#include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -322,8 +322,8 @@ RenderWidgetHostImpl* RenderWidgetHostImpl::From(RenderWidgetHost* rwh) {
   return rwh->AsRenderWidgetHostImpl();
 }
 
-void RenderWidgetHostImpl::SetView(RenderWidgetHostView* view) {
-  view_ = RenderWidgetHostViewPort::FromRWHV(view);
+void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
+  view_ = view;
 
   GpuSurfaceTracker::Get()->SetSurfaceHandle(
       surface_id_, GetCompositingSurface());
@@ -1165,10 +1165,10 @@ void RenderWidgetHostImpl::RemoveMouseEventCallback(
 
 void RenderWidgetHostImpl::GetWebScreenInfo(blink::WebScreenInfo* result) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::GetWebScreenInfo");
-  if (GetView())
-    static_cast<RenderWidgetHostViewPort*>(GetView())->GetScreenInfo(result);
+  if (view_)
+    view_->GetScreenInfo(result);
   else
-    RenderWidgetHostViewPort::GetDefaultScreenInfo(result);
+    RenderWidgetHostViewBase::GetDefaultScreenInfo(result);
   screen_info_out_of_date_ = false;
 }
 

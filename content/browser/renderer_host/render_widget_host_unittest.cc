@@ -17,10 +17,10 @@
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
-#include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
@@ -30,16 +30,17 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/screen.h"
 
-#if defined(USE_AURA)
-#include "content/browser/compositor/image_transport_factory.h"
-#include "content/browser/renderer_host/render_widget_host_view_aura.h"
-#include "ui/aura/env.h"
-#include "ui/aura/test/test_screen.h"
-#include "ui/compositor/test/in_process_context_factory.h"
+#if defined(OS_ANDROID)
+#include "content/browser/renderer_host/render_widget_host_view_android.h"
 #endif
 
 #if defined(USE_AURA)
+#include "content/browser/compositor/image_transport_factory.h"
+#include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
+#include "ui/aura/env.h"
+#include "ui/aura/test/test_screen.h"
+#include "ui/compositor/test/in_process_context_factory.h"
 #include "ui/events/event.h"
 #endif
 
@@ -960,15 +961,13 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
 // Tests setting custom background
 TEST_F(RenderWidgetHostTest, Background) {
 #if !defined(OS_MACOSX)
-  scoped_ptr<RenderWidgetHostView> view(
-      RenderWidgetHostView::CreateViewForWidget(host_.get()));
-#if defined(OS_LINUX) || defined(USE_AURA)
+  scoped_ptr<RenderWidgetHostViewBase> view;
+#if defined(USE_AURA)
+  view.reset(new RenderWidgetHostViewAura(host_.get()));
   // TODO(derat): Call this on all platforms: http://crbug.com/102450.
-  // InitAsChild doesn't seem to work if NULL parent is passed on Windows,
-  // which leads to DCHECK failure in RenderWidgetHostView::Destroy.
-  // When you enable this for OS_WIN, enable |view.release()->Destroy()|
-  // below.
   view->InitAsChild(NULL);
+#elif defined(OS_ANDROID)
+  view.reset(new RenderWidgetHostViewAndroid(host_.get(), NULL));
 #endif
   host_->SetView(view.get());
 
@@ -1008,10 +1007,10 @@ TEST_F(RenderWidgetHostTest, Background) {
   sent_background.a.unlockPixels();
   background.unlockPixels();
 
-#if defined(OS_LINUX) || defined(USE_AURA)
+#if defined(USE_AURA)
   // See the comment above |InitAsChild(NULL)|.
   host_->SetView(NULL);
-  static_cast<RenderWidgetHostViewPort*>(view.release())->Destroy();
+  static_cast<RenderWidgetHostViewBase*>(view.release())->Destroy();
 #endif
 
 #else

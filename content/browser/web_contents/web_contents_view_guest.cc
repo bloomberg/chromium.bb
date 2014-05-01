@@ -119,7 +119,7 @@ void WebContentsViewGuest::CreateView(const gfx::Size& initial_size,
   size_ = initial_size;
 }
 
-RenderWidgetHostView* WebContentsViewGuest::CreateViewForWidget(
+RenderWidgetHostViewBase* WebContentsViewGuest::CreateViewForWidget(
     RenderWidgetHost* render_widget_host) {
   if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
@@ -128,13 +128,14 @@ RenderWidgetHostView* WebContentsViewGuest::CreateViewForWidget(
     // view twice), we check for the RVH Factory, which will be set when we're
     // making special ones (which go along with the special views).
     DCHECK(RenderViewHostFactory::has_factory());
-    return render_widget_host->GetView();
+    return static_cast<RenderWidgetHostViewBase*>(
+        render_widget_host->GetView());
   }
 
-  RenderWidgetHostView* platform_widget = NULL;
-  platform_widget = platform_view_->CreateViewForWidget(render_widget_host);
+  RenderWidgetHostViewBase* platform_widget =
+      platform_view_->CreateViewForWidget(render_widget_host);
 
-  RenderWidgetHostView* view = new RenderWidgetHostViewGuest(
+  RenderWidgetHostViewBase* view = new RenderWidgetHostViewGuest(
       render_widget_host,
       guest_,
       platform_widget);
@@ -142,9 +143,9 @@ RenderWidgetHostView* WebContentsViewGuest::CreateViewForWidget(
   return view;
 }
 
-RenderWidgetHostView* WebContentsViewGuest::CreateViewForPopupWidget(
+RenderWidgetHostViewBase* WebContentsViewGuest::CreateViewForPopupWidget(
     RenderWidgetHost* render_widget_host) {
-  return RenderWidgetHostViewPort::CreateViewForWidget(render_widget_host);
+  return platform_view_->CreateViewForWidget(render_widget_host);
 }
 
 void WebContentsViewGuest::SetPageTitle(const base::string16& title) {

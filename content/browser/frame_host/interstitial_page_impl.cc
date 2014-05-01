@@ -21,12 +21,12 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
-#include "content/port/browser/render_widget_host_view_port.h"
 #include "content/port/browser/web_contents_view_port.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -283,8 +283,7 @@ void InterstitialPageImpl::Hide() {
   if (render_view_host_->GetView() &&
       render_view_host_->GetView()->HasFocus() &&
       controller_->delegate()->GetRenderViewHost()->GetView()) {
-    RenderWidgetHostViewPort::FromRWHV(
-        controller_->delegate()->GetRenderViewHost()->GetView())->Focus();
+    controller_->delegate()->GetRenderViewHost()->GetView()->Focus();
   }
 
   // Delete this and call Shutdown on the RVH asynchronously, as we may have
@@ -580,7 +579,7 @@ WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
   WebContentsView* web_contents_view = web_contents()->GetView();
   WebContentsViewPort* web_contents_view_port =
       static_cast<WebContentsViewPort*>(web_contents_view);
-  RenderWidgetHostView* view =
+  RenderWidgetHostViewBase* view =
       web_contents_view_port->CreateViewForWidget(render_view_host_);
   render_view_host_->SetView(view);
   render_view_host_->AllowBindings(BINDINGS_POLICY_DOM_AUTOMATION);
@@ -704,7 +703,7 @@ void InterstitialPageImpl::Focus() {
   // Focus the native window.
   if (!enabled())
     return;
-  RenderWidgetHostViewPort::FromRWHV(render_view_host_->GetView())->Focus();
+  render_view_host_->GetView()->Focus();
 }
 
 void InterstitialPageImpl::FocusThroughTabTraversal(bool reverse) {

@@ -118,8 +118,8 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
   base::mac::ScopedNSAutoreleasePool pool;
 
   // Owned by its |cocoa_view()|, i.e. |rwhv_cocoa|.
-  RenderWidgetHostViewMac* rwhv_mac = static_cast<RenderWidgetHostViewMac*>(
-      RenderWidgetHostView::CreateViewForWidget(render_widget));
+  RenderWidgetHostViewMac* rwhv_mac = new RenderWidgetHostViewMac(
+      render_widget);
   base::scoped_nsobject<RenderWidgetHostViewCocoa> rwhv_cocoa(
       [rwhv_mac->cocoa_view() retain]);
 

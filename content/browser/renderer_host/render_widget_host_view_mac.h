@@ -19,6 +19,7 @@
 #include "content/browser/renderer_host/display_link_mac.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/software_frame_manager.h"
+#include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/edit_command.h"
 #import "content/public/browser/render_widget_host_view_mac_base.h"
@@ -211,10 +212,15 @@ class RenderWidgetHostImpl;
 //     references to it must become NULL."
 //
 // RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
-class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
-                                public IPC::Sender,
-                                public SoftwareFrameManagerClient {
+class CONTENT_EXPORT RenderWidgetHostViewMac
+    : public RenderWidgetHostViewBase,
+      public IPC::Sender,
+      public SoftwareFrameManagerClient {
  public:
+  // The view will associate itself with the given widget. The native view must
+  // be hooked up immediately to the view hierarchy, or else when it is
+  // deleted it will delete this out from under the caller.
+  explicit RenderWidgetHostViewMac(RenderWidgetHost* widget);
   virtual ~RenderWidgetHostViewMac();
 
   RenderWidgetHostViewCocoa* cocoa_view() const { return cocoa_view_; }
@@ -253,7 +259,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   virtual void StopSpeaking() OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
 
-  // Implementation of RenderWidgetHostViewPort.
+  // Implementation of RenderWidgetHostViewBase.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE;
   virtual void InitAsFullscreen(
@@ -509,7 +515,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   bool HasPendingSwapAck() const { return pending_swap_ack_; }
 
  private:
-  friend class RenderWidgetHostView;
   friend class RenderWidgetHostViewMacTest;
 
   struct PendingSwapAck {
@@ -523,11 +528,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   };
   scoped_ptr<PendingSwapAck> pending_swap_ack_;
   void AddPendingSwapAck(int32 route_id, int gpu_host_id, int32 renderer_id);
-
-  // The view will associate itself with the given widget. The native view must
-  // be hooked up immediately to the view hierarchy, or else when it is
-  // deleted it will delete this out from under the caller.
-  explicit RenderWidgetHostViewMac(RenderWidgetHost* widget);
 
   // Returns whether this render view is a popup (autocomplete window).
   bool IsPopup() const;

@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/port/browser/render_widget_host_view_port.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -23,18 +23,18 @@ const char kMinimalPageDataURL[] =
 
 class AccessibilityModeTest : public ContentBrowserTest {
  protected:
-  content::WebContents* web_contents() {
+  WebContents* web_contents() {
     return shell()->web_contents();
   }
 
-  content::RenderWidgetHostImpl* rwhi() {
-    content::RenderWidgetHost* rwh =
+  RenderWidgetHostImpl* rwhi() {
+    RenderWidgetHost* rwh =
         web_contents()->GetRenderWidgetHostView()->GetRenderWidgetHost();
-    return content::RenderWidgetHostImpl::From(rwh);
+    return RenderWidgetHostImpl::From(rwh);
   }
 
-  content::RenderWidgetHostViewPort* host_view() {
-    return RenderWidgetHostViewPort::FromRWHV(
+  RenderWidgetHostViewBase* host_view() {
+    return static_cast<RenderWidgetHostViewBase*>(
         shell()->web_contents()->GetRenderWidgetHostView());
   }
 

@@ -20,7 +20,7 @@ class VideoFrame;
 namespace content {
 
 // Defines an interface for listening to events of frame presentation and to
-// instruct the platform layer (i.e. RenderWidgetHostViewPort) to copy a frame.
+// instruct the platform layer (i.e. RenderWidgetHostView) to copy a frame.
 //
 // Further processing is possible (e.g. scale and color space conversion)
 // through this interface. See ShouldCaptureFrame() for details.

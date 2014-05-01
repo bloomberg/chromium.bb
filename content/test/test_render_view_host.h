@@ -83,7 +83,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
       uint32 output_surface_id,
       scoped_ptr<cc::CompositorFrame> frame) OVERRIDE;
 
-  // RenderWidgetHostViewPort implementation.
+  // RenderWidgetHostViewBase implementation.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE {}
   virtual void InitAsFullscreen(
@@ -112,9 +112,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void SetTooltipText(const base::string16& tooltip_text) OVERRIDE {}
   virtual void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) OVERRIDE {}
-#if defined(OS_ANDROID)
-  virtual void SelectionRootBoundsChanged(const gfx::Rect&) OVERRIDE {}
-#endif
   virtual void ScrollOffsetChanged() OVERRIDE {}
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
@@ -142,9 +139,12 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual bool PostProcessEventForPluginIme(
       const NativeWebKeyboardEvent& event) OVERRIDE;
 #elif defined(OS_ANDROID)
+  virtual void SelectionRootBoundsChanged(const gfx::Rect&) OVERRIDE {}
   virtual void ShowDisambiguationPopup(
       const gfx::Rect& target_rect,
       const SkBitmap& zoomed_bitmap) OVERRIDE {}
+  virtual void LockCompositingSurface() OVERRIDE {}
+  virtual void UnlockCompositingSurface() OVERRIDE {}
 #endif
   virtual void GetScreenInfo(blink::WebScreenInfo* results) OVERRIDE {}
   virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;

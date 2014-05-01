@@ -1082,7 +1082,7 @@ void WebContentsViewAura::CreateView(
     drag_dest_delegate_ = delegate_->GetDragDestDelegate();
 }
 
-RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
+RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
     RenderWidgetHost* render_widget_host) {
   if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
@@ -1091,11 +1091,12 @@ RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
     // view twice), we check for the RVH Factory, which will be set when we're
     // making special ones (which go along with the special views).
     DCHECK(RenderViewHostFactory::has_factory());
-    return render_widget_host->GetView();
+    return static_cast<RenderWidgetHostViewBase*>(
+        render_widget_host->GetView());
   }
 
-  RenderWidgetHostView* view =
-      RenderWidgetHostView::CreateViewForWidget(render_widget_host);
+  RenderWidgetHostViewBase* view = new RenderWidgetHostViewAura(
+      render_widget_host);
   view->InitAsChild(NULL);
   GetNativeView()->AddChild(view->GetNativeView());
 
@@ -1122,9 +1123,9 @@ RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
   return view;
 }
 
-RenderWidgetHostView* WebContentsViewAura::CreateViewForPopupWidget(
+RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForPopupWidget(
     RenderWidgetHost* render_widget_host) {
-  return RenderWidgetHostViewPort::CreateViewForWidget(render_widget_host);
+  return new RenderWidgetHostViewAura(render_widget_host);
 }
 
 void WebContentsViewAura::SetPageTitle(const base::string16& title) {

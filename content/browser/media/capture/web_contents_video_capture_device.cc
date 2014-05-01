@@ -66,9 +66,9 @@
 #include "content/browser/media/capture/video_capture_oracle.h"
 #include "content/browser/media/capture/web_contents_capture_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"
-#include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -369,8 +369,8 @@ ContentCaptureSubscription::ContentCaptureSubscription(
       timer_(true, true) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  RenderWidgetHostViewPort* view =
-      RenderWidgetHostViewPort::FromRWHV(source.GetView());
+  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
+      source.GetView());
 
   // Subscribe to accelerated presents. These will be serviced directly by the
   // oracle.
@@ -400,8 +400,8 @@ ContentCaptureSubscription::~ContentCaptureSubscription() {
     RenderViewHost* source = RenderViewHost::FromID(render_process_id_,
                                                     render_view_id_);
     if (source) {
-      RenderWidgetHostViewPort* view =
-          RenderWidgetHostViewPort::FromRWHV(source->GetView());
+      RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
+          source->GetView());
       if (view)
         view->EndFrameSubscription();
     }
@@ -632,8 +632,8 @@ void WebContentsCaptureMachine::Capture(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   RenderWidgetHost* rwh = GetTarget();
-  RenderWidgetHostViewPort* view =
-      rwh ? RenderWidgetHostViewPort::FromRWHV(rwh->GetView()) : NULL;
+  RenderWidgetHostViewBase* view =
+      rwh ? static_cast<RenderWidgetHostViewBase*>(rwh->GetView()) : NULL;
   if (!view || !rwh) {
     deliver_frame_cb.Run(base::TimeTicks(), false);
     return;

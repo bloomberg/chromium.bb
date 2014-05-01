@@ -11,7 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "content/port/browser/render_widget_host_view_port.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
@@ -31,7 +31,7 @@ AccessibilityTreeFormatter::AccessibilityTreeFormatter(
 // static
 AccessibilityTreeFormatter* AccessibilityTreeFormatter::Create(
     RenderViewHost* rvh) {
-  RenderWidgetHostViewPort* host_view = static_cast<RenderWidgetHostViewPort*>(
+  RenderWidgetHostViewBase* host_view = static_cast<RenderWidgetHostViewBase*>(
       WebContents::FromRenderViewHost(rvh)->GetRenderWidgetHostView());
 
   BrowserAccessibilityManager* manager =

@@ -41,7 +41,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
  public:
   RenderWidgetHostViewGuest(RenderWidgetHost* widget,
                             BrowserPluginGuest* guest,
-                            RenderWidgetHostView* platform_view);
+                            RenderWidgetHostViewBase* platform_view);
   virtual ~RenderWidgetHostViewGuest();
 
   // RenderWidgetHostView implementation.
@@ -57,7 +57,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual gfx::Size GetPhysicalBackingSize() const OVERRIDE;
   virtual base::string16 GetSelectedText() const OVERRIDE;
 
-  // RenderWidgetHostViewPort implementation.
+  // RenderWidgetHostViewBase implementation.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE;
   virtual void InitAsFullscreen(
@@ -86,9 +86,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
                                 const gfx::Range& range) OVERRIDE;
   virtual void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) OVERRIDE;
-#if defined(OS_ANDROID)
-  virtual void SelectionRootBoundsChanged(const gfx::Rect& bounds) OVERRIDE;
-#endif
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
@@ -126,15 +123,18 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual bool IsSpeaking() const OVERRIDE;
   virtual void StopSpeaking() OVERRIDE;
 
-  // RenderWidgetHostViewPort implementation.
+  // RenderWidgetHostViewBase implementation.
   virtual bool PostProcessEventForPluginIme(
       const NativeWebKeyboardEvent& event) OVERRIDE;
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
-  // RenderWidgetHostViewPort implementation.
+  // RenderWidgetHostViewBase implementation.
+  virtual void SelectionRootBoundsChanged(const gfx::Rect& bounds) OVERRIDE;
   virtual void ShowDisambiguationPopup(const gfx::Rect& target_rect,
                                        const SkBitmap& zoomed_bitmap) OVERRIDE;
+  virtual void LockCompositingSurface() OVERRIDE;
+  virtual void UnlockCompositingSurface() OVERRIDE;
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
@@ -163,6 +163,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   // Process all of the given gestures (passes them on to renderer)
   void ProcessGestures(ui::GestureRecognizer::Gestures* gestures);
 
+  RenderWidgetHostViewBase* GetGuestRenderWidgetHostView() const;
+
   // BrowserPluginGuest and RenderWidgetHostViewGuest's lifetimes are not tied
   // to one another, therefore we access |guest_| through WeakPtr.
   base::WeakPtr<BrowserPluginGuest> guest_;
@@ -170,7 +172,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   // The platform view for this RenderWidgetHostView.
   // RenderWidgetHostViewGuest mostly only cares about stuff related to
   // compositing, the rest are directly forwared to this |platform_view_|.
-  RenderWidgetHostViewPort* platform_view_;
+  RenderWidgetHostViewBase* platform_view_;
 #if defined(USE_AURA)
   scoped_ptr<ui::GestureRecognizer> gesture_recognizer_;
 #endif

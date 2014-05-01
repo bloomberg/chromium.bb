@@ -24,11 +24,11 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/view_messages.h"
-#include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -1070,8 +1070,7 @@ void RenderFrameHostManager::CommitPending() {
     delegate_->SetFocusToLocationBar(false);
   } else if (focus_render_view &&
              render_frame_host_->render_view_host()->GetView()) {
-    RenderWidgetHostViewPort::FromRWHV(
-        render_frame_host_->render_view_host()->GetView())->Focus();
+    render_frame_host_->render_view_host()->GetView()->Focus();
   }
 
   // Notify that we've swapped RenderFrameHosts. We do this before shutting down

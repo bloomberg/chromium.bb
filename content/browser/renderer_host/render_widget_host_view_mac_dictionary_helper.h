@@ -12,7 +12,6 @@ namespace content {
 
 class RenderWidgetHostView;
 class RenderWidgetHostViewMac;
-class RenderWidgetHostViewPort;
 
 // A helper class to bring up definition of word for a RWHV.
 //
@@ -21,8 +20,7 @@ class RenderWidgetHostViewPort;
 // system settings.
 class RenderWidgetHostViewMacDictionaryHelper {
  public:
-  explicit RenderWidgetHostViewMacDictionaryHelper(
-      RenderWidgetHostViewPort* view);
+  explicit RenderWidgetHostViewMacDictionaryHelper(RenderWidgetHostView* view);
 
   // Overrides the view to use to bring up dictionary panel.
   // This |target_view| can be different from |view_|, |view_| is used to get

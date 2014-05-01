@@ -118,9 +118,9 @@ class CONTENT_EXPORT WebContentsViewAura
   // Overridden from WebContentsViewPort:
   virtual void CreateView(
       const gfx::Size& initial_size, gfx::NativeView context) OVERRIDE;
-  virtual RenderWidgetHostView* CreateViewForWidget(
+  virtual RenderWidgetHostViewBase* CreateViewForWidget(
       RenderWidgetHost* render_widget_host) OVERRIDE;
-  virtual RenderWidgetHostView* CreateViewForPopupWidget(
+  virtual RenderWidgetHostViewBase* CreateViewForPopupWidget(
       RenderWidgetHost* render_widget_host) OVERRIDE;
   virtual void SetPageTitle(const base::string16& title) OVERRIDE;
   virtual void RenderViewCreated(RenderViewHost* host) OVERRIDE;

@@ -91,12 +91,12 @@ void TestWebContentsView::CreateView(const gfx::Size& initial_size,
                                      gfx::NativeView context) {
 }
 
-RenderWidgetHostView* TestWebContentsView::CreateViewForWidget(
+RenderWidgetHostViewBase* TestWebContentsView::CreateViewForWidget(
     RenderWidgetHost* render_widget_host) {
   return NULL;
 }
 
-RenderWidgetHostView* TestWebContentsView::CreateViewForPopupWidget(
+RenderWidgetHostViewBase* TestWebContentsView::CreateViewForPopupWidget(
     RenderWidgetHost* render_widget_host) {
   return NULL;
 }

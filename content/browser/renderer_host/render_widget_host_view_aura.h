@@ -125,6 +125,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
     touch_editing_client_ = client;
   }
 
+  explicit RenderWidgetHostViewAura(RenderWidgetHost* host);
+
   // RenderWidgetHostView implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
@@ -144,7 +146,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual gfx::Size GetVisibleViewportSize() const OVERRIDE;
   virtual void SetInsets(const gfx::Insets& insets) OVERRIDE;
 
-  // Overridden from RenderWidgetHostViewPort:
+  // Overridden from RenderWidgetHostViewBase:
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE;
   virtual void InitAsFullscreen(
@@ -324,11 +326,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   bool IsClosing() const { return in_shutdown_; }
 
  protected:
-  friend class RenderWidgetHostView;
   virtual ~RenderWidgetHostViewAura();
-
-  // Should be constructed via RenderWidgetHostView::CreateViewForWidget.
-  explicit RenderWidgetHostViewAura(RenderWidgetHost* host);
 
   // Exposed for tests.
   aura::Window* window() { return window_; }

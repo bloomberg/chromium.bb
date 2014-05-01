@@ -36,18 +36,6 @@
 
 namespace content {
 
-// static
-RenderWidgetHostViewPort* RenderWidgetHostViewPort::FromRWHV(
-    RenderWidgetHostView* rwhv) {
-  return static_cast<RenderWidgetHostViewPort*>(rwhv);
-}
-
-// static
-RenderWidgetHostViewPort* RenderWidgetHostViewPort::CreateViewForWidget(
-    RenderWidgetHost* widget) {
-  return FromRWHV(RenderWidgetHostView::CreateViewForWidget(widget));
-}
-
 #if defined(OS_WIN)
 
 namespace {
@@ -533,19 +521,12 @@ bool RenderWidgetHostViewBase::HasDisplayPropertyChanged(gfx::NativeView view) {
   return true;
 }
 
-void RenderWidgetHostViewBase::ProcessAckedTouchEvent(
-    const TouchEventWithLatencyInfo& touch, InputEventAckState ack_result) {
-}
-
 scoped_ptr<SyntheticGestureTarget>
 RenderWidgetHostViewBase::CreateSyntheticGestureTarget() {
   RenderWidgetHostImpl* host =
       RenderWidgetHostImpl::From(GetRenderWidgetHost());
   return scoped_ptr<SyntheticGestureTarget>(
       new SyntheticGestureTargetBase(host));
-}
-
-void RenderWidgetHostViewBase::FocusedNodeChanged(bool is_editable_node) {
 }
 
 // Platform implementation should override this method to allow frame
@@ -590,14 +571,6 @@ uint32 RenderWidgetHostViewBase::RendererFrameNumber() {
 
 void RenderWidgetHostViewBase::DidReceiveRendererFrame() {
   ++renderer_frame_number_;
-}
-
-void RenderWidgetHostViewBase::LockCompositingSurface() {
-  NOTIMPLEMENTED();
-}
-
-void RenderWidgetHostViewBase::UnlockCompositingSurface() {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewBase::FlushInput() {

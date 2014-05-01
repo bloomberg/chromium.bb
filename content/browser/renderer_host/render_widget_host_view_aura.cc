@@ -35,7 +35,6 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"
-#include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
@@ -2346,16 +2345,10 @@ DelegatedFrameHost* RenderWidgetHostViewAura::GetDelegatedFrameHost() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostView, public:
+// RenderWidgetHostViewBase, public:
 
 // static
-RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
-    RenderWidgetHost* widget) {
-  return new RenderWidgetHostViewAura(widget);
-}
-
-// static
-void RenderWidgetHostViewPort::GetDefaultScreenInfo(WebScreenInfo* results) {
+void RenderWidgetHostViewBase::GetDefaultScreenInfo(WebScreenInfo* results) {
   GetScreenInfoForWindow(results, NULL);
 }
 

@@ -131,7 +131,7 @@ void WebContentsViewAndroid::CreateView(
     const gfx::Size& initial_size, gfx::NativeView context) {
 }
 
-RenderWidgetHostView* WebContentsViewAndroid::CreateViewForWidget(
+RenderWidgetHostViewBase* WebContentsViewAndroid::CreateViewForWidget(
     RenderWidgetHost* render_widget_host) {
   if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
@@ -140,7 +140,8 @@ RenderWidgetHostView* WebContentsViewAndroid::CreateViewForWidget(
     // view twice), we check for the RVH Factory, which will be set when we're
     // making special ones (which go along with the special views).
     DCHECK(RenderViewHostFactory::has_factory());
-    return render_widget_host->GetView();
+    return static_cast<RenderWidgetHostViewBase*>(
+        render_widget_host->GetView());
   }
   // Note that while this instructs the render widget host to reference
   // |native_view_|, this has no effect without also instructing the
@@ -148,14 +149,13 @@ RenderWidgetHostView* WebContentsViewAndroid::CreateViewForWidget(
   // order to paint it. See ContentView::GetRenderWidgetHostViewAndroid for an
   // example of how this is achieved for InterstitialPages.
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(render_widget_host);
-  RenderWidgetHostView* view = new RenderWidgetHostViewAndroid(
-      rwhi, content_view_core_);
-  return view;
+  return new RenderWidgetHostViewAndroid(rwhi, content_view_core_);
 }
 
-RenderWidgetHostView* WebContentsViewAndroid::CreateViewForPopupWidget(
+RenderWidgetHostViewBase* WebContentsViewAndroid::CreateViewForPopupWidget(
     RenderWidgetHost* render_widget_host) {
-  return RenderWidgetHostViewPort::CreateViewForWidget(render_widget_host);
+  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(render_widget_host);
+  return new RenderWidgetHostViewAndroid(rwhi, NULL);
 }
 
 void WebContentsViewAndroid::RenderViewCreated(RenderViewHost* host) {

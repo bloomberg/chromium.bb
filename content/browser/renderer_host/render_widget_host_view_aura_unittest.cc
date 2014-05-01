@@ -223,8 +223,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
     parent_host_ = new RenderWidgetHostImpl(
         &delegate_, process_host_, MSG_ROUTING_NONE, false);
-    parent_view_ = static_cast<RenderWidgetHostViewAura*>(
-        RenderWidgetHostView::CreateViewForWidget(parent_host_));
+    parent_view_ = new RenderWidgetHostViewAura(parent_host_);
     parent_view_->InitAsChild(NULL);
     aura::client::ParentWindowWithContext(parent_view_->GetNativeView(),
                                           aura_test_helper_->root_window(),

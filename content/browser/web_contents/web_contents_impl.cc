@@ -42,6 +42,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_view_guest.h"
 #include "content/browser/webui/generic_handler.h"
@@ -55,7 +56,6 @@
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
-#include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -683,14 +683,6 @@ RenderWidgetHostView* WebContentsImpl::GetRenderWidgetHostView() const {
   return GetRenderManager()->GetRenderWidgetHostView();
 }
 
-RenderWidgetHostViewPort* WebContentsImpl::GetRenderWidgetHostViewPort() const {
-  BrowserPluginGuest* guest = GetBrowserPluginGuest();
-  if (guest && guest->embedder_web_contents()) {
-    return guest->embedder_web_contents()->GetRenderWidgetHostViewPort();
-  }
-  return RenderWidgetHostViewPort::FromRWHV(GetRenderWidgetHostView());
-}
-
 RenderWidgetHostView* WebContentsImpl::GetFullscreenRenderWidgetHostView()
     const {
   RenderWidgetHost* const widget_host =
@@ -967,8 +959,7 @@ base::TimeTicks WebContentsImpl::GetLastActiveTime() const {
 
 void WebContentsImpl::WasShown() {
   controller_.SetActive(true);
-  RenderWidgetHostViewPort* rwhv =
-      RenderWidgetHostViewPort::FromRWHV(GetRenderWidgetHostView());
+  RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
   if (rwhv) {
     rwhv->Show();
 #if defined(OS_MACOSX)
@@ -1001,8 +992,7 @@ void WebContentsImpl::WasHidden() {
     // removes the |GetRenderViewHost()|; then when we actually destroy the
     // window, OnWindowPosChanged() notices and calls WasHidden() (which
     // calls us).
-    RenderWidgetHostViewPort* rwhv =
-        RenderWidgetHostViewPort::FromRWHV(GetRenderWidgetHostView());
+    RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
     if (rwhv)
       rwhv->Hide();
   }
@@ -1533,8 +1523,9 @@ void WebContentsImpl::CreateNewWidget(int render_process_id,
       new RenderWidgetHostImpl(this, process, route_id, IsHidden());
   created_widgets_.insert(widget_host);
 
-  RenderWidgetHostViewPort* widget_view = RenderWidgetHostViewPort::FromRWHV(
-      view_->CreateViewForPopupWidget(widget_host));
+  RenderWidgetHostViewBase* widget_view =
+      static_cast<RenderWidgetHostViewBase*>(
+          view_->CreateViewForPopupWidget(widget_host));
   if (!widget_view)
     return;
   if (!is_fullscreen) {
@@ -1577,10 +1568,19 @@ void WebContentsImpl::ShowCreatedFullscreenWidget(int route_id) {
 void WebContentsImpl::ShowCreatedWidget(int route_id,
                                         bool is_fullscreen,
                                         const gfx::Rect& initial_pos) {
-  RenderWidgetHostViewPort* widget_host_view =
-      RenderWidgetHostViewPort::FromRWHV(GetCreatedWidget(route_id));
+  RenderWidgetHostViewBase* widget_host_view =
+      static_cast<RenderWidgetHostViewBase*>(GetCreatedWidget(route_id));
   if (!widget_host_view)
     return;
+
+  RenderWidgetHostView* view = NULL;
+  BrowserPluginGuest* guest = GetBrowserPluginGuest();
+  if (guest && guest->embedder_web_contents()) {
+    view = guest->embedder_web_contents()->GetRenderWidgetHostView();
+  } else {
+    view = GetRenderWidgetHostView();
+  }
+
   if (is_fullscreen) {
     DCHECK_EQ(MSG_ROUTING_NONE, fullscreen_widget_routing_id_);
     fullscreen_widget_routing_id_ = route_id;
@@ -1588,7 +1588,7 @@ void WebContentsImpl::ShowCreatedWidget(int route_id,
       widget_host_view->InitAsChild(GetRenderWidgetHostView()->GetNativeView());
       delegate_->ToggleFullscreenModeForTab(this, true);
     } else {
-      widget_host_view->InitAsFullscreen(GetRenderWidgetHostViewPort());
+      widget_host_view->InitAsFullscreen(view);
     }
     FOR_EACH_OBSERVER(WebContentsObserver,
                       observers_,
@@ -1596,7 +1596,7 @@ void WebContentsImpl::ShowCreatedWidget(int route_id,
     if (!widget_host_view->HasFocus())
       widget_host_view->Focus();
   } else {
-    widget_host_view->InitAsPopup(GetRenderWidgetHostViewPort(), initial_pos);
+    widget_host_view->InitAsPopup(view, initial_pos);
   }
 
   RenderWidgetHostImpl* render_widget_host_impl =
@@ -3754,7 +3754,7 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
     CrossProcessFrameConnector* frame_connector) {
   TRACE_EVENT0("browser", "WebContentsImpl::CreateRenderViewForRenderManager");
   // Can be NULL during tests.
-  RenderWidgetHostView* rwh_view;
+  RenderWidgetHostViewBase* rwh_view;
   // TODO(kenrb): RenderWidgetHostViewChildFrame special casing is temporary
   // until RenderWidgetHost is attached to RenderFrameHost. We need to special
   // case this because RWH is still a base class of RenderViewHost, and child
@@ -3855,7 +3855,7 @@ void WebContentsImpl::SetEncoding(const std::string& encoding) {
 }
 
 void WebContentsImpl::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {
-  RenderWidgetHostView* rwh_view = view_->CreateViewForWidget(rvh);
+  RenderWidgetHostViewBase* rwh_view = view_->CreateViewForWidget(rvh);
   // Can be NULL during tests.
   if (rwh_view)
     rwh_view->SetSize(GetView()->GetContainerSize());

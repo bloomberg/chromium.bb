@@ -189,8 +189,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     old_rwhv_ = rvh()->GetView();
 
     // Owned by its |cocoa_view()|, i.e. |rwhv_cocoa_|.
-    rwhv_mac_ = static_cast<RenderWidgetHostViewMac*>(
-        RenderWidgetHostView::CreateViewForWidget(rvh()));
+    rwhv_mac_ = new RenderWidgetHostViewMac(rvh());
     rwhv_cocoa_.reset([rwhv_mac_->cocoa_view() retain]);
   }
   virtual void TearDown() {
@@ -201,7 +200,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     pool_.Recycle();
 
     // See comment in SetUp().
-    test_rvh()->SetView(old_rwhv_);
+    test_rvh()->SetView(static_cast<RenderWidgetHostViewBase*>(old_rwhv_));
 
     RenderViewHostImplTestHarness::TearDown();
   }
@@ -277,8 +276,7 @@ TEST_F(RenderWidgetHostViewMacTest, FullscreenCloseOnEscape) {
   // Owned by its |cocoa_view()|.
   RenderWidgetHostImpl* rwh = new RenderWidgetHostImpl(
       &delegate, process_host, MSG_ROUTING_NONE, false);
-  RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
-      RenderWidgetHostView::CreateViewForWidget(rwh));
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(rwh);
 
   view->InitAsFullscreen(rwhv_mac_);
 
@@ -311,8 +309,7 @@ TEST_F(RenderWidgetHostViewMacTest, AcceleratorDestroy) {
   // Owned by its |cocoa_view()|.
   RenderWidgetHostImpl* rwh = new RenderWidgetHostImpl(
       &delegate, process_host, MSG_ROUTING_NONE, false);
-  RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
-      RenderWidgetHostView::CreateViewForWidget(rwh));
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(rwh);
 
   view->InitAsFullscreen(rwhv_mac_);
 
@@ -666,8 +663,7 @@ TEST_F(RenderWidgetHostViewMacTest, BlurAndFocusOnSetActive) {
   // Owned by its |cocoa_view()|.
   MockRenderWidgetHostImpl* rwh = new MockRenderWidgetHostImpl(
       &delegate, process_host, MSG_ROUTING_NONE);
-  RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
-      RenderWidgetHostView::CreateViewForWidget(rwh));
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(rwh);
 
   base::scoped_nsobject<CocoaTestHelperWindow> window(
       [[CocoaTestHelperWindow alloc] init]);
@@ -713,8 +709,7 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
   MockRenderWidgetHostDelegate delegate;
   MockRenderWidgetHostImpl* host = new MockRenderWidgetHostImpl(
       &delegate, process_host, MSG_ROUTING_NONE);
-  RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
-      RenderWidgetHostView::CreateViewForWidget(host));
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host);
 
   // Send an initial wheel event with NSEventPhaseBegan to the view.
   NSEvent* event1 = MockScrollWheelEventWithPhase(@selector(phaseBegan), 0);
@@ -752,8 +747,7 @@ TEST_F(RenderWidgetHostViewMacTest, IgnoreEmptyUnhandledWheelEvent) {
   MockRenderWidgetHostDelegate delegate;
   MockRenderWidgetHostImpl* host = new MockRenderWidgetHostImpl(
       &delegate, process_host, MSG_ROUTING_NONE);
-  RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
-      RenderWidgetHostView::CreateViewForWidget(host));
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host);
 
   // Add a delegate to the view.
   base::scoped_nsobject<MockRenderWidgetHostViewMacDelegate> view_delegate(

@@ -53,7 +53,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
   virtual gfx::Size GetPhysicalBackingSize() const OVERRIDE;
 
-  // RenderWidgetHostViewPort implementation.
+  // RenderWidgetHostViewBase implementation.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE;
   virtual void InitAsFullscreen(
@@ -83,9 +83,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
                                 const gfx::Range& range) OVERRIDE;
   virtual void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) OVERRIDE;
-#if defined(OS_ANDROID)
-  virtual void SelectionRootBoundsChanged(const gfx::Rect& bounds) OVERRIDE;
-#endif
   virtual void ScrollOffsetChanged() OVERRIDE;
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
@@ -137,16 +134,19 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   virtual bool IsSpeaking() const OVERRIDE;
   virtual void StopSpeaking() OVERRIDE;
 
-  // RenderWidgetHostViewPort implementation.
+  // RenderWidgetHostViewBase implementation.
   virtual bool PostProcessEventForPluginIme(
       const NativeWebKeyboardEvent& event) OVERRIDE;
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
-  // RenderWidgetHostViewPort implementation.
+  // RenderWidgetHostViewBase implementation.
+  virtual void SelectionRootBoundsChanged(const gfx::Rect& bounds) OVERRIDE;
   virtual void ShowDisambiguationPopup(
       const gfx::Rect& target_rect,
       const SkBitmap& zoomed_bitmap) OVERRIDE;
+  virtual void LockCompositingSurface() OVERRIDE;
+  virtual void UnlockCompositingSurface() OVERRIDE;
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)

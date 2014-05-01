@@ -1447,7 +1447,7 @@ SkBitmap::Config RenderWidgetHostViewAndroid::PreferredReadbackFormat() {
 }
 
 // static
-void RenderWidgetHostViewPort::GetDefaultScreenInfo(
+void RenderWidgetHostViewBase::GetDefaultScreenInfo(
     blink::WebScreenInfo* results) {
   const gfx::Display& display =
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
@@ -1460,16 +1460,6 @@ void RenderWidgetHostViewPort::GetDefaultScreenInfo(
   results->depth = info.GetBitsPerPixel();
   results->depthPerComponent = info.GetBitsPerComponent();
   results->isMonochrome = (results->depthPerComponent == 0);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostView, public:
-
-// static
-RenderWidgetHostView*
-RenderWidgetHostView::CreateViewForWidget(RenderWidgetHost* widget) {
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(widget);
-  return new RenderWidgetHostViewAndroid(rwhi, NULL);
 }
 
 } // namespace content

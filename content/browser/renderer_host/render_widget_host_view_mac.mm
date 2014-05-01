@@ -393,16 +393,10 @@ void RemoveLayerFromSuperlayer(
 namespace content {
 
 ///////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostView, public:
+// RenderWidgetHostViewBase, public:
 
 // static
-RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
-    RenderWidgetHost* widget) {
-  return new RenderWidgetHostViewMac(widget);
-}
-
-// static
-void RenderWidgetHostViewPort::GetDefaultScreenInfo(
+void RenderWidgetHostViewBase::GetDefaultScreenInfo(
     blink::WebScreenInfo* results) {
   *results = GetWebScreenInfo(NULL);
 }

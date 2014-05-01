@@ -10,7 +10,7 @@
 namespace content {
 class RenderViewHost;
 class RenderWidgetHost;
-class RenderWidgetHostView;
+class RenderWidgetHostViewBase;
 
 // This is the larger WebContentsView interface exposed only within content/ and
 // to embedders looking to port to new platforms.
@@ -24,11 +24,11 @@ class CONTENT_EXPORT WebContentsViewPort : public WebContentsView {
   // Sets up the View that holds the rendered web page, receives messages for
   // it and contains page plugins. The host view should be sized to the current
   // size of the WebContents.
-  virtual RenderWidgetHostView* CreateViewForWidget(
+  virtual RenderWidgetHostViewBase* CreateViewForWidget(
       RenderWidgetHost* render_widget_host) = 0;
 
   // Creates a new View that holds a popup and receives messages for it.
-  virtual RenderWidgetHostView* CreateViewForPopupWidget(
+  virtual RenderWidgetHostViewBase* CreateViewForPopupWidget(
       RenderWidgetHost* render_widget_host) = 0;
 
   // Sets the page title for the native widgets corresponding to the view. This

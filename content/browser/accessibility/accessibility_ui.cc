@@ -14,8 +14,8 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/view_message_enums.h"
-#include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
@@ -226,7 +226,7 @@ void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {
   }
 
   scoped_ptr<base::DictionaryValue> result(BuildTargetDescriptor(rvh));
-  RenderWidgetHostViewPort* host_view = static_cast<RenderWidgetHostViewPort*>(
+  RenderWidgetHostViewBase* host_view = static_cast<RenderWidgetHostViewBase*>(
       WebContents::FromRenderViewHost(rvh)->GetRenderWidgetHostView());
   if (!host_view) {
     result->Set("error",

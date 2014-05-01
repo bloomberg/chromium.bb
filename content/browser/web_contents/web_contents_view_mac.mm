@@ -337,7 +337,7 @@ void WebContentsViewMac::CreateView(
   cocoa_view_.reset(view);
 }
 
-RenderWidgetHostView* WebContentsViewMac::CreateViewForWidget(
+RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
     RenderWidgetHost* render_widget_host) {
   if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
@@ -346,11 +346,12 @@ RenderWidgetHostView* WebContentsViewMac::CreateViewForWidget(
     // view twice), we check for the RVH Factory, which will be set when we're
     // making special ones (which go along with the special views).
     DCHECK(RenderViewHostFactory::has_factory());
-    return render_widget_host->GetView();
+    return static_cast<RenderWidgetHostViewBase*>(
+        render_widget_host->GetView());
   }
 
-  RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
-      RenderWidgetHostView::CreateViewForWidget(render_widget_host));
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(
+      render_widget_host);
   if (delegate()) {
     base::scoped_nsobject<NSObject<RenderWidgetHostViewMacDelegate> >
         rw_delegate(
@@ -382,9 +383,9 @@ RenderWidgetHostView* WebContentsViewMac::CreateViewForWidget(
   return view;
 }
 
-RenderWidgetHostView* WebContentsViewMac::CreateViewForPopupWidget(
+RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForPopupWidget(
     RenderWidgetHost* render_widget_host) {
-  return RenderWidgetHostViewPort::CreateViewForWidget(render_widget_host);
+  return new RenderWidgetHostViewMac(render_widget_host);
 }
 
 void WebContentsViewMac::SetPageTitle(const base::string16& title) {

@@ -9,7 +9,7 @@
 namespace content {
 
 RenderWidgetHostViewMacDictionaryHelper::
-    RenderWidgetHostViewMacDictionaryHelper(RenderWidgetHostViewPort* view)
+    RenderWidgetHostViewMacDictionaryHelper(RenderWidgetHostView* view)
     : view_(static_cast<RenderWidgetHostViewMac*>(view)),
       target_view_(static_cast<RenderWidgetHostViewMac*>(view)) {
 }

@@ -83,7 +83,7 @@ class InputRouter;
 class MockRenderWidgetHost;
 class OverscrollController;
 class RenderWidgetHostDelegate;
-class RenderWidgetHostViewPort;
+class RenderWidgetHostViewBase;
 class SyntheticGestureController;
 class TimeoutMonitor;
 class TouchEmulator;
@@ -203,7 +203,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void InvalidateScreenInfo();
 
   // Sets the View of this RenderWidgetHost.
-  void SetView(RenderWidgetHostView* view);
+  void SetView(RenderWidgetHostViewBase* view);
 
   int surface_id() const { return surface_id_; }
 
@@ -598,7 +598,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // crashes, its View is destroyed and this pointer becomes NULL, even though
   // render_view_host_ lives on to load another URL (creating a new View while
   // doing so).
-  RenderWidgetHostViewPort* view_;
+  RenderWidgetHostViewBase* view_;
 
   // true if a renderer has once been valid. We use this flag to display a sad
   // tab only when we lose our renderer and not if a paint occurs during

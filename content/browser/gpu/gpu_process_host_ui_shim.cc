@@ -17,8 +17,8 @@
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gl/gl_switches.h"
 
@@ -68,7 +68,7 @@ class ScopedSendOnIOThread {
   bool cancelled_;
 };
 
-RenderWidgetHostViewPort* GetRenderWidgetHostViewFromSurfaceID(
+RenderWidgetHostViewBase* GetRenderWidgetHostViewFromSurfaceID(
     int surface_id) {
   int render_process_id = 0;
   int render_widget_id = 0;
@@ -78,7 +78,7 @@ RenderWidgetHostViewPort* GetRenderWidgetHostViewFromSurfaceID(
 
   RenderWidgetHost* host =
       RenderWidgetHost::FromID(render_process_id, render_widget_id);
-  return host ? RenderWidgetHostViewPort::FromRWHV(host->GetView()) : NULL;
+  return host ? static_cast<RenderWidgetHostViewBase*>(host->GetView()) : NULL;
 }
 
 }  // namespace
@@ -238,7 +238,7 @@ void GpuProcessHostUIShim::OnGraphicsInfoCollected(
 
 void GpuProcessHostUIShim::OnAcceleratedSurfaceInitialized(int32 surface_id,
                                                            int32 route_id) {
-  RenderWidgetHostViewPort* view =
+  RenderWidgetHostViewBase* view =
       GetRenderWidgetHostViewFromSurfaceID(surface_id);
   if (!view)
     return;
@@ -260,7 +260,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
       new AcceleratedSurfaceMsg_BufferPresented(params.route_id,
                                                 ack_params));
 
-  RenderWidgetHostViewPort* view = GetRenderWidgetHostViewFromSurfaceID(
+  RenderWidgetHostViewBase* view = GetRenderWidgetHostViewFromSurfaceID(
       params.surface_id);
   if (!view)
     return;
@@ -302,7 +302,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfacePostSubBuffer(
       new AcceleratedSurfaceMsg_BufferPresented(params.route_id,
                                                 ack_params));
 
-  RenderWidgetHostViewPort* view =
+  RenderWidgetHostViewBase* view =
       GetRenderWidgetHostViewFromSurfaceID(params.surface_id);
   if (!view)
     return;
@@ -325,7 +325,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceSuspend(int32 surface_id) {
   TRACE_EVENT0("renderer",
       "GpuProcessHostUIShim::OnAcceleratedSurfaceSuspend");
 
-  RenderWidgetHostViewPort* view =
+  RenderWidgetHostViewBase* view =
       GetRenderWidgetHostViewFromSurfaceID(surface_id);
   if (!view)
     return;
@@ -335,7 +335,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceSuspend(int32 surface_id) {
 
 void GpuProcessHostUIShim::OnAcceleratedSurfaceRelease(
     const GpuHostMsg_AcceleratedSurfaceRelease_Params& params) {
-  RenderWidgetHostViewPort* view = GetRenderWidgetHostViewFromSurfaceID(
+  RenderWidgetHostViewBase* view = GetRenderWidgetHostViewFromSurfaceID(
       params.surface_id);
   if (!view)
     return;
