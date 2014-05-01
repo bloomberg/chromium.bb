@@ -7,21 +7,38 @@
 """Unittests for config.  Needs to be run inside of chroot for mox."""
 
 import mock
+import os
 import cPickle
 import sys
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import cbuildbot_config
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
+from chromite.lib import osutils
 from chromite.lib import parallel
 
 CHROMIUM_WATCHING_URL = ('http://src.chromium.org/chrome/trunk/tools/build/'
     'masters/master.chromium.chromiumos/master_chromiumos_cros_cfg.py')
 
 
-# pylint: disable=W0212,R0904
+class ConfigDumpTest(cros_test_lib.TestCase):
+  """Tests related to config_dump.json & cbuildbot_config.py"""
+
+  def testDump(self):
+    """Make sure the json & config are kept in sync"""
+    cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'cbuildbot_view_config'),
+           '-d', '--pretty']
+    dump_file_path = os.path.join(constants.CHROMITE_DIR, 'buildbot',
+                                  'config_dump.json')
+    new_dump = cros_build_lib.RunCommand(cmd, capture_output=True).output
+    old_dump = osutils.ReadFile(dump_file_path)
+    self.assertTrue(new_dump == old_dump, 'config_dump.json does not match the '
+                    'configs defined in cbuildbot_config.py')
+
+
 class ConfigPickleTest(cros_test_lib.TestCase):
   """Test that a config object is pickleable."""
 
@@ -53,6 +70,7 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
 
     This checks for mispelled keys, or keys that are somehow removed.
     """
+    # pylint: disable=W0212
     expected_keys = set(cbuildbot_config._default.keys())
     for build_name, config in cbuildbot_config.config.iteritems():
       config_keys = set(config.keys())
@@ -208,6 +226,7 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
     """Verify that hw test timeout is in a reasonable range."""
     # The parallel library will kill the process if it's silent for longer
     # than the silent timeout.
+    # pylint: disable=W0212
     max_timeout = parallel._BackgroundTask.SILENT_TIMEOUT
     for build_name, config in cbuildbot_config.config.iteritems():
       for test_config in config['hw_tests']:
