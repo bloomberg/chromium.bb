@@ -103,6 +103,8 @@
         'lib/main/webview_tests.cc',
         'native/aw_contents_client_bridge_unittest.cc',
         'native/input_stream_unittest.cc',
+        'native/permission/media_access_permission_request_unittest.cc',
+        'native/permission/permission_request_handler_unittest.cc',
         'native/state_serializer_unittest.cc',
       ],
     },

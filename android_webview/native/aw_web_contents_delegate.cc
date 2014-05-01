@@ -8,6 +8,8 @@
 #include "android_webview/browser/find_helper.h"
 #include "android_webview/native/aw_contents.h"
 #include "android_webview/native/aw_contents_io_thread_client_impl.h"
+#include "android_webview/native/permission/media_access_permission_request.h"
+#include "android_webview/native/permission/permission_request_handler.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
@@ -18,6 +20,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/file_chooser_params.h"
+#include "content/public/common/media_stream_request.h"
 #include "jni/AwWebContentsDelegate_jni.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
@@ -186,6 +189,22 @@ void AwWebContentsDelegate::ActivateContents(WebContents* contents) {
   if (java_delegate.obj()) {
     Java_AwWebContentsDelegate_activateContents(env, java_delegate.obj());
   }
+}
+
+void AwWebContentsDelegate::RequestMediaAccessPermission(
+    WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    const content::MediaResponseCallback& callback) {
+  AwContents* aw_contents = AwContents::FromWebContents(web_contents);
+  if (!aw_contents) {
+    callback.Run(content::MediaStreamDevices(),
+                 content::MEDIA_DEVICE_INVALID_STATE,
+                 scoped_ptr<content::MediaStreamUI>().Pass());
+    return;
+  }
+  aw_contents->GetPermissionRequestHandler()->SendRequest(
+      scoped_ptr<AwPermissionRequestDelegate>(
+          new MediaAccessPermissionRequest(request, callback)));
 }
 
 static void FilesSelectedInChooser(
