@@ -15,5 +15,10 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id
   (rect 148 116 644 90)
   (rect 400 116 392 162)
   (rect 148 116 644 90)
+  (rect 139 116 9 90)
+  (rect 148 116 644 90)
+  (rect 139 116 653 90)
+  (rect 148 116 644 90)
+  (rect 139 116 653 90)
 )
 
