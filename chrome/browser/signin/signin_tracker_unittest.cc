@@ -100,5 +100,6 @@ TEST_F(SigninTrackerTest, SignInSucceeds) {
   EXPECT_CALL(observer_, SigninFailed(_)).Times(0);
 
   mock_signin_manager_->SetAuthenticatedUsername("user@gmail.com");
-  fake_oauth2_token_service_->IssueRefreshToken("refresh_token");
+  fake_oauth2_token_service_->IssueRefreshTokenForUser(
+      "user@gmail.com", "refresh_token");
 }

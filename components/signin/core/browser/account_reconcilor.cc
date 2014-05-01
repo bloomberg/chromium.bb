@@ -23,6 +23,24 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/cookies/canonical_cookie.h"
 
+
+namespace {
+
+class EmailEqualToFunc : public std::equal_to<std::pair<std::string, bool> > {
+ public:
+  bool operator()(const std::pair<std::string, bool>& p1,
+                  const std::pair<std::string, bool>& p2) const;
+};
+
+bool EmailEqualToFunc::operator()(
+    const std::pair<std::string, bool>& p1,
+    const std::pair<std::string, bool>& p2) const {
+  return p1.second == p2.second && gaia::AreEmailsSame(p1.first, p2.first);
+}
+
+}  // namespace
+
+
 // Fetches a refresh token from the given session in the GAIA cookie.  This is
 // a best effort only.  If it should fail, another reconcile action will occur
 // shortly anyway.
@@ -590,40 +608,45 @@ void AccountReconcilor::FinishReconcile() {
         add_to_chrome_.push_back(std::make_pair(gaia_account, i));
       }
     }
-
-    // Determine if we need to merge accounts from chrome into gaia cookie.
-    for (EmailSet::const_iterator i = valid_chrome_accounts_.begin();
-         i != valid_chrome_accounts_.end();
-         ++i) {
-      bool add_to_cookie = true;
-      for (size_t j = 0; j < gaia_accounts_.size(); ++j) {
-        if (gaia::AreEmailsSame(gaia_accounts_[j].first, *i)) {
-          add_to_cookie = !gaia_accounts_[j].second;
-          break;
-        }
-      }
-      if (add_to_cookie)
-        add_to_cookie_.push_back(*i);
-    }
   } else {
     VLOG(1) << "AccountReconcilor::FinishReconcile: rebuild cookie";
     // Really messed up state.  Blow away the gaia cookie completely and
     // rebuild it, making sure the primary account as specified by the
     // SigninManager is the first session in the gaia cookie.
     PerformLogoutAllAccountsAction();
-    add_to_cookie_.push_back(primary_account_);
-    for (EmailSet::const_iterator i = valid_chrome_accounts_.begin();
-         i != valid_chrome_accounts_.end();
-         ++i) {
-      if (*i != primary_account_)
-        add_to_cookie_.push_back(*i);
-    }
+    gaia_accounts_.clear();
   }
 
-  // For each account known to chrome but not in the gaia cookie,
-  // PerformMergeAction().
-  for (size_t i = 0; i < add_to_cookie_.size(); ++i)
-    PerformMergeAction(add_to_cookie_[i]);
+  // Create a list of accounts that need to be added to the gaia cookie.
+  // The primary account must be first to make sure it becomes the default
+  // account in the case where chrome is completely rebuilding the cookie.
+  add_to_cookie_.push_back(primary_account_);
+  for (EmailSet::const_iterator i = valid_chrome_accounts_.begin();
+        i != valid_chrome_accounts_.end();
+        ++i) {
+    if (*i != primary_account_)
+      add_to_cookie_.push_back(*i);
+  }
+
+  // For each account known to chrome, PerformMergeAction() if the account is
+  // not already in the cookie jar or its state is invalid, or signal merge
+  // completed otherwise.  Make a copy of |add_to_cookie_| since calls to
+  // SignalComplete() will change the array.
+  std::vector<std::string> add_to_cookie_copy = add_to_cookie_;
+  for (size_t i = 0; i < add_to_cookie_copy.size(); ++i) {
+    if (gaia_accounts_.end() !=
+            std::find_if(gaia_accounts_.begin(),
+                         gaia_accounts_.end(),
+                         std::bind1st(EmailEqualToFunc(),
+                                      std::make_pair(add_to_cookie_copy[i],
+                                                     true)))) {
+      merge_session_helper_.SignalComplete(
+          add_to_cookie_copy[i],
+          GoogleServiceAuthError::AuthErrorNone());
+    } else {
+      PerformMergeAction(add_to_cookie_copy[i]);
+    }
+  }
 
   // For each account in the gaia cookie not known to chrome,
   // PerformAddToChromeAction.

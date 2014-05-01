@@ -96,6 +96,16 @@ void MergeSessionHelper::LogOutAllAccounts() {
   LogOutInternal("", std::vector<std::string>());
 }
 
+void MergeSessionHelper::SignalComplete(
+    const std::string& account_id,
+    const GoogleServiceAuthError& error) {
+  // Its possible for the observer to delete |this| object.  Don't access
+  // access any members after this calling the observer.  This method should
+  // be the last call in any other method.
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    MergeSessionCompleted(account_id, error));
+}
+
 void MergeSessionHelper::StartLogOutUrlFetch() {
   DCHECK(accounts_.front().empty());
   GURL logout_url(GaiaUrls::GetInstance()->service_logout_url());
@@ -151,16 +161,6 @@ void MergeSessionHelper::StartFetching() {
 void MergeSessionHelper::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(accounts_.front().empty());
   HandleNextAccount();
-}
-
-void MergeSessionHelper::SignalComplete(
-    const std::string& account_id,
-    const GoogleServiceAuthError& error) {
-  // Its possible for the observer to delete |this| object.  Don't access
-  // access any members after this calling the observer.  This method should
-  // be the last call in any other method.
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    MergeSessionCompleted(account_id, error));
 }
 
 void MergeSessionHelper::HandleNextAccount() {

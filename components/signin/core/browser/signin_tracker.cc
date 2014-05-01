@@ -47,8 +47,9 @@ void SigninTracker::GoogleSigninFailed(const GoogleServiceAuthError& error) {
 }
 
 void SigninTracker::OnRefreshTokenAvailable(const std::string& account_id) {
-  // TODO: when OAuth2TokenService handles multi-login, this should check
-  // that |account_id| is the primary account before signalling success.
+  if (account_id != signin_manager_->GetAuthenticatedAccountId())
+    return;
+
   if (account_reconcilor_) {
     account_reconcilor_->AddMergeSessionObserver(this);
 #if !defined(OS_CHROMEOS)

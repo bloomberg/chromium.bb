@@ -526,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
   ResultCatcher catcher;
   StartSignInTest("sign_in_auth_in_progress_merge_session_fails.html");
   signin_manager_->CompletePendingSignin();
-  token_service_->IssueRefreshToken("token");
+  token_service_->IssueRefreshTokenForUser("user@example.com", "token");
   signin_manager_->NotifyMergeSessionObservers(
       GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
   ASSERT_TRUE(catcher.GetNextResult());
@@ -543,7 +543,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
   ResultCatcher catcher;
   StartSignInTest("sign_in_auth_in_progress_succeeds.html");
   signin_manager_->CompletePendingSignin();
-  token_service_->IssueRefreshToken("token");
+  token_service_->IssueRefreshTokenForUser("user@example.com", "token");
   signin_manager_->NotifyMergeSessionObservers(
       GoogleServiceAuthError::AuthErrorNone());
   ASSERT_TRUE(catcher.GetNextResult());
