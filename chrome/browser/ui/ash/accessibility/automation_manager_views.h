@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_AUTOMATION_MANAGER_VIEWS_H_
-#define CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_AUTOMATION_MANAGER_VIEWS_H_
+#ifndef CHROME_BROWSER_UI_ASH_ACCESSIBILITY_AUTOMATION_MANAGER_VIEWS_H_
+#define CHROME_BROWSER_UI_ASH_ACCESSIBILITY_AUTOMATION_MANAGER_VIEWS_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
+#include "chrome/browser/ui/ash/accessibility/ax_tree_source_views.h"
 #include "ui/accessibility/ax_tree_serializer.h"
-#include "ui/views/accessibility/ax_tree_source_views.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
 class Profile;
 
 namespace views {
+class AXAuraObjWrapper;
 class View;
 }  // namespace views
 
@@ -24,6 +25,12 @@ class AutomationManagerViews {
  public:
   // Get the single instance of this class.
   static AutomationManagerViews* GetInstance();
+
+  // Enable automation support for views.
+  void Enable();
+
+  // Disable automation support for views.
+  void Disable();
 
   // Handle an event fired upon a |View|.
   void HandleEvent(Profile* profile, views::View* view, ui::AXEvent event_type);
@@ -34,16 +41,20 @@ class AutomationManagerViews {
   AutomationManagerViews();
   ~AutomationManagerViews();
 
+  // Whether Views-based automation is enabled.
+  bool enabled_;
+
   // Holds the active views-based accessibility tree. A tree currently consists
   // of all views descendant to a |Widget| (see |AXTreeSourceViews|).
   // A tree becomes active when an event is fired on a descendant view.
-  scoped_ptr <views::AXTreeSourceViews> current_tree_;
+  scoped_ptr <AXTreeSourceViews> current_tree_;
 
   // Serializes incremental updates on the currently active tree
   // |current_tree_|.
-  scoped_ptr<ui::AXTreeSerializer<views::View*> > current_tree_serializer_;
+  scoped_ptr<ui::AXTreeSerializer<views::AXAuraObjWrapper*> >
+      current_tree_serializer_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationManagerViews);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_AUTOMATION_MANAGER_VIEWS_H_
+#endif  // CHROME_BROWSER_UI_ASH_ACCESSIBILITY_AUTOMATION_MANAGER_VIEWS_H_
