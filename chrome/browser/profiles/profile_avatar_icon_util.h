@@ -5,8 +5,17 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_AVATAR_ICON_UTIL_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_AVATAR_ICON_UTIL_H_
 
+#include <string>
+
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/image/image.h"
+
+namespace base {
+class FilePath;
+}
+
+namespace gfx {
+class Image;
+}
 
 namespace profiles {
 
@@ -42,6 +51,9 @@ const char* GetDefaultAvatarIconFileNameAtIndex(size_t index);
 
 // Gets the file name of an avatar that has no high res version.
 const char* GetNoHighResAvatarFileName();
+
+// Gets the full path of the high res avatar icon at |index|.
+base::FilePath GetPathOfHighResAvatarAtIndex(size_t index);
 
 // Returns a URL for the default avatar icon with specified index.
 std::string GetDefaultAvatarIconUrl(size_t index);

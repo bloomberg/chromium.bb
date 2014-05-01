@@ -28,6 +28,7 @@ class DictionaryValue;
 
 class PrefService;
 class PrefRegistrySimple;
+class ProfileAvatarDownloader;
 
 // This class saves various information about profiles to local preferences.
 // This cache can be used to display a list of profiles without having to
@@ -135,10 +136,22 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // Register cache related preferences in Local State.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // Starts downloading the high res avatar at index |icon_index|.
+  void DownloadHighResAvatar(size_t icon_index);
+
+  // Saves the avatar |image| at |image_path|. This is used both for the
+  // GAIA profile pictures and the ProfileAvatarDownloader that is used to
+  // download the high res avatars.
+  void SaveAvatarImageAtPath(const gfx::Image* image,
+                             const std::string& key,
+                             const base::FilePath& image_path);
+
   void AddObserver(ProfileInfoCacheObserver* obs);
   void RemoveObserver(ProfileInfoCacheObserver* obs);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ProfileInfoCacheTest, DownloadHighResAvatarTest);
+
   const base::DictionaryValue* GetInfoForProfileAtIndex(size_t index) const;
   // Saves the profile info to a cache and takes ownership of |info|.
   // Currently the only information that is cached is the profile's name,
@@ -168,12 +181,19 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // generic profile avatar.
   const gfx::Image* GetHighResAvatarOfProfileAtIndex(size_t index) const;
 
+  // Returns the decoded image at |image_path|. Used both by the GAIA profile
+  // image and the high res avatars.
   const gfx::Image* LoadAvatarPictureFromPath(
       const std::string& key,
       const base::FilePath& image_path) const;
+
+  // Called when the picture given by |key| has been loaded from disk and
+  // decoded into |image|.
   void OnAvatarPictureLoaded(const std::string& key,
                              gfx::Image** image) const;
-  void OnGAIAPictureSaved(const base::FilePath& path, bool* success) const;
+  // Called when the picture given by |file_name| has been saved to disk.
+  // Used both for the GAIA profile picture and the high res avatar files.
+  void OnAvatarPictureSaved(const std::string& file_name);
 
   PrefService* prefs_;
   std::vector<std::string> sorted_keys_;
@@ -184,9 +204,17 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // A cache of gaia/high res avatar profile pictures. This cache is updated
   // lazily so it needs to be mutable.
   mutable std::map<std::string, gfx::Image*> cached_avatar_images_;
-  // Marks a profile picture as loading. This prevents a picture from
+  // Marks a profile picture as loading from disk. This prevents a picture from
   // loading multiple times.
   mutable std::map<std::string, bool> cached_avatar_images_loading_;
+
+  // Map of profile pictures currently being downloaded from the remote
+  // location and the ProfileAvatarDownloader instances downloading them.
+  // This prevents a picture from being downloaded multiple times. The
+  // ProfileAvatarDownloader instances are deleted when the download completes
+  // or when the ProfileInfoCache is destroyed.
+  mutable std::map<std::string, ProfileAvatarDownloader*>
+      avatar_images_downloads_in_progress_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileInfoCache);
 };

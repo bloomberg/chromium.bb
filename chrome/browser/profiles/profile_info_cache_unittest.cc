@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/file_util.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/profiles/profile_avatar_downloader.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -116,8 +118,6 @@ base::FilePath ProfileInfoCacheTest::GetProfilePath(
 void ProfileInfoCacheTest::ResetCache() {
   testing_profile_manager_.DeleteProfileInfoCache();
 }
-
-namespace {
 
 TEST_F(ProfileInfoCacheTest, AddProfiles) {
   EXPECT_EQ(0u, GetCache()->GetNumberOfProfiles());
@@ -502,4 +502,49 @@ TEST_F(ProfileInfoCacheTest, AddStubProfile) {
     ASSERT_FALSE(names[i].empty());
 }
 
-}  // namespace
+TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {
+  EXPECT_EQ(0U, GetCache()->GetNumberOfProfiles());
+  base::FilePath path_1 = GetProfilePath("path_1");
+  GetCache()->AddProfileToCache(path_1, ASCIIToUTF16("name_1"),
+                                base::string16(), 0, std::string());
+  EXPECT_EQ(1U, GetCache()->GetNumberOfProfiles());
+
+  // We haven't downloaded any high-res avatars yet.
+  EXPECT_EQ(0U, GetCache()->cached_avatar_images_.size());
+  EXPECT_EQ(0U, GetCache()->avatar_images_downloads_in_progress_.size());
+  EXPECT_FALSE(GetCache()->GetHighResAvatarOfProfileAtIndex(0));
+
+  // Simulate downloading a high-res avatar.
+  const size_t kIconIndex = 0;
+  ProfileAvatarDownloader avatar_downloader(kIconIndex, GetCache());
+
+  // Put a real bitmap into "bitmap".  2x2 bitmap of green 32 bit pixels.
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
+  bitmap.allocPixels();
+  bitmap.eraseColor(SK_ColorGREEN);
+
+  avatar_downloader.OnFetchComplete(
+      GURL("http://www.google.com/avatar.png"), &bitmap);
+
+  std::string file_name =
+      profiles::GetDefaultAvatarIconFileNameAtIndex(kIconIndex);
+
+  // The file should have been cached and saved.
+  EXPECT_EQ(0U, GetCache()->avatar_images_downloads_in_progress_.size());
+  EXPECT_EQ(1U, GetCache()->cached_avatar_images_.size());
+  EXPECT_TRUE(GetCache()->GetHighResAvatarOfProfileAtIndex(0));
+  EXPECT_EQ(GetCache()->cached_avatar_images_[file_name],
+      GetCache()->GetHighResAvatarOfProfileAtIndex(0));
+
+  // Make sure everything has completed, and the file has been written to disk.
+  base::RunLoop().RunUntilIdle();
+
+  // Clean up.
+  base::FilePath icon_path =
+      profiles::GetPathOfHighResAvatarAtIndex(kIconIndex);
+  EXPECT_NE(std::string::npos, icon_path.MaybeAsASCII().find(file_name));
+  EXPECT_TRUE(base::PathExists(icon_path));
+  EXPECT_TRUE(base::DeleteFile(icon_path, true));
+  EXPECT_FALSE(base::PathExists(icon_path));
+}

@@ -1742,6 +1742,8 @@
         'browser/profiles/profile.h',
         'browser/profiles/profile_android.cc',
         'browser/profiles/profile_android.h',
+        'browser/profiles/profile_avatar_downloader.cc',
+        'browser/profiles/profile_avatar_downloader.h',
         'browser/profiles/profile_destroyer.cc',
         'browser/profiles/profile_destroyer.h',
         'browser/profiles/profile_downloader.cc',
