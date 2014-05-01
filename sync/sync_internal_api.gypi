@@ -107,6 +107,7 @@
     'internal_api/public/sessions/type_debug_info_observer.h',
     'internal_api/public/sessions/update_counters.cc',
     'internal_api/public/sessions/update_counters.h',
+    'internal_api/public/sync_auth_provider.h',
     'internal_api/public/sync_core_proxy.h',
     'internal_api/public/sync_encryption_handler.cc',
     'internal_api/public/sync_encryption_handler.h',

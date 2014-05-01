@@ -2238,6 +2238,8 @@
         'browser/sync/glue/ui_model_worker.h',
         'browser/sync/managed_user_signin_manager_wrapper.cc',
         'browser/sync/managed_user_signin_manager_wrapper.h',
+        'browser/sync/profile_sync_auth_provider.cc',
+        'browser/sync/profile_sync_auth_provider.h',
         'browser/sync/profile_sync_components_factory.h',
         'browser/sync/profile_sync_components_factory_impl.cc',
         'browser/sync/profile_sync_components_factory_impl.h',
