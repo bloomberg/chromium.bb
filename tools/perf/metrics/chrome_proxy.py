@@ -16,18 +16,15 @@ class ChromeProxyMetricException(page_measurement.MeasurementFailure):
 CHROME_PROXY_VIA_HEADER = 'Chrome-Compression-Proxy'
 CHROME_PROXY_VIA_HEADER_DEPRECATED = '1.1 Chrome Compression Proxy'
 
-PROXY_SETTING_HTTPS = 'proxy.googlezip.net:443'
-PROXY_SETTING_HTTPS_WITH_SCHEME = 'https://' + PROXY_SETTING_HTTPS
-PROXY_SETTING_HTTP = 'compress.googlezip.net:80'
-PROXY_SETTING_DIRECT = 'direct://'
+ALL_PROXIES = ['compress.googlezip.net:80', 'https://proxy.googlezip.net:443']
 
 # The default Chrome Proxy bypass time is a range from one to five mintues.
 # See ProxyList::UpdateRetryInfoOnFallback in net/proxy/proxy_list.cc.
 DEFAULT_BYPASS_MIN_SECONDS = 60
 DEFAULT_BYPASS_MAX_SECONDS = 5 * 60
 
-def GetProxyInfoFromNetworkInternals(tab, url='chrome://net-internals#proxy'):
-  tab.Navigate(url)
+def GetProxyInfoFromNetworkInternals(tab):
+  tab.Navigate('chrome://net-internals#proxy')
   with open(os.path.join(os.path.dirname(__file__), 'chrome_proxy.js')) as f:
     js = f.read()
     tab.ExecuteJavaScript(js)
@@ -86,11 +83,6 @@ class ChromeProxyMetric(network.NetworkMetric):
   def __init__(self):
     super(ChromeProxyMetric, self).__init__()
     self.compute_data_saving = True
-    self.effective_proxies = {
-        "proxy": PROXY_SETTING_HTTPS_WITH_SCHEME,
-        "fallback": PROXY_SETTING_HTTP,
-        "direct": PROXY_SETTING_DIRECT,
-        }
 
   def SetEvents(self, events):
     """Used for unittest."""
@@ -137,7 +129,7 @@ class ChromeProxyMetric(network.NetworkMetric):
       badProxies, expected_proxies,
       retry_seconds_low = DEFAULT_BYPASS_MIN_SECONDS,
       retry_seconds_high = DEFAULT_BYPASS_MAX_SECONDS):
-    """Verify the bad proxy list and their retry times are expected. """
+    """."""
     if not badProxies or (len(badProxies) != len(expected_proxies)):
       return False
 
@@ -179,11 +171,8 @@ class ChromeProxyMetric(network.NetworkMetric):
       info = GetProxyInfoFromNetworkInternals(tab)
       if not info['enabled']:
         raise ChromeProxyMetricException, (
-            'Chrome proxy should be enabled. proxy info: %s' % info)
-      self.VerifyBadProxies(
-          info['badProxies'],
-          [self.effective_proxies['proxy'],
-           self.effective_proxies['fallback']])
+            "Chrome proxy should be enabled. proxy info: %s" % info)
+      self.VerifyBadProxies(info['badProxies'], ALL_PROXIES)
 
     results.Add('bypass', 'count', bypass_count)
 
@@ -206,32 +195,3 @@ class ChromeProxyMetric(network.NetworkMetric):
       raise ChromeProxyMetricException, (
           'Safebrowsing failed (count=%d, safebrowsing_count=%d)\n' % (
               count, safebrowsing_count))
-
-  def AddResultsForHTTPFallback(
-      self, tab, results, expected_proxies=None, expected_bad_proxies=None):
-    info = GetProxyInfoFromNetworkInternals(tab)
-    if not 'enabled' in info or not info['enabled']:
-      raise ChromeProxyMetricException, (
-          'Chrome proxy should be enabled. proxy info: %s' % info)
-
-    if not expected_proxies:
-      expected_proxies = [self.effective_proxies['fallback'],
-                          self.effective_proxies['direct']]
-    if not expected_bad_proxies:
-      expected_bad_proxies = []
-
-    proxies = info['proxies']
-    if proxies != expected_proxies:
-      raise ChromeProxyMetricException, (
-          'Wrong effective proxies (%s). Expect: "%s"' % (
-          str(proxies), str(expected_proxies)))
-
-    bad_proxies = []
-    if 'badProxies' in info and info['badProxies']:
-      bad_proxies = [p['proxy'] for p in info['badProxies']
-                     if 'proxy' in p and p['proxy']]
-    if bad_proxies != expected_bad_proxies:
-      raise ChromeProxyMetricException, (
-          'Wrong bad proxies (%s). Expect: "%s"' % (
-          str(bad_proxies), str(expected_bad_proxies)))
-    results.Add('http_fallback', 'boolean', True)

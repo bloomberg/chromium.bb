@@ -1,10 +1,7 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
-import base64
 import logging
-import urlparse
 
 from metrics import chrome_proxy
 from metrics import loading
@@ -124,94 +121,6 @@ class ChromeProxySafebrowsing(ChromeProxyValidation):
 
   def AddResults(self, tab, results):
     self._metrics.AddResultsForSafebrowsing(tab, results)
-
-
-_FAKE_PROXY_AUTH_VALUE = 'aabbccdd3b7579186c1b0620614fdb1f0000ffff'
-_TEST_SERVER = 'chromeproxy-test.appspot.com'
-_TEST_SERVER_DEFAULT_URL = 'http://' + _TEST_SERVER + '/default'
-
-
-# We rely on the chromeproxy-test server to facilitate some of the tests.
-# The test server code is at <TBD location> and runs at _TEST_SERVER
-#
-# The test server allow request to override response status, headers, and
-# body through query parameters. See GetResponseOverrideURL.
-def GetResponseOverrideURL(url, respStatus=0, respHeader="", respBody=""):
-  """ Compose the request URL with query parameters to override
-  the chromeproxy-test server response.
-  """
-
-  queries = []
-  if respStatus > 0:
-    queries.append('respStatus=%d' % respStatus)
-  if respHeader:
-    queries.append('respHeader=%s' % base64.b64encode(respHeader))
-  if respBody:
-    queries.append('respBody=%s' % base64.b64encode(respBody))
-  if len(queries) == 0:
-    return url
-  "&".join(queries)
-  # url has query already
-  if urlparse.urlparse(url).query:
-    return url + '&' + "&".join(queries)
-  else:
-    return url + '?' + "&".join(queries)
-
-
-class ChromeProxyHTTPFallbackProbeURL(ChromeProxyValidation):
-  """Correctness measurement for proxy fallback.
-
-  In this test, the probe URL does not return 'OK'. Chrome is expected
-  to use the fallback proxy.
-  """
-
-  def __init__(self):
-    super(ChromeProxyHTTPFallbackProbeURL, self).__init__()
-
-  def CustomizeBrowserOptions(self, options):
-    super(ChromeProxyHTTPFallbackProbeURL,
-          self).CustomizeBrowserOptions(options)
-    # Use the test server probe URL which returns the response
-    # body as specified by respBody.
-    probe_url = GetResponseOverrideURL(
-        _TEST_SERVER_DEFAULT_URL,
-        respBody='not OK')
-    options.AppendExtraBrowserArgs(
-        '--data-reduction-proxy-probe-url=%s' % probe_url)
-
-  def AddResults(self, tab, results):
-    self._metrics.AddResultsForHTTPFallback(tab, results)
-
-
-# Depends on the fix of http://crbug.com/330342.
-class ChromeProxyHTTPFallbackViaHeader(ChromeProxyValidation):
-  """Correctness measurement for proxy fallback.
-
-  In this test, the configured proxy is the chromeproxy-test server which
-  will send back a response without the expected Via header. Chrome is
-  expected to use the fallback proxy and add the configured proxy to the
-  bad proxy list.
-  """
-
-  def __init__(self):
-    super(ChromeProxyHTTPFallbackViaHeader, self).__init__()
-
-  def CustomizeBrowserOptions(self, options):
-    super(ChromeProxyHTTPFallbackViaHeader,
-          self).CustomizeBrowserOptions(options)
-    options.AppendExtraBrowserArgs('--ignore-certificate-errors')
-    options.AppendExtraBrowserArgs(
-        '--spdy-proxy-auth-origin=http://%s' % _TEST_SERVER)
-    options.AppendExtraBrowserArgs(
-        '--spdy-proxy-auth-value=%s' % _FAKE_PROXY_AUTH_VALUE)
-
-  def AddResults(self, tab, results):
-    proxies = [
-        _TEST_SERVER + ":80",
-        self._metrics.effective_proxies['fallback'],
-        self._metrics.effective_proxies['direct']]
-    bad_proxies = [_TEST_SERVER + ":80"]
-    self._metrics.AddResultsForHTTPFallback(tab, results, proxies, bad_proxies)
 
 
 class ChromeProxySmoke(ChromeProxyValidation):
