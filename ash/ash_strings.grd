@@ -528,11 +528,11 @@ Press Shift + Alt to switch.
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_AUTO" desc="The text shown in the tray menu when rotation is set to auto.">
-        Auto rotate
+        Rotation on (Tap here to change)
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LOCKED" desc="The text shown in the tray menu when rotation is set to locked.">
-        Rotation locked
+        Rotation locked (Tap here to change)
       </message>
 
       <message name="IDS_ASH_VIRTUAL_KEYBOARD_TRAY_ACCESSIBLE_NAME" desc="The accessible text for virtual keyboard icon in status tray.">
