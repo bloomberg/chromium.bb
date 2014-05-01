@@ -266,10 +266,6 @@ function Download(download) {
     this.nodeProgressForeground_.height = Download.Progress.height;
     this.canvasProgress_ = this.nodeProgressForeground_.getContext('2d');
 
-    this.canvasProgressForegroundImage_ = new Image();
-    this.canvasProgressForegroundImage_.src =
-        'chrome://theme/IDR_DOWNLOAD_PROGRESS_FOREGROUND_32@' +
-        window.devicePixelRatio + 'x';
     this.safe_.appendChild(this.nodeProgressForeground_);
   }
 
@@ -415,21 +411,58 @@ Download.DangerType = {
 };
 
 /**
- * Constants for the progress meter.
+ * @param {number} a Some float.
+ * @param {number} b Some float.
+ * @param {number} opt_pct Percent of min(a,b).
+ * @return {boolean} true if a is within opt_pct percent of b.
  */
+function floatEq(a, b, opt_pct) {
+  return Math.abs(a - b) < (Math.min(a, b) * (opt_pct || 1.0) / 100.0);
+}
 
-Download.Progress = (function() {
-  var scale = window.devicePixelRatio;
-  return {
-    width: 48 * scale,
-    height: 48 * scale,
-    radius: 24 * scale,
-    centerX: 24 * scale,
-    centerY: 24 * scale,
-    base: -0.5 * Math.PI,
-    dir: false,
-  };
-})();
+/**
+ * Constants and "constants" for the progress meter.
+ */
+Download.Progress = {
+  START_ANGLE: -0.5 * Math.PI,
+  SIDE: 48,
+};
+
+/***/
+Download.Progress.HALF = Download.Progress.SIDE / 2;
+
+function computeDownloadProgress() {
+  if (floatEq(Download.Progress.scale, window.devicePixelRatio)) {
+    // Zooming in or out multiple times then typing Ctrl+0 resets the zoom level
+    // directly to 1x, which fires the matchMedia event multiple times.
+    return;
+  }
+  Download.Progress.scale = window.devicePixelRatio;
+  Download.Progress.width = Download.Progress.SIDE * Download.Progress.scale;
+  Download.Progress.height = Download.Progress.SIDE * Download.Progress.scale;
+  Download.Progress.radius = Download.Progress.HALF * Download.Progress.scale;
+  Download.Progress.centerX = Download.Progress.HALF * Download.Progress.scale;
+  Download.Progress.centerY = Download.Progress.HALF * Download.Progress.scale;
+}
+computeDownloadProgress();
+
+// Listens for when device-pixel-ratio changes between any zoom level.
+[0.3, 0.4, 0.6, 0.7, 0.8, 0.95, 1.05, 1.2, 1.4, 1.6, 1.9, 2.2, 2.7, 3.5, 4.5
+].forEach(function(scale) {
+  matchMedia('(-webkit-min-device-pixel-ratio:' + scale + ')').addListener(
+    function() {
+      computeDownloadProgress();
+  });
+});
+
+var ImageCache = {};
+function getCachedImage(src) {
+  if (!ImageCache[src]) {
+    ImageCache[src] = new Image();
+    ImageCache[src].src = src;
+  }
+  return ImageCache[src];
+}
 
 /**
  * Updates the download to reflect new data.
@@ -492,10 +525,22 @@ Download.prototype.update = function(download) {
     if (this.state_ == Download.States.IN_PROGRESS) {
       this.nodeProgressForeground_.style.display = 'block';
       this.nodeProgressBackground_.style.display = 'block';
+      this.nodeProgressForeground_.width = Download.Progress.width;
+      this.nodeProgressForeground_.height = Download.Progress.height;
+
+      var foregroundImage = getCachedImage(
+          'chrome://theme/IDR_DOWNLOAD_PROGRESS_FOREGROUND_32@' +
+          window.devicePixelRatio + 'x');
 
       // Draw a pie-slice for the progress.
       this.canvasProgress_.globalCompositeOperation = 'copy';
-      this.canvasProgress_.drawImage(this.canvasProgressForegroundImage_, 0, 0);
+      this.canvasProgress_.drawImage(
+          foregroundImage,
+          0, 0,  // sx, sy
+          foregroundImage.width,
+          foregroundImage.height,
+          0, 0,  // x, y
+          Download.Progress.width, Download.Progress.height);
       this.canvasProgress_.globalCompositeOperation = 'destination-in';
       this.canvasProgress_.beginPath();
       this.canvasProgress_.moveTo(Download.Progress.centerX,
@@ -505,8 +550,8 @@ Download.prototype.update = function(download) {
       this.canvasProgress_.arc(Download.Progress.centerX,
                                Download.Progress.centerY,
                                Download.Progress.radius,
-                               Download.Progress.base,
-                               Download.Progress.base + Math.PI * 0.02 *
+                               Download.Progress.START_ANGLE,
+                               Download.Progress.START_ANGLE + Math.PI * 0.02 *
                                Number(this.percent_),
                                false);
 
