@@ -1764,7 +1764,7 @@ void RenderLayer::updateStackingNode()
 void RenderLayer::updateScrollableArea()
 {
     if (requiresScrollableArea())
-        m_scrollableArea = adoptPtr(new RenderLayerScrollableArea(*renderBox()));
+        m_scrollableArea = adoptPtr(new RenderLayerScrollableArea(*this));
     else
         m_scrollableArea = nullptr;
 }
