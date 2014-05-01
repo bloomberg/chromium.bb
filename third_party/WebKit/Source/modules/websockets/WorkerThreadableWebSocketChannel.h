@@ -120,7 +120,7 @@ public:
     private:
         Peer(PassRefPtr<WeakReference<Peer> >, PassRefPtr<ThreadableWebSocketChannelClientWrapper>, WorkerLoaderProxy&, ExecutionContext*, const String& sourceURL, unsigned lineNumber, PassOwnPtr<ThreadableWebSocketChannelSyncHelper>);
 
-        RefPtr<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
+        const RefPtr<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
         WorkerLoaderProxy& m_loaderProxy;
         RefPtr<WebSocketChannel> m_mainWebSocketChannel;
         OwnPtr<ThreadableWebSocketChannelSyncHelper> m_syncHelper;
@@ -174,7 +174,7 @@ private:
 
         void terminatePeer();
 
-        RefPtr<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
+        const RefPtr<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
         RefPtrWillBePersistent<WorkerGlobalScope> m_workerGlobalScope;
         WorkerLoaderProxy& m_loaderProxy;
         ThreadableWebSocketChannelSyncHelper* m_syncHelper;
@@ -184,7 +184,7 @@ private:
     WorkerThreadableWebSocketChannel(WorkerGlobalScope&, WebSocketChannelClient*, const String& sourceURL, unsigned lineNumber);
 
     RefPtrWillBePersistent<WorkerGlobalScope> m_workerGlobalScope;
-    RefPtr<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
+    const RefPtr<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
     RefPtr<Bridge> m_bridge;
     String m_sourceURLAtConnection;
     unsigned m_lineNumberAtConnection;

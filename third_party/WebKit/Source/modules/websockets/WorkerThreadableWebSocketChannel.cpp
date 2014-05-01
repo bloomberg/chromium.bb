@@ -127,6 +127,7 @@ WorkerThreadableWebSocketChannel::WorkerThreadableWebSocketChannel(WorkerGlobalS
     , m_sourceURLAtConnection(sourceURL)
     , m_lineNumberAtConnection(lineNumber)
 {
+    ASSERT(m_workerClientWrapper.get());
     m_bridge->initialize(sourceURL, lineNumber);
 }
 
@@ -145,13 +146,11 @@ bool WorkerThreadableWebSocketChannel::connect(const KURL& url, const String& pr
 
 String WorkerThreadableWebSocketChannel::subprotocol()
 {
-    ASSERT(m_workerClientWrapper);
     return m_workerClientWrapper->subprotocol();
 }
 
 String WorkerThreadableWebSocketChannel::extensions()
 {
-    ASSERT(m_workerClientWrapper);
     return m_workerClientWrapper->extensions();
 }
 
@@ -238,6 +237,8 @@ WorkerThreadableWebSocketChannel::Peer::Peer(PassRefPtr<WeakReference<Peer> > re
     , m_weakFactory(reference, this)
 {
     ASSERT(isMainThread());
+    ASSERT(m_workerClientWrapper.get());
+
     Document* document = toDocument(context);
     if (RuntimeEnabledFeatures::experimentalWebSocketEnabled()) {
         m_mainWebSocketChannel = NewWebSocketChannelImpl::create(document, this, sourceURL, lineNumber);
@@ -270,7 +271,7 @@ void WorkerThreadableWebSocketChannel::Peer::destroy()
 void WorkerThreadableWebSocketChannel::Peer::connect(const KURL& url, const String& protocol)
 {
     ASSERT(isMainThread());
-    if (!m_mainWebSocketChannel || !m_workerClientWrapper) {
+    if (!m_mainWebSocketChannel) {
         m_syncHelper->setConnectRequestResult(false);
     } else {
         bool connectRequestResult = m_mainWebSocketChannel->connect(url, protocol);
@@ -282,7 +283,7 @@ void WorkerThreadableWebSocketChannel::Peer::connect(const KURL& url, const Stri
 void WorkerThreadableWebSocketChannel::Peer::send(const String& message)
 {
     ASSERT(isMainThread());
-    if (!m_mainWebSocketChannel || !m_workerClientWrapper) {
+    if (!m_mainWebSocketChannel) {
         m_syncHelper->setSendRequestResult(WebSocketChannel::SendFail);
     } else {
         WebSocketChannel::SendResult sendRequestResult = m_mainWebSocketChannel->send(message);
@@ -294,7 +295,7 @@ void WorkerThreadableWebSocketChannel::Peer::send(const String& message)
 void WorkerThreadableWebSocketChannel::Peer::sendArrayBuffer(PassOwnPtr<Vector<char> > data)
 {
     ASSERT(isMainThread());
-    if (!m_mainWebSocketChannel || !m_workerClientWrapper) {
+    if (!m_mainWebSocketChannel) {
         m_syncHelper->setSendRequestResult(WebSocketChannel::SendFail);
     } else {
         RefPtr<ArrayBuffer> binaryData = ArrayBuffer::create(data->data(), data->size());
@@ -307,7 +308,7 @@ void WorkerThreadableWebSocketChannel::Peer::sendArrayBuffer(PassOwnPtr<Vector<c
 void WorkerThreadableWebSocketChannel::Peer::sendBlob(PassRefPtr<BlobDataHandle> blobData)
 {
     ASSERT(isMainThread());
-    if (!m_mainWebSocketChannel || !m_workerClientWrapper) {
+    if (!m_mainWebSocketChannel) {
         m_syncHelper->setSendRequestResult(WebSocketChannel::SendFail);
     } else {
         WebSocketChannel::SendResult sendRequestResult = m_mainWebSocketChannel->send(blobData);
@@ -319,7 +320,7 @@ void WorkerThreadableWebSocketChannel::Peer::sendBlob(PassRefPtr<BlobDataHandle>
 void WorkerThreadableWebSocketChannel::Peer::bufferedAmount()
 {
     ASSERT(isMainThread());
-    if (!m_mainWebSocketChannel || !m_workerClientWrapper) {
+    if (!m_mainWebSocketChannel) {
         m_syncHelper->setBufferedAmount(0);
     } else {
         unsigned long bufferedAmount = m_mainWebSocketChannel->bufferedAmount();
@@ -489,7 +490,6 @@ void WorkerThreadableWebSocketChannel::Bridge::initialize(const String& sourceUR
 
 bool WorkerThreadableWebSocketChannel::Bridge::connect(const KURL& url, const String& protocol)
 {
-    ASSERT(m_workerClientWrapper);
     if (!m_workerGlobalScope)
         return false;
     ASSERT(m_syncHelper);
@@ -501,7 +501,7 @@ bool WorkerThreadableWebSocketChannel::Bridge::connect(const KURL& url, const St
 
 WebSocketChannel::SendResult WorkerThreadableWebSocketChannel::Bridge::send(const String& message)
 {
-    if (!m_workerClientWrapper || !m_workerGlobalScope)
+    if (!m_workerGlobalScope)
         return WebSocketChannel::SendFail;
     ASSERT(m_syncHelper);
     m_loaderProxy.postTaskToLoader(CallClosureTask::create(bind(&Peer::send, m_peer, message.isolatedCopy())));
@@ -512,7 +512,7 @@ WebSocketChannel::SendResult WorkerThreadableWebSocketChannel::Bridge::send(cons
 
 WebSocketChannel::SendResult WorkerThreadableWebSocketChannel::Bridge::send(const ArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
 {
-    if (!m_workerClientWrapper || !m_workerGlobalScope)
+    if (!m_workerGlobalScope)
         return WebSocketChannel::SendFail;
     ASSERT(m_syncHelper);
     // ArrayBuffer isn't thread-safe, hence the content of ArrayBuffer is copied into Vector<char>.
@@ -528,7 +528,7 @@ WebSocketChannel::SendResult WorkerThreadableWebSocketChannel::Bridge::send(cons
 
 WebSocketChannel::SendResult WorkerThreadableWebSocketChannel::Bridge::send(PassRefPtr<BlobDataHandle> data)
 {
-    if (!m_workerClientWrapper || !m_workerGlobalScope)
+    if (!m_workerGlobalScope)
         return WebSocketChannel::SendFail;
     ASSERT(m_syncHelper);
     m_loaderProxy.postTaskToLoader(CallClosureTask::create(bind(&Peer::sendBlob, m_peer, data)));
@@ -539,7 +539,7 @@ WebSocketChannel::SendResult WorkerThreadableWebSocketChannel::Bridge::send(Pass
 
 unsigned long WorkerThreadableWebSocketChannel::Bridge::bufferedAmount()
 {
-    if (!m_workerClientWrapper || !m_workerGlobalScope)
+    if (!m_workerGlobalScope)
         return 0;
     ASSERT(m_syncHelper);
     m_loaderProxy.postTaskToLoader(CallClosureTask::create(bind(&Peer::bufferedAmount, m_peer)));
@@ -583,7 +583,7 @@ void WorkerThreadableWebSocketChannel::Bridge::clearClientWrapper()
 // which causes the bridge to get disconnected from the WebSocket and deleted if there is no other reference.
 bool WorkerThreadableWebSocketChannel::Bridge::waitForMethodCompletion()
 {
-    if (!m_workerClientWrapper || !m_syncHelper)
+    if (!m_syncHelper)
         return true;
 
     blink::WebWaitableEvent* shutdownEvent = m_workerGlobalScope->thread()->shutdownEvent();
