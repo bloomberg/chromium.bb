@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<title>Service Worker: registration events</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
+<script>
+var t = async_test('Registration: events');
+t.step(function() {
+
+    // This always tests fresh registration, so unregister it first.
+    navigator.serviceWorker.unregister('/in-scope/*').then(
+        t.step_func(doRegister),
+        t.step_func(function(reason) {
+            assert_unreached('unregister failed: ' + reason.message);
+        })
+    );
+
+    function doRegister() {
+        navigator.serviceWorker.register(
+            'resources/events-worker.js',
+            {scope: '/in-scope/*'}
+        ).then(
+            t.step_func(onRegister),
+            t.step_func(function(reason) {
+                assert_unreached('register failed: ' + reason.message);
+            })
+        );
+    }
+
+    function sendMessagePort(worker, from) {
+        var messageChannel = new MessageChannel();
+        worker.postMessage({from:from, port:messageChannel.port2}, [messageChannel.port2]);
+        return messageChannel.port1;
+    }
+
+    function onRegister(sw) {
+        sw.onstatechange = t.step_func(function() {
+            if (sw.state !== 'active')
+                return;
+
+            sendMessagePort(sw, 'registering doc').onmessage = t.step_func(function (e) {
+                assert_array_equals(e.data.events,
+                                    ['install', 'activate'],
+                                   'Worker should see install then activate events');
+                t.done();
+            });
+        });
+    }
+});
+</script>

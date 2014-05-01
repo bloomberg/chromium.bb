@@ -1,0 +1,3 @@
+
+FAIL Registration: events assert_unreached: unregister failed: Service Worker support is disabled. Reached unreachable code
+
