@@ -254,12 +254,7 @@ public class AwTestContainerView extends FrameLayout {
         }
 
         @Override
-        public boolean requestDrawGL(Canvas canvas) {
-            return false;
-        }
-
-        @Override
-        public boolean executeHardwareAction(Runnable action) {
+        public boolean requestDrawGL(Canvas canvas, boolean waitForCompletion) {
             return false;
         }
     }

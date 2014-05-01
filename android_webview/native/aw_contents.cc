@@ -316,15 +316,14 @@ jlong AwContents::GetAwDrawGLViewContext(JNIEnv* env, jobject obj) {
 }
 
 void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
-  if (!hardware_renderer_) {
-    // TODO(boliu): Use executeHardwareAction to synchronously initialize
-    // hardware on first functor request. Then functor can point directly
-    // to HardwareRenderer.
-    hardware_renderer_.reset(new HardwareRenderer(&shared_renderer_state_));
+  for (base::Closure c = shared_renderer_state_.PopFrontClosure(); !c.is_null();
+       c = shared_renderer_state_.PopFrontClosure()) {
+    c.Run();
   }
 
+  // TODO(boliu): Make this a task as well.
   DrawGLResult result;
-  if (hardware_renderer_->DrawGL(draw_info, &result)) {
+  if (hardware_renderer_ && hardware_renderer_->DrawGL(draw_info, &result)) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI,
         FROM_HERE,
@@ -605,13 +604,15 @@ void AwContents::OnReceivedTouchIconUrl(const std::string& url,
       env, obj.obj(), ConvertUTF8ToJavaString(env, url).obj(), precomposed);
 }
 
-bool AwContents::RequestDrawGL(jobject canvas) {
+bool AwContents::RequestDrawGL(jobject canvas, bool wait_for_completion) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!canvas || !wait_for_completion);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return false;
-  return Java_AwContents_requestDrawGL(env, obj.obj(), canvas);
+  return Java_AwContents_requestDrawGL(
+      env, obj.obj(), canvas, wait_for_completion);
 }
 
 void AwContents::PostInvalidate() {
@@ -726,16 +727,47 @@ void AwContents::SetIsPaused(JNIEnv* env, jobject obj, bool paused) {
 
 void AwContents::OnAttachedToWindow(JNIEnv* env, jobject obj, int w, int h) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Add task but don't schedule it. It will run when DrawGL is called for
+  // the first time.
+  shared_renderer_state_.AppendClosure(
+      base::Bind(&AwContents::InitializeHardwareDrawOnRenderThread,
+                 base::Unretained(this)));
   browser_view_renderer_.OnAttachedToWindow(w, h);
+}
+
+void AwContents::InitializeHardwareDrawOnRenderThread() {
+  DCHECK(!hardware_renderer_);
+  DCHECK(!shared_renderer_state_.IsHardwareInitialized());
+  hardware_renderer_.reset(new HardwareRenderer(&shared_renderer_state_));
+  shared_renderer_state_.SetHardwareInitialized(true);
 }
 
 void AwContents::OnDetachedFromWindow(JNIEnv* env, jobject obj) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  shared_renderer_state_.ClearClosureQueue();
+  shared_renderer_state_.AppendClosure(base::Bind(
+      &AwContents::ReleaseHardwareDrawOnRenderThread, base::Unretained(this)));
+  bool draw_functor_succeeded = RequestDrawGL(NULL, true);
+  if (!draw_functor_succeeded &&
+      shared_renderer_state_.IsHardwareInitialized()) {
+    LOG(ERROR) << "Unable to free GL resources. Has the Window leaked";
+    // Calling release on wrong thread intentionally.
+    ReleaseHardwareDrawOnRenderThread();
+  } else {
+    shared_renderer_state_.ClearClosureQueue();
+  }
+
   browser_view_renderer_.OnDetachedFromWindow();
 }
 
-void AwContents::ReleaseHardwareDrawOnRenderThread(JNIEnv* env, jobject obj) {
+void AwContents::ReleaseHardwareDrawOnRenderThread() {
+  DCHECK(hardware_renderer_);
+  DCHECK(shared_renderer_state_.IsHardwareInitialized());
+  // No point in running any other commands if we released hardware already.
+  shared_renderer_state_.ClearClosureQueue();
   hardware_renderer_.reset();
+  shared_renderer_state_.SetHardwareInitialized(false);
 }
 
 base::android::ScopedJavaLocalRef<jbyteArray>
@@ -994,17 +1026,27 @@ void AwContents::SetJsOnlineProperty(JNIEnv* env,
   render_view_host_ext_->SetJsOnlineProperty(network_up);
 }
 
-void AwContents::TrimMemoryOnRenderThread(JNIEnv* env,
-                                          jobject obj,
-                                          jint level,
-                                          jboolean visible) {
-  if (hardware_renderer_) {
-    if (hardware_renderer_->TrimMemory(level, visible)) {
-      content::BrowserThread::PostTask(
-          content::BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&AwContents::ForceFakeComposite, ui_thread_weak_ptr_));
-    }
+void AwContents::TrimMemory(JNIEnv* env,
+                            jobject obj,
+                            jint level,
+                            jboolean visible) {
+  if (!shared_renderer_state_.IsHardwareInitialized())
+    return;
+
+  shared_renderer_state_.AppendClosure(
+      base::Bind(&AwContents::TrimMemoryOnRenderThread,
+                 base::Unretained(this),
+                 level,
+                 visible));
+  RequestDrawGL(NULL, true);
+}
+
+void AwContents::TrimMemoryOnRenderThread(int level, bool visible) {
+  if (hardware_renderer_ && hardware_renderer_->TrimMemory(level, visible)) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&AwContents::ForceFakeComposite, ui_thread_weak_ptr_));
   }
 }
 

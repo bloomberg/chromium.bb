@@ -136,18 +136,14 @@ public class AwContents {
          * Requests a callback on the native DrawGL method (see getAwDrawGLFunction)
          * if called from within onDraw, |canvas| will be non-null and hardware accelerated.
          * otherwise, |canvas| will be null, and the container view itself will be hardware
-         * accelerated.
+         * accelerated. If |waitForCompletion| is true, this method will not return until
+         * functor has returned.
+         * Should avoid setting |waitForCompletion| when |canvas| is not null.
          *
          * @return false indicates the GL draw request was not accepted, and the caller
          *         should fallback to the SW path.
          */
-        boolean requestDrawGL(Canvas canvas);
-
-        /**
-         * Run the action on with EGLContext current or return false.
-         * See hidden View#executeHardwareAction for details.
-         */
-        public boolean executeHardwareAction(Runnable action);
+        boolean requestDrawGL(Canvas canvas, boolean waitForCompletion);
     }
 
     /**
@@ -444,14 +440,7 @@ public class AwContents {
             if (mNativeAwContents == 0) return;
             boolean visibleRectEmpty = getGlobalVisibleRect().isEmpty();
             final boolean visible = mIsViewVisible && mIsWindowVisible && !visibleRectEmpty;
-            // Don't care about return value of executeHardwareAction since if view is not
-            // hardware accelerated, then there is nothing to clean up anyway.
-            mInternalAccessAdapter.executeHardwareAction(new Runnable() {
-                @Override
-                public void run() {
-                    nativeTrimMemoryOnRenderThread(mNativeAwContents, level, visible);
-                }
-            });
+            nativeTrimMemory(mNativeAwContents, level, visible);
         }
 
         @Override
@@ -1630,18 +1619,6 @@ public class AwContents {
         mIsAttachedToWindow = false;
         hideAutofillPopup();
         if (mNativeAwContents != 0) {
-            Runnable releaseHardware = new Runnable() {
-                @Override
-                public void run() {
-                    nativeReleaseHardwareDrawOnRenderThread(mNativeAwContents);
-                }
-            };
-            boolean result = mInternalAccessAdapter.executeHardwareAction(releaseHardware);
-            if (!result) {
-                Log.e(TAG, "May leak or deadlock. Leaked window?");
-                releaseHardware.run();
-            }
-
             nativeOnDetachedFromWindow(mNativeAwContents);
         }
 
@@ -1933,8 +1910,8 @@ public class AwContents {
     }
 
     @CalledByNative
-    private boolean requestDrawGL(Canvas canvas) {
-        return mInternalAccessAdapter.requestDrawGL(canvas);
+    private boolean requestDrawGL(Canvas canvas, boolean waitForCompletion) {
+        return mInternalAccessAdapter.requestDrawGL(canvas, waitForCompletion);
     }
 
     private static final boolean SUPPORTS_ON_ANIMATION =
@@ -2133,7 +2110,6 @@ public class AwContents {
     private native void nativeSetIsPaused(long nativeAwContents, boolean paused);
     private native void nativeOnAttachedToWindow(long nativeAwContents, int w, int h);
     private static native void nativeOnDetachedFromWindow(long nativeAwContents);
-    private static native void nativeReleaseHardwareDrawOnRenderThread(long nativeAwContents);
     private native void nativeSetDipScale(long nativeAwContents, float dipScale);
     private native void nativeSetFixedLayoutSize(long nativeAwContents,
             int widthDip, int heightDip);
@@ -2160,8 +2136,7 @@ public class AwContents {
 
     private native void nativeSetJsOnlineProperty(long nativeAwContents, boolean networkUp);
 
-    private native void nativeTrimMemoryOnRenderThread(long nativeAwContents, int level,
-            boolean visible);
+    private native void nativeTrimMemory(long nativeAwContents, int level, boolean visible);
 
     private native void nativeCreatePdfExporter(long nativeAwContents, AwPdfExporter awPdfExporter);
 

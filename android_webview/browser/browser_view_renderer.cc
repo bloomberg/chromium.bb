@@ -109,7 +109,7 @@ bool BrowserViewRenderer::OnDraw(jobject java_canvas,
     // We should be performing a hardware draw here. If we don't have the
     // compositor yet or if RequestDrawGL fails, it means we failed this draw
     // and thus return false here to clear to background color for this draw.
-    return has_compositor_ && client_->RequestDrawGL(java_canvas);
+    return has_compositor_ && client_->RequestDrawGL(java_canvas, false);
   }
   // Perform a software draw
   return DrawSWInternal(java_canvas, clip);

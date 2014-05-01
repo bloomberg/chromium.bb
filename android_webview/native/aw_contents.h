@@ -100,7 +100,6 @@ class AwContents : public FindHelper::Listener,
   void SetIsPaused(JNIEnv* env, jobject obj, bool paused);
   void OnAttachedToWindow(JNIEnv* env, jobject obj, int w, int h);
   void OnDetachedFromWindow(JNIEnv* env, jobject obj);
-  void ReleaseHardwareDrawOnRenderThread(JNIEnv* env, jobject obj);
   base::android::ScopedJavaLocalRef<jbyteArray> GetOpaqueState(
       JNIEnv* env, jobject obj);
   jboolean RestoreFromOpaqueState(JNIEnv* env, jobject obj, jbyteArray state);
@@ -163,8 +162,8 @@ class AwContents : public FindHelper::Listener,
   virtual void OnWebLayoutContentsSizeChanged(
       const gfx::Size& contents_size) OVERRIDE;
 
-  // BrowserViewRenderer::Client implementation.
-  virtual bool RequestDrawGL(jobject canvas) OVERRIDE;
+  // BrowserViewRendererClient implementation.
+  virtual bool RequestDrawGL(jobject canvas, bool wait_for_completion) OVERRIDE;
   virtual void PostInvalidate() OVERRIDE;
   virtual void OnNewPicture() OVERRIDE;
   virtual gfx::Point GetLocationOnScreen() OVERRIDE;
@@ -197,15 +196,16 @@ class AwContents : public FindHelper::Listener,
   void SetAwAutofillManagerDelegate(jobject delegate);
 
   void SetJsOnlineProperty(JNIEnv* env, jobject obj, jboolean network_up);
-  void TrimMemoryOnRenderThread(JNIEnv* env,
-                                jobject obj,
-                                jint level,
-                                jboolean visible);
+  void TrimMemory(JNIEnv* env, jobject obj, jint level, jboolean visible);
 
  private:
   void InitAutofillIfNecessary(bool enabled);
   void DidDrawGL(const DrawGLResult& result);
   void ForceFakeComposite();
+
+  void InitializeHardwareDrawOnRenderThread();
+  void ReleaseHardwareDrawOnRenderThread();
+  void TrimMemoryOnRenderThread(int level, bool visible);
 
   base::WeakPtrFactory<AwContents> weak_factory_on_ui_thread_;
   base::WeakPtr<AwContents> ui_thread_weak_ptr_;
