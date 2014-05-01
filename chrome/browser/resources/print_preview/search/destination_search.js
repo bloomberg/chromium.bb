@@ -583,6 +583,8 @@ cr.define('print_preview', function() {
       if (account) {
         this.userInfo_.activeUser = account;
         this.destinationStore_.reloadUserCookieBasedDestinations();
+        this.metrics_.incrementDestinationSearchBucket(
+            print_preview.Metrics.DestinationSearchBucket.ACCOUNT_CHANGED);
       } else {
         cr.dispatchSimpleEvent(this, DestinationSearch.EventType.ADD_ACCOUNT);
         // Set selection back to the active user.
@@ -592,6 +594,8 @@ cr.define('print_preview', function() {
             break;
           }
         }
+        this.metrics_.incrementDestinationSearchBucket(
+            print_preview.Metrics.DestinationSearchBucket.ADD_ACCOUNT_SELECTED);
       }
     },
 

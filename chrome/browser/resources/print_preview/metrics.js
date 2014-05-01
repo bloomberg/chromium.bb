@@ -50,7 +50,11 @@ cr.define('print_preview', function() {
     // Used when a user sees a register promo for a cloud print printer.
     REGISTER_PROMO_SHOWN: 7,
     // Used when a user selects a register promo for a cloud print printer.
-    REGISTER_PROMO_SELECTED: 8
+    REGISTER_PROMO_SELECTED: 8,
+    // User changed active account.
+    ACCOUNT_CHANGED: 9,
+    // User tried to log into another account.
+    ADD_ACCOUNT_SELECTED: 10
   };
 
   /**
