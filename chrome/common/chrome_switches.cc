@@ -103,6 +103,9 @@ const char kAppModeOAuth2Token[]            = "app-mode-oauth-token";
 // Whether to always use the new app install bubble when installing an app.
 const char kAppsNewInstallBubble[]          = "apps-new-install-bubble";
 
+// Experimental native frame support for packaged apps.
+const char kAppsUseNativeFrame[]            = "apps-use-native-frame";
+
 // Enables overriding the path for the default authentication extension.
 const char kAuthExtensionPath[]             = "auth-ext-path";
 

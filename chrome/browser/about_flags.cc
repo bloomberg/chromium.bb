@@ -1316,6 +1316,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableTcpFastOpen)
   },
   {
+    "apps-use-native-frame",
+    IDS_FLAGS_ENABLE_NATIVE_FRAMES_FOR_APPS_NAME,
+    IDS_FLAGS_ENABLE_NATIVE_FRAMES_FOR_APPS_DESCRIPTION,
+    kOsMac,
+    SINGLE_VALUE_TYPE(switches::kAppsUseNativeFrame)
+  },
+  {
     "enable-syncfs-directory-operation",
     IDS_FLAGS_ENABLE_SYNC_DIRECTORY_OPERATION_NAME,
     IDS_FLAGS_ENABLE_SYNC_DIRECTORY_OPERATION_DESCRIPTION,

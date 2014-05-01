@@ -201,10 +201,6 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
 
   apps::SizeConstraints size_constraints_;
 
-  bool has_frame_color_;
-  SkColor active_frame_color_;
-  SkColor inactive_frame_color_;
-
   base::scoped_nsobject<NativeAppWindowController> window_controller_;
   NSInteger attention_request_id_;  // identifier from requestUserAttention
 
