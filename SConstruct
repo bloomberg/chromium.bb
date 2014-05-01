@@ -131,6 +131,9 @@ ACCEPTABLE_ARGUMENTS = set([
     'force_sel_ldr',
     # force irt image used by tests
     'force_irt',
+    # generate_ninja=FILE enables a Ninja backend for SCons.  This writes a
+    # .ninja build file to FILE describing all of SCons' build targets.
+    'generate_ninja',
     # Path to a JSON file for machine-readable output.
     'json_build_results_output_file',
     # Replacement memcheck command for overriding the DEPS-in memcheck
@@ -481,6 +484,12 @@ pre_base_env = Environment(
     COVERAGE_GENHTML = '../third_party/lcov/bin/genhtml',
     **kwargs
 )
+
+
+if 'generate_ninja' in ARGUMENTS:
+  import pynacl.scons_to_ninja
+  pynacl.scons_to_ninja.GenerateNinjaFile(
+      pre_base_env, dest_file=ARGUMENTS['generate_ninja'])
 
 
 breakpad_tools_dir = ARGUMENTS.get('breakpad_tools_dir')
@@ -2026,7 +2035,8 @@ def CustomCommandPrinter(cmd, targets, source, env):
     # The SCons default (copied from print_cmd_line in Action.py)
     sys.stdout.write(cmd + u'\n')
 
-pre_base_env.Append(PRINT_CMD_LINE_FUNC=CustomCommandPrinter)
+if 'generate_ninja' not in ARGUMENTS:
+  pre_base_env.Append(PRINT_CMD_LINE_FUNC=CustomCommandPrinter)
 
 
 def GetAbsDirArg(env, argument, target):

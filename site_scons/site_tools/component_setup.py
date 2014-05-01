@@ -185,8 +185,11 @@ def generate(env):
   # much be the first thing in a SConstruct.
   env.Default('$DESTINATION_ROOT')
 
-  # Use brief command line strings if necessary
-  if env.GetOption('brief_comstr'):
+  # Use brief command line strings if necessary.
+  # Since these get passed to PRINT_CMD_LINE_FUNC, which scons_to_ninja
+  # relies on, don't do this if generate_ninja is enabled.
+  if (env.GetOption('brief_comstr') and
+      'generate_ninja' not in SCons.Script.ARGUMENTS):
     env.SetDefault(
         ARCOMSTR='________Creating library $TARGET',
         ASCOMSTR='________Assembling $TARGET',
