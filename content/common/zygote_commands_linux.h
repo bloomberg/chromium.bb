@@ -10,6 +10,10 @@
 
 namespace content {
 
+// Contents of the initial message sent from the zygote to the browser right
+// after it starts.
+static const char kZygoteBootMessage[] = "ZYGOTE_BOOT";
+
 // Contents of the initial message sent from the zygote to the browser when it
 // is ready to go.
 static const char kZygoteHelloMessage[] = "ZYGOTE_OK";

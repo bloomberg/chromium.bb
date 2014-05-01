@@ -49,24 +49,24 @@
 
 namespace content {
 
-// Returns true if |proc| is the same process as or a descendent process of
-// |ancestor|.
-static bool SameOrDescendantOf(base::ProcessId proc, base::ProcessId ancestor) {
-  for (unsigned i = 0; i < 100; i++) {
-    if (proc == ancestor)
-      return true;
+// Receive a fixed message on fd and return the sender's PID.
+// Returns true if the message received matches the expected message.
+static bool ReceiveFixedMessage(int fd,
+                                const char* expect_msg,
+                                size_t expect_len,
+                                base::ProcessId* sender_pid) {
+  char buf[expect_len + 1];
+  ScopedVector<base::ScopedFD> fds_vec;
 
-    // Walk up process tree.
-    base::ProcessHandle handle;
-    CHECK(base::OpenProcessHandle(proc, &handle));
-    proc = base::GetParentProcessId(handle);
-    base::CloseProcessHandle(handle);
-    if (proc <= 0)
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
+  const ssize_t len = UnixDomainSocket::RecvMsgWithPid(
+      fd, buf, sizeof(buf), &fds_vec, sender_pid);
+  if (static_cast<size_t>(len) != expect_len)
+    return false;
+  if (memcmp(buf, expect_msg, expect_len) != 0)
+    return false;
+  if (!fds_vec.empty())
+    return false;
+  return true;
 }
 
 // static
@@ -172,29 +172,28 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
   dummy_fd.reset();
 
   if (using_suid_sandbox_) {
-    // In the SUID sandbox, the real zygote is forked from the sandbox
-    // and will be executing in another PID namespace.
-    // Wait for the zygote to tell us it's running, and receive its PID,
-    // which the kernel will translate to our PID namespace.
-    // The sending code is in content/browser/zygote_main_linux.cc.
-    ScopedVector<base::ScopedFD> fds_vec;
-    const size_t kExpectedLength = sizeof(kZygoteHelloMessage);
-    char buf[kExpectedLength];
-    const ssize_t len = UnixDomainSocket::RecvMsgWithPid(
-        fds[0], buf, sizeof(buf), &fds_vec, &pid_);
-    CHECK_EQ(kExpectedLength, static_cast<size_t>(len))
-        << "Incorrect zygote magic length";
-    CHECK_EQ(0, memcmp(buf, kZygoteHelloMessage, kExpectedLength))
-        << "Incorrect zygote hello";
-    CHECK_EQ(0U, fds_vec.size())
-        << "Zygote hello should not include file descriptors";
+    // The SUID sandbox will execute the zygote in a new PID namespace, and
+    // the main zygote process will then fork from there.  Watch now our
+    // elaborate dance to find and validate the zygote's PID.
 
-    if (pid_ <= 0 || !SameOrDescendantOf(pid_, base::GetProcId(process))) {
-      LOG(FATAL)
-          << "Received invalid process ID for zygote; kernel might be too old? "
-             "See crbug.com/357670 or try using --"
-          << switches::kDisableSetuidSandbox << " to workaround.";
-    }
+    // First we receive a message from the zygote boot process.
+    base::ProcessId boot_pid;
+    CHECK(ReceiveFixedMessage(
+        fds[0], kZygoteBootMessage, sizeof(kZygoteBootMessage), &boot_pid));
+
+    // Within the PID namespace, the zygote boot process thinks it's PID 1,
+    // but its real PID can never be 1. This gives us a reliable test that
+    // the kernel is translating the sender's PID to our namespace.
+    CHECK_GT(boot_pid, 1)
+        << "Received invalid process ID for zygote; kernel might be too old? "
+           "See crbug.com/357670 or try using --"
+        << switches::kDisableSetuidSandbox << " to workaround.";
+
+    // Now receive the message that the zygote's ready to go, along with the
+    // main zygote process's ID.
+    CHECK(ReceiveFixedMessage(
+        fds[0], kZygoteHelloMessage, sizeof(kZygoteHelloMessage), &pid_));
+    CHECK_GT(pid_, 1);
 
     if (process != pid_) {
       // Reap the sandbox.

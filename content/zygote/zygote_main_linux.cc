@@ -458,6 +458,12 @@ bool ZygoteMain(const MainFunctionParams& params,
     // ancient setuid sandbox ABI requirement. However, the descriptor is no
     // longer needed, so we can simply close it right away now.
     CHECK_EQ(0, IGNORE_EINTR(close(kZygoteIdFd)));
+
+    // Let the ZygoteHost know we're booting up.
+    CHECK(UnixDomainSocket::SendMsg(kZygoteSocketPairFd,
+                                    kZygoteBootMessage,
+                                    sizeof(kZygoteBootMessage),
+                                    std::vector<int>()));
   }
 
   if (forkdelegate != NULL) {
