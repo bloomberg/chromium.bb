@@ -98,7 +98,7 @@ cr.define('extensions', function() {
     scrollToError: function() {
       var errorSpan = this.querySelector('.extension-code-highlighted-source');
       if (errorSpan)
-        errorSpan.scrollIntoView(false);  // Scroll to bottom of view.
+        this.scrollTop = errorSpan.offsetTop - this.clientHeight / 2;
     }
   };
 

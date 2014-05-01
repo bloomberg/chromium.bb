@@ -388,6 +388,8 @@ cr.define('extensions', function() {
        */
       this.setVisible = function(isVisible) {
         showOverlay(isVisible ? this.overlayDiv_ : null);
+        if (isVisible)
+          this.codeDiv_.scrollToError();
       };
 
       /**
