@@ -696,7 +696,7 @@ def BuildWithVisualStudio(targets):
 
 def WriteStringToFile(text, file_name):
   try:
-    with open(file_name, "w") as f:
+    with open(file_name, "wb") as f:
       f.write(text)
   except IOError as e:
     raise RuntimeError('Error writing to file [%s]' % file_name )
