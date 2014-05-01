@@ -1203,8 +1203,8 @@ class SignerResultsStageTest(AbstractStageTest):
       mock_gs_ctx.Cat.return_value.output = self.signer_result
 
       stage = self.ConstructStage()
-      stage.archive_stage._push_image_status_queue.put(
-          self.insns_urls_per_channel)
+      stage.board_runattrs.SetParallel(
+          'instruction_urls_per_channel', self.insns_urls_per_channel)
 
       stage.PerformStage()
       for result in results:
@@ -1222,7 +1222,7 @@ class SignerResultsStageTest(AbstractStageTest):
       mock_gs_ctx.Cat.return_value.output = self.signer_result
 
       stage = self.ConstructStage()
-      stage.archive_stage._push_image_status_queue.put({})
+      stage.board_runattrs.SetParallel('instruction_urls_per_channel', {})
 
       stage.PerformStage()
       self.assertFalse(mock_gs_ctx.Cat.called)
@@ -1238,9 +1238,8 @@ class SignerResultsStageTest(AbstractStageTest):
             "keyset": "link-mp-v4", "type": "recovery", "channel": "stable" }
           """
       stage = self.ConstructStage()
-      stage.archive_stage._push_image_status_queue.put({
-          'chan1': ['chan1_uri1'],
-      })
+      stage.board_runattrs.SetParallel('instruction_urls_per_channel',
+          {'chan1': ['chan1_uri1']})
       self.assertRaises(stages.SignerFailure, stage.PerformStage)
 
   def testPerformStageMalformedJson(self):
@@ -1250,9 +1249,9 @@ class SignerResultsStageTest(AbstractStageTest):
       mock_gs_ctx.Cat.return_value.output = "{"
 
       stage = self.ConstructStage()
-      stage.archive_stage._push_image_status_queue.put({
-          'chan1': ['chan1_uri1'],
-      })
+      stage.board_runattrs.SetParallel('instruction_urls_per_channel',
+          {'chan1': ['chan1_uri1']})
+
       self.assertRaises(stages.MalformedResultsException, stage.PerformStage)
 
   def testPerformStageTimeout(self):
@@ -1261,9 +1260,8 @@ class SignerResultsStageTest(AbstractStageTest):
       mock_wait.side_effect = timeout_util.TimeoutError
 
       stage = self.ConstructStage()
-      stage.archive_stage._push_image_status_queue.put({
-          'chan1': ['chan1_uri1'],
-      })
+      stage.board_runattrs.SetParallel('instruction_urls_per_channel',
+          {'chan1': ['chan1_uri1']})
       self.assertRaises(stages.SignerResultsTimeout, stage.PerformStage)
 
   def testCheckForResultsSuccess(self):

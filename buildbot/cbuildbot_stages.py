@@ -3232,7 +3232,8 @@ class SignerResultsStage(ArchivingStage):
     """
     # These results are expected to contain:
     # { 'channel': ['gs://instruction_uri1', 'gs://signer_instruction_uri2'] }
-    instruction_urls_per_channel = self.archive_stage.WaitForPushImage()
+    instruction_urls_per_channel = self.board_runattrs.GetParallel(
+        'instruction_urls_per_channel')
     if instruction_urls_per_channel is None:
       raise MissingInstructionException('PushImage results not available.')
 
@@ -3570,7 +3571,6 @@ class ArchiveStage(BoardSpecificBuilderStage, ArchivingStageMixin):
     self._recovery_image_status_queue = multiprocessing.Queue()
     self._release_upload_queue = multiprocessing.Queue()
     self._upload_queue = multiprocessing.Queue()
-    self._push_image_status_queue = multiprocessing.Queue()
     self._wait_for_channel_signing = multiprocessing.Queue()
     self.artifacts = []
 
@@ -3586,19 +3586,6 @@ class ArchiveStage(BoardSpecificBuilderStage, ArchivingStageMixin):
     # Put the status back so other SignerTestStage instances don't starve.
     self._recovery_image_status_queue.put(status)
     return status
-
-  def WaitForPushImage(self):
-    """Wait until PushImage compeletes.
-
-    Returns:
-      On success: The pushimage results.
-      None on error, or if pushimage didn't run.
-    """
-    cros_build_lib.Info('Waiting for PushImage...')
-    urls = self._push_image_status_queue.get()
-    # Put the status back so other processes don't starve.
-    self._push_image_status_queue.put(urls)
-    return urls
 
   def AnnounceChannelSigned(self, channel):
     """Announce that image signing has compeleted for a given channel.
@@ -3902,7 +3889,7 @@ class ArchiveStage(BoardSpecificBuilderStage, ArchivingStageMixin):
           dryrun=debug or not config['push_image'],
           profile=self._run.options.profile or config['profile'],
           sign_types=sign_types)
-      self._push_image_status_queue.put(urls)
+      self.board_runattrs.SetParallel('instruction_urls_per_channel', urls)
 
     def ArchiveReleaseArtifacts():
       with self.ArtifactUploader(self._release_upload_queue, archive=False):
@@ -3928,7 +3915,7 @@ class ArchiveStage(BoardSpecificBuilderStage, ArchivingStageMixin):
     # Tell the HWTestStage not to wait for artifacts to be uploaded
     # in case ArchiveStage throws an exception.
     self._recovery_image_status_queue.put(False)
-    self._push_image_status_queue.put(None)
+    self.board_runattrs.SetParallel('instruction_urls_per_channel', None)
     self._wait_for_channel_signing.put(None)
     return super(ArchiveStage, self)._HandleStageException(exc_info)
 
