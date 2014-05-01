@@ -8,12 +8,11 @@
       (drawsContent 1)
       (children 2
         (GraphicsLayer
-          (position -12.00 -12.00)
-          (bounds 370.00 220.00)
+          (bounds 358.00 208.00)
           (drawsContent 1)
           (children 1
             (GraphicsLayer
-              (position 35.00 35.00)
+              (position 23.00 23.00)
               (children 2
                 (GraphicsLayer
                   (bounds 285.00 150.00)
@@ -21,10 +20,10 @@
                     (GraphicsLayer
                       (children 1
                         (GraphicsLayer
-                          (bounds 285.00 192.00)
+                          (bounds 285.00 193.00)
                           (children 1
                             (GraphicsLayer
-                              (bounds 285.00 192.00)
+                              (bounds 285.00 193.00)
                               (drawsContent 1)
                               (children 1
                                 (GraphicsLayer
@@ -77,13 +76,14 @@
                 (GraphicsLayer
                   (position 285.00 0.00)
                   (bounds 15.00 150.00)
+                  (drawsContent 1)
                 )
               )
             )
           )
         )
         (GraphicsLayer
-          (position 18.00 202.00)
+          (position 18.00 203.00)
           (bounds 210.00 210.00)
           (contentsOpaque 1)
           (drawsContent 1)

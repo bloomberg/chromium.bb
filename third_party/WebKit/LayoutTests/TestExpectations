@@ -91,11 +91,6 @@ crbug.com/310679 [ Mac ] fast/frames/frame-set-rotation-hit.html [ ImageOnlyFail
 crbug.com/310679 [ Mac ] fast/frames/frame-set-scaling-hit.html [ ImageOnlyFailure Pass ]
 crbug.com/318434 virtual/gpu/compositedscrolling/scrollbars/custom-scrollbar-with-incomplete-style.html [ ImageOnlyFailure ]
 
-Bug(chrishtr) virtual/softwarecompositing/backing/no-backing-for-clip.html [ NeedsRebaseline ]
-Bug(chrishtr) virtual/softwarecompositing/iframes/invisible-nested-iframe-show.html [ NeedsRebaseline ]
-Bug(chrishtr) compositing/backing/no-backing-for-clip.html [ NeedsRebaseline ]
-Bug(chrishtr) compositing/iframes/invisible-nested-iframe-show.html [ NeedsRebaseline ]
-
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
 
