@@ -52,21 +52,32 @@ TEST(JsonSchemaCompilerArrayTest, BasicArrayType) {
 }
 
 TEST(JsonSchemaCompilerArrayTest, EnumArrayType) {
-  std::vector<EnumArrayType::TypesType> enums;
-  enums.push_back(EnumArrayType::TYPES_TYPE_ONE);
-  enums.push_back(EnumArrayType::TYPES_TYPE_TWO);
-  enums.push_back(EnumArrayType::TYPES_TYPE_THREE);
-
-  scoped_ptr<base::ListValue> types(new base::ListValue());
-  for (size_t i = 0; i < enums.size(); ++i)
-    types->Append(new base::StringValue(EnumArrayType::ToString(enums[i])));
-
+  // { "types": ["one", "two", "three"] }
+  base::ListValue* types = new base::ListValue();
+  types->AppendString("one");
+  types->AppendString("two");
+  types->AppendString("three");
   base::DictionaryValue value;
-  value.Set("types", types.release());
+  value.Set("types", types);
 
   EnumArrayType enum_array_type;
+
+  // Test Populate.
   ASSERT_TRUE(EnumArrayType::Populate(value, &enum_array_type));
-  EXPECT_EQ(enums, enum_array_type.types);
+  {
+    EnumArrayType::TypesType enums[] = {
+      EnumArrayType::TYPES_TYPE_ONE,
+      EnumArrayType::TYPES_TYPE_TWO,
+      EnumArrayType::TYPES_TYPE_THREE,
+    };
+    std::vector<EnumArrayType::TypesType> enums_vector(
+        enums, enums + arraysize(enums));
+    EXPECT_EQ(enums_vector, enum_array_type.types);
+  }
+
+  // Test ToValue.
+  scoped_ptr<base::Value> as_value(enum_array_type.ToValue());
+  EXPECT_TRUE(value.Equals(as_value.get())) << value << " != " << *as_value;
 }
 
 TEST(JsonSchemaCompilerArrayTest, OptionalEnumArrayType) {
