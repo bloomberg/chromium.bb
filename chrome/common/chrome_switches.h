@@ -47,7 +47,6 @@ extern const char kAppsGalleryUpdateURL[];
 extern const char kAppModeAuthCode[];
 extern const char kAppModeOAuth2Token[];
 extern const char kAppsNewInstallBubble[];
-extern const char kAppsUseNativeFrame[];
 extern const char kAuthExtensionPath[];
 extern const char kAuthNegotiateDelegateWhitelist[];
 extern const char kAuthSchemes[];
