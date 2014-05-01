@@ -59,9 +59,6 @@ class SYNC_EXPORT_PRIVATE MutableEntry : public ModelNeutralMutableEntry {
   // ID to put the node in first position.
   bool PutPredecessor(const Id& predecessor_id);
 
-  void PutAttachmentMetadata(
-      const sync_pb::AttachmentMetadata& attachment_metadata);
-
  private:
   // Kind of redundant. We should reduce the number of pointers
   // floating around if at all possible. Could we store this in Directory?

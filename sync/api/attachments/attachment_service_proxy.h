@@ -58,8 +58,7 @@ class SYNC_EXPORT AttachmentServiceProxy : public AttachmentService {
       const GetOrDownloadCallback& callback) OVERRIDE;
   virtual void DropAttachments(const AttachmentIdList& attachment_ids,
                                const DropCallback& callback) OVERRIDE;
-  virtual void StoreAttachments(const AttachmentList& attachment,
-                                const StoreCallback& callback) OVERRIDE;
+  virtual void OnSyncDataAdd(const SyncData& sync_data) OVERRIDE;
   virtual void OnSyncDataDelete(const SyncData& sync_data) OVERRIDE;
   virtual void OnSyncDataUpdate(const AttachmentIdList& old_attachment_ids,
                                 const SyncData& updated_sync_data) OVERRIDE;
@@ -90,8 +89,7 @@ class SYNC_EXPORT AttachmentServiceProxy : public AttachmentService {
         const GetOrDownloadCallback& callback) OVERRIDE;
     virtual void DropAttachments(const AttachmentIdList& attachment_ids,
                                  const DropCallback& callback) OVERRIDE;
-    virtual void StoreAttachments(const AttachmentList& attachment,
-                                  const StoreCallback& callback) OVERRIDE;
+    virtual void OnSyncDataAdd(const SyncData& sync_data) OVERRIDE;
     virtual void OnSyncDataDelete(const SyncData& sync_data) OVERRIDE;
     virtual void OnSyncDataUpdate(const AttachmentIdList& old_attachment_ids,
                                   const SyncData& updated_sync_data) OVERRIDE;

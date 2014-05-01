@@ -51,15 +51,10 @@ void FakeAttachmentService::DropAttachments(
                                      callback));
 }
 
-void FakeAttachmentService::StoreAttachments(const AttachmentList& attachments,
-                                             const StoreCallback& callback) {
+void FakeAttachmentService::OnSyncDataAdd(const SyncData& sync_data) {
   DCHECK(CalledOnValidThread());
-  attachment_store_->Write(attachments,
-                           base::Bind(&FakeAttachmentService::WriteDone,
-                                      weak_ptr_factory_.GetWeakPtr(),
-                                      callback));
-  // TODO(maniscalco): Ensure the linked attachments are schedule for upload to
-  // the server (bug 356351).
+  // TODO(maniscalco): Ensure the linked attachments get persisted in local
+  // storage and schedule them for upload to the server (bug 356351).
 }
 
 void FakeAttachmentService::OnSyncDataDelete(const SyncData& sync_data) {
@@ -102,18 +97,6 @@ void FakeAttachmentService::DropDone(const DropCallback& callback,
   // TODO(maniscalco): Deal with case where an error occurred (bug 361251).
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          base::Bind(callback, drop_result));
-}
-
-void FakeAttachmentService::WriteDone(const StoreCallback& callback,
-                                      const AttachmentStore::Result& result) {
-  AttachmentService::StoreResult store_result =
-      AttachmentService::STORE_UNSPECIFIED_ERROR;
-  if (result == AttachmentStore::SUCCESS) {
-    store_result = AttachmentService::STORE_SUCCESS;
-  }
-  // TODO(maniscalco): Deal with case where an error occurred (bug 361251).
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(callback, store_result));
 }
 
 }  // namespace syncer

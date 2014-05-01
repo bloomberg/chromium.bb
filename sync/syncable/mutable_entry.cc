@@ -233,20 +233,6 @@ bool MutableEntry::PutPredecessor(const Id& predecessor_id) {
   return true;
 }
 
-void MutableEntry::PutAttachmentMetadata(
-    const sync_pb::AttachmentMetadata& attachment_metadata) {
-  DCHECK(kernel_);
-  write_transaction()->TrackChangesTo(kernel_);
-  if (kernel_->ref(ATTACHMENT_METADATA).SerializeAsString() !=
-      attachment_metadata.SerializeAsString()) {
-    dir()->UpdateAttachmentIndex(GetMetahandle(),
-                                 kernel_->ref(ATTACHMENT_METADATA),
-                                 attachment_metadata);
-    kernel_->put(ATTACHMENT_METADATA, attachment_metadata);
-    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
-  }
-}
-
 // This function sets only the flags needed to get this entry to sync.
 bool MarkForSyncing(MutableEntry* e) {
   DCHECK_NE(static_cast<MutableEntry*>(NULL), e);

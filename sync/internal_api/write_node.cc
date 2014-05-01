@@ -464,11 +464,6 @@ bool WriteNode::SetPosition(const BaseNode& new_parent,
   return PutPredecessor(predecessor);
 }
 
-void WriteNode::SetAttachmentMetadata(
-    const sync_pb::AttachmentMetadata& attachment_metadata) {
-  entry_->PutAttachmentMetadata(attachment_metadata);
-}
-
 const syncable::Entry* WriteNode::GetEntry() const {
   return entry_;
 }

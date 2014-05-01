@@ -291,13 +291,10 @@ ModelType BaseNode::GetModelType() const {
 }
 
 const syncer::AttachmentIdList BaseNode::GetAttachmentIds() const {
-  AttachmentIdList result;
-  const sync_pb::AttachmentMetadata& metadata =
-      GetEntry()->GetAttachmentMetadata();
-  for (int i = 0; i < metadata.record_size(); ++i) {
-    result.push_back(AttachmentId::CreateFromProto(metadata.record(i).id()));
-  }
-  return result;
+  // TODO(maniscalco): Once EntryKernel is capable of storing AttachmentIds,
+  // update this method to retrieve the list of AttachmentIds from read_node and
+  // pass it to CreateRemoteData (bug 348625).
+  return AttachmentIdList();
 }
 
 void BaseNode::SetUnencryptedSpecifics(

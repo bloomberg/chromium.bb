@@ -38,21 +38,10 @@ class SYNC_EXPORT AttachmentService {
   // The result of a DropAttachments operation.
   enum DropResult {
     DROP_SUCCESS,            // No error, all attachments dropped.
-    DROP_UNSPECIFIED_ERROR,  // An unspecified error occurred. Some or all
-                             // attachments may not have been dropped.
+    DROP_UNSPECIFIED_ERROR,  // An unspecified error occurred.
   };
 
   typedef base::Callback<void(const DropResult&)> DropCallback;
-
-  // The result of a StoreAttachments operation.
-  enum StoreResult {
-    STORE_SUCCESS,            // No error, all attachments stored (at least
-                              // locally).
-    STORE_UNSPECIFIED_ERROR,  // An unspecified error occurred. Some or all
-                              // attachments may not have been stored.
-  };
-
-  typedef base::Callback<void(const StoreResult&)> StoreCallback;
 
   AttachmentService();
   virtual ~AttachmentService();
@@ -66,12 +55,10 @@ class SYNC_EXPORT AttachmentService {
   virtual void DropAttachments(const AttachmentIdList& attachment_ids,
                                const DropCallback& callback) = 0;
 
-  // Store |attachments| on device and (eventually) upload them to the server.
-  //
-  // Invokes |callback| once the attachments have been written to device
-  // storage.
-  virtual void StoreAttachments(const AttachmentList& attachments,
-                                const StoreCallback& callback) = 0;
+  // This method should be called when a SyncData is about to be added to the
+  // sync database so we have a chance to persist the Attachment locally and
+  // schedule it for upload to the sync server.
+  virtual void OnSyncDataAdd(const SyncData& sync_data) = 0;
 
   // This method should be called when a SyncData is about to be deleted from
   // the sync database so we can remove any unreferenced attachments from local

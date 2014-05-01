@@ -31,6 +31,7 @@ class BaseTransaction;
 //
 // Serves as base class for several other test fixtures.
 class SyncableDirectoryTest : public testing::Test {
+ private:
  protected:
   static const char kDirectoryName[];
 
@@ -46,24 +47,12 @@ class SyncableDirectoryTest : public testing::Test {
   DirOpenResult ReopenDirectory();
 
   // Creates an empty entry and sets the ID field to a default one.
-  void CreateEntry(const ModelType& model_type, const std::string& entryname);
+  void CreateEntry(const std::string& entryname);
 
   // Creates an empty entry and sets the ID field to id.
-  void CreateEntry(const ModelType& model_type,
-                   const std::string& entryname,
-                   const int id);
+  void CreateEntry(const std::string& entryname, const int id);
 
-  void CreateEntry(const ModelType& model_type,
-                   const std::string& entryname,
-                   const Id& id);
-
-  void CreateEntryWithAttachmentMetadata(
-      const ModelType& model_type,
-      const std::string& entryname,
-      const Id& id,
-      const sync_pb::AttachmentMetadata& attachment_metadata);
-
-  void DeleteEntry(const Id& id);
+  void CreateEntry(const std::string& entryname, Id id);
 
   // When a directory is saved then loaded from disk, it will pass through
   // DropDeletedEntries().  This will remove some entries from the directory.

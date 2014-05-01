@@ -36,21 +36,6 @@ syncer::AttachmentId ProtoToId(const sync_pb::AttachmentIdProto& proto) {
   return syncer::AttachmentId::CreateFromProto(proto);
 }
 
-// Return true iff |attachments| contains one or more elements with the same
-// AttachmentId.
-bool ContainsDuplicateAttachments(const syncer::AttachmentList& attachments) {
-  std::set<syncer::AttachmentId> id_set;
-  AttachmentList::const_iterator iter = attachments.begin();
-  AttachmentList::const_iterator end = attachments.end();
-  for (; iter != end; ++iter) {
-    if (id_set.find(iter->GetId()) != id_set.end()) {
-      return true;
-    }
-    id_set.insert(iter->GetId());
-  }
-  return false;
-}
-
 }  // namespace
 
 namespace syncer {
@@ -111,13 +96,15 @@ SyncData SyncData::CreateLocalData(const std::string& sync_tag,
       sync_tag, non_unique_title, specifics, attachments);
 }
 
+// TODO(maniscalco): What should happen if the same Attachment appears in the
+// list twice? Document the behavior and add a test case.
+//
 // Static.
 SyncData SyncData::CreateLocalDataWithAttachments(
     const std::string& sync_tag,
     const std::string& non_unique_title,
     const sync_pb::EntitySpecifics& specifics,
     const AttachmentList& attachments) {
-  DCHECK(!ContainsDuplicateAttachments(attachments));
   sync_pb::SyncEntity entity;
   entity.set_client_defined_unique_tag(sync_tag);
   entity.set_non_unique_name(non_unique_title);
@@ -126,6 +113,9 @@ SyncData SyncData::CreateLocalDataWithAttachments(
                  attachments.end(),
                  RepeatedFieldBackInserter(entity.mutable_attachment_id()),
                  AttachmentToProto);
+  // TODO(maniscalco): Actually pass the attachments to the ctor and make them
+  // available to the AttachmentService once this SyncData gets passed into
+  // GenericChangeProcesso::ProcessSyncChanges (bug 354530).
   AttachmentList copy_of_attachments(attachments);
   return SyncData(kInvalidId,
                   &entity,

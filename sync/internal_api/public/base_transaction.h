@@ -24,9 +24,6 @@ class Directory;
 // syncable, and are used in a similar way. Unlike syncable::BaseTransaction,
 // whose construction requires an explicit syncable::Directory, a sync
 // API BaseTransaction is created from a UserShare object.
-//
-// Note, these transactions are not atomic. Individual operations can
-// fail. There is no built-in rollback or undo mechanism.
 class SYNC_EXPORT BaseTransaction {
  public:
   // Provide access to the underlying syncable objects from BaseNode.

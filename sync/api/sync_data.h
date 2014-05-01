@@ -43,19 +43,14 @@ class SYNC_EXPORT SyncData {
   // Default copy and assign welcome.
 
   // Helper methods for creating SyncData objects for local data.
-  //
-  // |sync_tag| Must be a string unique to this datatype and is used as a node
+  // The sync tag must be a string unique to this datatype and is used as a node
   // identifier server-side.
-  //
   // For deletes: |datatype| must specify the datatype who node is being
   // deleted.
-  //
-  // For adds/updates: |specifics| must be valid and |non_unique_title| (can be
-  // the same as |sync_tag|) must be specfied.  Note: |non_unique_title| is
-  // primarily for debug purposes, and will be overwritten if the datatype is
-  // encrypted.
-  //
-  // For data with attachments: |attachments| must not contain duplicates.
+  // For adds/updates: the specifics must be valid and the non-unique title (can
+  // be the same as sync tag) must be specfied.
+  // Note: the non_unique_title is primarily for debug purposes, and will be
+  // overwritten if the datatype is encrypted.
   static SyncData CreateLocalDelete(
       const std::string& sync_tag,
       ModelType datatype);

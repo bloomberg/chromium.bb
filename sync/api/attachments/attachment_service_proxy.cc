@@ -35,15 +35,6 @@ void ProxyDropCallback(
   task_runner->PostTask(FROM_HERE, base::Bind(callback, result));
 }
 
-// Invokes |callback| with |result| and |attachments| in the |task_runner|
-// thread.
-void ProxyStoreCallback(
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    const AttachmentService::StoreCallback& callback,
-    const AttachmentService::StoreResult& result) {
-  task_runner->PostTask(FROM_HERE, base::Bind(callback, result));
-}
-
 }  // namespace
 
 AttachmentServiceProxy::AttachmentServiceProxy() {
@@ -94,17 +85,11 @@ void AttachmentServiceProxy::DropAttachments(
                                             proxy_callback));
 }
 
-void AttachmentServiceProxy::StoreAttachments(const AttachmentList& attachments,
-                                              const StoreCallback& callback) {
+void AttachmentServiceProxy::OnSyncDataAdd(const SyncData& sync_data) {
   DCHECK(wrapped_task_runner_);
-  StoreCallback proxy_callback = base::Bind(
-      &ProxyStoreCallback, base::MessageLoopProxy::current(), callback);
   wrapped_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&AttachmentService::StoreAttachments,
-                 core_,
-                 attachments,
-                 proxy_callback));
+      base::Bind(&AttachmentService::OnSyncDataAdd, core_, sync_data));
 }
 
 void AttachmentServiceProxy::OnSyncDataDelete(const SyncData& sync_data) {
@@ -152,13 +137,11 @@ void AttachmentServiceProxy::Core::DropAttachments(
   wrapped_->DropAttachments(attachment_ids, callback);
 }
 
-void AttachmentServiceProxy::Core::StoreAttachments(
-    const AttachmentList& attachments,
-    const StoreCallback& callback) {
+void AttachmentServiceProxy::Core::OnSyncDataAdd(const SyncData& sync_data) {
   if (!wrapped_) {
     return;
   }
-  wrapped_->StoreAttachments(attachments, callback);
+  wrapped_->OnSyncDataAdd(sync_data);
 }
 
 void AttachmentServiceProxy::Core::OnSyncDataDelete(const SyncData& sync_data) {
