@@ -1118,7 +1118,8 @@ void PictureLayerImpl::RecalculateRasterScales(
         zooming_out ? old_raster_contents_scale / kMaxScaleRatioDuringPinch
                     : old_raster_contents_scale * kMaxScaleRatioDuringPinch;
     raster_contents_scale_ = SnappedContentsScale(desired_contents_scale);
-    raster_page_scale_ = raster_contents_scale_ / raster_device_scale_;
+    raster_page_scale_ =
+        raster_contents_scale_ / raster_device_scale_ / raster_source_scale_;
   }
 
   raster_contents_scale_ =

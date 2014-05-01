@@ -868,51 +868,45 @@ TEST_F(PictureLayerImplTest, PinchGestureTilings) {
   // Set up the high and low res tilings before pinch zoom.
   SetupTrees(pending_pile, active_pile);
   EXPECT_EQ(0u, active_layer_->tilings()->num_tilings());
-  SetContentsScaleOnBothLayers(1.0f, 1.0f, 1.0f, 1.0f, false);
+  SetContentsScaleOnBothLayers(2.0f, 1.0f, 1.0f, 1.0f, false);
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
   EXPECT_EQ(2u, active_layer_->tilings()->num_tilings());
-  EXPECT_FLOAT_EQ(
-      1.0f,
-      active_layer_->tilings()->tiling_at(0)->contents_scale());
-  EXPECT_FLOAT_EQ(
-      1.0f * low_res_factor,
-      active_layer_->tilings()->tiling_at(1)->contents_scale());
+  EXPECT_FLOAT_EQ(2.0f,
+                  active_layer_->tilings()->tiling_at(0)->contents_scale());
+  EXPECT_FLOAT_EQ(2.0f * low_res_factor,
+                  active_layer_->tilings()->tiling_at(1)->contents_scale());
 
   // Start a pinch gesture.
   host_impl_.PinchGestureBegin();
 
   // Zoom out by a small amount. We should create a tiling at half
-  // the scale (1/kMaxScaleRatioDuringPinch).
-  SetContentsScaleOnBothLayers(0.90f, 1.0f, 0.9f, 1.0f, false);
+  // the scale (2/kMaxScaleRatioDuringPinch).
+  SetContentsScaleOnBothLayers(1.8f, 1.0f, 0.9f, 1.0f, false);
   EXPECT_EQ(3u, active_layer_->tilings()->num_tilings());
-  EXPECT_FLOAT_EQ(
-      1.0f,
-      active_layer_->tilings()->tiling_at(0)->contents_scale());
-  EXPECT_FLOAT_EQ(
-      0.5f,
-      active_layer_->tilings()->tiling_at(1)->contents_scale());
-  EXPECT_FLOAT_EQ(
-      1.0f * low_res_factor,
-      active_layer_->tilings()->tiling_at(2)->contents_scale());
+  EXPECT_FLOAT_EQ(2.0f,
+                  active_layer_->tilings()->tiling_at(0)->contents_scale());
+  EXPECT_FLOAT_EQ(1.0f,
+                  active_layer_->tilings()->tiling_at(1)->contents_scale());
+  EXPECT_FLOAT_EQ(2.0f * low_res_factor,
+                  active_layer_->tilings()->tiling_at(2)->contents_scale());
 
   // Zoom out further, close to our low-res scale factor. We should
   // use that tiling as high-res, and not create a new tiling.
   SetContentsScaleOnBothLayers(
-      low_res_factor, 1.0f, low_res_factor, 1.0f, false);
+      low_res_factor, 1.0f, low_res_factor / 2.0f, 1.0f, false);
   EXPECT_EQ(3u, active_layer_->tilings()->num_tilings());
 
   // Zoom in a lot now. Since we increase by increments of
-  // kMaxScaleRatioDuringPinch, this will first use 0.5, then 1.0
-  // and then finally create a new tiling at 2.0.
-  SetContentsScaleOnBothLayers(2.1f, 1.0f, 2.1f, 1.f, false);
+  // kMaxScaleRatioDuringPinch, this will first use 1.0, then 2.0
+  // and then finally create a new tiling at 4.0.
+  SetContentsScaleOnBothLayers(4.2f, 1.0f, 2.1f, 1.f, false);
   EXPECT_EQ(3u, active_layer_->tilings()->num_tilings());
-  SetContentsScaleOnBothLayers(2.1f, 1.0f, 2.1f, 1.f, false);
+  SetContentsScaleOnBothLayers(4.2f, 1.0f, 2.1f, 1.f, false);
   EXPECT_EQ(3u, active_layer_->tilings()->num_tilings());
-  SetContentsScaleOnBothLayers(2.1f, 1.0f, 2.1f, 1.f, false);
+  SetContentsScaleOnBothLayers(4.2f, 1.0f, 2.1f, 1.f, false);
   EXPECT_EQ(4u, active_layer_->tilings()->num_tilings());
-  EXPECT_FLOAT_EQ(
-      2.0f,
-      active_layer_->tilings()->tiling_at(0)->contents_scale());
+  EXPECT_FLOAT_EQ(4.0f,
+                  active_layer_->tilings()->tiling_at(0)->contents_scale());
 }
 
 TEST_F(PictureLayerImplTest, CleanUpTilings) {
