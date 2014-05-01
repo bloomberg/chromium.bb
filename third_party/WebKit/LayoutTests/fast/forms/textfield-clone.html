@@ -5,7 +5,6 @@
 <input id=i1 value="Initial" style>
 <input id=i2 type=search value="Initial" style>
 <!-- ENABLE_INPUT_SPEECH flag doesn't affect the test result -->
-<input id=i3 type=search value="Initial" x-webkit-speech style>
 <input id=i4 type=number value="0" style>
 </div>
 <div id=console></div>
@@ -28,7 +27,6 @@ function check(id, value) {
 
 check('i1', 'foo');
 check('i2', 'query');
-check('i3', 'speech');
 check('i4', '13');
 container.innerHTML = '';
 </script>

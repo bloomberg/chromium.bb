@@ -1,9 +1,6 @@
-CONSOLE WARNING: The 'x-webkit-speech' input field attribute is deprecated. Please use the JavaScript API instead.
 There was a bug that the value property of a cloned text input was not updated.
 
 Check for text type:
-PASS clone.value is newValue
-Check for search type:
 PASS clone.value is newValue
 Check for search type:
 PASS clone.value is newValue

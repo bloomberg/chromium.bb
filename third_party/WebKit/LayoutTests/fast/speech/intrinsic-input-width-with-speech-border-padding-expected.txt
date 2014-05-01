@@ -1,6 +1,0 @@
-CONSOLE WARNING: The 'x-webkit-speech' input field attribute is deprecated. Please use the JavaScript API instead.
-PASS document.getElementById("speechInput1").offsetWidth is document.getElementById("input1").offsetWidth
-PASS successfullyParsed is true
-
-TEST COMPLETE
- 
