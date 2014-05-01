@@ -204,6 +204,8 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   const pid_t zygote_pid = content::ZygoteHost::GetInstance()->GetPid();
+  const pid_t sandbox_helper_pid =
+      content::ZygoteHost::GetInstance()->GetSandboxHelperPid();
 #endif
 
   ProcessData* const chrome_browser = ChromeBrowser();
@@ -337,6 +339,8 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
     if (process.pid == zygote_pid) {
       process.process_type = content::PROCESS_TYPE_ZYGOTE;
+    } else if (process.pid == sandbox_helper_pid) {
+      process.process_type = content::PROCESS_TYPE_SANDBOX_HELPER;
     }
 #endif
   }

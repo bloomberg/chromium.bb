@@ -129,9 +129,10 @@ static void MSCharSetToFontconfig(FcLangSet* langset, unsigned fdwCharSet) {
 
 namespace content {
 
-SandboxIPCHandler::SandboxIPCHandler(int browser_socket,
+SandboxIPCProcess::SandboxIPCProcess(int lifeline_fd,
+                                     int browser_socket,
                                      std::string sandbox_cmd)
-    : browser_socket_(browser_socket) {
+    : lifeline_fd_(lifeline_fd), browser_socket_(browser_socket) {
   if (!sandbox_cmd.empty()) {
     sandbox_cmd_.push_back(sandbox_cmd);
     sandbox_cmd_.push_back(base::kFindInodeSwitch);
@@ -141,23 +142,33 @@ SandboxIPCHandler::SandboxIPCHandler(int browser_socket,
   // positioning, so we pass the current setting through to WebKit.
   WebFontInfo::setSubpixelPositioning(
       gfx::GetDefaultWebkitSubpixelPositioning());
+
+  CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  command_line.AppendSwitchASCII(switches::kProcessType,
+                                 switches::kSandboxIPCProcess);
+
+  // Update the process title. The argv was already cached by the call to
+  // SetProcessTitleFromCommandLine in content_main_runner.cc, so we can pass
+  // NULL here (we don't have the original argv at this point).
+  SetProcessTitleFromCommandLine(NULL);
 }
 
-void SandboxIPCHandler::Run() {
-  struct pollfd pfds[1];
-  pfds[0].fd = browser_socket_;
+void SandboxIPCProcess::Run() {
+  struct pollfd pfds[2];
+  pfds[0].fd = lifeline_fd_;
   pfds[0].events = POLLIN;
+  pfds[1].fd = browser_socket_;
+  pfds[1].events = POLLIN;
 
   int failed_polls = 0;
   for (;;) {
-    const int r =
-        HANDLE_EINTR(poll(pfds, arraysize(pfds), -1 /* no timeout */));
+    const int r = HANDLE_EINTR(poll(pfds, 2, -1 /* no timeout */));
     // '0' is not a possible return value with no timeout.
     DCHECK_NE(0, r);
     if (r < 0) {
       PLOG(WARNING) << "poll";
       if (failed_polls++ == 3) {
-        LOG(FATAL) << "poll(2) failing. SandboxIPCHandler aborting.";
+        LOG(FATAL) << "poll(2) failing. RenderSandboxHostLinux aborting.";
         return;
       }
       continue;
@@ -165,20 +176,18 @@ void SandboxIPCHandler::Run() {
 
     failed_polls = 0;
 
-    // If poll(2) reports an error condition in the fd,
-    // we assume the zygote is gone and we return.
-    if (pfds[0].revents & (POLLERR | POLLHUP)) {
-      VLOG(1) << "SandboxIPCHandler stopping.";
-      return;
+    if (pfds[0].revents) {
+      // our parent died so we should too.
+      _exit(0);
     }
 
-    if (pfds[0].revents & POLLIN) {
+    if (pfds[1].revents) {
       HandleRequestFromRenderer(browser_socket_);
     }
   }
 }
 
-void SandboxIPCHandler::HandleRequestFromRenderer(int fd) {
+void SandboxIPCProcess::HandleRequestFromRenderer(int fd) {
   ScopedVector<base::ScopedFD> fds;
 
   // A FontConfigIPC::METHOD_MATCH message could be kMaxFontFamilyLength
@@ -222,7 +231,7 @@ void SandboxIPCHandler::HandleRequestFromRenderer(int fd) {
   }
 }
 
-int SandboxIPCHandler::FindOrAddPath(const SkString& path) {
+int SandboxIPCProcess::FindOrAddPath(const SkString& path) {
   int count = paths_.count();
   for (int i = 0; i < count; ++i) {
     if (path == *paths_[i])
@@ -232,7 +241,7 @@ int SandboxIPCHandler::FindOrAddPath(const SkString& path) {
   return count;
 }
 
-void SandboxIPCHandler::HandleFontMatchRequest(
+void SandboxIPCProcess::HandleFontMatchRequest(
     int fd,
     const Pickle& pickle,
     PickleIterator iter,
@@ -272,7 +281,7 @@ void SandboxIPCHandler::HandleFontMatchRequest(
   SendRendererReply(fds, reply, -1);
 }
 
-void SandboxIPCHandler::HandleFontOpenRequest(
+void SandboxIPCProcess::HandleFontOpenRequest(
     int fd,
     const Pickle& pickle,
     PickleIterator iter,
@@ -301,13 +310,13 @@ void SandboxIPCHandler::HandleFontOpenRequest(
   }
 }
 
-void SandboxIPCHandler::HandleGetFontFamilyForChar(
+void SandboxIPCProcess::HandleGetFontFamilyForChar(
     int fd,
     const Pickle& pickle,
     PickleIterator iter,
     const std::vector<base::ScopedFD*>& fds) {
   // The other side of this call is
-  // content/common/child_process_sandbox_support_impl_linux.cc
+  // chrome/renderer/renderer_sandbox_support_linux.cc
 
   EnsureWebKitInitialized();
   WebUChar32 c;
@@ -332,7 +341,7 @@ void SandboxIPCHandler::HandleGetFontFamilyForChar(
   SendRendererReply(fds, reply, -1);
 }
 
-void SandboxIPCHandler::HandleGetStyleForStrike(
+void SandboxIPCProcess::HandleGetStyleForStrike(
     int fd,
     const Pickle& pickle,
     PickleIterator iter,
@@ -361,7 +370,7 @@ void SandboxIPCHandler::HandleGetStyleForStrike(
   SendRendererReply(fds, reply, -1);
 }
 
-void SandboxIPCHandler::HandleLocaltime(
+void SandboxIPCProcess::HandleLocaltime(
     int fd,
     const Pickle& pickle,
     PickleIterator iter,
@@ -394,7 +403,7 @@ void SandboxIPCHandler::HandleLocaltime(
   SendRendererReply(fds, reply, -1);
 }
 
-void SandboxIPCHandler::HandleGetChildWithInode(
+void SandboxIPCProcess::HandleGetChildWithInode(
     int fd,
     const Pickle& pickle,
     PickleIterator iter,
@@ -429,7 +438,7 @@ void SandboxIPCHandler::HandleGetChildWithInode(
   SendRendererReply(fds, reply, -1);
 }
 
-void SandboxIPCHandler::HandleMakeSharedMemorySegment(
+void SandboxIPCProcess::HandleMakeSharedMemorySegment(
     int fd,
     const Pickle& pickle,
     PickleIterator iter,
@@ -449,7 +458,7 @@ void SandboxIPCHandler::HandleMakeSharedMemorySegment(
   SendRendererReply(fds, reply, shm_fd);
 }
 
-void SandboxIPCHandler::HandleMatchWithFallback(
+void SandboxIPCProcess::HandleMatchWithFallback(
     int fd,
     const Pickle& pickle,
     PickleIterator iter,
@@ -609,7 +618,7 @@ void SandboxIPCHandler::HandleMatchWithFallback(
   }
 }
 
-void SandboxIPCHandler::SendRendererReply(
+void SandboxIPCProcess::SendRendererReply(
     const std::vector<base::ScopedFD*>& fds,
     const Pickle& reply,
     int reply_fd) {
@@ -645,13 +654,13 @@ void SandboxIPCHandler::SendRendererReply(
     PLOG(ERROR) << "sendmsg";
 }
 
-SandboxIPCHandler::~SandboxIPCHandler() {
+SandboxIPCProcess::~SandboxIPCProcess() {
   paths_.deleteAll();
   if (webkit_platform_support_)
     blink::shutdownWithoutV8();
 }
 
-void SandboxIPCHandler::EnsureWebKitInitialized() {
+void SandboxIPCProcess::EnsureWebKitInitialized() {
   if (webkit_platform_support_)
     return;
   webkit_platform_support_.reset(new BlinkPlatformImpl);
