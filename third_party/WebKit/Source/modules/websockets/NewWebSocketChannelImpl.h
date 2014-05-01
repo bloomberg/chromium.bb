@@ -44,7 +44,6 @@
 #include "wtf/FastAllocBase.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
@@ -63,7 +62,7 @@ class Document;
 class WebSocketHandshakeRequest;
 
 // This class may replace MainThreadWebSocketChannel.
-class NewWebSocketChannelImpl FINAL : public WebSocketChannel, public RefCounted<NewWebSocketChannelImpl>, public blink::WebSocketHandleClient, public ContextLifecycleObserver {
+class NewWebSocketChannelImpl FINAL : public WebSocketChannel, public blink::WebSocketHandleClient, public ContextLifecycleObserver {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     // You can specify the source file and the line number information
@@ -90,9 +89,6 @@ public:
     virtual void fail(const String& reason, MessageLevel, const String&, unsigned lineNumber) OVERRIDE;
     using WebSocketChannel::fail;
     virtual void disconnect() OVERRIDE;
-
-    using RefCounted<NewWebSocketChannelImpl>::ref;
-    using RefCounted<NewWebSocketChannelImpl>::deref;
 
     virtual void suspend() OVERRIDE;
     virtual void resume() OVERRIDE;
@@ -142,10 +138,6 @@ private:
     // Methods for BlobLoader.
     void didFinishLoadingBlob(PassRefPtr<ArrayBuffer>);
     void didFailLoadingBlob(FileError::ErrorCode);
-
-    // WebSocketChannel functions.
-    virtual void refWebSocketChannel() OVERRIDE { ref(); }
-    virtual void derefWebSocketChannel() OVERRIDE { deref(); }
 
     // LifecycleObserver functions.
     // This object must be destroyed before the context.

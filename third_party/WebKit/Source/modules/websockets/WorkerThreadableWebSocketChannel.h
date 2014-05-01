@@ -61,7 +61,7 @@ class WorkerGlobalScope;
 class WorkerLoaderProxy;
 class WorkerRunLoop;
 
-class WorkerThreadableWebSocketChannel FINAL : public RefCounted<WorkerThreadableWebSocketChannel>, public WebSocketChannel {
+class WorkerThreadableWebSocketChannel FINAL : public WebSocketChannel {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassRefPtr<WebSocketChannel> create(WorkerGlobalScope& workerGlobalScope, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
@@ -127,14 +127,6 @@ public:
         WeakPtrFactory<Peer> m_weakFactory;
     };
 
-    using RefCounted<WorkerThreadableWebSocketChannel>::ref;
-    using RefCounted<WorkerThreadableWebSocketChannel>::deref;
-
-protected:
-    // WebSocketChannel functions.
-    virtual void refWebSocketChannel() OVERRIDE { ref(); }
-    virtual void derefWebSocketChannel() OVERRIDE { deref(); }
-
 private:
     // Bridge for Peer. Running on the worker thread.
     class Bridge : public RefCounted<Bridge> {
@@ -157,9 +149,6 @@ private:
         void disconnect();
         void suspend();
         void resume();
-
-        using RefCounted<Bridge>::ref;
-        using RefCounted<Bridge>::deref;
 
     private:
         Bridge(PassRefPtr<ThreadableWebSocketChannelClientWrapper>, PassRefPtrWillBeRawPtr<WorkerGlobalScope>);

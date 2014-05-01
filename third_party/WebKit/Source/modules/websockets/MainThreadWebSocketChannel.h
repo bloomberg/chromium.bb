@@ -44,7 +44,6 @@
 #include "wtf/Deque.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
 
@@ -57,7 +56,7 @@ class SocketStreamHandle;
 class SocketStreamError;
 class WebSocketChannelClient;
 
-class MainThreadWebSocketChannel FINAL : public RefCounted<MainThreadWebSocketChannel>, public SocketStreamHandleClient, public WebSocketChannel, public FileReaderLoaderClient {
+class MainThreadWebSocketChannel FINAL : public SocketStreamHandleClient, public WebSocketChannel, public FileReaderLoaderClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     // You can specify the source file and the line number information
@@ -100,14 +99,6 @@ public:
     virtual void didReceiveData() OVERRIDE;
     virtual void didFinishLoading() OVERRIDE;
     virtual void didFail(FileError::ErrorCode) OVERRIDE;
-
-    using RefCounted<MainThreadWebSocketChannel>::ref;
-    using RefCounted<MainThreadWebSocketChannel>::deref;
-
-protected:
-    // WebSocketChannel functions.
-    virtual void refWebSocketChannel() OVERRIDE { ref(); }
-    virtual void derefWebSocketChannel() OVERRIDE { deref(); }
 
 private:
     MainThreadWebSocketChannel(Document*, WebSocketChannelClient*, const String&, unsigned);

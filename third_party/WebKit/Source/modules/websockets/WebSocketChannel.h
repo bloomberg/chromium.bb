@@ -35,6 +35,7 @@
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -44,7 +45,7 @@ class KURL;
 class ExecutionContext;
 class WebSocketChannelClient;
 
-class WebSocketChannel {
+class WebSocketChannel : public RefCounted<WebSocketChannel> {
     WTF_MAKE_NONCOPYABLE(WebSocketChannel);
 public:
     WebSocketChannel() { }
@@ -103,13 +104,7 @@ public:
     virtual void suspend() = 0;
     virtual void resume() = 0;
 
-    void ref() { refWebSocketChannel(); }
-    void deref() { derefWebSocketChannel(); }
-
-protected:
     virtual ~WebSocketChannel() { }
-    virtual void refWebSocketChannel() = 0;
-    virtual void derefWebSocketChannel() = 0;
 };
 
 } // namespace WebCore
