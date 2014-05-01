@@ -62,13 +62,6 @@ cr.define('options', function() {
         chrome.send('chooseBookmarksFile');
       };
 
-      $('import-data-show-bookmarks-bar').onchange = function() {
-        // Note: The callback 'toggleShowBookmarksBar' is handled within the
-        // browser options handler -- rather than the import data handler --
-        // as the implementation is shared by several clients.
-        chrome.send('toggleShowBookmarksBar');
-      }
-
       $('import-data-confirm').onclick = function() {
         ImportDataOverlay.dismiss();
       };
