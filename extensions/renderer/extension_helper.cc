@@ -1,23 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/extension_helper.h"
+#include "extensions/renderer/extension_helper.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/command_line.h"
-#include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/chrome_extension_messages.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/url_constants.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
-#include "chrome/renderer/extensions/user_script_scheduler.h"
-#include "chrome/renderer/web_apps.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "extensions/common/api/messaging/message.h"
@@ -26,6 +13,7 @@
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/messaging_bindings.h"
+#include "extensions/renderer/user_script_scheduler.h"
 #include "extensions/renderer/user_script_slave.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
@@ -143,7 +131,6 @@ ExtensionHelper::ExtensionHelper(content::RenderView* render_view,
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<ExtensionHelper>(render_view),
       dispatcher_(dispatcher),
-      pending_app_icon_requests_(0),
       view_type_(VIEW_TYPE_INVALID),
       tab_id_(-1),
       browser_window_id_(-1) {
@@ -163,8 +150,6 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnDisconnect,
                         OnExtensionDispatchOnDisconnect)
     IPC_MESSAGE_HANDLER(ExtensionMsg_ExecuteCode, OnExecuteCode)
-    IPC_MESSAGE_HANDLER(ChromeExtensionMsg_GetApplicationInfo,
-                        OnGetApplicationInfo)
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetTabId, OnSetTabId)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateBrowserWindowId,
                         OnUpdateBrowserWindowId)
@@ -328,29 +313,6 @@ void ExtensionHelper::OnExecuteCode(
   SchedulerMap::iterator i = g_schedulers.Get().find(main_frame);
   if (i != g_schedulers.Get().end())
     i->second->ExecuteCode(params);
-}
-
-void ExtensionHelper::OnGetApplicationInfo(int page_id) {
-  WebApplicationInfo app_info;
-  if (page_id == render_view()->GetPageId()) {
-    base::string16 error;
-    web_apps::ParseWebAppFromWebDocument(
-        render_view()->GetWebView()->mainFrame(), &app_info, &error);
-  }
-
-  // Prune out any data URLs in the set of icons.  The browser process expects
-  // any icon with a data URL to have originated from a favicon.  We don't want
-  // to decode arbitrary data URLs in the browser process.  See
-  // http://b/issue?id=1162972
-  for (size_t i = 0; i < app_info.icons.size(); ++i) {
-    if (app_info.icons[i].url.SchemeIs(content::kDataScheme)) {
-      app_info.icons.erase(app_info.icons.begin() + i);
-      --i;
-    }
-  }
-
-  Send(new ChromeExtensionHostMsg_DidGetApplicationInfo(
-      routing_id(), page_id, app_info));
 }
 
 void ExtensionHelper::OnNotifyRendererViewType(ViewType type) {

@@ -1,15 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/user_script_scheduler.h"
+#include "extensions/renderer/user_script_scheduler.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/renderer/chrome_render_process_observer.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
-#include "chrome/renderer/extensions/extension_helper.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/error_utils.h"
@@ -19,6 +16,7 @@
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/dom_activity_logger.h"
 #include "extensions/renderer/extension_groups.h"
+#include "extensions/renderer/extension_helper.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/user_script_slave.h"
 #include "third_party/WebKit/public/platform/WebString.h"

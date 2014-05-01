@@ -1,26 +1,21 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_EXTENSION_HELPER_H_
-#define CHROME_RENDERER_EXTENSIONS_EXTENSION_HELPER_H_
+#ifndef EXTENSIONS_RENDERER_EXTENSION_HELPER_H_
+#define EXTENSIONS_RENDERER_EXTENSION_HELPER_H_
 
-#include <map>
 #include <vector>
 
-#include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "extensions/common/view_type.h"
-#include "third_party/WebKit/public/platform/WebURLResponse.h"
 
 class GURL;
 class SkBitmap;
 struct ExtensionMsg_ExecuteCode_Params;
 struct ExtensionMsg_ExternalConnectionInfo;
-struct WebApplicationInfo;
 
 namespace base {
 class DictionaryValue;
@@ -92,7 +87,6 @@ class ExtensionHelper
   void OnExtensionDispatchOnDisconnect(int port_id,
                                        const std::string& error_message);
   void OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
-  void OnGetApplicationInfo(int page_id);
   void OnNotifyRendererViewType(ViewType view_type);
   void OnSetTabId(int tab_id);
   void OnUpdateBrowserWindowId(int window_id);
@@ -101,15 +95,6 @@ class ExtensionHelper
   void OnAppWindowClosed();
 
   Dispatcher* dispatcher_;
-
-  // The app info that we are processing. This is used when installing an app
-  // via application definition. The in-progress web app is stored here while
-  // its manifest and icons are downloaded.
-  scoped_ptr<WebApplicationInfo> pending_app_info_;
-
-  // The number of app icon requests outstanding. When this reaches zero, we're
-  // done processing an app definition file.
-  int pending_app_icon_requests_;
 
   // Type of view attached with RenderView.
   ViewType view_type_;
@@ -125,4 +110,4 @@ class ExtensionHelper
 
 }  // namespace extensions
 
-#endif  // CHROME_RENDERER_EXTENSIONS_EXTENSION_HELPER_H_
+#endif  // EXTENSIONS_RENDERER_EXTENSION_HELPER_H_

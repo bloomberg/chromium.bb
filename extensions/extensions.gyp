@@ -413,6 +413,11 @@
     {
       'target_name': 'extensions_renderer',
       'type': 'static_library',
+      'dependencies': [
+        'extensions_resources.gyp:extensions_resources',
+        '../chrome/chrome_resources.gyp:chrome_resources',
+        '../third_party/WebKit/public/blink.gyp:blink',
+      ],
       'include_dirs': [
         '..',
       ],
@@ -448,6 +453,8 @@
         'renderer/dom_activity_logger.h',
         'renderer/event_bindings.cc',
         'renderer/event_bindings.h',
+        'renderer/extension_helper.cc',
+        'renderer/extension_helper.h',
         'renderer/extensions_renderer_client.cc',
         'renderer/extensions_renderer_client.h',
         'renderer/extension_groups.h',
@@ -498,6 +505,8 @@
         'renderer/test_features_native_handler.h',
         'renderer/user_gestures_native_handler.cc',
         'renderer/user_gestures_native_handler.h',
+        'renderer/user_script_scheduler.cc',
+        'renderer/user_script_scheduler.h',
         'renderer/user_script_slave.cc',
         'renderer/user_script_slave.h',
         'renderer/utils_native_handler.cc',
@@ -506,11 +515,6 @@
         'renderer/v8_context_native_handler.h',
         'renderer/v8_schema_registry.cc',
         'renderer/v8_schema_registry.h',
-      ],
-      'dependencies': [
-        'extensions_resources.gyp:extensions_resources',
-        '../chrome/chrome_resources.gyp:chrome_resources',
-        '../third_party/WebKit/public/blink.gyp:blink',
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],

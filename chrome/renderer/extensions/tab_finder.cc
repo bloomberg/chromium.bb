@@ -4,8 +4,8 @@
 
 #include "chrome/renderer/extensions/tab_finder.h"
 
-#include "chrome/renderer/extensions/extension_helper.h"
 #include "content/public/renderer/render_view.h"
+#include "extensions/renderer/extension_helper.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 

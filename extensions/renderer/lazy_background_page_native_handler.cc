@@ -5,10 +5,10 @@
 #include "extensions/renderer/lazy_background_page_native_handler.h"
 
 #include "base/bind.h"
-#include "chrome/renderer/extensions/extension_helper.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/renderer/extension_helper.h"
 #include "extensions/renderer/script_context.h"
 
 namespace extensions {

@@ -31,10 +31,10 @@
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/chrome_render_view_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
+#include "chrome/renderer/extensions/chrome_extension_helper.h"
 #include "chrome/renderer/extensions/chrome_extensions_dispatcher_delegate.h"
 #include "chrome/renderer/extensions/chrome_extensions_renderer_client.h"
 #include "chrome/renderer/extensions/extension_frame_helper.h"
-#include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/renderer_permissions_policy_delegate.h"
 #include "chrome/renderer/extensions/resource_request_policy.h"
 #include "chrome/renderer/external_extension.h"
@@ -82,6 +82,7 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/switches.h"
 #include "extensions/renderer/dispatcher.h"
+#include "extensions/renderer/extension_helper.h"
 #include "extensions/renderer/script_context.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -418,6 +419,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
 void ChromeContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
   new extensions::ExtensionHelper(render_view, extension_dispatcher_.get());
+  new extensions::ChromeExtensionHelper(render_view);
   new PageLoadHistograms(render_view);
 #if defined(ENABLE_PRINTING)
   new printing::PrintWebViewHelper(render_view);
