@@ -32,84 +32,89 @@ except ImportError:
 import mock
 
 # pylint: disable=R0901, W0212
-class SignerResultsStageTest(generic_stages_unittest.AbstractStageTest):
-  """Test the SignerResultsStage."""
-
+class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
+  """Test the PaygenStageStage."""
   BOT_ID = 'x86-mario-release'
   RELEASE_TAG = '0.0.1'
+
+  SIGNER_RESULT = """
+    { "status": { "status": "passed" }, "board": "link",
+    "keyset": "link-mp-v4", "type": "recovery", "channel": "stable" }
+    """
+
+  INSNS_URLS_PER_CHANNEL = {
+      'chan1': ['chan1_uri1', 'chan1_uri2'],
+      'chan2': ['chan2_uri1'],
+  }
 
   def setUp(self):
     self.StartPatcher(BuilderRunMock())
     self._Prepare()
 
-    self.signer_result = """
-      { "status": { "status": "passed" }, "board": "link",
-      "keyset": "link-mp-v4", "type": "recovery", "channel": "stable" }
-      """
-
-    self.insns_urls_per_channel = {
-        'chan1': ['chan1_uri1', 'chan1_uri2'],
-        'chan2': ['chan2_uri1'],
-    }
-
-
   def ConstructStage(self):
     archive_stage = artifact_stages.ArchiveStage(self._run, self._current_board)
-    stage = stages.SignerResultsStage(
-        self._run, self._current_board, archive_stage)
+    return stages.PaygenStage(self._run, self._current_board, archive_stage)
 
-    return stage
+  def testWaitForPushImageSuccess(self):
+    """Test waiting for input from PushImage."""
+    stage = self.ConstructStage()
+    stage.board_runattrs.SetParallel(
+        'instruction_urls_per_channel', self.INSNS_URLS_PER_CHANNEL)
 
-  def testPerformStageSuccess(self):
+    self.assertEqual(stage._WaitForPushImage(), self.INSNS_URLS_PER_CHANNEL)
+
+  def testWaitForPushImageTimeout(self):
+    """Test that WaitForPushImage times out, if pushimage never runs."""
+    stage = self.ConstructStage()
+
+    # Shorten the timeout so the tests finish in a reasonable period of time.
+    stage.PUSHIMAGE_TIMEOUT = 0.01
+
+    self.assertRaises(stages.MissingInstructionException,
+                      stage._WaitForPushImage)
+
+  def testWaitForPushImageError(self):
+    """Test WaitForPushImageError with an error output from pushimage."""
+    stage = self.ConstructStage()
+    stage.board_runattrs.SetParallel(
+        'instruction_urls_per_channel', None)
+
+    self.assertRaises(stages.MissingInstructionException,
+                      stage._WaitForPushImage)
+
+  def testWaitForSigningResultsSuccess(self):
     """Test that SignerResultsStage works when signing works."""
     results = ['chan1_uri1.json', 'chan1_uri2.json', 'chan2_uri1.json']
 
     with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
-      mock_gs_ctx.Cat.return_value.output = self.signer_result
+      mock_gs_ctx.Cat.return_value.output = self.SIGNER_RESULT
+      notifier = mock.Mock()
 
       stage = self.ConstructStage()
-      stage.board_runattrs.SetParallel(
-          'instruction_urls_per_channel', self.insns_urls_per_channel)
+      stage._WaitForSigningResults(self.INSNS_URLS_PER_CHANNEL, notifier)
 
-      stage.PerformStage()
+      self.assertEqual(notifier.mock_calls,
+                       [mock.call('chan1'),
+                        mock.call('chan2')])
+
       for result in results:
         mock_gs_ctx.Cat.assert_any_call(result)
 
-      self.assertEqual(stage.archive_stage.WaitForChannelSigning(), 'chan1')
-      self.assertEqual(stage.archive_stage.WaitForChannelSigning(), 'chan2')
-      self.assertEqual(stage.archive_stage.WaitForChannelSigning(),
-                       stages.SignerResultsStage.FINISHED)
-
-  def testPerformStageSuccessNothingSigned(self):
+  def testWaitForSigningResultsSuccessNothingSigned(self):
     """Test that SignerResultsStage passes when there are no signed images."""
     with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
-      mock_gs_ctx.Cat.return_value.output = self.signer_result
+      mock_gs_ctx.Cat.return_value.output = self.SIGNER_RESULT
+      notifier = mock.Mock()
 
       stage = self.ConstructStage()
-      stage.board_runattrs.SetParallel('instruction_urls_per_channel', {})
+      stage._WaitForSigningResults({}, notifier)
 
-      stage.PerformStage()
-      self.assertFalse(mock_gs_ctx.Cat.called)
-      self.assertEqual(stage.archive_stage.WaitForChannelSigning(),
-                       stages.SignerResultsStage.FINISHED)
+      self.assertEqual(notifier.mock_calls, [])
+      self.assertEqual(mock_gs_ctx.Cat.mock_calls, [])
 
-  def testPerformStageInstructionUrlsTimeout(self):
-    """Test that SignerResultsStage passes when there are no signed images."""
-    with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
-      mock_gs_ctx = mock_gs_ctx_init.return_value
-      mock_gs_ctx.Cat.return_value.output = self.signer_result
-
-      stage = self.ConstructStage()
-
-      # Shorten the timeout so the tests finish in a reasonable period of time.
-      stage.PUSHIMAGE_TIMEOUT = 0.01
-
-      self.assertRaises(stages.MissingInstructionException, stage.PerformStage)
-      self.assertFalse(mock_gs_ctx.Cat.called)
-
-  def testPerformStageFailure(self):
+  def testWaitForSigningResultsFailure(self):
     """Test that SignerResultsStage errors when the signers report an error."""
     with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
@@ -117,63 +122,85 @@ class SignerResultsStageTest(generic_stages_unittest.AbstractStageTest):
           { "status": { "status": "failed" }, "board": "link",
             "keyset": "link-mp-v4", "type": "recovery", "channel": "stable" }
           """
-      stage = self.ConstructStage()
-      stage.board_runattrs.SetParallel('instruction_urls_per_channel',
-          {'chan1': ['chan1_uri1']})
-      self.assertRaises(stages.SignerFailure, stage.PerformStage)
+      notifier = mock.Mock()
 
-  def testPerformStageMalformedJson(self):
+      stage = self.ConstructStage()
+
+      self.assertRaises(stages.SignerFailure,
+                        stage._WaitForSigningResults,
+                        {'chan1': ['chan1_uri1']}, notifier)
+
+      self.assertEqual(notifier.mock_calls, [])
+      self.assertEqual(mock_gs_ctx.Cat.mock_calls,
+                       [mock.call('chan1_uri1.json')])
+
+  def testWaitForSigningResultsMalformedJson(self):
     """Test that SignerResultsStage errors when invalid Json is received.."""
     with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
       mock_gs_ctx.Cat.return_value.output = "{"
+      notifier = mock.Mock()
 
       stage = self.ConstructStage()
-      stage.board_runattrs.SetParallel('instruction_urls_per_channel',
-          {'chan1': ['chan1_uri1']})
 
-      self.assertRaises(stages.MalformedResultsException, stage.PerformStage)
+      self.assertRaises(stages.MalformedResultsException,
+                        stage._WaitForSigningResults,
+                        self.INSNS_URLS_PER_CHANNEL, notifier)
 
-  def testPerformStageTimeout(self):
+      self.assertEqual(notifier.mock_calls, [])
+      self.assertEqual(mock_gs_ctx.Cat.mock_calls,
+                       [mock.call('chan1_uri1.json')])
+
+  def testWaitForSigningResultsTimeout(self):
     """Test that SignerResultsStage reports timeouts correctly."""
     with patch(stages.timeout_util, 'WaitForSuccess') as mock_wait:
       mock_wait.side_effect = timeout_util.TimeoutError
+      notifier = mock.Mock()
 
       stage = self.ConstructStage()
-      stage.board_runattrs.SetParallel('instruction_urls_per_channel',
-          {'chan1': ['chan1_uri1']})
-      self.assertRaises(stages.SignerResultsTimeout, stage.PerformStage)
+
+      self.assertRaises(stages.SignerResultsTimeout,
+                        stage._WaitForSigningResults,
+                        {'chan1': ['chan1_uri1']}, notifier)
+
+      self.assertEqual(notifier.mock_calls, [])
 
   def testCheckForResultsSuccess(self):
     """Test that SignerResultsStage works when signing works."""
     with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
-      mock_gs_ctx.Cat.return_value.output = self.signer_result
+      mock_gs_ctx.Cat.return_value.output = self.SIGNER_RESULT
+      notifier = mock.Mock()
 
       stage = self.ConstructStage()
       self.assertTrue(
           stage._CheckForResults(mock_gs_ctx,
-          self.insns_urls_per_channel))
+                                 self.INSNS_URLS_PER_CHANNEL,
+                                 notifier))
+      self.assertEqual(notifier.mock_calls,
+                       [mock.call('chan1'), mock.call('chan2')])
 
   def testCheckForResultsSuccessNoChannels(self):
     """Test that SignerResultsStage works when there is nothing to check for."""
     with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
+      notifier = mock.Mock()
 
       stage = self.ConstructStage()
 
       # Ensure we find that we are ready if there are no channels to look for.
-      self.assertTrue(stage._CheckForResults(mock_gs_ctx, {}))
+      self.assertTrue(stage._CheckForResults(mock_gs_ctx, {}, notifier))
 
       # Ensure we didn't contact GS while checking for no channels.
       self.assertFalse(mock_gs_ctx.Cat.called)
+      self.assertEqual(notifier.mock_calls, [])
 
   def testCheckForResultsPartialComplete(self):
     """Verify _CheckForResults handles partial signing results."""
     def catChan2Success(url):
       if url.startswith('chan2'):
         result = mock.Mock()
-        result.output = self.signer_result
+        result.output = self.SIGNER_RESULT
         return result
       else:
         raise stages.gs.GSNoSuchKey()
@@ -181,11 +208,13 @@ class SignerResultsStageTest(generic_stages_unittest.AbstractStageTest):
     with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
       mock_gs_ctx.Cat.side_effect = catChan2Success
+      notifier = mock.Mock()
 
       stage = self.ConstructStage()
       self.assertFalse(
           stage._CheckForResults(mock_gs_ctx,
-          self.insns_urls_per_channel))
+                                 self.INSNS_URLS_PER_CHANNEL,
+                                 notifier))
       self.assertEqual(stage.signing_results, {
           'chan1': {},
           'chan2': {
@@ -198,49 +227,64 @@ class SignerResultsStageTest(generic_stages_unittest.AbstractStageTest):
               }
           }
       })
+      self.assertEqual(notifier.mock_calls, [mock.call('chan2')])
 
   def testCheckForResultsUnexpectedJson(self):
     """Verify _CheckForResults handles unexpected Json values."""
     with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
       mock_gs_ctx.Cat.return_value.output = "{}"
+      notifier = mock.Mock()
 
       stage = self.ConstructStage()
       self.assertFalse(
           stage._CheckForResults(mock_gs_ctx,
-          self.insns_urls_per_channel))
+                                 self.INSNS_URLS_PER_CHANNEL,
+                                 notifier))
       self.assertEqual(stage.signing_results, {
           'chan1': {}, 'chan2': {}
       })
+      self.assertEqual(notifier.mock_calls, [])
 
   def testCheckForResultsNoResult(self):
     """Verify _CheckForResults handles missing signer results."""
     with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
       mock_gs_ctx.Cat.side_effect = stages.gs.GSNoSuchKey
+      notifier = mock.Mock()
 
       stage = self.ConstructStage()
       self.assertFalse(
           stage._CheckForResults(mock_gs_ctx,
-          self.insns_urls_per_channel))
+                                 self.INSNS_URLS_PER_CHANNEL,
+                                 notifier))
       self.assertEqual(stage.signing_results, {
           'chan1': {}, 'chan2': {}
       })
+      self.assertEqual(notifier.mock_calls, [])
 
+  def testCheckForResultsFailed(self):
+    """Verify _CheckForResults handles missing signer results."""
+    with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
+      mock_gs_ctx = mock_gs_ctx_init.return_value
+      mock_gs_ctx.Cat.side_effect = stages.gs.GSNoSuchKey
+      notifier = mock.Mock()
 
-class PaygenStageTest(generic_stages_unittest.StageTest):
-  """Test the PaygenStageStage."""
+      stage = self.ConstructStage()
+      self.assertFalse(
+          stage._CheckForResults(mock_gs_ctx,
+                                 self.INSNS_URLS_PER_CHANNEL,
+                                 notifier))
+      self.assertEqual(stage.signing_results, {
+          'chan1': {}, 'chan2': {}
+      })
+      self.assertEqual(notifier.mock_calls, [])
 
-  BOT_ID = 'x86-mario-release'
-  RELEASE_TAG = '0.0.1'
-
-  def setUp(self):
-    self.StartPatcher(BuilderRunMock())
-    self._Prepare()
-
-  def ConstructStage(self):
-    archive_stage = artifact_stages.ArchiveStage(self._run, self._current_board)
-    return stages.PaygenStage(self._run, self._current_board, archive_stage)
+  def generateNotifyCalls(self, channels):
+    def side_effect(_, notifier):
+      for channel in channels:
+        notifier(channel)
+    return side_effect
 
   def testPerformStageSuccess(self):
     """Test that SignerResultsStage works when signing works."""
@@ -249,44 +293,37 @@ class PaygenStageTest(generic_stages_unittest.StageTest):
       queue = background().__enter__()
 
       stage = self.ConstructStage()
-      stage.archive_stage.AnnounceChannelSigned('stable')
-      stage.archive_stage.AnnounceChannelSigned('beta')
-      stage.archive_stage.AnnounceChannelSigned(
-          stages.SignerResultsStage.FINISHED)
-      stage.PerformStage()
+
+      with patch(stage, '_WaitForPushImage') as wait_push:
+        with patch(stage, '_WaitForSigningResults') as wait_signing:
+          wait_push.return_value = self.INSNS_URLS_PER_CHANNEL
+          wait_signing.side_effect = self.generateNotifyCalls(('stable',
+                                                               'beta'))
+          stage.PerformStage()
 
       # Verify that we queue up work
       queue.put.assert_any_call(('stable', 'x86-mario', '0.0.1', False, True))
       queue.put.assert_any_call(('beta', 'x86-mario', '0.0.1', False, True))
 
-  def testPerformStageNoChannels(self):
+  def testPerformStageSigningFailed(self):
     """Test that SignerResultsStage works when signing works."""
     with patch(stages.parallel, 'BackgroundTaskRunner') as background:
       queue = background().__enter__()
 
       stage = self.ConstructStage()
-      stage.archive_stage.AnnounceChannelSigned(
-          stages.SignerResultsStage.FINISHED)
-      stage.PerformStage()
+
+      with patch(stage, '_WaitForPushImage') as wait_push:
+        with patch(stage, '_WaitForSigningResults') as wait_signing:
+          wait_push.return_value = self.INSNS_URLS_PER_CHANNEL
+          wait_signing.side_effect = stages.SignerFailure
+
+          self.assertRaises(stages.SignerFailure,
+                            stage.PerformStage)
 
       # Ensure no work was queued up.
       self.assertFalse(queue.put.called)
 
-  def testPerformSigningFailed(self):
-    """Test that SignerResultsStage works when signing works."""
-    with patch(stages.parallel, 'BackgroundTaskRunner') as background:
-      queue = background().__enter__()
-
-      stage = self.ConstructStage()
-      stage.archive_stage.AnnounceChannelSigned(None)
-
-      self.assertRaises(stages.PaygenSigningRequirementsError,
-                        stage.PerformStage)
-
-      # Ensure no work was queued up.
-      self.assertFalse(queue.put.called)
-
-  def testPerformTrybot(self):
+  def testPerformStageTrybot(self):
     """Test the PerformStage alternate behavior for trybot runs."""
     with patch(stages.parallel, 'BackgroundTaskRunner') as background:
       queue = background().__enter__()
@@ -295,7 +332,13 @@ class PaygenStageTest(generic_stages_unittest.StageTest):
       # ConstructStage.
       stage = stages.PaygenStage(self._run, self._current_board,
                                  archive_stage=None, channels=['foo', 'bar'])
-      stage.PerformStage()
+      with patch(stage, '_WaitForPushImage') as wait_push:
+        with patch(stage, '_WaitForSigningResults') as wait_signing:
+          stage.PerformStage()
+
+        # Make sure we don't wait on push_image or signing in this case.
+        self.assertEqual(wait_push.mock_calls, [])
+        self.assertEqual(wait_signing.mock_calls, [])
 
       # Notice that we didn't put anything in _wait_for_channel_signing, but
       # still got results right away.
