@@ -59,7 +59,7 @@ public class ChromeWebContentsDelegateAndroid extends WebContentsDelegateAndroid
     @CalledByNative
     private static FindMatchRectsDetails createFindMatchRectsDetails(
             int version, int numRects, RectF activeRect) {
-        return new FindMatchRectsDetails(version, new RectF[numRects], activeRect);
+        return new FindMatchRectsDetails(version, numRects, activeRect);
     }
 
     @CalledByNative
