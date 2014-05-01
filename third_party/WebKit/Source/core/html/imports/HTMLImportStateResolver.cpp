@@ -37,6 +37,8 @@ namespace WebCore {
 
 inline bool HTMLImportStateResolver::isBlockingFollowers(HTMLImport* import)
 {
+    if (!import->isSync())
+        return false;
     if (!import->loader())
         return true;
     return !import->state().isReady();
@@ -50,7 +52,7 @@ inline bool HTMLImportStateResolver::shouldBlockScriptExecution() const
     }
 
     for (HTMLImport* child = m_import->firstChild(); child; child = child->next()) {
-        if (child->isSync() && isBlockingFollowers(child))
+        if (isBlockingFollowers(child))
             return true;
     }
 
