@@ -57,7 +57,7 @@ export PNACL_TOOLCHAIN_DIR=${TOOLCHAIN_BASE_DIR}/pnacl_newlib
 export PNACL_TOOLCHAIN_LABEL=pnacl_linux_x86
 # This picks the TC which we just built, even if scons doesn't know
 # how to find a 64-bit host toolchain.
-readonly SCONS_PICK_TC="pnaclsdk_mode=custom:toolchain/${PNACL_TOOLCHAIN_DIR}"
+readonly SCONS_PICK_TC="pnacl_newlib_dir=toolchain/${PNACL_TOOLCHAIN_DIR}"
 
 # download-old-tc -
 # Download the archived frontend toolchain, if we haven't already
@@ -226,8 +226,8 @@ archived-frontend-test() {
   mv toolchain/${PNACL_TOOLCHAIN_DIR} \
     toolchain/${TOOLCHAIN_BASE_DIR}/current_tc/${PNACL_TOOLCHAIN_LABEL}
 
-  # Link the old frontend into place. If we just use pnaclsdk_mode to select a
-  # different toolchain, SCons will attempt to rebuild the IRT.
+  # Link the old frontend into place. If we select a different toolchain,
+  # SCons will attempt to rebuild the IRT.
   ln -s archived_tc/${PNACL_TOOLCHAIN_LABEL} toolchain/${PNACL_TOOLCHAIN_DIR}
 
   # Build the pexes with the old frontend.

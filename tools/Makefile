@@ -867,7 +867,7 @@ gdb: BUILD/stamp-$(CROSSARCH)-gdb
 .PHONY: headers_for_build
 headers_for_build:
 	cd .. && \
-	  ./$(SCONS) naclsdk_mode=custom:$(PREFIX_NATIVE) \
+	  ./$(SCONS) nacl_newlib_dir=$(PREFIX_NATIVE) \
 		     --verbose platform=x86-$(BITSPLATFORM) \
 		     install_headers includedir=$(HEADERS_FOR_BUILD_NATIVE)
 
@@ -1053,14 +1053,14 @@ DEJAGNU_TIMESTAMP := $(shell date +%y%m%d%H%M%S)
 .PHONY: $(SEL_LDR)
 $(SEL_LDR):
 	(cd .. && \
-	  ./$(SCONS) naclsdk_mode=custom:$(DESTDIR)$(PREFIX) \
+	  ./$(SCONS) nacl_glibc_dir=$(DESTDIR)$(PREFIX) \
 	    --mode=opt-host,nacl platform=x86-$(BITSPLATFORM) \
 	    --verbose sel_ldr)
 
 .PHONY: check
 check: $(SEL_LDR)
 	(cd .. && \
-	  ./$(SCONS) naclsdk_mode=custom:$(DESTDIR)$(PREFIX) \
+	  ./$(SCONS) nacl_glibc_dir=$(DESTDIR)$(PREFIX) \
 	    --mode=opt-host,nacl platform=x86-$(BITSPLATFORM) \
 	    --verbose run_hello_world_test)
 	mkdir BUILD/build-gcc-$(CROSSARCH)/results.$(DEJAGNU_TIMESTAMP)

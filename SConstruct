@@ -146,8 +146,6 @@ ACCEPTABLE_ARGUMENTS = set([
     # colon-separated list of pnacl bcld flags, e.g. "-lfoo:-Wl,-u,bar".
     # Not using nacl_linkflags since that gets clobbered in some tests.
     'pnacl_bcldflags',
-    'naclsdk_mode',
-    'pnaclsdk_mode',
     'platform',
     # Run tests under this tool (e.g. valgrind, tsan, strace, etc).
     # If the tool has options, pass them after comma: 'tool,--opt1,--opt2'.
@@ -184,12 +182,12 @@ ACCEPTABLE_ARGUMENTS = set([
     'bindir',
     # Where a Breakpad build output directory is for optional Breakpad testing.
     'breakpad_tools_dir',
-    # Allows overriding the toolchain to use. The default toolchain will be
-    # a combination of the other arguments. Example toolchains:
-    #  NaCl (newlib): nacl_PLATFORM_newlib
-    #  NaCl (glibc):  nacl_PLATFORM_glibc
-    #  pnacl:         pnacl_PLATFORM
-    'toolchain',
+    # Allows overriding of the nacl newlib toolchain directory.
+    'nacl_newlib_dir',
+    # Allows override of the nacl glibc toolchain directory.
+    'nacl_glibc_dir',
+    # Allows override of the pnacl newlib toolchain directory.
+    'pnacl_newlib_dir',
     # Allows overriding the version number in the toolchain's
     # FEATURE_VERSION file.  This is used for PNaCl ABI compatibility
     # testing.
@@ -1175,18 +1173,21 @@ def GetPlatformBuildTargetDir(env):
 pre_base_env.AddMethod(GetPlatformBuildTargetDir)
 
 
-def GetToolchainName(env, target_arch=None, is_pnacl=None, lib_name=None):
-  toolchain = ARGUMENTS.get('toolchain', None)
-  if toolchain is None:
+def GetToolchainDir(env, platform_build_dir=None, toolchain_name=None,
+                    target_arch=None, is_pnacl=None, lib_name=None):
+  if platform_build_dir is None:
+    platform_build_dir = env.GetPlatformBuildTargetDir()
+
+  if toolchain_name is None:
+    # Fill in default arguments based on environment.
     if is_pnacl is None:
       is_pnacl = env.Bit('bitcode')
-    if lib_name is None:
-      if is_pnacl or not env.Bit('nacl_glibc'):
-        lib_name = 'newlib'
-      else:
-        lib_name = 'glibc'
+      if lib_name is None:
+        if is_pnacl or not env.Bit('nacl_glibc'):
+          lib_name = 'newlib'
+        else:
+          lib_name = 'glibc'
 
-    build_arch = pynacl.platform.GetArch(GetBuildPlatform())
     if target_arch is None:
       target_arch = pynacl.platform.GetArch(GetTargetPlatform())
 
@@ -1195,24 +1196,27 @@ def GetToolchainName(env, target_arch=None, is_pnacl=None, lib_name=None):
     else:
       target_env = 'nacl_%s' % target_arch
 
-    toolchain = '%s_%s' % (target_env, lib_name)
+    # See if we have a custom toolchain directory set.
+    if is_pnacl:
+      toolchain_arg = 'pnacl_%s_dir' % lib_name
+    else:
+      toolchain_arg = 'nacl_%s_dir' % lib_name
 
-  return toolchain
+    custom_toolchain_dir = ARGUMENTS.get(toolchain_arg, None)
+    if custom_toolchain_dir:
+      return env.SConstructAbsPath(custom_toolchain_dir)
 
-pre_base_env.AddMethod(GetToolchainName)
+    # Get the standard toolchain name since no directory custom was found.
+    if is_pnacl:
+      target_env = 'pnacl'
+    else:
+      target_env = 'nacl_%s' % target_arch
+    toolchain_name = '%s_%s' % (target_env, lib_name)
 
-
-def GetToolchainDir(env, platform_build_dir=None, toolchain_name=None):
-  if platform_build_dir is None:
-    platform_build_dir = env.GetPlatformBuildTargetDir()
-  if toolchain_name is None:
-    toolchain_name = env.GetToolchainName()
-
-  toolchain_sub_dir = os.path.join(
-      'toolchain',
-      platform_build_dir,
-      toolchain_name
-  )
+  # Get the absolute path for the platform build directory and toolchain.
+  toolchain_sub_dir = os.path.join('toolchain',
+                                   platform_build_dir,
+                                   toolchain_name)
   return env.SConstructAbsPath(toolchain_sub_dir)
 
 pre_base_env.AddMethod(GetToolchainDir)
@@ -2246,17 +2250,6 @@ Targets to build untrusted code destined for the SDK:
 
 Options:
 --------
-
-naclsdk_mode=<mode>   where <mode>:
-
-                    'local': use locally installed sdk kit
-                    'download': use the download copy (default)
-                    'custom:<path>': use kit at <path>
-                    'manual': use settings from env vars NACL_SDK_xxx
-
-pnaclsdk_mode=<mode> where <mode:
-                    'default': use the default (typically the downloaded copy)
-                    'custom:<path>': use kit from <path>
 
 --prebuilt          Do not build things, just do install steps
 

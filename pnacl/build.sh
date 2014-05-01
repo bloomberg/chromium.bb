@@ -2553,15 +2553,12 @@ sdk-headers() {
 
   StepBanner "SDK" "Install headers"
   spushd "${NACL_ROOT}"
-  # TODO(pnacl-team): remove this pnaclsdk_mode once we have a better story
-  # about host binary type (x86-32 vs x86-64).  SCons only knows how to use
-  # x86-32 host binaries right now, so we need pnaclsdk_mode to override that.
   RunWithLog "sdk.headers" \
       ./scons \
       "${SCONS_ARGS[@]}" \
       ${extra_flags} \
       platform=${neutral_platform} \
-      pnaclsdk_mode="custom:${INSTALL_ROOT}" \
+      pnacl_newlib_dir="${INSTALL_ROOT}" \
       install_headers \
       includedir="$(PosixToSysPath "${SDK_INSTALL_INCLUDE}")"
   spopd
@@ -2576,13 +2573,12 @@ sdk-libs() {
   local neutral_platform="x86-32"
 
   spushd "${NACL_ROOT}"
-  # See above TODO about pnaclsdk_mode.
   RunWithLog "sdk.libs.bitcode" \
       ./scons \
       "${SCONS_ARGS[@]}" \
       ${extra_flags} \
       platform=${neutral_platform} \
-      pnaclsdk_mode="custom:${INSTALL_ROOT}" \
+      pnacl_newlib_dir="${INSTALL_ROOT}" \
       install_lib \
       libdir="$(PosixToSysPath "${SDK_INSTALL_LIB}")"
   spopd
@@ -2596,13 +2592,12 @@ sdk-private-libs() {
   spushd "${NACL_ROOT}"
 
   local neutral_platform="x86-32"
-  # See above TODO about pnaclsdk_mode.
   RunWithLog "sdk.libs_private.bitcode" \
     ./scons \
     -j${PNACL_CONCURRENCY} \
     bitcode=1 \
     platform=${neutral_platform} \
-    pnaclsdk_mode="custom:${INSTALL_ROOT}" \
+    pnacl_newlib_dir="${INSTALL_ROOT}" \
     --verbose \
     libnacl_sys_private \
     libpthread_private \

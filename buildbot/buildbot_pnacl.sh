@@ -507,7 +507,7 @@ mode-buildbot-arm-hw-try() {
 tc-tests-all() {
   local is_try=$1
 
-  local label="pnaclsdk_mode=custom:toolchain/${PNACL_TOOLCHAIN_DIR}"
+  local label="pnacl_newlib_dir=toolchain/${PNACL_TOOLCHAIN_DIR}"
   local scons_flags="-k skip_trusted_tests=1 -j8 ${label}"
 
   llvm-regression
