@@ -30,6 +30,7 @@ typedef std::vector<syncer::SyncData> SyncDataList;
 namespace browser_sync {
 
 class GenericChangeProcessor;
+class GenericChangeProcessorFactory;
 class DataTypeErrorHandler;
 
 // A ref-counted wrapper around a GenericChangeProcessor for use with datatypes
@@ -52,7 +53,7 @@ class DataTypeErrorHandler;
 class SharedChangeProcessor
     : public base::RefCountedThreadSafe<SharedChangeProcessor> {
  public:
-  // Create an uninitialized SharedChangeProcessor (to be later connected).
+  // Create an uninitialized SharedChangeProcessor.
   SharedChangeProcessor();
 
   // Connect to the Syncer and prepare to handle changes for |type|. Will
@@ -62,6 +63,7 @@ class SharedChangeProcessor
   // syncer::SyncableService was not alive, will return a null weak pointer.
   virtual base::WeakPtr<syncer::SyncableService> Connect(
     ProfileSyncComponentsFactory* sync_factory,
+    GenericChangeProcessorFactory* processor_factory,
     ProfileSyncService* sync_service,
     DataTypeErrorHandler* error_handler,
     syncer::ModelType type,

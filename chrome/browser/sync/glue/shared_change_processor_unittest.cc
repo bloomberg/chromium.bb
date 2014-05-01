@@ -14,6 +14,8 @@
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "components/sync_driver/data_type_error_handler_mock.h"
+#include "components/sync_driver/generic_change_processor.h"
+#include "components/sync_driver/generic_change_processor_factory.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sync/api/fake_syncable_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -106,6 +108,7 @@ class SyncSharedChangeProcessorTest : public testing::Test {
         WillOnce(GetWeakPtrToSyncableService(db_syncable_service_.get()));
     EXPECT_TRUE(shared_change_processor->Connect(
         &sync_factory_,
+        &processor_factory_,
         &sync_service_,
         &error_handler_,
         syncer::AUTOFILL,
@@ -121,6 +124,8 @@ class SyncSharedChangeProcessorTest : public testing::Test {
   TestingProfile profile_;
   NiceMock<ProfileSyncServiceMock> sync_service_;
   StrictMock<DataTypeErrorHandlerMock> error_handler_;
+
+  GenericChangeProcessorFactory processor_factory_;
 
   // Used only on DB thread.
   scoped_ptr<syncer::FakeSyncableService> db_syncable_service_;

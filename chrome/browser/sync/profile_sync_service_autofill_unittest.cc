@@ -49,7 +49,6 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/data_type_controller.h"
-#include "components/sync_driver/generic_change_processor.h"
 #include "components/webdata/common/web_data_service_test_util.h"
 #include "components/webdata/common/web_database.h"
 #include "content/public/test/test_browser_thread.h"
@@ -84,7 +83,6 @@ using base::WaitableEvent;
 using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillProfileDataTypeController;
 using browser_sync::DataTypeController;
-using browser_sync::GenericChangeProcessor;
 using content::BrowserThread;
 using syncer::AUTOFILL;
 using syncer::BaseNode;
@@ -367,16 +365,6 @@ ACTION_P(ReturnNewDataTypeManagerWithDebugListener, debug_listener) {
       arg5);
 }
 
-ACTION(MakeGenericChangeProcessor) {
-  syncer::UserShare* user_share = arg0->GetUserShare();
-  return new GenericChangeProcessor(
-      arg1,
-      arg2,
-      arg3,
-      user_share,
-      syncer::FakeAttachmentService::CreateForTest());
-}
-
 ACTION_P(MakeAutofillProfileSyncComponents, wds) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!BrowserThread::CurrentlyOn(BrowserThread::DB))
@@ -410,8 +398,6 @@ class AutofillEntryFactory : public AbstractAutofillFactory {
                               ProfileSyncService* service,
                               AutofillWebDataService* wds,
                               DataTypeController* dtc) OVERRIDE {
-    EXPECT_CALL(*factory, CreateGenericChangeProcessor(_,_,_,_)).
-        WillOnce(MakeGenericChangeProcessor());
     EXPECT_CALL(*factory, GetSyncableServiceForType(syncer::AUTOFILL)).
         WillOnce(MakeAutocompleteSyncComponents(wds));
   }
@@ -430,8 +416,6 @@ class AutofillProfileFactory : public AbstractAutofillFactory {
                               ProfileSyncService* service,
                               AutofillWebDataService* wds,
                               DataTypeController* dtc) OVERRIDE {
-    EXPECT_CALL(*factory, CreateGenericChangeProcessor(_,_,_,_)).
-        WillOnce(MakeGenericChangeProcessor());
     EXPECT_CALL(*factory,
         GetSyncableServiceForType(syncer::AUTOFILL_PROFILE)).
         WillOnce(MakeAutofillProfileSyncComponents(wds));

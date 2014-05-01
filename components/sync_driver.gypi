@@ -32,6 +32,8 @@
         'sync_driver/failed_data_types_handler.h',
         'sync_driver/generic_change_processor.cc',
         'sync_driver/generic_change_processor.h',
+        'sync_driver/generic_change_processor_factory.cc',
+        'sync_driver/generic_change_processor_factory.h',
         'sync_driver/model_association_manager.cc',
         'sync_driver/model_association_manager.h',
         'sync_driver/model_associator.h',

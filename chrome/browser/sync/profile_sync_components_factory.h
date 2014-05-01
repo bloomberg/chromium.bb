@@ -94,13 +94,6 @@ class ProfileSyncComponentsFactory
       Profile* profile,
       const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs) = 0;
 
-  // Creating this in the factory helps us mock it out in testing.
-  virtual browser_sync::GenericChangeProcessor* CreateGenericChangeProcessor(
-      ProfileSyncService* profile_sync_service,
-      browser_sync::DataTypeErrorHandler* error_handler,
-      const base::WeakPtr<syncer::SyncableService>& local_service,
-      const base::WeakPtr<syncer::SyncMergeResult>& merge_result) = 0;
-
   // Legacy datatypes that need to be converted to the SyncableService API.
   virtual SyncComponents CreateBookmarkSyncComponents(
       ProfileSyncService* profile_sync_service,

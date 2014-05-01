@@ -7,7 +7,10 @@
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "components/sync_driver/generic_change_processor.h"
+#include "components/sync_driver/generic_change_processor_factory.h"
 #include "content/public/browser/browser_thread.h"
+#include "sync/api/attachments/attachment_service.h"
+#include "sync/api/attachments/fake_attachment_service.h"
 #include "sync/api/sync_change.h"
 
 using base::AutoLock;
@@ -47,6 +50,7 @@ SharedChangeProcessor::~SharedChangeProcessor() {
 
 base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
     ProfileSyncComponentsFactory* sync_factory,
+    GenericChangeProcessorFactory* processor_factory,
     ProfileSyncService* sync_service,
     DataTypeErrorHandler* error_handler,
     syncer::ModelType type,
@@ -70,12 +74,18 @@ base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
     return base::WeakPtr<syncer::SyncableService>();
   }
 
-  // TODO(zea): Pass |merge_result| to the generic change processor.
-  generic_change_processor_ =
-      sync_factory->CreateGenericChangeProcessor(sync_service_,
-                                                 error_handler,
-                                                 local_service,
-                                                 merge_result);
+  // TODO(maniscalco): Replace FakeAttachmentService with a real
+  // AttachmentService implementation once implemented (bug 356359).
+  scoped_ptr<syncer::AttachmentService> attachment_service(
+      new syncer::FakeAttachmentService(
+          sync_factory->CreateCustomAttachmentStoreForType(type)));
+
+  generic_change_processor_ = processor_factory->CreateGenericChangeProcessor(
+      sync_service_->GetUserShare(),
+      error_handler,
+      local_service,
+      merge_result,
+      attachment_service.Pass()).release();
   return local_service;
 }
 

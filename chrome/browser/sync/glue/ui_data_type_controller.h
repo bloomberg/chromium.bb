@@ -58,6 +58,11 @@ class UIDataTypeController : public DataTypeController {
       const tracked_objects::Location& from_here,
       const std::string& message) OVERRIDE;
 
+  // Used by tests to override the factory used to create
+  // GenericChangeProcessors.
+  void SetGenericChangeProcessorFactoryForTest(
+      scoped_ptr<GenericChangeProcessorFactory> factory);
+
  protected:
   // For testing only.
   UIDataTypeController();
@@ -117,6 +122,8 @@ class UIDataTypeController : public DataTypeController {
   // two datatype controller implementations (for ui and non-ui thread
   // datatypes).
   scoped_refptr<SharedChangeProcessor> shared_change_processor_;
+
+  scoped_ptr<GenericChangeProcessorFactory> processor_factory_;
 
   // A weak pointer to the actual local syncable service, which performs all the
   // real work. We do not own the object.

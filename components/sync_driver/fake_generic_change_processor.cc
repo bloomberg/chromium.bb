@@ -18,19 +18,10 @@ FakeGenericChangeProcessor::FakeGenericChangeProcessor()
                              NULL,
                              syncer::FakeAttachmentService::CreateForTest()),
       sync_model_has_user_created_nodes_(true),
-      sync_model_has_user_created_nodes_success_(true),
-      crypto_ready_if_necessary_(true) {}
+      sync_model_has_user_created_nodes_success_(true) {}
 
 FakeGenericChangeProcessor::~FakeGenericChangeProcessor() {}
 
-void FakeGenericChangeProcessor::set_process_sync_changes_error(
-    const syncer::SyncError& error) {
-  process_sync_changes_error_ = error;
-}
-void FakeGenericChangeProcessor::set_get_sync_data_for_type_error(
-    const syncer::SyncError& error) {
-  get_sync_data_for_type_error_ = error;
-}
 void FakeGenericChangeProcessor::set_sync_model_has_user_created_nodes(
     bool has_nodes) {
   sync_model_has_user_created_nodes_ = has_nodes;
@@ -39,20 +30,16 @@ void FakeGenericChangeProcessor::set_sync_model_has_user_created_nodes_success(
     bool success) {
   sync_model_has_user_created_nodes_success_ = success;
 }
-void FakeGenericChangeProcessor::set_crypto_ready_if_necessary(
-    bool crypto_ready) {
-  crypto_ready_if_necessary_ = crypto_ready;
-}
 
 syncer::SyncError FakeGenericChangeProcessor::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const syncer::SyncChangeList& change_list) {
-  return process_sync_changes_error_;
+  return syncer::SyncError();
 }
 
 syncer::SyncError FakeGenericChangeProcessor::GetAllSyncDataReturnError(
     syncer::ModelType type, syncer::SyncDataList* current_sync_data) const {
-  return get_sync_data_for_type_error_;
+  return syncer::SyncError();
 }
 
 bool FakeGenericChangeProcessor::GetDataTypeContext(
@@ -73,7 +60,23 @@ bool FakeGenericChangeProcessor::SyncModelHasUserCreatedNodes(
 
 bool FakeGenericChangeProcessor::CryptoReadyIfNecessary(
     syncer::ModelType type) {
-  return crypto_ready_if_necessary_;
+  return true;
+}
+
+FakeGenericChangeProcessorFactory::FakeGenericChangeProcessorFactory(
+    scoped_ptr<FakeGenericChangeProcessor> processor)
+    : processor_(processor.Pass()) {}
+
+FakeGenericChangeProcessorFactory::~FakeGenericChangeProcessorFactory() {}
+
+scoped_ptr<GenericChangeProcessor>
+FakeGenericChangeProcessorFactory::CreateGenericChangeProcessor(
+    syncer::UserShare* user_share,
+    browser_sync::DataTypeErrorHandler* error_handler,
+    const base::WeakPtr<syncer::SyncableService>& local_service,
+    const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
+    scoped_ptr<syncer::AttachmentService> attachment_service) {
+  return processor_.PassAs<GenericChangeProcessor>();
 }
 
 }  // namespace browser_sync

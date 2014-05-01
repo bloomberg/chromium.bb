@@ -7,6 +7,7 @@
 
 #include "components/sync_driver/generic_change_processor.h"
 
+#include "components/sync_driver/generic_change_processor_factory.h"
 #include "sync/api/sync_error.h"
 
 namespace browser_sync {
@@ -18,11 +19,8 @@ class FakeGenericChangeProcessor : public GenericChangeProcessor {
   virtual ~FakeGenericChangeProcessor();
 
   // Setters for GenericChangeProcessor implementation results.
-  void set_process_sync_changes_error(const syncer::SyncError& error);
-  void set_get_sync_data_for_type_error(const syncer::SyncError& error);
   void set_sync_model_has_user_created_nodes(bool has_nodes);
   void set_sync_model_has_user_created_nodes_success(bool success);
-  void set_crypto_ready_if_necessary(bool crypto_ready);
 
   // GenericChangeProcessor implementations.
   virtual syncer::SyncError ProcessSyncChanges(
@@ -39,11 +37,25 @@ class FakeGenericChangeProcessor : public GenericChangeProcessor {
   virtual bool CryptoReadyIfNecessary(syncer::ModelType type) OVERRIDE;
 
  private:
-  syncer::SyncError process_sync_changes_error_;
-  syncer::SyncError get_sync_data_for_type_error_;
   bool sync_model_has_user_created_nodes_;
   bool sync_model_has_user_created_nodes_success_;
-  bool crypto_ready_if_necessary_;
+};
+
+// Define a factory for FakeGenericChangeProcessor for convenience.
+class FakeGenericChangeProcessorFactory : public GenericChangeProcessorFactory {
+ public:
+  explicit FakeGenericChangeProcessorFactory(
+      scoped_ptr<FakeGenericChangeProcessor> processor);
+  virtual ~FakeGenericChangeProcessorFactory();
+  virtual scoped_ptr<GenericChangeProcessor> CreateGenericChangeProcessor(
+      syncer::UserShare* user_share,
+      browser_sync::DataTypeErrorHandler* error_handler,
+      const base::WeakPtr<syncer::SyncableService>& local_service,
+      const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
+      scoped_ptr<syncer::AttachmentService> attachment_service) OVERRIDE;
+ private:
+  scoped_ptr<FakeGenericChangeProcessor> processor_;
+  DISALLOW_COPY_AND_ASSIGN(FakeGenericChangeProcessorFactory);
 };
 
 }  // namespace browser_sync

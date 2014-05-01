@@ -10,6 +10,7 @@
 #include "chrome/browser/sync/glue/shared_change_processor_ref.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "components/sync_driver/generic_change_processor_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/syncable_service.h"
@@ -331,8 +332,10 @@ void NonUIDataTypeController::
   // Note that it's possible the shared_change_processor has already been
   // disconnected at this point, so all our accesses to the syncer from this
   // point on are through it.
+  GenericChangeProcessorFactory factory;
   local_service_ = shared_change_processor->Connect(
       profile_sync_factory_,
+      &factory,
       sync_service_,
       this,
       type(),

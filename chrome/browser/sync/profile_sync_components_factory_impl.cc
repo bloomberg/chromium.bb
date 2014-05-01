@@ -108,7 +108,6 @@ using browser_sync::DataTypeManagerImpl;
 using browser_sync::DataTypeManagerObserver;
 using browser_sync::ExtensionDataTypeController;
 using browser_sync::ExtensionSettingDataTypeController;
-using browser_sync::GenericChangeProcessor;
 using browser_sync::PasswordDataTypeController;
 using browser_sync::ProxyDataTypeController;
 using browser_sync::SearchEngineDataTypeController;
@@ -436,31 +435,6 @@ ProfileSyncComponentsFactoryImpl::CreateSyncBackendHost(
     Profile* profile,
     const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs) {
   return new browser_sync::SyncBackendHostImpl(name, profile, sync_prefs);
-}
-
-browser_sync::GenericChangeProcessor*
-    ProfileSyncComponentsFactoryImpl::CreateGenericChangeProcessor(
-        ProfileSyncService* profile_sync_service,
-        browser_sync::DataTypeErrorHandler* error_handler,
-        const base::WeakPtr<syncer::SyncableService>& local_service,
-        const base::WeakPtr<syncer::SyncMergeResult>& merge_result) {
-  syncer::UserShare* user_share = profile_sync_service->GetUserShare();
-
-  scoped_ptr<syncer::AttachmentService> attachment_service(
-      // TODO(tim): Bug 339726. Remove merge_result->model_type hack! This
-      // method (CreateGenericChangeProcessor) will cease to exist in favor
-      // of a new SharedChangeProcessor::Connect, at which point we'll know
-      // the data type.
-      // TODO(maniscalco): Replace FakeAttachmentService with a real
-      // AttachmentService implementation once implemented (bug 356359).
-      new syncer::FakeAttachmentService(
-          CreateCustomAttachmentStoreForType(merge_result->model_type())));
-  return new GenericChangeProcessor(
-      error_handler,
-      local_service,
-      merge_result,
-      user_share,
-      attachment_service.Pass());
 }
 
 base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::

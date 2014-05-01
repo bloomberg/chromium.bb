@@ -25,10 +25,6 @@ using testing::Return;
 namespace browser_sync {
 namespace {
 
-ACTION_P(ReturnAndRelease, change_processor) {
-  return change_processor->release();
-}
-
 // TODO(zea): Expand this to make the dtc type paramterizable. This will let us
 // test the basic functionality of all UIDataTypeControllers. We'll need to have
 // intelligent default values for the methods queried in the dependent services
@@ -39,7 +35,7 @@ class SyncUIDataTypeControllerTest : public testing::Test {
       : ui_thread_(BrowserThread::UI, &message_loop_),
         profile_sync_service_(&profile_),
         type_(syncer::PREFERENCES),
-        change_processor_(new FakeGenericChangeProcessor()) {}
+        change_processor_(NULL) {}
 
   virtual void SetUp() {
     profile_sync_factory_.reset(new ProfileSyncComponentsFactoryMock());
@@ -62,14 +58,14 @@ class SyncUIDataTypeControllerTest : public testing::Test {
 
  protected:
   void SetStartExpectations() {
-    // Ownership gets passed to caller of CreateGenericChangeProcessor.
-    change_processor_.reset(new FakeGenericChangeProcessor());
+    scoped_ptr<FakeGenericChangeProcessor> p(new FakeGenericChangeProcessor());
+    change_processor_ = p.get();
+    scoped_ptr<GenericChangeProcessorFactory> f(
+        new FakeGenericChangeProcessorFactory(p.Pass()));
+    preference_dtc_->SetGenericChangeProcessorFactoryForTest(f.Pass());
     EXPECT_CALL(model_load_callback_, Run(_, _));
     EXPECT_CALL(*profile_sync_factory_, GetSyncableServiceForType(type_)).
         WillOnce(Return(syncable_service_.AsWeakPtr()));
-    EXPECT_CALL(*profile_sync_factory_,
-                CreateGenericChangeProcessor(_, _, _, _)).
-        WillOnce(ReturnAndRelease(&change_processor_));
   }
 
   void SetActivateExpectations() {
@@ -102,7 +98,7 @@ class SyncUIDataTypeControllerTest : public testing::Test {
   StartCallbackMock start_callback_;
   ModelLoadCallbackMock model_load_callback_;
   scoped_refptr<UIDataTypeController> preference_dtc_;
-  scoped_ptr<FakeGenericChangeProcessor> change_processor_;
+  FakeGenericChangeProcessor* change_processor_;
   syncer::FakeSyncableService syncable_service_;
 };
 

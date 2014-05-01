@@ -42,16 +42,8 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
                    const std::string& name,
                    Profile* profile,
                    const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs));
-  MOCK_METHOD4(CreateGenericChangeProcessor,
-      browser_sync::GenericChangeProcessor*(
-          ProfileSyncService* profile_sync_service,
-          browser_sync::DataTypeErrorHandler* error_handler,
-          const base::WeakPtr<syncer::SyncableService>& local_service,
-          const base::WeakPtr<syncer::SyncMergeResult>& merge_result));
   MOCK_METHOD1(GetSyncableServiceForType,
                base::WeakPtr<syncer::SyncableService>(syncer::ModelType));
-  MOCK_METHOD1(CreateCustomAttachmentStoreForTypeMock,
-               syncer::AttachmentStore*(syncer::ModelType));
   virtual scoped_ptr<syncer::AttachmentStore>
       CreateCustomAttachmentStoreForType(syncer::ModelType type) OVERRIDE;
   MOCK_METHOD2(CreateBookmarkSyncComponents,
