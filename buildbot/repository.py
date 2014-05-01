@@ -289,7 +289,7 @@ class RepoRepository(object):
     cros_build_lib.RunCommand(['repo', '--time', 'sync', '-d'],
                               cwd=self.directory)
 
-  def Sync(self, local_manifest=None, jobs=None, all_branches=False,
+  def Sync(self, local_manifest=None, jobs=None, all_branches=True,
            network_only=False):
     """Sync/update the source.  Changes manifest if specified.
 
@@ -298,9 +298,10 @@ class RepoRepository(object):
         may be used to set it back to the default manifest.
       jobs: May be set to override the default sync parallelism defined by
         the manifest.
-      all_branches: If False (the default), a repo sync -c is performed; this
-        saves on sync'ing via grabbing only what is needed for the manifest
-        specified branch.
+      all_branches: If False, a repo sync -c is performed; this saves on
+        sync'ing via grabbing only what is needed for the manifest specified
+        branch. Defaults to True. TODO(davidjames): Set the default back to
+        False once we've fixed http://crbug.com/368722 .
       network_only: If true, perform only the network half of the sync; skip
         the checkout.  Primarily of use to validate a manifest (although
         if the manifest has bad copyfile statements, via skipping checkout
