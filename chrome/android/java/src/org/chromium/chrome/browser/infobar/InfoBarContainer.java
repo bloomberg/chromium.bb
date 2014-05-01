@@ -38,6 +38,9 @@ public class InfoBarContainer extends LinearLayout {
     private static final String TAG = "InfoBarContainer";
     private static final long REATTACH_FADE_IN_MS = 250;
 
+    /**
+     * A listener for the InfoBar animation.
+     */
     public interface InfoBarAnimationListener {
         /**
          * Notifies the subscriber when an animation is completed.
@@ -208,15 +211,6 @@ public class InfoBarContainer extends LinearLayout {
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         setVisibility(INVISIBLE);
-    }
-
-    public InfoBar findInfoBar(int nativeInfoBar) {
-        for (InfoBar infoBar : mInfoBars) {
-            if (infoBar.ownsNativeInfoBar(nativeInfoBar)) {
-                return infoBar;
-            }
-        }
-        return null;
     }
 
     /**
