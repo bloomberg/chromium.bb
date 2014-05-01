@@ -10,6 +10,7 @@
 
 typedef struct _drmModeConnector drmModeConnector;
 typedef struct _drmModeCrtc drmModeCrtc;
+typedef struct _drmModeModeInfo drmModeModeInfo;
 typedef struct _drmModeRes drmModeRes;
 
 namespace ui {
@@ -35,6 +36,8 @@ class HardwareDisplayControllerInfo {
 // displays.
 ScopedVector<HardwareDisplayControllerInfo>
 GetAvailableDisplayControllerInfos(int fd, drmModeRes* resources);
+
+bool SameMode(const drmModeModeInfo& lhs, const drmModeModeInfo& rhs);
 
 }  // namespace ui
 

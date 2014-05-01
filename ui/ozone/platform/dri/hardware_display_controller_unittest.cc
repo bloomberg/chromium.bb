@@ -210,7 +210,7 @@ class HardwareDisplayControllerTest : public testing::Test {
 void HardwareDisplayControllerTest::SetUp() {
   drm_.reset(new MockDriWrapper(kFd));
   controller_.reset(new ui::HardwareDisplayController(
-      drm_.get(), kConnectorId, kCrtcId, kDefaultMode));
+      drm_.get(), kConnectorId, kCrtcId));
 }
 
 void HardwareDisplayControllerTest::TearDown() {
@@ -223,7 +223,8 @@ TEST_F(HardwareDisplayControllerTest, CheckStateAfterSurfaceIsBound) {
       new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
-  EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
+  EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass(),
+                                                   kDefaultMode));
 
   EXPECT_EQ(2, drm_->get_add_framebuffer_call_count());
   EXPECT_TRUE(controller_->get_surface() != NULL);
@@ -236,7 +237,8 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfBindingFails) {
       new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
-  EXPECT_FALSE(controller_->BindSurfaceToController(surface.Pass()));
+  EXPECT_FALSE(controller_->BindSurfaceToController(surface.Pass(),
+                                                    kDefaultMode));
 
   EXPECT_EQ(1, drm_->get_add_framebuffer_call_count());
   EXPECT_EQ(NULL, controller_->get_surface());
@@ -247,7 +249,8 @@ TEST_F(HardwareDisplayControllerTest, CheckStateAfterPageFlip) {
       new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
-  EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
+  EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass(),
+                                                   kDefaultMode));
 
   EXPECT_TRUE(controller_->SchedulePageFlip());
   EXPECT_TRUE(controller_->get_surface() != NULL);
@@ -260,7 +263,8 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfModesetFails) {
       new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
-  EXPECT_FALSE(controller_->BindSurfaceToController(surface.Pass()));
+  EXPECT_FALSE(controller_->BindSurfaceToController(surface.Pass(),
+                                                    kDefaultMode));
   EXPECT_EQ(NULL, controller_->get_surface());
 }
 
@@ -271,7 +275,8 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfPageFlipFails) {
       new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
-  EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
+  EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass(),
+                                                   kDefaultMode));
   EXPECT_FALSE(controller_->SchedulePageFlip());
 }
 
@@ -280,7 +285,8 @@ TEST_F(HardwareDisplayControllerTest, CheckProperDestruction) {
       new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
-  EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
+  EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass(),
+                                                   kDefaultMode));
   EXPECT_TRUE(controller_->get_surface() != NULL);
 
   controller_.reset();

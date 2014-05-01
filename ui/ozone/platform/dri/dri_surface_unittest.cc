@@ -137,7 +137,7 @@ class DriSurfaceTest : public testing::Test {
 void DriSurfaceTest::SetUp() {
   drm_.reset(new MockDriWrapper());
   controller_.reset(new ui::HardwareDisplayController(
-      drm_.get(), kConnectorId, kCrtcId, kDefaultMode));
+      drm_.get(), kConnectorId, kCrtcId));
 
   surface_.reset(new MockDriSurface(drm_.get(),
                                     gfx::Size(kDefaultMode.hdisplay,
@@ -161,7 +161,8 @@ TEST_F(DriSurfaceTest, SuccessfulInitialization) {
 
 TEST_F(DriSurfaceTest, CheckFBIDOnSwap) {
   EXPECT_TRUE(surface_->Initialize());
-  controller_->BindSurfaceToController(surface_.PassAs<ui::DriSurface>());
+  controller_->BindSurfaceToController(surface_.PassAs<ui::DriSurface>(),
+                                       kDefaultMode);
 
   // Check that the framebuffer ID is correct.
   EXPECT_EQ(2u, controller_->get_surface()->GetFramebufferId());

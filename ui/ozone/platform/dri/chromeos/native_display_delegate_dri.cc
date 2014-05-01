@@ -61,7 +61,7 @@ void NativeDisplayDelegateDri::ForceDPMSOn() {
 }
 
 std::vector<DisplaySnapshot*> NativeDisplayDelegateDri::GetDisplays() {
-  cached_displays_.clear();
+  ScopedVector<DisplaySnapshotDri> old_displays(cached_displays_.Pass());
   cached_modes_.clear();
 
   drmModeRes* resources = drmModeGetResources(
@@ -87,6 +87,22 @@ std::vector<DisplaySnapshot*> NativeDisplayDelegateDri::GetDisplays() {
   }
 
   drmModeFreeResources(resources);
+
+  for (size_t i = 0; i < old_displays.size(); ++i) {
+    bool found = false;
+    for (size_t j = 0; j < cached_displays_.size(); ++j) {
+      if (old_displays[i]->connector() == cached_displays_[j]->connector() &&
+          old_displays[i]->crtc() == cached_displays_[j]->crtc()) {
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      surface_factory_->DestroyHardwareDisplayController(
+          old_displays[i]->connector(), old_displays[i]->crtc());
+    }
+  }
 
   std::vector<DisplaySnapshot*> generic_displays(cached_displays_.begin(),
                                                  cached_displays_.end());
@@ -167,8 +183,11 @@ void NativeDisplayDelegateDri::OnDeviceEvent(const DeviceEvent& event) {
   if (event.device_type() != DeviceEvent::DISPLAY)
     return;
 
-  if (event.action_type() == DeviceEvent::CHANGE)
-    NOTIMPLEMENTED();
+  if (event.action_type() == DeviceEvent::CHANGE) {
+    VLOG(1) << "Got display changed event";
+    FOR_EACH_OBSERVER(
+        NativeDisplayObserver, observers_, OnConfigurationChanged());
+  }
 }
 
 }  // namespace ui

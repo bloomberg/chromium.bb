@@ -105,4 +105,21 @@ GetAvailableDisplayControllerInfos(int fd, drmModeRes* resources) {
   return displays.Pass();
 }
 
+bool SameMode(const drmModeModeInfo& lhs, const drmModeModeInfo& rhs) {
+  return lhs.clock == rhs.clock &&
+         lhs.hdisplay == rhs.hdisplay &&
+         lhs.vdisplay == rhs.vdisplay &&
+         lhs.vrefresh == rhs.vrefresh &&
+         lhs.hsync_start == rhs.hsync_start &&
+         lhs.hsync_end == rhs.hsync_end &&
+         lhs.htotal == rhs.htotal &&
+         lhs.hskew == rhs.hskew &&
+         lhs.vsync_start == rhs.vsync_start &&
+         lhs.vsync_end == rhs.vsync_end &&
+         lhs.vtotal == rhs.vtotal &&
+         lhs.vscan == rhs.vscan &&
+         lhs.flags == rhs.flags &&
+         strcmp(lhs.name, rhs.name) == 0;
+}
+
 }  // namespace ui

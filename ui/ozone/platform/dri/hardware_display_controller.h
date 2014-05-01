@@ -84,13 +84,15 @@ class OZONE_EXPORT HardwareDisplayController {
  public:
   HardwareDisplayController(DriWrapper* drm,
                             uint32_t connector_id,
-                            uint32_t crtc_id,
-                            drmModeModeInfo mode);
+                            uint32_t crtc_id);
 
   ~HardwareDisplayController();
 
   // Associate the HDCO with a surface implementation and initialize it.
-  bool BindSurfaceToController(scoped_ptr<DriSurface> surface);
+  bool BindSurfaceToController(scoped_ptr<DriSurface> surface,
+                               drmModeModeInfo mode);
+
+  void UnbindSurfaceFromController();
 
   // Schedules the |surface_|'s framebuffer to be displayed on the next vsync
   // event. The event will be posted on the graphics card file descriptor |fd_|
@@ -131,7 +133,8 @@ class OZONE_EXPORT HardwareDisplayController {
   int get_fd() const { return drm_->get_fd(); };
 
   const drmModeModeInfo& get_mode() const { return mode_; };
-
+  uint32_t connector_id() const { return connector_id_; }
+  uint32_t crtc_id() const { return crtc_id_; }
   DriSurface* get_surface() const { return surface_.get(); };
 
   uint64_t get_time_of_last_flip() const {
@@ -139,6 +142,9 @@ class OZONE_EXPORT HardwareDisplayController {
   };
 
  private:
+  bool RegisterFramebuffers(DriSurface* surface, drmModeModeInfo mode);
+  void UnregisterFramebuffers(DriSurface* surface);
+
   // Object containing the connection to the graphics device and wraps the API
   // calls to control it.
   DriWrapper* drm_;

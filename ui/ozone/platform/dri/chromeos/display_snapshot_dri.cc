@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "ui/display/util/edid_parser.h"
 #include "ui/ozone/platform/dri/chromeos/display_mode_dri.h"
+#include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 
 namespace ui {
@@ -38,22 +39,6 @@ DisplayConnectionType GetDisplayType(drmModeConnector* connector) {
     default:
       return DISPLAY_CONNECTION_TYPE_UNKNOWN;
   }
-}
-
-bool SameMode(const drmModeModeInfo& lhs, const drmModeModeInfo& rhs) {
-  return lhs.clock == rhs.clock &&
-         lhs.hdisplay == rhs.vdisplay &&
-         lhs.vrefresh == rhs.vrefresh &&
-         lhs.hsync_start == rhs.hsync_start &&
-         lhs.hsync_end == rhs.hsync_end &&
-         lhs.htotal == rhs.htotal &&
-         lhs.hskew == rhs.hskew &&
-         lhs.vsync_start == rhs.vsync_start &&
-         lhs.vsync_end == rhs.vsync_end &&
-         lhs.vtotal == rhs.vtotal &&
-         lhs.vscan == rhs.vscan &&
-         lhs.flags == rhs.flags &&
-         strcmp(lhs.name, rhs.name) == 0;
 }
 
 bool IsAspectPreserving(DriWrapper* drm, drmModeConnector* connector) {

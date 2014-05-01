@@ -5,8 +5,9 @@
 #ifndef UI_OZONE_PLATFORM_DRI_DRI_SURFACE_FACTORY_H_
 #define UI_OZONE_PLATFORM_DRI_DRI_SURFACE_FACTORY_H_
 
+#include <map>
+
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
 #include "ui/ozone/ozone_export.h"
@@ -69,7 +70,15 @@ class OZONE_EXPORT DriSurfaceFactory : public gfx::SurfaceFactoryOzone {
                                        uint32_t crtc,
                                        const drmModeModeInfo& mode);
 
+  void DestroyHardwareDisplayController(uint32_t connector, uint32_t crtc);
+
   bool DisableHardwareDisplayController(uint32_t crtc);
+
+  bool IsWidgetValid(gfx::AcceleratedWidget w) const;
+
+  // Returns the controller in |controllers_| associated with |w|.
+  HardwareDisplayController* GetControllerForWidget(
+      gfx::AcceleratedWidget w);
 
   DriWrapper* drm() const { return drm_.get(); }
 
@@ -92,17 +101,16 @@ class OZONE_EXPORT DriSurfaceFactory : public gfx::SurfaceFactoryOzone {
   // Draw the last set cursor & update the cursor plane.
   void ResetCursor(gfx::AcceleratedWidget w);
 
-  // Returns the controller in |controllers_| associated with |w|.
-  HardwareDisplayController* GetControllerForWidget(
-      gfx::AcceleratedWidget w);
-
   scoped_ptr<DriWrapper> drm_;
 
   HardwareState state_;
 
+  typedef std::map<gfx::AcceleratedWidget, HardwareDisplayController*>
+      HardwareDisplayControllerMap;
   // Active outputs.
-  ScopedVector<HardwareDisplayController> controllers_;
+  HardwareDisplayControllerMap controllers_;
   int allocated_widgets_;
+  int last_added_widget_;
 
   scoped_ptr<DriSurface> cursor_surface_;
 
