@@ -33,7 +33,7 @@ class FakeVideoDecoderTest : public testing::Test {
   }
 
   void InitializeWithConfig(const VideoDecoderConfig& config) {
-    decoder_->Initialize(config, NewExpectedStatusCB(PIPELINE_OK));
+    decoder_->Initialize(config, false, NewExpectedStatusCB(PIPELINE_OK));
     message_loop_.RunUntilIdle();
     current_config_ = config;
   }

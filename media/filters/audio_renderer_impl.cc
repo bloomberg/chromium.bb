@@ -290,6 +290,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
 
   audio_buffer_stream_.Initialize(
       stream,
+      false,
       statistics_cb,
       base::Bind(&AudioRendererImpl::OnAudioBufferStreamInitialized,
                  weak_factory_.GetWeakPtr()));

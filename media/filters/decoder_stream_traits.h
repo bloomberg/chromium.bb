@@ -30,6 +30,10 @@ struct DecoderStreamTraits<DemuxerStream::AUDIO> {
   typedef base::Callback<void(bool success)> StreamInitCB;
 
   static std::string ToString();
+  static void Initialize(DecoderType* decoder,
+                         const DecoderConfigType& config,
+                         bool low_delay,
+                         const PipelineStatusCB& status_cb);
   static bool FinishInitialization(const StreamInitCB& init_cb,
                                    DecoderType* decoder,
                                    DemuxerStream* stream);
@@ -47,6 +51,10 @@ struct DecoderStreamTraits<DemuxerStream::VIDEO> {
   typedef base::Callback<void(bool success)> StreamInitCB;
 
   static std::string ToString();
+  static void Initialize(DecoderType* decoder,
+                         const DecoderConfigType& config,
+                         bool low_delay,
+                         const PipelineStatusCB& status_cb);
   static bool FinishInitialization(const StreamInitCB& init_cb,
                                    DecoderType* decoder,
                                    DemuxerStream* stream);

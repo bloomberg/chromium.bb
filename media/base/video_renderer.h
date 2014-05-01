@@ -44,6 +44,7 @@ class MEDIA_EXPORT VideoRenderer {
   //
   // |get_duration_cb| is used to query the media duration.
   virtual void Initialize(DemuxerStream* stream,
+                          bool low_delay,
                           const PipelineStatusCB& init_cb,
                           const StatisticsCB& statistics_cb,
                           const TimeCB& time_cb,

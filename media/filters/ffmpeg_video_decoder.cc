@@ -124,6 +124,7 @@ static void ReleaseVideoBufferImpl(AVCodecContext* s, AVFrame* frame) {
 }
 
 void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
+                                    bool low_delay,
                                     const PipelineStatusCB& status_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(decode_cb_.is_null());
@@ -134,7 +135,7 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
   config_ = config;
   PipelineStatusCB initialize_cb = BindToCurrentLoop(status_cb);
 
-  if (!config.IsValidConfig() || !ConfigureDecoder()) {
+  if (!config.IsValidConfig() || !ConfigureDecoder(low_delay)) {
     initialize_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
     return;
   }
@@ -332,7 +333,7 @@ void FFmpegVideoDecoder::ReleaseFFmpegResources() {
   av_frame_.reset();
 }
 
-bool FFmpegVideoDecoder::ConfigureDecoder() {
+bool FFmpegVideoDecoder::ConfigureDecoder(bool low_delay) {
   // Release existing decoder resources if necessary.
   ReleaseFFmpegResources();
 
@@ -344,6 +345,7 @@ bool FFmpegVideoDecoder::ConfigureDecoder() {
   // for damaged macroblocks, and set our error detection sensitivity.
   codec_context_->error_concealment = FF_EC_GUESS_MVS | FF_EC_DEBLOCK;
   codec_context_->thread_count = GetThreadCount(codec_context_->codec_id);
+  codec_context_->thread_type = low_delay ? FF_THREAD_SLICE : FF_THREAD_FRAME;
   codec_context_->opaque = this;
   codec_context_->flags |= CODEC_FLAG_EMU_EDGE;
   codec_context_->get_buffer = GetVideoBufferImpl;

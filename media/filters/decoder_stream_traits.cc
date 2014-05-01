@@ -16,6 +16,14 @@ std::string DecoderStreamTraits<DemuxerStream::AUDIO>::ToString() {
   return "Audio";
 }
 
+void DecoderStreamTraits<DemuxerStream::AUDIO>::Initialize(
+    DecoderType* decoder,
+    const DecoderConfigType& config,
+    bool low_delay,
+    const PipelineStatusCB& status_cb) {
+  decoder->Initialize(config, status_cb);
+}
+
 bool DecoderStreamTraits<DemuxerStream::AUDIO>::FinishInitialization(
     const StreamInitCB& init_cb,
     DecoderType* decoder,
@@ -45,6 +53,14 @@ DecoderStreamTraits<DemuxerStream::AUDIO>::DecoderConfigType
 
 std::string DecoderStreamTraits<DemuxerStream::VIDEO>::ToString() {
   return "Video";
+}
+
+void DecoderStreamTraits<DemuxerStream::VIDEO>::Initialize(
+    DecoderType* decoder,
+    const DecoderConfigType& config,
+    bool low_delay,
+    const PipelineStatusCB& status_cb) {
+  decoder->Initialize(config, low_delay, status_cb);
 }
 
 bool DecoderStreamTraits<DemuxerStream::VIDEO>::FinishInitialization(

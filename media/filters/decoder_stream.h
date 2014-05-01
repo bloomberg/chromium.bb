@@ -58,6 +58,7 @@ class MEDIA_EXPORT DecoderStream {
   // Initializes the DecoderStream and returns the initialization result
   // through |init_cb|. Note that |init_cb| is always called asynchronously.
   void Initialize(DemuxerStream* stream,
+                  bool low_delay,
                   const StatisticsCB& statistics_cb,
                   const InitCB& init_cb);
 
@@ -173,6 +174,7 @@ class MEDIA_EXPORT DecoderStream {
   base::Closure stop_cb_;
 
   DemuxerStream* stream_;
+  bool low_delay_;
 
   scoped_ptr<DecoderSelector<StreamType> > decoder_selector_;
 

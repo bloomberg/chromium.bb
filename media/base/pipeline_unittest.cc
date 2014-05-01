@@ -111,6 +111,9 @@ class PipelineTest : public ::testing::Test {
 
     EXPECT_CALL(*demuxer_, GetTimelineOffset())
         .WillRepeatedly(Return(base::Time()));
+
+    EXPECT_CALL(*demuxer_, GetLiveness())
+        .WillRepeatedly(Return(Demuxer::LIVENESS_UNKNOWN));
   }
 
   virtual ~PipelineTest() {
@@ -165,8 +168,8 @@ class PipelineTest : public ::testing::Test {
 
   // Sets up expectations to allow the video renderer to initialize.
   void InitializeVideoRenderer(DemuxerStream* stream) {
-    EXPECT_CALL(*video_renderer_, Initialize(stream, _, _, _, _, _, _, _))
-        .WillOnce(RunCallback<1>(PIPELINE_OK));
+    EXPECT_CALL(*video_renderer_, Initialize(stream, _, _, _, _, _, _, _, _))
+        .WillOnce(RunCallback<2>(PIPELINE_OK));
     EXPECT_CALL(*video_renderer_, SetPlaybackRate(0.0f));
 
     // Startup sequence.
@@ -1028,14 +1031,14 @@ class PipelineTeardownTest : public PipelineTest {
 
     if (state == kInitVideoRenderer) {
       if (stop_or_error == kStop) {
-        EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _))
+        EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _, _))
             .WillOnce(DoAll(Stop(pipeline_.get(), stop_cb),
-                            RunCallback<1>(PIPELINE_OK)));
+                            RunCallback<2>(PIPELINE_OK)));
         EXPECT_CALL(callbacks_, OnStop());
       } else {
         status = PIPELINE_ERROR_INITIALIZATION_FAILED;
-        EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _))
-            .WillOnce(RunCallback<1>(status));
+        EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _, _))
+            .WillOnce(RunCallback<2>(status));
       }
 
       EXPECT_CALL(*demuxer_, Stop(_)).WillOnce(RunClosure<0>());
@@ -1044,8 +1047,8 @@ class PipelineTeardownTest : public PipelineTest {
       return status;
     }
 
-    EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _))
-        .WillOnce(RunCallback<1>(PIPELINE_OK));
+    EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _, _))
+        .WillOnce(RunCallback<2>(PIPELINE_OK));
 
     EXPECT_CALL(callbacks_, OnMetadata(_));
 

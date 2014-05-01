@@ -43,6 +43,7 @@ class MEDIA_EXPORT VideoDecoder {
   // 3) No VideoDecoder calls except for Stop() should be made before
   //    |status_cb| is executed.
   virtual void Initialize(const VideoDecoderConfig& config,
+                          bool low_delay,
                           const PipelineStatusCB& status_cb) = 0;
 
   // Requests a |buffer| to be decoded. The status of the decoder and decoded

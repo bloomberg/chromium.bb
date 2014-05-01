@@ -35,6 +35,7 @@ class FakeVideoDecoder : public VideoDecoder {
 
   // VideoDecoder implementation.
   virtual void Initialize(const VideoDecoderConfig& config,
+                          bool low_delay,
                           const PipelineStatusCB& status_cb) OVERRIDE;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) OVERRIDE;

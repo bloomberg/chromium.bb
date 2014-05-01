@@ -76,7 +76,8 @@ class MockVideoDecoder : public VideoDecoder {
   virtual ~MockVideoDecoder();
 
   // VideoDecoder implementation.
-  MOCK_METHOD2(Initialize, void(const VideoDecoderConfig& config,
+  MOCK_METHOD3(Initialize, void(const VideoDecoderConfig& config,
+                                bool low_delay,
                                 const PipelineStatusCB&));
   MOCK_METHOD2(Decode, void(const scoped_refptr<DecoderBuffer>& buffer,
                             const DecodeCB&));
@@ -112,7 +113,8 @@ class MockVideoRenderer : public VideoRenderer {
   virtual ~MockVideoRenderer();
 
   // VideoRenderer implementation.
-  MOCK_METHOD8(Initialize, void(DemuxerStream* stream,
+  MOCK_METHOD9(Initialize, void(DemuxerStream* stream,
+                                bool low_delay,
                                 const PipelineStatusCB& init_cb,
                                 const StatisticsCB& statistics_cb,
                                 const TimeCB& time_cb,

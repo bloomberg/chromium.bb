@@ -902,6 +902,7 @@ void Pipeline::InitializeVideoRenderer(const PipelineStatusCB& done_cb) {
   video_renderer_ = filter_collection_->GetVideoRenderer();
   video_renderer_->Initialize(
       demuxer_->GetStream(DemuxerStream::VIDEO),
+      demuxer_->GetLiveness() == Demuxer::LIVENESS_LIVE,
       done_cb,
       base::Bind(&Pipeline::OnUpdateStatistics, base::Unretained(this)),
       base::Bind(&Pipeline::OnVideoTimeUpdate, base::Unretained(this)),

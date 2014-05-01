@@ -148,6 +148,7 @@ void VideoRendererImpl::Preroll(base::TimeDelta time,
 }
 
 void VideoRendererImpl::Initialize(DemuxerStream* stream,
+                                   bool low_delay,
                                    const PipelineStatusCB& init_cb,
                                    const StatisticsCB& statistics_cb,
                                    const TimeCB& max_time_cb,
@@ -178,6 +179,7 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
 
   video_frame_stream_.Initialize(
       stream,
+      low_delay,
       statistics_cb,
       base::Bind(&VideoRendererImpl::OnVideoFrameStreamInitialized,
                  weak_factory_.GetWeakPtr()));

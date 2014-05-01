@@ -68,7 +68,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
 
   void InitializeWithConfigAndStatus(const VideoDecoderConfig& config,
                                      PipelineStatus status) {
-    decoder_->Initialize(config, NewExpectedStatusCB(status));
+    decoder_->Initialize(config, false, NewExpectedStatusCB(status));
     message_loop_.RunUntilIdle();
   }
 

@@ -43,6 +43,7 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   // VideoDecoder implementation.
   virtual void Initialize(const VideoDecoderConfig& config,
+                          bool live_mode,
                           const PipelineStatusCB& status_cb) OVERRIDE;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) OVERRIDE;

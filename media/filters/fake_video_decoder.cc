@@ -29,6 +29,7 @@ FakeVideoDecoder::~FakeVideoDecoder() {
 }
 
 void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
+                                  bool low_delay,
                                   const PipelineStatusCB& status_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(config.IsValidConfig());

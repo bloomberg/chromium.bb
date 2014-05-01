@@ -60,6 +60,7 @@ DecoderStream<StreamType>::~DecoderStream() {
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::Initialize(DemuxerStream* stream,
+                                           bool low_delay,
                                            const StatisticsCB& statistics_cb,
                                            const InitCB& init_cb) {
   FUNCTION_DVLOG(2);
@@ -71,11 +72,12 @@ void DecoderStream<StreamType>::Initialize(DemuxerStream* stream,
   statistics_cb_ = statistics_cb;
   init_cb_ = init_cb;
   stream_ = stream;
+  low_delay_ = low_delay;
 
   state_ = STATE_INITIALIZING;
   // TODO(xhwang): DecoderSelector only needs a config to select a decoder.
   decoder_selector_->SelectDecoder(
-      stream,
+      stream, low_delay,
       base::Bind(&DecoderStream<StreamType>::OnDecoderSelected,
                  weak_factory_.GetWeakPtr()));
 }
@@ -429,8 +431,10 @@ void DecoderStream<StreamType>::ReinitializeDecoder() {
 
   DCHECK(StreamTraits::GetDecoderConfig(*stream_).IsValidConfig());
   state_ = STATE_REINITIALIZING_DECODER;
-  decoder_->Initialize(
+  DecoderStreamTraits<StreamType>::Initialize(
+      decoder_.get(),
       StreamTraits::GetDecoderConfig(*stream_),
+      low_delay_,
       base::Bind(&DecoderStream<StreamType>::OnDecoderReinitialized,
                  weak_factory_.GetWeakPtr()));
 }

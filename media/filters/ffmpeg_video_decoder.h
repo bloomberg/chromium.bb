@@ -33,6 +33,7 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
 
   // VideoDecoder implementation.
   virtual void Initialize(const VideoDecoderConfig& config,
+                          bool low_delay,
                           const PipelineStatusCB& status_cb) OVERRIDE;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) OVERRIDE;
@@ -60,7 +61,7 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
 
   // Handles (re-)initializing the decoder with a (new) config.
   // Returns true if initialization was successful.
-  bool ConfigureDecoder();
+  bool ConfigureDecoder(bool low_delay);
 
   // Releases resources associated with |codec_context_| and |av_frame_|
   // and resets them to NULL.

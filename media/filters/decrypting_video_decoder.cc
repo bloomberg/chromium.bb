@@ -31,6 +31,7 @@ DecryptingVideoDecoder::DecryptingVideoDecoder(
       weak_factory_(this) {}
 
 void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
+                                        bool live_mode,
                                         const PipelineStatusCB& status_cb) {
   DVLOG(2) << "Initialize()";
   DCHECK(task_runner_->BelongsToCurrentThread());

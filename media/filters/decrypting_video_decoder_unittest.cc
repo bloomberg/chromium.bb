@@ -86,7 +86,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
   // can succeed or fail.
   void InitializeAndExpectStatus(const VideoDecoderConfig& config,
                                  PipelineStatus status) {
-    decoder_->Initialize(config, NewExpectedStatusCB(status));
+    decoder_->Initialize(config, false, NewExpectedStatusCB(status));
     message_loop_.RunUntilIdle();
   }
 
@@ -407,7 +407,7 @@ TEST_F(DecryptingVideoDecoderTest, Stop_DuringDecryptorRequested) {
   DecryptorReadyCB decryptor_ready_cb;
   EXPECT_CALL(*this, RequestDecryptorNotification(_))
       .WillOnce(SaveArg<0>(&decryptor_ready_cb));
-  decoder_->Initialize(TestVideoConfig::NormalEncrypted(),
+  decoder_->Initialize(TestVideoConfig::NormalEncrypted(), false,
                        NewExpectedStatusCB(DECODER_ERROR_NOT_SUPPORTED));
   message_loop_.RunUntilIdle();
   // |decryptor_ready_cb| is saved but not called here.

@@ -142,6 +142,7 @@ static void ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB(
 }
 
 void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
+                                 bool live_mode,
                                  const PipelineStatusCB& orig_status_cb) {
   DVLOG(3) << "Initialize()";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
