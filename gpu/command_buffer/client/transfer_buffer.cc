@@ -6,6 +6,7 @@
 
 #include "gpu/command_buffer/client/transfer_buffer.h"
 
+#include "base/bits.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
@@ -109,36 +110,8 @@ void TransferBuffer::AllocateRingBuffer(unsigned int size) {
   usable_ = false;
 }
 
-// Returns the integer i such as 2^i <= n < 2^(i+1)
-static int Log2Floor(uint32 n) {
-  if (n == 0)
-    return -1;
-  int log = 0;
-  uint32 value = n;
-  for (int i = 4; i >= 0; --i) {
-    int shift = (1 << i);
-    uint32 x = value >> shift;
-    if (x != 0) {
-      value = x;
-      log += shift;
-    }
-  }
-  DCHECK_EQ(value, 1u);
-  return log;
-}
-
-// Returns the integer i such as 2^(i-1) < n <= 2^i
-static int Log2Ceiling(uint32 n) {
-  if (n == 0) {
-    return -1;
-  } else {
-    // Log2Floor returns -1 for 0, so the following works correctly for n=1.
-    return 1 + Log2Floor(n - 1);
-  }
-}
-
 static unsigned int ComputePOTSize(unsigned int dimension) {
-  return (dimension == 0) ? 0 : 1 << Log2Ceiling(dimension);
+  return (dimension == 0) ? 0 : 1 << base::bits::Log2Ceiling(dimension);
 }
 
 void TransferBuffer::ReallocateRingBuffer(unsigned int size) {
