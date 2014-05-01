@@ -1720,6 +1720,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "bayleybay-depthcharge-firmware": {
@@ -30161,6 +30162,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -30276,6 +30278,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "pfq_suite"
                 ]
@@ -30356,6 +30359,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -30478,6 +30482,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
