@@ -640,24 +640,24 @@ void AutofillAgent::QueryAutofillSuggestions(
   gfx::RectF bounding_box_scaled =
       GetScaledBoundingBox(web_view_->pageScaleFactor(), &element_);
 
+  std::vector<base::string16> data_list_values;
+  std::vector<base::string16> data_list_labels;
   const WebInputElement* input_element = toWebInputElement(&element);
   if (input_element) {
     // Find the datalist values and send them to the browser process.
-    std::vector<base::string16> data_list_values;
-    std::vector<base::string16> data_list_labels;
     GetDataListSuggestions(*input_element,
                            datalist_only,
                            &data_list_values,
                            &data_list_labels);
     TrimStringVectorForIPC(&data_list_values);
     TrimStringVectorForIPC(&data_list_labels);
-
-    Send(new AutofillHostMsg_SetDataList(routing_id(),
-                                         data_list_values,
-                                         data_list_labels));
   }
 
   is_popup_possibly_visible_ = true;
+  Send(new AutofillHostMsg_SetDataList(routing_id(),
+                                       data_list_values,
+                                       data_list_labels));
+
   Send(new AutofillHostMsg_QueryFormFieldAutofill(routing_id(),
                                                   autofill_query_id_,
                                                   form,
