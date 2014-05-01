@@ -10,10 +10,12 @@
 
 namespace WebCore {
 
-class ScreenOrientationController FINAL : public NoBaseWillBeGarbageCollectedFinalized<ScreenOrientationController>, public DocumentSupplement {
+class ScreenOrientationController FINAL : public NoBaseWillBeGarbageCollected<ScreenOrientationController>, public DocumentSupplement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationController);
 public:
+#if !ENABLE(OILPAN)
     virtual ~ScreenOrientationController();
+#endif
 
     void didChangeScreenOrientation(blink::WebScreenOrientationType);
 

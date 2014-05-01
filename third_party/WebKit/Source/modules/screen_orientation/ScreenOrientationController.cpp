@@ -13,10 +13,13 @@
 
 namespace WebCore {
 
+#if !ENABLE(OILPAN)
 ScreenOrientationController::~ScreenOrientationController()
 {
+    // With oilpan, weak processing removes the controller once it is dead.
     ScreenOrientationDispatcher::instance().removeController(this);
 }
+#endif
 
 ScreenOrientationController& ScreenOrientationController::from(Document& document)
 {

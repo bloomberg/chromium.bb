@@ -13,25 +13,37 @@ namespace WebCore {
 
 ScreenOrientationDispatcher& ScreenOrientationDispatcher::instance()
 {
+#if ENABLE(OILPAN)
+    DEFINE_STATIC_LOCAL(Persistent<ScreenOrientationDispatcher>, screenOrientationDispatcher, (new ScreenOrientationDispatcher()));
+    return *screenOrientationDispatcher;
+#else
     DEFINE_STATIC_LOCAL(ScreenOrientationDispatcher, screenOrientationDispatcher, ());
     return screenOrientationDispatcher;
+#endif
 }
 
 ScreenOrientationDispatcher::ScreenOrientationDispatcher()
+#if !ENABLE(OILPAN)
     : m_needsPurge(false)
     , m_isDispatching(false)
+#endif
 {
 }
 
 void ScreenOrientationDispatcher::addController(ScreenOrientationController* controller)
 {
     bool wasEmpty = m_controllers.isEmpty();
+#if ENABLE(OILPAN)
+    m_controllers.add(controller);
+#else
     if (!m_controllers.contains(controller))
         m_controllers.append(controller);
+#endif
     if (wasEmpty)
         startListening();
 }
 
+#if !ENABLE(OILPAN)
 void ScreenOrientationDispatcher::removeController(ScreenOrientationController* controller)
 {
     // Do not actually remove the controllers from the vector, instead zero them out.
@@ -70,9 +82,21 @@ void ScreenOrientationDispatcher::purgeControllers()
     if (m_controllers.isEmpty())
         stopListening();
 }
+#endif
 
 void ScreenOrientationDispatcher::didChangeScreenOrientation(blink::WebScreenOrientationType orientation)
 {
+#if ENABLE(OILPAN)
+    if (m_controllers.isEmpty()) {
+        stopListening();
+        return;
+    }
+    // The on-stack iterator will make m_controllers strong while iterating,
+    // therefore no controllers can be removed during iteration.
+    for (HeapHashSet<WeakMember<ScreenOrientationController> >::iterator it = m_controllers.begin(); it != m_controllers.end(); ++it) {
+        (*it)->didChangeScreenOrientation(orientation);
+    }
+#else
     {
         TemporaryChange<bool> changeIsDispatching(m_isDispatching, true);
         // Don't fire controllers removed or added during event dispatch.
@@ -86,6 +110,7 @@ void ScreenOrientationDispatcher::didChangeScreenOrientation(blink::WebScreenOri
     if (m_needsPurge)
         purgeControllers();
 }
+#endif
 
 void ScreenOrientationDispatcher::startListening()
 {
@@ -96,5 +121,13 @@ void ScreenOrientationDispatcher::stopListening()
 {
     blink::Platform::current()->setScreenOrientationListener(0);
 }
+
+#if ENABLE(OILPAN)
+void ScreenOrientationDispatcher::trace(Visitor* visitor)
+{
+    // Weak processing will remove controllers once they are dead.
+    visitor->trace(m_controllers);
+}
+#endif
 
 } // namespace WebCore
