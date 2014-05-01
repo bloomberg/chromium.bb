@@ -109,8 +109,8 @@ void ScreenOrientationDispatcher::didChangeScreenOrientation(blink::WebScreenOri
 
     if (m_needsPurge)
         purgeControllers();
-}
 #endif
+}
 
 void ScreenOrientationDispatcher::startListening()
 {
