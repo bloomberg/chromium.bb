@@ -299,7 +299,7 @@ crbug.com/248938 virtual/threaded/animations/cascade-important.html [ Pass Timeo
 crbug.com/248938 virtual/threaded/animations/change-keyframes.html [ Pass Failure Timeout ]
 crbug.com/248938 virtual/threaded/animations/change-keyframes-name.html [ Pass Failure Timeout ]
 crbug.com/248938 virtual/threaded/animations/change-one-anim.html [ Pass Failure ]
-crbug.com/248938 [ Win ] virtual/threaded/animations/change-transform-style-during-animation.html [ Pass Timeout ]
+# crbug.com/248938 [ Win ] virtual/threaded/animations/change-transform-style-during-animation.html [ Pass Timeout ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/combo-transform-rotate+scale.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/combo-transform-translate+scale.html [ Pass Failure ]
 crbug.com/248938 [ Debug ] virtual/threaded/animations/delay-start-event.html [ Pass Failure ]
@@ -990,3 +990,6 @@ crbug.com/361729 fast/multicol/pagination-h-horizontal-tb.html [ Pass Failure ]
 crbug.com/367903 web-animations-api/timeline-time.html [ Pass Failure ]
 
 crbug.com/367817 fast/frames/location-observe-callback-crash.html [ Pass Failure ]
+
+crbug.com/369330 virtual/threaded/animations/3d/replace-filling-transform.html [ Pass ImageOnlyFailure ]
+crbug.com/369330 virtual/threaded/animations/change-transform-style-during-animation.html [ Pass ImageOnlyFailure ]
