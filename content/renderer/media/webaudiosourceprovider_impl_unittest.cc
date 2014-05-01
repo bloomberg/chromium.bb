@@ -212,15 +212,27 @@ TEST_F(WebAudioSourceProviderImplTest, ProvideInput) {
   wasp_impl_->provideInput(audio_data, params_.frames_per_buffer());
   ASSERT_TRUE(CompareBusses(bus1.get(), bus2.get()));
 
+  // Ensure if a renderer properly fill silence for partial Render() calls by
+  // configuring the fake callback to return half the data.  After these calls
+  // bus1 is full of junk data, and bus2 is partially filled.
+  wasp_impl_->SetVolume(1);
+  fake_callback_.Render(bus1.get(), 0);
+  fake_callback_.reset();
+  fake_callback_.Render(bus2.get(), 0);
+  bus2->ZeroFramesPartial(bus2->frames() / 2,
+                          bus2->frames() - bus2->frames() / 2);
+  fake_callback_.reset();
+  fake_callback_.set_half_fill(true);
   wasp_impl_->Play();
 
-  // Play should return real audio data again...
+  // Play should return real audio data again, but the last half should be zero.
   wasp_impl_->provideInput(audio_data, params_.frames_per_buffer());
-  ASSERT_FALSE(CompareBusses(bus1.get(), bus2.get()));
+  ASSERT_TRUE(CompareBusses(bus1.get(), bus2.get()));
 
   // Stop() should return silence.
   wasp_impl_->Stop();
   bus1->channel(0)[0] = 1;
+  bus2->Zero();
   wasp_impl_->provideInput(audio_data, params_.frames_per_buffer());
   ASSERT_TRUE(CompareBusses(bus1.get(), bus2.get()));
 }
