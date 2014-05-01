@@ -30,6 +30,7 @@
         'inputs': [
           '../bindings/scripts/generate_event_interfaces.py',
           '../bindings/scripts/utilities.py',
+          '<(event_idl_files_list)',
           '<@(event_idl_files)',
         ],
         'outputs': [
