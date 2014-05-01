@@ -9,6 +9,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -223,7 +224,8 @@ public class CronetSampleActivity extends Activity {
     }
 
     public void startNetLog() {
-        mRequestContext.startNetLogToFile("/sdcard/cronet_sample_netlog.json");
+        mRequestContext.startNetLogToFile(
+                Environment.getExternalStorageDirectory().getPath() + "/cronet_sample_netlog.json");
     }
 
     public void stopNetLog() {
