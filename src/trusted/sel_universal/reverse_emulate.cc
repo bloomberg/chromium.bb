@@ -40,16 +40,12 @@ class ReverseEmulate : public nacl::ReverseInterface {
       const vector<nacl::string>& sel_ldr_argv);
   virtual ~ReverseEmulate();
 
-  // debugging, messaging
-  virtual void Log(nacl::string message);
-
   // Startup handshake
   virtual void StartupInitializationComplete();
 
   // Name service use.
   virtual bool OpenManifestEntry(nacl::string url_key,
                                  struct NaClFileInfo* info);
-  virtual bool CloseManifestEntry(int32_t desc);
   virtual void ReportCrash();
 
   // The low-order 8 bits of the |exit_status| should be reported to
@@ -242,10 +238,6 @@ ReverseEmulate::~ReverseEmulate() {
   NaClMutexDtor(&mu_);
 }
 
-void ReverseEmulate::Log(nacl::string message) {
-  NaClLog(1, "ReverseEmulate::Log (message=%s)\n", message.c_str());
-}
-
 void ReverseEmulate::StartupInitializationComplete() {
   NaClLog(1, "ReverseEmulate::StartupInitializationComplete ()\n");
 }
@@ -268,12 +260,6 @@ bool ReverseEmulate::OpenManifestEntry(nacl::string url_key,
   // mmaping can be enabled.
   info->desc = OPEN(pathname.c_str(), O_RDONLY);
   return info->desc >= 0;
-}
-
-bool ReverseEmulate::CloseManifestEntry(int32_t desc) {
-  NaClLog(1, "ReverseEmulate::CloseManifestEntry (desc=%d)\n", desc);
-  CLOSE(desc);
-  return true;
 }
 
 void ReverseEmulate::ReportCrash() {

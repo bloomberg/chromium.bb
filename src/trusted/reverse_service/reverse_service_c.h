@@ -195,10 +195,6 @@ int NaClReverseInterfaceCtor_protected(
 
 void NaClReverseInterfaceDtor(struct NaClRefCount *vself);
 
-void NaClReverseInterfaceLog(
-    struct NaClReverseInterface   *self,
-    char const                    *message);
-
 void NaClReverseInterfaceStartupInitializationComplete(
     struct NaClReverseInterface   *self);
 
@@ -206,10 +202,6 @@ int NaClReverseInterfaceOpenManifestEntry(
     struct NaClReverseInterface   *self,
     char const                    *url_key,
     struct NaClFileInfo           *info);
-
-int NaClReverseInterfaceCloseManifestEntry(
-    struct NaClReverseInterface   *self,
-    int32_t                       desc);
 
 void NaClReverseInterfaceReportCrash(
     struct NaClReverseInterface   *self);
