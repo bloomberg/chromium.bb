@@ -29,9 +29,15 @@ function Gallery(volumeManager) {
   this.context_ = {
     appWindow: chrome.app.window.current(),
     onBack: function() {},
-    onClose: function() {},
-    onMaximize: function() {},
-    onMinimize: function() {},
+    onClose: function() { close(); },
+    onMaximize: function() {
+      var appWindow = chrome.app.window.current();
+      if (appWindow.isMaximized())
+        appWindow.restore();
+      else
+        appWindow.maximize();
+    },
+    onMinimize: function() { chrome.app.window.current().minimize(); },
     onAppRegionChanged: function() {},
     metadataCache: MetadataCache.createFull(volumeManager),
     shareActions: [],

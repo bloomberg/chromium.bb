@@ -178,12 +178,17 @@ body {
 }
 
 .gallery > .header {
+  -webkit-app-region: drag;
   -webkit-box-align: center;
   -webkit-box-pack: end;
   border-bottom: 1px solid rgba(50, 50, 50, 0.8);
   display: -webkit-box;
   height: 45px;
   top: 0;
+}
+
+.gallery .header button {
+  -webkit-app-region: no-drag;
 }
 
 .gallery > .toolbar {
