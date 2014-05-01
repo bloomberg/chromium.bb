@@ -79,9 +79,8 @@ AvatarImageSource::AvatarImageSource(gfx::ImageSkia avatar,
                                      AvatarBorder border)
     : gfx::CanvasImageSource(canvas_size, false),
       canvas_size_(canvas_size),
-      width_(width - profiles::kAvatarIconPadding),
-      height_(GetScaledAvatarHeightForWidth(width, avatar) -
-          profiles::kAvatarIconPadding),
+      width_(width),
+      height_(GetScaledAvatarHeightForWidth(width, avatar)),
       position_(position),
       border_(border) {
   avatar_ = gfx::ImageSkiaOperations::CreateResizedImage(
@@ -186,7 +185,6 @@ struct IconResourceInfo {
 
 const int kAvatarIconWidth = 38;
 const int kAvatarIconHeight = 38;
-const int kAvatarIconPadding = 2;
 const SkColor kAvatarTutorialBackgroundColor = SkColorSetRGB(0x42, 0x85, 0xf4);
 const SkColor kAvatarTutorialContentTextColor = SkColorSetRGB(0xc6, 0xda, 0xfc);
 const SkColor kAvatarBubbleAccountsBackgroundColor =

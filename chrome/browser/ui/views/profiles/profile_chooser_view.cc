@@ -152,11 +152,17 @@ class EditableProfilePhoto : public views::ImageView {
       : views::ImageView(),
         change_photo_button_(NULL) {
     gfx::Image image = profiles::GetSizedAvatarIcon(
-        icon, true,
-        kLargeImageSide + profiles::kAvatarIconPadding,
-        kLargeImageSide + profiles::kAvatarIconPadding);
+        icon, true, kLargeImageSide, kLargeImageSide);
     SetImage(image.ToImageSkia());
     SetBoundsRect(bounds);
+
+    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+    views::ImageView* frame_overlay = new views::ImageView();
+    frame_overlay->SetImage(rb->GetImageNamed(
+        IDR_ICON_PROFILES_AVATAR_PHOTO_FRAME).ToImageSkia());
+    frame_overlay->SetVerticalAlignment(views::ImageView::CENTER);
+    frame_overlay->SetBoundsRect(bounds);
+    AddChildView(frame_overlay);
 
     if (!is_editing_allowed)
       return;
@@ -164,24 +170,17 @@ class EditableProfilePhoto : public views::ImageView {
     set_notify_enter_exit_on_child(true);
 
     // Button overlay that appears when hovering over the image.
-    change_photo_button_ = new views::LabelButton(listener,
-        l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_CHANGE_PHOTO_BUTTON));
+    change_photo_button_ = new views::LabelButton(listener, base::string16());
     change_photo_button_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     change_photo_button_->SetBorder(views::Border::NullBorder());
-    const SkColor color = SK_ColorWHITE;
-    change_photo_button_->SetTextColor(views::Button::STATE_NORMAL, color);
-    change_photo_button_->SetTextColor(views::Button::STATE_HOVERED, color);
 
-    const SkColor kBackgroundColor = SkColorSetARGB(125, 0, 0, 0);
+    const SkColor kBackgroundColor = SkColorSetARGB(65, 255, 255, 255);
     change_photo_button_->set_background(
         views::Background::CreateSolidBackground(kBackgroundColor));
-    // Need to take into account the border padding on the avatar.
-    const int kOverlayHeight = 20;
-    change_photo_button_->SetBounds(
-        bounds.origin().x(),
-        bounds.origin().y() + kLargeImageSide - kOverlayHeight,
-        kLargeImageSide,
-        kOverlayHeight);
+    change_photo_button_->SetImage(views::LabelButton::STATE_NORMAL,
+        *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_EDIT_CAMERA));
+
+    change_photo_button_->SetBoundsRect(bounds);
     change_photo_button_->SetVisible(false);
     AddChildView(change_photo_button_);
   }
@@ -335,9 +334,8 @@ class TitleCard : public views::View {
   }
 
   virtual gfx::Size GetPreferredSize() OVERRIDE{
-    int height = profiles::kAvatarIconPadding * 2 +
-        std::max(title_label_->GetPreferredSize().height(),
-                 back_button_->GetPreferredSize().height());
+    int height = std::max(title_label_->GetPreferredSize().height(),
+        back_button_->GetPreferredSize().height());
     return gfx::Size(width(), height);
   }
 
@@ -394,10 +392,6 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
   set_margins(gfx::Insets());
 
   ResetView();
-
-  set_background(views::Background::CreateSolidBackground(
-      GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_DialogBackground)));
 
   avatar_menu_.reset(new AvatarMenu(
       &g_browser_process->profile_manager()->GetProfileInfoCache(),
@@ -509,6 +503,10 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
       layout = CreateSingleColumnLayout(this, kFixedMenuWidth);
       sub_view = CreateProfileChooserView(avatar_menu, last_tutorial_mode);
   }
+  sub_view->set_background(views::Background::CreateSolidBackground(
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_DialogBackground)));
+
   layout->StartRow(1, 0);
   layout->AddView(sub_view);
   Layout();
@@ -572,7 +570,12 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
              sender == current_profile_photo_->change_photo_button()) {
     avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
   } else if (sender == signin_current_profile_link_) {
-    ShowView(BUBBLE_VIEW_MODE_GAIA_SIGNIN, avatar_menu_.get());
+    // Only show the inline signin if the new UI flag is flipped. Otherwise,
+    // use the tab signin page.
+    if (switches::IsNewProfileManagement())
+      ShowView(BUBBLE_VIEW_MODE_GAIA_SIGNIN, avatar_menu_.get());
+    else
+      chrome::ShowBrowserSignin(browser_, signin::SOURCE_MENU);
   } else {
     // Either one of the "other profiles", or one of the profile accounts
     // buttons was pressed.
@@ -886,7 +889,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
   views::GridLayout* layout = CreateSingleColumnLayout(view, column_width);
   layout->SetInsets(views::kButtonVEdgeMarginNew,
                     views::kButtonHEdgeMarginNew,
-                    views::kRelatedControlVerticalSpacing,
+                    views::kUnrelatedControlVerticalSpacing,
                     views::kButtonHEdgeMarginNew);
 
   // Profile icon, centered.
@@ -971,9 +974,7 @@ views::View* ProfileChooserView::CreateOtherProfilesView(
     const int kSmallImageSide = 32;
 
     gfx::Image image = profiles::GetSizedAvatarIcon(
-        item.icon, true,
-        kSmallImageSide + profiles::kAvatarIconPadding,
-        kSmallImageSide + profiles::kAvatarIconPadding);
+        item.icon, true, kSmallImageSide, kSmallImageSide);
 
     views::LabelButton* button = new BackgroundColorHoverButton(
         this,

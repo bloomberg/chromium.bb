@@ -26,7 +26,6 @@ extern const char kHighResAvatarFolderName[];
 // Avatar formatting.
 extern const int kAvatarIconWidth;
 extern const int kAvatarIconHeight;
-extern const int kAvatarIconPadding;
 extern const SkColor kAvatarTutorialBackgroundColor;
 extern const SkColor kAvatarTutorialContentTextColor;
 extern const SkColor kAvatarBubbleAccountsBackgroundColor;

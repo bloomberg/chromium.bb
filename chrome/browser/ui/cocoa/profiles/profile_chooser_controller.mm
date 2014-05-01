@@ -75,7 +75,6 @@ const CGFloat kHorizontalSpacing = 16.0;
 const CGFloat kTitleFontSize = 15.0;
 const CGFloat kTextFontSize = 12.0;
 const CGFloat kProfileButtonHeight = 30;
-const int kOverlayHeight = 20;  // Height of the "Change" avatar photo overlay.
 const int kBezelThickness = 3;  // Width of the bezel on an NSButton.
 const int kImageTitleSpacing = 10;
 const int kBlueButtonHeight = 30;
@@ -95,9 +94,7 @@ const int kPrimaryProfileTag = -1;
 
 gfx::Image CreateProfileImage(const gfx::Image& icon, int imageSize) {
   return profiles::GetSizedAvatarIcon(
-      icon, true /* image is a square */,
-      imageSize + profiles::kAvatarIconPadding,
-      imageSize + profiles::kAvatarIconPadding);
+      icon, true /* image is a square */, imageSize, imageSize);
 }
 
 // Updates the window size and position.
@@ -348,7 +345,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
-  NSColor* backgroundColor = [NSColor colorWithCalibratedWhite:0 alpha:0.5f];
+  NSColor* backgroundColor = [NSColor colorWithCalibratedWhite:1 alpha:0.4f];
   [backgroundColor setFill];
   NSRectFillUsingOperation(dirtyRect, NSCompositeSourceAtop);
   [super drawRect:dirtyRect];
@@ -402,18 +399,22 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
             userInfo:nil]);
     [self addTrackingArea:trackingArea_.get()];
 
+    NSRect bounds = NSMakeRect(0, 0, kLargeImageSide, kLargeImageSide);
     if (editingAllowed) {
-      // The avatar photo uses a frame of width profiles::kAvatarIconPadding,
-      // which we must subtract from the button's bounds.
-      changePhotoButton_.reset([self changePhotoButtonWithRect:NSMakeRect(
-          profiles::kAvatarIconPadding, profiles::kAvatarIconPadding,
-          kLargeImageSide - 2 * profiles::kAvatarIconPadding,
-          kOverlayHeight)]);
+      changePhotoButton_.reset([self changePhotoButtonWithRect:bounds]);
       [self addSubview:changePhotoButton_];
 
       // Hide the button until the image is hovered over.
       [changePhotoButton_ setHidden:YES];
     }
+
+    // Add the frame overlay last, so that both the photo and the button
+    // look like circles.
+    base::scoped_nsobject<NSImageView> frameOverlay(
+        [[NSImageView alloc] initWithFrame:bounds]);
+    [frameOverlay setImage:ui::ResourceBundle::GetSharedInstance().
+        GetNativeImageNamed(IDR_ICON_PROFILES_AVATAR_PHOTO_FRAME).AsNSImage()];
+    [self addSubview:frameOverlay];
   }
   return self;
 }
@@ -433,21 +434,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (TransparentBackgroundButton*)changePhotoButtonWithRect:(NSRect)rect {
   TransparentBackgroundButton* button =
       [[TransparentBackgroundButton alloc] initWithFrame:rect];
-
-  // The button has a centered white text and a transparent background.
-  base::scoped_nsobject<NSMutableParagraphStyle> textStyle(
-      [[NSMutableParagraphStyle alloc] init]);
-  [textStyle setAlignment:NSCenterTextAlignment];
-  NSDictionary* titleAttributes = @{
-      NSParagraphStyleAttributeName : textStyle,
-      NSForegroundColorAttributeName : [NSColor whiteColor]
-  };
-  NSString* buttonTitle = l10n_util::GetNSString(
-      IDS_PROFILES_PROFILE_CHANGE_PHOTO_BUTTON);
-  base::scoped_nsobject<NSAttributedString> attributedTitle(
-      [[NSAttributedString alloc] initWithString:buttonTitle
-                                      attributes:titleAttributes]);
-  [button setAttributedTitle:attributedTitle];
+  [button setImage:ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_ICON_PROFILES_EDIT_CAMERA).AsNSImage()];
+  [button setImagePosition:NSImageOnly];
   [button setTarget:self];
   [button setAction:@selector(editPhoto:)];
   return button;
