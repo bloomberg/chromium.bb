@@ -6,7 +6,7 @@
 #define CONTENT_TEST_TEST_MEDIA_STREAM_CLIENT_H_
 
 #include "base/callback_forward.h"
-#include "content/public/renderer/render_frame_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/media/media_stream_client.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
@@ -14,10 +14,10 @@ namespace content {
 
 // TestMediaStreamClient is a mock implementation of MediaStreamClient used when
 // running layout tests.
-class TestMediaStreamClient : public RenderFrameObserver,
+class TestMediaStreamClient : public RenderViewObserver,
                               public MediaStreamClient {
  public:
-  explicit TestMediaStreamClient(RenderFrame* render_frame);
+  explicit TestMediaStreamClient(RenderView* render_view);
   virtual ~TestMediaStreamClient();
 
   // MediaStreamClient implementation.

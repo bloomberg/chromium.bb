@@ -17,7 +17,6 @@
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/renderer/media/webmediaplayer_delegate.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
@@ -36,9 +35,9 @@ class WebInputEvent;
 class WebMouseEvent;
 class WebContentDecryptionModule;
 class WebMIDIClient;
-class WebMediaPlayer;
 class WebNotificationPresenter;
 class WebSecurityOrigin;
+class WebUserMediaClient;
 struct WebCompositionUnderline;
 struct WebContextMenuData;
 struct WebCursorInfo;
@@ -53,7 +52,6 @@ class Rect;
 namespace content {
 
 class ChildFrameCompositingHelper;
-class MediaStreamClient;
 class NotificationProvider;
 class PepperPluginInstanceImpl;
 class RendererPpapiHost;
@@ -65,8 +63,7 @@ struct CustomContextMenuContext;
 
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
-      NON_EXPORTED_BASE(public blink::WebFrameClient),
-      NON_EXPORTED_BASE(public WebMediaPlayerDelegate) {
+      NON_EXPORTED_BASE(public blink::WebFrameClient) {
  public:
   // Creates a new RenderFrame. |render_view| is the RenderView object that this
   // frame belongs to.
@@ -178,10 +175,6 @@ class CONTENT_EXPORT RenderFrameImpl
     bool keep_selection);
 #endif  // ENABLE_PLUGINS
 
-  // Overrides the MediaStreamClient used when creating MediaStream players.
-  // Must be called before any players are created.
-  void SetMediaStreamClientForTesting(MediaStreamClient* media_stream_client);
-
   // IPC::Sender
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
@@ -206,7 +199,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                  blink::WebNavigationPolicy policy) OVERRIDE;
   virtual void ExecuteJavaScript(const base::string16& javascript) OVERRIDE;
 
-  // blink::WebFrameClient implementation:
+  // blink::WebFrameClient implementation -------------------------------------
   virtual blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
                                          const blink::WebPluginParams& params);
   virtual blink::WebMediaPlayer* createMediaPlayer(
@@ -370,11 +363,6 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void initializeChildFrame(const blink::WebRect& frame_rect,
                                     float scale_factor);
 
-  // WebMediaPlayerDelegate implementation:
-  virtual void DidPlay(blink::WebMediaPlayer* player) OVERRIDE;
-  virtual void DidPause(blink::WebMediaPlayer* player) OVERRIDE;
-  virtual void PlayerGone(blink::WebMediaPlayer* player) OVERRIDE;
-
   // TODO(nasko): Make all tests in RenderViewImplTest friends and then move
   // this back to private member.
   void OnNavigate(const FrameMsg_Navigate_Params& params);
@@ -485,21 +473,6 @@ class CONTENT_EXPORT RenderFrameImpl
                                const blink::WebURLError& error,
                                bool replace);
 
-  // Initializes |media_stream_client_|, returning true if successful. Returns
-  // false if it wasn't possible to create a MediaStreamClient (e.g., WebRTC is
-  // disabled) in which case |media_stream_client_| is NULL.
-  bool InitializeMediaStreamClient();
-
-  blink::WebMediaPlayer* CreateWebMediaPlayerForMediaStream(
-      const blink::WebURL& url,
-      blink::WebMediaPlayerClient* client);
-
-#if defined(OS_ANDROID)
- blink::WebMediaPlayer* CreateAndroidWebMediaPlayer(
-      const blink::WebURL& url,
-      blink::WebMediaPlayerClient* client);
-#endif
-
   // Stores the WebLocalFrame we are associated with.
   blink::WebLocalFrame* frame_;
 
@@ -558,12 +531,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Holds a reference to the service which provides desktop notifications.
   NotificationProvider* notification_provider_;
-
-  // MediaStreamClient attached to this frame; lazily initialized.
-  MediaStreamClient* media_stream_client_;
-  blink::WebUserMediaClient* web_user_media_client_;
-
-  base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameImpl);
 };

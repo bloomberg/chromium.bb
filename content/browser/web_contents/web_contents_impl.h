@@ -835,8 +835,8 @@ class CONTENT_EXPORT WebContentsImpl
   // Removes browser plugin embedder if there is one.
   void RemoveBrowserPluginEmbedder();
 
-  // Clear |render_frame_host|'s PowerSaveBlockers.
-  void ClearPowerSaveBlockers(RenderFrameHost* render_frame_host);
+  // Clear |render_view_host|'s PowerSaveBlockers.
+  void ClearPowerSaveBlockers(RenderViewHost* render_view_host);
 
   // Clear all PowerSaveBlockers, leave power_save_blocker_ empty.
   void ClearAllPowerSaveBlockers();
@@ -906,10 +906,10 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Helper classes ------------------------------------------------------------
 
-  // Maps the RenderFrameHost to its media_player_cookie and PowerSaveBlocker
-  // pairs. Key is the RenderFrameHost, value is the map which maps
-  // player_cookie on to PowerSaveBlocker.
-  typedef std::map<RenderFrameHost*, std::map<int64, PowerSaveBlocker*> >
+  // Maps the RenderViewHost to its media_player_cookie and PowerSaveBlocker
+  // pairs. Key is the RenderViewHost, value is the map which maps player_cookie
+  // on to PowerSaveBlocker.
+  typedef std::map<RenderViewHost*, std::map<int64, PowerSaveBlocker*> >
       PowerSaveBlockerMap;
   PowerSaveBlockerMap power_save_blockers_;
 

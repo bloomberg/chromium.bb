@@ -212,7 +212,9 @@ WebKitTestRunner::WebKitTestRunner(RenderView* render_view)
       focused_view_(NULL),
       is_main_window_(false),
       focus_on_next_commit_(false),
-      leak_detector_(new LeakDetector(this)) {
+      leak_detector_(new LeakDetector(this))
+{
+  UseMockMediaStreams(render_view);
 }
 
 WebKitTestRunner::~WebKitTestRunner() {

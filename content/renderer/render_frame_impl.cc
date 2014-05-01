@@ -56,14 +56,7 @@
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/java/java_bridge_dispatcher.h"
-#include "content/renderer/media/audio_renderer_mixer_manager.h"
-#include "content/renderer/media/media_stream_dispatcher.h"
-#include "content/renderer/media/media_stream_impl.h"
-#include "content/renderer/media/render_media_log.h"
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
-#include "content/renderer/media/webmediaplayer_impl.h"
-#include "content/renderer/media/webmediaplayer_ms.h"
-#include "content/renderer/media/webmediaplayer_params.h"
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
 #include "content/renderer/render_process.h"
@@ -75,7 +68,6 @@
 #include "content/renderer/shared_worker_repository.h"
 #include "content/renderer/v8_value_converter_impl.h"
 #include "content/renderer/websharedworker_proxy.h"
-#include "media/base/audio_renderer_mixer_input.h"
 #include "net/base/data_url.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -114,15 +106,6 @@
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include <cpu-features.h>
-
-#include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "content/renderer/android/synchronous_compositor_factory.h"
-#include "content/renderer/media/android/stream_texture_factory_impl.h"
-#include "content/renderer/media/android/webmediaplayer_android.h"
-#endif
-
 using blink::WebContextMenuData;
 using blink::WebData;
 using blink::WebDataSource;
@@ -132,8 +115,6 @@ using blink::WebFrame;
 using blink::WebHistoryItem;
 using blink::WebHTTPBody;
 using blink::WebLocalFrame;
-using blink::WebMediaPlayer;
-using blink::WebMediaPlayerClient;
 using blink::WebNavigationPolicy;
 using blink::WebNavigationType;
 using blink::WebNode;
@@ -360,10 +341,7 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       selection_text_offset_(0),
       selection_range_(gfx::Range::InvalidRange()),
       handling_select_range_(false),
-      notification_provider_(NULL),
-      media_stream_client_(NULL),
-      web_user_media_client_(NULL),
-      weak_factory_(this) {
+      notification_provider_(NULL) {
   RenderThread::Get()->AddRoute(routing_id_, this);
 
 #if defined(OS_ANDROID)
@@ -588,13 +566,6 @@ void RenderFrameImpl::OnImeConfirmComposition(
 }
 
 #endif  // ENABLE_PLUGINS
-
-void RenderFrameImpl::SetMediaStreamClientForTesting(
-    MediaStreamClient* media_stream_client) {
-  DCHECK(!media_stream_client_);
-  DCHECK(!web_user_media_client_);
-  media_stream_client_ = media_stream_client;
-}
 
 bool RenderFrameImpl::Send(IPC::Message* message) {
   if (is_detaching_ ||
@@ -1315,22 +1286,11 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
     blink::WebLocalFrame* frame,
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client) {
-  WebMediaPlayer* player = CreateWebMediaPlayerForMediaStream(url, client);
-  if (player)
-    return player;
-
-#if defined(OS_ANDROID)
-  return CreateAndroidWebMediaPlayer(url, client);
-#else
-  WebMediaPlayerParams params(
-      base::Bind(&ContentRendererClient::DeferMediaLoad,
-                 base::Unretained(GetContentClient()->renderer()),
-                 static_cast<RenderFrame*>(this)),
-      RenderThreadImpl::current()->GetAudioRendererMixerManager()->CreateInput(
-          render_view_->routing_id_, routing_id_));
-  return new WebMediaPlayerImpl(frame, client, weak_factory_.GetWeakPtr(),
-                                params);
-#endif  // defined(OS_ANDROID)
+  DCHECK(!frame_ || frame_ == frame);
+  // TODO(nasko): Moving the implementation here involves moving a few media
+  // related client objects here or referencing them in the RenderView. Needs
+  // more work to understand where the proper place for those objects is.
+  return render_view_->CreateMediaPlayer(this, frame, url, client);
 }
 
 blink::WebContentDecryptionModule*
@@ -2648,11 +2608,7 @@ void RenderFrameImpl::willStartUsingPeerConnectionHandler(
 }
 
 blink::WebUserMediaClient* RenderFrameImpl::userMediaClient() {
-  // This can happen in tests, in which case it's OK to return NULL.
-  if (!InitializeMediaStreamClient())
-    return NULL;
-
-  return web_user_media_client_;
+  return render_view_->userMediaClient();
 }
 
 blink::WebMIDIClient* RenderFrameImpl::webMIDIClient() {
@@ -2735,21 +2691,6 @@ void RenderFrameImpl::initializeChildFrame(const blink::WebRect& frame_rect,
                                            float scale_factor) {
   Send(new FrameHostMsg_InitializeChildFrame(
       routing_id_, frame_rect, scale_factor));
-}
-
-void RenderFrameImpl::DidPlay(blink::WebMediaPlayer* player) {
-  Send(new FrameHostMsg_MediaPlayingNotification(
-      routing_id_, reinterpret_cast<int64>(player), player->hasVideo(),
-      player->hasAudio()));
-}
-
-void RenderFrameImpl::DidPause(blink::WebMediaPlayer* player) {
-  Send(new FrameHostMsg_MediaPausedNotification(
-      routing_id_, reinterpret_cast<int64>(player)));
-}
-
-void RenderFrameImpl::PlayerGone(blink::WebMediaPlayer* player) {
-  DidPause(player);
 }
 
 void RenderFrameImpl::AddObserver(RenderFrameObserver* observer) {
@@ -3283,100 +3224,5 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
   }
   GetRenderWidget()->UpdateSelectionBounds();
 }
-
-bool RenderFrameImpl::InitializeMediaStreamClient() {
-  if (media_stream_client_)
-    return true;
-
-  if (!RenderThreadImpl::current())  // Will be NULL during unit tests.
-    return false;
-
-#if defined(OS_ANDROID)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableWebRTC))
-    return false;
-#endif
-
-#if defined(ENABLE_WEBRTC)
-  if (!render_view_->media_stream_dispatcher_) {
-    render_view_->media_stream_dispatcher_ =
-        new MediaStreamDispatcher(render_view_.get());
-  }
-
-  MediaStreamImpl* media_stream_impl = new MediaStreamImpl(
-      render_view_.get(),
-      render_view_->media_stream_dispatcher_,
-      RenderThreadImpl::current()->GetMediaStreamDependencyFactory());
-  media_stream_client_ = media_stream_impl;
-  web_user_media_client_ = media_stream_impl;
-  return true;
-#else
-  return false;
-#endif
-}
-
-WebMediaPlayer* RenderFrameImpl::CreateWebMediaPlayerForMediaStream(
-    const blink::WebURL& url,
-    WebMediaPlayerClient* client) {
-#if defined(ENABLE_WEBRTC)
-  if (!InitializeMediaStreamClient()) {
-    LOG(ERROR) << "Failed to initialize MediaStreamClient";
-    return NULL;
-  }
-  if (media_stream_client_->IsMediaStream(url)) {
-#if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
-    bool found_neon =
-        (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
-    UMA_HISTOGRAM_BOOLEAN("Platform.WebRtcNEONFound", found_neon);
-#endif  // defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
-    return new WebMediaPlayerMS(frame_, client, weak_factory_.GetWeakPtr(),
-                                media_stream_client_, new RenderMediaLog());
-  }
-#endif  // defined(ENABLE_WEBRTC)
-  return NULL;
-}
-
-#if defined(OS_ANDROID)
-
-WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
-      const blink::WebURL& url,
-      WebMediaPlayerClient* client) {
-  GpuChannelHost* gpu_channel_host =
-      RenderThreadImpl::current()->EstablishGpuChannelSync(
-          CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
-  if (!gpu_channel_host) {
-    LOG(ERROR) << "Failed to establish GPU channel for media player";
-    return NULL;
-  }
-
-  scoped_refptr<StreamTextureFactory> stream_texture_factory;
-  if (GetRenderWidget()->UsingSynchronousRendererCompositor()) {
-    SynchronousCompositorFactory* factory =
-        SynchronousCompositorFactory::GetInstance();
-    stream_texture_factory = factory->CreateStreamTextureFactory(
-        render_view_->routing_id_);
-  } else {
-    scoped_refptr<webkit::gpu::ContextProviderWebContext> context_provider =
-        RenderThreadImpl::current()->SharedMainThreadContextProvider();
-
-    if (!context_provider.get()) {
-      LOG(ERROR) << "Failed to get context3d for media player";
-      return NULL;
-    }
-
-    stream_texture_factory = StreamTextureFactoryImpl::Create(
-        context_provider, gpu_channel_host, render_view_->routing_id_);
-  }
-
-  return new WebMediaPlayerAndroid(
-      frame_,
-      client,
-      weak_factory_.GetWeakPtr(),
-      render_view_->media_player_manager_,
-      stream_texture_factory,
-      RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
-      new RenderMediaLog());
-}
-
-#endif
 
 }  // namespace content
