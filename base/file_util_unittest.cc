@@ -2012,7 +2012,12 @@ TEST_F(FileUtilTest, ReadFileToString) {
 
   FilePath file_path =
       temp_dir_.path().Append(FILE_PATH_LITERAL("ReadFileToStringTest"));
+  FilePath file_path_dangerous =
+      temp_dir_.path().Append(FILE_PATH_LITERAL("..")).
+      Append(temp_dir_.path().BaseName()).
+      Append(FILE_PATH_LITERAL("ReadFileToStringTest"));
 
+  // Create test file.
   ASSERT_EQ(4, WriteFile(file_path, kTestData, 4));
 
   EXPECT_TRUE(ReadFileToString(file_path, &data));
@@ -2020,7 +2025,7 @@ TEST_F(FileUtilTest, ReadFileToString) {
 
   data = "temp";
   EXPECT_FALSE(ReadFileToString(file_path, &data, 0));
-  EXPECT_EQ(data.length(), 0u);
+  EXPECT_EQ(0u, data.length());
 
   data = "temp";
   EXPECT_FALSE(ReadFileToString(file_path, &data, 2));
@@ -2042,15 +2047,20 @@ TEST_F(FileUtilTest, ReadFileToString) {
 
   EXPECT_TRUE(ReadFileToString(file_path, NULL));
 
+  data = "temp";
+  EXPECT_FALSE(ReadFileToString(file_path_dangerous, &data));
+  EXPECT_EQ(0u, data.length());
+
+  // Delete test file.
   EXPECT_TRUE(base::DeleteFile(file_path, false));
 
   data = "temp";
   EXPECT_FALSE(ReadFileToString(file_path, &data));
-  EXPECT_EQ(data.length(), 0u);
+  EXPECT_EQ(0u, data.length());
 
   data = "temp";
   EXPECT_FALSE(ReadFileToString(file_path, &data, 6));
-  EXPECT_EQ(data.length(), 0u);
+  EXPECT_EQ(0u, data.length());
 }
 
 TEST_F(FileUtilTest, TouchFile) {

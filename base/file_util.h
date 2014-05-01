@@ -136,22 +136,24 @@ BASE_EXPORT bool ContentsEqual(const FilePath& filename1,
 BASE_EXPORT bool TextContentsEqual(const FilePath& filename1,
                                    const FilePath& filename2);
 
-// Reads the file at |path| into |contents| and returns true on success.
-// |contents| may be NULL, in which case this function is useful for its
-// side effect of priming the disk cache (could be used for unit tests).
-// The function returns false and the string pointed to by |contents| is
-// cleared when |path| does not exist or if it contains path traversal
-// components ('..').
+// Reads the file at |path| into |contents| and returns true on success and
+// false on error.  For security reasons, a |path| containing path traversal
+// components ('..') is treated as a read error and |contents| is set to empty.
+// In case of I/O error, |contents| holds the data that could be read from the
+// file before the error occurred.
+// |contents| may be NULL, in which case this function is useful for its side
+// effect of priming the disk cache (could be used for unit tests).
 BASE_EXPORT bool ReadFileToString(const FilePath& path, std::string* contents);
 
-// Reads the file at |path| into |contents| and returns true on success.
-// |contents| may be NULL, in which case this function is useful for its
-// side effect of priming the disk cache (could be used for unit tests).
-// The function returns false and the string pointed to by |contents| is
-// cleared when |path| does not exist or if it contains path traversal
-// components ('..').
-// When the file size exceeds |max_size|, the function returns false
-// with |contents| holding the file truncated to |max_size|.
+// Reads the file at |path| into |contents| and returns true on success and
+// false on error.  For security reasons, a |path| containing path traversal
+// components ('..') is treated as a read error and |contents| is set to empty.
+// In case of I/O error, |contents| holds the data that could be read from the
+// file before the error occurred.  When the file size exceeds |max_size|, the
+// function returns false with |contents| holding the file truncated to
+// |max_size|.
+// |contents| may be NULL, in which case this function is useful for its side
+// effect of priming the disk cache (could be used for unit tests).
 BASE_EXPORT bool ReadFileToString(const FilePath& path,
                                   std::string* contents,
                                   size_t max_size);
@@ -172,7 +174,7 @@ BASE_EXPORT bool CreateSymbolicLink(const FilePath& target,
 // Returns false upon failure.
 BASE_EXPORT bool ReadSymbolicLink(const FilePath& symlink, FilePath* target);
 
-// Bits ans masks of the file permission.
+// Bits and masks of the file permission.
 enum FilePermissionBits {
   FILE_PERMISSION_MASK              = S_IRWXU | S_IRWXG | S_IRWXO,
   FILE_PERMISSION_USER_MASK         = S_IRWXU,

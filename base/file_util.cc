@@ -157,6 +157,7 @@ bool ReadFileToString(const FilePath& path,
 
     size += len;
   }
+  read_status = read_status && !ferror(file);
   CloseFile(file);
 
   return read_status;
