@@ -2978,6 +2978,53 @@ TEST_F(LayerTreeHostCommonTest,
 }
 
 TEST_F(LayerTreeHostCommonTest,
+       SingularTransformDoesNotPreventClearingDrawProperties) {
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  root->AddChild(child);
+
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  host->SetRootLayer(root);
+
+  gfx::Transform identity_matrix;
+  gfx::Transform uninvertible_matrix(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+  ASSERT_FALSE(uninvertible_matrix.IsInvertible());
+
+  SetLayerPropertiesForTesting(root.get(),
+                               uninvertible_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(100, 100),
+                               true,
+                               false);
+  SetLayerPropertiesForTesting(child.get(),
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(5.f, 5.f),
+                               gfx::Size(50, 50),
+                               true,
+                               false);
+
+  child->draw_properties().sorted_for_recursion = true;
+
+  TransformOperations start_transform_operations;
+  start_transform_operations.AppendScale(1.f, 0.f, 0.f);
+
+  TransformOperations end_transform_operations;
+  end_transform_operations.AppendScale(1.f, 1.f, 0.f);
+
+  AddAnimatedTransformToLayer(
+      root.get(), 10.0, start_transform_operations, end_transform_operations);
+
+  EXPECT_TRUE(root->TransformIsAnimating());
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  EXPECT_FALSE(child->draw_properties().sorted_for_recursion);
+}
+
+TEST_F(LayerTreeHostCommonTest,
        DrawableAndVisibleContentRectsForLayersInClippedRenderSurface) {
   scoped_refptr<Layer> root = Layer::Create();
   scoped_refptr<Layer> render_surface1 = Layer::Create();
