@@ -2438,8 +2438,7 @@ class ValidationPool(object):
     if not details:
       details = ['cbuildbot failed']
 
-    msg = '%s: %s' % (self._builder_name, ' '.join(details))
-    return ValidationFailedMessage(msg, tracebacks, internal)
+    return ValidationFailedMessage(' '.join(details), tracebacks, internal)
 
   def HandleCouldNotApply(self, change):
     """Handler for when Paladin fails to apply a change.

@@ -1430,7 +1430,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         text = builder
         if statuses[builder].message:
           # The message includes the reason of failure.
-          text = statuses[builder].message.message
+          text = '%s: %s' % (builder, statuses[builder].message.message)
 
         cros_build_lib.PrintBuildbotLink(text, statuses[builder].dashboard_url)
 
