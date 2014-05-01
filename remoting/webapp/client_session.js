@@ -44,6 +44,7 @@ var remoting = remoting || {};
  * @param {string} clientPairedSecret For paired Me2Me connections, the
  *     paired secret for this client, as issued by the host.
  * @constructor
+ * @extends {base.EventSource}
  */
 remoting.ClientSession = function(accessCode, fetchPin, fetchThirdPartyToken,
                                   authenticationMethods,
@@ -89,9 +90,6 @@ remoting.ClientSession = function(accessCode, fetchPin, fetchThirdPartyToken,
   /** @private */
   this.hasReceivedFrame_ = false;
   this.logToServer = new remoting.LogToServer();
-  /** @type {?function(remoting.ClientSession.State,
-                       remoting.ClientSession.State):void} */
-  this.onStateChange_ = null;
 
   /** @type {number?} @private */
   this.notifyClientResolutionTimer_ = null;
@@ -116,7 +114,7 @@ remoting.ClientSession = function(accessCode, fetchPin, fetchThirdPartyToken,
   this.callToggleFullScreen_ = remoting.fullscreen.toggle.bind(
       remoting.fullscreen);
   /** @private */
-  this.callOnFullScreenChanged_ = this.onFullScreenChanged_.bind(this);
+  this.callOnFullScreenChanged_ = this.onFullScreenChanged_.bind(this)
 
   /** @private */
   this.screenOptionsMenu_ = new remoting.MenuButton(
@@ -154,15 +152,15 @@ remoting.ClientSession = function(accessCode, fetchPin, fetchThirdPartyToken,
       'click', this.callSetScreenMode_, false);
   this.fullScreenButton_.addEventListener(
       'click', this.callToggleFullScreen_, false);
+  this.defineEvents(Object.keys(remoting.ClientSession.Events));
 };
 
-/**
- * @param {?function(remoting.ClientSession.State,
-                     remoting.ClientSession.State):void} onStateChange
- *     The callback to invoke when the session changes state.
- */
-remoting.ClientSession.prototype.setOnStateChange = function(onStateChange) {
-  this.onStateChange_ = onStateChange;
+base.extend(remoting.ClientSession, base.EventSource);
+
+/** @enum {string} */
+remoting.ClientSession.Events = {
+  stateChanged: 'stateChanged',
+  videoChannelStateChanged: 'videoChannelStateChanged'
 };
 
 /**
@@ -229,7 +227,20 @@ remoting.ClientSession.State.fromString = function(state) {
     throw "Invalid ClientSession.State: " + state;
   }
   return remoting.ClientSession.State[state];
-}
+};
+
+/**
+  @constructor
+  @param {remoting.ClientSession.State} current
+  @param {remoting.ClientSession.State} previous
+*/
+remoting.ClientSession.StateEvent = function(current, previous) {
+  /** @type {remoting.ClientSession.State} */
+  this.previous = previous
+
+  /** @type {remoting.ClientSession.State} */
+  this.current = current;
+};
 
 /** @enum {number} */
 remoting.ClientSession.ConnectionError = {
@@ -561,19 +572,32 @@ remoting.ClientSession.prototype.removePlugin = function() {
 };
 
 /**
- * Deletes the <embed> element from the container and disconnects.
+ * Disconnect the current session with a particular |error|.  The session will
+ * raise a |stateChanged| event in response to it.  The caller should then call
+ * |cleanup| to remove and destroy the <embed> element.
  *
- * @param {boolean} isUserInitiated True for user-initiated disconnects, False
- *     for disconnects due to connection failures.
+ * @param {remoting.Error} error The reason for the disconnection.  Use
+ *    remoting.Error.NONE if there is no error.
  * @return {void} Nothing.
  */
-remoting.ClientSession.prototype.disconnect = function(isUserInitiated) {
-  if (isUserInitiated) {
-    // The plugin won't send a state change notification, so we explicitly log
-    // the fact that the connection has closed.
-    this.logToServer.logClientSessionStateChange(
-        remoting.ClientSession.State.CLOSED, remoting.Error.NONE, this.mode_);
-  }
+remoting.ClientSession.prototype.disconnect = function(error) {
+  var state = (error == remoting.Error.NONE) ?
+                  remoting.ClientSession.State.CLOSED :
+                  remoting.ClientSession.State.FAILED;
+
+  // The plugin won't send a state change notification, so we explicitly log
+  // the fact that the connection has closed.
+  this.logToServer.logClientSessionStateChange(state, error, this.mode_);
+  this.error_ = error;
+  this.setState_(state);
+};
+
+/**
+ * Deletes the <embed> element from the container and disconnects.
+ *
+ * @return {void} Nothing.
+ */
+remoting.ClientSession.prototype.cleanup = function() {
   remoting.wcsSandbox.setOnIq(null);
   this.sendIq_(
       '<cli:iq ' +
@@ -969,6 +993,9 @@ remoting.ClientSession.prototype.onConnectionReady_ = function(ready) {
   } else {
     this.plugin_.element().classList.remove("session-client-inactive");
   }
+
+  this.raiseEvent(remoting.ClientSession.Events.videoChannelStateChanged,
+                  ready);
 };
 
 /**
@@ -1022,9 +1049,10 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
   if (this.state_ == remoting.ClientSession.State.CONNECTED) {
     this.createGnubbyAuthHandler_();
   }
-  if (this.onStateChange_) {
-    this.onStateChange_(oldState, newState);
-  }
+
+  this.raiseEvent(remoting.ClientSession.Events.stateChanged,
+    new remoting.ClientSession.StateEvent(newState, oldState)
+  );
 };
 
 /**
@@ -1071,9 +1099,9 @@ remoting.ClientSession.prototype.onResize = function() {
  */
 remoting.ClientSession.prototype.pauseVideo = function(pause) {
   if (this.plugin_) {
-    this.plugin_.pauseVideo(pause)
+    this.plugin_.pauseVideo(pause);
   }
-}
+};
 
 /**
  * Requests that the host pause or resume audio.

@@ -59,6 +59,19 @@ remoting.SessionConnector = function(pluginParent, onOk, onError,
    */
   this.connectionMode_ = remoting.ClientSession.Mode.ME2ME;
 
+  /**
+   * @type {remoting.SmartReconnector}
+   * @private
+   */
+  this.reconnector_ = null;
+
+  /**
+   * @private
+   */
+  this.bound_ = {
+    onStateChange : this.onStateChange_.bind(this)
+  };
+
   // Initialize/declare per-connection state.
   this.reset();
 };
@@ -393,7 +406,9 @@ remoting.SessionConnector.prototype.createSession_ = function() {
       authenticationMethods, this.hostId_, this.hostJid_, this.hostPublicKey_,
       this.connectionMode_, this.clientPairingId_, this.clientPairedSecret_);
   this.clientSession_.logHostOfflineErrors(!this.refreshHostJidIfOffline_);
-  this.clientSession_.setOnStateChange(this.onStateChange_.bind(this));
+  this.clientSession_.addEventListener(
+      remoting.ClientSession.Events.stateChanged,
+      this.bound_.onStateChange);
   this.clientSession_.createPluginAndConnect(this.pluginParent_,
                                              this.onExtensionMessage_);
 };
@@ -404,20 +419,24 @@ remoting.SessionConnector.prototype.createSession_ = function() {
  * events). Errors that occur while connecting either trigger a reconnect
  * or notify the onError handler.
  *
- * @param {number} oldState The previous state of the plugin.
- * @param {number} newState The current state of the plugin.
+ * @param  {remoting.ClientSession.StateEvent} event
  * @return {void} Nothing.
  * @private
  */
-remoting.SessionConnector.prototype.onStateChange_ =
-    function(oldState, newState) {
-  switch (newState) {
+remoting.SessionConnector.prototype.onStateChange_ = function(event) {
+  switch (event.current) {
     case remoting.ClientSession.State.CONNECTED:
       // When the connection succeeds, deregister for state-change callbacks
       // and pass the session to the onOk callback. It is expected that it
       // will register a new state-change callback to handle disconnect
       // or error conditions.
-      this.clientSession_.setOnStateChange(null);
+      this.clientSession_.removeEventListener(
+          remoting.ClientSession.Events.stateChanged,
+          this.bound_.onStateChange);
+
+      base.dispose(this.reconnector_);
+      this.reconnector_ =
+          new remoting.SmartReconnector(this, this.clientSession_);
       this.onOk_(this.clientSession_);
       break;
 
@@ -452,6 +471,7 @@ remoting.SessionConnector.prototype.onStateChange_ =
       }
       if (error == remoting.Error.HOST_IS_OFFLINE &&
           this.refreshHostJidIfOffline_) {
+        // The plugin will be re-created when the host finished refreshing
         remoting.hostList.refresh(this.onHostListRefresh_.bind(this));
       } else {
         this.onError_(error);
@@ -459,7 +479,7 @@ remoting.SessionConnector.prototype.onStateChange_ =
       break;
 
     default:
-      console.error('Unexpected client plugin state: ' + newState);
+      console.error('Unexpected client plugin state: ' + event.current);
       // This should only happen if the web-app and client plugin get out of
       // sync, and even then the version check should ensure compatibility.
       this.onError_(remoting.Error.MISSING_PLUGIN);

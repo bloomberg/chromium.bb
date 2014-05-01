@@ -48,6 +48,7 @@
       'webapp/clipboard.js',
       'webapp/media_source_renderer.js',
       'webapp/session_connector.js',
+      'webapp/smart_reconnector.js',
     ],
     # Remoting core JavaScript files.
     'remoting_webapp_js_core_files': [
