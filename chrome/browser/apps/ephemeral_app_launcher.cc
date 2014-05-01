@@ -4,17 +4,15 @@
 
 #include "chrome/browser/apps/ephemeral_app_launcher.h"
 
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/permissions/permissions_data.h"
 
@@ -108,38 +106,33 @@ void EphemeralAppLauncher::Start() {
   BeginInstall();
 }
 
-EphemeralAppLauncher::EphemeralAppLauncher(
-    const std::string& webstore_item_id,
-    Profile* profile,
-    gfx::NativeWindow parent_window,
-    const Callback& callback)
-        : WebstoreStandaloneInstaller(
-              webstore_item_id,
-              profile,
-              callback),
-          parent_window_(parent_window),
-          dummy_web_contents_(
-              WebContents::Create(WebContents::CreateParams(profile))) {
+EphemeralAppLauncher::EphemeralAppLauncher(const std::string& webstore_item_id,
+                                           Profile* profile,
+                                           gfx::NativeWindow parent_window,
+                                           const Callback& callback)
+    : WebstoreStandaloneInstaller(webstore_item_id, profile, callback),
+      extension_registry_observer_(this),
+      parent_window_(parent_window),
+      dummy_web_contents_(
+          WebContents::Create(WebContents::CreateParams(profile))) {
 }
 
-EphemeralAppLauncher::EphemeralAppLauncher(
-    const std::string& webstore_item_id,
-    content::WebContents* web_contents,
-    const Callback& callback)
-        : WebstoreStandaloneInstaller(
-              webstore_item_id,
-              ProfileForWebContents(web_contents),
-              callback),
-          content::WebContentsObserver(web_contents),
-          parent_window_(NativeWindowForWebContents(web_contents)) {
+EphemeralAppLauncher::EphemeralAppLauncher(const std::string& webstore_item_id,
+                                           content::WebContents* web_contents,
+                                           const Callback& callback)
+    : WebstoreStandaloneInstaller(webstore_item_id,
+                                  ProfileForWebContents(web_contents),
+                                  callback),
+      content::WebContentsObserver(web_contents),
+      extension_registry_observer_(this),
+      parent_window_(NativeWindowForWebContents(web_contents)) {
 }
 
 EphemeralAppLauncher::~EphemeralAppLauncher() {}
 
 void EphemeralAppLauncher::StartObserving() {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile()->GetOriginalProfile()));
+  extension_registry_observer_.Add(
+      extensions::ExtensionRegistry::Get(profile()->GetOriginalProfile()));
 }
 
 void EphemeralAppLauncher::LaunchApp(const Extension* extension) const {
@@ -255,7 +248,7 @@ void EphemeralAppLauncher::CompleteInstall(const std::string& error) {
   // chrome::NOTIFICATION_EXTENSION_INSTALLED, but this is broadcasted before
   // ExtensionService has added the extension to its list of installed
   // extensions and is too early to launch the app. Instead, we will launch at
-  // chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED.
+  // EphemeralAppLauncher::OnExtensionLoaded().
   // TODO(tmdiep): Refactor extensions/WebstoreInstaller or
   // WebstoreStandaloneInstaller to support this cleanly.
 }
@@ -265,24 +258,13 @@ void EphemeralAppLauncher::WebContentsDestroyed(
   AbortInstall();
 }
 
-void EphemeralAppLauncher::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      const extensions::Extension* extension =
-          content::Details<const extensions::Extension>(details).ptr();
-      DCHECK(extension);
-      if (extension->id() == id()) {
-        LaunchApp(extension);
-        WebstoreStandaloneInstaller::CompleteInstall(std::string());
-      }
-      break;
-    }
-
-    default:
-      NOTREACHED();
+void EphemeralAppLauncher::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  DCHECK(extension);
+  if (extension->id() == id()) {
+    LaunchApp(extension);
+    WebstoreStandaloneInstaller::CompleteInstall(std::string());
   }
 }
 

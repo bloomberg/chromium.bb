@@ -8,10 +8,11 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/webstore_standalone_installer.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
-#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 class ExtensionEnableFlow;
 class Profile;
@@ -22,16 +23,16 @@ class WebContents;
 
 namespace extensions {
 class Extension;
+class ExtensionRegistry;
 }
 
 // EphemeralAppLauncher manages the launching of ephemeral apps. It handles
 // display of a prompt, initiates install of the app (if necessary) and finally
 // launches the app.
-class EphemeralAppLauncher
-    : public extensions::WebstoreStandaloneInstaller,
-      public content::WebContentsObserver,
-      public content::NotificationObserver,
-      public ExtensionEnableFlowDelegate {
+class EphemeralAppLauncher : public extensions::WebstoreStandaloneInstaller,
+                             public content::WebContentsObserver,
+                             public extensions::ExtensionRegistryObserver,
+                             public ExtensionEnableFlowDelegate {
  public:
   typedef WebstoreStandaloneInstaller::Callback Callback;
 
@@ -92,16 +93,19 @@ class EphemeralAppLauncher
   virtual void WebContentsDestroyed(
       content::WebContents* web_contents) OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
 
   // ExtensionEnableFlowDelegate implementation.
   virtual void ExtensionEnableFlowFinished() OVERRIDE;
   virtual void ExtensionEnableFlowAborted(bool user_initiated) OVERRIDE;
 
-  content::NotificationRegistrar registrar_;
+  // Listen to extension unloaded notifications.
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   gfx::NativeWindow parent_window_;
   scoped_ptr<content::WebContents> dummy_web_contents_;
