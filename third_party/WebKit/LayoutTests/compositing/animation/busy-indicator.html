@@ -27,7 +27,6 @@
                height: 30px;
                opacity: 0;
                -webkit-animation-duration: 2.4s;
-               -webkit-animation-iteration-count: infinite;
              }
              .progress-indicator.visible .progress-indicator0 {
                left: 0px;
@@ -78,6 +77,24 @@
                  -webkit-animation-name: spinner;
              }
     </style>
+    <script type="text/javascript" charset="utf-8">
+      function testEnded()
+      {
+        if (window.testRunner)
+          testRunner.notifyDone();
+      }
+
+      function startTest()
+      {
+        if (window.testRunner)
+          testRunner.waitUntilDone();
+
+        document.getElementById('app-loading-progress').addEventListener(
+            'webkitAnimationEnd', testEnded, false);
+      }
+
+      window.addEventListener('load', startTest, false);
+    </script>
     </head>
     <body class="app-startup">
         <div id="app-loading">
