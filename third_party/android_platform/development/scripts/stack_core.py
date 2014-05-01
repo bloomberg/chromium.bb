@@ -72,6 +72,9 @@ def ConvertTrace(lines, more_info):
   thread_line = re.compile("(.*)(\-\-\- ){15}\-\-\-")
   dalvik_jni_thread_line = re.compile("(\".*\" prio=[0-9]+ tid=[0-9]+ NATIVE.*)")
   dalvik_native_thread_line = re.compile("(\".*\" sysTid=[0-9]+ nice=[0-9]+.*)")
+  # Matches LOG(FATAL) lines, like the following example:
+  #   [FATAL:source_file.cc(33)] Check failed: !instances_.empty()
+  log_fatal_line = re.compile("(\[FATAL\:.*\].*)$")
   # Note that both trace and value line matching allow for variable amounts of
   # whitespace (e.g. \t). This is because the we want to allow for the stack
   # tool to operate on AndroidFeedback provided system logs. AndroidFeedback
@@ -84,6 +87,13 @@ def ConvertTrace(lines, more_info):
   #   03-25 00:51:05.520 I/DEBUG ( 65): #00 pc 001cf42e /data/data/com.my.project/lib/libmyproject.so
   # Please note the spacing differences.
   trace_line = re.compile("(.*)\#(?P<frame>[0-9]+)[ \t]+(..)[ \t]+(0x)?(?P<address>[0-9a-f]{0,8})[ \t]+(?P<lib>[^\r\n \t]*)(?P<symbol_present> \((?P<symbol_name>.*)\))?")  # pylint: disable-msg=C6310
+  # Matches lines emitted by src/base/debug/stack_trace_android.cc, like:
+  #   #00 0x7324d92d /data/app-lib/org.chromium.native_test-1/libbase.cr.so+0x0006992d
+  # This pattern includes the unused named capture groups <symbol_present> and
+  # <symbol_name> so that it can interoperate with the |trace_line| regex.
+  debug_trace_line = re.compile('(.*)(?P<frame>\#[0-9]+ 0x[0-9a-f]{8,8}) '
+                                '(?P<lib>[^+]+)\+0x(?P<address>[0-9a-f]{8,8})'
+                                '(?P<symbol_present>)(?P<symbol_name>)')
   # Examples of matched value lines include:
   #   bea4170c  8018e4e9  /data/data/com.my.project/lib/libmyproject.so
   #   bea4170c  8018e4e9  /data/data/com.my.project/lib/libmyproject.so (symbol)
@@ -113,7 +123,7 @@ def ConvertTrace(lines, more_info):
     line = unicode(ln, errors='ignore')
     lib, address = None, None
 
-    match = trace_line.match(line)
+    match = trace_line.match(line) or debug_trace_line.match(line)
     if match:
       address, lib = match.group('address', 'lib')
 
@@ -138,8 +148,10 @@ def ConvertTrace(lines, more_info):
     thread_header = thread_line.search(line)
     dalvik_jni_thread_header = dalvik_jni_thread_line.search(line)
     dalvik_native_thread_header = dalvik_native_thread_line.search(line)
-    if process_header or signal_header or register_header or thread_header \
-        or dalvik_jni_thread_header or dalvik_native_thread_header:
+    log_fatal_header = log_fatal_line.search(line)
+    if (process_header or signal_header or register_header or thread_header or
+        dalvik_jni_thread_header or dalvik_native_thread_header or
+        log_fatal_header) :
       if trace_lines or value_lines:
         PrintOutput(trace_lines, value_lines, more_info)
         PrintDivider()
@@ -158,9 +170,12 @@ def ConvertTrace(lines, more_info):
         print dalvik_jni_thread_header.group(1)
       if dalvik_native_thread_header:
         print dalvik_native_thread_header.group(1)
+      if log_fatal_header:
+        print log_fatal_header.group(1)
       continue
-    if trace_line.match(line):
-      match = trace_line.match(line)
+
+    match = trace_line.match(line) or debug_trace_line.match(line)
+    if match:
       frame, code_addr, area, symbol_present, symbol_name = match.group(
           'frame', 'address', 'lib', 'symbol_present', 'symbol_name')
 
@@ -199,8 +214,8 @@ def ConvertTrace(lines, more_info):
       # Code lines should be ignored. If this were exluded the 'code around'
       # sections would trigger value_line matches.
       continue;
-    if value_line.match(line):
-      match = value_line.match(line)
+    match = value_line.match(line)
+    if match:
       (unused_, addr, value, area, symbol_present, symbol_name) = match.groups()
       if area == UNKNOWN or area == HEAP or area == STACK or not area:
         value_lines.append((addr, value, "", area))
