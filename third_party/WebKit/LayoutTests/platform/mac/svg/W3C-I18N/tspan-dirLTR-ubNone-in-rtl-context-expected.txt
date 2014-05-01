@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         RenderSVGInlineText {#text} at (179,0) size 83x21
           chunk 1 (middle anchor) text run 1 at (278.30,150.00) startOffset 0 endOffset 14 width 82.80 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644} \""
         RenderSVGTSpan {tspan} at (0,0) size 169x21
-          RenderSVGInlineText {#text} at (11,0) size 168x21
+          RenderSVGInlineText {#text} at (11,0) size 169x21
             chunk 1 (middle anchor) text run 1 at (110.30,150.00) startOffset 0 endOffset 8 width 44.40 RTL: ", \x{627}\x{62E}\x{62A}\x{628}\x{627}\x{631}"
             chunk 1 (middle anchor) text run 1 at (154.70,150.00) startOffset 0 endOffset 13 width 123.60: "dirLTR ubNone"
         RenderSVGInlineText {#text} at (0,0) size 12x21
