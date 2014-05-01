@@ -37,7 +37,6 @@
 #include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Threading.h"
 #include "wtf/text/WTFString.h"
@@ -51,7 +50,7 @@ namespace WebCore {
     struct CrossThreadResourceResponseData;
     struct CrossThreadResourceRequestData;
 
-    class WorkerThreadableLoader FINAL : public RefCounted<WorkerThreadableLoader>, public ThreadableLoader {
+    class WorkerThreadableLoader FINAL : public ThreadableLoader {
         WTF_MAKE_FAST_ALLOCATED;
     public:
         static void loadResourceSynchronously(WorkerGlobalScope&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&);
@@ -65,13 +64,6 @@ namespace WebCore {
         virtual void cancel() OVERRIDE;
 
         bool done() const { return m_workerClientWrapper->done(); }
-
-        using RefCounted<WorkerThreadableLoader>::ref;
-        using RefCounted<WorkerThreadableLoader>::deref;
-
-    protected:
-        virtual void refThreadableLoader() OVERRIDE { ref(); }
-        virtual void derefThreadableLoader() OVERRIDE { deref(); }
 
     private:
         // Creates a loader on the main thread and bridges communication between

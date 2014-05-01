@@ -41,7 +41,6 @@
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -52,7 +51,7 @@ class ResourceRequest;
 class SecurityOrigin;
 class ThreadableLoaderClient;
 
-class DocumentThreadableLoader FINAL : public RefCounted<DocumentThreadableLoader>, public ThreadableLoader, private ResourceOwner<RawResource>  {
+class DocumentThreadableLoader FINAL : public ThreadableLoader, private ResourceOwner<RawResource>  {
     WTF_MAKE_FAST_ALLOCATED;
     public:
         static void loadResourceSynchronously(Document&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&);
@@ -61,13 +60,6 @@ class DocumentThreadableLoader FINAL : public RefCounted<DocumentThreadableLoade
 
         virtual void cancel() OVERRIDE;
         void setDefersLoading(bool);
-
-        using RefCounted<DocumentThreadableLoader>::ref;
-        using RefCounted<DocumentThreadableLoader>::deref;
-
-    protected:
-        virtual void refThreadableLoader() OVERRIDE { ref(); }
-        virtual void derefThreadableLoader() OVERRIDE { deref(); }
 
     private:
         enum BlockingBehavior {
