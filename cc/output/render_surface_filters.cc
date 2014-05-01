@@ -267,7 +267,7 @@ skia::RefPtr<SkImageFilter> RenderSurfaceFilters::BuildImageFilter(
             SkAlphaThresholdFilter::Create(
                 op.region(), op.amount(), op.outer_threshold()));
         if (image_filter.get()) {
-          image_filter = skia::AdoptRef(new SkComposeImageFilter(
+          image_filter = skia::AdoptRef(SkComposeImageFilter::Create(
               alpha_filter.get(), image_filter.get()));
         } else {
           image_filter = alpha_filter;
