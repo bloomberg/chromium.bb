@@ -437,6 +437,8 @@
         'browser/fileapi/obfuscated_file_util_unittest.cc',
         'browser/fileapi/plugin_private_file_system_backend_unittest.cc',
         'browser/fileapi/recursive_operation_delegate_unittest.cc',
+        'browser/fileapi/sandbox_database_test_helper.cc',
+        'browser/fileapi/sandbox_database_test_helper.h',
         'browser/fileapi/sandbox_directory_database_unittest.cc',
         'browser/fileapi/sandbox_file_system_backend_delegate_unittest.cc',
         'browser/fileapi/sandbox_file_system_backend_unittest.cc',
@@ -680,8 +682,6 @@
         '../webkit/browser/database/database_quota_client_unittest.cc',
         '../webkit/browser/database/database_util_unittest.cc',
         '../webkit/browser/database/databases_table_unittest.cc',
-        '../webkit/browser/fileapi/sandbox_database_test_helper.cc',
-        '../webkit/browser/fileapi/sandbox_database_test_helper.h',
         '../webkit/child/multipart_response_delegate_unittest.cc',
       ],
       'conditions': [

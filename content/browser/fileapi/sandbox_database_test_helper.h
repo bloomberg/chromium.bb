@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_FILEAPI_SANDBOX_DATABASE_TEST_HELPER_H_
-#define WEBKIT_BROWSER_FILEAPI_SANDBOX_DATABASE_TEST_HELPER_H_
+#ifndef CONTENT_BROWSER_FILEAPI_SANDBOX_DATABASE_TEST_HELPER_H_
+#define CONTENT_BROWSER_FILEAPI_SANDBOX_DATABASE_TEST_HELPER_H_
 
 #include <cstddef>
 
@@ -13,7 +13,7 @@ namespace base {
 class FilePath;
 }
 
-namespace fileapi {
+namespace content {
 
 void CorruptDatabase(const base::FilePath& db_path,
                      leveldb::FileType type,
@@ -23,6 +23,6 @@ void CorruptDatabase(const base::FilePath& db_path,
 void DeleteDatabaseFile(const base::FilePath& db_path,
                         leveldb::FileType type);
 
-}  // namespace fileapi
+}  // namespace content
 
-#endif  // WEBKIT_BROWSER_FILEAPI_SANDBOX_DATABASE_TEST_HELPER_H_
+#endif  // CONTENT_BROWSER_FILEAPI_SANDBOX_DATABASE_TEST_HELPER_H_
