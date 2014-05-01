@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/run_loop.h"
 #include "base/time/time.h"
 #include "content/common/resource_request_body.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -257,6 +258,12 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
   EXPECT_TRUE(AreElementsEqual(*upload->element_readers()[5], blob_element1));
   EXPECT_TRUE(AreElementsEqual(*upload->element_readers()[6], blob_element2));
   EXPECT_TRUE(AreElementsEqual(*upload->element_readers()[7], upload_element2));
+
+  // Clean up for ASAN.
+  handle1.reset();
+  handle2.reset();
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
 }
 
 }  // namespace content
