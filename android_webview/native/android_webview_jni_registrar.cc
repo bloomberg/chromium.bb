@@ -23,7 +23,6 @@
 #include "android_webview/native/input_stream_impl.h"
 #include "android_webview/native/intercepted_request_data_impl.h"
 #include "android_webview/native/java_browser_view_renderer_helper.h"
-#include "android_webview/native/permission/aw_permission_request.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/debug/trace_event.h"
@@ -43,7 +42,6 @@ static base::android::RegistrationMethod kWebViewRegisteredMethods[] = {
   { "AwSettings", RegisterAwSettings },
   { "AwHttpAuthHandler", RegisterAwHttpAuthHandler },
   { "AwPdfExporter", RegisterAwPdfExporter },
-  { "AwPermissionRequest", RegisterAwPermissionRequest },
   { "AwQuotaManagerBridge", RegisterAwQuotaManagerBridge },
   { "AwResource", AwResource::RegisterAwResource },
   { "AwWebContentsDelegate", RegisterAwWebContentsDelegate },

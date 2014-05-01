@@ -49,10 +49,6 @@ class AwWebContentsDelegate
 
   virtual void CloseContents(content::WebContents* source) OVERRIDE;
   virtual void ActivateContents(content::WebContents* contents) OVERRIDE;
-  virtual void RequestMediaAccessPermission(
-      content::WebContents* web_contents,
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback) OVERRIDE;
 };
 
 bool RegisterAwWebContentsDelegate(JNIEnv* env);

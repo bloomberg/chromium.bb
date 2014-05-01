@@ -24,8 +24,6 @@
 #include "android_webview/native/aw_picture.h"
 #include "android_webview/native/aw_web_contents_delegate.h"
 #include "android_webview/native/java_browser_view_renderer_helper.h"
-#include "android_webview/native/permission/aw_permission_request.h"
-#include "android_webview/native/permission/permission_request_handler.h"
 #include "android_webview/native/state_serializer.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/android/jni_android.h"
@@ -170,8 +168,6 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
                              new AwContentsUserData(this));
   render_view_host_ext_.reset(
       new AwRenderViewHostExt(this, web_contents_.get()));
-
-  permission_request_handler_.reset(new PermissionRequestHandler(this));
 
   AwAutofillManagerDelegate* autofill_manager_delegate =
       AwAutofillManagerDelegate::FromWebContents(web_contents_.get());
@@ -520,30 +516,6 @@ void AwContents::HideGeolocationPrompt(const GURL& origin) {
                             pending_geolocation_prompts_.front().first);
     }
   }
-}
-
-void AwContents::OnPermissionRequest(AwPermissionRequest* request) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_request = request->CreateJavaPeer();
-  ScopedJavaLocalRef<jobject> j_ref = java_ref_.get(env);
-  if (j_request.is_null() || j_ref.is_null()) {
-    permission_request_handler_->CancelRequest(
-        request->GetOrigin(), request->GetResources());
-    return;
-  }
-
-  Java_AwContents_onPermissionRequest(env, j_ref.obj(), j_request.obj());
-}
-
-void AwContents::OnPermissionRequestCanceled(AwPermissionRequest* request) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_request = request->GetJavaObject();
-  if (j_request.is_null())
-    return;
-
-  ScopedJavaLocalRef<jobject> j_ref = java_ref_.get(env);
-  Java_AwContents_onPermissionRequestCanceled(
-      env, j_ref.obj(), j_request.obj());
 }
 
 void AwContents::FindAllAsync(JNIEnv* env, jobject obj, jstring search_string) {

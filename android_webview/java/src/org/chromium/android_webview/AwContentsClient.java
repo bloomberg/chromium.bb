@@ -17,7 +17,6 @@ import android.webkit.GeolocationPermissions;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 
-import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.WebContentsObserverAndroid;
 import org.chromium.net.NetError;
@@ -189,13 +188,6 @@ public abstract class AwContentsClient {
             GeolocationPermissions.Callback callback);
 
     public abstract void onGeolocationPermissionsHidePrompt();
-
-    // TODO(michaelbai): Change the abstract once merged
-    public /*abstract*/ void onPermissionRequest(AwPermissionRequest awPermissionRequest) {}
-
-    // TODO(michaelbai): Change the abstract once merged
-    public /*abstract*/ void onPermissionRequestCanceled(
-            AwPermissionRequest awPermissionRequest) {}
 
     public abstract void onScaleChangedScaled(float oldScale, float newScale);
 
