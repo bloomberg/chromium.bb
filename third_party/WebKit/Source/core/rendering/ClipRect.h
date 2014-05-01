@@ -196,12 +196,12 @@ struct ClipRectsCache {
 public:
     ClipRectsCache()
     {
-#ifndef NDEBUG
         for (int i = 0; i < NumCachedClipRectsTypes; ++i) {
             m_clipRectsRoot[i] = 0;
+#ifndef NDEBUG
             m_scrollbarRelevancy[i] = IgnoreOverlayScrollbarSize;
-        }
 #endif
+        }
     }
 
     PassRefPtr<ClipRects> getClipRects(ClipRectsType clipRectsType, ShouldRespectOverflowClip respectOverflow) { return m_clipRects[getIndex(clipRectsType, respectOverflow)]; }
