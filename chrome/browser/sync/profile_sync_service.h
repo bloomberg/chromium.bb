@@ -35,6 +35,7 @@
 #include "components/sync_driver/data_type_manager.h"
 #include "components/sync_driver/data_type_manager_observer.h"
 #include "components/sync_driver/failed_data_types_handler.h"
+#include "components/sync_driver/non_blocking_data_type_manager.h"
 #include "components/sync_driver/sync_frontend.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -313,6 +314,18 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // some point in the future.  This function call does not enable or activate
   // the syncing of this type
   void RegisterNonBlockingType(syncer::ModelType type);
+
+  // Called by a component that supports non-blocking sync when it is ready to
+  // initialize its connection to the sync backend.
+  //
+  // If policy allows for syncing this type (ie. it is "preferred"), then this
+  // should result in a message to enable syncing for this type when the sync
+  // backend is available.  If the type is not to be synced, this should result
+  // in a message that allows the component to delete its local sync state.
+  void InitializeNonBlockingType(
+      syncer::ModelType type,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      base::WeakPtr<syncer::NonBlockingTypeProcessor> processor);
 
   // Return the active OpenTabsUIDelegate. If sessions is not enabled or not
   // currently syncing, returns NULL.
@@ -742,8 +755,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler();
 
-  const browser_sync::DataTypeController::TypeMap& data_type_controllers() {
-    return data_type_controllers_;
+  const browser_sync::DataTypeController::TypeMap&
+      directory_data_type_controllers() {
+    return directory_data_type_controllers_;
   }
 
   // Helper method for managing encryption UI.
@@ -904,11 +918,8 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // is equal to !HasSyncSetupCompleted() at the time of OnBackendInitialized().
   bool is_first_time_sync_configure_;
 
-  // List of available data type controllers.
-  browser_sync::DataTypeController::TypeMap data_type_controllers_;
-
-  // List of registered types that use the non-blocking API.
-  syncer::ModelTypeSet non_blocking_types_;
+  // List of available data type controllers for directory types.
+  browser_sync::DataTypeController::TypeMap directory_data_type_controllers_;
 
   // Whether the SyncBackendHost has been initialized.
   bool backend_initialized_;
@@ -931,8 +942,11 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   std::string unrecoverable_error_message_;
   tracked_objects::Location unrecoverable_error_location_;
 
-  // Manages the start and stop of the various data types.
-  scoped_ptr<browser_sync::DataTypeManager> data_type_manager_;
+  // Manages the start and stop of the directory data types.
+  scoped_ptr<browser_sync::DataTypeManager> directory_data_type_manager_;
+
+  // Manager for the non-blocking data types.
+  browser_sync::NonBlockingDataTypeManager non_blocking_data_type_manager_;
 
   ObserverList<ProfileSyncServiceBase::Observer> observers_;
   ObserverList<browser_sync::ProtocolEventObserver> protocol_event_observers_;

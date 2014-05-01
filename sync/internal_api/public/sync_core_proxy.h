@@ -28,7 +28,7 @@ class SYNC_EXPORT_PRIVATE SyncCoreProxy {
       base::WeakPtr<NonBlockingTypeProcessor> type_processor) = 0;
 
   // Creates a clone of this SyncCoreProxy.
-  virtual scoped_ptr<SyncCoreProxy> Clone() = 0;
+  virtual scoped_ptr<SyncCoreProxy> Clone() const = 0;
 };
 
 }  // namespace syncer

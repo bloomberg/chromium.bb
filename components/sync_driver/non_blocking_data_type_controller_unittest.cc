@@ -27,7 +27,7 @@ class MockSyncCoreProxy : public syncer::SyncCoreProxy {
         scoped_refptr<base::SequencedTaskRunner>());
   }
 
-  virtual scoped_ptr<SyncCoreProxy> Clone() OVERRIDE {
+  virtual scoped_ptr<SyncCoreProxy> Clone() const OVERRIDE {
     return scoped_ptr<SyncCoreProxy>(new MockSyncCoreProxy());
   }
 };

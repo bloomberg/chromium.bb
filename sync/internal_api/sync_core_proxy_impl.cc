@@ -32,7 +32,7 @@ void SyncCoreProxyImpl::ConnectTypeToCore(
                  type_processor));
 }
 
-scoped_ptr<SyncCoreProxy> SyncCoreProxyImpl::Clone() {
+scoped_ptr<SyncCoreProxy> SyncCoreProxyImpl::Clone() const {
   return scoped_ptr<SyncCoreProxy>(
       new SyncCoreProxyImpl(sync_task_runner_, sync_core_));
 }

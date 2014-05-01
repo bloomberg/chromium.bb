@@ -37,6 +37,8 @@
         'sync_driver/model_associator.h',
         'sync_driver/non_blocking_data_type_controller.cc',
         'sync_driver/non_blocking_data_type_controller.h',
+        'sync_driver/non_blocking_data_type_manager.cc',
+        'sync_driver/non_blocking_data_type_manager.h',
         'sync_driver/pref_names.cc',
         'sync_driver/pref_names.h',
         'sync_driver/proxy_data_type_controller.cc',

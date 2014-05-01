@@ -23,7 +23,7 @@ class NullSyncCoreProxy : public SyncCoreProxy {
   virtual void ConnectTypeToCore(
       syncer::ModelType type,
       base::WeakPtr<NonBlockingTypeProcessor> processor) OVERRIDE;
-  virtual scoped_ptr<SyncCoreProxy> Clone() OVERRIDE;
+  virtual scoped_ptr<SyncCoreProxy> Clone() const OVERRIDE;
 };
 
 }  // namespace syncer

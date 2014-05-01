@@ -40,7 +40,7 @@ class SYNC_EXPORT_PRIVATE SyncCoreProxyImpl : public SyncCoreProxy {
       syncer::ModelType type,
       base::WeakPtr<NonBlockingTypeProcessor> type_processor) OVERRIDE;
 
-  virtual scoped_ptr<SyncCoreProxy> Clone() OVERRIDE;
+  virtual scoped_ptr<SyncCoreProxy> Clone() const OVERRIDE;
 
  private:
   // A SequencedTaskRunner representing the thread where the SyncCore lives.
