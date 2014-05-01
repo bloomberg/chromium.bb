@@ -56,9 +56,7 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       should_update_tile_priorities_(false),
       should_use_low_res_tiling_(tree_impl->settings().create_low_res_tiling),
       use_gpu_rasterization_(false),
-      layer_needs_to_register_itself_(true),
-      uninitialized_tiles_required_for_activation_count_(0) {
-}
+      layer_needs_to_register_itself_(true) {}
 
 PictureLayerImpl::~PictureLayerImpl() {
   if (!layer_needs_to_register_itself_)
@@ -407,7 +405,6 @@ void PictureLayerImpl::UpdateTilePriorities() {
                                  contents_scale_x(),
                                  current_frame_time_in_seconds);
 
-  uninitialized_tiles_required_for_activation_count_ = 0;
   if (layer_tree_impl()->IsPendingTree())
     MarkVisibleResourcesAsRequired();
 
@@ -420,13 +417,6 @@ void PictureLayerImpl::NotifyTileInitialized(const Tile* tile) {
     gfx::RectF layer_damage_rect =
         gfx::ScaleRect(tile->content_rect(), 1.f / tile->contents_scale());
     AddDamageRect(layer_damage_rect);
-
-    DCHECK_EQ(0, uninitialized_tiles_required_for_activation_count_);
-  } else if (layer_tree_impl()->IsPendingTree()) {
-    if (tile->required_for_activation()) {
-      DCHECK_GT(uninitialized_tiles_required_for_activation_count_, 0);
-      --uninitialized_tiles_required_for_activation_count_;
-    }
   }
 }
 
@@ -745,7 +735,7 @@ ResourceProvider::ResourceId PictureLayerImpl::ContentsResourceId() const {
   return tile_version.get_resource_id();
 }
 
-void PictureLayerImpl::MarkVisibleResourcesAsRequired() {
+void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
   DCHECK(layer_tree_impl()->IsPendingTree());
   DCHECK(!layer_tree_impl()->needs_update_draw_properties());
   DCHECK(ideal_contents_scale_);
@@ -853,7 +843,7 @@ bool PictureLayerImpl::MarkVisibleTilesAsRequired(
     const PictureLayerTiling* optional_twin_tiling,
     float contents_scale,
     const gfx::Rect& rect,
-    const Region& missing_region) {
+    const Region& missing_region) const {
   bool twin_had_missing_tile = false;
   for (PictureLayerTiling::CoverageIterator iter(tiling,
                                                  contents_scale,
@@ -880,10 +870,8 @@ bool PictureLayerImpl::MarkVisibleTilesAsRequired(
         continue;
       }
     }
-    DCHECK(!tile->required_for_activation());
+
     tile->MarkRequiredForActivation();
-    if (!tile->IsReadyToDraw())
-      ++uninitialized_tiles_required_for_activation_count_;
   }
   return twin_had_missing_tile;
 }

@@ -9,8 +9,6 @@
 
 namespace cc {
 
-class Tile;
-
 class FakeTileManagerClient : public TileManagerClient {
  public:
   virtual ~FakeTileManagerClient() {}
