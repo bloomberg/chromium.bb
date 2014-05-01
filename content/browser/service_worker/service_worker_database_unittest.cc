@@ -72,6 +72,26 @@ TEST(ServiceWorkerDatabaseTest, OpenDatabase_InMemory) {
   EXPECT_FALSE(database->LazyOpen(false));
 }
 
+TEST(ServiceWorkerDatabaseTest, DatabaseVersion) {
+  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  EXPECT_TRUE(database->LazyOpen(true));
+
+  // Opening a new database does not write anything, so its schema version
+  // should be 0.
+  int64 db_version = -1;
+  EXPECT_TRUE(database->ReadDatabaseVersion(&db_version));
+  EXPECT_EQ(0u, db_version);
+
+  // First writing triggers database initialization and bumps the schema
+  // version.
+  std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
+  ServiceWorkerDatabase::RegistrationData data;
+  ASSERT_TRUE(database->WriteRegistration(data, resources));
+
+  EXPECT_TRUE(database->ReadDatabaseVersion(&db_version));
+  EXPECT_LT(0, db_version);
+}
+
 TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
   base::ScopedTempDir database_dir;
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());

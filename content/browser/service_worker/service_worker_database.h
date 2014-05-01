@@ -148,6 +148,9 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
                         const std::set<int64>& ids);
   bool DeleteResourceIds(const char* id_key_prefix,
                          const std::set<int64>& ids);
+
+  // Reads the current schema version from the database. If the database hasn't
+  // been written anything yet, sets |db_version| to 0 and returns true.
   bool ReadDatabaseVersion(int64* db_version);
 
   // Write a batch into the database.
@@ -190,6 +193,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
 
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, OpenDatabase);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, OpenDatabase_InMemory);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, DatabaseVersion);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, GetNextAvailableIds);
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDatabase);
