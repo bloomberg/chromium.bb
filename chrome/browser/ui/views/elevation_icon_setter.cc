@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/views/elevation_icon_setter.h"
 
-#include "build/build_config.h"
+#include "base/task_runner_util.h"
+#include "content/public/browser/browser_thread.h"
+#include "ui/views/controls/button/label_button.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -12,14 +14,19 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "ui/gfx/icon_util.h"
-#include "ui/views/controls/button/label_button.h"
 #endif
 
-void AddElevationIconToButton(views::LabelButton* button) {
+
+// Helpers --------------------------------------------------------------------
+
+namespace {
+
+scoped_ptr<SkBitmap> GetElevationIcon() {
+  scoped_ptr<SkBitmap> icon;
 #if defined(OS_WIN)
   if ((base::win::GetVersion() < base::win::VERSION_VISTA) ||
       !base::win::UserAccountControlIsEnabled())
-    return;
+    return icon.Pass();
 
   SHSTOCKICONINFO icon_info = { sizeof(SHSTOCKICONINFO) };
   typedef HRESULT (STDAPICALLTYPE *GetStockIconInfo)(SHSTOCKICONID,
@@ -33,15 +40,41 @@ void AddElevationIconToButton(views::LabelButton* button) {
   // TODO(pkasting): Run on a background thread since this call spins a nested
   // message loop.
   if (FAILED((*func)(SIID_SHIELD, SHGSI_ICON | SHGSI_SMALLICON, &icon_info)))
-    return;
+    return icon.Pass();
 
-  scoped_ptr<SkBitmap> icon(IconUtil::CreateSkBitmapFromHICON(
-      icon_info.hIcon, gfx::Size(GetSystemMetrics(SM_CXSMICON),
-                                 GetSystemMetrics(SM_CYSMICON))));
+  icon.reset(IconUtil::CreateSkBitmapFromHICON(
+      icon_info.hIcon,
+      gfx::Size(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON))));
   DestroyIcon(icon_info.hIcon);
-  if (icon) {
-    button->SetImage(views::Button::STATE_NORMAL,
-                     gfx::ImageSkia::CreateFrom1xBitmap(*icon));
-  }
 #endif
+  return icon.Pass();
+}
+
+}  // namespace
+
+
+// ElevationIconSetter --------------------------------------------------------
+
+ElevationIconSetter::ElevationIconSetter(views::LabelButton* button)
+    : button_(button),
+      weak_factory_(this) {
+  base::PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&GetElevationIcon),
+      base::Bind(&ElevationIconSetter::SetButtonIcon,
+                 weak_factory_.GetWeakPtr()));
+}
+
+ElevationIconSetter::~ElevationIconSetter() {
+}
+
+void ElevationIconSetter::SetButtonIcon(scoped_ptr<SkBitmap> icon) {
+  if (icon) {
+    button_->SetImage(views::Button::STATE_NORMAL,
+                      gfx::ImageSkia::CreateFrom1xBitmap(*icon));
+    button_->SizeToPreferredSize();
+    if (button_->parent())
+      button_->parent()->Layout();
+  }
 }

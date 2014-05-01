@@ -11,6 +11,7 @@
 #include "ui/views/controls/link_listener.h"
 
 class ConfirmInfoBarDelegate;
+class ElevationIconSetter;
 
 namespace views {
 class Label;
@@ -48,6 +49,7 @@ class ConfirmInfoBar : public InfoBarView,
   views::LabelButton* ok_button_;
   views::LabelButton* cancel_button_;
   views::Link* link_;
+  scoped_ptr<ElevationIconSetter> elevation_icon_setter_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfirmInfoBar);
 };

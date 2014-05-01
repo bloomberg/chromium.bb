@@ -86,6 +86,9 @@ bool OutdatedUpgradeBubbleView::IsAvailable() {
 OutdatedUpgradeBubbleView::~OutdatedUpgradeBubbleView() {
   if (!accepted_ && num_ignored_bubbles_ < kMaxIgnored)
     ++num_ignored_bubbles_;
+
+  // Ensure |elevation_icon_setter_| is destroyed before |accept_button_|.
+  elevation_icon_setter_.reset();
 }
 
 views::View* OutdatedUpgradeBubbleView::GetInitiallyFocusedView() {
@@ -108,7 +111,7 @@ void OutdatedUpgradeBubbleView::Init() {
   accept_button_->SetStyle(views::Button::STYLE_BUTTON);
   accept_button_->SetIsDefault(true);
   accept_button_->SetFontList(rb.GetFontList(ui::ResourceBundle::BoldFont));
-  AddElevationIconToButton(accept_button_);
+  elevation_icon_setter_.reset(new ElevationIconSetter(accept_button_));
 
   later_button_ = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_LATER));

@@ -33,6 +33,8 @@ ConfirmInfoBar::ConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate> delegate)
 }
 
 ConfirmInfoBar::~ConfirmInfoBar() {
+  // Ensure |elevation_icon_setter_| is destroyed before |ok_button_|.
+  elevation_icon_setter_.reset();
 }
 
 void ConfirmInfoBar::Layout() {
@@ -69,10 +71,8 @@ void ConfirmInfoBar::ViewHierarchyChanged(
     if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_OK) {
       ok_button_ = CreateLabelButton(
           this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
-      if (delegate->OKButtonTriggersUACPrompt()) {
-        AddElevationIconToButton(ok_button_);
-        ok_button_->SizeToPreferredSize();
-      }
+      if (delegate->OKButtonTriggersUACPrompt())
+        elevation_icon_setter_.reset(new ElevationIconSetter(ok_button_));
       AddChildView(ok_button_);
     }
 
