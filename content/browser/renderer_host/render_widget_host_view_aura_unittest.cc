@@ -155,16 +155,22 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
 
   virtual ~FakeRenderWidgetHostViewAura() {}
 
-  virtual bool ShouldCreateResizeLock() OVERRIDE {
-    gfx::Size desired_size = window()->bounds().size();
-    return desired_size != current_frame_size_in_dip();
-  }
-
-  virtual scoped_ptr<ResizeLock> CreateResizeLock(bool defer_compositor_lock)
-      OVERRIDE {
+  virtual scoped_ptr<ResizeLock> CreateResizeLock(
+      bool defer_compositor_lock) OVERRIDE {
     gfx::Size desired_size = window()->bounds().size();
     return scoped_ptr<ResizeLock>(
         new FakeResizeLock(desired_size, defer_compositor_lock));
+  }
+
+  void RunOnCompositingDidCommit() {
+    GetDelegatedFrameHost()->OnCompositingDidCommitForTesting(
+        window()->GetHost()->compositor());
+  }
+
+  virtual bool ShouldCreateResizeLock() OVERRIDE {
+    gfx::Size desired_size = window()->bounds().size();
+    return desired_size !=
+           GetDelegatedFrameHost()->CurrentFrameSizeInDIPForTesting();
   }
 
   virtual void RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request)
@@ -181,8 +187,8 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
     }
   }
 
-  void RunOnCompositingDidCommit() {
-    OnCompositingDidCommit(window()->GetHost()->compositor());
+  cc::DelegatedFrameProvider* frame_provider() const {
+    return GetDelegatedFrameHost()->FrameProviderForTesting();
   }
 
   // A lock that doesn't actually do anything to the compositor, and does not
@@ -984,7 +990,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
   // Lock the compositor. Now we should drop frames.
   view_rect = gfx::Rect(150, 150);
   view_->SetSize(view_rect.size());
-  view_->MaybeCreateResizeLock();
+  view_->GetDelegatedFrameHost()->MaybeCreateResizeLock();
 
   // This frame is dropped.
   gfx::Rect dropped_damage_rect_1(10, 20, 30, 40);
@@ -1103,37 +1109,37 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
     views[i]->WasShown();
     views[i]->OnSwapCompositorFrame(
         1, MakeDelegatedFrame(1.f, frame_size, view_rect));
-    EXPECT_TRUE(views[i]->frame_provider_);
+    EXPECT_TRUE(views[i]->frame_provider());
     views[i]->WasHidden();
   }
 
   // There should be max_renderer_frames with a frame in it, and one without it.
   // Since the logic is LRU eviction, the first one should be without.
-  EXPECT_FALSE(views[0]->frame_provider_);
+  EXPECT_FALSE(views[0]->frame_provider());
   for (size_t i = 1; i < renderer_count; ++i)
-    EXPECT_TRUE(views[i]->frame_provider_);
+    EXPECT_TRUE(views[i]->frame_provider());
 
   // LRU renderer is [0], make it visible, it shouldn't evict anything yet.
   views[0]->WasShown();
-  EXPECT_FALSE(views[0]->frame_provider_);
-  EXPECT_TRUE(views[1]->frame_provider_);
+  EXPECT_FALSE(views[0]->frame_provider());
+  EXPECT_TRUE(views[1]->frame_provider());
 
   // Swap a frame on it, it should evict the next LRU [1].
   views[0]->OnSwapCompositorFrame(
       1, MakeDelegatedFrame(1.f, frame_size, view_rect));
-  EXPECT_TRUE(views[0]->frame_provider_);
-  EXPECT_FALSE(views[1]->frame_provider_);
+  EXPECT_TRUE(views[0]->frame_provider());
+  EXPECT_FALSE(views[1]->frame_provider());
   views[0]->WasHidden();
 
   // LRU renderer is [1], still hidden. Swap a frame on it, it should evict
   // the next LRU [2].
   views[1]->OnSwapCompositorFrame(
       1, MakeDelegatedFrame(1.f, frame_size, view_rect));
-  EXPECT_TRUE(views[0]->frame_provider_);
-  EXPECT_TRUE(views[1]->frame_provider_);
-  EXPECT_FALSE(views[2]->frame_provider_);
+  EXPECT_TRUE(views[0]->frame_provider());
+  EXPECT_TRUE(views[1]->frame_provider());
+  EXPECT_FALSE(views[2]->frame_provider());
   for (size_t i = 3; i < renderer_count; ++i)
-    EXPECT_TRUE(views[i]->frame_provider_);
+    EXPECT_TRUE(views[i]->frame_provider());
 
   // Make all renderers but [0] visible and swap a frame on them, keep [0]
   // hidden, it becomes the LRU.
@@ -1141,14 +1147,14 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
     views[i]->WasShown();
     views[i]->OnSwapCompositorFrame(
         1, MakeDelegatedFrame(1.f, frame_size, view_rect));
-    EXPECT_TRUE(views[i]->frame_provider_);
+    EXPECT_TRUE(views[i]->frame_provider());
   }
-  EXPECT_FALSE(views[0]->frame_provider_);
+  EXPECT_FALSE(views[0]->frame_provider());
 
   // Swap a frame on [0], it should be evicted immediately.
   views[0]->OnSwapCompositorFrame(
       1, MakeDelegatedFrame(1.f, frame_size, view_rect));
-  EXPECT_FALSE(views[0]->frame_provider_);
+  EXPECT_FALSE(views[0]->frame_provider());
 
   // Make [0] visible, and swap a frame on it. Nothing should be evicted
   // although we're above the limit.
@@ -1156,11 +1162,11 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   views[0]->OnSwapCompositorFrame(
       1, MakeDelegatedFrame(1.f, frame_size, view_rect));
   for (size_t i = 0; i < renderer_count; ++i)
-    EXPECT_TRUE(views[i]->frame_provider_);
+    EXPECT_TRUE(views[i]->frame_provider());
 
   // Make [0] hidden, it should evict its frame.
   views[0]->WasHidden();
-  EXPECT_FALSE(views[0]->frame_provider_);
+  EXPECT_FALSE(views[0]->frame_provider());
 
   for (size_t i = 0; i < renderer_count - 1; ++i)
     views[i]->WasHidden();
@@ -1182,9 +1188,9 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   views[renderer_count - 1]->WasHidden();
   for (size_t i = 0; i < renderer_count; ++i) {
     if (i + 2 < renderer_count)
-      EXPECT_FALSE(views[i]->frame_provider_);
+      EXPECT_FALSE(views[i]->frame_provider());
     else
-      EXPECT_TRUE(views[i]->frame_provider_);
+      EXPECT_TRUE(views[i]->frame_provider());
   }
   HostSharedBitmapManager::current()->ProcessRemoved(
       base::GetCurrentProcessHandle());
@@ -1233,25 +1239,25 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
     views[i]->WasShown();
     views[i]->OnSwapCompositorFrame(
         1, MakeDelegatedFrame(1.f, frame_size, view_rect));
-    EXPECT_TRUE(views[i]->frame_provider_);
+    EXPECT_TRUE(views[i]->frame_provider());
   }
 
   // If we hide [0], then [0] should be evicted.
   views[0]->WasHidden();
-  EXPECT_FALSE(views[0]->frame_provider_);
+  EXPECT_FALSE(views[0]->frame_provider());
 
   // If we lock [0] before hiding it, then [0] should not be evicted.
   views[0]->WasShown();
   views[0]->OnSwapCompositorFrame(
         1, MakeDelegatedFrame(1.f, frame_size, view_rect));
-  EXPECT_TRUE(views[0]->frame_provider_);
-  views[0]->LockResources();
+  EXPECT_TRUE(views[0]->frame_provider());
+  views[0]->GetDelegatedFrameHost()->LockResources();
   views[0]->WasHidden();
-  EXPECT_TRUE(views[0]->frame_provider_);
+  EXPECT_TRUE(views[0]->frame_provider());
 
   // If we unlock [0] now, then [0] should be evicted.
-  views[0]->UnlockResources();
-  EXPECT_FALSE(views[0]->frame_provider_);
+  views[0]->GetDelegatedFrameHost()->UnlockResources();
+  EXPECT_FALSE(views[0]->frame_provider());
 
   for (size_t i = 0; i < renderer_count; ++i) {
     views[i]->Destroy();
@@ -1277,7 +1283,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SoftwareDPIChange) {
 
   // Save the frame provider.
   scoped_refptr<cc::DelegatedFrameProvider> frame_provider =
-      view_->frame_provider_;
+      view_->frame_provider();
 
   // This frame will have the same number of physical pixels, but has a new
   // scale on it.
@@ -1287,7 +1293,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SoftwareDPIChange) {
   // When we get a new frame with the same frame size in physical pixels, but a
   // different scale, we should generate a new frame provider, as the final
   // result will need to be scaled differently to the screen.
-  EXPECT_NE(frame_provider.get(), view_->frame_provider_.get());
+  EXPECT_NE(frame_provider.get(), view_->frame_provider());
 }
 
 class RenderWidgetHostViewAuraCopyRequestTest
@@ -1343,7 +1349,9 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
   request = view_->last_copy_request_.Pass();
 
   // There should be one subscriber texture in flight.
-  EXPECT_EQ(1u, view_->active_frame_subscriber_textures_.size());
+  EXPECT_EQ(1u,
+            view_->GetDelegatedFrameHost()->
+                active_frame_subscriber_textures_.size());
 
   // Send back the mailbox included in the request. There's no release callback
   // since the mailbox came from the RWHVA originally.
@@ -1355,7 +1363,9 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
   run_loop.Run();
 
   // The callback should succeed.
-  EXPECT_EQ(0u, view_->active_frame_subscriber_textures_.size());
+  EXPECT_EQ(0u,
+            view_->GetDelegatedFrameHost()->
+                active_frame_subscriber_textures_.size());
   EXPECT_EQ(1, callback_count_);
   EXPECT_TRUE(result_);
 
@@ -1366,7 +1376,9 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
   request = view_->last_copy_request_.Pass();
 
   // There should be one subscriber texture in flight again.
-  EXPECT_EQ(1u, view_->active_frame_subscriber_textures_.size());
+  EXPECT_EQ(1u,
+            view_->GetDelegatedFrameHost()->
+                active_frame_subscriber_textures_.size());
 
   // Destroy the RenderWidgetHostViewAura and ImageTransportFactory.
   TearDownEnvironment();

@@ -8,14 +8,10 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "cc/layers/delegated_frame_provider.h"
-#include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_ack.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/texture_mailbox.h"
@@ -41,12 +37,8 @@
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
-#include "content/public/common/content_switches.h"
-#include "media/base/video_util.h"
-#include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -67,7 +59,6 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/compositor_vsync_manager.h"
-#include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_recognizer.h"
@@ -418,6 +409,7 @@ class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
 RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
     : host_(RenderWidgetHostImpl::From(host)),
       window_(new aura::Window(this)),
+      delegated_frame_host_(new DelegatedFrameHost(this)),
       in_shutdown_(false),
       in_bounds_changed_(false),
       is_fullscreen_(false),
@@ -429,16 +421,11 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       can_compose_inline_(true),
       has_composition_text_(false),
       accept_return_character_(false),
-      last_output_surface_id_(0),
-      pending_delegated_ack_count_(0),
-      skipped_frames_(false),
       last_swapped_software_frame_scale_factor_(1.f),
       paint_canvas_(NULL),
       synthetic_move_sent_(false),
-      can_lock_compositor_(YES),
       cursor_visibility_state_in_renderer_(UNKNOWN),
       touch_editing_client_(NULL),
-      delegated_frame_evictor_(new DelegatedFrameEvictor(this)),
       weak_ptr_factory_(this) {
   host_->SetView(this);
   window_observer_.reset(new WindowObserver(this));
@@ -446,9 +433,8 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
   aura::client::SetActivationDelegate(window_, this);
   aura::client::SetActivationChangeObserver(window_, this);
   aura::client::SetFocusChangeObserver(window_, this);
-  window_->set_layer_owner_delegate(this);
+  window_->set_layer_owner_delegate(delegated_frame_host_.get());
   gfx::Screen::GetScreenFor(window_)->AddObserver(this);
-  ImageTransportFactory::GetInstance()->AddObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -558,7 +544,6 @@ void RenderWidgetHostViewAura::WasShown() {
   if (!host_->is_hidden())
     return;
   host_->WasShown();
-  delegated_frame_evictor_->SetVisible(true);
 
   aura::Window* root = window_->GetRootWindow();
   if (root) {
@@ -568,12 +553,7 @@ void RenderWidgetHostViewAura::WasShown() {
       NotifyRendererOfCursorVisibilityState(cursor_client->IsCursorVisible());
   }
 
-  if (host_->is_accelerated_compositing_active() &&
-      !released_front_lock_.get()) {
-    ui::Compositor* compositor = GetCompositor();
-    if (compositor)
-      released_front_lock_ = compositor->GetCompositorLock();
-  }
+  delegated_frame_host_->WasShown();
 
 #if defined(OS_WIN)
   if (legacy_render_widget_host_HWND_) {
@@ -595,8 +575,7 @@ void RenderWidgetHostViewAura::WasHidden() {
   if (!host_ || host_->is_hidden())
     return;
   host_->WasHidden();
-  delegated_frame_evictor_->SetVisible(false);
-  released_front_lock_ = NULL;
+  delegated_frame_host_->WasHidden();
 
 #if defined(OS_WIN)
   constrained_rects_.clear();
@@ -636,77 +615,6 @@ void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
   }
 
   InternalSetBounds(gfx::Rect(relative_origin, rect.size()));
-}
-
-void RenderWidgetHostViewAura::MaybeCreateResizeLock() {
-  if (!ShouldCreateResizeLock())
-    return;
-  DCHECK(window_->GetHost());
-  DCHECK(window_->GetHost()->compositor());
-
-  // Listen to changes in the compositor lock state.
-  ui::Compositor* compositor = window_->GetHost()->compositor();
-  if (!compositor->HasObserver(this))
-    compositor->AddObserver(this);
-
-  bool defer_compositor_lock =
-      can_lock_compositor_ == NO_PENDING_RENDERER_FRAME ||
-      can_lock_compositor_ == NO_PENDING_COMMIT;
-
-  if (can_lock_compositor_ == YES)
-    can_lock_compositor_ = YES_DID_LOCK;
-
-  resize_lock_ = CreateResizeLock(defer_compositor_lock);
-}
-
-bool RenderWidgetHostViewAura::ShouldCreateResizeLock() {
-  // On Windows while resizing, the the resize locks makes us mis-paint a white
-  // vertical strip (including the non-client area) if the content composition
-  // is lagging the UI composition. So here we disable the throttling so that
-  // the UI bits can draw ahead of the content thereby reducing the amount of
-  // whiteout. Because this causes the content to be drawn at wrong sizes while
-  // resizing we compensate by blocking the UI thread in Compositor::Draw() by
-  // issuing a FinishAllRendering() if we are resizing.
-#if defined(OS_WIN)
-  return false;
-#else
-  if (resize_lock_)
-    return false;
-
-  if (host_->should_auto_resize())
-    return false;
-  if (!host_->is_accelerated_compositing_active())
-    return false;
-
-  gfx::Size desired_size = window_->bounds().size();
-  if (desired_size == current_frame_size_in_dip_)
-    return false;
-
-  aura::WindowTreeHost* host = window_->GetHost();
-  if (!host)
-    return false;
-
-  ui::Compositor* compositor = host->compositor();
-  if (!compositor)
-    return false;
-
-  return true;
-#endif
-}
-
-scoped_ptr<ResizeLock> RenderWidgetHostViewAura::CreateResizeLock(
-    bool defer_compositor_lock) {
-  gfx::Size desired_size = window_->bounds().size();
-  return scoped_ptr<ResizeLock>(new CompositorResizeLock(
-      window_->GetHost(),
-      desired_size,
-      defer_compositor_lock,
-      base::TimeDelta::FromMilliseconds(kResizeLockTimeoutMs)));
-}
-
-void RenderWidgetHostViewAura::RequestCopyOfOutput(
-    scoped_ptr<cc::CopyOutputRequest> request) {
-  window_->layer()->RequestCopyOfOutput(request.Pass());
 }
 
 gfx::NativeView RenderWidgetHostViewAura::GetNativeView() const {
@@ -831,7 +739,7 @@ bool RenderWidgetHostViewAura::HasFocus() const {
 }
 
 bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() const {
-  return CanCopyToBitmap();
+  return delegated_frame_host_->CanCopyToBitmap();
 }
 
 void RenderWidgetHostViewAura::Show() {
@@ -861,10 +769,7 @@ gfx::Rect RenderWidgetHostViewAura::GetViewBounds() const {
   // for the correct frame (i.e. during a resize), don't change the size so that
   // we don't pipeline more resizes than we can handle.
   gfx::Rect bounds(window_->GetBoundsInScreen());
-  if (resize_lock_.get())
-    return gfx::Rect(bounds.origin(), resize_lock_->expected_size());
-  else
-    return bounds;
+  return delegated_frame_host_->GetViewBoundsWithResizeLock(bounds);
 }
 
 void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
@@ -1024,97 +929,33 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     const SkBitmap::Config config) {
-  // Only ARGB888 and RGB565 supported as of now.
-  bool format_support = ((config == SkBitmap::kRGB_565_Config) ||
-                         (config == SkBitmap::kARGB_8888_Config));
-  if (!format_support) {
-    DCHECK(format_support);
-    callback.Run(false, SkBitmap());
-    return;
-  }
-  if (!CanCopyToBitmap()) {
-    callback.Run(false, SkBitmap());
-    return;
-  }
-
-  const gfx::Size& dst_size_in_pixel = ConvertViewSizeToPixel(this, dst_size);
-  scoped_ptr<cc::CopyOutputRequest> request =
-      cc::CopyOutputRequest::CreateRequest(base::Bind(
-          &RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResult,
-          dst_size_in_pixel,
-          config,
-          callback));
-  gfx::Rect src_subrect_in_pixel =
-      ConvertRectToPixel(current_device_scale_factor_, src_subrect);
-  request->set_area(src_subrect_in_pixel);
-  RequestCopyOfOutput(request.Pass());
+  delegated_frame_host_->CopyFromCompositingSurface(
+      src_subrect, dst_size, callback, config);
 }
 
 void RenderWidgetHostViewAura::CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
       const base::Callback<void(bool)>& callback) {
-  if (!CanCopyToVideoFrame()) {
-    callback.Run(false);
-    return;
-  }
-
-  // Try get a texture to reuse.
-  scoped_refptr<OwnedMailbox> subscriber_texture;
-  if (frame_subscriber_) {
-    if (!idle_frame_subscriber_textures_.empty()) {
-      subscriber_texture = idle_frame_subscriber_textures_.back();
-      idle_frame_subscriber_textures_.pop_back();
-    } else if (GLHelper* helper =
-                   ImageTransportFactory::GetInstance()->GetGLHelper()) {
-      subscriber_texture = new OwnedMailbox(helper);
-    }
-    if (subscriber_texture.get())
-      active_frame_subscriber_textures_.insert(subscriber_texture.get());
-  }
-
-  scoped_ptr<cc::CopyOutputRequest> request =
-      cc::CopyOutputRequest::CreateRequest(base::Bind(
-          &RenderWidgetHostViewAura::
-               CopyFromCompositingSurfaceHasResultForVideo,
-          AsWeakPtr(),  // For caching the ReadbackYUVInterface on this class.
-          subscriber_texture,
-          target,
-          callback));
-  gfx::Rect src_subrect_in_pixel =
-      ConvertRectToPixel(current_device_scale_factor_, src_subrect);
-  request->set_area(src_subrect_in_pixel);
-  if (subscriber_texture.get()) {
-    request->SetTextureMailbox(
-        cc::TextureMailbox(subscriber_texture->mailbox(),
-                           subscriber_texture->target(),
-                           subscriber_texture->sync_point()));
-  }
-  RequestCopyOfOutput(request.Pass());
-}
-
-bool RenderWidgetHostViewAura::CanCopyToBitmap() const {
-  return GetCompositor() && window_->layer()->has_external_content();
+  delegated_frame_host_->CopyFromCompositingSurfaceToVideoFrame(
+      src_subrect, target, callback);
 }
 
 bool RenderWidgetHostViewAura::CanCopyToVideoFrame() const {
-  return GetCompositor() &&
-         window_->layer()->has_external_content() &&
-         host_->is_accelerated_compositing_active();
+  return delegated_frame_host_->CanCopyToVideoFrame();
 }
 
 bool RenderWidgetHostViewAura::CanSubscribeFrame() const {
-  return true;
+  return delegated_frame_host_->CanSubscribeFrame();
 }
 
 void RenderWidgetHostViewAura::BeginFrameSubscription(
     scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
-  frame_subscriber_ = subscriber.Pass();
+  delegated_frame_host_->BeginFrameSubscription(subscriber.Pass());
 }
 
 void RenderWidgetHostViewAura::EndFrameSubscription() {
-  idle_frame_subscriber_textures_.clear();
-  frame_subscriber_.reset();
+  delegated_frame_host_->EndFrameSubscription();
 }
 
 void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {
@@ -1122,15 +963,6 @@ void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceInitialized(int host_id,
                                                              int route_id) {
-}
-
-bool RenderWidgetHostViewAura::ShouldSkipFrame(gfx::Size size_in_dip) const {
-  if (can_lock_compositor_ == NO_PENDING_RENDERER_FRAME ||
-      can_lock_compositor_ == NO_PENDING_COMMIT ||
-      !resize_lock_.get())
-    return false;
-
-  return size_in_dip != resize_lock_->expected_size();
 }
 
 void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
@@ -1142,7 +974,7 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
   if (!in_bounds_changed_)
     window_->SetBounds(rect);
   host_->WasResized();
-  MaybeCreateResizeLock();
+  delegated_frame_host_->WasResized();
   if (touch_editing_client_) {
     touch_editing_client_->OnSelectionOrCursorChanged(selection_anchor_rect_,
       selection_focus_rect_);
@@ -1172,37 +1004,6 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
   if (mouse_locked_)
     UpdateMouseLockRegion();
 #endif
-}
-
-void RenderWidgetHostViewAura::CheckResizeLock() {
-  if (!resize_lock_ ||
-      resize_lock_->expected_size() != current_frame_size_in_dip_)
-    return;
-
-  // Since we got the size we were looking for, unlock the compositor. But delay
-  // the release of the lock until we've kicked a frame with the new texture, to
-  // avoid resizing the UI before we have a chance to draw a "good" frame.
-  resize_lock_->UnlockCompositor();
-  ui::Compositor* compositor = GetCompositor();
-  if (compositor) {
-    if (!compositor->HasObserver(this))
-      compositor->AddObserver(this);
-  }
-}
-
-void RenderWidgetHostViewAura::DidReceiveFrameFromRenderer() {
-  if (frame_subscriber() && CanCopyToVideoFrame()) {
-    const base::TimeTicks present_time = base::TimeTicks::Now();
-    scoped_refptr<media::VideoFrame> frame;
-    RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
-    if (frame_subscriber()->ShouldCaptureFrame(present_time,
-                                               &frame, &callback)) {
-      CopyFromCompositingSurfaceToVideoFrame(
-          gfx::Rect(current_frame_size_in_dip_),
-          frame,
-          base::Bind(callback, present_time));
-    }
-  }
 }
 
 #if defined(OS_WIN)
@@ -1242,164 +1043,16 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
   // Oldschool composited mode is no longer supported.
 }
 
-void RenderWidgetHostViewAura::SwapDelegatedFrame(
-    uint32 output_surface_id,
-    scoped_ptr<cc::DelegatedFrameData> frame_data,
-    float frame_device_scale_factor,
-    const std::vector<ui::LatencyInfo>& latency_info) {
-  DCHECK_NE(0u, frame_data->render_pass_list.size());
-
-  cc::RenderPass* root_pass = frame_data->render_pass_list.back();
-
-  gfx::Size frame_size = root_pass->output_rect.size();
-  gfx::Size frame_size_in_dip =
-      ConvertSizeToDIP(frame_device_scale_factor, frame_size);
-
-  gfx::Rect damage_rect = gfx::ToEnclosingRect(root_pass->damage_rect);
-  damage_rect.Intersect(gfx::Rect(frame_size));
-  gfx::Rect damage_rect_in_dip =
-      ConvertRectToDIP(frame_device_scale_factor, damage_rect);
-
-  if (ShouldSkipFrame(frame_size_in_dip)) {
-    cc::CompositorFrameAck ack;
-    cc::TransferableResource::ReturnResources(frame_data->resource_list,
-                                              &ack.resources);
-    RenderWidgetHostImpl::SendSwapCompositorFrameAck(
-        host_->GetRoutingID(), output_surface_id,
-        host_->GetProcess()->GetID(), ack);
-    skipped_frames_ = true;
-    return;
-  }
-
-  if (skipped_frames_) {
-    skipped_frames_ = false;
-    damage_rect = gfx::Rect(frame_size);
-    damage_rect_in_dip = gfx::Rect(frame_size_in_dip);
-
-    // Give the same damage rect to the compositor.
-    cc::RenderPass* root_pass = frame_data->render_pass_list.back();
-    root_pass->damage_rect = damage_rect;
-  }
-
-  if (output_surface_id != last_output_surface_id_) {
-    // Resource ids are scoped by the output surface.
-    // If the originating output surface doesn't match the last one, it
-    // indicates the renderer's output surface may have been recreated, in which
-    // case we should recreate the DelegatedRendererLayer, to avoid matching
-    // resources from the old one with resources from the new one which would
-    // have the same id. Changing the layer to showing painted content destroys
-    // the DelegatedRendererLayer.
-    EvictDelegatedFrame();
-
-    // Drop the cc::DelegatedFrameResourceCollection so that we will not return
-    // any resources from the old output surface with the new output surface id.
-    if (resource_collection_.get()) {
-      resource_collection_->SetClient(NULL);
-
-      if (resource_collection_->LoseAllResources())
-        SendReturnedDelegatedResources(last_output_surface_id_);
-
-      resource_collection_ = NULL;
-    }
-    last_output_surface_id_ = output_surface_id;
-  }
-  if (frame_size.IsEmpty()) {
-    DCHECK_EQ(0u, frame_data->resource_list.size());
-    EvictDelegatedFrame();
-  } else {
-    if (!resource_collection_) {
-      resource_collection_ = new cc::DelegatedFrameResourceCollection;
-      resource_collection_->SetClient(this);
-    }
-    // If the physical frame size changes, we need a new |frame_provider_|. If
-    // the physical frame size is the same, but the size in DIP changed, we
-    // need to adjust the scale at which the frames will be drawn, and we do
-    // this by making a new |frame_provider_| also to ensure the scale change
-    // is presented in sync with the new frame content.
-    if (!frame_provider_.get() || frame_size != frame_provider_->frame_size() ||
-        frame_size_in_dip != current_frame_size_in_dip_) {
-      frame_provider_ = new cc::DelegatedFrameProvider(
-          resource_collection_.get(), frame_data.Pass());
-      window_->layer()->SetShowDelegatedContent(frame_provider_.get(),
-                                                frame_size_in_dip);
-    } else {
-      frame_provider_->SetFrameData(frame_data.Pass());
-    }
-  }
-  released_front_lock_ = NULL;
-  current_frame_size_in_dip_ = frame_size_in_dip;
-  CheckResizeLock();
-
-  window_->SchedulePaintInRect(damage_rect_in_dip);
-
-  pending_delegated_ack_count_++;
-
-  ui::Compositor* compositor = GetCompositor();
-  if (!compositor) {
-    SendDelegatedFrameAck(output_surface_id);
-  } else {
-    for (size_t i = 0; i < latency_info.size(); i++)
-      compositor->SetLatencyInfo(latency_info[i]);
-    AddOnCommitCallbackAndDisableLocks(
-        base::Bind(&RenderWidgetHostViewAura::SendDelegatedFrameAck,
-                   AsWeakPtr(),
-                   output_surface_id));
-  }
-  DidReceiveFrameFromRenderer();
-  if (frame_provider_.get())
-    delegated_frame_evictor_->SwappedFrame(!host_->is_hidden());
-  // Note: the frame may have been evicted immediately.
-}
-
-void RenderWidgetHostViewAura::SendDelegatedFrameAck(uint32 output_surface_id) {
-  cc::CompositorFrameAck ack;
-  if (resource_collection_)
-    resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
-  RenderWidgetHostImpl::SendSwapCompositorFrameAck(host_->GetRoutingID(),
-                                                   output_surface_id,
-                                                   host_->GetProcess()->GetID(),
-                                                   ack);
-  DCHECK_GT(pending_delegated_ack_count_, 0);
-  pending_delegated_ack_count_--;
-}
-
-void RenderWidgetHostViewAura::UnusedResourcesAreAvailable() {
-  if (pending_delegated_ack_count_)
-    return;
-
-  SendReturnedDelegatedResources(last_output_surface_id_);
-}
-
-void RenderWidgetHostViewAura::SendReturnedDelegatedResources(
-    uint32 output_surface_id) {
-  DCHECK(resource_collection_);
-
-  cc::CompositorFrameAck ack;
-  resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
-  DCHECK(!ack.resources.empty());
-
-  RenderWidgetHostImpl::SendReclaimCompositorResources(
-      host_->GetRoutingID(),
-      output_surface_id,
-      host_->GetProcess()->GetID(),
-      ack);
-}
-
-void RenderWidgetHostViewAura::EvictDelegatedFrame() {
-  window_->layer()->SetShowPaintedContent();
-  frame_provider_ = NULL;
-  delegated_frame_evictor_->DiscardedFrame();
-}
-
 void RenderWidgetHostViewAura::OnSwapCompositorFrame(
     uint32 output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
   TRACE_EVENT0("content", "RenderWidgetHostViewAura::OnSwapCompositorFrame");
   if (frame->delegated_frame_data) {
-    SwapDelegatedFrame(output_surface_id,
-                       frame->delegated_frame_data.Pass(),
-                       frame->metadata.device_scale_factor,
-                       frame->metadata.latency_info);
+    delegated_frame_host_->SwapDelegatedFrame(
+        output_surface_id,
+        frame->delegated_frame_data.Pass(),
+        frame->metadata.device_scale_factor,
+        frame->metadata.latency_info);
     return;
   }
 
@@ -1449,298 +1102,6 @@ bool RenderWidgetHostViewAura::HasAcceleratedSurface(
   // matter what is returned here as GetBackingStore is the only caller of this
   // method. TODO(jbates) implement this if other Aura code needs it.
   return false;
-}
-
-// static
-void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResult(
-    const gfx::Size& dst_size_in_pixel,
-    const SkBitmap::Config config,
-    const base::Callback<void(bool, const SkBitmap&)>& callback,
-    scoped_ptr<cc::CopyOutputResult> result) {
-  if (result->IsEmpty() || result->size().IsEmpty()) {
-    callback.Run(false, SkBitmap());
-    return;
-  }
-
-  if (result->HasTexture()) {
-    PrepareTextureCopyOutputResult(dst_size_in_pixel, config,
-                                   callback,
-                                   result.Pass());
-    return;
-  }
-
-  DCHECK(result->HasBitmap());
-  PrepareBitmapCopyOutputResult(dst_size_in_pixel, config, callback,
-                                result.Pass());
-}
-
-static void CopyFromCompositingSurfaceFinished(
-    const base::Callback<void(bool, const SkBitmap&)>& callback,
-    scoped_ptr<cc::SingleReleaseCallback> release_callback,
-    scoped_ptr<SkBitmap> bitmap,
-    scoped_ptr<SkAutoLockPixels> bitmap_pixels_lock,
-    bool result) {
-  bitmap_pixels_lock.reset();
-
-  uint32 sync_point = 0;
-  if (result) {
-    GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
-    sync_point = gl_helper->InsertSyncPoint();
-  }
-  bool lost_resource = sync_point == 0;
-  release_callback->Run(sync_point, lost_resource);
-
-  callback.Run(result, *bitmap);
-}
-
-// static
-void RenderWidgetHostViewAura::PrepareTextureCopyOutputResult(
-    const gfx::Size& dst_size_in_pixel,
-    const SkBitmap::Config config,
-    const base::Callback<void(bool, const SkBitmap&)>& callback,
-    scoped_ptr<cc::CopyOutputResult> result) {
-  DCHECK(result->HasTexture());
-  base::ScopedClosureRunner scoped_callback_runner(
-      base::Bind(callback, false, SkBitmap()));
-
-  scoped_ptr<SkBitmap> bitmap(new SkBitmap);
-  bitmap->setConfig(config,
-                    dst_size_in_pixel.width(), dst_size_in_pixel.height(),
-                    0, kOpaque_SkAlphaType);
-  if (!bitmap->allocPixels())
-    return;
-
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  GLHelper* gl_helper = factory->GetGLHelper();
-  if (!gl_helper)
-    return;
-
-  scoped_ptr<SkAutoLockPixels> bitmap_pixels_lock(
-      new SkAutoLockPixels(*bitmap));
-  uint8* pixels = static_cast<uint8*>(bitmap->getPixels());
-
-  cc::TextureMailbox texture_mailbox;
-  scoped_ptr<cc::SingleReleaseCallback> release_callback;
-  result->TakeTexture(&texture_mailbox, &release_callback);
-  DCHECK(texture_mailbox.IsTexture());
-  if (!texture_mailbox.IsTexture())
-    return;
-
-  ignore_result(scoped_callback_runner.Release());
-
-  gl_helper->CropScaleReadbackAndCleanMailbox(
-      texture_mailbox.mailbox(),
-      texture_mailbox.sync_point(),
-      result->size(),
-      gfx::Rect(result->size()),
-      dst_size_in_pixel,
-      pixels,
-      config,
-      base::Bind(&CopyFromCompositingSurfaceFinished,
-                 callback,
-                 base::Passed(&release_callback),
-                 base::Passed(&bitmap),
-                 base::Passed(&bitmap_pixels_lock)));
-}
-
-// static
-void RenderWidgetHostViewAura::PrepareBitmapCopyOutputResult(
-    const gfx::Size& dst_size_in_pixel,
-    const SkBitmap::Config config,
-    const base::Callback<void(bool, const SkBitmap&)>& callback,
-    scoped_ptr<cc::CopyOutputResult> result) {
-  if (config != SkBitmap::kARGB_8888_Config) {
-    NOTIMPLEMENTED();
-    callback.Run(false, SkBitmap());
-    return;
-  }
-  DCHECK(result->HasBitmap());
-  base::ScopedClosureRunner scoped_callback_runner(
-      base::Bind(callback, false, SkBitmap()));
-
-  scoped_ptr<SkBitmap> source = result->TakeBitmap();
-  DCHECK(source);
-  if (!source)
-    return;
-
-  ignore_result(scoped_callback_runner.Release());
-
-  SkBitmap bitmap = skia::ImageOperations::Resize(
-      *source,
-      skia::ImageOperations::RESIZE_BEST,
-      dst_size_in_pixel.width(),
-      dst_size_in_pixel.height());
-  callback.Run(true, bitmap);
-}
-
-// static
-void RenderWidgetHostViewAura::ReturnSubscriberTexture(
-    base::WeakPtr<RenderWidgetHostViewAura> rwhva,
-    scoped_refptr<OwnedMailbox> subscriber_texture,
-    uint32 sync_point) {
-  if (!subscriber_texture.get())
-    return;
-  if (!rwhva)
-    return;
-  DCHECK_NE(
-      rwhva->active_frame_subscriber_textures_.count(subscriber_texture.get()),
-      0u);
-
-  subscriber_texture->UpdateSyncPoint(sync_point);
-
-  rwhva->active_frame_subscriber_textures_.erase(subscriber_texture.get());
-  if (rwhva->frame_subscriber_ && subscriber_texture->texture_id())
-    rwhva->idle_frame_subscriber_textures_.push_back(subscriber_texture);
-}
-
-void RenderWidgetHostViewAura::CopyFromCompositingSurfaceFinishedForVideo(
-    base::WeakPtr<RenderWidgetHostViewAura> rwhva,
-    const base::Callback<void(bool)>& callback,
-    scoped_refptr<OwnedMailbox> subscriber_texture,
-    scoped_ptr<cc::SingleReleaseCallback> release_callback,
-    bool result) {
-  callback.Run(result);
-
-  uint32 sync_point = 0;
-  if (result) {
-    GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
-    sync_point = gl_helper->InsertSyncPoint();
-  }
-  if (release_callback) {
-    // A release callback means the texture came from the compositor, so there
-    // should be no |subscriber_texture|.
-    DCHECK(!subscriber_texture);
-    bool lost_resource = sync_point == 0;
-    release_callback->Run(sync_point, lost_resource);
-  }
-  ReturnSubscriberTexture(rwhva, subscriber_texture, sync_point);
-}
-
-// static
-void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResultForVideo(
-    base::WeakPtr<RenderWidgetHostViewAura> rwhva,
-    scoped_refptr<OwnedMailbox> subscriber_texture,
-    scoped_refptr<media::VideoFrame> video_frame,
-    const base::Callback<void(bool)>& callback,
-    scoped_ptr<cc::CopyOutputResult> result) {
-  base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
-  base::ScopedClosureRunner scoped_return_subscriber_texture(
-      base::Bind(&ReturnSubscriberTexture, rwhva, subscriber_texture, 0));
-
-  if (!rwhva)
-    return;
-  if (result->IsEmpty())
-    return;
-  if (result->size().IsEmpty())
-    return;
-
-  // Compute the dest size we want after the letterboxing resize. Make the
-  // coordinates and sizes even because we letterbox in YUV space
-  // (see CopyRGBToVideoFrame). They need to be even for the UV samples to
-  // line up correctly.
-  // The video frame's coded_size() and the result's size() are both physical
-  // pixels.
-  gfx::Rect region_in_frame =
-      media::ComputeLetterboxRegion(gfx::Rect(video_frame->coded_size()),
-                                    result->size());
-  region_in_frame = gfx::Rect(region_in_frame.x() & ~1,
-                              region_in_frame.y() & ~1,
-                              region_in_frame.width() & ~1,
-                              region_in_frame.height() & ~1);
-  if (region_in_frame.IsEmpty())
-    return;
-
-  if (!result->HasTexture()) {
-    DCHECK(result->HasBitmap());
-    scoped_ptr<SkBitmap> bitmap = result->TakeBitmap();
-    // Scale the bitmap to the required size, if necessary.
-    SkBitmap scaled_bitmap;
-    if (result->size().width() != region_in_frame.width() ||
-        result->size().height() != region_in_frame.height()) {
-      skia::ImageOperations::ResizeMethod method =
-          skia::ImageOperations::RESIZE_GOOD;
-      scaled_bitmap = skia::ImageOperations::Resize(*bitmap.get(), method,
-                                                    region_in_frame.width(),
-                                                    region_in_frame.height());
-    } else {
-      scaled_bitmap = *bitmap.get();
-    }
-
-    {
-      SkAutoLockPixels scaled_bitmap_locker(scaled_bitmap);
-
-      media::CopyRGBToVideoFrame(
-          reinterpret_cast<uint8*>(scaled_bitmap.getPixels()),
-          scaled_bitmap.rowBytes(),
-          region_in_frame,
-          video_frame.get());
-    }
-    ignore_result(scoped_callback_runner.Release());
-    callback.Run(true);
-    return;
-  }
-
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  GLHelper* gl_helper = factory->GetGLHelper();
-  if (!gl_helper)
-    return;
-  if (subscriber_texture.get() && !subscriber_texture->texture_id())
-    return;
-
-  cc::TextureMailbox texture_mailbox;
-  scoped_ptr<cc::SingleReleaseCallback> release_callback;
-  result->TakeTexture(&texture_mailbox, &release_callback);
-  DCHECK(texture_mailbox.IsTexture());
-  if (!texture_mailbox.IsTexture())
-    return;
-
-  gfx::Rect result_rect(result->size());
-
-  content::ReadbackYUVInterface* yuv_readback_pipeline =
-      rwhva->yuv_readback_pipeline_.get();
-  if (yuv_readback_pipeline == NULL ||
-      yuv_readback_pipeline->scaler()->SrcSize() != result_rect.size() ||
-      yuv_readback_pipeline->scaler()->SrcSubrect() != result_rect ||
-      yuv_readback_pipeline->scaler()->DstSize() != region_in_frame.size()) {
-    GLHelper::ScalerQuality quality = GLHelper::SCALER_QUALITY_FAST;
-    std::string quality_switch = switches::kTabCaptureDownscaleQuality;
-    // If we're scaling up, we can use the "best" quality.
-    if (result_rect.size().width() < region_in_frame.size().width() &&
-        result_rect.size().height() < region_in_frame.size().height())
-      quality_switch = switches::kTabCaptureUpscaleQuality;
-
-    std::string switch_value =
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(quality_switch);
-    if (switch_value == "fast")
-      quality = GLHelper::SCALER_QUALITY_FAST;
-    else if (switch_value == "good")
-      quality = GLHelper::SCALER_QUALITY_GOOD;
-    else if (switch_value == "best")
-      quality = GLHelper::SCALER_QUALITY_BEST;
-
-    rwhva->yuv_readback_pipeline_.reset(
-        gl_helper->CreateReadbackPipelineYUV(quality,
-                                             result_rect.size(),
-                                             result_rect,
-                                             video_frame->coded_size(),
-                                             region_in_frame,
-                                             true,
-                                             true));
-    yuv_readback_pipeline = rwhva->yuv_readback_pipeline_.get();
-  }
-
-  ignore_result(scoped_callback_runner.Release());
-  ignore_result(scoped_return_subscriber_texture.Release());
-  base::Callback<void(bool result)> finished_callback = base::Bind(
-      &RenderWidgetHostViewAura::CopyFromCompositingSurfaceFinishedForVideo,
-      rwhva->AsWeakPtr(),
-      callback,
-      subscriber_texture,
-      base::Passed(&release_callback));
-  yuv_readback_pipeline->ReadbackYUV(texture_mailbox.mailbox(),
-                                     texture_mailbox.sync_point(),
-                                     video_frame.get(),
-                                     finished_callback);
 }
 
 void RenderWidgetHostViewAura::GetScreenInfo(WebScreenInfo* results) {
@@ -2690,77 +2051,13 @@ void RenderWidgetHostViewAura::OnHostMoved(const aura::WindowTreeHost* host,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostViewAura, ui::CompositorObserver implementation:
-
-void RenderWidgetHostViewAura::OnCompositingDidCommit(
-    ui::Compositor* compositor) {
-  if (can_lock_compositor_ == NO_PENDING_COMMIT) {
-    can_lock_compositor_ = YES;
-    if (resize_lock_.get() && resize_lock_->GrabDeferredLock())
-      can_lock_compositor_ = YES_DID_LOCK;
-  }
-  RunOnCommitCallbacks();
-  if (resize_lock_ &&
-      resize_lock_->expected_size() == current_frame_size_in_dip_) {
-    resize_lock_.reset();
-    host_->WasResized();
-    // We may have had a resize while we had the lock (e.g. if the lock expired,
-    // or if the UI still gave us some resizes), so make sure we grab a new lock
-    // if necessary.
-    MaybeCreateResizeLock();
-  }
-}
-
-void RenderWidgetHostViewAura::OnCompositingStarted(
-    ui::Compositor* compositor, base::TimeTicks start_time) {
-  last_draw_ended_ = start_time;
-}
-
-void RenderWidgetHostViewAura::OnCompositingEnded(
-    ui::Compositor* compositor) {
-}
-
-void RenderWidgetHostViewAura::OnCompositingAborted(
-    ui::Compositor* compositor) {
-}
-
-void RenderWidgetHostViewAura::OnCompositingLockStateChanged(
-    ui::Compositor* compositor) {
-  // A compositor lock that is part of a resize lock timed out. We
-  // should display a renderer frame.
-  if (!compositor->IsLocked() && can_lock_compositor_ == YES_DID_LOCK) {
-    can_lock_compositor_ = NO_PENDING_RENDERER_FRAME;
-  }
-}
-
-void RenderWidgetHostViewAura::OnUpdateVSyncParameters(
-    base::TimeTicks timebase,
-    base::TimeDelta interval) {
-  if (IsShowing())
-    host_->UpdateVSyncParameters(timebase, interval);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostViewAura, ImageTransportFactoryObserver implementation:
-
-void RenderWidgetHostViewAura::OnLostResources() {
-  if (frame_provider_.get())
-    EvictDelegatedFrame();
-  idle_frame_subscriber_textures_.clear();
-  yuv_readback_pipeline_.reset();
-
-  host_->ScheduleComposite();
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, private:
 
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
   if (touch_editing_client_)
     touch_editing_client_->OnViewDestroyed();
 
-  ImageTransportFactory::GetInstance()->RemoveObserver(this);
-
+  delegated_frame_host_.reset();
   window_observer_.reset();
   if (window_->GetHost())
     window_->GetHost()->RemoveObserver(this);
@@ -2784,24 +2081,9 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
   // associated with the window, but just in case.
   DetachFromInputMethod();
 
-  if (resource_collection_.get())
-    resource_collection_->SetClient(NULL);
-
-  // An OwnedMailbox should not refer to the GLHelper anymore once the RWHVA is
-  // destroyed, as it may then outlive the GLHelper.
-  for (std::set<OwnedMailbox*>::iterator it =
-           active_frame_subscriber_textures_.begin();
-       it != active_frame_subscriber_textures_.end();
-       ++it) {
-    (*it)->Destroy();
-  }
-  active_frame_subscriber_textures_.clear();
-
 #if defined(OS_WIN)
   legacy_render_widget_host_HWND_.reset(NULL);
 #endif
-
-  DCHECK(!vsync_manager_);
 }
 
 void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
@@ -2924,27 +2206,6 @@ bool RenderWidgetHostViewAura::ShouldMoveToCenter() {
       global_mouse_position_.y() > rect.bottom() - border_y;
 }
 
-void RenderWidgetHostViewAura::RunOnCommitCallbacks() {
-  for (std::vector<base::Closure>::const_iterator
-      it = on_compositing_did_commit_callbacks_.begin();
-      it != on_compositing_did_commit_callbacks_.end(); ++it) {
-    it->Run();
-  }
-  on_compositing_did_commit_callbacks_.clear();
-}
-
-void RenderWidgetHostViewAura::AddOnCommitCallbackAndDisableLocks(
-    const base::Closure& callback) {
-  ui::Compositor* compositor = GetCompositor();
-  DCHECK(compositor);
-
-  if (!compositor->HasObserver(this))
-    compositor->AddObserver(this);
-
-  can_lock_compositor_ = NO_PENDING_COMMIT;
-  on_compositing_did_commit_callbacks_.push_back(callback);
-}
-
 void RenderWidgetHostViewAura::AddedToRootWindow() {
   window_->GetHost()->AddObserver(this);
   UpdateScreenInfo(window_);
@@ -2969,12 +2230,7 @@ void RenderWidgetHostViewAura::AddedToRootWindow() {
         reinterpret_cast<HWND>(GetNativeViewId()));
 #endif
 
-  ui::Compositor* compositor = GetCompositor();
-  if (compositor) {
-    DCHECK(!vsync_manager_);
-    vsync_manager_ = compositor->vsync_manager();
-    vsync_manager_->AddObserver(this);
-  }
+  delegated_frame_host_->AddedToWindow();
 }
 
 void RenderWidgetHostViewAura::RemovingFromRootWindow() {
@@ -2986,12 +2242,7 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
   DetachFromInputMethod();
 
   window_->GetHost()->RemoveObserver(this);
-  RunOnCommitCallbacks();
-  resize_lock_.reset();
-  host_->WasResized();
-  ui::Compositor* compositor = GetCompositor();
-  if (compositor && compositor->HasObserver(this))
-    compositor->RemoveObserver(this);
+  delegated_frame_host_->RemovingFromWindow();
 
 #if defined(OS_WIN)
   // Update the legacy window's parent temporarily to the desktop window. It
@@ -2999,16 +2250,6 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
   if (legacy_render_widget_host_HWND_)
     legacy_render_widget_host_HWND_->UpdateParent(::GetDesktopWindow());
 #endif
-
-  if (vsync_manager_) {
-    vsync_manager_->RemoveObserver(this);
-    vsync_manager_ = NULL;
-  }
-}
-
-ui::Compositor* RenderWidgetHostViewAura::GetCompositor() const {
-  aura::WindowTreeHost* host = window_->GetHost();
-  return host ? host->compositor() : NULL;
 }
 
 void RenderWidgetHostViewAura::DetachFromInputMethod() {
@@ -3046,32 +2287,62 @@ void RenderWidgetHostViewAura::ForwardKeyboardEvent(
   host_->ForwardKeyboardEvent(event);
 }
 
-void RenderWidgetHostViewAura::LockResources() {
-  DCHECK(frame_provider_);
-  delegated_frame_evictor_->LockFrame();
-}
-
-void RenderWidgetHostViewAura::UnlockResources() {
-  DCHECK(frame_provider_);
-  delegated_frame_evictor_->UnlockFrame();
-}
-
 SkBitmap::Config RenderWidgetHostViewAura::PreferredReadbackFormat() {
   return SkBitmap::kARGB_8888_Config;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostViewAura, ui::LayerOwnerDelegate implementation:
+// DelegatedFrameHost, public:
 
-void RenderWidgetHostViewAura::OnLayerRecreated(ui::Layer* old_layer,
-                                                ui::Layer* new_layer) {
-  // The new_layer is the one that will be used by our Window, so that's the one
-  // that should keep our frame. old_layer will be returned to the
-  // RecreateLayer caller, and should have a copy.
-  if (frame_provider_.get()) {
-    new_layer->SetShowDelegatedContent(frame_provider_.get(),
-                                       current_frame_size_in_dip_);
-  }
+ui::Compositor* RenderWidgetHostViewAura::GetCompositor() const {
+  aura::WindowTreeHost* host = window_->GetHost();
+  return host ? host->compositor() : NULL;
+}
+
+ui::Layer* RenderWidgetHostViewAura::GetLayer() {
+  return window_->layer();
+}
+
+RenderWidgetHostImpl* RenderWidgetHostViewAura::GetHost() {
+  return host_;
+}
+
+void RenderWidgetHostViewAura::SchedulePaintInRect(
+    const gfx::Rect& damage_rect_in_dip) {
+  window_->SchedulePaintInRect(damage_rect_in_dip);
+}
+
+bool RenderWidgetHostViewAura::IsVisible() {
+  return IsShowing();
+}
+
+gfx::Size RenderWidgetHostViewAura::DesiredFrameSize() {
+  return window_->bounds().size();
+}
+
+float RenderWidgetHostViewAura::CurrentDeviceScaleFactor() {
+  return current_device_scale_factor_;
+}
+
+gfx::Size RenderWidgetHostViewAura::ConvertViewSizeToPixel(
+    const gfx::Size& size) {
+  return content::ConvertViewSizeToPixel(this, size);
+}
+
+scoped_ptr<ResizeLock> RenderWidgetHostViewAura::CreateResizeLock(
+    bool defer_compositor_lock) {
+  gfx::Size desired_size = window_->bounds().size();
+  return scoped_ptr<ResizeLock>(new CompositorResizeLock(
+      window_->GetHost(),
+      desired_size,
+      defer_compositor_lock,
+      base::TimeDelta::FromMilliseconds(kResizeLockTimeoutMs)));
+  ResizeLock* lock = NULL;
+  return scoped_ptr<ResizeLock>(lock);
+}
+
+DelegatedFrameHost* RenderWidgetHostViewAura::GetDelegatedFrameHost() const {
+  return delegated_frame_host_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

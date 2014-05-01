@@ -357,6 +357,8 @@
     'browser/compositor/browser_compositor_output_surface.h',
     'browser/compositor/browser_compositor_output_surface_proxy.cc',
     'browser/compositor/browser_compositor_output_surface_proxy.h',
+    'browser/compositor/delegated_frame_host.cc',
+    'browser/compositor/delegated_frame_host.h',
     'browser/compositor/gpu_process_transport_factory.cc',
     'browser/compositor/gpu_process_transport_factory.h',
     'browser/compositor/image_transport_factory.cc',

@@ -16,28 +16,19 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/layers/delegated_frame_provider.h"
-#include "cc/layers/delegated_frame_resource_collection.h"
-#include "cc/resources/single_release_callback.h"
-#include "cc/resources/texture_mailbox.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/compositor/delegated_frame_host.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/compositor/owned_mailbox.h"
-#include "content/browser/renderer_host/delegated_frame_evictor.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
-#include "content/common/gpu/client/gl_helper.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/compositor/compositor.h"
-#include "ui/compositor/compositor_observer.h"
-#include "ui/compositor/compositor_vsync_manager.h"
-#include "ui/compositor/layer_owner_delegate.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
@@ -68,7 +59,6 @@ struct Mailbox;
 
 namespace ui {
 class CompositorLock;
-class CompositorVSyncManager;
 class InputMethod;
 class LocatedEvent;
 class Texture;
@@ -82,14 +72,11 @@ class LegacyRenderWidgetHostHWND;
 class RenderFrameHostImpl;
 class RenderWidgetHostImpl;
 class RenderWidgetHostView;
-class ResizeLock;
 
 // RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
 class CONTENT_EXPORT RenderWidgetHostViewAura
     : public RenderWidgetHostViewBase,
-      public ui::CompositorObserver,
-      public ui::CompositorVSyncManager::Observer,
-      public ui::LayerOwnerDelegate,
+      public DelegatedFrameHostClient,
       public ui::TextInputClient,
       public gfx::DisplayObserver,
       public aura::WindowTreeHostObserver,
@@ -98,10 +85,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       public aura::client::ActivationChangeObserver,
       public aura::client::FocusChangeObserver,
       public aura::client::CursorClientObserver,
-      public ImageTransportFactoryObserver,
-      public DelegatedFrameEvictorClient,
-      public base::SupportsWeakPtr<RenderWidgetHostViewAura>,
-      public cc::DelegatedFrameResourceCollectionClient {
+      public base::SupportsWeakPtr<RenderWidgetHostViewAura> {
  public:
   // Displays and controls touch editing elements such as selection handles.
   class TouchEditingClient {
@@ -322,8 +306,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void OnHostMoved(const aura::WindowTreeHost* host,
                            const gfx::Point& new_origin) OVERRIDE;
 
-  bool CanCopyToBitmap() const;
-
   void OnTextInputStateChanged(const ViewHostMsg_TextInputState_Params& params);
 
 #if defined(OS_WIN)
@@ -348,40 +330,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Should be constructed via RenderWidgetHostView::CreateViewForWidget.
   explicit RenderWidgetHostViewAura(RenderWidgetHost* host);
 
-  RenderWidgetHostViewFrameSubscriber* frame_subscriber() const {
-    return frame_subscriber_.get();
-  }
-
-  virtual bool ShouldCreateResizeLock();
-  virtual scoped_ptr<ResizeLock> CreateResizeLock(bool defer_compositor_lock);
-
-  virtual void RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request);
-
   // Exposed for tests.
   aura::Window* window() { return window_; }
-  gfx::Size current_frame_size_in_dip() const {
-    return current_frame_size_in_dip_;
-  }
-  void LockResources();
-  void UnlockResources();
-
-  // Overridden from ui::CompositorObserver:
-  virtual void OnCompositingDidCommit(ui::Compositor* compositor) OVERRIDE;
-  virtual void OnCompositingStarted(ui::Compositor* compositor,
-                                    base::TimeTicks start_time) OVERRIDE;
-  virtual void OnCompositingEnded(ui::Compositor* compositor) OVERRIDE;
-  virtual void OnCompositingAborted(ui::Compositor* compositor) OVERRIDE;
-  virtual void OnCompositingLockStateChanged(
-      ui::Compositor* compositor) OVERRIDE;
-
-  // Overridden from ui::CompositorVSyncManager::Observer:
-  virtual void OnUpdateVSyncParameters(base::TimeTicks timebase,
-                                       base::TimeDelta interval) OVERRIDE;
   virtual SkBitmap::Config PreferredReadbackFormat() OVERRIDE;
-
-  // Overridden from ui::LayerOwnerObserver:
-  virtual void OnLayerRecreated(ui::Layer* old_layer,
-                                ui::Layer* new_layer) OVERRIDE;
+  virtual DelegatedFrameHost* GetDelegatedFrameHost() const OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, SetCompositionText);
@@ -406,23 +358,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   class WindowObserver;
   friend class WindowObserver;
 
-  // Overridden from ImageTransportFactoryObserver:
-  virtual void OnLostResources() OVERRIDE;
-
   void UpdateCursorIfOverSelf();
-  bool ShouldSkipFrame(gfx::Size size_in_dip) const;
 
   // Set the bounds of the window and handle size changes.  Assumes the caller
   // has already adjusted the origin of |rect| to conform to whatever coordinate
   // space is required by the aura::Window.
   void InternalSetBounds(const gfx::Rect& rect);
-
-  // Lazily grab a resize lock if the aura window size doesn't match the current
-  // frame size, to give time to the renderer.
-  void MaybeCreateResizeLock();
-
-  // Checks if the resize lock can be released because we received an new frame.
-  void CheckResizeLock();
 
   ui::InputMethod* GetInputMethod() const;
 
@@ -449,53 +390,24 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // moved to center.
   bool ShouldMoveToCenter();
 
-  // Run all on compositing commit callbacks.
-  void RunOnCommitCallbacks();
-
-  // Add on compositing commit callback.
-  void AddOnCommitCallbackAndDisableLocks(const base::Closure& callback);
-
   // Called after |window_| is parented to a WindowEventDispatcher.
   void AddedToRootWindow();
 
   // Called prior to removing |window_| from a WindowEventDispatcher.
   void RemovingFromRootWindow();
 
-  // Called after async thumbnailer task completes.  Scales and crops the result
-  // of the copy.
-  static void CopyFromCompositingSurfaceHasResult(
-      const gfx::Size& dst_size_in_pixel,
-      const SkBitmap::Config config,
-      const base::Callback<void(bool, const SkBitmap&)>& callback,
-      scoped_ptr<cc::CopyOutputResult> result);
-  static void PrepareTextureCopyOutputResult(
-      const gfx::Size& dst_size_in_pixel,
-      const SkBitmap::Config config,
-      const base::Callback<void(bool, const SkBitmap&)>& callback,
-      scoped_ptr<cc::CopyOutputResult> result);
-  static void PrepareBitmapCopyOutputResult(
-      const gfx::Size& dst_size_in_pixel,
-      const SkBitmap::Config config,
-      const base::Callback<void(bool, const SkBitmap&)>& callback,
-      scoped_ptr<cc::CopyOutputResult> result);
-  static void CopyFromCompositingSurfaceHasResultForVideo(
-      base::WeakPtr<RenderWidgetHostViewAura> rwhva,
-      scoped_refptr<OwnedMailbox> subscriber_texture,
-      scoped_refptr<media::VideoFrame> video_frame,
-      const base::Callback<void(bool)>& callback,
-      scoped_ptr<cc::CopyOutputResult> result);
-  static void CopyFromCompositingSurfaceFinishedForVideo(
-      base::WeakPtr<RenderWidgetHostViewAura> rwhva,
-      const base::Callback<void(bool)>& callback,
-      scoped_refptr<OwnedMailbox> subscriber_texture,
-      scoped_ptr<cc::SingleReleaseCallback> release_callback,
-      bool result);
-  static void ReturnSubscriberTexture(
-      base::WeakPtr<RenderWidgetHostViewAura> rwhva,
-      scoped_refptr<OwnedMailbox> subscriber_texture,
-      uint32 sync_point);
-
-  ui::Compositor* GetCompositor() const;
+  // DelegatedFrameHostClient implementation.
+  virtual ui::Compositor* GetCompositor() const OVERRIDE;
+  virtual ui::Layer* GetLayer() OVERRIDE;
+  virtual RenderWidgetHostImpl* GetHost() OVERRIDE;
+  virtual void SchedulePaintInRect(
+      const gfx::Rect& damage_rect_in_dip) OVERRIDE;
+  virtual bool IsVisible() OVERRIDE;
+  virtual scoped_ptr<ResizeLock> CreateResizeLock(
+      bool defer_compositor_lock) OVERRIDE;
+  virtual gfx::Size DesiredFrameSize() OVERRIDE;
+  virtual float CurrentDeviceScaleFactor() OVERRIDE;
+  virtual gfx::Size ConvertViewSizeToPixel(const gfx::Size& size) OVERRIDE;
 
   // Detaches |this| from the input method object.
   void DetachFromInputMethod();
@@ -515,22 +427,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Converts |rect| from screen coordinate to window coordinate.
   gfx::Rect ConvertRectFromScreen(const gfx::Rect& rect) const;
 
-  void SwapDelegatedFrame(
-      uint32 output_surface_id,
-      scoped_ptr<cc::DelegatedFrameData> frame_data,
-      float frame_device_scale_factor,
-      const std::vector<ui::LatencyInfo>& latency_info);
-  void SendDelegatedFrameAck(uint32 output_surface_id);
-  void SendReturnedDelegatedResources(uint32 output_surface_id);
-
-  // DelegatedFrameEvictorClient implementation.
-  virtual void EvictDelegatedFrame() OVERRIDE;
-
-  // cc::DelegatedFrameProviderClient implementation.
-  virtual void UnusedResourcesAreAvailable() OVERRIDE;
-
-  void DidReceiveFrameFromRenderer();
-
   // Helper function to set keyboard focus to the main window.
   void SetKeyboardFocus();
 
@@ -540,6 +436,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   RenderWidgetHostImpl* host_;
 
   aura::Window* window_;
+
+  scoped_ptr<DelegatedFrameHost> delegated_frame_host_;
 
   scoped_ptr<WindowObserver> window_observer_;
 
@@ -597,32 +495,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Current tooltip text.
   base::string16 tooltip_;
 
-  std::vector<base::Closure> on_compositing_did_commit_callbacks_;
-
-  // The vsync manager we are observing for changes, if any.
-  scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
-
-  // With delegated renderer, this is the last output surface, used to
-  // disambiguate resources with the same id coming from different output
-  // surfaces.
-  uint32 last_output_surface_id_;
-
-  // The number of delegated frame acks that are pending, to delay resource
-  // returns until the acks are sent.
-  int pending_delegated_ack_count_;
-
-  // True after a delegated frame has been skipped, until a frame is not
-  // skipped.
-  bool skipped_frames_;
-
-  // Holds delegated resources that have been given to a DelegatedFrameProvider,
-  // and gives back resources when they are no longer in use for return to the
-  // renderer.
-  scoped_refptr<cc::DelegatedFrameResourceCollection> resource_collection_;
-
-  // Provides delegated frame updates to the cc::DelegatedRendererLayer.
-  scoped_refptr<cc::DelegatedFrameProvider> frame_provider_;
-
   // The size and scale of the last software compositing frame that was swapped.
   gfx::Size last_swapped_software_frame_size_;
   float last_swapped_software_frame_scale_factor_;
@@ -645,34 +517,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // events vs. normal mouse move events.
   bool synthetic_move_sent_;
 
-  // This lock is the one waiting for a frame of the right size to come back
-  // from the renderer/GPU process. It is set from the moment the aura window
-  // got resized, to the moment we committed the renderer frame of the same
-  // size. It keeps track of the size we expect from the renderer, and locks the
-  // compositor, as well as the UI for a short time to give a chance to the
-  // renderer of producing a frame of the right size.
-  scoped_ptr<ResizeLock> resize_lock_;
-
-  // Keeps track of the current frame size.
-  gfx::Size current_frame_size_in_dip_;
-
-  // This lock is for waiting for a front surface to become available to draw.
-  scoped_refptr<ui::CompositorLock> released_front_lock_;
-
   // Used to track the state of the window we're created from. Only used when
   // created fullscreen.
   scoped_ptr<aura::WindowTracker> host_tracker_;
-
-  enum CanLockCompositorState {
-    YES,
-    // We locked, so at some point we'll need to kick a frame.
-    YES_DID_LOCK,
-    // No. A lock timed out, we need to kick a new frame before locking again.
-    NO_PENDING_RENDERER_FRAME,
-    // No. We've got a frame, but it hasn't been committed.
-    NO_PENDING_COMMIT,
-  };
-  CanLockCompositorState can_lock_compositor_;
 
   // Used to track the last cursor visibility update that was sent to the
   // renderer via NotifyRendererOfCursorVisibilityState().
@@ -696,22 +543,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   PluginWindowMoves plugin_window_moves_;
 #endif
 
-  base::TimeTicks last_draw_ended_;
-
-  // Subscriber that listens to frame presentation events.
-  scoped_ptr<RenderWidgetHostViewFrameSubscriber> frame_subscriber_;
-  std::vector<scoped_refptr<OwnedMailbox> > idle_frame_subscriber_textures_;
-  std::set<OwnedMailbox*> active_frame_subscriber_textures_;
-
-  // YUV readback pipeline.
-  scoped_ptr<content::ReadbackYUVInterface>
-      yuv_readback_pipeline_;
-
   TouchEditingClient* touch_editing_client_;
 
   gfx::Insets insets_;
 
-  scoped_ptr<DelegatedFrameEvictor> delegated_frame_evictor_;
+  std::vector<ui::LatencyInfo> software_latency_info_;
 
   scoped_ptr<aura::client::ScopedTooltipDisabler> tooltip_disabler_;
 
