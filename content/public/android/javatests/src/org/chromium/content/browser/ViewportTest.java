@@ -26,7 +26,7 @@ public class ViewportTest extends ContentViewTestBase {
     }
 
     protected int evaluateIntegerValue(String expression) throws Throwable {
-        return Integer.valueOf(evaluateStringValue(expression));
+        return Integer.parseInt(evaluateStringValue(expression));
     }
 
     /*
