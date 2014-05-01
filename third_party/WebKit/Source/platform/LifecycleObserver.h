@@ -45,7 +45,7 @@ public:
     };
 
     explicit LifecycleObserver(Context* context, Type type = GenericType)
-        : m_lifecycleContext(context)
+        : m_lifecycleContext(0)
         , m_observerType(type)
     {
         observeContext(context);
