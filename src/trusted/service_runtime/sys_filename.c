@@ -8,6 +8,7 @@
 
 #include <string.h>
 
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_host_dir.h"
 #include "native_client/src/trusted/desc/nacl_desc_dir.h"
@@ -15,6 +16,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
+#include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_copy.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
@@ -43,7 +45,7 @@ static uint32_t CopyPathFromUser(struct NaClApp *nap,
 }
 
 int32_t NaClSysOpen(struct NaClAppThread  *natp,
-                    char                  *pathname,
+                    uint32_t              pathname,
                     int                   flags,
                     int                   mode) {
   struct NaClApp       *nap = natp->nap;
@@ -53,8 +55,8 @@ int32_t NaClSysOpen(struct NaClAppThread  *natp,
   int                  allowed_flags;
 
   NaClLog(3, "NaClSysOpen(0x%08"NACL_PRIxPTR", "
-          "0x%08"NACL_PRIxPTR", 0x%x, 0x%x)\n",
-          (uintptr_t) natp, (uintptr_t) pathname, flags, mode);
+          "0x%08"NACL_PRIx32", 0x%x, 0x%x)\n",
+          (uintptr_t) natp, pathname, flags, mode);
 
   if (!NaClAclBypassChecks) {
     return -NACL_ABI_EACCES;
@@ -138,23 +140,22 @@ cleanup:
 }
 
 int32_t NaClSysStat(struct NaClAppThread  *natp,
-                    const char            *pathname,
-                    struct nacl_abi_stat  *buf) {
+                    uint32_t              pathname,
+                    uint32_t              nasp) {
   struct NaClApp      *nap = natp->nap;
   int32_t             retval = -NACL_ABI_EINVAL;
   char                path[NACL_CONFIG_PATH_MAX];
   nacl_host_stat_t    stbuf;
 
   NaClLog(3,
-          ("Entered NaClSysStat(0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR","
-           " 0x%08"NACL_PRIxPTR")\n"),
-          (uintptr_t) natp, (uintptr_t) pathname, (uintptr_t) buf);
+          ("Entered NaClSysStat(0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIx32","
+           " 0x%08"NACL_PRIx32")\n"), (uintptr_t) natp, pathname, nasp);
 
   if (!NaClAclBypassChecks) {
     return -NACL_ABI_EACCES;
   }
 
-  retval = CopyPathFromUser(nap, path, sizeof path, (uintptr_t) pathname);
+  retval = CopyPathFromUser(nap, path, sizeof path, pathname);
   if (0 != retval)
     goto cleanup;
 
@@ -165,10 +166,8 @@ int32_t NaClSysStat(struct NaClAppThread  *natp,
   if (0 == retval) {
     struct nacl_abi_stat abi_stbuf;
 
-    retval = NaClAbiStatHostDescStatXlateCtor(&abi_stbuf,
-                                              &stbuf);
-    if (!NaClCopyOutToUser(nap, (uintptr_t) buf,
-                           &abi_stbuf, sizeof abi_stbuf)) {
+    retval = NaClAbiStatHostDescStatXlateCtor(&abi_stbuf, &stbuf);
+    if (!NaClCopyOutToUser(nap, nasp, &abi_stbuf, sizeof abi_stbuf)) {
       retval = -NACL_ABI_EFAULT;
     }
   }
@@ -279,6 +278,226 @@ int32_t NaClSysUnlink(struct NaClAppThread *natp,
     goto cleanup;
 
   retval = NaClHostDescUnlink(path);
+  NaClLog(3, "NaClHostDescUnlink '%s' -> %d\n", path, retval);
 cleanup:
   return retval;
+}
+
+int32_t NaClSysTruncate(struct NaClAppThread *natp,
+                        uint32_t             pathname,
+                        uint32_t             length_addr) {
+  struct NaClApp *nap = natp->nap;
+  char           path[NACL_CONFIG_PATH_MAX];
+  int32_t        retval = -NACL_ABI_EINVAL;
+  nacl_abi_off_t length;
+
+  if (!NaClAclBypassChecks)
+    return -NACL_ABI_EACCES;
+
+  retval = CopyPathFromUser(nap, path, sizeof path, pathname);
+  if (0 != retval)
+    return retval;
+
+  if (!NaClCopyInFromUser(nap, &length, length_addr, sizeof length))
+    return -NACL_ABI_EFAULT;
+
+  retval = NaClHostDescTruncate(path, length);
+  NaClLog(3, "NaClHostDescTruncate '%s' %"NACL_PRId64" -> %d\n",
+          path, length, retval);
+  return retval;
+}
+
+int32_t NaClSysLstat(struct NaClAppThread  *natp,
+                     uint32_t              pathname,
+                     uint32_t              nasp) {
+  struct NaClApp      *nap = natp->nap;
+  int32_t             retval = -NACL_ABI_EINVAL;
+  char                path[NACL_CONFIG_PATH_MAX];
+  nacl_host_stat_t    stbuf;
+
+  NaClLog(3,
+          ("Entered NaClSysLstat(0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIx32","
+           " 0x%08"NACL_PRIx32")\n"), (uintptr_t) natp, pathname, nasp);
+
+  if (!NaClAclBypassChecks) {
+    return -NACL_ABI_EACCES;
+  }
+
+  retval = CopyPathFromUser(nap, path, sizeof path, pathname);
+  if (0 != retval)
+    return retval;
+
+  /*
+   * Perform a host stat.
+   */
+  retval = NaClHostDescLstat(path, &stbuf);
+  if (0 == retval) {
+    struct nacl_abi_stat abi_stbuf;
+
+    retval = NaClAbiStatHostDescStatXlateCtor(&abi_stbuf, &stbuf);
+    if (!NaClCopyOutToUser(nap, nasp, &abi_stbuf, sizeof abi_stbuf)) {
+      return -NACL_ABI_EFAULT;
+    }
+  }
+  return retval;
+}
+
+int32_t NaClSysLink(struct NaClAppThread *natp,
+                    uint32_t              oldname,
+                    uint32_t              newname) {
+  struct NaClApp *nap = natp->nap;
+  char           oldpath[NACL_CONFIG_PATH_MAX];
+  char           newpath[NACL_CONFIG_PATH_MAX];
+  int32_t        retval = -NACL_ABI_EINVAL;
+
+  if (!NaClAclBypassChecks)
+    return -NACL_ABI_EACCES;
+
+  retval = CopyPathFromUser(nap, oldpath, sizeof oldpath, oldname);
+  if (0 != retval)
+    return retval;
+
+  retval = CopyPathFromUser(nap, newpath, sizeof newpath, newname);
+  if (0 != retval)
+    return retval;
+
+  return NaClHostDescLink(oldpath, newpath);
+}
+
+int32_t NaClSysRename(struct NaClAppThread *natp,
+                      uint32_t             oldname,
+                      uint32_t             newname) {
+  struct NaClApp *nap = natp->nap;
+  char           oldpath[NACL_CONFIG_PATH_MAX];
+  char           newpath[NACL_CONFIG_PATH_MAX];
+  int32_t        retval = -NACL_ABI_EINVAL;
+
+  if (!NaClAclBypassChecks)
+    return -NACL_ABI_EACCES;
+
+  retval = CopyPathFromUser(nap, oldpath, sizeof oldpath, oldname);
+  if (0 != retval)
+    return retval;
+
+  retval = CopyPathFromUser(nap, newpath, sizeof newpath, newname);
+  if (0 != retval)
+    return retval;
+
+  return NaClHostDescRename(oldpath, newpath);
+}
+
+int32_t NaClSysSymlink(struct NaClAppThread *natp,
+                       uint32_t             oldname,
+                       uint32_t             newname) {
+  struct NaClApp *nap = natp->nap;
+  char           oldpath[NACL_CONFIG_PATH_MAX];
+  char           newpath[NACL_CONFIG_PATH_MAX];
+  int32_t        retval = -NACL_ABI_EINVAL;
+
+  if (!NaClAclBypassChecks)
+    return -NACL_ABI_EACCES;
+
+  retval = CopyPathFromUser(nap, oldpath, sizeof oldpath, oldname);
+  if (0 != retval)
+    return retval;
+
+  retval = CopyPathFromUser(nap, newpath, sizeof newpath, newname);
+  if (0 != retval)
+    return retval;
+
+  return NaClHostDescSymlink(oldpath, newpath);
+}
+
+int32_t NaClSysChmod(struct NaClAppThread *natp,
+                     uint32_t             path,
+                     nacl_abi_mode_t      mode) {
+  struct NaClApp *nap = natp->nap;
+  char           pathname[NACL_CONFIG_PATH_MAX];
+  int32_t        retval = -NACL_ABI_EINVAL;
+
+  if (!NaClAclBypassChecks)
+    return -NACL_ABI_EACCES;
+
+  retval = CopyPathFromUser(nap, pathname, sizeof pathname, path);
+  if (0 != retval)
+    return retval;
+
+  return NaClHostDescChmod(pathname, mode);
+}
+
+int32_t NaClSysAccess(struct NaClAppThread *natp,
+                      uint32_t             path,
+                      int                  amode) {
+  struct NaClApp *nap = natp->nap;
+  char           pathname[NACL_CONFIG_PATH_MAX];
+  int32_t        retval = -NACL_ABI_EINVAL;
+
+  if (!NaClAclBypassChecks)
+    return -NACL_ABI_EACCES;
+
+  /*
+   * amode must either be F_OK or some combination of the three permission bits.
+   */
+  if (amode != NACL_ABI_F_OK
+      && (amode & ~(NACL_ABI_R_OK | NACL_ABI_W_OK | NACL_ABI_X_OK)) != 0)
+    return -NACL_ABI_EINVAL;
+
+  retval = CopyPathFromUser(nap, pathname, sizeof pathname, path);
+  if (0 != retval)
+    return retval;
+
+  retval = NaClHostDescAccess(pathname, amode);
+  NaClLog(3, "NaClHostDescAccess '%s' %d -> %d\n", pathname, amode, retval);
+  return retval;
+}
+
+int32_t NaClSysReadlink(struct NaClAppThread *natp,
+                        uint32_t             path,
+                        uint32_t             buffer,
+                        size_t               count) {
+  struct NaClApp *nap = natp->nap;
+  char           pathname[NACL_CONFIG_PATH_MAX];
+  char           realpath[NACL_CONFIG_PATH_MAX];
+  int32_t        retval = -NACL_ABI_EINVAL;
+
+  if (!NaClAclBypassChecks)
+    return -NACL_ABI_EACCES;
+
+  if (count >= NACL_CONFIG_PATH_MAX)
+    return -NACL_ABI_EINVAL;
+
+  retval = CopyPathFromUser(nap, pathname, sizeof pathname, path);
+  if (0 != retval)
+    return retval;
+
+  retval = NaClHostDescReadlink(pathname, realpath, count);
+  if (retval < 0)
+    return retval;
+
+  CHECK(retval <= (int32_t)count);
+  if (!NaClCopyOutToUser(nap, buffer, realpath, retval))
+    return -NACL_ABI_EFAULT;
+
+  return retval;
+}
+
+int32_t NaClSysUtimes(struct NaClAppThread *natp,
+                      uint32_t             path,
+                      uint32_t             times) {
+  struct NaClApp *nap = natp->nap;
+  char           pathname[NACL_CONFIG_PATH_MAX];
+  int32_t        retval = -NACL_ABI_EINVAL;
+
+  if (!NaClAclBypassChecks)
+    return -NACL_ABI_EACCES;
+
+  retval = CopyPathFromUser(nap, pathname, sizeof pathname, path);
+  if (0 != retval)
+    return retval;
+
+  if (times == 0)
+    return -NACL_ABI_EACCES;
+
+  /* TODO(sbc): implement in terms of NaClHost function. */
+  return -NACL_ABI_ENOSYS;
 }

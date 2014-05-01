@@ -9,21 +9,21 @@
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
 EXTERN_C_BEGIN
 
 struct NaClApp;
 struct NaClAppThread;
-struct nacl_abi_stat;
 
 int32_t NaClSysOpen(struct NaClAppThread  *natp,
-                    char                  *pathname,
+                    uint32_t              pathname,
                     int                   flags,
                     int                   mode);
 
 int32_t NaClSysStat(struct NaClAppThread *natp,
-                    const char           *path,
-                    struct nacl_abi_stat *nasp);
+                    uint32_t             path,
+                    uint32_t             nasp);
 
 int32_t NaClSysMkdir(struct NaClAppThread *natp,
                      uint32_t             path,
@@ -41,6 +41,43 @@ int32_t NaClSysGetcwd(struct NaClAppThread *natp,
 
 int32_t NaClSysUnlink(struct NaClAppThread *natp,
                       uint32_t             path);
+
+int32_t NaClSysTruncate(struct NaClAppThread *natp,
+                        uint32_t             path,
+                        uint32_t             length_addr);
+
+int32_t NaClSysLstat(struct NaClAppThread *natp,
+                     uint32_t             path,
+                     uint32_t             nasp);
+
+int32_t NaClSysLink(struct NaClAppThread *natp,
+                    uint32_t              oldpath,
+                    uint32_t              newpath);
+
+int32_t NaClSysRename(struct NaClAppThread *natp,
+                      uint32_t              oldpath,
+                      uint32_t              newpath);
+
+int32_t NaClSysSymlink(struct NaClAppThread *natp,
+                       uint32_t             oldpath,
+                       uint32_t             newpath);
+
+int32_t NaClSysChmod(struct NaClAppThread *natp,
+                     uint32_t             path,
+                     nacl_abi_mode_t      mode);
+
+int32_t NaClSysAccess(struct NaClAppThread *natp,
+                      uint32_t             path,
+                      int                  amode);
+
+int32_t NaClSysReadlink(struct NaClAppThread *natp,
+                        uint32_t             path,
+                        uint32_t             buf,
+                        size_t               count);
+
+int32_t NaClSysUtimes(struct NaClAppThread *natp,
+                      uint32_t             path,
+                      uint32_t             times);
 
 EXTERN_C_END
 

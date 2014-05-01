@@ -36,6 +36,8 @@ int32_t NaClAbiStatHostDescStatXlateCtor(struct nacl_abi_stat   *dst,
                                          nacl_host_stat_t const *src) {
   nacl_abi_mode_t m;
 
+  memset(dst, 0, sizeof *dst);
+
   if (src->st_size > INT32_MAX) {
     return -NACL_ABI_EOVERFLOW;
   }

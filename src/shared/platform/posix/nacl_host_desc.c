@@ -14,6 +14,7 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -33,10 +34,11 @@
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 
+#include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
-#include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
+#include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
 
 #if NACL_LINUX
 # include "native_client/src/shared/platform/posix/nacl_file_lock.h"
@@ -53,6 +55,38 @@
 #else
 # error "Which POSIX OS?"
 #endif
+
+/*
+ * Map our ABI to the host OS's ABI.
+ */
+static INLINE mode_t NaClMapMode(nacl_abi_mode_t abi_mode) {
+  mode_t m = 0;
+  if (0 != (abi_mode & NACL_ABI_S_IRUSR))
+    m |= S_IRUSR;
+  if (0 != (abi_mode & NACL_ABI_S_IWUSR))
+    m |= S_IWUSR;
+  if (0 != (abi_mode & NACL_ABI_S_IXUSR))
+    m |= S_IXUSR;
+  return m;
+}
+
+/*
+ * Map our ABI to the host OS's ABI.
+ */
+static INLINE int NaClMapAccessMode(int nacl_mode) {
+  int mode = 0;
+  if (nacl_mode == NACL_ABI_F_OK) {
+    mode = F_OK;
+  } else {
+    if (nacl_mode & NACL_ABI_R_OK)
+      mode |= R_OK;
+    if (nacl_mode & NACL_ABI_W_OK)
+      mode |= W_OK;
+    if (nacl_mode & NACL_ABI_X_OK)
+      mode |= X_OK;
+  }
+  return mode;
+}
 
 /*
  * Map our ABI to the host OS's ABI.  On linux, this should be a big no-op.
@@ -581,7 +615,7 @@ int NaClHostDescFstat(struct NaClHostDesc  *d,
                       nacl_host_stat_t     *nhsp) {
   NaClHostDescCheckValidity("NaClHostDescFstat", d);
   if (NACL_HOST_FSTAT64(d->d, nhsp) == -1) {
-    return -errno;
+    return -NaClXlateErrno(errno);
   }
 
   return 0;
@@ -611,11 +645,10 @@ int NaClHostDescClose(struct NaClHostDesc *d) {
  * This is not a host descriptor function, but is closely related to
  * fstat and should behave similarly.
  */
-int NaClHostDescStat(char const       *host_os_pathname,
-                     nacl_host_stat_t *nhsp) {
+int NaClHostDescStat(char const *path, nacl_host_stat_t *nhsp) {
 
-  if (NACL_HOST_STAT64(host_os_pathname, nhsp) == -1) {
-    return -errno;
+  if (NACL_HOST_STAT64(path, nhsp) == -1) {
+    return -NaClXlateErrno(errno);
   }
 
   return 0;
@@ -647,6 +680,55 @@ int NaClHostDescGetcwd(char *path, size_t len) {
 
 int NaClHostDescUnlink(const char *path) {
   if (unlink(path) != 0)
-    return -errno;
+    return -NaClXlateErrno(errno);
   return 0;
+}
+
+int NaClHostDescTruncate(char const *path, nacl_abi_off_t length) {
+  if (truncate(path, length) != 0)
+    return -NaClXlateErrno(errno);
+  return 0;
+}
+
+int NaClHostDescLstat(char const *path, nacl_host_stat_t *nhsp) {
+  if (NACL_HOST_LSTAT64(path, nhsp) == -1)
+    return -NaClXlateErrno(errno);
+  return 0;
+}
+
+int NaClHostDescLink(const char *oldpath, const char *newpath) {
+  if (link(oldpath, newpath) != 0)
+    return -NaClXlateErrno(errno);
+  return 0;
+}
+
+int NaClHostDescRename(const char *oldpath, const char *newpath) {
+  if (rename(oldpath, newpath) != 0)
+    return -NaClXlateErrno(errno);
+  return 0;
+}
+
+int NaClHostDescSymlink(const char *oldpath, const char *newpath) {
+  if (symlink(oldpath, newpath) != 0)
+    return -NaClXlateErrno(errno);
+  return 0;
+}
+
+int NaClHostDescChmod(const char *path, nacl_abi_mode_t mode) {
+  if (chmod(path, NaClMapMode(mode)) != 0)
+    return -NaClXlateErrno(errno);
+  return 0;
+}
+
+int NaClHostDescAccess(const char *path, int amode) {
+  if (access(path, NaClMapAccessMode(amode)) != 0)
+    return -NaClXlateErrno(errno);
+  return 0;
+}
+
+int NaClHostDescReadlink(const char *path, char *buf, size_t bufsize) {
+  int retval = readlink(path, buf, bufsize);
+  if (retval < 0)
+    return -NaClXlateErrno(errno);
+  return retval;
 }

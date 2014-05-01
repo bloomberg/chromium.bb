@@ -245,11 +245,6 @@ int     _EXFUN(sync, (void));
 int     _EXFUN(readlink, (const char *__path, char *__buf, int __buflen));
 int     _EXFUN(symlink, (const char *__name1, const char *__name2));
 
-#define F_OK 0
-#define R_OK 4
-#define W_OK 2
-#define X_OK 1
-
 # define SEEK_SET 0
 # define SEEK_CUR 1
 # define SEEK_END 2
@@ -261,6 +256,11 @@ int     _EXFUN(symlink, (const char *__name1, const char *__name2));
 #define STDERR_FILENO   2       /* standard error file descriptor */
 
 #endif  /* __native_client__ */
+
+#define NACL_ABI_F_OK 0
+#define NACL_ABI_R_OK 4
+#define NACL_ABI_W_OK 2
+#define NACL_ABI_X_OK 1
 
 /*
  * sysconf values as supported by NativeClient

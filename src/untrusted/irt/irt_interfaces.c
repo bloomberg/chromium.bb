@@ -62,7 +62,9 @@ static const struct nacl_irt_interface irt_interfaces[] = {
    */
   { NACL_IRT_FILENAME_v0_1, &nacl_irt_filename, sizeof(nacl_irt_filename),
     non_pnacl_filter },
-  { NACL_IRT_DEV_FILENAME_v0_2, &nacl_irt_dev_filename,
+  { NACL_IRT_DEV_FILENAME_v0_2, &nacl_irt_dev_filename_v0_2,
+    sizeof(nacl_irt_dev_filename_v0_2), file_access_filter },
+  { NACL_IRT_DEV_FILENAME_v0_3, &nacl_irt_dev_filename,
     sizeof(nacl_irt_dev_filename), file_access_filter },
   /*
    * The old versions of "irt-memory", v0.1 and v0.2, which contain

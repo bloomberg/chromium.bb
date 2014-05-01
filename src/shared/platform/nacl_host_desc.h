@@ -53,14 +53,17 @@ typedef int64_t nacl_off64_t;
 typedef struct stat64 nacl_host_stat_t;
 # define NACL_HOST_FSTAT64 fstat64
 # define NACL_HOST_STAT64 stat64
+# define NACL_HOST_LSTAT64 lstat64
 #elif NACL_OSX
 typedef struct stat nacl_host_stat_t;
 # define NACL_HOST_FSTAT64 fstat
 # define NACL_HOST_STAT64 stat
+# define NACL_HOST_LSTAT64 lstat
 #elif NACL_WINDOWS
 typedef struct _stati64 nacl_host_stat_t;
 # define NACL_HOST_FSTAT64 _fstat64
 # define NACL_HOST_STAT64 _stati64
+# define NACL_HOST_LSTAT64 _lstati64
 #elif defined __native_client__
 /* nacl_host_stat_t not exposed to NaCl module code */
 #else
@@ -336,6 +339,37 @@ extern int NaClHostDescGetcwd(char *path, size_t len) NACL_WUR;
  * Underlying host-OS functions:  unlink(2) / _unlink
  */
 extern int NaClHostDescUnlink(char const *path) NACL_WUR;
+
+extern int NaClHostDescTruncate(char const *path,
+                                nacl_abi_off_t length) NACL_WUR;
+
+extern int NaClHostDescLstat(char const *path,
+                             nacl_host_stat_t *nasp) NACL_WUR;
+
+extern int NaClHostDescLink(const char *oldpath, const char *newpath) NACL_WUR;
+
+/*
+ * Rename a file or directory.
+ */
+extern int NaClHostDescRename(const char *oldpath,
+                              const char *newpath) NACL_WUR;
+
+/*
+ * Create a new symlink called 'newpath', pointing to 'oldpath'.
+ */
+extern int NaClHostDescSymlink(const char *oldpath, const char *newpath);
+
+extern int NaClHostDescChmod(const char *path, nacl_abi_mode_t amode);
+
+extern int NaClHostDescAccess(const char *path, int amode);
+
+/*
+ * Find the target of a symlink.
+ * Like readlink(2) this function writes up to 'bufsize' bytes to 'buf' and
+ * returns the number of bytes written but never writes the NULL terminator.
+ * Returns -1 and sets errno on error.
+ */
+extern int NaClHostDescReadlink(const char *path, char *buf, size_t bufsize);
 
 /*
  * Maps NACI_ABI_ versions of the mmap prot argument to host ABI versions

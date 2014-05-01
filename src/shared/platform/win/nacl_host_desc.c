@@ -33,10 +33,11 @@
 #include "native_client/src/trusted/service_runtime/internal_errno.h"
 #include "native_client/src/trusted/service_runtime/sel_util-inl.h"
 
+#include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
-#include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
+#include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
 
 #define OFFSET_FOR_FILEPOS_LOCK (GG_LONGLONG(0x7000000000000000))
 
@@ -99,6 +100,44 @@ static void NaClTakeFilePosLock(HANDLE hFile) {
     NaClLog(LOG_FATAL, "NaClTakeFilePosLock: LockFileEx failed, error %u\n",
             err);
   }
+}
+
+/*
+ * Map our ABI to the host OS's ABI.
+ * Note: there is no X bit equivalent on windows so NACL_ABI_S_IXUSR
+ * is ignored.
+ */
+static INLINE mode_t NaClMapMode(nacl_abi_mode_t abi_mode) {
+  mode_t m = 0;
+  if (0 != (abi_mode & NACL_ABI_S_IRUSR))
+    m |= _S_IREAD;
+  if (0 != (abi_mode & NACL_ABI_S_IWUSR))
+    m |= _S_IWRITE;
+  return m;
+}
+
+/* Windows doesn't define R_OK or W_OK macros but expects these constants */
+#define WIN_F_OK 0
+#define WIN_R_OK 4
+#define WIN_W_OK 2
+
+/*
+ * Map our ABI to the host OS's ABI.
+ * There is no X_OK (0x1) on win32 so we ignore
+ * NACL_ABI_X_OK and report everything that exists
+ * as being executable.
+ */
+static INLINE int NaClMapAccessMode(int nacl_mode) {
+  int mode = 0;
+  if (nacl_mode == NACL_ABI_F_OK) {
+    mode = WIN_F_OK;
+  } else {
+    if (nacl_mode & NACL_ABI_R_OK)
+      mode |= WIN_R_OK;
+    if (nacl_mode & NACL_ABI_W_OK)
+      mode |= WIN_W_OK;
+  }
+  return mode;
 }
 
 static void NaClDropFilePosLock(HANDLE hFile) {
@@ -896,17 +935,10 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
   DWORD err;
   int fd;
 
-  /*
-   * TODO(bsy): do something reasonable with perms.  In particular,
-   * Windows does support read-only files, so if (perms &
-   * NACL_ABI_IRWXU) == NACL_ABI_S_IRUSR, we could create the file
-   * with FILE_ATTRIBUTE_READONLY.  Since only test code is allowed to
-   * open files, this is low priority.
-   */
-  UNREFERENCED_PARAMETER(perms);
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDescOpen: 'this' is NULL\n");
   }
+
   /*
    * Sanitize access flags.
    */
@@ -991,12 +1023,12 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
       NACL_ABI_O_RDONLY != (flags & NACL_ABI_O_ACCMODE)) {
     NaClLog(4, "NaClHostDescOpen: Truncating file\n");
     if (!SetEndOfFile(hFile)) {
-      int last_error = GetLastError();
+      err = GetLastError();
       NaClLog(LOG_ERROR,
               "NaClHostDescOpen: could not truncate file:"
               " last error %d.\n",
-              last_error);
-      if (last_error == ERROR_USER_MAPPED_FILE) {
+              err);
+      if (err == ERROR_USER_MAPPED_FILE) {
         NaClLog(LOG_ERROR,
                 "NaClHostDescOpen: this is due to an existing mapping"
                 " of the same file.\n");
@@ -1362,9 +1394,8 @@ int NaClHostDescClose(struct NaClHostDesc *d) {
  * This is not a host descriptor function, but is closely related to
  * fstat and should behave similarly.
  */
-int NaClHostDescStat(char const       *host_os_pathname,
-                     nacl_host_stat_t *nhsp) {
-  if (NACL_HOST_STAT64(host_os_pathname, nhsp) == -1) {
+int NaClHostDescStat(char const *path, nacl_host_stat_t *nhsp) {
+  if (NACL_HOST_STAT64(path, nhsp) == -1) {
     return -GetErrno();
   }
 
@@ -1397,7 +1428,116 @@ int NaClHostDescGetcwd(char *path, size_t len) {
 }
 
 int NaClHostDescUnlink(const char *path) {
+  /*
+   * If the file exists and is not writable we make it writeable
+   * before calling _unlink() to match the POSIX semantics where
+   * unlink(2) can remove readonly files.
+   */
+  if (_access(path, WIN_F_OK) == 0 && _access(path, WIN_W_OK) != 0) {
+    if (_chmod(path, _S_IREAD | S_IWRITE) != 0) {
+      /* If _chmod fails just log it and contine on to call _unlink anyway */
+      NaClLog(3, "NaClHostDescUnlink: _chmod failed: %d\n", errno);
+    }
+  }
+
   if (_unlink(path) != 0)
-    return -errno;
+    return -NaClXlateErrno(errno);
+
   return 0;
+}
+
+int NaClHostDescTruncate(char const *path, nacl_abi_off_t length) {
+  LARGE_INTEGER win_length;
+  DWORD err;
+
+  HANDLE hfile = CreateFileA(path,
+      GENERIC_READ | GENERIC_WRITE,
+      FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+      NULL,
+      OPEN_EXISTING,
+      FILE_ATTRIBUTE_NORMAL | FILE_FLAG_POSIX_SEMANTICS,
+      NULL);
+
+  if (INVALID_HANDLE_VALUE == hfile) {
+    err = GetLastError();
+    NaClLog(3, "NaClHostDescTruncate: CreateFile failed %d\n", err);
+    return -NaClXlateSystemError(err);
+  }
+
+  win_length.QuadPart = length;
+  if (!SetFilePointerEx(hfile, win_length, NULL, FILE_BEGIN)) {
+    err = GetLastError();
+    NaClLog(LOG_ERROR,
+            "NaClHostDescTruncate: SetFilePointerEx failed:"
+            " last error %d.\n", err);
+    return -NaClXlateSystemError(err);
+  }
+
+  if (!SetEndOfFile(hfile)) {
+    err = GetLastError();
+    NaClLog(LOG_ERROR,
+            "NaClHostDescTruncate: could not truncate file:"
+            " last error %d.\n", err);
+    if (err == ERROR_USER_MAPPED_FILE) {
+      NaClLog(LOG_ERROR,
+              "NaClHostDescTruncate: this is due to an existing"
+              " mapping of the same file.\n");
+    }
+    return -NaClXlateSystemError(err);
+  }
+
+  return 0;
+}
+
+int NaClHostDescLstat(char const *path, nacl_host_stat_t *nhsp) {
+  /*
+   * Since symlinks don't exist on windows, stat() and lstat()
+   * are equivalent.
+   */
+  return NaClHostDescStat(path, nhsp);
+}
+
+int NaClHostDescLink(const char *oldpath, const char *newpath) {
+  /*
+   * Hard linking not implemented for win32
+   */
+  NaClLog(1, "NaClHostDescLink: hard linking not supported on windows.\n");
+  return -NACL_ABI_ENOSYS;
+}
+
+int NaClHostDescRename(const char *oldpath, const char *newpath) {
+  if (rename(oldpath, newpath) != 0)
+    return -NaClXlateErrno(errno);
+  return 0;
+}
+
+int NaClHostDescSymlink(const char *oldpath, const char *newpath) {
+  /*
+   * Symlinks are not supported on win32.
+   */
+  NaClLog(1, "NaClHostDescSymlink: symbolic links not supported on windows.\n");
+  return -NACL_ABI_ENOSYS;
+}
+
+int NaClHostDescChmod(const char *path, nacl_abi_mode_t mode) {
+  if (_chmod(path, NaClMapMode(mode)) != 0)
+    return -NaClXlateErrno(errno);
+  return 0;
+}
+
+int NaClHostDescAccess(const char *path, int amode) {
+  if (_access(path, NaClMapAccessMode(amode)) != 0)
+    return -NaClXlateErrno(errno);
+  return 0;
+}
+
+int NaClHostDescReadlink(const char *path, char *buf, size_t bufsize) {
+  /*
+   * readlink(2) sets errno to EINVAL when the file in question is
+   * not a symlink.  Since win32 does not support symlinks we simply
+   * return EINVAL in all cases here.
+   */
+  NaClLog(1,
+          "NaClHostDescReadlink: symbolic links not supported on Windows.\n");
+  return -NACL_ABI_EINVAL;
 }

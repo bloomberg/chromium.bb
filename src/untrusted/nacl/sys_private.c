@@ -219,6 +219,42 @@ int unlink(const char *path) {
   return errno_call(NACL_SYSCALL(unlink)(path));
 }
 
+int truncate(const char *path, off_t length) {
+  return errno_call(NACL_SYSCALL(truncate)(path, &length));
+}
+
+int lstat(const char *file, struct stat *st) {
+  return errno_call(NACL_SYSCALL(lstat)(file, st));
+}
+
+int link(const char *oldpath, const char *newpath) {
+  return errno_call(NACL_SYSCALL(link)(oldpath, newpath));
+}
+
+int rename(const char *oldpath, const char* newpath) {
+  return errno_call(NACL_SYSCALL(rename)(oldpath, newpath));
+}
+
+int symlink(const char *oldpath, const char* newpath) {
+  return errno_call(NACL_SYSCALL(symlink)(oldpath, newpath));
+}
+
+int chmod(const char *path, mode_t mode) {
+  return errno_call(NACL_SYSCALL(chmod)(path, mode));
+}
+
+int access(const char *path, int amode) {
+  return errno_call(NACL_SYSCALL(access)(path, amode));
+}
+
+int readlink(const char *path, char *buf, int bufsize) {
+  return errno_value_call(NACL_SYSCALL(readlink)(path, buf, bufsize));
+}
+
+int utimes(const char *path, const struct timeval times[2]) {
+  return errno_value_call(NACL_SYSCALL(utimes)(path, times));
+}
+
 /*
  * This is a stub since _start will call it but we don't want to
  * do the normal initialization.

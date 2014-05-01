@@ -25,18 +25,18 @@
 #define TEXT_LINE_SIZE 1024
 
 /*
- * TODO(sbc): remove this test once gethostname() declaration
- * gets added to the prebuilt newlib toolchain
+ * TODO(sbc): remove this test once these declarations get added to the prebuilt
+ * newlib toolchain
  */
 #ifndef __GLIBC__
 extern "C" int gethostname(char *name, size_t len);
+extern "C" int utimes(const char *filename, const struct timeval times[2]);
 #endif
 
 /*
  * function failed(testname, msg)
  *   print failure message and exit with a return code of -1
  */
-
 bool failed(const char *testname, const char *msg) {
   printf("TEST FAILED: %s: %s\n", testname, msg);
   return false;
@@ -46,10 +46,27 @@ bool failed(const char *testname, const char *msg) {
  * function passed(testname, msg)
  *   print success message
  */
-
 bool passed(const char *testname, const char *msg) {
   printf("TEST PASSED: %s: %s\n", testname, msg);
   return true;
+}
+
+/*
+ * Split filename into basename and dirname.
+ * The argument is modified in place such that it
+ * becomes the dirname and the basename is returned.
+ */
+static char *split_name(char *full_name) {
+  // Strip off the trailing filename
+  char *basename = strrchr(full_name, '/');
+  if (basename == NULL) {
+    basename = strrchr(full_name, '\\');
+    ASSERT_NE_MSG(basename, NULL, "test_file contains no dir seperator");
+    if (!basename)
+      return NULL;
+  }
+  basename[0] = '\0';
+  return basename + 1;
 }
 
 /*
@@ -62,7 +79,7 @@ bool passed(const char *testname, const char *msg) {
  *   test1() before test2(), and so on.
  */
 
-bool test1() {
+bool test_sched_yield() {
   // test sched_yield
   if (sched_yield()) {
     printf("sched_yield failed\n");
@@ -71,7 +88,7 @@ bool test1() {
   return true;
 }
 
-bool test2() {
+bool test_sysconf() {
   // test sysconf
   int rv;
   rv = sysconf(_SC_NPROCESSORS_ONLN);
@@ -92,29 +109,6 @@ bool test2() {
   return true;
 }
 
-// TODO(sbc): remove this restriction once glibc is updated to
-// use dev-filename-0.2:
-// https://code.google.com/p/nativeclient/issues/detail?id=3709
-#if defined(__GLIBC__)
-
-bool test_chdir() {
-  return passed("test_chdir", "all");
-}
-
-bool test_mkdir_rmdir(const char *test_file) {
-  return passed("test_mkdir_rmdir", "all");
-}
-
-bool test_getcwd() {
-  return passed("test_getcwd", "all");
-}
-
-bool test_unlink(const char *test_file) {
-  return passed("test_unlink", "all");
-}
-
-#else
-
 // Simple test that chdir returns zero for '.'.  chdir gets more
 // significant testing as part of the getcwd test.
 bool test_chdir() {
@@ -129,14 +123,7 @@ bool test_mkdir_rmdir(const char *test_file) {
   // was passed in.
   char dirname[PATH_MAX];
   strncpy(dirname, test_file, PATH_MAX);
-
-  // Strip off the trailing filename
-  char *basename_start = strrchr(dirname, '/');
-  if (basename_start == NULL) {
-    basename_start = strrchr(dirname, '\\');
-    ASSERT_NE_MSG(basename_start, NULL, "test_file contains no dir seperator");
-  }
-  basename_start[1] = '\0';
+  split_name(dirname);
 
   ASSERT(strlen(dirname) + 6 < PATH_MAX);
   strncat(dirname, "tmpdir", 6);
@@ -201,32 +188,271 @@ bool test_getcwd() {
 bool test_unlink(const char *test_file) {
   int rtn;
   struct stat buf;
-  char buffer[PATH_MAX];
-  snprintf(buffer, PATH_MAX, "%s.tmp", test_file);
-  buffer[PATH_MAX - 1] = '\0';
+  char temp_file[PATH_MAX];
+  snprintf(temp_file, PATH_MAX, "%s.tmp_unlink", test_file);
+  temp_file[PATH_MAX - 1] = '\0';
 
-  int fd = open(buffer, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+  int fd = open(temp_file, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
   ASSERT_MSG(fd >= 0, "open() failed");
 
   rtn = close(fd);
   ASSERT_EQ_MSG(rtn, 0, "close() failed");
 
-  rtn = stat(buffer, &buf);
+  rtn = stat(temp_file, &buf);
   ASSERT_EQ_MSG(rtn, 0, "stat() failed");
 
-  rtn = unlink(buffer);
+  rtn = unlink(temp_file);
   ASSERT_EQ_MSG(rtn, 0, "unlink() failed");
 
-  rtn = stat(buffer, &buf);
+  rtn = stat(temp_file, &buf);
   ASSERT_NE_MSG(rtn, 0, "unlink() failed to remove file");
 
-  rtn = unlink(buffer);
+  rtn = unlink(temp_file);
   ASSERT_NE_MSG(rtn, 0, "unlink() failed to fail");
 
   return passed("test_unlink", "all");
 }
 
-#endif  // !__GLIBC__
+bool test_rename(const char *test_file) {
+  int rtn;
+  struct stat buf;
+  char filename1[PATH_MAX];
+  char filename2[PATH_MAX];
+  snprintf(filename1, PATH_MAX, "%s.tmp1", test_file);
+  snprintf(filename2, PATH_MAX, "%s.tmp2", test_file);
+
+  // Create a test file and verify that we can stat() it.
+  int fd = open(filename1, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+  ASSERT_MSG(fd >= 0, "open() failed");
+  rtn = close(fd);
+  ASSERT_EQ_MSG(rtn, 0, "close() failed");
+
+  rtn = stat(filename1, &buf);
+  ASSERT_EQ_MSG(rtn, 0, "stat() failed");
+
+  // Rename the test file and verify that the old file is no
+  // longer stat()-able.
+  rtn = rename(filename1, filename2);
+  ASSERT_EQ_MSG(rtn, 0, "rename() failed");
+
+  rtn = stat(filename2, &buf);
+  ASSERT_EQ_MSG(rtn, 0, "stat() of new file failed");
+
+  rtn = stat(filename1, &buf);
+  ASSERT_NE_MSG(rtn, 0, "stat() of old name should fail after rename");
+
+  ASSERT_EQ(remove(filename2), 0);
+  return passed("test_rename", "all");
+}
+
+bool test_link(const char *test_file) {
+  struct stat buf;
+  struct stat buf_orig;
+  char link_filename[PATH_MAX];
+  char target_filename[PATH_MAX];
+  snprintf(target_filename, PATH_MAX, "%s.target", test_file);
+  snprintf(link_filename, PATH_MAX, "%s.link", test_file);
+
+  // Create link target with some dummy data
+  int fd = open(target_filename, O_WRONLY | O_CREAT, S_IRWXU);
+  ASSERT(fd >= 0);
+  ASSERT_EQ(write(fd, "123", 3), 3);
+  ASSERT_EQ(close(fd), 0);
+
+  int rtn = link(target_filename, link_filename);
+  if (rtn != 0 || errno == ENOSYS)
+    return passed("test_link", "all");
+
+  // Verify that the new file is a regular file and that changes to it are
+  // mirrored in the original file.
+  ASSERT_EQ(stat(link_filename, &buf), 0);
+  ASSERT_EQ(stat(target_filename, &buf_orig), 0);
+  ASSERT(S_ISREG(buf.st_mode));
+  ASSERT(S_ISREG(buf_orig.st_mode));
+
+  ASSERT_EQ(buf_orig.st_size, 3);
+  ASSERT_EQ(buf_orig.st_size, buf.st_size);
+
+  // Write some bytes to the new file
+  fd = open(link_filename, O_WRONLY);
+  ASSERT(fd >= 0);
+  ASSERT_EQ(write(fd, "test", 4), 4);
+  ASSERT_EQ(close(fd), 0);
+
+  // Verify that the two files are still the same size
+  ASSERT_EQ(stat(link_filename, &buf), 0);
+  ASSERT_EQ(stat(target_filename, &buf_orig), 0);
+  ASSERT(S_ISREG(buf.st_mode));
+  ASSERT(S_ISREG(buf_orig.st_mode));
+  ASSERT_EQ(buf_orig.st_size, buf.st_size);
+  ASSERT_EQ(buf_orig.st_size, 4);
+
+  ASSERT_EQ(remove(link_filename), 0);
+  ASSERT_EQ(remove(target_filename), 0);
+  return passed("test_link", "all");
+}
+
+// This tests symlink/readlink and lstat.  symlink and readlink
+// are expected to return ENOSYS on win32 so we handle this case
+// and bail out early.
+bool test_symlinks(const char *test_file) {
+  char dirname[PATH_MAX];
+  char link_filename[PATH_MAX];
+  struct stat buf;
+
+  // Test that lstat of the test_file works
+  ASSERT_EQ(lstat(test_file, &buf), 0);
+  ASSERT_EQ(S_ISREG(buf.st_mode), 1);
+
+  // Split filename into basename and dirname.
+  strncpy(dirname, test_file, PATH_MAX);
+  char *basename = split_name(dirname);
+
+  snprintf(link_filename, PATH_MAX, "%s.link", test_file);
+
+  // Create this link
+  int rtn = symlink(basename, link_filename);
+  if (rtn != 0 || errno == ENOSYS)
+    return passed("test_symlinks", "all");
+
+  ASSERT_EQ(rtn, 0);
+
+  // Check the lstat() and stat of the link
+  ASSERT_EQ(lstat(link_filename, &buf), 0);
+  ASSERT_NE_MSG(S_ISLNK(buf.st_mode), 0, "lstat of link failed to be ISLNK");
+  ASSERT_EQ_MSG(S_ISREG(buf.st_mode), 0, "lstat of link should not be ISREG");
+
+  ASSERT_EQ(stat(link_filename, &buf), 0);
+  ASSERT_EQ_MSG(S_ISLNK(buf.st_mode), 0, "stat of symlink should not ISLNK");
+  ASSERT_NE_MSG(S_ISREG(buf.st_mode), 0, "stat of symlink should report ISREG");
+
+  // calling symlink again should yield EEXIST.
+  ASSERT_EQ(symlink(test_file, link_filename), -1);
+  ASSERT_EQ(errno, EEXIST);
+  ASSERT_EQ(remove(link_filename), 0);
+
+  return passed("test_symlinks", "all");
+}
+
+bool test_chmod(const char *test_file) {
+  struct stat buf;
+  char temp_file[PATH_MAX];
+  snprintf(temp_file, PATH_MAX, "%s.tmp_chmod", test_file);
+
+  int fd = open(temp_file, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+  ASSERT(fd >= 0);
+  ASSERT_EQ(close(fd), 0);
+
+  ASSERT_EQ(stat(temp_file, &buf), 0);
+  ASSERT_EQ(buf.st_mode & ~S_IFMT, S_IRUSR | S_IWUSR);
+
+  // change the file to readonly and verify the change
+  ASSERT_EQ(chmod(temp_file, S_IRUSR), 0);
+  ASSERT_EQ(stat(temp_file, &buf), 0);
+  ASSERT_EQ(buf.st_mode & ~S_IFMT, S_IRUSR);
+  ASSERT(open(temp_file, O_WRONLY) < 0);
+
+  ASSERT_EQ(remove(temp_file), 0);
+  return passed("test_chmod", "all");
+}
+
+bool test_access(const char *test_file) {
+  char temp_access[PATH_MAX];
+  snprintf(temp_access, PATH_MAX, "%s.tmp_access", test_file);
+
+  ASSERT_EQ(access(test_file, F_OK), 0);
+  ASSERT_EQ(access(test_file, R_OK), 0);
+  ASSERT_EQ(access(test_file, W_OK), 0);
+
+  ASSERT_EQ(access(temp_access, F_OK), -1);
+  ASSERT_EQ(access(temp_access, R_OK), -1);
+  ASSERT_EQ(access(temp_access, W_OK), -1);
+
+  /*
+   * We can't test the X bit here since it's not consistent across platforms.
+   * On win32 there is no equivalent so we always return true.  On Mac/Linux
+   * the underlying X bit is reported.
+   */
+  // ASSERT_EQ(access(test_file, X_OK), -1);
+  // ASSERT_EQ(access(temp_access, X_OK), -1);
+
+  // Create a read-only file
+  int fd = open(temp_access, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR);
+  ASSERT(fd > 0);
+  ASSERT_EQ(close(fd), 0);
+
+  ASSERT_EQ(access(temp_access, F_OK), 0);
+  ASSERT_EQ(access(temp_access, R_OK), 0);
+  ASSERT_EQ(access(temp_access, W_OK), -1);
+  ASSERT_EQ(remove(temp_access), 0);
+
+  return passed("test_access", "all");
+}
+
+bool test_utimes(const char *test_file) {
+  // TODO(mseaborn): Implement utimes for unsandboxed mode.
+  if (PNACL_UNSANDBOXED)
+    return true;
+  struct timeval times[2];
+  // utimes() is currently not implemented and should always
+  // fail with ENOSYS
+  ASSERT_EQ(utimes("dummy", times), -1);
+  ASSERT_EQ(errno, ENOSYS);
+  return passed("test_access", "all");
+}
+
+bool test_truncate(const char *test_file) {
+  // TODO(mseaborn): Implement truncate for unsandboxed mode.
+  if (PNACL_UNSANDBOXED)
+    return true;
+  char temp_file[PATH_MAX];
+  snprintf(temp_file, PATH_MAX, "%s.tmp_truncate", test_file);
+
+  char buffer[100];
+  char read_buffer[200];
+  struct stat buf;
+  for (size_t i = 0; i < sizeof(buffer); i++)
+    buffer[i] = i;
+
+  // Write 100 sequential chars to the test file.
+  int fd = open(temp_file, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
+  ASSERT(fd >= 0);
+  ASSERT_EQ(100, write(fd, buffer, 100));
+  ASSERT_EQ(0, close(fd));
+
+  ASSERT_EQ(stat(temp_file, &buf), 0);
+  ASSERT_EQ(buf.st_size, 100);
+
+  // truncate the file beyond its current length
+  ASSERT_EQ(truncate(temp_file, 200), 0);
+  ASSERT_EQ(stat(temp_file, &buf), 0);
+  ASSERT_EQ(buf.st_size, 200);
+
+  // Verify the new content, which should not be 100
+  // bytes of sequential chars and 100 bytes of '\0'
+  fd = open(temp_file, O_RDONLY);
+  ASSERT(fd >= 0);
+  ASSERT_EQ(read(fd, read_buffer, 200), 200);
+  ASSERT_EQ(memcmp(read_buffer, buffer, 100), 0);
+  for (int i = 100; i < 200; i++)
+    ASSERT_EQ(read_buffer[i], 0);
+  ASSERT_EQ(0, close(fd));
+
+  // Now truncate the file to a size smaller than the
+  // original
+  ASSERT_EQ(truncate(temp_file, 50), 0);
+  ASSERT_EQ(stat(temp_file, &buf), 0);
+  ASSERT_EQ(buf.st_size, 50);
+
+  fd = open(temp_file, O_RDONLY);
+  ASSERT(fd >= 0);
+  ASSERT_EQ(read(fd, read_buffer, 50), 50);
+  ASSERT_EQ(memcmp(read_buffer, buffer, 50), 0);
+  ASSERT_EQ(0, close(fd));
+
+  ASSERT_EQ(remove(temp_file), 0);
+  return passed("test_truncate", "all");
+}
 
 // open() returns the new file descriptor, or -1 if an error occurred
 bool test_open(const char *test_file) {
@@ -448,7 +674,6 @@ bool test_read(const char *test_file) {
   return passed(testname, "all");
 }
 
-
 // write() returns the number of bytes written on success, -1 on error
 bool test_write(const char *test_file) {
   int fd;
@@ -581,17 +806,11 @@ bool test_readdir(const char *test_file) {
     return true;
 
   // Read the directory containing the test file
+
+  // Split filename into basename and dirname.
   char dirname[PATH_MAX];
   strncpy(dirname, test_file, PATH_MAX);
-
-  // Strip off the trailing filename
-  char *basename = strrchr(dirname, '/');
-  if (basename == NULL) {
-    basename = strrchr(dirname, '\\');
-    ASSERT_NE_MSG(basename, NULL, "test_file contains no dir seperator");
-  }
-  basename[0] = '\0';
-  basename++;
+  char *basename = split_name(dirname);
 
   // Read the directory listing and verify that the test_file is
   // present.
@@ -626,6 +845,7 @@ bool test_isatty(const char *test_file) {
   // TODO(mseaborn): Implement isatty() for unsandboxed mode.
   if (PNACL_UNSANDBOXED)
     return true;
+
   // TODO(sbc): isatty() in glibc is not yet hooked up to the IRT
   // interfaces. Remove this conditional once this gets addressed:
   // https://code.google.com/p/nativeclient/issues/detail?id=3709
@@ -691,21 +911,40 @@ bool test_gethostname() {
 bool testSuite(const char *test_file) {
   bool ret = true;
   // The order of executing these tests matters!
-  ret &= test1();
-  ret &= test2();
+  ret &= test_sched_yield();
+  ret &= test_sysconf();
   ret &= test_stat(test_file);
   ret &= test_open(test_file);
   ret &= test_close(test_file);
   ret &= test_read(test_file);
   ret &= test_write(test_file);
   ret &= test_lseek(test_file);
-  ret &= test_unlink(test_file);
-  ret &= test_chdir();
-  ret &= test_getcwd();
-  ret &= test_mkdir_rmdir(test_file);
   ret &= test_readdir(test_file);
   ret &= test_gethostname();
+// glibc support for calling syscalls directly, without the IRT, is limited
+// so we skip certain tests in this case.
+#if !defined(__GLIBC__) || TESTS_USE_IRT
+  ret &= test_unlink(test_file);
+  ret &= test_chdir();
+  ret &= test_mkdir_rmdir(test_file);
+  ret &= test_getcwd();
+  ret &= test_mkdir_rmdir(test_file);
   ret &= test_isatty(test_file);
+  if (!PNACL_UNSANDBOXED) {
+    ret &= test_rename(test_file);
+    ret &= test_link(test_file);
+    ret &= test_symlinks(test_file);
+    ret &= test_chmod(test_file);
+    ret &= test_access(test_file);
+  }
+#endif
+// TODO(sbc): remove this restriction once glibc's truncate calls
+// is hooked up to the IRT dev-filename-0.2 interface:
+// https://code.google.com/p/nativeclient/issues/detail?id=3709
+#if !defined(__GLIBC__)
+  ret &= test_truncate(test_file);
+#endif
+  ret &= test_utimes(test_file);
   return ret;
 }
 

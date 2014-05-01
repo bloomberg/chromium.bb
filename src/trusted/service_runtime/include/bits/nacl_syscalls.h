@@ -117,6 +117,15 @@
 #define NACL_sys_pread                  130
 #define NACL_sys_pwrite                 131
 
-#define NACL_MAX_SYSCALLS               132
+#define NACL_sys_truncate               140
+#define NACL_sys_lstat                  141
+#define NACL_sys_link                   142
+#define NACL_sys_rename                 143
+#define NACL_sys_symlink                144
+#define NACL_sys_access                 145
+#define NACL_sys_readlink               146
+#define NACL_sys_utimes                 147
+
+#define NACL_MAX_SYSCALLS               148
 
 #endif

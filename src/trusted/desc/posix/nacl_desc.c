@@ -61,6 +61,12 @@ int32_t NaClAbiStatHostDescStatXlateCtor(struct nacl_abi_stat    *dst,
     case S_IFDIR:
       m = NACL_ABI_S_IFDIR;
       break;
+    case S_IFLNK:
+      m = NACL_ABI_S_IFLNK;
+      break;
+    case S_IFIFO:
+      m = NACL_ABI_S_IFIFO;
+      break;
 #if defined(S_IFCHR)
     case S_IFCHR:
       /* stdin/out/err can be inherited, so this is okay */
@@ -78,13 +84,13 @@ int32_t NaClAbiStatHostDescStatXlateCtor(struct nacl_abi_stat    *dst,
       m = NACL_ABI_S_UNSUP;
   }
   if (0 != (src->st_mode & S_IRUSR)) {
-      m |= NACL_ABI_S_IRUSR;
+    m |= NACL_ABI_S_IRUSR;
   }
   if (0 != (src->st_mode & S_IWUSR)) {
-      m |= NACL_ABI_S_IWUSR;
+    m |= NACL_ABI_S_IWUSR;
   }
   if (0 != (src->st_mode & S_IXUSR)) {
-      m |= NACL_ABI_S_IXUSR;
+    m |= NACL_ABI_S_IXUSR;
   }
   dst->nacl_abi_st_mode = m;
   dst->nacl_abi_st_nlink = src->st_nlink;
