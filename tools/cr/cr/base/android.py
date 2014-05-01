@@ -37,7 +37,6 @@ class AndroidPlatform(cr.Platform):
       CR_TEST_RUNNER=os.path.join(
           '{CR_SRC}', 'build', 'android', 'test_runner.py'),
       CR_ADB_GDB=os.path.join('{CR_SRC}', 'build', 'android', 'adb_gdb'),
-      CHROMIUM_OUT_DIR='{CR_OUT_BASE}',
       CR_DEFAULT_TARGET='chrome_shell',
       GYP_DEF_OS='android'
   )

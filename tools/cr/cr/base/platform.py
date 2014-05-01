@@ -11,7 +11,7 @@ import cr
 
 DEFAULT = cr.Config.From(
     DEPOT_TOOLS=os.path.join('{GOOGLE_CODE}', 'depot_tools'),
-)
+    CHROMIUM_OUT_DIR='{CR_OUT_BASE}',)
 
 
 class Platform(cr.Plugin, cr.Plugin.Type):
