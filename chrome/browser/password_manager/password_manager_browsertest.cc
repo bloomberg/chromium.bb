@@ -678,12 +678,14 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 
   NavigateToFile("/password/password_form.html");
 
-  // Enable the enable-automatic-password-saving switch
+  // Add the enable-automatic-password-saving switch.
   CommandLine::ForCurrentProcess()->AppendSwitch(
       password_manager::switches::kEnableAutomaticPasswordSaving);
 
   // Fill a form and submit through a <input type="submit"> button.
   NavigationObserver observer(WebContents());
+  // Make sure that the only passwords saved are the auto-saved ones.
+  observer.disable_should_automatically_accept_infobar();
   std::string fill_and_submit =
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('password_field').value = 'random';"
