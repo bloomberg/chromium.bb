@@ -5,13 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_MANAGER_ZIP_FILE_CREATOR_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_ZIP_FILE_CREATOR_H_
 
-#include <string>
-
+#include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host_client.h"
-#include "extensions/common/extension.h"
 
 namespace file_manager {
 
@@ -20,30 +17,22 @@ namespace file_manager {
 // subprocess to protect the browser process from handling arbitrary input data
 // from untrusted sources.
 //
-// Lifetime management:
-//
-// This class is ref-counted by each call it makes to itself on another thread,
-// and by UtilityProcessHost.
-//
-// Additionally, we hold a reference to our own client so that it lives at least
-// long enough to receive the result of zip file creation.
+// The class is ref-counted and its ownership is passed around internal callback
+// objects and finally to UtilityProcessHost. After the job finishes, the host
+// releases the ref-pointer and then ZipFileCreator is automatically deleted.
 class ZipFileCreator : public content::UtilityProcessHostClient {
  public:
-  class Observer {
-   public:
-    virtual void OnZipDone(bool success) = 0;
-
-   protected:
-    virtual ~Observer() {}
-  };
+  typedef base::Callback<void(bool)> ResultCallback;
 
   // Creates a zip file from the specified list of files and directories.
-  ZipFileCreator(Observer* observer,
+  ZipFileCreator(const ResultCallback& callback,
                  const base::FilePath& src_dir,
                  const std::vector<base::FilePath>& src_relative_paths,
                  const base::FilePath& dest_file);
 
-  // Start creating the zip file. The client is called with the results.
+  // Starts creating the zip file. Must be called from the UI thread.
+  // The result will be passed to |callback|. After the task is finished and
+  // |callback| is run, ZipFileCreator instance is deleted.
   void Start();
 
  private:
@@ -51,8 +40,8 @@ class ZipFileCreator : public content::UtilityProcessHostClient {
 
   virtual ~ZipFileCreator();
 
-  // Opens a handle for the zip file, and proceeds to StartProcessOnIOThread.
-  void OpenFileHandleOnBlockingThreadPool();
+  // Called after the file handle is opened on blocking pool.
+  void OnOpenFileHandle(base::File file);
 
   // Starts the utility process that creates the zip file.
   void StartProcessOnIOThread(base::File dest_file);
@@ -67,11 +56,8 @@ class ZipFileCreator : public content::UtilityProcessHostClient {
 
   void ReportDone(bool success);
 
-  // The observer's thread. This is the thread we respond on.
-  content::BrowserThread::ID thread_identifier_;
-
-  // The observer.
-  Observer* observer_;
+  // The callback.
+  ResultCallback callback_;
 
   // The source directory for input files.
   base::FilePath src_dir_;
@@ -82,9 +68,6 @@ class ZipFileCreator : public content::UtilityProcessHostClient {
 
   // The output zip file.
   base::FilePath dest_file_;
-
-  // Whether we've received a response from the utility process yet.
-  bool got_response_;
 };
 
 }  // namespace file_manager

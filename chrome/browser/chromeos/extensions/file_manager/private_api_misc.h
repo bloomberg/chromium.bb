@@ -9,7 +9,6 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_MISC_H_
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
-#include "chrome/browser/chromeos/file_manager/zip_file_creator.h"
 #include "google_apis/drive/gdata_errorcode.h"
 
 namespace google_apis {
@@ -64,8 +63,7 @@ class FileBrowserPrivateSetPreferencesFunction
 // Implements the chrome.fileBrowserPrivate.zipSelection method.
 // Creates a zip file for the selected files.
 class FileBrowserPrivateZipSelectionFunction
-    : public LoggedAsyncExtensionFunction,
-      public file_manager::ZipFileCreator::Observer {
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.zipSelection",
                              FILEBROWSERPRIVATE_ZIPSELECTION)
@@ -78,11 +76,8 @@ class FileBrowserPrivateZipSelectionFunction
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 
-  // extensions::ZipFileCreator::Delegate overrides.
-  virtual void OnZipDone(bool success) OVERRIDE;
-
- private:
-  scoped_refptr<file_manager::ZipFileCreator> zip_file_creator_;
+  // Receives the result from ZipFileCreator.
+  void OnZipDone(bool success);
 };
 
 // Implements the chrome.fileBrowserPrivate.zoom method.

@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "base/callback.h"
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -21,22 +21,10 @@ namespace file_manager {
 
 namespace {
 
-class TestObserver : public ZipFileCreator::Observer {
- public:
-  explicit TestObserver(const base::Closure& quit)
-      : success_(false), quit_(quit) {}
-
-  virtual void OnZipDone(bool success) OVERRIDE {
-    success_ = success;
-    quit_.Run();
-  }
-
-  const bool success() const { return success_; }
-
- private:
-  bool success_;
-  const base::Closure quit_;
-};
+void TestCallback(bool* out_success, const base::Closure& quit, bool success) {
+  *out_success = success;
+  quit.Run();
+}
 
 class ZipFileCreatorTest : public InProcessBrowserTest {
  protected:
@@ -61,16 +49,19 @@ class ZipFileCreatorTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ZipFileCreatorTest, FailZipForAbsentFile) {
   base::RunLoop run_loop;
-  TestObserver observer(content::GetQuitTaskForRunLoop(&run_loop));
+  bool success = true;
 
   std::vector<base::FilePath> paths;
   paths.push_back(base::FilePath(FILE_PATH_LITERAL("not.exist")));
-  scoped_refptr<ZipFileCreator> zipper(new ZipFileCreator(
-      &observer, zip_base_dir(), paths, zip_archive_path()));
-  zipper->Start();
+  (new ZipFileCreator(
+       base::Bind(
+           &TestCallback, &success, content::GetQuitTaskForRunLoop(&run_loop)),
+       zip_base_dir(),
+       paths,
+       zip_archive_path()))->Start();
 
   content::RunThisRunLoop(&run_loop);
-  EXPECT_FALSE(observer.success());
+  EXPECT_FALSE(success);
 }
 
 IN_PROC_BROWSER_TEST_F(ZipFileCreatorTest, SomeFilesZip) {
@@ -85,19 +76,22 @@ IN_PROC_BROWSER_TEST_F(ZipFileCreatorTest, SomeFilesZip) {
   base::WriteFile(zip_base_dir().Append(kFile2),
                   kRandomData.c_str(), kRandomData.size());
 
+  bool success = false;
   base::RunLoop run_loop;
-  TestObserver observer(content::GetQuitTaskForRunLoop(&run_loop));
 
   std::vector<base::FilePath> paths;
   paths.push_back(kDir1);
   paths.push_back(kFile1);
   paths.push_back(kFile2);
-  scoped_refptr<ZipFileCreator> zipper(new ZipFileCreator(
-      &observer, zip_base_dir(), paths, zip_archive_path()));
-  zipper->Start();
+  (new ZipFileCreator(
+       base::Bind(
+           &TestCallback, &success, content::GetQuitTaskForRunLoop(&run_loop)),
+       zip_base_dir(),
+       paths,
+       zip_archive_path()))->Start();
 
   content::RunThisRunLoop(&run_loop);
-  EXPECT_TRUE(observer.success());
+  EXPECT_TRUE(success);
 
   // Check the archive content.
   zip::ZipReader reader;

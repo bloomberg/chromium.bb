@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/app_installer.h"
+#include "chrome/browser/chromeos/file_manager/zip_file_creator.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/drive/event_logger.h"
@@ -215,22 +216,17 @@ bool FileBrowserPrivateZipSelectionFunction::RunImpl() {
     src_relative_paths.push_back(relative_path);
   }
 
-  zip_file_creator_ = new file_manager::ZipFileCreator(this,
-                                                       src_dir,
-                                                       src_relative_paths,
-                                                       dest_file);
-
-  // Keep the refcount until the zipping is complete on utility process.
-  AddRef();
-
-  zip_file_creator_->Start();
+  (new file_manager::ZipFileCreator(
+       base::Bind(&FileBrowserPrivateZipSelectionFunction::OnZipDone, this),
+       src_dir,
+       src_relative_paths,
+       dest_file))->Start();
   return true;
 }
 
 void FileBrowserPrivateZipSelectionFunction::OnZipDone(bool success) {
   SetResult(new base::FundamentalValue(success));
   SendResponse(true);
-  Release();
 }
 
 bool FileBrowserPrivateZoomFunction::RunSync() {
