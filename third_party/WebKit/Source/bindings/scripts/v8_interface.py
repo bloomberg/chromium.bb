@@ -343,6 +343,13 @@ def generate_overloads_by_type(methods):
             'overload_resolution_expression': overload_resolution_expression(method),
         })
 
+    def common_value(dicts, key):
+        values = (d[key] for d in dicts)
+        first_value = next(values)
+        if all(value == first_value for value in values):
+            return first_value
+        return None
+
     # Resolution function is generated after last overloaded function;
     # package necessary information into |method.overloads| for that method.
     last_overloaded_name_methods = [
@@ -358,6 +365,8 @@ def generate_overloads_by_type(methods):
             'methods': overloads,
             'minimum_number_of_required_arguments': minimum_number_of_required_arguments,
             'name': name,
+            'measure_all_as': common_value(overloads, 'measure_as'),  # [MeasureAs]
+            'deprecate_all_as': common_value(overloads, 'deprecate_as'),  # [DeprecateAs]
         }
 
 

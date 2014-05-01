@@ -7353,6 +7353,286 @@ static void measureAsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8:
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void DeprecateAsOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    impl->DeprecateAsOverloadedMethod();
+}
+
+static void DeprecateAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "DeprecateAsOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwArityTypeError(exceptionState, 1, info.Length());
+        return;
+    }
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
+    impl->DeprecateAsOverloadedMethod(arg);
+}
+
+static void DeprecateAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (((info.Length() == 0))) {
+        UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeatureA);
+        DeprecateAsOverloadedMethod1Method(info);
+        return;
+    }
+    if (((info.Length() == 1))) {
+        UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
+        DeprecateAsOverloadedMethod2Method(info);
+        return;
+    }
+    throwTypeError(ExceptionMessages::failedToExecute("DeprecateAsOverloadedMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+}
+
+static void DeprecateAsOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectV8Internal::DeprecateAsOverloadedMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void DeprecateAsSameValueOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    impl->DeprecateAsSameValueOverloadedMethod();
+}
+
+static void DeprecateAsSameValueOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "DeprecateAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwArityTypeError(exceptionState, 1, info.Length());
+        return;
+    }
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
+    impl->DeprecateAsSameValueOverloadedMethod(arg);
+}
+
+static void DeprecateAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+    if (((info.Length() == 0))) {
+        DeprecateAsSameValueOverloadedMethod1Method(info);
+        return;
+    }
+    if (((info.Length() == 1))) {
+        DeprecateAsSameValueOverloadedMethod2Method(info);
+        return;
+    }
+    throwTypeError(ExceptionMessages::failedToExecute("DeprecateAsSameValueOverloadedMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+}
+
+static void DeprecateAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectV8Internal::DeprecateAsSameValueOverloadedMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void measureAsOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    impl->measureAsOverloadedMethod();
+}
+
+static void measureAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "measureAsOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwArityTypeError(exceptionState, 1, info.Length());
+        return;
+    }
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
+    impl->measureAsOverloadedMethod(arg);
+}
+
+static void measureAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (((info.Length() == 0))) {
+        UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeatureA);
+        measureAsOverloadedMethod1Method(info);
+        return;
+    }
+    if (((info.Length() == 1))) {
+        UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
+        measureAsOverloadedMethod2Method(info);
+        return;
+    }
+    throwTypeError(ExceptionMessages::failedToExecute("measureAsOverloadedMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+}
+
+static void measureAsOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectV8Internal::measureAsOverloadedMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void measureAsSameValueOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    impl->measureAsSameValueOverloadedMethod();
+}
+
+static void measureAsSameValueOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "measureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwArityTypeError(exceptionState, 1, info.Length());
+        return;
+    }
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
+    impl->measureAsSameValueOverloadedMethod(arg);
+}
+
+static void measureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+    if (((info.Length() == 0))) {
+        measureAsSameValueOverloadedMethod1Method(info);
+        return;
+    }
+    if (((info.Length() == 1))) {
+        measureAsSameValueOverloadedMethod2Method(info);
+        return;
+    }
+    throwTypeError(ExceptionMessages::failedToExecute("measureAsSameValueOverloadedMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+}
+
+static void measureAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectV8Internal::measureAsSameValueOverloadedMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void deprecateAsMeasureAsSameValueOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    impl->deprecateAsMeasureAsSameValueOverloadedMethod();
+}
+
+static void deprecateAsMeasureAsSameValueOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsMeasureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwArityTypeError(exceptionState, 1, info.Length());
+        return;
+    }
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
+    impl->deprecateAsMeasureAsSameValueOverloadedMethod(arg);
+}
+
+static void deprecateAsMeasureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+    if (((info.Length() == 0))) {
+        UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeatureA);
+        deprecateAsMeasureAsSameValueOverloadedMethod1Method(info);
+        return;
+    }
+    if (((info.Length() == 1))) {
+        UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
+        deprecateAsMeasureAsSameValueOverloadedMethod2Method(info);
+        return;
+    }
+    throwTypeError(ExceptionMessages::failedToExecute("deprecateAsMeasureAsSameValueOverloadedMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+}
+
+static void deprecateAsMeasureAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectV8Internal::deprecateAsMeasureAsSameValueOverloadedMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void deprecateAsSameValueMeasureAsOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    impl->deprecateAsSameValueMeasureAsOverloadedMethod();
+}
+
+static void deprecateAsSameValueMeasureAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsSameValueMeasureAsOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwArityTypeError(exceptionState, 1, info.Length());
+        return;
+    }
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
+    impl->deprecateAsSameValueMeasureAsOverloadedMethod(arg);
+}
+
+static void deprecateAsSameValueMeasureAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+    if (((info.Length() == 0))) {
+        UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeatureA);
+        deprecateAsSameValueMeasureAsOverloadedMethod1Method(info);
+        return;
+    }
+    if (((info.Length() == 1))) {
+        UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
+        deprecateAsSameValueMeasureAsOverloadedMethod2Method(info);
+        return;
+    }
+    throwTypeError(ExceptionMessages::failedToExecute("deprecateAsSameValueMeasureAsOverloadedMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+}
+
+static void deprecateAsSameValueMeasureAsOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectV8Internal::deprecateAsSameValueMeasureAsOverloadedMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void deprecateAsSameValueMeasureAsSameValueOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    impl->deprecateAsSameValueMeasureAsSameValueOverloadedMethod();
+}
+
+static void deprecateAsSameValueMeasureAsSameValueOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsSameValueMeasureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwArityTypeError(exceptionState, 1, info.Length());
+        return;
+    }
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
+    impl->deprecateAsSameValueMeasureAsSameValueOverloadedMethod(arg);
+}
+
+static void deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
+    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeatureA);
+    if (((info.Length() == 0))) {
+        deprecateAsSameValueMeasureAsSameValueOverloadedMethod1Method(info);
+        return;
+    }
+    if (((info.Length() == 1))) {
+        deprecateAsSameValueMeasureAsSameValueOverloadedMethod2Method(info);
+        return;
+    }
+    throwTypeError(ExceptionMessages::failedToExecute("deprecateAsSameValueMeasureAsSameValueOverloadedMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+}
+
+static void deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectV8Internal::deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void notEnumerableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
@@ -8224,6 +8504,13 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"deprecatedVoidMethod", TestObjectV8Internal::deprecatedVoidMethodMethodCallback, 0, 0},
     {"implementedAsVoidMethod", TestObjectV8Internal::implementedAsVoidMethodMethodCallback, 0, 0},
     {"measureAsVoidMethod", TestObjectV8Internal::measureAsVoidMethodMethodCallback, 0, 0},
+    {"DeprecateAsOverloadedMethod", TestObjectV8Internal::DeprecateAsOverloadedMethodMethodCallback, 0, 0},
+    {"DeprecateAsSameValueOverloadedMethod", TestObjectV8Internal::DeprecateAsSameValueOverloadedMethodMethodCallback, 0, 0},
+    {"measureAsOverloadedMethod", TestObjectV8Internal::measureAsOverloadedMethodMethodCallback, 0, 0},
+    {"measureAsSameValueOverloadedMethod", TestObjectV8Internal::measureAsSameValueOverloadedMethodMethodCallback, 0, 0},
+    {"deprecateAsMeasureAsSameValueOverloadedMethod", TestObjectV8Internal::deprecateAsMeasureAsSameValueOverloadedMethodMethodCallback, 0, 0},
+    {"deprecateAsSameValueMeasureAsOverloadedMethod", TestObjectV8Internal::deprecateAsSameValueMeasureAsOverloadedMethodMethodCallback, 0, 0},
+    {"deprecateAsSameValueMeasureAsSameValueOverloadedMethod", TestObjectV8Internal::deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethodCallback, 0, 0},
     {"perWorldBindingsVoidMethod", TestObjectV8Internal::perWorldBindingsVoidMethodMethodCallback, TestObjectV8Internal::perWorldBindingsVoidMethodMethodCallbackForMainWorld, 0},
     {"perWorldBindingsVoidMethodTestInterfaceEmptyArg", TestObjectV8Internal::perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallback, TestObjectV8Internal::perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallbackForMainWorld, 1},
     {"activityLoggingForAllWorldsPerWorldBindingsVoidMethod", TestObjectV8Internal::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallback, TestObjectV8Internal::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallbackForMainWorld, 0},

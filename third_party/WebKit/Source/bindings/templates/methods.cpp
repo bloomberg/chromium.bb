@@ -281,8 +281,20 @@ throwArityTypeErrorForMethod("{{method.name}}", "{{interface_name}}", {{number_o
 {% macro overload_resolution_method(overloads, world_suffix) %}
 static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    {% if overloads.measure_all_as %}
+    UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::{{overloads.measure_all_as}});
+    {% endif %}
+    {% if overloads.deprecate_all_as %}
+    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::{{overloads.deprecate_all_as}});
+    {% endif %}
     {% for method in overloads.methods %}
     if ({{method.overload_resolution_expression}}) {
+        {% if method.measure_as and not overloads.measure_all_as %}
+        UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::{{method.measure_as}});
+        {% endif %}
+        {% if method.deprecate_as and not overloads.deprecate_all_as %}
+        UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::{{method.deprecate_as}});
+        {% endif %}
         {{method.name}}{{method.overload_index}}Method{{world_suffix}}(info);
         return;
     }
@@ -305,12 +317,14 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
 static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    {% if not method.overloads %}{# Overloaded methods are measured in overload_resolution_method() #}
     {% if method.measure_as %}
     UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::{{method.measure_as}});
     {% endif %}
     {% if method.deprecate_as %}
     UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::{{method.deprecate_as}});
     {% endif %}
+    {% endif %}{# not method.overloads #}
     {% if world_suffix in method.activity_logging_world_list %}
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
