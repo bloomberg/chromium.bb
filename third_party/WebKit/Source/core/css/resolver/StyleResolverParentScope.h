@@ -39,11 +39,13 @@ inline StyleResolverParentScope::StyleResolverParentScope(Node& parent)
     ASSERT(m_parent.document().inStyleRecalc());
     ASSERT(parent.isElementNode() || parent.isShadowRoot());
     s_currentScope = this;
+    m_resolver.increaseStyleSharingDepth();
 }
 
 inline StyleResolverParentScope::~StyleResolverParentScope()
 {
     s_currentScope = m_previous;
+    m_resolver.decreaseStyleSharingDepth();
     if (!m_pushed)
         return;
     if (m_parent.isElementNode())
