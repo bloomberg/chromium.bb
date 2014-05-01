@@ -27,12 +27,10 @@ def GetRemotePackageKey(is_shared, rev_num, package_target, package_name):
   else:
     intermediate_dir = package_target
 
-  return posixpath.join(
-      'builds',
-      str(rev_num),
-      intermediate_dir,
-      package_name + '.json'
-  )
+  return posixpath.join('builds',
+                        str(rev_num),
+                        intermediate_dir,
+                        package_name + '.json')
 
 
 def GetRemotePackageArchiveKey(archive_name, hash_value):
@@ -44,11 +42,9 @@ def GetRemotePackageArchiveKey(archive_name, hash_value):
   Returns:
     The google cloud storage key where the package archive should be found.
   """
-  return posixpath.join(
-      'archives',
-      archive_name,
-      hash_value
-  )
+  return posixpath.join('archives',
+                        archive_name,
+                        hash_value)
 
 
 def GetLocalPackageFile(tar_dir, package_target, package_name):
@@ -61,16 +57,29 @@ def GetLocalPackageFile(tar_dir, package_target, package_name):
   Returns:
     The standard location where local package file is found.
   """
-  return os.path.join(
-      tar_dir,
-      package_target,
-      package_name + '.json'
-  )
+  return os.path.join(tar_dir,
+                      package_target,
+                      package_name + '.json')
+
+
+def GetLocalPackageArchiveDir(tar_dir, package_target, package_name):
+  """Returns the local package archive directory location.
+
+  Args:
+    tar_dir: The tar directory for where package archives would be found.
+    package_target: The package target of the package containing the archive.
+    package_name: The name of the package.
+  Returns:
+    The standard directory where local package archive files are found.
+  """
+  return os.path.join(tar_dir,
+                      package_target,
+                      package_name)
 
 
 def GetLocalPackageArchiveFile(tar_dir, package_target, package_name,
                                archive_name):
-  """Returns the local package archive location.
+  """Returns the local package archive file location.
 
   Args:
     tar_dir: The tar directory for where package archives would be found.
@@ -80,12 +89,10 @@ def GetLocalPackageArchiveFile(tar_dir, package_target, package_name,
   Returns:
     The standard location where local package archive file is found.
   """
-  return os.path.join(
-      tar_dir,
-      package_target,
-      package_name,
-      archive_name
-  )
+  return os.path.join(GetLocalPackageArchiveDir(tar_dir,
+                                                package_target,
+                                                package_name),
+                      archive_name)
 
 
 def GetRevisionFile(revision_dir, package_name):
@@ -97,10 +104,8 @@ def GetRevisionFile(revision_dir, package_name):
   Returns:
     The standard location where the revision file is found.
   """
-  return os.path.join(
-      revision_dir,
-      package_name + '.json'
-  )
+  return os.path.join(revision_dir,
+                      package_name + '.json')
 
 
 def GetFullDestDir(dest_dir, package_target, package_name):
@@ -131,7 +136,5 @@ def GetDestPackageFile(dest_dir, package_target, package_name):
     The location of the package file within the destination directory.
   """
 
-  return os.path.join(
-      GetFullDestDir(dest_dir, package_target, package_name),
-      package_name + '.json'
-  )
+  return os.path.join(GetFullDestDir(dest_dir, package_target, package_name),
+                      package_name + '.json')

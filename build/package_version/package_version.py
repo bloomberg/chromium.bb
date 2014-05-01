@@ -185,30 +185,40 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
   downloaded_files = []
   if downloader is None:
     downloader = pynacl.gsd_storage.HttpDownload
-  local_package_file = package_locations.GetLocalPackageFile(
-      tar_dir,
-      package_target,
-      package_name)
+  local_package_file = package_locations.GetLocalPackageFile(tar_dir,
+                                                             package_target,
+                                                             package_name)
   # To ensure that we do not redownload extra archives that we already have,
   # create a dictionary of old package archives that contains the hash of each
   # package archive.
   old_archives = {}
   if os.path.isfile(local_package_file):
-    old_package_desc = package_info.PackageInfo(local_package_file)
-    old_archives_list = old_package_desc.GetArchiveList()
-    old_archive_names = [archive.GetArchiveData().name
-                         for archive
-                         in old_archives_list]
-    for archive_name in old_archive_names:
-      archive_file = package_locations.GetLocalPackageArchiveFile(
+    try:
+      old_package_desc = package_info.PackageInfo(local_package_file)
+      old_archives_list = old_package_desc.GetArchiveList()
+      old_archive_names = [archive.GetArchiveData().name
+                           for archive
+                           in old_archives_list]
+      for archive_name in old_archive_names:
+        archive_file = package_locations.GetLocalPackageArchiveFile(
+            tar_dir,
+            package_target,
+            package_name,
+            archive_name
+            )
+
+        archive_hash = archive_info.GetArchiveHash(archive_file)
+        if archive_hash is not None:
+          old_archives[archive_name] = archive_hash
+    except:
+      # Nothing can be trusted here anymore, delete all package archives.
+      archive_directory = package_locations.GetLocalPackageArchiveDir(
           tar_dir,
           package_target,
-          package_name,
-          archive_name)
-
-      archive_hash = archive_info.GetArchiveHash(archive_file)
-      if archive_hash is not None:
-        old_archives[archive_name] = archive_hash
+          package_name
+          )
+      os.unlink(local_package_file)
+      pynacl.file_tools.RemoveDir(archive_directory)
 
   # Download packages information file along with each of the package
   # archives described in the information file. Also keep track of what
