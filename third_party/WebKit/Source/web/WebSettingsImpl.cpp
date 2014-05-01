@@ -508,7 +508,9 @@ void WebSettingsImpl::setDeferredImageDecodingEnabled(bool enabled)
 
 void WebSettingsImpl::setDeferredFiltersEnabled(bool enabled)
 {
-    m_settings->setDeferredFiltersEnabled(enabled);
+    // FIXME: Once the default has been flipped in Chrome, re-enable this.
+    // http://crbug.com/368265
+//    m_settings->setDeferredFiltersEnabled(enabled);
 }
 
 void WebSettingsImpl::setAcceleratedCompositingForFixedPositionEnabled(bool enabled)
