@@ -1062,23 +1062,26 @@ void BrowserCommandController::UpdateSharedCommandsForIncognitoAvailability(
       IDC_NEW_INCOGNITO_WINDOW,
       incognito_availability != IncognitoModePrefs::DISABLED);
 
-  // Bookmark manager and settings page/subpages are forced to open in normal
-  // mode. For this reason we disable these commands when incognito is forced.
-  const bool command_enabled =
-      incognito_availability != IncognitoModePrefs::FORCED &&
-      !profile->IsGuestSession();
+  const bool guest_session = profile->IsGuestSession();
+  const bool forced_incognito =
+      incognito_availability == IncognitoModePrefs::FORCED ||
+      guest_session;  // Guest always runs in Incognito mode.
   command_updater->UpdateCommandEnabled(
       IDC_SHOW_BOOKMARK_MANAGER,
-      browser_defaults::bookmarks_enabled && command_enabled);
+      browser_defaults::bookmarks_enabled && !forced_incognito);
   ExtensionService* extension_service = profile->GetExtensionService();
-  bool enable_extensions =
+  const bool enable_extensions =
       extension_service && extension_service->extensions_enabled();
-  command_updater->UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS,
-                                        enable_extensions && command_enabled);
 
-  command_updater->UpdateCommandEnabled(IDC_IMPORT_SETTINGS, command_enabled);
-  command_updater->UpdateCommandEnabled(IDC_OPTIONS, command_enabled);
-  command_updater->UpdateCommandEnabled(IDC_SHOW_SIGNIN, command_enabled);
+  // Bookmark manager and settings page/subpages are forced to open in normal
+  // mode. For this reason we disable these commands when incognito is forced.
+  command_updater->UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS,
+                                        enable_extensions && !forced_incognito);
+
+  command_updater->UpdateCommandEnabled(IDC_IMPORT_SETTINGS, !forced_incognito);
+  command_updater->UpdateCommandEnabled(IDC_OPTIONS,
+                                        !forced_incognito || guest_session);
+  command_updater->UpdateCommandEnabled(IDC_SHOW_SIGNIN, !forced_incognito);
 }
 
 void BrowserCommandController::UpdateCommandsForIncognitoAvailability() {
@@ -1244,11 +1247,12 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
   // Settings page/subpages are forced to open in normal mode. We disable these
   // commands for guest sessions and when incognito is forced.
   const bool options_enabled = show_main_ui &&
-      !profile()->IsGuestSession() &&
       IncognitoModePrefs::GetAvailability(
           profile()->GetPrefs()) != IncognitoModePrefs::FORCED;
+  const bool guest_session = profile()->IsGuestSession();
   command_updater_.UpdateCommandEnabled(IDC_OPTIONS, options_enabled);
-  command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, options_enabled);
+  command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS,
+                                        options_enabled && !guest_session);
 
   command_updater_.UpdateCommandEnabled(IDC_EDIT_SEARCH_ENGINES, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
