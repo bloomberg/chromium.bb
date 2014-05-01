@@ -103,7 +103,7 @@ const char kFocusToEditTimeHistogram[] = "Omnibox.FocusToEditTime";
 
 // Histogram name which counts the number of milliseconds a user takes
 // between focusing and opening an omnibox match.
-const char kFocusToOpenTimeHistogram[] = "Omnibox.FocusToOpenTime";
+const char kFocusToOpenTimeHistogram[] = "Omnibox.FocusToOpenTimeAnyPopupState";
 
 // Split the percentage match histograms into buckets based on the width of the
 // omnibox.
@@ -712,63 +712,66 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
               input_text, alternate_nav_url,
               AutocompleteInput::HasHTTPScheme(input_text))));
 
-  // We only care about cases where there is a selection (i.e. the popup is
-  // open).
-  if (popup_model()->IsOpen()) {
-    base::TimeDelta elapsed_time_since_last_change_to_default_match(
-        now - autocomplete_controller()->last_time_default_match_changed());
-    // These elapsed times don't really make sense for ZeroSuggest matches
-    // (because the user does not modify the omnibox for ZeroSuggest), so for
-    // those we set the elapsed times to something that will be ignored by
-    // metrics_log.cc.
-    if (match.provider &&
-        (match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST)) {
-      elapsed_time_since_user_first_modified_omnibox =
-          base::TimeDelta::FromMilliseconds(-1);
-      elapsed_time_since_last_change_to_default_match =
-          base::TimeDelta::FromMilliseconds(-1);
-    }
-    DCHECK_NE(OmniboxPopupModel::kNoMatch, index);
-    OmniboxLog log(
-        input_text,
-        just_deleted_text_,
-        input_.type(),
-        index,
-        -1,  // don't yet know tab ID; set later if appropriate
-        ClassifyPage(),
-        elapsed_time_since_user_first_modified_omnibox,
-        match.inline_autocompletion.length(),
-        elapsed_time_since_last_change_to_default_match,
-        result());
-
-    DCHECK(user_input_in_progress_ || (match.provider &&
-           (match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST)))
-        << "We didn't get here through the expected series of calls. "
-        << "time_user_first_modified_omnibox_ is not set correctly and other "
-        << "things may be wrong. Match provider: "
-        << (match.provider ? match.provider->GetName() : "NULL");
-    DCHECK(log.elapsed_time_since_user_first_modified_omnibox >=
-           log.elapsed_time_since_last_change_to_default_match)
-        << "We should've got the notification that the user modified the "
-        << "omnibox text at same time or before the most recent time the "
-        << "default match changed.";
-
-    if ((disposition == CURRENT_TAB) && delegate_->CurrentPageExists()) {
-      // If we know the destination is being opened in the current tab,
-      // we can easily get the tab ID.  (If it's being opened in a new
-      // tab, we don't know the tab ID yet.)
-      log.tab_id = delegate_->GetSessionID().id();
-    }
-    autocomplete_controller()->AddProvidersInfo(&log.providers_info);
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-        content::Source<Profile>(profile_),
-        content::Details<OmniboxLog>(&log));
-    HISTOGRAM_ENUMERATION("Omnibox.EventCount", 1, 2);
-    DCHECK(!last_omnibox_focus_.is_null())
-        << "An omnibox focus should have occurred before opening a match.";
-    UMA_HISTOGRAM_TIMES(kFocusToOpenTimeHistogram, now - last_omnibox_focus_);
+  base::TimeDelta elapsed_time_since_last_change_to_default_match(
+      now - autocomplete_controller()->last_time_default_match_changed());
+  // These elapsed times don't really make sense for ZeroSuggest matches
+  // (because the user does not modify the omnibox for ZeroSuggest), so for
+  // those we set the elapsed times to something that will be ignored by
+  // metrics_log.cc.  They also don't necessarily make sense if the omnibox
+  // dropdown is closed or the user used a paste-and-go action.  (In most
+  // cases when this happens, the user never modified the omnibox.)
+  if ((match.provider &&
+       (match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST)) ||
+      !popup_model()->IsOpen() || !pasted_text.empty()) {
+    const base::TimeDelta default_time_delta =
+        base::TimeDelta::FromMilliseconds(-1);
+    elapsed_time_since_user_first_modified_omnibox = default_time_delta;
+    elapsed_time_since_last_change_to_default_match = default_time_delta;
   }
+  // If the popup is closed or this is a paste-and-go action (meaning the
+  // contents of the dropdown are ignored regardless), we record for logging
+  // purposes a selected_index of 0 and a suggestion list as having a single
+  // entry of the match used.
+  ACMatches fake_single_entry_matches;
+  fake_single_entry_matches.push_back(match);
+  AutocompleteResult fake_single_entry_result;
+  fake_single_entry_result.AppendMatches(fake_single_entry_matches);
+  OmniboxLog log(
+      input_text,
+      just_deleted_text_,
+      input_.type(),
+      popup_model()->IsOpen(),
+      (!popup_model()->IsOpen() || !pasted_text.empty()) ? 0 : index,
+      !pasted_text.empty(),
+      -1,  // don't yet know tab ID; set later if appropriate
+      ClassifyPage(),
+      elapsed_time_since_user_first_modified_omnibox,
+      match.inline_autocompletion.length(),
+      elapsed_time_since_last_change_to_default_match,
+      (!popup_model()->IsOpen() || !pasted_text.empty()) ?
+          fake_single_entry_result : result());
+  DCHECK(!popup_model()->IsOpen() || !pasted_text.empty() ||
+         (log.elapsed_time_since_user_first_modified_omnibox >=
+          log.elapsed_time_since_last_change_to_default_match))
+      << "We should've got the notification that the user modified the "
+      << "omnibox text at same time or before the most recent time the "
+      << "default match changed.";
+
+  if ((disposition == CURRENT_TAB) && delegate_->CurrentPageExists()) {
+    // If we know the destination is being opened in the current tab,
+    // we can easily get the tab ID.  (If it's being opened in a new
+    // tab, we don't know the tab ID yet.)
+    log.tab_id = delegate_->GetSessionID().id();
+  }
+  autocomplete_controller()->AddProvidersInfo(&log.providers_info);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
+      content::Source<Profile>(profile_),
+      content::Details<OmniboxLog>(&log));
+  HISTOGRAM_ENUMERATION("Omnibox.EventCount", 1, 2);
+  DCHECK(!last_omnibox_focus_.is_null())
+      << "An omnibox focus should have occurred before opening a match.";
+  UMA_HISTOGRAM_TIMES(kFocusToOpenTimeHistogram, now - last_omnibox_focus_);
 
   TemplateURL* template_url = match.GetTemplateURL(profile_, false);
   if (template_url) {

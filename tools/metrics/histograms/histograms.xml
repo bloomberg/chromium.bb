@@ -16386,9 +16386,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Omnibox.FocusToOpenTime" units="ms">
   <owner>mpearson@chromium.org</owner>
+  <obsolete>
+    Replaced with Omnibox.FocusToOpenTimeAnyPopupState in April 2014.
+  </obsolete>
   <summary>
     The length of time between when a user focused on the omnibox and opened an
     omnibox match (which could be what they typed or a suggestion).
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.FocusToOpenTimeAnyPopupState" units="ms">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    The length of time between when a user focused on the omnibox and opened an
+    omnibox match (which could be what they typed or a suggestion).  This is
+    recorded regardless of whether the omnibox dropdown (a.k.a. popup) is open.
   </summary>
 </histogram>
 
