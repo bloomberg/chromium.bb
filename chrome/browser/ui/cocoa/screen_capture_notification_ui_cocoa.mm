@@ -108,6 +108,12 @@ scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
   return self;
 }
 
+- (void)dealloc {
+  [stopButton_ setTarget:nil];
+  [minimizeButton_ setTarget:nil];
+  [super dealloc];
+}
+
 - (void)stopSharing:(id)sender {
   if (!stop_callback_.is_null()) {
     base::Closure callback = stop_callback_;

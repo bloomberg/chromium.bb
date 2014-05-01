@@ -81,6 +81,8 @@ const int kExcessButtonPadding = 6;
 }
 
 - (void)dealloc {
+  [shareButton_ setTarget:nil];
+  [cancelButton_ setTarget:nil];
   [sourceBrowser_ setDelegate:nil];
   [sourceBrowser_ setDataSource:nil];
   [super dealloc];
