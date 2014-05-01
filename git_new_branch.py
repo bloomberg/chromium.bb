@@ -46,7 +46,7 @@ def main(args):
     sys.stdout.write(cpe.stdout)
     sys.stderr.write(cpe.stderr)
     return 1
-  sys.stderr.write('Switched to branch %s.' % opts.branch_name)
+  sys.stderr.write('Switched to branch %s.\n' % opts.branch_name)
 
 
 if __name__ == '__main__':  # pragma: no cover
