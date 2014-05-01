@@ -53,12 +53,12 @@ HistoryController::HistoryController(RenderViewImpl* render_view)
 HistoryController::~HistoryController() {
 }
 
-void HistoryController::GoToEntry(HistoryEntry* target_entry,
+void HistoryController::GoToEntry(scoped_ptr<HistoryEntry> target_entry,
                                   WebURLRequest::CachePolicy cache_policy) {
   HistoryFrameLoadVector same_document_loads;
   HistoryFrameLoadVector different_document_loads;
 
-  provisional_entry_.reset(target_entry);
+  provisional_entry_ = target_entry.Pass();
 
   WebFrame* main_frame = render_view_->main_render_frame()->GetWebFrame();
   if (current_entry_) {

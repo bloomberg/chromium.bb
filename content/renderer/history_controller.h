@@ -109,7 +109,7 @@ class CONTENT_EXPORT HistoryController {
   explicit HistoryController(RenderViewImpl* render_view);
   ~HistoryController();
 
-  void GoToEntry(HistoryEntry* entry,
+  void GoToEntry(scoped_ptr<HistoryEntry> entry,
                  blink::WebURLRequest::CachePolicy cache_policy);
 
   void UpdateForCommit(RenderFrameImpl* frame,

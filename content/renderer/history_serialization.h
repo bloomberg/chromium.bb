@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
 namespace blink {
@@ -20,7 +21,8 @@ class PageState;
 CONTENT_EXPORT PageState HistoryEntryToPageState(HistoryEntry* entry);
 CONTENT_EXPORT PageState SingleHistoryItemToPageState(
     const blink::WebHistoryItem& item);
-CONTENT_EXPORT HistoryEntry* PageStateToHistoryEntry(const PageState& state);
+CONTENT_EXPORT scoped_ptr<HistoryEntry> PageStateToHistoryEntry(
+    const PageState& state);
 
 }  // namespace content
 

@@ -729,12 +729,13 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
   } else if (params.page_state.IsValid()) {
     // We must know the page ID of the page we are navigating back to.
     DCHECK_NE(params.page_id, -1);
-    HistoryEntry* entry = PageStateToHistoryEntry(params.page_state);
+    scoped_ptr<HistoryEntry> entry =
+        PageStateToHistoryEntry(params.page_state);
     if (entry) {
       // Ensure we didn't save the swapped out URL in UpdateState, since the
       // browser should never be telling us to navigate to swappedout://.
       CHECK(entry->root().urlString() != WebString::fromUTF8(kSwappedOutURL));
-      render_view_->history_controller()->GoToEntry(entry, cache_policy);
+      render_view_->history_controller()->GoToEntry(entry.Pass(), cache_policy);
     }
   } else if (!params.base_url_for_data_url.is_empty()) {
     // A loadData request with a specified base URL.

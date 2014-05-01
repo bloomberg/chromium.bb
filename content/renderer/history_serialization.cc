@@ -186,15 +186,15 @@ PageState SingleHistoryItemToPageState(const WebHistoryItem& item) {
   return PageState::CreateFromEncodedData(encoded_data);
 }
 
-HistoryEntry* PageStateToHistoryEntry(const PageState& page_state) {
+scoped_ptr<HistoryEntry> PageStateToHistoryEntry(const PageState& page_state) {
   ExplodedPageState state;
   if (!DecodePageState(page_state.ToEncodedData(), &state))
-    return NULL;
+    return scoped_ptr<HistoryEntry>();
 
-  HistoryEntry* entry = new HistoryEntry();
+  scoped_ptr<HistoryEntry> entry(new HistoryEntry());
   RecursivelyGenerateHistoryItem(state.top, entry->root_history_node());
 
-  return entry;
+  return entry.Pass();
 }
 
 }  // namespace content

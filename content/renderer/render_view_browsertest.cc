@@ -333,9 +333,9 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
 
   // Check post data sent to browser matches
   EXPECT_TRUE(host_nav_params.a.page_state.IsValid());
-  const blink::WebHistoryItem item =
-      PageStateToHistoryEntry(host_nav_params.a.page_state)->root();
-  blink::WebHTTPBody body = item.httpBody();
+  scoped_ptr<HistoryEntry> entry =
+      PageStateToHistoryEntry(host_nav_params.a.page_state);
+  blink::WebHTTPBody body = entry->root().httpBody();
   blink::WebHTTPBody::Element element;
   bool successful = body.elementAt(0, element);
   EXPECT_TRUE(successful);
