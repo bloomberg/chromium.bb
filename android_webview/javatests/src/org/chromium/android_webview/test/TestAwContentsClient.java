@@ -14,7 +14,10 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPage
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 
-class TestAwContentsClient extends NullContentsClient {
+/**
+ * AwContentsClient subclass used for testing.
+ */
+public class TestAwContentsClient extends NullContentsClient {
     private String mUpdatedTitle;
     private final OnPageStartedHelper mOnPageStartedHelper;
     private final OnPageFinishedHelper mOnPageFinishedHelper;
@@ -73,6 +76,9 @@ class TestAwContentsClient extends NullContentsClient {
         return mAddMessageToConsoleHelper;
     }
 
+    /**
+     * Callback helper for onScaleChangedScaled.
+     */
     public static class OnScaleChangedHelper extends CallbackHelper {
         private float mPreviousScale;
         private float mCurrentScale;
@@ -227,6 +233,9 @@ class TestAwContentsClient extends NullContentsClient {
         return false;
     }
 
+    /**
+     * Callback helper for onScaleChangedScaled.
+     */
     public static class AddMessageToConsoleHelper extends CallbackHelper {
         private int mLevel;
         private String mMessage;
@@ -267,6 +276,9 @@ class TestAwContentsClient extends NullContentsClient {
         mOnScaleChangedHelper.notifyCalled(oldScale, newScale);
     }
 
+    /**
+     * Callback helper for onScaleChangedScaled.
+     */
     public static class PictureListenerHelper extends CallbackHelper {
         // Generally null, depending on |invalidationOnly| in enableOnNewPicture()
         private Picture mPicture;
@@ -287,6 +299,9 @@ class TestAwContentsClient extends NullContentsClient {
         mPictureListenerHelper.notifyCalled(picture);
     }
 
+    /**
+     * Callback helper for onScaleChangedScaled.
+     */
     public static class ShouldOverrideUrlLoadingHelper extends CallbackHelper {
         private String mShouldOverrideUrlLoadingUrl;
         private String mPreviousShouldOverrideUrlLoadingUrl;

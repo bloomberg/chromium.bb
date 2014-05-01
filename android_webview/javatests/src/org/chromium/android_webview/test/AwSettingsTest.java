@@ -16,6 +16,8 @@ import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.chromium.android_webview.AwContents;
@@ -24,6 +26,7 @@ import org.chromium.android_webview.AwSettings.LayoutAlgorithm;
 import org.chromium.android_webview.InterceptedRequestData;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.ImagePageGenerator;
+import org.chromium.android_webview.test.util.VideoTestUtil;
 import org.chromium.android_webview.test.util.VideoTestWebServer;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -2543,14 +2546,14 @@ public class AwSettingsTest extends AwTestBase {
     */
     @DisabledTest
     public void testMediaPlaybackWithoutUserGesture() throws Throwable {
-        assertTrue(runVideoTest(false, -1));
+        assertTrue(VideoTestUtil.runVideoTest(this, false, WAIT_TIMEOUT_MS));
     }
 
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
     public void testMediaPlaybackWithUserGesture() throws Throwable {
         // Wait for 5 second to see if video played.
-        assertFalse(runVideoTest(true, 5000));
+        assertFalse(VideoTestUtil.runVideoTest(this, true, scaleTimeout(5000)));
     }
 
     @SmallTest
