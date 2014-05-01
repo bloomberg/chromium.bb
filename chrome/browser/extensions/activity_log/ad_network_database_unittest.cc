@@ -180,7 +180,7 @@ void AdNetworkDatabaseUnitTest::SetUp() {
       "en-US", mock_resource_delegate_.get());
 }
 
-TEST_F(AdNetworkDatabaseUnitTest, AdNetworkDatabaseTest) {
+TEST_F(AdNetworkDatabaseUnitTest, DISABLED_AdNetworkDatabaseTest) {
   const AdNetworkDatabase* database = AdNetworkDatabase::Get();
   ASSERT_TRUE(database);
 
