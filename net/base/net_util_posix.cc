@@ -111,7 +111,8 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
     CHECK(base::StringToUint(network_tokenizer.token(), &index));
 
     networks->push_back(
-        NetworkInterface(name, name, index, NETWORK_INTERFACE_UNKNOWN,
+        NetworkInterface(name, name, index,
+                         NetworkChangeNotifier::CONNECTION_UNKNOWN,
                          address, network_prefix));
   }
   return true;
@@ -212,7 +213,8 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
         }
       }
       network_info.interface = NetworkInterface(
-          name, name, if_nametoindex(name.c_str()), NETWORK_INTERFACE_UNKNOWN,
+          name, name, if_nametoindex(name.c_str()),
+          NetworkChangeNotifier::CONNECTION_UNKNOWN,
           address.address(), net_mask);
 
       network_infos.push_back(NetworkInterfaceInfo(network_info));

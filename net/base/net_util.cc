@@ -960,14 +960,14 @@ bool IsLocalhost(const std::string& host) {
 }
 
 NetworkInterface::NetworkInterface()
-    : type(NETWORK_INTERFACE_UNKNOWN),
+    : type(NetworkChangeNotifier::CONNECTION_UNKNOWN),
       network_prefix(0) {
 }
 
 NetworkInterface::NetworkInterface(const std::string& name,
                                    const std::string& friendly_name,
                                    uint32 interface_index,
-                                   NetworkInterfaceType type,
+                                   NetworkChangeNotifier::ConnectionType type,
                                    const IPAddressNumber& address,
                                    size_t network_prefix)
     : name(name),

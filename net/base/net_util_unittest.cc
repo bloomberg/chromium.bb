@@ -1804,6 +1804,9 @@ TEST(NetUtilTest, GetNetworkList) {
       EXPECT_LT(it->interface_index, 1u << 24u);  // Must fit 0.x.x.x.
       EXPECT_NE(it->interface_index, 0u);  // 0 means to use default.
     }
+    if (it->type == NetworkChangeNotifier::CONNECTION_WIFI) {
+      EXPECT_NE(WIFI_PHY_LAYER_PROTOCOL_NONE, GetWifiPHYLayerProtocol());
+    }
 #elif !defined(OS_ANDROID)
     char name[IF_NAMESIZE];
     EXPECT_TRUE(if_indextoname(it->interface_index, name));

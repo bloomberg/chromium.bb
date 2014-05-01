@@ -24,6 +24,8 @@
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
 
+namespace net {
+
 namespace {
 
 struct WlanApi {
@@ -81,9 +83,20 @@ struct WlanApi {
   bool initialized;
 };
 
-}  // namespace
+// Converts Windows defined types to NetworkInterfaceType.
+NetworkChangeNotifier::ConnectionType GetNetworkInterfaceType(DWORD ifType) {
+  NetworkChangeNotifier::ConnectionType type =
+      NetworkChangeNotifier::CONNECTION_UNKNOWN;
+  if (ifType == IF_TYPE_ETHERNET_CSMACD) {
+    type = NetworkChangeNotifier::CONNECTION_ETHERNET;
+  } else if (ifType == IF_TYPE_IEEE80211) {
+    type = NetworkChangeNotifier::CONNECTION_WIFI;
+  }
+  // TODO(mallinath) - Cellular?
+  return type;
+}
 
-namespace net {
+}  // namespace
 
 bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
   // GetAdaptersAddresses() may require IO operations.
@@ -173,15 +186,17 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
               ipv6_valid_lifetime = address->ValidLifetime;
               ipv6_address.reset(new NetworkInterface(adapter->AdapterName,
                                  base::SysWideToNativeMB(adapter->FriendlyName),
-                                 index, NETWORK_INTERFACE_UNKNOWN,
-                                 endpoint.address(), net_prefix));
+                                 index,
+                                 GetNetworkInterfaceType(adapter->IfType),
+                                 endpoint.address(),
+                                 net_prefix));
               continue;
             }
           }
           networks->push_back(
               NetworkInterface(adapter->AdapterName,
                                base::SysWideToNativeMB(adapter->FriendlyName),
-                               index, NETWORK_INTERFACE_UNKNOWN,
+                               index, GetNetworkInterfaceType(adapter->IfType),
                                endpoint.address(), net_prefix));
         }
       }
