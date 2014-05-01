@@ -383,6 +383,17 @@ public:
         DocumentImportNodeOptionalArgument = 373,
         HTMLTableElementVspace = 374,
         HTMLTableElementHspace = 375,
+        PrefixedDocumentExitPointerLock = 376,
+        PrefixedDocumentPointerLockElement = 377,
+        PrefixedTouchRadiusX = 378,
+        PrefixedTouchRadiusY = 379,
+        PrefixedTouchRotationAngle = 380,
+        PrefixedTouchForce = 381,
+        PrefixedMouseEventMovementX = 382,
+        PrefixedMouseEventMovementY = 383,
+        PrefixedWheelEventDirectionInvertedFromDevice = 384,
+        PrefixedWheelEventInit = 385,
+        PrefixedFileRelativePath = 386,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         NumberOfFeatures, // This enum value must be last.

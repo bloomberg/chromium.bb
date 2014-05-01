@@ -161,8 +161,8 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
     readonly attribute DOMString compatMode;
 
-    void webkitExitPointerLock();
-    readonly attribute Element webkitPointerLockElement;
+    [MeasureAs=PrefixedDocumentExitPointerLock] void webkitExitPointerLock();
+    [MeasureAs=PrefixedDocumentPointerLockElement] readonly attribute Element webkitPointerLockElement;
 
     // Event handler attributes
     attribute EventHandler onbeforecopy;

@@ -30,5 +30,5 @@
     readonly attribute DOMString name;
     [Custom=Getter, MeasureAs=FileGetLastModifiedDate] readonly attribute Date lastModifiedDate;
     [Custom=Getter, RuntimeEnabled=FileConstructor] readonly attribute long long lastModified;
-    readonly attribute DOMString webkitRelativePath;
+    [MeasureAs=PrefixedFileRelativePath] readonly attribute DOMString webkitRelativePath;
 };

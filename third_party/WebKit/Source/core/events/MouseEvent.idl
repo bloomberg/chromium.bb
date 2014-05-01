@@ -30,8 +30,8 @@
     [InitializedByEventConstructor] readonly attribute boolean          metaKey;
     [InitializedByEventConstructor] readonly attribute unsigned short   button;
     [InitializedByEventConstructor] readonly attribute EventTarget?     relatedTarget;
-                                    readonly attribute long             webkitMovementX;
-                                    readonly attribute long             webkitMovementY;
+    [MeasureAs=PrefixedMouseEventMovementX] readonly attribute long webkitMovementX;
+    [MeasureAs=PrefixedMouseEventMovementY] readonly attribute long webkitMovementY;
 
      void initMouseEvent([Default=Undefined] optional DOMString type,
                                        [Default=Undefined] optional boolean canBubble,

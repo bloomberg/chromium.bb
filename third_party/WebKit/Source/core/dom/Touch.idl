@@ -34,8 +34,8 @@
     readonly attribute long             pageY;
     readonly attribute EventTarget      target;
     readonly attribute unsigned long    identifier;
-    readonly attribute long             webkitRadiusX;
-    readonly attribute long             webkitRadiusY;
-    readonly attribute float            webkitRotationAngle;
-    readonly attribute float            webkitForce;
+    [MeasureAs=PrefixedTouchRadiusX] readonly attribute long webkitRadiusX;
+    [MeasureAs=PrefixedTouchRadiusY] readonly attribute long webkitRadiusY;
+    [MeasureAs=PrefixedTouchRotationAngle] readonly attribute float webkitRotationAngle;
+    [MeasureAs=PrefixedTouchForce] readonly attribute float webkitForce;
 };
