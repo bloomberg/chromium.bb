@@ -16,6 +16,7 @@
 #include "android_webview/browser/icon_helper.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
 #include "android_webview/browser/shared_renderer_state.h"
+#include "android_webview/native/permission/permission_request_handler_client.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback_forward.h"
@@ -36,6 +37,7 @@ class AwContentsClientBridge;
 class AwPdfExporter;
 class AwWebContentsDelegate;
 class HardwareRenderer;
+class PermissionRequestHandler;
 
 // Native side of java-class of same name.
 // Provides the ownership of and access to browser components required for
@@ -53,7 +55,8 @@ class HardwareRenderer;
 class AwContents : public FindHelper::Listener,
                    public IconHelper::Listener,
                    public AwRenderViewHostExtClient,
-                   public BrowserViewRendererClient {
+                   public BrowserViewRendererClient,
+                   public PermissionRequestHandlerClient {
  public:
   // Returns the AwContents instance associated with |web_contents|, or NULL.
   static AwContents* FromWebContents(content::WebContents* web_contents);
@@ -139,6 +142,15 @@ class AwContents : public FindHelper::Listener,
                                  jboolean value,
                                  jstring origin);
 
+  // PermissionRequestHandlerClient implementation.
+  virtual void OnPermissionRequest(AwPermissionRequest* request) OVERRIDE;
+  virtual void OnPermissionRequestCanceled(
+      AwPermissionRequest* request) OVERRIDE;
+
+  PermissionRequestHandler* GetPermissionRequestHandler() {
+    return permission_request_handler_.get();
+  }
+
   // Find-in-page API and related methods.
   void FindAllAsync(JNIEnv* env, jobject obj, jstring search_string);
   void FindNext(JNIEnv* env, jobject obj, jboolean forward);
@@ -222,6 +234,7 @@ class AwContents : public FindHelper::Listener,
   BrowserViewRenderer browser_view_renderer_;
   scoped_ptr<HardwareRenderer> hardware_renderer_;
   scoped_ptr<AwPdfExporter> pdf_exporter_;
+  scoped_ptr<PermissionRequestHandler> permission_request_handler_;
 
   // GURL is supplied by the content layer as requesting frame.
   // Callback is supplied by the content layer, and is invoked with the result

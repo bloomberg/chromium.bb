@@ -23,6 +23,7 @@ import org.chromium.android_webview.AwHttpAuthHandler;
 import org.chromium.android_webview.InterceptedRequestData;
 import org.chromium.android_webview.JsPromptResultReceiver;
 import org.chromium.android_webview.JsResultReceiver;
+import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.base.ThreadUtils;
 
 import java.security.Principal;
@@ -218,5 +219,14 @@ public class NullContentsClient extends AwContentsClient {
     @Override
     public Bitmap getDefaultVideoPoster() {
         return null;
+    }
+
+    @Override
+    public void onPermissionRequest(AwPermissionRequest awPermissionRequest) {
+        awPermissionRequest.deny();
+    }
+
+    @Override
+    public void onPermissionRequestCanceled(AwPermissionRequest awPermissionRequest) {
     }
 }

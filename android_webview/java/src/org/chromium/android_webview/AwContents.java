@@ -37,6 +37,7 @@ import android.widget.OverScroller;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
@@ -1882,6 +1883,16 @@ public class AwContents {
     @CalledByNative
     private void onGeolocationPermissionsHidePrompt() {
         mContentsClient.onGeolocationPermissionsHidePrompt();
+    }
+
+    @CalledByNative
+    private void onPermissionRequest(AwPermissionRequest awPermissionRequest) {
+        mContentsClient.onPermissionRequest(awPermissionRequest);
+    }
+
+    @CalledByNative
+    private void onPermissionRequestCanceled(AwPermissionRequest awPermissionRequest) {
+        mContentsClient.onPermissionRequestCanceled(awPermissionRequest);
     }
 
     @CalledByNative
