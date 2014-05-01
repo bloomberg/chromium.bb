@@ -687,4 +687,34 @@ TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
   form_manager.Save();
 }
 
+TEST_F(PasswordFormManagerTest, TestScoringPublicSuffixMatch) {
+  base::MessageLoop message_loop;
+
+  TestPasswordManagerClient client(NULL);
+  MockPasswordManagerDriver driver;
+  EXPECT_CALL(driver, IsOffTheRecord()).WillRepeatedly(Return(false));
+  EXPECT_CALL(driver, AllowPasswordGenerationForForm(_));
+
+  TestPasswordManager password_manager(&client);
+  scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
+    &password_manager, &client, &driver, *observed_form(), false));
+
+  // Simulate having two matches for this form, first comes from different
+  // signon realm, but reports the same origin and action as matched form.
+  // Second candidate has the same signon realm as the form, but has a different
+  // origin and action. Public suffix match is the most important criterion so
+  // the second candidate should be selected.
+  std::vector<PasswordForm*> results;
+  results.push_back(CreateSavedMatch(false));
+  results.push_back(CreateSavedMatch(false));
+  results[0]->original_signon_realm = "http://accounts2.google.com";
+  results[1]->origin = GURL("http://accounts.google.com/a/ServiceLoginAuth2");
+  results[1]->action = GURL("http://accounts.google.com/a/ServiceLogin2");
+  SimulateFetchMatchingLoginsFromPasswordStore(manager.get());
+  SimulateResponseFromPasswordStore(manager.get(), results);
+  EXPECT_EQ(1u, password_manager.GetLatestBestMatches().size());
+  EXPECT_EQ("", password_manager.GetLatestBestMatches().begin()
+      ->second->original_signon_realm);
+}
+
 }  // namespace password_manager
