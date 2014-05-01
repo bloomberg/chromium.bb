@@ -119,6 +119,27 @@ private:
     friend class AnimationInterpolationTest;
 };
 
+class DefaultStyleInterpolation : public StyleInterpolation {
+public:
+    static PassRefPtrWillBeRawPtr<DefaultStyleInterpolation> create(CSSValue* start, CSSValue* end, CSSPropertyID id)
+    {
+        return adoptRefWillBeNoop(new DefaultStyleInterpolation(start, end, id));
+    }
+    virtual void apply(StyleResolverState&) const;
+    virtual void trace(Visitor*) OVERRIDE;
+
+private:
+    DefaultStyleInterpolation(CSSValue* start, CSSValue* end, CSSPropertyID id)
+        : StyleInterpolation(InterpolableBool::create(false), InterpolableBool::create(true), id)
+        , m_startCSSValue(start)
+        , m_endCSSValue(end)
+    {
+    }
+
+    RefPtrWillBeMember<CSSValue> m_startCSSValue;
+    RefPtrWillBeMember<CSSValue> m_endCSSValue;
+};
+
 DEFINE_TYPE_CASTS(StyleInterpolation, Interpolation, value, value->isStyleInterpolation(), value.isStyleInterpolation());
 DEFINE_TYPE_CASTS(LegacyStyleInterpolation, Interpolation, value, value->isLegacyStyleInterpolation(), value.isLegacyStyleInterpolation());
 
