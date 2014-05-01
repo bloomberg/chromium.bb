@@ -260,7 +260,7 @@ FastTextAutosizer::FastTextAutosizer(const Document* document)
 
 void FastTextAutosizer::record(const RenderBlock* block)
 {
-    if (!enabled())
+    if (!m_pageInfo.m_settingEnabled)
         return;
 
     ASSERT(!m_blocksThatHaveBegunLayout.contains(block));
@@ -274,7 +274,7 @@ void FastTextAutosizer::record(const RenderBlock* block)
 
 void FastTextAutosizer::destroy(const RenderBlock* block)
 {
-    if (!enabled())
+    if (!m_pageInfo.m_settingEnabled)
         return;
     ASSERT(!m_blocksThatHaveBegunLayout.contains(block));
 
@@ -460,20 +460,14 @@ void FastTextAutosizer::inflate(RenderBlock* block)
     }
 }
 
-// FIXME(crbug.com/367864): Unify this with m_pageInfo.m_settingEnabled.
-bool FastTextAutosizer::enabled() const
-{
-    return m_document->settings() && m_document->settings()->textAutosizingEnabled();
-}
-
 bool FastTextAutosizer::shouldHandleLayout() const
 {
-    return enabled() && m_pageInfo.m_pageNeedsAutosizing && !m_updatePageInfoDeferred;
+    return m_pageInfo.m_settingEnabled && m_pageInfo.m_pageNeedsAutosizing && !m_updatePageInfoDeferred;
 }
 
 void FastTextAutosizer::updatePageInfoInAllFrames()
 {
-    ASSERT(!enabled() || m_document->frame()->isMainFrame());
+    ASSERT(!m_document->frame() || m_document->frame()->isMainFrame());
 
     for (LocalFrame* frame = m_document->frame(); frame; frame = frame->tree().traverseNext()) {
         if (FastTextAutosizer* textAutosizer = frame->document()->fastTextAutosizer())
@@ -483,13 +477,13 @@ void FastTextAutosizer::updatePageInfoInAllFrames()
 
 void FastTextAutosizer::updatePageInfo()
 {
-    if (m_updatePageInfoDeferred || !m_document->page())
+    if (m_updatePageInfoDeferred || !m_document->page() || !m_document->settings())
         return;
 
     PageInfo previousPageInfo(m_pageInfo);
-    m_pageInfo.m_settingEnabled = enabled();
+    m_pageInfo.m_settingEnabled = m_document->settings()->textAutosizingEnabled();
 
-    if (!enabled() || m_document->printing()) {
+    if (!m_pageInfo.m_settingEnabled || m_document->printing()) {
         m_pageInfo.m_pageNeedsAutosizing = false;
     } else {
         RenderView* renderView = toRenderView(m_document->renderer());
