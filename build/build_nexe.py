@@ -154,16 +154,13 @@ class Builder(object):
 
     if arch in ['x86-32', 'x86-64']:
       mainarch = 'x86'
-      self.subarch = arch.split('-')[1]
       self.tool_prefix = 'x86_64-nacl-'
     elif arch == 'arm':
-      self.subarch = ''
       self.tool_prefix = 'arm-nacl-'
       mainarch = 'arm'
     elif arch == 'mips':
       self.is_pnacl_toolchain = True
     elif arch == 'pnacl':
-      self.subarch = ''
       self.is_pnacl_toolchain = True
     else:
       raise Error('Toolchain architecture %s not supported.' % arch)
@@ -182,9 +179,12 @@ class Builder(object):
 
     if self.is_pnacl_toolchain:
       self.tool_prefix = 'pnacl-'
-      tooldir = '%s_pnacl' % self.osname
+      tool_subdir = 'pnacl_newlib'
     else:
-      tooldir = '%s_%s_%s' % (self.osname, mainarch, toolname)
+      tool_subdir = 'nacl_%s_%s' % (mainarch, toolname)
+
+    build_arch = pynacl.platform.GetArch()
+    tooldir = os.path.join('%s_%s' % (self.osname, build_arch), tool_subdir)
 
     self.root_path = options.root
     self.nacl_path = os.path.join(self.root_path, 'native_client')
