@@ -352,14 +352,11 @@ class GitWrapper(SCMWrapper):
     if (not os.path.exists(self.checkout_path) or
         (os.path.isdir(self.checkout_path) and
          not os.path.exists(os.path.join(self.checkout_path, '.git')))):
-      if (os.path.isdir(self.checkout_path) and
-          not os.path.exists(os.path.join(self.checkout_path, '.git')) and
-          os.listdir(self.checkout_path)):
-        # This is a little hack to work around checkouts which are created
-        # using "gclient config --name ."
-        if not self.relpath == '.':
-          self._DeleteOrMove(options.force)
-      self._Clone(revision, url, options)
+      try:
+        self._Clone(revision, url, options)
+      except subprocess2.CalledProcessError:
+        self._DeleteOrMove(options.force)
+        self._Clone(revision, url, options)
       self._UpdateBranchHeads(options, fetch=True)
       if file_list is not None:
         files = self._Capture(['ls-files']).splitlines()

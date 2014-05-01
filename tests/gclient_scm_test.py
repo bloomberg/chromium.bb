@@ -1297,11 +1297,6 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.os.path.exists(os.path.join(self.base_path, '.git')
                                ).AndReturn(False)
-    gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
-    gclient_scm.os.path.exists(os.path.join(self.base_path, '.git')
-                               ).AndReturn(False)
-    self.mox.StubOutWithMock(gclient_scm.os, 'listdir', True)
-    gclient_scm.os.listdir(self.base_path).AndReturn([])
 
     self.mox.StubOutWithMock(gclient_scm.GitWrapper, '_Clone', True)
     # pylint: disable=E1120
@@ -1324,23 +1319,24 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     scm.update(options, None, [])
     self.checkstdout('\n')
 
-  def testUpdateNoDotGitForce(self):
-    options = self.Options(force=True)
+  def testUpdateConflict(self):
+    options = self.Options()
 
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.os.path.exists(os.path.join(self.base_path, '.git')
                                ).AndReturn(False)
-    gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
-    gclient_scm.os.path.exists(os.path.join(self.base_path, '.git')
-                               ).AndReturn(False)
-    self.mox.StubOutWithMock(gclient_scm.os, 'listdir', True)
-    gclient_scm.os.listdir(self.base_path).AndReturn([])
+
     self.mox.StubOutWithMock(gclient_scm.GitWrapper, '_Clone', True)
     # pylint: disable=E1120
+    gclient_scm.GitWrapper._Clone(
+        'refs/remotes/origin/master', self.url, options
+    ).AndRaise(gclient_scm.subprocess2.CalledProcessError(None, None, None,
+                                                          None, None))
+    self.mox.StubOutWithMock(gclient_scm.GitWrapper, '_DeleteOrMove', True)
+    gclient_scm.GitWrapper._DeleteOrMove(False)
     gclient_scm.GitWrapper._Clone('refs/remotes/origin/master', self.url,
                                   options)
-    # pylint: disable=E1120
     self.mox.StubOutWithMock(gclient_scm.subprocess2, 'check_output', True)
     gclient_scm.subprocess2.check_output(
         ['git', 'ls-files'], cwd=self.base_path,
