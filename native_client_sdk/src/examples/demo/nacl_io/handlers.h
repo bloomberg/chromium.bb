@@ -5,32 +5,37 @@
 #ifndef HANDLERS_H_
 #define HANDLERS_H_
 
-#define MAX_PARAMS 4
+#include "ppapi/c/pp_var.h"
 
-typedef int (*HandleFunc)(int num_params, char** params, char** output);
+typedef int (*HandleFunc)(struct PP_Var params,
+                          struct PP_Var* out_var,
+                          const char** error);
 
-int HandleFopen(int num_params, char** params, char** output);
-int HandleFwrite(int num_params, char** params, char** output);
-int HandleFread(int num_params, char** params, char** output);
-int HandleFseek(int num_params, char** params, char** output);
-int HandleFclose(int num_params, char** params, char** output);
-int HandleFflush(int num_params, char** params, char** output);
-int HandleStat(int num_params, char** params, char** output);
+int HandleFopen(struct PP_Var params, struct PP_Var* out, const char** error);
+int HandleFwrite(struct PP_Var params, struct PP_Var* out, const char** error);
+int HandleFread(struct PP_Var params, struct PP_Var* out, const char** error);
+int HandleFseek(struct PP_Var params, struct PP_Var* out, const char** error);
+int HandleFclose(struct PP_Var params, struct PP_Var* out, const char** error);
+int HandleFflush(struct PP_Var params, struct PP_Var* out, const char** error);
+int HandleStat(struct PP_Var params, struct PP_Var* out, const char** error);
 
-int HandleOpendir(int num_params, char** params, char** output);
-int HandleReaddir(int num_params, char** params, char** output);
-int HandleClosedir(int num_params, char** params, char** output);
+int HandleOpendir(struct PP_Var params, struct PP_Var* out, const char** error);
+int HandleReaddir(struct PP_Var params, struct PP_Var* out, const char** error);
+int HandleClosedir(struct PP_Var params, struct PP_Var* out,
+                   const char** error);
 
-int HandleMkdir(int num_params, char** params, char** output);
-int HandleRmdir(int num_params, char** params, char** output);
-int HandleChdir(int num_params, char** params, char** output);
-int HandleGetcwd(int num_params, char** params, char** output);
+int HandleMkdir(struct PP_Var params, struct PP_Var* out, const char** error);
+int HandleRmdir(struct PP_Var params, struct PP_Var* out, const char** error);
+int HandleChdir(struct PP_Var params, struct PP_Var* out, const char** error);
+int HandleGetcwd(struct PP_Var params, struct PP_Var* out, const char** error);
 
-int HandleGetaddrinfo(int num_params, char** params, char** output);
-int HandleGethostbyname(int num_params, char** params, char** output);
-int HandleConnect(int num_params, char** params, char** output);
-int HandleSend(int num_params, char** params, char** output);
-int HandleRecv(int num_params, char** params, char** output);
-int HandleClose(int num_params, char** params, char** output);
+int HandleGetaddrinfo(struct PP_Var params, struct PP_Var* out,
+                      const char** error);
+int HandleGethostbyname(struct PP_Var params, struct PP_Var* out,
+                        const char** error);
+int HandleConnect(struct PP_Var params, struct PP_Var* out, const char** error);
+int HandleSend(struct PP_Var params, struct PP_Var* out, const char** error);
+int HandleRecv(struct PP_Var params, struct PP_Var* out, const char** error);
+int HandleClose(struct PP_Var params, struct PP_Var* out, const char** error);
 
 #endif /* HANDLERS_H_ */

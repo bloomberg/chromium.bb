@@ -6,6 +6,10 @@ function moduleDidLoad() {
   common.hideModule();
 }
 
+function $(id) {
+  return document.getElementById(id);
+}
+
 // Called by the common.js module.
 function domContentLoaded(name, tc, config, width, height) {
   navigator.webkitPersistentStorage.requestQuota(1024 * 1024,
@@ -76,273 +80,223 @@ var filehandle_map = {};
 var dirhandle_map = {};
 
 function fopen(e) {
-  var filename = document.getElementById('fopenFilename').value;
-  var access = document.getElementById('fopenMode').value;
-  nacl_module.postMessage(makeCall('fopen', filename, access));
-}
+  var filename = $('fopenFilename').value;
+  var access = $('fopenMode').value;
+  postCall('fopen', filename, access, function(filename, filehandle) {
+    filehandle_map[filehandle] = filename;
 
-function fopenResult(filename, filehandle) {
-  filehandle_map[filehandle] = filename;
-
-  addNameToSelectElements('.file-handle', filehandle, filename);
-  common.logMessage('File ' + filename + ' opened successfully.');
+    addNameToSelectElements('.file-handle', filehandle, filename);
+    common.logMessage('File ' + filename + ' opened successfully.');
+  });
 }
 
 function fclose(e) {
-  var filehandle = document.getElementById('fcloseHandle').value;
-  nacl_module.postMessage(makeCall('fclose', filehandle));
-}
-
-function fcloseResult(filehandle) {
-  var filename = filehandle_map[filehandle];
-  removeNameFromSelectElements('.file-handle', filehandle, filename);
-  common.logMessage('File ' + filename + ' closed successfully.');
+  var filehandle = parseInt($('fcloseHandle').value, 10);
+  postCall('fclose', filehandle, function(filehandle) {
+    var filename = filehandle_map[filehandle];
+    removeNameFromSelectElements('.file-handle', filehandle, filename);
+    common.logMessage('File ' + filename + ' closed successfully.');
+  });
 }
 
 function fread(e) {
-  var filehandle = document.getElementById('freadHandle').value;
-  var numBytes = document.getElementById('freadBytes').value;
-  nacl_module.postMessage(makeCall('fread', filehandle, numBytes));
-}
-
-function freadResult(filehandle, data) {
-  var filename = filehandle_map[filehandle];
-  common.logMessage('Read "' + data + '" from file ' + filename + '.');
+  var filehandle = parseInt($('freadHandle').value, 10);
+  var numBytes = parseInt($('freadBytes').value, 10);
+  postCall('fread', filehandle, numBytes, function(filehandle, data) {
+    var filename = filehandle_map[filehandle];
+    common.logMessage('Read "' + data + '" from file ' + filename + '.');
+  });
 }
 
 function fwrite(e) {
-  var filehandle = document.getElementById('fwriteHandle').value;
-  var data = document.getElementById('fwriteData').value;
-  nacl_module.postMessage(makeCall('fwrite', filehandle, data));
-}
-
-function fwriteResult(filehandle, bytes_written) {
-  var filename = filehandle_map[filehandle];
-  common.logMessage('Wrote ' + bytes_written + ' bytes to file ' + filename +
-      '.');
+  var filehandle = parseInt($('fwriteHandle').value, 10);
+  var data = $('fwriteData').value;
+  postCall('fwrite', filehandle, data, function(filehandle, bytesWritten) {
+    var filename = filehandle_map[filehandle];
+    common.logMessage('Wrote ' + bytesWritten + ' bytes to file ' + filename +
+        '.');
+  });
 }
 
 function fseek(e) {
-  var filehandle = document.getElementById('fseekHandle').value;
-  var offset = document.getElementById('fseekOffset').value;
-  var whence = document.getElementById('fseekWhence').value;
-  nacl_module.postMessage(makeCall('fseek', filehandle, offset, whence));
-}
-
-function fseekResult(filehandle, filepos) {
-  var filename = filehandle_map[filehandle];
-  common.logMessage('Seeked to location ' + filepos + ' in file ' + filename +
-      '.');
+  var filehandle = parseInt($('fseekHandle').value, 10);
+  var offset = parseInt($('fseekOffset').value, 10);
+  var whence = parseInt($('fseekWhence').value, 10);
+  postCall('fseek', filehandle, offset, whence, function(filehandle, filepos) {
+    var filename = filehandle_map[filehandle];
+    common.logMessage('Seeked to location ' + filepos + ' in file ' + filename +
+        '.');
+  });
 }
 
 function fflush(e) {
-  var filehandle = document.getElementById('fflushHandle').value;
-  nacl_module.postMessage(makeCall('fflush', filehandle));
-}
-
-function fflushResult(filehandle, filepos) {
-  var filename = filehandle_map[filehandle];
-  common.logMessage('flushed ' + filename + '.');
+  var filehandle = parseInt($('fflushHandle').value, 10);
+  postCall('fflush', filehandle, function(filehandle, filepos) {
+    var filename = filehandle_map[filehandle];
+    common.logMessage('flushed ' + filename + '.');
+  });
 }
 
 function stat(e) {
-  var filename = document.getElementById('statFilename').value;
-  nacl_module.postMessage(makeCall('stat', filename));
-}
-
-function statResult(filename, size) {
-  common.logMessage('File ' + filename + ' has size ' + size + '.');
+  var filename = $('statFilename').value;
+  postCall('stat', filename, function(filename, size) {
+    common.logMessage('File ' + filename + ' has size ' + size + '.');
+  });
 }
 
 function opendir(e) {
-  var dirname = document.getElementById('opendirDirname').value;
-  nacl_module.postMessage(makeCall('opendir', dirname));
-}
+  var dirname = $('opendirDirname').value;
+  postCall('opendir', dirname, function(dirname, dirhandle) {
+    dirhandle_map[dirhandle] = dirname;
 
-function opendirResult(dirname, dirhandle) {
-  dirhandle_map[dirhandle] = dirname;
-
-  addNameToSelectElements('.dir-handle', dirhandle, dirname);
-  common.logMessage('Directory ' + dirname + ' opened successfully.');
+    addNameToSelectElements('.dir-handle', dirhandle, dirname);
+    common.logMessage('Directory ' + dirname + ' opened successfully.');
+  });
 }
 
 function readdir(e) {
-  var dirhandle = document.getElementById('readdirHandle').value;
-  nacl_module.postMessage(makeCall('readdir', dirhandle));
-}
-
-function readdirResult(dirhandle, ino, name) {
-  var dirname = dirhandle_map[dirhandle];
-  if (ino === '') {
-    common.logMessage('End of directory.');
-  } else {
-    common.logMessage('Read entry ("' + name + '", ino = ' + ino +
-                      ') from directory ' + dirname + '.');
-  }
+  var dirhandle = parseInt($('readdirHandle').value, 10);
+  postCall('readdir', dirhandle, function(dirhandle, ino, name) {
+    var dirname = dirhandle_map[dirhandle];
+    if (ino === undefined) {
+      common.logMessage('End of directory.');
+    } else {
+      common.logMessage('Read entry ("' + name + '", ino = ' + ino +
+                        ') from directory ' + dirname + '.');
+    }
+  });
 }
 
 function closedir(e) {
-  var dirhandle = document.getElementById('closedirHandle').value;
-  nacl_module.postMessage(makeCall('closedir', dirhandle));
-}
+  var dirhandle = parseInt($('closedirHandle').value, 10);
+  postCall('closedir', dirhandle, function(dirhandle) {
+    var dirname = dirhandle_map[dirhandle];
+    delete dirhandle_map[dirhandle];
 
-function closedirResult(dirhandle) {
-  var dirname = dirhandle_map[dirhandle];
-  delete dirhandle_map[dirhandle];
-
-  removeNameFromSelectElements('.dir-handle', dirhandle, dirname);
-  common.logMessage('Directory ' + dirname + ' closed successfully.');
+    removeNameFromSelectElements('.dir-handle', dirhandle, dirname);
+    common.logMessage('Directory ' + dirname + ' closed successfully.');
+  });
 }
 
 function mkdir(e) {
-  var dirname = document.getElementById('mkdirDirname').value;
-  var mode = document.getElementById('mkdirMode').value;
-  nacl_module.postMessage(makeCall('mkdir', dirname, mode));
-}
-
-function mkdirResult(dirname) {
-  common.logMessage('Directory ' + dirname + ' created successfully.');
+  var dirname = $('mkdirDirname').value;
+  var mode = parseInt($('mkdirMode').value, 10);
+  postCall('mkdir', dirname, mode, function(dirname) {
+    common.logMessage('Directory ' + dirname + ' created successfully.');
+  });
 }
 
 function rmdir(e) {
-  var dirname = document.getElementById('rmdirDirname').value;
-  nacl_module.postMessage(makeCall('rmdir', dirname));
-}
-
-function rmdirResult(dirname) {
-  common.logMessage('Directory ' + dirname + ' removed successfully.');
+  var dirname = $('rmdirDirname').value;
+  postCall('rmdir', dirname, function(dirname) {
+    common.logMessage('Directory ' + dirname + ' removed successfully.');
+  });
 }
 
 function chdir(e) {
-  var dirname = document.getElementById('chdirDirname').value;
-  nacl_module.postMessage(makeCall('chdir', dirname));
-}
-
-function chdirResult(dirname) {
-  common.logMessage('Changed directory to: ' + dirname + '.');
+  var dirname = $('chdirDirname').value;
+  postCall('chdir', dirname, function(dirname) {
+    common.logMessage('Changed directory to: ' + dirname + '.');
+  });
 }
 
 function getcwd(e) {
-  nacl_module.postMessage(makeCall('getcwd'));
-}
-
-function getcwdResult(dirname) {
-  common.logMessage('getcwd: ' + dirname + '.');
+  postCall('getcwd', function(dirname) {
+    common.logMessage('getcwd: ' + dirname + '.');
+  });
 }
 
 function getaddrinfo(e) {
-  var name = document.getElementById('getaddrinfoName').value;
-  var family = document.getElementById('getaddrinfoFamily').value;
-  nacl_module.postMessage(makeCall('getaddrinfo', name, family));
-}
-
-function getaddrinfoResult(name, addr_type) {
-  common.logMessage('getaddrinfo returned successfully');
-  common.logMessage('ai_cannonname = ' + name + '.');
-  var count = 1;
-  for (var i = 1; i < arguments.length; i+=2) {
-    var msg = 'Address number ' + count + ' = ' + arguments[i] +
-              ' (' + arguments[i+1] + ')';
-    common.logMessage(msg);
-    count += 1;
-  }
+  var name = $('getaddrinfoName').value;
+  var family = $('getaddrinfoFamily').value;
+  postCall('getaddrinfo', name, family, function(name, addrType) {
+    common.logMessage('getaddrinfo returned successfully');
+    common.logMessage('ai_cannonname = ' + name + '.');
+    var count = 1;
+    for (var i = 1; i < arguments.length; i+=2) {
+      var msg = 'Address number ' + count + ' = ' + arguments[i] +
+                ' (' + arguments[i+1] + ')';
+      common.logMessage(msg);
+      count += 1;
+    }
+  });
 }
 
 function gethostbyname(e) {
-  var name = document.getElementById('gethostbynameName').value;
-  nacl_module.postMessage(makeCall('gethostbyname', name));
-}
-
-function gethostbynameResult(name, addr_type) {
-  common.logMessage('gethostbyname returned successfully');
-  common.logMessage('h_name = ' + name + '.');
-  common.logMessage('h_addr_type = ' + addr_type + '.');
-  for (var i = 2; i < arguments.length; i++) {
-    common.logMessage('Address number ' + (i-1) + ' = ' + arguments[i] + '.');
-  }
+  var name = $('gethostbynameName').value;
+  postCall('gethostbyname', name, function(name, addrType) {
+    common.logMessage('gethostbyname returned successfully');
+    common.logMessage('h_name = ' + name + '.');
+    common.logMessage('h_addr_type = ' + addrType + '.');
+    for (var i = 2; i < arguments.length; i++) {
+      common.logMessage('Address number ' + (i-1) + ' = ' + arguments[i] + '.');
+    }
+  });
 }
 
 function connect(e) {
-  var host = document.getElementById('connectHost').value;
-  var port = document.getElementById('connectPort').value;
-  nacl_module.postMessage(makeCall('connect', host, port));
-}
-
-function connectResult(sockhandle) {
-  common.logMessage('connected');
-  addNameToSelectElements('.sock-handle', sockhandle, '[socket]');
+  var host = $('connectHost').value;
+  var port = parseInt($('connectPort').value, 10);
+  postCall('connect', host, port, function(sockhandle) {
+    common.logMessage('connected');
+    addNameToSelectElements('.sock-handle', sockhandle, '[socket]');
+  });
 }
 
 function recv(e) {
-  var handle = document.getElementById('recvHandle').value;
-  var bufferSize = document.getElementById('recvBufferSize').value;
-  nacl_module.postMessage(makeCall('recv', handle, bufferSize));
-}
-
-function recvResult(messageLen, message) {
-  common.logMessage("received " + messageLen + ' bytes: ' + message);
+  var handle = parseInt($('recvHandle').value, 10);
+  var bufferSize = parseInt($('recvBufferSize').value, 10);
+  postCall('recv', handle, bufferSize, function(messageLen, message) {
+    common.logMessage("received " + messageLen + ' bytes: ' + message);
+  });
 }
 
 function send(e) {
-  var handle = document.getElementById('sendHandle').value;
-  var message = document.getElementById('sendMessage').value;
-  nacl_module.postMessage(makeCall('send', handle, message));
-}
-
-function sendResult(sentBytes) {
-  common.logMessage("sent bytes: " + sentBytes);
+  var handle = parseInt($('sendHandle').value, 10);
+  var message = $('sendMessage').value;
+  postCall('send', handle, message, function(sentBytes) {
+    common.logMessage("sent bytes: " + sentBytes);
+  });
 }
 
 function close(e) {
-  var handle = document.getElementById('closeHandle').value;
-  nacl_module.postMessage(makeCall('close', handle));
+  var handle = parseInt($('closeHandle').value, 10);
+  postCall('close', handle, function(sock) {
+    removeNameFromSelectElements('.sock-handle', sock, "[socket]");
+    common.logMessage("closed socket: " + sock);
+  });
 }
 
-function closeResult(sock) {
-  removeNameFromSelectElements('.sock-handle', sock, "[socket]");
-  common.logMessage("closed socket: " + sock);
-}
+var funcToCallback = {};
 
-/**
- * Return true when |s| starts with the string |prefix|.
- *
- * @param {string} s The string to search.
- * @param {string} prefix The prefix to search for in |s|.
- * @return {boolean} Whether |s| starts with |prefix|.
- */
-function startsWith(s, prefix) {
-  // indexOf would search the entire string, lastIndexOf(p, 0) only checks at
-  // the first index. See: http://stackoverflow.com/a/4579228
-  return s.lastIndexOf(prefix, 0) === 0;
-}
+function postCall(func) {
+  var callback = arguments[arguments.length - 1];
+  funcToCallback[func] = callback;
 
-function makeCall(func) {
-  var message = func;
-  for (var i = 1; i < arguments.length; ++i) {
-    message += '\1' + arguments[i];
-  }
-
-  return message;
+  nacl_module.postMessage({
+    cmd: func,
+    args: Array.prototype.slice.call(arguments, 1, -1)
+  });
 }
 
 // Called by the common.js module.
 function handleMessage(message_event) {
-  var msg = message_event.data;
-  if (startsWith(msg, 'Error:')) {
-    common.logMessage(msg);
+  var data = message_event.data;
+  if ((typeof(data) === 'string' || data instanceof String)) {
+    common.logMessage(data);
   } else {
     // Result from a function call.
-    var params = msg.split('\1');
-    var funcName = params[0];
-    var funcResultName = funcName + 'Result';
-    var resultFunc = window[funcResultName];
+    var params = data.args;
+    var funcName = data.cmd;
+    var callback = funcToCallback[funcName];
 
-    if (!resultFunc) {
+    if (!callback) {
       common.logMessage('Error: Bad message ' + funcName +
                         ' received from NaCl module.');
       return;
     }
 
-    resultFunc.apply(null, params.slice(1));
+    delete funcToCallback[funcName];
+    callback.apply(null, params);
   }
 }

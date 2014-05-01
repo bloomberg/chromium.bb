@@ -8,6 +8,8 @@
 #include <pthread.h>
 #include <stdlib.h>
 
+#include "ppapi/c/pp_var.h"
+
 #define MAX_QUEUE_SIZE 16
 
 /** A mutex that guards |g_queue|. */
@@ -27,7 +29,7 @@ static pthread_cond_t g_queue_not_empty_cond;
  *   all elements in the g_queue are valid.
  * If g_queue_start == g_queue_end, and g_queue_size == 0:
  *   No elements are valid. */
-static char* g_queue[MAX_QUEUE_SIZE];
+static struct PP_Var g_queue[MAX_QUEUE_SIZE];
 
 /** The index of the head of the queue. */
 static int g_queue_start = 0;
@@ -63,14 +65,13 @@ void InitializeMessageQueue() {
  * NOTE: this function assumes g_queue_mutex is _NOT_ held.
  * @param[in] message The message to enqueue.
  * @return non-zero if the message was added to the queue. */
-int EnqueueMessage(char* message) {
+int EnqueueMessage(struct PP_Var message) {
   pthread_mutex_lock(&g_queue_mutex);
 
   /* We shouldn't block the main thread waiting for the queue to not be full,
    * so just drop the message. */
   if (IsQueueFull()) {
     pthread_mutex_unlock(&g_queue_mutex);
-    free(message);
     return 0;
   }
 
@@ -92,8 +93,8 @@ int EnqueueMessage(char* message) {
  *
  * NOTE: this function assumes g_queue_mutex is _NOT_ held.
  * @return The message at the head of the queue. */
-char* DequeueMessage() {
-  char* message = NULL;
+struct PP_Var DequeueMessage() {
+  struct PP_Var message;
 
   pthread_mutex_lock(&g_queue_mutex);
 

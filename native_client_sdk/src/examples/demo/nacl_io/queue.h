@@ -6,6 +6,8 @@
 #ifndef QUEUE_H_
 #define QUEUE_H_
 
+#include "ppapi/c/pp_var.h"
+
 /* This file implements a single-producer/single-consumer queue, using a mutex
  * and a condition variable.
  *
@@ -24,7 +26,7 @@
  * devices. */
 
 void InitializeMessageQueue();
-int EnqueueMessage(char* message);
-char* DequeueMessage();
+int EnqueueMessage(struct PP_Var message);
+struct PP_Var DequeueMessage();
 
 #endif /* QUEUE_H_ */
