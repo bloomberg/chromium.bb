@@ -2101,3 +2101,10 @@ UNINITIALIZED READ
 name=bug_42043
 ...
 QuickTime.qts!*
+
+UNINITIALIZED READ
+name=bug_369141
+...
+*!WebCore::RenderLayerClipper::updateClipRects
+*!WebCore::RenderLayerClipper::parentClipRects
+*!WebCore::RenderLayerClipper::backgroundClipRect
