@@ -117,6 +117,8 @@ static inline PropertyWhitelistType determinePropertyWhitelistType(const AddRule
     for (const CSSSelector* component = &selector; component; component = component->tagHistory()) {
         if (component->pseudoType() == CSSSelector::PseudoCue || (component->m_match == CSSSelector::PseudoElement && component->value() == TextTrackCue::cueShadowPseudoId()))
             return PropertyWhitelistCue;
+        if (component->pseudoType() == CSSSelector::PseudoFirstLetter)
+            return PropertyWhitelistFirstLetter;
     }
     return PropertyWhitelistNone;
 }

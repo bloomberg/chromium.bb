@@ -44,7 +44,8 @@ enum AddRuleFlags {
 
 enum PropertyWhitelistType {
     PropertyWhitelistNone   = 0,
-    PropertyWhitelistCue
+    PropertyWhitelistCue,
+    PropertyWhitelistFirstLetter,
 };
 
 class CSSSelector;
