@@ -175,13 +175,8 @@ double SourceBuffer::timestampOffset() const
 
 void SourceBuffer::setTimestampOffset(double offset, ExceptionState& exceptionState)
 {
-    // Enforce throwing an exception on restricted double values.
-    if (!std::isfinite(offset)) {
-        exceptionState.throwTypeError(ExceptionMessages::notAFiniteNumber(offset));
-        return;
-    }
-
     // Section 3.1 timestampOffset attribute setter steps.
+    // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-SourceBuffer-timestampOffset
     // 1. Let new timestamp offset equal the new value being assigned to this attribute.
     // 2. If this object has been removed from the sourceBuffers attribute of the parent media source, then throw an
     //    InvalidStateError exception and abort these steps.
@@ -212,13 +207,8 @@ double SourceBuffer::appendWindowStart() const
 
 void SourceBuffer::setAppendWindowStart(double start, ExceptionState& exceptionState)
 {
-    // Enforce throwing an exception on restricted double values.
-    if (!std::isfinite(start)) {
-        exceptionState.throwTypeError(ExceptionMessages::notAFiniteNumber(start));
-        return;
-    }
-
     // Section 3.1 appendWindowStart attribute setter steps.
+    // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-SourceBuffer-appendWindowStart
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
     //    InvalidStateError exception and abort these steps.
     // 2. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
@@ -246,6 +236,7 @@ double SourceBuffer::appendWindowEnd() const
 void SourceBuffer::setAppendWindowEnd(double end, ExceptionState& exceptionState)
 {
     // Section 3.1 appendWindowEnd attribute setter steps.
+    // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-SourceBuffer-appendWindowEnd
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
     //    InvalidStateError exception and abort these steps.
     // 2. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.

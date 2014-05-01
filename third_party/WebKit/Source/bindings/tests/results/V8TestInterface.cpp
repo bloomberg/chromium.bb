@@ -105,8 +105,14 @@ static void doubleAttributeAttributeGetterCallback(v8::Local<v8::String>, const 
 static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "doubleAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
     TONATIVE_VOID(double, cppValue, static_cast<double>(v8Value->NumberValue()));
+    if (!std::isfinite(cppValue)) {
+        exceptionState.throwTypeError("The provided double value is non-finite.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setDoubleAttribute(cppValue);
 }
 
@@ -134,8 +140,14 @@ static void floatAttributeAttributeGetterCallback(v8::Local<v8::String>, const v
 static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "floatAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
     TONATIVE_VOID(float, cppValue, static_cast<float>(v8Value->NumberValue()));
+    if (!std::isfinite(cppValue)) {
+        exceptionState.throwTypeError("The provided float value is non-finite.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setFloatAttribute(cppValue);
 }
 

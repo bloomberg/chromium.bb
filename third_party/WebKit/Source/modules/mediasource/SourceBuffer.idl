@@ -28,15 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#idl-def-SourceBuffer
+
 enum AppendMode {
     "segments",
     "sequence"
 };
 
 [
-    NoInterfaceObject,
     ActiveDOMObject,
-    RuntimeEnabled=MediaSource
+    NoInterfaceObject,
+    RuntimeEnabled=MediaSource,
 ] interface SourceBuffer : EventTarget {
 
     // Gets or sets the AppendMode.
@@ -49,13 +51,13 @@ enum AppendMode {
     [RaisesException=Getter] readonly attribute TimeRanges buffered;
 
     // Applies an offset to media segment timestamps.
-    [RaisesException=Setter] attribute double timestampOffset;
+    [RaisesException=Setter, TypeChecking=Unrestricted] attribute double timestampOffset;
 
     // Presentation timestamp for the start of append window.
-    [RaisesException=Setter] attribute double appendWindowStart;
+    [RaisesException=Setter, TypeChecking=Unrestricted] attribute double appendWindowStart;
 
     // Presentation timestamp for the end of append window.
-    [RaisesException=Setter] attribute double appendWindowEnd;
+    [RaisesException=Setter] attribute unrestricted double appendWindowEnd;
 
     // Append segment data.
     [RaisesException] void appendBuffer(ArrayBuffer data);

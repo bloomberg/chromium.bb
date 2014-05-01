@@ -257,8 +257,20 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     {% elif not is_node %}{# EventHandler hack #}
     moveEventListenerToNewWrapper(holder, {{attribute.event_handler_getter_expression}}, v8Value, {{v8_class}}::eventListenerCacheIndex, info.GetIsolate());
     {% endif %}
-    {% if attribute.enum_validation_expression %}
-    {# Setter ignores invalid enum values: http://www.w3.org/TR/WebIDL/#idl-enums #}
+    {# Type checking, possibly throw a TypeError, per:
+       http://www.w3.org/TR/WebIDL/#es-type-mapping #}
+    {% if attribute.has_type_checking_unrestricted %}
+    {# Non-finite floating point values (NaN, +Infinity or −Infinity), per:
+       http://heycam.github.io/webidl/#es-float
+       http://heycam.github.io/webidl/#es-double #}
+    if (!std::isfinite(cppValue)) {
+        exceptionState.throwTypeError("The provided {{attribute.idl_type}} value is non-finite.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    {% elif attribute.enum_validation_expression %}
+    {# Setter ignores invalid enum values:
+       http://www.w3.org/TR/WebIDL/#idl-enums #}
     String string = cppValue;
     if (!({{attribute.enum_validation_expression}}))
         return;
