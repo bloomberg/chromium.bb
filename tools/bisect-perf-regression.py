@@ -159,9 +159,9 @@ BUILD_RESULT_SKIPPED = 2
 # Maximum time in seconds to wait after posting build request to tryserver.
 # TODO: Change these values based on the actual time taken by buildbots on
 # the tryserver.
-MAX_MAC_BUILD_TIME = 7200
-MAX_WIN_BUILD_TIME = 7200
-MAX_LINUX_BUILD_TIME = 7200
+MAX_MAC_BUILD_TIME = 14400
+MAX_WIN_BUILD_TIME = 14400
+MAX_LINUX_BUILD_TIME = 14400
 
 # Patch template to add a new file, DEPS.sha under src folder.
 # This file contains SHA1 value of the DEPS changes made while bisecting
