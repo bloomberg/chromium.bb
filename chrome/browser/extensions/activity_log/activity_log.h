@@ -17,9 +17,9 @@
 #include "chrome/browser/extensions/activity_log/activity_log_policy.h"
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/common/extensions/dom_action_types.h"
 #include "extensions/browser/api_activity_monitor.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/common/dom_action_types.h"
 
 class Profile;
 

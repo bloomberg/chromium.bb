@@ -1,16 +1,15 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/dom_activity_logger.h"
+#include "extensions/renderer/dom_activity_logger.h"
 
-#include "chrome/common/extensions/ad_injection_constants.h"
-#include "chrome/common/extensions/dom_action_types.h"
-#include "chrome/renderer/chrome_render_process_observer.h"
-#include "chrome/renderer/extensions/activity_log_converter_strategy.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/v8_value_converter.h"
+#include "extensions/common/ad_injection_constants.h"
+#include "extensions/common/dom_action_types.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/renderer/activity_log_converter_strategy.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDOMActivityLogger.h"

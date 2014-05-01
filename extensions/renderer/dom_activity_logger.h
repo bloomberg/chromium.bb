@@ -1,18 +1,14 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_DOM_ACTIVITY_LOGGER_H_
-#define CHROME_RENDERER_EXTENSIONS_DOM_ACTIVITY_LOGGER_H_
+#ifndef EXTENSIONS_RENDERER_DOM_ACTIVITY_LOGGER_H_
+#define EXTENSIONS_RENDERER_DOM_ACTIVITY_LOGGER_H_
 
 #include <string>
 
-#include "base/strings/string_piece.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
+#include "base/macros.h"
 #include "third_party/WebKit/public/web/WebDOMActivityLogger.h"
-#include "url/gurl.h"
-#include "v8/include/v8.h"
 
 namespace content {
 class V8ValueConverter;
@@ -55,5 +51,5 @@ class DOMActivityLogger: public blink::WebDOMActivityLogger {
 
 }  // namespace extensions
 
-#endif  // CHROME_RENDERER_EXTENSIONS_DOM_ACTIVITY_LOGGER_H_
+#endif  // EXTENSIONS_RENDERER_DOM_ACTIVITY_LOGGER_H_
 

@@ -1,10 +1,10 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/renderer/extensions/activity_log_converter_strategy.h"
+#include "extensions/renderer/activity_log_converter_strategy.h"
 #include "extensions/renderer/scoped_persistent.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"

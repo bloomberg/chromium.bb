@@ -578,6 +578,7 @@
         '../extensions/common/url_pattern_set_unittest.cc',
         '../extensions/common/url_pattern_unittest.cc',
         '../extensions/common/user_script_unittest.cc',
+        '../extensions/renderer/activity_log_converter_strategy_unittest.cc',
         '../extensions/renderer/script_context_set_unittest.cc',
         'app/chrome_dll.rc',
         # All unittests in browser, common, renderer and service.
@@ -1869,7 +1870,6 @@
         'common/worker_thread_ticker_unittest.cc',
         'renderer/chrome_content_renderer_client_unittest.cc',
         'renderer/content_settings_observer_unittest.cc',
-        'renderer/extensions/activity_log_converter_strategy_unittest.cc',
         'renderer/extensions/event_unittest.cc',
         'renderer/extensions/extension_localization_peer_unittest.cc',
         'renderer/extensions/json_schema_unittest.cc',
@@ -2065,6 +2065,7 @@
             ['exclude', '^common/extensions/permissions/settings_override_permission_unittest.cc'],
           ],
           'sources!': [
+            '../extensions/renderer/activity_log_converter_strategy_unittest.cc',
             'browser/extensions/extension_context_menu_model_unittest.cc',
             'browser/extensions/extension_ui_unittest.cc',
             'browser/extensions/extension_web_ui_unittest.cc',
@@ -2073,7 +2074,6 @@
             'browser/extensions/sandboxed_unpacker_unittest.cc',
             'common/extensions/sync_type_unittest.cc',
             'common/extensions/permissions/permission_set_unittest.cc',
-            'renderer/extensions/activity_log_converter_strategy_unittest.cc',
             'renderer/extensions/chrome_v8_context_set_unittest.cc',
             'renderer/extensions/event_unittest.cc',
             'renderer/extensions/extension_localization_peer_unittest.cc',

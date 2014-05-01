@@ -5,8 +5,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/uma_policy.h"
-#include "chrome/common/extensions/dom_action_types.h"
 #include "chrome/test/base/testing_profile.h"
+#include "extensions/common/dom_action_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/ad_injection_constants.h"
+#include "extensions/common/ad_injection_constants.h"
 
 #include "base/strings/string_util.h"
 

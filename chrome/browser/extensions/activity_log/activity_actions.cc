@@ -22,10 +22,10 @@
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/ad_injection_constants.h"
-#include "chrome/common/extensions/dom_action_types.h"
 #include "components/rappor/rappor_service.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/ad_injection_constants.h"
+#include "extensions/common/dom_action_types.h"
 #include "sql/statement.h"
 #include "url/gurl.h"
 

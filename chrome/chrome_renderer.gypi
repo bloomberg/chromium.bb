@@ -46,8 +46,6 @@
       'sources': [
         'renderer/benchmarking_extension.cc',
         'renderer/benchmarking_extension.h',
-        'renderer/extensions/activity_log_converter_strategy.cc',
-        'renderer/extensions/activity_log_converter_strategy.h',
         'renderer/extensions/api_activity_logger.cc',
         'renderer/extensions/api_activity_logger.h',
         'renderer/extensions/app_bindings.cc',
@@ -66,8 +64,6 @@
         'renderer/extensions/chrome_v8_extension_handler.h',
         'renderer/extensions/dispatcher.cc',
         'renderer/extensions/dispatcher.h',
-        'renderer/extensions/dom_activity_logger.cc',
-        'renderer/extensions/dom_activity_logger.h',
         'renderer/extensions/extension_frame_helper.cc',
         'renderer/extensions/extension_frame_helper.h',
         'renderer/extensions/extension_helper.cc',
