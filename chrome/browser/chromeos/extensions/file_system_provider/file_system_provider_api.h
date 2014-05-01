@@ -53,6 +53,30 @@ class FileSystemProviderInternalUnmountRequestedErrorFunction
   virtual bool RunSync() OVERRIDE;
 };
 
+class FileSystemProviderInternalGetMetadataRequestedSuccessFunction
+    : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "fileSystemProviderInternal.getMetadataRequestedSuccess",
+      FILESYSTEMPROVIDERINTERNAL_GETMETADATAREQUESTEDSUCCESS)
+
+ protected:
+  virtual ~FileSystemProviderInternalGetMetadataRequestedSuccessFunction() {}
+  virtual bool RunSync() OVERRIDE;
+};
+
+class FileSystemProviderInternalGetMetadataRequestedErrorFunction
+    : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "fileSystemProviderInternal.getMetadataRequestedError",
+      FILESYSTEMPROVIDERINTERNAL_GETMETADATAREQUESTEDERROR)
+
+ protected:
+  virtual ~FileSystemProviderInternalGetMetadataRequestedErrorFunction() {}
+  virtual bool RunSync() OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_SYSTEM_PROVIDER_FILE_SYSTEM_PROVIDER_API_H_

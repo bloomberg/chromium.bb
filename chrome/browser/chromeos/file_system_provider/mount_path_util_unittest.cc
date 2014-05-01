@@ -43,10 +43,12 @@ fileapi::FileSystemURL CreateFileSystemURL(Profile* profile,
   const fileapi::ExternalMountPoints* const mount_points =
       fileapi::ExternalMountPoints::GetSystemInstance();
   DCHECK(mount_points);
+  DCHECK(file_path.IsAbsolute());
+  base::FilePath relative_path(file_path.value().substr(1));
   return mount_points->CreateCrackedFileSystemURL(
       GURL(origin),
       fileapi::kFileSystemTypeExternal,
-      base::FilePath(mount_path.BaseName().Append(file_path)));
+      base::FilePath(mount_path.BaseName().Append(relative_path)));
 }
 
 // Creates a Service instance. Used to be able to destroy the service in
@@ -105,7 +107,8 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser) {
       kExtensionId, kFileSystemName);
   EXPECT_LT(0, file_system_id);
 
-  const base::FilePath kFilePath = base::FilePath("hello/world.txt");
+  const base::FilePath kFilePath =
+      base::FilePath::FromUTF8Unsafe("/hello/world.txt");
   const fileapi::FileSystemURL url =
       CreateFileSystemURL(profile_, kExtensionId, file_system_id, kFilePath);
   EXPECT_TRUE(url.is_valid());
@@ -124,7 +127,7 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser_RootPath) {
       kExtensionId, kFileSystemName);
   EXPECT_LT(0, file_system_id);
 
-  const base::FilePath kFilePath = base::FilePath();
+  const base::FilePath kFilePath = base::FilePath::FromUTF8Unsafe("/");
   const fileapi::FileSystemURL url =
       CreateFileSystemURL(profile_, kExtensionId, file_system_id, kFilePath);
   EXPECT_TRUE(url.is_valid());
@@ -143,7 +146,7 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser_WrongUrl) {
       kExtensionId, kFileSystemName);
   EXPECT_LT(0, file_system_id);
 
-  const base::FilePath kFilePath = base::FilePath("hello");
+  const base::FilePath kFilePath = base::FilePath::FromUTF8Unsafe("/hello");
   const fileapi::FileSystemURL url = CreateFileSystemURL(
       profile_, kExtensionId, file_system_id + 1, kFilePath);
   // It is impossible to create a cracked URL for a mount point which doesn't

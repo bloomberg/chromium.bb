@@ -97,4 +97,23 @@ eventBindings.registerArgumentMassager(
       dispatch([fileSystemId, onSuccessCallback, onErrorCallback]);
     });
 
+eventBindings.registerArgumentMassager(
+    'fileSystemProvider.onGetMetadataRequested',
+    function(args, dispatch) {
+      var fileSystemId = args[0];
+      var requestId = args[1];
+      var entryPath = args[2];
+      var onSuccessCallback = function(metadata) {
+        // Serialize the Date as a string.
+        metadata.modificationTime.value = metadata.modificationTime.toString();
+        fileSystemProviderInternal.getMetadataRequestedSuccess(
+            fileSystemId, requestId, metadata);
+      };
+      var onErrorCallback = function(error) {
+        fileSystemProviderInternal.getMetadataRequestedError(
+          fileSystemId, requestId, error);
+      }
+      dispatch([fileSystemId, entryPath, onSuccessCallback, onErrorCallback]);
+    });
+
 exports.binding = binding.generate();

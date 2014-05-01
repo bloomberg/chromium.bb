@@ -81,6 +81,7 @@ bool FileSystemBackend::CanHandleType(fileapi::FileSystemType type) const {
     case fileapi::kFileSystemTypeNativeLocal:
     case fileapi::kFileSystemTypeNativeForPlatformApp:
     case fileapi::kFileSystemTypeDeviceMediaAsFileStorage:
+    case fileapi::kFileSystemTypeProvided:
       return true;
     default:
       return false;
@@ -267,7 +268,8 @@ fileapi::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
 
   DCHECK(url.type() == fileapi::kFileSystemTypeNativeLocal ||
          url.type() == fileapi::kFileSystemTypeRestrictedNativeLocal ||
-         url.type() == fileapi::kFileSystemTypeDrive);
+         url.type() == fileapi::kFileSystemTypeDrive ||
+         url.type() == fileapi::kFileSystemTypeProvided);
   return fileapi::FileSystemOperation::Create(
       url, context,
       make_scoped_ptr(new fileapi::FileSystemOperationContext(context)));

@@ -29,6 +29,21 @@ namespace fileSystemProvider {
     IO
   };
 
+  // Represents metadata of a file or a directory.
+  dictionary EntryMetadata {
+    // True if it is a directory.
+    boolean isDirectory;
+
+    // Name of this entry (not full path name).
+    DOMString name;
+
+    // File size in bytes.
+    double size;
+
+    // The last modified time of this entry.
+    [instanceOf=Date] object modificationTime;
+  };
+
   // Callback to receive the result of mount() function.
   // <code>fileSystemID</code> will be a unique ID for the file system just
   // mounted. The ID is used to distinguish multiple file systems mounted
@@ -50,6 +65,9 @@ namespace fileSystemProvider {
 
   // Callback to handle an error raised from the browser.
   [nocompile] callback ErrorCallback = void([instanceOf=DOMError] object error);
+
+  // Success callback for the <code>onGetMetadataRequested</code> event.
+  callback MetadataCallback = void(EntryMetadata metadata);
 
   interface Functions {
     // Mounts a file system with the given <code>displayName</code>.
@@ -74,15 +92,25 @@ namespace fileSystemProvider {
   };
 
   interface Events {
-    // Raised, when the user requests unmounting of the file system with the
-    // <code>fileSystemId</code> identifier in the Files.app UI. In response,
-    // the <code>unmount</code> API method should be called. If unmounting is
-    // not possible (eg. due to pending operation), then <code>errorCallback
-    // </code> should be called, and <code>unmount</code> should not be called.
+    // Raised when unmounting for the file system with the <code>fileSystemId
+    // </code> identifier is requested. In response, the <code>unmount</code>
+    // API method should be called together with <code>successCallback</code>.
+    // If unmounting is not possible (eg. due to a pending operation), then
+    // <code>errorCallback</code> must be called.
     [maxListeners=1] static void onUnmountRequested(
         long fileSystemId,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
+
+    // Raised, when metadata of a file or a directory at <code>entryPath</code>
+    // is requested. The metadata should be returned with the <code>
+    // successCallback</code> call. In case of an error, <code>errorCallback
+    // </code> must be called.
+    [maxListeners=1] static void onGetMetadataRequested(
+        long fileSystemId,
+        DOMString entryPath,
+        MetadataCallback successCallback,
+        ErrorCallback errorCallback);
   };
 };
 

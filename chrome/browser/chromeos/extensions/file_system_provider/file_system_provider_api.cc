@@ -107,6 +107,8 @@ bool FileSystemProviderMountFunction::RunSync() {
 
   Service* service = Service::Get(GetProfile());
   DCHECK(service);
+  if (!service)
+    return false;
 
   int file_system_id =
       service->MountFileSystem(extension_id(), params->display_name);
@@ -132,11 +134,13 @@ bool FileSystemProviderMountFunction::RunSync() {
 
 bool FileSystemProviderUnmountFunction::RunSync() {
   using api::file_system_provider::Unmount::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Service* service = Service::Get(GetProfile());
   DCHECK(service);
+  if (!service)
+    return false;
 
   if (!service->UnmountFileSystem(extension_id(), params->file_system_id)) {
     // TODO(mtomasz): Pass more detailed errors, rather than just a bool.
@@ -158,6 +162,8 @@ bool FileSystemProviderInternalUnmountRequestedSuccessFunction::RunSync() {
 
   Service* service = Service::Get(GetProfile());
   DCHECK(service);
+  if (!service)
+    return false;
 
   ProvidedFileSystemInterface* file_system =
       service->GetProvidedFileSystem(extension_id(), params->file_system_id);
@@ -197,6 +203,89 @@ bool FileSystemProviderInternalUnmountRequestedErrorFunction::RunSync() {
 
   Service* service = Service::Get(GetProfile());
   DCHECK(service);
+  if (!service)
+    return false;
+
+  ProvidedFileSystemInterface* file_system =
+      service->GetProvidedFileSystem(extension_id(), params->file_system_id);
+  if (!file_system) {
+    base::ListValue* result = new base::ListValue();
+    result->Append(
+        CreateError(kNotFoundErrorName, kResponseFailedErrorMessage));
+    SetResult(result);
+    return false;
+  }
+
+  RequestManager* request_manager = file_system->GetRequestManager();
+  DCHECK(request_manager);
+
+  if (!request_manager->RejectRequest(
+          params->request_id, ProviderErrorToFileError(params->error))) {
+    // TODO(mtomasz): Pass more detailed errors, rather than just a bool.
+    base::ListValue* result = new base::ListValue();
+    result->Append(
+        CreateError(kSecurityErrorName, kResponseFailedErrorMessage));
+    SetResult(result);
+    return false;
+  }
+
+  base::ListValue* result = new base::ListValue();
+  SetResult(result);
+  return true;
+}
+
+bool FileSystemProviderInternalGetMetadataRequestedSuccessFunction::RunSync() {
+  // TODO(mtomasz): Create a common class for these internal functions so
+  // most of the code could be easily reused.
+  using api::file_system_provider_internal::GetMetadataRequestedSuccess::Params;
+  scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  Service* service = Service::Get(GetProfile());
+  DCHECK(service);
+  if (!service)
+    return false;
+
+  ProvidedFileSystemInterface* file_system =
+      service->GetProvidedFileSystem(extension_id(), params->file_system_id);
+  if (!file_system) {
+    base::ListValue* result = new base::ListValue();
+    result->Append(
+        CreateError(kNotFoundErrorName, kResponseFailedErrorMessage));
+    SetResult(result);
+    return false;
+  }
+
+  RequestManager* request_manager = file_system->GetRequestManager();
+  DCHECK(request_manager);
+
+  const int request_id = params->request_id;
+  if (!request_manager->FulfillRequest(
+          request_id,
+          RequestValue::CreateForGetMetadataSuccess(params.Pass()),
+          false /* has_more */)) {
+    // TODO(mtomasz): Pass more detailed errors, rather than just a bool.
+    base::ListValue* result = new base::ListValue();
+    result->Append(
+        CreateError(kSecurityErrorName, kResponseFailedErrorMessage));
+    SetResult(result);
+    return false;
+  }
+
+  base::ListValue* result = new base::ListValue();
+  SetResult(result);
+  return true;
+}
+
+bool FileSystemProviderInternalGetMetadataRequestedErrorFunction::RunSync() {
+  using api::file_system_provider_internal::UnmountRequestedError::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  Service* service = Service::Get(GetProfile());
+  DCHECK(service);
+  if (!service)
+    return false;
 
   ProvidedFileSystemInterface* file_system =
       service->GetProvidedFileSystem(extension_id(), params->file_system_id);

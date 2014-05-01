@@ -5,9 +5,12 @@
 #include "chrome/browser/chromeos/file_system_provider/fileapi/provider_async_file_util.h"
 
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
+#include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
+#include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
@@ -18,6 +21,31 @@ using content::BrowserThread;
 namespace chromeos {
 namespace file_system_provider {
 namespace internal {
+namespace {
+
+// Executes GetFileInfo on the UI thread.
+void GetFileInfoOnUIThread(
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
+    const fileapi::FileSystemURL& url,
+    const fileapi::AsyncFileUtil::GetFileInfoCallback& callback) {
+  util::FileSystemURLParser parser(url);
+  if (!parser.Parse()) {
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND, base::File::Info());
+    return;
+  }
+
+  parser.file_system()->GetMetadata(parser.file_path(), callback);
+}
+
+// Routes the response of GetFileInfo back to the IO thread.
+void OnGetFileInfo(const fileapi::AsyncFileUtil::GetFileInfoCallback& callback,
+                   base::File::Error result,
+                   const base::File::Info& file_info) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE, base::Bind(callback, result, file_info));
+}
+
+}  // namespace
 
 ProviderAsyncFileUtil::ProviderAsyncFileUtil() {}
 
@@ -69,8 +97,12 @@ void ProviderAsyncFileUtil::GetFileInfo(
     const fileapi::FileSystemURL& url,
     const GetFileInfoCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  NOTIMPLEMENTED();
-  callback.Run(base::File::FILE_ERROR_NOT_FOUND, base::File::Info());
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&GetFileInfoOnUIThread,
+                                     base::Passed(&context),
+                                     url,
+                                     base::Bind(&OnGetFileInfo, callback)));
 }
 
 void ProviderAsyncFileUtil::ReadDirectory(

@@ -25,16 +25,15 @@ base::FilePath GetMountPath(Profile* profile,
                             int file_system_id);
 
 // Finds file system, which is responsible for handling the specified |url| by
-// analysing the mount path.
-// Also, extract the file path from the virtual path to be used by the file
-// system operations.
+// analysing the mount path. Also, extract the file path from the virtual path
+// to be used by the file system operations.
 class FileSystemURLParser {
  public:
   explicit FileSystemURLParser(const fileapi::FileSystemURL& url);
   virtual ~FileSystemURLParser();
 
   // Parses the |url| passed to the constructor. If parsing succeeds, then
-  // returns true. Otherwise, false.
+  // returns true. Otherwise, false. Must be called on UI thread.
   bool Parse();
 
   ProvidedFileSystemInterface* file_system() const { return file_system_; }

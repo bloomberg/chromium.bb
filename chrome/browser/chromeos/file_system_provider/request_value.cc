@@ -21,6 +21,14 @@ scoped_ptr<RequestValue> RequestValue::CreateForUnmountSuccess(
   return result.Pass();
 }
 
+scoped_ptr<RequestValue> RequestValue::CreateForGetMetadataSuccess(
+    scoped_ptr<extensions::api::file_system_provider_internal::
+                   GetMetadataRequestedSuccess::Params> params) {
+  scoped_ptr<RequestValue> result(new RequestValue);
+  result->get_metadata_success_params_ = params.Pass();
+  return result.Pass();
+}
+
 scoped_ptr<RequestValue> RequestValue::CreateForTesting(
     const std::string& params) {
   scoped_ptr<RequestValue> result(new RequestValue);

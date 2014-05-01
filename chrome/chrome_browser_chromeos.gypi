@@ -381,6 +381,8 @@
         'browser/chromeos/file_system_provider/mount_path_util.cc',
         'browser/chromeos/file_system_provider/mount_path_util.h',
         'browser/chromeos/file_system_provider/observer.h',
+        'browser/chromeos/file_system_provider/operations/get_metadata.cc',
+        'browser/chromeos/file_system_provider/operations/get_metadata.h',
         'browser/chromeos/file_system_provider/operations/operation.cc',
         'browser/chromeos/file_system_provider/operations/operation.h',
         'browser/chromeos/file_system_provider/operations/unmount.cc',

@@ -11,11 +11,17 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
+#include "base/run_loop.h"
+#include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/provider_async_file_util.h"
-#include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
+#include "chrome/browser/chromeos/file_system_provider/service.h"
+#include "chrome/browser/chromeos/file_system_provider/service_factory.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_file_system_context.h"
+#include "extensions/browser/extension_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/async_file_util.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
@@ -28,7 +34,6 @@ namespace file_system_provider {
 namespace {
 
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
-const int kFileSystemId = 1;
 
 // Logs callbacks invocations on the tested operations.
 // TODO(mtomasz): Store and verify more arguments, once the operations return
@@ -86,42 +91,6 @@ class EventLogger {
   DISALLOW_COPY_AND_ASSIGN(EventLogger);
 };
 
-// Registers an external mount point, and removes it once the object gets out
-// of scope. To ensure that creating the mount point succeeded, call is_valid().
-class ScopedExternalMountPoint {
- public:
-  ScopedExternalMountPoint(const std::string& mount_point_name,
-                           const base::FilePath& mount_path,
-                           fileapi::FileSystemType type)
-      : mount_point_name_(mount_point_name) {
-    fileapi::ExternalMountPoints* const mount_points =
-        fileapi::ExternalMountPoints::GetSystemInstance();
-    DCHECK(mount_points);
-    is_valid_ =
-        mount_points->RegisterFileSystem(mount_point_name,
-                                         fileapi::kFileSystemTypeProvided,
-                                         fileapi::FileSystemMountOption(),
-                                         mount_path);
-  }
-
-  virtual ~ScopedExternalMountPoint() {
-    if (!is_valid_)
-      return;
-
-    // If successfully registered in the constructor, then unregister.
-    fileapi::ExternalMountPoints* const mount_points =
-        fileapi::ExternalMountPoints::GetSystemInstance();
-    DCHECK(mount_points);
-    mount_points->RevokeFileSystem(mount_point_name_);
-  }
-
-  bool is_valid() { return is_valid_; }
-
- private:
-  const std::string mount_point_name_;
-  bool is_valid_;
-};
-
 // Creates a cracked FileSystemURL for tests.
 fileapi::FileSystemURL CreateFileSystemURL(const std::string& mount_point_name,
                                            const base::FilePath& file_path) {
@@ -132,6 +101,13 @@ fileapi::FileSystemURL CreateFileSystemURL(const std::string& mount_point_name,
       GURL(origin),
       fileapi::kFileSystemTypeExternal,
       base::FilePath::FromUTF8Unsafe(mount_point_name).Append(file_path));
+}
+
+// Creates a Service instance. Used to be able to destroy the service in
+// TearDown().
+KeyedService* CreateService(content::BrowserContext* context) {
+  return new Service(Profile::FromBrowserContext(context),
+                     extensions::ExtensionRegistry::Get(context));
 }
 
 }  // namespace
@@ -148,17 +124,28 @@ class FileSystemProviderProviderAsyncFileUtilTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    profile_.reset(new TestingProfile);
+    profile_manager_.reset(
+        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    ASSERT_TRUE(profile_manager_->SetUp());
+    profile_ = profile_manager_->CreateTestingProfile("testing-profile");
     async_file_util_.reset(new internal::ProviderAsyncFileUtil);
-    const base::FilePath mount_path =
-        util::GetMountPath(profile_.get(), kExtensionId, kFileSystemId);
+
     file_system_context_ =
         content::CreateFileSystemContextForTesting(NULL, data_dir_.path());
 
-    const std::string mount_point_name = mount_path.BaseName().AsUTF8Unsafe();
-    mount_point_.reset(new ScopedExternalMountPoint(
-        mount_point_name, mount_path, fileapi::kFileSystemTypeProvided));
-    ASSERT_TRUE(mount_point_->is_valid());
+    ServiceFactory::GetInstance()->SetTestingFactory(profile_, &CreateService);
+    Service* service = Service::Get(profile_);  // Owned by its factory.
+    service->SetFileSystemFactoryForTests(
+        base::Bind(&FakeProvidedFileSystem::Create));
+
+    const int file_system_id =
+        service->MountFileSystem(kExtensionId, "testing-file-system");
+    ASSERT_LT(0, file_system_id);
+    const ProvidedFileSystemInfo& file_system_info =
+        service->GetProvidedFileSystem(kExtensionId, file_system_id)
+            ->GetFileSystemInfo();
+    const std::string mount_point_name =
+        file_system_info.mount_path().BaseName().AsUTF8Unsafe();
 
     file_url_ = CreateFileSystemURL(
         mount_point_name, base::FilePath::FromUTF8Unsafe("hello/world.txt"));
@@ -170,6 +157,12 @@ class FileSystemProviderProviderAsyncFileUtilTest : public testing::Test {
     ASSERT_TRUE(root_url_.is_valid());
   }
 
+  virtual void TearDown() OVERRIDE {
+    // Setting the testing factory to NULL will destroy the created service
+    // associated with the testing profile.
+    ServiceFactory::GetInstance()->SetTestingFactory(profile_, NULL);
+  }
+
   scoped_ptr<fileapi::FileSystemOperationContext> CreateOperationContext() {
     return make_scoped_ptr(
         new fileapi::FileSystemOperationContext(file_system_context_.get()));
@@ -177,10 +170,10 @@ class FileSystemProviderProviderAsyncFileUtilTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir data_dir_;
-  scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<TestingProfileManager> profile_manager_;
+  TestingProfile* profile_;  // Owned by TestingProfileManager.
   scoped_ptr<fileapi::AsyncFileUtil> async_file_util_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
-  scoped_ptr<ScopedExternalMountPoint> mount_point_;
   fileapi::FileSystemURL file_url_;
   fileapi::FileSystemURL directory_url_;
   fileapi::FileSystemURL root_url_;
@@ -283,11 +276,12 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, GetFileInfo) {
 
   async_file_util_->GetFileInfo(
       CreateOperationContext(),
-      file_url_,
+      root_url_,
       base::Bind(&EventLogger::OnGetFileInfo, logger.GetWeakPtr()));
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(logger.error());
-  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, *logger.error());
+  EXPECT_EQ(base::File::FILE_OK, *logger.error());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, ReadDirectory) {

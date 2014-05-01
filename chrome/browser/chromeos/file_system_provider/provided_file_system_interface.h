@@ -31,6 +31,12 @@ class ProvidedFileSystemInterface {
   virtual void RequestUnmount(
       const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
 
+  // Requests metadata of the passed |entry_path|. It can be either a file
+  // or a directory.
+  virtual void GetMetadata(
+      const base::FilePath& entry_path,
+      const fileapi::AsyncFileUtil::GetFileInfoCallback& callback) = 0;
+
   // Returns a provided file system info for this file system.
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const = 0;
 

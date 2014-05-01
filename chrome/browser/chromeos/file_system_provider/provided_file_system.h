@@ -32,6 +32,9 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   // ProvidedFileSystemInterface overrides.
   virtual void RequestUnmount(
       const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
+  virtual void GetMetadata(
+      const base::FilePath& entry_path,
+      const fileapi::AsyncFileUtil::GetFileInfoCallback& callback) OVERRIDE;
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const OVERRIDE;
   virtual RequestManager* GetRequestManager() OVERRIDE;
 

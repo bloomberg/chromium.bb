@@ -19,6 +19,20 @@ namespace fileSystemProviderInternal {
         long fileSystemId,
         long requestId,
         fileSystemProvider.ProviderError error);
+
+    // Internal. Success callback of the <code>onGetMetadataRequested</code>
+    // event. Must be called if metadata is available.
+    static void getMetadataRequestedSuccess(
+        long fileSystemId,
+        long requestId,
+        fileSystemProvider.EntryMetadata metadata);
+
+    // Internal. Error callback of the <code>onGetMetadataRequested</code>
+    // event. Must be called when obtaining metadata fails.
+    static void getMetadataRequestedError(
+        long fileSystemId,
+        long requestId,
+        fileSystemProvider.ProviderError error);
   };
 };
 
