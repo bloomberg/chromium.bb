@@ -16,11 +16,15 @@
 #include "ui/base/l10n/l10n_util.h"
 
 @interface BaseBubbleController (Private)
+- (void)registerForNotifications;
 - (void)updateOriginFromAnchor;
 - (void)activateTabWithContents:(content::WebContents*)newContents
                previousContents:(content::WebContents*)oldContents
                         atIndex:(NSInteger)index
                          reason:(int)reason;
+- (void)recordAnchorOffset;
+- (void)parentWindowDidResize:(NSNotification*)notification;
+- (void)parentWindowWillClose:(NSNotification*)notification;
 - (void)closeCleanup;
 @end
 
@@ -42,13 +46,7 @@
     anchor_ = anchoredAt;
     shouldOpenAsKeyWindow_ = YES;
     shouldCloseOnResignKey_ = YES;
-
-    // Watch to see if the parent window closes, and if so, close this one.
-    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-    [center addObserver:self
-               selector:@selector(parentWindowWillClose:)
-                   name:NSWindowWillCloseNotification
-                 object:parentWindow_];
+    [self registerForNotifications];
   }
   return self;
 }
@@ -85,13 +83,7 @@
     [theWindow setContentView:contentView.get()];
     bubble_ = contentView.get();
 
-    // Watch to see if the parent window closes, and if so, close this one.
-    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-    [center addObserver:self
-               selector:@selector(parentWindowWillClose:)
-                   name:NSWindowWillCloseNotification
-                 object:parentWindow_];
-
+    [self registerForNotifications];
     [self awakeFromNib];
   }
   return self;
@@ -120,9 +112,33 @@
   [super dealloc];
 }
 
+- (void)registerForNotifications {
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  // Watch to see if the parent window closes, and if so, close this one.
+  [center addObserver:self
+             selector:@selector(parentWindowWillClose:)
+                 name:NSWindowWillCloseNotification
+               object:parentWindow_];
+  // Watch for parent window's resizing, to ensure this one is always
+  // anchored correctly.
+  [center addObserver:self
+             selector:@selector(parentWindowDidResize:)
+                 name:NSWindowDidResizeNotification
+               object:parentWindow_];
+}
+
 - (void)setAnchorPoint:(NSPoint)anchor {
   anchor_ = anchor;
   [self updateOriginFromAnchor];
+}
+
+- (void)recordAnchorOffset {
+  // The offset of the anchor from the parent's upper-left-hand corner is kept
+  // to ensure the bubble stays anchored correctly if the parent is resized.
+  anchorOffset_ = NSMakePoint(NSMinX([parentWindow_ frame]),
+                              NSMaxY([parentWindow_ frame]));
+  anchorOffset_.x -= anchor_.x;
+  anchorOffset_.y -= anchor_.y;
 }
 
 - (NSBox*)separatorWithFrame:(NSRect)frame {
@@ -132,6 +148,15 @@
   [spacer setBorderType:NSLineBorder];
   [spacer setAlphaValue:0.2];
   return [spacer.release() autorelease];
+}
+
+- (void)parentWindowDidResize:(NSNotification*)notification {
+  DCHECK_EQ(parentWindow_, [notification object]);
+  NSPoint newOrigin = NSMakePoint(NSMinX([parentWindow_ frame]),
+                                  NSMaxY([parentWindow_ frame]));
+  newOrigin.x -= anchorOffset_.x;
+  newOrigin.y -= anchorOffset_.y;
+  [self setAnchorPoint:newOrigin];
 }
 
 - (void)parentWindowWillClose:(NSNotification*)notification {
@@ -179,6 +204,7 @@
   else
     [window orderFront:nil];
   [self registerKeyStateEventTap];
+  [self recordAnchorOffset];
 }
 
 - (void)close {

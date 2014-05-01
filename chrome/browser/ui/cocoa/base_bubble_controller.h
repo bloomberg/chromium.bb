@@ -24,6 +24,11 @@ class TabStripModelObserverBridge;
  @private
   NSWindow* parentWindow_;  // weak
   NSPoint anchor_;
+  // Offset of the anchor point relative to the parent window's upper-left-hand
+  // corner. Used to ensure that if the parent window is resized with the bubble
+  // remaining visible, the bubble continues to be anchored correctly.
+  NSPoint anchorOffset_;
+
   IBOutlet InfoBubbleView* bubble_;  // to set arrow position
   // Bridge for tab change notifications.
   scoped_ptr<TabStripModelObserverBridge> tabStripObserverBridge_;
