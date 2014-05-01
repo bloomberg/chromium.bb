@@ -91,9 +91,10 @@ class TestAdNetworkDatabase : public AdNetworkDatabase {
  public:
   TestAdNetworkDatabase();
   virtual ~TestAdNetworkDatabase();
-  virtual bool IsAdNetwork(const GURL& url) const OVERRIDE;
 
  private:
+  virtual bool IsAdNetwork(const GURL& url) const OVERRIDE;
+
   GURL ad_network_url_;
 };
 

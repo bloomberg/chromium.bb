@@ -20,6 +20,7 @@ class AdNetworkDatabase {
   static const AdNetworkDatabase* Get();
   static void SetForTesting(scoped_ptr<AdNetworkDatabase> database);
 
+  // Returns true if the url is in the list of known ad networks.
   virtual bool IsAdNetwork(const GURL& url) const = 0;
 };
 
