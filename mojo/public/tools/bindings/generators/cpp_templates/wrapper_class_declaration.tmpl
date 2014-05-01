@@ -13,20 +13,20 @@ class {{struct.name}} {
 
   template <typename U>
   {{struct.name}}(const U& u, mojo::Buffer* buf = mojo::Buffer::current()) {
-    MOJO_INTERNAL_CHECK_ALLOW_IMPLICIT_TYPE_CONVERSION({{struct.name}}, U);
+    mojo::TypeConverter<{{struct.name}},U>::AssertAllowImplicitTypeConversion();
     *this = mojo::TypeConverter<{{struct.name}},U>::ConvertFrom(u, buf);
   }
 
   template <typename U>
   {{struct.name}}& operator=(const U& u) {
-    MOJO_INTERNAL_CHECK_ALLOW_IMPLICIT_TYPE_CONVERSION({{struct.name}}, U);
+    mojo::TypeConverter<{{struct.name}},U>::AssertAllowImplicitTypeConversion();
     *this = mojo::TypeConverter<{{struct.name}},U>::ConvertFrom(u, mojo::Buffer::current());
     return *this;
   }
 
   template <typename U>
   operator U() const {
-    MOJO_INTERNAL_CHECK_ALLOW_IMPLICIT_TYPE_CONVERSION({{struct.name}}, U);
+    mojo::TypeConverter<{{struct.name}},U>::AssertAllowImplicitTypeConversion();
     return To<U>();
   }
 

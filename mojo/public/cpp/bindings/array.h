@@ -31,20 +31,20 @@ class Array {
 
   template <typename U>
   Array(const U& u, Buffer* buf = Buffer::current()) {
-    MOJO_INTERNAL_CHECK_ALLOW_IMPLICIT_TYPE_CONVERSION(Array<T>, U);
+    TypeConverter<Array<T>,U>::AssertAllowImplicitTypeConversion();
     *this = TypeConverter<Array<T>,U>::ConvertFrom(u, buf);
   }
 
   template <typename U>
   Array& operator=(const U& u) {
-    MOJO_INTERNAL_CHECK_ALLOW_IMPLICIT_TYPE_CONVERSION(Array<T>, U);
+    TypeConverter<Array<T>,U>::AssertAllowImplicitTypeConversion();
     *this = TypeConverter<Array<T>,U>::ConvertFrom(u, Buffer::current());
     return *this;
   }
 
   template <typename U>
   operator U() const {
-    MOJO_INTERNAL_CHECK_ALLOW_IMPLICIT_TYPE_CONVERSION(Array<T>, U);
+    TypeConverter<Array<T>,U>::AssertAllowImplicitTypeConversion();
     return To<U>();
   }
 
@@ -151,7 +151,7 @@ class TypeConverter<String, const char*> {
 };
 
 template <typename T, typename E>
-class GenericArrayTypeConverter {
+class TypeConverter<Array<T>, std::vector<E> > {
  public:
   static Array<T> ConvertFrom(const std::vector<E>& input, Buffer* buf) {
     typename Array<T>::Builder result(input.size(), buf);
@@ -168,29 +168,8 @@ class GenericArrayTypeConverter {
     }
     return result;
   }
-};
 
-
-// Implicit conversion is not enabled by default.
-// If you would like to enable that for certain array types, you need to do
-// specializations and specify MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION() yourself.
-//
-// EXAMPLE:
-//
-// namespace mojo {
-// template <>
-// class TypeConverter<Array<X>, std::vector<Y> >
-//     : public GenericArrayTypeConverter<X, Y> {
-//  public:
-//   MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
-// };
-// }
-//
-// Please see the comments of MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION() for more
-// details.
-template <typename T, typename E>
-class TypeConverter<Array<T>, std::vector<E> >
-    : public GenericArrayTypeConverter<T, E> {
+  MOJO_INHERIT_IMPLICIT_TYPE_CONVERSION(T, E);
 };
 
 }  // namespace mojo

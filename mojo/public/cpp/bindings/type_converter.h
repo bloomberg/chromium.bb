@@ -55,9 +55,9 @@ namespace mojo {
 //
 // More "direct" conversions can be enabled by adding the following macro to the
 // TypeConverter specialization:
-//  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
+//   MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 //
-// To be exact, this amcro enables:
+// To be exact, this macro enables:
 // - converting constructor:
 //   T(const U& u, mojo::Buffer* buf = mojo::Buffer::current());
 // - assignment operator:
@@ -83,28 +83,34 @@ namespace mojo {
 //     output_2 = pt;
 //   }
 //
-// Although this macro is convenient, it makes conversions less obvious. Users
-// may do conversions excessively without paying attention to the cost. So
-// please use it wisely.
+// There is another macro to inherit implicit conversion settings from another
+// TypeConverter:
+//   MOJO_INHERIT_IMPLICIT_TYPE_CONVERSION(X, Y);
+//
+// It allows implicit conversions if and only if TypeConverter<X, Y> allows
+// implicit conversions. This is useful when defining TypeConverter for
+// container types.
+//
+// Although these macros are convenient, they make conversions less obvious.
+// Users may do conversions excessively without paying attention to the cost. So
+// please use them wisely.
 template <typename T, typename U> class TypeConverter {
   // static T ConvertFrom(const U& input, Buffer* buf);
   // static U ConvertTo(const T& input);
 
-  // Maybe:
+  // Maybe (mutually exclusive):
   // MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
+  // MOJO_INHERIT_IMPLICIT_TYPE_CONVERSION(X, Y);
 };
 
 }  // namespace mojo
 
 #define MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION() \
-    typedef void AllowImplicitTypeConversion
+  static void AssertAllowImplicitTypeConversion() {}
 
-// Fails compilation if MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION() is not specified
-// in TypeConverter<T, U>.
-#define MOJO_INTERNAL_CHECK_ALLOW_IMPLICIT_TYPE_CONVERSION(T, U) \
-    do { \
-      typedef typename mojo::TypeConverter<T, U>::AllowImplicitTypeConversion \
-          FailedIfNotAllowed; \
-    } while (false)
+#define MOJO_INHERIT_IMPLICIT_TYPE_CONVERSION(T, U) \
+  static void AssertAllowImplicitTypeConversion() { \
+    TypeConverter<T, U>::AssertAllowImplicitTypeConversion(); \
+  }
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_TYPE_CONVERTER_H_

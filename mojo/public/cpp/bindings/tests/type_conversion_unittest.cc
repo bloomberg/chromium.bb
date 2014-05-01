@@ -65,13 +65,6 @@ class TypeConverter<test_structs::Rect, RedmondRect> {
 };
 
 template <>
-class TypeConverter<Array<test_structs::Rect>, std::vector<RedmondRect> >
-    : public GenericArrayTypeConverter<test_structs::Rect, RedmondRect> {
- public:
-  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
-};
-
-template <>
 class TypeConverter<test_structs::NamedRegion, RedmondNamedRegion> {
  public:
   static test_structs::NamedRegion ConvertFrom(const RedmondNamedRegion& input,
