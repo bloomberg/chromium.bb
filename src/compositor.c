@@ -3333,6 +3333,7 @@ weston_output_transform_coordinate(struct weston_output *output,
 {
 	wl_fixed_t tx, ty;
 	wl_fixed_t width, height;
+	float zoom_scale, zx, zy;
 
 	width = wl_fixed_from_int(output->width * output->current_scale - 1);
 	height = wl_fixed_from_int(output->height * output->current_scale - 1);
@@ -3373,8 +3374,23 @@ weston_output_transform_coordinate(struct weston_output *output,
 		break;
 	}
 
-	*x = tx / output->current_scale + wl_fixed_from_int(output->x);
-	*y = ty / output->current_scale + wl_fixed_from_int(output->y);
+	tx /= output->current_scale;
+	ty /= output->current_scale;
+
+	if (output->zoom.active) {
+		zoom_scale = output->zoom.spring_z.current;
+		zx = (wl_fixed_to_double(tx) * (1.0f - zoom_scale) +
+		      output->width / 2.0f *
+		      (zoom_scale + output->zoom.trans_x));
+		zy = (wl_fixed_to_double(ty) * (1.0f - zoom_scale) +
+		      output->height / 2.0f *
+		      (zoom_scale + output->zoom.trans_y));
+		tx = wl_fixed_from_double(zx);
+		ty = wl_fixed_from_double(zy);
+	}
+
+	*x = tx + wl_fixed_from_int(output->x);
+	*y = ty + wl_fixed_from_int(output->y);
 }
 
 static void
