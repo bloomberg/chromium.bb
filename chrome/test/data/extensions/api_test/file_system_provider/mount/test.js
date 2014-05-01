@@ -2,15 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
+/**
+ * Runs all of the test cases, one by one.
+ */
 chrome.test.runTests([
   // Tests whether mounting succeeds, when a non-empty name is provided.
   function goodDisplayName() {
+    var onTestSuccess = chrome.test.callbackPass(function() {});
     chrome.fileSystemProvider.mount(
       'test file system',
       function(fileSystemId) {
         chrome.test.assertEq('number', typeof(fileSystemId));
-        chrome.test.assertTrue(fileSystemId == 1);
-        chrome.test.succeed();
+        chrome.test.assertEq(1, fileSystemId);
+        onTestSuccess();
       },
       function(error) {
         chrome.test.fail();
@@ -20,6 +26,7 @@ chrome.test.runTests([
 
   // Verifies that mounting fails, when an empty string is provided as a name.
   function emptyDisplayName() {
+    var onTestSuccess = chrome.test.callbackPass(function() {});
     chrome.fileSystemProvider.mount(
       '',
       function(fileSystemId) {
@@ -27,7 +34,7 @@ chrome.test.runTests([
       },
       function(error) {
         chrome.test.assertEq('SecurityError', error.name);
-        chrome.test.succeed();
+        onTestSuccess();
       }
     );
   },
@@ -36,6 +43,7 @@ chrome.test.runTests([
   // checks if the mounted volume is added to VolumeManager, by querying
   // fileBrowserPrivate.getVolumeMetadataList().
   function successfulMount() {
+    var onTestSuccess = chrome.test.callbackPass(function() {});
     chrome.fileSystemProvider.mount(
       'caramel-candy.zip',
       function(fileSystemId) {
@@ -46,7 +54,7 @@ chrome.test.runTests([
                 'provided:' + chrome.runtime.id + '-' + fileSystemId + '-user';
           });
           chrome.test.assertEq(1, found.length);
-          chrome.test.succeed();
+          onTestSuccess();
         });
       },
       function(error) {
@@ -59,6 +67,7 @@ chrome.test.runTests([
   // requests should succeed, except the last one which should fail with a
   // security error.
   function stressMountTest() {
+    var onTestSuccess = chrome.test.callbackPass(function() {});
     var ALREADY_MOUNTED_FILE_SYSTEMS = 2;  // By previous tests.
     var MAX_FILE_SYSTEMS = 16;
     var index = 0;
@@ -78,7 +87,7 @@ chrome.test.runTests([
             chrome.test.fail,
             function(error) {
               chrome.test.assertEq('SecurityError', error.name);
-              chrome.test.succeed();
+              onTestSuccess();
             });
       }
     };

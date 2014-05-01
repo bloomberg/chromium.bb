@@ -2,9 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 var firstFileSystemId;
 var secondFileSystemId;
 
+/**
+ * Sets up the tests. Called once per all test cases. In case of a failure,
+ * the callback is not called.
+ *
+ * @param {function()} callback Success callback.
+ */
 function setUp(callback) {
   chrome.fileSystemProvider.mount('chocolate.zip', function(id) {
     firstFileSystemId = id;
@@ -23,11 +31,15 @@ function setUp(callback) {
   });
 }
 
+/**
+ * Runs all of the test cases, one by one.
+ */
 function runTests() {
   chrome.test.runTests([
     // Tests the fileSystemProvider.unmount(). Verifies if the unmount event
     // is emitted by VolumeManager.
     function unmount() {
+      var onTestSuccess = chrome.test.callbackPass(function() {});
       var firstVolumeId =
           'provided:' + chrome.runtime.id + '-' + firstFileSystemId + '-user';
 
@@ -37,7 +49,7 @@ function runTests() {
         chrome.test.assertEq(firstVolumeId, event.volumeMetadata.volumeId);
         chrome.fileBrowserPrivate.onMountCompleted.removeListener(
             onMountCompleted);
-        chrome.test.succeed();
+        onTestSuccess();
       };
 
       chrome.fileBrowserPrivate.onMountCompleted.addListener(
@@ -52,17 +64,19 @@ function runTests() {
     // Tests the fileSystemProvider.unmount() with a wrong id. Verifies that
     // it fails with a correct error code.
     function unmountWrongId() {
-      chrome.fileSystemProvider.unmount(1337, function() {
+      var onTestSuccess = chrome.test.callbackPass(function() {});
+      chrome.fileSystemProvider.unmount(1337, function(fileSystemId) {
         chrome.test.fail();
       }, function(error) {
         chrome.test.assertEq('SecurityError', error.name);
-        chrome.test.succeed();
+        onTestSuccess();
       });
     },
 
     // Tests if fileBrowserPrivate.removeMount() for provided file systems emits
     // the onMountRequested() event with correct arguments.
     function requestUnmountSuccess() {
+      var onTestSuccess = chrome.test.callbackPass(function() {});
       var secondVolumeId =
           'provided:' + chrome.runtime.id + '-' + secondFileSystemId + '-user';
 
@@ -73,7 +87,7 @@ function runTests() {
         // event will not be raised.
         chrome.fileSystemProvider.onUnmountRequested.removeListener(
             onUnmountRequested);
-        chrome.test.succeed();
+        onTestSuccess();
       };
 
       chrome.fileSystemProvider.onUnmountRequested.addListener(
@@ -86,6 +100,7 @@ function runTests() {
     // event is called with correct aguments, and (2) if calling onError(),
     // results in an unmount event fired from the VolumeManager instance.
     function requestUnmountError() {
+      var onTestSuccess = chrome.test.callbackPass(function() {});
       var secondVolumeId =
           'provided:' + chrome.runtime.id + '-' + secondFileSystemId + '-user';
       var unmountRequested = false;
@@ -109,7 +124,7 @@ function runTests() {
         chrome.fileBrowserPrivate.removeMount(secondVolumeId);
         chrome.fileBrowserPrivate.onMountCompleted.removeListener(
             onMountCompleted);
-        chrome.test.succeed();
+        onTestSuccess();
       };
 
       chrome.fileSystemProvider.onUnmountRequested.addListener(
@@ -118,6 +133,7 @@ function runTests() {
       chrome.fileBrowserPrivate.removeMount(secondVolumeId);
     }
   ]);
-};
+}
 
+// Setup and run all of the test cases.
 setUp(runTests);

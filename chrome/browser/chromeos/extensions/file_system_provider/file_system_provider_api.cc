@@ -102,7 +102,7 @@ bool FileSystemProviderMountFunction::RunSync() {
     result->Append(CreateError(kSecurityErrorName,
                                kEmptyNameErrorMessage));
     SetResult(result);
-    return false;
+    return true;
   }
 
   Service* service = Service::Get(GetProfile());
@@ -119,7 +119,7 @@ bool FileSystemProviderMountFunction::RunSync() {
     result->Append(new base::FundamentalValue(0));
     result->Append(CreateError(kSecurityErrorName, kMountFailedErrorMessage));
     SetResult(result);
-    return false;
+    return true;
   }
 
   base::ListValue* result = new base::ListValue();
@@ -143,7 +143,7 @@ bool FileSystemProviderUnmountFunction::RunSync() {
     base::ListValue* result = new base::ListValue();
     result->Append(CreateError(kSecurityErrorName, kUnmountFailedErrorMessage));
     SetResult(result);
-    return false;
+    return true;
   }
 
   base::ListValue* result = new base::ListValue();
@@ -166,7 +166,7 @@ bool FileSystemProviderInternalUnmountRequestedSuccessFunction::RunSync() {
     result->Append(
         CreateError(kNotFoundErrorName, kResponseFailedErrorMessage));
     SetResult(result);
-    return false;
+    return true;
   }
 
   RequestManager* request_manager = file_system->GetRequestManager();
@@ -182,7 +182,7 @@ bool FileSystemProviderInternalUnmountRequestedSuccessFunction::RunSync() {
     result->Append(
         CreateError(kSecurityErrorName, kResponseFailedErrorMessage));
     SetResult(result);
-    return false;
+    return true;
   }
 
   base::ListValue* result = new base::ListValue();
@@ -205,7 +205,7 @@ bool FileSystemProviderInternalUnmountRequestedErrorFunction::RunSync() {
     result->Append(
         CreateError(kNotFoundErrorName, kResponseFailedErrorMessage));
     SetResult(result);
-    return false;
+    return true;
   }
 
   RequestManager* request_manager = file_system->GetRequestManager();
@@ -218,7 +218,7 @@ bool FileSystemProviderInternalUnmountRequestedErrorFunction::RunSync() {
     result->Append(
         CreateError(kSecurityErrorName, kResponseFailedErrorMessage));
     SetResult(result);
-    return false;
+    return true;
   }
 
   base::ListValue* result = new base::ListValue();
