@@ -24,7 +24,6 @@ function PDFViewer() {
   this.passwordScreen_.addEventListener('password-submitted',
                                         this.onPasswordSubmitted_.bind(this));
   this.errorScreen_ = $('error-screen');
-  this.errorScreen_.text = 'Failed to load PDF document';
 
   // Create the viewport.
   this.viewport_ = new Viewport(window,
@@ -252,6 +251,12 @@ PDFViewer.prototype = {
           this.passwordScreen_.active = true;
         else
           this.passwordScreen_.deny();
+        break;
+      case 'setTranslatedStrings':
+        this.passwordScreen_.text = message.data.getPasswordString;
+        this.progressBar_.text = message.data.loadingString;
+        this.errorScreen_.text = message.data.loadFailedString;
+        break;
     }
   },
 
