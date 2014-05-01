@@ -5,7 +5,6 @@
 #include "sync/test/fake_server/fake_server_network_resources.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/network_time_update_callback.h"
@@ -29,9 +28,7 @@ scoped_ptr<syncer::HttpPostProviderFactory>
         const NetworkTimeUpdateCallback& network_time_update_callback,
         CancelationSignal* cancelation_signal) {
   return make_scoped_ptr<syncer::HttpPostProviderFactory>(
-      new FakeServerHttpPostProviderFactory(
-          fake_server_,
-          base::MessageLoop::current()->message_loop_proxy()));
+      new FakeServerHttpPostProviderFactory(fake_server_));
 }
 
 }  // namespace fake_server

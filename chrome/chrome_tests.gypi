@@ -2192,8 +2192,6 @@
         'browser/sync/test/integration/extension_settings_helper.h',
         'browser/sync/test/integration/extensions_helper.cc',
         'browser/sync/test/integration/extensions_helper.h',
-        'browser/sync/test/integration/fake_server_invalidation_service.cc',
-        'browser/sync/test/integration/fake_server_invalidation_service.h',
         'browser/sync/test/integration/multi_client_status_change_checker.cc',
         'browser/sync/test/integration/multi_client_status_change_checker.h',
         'browser/sync/test/integration/passwords_helper.cc',

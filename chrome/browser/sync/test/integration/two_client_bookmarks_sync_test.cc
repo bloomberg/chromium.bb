@@ -1616,8 +1616,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, MC_DuplicateFolders) {
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
-// This test fails when run with FakeServer and FakeServerInvalidationService.
-IN_PROC_BROWSER_TEST_F(LegacyTwoClientBookmarksSyncTest, MC_DeleteBookmark) {
+IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, MC_DeleteBookmark) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncer::BOOKMARKS));
 

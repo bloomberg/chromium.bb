@@ -8,8 +8,6 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
-#include "base/synchronization/waitable_event.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/http_post_provider_interface.h"
 
@@ -21,9 +19,7 @@ class FakeServerHttpPostProvider
     : public syncer::HttpPostProviderInterface,
       public base::RefCountedThreadSafe<FakeServerHttpPostProvider> {
  public:
-  explicit FakeServerHttpPostProvider(
-      FakeServer* fake_server,
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
+  explicit FakeServerHttpPostProvider(FakeServer* fake_server);
 
   // HttpPostProviderInterface implementation.
   virtual void SetExtraRequestHeaders(const char* headers) OVERRIDE;
@@ -43,22 +39,13 @@ class FakeServerHttpPostProvider
   virtual ~FakeServerHttpPostProvider();
 
  private:
-  void OnPostComplete(int error_code,
-                      int response_code,
-                      const std::string& response);
-
   FakeServer* const fake_server_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
   std::string response_;
   std::string request_url_;
   int request_port_;
   std::string request_content_;
   std::string request_content_type_;
   std::string extra_request_headers_;
-  int post_error_code_;
-  int post_response_code_;
-  base::WaitableEvent post_complete_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeServerHttpPostProvider);
 };
@@ -66,9 +53,7 @@ class FakeServerHttpPostProvider
 class FakeServerHttpPostProviderFactory
     : public syncer::HttpPostProviderFactory {
  public:
-  explicit FakeServerHttpPostProviderFactory(
-      FakeServer* fake_server,
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
+  explicit FakeServerHttpPostProviderFactory(FakeServer* fake_server);
   virtual ~FakeServerHttpPostProviderFactory();
 
   // HttpPostProviderFactory:
@@ -78,7 +63,6 @@ class FakeServerHttpPostProviderFactory
 
  private:
   FakeServer* const fake_server_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeServerHttpPostProviderFactory);
 };
