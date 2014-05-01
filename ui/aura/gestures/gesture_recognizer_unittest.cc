@@ -597,8 +597,9 @@ class TimedEvents {
 // An event handler to keep track of events.
 class TestEventHandler : public ui::EventHandler {
  public:
-  TestEventHandler() : touch_released_count_(0), touch_pressed_count_(0),
-                       touch_moved_count_(0), touch_stationary_count_(0),
+  TestEventHandler() : touch_released_count_(0),
+                       touch_pressed_count_(0),
+                       touch_moved_count_(0),
                        touch_cancelled_count_(0) {
   }
 
@@ -615,9 +616,6 @@ class TestEventHandler : public ui::EventHandler {
       case ui::ET_TOUCH_MOVED:
         touch_moved_count_++;
         break;
-      case ui::ET_TOUCH_STATIONARY:
-        touch_stationary_count_++;
-        break;
       case ui::ET_TOUCH_CANCELLED:
         touch_cancelled_count_++;
         break;
@@ -630,21 +628,18 @@ class TestEventHandler : public ui::EventHandler {
     touch_released_count_ = 0;
     touch_pressed_count_ = 0;
     touch_moved_count_ = 0;
-    touch_stationary_count_ = 0;
     touch_cancelled_count_ = 0;
   }
 
   int touch_released_count() const { return touch_released_count_; }
   int touch_pressed_count() const { return touch_pressed_count_; }
   int touch_moved_count() const { return touch_moved_count_; }
-  int touch_stationary_count() const { return touch_stationary_count_; }
   int touch_cancelled_count() const { return touch_cancelled_count_; }
 
  private:
   int touch_released_count_;
   int touch_pressed_count_;
   int touch_moved_count_;
-  int touch_stationary_count_;
   int touch_cancelled_count_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventHandler);

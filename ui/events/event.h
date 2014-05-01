@@ -104,7 +104,6 @@ class EVENTS_EXPORT Event {
     return type_ == ET_TOUCH_RELEASED ||
            type_ == ET_TOUCH_PRESSED ||
            type_ == ET_TOUCH_MOVED ||
-           type_ == ET_TOUCH_STATIONARY ||
            type_ == ET_TOUCH_CANCELLED;
   }
 

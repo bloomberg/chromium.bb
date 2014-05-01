@@ -28,7 +28,7 @@ enum UMAEventType {
   UMA_ET_TOUCH_RELEASED,
   UMA_ET_TOUCH_PRESSED,
   UMA_ET_TOUCH_MOVED,
-  UMA_ET_TOUCH_STATIONARY,
+  UMA_ET_TOUCH_STATIONARY,  // Deprecated. Do not remove.
   UMA_ET_TOUCH_CANCELLED,
   UMA_ET_GESTURE_SCROLL_BEGIN,
   UMA_ET_GESTURE_SCROLL_END,
@@ -104,8 +104,6 @@ UMAEventType UMAEventTypeFromEvent(const ui::Event& event) {
       return UMA_ET_TOUCH_PRESSED;
     case ui::ET_TOUCH_MOVED:
       return UMA_ET_TOUCH_MOVED;
-    case ui::ET_TOUCH_STATIONARY:
-      return UMA_ET_TOUCH_STATIONARY;
     case ui::ET_TOUCH_CANCELLED:
       return UMA_ET_TOUCH_CANCELLED;
     case ui::ET_GESTURE_SCROLL_BEGIN:
