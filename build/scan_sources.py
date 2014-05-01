@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -35,9 +35,9 @@ class PathConverter(object):
   def ToPosixPath(self, pathname):
     return '/'.join(pathname.split(os.path.sep))
 
-  def exists(self, pathname):
+  def isfile(self, pathname):
     ospath = self.ToNativePath(pathname)
-    return os.path.exists(ospath) and not os.path.isdir(ospath)
+    return os.path.isfile(ospath)
 
   def getcwd(self):
     return self.ToPosixPath(os.getcwd())
@@ -54,15 +54,21 @@ class PathConverter(object):
     ospath = self.ToNativePath(pathname)
     return open(ospath)
 
-  def realpath(self, pathname):
+  def abspath(self, pathname):
     ospath = self.ToNativePath(pathname)
-    ospath = os.path.realpath(ospath)
+    ospath = os.path.abspath(ospath)
     return self.ToPosixPath(ospath)
 
   def dirname(self, pathname):
     ospath = self.ToNativePath(pathname)
     ospath = os.path.dirname(ospath)
     return self.ToPosixPath(ospath)
+
+
+filename_to_relative_cache = {}  # (filepath, basepath) -> relpath
+findfile_cache = {}  # (tuple(searchdirs), cwd, file) -> filename/None
+pathisfile_cache = {}  # abspath -> boolean, works because fs is static
+                       # during a run.
 
 
 class Resolver(object):
@@ -80,7 +86,7 @@ class Resolver(object):
 
   def AddOneDirectory(self, pathname):
     """Add an include search path."""
-    pathname = self.pathobj.realpath(pathname)
+    pathname = self.pathobj.abspath(pathname)
     DebugPrint('Adding DIR: %s' % pathname)
     if pathname not in self.search_dirs:
       if self.pathobj.isdir(pathname):
@@ -92,7 +98,7 @@ class Resolver(object):
 
   def RemoveOneDirectory(self, pathname):
     """Remove an include search path."""
-    pathname = self.pathobj.realpath(pathname)
+    pathname = self.pathobj.abspath(pathname)
     DebugPrint('Removing DIR: %s' % pathname)
     if pathname in self.search_dirs:
       self.search_dirs.remove(pathname)
@@ -112,32 +118,56 @@ class Resolver(object):
 
   def RealToRelative(self, filepath, basepath):
     """Returns a relative path from an absolute basepath and filepath."""
-    path_parts = filepath.split('/')
-    base_parts = basepath.split('/')
-    while path_parts and base_parts and path_parts[0] == base_parts[0]:
-      path_parts = path_parts[1:]
-      base_parts = base_parts[1:]
-    rel_parts = ['..'] * len(base_parts) + path_parts
-    return '/'.join(rel_parts)
+    cache_key = (filepath, basepath)
+    cache_result = None
+    if cache_key in filename_to_relative_cache:
+      cache_result = filename_to_relative_cache[cache_key]
+      return cache_result
+    def SlowRealToRelative(filepath, basepath):
+      path_parts = filepath.split('/')
+      base_parts = basepath.split('/')
+      while path_parts and base_parts and path_parts[0] == base_parts[0]:
+        path_parts = path_parts[1:]
+        base_parts = base_parts[1:]
+      rel_parts = ['..'] * len(base_parts) + path_parts
+      rel_path = '/'.join(rel_parts)
+      return rel_path
+    rel_path = SlowRealToRelative(filepath, basepath)
+    filename_to_relative_cache[cache_key] = rel_path
+    return rel_path
 
   def FilenameToRelative(self, filepath):
     """Returns a relative path from CWD to filepath."""
-    filepath = self.pathobj.realpath(filepath)
+    filepath = self.pathobj.abspath(filepath)
     basepath = self.cwd
     return self.RealToRelative(filepath, basepath)
 
   def FindFile(self, filename):
     """Search for <filename> across the search directories, if the path is not
        absolute.  Return the filepath relative to the CWD or None. """
+    cache_key = (tuple(self.search_dirs), self.cwd, filename)
+    if cache_key in findfile_cache:
+      cache_result = findfile_cache[cache_key]
+      return cache_result
+    result = None
+    def isfile(absname):
+      res = pathisfile_cache.get(absname)
+      if res is None:
+        res = self.pathobj.isfile(absname)
+        pathisfile_cache[absname] = res
+      return res
+
     if self.pathobj.isabs(filename):
-      if self.pathobj.exists(filename):
-        return self.FilenameToRelative(filename)
-      return None
-    for pathname in self.search_dirs:
-      fullname = '%s/%s' % (pathname, filename)
-      if self.pathobj.exists(fullname):
-        return self.FilenameToRelative(fullname)
-    return None
+      if isfile(filename):
+        result = self.FilenameToRelative(filename)
+    else:
+      for pathname in self.search_dirs:
+        fullname = '%s/%s' % (pathname, filename)
+        if isfile(fullname):
+          result = self.FilenameToRelative(fullname)
+          break
+    findfile_cache[cache_key] = result
+    return result
 
 
 def LoadFile(filename):
@@ -151,11 +181,14 @@ def LoadFile(filename):
   return fd.read()
 
 
+scan_cache = {}  # cache (abs_filename -> include_list)
+
+
 class Scanner(object):
   """Scanner searches for '#include' to find dependencies."""
 
   def __init__(self, loader=None):
-    regex = r'^\s*\#[ \t]*include[ \t]*[<"]([^>^"]+)[>"]'
+    regex = r'^\s*\#[ \t]*include[ \t]*[<"]([^>"]+)[>"]'
     self.parser = re.compile(regex, re.M)
     self.loader = loader
     if not loader:
@@ -167,7 +200,11 @@ class Scanner(object):
 
   def ScanFile(self, filename):
     """Generate a list of includes from this filename."""
+    abs_filename = os.path.abspath(filename)
+    if abs_filename in scan_cache:
+      return scan_cache[abs_filename]
     includes = self.ScanData(self.loader(filename))
+    scan_cache[abs_filename] = includes
     DebugPrint('Source %s contains:\n\t%s' % (filename, '\n\t'.join(includes)))
     return includes
 
@@ -214,10 +251,11 @@ class WorkQueue(object):
       # Add the directory of the current scanned file for resolving includes
       # while processing includes for this file.
       scan_dir = PathConverter().dirname(scan_name)
-      self.resolver.AddOneDirectory(scan_dir)
+      added_dir = not self.resolver.AddOneDirectory(scan_dir)
       for include_file in includes:
         self.PushIfNew(include_file)
-      self.resolver.RemoveOneDirectory(scan_dir)
+      if added_dir:
+        self.resolver.RemoveOneDirectory(scan_dir)
       scan_name = self.PopIfAvail()
     return sorted(self.added_set)
 
@@ -247,13 +285,9 @@ def DoMain(argv):
   sorted_list = workQ.Run()
   return '\n'.join(sorted_list) + '\n'
 
-  return 0
-
 
 def Main():
-  retcode, result = DoMain(sys.argv[1:])
-  if retcode:
-    sys.exit(retcode)
+  result = DoMain(sys.argv[1:])
   sys.stdout.write(result)
 
 
