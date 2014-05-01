@@ -17,6 +17,7 @@ namespace {
 const char kParent[] = "filesystem:http://foo.com/test/dir a";
 const char kFile[]   = "filesystem:http://foo.com/test/dir a/dir b";
 const char kChild[]  = "filesystem:http://foo.com/test/dir a/dir b/file";
+const char kHasPeriod[]   = "filesystem:http://foo.com/test/dir a.dir b";
 
 const char kOther1[] = "filesystem:http://foo.com/test/dir b";
 const char kOther2[] = "filesystem:http://foo.com/temporary/dir a";
@@ -84,6 +85,34 @@ TEST(LocalFileSyncStatusTest, SyncingSimple) {
   EXPECT_TRUE(status.IsWritable(URL(kFile)));
   EXPECT_TRUE(status.IsWritable(URL(kParent)));
   EXPECT_TRUE(status.IsWritable(URL(kChild)));
+}
+
+TEST(LocalFileSyncStatusTest, WritingOnPathsWithPeriod) {
+  LocalFileSyncStatus status;
+
+  status.StartWriting(URL(kParent));
+  status.StartWriting(URL(kHasPeriod));
+
+  EXPECT_TRUE(status.IsChildOrParentWriting(URL(kFile)));
+
+  status.EndWriting(URL(kParent));
+  status.StartWriting(URL(kFile));
+
+  EXPECT_TRUE(status.IsChildOrParentWriting(URL(kParent)));
+}
+
+TEST(LocalFileSyncStatusTest, SyncingOnPathsWithPeriod) {
+  LocalFileSyncStatus status;
+
+  status.StartSyncing(URL(kParent));
+  status.StartSyncing(URL(kHasPeriod));
+
+  EXPECT_TRUE(status.IsChildOrParentSyncing(URL(kFile)));
+
+  status.EndSyncing(URL(kParent));
+  status.StartSyncing(URL(kFile));
+
+  EXPECT_TRUE(status.IsChildOrParentSyncing(URL(kParent)));
 }
 
 }  // namespace sync_file_system

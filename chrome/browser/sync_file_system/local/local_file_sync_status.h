@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "webkit/browser/fileapi/file_system_url.h"
@@ -32,6 +33,8 @@ namespace sync_file_system {
 class LocalFileSyncStatus
     : public base::NonThreadSafe {
  public:
+  typedef std::pair<GURL, fileapi::FileSystemType> OriginAndType;
+
   class Observer {
    public:
     Observer() {}
@@ -73,17 +76,23 @@ class LocalFileSyncStatus
   void RemoveObserver(Observer* observer);
 
  private:
-  typedef std::map<fileapi::FileSystemURL, int64,
-                   fileapi::FileSystemURL::Comparator> URLCountMap;
+  FRIEND_TEST_ALL_PREFIXES(LocalFileSyncStatusTest, WritingOnPathsWithPeriod);
+  FRIEND_TEST_ALL_PREFIXES(LocalFileSyncStatusTest, SyncingOnPathsWithPeriod);
+
+  typedef std::set<base::FilePath> PathSet;
+  typedef std::map<OriginAndType, PathSet> URLSet;
+
+  typedef std::map<base::FilePath, int64> PathBucket;
+  typedef std::map<OriginAndType, PathBucket> URLBucket;
 
   bool IsChildOrParentWriting(const fileapi::FileSystemURL& url) const;
   bool IsChildOrParentSyncing(const fileapi::FileSystemURL& url) const;
 
   // If this count is non-zero positive there're ongoing write operations.
-  URLCountMap writing_;
+  URLBucket writing_;
 
   // If this flag is set sync process is running on the file.
-  fileapi::FileSystemURLSet syncing_;
+  URLSet syncing_;
 
   ObserverList<Observer> observer_list_;
 
