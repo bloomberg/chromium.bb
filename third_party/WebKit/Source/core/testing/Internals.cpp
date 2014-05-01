@@ -56,7 +56,6 @@
 #include "core/dom/DocumentMarker.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/Element.h"
-#include "core/dom/EventHandlerRegistry.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/NodeRenderStyle.h"
@@ -105,6 +104,7 @@
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
+#include "core/page/EventHandlerRegistry.h"
 #include "core/page/Page.h"
 #include "core/page/PagePopupController.h"
 #include "core/page/PrintContext.h"
@@ -1248,7 +1248,9 @@ unsigned Internals::activeDOMObjectCount(Document* document, ExceptionState& exc
 
 static unsigned eventHandlerCount(Document& document, EventHandlerRegistry::EventHandlerClass handlerClass)
 {
-    EventHandlerRegistry* registry = EventHandlerRegistry::from(document);
+    if (!document.page())
+        return 0;
+    EventHandlerRegistry* registry = EventHandlerRegistry::from(*document.page());
     unsigned count = 0;
     const EventTargetSet* targets = registry->eventHandlerTargets(handlerClass);
     if (targets) {

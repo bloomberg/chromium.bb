@@ -5,18 +5,19 @@
 #ifndef EventHandlerRegistry_h
 #define EventHandlerRegistry_h
 
-#include "core/dom/DocumentSupplementable.h"
 #include "core/events/Event.h"
+#include "core/page/Page.h"
 #include "wtf/HashCountedSet.h"
 
 namespace WebCore {
 
 typedef HashCountedSet<EventTarget*> EventTargetSet;
 
-// Registry for keeping track of event handlers. Handlers can either be
-// associated with an EventTarget or be "external" handlers which live outside
-// the DOM (e.g., WebViewImpl).
-class EventHandlerRegistry FINAL : public NoBaseWillBeGarbageCollectedFinalized<EventHandlerRegistry>, public DocumentSupplement {
+// Registry for keeping track of event handlers. Note that only handlers on
+// documents that can be rendered or can receive input (i.e., are attached to a
+// Page) are registered here.
+// TODO(skyostil): This class should move to the FrameHost (crbug.com/369082).
+class EventHandlerRegistry FINAL : public NoBaseWillBeGarbageCollectedFinalized<EventHandlerRegistry>, public Supplement<Page> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(EventHandlerRegistry);
 public:
     virtual ~EventHandlerRegistry();
@@ -25,20 +26,20 @@ public:
     // multiple event types.
     enum EventHandlerClass {
         ScrollEvent,
+#if ASSERT_ENABLED
+        // Additional event categories for verifying handler tracking logic.
+        EventsForTesting,
+#endif
         EventHandlerClassCount, // Must be the last entry.
     };
 
     static const char* supplementName();
-    static EventHandlerRegistry* from(Document&);
+    static EventHandlerRegistry* from(Page&);
 
-    // Returns true if the host Document or any child documents have any
-    // registered event handlers of the class.
+    // Returns true if the page has event handlers of the specified class.
     bool hasEventHandlers(EventHandlerClass) const;
 
-    // Returns a set of EventTargets which have registered handlers of the
-    // given class. Only contains targets directly in this document; all
-    // handlers in a child Document are collapsed to a single respective
-    // Document instance in the set.
+    // Returns a set of EventTargets which have registered handlers of the given class.
     const EventTargetSet* eventHandlerTargets(EventHandlerClass) const;
 
     // Registration and management of event handlers attached to EventTargets.
@@ -46,14 +47,21 @@ public:
     void didAddEventHandler(EventTarget&, EventHandlerClass);
     void didRemoveEventHandler(EventTarget&, const AtomicString& eventType);
     void didRemoveEventHandler(EventTarget&, EventHandlerClass);
-    void didMoveFromOtherDocument(EventTarget&, Document& oldDocument);
     void didRemoveAllEventHandlers(EventTarget&);
+    void didMoveIntoPage(EventTarget&);
+    void didMoveOutOfPage(EventTarget&);
+
+    // Either |documentDetached| or |didMoveOutOfPage| must be called whenever
+    // the Page that is associated with a registered event target changes. This
+    // ensures the registry does not end up with stale references to handlers
+    // that are no longer related to it.
+    void documentDetached(Document&);
 
     virtual void trace(Visitor*) OVERRIDE;
     void clearWeakMembers(Visitor*);
 
 private:
-    explicit EventHandlerRegistry(Document&);
+    explicit EventHandlerRegistry(Page&);
 
     enum ChangeOperation {
         Add, // Add a new event handler.
@@ -80,15 +88,12 @@ private:
 
     void updateEventHandlerInternal(ChangeOperation, EventHandlerClass, EventTarget*);
 
-    struct HandlerState {
-        HandlerState();
-        ~HandlerState();
+    void updateAllEventHandlers(ChangeOperation, EventTarget&);
 
-        OwnPtr<EventTargetSet> targets;
-    };
+    void checkConsistency() const;
 
-    Document& m_document;
-    HandlerState m_eventHandlers[EventHandlerClassCount];
+    Page& m_page;
+    EventTargetSet m_targets[EventHandlerClassCount];
 };
 
 } // namespace WebCore

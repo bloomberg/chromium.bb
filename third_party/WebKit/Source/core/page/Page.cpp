@@ -43,6 +43,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/DragController.h"
+#include "core/page/EventHandlerRegistry.h"
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
 #include "core/page/PageLifecycleNotifier.h"
@@ -205,6 +206,7 @@ void Page::documentDetached(Document* document)
     m_contextMenuController->documentDetached(document);
     if (m_validationMessageClient)
         m_validationMessageClient->documentDetached(*document);
+    EventHandlerRegistry::from(*this)->documentDetached(*document);
 }
 
 bool Page::openedByDOM() const

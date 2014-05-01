@@ -13,7 +13,32 @@ PASS window.internals.scrollEventHandlerCount(document) is 0
 PASS window.internals.scrollEventHandlerCount(document) is 1
 PASS window.internals.scrollEventHandlerCount(document) is 1
 PASS window.internals.scrollEventHandlerCount(document) is 0
+Test that nested Documents' scroll handlers are properly tracked in their parent Document.
+PASS window.internals.scrollEventHandlerCount(document) is 1
+PASS window.internals.scrollEventHandlerCount(nestedDocument) is 2
+PASS window.internals.scrollEventHandlerCount(document) is 2
+PASS window.internals.scrollEventHandlerCount(nestedDocument) is 1
+PASS window.internals.scrollEventHandlerCount(document) is 1
+PASS window.internals.scrollEventHandlerCount(document) is 1
+Test that detaching a nested Document with handlers works properly.
+PASS window.internals.scrollEventHandlerCount(nestedDocument) is 1
+PASS window.internals.scrollEventHandlerCount(document) is 1
+PASS window.internals.scrollEventHandlerCount(document) is 0
+Test moving event listeners from an unattached document to an attached one
+PASS window.internals.scrollEventHandlerCount(doc) is 0
+PASS window.internals.scrollEventHandlerCount(document) is 0
+PASS window.internals.scrollEventHandlerCount(document) is 2
+PASS window.internals.scrollEventHandlerCount(document) is 2
+PASS window.internals.scrollEventHandlerCount(document) is 0
+Test moving event listeners from an attached document to an unattached one
+PASS window.internals.scrollEventHandlerCount(document) is 2
+PASS window.internals.scrollEventHandlerCount(document) is 0
+Test moving a scroll event listener between documents belonging to the same page
+PASS window.internals.scrollEventHandlerCount(document) is 1
+PASS window.internals.scrollEventHandlerCount(document) is 1
+PASS window.internals.scrollEventHandlerCount(document) is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

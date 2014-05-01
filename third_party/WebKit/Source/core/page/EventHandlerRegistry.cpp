@@ -3,35 +3,22 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/dom/EventHandlerRegistry.h"
+#include "core/page/EventHandlerRegistry.h"
 
-#include "core/dom/Document.h"
 #include "core/events/ThreadLocalEventNames.h"
-#include "core/events/WheelEvent.h"
-#include "core/frame/FrameHost.h"
-#include "core/frame/LocalFrame.h"
-#include "core/page/Chrome.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
 namespace WebCore {
 
-EventHandlerRegistry::HandlerState::HandlerState()
-{
-}
-
-EventHandlerRegistry::HandlerState::~HandlerState()
-{
-}
-
-EventHandlerRegistry::EventHandlerRegistry(Document& document)
-    : m_document(document)
+EventHandlerRegistry::EventHandlerRegistry(Page& page)
+    : m_page(page)
 {
 }
 
 EventHandlerRegistry::~EventHandlerRegistry()
 {
+    checkConsistency();
 }
 
 const char* EventHandlerRegistry::supplementName()
@@ -39,12 +26,12 @@ const char* EventHandlerRegistry::supplementName()
     return "EventHandlerRegistry";
 }
 
-EventHandlerRegistry* EventHandlerRegistry::from(Document& document)
+EventHandlerRegistry* EventHandlerRegistry::from(Page& page)
 {
-    EventHandlerRegistry* registry = static_cast<EventHandlerRegistry*>(DocumentSupplement::from(document, supplementName()));
+    EventHandlerRegistry* registry = static_cast<EventHandlerRegistry*>(WillBeHeapSupplement<Page>::from(page, supplementName()));
     if (!registry) {
-        registry = new EventHandlerRegistry(document);
-        DocumentSupplement::provideTo(document, supplementName(), adoptPtrWillBeNoop(registry));
+        registry = new EventHandlerRegistry(page);
+        Supplement<Page>::provideTo(page, supplementName(), adoptPtrWillBeNoop(registry));
     }
     return registry;
 }
@@ -53,6 +40,10 @@ bool EventHandlerRegistry::eventTypeToClass(const AtomicString& eventType, Event
 {
     if (eventType == EventTypeNames::scroll) {
         *result = ScrollEvent;
+#if ASSERT_ENABLED
+    } else if (eventType == EventTypeNames::load || eventType == EventTypeNames::mousemove || eventType == EventTypeNames::touchstart) {
+        *result = EventsForTesting;
+#endif
     } else {
         return false;
     }
@@ -61,40 +52,26 @@ bool EventHandlerRegistry::eventTypeToClass(const AtomicString& eventType, Event
 
 const EventTargetSet* EventHandlerRegistry::eventHandlerTargets(EventHandlerClass handlerClass) const
 {
-    return m_eventHandlers[handlerClass].targets.get();
+    checkConsistency();
+    return &m_targets[handlerClass];
 }
 
 bool EventHandlerRegistry::hasEventHandlers(EventHandlerClass handlerClass) const
 {
-    EventTargetSet* targets = m_eventHandlers[handlerClass].targets.get();
-    return targets && targets->size();
+    return m_targets[handlerClass].size();
 }
 
 bool EventHandlerRegistry::updateEventHandlerTargets(ChangeOperation op, EventHandlerClass handlerClass, EventTarget* target)
 {
-    EventTargetSet* targets = m_eventHandlers[handlerClass].targets.get();
+    EventTargetSet* targets = &m_targets[handlerClass];
     if (op == Add) {
-#if ASSERT_ENABLED
-        if (Node* node = target->toNode())
-            ASSERT(&node->document() == &m_document);
-#endif // ASSERT_ENABLED
-
-        if (!targets) {
-            m_eventHandlers[handlerClass].targets = adoptPtr(new EventTargetSet);
-            targets = m_eventHandlers[handlerClass].targets.get();
-        }
-
         if (!targets->add(target).isNewEntry) {
             // Just incremented refcount, no real change.
             return false;
         }
     } else {
-        // Note that we can't assert that |target| is in this document because
-        // it might be in the process of moving out of it.
         ASSERT(op == Remove || op == RemoveAll);
         ASSERT(op == RemoveAll || targets->contains(target));
-        if (!targets)
-            return false;
 
         if (op == RemoveAll) {
             if (!targets->contains(target))
@@ -112,21 +89,14 @@ bool EventHandlerRegistry::updateEventHandlerTargets(ChangeOperation op, EventHa
 
 void EventHandlerRegistry::updateEventHandlerInternal(ChangeOperation op, EventHandlerClass handlerClass, EventTarget* target)
 {
-    // After the document has stopped, all updates become no-ops.
-    if (!m_document.isActive()) {
-        return;
-    }
-
     bool hadHandlers = hasEventHandlers(handlerClass);
     updateEventHandlerTargets(op, handlerClass, target);
     bool hasHandlers = hasEventHandlers(handlerClass);
 
-    // Notify the parent document's registry if we added the first or removed
-    // the last handler.
-    if (hadHandlers != hasHandlers && !m_document.parentDocument()) {
-        // This is the root registry; notify clients accordingly.
+    if (hadHandlers != hasHandlers) {
         notifyHasHandlersChanged(handlerClass, hasHandlers);
     }
+    checkConsistency();
 }
 
 void EventHandlerRegistry::updateEventHandlerOfType(ChangeOperation op, const AtomicString& eventType, EventTarget* target)
@@ -157,42 +127,56 @@ void EventHandlerRegistry::didRemoveEventHandler(EventTarget& target, EventHandl
     updateEventHandlerInternal(Remove, handlerClass, &target);
 }
 
-void EventHandlerRegistry::didMoveFromOtherDocument(EventTarget& target, Document& oldDocument)
+void EventHandlerRegistry::didMoveIntoPage(EventTarget& target)
 {
-    EventHandlerRegistry* oldRegistry = EventHandlerRegistry::from(oldDocument);
-    for (size_t i = 0; i < EventHandlerClassCount; ++i) {
-        EventHandlerClass handlerClass = static_cast<EventHandlerClass>(i);
-        const EventTargetSet* targets = oldRegistry->eventHandlerTargets(handlerClass);
-        if (!targets)
-            continue;
-        for (unsigned count = targets->count(&target); count > 0; --count) {
-            oldRegistry->updateEventHandlerInternal(Remove, handlerClass, &target);
-            updateEventHandlerInternal(Add, handlerClass, &target);
-        }
-    }
+    updateAllEventHandlers(Add, target);
+}
+
+void EventHandlerRegistry::didMoveOutOfPage(EventTarget& target)
+{
+    updateAllEventHandlers(RemoveAll, target);
 }
 
 void EventHandlerRegistry::didRemoveAllEventHandlers(EventTarget& target)
 {
     for (size_t i = 0; i < EventHandlerClassCount; ++i) {
         EventHandlerClass handlerClass = static_cast<EventHandlerClass>(i);
-        const EventTargetSet* targets = eventHandlerTargets(handlerClass);
-        if (!targets)
-            continue;
         updateEventHandlerInternal(RemoveAll, handlerClass, &target);
+    }
+}
+
+void EventHandlerRegistry::updateAllEventHandlers(ChangeOperation op, EventTarget& target)
+{
+    if (!target.hasEventListeners())
+        return;
+
+    Vector<AtomicString> eventTypes = target.eventTypes();
+    for (size_t i = 0; i < eventTypes.size(); ++i) {
+        EventHandlerClass handlerClass;
+        if (!eventTypeToClass(eventTypes[i], &handlerClass))
+            continue;
+        if (op == RemoveAll) {
+            updateEventHandlerInternal(op, handlerClass, &target);
+            continue;
+        }
+        for (unsigned count = target.getEventListeners(eventTypes[i]).size(); count > 0; --count)
+            updateEventHandlerInternal(op, handlerClass, &target);
     }
 }
 
 void EventHandlerRegistry::notifyHasHandlersChanged(EventHandlerClass handlerClass, bool hasActiveHandlers)
 {
-    Page* page = m_document.page();
-    ScrollingCoordinator* scrollingCoordinator = page ? page->scrollingCoordinator() : 0;
+    ScrollingCoordinator* scrollingCoordinator = m_page.scrollingCoordinator();
 
     switch (handlerClass) {
     case ScrollEvent:
         if (scrollingCoordinator)
             scrollingCoordinator->updateHaveScrollEventHandlers();
         break;
+#if ASSERT_ENABLED
+    case EventsForTesting:
+        break;
+#endif
     default:
         ASSERT_NOT_REACHED();
         break;
@@ -206,17 +190,10 @@ void EventHandlerRegistry::trace(Visitor* visitor)
 
 void EventHandlerRegistry::clearWeakMembers(Visitor* visitor)
 {
-    // FIXME: Oilpan: This is pretty funky. The current code disables all modifications of the
-    // EventHandlerRegistry when the document becomes inactive. To keep that behavior we only
-    // perform weak processing of the registry when the document is active.
-    if (!m_document.isActive())
-        return;
     Vector<EventTarget*> deadNodeTargets;
     for (size_t i = 0; i < EventHandlerClassCount; ++i) {
         EventHandlerClass handlerClass = static_cast<EventHandlerClass>(i);
-        const EventTargetSet* targets = eventHandlerTargets(handlerClass);
-        if (!targets)
-            continue;
+        const EventTargetSet* targets = &m_targets[handlerClass];
         for (EventTargetSet::const_iterator it = targets->begin(); it != targets->end(); ++it) {
             Node* node = it->key->toNode();
             if (node && !visitor->isAlive(node))
@@ -225,6 +202,45 @@ void EventHandlerRegistry::clearWeakMembers(Visitor* visitor)
     }
     for (size_t i = 0; i < deadNodeTargets.size(); ++i)
         didRemoveAllEventHandlers(*deadNodeTargets[i]);
+}
+
+void EventHandlerRegistry::documentDetached(Document& document)
+{
+    // Remove all event targets under the detached document.
+    for (size_t handlerClassIndex = 0; handlerClassIndex < EventHandlerClassCount; ++handlerClassIndex) {
+        EventHandlerClass handlerClass = static_cast<EventHandlerClass>(handlerClassIndex);
+        Vector<EventTarget*> targetsToRemove;
+        const EventTargetSet* targets = &m_targets[handlerClass];
+        for (EventTargetSet::const_iterator iter = targets->begin(); iter != targets->end(); ++iter) {
+            if (Node* node = iter->key->toNode()) {
+                for (Document* doc = &node->document(); doc; doc = doc->ownerElement() ? &doc->ownerElement()->document() : 0) {
+                    if (doc == &document) {
+                        targetsToRemove.append(iter->key);
+                        break;
+                    }
+                }
+            }
+        }
+        for (size_t i = 0; i < targetsToRemove.size(); ++i)
+            updateEventHandlerInternal(RemoveAll, handlerClass, targetsToRemove[i]);
+    }
+}
+
+void EventHandlerRegistry::checkConsistency() const
+{
+#if ASSERT_ENABLED
+    for (size_t i = 0; i < EventHandlerClassCount; ++i) {
+        EventHandlerClass handlerClass = static_cast<EventHandlerClass>(i);
+        const EventTargetSet* targets = &m_targets[handlerClass];
+        for (EventTargetSet::const_iterator iter = targets->begin(); iter != targets->end(); ++iter) {
+            if (Node* node = iter->key->toNode()) {
+                // See the comment for |documentDetached| if either of these assertions fails.
+                ASSERT(node->document().page());
+                ASSERT(node->document().page() == &m_page);
+            }
+        }
+    }
+#endif // ASSERT_ENABLED
 }
 
 } // namespace WebCore
