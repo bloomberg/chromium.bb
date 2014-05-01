@@ -17,8 +17,13 @@
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using base::FilePath;
+using testing::Contains;
+using testing::Eq;
 
 class AppInfoPermissionsTabTest : public testing::Test {
  protected:
@@ -163,20 +168,11 @@ TEST_F(AppInfoPermissionsTabTest, RetainedFilePermissionsObtainedCorrectly) {
   apps::SavedFilesService* files_service =
       apps::SavedFilesService::Get(&profile);
   files_service->RegisterFileEntry(
-      app->id(),
-      "file_id_1",
-      base::FilePath(FILE_PATH_LITERAL("file_1.ext")),
-      false);
+      app->id(), "file_id_1", FilePath(FILE_PATH_LITERAL("file_1.ext")), false);
   files_service->RegisterFileEntry(
-      app->id(),
-      "file_id_2",
-      base::FilePath(FILE_PATH_LITERAL("file_2.ext")),
-      false);
+      app->id(), "file_id_2", FilePath(FILE_PATH_LITERAL("file_2.ext")), false);
   files_service->RegisterFileEntry(
-      app->id(),
-      "file_id_3",
-      base::FilePath(FILE_PATH_LITERAL("file_3.ext")),
-      false);
+      app->id(), "file_id_3", FilePath(FILE_PATH_LITERAL("file_3.ext")), false);
 
   // There should be 2 required permissions: fileSystem and
   // fileSystem.retainEntries.
@@ -187,15 +183,28 @@ TEST_F(AppInfoPermissionsTabTest, RetainedFilePermissionsObtainedCorrectly) {
 
   EXPECT_TRUE(tab.GetOptionalPermissions()->IsEmpty());
 
-  const std::vector<base::FilePath> retained_files =
-      tab.GetRetainedFilePermissions();
+  // Convert the list of FilePaths into a list of StringTypes for comparisons
+  // using Contains.
+  const std::vector<FilePath> retained_files = tab.GetRetainedFilePermissions();
+  std::vector<FilePath::StringType> retained_file_paths;
+  for (std::vector<FilePath>::const_iterator it = retained_files.begin();
+       it != retained_files.end();
+       it++) {
+    retained_file_paths.push_back(it->value());
+  }
+
+  // Since we have no guarantees on the order of retained files, make sure the
+  // list is the expected length and all required entries are present.
   EXPECT_EQ((size_t)3, retained_files.size());
-  ASSERT_EQ(base::FilePath::StringType(FILE_PATH_LITERAL("file_1.ext")),
-            retained_files[0].value());
-  ASSERT_EQ(base::FilePath::StringType(FILE_PATH_LITERAL("file_2.ext")),
-            retained_files[1].value());
-  ASSERT_EQ(base::FilePath::StringType(FILE_PATH_LITERAL("file_3.ext")),
-            retained_files[2].value());
+  EXPECT_THAT(
+      retained_file_paths,
+      Contains(Eq(FilePath::StringType(FILE_PATH_LITERAL("file_1.ext")))));
+  EXPECT_THAT(
+      retained_file_paths,
+      Contains(Eq(FilePath::StringType(FILE_PATH_LITERAL("file_2.ext")))));
+  EXPECT_THAT(
+      retained_file_paths,
+      Contains(Eq(FilePath::StringType(FILE_PATH_LITERAL("file_3.ext")))));
 
   const std::vector<base::string16> retained_file_messages =
       tab.GetRetainedFilePermissionMessages();
