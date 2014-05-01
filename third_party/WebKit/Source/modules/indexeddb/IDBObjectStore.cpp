@@ -56,9 +56,16 @@ IDBObjectStore::IDBObjectStore(const IDBObjectStoreMetadata& metadata, IDBTransa
     , m_deleted(false)
 {
     ASSERT(m_transaction);
+#if !ENABLE(OILPAN)
     // We pass a reference to this object before it can be adopted.
     relaxAdoptionRequirement();
+#endif
     ScriptWrappable::init(this);
+}
+
+void IDBObjectStore::trace(Visitor* visitor)
+{
+    visitor->trace(m_transaction);
 }
 
 ScriptValue IDBObjectStore::keyPath(ScriptState* scriptState) const

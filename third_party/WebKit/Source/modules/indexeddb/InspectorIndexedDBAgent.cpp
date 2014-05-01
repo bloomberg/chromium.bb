@@ -209,13 +209,13 @@ static PassRefPtr<IDBTransaction> transactionForDatabase(ExecutionContext* execu
     return idbTransaction;
 }
 
-static PassRefPtr<IDBObjectStore> objectStoreForTransaction(IDBTransaction* idbTransaction, const String& objectStoreName)
+static PassRefPtrWillBeRawPtr<IDBObjectStore> objectStoreForTransaction(IDBTransaction* idbTransaction, const String& objectStoreName)
 {
     TrackExceptionState exceptionState;
-    RefPtr<IDBObjectStore> idbObjectStore = idbTransaction->objectStore(objectStoreName, exceptionState);
+    RefPtrWillBeRawPtr<IDBObjectStore> idbObjectStore = idbTransaction->objectStore(objectStoreName, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
-    return idbObjectStore;
+    return idbObjectStore.release();
 }
 
 static PassRefPtr<IDBIndex> indexForObjectStore(IDBObjectStore* idbObjectStore, const String& indexName)
@@ -497,7 +497,7 @@ public:
             m_requestCallback->sendFailure("Could not get transaction");
             return;
         }
-        RefPtr<IDBObjectStore> idbObjectStore = objectStoreForTransaction(idbTransaction.get(), m_objectStoreName);
+        RefPtrWillBeRawPtr<IDBObjectStore> idbObjectStore = objectStoreForTransaction(idbTransaction.get(), m_objectStoreName);
         if (!idbObjectStore) {
             m_requestCallback->sendFailure("Could not get object store");
             return;
@@ -735,7 +735,7 @@ public:
             m_requestCallback->sendFailure("Could not get transaction");
             return;
         }
-        RefPtr<IDBObjectStore> idbObjectStore = objectStoreForTransaction(idbTransaction.get(), m_objectStoreName);
+        RefPtrWillBeRawPtr<IDBObjectStore> idbObjectStore = objectStoreForTransaction(idbTransaction.get(), m_objectStoreName);
         if (!idbObjectStore) {
             m_requestCallback->sendFailure("Could not get object store");
             return;

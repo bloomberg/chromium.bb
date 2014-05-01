@@ -24,6 +24,7 @@
  */
 
 [
+    WillBeGarbageCollected
 ] interface IDBObjectStore {
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString name;
     [CallWith=ScriptState] readonly attribute any keyPath;

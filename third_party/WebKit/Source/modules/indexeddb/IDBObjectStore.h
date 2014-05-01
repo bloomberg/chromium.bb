@@ -49,13 +49,14 @@ class DOMStringList;
 class IDBAny;
 class ExceptionState;
 
-class IDBObjectStore : public ScriptWrappable, public RefCounted<IDBObjectStore> {
+class IDBObjectStore : public RefCountedWillBeGarbageCollectedFinalized<IDBObjectStore>, public ScriptWrappable {
 public:
-    static PassRefPtr<IDBObjectStore> create(const IDBObjectStoreMetadata& metadata, IDBTransaction* transaction)
+    static PassRefPtrWillBeRawPtr<IDBObjectStore> create(const IDBObjectStoreMetadata& metadata, IDBTransaction* transaction)
     {
-        return adoptRef(new IDBObjectStore(metadata, transaction));
+        return adoptRefWillBeNoop(new IDBObjectStore(metadata, transaction));
     }
     ~IDBObjectStore() { }
+    void trace(Visitor*);
 
     // Implement the IDBObjectStore IDL
     int64_t id() const { return m_metadata.id; }
@@ -117,7 +118,7 @@ private:
     }
 
     IDBObjectStoreMetadata m_metadata;
-    RefPtrWillBePersistent<IDBTransaction> m_transaction;
+    RefPtrWillBeMember<IDBTransaction> m_transaction;
     bool m_deleted;
 
     typedef HashMap<String, RefPtr<IDBIndex> > IDBIndexMap;

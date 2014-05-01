@@ -52,7 +52,7 @@ public:
 
     // Implement the IDL
     const String& name() const { return m_metadata.name; }
-    PassRefPtr<IDBObjectStore> objectStore() const { return m_objectStore; }
+    IDBObjectStore* objectStore() const { return m_objectStore.get(); }
     ScriptValue keyPath(ScriptState*) const;
     bool unique() const { return m_metadata.unique; }
     bool multiEntry() const { return m_metadata.multiEntry; }
@@ -77,7 +77,7 @@ private:
     PassRefPtrWillBeRawPtr<IDBRequest> getInternal(ExecutionContext*, const ScriptValue& key, ExceptionState&, bool keyOnly);
 
     IDBIndexMetadata m_metadata;
-    RefPtr<IDBObjectStore> m_objectStore;
+    RefPtrWillBePersistent<IDBObjectStore> m_objectStore;
     RefPtr<IDBTransaction> m_transaction;
     bool m_deleted;
 };

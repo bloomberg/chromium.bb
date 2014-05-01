@@ -112,7 +112,7 @@ protected:
     IDBCursor(PassOwnPtr<blink::WebIDBCursor>, blink::WebIDBCursor::Direction, IDBRequest*, IDBAny* source, IDBTransaction*);
 
 private:
-    PassRefPtr<IDBObjectStore> effectiveObjectStore() const;
+    PassRefPtrWillBeRawPtr<IDBObjectStore> effectiveObjectStore() const;
     void handleBlobAcks();
 
 #if !ENABLE(OILPAN)

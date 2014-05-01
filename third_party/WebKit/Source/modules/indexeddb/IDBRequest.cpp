@@ -319,7 +319,7 @@ void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> valueBuffer, PassOwnPtr<Vect
 }
 
 #ifndef NDEBUG
-static PassRefPtr<IDBObjectStore> effectiveObjectStore(PassRefPtrWillBeRawPtr<IDBAny> source)
+static PassRefPtrWillBeRawPtr<IDBObjectStore> effectiveObjectStore(PassRefPtrWillBeRawPtr<IDBAny> source)
 {
     if (source->type() == IDBAny::IDBObjectStoreType)
         return source->idbObjectStore();

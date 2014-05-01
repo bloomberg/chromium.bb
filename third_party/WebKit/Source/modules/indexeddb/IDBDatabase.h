@@ -69,8 +69,8 @@ public:
     ScriptValue version(ScriptState*) const;
     PassRefPtr<DOMStringList> objectStoreNames() const;
 
-    PassRefPtr<IDBObjectStore> createObjectStore(const String& name, const Dictionary&, ExceptionState&);
-    PassRefPtr<IDBObjectStore> createObjectStore(const String& name, const IDBKeyPath&, bool autoIncrement, ExceptionState&);
+    PassRefPtrWillBeRawPtr<IDBObjectStore> createObjectStore(const String& name, const Dictionary&, ExceptionState&);
+    PassRefPtrWillBeRawPtr<IDBObjectStore> createObjectStore(const String& name, const IDBKeyPath&, bool autoIncrement, ExceptionState&);
     PassRefPtrWillBeRawPtr<IDBTransaction> transaction(ExecutionContext* context, PassRefPtr<DOMStringList> scope, const String& mode, ExceptionState& exceptionState) { return transaction(context, *scope, mode, exceptionState); }
     PassRefPtrWillBeRawPtr<IDBTransaction> transaction(ExecutionContext*, const Vector<String>&, const String& mode, ExceptionState&);
     PassRefPtrWillBeRawPtr<IDBTransaction> transaction(ExecutionContext*, const String&, const String& mode, ExceptionState&);

@@ -137,7 +137,7 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBCursor::update(ExecutionContext* execution
         return nullptr;
     }
 
-    RefPtr<IDBObjectStore> objectStore = effectiveObjectStore();
+    RefPtrWillBeRawPtr<IDBObjectStore> objectStore = effectiveObjectStore();
     const IDBKeyPath& keyPath = objectStore->metadata().keyPath;
     const bool usesInLineKeys = !keyPath.isNull();
     if (usesInLineKeys) {
@@ -342,7 +342,7 @@ ScriptValue IDBCursor::value(ScriptState* scriptState)
 {
     ASSERT(isCursorWithValue());
 
-    RefPtr<IDBObjectStore> objectStore = effectiveObjectStore();
+    RefPtrWillBeRawPtr<IDBObjectStore> objectStore = effectiveObjectStore();
     const IDBObjectStoreMetadata& metadata = objectStore->metadata();
     RefPtrWillBeRawPtr<IDBAny> value;
     if (metadata.autoIncrement && !metadata.keyPath.isNull()) {
@@ -383,7 +383,7 @@ void IDBCursor::setValueReady(PassRefPtrWillBeRawPtr<IDBKey> key, PassRefPtrWill
     m_gotValue = true;
 }
 
-PassRefPtr<IDBObjectStore> IDBCursor::effectiveObjectStore() const
+PassRefPtrWillBeRawPtr<IDBObjectStore> IDBCursor::effectiveObjectStore() const
 {
     if (m_source->type() == IDBAny::IDBObjectStoreType)
         return m_source->idbObjectStore();
