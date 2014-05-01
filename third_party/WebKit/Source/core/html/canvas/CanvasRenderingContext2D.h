@@ -149,8 +149,6 @@ public:
 
     void beginPath();
 
-    PassRefPtr<Path2D> currentPath();
-    void setCurrentPath(Path2D*);
     void fill(const String& winding = "nonzero");
     void fill(Path2D*, const String& winding = "nonzero");
     void stroke();

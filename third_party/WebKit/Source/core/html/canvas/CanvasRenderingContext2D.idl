@@ -68,8 +68,6 @@ enum CanvasWindingRule { "nonzero", "evenodd" };
 
     void beginPath();
 
-    attribute Path2D currentPath;
-
     // FIXME: Simplify these using optional CanvasWindingRule once crbug.com/339000 gets fixed.
     void fill();
     [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable] void fill(Path2D path);

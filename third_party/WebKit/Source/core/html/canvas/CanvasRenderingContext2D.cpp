@@ -934,18 +934,6 @@ void CanvasRenderingContext2D::beginPath()
     m_path.clear();
 }
 
-PassRefPtr<Path2D> CanvasRenderingContext2D::currentPath()
-{
-    return Path2D::create(m_path);
-}
-
-void CanvasRenderingContext2D::setCurrentPath(Path2D* path)
-{
-    if (!path)
-        return;
-    m_path = path->path();
-}
-
 static bool validateRectForCanvas(float& x, float& y, float& width, float& height)
 {
     if (!std::isfinite(x) | !std::isfinite(y) | !std::isfinite(width) | !std::isfinite(height))
