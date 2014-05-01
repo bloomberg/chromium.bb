@@ -14,7 +14,7 @@
 #
 
 class Kind(object):
-  def __init__(self, spec = None):
+  def __init__(self, spec=None):
     self.spec = spec
     self.parent_kind = None
 
@@ -62,6 +62,7 @@ PRIMITIVES = (
 
 class Constant(object):
   def __init__(self, module, enum, field):
+    self.module = module
     self.namespace = module.namespace
     self.parent_kind = enum.parent_kind
     self.name = [enum.name, field.name]
@@ -74,7 +75,7 @@ class Constant(object):
 
 
 class Field(object):
-  def __init__(self, name = None, kind = None, ordinal = None, default = None):
+  def __init__(self, name=None, kind=None, ordinal=None, default=None):
     self.name = name
     self.kind = kind
     self.ordinal = ordinal
@@ -82,8 +83,9 @@ class Field(object):
 
 
 class Struct(Kind):
-  def __init__(self, name = None):
+  def __init__(self, name=None, module=None):
     self.name = name
+    self.module = module
     self.imported_from = None
     if name != None:
       spec = 'x:' + name
@@ -92,14 +94,14 @@ class Struct(Kind):
     Kind.__init__(self, spec)
     self.fields = []
 
-  def AddField(self, name, kind, ordinal = None, default = None):
+  def AddField(self, name, kind, ordinal=None, default=None):
     field = Field(name, kind, ordinal, default)
     self.fields.append(field)
     return field
 
 
 class Array(Kind):
-  def __init__(self, kind = None):
+  def __init__(self, kind=None):
     self.kind = kind
     if kind != None:
       Kind.__init__(self, 'a:' + kind.spec)
@@ -108,7 +110,7 @@ class Array(Kind):
 
 
 class Parameter(object):
-  def __init__(self, name = None, kind = None, ordinal = None, default = None):
+  def __init__(self, name=None, kind=None, ordinal=None, default=None):
     self.name = name
     self.ordinal = ordinal
     self.kind = kind
@@ -116,18 +118,18 @@ class Parameter(object):
 
 
 class Method(object):
-  def __init__(self, name = None, ordinal = None):
+  def __init__(self, name=None, ordinal=None):
     self.name = name
     self.ordinal = ordinal
     self.parameters = []
     self.response_parameters = None
 
-  def AddParameter(self, name, kind, ordinal = None, default = None):
+  def AddParameter(self, name, kind, ordinal=None, default=None):
     parameter = Parameter(name, kind, ordinal, default)
     self.parameters.append(parameter)
     return parameter
 
-  def AddResponseParameter(self, name, kind, ordinal = None, default = None):
+  def AddResponseParameter(self, name, kind, ordinal=None, default=None):
     if self.response_parameters == None:
       self.response_parameters = []
     parameter = Parameter(name, kind, ordinal, default)
@@ -136,7 +138,8 @@ class Method(object):
 
 
 class Interface(Kind):
-  def __init__(self, name = None, peer = None):
+  def __init__(self, name=None, peer=None, module=None):
+    self.module = module
     self.name = name
     if name != None:
       spec = 'x:' + name
@@ -146,20 +149,21 @@ class Interface(Kind):
     self.peer = peer
     self.methods = []
 
-  def AddMethod(self, name, ordinal = None):
+  def AddMethod(self, name, ordinal=None):
     method = Method(name, ordinal)
     self.methods.append(method)
     return method
 
 
 class EnumField(object):
-  def __init__(self, name = None, value = None):
+  def __init__(self, name=None, value=None):
     self.name = name
     self.value = value
 
 
 class Enum(Kind):
-  def __init__(self, name = None):
+  def __init__(self, name=None, module=None):
+    self.module = module
     self.name = name
     self.imported_from = None
     if name != None:
@@ -171,7 +175,7 @@ class Enum(Kind):
 
 
 class Module(object):
-  def __init__(self, name = None, namespace = None):
+  def __init__(self, name=None, namespace=None):
     self.name = name
     self.path = name
     self.namespace = namespace
@@ -179,11 +183,11 @@ class Module(object):
     self.interfaces = []
 
   def AddInterface(self, name):
-    interface = Interface(name)
+    interface=Interface(name, module=self);
     self.interfaces.append(interface)
     return interface
 
   def AddStruct(self, name):
-    struct = Struct(name)
+    struct=Struct(name, module=self)
     self.structs.append(struct)
     return struct

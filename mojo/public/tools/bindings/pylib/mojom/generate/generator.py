@@ -13,7 +13,7 @@ import pack
 def GetStructFromMethod(interface, method):
   """Converts a method's parameters into the fields of a struct."""
   params_class = "%s_%s_Params" % (interface.name, method.name)
-  struct = mojom.Struct(params_class)
+  struct = mojom.Struct(params_class, module=interface.module)
   for param in method.parameters:
     struct.AddField(param.name, param.kind, param.ordinal)
   struct.packed = pack.PackedStruct(struct)
@@ -22,7 +22,7 @@ def GetStructFromMethod(interface, method):
 def GetResponseStructFromMethod(interface, method):
   """Converts a method's response_parameters into the fields of a struct."""
   params_class = "%s_%s_ResponseParams" % (interface.name, method.name)
-  struct = mojom.Struct(params_class)
+  struct = mojom.Struct(params_class, module=interface.module)
   for param in method.response_parameters:
     struct.AddField(param.name, param.kind, param.ordinal)
   struct.packed = pack.PackedStruct(struct)

@@ -130,7 +130,7 @@ def StructToData(struct):
   }
 
 def StructFromData(module, data):
-  struct = mojom.Struct()
+  struct = mojom.Struct(module=module)
   struct.name = data['name']
   struct.spec = 'x:' + module.namespace + '.' + struct.name
   module.kinds[struct.spec] = struct
@@ -227,7 +227,7 @@ def InterfaceToData(interface):
   }
 
 def InterfaceFromData(module, data):
-  interface = mojom.Interface()
+  interface = mojom.Interface(module=module)
   interface.name = data['name']
   interface.spec = 'x:' + module.namespace + '.' + interface.name
   interface.peer = data['peer'] if data.has_key('peer') else None
@@ -252,7 +252,7 @@ def EnumFieldFromData(module, enum, data, parent_kind):
   return field
 
 def EnumFromData(module, data, parent_kind):
-  enum = mojom.Enum()
+  enum = mojom.Enum(module=module)
   enum.name = data['name']
   name = enum.name
   if parent_kind:
