@@ -1033,6 +1033,8 @@ crbug.com/352705 [ Win Debug ] virtual/threaded/animations/sample-on-last-keyfra
 crbug.com/352705 [ Linux ] virtual/threaded/animations/sample-on-last-keyframe.html [ Timeout Pass ]
 crbug.com/352801 [ Mavericks ] http/tests/security/link-crossorigin-stylesheet-no-cors.html [ Pass Failure ]
 crbug.com/352856 [ Mac ] svg/batik/text/textPosition2.svg [ Pass Failure ]
+crbug.com/352856 [ Mac ] svg/batik/text/textPosition.svg [ Failure Pass ]
+crbug.com/352856 [ Mac ] svg/batik/text/xmlSpace.svg [ Failure Pass ]
 
 crbug.com/353186 [ Win Debug ] http/tests/security/webgl-remote-read-remote-image-allowed-with-credentials.html [ Pass Timeout ]
 crbug.com/353208 fast/files/workers/worker-read-blob-async-crash.html [ Pass Crash Timeout ]
