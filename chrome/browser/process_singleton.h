@@ -24,7 +24,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "ui/gfx/native_widget_types.h"
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
 #include "base/files/scoped_temp_dir.h"
 #endif
 
@@ -89,7 +89,7 @@ class ProcessSingleton : public base::NonThreadSafe {
   // Clear any lock state during shutdown.
   void Cleanup();
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
   static void DisablePromptForTesting();
 #endif
 
@@ -100,7 +100,7 @@ class ProcessSingleton : public base::NonThreadSafe {
   // On Windows, Create() has to be called before this.
   NotifyResult NotifyOtherProcess();
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
   // Exposed for testing.  We use a timeout on Linux, and in tests we want
   // this timeout to be short.
   NotifyResult NotifyOtherProcessWithTimeout(
@@ -116,11 +116,9 @@ class ProcessSingleton : public base::NonThreadSafe {
 #endif
 
  private:
-#if !defined(OS_MACOSX)
   // Timeout for the current browser process to respond. 20 seconds should be
-  // enough. It's only used in Windows and Linux implementations.
+  // enough.
   static const int kTimeoutInSeconds = 20;
-#endif
 
   NotificationCallback notification_callback_;  // Handler for notifications.
 
@@ -132,7 +130,7 @@ class ProcessSingleton : public base::NonThreadSafe {
   bool is_virtualized_;  // Stuck inside Microsoft Softricity VM environment.
   HANDLE lock_file_;
   base::FilePath user_data_dir_;
-#elif defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#elif defined(OS_POSIX) && !defined(OS_ANDROID)
   // Return true if the given pid is one of our child processes.
   // Assumes that the current pid is the root of all pids of the current
   // instance.
@@ -171,14 +169,6 @@ class ProcessSingleton : public base::NonThreadSafe {
   // because it posts messages between threads.
   class LinuxWatcher;
   scoped_refptr<LinuxWatcher> watcher_;
-#elif defined(OS_MACOSX)
-  // Path in file system to the lock.
-  base::FilePath lock_path_;
-
-  // File descriptor associated with the lockfile, valid between
-  // |Create()| and |Cleanup()|.  Two instances cannot have a lock on
-  // the same file at the same time.
-  int lock_fd_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ProcessSingleton);

@@ -1,9 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/process_singleton.h"
 
+#include <fcntl.h>
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -14,9 +15,11 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
@@ -31,7 +34,7 @@ using content::BrowserThread;
 
 namespace {
 
-class ProcessSingletonLinuxTest : public testing::Test {
+class ProcessSingletonPosixTest : public testing::Test {
  public:
   // A ProcessSingleton exposing some protected methods for testing.
   class TestableProcessSingleton : public ProcessSingleton {
@@ -58,7 +61,7 @@ class ProcessSingletonLinuxTest : public testing::Test {
     }
   };
 
-  ProcessSingletonLinuxTest()
+  ProcessSingletonPosixTest()
       : kill_callbacks_(0),
         io_thread_(BrowserThread::IO),
         wait_event_(true, false),
@@ -89,7 +92,7 @@ class ProcessSingletonLinuxTest : public testing::Test {
     if (process_singleton_on_thread_) {
       worker_thread_->message_loop()->PostTask(
           FROM_HERE,
-          base::Bind(&ProcessSingletonLinuxTest::DestructProcessSingleton,
+          base::Bind(&ProcessSingletonPosixTest::DestructProcessSingleton,
                      base::Unretained(this)));
 
       scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
@@ -108,7 +111,7 @@ class ProcessSingletonLinuxTest : public testing::Test {
 
     worker_thread_->message_loop()->PostTask(
        FROM_HERE,
-       base::Bind(&ProcessSingletonLinuxTest::
+       base::Bind(&ProcessSingletonPosixTest::
                       CreateProcessSingletonInternal,
                   base::Unretained(this)));
 
@@ -119,6 +122,35 @@ class ProcessSingletonLinuxTest : public testing::Test {
 
   TestableProcessSingleton* CreateProcessSingleton() {
     return new TestableProcessSingleton(temp_dir_.path());
+  }
+
+  void VerifyFiles() {
+    struct stat statbuf;
+    ASSERT_EQ(0, lstat(lock_path_.value().c_str(), &statbuf));
+    ASSERT_TRUE(S_ISLNK(statbuf.st_mode));
+    char buf[PATH_MAX];
+    ssize_t len = readlink(lock_path_.value().c_str(), buf, PATH_MAX);
+    ASSERT_GT(len, 0);
+
+    ASSERT_EQ(0, lstat(socket_path_.value().c_str(), &statbuf));
+    ASSERT_TRUE(S_ISLNK(statbuf.st_mode));
+
+    len = readlink(socket_path_.value().c_str(), buf, PATH_MAX);
+    ASSERT_GT(len, 0);
+    base::FilePath socket_target_path = base::FilePath(std::string(buf, len));
+
+    ASSERT_EQ(0, lstat(socket_target_path.value().c_str(), &statbuf));
+    ASSERT_TRUE(S_ISSOCK(statbuf.st_mode));
+
+    len = readlink(cookie_path_.value().c_str(), buf, PATH_MAX);
+    ASSERT_GT(len, 0);
+    std::string cookie(buf, len);
+
+    base::FilePath remote_cookie_path = socket_target_path.DirName().
+        Append(chrome::kSingletonCookieFilename);
+    len = readlink(remote_cookie_path.value().c_str(), buf, PATH_MAX);
+    ASSERT_GT(len, 0);
+    EXPECT_EQ(cookie, std::string(buf, len));
   }
 
   ProcessSingleton::NotifyResult NotifyOtherProcess(
@@ -132,7 +164,7 @@ class ProcessSingletonLinuxTest : public testing::Test {
       process_singleton->OverrideCurrentPidForTesting(
           base::GetCurrentProcId() + 1);
       process_singleton->OverrideKillCallbackForTesting(
-          base::Bind(&ProcessSingletonLinuxTest::KillCallback,
+          base::Bind(&ProcessSingletonPosixTest::KillCallback,
                      base::Unretained(this)));
     }
 
@@ -172,7 +204,7 @@ class ProcessSingletonLinuxTest : public testing::Test {
   void BlockWorkerThread() {
     worker_thread_->message_loop()->PostTask(
         FROM_HERE,
-        base::Bind(&ProcessSingletonLinuxTest::BlockThread,
+        base::Bind(&ProcessSingletonPosixTest::BlockThread,
                    base::Unretained(this)));
   }
 
@@ -219,42 +251,17 @@ class ProcessSingletonLinuxTest : public testing::Test {
 
 }  // namespace
 
-// Test if the socket file and symbol link created by ProcessSingletonLinux
+// Test if the socket file and symbol link created by ProcessSingletonPosix
 // are valid.
 // If this test flakes, use http://crbug.com/74554.
-TEST_F(ProcessSingletonLinuxTest, CheckSocketFile) {
+TEST_F(ProcessSingletonPosixTest, CheckSocketFile) {
   CreateProcessSingletonOnThread();
-  struct stat statbuf;
-  ASSERT_EQ(0, lstat(lock_path_.value().c_str(), &statbuf));
-  ASSERT_TRUE(S_ISLNK(statbuf.st_mode));
-  char buf[PATH_MAX];
-  ssize_t len = readlink(lock_path_.value().c_str(), buf, PATH_MAX);
-  ASSERT_GT(len, 0);
-
-  ASSERT_EQ(0, lstat(socket_path_.value().c_str(), &statbuf));
-  ASSERT_TRUE(S_ISLNK(statbuf.st_mode));
-
-  len = readlink(socket_path_.value().c_str(), buf, PATH_MAX);
-  ASSERT_GT(len, 0);
-  base::FilePath socket_target_path = base::FilePath(std::string(buf, len));
-
-  ASSERT_EQ(0, lstat(socket_target_path.value().c_str(), &statbuf));
-  ASSERT_TRUE(S_ISSOCK(statbuf.st_mode));
-
-  len = readlink(cookie_path_.value().c_str(), buf, PATH_MAX);
-  ASSERT_GT(len, 0);
-  std::string cookie(buf, len);
-
-  base::FilePath remote_cookie_path = socket_target_path.DirName().
-      Append(chrome::kSingletonCookieFilename);
-  len = readlink(remote_cookie_path.value().c_str(), buf, PATH_MAX);
-  ASSERT_GT(len, 0);
-  EXPECT_EQ(cookie, std::string(buf, len));
+  VerifyFiles();
 }
 
 // TODO(james.su@gmail.com): port following tests to Windows.
 // Test success case of NotifyOtherProcess().
-TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessSuccess) {
+TEST_F(ProcessSingletonPosixTest, NotifyOtherProcessSuccess) {
   CreateProcessSingletonOnThread();
   EXPECT_EQ(ProcessSingleton::PROCESS_NOTIFIED,
             NotifyOtherProcess(true, TestTimeouts::action_timeout()));
@@ -262,7 +269,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessSuccess) {
 }
 
 // Test failure case of NotifyOtherProcess().
-TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessFailure) {
+TEST_F(ProcessSingletonPosixTest, NotifyOtherProcessFailure) {
   CreateProcessSingletonOnThread();
 
   BlockWorkerThread();
@@ -275,7 +282,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessFailure) {
 
 // Test that we don't kill ourselves by accident if a lockfile with the same pid
 // happens to exist.
-TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessNoSuicide) {
+TEST_F(ProcessSingletonPosixTest, NotifyOtherProcessNoSuicide) {
   CreateProcessSingletonOnThread();
   // Replace lockfile with one containing our own pid.
   EXPECT_EQ(0, unlink(lock_path_.value().c_str()));
@@ -296,7 +303,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessNoSuicide) {
 
 // Test that we can still notify a process on the same host even after the
 // hostname changed.
-TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessHostChanged) {
+TEST_F(ProcessSingletonPosixTest, NotifyOtherProcessHostChanged) {
   CreateProcessSingletonOnThread();
   EXPECT_EQ(0, unlink(lock_path_.value().c_str()));
   EXPECT_EQ(0, symlink("FAKEFOOHOST-1234", lock_path_.value().c_str()));
@@ -308,7 +315,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessHostChanged) {
 
 // Test that we fail when lock says process is on another host and we can't
 // notify it over the socket.
-TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessDifferingHost) {
+TEST_F(ProcessSingletonPosixTest, NotifyOtherProcessDifferingHost) {
   CreateProcessSingletonOnThread();
 
   BlockWorkerThread();
@@ -326,7 +333,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessDifferingHost) {
 
 // Test that we fail when lock says process is on another host and we can't
 // notify it over the socket.
-TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessOrCreate_DifferingHost) {
+TEST_F(ProcessSingletonPosixTest, NotifyOtherProcessOrCreate_DifferingHost) {
   CreateProcessSingletonOnThread();
 
   BlockWorkerThread();
@@ -344,7 +351,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessOrCreate_DifferingHost) {
 }
 
 // Test that Create fails when another browser is using the profile directory.
-TEST_F(ProcessSingletonLinuxTest, CreateFailsWithExistingBrowser) {
+TEST_F(ProcessSingletonPosixTest, CreateFailsWithExistingBrowser) {
   CreateProcessSingletonOnThread();
 
   scoped_ptr<TestableProcessSingleton> process_singleton(
@@ -355,7 +362,7 @@ TEST_F(ProcessSingletonLinuxTest, CreateFailsWithExistingBrowser) {
 
 // Test that Create fails when another browser is using the profile directory
 // but with the old socket location.
-TEST_F(ProcessSingletonLinuxTest, CreateChecksCompatibilitySocket) {
+TEST_F(ProcessSingletonPosixTest, CreateChecksCompatibilitySocket) {
   CreateProcessSingletonOnThread();
   scoped_ptr<TestableProcessSingleton> process_singleton(
       CreateProcessSingleton());
@@ -376,7 +383,7 @@ TEST_F(ProcessSingletonLinuxTest, CreateChecksCompatibilitySocket) {
 
 // Test that we fail when lock says process is on another host and we can't
 // notify it over the socket before of a bad cookie.
-TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessOrCreate_BadCookie) {
+TEST_F(ProcessSingletonPosixTest, NotifyOtherProcessOrCreate_BadCookie) {
   CreateProcessSingletonOnThread();
   // Change the cookie.
   EXPECT_EQ(0, unlink(cookie_path_.value().c_str()));
@@ -391,3 +398,29 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessOrCreate_BadCookie) {
             NotifyOtherProcessOrCreate(url, TestTimeouts::action_timeout()));
 }
 
+#if defined(OS_MACOSX)
+// Test that if there is an existing lock file, and we could not flock()
+// it, then exit.
+TEST_F(ProcessSingletonPosixTest, CreateRespectsOldMacLock) {
+  scoped_ptr<TestableProcessSingleton> process_singleton(
+      CreateProcessSingleton());
+  base::ScopedFD lock_fd(HANDLE_EINTR(
+      open(lock_path_.value().c_str(), O_RDWR | O_CREAT | O_EXLOCK, 0644)));
+  ASSERT_TRUE(lock_fd.is_valid());
+  EXPECT_FALSE(process_singleton->Create());
+  base::File::Info info;
+  EXPECT_TRUE(base::GetFileInfo(lock_path_, &info));
+  EXPECT_FALSE(info.is_directory);
+  EXPECT_FALSE(info.is_symbolic_link);
+}
+
+// Test that if there is an existing lock file, and it's not locked, we replace
+// it.
+TEST_F(ProcessSingletonPosixTest, CreateReplacesOldMacLock) {
+  scoped_ptr<TestableProcessSingleton> process_singleton(
+      CreateProcessSingleton());
+  EXPECT_EQ(0, base::WriteFile(lock_path_, "", 0));
+  EXPECT_TRUE(process_singleton->Create());
+  VerifyFiles();
+}
+#endif  // defined(OS_MACOSX)

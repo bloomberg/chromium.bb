@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,13 +74,16 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/ui/process_singleton_dialog_linux.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_LINUX)
+#include "chrome/browser/ui/process_singleton_dialog_linux.h"
+#endif
 
 #if defined(TOOLKIT_VIEWS) && !defined(OS_CHROMEOS)
 #include "ui/views/linux_ui/linux_ui.h"
@@ -298,14 +301,24 @@ bool DisplayProfileInUseError(const base::FilePath& lock_path,
                               const std::string& hostname,
                               int pid) {
   base::string16 error = l10n_util::GetStringFUTF16(
-      IDS_PROFILE_IN_USE_LINUX,
+      IDS_PROFILE_IN_USE_POSIX,
       base::IntToString16(pid),
       base::ASCIIToUTF16(hostname));
+  LOG(ERROR) << error;
+
+  if (g_disable_prompt)
+    return false;
+
+#if defined(OS_LINUX)
   base::string16 relaunch_button_text = l10n_util::GetStringUTF16(
       IDS_PROFILE_IN_USE_LINUX_RELAUNCH);
-  LOG(ERROR) << base::SysWideToNativeMB(base::UTF16ToWide(error)).c_str();
-  if (!g_disable_prompt)
-    return ShowProcessSingletonDialog(error, relaunch_button_text);
+  return ShowProcessSingletonDialog(error, relaunch_button_text);
+#elif defined(OS_MACOSX)
+  // On Mac, always usurp the lock.
+  return true;
+#endif
+
+  NOTREACHED();
   return false;
 }
 
@@ -392,6 +405,41 @@ bool ConnectSocket(ScopedSocket* socket,
     return false;
   }
 }
+
+#if defined(OS_MACOSX)
+bool ReplaceOldSingletonLock(const base::FilePath& symlink_content,
+                             const base::FilePath& lock_path) {
+  // Try taking an flock(2) on the file. Failure means the lock is taken so we
+  // should quit.
+  base::ScopedFD lock_fd(HANDLE_EINTR(
+      open(lock_path.value().c_str(), O_RDWR | O_CREAT | O_SYMLINK, 0644)));
+  if (!lock_fd.is_valid()) {
+    PLOG(ERROR) << "Could not open singleton lock";
+    return false;
+  }
+
+  int rc = HANDLE_EINTR(flock(lock_fd.get(), LOCK_EX | LOCK_NB));
+  if (rc == -1) {
+    if (errno == EWOULDBLOCK) {
+      LOG(ERROR) << "Singleton lock held by old process.";
+    } else {
+      PLOG(ERROR) << "Error locking singleton lock";
+    }
+    return false;
+  }
+
+  // Successfully taking the lock means we can replace it with the a new symlink
+  // lock. We never flock() the lock file from now on. I.e. we assume that an
+  // old version of Chrome will not run with the same user data dir after this
+  // version has run.
+  if (!base::DeleteFile(lock_path, false)) {
+    PLOG(ERROR) << "Could not delete old singleton lock.";
+    return false;
+  }
+
+  return SymlinkPath(symlink_content, lock_path);
+}
+#endif  // defined(OS_MACOSX)
 
 }  // namespace
 
@@ -883,9 +931,21 @@ bool ProcessSingleton::Create() {
   // Create symbol link before binding the socket, to ensure only one instance
   // can have the socket open.
   if (!SymlinkPath(symlink_content, lock_path_)) {
-      // If we failed to create the lock, most likely another instance won the
-      // startup race.
+    // TODO(jackhou): Remove this case once this code is stable on Mac.
+    // http://crbug.com/367612
+#if defined(OS_MACOSX)
+    // On Mac, an existing non-symlink lock file means the lock could be held by
+    // the old process singleton code. If we can successfully replace the lock,
+    // continue as normal.
+    if (base::IsLink(lock_path_) ||
+        !ReplaceOldSingletonLock(symlink_content, lock_path_)) {
       return false;
+    }
+#else
+    // If we failed to create the lock, most likely another instance won the
+    // startup race.
+    return false;
+#endif
   }
 
   // Create the socket file somewhere in /tmp which is usually mounted as a
@@ -895,6 +955,13 @@ bool ProcessSingleton::Create() {
     LOG(ERROR) << "Failed to create socket directory.";
     return false;
   }
+
+  // Check that the directory was created with the correct permissions.
+  int dir_mode = 0;
+  CHECK(base::GetPosixFilePermissions(socket_dir_.path(), &dir_mode) &&
+        dir_mode == base::FILE_PERMISSION_USER_MASK)
+      << "Temp directory mode is not 700: " << std::oct << dir_mode;
+
   // Setup the socket symlink and the two cookies.
   base::FilePath socket_target_path =
       socket_dir_.path().Append(chrome::kSingletonSocketFilename);
