@@ -24,7 +24,7 @@ using content::V8ValueConverter;
 
 namespace extensions {
 
-ScriptContext::ScriptContext(v8::Handle<v8::Context> v8_context,
+ScriptContext::ScriptContext(const v8::Handle<v8::Context>& v8_context,
                              blink::WebFrame* web_frame,
                              const Extension* extension,
                              Feature::Context context_type)

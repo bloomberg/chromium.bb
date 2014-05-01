@@ -9,7 +9,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
-#include "chrome/renderer/extensions/dispatcher.h"
+#include "chrome/renderer/extensions/chrome_extensions_dispatcher_delegate.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
@@ -21,6 +21,7 @@
 #include "content/public/renderer/render_view.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/common/extension.h"
+#include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/event_bindings.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -93,8 +94,11 @@ content::ContentBrowserClient*
 
 content::ContentRendererClient*
     ChromeRenderViewTest::CreateContentRendererClient() {
+  extension_dispatcher_delegate_.reset(
+      new ChromeExtensionsDispatcherDelegate());
   ChromeContentRendererClient* client = new ChromeContentRendererClient();
-  client->SetExtensionDispatcherForTest(new extensions::Dispatcher);
+  client->SetExtensionDispatcherForTest(
+      new extensions::Dispatcher(extension_dispatcher_delegate_.get()));
 #if defined(ENABLE_SPELLCHECK)
   client->SetSpellcheck(new SpellCheck());
 #endif

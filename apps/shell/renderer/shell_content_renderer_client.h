@@ -12,6 +12,7 @@
 
 namespace extensions {
 class Dispatcher;
+class DispatcherDelegate;
 }
 
 namespace apps {
@@ -43,6 +44,7 @@ class ShellContentRendererClient : public content::ContentRendererClient {
  private:
   scoped_ptr<ShellExtensionsClient> extensions_client_;
   scoped_ptr<ShellExtensionsRendererClient> extensions_renderer_client_;
+  scoped_ptr<extensions::DispatcherDelegate> extension_dispatcher_delegate_;
   scoped_ptr<extensions::Dispatcher> extension_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellContentRendererClient);

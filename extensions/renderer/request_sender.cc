@@ -5,9 +5,9 @@
 #include "extensions/renderer/request_sender.h"
 
 #include "base/values.h"
-#include "chrome/renderer/extensions/dispatcher.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"

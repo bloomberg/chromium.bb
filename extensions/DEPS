@@ -2,6 +2,7 @@ include_rules = [
   "+components/url_matcher",
   "+content/public/common",
   "+crypto",
+  "+grit/extensions_resources.h",
   "+testing",
   "+ui",
 
@@ -12,10 +13,12 @@ include_rules = [
   #
   # TODO(jamescook): Remove these. http://crbug.com/162530
   "!chrome/browser/chrome_notification_types.h",
-  "!chrome/renderer/extensions/dispatcher.h",
   "!chrome/renderer/extensions/extension_helper.h",
   "!grit/common_resources.h",
-  "!grit/extensions_api_resources.h",
+  '!grit/extensions_api_resources.h',
+  # This is needed for renderer JS sources which should eventually move to
+  # the extensions_resources target.
+  "!grit/renderer_resources.h",
 ]
 
 specific_include_rules = {
@@ -28,12 +31,12 @@ specific_include_rules = {
     "+chrome/browser/extensions/extension_service_unittest.h",
     "+chrome/browser/extensions/test_extension_system.h",
     "+chrome/common/chrome_paths.h",
+    "+chrome/common/extensions/features/feature_channel.h",
     "+chrome/common/extensions/manifest_tests/extension_manifest_test.h",
     "+chrome/test/base/testing_profile.h",
   ],
   "(simple|complex)_feature_unittest\.cc|base_feature_provider_unittest\.cc": [
     "+chrome/common/extensions/features/chrome_channel_feature_filter.h",
-    "+chrome/common/extensions/features/feature_channel.h",
   ],
   "permissions_data_unittest\.cc": [
     "+chrome/common/chrome_version_info.h",

@@ -1,15 +1,15 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <string>
 
 #include "base/bind.h"
-#include "chrome/renderer/extensions/api_activity_logger.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/activity_log_converter_strategy.h"
+#include "extensions/renderer/api_activity_logger.h"
 #include "extensions/renderer/script_context.h"
 
 using content::V8ValueConverter;
@@ -60,9 +60,10 @@ void APIActivityLogger::LogInternal(
     converter->SetStrategy(&strategy);
     scoped_ptr<base::ListValue> arg_list(new base::ListValue());
     for (size_t i = 0; i < arg_array->Length(); ++i) {
-      arg_list->Set(i,
-                    converter->FromV8Value(arg_array->Get(i),
-                    args.GetIsolate()->GetCurrentContext()));
+      arg_list->Set(
+          i,
+          converter->FromV8Value(arg_array->Get(i),
+                                 args.GetIsolate()->GetCurrentContext()));
     }
     params.arguments.Swap(arg_list.get());
   }

@@ -84,9 +84,7 @@ var chromeWebstore = {
   onDownloadProgress: installer.onDownloadProgress
 };
 
-// This must match the name in InstallWebstoreBindings in
-// chrome/renderer/extensions/dispatcher.cc.
-exports.chromeWebstore = chromeWebstore;
+exports.binding = chromeWebstore;
 
 // Called by webstore_bindings.cc.
 exports.onInstallResponse =

@@ -32,7 +32,7 @@ class Extension;
 // Chrome's wrapper for a v8 context.
 class ChromeV8Context : public ScriptContext {
  public:
-  ChromeV8Context(v8::Handle<v8::Context> context,
+  ChromeV8Context(const v8::Handle<v8::Context>& context,
                   blink::WebFrame* frame,
                   const Extension* extension,
                   Feature::Context context_type);

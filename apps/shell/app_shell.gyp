@@ -139,6 +139,8 @@
         'renderer/shell_custom_bindings.cc',
         'renderer/shell_custom_bindings.h',
         'renderer/shell_custom_bindings.js',
+        'renderer/shell_dispatcher_delegate.cc',
+        'renderer/shell_dispatcher_delegate.h',
         'renderer/shell_extensions_renderer_client.cc',
         'renderer/shell_extensions_renderer_client.h',
       ],

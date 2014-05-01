@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
-#include "chrome/renderer/extensions/dispatcher.h"
 #include "extensions/common/extension.h"
+#include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/script_context.h"
 #include "v8/include/v8.h"
 

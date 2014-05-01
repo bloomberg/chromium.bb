@@ -4,9 +4,9 @@
 
 #include "extensions/renderer/api_definitions_natives.h"
 
-#include "chrome/renderer/extensions/dispatcher.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
+#include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/script_context.h"
 
 namespace extensions {

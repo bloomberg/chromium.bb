@@ -71,7 +71,5 @@ app.installState = function getInstallState(callback) {
 if (extensionId)
   app.installState = wrapForLogging(app.installState);
 
-// This must match InstallAppBindings() in
-// chrome/renderer/extensions/dispatcher.cc.
-exports.chromeApp = app;
+exports.binding = app;
 exports.onInstallStateResponse = onInstallStateResponse;

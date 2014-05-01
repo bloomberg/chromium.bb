@@ -18,9 +18,6 @@ class TestExtensionsRendererClient : public ExtensionsRendererClient {
   // ExtensionsRendererClient implementation.
   virtual bool IsIncognitoProcess() const OVERRIDE;
   virtual int GetLowestIsolatedWorldId() const OVERRIDE;
-  virtual void RegisterNativeHandlers(ModuleSystem* module_system,
-                                      ScriptContext* context) OVERRIDE;
-  virtual void PopulateSourceMap(ResourceBundleSourceMap* source_map) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestExtensionsRendererClient);

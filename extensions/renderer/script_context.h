@@ -30,7 +30,7 @@ class Extension;
 // Extensions wrapper for a v8 context.
 class ScriptContext : public RequestSender::Source {
  public:
-  ScriptContext(v8::Handle<v8::Context> context,
+  ScriptContext(const v8::Handle<v8::Context>& context,
                 blink::WebFrame* frame,
                 const Extension* extension,
                 Feature::Context context_type);

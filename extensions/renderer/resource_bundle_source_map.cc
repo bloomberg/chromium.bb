@@ -1,10 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/resource_bundle_source_map.h"
+#include "extensions/renderer/resource_bundle_source_map.h"
 
 #include "ui/base/resource/resource_bundle.h"
+
+namespace extensions {
 
 ResourceBundleSourceMap::ResourceBundleSourceMap(
     const ui::ResourceBundle* resource_bundle)
@@ -41,3 +43,5 @@ v8::Handle<v8::String> ResourceBundleSourceMap::ConvertString(
   return v8::String::NewExternal(
       isolate, new StaticV8ExternalAsciiStringResource(string));
 }
+
+}  // namespace extensions

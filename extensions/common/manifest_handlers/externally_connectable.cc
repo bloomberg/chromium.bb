@@ -1,14 +1,14 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_handlers/externally_connectable.h"
+#include "extensions/common/manifest_handlers/externally_connectable.h"
 
 #include <algorithm>
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/extensions/api/manifest_types.h"
+#include "extensions/common/api/extensions_manifest_types.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission_set.h"
@@ -36,7 +36,7 @@ const char kErrorWildcardHostsNotAllowed[] =
 
 namespace keys = extensions::manifest_keys;
 namespace errors = externally_connectable_errors;
-using api::manifest_types::ExternallyConnectable;
+using core_api::extensions_manifest_types::ExternallyConnectable;
 
 namespace {
 
@@ -49,11 +49,13 @@ std::vector<T> Sorted(const std::vector<T>& in) {
   return out;
 }
 
-} // namespace
+}  // namespace
 
-ExternallyConnectableHandler::ExternallyConnectableHandler() {}
+ExternallyConnectableHandler::ExternallyConnectableHandler() {
+}
 
-ExternallyConnectableHandler::~ExternallyConnectableHandler() {}
+ExternallyConnectableHandler::~ExternallyConnectableHandler() {
+}
 
 bool ExternallyConnectableHandler::Parse(Extension* extension,
                                          base::string16* error) {
@@ -62,14 +64,13 @@ bool ExternallyConnectableHandler::Parse(Extension* extension,
                                    &externally_connectable));
   std::vector<InstallWarning> install_warnings;
   scoped_ptr<ExternallyConnectableInfo> info =
-      ExternallyConnectableInfo::FromValue(*externally_connectable,
-                                           &install_warnings,
-                                           error);
+      ExternallyConnectableInfo::FromValue(
+          *externally_connectable, &install_warnings, error);
   if (!info)
     return false;
   if (!info->matches.is_empty()) {
-    PermissionsData::GetInitialAPIPermissions(extension)->insert(
-        APIPermission::kWebConnectable);
+    PermissionsData::GetInitialAPIPermissions(extension)
+        ->insert(APIPermission::kWebConnectable);
   }
   extension->AddInstallWarnings(install_warnings);
   extension->SetManifestData(keys::kExternallyConnectable, info.release());
@@ -102,7 +103,8 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
   if (externally_connectable->matches) {
     for (std::vector<std::string>::iterator it =
              externally_connectable->matches->begin();
-         it != externally_connectable->matches->end(); ++it) {
+         it != externally_connectable->matches->end();
+         ++it) {
       // Safe to use SCHEME_ALL here; externally_connectable gives a page ->
       // extension communication path, not the other way.
       URLPattern pattern(URLPattern::SCHEME_ALL);
@@ -115,11 +117,11 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
       // Wildcard hosts are not allowed.
       if (pattern.host().empty()) {
         // Warning not error for forwards compatibility.
-        install_warnings->push_back(InstallWarning(
-            ErrorUtils::FormatErrorMessage(
-                errors::kErrorWildcardHostsNotAllowed, *it),
-            keys::kExternallyConnectable,
-            *it));
+        install_warnings->push_back(
+            InstallWarning(ErrorUtils::FormatErrorMessage(
+                               errors::kErrorWildcardHostsNotAllowed, *it),
+                           keys::kExternallyConnectable,
+                           *it));
         continue;
       }
 
@@ -145,13 +147,13 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
       // are not allowed. However just "appspot.com" is ok.
       if (registry_length == 0 && pattern.match_subdomains()) {
         // Warning not error for forwards compatibility.
-        install_warnings->push_back(InstallWarning(
-            ErrorUtils::FormatErrorMessage(
-                errors::kErrorTopLevelDomainsNotAllowed,
-                pattern.host().c_str(),
-                *it),
-            keys::kExternallyConnectable,
-            *it));
+        install_warnings->push_back(
+            InstallWarning(ErrorUtils::FormatErrorMessage(
+                               errors::kErrorTopLevelDomainsNotAllowed,
+                               pattern.host().c_str(),
+                               *it),
+                           keys::kExternallyConnectable,
+                           *it));
         continue;
       }
 
@@ -165,43 +167,45 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
   if (externally_connectable->ids) {
     for (std::vector<std::string>::iterator it =
              externally_connectable->ids->begin();
-         it != externally_connectable->ids->end(); ++it) {
+         it != externally_connectable->ids->end();
+         ++it) {
       if (*it == kAllIds) {
         all_ids = true;
       } else if (Extension::IdIsValid(*it)) {
         ids.push_back(*it);
       } else {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kErrorInvalidId, *it);
+        *error =
+            ErrorUtils::FormatErrorMessageUTF16(errors::kErrorInvalidId, *it);
         return scoped_ptr<ExternallyConnectableInfo>();
       }
     }
   }
 
-  if (!externally_connectable->matches &&
-      !externally_connectable->ids) {
-    install_warnings->push_back(InstallWarning(
-        errors::kErrorNothingSpecified,
-        keys::kExternallyConnectable));
+  if (!externally_connectable->matches && !externally_connectable->ids) {
+    install_warnings->push_back(InstallWarning(errors::kErrorNothingSpecified,
+                                               keys::kExternallyConnectable));
   }
 
   bool accepts_tls_channel_id =
       externally_connectable->accepts_tls_channel_id.get() &&
       *externally_connectable->accepts_tls_channel_id;
-  return make_scoped_ptr(
-      new ExternallyConnectableInfo(matches, ids, all_ids,
-                                    accepts_tls_channel_id));
+  return make_scoped_ptr(new ExternallyConnectableInfo(
+      matches, ids, all_ids, accepts_tls_channel_id));
 }
 
-ExternallyConnectableInfo::~ExternallyConnectableInfo() {}
+ExternallyConnectableInfo::~ExternallyConnectableInfo() {
+}
 
 ExternallyConnectableInfo::ExternallyConnectableInfo(
     const URLPatternSet& matches,
     const std::vector<std::string>& ids,
     bool all_ids,
     bool accepts_tls_channel_id)
-    : matches(matches), ids(Sorted(ids)), all_ids(all_ids),
-      accepts_tls_channel_id(accepts_tls_channel_id) {}
+    : matches(matches),
+      ids(Sorted(ids)),
+      all_ids(all_ids),
+      accepts_tls_channel_id(accepts_tls_channel_id) {
+}
 
 bool ExternallyConnectableInfo::IdCanConnect(const std::string& id) {
   if (all_ids)
@@ -210,4 +214,4 @@ bool ExternallyConnectableInfo::IdCanConnect(const std::string& id) {
   return std::binary_search(ids.begin(), ids.end(), id);
 }
 
-}   // namespace extensions
+}  // namespace extensions

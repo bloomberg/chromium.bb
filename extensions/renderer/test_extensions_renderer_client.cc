@@ -19,13 +19,4 @@ int TestExtensionsRendererClient::GetLowestIsolatedWorldId() const {
   return 1;
 }
 
-void TestExtensionsRendererClient::RegisterNativeHandlers(
-    extensions::ModuleSystem* module_system,
-    extensions::ScriptContext* context) {
-}
-
-void TestExtensionsRendererClient::PopulateSourceMap(
-    ResourceBundleSourceMap* source_map) {
-}
-
 }  // namespace extensions

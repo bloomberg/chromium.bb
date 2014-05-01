@@ -1,14 +1,14 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <algorithm>
 
 #include "chrome/common/extensions/features/feature_channel.h"
-#include "chrome/common/extensions/manifest_handlers/externally_connectable.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,8 +25,8 @@ class ExternallyConnectableTest : public ExtensionManifestTest {
  protected:
   ExternallyConnectableInfo* GetExternallyConnectableInfo(
       scoped_refptr<Extension> extension) {
-    return static_cast<ExternallyConnectableInfo*>(extension->GetManifestData(
-        manifest_keys::kExternallyConnectable));
+    return static_cast<ExternallyConnectableInfo*>(
+        extension->GetManifestData(manifest_keys::kExternallyConnectable));
   }
 
  private:
@@ -44,8 +44,9 @@ TEST_F(ExternallyConnectableTest, IDsAndMatches) {
       ExternallyConnectableInfo::Get(extension.get());
   ASSERT_TRUE(info);
 
-  EXPECT_THAT(info->ids, ElementsAre("abcdefghijklmnopabcdefghijklmnop",
-                                     "ponmlkjihgfedcbaponmlkjihgfedcba"));
+  EXPECT_THAT(info->ids,
+              ElementsAre("abcdefghijklmnopabcdefghijklmnop",
+                          "ponmlkjihgfedcbaponmlkjihgfedcba"));
 
   EXPECT_FALSE(info->all_ids);
 
@@ -89,8 +90,8 @@ TEST_F(ExternallyConnectableTest, IDsAndMatches) {
   // ignore the trailing slash. This is kind of a corner case, so let's test it.
   EXPECT_TRUE(info->matches.MatchesURL(GURL("http://no.wildcard.path")));
   EXPECT_TRUE(info->matches.MatchesURL(GURL("http://no.wildcard.path/")));
-  EXPECT_FALSE(info->matches.MatchesURL(
-        GURL("http://no.wildcard.path/index.html")));
+  EXPECT_FALSE(
+      info->matches.MatchesURL(GURL("http://no.wildcard.path/index.html")));
 }
 
 TEST_F(ExternallyConnectableTest, IDs) {
@@ -104,8 +105,9 @@ TEST_F(ExternallyConnectableTest, IDs) {
       ExternallyConnectableInfo::Get(extension.get());
   ASSERT_TRUE(info);
 
-  EXPECT_THAT(info->ids, ElementsAre("abcdefghijklmnopabcdefghijklmnop",
-                                     "ponmlkjihgfedcbaponmlkjihgfedcba"));
+  EXPECT_THAT(info->ids,
+              ElementsAre("abcdefghijklmnopabcdefghijklmnop",
+                          "ponmlkjihgfedcbaponmlkjihgfedcba"));
 
   EXPECT_FALSE(info->all_ids);
 
@@ -155,9 +157,8 @@ TEST_F(ExternallyConnectableTest, Matches) {
 }
 
 TEST_F(ExternallyConnectableTest, MatchesWithTlsChannelId) {
-  scoped_refptr<Extension> extension =
-      LoadAndExpectSuccess(
-          "externally_connectable_matches_tls_channel_id.json");
+  scoped_refptr<Extension> extension = LoadAndExpectSuccess(
+      "externally_connectable_matches_tls_channel_id.json");
   ASSERT_TRUE(extension.get());
 
   EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kWebConnectable));
@@ -190,8 +191,9 @@ TEST_F(ExternallyConnectableTest, AllIDs) {
       ExternallyConnectableInfo::Get(extension.get());
   ASSERT_TRUE(info);
 
-  EXPECT_THAT(info->ids, ElementsAre("abcdefghijklmnopabcdefghijklmnop",
-                                     "ponmlkjihgfedcbaponmlkjihgfedcba"));
+  EXPECT_THAT(info->ids,
+              ElementsAre("abcdefghijklmnopabcdefghijklmnop",
+                          "ponmlkjihgfedcbaponmlkjihgfedcba"));
 
   EXPECT_TRUE(info->all_ids);
 
@@ -200,11 +202,11 @@ TEST_F(ExternallyConnectableTest, AllIDs) {
 
 TEST_F(ExternallyConnectableTest, IdCanConnect) {
   // Not in order to test that ExternallyConnectableInfo sorts it.
-  std::string matches_ids_array[] = { "g", "h", "c", "i", "a", "z", "b" };
+  std::string matches_ids_array[] = {"g", "h", "c", "i", "a", "z", "b"};
   std::vector<std::string> matches_ids(
       matches_ids_array, matches_ids_array + arraysize(matches_ids_array));
 
-  std::string nomatches_ids_array[] = { "2", "3", "1" };
+  std::string nomatches_ids_array[] = {"2", "3", "1"};
 
   // all_ids = false.
   {
@@ -237,10 +239,9 @@ TEST_F(ExternallyConnectableTest, ErrorBadID) {
 }
 
 TEST_F(ExternallyConnectableTest, ErrorBadMatches) {
-  LoadAndExpectError(
-      "externally_connectable_error_bad_matches.json",
-      ErrorUtils::FormatErrorMessage(errors::kErrorInvalidMatchPattern,
-                                     "www.yahoo.com"));
+  LoadAndExpectError("externally_connectable_error_bad_matches.json",
+                     ErrorUtils::FormatErrorMessage(
+                         errors::kErrorInvalidMatchPattern, "www.yahoo.com"));
 }
 
 TEST_F(ExternallyConnectableTest, WarningNoAllURLs) {
@@ -270,10 +271,9 @@ TEST_F(ExternallyConnectableTest, WarningWildcardHost) {
 TEST_F(ExternallyConnectableTest, WarningNoTLD) {
   scoped_refptr<Extension> extension = LoadAndExpectWarning(
       "externally_connectable_error_tld.json",
-      ErrorUtils::FormatErrorMessage(
-          errors::kErrorTopLevelDomainsNotAllowed,
-          "co.uk",
-          "http://*.co.uk/*"));
+      ErrorUtils::FormatErrorMessage(errors::kErrorTopLevelDomainsNotAllowed,
+                                     "co.uk",
+                                     "http://*.co.uk/*"));
   ExternallyConnectableInfo* info = GetExternallyConnectableInfo(extension);
   EXPECT_FALSE(info->matches.ContainsPattern(
       URLPattern(URLPattern::SCHEME_ALL, "http://*.co.uk/*")));
@@ -284,10 +284,9 @@ TEST_F(ExternallyConnectableTest, WarningNoTLD) {
 TEST_F(ExternallyConnectableTest, WarningNoEffectiveTLD) {
   scoped_refptr<Extension> extension = LoadAndExpectWarning(
       "externally_connectable_error_effective_tld.json",
-      ErrorUtils::FormatErrorMessage(
-          errors::kErrorTopLevelDomainsNotAllowed,
-          "appspot.com",
-          "http://*.appspot.com/*"));
+      ErrorUtils::FormatErrorMessage(errors::kErrorTopLevelDomainsNotAllowed,
+                                     "appspot.com",
+                                     "http://*.appspot.com/*"));
   ExternallyConnectableInfo* info = GetExternallyConnectableInfo(extension);
   EXPECT_FALSE(info->matches.ContainsPattern(
       URLPattern(URLPattern::SCHEME_ALL, "http://*.appspot.com/*")));
@@ -298,10 +297,9 @@ TEST_F(ExternallyConnectableTest, WarningNoEffectiveTLD) {
 TEST_F(ExternallyConnectableTest, WarningUnknownTLD) {
   scoped_refptr<Extension> extension = LoadAndExpectWarning(
       "externally_connectable_error_unknown_tld.json",
-      ErrorUtils::FormatErrorMessage(
-          errors::kErrorTopLevelDomainsNotAllowed,
-          "notatld",
-          "http://*.notatld/*"));
+      ErrorUtils::FormatErrorMessage(errors::kErrorTopLevelDomainsNotAllowed,
+                                     "notatld",
+                                     "http://*.notatld/*"));
   ExternallyConnectableInfo* info = GetExternallyConnectableInfo(extension);
   EXPECT_FALSE(info->matches.ContainsPattern(
       URLPattern(URLPattern::SCHEME_ALL, "http://*.notatld/*")));

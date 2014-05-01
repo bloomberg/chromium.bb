@@ -1,13 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_STATIC_V8_EXTERNAL_STRING_RESOURCE_H_
-#define CHROME_RENDERER_EXTENSIONS_STATIC_V8_EXTERNAL_STRING_RESOURCE_H_
+#ifndef EXTENSIONS_RENDERER_STATIC_V8_EXTERNAL_ASCII_STRING_RESOURCE_H_
+#define EXTENSIONS_RENDERER_STATIC_V8_EXTERNAL_ASCII_STRING_RESOURCE_H_
 
 #include "base/compiler_specific.h"
 #include "base/strings/string_piece.h"
 #include "v8/include/v8.h"
+
+namespace extensions {
 
 // A very simple implementation of v8::ExternalAsciiStringResource that just
 // wraps a buffer. The buffer must outlive the v8 runtime instance this resource
@@ -25,4 +27,6 @@ class StaticV8ExternalAsciiStringResource
   base::StringPiece buffer_;
 };
 
-#endif // CHROME_RENDERER_EXTENSIONS_STATIC_V8_EXTERNAL_STRING_RESOURCE_H_
+}  // namespace extensions
+
+#endif  // EXTENSIONS_RENDERER_STATIC_V8_EXTERNAL_ASCII_STRING_RESOURCE_H_

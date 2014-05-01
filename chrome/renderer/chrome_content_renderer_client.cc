@@ -31,8 +31,8 @@
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/chrome_render_view_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
+#include "chrome/renderer/extensions/chrome_extensions_dispatcher_delegate.h"
 #include "chrome/renderer/extensions/chrome_extensions_renderer_client.h"
-#include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/extension_frame_helper.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/renderer_permissions_policy_delegate.h"
@@ -81,6 +81,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/switches.h"
+#include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/script_context.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -242,10 +243,14 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   chrome_observer_.reset(new ChromeRenderProcessObserver(this));
 
+  extension_dispatcher_delegate_.reset(
+      new ChromeExtensionsDispatcherDelegate());
   // ChromeRenderViewTest::SetUp() creates its own ExtensionDispatcher and
-  // injects it using SetExtensionDispatcherForTest(). Don't overwrite it.
-  if (!extension_dispatcher_)
-    extension_dispatcher_.reset(new extensions::Dispatcher());
+  // injects it using SetExtensionDispatcher(). Don't overwrite it.
+  if (!extension_dispatcher_) {
+    extension_dispatcher_.reset(
+        new extensions::Dispatcher(extension_dispatcher_delegate_.get()));
+  }
   permissions_policy_delegate_.reset(
       new extensions::RendererPermissionsPolicyDelegate(
           extension_dispatcher_.get()));
@@ -1324,18 +1329,18 @@ bool ChromeContentRendererClient::IsAdblockPlusInstalled() {
 }
 
 bool ChromeContentRendererClient::IsAdblockWithWebRequestInstalled() {
-  return g_current_client->extension_dispatcher_->
-      IsAdblockWithWebRequestInstalled();
+  return g_current_client->extension_dispatcher_delegate_
+      ->IsAdblockWithWebRequestInstalled();
 }
 
 bool ChromeContentRendererClient::IsAdblockPlusWithWebRequestInstalled() {
-  return g_current_client->extension_dispatcher_->
-      IsAdblockPlusWithWebRequestInstalled();
+  return g_current_client->extension_dispatcher_delegate_
+      ->IsAdblockPlusWithWebRequestInstalled();
 }
 
 bool ChromeContentRendererClient::IsOtherExtensionWithWebRequestInstalled() {
-  return g_current_client->extension_dispatcher_->
-      IsOtherExtensionWithWebRequestInstalled();
+  return g_current_client->extension_dispatcher_delegate_
+      ->IsOtherExtensionWithWebRequestInstalled();
 }
 
 const void* ChromeContentRendererClient::CreatePPAPIInterface(

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/app_runtime_custom_bindings.h"
+#include "extensions/renderer/app_runtime_custom_bindings.h"
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
@@ -17,7 +17,7 @@ using blink::WebString;
 
 namespace {
 
-void DeserializeString(const v8::FunctionCallbackInfo<v8::Value> &args) {
+void DeserializeString(const v8::FunctionCallbackInfo<v8::Value>& args) {
   DCHECK(args.Length() == 1);
   DCHECK(args[0]->IsString());
 
@@ -28,18 +28,17 @@ void DeserializeString(const v8::FunctionCallbackInfo<v8::Value> &args) {
   args.GetReturnValue().Set(serialized.deserialize());
 }
 
-void SerializeToString(const v8::FunctionCallbackInfo<v8::Value> &args) {
+void SerializeToString(const v8::FunctionCallbackInfo<v8::Value>& args) {
   DCHECK(args.Length() == 1);
-  WebSerializedScriptValue data =
-      WebSerializedScriptValue::serialize(args[0]);
+  WebSerializedScriptValue data = WebSerializedScriptValue::serialize(args[0]);
   WebString data_webstring = data.toString();
 
   std::string v = std::string(data_webstring.utf8());
-  args.GetReturnValue()
-      .Set(v8::String::NewFromUtf8(args.GetIsolate(), v.c_str()));
+  args.GetReturnValue().Set(
+      v8::String::NewFromUtf8(args.GetIsolate(), v.c_str()));
 }
 
-void CreateBlob(const v8::FunctionCallbackInfo<v8::Value> &args) {
+void CreateBlob(const v8::FunctionCallbackInfo<v8::Value>& args) {
   DCHECK(args.Length() == 2);
   DCHECK(args[0]->IsString());
   DCHECK(args[1]->IsNumber());
@@ -48,8 +47,8 @@ void CreateBlob(const v8::FunctionCallbackInfo<v8::Value> &args) {
   std::string blob_length_string(*v8::String::Utf8Value(args[1]));
   int64 blob_length = 0;
   DCHECK(base::StringToInt64(blob_length_string, &blob_length));
-  blink::WebBlob web_blob = WebBlob::createFromFile(
-      WebString::fromUTF8(blob_file_path), blob_length);
+  blink::WebBlob web_blob =
+      WebBlob::createFromFile(WebString::fromUTF8(blob_file_path), blob_length);
   args.GetReturnValue().Set(web_blob.toV8Value());
 }
 

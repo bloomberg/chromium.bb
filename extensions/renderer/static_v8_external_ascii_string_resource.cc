@@ -1,8 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/static_v8_external_string_resource.h"
+#include "extensions/renderer/static_v8_external_ascii_string_resource.h"
+
+namespace extensions {
 
 StaticV8ExternalAsciiStringResource::StaticV8ExternalAsciiStringResource(
     const base::StringPiece& buffer)
@@ -19,3 +21,5 @@ const char* StaticV8ExternalAsciiStringResource::data() const {
 size_t StaticV8ExternalAsciiStringResource::length() const {
   return buffer_.length();
 }
+
+}  // namespace extensions

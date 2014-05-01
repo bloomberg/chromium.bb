@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/messaging_bindings.h"
+#include "extensions/renderer/messaging_bindings.h"
 
 #include <map>
 #include <string>
@@ -13,14 +13,13 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
-#include "chrome/common/extensions/manifest_handlers/externally_connectable.h"
-#include "chrome/common/url_constants.h"
-#include "chrome/renderer/extensions/dispatcher.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/manifest_handlers/externally_connectable.h"
+#include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/event_bindings.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "extensions/renderer/scoped_persistent.h"
@@ -58,12 +57,11 @@ struct ExtensionData {
   std::map<int, PortData> ports;  // port ID -> data
 };
 
-base::LazyInstance<ExtensionData> g_extension_data =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<ExtensionData> g_extension_data = LAZY_INSTANCE_INITIALIZER;
 
 bool HasPortData(int port_id) {
   return g_extension_data.Get().ports.find(port_id) !=
-      g_extension_data.Get().ports.end();
+         g_extension_data.Get().ports.end();
 }
 
 ExtensionData::PortData& GetPortData(int port_id) {
@@ -82,17 +80,21 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
  public:
   ExtensionImpl(Dispatcher* dispatcher, ScriptContext* context)
       : ObjectBackedNativeHandler(context), dispatcher_(dispatcher) {
-    RouteFunction("CloseChannel",
+    RouteFunction(
+        "CloseChannel",
         base::Bind(&ExtensionImpl::CloseChannel, base::Unretained(this)));
-    RouteFunction("PortAddRef",
+    RouteFunction(
+        "PortAddRef",
         base::Bind(&ExtensionImpl::PortAddRef, base::Unretained(this)));
-    RouteFunction("PortRelease",
+    RouteFunction(
+        "PortRelease",
         base::Bind(&ExtensionImpl::PortRelease, base::Unretained(this)));
-    RouteFunction("PostMessage",
+    RouteFunction(
+        "PostMessage",
         base::Bind(&ExtensionImpl::PostMessage, base::Unretained(this)));
     // TODO(fsamuel, kalman): Move BindToGC out of messaging natives.
     RouteFunction("BindToGC",
-        base::Bind(&ExtensionImpl::BindToGC, base::Unretained(this)));
+                  base::Bind(&ExtensionImpl::BindToGC, base::Unretained(this)));
   }
 
   virtual ~ExtensionImpl() {}
@@ -116,9 +118,7 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
       return;
 
     // Arguments are (int32 port_id, string message).
-    CHECK(args.Length() == 2 &&
-          args[0]->IsInt32() &&
-          args[1]->IsString());
+    CHECK(args.Length() == 2 && args[0]->IsInt32() && args[1]->IsString());
 
     int port_id = args[0]->Int32Value();
     if (!HasPortData(port_id)) {
@@ -303,38 +303,36 @@ void MessagingBindings::DispatchOnConnect(
     }
 
     v8::Handle<v8::Value> arguments[] = {
-      // portId
-      v8::Integer::New(isolate, target_port_id),
-      // channelName
-      v8::String::NewFromUtf8(isolate,
-                              channel_name.c_str(),
-                              v8::String::kNormalString,
-                              channel_name.size()),
-      // sourceTab
-      tab,
-      // sourceExtensionId
-      v8::String::NewFromUtf8(isolate,
-                              source_extension_id.c_str(),
-                              v8::String::kNormalString,
-                              source_extension_id.size()),
-      // targetExtensionId
-      v8::String::NewFromUtf8(isolate,
-                              target_extension_id.c_str(),
-                              v8::String::kNormalString,
-                              target_extension_id.size()),
-      // sourceUrl
-      v8::String::NewFromUtf8(isolate,
-                              source_url_spec.c_str(),
-                              v8::String::kNormalString,
-                              source_url_spec.size()),
-      // tlsChannelId
-      tls_channel_id_value,
+        // portId
+        v8::Integer::New(isolate, target_port_id),
+        // channelName
+        v8::String::NewFromUtf8(isolate,
+                                channel_name.c_str(),
+                                v8::String::kNormalString,
+                                channel_name.size()),
+        // sourceTab
+        tab,
+        // sourceExtensionId
+        v8::String::NewFromUtf8(isolate,
+                                source_extension_id.c_str(),
+                                v8::String::kNormalString,
+                                source_extension_id.size()),
+        // targetExtensionId
+        v8::String::NewFromUtf8(isolate,
+                                target_extension_id.c_str(),
+                                v8::String::kNormalString,
+                                target_extension_id.size()),
+        // sourceUrl
+        v8::String::NewFromUtf8(isolate,
+                                source_url_spec.c_str(),
+                                v8::String::kNormalString,
+                                source_url_spec.size()),
+        // tlsChannelId
+        tls_channel_id_value,
     };
 
     v8::Handle<v8::Value> retval = (*it)->module_system()->CallModuleMethod(
-        "messaging",
-        "dispatchOnConnect",
-        arraysize(arguments), arguments);
+        "messaging", "dispatchOnConnect", arraysize(arguments), arguments);
 
     if (retval.IsEmpty()) {
       LOG(ERROR) << "Empty return value from dispatchOnConnect.";
@@ -348,9 +346,8 @@ void MessagingBindings::DispatchOnConnect(
   // If we didn't create a port, notify the other end of the channel (treat it
   // as a disconnect).
   if (!port_created) {
-    content::RenderThread::Get()->Send(
-        new ExtensionHostMsg_CloseChannel(
-            target_port_id, kReceivingEndDoesntExistError));
+    content::RenderThread::Get()->Send(new ExtensionHostMsg_CloseChannel(
+        target_port_id, kReceivingEndDoesntExistError));
   }
 }
 
@@ -389,9 +386,7 @@ void MessagingBindings::DeliverMessage(
     v8::Handle<v8::Value> port_id_handle =
         v8::Integer::New(isolate, target_port_id);
     v8::Handle<v8::Value> has_port = (*it)->module_system()->CallModuleMethod(
-        "messaging",
-        "hasPort",
-        1, &port_id_handle);
+        "messaging", "hasPort", 1, &port_id_handle);
 
     CHECK(!has_port.IsEmpty());
     if (!has_port->BooleanValue())
@@ -403,9 +398,8 @@ void MessagingBindings::DeliverMessage(
                                                 v8::String::kNormalString,
                                                 message.data.size()));
     arguments.push_back(port_id_handle);
-    (*it)->module_system()->CallModuleMethod("messaging",
-                                             "dispatchOnMessage",
-                                             &arguments);
+    (*it)->module_system()->CallModuleMethod(
+        "messaging", "dispatchOnMessage", &arguments);
   }
 }
 
@@ -439,9 +433,8 @@ void MessagingBindings::DispatchOnDisconnect(
     } else {
       arguments.push_back(v8::Null(isolate));
     }
-    (*it)->module_system()->CallModuleMethod("messaging",
-                                             "dispatchOnDisconnect",
-                                             &arguments);
+    (*it)->module_system()->CallModuleMethod(
+        "messaging", "dispatchOnDisconnect", &arguments);
   }
 }
 

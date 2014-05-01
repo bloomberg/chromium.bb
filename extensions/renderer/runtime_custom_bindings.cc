@@ -1,13 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/runtime_custom_bindings.h"
+#include "extensions/renderer/runtime_custom_bindings.h"
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/renderer/extensions/api_activity_logger.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
@@ -16,6 +15,7 @@
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest.h"
+#include "extensions/renderer/api_activity_logger.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -27,9 +27,9 @@ namespace extensions {
 
 RuntimeCustomBindings::RuntimeCustomBindings(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {
-  RouteFunction("GetManifest",
-                base::Bind(&RuntimeCustomBindings::GetManifest,
-                           base::Unretained(this)));
+  RouteFunction(
+      "GetManifest",
+      base::Bind(&RuntimeCustomBindings::GetManifest, base::Unretained(this)));
   RouteFunction("OpenChannelToExtension",
                 base::Bind(&RuntimeCustomBindings::OpenChannelToExtension,
                            base::Unretained(this)));
@@ -41,7 +41,8 @@ RuntimeCustomBindings::RuntimeCustomBindings(ScriptContext* context)
                            base::Unretained(this)));
 }
 
-RuntimeCustomBindings::~RuntimeCustomBindings() {}
+RuntimeCustomBindings::~RuntimeCustomBindings() {
+}
 
 void RuntimeCustomBindings::OpenChannelToExtension(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
@@ -69,9 +70,12 @@ void RuntimeCustomBindings::OpenChannelToExtension(
   bool include_tls_channel_id =
       args.Length() > 2 ? args[2]->BooleanValue() : false;
   int port_id = -1;
-  renderview->Send(new ExtensionHostMsg_OpenChannelToExtension(
-      renderview->GetRoutingID(), info, channel_name, include_tls_channel_id,
-      &port_id));
+  renderview->Send(
+      new ExtensionHostMsg_OpenChannelToExtension(renderview->GetRoutingID(),
+                                                  info,
+                                                  channel_name,
+                                                  include_tls_channel_id,
+                                                  &port_id));
   args.GetReturnValue().Set(static_cast<int32_t>(port_id));
 }
 
@@ -94,19 +98,14 @@ void RuntimeCustomBindings::OpenChannelToNativeApp(
     return;
 
   // The Javascript code should validate/fill the arguments.
-  CHECK(args.Length() >= 2 &&
-        args[0]->IsString() &&
-        args[1]->IsString());
+  CHECK(args.Length() >= 2 && args[0]->IsString() && args[1]->IsString());
 
   std::string extension_id = *v8::String::Utf8Value(args[0]->ToString());
   std::string native_app_name = *v8::String::Utf8Value(args[1]->ToString());
 
   int port_id = -1;
   renderview->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
-      renderview->GetRoutingID(),
-      extension_id,
-      native_app_name,
-      &port_id));
+      renderview->GetRoutingID(), extension_id, native_app_name, &port_id));
   args.GetReturnValue().Set(static_cast<int32_t>(port_id));
 }
 
@@ -115,9 +114,8 @@ void RuntimeCustomBindings::GetManifest(
   CHECK(context()->extension());
 
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  args.GetReturnValue().Set(
-      converter->ToV8Value(context()->extension()->manifest()->value(),
-                           context()->v8_context()));
+  args.GetReturnValue().Set(converter->ToV8Value(
+      context()->extension()->manifest()->value(), context()->v8_context()));
 }
 
 void RuntimeCustomBindings::GetExtensionViews(

@@ -5,7 +5,7 @@
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/renderer/extensions/dispatcher.h"
+#include "chrome/renderer/extensions/chrome_extensions_dispatcher_delegate.h"
 #include "chrome/renderer/extensions/renderer_permissions_policy_delegate.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/mock_render_thread.h"
@@ -13,6 +13,7 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/test_extensions_renderer_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,7 +31,10 @@ class RendererPermissionsPolicyDelegateTest : public testing::Test {
     render_thread_.reset(new content::MockRenderThread());
     renderer_client_.reset(new TestExtensionsRendererClient);
     ExtensionsRendererClient::Set(renderer_client_.get());
-    extension_dispatcher_.reset(new Dispatcher());
+    extension_dispatcher_delegate_.reset(
+        new ChromeExtensionsDispatcherDelegate());
+    extension_dispatcher_.reset(
+        new Dispatcher(extension_dispatcher_delegate_.get()));
     policy_delegate_.reset(
         new RendererPermissionsPolicyDelegate(extension_dispatcher_.get()));
   }
@@ -38,6 +42,7 @@ class RendererPermissionsPolicyDelegateTest : public testing::Test {
  protected:
   scoped_ptr<content::MockRenderThread> render_thread_;
   scoped_ptr<ExtensionsRendererClient> renderer_client_;
+  scoped_ptr<DispatcherDelegate> extension_dispatcher_delegate_;
   scoped_ptr<Dispatcher> extension_dispatcher_;
   scoped_ptr<RendererPermissionsPolicyDelegate> policy_delegate_;
 };

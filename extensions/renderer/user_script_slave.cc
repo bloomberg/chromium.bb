@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/user_script_slave.h"
+#include "extensions/renderer/user_script_slave.h"
 
 #include <map>
 
@@ -13,8 +13,7 @@
 #include "base/pickle.h"
 #include "base/strings/stringprintf.h"
 #include "base/timer/elapsed_timer.h"
-#include "chrome/common/url_constants.h"
-#include "chrome/renderer/isolated_world_ids.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
@@ -63,8 +62,7 @@ int UserScriptSlave::GetIsolatedWorldIdForExtension(const Extension* extension,
     // world since these are stored per frame, and we might not have used this
     // isolated world in this frame before.
     frame->setIsolatedWorldSecurityOrigin(
-        iter->second,
-        WebSecurityOrigin::create(extension->url()));
+        iter->second, WebSecurityOrigin::create(extension->url()));
     frame->setIsolatedWorldContentSecurityPolicy(
         iter->second,
         WebString::fromUTF8(CSPInfo::GetContentSecurityPolicy(extension)));
@@ -78,8 +76,7 @@ int UserScriptSlave::GetIsolatedWorldIdForExtension(const Extension* extension,
   // going to have enough extensions for it to matter.
   isolated_world_ids_[extension->id()] = new_id;
   frame->setIsolatedWorldSecurityOrigin(
-      new_id,
-      WebSecurityOrigin::create(extension->url()));
+      new_id, WebSecurityOrigin::create(extension->url()));
   frame->setIsolatedWorldContentSecurityPolicy(
       new_id,
       WebString::fromUTF8(CSPInfo::GetContentSecurityPolicy(extension)));
@@ -89,7 +86,8 @@ int UserScriptSlave::GetIsolatedWorldIdForExtension(const Extension* extension,
 std::string UserScriptSlave::GetExtensionIdForIsolatedWorld(
     int isolated_world_id) {
   for (IsolatedWorldMap::iterator iter = isolated_world_ids_.begin();
-       iter != isolated_world_ids_.end(); ++iter) {
+       iter != isolated_world_ids_.end();
+       ++iter) {
     if (iter->second == isolated_world_id)
       return iter->first;
   }
@@ -106,7 +104,8 @@ UserScriptSlave::UserScriptSlave(const ExtensionSet* extensions)
       IDR_GREASEMONKEY_API_JS);
 }
 
-UserScriptSlave::~UserScriptSlave() {}
+UserScriptSlave::~UserScriptSlave() {
+}
 
 void UserScriptSlave::GetActiveExtensions(
     std::set<std::string>* extension_ids) {
@@ -141,8 +140,7 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
 
   // Unpickle scripts.
   uint64 num_scripts = 0;
-  Pickle pickle(reinterpret_cast<char*>(shared_memory_->memory()),
-                pickle_size);
+  Pickle pickle(reinterpret_cast<char*>(shared_memory_->memory()), pickle_size);
   PickleIterator iter(pickle);
   CHECK(pickle.ReadUInt64(&iter, &num_scripts));
 
@@ -238,7 +236,7 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
     if (script->run_location() == location) {
       num_scripts += script->js_scripts().size();
       for (size_t j = 0; j < script->js_scripts().size(); ++j) {
-        UserScript::File &file = script->js_scripts()[j];
+        UserScript::File& file = script->js_scripts()[j];
         std::string content = file.GetContent().as_string();
 
         // We add this dumb function wrapper for standalone user script to
@@ -258,7 +256,8 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
       // Emulate Greasemonkey API for scripts that were converted to extensions
       // and "standalone" user scripts.
       if (script->is_standalone() || script->emulate_greasemonkey()) {
-        sources.insert(sources.begin(),
+        sources.insert(
+            sources.begin(),
             WebScriptSource(WebString::fromUTF8(api_js_.as_string())));
       }
 
@@ -266,13 +265,15 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
 
       base::ElapsedTimer exec_timer;
       DOMActivityLogger::AttachToWorld(isolated_world_id, extension->id());
-      frame->executeScriptInIsolatedWorld(
-          isolated_world_id, &sources.front(), sources.size(),
-          EXTENSION_GROUP_CONTENT_SCRIPTS);
+      frame->executeScriptInIsolatedWorld(isolated_world_id,
+                                          &sources.front(),
+                                          sources.size(),
+                                          EXTENSION_GROUP_CONTENT_SCRIPTS);
       UMA_HISTOGRAM_TIMES("Extensions.InjectScriptTime", exec_timer.Elapsed());
 
       for (std::vector<WebScriptSource>::const_iterator iter = sources.begin();
-           iter != sources.end(); ++iter) {
+           iter != sources.end();
+           ++iter) {
         extensions_executing_scripts[extension->id()].insert(
             GURL(iter->url).path());
       }

@@ -9,9 +9,6 @@ class ResourceBundleSourceMap;
 
 namespace extensions {
 
-class ModuleSystem;
-class ScriptContext;
-
 // Interface to allow the extensions module to make render-process-specific
 // queries of the embedder. Should be Set() once in the render process.
 //
@@ -29,13 +26,6 @@ class ExtensionsRendererClient {
   // Must be greater than 0. See blink::WebFrame::executeScriptInIsolatedWorld
   // (third_party/WebKit/public/web/WebFrame.h) for additional context.
   virtual int GetLowestIsolatedWorldId() const = 0;
-
-  // Registers additional native C++ code handlers for JS API functions.
-  virtual void RegisterNativeHandlers(ModuleSystem* module_system,
-                                      ScriptContext* context) = 0;
-
-  // Registers additional JS source code resources for API implementations.
-  virtual void PopulateSourceMap(ResourceBundleSourceMap* source_map) = 0;
 
   // Returns the single instance of |this|.
   static ExtensionsRendererClient* Get();
