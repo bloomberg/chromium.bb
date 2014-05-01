@@ -276,6 +276,8 @@ class Addr2LineWorkerPool {
                             inStream = null; // New readers need to be created next iteration
                         }
                     }
+                } catch (RuntimeException e) {
+                    throw e;
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
