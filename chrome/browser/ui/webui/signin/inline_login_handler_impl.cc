@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/signin/core/browser/about_signin_internals.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_oauth_helper.h"
@@ -103,6 +105,10 @@ void InlineSigninHelper::OnSigninOAuthInformationAvailable(
     browser = handler_->GetDesktopBrowser();
   }
 
+  AboutSigninInternals* about_signin_internals =
+    AboutSigninInternalsFactory::GetForProfile(profile_);
+  about_signin_internals->OnRefreshTokenReceived("Successful");
+
   signin::Source source = signin::GetSourceForPromoURL(current_url_);
   if (source == signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT) {
     ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
@@ -167,6 +173,10 @@ void InlineSigninHelper::OnSigninOAuthInformationFailure(
   const GoogleServiceAuthError& error) {
   if (handler_)
     handler_->HandleLoginError(error.ToString());
+
+  AboutSigninInternals* about_signin_internals =
+    AboutSigninInternalsFactory::GetForProfile(profile_);
+  about_signin_internals->OnRefreshTokenReceived("Failure");
 
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
