@@ -33,7 +33,7 @@
     '../third_party/skia/src/images/SkScaledBitmapSampler.cpp',
     '../third_party/skia/src/images/SkScaledBitmapSampler.h',
 
-    '../third_party/skia/src/opts/opts_check_SSE2.cpp',
+    '../third_party/skia/src/opts/opts_check_x86.cpp',
 
     '../third_party/skia/src/ports/SkFontConfigInterface_android.cpp',
     '../third_party/skia/src/ports/SkFontConfigInterface_direct.cpp',
@@ -187,7 +187,7 @@
     [ 'target_arch == "arm" or target_arch == "arm64" or \
        target_arch == "mipsel"', {
       'sources!': [
-        '../third_party/skia/src/opts/opts_check_SSE2.cpp'
+        '../third_party/skia/src/opts/opts_check_x86.cpp'
       ],
     }],
     [ 'desktop_linux == 1 or chromeos == 1', {
@@ -249,7 +249,7 @@
         '../third_party/skia/src/utils/mac/SkStream_mac.cpp',
       ],
       'sources/': [
-        ['exclude', 'opts_check_SSE2\\.cpp$'],
+        ['exclude', 'opts_check_x86\\.cpp$'],
       ],
 
       # The main skia_opts target does not currently work on iOS because the

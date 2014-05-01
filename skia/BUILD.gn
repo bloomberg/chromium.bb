@@ -425,7 +425,7 @@ source_set("skia_opts") {
   if (cpu_arch == "x86" || cpu_arch == "x64") {
     sources = [
       # SSE 2
-      "//third_party/skia/src/opts/opts_check_SSE2.cpp",
+      "//third_party/skia/src/opts/opts_check_x86.cpp",
       "//third_party/skia/src/opts/SkBitmapFilter_opts_SSE2.cpp",
       "//third_party/skia/src/opts/SkBitmapProcState_opts_SSE2.cpp",
       "//third_party/skia/src/opts/SkBlitRect_opts_SSE2.cpp",
