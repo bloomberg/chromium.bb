@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
 
 using base::ASCIIToUTF16;

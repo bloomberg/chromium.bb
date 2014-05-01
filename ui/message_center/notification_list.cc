@@ -9,8 +9,10 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
+#include "ui/message_center/notification_blocker.h"
 #include "ui/message_center/notification_types.h"
 
 namespace message_center {

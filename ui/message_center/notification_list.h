@@ -9,27 +9,29 @@
 #include <set>
 #include <string>
 
-#include "base/strings/string16.h"
-#include "base/time/time.h"
-#include "base/timer/timer.h"
-#include "ui/gfx/image/image.h"
-#include "ui/gfx/native_widget_types.h"
+#include "base/gtest_prod_util.h"
 #include "ui/message_center/message_center_export.h"
-#include "ui/message_center/notification.h"
 #include "ui/message_center/notification_blocker.h"
 #include "ui/message_center/notification_types.h"
 
 namespace base {
 class DictionaryValue;
+class TimeDelta;
+}
+
+namespace gfx {
+class Image;
 }
 
 namespace message_center {
 
-class NotificationDelegate;
-
 namespace test {
 class NotificationListTest;
 }
+
+class Notification;
+class NotificationDelegate;
+struct NotifierId;
 
 // Comparers used to auto-sort the lists of Notifications.
 struct MESSAGE_CENTER_EXPORT ComparePriorityTimestampSerial {

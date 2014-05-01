@@ -8,12 +8,9 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/observer_list.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification_list.h"
-#include "ui/message_center/notification_types.h"
 
 namespace base {
 class DictionaryValue;
@@ -32,8 +29,6 @@ class MessagePopupCollectionTest;
 
 class MessageCenterObserver;
 class NotificationBlocker;
-class NotificationList;
-class NotifierSettingsDelegate;
 class NotifierSettingsProvider;
 
 class MESSAGE_CENTER_EXPORT MessageCenter {
