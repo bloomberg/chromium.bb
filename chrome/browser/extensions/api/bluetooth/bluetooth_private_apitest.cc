@@ -57,6 +57,8 @@ class BluetoothPrivateApiTest : public ExtensionApiTest {
                                                          false));
     ON_CALL(*mock_adapter_, GetDevice(mock_device_->GetAddress()))
         .WillByDefault(Return(mock_device_.get()));
+    ON_CALL(*mock_adapter_, IsPresent())
+        .WillByDefault(Return(true));
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {}
@@ -134,6 +136,13 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, SetAdapterState) {
       WithArgs<0, 1>(Invoke(this, &BluetoothPrivateApiTest::SetDiscoverable)));
 
   ASSERT_TRUE(RunComponentExtensionTest("bluetooth_private/adapter_state"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, NoBluetoothAdapter) {
+  ON_CALL(*mock_adapter_, IsPresent())
+      .WillByDefault(Return(false));
+  ASSERT_TRUE(RunComponentExtensionTest("bluetooth_private/no_adapter"))
       << message_;
 }
 

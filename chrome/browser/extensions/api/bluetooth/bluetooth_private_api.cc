@@ -77,6 +77,9 @@ const char kPairingNotEnabled[] =
 const char kInvalidPairingResponseOptions[] =
     "Invalid pairing response options";
 
+const char kAdapterNotPresent[] =
+    "Could not find a Bluetooth adapter.";
+
 // Returns true if the pairing response options passed into the
 // setPairingResponse function are valid.
 bool ValidatePairingResponseOptions(
@@ -122,6 +125,12 @@ bool BluetoothPrivateSetAdapterStateFunction::DoWork(
   scoped_ptr<bt_private::SetAdapterState::Params> params(
       bt_private::SetAdapterState::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  if (!adapter->IsPresent()) {
+    SetError(kAdapterNotPresent);
+    SendResponse(false);
+    return true;
+  }
 
   const bt_private::NewAdapterState& new_state = params->adapter_state;
 

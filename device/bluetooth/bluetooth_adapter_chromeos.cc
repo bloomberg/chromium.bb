@@ -135,6 +135,9 @@ std::string BluetoothAdapterChromeOS::GetName() const {
 void BluetoothAdapterChromeOS::SetName(const std::string& name,
                                        const base::Closure& callback,
                                        const ErrorCallback& error_callback) {
+  if (!IsPresent())
+    error_callback.Run();
+
   DBusThreadManager::Get()->GetBluetoothAdapterClient()->
       GetProperties(object_path_)->alias.Set(
           name,
@@ -167,6 +170,9 @@ void BluetoothAdapterChromeOS::SetPowered(
     bool powered,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
+  if (!IsPresent())
+    error_callback.Run();
+
   DBusThreadManager::Get()->GetBluetoothAdapterClient()->
       GetProperties(object_path_)->powered.Set(
           powered,
@@ -191,6 +197,9 @@ void BluetoothAdapterChromeOS::SetDiscoverable(
     bool discoverable,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
+  if (!IsPresent())
+    error_callback.Run();
+
   DBusThreadManager::Get()->GetBluetoothAdapterClient()->
       GetProperties(object_path_)->discoverable.Set(
           discoverable,
