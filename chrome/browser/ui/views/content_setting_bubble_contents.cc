@@ -444,13 +444,13 @@ void ContentSettingBubbleContents::OnMenuButtonClicked(
 
     gfx::Point screen_location;
     views::View::ConvertPointToScreen(j->first, &screen_location);
-    ignore_result(menu_runner_->RunMenuAt(
-        source->GetWidget(),
-        j->first,
-        gfx::Rect(screen_location, j->first->size()),
-        views::MenuItemView::TOPLEFT,
-        ui::MENU_SOURCE_NONE,
-        views::MenuRunner::HAS_MNEMONICS));
+    ignore_result(
+        menu_runner_->RunMenuAt(source->GetWidget(),
+                                j->first,
+                                gfx::Rect(screen_location, j->first->size()),
+                                views::MENU_ANCHOR_TOPLEFT,
+                                ui::MENU_SOURCE_NONE,
+                                views::MenuRunner::HAS_MNEMONICS));
 }
 
 int ContentSettingBubbleContents::GetPreferredMediaMenuWidth(

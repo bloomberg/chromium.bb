@@ -42,7 +42,6 @@
 #include "net/base/filename_util.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/gfx/image/image.h"
-#include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
 
@@ -121,13 +120,16 @@ class BrowserTabStripController::TabContextMenuContents
   }
 
   void RunMenuAt(const gfx::Point& point, ui::MenuSourceType source_type) {
-    if (menu_runner_->RunMenuAt(
-            tab_->GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
-            views::MenuItemView::TOPLEFT, source_type,
-            views::MenuRunner::HAS_MNEMONICS |
-            views::MenuRunner::CONTEXT_MENU) ==
-        views::MenuRunner::MENU_DELETED)
+    if (menu_runner_->RunMenuAt(tab_->GetWidget(),
+                                NULL,
+                                gfx::Rect(point, gfx::Size()),
+                                views::MENU_ANCHOR_TOPLEFT,
+                                source_type,
+                                views::MenuRunner::HAS_MNEMONICS |
+                                    views::MenuRunner::CONTEXT_MENU) ==
+        views::MenuRunner::MENU_DELETED) {
       return;
+    }
   }
 
   // Overridden from ui::SimpleMenuModel::Delegate:

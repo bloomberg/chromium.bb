@@ -26,6 +26,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/focusable_border.h"
+#include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/menu_runner_handler.h"
 #include "ui/views/controls/menu/submenu_view.h"
@@ -769,8 +770,8 @@ void Combobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
     arrow_button_->SetState(Button::STATE_PRESSED);
   }
   dropdown_open_ = true;
-  MenuItemView::AnchorPosition anchor_position =
-      style_ == STYLE_ACTION ? MenuItemView::TOPRIGHT : MenuItemView::TOPLEFT;
+  MenuAnchorPosition anchor_position =
+      style_ == STYLE_ACTION ? MENU_ANCHOR_TOPRIGHT : MENU_ANCHOR_TOPLEFT;
   if (dropdown_list_menu_runner_->RunMenuAt(GetWidget(), NULL, bounds,
                                             anchor_position, source_type,
                                             MenuRunner::COMBOBOX) ==

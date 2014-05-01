@@ -184,11 +184,11 @@ void MenuItemView::GetAccessibleState(ui::AXViewState* state) {
 }
 
 // static
-bool MenuItemView::IsBubble(MenuItemView::AnchorPosition anchor) {
-  return anchor == MenuItemView::BUBBLE_LEFT ||
-         anchor == MenuItemView::BUBBLE_RIGHT ||
-         anchor == MenuItemView::BUBBLE_ABOVE ||
-         anchor == MenuItemView::BUBBLE_BELOW;
+bool MenuItemView::IsBubble(MenuAnchorPosition anchor) {
+  return anchor == MENU_ANCHOR_BUBBLE_LEFT ||
+         anchor == MENU_ANCHOR_BUBBLE_RIGHT ||
+         anchor == MENU_ANCHOR_BUBBLE_ABOVE ||
+         anchor == MENU_ANCHOR_BUBBLE_BELOW;
 }
 
 // static

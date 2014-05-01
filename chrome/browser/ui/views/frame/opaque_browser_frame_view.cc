@@ -378,7 +378,7 @@ void OpaqueBrowserFrameView::OnMenuButtonClicked(views::View* source,
   ignore_result(menu_runner.RunMenuAt(browser_view()->GetWidget(),
                                       window_icon_,
                                       window_icon_->GetBoundsInScreen(),
-                                      views::MenuItemView::TOPLEFT,
+                                      views::MENU_ANCHOR_TOPLEFT,
                                       ui::MENU_SOURCE_MOUSE,
                                       views::MenuRunner::HAS_MNEMONICS));
 #endif

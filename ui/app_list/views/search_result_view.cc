@@ -17,7 +17,6 @@
 #include "ui/gfx/render_text.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 namespace app_list {
@@ -343,10 +342,12 @@ void SearchResultView::ShowContextMenuForView(views::View* source,
     return;
 
   context_menu_runner_.reset(new views::MenuRunner(menu_model));
-  if (context_menu_runner_->RunMenuAt(
-          GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
-          views::MenuItemView::TOPLEFT, source_type,
-          views::MenuRunner::HAS_MNEMONICS) ==
+  if (context_menu_runner_->RunMenuAt(GetWidget(),
+                                      NULL,
+                                      gfx::Rect(point, gfx::Size()),
+                                      views::MENU_ANCHOR_TOPLEFT,
+                                      source_type,
+                                      views::MenuRunner::HAS_MNEMONICS) ==
       views::MenuRunner::MENU_DELETED)
     return;
 }

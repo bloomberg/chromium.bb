@@ -333,7 +333,7 @@ const infobars::InfoBarContainer::Delegate* InfoBarView::container_delegate()
 
 void InfoBarView::RunMenuAt(ui::MenuModel* menu_model,
                             views::MenuButton* button,
-                            views::MenuItemView::AnchorPosition anchor) {
+                            views::MenuAnchorPosition anchor) {
   DCHECK(owner());  // We'd better not open any menus while we're closing.
   gfx::Point screen_point;
   views::View::ConvertPointToScreen(button, &screen_point);

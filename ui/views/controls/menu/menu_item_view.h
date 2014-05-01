@@ -15,6 +15,7 @@
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/menu/menu_config.h"
+#include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/view.h"
 
 #if defined(OS_WIN)
@@ -83,21 +84,6 @@ class VIEWS_EXPORT MenuItemView : public View {
     EMPTY
   };
 
-  // Where the menu should be anchored to for non-RTL languages.  The
-  // opposite position will be used if base::i18n:IsRTL() is true.
-  // The BUBBLE flags are used when the menu should get enclosed by a bubble.
-  // Note that BUBBLE flags should only be used with menus which have no
-  // children.
-  enum AnchorPosition {
-    TOPLEFT,
-    TOPRIGHT,
-    BOTTOMCENTER,
-    BUBBLE_LEFT,
-    BUBBLE_RIGHT,
-    BUBBLE_ABOVE,
-    BUBBLE_BELOW
-  };
-
   // Where the menu should be drawn, above or below the bounds (when
   // the bounds is non-empty).  POSITION_BEST_FIT (default) positions
   // the menu below the bounds unless the menu does not fit on the
@@ -143,7 +129,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   static int label_start() { return label_start_; }
 
   // Returns if a given |anchor| is a bubble or not.
-  static bool IsBubble(MenuItemView::AnchorPosition anchor);
+  static bool IsBubble(MenuAnchorPosition anchor);
 
   // Returns the accessible name to be used with screen readers. Mnemonics are
   // removed and the menu item accelerator text is appended.

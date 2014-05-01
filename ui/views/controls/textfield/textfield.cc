@@ -25,7 +25,6 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -925,8 +924,12 @@ void Textfield::ShowContextMenuForView(View* source,
                                        const gfx::Point& point,
                                        ui::MenuSourceType source_type) {
   UpdateContextMenu();
-  ignore_result(context_menu_runner_->RunMenuAt(GetWidget(), NULL,
-      gfx::Rect(point, gfx::Size()), MenuItemView::TOPLEFT, source_type,
+  ignore_result(context_menu_runner_->RunMenuAt(
+      GetWidget(),
+      NULL,
+      gfx::Rect(point, gfx::Size()),
+      MENU_ANCHOR_TOPLEFT,
+      source_type,
       MenuRunner::HAS_MNEMONICS | MenuRunner::CONTEXT_MENU));
 }
 

@@ -25,7 +25,7 @@
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
-#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/drag_controller.h"
 
 class BookmarkContextMenu;
@@ -44,6 +44,7 @@ class SlideAnimation;
 namespace views {
 class CustomButton;
 class MenuButton;
+class MenuItemView;
 class TextButton;
 }
 
@@ -120,7 +121,7 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // Returns the position to anchor the menu for |button| at.
   void GetAnchorPositionForButton(views::MenuButton* button,
-                                  views::MenuItemView::AnchorPosition* anchor);
+                                  views::MenuAnchorPosition* anchor);
 
   // Returns the button responsible for showing bookmarks in the other bookmark
   // folder.

@@ -189,11 +189,15 @@ void ExampleMenuButton::OnMenuButtonClicked(View* source,
                                             const gfx::Point& point) {
   menu_runner_.reset(new MenuRunner(GetMenuModel()));
 
-  if (menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(), this,
-        gfx::Rect(point, gfx::Size()), MenuItemView::TOPRIGHT,
-        ui::MENU_SOURCE_NONE, MenuRunner::HAS_MNEMONICS) ==
-      MenuRunner::MENU_DELETED)
+  if (menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
+                              this,
+                              gfx::Rect(point, gfx::Size()),
+                              MENU_ANCHOR_TOPRIGHT,
+                              ui::MENU_SOURCE_NONE,
+                              MenuRunner::HAS_MNEMONICS) ==
+      MenuRunner::MENU_DELETED) {
     return;
+  }
 }
 
 ui::SimpleMenuModel* ExampleMenuButton::GetMenuModel() {

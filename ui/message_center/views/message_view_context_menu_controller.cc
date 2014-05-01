@@ -34,13 +34,12 @@ void MessageViewContextMenuController::ShowContextMenuForView(
 
   views::MenuRunner menu_runner(menu_model.get());
 
-  ignore_result(menu_runner.RunMenuAt(
-      source->GetWidget()->GetTopLevelWidget(),
-      NULL,
-      gfx::Rect(point, gfx::Size()),
-      views::MenuItemView::TOPRIGHT,
-      source_type,
-      views::MenuRunner::HAS_MNEMONICS));
+  ignore_result(menu_runner.RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
+                                      NULL,
+                                      gfx::Rect(point, gfx::Size()),
+                                      views::MENU_ANCHOR_TOPRIGHT,
+                                      source_type,
+                                      views::MenuRunner::HAS_MNEMONICS));
 }
 
 }  // namespace message_center

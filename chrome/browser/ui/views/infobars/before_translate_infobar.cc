@@ -13,7 +13,6 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/menu/menu_item_view.h"
 
 BeforeTranslateInfoBar::BeforeTranslateInfoBar(
     scoped_ptr<TranslateInfoBarDelegate> delegate)
@@ -169,12 +168,14 @@ void BeforeTranslateInfoBar::OnMenuButtonClicked(views::View* source,
   if (!owner())
     return;  // We're closing; don't call anything, it might access the owner.
   if (source == language_menu_button_) {
-    RunMenuAt(language_menu_model_.get(), language_menu_button_,
-              views::MenuItemView::TOPLEFT);
+    RunMenuAt(language_menu_model_.get(),
+              language_menu_button_,
+              views::MENU_ANCHOR_TOPLEFT);
   } else {
     DCHECK_EQ(options_menu_button_, source);
-    RunMenuAt(options_menu_model_.get(), options_menu_button_,
-              views::MenuItemView::TOPRIGHT);
+    RunMenuAt(options_menu_model_.get(),
+              options_menu_button_,
+              views::MENU_ANCHOR_TOPRIGHT);
   }
 }
 

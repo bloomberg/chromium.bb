@@ -14,10 +14,11 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
+#include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_delegate.h"
-#include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace base {
@@ -35,6 +36,7 @@ namespace views {
 
 class MenuButton;
 class MenuHostRootView;
+class MenuItemView;
 class MouseEvent;
 class SubmenuView;
 class View;
@@ -79,7 +81,7 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
                     MenuButton* button,
                     MenuItemView* root,
                     const gfx::Rect& bounds,
-                    MenuItemView::AnchorPosition position,
+                    MenuAnchorPosition position,
                     bool context_menu,
                     int* event_flags);
 
@@ -90,7 +92,7 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   bool drag_in_progress() const { return drag_in_progress_; }
 
   // Get the anchor position wich is used to show this menu.
-  MenuItemView::AnchorPosition GetAnchorPosition() { return state_.anchor; }
+  MenuAnchorPosition GetAnchorPosition() { return state_.anchor; }
 
   // Cancels the current Run. See ExitType for a description of what happens
   // with the various parameters.
@@ -199,7 +201,7 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
     gfx::Rect initial_bounds;
 
     // Position of the initial menu.
-    MenuItemView::AnchorPosition anchor;
+    MenuAnchorPosition anchor;
 
     // The direction child menus have opened in.
     std::list<bool> open_leading;
@@ -280,7 +282,7 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   SendAcceleratorResultType SendAcceleratorToHotTrackedView();
 
   void UpdateInitialLocation(const gfx::Rect& bounds,
-                             MenuItemView::AnchorPosition position,
+                             MenuAnchorPosition position,
                              bool context_menu);
 
   // Invoked when the user accepts the selected item. This is only used

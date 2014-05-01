@@ -952,9 +952,12 @@ void WrenchMenu::RunMenu(views::MenuButton* host) {
   views::View::ConvertPointToScreen(host, &screen_loc);
   gfx::Rect bounds(screen_loc, host->size());
   content::RecordAction(UserMetricsAction("ShowAppMenu"));
-  if (menu_runner_->RunMenuAt(host->GetWidget(), host, bounds,
-          MenuItemView::TOPRIGHT, ui::MENU_SOURCE_NONE,
-          views::MenuRunner::HAS_MNEMONICS) ==
+  if (menu_runner_->RunMenuAt(host->GetWidget(),
+                              host,
+                              bounds,
+                              views::MENU_ANCHOR_TOPRIGHT,
+                              ui::MENU_SOURCE_NONE,
+                              views::MenuRunner::HAS_MNEMONICS) ==
       views::MenuRunner::MENU_DELETED)
     return;
   if (bookmark_menu_delegate_.get()) {

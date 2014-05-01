@@ -21,6 +21,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
 
@@ -51,7 +52,7 @@ void BookmarkMenuController::RunMenuAt(BookmarkBarView* bookmark_bar,
   bookmark_bar_ = bookmark_bar;
   views::MenuButton* menu_button = bookmark_bar_->GetMenuButtonForNode(node_);
   DCHECK(menu_button);
-  MenuItemView::AnchorPosition anchor;
+  views::MenuAnchorPosition anchor;
   bookmark_bar_->GetAnchorPositionForButton(menu_button, &anchor);
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(menu_button, &screen_loc);
@@ -163,7 +164,7 @@ int BookmarkMenuController::GetDragOperations(MenuItemView* sender) {
 views::MenuItemView* BookmarkMenuController::GetSiblingMenu(
     views::MenuItemView* menu,
     const gfx::Point& screen_point,
-    views::MenuItemView::AnchorPosition* anchor,
+    views::MenuAnchorPosition* anchor,
     bool* has_mnemonics,
     views::MenuButton** button) {
   if (!bookmark_bar_ || for_drop_)

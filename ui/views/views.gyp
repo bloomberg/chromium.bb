@@ -154,6 +154,7 @@
         'controls/menu/menu_separator.h',
         'controls/menu/menu_separator_views.cc',
         'controls/menu/menu_separator_win.cc',
+        'controls/menu/menu_types.h',
         'controls/menu/menu_wrapper.h',
         'controls/menu/native_menu_win.cc',
         'controls/menu/native_menu_win.h',

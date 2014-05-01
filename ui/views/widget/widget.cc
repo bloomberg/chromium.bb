@@ -16,6 +16,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/focus/focus_manager.h"

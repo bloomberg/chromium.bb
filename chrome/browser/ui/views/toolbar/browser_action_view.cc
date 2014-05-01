@@ -28,6 +28,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
+#include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 using extensions::Extension;
@@ -186,8 +187,12 @@ void BrowserActionButton::ShowContextMenuForView(
   context_menu_ = menu_runner_->GetMenu();
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(this, &screen_loc);
-  if (menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(screen_loc, size()),
-          views::MenuItemView::TOPLEFT, source_type,
+  if (menu_runner_->RunMenuAt(
+          GetWidget(),
+          NULL,
+          gfx::Rect(screen_loc, size()),
+          views::MENU_ANCHOR_TOPLEFT,
+          source_type,
           views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
       views::MenuRunner::MENU_DELETED) {
     return;

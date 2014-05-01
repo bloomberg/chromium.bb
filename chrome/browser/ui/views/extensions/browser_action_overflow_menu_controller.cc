@@ -112,7 +112,7 @@ bool BrowserActionOverflowMenuController::RunMenu(views::Widget* window,
   bounds.set_x(screen_loc.x());
   bounds.set_y(screen_loc.y());
 
-  views::MenuItemView::AnchorPosition anchor = views::MenuItemView::TOPRIGHT;
+  views::MenuAnchorPosition anchor = views::MENU_ANCHOR_TOPRIGHT;
   // As we maintain our own lifetime we can safely ignore the result.
   ignore_result(menu_runner_->RunMenuAt(window, menu_button_, bounds, anchor,
       ui::MENU_SOURCE_NONE, for_drop_ ? views::MenuRunner::FOR_DROP : 0));
@@ -154,11 +154,14 @@ bool BrowserActionOverflowMenuController::ShowContextMenu(
 
   // We can ignore the result as we delete ourself.
   // This blocks until the user choses something or dismisses the menu.
-  ignore_result(context_menu_runner.RunMenuAt(menu_button_->GetWidget(),
-      NULL, gfx::Rect(p, gfx::Size()), views::MenuItemView::TOPLEFT,
+  ignore_result(context_menu_runner.RunMenuAt(
+      menu_button_->GetWidget(),
+      NULL,
+      gfx::Rect(p, gfx::Size()),
+      views::MENU_ANCHOR_TOPLEFT,
       source_type,
       views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::IS_NESTED |
-      views::MenuRunner::CONTEXT_MENU));
+          views::MenuRunner::CONTEXT_MENU));
 
   // The user is done with the context menu, so we can close the underlying
   // menu.

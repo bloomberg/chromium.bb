@@ -594,11 +594,15 @@ void TaskManagerView::ShowContextMenuForView(views::View* source,
     menu_model.AddCheckItem(i->id, l10n_util::GetStringUTF16(i->id));
   }
   menu_runner_.reset(new views::MenuRunner(&menu_model));
-  if (menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
-                              views::MenuItemView::TOPLEFT, source_type,
+  if (menu_runner_->RunMenuAt(GetWidget(),
+                              NULL,
+                              gfx::Rect(point, gfx::Size()),
+                              views::MENU_ANCHOR_TOPLEFT,
+                              source_type,
                               views::MenuRunner::CONTEXT_MENU) ==
-      views::MenuRunner::MENU_DELETED)
+      views::MenuRunner::MENU_DELETED) {
     return;
+  }
 }
 
 bool TaskManagerView::IsCommandIdChecked(int id) const {

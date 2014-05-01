@@ -6,11 +6,11 @@
 #define UI_VIEWS_CONTROLS_MENU_MENU_RUNNER_HANDLER_H_
 
 #include "base/basictypes.h"
-#include "ui/views/controls/menu/menu_item_view.h"
 
 namespace views {
 
 class MenuButton;
+class MenuItemView;
 class Widget;
 
 // Used internally by MenuRunner to show the menu. Can be set in tests (see
@@ -21,7 +21,7 @@ class VIEWS_EXPORT MenuRunnerHandler {
   virtual MenuRunner::RunResult RunMenuAt(Widget* parent,
                                           MenuButton* button,
                                           const gfx::Rect& bounds,
-                                          MenuItemView::AnchorPosition anchor,
+                                          MenuAnchorPosition anchor,
                                           ui::MenuSourceType source_type,
                                           int32 types) = 0;
 };

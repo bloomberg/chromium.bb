@@ -75,7 +75,6 @@
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/metrics.h"
 #include "ui/views/view_constants.h"
@@ -90,7 +89,6 @@ using content::Referrer;
 using ui::DropTargetEvent;
 using views::CustomButton;
 using views::MenuButton;
-using views::MenuItemView;
 using views::View;
 
 // Margins around the content.
@@ -567,11 +565,11 @@ views::MenuButton* BookmarkBarView::GetMenuButtonForNode(
 
 void BookmarkBarView::GetAnchorPositionForButton(
     views::MenuButton* button,
-    MenuItemView::AnchorPosition* anchor) {
+    views::MenuAnchorPosition* anchor) {
   if (button == other_bookmarked_button_ || button == overflow_button_)
-    *anchor = MenuItemView::TOPRIGHT;
+    *anchor = views::MENU_ANCHOR_TOPRIGHT;
   else
-    *anchor = MenuItemView::TOPLEFT;
+    *anchor = views::MENU_ANCHOR_TOPLEFT;
 }
 
 views::MenuItemView* BookmarkBarView::GetMenu() {

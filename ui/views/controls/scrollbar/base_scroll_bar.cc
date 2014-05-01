@@ -305,11 +305,16 @@ void BaseScrollBar::ShowContextMenuForView(View* source,
   menu->AppendSeparator();
   menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollPrev);
   menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollNext);
-  if (menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(p, gfx::Size()),
-          views::MenuItemView::TOPLEFT, source_type, MenuRunner::HAS_MNEMONICS |
-          views::MenuRunner::CONTEXT_MENU) ==
-      MenuRunner::MENU_DELETED)
+  if (menu_runner_->RunMenuAt(
+          GetWidget(),
+          NULL,
+          gfx::Rect(p, gfx::Size()),
+          MENU_ANCHOR_TOPLEFT,
+          source_type,
+          MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
+      MenuRunner::MENU_DELETED) {
     return;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

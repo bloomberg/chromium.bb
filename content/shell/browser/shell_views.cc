@@ -24,7 +24,6 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
-#include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -189,11 +188,14 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
         new views::MenuRunner(context_menu_model_.get()));
 
     if (context_menu_runner_->RunMenuAt(web_view_->GetWidget(),
-                NULL, gfx::Rect(screen_point, gfx::Size()),
-                views::MenuItemView::TOPRIGHT, ui::MENU_SOURCE_NONE,
-                views::MenuRunner::CONTEXT_MENU) ==
-            views::MenuRunner::MENU_DELETED)
-        return;
+                                        NULL,
+                                        gfx::Rect(screen_point, gfx::Size()),
+                                        views::MENU_ANCHOR_TOPRIGHT,
+                                        ui::MENU_SOURCE_NONE,
+                                        views::MenuRunner::CONTEXT_MENU) ==
+        views::MenuRunner::MENU_DELETED) {
+      return;
+    }
   }
 
   void OnWebContentsFocused(content::WebContents* web_contents) {

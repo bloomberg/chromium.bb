@@ -10,7 +10,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/point.h"
-#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/gfx/rect.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -61,9 +61,12 @@ void StatusIconWin::HandleClickEvent(const gfx::Point& cursor_pos,
 
   menu_runner_.reset(new views::MenuRunner(menu_model_));
 
-  ignore_result(menu_runner_->RunMenuAt(NULL, NULL,
-      gfx::Rect(cursor_pos, gfx::Size()), views::MenuItemView::TOPLEFT,
-      ui::MENU_SOURCE_MOUSE, views::MenuRunner::HAS_MNEMONICS));
+  ignore_result(menu_runner_->RunMenuAt(NULL,
+                                        NULL,
+                                        gfx::Rect(cursor_pos, gfx::Size()),
+                                        views::MENU_ANCHOR_TOPLEFT,
+                                        ui::MENU_SOURCE_MOUSE,
+                                        views::MenuRunner::HAS_MNEMONICS));
 }
 
 void StatusIconWin::HandleBalloonClickEvent() {

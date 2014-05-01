@@ -10,7 +10,6 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/page_navigator.h"
 #include "ui/gfx/point.h"
-#include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 DownloadShelfContextMenuView::DownloadShelfContextMenuView(
@@ -31,11 +30,11 @@ void DownloadShelfContextMenuView::Run(views::Widget* parent_widget,
   menu_runner_.reset(new views::MenuRunner(menu_model));
 
   // The menu's alignment is determined based on the UI layout.
-  views::MenuItemView::AnchorPosition position;
+  views::MenuAnchorPosition position;
   if (base::i18n::IsRTL())
-    position = views::MenuItemView::TOPRIGHT;
+    position = views::MENU_ANCHOR_TOPRIGHT;
   else
-    position = views::MenuItemView::TOPLEFT;
+    position = views::MENU_ANCHOR_TOPLEFT;
 
   // The return value of RunMenuAt indicates whether the MenuRunner was deleted
   // while running the menu, which indicates that the containing view may have

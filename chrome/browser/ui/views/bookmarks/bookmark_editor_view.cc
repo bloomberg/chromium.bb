@@ -249,12 +249,16 @@ void BookmarkEditorView::ShowContextMenuForView(
 
   context_menu_runner_.reset(new views::MenuRunner(GetMenuModel()));
 
-  if (context_menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
-        NULL, gfx::Rect(point, gfx::Size()), views::MenuItemView::TOPRIGHT,
-        source_type,
-        views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
-        views::MenuRunner::MENU_DELETED)
+  if (context_menu_runner_->RunMenuAt(
+          source->GetWidget()->GetTopLevelWidget(),
+          NULL,
+          gfx::Rect(point, gfx::Size()),
+          views::MENU_ANCHOR_TOPRIGHT,
+          source_type,
+          views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
+      views::MenuRunner::MENU_DELETED) {
     return;
+  }
 }
 
 void BookmarkEditorView::Init() {

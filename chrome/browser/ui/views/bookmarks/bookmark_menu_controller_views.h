@@ -11,7 +11,6 @@
 #include "components/bookmarks/core/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/core/browser/bookmark_node_data.h"
 #include "ui/views/controls/menu/menu_delegate.h"
-#include "ui/views/controls/menu/menu_item_view.h"
 
 class BookmarkBarView;
 class BookmarkMenuControllerObserver;
@@ -29,6 +28,7 @@ class OSExchangeData;
 
 namespace views {
 class MenuButton;
+class MenuItemView;
 class MenuRunner;
 class Widget;
 }
@@ -107,7 +107,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   virtual views::MenuItemView* GetSiblingMenu(
       views::MenuItemView* menu,
       const gfx::Point& screen_point,
-      views::MenuItemView::AnchorPosition* anchor,
+      views::MenuAnchorPosition* anchor,
       bool* has_mnemonics,
       views::MenuButton** button) OVERRIDE;
   virtual int GetMaxWidthForMenu(views::MenuItemView* view) OVERRIDE;

@@ -12,6 +12,7 @@
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_controller_delegate.h"
 #include "ui/views/controls/menu/menu_delegate.h"
+#include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner_handler.h"
 #include "ui/views/widget/widget.h"
@@ -43,7 +44,7 @@ class MenuRunnerImpl : public internal::MenuControllerDelegate {
   MenuRunner::RunResult RunMenuAt(Widget* parent,
                                   MenuButton* button,
                                   const gfx::Rect& bounds,
-                                  MenuItemView::AnchorPosition anchor,
+                                  MenuAnchorPosition anchor,
                                   int32 types) WARN_UNUSED_RESULT;
 
   void Cancel();
@@ -140,12 +141,11 @@ void MenuRunnerImpl::Release() {
   }
 }
 
-MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(
-    Widget* parent,
-    MenuButton* button,
-    const gfx::Rect& bounds,
-    MenuItemView::AnchorPosition anchor,
-    int32 types) {
+MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(Widget* parent,
+                                                MenuButton* button,
+                                                const gfx::Rect& bounds,
+                                                MenuAnchorPosition anchor,
+                                                int32 types) {
   closing_event_time_ = base::TimeDelta();
   if (running_) {
     // Ignore requests to show the menu while it's already showing. MenuItemView
@@ -300,7 +300,7 @@ MenuItemView* MenuRunner::GetMenu() {
 MenuRunner::RunResult MenuRunner::RunMenuAt(Widget* parent,
                                             MenuButton* button,
                                             const gfx::Rect& bounds,
-                                            MenuItemView::AnchorPosition anchor,
+                                            MenuAnchorPosition anchor,
                                             ui::MenuSourceType source_type,
                                             int32 types) {
   if (runner_handler_.get()) {
@@ -321,11 +321,11 @@ MenuRunner::RunResult MenuRunner::RunMenuAt(Widget* parent,
       case ui::MENU_SOURCE_NONE:
       case ui::MENU_SOURCE_KEYBOARD:
       case ui::MENU_SOURCE_MOUSE:
-        anchor = MenuItemView::TOPLEFT;
+        anchor = MENU_ANCHOR_TOPLEFT;
         break;
       case ui::MENU_SOURCE_TOUCH:
       case ui::MENU_SOURCE_TOUCH_EDIT_MENU:
-        anchor = MenuItemView::BOTTOMCENTER;
+        anchor = MENU_ANCHOR_BOTTOMCENTER;
         break;
       default:
         break;

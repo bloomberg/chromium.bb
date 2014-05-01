@@ -7,7 +7,7 @@
 
 #include "ui/views/view.h"
 #include "ui/views/bubble/bubble_border.h"
-#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/menu_types.h"
 
 namespace views {
 
@@ -47,8 +47,7 @@ class MenuScrollViewContainer : public View {
   // Create the bubble border.
   void CreateBubbleBorder();
 
-  BubbleBorder::Arrow BubbleBorderTypeFromAnchor(
-      MenuItemView::AnchorPosition anchor);
+  BubbleBorder::Arrow BubbleBorderTypeFromAnchor(MenuAnchorPosition anchor);
 
   class MenuScrollView;
 

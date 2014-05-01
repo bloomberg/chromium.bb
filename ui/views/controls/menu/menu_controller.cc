@@ -35,6 +35,7 @@
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller_delegate.h"
 #include "ui/views/controls/menu/menu_host_root_view.h"
+#include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/drag_utils.h"
@@ -346,8 +347,9 @@ struct MenuController::SelectByCharDetails {
 MenuController::State::State()
     : item(NULL),
       submenu_open(false),
-      anchor(MenuItemView::TOPLEFT),
-      context_menu(false) {}
+      anchor(MENU_ANCHOR_TOPLEFT),
+      context_menu(false) {
+}
 
 MenuController::State::~State() {}
 
@@ -365,7 +367,7 @@ MenuItemView* MenuController::Run(Widget* parent,
                                   MenuButton* button,
                                   MenuItemView* root,
                                   const gfx::Rect& bounds,
-                                  MenuItemView::AnchorPosition position,
+                                  MenuAnchorPosition position,
                                   bool context_menu,
                                   int* result_event_flags) {
   exit_type_ = EXIT_NONE;
@@ -1232,10 +1234,9 @@ MenuController::SendAcceleratorResultType
       ACCELERATOR_PROCESSED : ACCELERATOR_PROCESSED_EXIT;
 }
 
-void MenuController::UpdateInitialLocation(
-    const gfx::Rect& bounds,
-    MenuItemView::AnchorPosition position,
-    bool context_menu) {
+void MenuController::UpdateInitialLocation(const gfx::Rect& bounds,
+                                           MenuAnchorPosition position,
+                                           bool context_menu) {
   pending_state_.context_menu = context_menu;
   pending_state_.initial_bounds = bounds;
   if (bounds.height() > 1) {
@@ -1246,10 +1247,10 @@ void MenuController::UpdateInitialLocation(
 
   // Reverse anchor position for RTL languages.
   if (base::i18n::IsRTL() &&
-      (position == MenuItemView::TOPRIGHT ||
-       position == MenuItemView::TOPLEFT)) {
-    pending_state_.anchor = position == MenuItemView::TOPRIGHT ?
-        MenuItemView::TOPLEFT : MenuItemView::TOPRIGHT;
+      (position == MENU_ANCHOR_TOPRIGHT || position == MENU_ANCHOR_TOPLEFT)) {
+    pending_state_.anchor = position == MENU_ANCHOR_TOPRIGHT
+                                ? MENU_ANCHOR_TOPLEFT
+                                : MENU_ANCHOR_TOPRIGHT;
   } else {
     pending_state_.anchor = position;
   }
@@ -1305,7 +1306,7 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
   // if there is a sibling menu we should show.
   gfx::Point screen_point(mouse_location);
   View::ConvertPointToScreen(source_view, &screen_point);
-  MenuItemView::AnchorPosition anchor;
+  MenuAnchorPosition anchor;
   bool has_mnemonics;
   MenuButton* button = NULL;
   MenuItemView* alt_menu = source->GetMenuItem()->GetDelegate()->
@@ -1729,11 +1730,11 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
       x += 1;
 
     y = state_.initial_bounds.bottom();
-    if (state_.anchor == MenuItemView::TOPRIGHT) {
+    if (state_.anchor == MENU_ANCHOR_TOPRIGHT) {
       x = x + state_.initial_bounds.width() - pref.width();
       if (menu_config.offset_context_menus && state_.context_menu)
         x -= 1;
-    } else if (state_.anchor == MenuItemView::BOTTOMCENTER) {
+    } else if (state_.anchor == MENU_ANCHOR_BOTTOMCENTER) {
       x = x - (pref.width() - state_.initial_bounds.width()) / 2;
       if (pref.height() >
           state_.initial_bounds.y() + kCenteredContextMenuYOffset) {
@@ -1782,7 +1783,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
           // The menu should never overlap the owning button. So move it.
           // We use the anchor view style to determine the preferred position
           // relative to the owning button.
-          if (state_.anchor == MenuItemView::TOPLEFT) {
+          if (state_.anchor == MENU_ANCHOR_TOPLEFT) {
             // The menu starts with the same x coordinate as the owning button.
             if (x + state_.initial_bounds.width() + pref.width() >
                 state_.monitor_bounds.right())
@@ -1895,16 +1896,16 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
     int max_height = state_.monitor_bounds.height();
     // In case of bubbles, the maximum width is limited by the space
     // between the display corner and the target area + the tip size.
-    if (state_.anchor == MenuItemView::BUBBLE_LEFT) {
+    if (state_.anchor == MENU_ANCHOR_BUBBLE_LEFT) {
       max_width = owner_bounds.x() - state_.monitor_bounds.x() +
                   kBubbleTipSizeLeftRight;
-    } else if (state_.anchor == MenuItemView::BUBBLE_RIGHT) {
+    } else if (state_.anchor == MENU_ANCHOR_BUBBLE_RIGHT) {
       max_width = state_.monitor_bounds.right() - owner_bounds.right() +
                   kBubbleTipSizeLeftRight;
-    } else if (state_.anchor == MenuItemView::BUBBLE_ABOVE) {
+    } else if (state_.anchor == MENU_ANCHOR_BUBBLE_ABOVE) {
       max_height = owner_bounds.y() - state_.monitor_bounds.y() +
                    kBubbleTipSizeTopBottom;
-    } else if (state_.anchor == MenuItemView::BUBBLE_BELOW) {
+    } else if (state_.anchor == MENU_ANCHOR_BUBBLE_BELOW) {
       max_height = state_.monitor_bounds.bottom() - owner_bounds.bottom() +
                    kBubbleTipSizeTopBottom;
     }
@@ -1919,9 +1920,9 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
                           item->GetDelegate()->GetMaxWidthForMenu(item)));
 
   int x, y;
-  if (state_.anchor == MenuItemView::BUBBLE_ABOVE ||
-      state_.anchor == MenuItemView::BUBBLE_BELOW) {
-    if (state_.anchor == MenuItemView::BUBBLE_ABOVE)
+  if (state_.anchor == MENU_ANCHOR_BUBBLE_ABOVE ||
+      state_.anchor == MENU_ANCHOR_BUBBLE_BELOW) {
+    if (state_.anchor == MENU_ANCHOR_BUBBLE_ABOVE)
       y = owner_bounds.y() - pref.height() + kBubbleTipSizeTopBottom;
     else
       y = owner_bounds.bottom() - kBubbleTipSizeTopBottom;
@@ -1936,7 +1937,7 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
     submenu->GetScrollViewContainer()->SetBubbleArrowOffset(
         pref.width() / 2 - x + x_old);
   } else {
-    if (state_.anchor == MenuItemView::BUBBLE_RIGHT)
+    if (state_.anchor == MENU_ANCHOR_BUBBLE_RIGHT)
       x = owner_bounds.right() - kBubbleTipSizeLeftRight;
     else
       x = owner_bounds.x() - pref.width() + kBubbleTipSizeLeftRight;

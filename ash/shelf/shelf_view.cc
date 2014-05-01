@@ -1767,8 +1767,7 @@ void ShelfView::ShowMenu(scoped_ptr<views::MenuModelAdapter> menu_model_adapter,
       source->GetWidget()->GetNativeView()->GetRootWindow());
 
   // Determine the menu alignment dependent on the shelf.
-  views::MenuItemView::AnchorPosition menu_alignment =
-      views::MenuItemView::TOPLEFT;
+  views::MenuAnchorPosition menu_alignment = views::MENU_ANCHOR_TOPLEFT;
   gfx::Rect anchor_point = gfx::Rect(click_point, gfx::Size());
 
   ShelfWidget* shelf = RootWindowController::ForShelf(
@@ -1793,16 +1792,16 @@ void ShelfView::ShowMenu(scoped_ptr<views::MenuModelAdapter> menu_model_adapter,
 
     switch (align) {
       case SHELF_ALIGNMENT_BOTTOM:
-        menu_alignment = views::MenuItemView::BUBBLE_ABOVE;
+        menu_alignment = views::MENU_ANCHOR_BUBBLE_ABOVE;
         break;
       case SHELF_ALIGNMENT_LEFT:
-        menu_alignment = views::MenuItemView::BUBBLE_RIGHT;
+        menu_alignment = views::MENU_ANCHOR_BUBBLE_RIGHT;
         break;
       case SHELF_ALIGNMENT_RIGHT:
-        menu_alignment = views::MenuItemView::BUBBLE_LEFT;
+        menu_alignment = views::MENU_ANCHOR_BUBBLE_LEFT;
         break;
       case SHELF_ALIGNMENT_TOP:
-        menu_alignment = views::MenuItemView::BUBBLE_BELOW;
+        menu_alignment = views::MENU_ANCHOR_BUBBLE_BELOW;
         break;
     }
   }

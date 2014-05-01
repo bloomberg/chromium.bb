@@ -199,9 +199,10 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
     menu_delegate.set_triggerable_event_flags(triggerable_event_flags());
     menu_runner_.reset(new views::MenuRunner(menu_delegate.CreateMenu()));
     views::MenuRunner::RunResult result =
-        menu_runner_->RunMenuAt(GetWidget(), NULL,
+        menu_runner_->RunMenuAt(GetWidget(),
+                                NULL,
                                 gfx::Rect(menu_position, gfx::Size(0, 0)),
-                                views::MenuItemView::TOPLEFT,
+                                views::MENU_ANCHOR_TOPLEFT,
                                 source_type,
                                 views::MenuRunner::HAS_MNEMONICS);
     if (result == views::MenuRunner::MENU_DELETED)
@@ -211,9 +212,10 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
     views::MenuItemView* menu = new views::MenuItemView(&menu_delegate);
     menu_runner_.reset(new views::MenuRunner(menu));
     views::MenuRunner::RunResult result =
-        menu_runner_->RunMenuAt(GetWidget(), NULL,
+        menu_runner_->RunMenuAt(GetWidget(),
+                                NULL,
                                 gfx::Rect(menu_position, gfx::Size(0, 0)),
-                                views::MenuItemView::TOPLEFT,
+                                views::MENU_ANCHOR_TOPLEFT,
                                 source_type,
                                 views::MenuRunner::HAS_MNEMONICS);
     if (result == views::MenuRunner::MENU_DELETED)

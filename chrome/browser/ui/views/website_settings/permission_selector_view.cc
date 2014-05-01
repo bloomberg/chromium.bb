@@ -117,14 +117,15 @@ void PermissionMenuButton::OnMenuButtonClicked(View* source,
 
   gfx::Point p(point);
   p.Offset(-source->width(), 0);
-  if (menu_runner_->RunMenuAt(
-          source->GetWidget()->GetTopLevelWidget(),
-          this,
-          gfx::Rect(p, gfx::Size()),
-          views::MenuItemView::TOPLEFT,
-          ui::MENU_SOURCE_NONE,
-          views::MenuRunner::HAS_MNEMONICS) == views::MenuRunner::MENU_DELETED)
+  if (menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
+                              this,
+                              gfx::Rect(p, gfx::Size()),
+                              views::MENU_ANCHOR_TOPLEFT,
+                              ui::MENU_SOURCE_NONE,
+                              views::MenuRunner::HAS_MNEMONICS) ==
+      views::MenuRunner::MENU_DELETED) {
     return;
+  }
 }
 
 }  // namespace internal

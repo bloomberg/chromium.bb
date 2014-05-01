@@ -29,7 +29,6 @@
 #include "ui/gfx/transform_util.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/drag_controller.h"
 
@@ -328,12 +327,15 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
     return;
 
   context_menu_runner_.reset(new views::MenuRunner(menu_model));
-  if (context_menu_runner_->RunMenuAt(
-          GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
-          views::MenuItemView::TOPLEFT, source_type,
-          views::MenuRunner::HAS_MNEMONICS) ==
-      views::MenuRunner::MENU_DELETED)
+  if (context_menu_runner_->RunMenuAt(GetWidget(),
+                                      NULL,
+                                      gfx::Rect(point, gfx::Size()),
+                                      views::MENU_ANCHOR_TOPLEFT,
+                                      source_type,
+                                      views::MenuRunner::HAS_MNEMONICS) ==
+      views::MenuRunner::MENU_DELETED) {
     return;
+  }
 }
 
 void AppListItemView::StateChanged() {

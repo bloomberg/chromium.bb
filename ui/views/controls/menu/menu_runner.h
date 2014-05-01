@@ -8,7 +8,17 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/base/ui_base_types.h"
+#include "ui/views/controls/menu/menu_types.h"
+#include "ui/views/views_export.h"
+
+namespace base {
+class TimeDelta;
+}
+
+namespace gfx {
+class Rect;
+}
 
 namespace ui {
 class MenuModel;
@@ -17,6 +27,7 @@ class MenuModel;
 namespace views {
 
 class MenuButton;
+class MenuItemView;
 class MenuModelAdapter;
 class MenuRunnerHandler;
 class Widget;
@@ -103,7 +114,7 @@ class VIEWS_EXPORT MenuRunner {
   RunResult RunMenuAt(Widget* parent,
                       MenuButton* button,
                       const gfx::Rect& bounds,
-                      MenuItemView::AnchorPosition anchor,
+                      MenuAnchorPosition anchor,
                       ui::MenuSourceType source_type,
                       int32 types) WARN_UNUSED_RESULT;
 

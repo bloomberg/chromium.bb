@@ -23,7 +23,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/widget/widget.h"
 
 
@@ -186,9 +185,8 @@ void ExtensionInfoBar::OnMenuButtonClicked(views::View* source,
   scoped_refptr<ExtensionContextMenuModel> options_menu_contents =
       new ExtensionContextMenuModel(extension, browser_);
   DCHECK_EQ(icon_as_menu_, source);
-  RunMenuAt(options_menu_contents.get(),
-            icon_as_menu_,
-            views::MenuItemView::TOPLEFT);
+  RunMenuAt(
+      options_menu_contents.get(), icon_as_menu_, views::MENU_ANCHOR_TOPLEFT);
 }
 
 void ExtensionInfoBar::OnImageLoaded(const gfx::Image& image) {

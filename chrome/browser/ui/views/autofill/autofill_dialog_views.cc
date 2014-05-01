@@ -537,7 +537,7 @@ void AutofillDialogViews::AccountChooser::OnMenuButtonClicked(
   if (menu_runner_->RunMenuAt(source->GetWidget(),
                               NULL,
                               source->GetBoundsInScreen(),
-                              views::MenuItemView::TOPRIGHT,
+                              views::MENU_ANCHOR_TOPRIGHT,
                               ui::MENU_SOURCE_NONE,
                               0) == views::MenuRunner::MENU_DELETED) {
     return;
@@ -1752,7 +1752,7 @@ void AutofillDialogViews::OnMenuButtonClicked(views::View* source,
   if (menu_runner_->RunMenuAt(source->GetWidget(),
                               NULL,
                               screen_bounds,
-                              views::MenuItemView::TOPRIGHT,
+                              views::MENU_ANCHOR_TOPRIGHT,
                               ui::MENU_SOURCE_NONE,
                               0) == views::MenuRunner::MENU_DELETED) {
     return;

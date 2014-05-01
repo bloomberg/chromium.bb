@@ -70,13 +70,12 @@ void MenuTestBase::OnMenuButtonClicked(views::View* source,
   gfx::Point screen_location;
   views::View::ConvertPointToScreen(source, &screen_location);
   gfx::Rect bounds(screen_location, source->size());
-  ignore_result(menu_runner_->RunMenuAt(
-      source->GetWidget(),
-      button_,
-      bounds,
-      views::MenuItemView::TOPLEFT,
-      ui::MENU_SOURCE_NONE,
-      views::MenuRunner::HAS_MNEMONICS));
+  ignore_result(menu_runner_->RunMenuAt(source->GetWidget(),
+                                        button_,
+                                        bounds,
+                                        views::MENU_ANCHOR_TOPLEFT,
+                                        ui::MENU_SOURCE_NONE,
+                                        views::MenuRunner::HAS_MNEMONICS));
 }
 
 void MenuTestBase::ExecuteCommand(int id) {

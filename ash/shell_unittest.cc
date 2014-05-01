@@ -380,9 +380,12 @@ TEST_F(ShellTest, LockScreenClosesActiveMenu) {
                  base::Unretained(this)));
 
   EXPECT_EQ(views::MenuRunner::NORMAL_EXIT,
-      menu_runner->RunMenuAt(widget, NULL, gfx::Rect(),
-        views::MenuItemView::TOPLEFT, ui::MENU_SOURCE_MOUSE,
-        views::MenuRunner::CONTEXT_MENU));
+            menu_runner->RunMenuAt(widget,
+                                   NULL,
+                                   gfx::Rect(),
+                                   views::MENU_ANCHOR_TOPLEFT,
+                                   ui::MENU_SOURCE_MOUSE,
+                                   views::MenuRunner::CONTEXT_MENU));
 }
 
 TEST_F(ShellTest, ManagedWindowModeBasics) {

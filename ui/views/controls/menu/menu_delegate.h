@@ -10,23 +10,29 @@
 
 #include "base/logging.h"
 #include "base/strings/string16.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/base/ui_base_types.h"
+#include "ui/views/controls/menu/menu_types.h"
+#include "ui/views/views_export.h"
 
 using ui::OSExchangeData;
 
 namespace gfx {
 class FontList;
+class Point;
 }
 
 namespace ui {
 class Accelerator;
+class DropTargetEvent;
 }
 
 namespace views {
 
 class MenuButton;
+class MenuItemView;
 
 // MenuDelegate --------------------------------------------------------------
 
@@ -213,7 +219,7 @@ class VIEWS_EXPORT MenuDelegate {
   // The delegate owns the returned menu, not the controller.
   virtual MenuItemView* GetSiblingMenu(MenuItemView* menu,
                                        const gfx::Point& screen_point,
-                                       MenuItemView::AnchorPosition* anchor,
+                                       MenuAnchorPosition* anchor,
                                        bool* has_mnemonics,
                                        MenuButton** button);
 

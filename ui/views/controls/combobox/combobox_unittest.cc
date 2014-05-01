@@ -38,7 +38,7 @@ class TestMenuRunnerHandler : public MenuRunnerHandler {
   virtual MenuRunner::RunResult RunMenuAt(Widget* parent,
                                           MenuButton* button,
                                           const gfx::Rect& bounds,
-                                          MenuItemView::AnchorPosition anchor,
+                                          MenuAnchorPosition anchor,
                                           ui::MenuSourceType source_type,
                                           int32 types) OVERRIDE {
     executed_ = true;
