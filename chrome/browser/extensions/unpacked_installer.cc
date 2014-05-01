@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -112,6 +113,7 @@ UnpackedInstaller::UnpackedInstaller(ExtensionService* extension_service)
     : service_weak_(extension_service->AsWeakPtr()),
       prompt_for_plugins_(true),
       require_modern_manifest_version_(true),
+      be_noisy_on_failure_(true),
       installer_(extension_service->profile()) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -296,8 +298,13 @@ void UnpackedInstaller::ReportExtensionLoadError(const std::string &error) {
   if (!on_failure_callback_.is_null())
     on_failure_callback_.Run(extension_path_, error);
 
-  if (service_weak_.get())
-    service_weak_->ReportExtensionLoadError(extension_path_, error);
+  if (service_weak_.get()) {
+    ExtensionErrorReporter::GetInstance()->ReportLoadError(
+        extension_path_,
+        error,
+        service_weak_->profile(),
+        be_noisy_on_failure_);
+  }
 }
 
 void UnpackedInstaller::ConfirmInstall() {

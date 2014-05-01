@@ -69,6 +69,10 @@ class UnpackedInstaller
     on_failure_callback_ = callback;
   }
 
+  void set_be_noisy_on_failure(bool be_noisy_on_failure) {
+    be_noisy_on_failure_ = be_noisy_on_failure;
+  }
+
  private:
   friend class base::RefCountedThreadSafe<UnpackedInstaller>;
 
@@ -127,6 +131,9 @@ class UnpackedInstaller
 
   // An optional callback to set in order to be notified of failure.
   OnFailureCallback on_failure_callback_;
+
+  // Whether or not to be noisy (show a dialog) on failure. Defaults to true.
+  bool be_noisy_on_failure_;
 
   // Gives access to common methods and data of an extension installer.
   ExtensionInstaller installer_;

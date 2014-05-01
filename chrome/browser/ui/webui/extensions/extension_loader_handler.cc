@@ -187,6 +187,11 @@ void ExtensionLoaderHandler::LoadUnpackedExtensionImpl(
   installer->set_on_failure_callback(
       base::Bind(&ExtensionLoaderHandler::OnLoadFailure,
                  weak_ptr_factory_.GetWeakPtr()));
+
+  // We do our own error handling, so we don't want a load failure to trigger
+  // a dialog.
+  installer->set_be_noisy_on_failure(false);
+
   installer->Load(file_path);
 }
 

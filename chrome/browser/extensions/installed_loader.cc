@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
@@ -171,7 +172,11 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
   }
 
   if (!extension.get()) {
-    extension_service_->ReportExtensionLoadError(info.extension_path, error);
+    ExtensionErrorReporter::GetInstance()->ReportLoadError(
+        info.extension_path,
+        error,
+        extension_service_->profile(),
+        false);  // Be quiet.
     return;
   }
 
@@ -222,8 +227,11 @@ void InstalledLoader::LoadAllExtensions() {
                                    &error));
 
       if (!extension.get()) {
-        extension_service_->ReportExtensionLoadError(
-            info->extension_path, error);
+        ExtensionErrorReporter::GetInstance()->ReportLoadError(
+            info->extension_path,
+            error,
+            extension_service_->profile(),
+            false);  // Be quiet.
         continue;
       }
 

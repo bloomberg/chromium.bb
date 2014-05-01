@@ -12,7 +12,10 @@
 
 namespace base {
 class MessageLoop;
+class FilePath;
 }
+
+class Profile;
 
 // Exposes an easy way for the various components of the extension system to
 // report errors. This is a singleton that lives on the UI thread, with the
@@ -30,6 +33,16 @@ class ExtensionErrorReporter {
 
   // Get the singleton instance.
   static ExtensionErrorReporter* GetInstance();
+
+  // Report an extension load error. This forwards to ReportError() after
+  // sending an EXTENSION_LOAD_ERROR notification.
+  // TODO(rdevlin.cronin): There's a lot wrong with this. But some of our
+  // systems rely on the notification. Investigate what it will take to remove
+  // the notification and this method.
+  void ReportLoadError(const base::FilePath& extension_path,
+                       const std::string& error,
+                       Profile* profile,
+                       bool be_noisy);
 
   // Report an error. Errors always go to VLOG(1). Optionally, they can also
   // cause a noisy alert box.
