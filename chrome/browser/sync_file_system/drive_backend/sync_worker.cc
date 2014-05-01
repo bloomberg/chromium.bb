@@ -531,13 +531,16 @@ void SyncWorker::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
   }
 
   if (status == SYNC_STATUS_OK) {
-    FOR_EACH_OBSERVER(
-        Observer, observers_,
-        OnFileStatusChanged(
-            syncer->url(),
-            SYNC_FILE_STATUS_SYNCED,
-            syncer->sync_action(),
-            SYNC_DIRECTION_REMOTE_TO_LOCAL));
+    if (syncer->sync_action() != SYNC_ACTION_NONE &&
+        syncer->url().is_valid()) {
+      FOR_EACH_OBSERVER(
+          Observer, observers_,
+          OnFileStatusChanged(
+              syncer->url(),
+              SYNC_FILE_STATUS_SYNCED,
+              syncer->sync_action(),
+              SYNC_DIRECTION_REMOTE_TO_LOCAL));
+    }
 
     if (syncer->sync_action() == SYNC_ACTION_DELETED &&
         syncer->url().is_valid() &&

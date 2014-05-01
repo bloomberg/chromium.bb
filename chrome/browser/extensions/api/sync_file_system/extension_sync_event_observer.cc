@@ -92,8 +92,12 @@ void ExtensionSyncEventObserver::OnFileSynced(
   scoped_ptr<base::ListValue> params(new base::ListValue());
 
   // For now we always assume events come only for files (not directories).
-  params->Append(CreateDictionaryValueForFileSystemEntry(
-      url, sync_file_system::SYNC_FILE_TYPE_FILE));
+  scoped_ptr<base::DictionaryValue> entry(
+      CreateDictionaryValueForFileSystemEntry(
+          url, sync_file_system::SYNC_FILE_TYPE_FILE));
+  if (!entry)
+    return;
+  params->Append(entry.release());
 
   // Status, SyncAction and any optional notes to go here.
   api::sync_file_system::FileStatus status_enum =
