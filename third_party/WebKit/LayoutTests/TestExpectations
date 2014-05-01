@@ -910,6 +910,14 @@ crbug.com/308992 css2.1/20110323/replaced-intrinsic-002.htm [ Failure ]
 # Disabling this for now since Chromium CL changes output. Will re-enable once Chromium side lands.
 Bug(simonhatch) http/tests/loading/promote-img-in-viewport-priority.html [ Skip ]
 
+crbug.com/361729 media/video-aspect-ratio.html [ NeedsRebaseline ]
+crbug.com/361729 media/video-colorspace-yuv420.html [ NeedsRebaseline ]
+crbug.com/361729 media/video-colorspace-yuv422.html [ NeedsRebaseline ]
+crbug.com/361729 media/video-layer-crash.html [ NeedsRebaseline ]
+crbug.com/361729 media/video-transformed.html [ NeedsRebaseline ]
+crbug.com/361729 media/video-zoom-controls.html [ NeedsRebaseline ]
+crbug.com/361729 media/video-zoom.html [ NeedsRebaseline ]
+
 crbug.com/359960 compositing/iframes/scrolling-iframe.html [ Pass Failure ]
 crbug.com/359960 virtual/softwarecompositing/iframes/scrolling-iframe.html [ Pass Failure ]
 crbug.com/359961 inspector/timeline/timeline-window-filter.html [ Pass Timeout ]

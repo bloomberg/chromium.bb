@@ -1,5 +1,10 @@
 <html>
 <head>
+    <script>
+      if (window.internals) {
+        window.internals.settings.setForceCompositingMode(true);
+      }
+    </script>
     <style>
       body { zoom: 150%; }
       video {
