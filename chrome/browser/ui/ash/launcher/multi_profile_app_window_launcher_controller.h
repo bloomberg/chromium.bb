@@ -23,6 +23,10 @@ class MultiProfileAppWindowLauncherController
   // Overridden from AppWindowRegistry::Observer:
   virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE;
   virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE;
+#if defined(OS_CHROMEOS)
+  virtual void OnAppWindowShown(apps::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowHidden(apps::AppWindow* app_window) OVERRIDE;
+#endif
 
  private:
   typedef std::vector<apps::AppWindow*> AppWindowList;

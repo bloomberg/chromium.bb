@@ -284,6 +284,12 @@ void AppWindow::Init(const GURL& url,
     // Panels are not activated by default.
     Show(window_type_is_panel() || !new_params.focused ? SHOW_INACTIVE
                                                        : SHOW_ACTIVE);
+#if defined(OS_CHROMEOS)
+  } else {
+    // Although the window starts hidden by default, calling Hide() here
+    // notifies observers of the window being hidden.
+    Hide();
+#endif
   }
 
   if (new_params.state == ui::SHOW_STATE_FULLSCREEN)
@@ -672,6 +678,9 @@ void AppWindow::Show(ShowType show_type) {
       GetBaseWindow()->ShowInactive();
       break;
   }
+#if defined(OS_CHROMEOS)
+  AppWindowRegistry::Get(browser_context_)->AppWindowShown(this);
+#endif
 }
 
 void AppWindow::Hide() {
@@ -681,6 +690,9 @@ void AppWindow::Hide() {
   // show will not be delayed.
   show_on_first_paint_ = false;
   GetBaseWindow()->Hide();
+#if defined(OS_CHROMEOS)
+  AppWindowRegistry::Get(browser_context_)->AppWindowHidden(this);
+#endif
 }
 
 void AppWindow::SetAlwaysOnTop(bool always_on_top) {

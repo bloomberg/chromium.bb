@@ -112,6 +112,16 @@ void MultiProfileAppWindowLauncherController::OnAppWindowRemoved(
   app_window_list_.erase(it);
 }
 
+#if defined(OS_CHROMEOS)
+void MultiProfileAppWindowLauncherController::OnAppWindowShown(
+    apps::AppWindow* app_window) {
+}
+
+void MultiProfileAppWindowLauncherController::OnAppWindowHidden(
+    apps::AppWindow* app_window) {
+}
+#endif
+
 bool MultiProfileAppWindowLauncherController::UserHasAppOnActiveDesktop(
     apps::AppWindow* app_window) {
   const std::string& app_id = app_window->extension_id();
