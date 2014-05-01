@@ -11,7 +11,11 @@ import webgl_conformance_expectations
 from telemetry import test as test_module
 from telemetry.core import util
 from telemetry.page import page_set
+from telemetry.page import page as page_module
 from telemetry.page import page_test
+# pylint: disable=W0401,W0614
+from telemetry.page.actions.all_page_actions import *
+
 
 conformance_path = os.path.join(
     util.GetChromiumSrcDir(),
@@ -76,6 +80,21 @@ class WebglConformanceValidator(page_test.PageTest):
     ])
 
 
+class WebglConformancePage(page_module.Page):
+  def __init__(self, page_set, test):
+    super(WebglConformancePage, self).__init__(
+      url='file://' + test, page_set=page_set, base_dir=page_set.base_dir)
+    self.name = ('WebglConformance.%s' %
+                 test.replace('/', '_').replace('-', '_').
+                 replace('\\', '_').rpartition('.')[0].replace('.', '_'))
+    self.script_to_evaluate_on_commit = conformance_harness_script
+
+  def RunNavigateSteps(self, action_runner):
+    action_runner.RunAction(NavigateAction())
+    action_runner.RunAction(WaitAction(
+      {'javascript': 'webglTestHarness._finished', 'timeout': 120}))
+
+
 class WebglConformance(test_module.Test):
   """Conformance with Khronos WebGL Conformance Tests"""
   test = WebglConformanceValidator
@@ -90,33 +109,16 @@ class WebglConformance(test_module.Test):
     tests = self._ParseTests('00_test_list.txt',
         options.webgl_conformance_version)
 
-    page_set_dict = {
-      'description': 'Executes WebGL conformance tests',
-      'user_agent_type': 'desktop',
-      'serving_dirs': [ '' ],
-      'pages': []
-    }
-
-    pages = page_set_dict['pages']
+    ps = page_set.PageSet(
+      description='Executes WebGL conformance tests',
+      user_agent_type='desktop',
+      serving_dirs=[''],
+      file_path=conformance_path)
 
     for test in tests:
-      pages.append({
-        'name': 'WebglConformance.%s' %
-            test.replace('/', '_').replace('-', '_').
-            replace('\\', '_').rpartition('.')[0].replace('.', '_'),
-        'url': 'file://' + test,
-        'script_to_evaluate_on_commit': conformance_harness_script,
-        'navigate_steps': [
-          {'action': 'navigate'},
-          {
-            'action': 'wait',
-            'javascript': 'webglTestHarness._finished',
-            'timeout': 120
-          }
-        ]
-      })
+      ps.AddPage(WebglConformancePage(ps, test))
 
-    return page_set.PageSet.FromDict(page_set_dict, conformance_path)
+    return ps
 
   def CreateExpectations(self, page_set):
     return webgl_conformance_expectations.WebGLConformanceExpectations()

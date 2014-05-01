@@ -4,6 +4,7 @@
 import hardware_accelerated_feature_expectations as expectations
 
 from telemetry import test
+from telemetry.page import page as page_module
 from telemetry.page import page_set
 from telemetry.page import page_test
 
@@ -36,6 +37,15 @@ class _HardwareAcceleratedFeatureValidator(page_test.PageTest):
 def safe_feature_name(feature):
   return feature.lower().replace(' ', '_')
 
+class ChromeGpuPage(page_module.PageWithDefaultRunNavigate):
+  def __init__(self, page_set, feature):
+    super(ChromeGpuPage, self).__init__(
+      url='chrome://gpu', page_set=page_set, base_dir=page_set.base_dir)
+    self.name = ('HardwareAcceleratedFeature.%s_accelerated' %
+                 safe_feature_name(feature))
+    self.feature = feature
+    self.script_to_evaluate_on_commit = test_harness_script
+
 class HardwareAcceleratedFeature(test.Test):
   """Tests GPU acceleration is reported as active for various features"""
   test = _HardwareAcceleratedFeatureValidator
@@ -46,24 +56,11 @@ class HardwareAcceleratedFeature(test.Test):
   def CreatePageSet(self, options):
     features = ['WebGL', 'Canvas']
 
-    page_set_dict = {
-      'description': 'Tests GPU acceleration is reported as active',
-      'user_agent_type': 'desktop',
-      'pages': []
-    }
-
-    pages = page_set_dict['pages']
+    ps = page_set.PageSet(
+      description='Tests GPU acceleration is reported as active',
+      user_agent_type='desktop',
+      file_path='')
 
     for feature in features:
-      pages.append({
-        'name': 'HardwareAcceleratedFeature.%s_accelerated' %
-            safe_feature_name(feature),
-        'url': 'chrome://gpu',
-        'navigate_steps': [
-          { "action": 'navigate' }
-        ],
-        'script_to_evaluate_on_commit': test_harness_script,
-        'feature': feature
-      })
-
-    return page_set.PageSet.FromDict(page_set_dict, '')
+      ps.AddPage(ChromeGpuPage(page_set=ps, feature=feature))
+    return ps
