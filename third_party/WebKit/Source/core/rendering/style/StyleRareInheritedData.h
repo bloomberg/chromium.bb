@@ -55,6 +55,7 @@ public:
         return !(*this == o);
     }
     bool shadowDataEquivalent(const StyleRareInheritedData&) const;
+    bool quotesDataEquivalent(const StyleRareInheritedData&) const;
 
     RefPtr<StyleImage> listStyleImage;
 

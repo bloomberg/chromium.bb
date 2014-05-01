@@ -531,7 +531,7 @@ bool RenderStyle::diffNeedsFullLayout(const RenderStyle& other) const
         if (!rareInheritedData->shadowDataEquivalent(*other.rareInheritedData.get()))
             return true;
 
-        if (rareInheritedData->quotes.get() != other.rareInheritedData->quotes.get())
+        if (!rareInheritedData->quotesDataEquivalent(*other.rareInheritedData.get()))
             return true;
     }
 
@@ -730,8 +730,6 @@ void RenderStyle::setCursorList(PassRefPtr<CursorList> other)
 
 void RenderStyle::setQuotes(PassRefPtr<QuotesData> q)
 {
-    if (rareInheritedData->quotes.get() == q.get())
-        return;
     rareInheritedData.access()->quotes = q;
 }
 

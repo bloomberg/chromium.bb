@@ -217,7 +217,7 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && hyphenationString == o.hyphenationString
         && locale == o.locale
         && textEmphasisCustomMark == o.textEmphasisCustomMark
-        && quotes.get() == o.quotes.get()
+        && quotesDataEquivalent(o)
         && m_tabSize == o.m_tabSize
         && m_imageRendering == o.m_imageRendering
         && m_textUnderlinePosition == o.m_textUnderlinePosition
@@ -232,6 +232,15 @@ bool StyleRareInheritedData::shadowDataEquivalent(const StyleRareInheritedData& 
     if (textShadow && o.textShadow && (*textShadow != *o.textShadow))
         return false;
     return true;
+}
+
+bool StyleRareInheritedData::quotesDataEquivalent(const StyleRareInheritedData& o) const
+{
+    if (quotes == o.quotes)
+        return true;
+    if (!quotes || !o.quotes)
+        return false;
+    return *quotes == *o.quotes;
 }
 
 } // namespace WebCore
