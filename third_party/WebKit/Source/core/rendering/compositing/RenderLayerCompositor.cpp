@@ -330,6 +330,8 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
     case CompositingUpdateNone:
         ASSERT_NOT_REACHED();
         break;
+    case CompositingUpdateOnCompositedScroll:
+        break;
     case CompositingUpdateAfterStyleChange:
         m_needsToRecomputeCompositingRequirements = true;
         break;
@@ -339,7 +341,6 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
     case CompositingUpdateOnScroll:
         m_needsToRecomputeCompositingRequirements = true; // Overlap can change with scrolling, so need to check for hierarchy updates.
         break;
-    case CompositingUpdateOnCompositedScroll:
     case CompositingUpdateAfterCanvasContextChange:
         break;
     }
@@ -438,7 +439,7 @@ void RenderLayerCompositor::updateIfNeeded()
             needHierarchyAndGeometryUpdate = true;
     }
 
-    if (updateType >= CompositingUpdateAfterStyleChange || needHierarchyAndGeometryUpdate) {
+    if (updateType > CompositingUpdateNone || needHierarchyAndGeometryUpdate) {
         TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::updateRecursive");
         GraphicsLayerUpdater updater;
         updater.update(*updateRoot, graphicsLayerUpdateType);
