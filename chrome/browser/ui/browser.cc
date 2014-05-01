@@ -2248,22 +2248,25 @@ bool Browser::ShouldShowLocationBar() const {
   if (is_type_tabbed())
     return true;
 
-  if (is_app() && CommandLine::ForCurrentProcess()->HasSwitch(
-                      switches::kEnableStreamlinedHostedApps)) {
-    // If kEnableStreamlinedHostedApps is true, show the location bar for
-    // bookmark apps.
-    ExtensionService* service =
-        extensions::ExtensionSystem::Get(profile_)->extension_service();
-    const extensions::Extension* extension =
-        service ? service->GetInstalledExtension(
-                      web_app::GetExtensionIdFromApplicationName(app_name()))
-                : NULL;
-    return (!extension || extension->from_bookmark()) &&
-           app_name() != DevToolsWindow::kDevToolsApp;
+  if (is_app()) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableStreamlinedHostedApps)) {
+      // If kEnableStreamlinedHostedApps is true, show the location bar for
+      // bookmark apps.
+      ExtensionService* service =
+          extensions::ExtensionSystem::Get(profile_)->extension_service();
+      const extensions::Extension* extension =
+          service ? service->GetInstalledExtension(
+                        web_app::GetExtensionIdFromApplicationName(app_name()))
+                  : NULL;
+      return (!extension || extension->from_bookmark()) &&
+             app_name() != DevToolsWindow::kDevToolsApp;
+    } else {
+      return false;
+    }
   }
 
-  // All app windows and system windows are trusted and never show a location
-  // bar.
+  // Trusted app windows and system windows never show a location bar.
   return !is_trusted_source();
 }
 
