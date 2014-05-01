@@ -645,8 +645,8 @@ void IndexedDBDispatcher::OnSuccessCursorContinue(
   const IndexedDBKey& primary_key = p.primary_key;
   const std::string& value = p.value;
 
-  WebIDBCursorImpl* cursor = cursors_[ipc_cursor_id];
-  DCHECK(cursor);
+  if (cursors_.find(ipc_cursor_id) == cursors_.end())
+    return;
 
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_callbacks_id);
   if (!callbacks)
@@ -678,13 +678,16 @@ void IndexedDBDispatcher::OnSuccessCursorPrefetch(
     PrepareWebValueAndBlobInfo(
         p.values[i], p.blob_or_file_infos[i], &values[i], &blob_infos[i]);
   }
-  WebIDBCursorImpl* cursor = cursors_[ipc_cursor_id];
-  DCHECK(cursor);
-  cursor->SetPrefetchData(keys, primary_keys, values, blob_infos);
+  std::map<int32, WebIDBCursorImpl*>::const_iterator cur_iter =
+      cursors_.find(ipc_cursor_id);
+  if (cur_iter == cursors_.end())
+    return;
+
+  cur_iter->second->SetPrefetchData(keys, primary_keys, values, blob_infos);
 
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_callbacks_id);
   DCHECK(callbacks);
-  cursor->CachedContinue(callbacks);
+  cur_iter->second->CachedContinue(callbacks);
   pending_callbacks_.Remove(ipc_callbacks_id);
 }
 
