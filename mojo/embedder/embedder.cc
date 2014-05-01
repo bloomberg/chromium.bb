@@ -11,6 +11,7 @@
 #include "mojo/system/channel.h"
 #include "mojo/system/core.h"
 #include "mojo/system/entrypoints.h"
+#include "mojo/system/message_in_transit.h"
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/message_pipe_dispatcher.h"
 #include "mojo/system/raw_channel.h"
@@ -18,39 +19,66 @@
 namespace mojo {
 namespace embedder {
 
-void Init() {
-  system::entrypoints::SetCore(new system::Core());
-}
-
+// This is defined here (instead of a header file), since it's opaque to the
+// outside world. But we need to define it before our (internal-only) functions
+// that use it.
 struct ChannelInfo {
+  explicit ChannelInfo(scoped_refptr<system::Channel> channel)
+      : channel(channel) {}
+  ~ChannelInfo() {}
+
   scoped_refptr<system::Channel> channel;
 };
 
-static void CreateChannelOnIOThread(
+namespace {
+
+// Helper for |CreateChannelOnIOThread()|. (Note: May return null for some
+// failures.)
+scoped_refptr<system::Channel> MakeChannel(
+    ScopedPlatformHandle platform_handle,
+    scoped_refptr<system::MessagePipe> message_pipe) {
+  DCHECK(platform_handle.is_valid());
+
+  // Create and initialize a |system::Channel|.
+  scoped_refptr<system::Channel> channel = new system::Channel();
+  if (!channel->Init(system::RawChannel::Create(platform_handle.Pass()))) {
+    // This is very unusual (e.g., maybe |platform_handle| was invalid or we
+    // reached some system resource limit).
+    LOG(ERROR) << "Channel::Init() failed";
+    // Return null, since |Shutdown()| shouldn't be called in this case.
+    return scoped_refptr<system::Channel>();
+  }
+  // Once |Init()| has succeeded, we have to return |channel| (since
+  // |Shutdown()| will have to be called on it).
+
+  // Attach the message pipe endpoint.
+  system::MessageInTransit::EndpointId endpoint_id =
+      channel->AttachMessagePipeEndpoint(message_pipe, 1);
+  if (endpoint_id == system::MessageInTransit::kInvalidEndpointId) {
+    // This means that, e.g., the other endpoint of the message pipe was closed
+    // first. But it's not necessarily an error per se.
+    DVLOG(2) << "Channel::AttachMessagePipeEndpoint() failed";
+    return channel;
+  }
+  CHECK_EQ(endpoint_id, system::Channel::kBootstrapEndpointId);
+
+  if (!channel->RunMessagePipeEndpoint(system::Channel::kBootstrapEndpointId,
+                                       system::Channel::kBootstrapEndpointId)) {
+    // Currently, there's no reason for this to fail.
+    NOTREACHED() << "Channel::RunMessagePipeEndpoint() failed";
+    return channel;
+  }
+
+  return channel;
+}
+
+void CreateChannelOnIOThread(
     ScopedPlatformHandle platform_handle,
     scoped_refptr<system::MessagePipe> message_pipe,
     DidCreateChannelCallback callback,
     scoped_refptr<base::TaskRunner> callback_thread_task_runner) {
-  CHECK(platform_handle.is_valid());
-
-  scoped_ptr<ChannelInfo> channel_info(new ChannelInfo);
-
-  // Create and initialize a |system::Channel|.
-  channel_info->channel = new system::Channel();
-  bool success = channel_info->channel->Init(
-      system::RawChannel::Create(platform_handle.Pass()));
-  DCHECK(success);
-
-  // Attach the message pipe endpoint.
-  system::MessageInTransit::EndpointId endpoint_id =
-      channel_info->channel->AttachMessagePipeEndpoint(message_pipe, 1);
-  // We shouldn't get |kInvalidEndpointId| here -- since |CreateChannel()| is
-  // responsible for the local endpoint, and won't close it.
-  DCHECK_EQ(endpoint_id, system::Channel::kBootstrapEndpointId);
-  success = channel_info->channel->RunMessagePipeEndpoint(
-      system::Channel::kBootstrapEndpointId,
-      system::Channel::kBootstrapEndpointId);
-  DCHECK(success);  // This shouldn't fail.
+  scoped_ptr<ChannelInfo> channel_info(
+      new ChannelInfo(MakeChannel(platform_handle.Pass(), message_pipe)));
 
   // Hand the channel back to the embedder.
   if (callback_thread_task_runner) {
@@ -60,6 +88,12 @@ static void CreateChannelOnIOThread(
   } else {
     callback.Run(channel_info.release());
   }
+}
+
+}  // namespace
+
+void Init() {
+  system::entrypoints::SetCore(new system::Core());
 }
 
 ScopedMessagePipeHandle CreateChannel(
@@ -91,7 +125,11 @@ ScopedMessagePipeHandle CreateChannel(
 
 void DestroyChannelOnIOThread(ChannelInfo* channel_info) {
   DCHECK(channel_info);
-  DCHECK(channel_info->channel.get());
+  if (!channel_info->channel) {
+    // Presumably, |Init()| on the channel failed.
+    return;
+  }
+
   channel_info->channel->Shutdown();
   delete channel_info;
 }
