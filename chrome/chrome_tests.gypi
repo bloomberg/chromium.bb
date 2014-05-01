@@ -1484,6 +1484,7 @@
         'test/base/test_chrome_web_ui_controller_factory.h',
         'test/base/test_chrome_web_ui_controller_factory_browsertest.cc',
         'test/data/chromeos/oobe_webui_browsertest.js',
+        'test/data/pdf/pdf_extension_test.cc',
         'test/data/webui/about_invalidations_browsertest.js',
         'test/data/webui/accessibility_audit_browsertest.js',
         'test/data/webui/assertions.js',

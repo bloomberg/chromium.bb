@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
 'use strict';
 
 <include src="../../../../ui/webui/resources/js/util.js">
@@ -47,8 +46,10 @@ function PDFViewer() {
   // Otherwise, we take the query string of the URL to indicate the URL of the
   // PDF to load. This is used for print preview in particular.
   var streamDetails;
-  if (chrome.extension.getBackgroundPage)
+  if (chrome.extension.getBackgroundPage &&
+      chrome.extension.getBackgroundPage()) {
     streamDetails = chrome.extension.getBackgroundPage().popStreamDetails();
+  }
 
   if (!streamDetails) {
     // The URL of this page will be of the form
@@ -189,6 +190,9 @@ PDFViewer.prototype = {
       }
     } else if (progress == 100) {
       // Document load complete.
+      var loadEvent = new Event('pdfload');
+      window.dispatchEvent(loadEvent);
+      // TODO(raymes): Replace this and other callbacks with events.
       this.messagingHost_.documentLoaded();
       if (this.lastViewportPosition_)
         this.viewport_.position = this.lastViewportPosition_;
@@ -361,9 +365,6 @@ PDFViewer.prototype = {
   get viewport() {
     return this.viewport_;
   }
+};
 
-}
-
-new PDFViewer();
-
-})();
+var viewer = new PDFViewer();
