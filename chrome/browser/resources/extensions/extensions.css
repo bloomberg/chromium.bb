@@ -294,6 +294,11 @@ html[dir='rtl'] .extension-list-item {
 
 .error-collection-control {
   -webkit-margin-start: 5px;
+  display: none;
+}
+
+#extension-settings.dev-mode .error-collection-control {
+  display: initial;
 }
 
 #font-measuring-div {
