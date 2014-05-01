@@ -931,13 +931,6 @@ crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Needs
 #crbug.com/362050 [ Retina ] fast/repaint/block-layout-inline-children-replaced.html [ Failure ]
 crbug.com/362073 [ Mac Debug ] fast/dom/shadow/input-color-in-content.html [ Crash Pass ]
 
-# Form control/bidi rendering differences on bots.
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/drawBidiText.html [ Pass Failure ImageOnlyFailure ]
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/bidi-listbox-atsui.html [ Pass Failure ImageOnlyFailure ]
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/bidi-listbox.html [ Pass Failure ImageOnlyFailure ]
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/bidi-menulist.html [ Pass Failure ImageOnlyFailure ]
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/textIteratorNilRenderer.html [ Pass Failure ImageOnlyFailure ]
-
 # Very subtle alignment/clipping differences, tests likely need to be updated.
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/complex-text-missing-glyph-fallback.html [ ImageOnlyFailure ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/inline-block-with-mixed-direction-words.html [ ImageOnlyFailure ]
