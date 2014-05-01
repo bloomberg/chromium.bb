@@ -354,8 +354,10 @@ void MediaStreamDevicesController::Deny(
   DLOG(WARNING) << "MediaStreamDevicesController::Deny: " << result;
   NotifyUIRequestDenied();
 
-  if (update_content_setting)
+  if (update_content_setting) {
+    CHECK_EQ(content::MEDIA_DEVICE_PERMISSION_DENIED, result);
     SetPermission(false);
+  }
 
   content::MediaResponseCallback cb = callback_;
   callback_.Reset();
@@ -419,7 +421,7 @@ void MediaStreamDevicesController::PermissionDenied() {
 void MediaStreamDevicesController::Cancelled() {
   UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
                             kCancel, kPermissionActionsMax);
-  Deny(true, content::MEDIA_DEVICE_PERMISSION_DISMISSED);
+  Deny(false, content::MEDIA_DEVICE_PERMISSION_DISMISSED);
 }
 
 void MediaStreamDevicesController::RequestFinished() {
