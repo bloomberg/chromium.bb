@@ -70,6 +70,11 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         'conformance/glsl/bugs/array-of-struct-with-int-first-position.html',
         ['mountainlion', ('nvidia', 0xfd5)], bug=368912)
 
+    # Mac 10.8 / ATI failures
+    self.Fail(
+        'conformance/rendering/point-with-gl-pointcoord-in-fragment-shader.html',
+        ['mountainlion', 'amd'])
+
     # Mac 10.7 / Intel failures
     self.Skip('conformance/glsl/functions/glsl-function-asin.html',
         ['lion', 'intel'])
@@ -106,6 +111,9 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # The following test is very slow and therefore times out on Android bot.
     self.Skip('conformance/rendering/multisample-corruption.html',
         ['android'])
+    # The following test times out on Android bot.
+    self.Fail('conformance/uniforms/gl-uniform-arrays.html',
+        ['android'], bug=369300)
     self.Fail('conformance/glsl/misc/empty_main.vert.html',
         ['android'], bug=315976)
     self.Fail('conformance/glsl/misc/gl_position_unset.vert.html',
