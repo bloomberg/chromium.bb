@@ -22,14 +22,8 @@ namespace installer {
 // system_install: if true, the function returns system wide location
 //                 (ProgramFiles\Google). Otherwise it returns user specific
 //                 location (Document And Settings\<user>\Local Settings...)
-base::FilePath GetChromeInstallPath(bool system_install, BrowserDistribution* dist);
-
-// Returns the path to the directory that holds the user data.  This is always
-// inside a user's local application data folder (e.g., "AppData\Local" or
-// "Local Settings\Application Data" in %USERPROFILE%). Note that this is the
-// default user data directory and does not take into account that it can be
-// overriden with a command line parameter.
-base::FilePath GetChromeUserDataPath(BrowserDistribution* dist);
+base::FilePath GetChromeInstallPath(bool system_install,
+                                    BrowserDistribution* dist);
 
 // Returns the distribution corresponding to the current process's binaries.
 // In the case of a multi-install product, this will be the CHROME_BINARIES

@@ -24,7 +24,7 @@
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths_internal.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/setup/install.h"
@@ -388,20 +388,25 @@ DeleteResult DeleteEmptyDir(const base::FilePath& path) {
   return DELETE_FAILED;
 }
 
+// Get the user data directory, which is *not* DIR_USER_DATA for Chrome Frame.
+// TODO(grt): Remove Chrome Frame uninstall support when usage is low enough.
 base::FilePath GetUserDataDir(const Product& product) {
-  // Obtain the location of the user profile data.
-  base::FilePath user_data_dir = product.GetUserDataPath();
-  LOG_IF(ERROR, user_data_dir.empty())
-      << "Could not retrieve user's profile directory.";
-
-  return user_data_dir;
+  base::FilePath path;
+  bool is_chrome_frame = product.is_chrome_frame();
+  int key = is_chrome_frame ? base::DIR_LOCAL_APP_DATA : chrome::DIR_USER_DATA;
+  if (!PathService::Get(key, &path))
+    return base::FilePath();
+  if (is_chrome_frame) {
+    path = path.Append(product.distribution()->GetInstallSubDir());
+    path = path.Append(chrome::kUserDataDirname);
+  }
+  return path;
 }
 
 // Creates a copy of the local state file and returns a path to the copy.
 base::FilePath BackupLocalStateFile(const base::FilePath& user_data_dir) {
   base::FilePath backup;
-  base::FilePath state_file(
-      user_data_dir.Append(chrome::kLocalStateFilename));
+  base::FilePath state_file(user_data_dir.Append(chrome::kLocalStateFilename));
   if (!base::CreateTemporaryFile(&backup))
     LOG(ERROR) << "Failed to create temporary file for Local State.";
   else
@@ -1327,7 +1332,14 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   // (aka non-multi) installation or we are the Chrome Binaries.
 
   base::FilePath user_data_dir(GetUserDataDir(product));
-  base::FilePath backup_state_file(BackupLocalStateFile(user_data_dir));
+  base::FilePath backup_state_file;
+  if (!user_data_dir.empty()) {
+    backup_state_file = BackupLocalStateFile(user_data_dir);
+  } else {
+    LOG(ERROR) << "Could not retrieve the user's profile directory.";
+    ret = installer::UNINSTALL_FAILED;
+    delete_profile = false;
+  }
 
   if (product.is_chrome_app_host()) {
     DeleteAppHostFilesAndFolders(installer_state, product_state->version());

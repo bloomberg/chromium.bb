@@ -12,10 +12,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/product.h"
 #include "chrome/installer/util/util_constants.h"
 #include "crypto/sha2.h"
 
@@ -36,25 +35,15 @@ enum FlagSetting {
   FLAG_PRESERVE,  // Preserve the value that the flag has currently.
 };
 
-// A helper function that takes a |profile_path| and builds a registry key
+// A helper function that takes a |profile_directory| and builds a registry key
 // name to use when deciding where to read/write the auto-launch value
 // to/from. It takes into account the name of the profile (so that different
 // installations of Chrome don't conflict, and so the in the future different
 // profiles can be auto-launched (or not) separately).
 base::string16 ProfileToKeyName(const base::string16& profile_directory) {
   base::FilePath path;
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kUserDataDir)) {
-    path = command_line.GetSwitchValuePath(switches::kUserDataDir);
-  } else {
-    // Get the path from the same source as the installer, to make sure there
-    // are no differences.
-    BrowserDistribution* distribution =
-        BrowserDistribution::GetSpecificDistribution(
-            BrowserDistribution::CHROME_BROWSER);
-    installer::Product product(distribution);
-    path = product.GetUserDataPath();
-  }
+  const bool success = PathService::Get(chrome::DIR_USER_DATA, &path);
+  DCHECK(success);
   path = path.Append(profile_directory);
 
   std::string input(path.AsUTF8Unsafe());
@@ -212,8 +201,7 @@ void SetWillLaunchAtLogin(const base::FilePath& application_path,
       cmd_line += ASCIIToUTF16("\"");
     }
 
-    base::win::AddCommandToAutoRun(
-        HKEY_CURRENT_USER, key_name, cmd_line);
+    base::win::AddCommandToAutoRun(HKEY_CURRENT_USER, key_name, cmd_line);
   } else {
     base::win::RemoveCommandFromAutoRun(HKEY_CURRENT_USER, key_name);
   }

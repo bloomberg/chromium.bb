@@ -12,39 +12,17 @@
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/util_constants.h"
 
-namespace {
-
-base::FilePath GetChromeInstallBasePath(bool system,
-                                        BrowserDistribution* distribution,
-                                        const wchar_t* sub_path) {
-  base::FilePath install_path;
-  if (system) {
-    PathService::Get(base::DIR_PROGRAM_FILES, &install_path);
-  } else {
-    PathService::Get(base::DIR_LOCAL_APP_DATA, &install_path);
-  }
-
-  if (!install_path.empty()) {
-    install_path = install_path.Append(distribution->GetInstallSubDir());
-    install_path = install_path.Append(sub_path);
-  }
-
-  return install_path;
-}
-
-}  // namespace
-
 namespace installer {
 
 base::FilePath GetChromeInstallPath(bool system_install,
                                     BrowserDistribution* dist) {
-  return GetChromeInstallBasePath(system_install, dist, kInstallBinaryDir);
-}
-
-base::FilePath GetChromeUserDataPath(BrowserDistribution* dist) {
-  // TODO(msw): Remove this method and make callers use PathService directly to
-  // obtain the right DIR_USER_DATA.
-  return GetChromeInstallBasePath(false, dist, kInstallUserDataDir);
+  base::FilePath install_path;
+  int key = system_install ? base::DIR_PROGRAM_FILES : base::DIR_LOCAL_APP_DATA;
+  if (PathService::Get(key, &install_path)) {
+    install_path = install_path.Append(dist->GetInstallSubDir());
+    install_path = install_path.Append(kInstallBinaryDir);
+  }
+  return install_path;
 }
 
 BrowserDistribution* GetBinariesDistribution(bool system_install) {

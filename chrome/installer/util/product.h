@@ -81,13 +81,6 @@ class Product {
       return options_.erase(option) != 0;
   }
 
-  // Returns the path to the directory that holds the user data.  This is always
-  // inside a user's local application data folder (e.g., "AppData\Local" or
-  // "Local Settings\Application Data" in %USERPROFILE%). Note that this is the
-  // default user data directory and does not take into account that it can be
-  // overriden with a command line parameter.
-  base::FilePath GetUserDataPath() const;
-
   // Launches Chrome without waiting for it to exit.
   bool LaunchChrome(const base::FilePath& application_path) const;
 
