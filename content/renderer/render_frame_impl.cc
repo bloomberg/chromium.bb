@@ -1365,6 +1365,9 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
   // happen if this RenderFrameImpl's IPCs are being filtered when in swapped
   // out state.
   if (child_routing_id == MSG_ROUTING_NONE) {
+#if !defined(OS_LINUX)
+    // DumpWithoutCrashing() crashes on Linux in renderer processes when
+    // breakpad and sandboxing are enabled: crbug.com/349600
     base::debug::Alias(parent);
     base::debug::Alias(&routing_id_);
     bool render_view_is_swapped_out = GetRenderWidget()->is_swapped_out();
@@ -1373,6 +1376,7 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
     base::debug::Alias(&render_view_is_closing);
     base::debug::Alias(&is_swapped_out_);
     base::debug::DumpWithoutCrashing();
+#endif
     return NULL;
   }
 
