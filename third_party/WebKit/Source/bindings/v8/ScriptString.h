@@ -31,19 +31,34 @@
 #ifndef ScriptString_h
 #define ScriptString_h
 
-#include "bindings/v8/ScriptValue.h"
-#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/SharedPersistent.h"
+#include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
+#include <v8.h>
 
 namespace WebCore {
 
-class ScriptString FINAL : public ScriptValue {
+class ScriptString FINAL {
 public:
-    ScriptString() { }
-    ScriptString(v8::Handle<v8::String> value, v8::Isolate* isolate) : ScriptValue(value, isolate) { }
+    ScriptString();
+    ScriptString(v8::Isolate*, v8::Handle<v8::String>);
+    ScriptString& operator=(const ScriptString&);
 
+    v8::Isolate* isolate()
+    {
+        if (!m_isolate)
+            m_isolate = v8::Isolate::GetCurrent();
+        return m_isolate;
+    }
+    bool isEmpty() const { return !m_string || m_string->isEmpty(); }
+    void clear() { m_string = nullptr; }
+    v8::Handle<v8::String> v8Value();
     ScriptString concatenateWith(const String&);
-    String flattenToString() const;
+    String flattenToString();
+
+private:
+    v8::Isolate* m_isolate;
+    RefPtr<SharedPersistent<v8::String> > m_string;
 };
 
 } // namespace WebCore

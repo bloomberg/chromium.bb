@@ -31,26 +31,53 @@
 #include "config.h"
 #include "bindings/v8/ScriptString.h"
 
+#include "bindings/v8/V8Binding.h"
+
 namespace WebCore {
+
+ScriptString::ScriptString()
+    : m_isolate(0)
+{
+}
+
+ScriptString::ScriptString(v8::Isolate* isolate, v8::Handle<v8::String> string)
+    : m_isolate(isolate)
+    , m_string(SharedPersistent<v8::String>::create(string, m_isolate))
+{
+}
+
+ScriptString& ScriptString::operator=(const ScriptString& string)
+{
+    if (this != &string) {
+        m_isolate = string.m_isolate;
+        m_string = string.m_string;
+    }
+    return *this;
+}
+
+v8::Handle<v8::String> ScriptString::v8Value()
+{
+    if (isEmpty())
+        return v8::Handle<v8::String>();
+    return m_string->newLocal(isolate());
+}
 
 ScriptString ScriptString::concatenateWith(const String& string)
 {
     v8::Isolate* nonNullIsolate = isolate();
     v8::HandleScope handleScope(nonNullIsolate);
-    v8::Handle<v8::String> b = v8String(nonNullIsolate, string);
+    v8::Handle<v8::String> targetString = v8String(nonNullIsolate, string);
     if (isEmpty())
-        return ScriptString(b, nonNullIsolate);
-    v8::Handle<v8::String> a = v8::Handle<v8::String>::Cast(v8Value());
-    return ScriptString(v8::String::Concat(a, b), nonNullIsolate);
+        return ScriptString(nonNullIsolate, targetString);
+    return ScriptString(nonNullIsolate, v8::String::Concat(v8Value(), targetString));
 }
 
-String ScriptString::flattenToString() const
+String ScriptString::flattenToString()
 {
     if (isEmpty())
         return String();
     v8::HandleScope handleScope(isolate());
-    v8::Handle<v8::String> value = v8::Handle<v8::String>::Cast(v8Value());
-    return v8StringToWebCoreString<String>(value, Externalize);
+    return v8StringToWebCoreString<String>(v8Value(), Externalize);
 }
 
 } // namespace WebCore

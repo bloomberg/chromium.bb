@@ -73,7 +73,7 @@ void V8XMLHttpRequest::responseTextAttributeGetterCustom(const v8::PropertyCallb
 {
     XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toNative(info.Holder());
     ExceptionState exceptionState(ExceptionState::GetterContext, "responseText", "XMLHttpRequest", info.Holder(), info.GetIsolate());
-    ScriptValue text = xmlHttpRequest->responseText(exceptionState);
+    ScriptString text = xmlHttpRequest->responseText(exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     if (text.isEmpty()) {
@@ -98,21 +98,18 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(const v8::PropertyCallbackI
             v8::Isolate* isolate = info.GetIsolate();
 
             ScriptString jsonSource = xmlHttpRequest->responseJSONSource();
-            if (jsonSource.isEmpty() || !jsonSource.v8Value()->IsString()) {
+            if (jsonSource.isEmpty()) {
                 v8SetReturnValue(info, v8::Null(isolate));
                 return;
             }
 
             // Catch syntax error.
             v8::TryCatch exceptionCatcher;
-
-            v8::Handle<v8::Value> json = v8::JSON::Parse(jsonSource.v8Value().As<v8::String>());
-
+            v8::Handle<v8::Value> json = v8::JSON::Parse(jsonSource.v8Value());
             if (exceptionCatcher.HasCaught() || json.IsEmpty())
                 v8SetReturnValue(info, v8::Null(isolate));
             else
                 v8SetReturnValue(info, json);
-
             return;
         }
 
