@@ -789,20 +789,6 @@ crbug.com/339778 [ Debug ] fast/dom/timer-throttling-hidden-page.html [ Failure 
 
 crbug.com/356828 fast/dom/gc-dom-tree-lifetime.html [ Timeout Pass ]
 
-# Repaint tests are marked flaky temporarily. Need rebaseline later. crbug.com/367201
-crbug.com/352460 compositing/squashing/squashed-layer-loses-graphicslayer.html [ NeedsRebaseline ]
-crbug.com/352460 fast/repaint/change-transform.html [ NeedsRebaseline ]
-crbug.com/352460 fast/repaint/fixed-scale.html [ NeedsRebaseline ]
-crbug.com/352460 fast/repaint/scroll-in-transformed-layer.html [ NeedsRebaseline ]
-crbug.com/352460 fast/repaint/transform-absolute-child.html [ NeedsRebaseline ]
-crbug.com/352460 fast/repaint/transform-absolute-in-positioned-container.html [ NeedsRebaseline ]
-crbug.com/352460 fast/repaint/transform-relative-position.html [ NeedsRebaseline ]
-crbug.com/352460 fast/repaint/transform-repaint-descendants.html [ NeedsRebaseline ]
-crbug.com/352460 fast/repaint/transform-replaced-shadows.html [ NeedsRebaseline ]
-crbug.com/352460 fast/repaint/transform-rotate-and-remove.html [ NeedsRebaseline ]
-crbug.com/352460 fast/repaint/transform-translate.html [ NeedsRebaseline ]
-crbug.com/352460 virtual/softwarecompositing/squashing/squashed-layer-loses-graphicslayer.html [ NeedsRebaseline ]
-
 # Heap buffer overflow failures on Linux ASAN
 crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform08.xhtml [ Crash Pass ]
 crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform09.xhtml [ Crash Pass ]

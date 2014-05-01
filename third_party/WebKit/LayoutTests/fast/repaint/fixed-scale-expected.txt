@@ -1,6 +1,5 @@
 (repaint rects
   (rect 125 125 50 50)
-  (rect 125 125 50 50)
   (rect 100 100 100 100)
 )
 

@@ -1,7 +1,6 @@
 
 (repaint rects
   (rect -12 28 280 280)
-  (rect -12 28 280 280)
   (rect 8 28 140 140)
 )
 
