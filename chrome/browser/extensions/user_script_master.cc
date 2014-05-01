@@ -341,6 +341,19 @@ void UserScriptMaster::NewScriptsAvailable(base::SharedMemory* handle) {
   } else {
     // We're no longer loading.
     script_reloader_ = NULL;
+
+    if (handle == NULL) {
+      // This can happen if we run out of file descriptors.  In that case, we
+      // have a choice between silently omitting all user scripts for new tabs,
+      // by nulling out shared_memory_, or only silently omitting new ones by
+      // leaving the existing object in place. The second seems less bad, even
+      // though it removes the possibility that freeing the shared memory block
+      // would open up enough FDs for long enough for a retry to succeed.
+
+      // Pretend the extension change didn't happen.
+      return;
+    }
+
     // We've got scripts ready to go.
     shared_memory_.swap(handle_deleter);
 
