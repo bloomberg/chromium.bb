@@ -15,20 +15,19 @@
 
 namespace gfx {
 
-// Load a library, printing an error message on failure.
-base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
+base::NativeLibrary LoadLibraryAndPrintError(const base::FilePath& filename) {
   base::NativeLibraryLoadError error;
   base::NativeLibrary library = base::LoadNativeLibrary(filename, &error);
   if (!library) {
-    DVLOG(1) << "Failed to load " << filename.MaybeAsASCII() << ": "
-             << error.ToString();
+    LOG(ERROR) << "Failed to load " << filename.MaybeAsASCII() << ": "
+               << error.ToString();
     return NULL;
   }
   return library;
 }
 
-base::NativeLibrary LoadLibrary(const char* filename) {
-  return LoadLibrary(base::FilePath(filename));
+base::NativeLibrary LoadLibraryAndPrintError(const char* filename) {
+  return LoadLibraryAndPrintError(base::FilePath(filename));
 }
 
 bool InitializeStaticGLBindingsOSMesaGL() {
@@ -39,11 +38,9 @@ bool InitializeStaticGLBindingsOSMesaGL() {
   }
 
   base::FilePath library_path = module_path.Append("libosmesa.so");
-  base::NativeLibrary library = LoadLibrary(library_path);
-  if (!library) {
-    LOG(ERROR) << "Failed to load " << library_path.value() << ".";
+  base::NativeLibrary library = LoadLibraryAndPrintError(library_path);
+  if (!library)
     return false;
-  }
 
   GLGetProcAddressProc get_proc_address =
       reinterpret_cast<GLGetProcAddressProc>(

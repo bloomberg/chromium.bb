@@ -68,17 +68,15 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
       const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
       if (command_line->HasSwitch(switches::kTestGLLib))
-        library = LoadLibrary(command_line->GetSwitchValueASCII(
-            switches::kTestGLLib).c_str());
+        library = LoadLibraryAndPrintError(
+            command_line->GetSwitchValueASCII(switches::kTestGLLib).c_str());
 
       if (!library) {
-        library = LoadLibrary(kGLLibraryName);
+        library = LoadLibraryAndPrintError(kGLLibraryName);
       }
 
-      if (!library) {
-        LOG(ERROR) << "Failed to load " << kGLLibraryName << ".";
+      if (!library)
         return false;
-      }
 
       GLGetProcAddressProc get_proc_address =
           reinterpret_cast<GLGetProcAddressProc>(
@@ -99,14 +97,13 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
       break;
     }
     case kGLImplementationEGLGLES2: {
-      base::NativeLibrary gles_library = LoadLibrary(kGLESv2LibraryName);
-      if (!gles_library) {
-        LOG(ERROR) << "Failed to load " << kGLESv2LibraryName << ".";
+      base::NativeLibrary gles_library =
+          LoadLibraryAndPrintError(kGLESv2LibraryName);
+      if (!gles_library)
         return false;
-      }
-      base::NativeLibrary egl_library = LoadLibrary(kEGLLibraryName);
+      base::NativeLibrary egl_library =
+          LoadLibraryAndPrintError(kEGLLibraryName);
       if (!egl_library) {
-        LOG(ERROR) << "Failed to load " << kEGLLibraryName << ".";
         base::UnloadNativeLibrary(gles_library);
         return false;
       }

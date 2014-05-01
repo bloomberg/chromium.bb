@@ -44,14 +44,12 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
 
   switch (implementation) {
     case kGLImplementationEGLGLES2: {
-      base::NativeLibrary gles_library = LoadLibrary("libGLESv2.so");
-      if (!gles_library) {
-        LOG(ERROR) << "Failed to load libGLESv2.so.";
+      base::NativeLibrary gles_library =
+          LoadLibraryAndPrintError("libGLESv2.so");
+      if (!gles_library)
         return false;
-      }
-      base::NativeLibrary egl_library = LoadLibrary("libEGL.so");
+      base::NativeLibrary egl_library = LoadLibraryAndPrintError("libEGL.so");
       if (!egl_library) {
-        LOG(ERROR) << "Failed to load libEGL.so.";
         base::UnloadNativeLibrary(gles_library);
         return false;
       }
