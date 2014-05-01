@@ -592,7 +592,11 @@ Value ExecuteBinaryOperator(Scope* scope,
     return ExecuteAnd(scope, op_node, left, right, err);
 
   Value left_value = GetValueOrFillError(op_node, left, "left", scope, err);
+  if (err->has_error())
+    return Value();
   Value right_value = GetValueOrFillError(op_node, right, "right", scope, err);
+  if (err->has_error())
+    return Value();
 
   // +, -.
   if (op.type() == Token::MINUS)

@@ -58,7 +58,7 @@ Value ExecuteGenericTarget(const char* target_type,
 #define SCRIPT_EXECUTION_CONTEXT \
     "  The script will be executed with the given arguments with the current\n"\
     "  directory being that of the root build directory. If you pass files\n"\
-    "  to your script, see \"gn help to_build_path\" for how to convert\n" \
+    "  to your script, see \"gn help rebase_path\" for how to convert\n" \
     "  file names to be relative to the build directory (file names in the\n" \
     "  sources, outputs, and source_prereqs will be all treated as relative\n" \
     "  to the current build file and converted as needed automatically).\n"
@@ -83,7 +83,10 @@ const char kAction_Help[] =
     "  In an action the \"sources\" and \"source_prereqs\" are treated the\n"
     "  same: they're both input dependencies on script execution with no\n"
     "  special handling. If you want to pass the sources to your script, you\n"
-    "  must do so explicitly by including them in the \"args\".\n"
+    "  must do so explicitly by including them in the \"args\". Note also\n"
+    "  that this means there is no special handling of paths since GN\n"
+    "  doesn't know which of the args are paths and not. You will want to use\n"
+    "  rebase_path() to convert paths to be relative to the root_build_dir.\n"
     "\n"
     "  It is recommended you put inputs to your script in the \"sources\"\n"
     "  variable, and stuff like other Python files required to run your\n"
@@ -117,7 +120,8 @@ const char kAction_Help[] =
     "\n"
     "    # Note that we have to manually pass the sources to our script if\n"
     "    # the script needs them as inputs.\n"
-    "    args = [ \"--out\", to_build_path(target_gen_dir) ] + sources\n"
+    "    args = [ \"--out\", rebase_path(target_gen_dir, root_build_dir) ] +\n"
+    "           rebase_path(sources, root_build_dir)\n"
     "  }\n";
 
 Value RunAction(Scope* scope,
@@ -182,11 +186,12 @@ const char kActionForEach_Help[] =
     "\n"
     "    # Note that since \"args\" is opaque to GN, if you specify paths\n"
     "    # here, you will need to convert it to be relative to the build\n"
-    "    # directory using \"to_build_path()\".\n"
-    "    args = [ \"{{source}}\",\n"
-    "             \"-o\",\n"
-    "             to_build_path(relative_target_gen_dir) + \"/\" +\n"
-    "                 {{source_name_part}}.h\" ]\n"
+    "    # directory using \"rebase_path()\".\n"
+    "    args = [\n"
+    "      \"{{source}}\",\n"
+    "      \"-o\",\n"
+    "      rebase_path(relative_target_gen_dir, root_build_dir) +\n"
+    "        \"/{{source_name_part}}.h\" ]\n"
     "  }\n"
     "\n";
 Value RunActionForEach(Scope* scope,
