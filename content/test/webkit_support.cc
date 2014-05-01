@@ -107,7 +107,7 @@ void SetUpTestEnvironmentForUnitTests() {
   // Explicitly initialize the GURL library before spawning any threads.
   // Otherwise crash may happend when different threads try to create a GURL
   // at same time.
-  url_util::Initialize();
+  url::Initialize();
   test_environment = new TestEnvironment;
 }
 

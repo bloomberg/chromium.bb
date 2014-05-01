@@ -65,11 +65,10 @@ static bool ReverseViewSource(GURL* url, BrowserContext* browser_context) {
   if (url->SchemeIs(kViewSourceScheme))
     return false;
 
-  url_canon::Replacements<char> repl;
+  url::Replacements<char> repl;
   repl.SetScheme(kViewSourceScheme,
-                 url_parse::Component(0, strlen(kViewSourceScheme)));
-  repl.SetPath(url->spec().c_str(),
-      url_parse::Component(0, url->spec().size()));
+                 url::Component(0, strlen(kViewSourceScheme)));
+  repl.SetPath(url->spec().c_str(), url::Component(0, url->spec().size()));
   *url = url->ReplaceComponents(repl);
   return true;
 }

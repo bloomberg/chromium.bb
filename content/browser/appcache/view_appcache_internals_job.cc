@@ -110,8 +110,7 @@ void EmitCommandAnchor(const char* label,
   query.push_back('=');
   query.append(param);
   GURL::Replacements replacements;
-  replacements.SetQuery(query.data(),
-                        url_parse::Component(0, query.length()));
+  replacements.SetQuery(query.data(), url::Component(0, query.length()));
   GURL command_url = base_url.ReplaceComponents(replacements);
   EmitAnchor(command_url.spec(), label, out);
 }
@@ -225,8 +224,7 @@ std::string FormViewEntryAnchor(const GURL& base_url,
   query.append(group_id_string);
 
   GURL::Replacements replacements;
-  replacements.SetQuery(query.data(),
-                        url_parse::Component(0, query.length()));
+  replacements.SetQuery(query.data(), url::Component(0, query.length()));
   GURL view_entry_url = base_url.ReplaceComponents(replacements);
 
   std::string anchor;

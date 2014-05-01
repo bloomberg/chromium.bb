@@ -115,7 +115,7 @@ bool AreURLsInPageNavigation(const GURL& existing_url,
     return navigation_type == NAVIGATION_TYPE_IN_PAGE;
   }
 
-  url_canon::Replacements<char> replacements;
+  url::Replacements<char> replacements;
   replacements.ClearRef();
   return existing_url.ReplaceComponents(replacements) ==
       new_url.ReplaceComponents(replacements);

@@ -92,8 +92,8 @@ class SiteInstanceTest : public testing::Test {
 
   virtual void SetUp() {
     old_browser_client_ = SetBrowserClientForTesting(&browser_client_);
-    url_util::AddStandardScheme(kPrivilegedScheme);
-    url_util::AddStandardScheme(kChromeUIScheme);
+    url::AddStandardScheme(kPrivilegedScheme);
+    url::AddStandardScheme(kChromeUIScheme);
 
     SiteInstanceImpl::set_render_process_host_factory(&rph_factory_);
   }

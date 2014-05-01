@@ -234,7 +234,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
   }
 
   static GURL UrlWithoutQuery(const GURL& url) {
-    url_canon::Replacements<char> replacements;
+    url::Replacements<char> replacements;
     replacements.ClearQuery();
     return url.ReplaceComponents(replacements);
   }

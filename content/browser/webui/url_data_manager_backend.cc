@@ -83,9 +83,9 @@ bool CheckURLIsValid(const GURL& url) {
 // path is the remaining portion after the scheme and hostname.
 void URLToRequestPath(const GURL& url, std::string* path) {
   const std::string& spec = url.possibly_invalid_spec();
-  const url_parse::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
+  const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
   // + 1 to skip the slash at the beginning of the path.
-  int offset = parsed.CountCharactersBefore(url_parse::Parsed::PATH, false) + 1;
+  int offset = parsed.CountCharactersBefore(url::Parsed::PATH, false) + 1;
 
   if (offset < static_cast<int>(spec.size()))
     path->assign(spec.substr(offset));

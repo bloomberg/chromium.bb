@@ -18,10 +18,9 @@ HistogramInternalsRequestJob::HistogramInternalsRequestJob(
     net::URLRequest* request, net::NetworkDelegate* network_delegate)
     : net::URLRequestSimpleJob(request, network_delegate) {
   const std::string& spec = request->url().possibly_invalid_spec();
-  const url_parse::Parsed& parsed =
-      request->url().parsed_for_possibly_invalid_spec();
+  const url::Parsed& parsed = request->url().parsed_for_possibly_invalid_spec();
   // + 1 to skip the slash at the beginning of the path.
-  int offset = parsed.CountCharactersBefore(url_parse::Parsed::PATH, false) + 1;
+  int offset = parsed.CountCharactersBefore(url::Parsed::PATH, false) + 1;
 
   if (offset < static_cast<int>(spec.size()))
     path_.assign(spec.substr(offset));
