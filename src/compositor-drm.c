@@ -953,11 +953,14 @@ drm_output_prepare_cursor_view(struct weston_output *output_base,
 {
 	struct drm_compositor *c =
 		(struct drm_compositor *) output_base->compositor;
+	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
 	struct drm_output *output = (struct drm_output *) output_base;
 
 	if (c->gbm == NULL)
 		return NULL;
 	if (output->base.transform != WL_OUTPUT_TRANSFORM_NORMAL)
+		return NULL;
+	if (viewport->buffer.scale != output_base->current_scale)
 		return NULL;
 	if (output->cursor_view)
 		return NULL;
