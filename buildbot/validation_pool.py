@@ -115,11 +115,11 @@ class PatchNotCommitReady(cros_patch.PatchException):
     return 'isn\'t marked as Commit-Ready anymore.'
 
 
-class PatchNotPublished(cros_patch.PatchException):
-  """Raised if a patch is not published."""
+class PatchModified(cros_patch.PatchException):
+  """Raised if a patch is modified while the CQ is running."""
 
   def ShortExplanation(self):
-    return 'has not been published.'
+    return 'was modified while the CQ was in the middle of testing it.'
 
 
 class PatchRejected(cros_patch.PatchException):
@@ -2000,30 +2000,13 @@ class ValidationPool(object):
                                throttled_ok=throttled_ok)):
       raise TreeIsClosedException(close_or_throttled=not throttled_ok)
 
-    # First, reload all of the changes from the Gerrit server so that we have a
-    # fresh view of their approval status. This is needed so that our filtering
-    # that occurs below will be mostly up-to-date.
-    errors = {}
-    changes = list(self.ReloadChanges(changes))
-
-    # Filter out changes that are already merged (e.g. dev chumped the
-    # CL during the CQ run). We do not consider these as errors, and
-    # print out warnings instead.
-    uncommitted_changes = [x for x in changes if not x.IsAlreadyMerged()]
-    for change in set(changes) - set(uncommitted_changes):
-      logging.warning('%s is already merged. It was most likely chumped during '
-                      'the current CQ run.', change)
-
-    # Filter out the draft changes here to prevent the race condition
-    # where user uploads a new draft patch set during the CQ run.
-    published_changes = self.FilterDraftChanges(uncommitted_changes)
-    for change in set(uncommitted_changes) - set(published_changes):
-      errors[change] = PatchNotPublished(change)
+    # Filter out changes that were modified during the CQ run.
+    unmodified_changes, errors = self.FilterModifiedChanges(changes)
 
     # Filter out changes that aren't marked as CR=+2, CQ=+1, V=+1 anymore, in
     # case the patch status changed during the CQ run.
-    filtered_changes = self.FilterNonMatchingChanges(published_changes)
-    for change in set(published_changes) - set(filtered_changes):
+    filtered_changes = self.FilterNonMatchingChanges(unmodified_changes)
+    for change in set(unmodified_changes) - set(filtered_changes):
       errors[change] = PatchNotCommitReady(change)
 
     patch_series = PatchSeries(self.build_root, helper_pool=self._helper_pool)
@@ -2045,6 +2028,41 @@ class ValidationPool(object):
       for change in self.changes:
         self._metadata.RecordCLAction(change, constants.CL_ACTION_PICKED_UP,
                                       timestamp)
+
+  @classmethod
+  def FilterModifiedChanges(cls, changes):
+    """Filter out changes that were modified while the CQ was in-flight.
+
+    Args:
+      changes: A list of changes (as PatchQuery objects).
+
+    Returns:
+      This returns a tuple (unmodified_changes, errors).
+
+      unmodified_changes: A reloaded list of changes, only including unmodified
+                          and unsubmitted changes.
+      errors: A dictionary. This dictionary will contain all patches that have
+        encountered errors, and map them to the associated exception object.
+    """
+    # Reload all of the changes from the Gerrit server so that we have a
+    # fresh view of their approval status. This is needed so that our filtering
+    # that occurs below will be mostly up-to-date.
+    unmodified_changes, errors = [], {}
+    reloaded_changes = list(cls.ReloadChanges(changes))
+    old_changes = cros_patch.PatchCache(changes)
+    for change in reloaded_changes:
+      if change.IsAlreadyMerged():
+        logging.warning('%s is already merged. It was most likely chumped '
+                        'during the current CQ run.', change)
+      elif change.patch_number != old_changes[change].patch_number:
+        # If users upload new versions of a CL while the CQ is in-flight, then
+        # their CLs are no longer tested. These CLs should be rejected.
+        errors[change] = PatchModified(change)
+      else:
+        unmodified_changes.append(change)
+
+    return unmodified_changes, errors
+
   @classmethod
   def ReloadChanges(cls, changes):
     """Reload the specified |changes| from the server.
@@ -2155,9 +2173,9 @@ class ValidationPool(object):
       # exceptions. These exceptions are mostly caused by human
       # intervention during the current run and have limited impact on
       # other patches.
-      whitelisted_exceptions = (PatchNotCommitReady,
-                                PatchNotPublished,
-                                PatchConflict,
+      whitelisted_exceptions = (PatchConflict,
+                                PatchModified,
+                                PatchNotCommitReady,
                                 cros_patch.DependencyError,)
 
       if all(isinstance(e, whitelisted_exceptions) for e in errors.values()):

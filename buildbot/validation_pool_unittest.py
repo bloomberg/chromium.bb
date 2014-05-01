@@ -1522,20 +1522,30 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
     notify_error = validation_pool.PatchFailedToSubmit(self.patches[0], error)
     self.assertEqualNotifyArg(notify_error, self.patches[0], 'error')
 
-  def testDraftCL(self):
-    """Test that a draft CL is rejected."""
-    self.patches[1].patch_dict['currentPatchSet']['draft'] = True
-    self.SubmitPool(submitted=self.patches[:1], rejected=self.patches[1:])
-
   def testNotCommitReady(self):
-    """Test that a CL without the commit ready bit is rejected."""
-    self.PatchObject(self.patches[1], 'HasApproval', return_value=False)
+    """Test that a CL is rejected if its approvals were pulled."""
+    def _ReloadPatches(patches):
+      reloaded = copy.deepcopy(patches)
+      self.PatchObject(reloaded[1], 'HasApproval', return_value=False)
+      return reloaded
+    self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
+                     side_effect=_ReloadPatches)
     self.SubmitPool(submitted=self.patches[:1], rejected=self.patches[1:])
 
   def testAlreadyMerged(self):
     """Test that a CL that was chumped during the run was not rejected."""
     self.PatchObject(self.patches[0], 'IsAlreadyMerged', return_value=True)
     self.SubmitPool(submitted=self.patches[1:], rejected=[])
+
+  def testModified(self):
+    """Test that a CL that was modified during the run is rejected."""
+    def _ReloadPatches(patches):
+      reloaded = copy.deepcopy(patches)
+      reloaded[1].patch_number += 1
+      return reloaded
+    self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
+                     side_effect=_ReloadPatches)
+    self.SubmitPool(submitted=self.patches[:1], rejected=self.patches[1:])
 
 
 class SubmitPartialPoolTest(BaseSubmitPoolTestCase):
