@@ -79,6 +79,7 @@ public class AutofillDialogControllerAndroid {
          * @param initialShippingGuid GUID of the initial shipping address selection in Autofill
          * @param initialCardGuid GUID of the initial credit card selection in Autofill
          * @param merchantDomain Scheme+origin for the originating web page, or null
+         * @param shippingCountries A list of allowed shipping countries, or null
          * @return The Autofill dialog that would later call into the delegate, or null
          */
         AutofillDialog createDialog(
@@ -90,7 +91,8 @@ public class AutofillDialogControllerAndroid {
                 final boolean initialChoiceIsAutofill, final String initialAccountName,
                 final String initialBillingGuid, final String initialShippingGuid,
                 final String initialCardGuid,
-                final String merchantDomain);
+                final String merchantDomain,
+                final String[] shippingCountries);
     }
 
     /**
@@ -111,7 +113,8 @@ public class AutofillDialogControllerAndroid {
             final boolean initialChoiceIsAutofill, final String initialWalletAccountName,
             final String initialBillingGuid, final String initialShippingGuid,
             final String initialCardGuid,
-            final String merchantDomain) {
+            final String merchantDomain,
+            final String[] shippingCountries) {
         mNativeDelegate = nativeAutofillDialogControllerAndroid;
 
         if (sDialogFactory == null) {
@@ -145,7 +148,8 @@ public class AutofillDialogControllerAndroid {
                 incognitoMode,
                 initialChoiceIsAutofill, initialWalletAccountName,
                 initialBillingGuid, initialShippingGuid, initialCardGuid,
-                merchantDomain);
+                merchantDomain,
+                shippingCountries);
         if (mDialog == null) {
             nativeDialogCancel(mNativeDelegate);
             return;
@@ -162,7 +166,8 @@ public class AutofillDialogControllerAndroid {
             final boolean initialChoiceIsAutofill, final String initialWalletAccountName,
             final String initialBillingGuid, final String initialShippingGuid,
             final String initialCreditCardGuid,
-            final String merchantDomain) {
+            final String merchantDomain,
+            final String[] shippingCountries) {
         return new AutofillDialogControllerAndroid(
                 nativeAutofillDialogControllerAndroid, windowAndroid,
                 requestFullBillingAddress, requestShippingAddress, requestPhoneNumbers,
@@ -170,7 +175,8 @@ public class AutofillDialogControllerAndroid {
                 initialChoiceIsAutofill, initialWalletAccountName,
                 initialBillingGuid, initialShippingGuid,
                 initialCreditCardGuid,
-                merchantDomain);
+                merchantDomain,
+                shippingCountries);
     }
 
     @CalledByNative

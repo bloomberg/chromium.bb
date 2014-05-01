@@ -23,47 +23,67 @@ import java.util.List;
 @JNINamespace("autofill")
 public class PersonalDataManager {
 
+    /**
+     * Observer of PersonalDataManager events.
+     */
     public interface PersonalDataManagerObserver {
+        /**
+         * Called when the data is changed.
+         */
         public abstract void onPersonalDataChanged();
     }
 
+    /**
+     * Autofill address information.
+     */
     public static class AutofillProfile {
         private String mGUID;
         private String mOrigin;
         private String mFullName;
         private String mCompanyName;
-        private String mAddressLine1;
-        private String mAddressLine2;
-        private String mCity;
-        private String mState;
-        private String mZip;
+        private String mStreetAddress;
+        private String mRegion;
+        private String mLocality;
+        private String mDependentLocality;
+        private String mPostalCode;
+        private String mSortingCode;
         private String mCountry;
         private String mPhoneNumber;
         private String mEmailAddress;
+        private String mLanguageCode;
 
         @CalledByNative("AutofillProfile")
-        public static AutofillProfile create(String guid, String origin, String fullName,
-                String companyName, String addressLine1, String addressLine2, String city,
-                String state, String zip, String country, String phoneNumber, String emailAddress) {
-            return new AutofillProfile(guid, origin, fullName, companyName, addressLine1,
-                    addressLine2, city, state, zip, country, phoneNumber, emailAddress);
+        public static AutofillProfile create(String guid, String origin,
+                String fullName, String companyName,
+                String streetAddress, String region, String locality, String dependentLocality,
+                String postalCode, String sortingCode,
+                String country, String phoneNumber, String emailAddress, String languageCode) {
+            return new AutofillProfile(guid, origin, fullName, companyName,
+                    streetAddress,
+                    region, locality, dependentLocality,
+                    postalCode, sortingCode, country, phoneNumber, emailAddress, languageCode);
         }
 
         public AutofillProfile(String guid, String origin, String fullName, String companyName,
-                String addressLine1, String addressLine2, String city, String state,
-                String zip, String country, String phoneNumber, String emailAddress) {
+                String streetAddress,
+                String region,
+                String locality, String dependentLocality,
+                String postalCode, String sortingCode,
+                String country, String phoneNumber, String emailAddress, String languageCode) {
             mGUID = guid;
             mOrigin = origin;
             mFullName = fullName;
             mCompanyName = companyName;
-            mAddressLine1 = addressLine1;
-            mAddressLine2 = addressLine2;
-            mCity = city;
-            mState = state;
-            mZip = zip;
+            mStreetAddress = streetAddress;
+            mRegion = region;
+            mLocality = locality;
+            mDependentLocality = dependentLocality;
+            mPostalCode = postalCode;
+            mSortingCode = sortingCode;
             mCountry = country;
             mPhoneNumber = phoneNumber;
             mEmailAddress = emailAddress;
+            mLanguageCode = languageCode;
         }
 
         @CalledByNative("AutofillProfile")
@@ -87,28 +107,33 @@ public class PersonalDataManager {
         }
 
         @CalledByNative("AutofillProfile")
-        public String getAddressLine1() {
-            return mAddressLine1;
+        public String getStreetAddress() {
+            return mStreetAddress;
         }
 
         @CalledByNative("AutofillProfile")
-        public String getAddressLine2() {
-            return mAddressLine2;
+        public String getRegion() {
+            return mRegion;
         }
 
         @CalledByNative("AutofillProfile")
-        public String getCity() {
-            return mCity;
+        public String getLocality() {
+            return mLocality;
         }
 
         @CalledByNative("AutofillProfile")
-        public String getState() {
-            return mState;
+        public String getDependentLocality() {
+            return mDependentLocality;
         }
 
         @CalledByNative("AutofillProfile")
-        public String getZip() {
-            return mZip;
+        public String getPostalCode() {
+            return mPostalCode;
+        }
+
+        @CalledByNative("AutofillProfile")
+        public String getSortingCode() {
+            return mSortingCode;
         }
 
         @CalledByNative("AutofillProfile")
@@ -130,6 +155,11 @@ public class PersonalDataManager {
             return mEmailAddress;
         }
 
+        @CalledByNative("AutofillProfile")
+        public String getLanguageCode() {
+            return mLanguageCode;
+        }
+
         public void setGUID(String guid) {
             mGUID = guid;
         }
@@ -146,24 +176,28 @@ public class PersonalDataManager {
             mCompanyName = companyName;
         }
 
-        public void setAddressLine1(String addressLine1) {
-            mAddressLine1 = addressLine1;
+        public void setStreetAddress(String streetAddress) {
+            mStreetAddress = streetAddress;
         }
 
-        public void setAddressLine2(String addressLine2) {
-            mAddressLine2 = addressLine2;
+        public void setRegion(String region) {
+            mRegion = region;
         }
 
-        public void setCity(String city) {
-            mCity = city;
+        public void setLocality(String locality) {
+            mLocality = locality;
         }
 
-        public void setState(String state) {
-            mState = state;
+        public void setDependentLocality(String dependentLocality) {
+            mDependentLocality = dependentLocality;
         }
 
-        public void setZip(String zip) {
-            mZip = zip;
+        public void setPostalCode(String postalCode) {
+            mPostalCode = postalCode;
+        }
+
+        public void setSortingCode(String sortingCode) {
+            mSortingCode = sortingCode;
         }
 
         public void setCountry(String country) {
@@ -177,8 +211,15 @@ public class PersonalDataManager {
         public void setEmailAddress(String emailAddress) {
             mEmailAddress = emailAddress;
         }
+
+        public void setLanguageCode(String languageCode) {
+            mLanguageCode = languageCode;
+        }
     }
 
+    /**
+     * Autofill credit card information.
+     */
     public static class CreditCard {
         // Note that while some of these fields are numbers, they're predominantly read,
         // marshaled and compared as strings. To save conversions, we use strings everywhere.

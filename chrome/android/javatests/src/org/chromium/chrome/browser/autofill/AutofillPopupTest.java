@@ -38,27 +38,32 @@ public class AutofillPopupTest extends ChromeShellTestBase {
     private static final String COMPANY_NAME = "Acme Inc.";
     private static final String ADDRESS_LINE1 = "1 Main";
     private static final String ADDRESS_LINE2 = "Apt A";
+    private static final String STREET_ADDRESS_TEXTAREA = ADDRESS_LINE1 + "\n" + ADDRESS_LINE2;
     private static final String CITY = "San Francisco";
+    private static final String DEPENDENT_LOCALITY = "";
     private static final String STATE = "CA";
     private static final String ZIP_CODE = "94102";
+    private static final String SORTING_CODE = "";
     private static final String COUNTRY = "US";
     private static final String PHONE_NUMBER = "4158889999";
     private static final String EMAIL = "john@acme.inc";
+    private static final String LANGUAGE_CODE = "";
     private static final String ORIGIN = "https://www.example.com";
 
     private static final String BASIC_PAGE_DATA = UrlUtils.encodeHtmlDataUri(
             "<html><head><meta name=\"viewport\"" +
             "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>" +
             "<body><form method=\"POST\">" +
-            "<input type=\"text\" id=\"fn\" autocomplete=\"given-name\"><br>" +
-            "<input type=\"text\" id=\"ln\" autocomplete=\"family-name\"><br>" +
-            "<input type=\"text\" id=\"a1\" autocomplete=\"address-line1\"><br>" +
-            "<input type=\"text\" id=\"a2\" autocomplete=\"address-line2\"><br>" +
-            "<input type=\"text\" id=\"ct\" autocomplete=\"locality\"><br>" +
-            "<input type=\"text\" id=\"zc\" autocomplete=\"postal-code\"><br>" +
-            "<input type=\"text\" id=\"em\" autocomplete=\"email\"><br>" +
-            "<input type=\"text\" id=\"ph\" autocomplete=\"tel\"><br>" +
-            "<input type=\"text\" id=\"fx\" autocomplete=\"fax\"><br>" +
+            "<input type=\"text\" id=\"fn\" autocomplete=\"given-name\" /><br>" +
+            "<input type=\"text\" id=\"ln\" autocomplete=\"family-name\" /><br>" +
+            "<textarea id=\"sa\" autocomplete=\"street-address\"></textarea><br>" +
+            "<input type=\"text\" id=\"a1\" autocomplete=\"address-line1\" /><br>" +
+            "<input type=\"text\" id=\"a2\" autocomplete=\"address-line2\" /><br>" +
+            "<input type=\"text\" id=\"ct\" autocomplete=\"locality\" /><br>" +
+            "<input type=\"text\" id=\"zc\" autocomplete=\"postal-code\" /><br>" +
+            "<input type=\"text\" id=\"em\" autocomplete=\"email\" /><br>" +
+            "<input type=\"text\" id=\"ph\" autocomplete=\"tel\" /><br>" +
+            "<input type=\"text\" id=\"fx\" autocomplete=\"fax\" /><br>" +
             "<select id=\"co\" autocomplete=\"country\"><br>" +
             "<option value=\"BR\">Brazil</option>" +
             "<option value=\"US\">United States</option>" +
@@ -143,8 +148,11 @@ public class AutofillPopupTest extends ChromeShellTestBase {
 
         // Add an Autofill profile.
         AutofillProfile profile = new AutofillProfile(
-                "" /* guid */, ORIGIN, FIRST_NAME + " " + LAST_NAME, COMPANY_NAME, ADDRESS_LINE1,
-                ADDRESS_LINE2, CITY, STATE, ZIP_CODE, COUNTRY, PHONE_NUMBER, EMAIL);
+                "" /* guid */, ORIGIN, FIRST_NAME + " " + LAST_NAME, COMPANY_NAME,
+                STREET_ADDRESS_TEXTAREA,
+                STATE, CITY, DEPENDENT_LOCALITY,
+                ZIP_CODE, SORTING_CODE, COUNTRY, PHONE_NUMBER, EMAIL,
+                LANGUAGE_CODE);
         mHelper.setProfile(profile);
         assertEquals(1, mHelper.getNumberOfProfiles());
 
@@ -191,6 +199,8 @@ public class AutofillPopupTest extends ChromeShellTestBase {
                 FIRST_NAME, DOMUtils.getNodeValue(viewCore, "fn"));
         assertEquals("Last name did not match",
                 LAST_NAME, DOMUtils.getNodeValue(viewCore, "ln"));
+        assertEquals("Street address (textarea) did not match",
+                STREET_ADDRESS_TEXTAREA, DOMUtils.getNodeValue(viewCore, "sa"));
         assertEquals("Address line 1 did not match",
                 ADDRESS_LINE1, DOMUtils.getNodeValue(viewCore, "a1"));
         assertEquals("Address line 2 did not match",
@@ -207,11 +217,12 @@ public class AutofillPopupTest extends ChromeShellTestBase {
                 PHONE_NUMBER, DOMUtils.getNodeValue(viewCore, "ph"));
 
         final String profileFullName = FIRST_NAME + " " + LAST_NAME;
-        final int loggedEntries = 9;
+        final int loggedEntries = 10;
         assertEquals("Mismatched number of logged entries",
                 loggedEntries, mAutofillLoggedEntries.size());
         assertLogged(FIRST_NAME, profileFullName);
         assertLogged(LAST_NAME, profileFullName);
+        assertLogged(STREET_ADDRESS_TEXTAREA, profileFullName);
         assertLogged(ADDRESS_LINE1, profileFullName);
         assertLogged(ADDRESS_LINE2, profileFullName);
         assertLogged(CITY, profileFullName);

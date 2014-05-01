@@ -57,6 +57,42 @@ const char kLastUsedBillingAddressGuid[] = "last_used_billing";
 const char kLastUsedShippingAddressGuid[] = "last_used_shipping";
 const char kLastUsedCreditCardGuid[] = "last_used_card";
 
+// Constructs |inputs| for the SECTION_CC_BILLING section.
+void BuildCcBillingInputs(DetailInputs* inputs) {
+  const DetailInput kCcBillingInputs[] = {
+    { DetailInput::LONG, NAME_BILLING_FULL },
+    { DetailInput::LONG, ADDRESS_BILLING_STREET_ADDRESS },
+    { DetailInput::LONG, ADDRESS_BILLING_CITY },
+    { DetailInput::LONG, ADDRESS_BILLING_DEPENDENT_LOCALITY },
+    { DetailInput::LONG, ADDRESS_BILLING_STATE },
+    { DetailInput::LONG, ADDRESS_BILLING_ZIP },
+    { DetailInput::LONG, ADDRESS_BILLING_SORTING_CODE },
+    { DetailInput::LONG, ADDRESS_BILLING_COUNTRY },
+    { DetailInput::LONG, PHONE_BILLING_WHOLE_NUMBER },
+    { DetailInput::LONG, CREDIT_CARD_NUMBER },
+    { DetailInput::LONG, CREDIT_CARD_EXP_MONTH },
+    { DetailInput::LONG, CREDIT_CARD_EXP_4_DIGIT_YEAR },
+    { DetailInput::LONG, CREDIT_CARD_VERIFICATION_CODE },
+  };
+  common::BuildInputs(kCcBillingInputs, arraysize(kCcBillingInputs), inputs);
+}
+
+// Constructs |inputs| for the SECTION_SHIPPING section.
+void BuildShippingInputs(DetailInputs* inputs) {
+  const DetailInput kShippingInputs[] = {
+    { DetailInput::LONG, NAME_FULL },
+    { DetailInput::LONG, ADDRESS_HOME_STREET_ADDRESS },
+    { DetailInput::LONG, ADDRESS_HOME_CITY },
+    { DetailInput::LONG, ADDRESS_HOME_DEPENDENT_LOCALITY },
+    { DetailInput::LONG, ADDRESS_HOME_STATE },
+    { DetailInput::LONG, ADDRESS_HOME_ZIP },
+    { DetailInput::LONG, ADDRESS_HOME_SORTING_CODE },
+    { DetailInput::LONG, ADDRESS_HOME_COUNTRY },
+    { DetailInput::LONG, PHONE_HOME_WHOLE_NUMBER },
+  };
+  common::BuildInputs(kShippingInputs, arraysize(kShippingInputs), inputs);
+}
+
 base::string16 NullGetInfo(const AutofillType& type) {
   return base::string16();
 }
@@ -90,8 +126,12 @@ void FillOutputForSection(
     FormStructure& form_structure,
     FullWallet* full_wallet,
     const base::string16& email_address) {
+  DCHECK(section == SECTION_CC_BILLING || section == SECTION_SHIPPING);
   DetailInputs inputs;
-  common::BuildInputsForSection(section, "US", &inputs, NULL);
+  if (section == SECTION_CC_BILLING)
+    BuildCcBillingInputs(&inputs);
+  else
+    BuildShippingInputs(&inputs);
 
   FillOutputForSectionWithComparator(
       section, inputs,
@@ -263,9 +303,21 @@ void AutofillDialogControllerAndroid::Show() {
   const ServerFieldType full_billing_is_necessary_if[] = {
       ADDRESS_BILLING_LINE1,
       ADDRESS_BILLING_LINE2,
+      ADDRESS_BILLING_APT_NUM,
       ADDRESS_BILLING_CITY,
       ADDRESS_BILLING_STATE,
+      // ADDRESS_BILLING_ZIP,  // Postal code alone is a short form.
+      ADDRESS_BILLING_COUNTRY,
+      ADDRESS_BILLING_STREET_ADDRESS,
+      ADDRESS_BILLING_DEPENDENT_LOCALITY,
+      ADDRESS_BILLING_SORTING_CODE,
       PHONE_BILLING_WHOLE_NUMBER
+  };
+  const ServerFieldType billing_phone_number_is_necessary_if[] = {
+      PHONE_BILLING_WHOLE_NUMBER
+  };
+  const ServerFieldType shipping_phone_number_is_necessary_if[] = {
+      PHONE_HOME_WHOLE_NUMBER
   };
   const bool request_full_billing_address =
       IsSectionInputsUsedInFormStructure(
@@ -274,19 +326,21 @@ void AutofillDialogControllerAndroid::Show() {
           arraysize(full_billing_is_necessary_if),
           form_structure_);
   const bool request_phone_numbers =
-      IsSectionInputUsedInFormStructure(
+      IsSectionInputsUsedInFormStructure(
           SECTION_BILLING,
-          PHONE_BILLING_WHOLE_NUMBER,
+          billing_phone_number_is_necessary_if,
+          arraysize(billing_phone_number_is_necessary_if),
           form_structure_) ||
-      IsSectionInputUsedInFormStructure(
+      IsSectionInputsUsedInFormStructure(
           SECTION_SHIPPING,
-          PHONE_HOME_WHOLE_NUMBER,
+          shipping_phone_number_is_necessary_if,
+          arraysize(shipping_phone_number_is_necessary_if),
           form_structure_);
 
   bool request_shipping_address = false;
   {
     DetailInputs inputs;
-    common::BuildInputsForSection(SECTION_SHIPPING, "US", &inputs, NULL);
+    BuildShippingInputs(&inputs);
     request_shipping_address = form_structure_.FillFields(
         common::TypesFromInputs(inputs),
         base::Bind(common::ServerTypeMatchesField, SECTION_SHIPPING),
@@ -334,6 +388,14 @@ void AutofillDialogControllerAndroid::Show() {
   ScopedJavaLocalRef<jstring> jmerchant_domain =
       base::android::ConvertUTF8ToJavaString(
           env, source_url_.GetOrigin().spec());
+  const std::set<base::string16> availableShippingCountriesSet =
+      form_structure_.PossibleValues(ADDRESS_HOME_COUNTRY);
+  ScopedJavaLocalRef<jobjectArray> jshipping_countries =
+      base::android::ToJavaArrayOfStrings(
+          env,
+          std::vector<base::string16>(availableShippingCountriesSet.begin(),
+                                      availableShippingCountriesSet.end()));
+
   java_object_.Reset(Java_AutofillDialogControllerAndroid_create(
       env,
       reinterpret_cast<intptr_t>(this),
@@ -344,7 +406,8 @@ void AutofillDialogControllerAndroid::Show() {
       last_used_choice_is_autofill, jlast_used_account_name.obj(),
       jlast_used_billing.obj(), jlast_used_shipping.obj(),
       jlast_used_card.obj(),
-      jmerchant_domain.obj()));
+      jmerchant_domain.obj(),
+      jshipping_countries.obj()));
 }
 
 void AutofillDialogControllerAndroid::Hide() {

@@ -25,29 +25,45 @@ import java.util.concurrent.TimeoutException;
 public class AutofillDialogControllerTest extends ChromeShellTestBase {
     private static final String SWITCH_REDUCE_SECURITY_FOR_TESTING = "reduce-security-for-testing";
     private static final long DIALOG_CALLBACK_DELAY_MILLISECONDS = 50;
+
     private static final String TEST_NAME = "Joe Doe";
     private static final String TEST_PHONE = "(415)413-0703";
     private static final String TEST_PHONE_UNFORMATTED = "4154130703";
     private static final String TEST_EMAIL = "email@server.com";
+
     private static final String TEST_CC_NUMBER = "4111111111111111";
     private static final String TEST_CC_CSC = "123";
     private static final int TEST_CC_EXP_MONTH = 11;
     private static final int TEST_CC_EXP_YEAR = 2015;
+
     private static final String TEST_BILLING1 = "123 Main street";
     private static final String TEST_BILLING2 = "apt 456";
+    private static final String TEST_BILLING3 = "leave at the office";
+    private static final String TEST_BILLING_STREET =
+            TEST_BILLING1 + "\n" + TEST_BILLING2 + "\n" + TEST_BILLING3;
     private static final String TEST_BILLING_CITY = "Schenectady";
+    private static final String TEST_BILLING_DL = "";  // dependent locality
     private static final String TEST_BILLING_STATE = "NY";
     private static final String TEST_BILLING_ZIP = "12345";
+    private static final String TEST_BILLING_SORTING_CODE = "";  // sorting code
     private static final String TEST_BILLING_COUNTRY = "US";
+    private static final String TEST_BILLING_LANGUAGE = "";  // language
+
     private static final String TEST_SHIPPING_NAME = "Mister Receiver";
     private static final String TEST_SHIPPING_PHONE = "+46 8 713 99 99";
     private static final String TEST_SHIPPING_PHONE_UNFORMATTED = "4687139999";
     private static final String TEST_SHIPPING1 = "19 Farstaplan";
     private static final String TEST_SHIPPING2 = "Third floor";
+    private static final String TEST_SHIPPING3 = "please call first";
+    private static final String TEST_SHIPPING_STREET =
+            TEST_SHIPPING1 + "\n" + TEST_SHIPPING2 + "\n" + TEST_SHIPPING3;
     private static final String TEST_SHIPPING_CITY = "Farsta";
+    private static final String TEST_SHIPPING_DL = "";  // dependent locality
     private static final String TEST_SHIPPING_STATE = "Stockholm";
     private static final String TEST_SHIPPING_ZIP = "12346";
+    private static final String TEST_SHIPPING_SORTING_CODE = "";  // sorting code
     private static final String TEST_SHIPPING_COUNTRY = "SE";
+    private static final String TEST_SHIPPING_LANGUAGE = "";  // language
 
     private static final String HTML_PRELUDE = "<html>"
             + "<head>"
@@ -109,18 +125,20 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
                 + "  <option value=\"2015\">2015</option>"
                 + "</select>"
                 + "<input id=\"id-cc-csc\" autocomplete=\"cc-csc\" value=\"W\">"
-                + "<select id=\"id-cc-country\" autocomplete=\"billing country\">"
-                + "  <option value=\"NL\" selected>Netherlands</option>"
-                + "  <option value=\"US\">United States</option>"
-                + "  <option value=\"SE\">Sweden</option>"
-                + "  <option value=\"RU\">Russia</option>"
-                + "</select>"
                 + "<input id=\"id-cc-zip\" autocomplete=\"billing postal-code\" value=\"W\">");
         if (requestFullBilling) {
             sb.append("<input id=\"id-cc-1\" autocomplete=\"billing address-line1\" value=\"W\">"
                     + "<input id=\"id-cc-2\" autocomplete=\"billing address-line2\" value=\"W\">"
+                    + "<textarea id=\"id-cc-str\""
+                    + "    autocomplete=\"billing street-address\">W</textarea>"
                     + "<input id=\"id-cc-city\" autocomplete=\"billing locality\" value=\"W\">"
-                    + "<input id=\"id-cc-state\" autocomplete=\"billing region\" value=\"W\">");
+                    + "<input id=\"id-cc-state\" autocomplete=\"billing region\" value=\"W\">"
+                    + "<select id=\"id-cc-country\" autocomplete=\"billing country\">"
+                    + "  <option value=\"NL\" selected>Netherlands</option>"
+                    + "  <option value=\"US\">United States</option>"
+                    + "  <option value=\"SE\">Sweden</option>"
+                    + "  <option value=\"RU\">Russia</option>"
+                    + "</select>");
         }
         sb.append("</fieldset>");
         if (requestShipping) {
@@ -129,6 +147,8 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
                     + "<input id=\"id-h-name\" autocomplete=\"shipping name\" value=\"W\">"
                     + "<input id=\"id-h-1\" autocomplete=\"shipping address-line1\" value=\"W\">"
                     + "<input id=\"id-h-2\" autocomplete=\"shipping address-line2\" value=\"W\">"
+                    + "<textarea id=\"id-h-str\""
+                    + "    autocomplete=\"shipping street-address\">W</textarea>"
                     + "<input id=\"id-h-city\" autocomplete=\"shipping locality\" value=\"W\">"
                     + "<input id=\"id-h-state\" autocomplete=\"shipping region\" value=\"W\">"
                     + "<input id=\"id-h-zip\" autocomplete=\"shipping postal-code\" value=\"W\">"
@@ -344,7 +364,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
                 + "  <option value=\"SE\">Sweden</option>"
                 + "  <option value=\"RU\">Russia</option>"
                 + "</select>",
-                TEST_BILLING_COUNTRY, "id", false, false, false);
+                TEST_BILLING_COUNTRY, "id", true, false, false);
     }
 
     @SmallTest
@@ -369,6 +389,14 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
         verifyOneFieldWithCc(
                 "<input id=\"id\" autocomplete=\"billing address-line2\">",
                 TEST_BILLING2, "id", true, false, false);
+    }
+
+    @SmallTest
+    @Feature({"autofill"})
+    public void testRacTypeBillingStreetAddress() throws InterruptedException, TimeoutException {
+        verifyOneFieldWithCc(
+                "<textarea id=\"id\" autocomplete=\"billing street-address\"></textarea>",
+                TEST_BILLING_STREET, "id", true, false, false);
     }
 
     @SmallTest
@@ -422,6 +450,14 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
         verifyOneFieldWithCc(
                 "<input id=\"id\" autocomplete=\"shipping address-line2\">",
                 TEST_SHIPPING2, "id", false, true, false);
+    }
+
+    @SmallTest
+    @Feature({"autofill"})
+    public void testRacTypeShippingStreetAddress() throws InterruptedException, TimeoutException {
+        verifyOneFieldWithCc(
+                "<textarea id=\"id\" autocomplete=\"shipping street-address\"></textarea>",
+                TEST_SHIPPING_STREET, "id", false, true, false);
     }
 
     @SmallTest
@@ -543,8 +579,6 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
                 "" + TEST_CC_EXP_YEAR,
                 DOMUtils.getNodeValue(viewCore, "id-cc-exp-year"));
 
-        assertEquals("billing country did not match",
-                TEST_BILLING_COUNTRY, DOMUtils.getNodeValue(viewCore, "id-cc-country"));
         assertEquals("billing postal-code did not match",
                 TEST_BILLING_ZIP, DOMUtils.getNodeValue(viewCore, "id-cc-zip"));
 
@@ -553,10 +587,14 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
                     TEST_BILLING1, DOMUtils.getNodeValue(viewCore, "id-cc-1"));
             assertEquals("billing address-line2 did not match",
                     TEST_BILLING2, DOMUtils.getNodeValue(viewCore, "id-cc-2"));
+            assertEquals("billing street-address did not match",
+                    TEST_BILLING_STREET, DOMUtils.getNodeValue(viewCore, "id-cc-str"));
             assertEquals("billing locality did not match",
                     TEST_BILLING_CITY, DOMUtils.getNodeValue(viewCore, "id-cc-city"));
             assertEquals("billing region did not match",
                     TEST_BILLING_STATE, DOMUtils.getNodeValue(viewCore, "id-cc-state"));
+            assertEquals("billing country did not match",
+                    TEST_BILLING_COUNTRY, DOMUtils.getNodeValue(viewCore, "id-cc-country"));
 
             if (requestPhoneNumbers) {
                 assertEquals("billing tel did not match",
@@ -574,6 +612,8 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
                     TEST_SHIPPING1, DOMUtils.getNodeValue(viewCore, "id-h-1"));
             assertEquals("shipping address-line2 did not match",
                     TEST_SHIPPING2, DOMUtils.getNodeValue(viewCore, "id-h-2"));
+            assertEquals("shipping street-address did not match",
+                    TEST_SHIPPING_STREET, DOMUtils.getNodeValue(viewCore, "id-h-str"));
             assertEquals("shipping locality did not match",
                     TEST_SHIPPING_CITY, DOMUtils.getNodeValue(viewCore, "id-h-city"));
             assertEquals("shipping region did not match",
@@ -639,12 +679,16 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
                         TEST_CC_NUMBER, TEST_CC_CSC),
                 new AutofillDialogResult.ResultAddress(
                         TEST_NAME, TEST_PHONE,
-                        TEST_BILLING1, TEST_BILLING2, TEST_BILLING_CITY, TEST_BILLING_STATE,
-                        TEST_BILLING_ZIP, TEST_BILLING_COUNTRY),
+                        TEST_BILLING_STREET,
+                        TEST_BILLING_CITY, TEST_BILLING_DL, TEST_BILLING_STATE,
+                        TEST_BILLING_ZIP, TEST_BILLING_SORTING_CODE, TEST_BILLING_COUNTRY,
+                        TEST_BILLING_LANGUAGE),
                 new AutofillDialogResult.ResultAddress(
                         TEST_SHIPPING_NAME, TEST_SHIPPING_PHONE,
-                        TEST_SHIPPING1, TEST_SHIPPING2, TEST_SHIPPING_CITY, TEST_SHIPPING_STATE,
-                        TEST_SHIPPING_ZIP, TEST_SHIPPING_COUNTRY));
+                        TEST_SHIPPING_STREET,
+                        TEST_SHIPPING_CITY, TEST_SHIPPING_DL, TEST_SHIPPING_STATE,
+                        TEST_SHIPPING_ZIP, TEST_SHIPPING_SORTING_CODE, TEST_SHIPPING_COUNTRY,
+                        TEST_SHIPPING_LANGUAGE));
         MockAutofillDialogController.installMockFactory(
                 DIALOG_CALLBACK_DELAY_MILLISECONDS,
                 result,

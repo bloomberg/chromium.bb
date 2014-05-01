@@ -75,38 +75,45 @@ public class AutofillDialogResult {
     public static class ResultAddress {
         private final String mName;
         private final String mPhoneNumber;
-        private final String mAddress1;
-        private final String mAddress2;
-        private final String mCity;
-        private final String mState;
+        private final String mStreetAddress;
+        private final String mLocality;
+        private final String mDependentLocality;
+        private final String mAdministrativeArea;
         private final String mPostalCode;
+        private final String mSortingCode;
         private final String mCountryCode;
+        private final String mLanguageCode;
 
         /**
          * Creates a ResultAddress.
          * Any parameter can be empty or null.
          * @param name Full name
          * @param phoneNumber Phone number
-         * @param address1 Address line 1
-         * @param address2 Address line 2
-         * @param city City
-         * @param state State
+         * @param streetAddress Street address
+         * @param locality Locality / City
+         * @param dependentLocality Inner-city district / Suburb / Dependent locality
+         * @param administrativeArea Region / State
          * @param postalCode Postal code
+         * @param sortingCode Sorting code
          * @param countryCode Country code
+         * @param languageCode Language code
          */
         public ResultAddress(
                 String name, String phoneNumber,
-                String address1, String address2,
-                String city, String state, String postalCode,
-                String countryCode) {
+                String streetAddress,
+                String locality, String dependentLocality,
+                String administrativeArea, String postalCode, String sortingCode,
+                String countryCode, String languageCode) {
             mName = name;
             mPhoneNumber = phoneNumber;
-            mAddress1 = address1;
-            mAddress2 = address2;
-            mCity = city;
-            mState = state;
+            mStreetAddress = streetAddress;
+            mLocality = locality;
+            mDependentLocality = dependentLocality;
+            mAdministrativeArea = administrativeArea;
             mPostalCode = postalCode;
+            mSortingCode = sortingCode;
             mCountryCode = countryCode;
+            mLanguageCode = languageCode;
         }
 
         /**
@@ -126,35 +133,35 @@ public class AutofillDialogResult {
         }
 
         /**
-         * @return Address line 1
+         * @return Street address
          */
         @CalledByNative("ResultAddress")
-        public String getAddress1() {
-            return mAddress1;
+        public String getStreetAddress() {
+            return mStreetAddress;
         }
 
         /**
-         * @return Address line 2
+         * @return Locality (city)
          */
         @CalledByNative("ResultAddress")
-        public String getAddress2() {
-            return mAddress2;
+        public String getLocality() {
+            return mLocality;
         }
 
         /**
-         * @return City
+         * @return Dependent locality (inner-city district / suburb)
          */
         @CalledByNative("ResultAddress")
-        public String getCity() {
-            return mCity;
+        public String getDependentLocality() {
+            return mDependentLocality;
         }
 
         /**
-         * @return State
+         * @return Administrative area (region / state)
          */
         @CalledByNative("ResultAddress")
-        public String getState() {
-            return mState;
+        public String getAdministrativeArea() {
+            return mAdministrativeArea;
         }
 
         /**
@@ -166,11 +173,27 @@ public class AutofillDialogResult {
         }
 
         /**
+         * @return Sorting code
+         */
+        @CalledByNative("ResultAddress")
+        public String getSortingCode() {
+            return mSortingCode;
+        }
+
+        /**
          * @return Country code
          */
         @CalledByNative("ResultAddress")
         public String getCountryCode() {
             return mCountryCode;
+        }
+
+        /**
+         * @return Language code
+         */
+        @CalledByNative("ResultAddress")
+        public String getLanguageCode() {
+            return mLanguageCode;
         }
     }
 

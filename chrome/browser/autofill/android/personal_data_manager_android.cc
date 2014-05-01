@@ -43,19 +43,22 @@ ScopedJavaLocalRef<jobject> CreateJavaProfileFromNative(
       ConvertUTF16ToJavaString(env, profile.GetRawInfo(COMPANY_NAME)).obj(),
       ConvertUTF16ToJavaString(
           env,
-          profile.GetRawInfo(ADDRESS_HOME_LINE1)).obj(),
-      ConvertUTF16ToJavaString(
-          env,
-          profile.GetRawInfo(ADDRESS_HOME_LINE2)).obj(),
-      ConvertUTF16ToJavaString(
-          env,
-          profile.GetRawInfo(ADDRESS_HOME_CITY)).obj(),
+          profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS)).obj(),
       ConvertUTF16ToJavaString(
           env,
           profile.GetRawInfo(ADDRESS_HOME_STATE)).obj(),
       ConvertUTF16ToJavaString(
           env,
+          profile.GetRawInfo(ADDRESS_HOME_CITY)).obj(),
+      ConvertUTF16ToJavaString(
+          env,
+          profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY)).obj(),
+      ConvertUTF16ToJavaString(
+          env,
           profile.GetRawInfo(ADDRESS_HOME_ZIP)).obj(),
+      ConvertUTF16ToJavaString(
+          env,
+          profile.GetRawInfo(ADDRESS_HOME_SORTING_CODE)).obj(),
       ConvertUTF16ToJavaString(
           env,
           profile.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY),
@@ -63,7 +66,8 @@ ScopedJavaLocalRef<jobject> CreateJavaProfileFromNative(
       ConvertUTF16ToJavaString(
           env,
           profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER)).obj(),
-      ConvertUTF16ToJavaString(env, profile.GetRawInfo(EMAIL_ADDRESS)).obj());
+      ConvertUTF16ToJavaString(env, profile.GetRawInfo(EMAIL_ADDRESS)).obj(),
+      ConvertUTF8ToJavaString(env, profile.language_code()).obj());
 }
 
 void PopulateNativeProfileFromJava(
@@ -82,25 +86,29 @@ void PopulateNativeProfileFromJava(
       ConvertJavaStringToUTF16(
           Java_AutofillProfile_getCompanyName(env, jprofile)));
   profile->SetRawInfo(
-      ADDRESS_HOME_LINE1,
+      ADDRESS_HOME_STREET_ADDRESS,
       ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getAddressLine1(env, jprofile)));
-  profile->SetRawInfo(
-      ADDRESS_HOME_LINE2,
-      ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getAddressLine2(env, jprofile)));
-  profile->SetRawInfo(
-      ADDRESS_HOME_CITY,
-      ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getCity(env, jprofile)));
+          Java_AutofillProfile_getStreetAddress(env, jprofile)));
   profile->SetRawInfo(
       ADDRESS_HOME_STATE,
       ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getState(env, jprofile)));
+          Java_AutofillProfile_getRegion(env, jprofile)));
+  profile->SetRawInfo(
+      ADDRESS_HOME_CITY,
+      ConvertJavaStringToUTF16(
+          Java_AutofillProfile_getLocality(env, jprofile)));
+  profile->SetRawInfo(
+      ADDRESS_HOME_DEPENDENT_LOCALITY,
+      ConvertJavaStringToUTF16(
+          Java_AutofillProfile_getDependentLocality(env, jprofile)));
   profile->SetRawInfo(
       ADDRESS_HOME_ZIP,
       ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getZip(env, jprofile)));
+          Java_AutofillProfile_getPostalCode(env, jprofile)));
+  profile->SetRawInfo(
+      ADDRESS_HOME_SORTING_CODE,
+      ConvertJavaStringToUTF16(
+          Java_AutofillProfile_getSortingCode(env, jprofile)));
   profile->SetInfo(
       AutofillType(ADDRESS_HOME_COUNTRY),
       ConvertJavaStringToUTF16(
@@ -114,6 +122,9 @@ void PopulateNativeProfileFromJava(
       EMAIL_ADDRESS,
       ConvertJavaStringToUTF16(
           Java_AutofillProfile_getEmailAddress(env, jprofile)));
+  profile->set_language_code(
+      ConvertJavaStringToUTF8(
+          Java_AutofillProfile_getLanguageCode(env, jprofile)));
 }
 
 ScopedJavaLocalRef<jobject> CreateJavaCreditCardFromNative(

@@ -10,6 +10,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
@@ -45,27 +46,29 @@ scoped_ptr<wallet::Address> ParseJavaWalletAddress(
 
   const base::string16 recipient_name =
       FETCH_JSTRING(UTF16, env, address, ResultAddress, Name);
+
   std::vector<base::string16> address_lines;
-  address_lines.push_back(
-      FETCH_JSTRING(UTF16, env, address, ResultAddress, Address1));
-  address_lines.push_back(
-      FETCH_JSTRING(UTF16, env, address, ResultAddress, Address2));
+  const base::string16 street_address =
+      FETCH_JSTRING(UTF16, env, address, ResultAddress, StreetAddress);
+  base::SplitString(street_address, base::char16('\n'), &address_lines);
+
   const base::string16 locality_name =
-      FETCH_JSTRING(UTF16, env, address, ResultAddress, City);
+      FETCH_JSTRING(UTF16, env, address, ResultAddress, Locality);
+  const base::string16 dependent_locality_name =
+      FETCH_JSTRING(UTF16, env, address, ResultAddress, DependentLocality);
   const base::string16 administrative_area_name =
-      FETCH_JSTRING(UTF16, env, address, ResultAddress, State);
+      FETCH_JSTRING(UTF16, env, address, ResultAddress, AdministrativeArea);
   const base::string16 postal_code_number =
       FETCH_JSTRING(UTF16, env, address, ResultAddress, PostalCode);
+  const base::string16 sorting_code =
+      FETCH_JSTRING(UTF16, env, address, ResultAddress, SortingCode);
   const base::string16 phone_number =
       FETCH_JSTRING(UTF16, env, address, ResultAddress, PhoneNumber);
   const std::string country_name_code =
       FETCH_JSTRING(UTF8, env, address, ResultAddress, CountryCode);
   DCHECK(!country_name_code.empty());
-
-  // TODO(aruslan): get these from the JavaWalletAddress.
-  const base::string16 dependent_locality_name;
-  const base::string16 sorting_code;
-  const std::string language_code;
+  const std::string language_code =
+      FETCH_JSTRING(UTF8, env, address, ResultAddress, LanguageCode);
 
   return scoped_ptr<wallet::Address>(new wallet::Address(
       country_name_code,

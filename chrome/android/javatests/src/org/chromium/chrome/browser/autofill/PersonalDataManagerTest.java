@@ -35,29 +35,63 @@ public class PersonalDataManagerTest extends ChromeShellTestBase {
     public void testAddAndEditProfiles() throws InterruptedException, ExecutionException {
         AutofillProfile profile = new AutofillProfile(
                 "" /* guid */, "https://www.example.com" /* origin */,
-                "John Smith", "Acme Inc.", "1 Main", "Apt A", "San Francisco", "CA",
-                "94102", "US", "4158889999", "john@acme.inc");
+                "John Smith", "Acme Inc.",
+                "1 Main\nApt A", "CA", "San Francisco", "",
+                "94102", "",
+                "US", "4158889999", "john@acme.inc", "");
         String profileOneGUID = mHelper.setProfile(profile);
         assertEquals(1, mHelper.getNumberOfProfiles());
 
         AutofillProfile profile2 = new AutofillProfile(
                 "" /* guid */, "http://www.example.com" /* origin */,
-                "John Hackock", "Acme Inc.", "1 Main", "Apt A", "San Francisco", "CA",
-                "94102", "US", "4158889999", "john@acme.inc");
+                "John Hackock", "Acme Inc.",
+                "1 Main\nApt A", "CA", "San Francisco", "",
+                "94102", "",
+                "US", "4158889999", "john@acme.inc", "");
         String profileTwoGUID = mHelper.setProfile(profile2);
         assertEquals(2, mHelper.getNumberOfProfiles());
 
         profile.setGUID(profileOneGUID);
         profile.setCountry("Canada");
         mHelper.setProfile(profile);
-        assertEquals("Should still have only two profile", 2, mHelper.getNumberOfProfiles());
+        assertEquals("Should still have only two profiles", 2, mHelper.getNumberOfProfiles());
 
         AutofillProfile storedProfile = mHelper.getProfile(profileOneGUID);
         assertEquals(profileOneGUID, storedProfile.getGUID());
         assertEquals("https://www.example.com", storedProfile.getOrigin());
         assertEquals("CA", storedProfile.getCountryCode());
-        assertEquals("San Francisco", storedProfile.getCity());
+        assertEquals("San Francisco", storedProfile.getLocality());
         assertNotNull(mHelper.getProfile(profileTwoGUID));
+    }
+
+    @SmallTest
+    @Feature({"Autofill"})
+    public void testUpdateLanguageCodeInProfile() throws InterruptedException, ExecutionException {
+        AutofillProfile profile = new AutofillProfile(
+                "" /* guid */, "https://www.example.com" /* origin */,
+                "John Smith", "Acme Inc.",
+                "1 Main\nApt A", "CA", "San Francisco", "",
+                "94102", "",
+                "US", "4158889999", "john@acme.inc", "fr");
+        assertEquals("fr", profile.getLanguageCode());
+        String profileOneGUID = mHelper.setProfile(profile);
+        assertEquals(1, mHelper.getNumberOfProfiles());
+
+        AutofillProfile storedProfile = mHelper.getProfile(profileOneGUID);
+        assertEquals(profileOneGUID, storedProfile.getGUID());
+        assertEquals("fr", storedProfile.getLanguageCode());
+        assertEquals("US", storedProfile.getCountryCode());
+
+        profile.setGUID(profileOneGUID);
+        profile.setLanguageCode("en");
+        mHelper.setProfile(profile);
+
+        AutofillProfile storedProfile2 = mHelper.getProfile(profileOneGUID);
+        assertEquals(profileOneGUID, storedProfile2.getGUID());
+        assertEquals("en", storedProfile2.getLanguageCode());
+        assertEquals("US", storedProfile2.getCountryCode());
+        assertEquals("San Francisco", storedProfile2.getLocality());
+        assertEquals("https://www.example.com", storedProfile2.getOrigin());
     }
 
     @SmallTest
@@ -65,8 +99,10 @@ public class PersonalDataManagerTest extends ChromeShellTestBase {
     public void testAddAndDeleteProfile() throws InterruptedException, ExecutionException {
         AutofillProfile profile = new AutofillProfile(
                 "" /* guid */, "Chrome settings" /* origin */,
-                "John Smith", "Acme Inc.", "1 Main", "Apt A", "San Francisco", "CA",
-                "94102", "US", "4158889999", "john@acme.inc");
+                "John Smith", "Acme Inc.",
+                "1 Main\nApt A", "CA", "San Francisco", "",
+                "94102", "",
+                "US", "4158889999", "john@acme.inc", "");
         String profileOneGUID = mHelper.setProfile(profile);
         assertEquals(1, mHelper.getNumberOfProfiles());
 
@@ -125,14 +161,18 @@ public class PersonalDataManagerTest extends ChromeShellTestBase {
         // getCountryCode() should return a country code.
         AutofillProfile profile1 = new AutofillProfile(
                 "" /* guid */, "https://www.example.com" /* origin */,
-                "John Smith", "Acme Inc.", "1 Main", "Apt A", "Montreal", "Quebec",
-                "H3B 2Y5", "Canada", "514-670-1234", "john@acme.inc");
+                "John Smith", "Acme Inc.",
+                "1 Main\nApt A", "Quebec", "Montreal", "",
+                "H3B 2Y5", "",
+                "Canada", "514-670-1234", "john@acme.inc", "");
         String profileGuid1 = mHelper.setProfile(profile1);
 
         AutofillProfile profile2 = new AutofillProfile(
                 "" /* guid */, "https://www.example.com" /* origin */,
-                "Greg Smith", "Ucme Inc.", "123 Bush", "Apt 125", "Montreal", "Quebec",
-                "H3B 2Y5", "CA", "514-670-4321", "greg@ucme.inc");
+                "Greg Smith", "Ucme Inc.",
+                "123 Bush\nApt 125", "Quebec", "Montreal", "",
+                "H3B 2Y5", "",
+                "CA", "514-670-4321", "greg@ucme.inc", "");
         String profileGuid2 = mHelper.setProfile(profile2);
 
         assertEquals(2, mHelper.getNumberOfProfiles());
