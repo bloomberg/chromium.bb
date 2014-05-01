@@ -605,7 +605,8 @@ bool FastTextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const R
     RenderObject* descendant = root->nextInPreOrder(root);
     while (descendant) {
         if (descendant->isRenderBlock()) {
-            if (!descendant->isTableCell() && classifyBlock(descendant, INDEPENDENT | SUPPRESSING)) {
+            if (!(descendant->isTableCell() || (root->isTableCell() && descendant->isTable()))
+                && classifyBlock(descendant, INDEPENDENT | SUPPRESSING)) {
                 descendant = descendant->nextInPreOrderAfterChildren(root);
                 continue;
             }
