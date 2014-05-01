@@ -479,10 +479,35 @@ class Page25(KeyMobileSitesPage):
           function(callback) {
             callback(document.getElementById(':5'));
           }''',
-        'remaining_scroll_distance_function': '''
+        'scroll_distance_function': '''
           function() {
             return Math.max(0, 2500 +
               document.getElementById(':h').getBoundingClientRect().top);
+          }'''
+      }))
+
+
+class Page26(KeyMobileSitesPage):
+
+  """
+  Why: #1 world commerce website by visits; #3 commerce in the US by time spent
+  """
+
+  def __init__(self, page_set):
+    super(Page26, self).__init__(
+      url='http://www.amazon.com/gp/aw/s/ref=is_box_?k=nicolas+cage',
+      page_set=page_set)
+
+  def RunSmoothness(self, action_runner):
+    action_runner.RunAction(ScrollAction(
+      {
+        'scrollable_element_function': '''
+          function(callback) {
+            callback(document.getElementById('search'));
+          }''',
+        'scroll_distance_function': '''
+          function() {
+            return document.body.scrollHeight - window.innerHeight;
           }'''
       }))
 
@@ -522,6 +547,7 @@ class KeyMobileSitesPageSet(page_set_module.PageSet):
 #    self.AddPage(Page23(self))
     self.AddPage(Page24(self))
     self.AddPage(Page25(self))
+    self.AddPage(Page26(self))
 
     urls_list = [
       # Why: crbug.com/242544
@@ -540,9 +566,6 @@ class KeyMobileSitesPageSet(page_set_module.PageSet):
       'http://news.yahoo.com',
       # Why: #2 news worldwide
       'http://www.cnn.com',
-      # Why: #1 world commerce website by visits; #3 commerce in the US by time
-      # spent
-      'http://www.amazon.com/gp/aw/s/ref=is_box_?k=nicolas+cage',
       # Why: #1 commerce website by time spent by users in US
       'http://shop.mobileweb.ebay.com/searchresults?kw=viking+helmet',
       # Why: #1 Alexa recreation
