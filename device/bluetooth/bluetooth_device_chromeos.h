@@ -37,6 +37,9 @@ class BluetoothDeviceChromeOS
   virtual uint16 GetVendorID() const OVERRIDE;
   virtual uint16 GetProductID() const OVERRIDE;
   virtual uint16 GetDeviceID() const OVERRIDE;
+  virtual int GetRSSI() const OVERRIDE;
+  virtual int GetCurrentHostTransmitPower() const OVERRIDE;
+  virtual int GetMaximumHostTransmitPower() const OVERRIDE;
   virtual bool IsPaired() const OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
   virtual bool IsConnectable() const OVERRIDE;

@@ -111,6 +111,21 @@ uint16 BluetoothDeviceWin::GetDeviceID() const {
   return 0;
 }
 
+int BluetoothDeviceWin::GetRSSI() const {
+  NOTIMPLEMENTED();
+  return kUnknownPower;
+}
+
+int BluetoothDeviceWin::GetCurrentHostTransmitPower() const {
+  NOTIMPLEMENTED();
+  return kUnknownPower;
+}
+
+int BluetoothDeviceWin::GetMaximumHostTransmitPower() const {
+  NOTIMPLEMENTED();
+  return kUnknownPower;
+}
+
 bool BluetoothDeviceWin::IsPaired() const {
   return paired_;
 }

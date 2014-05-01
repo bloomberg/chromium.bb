@@ -66,6 +66,9 @@ class BluetoothDevice {
     DEVICE_KEYBOARD_MOUSE_COMBO
   };
 
+  // The value returned if the RSSI or transmit power cannot be read.
+  static const int kUnknownPower = 127;
+
   // Possible errors passed back to an error callback function in case of a
   // failed call to Connect().
   enum ConnectErrorCode {
@@ -226,6 +229,28 @@ class BluetoothDevice {
   // values are unique, and do not overlap, so DEVICE_KEYBOARD is not also
   // DEVICE_PERIPHERAL.
   DeviceType GetDeviceType() const;
+
+  // Gets the "received signal strength indication" (RSSI) of the current
+  // connection to the device. The RSSI indicates the power present in the
+  // received radio signal, measured in dBm, to a resolution of 1dBm. Larger
+  // (typically, less negative) values indicate a stronger signal.
+  // If the device is not currently connected, then returns the RSSI read from
+  // the last inquiry that returned the device, where available. In case of an
+  // error, returns |kUnknownPower|. Otherwise, returns the connection's RSSI.
+  virtual int GetRSSI() const = 0;
+
+  // These two methods are used to read the current or maximum transmit power
+  // ("Tx power") of the current connection to the device. The transmit power
+  // indicates the strength of the signal broadcast from the host's Bluetooth
+  // antenna when communicating with the device, measured in dBm, to a
+  // resolution of 1dBm. Larger (typically, less negative) values
+  // indicate a stronger signal.
+  // It is only meaningful to call this method when there is a connection
+  // established to the device. If there is no connection, or in case of an
+  // error, returns |kUnknownPower|. Otherwise, returns the connection's
+  // transmit power.
+  virtual int GetCurrentHostTransmitPower() const = 0;
+  virtual int GetMaximumHostTransmitPower() const = 0;
 
   // Indicates whether the device is known to support pairing based on its
   // device class and address.

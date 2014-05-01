@@ -212,6 +212,21 @@ uint16 BluetoothDeviceChromeOS::GetDeviceID() const {
   return device_id;
 }
 
+int BluetoothDeviceChromeOS::GetRSSI() const {
+  NOTIMPLEMENTED();
+  return kUnknownPower;
+}
+
+int BluetoothDeviceChromeOS::GetCurrentHostTransmitPower() const {
+  NOTIMPLEMENTED();
+  return kUnknownPower;
+}
+
+int BluetoothDeviceChromeOS::GetMaximumHostTransmitPower() const {
+  NOTIMPLEMENTED();
+  return kUnknownPower;
+}
+
 bool BluetoothDeviceChromeOS::IsPaired() const {
   BluetoothDeviceClient::Properties* properties =
       DBusThreadManager::Get()->GetBluetoothDeviceClient()->

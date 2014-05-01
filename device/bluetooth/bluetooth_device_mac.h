@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_MAC_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_MAC_H_
 
+#import <IOBluetooth/IOBluetooth.h>
+
 #include <string>
 
 #include "base/basictypes.h"
@@ -32,6 +34,9 @@ class BluetoothDeviceMac : public BluetoothDevice {
   virtual uint16 GetVendorID() const OVERRIDE;
   virtual uint16 GetProductID() const OVERRIDE;
   virtual uint16 GetDeviceID() const OVERRIDE;
+  virtual int GetRSSI() const OVERRIDE;
+  virtual int GetCurrentHostTransmitPower() const OVERRIDE;
+  virtual int GetMaximumHostTransmitPower() const OVERRIDE;
   virtual bool IsPaired() const OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
   virtual bool IsConnectable() const OVERRIDE;
@@ -71,6 +76,11 @@ class BluetoothDeviceMac : public BluetoothDevice {
 
  private:
   friend class BluetoothAdapterMac;
+
+  // Implementation to read the host's transmit power level of type
+  // |power_level_type|.
+  int GetHostTransmitPower(
+      BluetoothHCITransmitPowerLevelType power_level_type) const;
 
   // List of observers interested in event notifications from us.
   ObserverList<Observer> observers_;
