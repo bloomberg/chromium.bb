@@ -4,11 +4,29 @@
 
 #include "chrome/browser/ui/views/app_list/linux/app_list_linux.h"
 
+#include "base/command_line.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_positioner.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/widget/widget.h"
+
+AppListLinux::AppListLinux(app_list::AppListView* view,
+                           const base::Closure& on_should_dismiss)
+    : view_(view),
+      window_icon_updated_(false),
+      on_should_dismiss_(on_should_dismiss) {
+  view_->AddObserver(this);
+}
+
+AppListLinux::~AppListLinux() {
+  view_->RemoveObserver(this);
+}
 
 // static
 AppListPositioner::ScreenEdge AppListLinux::ShelfLocationInDisplay(
@@ -80,14 +98,26 @@ gfx::Point AppListLinux::FindAnchorPoint(const gfx::Size& view_size,
   return positioner.GetAnchorPointForShelfCursor(edge, cursor);
 }
 
-// static
-void AppListLinux::MoveNearCursor(app_list::AppListView* view) {
+void AppListLinux::Show() {
+  view_->GetWidget()->Show();
+  if (!window_icon_updated_) {
+    view_->GetWidget()->GetTopLevelWidget()->UpdateWindowIcon();
+    window_icon_updated_ = true;
+  }
+  view_->GetWidget()->Activate();
+}
+
+void AppListLinux::Hide() {
+  view_->GetWidget()->Hide();
+}
+
+void AppListLinux::MoveNearCursor() {
   gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
   gfx::Screen* screen =
-      gfx::Screen::GetScreenFor(view->GetWidget()->GetNativeView());
+      gfx::Screen::GetScreenFor(view_->GetWidget()->GetNativeView());
   gfx::Display display = screen->GetDisplayNearestPoint(cursor);
 
-  view->SetBubbleArrow(views::BubbleBorder::FLOAT);
+  view_->SetBubbleArrow(views::BubbleBorder::FLOAT);
 
   // In the Unity desktop environment, special case SCREEN_EDGE_LEFT. It is
   // always on the left side in Unity, but ShelfLocationInDisplay will not
@@ -101,6 +131,32 @@ void AppListLinux::MoveNearCursor(app_list::AppListView* view) {
     edge = AppListPositioner::SCREEN_EDGE_LEFT;
   else
     edge = ShelfLocationInDisplay(display);
-  view->SetAnchorPoint(
-      FindAnchorPoint(view->GetPreferredSize(), display, cursor, edge));
+  view_->SetAnchorPoint(
+      FindAnchorPoint(view_->GetPreferredSize(), display, cursor, edge));
+}
+
+bool AppListLinux::IsVisible() {
+  return view_->GetWidget()->IsVisible();
+}
+
+void AppListLinux::Prerender() {
+  view_->Prerender();
+}
+
+gfx::NativeWindow AppListLinux::GetWindow() {
+  return view_->GetWidget()->GetNativeWindow();
+}
+
+void AppListLinux::SetProfile(Profile* profile) {
+  view_->SetProfileByPath(profile->GetPath());
+}
+
+void AppListLinux::OnActivationChanged(
+    views::Widget* /*widget*/, bool active) {
+  if (active)
+    return;
+
+  // Call |on_should_dismiss_| asynchronously. This must be done asynchronously
+  // or our caller will crash, as it expects the app list to remain alive.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, on_should_dismiss_);
 }

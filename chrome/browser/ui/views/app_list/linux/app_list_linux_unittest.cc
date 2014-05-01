@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/app_list/linux/app_list_linux.h"
 
-#include "base/logging.h"
 #include "chrome/browser/ui/app_list/app_list_positioner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/display.h"

@@ -5,16 +5,20 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_ACTIVATION_TRACKER_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_ACTIVATION_TRACKER_WIN_H_
 
-#include "base/macros.h"
+#include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/timer/timer.h"
 #include "ui/app_list/views/app_list_view_observer.h"
 
-class AppListServiceWin;
+namespace app_list {
+class AppListView;
+}
 
 // Periodically checks to see if an AppListView has lost focus using a timer.
 class ActivationTrackerWin : public app_list::AppListViewObserver {
  public:
-  explicit ActivationTrackerWin(AppListServiceWin* service);
+  ActivationTrackerWin(app_list::AppListView* view,
+                       const base::Closure& on_should_dismiss);
   ~ActivationTrackerWin();
 
   // app_list::AppListViewObserver:
@@ -33,7 +37,11 @@ class ActivationTrackerWin : public app_list::AppListViewObserver {
   // app list).
   bool ShouldDismissAppList();
 
-  AppListServiceWin* service_;  // Weak. Owns this.
+  // The window to track the active state of.
+  app_list::AppListView* view_;
+
+  // Called to request |view_| be closed.
+  base::Closure on_should_dismiss_;
 
   // Records whether, on the previous timer tick, the taskbar had focus without
   // the right mouse button being down. We allow the taskbar to have focus for
