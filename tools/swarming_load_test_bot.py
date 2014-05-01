@@ -28,6 +28,8 @@ sys.path.insert(0, ROOT_DIR)
 
 from third_party import colorama
 
+import swarming
+
 from utils import graph
 from utils import net
 from utils import threading_utils
@@ -84,8 +86,8 @@ class FakeSwarmBot(object):
   result.
   """
   def __init__(
-      self, swarming_url, swarm_bot_hash, index, progress, duration,
-      events, kill_event):
+      self, swarming_url, dimensions, swarm_bot_version_hash, index, progress,
+      duration, events, kill_event):
     self._lock = threading.Lock()
     self._swarming = swarming_url
     self._index = index
@@ -103,17 +105,11 @@ class FakeSwarmBot(object):
     #    +/master/scripts/tools/swarm_bootstrap/swarm_bootstrap.py
     # for more details.
     self._attributes = {
-      'dimensions': {
-        # Use improbable values to reduce the chance of interferring with real
-        # slaves.
-        'bits': '36',
-        'machine': os.uname()[4] + '-experimental',
-        'os': [OS_NAME],
-      },
+      'dimensions': dimensions,
       'id': self._machine_id,
       'try_count': 0,
       'tag': self._machine_id,
-      'version': swarm_bot_hash,
+      'version': swarm_bot_version_hash,
     }
 
     self._thread = threading.Thread(target=self._run, name='bot%d' % index)
@@ -233,6 +229,14 @@ def main():
       '-S', '--swarming',
       metavar='URL', default='',
       help='Swarming server to use')
+  swarming.add_filter_options(parser)
+  # Use improbable values to reduce the chance of interferring with real slaves.
+  parser.set_defaults(
+      dimensions=[
+        ('bits', '36'),
+        ('machine', os.uname()[4] + '-experimental'),
+        ('os', OS_NAME),
+      ])
 
   group = optparse.OptionGroup(parser, 'Load generated')
   group.add_option(
@@ -266,6 +270,7 @@ def main():
     parser.error('--swarming is required.')
   if options.consume <= 0:
     parser.error('Needs --consume > 0. 0.01 is a valid value.')
+  swarming.process_filter_options(parser, options)
 
   print(
       'Running %d slaves, each task lasting %.1fs' % (
@@ -277,11 +282,12 @@ def main():
   events = Queue.Queue()
   start = time.time()
   kill_event = threading.Event()
-  swarm_bot_hash = calculate_version(options.swarming + '/get_slave_code')
+  swarm_bot_version_hash = calculate_version(
+      options.swarming + '/get_slave_code')
   slaves = [
     FakeSwarmBot(
-      options.swarming, swarm_bot_hash, i, progress, options.consume,
-      events, kill_event)
+      options.swarming, options.dimensions, swarm_bot_version_hash, i, progress,
+      options.consume, events, kill_event)
     for i in range(options.slaves)
   ]
   try:

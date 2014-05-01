@@ -764,6 +764,12 @@ def add_filter_options(parser):
   parser.add_option_group(parser.filter_group)
 
 
+def process_filter_options(parser, options):
+  options.dimensions = dict(options.dimensions)
+  if not options.dimensions:
+    parser.error('Please at least specify one --dimension')
+
+
 def add_trigger_options(parser):
   """Adds all options to trigger a task on Swarming."""
   isolateserver.add_isolate_server_options(parser, True)
@@ -805,9 +811,7 @@ def process_trigger_options(parser, options, args):
   isolateserver.process_isolate_server_options(parser, options)
   if len(args) != 1:
     parser.error('Must pass one .isolated file or its hash (sha1).')
-  options.dimensions = dict(options.dimensions)
-  if not options.dimensions:
-    parser.error('Please at least specify one --dimension')
+  process_filter_options(parser, options)
 
 
 def add_collect_options(parser):
