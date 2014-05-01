@@ -273,8 +273,6 @@ crbug.com/331583 [ Mavericks ] ietestcenter/css3/multicolumn/column-block-format
 crbug.com/331583 [ Mavericks ] ietestcenter/css3/multicolumn/column-containing-block-003.htm [ Pass ImageOnlyFailure ]
 # Also svg/hixie/text/001.xml and fullscreen/parent-flow-inline-with-block-child.html but they have other lines in this file.
 
-crbug.com/368983 fast/css/font-face-woff2.html [ ImageOnlyFailure ]
-
 crbug.com/225184 scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Pass ]
 
 crbug.com/365340 editing/pasteboard/paste-noscript-xhtml.xhtml [ Failure Pass ]
