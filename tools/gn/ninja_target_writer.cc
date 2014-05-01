@@ -84,31 +84,57 @@ void NinjaTargetWriter::RunAndWriteFile(const Target* target,
                   static_cast<int>(contents.size()));
 }
 
-std::string NinjaTargetWriter::GetSourcesImplicitDeps() const {
-  std::ostringstream ret;
-  ret << " |";
+std::string NinjaTargetWriter::WriteInputDepsStampAndGetDep() const {
+  // For an action (where we run a script only once) the sources are the same
+  // as the source prereqs.
+  bool list_sources_as_input_deps = target_->output_type() == Target::ACTION;
+
+  if (target_->source_prereqs().empty() &&
+      target_->recursive_hard_deps().empty() &&
+      (!list_sources_as_input_deps || target_->sources().empty()))
+    return std::string();  // No input/hard deps.
+
+  // One potential optimization is if there are few input dependencies (or
+  // potentially few sources that depend on these) it's better to just write
+  // all hard deps on each sources line than have this intermediate stamp. We
+  // do the stamp file because duplicating all the order-only deps for each
+  // source file can really explode the ninja file but this won't be the most
+  // optimal thing in all cases.
+
+  OutputFile input_stamp_file = helper_.GetTargetOutputDir(target_);
+  input_stamp_file.value().append(target_->label().name());
+  input_stamp_file.value().append(".inputdeps.stamp");
+
+  std::ostringstream stamp_file_stream;
+  path_output_.WriteFile(stamp_file_stream, input_stamp_file);
+  std::string stamp_file_string = stamp_file_stream.str();
+
+  out_ << stamp_file_string << ": stamp";
 
   // Input files are order-only deps.
   const Target::FileList& prereqs = target_->source_prereqs();
-  bool has_files = !prereqs.empty();
   for (size_t i = 0; i < prereqs.size(); i++) {
-    ret << " ";
-    path_output_.WriteFile(ret, prereqs[i]);
+    out_ << " ";
+    path_output_.WriteFile(out_, prereqs[i]);
   }
-
-  // Add on any direct deps marked as "hard".
-  const LabelTargetVector& deps = target_->deps();
-  for (size_t i = 0; i < deps.size(); i++) {
-    if (deps[i].ptr->hard_dep()) {
-      has_files = true;
-      ret << " ";
-      path_output_.WriteFile(ret, helper_.GetTargetOutputFile(deps[i].ptr));
+  if (list_sources_as_input_deps) {
+    const Target::FileList& sources = target_->sources();
+    for (size_t i = 0; i < sources.size(); i++) {
+      out_ << " ";
+      path_output_.WriteFile(out_, sources[i]);
     }
   }
 
-  if (has_files)
-    return ret.str();
-  return std::string();  // No files added.
+  // Add on any hard deps that are direct or indirect dependencies.
+  const std::set<const Target*>& hard_deps = target_->recursive_hard_deps();
+  for (std::set<const Target*>::const_iterator i = hard_deps.begin();
+       i != hard_deps.end(); ++i) {
+    out_ << " ";
+    path_output_.WriteFile(out_, helper_.GetTargetOutputFile(*i));
+  }
+
+  out_ << "\n";
+  return " | " + stamp_file_string;
 }
 
 FileTemplate NinjaTargetWriter::GetOutputTemplate() const {

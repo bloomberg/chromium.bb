@@ -28,7 +28,7 @@ class NinjaHelper {
   std::string GetTopleveOutputDir() const;
 
   // Ends in a slash.
-  std::string GetTargetOutputDir(const Target* target) const;
+  OutputFile GetTargetOutputDir(const Target* target) const;
 
   // Example: "base/base.ninja". The string version will not be escaped, and
   // will always have slashes for path separators.

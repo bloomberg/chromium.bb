@@ -127,10 +127,6 @@ extern const char kForwardDependentConfigsFrom[];
 extern const char kForwardDependentConfigsFrom_HelpShort[];
 extern const char kForwardDependentConfigsFrom_Help[];
 
-extern const char kHardDep[];
-extern const char kHardDep_HelpShort[];
-extern const char kHardDep_Help[];
-
 extern const char kIncludeDirs[];
 extern const char kIncludeDirs_HelpShort[];
 extern const char kIncludeDirs_Help[];
