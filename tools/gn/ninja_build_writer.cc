@@ -51,7 +51,11 @@ std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
   const CommandLine::SwitchMap& switches = our_cmdline.GetSwitches();
   for (CommandLine::SwitchMap::const_iterator i = switches.begin();
        i != switches.end(); ++i) {
-    if (i->first != "q" && i->first != "root") {
+    // Only write arguments we haven't already written. Always skip "args"
+    // since those will have been written to the file and will be used
+    // implicitly in the future. Keeping --args would mean changes to the file
+    // would be ignored.
+    if (i->first != "q" && i->first != "root" && i->first != "args") {
       std::string escaped_value =
           EscapeString(FilePathToUTF8(i->second), escape_shell, NULL);
       cmdline.AppendSwitchASCII(i->first, escaped_value);
@@ -129,23 +133,6 @@ void NinjaBuildWriter::WriteNinjaRules() {
   out_ << "build build.ninja: gn\n"
        << "  generator = 1\n"
        << "  depfile = build.ninja.d\n";
-
-  // Provide a way to force regenerating ninja files if the user is suspicious
-  // something is out-of-date. This will be "ninja refresh".
-  out_ << "\nbuild refresh: gn\n";
-
-  // Provide a way to see what flags are associated with this build:
-  // This will be "ninja show".
-  const CommandLine& our_cmdline = *CommandLine::ForCurrentProcess();
-  std::string args = our_cmdline.GetSwitchValueASCII("args");
-  out_ << "rule echo\n";
-  out_ << "  command = echo $text\n";
-  out_ << "  description = ECHO $desc\n";
-  out_ << "build show: echo\n";
-  out_ << "  desc = build arguments:\n";
-  out_ << "  text = "
-       << (args.empty() ? std::string("No build args, using defaults.") : args)
-       << "\n";
 
   // Input build files. These go in the ".d" file. If we write them as
   // dependencies in the .ninja file itself, ninja will expect the files to
