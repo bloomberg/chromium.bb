@@ -1193,7 +1193,7 @@ private:
     RefPtr<ResourceFetcher> m_fetcher;
     RefPtr<DocumentParser> m_parser;
     unsigned m_activeParserCount;
-    RefPtr<ContextFeatures> m_contextFeatures;
+    RefPtrWillBeMember<ContextFeatures> m_contextFeatures;
 
     bool m_wellFormed;
 

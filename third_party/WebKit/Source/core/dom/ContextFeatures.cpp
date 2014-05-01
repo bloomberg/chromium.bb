@@ -45,7 +45,11 @@ const char* ContextFeatures::supplementName()
 
 ContextFeatures* ContextFeatures::defaultSwitch()
 {
+#if ENABLE(OILPAN)
+    DEFINE_STATIC_LOCAL(Persistent<ContextFeatures>, instance, (ContextFeatures::create(ContextFeaturesClient::empty())));
+#else
     DEFINE_STATIC_REF(ContextFeatures, instance, (ContextFeatures::create(ContextFeaturesClient::empty())));
+#endif
     return instance;
 }
 

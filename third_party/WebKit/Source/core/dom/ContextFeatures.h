@@ -36,8 +36,8 @@ class Document;
 class Page;
 
 #if ENABLE(OILPAN)
-class ContextFeatures FINAL : public RefCountedGarbageCollected<ContextFeatures>, public HeapSupplement<Page> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ContextFeatures);
+class ContextFeatures FINAL : public GarbageCollectedFinalized<ContextFeatures>, public HeapSupplement<Page> {
+    USING_GARBAGE_COLLECTED_MIXIN(ContextFeatures);
 public:
     typedef HeapSupplement<Page> SupplementType;
 #else
@@ -94,7 +94,7 @@ void provideContextFeaturesToDocumentFrom(Document&, Page&);
 
 inline PassRefPtrWillBeRawPtr<ContextFeatures> ContextFeatures::create(PassOwnPtr<ContextFeaturesClient> client)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new ContextFeatures(client));
+    return adoptRefWillBeNoop(new ContextFeatures(client));
 }
 
 inline bool ContextFeatures::isEnabled(Document* document, FeatureType type, bool defaultValue) const

@@ -5309,7 +5309,7 @@ void Document::decrementActiveParserCount()
 
 void Document::setContextFeatures(ContextFeatures& features)
 {
-    m_contextFeatures = PassRefPtr<ContextFeatures>(features);
+    m_contextFeatures = PassRefPtrWillBeRawPtr<ContextFeatures>(features);
 }
 
 static RenderObject* nearestCommonHoverAncestor(RenderObject* obj1, RenderObject* obj2)
@@ -5671,6 +5671,7 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_styleSheetList);
     visitor->trace(m_mediaQueryMatcher);
     visitor->trace(m_visibilityObservers);
+    visitor->trace(m_contextFeatures);
     visitor->registerWeakMembers<Document, &Document::clearWeakMembers>(this);
     DocumentSupplementable::trace(visitor);
     TreeScope::trace(visitor);
