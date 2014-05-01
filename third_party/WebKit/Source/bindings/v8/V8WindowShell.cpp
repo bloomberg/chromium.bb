@@ -215,7 +215,6 @@ bool V8WindowShell::initialize()
             setInjectedScriptContextDebugId(context, m_frame->script().contextDebugId(mainWindow->context()));
     }
 
-    m_scriptState->perContextData()->setActivityLogger(V8DOMActivityLogger::activityLogger(m_world->worldId()));
     if (!installDOMWindow()) {
         disposeContext(DoNotDetachGlobal);
         return false;

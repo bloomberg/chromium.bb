@@ -33,7 +33,6 @@
 
 #include "bindings/v8/CustomElementBinding.h"
 #include "bindings/v8/ScopedPersistent.h"
-#include "bindings/v8/V8DOMActivityLogger.h"
 #include "bindings/v8/V8PersistentValueMap.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "gin/public/context_holder.h"
@@ -86,8 +85,6 @@ public:
     v8::Local<v8::Object> prototypeForType(const WrapperTypeInfo*);
 
     V8NPObjectMap* v8NPObjectMap() { return &m_v8NPObjectMap; }
-    V8DOMActivityLogger* activityLogger() { return m_activityLogger; }
-    void setActivityLogger(V8DOMActivityLogger* logger) { m_activityLogger = logger; }
 
     void addCustomElementBinding(CustomElementDefinition*, PassOwnPtr<CustomElementBinding>);
     void clearCustomElementBinding(CustomElementDefinition*);
@@ -108,10 +105,6 @@ private:
     ConstructorMap m_constructorMap;
 
     V8NPObjectMap m_v8NPObjectMap;
-    // We cache a pointer to the V8DOMActivityLogger associated with the world
-    // corresponding to this context. The ownership of the pointer is retained
-    // by the DOMActivityLoggerMap in DOMWrapperWorld.
-    V8DOMActivityLogger* m_activityLogger;
 
     v8::Isolate* m_isolate;
     OwnPtr<gin::ContextHolder> m_contextHolder;
