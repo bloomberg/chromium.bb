@@ -261,6 +261,10 @@ class CONTENT_EXPORT RenderWidget
                                        bool has_vertical_scrollbar);
 #endif  // defined(OS_MACOSX)
 
+#if defined(OS_ANDROID)
+  void DidChangeBodyBackgroundColor(SkColor bg_color);
+#endif
+
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
   // without ref-counting is an error.
@@ -694,6 +698,11 @@ class CONTENT_EXPORT RenderWidget
   // browser regarding IME-type events that have not been acknowledged by the
   // browser. If this value is not 0 IME events will be dropped.
   int outstanding_ime_acks_;
+
+  // The background color of the document body element. This is used as the
+  // default background color for filling the screen areas for which we don't
+  // have the actual content.
+  SkColor body_background_color_;
 #endif
 
 #if defined(OS_MACOSX)

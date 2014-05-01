@@ -683,7 +683,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       renderer_accessibility_(NULL),
       mouse_lock_dispatcher_(NULL),
 #if defined(OS_ANDROID)
-      body_background_color_(SK_ColorWHITE),
       expected_content_intent_id_(0),
       media_player_manager_(NULL),
 #endif
@@ -2431,31 +2430,6 @@ void RenderViewImpl::didChangeScrollOffset(WebLocalFrame* frame) {
 
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, DidChangeScrollOffset(frame));
-}
-
-void RenderViewImpl::didFirstVisuallyNonEmptyLayout(WebLocalFrame* frame) {
-  if (frame != webview()->mainFrame())
-    return;
-
-  InternalDocumentStateData* data =
-      InternalDocumentStateData::FromDataSource(frame->dataSource());
-  data->set_did_first_visually_non_empty_layout(true);
-
-#if defined(OS_ANDROID)
-  // Update body background color if necessary.
-  SkColor bg_color = webwidget_->backgroundColor();
-
-  // If not initialized, default to white. Note that 0 is different from black
-  // as black still has alpha 0xFF.
-  if (!bg_color)
-    bg_color = SK_ColorWHITE;
-
-  if (bg_color != body_background_color_) {
-    body_background_color_ = bg_color;
-    Send(new ViewHostMsg_DidChangeBodyBackgroundColor(
-        GetRoutingID(), bg_color));
-  }
-#endif
 }
 
 void RenderViewImpl::SendFindReply(int request_id,

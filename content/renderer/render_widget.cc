@@ -393,6 +393,7 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
 #if defined(OS_ANDROID)
       text_field_is_dirty_(false),
       outstanding_ime_acks_(0),
+      body_background_color_(SK_ColorWHITE),
 #endif
 #if defined(OS_MACOSX)
       cached_has_main_frame_horizontal_scrollbar_(false),
@@ -1997,6 +1998,20 @@ bool RenderWidget::ShouldUpdateCompositionInfo(
       return true;
   }
   return false;
+}
+#endif
+
+#if defined(OS_ANDROID)
+void RenderWidget::DidChangeBodyBackgroundColor(SkColor bg_color) {
+  // If not initialized, default to white. Note that 0 is different from black
+  // as black still has alpha 0xFF.
+  if (!bg_color)
+    bg_color = SK_ColorWHITE;
+
+  if (bg_color != body_background_color_) {
+    body_background_color_ = bg_color;
+    Send(new ViewHostMsg_DidChangeBodyBackgroundColor(routing_id(), bg_color));
+  }
 }
 #endif
 

@@ -689,7 +689,6 @@ class CONTENT_EXPORT RenderViewImpl
   void didHandleOnloadEvents(blink::WebLocalFrame* frame);
   void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
   void didChangeScrollOffset(blink::WebLocalFrame* frame);
-  void didFirstVisuallyNonEmptyLayout(blink::WebLocalFrame*);
   bool willCheckAndDispatchMessageEvent(
       blink::WebLocalFrame* sourceFrame,
       blink::WebFrame* targetFrame,
@@ -1179,11 +1178,6 @@ class CONTENT_EXPORT RenderViewImpl
 
 #if defined(OS_ANDROID)
   // Android Specific ---------------------------------------------------------
-
-  // The background color of the document body element. This is used as the
-  // default background color for filling the screen areas for which we don't
-  // have the actual content.
-  SkColor body_background_color_;
 
   // Expected id of the next content intent launched. Used to prevent scheduled
   // intents to be launched if aborted.
