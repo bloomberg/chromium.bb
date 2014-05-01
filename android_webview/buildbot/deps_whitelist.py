@@ -48,6 +48,7 @@ class DepsWhitelist(object):
       'third_party/libvpx',
       'third_party/libyuv',
       'third_party/mesa/src',
+      'third_party/openmax_dl',
       'third_party/openssl',
       'third_party/opus/src',
       'third_party/ots',
