@@ -53,6 +53,7 @@ void ServiceWorkerContextWrapper::Shutdown() {
         base::Bind(&ServiceWorkerContextWrapper::Shutdown, this));
     return;
   }
+  // Breaks the reference cycle through ServiceWorkerProcessManager.
   context_core_.reset();
 }
 

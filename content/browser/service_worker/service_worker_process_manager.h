@@ -62,6 +62,8 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
   bool DecrementWorkerRefcountByPid(int process_id) const;
 
   // These fields are only accessed on the UI thread after construction.
+  // The reference cycle through context_wrapper_ is broken in
+  // ServiceWorkerContextWrapper::Shutdown().
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
   base::Callback<bool(int)> increment_for_test_;
   base::Callback<bool(int)> decrement_for_test_;
