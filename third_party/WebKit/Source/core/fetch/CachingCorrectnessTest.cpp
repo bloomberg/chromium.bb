@@ -30,8 +30,11 @@
 
 #include "config.h"
 
+#include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
+#include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/fetch/ResourcePtr.h"
 #include "core/html/HTMLDocument.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/network/ResourceRequest.h"
@@ -64,24 +67,24 @@ protected:
         m_proxyPlatform.advanceClock(seconds);
     }
 
-    ResourcePtr<Resource> resourceFromResourceResponse(ResourceResponse response)
+    ResourcePtr<Resource> resourceFromResourceResponse(ResourceResponse response, Resource::Type type = Resource::Raw)
     {
         if (response.url().isNull())
             response.setURL(KURL(ParsedURLString, kResourceURL));
         ResourcePtr<Resource> resource =
-            new Resource(ResourceRequest(response.url()), Resource::Raw);
+            new Resource(ResourceRequest(response.url()), type);
         resource->setResponse(response);
         memoryCache()->add(resource.get());
 
         return resource;
     }
 
-    ResourcePtr<Resource> resourceFromResourceRequest(ResourceRequest request)
+    ResourcePtr<Resource> resourceFromResourceRequest(ResourceRequest request, Resource::Type type = Resource::Raw)
     {
         if (request.url().isNull())
             request.setURL(KURL(ParsedURLString, kResourceURL));
         ResourcePtr<Resource> resource =
-            new Resource(request, Resource::Raw);
+            new Resource(request, type);
         resource->setResponse(ResourceResponse(KURL(ParsedURLString, kResourceURL), "text/html", 0, nullAtom, String()));
         memoryCache()->add(resource.get());
 
@@ -92,6 +95,12 @@ protected:
     {
         FetchRequest fetchRequest(ResourceRequest(KURL(ParsedURLString, kResourceURL)), FetchInitiatorInfo());
         return m_fetcher->fetchSynchronously(fetchRequest);
+    }
+
+    ResourcePtr<Resource> fetchImage()
+    {
+        FetchRequest fetchRequest(ResourceRequest(KURL(ParsedURLString, kResourceURL)), FetchInitiatorInfo());
+        return m_fetcher->fetchImage(fetchRequest);
     }
 
     ResourceFetcher* fetcher() const { return m_fetcher.get(); }
@@ -248,6 +257,46 @@ TEST_F(CachingCorrectnessTest, ExpiredFromExpires)
 
     ResourcePtr<Resource> fetched = fetch();
     EXPECT_NE(expired200, fetched);
+}
+
+// If the image hasn't been loaded in this "document" before, then it shouldn't have list of available images logic.
+TEST_F(CachingCorrectnessTest, NewImageExpiredFromExpires)
+{
+    ResourceResponse expired200Response;
+    expired200Response.setHTTPStatusCode(200);
+    expired200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
+    expired200Response.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
+
+    ResourcePtr<Resource> expired200 = resourceFromResourceResponse(expired200Response, Resource::Image);
+
+    // Advance the clock within the expiredness period of this resource before we make a request.
+    advanceClock(24. * 60. * 60. + 15.);
+
+    ResourcePtr<Resource> fetched = fetchImage();
+    EXPECT_NE(expired200, fetched);
+}
+
+// If the image has been loaded in this "document" before, then it should have list of available images logic, and so
+// normal cache testing should be bypassed.
+TEST_F(CachingCorrectnessTest, ReuseImageExpiredFromExpires)
+{
+    ResourceResponse expired200Response;
+    expired200Response.setHTTPStatusCode(200);
+    expired200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
+    expired200Response.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
+
+    ResourcePtr<Resource> expired200 = resourceFromResourceResponse(expired200Response, Resource::Image);
+
+    // Advance the clock within the freshness period, and make a request to add this image to the document resources.
+    advanceClock(15.);
+    ResourcePtr<Resource> firstFetched = fetchImage();
+    EXPECT_EQ(expired200, firstFetched);
+
+    // Advance the clock within the expiredness period of this resource before we make a request.
+    advanceClock(24. * 60. * 60. + 15.);
+
+    ResourcePtr<Resource> fetched = fetchImage();
+    EXPECT_EQ(expired200, fetched);
 }
 
 TEST_F(CachingCorrectnessTest, ExpiredFromMaxAge)

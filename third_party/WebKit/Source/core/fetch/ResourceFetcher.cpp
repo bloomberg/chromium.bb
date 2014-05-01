@@ -978,6 +978,12 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
         WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicye reloading due to resource being in the error state");
         return Reload;
     }
+
+    // List of available images logic allows images to be re-used without cache validation. We restrict this only to images
+    // from memory cache which are the same as the version in the current document.
+    if (type == Resource::Image && existingResource == cachedResource(request.url()))
+        return Use;
+
     // If any of the redirects in the chain to loading the resource were not cacheable, we cannot reuse our cached resource.
     if (!existingResource->canReuseRedirectChain()) {
         WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to an uncacheable redirect");
