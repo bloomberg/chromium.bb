@@ -96,6 +96,9 @@ void ShellContentRendererClient::RenderThreadStarted() {
 
 void ShellContentRendererClient::RenderFrameCreated(RenderFrame* render_frame) {
   new ShellRenderFrameObserver(render_frame);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    UseMockMediaStreams(render_frame);
 }
 
 void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {

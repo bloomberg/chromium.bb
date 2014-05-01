@@ -11,6 +11,7 @@
 #include "content/public/common/page_state.h"
 #include "content/renderer/history_entry.h"
 #include "content/renderer/history_serialization.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
@@ -160,10 +161,11 @@ void DisableAutoResizeMode(RenderView* render_view, const WebSize& new_size) {
       DisableAutoResizeForTesting(new_size);
 }
 
-void UseMockMediaStreams(RenderView* render_view) {
-  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
-  render_view_impl->SetMediaStreamClientForTesting(
-      new TestMediaStreamClient(render_view_impl));
+void UseMockMediaStreams(RenderFrame* render_frame) {
+  RenderFrameImpl* render_frame_impl = static_cast<RenderFrameImpl*>(
+      render_frame);
+  render_frame_impl->SetMediaStreamClientForTesting(
+      new TestMediaStreamClient(render_frame_impl));
 }
 
 struct ToLower {

@@ -22,6 +22,7 @@ struct WebSize;
 namespace content {
 
 class PageState;
+class RenderFrame;
 class RenderView;
 class WebTestProxyBase;
 
@@ -94,8 +95,8 @@ void EnableAutoResizeMode(RenderView* render_view,
 void DisableAutoResizeMode(RenderView* render_view,
                            const blink::WebSize& new_size);
 
-// Forces the |render_view| to use mock media streams.
-void UseMockMediaStreams(RenderView* render_view);
+// Forces the |render_frame| to use mock media streams.
+void UseMockMediaStreams(RenderFrame* render_frame);
 
 // Provides a text dump of the contents of the given page state.
 std::string DumpBackForwardList(std::vector<PageState>& page_state,

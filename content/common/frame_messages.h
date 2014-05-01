@@ -573,3 +573,12 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_EndColorChooser, int /* id */)
 IPC_MESSAGE_ROUTED2(FrameHostMsg_SetSelectedColorInColorChooser,
                     int /* id */,
                     SkColor /* color */)
+
+// Notifies the browser that media has started/stopped playing.
+IPC_MESSAGE_ROUTED3(FrameHostMsg_MediaPlayingNotification,
+                    int64 /* player_cookie, distinguishes instances */,
+                    bool /* has_video */,
+                    bool /* has_audio */)
+
+IPC_MESSAGE_ROUTED1(FrameHostMsg_MediaPausedNotification,
+                    int64 /* player_cookie, distinguishes instances */)
