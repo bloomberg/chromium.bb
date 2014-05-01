@@ -57,14 +57,6 @@
         'bookmarks/core/browser/scoped_group_bookmark_actions.cc',
         'bookmarks/core/browser/scoped_group_bookmark_actions.h',
       ],
-      'conditions': [
-        ['OS=="android"', {
-          'sources!': [
-            'bookmarks/core/browser/scoped_group_bookmark_actions.cc',
-            'bookmarks/core/browser/scoped_group_bookmark_actions.h',
-          ],
-        }]
-      ],
     },
     {
       'target_name': 'bookmarks_core_common',

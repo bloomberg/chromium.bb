@@ -22,10 +22,7 @@
 #include "net/base/net_util.h"
 #include "ui/base/models/tree_node_iterator.h"
 #include "url/gurl.h"
-
-#if !defined(OS_ANDROID)
 #include "components/bookmarks/core/browser/scoped_group_bookmark_actions.h"
-#endif
 
 using base::Time;
 
@@ -182,9 +179,7 @@ void CopyToClipboard(BookmarkModel* model,
       WriteToClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE);
 
   if (remove_nodes) {
-#if !defined(OS_ANDROID)
     ScopedGroupBookmarkActions group_cut(model);
-#endif
     for (size_t i = 0; i < filtered_nodes.size(); ++i) {
       int index = filtered_nodes[i]->parent()->GetIndexOf(filtered_nodes[i]);
       if (index > -1)
@@ -205,9 +200,7 @@ void PasteFromClipboard(BookmarkModel* model,
 
   if (index == -1)
     index = parent->child_count();
-#if !defined(OS_ANDROID)
   ScopedGroupBookmarkActions group_paste(model);
-#endif
   CloneBookmarkNode(model, bookmark_data.elements, parent, index, true);
 }
 
