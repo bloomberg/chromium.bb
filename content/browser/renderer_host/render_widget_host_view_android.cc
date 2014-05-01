@@ -1117,11 +1117,6 @@ void RenderWidgetHostViewAndroid::ProcessAckedTouchEvent(
   gesture_provider_.OnTouchEventAck(event_consumed);
 }
 
-void RenderWidgetHostViewAndroid::SetHasHorizontalScrollbar(
-    bool has_horizontal_scrollbar) {
-  // intentionally empty, like RenderWidgetHostViewViews
-}
-
 void RenderWidgetHostViewAndroid::SetScrollOffsetPinning(
     bool is_pinned_to_left, bool is_pinned_to_right) {
   // intentionally empty, like RenderWidgetHostViewViews

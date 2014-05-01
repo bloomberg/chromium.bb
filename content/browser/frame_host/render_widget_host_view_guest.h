@@ -103,8 +103,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual void OnSwapCompositorFrame(
       uint32 output_surface_id,
       scoped_ptr<cc::CompositorFrame> frame) OVERRIDE;
-  virtual void SetHasHorizontalScrollbar(
-      bool has_horizontal_scrollbar) OVERRIDE;
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
 #if defined(USE_AURA)

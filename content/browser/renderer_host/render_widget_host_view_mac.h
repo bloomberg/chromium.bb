@@ -323,8 +323,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
 
-  virtual void SetHasHorizontalScrollbar(
-      bool has_horizontal_scrollbar) OVERRIDE;
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
   virtual bool LockMouse() OVERRIDE;
@@ -571,8 +569,11 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // received. In this case, switch from polling for frames to pushing them.
   void TimerSinceGotAcceleratedFrameFired();
 
+  // IPC message handlers.
   void OnPluginFocusChanged(bool focused, int plugin_id);
   void OnStartPluginIme();
+  void OnDidChangeScrollbarsForMainFrame(bool has_horizontal_scrollbar,
+                                         bool has_vertical_scrollbar);
 
   // Convert |rect| from the views coordinate (upper-left origin) into
   // the OpenGL coordinate (lower-left origin) and scale for HiDPI displays.

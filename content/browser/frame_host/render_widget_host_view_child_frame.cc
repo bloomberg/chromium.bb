@@ -328,10 +328,6 @@ gfx::GLSurfaceHandle RenderWidgetHostViewChildFrame::GetCompositingSurface() {
   return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
 }
 
-void RenderWidgetHostViewChildFrame::SetHasHorizontalScrollbar(
-    bool has_horizontal_scrollbar) {
-}
-
 void RenderWidgetHostViewChildFrame::SetScrollOffsetPinning(
     bool is_pinned_to_left, bool is_pinned_to_right) {
 }

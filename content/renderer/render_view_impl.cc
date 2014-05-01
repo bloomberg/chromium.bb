@@ -668,8 +668,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
 #endif
       cached_is_main_frame_pinned_to_left_(false),
       cached_is_main_frame_pinned_to_right_(false),
-      cached_has_main_frame_horizontal_scrollbar_(false),
-      cached_has_main_frame_vertical_scrollbar_(false),
       has_scrolled_focused_editable_node_into_rect_(false),
       push_messaging_dispatcher_(NULL),
       geolocation_dispatcher_(NULL),
@@ -2405,27 +2403,6 @@ bool RenderViewImpl::InitializeMediaStreamClient() {
 #else
   return false;
 #endif
-}
-
-void RenderViewImpl::didChangeContentsSize(WebLocalFrame* frame,
-                                           const WebSize& size) {
-  if (webview()->mainFrame() != frame)
-    return;
-  WebView* frameView = frame->view();
-  if (!frameView)
-    return;
-
-  bool has_horizontal_scrollbar = frame->hasHorizontalScrollbar();
-  bool has_vertical_scrollbar = frame->hasVerticalScrollbar();
-
-  if (has_horizontal_scrollbar != cached_has_main_frame_horizontal_scrollbar_ ||
-      has_vertical_scrollbar != cached_has_main_frame_vertical_scrollbar_) {
-    Send(new ViewHostMsg_DidChangeScrollbarsForMainFrame(
-          routing_id_, has_horizontal_scrollbar, has_vertical_scrollbar));
-
-    cached_has_main_frame_horizontal_scrollbar_ = has_horizontal_scrollbar;
-    cached_has_main_frame_vertical_scrollbar_ = has_vertical_scrollbar;
-  }
 }
 
 void RenderViewImpl::UpdateScrollState(WebFrame* frame) {

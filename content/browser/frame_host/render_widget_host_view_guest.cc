@@ -385,11 +385,6 @@ void RenderWidgetHostViewGuest::SetBackground(const SkBitmap& background) {
   platform_view_->SetBackground(background);
 }
 
-void RenderWidgetHostViewGuest::SetHasHorizontalScrollbar(
-    bool has_horizontal_scrollbar) {
-  platform_view_->SetHasHorizontalScrollbar(has_horizontal_scrollbar);
-}
-
 void RenderWidgetHostViewGuest::SetScrollOffsetPinning(
     bool is_pinned_to_left, bool is_pinned_to_right) {
   platform_view_->SetScrollOffsetPinning(

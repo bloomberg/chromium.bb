@@ -690,8 +690,6 @@ class CONTENT_EXPORT RenderViewImpl
   void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
   void didChangeScrollOffset(blink::WebLocalFrame* frame);
   void didFirstVisuallyNonEmptyLayout(blink::WebLocalFrame*);
-  void didChangeContentsSize(blink::WebLocalFrame* frame,
-                             const blink::WebSize& size);
   bool willCheckAndDispatchMessageEvent(
       blink::WebLocalFrame* sourceFrame,
       blink::WebFrame* targetFrame,
@@ -1122,10 +1120,6 @@ class CONTENT_EXPORT RenderViewImpl
   // or right" state that was last sent to the browser.
   bool cached_is_main_frame_pinned_to_left_;
   bool cached_is_main_frame_pinned_to_right_;
-
-  // These store the "has scrollbars" state last sent to the browser.
-  bool cached_has_main_frame_horizontal_scrollbar_;
-  bool cached_has_main_frame_vertical_scrollbar_;
 
   // Bookkeeping to suppress redundant scroll and focus requests for an already
   // scrolled and focused editable node.

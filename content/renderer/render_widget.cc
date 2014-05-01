@@ -394,6 +394,10 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       text_field_is_dirty_(false),
       outstanding_ime_acks_(0),
 #endif
+#if defined(OS_MACOSX)
+      cached_has_main_frame_horizontal_scrollbar_(false),
+      cached_has_main_frame_vertical_scrollbar_(false),
+#endif
       popup_origin_scale_for_emulation_(0.f),
       resizing_mode_selector_(new ResizingModeSelector()),
       context_menu_source_type_(ui::MENU_SOURCE_MOUSE) {
@@ -2078,6 +2082,21 @@ bool RenderWidget::ShouldUpdateCompositionInfo(
 bool RenderWidget::CanComposeInline() {
   return true;
 }
+
+#if defined(OS_MACOSX)
+void RenderWidget::DidChangeScrollbarsForMainFrame(
+    bool has_horizontal_scrollbar,
+    bool has_vertical_scrollbar) {
+  if (has_horizontal_scrollbar != cached_has_main_frame_horizontal_scrollbar_ ||
+      has_vertical_scrollbar != cached_has_main_frame_vertical_scrollbar_) {
+    Send(new ViewHostMsg_DidChangeScrollbarsForMainFrame(
+          routing_id_, has_horizontal_scrollbar, has_vertical_scrollbar));
+
+    cached_has_main_frame_horizontal_scrollbar_ = has_horizontal_scrollbar;
+    cached_has_main_frame_vertical_scrollbar_ = has_vertical_scrollbar;
+  }
+}
+#endif  // defined(OS_MACOSX)
 
 WebScreenInfo RenderWidget::screenInfo() {
   return screen_info_;

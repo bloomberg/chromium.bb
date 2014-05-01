@@ -256,6 +256,11 @@ class CONTENT_EXPORT RenderWidget
   void UpdateCompositionInfo(bool should_update_range);
 #endif
 
+#if defined(OS_MACOSX)
+  void DidChangeScrollbarsForMainFrame(bool has_horizontal_scrollbar,
+                                       bool has_vertical_scrollbar);
+#endif  // defined(OS_MACOSX)
+
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
   // without ref-counting is an error.
@@ -699,6 +704,12 @@ class CONTENT_EXPORT RenderWidget
   // browser. If this value is not 0 IME events will be dropped.
   int outstanding_ime_acks_;
 #endif
+
+#if defined(OS_MACOSX)
+  // These store the "has scrollbars" state last sent to the browser.
+  bool cached_has_main_frame_horizontal_scrollbar_;
+  bool cached_has_main_frame_vertical_scrollbar_;
+#endif  // defined(OS_MACOSX)
 
   scoped_ptr<ScreenMetricsEmulator> screen_metrics_emulator_;
 

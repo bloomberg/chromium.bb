@@ -2515,10 +2515,18 @@ void RenderFrameImpl::didFirstVisuallyNonEmptyLayout(
 void RenderFrameImpl::didChangeContentsSize(blink::WebLocalFrame* frame,
                                             const blink::WebSize& size) {
   DCHECK(!frame_ || frame_ == frame);
-  // TODO(nasko): Move implementation here. Needed state:
-  // * cached_has_main_frame_horizontal_scrollbar_
-  // * cached_has_main_frame_vertical_scrollbar_
-  render_view_->didChangeContentsSize(frame, size);
+#if defined(OS_MACOSX)
+  if (frame->parent())
+    return;
+
+  WebView* frameView = frame->view();
+  if (!frameView)
+    return;
+
+  GetRenderWidget()->DidChangeScrollbarsForMainFrame(
+      frame->hasHorizontalScrollbar(),
+      frame->hasVerticalScrollbar());
+#endif  // defined(OS_MACOSX)
 }
 
 void RenderFrameImpl::didChangeScrollOffset(blink::WebLocalFrame* frame) {

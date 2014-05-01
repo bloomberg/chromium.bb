@@ -1790,11 +1790,6 @@ RenderWidgetHostViewAura::CreateSyntheticGestureTarget() {
       new SyntheticGestureTargetAura(host_));
 }
 
-void RenderWidgetHostViewAura::SetHasHorizontalScrollbar(
-    bool has_horizontal_scrollbar) {
-  // Not needed. Mac-only.
-}
-
 void RenderWidgetHostViewAura::SetScrollOffsetPinning(
     bool is_pinned_to_left, bool is_pinned_to_right) {
   // Not needed. Mac-only.

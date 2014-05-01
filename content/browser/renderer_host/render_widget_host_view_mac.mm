@@ -636,6 +636,8 @@ bool RenderWidgetHostViewMac::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewMac, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PluginFocusChanged, OnPluginFocusChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartPluginIme, OnStartPluginIme)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeScrollbarsForMainFrame,
+                        OnDidChangeScrollbarsForMainFrame)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1850,11 +1852,6 @@ gfx::GLSurfaceHandle RenderWidgetHostViewMac::GetCompositingSurface() {
   return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NATIVE_TRANSPORT);
 }
 
-void RenderWidgetHostViewMac::SetHasHorizontalScrollbar(
-    bool has_horizontal_scrollbar) {
-  [cocoa_view_ setHasHorizontalScrollbar:has_horizontal_scrollbar];
-}
-
 void RenderWidgetHostViewMac::SetScrollOffsetPinning(
     bool is_pinned_to_left, bool is_pinned_to_right) {
   [cocoa_view_ scrollOffsetPinnedToLeft:is_pinned_to_left
@@ -2127,6 +2124,11 @@ void RenderWidgetHostViewMac::OnPluginFocusChanged(bool focused,
 
 void RenderWidgetHostViewMac::OnStartPluginIme() {
   [cocoa_view_ setPluginImeActive:YES];
+}
+
+void RenderWidgetHostViewMac::OnDidChangeScrollbarsForMainFrame(
+    bool has_horizontal_scrollbar, bool has_vertical_scrollbar) {
+  [cocoa_view_ setHasHorizontalScrollbar:has_horizontal_scrollbar];
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
