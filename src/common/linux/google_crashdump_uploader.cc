@@ -29,7 +29,6 @@
 
 
 #include "common/linux/google_crashdump_uploader.h"
-#include "common/linux/libcurl_wrapper.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>

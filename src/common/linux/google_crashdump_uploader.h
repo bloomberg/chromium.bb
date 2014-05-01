@@ -31,12 +31,11 @@
 #include <string>
 #include <map>
 
+#include "common/linux/libcurl_wrapper.h"
 #include "common/scoped_ptr.h"
 #include "common/using_std_string.h"
 
 namespace google_breakpad {
-
-class LibcurlWrapper;
 
 class GoogleCrashdumpUploader {
  public:
