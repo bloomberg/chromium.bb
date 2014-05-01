@@ -100,6 +100,11 @@ Patches:
     patches/paddingextvalue.patch
     https://bugzilla.mozilla.org/show_bug.cgi?id=994883
 
+  * Move the signature_algorithms extension to the end of the extension list.
+    This works around a bug in WebSphere Application Server 7.0 which is
+    intolerant to the final extension having zero length.
+    patches/reorderextensions.patch
+
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.
 
