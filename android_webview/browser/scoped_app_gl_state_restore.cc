@@ -52,13 +52,25 @@ void GLEnableDisable(GLenum cap, bool enable) {
 
 bool g_globals_initialized = false;
 GLint g_gl_max_texture_units = 0;
-bool g_oes_vertex_array_object = false;
+bool g_supports_oes_vertex_array_object = false;
 
 }  // namespace
 
 ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode) : mode_(mode) {
   TRACE_EVENT0("android_webview", "AppGLStateSave");
   MakeAppContextCurrent();
+
+  if (!g_globals_initialized) {
+    g_globals_initialized = true;
+
+    glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &g_gl_max_texture_units);
+    DCHECK_GT(g_gl_max_texture_units, 0);
+
+    std::string extensions(
+        reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
+    g_supports_oes_vertex_array_object =
+        extensions.find("GL_OES_vertex_array_object") != std::string::npos;
+  }
 
   glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &vertex_array_buffer_binding_);
   glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &index_array_buffer_binding_);
@@ -82,21 +94,6 @@ ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode) : mode_(mode) {
 
   glGetIntegerv(GL_PACK_ALIGNMENT, &pack_alignment_);
   glGetIntegerv(GL_UNPACK_ALIGNMENT, &unpack_alignment_);
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(vertex_attrib_); ++i) {
-    glGetVertexAttribiv(
-        i, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &vertex_attrib_[i].enabled);
-    glGetVertexAttribiv(
-        i, GL_VERTEX_ATTRIB_ARRAY_SIZE, &vertex_attrib_[i].size);
-    glGetVertexAttribiv(
-        i, GL_VERTEX_ATTRIB_ARRAY_TYPE, &vertex_attrib_[i].type);
-    glGetVertexAttribiv(
-        i, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, &vertex_attrib_[i].normalized);
-    glGetVertexAttribiv(
-        i, GL_VERTEX_ATTRIB_ARRAY_STRIDE, &vertex_attrib_[i].stride);
-    glGetVertexAttribPointerv(
-        i, GL_VERTEX_ATTRIB_ARRAY_POINTER, &vertex_attrib_[i].pointer);
-  }
 
   glGetBooleanv(GL_DEPTH_TEST, &depth_test_);
   glGetBooleanv(GL_CULL_FACE, &cull_face_);
@@ -128,18 +125,6 @@ ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode) : mode_(mode) {
 
   glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &framebuffer_binding_ext_);
 
-  if (!g_globals_initialized) {
-    g_globals_initialized = true;
-
-    glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &g_gl_max_texture_units);
-    DCHECK_GT(g_gl_max_texture_units, 0);
-
-    std::string extensions(
-        reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
-    g_oes_vertex_array_object =
-        extensions.find("GL_OES_vertex_array_object") != std::string::npos;
-  }
-
   glGetIntegerv(GL_ACTIVE_TEXTURE, &active_texture_);
 
   texture_bindings_.resize(g_gl_max_texture_units);
@@ -152,8 +137,32 @@ ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode) : mode_(mode) {
                   &bindings.texture_external_oes);
   }
 
-  if (g_oes_vertex_array_object)
+  if (g_supports_oes_vertex_array_object) {
     glGetIntegerv(GL_VERTEX_ARRAY_BINDING_OES, &vertex_array_bindings_oes_);
+    glBindVertexArrayOES(0);
+  }
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(vertex_attrib_); ++i) {
+    glGetVertexAttribiv(
+        i, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &vertex_attrib_[i].enabled);
+    glGetVertexAttribiv(
+        i, GL_VERTEX_ATTRIB_ARRAY_SIZE, &vertex_attrib_[i].size);
+    glGetVertexAttribiv(
+        i, GL_VERTEX_ATTRIB_ARRAY_TYPE, &vertex_attrib_[i].type);
+    glGetVertexAttribiv(
+        i, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, &vertex_attrib_[i].normalized);
+    glGetVertexAttribiv(
+        i, GL_VERTEX_ATTRIB_ARRAY_STRIDE, &vertex_attrib_[i].stride);
+    glGetVertexAttribPointerv(
+        i, GL_VERTEX_ATTRIB_ARRAY_POINTER, &vertex_attrib_[i].pointer);
+    glGetVertexAttribPointerv(
+        i, GL_VERTEX_ATTRIB_ARRAY_POINTER, &vertex_attrib_[i].pointer);
+    glGetVertexAttribiv(i,
+                        GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING,
+                        &vertex_attrib_[i].vertex_attrib_array_buffer_binding);
+    glGetVertexAttribfv(
+        i, GL_CURRENT_VERTEX_ATTRIB, vertex_attrib_[i].current_vertex_attrib);
+  }
 }
 
 ScopedAppGLStateRestore::~ScopedAppGLStateRestore() {
@@ -161,8 +170,34 @@ ScopedAppGLStateRestore::~ScopedAppGLStateRestore() {
   MakeAppContextCurrent();
 
   glBindFramebufferEXT(GL_FRAMEBUFFER, framebuffer_binding_ext_);
-  glBindBuffer(GL_ARRAY_BUFFER, vertex_array_buffer_binding_);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_array_buffer_binding_);
+
+  if (g_supports_oes_vertex_array_object)
+    glBindVertexArrayOES(0);
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(vertex_attrib_); ++i) {
+    glBindBuffer(GL_ARRAY_BUFFER,
+                 vertex_attrib_[i].vertex_attrib_array_buffer_binding);
+    glVertexAttribPointer(i,
+                          vertex_attrib_[i].size,
+                          vertex_attrib_[i].type,
+                          vertex_attrib_[i].normalized,
+                          vertex_attrib_[i].stride,
+                          vertex_attrib_[i].pointer);
+
+    glVertexAttrib4fv(i, vertex_attrib_[i].current_vertex_attrib);
+
+    if (vertex_attrib_[i].enabled) {
+      glEnableVertexAttribArray(i);
+    } else {
+      glDisableVertexAttribArray(i);
+    }
+  }
+
+  if (g_supports_oes_vertex_array_object && vertex_array_bindings_oes_ != 0)
+    glBindVertexArrayOES(vertex_array_bindings_oes_);
+
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_array_buffer_binding_);
 
   for (int ii = 0; ii < g_gl_max_texture_units; ++ii) {
     glActiveTexture(GL_TEXTURE0 + ii);
@@ -175,21 +210,6 @@ ScopedAppGLStateRestore::~ScopedAppGLStateRestore() {
 
   glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment_);
   glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment_);
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(vertex_attrib_); ++i) {
-    glVertexAttribPointer(i,
-                          vertex_attrib_[i].size,
-                          vertex_attrib_[i].type,
-                          vertex_attrib_[i].normalized,
-                          vertex_attrib_[i].stride,
-                          vertex_attrib_[i].pointer);
-
-    if (vertex_attrib_[i].enabled) {
-      glEnableVertexAttribArray(i);
-    } else {
-      glDisableVertexAttribArray(i);
-    }
-  }
 
   GLEnableDisable(GL_DEPTH_TEST, depth_test_);
 
@@ -239,9 +259,6 @@ ScopedAppGLStateRestore::~ScopedAppGLStateRestore() {
 
   GLEnableDisable(GL_STENCIL_TEST, stencil_test_);
   glStencilFunc(stencil_func_, stencil_mask_, stencil_ref_);
-
-  if (g_oes_vertex_array_object)
-    glBindVertexArrayOES(vertex_array_bindings_oes_);
 }
 
 }  // namespace android_webview

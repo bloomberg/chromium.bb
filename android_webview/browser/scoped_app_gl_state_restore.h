@@ -40,6 +40,8 @@ class ScopedAppGLStateRestore {
     GLint normalized;
     GLint stride;
     GLvoid* pointer;
+    GLint vertex_attrib_array_buffer_binding;
+    GLfloat current_vertex_attrib[4];
   } vertex_attrib_[3];
 
   GLint vertex_array_buffer_binding_;
