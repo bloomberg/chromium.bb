@@ -1328,6 +1328,7 @@ _x86_release_boards = frozenset([
   'stout',
   'stumpy',
   'swanky',
+  'tricky',
   'winky',
   'wolf',
   'x86-alex',
@@ -2199,6 +2200,7 @@ _AddGroupConfig('slippy', 'peppy', (
 # building it.
 _AddGroupConfig('beltino', 'panther', (
     'monroe',
+    'tricky',
     'zako',
 ))
 
