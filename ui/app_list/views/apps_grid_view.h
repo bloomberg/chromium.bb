@@ -115,11 +115,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void EndDrag(bool cancel);
   bool IsDraggedView(const views::View* view) const;
 
-  void StartSettingUpSynchronousDrag();
-  bool RunSynchronousDrag();
-  void CleanUpSynchronousDrag();
-  void OnGotShortcutPath(const base::FilePath& path);
-
   // Set the drag and drop host for application links.
   void SetDragAndDropHostOfCurrentAppList(
       ApplicationDragAndDropHost* drag_and_drop_host);
@@ -442,6 +437,14 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Returns true if the grid view is under an OEM folder.
   bool IsUnderOEMFolder();
+
+  void StartSettingUpSynchronousDrag();
+  bool RunSynchronousDrag();
+  void CleanUpSynchronousDrag();
+#if defined(OS_WIN)
+  void OnGotShortcutPath(scoped_refptr<SynchronousDrag> drag,
+                         const base::FilePath& path);
+#endif
 
   AppListModel* model_;  // Owned by AppListView.
   AppListItemList* item_list_;  // Not owned.

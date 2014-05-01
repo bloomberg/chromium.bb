@@ -448,20 +448,6 @@ void AppsGridView::InitiateDrag(AppListItemView* view,
   drag_view_start_ = gfx::Point(drag_view_->x(), drag_view_->y());
 }
 
-void AppsGridView::OnGotShortcutPath(const base::FilePath& path) {
-#if defined(OS_WIN)
-  // Drag may have ended before we get the shortcut path.
-  if (!synchronous_drag_)
-    return;
-  // Setting the shortcut path here means the next time we hit UpdateDrag()
-  // we'll enter the synchronous drag.
-  // NOTE we don't Run() the drag here because that causes animations not to
-  // update for some reason.
-  synchronous_drag_->set_shortcut_path(path);
-  DCHECK(synchronous_drag_->CanRun());
-#endif
-}
-
 void AppsGridView::StartSettingUpSynchronousDrag() {
 #if defined(OS_WIN)
   if (!delegate_)
@@ -476,10 +462,11 @@ void AppsGridView::StartSettingUpSynchronousDrag() {
   if (IsDraggingForReparentInRootLevelGridView())
     return;
 
-  delegate_->GetShortcutPathForApp(
-      drag_view_->item()->id(),
-      base::Bind(&AppsGridView::OnGotShortcutPath, base::Unretained(this)));
   synchronous_drag_ = new SynchronousDrag(this, drag_view_, drag_view_offset_);
+  delegate_->GetShortcutPathForApp(drag_view_->item()->id(),
+                                   base::Bind(&AppsGridView::OnGotShortcutPath,
+                                              base::Unretained(this),
+                                              synchronous_drag_));
 #endif
 }
 
@@ -502,6 +489,23 @@ void AppsGridView::CleanUpSynchronousDrag() {
   synchronous_drag_ = NULL;
 #endif
 }
+
+#if defined(OS_WIN)
+void AppsGridView::OnGotShortcutPath(
+    scoped_refptr<SynchronousDrag> synchronous_drag,
+    const base::FilePath& path) {
+  // Drag may have ended before we get the shortcut path or a new drag may have
+  // begun.
+  if (synchronous_drag_ != synchronous_drag)
+    return;
+  // Setting the shortcut path here means the next time we hit UpdateDrag()
+  // we'll enter the synchronous drag.
+  // NOTE we don't Run() the drag here because that causes animations not to
+  // update for some reason.
+  synchronous_drag_->set_shortcut_path(path);
+  DCHECK(synchronous_drag_->CanRun());
+}
+#endif
 
 bool AppsGridView::UpdateDragFromItem(Pointer pointer,
                                       const ui::LocatedEvent& event) {
