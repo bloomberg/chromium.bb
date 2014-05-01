@@ -24,16 +24,16 @@ class GuestView : public GuestViewBase {
   }
 
   // GuestViewBase implementation.
-  virtual const std::string& GetViewType() const OVERRIDE { return type_; }
+  virtual const char* GetViewType() const OVERRIDE {
+    return T::Type;
+  }
 
  protected:
   GuestView(content::WebContents* guest_web_contents,
             const std::string& embedder_extension_id)
-      : GuestViewBase(guest_web_contents, embedder_extension_id),
-        type_(T::Type) {}
+      : GuestViewBase(guest_web_contents, embedder_extension_id) {}
 
  private:
-  std::string type_;
   DISALLOW_COPY_AND_ASSIGN(GuestView);
 };
 

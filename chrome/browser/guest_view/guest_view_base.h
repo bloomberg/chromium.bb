@@ -39,7 +39,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate {
   // Returns a *ViewGuest if this GuestView is of the given view type.
   template <typename T>
   T* As() {
-    if (GetViewType() == T::Type) {
+    if (!strcmp(GetViewType(), T::Type)) {
       return static_cast<T*>(this);
     }
     return NULL;
@@ -69,7 +69,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate {
   static void GetDefaultContentSettingRules(RendererContentSettingRules* rules,
                                             bool incognito);
 
-  virtual const std::string& GetViewType() const = 0;
+  virtual const char* GetViewType() const = 0;
 
   virtual void Attach(content::WebContents* embedder_web_contents,
                       const base::DictionaryValue& args);
