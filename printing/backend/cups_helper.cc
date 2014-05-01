@@ -314,7 +314,7 @@ HttpConnectionCUPS::HttpConnectionCUPS(const GURL& print_server_url,
     return;
 
   int port = print_server_url.IntPort();
-  if (port == url_parse::PORT_UNSPECIFIED)
+  if (port == url::PORT_UNSPECIFIED)
     port = kDefaultIPPServerPort;
 
   http_ = httpConnectEncrypt(print_server_url.host().c_str(), port, encryption);

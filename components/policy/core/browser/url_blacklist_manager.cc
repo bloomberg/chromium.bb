@@ -57,9 +57,9 @@ void ProcessQueryToConditions(
     const std::string& query,
     bool allow,
     std::set<URLQueryElementMatcherCondition>* query_conditions) {
-  url_parse::Component query_left = url_parse::MakeRange(0, query.length());
-  url_parse::Component key;
-  url_parse::Component value;
+  url::Component query_left = url::MakeRange(0, query.length());
+  url::Component key;
+  url::Component value;
   // Depending on the filter type being black-list or white-list, the matcher
   // choose any or every match. The idea is a URL should be black-listed if
   // there is any occurrence of the key value pair. It should be white-listed
@@ -201,7 +201,7 @@ bool URLBlacklist::FilterToComponents(SegmentURLCallback segment_url,
                                       uint16* port,
                                       std::string* path,
                                       std::string* query) {
-  url_parse::Parsed parsed;
+  url::Parsed parsed;
 
   if (segment_url(filter, &parsed) == kFileScheme) {
     base::FilePath file_path;
@@ -241,11 +241,11 @@ bool URLBlacklist::FilterToComponents(SegmentURLCallback segment_url,
     host->erase(0, 1);
     *match_subdomains = false;
   } else {
-    url_canon::RawCanonOutputT<char> output;
-    url_canon::CanonHostInfo host_info;
-    url_canon::CanonicalizeHostVerbose(filter.c_str(), parsed.host,
-                                       &output, &host_info);
-    if (host_info.family == url_canon::CanonHostInfo::NEUTRAL) {
+    url::RawCanonOutputT<char> output;
+    url::CanonHostInfo host_info;
+    url::CanonicalizeHostVerbose(filter.c_str(), parsed.host, &output,
+                                 &host_info);
+    if (host_info.family == url::CanonHostInfo::NEUTRAL) {
       // We want to match subdomains. Add a dot in front to make sure we only
       // match at domain component boundaries.
       *host = "." + *host;

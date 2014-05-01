@@ -49,10 +49,10 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
 
   content::SetContentMainDelegate(new android_webview::AwMainDelegate());
 
-  // Initialize url_util here while we are still single-threaded, in case we use
+  // Initialize url lib here while we are still single-threaded, in case we use
   // CookieManager before initializing Chromium (which would normally have done
   // this). It's safe to call this multiple times.
-  url_util::Initialize();
+  url::Initialize();
 
   return JNI_VERSION_1_4;
 }

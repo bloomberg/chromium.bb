@@ -210,8 +210,7 @@ void HttpBridge::SetURL(const char* url, int port) {
   GURL temp(url);
   GURL::Replacements replacements;
   std::string port_str = base::IntToString(port);
-  replacements.SetPort(port_str.c_str(),
-                       url_parse::Component(0, port_str.length()));
+  replacements.SetPort(port_str.c_str(), url::Component(0, port_str.length()));
   url_for_request_ = temp.ReplaceComponents(replacements);
 }
 

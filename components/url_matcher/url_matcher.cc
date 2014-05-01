@@ -386,8 +386,8 @@ std::string URLMatcherConditionFactory::CanonicalizeURLForFullSearches(
   // Clear port if it is implicit from scheme.
   if (url.has_port()) {
     const std::string& port = url.scheme();
-    if (url_canon::DefaultPortForScheme(port.c_str(), port.size()) ==
-            url.EffectiveIntPort()) {
+    if (url::DefaultPortForScheme(port.c_str(), port.size()) ==
+        url.EffectiveIntPort()) {
       replacements.ClearPort();
     }
   }
@@ -407,8 +407,8 @@ static std::string CanonicalizeURLForRegexSearchesHelper(
   // Clear port if it is implicit from scheme.
   if (url.has_port()) {
     const std::string& port = url.scheme();
-    if (url_canon::DefaultPortForScheme(port.c_str(), port.size()) ==
-            url.EffectiveIntPort()) {
+    if (url::DefaultPortForScheme(port.c_str(), port.size()) ==
+        url.EffectiveIntPort()) {
       replacements.ClearPort();
     }
   }

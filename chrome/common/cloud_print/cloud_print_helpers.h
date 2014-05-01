@@ -27,7 +27,7 @@ typedef std::map<std::string, std::string> PrinterTags;
 // URL's path does not end with a slash. It is assumed that |path| does not
 // begin with a '/'.
 // NOTE: Since we ALWAYS want to append here, we simply append the path string
-// instead of calling url_utils::ResolveRelative. The input |url| may or may not
+// instead of calling url::ResolveRelative. The input |url| may or may not
 // contain a '/' at the end.
 std::string AppendPathToUrl(const GURL& url, const std::string& path);
 

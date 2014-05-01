@@ -85,10 +85,10 @@ bool SocketPermissionEntry::Check(
 
     if (!pattern_.host.empty()) {
       // Do not wildcard part of IP address.
-      url_parse::Component component(0, lhost.length());
-      url_canon::RawCanonOutputT<char, 128> ignored_output;
-      url_canon::CanonHostInfo host_info;
-      url_canon::CanonicalizeIPAddress(
+      url::Component component(0, lhost.length());
+      url::RawCanonOutputT<char, 128> ignored_output;
+      url::CanonHostInfo host_info;
+      url::CanonicalizeIPAddress(
           lhost.c_str(), component, &ignored_output, &host_info);
       if (host_info.IsIPAddress())
         return false;

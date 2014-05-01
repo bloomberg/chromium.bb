@@ -73,8 +73,8 @@ bool IsStandardScheme(const std::string& scheme) {
   if (scheme == "*")
     return true;
 
-  return url_util::IsStandard(scheme.c_str(),
-      url_parse::Component(0, static_cast<int>(scheme.length())));
+  return url::IsStandard(scheme.c_str(),
+                         url::Component(0, static_cast<int>(scheme.length())));
 }
 
 bool IsValidPortForScheme(const std::string& scheme, const std::string& port) {
@@ -82,12 +82,12 @@ bool IsValidPortForScheme(const std::string& scheme, const std::string& port) {
     return true;
 
   // Only accept non-wildcard ports if the scheme uses ports.
-  if (url_canon::DefaultPortForScheme(scheme.c_str(), scheme.length()) ==
-      url_parse::PORT_UNSPECIFIED) {
+  if (url::DefaultPortForScheme(scheme.c_str(), scheme.length()) ==
+      url::PORT_UNSPECIFIED) {
     return false;
   }
 
-  int parsed_port = url_parse::PORT_UNSPECIFIED;
+  int parsed_port = url::PORT_UNSPECIFIED;
   if (!base::StringToInt(port, &parsed_port))
     return false;
   return (parsed_port >= 0) && (parsed_port < 65536);

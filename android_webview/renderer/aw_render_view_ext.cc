@@ -69,9 +69,10 @@ bool RemovePrefixAndAssignIfMatches(const base::StringPiece& prefix,
   const base::StringPiece spec(url.possibly_invalid_spec());
 
   if (spec.starts_with(prefix)) {
-    url_canon::RawCanonOutputW<1024> output;
-    url_util::DecodeURLEscapeSequences(spec.data() + prefix.length(),
-        spec.length() - prefix.length(), &output);
+    url::RawCanonOutputW<1024> output;
+    url::DecodeURLEscapeSequences(spec.data() + prefix.length(),
+                                  spec.length() - prefix.length(),
+                                  &output);
     std::string decoded_url = base::UTF16ToUTF8(
         base::string16(output.data(), output.length()));
     dest->assign(decoded_url.begin(), decoded_url.end());

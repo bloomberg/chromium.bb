@@ -12,7 +12,7 @@
 namespace {
 
 std::string GetComponent(const std::string& url,
-                         const url_parse::Component component) {
+                         const url::Component component) {
   if (component.len < 0) {
     return std::string();
   }
@@ -53,9 +53,9 @@ std::string GetOauthStartUrl(const std::string& redirect_url) {
 
 std::string GetOauthCodeInUrl(const std::string& url,
                               const std::string& redirect_url) {
-  url_parse::Parsed url_parsed;
+  url::Parsed url_parsed;
   ParseStandardURL(url.c_str(), url.length(), &url_parsed);
-  url_parse::Parsed redirect_url_parsed;
+  url::Parsed redirect_url_parsed;
   ParseStandardURL(redirect_url.c_str(), redirect_url.length(),
                    &redirect_url_parsed);
   if (GetComponent(url, url_parsed.scheme) !=
@@ -66,9 +66,9 @@ std::string GetOauthCodeInUrl(const std::string& url,
       GetComponent(redirect_url, redirect_url_parsed.host)) {
     return std::string();
   }
-  url_parse::Component query = url_parsed.query;
-  url_parse::Component key;
-  url_parse::Component value;
+  url::Component query = url_parsed.query;
+  url::Component key;
+  url::Component value;
   while (ExtractQueryKeyValue(url.c_str(), &query, &key, &value)) {
     if (GetComponent(url, key) == "code") {
       return GetComponent(url, value);

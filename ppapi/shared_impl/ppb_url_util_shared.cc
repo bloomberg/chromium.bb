@@ -14,7 +14,7 @@ namespace ppapi {
 
 namespace {
 
-void ConvertComponent(const url_parse::Component& input,
+void ConvertComponent(const url::Component& input,
                       PP_URLComponent_Dev* output) {
   output->begin = input.begin;
   output->len = input.len;
@@ -26,8 +26,7 @@ void ConvertComponent(const url_parse::Component& input,
 //
 // Output can be NULL to specify "do nothing." This rule is followed by all the
 // url util functions, so we implement it once here.
-void ConvertComponents(const url_parse::Parsed& input,
-                       PP_URLComponents_Dev* output) {
+void ConvertComponents(const url::Parsed& input, PP_URLComponents_Dev* output) {
   if (!output)
     return;
 

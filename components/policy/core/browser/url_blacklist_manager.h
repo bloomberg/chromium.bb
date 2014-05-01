@@ -43,8 +43,7 @@ class POLICY_EXPORT URLBlacklist {
  public:
   // This is meant to be bound to URLFixerUpper::SegmentURL. See that function
   // for documentation on the parameters and return value.
-  typedef std::string (*SegmentURLCallback)(const std::string&,
-                                            url_parse::Parsed*);
+  typedef std::string (*SegmentURLCallback)(const std::string&, url::Parsed*);
 
   explicit URLBlacklist(SegmentURLCallback segment_url);
   virtual ~URLBlacklist();

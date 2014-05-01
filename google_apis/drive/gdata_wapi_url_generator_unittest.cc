@@ -41,7 +41,7 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateEditUrlWithoutParams) {
 }
 
 TEST_F(GDataWapiUrlGeneratorTest, GenerateEditUrlWithEmbedOrigin) {
-  url_util::AddStandardScheme("chrome-extension");
+  url::AddStandardScheme("chrome-extension");
 
   EXPECT_EQ(
       "https://docs.google.com/feeds/default/private/full/XXX?v=3&alt=json"
