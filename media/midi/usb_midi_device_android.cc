@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/android/jni_array.h"
+#include "base/time/time.h"
 #include "jni/UsbMidiDeviceAndroid_jni.h"
 
 namespace media {
@@ -54,8 +55,8 @@ void UsbMidiDeviceAndroid::OnData(JNIEnv* env,
   base::android::JavaByteArrayToByteVector(env, data, &bytes);
 
   const uint8* head = bytes.size() ? &bytes[0] : NULL;
-  // TODO(yhirano): Provide the correct timestamp.
-  delegate_->ReceiveUsbMidiData(this, endpoint_number, head, bytes.size(), 0);
+  delegate_->ReceiveUsbMidiData(this, endpoint_number, head, bytes.size(),
+                                base::TimeTicks::HighResNow());
 }
 
 bool UsbMidiDeviceAndroid::RegisterUsbMidiDevice(JNIEnv* env) {

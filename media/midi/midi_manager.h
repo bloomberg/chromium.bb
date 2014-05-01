@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/synchronization/lock.h"
+#include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/midi/midi_port_info.h"
 #include "media/midi/midi_result.h"
@@ -96,10 +97,20 @@ class MEDIA_EXPORT MidiManager {
   void AddOutputPort(const MidiPortInfo& info);
 
   // Dispatches to all clients.
+  // TODO(toyoshim): Fix the mac implementation to use
+  // |ReceiveMidiData(..., base::TimeTicks)|.
   void ReceiveMidiData(uint32 port_index,
                        const uint8* data,
                        size_t length,
                        double timestamp);
+
+  void ReceiveMidiData(uint32 port_index,
+                       const uint8* data,
+                       size_t length,
+                       base::TimeTicks time) {
+    ReceiveMidiData(port_index, data, length,
+                    (time - base::TimeTicks()).InSecondsF());
+  }
 
   bool initialized_;
   MidiResult result_;
@@ -114,6 +125,7 @@ class MEDIA_EXPORT MidiManager {
   MidiPortInfoList input_ports_;
   MidiPortInfoList output_ports_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(MidiManager);
 };
 

@@ -55,11 +55,11 @@ void UsbMidiInputStream::OnReceivedData(UsbMidiDevice* device,
                                         int endpoint_number,
                                         const uint8* data,
                                         size_t size,
-                                        double timestamp) {
+                                        base::TimeTicks time) {
   DCHECK_EQ(0u, size % kPacketSize);
   size_t current = 0;
   while (current + kPacketSize <= size) {
-    ProcessOnePacket(device, endpoint_number, &data[current], timestamp);
+    ProcessOnePacket(device, endpoint_number, &data[current], time);
     current += kPacketSize;
   }
 }
@@ -67,7 +67,7 @@ void UsbMidiInputStream::OnReceivedData(UsbMidiDevice* device,
 void UsbMidiInputStream::ProcessOnePacket(UsbMidiDevice* device,
                                           int endpoint_number,
                                           const uint8* packet,
-                                          double timestamp) {
+                                          base::TimeTicks time) {
   // The first 4 bytes of the packet is accessible here.
   uint8 code_index = packet[0] & 0x0f;
   uint8 cable_number = packet[0] >> 4;
@@ -86,7 +86,7 @@ void UsbMidiInputStream::ProcessOnePacket(UsbMidiDevice* device,
                                           endpoint_number,
                                           cable_number));
   if (it != jack_dictionary_.end())
-    delegate_->OnReceivedData(it->second, &packet[1], packet_size, timestamp);
+    delegate_->OnReceivedData(it->second, &packet[1], packet_size, time);
 }
 
 std::vector<UsbMidiInputStream::JackUniqueKey>

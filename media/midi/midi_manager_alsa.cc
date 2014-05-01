@@ -6,6 +6,8 @@
 
 #include <alsa/asoundlib.h>
 #include <stdlib.h>
+#include <algorithm>
+#include <string>
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
@@ -239,7 +241,7 @@ void MidiManagerAlsa::DispatchSendMidiData(MidiManagerClient* client,
 }
 
 void MidiManagerAlsa::EventReset() {
-  CHECK(pipe_fd_[0] >= 0);
+  CHECK_GE(pipe_fd_[0], 0);
 
   // Sum up descriptors which are needed to poll input devices and a shutdown
   // message.
@@ -282,10 +284,6 @@ void MidiManagerAlsa::EventLoop() {
   // Read available incoming MIDI data.
   int fds_index = 1;
   uint8 buffer[kReceiveBufferSize];
-  // TODO(toyoshim): Revisit if the following conversion is the best way.
-  base::TimeDelta timestamp_delta =
-      base::TimeDelta::FromInternalValue(now.ToInternalValue());
-  double timestamp = timestamp_delta.InSecondsF();
 
   for (size_t i = 0; i < in_devices_.size(); ++i) {
     unsigned short revents =
@@ -297,7 +295,7 @@ void MidiManagerAlsa::EventLoop() {
     }
     if (revents & POLLIN) {
       size_t read_size = in_devices_[i]->Receive(buffer, kReceiveBufferSize);
-      ReceiveMidiData(i, buffer, read_size, timestamp);
+      ReceiveMidiData(i, buffer, read_size, now);
     }
     fds_index += in_devices_[i]->GetPollDescriptorsCount();
   }

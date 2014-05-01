@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/midi/usb_midi_jack.h"
 
@@ -30,7 +31,7 @@ class MEDIA_EXPORT UsbMidiInputStream {
     virtual void OnReceivedData(size_t jack_index,
                                 const uint8* data,
                                 size_t size,
-                                double timestamp) = 0;
+                                base::TimeTicks time) = 0;
   };
 
   // This is public for testing.
@@ -56,7 +57,7 @@ class MEDIA_EXPORT UsbMidiInputStream {
                       int endpoint_number,
                       const uint8* data,
                       size_t size,
-                      double timestamp);
+                      base::TimeTicks time);
 
   std::vector<JackUniqueKey> RegisteredJackKeysForTesting() const;
 
@@ -67,7 +68,7 @@ class MEDIA_EXPORT UsbMidiInputStream {
   void ProcessOnePacket(UsbMidiDevice* device,
                         int endpoint_number,
                         const uint8* packet,
-                        double timestamp);
+                        base::TimeTicks time);
 
   // A map from UsbMidiJack to its index in |jacks_|.
   std::map<JackUniqueKey, size_t> jack_dictionary_;

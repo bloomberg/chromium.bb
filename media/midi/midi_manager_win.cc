@@ -18,6 +18,8 @@
 #define MMNOMMIO
 #include <mmsystem.h>
 
+#include <algorithm>
+#include <string>
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
@@ -338,13 +340,7 @@ class MidiManagerWin::InDeviceInfo {
     // http://msdn.microsoft.com/en-us/library/windows/desktop/dd757286.aspx
     const base::TimeTicks event_time =
         start_time_ + base::TimeDelta::FromMilliseconds(elapsed_ms);
-    // MidiManager::ReceiveMidiData() expects |timestamp| as the elapsed seconds
-    // from base::TimeTicks::Now().
-    // TODO(yukawa): Update MidiManager::ReceiveMidiData() so that it can
-    // receive |event_time| directly if the precision of base::TimeTicks is
-    // sufficient.
-    const double timestamp = (event_time - base::TimeTicks()).InSecondsF();
-    manager_->ReceiveMidiData(port_index_, data, length, timestamp);
+    manager_->ReceiveMidiData(port_index_, data, length, event_time);
   }
 
   MidiManagerWin* manager_;

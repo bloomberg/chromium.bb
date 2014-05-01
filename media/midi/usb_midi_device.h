@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_vector.h"
+#include "base/time/time.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -27,7 +28,7 @@ class MEDIA_EXPORT UsbMidiDeviceDelegate {
                                   int endpoint_number,
                                   const uint8* data,
                                   size_t size,
-                                  double timestamp) = 0;
+                                  base::TimeTicks time) = 0;
 };
 
 // UsbMidiDevice represents a USB-MIDI device.

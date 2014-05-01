@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "media/midi/usb_midi_device.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -304,7 +305,8 @@ TEST_F(MidiManagerUsbTest, Receive) {
   ASSERT_TRUE(initialize_result_);
 
   manager_->StartSession(&client, 0);
-  manager_->ReceiveUsbMidiData(device_raw, 2, data, arraysize(data), 0);
+  manager_->ReceiveUsbMidiData(device_raw, 2, data, arraysize(data),
+                               base::TimeTicks());
   manager_->EndSession(&client);
 
   EXPECT_EQ("UsbMidiDevice::GetDescriptor\n"

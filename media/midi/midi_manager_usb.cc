@@ -62,21 +62,21 @@ void MidiManagerUsb::ReceiveUsbMidiData(UsbMidiDevice* device,
                                         int endpoint_number,
                                         const uint8* data,
                                         size_t size,
-                                        double timestamp) {
+                                        base::TimeTicks time) {
   if (!input_stream_)
     return;
   input_stream_->OnReceivedData(device,
                                 endpoint_number,
                                 data,
                                 size,
-                                timestamp);
+                                time);
 }
 
 void MidiManagerUsb::OnReceivedData(size_t jack_index,
                                     const uint8* data,
                                     size_t size,
-                                    double timestamp) {
-  ReceiveMidiData(jack_index, data, size, timestamp);
+                                    base::TimeTicks time) {
+  ReceiveMidiData(jack_index, data, size, time);
 }
 
 

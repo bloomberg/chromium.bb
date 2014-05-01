@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/midi/midi_manager.h"
 #include "media/midi/usb_midi_device.h"
@@ -42,13 +43,13 @@ class MEDIA_EXPORT MidiManagerUsb : public MidiManager,
                                   int endpoint_number,
                                   const uint8* data,
                                   size_t size,
-                                  double timestamp) OVERRIDE;
+                                  base::TimeTicks time) OVERRIDE;
 
   // UsbMidiInputStream::Delegate implementation.
   virtual void OnReceivedData(size_t jack_index,
                               const uint8* data,
                               size_t size,
-                              double timestamp) OVERRIDE;
+                              base::TimeTicks time) OVERRIDE;
 
   const ScopedVector<UsbMidiOutputStream>& output_streams() const {
     return output_streams_;
