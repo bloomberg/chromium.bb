@@ -777,6 +777,27 @@
         }
       ],
     }],
+    ['OS=="linux"', {
+      'targets': [
+        {
+          'target_name': 'mojo_dbus_service',
+          'type': 'static_library',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../build/linux/system.gyp:dbus',
+            '../dbus/dbus.gyp:dbus',
+            'mojo_common_lib',
+            'mojo_external_service_bindings',
+            'mojo_shell_client',
+            'mojo_system_impl',
+          ],
+          'sources': [
+            'dbus/dbus_external_service.h',
+            'dbus/dbus_external_service.cc',
+          ],
+        },
+      ],
+    }],
     ['test_isolation_mode != "noop"', {
       'targets': [
         {

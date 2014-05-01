@@ -17,6 +17,7 @@
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "mojo/common/channel_init.h"
+#include "mojo/dbus/dbus_external_service.h"
 #include "mojo/embedder/platform_channel_pair.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/bindings/interface.h"
@@ -94,7 +95,7 @@ class DBusServiceLoader::LoadContext : public mojo::ExternalServiceHost {
     service_dbus_proxy_ =
         bus_->GetObjectProxy(service_name, dbus::ObjectPath(object_path));
 
-    dbus::MethodCall call("org.chromium.Mojo", "ConnectChannel");
+    dbus::MethodCall call(kMojoDBusInterface, kMojoDBusConnectMethod);
     dbus::MessageWriter writer(&call);
     writer.AppendFileDescriptor(*client_fd.get());
 
