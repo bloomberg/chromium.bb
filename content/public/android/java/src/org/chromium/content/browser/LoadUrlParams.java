@@ -247,6 +247,13 @@ public class LoadUrlParams {
     }
 
     /**
+     * Return the extra headers as a map.
+     */
+    public Map<String, String> getExtraHeaders() {
+        return mExtraHeaders;
+    }
+
+    /**
      * Return the extra headers as a single String separated by "\n", or null if no extra header is
      * set. This form is suitable for passing to native
      * NavigationController::LoadUrlParams::extra_headers. This will return the headers set in an

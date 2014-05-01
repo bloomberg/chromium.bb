@@ -26,6 +26,7 @@ import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
@@ -106,8 +107,15 @@ public class AwTestBase
     protected void loadUrlSync(final AwContents awContents,
                                CallbackHelper onPageFinishedHelper,
                                final String url) throws Exception {
+        loadUrlSync(awContents, onPageFinishedHelper, url, null);
+    }
+
+    protected void loadUrlSync(final AwContents awContents,
+                               CallbackHelper onPageFinishedHelper,
+                               final String url,
+                               final Map<String, String> extraHeaders) throws Exception {
         int currentCallCount = onPageFinishedHelper.getCallCount();
-        loadUrlAsync(awContents, url);
+        loadUrlAsync(awContents, url, extraHeaders);
         onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_MS,
                 TimeUnit.MILLISECONDS);
     }
@@ -130,10 +138,18 @@ public class AwTestBase
      */
     protected void loadUrlAsync(final AwContents awContents,
                                 final String url) throws Exception {
+        loadUrlAsync(awContents, url, null);
+    }
+
+    protected void loadUrlAsync(final AwContents awContents,
+                                final String url,
+                                final Map<String, String> extraHeaders) {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                awContents.loadUrl(new LoadUrlParams(url));
+                LoadUrlParams params = new LoadUrlParams(url);
+                params.setExtraHeaders(extraHeaders);
+                awContents.loadUrl(params);
             }
         });
     }

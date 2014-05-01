@@ -50,6 +50,7 @@ import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.NavigationHistory;
 import org.chromium.content.browser.PageTransitionTypes;
 import org.chromium.content.common.CleanupReference;
+import org.chromium.content_public.Referrer;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.WindowAndroid;
@@ -62,6 +63,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 
@@ -911,8 +913,23 @@ public class AwContents {
         // every time the user agent in AwSettings is modified.
         params.setOverrideUserAgent(LoadUrlParams.UA_OVERRIDE_TRUE);
 
+
         // We don't pass extra headers to the content layer, as WebViewClassic
         // was adding them in a very narrow set of conditions. See http://crbug.com/306873
+        // However, if the embedder is attempting to inject a Referer header for their
+        // loadUrl call, then we set that separately and remove it from the extra headers map/
+        final String REFERER = "referer";
+        Map<String, String> extraHeaders = params.getExtraHeaders();
+        if (extraHeaders != null) {
+            for (String header : extraHeaders.keySet()) {
+                if (REFERER.equals(header.toLowerCase())) {
+                    params.setReferrer(new Referrer(extraHeaders.remove(header), 1));
+                    params.setExtraHeaders(extraHeaders);
+                    break;
+                }
+            }
+        }
+
         if (mNativeAwContents != 0) {
             nativeSetExtraHeadersForUrl(
                     mNativeAwContents, params.getUrl(), params.getExtraHttpRequestHeadersString());
