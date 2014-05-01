@@ -531,6 +531,9 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
 
   if (sender == users_button_) {
     profiles::ShowUserManagerMaybeWithTutorial(browser_->profile());
+    // If this is a guest session, also close all the guest browser windows.
+    if (browser_->profile()->IsGuestSession())
+      profiles::CloseGuestProfileWindows();
   } else if (sender == lock_button_) {
     profiles::LockProfile(browser_->profile());
   } else if (sender == tutorial_ok_button_) {
@@ -1013,11 +1016,14 @@ views::View* ProfileChooserView::CreateOptionsView(bool enable_lock) {
     layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
   }
 
+  base::string16 text = browser_->profile()->IsGuestSession() ?
+      l10n_util::GetStringUTF16(IDS_PROFILES_EXIT_GUEST) :
+      l10n_util::GetStringFUTF16(IDS_PROFILES_NOT_YOU_BUTTON,
+          profiles::GetAvatarNameForProfile(browser_->profile()));
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   users_button_ = new BackgroundColorHoverButton(
       this,
-      l10n_util::GetStringFUTF16(IDS_PROFILES_NOT_YOU_BUTTON,
-          profiles::GetAvatarNameForProfile(browser_->profile())),
+      text,
       *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_AVATAR),
       *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_AVATAR));
   users_button_->set_min_size(gfx::Size(

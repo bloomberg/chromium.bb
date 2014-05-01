@@ -750,6 +750,12 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   profiles::ShowUserManagerMaybeWithTutorial(browser_->profile());
 }
 
+- (IBAction)exitGuest:(id)sender {
+  DCHECK(browser_->profile()->IsGuestSession());
+  [self showUserManager:sender];
+  profiles::CloseGuestProfileWindows();
+}
+
 - (IBAction)showAccountManagement:(id)sender {
   [self initMenuContentsWithView:BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
 }
@@ -1256,14 +1262,17 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   NSRect viewRect = NSMakeRect(0, 0,
                                rect.size.width - widthOfLockButton,
                                kBlueButtonHeight + kVerticalSpacing);
+  NSString* text = isGuestSession_ ?
+      l10n_util::GetNSString(IDS_PROFILES_EXIT_GUEST) :
+      l10n_util::GetNSStringF(IDS_PROFILES_NOT_YOU_BUTTON,
+          profiles::GetAvatarNameForProfile(browser_->profile()));
   NSButton* notYouButton =
       [self hoverButtonWithRect:viewRect
-                           text:l10n_util::GetNSStringF(
-          IDS_PROFILES_NOT_YOU_BUTTON,
-          profiles::GetAvatarNameForProfile(browser_->profile()))
+                           text:text
                 imageResourceId:IDR_ICON_PROFILES_MENU_AVATAR
        alternateImageResourceId:IDR_ICON_PROFILES_MENU_AVATAR
-                         action:@selector(showUserManager:)];
+                         action:isGuestSession_? @selector(exitGuest:) :
+                                                 @selector(showUserManager:)];
 
   rect.size.height = NSMaxY([notYouButton frame]);
   base::scoped_nsobject<NSView> container([[NSView alloc] initWithFrame:rect]);

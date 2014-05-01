@@ -89,6 +89,9 @@ class WebContents;
 // Shows the User Manager.
 - (IBAction)showUserManager:(id)sender;
 
+// Closes all guest browsers and shows the User Manager.
+- (IBAction)exitGuest:(id)sender;
+
 // Shows the account management view.
 - (IBAction)showAccountManagement:(id)sender;
 
