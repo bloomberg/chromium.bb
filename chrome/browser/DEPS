@@ -33,6 +33,7 @@ include_rules = [
   "+components/precache",
   "+components/query_parser",
   "+components/rappor",
+  "+components/search_provider_logos",
   "+components/sessions",
   "+components/signin",
   "+components/startup_metric_utils",

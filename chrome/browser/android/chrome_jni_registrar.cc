@@ -19,6 +19,7 @@
 #include "chrome/browser/android/field_trial_helper.h"
 #include "chrome/browser/android/foreign_session_helper.h"
 #include "chrome/browser/android/intent_helper.h"
+#include "chrome/browser/android/logo_bridge.h"
 #include "chrome/browser/android/most_visited_sites.h"
 #include "chrome/browser/android/new_tab_page_prefs.h"
 #include "chrome/browser/android/omnibox/omnibox_prerender.h"
@@ -117,7 +118,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "ContextMenuHelper", RegisterContextMenuHelper },
   { "DataReductionProxySettings", DataReductionProxySettingsAndroid::Register },
   { "DevToolsServer", RegisterDevToolsServer },
-  { "InvalidationController", invalidation::RegisterInvalidationController },
   { "ExternalPrerenderRequestHandler",
       prerender::ExternalPrerenderHandlerAndroid::
       RegisterExternalPrerenderHandlerAndroid },
@@ -129,8 +129,10 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "InfoBarContainer", RegisterInfoBarContainer },
   { "ShortcutHelper", ShortcutHelper::RegisterShortcutHelper },
   { "IntentHelper", RegisterIntentHelper },
+  { "InvalidationController", invalidation::RegisterInvalidationController },
   { "JavascriptAppModalDialog",
     JavascriptAppModalDialogAndroid::RegisterJavascriptAppModalDialog },
+  { "LogoBridge", RegisterLogoBridge },
   { "MostVisitedSites", MostVisitedSites::Register },
   { "NativeInfoBar", RegisterNativeInfoBar },
   { "NavigationPopup", NavigationPopup::RegisterNavigationPopup },
