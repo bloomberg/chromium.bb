@@ -133,9 +133,9 @@ class RenderingStats(object):
     assert(len(timeline_ranges) > 0)
     # Find the top level process with rendering stats (browser or renderer).
     if HasRenderingStats(browser_process):
-      self.top_level_process = browser_process
+      timestamp_process = browser_process
     else:
-      self.top_level_process  = renderer_process
+      timestamp_process  = renderer_process
 
     self.frame_timestamps = []
     self.frame_times = []
@@ -170,9 +170,12 @@ class RenderingStats(object):
 
       if timeline_range.is_empty:
         continue
-      self.initMainThreadStatsFromTimeline(timeline_range)
-      self.initImplThreadStatsFromTimeline(timeline_range)
-      self.initScrollLatencyStatsFromTimeline(browser_process, timeline_range)
+      self._InitFrameTimestampsFromTimeline(timestamp_process, timeline_range)
+      self._InitMainThreadRenderingStatsFromTimeline(
+          renderer_process, timeline_range)
+      self._InitImplThreadRenderingStatsFromTimeline(
+          renderer_process, timeline_range)
+      self._InitScrollLatencyStatsFromTimeline(browser_process, timeline_range)
 
     # Check if we have collected at least 2 frames in every range. Otherwise we
     # can't compute any meaningful metrics.
@@ -180,7 +183,8 @@ class RenderingStats(object):
       if len(segment) < 2:
         raise NotEnoughFramesError(len(segment))
 
-  def initScrollLatencyStatsFromTimeline(self, browser_process, timeline_range):
+  def _InitScrollLatencyStatsFromTimeline(
+      self, browser_process, timeline_range):
     mouse_wheel_events = GetScrollInputLatencyEvents(
         "MouseWheel", browser_process, timeline_range)
     self.mouse_wheel_scroll_latency = ComputeMouseWheelScrollLatency(
@@ -195,28 +199,40 @@ class RenderingStats(object):
     self.js_touch_scroll_latency = ComputeTouchScrollLatency(
         js_touch_scroll_events)
 
-  def initMainThreadStatsFromTimeline(self, timeline_range):
-    event_name = 'BenchmarkInstrumentation::MainThreadRenderingStats'
+  def _GatherEvents(self, event_name, process, timeline_range):
     events = []
-    for event in self.top_level_process.IterAllSlicesOfName(event_name):
+    for event in process.IterAllSlicesOfName(event_name):
       if event.start >= timeline_range.min and event.end <= timeline_range.max:
         if 'data' not in event.args:
           continue
         events.append(event)
     events.sort(key=attrgetter('start'))
+    return events
 
-    first_frame = True
-    for event in events:
-      frame_count = event.args['data']['frame_count']
-      if frame_count > 1:
-        raise ValueError, 'trace contains multi-frame render stats'
-      if frame_count == 1:
-        self.frame_timestamps[-1].append(
-            event.start)
-        if not first_frame:
-          self.frame_times[-1].append(round(self.frame_timestamps[-1][-1] -
-                                            self.frame_timestamps[-1][-2], 2))
-        first_frame = False
+  def _AddFrameTimestamp(self, event):
+    frame_count = event.args['data']['frame_count']
+    if frame_count > 1:
+      raise ValueError, 'trace contains multi-frame render stats'
+    if frame_count == 1:
+      self.frame_timestamps[-1].append(
+          event.start)
+      if len(self.frame_timestamps[-1]) >= 2:
+        self.frame_times[-1].append(round(self.frame_timestamps[-1][-1] -
+                                          self.frame_timestamps[-1][-2], 2))
+
+  def _InitFrameTimestampsFromTimeline(self, process, timeline_range):
+    event_name = 'BenchmarkInstrumentation::MainThreadRenderingStats'
+    for event in self._GatherEvents(event_name, process, timeline_range):
+      self._AddFrameTimestamp(event)
+
+    event_name = 'BenchmarkInstrumentation::ImplThreadRenderingStats'
+    for event in self._GatherEvents(event_name, process, timeline_range):
+      self._AddFrameTimestamp(event)
+
+
+  def _InitMainThreadRenderingStatsFromTimeline(self, process, timeline_range):
+    event_name = 'BenchmarkInstrumentation::MainThreadRenderingStats'
+    for event in self._GatherEvents(event_name, process, timeline_range):
       self.paint_times[-1].append(1000.0 *
           event.args['data']['paint_time'])
       self.painted_pixel_counts[-1].append(
@@ -226,28 +242,9 @@ class RenderingStats(object):
       self.recorded_pixel_counts[-1].append(
           event.args['data']['recorded_pixel_count'])
 
-  def initImplThreadStatsFromTimeline(self, timeline_range):
+  def _InitImplThreadRenderingStatsFromTimeline(self, process, timeline_range):
     event_name = 'BenchmarkInstrumentation::ImplThreadRenderingStats'
-    events = []
-    for event in self.top_level_process.IterAllSlicesOfName(event_name):
-      if event.start >= timeline_range.min and event.end <= timeline_range.max:
-        if 'data' not in event.args:
-          continue
-        events.append(event)
-    events.sort(key=attrgetter('start'))
-
-    first_frame = True
-    for event in events:
-      frame_count = event.args['data']['frame_count']
-      if frame_count > 1:
-        raise ValueError, 'trace contains multi-frame render stats'
-      if frame_count == 1:
-        self.frame_timestamps[-1].append(
-            event.start)
-        if not first_frame:
-          self.frame_times[-1].append(round(self.frame_timestamps[-1][-1] -
-                                            self.frame_timestamps[-1][-2], 2))
-        first_frame = False
+    for event in self._GatherEvents(event_name, process, timeline_range):
       self.rasterize_times[-1].append(1000.0 *
           event.args['data']['rasterize_time'])
       self.rasterized_pixel_counts[-1].append(
