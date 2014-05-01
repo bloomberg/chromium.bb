@@ -321,8 +321,8 @@ class BASE_EXPORT FilePath {
   // separator.
   FilePath StripTrailingSeparators() const WARN_UNUSED_RESULT;
 
-  // Returns true if this FilePath contains any attempt to reference a parent
-  // directory (i.e. has a path component that is ".."
+  // Returns true if this FilePath contains an attempt to reference a parent
+  // directory (e.g. has a path component that is "..").
   bool ReferencesParent() const;
 
   // Return a Unicode human-readable version of this path.
