@@ -59,7 +59,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/mime_types_handler.h"
+#include "chrome/common/extensions/manifest_handlers/mime_types_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"

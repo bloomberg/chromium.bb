@@ -36,7 +36,7 @@
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/mime_types_handler.h"
+#include "chrome/common/extensions/manifest_handlers/mime_types_handler.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"

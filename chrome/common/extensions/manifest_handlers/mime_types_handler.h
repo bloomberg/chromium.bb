@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_MIME_TYPES_HANDLER_H_
-#define CHROME_COMMON_EXTENSIONS_MIME_TYPES_HANDLER_H_
+#ifndef CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_MIME_TYPES_HANDLER_H_
+#define CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_MIME_TYPES_HANDLER_H_
 
 #include <set>
 #include <string>
@@ -64,5 +64,4 @@ class MimeTypesHandlerParser : public extensions::ManifestHandler {
   virtual const std::vector<std::string> Keys() const OVERRIDE;
 };
 
-#endif  // CHROME_COMMON_EXTENSIONS_MIME_TYPES_HANDLER_H_
-
+#endif  // CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_MIME_TYPES_HANDLER_H_

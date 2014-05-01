@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/mime_types_handler.h"
+#include "chrome/common/extensions/manifest_handlers/mime_types_handler.h"
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
