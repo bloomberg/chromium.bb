@@ -15,7 +15,7 @@ void MultiUserWindowManagerStub::SetWindowOwner(aura::Window* window,
 }
 
 const std::string& MultiUserWindowManagerStub::GetWindowOwner(
-    aura::Window* window) {
+    aura::Window* window) const {
   return base::EmptyString();
 }
 
@@ -24,22 +24,22 @@ void MultiUserWindowManagerStub::ShowWindowForUser(aura::Window* window,
   NOTIMPLEMENTED();
 }
 
-bool MultiUserWindowManagerStub::AreWindowsSharedAmongUsers() {
+bool MultiUserWindowManagerStub::AreWindowsSharedAmongUsers() const {
   return false;
 }
 
 void MultiUserWindowManagerStub::GetOwnersOfVisibleWindows(
-    std::set<std::string>* user_ids) {
+    std::set<std::string>* user_ids) const {
 }
 
 bool MultiUserWindowManagerStub::IsWindowOnDesktopOfUser(
     aura::Window* window,
-    const std::string& user_id) {
+    const std::string& user_id) const {
   return true;
 }
 
 const std::string& MultiUserWindowManagerStub::GetUserPresentingWindow(
-    aura::Window* window) {
+    aura::Window* window) const {
   return base::EmptyString();
 }
 

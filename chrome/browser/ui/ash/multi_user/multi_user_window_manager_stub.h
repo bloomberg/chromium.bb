@@ -23,16 +23,18 @@ class MultiUserWindowManagerStub : public MultiUserWindowManager {
   // MultiUserWindowManager overrides:
   virtual void SetWindowOwner(
       aura::Window* window, const std::string& user_id) OVERRIDE;
-  virtual const std::string& GetWindowOwner(aura::Window* window) OVERRIDE;
+  virtual const std::string& GetWindowOwner(
+      aura::Window* window) const OVERRIDE;
   virtual void ShowWindowForUser(
       aura::Window* window, const std::string& user_id) OVERRIDE;
-  virtual bool AreWindowsSharedAmongUsers() OVERRIDE;
+  virtual bool AreWindowsSharedAmongUsers() const OVERRIDE;
   virtual void GetOwnersOfVisibleWindows(
-      std::set<std::string>* user_ids) OVERRIDE;
-  virtual bool IsWindowOnDesktopOfUser(aura::Window* window,
-                                       const std::string& user_id) OVERRIDE;
+      std::set<std::string>* user_ids) const OVERRIDE;
+  virtual bool IsWindowOnDesktopOfUser(
+      aura::Window* window,
+      const std::string& user_id) const OVERRIDE;
   virtual const std::string& GetUserPresentingWindow(
-      aura::Window* window) OVERRIDE;
+      aura::Window* window) const OVERRIDE;
   virtual void AddUser(content::BrowserContext* context) OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;

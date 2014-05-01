@@ -75,16 +75,18 @@ class MultiUserWindowManagerChromeOS
   // MultiUserWindowManager overrides:
   virtual void SetWindowOwner(
       aura::Window* window, const std::string& user_id) OVERRIDE;
-  virtual const std::string& GetWindowOwner(aura::Window* window) OVERRIDE;
+  virtual const std::string& GetWindowOwner(
+      aura::Window* window) const OVERRIDE;
   virtual void ShowWindowForUser(
       aura::Window* window, const std::string& user_id) OVERRIDE;
-  virtual bool AreWindowsSharedAmongUsers() OVERRIDE;
+  virtual bool AreWindowsSharedAmongUsers() const OVERRIDE;
   virtual void GetOwnersOfVisibleWindows(
-      std::set<std::string>* user_ids) OVERRIDE;
-  virtual bool IsWindowOnDesktopOfUser(aura::Window* window,
-                                       const std::string& user_id) OVERRIDE;
+      std::set<std::string>* user_ids) const OVERRIDE;
+  virtual bool IsWindowOnDesktopOfUser(
+      aura::Window* window,
+      const std::string& user_id) const OVERRIDE;
   virtual const std::string& GetUserPresentingWindow(
-      aura::Window* window) OVERRIDE;
+      aura::Window* window) const OVERRIDE;
   virtual void AddUser(content::BrowserContext* context) OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
@@ -117,7 +119,7 @@ class MultiUserWindowManagerChromeOS
   bool IsAnimationRunningForTest();
 
   // Returns the current user for unit tests.
-  const std::string& GetCurrentUserForTest();
+  const std::string& GetCurrentUserForTest() const;
 
  protected:
   friend class UserSwichAnimatorChromeOS;
@@ -202,7 +204,7 @@ class MultiUserWindowManagerChromeOS
 
   // Find the first owned window in the chain.
   // Returns NULL when the window itself is owned.
-  aura::Window* GetOwningWindowInTransientChain(aura::Window* window);
+  aura::Window* GetOwningWindowInTransientChain(aura::Window* window) const;
 
   // A |window| and its children were attached as transient children to an
   // |owning_parent| and need to be registered. Note that the |owning_parent|
@@ -221,7 +223,7 @@ class MultiUserWindowManagerChromeOS
 
   // Get the animation time in milliseconds dependent on the |AnimationSpeed|
   // from the passed |default_time_in_ms|.
-  int GetAdjustedAnimationTimeInMS(int default_time_in_ms);
+  int GetAdjustedAnimationTimeInMS(int default_time_in_ms) const;
 
   // A lookup to see to which user the given window belongs to, where and if it
   // should get shown.

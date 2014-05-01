@@ -39,16 +39,18 @@ class TestMultiUserWindowManager : public chrome::MultiUserWindowManager {
   // MultiUserWindowManager overrides:
   virtual void SetWindowOwner(
       aura::Window* window, const std::string& user_id) OVERRIDE;
-  virtual const std::string& GetWindowOwner(aura::Window* window) OVERRIDE;
+  virtual const std::string& GetWindowOwner(
+      aura::Window* window) const OVERRIDE;
   virtual void ShowWindowForUser(
       aura::Window* window, const std::string& user_id) OVERRIDE;
-  virtual bool AreWindowsSharedAmongUsers() OVERRIDE;
+  virtual bool AreWindowsSharedAmongUsers() const OVERRIDE;
   virtual void GetOwnersOfVisibleWindows(
-      std::set<std::string>* user_ids) OVERRIDE;
-  virtual bool IsWindowOnDesktopOfUser(aura::Window* window,
-                                       const std::string& user_id) OVERRIDE;
+      std::set<std::string>* user_ids) const OVERRIDE;
+  virtual bool IsWindowOnDesktopOfUser(
+      aura::Window* window,
+      const std::string& user_id) const OVERRIDE;
   virtual const std::string& GetUserPresentingWindow(
-      aura::Window* window) OVERRIDE;
+      aura::Window* window) const OVERRIDE;
   virtual void AddUser(content::BrowserContext* profile) OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
@@ -95,7 +97,7 @@ void TestMultiUserWindowManager::SetWindowOwner(
 }
 
 const std::string& TestMultiUserWindowManager::GetWindowOwner(
-    aura::Window* window) {
+    aura::Window* window) const {
   // No matter which window will get queried - all browsers belong to the
   // original browser's user.
   return browser_owner_;
@@ -112,22 +114,22 @@ void TestMultiUserWindowManager::ShowWindowForUser(
   created_window_shown_for_ = user_id;
 }
 
-bool TestMultiUserWindowManager::AreWindowsSharedAmongUsers() {
+bool TestMultiUserWindowManager::AreWindowsSharedAmongUsers() const {
   return browser_owner_ != desktop_owner_;
 }
 
 void TestMultiUserWindowManager::GetOwnersOfVisibleWindows(
-    std::set<std::string>* user_ids) {
+    std::set<std::string>* user_ids) const {
 }
 
 bool TestMultiUserWindowManager::IsWindowOnDesktopOfUser(
     aura::Window* window,
-    const std::string& user_id) {
+    const std::string& user_id) const {
   return GetUserPresentingWindow(window) == user_id;
 }
 
 const std::string& TestMultiUserWindowManager::GetUserPresentingWindow(
-    aura::Window* window) {
+    aura::Window* window) const {
   if (window == browser_window_)
     return desktop_owner_;
   if (created_window_ && window == created_window_)
