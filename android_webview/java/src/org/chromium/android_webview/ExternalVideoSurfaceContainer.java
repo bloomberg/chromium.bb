@@ -63,7 +63,7 @@ public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
     private static WeakReference<ExternalVideoSurfaceContainer> sActiveContainer =
             new WeakReference<ExternalVideoSurfaceContainer>(null);
 
-    private final int mNativeExternalVideoSurfaceContainer;
+    private final long mNativeExternalVideoSurfaceContainer;
     private final ContentViewCore mContentViewCore;
     private int mPlayerId = INVALID_PLAYER_ID;
     private SurfaceView mSurfaceView;
@@ -85,7 +85,7 @@ public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
      */
     public static class Factory {
         public ExternalVideoSurfaceContainer create(
-                int nativeExternalVideoSurfaceContainer, ContentViewCore contentViewCore) {
+                long nativeExternalVideoSurfaceContainer, ContentViewCore contentViewCore) {
             return new ExternalVideoSurfaceContainer(
                     nativeExternalVideoSurfaceContainer, contentViewCore);
         }
@@ -99,12 +99,12 @@ public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
 
     @CalledByNative
     private static ExternalVideoSurfaceContainer create(
-            int nativeExternalVideoSurfaceContainer, ContentViewCore contentViewCore) {
+            long nativeExternalVideoSurfaceContainer, ContentViewCore contentViewCore) {
         return sFactory.create(nativeExternalVideoSurfaceContainer, contentViewCore);
     }
 
     protected ExternalVideoSurfaceContainer(
-            int nativeExternalVideoSurfaceContainer, ContentViewCore contentViewCore) {
+            long nativeExternalVideoSurfaceContainer, ContentViewCore contentViewCore) {
         assert contentViewCore != null;
         mNativeExternalVideoSurfaceContainer = nativeExternalVideoSurfaceContainer;
         mContentViewCore = contentViewCore;

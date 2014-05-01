@@ -55,7 +55,7 @@ public class ExternalVideoSurfaceContainerTest extends AwTestBase {
         private int mPlayerId = INVALID_PLAYER_ID;
 
         public MockExternalVideoSurfaceContainer(
-                int nativeExternalVideoSurfaceContainer, ContentViewCore contentViewCore) {
+                long nativeExternalVideoSurfaceContainer, ContentViewCore contentViewCore) {
             super(nativeExternalVideoSurfaceContainer, contentViewCore);
         }
 
@@ -91,7 +91,7 @@ public class ExternalVideoSurfaceContainerTest extends AwTestBase {
         ExternalVideoSurfaceContainer.setFactory(new ExternalVideoSurfaceContainer.Factory() {
             @Override
             public ExternalVideoSurfaceContainer create(
-                    int nativeContainer, ContentViewCore contentViewCore) {
+                    long nativeContainer, ContentViewCore contentViewCore) {
                 return new MockExternalVideoSurfaceContainer(nativeContainer, contentViewCore);
             }
         });
