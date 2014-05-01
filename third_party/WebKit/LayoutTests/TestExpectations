@@ -986,7 +986,6 @@ crbug.com/367814 [ Win Debug ] fast/dom/custom/document-register-reentrant-throw
 crbug.com/361729 fast/multicol/pagination-h-horizontal-bt.html [ Pass Failure ]
 crbug.com/361729 fast/multicol/pagination-h-horizontal-tb.html [ Pass Failure ]
 
-crbug.com/367653 svg/transforms/animated-path-inside-transformed-html.xhtml [ NeedsRebaseline ]
 crbug.com/367903 web-animations-api/timeline-time.html [ Pass Failure ]
 
 crbug.com/169282 virtual/threaded/compositing/visibility/visibility-image-layers.html [ NeedsRebaseline ]
