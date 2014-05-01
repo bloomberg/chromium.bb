@@ -32,7 +32,6 @@ ConnectionToHost::ConnectionToHost(
       event_callback_(NULL),
       client_stub_(NULL),
       clipboard_stub_(NULL),
-      video_stub_(NULL),
       audio_stub_(NULL),
       signal_strategy_(NULL),
       state_(INITIALIZING),
@@ -79,7 +78,12 @@ void ConnectionToHost::Connect(SignalStrategy* signal_strategy,
   event_callback_ = event_callback;
   client_stub_ = client_stub;
   clipboard_stub_ = clipboard_stub;
-  video_stub_ = video_stub;
+  monitored_video_stub_.reset(new MonitoredVideoStub(
+      video_stub,
+      base::TimeDelta::FromSeconds(
+          MonitoredVideoStub::kConnectivityCheckDelaySeconds),
+      base::Bind(&ConnectionToHost::OnVideoChannelStatus,
+                 base::Unretained(this))));
   audio_stub_ = audio_stub;
   authenticator_ = authenticator.Pass();
 
@@ -173,15 +177,15 @@ void ConnectionToHost::OnSessionStateChange(
                      base::Unretained(this)));
 
       video_reader_ = VideoReader::Create(session_->config());
-      video_reader_->Init(session_.get(), video_stub_, base::Bind(
-          &ConnectionToHost::OnChannelInitialized, base::Unretained(this)));
+      video_reader_->Init(session_.get(), monitored_video_stub_.get(),
+                          base::Bind(&ConnectionToHost::OnChannelInitialized,
+                                     base::Unretained(this)));
 
       audio_reader_ = AudioReader::Create(session_->config());
       if (audio_reader_.get()) {
-        audio_reader_->Init(
-            session_.get(), session_->config().audio_config(),
-            base::Bind(&ConnectionToHost::OnChannelInitialized,
-                       base::Unretained(this)));
+        audio_reader_->Init(session_.get(), session_->config().audio_config(),
+                            base::Bind(&ConnectionToHost::OnChannelInitialized,
+                                       base::Unretained(this)));
         audio_reader_->set_audio_stub(audio_stub_);
       }
       break;
@@ -215,15 +219,13 @@ void ConnectionToHost::OnSessionRouteChange(const std::string& channel_name,
   event_callback_->OnRouteChanged(channel_name, route);
 }
 
-void ConnectionToHost::OnSessionChannelReady(const std::string& channel_name,
-                                             bool ready) {
-  if (ready) {
-    not_ready_channels_.erase(channel_name);
-  } else if (!ready) {
-    not_ready_channels_.insert(channel_name);
-  }
+void ConnectionToHost::OnVideoChannelStatus(bool active) {
+  event_callback_->OnConnectionReady(active);
+}
 
-  event_callback_->OnConnectionReady(not_ready_channels_.empty());
+void ConnectionToHost::OnChannelReconnectionTimeout() {
+  LOG(ERROR) << "Failed to connect video channel";
+  CloseOnError(CHANNEL_CONNECTION_ERROR);
 }
 
 ConnectionToHost::State ConnectionToHost::state() const {

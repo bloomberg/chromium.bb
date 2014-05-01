@@ -313,8 +313,6 @@ void LibjingleStreamTransport::OnWritableState(
     cricket::TransportChannel* channel) {
   DCHECK_EQ(channel, channel_.get());
 
-  event_handler_->OnTransportReady(this, channel->writable());
-
   if (channel->writable()) {
     channel_was_writable_ = true;
     connect_attempts_left_ = kMaxReconnectAttempts;

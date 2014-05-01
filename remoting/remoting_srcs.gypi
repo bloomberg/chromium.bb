@@ -143,6 +143,8 @@
       'protocol/message_reader.h',
       'protocol/message_serialization.cc',
       'protocol/message_serialization.h',
+      'protocol/monitored_video_stub.cc',
+      'protocol/monitored_video_stub.h',
       'protocol/mouse_input_filter.cc',
       'protocol/mouse_input_filter.h',
       'protocol/name_value_map.h',

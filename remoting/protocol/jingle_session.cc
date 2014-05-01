@@ -40,6 +40,12 @@ const int kTransportInfoSendDelayMs = 2;
 // for all requests except |transport-info|.
 const int kDefaultMessageTimeout = 10;
 
+// During a reconnection, it usually takes longer for the peer to respond due to
+// pending messages in the channel from the previous session.  From experiment,
+// it can take up to 20s for the session to reconnect. To make it safe, setting
+// the timeout to 30s.
+const int kSessionInitiateAndAcceptTimeout = kDefaultMessageTimeout * 3;
+
 // Timeout for the transport-info messages.
 const int kTransportInfoTimeout = 10 * 60;
 
@@ -302,11 +308,6 @@ void JingleSession::OnTransportRouteChange(Transport* transport,
     event_handler_->OnSessionRouteChange(transport->name(), route);
 }
 
-void JingleSession::OnTransportReady(Transport* transport, bool ready) {
-  if (event_handler_)
-    event_handler_->OnSessionChannelReady(transport->name(), ready);
-}
-
 void JingleSession::OnTransportFailed(Transport* transport) {
   CloseInternal(CHANNEL_CONNECTION_ERROR);
 }
@@ -321,9 +322,16 @@ void JingleSession::SendMessage(const JingleMessage& message) {
   scoped_ptr<IqRequest> request = session_manager_->iq_sender()->SendIq(
       message.ToXml(),
       base::Bind(&JingleSession::OnMessageResponse,
-                 base::Unretained(this), message.action));
+                 base::Unretained(this),
+                 message.action));
+
+  int timeout = kDefaultMessageTimeout;
+  if (message.action == JingleMessage::SESSION_INITIATE ||
+      message.action == JingleMessage::SESSION_ACCEPT) {
+    timeout = kSessionInitiateAndAcceptTimeout;
+  }
   if (request) {
-    request->SetTimeout(base::TimeDelta::FromSeconds(kDefaultMessageTimeout));
+    request->SetTimeout(base::TimeDelta::FromSeconds(timeout));
     pending_requests_.insert(request.release());
   } else {
     LOG(ERROR) << "Failed to send a "
