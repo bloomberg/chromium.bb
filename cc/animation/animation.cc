@@ -65,7 +65,7 @@ Animation::Animation(scoped_ptr<AnimationCurve> curve,
       run_state_(WaitingForTargetAvailability),
       iterations_(1),
       start_time_(0),
-      alternates_direction_(false),
+      direction_(Normal),
       time_offset_(0),
       needs_synchronized_start_time_(false),
       received_finished_event_(false),
@@ -176,8 +176,8 @@ double Animation::TrimTimeToCurrentIteration(double monotonic_time) const {
       needs_synchronized_start_time())
     trimmed = time_offset_;
 
-  // Zero is always the start of the animation.
-  if (trimmed <= 0)
+  // Return 0 if we are before the start of the animation
+  if (trimmed < 0)
     return 0;
 
   // Always return zero if we have no iterations.
@@ -188,26 +188,32 @@ double Animation::TrimTimeToCurrentIteration(double monotonic_time) const {
   if (curve_->Duration() <= 0)
     return 0;
 
-  // If less than an iteration duration, just return trimmed.
-  if (trimmed < curve_->Duration())
-    return trimmed;
-
-  // If greater than or equal to the total duration, return iteration duration.
-  if (iterations_ >= 0 && trimmed >= curve_->Duration() * iterations_) {
-    if (alternates_direction_ && !(iterations_ % 2))
-      return 0;
-    return curve_->Duration();
-  }
+  // check if we are past active interval
+  bool is_past_total_duration =
+      (iterations_ > 0 && trimmed >= curve_->Duration() * iterations_);
 
   // We need to know the current iteration if we're alternating.
-  int iteration = static_cast<int>(trimmed / curve_->Duration());
+  int iteration = 0;
 
-  // Calculate x where trimmed = x + n * curve_->Duration() for some positive
-  // integer n.
-  trimmed = fmod(trimmed, curve_->Duration());
+  // If we are past the active interval, return iteration duration.
+  if (is_past_total_duration) {
+    iteration = iterations_;
+    trimmed = curve_->Duration();
+  } else {
+    iteration = static_cast<int>(trimmed / curve_->Duration());
+    // Calculate x where trimmed = x + n * curve_->Duration() for some positive
+    // integer n.
+    trimmed = fmod(trimmed, curve_->Duration());
+  }
 
-  // If we're alternating and on an odd iteration, reverse the direction.
-  if (alternates_direction_ && iteration % 2 == 1)
+  // check if we are running the animation in reverse direction for the current
+  // iteration
+  bool reverse = (direction_ == Reverse) ||
+                 (direction_ == Alternate && iteration % 2 == 1) ||
+                 (direction_ == AlternateReverse && iteration % 2 == 0);
+
+  // if we are running the animation in reverse direction, reverse the result
+  if (reverse)
     return curve_->Duration() - trimmed;
 
   return trimmed;
@@ -223,7 +229,7 @@ scoped_ptr<Animation> Animation::CloneAndInitialize(
   to_return->pause_time_ = pause_time_;
   to_return->total_paused_time_ = total_paused_time_;
   to_return->time_offset_ = time_offset_;
-  to_return->alternates_direction_ = alternates_direction_;
+  to_return->direction_ = direction_;
   DCHECK(!to_return->is_controlling_instance_);
   to_return->is_controlling_instance_ = true;
   return to_return.Pass();

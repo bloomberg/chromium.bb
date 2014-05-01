@@ -23,7 +23,11 @@ TEST(WebAnimationTest, DefaultSettings) {
   EXPECT_EQ(1, animation->iterations());
   EXPECT_EQ(0, animation->startTime());
   EXPECT_EQ(0, animation->timeOffset());
+#if WEB_ANIMATION_SUPPORTS_FULL_DIRECTION
+  EXPECT_EQ(WebAnimation::DirectionNormal, animation->direction());
+#else
   EXPECT_FALSE(animation->alternatesDirection());
+#endif
 }
 
 TEST(WebAnimationTest, ModifiedSettings) {
@@ -33,12 +37,20 @@ TEST(WebAnimationTest, ModifiedSettings) {
   animation->setIterations(2);
   animation->setStartTime(2);
   animation->setTimeOffset(2);
+#if WEB_ANIMATION_SUPPORTS_FULL_DIRECTION
+  animation->setDirection(WebAnimation::DirectionReverse);
+#else
   animation->setAlternatesDirection(true);
+#endif
 
   EXPECT_EQ(2, animation->iterations());
   EXPECT_EQ(2, animation->startTime());
   EXPECT_EQ(2, animation->timeOffset());
+#if WEB_ANIMATION_SUPPORTS_FULL_DIRECTION
+  EXPECT_EQ(WebAnimation::DirectionReverse, animation->direction());
+#else
   EXPECT_TRUE(animation->alternatesDirection());
+#endif
 }
 
 }  // namespace
