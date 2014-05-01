@@ -5976,6 +5976,7 @@ shell_destroy(struct wl_listener *listener, void *data)
 	}
 
 	wl_list_remove(&shell->output_create_listener.link);
+	wl_list_remove(&shell->output_move_listener.link);
 
 	wl_array_for_each(ws, &shell->workspaces.array)
 		workspace_destroy(*ws);
