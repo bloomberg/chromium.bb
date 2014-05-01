@@ -38,7 +38,6 @@
     'public/android/java/src/org/chromium/content/browser/WebContentsObserverAndroid.java',
     'public/android/java/src/org/chromium/content/browser/framehost/NavigationControllerImpl.java',
     'public/android/java/src/org/chromium/content/browser/webcontents/WebContentsImpl.java',
-    'public/android/java/src/org/chromium/content/common/DeviceTelephonyInfo.java',
    ],
   'variables': {
     'jni_gen_package': 'content',

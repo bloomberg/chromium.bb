@@ -204,7 +204,6 @@
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
 
-#include "content/common/android/device_telephony_info.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/android/address_detector.h"
 #include "content/renderer/android/content_detector.h"
@@ -214,6 +213,7 @@
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/stream_texture_factory_impl.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
+#include "net/android/network_library.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
@@ -726,12 +726,10 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
     stats_collection_observer_.reset(new StatsCollectionObserver(this));
 
 #if defined(OS_ANDROID)
-  content::DeviceTelephonyInfo device_info;
-
   const std::string region_code =
       command_line.HasSwitch(switches::kNetworkCountryIso)
           ? command_line.GetSwitchValueASCII(switches::kNetworkCountryIso)
-          : device_info.GetNetworkCountryIso();
+          : net::android::GetTelephonyNetworkOperator();
   content_detectors_.push_back(linked_ptr<ContentDetector>(
       new AddressDetector()));
   content_detectors_.push_back(linked_ptr<ContentDetector>(

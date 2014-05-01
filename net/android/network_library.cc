@@ -122,6 +122,20 @@ bool GetMimeTypeFromExtension(const std::string& extension,
   return true;
 }
 
+std::string GetTelephonyNetworkCountryIso() {
+  return base::android::ConvertJavaStringToUTF8(
+      Java_AndroidNetworkLibrary_getNetworkCountryIso(
+          base::android::AttachCurrentThread(),
+          base::android::GetApplicationContext()));
+}
+
+std::string GetTelephonyNetworkOperator() {
+  return base::android::ConvertJavaStringToUTF8(
+      Java_AndroidNetworkLibrary_getNetworkOperator(
+          base::android::AttachCurrentThread(),
+          base::android::GetApplicationContext()));
+}
+
 bool RegisterNetworkLibrary(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
