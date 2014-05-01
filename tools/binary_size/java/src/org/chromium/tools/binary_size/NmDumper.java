@@ -120,23 +120,25 @@ class NmDumper {
             }
         }
 
-        private synchronized void println(PrintWriter writer, String string) {
+        private void println(PrintWriter writer, String string) {
             if (writer != null) {
-                writer.println(string);
-                writer.flush();
+                synchronized (writer) {
+                    writer.println(string);
+                    writer.flush();
+                }
             }
         }
 
-        synchronized void print(String string) {
+        void print(String string) {
             println(outWriter, string);
         }
 
-        synchronized void printSkip(String string) {
+        void printSkip(String string) {
             println(skipWriter, string);
             println(outWriter, string);
         }
 
-        synchronized void printFail(String string) {
+        void printFail(String string) {
             println(failWriter, string);
             println(outWriter, string);
         }
