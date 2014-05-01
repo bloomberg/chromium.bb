@@ -71,6 +71,15 @@ EVENT_MALWARE_PROXY = (
 
 
 class ChromeProxyMetricTest(unittest.TestCase):
+
+  _test_proxy_info = {}
+
+  def _StubGetProxyInfo(self, info):
+    def stub(unused_tab, unused_url=''):  # pylint: disable=W0613
+      return ChromeProxyMetricTest._test_proxy_info
+    chrome_proxy.GetProxyInfoFromNetworkInternals = stub
+    ChromeProxyMetricTest._test_proxy_info = info
+
   def testChromeProxyResponse(self):
     # An https non-proxy response.
     resp = chrome_proxy.ChromeProxyResponse(
@@ -165,6 +174,44 @@ class ChromeProxyMetricTest(unittest.TestCase):
     metric.SetEvents([EVENT_IMAGE_DIRECT])
     metric.AddResultsForBypass(None, results)
     results.AssertHasPageSpecificScalarValue('bypass', 'count', 1)
+
+  def testChromeProxyMetricForHTTPFallback(self):
+    metric = chrome_proxy.ChromeProxyMetric()
+    metric.SetEvents([
+        EVENT_HTML_PROXY,
+        EVENT_HTML_PROXY_DEPRECATED_VIA])
+    results = test_page_measurement_results.TestPageMeasurementResults(self)
+
+    fallback_exception = False
+    info = {}
+    info['enabled'] = False
+    self._StubGetProxyInfo(info)
+    try:
+      metric.AddResultsForBypass(None, results)
+    except chrome_proxy.ChromeProxyMetricException:
+      fallback_exception = True
+    self.assertTrue(fallback_exception)
+
+    fallback_exception = False
+    info['enabled'] = True
+    info['proxies'] = [
+        'something.else.com:80',
+        chrome_proxy.PROXY_SETTING_DIRECT
+        ]
+    self._StubGetProxyInfo(info)
+    try:
+      metric.AddResultsForBypass(None, results)
+    except chrome_proxy.ChromeProxyMetricException:
+      fallback_exception = True
+    self.assertTrue(fallback_exception)
+
+    info['enabled'] = True
+    info['proxies'] = [
+        chrome_proxy.PROXY_SETTING_HTTP,
+        chrome_proxy.PROXY_SETTING_DIRECT
+        ]
+    self._StubGetProxyInfo(info)
+    metric.AddResultsForHTTPFallback(None, results)
 
   def testChromeProxyMetricForSafebrowsing(self):
     metric = chrome_proxy.ChromeProxyMetric()
