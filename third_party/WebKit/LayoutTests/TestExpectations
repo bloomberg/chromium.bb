@@ -19,6 +19,7 @@ crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pas
 # -----------------------------------------------------------------
 
 crbug.com/364088 inspector/audits/audits-panel-noimages-functional.html [ Pass Failure ]
+crbug.com/369035 inspector/profiler/cpu-profiler-profiling.html [ Failure Pass ]
 
 # -----------------------------------------------------------------
 # Plugin tests
