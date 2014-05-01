@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -443,6 +444,12 @@ void RLZTracker::Observe(int type,
                          const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_OMNIBOX_OPENED_URL:
+      // In M-36, we made NOTIFICATION_OMNIBOX_OPENED_URL fire more often than
+      // it did previously.  The RLZ folks want RLZ's "first search" detection
+      // to remain as unaffected as possible by this change.  This test is
+      // there to keep the old behavior.
+      if (!content::Details<OmniboxLog>(details).ptr()->is_popup_open)
+        break;
       RecordFirstSearch(CHROME_OMNIBOX);
       registrar_.Remove(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
                         content::NotificationService::AllSources());
