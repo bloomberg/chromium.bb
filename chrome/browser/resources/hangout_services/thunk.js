@@ -160,12 +160,48 @@ function onChooseDesktopMediaPort(port) {
         // desktop media source, so it does not need to be conditional.
         chrome.desktopCapture.cancelChooseDesktopMedia(cancelId);
       });
-    } else if (method == 'getNaclArchitecture') {
-      chrome.runtime.getPlatformInfo(function(obj) {
-        doSendResponse(obj.nacl_arch);
-      });
-      return true;
     }
+  });
+}
+
+// A port for continuously reporting relevant CPU usage information to the page.
+function onProcessCpu(port) {
+  var tabPid;
+  function processListener(processes) {
+    if (tabPid == undefined) {
+      // getProcessIdForTab sometimes fails, and does not call the callback.
+      // (Tracked at https://crbug.com/368855.)
+      // This call retries it on each process update until it succeeds.
+      chrome.processes.getProcessIdForTab(port.sender.tab.id, function(x) {
+        tabPid = x;
+      });
+      return;
+    }
+    var tabProcess = processes[tabPid];
+    if (!tabProcess) {
+      return;
+    }
+    var pluginProcessCpu = 0, browserProcessCpu = 0;
+    for (var pid in processes) {
+      var process = processes[pid];
+      if (process.type == 'browser') {
+        browserProcessCpu = process.cpu;
+      } else if ((process.type == 'plugin' || process.type == 'nacl') &&
+                 process.title.toLowerCase().indexOf('hangouts') > 0) {
+        pluginProcessCpu = process.cpu;
+      }
+    }
+
+    port.postMessage({
+      'tabCpuUsage': tabProcess.cpu,
+      'browserCpuUsage': browserProcessCpu,
+      'pluginCpuUsage': pluginProcessCpu
+    });
+  }
+
+  chrome.processes.onUpdated.addListener(processListener);
+  port.onDisconnect.addListener(function() {
+    chrome.processes.onUpdated.removeListener(processListener);
   });
 }
 
@@ -174,6 +210,8 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
     onSinksChangedPort(port);
   } else if (port.name == 'chooseDesktopMedia') {
     onChooseDesktopMediaPort(port);
+  } else if (port.name == 'processCpu') {
+    onProcessCpu(port);
   } else {
     // Unknown port type.
     port.disconnect();
