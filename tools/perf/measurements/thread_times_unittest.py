@@ -3,11 +3,14 @@
 # found in the LICENSE file.
 
 from measurements import thread_times
+from measurements import smoothness_unittest
 from metrics import timeline
 from telemetry import test
 from telemetry.core import wpr_modes
 from telemetry.page import page_measurement_unittest_base
+
 from telemetry.unittest import options_for_unittests
+
 
 
 class ThreadTimesUnitTest(
@@ -30,8 +33,8 @@ class ThreadTimesUnitTest(
       self.assertEquals(len(cpu_time), 1)
 
   def testBasicForPageWithNoGesture(self):
-    ps = self.CreatePageSetFromFileInUnittestDataDir('animated_page.html')
-    setattr(ps.pages[0], 'RunSmoothness', {'action': 'wait', 'seconds' : 1})
+    ps = self.CreateEmptyPageSet()
+    ps.AddPage(smoothness_unittest.AnimatedPage(ps))
 
     measurement = thread_times.ThreadTimes()
     timeline_options = self._options

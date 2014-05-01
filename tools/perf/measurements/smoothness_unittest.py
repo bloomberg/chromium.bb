@@ -7,6 +7,8 @@ from measurements import smoothness
 from telemetry.core import wpr_modes
 from telemetry.page import page
 from telemetry.page import page_measurement_unittest_base
+# pylint: disable=W0401,W0614
+from telemetry.page.actions.all_page_actions import *
 from telemetry.unittest import options_for_unittests
 
 class FakePlatform(object):
@@ -23,6 +25,16 @@ class FakeBrowser(object):
 
   def StartTracing(self, category_filter, _):
     self.category_filter = category_filter
+
+
+class AnimatedPage(page.Page):
+  def __init__(self, page_set):
+    super(AnimatedPage, self).__init__(
+      url='file://animated_page.html',
+      page_set=page_set, base_dir=page_set.base_dir)
+
+  def RunSmoothness(self, action_runner):
+    action_runner.RunAction(WaitAction({'seconds': 1}))
 
 
 class FakeTab(object):
@@ -109,8 +121,9 @@ class SmoothnessUnitTest(
           mean_touch_scroll_latency[0].GetRepresentativeNumber(), 0)
 
   def testSmoothnessForPageWithNoGesture(self):
-    ps = self.CreatePageSetFromFileInUnittestDataDir('animated_page.html')
-    setattr(ps.pages[0], 'RunSmoothness', {'action': 'wait', 'seconds' : 1})
+    ps = self.CreateEmptyPageSet()
+    ps.AddPage(AnimatedPage(ps))
+
     measurement = smoothness.Smoothness()
     results = self.RunMeasurement(measurement, ps, options=self._options)
     self.assertEquals(0, len(results.failures))
