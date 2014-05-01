@@ -28,11 +28,6 @@ import test_lib
 
 import pynacl.platform
 
-# NOTE: Underlay for  src/third_party_mod/gtest
-# TODO: try to eliminate this hack
-Dir('src/third_party_mod/gtest').addRepository(
-    Dir('#/../testing/gtest'))
-
 # turning garbage collection off reduces startup time by 10%
 import gc
 gc.disable()
