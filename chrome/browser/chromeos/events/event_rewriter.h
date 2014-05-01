@@ -9,25 +9,42 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/events/event.h"
+#include "ui/events/event_rewriter.h"
+
+#if defined(USE_X11)
 #include "chrome/browser/chromeos/device_hierarchy_observer.h"
-#include "chromeos/ime/ime_keyboard.h"
-#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/platform/platform_event_observer.h"
+typedef union _XEvent XEvent;
+#endif
 
 class PrefService;
-typedef union _XEvent XEvent;
 
 namespace chromeos {
 namespace input_method {
 class ImeKeyboard;
 }
 
-class EventRewriter : public DeviceHierarchyObserver,
-                      public ui::PlatformEventObserver {
+// EventRewriter makes various changes to keyboard-related events,
+// including KeyEvents and some other events with keyboard modifier flags:
+// - maps modifiers keys (Control, Alt, Search, Caps, Diamond) according
+//   to user preferences;
+// - maps Command to Control on Apple keyboards;
+// - converts numeric pad editing keys to their numeric forms;
+// - converts top-row function keys to special keys where necessary;
+// - handles various key combinations like Search+Backspace -> Delete
+//   and Search+number to Fnumber;
+// - handles key/pointer combinations like Alt+Button1 -> Button3.
+class EventRewriter
+    :
+#if defined(USE_X11)
+      public DeviceHierarchyObserver,
+      public ui::PlatformEventObserver,
+#endif
+      public ui::EventRewriter {
  public:
   enum DeviceType {
     kDeviceUnknown = 0,
@@ -40,31 +57,36 @@ class EventRewriter : public DeviceHierarchyObserver,
   // Calls DeviceAddedInternal.
   DeviceType DeviceAddedForTesting(int device_id,
                                    const std::string& device_name);
-  // Calls Rewrite.
-  void RewriteForTesting(XEvent* event);
 
+  // Calls RewriteLocatedEvent().
+  void RewriteLocatedEventForTesting(const ui::Event& event, int* flags);
+
+#if defined(USE_X11)
   const std::map<int, DeviceType>& device_id_to_type_for_testing() const {
     return device_id_to_type_;
   }
+#endif
+
   void set_last_device_id_for_testing(int device_id) {
     last_device_id_ = device_id;
   }
   void set_pref_service_for_testing(const PrefService* pref_service) {
     pref_service_for_testing_ = pref_service;
   }
-  void set_keyboard_for_testing(input_method::ImeKeyboard* keyboard) {
-    keyboard_for_testing_ = keyboard;
+  void set_ime_keyboard_for_testing(
+      chromeos::input_method::ImeKeyboard* ime_keyboard) {
+    ime_keyboard_for_testing_ = ime_keyboard;
   }
 
-  // Gets DeviceType from the |device_name|.
-  static DeviceType GetDeviceType(const std::string& device_name);
+  // EventRewriter overrides:
+  virtual ui::EventRewriteStatus RewriteEvent(
+      const ui::Event& event,
+      scoped_ptr<ui::Event>* rewritten_event) OVERRIDE;
+  virtual ui::EventRewriteStatus NextDispatchEvent(
+      const ui::Event& last_event,
+      scoped_ptr<ui::Event>* new_event) OVERRIDE;
 
- private:
-  friend class EventRewriterAshTest;
-  friend class EventRewriterTest;
-
-  void DeviceKeyPressedOrReleased(int device_id);
-
+#if defined(USE_X11)
   // ui::PlatformEventObserver:
   virtual void WillProcessEvent(const ui::PlatformEvent& event) OVERRIDE;
   virtual void DidProcessEvent(const ui::PlatformEvent& event) OVERRIDE;
@@ -73,101 +95,29 @@ class EventRewriter : public DeviceHierarchyObserver,
   virtual void DeviceHierarchyChanged() OVERRIDE;
   virtual void DeviceAdded(int device_id) OVERRIDE;
   virtual void DeviceRemoved(int device_id) OVERRIDE;
+#endif
 
-  // We don't want to include Xlib.h here since it has polluting macros, so
-  // define these locally.
-  typedef unsigned long KeySym;
-  typedef unsigned char KeyCode;
-
-  // Updates |*_xkeycode_| in response to a keyboard map change.
-  void RefreshKeycodes();
-  // Converts an X key symbol like XK_Control_L to a key code.
-  unsigned char NativeKeySymToNativeKeycode(KeySym keysym);
-
-  struct KeyboardRemapping {
-    KeySym input_keysym;
-    unsigned int input_native_mods;
-    KeySym output_keysym;
-    unsigned int output_native_mods;
+ private:
+  // Things that internal rewriter phases can change about an Event.
+  struct MutableKeyState {
+    int flags;
+    ui::KeyboardCode key_code;
   };
 
-  // Returns true if the target for |event| would prefer to receive raw function
-  // keys instead of having them rewritten into back, forward, brightness,
-  // volume, etc. or if the user has specified that they desire top-row keys to
-  // be treated as function keys globally.
-  bool TopRowKeysAreFunctionKeys(XEvent* event) const;
+  // Tables of direct remappings for |RewriteWithKeyboardRemappingsByKeyCode()|.
+  struct KeyboardRemapping {
+    ui::KeyboardCode input_key_code;
+    int input_flags;
+    ui::KeyboardCode output_key_code;
+    int output_flags;
+  };
 
-  // Given a set of KeyboardRemapping structs, it finds a matching struct
-  // if possible, and updates the remapped event values. Returns true if a
-  // remapping was found and remapped values were updated.
-  bool RewriteWithKeyboardRemappingsByKeySym(
-      const KeyboardRemapping* remappings,
-      size_t num_remappings,
-      KeySym keysym,
-      unsigned int native_mods,
-      KeySym* remapped_native_keysym,
-      unsigned int* remapped_native_mods);
-
-  // Given a set of KeyboardRemapping structs, it finds a matching struct
-  // if possible, and updates the remapped event values. This function converts
-  // the KeySym in the KeyboardRemapping struct into the KeyCode before matching
-  // to allow any KeyCode on the same physical key as the given KeySym to match.
-  // Returns true if a remapping was found and remapped values were updated.
-  bool RewriteWithKeyboardRemappingsByKeyCode(
-      const KeyboardRemapping* remappings,
-      size_t num_remappings,
-      KeyCode keycode,
-      unsigned int native_mods,
-      KeySym* remapped_native_keysym,
-      unsigned int* remapped_native_mods);
+#if defined(USE_X11)
+  void DeviceKeyPressedOrReleased(int device_id);
+#endif
 
   // Returns the PrefService that should be used.
   const PrefService* GetPrefService() const;
-
-  // Rewrites the |event| by applying all RewriteXXX functions as needed.
-  void Rewrite(XEvent* event);
-
-  // Rewrites a modifier key press/release following the current user
-  // preferences.
-  bool RewriteModifiers(XEvent* event);
-
-  // Rewrites Fn key press/release to Control. In some cases, Fn key is not
-  // intercepted by the EC, but generates a key event like "XK_F15 + Mod3Mask"
-  // as shown in crosbug.com/p/14339.
-  bool RewriteFnKey(XEvent* event);
-
-  // Rewrites a NumPad key press/release without Num Lock to a corresponding key
-  // press/release with the lock.  Returns true when |event| is rewritten.
-  bool RewriteNumPadKeys(XEvent* event);
-
-  // Rewrites Backspace and Arrow keys following the Chrome OS keyboard spec.
-  //  * Alt+Backspace -> Delete
-  //  * Alt+Up -> Prior (aka PageUp)
-  //  * Alt+Down -> Next (aka PageDown)
-  //  * Ctrl+Alt+Up -> Home
-  //  * Ctrl+Alt+Down -> End
-  // When the Search key acts as a function key, it instead maps:
-  //  * Search+Backspace -> Delete
-  //  * Search+Up -> Prior (aka PageUp)
-  //  * Search+Down -> Next (aka PageDown)
-  //  * Search+Left -> Home
-  //  * Search+Right -> End
-  //  * Search+. -> Insert
-  // Returns true when the |event| is rewritten.
-  bool RewriteExtendedKeys(XEvent* event);
-
-  // When the Search key acts as a function key, it remaps Search+1
-  // through Search+= to F1 through F12. Returns true when the |event| is
-  // rewritten.
-  bool RewriteFunctionKeys(XEvent* event);
-
-  // Rewrites the located |event|.
-  void RewriteLocatedEvent(XEvent* event);
-
-  // Overwrites |event| with the keycodes and flags.
-  void OverwriteEvent(XEvent* event,
-                      unsigned int new_native_keycode,
-                      unsigned int new_native_state);
 
   // Checks the type of the |device_name|, and inserts a new entry to
   // |device_id_to_type_|.
@@ -176,22 +126,42 @@ class EventRewriter : public DeviceHierarchyObserver,
   // Returns true if |last_device_id_| is Apple's.
   bool IsAppleKeyboard() const;
 
-  // Remaps |original_native_modifiers| to |remapped_native_modifiers| following
-  // the current user prefs.
-  void GetRemappedModifierMasks(unsigned int original_native_modifiers,
-                                unsigned int* remapped_native_modifiers) const;
+  // Returns true if the target for |event| would prefer to receive raw function
+  // keys instead of having them rewritten into back, forward, brightness,
+  // volume, etc. or if the user has specified that they desire top-row keys to
+  // be treated as function keys globally.
+  bool TopRowKeysAreFunctionKeys(const ui::KeyEvent& event) const;
 
-  std::map<int, DeviceType> device_id_to_type_;
-  int last_device_id_;
+  // Given modifier flags |original_flags|, returns the remapped modifiers
+  // according to user preferences and/or event properties.
+  int GetRemappedModifierMasks(const PrefService& pref_service,
+                               const ui::Event& event,
+                               int original_flags) const;
 
-  // A mapping from X11 KeySym keys to KeyCode values.
-  base::hash_map<unsigned long, unsigned long> keysym_to_keycode_map_;
+  // Given a set of KeyboardRemapping structs, it finds a matching struct
+  // if possible, and updates the remapped event values. Returns true if a
+  // remapping was found and remapped values were updated.
+  bool RewriteWithKeyboardRemappingsByKeyCode(
+      const KeyboardRemapping* remappings,
+      size_t num_remappings,
+      const MutableKeyState& input,
+      MutableKeyState* remapped_state);
+
+  // Rewriter phases. These can inspect the original |event|, but operate using
+  // the current |state|, which may have been modified by previous phases.
+  void RewriteModifierKeys(const ui::KeyEvent& event, MutableKeyState* state);
+  void RewriteNumPadKeys(const ui::KeyEvent& event, MutableKeyState* state);
+  void RewriteExtendedKeys(const ui::KeyEvent& event, MutableKeyState* state);
+  void RewriteFunctionKeys(const ui::KeyEvent& event, MutableKeyState* state);
+  void RewriteLocatedEvent(const ui::Event& event, MutableKeyState* state);
 
   // A set of device IDs whose press event has been rewritten.
   std::set<int> pressed_device_ids_;
 
-  input_method::ImeKeyboard* keyboard_for_testing_;
+  std::map<int, DeviceType> device_id_to_type_;
+  int last_device_id_;
 
+  chromeos::input_method::ImeKeyboard* ime_keyboard_for_testing_;
   const PrefService* pref_service_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(EventRewriter);

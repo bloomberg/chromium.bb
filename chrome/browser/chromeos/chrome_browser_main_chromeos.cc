@@ -720,12 +720,12 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 
   // Start the CrOS input device UMA watcher
   DeviceUMA::GetInstance();
-
-  event_rewriter_.reset(new EventRewriter());
 #endif
   keyboard_event_rewriters_.reset(new EventRewriterController());
   keyboard_event_rewriters_->AddEventRewriter(
       scoped_ptr<ui::EventRewriter>(new KeyboardDrivenEventRewriter()));
+  keyboard_event_rewriters_->AddEventRewriter(
+      scoped_ptr<ui::EventRewriter>(new EventRewriter()));
 
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- immediately after ChildProcess::WaitForDebugger().
@@ -797,8 +797,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   keyboard_event_rewriters_.reset();
 #if defined(USE_X11)
-  event_rewriter_.reset();
-
   // The XInput2 event listener needs to be shut down earlier than when
   // Singletons are finally destroyed in AtExitManager.
   XInputHierarchyChangedEventListener::GetInstance()->Stop();

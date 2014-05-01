@@ -11,6 +11,8 @@
 #undef None
 #undef RootWindow
 
+#include <vector>
+
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
 #include "base/basictypes.h"
@@ -29,40 +31,57 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
+#include "ui/events/event_rewriter.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/events/x/touch_factory_x11.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace {
 
+std::string GetKeyEventAsString(const ui::KeyEvent& keyevent) {
+  return base::StringPrintf("ui_keycode=0x%X ui_flags=0x%X ui_type=%d",
+                            keyevent.key_code(),
+                            keyevent.flags(),
+                            keyevent.type());
+}
+
 std::string GetRewrittenEventAsString(chromeos::EventRewriter* rewriter,
                                       ui::KeyboardCode ui_keycode,
                                       int ui_flags,
-                                      ui::EventType ui_type,
-                                      KeyCode x_keycode,
-                                      unsigned int x_state) {
-  ui::ScopedXI2Event xev;
-  xev.InitKeyEvent(ui_type, ui_keycode, ui_flags);
-  XEvent* xevent = xev;
-  xevent->xkey.keycode = x_keycode;
-  xevent->xkey.state = x_state;
-  rewriter->RewriteForTesting(xevent);
-  ui::KeyEvent keyevent(xevent, false /* is_char */);
-  return base::StringPrintf(
-      "ui_keycode=%d ui_flags=%d ui_type=%d x_keycode=%u x_state=%u x_type=%d",
-      keyevent.key_code(), keyevent.flags(), keyevent.type(),
-      xevent->xkey.keycode, xevent->xkey.state, xevent->xkey.type);
+                                      ui::EventType ui_type) {
+  const ui::KeyEvent event(ui_type, ui_keycode, ui_flags, false);
+  scoped_ptr<ui::Event> new_event;
+  rewriter->RewriteEvent(event, &new_event);
+  if (new_event)
+    return GetKeyEventAsString(
+        static_cast<const ui::KeyEvent&>(*new_event.get()));
+  return GetKeyEventAsString(event);
 }
 
 std::string GetExpectedResultAsString(ui::KeyboardCode ui_keycode,
                                       int ui_flags,
-                                      ui::EventType ui_type,
-                                      KeyCode x_keycode,
-                                      unsigned int x_state,
-                                      int x_type) {
-  return base::StringPrintf(
-      "ui_keycode=%d ui_flags=%d ui_type=%d x_keycode=%u x_state=%u x_type=%d",
-      ui_keycode, ui_flags, ui_type, x_keycode, x_state, x_type);
+                                      ui::EventType ui_type) {
+  return base::StringPrintf("ui_keycode=0x%X ui_flags=0x%X ui_type=%d",
+                            ui_keycode,
+                            ui_flags,
+                            ui_type);
+}
+
+std::string GetRewrittenEventNumbered(size_t i,
+                                      chromeos::EventRewriter* rewriter,
+                                      ui::KeyboardCode ui_keycode,
+                                      int ui_flags,
+                                      ui::EventType ui_type) {
+  return base::StringPrintf("(%zu) ", i) +
+         GetRewrittenEventAsString(rewriter, ui_keycode, ui_flags, ui_type);
+}
+
+std::string GetExpectedResultNumbered(size_t i,
+                                      ui::KeyboardCode ui_keycode,
+                                      int ui_flags,
+                                      ui::EventType ui_type) {
+  return base::StringPrintf("(%zu) ", i) +
+         GetExpectedResultAsString(ui_keycode, ui_flags, ui_type);
 }
 
 }  // namespace
@@ -73,94 +92,6 @@ class EventRewriterTest : public ash::test::AshTestBase {
  public:
   EventRewriterTest()
       : display_(gfx::GetXDisplay()),
-        keycode_a_(XKeysymToKeycode(display_, XK_a)),
-        keycode_alt_l_(XKeysymToKeycode(display_, XK_Alt_L)),
-        keycode_alt_r_(XKeysymToKeycode(display_, XK_Alt_R)),
-        keycode_b_(XKeysymToKeycode(display_, XK_B)),
-        keycode_caps_lock_(XKeysymToKeycode(display_, XK_Caps_Lock)),
-        keycode_control_l_(XKeysymToKeycode(display_, XK_Control_L)),
-        keycode_control_r_(XKeysymToKeycode(display_, XK_Control_R)),
-        keycode_meta_l_(XKeysymToKeycode(display_, XK_Meta_L)),
-        keycode_meta_r_(XKeysymToKeycode(display_, XK_Meta_R)),
-        keycode_num_pad_0_(XKeysymToKeycode(display_, XK_KP_0)),
-        keycode_num_pad_1_(XKeysymToKeycode(display_, XK_KP_1)),
-        keycode_num_pad_2_(XKeysymToKeycode(display_, XK_KP_2)),
-        keycode_num_pad_3_(XKeysymToKeycode(display_, XK_KP_3)),
-        keycode_num_pad_4_(XKeysymToKeycode(display_, XK_KP_4)),
-        keycode_num_pad_5_(XKeysymToKeycode(display_, XK_KP_5)),
-        keycode_num_pad_6_(XKeysymToKeycode(display_, XK_KP_6)),
-        keycode_num_pad_7_(XKeysymToKeycode(display_, XK_KP_7)),
-        keycode_num_pad_8_(XKeysymToKeycode(display_, XK_KP_8)),
-        keycode_num_pad_9_(XKeysymToKeycode(display_, XK_KP_9)),
-        keycode_num_pad_begin_(XKeysymToKeycode(display_, XK_KP_Begin)),
-        keycode_num_pad_decimal_(XKeysymToKeycode(display_, XK_KP_Decimal)),
-        keycode_num_pad_delete_(XKeysymToKeycode(display_, XK_KP_Delete)),
-        keycode_num_pad_down_(XKeysymToKeycode(display_, XK_KP_Down)),
-        keycode_num_pad_end_(XKeysymToKeycode(display_, XK_KP_End)),
-        keycode_num_pad_home_(XKeysymToKeycode(display_, XK_KP_Home)),
-        keycode_num_pad_insert_(XKeysymToKeycode(display_, XK_KP_Insert)),
-        keycode_num_pad_left_(XKeysymToKeycode(display_, XK_KP_Left)),
-        keycode_num_pad_next_(XKeysymToKeycode(display_, XK_KP_Next)),
-        keycode_num_pad_prior_(XKeysymToKeycode(display_, XK_KP_Prior)),
-        keycode_num_pad_right_(XKeysymToKeycode(display_, XK_KP_Right)),
-        keycode_num_pad_up_(XKeysymToKeycode(display_, XK_KP_Up)),
-        keycode_super_l_(XKeysymToKeycode(display_, XK_Super_L)),
-        keycode_super_r_(XKeysymToKeycode(display_, XK_Super_R)),
-        keycode_void_symbol_(XKeysymToKeycode(display_, XK_VoidSymbol)),
-        keycode_delete_(XKeysymToKeycode(display_, XK_Delete)),
-        keycode_backspace_(XKeysymToKeycode(display_, XK_BackSpace)),
-        keycode_up_(XKeysymToKeycode(display_, XK_Up)),
-        keycode_down_(XKeysymToKeycode(display_, XK_Down)),
-        keycode_left_(XKeysymToKeycode(display_, XK_Left)),
-        keycode_right_(XKeysymToKeycode(display_, XK_Right)),
-        keycode_prior_(XKeysymToKeycode(display_, XK_Prior)),
-        keycode_next_(XKeysymToKeycode(display_, XK_Next)),
-        keycode_home_(XKeysymToKeycode(display_, XK_Home)),
-        keycode_end_(XKeysymToKeycode(display_, XK_End)),
-        keycode_escape_(XKeysymToKeycode(display_, XK_Escape)),
-        keycode_launch6_(XKeysymToKeycode(display_, XF86XK_Launch6)),
-        keycode_launch7_(XKeysymToKeycode(display_, XF86XK_Launch7)),
-        keycode_f1_(XKeysymToKeycode(display_, XK_F1)),
-        keycode_f2_(XKeysymToKeycode(display_, XK_F2)),
-        keycode_f3_(XKeysymToKeycode(display_, XK_F3)),
-        keycode_f4_(XKeysymToKeycode(display_, XK_F4)),
-        keycode_f5_(XKeysymToKeycode(display_, XK_F5)),
-        keycode_f6_(XKeysymToKeycode(display_, XK_F6)),
-        keycode_f7_(XKeysymToKeycode(display_, XK_F7)),
-        keycode_f8_(XKeysymToKeycode(display_, XK_F8)),
-        keycode_f9_(XKeysymToKeycode(display_, XK_F9)),
-        keycode_f10_(XKeysymToKeycode(display_, XK_F10)),
-        keycode_f11_(XKeysymToKeycode(display_, XK_F11)),
-        keycode_f12_(XKeysymToKeycode(display_, XK_F12)),
-        keycode_browser_back_(XKeysymToKeycode(display_, XF86XK_Back)),
-        keycode_browser_forward_(XKeysymToKeycode(display_, XF86XK_Forward)),
-        keycode_browser_refresh_(XKeysymToKeycode(display_, XF86XK_Reload)),
-        keycode_media_launch_app1_(XKeysymToKeycode(display_, XF86XK_LaunchA)),
-        keycode_media_launch_app2_(XKeysymToKeycode(display_, XF86XK_LaunchB)),
-        keycode_brightness_down_(XKeysymToKeycode(
-            display_, XF86XK_MonBrightnessDown)),
-        keycode_brightness_up_(XKeysymToKeycode(
-            display_, XF86XK_MonBrightnessUp)),
-        keycode_volume_mute_(XKeysymToKeycode(display_, XF86XK_AudioMute)),
-        keycode_volume_down_(XKeysymToKeycode(
-            display_, XF86XK_AudioLowerVolume)),
-        keycode_volume_up_(XKeysymToKeycode(
-            display_, XF86XK_AudioRaiseVolume)),
-        keycode_power_(XKeysymToKeycode(display_, XF86XK_PowerOff)),
-        keycode_1_(XKeysymToKeycode(display_, XK_1)),
-        keycode_2_(XKeysymToKeycode(display_, XK_2)),
-        keycode_3_(XKeysymToKeycode(display_, XK_3)),
-        keycode_4_(XKeysymToKeycode(display_, XK_4)),
-        keycode_5_(XKeysymToKeycode(display_, XK_5)),
-        keycode_6_(XKeysymToKeycode(display_, XK_6)),
-        keycode_7_(XKeysymToKeycode(display_, XK_7)),
-        keycode_8_(XKeysymToKeycode(display_, XK_8)),
-        keycode_9_(XKeysymToKeycode(display_, XK_9)),
-        keycode_0_(XKeysymToKeycode(display_, XK_0)),
-        keycode_minus_(XKeysymToKeycode(display_, XK_minus)),
-        keycode_equal_(XKeysymToKeycode(display_, XK_equal)),
-        keycode_period_(XKeysymToKeycode(display_, XK_period)),
-        keycode_insert_(XKeysymToKeycode(display_, XK_Insert)),
         mock_user_manager_(new chromeos::MockUserManager),
         user_manager_enabler_(mock_user_manager_),
         input_method_manager_mock_(NULL) {
@@ -189,155 +120,18 @@ class EventRewriterTest : public ash::test::AshTestBase {
   void TestRewriteNumPadKeys();
   void TestRewriteNumPadKeysOnAppleKeyboard();
 
-  void RewriteMouseEvent(EventRewriter* rewriter,
-                         ui::MouseEvent* event) {
-    XEvent* xevent = event->native_event();
-    rewriter->RewriteLocatedEvent(xevent);
-    *event = ui::MouseEvent(xevent);
+  int RewriteMouseEvent(chromeos::EventRewriter* rewriter,
+                        const ui::MouseEvent& event) {
+    int flags = event.flags();
+    rewriter->RewriteLocatedEventForTesting(event, &flags);
+    return flags;
   }
 
   Display* display_;
-  const KeyCode keycode_a_;
-  const KeyCode keycode_alt_l_;
-  const KeyCode keycode_alt_r_;
-  const KeyCode keycode_b_;
-  const KeyCode keycode_caps_lock_;
-  const KeyCode keycode_control_l_;
-  const KeyCode keycode_control_r_;
-  const KeyCode keycode_meta_l_;
-  const KeyCode keycode_meta_r_;
-  const KeyCode keycode_num_pad_0_;
-  const KeyCode keycode_num_pad_1_;
-  const KeyCode keycode_num_pad_2_;
-  const KeyCode keycode_num_pad_3_;
-  const KeyCode keycode_num_pad_4_;
-  const KeyCode keycode_num_pad_5_;
-  const KeyCode keycode_num_pad_6_;
-  const KeyCode keycode_num_pad_7_;
-  const KeyCode keycode_num_pad_8_;
-  const KeyCode keycode_num_pad_9_;
-  const KeyCode keycode_num_pad_begin_;
-  const KeyCode keycode_num_pad_decimal_;
-  const KeyCode keycode_num_pad_delete_;
-  const KeyCode keycode_num_pad_down_;
-  const KeyCode keycode_num_pad_end_;
-  const KeyCode keycode_num_pad_home_;
-  const KeyCode keycode_num_pad_insert_;
-  const KeyCode keycode_num_pad_left_;
-  const KeyCode keycode_num_pad_next_;
-  const KeyCode keycode_num_pad_prior_;
-  const KeyCode keycode_num_pad_right_;
-  const KeyCode keycode_num_pad_up_;
-  const KeyCode keycode_super_l_;
-  const KeyCode keycode_super_r_;
-  const KeyCode keycode_void_symbol_;
-  const KeyCode keycode_delete_;
-  const KeyCode keycode_backspace_;
-  const KeyCode keycode_up_;
-  const KeyCode keycode_down_;
-  const KeyCode keycode_left_;
-  const KeyCode keycode_right_;
-  const KeyCode keycode_prior_;
-  const KeyCode keycode_next_;
-  const KeyCode keycode_home_;
-  const KeyCode keycode_end_;
-  const KeyCode keycode_escape_;
-  const KeyCode keycode_launch6_;  // F15
-  const KeyCode keycode_launch7_;  // F16
-  const KeyCode keycode_f1_;
-  const KeyCode keycode_f2_;
-  const KeyCode keycode_f3_;
-  const KeyCode keycode_f4_;
-  const KeyCode keycode_f5_;
-  const KeyCode keycode_f6_;
-  const KeyCode keycode_f7_;
-  const KeyCode keycode_f8_;
-  const KeyCode keycode_f9_;
-  const KeyCode keycode_f10_;
-  const KeyCode keycode_f11_;
-  const KeyCode keycode_f12_;
-  const KeyCode keycode_browser_back_;
-  const KeyCode keycode_browser_forward_;
-  const KeyCode keycode_browser_refresh_;
-  const KeyCode keycode_media_launch_app1_;
-  const KeyCode keycode_media_launch_app2_;
-  const KeyCode keycode_brightness_down_;
-  const KeyCode keycode_brightness_up_;
-  const KeyCode keycode_volume_mute_;
-  const KeyCode keycode_volume_down_;
-  const KeyCode keycode_volume_up_;
-  const KeyCode keycode_power_;
-  const KeyCode keycode_1_;
-  const KeyCode keycode_2_;
-  const KeyCode keycode_3_;
-  const KeyCode keycode_4_;
-  const KeyCode keycode_5_;
-  const KeyCode keycode_6_;
-  const KeyCode keycode_7_;
-  const KeyCode keycode_8_;
-  const KeyCode keycode_9_;
-  const KeyCode keycode_0_;
-  const KeyCode keycode_minus_;
-  const KeyCode keycode_equal_;
-  const KeyCode keycode_period_;
-  const KeyCode keycode_insert_;
   chromeos::MockUserManager* mock_user_manager_;  // Not owned.
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   chromeos::input_method::MockInputMethodManager* input_method_manager_mock_;
 };
-
-TEST_F(EventRewriterTest, TestGetDeviceType) {
-  // This is the typical string which an Apple keyboard sends.
-  EXPECT_EQ(EventRewriter::kDeviceAppleKeyboard,
-            EventRewriter::GetDeviceType("Apple Inc. Apple Keyboard"));
-
-  // Other cases we accept.
-  EXPECT_EQ(EventRewriter::kDeviceAppleKeyboard,
-            EventRewriter::GetDeviceType("Apple Keyboard"));
-  EXPECT_EQ(EventRewriter::kDeviceAppleKeyboard,
-            EventRewriter::GetDeviceType("apple keyboard"));
-  EXPECT_EQ(EventRewriter::kDeviceAppleKeyboard,
-            EventRewriter::GetDeviceType("apple keyboard."));
-  EXPECT_EQ(EventRewriter::kDeviceAppleKeyboard,
-            EventRewriter::GetDeviceType("apple.keyboard."));
-  EXPECT_EQ(EventRewriter::kDeviceAppleKeyboard,
-            EventRewriter::GetDeviceType(".apple.keyboard."));
-
-  // Dell, Microsoft, Logitech, ... should be recognized as a kDeviceUnknown.
-  EXPECT_EQ(EventRewriter::kDeviceUnknown,
-            EventRewriter::GetDeviceType("Dell Dell USB Entry Keyboard"));
-  EXPECT_EQ(EventRewriter::kDeviceUnknown,
-            EventRewriter::GetDeviceType(
-                "Microsoft Natural Ergonomic Keyboard"));
-  EXPECT_EQ(EventRewriter::kDeviceUnknown,
-            EventRewriter::GetDeviceType("CHESEN USB Keyboard"));
-
-  // Some corner cases.
-  EXPECT_EQ(EventRewriter::kDeviceUnknown, EventRewriter::GetDeviceType(""));
-  EXPECT_EQ(EventRewriter::kDeviceUnknown,
-            EventRewriter::GetDeviceType("."));
-  EXPECT_EQ(EventRewriter::kDeviceUnknown,
-            EventRewriter::GetDeviceType(". "));
-  EXPECT_EQ(EventRewriter::kDeviceUnknown,
-            EventRewriter::GetDeviceType(" ."));
-  EXPECT_EQ(EventRewriter::kDeviceUnknown,
-            EventRewriter::GetDeviceType("not-an-apple keyboard"));
-}
-
-TEST_F(EventRewriterTest, TestDeviceAddedOrRemoved) {
-  EventRewriter rewriter;
-  EXPECT_TRUE(rewriter.device_id_to_type_for_testing().empty());
-  EXPECT_EQ(EventRewriter::kDeviceUnknown,
-            rewriter.DeviceAddedForTesting(0, "PC Keyboard"));
-  EXPECT_EQ(1U, rewriter.device_id_to_type_for_testing().size());
-  EXPECT_EQ(EventRewriter::kDeviceAppleKeyboard,
-            rewriter.DeviceAddedForTesting(1, "Apple Keyboard"));
-  EXPECT_EQ(2U, rewriter.device_id_to_type_for_testing().size());
-  // Try to reuse the first ID.
-  EXPECT_EQ(EventRewriter::kDeviceAppleKeyboard,
-            rewriter.DeviceAddedForTesting(0, "Apple Keyboard"));
-  EXPECT_EQ(2U, rewriter.device_id_to_type_for_testing().size());
-}
 
 TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
   // First, test with a PC keyboard.
@@ -347,149 +141,89 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
   rewriter.set_last_device_id_for_testing(0);
   rewriter.set_pref_service_for_testing(&prefs);
 
-  // XK_a, Alt modifier.
+  // VKEY_A, Alt modifier.
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_A, ui::EF_ALT_DOWN, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_A, ui::EF_ALT_DOWN, ui::ET_KEY_PRESSED));
+
+  // VKEY_A, Win modifier.
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_A, ui::EF_COMMAND_DOWN, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_A, ui::EF_COMMAND_DOWN, ui::ET_KEY_PRESSED));
+
+  // VKEY_A, Alt+Win modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod1Mask,
-                                      KeyPress),
+                                      ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_A,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod1Mask));
+                                      ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                                      ui::ET_KEY_PRESSED));
 
-  // XK_a, Win modifier.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod4Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_A,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod4Mask));
-
-  // XK_a, Alt+Win modifier.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod1Mask | Mod4Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_A,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod1Mask | Mod4Mask));
-
-  // XK_Super_L (left Windows key), Alt modifier.
+  // VKEY_LWIN (left Windows key), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_LWIN,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      Mod1Mask,
-                                      KeyPress),
+                                      ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_LWIN,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      Mod1Mask));
+                                      ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                                      ui::ET_KEY_PRESSED));
 
-  // XK_Super_R (right Windows key), Alt modifier.
+  // VKEY_RWIN (right Windows key), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_RWIN,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_r_,
-                                      Mod1Mask,
-                                      KeyPress),
+                                      ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_RWIN,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_r_,
-                                      Mod1Mask));
+                                      ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                                      ui::ET_KEY_PRESSED));
 
   // An Apple keyboard reusing the ID, zero.
   rewriter.DeviceAddedForTesting(0, "Apple Keyboard");
   rewriter.set_last_device_id_for_testing(0);
 
-  // XK_a, Alt modifier.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod1Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_A,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod1Mask));
+  // VKEY_A, Alt modifier.
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_A, ui::EF_ALT_DOWN, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_A, ui::EF_ALT_DOWN, ui::ET_KEY_PRESSED));
 
-  // XK_a, Win modifier.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      ControlMask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_A,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod4Mask));
+  // VKEY_A, Win modifier.
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_A, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_A, ui::EF_COMMAND_DOWN, ui::ET_KEY_PRESSED));
 
-  // XK_a, Alt+Win modifier.
+  // VKEY_A, Alt+Win modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
                                       ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod1Mask | ControlMask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_A,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod1Mask | Mod4Mask));
+                                      ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                                      ui::ET_KEY_PRESSED));
 
-  // XK_Super_L (left Windows key), Alt modifier.
+  // VKEY_LWIN (left Windows key), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
                                       ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_l_,
-                                      Mod1Mask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_LWIN,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      Mod1Mask));
+                                      ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED));
 
-  // XK_Super_R (right Windows key), Alt modifier.
+  // VKEY_RWIN (right Windows key), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
                                       ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_r_,
-                                      Mod1Mask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_RWIN,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_r_,
-                                      Mod1Mask));
+                                      ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED));
 }
 
 // For crbug.com/133896.
@@ -506,53 +240,37 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControlWithControlRemapped) {
   rewriter.DeviceAddedForTesting(0, "PC Keyboard");
   rewriter.set_last_device_id_for_testing(0);
 
-  // XK_Control_L (left Control key) should be remapped to Alt.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_MENU,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_alt_l_,
-                                      0U,
-                                      KeyPress),
+  // Control should be remapped to Alt.
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_MENU, ui::EF_ALT_DOWN, ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_CONTROL,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_l_,
-                                      0U));
+                                      ui::EF_CONTROL_DOWN,
+                                      ui::ET_KEY_PRESSED));
 
   // An Apple keyboard reusing the ID, zero.
   rewriter.DeviceAddedForTesting(0, "Apple Keyboard");
   rewriter.set_last_device_id_for_testing(0);
 
-  // XK_Super_L (left Command key) with  Alt modifier. The remapped Command key
+  // VKEY_LWIN (left Command key) with  Alt modifier. The remapped Command key
   // should never be re-remapped to Alt.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
                                       ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_l_,
-                                      Mod1Mask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_LWIN,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      Mod1Mask));
+                                      ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED));
 
-  // XK_Super_R (right Command key) with  Alt modifier. The remapped Command key
+  // VKEY_RWIN (right Command key) with  Alt modifier. The remapped Command key
   // should never be re-remapped to Alt.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
                                       ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_r_,
-                                      Mod1Mask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_RWIN,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_r_,
-                                      Mod1Mask));
+                                      ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED));
 }
 
 void EventRewriterTest::TestRewriteNumPadKeys() {
@@ -561,326 +279,187 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
   rewriter.set_pref_service_for_testing(&prefs);
 
   // XK_KP_Insert (= NumPad 0 without Num Lock), no modifier.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD0,
-                                      ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_0_,
-                                      Mod2Mask,  // Num Lock
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_INSERT,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_insert_,
-                                      0));
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_NUMPAD0, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_INSERT, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED));
 
   // XK_KP_Insert (= NumPad 0 without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD0,
                                       ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_0_,
-                                      Mod1Mask | Mod2Mask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_INSERT,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_insert_,
-                                      Mod1Mask));
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
+                                      ui::ET_KEY_PRESSED));
 
   // XK_KP_Delete (= NumPad . without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_DECIMAL,
                                       ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_decimal_,
-                                      Mod1Mask | Mod2Mask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_DELETE,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_delete_,
-                                      Mod1Mask));
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
+                                      ui::ET_KEY_PRESSED));
 
   // XK_KP_End (= NumPad 1 without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD1,
                                       ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_1_,
-                                      Mod1Mask | Mod2Mask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_END,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_end_,
-                                      Mod1Mask));
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
+                                      ui::ET_KEY_PRESSED));
 
   // XK_KP_Down (= NumPad 2 without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD2,
                                       ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_2_,
-                                      Mod1Mask | Mod2Mask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_DOWN,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_down_,
-                                      Mod1Mask));
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
+                                      ui::ET_KEY_PRESSED));
 
   // XK_KP_Next (= NumPad 3 without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD3,
                                       ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_3_,
-                                      Mod1Mask | Mod2Mask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_NEXT,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_next_,
-                                      Mod1Mask));
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
+                                      ui::ET_KEY_PRESSED));
 
   // XK_KP_Left (= NumPad 4 without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD4,
                                       ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_4_,
-                                      Mod1Mask | Mod2Mask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_LEFT,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_left_,
-                                      Mod1Mask));
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
+                                      ui::ET_KEY_PRESSED));
 
   // XK_KP_Begin (= NumPad 5 without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD5,
                                       ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_5_,
-                                      Mod1Mask | Mod2Mask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_CLEAR,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_begin_,
-                                      Mod1Mask));
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
+                                      ui::ET_KEY_PRESSED));
 
   // XK_KP_Right (= NumPad 6 without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD6,
                                       ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_6_,
-                                      Mod1Mask | Mod2Mask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_RIGHT,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_right_,
-                                      Mod1Mask));
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
+                                      ui::ET_KEY_PRESSED));
 
   // XK_KP_Home (= NumPad 7 without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD7,
                                       ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_7_,
-                                      Mod1Mask | Mod2Mask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_HOME,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_home_,
-                                      Mod1Mask));
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
+                                      ui::ET_KEY_PRESSED));
 
   // XK_KP_Up (= NumPad 8 without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD8,
                                       ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_8_,
-                                      Mod1Mask | Mod2Mask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_UP,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_up_,
-                                      Mod1Mask));
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
+                                      ui::ET_KEY_PRESSED));
 
   // XK_KP_Prior (= NumPad 9 without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD9,
                                       ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_9_,
-                                      Mod1Mask | Mod2Mask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_PRIOR,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_prior_,
-                                      Mod1Mask));
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
+                                      ui::ET_KEY_PRESSED));
 
   // XK_KP_0 (= NumPad 0 with Num Lock), Num Lock modifier.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD0,
-                                      ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_0_,
-                                      Mod2Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_NUMPAD0,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_0_,
-                                      Mod2Mask));
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_NUMPAD0, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_NUMPAD0, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED));
 
   // XK_KP_DECIMAL (= NumPad . with Num Lock), Num Lock modifier.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_DECIMAL,
-                                      ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_decimal_,
-                                      Mod2Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_DECIMAL,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_decimal_,
-                                      Mod2Mask));
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_DECIMAL, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_DECIMAL, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED));
 
   // XK_KP_1 (= NumPad 1 with Num Lock), Num Lock modifier.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD1,
-                                      ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_1_,
-                                      Mod2Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_NUMPAD1,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_1_,
-                                      Mod2Mask));
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_NUMPAD1, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_NUMPAD1, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED));
 
   // XK_KP_2 (= NumPad 2 with Num Lock), Num Lock modifier.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD2,
-                                      ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_2_,
-                                      Mod2Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_NUMPAD2,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_2_,
-                                      Mod2Mask));
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_NUMPAD2, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_NUMPAD2, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED));
 
   // XK_KP_3 (= NumPad 3 with Num Lock), Num Lock modifier.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD3,
-                                      ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_3_,
-                                      Mod2Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_NUMPAD3,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_3_,
-                                      Mod2Mask));
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_NUMPAD3, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_NUMPAD3, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED));
 
   // XK_KP_4 (= NumPad 4 with Num Lock), Num Lock modifier.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD4,
-                                      ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_4_,
-                                      Mod2Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_NUMPAD4,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_4_,
-                                      Mod2Mask));
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_NUMPAD4, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_NUMPAD4, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED));
 
   // XK_KP_5 (= NumPad 5 with Num Lock), Num Lock modifier.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD5,
-                                      ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_5_,
-                                      Mod2Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_NUMPAD5,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_5_,
-                                      Mod2Mask));
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_NUMPAD5, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_NUMPAD5, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED));
 
   // XK_KP_6 (= NumPad 6 with Num Lock), Num Lock modifier.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD6,
-                                      ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_6_,
-                                      Mod2Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_NUMPAD6,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_6_,
-                                      Mod2Mask));
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_NUMPAD6, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_NUMPAD6, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED));
 
   // XK_KP_7 (= NumPad 7 with Num Lock), Num Lock modifier.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD7,
-                                      ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_7_,
-                                      Mod2Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_NUMPAD7,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_7_,
-                                      Mod2Mask));
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_NUMPAD7, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_NUMPAD7, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED));
 
   // XK_KP_8 (= NumPad 8 with Num Lock), Num Lock modifier.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD8,
-                                      ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_8_,
-                                      Mod2Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_NUMPAD8,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_8_,
-                                      Mod2Mask));
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_NUMPAD8, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_NUMPAD8, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED));
 
   // XK_KP_9 (= NumPad 9 with Num Lock), Num Lock modifier.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD9,
-                                      ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_9_,
-                                      Mod2Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_NUMPAD9,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_9_,
-                                      Mod2Mask));
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_NUMPAD9, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_NUMPAD9, ui::EF_NUMPAD_KEY, ui::ET_KEY_PRESSED));
 }
 
 TEST_F(EventRewriterTest, TestRewriteNumPadKeys) {
@@ -909,31 +488,21 @@ void EventRewriterTest::TestRewriteNumPadKeysOnAppleKeyboard() {
   // The result should be "Num Pad 1 with Control + Num Lock modifiers".
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD1,
                                       ui::EF_CONTROL_DOWN | ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_1_,
-                                      ControlMask | Mod2Mask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_END,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_end_,
-                                      Mod4Mask));
+                                      ui::EF_COMMAND_DOWN | ui::EF_NUMPAD_KEY,
+                                      ui::ET_KEY_PRESSED));
 
-  // XK_KP_1 (= NumPad 1 without Num Lock), Win modifier.
+  // XK_KP_1 (= NumPad 1 with Num Lock), Win modifier.
   // The result should also be "Num Pad 1 with Control + Num Lock modifiers".
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD1,
                                       ui::EF_CONTROL_DOWN | ui::EF_NUMPAD_KEY,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_1_,
-                                      ControlMask | Mod2Mask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_NUMPAD1,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_num_pad_end_,
-                                      Mod4Mask));
+                                      ui::EF_COMMAND_DOWN | ui::EF_NUMPAD_KEY,
+                                      ui::ET_KEY_PRESSED));
 }
 
 TEST_F(EventRewriterTest, TestRewriteNumPadKeysOnAppleKeyboard) {
@@ -957,89 +526,45 @@ TEST_F(EventRewriterTest, TestRewriteModifiersNoRemap) {
   rewriter.set_pref_service_for_testing(&prefs);
 
   // Press Search. Confirm the event is not rewritten.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_LWIN,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_LWIN,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      0U));
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_LWIN, ui::EF_COMMAND_DOWN, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_LWIN, ui::EF_NONE, ui::ET_KEY_PRESSED));
 
   // Press left Control. Confirm the event is not rewritten.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_l_,
-                                      0U,
-                                      KeyPress),
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_CONTROL,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_l_,
-                                      0U));
+                                      ui::EF_CONTROL_DOWN,
+                                      ui::ET_KEY_PRESSED));
 
   // Press right Control. Confirm the event is not rewritten.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_r_,
-                                      0U,
-                                      KeyPress),
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_CONTROL,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_r_,
-                                      0U));
+                                      ui::EF_CONTROL_DOWN,
+                                      ui::ET_KEY_PRESSED));
 
   // Press left Alt. Confirm the event is not rewritten.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_MENU,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_alt_l_,
-                                      0,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_MENU,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_alt_l_,
-                                      0U));
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_MENU, ui::EF_ALT_DOWN, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_MENU, ui::EF_ALT_DOWN, ui::ET_KEY_PRESSED));
 
   // Press right Alt. Confirm the event is not rewritten.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_MENU,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_alt_r_,
-                                      0,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_MENU,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_alt_r_,
-                                      0U));
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_MENU, ui::EF_ALT_DOWN, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_MENU, ui::EF_ALT_DOWN, ui::ET_KEY_PRESSED));
 
   // Test KeyRelease event, just in case.
   // Release Search. Confirm the release event is not rewritten.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_LWIN,
-                                      0,
-                                      ui::ET_KEY_RELEASED,
-                                      keycode_super_l_,
-                                      Mod4Mask,
-                                      KeyRelease),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_LWIN,
-                                      0,
-                                      ui::ET_KEY_RELEASED,
-                                      keycode_super_l_,
-                                      Mod4Mask));
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_LWIN, ui::EF_NONE, ui::ET_KEY_RELEASED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_LWIN, ui::EF_NONE, ui::ET_KEY_RELEASED));
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersNoRemapMultipleKeys) {
@@ -1047,79 +572,43 @@ TEST_F(EventRewriterTest, TestRewriteModifiersNoRemapMultipleKeys) {
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
 
-  // Press left Alt with Shift. Confirm the event is not rewritten.
+  // Press Alt with Shift. Confirm the event is not rewritten.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_MENU,
                                       ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_meta_l_,
-                                      ShiftMask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_MENU,
-                                      ui::EF_SHIFT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_meta_l_,
-                                      ShiftMask));
-
-  // Press right Alt with Shift. Confirm the event is not rewritten.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_MENU,
                                       ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_meta_r_,
-                                      ShiftMask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_MENU,
-                                      ui::EF_SHIFT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_meta_r_,
-                                      ShiftMask));
+                                      ui::ET_KEY_PRESSED));
 
   // Press Search with Caps Lock mask. Confirm the event is not rewritten.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_LWIN,
-                                      ui::EF_CAPS_LOCK_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      LockMask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_LWIN,
-                                      ui::EF_CAPS_LOCK_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      LockMask));
+  EXPECT_EQ(
+      GetExpectedResultAsString(ui::VKEY_LWIN,
+                                ui::EF_CAPS_LOCK_DOWN | ui::EF_COMMAND_DOWN,
+                                ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(&rewriter,
+                                ui::VKEY_LWIN,
+                                ui::EF_CAPS_LOCK_DOWN | ui::EF_COMMAND_DOWN,
+                                ui::ET_KEY_PRESSED));
 
   // Release Search with Caps Lock mask. Confirm the event is not rewritten.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_LWIN,
-                                      ui::EF_CAPS_LOCK_DOWN,
-                                      ui::ET_KEY_RELEASED,
-                                      keycode_super_l_,
-                                      LockMask | Mod4Mask,
-                                      KeyRelease),
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_LWIN, ui::EF_CAPS_LOCK_DOWN, ui::ET_KEY_RELEASED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_LWIN,
                                       ui::EF_CAPS_LOCK_DOWN,
-                                      ui::ET_KEY_RELEASED,
-                                      keycode_super_l_,
-                                      LockMask | Mod4Mask));
+                                      ui::ET_KEY_RELEASED));
 
   // Press Shift+Ctrl+Alt+Search+A. Confirm the event is not rewritten.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_B,
-                                      ui::EF_SHIFT_DOWN |
-                                      ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_b_,
-                                      ShiftMask | ControlMask | Mod1Mask |
-                                      Mod4Mask,
-                                      KeyPress),
+                                      ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
+                                          ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_B,
-                                      ui::EF_SHIFT_DOWN |
-                                      ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_b_,
-                                      ShiftMask | ControlMask | Mod1Mask |
-                                      Mod4Mask));
+                                      ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
+                                          ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                                      ui::ET_KEY_PRESSED));
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersDisableSome) {
@@ -1136,128 +625,70 @@ TEST_F(EventRewriterTest, TestRewriteModifiersDisableSome) {
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
 
-  // Press left Alt with Shift. This key press shouldn't be affected by the
+  // Press Alt with Shift. This key press shouldn't be affected by the
   // pref. Confirm the event is not rewritten.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_MENU,
                                       ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_meta_l_,
-                                      ShiftMask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_MENU,
-                                      ui::EF_SHIFT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_meta_l_,
-                                      ShiftMask));
+                                      ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED));
 
-  // Press Search. Confirm the event is now VKEY_UNKNOWN + XK_VoidSymbol.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_UNKNOWN,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_void_symbol_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_LWIN,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      0U));
+  // Press Search. Confirm the event is now VKEY_UNKNOWN.
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_UNKNOWN, ui::EF_NONE, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_LWIN, ui::EF_NONE, ui::ET_KEY_PRESSED));
 
-  // Press Control. Confirm the event is now VKEY_UNKNOWN + XK_VoidSymbol.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_UNKNOWN,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_void_symbol_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_CONTROL,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_l_,
-                                      0U));
+  // Press Control. Confirm the event is now VKEY_UNKNOWN.
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_UNKNOWN, ui::EF_NONE, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_CONTROL, ui::EF_NONE, ui::ET_KEY_PRESSED));
 
-  // Press Control+Search. Confirm the event is now VKEY_UNKNOWN +
-  // XK_VoidSymbol without any modifiers.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_UNKNOWN,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_void_symbol_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_LWIN,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      ControlMask));
+  // Press Control+Search. Confirm the event is now VKEY_UNKNOWN
+  // without any modifiers.
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_UNKNOWN, ui::EF_NONE, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_LWIN, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED));
 
   // Press Control+Search+a. Confirm the event is now VKEY_A without any
   // modifiers.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_A,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      ControlMask | Mod4Mask));
+  EXPECT_EQ(
+      GetExpectedResultAsString(ui::VKEY_A, ui::EF_NONE, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_A, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED));
 
   // Press Control+Search+Alt+a. Confirm the event is now VKEY_A only with
   // the Alt modifier.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod1Mask,
-                                      KeyPress),
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_A, ui::EF_ALT_DOWN, ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_A,
                                       ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      ControlMask | Mod1Mask | Mod4Mask));
+                                      ui::ET_KEY_PRESSED));
 
   // Remap Alt to Control.
   IntegerPrefMember alt;
   alt.Init(prefs::kLanguageRemapAltKeyTo, &prefs);
   alt.SetValue(chromeos::input_method::kControlKey);
 
-  // Press left Alt. Confirm the event is now VKEY_CONTROL + XK_Control_L
+  // Press left Alt. Confirm the event is now VKEY_CONTROL
   // even though the Control key itself is disabled.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_l_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_MENU,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_alt_l_,
-                                      0U));
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_MENU, ui::EF_ALT_DOWN, ui::ET_KEY_PRESSED));
 
   // Press Alt+a. Confirm the event is now Control+a even though the Control
   // key itself is disabled.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      ControlMask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_A,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod1Mask));
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_A, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_A, ui::EF_ALT_DOWN, ui::ET_KEY_PRESSED));
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapToControl) {
@@ -1271,113 +702,62 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToControl) {
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
 
-  // Press Search. Confirm the event is now VKEY_CONTROL + XK_Control_L.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_l_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_LWIN,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      0U));
+  // Press Search. Confirm the event is now VKEY_CONTROL.
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_LWIN, ui::EF_COMMAND_DOWN, ui::ET_KEY_PRESSED));
 
   // Remap Alt to Control too.
   IntegerPrefMember alt;
   alt.Init(prefs::kLanguageRemapAltKeyTo, &prefs);
   alt.SetValue(chromeos::input_method::kControlKey);
 
-  // Press left Alt. Confirm the event is now VKEY_CONTROL + XK_Control_L.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_l_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_MENU,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_alt_l_,
-                                      0U));
+  // Press Alt. Confirm the event is now VKEY_CONTROL.
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_MENU, ui::EF_ALT_DOWN, ui::ET_KEY_PRESSED));
 
-  // Press right Alt. Confirm the event is now VKEY_CONTROL + XK_Control_R.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_r_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_MENU,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_alt_r_,
-                                      0U));
-
-  // Press Alt+Search. Confirm the event is now VKEY_CONTROL + XK_Control_L.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_l_,
-                                      ControlMask,
-                                      KeyPress),
+  // Press Alt+Search. Confirm the event is now VKEY_CONTROL.
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_LWIN,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      Mod1Mask));
+                                      ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                                      ui::ET_KEY_PRESSED));
 
-  // Press Control+Alt+Search. Confirm the event is now VKEY_CONTROL +
-  // XK_Control_L.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_l_,
-                                      ControlMask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_LWIN,
-                                      ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      ControlMask | Mod1Mask));
+  // Press Control+Alt+Search. Confirm the event is now VKEY_CONTROL.
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter,
+                ui::VKEY_LWIN,
+                ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                ui::ET_KEY_PRESSED));
 
   // Press Shift+Control+Alt+Search. Confirm the event is now Control with
   // Shift and Control modifiers.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
                                       ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_l_,
-                                      ShiftMask | ControlMask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_LWIN,
-                                      ui::EF_SHIFT_DOWN |
-                                      ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      ShiftMask | ControlMask | Mod1Mask));
+                                      ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
+                                          ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                                      ui::ET_KEY_PRESSED));
 
   // Press Shift+Control+Alt+Search+B. Confirm the event is now B with Shift
   // and Control modifiers.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_B,
                                       ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_b_,
-                                      ShiftMask | ControlMask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_B,
-                                      ui::EF_SHIFT_DOWN |
-                                      ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_b_,
-                                      ShiftMask | ControlMask | Mod1Mask));
+                                      ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
+                                          ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                                      ui::ET_KEY_PRESSED));
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapToEscape) {
@@ -1392,18 +772,11 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToEscape) {
   rewriter.set_pref_service_for_testing(&prefs);
 
   // Press Search. Confirm the event is now VKEY_ESCAPE.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_ESCAPE,
-                                      ui::EF_NONE,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_escape_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_LWIN,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      0U));
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_ESCAPE, ui::EF_NONE, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_LWIN, ui::EF_COMMAND_DOWN, ui::ET_KEY_PRESSED));
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
@@ -1417,38 +790,23 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
 
-  // Press Search. Confirm the event is now VKEY_MENU + XK_Alt_L.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_MENU,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_alt_l_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_LWIN,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      0U));
+  // Press Search. Confirm the event is now VKEY_MENU.
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_MENU, ui::EF_ALT_DOWN, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_LWIN, ui::EF_COMMAND_DOWN, ui::ET_KEY_PRESSED));
 
   // Remap Alt to Control.
   IntegerPrefMember alt;
   alt.Init(prefs::kLanguageRemapAltKeyTo, &prefs);
   alt.SetValue(chromeos::input_method::kControlKey);
 
-  // Press left Alt. Confirm the event is now VKEY_CONTROL + XK_Control_L.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_l_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_MENU,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_alt_l_,
-                                      0U));
+  // Press left Alt. Confirm the event is now VKEY_CONTROL.
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_MENU, ui::EF_ALT_DOWN, ui::ET_KEY_PRESSED));
 
   // Remap Control to Search.
   IntegerPrefMember control;
@@ -1456,66 +814,45 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
   control.SetValue(chromeos::input_method::kSearchKey);
 
   // Press left Control. Confirm the event is now VKEY_LWIN.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_LWIN,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      0U,
-                                      KeyPress),
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_LWIN, ui::EF_COMMAND_DOWN, ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_CONTROL,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_l_,
-                                      0U));
+                                      ui::EF_CONTROL_DOWN,
+                                      ui::ET_KEY_PRESSED));
 
   // Then, press all of the three, Control+Alt+Search.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_MENU,
-                                      ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_alt_l_,
-                                      ControlMask | Mod4Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_LWIN,
-                                      ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      ControlMask | Mod1Mask));
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_MENU,
+                ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter,
+                ui::VKEY_LWIN,
+                ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                ui::ET_KEY_PRESSED));
 
   // Press Shift+Control+Alt+Search.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_MENU,
-                                      (ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
-                                       ui::EF_ALT_DOWN),
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_alt_l_,
-                                      ShiftMask | ControlMask | Mod4Mask,
-                                      KeyPress),
+                                      ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
+                                          ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_LWIN,
-                                      ui::EF_SHIFT_DOWN |
-                                      ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      ShiftMask | ControlMask | Mod1Mask));
+                                      ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
+                                          ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                                      ui::ET_KEY_PRESSED));
 
   // Press Shift+Control+Alt+Search+B
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_B,
-                                      ui::EF_SHIFT_DOWN |
-                                      ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_b_,
-                                      ShiftMask | ControlMask | Mod1Mask |
-                                      Mod4Mask,
-                                      KeyPress),
+                                      ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
+                                          ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_B,
-                                      ui::EF_SHIFT_DOWN |
-                                      ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_b_,
-                                      ShiftMask | ControlMask | Mod1Mask |
-                                      Mod4Mask));
+                                      ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
+                                          ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                                      ui::ET_KEY_PRESSED));
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
@@ -1526,185 +863,111 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   search.Init(prefs::kLanguageRemapSearchKeyTo, &prefs);
   search.SetValue(chromeos::input_method::kCapsLockKey);
 
-  chromeos::input_method::FakeImeKeyboard keyboard;
+  chromeos::input_method::FakeImeKeyboard ime_keyboard;
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
-  rewriter.set_keyboard_for_testing(&keyboard);
-  EXPECT_FALSE(keyboard.caps_lock_is_enabled_);
+  rewriter.set_ime_keyboard_for_testing(&ime_keyboard);
+  EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
   // Press Search.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
-                                      ui::EF_CAPS_LOCK_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_caps_lock_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_LWIN,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      0U));
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_CAPITAL, ui::EF_CAPS_LOCK_DOWN, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_LWIN, ui::EF_COMMAND_DOWN, ui::ET_KEY_PRESSED));
   // Confirm that the Caps Lock status is changed.
-  EXPECT_TRUE(keyboard.caps_lock_is_enabled_);
+  EXPECT_TRUE(ime_keyboard.caps_lock_is_enabled_);
 
   // Release Search.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
-                                      ui::EF_NONE,
-                                      ui::ET_KEY_RELEASED,
-                                      keycode_caps_lock_,
-                                      LockMask,
-                                      KeyRelease),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_LWIN,
-                                      ui::EF_CAPS_LOCK_DOWN,
-                                      ui::ET_KEY_RELEASED,
-                                      keycode_super_l_,
-                                      Mod4Mask | LockMask));
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_CAPITAL, ui::EF_NONE, ui::ET_KEY_RELEASED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_LWIN, ui::EF_NONE, ui::ET_KEY_RELEASED));
   // Confirm that the Caps Lock status is not changed.
-  EXPECT_TRUE(keyboard.caps_lock_is_enabled_);
+  EXPECT_TRUE(ime_keyboard.caps_lock_is_enabled_);
 
   // Press Search.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
-                                      ui::EF_CAPS_LOCK_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_caps_lock_,
-                                      LockMask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_LWIN,
-                                      ui::EF_CAPS_LOCK_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_super_l_,
-                                      LockMask));
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_CAPITAL, ui::EF_CAPS_LOCK_DOWN, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(&rewriter,
+                                ui::VKEY_LWIN,
+                                ui::EF_COMMAND_DOWN | ui::EF_CAPS_LOCK_DOWN,
+                                ui::ET_KEY_PRESSED));
   // Confirm that the Caps Lock status is changed.
-  EXPECT_FALSE(keyboard.caps_lock_is_enabled_);
+  EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
   // Release Search.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
-                                      ui::EF_NONE,
-                                      ui::ET_KEY_RELEASED,
-                                      keycode_caps_lock_,
-                                      LockMask,
-                                      KeyRelease),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_LWIN,
-                                      ui::EF_CAPS_LOCK_DOWN,
-                                      ui::ET_KEY_RELEASED,
-                                      keycode_super_l_,
-                                      Mod4Mask | LockMask));
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_CAPITAL, ui::EF_NONE, ui::ET_KEY_RELEASED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_LWIN, ui::EF_NONE, ui::ET_KEY_RELEASED));
   // Confirm that the Caps Lock status is not changed.
-  EXPECT_FALSE(keyboard.caps_lock_is_enabled_);
+  EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
   // Press Caps Lock (on an external keyboard).
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
-                                      ui::EF_CAPS_LOCK_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_caps_lock_,
-                                      0U,
-                                      KeyPress),
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_CAPITAL, ui::EF_CAPS_LOCK_DOWN, ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_CAPITAL,
-                                      ui::EF_NONE,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_caps_lock_,
-                                      0U));
+                                      ui::EF_CAPS_LOCK_DOWN,
+                                      ui::ET_KEY_PRESSED));
 
   // Confirm that calling RewriteForTesting() does not change the state of
-  // |keyboard|. In this case, X Window system itself should change the
+  // |ime_keyboard|. In this case, X Window system itself should change the
   // Caps Lock state, not ash::EventRewriter.
-  EXPECT_FALSE(keyboard.caps_lock_is_enabled_);
+  EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
   // Release Caps Lock (on an external keyboard).
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
-                                      ui::EF_NONE,
-                                      ui::ET_KEY_RELEASED,
-                                      keycode_caps_lock_,
-                                      LockMask,
-                                      KeyRelease),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_CAPITAL,
-                                      ui::EF_CAPS_LOCK_DOWN,
-                                      ui::ET_KEY_RELEASED,
-                                      keycode_caps_lock_,
-                                      LockMask));
-  EXPECT_FALSE(keyboard.caps_lock_is_enabled_);
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_CAPITAL, ui::EF_NONE, ui::ET_KEY_RELEASED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_CAPITAL, ui::EF_NONE, ui::ET_KEY_RELEASED));
+  EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 }
 
-TEST_F(EventRewriterTest, DISABLED_TestRewriteCapsLock) {
-  // It seems that the X server running on build servers is too old and does not
-  // support F16 (i.e. 'XKeysymToKeycode(display_, XF86XK_Launch7)' call).
-  // TODO(yusukes): Reenable the test once build servers are upgraded.
-
+TEST_F(EventRewriterTest, TestRewriteCapsLock) {
   TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterProfilePrefs(prefs.registry());
 
-  chromeos::input_method::FakeImeKeyboard keyboard;
+  chromeos::input_method::FakeImeKeyboard ime_keyboard;
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
-  rewriter.set_keyboard_for_testing(&keyboard);
-  EXPECT_FALSE(keyboard.caps_lock_is_enabled_);
+  rewriter.set_ime_keyboard_for_testing(&ime_keyboard);
+  EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
   // On Chrome OS, CapsLock is mapped to F16 with Mod3Mask.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
-                                      ui::EF_CAPS_LOCK_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_caps_lock_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_F16,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_launch7_,
-                                      0U));
-  EXPECT_TRUE(keyboard.caps_lock_is_enabled_);
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_CAPITAL, ui::EF_CAPS_LOCK_DOWN, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_F16, ui::EF_NONE, ui::ET_KEY_PRESSED));
+  EXPECT_TRUE(ime_keyboard.caps_lock_is_enabled_);
 }
 
-TEST_F(EventRewriterTest, DISABLED_TestRewriteDiamondKey) {
-  // TODO(yusukes): Reenable the test once build servers are upgraded.
-
+TEST_F(EventRewriterTest, TestRewriteDiamondKey) {
   TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterProfilePrefs(prefs.registry());
 
-  chromeos::input_method::FakeImeKeyboard keyboard;
+  chromeos::input_method::FakeImeKeyboard ime_keyboard;
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
-  rewriter.set_keyboard_for_testing(&keyboard);
+  rewriter.set_ime_keyboard_for_testing(&ime_keyboard);
 
   // F15 should work as Ctrl when --has-chromeos-diamond-key is not specified.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_l_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_F15,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_launch6_,
-                                      0U));
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_F15, ui::EF_NONE, ui::ET_KEY_PRESSED));
 
   // However, Mod2Mask should not be rewritten to CtrlMask when
   // --has-chromeos-diamond-key is not specified.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod2Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_A,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod2Mask));
+  EXPECT_EQ(
+      GetExpectedResultAsString(ui::VKEY_A, ui::EF_NONE, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_A, ui::EF_NONE, ui::ET_KEY_PRESSED));
 }
 
-TEST_F(EventRewriterTest, DISABLED_TestRewriteDiamondKeyWithFlag) {
-  // TODO(yusukes): Reenable the test once build servers are upgraded.
-
+TEST_F(EventRewriterTest, TestRewriteDiamondKeyWithFlag) {
   const CommandLine original_cl(*CommandLine::ForCurrentProcess());
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       chromeos::switches::kHasChromeOSDiamondKey, "");
@@ -1712,91 +975,52 @@ TEST_F(EventRewriterTest, DISABLED_TestRewriteDiamondKeyWithFlag) {
   TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterProfilePrefs(prefs.registry());
 
-  chromeos::input_method::FakeImeKeyboard keyboard;
+  chromeos::input_method::FakeImeKeyboard ime_keyboard;
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
-  rewriter.set_keyboard_for_testing(&keyboard);
+  rewriter.set_ime_keyboard_for_testing(&ime_keyboard);
 
   // By default, F15 should work as Control.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_l_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_F15,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_launch6_,
-                                      0U));
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_F15, ui::EF_NONE, ui::ET_KEY_PRESSED));
 
   IntegerPrefMember diamond;
   diamond.Init(prefs::kLanguageRemapDiamondKeyTo, &prefs);
   diamond.SetValue(chromeos::input_method::kVoidKey);
 
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_UNKNOWN,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_void_symbol_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_F15,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_launch6_,
-                                      0U));
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_UNKNOWN, ui::EF_NONE, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_F15, ui::EF_NONE, ui::ET_KEY_PRESSED));
 
   diamond.SetValue(chromeos::input_method::kControlKey);
 
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_l_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_F15,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_launch6_,
-                                      0U));
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_F15, ui::EF_NONE, ui::ET_KEY_PRESSED));
 
   diamond.SetValue(chromeos::input_method::kAltKey);
 
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_MENU,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_alt_l_,
-                                      0,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_F15,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_launch6_,
-                                      0U));
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_MENU, ui::EF_ALT_DOWN, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_F15, ui::EF_NONE, ui::ET_KEY_PRESSED));
 
   diamond.SetValue(chromeos::input_method::kCapsLockKey);
 
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
-                                      ui::EF_CAPS_LOCK_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_caps_lock_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_F15,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_launch6_,
-                                      0U));
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_CAPITAL, ui::EF_CAPS_LOCK_DOWN, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_F15, ui::EF_NONE, ui::ET_KEY_PRESSED));
 
   *CommandLine::ForCurrentProcess() = original_cl;
 }
 
 TEST_F(EventRewriterTest, TestRewriteCapsLockToControl) {
+  // Remap CapsLock to Control.
   TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterProfilePrefs(prefs.registry());
   IntegerPrefMember control;
@@ -1808,46 +1032,27 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockToControl) {
 
   // Press CapsLock+a. Confirm that Mod3Mask is rewritten to ControlMask.
   // On Chrome OS, CapsLock works as a Mod3 modifier.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      ControlMask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_A,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod3Mask));
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_A, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_A, ui::EF_CAPS_LOCK_DOWN, ui::ET_KEY_PRESSED));
 
   // Press Control+CapsLock+a. Confirm that Mod3Mask is rewritten to ControlMask
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      ControlMask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_A,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod3Mask | ControlMask));
+  EXPECT_EQ(
+      GetExpectedResultAsString(
+          ui::VKEY_A, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_A, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED));
 
   // Press Alt+CapsLock+a. Confirm that Mod3Mask is rewritten to ControlMask.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
                                       ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod1Mask | ControlMask,
-                                      KeyPress),
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_A,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod1Mask | Mod3Mask));
+                                      ui::EF_ALT_DOWN | ui::EF_CAPS_LOCK_DOWN,
+                                      ui::ET_KEY_PRESSED));
 }
 
 TEST_F(EventRewriterTest, TestRewriteCapsLockMod3InUse) {
@@ -1864,18 +1069,10 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockMod3InUse) {
 
   // Press CapsLock+a. Confirm that Mod3Mask is NOT rewritten to ControlMask
   // when Mod3Mask is already in use by the current XKB layout.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod3Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_A,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_a_,
-                                      Mod3Mask));
+  EXPECT_EQ(
+      GetExpectedResultAsString(ui::VKEY_A, ui::EF_NONE, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_A, ui::EF_NONE, ui::ET_KEY_PRESSED));
 
   input_method_manager_mock_->set_mod3_used(false);
 }
@@ -1884,142 +1081,90 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeys) {
   TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterProfilePrefs(prefs.registry());
   EventRewriter rewriter;
+  rewriter.DeviceAddedForTesting(0, "PC Keyboard");
+  rewriter.set_last_device_id_for_testing(0);
   rewriter.set_pref_service_for_testing(&prefs);
 
   struct {
     ui::KeyboardCode input;
-    KeyCode input_native;
     unsigned int input_mods;
-    unsigned int input_native_mods;
     ui::KeyboardCode output;
-    KeyCode output_native;
     unsigned int output_mods;
-    unsigned int output_native_mods;
   } chromeos_tests[] = {
-    // Alt+Backspace -> Delete
-    { ui::VKEY_BACK, keycode_backspace_,
-      ui::EF_ALT_DOWN, Mod1Mask,
-      ui::VKEY_DELETE, keycode_delete_,
-      0, 0, },
-    // Control+Alt+Backspace -> Control+Delete
-    { ui::VKEY_BACK, keycode_backspace_,
-      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask,
-      ui::VKEY_DELETE, keycode_delete_,
-      ui::EF_CONTROL_DOWN, ControlMask, },
-    // Search+Alt+Backspace -> Alt+Backspace
-    { ui::VKEY_BACK, keycode_backspace_,
-      ui::EF_ALT_DOWN, Mod1Mask | Mod4Mask,
-      ui::VKEY_BACK, keycode_backspace_,
-      ui::EF_ALT_DOWN, Mod1Mask, },
-    // Search+Control+Alt+Backspace -> Control+Alt+Backspace
-    { ui::VKEY_BACK, keycode_backspace_,
-      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask | Mod4Mask,
-      ui::VKEY_BACK, keycode_backspace_,
-      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask, },
-    // Alt+Up -> Prior
-    { ui::VKEY_UP, keycode_up_,
-      ui::EF_ALT_DOWN, Mod1Mask,
-      ui::VKEY_PRIOR, keycode_prior_,
-      0, 0, },
-    // Alt+Down -> Next
-    { ui::VKEY_DOWN, keycode_down_,
-      ui::EF_ALT_DOWN, Mod1Mask,
-      ui::VKEY_NEXT, keycode_next_,
-      0, 0, },
-    // Ctrl+Alt+Up -> Home
-    { ui::VKEY_UP, keycode_up_,
-      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask,
-      ui::VKEY_HOME, keycode_home_,
-      0, 0, },
-    // Ctrl+Alt+Down -> End
-    { ui::VKEY_DOWN, keycode_down_,
-      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask,
-      ui::VKEY_END, keycode_end_,
-      0, 0, },
+        // Alt+Backspace -> Delete
+        {ui::VKEY_BACK, ui::EF_ALT_DOWN, ui::VKEY_DELETE, ui::EF_NONE},
+        // Control+Alt+Backspace -> Control+Delete
+        {ui::VKEY_BACK, ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, ui::VKEY_DELETE,
+         ui::EF_CONTROL_DOWN},
+        // Search+Alt+Backspace -> Alt+Backspace
+        {ui::VKEY_BACK, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::VKEY_BACK,
+         ui::EF_ALT_DOWN},
+        // Search+Control+Alt+Backspace -> Control+Alt+Backspace
+        {ui::VKEY_BACK,
+         ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
+         ui::VKEY_BACK, ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN},
+        // Alt+Up -> Prior
+        {ui::VKEY_UP, ui::EF_ALT_DOWN, ui::VKEY_PRIOR, ui::EF_NONE},
+        // Alt+Down -> Next
+        {ui::VKEY_DOWN, ui::EF_ALT_DOWN, ui::VKEY_NEXT, ui::EF_NONE},
+        // Ctrl+Alt+Up -> Home
+        {ui::VKEY_UP, ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, ui::VKEY_HOME,
+         ui::EF_NONE},
+        // Ctrl+Alt+Down -> End
+        {ui::VKEY_DOWN, ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, ui::VKEY_END,
+         ui::EF_NONE},
 
-    // Search+Alt+Up -> Alt+Up
-    { ui::VKEY_UP, keycode_up_,
-      ui::EF_ALT_DOWN, Mod1Mask | Mod4Mask,
-      ui::VKEY_UP, keycode_up_,
-      ui::EF_ALT_DOWN, Mod1Mask },
-    // Search+Alt+Down -> Alt+Down
-    { ui::VKEY_DOWN, keycode_down_,
-      ui::EF_ALT_DOWN, Mod1Mask | Mod4Mask,
-      ui::VKEY_DOWN, keycode_down_,
-      ui::EF_ALT_DOWN, Mod1Mask },
-    // Search+Ctrl+Alt+Up -> Search+Ctrl+Alt+Up
-    { ui::VKEY_UP, keycode_up_,
-      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask | Mod4Mask,
-      ui::VKEY_UP, keycode_up_,
-      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask },
-    // Search+Ctrl+Alt+Down -> Ctrl+Alt+Down
-    { ui::VKEY_DOWN, keycode_down_,
-      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask | Mod4Mask,
-      ui::VKEY_DOWN, keycode_down_,
-      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask },
+        // Search+Alt+Up -> Alt+Up
+        {ui::VKEY_UP, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::VKEY_UP,
+         ui::EF_ALT_DOWN},
+        // Search+Alt+Down -> Alt+Down
+        {ui::VKEY_DOWN, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::VKEY_DOWN,
+         ui::EF_ALT_DOWN},
+        // Search+Ctrl+Alt+Up -> Search+Ctrl+Alt+Up
+        {ui::VKEY_UP,
+         ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
+         ui::VKEY_UP, ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN},
+        // Search+Ctrl+Alt+Down -> Ctrl+Alt+Down
+        {ui::VKEY_DOWN,
+         ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
+         ui::VKEY_DOWN, ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN},
 
-    // Period -> Period
-    { ui::VKEY_OEM_PERIOD, keycode_period_, 0, 0,
-      ui::VKEY_OEM_PERIOD, keycode_period_, 0, 0 },
+        // Period -> Period
+        {ui::VKEY_OEM_PERIOD, ui::EF_NONE, ui::VKEY_OEM_PERIOD, ui::EF_NONE},
 
-    // Search+Backspace -> Delete
-    { ui::VKEY_BACK, keycode_backspace_,
-      0, Mod4Mask,
-      ui::VKEY_DELETE, keycode_delete_,
-      0, 0, },
-    // Search+Up -> Prior
-    { ui::VKEY_UP, keycode_up_,
-      0, Mod4Mask,
-      ui::VKEY_PRIOR, keycode_prior_,
-      0, 0, },
-    // Search+Down -> Next
-    { ui::VKEY_DOWN, keycode_down_,
-      0, Mod4Mask,
-      ui::VKEY_NEXT, keycode_next_,
-      0, 0, },
-    // Search+Left -> Home
-    { ui::VKEY_LEFT, keycode_left_,
-      0, Mod4Mask,
-      ui::VKEY_HOME, keycode_home_,
-      0, 0, },
-    // Control+Search+Left -> Home
-    { ui::VKEY_LEFT, keycode_left_,
-      ui::EF_CONTROL_DOWN, Mod4Mask | ControlMask,
-      ui::VKEY_HOME, keycode_home_,
-      ui::EF_CONTROL_DOWN, ControlMask },
-    // Search+Right -> End
-    { ui::VKEY_RIGHT, keycode_right_,
-      0, Mod4Mask,
-      ui::VKEY_END, keycode_end_,
-      0, 0, },
-    // Control+Search+Right -> End
-    { ui::VKEY_RIGHT, keycode_right_,
-      ui::EF_CONTROL_DOWN, Mod4Mask | ControlMask,
-      ui::VKEY_END, keycode_end_,
-      ui::EF_CONTROL_DOWN, ControlMask },
-    // Search+Period -> Insert
-    { ui::VKEY_OEM_PERIOD, keycode_period_, 0, Mod4Mask,
-      ui::VKEY_INSERT, keycode_insert_, 0, 0 },
-    // Control+Search+Period -> Control+Insert
-    { ui::VKEY_OEM_PERIOD, keycode_period_,
-      ui::EF_CONTROL_DOWN, Mod4Mask | ControlMask,
-      ui::VKEY_INSERT, keycode_insert_,
-      ui::EF_CONTROL_DOWN, ControlMask }
-  };
+        // Search+Backspace -> Delete
+        {ui::VKEY_BACK, ui::EF_COMMAND_DOWN, ui::VKEY_DELETE, ui::EF_NONE},
+        // Search+Up -> Prior
+        {ui::VKEY_UP, ui::EF_COMMAND_DOWN, ui::VKEY_PRIOR, ui::EF_NONE},
+        // Search+Down -> Next
+        {ui::VKEY_DOWN, ui::EF_COMMAND_DOWN, ui::VKEY_NEXT, ui::EF_NONE},
+        // Search+Left -> Home
+        {ui::VKEY_LEFT, ui::EF_COMMAND_DOWN, ui::VKEY_HOME, ui::EF_NONE},
+        // Control+Search+Left -> Home
+        {ui::VKEY_LEFT, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN,
+         ui::VKEY_HOME, ui::EF_CONTROL_DOWN},
+        // Search+Right -> End
+        {ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN, ui::VKEY_END, ui::EF_NONE},
+        // Control+Search+Right -> End
+        {ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN,
+         ui::VKEY_END, ui::EF_CONTROL_DOWN},
+        // Search+Period -> Insert
+        {ui::VKEY_OEM_PERIOD, ui::EF_COMMAND_DOWN, ui::VKEY_INSERT,
+         ui::EF_NONE},
+        // Control+Search+Period -> Control+Insert
+        {ui::VKEY_OEM_PERIOD, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN,
+         ui::VKEY_INSERT, ui::EF_CONTROL_DOWN}};
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(chromeos_tests); ++i) {
-    EXPECT_EQ(GetExpectedResultAsString(chromeos_tests[i].output,
+    EXPECT_EQ(GetExpectedResultNumbered(i,
+                                        chromeos_tests[i].output,
                                         chromeos_tests[i].output_mods,
-                                        ui::ET_KEY_PRESSED,
-                                        chromeos_tests[i].output_native,
-                                        chromeos_tests[i].output_native_mods,
-                                        KeyPress),
-              GetRewrittenEventAsString(&rewriter,
+                                        ui::ET_KEY_PRESSED),
+              GetRewrittenEventNumbered(i,
+                                        &rewriter,
                                         chromeos_tests[i].input,
                                         chromeos_tests[i].input_mods,
-                                        ui::ET_KEY_PRESSED,
-                                        chromeos_tests[i].input_native,
-                                        chromeos_tests[i].input_native_mods));
+                                        ui::ET_KEY_PRESSED));
   }
 }
 
@@ -2031,214 +1176,126 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeys) {
 
   struct {
     ui::KeyboardCode input;
-    KeyCode input_native;
-    unsigned int input_native_mods;
     unsigned int input_mods;
     ui::KeyboardCode output;
-    KeyCode output_native;
-    unsigned int output_native_mods;
     unsigned int output_mods;
   } tests[] = {
-    // F1 -> Back
-    { ui::VKEY_F1, keycode_f1_, 0, 0,
-      ui::VKEY_BROWSER_BACK, keycode_browser_back_, 0, 0 },
-    { ui::VKEY_F1, keycode_f1_, ControlMask, ui::EF_CONTROL_DOWN,
-      ui::VKEY_BROWSER_BACK, keycode_browser_back_,
-      ControlMask, ui::EF_CONTROL_DOWN },
-    { ui::VKEY_F1, keycode_f1_, Mod1Mask, ui::EF_ALT_DOWN,
-      ui::VKEY_BROWSER_BACK, keycode_browser_back_,
-      Mod1Mask, ui::EF_ALT_DOWN },
-    // F2 -> Forward
-    { ui::VKEY_F2, keycode_f2_, 0, 0,
-      ui::VKEY_BROWSER_FORWARD, keycode_browser_forward_, 0, 0 },
-    { ui::VKEY_F2, keycode_f2_, ControlMask, ui::EF_CONTROL_DOWN,
-      ui::VKEY_BROWSER_FORWARD, keycode_browser_forward_,
-      ControlMask, ui::EF_CONTROL_DOWN },
-    { ui::VKEY_F2, keycode_f2_, Mod1Mask, ui::EF_ALT_DOWN,
-      ui::VKEY_BROWSER_FORWARD, keycode_browser_forward_,
-      Mod1Mask, ui::EF_ALT_DOWN },
-    // F3 -> Refresh
-    { ui::VKEY_F3, keycode_f3_, 0, 0,
-      ui::VKEY_BROWSER_REFRESH, keycode_browser_refresh_, 0, 0 },
-    { ui::VKEY_F3, keycode_f3_, ControlMask, ui::EF_CONTROL_DOWN,
-      ui::VKEY_BROWSER_REFRESH, keycode_browser_refresh_,
-      ControlMask, ui::EF_CONTROL_DOWN },
-    { ui::VKEY_F3, keycode_f3_, Mod1Mask, ui::EF_ALT_DOWN,
-      ui::VKEY_BROWSER_REFRESH, keycode_browser_refresh_,
-      Mod1Mask, ui::EF_ALT_DOWN },
-    // F4 -> Launch App 2
-    { ui::VKEY_F4, keycode_f4_, 0, 0,
-      ui::VKEY_MEDIA_LAUNCH_APP2, keycode_media_launch_app2_, 0, 0 },
-    { ui::VKEY_F4, keycode_f4_, ControlMask, ui::EF_CONTROL_DOWN,
-      ui::VKEY_MEDIA_LAUNCH_APP2, keycode_media_launch_app2_,
-      ControlMask, ui::EF_CONTROL_DOWN },
-    { ui::VKEY_F4, keycode_f4_, Mod1Mask, ui::EF_ALT_DOWN,
-      ui::VKEY_MEDIA_LAUNCH_APP2, keycode_media_launch_app2_,
-      Mod1Mask, ui::EF_ALT_DOWN },
-    // F5 -> Launch App 1
-    { ui::VKEY_F5, keycode_f5_, 0, 0,
-      ui::VKEY_MEDIA_LAUNCH_APP1, keycode_media_launch_app1_, 0, 0 },
-    { ui::VKEY_F5, keycode_f5_, ControlMask, ui::EF_CONTROL_DOWN,
-      ui::VKEY_MEDIA_LAUNCH_APP1, keycode_media_launch_app1_,
-      ControlMask, ui::EF_CONTROL_DOWN },
-    { ui::VKEY_F5, keycode_f5_, Mod1Mask, ui::EF_ALT_DOWN,
-      ui::VKEY_MEDIA_LAUNCH_APP1, keycode_media_launch_app1_,
-      Mod1Mask, ui::EF_ALT_DOWN },
-    // F6 -> Brightness down
-    { ui::VKEY_F6, keycode_f6_, 0, 0,
-      ui::VKEY_BRIGHTNESS_DOWN, keycode_brightness_down_, 0, 0 },
-    { ui::VKEY_F6, keycode_f6_, ControlMask, ui::EF_CONTROL_DOWN,
-      ui::VKEY_BRIGHTNESS_DOWN, keycode_brightness_down_,
-      ControlMask, ui::EF_CONTROL_DOWN },
-    { ui::VKEY_F6, keycode_f6_, Mod1Mask, ui::EF_ALT_DOWN,
-      ui::VKEY_BRIGHTNESS_DOWN, keycode_brightness_down_,
-      Mod1Mask, ui::EF_ALT_DOWN },
-    // F7 -> Brightness up
-    { ui::VKEY_F7, keycode_f7_, 0, 0,
-      ui::VKEY_BRIGHTNESS_UP, keycode_brightness_up_, 0, 0 },
-    { ui::VKEY_F7, keycode_f7_, ControlMask, ui::EF_CONTROL_DOWN,
-      ui::VKEY_BRIGHTNESS_UP, keycode_brightness_up_,
-      ControlMask, ui::EF_CONTROL_DOWN },
-    { ui::VKEY_F7, keycode_f7_, Mod1Mask, ui::EF_ALT_DOWN,
-      ui::VKEY_BRIGHTNESS_UP, keycode_brightness_up_,
-      Mod1Mask, ui::EF_ALT_DOWN },
-    // F8 -> Volume Mute
-    { ui::VKEY_F8, keycode_f8_, 0, 0,
-      ui::VKEY_VOLUME_MUTE, keycode_volume_mute_, 0, 0 },
-    { ui::VKEY_F8, keycode_f8_, ControlMask, ui::EF_CONTROL_DOWN,
-      ui::VKEY_VOLUME_MUTE, keycode_volume_mute_,
-      ControlMask, ui::EF_CONTROL_DOWN },
-    { ui::VKEY_F8, keycode_f8_, Mod1Mask, ui::EF_ALT_DOWN,
-      ui::VKEY_VOLUME_MUTE, keycode_volume_mute_,
-      Mod1Mask, ui::EF_ALT_DOWN },
-    // F9 -> Volume Down
-    { ui::VKEY_F9, keycode_f9_, 0, 0,
-      ui::VKEY_VOLUME_DOWN, keycode_volume_down_, 0, 0 },
-    { ui::VKEY_F9, keycode_f9_, ControlMask, ui::EF_CONTROL_DOWN,
-      ui::VKEY_VOLUME_DOWN, keycode_volume_down_,
-      ControlMask, ui::EF_CONTROL_DOWN },
-    { ui::VKEY_F9, keycode_f9_, Mod1Mask, ui::EF_ALT_DOWN,
-      ui::VKEY_VOLUME_DOWN, keycode_volume_down_,
-      Mod1Mask, ui::EF_ALT_DOWN },
-    // F10 -> Volume Up
-    { ui::VKEY_F10, keycode_f10_, 0, 0,
-      ui::VKEY_VOLUME_UP, keycode_volume_up_, 0, 0 },
-    { ui::VKEY_F10, keycode_f10_, ControlMask, ui::EF_CONTROL_DOWN,
-      ui::VKEY_VOLUME_UP, keycode_volume_up_,
-      ControlMask, ui::EF_CONTROL_DOWN },
-    { ui::VKEY_F10, keycode_f10_, Mod1Mask, ui::EF_ALT_DOWN,
-      ui::VKEY_VOLUME_UP, keycode_volume_up_,
-      Mod1Mask, ui::EF_ALT_DOWN },
-    // F11 -> F11
-    { ui::VKEY_F11, keycode_f11_, 0, 0,
-      ui::VKEY_F11, keycode_f11_, 0, 0 },
-    { ui::VKEY_F11, keycode_f11_, ControlMask, ui::EF_CONTROL_DOWN,
-      ui::VKEY_F11, keycode_f11_, ControlMask, ui::EF_CONTROL_DOWN },
-    { ui::VKEY_F11, keycode_f11_, Mod1Mask, ui::EF_ALT_DOWN,
-      ui::VKEY_F11, keycode_f11_, Mod1Mask, ui::EF_ALT_DOWN },
-    // F12 -> F12
-    { ui::VKEY_F12, keycode_f12_, 0, 0,
-      ui::VKEY_F12, keycode_f12_, 0, 0 },
-    { ui::VKEY_F12, keycode_f12_, ControlMask, ui::EF_CONTROL_DOWN,
-      ui::VKEY_F12, keycode_f12_, ControlMask, ui::EF_CONTROL_DOWN },
-    { ui::VKEY_F12, keycode_f12_, Mod1Mask, ui::EF_ALT_DOWN,
-      ui::VKEY_F12, keycode_f12_, Mod1Mask, ui::EF_ALT_DOWN },
+        // F1 -> Back
+        {ui::VKEY_F1, ui::EF_NONE, ui::VKEY_BROWSER_BACK, ui::EF_NONE},
+        {ui::VKEY_F1, ui::EF_CONTROL_DOWN, ui::VKEY_BROWSER_BACK,
+         ui::EF_CONTROL_DOWN},
+        {ui::VKEY_F1, ui::EF_ALT_DOWN, ui::VKEY_BROWSER_BACK, ui::EF_ALT_DOWN},
+        // F2 -> Forward
+        {ui::VKEY_F2, ui::EF_NONE, ui::VKEY_BROWSER_FORWARD, ui::EF_NONE},
+        {ui::VKEY_F2, ui::EF_CONTROL_DOWN, ui::VKEY_BROWSER_FORWARD,
+         ui::EF_CONTROL_DOWN},
+        {ui::VKEY_F2, ui::EF_ALT_DOWN, ui::VKEY_BROWSER_FORWARD,
+         ui::EF_ALT_DOWN},
+        // F3 -> Refresh
+        {ui::VKEY_F3, ui::EF_NONE, ui::VKEY_BROWSER_REFRESH, ui::EF_NONE},
+        {ui::VKEY_F3, ui::EF_CONTROL_DOWN, ui::VKEY_BROWSER_REFRESH,
+         ui::EF_CONTROL_DOWN},
+        {ui::VKEY_F3, ui::EF_ALT_DOWN, ui::VKEY_BROWSER_REFRESH,
+         ui::EF_ALT_DOWN},
+        // F4 -> Launch App 2
+        {ui::VKEY_F4, ui::EF_NONE, ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_NONE},
+        {ui::VKEY_F4, ui::EF_CONTROL_DOWN, ui::VKEY_MEDIA_LAUNCH_APP2,
+         ui::EF_CONTROL_DOWN},
+        {ui::VKEY_F4, ui::EF_ALT_DOWN, ui::VKEY_MEDIA_LAUNCH_APP2,
+         ui::EF_ALT_DOWN},
+        // F5 -> Launch App 1
+        {ui::VKEY_F5, ui::EF_NONE, ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE},
+        {ui::VKEY_F5, ui::EF_CONTROL_DOWN, ui::VKEY_MEDIA_LAUNCH_APP1,
+         ui::EF_CONTROL_DOWN},
+        {ui::VKEY_F5, ui::EF_ALT_DOWN, ui::VKEY_MEDIA_LAUNCH_APP1,
+         ui::EF_ALT_DOWN},
+        // F6 -> Brightness down
+        {ui::VKEY_F6, ui::EF_NONE, ui::VKEY_BRIGHTNESS_DOWN, ui::EF_NONE},
+        {ui::VKEY_F6, ui::EF_CONTROL_DOWN, ui::VKEY_BRIGHTNESS_DOWN,
+         ui::EF_CONTROL_DOWN},
+        {ui::VKEY_F6, ui::EF_ALT_DOWN, ui::VKEY_BRIGHTNESS_DOWN,
+         ui::EF_ALT_DOWN},
+        // F7 -> Brightness up
+        {ui::VKEY_F7, ui::EF_NONE, ui::VKEY_BRIGHTNESS_UP, ui::EF_NONE},
+        {ui::VKEY_F7, ui::EF_CONTROL_DOWN, ui::VKEY_BRIGHTNESS_UP,
+         ui::EF_CONTROL_DOWN},
+        {ui::VKEY_F7, ui::EF_ALT_DOWN, ui::VKEY_BRIGHTNESS_UP, ui::EF_ALT_DOWN},
+        // F8 -> Volume Mute
+        {ui::VKEY_F8, ui::EF_NONE, ui::VKEY_VOLUME_MUTE, ui::EF_NONE},
+        {ui::VKEY_F8, ui::EF_CONTROL_DOWN, ui::VKEY_VOLUME_MUTE,
+         ui::EF_CONTROL_DOWN},
+        {ui::VKEY_F8, ui::EF_ALT_DOWN, ui::VKEY_VOLUME_MUTE, ui::EF_ALT_DOWN},
+        // F9 -> Volume Down
+        {ui::VKEY_F9, ui::EF_NONE, ui::VKEY_VOLUME_DOWN, ui::EF_NONE},
+        {ui::VKEY_F9, ui::EF_CONTROL_DOWN, ui::VKEY_VOLUME_DOWN,
+         ui::EF_CONTROL_DOWN},
+        {ui::VKEY_F9, ui::EF_ALT_DOWN, ui::VKEY_VOLUME_DOWN, ui::EF_ALT_DOWN},
+        // F10 -> Volume Up
+        {ui::VKEY_F10, ui::EF_NONE, ui::VKEY_VOLUME_UP, ui::EF_NONE},
+        {ui::VKEY_F10, ui::EF_CONTROL_DOWN, ui::VKEY_VOLUME_UP,
+         ui::EF_CONTROL_DOWN},
+        {ui::VKEY_F10, ui::EF_ALT_DOWN, ui::VKEY_VOLUME_UP, ui::EF_ALT_DOWN},
+        // F11 -> F11
+        {ui::VKEY_F11, ui::EF_NONE, ui::VKEY_F11, ui::EF_NONE},
+        {ui::VKEY_F11, ui::EF_CONTROL_DOWN, ui::VKEY_F11, ui::EF_CONTROL_DOWN},
+        {ui::VKEY_F11, ui::EF_ALT_DOWN, ui::VKEY_F11, ui::EF_ALT_DOWN},
+        // F12 -> F12
+        {ui::VKEY_F12, ui::EF_NONE, ui::VKEY_F12, ui::EF_NONE},
+        {ui::VKEY_F12, ui::EF_CONTROL_DOWN, ui::VKEY_F12, ui::EF_CONTROL_DOWN},
+        {ui::VKEY_F12, ui::EF_ALT_DOWN, ui::VKEY_F12, ui::EF_ALT_DOWN},
 
-    // The number row should not be rewritten without Search key.
-    { ui::VKEY_1, keycode_1_, 0, 0,
-      ui::VKEY_1, keycode_1_, 0, 0 },
-    { ui::VKEY_2, keycode_2_, 0, 0,
-      ui::VKEY_2, keycode_2_, 0, 0 },
-    { ui::VKEY_3, keycode_3_, 0, 0,
-      ui::VKEY_3, keycode_3_, 0, 0 },
-    { ui::VKEY_4, keycode_4_, 0, 0,
-      ui::VKEY_4, keycode_4_, 0, 0 },
-    { ui::VKEY_5, keycode_5_, 0, 0,
-      ui::VKEY_5, keycode_5_, 0, 0 },
-    { ui::VKEY_6, keycode_6_, 0, 0,
-      ui::VKEY_6, keycode_6_, 0, 0 },
-    { ui::VKEY_7, keycode_7_, 0, 0,
-      ui::VKEY_7, keycode_7_, 0, 0 },
-    { ui::VKEY_8, keycode_8_, 0, 0,
-      ui::VKEY_8, keycode_8_, 0, 0 },
-    { ui::VKEY_9, keycode_9_, 0, 0,
-      ui::VKEY_9, keycode_9_, 0, 0 },
-    { ui::VKEY_0, keycode_0_, 0, 0,
-      ui::VKEY_0, keycode_0_, 0, 0 },
-    { ui::VKEY_OEM_MINUS, keycode_minus_, 0, 0,
-      ui::VKEY_OEM_MINUS, keycode_minus_, 0, 0 },
-    { ui::VKEY_OEM_PLUS, keycode_equal_, 0, 0,
-      ui::VKEY_OEM_PLUS, keycode_equal_, 0, 0 },
+        // The number row should not be rewritten without Search key.
+        {ui::VKEY_1, ui::EF_NONE, ui::VKEY_1, ui::EF_NONE},
+        {ui::VKEY_2, ui::EF_NONE, ui::VKEY_2, ui::EF_NONE},
+        {ui::VKEY_3, ui::EF_NONE, ui::VKEY_3, ui::EF_NONE},
+        {ui::VKEY_4, ui::EF_NONE, ui::VKEY_4, ui::EF_NONE},
+        {ui::VKEY_5, ui::EF_NONE, ui::VKEY_5, ui::EF_NONE},
+        {ui::VKEY_6, ui::EF_NONE, ui::VKEY_6, ui::EF_NONE},
+        {ui::VKEY_7, ui::EF_NONE, ui::VKEY_7, ui::EF_NONE},
+        {ui::VKEY_8, ui::EF_NONE, ui::VKEY_8, ui::EF_NONE},
+        {ui::VKEY_9, ui::EF_NONE, ui::VKEY_9, ui::EF_NONE},
+        {ui::VKEY_0, ui::EF_NONE, ui::VKEY_0, ui::EF_NONE},
+        {ui::VKEY_OEM_MINUS, ui::EF_NONE, ui::VKEY_OEM_MINUS, ui::EF_NONE},
+        {ui::VKEY_OEM_PLUS, ui::EF_NONE, ui::VKEY_OEM_PLUS, ui::EF_NONE},
 
-    // The number row should be rewritten as the F<number> row with Search key.
-    { ui::VKEY_1, keycode_1_, Mod4Mask, 0,
-      ui::VKEY_F1, keycode_f1_, 0, 0 },
-    { ui::VKEY_2, keycode_2_, Mod4Mask, 0,
-      ui::VKEY_F2, keycode_f2_, 0, 0 },
-    { ui::VKEY_3, keycode_3_, Mod4Mask, 0,
-      ui::VKEY_F3, keycode_f3_, 0, 0 },
-    { ui::VKEY_4, keycode_4_, Mod4Mask, 0,
-      ui::VKEY_F4, keycode_f4_, 0, 0 },
-    { ui::VKEY_5, keycode_5_, Mod4Mask, 0,
-      ui::VKEY_F5, keycode_f5_, 0, 0 },
-    { ui::VKEY_6, keycode_6_, Mod4Mask, 0,
-      ui::VKEY_F6, keycode_f6_, 0, 0 },
-    { ui::VKEY_7, keycode_7_, Mod4Mask, 0,
-      ui::VKEY_F7, keycode_f7_, 0, 0 },
-    { ui::VKEY_8, keycode_8_, Mod4Mask, 0,
-      ui::VKEY_F8, keycode_f8_, 0, 0 },
-    { ui::VKEY_9, keycode_9_, Mod4Mask, 0,
-      ui::VKEY_F9, keycode_f9_, 0, 0 },
-    { ui::VKEY_0, keycode_0_, Mod4Mask, 0,
-      ui::VKEY_F10, keycode_f10_, 0, 0 },
-    { ui::VKEY_OEM_MINUS, keycode_minus_, Mod4Mask, 0,
-      ui::VKEY_F11, keycode_f11_, 0, 0 },
-    { ui::VKEY_OEM_PLUS, keycode_equal_, Mod4Mask, 0,
-      ui::VKEY_F12, keycode_f12_, 0, 0 },
+        // The number row should be rewritten as the F<number> row with Search
+        // key.
+        {ui::VKEY_1, ui::EF_COMMAND_DOWN, ui::VKEY_F1, ui::EF_NONE},
+        {ui::VKEY_2, ui::EF_COMMAND_DOWN, ui::VKEY_F2, ui::EF_NONE},
+        {ui::VKEY_3, ui::EF_COMMAND_DOWN, ui::VKEY_F3, ui::EF_NONE},
+        {ui::VKEY_4, ui::EF_COMMAND_DOWN, ui::VKEY_F4, ui::EF_NONE},
+        {ui::VKEY_5, ui::EF_COMMAND_DOWN, ui::VKEY_F5, ui::EF_NONE},
+        {ui::VKEY_6, ui::EF_COMMAND_DOWN, ui::VKEY_F6, ui::EF_NONE},
+        {ui::VKEY_7, ui::EF_COMMAND_DOWN, ui::VKEY_F7, ui::EF_NONE},
+        {ui::VKEY_8, ui::EF_COMMAND_DOWN, ui::VKEY_F8, ui::EF_NONE},
+        {ui::VKEY_9, ui::EF_COMMAND_DOWN, ui::VKEY_F9, ui::EF_NONE},
+        {ui::VKEY_0, ui::EF_COMMAND_DOWN, ui::VKEY_F10, ui::EF_NONE},
+        {ui::VKEY_OEM_MINUS, ui::EF_COMMAND_DOWN, ui::VKEY_F11, ui::EF_NONE},
+        {ui::VKEY_OEM_PLUS, ui::EF_COMMAND_DOWN, ui::VKEY_F12, ui::EF_NONE},
 
-    // The function keys should not be rewritten with Search key pressed.
-    { ui::VKEY_F1, keycode_f1_, Mod4Mask, 0,
-      ui::VKEY_F1, keycode_f1_, 0, 0 },
-    { ui::VKEY_F2, keycode_f2_, Mod4Mask, 0,
-      ui::VKEY_F2, keycode_f2_, 0, 0 },
-    { ui::VKEY_F3, keycode_f3_, Mod4Mask, 0,
-      ui::VKEY_F3, keycode_f3_, 0, 0 },
-    { ui::VKEY_F4, keycode_f4_, Mod4Mask, 0,
-      ui::VKEY_F4, keycode_f4_, 0, 0 },
-    { ui::VKEY_F5, keycode_f5_, Mod4Mask, 0,
-      ui::VKEY_F5, keycode_f5_, 0, 0 },
-    { ui::VKEY_F6, keycode_f6_, Mod4Mask, 0,
-      ui::VKEY_F6, keycode_f6_, 0, 0 },
-    { ui::VKEY_F7, keycode_f7_, Mod4Mask, 0,
-      ui::VKEY_F7, keycode_f7_, 0, 0 },
-    { ui::VKEY_F8, keycode_f8_, Mod4Mask, 0,
-      ui::VKEY_F8, keycode_f8_, 0, 0 },
-    { ui::VKEY_F9, keycode_f9_, Mod4Mask, 0,
-      ui::VKEY_F9, keycode_f9_, 0, 0 },
-    { ui::VKEY_F10, keycode_f10_, Mod4Mask, 0,
-      ui::VKEY_F10, keycode_f10_, 0, 0 },
-    { ui::VKEY_F11, keycode_f11_, Mod4Mask, 0,
-      ui::VKEY_F11, keycode_f11_, 0, 0 },
-    { ui::VKEY_F12, keycode_f12_, Mod4Mask, 0,
-      ui::VKEY_F12, keycode_f12_, 0, 0 },
-  };
+        // The function keys should not be rewritten with Search key pressed.
+        {ui::VKEY_F1, ui::EF_COMMAND_DOWN, ui::VKEY_F1, ui::EF_NONE},
+        {ui::VKEY_F2, ui::EF_COMMAND_DOWN, ui::VKEY_F2, ui::EF_NONE},
+        {ui::VKEY_F3, ui::EF_COMMAND_DOWN, ui::VKEY_F3, ui::EF_NONE},
+        {ui::VKEY_F4, ui::EF_COMMAND_DOWN, ui::VKEY_F4, ui::EF_NONE},
+        {ui::VKEY_F5, ui::EF_COMMAND_DOWN, ui::VKEY_F5, ui::EF_NONE},
+        {ui::VKEY_F6, ui::EF_COMMAND_DOWN, ui::VKEY_F6, ui::EF_NONE},
+        {ui::VKEY_F7, ui::EF_COMMAND_DOWN, ui::VKEY_F7, ui::EF_NONE},
+        {ui::VKEY_F8, ui::EF_COMMAND_DOWN, ui::VKEY_F8, ui::EF_NONE},
+        {ui::VKEY_F9, ui::EF_COMMAND_DOWN, ui::VKEY_F9, ui::EF_NONE},
+        {ui::VKEY_F10, ui::EF_COMMAND_DOWN, ui::VKEY_F10, ui::EF_NONE},
+        {ui::VKEY_F11, ui::EF_COMMAND_DOWN, ui::VKEY_F11, ui::EF_NONE},
+        {ui::VKEY_F12, ui::EF_COMMAND_DOWN, ui::VKEY_F12, ui::EF_NONE},
+    };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    // XKeysymToKeycode returns zero for unknown keys. So ignore those.
-    if (tests[i].output_native == 0)
-      continue;
-    EXPECT_EQ(GetExpectedResultAsString(tests[i].output,
-                                        tests[i].output_mods,
-                                        ui::ET_KEY_PRESSED,
-                                        tests[i].output_native,
-                                        tests[i].output_native_mods,
-                                        KeyPress),
-              GetRewrittenEventAsString(&rewriter,
+    EXPECT_EQ(GetExpectedResultNumbered(
+                  i, tests[i].output, tests[i].output_mods, ui::ET_KEY_PRESSED),
+              GetRewrittenEventNumbered(i,
+                                        &rewriter,
                                         tests[i].input,
                                         tests[i].input_mods,
-                                        ui::ET_KEY_PRESSED,
-                                        tests[i].input_native,
-                                        tests[i].input_native_mods));
+                                        ui::ET_KEY_PRESSED));
   }
 }
 
@@ -2259,32 +1316,21 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithSearchRemapped) {
       chromeos::switches::kHasChromeOSKeyboard, "");
 
   // Alt+Search+Down -> End
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_END,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_end_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_DOWN,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_down_,
-                                      Mod1Mask | Mod4Mask));
+  EXPECT_EQ(
+      GetExpectedResultAsString(ui::VKEY_END, ui::EF_NONE, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(&rewriter,
+                                ui::VKEY_DOWN,
+                                ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                                ui::ET_KEY_PRESSED));
 
   // Shift+Alt+Search+Down -> Shift+End
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_END,
-                                      ui::EF_SHIFT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_end_,
-                                      ShiftMask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_DOWN,
-                                      ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_down_,
-                                      ShiftMask | Mod1Mask | Mod4Mask));
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_END, ui::EF_SHIFT_DOWN, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter,
+                ui::VKEY_DOWN,
+                ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+                ui::ET_KEY_PRESSED));
 
   *CommandLine::ForCurrentProcess() = original_cl;
 }
@@ -2306,37 +1352,54 @@ TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
     ui::ScopedXI2Event xev;
     xev.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL, 0);
     XEvent* xevent = xev;
-    xevent->xkey.keycode = keycode_control_l_;
+    xevent->xkey.keycode = XKeysymToKeycode(gfx::GetXDisplay(), XK_Control_L);
     xevent->xkey.send_event = True;  // XSendEvent() always does this.
-    rewriter.RewriteForTesting(xevent);
     ui::KeyEvent keyevent(xev, false /* is_char */);
-    rewritten_event = base::StringPrintf(
-        "ui_keycode=%d ui_flags=%d ui_type=%d "
-        "x_keycode=%u x_state=%u x_type=%d",
-        keyevent.key_code(), keyevent.flags(), keyevent.type(),
-        xevent->xkey.keycode, xevent->xkey.state, xevent->xkey.type);
+    scoped_ptr<ui::Event> new_event;
+    // Control should NOT be remapped to Alt if send_event
+    // flag in the event is True.
+    EXPECT_EQ(ui::EVENT_REWRITE_CONTINUE,
+              rewriter.RewriteEvent(keyevent, &new_event));
+    EXPECT_FALSE(new_event);
   }
+}
 
-  // XK_Control_L (left Control key) should NOT be remapped to Alt if send_event
-  // flag in the event is True.
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_control_l_,
-                                      0U,
-                                      KeyPress),
-            rewritten_event);
+TEST_F(EventRewriterTest, TestRewriteNonNativeEvent) {
+  // Remap Control to Alt.
+  TestingPrefServiceSyncable prefs;
+  chromeos::Preferences::RegisterProfilePrefs(prefs.registry());
+  IntegerPrefMember control;
+  control.Init(prefs::kLanguageRemapControlKeyTo, &prefs);
+  control.SetValue(chromeos::input_method::kAltKey);
+
+  EventRewriter rewriter;
+  rewriter.set_pref_service_for_testing(&prefs);
+
+  const int kTouchId = 2;
+  gfx::Point location(0, 0);
+  ui::TouchEvent press(
+      ui::ET_TOUCH_PRESSED, location, kTouchId, base::TimeDelta());
+  press.set_flags(ui::EF_CONTROL_DOWN);
+
+  scoped_ptr<ui::Event> new_event;
+  rewriter.RewriteEvent(press, &new_event);
+  EXPECT_TRUE(new_event);
+  // Control should be remapped to Alt.
+  EXPECT_EQ(ui::EF_ALT_DOWN,
+            new_event->flags() & (ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN));
 }
 
 // Tests of event rewriting that depend on the Ash window manager.
 class EventRewriterAshTest : public ash::test::AshTestBase {
  public:
-  EventRewriterAshTest() {
-  }
+  EventRewriterAshTest()
+      : mock_user_manager_(new chromeos::MockUserManager),
+        user_manager_enabler_(mock_user_manager_) {}
   virtual ~EventRewriterAshTest() {}
 
-  bool RewriteFunctionKeys(XEvent* event) {
-    return rewriter_->RewriteFunctionKeys(event);
+  bool RewriteFunctionKeys(const ui::Event& event,
+                           scoped_ptr<ui::Event>* rewritten_event) {
+    return rewriter_->RewriteEvent(event, rewritten_event);
   }
 
  protected:
@@ -2357,6 +1420,9 @@ class EventRewriterAshTest : public ash::test::AshTestBase {
  private:
   scoped_ptr<EventRewriter> rewriter_;
 
+  chromeos::MockUserManager* mock_user_manager_;  // Not owned.
+  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
+
   DISALLOW_COPY_AND_ASSIGN(EventRewriterAshTest);
 };
 
@@ -2366,38 +1432,39 @@ TEST_F(EventRewriterAshTest, TopRowKeysAreFunctionKeys) {
   window_state->Activate();
 
   // Create a simulated keypress of F1 targetted at the window.
-  ui::ScopedXI2Event xev_f1;
-  KeyCode keycode_f1 = XKeysymToKeycode(gfx::GetXDisplay(), XK_F1);
-  xev_f1.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_F1, 0);
-  XEvent* xevent = xev_f1;
-  xevent->xkey.keycode = keycode_f1;
+  ui::KeyEvent press_f1(ui::ET_KEY_PRESSED, ui::VKEY_F1, 0, false);
 
   // Simulate an apps v2 window that has requested top row keys as function
   // keys. The event should not be rewritten.
   window_state->set_top_row_keys_are_function_keys(true);
-  ASSERT_FALSE(RewriteFunctionKeys(xevent));
-  ui::KeyEvent press_f1(xev_f1, false);
-  ASSERT_EQ(ui::VKEY_F1, press_f1.key_code());
+  scoped_ptr<ui::Event> rewritten_event;
+  ASSERT_FALSE(RewriteFunctionKeys(press_f1, &rewritten_event));
+  ASSERT_FALSE(rewritten_event);
+  EXPECT_EQ(
+      GetExpectedResultAsString(ui::VKEY_F1, ui::EF_NONE, ui::ET_KEY_PRESSED),
+      GetKeyEventAsString(press_f1));
 
   // The event should also not be rewritten if the send-function-keys pref is
   // additionally set, for both apps v2 and regular windows.
   BooleanPrefMember send_function_keys_pref;
   send_function_keys_pref.Init(prefs::kLanguageSendFunctionKeys, &prefs_);
   send_function_keys_pref.SetValue(true);
-  ASSERT_FALSE(RewriteFunctionKeys(xevent));
-  press_f1 = ui::KeyEvent(xev_f1, false);
-  ASSERT_EQ(ui::VKEY_F1, press_f1.key_code());
   window_state->set_top_row_keys_are_function_keys(false);
-  ASSERT_FALSE(RewriteFunctionKeys(xevent));
-  press_f1 = ui::KeyEvent(xev_f1, false);
-  ASSERT_EQ(ui::VKEY_F1, press_f1.key_code());
+  ASSERT_FALSE(RewriteFunctionKeys(press_f1, &rewritten_event));
+  ASSERT_FALSE(rewritten_event);
+  EXPECT_EQ(
+      GetExpectedResultAsString(ui::VKEY_F1, ui::EF_NONE, ui::ET_KEY_PRESSED),
+      GetKeyEventAsString(press_f1));
 
   // If the pref isn't set when an event is sent to a regular window, F1 is
   // rewritten to the back key.
   send_function_keys_pref.SetValue(false);
-  ASSERT_TRUE(RewriteFunctionKeys(xevent));
-  press_f1 = ui::KeyEvent(xev_f1, false);
-  ASSERT_EQ(ui::VKEY_BROWSER_BACK, press_f1.key_code());
+  ASSERT_TRUE(RewriteFunctionKeys(press_f1, &rewritten_event));
+  ASSERT_TRUE(rewritten_event);
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_BROWSER_BACK, ui::EF_NONE, ui::ET_KEY_PRESSED),
+            GetKeyEventAsString(
+                *static_cast<const ui::KeyEvent*>(rewritten_event.get())));
 }
 
 TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
@@ -2417,18 +1484,16 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     // Sanity check.
     EXPECT_EQ(ui::ET_MOUSE_PRESSED, press.type());
     EXPECT_EQ(kLeftAndAltFlag, press.flags());
-
-    RewriteMouseEvent(&rewriter, &press);
-
-    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & press.flags());
+    int flags = RewriteMouseEvent(&rewriter, press);
+    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & flags);
   }
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(
         10, ui::ET_MOUSE_RELEASED, gfx::Point(), kLeftAndAltFlag);
     ui::MouseEvent release(xev);
-    RewriteMouseEvent(&rewriter, &release);
-    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & release.flags());
+    int flags = RewriteMouseEvent(&rewriter, release);
+    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & flags);
   }
 
   // No ALT in frst click.
@@ -2437,17 +1502,16 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     xev.InitGenericButtonEvent(
         10, ui::ET_MOUSE_PRESSED, gfx::Point(), ui::EF_LEFT_MOUSE_BUTTON);
     ui::MouseEvent press(xev);
-    RewriteMouseEvent(&rewriter, &press);
-    EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & press.flags());
+    int flags = RewriteMouseEvent(&rewriter, press);
+    EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & flags);
   }
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(
         10, ui::ET_MOUSE_RELEASED, gfx::Point(), kLeftAndAltFlag);
     ui::MouseEvent release(xev);
-    RewriteMouseEvent(&rewriter, &release);
-    EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) &
-                release.flags());
+    int flags = RewriteMouseEvent(&rewriter, release);
+    EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & flags);
   }
 
   // ALT on different device.
@@ -2456,25 +1520,24 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     xev.InitGenericButtonEvent(
         11, ui::ET_MOUSE_PRESSED, gfx::Point(), kLeftAndAltFlag);
     ui::MouseEvent press(xev);
-    RewriteMouseEvent(&rewriter, &press);
-    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & press.flags());
+    int flags = RewriteMouseEvent(&rewriter, press);
+    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & flags);
   }
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(
         10, ui::ET_MOUSE_RELEASED, gfx::Point(), kLeftAndAltFlag);
     ui::MouseEvent release(xev);
-    RewriteMouseEvent(&rewriter, &release);
-    EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) &
-                release.flags());
+    int flags = RewriteMouseEvent(&rewriter, release);
+    EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & flags);
   }
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(
         11, ui::ET_MOUSE_RELEASED, gfx::Point(), kLeftAndAltFlag);
     ui::MouseEvent release(xev);
-    RewriteMouseEvent(&rewriter, &release);
-    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & release.flags());
+    int flags = RewriteMouseEvent(&rewriter, release);
+    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & flags);
   }
 }
 
