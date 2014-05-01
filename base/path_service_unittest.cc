@@ -147,7 +147,7 @@ TEST_F(PathServiceTest, Get) {
 #endif
 }
 
-// test that all versions of the Override function of PathService do what they
+// Test that all versions of the Override function of PathService do what they
 // are supposed to do.
 TEST_F(PathServiceTest, Override) {
   int my_special_key = 666;
@@ -163,12 +163,37 @@ TEST_F(PathServiceTest, Override) {
   // PathService::OverrideAndCreateIfNeeded should obey the |create| parameter.
   PathService::OverrideAndCreateIfNeeded(my_special_key,
                                          fake_cache_dir2,
+                                         false,
                                          false);
   EXPECT_FALSE(base::PathExists(fake_cache_dir2));
   EXPECT_TRUE(PathService::OverrideAndCreateIfNeeded(my_special_key,
                                                      fake_cache_dir2,
+                                                     false,
                                                      true));
   EXPECT_TRUE(base::PathExists(fake_cache_dir2));
+
+#if defined(OS_POSIX)
+  base::FilePath non_existent(
+      base::MakeAbsoluteFilePath(temp_dir.path()).AppendASCII("non_existent"));
+  EXPECT_TRUE(non_existent.IsAbsolute());
+  EXPECT_FALSE(base::PathExists(non_existent));
+  // This fails because MakeAbsoluteFilePath fails for non-existent files.
+  EXPECT_FALSE(PathService::OverrideAndCreateIfNeeded(my_special_key,
+                                                      non_existent,
+                                                      false,
+                                                      false));
+  // This works because indicating that |non_existent| is absolute skips the
+  // internal MakeAbsoluteFilePath call.
+  EXPECT_TRUE(PathService::OverrideAndCreateIfNeeded(my_special_key,
+                                                     non_existent,
+                                                     true,
+                                                     false));
+  // Check that the path has been overridden and no directory was created.
+  EXPECT_FALSE(base::PathExists(non_existent));
+  base::FilePath path;
+  EXPECT_TRUE(PathService::Get(my_special_key, &path));
+  EXPECT_EQ(non_existent, path);
+#endif
 }
 
 // Check if multiple overrides can co-exist.

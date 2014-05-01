@@ -16,6 +16,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_prefs',
+        '../components/components.gyp:cloud_policy_proto',
         '../components/components.gyp:onc_component',
         '../crypto/crypto.gyp:crypto',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
@@ -25,6 +26,7 @@
         '../net/net.gyp:net',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/libxml/libxml.gyp:libxml',
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../url/url.gyp:url_lib',
         'cryptohome_proto',

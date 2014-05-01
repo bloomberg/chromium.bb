@@ -849,15 +849,6 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAbortedWithAutoEnrollment) {
 }
 
 IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
-  // Fake an auto enrollment is not going to be enforced.
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnterpriseEnrollmentInitialModulus, "1");
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnterpriseEnrollmentModulusLimit, "2");
-  g_browser_process->local_state()->SetBoolean(prefs::kShouldAutoEnroll, false);
-  g_browser_process->local_state()->SetInteger(
-      prefs::kAutoEnrollmentPowerLimit, -1);
-
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =
       chromeos::WizardController::default_controller();
@@ -1123,9 +1114,13 @@ class KioskEnterpriseTest : public KioskTest {
         device_policy_test_helper_.device_policy()->policy_data();
     policy_data.set_service_account_identity(kTestEnterpriseServiceAccountId);
     device_policy_test_helper_.device_policy()->Build();
+
+    base::RunLoop run_loop;
     DBusThreadManager::Get()->GetSessionManagerClient()->StoreDevicePolicy(
         device_policy_test_helper_.device_policy()->GetBlob(),
-        base::Bind(&KioskEnterpriseTest::StorePolicyCallback));
+        base::Bind(&KioskEnterpriseTest::StorePolicyCallback,
+                   run_loop.QuitClosure()));
+    run_loop.Run();
 
     DeviceSettingsService::Get()->Load();
 
@@ -1164,8 +1159,9 @@ class KioskEnterpriseTest : public KioskTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  static void StorePolicyCallback(bool result) {
+  static void StorePolicyCallback(const base::Closure& callback, bool result) {
     ASSERT_TRUE(result);
+    callback.Run();
   }
 
   policy::DevicePolicyCrosTestHelper device_policy_test_helper_;

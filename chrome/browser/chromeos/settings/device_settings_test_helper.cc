@@ -166,7 +166,6 @@ void DeviceSettingsTestHelper::StoreDevicePolicy(
 void DeviceSettingsTestHelper::StorePolicyForUser(
     const std::string& username,
     const std::string& policy_blob,
-    const std::string& policy_key,
     const StorePolicyCallback& callback) {
 }
 

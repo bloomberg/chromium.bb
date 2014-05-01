@@ -117,7 +117,6 @@ void FakeSessionManagerClient::StoreDevicePolicy(
 void FakeSessionManagerClient::StorePolicyForUser(
     const std::string& username,
     const std::string& policy_blob,
-    const std::string& policy_key,
     const StorePolicyCallback& callback) {
   user_policies_[username] = policy_blob;
   base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
