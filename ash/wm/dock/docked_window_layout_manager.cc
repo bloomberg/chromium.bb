@@ -707,8 +707,17 @@ void DockedWindowLayoutManager::OnChildWindowVisibilityChanged(
 void DockedWindowLayoutManager::SetChildBounds(
     aura::Window* child,
     const gfx::Rect& requested_bounds) {
+  // The minimum constraints have to be applied first by the layout manager.
+  gfx::Rect actual_new_bounds(requested_bounds);
+  if (child->delegate()) {
+    const gfx::Size& min_size = child->delegate()->GetMinimumSize();
+    actual_new_bounds.set_width(
+        std::max(min_size.width(), actual_new_bounds.width()));
+    actual_new_bounds.set_height(
+        std::max(min_size.height(), actual_new_bounds.height()));
+  }
   // Whenever one of our windows is moved or resized enforce layout.
-  SetChildBoundsDirect(child, requested_bounds);
+  SetChildBoundsDirect(child, actual_new_bounds);
   if (IsPopupOrTransient(child))
     return;
   ShelfLayoutManager* shelf_layout =

@@ -27,6 +27,7 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -432,6 +433,12 @@ void PanelLayoutManager::SetChildBounds(aura::Window* child,
       panel_windows_.erase(dragged_panel_iter);
       panel_windows_.insert(new_position, dragged_panel_info);
     }
+  }
+  // Respect the minimum size of the window.
+  if (child->delegate()) {
+    const gfx::Size& min_size = child->delegate()->GetMinimumSize();
+    bounds.set_width(std::max(min_size.width(), bounds.width()));
+    bounds.set_height(std::max(min_size.height(), bounds.height()));
   }
 
   SetChildBoundsDirect(child, bounds);

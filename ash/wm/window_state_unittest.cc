@@ -130,6 +130,67 @@ TEST_F(WindowStateTest, SnapWindowMinimumSize) {
   EXPECT_FALSE(window_state->CanSnap());
 }
 
+// Test that the minimum size specified by aura::WindowDelegate gets respected.
+TEST_F(WindowStateTest, TestRespectMinimumSize) {
+  if (!SupportsHostWindowResize())
+    return;
+
+  UpdateDisplay("0+0-1024x768");
+
+  aura::test::TestWindowDelegate delegate;
+  const gfx::Size minimum_size(gfx::Size(500, 300));
+  delegate.set_minimum_size(minimum_size);
+
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+      &delegate, -1, gfx::Rect(0, 100, 100, 100)));
+
+  // Check that the window has the correct minimum size.
+  EXPECT_EQ(minimum_size.ToString(), window->bounds().size().ToString());
+
+  // Set the size to something bigger - that should work.
+  gfx::Rect bigger_bounds(700, 500, 700, 500);
+  window->SetBounds(bigger_bounds);
+  EXPECT_EQ(bigger_bounds.ToString(), window->bounds().ToString());
+
+  // Set the size to something smaller - that should only resize to the smallest
+  // possible size.
+  gfx::Rect smaller_bounds(700, 500, 100, 100);
+  window->SetBounds(smaller_bounds);
+  EXPECT_EQ(minimum_size.ToString(), window->bounds().size().ToString());
+}
+
+// Test that the minimum window size specified by aura::WindowDelegate does not
+// exceed the screen size.
+TEST_F(WindowStateTest, TestIgnoreTooBigMinimumSize) {
+  if (!SupportsHostWindowResize())
+    return;
+
+  UpdateDisplay("0+0-1024x768");
+  const gfx::Size work_area_size =
+      ash::Shell::GetScreen()->GetPrimaryDisplay().work_area().size();
+  const gfx::Size illegal_size(1280, 960);
+  const gfx::Rect illegal_bounds(gfx::Point(0, 0), illegal_size);
+
+  aura::test::TestWindowDelegate delegate;
+  const gfx::Size minimum_size(illegal_size);
+  delegate.set_minimum_size(minimum_size);
+
+  // The creation should force the window to respect the screen size.
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+      &delegate, -1, illegal_bounds));
+  EXPECT_EQ(work_area_size.ToString(), window->bounds().size().ToString());
+
+  // Trying to set the size to something bigger then the screen size should be
+  // ignored.
+  window->SetBounds(illegal_bounds);
+  EXPECT_EQ(work_area_size.ToString(), window->bounds().size().ToString());
+
+  // Maximizing the window should not allow it to go bigger than that either.
+  WindowState* window_state = GetWindowState(window.get());
+  window_state->Maximize();
+  EXPECT_EQ(work_area_size.ToString(), window->bounds().size().ToString());
+}
+
 // Test that setting the bounds of a snapped window keeps its snapped.
 TEST_F(WindowStateTest, SnapWindowSetBounds) {
   if (!SupportsHostWindowResize())
