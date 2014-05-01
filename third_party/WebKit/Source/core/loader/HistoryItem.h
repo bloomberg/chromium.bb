@@ -52,7 +52,8 @@ public:
 
     // Used when the frame this item represents was navigated to a different
     // url but a new item wasn't created.
-    void generateNewSequenceNumbers();
+    void generateNewItemSequenceNumber();
+    void generateNewDocumentSequenceNumber();
 
     const String& urlString() const;
     KURL url() const;

@@ -53,9 +53,13 @@ HistoryItem::~HistoryItem()
 {
 }
 
-void HistoryItem::generateNewSequenceNumbers()
+void HistoryItem::generateNewItemSequenceNumber()
 {
     m_itemSequenceNumber = generateSequenceNumber();
+}
+
+void HistoryItem::generateNewDocumentSequenceNumber()
+{
     m_documentSequenceNumber = generateSequenceNumber();
 }
 
