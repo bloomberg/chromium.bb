@@ -712,6 +712,8 @@ void VolumeManager::OnRemovableStorageAttached(
     const storage_monitor::StorageInfo& info) {
   if (!storage_monitor::StorageInfo::IsMTPDevice(info.device_id()))
     return;
+  if (profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled))
+    return;
 
   const base::FilePath path = base::FilePath::FromUTF8Unsafe(info.location());
   const std::string fsid = GetMountPointNameForMediaStorage(info);
