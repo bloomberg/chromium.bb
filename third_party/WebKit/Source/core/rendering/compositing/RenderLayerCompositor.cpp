@@ -326,25 +326,6 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
 
     m_pendingUpdateType = std::max(m_pendingUpdateType, updateType);
 
-    switch (updateType) {
-    case CompositingUpdateNone:
-        ASSERT_NOT_REACHED();
-        break;
-    case CompositingUpdateOnCompositedScroll:
-        break;
-    case CompositingUpdateAfterStyleChange:
-        m_needsToRecomputeCompositingRequirements = true;
-        break;
-    case CompositingUpdateAfterLayout:
-        m_needsToRecomputeCompositingRequirements = true;
-        break;
-    case CompositingUpdateOnScroll:
-        m_needsToRecomputeCompositingRequirements = true; // Overlap can change with scrolling, so need to check for hierarchy updates.
-        break;
-    case CompositingUpdateAfterCanvasContextChange:
-        break;
-    }
-
     page()->animator().scheduleVisualUpdate();
     lifecycle().ensureStateAtMost(DocumentLifecycle::LayoutClean);
 }
@@ -365,7 +346,7 @@ void RenderLayerCompositor::scheduleAnimationIfNeeded()
 
 bool RenderLayerCompositor::hasUnresolvedDirtyBits()
 {
-    return m_needsToRecomputeCompositingRequirements || compositingLayersNeedRebuild() || m_needsUpdateCompositingRequirementsState || m_pendingUpdateType > CompositingUpdateNone;
+    return m_needsToRecomputeCompositingRequirements || compositingLayersNeedRebuild() || m_needsUpdateCompositingRequirementsState || m_pendingUpdateType != CompositingUpdateNone;
 }
 
 void RenderLayerCompositor::updateIfNeeded()
@@ -383,7 +364,7 @@ void RenderLayerCompositor::updateIfNeeded()
     }
 
     CompositingUpdateType updateType = m_pendingUpdateType;
-    bool needCompositingRequirementsUpdate = m_needsToRecomputeCompositingRequirements;
+    bool needCompositingRequirementsUpdate = m_needsToRecomputeCompositingRequirements || updateType >= CompositingUpdateAfterStyleChange;
     bool needHierarchyAndGeometryUpdate = compositingLayersNeedRebuild();
 
     m_pendingUpdateType = CompositingUpdateNone;
@@ -439,7 +420,7 @@ void RenderLayerCompositor::updateIfNeeded()
             needHierarchyAndGeometryUpdate = true;
     }
 
-    if (updateType > CompositingUpdateNone || needHierarchyAndGeometryUpdate) {
+    if (updateType != CompositingUpdateNone || needHierarchyAndGeometryUpdate) {
         TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::updateRecursive");
         GraphicsLayerUpdater updater;
         updater.update(*updateRoot, graphicsLayerUpdateType);

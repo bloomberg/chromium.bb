@@ -212,8 +212,16 @@ void RenderLayer::contentChanged(ContentChangeType changeType)
     if (changeType == CanvasChanged || changeType == VideoChanged || changeType == FullScreenChanged)
         compositor()->updateLayerCompositingState(this);
 
-    if (changeType == CanvasContextChanged)
+    if (changeType == CanvasContextChanged) {
         compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCanvasContextChange);
+
+        // Although we're missing test coverage, we need to call
+        // GraphicsLayer::setContentsToPlatformLayer with the new platform
+        // layer for this canvas.
+        // See http://crbug.com/349195
+        if (hasCompositedLayerMapping())
+            compositedLayerMapping()->setNeedsGraphicsLayerUpdate();
+    }
 
     if (m_compositedLayerMapping)
         m_compositedLayerMapping->contentChanged(changeType);
