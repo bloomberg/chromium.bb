@@ -1120,12 +1120,12 @@ crbug.com/368518 fast/repaint/background-shorthand-with-gradient-and-height-chan
 crbug.com/368518 fast/repaint/background-size-auto-with-gradient-and-height-changes.html [ NeedsRebaseline ]
 crbug.com/368518 fast/repaint/obscured-background-no-repaint.html [ NeedsRebaseline ]
 
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/basic/generic-family-reset.html [ NeedsManualRebaseline ]
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/drawBidiText.html [ NeedsManualRebaseline ]
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/bidi-listbox-atsui.html [ NeedsManualRebaseline ]
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/bidi-listbox.html [ NeedsManualRebaseline ]
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/bidi-menulist.html [ NeedsManualRebaseline ]
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/textIteratorNilRenderer.html [ NeedsManualRebaseline ]
+# Form control/bidi rendering differences on bots.
+crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/drawBidiText.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/bidi-listbox-atsui.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/bidi-listbox.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/bidi-menulist.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/textIteratorNilRenderer.html [ Pass Failure ImageOnlyFailure ]
 
 # Very subtle alignment/clipping differences, tests likely need to be updated.
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/complex-text-missing-glyph-fallback.html [ ImageOnlyFailure ]
