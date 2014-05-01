@@ -186,6 +186,14 @@ static std::string CreateBlobData(
     scoped_refptr<IndexedDBDispatcherHost> dispatcher_host,
     webkit_blob::BlobStorageContext* blob_storage_context,
     base::TaskRunner* task_runner) {
+  std::string uuid = blob_info.uuid();
+  if (!uuid.empty()) {
+    // We're sending back a live blob, not a reference into our backing store.
+    scoped_ptr<webkit_blob::BlobDataHandle> blob_data_handle(
+        blob_storage_context->GetBlobDataFromUUID(uuid));
+    dispatcher_host->HoldBlobDataHandle(uuid, blob_data_handle);
+    return uuid;
+  }
   scoped_refptr<ShareableFileReference> shareable_file =
       ShareableFileReference::Get(blob_info.file_path());
   if (!shareable_file.get()) {
@@ -193,10 +201,11 @@ static std::string CreateBlobData(
         blob_info.file_path(),
         ShareableFileReference::DONT_DELETE_ON_FINAL_RELEASE,
         task_runner);
-    shareable_file->AddFinalReleaseCallback(blob_info.release_callback());
+    if (!blob_info.release_callback().is_null())
+      shareable_file->AddFinalReleaseCallback(blob_info.release_callback());
   }
 
-  std::string uuid(base::GenerateGUID());
+  uuid = base::GenerateGUID();
   scoped_refptr<webkit_blob::BlobData> blob_data =
       new webkit_blob::BlobData(uuid);
   blob_data->AppendFile(
@@ -270,7 +279,6 @@ static void FillInBlobData(
       info.mime_type = iter->type();
       info.file_name = iter->file_name();
       info.file_path = iter->file_path().AsUTF16Unsafe();
-      DCHECK_NE(-1, iter->size());
       info.size = iter->size();
       info.last_modified = iter->last_modified().ToDoubleT();
       blob_or_file_info->push_back(info);
@@ -288,7 +296,8 @@ void IndexedDBCallbacks::RegisterBlobsAndSend(
     const base::Closure& callback) {
   std::vector<IndexedDBBlobInfo>::const_iterator iter;
   for (iter = blob_info.begin(); iter != blob_info.end(); ++iter) {
-    iter->mark_used_callback().Run();
+    if (!iter->mark_used_callback().is_null())
+      iter->mark_used_callback().Run();
   }
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, callback);
@@ -431,7 +440,8 @@ void IndexedDBCallbacks::OnSuccessWithPrefetch(
       for (blob_iter = iter->blob_info.begin();
            blob_iter != iter->blob_info.end();
            ++blob_iter) {
-        blob_iter->mark_used_callback().Run();
+        if (!blob_iter->mark_used_callback().is_null())
+          blob_iter->mark_used_callback().Run();
       }
     }
   }

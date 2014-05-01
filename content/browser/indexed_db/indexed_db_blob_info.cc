@@ -4,15 +4,15 @@
 
 #include "content/browser/indexed_db/indexed_db_blob_info.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 
 namespace content {
 
 IndexedDBBlobInfo::IndexedDBBlobInfo()
-    : is_file_(false),
-      size_(-1),
-      key_(DatabaseMetaDataKey::kInvalidBlobKey) {}
+    : is_file_(false), size_(-1), key_(DatabaseMetaDataKey::kInvalidBlobKey) {
+}
 
 IndexedDBBlobInfo::~IndexedDBBlobInfo() {}
 
@@ -23,31 +23,33 @@ IndexedDBBlobInfo::IndexedDBBlobInfo(const std::string& uuid,
       uuid_(uuid),
       type_(type),
       size_(size),
-      key_(DatabaseMetaDataKey::kInvalidBlobKey) {}
+      key_(DatabaseMetaDataKey::kInvalidBlobKey) {
+}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(const base::string16& type,
                                      int64 size,
                                      int64 key)
-    : is_file_(false), type_(type), size_(size), key_(key) {}
+    : is_file_(false), type_(type), size_(size), key_(key) {
+}
 
-IndexedDBBlobInfo::IndexedDBBlobInfo(const base::FilePath& file_path,
+IndexedDBBlobInfo::IndexedDBBlobInfo(const std::string& uuid,
+                                     const base::FilePath& file_path,
                                      const base::string16& file_name,
                                      const base::string16& type)
     : is_file_(true),
+      uuid_(uuid),
       type_(type),
       size_(-1),
       file_name_(file_name),
       file_path_(file_path),
-      key_(DatabaseMetaDataKey::kInvalidBlobKey) {}
+      key_(DatabaseMetaDataKey::kInvalidBlobKey) {
+}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(int64 key,
                                      const base::string16& type,
                                      const base::string16& file_name)
-    : is_file_(true),
-      type_(type),
-      size_(-1),
-      file_name_(file_name),
-      key_(key) {}
+    : is_file_(true), type_(type), size_(-1), file_name_(file_name), key_(key) {
+}
 
 void IndexedDBBlobInfo::set_size(int64 size) {
   DCHECK_EQ(-1, size_);

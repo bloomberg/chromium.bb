@@ -25,7 +25,8 @@ class CONTENT_EXPORT IndexedDBBlobInfo {
                     int64 size);
   IndexedDBBlobInfo(const base::string16& type, int64 size, int64 key);
   // These two are used for Files.
-  IndexedDBBlobInfo(const base::FilePath& file_path,
+  IndexedDBBlobInfo(const std::string& uuid,
+                    const base::FilePath& file_path,
                     const base::string16& file_name,
                     const base::string16& type);
   IndexedDBBlobInfo(int64 key,

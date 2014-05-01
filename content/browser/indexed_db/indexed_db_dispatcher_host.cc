@@ -652,7 +652,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
         parent_->BadMessageReceived();
         return;
       }
-      blob_info[i] = IndexedDBBlobInfo(path, info.file_name, info.mime_type);
+      blob_info[i] =
+          IndexedDBBlobInfo(info.uuid, path, info.file_name, info.mime_type);
     } else {
       blob_info[i] = IndexedDBBlobInfo(info.uuid, info.mime_type, info.size);
     }
