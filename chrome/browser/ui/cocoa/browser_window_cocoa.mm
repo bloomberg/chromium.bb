@@ -43,7 +43,7 @@
 #include "chrome/browser/ui/cocoa/task_manager_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/web_dialog_window_controller.h"
-#import "chrome/browser/ui/cocoa/website_settings_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/website_settings/website_settings_bubble_controller.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"

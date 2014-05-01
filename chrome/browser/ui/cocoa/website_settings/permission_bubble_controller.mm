@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/cocoa/website_settings/permission_bubble_cocoa.h"
 #include "chrome/browser/ui/cocoa/website_settings/permission_selector_button.h"
 #include "chrome/browser/ui/cocoa/website_settings/split_block_button.h"
+#include "chrome/browser/ui/cocoa/website_settings/website_settings_utils_cocoa.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_view.h"
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
@@ -45,7 +46,6 @@ const CGFloat kButtonPadding = 10.0f;
 const CGFloat kTitlePaddingX = 50.0f;
 const CGFloat kTitleFontSize = 15.0f;
 const CGFloat kPermissionFontSize = 12.0f;
-const CGFloat kPermissionButtonTitleRightPadding = 4.0f;
 
 class MenuDelegate : public ui::SimpleMenuModel::Delegate {
  public:
@@ -100,10 +100,14 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     [self setBordered:NO];
 
     __block PermissionBubbleView::Delegate* blockDelegate = delegate;
+    __block AllowBlockMenuButton* blockSelf = self;
     PermissionMenuModel::ChangeCallback changeCallback =
         base::BindBlock(^(const WebsiteSettingsUI::PermissionInfo& permission) {
             blockDelegate->ToggleAccept(
                 index, permission.setting == CONTENT_SETTING_ALLOW);
+            [blockSelf setFrameSize:
+                SizeForWebsiteSettingsButtonTitle(blockSelf,
+                                                  [blockSelf title])];
         });
 
     menuModel_.reset(new PermissionMenuModel(url, setting, changeCallback));
@@ -111,20 +115,12 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
                                          useWithPopUpButtonCell:NO]);
     [self setMenu:[menuController_ menu]];
     [self selectItemAtIndex:menuModel_->GetIndexOfCommandId(setting)];
+    // Although the frame is reset, below, this sizes the cell properly.
     [self sizeToFit];
     // Adjust the size to fit the current title.  Using only -sizeToFit leaves
     // an ugly amount of whitespace between the title and the arrows because it
     // will fit to the largest element in the menu, not just the selected item.
-    // TODO(leng):  This was copied from PermissionSelectorButton.  Move to a
-    // shared location, so that the code is not duplicated.
-    NSDictionary* textAttributes =
-        [[self attributedTitle] attributesAtIndex:0 effectiveRange:NULL];
-    NSSize titleSize = [[self title] sizeWithAttributes:textAttributes];
-    NSRect frame = [self frame];
-    NSRect titleRect = [[self cell] titleRectForBounds:frame];
-    CGFloat width = titleSize.width + NSWidth(frame) - NSWidth(titleRect);
-    [self setFrameSize:NSMakeSize(width + kPermissionButtonTitleRightPadding,
-                                  NSHeight(frame))];
+    [self setFrameSize:SizeForWebsiteSettingsButtonTitle(self, [self title])];
   }
   return self;
 }

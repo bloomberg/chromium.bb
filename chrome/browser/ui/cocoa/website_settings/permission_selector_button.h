@@ -26,9 +26,6 @@
                       forURL:(const GURL&)url
                 withCallback:(PermissionMenuModel::ChangeCallback)callback;
 
-// Returns the size of the button with the given title.
-- (NSSize)sizeForTitle:(NSString*)title;
-
 // Returns the largest possible size given all of the items in the menu.
 - (CGFloat)maxTitleWidthWithDefaultSetting:(ContentSetting)defaultSetting;
 

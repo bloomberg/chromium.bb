@@ -5,13 +5,10 @@
 #import "chrome/browser/ui/cocoa/website_settings/permission_selector_button.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/ui/cocoa/website_settings/website_settings_utils_cocoa.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/browser/ui/website_settings/website_settings_utils.h"
 #import "ui/base/cocoa/menu_controller.h"
-
-// The amount of horizontal space between the permission popup title and the
-// arrow icon.
-const CGFloat kPermissionButtonTitleRightPadding = 4;
 
 @implementation PermissionSelectorButton
 
@@ -44,33 +41,21 @@ const CGFloat kPermissionButtonTitleRightPadding = 4;
     [self sizeToFit];
 
     // Size the button to just fit the visible title - not all of its items.
-    [self setFrameSize:[self sizeForTitle:[self title]]];
+    [self setFrameSize:SizeForWebsiteSettingsButtonTitle(self, [self title])];
   }
   return self;
-}
-
-// Determine the size of a popup button with the given title.
-- (NSSize)sizeForTitle:(NSString*)title {
-  NSDictionary* textAttributes = @{NSFontAttributeName : [self font]};
-  NSSize titleSize = [title sizeWithAttributes:textAttributes];
-
-  NSRect frame = [self frame];
-  NSRect titleRect = [[self cell] titleRectForBounds:frame];
-  CGFloat width = titleSize.width + NSWidth(frame) - NSWidth(titleRect);
-
-  return NSMakeSize(width + kPermissionButtonTitleRightPadding,
-                    NSHeight(frame));
 }
 
 - (CGFloat)maxTitleWidthWithDefaultSetting:(ContentSetting)defaultSetting {
   // Determine the largest possible size for this button.
   CGFloat maxTitleWidth = 0;
   for (NSMenuItem* item in [self itemArray]) {
-    base::string16 title = WebsiteSettingsUI::PermissionActionToUIString(
-        static_cast<ContentSetting>([item tag]),
-        defaultSetting,
-        content_settings::SETTING_SOURCE_USER);
-    NSSize size = [self sizeForTitle:base::SysUTF16ToNSString(title)];
+    NSString* title =
+        base::SysUTF16ToNSString(WebsiteSettingsUI::PermissionActionToUIString(
+            static_cast<ContentSetting>([item tag]),
+            defaultSetting,
+            content_settings::SETTING_SOURCE_USER));
+    NSSize size = SizeForWebsiteSettingsButtonTitle(self, title);
     maxTitleWidth = std::max(maxTitleWidth, size.width);
   }
   return maxTitleWidth;
