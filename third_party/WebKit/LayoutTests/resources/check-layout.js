@@ -37,63 +37,63 @@ function checkExpectedValues(node, failures)
     var output = { checked: false };
     var expectedWidth = checkAttribute(output, node, "data-expected-width");
     if (expectedWidth) {
-        if (Math.abs(node.offsetWidth - expectedWidth) >= 1)
+        if (node.offsetWidth != parseInt(expectedWidth))
             failures.push("Expected " + expectedWidth + " for width, but got " + node.offsetWidth + ". ");
     }
 
     var expectedHeight = checkAttribute(output, node, "data-expected-height");
     if (expectedHeight) {
-        if (Math.abs(node.offsetHeight - expectedHeight) >= 1)
+        if (node.offsetHeight != parseInt(expectedHeight))
             failures.push("Expected " + expectedHeight + " for height, but got " + node.offsetHeight + ". ");
     }
 
     var expectedOffset = checkAttribute(output, node, "data-offset-x");
     if (expectedOffset) {
-        if (Math.abs(node.offsetLeft - expectedOffset) >= 1)
+        if (node.offsetLeft != parseInt(expectedOffset))
             failures.push("Expected " + expectedOffset + " for offsetLeft, but got " + node.offsetLeft + ". ");
     }
 
     var expectedOffset = checkAttribute(output, node, "data-offset-y");
     if (expectedOffset) {
-        if (Math.abs(node.offsetTop - expectedOffset) >= 1)
+        if (node.offsetTop != parseInt(expectedOffset))
             failures.push("Expected " + expectedOffset + " for offsetTop, but got " + node.offsetTop + ". ");
     }
 
     var expectedWidth = checkAttribute(output, node, "data-expected-client-width");
     if (expectedWidth) {
-        if (Math.abs(node.clientWidth - expectedWidth) >= 1)
+        if (node.clientWidth != parseInt(expectedWidth))
             failures.push("Expected " + expectedWidth + " for clientWidth, but got " + node.clientWidth + ". ");
     }
 
     var expectedHeight = checkAttribute(output, node, "data-expected-client-height");
     if (expectedHeight) {
-        if (Math.abs(node.clientHeight - expectedHeight) >= 1)
+        if (node.clientHeight != parseInt(expectedHeight))
             failures.push("Expected " + expectedHeight + " for clientHeight, but got " + node.clientHeight + ". ");
     }
 
     var expectedWidth = checkAttribute(output, node, "data-expected-scroll-width");
     if (expectedWidth) {
-        if (Math.abs(node.scrollWidth - expectedWidth) >= 1)
+        if (node.scrollWidth != parseInt(expectedWidth))
             failures.push("Expected " + expectedWidth + " for scrollWidth, but got " + node.scrollWidth + ". ");
     }
 
     var expectedHeight = checkAttribute(output, node, "data-expected-scroll-height");
     if (expectedHeight) {
-        if (Math.abs(node.scrollHeight - expectedHeight) >= 1)
+        if (node.scrollHeight != parseInt(expectedHeight))
             failures.push("Expected " + expectedHeight + " for scrollHeight, but got " + node.scrollHeight + ". ");
     }
 
     var expectedOffset = checkAttribute(output, node, "data-total-x");
     if (expectedOffset) {
         var totalLeft = node.clientLeft + node.offsetLeft;
-        if (Math.abs(totalLeft - expectedOffset) >= 1)
+        if (totalLeft != parseInt(expectedOffset))
             failures.push("Expected " + expectedOffset + " for clientLeft+offsetLeft, but got " + totalLeft + ", clientLeft: " + node.clientLeft + ", offsetLeft: " + node.offsetLeft + ". ");
     }
 
     var expectedOffset = checkAttribute(output, node, "data-total-y");
     if (expectedOffset) {
         var totalTop = node.clientTop + node.offsetTop;
-        if (Math.abs(totalTop - expectedOffset) >= 1)
+        if (totalTop != parseInt(expectedOffset))
             failures.push("Expected " + expectedOffset + " for clientTop+offsetTop, but got " + totalTop + ", clientTop: " + node.clientTop + ", + offsetTop: " + node.offsetTop + ". ");
     }
 

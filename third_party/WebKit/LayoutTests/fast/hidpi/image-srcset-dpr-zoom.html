@@ -19,7 +19,7 @@
     }, false);
 
     addEventListener("load", function() {
-        shouldBeTrue('Math.abs(document.getElementById("foo").clientWidth - 200) < 0.1');
+        shouldBeTrue('document.getElementById("foo").clientWidth==200');
     }, false);
 </script>
 </head>
