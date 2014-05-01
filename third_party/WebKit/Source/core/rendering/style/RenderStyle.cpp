@@ -540,10 +540,10 @@ bool RenderStyle::diffNeedsFullLayout(const RenderStyle& other) const
 
     if (inherited.get() != other.inherited.get()) {
         if (inherited->line_height != other.inherited->line_height
-        || inherited->font != other.inherited->font
-        || inherited->horizontal_border_spacing != other.inherited->horizontal_border_spacing
-        || inherited->vertical_border_spacing != other.inherited->vertical_border_spacing)
-        return true;
+            || inherited->font != other.inherited->font
+            || inherited->horizontal_border_spacing != other.inherited->horizontal_border_spacing
+            || inherited->vertical_border_spacing != other.inherited->vertical_border_spacing)
+            return true;
     }
 
     if (inherited_flags._box_direction != other.inherited_flags._box_direction
@@ -608,13 +608,16 @@ bool RenderStyle::diffNeedsRepaintLayer(const RenderStyle& other) const
     if (position() != StaticPosition && (visual->clip != other.visual->clip || visual->hasClip != other.visual->hasClip))
         return true;
 
-    if (RuntimeEnabledFeatures::cssCompositingEnabled() && (rareNonInheritedData->m_effectiveBlendMode != other.rareNonInheritedData->m_effectiveBlendMode
-        || rareNonInheritedData->m_isolation != other.rareNonInheritedData->m_isolation))
-        return true;
+    if (rareNonInheritedData.get() != other.rareNonInheritedData.get()) {
+        if (RuntimeEnabledFeatures::cssCompositingEnabled()
+            && (rareNonInheritedData->m_effectiveBlendMode != other.rareNonInheritedData->m_effectiveBlendMode
+                || rareNonInheritedData->m_isolation != other.rareNonInheritedData->m_isolation))
+            return true;
 
-    if (rareNonInheritedData->m_mask != other.rareNonInheritedData->m_mask
-        || rareNonInheritedData->m_maskBoxImage != other.rareNonInheritedData->m_maskBoxImage)
-        return true;
+        if (rareNonInheritedData->m_mask != other.rareNonInheritedData->m_mask
+            || rareNonInheritedData->m_maskBoxImage != other.rareNonInheritedData->m_maskBoxImage)
+            return true;
+    }
 
     return false;
 }
@@ -625,21 +628,25 @@ bool RenderStyle::diffNeedsRepaintObject(const RenderStyle& other) const
         || inherited_flags.m_printColorAdjust != other.inherited_flags.m_printColorAdjust
         || inherited_flags._insideLink != other.inherited_flags._insideLink
         || !surround->border.visuallyEqual(other.surround->border)
-        || !m_background->visuallyEqual(*other.m_background)
-        || rareInheritedData->userModify != other.rareInheritedData->userModify
-        || rareInheritedData->userSelect != other.rareInheritedData->userSelect
-        || rareNonInheritedData->userDrag != other.rareNonInheritedData->userDrag
-        || rareNonInheritedData->m_borderFit != other.rareNonInheritedData->m_borderFit
-        || rareNonInheritedData->m_objectFit != other.rareNonInheritedData->m_objectFit
-        || rareNonInheritedData->m_objectPosition != other.rareNonInheritedData->m_objectPosition
-        || rareInheritedData->m_imageRendering != other.rareInheritedData->m_imageRendering)
+        || !m_background->visuallyEqual(*other.m_background))
         return true;
 
-    if (rareNonInheritedData->m_shapeOutside != other.rareNonInheritedData->m_shapeOutside)
-        return true;
+    if (rareInheritedData.get() != other.rareInheritedData.get()) {
+        if (rareInheritedData->userModify != other.rareInheritedData->userModify
+            || rareInheritedData->userSelect != other.rareInheritedData->userSelect
+            || rareInheritedData->m_imageRendering != other.rareInheritedData->m_imageRendering)
+            return true;
+    }
 
-    if (rareNonInheritedData->m_clipPath != other.rareNonInheritedData->m_clipPath)
-        return true;
+    if (rareNonInheritedData.get() != other.rareNonInheritedData.get()) {
+        if (rareNonInheritedData->userDrag != other.rareNonInheritedData->userDrag
+            || rareNonInheritedData->m_borderFit != other.rareNonInheritedData->m_borderFit
+            || rareNonInheritedData->m_objectFit != other.rareNonInheritedData->m_objectFit
+            || rareNonInheritedData->m_objectPosition != other.rareNonInheritedData->m_objectPosition
+            || rareNonInheritedData->m_shapeOutside != other.rareNonInheritedData->m_shapeOutside
+            || rareNonInheritedData->m_clipPath != other.rareNonInheritedData->m_clipPath)
+            return true;
+    }
 
     return false;
 }
@@ -675,22 +682,26 @@ unsigned RenderStyle::computeChangedContextSensitiveProperties(const RenderStyle
         if (rareNonInheritedData->opacity != other.rareNonInheritedData->opacity)
             changedContextSensitiveProperties |= ContextSensitivePropertyOpacity;
 
-        if (rareNonInheritedData->m_filter.get() != other.rareNonInheritedData->m_filter.get()
-            && *rareNonInheritedData->m_filter.get() != *other.rareNonInheritedData->m_filter.get())
+        if (rareNonInheritedData->m_filter != other.rareNonInheritedData->m_filter)
             changedContextSensitiveProperties |= ContextSensitivePropertyFilter;
     }
 
     if (!diff.needsRepaint()) {
         if (inherited->color != other.inherited->color
             || inherited_flags._text_decorations != other.inherited_flags._text_decorations
-            || visual->textDecoration != other.visual->textDecoration
-            || rareNonInheritedData->m_textDecorationStyle != other.rareNonInheritedData->m_textDecorationStyle
-            || rareNonInheritedData->m_textDecorationColor != other.rareNonInheritedData->m_textDecorationColor
-            || rareInheritedData->textFillColor() != other.rareInheritedData->textFillColor()
-            || rareInheritedData->textStrokeColor() != other.rareInheritedData->textStrokeColor()
-            || rareInheritedData->textEmphasisColor() != other.rareInheritedData->textEmphasisColor()
-            || rareInheritedData->textEmphasisFill != other.rareInheritedData->textEmphasisFill)
+            || visual->textDecoration != other.visual->textDecoration) {
             changedContextSensitiveProperties |= ContextSensitivePropertyTextOrColor;
+        } else if (rareNonInheritedData.get() != other.rareNonInheritedData.get()) {
+            if (rareNonInheritedData->m_textDecorationStyle != other.rareNonInheritedData->m_textDecorationStyle
+                || rareNonInheritedData->m_textDecorationColor != other.rareNonInheritedData->m_textDecorationColor)
+                changedContextSensitiveProperties |= ContextSensitivePropertyTextOrColor;
+        } else if (rareInheritedData.get() != other.rareInheritedData.get()) {
+            if (rareInheritedData->textFillColor() != other.rareInheritedData->textFillColor()
+                || rareInheritedData->textStrokeColor() != other.rareInheritedData->textStrokeColor()
+                || rareInheritedData->textEmphasisColor() != other.rareInheritedData->textEmphasisColor()
+                || rareInheritedData->textEmphasisFill != other.rareInheritedData->textEmphasisFill)
+                changedContextSensitiveProperties |= ContextSensitivePropertyTextOrColor;
+        }
     }
 
     return changedContextSensitiveProperties;

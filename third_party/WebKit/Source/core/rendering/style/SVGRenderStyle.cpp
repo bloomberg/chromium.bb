@@ -151,7 +151,7 @@ bool SVGRenderStyle::diffNeedsLayout(const SVGRenderStyle* other) const
         return true;
 
     // Text related properties influence layout.
-    if (misc != other->misc && misc->baselineShiftValue != other->misc->baselineShiftValue)
+    if (misc->baselineShiftValue != other->misc->baselineShiftValue)
         return true;
 
     // These properties affect the cached stroke bounding box rects.
@@ -164,7 +164,7 @@ bool SVGRenderStyle::diffNeedsLayout(const SVGRenderStyle* other) const
         return true;
 
     // Some stroke properties, requires relayouts, as the cached stroke boundaries need to be recalculated.
-    if (stroke != other->stroke) {
+    if (stroke.get() != other->stroke.get()) {
         if (stroke->width != other->stroke->width
             || stroke->paintType != other->stroke->paintType
             || stroke->paintColor != other->stroke->paintColor
@@ -187,7 +187,7 @@ bool SVGRenderStyle::diffNeedsRepaint(const SVGRenderStyle* other) const
         return true;
 
     // Painting related properties only need repaints.
-    if (misc != other->misc) {
+    if (misc.get() != other->misc.get()) {
         if (misc->floodColor != other->misc->floodColor
             || misc->floodOpacity != other->misc->floodOpacity
             || misc->lightingColor != other->misc->lightingColor)
@@ -195,9 +195,13 @@ bool SVGRenderStyle::diffNeedsRepaint(const SVGRenderStyle* other) const
     }
 
     // If fill changes, we just need to repaint. Fill boundaries are not influenced by this, only by the Path, that RenderSVGPath contains.
-    if (fill->paintType != other->fill->paintType || fill->paintColor != other->fill->paintColor
-        || fill->paintUri != other->fill->paintUri || fill->opacity != other->fill->opacity)
-        return true;
+    if (fill.get() != other->fill.get()) {
+        if (fill->paintType != other->fill->paintType
+            || fill->paintColor != other->fill->paintColor
+            || fill->paintUri != other->fill->paintUri
+            || fill->opacity != other->fill->opacity)
+            return true;
+    }
 
     // If gradient stops change, we just need to repaint. Style updates are already handled through RenderSVGGradientSTop.
     if (stops != other->stops)
