@@ -64,6 +64,13 @@ def GenerateNinjaFile(env, dest_file):
 # Generic rule for handling any command.
 rule cmd
   command = $cmd
+
+# NaCl overrides SCons's Install() step to create hard links, for speed.
+# To coexist with that, we must remove the file before copying, otherwise
+# cp complains the source and dest "are the same file".  We also create
+# hard links here (with -l) for speed.
+rule install
+  command = rm -f $out && cp -l $in $out
 """)
 
     for node in node_list:
@@ -76,7 +83,9 @@ rule cmd
         funcname = action.function_name()
         if funcname == 'installFunc':
           assert len(deps) == 1, len(deps)
-          cmds = ['cp %s %s' % (deps[0], dest_path)]
+          ninja_fh.write('\nbuild %s: install %s\n'
+                         % (dest_path, ' '.join(deps)))
+          continue
         else:
           sys.stderr.write('Unknown FunctionAction, %r: skipping target %r\n'
                            % (funcname, dest_path))
