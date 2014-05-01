@@ -53,6 +53,9 @@ public:
     typedef CustomElementMicrotaskStep::Result Result;
     Result dispatch();
 
+#if !defined(NDEBUG)
+    void show(unsigned indent);
+#endif
 private:
     CustomElementMicrotaskQueue() { }
 

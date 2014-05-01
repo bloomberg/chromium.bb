@@ -47,6 +47,10 @@ public:
     };
 
     virtual Result process() = 0;
+
+#if !defined(NDEBUG)
+    virtual void show(unsigned indent) = 0;
+#endif
 };
 
 }

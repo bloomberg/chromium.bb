@@ -102,4 +102,16 @@ CustomElementMicrotaskStep::Result CustomElementMicrotaskQueue::dispatch()
     return result;
 }
 
+#if !defined(NDEBUG)
+void CustomElementMicrotaskQueue::show(unsigned indent)
+{
+    for (unsigned q = 0; q < m_queue.size(); ++q) {
+        if (m_queue[q])
+            m_queue[q]->show(indent);
+        else
+            fprintf(stderr, "%*s\n", indent, "");
+    }
+}
+#endif
+
 } // namespace WebCore

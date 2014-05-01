@@ -54,6 +54,10 @@ private:
 
     virtual Result process() OVERRIDE;
 
+#if !defined(NDEBUG)
+    virtual void show(unsigned indent) OVERRIDE;
+#endif
+
     RefPtr<CustomElementRegistrationContext> m_context;
     RefPtr<Element> m_element;
     CustomElementDescriptor m_descriptor;

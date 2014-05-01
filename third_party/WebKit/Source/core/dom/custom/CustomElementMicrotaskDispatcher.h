@@ -31,6 +31,10 @@ public:
 
     bool elementQueueIsEmpty() { return m_elements.isEmpty(); }
 
+#if !defined(NDEBUG)
+    void show();
+#endif
+
 private:
     CustomElementMicrotaskDispatcher();
 
@@ -51,5 +55,9 @@ private:
 };
 
 }
+
+#if !defined(NDEBUG)
+void showCEMD();
+#endif
 
 #endif // CustomElementMicrotaskDispatcher_h

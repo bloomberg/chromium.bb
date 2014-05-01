@@ -62,6 +62,10 @@ private:
     // CustomElementMicrotaskStep
     virtual Result process() OVERRIDE FINAL;
 
+#if !defined(NDEBUG)
+    virtual void show(unsigned indent) OVERRIDE;
+#endif
+
     bool m_importFinished;
     RefPtr<CustomElementMicrotaskQueue> m_queue;
 };

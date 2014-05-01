@@ -33,6 +33,7 @@
 
 #include "core/dom/custom/CustomElementMicrotaskDispatcher.h"
 #include "core/dom/custom/CustomElementMicrotaskQueue.h"
+#include <stdio.h>
 
 namespace WebCore {
 
@@ -66,5 +67,14 @@ CustomElementMicrotaskStep::Result CustomElementMicrotaskImportStep::process()
         result = Result(result | ShouldStop);
     return result;
 }
+
+#if !defined(NDEBUG)
+void CustomElementMicrotaskImportStep::show(unsigned indent)
+{
+    fprintf(stderr, "indent: %d\n", indent);
+    fprintf(stderr, "%*sImport\n", indent, "");
+    m_queue->show(indent + 1);
+}
+#endif
 
 } // namespace WebCore
