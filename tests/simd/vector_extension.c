@@ -10,13 +10,16 @@
  * http://clang.llvm.org/docs/LanguageExtensions.html
  *
  * This test is thorough feature-wise, but not thorough in testing the
- * corner-case values. It tries to exercise all vector types and
- * operations that are supported, and verifies that test values generate
- * the right result by comparing to a golden output file. It does not
- * test all the MIN/MAX values, nor does it test undefined behavior.
- *
- * TODO(jfb) Add testing for vector conversion.
- * TODO(jfb) Add testing for vector shuffle once PNaCl supports it.
+ * corner-case values. It merely ensures that the compiler can generate
+ * code for vector extensions without rejecting it (e.g. with some
+ * internal failure or validation error), and that the output it
+ * generates is as specified by the extensions' specification (for the
+ * few inputs it exercises). The test tries to exercise all vector types
+ * and operations that are supported by PNaCl, and verifies that test
+ * values generate the right result by comparing to a golden output
+ * file. It does not test all the MIN/MAX values, nor does it test
+ * undefined behavior: these are left to more thorough tests in this
+ * directory.
  */
 
 #include "native_client/src/include/nacl_macros.h"
@@ -187,6 +190,72 @@ typedef I32 VF32_BOOL __attribute__((vector_size(VEC_BYTES)));
     TEST_UNARY(TYPE, ~, VAL);     \
   } while (0)
 
+#define TEST_CAST(TYPE_TO, TYPE_FROM, VAL)                            \
+  do {                                                                \
+    NACL_COMPILE_TIME_ASSERT(sizeof(TYPE_TO) ==                       \
+                             sizeof(VAL[0])); /* Types must match. */ \
+    NACL_COMPILE_TIME_ASSERT(sizeof(TYPE_FROM) ==                     \
+                             sizeof(VAL[0])); /* Types must match. */ \
+    const V##TYPE_TO result = (V##TYPE_TO)VAL;                        \
+    printf(#TYPE_FROM " cast to (V%s) ", #TYPE_TO);                   \
+    PRINT(TYPE_FROM, VAL);                                            \
+    printf(" = ");                                                    \
+    PRINT(TYPE_TO, result);                                           \
+    printf("\n");                                                     \
+  } while (0)
+
+#define TEST_8BIT_CAST(TYPE_FROM, VAL) \
+  do {                                 \
+    TEST_CAST(I8, TYPE_FROM, VAL);     \
+    TEST_CAST(U8, TYPE_FROM, VAL);     \
+  } while (0)
+
+#define TEST_16BIT_CAST(TYPE_FROM, VAL) \
+  do {                                  \
+    TEST_CAST(I16, TYPE_FROM, VAL);     \
+    TEST_CAST(U16, TYPE_FROM, VAL);     \
+  } while (0)
+
+#define TEST_32BIT_CAST(TYPE_FROM, VAL) \
+  do {                                  \
+    TEST_CAST(I32, TYPE_FROM, VAL);     \
+    TEST_CAST(U32, TYPE_FROM, VAL);     \
+    TEST_CAST(F32, TYPE_FROM, VAL);     \
+  } while (0)
+
+#define TEST_CONVERTVECTOR(TYPE_TO, TYPE_FROM, VAL)                     \
+  do {                                                                  \
+    NACL_COMPILE_TIME_ASSERT(sizeof(TYPE_TO) ==                         \
+                             sizeof(VAL[0])); /* Types must match. */   \
+    NACL_COMPILE_TIME_ASSERT(sizeof(TYPE_FROM) ==                       \
+                             sizeof(VAL[0])); /* Types must match. */   \
+    const V##TYPE_TO result = __builtin_convertvector(VAL, V##TYPE_TO); \
+    printf(#TYPE_FROM " convertvector to V%s ", #TYPE_TO);              \
+    PRINT(TYPE_FROM, VAL);                                              \
+    printf(" = ");                                                      \
+    PRINT(TYPE_TO, result);                                             \
+    printf("\n");                                                       \
+  } while (0)
+
+#define TEST_8BIT_CONVERTVECTOR(TYPE_FROM, VAL) \
+  do {                                          \
+    TEST_CONVERTVECTOR(I8, TYPE_FROM, VAL);     \
+    TEST_CONVERTVECTOR(U8, TYPE_FROM, VAL);     \
+  } while (0)
+
+#define TEST_16BIT_CONVERTVECTOR(TYPE_FROM, VAL) \
+  do {                                           \
+    TEST_CONVERTVECTOR(I16, TYPE_FROM, VAL);     \
+    TEST_CONVERTVECTOR(U16, TYPE_FROM, VAL);     \
+  } while (0)
+
+#define TEST_32BIT_CONVERTVECTOR(TYPE_FROM, VAL) \
+  do {                                           \
+    TEST_CONVERTVECTOR(I32, TYPE_FROM, VAL);     \
+    TEST_CONVERTVECTOR(U32, TYPE_FROM, VAL);     \
+    TEST_CONVERTVECTOR(F32, TYPE_FROM, VAL);     \
+  } while (0)
+
 /*
  * Vector values used in tests.
  *
@@ -243,6 +312,22 @@ __attribute__((noinline)) void test(void) {
   TEST_UNARY_INT(I32, vi32[0]);
   TEST_UNARY_INT(U32, vu32[0]);
   TEST_UNARY_FP(F32, vf32[0]);
+
+  TEST_8BIT_CAST(I8, vi8[0]);
+  TEST_8BIT_CAST(U8, vu8[0]);
+  TEST_16BIT_CAST(I16, vi16[0]);
+  TEST_16BIT_CAST(U16, vu16[0]);
+  TEST_32BIT_CAST(I32, vi32[0]);
+  TEST_32BIT_CAST(U32, vu32[0]);
+  TEST_32BIT_CAST(F32, vf32[0]);
+
+  TEST_8BIT_CONVERTVECTOR(I8, vi8[0]);
+  TEST_8BIT_CONVERTVECTOR(U8, vu8[0]);
+  TEST_16BIT_CONVERTVECTOR(I16, vi16[0]);
+  TEST_16BIT_CONVERTVECTOR(U16, vu16[0]);
+  TEST_32BIT_CONVERTVECTOR(I32, vi32[0]);
+  TEST_32BIT_CONVERTVECTOR(U32, vu32[0]);
+  TEST_32BIT_CONVERTVECTOR(F32, vf32[0]);
 }
 
 int main(void) {

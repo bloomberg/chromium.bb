@@ -61,6 +61,6 @@ AddTest(ref_env, 'simd.cc', test_suffix='_ref')
 # TODO(jfb) Re-enable testing when we migrate to a newer GCC.
 if env.Bit('bitcode') and env['TOOLCHAIN_FEATURE_VERSION'] >= 5:
   AddTest(native_env, 'vector_extension.c',
-          golden_file=ref_env.File('vector_extension.stdout'))
+          golden_file=native_env.File('vector_extension.stdout'))
   AddTest(native_env, 'vector_shuffle.cc',
-          golden_file=ref_env.File('vector_shuffle.stdout'))
+          golden_file=native_env.File('vector_shuffle.stdout'))
