@@ -8,8 +8,14 @@ This is the root module of all the cr code.
 Commonly accessed elements, including all plugins, are promoted into this
 module.
 """
-import sys
 
-from cr.config import Config
-from cr.loader import AutoExport
-import cr.plugin
+import cr.loader
+from cr.loader import Import
+
+Import(__name__, 'auto.user')
+Import(__name__, 'autocomplete')
+Import(__name__, 'config')
+Import(__name__, 'plugin')
+Import(__name__, 'base')
+Import(__name__, 'commands')
+Import(__name__, 'actions')

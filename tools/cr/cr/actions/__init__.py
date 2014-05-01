@@ -8,3 +8,10 @@ This package holds the standard actions used by the commands in the cr tool.
 These actions are the things that actually perform the work, they are generally
 run in sequences by commands.
 """
+
+import cr
+
+cr.Import(__name__, 'action')
+cr.Import(__name__, 'runner')
+cr.Import(__name__, 'builder')
+cr.Import(__name__, 'installer')

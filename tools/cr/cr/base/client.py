@@ -204,3 +204,24 @@ def PrintInfo():
       print ' ', name, '=', cr.context.Get(name)
   except AttributeError:
     pass
+
+
+class InitHook(cr.Plugin, cr.Plugin.Type):
+  """Base class for output directory initialization hooks.
+
+  Implementations used to fix from old version to new ones live in the
+  cr.fixups package.
+  """
+
+  def Run(self, old_version, config):
+    """Run the initialization hook.
+
+    This is invoked once per init invocation.
+    Args:
+      old_version: The old version,
+          0.0 if the old version was bad or missing,
+          None if building a new output direcory.
+      config: The mutable config that will be written.
+    """
+    raise NotImplementedError('Must be overridden.')
+

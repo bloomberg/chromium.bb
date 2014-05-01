@@ -10,10 +10,6 @@ Holds the main function and all it's support code.
 import os
 import sys
 import cr
-import cr.auto.user
-import cr.autocomplete
-import cr.loader
-import cr.base.context
 
 _CONTACT = 'iancottrell@chromium.org'
 

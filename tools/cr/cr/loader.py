@@ -68,16 +68,31 @@ def _ScanPackage(package):
       basenames = sorted(os.listdir(path))
     except OSError:
       basenames = []
+    packages = []
     for basename in basenames:
       fullpath = os.path.join(path, basename)
       if os.path.isdir(fullpath):
         name = '.'.join([package.__name__, basename])
-        child = _Import(name)
-        modules.extend(_ScanPackage(child))
+        packages.append(name)
       elif basename.endswith('.py') and not basename.startswith('_'):
         name = '.'.join([package.__name__, basename[:-3]])
-        modules.append(name)
+        module = _Import(name)
+        _ScanModule(module)
+        modules.append(module)
+    for name in packages:
+      child = _Import(name)
+      modules.extend(_ScanPackage(child))
   return modules
+
+
+def Import(package, name):
+  module = _Import(package + '.' + name)
+  path = getattr(module, '__path__', None)
+  if path:
+    _ScanPackage(module)
+  else:
+    _ScanModule(module)
+  return module
 
 
 def Scan():
@@ -92,32 +107,7 @@ def Scan():
   Modules are allowed to refer to each other, their import will be retried
   until it succeeds or no progress can be made on any module.
   """
-  remains = _ScanPackage(cr)
-  progress = True
-  modules = []
-  while progress and remains:
-    progress = False
-    todo = remains
-    remains = []
-    for name in todo:
-      try:
-        module = _Import(name)
-        modules.append(module)
-        _ScanModule(module)
-        progress = True
-      except:  # sink all errors here pylint: disable=bare-except
-        # Try this one again, if progress was made on a possible dependency
-        remains.append(name)
-  if remains:
-    print "Cannot load all of", remains
-    # There are modules that won't import in any order.
-    # Print all the errors as we can't determine root cause.
-    for name in remains:
-      try:
-        _Import(name)
-      except ImportError as e:
-        print 'Failed importing', name, ':', e
-    exit(1)
+  modules = _ScanPackage(cr)
   # Now scan all the found modules one more time.
   # This happens after all imports, in case any imports register scan hooks.
   for module in modules:

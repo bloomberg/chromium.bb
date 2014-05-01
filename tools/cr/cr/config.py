@@ -66,7 +66,7 @@ class _Tracer(object):
     return value
 
 
-class Config(cr.visitor.Node):
+class Config(cr.visitor.Node, cr.loader.AutoExport):
   """The main variable holding class.
 
   This holds a set of unresolved key value pairs, and the set of child Config
@@ -237,4 +237,3 @@ class Config(cr.visitor.Node):
 
   def __contains__(self, key):
     return self.Find(key) is not None
-

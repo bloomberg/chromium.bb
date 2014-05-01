@@ -7,3 +7,7 @@
 This package has all the standard commands built in to the cr tool.
 Most commands use actions to perform the real work.
 """
+
+import cr
+
+cr.Import(__name__, 'target')
