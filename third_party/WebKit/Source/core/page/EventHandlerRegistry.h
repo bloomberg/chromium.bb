@@ -17,7 +17,7 @@ typedef HashCountedSet<EventTarget*> EventTargetSet;
 // documents that can be rendered or can receive input (i.e., are attached to a
 // Page) are registered here.
 // TODO(skyostil): This class should move to the FrameHost (crbug.com/369082).
-class EventHandlerRegistry FINAL : public NoBaseWillBeGarbageCollectedFinalized<EventHandlerRegistry>, public Supplement<Page> {
+class EventHandlerRegistry FINAL : public NoBaseWillBeGarbageCollectedFinalized<EventHandlerRegistry>, public WillBeHeapSupplement<Page> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(EventHandlerRegistry);
 public:
     virtual ~EventHandlerRegistry();

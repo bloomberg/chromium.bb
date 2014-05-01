@@ -31,7 +31,7 @@ EventHandlerRegistry* EventHandlerRegistry::from(Page& page)
     EventHandlerRegistry* registry = static_cast<EventHandlerRegistry*>(WillBeHeapSupplement<Page>::from(page, supplementName()));
     if (!registry) {
         registry = new EventHandlerRegistry(page);
-        Supplement<Page>::provideTo(page, supplementName(), adoptPtrWillBeNoop(registry));
+        WillBeHeapSupplement<Page>::provideTo(page, supplementName(), adoptPtrWillBeNoop(registry));
     }
     return registry;
 }
