@@ -103,7 +103,7 @@ class WebglConformance(test_module.Test):
   def AddTestCommandLineArgs(cls, group):
     group.add_option('--webgl-conformance-version',
         help='Version of the WebGL conformance tests to run.',
-        default='1.0.2')
+        default='1.0.3')
 
   def CreatePageSet(self, options):
     tests = self._ParseTests('00_test_list.txt',
