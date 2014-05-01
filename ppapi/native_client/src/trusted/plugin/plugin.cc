@@ -34,7 +34,6 @@
 #include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/module.h"
 
-#include "ppapi/native_client/src/trusted/plugin/file_utils.h"
 #include "ppapi/native_client/src/trusted/plugin/json_manifest.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_subprocess.h"
@@ -370,7 +369,6 @@ Plugin::Plugin(PP_Instance pp_instance)
       uses_nonsfi_mode_(false),
       wrapper_factory_(NULL),
       time_of_last_progress_event_(0),
-      manifest_open_time_(-1),
       nexe_open_time_(-1),
       nacl_interface_(NULL),
       uma_interface_(this) {
@@ -566,74 +564,14 @@ void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
 void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("Plugin::NaClManifestFileDidOpen (pp_error=%"
                  NACL_PRId32 ")\n", pp_error));
-  int64_t now = NaClGetTimeOfDayMicroseconds();
-  int64_t download_time;
-  if (now < manifest_open_time_)
-    download_time = 0;
-  else
-    download_time = now - manifest_open_time_;
-  HistogramTimeSmall("NaCl.Perf.StartupTime.ManifestDownload",
-                     download_time / 1000);
-  HistogramHTTPStatusCode(
-      nacl_interface_->GetIsInstalled(pp_instance()) ?
-          "NaCl.HttpStatusCodeClass.Manifest.InstalledApp" :
-          "NaCl.HttpStatusCodeClass.Manifest.NotInstalledApp",
-      nexe_downloader_.status_code());
-  ErrorInfo error_info;
-  NaClFileInfo tmp_info(nexe_downloader_.GetFileInfo());
-  NaClFileInfoAutoCloser info(&tmp_info);
-  PLUGIN_PRINTF(("Plugin::NaClManifestFileDidOpen (file_desc=%"
-                 NACL_PRId32 ")\n", info.get_desc()));
-  if (pp_error != PP_OK || info.get_desc() == NACL_NO_FILE_DESC) {
-    if (pp_error == PP_ERROR_ABORTED) {
-      ReportLoadAbort();
-    } else if (pp_error == PP_ERROR_NOACCESS) {
-      error_info.SetReport(PP_NACL_ERROR_MANIFEST_NOACCESS_URL,
-                           "access to manifest url was denied.");
-      ReportLoadError(error_info);
-    } else {
-      error_info.SetReport(PP_NACL_ERROR_MANIFEST_LOAD_URL,
-                           "could not load manifest url.");
-      ReportLoadError(error_info);
-    }
-    return;
-  }
-  nacl::string json_buffer;
-  // SlurpFile closes the file descriptor after reading (or on error).
-  file_utils::StatusCode status = file_utils::SlurpFile(
-      info.Release().desc, json_buffer, kNaClManifestMaxFileBytes);
+  if (pp_error == PP_OK) {
+    // Take local ownership of manifest_data_var_
+    pp::Var manifest_data = pp::Var(pp::PASS_REF, manifest_data_var_);
+    manifest_data_var_ = PP_MakeUndefined();
 
-  if (status != file_utils::PLUGIN_FILE_SUCCESS) {
-    switch (status) {
-      case file_utils::PLUGIN_FILE_SUCCESS:
-        CHECK(0);
-        break;
-      case file_utils::PLUGIN_FILE_ERROR_MEM_ALLOC:
-        error_info.SetReport(PP_NACL_ERROR_MANIFEST_MEMORY_ALLOC,
-                             "could not allocate manifest memory.");
-        break;
-      case file_utils::PLUGIN_FILE_ERROR_OPEN:
-        error_info.SetReport(PP_NACL_ERROR_MANIFEST_OPEN,
-                             "could not open manifest file.");
-        break;
-      case file_utils::PLUGIN_FILE_ERROR_FILE_TOO_LARGE:
-        error_info.SetReport(PP_NACL_ERROR_MANIFEST_TOO_LARGE,
-                             "manifest file too large.");
-        break;
-      case file_utils::PLUGIN_FILE_ERROR_STAT:
-        error_info.SetReport(PP_NACL_ERROR_MANIFEST_STAT,
-                             "could not stat manifest file.");
-        break;
-      case file_utils::PLUGIN_FILE_ERROR_READ:
-        error_info.SetReport(PP_NACL_ERROR_MANIFEST_READ,
-                             "could not read manifest file.");
-        break;
-    }
-    ReportLoadError(error_info);
-    return;
+    std::string json_buffer = manifest_data.AsString();
+    ProcessNaClManifest(json_buffer);
   }
-
-  ProcessNaClManifest(json_buffer);
 }
 
 void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
@@ -713,13 +651,11 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
   } else {
     pp::CompletionCallback open_callback =
         callback_factory_.NewCallback(&Plugin::NaClManifestFileDidOpen);
-    manifest_open_time_ = NaClGetTimeOfDayMicroseconds();
-    // Will always call the callback on success or failure.
-    CHECK(nexe_downloader_.Open(nmf_resolved_url.AsString(),
-                                DOWNLOAD_TO_FILE,
-                                open_callback,
-                                false,
-                                NULL));
+    std::string nmf_resolved_url_str = nmf_resolved_url.AsString();
+    nacl_interface_->DownloadManifestToBuffer(
+        pp_instance(),
+        &manifest_data_var_,
+        open_callback.pp_completion_callback());
   }
 }
 

@@ -3276,6 +3276,11 @@ static PP_Bool Pnacl_M25_PPB_NaCl_Private_DevInterfacesEnabled(PP_Instance insta
   return iface->DevInterfacesEnabled(instance);
 }
 
+static void Pnacl_M25_PPB_NaCl_Private_DownloadManifestToBuffer(PP_Instance instance, struct PP_Var* data, struct PP_CompletionCallback* callback) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  iface->DownloadManifestToBuffer(instance, data, *callback);
+}
+
 /* End wrapper methods for PPB_NaCl_Private_1_0 */
 
 /* Begin wrapper methods for PPB_NetAddress_Private_0_1 */
@@ -5006,7 +5011,8 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .ProcessNaClManifest = (void (*)(PP_Instance instance, const char* program_url))&Pnacl_M25_PPB_NaCl_Private_ProcessNaClManifest,
     .GetManifestURLArgument = (struct PP_Var (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetManifestURLArgument,
     .IsPNaCl = (PP_Bool (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_IsPNaCl,
-    .DevInterfacesEnabled = (PP_Bool (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_DevInterfacesEnabled
+    .DevInterfacesEnabled = (PP_Bool (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_DevInterfacesEnabled,
+    .DownloadManifestToBuffer = (void (*)(PP_Instance instance, struct PP_Var* data, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_DownloadManifestToBuffer
 };
 
 static const struct PPB_NetAddress_Private_0_1 Pnacl_Wrappers_PPB_NetAddress_Private_0_1 = {

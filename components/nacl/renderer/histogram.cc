@@ -88,6 +88,8 @@ void HistogramEnumerateOsArch(const std::string& sandbox_isa) {
 // These constants MUST match those in
 // ppapi/native_client/src/trusted/plugin/plugin.cc
 void HistogramTimeSmall(const std::string& name, int64_t sample) {
+  if (sample < 0)
+    sample = 0;
   base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
       name,
       base::TimeDelta::FromMilliseconds(1),
@@ -102,6 +104,8 @@ void HistogramTimeSmall(const std::string& name, int64_t sample) {
 // These constants MUST match those in
 // ppapi/native_client/src/trusted/plugin/plugin.cc
 void HistogramTimeMedium(const std::string& name, int64_t sample) {
+  if (sample < 0)
+    sample = 0;
   base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
       name,
       base::TimeDelta::FromMilliseconds(10),
@@ -116,6 +120,8 @@ void HistogramTimeMedium(const std::string& name, int64_t sample) {
 // These constants MUST match those in
 // ppapi/native_client/src/trusted/plugin/plugin.cc
 void HistogramTimeLarge(const std::string& name, int64_t sample) {
+  if (sample < 0)
+    sample = 0;
   base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
       name,
       base::TimeDelta::FromMilliseconds(100),

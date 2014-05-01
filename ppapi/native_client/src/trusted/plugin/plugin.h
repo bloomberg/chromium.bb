@@ -331,8 +331,9 @@ class Plugin : public pp::Instance {
   int exit_status_;
 
   // Open times are in microseconds.
-  int64_t manifest_open_time_;
   int64_t nexe_open_time_;
+
+  PP_Var manifest_data_var_;
 
   const PPB_NaCl_Private* nacl_interface_;
   pp::UMAPrivate uma_interface_;
