@@ -13,9 +13,9 @@ var escape_codes = {
 };
 
 encodings_table.forEach(function(section) {
-    section.encodings.forEach(function(encoding) {
-        if (encoding.name === 'replacement')
-            return;
+    section.encodings.filter(function(encoding) {
+        return encoding.name !== 'replacement';
+    }).forEach(function(encoding) {
         if (utf_encodings.indexOf(encoding.name) !== -1)
             return;
 

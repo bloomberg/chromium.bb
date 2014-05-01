@@ -41,12 +41,12 @@ var bad = [
 bad.forEach(function(t) {
     test(function() {
         assert_equals(new TextDecoder(t.encoding).decode(new Uint8Array(t.input)), t.expected);
-    }, t.encoding + " - " + t.name);
+    }, t.encoding + ' - ' + t.name);
     test(function() {
         assert_throws({name: 'EncodingError'}, function() {
             new TextDecoder(t.encoding, {fatal: true}).decode(new Uint8Array(t.input))
         });
-    }, t.encoding + " - " + t.name + ' (fatal flag set)');
+    }, t.encoding + ' - ' + t.name + ' (fatal flag set)');
 });
 
 </script>
