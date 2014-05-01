@@ -375,6 +375,14 @@ void EncodeIDBKeyPath(const IndexedDBKeyPath& value, std::string* into) {
   }
 }
 
+void EncodeBlobJournal(const BlobJournalType& journal, std::string* into) {
+  BlobJournalType::const_iterator iter;
+  for (iter = journal.begin(); iter != journal.end(); ++iter) {
+    EncodeVarInt(iter->first, into);
+    EncodeVarInt(iter->second, into);
+  }
+}
+
 bool DecodeByte(StringPiece* slice, unsigned char* value) {
   if (slice->empty())
     return false;
@@ -605,6 +613,27 @@ bool DecodeIDBKeyPath(StringPiece* slice, IndexedDBKeyPath* value) {
   }
   NOTREACHED();
   return false;
+}
+
+bool DecodeBlobJournal(StringPiece* slice, BlobJournalType* journal) {
+  BlobJournalType output;
+  while (!slice->empty()) {
+    int64 database_id = -1;
+    int64 blob_key = -1;
+    if (!DecodeVarInt(slice, &database_id))
+      return false;
+    if (!KeyPrefix::IsValidDatabaseId(database_id))
+      return false;
+    if (!DecodeVarInt(slice, &blob_key))
+      return false;
+    if (!DatabaseMetaDataKey::IsValidBlobKey(blob_key) &&
+        (blob_key != DatabaseMetaDataKey::kAllBlobsKey)) {
+      return false;
+    }
+    output.push_back(std::make_pair(database_id, blob_key));
+  }
+  journal->swap(output);
+  return true;
 }
 
 bool ConsumeEncodedIDBKey(StringPiece* slice) {

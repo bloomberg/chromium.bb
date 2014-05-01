@@ -370,7 +370,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
     }
     void PutBlobInfo(int64 database_id,
                      int64 object_store_id,
-                     const std::string& key,
+                     const std::string& object_store_data_key,
                      std::vector<IndexedDBBlobInfo>*,
                      ScopedVector<webkit_blob::BlobDataHandle>* handles);
 
@@ -471,6 +471,8 @@ class CONTENT_EXPORT IndexedDBBackingStore
       const Transaction::WriteDescriptor& descriptor,
       Transaction::ChainedBlobWriter* chained_blob_writer);
   virtual bool RemoveBlobFile(int64 database_id, int64 key);
+  virtual void StartJournalCleaningTimer();
+  void CleanPrimaryJournalIgnoreReturn();
 
  private:
   static scoped_refptr<IndexedDBBackingStore> Create(
@@ -499,6 +501,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
                              IndexedDBObjectStoreMetadata::IndexMap* map)
       WARN_UNUSED_RESULT;
   bool RemoveBlobDirectory(int64 database_id);
+  leveldb::Status CleanUpBlobJournal(const std::string& level_db_key);
 
   IndexedDBFactory* indexed_db_factory_;
   const GURL origin_url_;
@@ -515,6 +518,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
   net::URLRequestContext* request_context_;
   base::TaskRunner* task_runner_;
   std::set<int> child_process_ids_granted_;
+  base::OneShotTimer<IndexedDBBackingStore> journal_cleaning_timer_;
 
   scoped_ptr<LevelDBDatabase> db_;
   scoped_ptr<LevelDBComparator> comparator_;

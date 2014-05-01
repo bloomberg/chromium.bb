@@ -23,6 +23,10 @@ CONTENT_EXPORT extern const unsigned char kMinimumIndexId;
 CONTENT_EXPORT std::string MaxIDBKey();
 CONTENT_EXPORT std::string MinIDBKey();
 
+// DatabaseId, BlobKey
+typedef std::pair<int64_t, int64_t> BlobJournalEntryType;
+typedef std::vector<BlobJournalEntryType> BlobJournalType;
+
 CONTENT_EXPORT void EncodeByte(unsigned char value, std::string* into);
 CONTENT_EXPORT void EncodeBool(bool value, std::string* into);
 CONTENT_EXPORT void EncodeInt(int64 value, std::string* into);
@@ -36,6 +40,8 @@ CONTENT_EXPORT void EncodeDouble(double value, std::string* into);
 CONTENT_EXPORT void EncodeIDBKey(const IndexedDBKey& value, std::string* into);
 CONTENT_EXPORT void EncodeIDBKeyPath(const IndexedDBKeyPath& value,
                                      std::string* into);
+CONTENT_EXPORT void EncodeBlobJournal(const BlobJournalType& journal,
+                                      std::string* into);
 
 CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeByte(base::StringPiece* slice,
                                                   unsigned char* value);
@@ -60,6 +66,9 @@ CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeIDBKey(
 CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeIDBKeyPath(
     base::StringPiece* slice,
     IndexedDBKeyPath* value);
+CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeBlobJournal(
+    base::StringPiece* slice,
+    BlobJournalType* journal);
 
 CONTENT_EXPORT int CompareEncodedStringsWithLength(base::StringPiece* slice1,
                                                    base::StringPiece* slice2,
@@ -229,7 +238,7 @@ class DatabaseMetaDataKey {
     MAX_SIMPLE_METADATA_TYPE = 6
   };
 
-  static const int64 kAllBlobsKey;
+  CONTENT_EXPORT static const int64 kAllBlobsKey;
   static const int64 kBlobKeyGeneratorInitialNumber;
   // All keys <= 0 are invalid.  This one's just a convenient example.
   static const int64 kInvalidBlobKey;

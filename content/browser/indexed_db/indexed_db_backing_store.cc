@@ -126,6 +126,8 @@ enum IndexedDBBackingStoreErrorSource {
   GET_DATABASE_NAMES,
   DELETE_INDEX,
   CLEAR_OBJECT_STORE,
+  READ_BLOB_JOURNAL,
+  DECODE_BLOB_JOURNAL,
   INTERNAL_ERROR_MAX,
 };
 
@@ -190,6 +192,10 @@ static leveldb::Status InternalInconsistencyStatus() {
 
 static leveldb::Status InvalidDBKeyStatus() {
   return leveldb::Status::InvalidArgument("Invalid database key ID");
+}
+
+static leveldb::Status IOErrorStatus() {
+  return leveldb::Status::IOError("IO Error");
 }
 
 template <typename DBOrTransaction>
@@ -473,6 +479,99 @@ class DefaultLevelDBFactory : public LevelDBFactory {
     return LevelDBDatabase::Destroy(file_name);
   }
 };
+
+// TODO(ericu): Error recovery. If we persistently can't read the
+// blob journal, the safe thing to do is to clear it and leak the blobs,
+// though that may be costly. Still, database/directory deletion should always
+// clean things up, and we can write an fsck that will do a full correction if
+// need be.
+template <typename T>
+static leveldb::Status GetBlobJournal(const StringPiece& leveldb_key,
+                                      T* leveldb_transaction,
+                                      BlobJournalType* journal) {
+  std::string data;
+  bool found = false;
+  leveldb::Status s = leveldb_transaction->Get(leveldb_key, &data, &found);
+  if (!s.ok()) {
+    INTERNAL_READ_ERROR_UNTESTED(READ_BLOB_JOURNAL);
+    return s;
+  }
+  journal->clear();
+  if (!found || !data.size())
+    return leveldb::Status::OK();
+  StringPiece slice(data);
+  if (!DecodeBlobJournal(&slice, journal)) {
+    INTERNAL_READ_ERROR_UNTESTED(DECODE_BLOB_JOURNAL);
+    s = InternalInconsistencyStatus();
+  }
+  return s;
+}
+
+static void ClearBlobJournal(LevelDBTransaction* leveldb_transaction,
+                             const std::string& level_db_key) {
+  leveldb_transaction->Remove(level_db_key);
+}
+
+static void UpdatePrimaryJournalWithBlobList(
+    LevelDBTransaction* leveldb_transaction,
+    const BlobJournalType& journal) {
+  const std::string leveldb_key = BlobJournalKey::Encode();
+  std::string data;
+  EncodeBlobJournal(journal, &data);
+  leveldb_transaction->Put(leveldb_key, &data);
+}
+
+static void UpdateLiveBlobJournalWithBlobList(
+    LevelDBTransaction* leveldb_transaction,
+    const BlobJournalType& journal) {
+  const std::string leveldb_key = LiveBlobJournalKey::Encode();
+  std::string data;
+  EncodeBlobJournal(journal, &data);
+  leveldb_transaction->Put(leveldb_key, &data);
+}
+
+static leveldb::Status MergeBlobsIntoLiveBlobJournal(
+    LevelDBTransaction* leveldb_transaction,
+    const BlobJournalType& journal) {
+  BlobJournalType old_journal;
+  const std::string key = LiveBlobJournalKey::Encode();
+  leveldb::Status s = GetBlobJournal(key, leveldb_transaction, &old_journal);
+  if (!s.ok())
+    return s;
+
+  old_journal.insert(old_journal.end(), journal.begin(), journal.end());
+
+  UpdateLiveBlobJournalWithBlobList(leveldb_transaction, old_journal);
+  return leveldb::Status::OK();
+}
+
+static void UpdateBlobJournalWithDatabase(
+    LevelDBDirectTransaction* leveldb_transaction,
+    int64 database_id) {
+  BlobJournalType journal;
+  journal.push_back(
+      std::make_pair(database_id, DatabaseMetaDataKey::kAllBlobsKey));
+  const std::string key = BlobJournalKey::Encode();
+  std::string data;
+  EncodeBlobJournal(journal, &data);
+  leveldb_transaction->Put(key, &data);
+}
+
+static leveldb::Status MergeDatabaseIntoLiveBlobJournal(
+    LevelDBDirectTransaction* leveldb_transaction,
+    int64 database_id) {
+  BlobJournalType journal;
+  const std::string key = LiveBlobJournalKey::Encode();
+  leveldb::Status s = GetBlobJournal(key, leveldb_transaction, &journal);
+  if (!s.ok())
+    return s;
+  journal.push_back(
+      std::make_pair(database_id, DatabaseMetaDataKey::kAllBlobsKey));
+  std::string data;
+  EncodeBlobJournal(journal, &data);
+  leveldb_transaction->Put(key, &data);
+  return leveldb::Status::OK();
+}
 
 IndexedDBBackingStore::IndexedDBBackingStore(
     IndexedDBFactory* indexed_db_factory,
@@ -1097,6 +1196,18 @@ leveldb::Status IndexedDBBackingStore::DeleteDatabase(
 
   const std::string key = DatabaseNameKey::Encode(origin_identifier_, name);
   transaction->Remove(key);
+
+  // TODO(ericu): Put the real calls to the blob journal code here.  For now,
+  // I've inserted fake calls so that we don't get "you didn't use this static
+  // function" compiler errors.
+  if (false) {
+    scoped_refptr<LevelDBTransaction> fake_transaction =
+        new LevelDBTransaction(NULL);
+    BlobJournalType fake_journal;
+    MergeDatabaseIntoLiveBlobJournal(transaction.get(), metadata.id);
+    UpdateBlobJournalWithDatabase(transaction.get(), metadata.id);
+    MergeBlobsIntoLiveBlobJournal(fake_transaction.get(), fake_journal);
+  }
 
   s = transaction->Commit();
   if (!s.ok()) {
@@ -1934,6 +2045,85 @@ bool IndexedDBBackingStore::WriteBlobFile(
   return true;
 }
 
+void IndexedDBBackingStore::ReportBlobUnused(int64 database_id,
+                                             int64 blob_key) {
+  DCHECK(KeyPrefix::IsValidDatabaseId(database_id));
+  bool all_blobs = blob_key == DatabaseMetaDataKey::kAllBlobsKey;
+  DCHECK(all_blobs || DatabaseMetaDataKey::IsValidBlobKey(blob_key));
+  scoped_refptr<LevelDBTransaction> transaction =
+      new LevelDBTransaction(db_.get());
+
+  std::string live_blob_key = LiveBlobJournalKey::Encode();
+  BlobJournalType live_blob_journal;
+  if (!GetBlobJournal(live_blob_key, transaction.get(), &live_blob_journal)
+           .ok())
+    return;
+  DCHECK(live_blob_journal.size());
+
+  std::string primary_key = BlobJournalKey::Encode();
+  BlobJournalType primary_journal;
+  if (!GetBlobJournal(primary_key, transaction.get(), &primary_journal).ok())
+    return;
+
+  // There are several cases to handle.  If blob_key is kAllBlobsKey, we want to
+  // remove all entries with database_id from the live_blob journal and add only
+  // kAllBlobsKey to the primary journal.  Otherwise if IsValidBlobKey(blob_key)
+  // and we hit kAllBlobsKey for the right database_id in the journal, we leave
+  // the kAllBlobsKey entry in the live_blob journal but add the specific blob
+  // to the primary.  Otherwise if IsValidBlobKey(blob_key) and we find a
+  // matching (database_id, blob_key) tuple, we should move it to the primary
+  // journal.
+  BlobJournalType new_live_blob_journal;
+  for (BlobJournalType::iterator journal_iter = live_blob_journal.begin();
+       journal_iter != live_blob_journal.end();
+       ++journal_iter) {
+    int64 current_database_id = journal_iter->first;
+    int64 current_blob_key = journal_iter->second;
+    bool current_all_blobs =
+        current_blob_key == DatabaseMetaDataKey::kAllBlobsKey;
+    DCHECK(KeyPrefix::IsValidDatabaseId(current_database_id) ||
+           current_all_blobs);
+    if (current_database_id == database_id &&
+        (all_blobs || current_all_blobs || blob_key == current_blob_key)) {
+      if (!all_blobs) {
+        primary_journal.push_back(
+            std::make_pair(database_id, current_blob_key));
+        if (current_all_blobs)
+          new_live_blob_journal.push_back(*journal_iter);
+        new_live_blob_journal.insert(new_live_blob_journal.end(),
+                                     ++journal_iter,
+                                     live_blob_journal.end());  // All the rest.
+        break;
+      }
+    } else {
+      new_live_blob_journal.push_back(*journal_iter);
+    }
+  }
+  if (all_blobs) {
+    primary_journal.push_back(
+        std::make_pair(database_id, DatabaseMetaDataKey::kAllBlobsKey));
+  }
+  UpdatePrimaryJournalWithBlobList(transaction.get(), primary_journal);
+  UpdateLiveBlobJournalWithBlobList(transaction.get(), new_live_blob_journal);
+  transaction->Commit();
+  // We could just do the deletions/cleaning here, but if there are a lot of
+  // blobs about to be garbage collected, it'd be better to wait and do them all
+  // at once.
+  StartJournalCleaningTimer();
+}
+
+// The this reference is a raw pointer that's declared Unretained inside the
+// timer code, so this won't confuse IndexedDBFactory's check for
+// HasLastBackingStoreReference.  It's safe because if the backing store is
+// deleted, the timer will automatically be canceled on destruction.
+void IndexedDBBackingStore::StartJournalCleaningTimer() {
+  journal_cleaning_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromSeconds(5),
+      this,
+      &IndexedDBBackingStore::CleanPrimaryJournalIgnoreReturn);
+}
+
 // This assumes a file path of dbId/second-to-LSB-of-counter/counter.
 FilePath IndexedDBBackingStore::GetBlobFileName(int64 database_id, int64 key) {
   return GetBlobFileNameForKey(blob_path_, database_id, key);
@@ -2063,6 +2253,40 @@ bool IndexedDBBackingStore::RemoveBlobFile(int64 database_id, int64 key) {
 bool IndexedDBBackingStore::RemoveBlobDirectory(int64 database_id) {
   FilePath dirName = GetBlobDirectoryName(blob_path_, database_id);
   return base::DeleteFile(dirName, true);
+}
+
+leveldb::Status IndexedDBBackingStore::CleanUpBlobJournal(
+    const std::string& level_db_key) {
+  scoped_refptr<LevelDBTransaction> journal_transaction =
+      new LevelDBTransaction(db_.get());
+  BlobJournalType journal;
+  leveldb::Status s =
+      GetBlobJournal(level_db_key, journal_transaction.get(), &journal);
+  if (!s.ok())
+    return s;
+  if (!journal.size())
+    return leveldb::Status::OK();
+  BlobJournalType::iterator journal_iter;
+  for (journal_iter = journal.begin(); journal_iter != journal.end();
+       ++journal_iter) {
+    int64 database_id = journal_iter->first;
+    int64 blob_key = journal_iter->second;
+    DCHECK(KeyPrefix::IsValidDatabaseId(database_id));
+    if (blob_key == DatabaseMetaDataKey::kAllBlobsKey) {
+      if (!RemoveBlobDirectory(database_id))
+        return IOErrorStatus();
+    } else {
+      DCHECK(DatabaseMetaDataKey::IsValidBlobKey(blob_key));
+      if (!RemoveBlobFile(database_id, blob_key))
+        return IOErrorStatus();
+    }
+  }
+  ClearBlobJournal(journal_transaction.get(), level_db_key);
+  return journal_transaction->Commit();
+}
+
+void IndexedDBBackingStore::CleanPrimaryJournalIgnoreReturn() {
+  CleanUpBlobJournal(BlobJournalKey::Encode());
 }
 
 WARN_UNUSED_RESULT static leveldb::Status SetMaxIndexId(
@@ -2380,11 +2604,6 @@ leveldb::Status IndexedDBBackingStore::KeyExistsInIndex(
     return s;
   else
     return InvalidDBKeyStatus();
-}
-
-void IndexedDBBackingStore::ReportBlobUnused(int64 database_id,
-                                             int64 blob_key) {
-  // TODO(ericu)
 }
 
 IndexedDBBackingStore::Cursor::Cursor(
