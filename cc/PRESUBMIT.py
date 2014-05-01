@@ -212,6 +212,58 @@ def CheckNamespace(input_api, output_api):
       items=errors)]
   return []
 
+def CheckForUseOfWrongClock(input_api,
+                            output_api,
+                            white_list=CC_SOURCE_FILES,
+                            black_list=None):
+  """Make sure new lines of code don't use a clock susceptible to skew."""
+  black_list = tuple(black_list or input_api.DEFAULT_BLACK_LIST)
+  source_file_filter = lambda x: input_api.FilterSourceFile(x,
+                                                            white_list,
+                                                            black_list)
+  # Regular expression that should detect any explicit references to the
+  # base::Time type (or base::Clock/DefaultClock), whether in using decls,
+  # typedefs, or to call static methods.
+  base_time_type_pattern = r'(^|\W)base::(Time|Clock|DefaultClock)(\W|$)'
+
+  # Regular expression that should detect references to the base::Time class
+  # members, such as a call to base::Time::Now.
+  base_time_member_pattern = r'(^|\W)(Time|Clock|DefaultClock)::'
+
+  # Regular expression to detect "using base::Time" declarations.  We want to
+  # prevent these from triggerring a warning.  For example, it's perfectly
+  # reasonable for code to be written like this:
+  #
+  #   using base::Time;
+  #   ...
+  #   int64 foo_us = foo_s * Time::kMicrosecondsPerSecond;
+  using_base_time_decl_pattern = r'^\s*using\s+(::)?base::Time\s*;'
+
+  # Regular expression to detect references to the kXXX constants in the
+  # base::Time class.  We want to prevent these from triggerring a warning.
+  base_time_konstant_pattern = r'(^|\W)Time::k\w+'
+
+  problem_re = input_api.re.compile(
+      r'(' + base_time_type_pattern + r')|(' + base_time_member_pattern + r')')
+  exception_re = input_api.re.compile(
+      r'(' + using_base_time_decl_pattern + r')|(' +
+      base_time_konstant_pattern + r')')
+  problems = []
+  for f in input_api.AffectedSourceFiles(source_file_filter):
+    for line_number, line in f.ChangedContents():
+      if problem_re.search(line):
+        if not exception_re.search(line):
+          problems.append(
+              '  %s:%d\n    %s' % (f.LocalPath(), line_number, line.strip()))
+
+  if problems:
+    return [output_api.PresubmitPromptOrNotify(
+        'You added one or more references to the base::Time class and/or one\n'
+        'of its member functions (or base::Clock/DefaultClock). In cc code,\n'
+        'it is most certainly incorrect! Instead use base::TimeTicks.\n\n'
+        '\n'.join(problems))]
+  else:
+    return []
 
 def CheckChangeOnUpload(input_api, output_api):
   results = []
@@ -221,6 +273,7 @@ def CheckChangeOnUpload(input_api, output_api):
   results += CheckChangeLintsClean(input_api, output_api)
   results += CheckTodos(input_api, output_api)
   results += CheckNamespace(input_api, output_api)
+  results += CheckForUseOfWrongClock(input_api, output_api)
   results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api)
   return results
 
