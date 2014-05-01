@@ -329,6 +329,8 @@
         'resources/image_layer_updater.h',
         'resources/image_raster_worker_pool.cc',
         'resources/image_raster_worker_pool.h',
+        'resources/image_copy_raster_worker_pool.cc',
+        'resources/image_copy_raster_worker_pool.h',
         'resources/layer_painter.h',
         'resources/layer_quad.cc',
         'resources/layer_quad.h',

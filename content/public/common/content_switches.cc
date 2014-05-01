@@ -234,10 +234,6 @@ const char kDisableLocalStorage[]           = "disable-local-storage";
 // builds.
 const char kDisableLogging[]                = "disable-logging";
 
-// Disable rasterizer that writes directly to GPU memory.
-// Overrides the kEnableMapImage flag.
-const char kDisableMapImage[]               = "disable-map-image";
-
 // Disables Media Source API (i.e., the MediaSource object).
 const char kDisableMediaSource[]            = "disable-media-source";
 
@@ -308,6 +304,10 @@ const char kDisableXSLT[]                   = "disable-xslt";
 
 // Disables Blink's XSSAuditor. The XSSAuditor mitigates reflective XSS.
 const char kDisableXSSAuditor[]             = "disable-xss-auditor";
+
+// Disable rasterizer that writes directly to GPU memory associated with tiles.
+// Overrides the kEnableZeroCopy flag.
+const char kDisableZeroCopy[]               = "disable-zero-copy";
 
 // Specifies if the |DOMAutomationController| needs to be bound in the
 // renderer. This binding happens on per-frame basis and hence can potentially
@@ -444,9 +444,6 @@ const char kEnableInbandTextTracks[]        = "enable-inband-text-tracks";
 // builds.
 const char kEnableLogging[]                 = "enable-logging";
 
-// Enable rasterizer that writes directly to GPU memory.
-const char kEnableMapImage[]                = "enable-map-image";
-
 // Enables the memory benchmarking extension
 const char kEnableMemoryBenchmarking[]      = "enable-memory-benchmarking";
 
@@ -463,6 +460,9 @@ const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 
 // Enables use of cache if offline, even if it's stale
 const char kEnableOfflineCacheAccess[]      = "enable-offline-cache-access";
+
+// Enable rasterizer that writes directly to GPU memory.
+const char kEnableOneCopy[]                 = "enable-one-copy";
 
 // Enables use of hardware overlay for fullscreen video playback. Android only.
 const char kEnableOverlayFullscreenVideo[]  = "enable-overlay-fullscreen-video";
@@ -580,6 +580,9 @@ const char kEnableWebGLDraftExtensions[] = "enable-webgl-draft-extensions";
 
 // Enables Web MIDI API.
 const char kEnableWebMIDI[]                 = "enable-web-midi";
+
+// Enable rasterizer that writes directly to GPU memory associated with tiles.
+const char kEnableZeroCopy[]                = "enable-zero-copy";
 
 // Load NPAPI plugins from the specified directory.
 const char kExtraPluginDir[]                = "extra-plugin-dir";

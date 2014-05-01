@@ -44,6 +44,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/direct_raster_worker_pool.h"
+#include "cc/resources/image_copy_raster_worker_pool.h"
 #include "cc/resources/image_raster_worker_pool.h"
 #include "cc/resources/memory_history.h"
 #include "cc/resources/picture_layer_tiling.h"
@@ -262,7 +263,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       did_lose_called_(false),
 #endif
       shared_bitmap_manager_(manager),
-      id_(id) {
+      id_(id),
+      transfer_buffer_memory_limit_(0u) {
   DCHECK(proxy_->IsImplThread());
   DidVisibilityChange(this, visible_);
 
@@ -310,6 +312,7 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   resource_pool_.reset();
   raster_worker_pool_.reset();
   direct_raster_worker_pool_.reset();
+  staging_resource_pool_.reset();
 }
 
 void LayerTreeHostImpl::BeginMainFrameAborted(bool did_handle) {
@@ -1199,6 +1202,16 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
       unused_memory_limit_in_bytes,
       global_tile_state_.num_resources_limit);
 
+  // Staging pool resources are used as transfer buffers so we use
+  // |transfer_buffer_memory_limit_| as the memory limit for this resource pool.
+  if (staging_resource_pool_) {
+    staging_resource_pool_->CheckBusyResources();
+    staging_resource_pool_->SetResourceUsageLimits(
+        visible_ ? transfer_buffer_memory_limit_ : 0,
+        transfer_buffer_memory_limit_,
+        std::numeric_limits<size_t>::max());
+  }
+
   DidModifyTilePriorities();
 }
 
@@ -1824,27 +1837,47 @@ void LayerTreeHostImpl::CreateAndSetRenderer(
 void LayerTreeHostImpl::CreateAndSetTileManager(
     ResourceProvider* resource_provider,
     ContextProvider* context_provider,
-    bool using_map_image,
+    bool use_zero_copy,
+    bool use_one_copy,
     bool allow_rasterize_on_demand) {
   DCHECK(settings_.impl_side_painting);
   DCHECK(resource_provider);
   DCHECK(proxy_->ImplThreadTaskRunner());
 
-  if (using_map_image) {
-    raster_worker_pool_ =
-        ImageRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
-                                      RasterWorkerPool::GetTaskGraphRunner(),
-                                      resource_provider);
+  transfer_buffer_memory_limit_ =
+      GetMaxTransferBufferUsageBytes(context_provider);
+
+  if (use_zero_copy) {
     resource_pool_ =
         ResourcePool::Create(resource_provider,
                              GetMapImageTextureTarget(context_provider),
                              resource_provider->best_texture_format());
+    raster_worker_pool_ =
+        ImageRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
+                                      RasterWorkerPool::GetTaskGraphRunner(),
+                                      resource_provider);
+  } else if (use_one_copy) {
+    // We need to create a staging resource pool when using copy rasterizer.
+    staging_resource_pool_ =
+        ResourcePool::Create(resource_provider,
+                             GetMapImageTextureTarget(context_provider),
+                             resource_provider->best_texture_format());
+    resource_pool_ =
+        ResourcePool::Create(resource_provider,
+                             GL_TEXTURE_2D,
+                             resource_provider->best_texture_format());
+
+    raster_worker_pool_ = ImageCopyRasterWorkerPool::Create(
+        proxy_->ImplThreadTaskRunner(),
+        RasterWorkerPool::GetTaskGraphRunner(),
+        resource_provider,
+        staging_resource_pool_.get());
   } else {
     raster_worker_pool_ = PixelBufferRasterWorkerPool::Create(
         proxy_->ImplThreadTaskRunner(),
         RasterWorkerPool::GetTaskGraphRunner(),
         resource_provider,
-        GetMaxTransferBufferUsageBytes(context_provider));
+        transfer_buffer_memory_limit_);
     resource_pool_ = ResourcePool::Create(
         resource_provider,
         GL_TEXTURE_2D,
@@ -1884,6 +1917,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
   renderer_.reset();
   tile_manager_.reset();
   resource_pool_.reset();
+  staging_resource_pool_.reset();
   raster_worker_pool_.reset();
   direct_raster_worker_pool_.reset();
   resource_provider_.reset();
@@ -1906,11 +1940,27 @@ bool LayerTreeHostImpl::InitializeRenderer(
   CreateAndSetRenderer(
       output_surface.get(), resource_provider.get(), skip_gl_renderer);
 
+  transfer_buffer_memory_limit_ =
+      GetMaxTransferBufferUsageBytes(output_surface->context_provider().get());
+
   if (settings_.impl_side_painting) {
+    // Note: we use zero-copy rasterizer by default when the renderer is using
+    // shared memory resources.
+    bool use_zero_copy =
+        (settings_.use_zero_copy ||
+         GetRendererCapabilities().using_shared_memory_resources) &&
+        GetRendererCapabilities().using_map_image;
+
+    // Sync query support is required by one-copy rasterizer.
+    bool use_one_copy = settings_.use_one_copy &&
+                        GetRendererCapabilities().using_map_image &&
+                        resource_provider->use_sync_query();
+
     CreateAndSetTileManager(
         resource_provider.get(),
         output_surface->context_provider().get(),
-        GetRendererCapabilities().using_map_image,
+        use_zero_copy,
+        use_one_copy,
         GetRendererCapabilities().allow_rasterize_on_demand);
   }
 
@@ -1975,6 +2025,7 @@ void LayerTreeHostImpl::ReleaseGL() {
   resource_pool_.reset();
   raster_worker_pool_.reset();
   direct_raster_worker_pool_.reset();
+  staging_resource_pool_.reset();
   resource_provider_->InitializeSoftware();
 
   bool skip_gl_renderer = true;
@@ -1982,9 +2033,11 @@ void LayerTreeHostImpl::ReleaseGL() {
       output_surface_.get(), resource_provider_.get(), skip_gl_renderer);
 
   EnforceZeroBudget(true);
+  DCHECK(GetRendererCapabilities().using_map_image);
   CreateAndSetTileManager(resource_provider_.get(),
                           NULL,
-                          GetRendererCapabilities().using_map_image,
+                          true,
+                          false,
                           GetRendererCapabilities().allow_rasterize_on_demand);
   DCHECK(tile_manager_);
 

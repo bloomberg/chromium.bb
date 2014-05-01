@@ -333,8 +333,7 @@ GLRenderer::GLRenderer(RendererClient* client,
   // so we only need to avoid POT textures if we have an NPOT fast-path.
   capabilities_.avoid_pow2_textures = context_caps.gpu.fast_npot_mo8_textures;
 
-  capabilities_.using_map_image =
-      settings_->use_map_image && context_caps.gpu.map_image;
+  capabilities_.using_map_image = context_caps.gpu.map_image;
 
   capabilities_.using_discard_framebuffer =
       context_caps.gpu.discard_framebuffer;

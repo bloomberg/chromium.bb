@@ -57,7 +57,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
   CommandLine* cl = CommandLine::ForCurrentProcess();
   cl->AppendSwitch(switches::kEnableBeginFrameScheduling);
-  cl->AppendSwitch(switches::kEnableMapImage);
+  cl->AppendSwitch(switches::kEnableZeroCopy);
   cl->AppendSwitch(switches::kEnableImplSidePainting);
 
   // WebView uses the Android system's scrollbars and overscroll glow.

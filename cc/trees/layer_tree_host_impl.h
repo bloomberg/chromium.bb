@@ -473,7 +473,8 @@ class CC_EXPORT LayerTreeHostImpl
       bool skip_gl_renderer);
   void CreateAndSetTileManager(ResourceProvider* resource_provider,
                                ContextProvider* context_provider,
-                               bool using_map_image,
+                               bool use_zero_copy,
+                               bool use_one_copy,
                                bool allow_rasterize_on_demand);
   void ReleaseTreeResources();
   void EnforceZeroBudget(bool zero_budget);
@@ -548,6 +549,7 @@ class CC_EXPORT LayerTreeHostImpl
   scoped_ptr<RasterWorkerPool> raster_worker_pool_;
   scoped_ptr<RasterWorkerPool> direct_raster_worker_pool_;
   scoped_ptr<ResourcePool> resource_pool_;
+  scoped_ptr<ResourcePool> staging_resource_pool_;
   scoped_ptr<Renderer> renderer_;
 
   GlobalStateThatImpactsTilePriority global_tile_state_;
@@ -659,6 +661,8 @@ class CC_EXPORT LayerTreeHostImpl
   int id_;
 
   std::set<SwapPromiseMonitor*> swap_promise_monitor_;
+
+  size_t transfer_buffer_memory_limit_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

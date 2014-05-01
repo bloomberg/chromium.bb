@@ -216,7 +216,9 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   bool is_lcd_text_enabled() const { return is_lcd_text_enabled_; }
 
-  bool is_map_image_enabled() const { return is_map_image_enabled_; }
+  bool is_zero_copy_enabled() const { return is_zero_copy_enabled_; }
+
+  bool is_one_copy_enabled() const { return is_one_copy_enabled_; }
 
   AppCacheDispatcher* appcache_dispatcher() const {
     return appcache_dispatcher_.get();
@@ -543,7 +545,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   bool is_impl_side_painting_enabled_;
   bool is_low_res_tiling_enabled_;
   bool is_lcd_text_enabled_;
-  bool is_map_image_enabled_;
+  bool is_zero_copy_enabled_;
+  bool is_one_copy_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };

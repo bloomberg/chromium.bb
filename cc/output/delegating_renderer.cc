@@ -63,8 +63,7 @@ DelegatingRenderer::DelegatingRenderer(RendererClient* client,
     DCHECK(!caps.gpu.iosurface || caps.gpu.texture_rectangle);
 
     capabilities_.using_egl_image = caps.gpu.egl_image_external;
-    capabilities_.using_map_image =
-        settings_->use_map_image && caps.gpu.map_image;
+    capabilities_.using_map_image = caps.gpu.map_image;
 
     capabilities_.allow_rasterize_on_demand = false;
   }

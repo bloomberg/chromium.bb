@@ -409,9 +409,10 @@ void RenderThreadImpl::Init() {
   webkit::WebLayerImpl::SetImplSidePaintingEnabled(
       is_impl_side_painting_enabled_);
 
-  is_map_image_enabled_ =
-      command_line.HasSwitch(switches::kEnableMapImage) &&
-      !command_line.HasSwitch(switches::kDisableMapImage);
+  is_zero_copy_enabled_ = command_line.HasSwitch(switches::kEnableZeroCopy) &&
+                          !command_line.HasSwitch(switches::kDisableZeroCopy);
+
+  is_one_copy_enabled_ = command_line.HasSwitch(switches::kEnableOneCopy);
 
   if (command_line.HasSwitch(switches::kDisableLCDText)) {
     is_lcd_text_enabled_ = false;

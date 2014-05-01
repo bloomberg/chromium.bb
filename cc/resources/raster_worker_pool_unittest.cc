@@ -9,11 +9,13 @@
 
 #include "base/cancelable_callback.h"
 #include "cc/resources/direct_raster_worker_pool.h"
+#include "cc/resources/image_copy_raster_worker_pool.h"
 #include "cc/resources/image_raster_worker_pool.h"
 #include "cc/resources/picture_pile.h"
 #include "cc/resources/picture_pile_impl.h"
 #include "cc/resources/pixel_buffer_raster_worker_pool.h"
 #include "cc/resources/rasterizer.h"
+#include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"
 #include "cc/test/fake_output_surface.h"
@@ -28,6 +30,7 @@ namespace {
 enum RasterWorkerPoolType {
   RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER,
   RASTER_WORKER_POOL_TYPE_IMAGE,
+  RASTER_WORKER_POOL_TYPE_IMAGE_COPY,
   RASTER_WORKER_POOL_TYPE_DIRECT
 };
 
@@ -113,6 +116,8 @@ class RasterWorkerPoolTest
         ResourceProvider::Create(
             output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1)
             .Pass();
+    staging_resource_pool_ = ResourcePool::Create(
+        resource_provider_.get(), GL_TEXTURE_2D, RGBA_8888);
 
     switch (GetParam()) {
       case RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER:
@@ -128,6 +133,13 @@ class RasterWorkerPoolTest
             RasterWorkerPool::GetTaskGraphRunner(),
             resource_provider_.get());
         break;
+      case RASTER_WORKER_POOL_TYPE_IMAGE_COPY:
+        raster_worker_pool_ = ImageCopyRasterWorkerPool::Create(
+            base::MessageLoopProxy::current().get(),
+            RasterWorkerPool::GetTaskGraphRunner(),
+            resource_provider_.get(),
+            staging_resource_pool_.get());
+        break;
       case RASTER_WORKER_POOL_TYPE_DIRECT:
         raster_worker_pool_ = DirectRasterWorkerPool::Create(
             base::MessageLoopProxy::current().get(),
@@ -139,7 +151,10 @@ class RasterWorkerPoolTest
     DCHECK(raster_worker_pool_);
     raster_worker_pool_->AsRasterizer()->SetClient(this);
   }
-  virtual ~RasterWorkerPoolTest() { resource_provider_.reset(); }
+  virtual ~RasterWorkerPoolTest() {
+    staging_resource_pool_.reset();
+    resource_provider_.reset();
+  }
 
   // Overridden from testing::Test:
   virtual void TearDown() OVERRIDE {
@@ -249,6 +264,7 @@ class RasterWorkerPoolTest
   scoped_ptr<FakeOutputSurface> output_surface_;
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
   scoped_ptr<ResourceProvider> resource_provider_;
+  scoped_ptr<ResourcePool> staging_resource_pool_;
   scoped_ptr<RasterWorkerPool> raster_worker_pool_;
   base::CancelableClosure timeout_;
   int timeout_seconds_;
@@ -310,6 +326,7 @@ INSTANTIATE_TEST_CASE_P(RasterWorkerPoolTests,
                         RasterWorkerPoolTest,
                         ::testing::Values(RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER,
                                           RASTER_WORKER_POOL_TYPE_IMAGE,
+                                          RASTER_WORKER_POOL_TYPE_IMAGE_COPY,
                                           RASTER_WORKER_POOL_TYPE_DIRECT));
 
 }  // namespace
