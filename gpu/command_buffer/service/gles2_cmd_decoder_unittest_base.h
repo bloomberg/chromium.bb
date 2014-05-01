@@ -34,7 +34,7 @@ namespace gles2 {
 
 class MemoryTracker;
 
-class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
+class GLES2DecoderTestBase : public testing::Test {
  public:
   GLES2DecoderTestBase();
   virtual ~GLES2DecoderTestBase();
@@ -269,8 +269,6 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
       GLuint index, GLint size, GLenum type, GLsizei stride, GLuint offset);
   void DoVertexAttribDivisorANGLE(GLuint index, GLuint divisor);
 
-  void DoEnableDisable(GLenum cap, bool enable);
-
   void DoEnableVertexAttribArray(GLint index);
 
   void DoBufferData(GLenum target, GLsizei size);
@@ -332,13 +330,6 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
       GLclampf restore_depth,
       bool restore_scissor_test);
 
-  void SetupExpectationsForDepthMask(bool mask);
-  void SetupExpectationsForEnableDisable(GLenum cap, bool enable);
-  void SetupExpectationsForColorMask(bool red,
-                                     bool green,
-                                     bool blue,
-                                     bool alpha);
-
   void SetupExpectationsForApplyingDirtyState(
       bool framebuffer_is_rgb,
       bool framebuffer_has_depth,
@@ -348,7 +339,10 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
       bool depth_enabled,
       GLuint front_stencil_mask,
       GLuint back_stencil_mask,
-      bool stencil_enabled);
+      bool stencil_enabled,
+      bool cull_face_enabled,
+      bool scissor_test_enabled,
+      bool blend_enabled);
 
   void SetupExpectationsForApplyingDefaultDirtyState();
 
@@ -515,30 +509,6 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   void* shared_memory_base_;
 
   int8 immediate_buffer_[256];
-
-  const bool ignore_cached_state_for_test_;
-  bool cached_color_mask_red_;
-  bool cached_color_mask_green_;
-  bool cached_color_mask_blue_;
-  bool cached_color_mask_alpha_;
-  bool cached_depth_mask_;
-  uint32 cached_stencil_front_mask_;
-  uint32 cached_stencil_back_mask_;
-
-  struct EnableFlags {
-    EnableFlags();
-    bool cached_blend;
-    bool cached_cull_face;
-    bool cached_depth_test;
-    bool cached_dither;
-    bool cached_polygon_offset_fill;
-    bool cached_sample_alpha_to_coverage;
-    bool cached_sample_coverage;
-    bool cached_scissor_test;
-    bool cached_stencil_test;
-  };
-
-  EnableFlags enable_flags_;
 
  private:
   class MockCommandBufferEngine : public CommandBufferEngine {

@@ -81,7 +81,6 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD0(ResetAsyncPixelTransferManagerForTest, void());
   MOCK_METHOD1(SetAsyncPixelTransferManagerForTest,
       void(AsyncPixelTransferManager*));
-  MOCK_METHOD1(SetIgnoreCachedStateForTest, void(bool ignore));
   MOCK_METHOD3(DoCommand, error::Error(unsigned int command,
                                        unsigned int arg_count,
                                        const void* cmd_data));

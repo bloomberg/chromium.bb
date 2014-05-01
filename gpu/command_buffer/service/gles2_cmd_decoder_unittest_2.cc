@@ -225,8 +225,6 @@ class GLES2DecoderTest2 : public GLES2DecoderTestBase {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest2, ::testing::Bool());
-
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::GenQueriesEXT, 0>(
     bool valid) {
@@ -594,63 +592,63 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::TexParameterivImmediate, 0>(
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_2_autogen.h"
 
-TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_INT) {
+TEST_F(GLES2DecoderTest2, AcceptsUniform_GL_INT) {
   TestAcceptedUniform(GL_INT, Program::kUniform1i);
 }
 
-TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_INT_VEC2) {
+TEST_F(GLES2DecoderTest2, AcceptsUniform_GL_INT_VEC2) {
   TestAcceptedUniform(GL_INT_VEC2, Program::kUniform2i);
 }
 
-TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_INT_VEC3) {
+TEST_F(GLES2DecoderTest2, AcceptsUniform_GL_INT_VEC3) {
   TestAcceptedUniform(GL_INT_VEC3, Program::kUniform3i);
 }
 
-TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_INT_VEC4) {
+TEST_F(GLES2DecoderTest2, AcceptsUniform_GL_INT_VEC4) {
   TestAcceptedUniform(GL_INT_VEC4, Program::kUniform4i);
 }
 
-TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_BOOL) {
+TEST_F(GLES2DecoderTest2, AcceptsUniform_GL_BOOL) {
   TestAcceptedUniform(GL_BOOL, Program::kUniform1i | Program::kUniform1f);
 }
 
-TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_BOOL_VEC2) {
+TEST_F(GLES2DecoderTest2, AcceptsUniform_GL_BOOL_VEC2) {
   TestAcceptedUniform(GL_BOOL_VEC2, Program::kUniform2i | Program::kUniform2f);
 }
 
-TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_BOOL_VEC3) {
+TEST_F(GLES2DecoderTest2, AcceptsUniform_GL_BOOL_VEC3) {
   TestAcceptedUniform(GL_BOOL_VEC3, Program::kUniform3i | Program::kUniform3f);
 }
 
-TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_BOOL_VEC4) {
+TEST_F(GLES2DecoderTest2, AcceptsUniform_GL_BOOL_VEC4) {
   TestAcceptedUniform(GL_BOOL_VEC4, Program::kUniform4i | Program::kUniform4f);
 }
 
-TEST_P(GLES2DecoderTest2, AcceptsUniformTypeFLOAT) {
+TEST_F(GLES2DecoderTest2, AcceptsUniformTypeFLOAT) {
   TestAcceptedUniform(GL_FLOAT, Program::kUniform1f);
 }
 
-TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_VEC2) {
+TEST_F(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_VEC2) {
   TestAcceptedUniform(GL_FLOAT_VEC2, Program::kUniform2f);
 }
 
-TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_VEC3) {
+TEST_F(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_VEC3) {
   TestAcceptedUniform(GL_FLOAT_VEC3, Program::kUniform3f);
 }
 
-TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_VEC4) {
+TEST_F(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_VEC4) {
   TestAcceptedUniform(GL_FLOAT_VEC4, Program::kUniform4f);
 }
 
-TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_MAT2) {
+TEST_F(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_MAT2) {
   TestAcceptedUniform(GL_FLOAT_MAT2, Program::kUniformMatrix2f);
 }
 
-TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_MAT3) {
+TEST_F(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_MAT3) {
   TestAcceptedUniform(GL_FLOAT_MAT3, Program::kUniformMatrix3f);
 }
 
-TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_MAT4) {
+TEST_F(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_MAT4) {
   TestAcceptedUniform(GL_FLOAT_MAT4, Program::kUniformMatrix4f);
 }
 

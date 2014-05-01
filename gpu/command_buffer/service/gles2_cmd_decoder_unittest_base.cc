@@ -53,15 +53,7 @@ GLES2DecoderTestBase::GLES2DecoderTestBase()
       client_vertex_shader_id_(121),
       client_fragment_shader_id_(122),
       client_query_id_(123),
-      client_vertexarray_id_(124),
-      ignore_cached_state_for_test_(GetParam()),
-      cached_color_mask_red_(true),
-      cached_color_mask_green_(true),
-      cached_color_mask_blue_(true),
-      cached_color_mask_alpha_(true),
-      cached_depth_mask_(true),
-      cached_stencil_front_mask_(0xFFFFFFFFU),
-      cached_stencil_back_mask_(0xFFFFFFFFU) {
+      client_vertexarray_id_(124) {
   memset(immediate_buffer_, 0xEE, sizeof(immediate_buffer_));
 }
 
@@ -94,8 +86,7 @@ GLES2DecoderTestBase::InitState::InitState()
       request_depth(false),
       request_stencil(false),
       bind_generates_resource(false),
-      lose_context_when_out_of_memory(false) {
-}
+      lose_context_when_out_of_memory(false) {}
 
 void GLES2DecoderTestBase::InitDecoder(const InitState& init) {
   InitDecoderWithCommandLine(init, NULL);
@@ -316,7 +307,6 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   std::vector<int32> attribs(attributes, attributes + arraysize(attributes));
 
   decoder_.reset(GLES2Decoder::Create(group_.get()));
-  decoder_->SetIgnoreCachedStateForTest(ignore_cached_state_for_test_);
   decoder_->GetLogger()->set_log_synthesized_gl_errors(false);
   decoder_->Initialize(surface_,
                        context_,
@@ -565,7 +555,9 @@ void GLES2DecoderTestBase::SetupExpectationsForFramebufferClearingMulti(
     EXPECT_CALL(*gl_, ClearColor(0.0f, 0.0f, 0.0f, 0.0f))
         .Times(1)
         .RetiresOnSaturation();
-    SetupExpectationsForColorMask(true, true, true, true);
+    EXPECT_CALL(*gl_, ColorMask(true, true, true, true))
+        .Times(1)
+        .RetiresOnSaturation();
   }
   if ((clear_bits & GL_STENCIL_BUFFER_BIT) != 0) {
     EXPECT_CALL(*gl_, ClearStencil(0))
@@ -579,9 +571,13 @@ void GLES2DecoderTestBase::SetupExpectationsForFramebufferClearingMulti(
     EXPECT_CALL(*gl_, ClearDepth(1.0f))
         .Times(1)
         .RetiresOnSaturation();
-    SetupExpectationsForDepthMask(true);
+    EXPECT_CALL(*gl_, DepthMask(1))
+        .Times(1)
+        .RetiresOnSaturation();
   }
-  SetupExpectationsForEnableDisable(GL_SCISSOR_TEST, false);
+  EXPECT_CALL(*gl_, Disable(GL_SCISSOR_TEST))
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, Clear(clear_bits))
       .Times(1)
       .RetiresOnSaturation();
@@ -651,98 +647,6 @@ void GLES2DecoderTestBase::DoDeleteBuffer(
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
-void GLES2DecoderTestBase::SetupExpectationsForColorMask(bool red,
-                                                         bool green,
-                                                         bool blue,
-                                                         bool alpha) {
-  if (ignore_cached_state_for_test_ || cached_color_mask_red_ != red ||
-      cached_color_mask_green_ != green || cached_color_mask_blue_ != blue ||
-      cached_color_mask_alpha_ != alpha) {
-    cached_color_mask_red_ = red;
-    cached_color_mask_green_ = green;
-    cached_color_mask_blue_ = blue;
-    cached_color_mask_alpha_ = alpha;
-    EXPECT_CALL(*gl_, ColorMask(red, green, blue, alpha))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
-}
-
-void GLES2DecoderTestBase::SetupExpectationsForDepthMask(bool mask) {
-  if (ignore_cached_state_for_test_ || cached_depth_mask_ != mask) {
-    cached_depth_mask_ = mask;
-    EXPECT_CALL(*gl_, DepthMask(mask)).Times(1).RetiresOnSaturation();
-  }
-}
-
-void GLES2DecoderTestBase::SetupExpectationsForEnableDisable(GLenum cap,
-                                                             bool enable) {
-  switch (cap) {
-    case GL_BLEND:
-      if (enable_flags_.cached_blend == enable &&
-          !ignore_cached_state_for_test_)
-        return;
-      enable_flags_.cached_blend = enable;
-      break;
-    case GL_CULL_FACE:
-      if (enable_flags_.cached_cull_face == enable &&
-          !ignore_cached_state_for_test_)
-        return;
-      enable_flags_.cached_cull_face = enable;
-      break;
-    case GL_DEPTH_TEST:
-      if (enable_flags_.cached_depth_test == enable &&
-          !ignore_cached_state_for_test_)
-        return;
-      enable_flags_.cached_depth_test = enable;
-      break;
-    case GL_DITHER:
-      if (enable_flags_.cached_dither == enable &&
-          !ignore_cached_state_for_test_)
-        return;
-      enable_flags_.cached_dither = enable;
-      break;
-    case GL_POLYGON_OFFSET_FILL:
-      if (enable_flags_.cached_polygon_offset_fill == enable &&
-          !ignore_cached_state_for_test_)
-        return;
-      enable_flags_.cached_polygon_offset_fill = enable;
-      break;
-    case GL_SAMPLE_ALPHA_TO_COVERAGE:
-      if (enable_flags_.cached_sample_alpha_to_coverage == enable &&
-          !ignore_cached_state_for_test_)
-        return;
-      enable_flags_.cached_sample_alpha_to_coverage = enable;
-      break;
-    case GL_SAMPLE_COVERAGE:
-      if (enable_flags_.cached_sample_coverage == enable &&
-          !ignore_cached_state_for_test_)
-        return;
-      enable_flags_.cached_sample_coverage = enable;
-      break;
-    case GL_SCISSOR_TEST:
-      if (enable_flags_.cached_scissor_test == enable &&
-          !ignore_cached_state_for_test_)
-        return;
-      enable_flags_.cached_scissor_test = enable;
-      break;
-    case GL_STENCIL_TEST:
-      if (enable_flags_.cached_stencil_test == enable &&
-          !ignore_cached_state_for_test_)
-        return;
-      enable_flags_.cached_stencil_test = enable;
-      break;
-    default:
-      NOTREACHED();
-      return;
-  }
-  if (enable) {
-    EXPECT_CALL(*gl_, Enable(cap)).Times(1).RetiresOnSaturation();
-  } else {
-    EXPECT_CALL(*gl_, Disable(cap)).Times(1).RetiresOnSaturation();
-  }
-}
-
 void GLES2DecoderTestBase::SetupExpectationsForApplyingDirtyState(
     bool framebuffer_is_rgb,
     bool framebuffer_has_depth,
@@ -752,60 +656,87 @@ void GLES2DecoderTestBase::SetupExpectationsForApplyingDirtyState(
     bool depth_enabled,
     GLuint front_stencil_mask,
     GLuint back_stencil_mask,
-    bool stencil_enabled) {
-  bool color_mask_red = (color_bits & 0x1000) != 0;
-  bool color_mask_green = (color_bits & 0x0100) != 0;
-  bool color_mask_blue = (color_bits & 0x0010) != 0;
-  bool color_mask_alpha = (color_bits & 0x0001) && !framebuffer_is_rgb;
-
-  SetupExpectationsForColorMask(
-      color_mask_red, color_mask_green, color_mask_blue, color_mask_alpha);
-  SetupExpectationsForDepthMask(depth_mask);
-
-  if (ignore_cached_state_for_test_ ||
-      cached_stencil_front_mask_ != front_stencil_mask) {
-    cached_stencil_front_mask_ = front_stencil_mask;
-    EXPECT_CALL(*gl_, StencilMaskSeparate(GL_FRONT, front_stencil_mask))
+    bool stencil_enabled,
+    bool cull_face_enabled,
+    bool scissor_test_enabled,
+    bool blend_enabled) {
+  EXPECT_CALL(*gl_, ColorMask(
+      (color_bits & 0x1000) != 0,
+      (color_bits & 0x0100) != 0,
+      (color_bits & 0x0010) != 0,
+      (color_bits & 0x0001) && !framebuffer_is_rgb))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, DepthMask(depth_mask))
+      .Times(1)
+      .RetiresOnSaturation();
+  if (framebuffer_has_depth && depth_enabled) {
+    EXPECT_CALL(*gl_, Enable(GL_DEPTH_TEST))
+        .Times(1)
+        .RetiresOnSaturation();
+  } else {
+    EXPECT_CALL(*gl_, Disable(GL_DEPTH_TEST))
         .Times(1)
         .RetiresOnSaturation();
   }
-
-  if (ignore_cached_state_for_test_ ||
-      cached_stencil_back_mask_ != back_stencil_mask) {
-    cached_stencil_back_mask_ = back_stencil_mask;
-    EXPECT_CALL(*gl_, StencilMaskSeparate(GL_BACK, back_stencil_mask))
+  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_FRONT, front_stencil_mask))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_BACK, back_stencil_mask))
+      .Times(1)
+      .RetiresOnSaturation();
+  if (framebuffer_has_stencil && stencil_enabled) {
+    EXPECT_CALL(*gl_, Enable(GL_STENCIL_TEST))
+        .Times(1)
+        .RetiresOnSaturation();
+  } else {
+    EXPECT_CALL(*gl_, Disable(GL_STENCIL_TEST))
         .Times(1)
         .RetiresOnSaturation();
   }
-
-  SetupExpectationsForEnableDisable(GL_DEPTH_TEST,
-                                    framebuffer_has_depth && depth_enabled);
-  SetupExpectationsForEnableDisable(GL_STENCIL_TEST,
-                                    framebuffer_has_stencil && stencil_enabled);
+  if (cull_face_enabled) {
+    EXPECT_CALL(*gl_, Enable(GL_CULL_FACE))
+        .Times(1)
+        .RetiresOnSaturation();
+  } else {
+    EXPECT_CALL(*gl_, Disable(GL_CULL_FACE))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  if (scissor_test_enabled) {
+    EXPECT_CALL(*gl_, Enable(GL_SCISSOR_TEST))
+        .Times(1)
+        .RetiresOnSaturation();
+  } else {
+    EXPECT_CALL(*gl_, Disable(GL_SCISSOR_TEST))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  if (blend_enabled) {
+    EXPECT_CALL(*gl_, Enable(GL_BLEND))
+        .Times(1)
+        .RetiresOnSaturation();
+  } else {
+    EXPECT_CALL(*gl_, Disable(GL_BLEND))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
 }
 
 void GLES2DecoderTestBase::SetupExpectationsForApplyingDefaultDirtyState() {
-  SetupExpectationsForApplyingDirtyState(false,   // Framebuffer is RGB
-                                         false,   // Framebuffer has depth
-                                         false,   // Framebuffer has stencil
-                                         0x1111,  // color bits
-                                         true,    // depth mask
-                                         false,   // depth enabled
-                                         0,       // front stencil mask
-                                         0,       // back stencil mask
-                                         false);  // stencil enabled
-}
-
-GLES2DecoderTestBase::EnableFlags::EnableFlags()
-    : cached_blend(false),
-      cached_cull_face(false),
-      cached_depth_test(false),
-      cached_dither(true),
-      cached_polygon_offset_fill(false),
-      cached_sample_alpha_to_coverage(false),
-      cached_sample_coverage(false),
-      cached_scissor_test(false),
-      cached_stencil_test(false) {
+  SetupExpectationsForApplyingDirtyState(
+      false,   // Framebuffer is RGB
+      false,   // Framebuffer has depth
+      false,   // Framebuffer has stencil
+      0x1111,  // color bits
+      true,    // depth mask
+      false,   // depth enabled
+      0,       // front stencil mask
+      0,       // back stencil mask
+      false,   // stencil enabled
+      false,   // cull_face_enabled
+      false,   // scissor_test_enabled
+      false);  // blend_enabled
 }
 
 void GLES2DecoderTestBase::DoBindFramebuffer(
@@ -1375,19 +1306,6 @@ void GLES2DecoderTestBase::SetupShader(
   link_cmd.Init(program_client_id);
 
   EXPECT_EQ(error::kNoError, ExecuteCmd(link_cmd));
-}
-
-void GLES2DecoderTestBase::DoEnableDisable(GLenum cap, bool enable) {
-  SetupExpectationsForEnableDisable(cap, enable);
-  if (enable) {
-    cmds::Enable cmd;
-    cmd.Init(cap);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  } else {
-    cmds::Disable cmd;
-    cmd.Init(cap);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  }
 }
 
 void GLES2DecoderTestBase::DoEnableVertexAttribArray(GLint index) {
