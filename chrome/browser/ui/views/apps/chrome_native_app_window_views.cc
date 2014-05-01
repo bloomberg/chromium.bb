@@ -192,7 +192,9 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
 ChromeNativeAppWindowViews::ChromeNativeAppWindowViews()
     : is_fullscreen_(false),
       has_frame_color_(false),
-      frame_color_(SK_ColorBLACK) {}
+      active_frame_color_(SK_ColorBLACK),
+      inactive_frame_color_(SK_ColorBLACK) {
+}
 
 ChromeNativeAppWindowViews::~ChromeNativeAppWindowViews() {}
 
@@ -347,8 +349,12 @@ ChromeNativeAppWindowViews::CreateStandardDesktopAppFrame() {
 
 apps::AppWindowFrameView*
 ChromeNativeAppWindowViews::CreateNonStandardAppFrame() {
-  apps::AppWindowFrameView* frame = new apps::AppWindowFrameView(
-      widget(), this, has_frame_color_, frame_color_);
+  apps::AppWindowFrameView* frame =
+      new apps::AppWindowFrameView(widget(),
+                                   this,
+                                   has_frame_color_,
+                                   active_frame_color_,
+                                   inactive_frame_color_);
   frame->Init();
 #if defined(USE_ASH)
   // For Aura windows on the Ash desktop the sizes are different and the user
@@ -669,7 +675,13 @@ bool ChromeNativeAppWindowViews::HasFrameColor() const {
   return has_frame_color_;
 }
 
-SkColor ChromeNativeAppWindowViews::FrameColor() const { return frame_color_; }
+SkColor ChromeNativeAppWindowViews::ActiveFrameColor() const {
+  return active_frame_color_;
+}
+
+SkColor ChromeNativeAppWindowViews::InactiveFrameColor() const {
+  return inactive_frame_color_;
+}
 
 // NativeAppWindowViews implementation.
 
@@ -678,7 +690,8 @@ void ChromeNativeAppWindowViews::InitializeWindow(
     const AppWindow::CreateParams& create_params) {
   DCHECK(widget());
   has_frame_color_ = create_params.has_frame_color;
-  frame_color_ = create_params.frame_color;
+  active_frame_color_ = create_params.active_frame_color;
+  inactive_frame_color_ = create_params.inactive_frame_color;
   if (create_params.window_type == AppWindow::WINDOW_TYPE_PANEL ||
       create_params.window_type == AppWindow::WINDOW_TYPE_V1_PANEL) {
     InitializePanelWindow(create_params);

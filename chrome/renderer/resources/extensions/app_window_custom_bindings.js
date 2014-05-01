@@ -251,8 +251,14 @@ appWindow.registerCustomHook(function(bindingsAPI) {
       return appWindowData.hasFrameColor;
     }});
 
-    Object.defineProperty(AppWindow.prototype, 'frameColor', {get: function() {
-      return appWindowData.frameColor;
+    Object.defineProperty(AppWindow.prototype, 'activeFrameColor',
+                          {get: function() {
+      return appWindowData.activeFrameColor;
+    }});
+
+    Object.defineProperty(AppWindow.prototype, 'inactiveFrameColor',
+                          {get: function() {
+      return appWindowData.inactiveFrameColor;
     }});
 
     appWindowData = {
@@ -284,7 +290,8 @@ appWindow.registerCustomHook(function(bindingsAPI) {
       maximized: params.maximized,
       alwaysOnTop: params.alwaysOnTop,
       hasFrameColor: params.hasFrameColor,
-      frameColor: params.frameColor
+      activeFrameColor: params.activeFrameColor,
+      inactiveFrameColor: params.inactiveFrameColor
     };
     currentAppWindow = new AppWindow;
   });

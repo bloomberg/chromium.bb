@@ -51,7 +51,8 @@ class AppWindowFrameView : public views::NonClientFrameView,
   AppWindowFrameView(views::Widget* widget,
                      NativeAppWindow* window,
                      bool draw_frame,
-                     const SkColor& frame_color);
+                     const SkColor& active_frame_color,
+                     const SkColor& inactive_frame_color);
   virtual ~AppWindowFrameView();
 
   void Init();
@@ -90,7 +91,8 @@ class AppWindowFrameView : public views::NonClientFrameView,
   views::Widget* widget_;
   NativeAppWindow* window_;
   bool draw_frame_;
-  SkColor frame_color_;
+  SkColor active_frame_color_;
+  SkColor inactive_frame_color_;
   views::ImageButton* close_button_;
   views::ImageButton* maximize_button_;
   views::ImageButton* restore_button_;

@@ -363,7 +363,13 @@ bool NativeAppWindowViews::IsFrameless() const { return frameless_; }
 
 bool NativeAppWindowViews::HasFrameColor() const { return false; }
 
-SkColor NativeAppWindowViews::FrameColor() const { return SK_ColorBLACK; }
+SkColor NativeAppWindowViews::ActiveFrameColor() const {
+  return SK_ColorBLACK;
+}
+
+SkColor NativeAppWindowViews::InactiveFrameColor() const {
+  return SK_ColorBLACK;
+}
 
 gfx::Insets NativeAppWindowViews::GetFrameInsets() const {
   if (frameless_)

@@ -723,7 +723,12 @@ bool NativeAppWindowCocoa::HasFrameColor() const {
   return false;
 }
 
-SkColor NativeAppWindowCocoa::FrameColor() const {
+SkColor NativeAppWindowCocoa::ActiveFrameColor() const {
+  // TODO(benwells): Implement this.
+  return SkColor();
+}
+
+SkColor NativeAppWindowCocoa::InactiveFrameColor() const {
   // TODO(benwells): Implement this.
   return SkColor();
 }

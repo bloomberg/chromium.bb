@@ -146,7 +146,8 @@ class NativeAppWindowViews : public NativeAppWindow,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual bool IsFrameless() const OVERRIDE;
   virtual bool HasFrameColor() const OVERRIDE;
-  virtual SkColor FrameColor() const OVERRIDE;
+  virtual SkColor ActiveFrameColor() const OVERRIDE;
+  virtual SkColor InactiveFrameColor() const OVERRIDE;
   virtual gfx::Insets GetFrameInsets() const OVERRIDE;
   virtual void HideWithApp() OVERRIDE;
   virtual void ShowWithApp() OVERRIDE;

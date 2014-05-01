@@ -105,9 +105,22 @@ namespace app.window {
     // nested elements.<br>
     DOMString? type;
     // Allows the frame color to be set. Frame coloring is only available if the
-    // frame type is <code>chrome</code>.
+    // frame type is <code>chrome</code>.<br>
     // Frame coloring is experimental and only available in dev channel.
     DOMString? color;
+    // Allows the frame color of the window when active to be set. Frame
+    // coloring is only available if the frame type is <code>chrome</code>.<br>
+    // Frame coloring is only available if the frame type is
+    // <code>chrome</code>.<br>
+    // Frame coloring is experimental and only available in dev channel.
+    DOMString? activeColor;
+    // Allows the frame color of the window when inactive to be set differently
+    // to the active color. Frame
+    // coloring is only available if the frame type is <code>chrome</code>.<br>
+    // <code>inactiveColor</code> must be used in conjunction with <code>
+    // color</code>.<br>
+    // Frame coloring is experimental and only available in dev channel.
+    DOMString? inactiveColor;
   };
 
   // State of a window: normal, fullscreen, maximized, minimized.
@@ -329,7 +342,8 @@ namespace app.window {
 
     // Accessors for testing.
     [nodoc] boolean hasFrameColor;
-    [nodoc] long frameColor;
+    [nodoc] long activeFrameColor;
+    [nodoc] long inactiveFrameColor;
 
     // Set whether the window should stay above most other windows. Requires the
     // <code>"app.window.alwaysOnTop"</code> permission.

@@ -123,7 +123,8 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual bool IsFrameless() const OVERRIDE;
   virtual bool HasFrameColor() const OVERRIDE;
-  virtual SkColor FrameColor() const OVERRIDE;
+  virtual SkColor ActiveFrameColor() const OVERRIDE;
+  virtual SkColor InactiveFrameColor() const OVERRIDE;
   virtual gfx::Insets GetFrameInsets() const OVERRIDE;
 
   // These are used to simulate Mac-style hide/show. Since windows can be hidden

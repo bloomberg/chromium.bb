@@ -75,7 +75,8 @@ class ChromeNativeAppWindowViews : public apps::NativeAppWindowViews,
   virtual void UpdateBadgeIcon() OVERRIDE;
   virtual void UpdateShape(scoped_ptr<SkRegion> region) OVERRIDE;
   virtual bool HasFrameColor() const OVERRIDE;
-  virtual SkColor FrameColor() const OVERRIDE;
+  virtual SkColor ActiveFrameColor() const OVERRIDE;
+  virtual SkColor InactiveFrameColor() const OVERRIDE;
 
   // NativeAppWindowViews implementation.
   virtual void InitializeWindow(
@@ -90,7 +91,8 @@ class ChromeNativeAppWindowViews : public apps::NativeAppWindowViews,
   scoped_ptr<SkRegion> shape_;
 
   bool has_frame_color_;
-  SkColor frame_color_;
+  SkColor active_frame_color_;
+  SkColor inactive_frame_color_;
   gfx::Size preferred_size_;
 
   // The class that registers for keyboard shortcuts for extension commands.

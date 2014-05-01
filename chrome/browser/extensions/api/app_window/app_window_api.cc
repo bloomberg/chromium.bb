@@ -44,8 +44,10 @@ const char kInvalidWindowId[] =
 const char kInvalidColorSpecification[] =
     "The color specification could not be parsed.";
 const char kInvalidChannelForFrameOptions[] =
-    "frameOptions is only available in dev channel.";
+    "Frame options are only available in dev channel.";
 const char kColorWithFrameNone[] = "Windows with no frame cannot have a color.";
+const char kInactiveColorWithoutColor[] =
+    "frame.inactiveColor must be used with frame.color.";
 const char kConflictingBoundsOptions[] =
     "The $1 property cannot be specified for both inner and outer bounds.";
 }  // namespace app_window_constants
@@ -451,13 +453,30 @@ bool AppWindowCreateFunction::GetFrameOptions(
       return false;
     }
 
-    if (image_util::ParseCSSColorString(*options.frame->as_frame_options->color,
-                                        &create_params->frame_color)) {
-      create_params->has_frame_color = true;
-      return true;
+    if (!image_util::ParseCSSColorString(
+            *options.frame->as_frame_options->color,
+            &create_params->active_frame_color)) {
+      error_ = app_window_constants::kInvalidColorSpecification;
+      return false;
     }
 
-    error_ = app_window_constants::kInvalidColorSpecification;
+    create_params->has_frame_color = true;
+    create_params->inactive_frame_color = create_params->active_frame_color;
+
+    if (options.frame->as_frame_options->inactive_color.get()) {
+      if (!image_util::ParseCSSColorString(
+              *options.frame->as_frame_options->inactive_color,
+              &create_params->inactive_frame_color)) {
+        error_ = app_window_constants::kInvalidColorSpecification;
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  if (options.frame->as_frame_options->inactive_color.get()) {
+    error_ = app_window_constants::kInactiveColorWithoutColor;
     return false;
   }
 
@@ -473,7 +492,8 @@ void AppWindowCreateFunction::UpdateFrameOptionsForChannel(
     // TODO(benwells): Remove this code once we get agreement to use the new
     // native style frame.
     create_params->has_frame_color = true;
-    create_params->frame_color = SK_ColorWHITE;
+    create_params->active_frame_color = SK_ColorWHITE;
+    create_params->inactive_frame_color = SK_ColorWHITE;
   }
 #endif
 }

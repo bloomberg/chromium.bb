@@ -39,11 +39,13 @@ const char AppWindowFrameView::kViewClassName[] =
 AppWindowFrameView::AppWindowFrameView(views::Widget* widget,
                                        NativeAppWindow* window,
                                        bool draw_frame,
-                                       const SkColor& frame_color)
+                                       const SkColor& active_frame_color,
+                                       const SkColor& inactive_frame_color)
     : widget_(widget),
       window_(window),
       draw_frame_(draw_frame),
-      frame_color_(frame_color),
+      active_frame_color_(active_frame_color),
+      inactive_frame_color_(inactive_frame_color),
       close_button_(NULL),
       maximize_button_(NULL),
       restore_button_(NULL),
@@ -232,8 +234,6 @@ void AppWindowFrameView::GetWindowMask(const gfx::Size& size,
   // We got nothing to say about no window mask.
 }
 
-// views::View implementation.
-
 gfx::Size AppWindowFrameView::GetPreferredSize() {
   gfx::Size pref = widget_->client_view()->GetPreferredSize();
   gfx::Rect bounds(0, 0, pref.width(), pref.height());
@@ -308,7 +308,10 @@ void AppWindowFrameView::OnPaint(gfx::Canvas* canvas) {
   SkPaint paint;
   paint.setAntiAlias(false);
   paint.setStyle(SkPaint::kFill_Style);
-  paint.setColor(frame_color_);
+  if (widget_->IsActive())
+    paint.setColor(active_frame_color_);
+  else
+    paint.setColor(inactive_frame_color_);
   gfx::Path path;
   path.moveTo(0, 0);
   path.lineTo(width(), 0);
@@ -349,8 +352,6 @@ gfx::Size AppWindowFrameView::GetMaximumSize() {
 
   return max_size;
 }
-
-// views::ButtonListener implementation.
 
 void AppWindowFrameView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {

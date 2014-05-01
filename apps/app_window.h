@@ -142,7 +142,8 @@ class AppWindow : public content::NotificationObserver,
     Frame frame;
 
     bool has_frame_color;
-    SkColor frame_color;
+    SkColor active_frame_color;
+    SkColor inactive_frame_color;
     bool transparent_background;  // Only supported on ash.
 
     // The initial content/inner bounds specification (excluding any window

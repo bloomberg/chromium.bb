@@ -60,7 +60,8 @@ class NativeAppWindow : public ui::BaseWindow,
 
   // Returns information about the window's frame.
   virtual bool HasFrameColor() const = 0;
-  virtual SkColor FrameColor() const = 0;
+  virtual SkColor ActiveFrameColor() const = 0;
+  virtual SkColor InactiveFrameColor() const = 0;
 
   // Returns the difference between the window bounds (including titlebar and
   // borders) and the content bounds, if any.

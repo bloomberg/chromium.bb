@@ -1272,7 +1272,8 @@ function testFrameColors() {
       },
       callbackPass(function(win) {
         chrome.test.assertEq(true, win.hasFrameColor);
-        chrome.test.assertEq(-16777216, win.frameColor);
+        chrome.test.assertEq(0x000000, win.activeFrameColor);
+        chrome.test.assertEq(0x000000, win.inactiveFrameColor);
         win.close();
       }));
     },
@@ -1285,7 +1286,24 @@ function testFrameColors() {
       },
       callbackPass(function(win) {
         chrome.test.assertEq(true, win.hasFrameColor);
-        chrome.test.assertEq(-1, win.frameColor);
+        chrome.test.assertEq(0xFFFFFF, win.activeFrameColor);
+        chrome.test.assertEq(0xFFFFFF, win.inactiveFrameColor);
+        win.close();
+      }));
+    },
+
+    function testWithActiveInactive() {
+      chrome.app.window.create('test.html', {
+        frame: {
+          type: 'chrome',
+          color: '#000000',
+          inactiveColor: '#FFFFFF'
+        }
+      },
+      callbackPass(function(win) {
+        chrome.test.assertEq(true, win.hasFrameColor);
+        chrome.test.assertEq(0x000000, win.activeFrameColor);
+        chrome.test.assertEq(0xFFFFFF, win.inactiveFrameColor);
         win.close();
       }));
     },
@@ -1298,7 +1316,8 @@ function testFrameColors() {
       },
       callbackPass(function(win) {
         chrome.test.assertEq(true, win.hasFrameColor);
-        chrome.test.assertEq(-1, win.frameColor);
+        chrome.test.assertEq(0xFFFFFF, win.activeFrameColor);
+        chrome.test.assertEq(0xFFFFFF, win.inactiveFrameColor);
         win.close();
       }));
     },
@@ -1313,7 +1332,16 @@ function testFrameColors() {
       callbackFail('Windows with no frame cannot have a color.'));
     },
 
-    function testWithInvalidColor() {
+    function testWithInactiveColorAndNoColor() {
+      chrome.app.window.create('test.html', {
+        frame: {
+          inactiveColor: '#FFF'
+        }
+      },
+      callbackFail('frame.inactiveColor must be used with frame.color.'));
+    },
+
+     function testWithInvalidColor() {
       chrome.app.window.create('test.html', {
         frame: {
           color: 'DontWorryBeHappy'
@@ -1330,7 +1358,8 @@ function testFrameColorsInStable() {
       chrome.app.window.create('test.html', callbackPass(function(win) {
         if (navigator.platform.substr(0, 3).toLowerCase() == "win") {
           chrome.test.assertEq(true, win.hasFrameColor);
-          chrome.test.assertEq(-1, win.frameColor);
+          chrome.test.assertEq(0xFFFFFF, win.activeFrameColor);
+          chrome.test.assertEq(0xFFFFFF, win.inactiveFrameColor);
         } else {
           chrome.test.assertEq(false, win.hasFrameColor);
         }
@@ -1344,7 +1373,7 @@ function testFrameColorsInStable() {
           color: '#FFF'
         }
       },
-      callbackFail('frameOptions is only available in dev channel.'));
+      callbackFail('Frame options are only available in dev channel.'));
     }
   ]);
 }

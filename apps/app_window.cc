@@ -709,7 +709,17 @@ void AppWindow::GetSerializedState(base::DictionaryValue* properties) const {
   properties->SetBoolean("maximized", native_app_window_->IsMaximized());
   properties->SetBoolean("alwaysOnTop", IsAlwaysOnTop());
   properties->SetBoolean("hasFrameColor", native_app_window_->HasFrameColor());
-  properties->SetInteger("frameColor", native_app_window_->FrameColor());
+
+  // These properties are undocumented and are to enable testing. Alpha is
+  // removed to
+  // make the values easier to check.
+  SkColor transparent_white = ~SK_ColorBLACK;
+  properties->SetInteger(
+      "activeFrameColor",
+      native_app_window_->ActiveFrameColor() & transparent_white);
+  properties->SetInteger(
+      "inactiveFrameColor",
+      native_app_window_->InactiveFrameColor() & transparent_white);
 
   gfx::Rect content_bounds = GetClientBounds();
   gfx::Size content_min_size = native_app_window_->GetContentMinimumSize();
