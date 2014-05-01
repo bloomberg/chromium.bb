@@ -1091,10 +1091,15 @@ void FrameLoader::detachClient()
     // back to FrameLoaderClient via V8WindowShell.
     m_frame->script().clearForClose();
 
-    // After this, we must no longer talk to the client since this clears
-    // its owning reference back to our owning LocalFrame.
-    m_client->detachedFromParent();
-    m_client = 0;
+    // m_client should never be null because that means we somehow re-entered
+    // the frame detach code... but it is sometimes.
+    // FIXME: Understand why this is happening so we can document this insanity.
+    if (m_client) {
+        // After this, we must no longer talk to the client since this clears
+        // its owning reference back to our owning LocalFrame.
+        m_client->detachedFromParent();
+        m_client = 0;
+    }
 }
 
 void FrameLoader::addHTTPOriginIfNeeded(ResourceRequest& request, const AtomicString& origin)
