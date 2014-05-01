@@ -7,6 +7,8 @@
 
 // Note: This header should be compilable as C.
 
+#include <stdio.h>
+
 #include "mojo/public/c/test_support/test_support_export.h"
 
 #ifdef __cplusplus
@@ -17,6 +19,27 @@ MOJO_TEST_SUPPORT_EXPORT void MojoTestSupportLogPerfResult(
     const char* test_name,
     double value,
     const char* units);
+
+// Opens a "/"-delimited file path relative to the source root.
+MOJO_TEST_SUPPORT_EXPORT FILE* MojoTestSupportOpenSourceRootRelativeFile(
+    const char* source_root_relative_path);
+
+// Enumerates a "/"-delimited directory path relative to the source root.
+// Returns only regular files. The return value is a heap-allocated array of
+// heap-allocated strings. Each must be free'd separately.
+//
+// The return value is built like so:
+//
+//   char** rv = (char**) calloc(N + 1, sizeof(char*));
+//   rv[0] = strdup("a");
+//   rv[1] = strdup("b");
+//   rv[2] = strdup("c");
+//   ...
+//   rv[N] = NULL;
+//
+MOJO_TEST_SUPPORT_EXPORT
+char** MojoTestSupportEnumerateSourceRootRelativeDirectory(
+    const char* source_root_relative_path);
 
 #ifdef __cplusplus
 }  // extern "C"

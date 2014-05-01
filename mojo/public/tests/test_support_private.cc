@@ -5,8 +5,8 @@
 #include "mojo/public/tests/test_support_private.h"
 
 #include <assert.h>
-#include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 static mojo::test::TestSupport* g_test_support = NULL;
 
@@ -19,6 +19,26 @@ void MojoTestSupportLogPerfResult(const char* test_name,
     g_test_support->LogPerfResult(test_name, value, units);
   else
     printf("[no test runner]\t%s\t%g\t%s\n", test_name, value, units);
+}
+
+FILE* MojoTestSupportOpenSourceRootRelativeFile(const char* relative_path) {
+  if (g_test_support)
+    return g_test_support->OpenSourceRootRelativeFile(relative_path);
+  printf("[no test runner]\n");
+  return NULL;
+}
+
+char** MojoTestSupportEnumerateSourceRootRelativeDirectory(
+    const char* relative_path) {
+  if (g_test_support)
+    return g_test_support->EnumerateSourceRootRelativeDirectory(relative_path);
+
+  printf("[no test runner]\n");
+
+  // Return empty list:
+  char** rv = static_cast<char**>(calloc(1, sizeof(char*)));
+  rv[0] = NULL;
+  return rv;
 }
 
 }  // extern "C"

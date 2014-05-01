@@ -107,6 +107,7 @@
         'mojo_test_support',
       ],
       'sources': [
+        'public/cpp/test_support/lib/test_support.cc',
         'public/cpp/test_support/lib/test_utils.cc',
         'public/cpp/test_support/test_utils.h',
       ],
@@ -134,6 +135,7 @@
         'public/cpp/bindings/tests/router_unittest.cc',
         'public/cpp/bindings/tests/sample_service_unittest.cc',
         'public/cpp/bindings/tests/type_conversion_unittest.cc',
+        'public/cpp/bindings/tests/validation_unittest.cc',
       ],
     },
     {
@@ -243,6 +245,8 @@
         'public/cpp/bindings/lib/message.cc',
         'public/cpp/bindings/lib/message_builder.cc',
         'public/cpp/bindings/lib/message_builder.h',
+        'public/cpp/bindings/lib/message_header_validator.cc',
+        'public/cpp/bindings/lib/message_header_validator.h',
         'public/cpp/bindings/lib/message_internal.h',
         'public/cpp/bindings/lib/message_queue.cc',
         'public/cpp/bindings/lib/message_queue.h',

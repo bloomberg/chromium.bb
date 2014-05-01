@@ -114,12 +114,14 @@ void Connector::ReadMore() {
   while (true) {
     MojoResult rv;
 
-    rv = ReadAndDispatchMessage(message_pipe_.get(), incoming_receiver_, NULL);
+    bool receiver_result;
+    rv = ReadAndDispatchMessage(message_pipe_.get(), incoming_receiver_,
+                                &receiver_result);
     if (rv == MOJO_RESULT_SHOULD_WAIT) {
       WaitToReadMore();
       break;
     }
-    if (rv != MOJO_RESULT_OK) {
+    if (rv != MOJO_RESULT_OK || !receiver_result) {
       error_ = true;
       break;
     }
