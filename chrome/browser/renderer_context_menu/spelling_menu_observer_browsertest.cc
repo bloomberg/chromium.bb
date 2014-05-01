@@ -232,6 +232,16 @@ class SpellingMenuObserverTest : public InProcessBrowserTest {
     observer_->InitMenu(params);
   }
 
+  void ForceSuggestMode() {
+    menu()->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
+    // Force a non-empty and non-"en" locale so SUGGEST is available.
+    menu()->GetPrefs()->SetString(prefs::kSpellCheckDictionary, "fr");
+    ASSERT_TRUE(SpellingServiceClient::IsAvailable(
+        menu()->GetProfile(), SpellingServiceClient::SUGGEST));
+    ASSERT_FALSE(SpellingServiceClient::IsAvailable(
+        menu()->GetProfile(), SpellingServiceClient::SPELLCHECK));
+  }
+
   virtual ~SpellingMenuObserverTest();
   MockRenderViewContextMenu* menu() { return menu_.get(); }
   SpellingMenuObserver* observer() { return observer_.get(); }
@@ -323,15 +333,7 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, EnableSpellingService) {
 // Test that there will be a separator after "no suggestions" if
 // SpellingServiceClient::SUGGEST is on.
 IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, SeparatorAfterSuggestions) {
-  menu()->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kUseSpellingSuggestions);
-
-  // Force a non-empty locale so SUGGEST is available.
-  menu()->GetPrefs()->SetString(prefs::kSpellCheckDictionary, "en");
-  EXPECT_TRUE(SpellingServiceClient::IsAvailable(menu()->GetProfile(),
-    SpellingServiceClient::SUGGEST));
-
+  ForceSuggestMode();
   InitMenu("jhhj", NULL);
 
   // The test should see a top separator, "No spelling suggestions",
@@ -467,9 +469,7 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, SuggestionsForceTopSeparator) {
 
   // Case #3. Misspelled word, suggestion service is on.
   Reset(false);
-  menu()->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kUseSpellingSuggestions);
+  ForceSuggestMode();
   InitMenu("asdfkj", NULL);
 
   // Should have at least 2 entries. Separator, suggestion.

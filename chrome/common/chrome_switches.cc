@@ -1267,10 +1267,6 @@ const char kUnlimitedStorage[]              = "unlimited-storage";
 // testing flag.
 const char kUseSpdy[]                       = "use-spdy";
 
-// Disables use of the spelling web service and only provides suggestions.
-// This will only work if asynchronous spell checking is not disabled.
-const char kUseSpellingSuggestions[]        = "use-spelling-suggestions";
-
 // A string used to override the default user agent with a custom one.
 const char kUserAgent[]                     = "user-agent";
 

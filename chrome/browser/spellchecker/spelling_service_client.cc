@@ -120,12 +120,6 @@ bool SpellingServiceClient::IsAvailable(
   if (locale.empty())
     return false;
 
-  // If we do not have the spelling service enabled, then we are only available
-  // for SUGGEST.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kUseSpellingSuggestions))
-    return type == SUGGEST;
-
   // Finally, if all options are available, we only enable only SUGGEST
   // if SPELLCHECK is not available for our language because SPELLCHECK results
   // are a superset of SUGGEST results.
