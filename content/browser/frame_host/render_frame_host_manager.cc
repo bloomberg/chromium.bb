@@ -78,7 +78,9 @@ RenderFrameHostManager::RenderFrameHostManager(
       render_widget_delegate_(render_widget_delegate),
       interstitial_page_(NULL),
       cross_process_frame_connector_(NULL),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK(frame_tree_node_);
+}
 
 RenderFrameHostManager::~RenderFrameHostManager() {
   if (pending_render_frame_host_)
@@ -895,9 +897,7 @@ int RenderFrameHostManager::CreateRenderFrame(
   // remove it from the list of swapped out hosts if it commits.
   RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(instance);
 
-  FrameTreeNode* parent_node = NULL;
-  if (frame_tree_node_)
-    parent_node = frame_tree_node_->parent();
+  FrameTreeNode* parent_node = frame_tree_node_->parent();
 
   if (proxy) {
     routing_id = proxy->render_view_host()->GetRoutingID();
