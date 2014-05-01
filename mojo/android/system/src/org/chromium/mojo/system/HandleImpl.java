@@ -15,8 +15,6 @@ class HandleImpl implements Handle {
 
     private static final String TAG = "HandleImpl";
 
-    private static final int INVALID_HANDLE = 0;
-
     /**
      * The pointer to the scoped handle owned by this object.
      */
@@ -42,7 +40,7 @@ class HandleImpl implements Handle {
         mCore = other.mCore;
         HandleImpl otherAsHandleImpl = other;
         int mojoHandle = otherAsHandleImpl.mMojoHandle;
-        otherAsHandleImpl.mMojoHandle = INVALID_HANDLE;
+        otherAsHandleImpl.mMojoHandle = CoreImpl.INVALID_HANDLE;
         mMojoHandle = mojoHandle;
     }
 
@@ -51,10 +49,10 @@ class HandleImpl implements Handle {
      */
     @Override
     public void close() {
-        if (mMojoHandle != INVALID_HANDLE) {
+        if (mMojoHandle != CoreImpl.INVALID_HANDLE) {
             // After a close, the handle is invalid whether the close succeed or not.
             int handle = mMojoHandle;
-            mMojoHandle = INVALID_HANDLE;
+            mMojoHandle = CoreImpl.INVALID_HANDLE;
             mCore.close(handle);
         }
     }
@@ -72,7 +70,7 @@ class HandleImpl implements Handle {
      */
     @Override
     public boolean isValid() {
-        return mMojoHandle != INVALID_HANDLE;
+        return mMojoHandle != CoreImpl.INVALID_HANDLE;
     }
 
     /**
@@ -88,7 +86,7 @@ class HandleImpl implements Handle {
      * invalidate the handle. The caller must ensures that the handle does not leak.
      */
     void invalidateHandle() {
-        mMojoHandle = INVALID_HANDLE;
+        mMojoHandle = CoreImpl.INVALID_HANDLE;
     }
 
     /**

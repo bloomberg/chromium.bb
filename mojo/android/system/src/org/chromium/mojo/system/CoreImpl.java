@@ -20,7 +20,7 @@ import java.util.List;
  * Implementation of {@link Core}.
  */
 @JNINamespace("mojo::android")
-class CoreImpl implements Core {
+public class CoreImpl implements Core {
 
     /**
      * Discard flag for the |MojoReadData| operation.
@@ -37,8 +37,13 @@ class CoreImpl implements Core {
      */
     private static final int FLAG_SIZE = 4;
 
+    /**
+     * The mojo handle for an invalid handle.
+     */
+    static final int INVALID_HANDLE = 0;
+
     private static class LazyHolder {
-      private static final Core INSTANCE = new CoreImpl();
+        private static final Core INSTANCE = new CoreImpl();
     }
 
     /**
@@ -70,8 +75,7 @@ class CoreImpl implements Core {
         ByteBuffer buffer = allocateDirectBuffer(handles.size() * 8);
         int index = 0;
         for (Pair<Handle, WaitFlags> handle : handles) {
-            HandleImpl realHandler = (HandleImpl) handle.first;
-            buffer.putInt(HANDLE_SIZE * index, realHandler.getMojoHandle());
+            buffer.putInt(HANDLE_SIZE * index, getMojoHandle(handle.first));
             buffer.putInt(HANDLE_SIZE * handles.size() + FLAG_SIZE * index,
                     handle.second.getFlags());
             index++;
@@ -90,7 +94,7 @@ class CoreImpl implements Core {
      */
     @Override
     public int wait(Handle handle, WaitFlags flags, long deadline) {
-        return filterMojoResultForWait(nativeWait(((HandleImpl) handle).getMojoHandle(),
+        return filterMojoResultForWait(nativeWait(getMojoHandle(handle),
                 flags.getFlags(), deadline));
     }
 
@@ -103,7 +107,7 @@ class CoreImpl implements Core {
         if (result.getMojoResult() != MojoResult.OK) {
             throw new MojoException(result.getMojoResult());
         }
-        return Pair.<MessagePipeHandle, MessagePipeHandle>create(
+        return Pair.<MessagePipeHandle, MessagePipeHandle> create(
                 new MessagePipeHandleImpl(this, result.getMojoHandle1()),
                 new MessagePipeHandleImpl(this, result.getMojoHandle2()));
     }
@@ -125,7 +129,7 @@ class CoreImpl implements Core {
         if (result.getMojoResult() != MojoResult.OK) {
             throw new MojoException(result.getMojoResult());
         }
-        return Pair.<ProducerHandle, ConsumerHandle>create(
+        return Pair.<ProducerHandle, ConsumerHandle> create(
                 new DataPipeProducerHandleImpl(this, result.getMojoHandle1()),
                 new DataPipeConsumerHandleImpl(this, result.getMojoHandle2()));
     }
@@ -170,8 +174,7 @@ class CoreImpl implements Core {
         if (handles != null && !handles.isEmpty()) {
             handlesBuffer = allocateDirectBuffer(handles.size() * HANDLE_SIZE);
             for (Handle handle : handles) {
-                HandleImpl realHandle = (HandleImpl) handle;
-                handlesBuffer.putInt(realHandle.getMojoHandle());
+                handlesBuffer.putInt(getMojoHandle(handle));
             }
             handlesBuffer.position(0);
         }
@@ -184,7 +187,9 @@ class CoreImpl implements Core {
         // Success means the handles have been invalidated.
         if (handles != null) {
             for (Handle handle : handles) {
-                ((HandleImpl) handle).invalidateHandle();
+                if (handle.isValid()) {
+                    ((HandleImpl) handle).invalidateHandle();
+                }
             }
         }
     }
@@ -355,6 +360,16 @@ class CoreImpl implements Core {
         if (result != MojoResult.OK) {
             throw new MojoException(result);
         }
+    }
+
+    /**
+     * @return the mojo handle associated to the given handle, considering invalid handles.
+     */
+    private int getMojoHandle(Handle handle) {
+        if (handle.isValid()) {
+            return ((HandleImpl) handle).getMojoHandle();
+        }
+        return 0;
     }
 
     private static int filterMojoResultForWait(int code) {

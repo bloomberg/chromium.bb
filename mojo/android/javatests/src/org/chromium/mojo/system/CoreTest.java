@@ -99,7 +99,7 @@ public class CoreTest extends InstrumentationTestCase {
      */
     @SmallTest
     public void testWaitMany() {
-        Core core = CoreSingleton.getInstance();
+        Core core = CoreImpl.getInstance();
         Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
 
         try {
@@ -135,7 +135,7 @@ public class CoreTest extends InstrumentationTestCase {
      */
     @SmallTest
     public void testMessagePipeEmpty() {
-        Core core = CoreSingleton.getInstance();
+        Core core = CoreImpl.getInstance();
         Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
 
         try {
@@ -189,7 +189,7 @@ public class CoreTest extends InstrumentationTestCase {
      */
     @SmallTest
     public void testMessagePipeSend() {
-        Core core = CoreSingleton.getInstance();
+        Core core = CoreImpl.getInstance();
         Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
 
         try {
@@ -207,7 +207,7 @@ public class CoreTest extends InstrumentationTestCase {
     @SmallTest
     public void testMessagePipeReceiveOnSmallBuffer() {
         Random random = new Random();
-        Core core = CoreSingleton.getInstance();
+        Core core = CoreImpl.getInstance();
         Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
 
         try {
@@ -236,7 +236,7 @@ public class CoreTest extends InstrumentationTestCase {
      */
     @SmallTest
     public void testMessagePipeSendHandles() {
-        Core core = CoreSingleton.getInstance();
+        Core core = CoreImpl.getInstance();
         Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
         Pair<MessagePipeHandle, MessagePipeHandle> handlesToShare = core.createMessagePipe();
 
@@ -266,7 +266,7 @@ public class CoreTest extends InstrumentationTestCase {
     }
 
     private static void createAndCloseDataPipe(DataPipe.CreateOptions options) {
-        Core core = CoreSingleton.getInstance();
+        Core core = CoreImpl.getInstance();
         Pair<DataPipe.ProducerHandle, DataPipe.ConsumerHandle> handles = core.createDataPipe(
                 options);
         handles.first.close();
@@ -297,7 +297,7 @@ public class CoreTest extends InstrumentationTestCase {
      */
     @SmallTest
     public void testDataPipeSend() {
-        Core core = CoreSingleton.getInstance();
+        Core core = CoreImpl.getInstance();
         Random random = new Random();
 
         Pair<DataPipe.ProducerHandle, DataPipe.ConsumerHandle> handles = core.createDataPipe(null);
@@ -337,7 +337,7 @@ public class CoreTest extends InstrumentationTestCase {
     @SmallTest
     public void testDataPipeTwoPhaseSend() {
         Random random = new Random();
-        Core core = CoreSingleton.getInstance();
+        Core core = CoreImpl.getInstance();
         Pair<DataPipe.ProducerHandle, DataPipe.ConsumerHandle> handles = core.createDataPipe(null);
 
         try {
@@ -371,7 +371,7 @@ public class CoreTest extends InstrumentationTestCase {
     @SmallTest
     public void testDataPipeDiscard() {
         Random random = new Random();
-        Core core = CoreSingleton.getInstance();
+        Core core = CoreImpl.getInstance();
         Pair<DataPipe.ProducerHandle, DataPipe.ConsumerHandle> handles = core.createDataPipe(null);
 
         try {
@@ -410,7 +410,7 @@ public class CoreTest extends InstrumentationTestCase {
      */
     @SmallTest
     public void testSharedBufferCreation() {
-        Core core = CoreSingleton.getInstance();
+        Core core = CoreImpl.getInstance();
         // Test creation with empty options.
         core.createSharedBuffer(null, 8).close();
         // Test creation with default options.
@@ -422,7 +422,7 @@ public class CoreTest extends InstrumentationTestCase {
      */
     @SmallTest
     public void testSharedBufferDuplication() {
-        Core core = CoreSingleton.getInstance();
+        Core core = CoreImpl.getInstance();
         SharedBufferHandle handle = core.createSharedBuffer(null, 8);
         try {
             // Test duplication with empty options.
@@ -440,7 +440,7 @@ public class CoreTest extends InstrumentationTestCase {
     @SmallTest
     public void testSharedBufferSending() {
         Random random = new Random();
-        Core core = CoreSingleton.getInstance();
+        Core core = CoreImpl.getInstance();
         SharedBufferHandle handle = core.createSharedBuffer(null, 8);
         SharedBufferHandle newHandle = handle.duplicate(null);
 
@@ -464,6 +464,57 @@ public class CoreTest extends InstrumentationTestCase {
         } finally {
             handle.close();
             newHandle.close();
+        }
+    }
+
+    /**
+     * Testing that invalid handle can be used with this implementation.
+     */
+    @SmallTest
+    public void testInvalidHandle() {
+        Core core = CoreImpl.getInstance();
+        Handle handle = new InvalidHandle();
+
+        // Checking wait.
+        boolean exception = false;
+        try {
+            core.wait(handle, WaitFlags.all(), 0);
+        } catch (MojoException e) {
+            assertEquals(MojoResult.INVALID_ARGUMENT, e.getMojoResult());
+            exception = true;
+        }
+        assertTrue(exception);
+
+        // Checking waitMany.
+        exception = false;
+        try {
+            List<Pair<Handle, WaitFlags>> handles = new ArrayList<Pair<Handle, WaitFlags>>();
+            handles.add(Pair.create(handle, WaitFlags.all()));
+            core.waitMany(handles, 0);
+        } catch (MojoException e) {
+            assertEquals(MojoResult.INVALID_ARGUMENT, e.getMojoResult());
+            exception = true;
+        }
+        assertTrue(exception);
+
+        // Checking sending an invalid handle.
+        // Until the behavior is changed on the C++ side, handle gracefully 2 different use case:
+        // - Receive a INVALID_ARGUMENT exception
+        // - Receive an invalid handle on the other side.
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        try {
+            handles.first.writeMessage(null,
+                    Collections.<Handle> singletonList(handle),
+                    WriteFlags.none());
+            ReadMessageResult readMessageResult = handles.second.readMessage(null, 1,
+                    ReadFlags.none());
+            assertEquals(1, readMessageResult.getHandlesCount());
+            assertFalse(readMessageResult.getHandles().get(0).isValid());
+        } catch (MojoException e) {
+            assertEquals(MojoResult.INVALID_ARGUMENT, e.getMojoResult());
+        } finally {
+            handles.first.close();
+            handles.second.close();
         }
     }
 
