@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/debug/trace_event.h"
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
@@ -36,19 +36,14 @@ MidiManagerMac::MidiManagerMac()
       send_thread_("MidiSendThread") {
 }
 
-MidiResult MidiManagerMac::Initialize() {
-  TRACE_EVENT0("midi", "MidiManagerMac::Initialize");
-
+void MidiManagerMac::StartInitialization() {
   // CoreMIDI registration.
   midi_client_ = 0;
-  OSStatus result = MIDIClientCreate(
-      CFSTR("Google Chrome"),
-      NULL,
-      NULL,
-      &midi_client_);
+  OSStatus result =
+      MIDIClientCreate(CFSTR("Chrome"), NULL, NULL, &midi_client_);
 
   if (result != noErr)
-    return MIDI_INITIALIZATION_ERROR;
+    return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
 
   coremidi_input_ = 0;
 
@@ -60,14 +55,14 @@ MidiResult MidiManagerMac::Initialize() {
       this,
       &coremidi_input_);
   if (result != noErr)
-    return MIDI_INITIALIZATION_ERROR;
+    return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
 
   result = MIDIOutputPortCreate(
       midi_client_,
       CFSTR("MIDI Output"),
       &coremidi_output_);
   if (result != noErr)
-    return MIDI_INITIALIZATION_ERROR;
+    return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
 
   uint32 destination_count = MIDIGetNumberOfDestinations();
   destinations_.resize(destination_count);
@@ -98,11 +93,10 @@ MidiResult MidiManagerMac::Initialize() {
     AddInputPort(info);
   }
 
-  // TODO(toyoshim): Fix the memory management here!
   packet_list_ = reinterpret_cast<MIDIPacketList*>(midi_buffer_);
   midi_packet_ = MIDIPacketListInit(packet_list_);
 
-  return MIDI_OK;
+  CompleteInitialization(MIDI_OK);
 }
 
 void MidiManagerMac::DispatchSendMidiData(MidiManagerClient* client,

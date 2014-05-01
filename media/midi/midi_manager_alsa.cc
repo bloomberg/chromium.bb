@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -129,11 +128,7 @@ MidiManagerAlsa::MidiManagerAlsa()
     pipe_fd_[i] = -1;
 }
 
-MidiResult MidiManagerAlsa::Initialize() {
-  // TODO(toyoshim): Make Initialize() asynchronous.
-  // See http://crbug.com/339746.
-  TRACE_EVENT0("midi", "MidiManagerAlsa::Initialize");
-
+void MidiManagerAlsa::StartInitialization() {
   // Enumerate only hardware MIDI devices because software MIDIs running in
   // the browser process is not secure.
   snd_ctl_card_info_t* card;
@@ -190,14 +185,14 @@ MidiResult MidiManagerAlsa::Initialize() {
 
   if (pipe(pipe_fd_) < 0) {
     VPLOG(1) << "pipe() failed";
-    return MIDI_INITIALIZATION_ERROR;
+    CompleteInitialization(MIDI_INITIALIZATION_ERROR);
+  } else {
+    event_thread_.Start();
+    event_thread_.message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&MidiManagerAlsa::EventReset, base::Unretained(this)));
+    CompleteInitialization(MIDI_OK);
   }
-  event_thread_.Start();
-  event_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&MidiManagerAlsa::EventReset, base::Unretained(this)));
-
-  return MIDI_OK;
 }
 
 MidiManagerAlsa::~MidiManagerAlsa() {

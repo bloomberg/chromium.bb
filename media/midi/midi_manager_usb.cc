@@ -5,7 +5,6 @@
 #include "media/midi/midi_manager_usb.h"
 
 #include "base/callback.h"
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -17,16 +16,6 @@
 
 namespace media {
 
-namespace {
-
-// Noop callback for (sync) Initialize.
-// TODO(yhirano): This function should go away when
-// MidiManager::Initialize() becomes asynchronous. See http://crbug.com/339746.
-void Noop(bool result) {
-}
-
-}  // namespace
-
 MidiManagerUsb::MidiManagerUsb(scoped_ptr<UsbMidiDevice::Factory> factory)
     : device_factory_(factory.Pass()) {
 }
@@ -34,13 +23,13 @@ MidiManagerUsb::MidiManagerUsb(scoped_ptr<UsbMidiDevice::Factory> factory)
 MidiManagerUsb::~MidiManagerUsb() {
 }
 
-MidiResult MidiManagerUsb::Initialize() {
-  TRACE_EVENT0("midi", "MidiManagerUsb::Initialize");
-  Initialize(base::Bind(Noop));
-  return MIDI_OK;
+void MidiManagerUsb::StartInitialization() {
+  Initialize(
+      base::Bind(&MidiManager::CompleteInitialization, base::Unretained(this)));
 }
 
-void MidiManagerUsb::Initialize(base::Callback<void(bool result)> callback) {
+void MidiManagerUsb::Initialize(
+    base::Callback<void(MidiResult result)> callback) {
   initialize_callback_ = callback;
   // This is safe because EnumerateDevices cancels the operation on destruction.
   device_factory_->EnumerateDevices(
@@ -83,7 +72,7 @@ void MidiManagerUsb::OnReceivedData(size_t jack_index,
 void MidiManagerUsb::OnEnumerateDevicesDone(bool result,
                                             UsbMidiDevice::Devices* devices) {
   if (!result) {
-    initialize_callback_.Run(false);
+    initialize_callback_.Run(MIDI_INITIALIZATION_ERROR);
     return;
   }
   devices->swap(devices_);
@@ -97,7 +86,7 @@ void MidiManagerUsb::OnEnumerateDevicesDone(bool result,
                                      descriptor.size(),
                                      &jacks);
     if (!parse_result) {
-      initialize_callback_.Run(false);
+      initialize_callback_.Run(MIDI_INITIALIZATION_ERROR);
       return;
     }
     std::vector<UsbMidiJack> input_jacks;
@@ -115,7 +104,7 @@ void MidiManagerUsb::OnEnumerateDevicesDone(bool result,
     }
     input_stream_.reset(new UsbMidiInputStream(input_jacks, this));
   }
-  initialize_callback_.Run(true);
+  initialize_callback_.Run(MIDI_OK);
 }
 
 }  // namespace media

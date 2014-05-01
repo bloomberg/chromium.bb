@@ -1053,6 +1053,7 @@
         'filters/video_frame_scheduler_unittest.cc',
         'filters/video_frame_stream_unittest.cc',
         'filters/video_renderer_impl_unittest.cc',
+        'midi/midi_manager_unittest.cc',
         'midi/midi_manager_usb_unittest.cc',
         'midi/midi_message_queue_unittest.cc',
         'midi/midi_message_util_unittest.cc',

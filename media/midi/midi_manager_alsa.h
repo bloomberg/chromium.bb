@@ -21,7 +21,7 @@ class MidiManagerAlsa : public MidiManager {
   virtual ~MidiManagerAlsa();
 
   // MidiManager implementation.
-  virtual MidiResult Initialize() OVERRIDE;
+  virtual void StartInitialization() OVERRIDE;
   virtual void DispatchSendMidiData(MidiManagerClient* client,
                                     uint32 port_index,
                                     const std::vector<uint8>& data,

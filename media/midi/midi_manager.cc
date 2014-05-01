@@ -4,8 +4,6 @@
 
 #include "media/midi/midi_manager.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/debug/trace_event.h"
 
 namespace media {
@@ -26,18 +24,41 @@ MidiManager::~MidiManager() {
 }
 
 void MidiManager::StartSession(MidiManagerClient* client, int client_id) {
-  // Lazily initialize the MIDI back-end.
-  if (!initialized_) {
-    initialized_ = true;
-    result_ = Initialize();
+  bool session_is_ready;
+  bool session_needs_initialization = false;
+
+  {
+    base::AutoLock auto_lock(clients_lock_);
+    session_is_ready = initialized_;
+    if (!session_is_ready) {
+      // Call StartInitialization() only for the first request.
+      session_needs_initialization = pending_clients_.empty();
+      pending_clients_.insert(
+          std::pair<int, MidiManagerClient*>(client_id, client));
+    }
   }
 
-  if (result_ == MIDI_OK) {
-    base::AutoLock auto_lock(clients_lock_);
-    clients_.insert(client);
+  // Lazily initialize the MIDI back-end.
+  if (!session_is_ready) {
+    if (session_needs_initialization) {
+      TRACE_EVENT0("midi", "MidiManager::StartInitialization");
+      StartInitialization();
+    }
+    // CompleteInitialization() will be called asynchronously when platform
+    // dependent initialization is finished.
+    return;
   }
-  // TODO(toyoshim): Make Initialize() asynchronous.
-  client->CompleteStartSession(client_id, result_);
+
+  // Platform dependent initialization was already finished for previously
+  // initialized clients.
+  MidiResult result;
+  {
+    base::AutoLock auto_lock(clients_lock_);
+    if (result_ == MIDI_OK)
+      clients_.insert(client);
+    result = result_;
+  }
+  client->CompleteStartSession(client_id, result);
 }
 
 void MidiManager::EndSession(MidiManagerClient* client) {
@@ -54,9 +75,28 @@ void MidiManager::DispatchSendMidiData(MidiManagerClient* client,
   NOTREACHED();
 }
 
-MidiResult MidiManager::Initialize() {
-  TRACE_EVENT0("midi", "MidiManager::Initialize");
-  return MIDI_NOT_SUPPORTED;
+void MidiManager::StartInitialization() {
+  CompleteInitialization(MIDI_NOT_SUPPORTED);
+}
+
+void MidiManager::CompleteInitialization(MidiResult result) {
+  TRACE_EVENT0("midi", "MidiManager::CompleteInitialization");
+
+  base::AutoLock auto_lock(clients_lock_);
+  DCHECK(clients_.empty());
+  DCHECK(!pending_clients_.empty());
+  DCHECK(!initialized_);
+  initialized_ = true;
+  result_ = result;
+
+  for (PendingClientMap::iterator it = pending_clients_.begin();
+       it != pending_clients_.end();
+       ++it) {
+    if (result_ == MIDI_OK)
+      clients_.insert(it->second);
+    it->second->CompleteStartSession(it->first, result_);
+  }
+  pending_clients_.clear();
 }
 
 void MidiManager::AddInputPort(const MidiPortInfo& info) {

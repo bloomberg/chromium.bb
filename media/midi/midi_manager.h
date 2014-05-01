@@ -5,6 +5,7 @@
 #ifndef MEDIA_MIDI_MIDI_MANAGER_H_
 #define MEDIA_MIDI_MIDI_MANAGER_H_
 
+#include <map>
 #include <set>
 #include <vector>
 
@@ -89,9 +90,19 @@ class MEDIA_EXPORT MidiManager {
   const MidiPortInfoList& output_ports() { return output_ports_; }
 
  protected:
-  // Initializes the MIDI system, returning |true| on success.
-  // The default implementation is for unsupported platforms.
-  virtual MidiResult Initialize();
+  friend class MidiManagerUsb;
+
+  // Initializes the platform dependent MIDI system. It will call
+  // CompleteInitialization() asynchronously when initialization is finished.
+  // |result| of CompleteInitialization() will be MIDI_OK on success.
+  // MidiManager has a default implementation that calls
+  // CompleteInitialization() with MIDI_NOT_SUPPORTED.
+  virtual void StartInitialization();
+
+  // Called from a platform dependent implementation of StartInitialization().
+  // It will distribute |result| to MIDIManagerClient objects in
+  // |pending_clients_|.
+  void CompleteInitialization(MidiResult result);
 
   void AddInputPort(const MidiPortInfo& info);
   void AddOutputPort(const MidiPortInfo& info);
@@ -119,7 +130,11 @@ class MEDIA_EXPORT MidiManager {
   typedef std::set<MidiManagerClient*> ClientList;
   ClientList clients_;
 
-  // Protects access to our clients.
+  // Keeps track of all clients who are waiting for CompleteStartSession().
+  typedef std::map<int, MidiManagerClient*> PendingClientMap;
+  PendingClientMap pending_clients_;
+
+  // Protects access to our clients, |clients_| and |pending_clients_|.
   base::Lock clients_lock_;
 
   MidiPortInfoList input_ports_;
