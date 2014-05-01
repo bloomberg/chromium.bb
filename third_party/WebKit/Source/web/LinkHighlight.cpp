@@ -253,12 +253,14 @@ bool LinkHighlight::computeHighlightLayerPathAndPosition(RenderLayer* compositin
     return pathHasChanged;
 }
 
-void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect& webClipRect, bool, WebFloatRect&)
+void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect& webClipRect, bool, WebFloatRect&,
+    WebContentLayerClient::GraphicsContextStatus contextStatus)
 {
     if (!m_node || !m_node->renderer())
         return;
 
-    GraphicsContext gc(canvas);
+    GraphicsContext gc(canvas,
+        contextStatus == WebContentLayerClient::GraphicsContextEnabled ? GraphicsContext::NothingDisabled : GraphicsContext::FullyDisabled);
     IntRect clipRect(IntPoint(webClipRect.x, webClipRect.y), IntSize(webClipRect.width, webClipRect.height));
     gc.clip(clipRect);
     gc.setFillColor(m_node->renderer()->style()->tapHighlightColor());

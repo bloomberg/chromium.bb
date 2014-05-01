@@ -35,6 +35,8 @@ struct WebFloatRect;
 
 class BLINK_PLATFORM_EXPORT WebContentLayerClient {
 public:
+    enum GraphicsContextStatus { GraphicsContextEnabled, GraphicsContextDisabled };
+
     // Paints the content area for the layer, typically dirty rects submitted
     // through WebContentLayer::setNeedsDisplay, submitting drawing commands
     // through the WebCanvas.
@@ -42,7 +44,9 @@ public:
     // Optionally, the implementation may set |opaque| to a rect covering pixels that
     // the implementation knows are opaque. This information can be used for various
     // optimizations.
-    virtual void paintContents(WebCanvas*, const WebRect& clip, bool canPaintLCDText, WebFloatRect& opaque) = 0;
+    // The |disableContext| enum controls most processing in
+    // GraphicsContext to isolate the painting code in performance tests.
+    virtual void paintContents(WebCanvas*, const WebRect& clip, bool canPaintLCDText, WebFloatRect& opaque, GraphicsContextStatus = GraphicsContextEnabled) = 0;
 
 protected:
     virtual ~WebContentLayerClient() { }

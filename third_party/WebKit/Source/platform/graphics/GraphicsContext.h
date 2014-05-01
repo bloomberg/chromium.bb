@@ -70,7 +70,13 @@ public:
         ReadWrite
     };
 
-    explicit GraphicsContext(SkCanvas*);
+    enum DisabledMode {
+        NothingDisabled = 0, // Run as normal.
+        PaintingDisabled = 1, // Do not issue painting calls to the canvas but maintain state correctly.
+        FullyDisabled = 2 // Do absolutely minimal work to remove the cost of the context from performance tests.
+    };
+
+    explicit GraphicsContext(SkCanvas*, DisabledMode = NothingDisabled);
     ~GraphicsContext();
 
     // Returns the canvas used for painting. Must not be called if painting is disabled.
@@ -90,7 +96,8 @@ public:
         ASSERT(!paintingDisabled());
         return m_canvas;
     }
-    bool paintingDisabled() const { return !m_canvas; }
+    bool paintingDisabled() const { return m_disabledState & PaintingDisabled; }
+    bool contextDisabled() const { return m_disabledState; }
 
     // ---------- State management methods -----------------
     void save();
@@ -439,6 +446,9 @@ private:
     // Apply deferred paint state saves
     void realizePaintSave()
     {
+        if (contextDisabled())
+            return;
+
         if (m_paintState->saveCount()) {
             m_paintState->decrementSaveCount();
             ++m_paintStateIndex;
@@ -453,7 +463,7 @@ private:
     // Apply deferred canvas state saves
     void realizeCanvasSave()
     {
-        if (!m_pendingCanvasSave)
+        if (!m_pendingCanvasSave || contextDisabled())
             return;
 
         m_canvas->save();
@@ -466,7 +476,7 @@ private:
 
     bool isRecording() const;
 
-    // null indicates painting is disabled. Never delete this object.
+    // null indicates painting is contextDisabled. Never delete this object.
     SkCanvas* m_canvas;
 
     // Paint states stack. Enables local drawing state change with save()/restore() calls.
@@ -496,11 +506,15 @@ private:
 #endif
     // Tracks the region painted opaque via the GraphicsContext.
     OpaqueRegionSkia m_opaqueRegion;
-    bool m_trackOpaqueRegion : 1;
 
     // Tracks the region where text is painted via the GraphicsContext.
-    bool m_trackTextRegion : 1;
     SkRect m_textRegion;
+
+    unsigned m_disabledState;
+
+    // Activation for the above region tracking features
+    bool m_trackOpaqueRegion : 1;
+    bool m_trackTextRegion : 1;
 
     // Are we on a high DPI display? If so, spelling and grammar markers are larger.
     bool m_useHighResMarker : 1;

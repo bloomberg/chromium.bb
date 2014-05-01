@@ -92,7 +92,8 @@ public:
     virtual void willCloseLayerTreeView() OVERRIDE FINAL;
 
     // WebContentLayerClient
-    virtual void paintContents(WebCanvas*, const WebRect& clip, bool canPaintLCDTest, WebFloatRect& opaque) OVERRIDE FINAL;
+    virtual void paintContents(WebCanvas*, const WebRect& clip, bool canPaintLCDTest, WebFloatRect& opaque,
+        WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) OVERRIDE FINAL;
 
     // WebPopupMenuImpl
     void initialize(WebCore::FramelessScrollView* widget, const WebRect& bounds);

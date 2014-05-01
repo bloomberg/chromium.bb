@@ -56,7 +56,8 @@ public:
     void setOpaque(bool opaque) { m_opaque = opaque; }
 
     // blink::WebContentLayerClient implementation.
-    virtual void paintContents(SkCanvas*, const blink::WebRect& clip, bool canPaintLCDText, blink::WebFloatRect& opaque) OVERRIDE;
+    virtual void paintContents(SkCanvas*, const blink::WebRect& clip, bool canPaintLCDText, blink::WebFloatRect& opaque,
+        blink::WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) OVERRIDE;
 
 private:
     GraphicsContextPainter* m_painter;

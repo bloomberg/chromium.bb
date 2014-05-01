@@ -235,13 +235,15 @@ void WebPopupMenuImpl::enterForceCompositingMode(bool enter)
     }
 }
 
-void WebPopupMenuImpl::paintContents(WebCanvas* canvas, const WebRect& rect, bool, WebFloatRect&)
+void WebPopupMenuImpl::paintContents(WebCanvas* canvas, const WebRect& rect, bool, WebFloatRect&,
+    WebContentLayerClient::GraphicsContextStatus contextStatus)
 {
     if (!m_widget)
         return;
 
     if (!rect.isEmpty()) {
-        GraphicsContext context(canvas);
+        GraphicsContext context(canvas,
+            contextStatus == WebContentLayerClient::GraphicsContextEnabled ? GraphicsContext::NothingDisabled : GraphicsContext::FullyDisabled);
         m_widget->paint(&context, rect);
     }
 }

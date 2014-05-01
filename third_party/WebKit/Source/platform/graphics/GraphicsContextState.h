@@ -48,9 +48,10 @@ namespace WebCore {
 class PLATFORM_EXPORT GraphicsContextState FINAL {
     WTF_MAKE_NONCOPYABLE(GraphicsContextState);
 public:
-    static PassOwnPtr<GraphicsContextState> create() { return adoptPtr(new GraphicsContextState()); }
-
-    GraphicsContextState();
+    static PassOwnPtr<GraphicsContextState> create()
+    {
+        return adoptPtr(new GraphicsContextState());
+    }
 
     void copy(GraphicsContextState*);
 
@@ -140,6 +141,8 @@ public:
     void setShouldClampToSourceRect(bool shouldClampToSourceRect) { m_shouldClampToSourceRect = shouldClampToSourceRect; }
 
 private:
+    GraphicsContextState();
+
     // Helper function for applying the state's alpha value to the given input
     // color to produce a new output color.
     SkColor applyAlpha(SkColor c) const

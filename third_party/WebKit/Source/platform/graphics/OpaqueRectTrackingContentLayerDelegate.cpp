@@ -48,13 +48,16 @@ OpaqueRectTrackingContentLayerDelegate::~OpaqueRectTrackingContentLayerDelegate(
 {
 }
 
-void OpaqueRectTrackingContentLayerDelegate::paintContents(SkCanvas* canvas, const WebRect& clip, bool canPaintLCDText, WebFloatRect& opaque)
+void OpaqueRectTrackingContentLayerDelegate::paintContents(
+    SkCanvas* canvas, const WebRect& clip, bool canPaintLCDText, WebFloatRect& opaque,
+    blink::WebContentLayerClient::GraphicsContextStatus contextStatus)
 {
     static const unsigned char* annotationsEnabled = 0;
     if (UNLIKELY(!annotationsEnabled))
         annotationsEnabled = EventTracer::getTraceCategoryEnabledFlag(TRACE_DISABLED_BY_DEFAULT("blink.graphics_context_annotations"));
 
-    GraphicsContext context(canvas);
+    GraphicsContext context(canvas,
+        contextStatus == blink::WebContentLayerClient::GraphicsContextEnabled ? GraphicsContext::NothingDisabled : GraphicsContext::FullyDisabled);
     context.setTrackOpaqueRegion(!m_opaque);
     context.setCertainlyOpaque(m_opaque);
     context.setShouldSmoothFonts(canPaintLCDText);
