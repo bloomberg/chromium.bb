@@ -1,16 +1,19 @@
 {
   "package_name": "nacl_arm_bionic",
   "package_targets": {
-    "linux_x86": [
-      {
-        "extract_dir": "",
-        "hash": "b6579a89679821cbbb90f9b1ae958d3ed39d9bab",
-        "name": "naclsdk_linux_arm_bionic.tgz",
-        "tar_src_dir": "",
-        "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13040/naclsdk_linux_arm_bionic.tgz"
-      }
-    ]
+    "linux_x86": {
+      "archives": [
+        {
+          "extract_dir": "",
+          "hash": "bba85cec0110ad8ca25a0faedc1248526e64ece8",
+          "name": "naclsdk_linux_arm_bionic.tgz",
+          "tar_src_dir": "",
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13101/naclsdk_linux_arm_bionic.tgz"
+        }
+      ],
+      "version": 1
+    }
   },
-  "revision": 13040,
-  "revision_hash": "0601d4eea6e005057c7a6cbbfe4feecbec1adef6"
+  "revision": 13101,
+  "revision_hash": "4b59524336199d16104c678106fa983f8c970980"
 }
