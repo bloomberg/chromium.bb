@@ -140,6 +140,14 @@ class CC_EXPORT PictureLayerImpl
   WhichTree GetTree() const;
   bool IsOnActiveOrPendingTree() const;
 
+  // Return the count of tiles on this layer that meet both of the following
+  // conditions:
+  // 1. The tile is required for activation.
+  // 2. The tile needs initialization (ie, it's not ready to draw).
+  int UninitializedTilesRequiredForActivationCount() const {
+    return uninitialized_tiles_required_for_activation_count_;
+  }
+
  protected:
   friend class LayerRasterTileIterator;
 
@@ -163,13 +171,13 @@ class CC_EXPORT PictureLayerImpl
   float SnappedContentsScale(float new_contents_scale);
   void UpdateLCDTextStatus(bool new_status);
   void ResetRasterScale();
-  void MarkVisibleResourcesAsRequired() const;
+  void MarkVisibleResourcesAsRequired();
   bool MarkVisibleTilesAsRequired(
       PictureLayerTiling* tiling,
       const PictureLayerTiling* optional_twin_tiling,
       float contents_scale,
       const gfx::Rect& rect,
-      const Region& missing_region) const;
+      const Region& missing_region);
 
   void DoPostCommitInitializationIfNeeded() {
     if (needs_post_commit_initialization_)
@@ -220,6 +228,8 @@ class CC_EXPORT PictureLayerImpl
   gfx::Rect visible_rect_for_tile_priority_;
   gfx::Size viewport_size_for_tile_priority_;
   gfx::Transform screen_space_transform_for_tile_priority_;
+
+  int uninitialized_tiles_required_for_activation_count_;
 
   friend class PictureLayer;
   DISALLOW_COPY_AND_ASSIGN(PictureLayerImpl);
