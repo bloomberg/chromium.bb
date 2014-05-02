@@ -408,7 +408,9 @@ base::string16 ExtractSearchTermsFromURL(Profile* profile, const GURL& url) {
     // page.
     InstantSearchPrerenderer* prerenderer =
         InstantSearchPrerenderer::GetForProfile(profile);
-    DCHECK(prerenderer);
+    // TODO(kmadhusu): Remove this CHECK after the investigation of
+    // crbug.com/367204.
+    CHECK(prerenderer);
     return prerenderer->get_last_query();
   }
 
