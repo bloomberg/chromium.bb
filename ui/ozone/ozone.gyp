@@ -8,6 +8,8 @@
     'external_ozone_platforms': [],
     'external_ozone_platform_files': [],
     'external_ozone_platform_deps': [],
+    'internal_ozone_platforms': [],
+    'internal_ozone_platform_deps': [],
   },
   'targets': [
     {
@@ -20,6 +22,7 @@
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<@(external_ozone_platform_deps)',
+        '<@(internal_ozone_platform_deps)',
       ],
       'defines': [
         'OZONE_IMPLEMENTATION',
@@ -28,6 +31,7 @@
         'platform_list_file': '<(SHARED_INTERMEDIATE_DIR)/ui/ozone/ozone_platform_list.cc',
         'ozone_platforms': [
           '<@(external_ozone_platforms)',
+          '<@(internal_ozone_platforms)',
         ],
       },
       'sources': [
@@ -41,37 +45,10 @@
         'ozone_platform.h',
         'ozone_switches.cc',
         'ozone_switches.h',
-        'platform/dri/chromeos/display_mode_dri.cc',
-        'platform/dri/chromeos/display_mode_dri.h',
-        'platform/dri/chromeos/display_snapshot_dri.cc',
-        'platform/dri/chromeos/display_snapshot_dri.h',
-        'platform/dri/chromeos/native_display_delegate_dri.cc',
-        'platform/dri/chromeos/native_display_delegate_dri.h',
-        'platform/dri/ozone_platform_dri.cc',
-        'platform/dri/ozone_platform_dri.h',
-        'platform/dri/cursor_factory_evdev_dri.cc',
-        'platform/dri/cursor_factory_evdev_dri.h',
-        'platform/dri/dri_buffer.cc',
-        'platform/dri/dri_buffer.h',
-        'platform/dri/dri_surface.cc',
-        'platform/dri/dri_surface.h',
-        'platform/dri/dri_surface_factory.cc',
-        'platform/dri/dri_surface_factory.h',
-        'platform/dri/dri_util.cc',
-        'platform/dri/dri_util.h',
-        'platform/dri/dri_vsync_provider.cc',
-        'platform/dri/dri_vsync_provider.h',
-        'platform/dri/dri_wrapper.cc',
-        'platform/dri/dri_wrapper.h',
-        'platform/dri/hardware_display_controller.cc',
-        'platform/dri/hardware_display_controller.h',
-        'platform/test/ozone_platform_test.cc',
-        'platform/test/ozone_platform_test.h',
         '<@(external_ozone_platform_files)',
       ],
       'includes': [
         'ime/ime.gypi',
-        'platform/caca/caca.gypi',
       ],
       'actions': [
         {
@@ -95,43 +72,34 @@
         },
       ],
       'conditions': [
-        ['<(ozone_platform_dri)==1', {
-          'variables': {
-            'ozone_platforms': [
-              'dri'
-            ]
-          },
-          'dependencies': [
-            '../../build/linux/system.gyp:dridrm',
-            '../../ui/display/display.gyp:display_util',
+        ['use_udev == 0', {
+          'sources/': [
+            ['exclude', '_udev\\.(h|cc)$'],
           ],
-        }, {  # ozone_platform_dri==0
-          'sources/': [
-            ['exclude', '^platform/dri/'],
-          ]
-        }],
-        ['<(ozone_platform_test)==1', {
-          'variables': {
-            'ozone_platforms': [
-              'test'
-            ],
-          }
-        }, {  # ozone_platform_test==0
-          'sources/': [
-            ['exclude', '^platform/test/'],
-          ]
         }],
         ['chromeos==1', {
           'dependencies': [
             '<(DEPTH)/ui/display/display.gyp:display_types',
           ],
         }],
-        ['use_udev == 0', {
-          'sources/': [
-            ['exclude', '_udev\\.(h|cc)$'],
-          ],
-        }],
       ]
     },
+  ],
+  'conditions': [
+    ['<(ozone_platform_caca) == 1', {
+      'includes': [
+        'platform/caca/caca.gypi',
+      ],
+    }],
+    ['<(ozone_platform_dri) == 1', {
+      'includes': [
+        'platform/dri/dri.gypi',
+      ],
+    }],
+    ['<(ozone_platform_test) == 1', {
+      'includes': [
+        'platform/test/test.gypi',
+      ],
+    }],
   ],
 }
