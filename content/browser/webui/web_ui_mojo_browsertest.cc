@@ -32,34 +32,6 @@ namespace content {
 namespace {
 
 bool got_message = false;
-int message_count = 0;
-
-const int kExpectedMessageCount = 100;
-
-// Negative numbers with different values in each byte, the last of
-// which can survive promotion to double and back.
-const int8  kExpectedInt8Value = -65;
-const int16 kExpectedInt16Value = -16961;
-const int32 kExpectedInt32Value = -1145258561;
-const int64 kExpectedInt64Value = -77263311946305LL;
-
-// Positive numbers with different values in each byte, the last of
-// which can survive promotion to double and back.
-const uint8  kExpectedUInt8Value = 65;
-const uint16 kExpectedUInt16Value = 16961;
-const uint32 kExpectedUInt32Value = 1145258561;
-const uint64 kExpectedUInt64Value = 77263311946305LL;
-
-// Double/float values, including special case constants.
-const double kExpectedDoubleVal = 3.14159265358979323846;
-const double kExpectedDoubleInf = std::numeric_limits<double>::infinity();
-const double kExpectedDoubleNan = std::numeric_limits<double>::quiet_NaN();
-const float kExpectedFloatVal = static_cast<float>(kExpectedDoubleVal);
-const float kExpectedFloatInf = std::numeric_limits<float>::infinity();
-const float kExpectedFloatNan = std::numeric_limits<float>::quiet_NaN();
-
-// NaN has the property that it is not equal to itself.
-#define EXPECT_NAN(x) EXPECT_NE(x, x)
 
 // The bindings for the page are generated from a .mojom file. This code looks
 // up the generated file from disk and returns it.
@@ -97,11 +69,6 @@ class BrowserTargetImpl : public mojo::BrowserTarget {
     NOTREACHED();
   }
 
-  virtual void EchoResponse(const mojo::EchoArgs& arg1,
-                            const mojo::EchoArgs& arg2) OVERRIDE {
-    NOTREACHED();
-  }
-
  protected:
   mojo::RemotePtr<mojo::RendererTarget> client_;
   base::RunLoop* run_loop_;
@@ -129,76 +96,6 @@ class PingBrowserTargetImpl : public BrowserTargetImpl {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PingBrowserTargetImpl);
-};
-
-class EchoBrowserTargetImpl : public BrowserTargetImpl {
- public:
-  EchoBrowserTargetImpl(mojo::ScopedRendererTargetHandle handle,
-                        base::RunLoop* run_loop)
-      : BrowserTargetImpl(handle, run_loop) {
-    mojo::AllocationScope scope;
-    mojo::EchoArgs::Builder builder;
-    builder.set_si64(kExpectedInt64Value);
-    builder.set_si32(kExpectedInt32Value);
-    builder.set_si16(kExpectedInt16Value);
-    builder.set_si8(kExpectedInt8Value);
-    builder.set_ui64(kExpectedUInt64Value);
-    builder.set_ui32(kExpectedUInt32Value);
-    builder.set_ui16(kExpectedUInt16Value);
-    builder.set_ui8(kExpectedUInt8Value);
-    builder.set_float_val(kExpectedFloatVal);
-    builder.set_float_inf(kExpectedFloatInf);
-    builder.set_float_nan(kExpectedFloatNan);
-    builder.set_double_val(kExpectedDoubleVal);
-    builder.set_double_inf(kExpectedDoubleInf);
-    builder.set_double_nan(kExpectedDoubleNan);
-    builder.set_name("coming");
-    mojo::Array<mojo::String>::Builder string_array(3);
-    string_array[0] = "one";
-    string_array[1] = "two";
-    string_array[2] = "three";
-    builder.set_string_array(string_array.Finish());
-    client_->Echo(builder.Finish());
-  }
-
-  virtual ~EchoBrowserTargetImpl() {}
-
-  // mojo::BrowserTarget overrides:
-  // Check the response, and quit the RunLoop after N calls.
-  virtual void EchoResponse(const mojo::EchoArgs& arg1,
-                            const mojo::EchoArgs& arg2) OVERRIDE {
-    EXPECT_EQ(kExpectedInt64Value, arg1.si64());
-    EXPECT_EQ(kExpectedInt32Value, arg1.si32());
-    EXPECT_EQ(kExpectedInt16Value, arg1.si16());
-    EXPECT_EQ(kExpectedInt8Value, arg1.si8());
-    EXPECT_EQ(kExpectedUInt64Value, arg1.ui64());
-    EXPECT_EQ(kExpectedUInt32Value, arg1.ui32());
-    EXPECT_EQ(kExpectedUInt16Value, arg1.ui16());
-    EXPECT_EQ(kExpectedUInt8Value, arg1.ui8());
-    EXPECT_EQ(kExpectedFloatVal, arg1.float_val());
-    EXPECT_EQ(kExpectedFloatInf, arg1.float_inf());
-    EXPECT_NAN(arg1.float_nan());
-    EXPECT_EQ(kExpectedDoubleVal, arg1.double_val());
-    EXPECT_EQ(kExpectedDoubleInf, arg1.double_inf());
-    EXPECT_NAN(arg1.double_nan());
-    EXPECT_EQ(std::string("coming"), arg1.name().To<std::string>());
-    EXPECT_EQ(std::string("one"), arg1.string_array()[0].To<std::string>());
-    EXPECT_EQ(std::string("two"), arg1.string_array()[1].To<std::string>());
-    EXPECT_EQ(std::string("three"), arg1.string_array()[2].To<std::string>());
-
-    EXPECT_EQ(-1, arg2.si64());
-    EXPECT_EQ(-1, arg2.si32());
-    EXPECT_EQ(-1, arg2.si16());
-    EXPECT_EQ(-1, arg2.si8());
-    EXPECT_EQ(std::string("going"), arg2.name().To<std::string>());
-
-    message_count += 1;
-    if (message_count == kExpectedMessageCount)
-      run_loop_->Quit();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(EchoBrowserTargetImpl);
 };
 
 // WebUIController that sets up mojo bindings.
@@ -242,27 +139,6 @@ class PingTestWebUIController : public TestWebUIController {
   DISALLOW_COPY_AND_ASSIGN(PingTestWebUIController);
 };
 
-// TestWebUIController that additionally creates the echo test BrowserTarget
-// implementation at the right time.
-class EchoTestWebUIController : public TestWebUIController {
- public:
-   EchoTestWebUIController(WebUI* web_ui, base::RunLoop* run_loop)
-      : TestWebUIController(web_ui, run_loop) {
-  }
-
-  // WebUIController overrides:
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE {
-    mojo::InterfacePipe<mojo::BrowserTarget, mojo::RendererTarget> pipe;
-    browser_target_.reset(new EchoBrowserTargetImpl(
-        pipe.handle_to_peer.Pass(), run_loop_));
-    render_view_host->SetWebUIHandle(
-        mojo::ScopedMessagePipeHandle(pipe.handle_to_self.release()));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(EchoTestWebUIController);
-};
-
 // WebUIControllerFactory that creates TestWebUIController.
 class TestWebUIControllerFactory : public WebUIControllerFactory {
  public:
@@ -274,8 +150,6 @@ class TestWebUIControllerFactory : public WebUIControllerFactory {
       WebUI* web_ui, const GURL& url) const OVERRIDE {
     if (url.query() == "ping")
       return new PingTestWebUIController(web_ui, run_loop_);
-    if (url.query() == "echo")
-      return new EchoTestWebUIController(web_ui, run_loop_);
     return NULL;
   }
   virtual WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
@@ -339,32 +213,6 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
   // RunLoop is quit when message received from page.
   run_loop.Run();
   EXPECT_TRUE(got_message);
-}
-
-// Loads a webui page that contains mojo bindings and verifies that
-// parameters are passed back correctly from JavaScript.
-IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndEcho) {
-  // Currently there is no way to have a generated file included in the isolate
-  // files. If the bindings file doesn't exist assume we're on such a bot and
-  // pass.
-  // TODO(sky): remove this conditional when isolates support copying from gen.
-  const base::FilePath test_file_path(
-      mojo::test::GetFilePathForJSResource(
-          "content/test/data/web_ui_test_mojo_bindings.mojom"));
-  if (!base::PathExists(test_file_path)) {
-    LOG(WARNING) << " mojom binding file doesn't exist, assuming on isolate";
-    return;
-  }
-
-  message_count = 0;
-  ASSERT_TRUE(test_server()->Start());
-  base::RunLoop run_loop;
-  factory()->set_run_loop(&run_loop);
-  GURL test_url(test_server()->GetURL("files/web_ui_mojo.html?echo"));
-  NavigateToURL(shell(), test_url);
-  // RunLoop is quit when response received from page.
-  run_loop.Run();
-  EXPECT_EQ(kExpectedMessageCount, message_count);
 }
 
 }  // namespace
