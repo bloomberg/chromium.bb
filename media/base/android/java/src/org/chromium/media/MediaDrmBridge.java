@@ -277,7 +277,7 @@ class MediaDrmBridge {
      * @param nativeMediaDrmBridge Native object of this class.
      */
     @CalledByNative
-    private static MediaDrmBridge create(byte[] schemeUUID, int nativeMediaDrmBridge) {
+    private static MediaDrmBridge create(byte[] schemeUUID, long nativeMediaDrmBridge) {
         UUID cryptoScheme = getUUIDFromBytes(schemeUUID);
         if (cryptoScheme == null || !MediaDrm.isCryptoSchemeSupported(cryptoScheme)) {
             return null;

@@ -67,7 +67,7 @@ public class PrintingContext implements PrintingContextInterface {
     }
 
     @CalledByNative
-    public static PrintingContext create(int nativeObjectPointer) {
+    public static PrintingContext create(long nativeObjectPointer) {
         ThreadUtils.assertOnUiThread();
         return new PrintingContext(nativeObjectPointer);
     }

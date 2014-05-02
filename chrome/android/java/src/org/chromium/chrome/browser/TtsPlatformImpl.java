@@ -132,7 +132,7 @@ class TtsPlatformImpl {
      * @param context The app context.
      */
     @CalledByNative
-    private static TtsPlatformImpl create(int nativeTtsPlatformImplAndroid,
+    private static TtsPlatformImpl create(long nativeTtsPlatformImplAndroid,
                                           Context context) {
         return new TtsPlatformImpl(nativeTtsPlatformImplAndroid, context);
     }
