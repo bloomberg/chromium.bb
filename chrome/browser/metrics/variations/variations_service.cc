@@ -12,6 +12,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/sys_info.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/network_time/network_time_tracker.h"
@@ -156,7 +157,7 @@ ResourceRequestsAllowedState ResourceRequestStateToHistogramValue(
 }
 
 
-// Get current form factor and convert it from enum DeviceFormFactor to enum
+// Gets current form factor and converts it from enum DeviceFormFactor to enum
 // Study_FormFactor.
 Study_FormFactor GetCurrentFormFactor() {
   switch (ui::GetDeviceFormFactor()) {
@@ -169,6 +170,15 @@ Study_FormFactor GetCurrentFormFactor() {
   }
   NOTREACHED();
   return Study_FormFactor_DESKTOP;
+}
+
+// Gets the hardware class and returns it as a string. This returns an empty
+// string if the client is not ChromeOS.
+std::string GetHardwareClass() {
+#if defined(OS_CHROMEOS)
+  return base::SysInfo::GetLsbReleaseBoard();
+#endif  // OS_CHROMEOS
+  return std::string();
 }
 
 // Returns the date that should be used by the VariationsSeedProcessor to do
@@ -230,7 +240,7 @@ bool VariationsService::CreateTrialsFromSeed() {
   VariationsSeedProcessor().CreateTrialsFromSeed(
       seed, g_browser_process->GetApplicationLocale(),
       GetReferenceDateForExpiryChecks(local_state_), current_version,
-      GetChannelForVariations(), GetCurrentFormFactor());
+      GetChannelForVariations(), GetCurrentFormFactor(), GetHardwareClass());
 
   // Log the "freshness" of the seed that was just used. The freshness is the
   // time between the last successful seed download and now.

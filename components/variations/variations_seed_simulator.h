@@ -58,7 +58,8 @@ class VariationsSeedSimulator {
                              const base::Time& reference_date,
                              const base::Version& version,
                              Study_Channel channel,
-                             Study_FormFactor form_factor);
+                             Study_FormFactor form_factor,
+                             const std::string& hardware_class);
 
  private:
   friend class VariationsSeedSimulatorTest;

@@ -313,6 +313,65 @@ TEST(VariationsStudyFilteringTest, CheckStudyVersion) {
   }
 }
 
+TEST(VariationsStudyFilteringTest, CheckStudyHardwareClass) {
+  struct {
+    const char* hardware_class;
+    const char* exclude_hardware_class;
+    const char* actual_hardware_class;
+    bool expected_result;
+  } test_cases[] = {
+    // Neither filtered nor excluded set:
+    // True since empty is always a match.
+    {"", "", "fancy INTEL pear device", true},
+    {"", "", "", true},
+
+    // Filtered set:
+    {"apple,pear,orange", "", "apple", true},
+    {"apple,pear,orange", "", "fancy INTEL pear device", true},
+    {"apple,pear,orange", "", "fancy INTEL GRAPE device", false},
+    // Somehow tagged as both, but still valid.
+    {"apple,pear,orange", "", "fancy INTEL pear GRAPE device", true},
+    // Substring, so still valid.
+    {"apple,pear,orange", "", "fancy INTEL SNapple device", true},
+    // No issues with doubling.
+    {"apple,pear,orange", "", "fancy orange orange device", true},
+    // Empty, which is what would happen for non ChromeOS platforms.
+    {"apple,pear,orange", "", "", false},
+
+    // Excluded set:
+    {"", "apple,pear,orange", "apple", false},
+    {"", "apple,pear,orange", "fancy INTEL pear device", false},
+    {"", "apple,pear,orange", "fancy INTEL GRAPE device", true},
+    // Somehow tagged as both. Very excluded!
+    {"", "apple,pear,orange", "fancy INTEL pear GRAPE device", false},
+    // Substring, so still invalid.
+    {"", "apple,pear,orange", "fancy INTEL SNapple device", false},
+    // Empty.
+    {"", "apple,pear,orange", "", true},
+
+    // Not testing when both are set as it should never occur and should be
+    // considered undefined.
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    Study_Filter filter;
+    std::vector<std::string> hardware_class;
+    base::SplitString(test_cases[i].hardware_class, ',', &hardware_class);
+    for (size_t j = 0; j < hardware_class.size(); ++j)
+      filter.add_hardware_class(hardware_class[j]);
+
+    std::vector<std::string> exclude_hardware_class;
+    base::SplitString(test_cases[i].exclude_hardware_class, ',',
+                      &exclude_hardware_class);
+    for (size_t j = 0; j < exclude_hardware_class.size(); ++j)
+      filter.add_exclude_hardware_class(exclude_hardware_class[j]);
+
+    EXPECT_EQ(test_cases[i].expected_result,
+              internal::CheckStudyHardwareClass(
+                  filter, test_cases[i].actual_hardware_class));
+  }
+}
+
 TEST(VariationsStudyFilteringTest, FilterAndValidateStudies) {
   const std::string kTrial1Name = "A";
   const std::string kGroup1Name = "Group1";
@@ -339,7 +398,7 @@ TEST(VariationsStudyFilteringTest, FilterAndValidateStudies) {
   std::vector<ProcessedStudy> processed_studies;
   FilterAndValidateStudies(
       seed, "en-CA", base::Time::Now(), base::Version("20.0.0.0"),
-      Study_Channel_STABLE, Study_FormFactor_DESKTOP, &processed_studies);
+      Study_Channel_STABLE, Study_FormFactor_DESKTOP, "", &processed_studies);
 
   // Check that only the first kTrial1Name study was kept.
   ASSERT_EQ(2U, processed_studies.size());

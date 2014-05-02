@@ -64,10 +64,11 @@ void VariationsSeedProcessor::CreateTrialsFromSeed(
     const base::Time& reference_date,
     const base::Version& version,
     Study_Channel channel,
-    Study_FormFactor form_factor) {
+    Study_FormFactor form_factor,
+    const std::string& hardware_class) {
   std::vector<ProcessedStudy> filtered_studies;
   FilterAndValidateStudies(seed, locale, reference_date, version, channel,
-                           form_factor, &filtered_studies);
+                           form_factor, hardware_class, &filtered_studies);
 
   for (size_t i = 0; i < filtered_studies.size(); ++i)
     CreateTrialFromStudy(filtered_studies[i]);

@@ -28,6 +28,11 @@ bool CheckStudyChannel(const Study_Filter& filter, Study_Channel channel);
 bool CheckStudyFormFactor(const Study_Filter& filter,
                           Study_FormFactor form_factor);
 
+// Checks whether a study is applicable for the given |hardware_class| per
+// |filter|.
+bool CheckStudyHardwareClass(const Study_Filter& filter,
+                             const std::string& hardware_class);
+
 // Checks whether a study is applicable for the given |locale| per |filter|.
 bool CheckStudyLocale(const Study_Filter& filter, const std::string& locale);
 
@@ -46,15 +51,14 @@ bool CheckStudyVersion(const Study_Filter& filter,
 bool IsStudyExpired(const Study& study, const base::Time& date_time);
 
 // Returns whether |study| should be disabled according to its restriction
-// parameters. Uses |version_info| for min / max version checks,
-// |reference_date| for the start date check and |channel| for channel
-// checks.
+// parameters.
 bool ShouldAddStudy(const Study& study,
                     const std::string& locale,
                     const base::Time& reference_date,
                     const base::Version& version,
                     Study_Channel channel,
-                    Study_FormFactor form_factor);
+                    Study_FormFactor form_factor,
+                    const std::string& hardware_class);
 
 }  // namespace internal
 
@@ -67,6 +71,7 @@ void FilterAndValidateStudies(const VariationsSeed& seed,
                               const base::Version& version,
                               Study_Channel channel,
                               Study_FormFactor form_factor,
+                              const std::string& hardware_class,
                               std::vector<ProcessedStudy>* filtered_studies);
 
 }  // namespace chrome_variations

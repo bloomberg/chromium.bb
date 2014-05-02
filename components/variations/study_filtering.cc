@@ -64,6 +64,41 @@ bool CheckStudyFormFactor(const Study_Filter& filter,
   return false;
 }
 
+bool CheckStudyHardwareClass(const Study_Filter& filter,
+                             const std::string& hardware_class) {
+  // Empty hardware_class and exclude_hardware_class matches all.
+  if (filter.hardware_class_size() == 0 &&
+      filter.exclude_hardware_class_size() == 0) {
+    return true;
+  }
+
+  // Checks if we are supposed to filter for a specified set of
+  // hardware_classes. Note that this means this overrides the
+  // exclude_hardware_class in case that ever occurs (which it shouldn't).
+  if (filter.hardware_class_size() > 0) {
+    for (int i = 0; i < filter.hardware_class_size(); ++i) {
+      // Check if the entry is a substring of |hardware_class|.
+      size_t position = hardware_class.find(filter.hardware_class(i));
+      if (position != std::string::npos)
+        return true;
+    }
+    // None of the requested hardware_classes match.
+    return false;
+  }
+
+  // Omit if matches any of the exclude entries.
+  for (int i = 0; i < filter.exclude_hardware_class_size(); ++i) {
+    // Check if the entry is a substring of |hardware_class|.
+    size_t position = hardware_class.find(
+        filter.exclude_hardware_class(i));
+    if (position != std::string::npos)
+      return false;
+  }
+
+  // None of the exclusions match, so this accepts.
+  return true;
+}
+
 bool CheckStudyLocale(const Study_Filter& filter, const std::string& locale) {
   // An empty locale list matches all locales.
   if (filter.locale_size() == 0)
@@ -130,7 +165,8 @@ bool ShouldAddStudy(
     const base::Time& reference_date,
     const base::Version& version,
     Study_Channel channel,
-    Study_FormFactor form_factor) {
+    Study_FormFactor form_factor,
+    const std::string& hardware_class) {
   if (study.has_filter()) {
     if (!CheckStudyChannel(study.filter(), channel)) {
       DVLOG(1) << "Filtered out study " << study.name() << " due to channel.";
@@ -163,6 +199,13 @@ bool ShouldAddStudy(
                   " due to start date.";
       return false;
     }
+
+    if (!CheckStudyHardwareClass(study.filter(), hardware_class)) {
+      DVLOG(1) << "Filtered out study " << study.name() <<
+                  " due to hardware_class.";
+      return false;
+    }
+
   }
 
   DVLOG(1) << "Kept study " << study.name() << ".";
@@ -178,6 +221,7 @@ void FilterAndValidateStudies(
     const base::Version& version,
     Study_Channel channel,
     Study_FormFactor form_factor,
+    const std::string& hardware_class,
     std::vector<ProcessedStudy>* filtered_studies) {
   DCHECK(version.IsValid());
 
@@ -191,7 +235,7 @@ void FilterAndValidateStudies(
   for (int i = 0; i < seed.study_size(); ++i) {
     const Study& study = seed.study(i);
     if (!internal::ShouldAddStudy(study, locale, reference_date, version,
-                                  channel, form_factor)) {
+                                  channel, form_factor, hardware_class)) {
       continue;
     }
 
