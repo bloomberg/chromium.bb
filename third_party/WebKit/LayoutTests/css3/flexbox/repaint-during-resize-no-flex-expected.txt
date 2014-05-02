@@ -1,9 +1,19 @@
-(repaint rects
-  (rect 20 20 10 50)
-  (rect 20 20 50 50)
-  (rect 70 20 10 50)
-  (rect 110 20 10 50)
-  (rect 120 20 10 50)
-  (rect 160 20 10 50)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 20.00 20.00 10.00 50.00)
+        (rect 20.00 20.00 50.00 50.00)
+        (rect 70.00 20.00 10.00 50.00)
+        (rect 110.00 20.00 10.00 50.00)
+        (rect 120.00 20.00 10.00 50.00)
+        (rect 160.00 20.00 10.00 50.00)
+      )
+    )
+  )
 )
 

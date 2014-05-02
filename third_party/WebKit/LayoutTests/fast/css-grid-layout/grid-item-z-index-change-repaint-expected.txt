@@ -2,10 +2,20 @@ This test checks that grid items correctly repaint when 'z-index' changes.
 
 For this test to pass, there should be no red below.
 
-(repaint rects
-  (rect 8 236 200 100)
-  (rect 8 236 200 100)
-  (rect 8 126 200 100)
-  (rect 8 126 200 100)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 236.00 200.00 100.00)
+        (rect 8.00 236.00 200.00 100.00)
+        (rect 8.00 126.00 200.00 100.00)
+        (rect 8.00 126.00 200.00 100.00)
+      )
+    )
+  )
 )
 

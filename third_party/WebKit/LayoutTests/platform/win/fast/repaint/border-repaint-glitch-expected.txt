@@ -5,12 +5,22 @@ TEST PASS: The boxes will resize, maintaining their solid red rectangular border
 TEST FAIL: The boxes will resize, but the borders will break. The first box will be missing small segments from either side of its bottom border. The second box will have small red horizontal segments protruding inwards from both sides of the border, where the bottom border was before.
 
 
-(repaint rects
-  (rect 19 255 200 20)
-  (rect 33 201 172 60)
-  (rect 33 201 172 40)
-  (rect 19 417 200 20)
-  (rect 33 363 172 40)
-  (rect 33 363 172 60)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 19.00 255.00 200.00 20.00)
+        (rect 33.00 201.00 172.00 60.00)
+        (rect 33.00 201.00 172.00 40.00)
+        (rect 19.00 417.00 200.00 20.00)
+        (rect 33.00 363.00 172.00 40.00)
+        (rect 33.00 363.00 172.00 60.00)
+      )
+    )
+  )
 )
 

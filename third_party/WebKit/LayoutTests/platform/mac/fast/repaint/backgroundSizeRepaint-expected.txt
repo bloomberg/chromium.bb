@@ -5,14 +5,24 @@ TEST PASS: The boxes will resize, and their background images will repaint corre
 TEST FAIL: The boxes will resize, but the background images will leave artifacts on the sides.
 
 
-(repaint rects
-  (rect 19 169 200 60)
-  (rect 19 169 200 40)
-  (rect 29 169 180 60)
-  (rect 29 169 180 40)
-  (rect 19 329 200 40)
-  (rect 19 329 200 60)
-  (rect 29 329 180 40)
-  (rect 29 329 180 60)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 19.00 169.00 200.00 60.00)
+        (rect 19.00 169.00 200.00 40.00)
+        (rect 29.00 169.00 180.00 60.00)
+        (rect 29.00 169.00 180.00 40.00)
+        (rect 19.00 329.00 200.00 40.00)
+        (rect 19.00 329.00 200.00 60.00)
+        (rect 29.00 329.00 180.00 40.00)
+        (rect 29.00 329.00 180.00 60.00)
+      )
+    )
+  )
 )
 

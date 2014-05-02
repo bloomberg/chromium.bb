@@ -1,8 +1,18 @@
 This should be a 100×100px green square with a black border:
- (repaint rects
-  (rect 8 28 14 104)
-  (rect 8 28 104 104)
-  (rect 10 30 10 10)
-  (rect 10 30 100 10)
+ (GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 28.00 14.00 104.00)
+        (rect 8.00 28.00 104.00 104.00)
+        (rect 10.00 30.00 10.00 10.00)
+        (rect 10.00 30.00 100.00 10.00)
+      )
+    )
+  )
 )
 

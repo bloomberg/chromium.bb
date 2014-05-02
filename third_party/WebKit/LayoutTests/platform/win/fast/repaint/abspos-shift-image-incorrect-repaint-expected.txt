@@ -1,16 +1,25 @@
 This test checks that shifting an abspos container will properly repaint its descendants.
 The images below should be correctly repainted.
   
-(repaint rects
-  (rect 0 0 1500 237)
-  (rect -250 0 1500 237)
-  (rect 0 0 700 237)
-  (rect -250 0 700 237)
-  (rect 0 0 214 236)
-  (rect -250 0 214 236)
-  (rect 704 0 700 237)
-  (rect 454 0 700 237)
-  (rect 704 0 214 236)
-  (rect 454 0 214 236)
+(GraphicsLayer
+  (bounds 1250.00 585.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 1250.00 585.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 0.00 0.00 1500.00 237.00)
+        (rect 0.00 0.00 1250.00 237.00)
+        (rect 0.00 0.00 700.00 237.00)
+        (rect 0.00 0.00 450.00 237.00)
+        (rect 0.00 0.00 214.00 236.00)
+        (rect 704.00 0.00 700.00 237.00)
+        (rect 454.00 0.00 700.00 237.00)
+        (rect 704.00 0.00 214.00 236.00)
+        (rect 454.00 0.00 214.00 236.00)
+      )
+    )
+  )
 )
 

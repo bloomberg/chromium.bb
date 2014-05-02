@@ -6,10 +6,20 @@ TEST FAIL: Another copy of the word “Hello” will appear.
 
  
 Hello
-(repaint rects
-  (rect 0 182 800 30)
-  (rect 8 166 784 30)
-  (rect 8 166 784 30)
-  (rect 8 130 784 66)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 0.00 182.00 800.00 30.00)
+        (rect 8.00 166.00 784.00 30.00)
+        (rect 8.00 166.00 784.00 30.00)
+        (rect 8.00 130.00 784.00 66.00)
+      )
+    )
+  )
 )
 

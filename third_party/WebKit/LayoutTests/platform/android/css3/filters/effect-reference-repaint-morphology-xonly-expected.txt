@@ -1,0 +1,5 @@
+ (repaint rects
+  (rect 33 50 250 200)
+  (rect 33 50 250 200)
+)
+

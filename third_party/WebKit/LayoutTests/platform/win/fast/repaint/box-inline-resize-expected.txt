@@ -5,10 +5,20 @@ You should see an invalidation at x=40 of the h2 or this test is broken.
 
 Chromium
 
-(repaint rects
-  (rect 8 88 32 67)
-  (rect 8 88 32 36)
-  (rect 8 108 111 27)
-  (rect 40 108 111 27)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 88.00 32.00 67.00)
+        (rect 8.00 88.00 32.00 36.00)
+        (rect 8.00 108.00 111.00 27.00)
+        (rect 40.00 108.00 111.00 27.00)
+      )
+    )
+  )
 )
 

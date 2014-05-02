@@ -3,11 +3,21 @@ This tests for a repaint bug. The old caret position should be invalidated when 
 
 
 
-(repaint rects
-  (rect 3 89 794 20)
-  (rect 3 84 794 5)
-  (rect 8 84 784 20)
-  (rect 7 63 3 21)
-  (rect 7 83 3 21)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 3.00 89.00 794.00 20.00)
+        (rect 3.00 84.00 794.00 5.00)
+        (rect 8.00 84.00 784.00 20.00)
+        (rect 7.00 63.00 3.00 21.00)
+        (rect 7.00 83.00 3.00 21.00)
+      )
+    )
+  )
 )
 

@@ -1,7 +1,17 @@
 La la la la
-(repaint rects
-  (rect 47 0 15 18)
-  (rect 0 0 47 18)
-  (rect 0 0 62 18)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 47.00 0.00 15.00 18.00)
+        (rect 0.00 0.00 47.00 18.00)
+        (rect 0.00 0.00 62.00 18.00)
+      )
+    )
+  )
 )
 

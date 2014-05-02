@@ -1,6 +1,16 @@
 This test checks that changing the grid-row on a grid item properly repaint. The final grid item should be 100px * 100px. There should be no trace of the grid item at the old position.
-(repaint rects
-  (rect 8 38 100 50)
-  (rect 8 88 100 100)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 38.00 100.00 50.00)
+        (rect 8.00 88.00 100.00 100.00)
+      )
+    )
+  )
 )
 
