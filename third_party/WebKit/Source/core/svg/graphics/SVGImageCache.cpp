@@ -23,6 +23,7 @@
 
 #include "core/fetch/ImageResource.h"
 #include "core/frame/FrameView.h"
+#include "core/html/HTMLImageElement.h"
 #include "core/page/Page.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/svg/graphics/SVGImage.h"
@@ -89,6 +90,14 @@ Image* SVGImageCache::imageForRenderer(const RenderObject* renderer)
 
     RefPtr<SVGImageForContainer> imageForContainer = it->value;
     ASSERT(!imageForContainer->size().isEmpty());
+
+    Node* node = renderer->node();
+    if (node && isHTMLImageElement(node)) {
+        const AtomicString& urlString = toHTMLImageElement(node)->imageSourceURL();
+        KURL url = node->document().completeURL(urlString);
+        imageForContainer->setURL(url);
+    }
+
     return imageForContainer.get();
 }
 

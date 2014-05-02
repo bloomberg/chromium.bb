@@ -29,6 +29,7 @@
 
 #include "platform/graphics/Image.h"
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/KURL.h"
 
 namespace WebCore {
 
@@ -53,6 +54,7 @@ public:
 
     virtual bool isSVGImage() const OVERRIDE { return true; }
     virtual IntSize size() const OVERRIDE { return m_intrinsicSize; }
+    void setURL(const KURL& url) { m_url = url; }
 
     virtual bool currentFrameHasSingleSecurityOrigin() const OVERRIDE;
 
@@ -101,6 +103,7 @@ private:
     OwnPtr<SVGImageChromeClient> m_chromeClient;
     OwnPtrWillBePersistent<Page> m_page;
     IntSize m_intrinsicSize;
+    KURL m_url;
 };
 
 DEFINE_IMAGE_TYPE_CASTS(SVGImage);

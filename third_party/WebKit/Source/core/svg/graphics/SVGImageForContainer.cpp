@@ -20,7 +20,6 @@
 #include "config.h"
 #include "core/svg/graphics/SVGImageForContainer.h"
 
-#include "core/svg/graphics/SVGImage.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
 #include "wtf/PassRefPtr.h"
