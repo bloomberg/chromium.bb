@@ -39,6 +39,7 @@
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/infobars/core/infobar.h"
+#include "components/infobars/core/infobar_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -131,25 +132,24 @@ class AutofillManagerTestDelegateImpl
 
 class WindowedPersonalDataManagerObserver
     : public PersonalDataManagerObserver,
-      public content::NotificationObserver {
+      public infobars::InfoBarManager::Observer {
  public:
   explicit WindowedPersonalDataManagerObserver(Browser* browser)
       : alerted_(false),
         has_run_message_loop_(false),
         browser_(browser),
-        infobar_service_(NULL) {
+        infobar_service_(InfoBarService::FromWebContents(
+            browser_->tab_strip_model()->GetActiveWebContents())) {
     PersonalDataManagerFactory::GetForProfile(browser_->profile())->
         AddObserver(this);
-    registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-                   content::NotificationService::AllSources());
+    infobar_service_->AddObserver(this);
   }
 
   virtual ~WindowedPersonalDataManagerObserver() {
-    if (infobar_service_) {
-      while (infobar_service_->infobar_count() > 0) {
-        infobar_service_->RemoveInfoBar(infobar_service_->infobar_at(0));
-      }
+    while (infobar_service_->infobar_count() > 0) {
+      infobar_service_->RemoveInfoBar(infobar_service_->infobar_at(0));
     }
+    infobar_service_->RemoveObserver(this);
   }
 
   // PersonalDataManagerObserver:
@@ -165,15 +165,6 @@ class WindowedPersonalDataManagerObserver
     OnPersonalDataChanged();
   }
 
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    infobar_service_ = InfoBarService::FromWebContents(
-        browser_->tab_strip_model()->GetActiveWebContents());
-    infobar_service_->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate()->
-        Accept();
-  }
 
   void Wait() {
     if (!alerted_) {
@@ -185,10 +176,15 @@ class WindowedPersonalDataManagerObserver
   }
 
  private:
+  // infobars::InfoBarManager::Observer:
+  virtual void OnInfoBarAdded(infobars::InfoBar* infobar) OVERRIDE {
+    infobar_service_->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate()->
+        Accept();
+  }
+
   bool alerted_;
   bool has_run_message_loop_;
   Browser* browser_;
-  content::NotificationRegistrar registrar_;
   InfoBarService* infobar_service_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowedPersonalDataManagerObserver);
