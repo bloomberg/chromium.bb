@@ -598,27 +598,6 @@
           ],
         },
 
-        # A standalone executable that runs a Sync FakeServer instance.
-        {
-          'target_name': 'run_sync_fake_server',
-          'type': 'executable',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../base/base.gyp:test_support_base',
-            '../net/net.gyp:http_server',
-            '../net/net.gyp:net',
-            '../net/net.gyp:net_test_support',
-            '../testing/gtest.gyp:gtest',
-            '../url/url.gyp:url_lib',
-            'test_support_sync_fake_server',
-          ],
-          'sources': [
-            'test/fake_server/run_sync_fake_server.cc',
-            'test/fake_server/fake_sync_server_http_handler.cc',
-            'test/fake_server/fake_sync_server_http_handler.h',
-          ],
-        },
-
         # A tool to listen to sync notifications and print them out.
         {
           'target_name': 'sync_listen_notifications',
