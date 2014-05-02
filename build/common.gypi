@@ -853,12 +853,12 @@
           'test_isolation_mode%': 'noop',
         }],
         # Whether Android ARM or x86 build uses OpenMAX DL FFT.
-        ['OS=="android" and ((target_arch=="arm" and arm_version >= 7) or target_arch=="ia32" or target_arch=="x64") and android_webview_build==0', {
-          # Currently only supported on Android ARMv7+, ia32 or x64
-          # without webview.  When enabled, this will also enable
-          # WebAudio support on Android ARM, ia32 and x64.  Default is
-          # enabled.  Whether WebAudio is actually available depends
-          # on runtime settings and flags.
+        ['OS=="android" and ((target_arch=="arm" and arm_version >= 7) or target_arch=="ia32" or target_arch=="x64")', {
+          # Currently only supported on Android ARMv7+, ia32 or x64.
+          # When enabled, this will also enable WebAudio support on
+          # Android ARM, ia32 and x64.  Default is enabled.  Whether
+          # WebAudio is actually available depends on runtime settings
+          # and flags.
           'use_openmax_dl_fft%': 1,
         }, {
           'use_openmax_dl_fft%': 0,
