@@ -453,11 +453,7 @@ bool ZygoteMain(const MainFunctionParams& params,
   const bool must_enable_setuid_sandbox =
       linux_sandbox->setuid_sandbox_client()->IsSuidSandboxChild();
   if (must_enable_setuid_sandbox) {
-    // When we're launched through the setuid sandbox, ZygoteHostImpl::Init
-    // arranges for kZygoteIdFd to be a dummy file descriptor to satisfy an
-    // ancient setuid sandbox ABI requirement. However, the descriptor is no
-    // longer needed, so we can simply close it right away now.
-    CHECK_EQ(0, IGNORE_EINTR(close(kZygoteIdFd)));
+    linux_sandbox->setuid_sandbox_client()->CloseDummyFile();
 
     // Let the ZygoteHost know we're booting up.
     CHECK(UnixDomainSocket::SendMsg(kZygoteSocketPairFd,

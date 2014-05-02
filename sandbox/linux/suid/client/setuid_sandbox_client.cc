@@ -5,6 +5,8 @@
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 
 #include <fcntl.h>
+#include <stdlib.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -136,7 +138,7 @@ namespace sandbox {
 
 SetuidSandboxClient* SetuidSandboxClient::Create() {
   base::Environment* environment(base::Environment::Create());
-  SetuidSandboxClient* sandbox_client(new(SetuidSandboxClient));
+  SetuidSandboxClient* sandbox_client(new SetuidSandboxClient);
 
   CHECK(environment);
   sandbox_client->env_ = environment;
@@ -150,6 +152,21 @@ SetuidSandboxClient::SetuidSandboxClient()
 
 SetuidSandboxClient::~SetuidSandboxClient() {
   delete env_;
+}
+
+void SetuidSandboxClient::CloseDummyFile() {
+  // When we're launched through the setuid sandbox, SetupLaunchOptions
+  // arranges for kZygoteIdFd to be a dummy file descriptor to satisfy an
+  // ancient setuid sandbox ABI requirement. However, the descriptor is no
+  // longer needed, so we can simply close it right away now.
+  CHECK(IsSuidSandboxChild());
+
+  // Sanity check that kZygoteIdFd refers to a pipe.
+  struct stat st;
+  PCHECK(0 == fstat(kZygoteIdFd, &st));
+  CHECK(S_ISFIFO(st.st_mode));
+
+  PCHECK(0 == IGNORE_EINTR(close(kZygoteIdFd)));
 }
 
 bool SetuidSandboxClient::ChrootMe() {
@@ -226,12 +243,6 @@ bool SetuidSandboxClient::IsDisabledViaEnvironment() {
   return false;
 }
 
-int SetuidSandboxClient::GetUniqueToChildFileDescriptor() {
-  // The setuid binary is hard-wired to close this in the helper process it
-  // creates.
-  return kZygoteIdFd;
-}
-
 base::FilePath SetuidSandboxClient::GetSandboxBinaryPath() {
   base::FilePath sandbox_binary;
   base::FilePath exe_dir;
@@ -256,8 +267,7 @@ base::FilePath SetuidSandboxClient::GetSandboxBinaryPath() {
   return sandbox_binary;
 }
 
-void SetuidSandboxClient::PrependWrapper(base::CommandLine* cmd_line,
-                                         base::LaunchOptions* options) {
+void SetuidSandboxClient::PrependWrapper(base::CommandLine* cmd_line) {
   std::string sandbox_binary(GetSandboxBinaryPath().value());
   struct stat st;
   if (sandbox_binary.empty() || stat(sandbox_binary.c_str(), &st) != 0) {
@@ -275,15 +285,30 @@ void SetuidSandboxClient::PrependWrapper(base::CommandLine* cmd_line,
                << sandbox_binary << " is owned by root and has mode 4755.";
   }
 
-  if (cmd_line) {
-    cmd_line->PrependWrapper(sandbox_binary);
-  }
+  cmd_line->PrependWrapper(sandbox_binary);
+}
 
-  if (options) {
-    // Launching a setuid binary requires PR_SET_NO_NEW_PRIVS to not be used.
-    options->allow_new_privs = true;
-    UnsetExpectedEnvironmentVariables(&options->environ);
-  }
+void SetuidSandboxClient::SetupLaunchOptions(
+    base::LaunchOptions* options,
+    base::FileHandleMappingVector* fds_to_remap,
+    base::ScopedFD* dummy_fd) {
+  DCHECK(options);
+  DCHECK(fds_to_remap);
+
+  // Launching a setuid binary requires PR_SET_NO_NEW_PRIVS to not be used.
+  options->allow_new_privs = true;
+  UnsetExpectedEnvironmentVariables(&options->environ);
+
+  // Set dummy_fd to the reading end of a closed pipe.
+  int pipe_fds[2];
+  PCHECK(0 == pipe(pipe_fds));
+  PCHECK(0 == IGNORE_EINTR(close(pipe_fds[1])));
+  dummy_fd->reset(pipe_fds[0]);
+
+  // We no longer need a dummy socket for discovering the child's PID,
+  // but the sandbox is still hard-coded to expect a file descriptor at
+  // kZygoteIdFd. Fixing this requires a sandbox API change. :(
+  fds_to_remap->push_back(std::make_pair(dummy_fd->get(), kZygoteIdFd));
 }
 
 void SetuidSandboxClient::SetupLaunchEnvironment() {

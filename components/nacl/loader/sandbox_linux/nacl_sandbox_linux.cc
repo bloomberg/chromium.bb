@@ -74,13 +74,11 @@ void NaClSandbox::InitializeLayerOneSandbox() {
   CHECK(!IsSandboxed()) << "Unexpectedly sandboxed!";
   scoped_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client(
       sandbox::SetuidSandboxClient::Create());
-  // Close the file descriptor that is an artefact of how the setuid sandbox
-  // works.
-  PCHECK(0 == IGNORE_EINTR(close(
-                  setuid_sandbox_client->GetUniqueToChildFileDescriptor())));
   const bool suid_sandbox_child = setuid_sandbox_client->IsSuidSandboxChild();
 
   if (suid_sandbox_child) {
+    setuid_sandbox_client->CloseDummyFile();
+
     // Make sure that no directory file descriptor is open, as it would bypass
     // the setuid sandbox model.
     CHECK(!HasOpenDirectory());

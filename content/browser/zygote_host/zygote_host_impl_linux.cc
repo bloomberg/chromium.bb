@@ -153,16 +153,9 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
   if (using_suid_sandbox_) {
     scoped_ptr<sandbox::SetuidSandboxClient>
         sandbox_client(sandbox::SetuidSandboxClient::Create());
-    sandbox_client->PrependWrapper(&cmd_line, &options);
+    sandbox_client->PrependWrapper(&cmd_line);
+    sandbox_client->SetupLaunchOptions(&options, &fds_to_map, &dummy_fd);
     sandbox_client->SetupLaunchEnvironment();
-
-    // We no longer need this dummy socket for discovering the zygote's PID,
-    // but the sandbox is still hard-coded to expect a file descriptor at
-    // kZygoteIdFd. Fixing this requires a sandbox API change. :(
-    CHECK_EQ(kZygoteIdFd, sandbox_client->GetUniqueToChildFileDescriptor());
-    dummy_fd.reset(socket(AF_UNIX, SOCK_DGRAM, 0));
-    CHECK_GE(dummy_fd.get(), 0);
-    fds_to_map.push_back(std::make_pair(dummy_fd.get(), kZygoteIdFd));
   }
 
   base::ProcessHandle process = -1;
