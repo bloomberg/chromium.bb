@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <math.h>
+
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
@@ -129,6 +131,11 @@ bool EventListIsSubset(const ScopedVector<ui::TouchEvent>& subset,
 }
 #endif  // defined(USE_AURA)
 
+// Expected function used for converting pinch scales to deltaY values.
+float PinchScaleToWheelDelta(float scale) {
+  return 100.0 * log(scale);
+}
+
 }  // namespace
 
 class InputRouterImplTest : public testing::Test {
@@ -206,15 +213,14 @@ class InputRouterImplTest : public testing::Test {
         SyntheticWebGestureEventBuilder::BuildScrollUpdate(dX, dY, modifiers));
   }
 
-  void SimulateGesturePinchUpdateEvent(float scale,
-                                       float anchorX,
-                                       float anchorY,
-                                       int modifiers) {
-    SimulateGestureEvent(
-        SyntheticWebGestureEventBuilder::BuildPinchUpdate(scale,
-                                                          anchorX,
-                                                          anchorY,
-                                                          modifiers));
+  void SimulateGesturePinchUpdateEvent(
+      float scale,
+      float anchorX,
+      float anchorY,
+      int modifiers,
+      WebGestureEvent::SourceDevice sourceDevice) {
+    SimulateGestureEvent(SyntheticWebGestureEventBuilder::BuildPinchUpdate(
+        scale, anchorX, anchorY, modifiers, sourceDevice));
   }
 
   void SimulateGestureFlingStartEvent(
@@ -509,10 +515,21 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   SimulateWheelEvent(0, -10, 0, false);  // enqueued
   SimulateWheelEvent(8, -6, 0, false);  // coalesced into previous event
   SimulateWheelEvent(9, -7, 1, false);  // enqueued, different modifiers
+  SimulateWheelEvent(0, -10, 0, false);  // enqueued, different modifiers
+  // Explicitly verify that PhaseEnd isn't coalesced to avoid bugs like
+  // https://crbug.com/154740.
+  SimulateWheelEventWithPhase(WebMouseWheelEvent::PhaseEnded);  // enqueued
 
   // Check that only the first event was sent.
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
                   InputMsg_HandleInputEvent::ID));
+  const WebInputEvent* input_event =
+      GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
+  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type);
+  const WebMouseWheelEvent* wheel_event =
+      static_cast<const WebMouseWheelEvent*>(input_event);
+  EXPECT_EQ(0, wheel_event->deltaX);
+  EXPECT_EQ(-5, wheel_event->deltaY);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   // Check that the ACK sends the second message immediately.
@@ -525,61 +542,60 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
           InputMsg_HandleInputEvent::ID));
+  input_event = GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
+  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type);
+  wheel_event = static_cast<const WebMouseWheelEvent*>(input_event);
+  EXPECT_EQ(8, wheel_event->deltaX);
+  EXPECT_EQ(-10 + -6, wheel_event->deltaY);  // coalesced
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
-  // One more time.
+  // Ack the second event (which had the third coalesced into it).
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
                   InputMsg_HandleInputEvent::ID));
+  input_event = GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
+  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type);
+  wheel_event = static_cast<const WebMouseWheelEvent*>(input_event);
+  EXPECT_EQ(9, wheel_event->deltaX);
+  EXPECT_EQ(-7, wheel_event->deltaY);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
-  // After the final ack, the queue should be empty.
+  // Ack the fourth event.
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
-}
-
-TEST_F(InputRouterImplTest,
-       CoalescesWheelEventsQueuedPhaseEndIsNotDropped) {
-  // Send an initial gesture begin and ACK it.
-  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
-                       WebGestureEvent::Touchpad);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-  SendInputEventACK(WebInputEvent::GestureScrollBegin,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
-  base::MessageLoop::current()->RunUntilIdle();
-
-  // Send a wheel event, should get sent directly.
-  SimulateWheelEvent(0, -5, 0, false);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-
-  // Send a wheel phase end event before an ACK is received for the previous
-  // wheel event, which should get queued.
-  SimulateWheelEventWithPhase(WebMouseWheelEvent::PhaseEnded);
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
-
-  // A gesture event should now result in the queued phase ended event being
-  // transmitted before it.
-  SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
-                       WebGestureEvent::Touchpad);
-
-  // Verify the events that were sent.
-  const WebInputEvent* input_event =
-      GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
+  EXPECT_TRUE(
+      process_->sink().GetUniqueMessageMatching(InputMsg_HandleInputEvent::ID));
+  input_event = GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
   ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type);
-  const WebMouseWheelEvent* wheel_event =
-      static_cast<const WebMouseWheelEvent*>(input_event);
-  ASSERT_EQ(WebMouseWheelEvent::PhaseEnded, wheel_event->phase);
+  wheel_event = static_cast<const WebMouseWheelEvent*>(input_event);
+  EXPECT_EQ(0, wheel_event->deltaX);
+  EXPECT_EQ(-10, wheel_event->deltaY);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
-  input_event = GetInputEventFromMessage(*process_->sink().GetMessageAt(1));
-  EXPECT_EQ(WebInputEvent::GestureScrollEnd, input_event->type);
+  // Ack the fifth event.
+  SendInputEventACK(WebInputEvent::MouseWheel, INPUT_EVENT_ACK_STATE_CONSUMED);
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  EXPECT_TRUE(
+      process_->sink().GetUniqueMessageMatching(InputMsg_HandleInputEvent::ID));
+  input_event = GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
+  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type);
+  wheel_event = static_cast<const WebMouseWheelEvent*>(input_event);
+  EXPECT_EQ(0, wheel_event->deltaX);
+  EXPECT_EQ(0, wheel_event->deltaY);
+  EXPECT_EQ(WebMouseWheelEvent::PhaseEnded, wheel_event->phase);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
-  ASSERT_EQ(2U, GetSentMessageCountAndResetSink());
+  // After the final ack, the queue should be empty.
+  SendInputEventACK(WebInputEvent::MouseWheel, INPUT_EVENT_ACK_STATE_CONSUMED);
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
 }
 
 // Tests that touch-events are queued properly.
@@ -1381,22 +1397,210 @@ TEST_F(InputRouterImplTest, InputFlush) {
 }
 
 // Test that GesturePinchUpdate is handled specially for trackpad
-TEST_F(InputRouterImplTest, TrackpadPinchUpdate) {
-  // For now Trackpad PinchUpdate events are just immediately ACKed
-  // as unconsumed without going to the renderer.
-  // TODO(rbyers): Update for wheel event behavior - crbug.com/289887.
+TEST_F(InputRouterImplTest, TouchpadPinchUpdate) {
+  // GesturePinchUpdate for trackpad sends synthetic wheel events.
   // Note that the Touchscreen case is verified as NOT doing this as
   // part of the ShowPressIsInOrder test.
-  SimulateGestureEvent(WebInputEvent::GesturePinchUpdate,
-                       WebGestureEvent::Touchpad);
-  ASSERT_EQ(0U, GetSentMessageCountAndResetSink());
+
+  SimulateGesturePinchUpdateEvent(1.5f, 20, 25, 0, WebGestureEvent::Touchpad);
+
+  // Verify we actually sent a special wheel event to the renderer.
+  const WebInputEvent* input_event =
+      GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
+  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type);
+  const WebMouseWheelEvent* wheel_event =
+      static_cast<const WebMouseWheelEvent*>(input_event);
+  EXPECT_EQ(20, wheel_event->x);
+  EXPECT_EQ(25, wheel_event->y);
+  EXPECT_EQ(20, wheel_event->globalX);
+  EXPECT_EQ(25, wheel_event->globalY);
+  EXPECT_EQ(20, wheel_event->windowX);
+  EXPECT_EQ(25, wheel_event->windowY);
+  EXPECT_EQ(PinchScaleToWheelDelta(1.5), wheel_event->deltaY);
+  EXPECT_EQ(0, wheel_event->deltaX);
+  EXPECT_EQ(1, wheel_event->hasPreciseScrollingDeltas);
+  EXPECT_EQ(1, wheel_event->wheelTicksY);
+  EXPECT_EQ(0, wheel_event->wheelTicksX);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // Indicate that the wheel event was unhandled.
+  SendInputEventACK(WebInputEvent::MouseWheel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  // Check that the correct unhandled pinch event was received.
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  ASSERT_EQ(WebInputEvent::GesturePinchUpdate, ack_handler_->ack_event_type());
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, ack_handler_->ack_state());
+  EXPECT_EQ(1.5f, ack_handler_->acked_gesture_event().data.pinchUpdate.scale);
   EXPECT_EQ(0, client_->in_flight_event_count());
+
+  // Second a second pinch event.
+  SimulateGesturePinchUpdateEvent(0.3f, 20, 25, 0, WebGestureEvent::Touchpad);
+  input_event = GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
+  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type);
+  wheel_event = static_cast<const WebMouseWheelEvent*>(input_event);
+  EXPECT_FLOAT_EQ(PinchScaleToWheelDelta(0.3f), wheel_event->deltaY);
+  EXPECT_EQ(1, wheel_event->hasPreciseScrollingDeltas);
+  EXPECT_EQ(-1, wheel_event->wheelTicksY);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // Indicate that the wheel event was handled this time.
+  SendInputEventACK(WebInputEvent::MouseWheel, INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Check that the correct HANDLED pinch event was received.
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, ack_handler_->ack_event_type());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, ack_handler_->ack_state());
+  EXPECT_FLOAT_EQ(0.3f,
+                  ack_handler_->acked_gesture_event().data.pinchUpdate.scale);
 }
 
-// Test proper handling of trackpad Gesture{Pinch,Scroll}Update sequences.
-TEST_F(InputRouterImplTest, TrackpadPinchAndScrollUpdate) {
+// Test that touchpad pinch events are coalesced property, with their synthetic
+// wheel events getting the right ACKs.
+TEST_F(InputRouterImplTest, TouchpadPinchCoalescing) {
+  // Send the first pinch.
+  SimulateGesturePinchUpdateEvent(1.5f, 20, 25, 0, WebGestureEvent::Touchpad);
+
+  // Verify we sent the wheel event to the renderer.
+  const WebInputEvent* input_event =
+      GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
+  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type);
+  const WebMouseWheelEvent* wheel_event =
+      static_cast<const WebMouseWheelEvent*>(input_event);
+  EXPECT_EQ(PinchScaleToWheelDelta(1.5f), wheel_event->deltaY);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(1, client_->in_flight_event_count());
+
+  // Send a second pinch, this should be queued in the GestureEventQueue.
+  SimulateGesturePinchUpdateEvent(1.6f, 20, 25, 0, WebGestureEvent::Touchpad);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+
+  // Send a third pinch, this should be coalesced into the second in the
+  // GestureEventQueue.
+  SimulateGesturePinchUpdateEvent(1.7f, 20, 25, 0, WebGestureEvent::Touchpad);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+
+  // Indicate that the first wheel event was unhandled and verify the ACK.
+  SendInputEventACK(WebInputEvent::MouseWheel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, ack_handler_->ack_event_type());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, ack_handler_->ack_state());
+  EXPECT_EQ(1.5f, ack_handler_->acked_gesture_event().data.pinchUpdate.scale);
+
+  // Verify a second wheel event was sent representing the 2nd and 3rd pinch
+  // events.
+  EXPECT_EQ(1, client_->in_flight_event_count());
+  input_event = GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
+  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type);
+  wheel_event = static_cast<const WebMouseWheelEvent*>(input_event);
+  EXPECT_FLOAT_EQ(PinchScaleToWheelDelta(1.6f * 1.7f),
+                  PinchScaleToWheelDelta(1.6f) + PinchScaleToWheelDelta(1.7f));
+  EXPECT_FLOAT_EQ(PinchScaleToWheelDelta(1.6f * 1.7f), wheel_event->deltaY);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+
+  // Indicate that the second wheel event was handled and verify the ACK.
+  SendInputEventACK(WebInputEvent::MouseWheel, INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, ack_handler_->ack_event_type());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, ack_handler_->ack_state());
+  EXPECT_FLOAT_EQ(1.6f * 1.7f,
+                  ack_handler_->acked_gesture_event().data.pinchUpdate.scale);
+}
+
+// Test interleaving pinch and wheel events.
+TEST_F(InputRouterImplTest, TouchpadPinchAndWheel) {
+  // Simulate queued wheel and pinch events events.
+  // Note that in practice interleaving pinch and wheel events should be rare
+  // (eg. requires the use of a mouse and trackpad at the same time).
+
+  // Use the control modifier to match the synthetic wheel events so that
+  // they're elligble for coalescing.
+  int mod = WebInputEvent::ControlKey;
+
+  // Event 1: sent directly.
+  SimulateWheelEvent(0, -5, mod, true);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // Event 2: enqueued in InputRouter.
+  SimulateWheelEvent(0, -10, mod, true);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+
+  // Event 3: enqueued in InputRouter, not coalesced into #2.
+  SimulateGesturePinchUpdateEvent(1.5f, 20, 25, 0, WebGestureEvent::Touchpad);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+
+  // Event 4: enqueued in GestureEventQueue.
+  SimulateGesturePinchUpdateEvent(1.2f, 20, 25, 0, WebGestureEvent::Touchpad);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+
+  // Event 5: coalesced into wheel event for #3.
+  SimulateWheelEvent(2, 0, mod, true);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+
+  // Send ack for #1.
+  SendInputEventACK(WebInputEvent::MouseWheel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(WebInputEvent::MouseWheel, ack_handler_->ack_event_type());
+
+  // Verify we sent #2.
+  ASSERT_EQ(1U, process_->sink().message_count());
+  const WebInputEvent* input_event =
+      GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
+  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type);
+  const WebMouseWheelEvent* wheel_event =
+      static_cast<const WebMouseWheelEvent*>(input_event);
+  EXPECT_EQ(0, wheel_event->deltaX);
+  EXPECT_EQ(-10, wheel_event->deltaY);
+  EXPECT_EQ(mod, wheel_event->modifiers);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // Send ack for #2.
+  SendInputEventACK(WebInputEvent::MouseWheel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(WebInputEvent::MouseWheel, ack_handler_->ack_event_type());
+
+  // Verify we sent #3 (with #5 coalesced in).
+  ASSERT_EQ(1U, process_->sink().message_count());
+  input_event = GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
+  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type);
+  wheel_event = static_cast<const WebMouseWheelEvent*>(input_event);
+  EXPECT_EQ(2, wheel_event->deltaX);
+  EXPECT_EQ(PinchScaleToWheelDelta(1.5f), wheel_event->deltaY);
+  EXPECT_EQ(mod, wheel_event->modifiers);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // Send ack for #3.
+  SendInputEventACK(WebInputEvent::MouseWheel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, ack_handler_->ack_event_type());
+
+  // Verify we sent #4.
+  ASSERT_EQ(1U, process_->sink().message_count());
+  input_event = GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
+  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type);
+  wheel_event = static_cast<const WebMouseWheelEvent*>(input_event);
+  EXPECT_EQ(0, wheel_event->deltaX);
+  EXPECT_FLOAT_EQ(PinchScaleToWheelDelta(1.2f), wheel_event->deltaY);
+  EXPECT_EQ(mod, wheel_event->modifiers);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // Send ack for #4.
+  SendInputEventACK(WebInputEvent::MouseWheel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, ack_handler_->ack_event_type());
+}
+
+// Test proper handling of touchpad Gesture{Pinch,Scroll}Update sequences.
+TEST_F(InputRouterImplTest, TouchpadPinchAndScrollUpdate) {
   // The first scroll should be sent immediately.
   SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,
                        WebGestureEvent::Touchpad);
@@ -1426,18 +1630,22 @@ TEST_F(InputRouterImplTest, TrackpadPinchAndScrollUpdate) {
   EXPECT_EQ(1, client_->in_flight_event_count());
 
   // Ack'ing the first scroll should trigger both the coalesced scroll and the
-  // coalesced pinch events.  However, the GesturePinchUpdate should be ack'ed
-  // immediately without going to the renderer.
-  // TODO(rbyers): Update for wheel event behavior - crbug.com/289887.
+  // coalesced pinch events (which is sent to the renderer as a wheel event).
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-  EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
-  EXPECT_EQ(1, client_->in_flight_event_count());
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(2, client_->in_flight_event_count());
 
   // Ack the second scroll.
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(1, client_->in_flight_event_count());
+
+  // Ack the wheel event.
+  SendInputEventACK(WebInputEvent::MouseWheel, INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
   EXPECT_EQ(0, client_->in_flight_event_count());

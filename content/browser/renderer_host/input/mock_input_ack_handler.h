@@ -47,6 +47,8 @@ class MockInputAckHandler : public InputAckHandler {
   }
   InputEventAckState ack_state() const { return ack_state_; }
 
+  blink::WebInputEvent::Type ack_event_type() const { return ack_event_type_; }
+
   const NativeWebKeyboardEvent& acked_keyboard_event() const {
     return acked_key_event_;
   }
@@ -61,12 +63,14 @@ class MockInputAckHandler : public InputAckHandler {
   }
 
  private:
-  void RecordAckCalled(InputEventAckState ack_result);
+  void RecordAckCalled(blink::WebInputEvent::Type eventType,
+                       InputEventAckState ack_result);
 
   InputRouter* input_router_;
 
   size_t ack_count_;
   bool unexpected_event_ack_called_;
+  blink::WebInputEvent::Type ack_event_type_;
   InputEventAckState ack_state_;
   NativeWebKeyboardEvent acked_key_event_;
   blink::WebMouseWheelEvent acked_wheel_event_;

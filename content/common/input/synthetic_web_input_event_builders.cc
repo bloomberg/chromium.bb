@@ -123,12 +123,15 @@ WebGestureEvent SyntheticWebGestureEventBuilder::BuildPinchUpdate(
     float scale,
     float anchor_x,
     float anchor_y,
-    int modifiers) {
-  WebGestureEvent result = Build(WebInputEvent::GesturePinchUpdate,
-                                 WebGestureEvent::Touchscreen);
+    int modifiers,
+    WebGestureEvent::SourceDevice source_device) {
+  WebGestureEvent result =
+      Build(WebInputEvent::GesturePinchUpdate, source_device);
   result.data.pinchUpdate.scale = scale;
   result.x = anchor_x;
   result.y = anchor_y;
+  result.globalX = anchor_x;
+  result.globalY = anchor_y;
   result.modifiers = modifiers;
   return result;
 }

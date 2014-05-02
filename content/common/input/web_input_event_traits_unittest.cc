@@ -4,6 +4,8 @@
 
 #include "content/common/input/web_input_event_traits.h"
 
+#include <limits>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
@@ -11,6 +13,7 @@ using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
+using std::numeric_limits;
 
 namespace content {
 namespace {
@@ -135,6 +138,25 @@ TEST_F(WebInputEventTraitsTest, PinchEventCoalescing) {
   EXPECT_TRUE(WebInputEventTraits::CanCoalesce(pinch0, pinch0));
   WebInputEventTraits::Coalesce(pinch0, &pinch1);
   EXPECT_EQ(2.f * 3.f, pinch1.data.pinchUpdate.scale);
+
+  // Scales have a minimum value and can never reach 0.
+  ASSERT_GT(numeric_limits<float>::min(), 0);
+  pinch0 = CreateGesture(WebInputEvent::GesturePinchUpdate, 1, 1);
+  pinch0.data.pinchUpdate.scale = numeric_limits<float>::min() * 2.0f;
+  pinch1 = CreateGesture(WebInputEvent::GesturePinchUpdate, 1, 1);
+  pinch1.data.pinchUpdate.scale = numeric_limits<float>::min() * 5.0f;
+  EXPECT_TRUE(WebInputEventTraits::CanCoalesce(pinch0, pinch1));
+  WebInputEventTraits::Coalesce(pinch0, &pinch1);
+  EXPECT_EQ(numeric_limits<float>::min(), pinch1.data.pinchUpdate.scale);
+
+  // Scales have a maximum value and can never reach Infinity.
+  pinch0 = CreateGesture(WebInputEvent::GesturePinchUpdate, 1, 1);
+  pinch0.data.pinchUpdate.scale = numeric_limits<float>::max() / 2.0f;
+  pinch1 = CreateGesture(WebInputEvent::GesturePinchUpdate, 1, 1);
+  pinch1.data.pinchUpdate.scale = 10.0f;
+  EXPECT_TRUE(WebInputEventTraits::CanCoalesce(pinch0, pinch1));
+  WebInputEventTraits::Coalesce(pinch0, &pinch1);
+  EXPECT_EQ(numeric_limits<float>::max(), pinch1.data.pinchUpdate.scale);
 }
 
 }  // namespace

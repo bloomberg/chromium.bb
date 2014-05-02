@@ -18,10 +18,12 @@ using blink::WebTouchPoint;
 namespace content {
 
 MockInputAckHandler::MockInputAckHandler()
-  : input_router_(NULL),
-    ack_count_(0),
-    unexpected_event_ack_called_(false),
-    ack_state_(INPUT_EVENT_ACK_STATE_UNKNOWN) {}
+    : input_router_(NULL),
+      ack_count_(0),
+      unexpected_event_ack_called_(false),
+      ack_event_type_(WebInputEvent::Undefined),
+      ack_state_(INPUT_EVENT_ACK_STATE_UNKNOWN) {
+}
 
 MockInputAckHandler::~MockInputAckHandler() {}
 
@@ -30,7 +32,7 @@ void MockInputAckHandler::OnKeyboardEventAck(
     InputEventAckState ack_result)  {
   VLOG(1) << __FUNCTION__ << " called!";
   acked_key_event_ = event;
-  RecordAckCalled(ack_result);
+  RecordAckCalled(event.type, ack_result);
 }
 
 void MockInputAckHandler::OnWheelEventAck(
@@ -38,7 +40,7 @@ void MockInputAckHandler::OnWheelEventAck(
     InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
   acked_wheel_event_ = event.event;
-  RecordAckCalled(ack_result);
+  RecordAckCalled(event.event.type, ack_result);
 }
 
 void MockInputAckHandler::OnTouchEventAck(
@@ -46,7 +48,7 @@ void MockInputAckHandler::OnTouchEventAck(
     InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
   acked_touch_event_ = event;
-  RecordAckCalled(ack_result);
+  RecordAckCalled(event.event.type, ack_result);
   if (touch_followup_event_)
     input_router_->SendTouchEvent(*touch_followup_event_);
   if (gesture_followup_event_)
@@ -58,7 +60,7 @@ void MockInputAckHandler::OnGestureEventAck(
     InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
   acked_gesture_event_ = event.event;
-  RecordAckCalled(ack_result);
+  RecordAckCalled(event.event.type, ack_result);
 }
 
 void MockInputAckHandler::OnUnexpectedEventAck(UnexpectedEventAckType type)  {
@@ -72,7 +74,9 @@ size_t MockInputAckHandler::GetAndResetAckCount() {
   return ack_count;
 }
 
-void MockInputAckHandler::RecordAckCalled(InputEventAckState ack_result) {
+void MockInputAckHandler::RecordAckCalled(blink::WebInputEvent::Type type,
+                                          InputEventAckState ack_result) {
+  ack_event_type_ = type;
   ++ack_count_;
   ack_state_ = ack_result;
 }

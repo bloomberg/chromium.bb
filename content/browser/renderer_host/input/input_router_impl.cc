@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/input/input_router_impl.h"
 
+#include <math.h>
+
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
@@ -180,26 +182,39 @@ void InputRouterImpl::SendMouseEvent(
 
 void InputRouterImpl::SendWheelEvent(
     const MouseWheelEventWithLatencyInfo& wheel_event) {
-  // If there's already a mouse wheel event waiting to be sent to the renderer,
-  // add the new deltas to that event. Not doing so (e.g., by dropping the old
-  // event, as for mouse moves) results in very slow scrolling on the Mac (on
-  // which many, very small wheel events are sent).
+  SendWheelEvent(QueuedWheelEvent(wheel_event, false));
+}
+
+void InputRouterImpl::SendWheelEvent(const QueuedWheelEvent& wheel_event) {
   if (mouse_wheel_pending_) {
+    // If there's already a mouse wheel event waiting to be sent to the
+    // renderer, add the new deltas to that event. Not doing so (e.g., by
+    // dropping the old event, as for mouse moves) results in very slow
+    // scrolling on the Mac (on which many, very small wheel events are sent).
+    // Note that we can't coalesce wheel events for pinches because the GEQ
+    // expects one ACK for each (but it's fine to coalesce non-pinch wheels
+    // into a pinch one).  Note that the GestureEventQueue ensures we only
+    // ever have a single pinch event queued here.
     if (coalesced_mouse_wheel_events_.empty() ||
-        !coalesced_mouse_wheel_events_.back().CanCoalesceWith(wheel_event)) {
+        wheel_event.synthesized_from_pinch ||
+        !coalesced_mouse_wheel_events_.back().event.CanCoalesceWith(
+            wheel_event.event)) {
       coalesced_mouse_wheel_events_.push_back(wheel_event);
     } else {
-      coalesced_mouse_wheel_events_.back().CoalesceWith(wheel_event);
+      coalesced_mouse_wheel_events_.back().event.CoalesceWith(
+          wheel_event.event);
     }
     return;
   }
+
   mouse_wheel_pending_ = true;
   current_wheel_event_ = wheel_event;
 
   HISTOGRAM_COUNTS_100("Renderer.WheelQueueSize",
                        coalesced_mouse_wheel_events_.size());
 
-  FilterAndSendWebInputEvent(wheel_event.event, wheel_event.latency, false);
+  FilterAndSendWebInputEvent(
+      wheel_event.event.event, wheel_event.event.latency, false);
 }
 
 void InputRouterImpl::SendKeyboardEvent(const NativeWebKeyboardEvent& key_event,
@@ -235,7 +250,7 @@ void InputRouterImpl::SendGestureEvent(
     return;
   }
 
-  FilterAndSendWebInputEvent(gesture_event.event, gesture_event.latency, false);
+  SendGestureEventImmediately(gesture_event);
 }
 
 void InputRouterImpl::SendTouchEvent(
@@ -281,6 +296,12 @@ void InputRouterImpl::SendTouchEventImmediately(
 
 void InputRouterImpl::SendGestureEventImmediately(
     const GestureEventWithLatencyInfo& gesture_event) {
+  if (gesture_event.event.type == WebInputEvent::GesturePinchUpdate &&
+      gesture_event.event.sourceDevice == WebGestureEvent::Touchpad) {
+    SendSyntheticWheelEventForPinch(gesture_event);
+    return;
+  }
+
   FilterAndSendWebInputEvent(gesture_event.event, gesture_event.latency, false);
 }
 
@@ -378,19 +399,6 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
                "type",
                WebInputEventTraits::GetName(input_event.type));
 
-  // Transmit any pending wheel events on a non-wheel event. This ensures that
-  // final PhaseEnded wheel event is received, which is necessary to terminate
-  // rubber-banding, for example.
-   if (input_event.type != WebInputEvent::MouseWheel) {
-    WheelEventQueue mouse_wheel_events;
-    mouse_wheel_events.swap(coalesced_mouse_wheel_events_);
-    for (size_t i = 0; i < mouse_wheel_events.size(); ++i) {
-      OfferToHandlers(mouse_wheel_events[i].event,
-                      mouse_wheel_events[i].latency,
-                      false);
-     }
-  }
-
   // Any input event cancels a pending mouse move event.
   next_mouse_move_.reset();
 
@@ -400,18 +408,6 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
 void InputRouterImpl::OfferToHandlers(const WebInputEvent& input_event,
                                       const ui::LatencyInfo& latency_info,
                                       bool is_keyboard_shortcut) {
-  // Trackpad pinch gestures are not yet handled by the renderer.
-  // TODO(rbyers): Send mousewheel for trackpad pinch - crbug.com/289887.
-  if (input_event.type == WebInputEvent::GesturePinchUpdate &&
-      static_cast<const WebGestureEvent&>(input_event).sourceDevice ==
-          WebGestureEvent::Touchpad) {
-    ProcessInputEventAck(input_event.type,
-                         INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
-                         latency_info,
-                         ACK_SOURCE_NONE);
-    return;
-  }
-
   if (OfferToOverscrollController(input_event, latency_info))
     return;
 
@@ -513,6 +509,43 @@ bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
     return true;
   }
   return false;
+}
+
+void InputRouterImpl::SendSyntheticWheelEventForPinch(
+    const GestureEventWithLatencyInfo& pinch_event) {
+  // We match typical trackpad behavior on Windows by sending fake wheel events
+  // with the ctrl modifier set when we see trackpad pinch gestures.  Ideally
+  // we'd someday get a standard 'pinch' event and send that instead.
+
+  WebMouseWheelEvent wheelEvent;
+  wheelEvent.type = WebInputEvent::MouseWheel;
+  wheelEvent.timeStampSeconds = pinch_event.event.timeStampSeconds;
+  wheelEvent.windowX = wheelEvent.x = pinch_event.event.x;
+  wheelEvent.windowY = wheelEvent.y = pinch_event.event.y;
+  wheelEvent.globalX = pinch_event.event.globalX;
+  wheelEvent.globalY = pinch_event.event.globalY;
+  wheelEvent.modifiers =
+      pinch_event.event.modifiers | WebInputEvent::ControlKey;
+  wheelEvent.deltaX = 0;
+  // The function to convert scales to deltaY values is designed to be
+  // compatible with websites existing use of wheel events, and with existing
+  // Windows trackpad behavior.  In particular, we want:
+  //  - deltas should accumulate via addition: f(s1*s2)==f(s1)+f(s2)
+  //  - deltas should invert via negation: f(1/s) == -f(s)
+  //  - zoom in should be positive: f(s) > 0 iff s > 1
+  //  - magnitude roughly matches wheels: f(2) > 25 && f(2) < 100
+  //  - a formula that's relatively easy to use from JavaScript
+  // Note that 'wheel' event deltaY values have their sign inverted.  So to
+  // convert a wheel deltaY back to a scale use Math.exp(-deltaY/100).
+  DCHECK_GT(pinch_event.event.data.pinchUpdate.scale, 0);
+  wheelEvent.deltaY = 100.0f * log(pinch_event.event.data.pinchUpdate.scale);
+  wheelEvent.hasPreciseScrollingDeltas = true;
+  wheelEvent.wheelTicksX = 0;
+  wheelEvent.wheelTicksY =
+      pinch_event.event.data.pinchUpdate.scale > 1 ? 1 : -1;
+
+  SendWheelEvent(QueuedWheelEvent(
+      MouseWheelEventWithLatencyInfo(wheelEvent, pinch_event.latency), true));
 }
 
 void InputRouterImpl::OnInputEventAck(WebInputEvent::Type event_type,
@@ -647,20 +680,32 @@ void InputRouterImpl::ProcessMouseAck(blink::WebInputEvent::Type type,
 
 void InputRouterImpl::ProcessWheelAck(InputEventAckState ack_result,
                                       const ui::LatencyInfo& latency) {
-  ProcessAckForOverscroll(current_wheel_event_.event, ack_result);
-
   // TODO(miletus): Add renderer side latency to each uncoalesced mouse
   // wheel event and add terminal component to each of them.
-  current_wheel_event_.latency.AddNewLatencyFrom(latency);
-  // Process the unhandled wheel event here before calling SendWheelEvent()
-  // since it will mutate current_wheel_event_.
-  ack_handler_->OnWheelEventAck(current_wheel_event_, ack_result);
+  current_wheel_event_.event.latency.AddNewLatencyFrom(latency);
+
+  if (current_wheel_event_.synthesized_from_pinch) {
+    // Ack the GesturePinchUpdate event that generated this wheel event.
+    ProcessInputEventAck(WebInputEvent::GesturePinchUpdate,
+                         ack_result,
+                         current_wheel_event_.event.latency,
+                         current_ack_source_);
+  } else {
+    // Process the unhandled wheel event here before calling SendWheelEvent()
+    // since it will mutate current_wheel_event_.
+    ProcessAckForOverscroll(current_wheel_event_.event.event, ack_result);
+    ack_handler_->OnWheelEventAck(current_wheel_event_.event, ack_result);
+  }
+
+  // Mark the wheel event complete only after the ACKs have been handled above.
+  // For example, ACKing the GesturePinchUpdate could cause another
+  // GesturePinchUpdate to be sent, which should queue a wheel event rather than
+  // send it immediately.
   mouse_wheel_pending_ = false;
 
-  // Now send the next (coalesced) mouse wheel event.
+  // Send the next (coalesced or synthetic) mouse wheel event.
   if (!coalesced_mouse_wheel_events_.empty()) {
-    MouseWheelEventWithLatencyInfo next_wheel_event =
-        coalesced_mouse_wheel_events_.front();
+    QueuedWheelEvent next_wheel_event = coalesced_mouse_wheel_events_.front();
     coalesced_mouse_wheel_events_.pop_front();
     SendWheelEvent(next_wheel_event);
   }
@@ -750,6 +795,19 @@ bool InputRouterImpl::HasPendingEvents() const {
 bool InputRouterImpl::IsInOverscrollGesture() const {
   OverscrollController* controller = client_->GetOverscrollController();
   return controller && controller->overscroll_mode() != OVERSCROLL_NONE;
+}
+
+InputRouterImpl::QueuedWheelEvent::QueuedWheelEvent()
+    : synthesized_from_pinch(false) {
+}
+
+InputRouterImpl::QueuedWheelEvent::QueuedWheelEvent(
+    const MouseWheelEventWithLatencyInfo& event,
+    bool synthesized_from_pinch)
+    : event(event), synthesized_from_pinch(synthesized_from_pinch) {
+}
+
+InputRouterImpl::QueuedWheelEvent::~QueuedWheelEvent() {
 }
 
 }  // namespace content

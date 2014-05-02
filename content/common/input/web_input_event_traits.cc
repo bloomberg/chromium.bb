@@ -5,6 +5,7 @@
 #include "content/common/input/web_input_event_traits.h"
 
 #include <bitset>
+#include <limits>
 
 #include "base/logging.h"
 
@@ -14,6 +15,7 @@ using blink::WebKeyboardEvent;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebTouchEvent;
+using std::numeric_limits;
 
 namespace content {
 namespace {
@@ -173,6 +175,12 @@ void Coalesce(const WebGestureEvent& event_to_coalesce,
         event_to_coalesce.data.scrollUpdate.deltaY;
   } else if (event->type == WebInputEvent::GesturePinchUpdate) {
     event->data.pinchUpdate.scale *= event_to_coalesce.data.pinchUpdate.scale;
+    // Ensure the scale remains bounded above 0 and below Infinity so that
+    // we can reliably perform operations like log on the values.
+    if (event->data.pinchUpdate.scale < numeric_limits<float>::min())
+      event->data.pinchUpdate.scale = numeric_limits<float>::min();
+    else if (event->data.pinchUpdate.scale > numeric_limits<float>::max())
+      event->data.pinchUpdate.scale = numeric_limits<float>::max();
   }
 }
 

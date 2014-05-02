@@ -743,11 +743,8 @@ class RenderWidgetHostTest : public testing::Test {
                                        float anchorX,
                                        float anchorY,
                                        int modifiers) {
-    SimulateGestureEventCore(
-        SyntheticWebGestureEventBuilder::BuildPinchUpdate(scale,
-                                                          anchorX,
-                                                          anchorY,
-                                                          modifiers));
+    SimulateGestureEventCore(SyntheticWebGestureEventBuilder::BuildPinchUpdate(
+        scale, anchorX, anchorY, modifiers, WebGestureEvent::Touchscreen));
   }
 
   // Inject synthetic GestureFlingStart events.

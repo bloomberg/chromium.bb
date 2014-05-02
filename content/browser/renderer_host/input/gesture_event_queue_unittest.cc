@@ -95,11 +95,8 @@ class GestureEventQueueTest : public testing::Test,
                                        float anchorX,
                                        float anchorY,
                                        int modifiers) {
-    SimulateGestureEvent(
-        SyntheticWebGestureEventBuilder::BuildPinchUpdate(scale,
-                                                          anchorX,
-                                                          anchorY,
-                                                          modifiers));
+    SimulateGestureEvent(SyntheticWebGestureEventBuilder::BuildPinchUpdate(
+        scale, anchorX, anchorY, modifiers, WebGestureEvent::Touchscreen));
   }
 
   void SimulateGestureFlingStartEvent(
