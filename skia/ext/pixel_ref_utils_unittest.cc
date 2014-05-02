@@ -51,13 +51,7 @@ class TestDiscardableShader : public SkShader {
     return SkShader::kDefault_BitmapType;
   }
 
-  // Pure virtual implementaiton.
-  virtual SkShader::Context* createContext(const SkBitmap& device,
-                                           const SkPaint& paint,
-                                           const SkMatrix& matrix,
-                                           void* storage) const OVERRIDE {
-    return NULL;
-  };
+  // not indended to return an actual context. Just need to supply this.
   virtual size_t contextSize() const OVERRIDE {
     return sizeof(SkShader::Context);
   }
