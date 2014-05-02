@@ -1,5 +1,0 @@
-This test checks that page's external arrays size reported by the memory agent includes size of all external arrays created by the page. Bug 113790.
-
-FAIL: block size for path = [ProcessPrivateMemory, JSExternalResources] is too small.
-expected minimal block size is 4194304 actual is 3382718
-
