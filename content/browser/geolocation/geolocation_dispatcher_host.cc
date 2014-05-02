@@ -4,10 +4,13 @@
 
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
 
+#include <map>
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
+#include "content/browser/geolocation/geolocation_provider_impl.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -85,34 +88,96 @@ void SendGeolocationPermissionResponse(int render_process_id,
   }
 }
 
-}  // namespace
+class GeolocationDispatcherHostImpl : public GeolocationDispatcherHost {
+ public:
+  GeolocationDispatcherHostImpl(
+      int render_process_id,
+      GeolocationPermissionContext* geolocation_permission_context);
 
-GeolocationDispatcherHost::GeolocationDispatcherHost(
+  // GeolocationDispatcherHost
+  virtual bool OnMessageReceived(const IPC::Message& msg,
+                                 bool* msg_was_ok) OVERRIDE;
+
+ private:
+  virtual ~GeolocationDispatcherHostImpl();
+
+  void OnRequestPermission(int render_view_id,
+                           int bridge_id,
+                           const GURL& requesting_frame,
+                           bool user_gesture);
+  void OnCancelPermissionRequest(int render_view_id,
+                                 int bridge_id,
+                                 const GURL& requesting_frame);
+  void OnStartUpdating(int render_view_id,
+                       const GURL& requesting_frame,
+                       bool enable_high_accuracy);
+  void OnStopUpdating(int render_view_id);
+
+
+  virtual void PauseOrResume(int render_view_id, bool should_pause) OVERRIDE;
+
+  // Updates the |geolocation_provider_| with the currently required update
+  // options.
+  void RefreshGeolocationOptions();
+
+  void OnLocationUpdate(const Geoposition& position);
+
+  int render_process_id_;
+  scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
+
+  struct RendererGeolocationOptions {
+    bool high_accuracy;
+    bool is_paused;
+  };
+
+  // Used to keep track of the renderers in this process that are using
+  // geolocation and the options associated with them. The map is iterated
+  // when a location update is available and the fan out to individual bridge
+  // IDs happens renderer side, in order to minimize context switches.
+  // Only used on the IO thread.
+  std::map<int, RendererGeolocationOptions> geolocation_renderers_;
+
+  // Used by Android WebView to support that case that a renderer is in the
+  // 'paused' state but not yet using geolocation. If the renderer does start
+  // using geolocation while paused, we move from this set into
+  // |geolocation_renderers_|. If the renderer doesn't end up wanting to use
+  // geolocation while 'paused' then we remove from this set. A renderer id
+  // can exist only in this set or |geolocation_renderers_|, never both.
+  std::set<int> pending_paused_geolocation_renderers_;
+
+  // Only set whilst we are registered with the geolocation provider.
+  GeolocationProviderImpl* geolocation_provider_;
+
+  GeolocationProviderImpl::LocationUpdateCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(GeolocationDispatcherHostImpl);
+};
+
+GeolocationDispatcherHostImpl::GeolocationDispatcherHostImpl(
     int render_process_id,
     GeolocationPermissionContext* geolocation_permission_context)
-    : BrowserMessageFilter(GeolocationMsgStart),
-      render_process_id_(render_process_id),
+    : render_process_id_(render_process_id),
       geolocation_permission_context_(geolocation_permission_context),
       geolocation_provider_(NULL) {
   callback_ = base::Bind(
-      &GeolocationDispatcherHost::OnLocationUpdate, base::Unretained(this));
+      &GeolocationDispatcherHostImpl::OnLocationUpdate, base::Unretained(this));
   // This is initialized by ResourceMessageFilter. Do not add any non-trivial
   // initialization here, defer to OnRegisterBridge which is triggered whenever
   // a javascript geolocation object is actually initialized.
 }
 
-GeolocationDispatcherHost::~GeolocationDispatcherHost() {
+GeolocationDispatcherHostImpl::~GeolocationDispatcherHostImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (geolocation_provider_)
     geolocation_provider_->RemoveLocationUpdateCallback(callback_);
 }
 
-bool GeolocationDispatcherHost::OnMessageReceived(
+bool GeolocationDispatcherHostImpl::OnMessageReceived(
     const IPC::Message& msg, bool* msg_was_ok) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   *msg_was_ok = true;
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(GeolocationDispatcherHost, msg, *msg_was_ok)
+  IPC_BEGIN_MESSAGE_MAP_EX(GeolocationDispatcherHostImpl, msg, *msg_was_ok)
     IPC_MESSAGE_HANDLER(GeolocationHostMsg_CancelPermissionRequest,
                         OnCancelPermissionRequest)
     IPC_MESSAGE_HANDLER(GeolocationHostMsg_RequestPermission,
@@ -124,7 +189,7 @@ bool GeolocationDispatcherHost::OnMessageReceived(
   return handled;
 }
 
-void GeolocationDispatcherHost::OnLocationUpdate(
+void GeolocationDispatcherHostImpl::OnLocationUpdate(
     const Geoposition& geoposition) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   RecordGeopositionErrorCode(geoposition.error_code);
@@ -136,7 +201,7 @@ void GeolocationDispatcherHost::OnLocationUpdate(
   }
 }
 
-void GeolocationDispatcherHost::OnRequestPermission(
+void GeolocationDispatcherHostImpl::OnRequestPermission(
     int render_view_id,
     int bridge_id,
     const GURL& requesting_frame,
@@ -163,7 +228,7 @@ void GeolocationDispatcherHost::OnRequestPermission(
   }
 }
 
-void GeolocationDispatcherHost::OnCancelPermissionRequest(
+void GeolocationDispatcherHostImpl::OnCancelPermissionRequest(
     int render_view_id,
     int bridge_id,
     const GURL& requesting_frame) {
@@ -176,7 +241,7 @@ void GeolocationDispatcherHost::OnCancelPermissionRequest(
   }
 }
 
-void GeolocationDispatcherHost::OnStartUpdating(
+void GeolocationDispatcherHostImpl::OnStartUpdating(
     int render_view_id,
     const GURL& requesting_frame,
     bool enable_high_accuracy) {
@@ -207,7 +272,7 @@ void GeolocationDispatcherHost::OnStartUpdating(
   RefreshGeolocationOptions();
 }
 
-void GeolocationDispatcherHost::OnStopUpdating(int render_view_id) {
+void GeolocationDispatcherHostImpl::OnStopUpdating(int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << __FUNCTION__ << " " << render_process_id_ << ":"
            << render_view_id;
@@ -216,8 +281,8 @@ void GeolocationDispatcherHost::OnStopUpdating(int render_view_id) {
   RefreshGeolocationOptions();
 }
 
-void GeolocationDispatcherHost::PauseOrResume(int render_view_id,
-                                              bool should_pause) {
+void GeolocationDispatcherHostImpl::PauseOrResume(int render_view_id,
+                                                  bool should_pause) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   std::map<int, RendererGeolocationOptions>::iterator it =
       geolocation_renderers_.find(render_view_id);
@@ -237,7 +302,7 @@ void GeolocationDispatcherHost::PauseOrResume(int render_view_id,
   }
 }
 
-void GeolocationDispatcherHost::RefreshGeolocationOptions() {
+void GeolocationDispatcherHostImpl::RefreshGeolocationOptions() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   bool needs_updates = false;
@@ -261,6 +326,27 @@ void GeolocationDispatcherHost::RefreshGeolocationOptions() {
       geolocation_provider_->RemoveLocationUpdateCallback(callback_);
     geolocation_provider_ = NULL;
   }
+}
+
+}  // namespace
+
+
+// GeolocationDispatcherHost --------------------------------------------------
+
+// static
+GeolocationDispatcherHost* GeolocationDispatcherHost::New(
+    int render_process_id,
+    GeolocationPermissionContext* geolocation_permission_context) {
+  return new GeolocationDispatcherHostImpl(
+      render_process_id,
+      geolocation_permission_context);
+}
+
+GeolocationDispatcherHost::GeolocationDispatcherHost()
+    : BrowserMessageFilter(GeolocationMsgStart) {
+}
+
+GeolocationDispatcherHost::~GeolocationDispatcherHost() {
 }
 
 }  // namespace content
