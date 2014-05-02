@@ -98,24 +98,6 @@ class TabAndroid : public CoreTabHelperDelegate,
                                          const base::string16& host,
                                          const base::string16& realm);
 
-  // Called when context menu option to create the bookmark shortcut on
-  // homescreen is called.
-  virtual void AddShortcutToBookmark(const GURL& url,
-                                     const base::string16& title,
-                                     const SkBitmap& skbitmap,
-                                     int r_value,
-                                     int g_value,
-                                     int b_value);
-
-  // Called when a bookmark node should be edited.
-  virtual void EditBookmark(int64 node_id,
-                            const base::string16& node_title,
-                            bool is_folder,
-                            bool is_partner_bookmark);
-
-  // Called to notify that the new tab page has completely rendered.
-  virtual void OnNewTabPageReady();
-
   // Called to determine if chrome://welcome should contain links to the terms
   // of service and the privacy notice.
   virtual bool ShouldWelcomePageLinkToTermsOfService();

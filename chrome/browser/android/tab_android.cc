@@ -177,26 +177,6 @@ void TabAndroid::OnReceivedHttpAuthRequest(jobject auth_handler,
   NOTIMPLEMENTED();
 }
 
-void TabAndroid::AddShortcutToBookmark(const GURL& url,
-                                       const base::string16& title,
-                                       const SkBitmap& skbitmap,
-                                       int r_value,
-                                       int g_value,
-                                       int b_value) {
-  NOTREACHED();
-}
-
-void TabAndroid::EditBookmark(int64 node_id,
-                              const base::string16& node_title,
-                              bool is_folder,
-                              bool is_partner_bookmark) {
-  NOTREACHED();
-}
-
-void TabAndroid::OnNewTabPageReady() {
-  NOTREACHED();
-}
-
 bool TabAndroid::ShouldWelcomePageLinkToTermsOfService() {
   NOTIMPLEMENTED();
   return false;
