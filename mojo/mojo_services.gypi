@@ -147,6 +147,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        'mojo_shell_bindings',
         'mojo_view_manager_bindings',
         'mojo_view_manager_common',
       ],
