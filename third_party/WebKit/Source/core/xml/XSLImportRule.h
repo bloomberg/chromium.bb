@@ -33,16 +33,17 @@ namespace WebCore {
 
 class XSLStyleSheetResource;
 
-class XSLImportRule FINAL : private StyleSheetResourceClient {
-    WTF_MAKE_FAST_ALLOCATED;
+class XSLImportRule FINAL : public NoBaseWillBeGarbageCollectedFinalized<XSLImportRule>, private StyleSheetResourceClient {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<XSLImportRule> create(XSLStyleSheet* parentSheet, const String& href)
+    static PassOwnPtrWillBeRawPtr<XSLImportRule> create(XSLStyleSheet* parentSheet, const String& href)
     {
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        return adoptPtr(new XSLImportRule(parentSheet, href));
+        return adoptPtrWillBeNoop(new XSLImportRule(parentSheet, href));
     }
 
     virtual ~XSLImportRule();
+    virtual void trace(Visitor*);
 
     const String& href() const { return m_strHref; }
     XSLStyleSheet* styleSheet() const { return m_styleSheet.get(); }
@@ -58,12 +59,9 @@ private:
 
     virtual void setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet) OVERRIDE;
 
-    // FIXME: Oilpan: This raw pointer is safe and has to be kept raw at this
-    // point to avoid cycles. When XSLImportRule is moved to the oilpan heap
-    // it should be a Member and be traced.
-    XSLStyleSheet* m_parentStyleSheet;
+    RawPtrWillBeMember<XSLStyleSheet> m_parentStyleSheet;
     String m_strHref;
-    RefPtrWillBePersistent<XSLStyleSheet> m_styleSheet;
+    RefPtrWillBeMember<XSLStyleSheet> m_styleSheet;
     ResourcePtr<XSLStyleSheetResource> m_resource;
     bool m_loading;
 };

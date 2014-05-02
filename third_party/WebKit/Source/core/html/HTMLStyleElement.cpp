@@ -58,11 +58,7 @@ HTMLStyleElement::~HTMLStyleElement()
 {
     // During tear-down, willRemove isn't called, so m_scopedStyleRegistrationState may still be RegisteredAsScoped or RegisteredInShadowRoot here.
     // Therefore we can't ASSERT(m_scopedStyleRegistrationState == NotRegistered).
-#if ENABLE(OILPAN)
-    // Remove this once StyleSheet has a strong pointer to its owner.
-    if (m_sheet)
-        m_sheet->clearOwnerNode();
-#else
+#if !ENABLE(OILPAN)
     StyleElement::clearDocumentData(document(), this);
 #endif
 
@@ -291,6 +287,12 @@ void HTMLStyleElement::setDisabled(bool setDisabled)
 {
     if (CSSStyleSheet* styleSheet = sheet())
         styleSheet->setDisabled(setDisabled);
+}
+
+void HTMLStyleElement::trace(Visitor* visitor)
+{
+    StyleElement::trace(visitor);
+    HTMLElement::trace(visitor);
 }
 
 }

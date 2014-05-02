@@ -56,9 +56,9 @@ typedef EventSender<HTMLLinkElement> LinkEventSender;
 // sticking current way so far.
 //
 class LinkStyle FINAL : public LinkResource, ResourceOwner<StyleSheetResource> {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<LinkStyle> create(HTMLLinkElement* owner);
+    static PassOwnPtrWillBeRawPtr<LinkStyle> create(HTMLLinkElement* owner);
 
     explicit LinkStyle(HTMLLinkElement* owner);
     virtual ~LinkStyle();
@@ -67,6 +67,7 @@ public:
     virtual void process() OVERRIDE;
     virtual void ownerRemoved() OVERRIDE;
     virtual bool hasLoaded() const OVERRIDE { return m_loadedSheet; }
+    virtual void trace(Visitor*) OVERRIDE;
 
     void startLoadingDynamicSheet();
     void notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred);
@@ -109,7 +110,7 @@ private:
     void removePendingSheet(RemovePendingSheetNotificationType = RemovePendingSheetNotifyImmediately);
     Document& document();
 
-    RefPtrWillBePersistent<CSSStyleSheet> m_sheet;
+    RefPtrWillBeMember<CSSStyleSheet> m_sheet;
     DisabledState m_disabledState;
     PendingSheetType m_pendingSheetType;
     bool m_loading;
@@ -166,6 +167,8 @@ public:
     // visible for testing purpose.
     static void parseSizesAttribute(const AtomicString& value, Vector<IntSize>& iconSizes);
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
 
@@ -198,7 +201,7 @@ private:
 private:
     HTMLLinkElement(Document&, bool createdByParser);
 
-    OwnPtr<LinkResource> m_link;
+    OwnPtrWillBeMember<LinkResource> m_link;
     LinkLoader m_linkLoader;
 
     String m_type;

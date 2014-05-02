@@ -95,7 +95,7 @@ public:
     virtual String href() const OVERRIDE { return m_originalURL; }
     virtual String title() const OVERRIDE { return emptyString(); }
 
-    virtual void clearOwnerNode() OVERRIDE { m_ownerNode = 0; }
+    virtual void clearOwnerNode() OVERRIDE { m_ownerNode = nullptr; }
     virtual KURL baseURL() const OVERRIDE { return m_finalURL; }
     virtual bool isLoading() const OVERRIDE;
 
@@ -105,12 +105,12 @@ private:
     XSLStyleSheet(Node* parentNode, const String& originalURL, const KURL& finalURL, bool embedded);
     XSLStyleSheet(XSLImportRule* parentImport, const String& originalURL, const KURL& finalURL);
 
-    Node* m_ownerNode;
+    RawPtrWillBeMember<Node> m_ownerNode;
     String m_originalURL;
     KURL m_finalURL;
     bool m_isDisabled;
 
-    Vector<OwnPtr<XSLImportRule> > m_children;
+    WillBeHeapVector<OwnPtrWillBeMember<XSLImportRule> > m_children;
 
     bool m_embedded;
     bool m_processed;

@@ -52,8 +52,10 @@ StyleElement::StyleElement(Document* document, bool createdByParser)
 
 StyleElement::~StyleElement()
 {
+#if !ENABLE(OILPAN)
     if (m_sheet)
         clearSheet();
+#endif
 }
 
 void StyleElement::processStyleSheet(Document& document, Element* element)
@@ -185,6 +187,11 @@ bool StyleElement::sheetLoaded(Document& document)
 void StyleElement::startLoadingDynamicSheet(Document& document)
 {
     document.styleEngine()->addPendingSheet();
+}
+
+void StyleElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_sheet);
 }
 
 }

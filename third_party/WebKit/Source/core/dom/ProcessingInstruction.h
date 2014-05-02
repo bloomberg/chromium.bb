@@ -36,6 +36,7 @@ class ProcessingInstruction FINAL : public CharacterData, private ResourceOwner<
 public:
     static PassRefPtr<ProcessingInstruction> create(Document&, const String& target, const String& data);
     virtual ~ProcessingInstruction();
+    virtual void trace(Visitor*) OVERRIDE;
 
     const String& target() const { return m_target; }
 
@@ -75,7 +76,7 @@ private:
     String m_localHref;
     String m_title;
     String m_media;
-    RefPtrWillBePersistent<StyleSheet> m_sheet;
+    RefPtrWillBeMember<StyleSheet> m_sheet;
     bool m_loading;
     bool m_alternate;
     bool m_createdByParser;

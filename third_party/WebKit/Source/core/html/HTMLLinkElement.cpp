@@ -147,9 +147,9 @@ PassRefPtr<HTMLLinkElement> HTMLLinkElement::create(Document& document, bool cre
 
 HTMLLinkElement::~HTMLLinkElement()
 {
+#if !ENABLE(OILPAN)
     m_link.clear();
 
-#if !ENABLE(OILPAN)
     if (inDocument())
         document().styleEngine()->removeStyleSheetCandidateNode(this);
 #endif
@@ -209,7 +209,7 @@ LinkResource* HTMLLinkElement::linkResourceToProcess()
         if (m_relAttribute.isImport() && RuntimeEnabledFeatures::htmlImportsEnabled())
             m_link = LinkImport::create(this);
         else {
-            OwnPtr<LinkStyle> link = LinkStyle::create(this);
+            OwnPtrWillBeRawPtr<LinkStyle> link = LinkStyle::create(this);
             if (fastHasAttribute(disabledAttr))
                 link->setDisabledState(true);
             m_link = link.release();
@@ -419,9 +419,15 @@ DOMSettableTokenList* HTMLLinkElement::sizes() const
     return m_sizes.get();
 }
 
-PassOwnPtr<LinkStyle> LinkStyle::create(HTMLLinkElement* owner)
+void HTMLLinkElement::trace(Visitor* visitor)
 {
-    return adoptPtr(new LinkStyle(owner));
+    visitor->trace(m_link);
+    HTMLElement::trace(visitor);
+}
+
+PassOwnPtrWillBeRawPtr<LinkStyle> LinkStyle::create(HTMLLinkElement* owner)
+{
+    return adoptPtrWillBeNoop(new LinkStyle(owner));
 }
 
 LinkStyle::LinkStyle(HTMLLinkElement* owner)
@@ -436,8 +442,10 @@ LinkStyle::LinkStyle(HTMLLinkElement* owner)
 
 LinkStyle::~LinkStyle()
 {
+#if !ENABLE(OILPAN)
     if (m_sheet)
         m_sheet->clearOwnerNode();
+#endif
 }
 
 Document& LinkStyle::document()
@@ -453,7 +461,7 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
 
     }
     // Completing the sheet load may cause scripts to execute.
-    RefPtr<Node> protector(m_owner);
+    RefPtrWillBeRawPtr<Node> protector(m_owner);
 
     CSSParserContext parserContext(m_owner->document(), 0, baseURL, charset);
 
@@ -690,6 +698,12 @@ void LinkStyle::ownerRemoved()
 
     if (styleSheetIsLoading())
         removePendingSheet(RemovePendingSheetNotifyLater);
+}
+
+void LinkStyle::trace(Visitor* visitor)
+{
+    visitor->trace(m_sheet);
+    LinkResource::trace(visitor);
 }
 
 } // namespace WebCore

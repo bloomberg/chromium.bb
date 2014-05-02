@@ -38,11 +38,7 @@ inline SVGStyleElement::SVGStyleElement(Document& document, bool createdByParser
 
 SVGStyleElement::~SVGStyleElement()
 {
-#if ENABLE(OILPAN)
-    // Remove this once StyleSheet has a strong pointer to its owner.
-    if (m_sheet)
-        m_sheet->clearOwnerNode();
-#else
+#if !ENABLE(OILPAN)
     StyleElement::clearDocumentData(document(), this);
 #endif
 }
@@ -152,6 +148,12 @@ void SVGStyleElement::childrenChanged(bool changedByParser, Node* beforeChange, 
 {
     SVGElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
     StyleElement::childrenChanged(this);
+}
+
+void SVGStyleElement::trace(Visitor* visitor)
+{
+    StyleElement::trace(visitor);
+    SVGElement::trace(visitor);
 }
 
 }

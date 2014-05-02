@@ -83,10 +83,12 @@ void StyleEngine::detachFromDocument()
     // Cleanup is performed eagerly when the StyleEngine is removed from the
     // document. The StyleEngine is unreachable after this, since only the
     // document has a reference to it.
+#if !ENABLE(OILPAN)
     for (unsigned i = 0; i < m_injectedAuthorStyleSheets.size(); ++i)
         m_injectedAuthorStyleSheets[i]->clearOwnerNode();
     for (unsigned i = 0; i < m_authorStyleSheets.size(); ++i)
         m_authorStyleSheets[i]->clearOwnerNode();
+#endif
 
     if (m_fontSelector) {
         m_fontSelector->clearDocument();

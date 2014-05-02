@@ -61,6 +61,11 @@ LocalFrame* LinkResource::loadingFrame() const
     return import->frame();
 }
 
+void LinkResource::trace(Visitor* visitor)
+{
+    visitor->trace(m_owner);
+}
+
 LinkRequestBuilder::LinkRequestBuilder(HTMLLinkElement* owner)
     : m_owner(owner)
     , m_url(owner->getNonEmptyURLAttribute(hrefAttr))

@@ -139,7 +139,7 @@ private:
     String m_title;
     RefPtrWillBeMember<MediaQuerySet> m_mediaQueries;
 
-    Node* m_ownerNode;
+    RawPtrWillBeMember<Node> m_ownerNode;
     RawPtrWillBeMember<CSSRule> m_ownerRule;
 
     TextPosition m_startPosition;

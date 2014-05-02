@@ -55,10 +55,10 @@ PassRefPtr<ProcessingInstruction> ProcessingInstruction::create(Document& docume
 
 ProcessingInstruction::~ProcessingInstruction()
 {
+#if !ENABLE(OILPAN)
     if (m_sheet)
         m_sheet->clearOwnerNode();
 
-#if !ENABLE(OILPAN)
     if (inDocument())
         document().styleEngine()->removeStyleSheetCandidateNode(this);
 #endif
@@ -271,6 +271,12 @@ void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint)
     // If we're in document teardown, then we don't need to do any notification of our sheet's removal.
     if (document().isActive())
         document().removedStyleSheet(removedSheet.get());
+}
+
+void ProcessingInstruction::trace(Visitor* visitor)
+{
+    visitor->trace(m_sheet);
+    CharacterData::trace(visitor);
 }
 
 } // namespace

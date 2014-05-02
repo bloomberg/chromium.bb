@@ -31,10 +31,11 @@ class Document;
 class Element;
 class TreeScope;
 
-class StyleElement {
+class StyleElement : public WillBeGarbageCollectedMixin {
 public:
     StyleElement(Document*, bool createdByParser);
     virtual ~StyleElement();
+    virtual void trace(Visitor*);
 
 protected:
     virtual const AtomicString& type() const = 0;
@@ -53,7 +54,7 @@ protected:
     void childrenChanged(Element*);
     void finishParsingChildren(Element*);
 
-    RefPtrWillBePersistent<CSSStyleSheet> m_sheet;
+    RefPtrWillBeMember<CSSStyleSheet> m_sheet;
 
 private:
     void createSheet(Element*, const String& text = String());

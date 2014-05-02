@@ -41,9 +41,9 @@
 
 namespace WebCore {
 
-PassOwnPtr<LinkImport> LinkImport::create(HTMLLinkElement* owner)
+PassOwnPtrWillBeRawPtr<LinkImport> LinkImport::create(HTMLLinkElement* owner)
 {
-    return adoptPtr(new LinkImport(owner));
+    return adoptPtrWillBeNoop(new LinkImport(owner));
 }
 
 LinkImport::LinkImport(HTMLLinkElement* owner)
@@ -54,7 +54,10 @@ LinkImport::LinkImport(HTMLLinkElement* owner)
 
 LinkImport::~LinkImport()
 {
-    clear();
+    if (m_child) {
+        m_child->clearClient();
+        m_child = 0;
+    }
 }
 
 Document* LinkImport::importedDocument() const
@@ -94,15 +97,6 @@ void LinkImport::process()
     }
 }
 
-void LinkImport::clear()
-{
-    m_owner = 0;
-    if (m_child) {
-        m_child->clearClient();
-        m_child = 0;
-    }
-}
-
 void LinkImport::didFinish()
 {
     if (!m_owner || !m_owner->inDocument())
@@ -114,7 +108,7 @@ void LinkImport::importChildWasDestroyed(HTMLImportChild* child)
 {
     ASSERT(m_child == child);
     m_child = 0;
-    clear();
+    m_owner = nullptr;
 }
 
 bool LinkImport::isSync() const
@@ -130,6 +124,11 @@ HTMLLinkElement* LinkImport::link()
 bool LinkImport::hasLoaded() const
 {
     return m_child && m_child->isDone() && !m_child->loaderHasError();
+}
+
+void LinkImport::trace(Visitor* visitor)
+{
+    LinkResource::trace(visitor);
 }
 
 } // namespace WebCore

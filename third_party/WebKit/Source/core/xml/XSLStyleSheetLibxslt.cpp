@@ -39,7 +39,7 @@
 namespace WebCore {
 
 XSLStyleSheet::XSLStyleSheet(XSLImportRule* parentRule, const String& originalURL, const KURL& finalURL)
-    : m_ownerNode(0)
+    : m_ownerNode(nullptr)
     , m_originalURL(originalURL)
     , m_finalURL(finalURL)
     , m_isDisabled(false)
@@ -70,11 +70,12 @@ XSLStyleSheet::~XSLStyleSheet()
 {
     if (!m_stylesheetDocTaken)
         xmlFreeDoc(m_stylesheetDoc);
-
+#if !ENABLE(OILPAN)
     for (unsigned i = 0; i < m_children.size(); ++i) {
         ASSERT(m_children.at(i)->parentStyleSheet() == this);
         m_children.at(i)->setParentStyleSheet(0);
     }
+#endif
 }
 
 bool XSLStyleSheet::isLoading() const
@@ -216,7 +217,7 @@ void XSLStyleSheet::loadChildSheets()
 
 void XSLStyleSheet::loadChildSheet(const String& href)
 {
-    OwnPtr<XSLImportRule> childRule = XSLImportRule::create(this, href);
+    OwnPtrWillBeRawPtr<XSLImportRule> childRule = XSLImportRule::create(this, href);
     XSLImportRule* c = childRule.get();
     m_children.append(childRule.release());
     c->loadSheet();
@@ -305,6 +306,8 @@ void XSLStyleSheet::markAsProcessed()
 
 void XSLStyleSheet::trace(Visitor* visitor)
 {
+    visitor->trace(m_ownerNode);
+    visitor->trace(m_children);
     visitor->trace(m_parentStyleSheet);
 }
 

@@ -29,6 +29,7 @@ namespace WebCore {
 
 class SVGStyleElement FINAL : public SVGElement
                             , public StyleElement {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGStyleElement);
 public:
     static PassRefPtr<SVGStyleElement> create(Document&, bool createdByParser);
     virtual ~SVGStyleElement();
@@ -46,6 +47,8 @@ public:
 
     virtual String title() const OVERRIDE;
     void setTitle(const AtomicString&);
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     SVGStyleElement(Document&, bool createdByParser);

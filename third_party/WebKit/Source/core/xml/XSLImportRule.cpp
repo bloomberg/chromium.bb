@@ -40,8 +40,10 @@ XSLImportRule::XSLImportRule(XSLStyleSheet* parent, const String& href)
 
 XSLImportRule::~XSLImportRule()
 {
+#if !ENABLE(OILPAN)
     if (m_styleSheet)
         m_styleSheet->setParentStyleSheet(0);
+#endif
 
     if (m_resource)
         m_resource->removeClient(this);
@@ -110,6 +112,12 @@ void XSLImportRule::loadSheet()
         if (!m_styleSheet)
             m_loading = true;
     }
+}
+
+void XSLImportRule::trace(Visitor* visitor)
+{
+    visitor->trace(m_parentStyleSheet);
+    visitor->trace(m_styleSheet);
 }
 
 } // namespace WebCore
