@@ -442,9 +442,9 @@ bool SyncChannel::Send(Message* message) {
   Logging* logger = Logging::GetInstance();
   std::string name;
   logger->GetMessageText(message->type(), &name, message, NULL);
-  TRACE_EVENT1("toplevel", "SyncChannel::Send", "name", name);
+  TRACE_EVENT1("ipc", "SyncChannel::Send", "name", name);
 #else
-  TRACE_EVENT2("toplevel", "SyncChannel::Send",
+  TRACE_EVENT2("ipc", "SyncChannel::Send",
                "class", IPC_MESSAGE_ID_CLASS(message->type()),
                "line", IPC_MESSAGE_ID_LINE(message->type()));
 #endif

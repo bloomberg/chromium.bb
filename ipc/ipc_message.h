@@ -217,12 +217,12 @@ class IPC_EXPORT Message : public Pickle {
 
   // Called to trace when message is sent.
   void TraceMessageBegin() {
-    TRACE_EVENT_FLOW_BEGIN0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), "IPC",
+    TRACE_EVENT_FLOW_BEGIN0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"), "IPC",
         header()->flags);
   }
   // Called to trace when message is received.
   void TraceMessageEnd() {
-    TRACE_EVENT_FLOW_END0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), "IPC",
+    TRACE_EVENT_FLOW_END0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"), "IPC",
         header()->flags);
   }
 

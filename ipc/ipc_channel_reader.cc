@@ -83,10 +83,10 @@ bool ChannelReader::DispatchInputData(const char* input_data,
       Logging* logger = Logging::GetInstance();
       std::string name;
       logger->GetMessageText(m.type(), &name, &m, NULL);
-      TRACE_EVENT1("toplevel", "ChannelReader::DispatchInputData",
+      TRACE_EVENT1("ipc,toplevel", "ChannelReader::DispatchInputData",
                    "name", name);
 #else
-      TRACE_EVENT2("toplevel", "ChannelReader::DispatchInputData",
+      TRACE_EVENT2("ipc,toplevel", "ChannelReader::DispatchInputData",
                    "class", IPC_MESSAGE_ID_CLASS(m.type()),
                    "line", IPC_MESSAGE_ID_LINE(m.type()));
 #endif
