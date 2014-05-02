@@ -524,12 +524,7 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
     if (m_frame->document()->loadEventFinished())
         m_client->didStartLoading(NavigationWithinSameDocument);
 
-    HistoryCommitType historyCommitType = HistoryInertCommit;
-    if (m_loadType == FrameLoadTypeBackForward)
-        historyCommitType = BackForwardCommit;
-    else if (updateBackForwardList == UpdateBackForwardList && m_currentItem)
-        historyCommitType = StandardCommit;
-
+    HistoryCommitType historyCommitType = updateBackForwardList == UpdateBackForwardList && m_currentItem ? StandardCommit : HistoryInertCommit;
     setHistoryItemStateForCommit(historyCommitType, sameDocumentNavigationSource == SameDocumentNavigationHistoryApi, data);
     m_client->dispatchDidNavigateWithinPage(m_currentItem.get(), historyCommitType);
     m_client->dispatchDidReceiveTitle(m_frame->document()->title());
