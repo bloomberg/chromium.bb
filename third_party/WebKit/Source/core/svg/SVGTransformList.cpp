@@ -313,18 +313,18 @@ void SVGTransformList::calculateAnimatedValue(SVGAnimationElement* animationElem
     RefPtr<SVGTransformList> toList = toSVGTransformList(toValue);
     RefPtr<SVGTransformList> toAtEndOfDurationList = toSVGTransformList(toAtEndOfDurationValue);
 
-    size_t fromListSize = fromList->length();
     size_t toListSize = toList->length();
-
     if (!toListSize)
         return;
+
+    // Get a reference to the from value before potentially cleaning it out (in the case of a To animation.)
+    RefPtr<SVGTransform> toTransform = toList->at(0);
+    RefPtr<SVGTransform> effectiveFrom = fromList->length() ? fromList->at(0) : SVGTransform::create(toTransform->transformType(), SVGTransform::ConstructZeroTransform);
 
     // Never resize the animatedTransformList to the toList size, instead either clear the list or append to it.
     if (!isEmpty() && !animationElement->isAdditive())
         clear();
 
-    RefPtr<SVGTransform> toTransform = toList->at(0);
-    RefPtr<SVGTransform> effectiveFrom = fromListSize ? fromList->at(0) : SVGTransform::create(toTransform->transformType(), SVGTransform::ConstructZeroTransform);
     RefPtr<SVGTransform> currentTransform = SVGTransformDistance(effectiveFrom, toTransform).scaledDistance(percentage).addToSVGTransform(effectiveFrom);
     if (animationElement->isAccumulated() && repeatCount) {
         RefPtr<SVGTransform> effectiveToAtEnd = !toAtEndOfDurationList->isEmpty() ? toAtEndOfDurationList->at(0) : SVGTransform::create(toTransform->transformType(), SVGTransform::ConstructZeroTransform);
