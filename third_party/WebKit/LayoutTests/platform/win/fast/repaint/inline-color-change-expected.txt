@@ -2,8 +2,18 @@ Repaint test for rdar://problem/6518850 Make sure that an inline repaints using 
 
 PASS
 
-(repaint rects
-  (rect 8 72 38 19)
-  (rect 8 72 38 19)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 72.00 38.00 19.00)
+        (rect 8.00 72.00 38.00 19.00)
+      )
+    )
+  )
 )
 

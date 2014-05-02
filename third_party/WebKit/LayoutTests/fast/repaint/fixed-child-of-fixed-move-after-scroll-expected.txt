@@ -1,8 +1,18 @@
 You should see a yellow rect on the left, and a green one on the right. No red pixels.
-(repaint rects
-  (rect 10 70 100 100)
-  (rect 10 70 100 100)
-  (rect 10 70 100 100)
-  (rect 150 70 100 100)
+(GraphicsLayer
+  (bounds 785.00 3016.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 785.00 3016.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 10.00 270.00 100.00 100.00)
+        (rect 10.00 270.00 100.00 100.00)
+        (rect 10.00 270.00 100.00 100.00)
+        (rect 150.00 270.00 100.00 100.00)
+      )
+    )
+  )
 )
 

@@ -3,10 +3,20 @@ Test for http://bugs.webkit.org/show_bug.cgi?id=13391 REGRESSION (r18819): Incom
 The popup and the button should say “SUCCESS” with no sign of “FAILURE”.
 
 SUCCESS
-(repaint rects
-  (rect 8 76 200 30)
-  (rect 8 76 200 30)
-  (rect 9 85 198 13)
-  (rect 16 114 184 13)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 76.00 200.00 30.00)
+        (rect 8.00 76.00 200.00 30.00)
+        (rect 9.00 85.00 198.00 13.00)
+        (rect 16.00 114.00 184.00 13.00)
+      )
+    )
+  )
 )
 

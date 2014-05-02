@@ -1,7 +1,17 @@
 Repaint test for http://bugs.webkit.org/show_bug.cgi?id=11452 REGRESSION (r16736-r16801): Incorrect repaint of fixed boxes.
 
-(repaint rects
-  (rect 8 60 100 100)
-  (rect 8 60 100 100)
+(GraphicsLayer
+  (bounds 785.00 2016.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 785.00 2016.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 80.00 100.00 100.00)
+        (rect 8.00 80.00 100.00 100.00)
+      )
+    )
+  )
 )
 

@@ -1,8 +1,18 @@
 If you see red, the test failed
 
-(repaint rects
-  (rect 28 54 500 50)
-  (rect 28 54 500 50)
-  (rect 28 54 250 50)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 28.00 54.00 500.00 50.00)
+        (rect 28.00 54.00 500.00 50.00)
+        (rect 28.00 54.00 250.00 50.00)
+      )
+    )
+  )
 )
 
