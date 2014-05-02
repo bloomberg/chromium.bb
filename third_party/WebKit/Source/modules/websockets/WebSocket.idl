@@ -35,7 +35,7 @@
     Constructor(DOMString url, sequence<DOMString> protocols),
     Constructor(DOMString url, DOMString protocol),
     ConstructorCallWith=ExecutionContext,
-    GlobalContext=Window&WorkerGlobalScope,
+    Exposed=Window&Worker,
     RaisesException=Constructor,
     WillBeGarbageCollected,
 ] interface WebSocket : EventTarget {

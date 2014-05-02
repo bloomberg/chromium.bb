@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [
-    GlobalContext=ServiceWorkerGlobalScope,
+    Exposed=ServiceWorker,
     RuntimeEnabled=ServiceWorker
 ] interface Client {
     readonly attribute unsigned long id;

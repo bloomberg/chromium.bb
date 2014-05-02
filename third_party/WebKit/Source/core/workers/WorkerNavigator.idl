@@ -29,7 +29,7 @@
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/workers.html#the-workernavigator-object
 
 [
-    GlobalContext=WorkerGlobalScope,
+    Exposed=Worker,
     WillBeGarbageCollected,
 ] interface WorkerNavigator {
 };

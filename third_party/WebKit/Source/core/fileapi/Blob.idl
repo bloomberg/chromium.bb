@@ -32,7 +32,7 @@
     WillBeGarbageCollected,
     CustomConstructor,
     CustomConstructor(sequence<any> blobParts, optional BlobPropertyBag options),
-    GlobalContext=Window&WorkerGlobalScope,
+    Exposed=Window&Worker,
     SpecialWrapFor=File,
 ] interface Blob {
     readonly attribute unsigned long long size;

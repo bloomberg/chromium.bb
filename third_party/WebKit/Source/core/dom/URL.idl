@@ -25,7 +25,7 @@
  */
 
 [
-    GlobalContext=Window&WorkerGlobalScope,
+    Exposed=Window&Worker,
     RaisesException=Constructor,
     Constructor(DOMString url),
     Constructor(DOMString url, URL base),

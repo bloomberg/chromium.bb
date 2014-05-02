@@ -40,7 +40,7 @@ enum XMLHttpRequestResponseType {
     WillBeGarbageCollected,
     ActiveDOMObject,
     CustomConstructor(optional XMLHttpRequestOptions options),
-    GlobalContext=Window&WorkerGlobalScope,
+    Exposed=Window&Worker
 ] interface XMLHttpRequest : XMLHttpRequestEventTarget {
     // event handler attributes
     attribute EventHandler onreadystatechange;

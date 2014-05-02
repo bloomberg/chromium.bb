@@ -30,7 +30,7 @@
 
 [
     Constructor(optional HTMLFormElement form),
-    GlobalContext=Window&WorkerGlobalScope,
+    Exposed=Window&Worker,
     ImplementedAs=DOMFormData,
     WillBeGarbageCollected,
 ] interface FormData {

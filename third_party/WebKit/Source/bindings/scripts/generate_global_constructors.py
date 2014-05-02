@@ -11,7 +11,8 @@ Concretely these are implemented as "constructor attributes", meaning
 hence "global constructors" for short.
 
 For reference on global objects, see:
-http://www.chromium.org/blink/webidl/blink-idl-extended-attributes#TOC-GlobalContext-i-
+http://heycam.github.io/webidl/#Global
+http://heycam.github.io/webidl/#Exposed
 
 Design document: http://www.chromium.org/developers/design-documents/idl-build
 """
@@ -48,6 +49,15 @@ def parse_options():
     return options, args
 
 
+# Global name: http://heycam.github.io/webidl/#dfn-global-name
+# FIXME: We should add support for [Global=xx] extended attribute instead of
+# hard-coding this mapping.
+def global_name_to_interface_name(global_name):
+    if global_name.endswith('Worker'):
+        return global_name + 'GlobalScope'
+    return global_name
+
+
 def record_global_constructors(idl_filename):
     interface_name, _ = os.path.splitext(os.path.basename(idl_filename))
     full_path = os.path.realpath(idl_filename)
@@ -63,9 +73,12 @@ def record_global_constructors(idl_filename):
         'NoInterfaceObject' in extended_attributes):
         return
 
-    global_contexts = extended_attributes.get('GlobalContext', 'Window').split('&')
+    # FIXME: In spec names are comma-separated, but that makes parsing very
+    # difficult (https://www.w3.org/Bugs/Public/show_bug.cgi?id=24959).
+    global_names = extended_attributes.get('Exposed', 'Window').split('&')
     new_constructors_list = generate_global_constructors_list(interface_name, extended_attributes)
-    for interface_name in global_contexts:
+    for global_name in global_names:
+        interface_name = global_name_to_interface_name(global_name)
         global_objects[interface_name]['constructors'].extend(new_constructors_list)
 
 

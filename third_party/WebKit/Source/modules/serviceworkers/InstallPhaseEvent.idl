@@ -30,7 +30,7 @@
 
 [
     RuntimeEnabled=ServiceWorker,
-    GlobalContext=ServiceWorkerGlobalScope,
+    Exposed=ServiceWorker,
 ] interface InstallPhaseEvent : Event {
     void waitUntil(any value);
 };

@@ -4,7 +4,7 @@
 
 [
     RuntimeEnabled=ServiceWorker,
-    GlobalContext=ServiceWorkerGlobalScope,
+    Exposed=ServiceWorker
 ] interface FetchEvent : Event {
     void respondWith(any value);
 };

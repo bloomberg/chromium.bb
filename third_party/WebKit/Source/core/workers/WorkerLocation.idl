@@ -28,7 +28,7 @@
 
 // http://www.w3.org/TR/workers/#workerlocation
 [
-    GlobalContext=WorkerGlobalScope,
+    Exposed=Worker,
     WillBeGarbageCollected,
 ] interface WorkerLocation {
 };

@@ -32,7 +32,7 @@ callback PromiseInit = void (any resolve, any reject);
 callback AnyCallback = any (optional any value);
 [
    CustomConstructor(PromiseInit init),
-   GlobalContext=Window&WorkerGlobalScope,
+   Exposed=Window&Worker
 ] interface Promise {
    [Custom] Promise then(optional AnyCallback fulfillCallback, optional AnyCallback rejectCallback);
    [Custom] Promise catch(optional AnyCallback rejectCallback);

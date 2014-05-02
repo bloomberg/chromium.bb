@@ -30,7 +30,7 @@
 
 [
     RuntimeEnabled=EncodingAPI,
-    GlobalContext=Window&WorkerGlobalScope,
+    Exposed=Window&Worker,
     Constructor([Default=NullString] optional DOMString label, optional Dictionary options),
     RaisesException=Constructor,
     GarbageCollected

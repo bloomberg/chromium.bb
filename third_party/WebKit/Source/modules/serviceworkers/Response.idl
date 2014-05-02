@@ -5,7 +5,7 @@
 [
     Constructor(optional Dictionary responseInitDict),
     RuntimeEnabled=ServiceWorker,
-    GlobalContext=ServiceWorkerGlobalScope,
+    Exposed=ServiceWorker
 ] interface Response {
     attribute unsigned short statusCode;
 
