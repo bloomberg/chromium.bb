@@ -174,33 +174,12 @@ def _SetEnvForPnacl(env, root):
   else:
     ld_arch_flag = arch_flag
 
-  if env.Bit('nacl_glibc'):
-    subroot = root + '/glibc'
-  else:
-    subroot = root
-
   translator_root = os.path.join(os.path.dirname(root), 'pnacl_translator')
 
-  binprefix = os.path.join(subroot, 'bin', 'pnacl-')
+  binprefix = os.path.join(root, 'bin', 'pnacl-')
   binext = ''
   if env.Bit('host_windows'):
     binext = '.bat'
-
-  if env.Bit('nacl_glibc'):
-    # TODO(pdox): This bias is needed because runnable-ld is
-    # expected to be in the same directory as the SDK.
-    # This assumption should be removed.
-    pnacl_lib = os.path.join(root, 'lib-%s' % arch)
-    pnacl_extra_lib = os.path.join(subroot, 'lib')
-  else:
-    pnacl_lib = os.path.join(subroot, 'lib')
-    pnacl_extra_lib = ''
-
-  #TODO(robertm): remove NACL_SDK_INCLUDE ASAP
-  if env.Bit('nacl_glibc'):
-    pnacl_include = os.path.join(root, 'glibc', 'usr', 'include')
-  else:
-    pnacl_include = os.path.join(root, 'usr', 'include')
 
   pnacl_ar = binprefix + 'ar' + binext
   pnacl_as = binprefix + 'as' + binext
@@ -247,12 +226,9 @@ def _SetEnvForPnacl(env, root):
   if env.Bit('x86_64_zero_based_sandbox'):
     pnacl_translate_flags += ' -sfi-zero-based-sandbox'
 
-  if pnacl_extra_lib:
-    env.Prepend(LIBPATH=pnacl_extra_lib)
-
   env.Replace(# Replace header and lib paths.
-              NACL_SDK_INCLUDE=pnacl_include,
-              NACL_SDK_LIB=pnacl_lib,
+              NACL_SDK_INCLUDE=os.path.join(root, 'usr', 'include'),
+              NACL_SDK_LIB=os.path.join(root, 'lib'),
               # Remove arch-specific flags (if any)
               BASE_LINKFLAGS='',
               BASE_CFLAGS='',
