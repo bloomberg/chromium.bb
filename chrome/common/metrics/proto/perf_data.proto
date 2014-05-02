@@ -349,8 +349,40 @@ message PerfDataProto {
   optional PerfEventStats stats = 4;
 
   // Not added from original: repeated uint64 metadata_mask = 5;
-  // Not added from original: repeated PerfStringMetadata string_metadata = 6;
 
   // Build ID metadata.
   repeated PerfBuildID build_ids = 7;
+
+  // Not added from original: repeated PerfUint32Metadata uint32_metadata = 8;
+  // Not added from original: repeated PerfUint64Metadata uint64_metadata = 9;
+  // Not added from original:
+  //     optional PerfCPUTopologyMetadata cpu_topology = 11;
+  // Not added from original:
+  //     repeated PerfNodeTopologyMetadata numa_topology = 12;
+
+  message StringMetadata {
+    message StringAndMd5sumPrefix {
+      // The string value was field 1 and has been intentionally left out.
+
+      // The string value's md5sum prefix.
+      optional uint64 value_md5_prefix = 2;
+    }
+
+    // Not added from original: optional StringAndMd5sumPrefix hostname = 1;
+    // Not added from original:
+    //     optional StringAndMd5sumPrefix kernel_version =2;
+    // Not added from original: optional StringAndMd5sumPrefix perf_version = 3;
+    // Not added from original: optional StringAndMd5sumPrefix architecture = 4;
+    // Not added from original:
+    //     optional StringAndMd5sumPrefix cpu_description = 5;
+    // Not added from original: optional StringAndMd5sumPrefix cpu_id = 6;
+    // Not added from original:
+    //     repeated StringAndMd5sumPrefix perf_command_line_token = 7;
+
+    // The command line stored as a single string.
+    optional StringAndMd5sumPrefix perf_command_line_whole = 8;
+  }
+
+  // All the string metadata from the perf data file.
+  optional StringMetadata string_metadata = 13;
 }
