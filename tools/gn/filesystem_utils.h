@@ -26,6 +26,7 @@ enum SourceFileType {
   SOURCE_MM,
   SOURCE_S,
   SOURCE_RC,
+  SOURCE_O,  // Object files can be inputs, too. Also counts .obj.
 };
 
 SourceFileType GetSourceFileType(const SourceFile& file);

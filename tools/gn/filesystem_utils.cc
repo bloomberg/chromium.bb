@@ -181,6 +181,8 @@ SourceFileType GetSourceFileType(const SourceFile& file) {
     return SOURCE_RC;
   if (extension == "S" || extension == "s")
     return SOURCE_S;
+  if (extension == "o" || extension == "obj")
+    return SOURCE_O;
 
   return SOURCE_UNKNOWN;
 }

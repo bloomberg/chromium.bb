@@ -17,6 +17,10 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
   target.set_output_type(Target::SOURCE_SET);
   target.sources().push_back(SourceFile("//foo/input1.cc"));
   target.sources().push_back(SourceFile("//foo/input2.cc"));
+  // Also test object files, which should be just passed through to the
+  // dependents to link.
+  target.sources().push_back(SourceFile("//foo/input3.o"));
+  target.sources().push_back(SourceFile("//foo/input4.obj"));
   target.OnResolved();
 
   // Source set itself.
@@ -39,7 +43,8 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
         "build obj/foo/bar.input1.obj: cxx ../../foo/input1.cc\n"
         "build obj/foo/bar.input2.obj: cxx ../../foo/input2.cc\n"
         "\n"
-        "build obj/foo/bar.stamp: stamp obj/foo/bar.input1.obj obj/foo/bar.input2.obj\n";
+        "build obj/foo/bar.stamp: stamp obj/foo/bar.input1.obj "
+            "obj/foo/bar.input2.obj ../../foo/input3.o ../../foo/input4.obj\n";
     std::string out_str = out.str();
 #if defined(OS_WIN)
     std::replace(out_str.begin(), out_str.end(), '\\', '/');
@@ -74,7 +79,10 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
         "ldflags = /MANIFEST /ManifestFile:obj/foo/shlib.intermediate."
             "manifest\n"
         "libs =\n"
-        "build shlib.dll shlib.dll.lib: solink obj/foo/bar.input1.obj "
+        // Ordering of the obj files here is arbitrary. Currently they're put
+        // in a set and come out sorted.
+        "build shlib.dll shlib.dll.lib: solink ../../foo/input3.o "
+            "../../foo/input4.obj obj/foo/bar.input1.obj "
             "obj/foo/bar.input2.obj\n"
         "  soname = shlib.dll\n"
         "  lib = shlib.dll\n"
