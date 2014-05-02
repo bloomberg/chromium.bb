@@ -27,6 +27,7 @@
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
 #include "core/css/StylePropertySet.h"
+#include "core/frame/UseCounter.h"
 
 namespace WebCore {
 
@@ -52,10 +53,12 @@ bool HTMLPreElement::isPresentationAttribute(const QualifiedName& name) const
 
 void HTMLPreElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
-    if (name == wrapAttr)
+    if (name == wrapAttr) {
+        UseCounter::count(document(), UseCounter::HTMLPreElementWrap);
         style->setProperty(CSSPropertyWhiteSpace, CSSValuePreWrap);
-    else
+    } else {
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+    }
 }
 
 }

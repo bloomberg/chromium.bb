@@ -22,5 +22,5 @@ interface HTMLPreElement : HTMLElement {
     [Reflect] attribute long width;
 
     // Extensions
-    [Reflect] attribute boolean wrap;
+    [Reflect, MeasureAs=HTMLPreElementWrap] attribute boolean wrap;
 };

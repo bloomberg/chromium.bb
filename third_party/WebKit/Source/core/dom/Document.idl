@@ -140,6 +140,7 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
     Element            elementFromPoint([Default=Undefined] optional long x,
                                         [Default=Undefined] optional long y);
+    [MeasureAs=DocumentCaretRangeFromPoint]
     Range              caretRangeFromPoint([Default=Undefined] optional long x,
                                            [Default=Undefined] optional long y);
 
@@ -152,7 +153,7 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString preferredStylesheetSet;
     [TreatReturnedNullStringAs=Null, TreatNullAs=NullString] attribute DOMString selectedStylesheetSet;
 
-    RenderingContext getCSSCanvasContext(DOMString contextId, DOMString name, long width, long height);
+    [MeasureAs=DocumentGetCSSCanvasContext] RenderingContext getCSSCanvasContext(DOMString contextId, DOMString name, long width, long height);
 
     // HTML 5
     HTMLCollection getElementsByClassName(DOMString classNames);

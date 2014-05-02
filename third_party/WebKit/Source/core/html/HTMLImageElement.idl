@@ -45,8 +45,8 @@
     attribute long width;
 
     // Extensions
-    readonly attribute long x;
-    readonly attribute long y;
+    [MeasureAs=HTMLImageElementX] readonly attribute long x;
+    [MeasureAs=HTMLImageElementY] readonly attribute long y;
 
     [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
 };
