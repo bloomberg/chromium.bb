@@ -145,6 +145,7 @@ private:
     typedef WillBeHeapHashSet<RefPtrWillBeMember<GeoNotifier> > GeoNotifierSet;
 
     class Watchers {
+        DISALLOW_ALLOCATION();
     public:
         void trace(Visitor*);
         bool add(int id, PassRefPtrWillBeRawPtr<GeoNotifier>);
