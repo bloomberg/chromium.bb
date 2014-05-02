@@ -6,21 +6,31 @@ from telemetry.page.actions.all_page_actions import *
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
-class PolymerCalculatorPage(page_module.PageWithDefaultRunNavigate):
+class PolymerPage(page_module.PageWithDefaultRunNavigate):
+
+  def __init__(self, url, page_set):
+    super(PolymerPage, self).__init__(
+      url=url,
+      page_set=page_set)
+    self.archive_data_file = "data/polymer.json"
+    self.script_to_evaluate_on_commit = '''
+      document.addEventListener("polymer-ready", function() {
+        window.__polymer_ready = true;
+      });
+    '''
+
+  def RunNavigateSteps(self, action_runner):
+    action_runner.RunAction(NavigateAction())
+    action_runner.RunAction(WaitAction(
+      { 'javascript': "window.__polymer_ready" }))
+
+
+class PolymerCalculatorPage(PolymerPage):
 
   def __init__(self, page_set):
     super(PolymerCalculatorPage, self).__init__(
       url='http://localhost:8000/components/paper-calculator/demo.html',
       page_set=page_set)
-    self.user_agent_type = 'mobile'
-    self.archive_data_file = 'data/polymer.json'
-
-  def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
 
   def RunSmoothness(self, action_runner):
     self.TapButton(action_runner)
@@ -52,9 +62,8 @@ class PolymerCalculatorPage(page_module.PageWithDefaultRunNavigate):
         'direction': 'left',
         'wait_after': {
           'javascript': '''
-            (o = document.querySelector(
-              "body /deep/ #outerPanels"
-            )), o.opened || o.wideMode
+            var outer = document.querySelector("body /deep/ #outerPanels");
+            outer.opened || outer.wideMode;
           '''
         },
         'top_start_percentage': 0.2,
@@ -74,6 +83,40 @@ class PolymerCalculatorPage(page_module.PageWithDefaultRunNavigate):
       }))
 
 
+class PolymerShadowPage(PolymerPage):
+
+  def __init__(self, page_set):
+    super(PolymerShadowPage, self).__init__(
+      url='http://localhost:8000/components/paper-shadow/demo.html',
+      page_set=page_set)
+    self.archive_data_file = 'data/polymer.json'
+
+  def RunSmoothness(self, action_runner):
+    action_runner.RunAction(JavascriptAction(
+      {
+        'expression': "document.getElementById('fab').scrollIntoView()"
+      }))
+    action_runner.RunAction(WaitAction(
+      {
+        'seconds': 5
+      }))
+    self.AnimateShadow(action_runner, 'card')
+    self.AnimateShadow(action_runner, 'fab')
+
+  def AnimateShadow(self, action_runner, eid):
+    for i in range(1, 6):
+      action_runner.RunAction(JavascriptAction(
+        {
+          'expression': '''
+            document.getElementById("{0}").z = {1}
+          '''.format(eid, i)
+        }))
+      action_runner.RunAction(WaitAction(
+        {
+          'seconds': 1
+        }))
+
+
 class PolymerPageSet(page_set_module.PageSet):
 
   def __init__(self):
@@ -82,3 +125,4 @@ class PolymerPageSet(page_set_module.PageSet):
       archive_data_file='data/polymer.json')
 
     self.AddPage(PolymerCalculatorPage(self))
+    self.AddPage(PolymerShadowPage(self))
