@@ -2968,7 +2968,7 @@ void Document::didLoadAllImports()
 {
     if (!haveStylesheetsLoaded())
         return;
-
+    setNeedsStyleRecalc(SubtreeStyleChange);
     didLoadAllScriptBlockingResources();
 }
 
@@ -2983,7 +2983,6 @@ void Document::didRemoveAllPendingStylesheet()
 
     if (!haveImportsLoaded())
         return;
-
     didLoadAllScriptBlockingResources();
 }
 

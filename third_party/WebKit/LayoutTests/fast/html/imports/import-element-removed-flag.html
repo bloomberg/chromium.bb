@@ -49,7 +49,6 @@ function testDynamicImportRemovingEagerly()
     dynamicImportEager = document.createElement("link");
     dynamicImportEager.setAttribute("rel", "import");
     dynamicImportEager.setAttribute("href", "resources/setting-greet-var.html");
-    dynamicImportEager.addEventListener("load", check);
     document.head.appendChild(dynamicImportEager);
 
     // Reoving <link> just after appending it.
@@ -67,7 +66,7 @@ function testDynamicImportRemovingEagerly()
         document.head.appendChild(dynamicImportEager);
         shouldBeNonNull("dynamicImportEager.import");
 
-        finishJSTest();
+        setTimeout(function() { finishJSTest(); }, 0);
     }
 
     window.setTimeout(check, 0);

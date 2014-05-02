@@ -8,7 +8,7 @@ function waitAndTest(tests)
     {
         var options = tests.shift();
         if (!options)
-            return finishJSTest();
+            return setTimeout(function() { finishJSTest(); }, 0);
         return runSingleTest(options);
     }
 

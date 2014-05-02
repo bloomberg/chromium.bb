@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <script>
-if (window.testRunner)
+if (window.testRunner) {
     testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+    setTimeout(function() { testRunner.notifyDone(); }, 500);
+}
 </script>
 <link href="resources/import-link-with-media-query.html" rel=import>
 This test passes if it does not crash under ASAN.

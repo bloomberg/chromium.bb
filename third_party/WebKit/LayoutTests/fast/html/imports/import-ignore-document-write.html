@@ -4,6 +4,7 @@
 <script>
 description("Document.write should be ignored in imports");
 jsTestIsAsync = true;
+window.addEventListener("load", function() { finishJSTest(); });
 </script>
 <link rel="import" href="resources/script-document-write.html">
 </head>
