@@ -187,17 +187,19 @@ public:
     }
 
     template<typename V8T, typename T>
-    static void assertWrapperSanity(void* object, T* objectAsT, v8::Isolate* isolate)
+    static void assertWrapperSanity(void* object, T* objectAsT)
     {
         ASSERT_NOT_REACHED();
     }
 
     template<typename V8T, typename T>
-    static void assertWrapperSanity(ScriptWrappable* object, T* objectAsT, v8::Isolate* isolate)
+    static void assertWrapperSanity(ScriptWrappable* object, T* objectAsT)
     {
         ASSERT(object);
-        v8::Local<v8::Object> local = object->newLocalWrapper(isolate);
-        assertWrapperSanity<V8T, T>(local, objectAsT);
+        ASSERT(objectAsT);
+        v8::Object* value = object->getRawValue();
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(value == 0
+            || value->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toInternalPointer(objectAsT));
     }
 
     inline bool containsWrapper() const { return (m_wrapperOrTypeInfo & 1); }
@@ -217,13 +219,18 @@ private:
     void getPersistent(v8::Persistent<v8::Object>* persistent) const
     {
         ASSERT(persistent);
-        v8::Object* object = containsWrapper() ? reinterpret_cast<v8::Object*>(m_wrapperOrTypeInfo & ~1) : 0;
 
         // Horrible and super unsafe: Cast the Persistent to an Object*, so
         // that we can inject the wrapped value. This only works because
         // we previously 'stole' the object pointer from a Persistent in
         // the setWrapper() method.
-        *reinterpret_cast<v8::Object**>(persistent) = object;
+        *reinterpret_cast<v8::Object**>(persistent) = getRawValue();
+    }
+
+    inline v8::Object* getRawValue() const
+    {
+        v8::Object* object = containsWrapper() ? reinterpret_cast<v8::Object*>(m_wrapperOrTypeInfo & ~1) : 0;
+        return object;
     }
 
     inline void disposeWrapper(v8::Local<v8::Object> wrapper)

@@ -67,7 +67,7 @@ public:
     static bool setReturnValueFromWrapperFast(v8::ReturnValue<v8::Value> returnValue, T* object, v8::Local<v8::Object> holder, Wrappable* wrappable)
     {
         if (canUseScriptWrappable(object)) {
-            ScriptWrappable::assertWrapperSanity<V8T, T>(object, object, returnValue.GetIsolate());
+            ScriptWrappable::assertWrapperSanity<V8T, T>(object, object);
             return ScriptWrappable::fromObject(object)->setReturnValue(returnValue);
         }
         // The second fastest way to check if we're in the main world is to check if
@@ -75,7 +75,7 @@ public:
         // FIXME: Investigate if it's worth having this check for performance.
         if (holderContainsWrapper(holder, wrappable)) {
             if (ScriptWrappable::wrapperCanBeStoredInObject(object)) {
-                ScriptWrappable::assertWrapperSanity<V8T, T>(object, object, returnValue.GetIsolate());
+                ScriptWrappable::assertWrapperSanity<V8T, T>(object, object);
                 return ScriptWrappable::fromObject(object)->setReturnValue(returnValue);
             }
             return DOMWrapperWorld::mainWorld().domDataStore().m_wrapperMap.setReturnValueFrom(returnValue, V8T::toInternalPointer(object));
@@ -87,7 +87,7 @@ public:
     static bool setReturnValueFromWrapper(v8::ReturnValue<v8::Value> returnValue, T* object)
     {
         if (canUseScriptWrappable(object)) {
-            ScriptWrappable::assertWrapperSanity<V8T, T>(object, object, returnValue.GetIsolate());
+            ScriptWrappable::assertWrapperSanity<V8T, T>(object, object);
             return ScriptWrappable::fromObject(object)->setReturnValue(returnValue);
         }
         return current(returnValue.GetIsolate()).template setReturnValueFrom<V8T>(returnValue, object);
@@ -117,7 +117,7 @@ public:
     static void setWrapperReference(const v8::Persistent<v8::Object>& parent, T* child, v8::Isolate* isolate)
     {
         if (canUseScriptWrappable(child)) {
-            ScriptWrappable::assertWrapperSanity<V8T, T>(child, child, isolate);
+            ScriptWrappable::assertWrapperSanity<V8T, T>(child, child);
             ScriptWrappable::fromObject(child)->setReference(parent, isolate);
             return;
         }
