@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/zlib/google/zip.h"
+#include "third_party/zlib/google/zip_internal.h"
 
 #include <algorithm>
 
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 
 #if defined(USE_SYSTEM_MINIZIP)
 #include <minizip/ioapi.h>
@@ -230,6 +232,28 @@ int GetErrorOfZipBuffer(void* /*opaque*/, void* /*stream*/) {
   return 0;
 }
 
+// Returns a zip_fileinfo struct with the time represented by |file_time|.
+zip_fileinfo TimeToZipFileInfo(const base::Time& file_time) {
+  base::Time::Exploded file_time_parts;
+  file_time.LocalExplode(&file_time_parts);
+
+  zip_fileinfo zip_info = {};
+  if (file_time_parts.year >= 1980) {
+    // This if check works around the handling of the year value in
+    // contrib/minizip/zip.c in function zip64local_TmzDateToDosDate
+    // It assumes that dates below 1980 are in the double digit format.
+    // Hence the fail safe option is to leave the date unset. Some programs
+    // might show the unset date as 1980-0-0 which is invalid.
+    zip_info.tmz_date.tm_year = file_time_parts.year;
+    zip_info.tmz_date.tm_mon = file_time_parts.month - 1;
+    zip_info.tmz_date.tm_mday = file_time_parts.day_of_month;
+    zip_info.tmz_date.tm_hour = file_time_parts.hour;
+    zip_info.tmz_date.tm_min = file_time_parts.minute;
+    zip_info.tmz_date.tm_sec = file_time_parts.second;
+  }
+
+  return zip_info;
+}
 }  // namespace
 
 namespace zip {
@@ -266,7 +290,7 @@ unzFile OpenHandleForUnzipping(HANDLE zip_handle) {
 #endif
 
 // static
-unzFile PreprareMemoryForUnzipping(const std::string& data) {
+unzFile PrepareMemoryForUnzipping(const std::string& data) {
   if (data.empty())
     return NULL;
 
@@ -311,6 +335,46 @@ zipFile OpenFdForZipping(int zip_fd, int append_flag) {
   return zipOpen2("fd", append_flag, NULL, &zip_funcs);
 }
 #endif
+
+zip_fileinfo GetFileInfoForZipping(const base::FilePath& path) {
+  base::Time file_time;
+  base::File::Info file_info;
+  if (base::GetFileInfo(path, &file_info))
+    file_time = file_info.last_modified;
+  return TimeToZipFileInfo(file_time);
+}
+
+bool ZipOpenNewFileInZip(zipFile zip_file,
+                         const std::string& str_path,
+                         const zip_fileinfo* file_info) {
+  // Section 4.4.4 http://www.pkware.com/documents/casestudies/APPNOTE.TXT
+  // Setting the Language encoding flag so the file is told to be in utf-8.
+  const uLong LANGUAGE_ENCODING_FLAG = 0x1 << 11;
+
+  if (ZIP_OK != zipOpenNewFileInZip4(
+                    zip_file,  // file
+                    str_path.c_str(),  // filename
+                    file_info,  // zipfi
+                    NULL,  // extrafield_local,
+                    0u,  // size_extrafield_local
+                    NULL,  // extrafield_global
+                    0u,  // size_extrafield_global
+                    NULL,  // comment
+                    Z_DEFLATED,  // method
+                    Z_DEFAULT_COMPRESSION,  // level
+                    0,  // raw
+                    -MAX_WBITS,  // windowBits
+                    DEF_MEM_LEVEL,  // memLevel
+                    Z_DEFAULT_STRATEGY,  // strategy
+                    NULL,  // password
+                    0,  // crcForCrypting
+                    0,  // versionMadeBy
+                    LANGUAGE_ENCODING_FLAG)) {  // flagBase
+    DLOG(ERROR) << "Could not open zip file entry " << str_path;
+    return false;
+  }
+  return true;
+}
 
 }  // namespace internal
 }  // namespace zip

@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_ZLIB_GOOGLE_ZIP_H_
 #define THIRD_PARTY_ZLIB_GOOGLE_ZIP_H_
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 

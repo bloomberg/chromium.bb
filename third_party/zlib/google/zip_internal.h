@@ -19,6 +19,10 @@
 #include "third_party/zlib/contrib/minizip/zip.h"
 #endif
 
+namespace base {
+class FilePath;
+}
+
 // Utility functions and constants used internally for the zip file
 // library in the directory. Don't use them outside of the library.
 namespace zip {
@@ -41,7 +45,7 @@ unzFile OpenHandleForUnzipping(HANDLE zip_handle);
 // Creates a custom unzFile object which reads data from the specified string.
 // This custom unzFile object overrides the I/O API functions of zlib so it can
 // read data from the specified string.
-unzFile PreprareMemoryForUnzipping(const std::string& data);
+unzFile PrepareMemoryForUnzipping(const std::string& data);
 
 // Opens the given file name in UTF-8 for zipping, with some setup for
 // Windows. |append_flag| will be passed to zipOpen2().
@@ -52,6 +56,14 @@ zipFile OpenForZipping(const std::string& file_name_utf8, int append_flag);
 // passed to zipOpen2().
 zipFile OpenFdForZipping(int zip_fd, int append_flag);
 #endif
+
+// Returns a zip_fileinfo with the last modification date of |path| set.
+zip_fileinfo GetFileInfoForZipping(const base::FilePath& path);
+
+// Wrapper around zipOpenNewFileInZip4 which passes most common options.
+bool ZipOpenNewFileInZip(zipFile zip_file,
+                         const std::string& str_path,
+                         const zip_fileinfo* file_info);
 
 const int kZipMaxPath = 256;
 const int kZipBufSize = 8192;

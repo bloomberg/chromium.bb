@@ -107,7 +107,7 @@ bool ZipReader::OpenFromPlatformFile(base::PlatformFile zip_fd) {
 }
 
 bool ZipReader::OpenFromString(const std::string& data) {
-  zip_file_ = internal::PreprareMemoryForUnzipping(data);
+  zip_file_ = internal::PrepareMemoryForUnzipping(data);
   if (!zip_file_)
     return false;
   return OpenInternal();
