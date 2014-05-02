@@ -65,3 +65,6 @@ path=@libexecdir@/weston-keyboard
 #constant_accel_factor = 50
 #min_accel_factor = 0.16
 #max_accel_factor = 1.0
+
+[screen-share]
+command=@bindir@/weston --backend=rdp-backend.so --shell=fullscreen-shell.so --no-clients-resize

@@ -32,6 +32,7 @@
 #include <signal.h>
 #include <linux/input.h>
 #include <errno.h>
+#include <ctype.h>
 
 #include <wayland-client.h>
 
@@ -99,6 +100,11 @@ struct ss_shm_buffer {
 	pixman_region32_t damage;
 
 	pixman_image_t *pm_image;
+};
+
+struct screen_share {
+	struct weston_compositor *compositor;
+	char *command;
 };
 
 static void
@@ -982,13 +988,18 @@ shared_output_destroy(struct shared_output *so)
 }
 
 static struct shared_output *
-weston_output_share(struct weston_output *output,
-		    const char *path, char *const argv[])
+weston_output_share(struct weston_output *output, const char* command)
 {
 	int sv[2];
 	char str[32];
 	pid_t pid;
 	sigset_t allsigs;
+	char *const argv[] = {
+	  "/bin/sh",
+	  "-c",
+	  (char*)command,
+	  NULL
+	};
 
 	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, sv) < 0) {
 		weston_log("weston_output_share: socketpair failed: %m\n");
@@ -1025,7 +1036,7 @@ weston_output_share(struct weston_output *output,
 		snprintf(str, sizeof str, "%d", sv[1]);
 		setenv("WAYLAND_SERVER_SOCKET", str, 1);
 
-		execv(path, argv);
+		execv(argv[0], argv);
 		weston_log("weston_output_share: exec failed: %m\n");
 		abort();
 	} else {
@@ -1056,7 +1067,7 @@ share_output_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 		     void *data)
 {
 	struct weston_output *output;
-	const char *path = BINDIR "/weston";
+	struct screen_share *ss = data;
 
 	if (!seat->pointer) {
 		weston_log("Cannot pick output: Seat does not have pointer\n");
@@ -1071,23 +1082,28 @@ share_output_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 		return;
 	}
 
-	char *const argv[] = {
-		"weston",
-		"--backend=rdp-backend.so",
-		"--shell=fullscreen-shell.so",
-		"--no-clients-resize",
-		NULL
-	};
-
-	weston_output_share(output, path, argv);
+	weston_output_share(output, ss->command);
 }
 
 WL_EXPORT int
 module_init(struct weston_compositor *compositor,
 	    int *argc, char *argv[])
 {
+	struct screen_share *ss;
+	struct weston_config_section *section;
+
+	ss = zalloc(sizeof *ss);
+	if (ss == NULL)
+		return -1;
+	ss->compositor = compositor;
+
+	section = weston_config_get_section(compositor->config, "screen-share",
+					    NULL, NULL);
+
+	weston_config_section_get_string(section, "command", &ss->command, "");
+
 	weston_compositor_add_key_binding(compositor, KEY_S,
 				          MODIFIER_CTRL | MODIFIER_ALT,
-					  share_output_binding, compositor);
+					  share_output_binding, ss);
 	return 0;
 }
