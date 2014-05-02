@@ -1137,3 +1137,6 @@ crbug.com/367817 fast/frames/location-observe-callback-crash.html [ Pass Failure
 
 crbug.com/369330 virtual/threaded/animations/3d/replace-filling-transform.html [ Pass ImageOnlyFailure ]
 crbug.com/369330 virtual/threaded/animations/change-transform-style-during-animation.html [ Pass ImageOnlyFailure ]
+
+# Started failing with v8 roll in chromium r267851.
+crbug.com/369600 fast/events/onerror-no-constructor.html [ Failure ]
