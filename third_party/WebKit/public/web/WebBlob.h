@@ -62,6 +62,7 @@ public:
         return *this;
     }
 
+    BLINK_EXPORT static WebBlob createFromUUID(const WebString& uuid, const WebString& type, long long size);
     BLINK_EXPORT static WebBlob createFromFile(const WebString& path, long long size);
     BLINK_EXPORT static WebBlob fromV8Value(v8::Handle<v8::Value>);
 

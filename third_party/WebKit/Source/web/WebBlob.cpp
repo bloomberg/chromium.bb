@@ -41,6 +41,12 @@ using namespace WebCore;
 
 namespace blink {
 
+WebBlob WebBlob::createFromUUID(const WebString& uuid, const WebString& type, long long size)
+{
+    RefPtrWillBeRawPtr<Blob> blob = Blob::create(BlobDataHandle::create(uuid, type, size));
+    return WebBlob(blob);
+}
+
 WebBlob WebBlob::createFromFile(const WebString& path, long long size)
 {
     OwnPtr<BlobData> blobData = BlobData::create();
