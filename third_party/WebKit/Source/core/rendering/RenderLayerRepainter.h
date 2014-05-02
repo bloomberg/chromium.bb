@@ -96,6 +96,7 @@ private:
     unsigned m_repaintStatus; // RepaintStatus
 
     LayoutRect m_repaintRect; // Cached repaint rects. Used by layout.
+    LayoutPoint m_offset;
 };
 
 } // namespace WebCore

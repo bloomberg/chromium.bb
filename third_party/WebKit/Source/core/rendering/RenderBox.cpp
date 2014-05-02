@@ -1559,7 +1559,10 @@ void RenderBox::repaintTreeAfterLayout()
     ASSERT(!needsLayout());
 
     const LayoutRect oldRepaintRect = previousRepaintRect();
-    setPreviousRepaintRect(clippedOverflowRectForRepaint(containerForRepaint()));
+    const LayoutPoint oldPositionFromRepaintContainer = previousPositionFromRepaintContainer();
+    RenderLayerModelObject* repaintContainer = containerForRepaint();
+    setPreviousRepaintRect(clippedOverflowRectForRepaint(repaintContainer));
+    setPreviousPositionFromRepaintContainer(positionFromRepaintContainer(repaintContainer));
 
     // If we are set to do a full repaint that means the RenderView will be
     // invalidated. We can then skip issuing of invalidations for the child
@@ -1577,9 +1580,10 @@ void RenderBox::repaintTreeAfterLayout()
         setShouldDoFullRepaintAfterLayout(true);
     }
 
-    const LayoutRect newRepaintRect = previousRepaintRect();
+    const LayoutRect& newRepaintRect = previousRepaintRect();
+    const LayoutPoint& newPositionFromRepaintContainer = previousPositionFromRepaintContainer();
     bool didFullRepaint = repaintAfterLayoutIfNeeded(containerForRepaint(),
-        shouldDoFullRepaintAfterLayout(), oldRepaintRect, &newRepaintRect);
+        shouldDoFullRepaintAfterLayout(), oldRepaintRect, oldPositionFromRepaintContainer, &newRepaintRect, &newPositionFromRepaintContainer);
 
     if (!didFullRepaint)
         repaintOverflowIfNeeded();

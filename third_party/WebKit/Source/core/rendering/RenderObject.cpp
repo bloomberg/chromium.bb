@@ -121,6 +121,7 @@ struct SameSizeAsRenderObject {
     unsigned m_bitfields;
     unsigned m_bitfields2;
     LayoutRect rect; // Stores the previous repaint rect.
+    LayoutPoint position; // Stores the previous position from the repaint container.
 };
 
 COMPILE_ASSERT(sizeof(RenderObject) == sizeof(SameSizeAsRenderObject), RenderObject_should_stay_small);
@@ -1244,6 +1245,18 @@ void RenderObject::paintOutline(PaintInfo& paintInfo, const LayoutRect& paintRec
         graphicsContext->endLayer();
 }
 
+// FIXME: In repaint-after-layout, we should be able to change the logic to remove the need for this function. See crbug.com/368416.
+LayoutPoint RenderObject::positionFromRepaintContainer(const RenderLayerModelObject* repaintContainer) const
+{
+    ASSERT(containerForRepaint() == repaintContainer);
+
+    LayoutPoint offset = isBox() ? toRenderBox(this)->location() : LayoutPoint();
+    if (repaintContainer == this)
+        return offset;
+
+    return roundedIntPoint(localToContainerPoint(offset, repaintContainer));
+}
+
 IntRect RenderObject::absoluteBoundingBoxRect() const
 {
     Vector<FloatQuad> quads;
@@ -1489,6 +1502,8 @@ const char* RenderObject::invalidationReasonToString(InvalidationReason reason) 
         return "bounds change with background";
     case InvalidationBoundsChange:
         return "bounds change";
+    case InvalidationLocationChange:
+        return "location change";
     case InvalidationScroll:
         return "scroll";
     case InvalidationSelection:
@@ -1524,7 +1539,7 @@ static PassRefPtr<JSONValue> jsonObjectForOldAndNewRects(const LayoutRect& oldRe
 }
 
 bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repaintContainer, bool wasSelfLayout,
-    const LayoutRect& oldBounds, const LayoutRect* newBoundsPtr)
+    const LayoutRect& oldBounds, const LayoutPoint& oldLocation, const LayoutRect* newBoundsPtr, const LayoutPoint* newLocationPtr)
 {
     RenderView* v = view();
     if (v->document().printing())
@@ -1533,6 +1548,7 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
     // This ASSERT fails due to animations.  See https://bugs.webkit.org/show_bug.cgi?id=37048
     // ASSERT(!newBoundsPtr || *newBoundsPtr == clippedOverflowRectForRepaint(repaintContainer));
     LayoutRect newBounds = newBoundsPtr ? *newBoundsPtr : clippedOverflowRectForRepaint(repaintContainer);
+    LayoutPoint newLocation = newLocationPtr ? *newLocationPtr : positionFromRepaintContainer(repaintContainer);
 
     // FIXME: This should use a ConvertableToTraceFormat when they are available in Blink.
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::repaintAfterLayoutIfNeeded()",
@@ -1553,6 +1569,9 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
         if (oldRoundedRect.radii() != newRoundedRect.radii())
             invalidationReason = InvalidationBorderRadius;
     }
+
+    if (invalidationReason == InvalidationIncremental && compositingState() != PaintsIntoOwnBacking && newLocation != oldLocation)
+        invalidationReason = InvalidationLocationChange;
 
     // If the bounds are the same then we know that none of the statements below
     // can match, so we can early out since we will not need to do any

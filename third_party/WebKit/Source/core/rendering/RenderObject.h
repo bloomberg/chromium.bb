@@ -120,6 +120,7 @@ enum InvalidationReason {
     InvalidationBorderRadius,
     InvalidationBoundsChangeWithBackground,
     InvalidationBoundsChange,
+    InvalidationLocationChange,
     InvalidationScroll,
     InvalidationSelection,
     InvalidationLayer,
@@ -759,6 +760,8 @@ public:
 
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint&) const { }
 
+    LayoutPoint positionFromRepaintContainer(const RenderLayerModelObject* repaintContainer) const;
+
     IntRect absoluteBoundingBoxRect() const;
     // FIXME: This function should go away eventually
     IntRect absoluteBoundingBoxRectIgnoringTransforms() const;
@@ -826,7 +829,7 @@ public:
 
     // Repaint only if our old bounds and new bounds are different. The caller may pass in newBounds if they are known.
     bool repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repaintContainer, bool wasSelfLayout,
-        const LayoutRect& oldBounds, const LayoutRect* newBoundsPtr = 0);
+        const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromRepaintContainer, const LayoutRect* newBoundsPtr = 0, const LayoutPoint* newPositionFromRepaintContainer = 0);
 
     // Walk the tree after layout repainting renderers that have changed or moved, updating bounds that have changed, and clearing repaint state.
     virtual void repaintTreeAfterLayout();
@@ -981,6 +984,9 @@ public:
 
     const LayoutRect& previousRepaintRect() const { return m_previousRepaintRect; }
     void setPreviousRepaintRect(const LayoutRect& rect) { m_previousRepaintRect = rect; }
+
+    const LayoutPoint& previousPositionFromRepaintContainer() const { return m_previousPositionFromRepaintContainer; }
+    void setPreviousPositionFromRepaintContainer(const LayoutPoint& location) { m_previousPositionFromRepaintContainer = location; }
 
     LayoutRect newOutlineRect();
     void setNewOutlineRect(const LayoutRect&);
@@ -1245,6 +1251,10 @@ private:
 
     // This stores the repaint rect from the previous layout.
     LayoutRect m_previousRepaintRect;
+
+    // This stores the position in the repaint container's coordinate.
+    // It is used to detect renderer shifts that forces a full invalidation.
+    LayoutPoint m_previousPositionFromRepaintContainer;
 };
 
 // Allow equality comparisons of RenderObject's by reference or pointer, interchangeably.

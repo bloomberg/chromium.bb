@@ -4,6 +4,7 @@ The image below should be completely invalidated.
 (repaint rects
   (rect 8 64 114 237)
   (rect 8 64 214 237)
-  (rect 122 64 100 236)
+  (rect 8 64 114 236)
+  (rect 8 64 214 236)
 )
 

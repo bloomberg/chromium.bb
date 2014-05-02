@@ -21,6 +21,7 @@
               (drawsContent 1)
               (repaint rects
                 (rect 0.00 0.00 100.00 100.00)
+                (rect 0.00 0.00 100.00 100.00)
               )
             )
           )

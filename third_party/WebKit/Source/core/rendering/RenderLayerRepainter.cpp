@@ -75,6 +75,7 @@ void RenderLayerRepainter::repaintAfterLayout(bool shouldCheckForRepaint)
 
         RenderLayerModelObject* repaintContainer = m_renderer.containerForRepaint();
         LayoutRect oldRepaintRect = m_repaintRect;
+        LayoutPoint oldOffset = m_offset;
         computeRepaintRects(repaintContainer);
         shouldCheckForRepaint &= shouldRepaintLayer();
 
@@ -85,7 +86,7 @@ void RenderLayerRepainter::repaintAfterLayout(bool shouldCheckForRepaint)
                     if (m_repaintRect != oldRepaintRect)
                         m_renderer.repaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_repaintRect), InvalidationLayer);
                 } else {
-                    m_renderer.repaintAfterLayoutIfNeeded(repaintContainer, m_renderer.selfNeedsLayout(), oldRepaintRect, &m_repaintRect);
+                    m_renderer.repaintAfterLayoutIfNeeded(repaintContainer, m_renderer.selfNeedsLayout(), oldRepaintRect, oldOffset, &m_repaintRect, &m_offset);
                 }
             }
         }
@@ -113,6 +114,7 @@ void RenderLayerRepainter::computeRepaintRects(const RenderLayerModelObject* rep
         m_renderer.setPreviousRepaintRect(m_renderer.clippedOverflowRectForRepaint(m_renderer.containerForRepaint()));
     } else {
         m_repaintRect = m_renderer.clippedOverflowRectForRepaint(repaintContainer);
+        m_offset = m_renderer.positionFromRepaintContainer(repaintContainer);
     }
 }
 
