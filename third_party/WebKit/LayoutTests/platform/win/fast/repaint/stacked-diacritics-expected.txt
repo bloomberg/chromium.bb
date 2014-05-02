@@ -5,8 +5,18 @@ TEST PASS: The text will entirely disappear.
 TEST FAIL: Most of the text will be gone, but some artifacts will be left behind at the top of the page.
 
 
-(repaint rects
-  (rect 19 147 200 43)
-  (rect 19 147 200 43)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 19.00 147.00 200.00 43.00)
+        (rect 19.00 147.00 200.00 43.00)
+      )
+    )
+  )
 )
 

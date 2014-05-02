@@ -1,11 +1,21 @@
 Repaint test for http://bugzilla.opendarwin.org/show_bug.cgi?id=9334 Incomplete repaint when changing block from non-positioned to positioned.
 
-(repaint rects
-  (rect 8 332 100 100)
-  (rect 8 82 100 100)
-  (rect 8 82 100 100)
-  (rect 8 132 100 100)
-  (rect 8 332 100 100)
-  (rect 8 282 100 100)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 332.00 100.00 100.00)
+        (rect 8.00 82.00 100.00 100.00)
+        (rect 8.00 82.00 100.00 100.00)
+        (rect 8.00 132.00 100.00 100.00)
+        (rect 8.00 332.00 100.00 100.00)
+        (rect 8.00 282.00 100.00 100.00)
+      )
+    )
+  )
 )
 

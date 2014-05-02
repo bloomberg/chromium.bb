@@ -1,9 +1,19 @@
 Test for https://bugs.webkit.org/show_bug.cgi?id=22472 Selection is not completely erased when a replaced element moves
 
 
-(repaint rects
-  (rect 8 52 784 236)
-  (rect 8 132 214 236)
-  (rect 8 52 214 236)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 52.00 784.00 236.00)
+        (rect 8.00 132.00 214.00 236.00)
+        (rect 8.00 52.00 214.00 236.00)
+      )
+    )
+  )
 )
 

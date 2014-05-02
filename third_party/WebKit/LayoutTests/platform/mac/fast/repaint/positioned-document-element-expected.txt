@@ -1,14 +1,24 @@
 Tests that the entire viewport is painted with a floated html element.
 
-(repaint rects
-  (rect 0 0 800 600)
-  (rect 0 0 800 50)
-  (rect 0 0 800 50)
-  (rect 0 0 800 50)
-  (rect 100 100 441 50)
-  (rect 8 16 784 18)
-  (rect 108 116 425 18)
-  (rect 8 16 784 18)
-  (rect 108 116 425 18)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 0.00 0.00 800.00 600.00)
+        (rect 0.00 0.00 800.00 50.00)
+        (rect 0.00 0.00 800.00 50.00)
+        (rect 0.00 0.00 800.00 50.00)
+        (rect 100.00 100.00 441.00 50.00)
+        (rect 8.00 16.00 784.00 18.00)
+        (rect 108.00 116.00 425.00 18.00)
+        (rect 8.00 16.00 784.00 18.00)
+        (rect 108.00 116.00 425.00 18.00)
+      )
+    )
+  )
 )
 

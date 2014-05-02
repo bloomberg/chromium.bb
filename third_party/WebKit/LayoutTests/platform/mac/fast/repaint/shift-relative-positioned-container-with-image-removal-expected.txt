@@ -2,17 +2,27 @@ issue 353933: Pages missing invalidations
 The test checks that removing a renderer correctly invalidate the existing shifted content. The image should be correctly invalidated below.
 
 
-(repaint rects
-  (rect 8 86 732 98)
-  (rect 8 86 769 98)
-  (rect 8 86 769 98)
-  (rect 0 735 785 98)
-  (rect 8 727 769 98)
-  (rect 8 184 769 641)
-  (rect 8 86 769 641)
-  (rect 8 184 769 641)
-  (rect 8 86 769 641)
-  (rect 58 234 489 541)
-  (rect 58 136 489 541)
+(GraphicsLayer
+  (bounds 785.00 735.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 785.00 735.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 86.00 732.00 98.00)
+        (rect 8.00 86.00 769.00 98.00)
+        (rect 8.00 86.00 769.00 98.00)
+        (rect 0.00 735.00 785.00 98.00)
+        (rect 8.00 727.00 769.00 98.00)
+        (rect 8.00 184.00 769.00 641.00)
+        (rect 8.00 86.00 769.00 641.00)
+        (rect 8.00 184.00 769.00 641.00)
+        (rect 8.00 86.00 769.00 641.00)
+        (rect 58.00 234.00 489.00 541.00)
+        (rect 58.00 136.00 489.00 541.00)
+      )
+    )
+  )
 )
 

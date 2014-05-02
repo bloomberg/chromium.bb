@@ -1,9 +1,19 @@
 
 Selection is here
-(repaint rects
-  (rect 8 8 200 21)
-  (rect 13 13 117 13)
-  (rect 8 298 10 10)
-  (rect 8 288 10 20)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 8.00 200.00 21.00)
+        (rect 13.00 13.00 117.00 13.00)
+        (rect 8.00 298.00 10.00 10.00)
+        (rect 8.00 288.00 10.00 20.00)
+      )
+    )
+  )
 )
 

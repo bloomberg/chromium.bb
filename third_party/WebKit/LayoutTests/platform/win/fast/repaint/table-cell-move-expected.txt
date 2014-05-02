@@ -4,16 +4,26 @@ TEST PASS: There should be only a green square below the line, and no red.
 
 TEST FAIL: There will be a red square and a green rectangle.
 
-(repaint rects
-  (rect 8 146 61 60)
-  (rect 8 146 61 60)
-  (rect 8 146 61 180)
-  (rect 8 206 61 180)
-  (rect 8 146 61 180)
-  (rect 8 206 61 180)
-  (rect 8 206 61 60)
-  (rect 8 266 61 60)
-  (rect 8 326 61 60)
-  (rect 8 326 61 60)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 146.00 61.00 60.00)
+        (rect 8.00 146.00 61.00 60.00)
+        (rect 8.00 146.00 61.00 180.00)
+        (rect 8.00 206.00 61.00 180.00)
+        (rect 8.00 146.00 61.00 180.00)
+        (rect 8.00 206.00 61.00 180.00)
+        (rect 8.00 206.00 61.00 60.00)
+        (rect 8.00 266.00 61.00 60.00)
+        (rect 8.00 326.00 61.00 60.00)
+        (rect 8.00 326.00 61.00 60.00)
+      )
+    )
+  )
 )
 

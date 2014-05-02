@@ -1,8 +1,18 @@
 If you see any red or orange below then the test has failed.
 
  
- (repaint rects
-  (rect 8 92 100 50)
-  (rect 8 92 100 50)
+ (GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 92.00 100.00 50.00)
+        (rect 8.00 92.00 100.00 50.00)
+      )
+    )
+  )
 )
 

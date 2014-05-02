@@ -1,9 +1,19 @@
 Tests repaint after layout of a subtree, inside a transformed element. You should see a large green square below.
 
-(repaint rects
-  (rect 128 46 100 200)
-  (rect 28 146 200 100)
-  (rect 28 46 100 200)
-  (rect 28 46 100 100)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 128.00 46.00 100.00 200.00)
+        (rect 28.00 146.00 200.00 100.00)
+        (rect 28.00 46.00 100.00 200.00)
+        (rect 28.00 46.00 100.00 100.00)
+      )
+    )
+  )
 )
 
