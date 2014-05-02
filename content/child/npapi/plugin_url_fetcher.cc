@@ -24,7 +24,6 @@
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "webkit/child/multipart_response_delegate.h"
-#include "webkit/child/resource_loader_bridge.h"
 #include "webkit/common/resource_response_info.h"
 
 namespace content {
@@ -103,7 +102,8 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
       resource_id_(resource_id),
       copy_stream_data_(copy_stream_data),
       data_offset_(0),
-      pending_failure_notification_(false) {
+      pending_failure_notification_(false),
+      request_id_(-1) {
   RequestInfo request_info;
   request_info.method = method;
   request_info.url = url;
@@ -143,25 +143,28 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
       request_info.headers = std::string("Range: ") + range;
   }
 
-  bridge_.reset(ChildThread::current()->resource_dispatcher()->CreateBridge(
-      request_info));
-  if (!body.empty()) {
-    scoped_refptr<ResourceRequestBody> request_body =
-        new ResourceRequestBody;
-    request_body->AppendBytes(&body[0], body.size());
-    bridge_->SetRequestBody(request_body.get());
-  }
+  ResourceDispatcher* dispatcher =
+      ChildThread::current()->resource_dispatcher();
 
-  bridge_->Start(this);
+  scoped_refptr<ResourceRequestBody> request_body = new ResourceRequestBody;
+
+  if (!body.empty())
+    request_body->AppendBytes(&body[0], body.size());
+
+  request_id_ = dispatcher->StartAsync(request_info, request_body, this);
 
   // TODO(jam): range requests
 }
 
 PluginURLFetcher::~PluginURLFetcher() {
+  if (request_id_ >= 0) {
+    ChildThread::current()->resource_dispatcher()->RemovePendingRequest(
+        request_id_);
+  }
 }
 
 void PluginURLFetcher::Cancel() {
-  bridge_->Cancel();
+  ChildThread::current()->resource_dispatcher()->Cancel(request_id_);
 
   // Due to races and nested event loops, PluginURLFetcher may still receive
   // events from the bridge before being destroyed. Do not forward additional
@@ -177,10 +180,13 @@ void PluginURLFetcher::URLRedirectResponse(bool allow) {
   if (!plugin_stream_)
     return;
 
+  ResourceDispatcher* dispatcher =
+      ChildThread::current()->resource_dispatcher();
+
   if (allow) {
-    bridge_->SetDefersLoading(false);
+    dispatcher->SetDefersLoading(request_id_, false);
   } else {
-    bridge_->Cancel();
+    dispatcher->Cancel(request_id_);
     plugin_stream_->DidFail(resource_id_);  // That will delete |this|.
   }
 }
@@ -231,7 +237,9 @@ bool PluginURLFetcher::OnReceivedRedirect(
     }
   } else {
     // Pause the request while we ask the plugin what to do about the redirect.
-    bridge_->SetDefersLoading(true);
+    ResourceDispatcher* dispatcher =
+        ChildThread::current()->resource_dispatcher();
+    dispatcher->SetDefersLoading(request_id_, true);
     plugin_stream_->WillSendRequest(url_, response_code);
   }
 

@@ -56,8 +56,6 @@
       'sources': [
         'multipart_response_delegate.cc',
         'multipart_response_delegate.h',
-        'resource_loader_bridge.cc',
-        'resource_loader_bridge.h',
         'webkit_child_export.h',
         'weburlresponse_extradata_impl.cc',
         'weburlresponse_extradata_impl.h',

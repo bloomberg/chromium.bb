@@ -28,7 +28,6 @@
 #include "net/base/net_util.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
-#include "webkit/child/resource_loader_bridge.h"
 #include "webkit/common/resource_type.h"
 
 using webkit_glue::ResourceLoaderBridge;
@@ -47,10 +46,7 @@ void RemoteToLocalTimeTicks(
   *time = converter.ToLocalTimeTicks(remote_time).ToTimeTicks();
 }
 
-
-}  // namespace
-
-static void CrashOnMapFailure() {
+void CrashOnMapFailure() {
 #if defined(OS_WIN)
   DWORD last_err = GetLastError();
   base::debug::Alias(&last_err);
@@ -59,7 +55,7 @@ static void CrashOnMapFailure() {
 }
 
 // Each resource request is assigned an ID scoped to this process.
-static int MakeRequestID() {
+int MakeRequestID() {
   // NOTE: The resource_dispatcher_host also needs probably unique
   // request_ids, so they count down from -2 (-1 is a special we're
   // screwed value), while the renderer process counts up.
@@ -67,203 +63,7 @@ static int MakeRequestID() {
   return next_request_id++;
 }
 
-// ResourceLoaderBridge implementation ----------------------------------------
-
-class IPCResourceLoaderBridge : public ResourceLoaderBridge {
- public:
-  IPCResourceLoaderBridge(ResourceDispatcher* dispatcher,
-                          const RequestInfo& request_info);
-  virtual ~IPCResourceLoaderBridge();
-
-  // ResourceLoaderBridge
-  virtual void SetRequestBody(ResourceRequestBody* request_body) OVERRIDE;
-  virtual bool Start(RequestPeer* peer) OVERRIDE;
-  virtual void Cancel() OVERRIDE;
-  virtual void SetDefersLoading(bool value) OVERRIDE;
-  virtual void DidChangePriority(net::RequestPriority new_priority,
-                                 int intra_priority_value) OVERRIDE;
-  virtual void SyncLoad(SyncLoadResponse* response) OVERRIDE;
-
- private:
-  RequestPeer* peer_;
-
-  // The resource dispatcher for this loader.  The bridge doesn't own it, but
-  // it's guaranteed to outlive the bridge.
-  ResourceDispatcher* dispatcher_;
-
-  // The request to send, created on initialization for modification and
-  // appending data.
-  ResourceHostMsg_Request request_;
-
-  // ID for the request, valid once Start()ed, -1 if not valid yet.
-  int request_id_;
-
-  // The routing id used when sending IPC messages.
-  int routing_id_;
-
-  // The security origin of the frame that initiates this request.
-  GURL frame_origin_;
-
-  bool is_synchronous_request_;
-};
-
-IPCResourceLoaderBridge::IPCResourceLoaderBridge(
-    ResourceDispatcher* dispatcher,
-    const RequestInfo& request_info)
-    : peer_(NULL),
-      dispatcher_(dispatcher),
-      request_id_(-1),
-      routing_id_(request_info.routing_id),
-      is_synchronous_request_(false) {
-  DCHECK(dispatcher_) << "no resource dispatcher";
-  request_.method = request_info.method;
-  request_.url = request_info.url;
-  request_.first_party_for_cookies = request_info.first_party_for_cookies;
-  request_.referrer = request_info.referrer;
-  request_.referrer_policy = request_info.referrer_policy;
-  request_.headers = request_info.headers;
-  request_.load_flags = request_info.load_flags;
-  request_.origin_pid = request_info.requestor_pid;
-  request_.resource_type = request_info.request_type;
-  request_.priority = request_info.priority;
-  request_.request_context = request_info.request_context;
-  request_.appcache_host_id = request_info.appcache_host_id;
-  request_.download_to_file = request_info.download_to_file;
-  request_.has_user_gesture = request_info.has_user_gesture;
-
-  const RequestExtraData kEmptyData;
-  const RequestExtraData* extra_data;
-  if (request_info.extra_data)
-    extra_data = static_cast<RequestExtraData*>(request_info.extra_data);
-  else
-    extra_data = &kEmptyData;
-  request_.visiblity_state = extra_data->visibility_state();
-  request_.render_frame_id = extra_data->render_frame_id();
-  request_.is_main_frame = extra_data->is_main_frame();
-  request_.parent_is_main_frame = extra_data->parent_is_main_frame();
-  request_.parent_render_frame_id = extra_data->parent_render_frame_id();
-  request_.allow_download = extra_data->allow_download();
-  request_.transition_type = extra_data->transition_type();
-  request_.should_replace_current_entry =
-      extra_data->should_replace_current_entry();
-  request_.transferred_request_child_id =
-      extra_data->transferred_request_child_id();
-  request_.transferred_request_request_id =
-      extra_data->transferred_request_request_id();
-  request_.service_worker_provider_id =
-      extra_data->service_worker_provider_id();
-  frame_origin_ = extra_data->frame_origin();
-}
-
-IPCResourceLoaderBridge::~IPCResourceLoaderBridge() {
-  // we remove our hook for the resource dispatcher only when going away, since
-  // it doesn't keep track of whether we've force terminated the request
-  if (request_id_ >= 0) {
-    // this operation may fail, as the dispatcher will have preemptively
-    // removed us when the renderer sends the ReceivedAllData message.
-    dispatcher_->RemovePendingRequest(request_id_);
-
-    if (request_.download_to_file) {
-      dispatcher_->message_sender()->Send(
-          new ResourceHostMsg_ReleaseDownloadedFile(request_id_));
-    }
-  }
-}
-
-void IPCResourceLoaderBridge::SetRequestBody(
-    ResourceRequestBody* request_body) {
-  DCHECK(request_id_ == -1) << "request already started";
-  request_.request_body = request_body;
-}
-
-// Writes a footer on the message and sends it
-bool IPCResourceLoaderBridge::Start(RequestPeer* peer) {
-  if (request_id_ != -1) {
-    NOTREACHED() << "Starting a request twice";
-    return false;
-  }
-
-  peer_ = peer;
-
-  // generate the request ID, and append it to the message
-  request_id_ = dispatcher_->AddPendingRequest(peer_,
-                                               request_.resource_type,
-                                               request_.origin_pid,
-                                               frame_origin_,
-                                               request_.url);
-
-  return dispatcher_->message_sender()->Send(
-      new ResourceHostMsg_RequestResource(routing_id_, request_id_, request_));
-}
-
-void IPCResourceLoaderBridge::Cancel() {
-  if (request_id_ < 0) {
-    NOTREACHED() << "Trying to cancel an unstarted request";
-    return;
-  }
-
-  if (!is_synchronous_request_)
-    dispatcher_->CancelPendingRequest(request_id_);
-
-  // We can't remove the request ID from the resource dispatcher because more
-  // data might be pending. Sending the cancel message may cause more data
-  // to be flushed, and will then cause a complete message to be sent.
-}
-
-void IPCResourceLoaderBridge::SetDefersLoading(bool value) {
-  if (request_id_ < 0) {
-    NOTREACHED() << "Trying to (un)defer an unstarted request";
-    return;
-  }
-
-  dispatcher_->SetDefersLoading(request_id_, value);
-}
-
-void IPCResourceLoaderBridge::DidChangePriority(
-    net::RequestPriority new_priority, int intra_priority_value) {
-  if (request_id_ < 0) {
-    NOTREACHED() << "Trying to change priority of an unstarted request";
-    return;
-  }
-
-  dispatcher_->DidChangePriority(routing_id_, request_id_, new_priority,
-                                 intra_priority_value);
-}
-
-void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
-  if (request_id_ != -1) {
-    NOTREACHED() << "Starting a request twice";
-    response->error_code = net::ERR_FAILED;
-    return;
-  }
-
-  request_id_ = MakeRequestID();
-  is_synchronous_request_ = true;
-
-  SyncLoadResult result;
-  IPC::SyncMessage* msg = new ResourceHostMsg_SyncLoad(routing_id_, request_id_,
-                                                       request_, &result);
-  // NOTE: This may pump events (see RenderThread::Send).
-  if (!dispatcher_->message_sender()->Send(msg)) {
-    response->error_code = net::ERR_FAILED;
-    return;
-  }
-
-  response->error_code = result.error_code;
-  response->url = result.final_url;
-  response->headers = result.headers;
-  response->mime_type = result.mime_type;
-  response->charset = result.charset;
-  response->request_time = result.request_time;
-  response->response_time = result.response_time;
-  response->encoded_data_length = result.encoded_data_length;
-  response->load_timing = result.load_timing;
-  response->devtools_info = result.devtools_info;
-  response->data.swap(result.data);
-  response->download_file_path = result.download_file_path;
-}
-
-// ResourceDispatcher ---------------------------------------------------------
+}  // namespace
 
 ResourceDispatcher::ResourceDispatcher(IPC::Sender* sender)
     : message_sender_(sender),
@@ -274,8 +74,6 @@ ResourceDispatcher::ResourceDispatcher(IPC::Sender* sender)
 
 ResourceDispatcher::~ResourceDispatcher() {
 }
-
-// ResourceDispatcher implementation ------------------------------------------
 
 bool ResourceDispatcher::OnMessageReceived(const IPC::Message& message) {
   if (!IsResourceDispatcherMessage(message)) {
@@ -337,11 +135,12 @@ void ResourceDispatcher::OnUploadProgress(int request_id, int64 position,
   request_info->peer->OnUploadProgress(position, size);
 
   // Acknowledge receipt
-  message_sender()->Send(new ResourceHostMsg_UploadProgress_ACK(request_id));
+  message_sender_->Send(new ResourceHostMsg_UploadProgress_ACK(request_id));
 }
 
 void ResourceDispatcher::OnReceivedResponse(
-    int request_id, const ResourceResponseHead& response_head) {
+    int request_id,
+    const ResourceResponseHead& response_head) {
   TRACE_EVENT0("loader", "ResourceDispatcher::OnReceivedResponse");
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
@@ -368,7 +167,8 @@ void ResourceDispatcher::OnReceivedResponse(
 }
 
 void ResourceDispatcher::OnReceivedCachedMetadata(
-      int request_id, const std::vector<char>& data) {
+    int request_id,
+    const std::vector<char>& data) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
@@ -420,8 +220,7 @@ void ResourceDispatcher::OnReceivedData(int request_id,
     CHECK_GE(request_info->buffer_size, data_offset + data_length);
 
     // Ensure that the SHM buffer remains valid for the duration of this scope.
-    // It is possible for CancelPendingRequest() to be called before we exit
-    // this scope.
+    // It is possible for Cancel() to be called before we exit this scope.
     linked_ptr<base::SharedMemory> retain_buffer(request_info->buffer);
 
     base::TimeTicks time_start = base::TimeTicks::Now();
@@ -459,14 +258,14 @@ void ResourceDispatcher::OnReceivedData(int request_id,
   }
 
   // Acknowledge the reception of this data.
-  message_sender()->Send(new ResourceHostMsg_DataReceived_ACK(request_id));
+  message_sender_->Send(new ResourceHostMsg_DataReceived_ACK(request_id));
 }
 
 void ResourceDispatcher::OnDownloadedData(int request_id,
                                           int data_len,
                                           int encoded_data_length) {
   // Acknowledge the reception of this message.
-  message_sender()->Send(
+  message_sender_->Send(
       new ResourceHostMsg_DataDownloaded_ACK(request_id));
 
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
@@ -509,7 +308,7 @@ void ResourceDispatcher::OnReceivedRedirect(
       FollowPendingRedirect(request_id, *request_info);
     }
   } else {
-    CancelPendingRequest(request_id);
+    Cancel(request_id);
   }
 }
 
@@ -518,7 +317,7 @@ void ResourceDispatcher::FollowPendingRedirect(
     PendingRequestInfo& request_info) {
   IPC::Message* msg = request_info.pending_redirect_message.release();
   if (msg)
-    message_sender()->Send(msg);
+    message_sender_->Send(msg);
 }
 
 void ResourceDispatcher::OnRequestComplete(
@@ -557,18 +356,6 @@ void ResourceDispatcher::OnRequestComplete(
                            request_complete_data.encoded_data_length);
 }
 
-int ResourceDispatcher::AddPendingRequest(RequestPeer* callback,
-                                          ResourceType::Type resource_type,
-                                          int origin_pid,
-                                          const GURL& frame_origin,
-                                          const GURL& request_url) {
-  // Compute a unique request_id for this renderer process.
-  int id = MakeRequestID();
-  pending_requests_[id] = PendingRequestInfo(
-      callback, resource_type, origin_pid, frame_origin, request_url);
-  return id;
-}
-
 bool ResourceDispatcher::RemovePendingRequest(int request_id) {
   PendingRequestList::iterator it = pending_requests_.find(request_id);
   if (it == pending_requests_.end())
@@ -576,12 +363,18 @@ bool ResourceDispatcher::RemovePendingRequest(int request_id) {
 
   PendingRequestInfo& request_info = it->second;
   ReleaseResourcesInMessageQueue(&request_info.deferred_message_queue);
+
+  if (request_info.download_to_file) {
+    message_sender_->Send(
+        new ResourceHostMsg_ReleaseDownloadedFile(request_id));
+  }
+
   pending_requests_.erase(it);
 
   return true;
 }
 
-void ResourceDispatcher::CancelPendingRequest(int request_id) {
+void ResourceDispatcher::Cancel(int request_id) {
   PendingRequestList::iterator it = pending_requests_.find(request_id);
   if (it == pending_requests_.end()) {
     DVLOG(1) << "unknown request";
@@ -590,7 +383,7 @@ void ResourceDispatcher::CancelPendingRequest(int request_id) {
 
   // |request_id| will be removed from |pending_requests_| when
   // OnRequestComplete returns with ERR_ABORTED.
-  message_sender()->Send(new ResourceHostMsg_CancelRequest(request_id));
+  message_sender_->Send(new ResourceHostMsg_CancelRequest(request_id));
 }
 
 void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
@@ -615,11 +408,11 @@ void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
   }
 }
 
-void ResourceDispatcher::DidChangePriority(
-    int routing_id, int request_id, net::RequestPriority new_priority,
-    int intra_priority_value) {
+void ResourceDispatcher::DidChangePriority(int request_id,
+                                           net::RequestPriority new_priority,
+                                           int intra_priority_value) {
   DCHECK(ContainsKey(pending_requests_, request_id));
-  message_sender()->Send(new ResourceHostMsg_DidChangePriority(
+  message_sender_->Send(new ResourceHostMsg_DidChangePriority(
       request_id, new_priority, intra_priority_value));
 }
 
@@ -627,6 +420,7 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo()
     : peer(NULL),
       resource_type(ResourceType::SUB_RESOURCE),
       is_deferred(false),
+      download_to_file(false),
       blocked_response(false),
       buffer_size(0) {
 }
@@ -636,7 +430,8 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
     ResourceType::Type resource_type,
     int origin_pid,
     const GURL& frame_origin,
-    const GURL& request_url)
+    const GURL& request_url,
+    bool download_to_file)
     : peer(peer),
       resource_type(resource_type),
       origin_pid(origin_pid),
@@ -644,6 +439,7 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
       url(request_url),
       frame_origin(frame_origin),
       response_url(request_url),
+      download_to_file(download_to_file),
       request_start(base::TimeTicks::Now()),
       blocked_response(false) {}
 
@@ -694,9 +490,57 @@ void ResourceDispatcher::FlushDeferredMessages(int request_id) {
   }
 }
 
-ResourceLoaderBridge* ResourceDispatcher::CreateBridge(
-    const RequestInfo& request_info) {
-  return new IPCResourceLoaderBridge(this, request_info);
+void ResourceDispatcher::StartSync(const RequestInfo& request_info,
+                                   ResourceRequestBody* request_body,
+                                   SyncLoadResponse* response) {
+  scoped_ptr<ResourceHostMsg_Request> request =
+      CreateRequest(request_info, request_body, NULL);
+
+  SyncLoadResult result;
+  IPC::SyncMessage* msg = new ResourceHostMsg_SyncLoad(
+      request_info.routing_id, MakeRequestID(), *request, &result);
+
+  // NOTE: This may pump events (see RenderThread::Send).
+  if (!message_sender_->Send(msg)) {
+    response->error_code = net::ERR_FAILED;
+    return;
+  }
+
+  response->error_code = result.error_code;
+  response->url = result.final_url;
+  response->headers = result.headers;
+  response->mime_type = result.mime_type;
+  response->charset = result.charset;
+  response->request_time = result.request_time;
+  response->response_time = result.response_time;
+  response->encoded_data_length = result.encoded_data_length;
+  response->load_timing = result.load_timing;
+  response->devtools_info = result.devtools_info;
+  response->data.swap(result.data);
+  response->download_file_path = result.download_file_path;
+}
+
+int ResourceDispatcher::StartAsync(const RequestInfo& request_info,
+                                   ResourceRequestBody* request_body,
+                                   RequestPeer* peer) {
+  GURL frame_origin;
+  scoped_ptr<ResourceHostMsg_Request> request =
+      CreateRequest(request_info, request_body, &frame_origin);
+
+  // Compute a unique request_id for this renderer process.
+  int request_id = MakeRequestID();
+  pending_requests_[request_id] =
+      PendingRequestInfo(peer,
+                         request->resource_type,
+                         request->origin_pid,
+                         frame_origin,
+                         request->url,
+                         request_info.download_to_file);
+
+  message_sender_->Send(new ResourceHostMsg_RequestResource(
+      request_info.routing_id, request_id, *request));
+
+  return request_id;
 }
 
 void ResourceDispatcher::ToResourceResponseInfo(
@@ -809,6 +653,53 @@ void ResourceDispatcher::ReleaseResourcesInMessageQueue(MessageQueue* queue) {
     queue->pop_front();
     delete message;
   }
+}
+
+scoped_ptr<ResourceHostMsg_Request> ResourceDispatcher::CreateRequest(
+    const RequestInfo& request_info,
+    ResourceRequestBody* request_body,
+    GURL* frame_origin) {
+  scoped_ptr<ResourceHostMsg_Request> request(new ResourceHostMsg_Request);
+  request->method = request_info.method;
+  request->url = request_info.url;
+  request->first_party_for_cookies = request_info.first_party_for_cookies;
+  request->referrer = request_info.referrer;
+  request->referrer_policy = request_info.referrer_policy;
+  request->headers = request_info.headers;
+  request->load_flags = request_info.load_flags;
+  request->origin_pid = request_info.requestor_pid;
+  request->resource_type = request_info.request_type;
+  request->priority = request_info.priority;
+  request->request_context = request_info.request_context;
+  request->appcache_host_id = request_info.appcache_host_id;
+  request->download_to_file = request_info.download_to_file;
+  request->has_user_gesture = request_info.has_user_gesture;
+
+  const RequestExtraData kEmptyData;
+  const RequestExtraData* extra_data;
+  if (request_info.extra_data)
+    extra_data = static_cast<RequestExtraData*>(request_info.extra_data);
+  else
+    extra_data = &kEmptyData;
+  request->visiblity_state = extra_data->visibility_state();
+  request->render_frame_id = extra_data->render_frame_id();
+  request->is_main_frame = extra_data->is_main_frame();
+  request->parent_is_main_frame = extra_data->parent_is_main_frame();
+  request->parent_render_frame_id = extra_data->parent_render_frame_id();
+  request->allow_download = extra_data->allow_download();
+  request->transition_type = extra_data->transition_type();
+  request->should_replace_current_entry =
+      extra_data->should_replace_current_entry();
+  request->transferred_request_child_id =
+      extra_data->transferred_request_child_id();
+  request->transferred_request_request_id =
+      extra_data->transferred_request_request_id();
+  request->service_worker_provider_id =
+      extra_data->service_worker_provider_id();
+  request->request_body = request_body;
+  if (frame_origin)
+    *frame_origin = extra_data->frame_origin();
+  return request.Pass();
 }
 
 }  // namespace content

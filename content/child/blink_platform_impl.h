@@ -15,7 +15,6 @@
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "ui/base/layout.h"
-#include "webkit/child/resource_loader_bridge.h"
 
 #if defined(USE_DEFAULT_RENDER_THEME)
 #include "content/child/webthemeengine_impl_default.h"

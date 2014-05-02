@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// An implementation of WebURLLoader in terms of ResourceLoaderBridge.
-
 #include "content/child/web_url_loader_impl.h"
 
 #include "base/bind.h"
@@ -16,7 +14,9 @@
 #include "content/child/ftp_directory_listing_response_delegate.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
+#include "content/child/resource_dispatcher.h"
 #include "content/child/sync_load_response.h"
+#include "content/common/resource_messages.h"
 #include "content/common/resource_request_body.h"
 #include "content/public/child/request_peer.h"
 #include "net/base/data_url.h"
@@ -37,7 +37,6 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "webkit/child/multipart_response_delegate.h"
-#include "webkit/child/resource_loader_bridge.h"
 #include "webkit/child/weburlresponse_extradata_impl.h"
 
 using base::Time;
@@ -58,7 +57,6 @@ using blink::WebURLRequest;
 using blink::WebURLResponse;
 using webkit_glue::MultipartResponseDelegate;
 using webkit_glue::ResourceDevToolsInfo;
-using webkit_glue::ResourceLoaderBridge;
 using webkit_glue::ResourceResponseInfo;
 using webkit_glue::WebURLResponseExtraDataImpl;
 
@@ -259,7 +257,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
 
  private:
   friend class base::RefCounted<Context>;
-  virtual ~Context() {}
+  virtual ~Context();
 
   // We can optimize the handling of data URLs in most cases.
   bool CanHandleDataURL(const GURL& url) const;
@@ -269,23 +267,21 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   WebURLRequest request_;
   WebURLLoaderClient* client_;
   WebReferrerPolicy referrer_policy_;
-  scoped_ptr<ResourceLoaderBridge> bridge_;
   scoped_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
   scoped_ptr<MultipartResponseDelegate> multipart_delegate_;
-  scoped_ptr<ResourceLoaderBridge> completed_bridge_;
+  int request_id_;
 };
 
 WebURLLoaderImpl::Context::Context(WebURLLoaderImpl* loader)
     : loader_(loader),
       client_(NULL),
-      referrer_policy_(blink::WebReferrerPolicyDefault) {
+      referrer_policy_(blink::WebReferrerPolicyDefault),
+      request_id_(-1) {
 }
 
 void WebURLLoaderImpl::Context::Cancel() {
-  // The bridge will still send OnCompletedRequest, which will Release() us, so
-  // we don't do that here.
-  if (bridge_)
-    bridge_->Cancel();
+  if (ChildThread::current())  // NULL in unittest.
+    ChildThread::current()->resource_dispatcher()->Cancel(request_id_);
 
   // Ensure that we do not notify the multipart delegate anymore as it has
   // its own pointer to the client.
@@ -298,21 +294,21 @@ void WebURLLoaderImpl::Context::Cancel() {
 }
 
 void WebURLLoaderImpl::Context::SetDefersLoading(bool value) {
-  if (bridge_)
-    bridge_->SetDefersLoading(value);
+  ChildThread::current()->resource_dispatcher()->SetDefersLoading(request_id_,
+                                                                  value);
 }
 
 void WebURLLoaderImpl::Context::DidChangePriority(
-    WebURLRequest::Priority new_priority, int intra_priority_value) {
-  if (bridge_)
-    bridge_->DidChangePriority(
-        ConvertWebKitPriorityToNetPriority(new_priority), intra_priority_value);
+    WebURLRequest::Priority new_priority,
+    int intra_priority_value) {
+  ChildThread::current()->resource_dispatcher()->DidChangePriority(
+      request_id_,
+      ConvertWebKitPriorityToNetPriority(new_priority),
+      intra_priority_value);
 }
 
 void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
                                       SyncLoadResponse* sync_load_response) {
-  DCHECK(!bridge_.get());
-
   request_ = request;  // Save the request.
 
   GURL url = request.url();
@@ -400,7 +396,10 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_info.extra_data = request.extraData();
   referrer_policy_ = request.referrerPolicy();
   request_info.referrer_policy = request.referrerPolicy();
-  bridge_.reset(ChildThread::current()->CreateBridge(request_info));
+  ResourceDispatcher* dispatcher =
+      ChildThread::current()->resource_dispatcher();
+
+  scoped_refptr<ResourceRequestBody> request_body = new ResourceRequestBody;
 
   if (!request.httpBody().isNull()) {
     // GET and HEAD requests shouldn't have http bodies.
@@ -408,7 +407,6 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     const WebHTTPBody& httpBody = request.httpBody();
     size_t i = 0;
     WebHTTPBody::Element element;
-    scoped_refptr<ResourceRequestBody> request_body = new ResourceRequestBody;
     while (httpBody.elementAt(i++, element)) {
       switch (element.type) {
         case WebHTTPBody::Element::TypeData:
@@ -450,19 +448,16 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       }
     }
     request_body->set_identifier(request.httpBody().identifier());
-    bridge_->SetRequestBody(request_body.get());
+
   }
 
   if (sync_load_response) {
-    bridge_->SyncLoad(sync_load_response);
+    dispatcher->StartSync(request_info, request_body.get(), sync_load_response);
     return;
   }
 
-  if (bridge_->Start(this)) {
-    AddRef();  // Balanced in OnCompletedRequest
-  } else {
-    bridge_.reset();
-  }
+  AddRef();  // Balanced in OnCompletedRequest.
+  request_id_ = dispatcher->StartAsync(request_info, request_body.get(), this);
 }
 
 void WebURLLoaderImpl::Context::OnUploadProgress(uint64 position, uint64 size) {
@@ -599,8 +594,8 @@ void WebURLLoaderImpl::Context::OnReceivedData(const char* data,
   }
 }
 
-void WebURLLoaderImpl::Context::OnReceivedCachedMetadata(
-    const char* data, int len) {
+void WebURLLoaderImpl::Context::OnReceivedCachedMetadata(const char* data,
+                                                         int len) {
   if (client_)
     client_->didReceiveCachedMetadata(loader_, data, len);
 }
@@ -620,11 +615,6 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
     multipart_delegate_.reset(NULL);
   }
 
-  // Prevent any further IPC to the browser now that we're complete, but
-  // don't delete it to keep any downloaded temp files alive.
-  DCHECK(!completed_bridge_.get());
-  completed_bridge_.swap(bridge_);
-
   if (client_) {
     if (error_code != net::OK) {
       client_->didFail(loader_, CreateError(request_.url(),
@@ -643,6 +633,13 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
   Release();
 }
 
+WebURLLoaderImpl::Context::~Context() {
+  if (request_id_ >= 0) {
+    ChildThread::current()->resource_dispatcher()->RemovePendingRequest(
+        request_id_);
+  }
+}
+
 bool WebURLLoaderImpl::Context::CanHandleDataURL(const GURL& url) const {
   DCHECK(url.SchemeIs("data"));
 
@@ -651,8 +648,7 @@ bool WebURLLoaderImpl::Context::CanHandleDataURL(const GURL& url) const {
   // download.
   //
   // NOTE: We special case MIME types we can render both for performance
-  // reasons as well as to support unit tests, which do not have an underlying
-  // ResourceLoaderBridge implementation.
+  // reasons as well as to support unit tests.
 
 #if defined(OS_ANDROID)
   // For compatibility reasons on Android we need to expose top-level data://
