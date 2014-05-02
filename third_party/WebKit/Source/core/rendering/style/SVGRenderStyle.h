@@ -314,16 +314,16 @@ public:
     const SVGPaint::SVGPaintType& strokePaintType() const { return stroke->paintType; }
     const Color& strokePaintColor() const { return stroke->paintColor; }
     const String& strokePaintUri() const { return stroke->paintUri; }
-    PassRefPtr<SVGLengthList> strokeDashArray() const { return stroke->dashArray; }
+    SVGLengthList* strokeDashArray() const { return stroke->dashArray.get(); }
     float strokeMiterLimit() const { return stroke->miterLimit; }
-    PassRefPtr<SVGLength> strokeWidth() const { return stroke->width; }
-    PassRefPtr<SVGLength> strokeDashOffset() const { return stroke->dashOffset; }
+    SVGLength* strokeWidth() const { return stroke->width.get(); }
+    SVGLength* strokeDashOffset() const { return stroke->dashOffset.get(); }
     float stopOpacity() const { return stops->opacity; }
     const Color& stopColor() const { return stops->color; }
     float floodOpacity() const { return misc->floodOpacity; }
     const Color& floodColor() const { return misc->floodColor; }
     const Color& lightingColor() const { return misc->lightingColor; }
-    PassRefPtr<SVGLength> baselineShiftValue() const { return misc->baselineShiftValue; }
+    SVGLength* baselineShiftValue() const { return misc->baselineShiftValue.get(); }
     const AtomicString& clipperResource() const { return resources->clipper; }
     const AtomicString& filterResource() const { return resources->filter; }
     const AtomicString& maskerResource() const { return resources->masker; }

@@ -1415,11 +1415,11 @@ public:
     void setStrokePaintColor(const Color& c) { accessSVGStyle()->setStrokePaint(SVGPaint::SVG_PAINTTYPE_RGBCOLOR, c, ""); }
     float strokeOpacity() const { return svgStyle()->strokeOpacity(); }
     void setStrokeOpacity(float f) { accessSVGStyle()->setStrokeOpacity(f); }
-    PassRefPtr<SVGLength> strokeWidth() const { return svgStyle()->strokeWidth(); }
+    SVGLength* strokeWidth() const { return svgStyle()->strokeWidth(); }
     void setStrokeWidth(PassRefPtr<SVGLength> w) { accessSVGStyle()->setStrokeWidth(w); }
-    PassRefPtr<SVGLengthList> strokeDashArray() const { return svgStyle()->strokeDashArray(); }
+    SVGLengthList* strokeDashArray() const { return svgStyle()->strokeDashArray(); }
     void setStrokeDashArray(PassRefPtr<SVGLengthList> array) { accessSVGStyle()->setStrokeDashArray(array); }
-    PassRefPtr<SVGLength> strokeDashOffset() const { return svgStyle()->strokeDashOffset(); }
+    SVGLength* strokeDashOffset() const { return svgStyle()->strokeDashOffset(); }
     void setStrokeDashOffset(PassRefPtr<SVGLength> d) { accessSVGStyle()->setStrokeDashOffset(d); }
     float strokeMiterLimit() const { return svgStyle()->strokeMiterLimit(); }
     void setStrokeMiterLimit(float f) { accessSVGStyle()->setStrokeMiterLimit(f); }
@@ -1434,7 +1434,7 @@ public:
     void setFloodColor(const Color& c) { accessSVGStyle()->setFloodColor(c); }
     void setLightingColor(const Color& c) { accessSVGStyle()->setLightingColor(c); }
 
-    PassRefPtr<SVGLength> baselineShiftValue() const { return svgStyle()->baselineShiftValue(); }
+    SVGLength* baselineShiftValue() const { return svgStyle()->baselineShiftValue(); }
     void setBaselineShiftValue(PassRefPtr<SVGLength> s) { accessSVGStyle()->setBaselineShiftValue(s); }
 
     void setShapeOutside(PassRefPtr<ShapeValue> value)

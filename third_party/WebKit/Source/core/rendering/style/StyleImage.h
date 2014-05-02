@@ -73,16 +73,6 @@ public:
     ALWAYS_INLINE bool isGeneratedImage() const { return m_isGeneratedImage; }
     ALWAYS_INLINE bool isImageResourceSet() const { return m_isImageResourceSet; }
 
-    static bool imagesEquivalent(const StyleImage* image1, const StyleImage* image2)
-    {
-        if (image1 != image2) {
-            if (!image1 || !image2)
-                return false;
-            return *image1 == *image2;
-        }
-        return true;
-    }
-
 protected:
     StyleImage()
         : m_isImageResource(false)

@@ -23,6 +23,7 @@
 #include "core/rendering/style/StyleRareNonInheritedData.h"
 
 #include "core/rendering/style/ContentData.h"
+#include "core/rendering/style/DataEquivalency.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/style/StyleFilterData.h"
@@ -268,50 +269,27 @@ bool StyleRareNonInheritedData::contentDataEquivalent(const StyleRareNonInherite
 
 bool StyleRareNonInheritedData::counterDataEquivalent(const StyleRareNonInheritedData& o) const
 {
-    if (m_counterDirectives.get() == o.m_counterDirectives.get())
-        return true;
-
-    if (m_counterDirectives && o.m_counterDirectives && *m_counterDirectives == *o.m_counterDirectives)
-        return true;
-
-    return false;
+    return dataEquivalent(m_counterDirectives, o.m_counterDirectives);
 }
 
 bool StyleRareNonInheritedData::shadowDataEquivalent(const StyleRareNonInheritedData& o) const
 {
-    if ((!m_boxShadow && o.m_boxShadow) || (m_boxShadow && !o.m_boxShadow))
-        return false;
-    if (m_boxShadow && o.m_boxShadow && (*m_boxShadow != *o.m_boxShadow))
-        return false;
-    return true;
+    return dataEquivalent(m_boxShadow, o.m_boxShadow);
 }
 
 bool StyleRareNonInheritedData::reflectionDataEquivalent(const StyleRareNonInheritedData& o) const
 {
-    if (m_boxReflect != o.m_boxReflect) {
-        if (!m_boxReflect || !o.m_boxReflect)
-            return false;
-        return *m_boxReflect == *o.m_boxReflect;
-    }
-    return true;
+    return dataEquivalent(m_boxReflect, o.m_boxReflect);
 }
 
 bool StyleRareNonInheritedData::animationDataEquivalent(const StyleRareNonInheritedData& o) const
 {
-    if ((!m_animations && o.m_animations) || (m_animations && !o.m_animations))
-        return false;
-    if (m_animations && o.m_animations && (*m_animations != *o.m_animations))
-        return false;
-    return true;
+    return dataEquivalent(m_animations, o.m_animations);
 }
 
 bool StyleRareNonInheritedData::transitionDataEquivalent(const StyleRareNonInheritedData& o) const
 {
-    if ((!m_transitions && o.m_transitions) || (m_transitions && !o.m_transitions))
-        return false;
-    if (m_transitions && o.m_transitions && (*m_transitions != *o.m_transitions))
-        return false;
-    return true;
+    return dataEquivalent(m_transitions, o.m_transitions);
 }
 
 bool StyleRareNonInheritedData::hasFilters() const

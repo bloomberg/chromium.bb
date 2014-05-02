@@ -24,6 +24,8 @@
 #include "config.h"
 #include "core/rendering/style/NinePieceImage.h"
 
+#include "core/rendering/style/DataEquivalency.h"
+
 namespace WebCore {
 
 static DataRef<NinePieceImageData>& defaultData()
@@ -76,7 +78,7 @@ NinePieceImageData::NinePieceImageData(const NinePieceImageData& other)
 
 bool NinePieceImageData::operator==(const NinePieceImageData& other) const
 {
-    return StyleImage::imagesEquivalent(image.get(), other.image.get())
+    return dataEquivalent(image, other.image)
         && imageSlices == other.imageSlices
         && fill == other.fill
         && borderSlices == other.borderSlices

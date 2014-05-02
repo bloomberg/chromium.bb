@@ -22,6 +22,8 @@
 #include "config.h"
 #include "core/rendering/style/FillLayer.h"
 
+#include "core/rendering/style/DataEquivalency.h"
+
 namespace WebCore {
 
 struct SameSizeAsFillLayer {
@@ -159,7 +161,7 @@ bool FillLayer::operator==(const FillLayer& o) const
 {
     // We do not check the "isSet" booleans for each property, since those are only used during initial construction
     // to propagate patterns into layers.  All layer comparisons happen after values have all been filled in anyway.
-    return StyleImage::imagesEquivalent(m_image.get(), o.m_image.get()) && m_xPosition == o.m_xPosition && m_yPosition == o.m_yPosition
+    return dataEquivalent(m_image, o.m_image) && m_xPosition == o.m_xPosition && m_yPosition == o.m_yPosition
             && m_backgroundXOrigin == o.m_backgroundXOrigin && m_backgroundYOrigin == o.m_backgroundYOrigin
             && m_attachment == o.m_attachment && m_clip == o.m_clip && m_composite == o.m_composite
             && m_blendMode == o.m_blendMode && m_origin == o.m_origin && m_repeatX == o.m_repeatX

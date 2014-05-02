@@ -6,6 +6,7 @@
 #include "core/animation/css/CSSPropertyEquality.h"
 
 #include "core/animation/css/CSSAnimations.h"
+#include "core/rendering/style/DataEquivalency.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/ShadowList.h"
 
@@ -39,7 +40,7 @@ bool fillLayersEqual(const FillLayer* aLayer, const FillLayer* bLayer)
                 return false;
             break;
         case CSSPropertyBackgroundImage:
-            if (!StyleImage::imagesEquivalent(aLayer->image(), bLayer->image()))
+            if (!dataEquivalent(aLayer->image(), bLayer->image()))
                 return false;
             break;
         default:
@@ -53,12 +54,6 @@ bool fillLayersEqual(const FillLayer* aLayer, const FillLayer* bLayer)
 
     // FIXME: Shouldn't this be return !aLayer && !bLayer; ?
     return true;
-}
-
-template <typename T>
-bool ptrsOrValuesEqual(T a, T b)
-{
-    return a == b || (a && b && *a == *b);
 }
 
 }
@@ -78,7 +73,7 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
     case CSSPropertyBackgroundSize:
         return fillLayersEqual<CSSPropertyBackgroundSize>(a.backgroundLayers(), b.backgroundLayers());
     case CSSPropertyBaselineShift:
-        return ptrsOrValuesEqual<PassRefPtr<SVGLength> >(a.baselineShiftValue(), b.baselineShiftValue());
+        return dataEquivalent(a.baselineShiftValue(), b.baselineShiftValue());
     case CSSPropertyBorderBottomColor:
         return a.borderBottomColor().resolve(a.color()) == b.borderBottomColor().resolve(b.color())
             && a.visitedLinkBorderBottomColor().resolve(a.color()) == b.visitedLinkBorderBottomColor().resolve(b.color());
@@ -93,7 +88,7 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
     case CSSPropertyBorderImageSlice:
         return a.borderImageSlices() == b.borderImageSlices();
     case CSSPropertyBorderImageSource:
-        return ptrsOrValuesEqual<StyleImage*>(a.borderImageSource(), b.borderImageSource());
+        return dataEquivalent(a.borderImageSource(), b.borderImageSource());
     case CSSPropertyBorderImageWidth:
         return a.borderImageWidth() == b.borderImageWidth();
     case CSSPropertyBorderLeftColor:
@@ -118,7 +113,7 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
     case CSSPropertyBottom:
         return a.bottom() == b.bottom();
     case CSSPropertyBoxShadow:
-        return ptrsOrValuesEqual<ShadowList*>(a.boxShadow(), b.boxShadow());
+        return dataEquivalent(a.boxShadow(), b.boxShadow());
     case CSSPropertyClip:
         return a.clip() == b.clip();
     case CSSPropertyColor:
@@ -157,7 +152,7 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
     case CSSPropertyLineHeight:
         return a.specifiedLineHeight() == b.specifiedLineHeight();
     case CSSPropertyListStyleImage:
-        return ptrsOrValuesEqual<StyleImage*>(a.listStyleImage(), b.listStyleImage());
+        return dataEquivalent(a.listStyleImage(), b.listStyleImage());
     case CSSPropertyMarginBottom:
         return a.marginBottom() == b.marginBottom();
     case CSSPropertyMarginLeft:
@@ -202,7 +197,7 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
     case CSSPropertyShapeMargin:
         return a.shapeMargin() == b.shapeMargin();
     case CSSPropertyShapeOutside:
-        return ptrsOrValuesEqual<ShapeValue*>(a.shapeOutside(), b.shapeOutside());
+        return dataEquivalent(a.shapeOutside(), b.shapeOutside());
     case CSSPropertyStopColor:
         return a.stopColor() == b.stopColor();
     case CSSPropertyStopOpacity:
@@ -211,22 +206,22 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
         return a.strokePaintType() == b.strokePaintType()
             && (a.strokePaintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR || a.strokePaintColor() == b.strokePaintColor());
     case CSSPropertyStrokeDasharray:
-        return ptrsOrValuesEqual<PassRefPtr<SVGLengthList> >(a.strokeDashArray(), b.strokeDashArray());
+        return dataEquivalent(a.strokeDashArray(), b.strokeDashArray());
     case CSSPropertyStrokeDashoffset:
-        return ptrsOrValuesEqual<PassRefPtr<SVGLength> >(a.strokeDashOffset(), b.strokeDashOffset());
+        return dataEquivalent(a.strokeDashOffset(), b.strokeDashOffset());
     case CSSPropertyStrokeMiterlimit:
         return a.strokeMiterLimit() == b.strokeMiterLimit();
     case CSSPropertyStrokeOpacity:
         return a.strokeOpacity() == b.strokeOpacity();
     case CSSPropertyStrokeWidth:
-        return ptrsOrValuesEqual<PassRefPtr<SVGLength> >(a.strokeWidth(), b.strokeWidth());
+        return dataEquivalent(a.strokeWidth(), b.strokeWidth());
     case CSSPropertyTextDecorationColor:
         return a.textDecorationColor().resolve(a.color()) == b.textDecorationColor().resolve(b.color())
             && a.visitedLinkTextDecorationColor().resolve(a.color()) == b.visitedLinkTextDecorationColor().resolve(b.color());
     case CSSPropertyTextIndent:
         return a.textIndent() == b.textIndent();
     case CSSPropertyTextShadow:
-        return ptrsOrValuesEqual<ShadowList*>(a.textShadow(), b.textShadow());
+        return dataEquivalent(a.textShadow(), b.textShadow());
     case CSSPropertyTop:
         return a.top() == b.top();
     case CSSPropertyVisibility:
@@ -238,9 +233,9 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
     case CSSPropertyWebkitBorderVerticalSpacing:
         return a.verticalBorderSpacing() == b.verticalBorderSpacing();
     case CSSPropertyWebkitBoxShadow:
-        return ptrsOrValuesEqual<ShadowList*>(a.boxShadow(), b.boxShadow());
+        return dataEquivalent(a.boxShadow(), b.boxShadow());
     case CSSPropertyWebkitClipPath:
-        return ptrsOrValuesEqual<ClipPathOperation*>(a.clipPath(), b.clipPath());
+        return dataEquivalent(a.clipPath(), b.clipPath());
     case CSSPropertyWebkitColumnCount:
         return a.columnCount() == b.columnCount();
     case CSSPropertyWebkitColumnGap:
@@ -259,11 +254,11 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
     case CSSPropertyWebkitMaskBoxImageSlice:
         return a.maskBoxImageSlices() == b.maskBoxImageSlices();
     case CSSPropertyWebkitMaskBoxImageSource:
-        return ptrsOrValuesEqual<StyleImage*>(a.maskBoxImageSource(), b.maskBoxImageSource());
+        return dataEquivalent(a.maskBoxImageSource(), b.maskBoxImageSource());
     case CSSPropertyWebkitMaskBoxImageWidth:
         return a.maskBoxImageWidth() == b.maskBoxImageWidth();
     case CSSPropertyWebkitMaskImage:
-        return ptrsOrValuesEqual<StyleImage*>(a.maskImage(), b.maskImage());
+        return dataEquivalent(a.maskImage(), b.maskImage());
     case CSSPropertyWebkitMaskPositionX:
         return fillLayersEqual<CSSPropertyWebkitMaskPositionX>(a.maskLayers(), b.maskLayers());
     case CSSPropertyWebkitMaskPositionY:

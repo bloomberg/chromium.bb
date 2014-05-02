@@ -23,6 +23,7 @@
 #include "core/rendering/style/StyleRareInheritedData.h"
 
 #include "core/rendering/style/CursorList.h"
+#include "core/rendering/style/DataEquivalency.h"
 #include "core/rendering/style/QuotesData.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/RenderStyleConstants.h"
@@ -158,15 +159,6 @@ StyleRareInheritedData::~StyleRareInheritedData()
 {
 }
 
-static bool cursorDataEquivalent(const CursorList* c1, const CursorList* c2)
-{
-    if (c1 == c2)
-        return true;
-    if ((!c1 && c2) || (c1 && !c2))
-        return false;
-    return (*c1 == *c2);
-}
-
 bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
 {
     return m_textStrokeColor == o.m_textStrokeColor
@@ -179,7 +171,7 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && tapHighlightColor == o.tapHighlightColor
         && shadowDataEquivalent(o)
         && highlight == o.highlight
-        && cursorDataEquivalent(cursorData.get(), o.cursorData.get())
+        && dataEquivalent(cursorData.get(), o.cursorData.get())
         && indent == o.indent
         && m_effectiveZoom == o.m_effectiveZoom
         && widows == o.widows
@@ -222,25 +214,17 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && m_imageRendering == o.m_imageRendering
         && m_textUnderlinePosition == o.m_textUnderlinePosition
         && m_rubyPosition == o.m_rubyPosition
-        && StyleImage::imagesEquivalent(listStyleImage.get(), o.listStyleImage.get());
+        && dataEquivalent(listStyleImage.get(), o.listStyleImage.get());
 }
 
 bool StyleRareInheritedData::shadowDataEquivalent(const StyleRareInheritedData& o) const
 {
-    if ((!textShadow && o.textShadow) || (textShadow && !o.textShadow))
-        return false;
-    if (textShadow && o.textShadow && (*textShadow != *o.textShadow))
-        return false;
-    return true;
+    return dataEquivalent(textShadow.get(), o.textShadow.get());
 }
 
 bool StyleRareInheritedData::quotesDataEquivalent(const StyleRareInheritedData& o) const
 {
-    if (quotes == o.quotes)
-        return true;
-    if (!quotes || !o.quotes)
-        return false;
-    return *quotes == *o.quotes;
+    return dataEquivalent(quotes, o.quotes);
 }
 
 } // namespace WebCore
