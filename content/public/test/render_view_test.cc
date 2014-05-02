@@ -268,14 +268,15 @@ const char* const kGetCoordinatesScript =
     "    var parent_coordinates = GetCoordinates(elem.offsetParent);"
     "    coordinates[0] += parent_coordinates[0];"
     "    coordinates[1] += parent_coordinates[1];"
-    "    return coordinates;"
+    "    return [ Math.round(coordinates[0]),"
+    "             Math.round(coordinates[1])];"
     "  };"
     "  var elem = document.getElementById('$1');"
     "  if (!elem)"
     "    return null;"
     "  var bounds = GetCoordinates(elem);"
-    "  bounds[2] = elem.offsetWidth;"
-    "  bounds[3] = elem.offsetHeight;"
+    "  bounds[2] = Math.round(elem.offsetWidth);"
+    "  bounds[3] = Math.round(elem.offsetHeight);"
     "  return bounds;"
     "})();";
 gfx::Rect RenderViewTest::GetElementBounds(const std::string& element_id) {
