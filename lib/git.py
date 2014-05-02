@@ -66,7 +66,8 @@ GIT_TRANSIENT_ERRORS = (
     r'The requested URL returned error: 500 while accessing',
 )
 
-GIT_TRANSIENT_ERRORS_RE = re.compile('|'.join(GIT_TRANSIENT_ERRORS))
+GIT_TRANSIENT_ERRORS_RE = re.compile('|'.join(GIT_TRANSIENT_ERRORS),
+                                     re.IGNORECASE)
 
 DEFAULT_RETRY_INTERVAL = 3
 DEFAULT_RETRIES = 5
