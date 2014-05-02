@@ -8,7 +8,6 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 
-#include "apps/app_window.h"
 #include "apps/size_constraints.h"
 #include "apps/ui/native_app_window.h"
 #include "base/mac/scoped_nsobject.h"
@@ -17,6 +16,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/common/draggable_region.h"
 #include "ui/gfx/rect.h"
+
+namespace apps {
+class AppWindow;
+}
 
 class ExtensionKeybindingRegistryCocoa;
 class NativeAppWindowCocoa;
@@ -156,13 +159,7 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   virtual ~NativeAppWindowCocoa();
 
   ShellNSWindow* window() const;
-
-  content::WebContents* web_contents() const {
-    return app_window_->web_contents();
-  }
-  const extensions::Extension* extension() const {
-    return app_window_->extension();
-  }
+  content::WebContents* WebContents() const;
 
   // Returns the WindowStyleMask based on the type of window frame.
   // Specifically, this includes NSResizableWindowMask if the window is

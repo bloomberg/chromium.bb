@@ -25,7 +25,7 @@ namespace {
 std::string GetAppShelfId(AppWindow* app_window) {
   if (app_window->window_type_is_panel())
     return base::StringPrintf("panel:%d", app_window->session_id().id());
-  return app_window->extension()->id();
+  return app_window->extension_id();
 }
 
 bool ControlsWindow(aura::Window* window) {
@@ -168,7 +168,7 @@ void AppWindowLauncherController::RegisterApp(AppWindow* app_window) {
   window->AddObserver(this);
 
   // Find or create an item controller and launcher item.
-  std::string app_id = app_window->extension()->id();
+  std::string app_id = app_window->extension_id();
   ash::ShelfItemStatus status = ash::wm::IsActiveWindow(window)
                                     ? ash::STATUS_ACTIVE
                                     : ash::STATUS_RUNNING;

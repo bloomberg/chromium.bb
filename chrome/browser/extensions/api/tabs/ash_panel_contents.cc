@@ -140,8 +140,7 @@ void AshPanelWindowController::SetFullscreenMode(
 
 bool AshPanelWindowController::IsVisibleToExtension(
     const extensions::Extension* extension) const {
-  return app_window_->extension() &&
-         extension->id() == app_window_->extension()->id();
+  return extension->id() == app_window_->extension_id();
 }
 
 void AshPanelWindowController::NativeWindowChanged() {

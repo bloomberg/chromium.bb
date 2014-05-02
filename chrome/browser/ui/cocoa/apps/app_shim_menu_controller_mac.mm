@@ -282,8 +282,13 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
   if ([name isEqualToString:NSWindowDidBecomeMainNotification]) {
     apps::AppWindow* appWindow =
         apps::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(window);
+
+    const extensions::Extension* extension = NULL;
     if (appWindow)
-      [self addMenuItems:appWindow->extension()];
+      extension = appWindow->GetExtension();
+
+    if (extension)
+      [self addMenuItems:extension];
     else
       [self removeMenuItems];
   } else if ([name isEqualToString:NSWindowWillCloseNotification]) {

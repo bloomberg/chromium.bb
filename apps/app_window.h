@@ -250,7 +250,6 @@ class AppWindow : public content::NotificationObserver,
 
   const std::string& window_key() const { return window_key_; }
   const SessionID& session_id() const { return session_id_; }
-  const extensions::Extension* extension() const { return extension_; }
   const std::string& extension_id() const { return extension_id_; }
   content::WebContents* web_contents() const;
   WindowType window_type() const { return window_type_; }
@@ -264,6 +263,7 @@ class AppWindow : public content::NotificationObserver,
   const gfx::Image& badge_icon() const { return badge_icon_; }
   const GURL& badge_icon_url() const { return badge_icon_url_; }
 
+  const extensions::Extension* GetExtension() const;
   NativeAppWindow* GetBaseWindow();
   gfx::NativeWindow GetNativeWindow();
 
@@ -473,8 +473,6 @@ class AppWindow : public content::NotificationObserver,
   // not own this object.
   content::BrowserContext* browser_context_;
 
-  // weak pointer - owned by ExtensionService.
-  const extensions::Extension* extension_;
   const std::string extension_id_;
 
   // Identifier that is used when saving and restoring geometry for this

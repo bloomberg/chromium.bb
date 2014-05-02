@@ -35,7 +35,7 @@ std::string GetWindowKeyForRenderViewHost(
   if (app_window->window_key().empty())
     return app_window->web_contents()->GetURL().possibly_invalid_spec();
 
-  std::string key = app_window->extension()->id();
+  std::string key = app_window->extension_id();
   key += ':';
   key += app_window->window_key();
   return key;
@@ -165,7 +165,7 @@ AppWindow* AppWindowRegistry::GetCurrentAppWindowForApp(
   for (AppWindowList::const_iterator i = app_windows_.begin();
        i != app_windows_.end();
        ++i) {
-    if ((*i)->extension()->id() == app_id) {
+    if ((*i)->extension_id() == app_id) {
       result = *i;
       if (result->GetBaseWindow()->IsActive())
         return result;
@@ -182,7 +182,7 @@ AppWindow* AppWindowRegistry::GetAppWindowForAppAndKey(
   for (AppWindowList::const_iterator i = app_windows_.begin();
        i != app_windows_.end();
        ++i) {
-    if ((*i)->extension()->id() == app_id && (*i)->window_key() == window_key) {
+    if ((*i)->extension_id() == app_id && (*i)->window_key() == window_key) {
       result = *i;
       if (result->GetBaseWindow()->IsActive())
         return result;

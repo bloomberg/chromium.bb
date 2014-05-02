@@ -204,9 +204,8 @@ void ChromeNativeAppWindowViews::OnBeforeWidgetInit(
 
 void ChromeNativeAppWindowViews::InitializeDefaultWindow(
     const AppWindow::CreateParams& create_params) {
-  std::string app_name =
-      web_app::GenerateApplicationNameFromExtensionId(
-          app_window()->extension()->id());
+  std::string app_name = web_app::GenerateApplicationNameFromExtensionId(
+      app_window()->extension_id());
 
   views::Widget::InitParams init_params(views::Widget::InitParams::TYPE_WINDOW);
   init_params.delegate = this;

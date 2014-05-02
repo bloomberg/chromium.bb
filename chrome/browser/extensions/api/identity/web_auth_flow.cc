@@ -110,7 +110,7 @@ void WebAuthFlow::DetachDelegateAndDelete() {
 
 void WebAuthFlow::OnAppWindowAdded(AppWindow* app_window) {
   if (app_window->window_key() == app_window_key_ &&
-      app_window->extension()->id() == extension_misc::kIdentityApiUiAppId) {
+      app_window->extension_id() == extension_misc::kIdentityApiUiAppId) {
     app_window_ = app_window;
     WebContentsObserver::Observe(app_window->web_contents());
 
@@ -125,7 +125,7 @@ void WebAuthFlow::OnAppWindowIconChanged(AppWindow* app_window) {}
 
 void WebAuthFlow::OnAppWindowRemoved(AppWindow* app_window) {
   if (app_window->window_key() == app_window_key_ &&
-      app_window->extension()->id() == extension_misc::kIdentityApiUiAppId) {
+      app_window->extension_id() == extension_misc::kIdentityApiUiAppId) {
     app_window_ = NULL;
     registrar_.RemoveAll();
 

@@ -1184,7 +1184,7 @@ class PlatformAppIncognitoBrowserTest : public PlatformAppBrowserTest,
 
   // AppWindowRegistry::Observer implementation.
   virtual void OnAppWindowAdded(AppWindow* app_window) OVERRIDE {
-    opener_app_ids_.insert(app_window->extension()->id());
+    opener_app_ids_.insert(app_window->extension_id());
   }
   virtual void OnAppWindowIconChanged(AppWindow* app_window) OVERRIDE {}
   virtual void OnAppWindowRemoved(AppWindow* app_window) OVERRIDE {}

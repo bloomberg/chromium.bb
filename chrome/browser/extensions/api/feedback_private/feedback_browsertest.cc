@@ -65,7 +65,7 @@ class FeedbackTest : public ExtensionBrowserTest {
     AppWindow* window =
         PlatformAppBrowserTest::GetFirstAppWindowForBrowser(browser());
     ASSERT_TRUE(window);
-    const Extension* feedback_app = window->extension();
+    const Extension* feedback_app = window->GetExtension();
     ASSERT_TRUE(feedback_app);
     EXPECT_EQ(feedback_app->id(), std::string(kFeedbackExtensionId));
   }
