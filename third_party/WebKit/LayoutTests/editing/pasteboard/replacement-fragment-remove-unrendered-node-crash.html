@@ -10,7 +10,7 @@ if (window.testRunner)
 var e = document.getElementById("test");
 var s = window.getSelection();
 
-s.setPosition(e, 10500000000);
+s.setPosition(e, e.childNodes.length);
 insertHTMLCommand("<noscript>baz");
 </script>
 </html>

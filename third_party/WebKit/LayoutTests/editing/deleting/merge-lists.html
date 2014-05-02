@@ -10,7 +10,7 @@
 <script>
 var li = document.getElementById("li");
 var selection = window.getSelection();
-selection.collapse(li, li.childNodes[0].length);
+selection.collapse(li, li.childNodes.length);
 document.execCommand("forwardDelete");
 Markup.description(document.getElementById('description').textContent);
 Markup.dump(document.querySelector('div'));
