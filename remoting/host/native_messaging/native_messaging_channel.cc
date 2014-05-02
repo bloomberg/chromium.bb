@@ -17,24 +17,23 @@
 
 namespace {
 
-base::PlatformFile DuplicatePlatformFile(base::PlatformFile handle) {
+base::File DuplicatePlatformFile(base::File file) {
   base::PlatformFile result;
 #if defined(OS_WIN)
   if (!DuplicateHandle(GetCurrentProcess(),
-                       handle,
+                       file.TakePlatformFile(),
                        GetCurrentProcess(),
                        &result,
                        0,
                        FALSE,
                        DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
-    PLOG(ERROR) << "Failed to duplicate handle " << handle;
-    return base::kInvalidPlatformFileValue;
+    PLOG(ERROR) << "Failed to duplicate handle " << file.GetPlatformFile();
+    return base::File();
   }
-  return result;
+  return base::File(result);
 #elif defined(OS_POSIX)
-  result = dup(handle);
-  base::ClosePlatformFile(handle);
-  return result;
+  result = dup(file.GetPlatformFile());
+  return base::File(result);
 #else
 #error Not implemented.
 #endif
@@ -45,11 +44,11 @@ base::PlatformFile DuplicatePlatformFile(base::PlatformFile handle) {
 namespace remoting {
 
 NativeMessagingChannel::NativeMessagingChannel(
-    base::PlatformFile input,
-    base::PlatformFile output)
-    : native_messaging_reader_(DuplicatePlatformFile(input)),
+    base::File input,
+    base::File output)
+    : native_messaging_reader_(DuplicatePlatformFile(input.Pass())),
       native_messaging_writer_(new NativeMessagingWriter(
-          DuplicatePlatformFile(output))),
+          DuplicatePlatformFile(output.Pass()))),
       weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }

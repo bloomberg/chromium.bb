@@ -29,8 +29,8 @@ const size_t kMaximumMessageSize = 1024 * 1024;
 
 namespace remoting {
 
-NativeMessagingWriter::NativeMessagingWriter(base::PlatformFile handle)
-    : write_stream_(handle),
+NativeMessagingWriter::NativeMessagingWriter(base::File file)
+    : write_stream_(file.Pass()),
       fail_(false) {
 }
 

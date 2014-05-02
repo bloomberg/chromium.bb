@@ -35,7 +35,7 @@ namespace remoting {
 
 class NativeMessagingReader::Core {
  public:
-  Core(base::PlatformFile handle,
+  Core(base::File file,
        scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
        scoped_refptr<base::SequencedTaskRunner> read_task_runner,
        base::WeakPtr<NativeMessagingReader> reader_);
@@ -63,11 +63,11 @@ class NativeMessagingReader::Core {
 };
 
 NativeMessagingReader::Core::Core(
-    base::PlatformFile handle,
+    base::File file,
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SequencedTaskRunner> read_task_runner,
     base::WeakPtr<NativeMessagingReader> reader)
-    : read_stream_(handle),
+    : read_stream_(file.Pass()),
       reader_(reader),
       caller_task_runner_(caller_task_runner),
       read_task_runner_(read_task_runner) {
@@ -130,12 +130,12 @@ void NativeMessagingReader::Core::NotifyEof() {
       base::Bind(&NativeMessagingReader::InvokeEofCallback, reader_));
 }
 
-NativeMessagingReader::NativeMessagingReader(base::PlatformFile handle)
+NativeMessagingReader::NativeMessagingReader(base::File file)
     : reader_thread_("Reader"),
       weak_factory_(this) {
   reader_thread_.Start();
   read_task_runner_ = reader_thread_.message_loop_proxy();
-  core_.reset(new Core(handle, base::ThreadTaskRunnerHandle::Get(),
+  core_.reset(new Core(file.Pass(), base::ThreadTaskRunnerHandle::Get(),
                        read_task_runner_, weak_factory_.GetWeakPtr()));
 }
 

@@ -102,8 +102,8 @@ int StartMe2MeNativeMessagingHost() {
     }
   }
 
-  base::PlatformFile read_file;
-  base::PlatformFile write_file;
+  base::File read_file;
+  base::File write_file;
   bool needs_elevation = false;
 
 #if defined(OS_WIN)
@@ -126,19 +126,19 @@ int StartMe2MeNativeMessagingHost() {
       command_line->GetSwitchValueNative(kOutputSwitchName);
 
     // A NULL SECURITY_ATTRIBUTES signifies that the handle can't be inherited
-    read_file = CreateFile(
+    read_file = base::File(CreateFile(
         input_pipe_name.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL, NULL);
-    if (read_file == INVALID_HANDLE_VALUE) {
+        FILE_ATTRIBUTE_NORMAL, NULL));
+    if (!read_file.IsValid()) {
       LOG_GETLASTERROR(ERROR) <<
           "CreateFile failed on '" << input_pipe_name << "'";
       return kInitializationFailed;
     }
 
-    write_file = CreateFile(
+    write_file = base::File(CreateFile(
         output_pipe_name.c_str(), GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL, NULL);
-    if (write_file == INVALID_HANDLE_VALUE) {
+        FILE_ATTRIBUTE_NORMAL, NULL));
+    if (!write_file.IsValid()) {
       LOG_GETLASTERROR(ERROR) <<
           "CreateFile failed on '" << output_pipe_name << "'";
       return kInitializationFailed;
@@ -148,8 +148,8 @@ int StartMe2MeNativeMessagingHost() {
     // the hosting executable specifies "Windows" subsystem. However the
     // returned handles are invalid in that case unless standard input and
     // output are redirected to a pipe or file.
-    read_file = GetStdHandle(STD_INPUT_HANDLE);
-    write_file = GetStdHandle(STD_OUTPUT_HANDLE);
+    read_file = base::File(GetStdHandle(STD_INPUT_HANDLE));
+    write_file = base::File(GetStdHandle(STD_OUTPUT_HANDLE));
 
     // After the native messaging channel starts the native messaging reader
     // will keep doing blocking read operations on the input named pipe.
@@ -163,8 +163,9 @@ int StartMe2MeNativeMessagingHost() {
     SetStdHandle(STD_OUTPUT_HANDLE, NULL);
   }
 #elif defined(OS_POSIX)
-  read_file = STDIN_FILENO;
-  write_file = STDOUT_FILENO;
+  // The files will be automatically closed.
+  read_file = base::File(STDIN_FILENO);
+  write_file = base::File(STDOUT_FILENO);
 #else
 #error Not implemented.
 #endif
@@ -229,7 +230,7 @@ int StartMe2MeNativeMessagingHost() {
 
   // Set up the native messaging channel.
   scoped_ptr<NativeMessagingChannel> channel(
-      new NativeMessagingChannel(read_file, write_file));
+      new NativeMessagingChannel(read_file.Pass(), write_file.Pass()));
 
   // Create the native messaging host.
   scoped_ptr<Me2MeNativeMessagingHost> host(

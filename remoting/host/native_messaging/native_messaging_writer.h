@@ -6,7 +6,6 @@
 #define REMOTING_HOST_NATIVE_MESSAGING_NATIVE_MESSAGING_WRITER_H_
 
 #include "base/files/file.h"
-#include "base/platform_file.h"
 
 namespace base {
 class Value;
@@ -18,7 +17,7 @@ namespace remoting {
 // webapp.
 class NativeMessagingWriter {
  public:
-  explicit NativeMessagingWriter(base::PlatformFile handle);
+  explicit NativeMessagingWriter(base::File file);
   ~NativeMessagingWriter();
 
   // Sends a message to the Native Messaging client, returning true if

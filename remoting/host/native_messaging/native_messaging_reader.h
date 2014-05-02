@@ -7,9 +7,9 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "base/threading/thread.h"
 
 namespace base {
@@ -25,7 +25,7 @@ class NativeMessagingReader {
  public:
   typedef base::Callback<void(scoped_ptr<base::Value>)> MessageCallback;
 
-  explicit NativeMessagingReader(base::PlatformFile handle);
+  explicit NativeMessagingReader(base::File file);
   ~NativeMessagingReader();
 
   // Begin reading messages from the Native Messaging client webapp, calling

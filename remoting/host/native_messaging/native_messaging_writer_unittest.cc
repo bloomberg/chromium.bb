@@ -21,13 +21,11 @@ class NativeMessagingWriterTest : public testing::Test {
   virtual ~NativeMessagingWriterTest();
 
   virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
 
  protected:
   scoped_ptr<NativeMessagingWriter> writer_;
-  base::PlatformFile read_handle_;
-  base::PlatformFile write_handle_;
-  bool read_handle_open_;
+  base::File read_file_;
+  base::File write_file_;
 };
 
 NativeMessagingWriterTest::NativeMessagingWriterTest() {}
@@ -35,17 +33,8 @@ NativeMessagingWriterTest::NativeMessagingWriterTest() {}
 NativeMessagingWriterTest::~NativeMessagingWriterTest() {}
 
 void NativeMessagingWriterTest::SetUp() {
-  ASSERT_TRUE(MakePipe(&read_handle_, &write_handle_));
-  writer_.reset(new NativeMessagingWriter(write_handle_));
-  read_handle_open_ = true;
-}
-
-void NativeMessagingWriterTest::TearDown() {
-  // |write_handle_| is owned by NativeMessagingWriter's FileStream, so don't
-  // try to close it here. And close |read_handle_| only if it hasn't
-  // already been closed.
-  if (read_handle_open_)
-    base::ClosePlatformFile(read_handle_);
+  ASSERT_TRUE(MakePipe(&read_file_, &write_file_));
+  writer_.reset(new NativeMessagingWriter(write_file_.Pass()));
 }
 
 TEST_F(NativeMessagingWriterTest, GoodMessage) {
@@ -55,12 +44,10 @@ TEST_F(NativeMessagingWriterTest, GoodMessage) {
 
   // Read from the pipe and verify the content.
   uint32 length;
-  int read = base::ReadPlatformFileAtCurrentPos(
-      read_handle_, reinterpret_cast<char*>(&length), 4);
+  int read = read_file_.ReadAtCurrentPos(reinterpret_cast<char*>(&length), 4);
   EXPECT_EQ(4, read);
   std::string content(length, '\0');
-  read = base::ReadPlatformFileAtCurrentPos(read_handle_,
-                                            string_as_array(&content), length);
+  read = read_file_.ReadAtCurrentPos(string_as_array(&content), length);
   EXPECT_EQ(static_cast<int>(length), read);
 
   // |content| should now contain serialized |message|.
@@ -71,7 +58,7 @@ TEST_F(NativeMessagingWriterTest, GoodMessage) {
   // and verify the read end immediately hits EOF.
   writer_.reset(NULL);
   char unused;
-  read = base::ReadPlatformFileAtCurrentPos(read_handle_, &unused, 1);
+  read = read_file_.ReadAtCurrentPos(&unused, 1);
   EXPECT_LE(read, 0);
 }
 
@@ -88,13 +75,10 @@ TEST_F(NativeMessagingWriterTest, SecondMessage) {
   int read;
   std::string content;
   for (int i = 0; i < 2; i++) {
-    read = base::ReadPlatformFileAtCurrentPos(
-        read_handle_, reinterpret_cast<char*>(&length), 4);
+    read = read_file_.ReadAtCurrentPos(reinterpret_cast<char*>(&length), 4);
     EXPECT_EQ(4, read) << "i = " << i;
     content.resize(length);
-    read = base::ReadPlatformFileAtCurrentPos(read_handle_,
-                                              string_as_array(&content),
-                                              length);
+    read = read_file_.ReadAtCurrentPos(string_as_array(&content), length);
     EXPECT_EQ(static_cast<int>(length), read) << "i = " << i;
   }
 
@@ -105,8 +89,7 @@ TEST_F(NativeMessagingWriterTest, SecondMessage) {
 
 TEST_F(NativeMessagingWriterTest, FailedWrite) {
   // Close the read end so that writing fails immediately.
-  base::ClosePlatformFile(read_handle_);
-  read_handle_open_ = false;
+  read_file_.Close();
 
   base::DictionaryValue message;
   EXPECT_FALSE(writer_->WriteMessage(message));

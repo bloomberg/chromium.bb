@@ -6,10 +6,10 @@
 #define REMOTING_HOST_NATIVE_MESSAGING_NATIVE_MESSAGING_CHANNEL_H_
 
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/host/native_messaging/native_messaging_reader.h"
 #include "remoting/host/native_messaging/native_messaging_writer.h"
@@ -31,7 +31,7 @@ class NativeMessagingChannel : public base::NonThreadSafe {
 
   // Constructs an object taking the ownership of |input| and |output|. Closes
   // |input| and |output| to prevent the caller from using them.
-  NativeMessagingChannel(base::PlatformFile input, base::PlatformFile output);
+  NativeMessagingChannel(base::File input, base::File output);
   ~NativeMessagingChannel();
 
   // Starts reading and processing messages.

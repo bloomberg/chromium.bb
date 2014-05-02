@@ -81,8 +81,8 @@ int StartIt2MeNativeMessagingHost() {
   // the hosting executable specifies "Windows" subsystem. However the returned
   // handles are invalid in that case unless standard input and output are
   // redirected to a pipe or file.
-  base::PlatformFile read_file = GetStdHandle(STD_INPUT_HANDLE);
-  base::PlatformFile write_file = GetStdHandle(STD_OUTPUT_HANDLE);
+  base::File read_file(GetStdHandle(STD_INPUT_HANDLE));
+  base::File write_file(GetStdHandle(STD_OUTPUT_HANDLE));
 
   // After the native messaging channel starts the native messaging reader
   // will keep doing blocking read operations on the input named pipe.
@@ -95,8 +95,9 @@ int StartIt2MeNativeMessagingHost() {
   SetStdHandle(STD_INPUT_HANDLE, NULL);
   SetStdHandle(STD_OUTPUT_HANDLE, NULL);
 #elif defined(OS_POSIX)
-  base::PlatformFile read_file = STDIN_FILENO;
-  base::PlatformFile write_file = STDOUT_FILENO;
+  // The files are automatically closed.
+  base::File read_file(STDIN_FILENO);
+  base::File write_file(STDOUT_FILENO);
 #else
 #error Not implemented.
 #endif
@@ -112,7 +113,7 @@ int StartIt2MeNativeMessagingHost() {
 
   // Set up the native messaging channel.
   scoped_ptr<NativeMessagingChannel> channel(
-      new NativeMessagingChannel(read_file, write_file));
+      new NativeMessagingChannel(read_file.Pass(), write_file.Pass()));
 
   scoped_ptr<It2MeNativeMessagingHost> host(
       new It2MeNativeMessagingHost(

@@ -661,7 +661,8 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
   // Set up the native messaging channel to talk to the elevated host.
   // Note that input for the elevate channel is output forthe elevated host.
   elevated_channel_.reset(new NativeMessagingChannel(
-      delegate_read_handle.Take(), delegate_write_handle.Take()));
+      base::File(delegate_read_handle.Take()),
+      base::File(delegate_write_handle.Take())));
 
   elevated_channel_->Start(
       base::Bind(&Me2MeNativeMessagingHost::ProcessDelegateResponse, weak_ptr_),

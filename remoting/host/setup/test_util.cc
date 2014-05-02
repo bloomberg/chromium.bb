@@ -12,15 +12,21 @@
 
 namespace remoting {
 
-bool MakePipe(base::PlatformFile* read_handle,
-              base::PlatformFile* write_handle) {
+bool MakePipe(base::File* read_file,
+              base::File* write_file) {
 #if defined(OS_WIN)
-  return CreatePipe(read_handle, write_handle, NULL, 0) != FALSE;
+  base::PlatformFile read_handle;
+  base::PlatformFile write_handle;
+  if (!CreatePipe(&read_handle, &write_handle, NULL, 0))
+    return false;
+  *read_file = base::File(read_handle);
+  *write_file = base::File(write_handle);
+  return true;
 #elif defined(OS_POSIX)
   int fds[2];
   if (pipe(fds) == 0) {
-    *read_handle = fds[0];
-    *write_handle = fds[1];
+    *read_file = base::File(fds[0]);
+    *write_file = base::File(fds[1]);
     return true;
   }
   return false;

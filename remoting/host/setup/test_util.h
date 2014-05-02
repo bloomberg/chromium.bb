@@ -5,15 +5,14 @@
 #ifndef REMOTING_HOST_SETUP_TEST_UTIL_H_
 #define REMOTING_HOST_SETUP_TEST_UTIL_H_
 
-#include "base/platform_file.h"
+#include "base/files/file.h"
 
 namespace remoting {
 
 // Creates an anonymous, unidirectional pipe, returning true if successful. On
-// success, the caller is responsible for closing both ends using
-// base::ClosePlatformFile().
-bool MakePipe(base::PlatformFile* read_handle,
-              base::PlatformFile* write_handle);
+// success, the receives ownership of both files.
+bool MakePipe(base::File* read_file,
+              base::File* write_file);
 
 }  // namespace remoting
 
