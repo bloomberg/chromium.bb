@@ -54,7 +54,6 @@ public:
         : m_baseURL("http://www.test.com/")
     {
         m_helper.initialize(true, 0, &m_mockWebViewClient, &configureSettings);
-        webViewImpl()->resize(IntSize(320, 240));
     }
 
     virtual ~PinchViewportTest()
@@ -116,6 +115,7 @@ private:
 // size should be clamped.
 TEST_F(PinchViewportTest, TestResize)
 {
+    webViewImpl()->resize(IntSize(320, 240));
     navigateTo("about:blank");
     forceFullCompositingUpdate();
 
@@ -170,6 +170,7 @@ TEST_F(PinchViewportTest, TestResize)
 // of the viewport.
 TEST_F(PinchViewportTest, TestVisibleRect)
 {
+    webViewImpl()->resize(IntSize(320, 240));
     navigateTo("about:blank");
     forceFullCompositingUpdate();
 
@@ -217,6 +218,7 @@ TEST_F(PinchViewportTest, TestVisibleRect)
 // pinch viewport always stays within the bounds of the main frame.
 TEST_F(PinchViewportTest, TestOffsetClamping)
 {
+    webViewImpl()->resize(IntSize(320, 240));
     navigateTo("about:blank");
     forceFullCompositingUpdate();
 
@@ -259,6 +261,7 @@ TEST_F(PinchViewportTest, TestOffsetClamping)
 // of viewport resizes, as would be the case if the on screen keyboard came up.
 TEST_F(PinchViewportTest, TestOffsetClampingWithResize)
 {
+    webViewImpl()->resize(IntSize(320, 240));
     navigateTo("about:blank");
     forceFullCompositingUpdate();
 
@@ -308,6 +311,7 @@ TEST_F(PinchViewportTest, TestOffsetClampingWithResize)
 // when we apply both scaling and resizes.
 TEST_F(PinchViewportTest, TestOffsetClampingWithResizeAndScale)
 {
+    webViewImpl()->resize(IntSize(320, 240));
     navigateTo("about:blank");
     forceFullCompositingUpdate();
 
@@ -359,5 +363,19 @@ TEST_F(PinchViewportTest, TestOffsetClampingWithResizeAndScale)
     EXPECT_FLOAT_POINT_EQ(FloatPoint(180, 135), pinchViewport.visibleRect().location());
     pinchViewport.setLocation(FloatPoint(1000, 1000));
     EXPECT_FLOAT_POINT_EQ(FloatPoint(180, 135), pinchViewport.visibleRect().location());
+}
+
+// Test that the pinch viewport still gets sized in AutoSize/AutoResize mode.
+TEST_F(PinchViewportTest, TestPinchViewportGetsSizeInAutoSizeMode)
+{
+    EXPECT_SIZE_EQ(IntSize(0, 0), IntSize(webViewImpl()->size()));
+    EXPECT_SIZE_EQ(IntSize(0, 0), frame()->page()->frameHost().pinchViewport().size());
+
+    webViewImpl()->enableAutoResizeMode(WebSize(10, 10), WebSize(1000, 1000));
+
+    registerMockedHttpURLLoad("200-by-300.html");
+    navigateTo(m_baseURL + "200-by-300.html");
+
+    EXPECT_SIZE_EQ(IntSize(200, 300), frame()->page()->frameHost().pinchViewport().size());
 }
 } // namespace

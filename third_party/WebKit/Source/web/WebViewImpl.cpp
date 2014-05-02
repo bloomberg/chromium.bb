@@ -3592,6 +3592,9 @@ void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe)
         WebSize frameSize = mainFrameImpl()->frame()->view()->frameRect().size();
         if (frameSize != m_size) {
             m_size = frameSize;
+
+            page()->frameHost().pinchViewport().setSize(m_size);
+
             m_client->didAutoResize(m_size);
             sendResizeEventAndRepaint();
         }
