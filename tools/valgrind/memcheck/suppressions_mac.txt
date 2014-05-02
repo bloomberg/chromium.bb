@@ -2385,3 +2385,21 @@
    fun:_ZN4base9TestSuite3RunEv
    fun:_ZN7content17UnitTestTestSuite3RunEv
 }
+{
+   bug_369597
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:ImageProviderCopyImageBlockSetCallback
+   fun:CGImageProviderCopyImageBlockSet
+   fun:img_blocks_create
+   fun:img_data_lock
+   fun:CGSImageDataLock
+   fun:ripc_AcquireImage
+   fun:ripc_DrawImage
+   fun:CGContextDrawImage
+   ...
+   fun:_ZN12_GLOBAL__N_143NSImageOrNSImageRepToSkBitmapWithColorSpaceEP7NSImageP10NSImageRep7_NSSizebP12CGColorSpace
+   fun:_ZN3gfx31NSImageToSkBitmapWithColorSpaceEP7NSImagebP12CGColorSpace
+   fun:_ZNK2ui9Clipboard9ReadImageENS_13ClipboardTypeE
+}
