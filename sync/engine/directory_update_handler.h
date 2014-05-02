@@ -32,6 +32,7 @@ namespace syncable {
 class Directory;
 }
 
+class DirectoryTypeDebugInfoEmitter;
 class ModelSafeWorker;
 
 // This class represents the syncable::Directory's processes for requesting and
@@ -44,7 +45,8 @@ class SYNC_EXPORT_PRIVATE DirectoryUpdateHandler : public UpdateHandler {
  public:
   DirectoryUpdateHandler(syncable::Directory* dir,
                          ModelType type,
-                         scoped_refptr<ModelSafeWorker> worker);
+                         scoped_refptr<ModelSafeWorker> worker,
+                         DirectoryTypeDebugInfoEmitter* debug_info_emitter);
   virtual ~DirectoryUpdateHandler();
 
   // UpdateHandler implementation.
@@ -93,6 +95,7 @@ class SYNC_EXPORT_PRIVATE DirectoryUpdateHandler : public UpdateHandler {
   syncable::Directory* dir_;
   ModelType type_;
   scoped_refptr<ModelSafeWorker> worker_;
+  DirectoryTypeDebugInfoEmitter* debug_info_emitter_;
 
   scoped_ptr<sync_pb::GarbageCollectionDirective> cached_gc_directive_;
 

@@ -18,6 +18,8 @@ namespace syncable {
 class Directory;
 }
 
+class DirectoryTypeDebugInfoEmitter;
+
 // This class represents the syncable::Directory as a source of items to commit
 // to the sync server.
 //
@@ -27,7 +29,9 @@ class Directory;
 // of a DirectoryCommitContribution.
 class DirectoryCommitContributor : public CommitContributor {
  public:
-  DirectoryCommitContributor(syncable::Directory* dir, ModelType type);
+  DirectoryCommitContributor(syncable::Directory* dir,
+                             ModelType type,
+                             DirectoryTypeDebugInfoEmitter* debug_info_emitter);
   virtual ~DirectoryCommitContributor();
 
   virtual scoped_ptr<CommitContribution> GetContribution(
@@ -36,6 +40,8 @@ class DirectoryCommitContributor : public CommitContributor {
  private:
   syncable::Directory* dir_;
   ModelType type_;
+
+  DirectoryTypeDebugInfoEmitter* debug_info_emitter_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectoryCommitContributor);
 };

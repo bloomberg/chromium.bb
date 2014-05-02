@@ -11,6 +11,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/test/test_entry_factory.h"
 #include "sync/protocol/sync.pb.h"
+#include "sync/sessions/directory_type_debug_info_emitter.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/entry.h"
@@ -55,6 +56,7 @@ class DirectoryUpdateHandlerProcessUpdateTest : public ::testing::Test {
   syncable::Directory* dir() {
     return dir_maker_.directory();
   }
+
  protected:
   scoped_ptr<sync_pb::SyncEntity> CreateUpdate(
       const std::string& id,
@@ -123,7 +125,8 @@ static const char kCacheGuid[] = "IrcjZ2jyzHDV9Io4+zKcXQ==";
 
 // Test that the bookmark tag is set on newly downloaded items.
 TEST_F(DirectoryUpdateHandlerProcessUpdateTest, NewBookmarkTag) {
-  DirectoryUpdateHandler handler(dir(), BOOKMARKS, ui_worker());
+  DirectoryTypeDebugInfoEmitter emitter;
+  DirectoryUpdateHandler handler(dir(), BOOKMARKS, ui_worker(), &emitter);
   sync_pb::GetUpdatesResponse gu_response;
   sessions::StatusController status;
 
@@ -161,7 +164,8 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, NewBookmarkTag) {
 // Test the receipt of a type root node.
 TEST_F(DirectoryUpdateHandlerProcessUpdateTest,
        ReceiveServerCreatedBookmarkFolders) {
-  DirectoryUpdateHandler handler(dir(), BOOKMARKS, ui_worker());
+  DirectoryTypeDebugInfoEmitter emitter;
+  DirectoryUpdateHandler handler(dir(), BOOKMARKS, ui_worker(), &emitter);
   sync_pb::GetUpdatesResponse gu_response;
   sessions::StatusController status;
 
@@ -195,7 +199,8 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest,
 
 // Test the receipt of a non-bookmark item.
 TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ReceiveNonBookmarkItem) {
-  DirectoryUpdateHandler handler(dir(), AUTOFILL, ui_worker());
+  DirectoryTypeDebugInfoEmitter emitter;
+  DirectoryUpdateHandler handler(dir(), AUTOFILL, ui_worker(), &emitter);
   sync_pb::GetUpdatesResponse gu_response;
   sessions::StatusController status;
 
@@ -226,7 +231,8 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ReceiveNonBookmarkItem) {
 
 // Tests the setting of progress markers.
 TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ProcessNewProgressMarkers) {
-  DirectoryUpdateHandler handler(dir(), BOOKMARKS, ui_worker());
+  DirectoryTypeDebugInfoEmitter emitter;
+  DirectoryUpdateHandler handler(dir(), BOOKMARKS, ui_worker(), &emitter);
 
   sync_pb::DataTypeProgressMarker progress;
   progress.set_data_type_id(GetSpecificsFieldNumberFromModelType(BOOKMARKS));
@@ -242,7 +248,9 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ProcessNewProgressMarkers) {
 }
 
 TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByVersion) {
-  DirectoryUpdateHandler handler(dir(), SYNCED_NOTIFICATIONS, ui_worker());
+  DirectoryTypeDebugInfoEmitter emitter;
+  DirectoryUpdateHandler handler(dir(), SYNCED_NOTIFICATIONS,
+                                 ui_worker(), &emitter);
   sessions::StatusController status;
 
   sync_pb::DataTypeProgressMarker progress;
@@ -305,7 +313,9 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByVersion) {
 }
 
 TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ContextVersion) {
-  DirectoryUpdateHandler handler(dir(), SYNCED_NOTIFICATIONS, ui_worker());
+  DirectoryTypeDebugInfoEmitter emitter;
+  DirectoryUpdateHandler handler(dir(), SYNCED_NOTIFICATIONS,
+                                 ui_worker(), &emitter);
   sessions::StatusController status;
   int field_number = GetSpecificsFieldNumberFromModelType(SYNCED_NOTIFICATIONS);
 
@@ -411,12 +421,14 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
 
     update_handler_map_.insert(std::make_pair(
         BOOKMARKS,
-        new DirectoryUpdateHandler(directory(), BOOKMARKS, ui_worker_)));
+        new DirectoryUpdateHandler(directory(), BOOKMARKS,
+                                   ui_worker_, &bookmarks_emitter_)));
     update_handler_map_.insert(std::make_pair(
         PASSWORDS,
         new DirectoryUpdateHandler(directory(),
-                                       PASSWORDS,
-                                       password_worker_)));
+                                   PASSWORDS,
+                                   password_worker_,
+                                   &passwords_emitter_)));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -450,6 +462,9 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
   scoped_refptr<FakeModelWorker> ui_worker_;
   scoped_refptr<FakeModelWorker> password_worker_;
   scoped_refptr<FakeModelWorker> passive_worker_;
+
+  DirectoryTypeDebugInfoEmitter bookmarks_emitter_;
+  DirectoryTypeDebugInfoEmitter passwords_emitter_;
 
   UpdateHandlerMap update_handler_map_;
   STLValueDeleter<UpdateHandlerMap> update_handler_map_deleter_;

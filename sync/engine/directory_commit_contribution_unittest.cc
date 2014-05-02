@@ -85,8 +85,9 @@ TEST_F(DirectoryCommitContributionTest, GatherByTypes) {
     CreateUnsyncedItem(&trans, EXTENSIONS, "extension1");
   }
 
+  DirectoryTypeDebugInfoEmitter emitter;
   scoped_ptr<DirectoryCommitContribution> cc(
-      DirectoryCommitContribution::Build(dir(), PREFERENCES, 5));
+      DirectoryCommitContribution::Build(dir(), PREFERENCES, 5, &emitter));
   ASSERT_EQ(2U, cc->GetNumEntries());
 
   const std::vector<int64>& metahandles = cc->metahandles_;
@@ -110,8 +111,9 @@ TEST_F(DirectoryCommitContributionTest, GatherAndTruncate) {
     CreateUnsyncedItem(&trans, EXTENSIONS, "extension1");
   }
 
+  DirectoryTypeDebugInfoEmitter emitter;
   scoped_ptr<DirectoryCommitContribution> cc(
-      DirectoryCommitContribution::Build(dir(), PREFERENCES, 1));
+      DirectoryCommitContribution::Build(dir(), PREFERENCES, 1, &emitter));
   ASSERT_EQ(1U, cc->GetNumEntries());
 
   int64 only_metahandle = cc->metahandles_[0];
@@ -132,10 +134,12 @@ TEST_F(DirectoryCommitContributionTest, PrepareCommit) {
     CreateUnsyncedItem(&trans, EXTENSIONS, "extension1");
   }
 
+  DirectoryTypeDebugInfoEmitter emitter1;
+  DirectoryTypeDebugInfoEmitter emitter2;
   scoped_ptr<DirectoryCommitContribution> pref_cc(
-      DirectoryCommitContribution::Build(dir(), PREFERENCES, 25));
+      DirectoryCommitContribution::Build(dir(), PREFERENCES, 25, &emitter1));
   scoped_ptr<DirectoryCommitContribution> ext_cc(
-      DirectoryCommitContribution::Build(dir(), EXTENSIONS, 25));
+      DirectoryCommitContribution::Build(dir(), EXTENSIONS, 25, &emitter2));
 
   sync_pb::ClientToServerMessage message;
   pref_cc->AddToCommitMessage(&message);
@@ -184,10 +188,12 @@ TEST_F(DirectoryCommitContributionTest, ProcessCommitResponse) {
     ext1_handle = CreateUnsyncedItem(&trans, EXTENSIONS, "extension1");
   }
 
+  DirectoryTypeDebugInfoEmitter emitter1;
+  DirectoryTypeDebugInfoEmitter emitter2;
   scoped_ptr<DirectoryCommitContribution> pref_cc(
-      DirectoryCommitContribution::Build(dir(), PREFERENCES, 25));
+      DirectoryCommitContribution::Build(dir(), PREFERENCES, 25, &emitter1));
   scoped_ptr<DirectoryCommitContribution> ext_cc(
-      DirectoryCommitContribution::Build(dir(), EXTENSIONS, 25));
+      DirectoryCommitContribution::Build(dir(), EXTENSIONS, 25, &emitter2));
 
   sync_pb::ClientToServerMessage message;
   pref_cc->AddToCommitMessage(&message);

@@ -7,7 +7,7 @@
 #include "sync/engine/conflict_resolver.h"
 #include "sync/engine/process_updates_util.h"
 #include "sync/engine/update_applicator.h"
-#include "sync/sessions/status_controller.h"
+#include "sync/sessions/directory_type_debug_info_emitter.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/syncable_model_neutral_write_transaction.h"
 #include "sync/syncable/syncable_write_transaction.h"
@@ -19,10 +19,12 @@ using syncable::SYNCER;
 DirectoryUpdateHandler::DirectoryUpdateHandler(
     syncable::Directory* dir,
     ModelType type,
-    scoped_refptr<ModelSafeWorker> worker)
+    scoped_refptr<ModelSafeWorker> worker,
+    DirectoryTypeDebugInfoEmitter* debug_info_emitter)
   : dir_(dir),
     type_(type),
-    worker_(worker) {}
+    worker_(worker),
+    debug_info_emitter_(debug_info_emitter) {}
 
 DirectoryUpdateHandler::~DirectoryUpdateHandler() {}
 

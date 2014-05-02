@@ -113,6 +113,24 @@ TEST_F(ModelTypeRegistryTest, SetEnabledDirectoryTypes_Clear) {
   registry()->SetEnabledDirectoryTypes(routing_info2);
 }
 
+// Test disabling then re-enabling some directory types.
+//
+// We don't get to inspect any of the state we're modifying.  This test is
+// useful only for detecting crashes or memory leaks.
+TEST_F(ModelTypeRegistryTest, SetEnabledDirectoryTypes_OffAndOn) {
+  ModelSafeRoutingInfo routing_info1;
+  routing_info1.insert(std::make_pair(NIGORI, GROUP_PASSIVE));
+  routing_info1.insert(std::make_pair(BOOKMARKS, GROUP_UI));
+  routing_info1.insert(std::make_pair(AUTOFILL, GROUP_DB));
+
+  registry()->SetEnabledDirectoryTypes(routing_info1);
+
+  ModelSafeRoutingInfo routing_info2;
+  registry()->SetEnabledDirectoryTypes(routing_info2);
+
+  registry()->SetEnabledDirectoryTypes(routing_info1);
+}
+
 TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
   NonBlockingTypeProcessor themes_processor(syncer::THEMES);
   NonBlockingTypeProcessor sessions_processor(syncer::SESSIONS);

@@ -23,7 +23,10 @@ DirectoryCommitContribution::~DirectoryCommitContribution() {
 scoped_ptr<DirectoryCommitContribution> DirectoryCommitContribution::Build(
     syncable::Directory* dir,
     ModelType type,
-    size_t max_entries) {
+    size_t max_entries,
+    DirectoryTypeDebugInfoEmitter* debug_info_emitter) {
+  DCHECK(debug_info_emitter);
+
   std::vector<int64> metahandles;
 
   syncable::ModelNeutralWriteTransaction trans(FROM_HERE, SYNCER, dir);
@@ -45,7 +48,12 @@ scoped_ptr<DirectoryCommitContribution> DirectoryCommitContribution::Build(
   dir->GetDataTypeContext(&trans, type, &context);
 
   return scoped_ptr<DirectoryCommitContribution>(
-      new DirectoryCommitContribution(metahandles, entities, context, dir));
+      new DirectoryCommitContribution(
+          metahandles,
+          entities,
+          context,
+          dir,
+          debug_info_emitter));
 }
 
 void DirectoryCommitContribution::AddToCommitMessage(
@@ -150,13 +158,15 @@ DirectoryCommitContribution::DirectoryCommitContribution(
     const std::vector<int64>& metahandles,
     const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entities,
     const sync_pb::DataTypeContext& context,
-    syncable::Directory* dir)
+    syncable::Directory* dir,
+    DirectoryTypeDebugInfoEmitter* debug_info_emitter)
     : dir_(dir),
       metahandles_(metahandles),
       entities_(entities),
       context_(context),
       entries_start_index_(0xDEADBEEF),
-      syncing_bits_set_(true) {}
+      syncing_bits_set_(true),
+      debug_info_emitter_(debug_info_emitter) {}
 
 void DirectoryCommitContribution::UnsetSyncingBits() {
   syncable::ModelNeutralWriteTransaction trans(FROM_HERE, SYNCER, dir_);
