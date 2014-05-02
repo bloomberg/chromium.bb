@@ -878,6 +878,7 @@ class SearchURLTest : public SearchTest {
 };
 
 TEST_F(SearchURLTest, QueryExtractionEnabled) {
+  UIThreadSearchTermsData::SetGoogleBaseURL("http://www.google.com/");
   EnableQueryExtractionForTesting();
   EXPECT_TRUE(IsQueryExtractionEnabled());
   TemplateURLRef::SearchTermsArgs search_terms_args(base::ASCIIToUTF16("foo"));
@@ -889,6 +890,7 @@ TEST_F(SearchURLTest, QueryExtractionEnabled) {
 }
 
 TEST_F(SearchURLTest, QueryExtractionDisabled) {
+  UIThreadSearchTermsData::SetGoogleBaseURL("http://www.google.com/");
   EXPECT_FALSE(IsQueryExtractionEnabled());
   TemplateURLRef::SearchTermsArgs search_terms_args(base::ASCIIToUTF16("foo"));
   GURL result(template_url_->url_ref().ReplaceSearchTerms(search_terms_args));
