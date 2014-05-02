@@ -164,7 +164,7 @@ class WebGLContextLostFromQuantityPage(page.Page):
       url='file://webgl.html?query=forced_quantity_loss',
       page_set=page_set,
       base_dir=base_dir)
-    self.name = 'ContextLost.WebGLContextLostFromQuantity',
+    self.name = 'ContextLost.WebGLContextLostFromQuantity'
     self.script_to_evaluate_on_commit = harness_script
     self.kill_gpu_process = False
     self.force_garbage_collection = True
