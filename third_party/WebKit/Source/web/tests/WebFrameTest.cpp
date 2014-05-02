@@ -5104,6 +5104,37 @@ TEST_F(WebFrameTest, PushStateStartsAndStops)
     EXPECT_EQ(client.differentDocumentStartCount(), 1);
 }
 
+class TestDidNavigateCommitTypeWebFrameClient : public WebFrameClient {
+public:
+    TestDidNavigateCommitTypeWebFrameClient()
+        : m_lastCommitType(WebHistoryInertCommit)
+    {
+    }
+
+    virtual void didNavigateWithinPage(WebLocalFrame*, const WebHistoryItem&, WebHistoryCommitType type) OVERRIDE
+    {
+        m_lastCommitType = type;
+    }
+
+    WebHistoryCommitType lastCommitType() const { return m_lastCommitType; }
+
+private:
+    WebHistoryCommitType m_lastCommitType;
+};
+
+TEST_F(WebFrameTest, SameDocumentHistoryNavigationCommitType)
+{
+    registerMockedHttpURLLoad("push_state.html");
+    TestDidNavigateCommitTypeWebFrameClient client;
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "push_state.html", true, &client);
+    RefPtr<WebCore::HistoryItem> item = webViewImpl->page()->mainFrame()->loader().currentItem();
+    runPendingTasks();
+
+    webViewImpl->page()->mainFrame()->loader().loadHistoryItem(item.get(), WebCore::HistorySameDocumentLoad);
+    EXPECT_EQ(WebBackForwardCommit, client.lastCommitType());
+}
+
 class TestHistoryWebFrameClient : public WebFrameClient {
 public:
     TestHistoryWebFrameClient()
