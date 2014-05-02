@@ -114,6 +114,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void UpdateDrag(Pointer pointer, const gfx::Point& point);
   void EndDrag(bool cancel);
   bool IsDraggedView(const views::View* view) const;
+  void ClearDragState(bool cancel_reparent);
 
   // Set the drag and drop host for application links.
   void SetDragAndDropHostOfCurrentAppList(

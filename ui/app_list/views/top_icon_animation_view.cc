@@ -30,6 +30,9 @@ TopIconAnimationView::TopIconAnimationView(const gfx::ImageSkia& icon,
 }
 
 TopIconAnimationView::~TopIconAnimationView() {
+  // Required due to RequiresNotificationWhenAnimatorDestroyed() returning true.
+  // See ui::LayerAnimationObserver for details.
+  StopObservingImplicitAnimations();
 }
 
 void TopIconAnimationView::AddObserver(TopIconAnimationObserver* observer) {
@@ -78,6 +81,10 @@ void TopIconAnimationView::OnImplicitAnimationsCompleted() {
                     observers_,
                     OnTopIconAnimationsComplete());
   delete this;
+}
+
+bool TopIconAnimationView::RequiresNotificationWhenAnimatorDestroyed() const {
+  return true;
 }
 
 }  // namespace app_list
