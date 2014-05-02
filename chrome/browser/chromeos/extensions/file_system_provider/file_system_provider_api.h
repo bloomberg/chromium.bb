@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_SYSTEM_PROVIDER_FILE_SYSTEM_PROVIDER_API_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_SYSTEM_PROVIDER_FILE_SYSTEM_PROVIDER_API_H_
 
+#include "chrome/browser/chromeos/extensions/file_system_provider/provider_function.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chrome/common/extensions/api/file_system_provider.h"
 
 namespace extensions {
 
@@ -31,11 +31,11 @@ class FileSystemProviderUnmountFunction : public ChromeSyncExtensionFunction {
 };
 
 class FileSystemProviderInternalUnmountRequestedSuccessFunction
-    : public ChromeSyncExtensionFunction {
+    : public FileSystemProviderInternalFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "fileSystemProviderInternal.unmountRequestedSuccess",
-      FILESYSTEMPROVIDERINTERNAL_UNMOUNTREQUESTEDSUCCESS)
+      FILESYSTEMPROVIDERINTERNAL_GETMETADATAREQUESTEDSUCCESS)
 
  protected:
   virtual ~FileSystemProviderInternalUnmountRequestedSuccessFunction() {}
@@ -43,10 +43,11 @@ class FileSystemProviderInternalUnmountRequestedSuccessFunction
 };
 
 class FileSystemProviderInternalUnmountRequestedErrorFunction
-    : public ChromeSyncExtensionFunction {
+    : public FileSystemProviderInternalFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileSystemProviderInternal.unmountRequestedError",
-                             FILESYSTEMPROVIDERINTERNAL_UNMOUNTREQUESTEDERROR)
+  DECLARE_EXTENSION_FUNCTION(
+      "fileSystemProviderInternal.unmountRequestedError",
+      FILESYSTEMPROVIDERINTERNAL_GETMETADATAREQUESTEDERROR)
 
  protected:
   virtual ~FileSystemProviderInternalUnmountRequestedErrorFunction() {}
@@ -54,7 +55,7 @@ class FileSystemProviderInternalUnmountRequestedErrorFunction
 };
 
 class FileSystemProviderInternalGetMetadataRequestedSuccessFunction
-    : public ChromeSyncExtensionFunction {
+    : public FileSystemProviderInternalFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "fileSystemProviderInternal.getMetadataRequestedSuccess",
@@ -66,7 +67,7 @@ class FileSystemProviderInternalGetMetadataRequestedSuccessFunction
 };
 
 class FileSystemProviderInternalGetMetadataRequestedErrorFunction
-    : public ChromeSyncExtensionFunction {
+    : public FileSystemProviderInternalFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "fileSystemProviderInternal.getMetadataRequestedError",

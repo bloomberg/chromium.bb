@@ -102,7 +102,7 @@ namespace fileSystemProvider {
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
 
-    // Raised, when metadata of a file or a directory at <code>entryPath</code>
+    // Raised when metadata of a file or a directory at <code>entryPath</code>
     // is requested. The metadata should be returned with the <code>
     // successCallback</code> call. In case of an error, <code>errorCallback
     // </code> must be called.

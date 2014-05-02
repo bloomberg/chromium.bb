@@ -997,6 +997,8 @@
             'browser/chromeos/extensions/file_manager/private_api_util.h',
             'browser/chromeos/extensions/file_system_provider/file_system_provider_api.cc',
             'browser/chromeos/extensions/file_system_provider/file_system_provider_api.h',
+            'browser/chromeos/extensions/file_system_provider/provider_function.cc',
+            'browser/chromeos/extensions/file_system_provider/provider_function.h',
             'browser/chromeos/extensions/first_run_private_api.cc',
             'browser/chromeos/extensions/first_run_private_api.h',
             'browser/chromeos/extensions/input_method_api.cc',
