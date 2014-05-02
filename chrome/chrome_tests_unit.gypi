@@ -1425,6 +1425,17 @@
         'browser/translate/translate_manager_render_view_host_unittest.cc',
         'browser/translate/translate_service_unittest.cc',
         'browser/ui/android/tab_model/tab_model_unittest.cc',
+        'browser/ui/app_list/app_list_positioner_unittest.cc',
+        'browser/ui/app_list/app_list_service_mac_unittest.mm',
+        'browser/ui/app_list/app_list_service_unittest.cc',
+        'browser/ui/app_list/extension_app_model_builder_unittest.cc',
+        'browser/ui/app_list/profile_loader_unittest.cc',
+        'browser/ui/app_list/test/app_list_shower_unittest.cc',
+        'browser/ui/app_list/test/fake_profile.cc',
+        'browser/ui/app_list/test/fake_profile.h',
+        'browser/ui/app_list/test/fake_profile_store.cc',
+        'browser/ui/app_list/test/fake_profile_store.h',
+        'browser/ui/app_list/test/fast_show_pickler_unittest.cc',
         'browser/ui/ash/ime_controller_chromeos_unittest.cc',
         'browser/ui/ash/accessibility/ax_tree_source_views_unittest.cc',
         'browser/ui/ash/launcher/chrome_launcher_controller_unittest.cc',
@@ -1711,6 +1722,8 @@
         'browser/ui/toolbar/wrench_menu_model_unittest.cc',
         'browser/ui/views/accelerator_table_unittest.cc',
         'browser/ui/views/accessibility/accessibility_event_router_views_unittest.cc',
+        'browser/ui/views/app_list/linux/app_list_linux_unittest.cc',
+        'browser/ui/views/app_list/win/app_list_win_unittest.cc',
         'browser/ui/views/apps/app_info_dialog/app_info_permissions_tab_unittest.cc',
         'browser/ui/views/apps/shaped_app_window_targeter_unittest.cc',
         'browser/ui/views/autofill/autofill_dialog_views_unittest.cc',
@@ -2276,6 +2289,9 @@
           'sources': [
             'browser/extensions/updater/local_extension_cache_unittest.cc',
           ],
+          'sources/': [
+            ['exclude', '^browser/ui/views/app_list/linux/'],
+          ],
         }, { # else: chromeos == 0
           'sources/': [
             ['exclude', '^browser/chromeos/'],
@@ -2675,9 +2691,10 @@
           'dependencies': [
             '../ui/app_list/app_list.gyp:app_list_test_support',
           ],
-          'sources': [
-            'browser/ui/app_list/extension_app_model_builder_unittest.cc',
-            'browser/ui/app_list/test/fast_show_pickler_unittest.cc',
+        }, {
+          'sources/': [
+            ['exclude', '^browser/ui/app_list/'],
+            ['exclude', '^browser/ui/views/app_list/'],
           ],
         }],
         ['use_ozone==1', {
@@ -2826,37 +2843,6 @@
               'ProgramDataBaseFileName': '<(PRODUCT_DIR)/unit_tests.exe.pdb',
             },
           },
-        },
-      ],
-    }],
-    ['enable_app_list==1', {
-      'targets': [
-        {
-          # Unit tests for chrome app list, not run on any bots, this is for faster
-          # compile/link/test cycles during development.
-          'target_name': 'chrome_app_list_unittests',
-          'type': '<(gtest_target_type)',
-          'dependencies': [
-            '../base/base.gyp:run_all_unittests',
-            '../chrome/chrome.gyp:test_support_common',
-            '../skia/skia.gyp:skia',
-            '../testing/gtest.gyp:gtest',
-            'browser_ui',
-          ],
-          'sources': [
-            'browser/ui/app_list/app_list_positioner_unittest.cc',
-            'browser/ui/app_list/app_list_service_mac_unittest.mm',
-            'browser/ui/app_list/app_list_service_unittest.cc',
-            'browser/ui/app_list/profile_loader_unittest.cc',
-            'browser/ui/app_list/test/app_list_shower_unittest.cc',
-            'browser/ui/app_list/test/fake_profile.cc',
-            'browser/ui/app_list/test/fake_profile.h',
-            'browser/ui/app_list/test/fake_profile_store.cc',
-            'browser/ui/app_list/test/fake_profile_store.h',
-            'browser/ui/app_list/test/fast_show_pickler_unittest.cc',
-            'browser/ui/views/app_list/linux/app_list_linux_unittest.cc',
-            'browser/ui/views/app_list/win/app_list_win_unittest.cc',
-          ],
         },
       ],
     }],

@@ -2608,7 +2608,6 @@
             'browser/ui/startup/default_browser_prompt.h',
             'browser/ui/external_protocol_dialog_delegate.cc',
             'browser/ui/external_protocol_dialog_delegate.h',
-            'browser/ui/views/app_list/linux/app_list_service_linux.cc',
             'browser/ui/views/chrome_views_delegate_aura.cc',
             'browser/ui/views/external_protocol_dialog.cc',
             'browser/ui/views/external_protocol_dialog.h',
@@ -2637,6 +2636,7 @@
           ],
           'sources/': [
             ['exclude', '^browser/ui/views/frame/opaque_browser_frame_view*'],
+            ['exclude', '^browser/ui/views/app_list/linux/'],
           ],
         }],
         ['use_cups==1', {

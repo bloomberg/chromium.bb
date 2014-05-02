@@ -71,6 +71,8 @@ void RecordDailyEventFrequency(
     return;  // In a unit test.
 
   PrefService* local_state = g_browser_process->local_state();
+  if (!local_state)
+    return;  // In a unit test.
 
   int count = local_state->GetInteger(count_pref);
   local_state->SetInteger(count_pref, count + 1);
