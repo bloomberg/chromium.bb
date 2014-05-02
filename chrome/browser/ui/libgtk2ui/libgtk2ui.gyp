@@ -88,6 +88,13 @@
             'gconf_listener.h',
           ],
         }],
+        [ 'clang==1', {
+          # G_DEFINE_TYPE automatically generates a *get_instance_private inline function after glib 2.37.
+          # That's unused. Prevent to complain about it.
+          'cflags': [
+            '-Wno-unused-function',
+          ],
+        }],
       ],
     },
   ],
