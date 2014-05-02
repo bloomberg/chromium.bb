@@ -171,9 +171,9 @@ struct shell_surface {
 	bool state_requested;
 
 	struct {
-		int left, right, top, bottom;
-	} margin, next_margin;
-	bool has_next_margin;
+		int32_t x, y, width, height;
+	} geometry, next_geometry;
+	bool has_set_geometry, has_next_geometry;
 
 	int focus_count;
 };
@@ -1554,14 +1554,12 @@ constrain_position(struct weston_move_grab *move, int *cx, int *cy)
 
 	panel_height = get_output_panel_height(shsurf->shell,
 					       shsurf->surface->output);
-	bottom = y + shsurf->surface->height - shsurf->margin.bottom;
+	bottom = y + shsurf->geometry.height;
 	if (bottom - panel_height < safety)
-		y = panel_height + safety -
-			shsurf->surface->height + shsurf->margin.bottom;
+		y = panel_height + safety - shsurf->geometry.height;
 
-	if (move->client_initiated &&
-	    y + shsurf->margin.top < panel_height)
-		y = panel_height - shsurf->margin.top;
+	if (move->client_initiated && y + shsurf->geometry.y < panel_height)
+		y = panel_height - shsurf->geometry.y;
 
 	*cx = x;
 	*cy = y;
@@ -1829,13 +1827,9 @@ surface_resize(struct shell_surface *shsurf,
 		return -1;
 
 	resize->edges = edges;
-	surface_subsurfaces_boundingbox(shsurf->surface, NULL, NULL,
-	                                &resize->width, &resize->height);
 
-	resize->width -= shsurf->margin.left;
-	resize->width -= shsurf->margin.right;
-	resize->height -= shsurf->margin.top;
-	resize->height -= shsurf->margin.bottom;
+	resize->width = shsurf->geometry.width;
+	resize->height = shsurf->geometry.height;
 
 	shsurf->resize_edges = edges;
 	shell_surface_state_changed(shsurf);
@@ -2130,14 +2124,14 @@ set_title(struct shell_surface *shsurf, const char *title)
 }
 
 static void
-set_margin(struct shell_surface *shsurf,
-	   int32_t left, int32_t right, int32_t top, int32_t bottom)
+set_window_geometry(struct shell_surface *shsurf,
+		    int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	shsurf->next_margin.left = left;
-	shsurf->next_margin.right = right;
-	shsurf->next_margin.top = top;
-	shsurf->next_margin.bottom = bottom;
-	shsurf->has_next_margin = true;
+	shsurf->next_geometry.x = x;
+	shsurf->next_geometry.y = y;
+	shsurf->next_geometry.width = width;
+	shsurf->next_geometry.height = height;
+	shsurf->has_next_geometry = true;
 }
 
 static void
@@ -3399,19 +3393,6 @@ xdg_surface_set_parent(struct wl_client *client,
 }
 
 static void
-xdg_surface_set_margin(struct wl_client *client,
-			     struct wl_resource *resource,
-			     int32_t left,
-			     int32_t right,
-			     int32_t top,
-			     int32_t bottom)
-{
-	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
-
-	set_margin(shsurf, left, right, top, bottom);
-}
-
-static void
 xdg_surface_set_app_id(struct wl_client *client,
 		       struct wl_resource *resource,
 		       const char *app_id)
@@ -3469,6 +3450,19 @@ xdg_surface_ack_configure(struct wl_client *client,
 		shsurf->state_changed = true;
 		shsurf->state_requested = false;
 	}
+}
+
+static void
+xdg_surface_set_window_geometry(struct wl_client *client,
+				struct wl_resource *resource,
+				int32_t x,
+				int32_t y,
+				int32_t width,
+				int32_t height)
+{
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+
+	set_window_geometry(shsurf, x, y, width, height);
 }
 
 static void
@@ -3542,13 +3536,13 @@ xdg_surface_set_minimized(struct wl_client *client,
 static const struct xdg_surface_interface xdg_surface_implementation = {
 	xdg_surface_destroy,
 	xdg_surface_set_parent,
-	xdg_surface_set_margin,
 	xdg_surface_set_title,
 	xdg_surface_set_app_id,
 	xdg_surface_show_window_menu,
 	xdg_surface_move,
 	xdg_surface_resize,
 	xdg_surface_ack_configure,
+	xdg_surface_set_window_geometry,
 	xdg_surface_set_maximized,
 	xdg_surface_unset_maximized,
 	xdg_surface_set_fullscreen,
@@ -5141,9 +5135,16 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 	if (es->width == 0)
 		return;
 
-	if (shsurf->has_next_margin) {
-		shsurf->margin = shsurf->next_margin;
-		shsurf->has_next_margin = false;
+	if (shsurf->has_next_geometry) {
+		shsurf->geometry = shsurf->next_geometry;
+		shsurf->has_next_geometry = false;
+		shsurf->has_set_geometry = true;
+	} else if (!shsurf->has_set_geometry) {
+		surface_subsurfaces_boundingbox(shsurf->surface,
+						&shsurf->geometry.x,
+						&shsurf->geometry.y,
+						&shsurf->geometry.width,
+						&shsurf->geometry.height);
 	}
 
 	if (shsurf->state_changed) {
@@ -6200,7 +6201,7 @@ module_init(struct weston_compositor *ec,
 	ec->shell_interface.move = shell_interface_move;
 	ec->shell_interface.resize = surface_resize;
 	ec->shell_interface.set_title = set_title;
-	ec->shell_interface.set_margin = set_margin;
+	ec->shell_interface.set_window_geometry = set_window_geometry;
 
 	weston_layer_init(&shell->fullscreen_layer, &ec->cursor_layer.link);
 	weston_layer_init(&shell->panel_layer, &shell->fullscreen_layer.link);

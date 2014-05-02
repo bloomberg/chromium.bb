@@ -3894,24 +3894,33 @@ window_sync_parent(struct window *window)
 }
 
 static void
-window_sync_margin(struct window *window)
+window_get_geometry(struct window *window, struct rectangle *geometry)
 {
-	int margin;
+	if (window->frame)
+		frame_input_rect(window->frame->frame,
+				 &geometry->x,
+				 &geometry->y,
+				 &geometry->width,
+				 &geometry->height);
+	else
+		window_get_allocation(window, geometry);
+}
+
+static void
+window_sync_geometry(struct window *window)
+{
+	struct rectangle geometry;
 
 	if (!window->xdg_surface)
 		return;
 
-	if (!window->frame)
-		return;
+	window_get_geometry(window, &geometry);
 
-	margin = frame_get_shadow_margin(window->frame->frame);
-
-	/* Shadow size is the same on every side. */
-	xdg_surface_set_margin(window->xdg_surface,
-				     margin,
-				     margin,
-				     margin,
-				     margin);
+	xdg_surface_set_window_geometry(window->xdg_surface,
+					geometry.x,
+					geometry.y,
+					geometry.width,
+					geometry.height);
 }
 
 static void
@@ -3922,7 +3931,7 @@ window_flush(struct window *window)
 	if (!window->custom) {
 		if (window->xdg_surface) {
 			window_sync_parent(window);
-			window_sync_margin(window);
+			window_sync_geometry(window);
 		}
 	}
 

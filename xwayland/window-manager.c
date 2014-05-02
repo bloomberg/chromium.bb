@@ -1007,12 +1007,9 @@ weston_wm_window_draw_decoration(void *data)
 
 		pixman_region32_init_rect(&window->surface->pending.input,
 					  input_x, input_y, input_w, input_h);
-		
-		shell_interface->set_margin(window->shsurf,
-					    input_x,
-					    width - input_w - input_x,
-					    input_y,
-					    height - input_h - input_y);
+
+		shell_interface->set_window_geometry(window->shsurf,
+						     input_x, input_y, input_w, input_h);
 	}
 }
 
