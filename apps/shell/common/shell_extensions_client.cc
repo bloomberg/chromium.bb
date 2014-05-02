@@ -21,6 +21,7 @@
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_provider.h"
 #include "extensions/common/url_pattern_set.h"
+#include "grit/app_shell_resources.h"
 #include "grit/common_resources.h"
 #include "grit/extensions_resources.h"
 
@@ -132,8 +133,9 @@ scoped_ptr<FeatureProvider> ShellExtensionsClient::CreateFeatureProvider(
     const std::string& name) const {
   extensions::JSONFeatureProviderSource source(name);
   if (name == "api") {
-    // TODO(yoz): Only include src/extensions resources.
     source.LoadJSON(IDR_EXTENSION_API_FEATURES);
+    source.LoadJSON(IDR_SHELL_EXTENSION_API_FEATURES);
+    // TODO(yoz): Don't include Chrome resources.
     source.LoadJSON(IDR_CHROME_EXTENSION_API_FEATURES);
     return scoped_ptr<FeatureProvider>(new BaseFeatureProvider(
         source.dictionary(), CreateFeature<extensions::APIFeature>));
