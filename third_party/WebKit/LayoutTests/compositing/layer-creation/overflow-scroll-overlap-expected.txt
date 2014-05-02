@@ -5,19 +5,16 @@
       (bounds 800.00 600.00)
       (contentsOpaque 1)
       (drawsContent 1)
-      (children 3
+      (children 2
         (GraphicsLayer
-          (position 8.00 8.00)
-          (bounds 30.00 30.00)
-        )
-        (GraphicsLayer
-          (position 20.00 20.00)
-          (bounds 306.00 206.00)
-          (drawsContent 1)
-          (children 1
+          (children 2
             (GraphicsLayer
-              (position 288.00 3.00)
-              (bounds 15.00 200.00)
+              (position 8.00 8.00)
+              (bounds 30.00 30.00)
+            )
+            (GraphicsLayer
+              (position 20.00 20.00)
+              (bounds 306.00 206.00)
               (drawsContent 1)
             )
           )

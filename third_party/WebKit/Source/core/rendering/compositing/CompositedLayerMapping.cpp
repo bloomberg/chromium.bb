@@ -1900,7 +1900,15 @@ void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, Grap
     } else {
         ASSERT(compositor()->layerSquashingEnabled());
         LayerPaintingInfo paintingInfo(paintInfo.renderLayer, dirtyRect, PaintBehaviorNormal, paintInfo.renderLayer->subpixelAccumulation());
+
+        // RenderLayer::paintLayer assumes that the caller clips to the passed rect. Squashed layers need to do this clipping in software,
+        // since there is no graphics layer to clip them precisely.
+        // FIXME: in some cases this clip is not necessary. For example if the dirty rect is not the same as the bounds of the layer,
+        // RenderLayer will clip it (see RenderLayer::clipToRect). Put in more work if this becomes a performance issue.
+        context->save();
+        context->clip(dirtyRect);
         paintInfo.renderLayer->paintLayer(context, paintingInfo, paintFlags);
+        context->restore();
     }
 
     ASSERT(!paintInfo.renderLayer->usedTransparency());

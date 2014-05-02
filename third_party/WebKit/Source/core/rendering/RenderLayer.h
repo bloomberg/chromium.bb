@@ -270,6 +270,7 @@ public:
     // paints the layers that intersect the damage rect from back to
     // front.  The hitTest method looks for mouse events by walking
     // layers that intersect the point from front to back.
+    // paint() assumes that the caller will clip to the bounds of damageRect if necessary.
     void paint(GraphicsContext*, const LayoutRect& damageRect, PaintBehavior = PaintBehaviorNormal, RenderObject* paintingRoot = 0, PaintLayerFlags = 0);
     bool hitTest(const HitTestRequest&, HitTestResult&);
     bool hitTest(const HitTestRequest&, const HitTestLocation&, HitTestResult&);
@@ -446,6 +447,7 @@ public:
         return isRootLayer() || layerRenderer->isPositioned() || hasTransform();
     }
 
+    // paintLayer() assumes that the caller will clip to the bounds of the painting dirty if necessary.
     void paintLayer(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
 
     PassOwnPtr<Vector<FloatRect> > collectTrackedRepaintRects() const;
@@ -506,6 +508,7 @@ public:
 
     void updateSelfPaintingLayer();
 
+    // paintLayerContents() assumes that the caller will clip to the bounds of the painting dirty rect if necessary.
     void paintLayerContents(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
 
     RenderLayer* enclosingTransformedAncestor() const;
