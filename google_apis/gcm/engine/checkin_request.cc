@@ -11,12 +11,10 @@
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
-#include "url/gurl.h"
 
 namespace gcm {
 
 namespace {
-const char kCheckinURL[] = "https://android.clients.google.com/checkin";
 const char kRequestContentType[] = "application/x-protobuf";
 const int kRequestVersionValue = 2;
 const int kDefaultUserSerialNumber = 0;
@@ -62,6 +60,7 @@ CheckinRequest::RequestInfo::RequestInfo(
 CheckinRequest::RequestInfo::~RequestInfo() {}
 
 CheckinRequest::CheckinRequest(
+    const GURL& checkin_url,
     const RequestInfo& request_info,
     const net::BackoffEntry::Policy& backoff_policy,
     const CheckinRequestCallback& callback,
@@ -69,6 +68,7 @@ CheckinRequest::CheckinRequest(
     : request_context_getter_(request_context_getter),
       callback_(callback),
       backoff_entry_(&backoff_policy),
+      checkin_url_(checkin_url),
       request_info_(request_info),
       weak_ptr_factory_(this) {
 }
@@ -105,7 +105,7 @@ void CheckinRequest::Start() {
   CHECK(request.SerializeToString(&upload_data));
 
   url_fetcher_.reset(
-      net::URLFetcher::Create(GURL(kCheckinURL), net::URLFetcher::POST, this));
+      net::URLFetcher::Create(checkin_url_, net::URLFetcher::POST, this));
   url_fetcher_->SetRequestContext(request_context_getter_);
   url_fetcher_->SetUploadData(kRequestContentType, upload_data);
   url_fetcher_->Start();

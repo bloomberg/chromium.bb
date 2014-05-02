@@ -145,19 +145,21 @@ void GServicesSettingsTest::SetUp() {
 }
 
 void GServicesSettingsTest::CheckAllSetToDefault() {
-  EXPECT_EQ(kDefaultCheckinInterval, settings().checkin_interval());
-  EXPECT_EQ(kDefaultCheckinURL, settings().checkin_url());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(kDefaultCheckinInterval),
+            settings().checkin_interval());
+  EXPECT_EQ(GURL(kDefaultCheckinURL), settings().checkin_url());
   EXPECT_EQ(kDefaultMCSHostname, settings().mcs_hostname());
   EXPECT_EQ(kDefaultMCSSecurePort, settings().mcs_secure_port());
-  EXPECT_EQ(kDefaultRegistrationURL, settings().registration_url());
+  EXPECT_EQ(GURL(kDefaultRegistrationURL), settings().registration_url());
 }
 
 void GServicesSettingsTest::CheckAllSetToAlternative() {
-  EXPECT_EQ(kAlternativeCheckinInterval, settings().checkin_interval());
-  EXPECT_EQ(kAlternativeCheckinURL, settings().checkin_url());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(kAlternativeCheckinInterval),
+            settings().checkin_interval());
+  EXPECT_EQ(GURL(kAlternativeCheckinURL), settings().checkin_url());
   EXPECT_EQ(kAlternativeMCSHostname, settings().mcs_hostname());
   EXPECT_EQ(kAlternativeMCSSecurePort, settings().mcs_secure_port());
-  EXPECT_EQ(kAlternativeRegistrationURL, settings().registration_url());
+  EXPECT_EQ(GURL(kAlternativeRegistrationURL), settings().registration_url());
 }
 
 void GServicesSettingsTest::SetWithAlternativeSettings(
@@ -238,7 +240,7 @@ TEST_F(GServicesSettingsTest, UpdateFromCheckinResponseMinimumCheckinInterval) {
   settings().UpdateFromCheckinResponse(checkin_response);
   EXPECT_TRUE(gcm_store().settings_saved());
 
-  EXPECT_EQ(GServicesSettings::kMinimumCheckinInterval,
+  EXPECT_EQ(GServicesSettings::MinimumCheckinInterval(),
             settings().checkin_interval());
   EXPECT_EQ("digest_value", settings().digest());
 }

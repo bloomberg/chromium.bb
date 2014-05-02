@@ -22,6 +22,7 @@ const uint64 kAndroidId = 42UL;
 const char kAppId[] = "TestAppId";
 const char kDeveloperId[] = "Project1";
 const char kLoginHeader[] = "AidLogin";
+const char kRegistrationURL[] = "http://foo.bar/register";
 const uint64 kSecurityToken = 77UL;
 
 // Backoff policy for testing registration request.
@@ -108,6 +109,7 @@ void RegistrationRequestTest::CreateRequest(const std::string& sender_ids) {
     senders.push_back(tokenizer.token());
 
   request_.reset(new RegistrationRequest(
+      GURL(kRegistrationURL),
       RegistrationRequest::RequestInfo(kAndroidId,
                                        kSecurityToken,
                                        kAppId,
@@ -152,13 +154,15 @@ TEST_F(RegistrationRequestTest, RequestSuccessful) {
   EXPECT_EQ("2501", registration_id_);
 }
 
-TEST_F(RegistrationRequestTest, RequestDataPassedToFetcher) {
+TEST_F(RegistrationRequestTest, RequestDataAndURL) {
   CreateRequest(kDeveloperId);
   request_->Start();
 
   // Get data sent by request.
   net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
+
+  EXPECT_EQ(GURL(kRegistrationURL), fetcher->GetOriginalURL());
 
   // Verify that authorization header was put together properly.
   net::HttpRequestHeaders headers;

@@ -21,6 +21,7 @@ const uint64 kAndroidId = 42UL;
 const char kLoginHeader[] = "AidLogin";
 const char kAppId[] = "TestAppId";
 const char kDeletedAppId[] = "deleted=TestAppId";
+const char kRegistrationURL[] = "http://foo.bar/register";
 const uint64 kSecurityToken = 77UL;
 
 // Backoff policy for testing registration request.
@@ -91,6 +92,7 @@ void UnregistrationRequestTest::UnregistrationCallback(
 
 void UnregistrationRequestTest::CreateRequest() {
   request_.reset(new UnregistrationRequest(
+      GURL(kRegistrationURL),
       UnregistrationRequest::RequestInfo(kAndroidId,
                                          kSecurityToken,
                                          kAppId),
@@ -125,6 +127,8 @@ TEST_F(UnregistrationRequestTest, RequestDataPassedToFetcher) {
   // Get data sent by request.
   net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
+
+  EXPECT_EQ(GURL(kRegistrationURL), fetcher->GetOriginalURL());
 
   // Verify that authorization header was put together properly.
   net::HttpRequestHeaders headers;

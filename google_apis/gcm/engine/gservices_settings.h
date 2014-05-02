@@ -9,9 +9,11 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "google_apis/gcm/base/gcm_export.h"
 #include "google_apis/gcm/engine/gcm_store.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
+#include "url/gurl.h"
 
 namespace gcm {
 
@@ -20,7 +22,7 @@ namespace gcm {
 class GCM_EXPORT GServicesSettings {
  public:
   // Minimum periodic checkin interval in seconds.
-  static const int64 kMinimumCheckinInterval;
+  static const base::TimeDelta MinimumCheckinInterval();
 
   // Create an instance of GServicesSettings class. |gcm_store| is used to store
   // the settings after they are extracted from checkin response.
@@ -34,21 +36,18 @@ class GCM_EXPORT GServicesSettings {
   // Updates the settings based on |load_result|.
   void UpdateFromLoadResult(const GCMStore::LoadResult& load_result);
 
-  const std::string& digest() const { return digest_; }
+  std::string digest() const { return digest_; }
 
-  // TODO(fgorski): Consider returning TimeDelta.
-  int64 checkin_interval() const { return checkin_interval_; }
+  base::TimeDelta checkin_interval() const { return checkin_interval_; }
 
-  // TODO(fgorski): Consider returning GURL and use it for validation.
-  const std::string& checkin_url() const { return checkin_url_; }
+  GURL checkin_url() const { return checkin_url_; }
 
   // TODO(fgorski): Consider returning GURL and use it for validation.
-  const std::string& mcs_hostname() const { return mcs_hostname_; }
+  std::string mcs_hostname() const { return mcs_hostname_; }
 
   int mcs_secure_port() const { return mcs_secure_port_; }
 
-  // TODO(fgorski): Consider returning GURL and use it for validation.
-  const std::string& registration_url() const { return registration_url_; }
+  GURL registration_url() const { return registration_url_; }
 
  private:
   // Parses the |settings| to fill in specific fields.
@@ -66,11 +65,11 @@ class GCM_EXPORT GServicesSettings {
   // settings table.
   std::string digest_;
 
-  // Time in seconds between periodic checkins.
-  int64 checkin_interval_;
+  // Time delta between periodic checkins.
+  base::TimeDelta checkin_interval_;
 
   // URL that should be used for checkins.
-  std::string checkin_url_;
+  GURL checkin_url_;
 
   // Hostname of the MCS server.
   std::string mcs_hostname_;
@@ -79,7 +78,7 @@ class GCM_EXPORT GServicesSettings {
   int mcs_secure_port_;
 
   // URL that should be used for regisrations and unregistrations.
-  std::string registration_url_;
+  GURL registration_url_;
 
   // Factory for creating references in callbacks.
   base::WeakPtrFactory<GServicesSettings> weak_ptr_factory_;

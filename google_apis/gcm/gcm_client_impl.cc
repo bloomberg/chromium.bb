@@ -307,7 +307,8 @@ void GCMClientImpl::StartCheckin() {
                                            account_ids_,
                                            chrome_build_proto_);
   checkin_request_.reset(
-      new CheckinRequest(request_info,
+      new CheckinRequest(gservices_settings_->checkin_url(),
+                         request_info,
                          kDefaultBackoffPolicy,
                          base::Bind(&GCMClientImpl::OnCheckinCompleted,
                                     weak_ptr_factory_.GetWeakPtr()),
@@ -373,8 +374,7 @@ void GCMClientImpl::SchedulePeriodicCheckin() {
 }
 
 base::TimeDelta GCMClientImpl::GetTimeToNextCheckin() const {
-  return last_checkin_time_ +
-         base::TimeDelta::FromSeconds(gservices_settings_->checkin_interval()) -
+  return last_checkin_time_ + gservices_settings_->checkin_interval() -
          clock_->Now();
 }
 
@@ -432,7 +432,8 @@ void GCMClientImpl::Register(const std::string& app_id,
   DCHECK_EQ(0u, pending_registration_requests_.count(app_id));
 
   RegistrationRequest* registration_request =
-      new RegistrationRequest(request_info,
+      new RegistrationRequest(gservices_settings_->registration_url(),
+                              request_info,
                               kDefaultBackoffPolicy,
                               base::Bind(&GCMClientImpl::OnRegisterCompleted,
                                          weak_ptr_factory_.GetWeakPtr(),
@@ -507,6 +508,7 @@ void GCMClientImpl::Unregister(const std::string& app_id) {
 
   UnregistrationRequest* unregistration_request =
       new UnregistrationRequest(
+          gservices_settings_->registration_url(),
           request_info,
           kDefaultBackoffPolicy,
           base::Bind(&GCMClientImpl::OnUnregisterCompleted,

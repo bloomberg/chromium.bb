@@ -16,6 +16,7 @@
 #include "google_apis/gcm/base/gcm_export.h"
 #include "net/base/backoff_entry.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "url/gurl.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -80,6 +81,7 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
   };
 
   RegistrationRequest(
+      const GURL& registration_url,
       const RequestInfo& request_info,
       const net::BackoffEntry::Policy& backoff_policy,
       const RegistrationCallback& callback,
@@ -104,6 +106,7 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
 
   RegistrationCallback callback_;
   RequestInfo request_info_;
+  GURL registration_url_;
 
   net::BackoffEntry backoff_entry_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;

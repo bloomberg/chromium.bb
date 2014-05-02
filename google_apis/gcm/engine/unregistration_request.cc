@@ -17,14 +17,11 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
-#include "url/gurl.h"
 
 namespace gcm {
 
 namespace {
 
-const char kRegistrationURL[] =
-    "https://android.clients.google.com/c2dm/register3";
 const char kRequestContentType[] = "application/x-www-form-urlencoded";
 
 // Request constants.
@@ -113,6 +110,7 @@ UnregistrationRequest::RequestInfo::RequestInfo(
 UnregistrationRequest::RequestInfo::~RequestInfo() {}
 
 UnregistrationRequest::UnregistrationRequest(
+    const GURL& registration_url,
     const RequestInfo& request_info,
     const net::BackoffEntry::Policy& backoff_policy,
     const UnregistrationCallback& callback,
@@ -120,6 +118,7 @@ UnregistrationRequest::UnregistrationRequest(
     GCMStatsRecorder* recorder)
     : callback_(callback),
       request_info_(request_info),
+      registration_url_(registration_url),
       backoff_entry_(&backoff_policy),
       request_context_getter_(request_context_getter),
       recorder_(recorder),
@@ -135,7 +134,7 @@ void UnregistrationRequest::Start() {
   DCHECK(!url_fetcher_.get());
 
   url_fetcher_.reset(net::URLFetcher::Create(
-      GURL(kRegistrationURL), net::URLFetcher::POST, this));
+      registration_url_, net::URLFetcher::POST, this));
   url_fetcher_->SetRequestContext(request_context_getter_);
 
   std::string android_id = base::Uint64ToString(request_info_.android_id);

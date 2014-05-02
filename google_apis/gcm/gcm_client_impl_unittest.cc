@@ -723,7 +723,8 @@ TEST_F(GCMClientImplCheckinTest, GServicesSettingsAfterInitialCheckin) {
   settings["gcm_registration_url"] = "http://alternative.url/registration";
   CompleteCheckin(
       kDeviceAndroidId, kDeviceSecurityToken, kSettingsDefaultDigest, settings);
-  EXPECT_EQ(kSettingsCheckinInterval, gservices_settings()->checkin_interval());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(kSettingsCheckinInterval),
+            gservices_settings()->checkin_interval());
 }
 
 // This test only checks that periodic checkin happens.
