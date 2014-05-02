@@ -18,7 +18,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/native_widget_aura.h"
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_ui.h"
@@ -42,7 +42,7 @@
 
 namespace {
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
 ui::NativeTheme* GetNativeThemeForWindow(aura::Window* window) {
   if (!window)
     return NULL;
@@ -84,7 +84,7 @@ ChromeBrowserMainExtraPartsAura::~ChromeBrowserMainExtraPartsAura() {
 }
 
 void ChromeBrowserMainExtraPartsAura::PreEarlyInitialization() {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
   // TODO(erg): Refactor this into a dlopen call when we add a GTK3 port.
   views::LinuxUI* gtk2_ui = BuildGtk2UI();
   gtk2_ui->SetNativeThemeOverride(base::Bind(&GetNativeThemeForWindow));
@@ -100,7 +100,7 @@ void ChromeBrowserMainExtraPartsAura::ToolkitInitialized() {
 #endif
 #endif
 
-#if !defined(USE_ASH) && defined(OS_LINUX) && defined(USE_X11)
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
   views::LinuxUI::instance()->Initialize();
 #endif
 }
