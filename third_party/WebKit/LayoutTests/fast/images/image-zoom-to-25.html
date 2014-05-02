@@ -36,9 +36,10 @@ function zoomPage()
 
             if (window.eventSender) {
                 eventSender.zoomPageOut();
-                log("Size at zoom level" + (count) + " : "  + image.clientWidth + "x" + image.clientHeight);
-                ++count;
-                if (count == 6)
+                var w = Math.round(image.clientWidth);
+                var h = Math.round(image.clientHeight);
+                log("Size at zoom level" + (count) + " : "  + w + " x " + h);
+                if (++count == 6)
                     testRunner.notifyDone();
             }
         };

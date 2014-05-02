@@ -1634,8 +1634,8 @@ crbug.com/368518 fast/repaint/transform-translate.html [ NeedsRebaseline ]
 crbug.com/368518 svg/repaint/focus-element.html [ NeedsRebaseline ]
 crbug.com/368518 svg/transforms/animated-path-inside-transformed-html.xhtml [ NeedsRebaseline ]
 
-crbug.com/369376 fast/images/image-zoom-to-25.html [ Failure ]
-crbug.com/369376 virtual/deferred/fast/images/image-zoom-to-25.html [ Failure ]
+crbug.com/369376 fast/images/image-zoom-to-25.html [ NeedsRebaseline ]
+crbug.com/369376 virtual/deferred/fast/images/image-zoom-to-25.html [ NeedsRebaseline ]
 
 # Disabling this for now since Chromium CL changes output. Will re-enable once Chromium side lands.
 Bug(simonhatch) http/tests/loading/promote-img-in-viewport-priority.html [ Skip ]
