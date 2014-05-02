@@ -99,6 +99,12 @@ skia::RefPtr<SkShader> CreateGradientShader(int start_point,
       grad_points, grad_colors, NULL, 2, SkShader::kRepeat_TileMode));
 }
 
+static SkScalar RadiusToSigma(double radius) {
+  // This captures historically what skia did under the hood. Now skia accepts
+  // sigma, not radius, so we perform the conversion.
+  return radius > 0 ? SkDoubleToScalar(0.57735f * radius + 0.5) : 0;
+}
+
 skia::RefPtr<SkDrawLooper> CreateShadowDrawLooper(
     const std::vector<ShadowValue>& shadows) {
   if (shadows.empty())
@@ -122,8 +128,8 @@ skia::RefPtr<SkDrawLooper> CreateShadowDrawLooper(
     // SkBlurMaskFilter's blur radius defines the range to extend the blur from
     // original mask, which is half of blur amount as defined in ShadowValue.
     skia::RefPtr<SkMaskFilter> blur_mask = skia::AdoptRef(
-        SkBlurMaskFilter::Create(SkDoubleToScalar(shadow.blur() / 2),
-                                 SkBlurMaskFilter::kNormal_BlurStyle,
+        SkBlurMaskFilter::Create(kNormal_SkBlurStyle,
+                                 RadiusToSigma(shadow.blur() / 2),
                                  SkBlurMaskFilter::kHighQuality_BlurFlag));
     skia::RefPtr<SkColorFilter> color_filter = skia::AdoptRef(
         SkColorFilter::CreateModeFilter(shadow.color(),
