@@ -241,6 +241,16 @@ TEST_F(ScrollingCoordinatorChromiumTest, wheelEventHandler)
     ASSERT_TRUE(rootScrollLayer->haveWheelEventHandlers());
 }
 
+TEST_F(ScrollingCoordinatorChromiumTest, scrollEventHandler)
+{
+    registerMockedHttpURLLoad("scroll-event-handler.html");
+    navigateTo(m_baseURL + "scroll-event-handler.html");
+    forceFullCompositingUpdate();
+
+    WebLayer* rootScrollLayer = getRootScrollLayer();
+    ASSERT_TRUE(rootScrollLayer->haveScrollEventHandlers());
+}
+
 TEST_F(ScrollingCoordinatorChromiumTest, clippedBodyTest)
 {
     registerMockedHttpURLLoad("clipped-body.html");
