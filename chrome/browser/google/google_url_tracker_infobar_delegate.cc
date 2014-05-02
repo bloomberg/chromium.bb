@@ -27,7 +27,7 @@ infobars::InfoBar* GoogleURLTrackerInfoBarDelegate::Create(
 }
 
 bool GoogleURLTrackerInfoBarDelegate::Accept() {
-  google_url_tracker_->AcceptGoogleURL();
+  google_url_tracker_->AcceptGoogleURL(true);
   return false;
 }
 
