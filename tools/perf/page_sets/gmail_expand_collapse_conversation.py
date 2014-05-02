@@ -8,7 +8,7 @@ from telemetry.page import page_set as page_set_module
 
 
 class GmailExpandCollapseConversationPage(
-  page_module.PageWithDefaultRunNavigate):
+  page_module.Page):
 
   """ Why: Expand and Collapse a long conversation. """
   # TODO(edmundyan): Find a long conversation rather than hardcode url

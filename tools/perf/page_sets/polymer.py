@@ -6,7 +6,7 @@ from telemetry.page.actions.all_page_actions import *
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
-class PolymerPage(page_module.PageWithDefaultRunNavigate):
+class PolymerPage(page_module.Page):
 
   def __init__(self, url, page_set):
     super(PolymerPage, self).__init__(

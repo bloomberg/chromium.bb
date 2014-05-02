@@ -7,7 +7,7 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 
-class SimpleScrollPage(page_module.PageWithDefaultRunNavigate):
+class SimpleScrollPage(page_module.Page):
   def __init__(self, url, page_set, credentials=''):
     super(SimpleScrollPage, self).__init__(url, page_set=page_set)
     self.credentials = credentials

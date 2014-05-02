@@ -37,7 +37,7 @@ class _HardwareAcceleratedFeatureValidator(page_test.PageTest):
 def safe_feature_name(feature):
   return feature.lower().replace(' ', '_')
 
-class ChromeGpuPage(page_module.PageWithDefaultRunNavigate):
+class ChromeGpuPage(page_module.Page):
   def __init__(self, page_set, feature):
     super(ChromeGpuPage, self).__init__(
       url='chrome://gpu', page_set=page_set, base_dir=page_set.base_dir)

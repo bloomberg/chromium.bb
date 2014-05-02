@@ -13,5 +13,5 @@ class FiveBlankPagesPageSet(page_set_module.PageSet):
   def __init__(self):
     super(FiveBlankPagesPageSet, self).__init__()
     for _ in xrange(5):
-      self.AddPage(page_module.PageWithDefaultRunNavigate(
+      self.AddPage(page_module.Page(
         'file://blank_page/blank_page.html', self))

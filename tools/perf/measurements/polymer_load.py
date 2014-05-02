@@ -7,7 +7,7 @@ from telemetry.page import page
 from telemetry.page import page_measurement
 
 
-class PageForPolymerLoad(page.PageWithDefaultRunNavigate):
+class PageForPolymerLoad(page.Page):
 
   def __init__(self, url, page_set):
     super(PageForPolymerLoad, self).__init__(

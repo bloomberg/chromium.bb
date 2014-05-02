@@ -4,10 +4,10 @@
 # pylint: disable=W0401,W0614
 from telemetry.page.actions.all_page_actions import *
 from telemetry.page.page_set import PageSet
-from telemetry.page.page import PageWithDefaultRunNavigate
+from telemetry.page.page import Page
 
 
-class Top2012Q3Page(PageWithDefaultRunNavigate):
+class Top2012Q3Page(Page):
 
   def __init__(self, url, page_set):
     super(Top2012Q3Page, self).__init__(url=url, page_set=page_set)

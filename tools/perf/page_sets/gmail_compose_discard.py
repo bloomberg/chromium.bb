@@ -7,7 +7,7 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 
-class GmailComposeDiscardPage(page_module.PageWithDefaultRunNavigate):
+class GmailComposeDiscardPage(page_module.Page):
 
   """ Why: Compose and discard a new email """
 

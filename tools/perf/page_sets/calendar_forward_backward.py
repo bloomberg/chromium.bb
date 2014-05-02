@@ -7,7 +7,7 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 
-class CalendarForwardBackwardPage(page_module.PageWithDefaultRunNavigate):
+class CalendarForwardBackwardPage(page_module.Page):
 
   """ Why: Click forward(4x) and backwards(4x) repeatedly """
 

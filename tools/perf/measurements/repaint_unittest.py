@@ -12,7 +12,7 @@ from telemetry.page.actions.all_page_actions import *
 from telemetry.unittest import options_for_unittests
 
 
-class TestRepaintPage(page_module.PageWithDefaultRunNavigate):
+class TestRepaintPage(page_module.Page):
   def __init__(self, page_set, base_dir):
     super(TestRepaintPage, self).__init__('file://blank.html',
                                           page_set, base_dir)

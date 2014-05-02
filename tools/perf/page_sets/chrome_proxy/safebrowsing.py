@@ -7,7 +7,7 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 
-class SafebrowsingPage(page_module.PageWithDefaultRunNavigate):
+class SafebrowsingPage(page_module.Page):
 
   """
   Why: Expect 'malware ahead' page. Use a short navigation timeout because no

@@ -7,7 +7,7 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 
-class GmailRefreshPage(page_module.PageWithDefaultRunNavigate):
+class GmailRefreshPage(page_module.Page):
 
   """ Why: Continually reload the gmail page. """
 

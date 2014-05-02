@@ -7,7 +7,7 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 
-class GpuRasterizationTestsPage(page_module.PageWithDefaultRunNavigate):
+class GpuRasterizationTestsPage(page_module.Page):
 
   def __init__(self, page_set):
     super(GpuRasterizationTestsPage, self).__init__(

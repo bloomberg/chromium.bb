@@ -7,7 +7,7 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 
-class GpuProcessTestsPage(page_module.PageWithDefaultRunNavigate):
+class GpuProcessTestsPage(page_module.Page):
 
   def __init__(self, url, name, page_set):
     super(GpuProcessTestsPage, self).__init__(url=url, page_set=page_set)

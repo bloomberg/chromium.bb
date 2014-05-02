@@ -7,7 +7,7 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 
-class PlusAltPostsPhotosPage(page_module.PageWithDefaultRunNavigate):
+class PlusAltPostsPhotosPage(page_module.Page):
 
   """ Why: Alternate between clicking posts and albums """
 

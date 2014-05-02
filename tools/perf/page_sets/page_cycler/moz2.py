@@ -6,7 +6,7 @@ from telemetry.page.actions.all_page_actions import *
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
-class Moz2Page(page_module.PageWithDefaultRunNavigate):
+class Moz2Page(page_module.Page):
 
   def __init__(self, url, page_set):
     super(Moz2Page, self).__init__(url=url, page_set=page_set)

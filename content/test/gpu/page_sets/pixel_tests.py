@@ -7,7 +7,7 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 
-class PixelTestsPage(page_module.PageWithDefaultRunNavigate):
+class PixelTestsPage(page_module.Page):
 
   def __init__(self, url, name, test_rect, revision, page_set):
     super(PixelTestsPage, self).__init__(url=url, page_set=page_set)

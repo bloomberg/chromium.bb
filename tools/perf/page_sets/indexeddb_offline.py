@@ -7,7 +7,7 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 
-class IndexeddbOfflinePage(page_module.PageWithDefaultRunNavigate):
+class IndexeddbOfflinePage(page_module.Page):
 
   """ Why: Simulates user input while offline and sync while online. """
 

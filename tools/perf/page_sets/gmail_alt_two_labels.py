@@ -7,7 +7,7 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 
-class GmailAltTwoLabelsPage(page_module.PageWithDefaultRunNavigate):
+class GmailAltTwoLabelsPage(page_module.Page):
 
   """ Why: Alternate between Inbox and Sent Mail """
 

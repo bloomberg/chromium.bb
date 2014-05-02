@@ -7,7 +7,7 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 
-class ToughWebglCasesPage(page_module.PageWithDefaultRunNavigate):
+class ToughWebglCasesPage(page_module.Page):
 
   def __init__(self, url, page_set):
     super(ToughWebglCasesPage, self).__init__(url=url, page_set=page_set)

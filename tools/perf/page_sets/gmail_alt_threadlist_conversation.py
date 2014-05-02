@@ -8,7 +8,7 @@ from telemetry.page import page_set as page_set_module
 
 
 class GmailAltThreadlistConversationPage(
-  page_module.PageWithDefaultRunNavigate):
+  page_module.Page):
 
   """ Why: Alternate between Inbox and the first email conversation. """
 

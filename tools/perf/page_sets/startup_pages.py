@@ -7,7 +7,7 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 
-class StartedPage(page_module.PageWithDefaultRunNavigate):
+class StartedPage(page_module.Page):
 
   def __init__(self, url, startup_url, page_set):
     super(StartedPage, self).__init__(url=url, page_set=page_set)

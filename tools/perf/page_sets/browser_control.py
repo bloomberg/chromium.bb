@@ -7,7 +7,7 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 
-class BrowserControlPage(page_module.PageWithDefaultRunNavigate):
+class BrowserControlPage(page_module.Page):
   """ Why: Continually attach and detach a DOM tree from a basic document. """
 
   def __init__(self, page_set):
