@@ -31,10 +31,6 @@ MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
 - (BluetoothHCIPowerState)powerState;
 @end
 
-@interface IOBluetoothDevice (LionSDKDeclarations)
-- (NSString*)addressString;
-@end
-
 @protocol IOBluetoothDeviceInquiryDelegate
 - (void)deviceInquiryStarted:(IOBluetoothDeviceInquiry*)sender;
 - (void)deviceInquiryDeviceFound:(IOBluetoothDeviceInquiry*)sender
@@ -232,9 +228,8 @@ void BluetoothAdapterMac::PollAdapter() {
 
   if (controller != nil) {
     name = base::SysNSStringToUTF8([controller nameAsString]);
-    // TODO(isherman): Convert the address format to XX:XX:XX:XX:XX:XX rather
-    // than xx-xx-xx-xx-xx-xx.
-    address = base::SysNSStringToUTF8([controller addressAsString]);
+    address = BluetoothDeviceMac::NormalizeAddress(
+        base::SysNSStringToUTF8([controller addressAsString]));
     powered = ([controller powerState] == kBluetoothHCIPowerStateON);
   }
 
@@ -273,8 +268,7 @@ void BluetoothAdapterMac::PollAdapter() {
 void BluetoothAdapterMac::UpdateDevices(NSArray* devices) {
   STLDeleteValues(&devices_);
   for (IOBluetoothDevice* device in devices) {
-    std::string device_address =
-        base::SysNSStringToUTF8([device addressString]);
+    std::string device_address = BluetoothDeviceMac::GetDeviceAddress(device);
     devices_[device_address] = new BluetoothDeviceMac(device);
   }
 }
@@ -298,7 +292,7 @@ void BluetoothAdapterMac::DeviceInquiryStarted(
 void BluetoothAdapterMac::DeviceFound(IOBluetoothDeviceInquiry* inquiry,
                                       IOBluetoothDevice* device) {
   DCHECK_EQ(device_inquiry_, inquiry);
-  std::string device_address = base::SysNSStringToUTF8([device addressString]);
+  std::string device_address = BluetoothDeviceMac::GetDeviceAddress(device);
   if (discovered_devices_.find(device_address) == discovered_devices_.end()) {
     BluetoothDeviceMac device_mac(device);
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,

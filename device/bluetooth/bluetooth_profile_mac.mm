@@ -18,16 +18,6 @@
 #include "device/bluetooth/bluetooth_device_mac.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
 
-// Replicate specific 10.7 SDK declarations for building with prior SDKs.
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-@interface IOBluetoothDevice (LionSDKDeclarations)
-- (NSString*)addressString;
-@end
-
-#endif  // MAC_OS_X_VERSION_10_7
-
 namespace device {
 namespace {
 
@@ -281,7 +271,7 @@ void BluetoothProfileMac::Connect(
     return;
   }
 
-  std::string device_address = base::SysNSStringToUTF8([device addressString]);
+  std::string device_address = BluetoothDeviceMac::GetDeviceAddress(device);
   BluetoothSocketMac::Connect(
       record,
       base::Bind(OnConnectSuccess,
@@ -295,7 +285,7 @@ void BluetoothProfileMac::OnRFCOMMChannelOpened(
     IOBluetoothRFCOMMChannel* rfcomm_channel) {
   DCHECK_EQ([rfcomm_channel getChannelID], rfcomm_channel_id_);
   std::string device_address =
-      base::SysNSStringToUTF8([[rfcomm_channel getDevice] addressString]);
+      BluetoothDeviceMac::GetDeviceAddress([rfcomm_channel getDevice]);
   BluetoothSocketMac::AcceptConnection(
       rfcomm_channel,
       base::Bind(OnConnectSuccess,

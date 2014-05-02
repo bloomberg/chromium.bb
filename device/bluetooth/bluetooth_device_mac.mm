@@ -10,6 +10,7 @@
 #include "base/hash.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "device/bluetooth/bluetooth_out_of_band_pairing_data.h"
@@ -70,7 +71,7 @@ std::string BluetoothDeviceMac::GetDeviceName() const {
 }
 
 std::string BluetoothDeviceMac::GetAddress() const {
-  return base::SysNSStringToUTF8([device_ addressString]);
+  return GetDeviceAddress(device_);
 }
 
 BluetoothDevice::VendorIDSource BluetoothDeviceMac::GetVendorIDSource() const {
@@ -232,6 +233,19 @@ int BluetoothDeviceMac::GetHostTransmitPower(
     return kUnknownPower;
 
   return power_level;
+}
+
+// static
+std::string BluetoothDeviceMac::GetDeviceAddress(IOBluetoothDevice* device) {
+  return NormalizeAddress(base::SysNSStringToUTF8([device addressString]));
+}
+
+// static
+std::string BluetoothDeviceMac::NormalizeAddress(const std::string& address) {
+  std::string normalized;
+  base::ReplaceChars(address, "-", ":", &normalized);
+  StringToUpperASCII(&normalized);
+  return normalized;
 }
 
 }  // namespace device

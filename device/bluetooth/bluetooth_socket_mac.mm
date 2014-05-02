@@ -18,19 +18,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "device/bluetooth/bluetooth_device_mac.h"
 #include "device/bluetooth/bluetooth_service_record.h"
 #include "device/bluetooth/bluetooth_service_record_mac.h"
 #include "net/base/io_buffer.h"
-
-// Replicate specific 10.7 SDK declarations for building with prior SDKs.
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-@interface IOBluetoothDevice (LionSDKDeclarations)
-- (NSString*)addressString;
-@end
-
-#endif  // MAC_OS_X_VERSION_10_7
 
 @interface BluetoothRFCOMMChannelDelegate
     : NSObject <IOBluetoothRFCOMMChannelDelegate> {
@@ -181,7 +172,7 @@ void BluetoothSocketMac::ConnectImpl(
   if (status != kIOReturnSuccess) {
     std::stringstream error;
     error << "Failed to connect bluetooth socket ("
-          << base::SysNSStringToUTF8([device addressString]) << "): (" << status
+          << BluetoothDeviceMac::GetDeviceAddress(device) << "): (" << status
           << ")";
     error_callback.Run(error.str());
     return;
@@ -218,9 +209,8 @@ void BluetoothSocketMac::OnChannelOpened(
     ReleaseChannel();
     std::stringstream error;
     error << "Failed to connect bluetooth socket ("
-          << base::SysNSStringToUTF8(
-                 [[rfcomm_channel_ getDevice] addressString]) << "): ("
-          << status << ")";
+          << BluetoothDeviceMac::GetDeviceAddress([rfcomm_channel_ getDevice])
+          << "): (" << status << ")";
     temp->error_callback.Run(error.str());
     return;
   }
@@ -339,8 +329,7 @@ void BluetoothSocketMac::Send(scoped_refptr<net::IOBuffer> buffer,
     if (status != kIOReturnSuccess) {
       std::stringstream error;
       error << "Failed to connect bluetooth socket ("
-            << base::SysNSStringToUTF8(
-                   [[rfcomm_channel_ getDevice] addressString])
+            << BluetoothDeviceMac::GetDeviceAddress([rfcomm_channel_ getDevice])
             << "): (" << status << ")";
       // Remember the first error only
       if (request->status == kIOReturnSuccess)
@@ -395,8 +384,7 @@ void BluetoothSocketMac::OnChannelWriteComplete(
     if (!request->error_signaled) {
       std::stringstream error;
       error << "Failed to connect bluetooth socket ("
-            << base::SysNSStringToUTF8(
-                   [[rfcomm_channel_ getDevice] addressString])
+            << BluetoothDeviceMac::GetDeviceAddress([rfcomm_channel_ getDevice])
             << "): (" << status << ")";
       request->error_signaled = true;
       request->error_callback.Run(error.str());
