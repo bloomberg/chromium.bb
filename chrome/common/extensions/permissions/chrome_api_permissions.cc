@@ -134,7 +134,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
          APIPermissionInfo::kFlagNone,
          IDS_EXTENSION_PROMPT_WARNING_NATIVE_MESSAGING,
          PermissionMessage::kNativeMessaging},
-        {APIPermission::kPower, "power", },
+        {APIPermission::kPower, "power"},
         {APIPermission::kPrivacy, "privacy", APIPermissionInfo::kFlagNone,
          IDS_EXTENSION_PROMPT_WARNING_PRIVACY, PermissionMessage::kPrivacy},
         {APIPermission::kProcesses, "processes", APIPermissionInfo::kFlagNone,
@@ -381,7 +381,8 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
          APIPermissionInfo::kFlagCannotBeOptional |
              APIPermissionInfo::kFlagInternal,
          IDS_EXTENSION_PROMPT_WARNING_START_PAGE_SETTING_OVERRIDE,
-         PermissionMessage::kStartupPages}, };
+         PermissionMessage::kStartupPages},
+    };
 
   std::vector<APIPermissionInfo*> permissions;
 
