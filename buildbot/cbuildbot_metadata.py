@@ -518,7 +518,12 @@ class BuildData(object):
 
     message_list = []
     for message, slaves in mapping.iteritems():
-      message_list.append('%s: %s' % (','.join(slaves), message))
+      if len(slaves) >= 6:
+        # Do not print all the names when there are more than 6 (an
+        # arbitrary number) builders.
+        message_list.append('%d buliders: %s' % (len(slaves), message))
+      else:
+        message_list.append('%s: %s' % (','.join(slaves), message))
 
     return ' | '.join(message_list)
 

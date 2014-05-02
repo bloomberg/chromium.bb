@@ -128,7 +128,7 @@ class SpreadsheetMasterTable(StatsTable):
   """Stats table for master builder that puts results in a spreadsheet."""
   # Bump this number whenever this class adds new data columns, or changes
   # the values of existing data columns.
-  SHEETS_VERSION = 2
+  SHEETS_VERSION = 3
 
   # These must match up with the column names on the spreadsheet.
   COL_BUILD_NUMBER = 'build number'
