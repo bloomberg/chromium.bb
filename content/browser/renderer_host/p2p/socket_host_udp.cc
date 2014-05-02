@@ -41,7 +41,8 @@ bool IsTransientError(int error) {
          error == net::ERR_ADDRESS_INVALID ||
          error == net::ERR_ACCESS_DENIED ||
          error == net::ERR_CONNECTION_RESET ||
-         error == net::ERR_OUT_OF_MEMORY;
+         error == net::ERR_OUT_OF_MEMORY ||
+         error == net::ERR_INTERNET_DISCONNECTED;
 }
 
 }  // namespace
@@ -287,7 +288,7 @@ void P2PSocketHostUdp::HandleSendResult(uint64 packet_id, int result) {
       return;
     }
     VLOG(0) << "sendto() has failed twice returning a "
-                 " transient error. Dropping the packet.";
+               " transient error. Dropping the packet.";
   }
   message_sender_->Send(new P2PMsg_OnSendComplete(id_));
 }
