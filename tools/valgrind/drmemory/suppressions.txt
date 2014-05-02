@@ -455,3 +455,8 @@ GDI USAGE ERROR
 name=http://crbug.com/42043-gdi
 ...
 QuickTime.qts!*
+
+UNADDRESSABLE ACCESS
+name=IntentionalCrash
+*!content::PpapiThread::OnCrash
+*!content::*::MaybeHandleDebugURL
