@@ -75,8 +75,8 @@ V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
 
 V8PerIsolateData::~V8PerIsolateData()
 {
-    if (m_regexScriptState)
-        m_regexScriptState->disposePerContextData();
+    if (m_blinkInJSScriptState)
+        m_blinkInJSScriptState->disposePerContextData();
     if (isMainThread())
         mainThreadPerIsolateData = 0;
 }
@@ -148,11 +148,11 @@ void V8PerIsolateData::setDOMTemplate(void* domTemplateKey, v8::Handle<v8::Funct
     currentDOMTemplateMap().add(domTemplateKey, v8::Eternal<v8::FunctionTemplate>(m_isolate, v8::Local<v8::FunctionTemplate>(templ)));
 }
 
-v8::Local<v8::Context> V8PerIsolateData::ensureRegexContext()
+v8::Local<v8::Context> V8PerIsolateData::ensureDomInJSContext()
 {
-    if (!m_regexScriptState)
-        m_regexScriptState = ScriptState::create(v8::Context::New(m_isolate), DOMWrapperWorld::create());
-    return m_regexScriptState->context();
+    if (!m_blinkInJSScriptState)
+        m_blinkInJSScriptState = ScriptState::create(v8::Context::New(m_isolate), DOMWrapperWorld::create());
+    return m_blinkInJSScriptState->context();
 }
 
 bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* info, v8::Handle<v8::Value> value)

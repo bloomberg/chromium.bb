@@ -505,7 +505,15 @@ DOMWindow* toDOMWindow(v8::Handle<v8::Context> context)
 
 DOMWindow* enteredDOMWindow(v8::Isolate* isolate)
 {
-    return toDOMWindow(isolate->GetEnteredContext());
+    DOMWindow* window = toDOMWindow(isolate->GetEnteredContext());
+    if (!window) {
+        // We don't always have an entered DOM window, for example during microtask callbacks from V8
+        // (where the entered context may be the DOM-in-JS context). In that case, we fall back
+        // to the current context.
+        window = currentDOMWindow(isolate);
+        ASSERT(window);
+    }
+    return window;
 }
 
 DOMWindow* currentDOMWindow(v8::Isolate* isolate)

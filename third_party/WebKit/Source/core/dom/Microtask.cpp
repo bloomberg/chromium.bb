@@ -39,40 +39,43 @@
 
 namespace WebCore {
 
-typedef Vector<OwnPtr<blink::WebThread::Task> > MicrotaskQueue;
-
-static MicrotaskQueue& microtaskQueue()
-{
-    DEFINE_STATIC_LOCAL(MicrotaskQueue, microtaskQueue, ());
-    return microtaskQueue;
-}
-
 void Microtask::performCheckpoint()
 {
-    V8PerIsolateData* isolateData = V8PerIsolateData::from(v8::Isolate::GetCurrent());
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    V8PerIsolateData* isolateData = V8PerIsolateData::from(isolate);
     ASSERT(isolateData);
     if (isolateData->recursionLevel() || isolateData->performingMicrotaskCheckpoint())
         return;
     isolateData->setPerformingMicrotaskCheckpoint(true);
 
-    while (!microtaskQueue().isEmpty()) {
-        MicrotaskQueue microtasks;
-        microtasks.swap(microtaskQueue());
-        for (size_t i = 0; i < microtasks.size(); ++i) {
-            microtasks[i]->run();
-        }
-    }
+    v8::HandleScope handleScope(isolate);
+    v8::Local<v8::Context> context = isolateData->ensureDomInJSContext();
+    v8::Context::Scope scope(context);
+    v8::V8::RunMicrotasks(isolate);
 
     isolateData->setPerformingMicrotaskCheckpoint(false);
 }
 
+static void microtaskFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    OwnPtr<blink::WebThread::Task> task = adoptPtr(static_cast<blink::WebThread::Task*>(info.Data().As<v8::External>()->Value()));
+    task->run();
+}
+
 void Microtask::enqueueMicrotask(PassOwnPtr<blink::WebThread::Task> callback)
 {
-    microtaskQueue().append(callback);
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    V8PerIsolateData* isolateData = V8PerIsolateData::from(isolate);
+    v8::HandleScope handleScope(isolate);
+    v8::Local<v8::Context> context = isolateData->ensureDomInJSContext();
+    v8::Context::Scope scope(context);
+    v8::Local<v8::External> handler = v8::External::New(isolate, callback.leakPtr());
+    v8::V8::EnqueueMicrotask(isolate, v8::Function::New(isolate, &microtaskFunctionCallback, handler));
 }
 
 void Microtask::enqueueMicrotask(const Closure& callback)
 {
     enqueueMicrotask(adoptPtr(new Task(callback)));
 }
+
 } // namespace WebCore
