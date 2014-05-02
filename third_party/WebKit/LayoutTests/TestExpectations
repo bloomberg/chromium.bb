@@ -682,10 +682,6 @@ crbug.com/368560 [ Win ] http/tests/svg/image-fetch-fail.svg [ Timeout Pass ]
 
 crbug.com/253763 fast/text-autosizing/first-line-scale-factor.html [ ImageOnlyFailure ]
 
-# TODO(senorblanco): remove this suppression once
-# https://codereview.chromium.org/265693005/ lands in Skia and rolls into Chrome
-crbug.com/368265 [ Debug ] svg/W3C-SVG-1.1/filters-conv-01-f.svg [ Crash ]
-
 # FIXME(crbug.com/302005): Remove these as expectations are updated or the fasttextautosizer improves.
 crbug.com/322782 fast/text-autosizing/cluster-inline-grid-flex-box.html [ ImageOnlyFailure ]
 crbug.com/322782 fast/text-autosizing/cluster-list-item.html [ ImageOnlyFailure ]
