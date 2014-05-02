@@ -1745,6 +1745,10 @@ void FrameView::repaintContentRectangle(const IntRect& r)
         IntRect repaintRect = r;
         repaintRect.move(-scrollOffset());
         m_trackedRepaintRects.append(repaintRect);
+        // FIXME: http://crbug.com/368518. Eventually, repaintContentRectangle
+        // is going away entirely once all layout tests are FCM. In the short
+        // term, no code should be tracking non-composited FrameView repaints.
+        RELEASE_ASSERT_NOT_REACHED();
     }
 
     ScrollView::repaintContentRectangle(r);

@@ -2,6 +2,9 @@
 window.testIsAsync = false;
 window.outputRepaintRects = true;
 
+if (window.internals)
+    window.internals.settings.setForceCompositingMode(true)
+
 function runRepaintTest()
 {
     if (!window.testRunner || !window.internals) {
@@ -47,7 +50,7 @@ function finishRepaintTest()
     // Force a style recalc.
     forceStyleRecalc();
 
-    var repaintRects = window.internals.repaintRectsAsText(document);
+    var repaintRects = window.internals.layerTreeAsText(document, window.internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
 
     internals.stopTrackingRepaints(document);
 
