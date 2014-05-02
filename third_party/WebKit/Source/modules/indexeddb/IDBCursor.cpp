@@ -387,8 +387,7 @@ PassRefPtrWillBeRawPtr<IDBObjectStore> IDBCursor::effectiveObjectStore() const
 {
     if (m_source->type() == IDBAny::IDBObjectStoreType)
         return m_source->idbObjectStore();
-    RefPtr<IDBIndex> index = m_source->idbIndex();
-    return index->objectStore();
+    return m_source->idbIndex()->objectStore();
 }
 
 bool IDBCursor::isDeleted() const

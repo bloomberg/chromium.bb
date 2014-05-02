@@ -218,13 +218,13 @@ static PassRefPtrWillBeRawPtr<IDBObjectStore> objectStoreForTransaction(IDBTrans
     return idbObjectStore.release();
 }
 
-static PassRefPtr<IDBIndex> indexForObjectStore(IDBObjectStore* idbObjectStore, const String& indexName)
+static PassRefPtrWillBeRawPtr<IDBIndex> indexForObjectStore(IDBObjectStore* idbObjectStore, const String& indexName)
 {
     TrackExceptionState exceptionState;
-    RefPtr<IDBIndex> idbIndex = idbObjectStore->index(indexName, exceptionState);
+    RefPtrWillBeRawPtr<IDBIndex> idbIndex = idbObjectStore->index(indexName, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
-    return idbIndex;
+    return idbIndex.release();
 }
 
 static PassRefPtr<KeyPath> keyPathFromIDBKeyPath(const IDBKeyPath& idbKeyPath)
@@ -507,7 +507,7 @@ public:
 
         RefPtrWillBeRawPtr<IDBRequest> idbRequest;
         if (!m_indexName.isEmpty()) {
-            RefPtr<IDBIndex> idbIndex = indexForObjectStore(idbObjectStore.get(), m_indexName);
+            RefPtrWillBeRawPtr<IDBIndex> idbIndex = indexForObjectStore(idbObjectStore.get(), m_indexName);
             if (!idbIndex) {
                 m_requestCallback->sendFailure("Could not get index");
                 return;

@@ -42,13 +42,14 @@ namespace WebCore {
 class ExceptionState;
 class IDBObjectStore;
 
-class IDBIndex : public ScriptWrappable, public RefCounted<IDBIndex> {
+class IDBIndex : public RefCountedWillBeGarbageCollectedFinalized<IDBIndex>, public ScriptWrappable {
 public:
-    static PassRefPtr<IDBIndex> create(const IDBIndexMetadata& metadata, IDBObjectStore* objectStore, IDBTransaction* transaction)
+    static PassRefPtrWillBeRawPtr<IDBIndex> create(const IDBIndexMetadata& metadata, IDBObjectStore* objectStore, IDBTransaction* transaction)
     {
-        return adoptRef(new IDBIndex(metadata, objectStore, transaction));
+        return adoptRefWillBeNoop(new IDBIndex(metadata, objectStore, transaction));
     }
     ~IDBIndex();
+    void trace(Visitor*);
 
     // Implement the IDL
     const String& name() const { return m_metadata.name; }
@@ -77,8 +78,8 @@ private:
     PassRefPtrWillBeRawPtr<IDBRequest> getInternal(ExecutionContext*, const ScriptValue& key, ExceptionState&, bool keyOnly);
 
     IDBIndexMetadata m_metadata;
-    RefPtrWillBePersistent<IDBObjectStore> m_objectStore;
-    RefPtr<IDBTransaction> m_transaction;
+    RefPtrWillBeMember<IDBObjectStore> m_objectStore;
+    RefPtrWillBeMember<IDBTransaction> m_transaction;
     bool m_deleted;
 };
 

@@ -74,15 +74,15 @@ public:
     PassRefPtrWillBeRawPtr<IDBRequest> deleteFunction(ExecutionContext*, const ScriptValue& key, ExceptionState&);
     PassRefPtrWillBeRawPtr<IDBRequest> clear(ExecutionContext*, ExceptionState&);
 
-    PassRefPtr<IDBIndex> createIndex(ScriptState* scriptState, const String& name, const String& keyPath, const Dictionary& options, ExceptionState& exceptionState)
+    PassRefPtrWillBeRawPtr<IDBIndex> createIndex(ScriptState* scriptState, const String& name, const String& keyPath, const Dictionary& options, ExceptionState& exceptionState)
     {
         return createIndex(scriptState, name, IDBKeyPath(keyPath), options, exceptionState);
     }
-    PassRefPtr<IDBIndex> createIndex(ScriptState* scriptState, const String& name, const Vector<String>& keyPath, const Dictionary& options, ExceptionState& exceptionState)
+    PassRefPtrWillBeRawPtr<IDBIndex> createIndex(ScriptState* scriptState, const String& name, const Vector<String>& keyPath, const Dictionary& options, ExceptionState& exceptionState)
     {
         return createIndex(scriptState, name, IDBKeyPath(keyPath), options, exceptionState);
     }
-    PassRefPtr<IDBIndex> index(const String& name, ExceptionState&);
+    PassRefPtrWillBeRawPtr<IDBIndex> index(const String& name, ExceptionState&);
     void deleteIndex(const String& name, ExceptionState&);
 
     PassRefPtrWillBeRawPtr<IDBRequest> count(ExecutionContext*, const ScriptValue& range, ExceptionState&);
@@ -107,8 +107,8 @@ public:
 private:
     IDBObjectStore(const IDBObjectStoreMetadata&, IDBTransaction*);
 
-    PassRefPtr<IDBIndex> createIndex(ScriptState*, const String& name, const IDBKeyPath&, const Dictionary&, ExceptionState&);
-    PassRefPtr<IDBIndex> createIndex(ScriptState*, const String& name, const IDBKeyPath&, bool unique, bool multiEntry, ExceptionState&);
+    PassRefPtrWillBeRawPtr<IDBIndex> createIndex(ScriptState*, const String& name, const IDBKeyPath&, const Dictionary&, ExceptionState&);
+    PassRefPtrWillBeRawPtr<IDBIndex> createIndex(ScriptState*, const String& name, const IDBKeyPath&, bool unique, bool multiEntry, ExceptionState&);
     PassRefPtrWillBeRawPtr<IDBRequest> put(ExecutionContext*, blink::WebIDBDatabase::PutMode, PassRefPtrWillBeRawPtr<IDBAny> source, ScriptValue&, const ScriptValue& key, ExceptionState&);
 
     int64_t findIndexId(const String& name) const;
@@ -121,7 +121,7 @@ private:
     RefPtrWillBeMember<IDBTransaction> m_transaction;
     bool m_deleted;
 
-    typedef HashMap<String, RefPtr<IDBIndex> > IDBIndexMap;
+    typedef WillBeHeapHashMap<String, RefPtrWillBeMember<IDBIndex> > IDBIndexMap;
     IDBIndexMap m_indexMap;
 };
 

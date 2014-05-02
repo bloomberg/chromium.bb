@@ -66,6 +66,7 @@ IDBObjectStore::IDBObjectStore(const IDBObjectStoreMetadata& metadata, IDBTransa
 void IDBObjectStore::trace(Visitor* visitor)
 {
     visitor->trace(m_transaction);
+    visitor->trace(m_indexMap);
 }
 
 ScriptValue IDBObjectStore::keyPath(ScriptState* scriptState) const
@@ -385,7 +386,7 @@ private:
 };
 }
 
-PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ScriptState* scriptState, const String& name, const IDBKeyPath& keyPath, const Dictionary& options, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<IDBIndex> IDBObjectStore::createIndex(ScriptState* scriptState, const String& name, const IDBKeyPath& keyPath, const Dictionary& options, ExceptionState& exceptionState)
 {
     bool unique = false;
     options.get("unique", unique);
@@ -396,7 +397,7 @@ PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ScriptState* scriptState, const
     return createIndex(scriptState, name, keyPath, unique, multiEntry, exceptionState);
 }
 
-PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ScriptState* scriptState, const String& name, const IDBKeyPath& keyPath, bool unique, bool multiEntry, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<IDBIndex> IDBObjectStore::createIndex(ScriptState* scriptState, const String& name, const IDBKeyPath& keyPath, bool unique, bool multiEntry, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::createIndex");
     if (!m_transaction->isVersionChange()) {
@@ -443,7 +444,7 @@ PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ScriptState* scriptState, const
     ++m_metadata.maxIndexId;
 
     IDBIndexMetadata metadata(name, indexId, keyPath, unique, multiEntry);
-    RefPtr<IDBIndex> index = IDBIndex::create(metadata, this, m_transaction.get());
+    RefPtrWillBeRawPtr<IDBIndex> index = IDBIndex::create(metadata, this, m_transaction.get());
     m_indexMap.set(name, index);
     m_metadata.indexes.set(indexId, metadata);
     m_transaction->db()->indexCreated(id(), metadata);
@@ -461,7 +462,7 @@ PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ScriptState* scriptState, const
     return index.release();
 }
 
-PassRefPtr<IDBIndex> IDBObjectStore::index(const String& name, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<IDBIndex> IDBObjectStore::index(const String& name, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::index");
     if (isDeleted()) {
@@ -493,7 +494,7 @@ PassRefPtr<IDBIndex> IDBObjectStore::index(const String& name, ExceptionState& e
     ASSERT(indexMetadata);
     ASSERT(indexMetadata->id != IDBIndexMetadata::InvalidId);
 
-    RefPtr<IDBIndex> index = IDBIndex::create(*indexMetadata, this, m_transaction.get());
+    RefPtrWillBeRawPtr<IDBIndex> index = IDBIndex::create(*indexMetadata, this, m_transaction.get());
     m_indexMap.set(name, index);
     return index.release();
 }

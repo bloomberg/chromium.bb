@@ -127,7 +127,7 @@ private:
     explicit IDBAny(PassRefPtr<DOMStringList>);
     explicit IDBAny(PassRefPtrWillBeRawPtr<IDBCursor>);
     explicit IDBAny(PassRefPtr<IDBDatabase>);
-    explicit IDBAny(PassRefPtr<IDBIndex>);
+    explicit IDBAny(PassRefPtrWillBeRawPtr<IDBIndex>);
     explicit IDBAny(PassRefPtrWillBeRawPtr<IDBObjectStore>);
     explicit IDBAny(PassRefPtr<IDBTransaction>);
     explicit IDBAny(PassRefPtrWillBeRawPtr<IDBKey>);
@@ -143,7 +143,7 @@ private:
     const RefPtr<DOMStringList> m_domStringList;
     const RefPtrWillBeMember<IDBCursor> m_idbCursor;
     const RefPtr<IDBDatabase> m_idbDatabase;
-    const RefPtr<IDBIndex> m_idbIndex;
+    const RefPtrWillBeMember<IDBIndex> m_idbIndex;
     const RefPtrWillBeMember<IDBObjectStore> m_idbObjectStore;
     const RefPtr<IDBTransaction> m_idbTransaction;
     const RefPtrWillBeMember<IDBKey> m_idbKey;

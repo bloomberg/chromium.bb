@@ -60,6 +60,12 @@ IDBIndex::~IDBIndex()
 {
 }
 
+void IDBIndex::trace(Visitor* visitor)
+{
+    visitor->trace(m_objectStore);
+    visitor->trace(m_transaction);
+}
+
 ScriptValue IDBIndex::keyPath(ScriptState* scriptState) const
 {
     return idbAnyToScriptValue(scriptState, IDBAny::create(m_metadata.keyPath));
