@@ -20,6 +20,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
+#include "content/test/frame_load_waiter.h"
 #include "content/test/mock_render_process.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -117,12 +118,10 @@ void RenderViewTest::LoadHTML(const char* html) {
   std::string url_str = "data:text/html;charset=utf-8,";
   url_str.append(html);
   GURL url(url_str);
-
   GetMainFrame()->loadRequest(WebURLRequest(url));
-
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.
-  ProcessPendingMessages();
+  FrameLoadWaiter(view_->GetMainRenderFrame()).Wait();
 }
 
 void RenderViewTest::GoBack(const PageState& state) {
@@ -425,7 +424,7 @@ void RenderViewTest::GoToOffset(int offset, const PageState& state) {
 
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.
-  ProcessPendingMessages();
+  FrameLoadWaiter(view_->GetMainRenderFrame()).Wait();
 }
 
 }  // namespace content

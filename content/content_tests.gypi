@@ -161,6 +161,8 @@
         'test/content_browser_test_utils_internal.h',
         'test/content_test_suite.cc',
         'test/content_test_suite.h',
+        'test/frame_load_waiter.cc',
+        'test/frame_load_waiter.h',
         'test/mock_google_streaming_server.cc',
         'test/mock_google_streaming_server.h',
         'test/mock_keyboard.cc',

@@ -35,6 +35,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
+#include "content/test/frame_load_waiter.h"
 #include "content/test/mock_keyboard.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
@@ -2014,7 +2015,8 @@ TEST_F(RenderViewImplTest, NavigateFrame) {
   nav_params.page_id = -1;
   nav_params.frame_to_navigate = "frame";
   frame()->OnNavigate(nav_params);
-  ProcessPendingMessages();
+  FrameLoadWaiter(
+      RenderFrame::FromWebFrame(frame()->GetWebFrame()->firstChild())).Wait();
 
   // Copy the document content to std::wstring and compare with the
   // expected result.
@@ -2164,7 +2166,8 @@ TEST_F(SuppressErrorPageTest, MAYBE_DoesNotSuppress) {
 
   // An error occurred.
   view()->main_render_frame()->didFailProvisionalLoad(web_frame, error);
-  ProcessPendingMessages();
+  // The error page itself is loaded asynchronously.
+  FrameLoadWaiter(frame()).Wait();
   const int kMaxOutputCharacters = 22;
   EXPECT_EQ("A suffusion of yellow.",
             base::UTF16ToASCII(web_frame->contentAsText(kMaxOutputCharacters)));
@@ -2249,7 +2252,7 @@ TEST_F(RenderViewImplTest, SendProgressCompletionUpdates) {
   EXPECT_EQ(0.1, progress_value.a);
   render_thread_->sink().ClearMessages();
 
-  ProcessPendingMessages();
+  FrameLoadWaiter(frame()).Wait();
 
   // The data url has loaded, so we should see a progress change to 1.0 (done)
   // and a stop notification.
