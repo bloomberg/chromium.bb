@@ -398,5 +398,5 @@ class _Generator(object):
     # For example, optional properties may have failed to parse, but the
     # parser was able to continue.
     if self._generate_error_messages:
-      params += ('base::string16* error = NULL',)
+      params += ('base::string16* error',)
     return ', '.join(str(p) for p in params)

@@ -191,6 +191,9 @@ class _Generator(object):
       .Sblock('    %s) {' % self._GenerateParams(
           ('const base::Value& value', '%(name)s* out'))))
 
+    if self._generate_error_messages:
+      c.Append('DCHECK(error);')
+
     if type_.property_type == PropertyType.CHOICES:
       for choice in type_.choices:
         (c.Sblock('if (%s) {' % self._GenerateValueIsTypeExpression('value',
@@ -313,7 +316,10 @@ class _Generator(object):
     (c.Append('// static')
       .Append('scoped_ptr<%s> %s::FromValue(%s) {' % (classname,
         cpp_namespace, self._GenerateParams(('const base::Value& value',))))
-      .Append('  scoped_ptr<%s> out(new %s());' % (classname, classname))
+    )
+    if self._generate_error_messages:
+      c.Append('DCHECK(error);')
+    (c.Append('  scoped_ptr<%s> out(new %s());' % (classname, classname))
       .Append('  if (!Populate(%s))' % self._GenerateArgs(
           ('value', 'out.get()')))
       .Append('    return scoped_ptr<%s>();' % classname)
@@ -554,7 +560,10 @@ class _Generator(object):
     (c.Append('// static')
       .Sblock('scoped_ptr<Params> Params::Create(%s) {' % self._GenerateParams(
         ['const base::ListValue& args']))
-      .Concat(self._GenerateParamsCheck(function, 'args'))
+    )
+    if self._generate_error_messages:
+      c.Append('DCHECK(error);')
+    (c.Concat(self._GenerateParamsCheck(function, 'args'))
       .Append('scoped_ptr<Params> params(new Params());')
     )
 
@@ -990,13 +999,9 @@ class _Generator(object):
     c = Code()
     if not self._generate_error_messages:
       return c
-    (c.Append('if (error) {')
-      .Append('  if (error->length())')
-      .Append('    error->append(UTF8ToUTF16("; "));')
-      .Append('  error->append(UTF8ToUTF16(%s));' % body)
-      .Append('}')
-      .Append('else')
-      .Append('  *error = UTF8ToUTF16(%s);' % body))
+    (c.Append('if (error->length())')
+      .Append('  error->append(UTF8ToUTF16("; "));')
+      .Append('error->append(UTF8ToUTF16(%s));' % body))
     return c
 
   def _GenerateParams(self, params):

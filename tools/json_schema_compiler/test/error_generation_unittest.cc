@@ -78,7 +78,8 @@ TEST(JsonSchemaCompilerErrorTest, TooManyParameters) {
   {
     scoped_ptr<base::ListValue> params_value = List(
         new FundamentalValue(5));
-    EXPECT_TRUE(TestFunction::Params::Create(*params_value));
+    base::string16 error;
+    EXPECT_TRUE(TestFunction::Params::Create(*params_value, &error));
   }
   {
     scoped_ptr<base::ListValue> params_value = List(
@@ -96,7 +97,8 @@ TEST(JsonSchemaCompilerErrorTest, ParamIsRequired) {
   {
     scoped_ptr<base::ListValue> params_value = List(
         new FundamentalValue(5));
-    EXPECT_TRUE(TestFunction::Params::Create(*params_value));
+    base::string16 error;
+    EXPECT_TRUE(TestFunction::Params::Create(*params_value, &error));
   }
   {
     scoped_ptr<base::ListValue> params_value = List(
@@ -125,9 +127,10 @@ TEST(JsonSchemaCompilerErrorTest, WrongPropertyValueType) {
 
 TEST(JsonSchemaCompilerErrorTest, WrongParameterCreationType) {
   {
+    base::string16 error;
     scoped_ptr<base::ListValue> params_value = List(
         new base::StringValue("Yeah!"));
-    EXPECT_TRUE(TestString::Params::Create(*params_value));
+    EXPECT_TRUE(TestString::Params::Create(*params_value, &error));
   }
   {
     scoped_ptr<base::ListValue> params_value = List(
