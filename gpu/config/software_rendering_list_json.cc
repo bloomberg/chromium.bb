@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "8.2",
+  "version": "8.3",
   "entries": [
     {
       "id": 1,
@@ -429,12 +429,28 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 37,
-      "description": "Drivers are unreliable for Optimus on Linux",
-      "cr_bugs": [131308],
+      "description": "Older drivers are unreliable for Optimus on Linux",
+      "cr_bugs": [131308, 363418],
       "os": {
         "type": "linux"
       },
       "multi_gpu_style": "optimus",
+      "exceptions": [
+        {
+          "driver_vendor": {
+            "op": "=",
+            "value": "Mesa"
+          },
+          "driver_version": {
+            "op": ">=",
+            "value": "10.1"
+          },
+          "gl_vendor": {
+            "op": "beginwith",
+            "value": "Intel"
+          }
+        }
+      ],
       "features": [
         "all"
       ]
