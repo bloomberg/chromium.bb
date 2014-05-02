@@ -211,9 +211,6 @@ class HistoryUI : public content::WebUIController {
  public:
   explicit HistoryUI(content::WebUI* web_ui);
 
-  // Return the URL for a given search term.
-  static const GURL GetHistoryURLWithSearchText(const base::string16& text);
-
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);
 

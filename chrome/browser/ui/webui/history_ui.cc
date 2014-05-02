@@ -1006,12 +1006,6 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 }
 
 // static
-const GURL HistoryUI::GetHistoryURLWithSearchText(const base::string16& text) {
-  return GURL(std::string(chrome::kChromeUIHistoryURL) + "#q=" +
-              net::EscapeQueryParamValue(base::UTF16ToUTF8(text), true));
-}
-
-// static
 base::RefCountedMemory* HistoryUI::GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor) {
   return ResourceBundle::GetSharedInstance().

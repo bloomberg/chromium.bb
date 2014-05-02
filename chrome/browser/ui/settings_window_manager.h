@@ -13,6 +13,7 @@
 #include "chrome/browser/sessions/session_id.h"
 
 class Browser;
+class GURL;
 class Profile;
 
 namespace chrome {
@@ -29,9 +30,9 @@ class SettingsWindowManager {
   void AddObserver(SettingsWindowManagerObserver* observer);
   void RemoveObserver(SettingsWindowManagerObserver* observer);
 
-  // Shows an existing settings Browser window for |profile| or creates a new
-  // one. Navigates that window to |sub_page|.
-  void ShowForProfile(Profile* profile, const std::string& sub_page);
+  // Shows a chrome:// page (e.g. Settings, History) in an an existing system
+  // Browser window for |profile| or creates a new one.
+  void ShowChromePageForProfile(Profile* profile, const GURL& gurl);
 
   // If a Browser settings window for |profile| has already been created,
   // returns it, otherwise returns NULL.

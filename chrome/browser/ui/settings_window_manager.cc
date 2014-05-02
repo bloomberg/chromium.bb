@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "url/gurl.h"
 
 namespace chrome {
 
@@ -32,10 +33,8 @@ void SettingsWindowManager::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void SettingsWindowManager::ShowForProfile(Profile* profile,
-                                           const std::string& sub_page) {
-  content::RecordAction(base::UserMetricsAction("ShowOptions"));
-  GURL gurl = chrome::GetSettingsUrl(sub_page);
+void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
+                                                     const GURL& gurl) {
   // Look for an existing browser window.
   Browser* browser = FindBrowserForProfile(profile);
   if (browser) {

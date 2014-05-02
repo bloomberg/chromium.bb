@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/settings_window_manager.h"
@@ -2084,7 +2085,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, SettingsWindow) {
 
   // Open a settings window. Number of browser items should remain unchanged,
   // number of shelf items should increase.
-  settings_manager->ShowForProfile(browser()->profile(), std::string());
+  settings_manager->ShowChromePageForProfile(
+      browser()->profile(),
+      chrome::GetSettingsUrl(std::string()));
   Browser* settings_browser =
       settings_manager->FindBrowserForProfile(browser()->profile());
   ASSERT_TRUE(settings_browser);

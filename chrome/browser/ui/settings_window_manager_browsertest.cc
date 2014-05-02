@@ -11,12 +11,17 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_observer.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -45,14 +50,17 @@ class SettingsWindowTestObserver
 
 class SettingsWindowManagerTest : public InProcessBrowserTest {
  public:
-  SettingsWindowManagerTest() : test_profile_(NULL) {
-    chrome::SettingsWindowManager::GetInstance()->AddObserver(&observer_);
+  SettingsWindowManagerTest()
+      : settings_manager_(chrome::SettingsWindowManager::GetInstance()),
+        test_profile_(NULL) {
+    settings_manager_->AddObserver(&observer_);
   }
   virtual ~SettingsWindowManagerTest() {
-    chrome::SettingsWindowManager::GetInstance()->RemoveObserver(&observer_);
+    settings_manager_->RemoveObserver(&observer_);
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(::switches::kEnableSettingsWindow);
     command_line->AppendSwitch(::switches::kMultiProfiles);
   }
 
@@ -83,6 +91,11 @@ class SettingsWindowManagerTest : public InProcessBrowserTest {
     }
   }
 
+  void ShowSettingsForProfile(Profile* profile) {
+    settings_manager_->ShowChromePageForProfile(
+        profile, GURL(chrome::kChromeUISettingsURL));
+  }
+
   void CloseBrowserSynchronously(Browser* browser) {
     content::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_BROWSER_CLOSED,
@@ -91,7 +104,20 @@ class SettingsWindowManagerTest : public InProcessBrowserTest {
     observer.Wait();
   }
 
+  void CloseNonDefaultBrowsers() {
+    std::list<Browser*> browsers_to_close;
+    for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+      if (*it != browser())
+        browsers_to_close.push_back(*it);
+    }
+    for (std::list<Browser*>::iterator iter = browsers_to_close.begin();
+         iter != browsers_to_close.end(); ++iter) {
+      CloseBrowserSynchronously(*iter);
+    }
+  }
+
  protected:
+  chrome::SettingsWindowManager* settings_manager_;
   SettingsWindowTestObserver observer_;
   base::ScopedTempDir temp_profile_dir_;
   Profile* test_profile_;  // Owned by g_browser_process->profile_manager()
@@ -101,32 +127,29 @@ class SettingsWindowManagerTest : public InProcessBrowserTest {
 
 
 IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenSettingsWindow) {
-  chrome::SettingsWindowManager* settings_manager =
-      chrome::SettingsWindowManager::GetInstance();
-
   // Open a settings window.
-  settings_manager->ShowForProfile(browser()->profile(), std::string());
+  ShowSettingsForProfile(browser()->profile());
   Browser* settings_browser =
-      settings_manager->FindBrowserForProfile(browser()->profile());
+      settings_manager_->FindBrowserForProfile(browser()->profile());
   ASSERT_TRUE(settings_browser);
   // Ensure the observer fired correctly.
   EXPECT_EQ(1u, observer_.new_settings_count());
   EXPECT_EQ(settings_browser, observer_.browser());
 
   // Open the settings again: no new window.
-  settings_manager->ShowForProfile(browser()->profile(), std::string());
+  ShowSettingsForProfile(browser()->profile());
   EXPECT_EQ(settings_browser,
-            settings_manager->FindBrowserForProfile(browser()->profile()));
+            settings_manager_->FindBrowserForProfile(browser()->profile()));
   EXPECT_EQ(1u, observer_.new_settings_count());
 
   // Close the settings window.
   CloseBrowserSynchronously(settings_browser);
-  EXPECT_FALSE(settings_manager->FindBrowserForProfile(browser()->profile()));
+  EXPECT_FALSE(settings_manager_->FindBrowserForProfile(browser()->profile()));
 
   // Open a new settings window.
-  settings_manager->ShowForProfile(browser()->profile(), std::string());
+  ShowSettingsForProfile(browser()->profile());
   Browser* settings_browser2 =
-      settings_manager->FindBrowserForProfile(browser()->profile());
+      settings_manager_->FindBrowserForProfile(browser()->profile());
   ASSERT_TRUE(settings_browser2);
   EXPECT_EQ(2u, observer_.new_settings_count());
 
@@ -135,24 +158,22 @@ IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenSettingsWindow) {
 
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, SettingsWindowMultiProfile) {
-  chrome::SettingsWindowManager* settings_manager =
-      chrome::SettingsWindowManager::GetInstance();
   Profile* test_profile = CreateTestProfile();
   ASSERT_TRUE(test_profile);
 
   // Open a settings window.
-  settings_manager->ShowForProfile(browser()->profile(), std::string());
+  ShowSettingsForProfile(browser()->profile());
   Browser* settings_browser =
-      settings_manager->FindBrowserForProfile(browser()->profile());
+      settings_manager_->FindBrowserForProfile(browser()->profile());
   ASSERT_TRUE(settings_browser);
   // Ensure the observer fired correctly.
   EXPECT_EQ(1u, observer_.new_settings_count());
   EXPECT_EQ(settings_browser, observer_.browser());
 
   // Open a settings window for a new profile.
-  settings_manager->ShowForProfile(test_profile, std::string());
+  ShowSettingsForProfile(test_profile);
   Browser* settings_browser2 =
-      settings_manager->FindBrowserForProfile(test_profile);
+      settings_manager_->FindBrowserForProfile(test_profile);
   ASSERT_TRUE(settings_browser2);
   // Ensure the observer fired correctly.
   EXPECT_EQ(2u, observer_.new_settings_count());
@@ -162,3 +183,30 @@ IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, SettingsWindowMultiProfile) {
   CloseBrowserSynchronously(settings_browser2);
 }
 #endif
+
+IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenSettingsChromePages) {
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+
+  // Settings should open a new browser window.
+  chrome::ShowSettings(browser());
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+
+  // History should open a new browser window.
+  CloseNonDefaultBrowsers();
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  chrome::ShowHistory(browser());
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+
+  // Extensions should open a new browser window.
+  CloseNonDefaultBrowsers();
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  std::string extension_to_highlight;  // none
+  chrome::ShowExtensions(browser(), extension_to_highlight);
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+
+  // Downloads should NOT open a new browser window.
+  CloseNonDefaultBrowsers();
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  chrome::ShowDownloads(browser());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+}
