@@ -36,7 +36,7 @@ class RenderTextPango : public RenderText {
   virtual std::vector<Rect> GetSubstringBounds(const Range& range) OVERRIDE;
   virtual size_t TextIndexToLayoutIndex(size_t index) const OVERRIDE;
   virtual size_t LayoutIndexToTextIndex(size_t index) const OVERRIDE;
-  virtual bool IsCursorablePosition(size_t position) OVERRIDE;
+  virtual bool IsValidCursorIndex(size_t index) OVERRIDE;
   virtual void ResetLayout() OVERRIDE;
   virtual void EnsureLayout() OVERRIDE;
   virtual void DrawVisualText(Canvas* canvas) OVERRIDE;

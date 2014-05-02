@@ -45,7 +45,7 @@ std::vector<RenderText::FontSpan> RenderTextMac::GetFontSpansForTesting() {
 
   std::vector<RenderText::FontSpan> spans;
   for (size_t i = 0; i < runs_.size(); ++i) {
-    gfx::Font font(runs_[i].font_name, runs_[i].text_size);
+    Font font(runs_[i].font_name, runs_[i].text_size);
     const CFRange cf_range = CTRunGetStringRange(runs_[i].ct_run);
     const Range range(cf_range.location, cf_range.location + cf_range.length);
     spans.push_back(RenderText::FontSpan(font, range));
@@ -93,9 +93,9 @@ size_t RenderTextMac::LayoutIndexToTextIndex(size_t index) const {
   return index;
 }
 
-bool RenderTextMac::IsCursorablePosition(size_t position) {
+bool RenderTextMac::IsValidCursorIndex(size_t index) {
   // TODO(asvitkine): Implement this. http://crbug.com/131618
-  return true;
+  return IsValidLogicalIndex(index);
 }
 
 void RenderTextMac::ResetLayout() {
@@ -211,7 +211,7 @@ void RenderTextMac::ApplyStyles(CFMutableAttributedStringRef attr_string,
     end = TextIndexToLayoutIndex(style.GetRange().end());
     const CFRange range = CFRangeMake(i, end - i);
     base::ScopedCFTypeRef<CGColorRef> foreground(
-        gfx::CGColorCreateFromSkColor(style.color()));
+        CGColorCreateFromSkColor(style.color()));
     CFAttributedStringSetAttribute(attr_string, range,
         kCTForegroundColorAttributeName, foreground);
     CFArrayAppendValue(attributes_, foreground);
@@ -254,9 +254,9 @@ void RenderTextMac::ComputeRuns() {
 
   // TODO(asvitkine): Don't use GetLineOffset() until draw time, since it may be
   // updated based on alignment changes without resetting the layout.
-  gfx::Vector2d text_offset = GetLineOffset(0);
+  Vector2d text_offset = GetLineOffset(0);
   // Skia will draw glyphs with respect to the baseline.
-  text_offset += gfx::Vector2d(0, common_baseline_);
+  text_offset += Vector2d(0, common_baseline_);
 
   const SkScalar x = SkIntToScalar(text_offset.x());
   const SkScalar y = SkIntToScalar(text_offset.y());
@@ -325,7 +325,7 @@ void RenderTextMac::ComputeRuns() {
         base::mac::GetValueFromDictionary<CGColorRef>(
             attributes, kCTForegroundColorAttributeName);
     if (foreground)
-      run->foreground = gfx::CGColorRefToSkColor(foreground);
+      run->foreground = CGColorRefToSkColor(foreground);
 
     const CFNumberRef underline =
         base::mac::GetValueFromDictionary<CFNumberRef>(

@@ -378,9 +378,13 @@ class GFX_EXPORT RenderText {
   // Gets the SelectionModel from a visual point in local coordinates.
   virtual SelectionModel FindCursorPosition(const Point& point) = 0;
 
-  // Return true if cursor can appear in front of the character at |position|,
-  // which means it is a grapheme boundary or the first character in the text.
-  virtual bool IsCursorablePosition(size_t position) = 0;
+  // Returns true if the position is a valid logical index into text(), and is
+  // also a valid grapheme boundary, which may be used as a cursor position.
+  virtual bool IsValidCursorIndex(size_t index) = 0;
+
+  // Returns true if the position is a valid logical index into text(). Indices
+  // amid multi-character graphemes are allowed here, unlike IsValidCursorIndex.
+  virtual bool IsValidLogicalIndex(size_t index);
 
   // Get the visual bounds of a cursor at |caret|. These bounds typically
   // represent a vertical line if |insert_mode| is true. Pass false for
@@ -388,8 +392,7 @@ class GFX_EXPORT RenderText {
   // are in local coordinates, but may be outside the visible region if the text
   // is longer than the textfield. Subsequent text, cursor, or bounds changes
   // may invalidate returned values. Note that |caret| must be placed at
-  // grapheme boundary, that is, |IsCursorablePosition(caret.caret_pos())| must
-  // return true.
+  // grapheme boundary, i.e. caret.caret_pos() must be a cursorable position.
   Rect GetCursorBounds(const SelectionModel& caret, bool insert_mode);
 
   // Compute the current cursor bounds, panning the text to show the cursor in
@@ -398,10 +401,9 @@ class GFX_EXPORT RenderText {
   const Rect& GetUpdatedCursorBounds();
 
   // Given an |index| in text(), return the next or previous grapheme boundary
-  // in logical order (that is, the nearest index for which
-  // |IsCursorablePosition(index)| returns true). The return value is in the
-  // range 0 to text().length() inclusive (the input is clamped if it is out of
-  // that range). Always moves by at least one character index unless the
+  // in logical order (i.e. the nearest cursorable index). The return value is
+  // in the range 0 to text().length() inclusive (the input is clamped if it is
+  // out of that range). Always moves by at least one character index unless the
   // supplied index is already at the boundary of the string.
   size_t IndexOfAdjacentGrapheme(size_t index,
                                  LogicalCursorDirection direction);
