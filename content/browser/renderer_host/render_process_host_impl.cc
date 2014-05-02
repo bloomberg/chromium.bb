@@ -702,7 +702,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       storage_partition_impl_->GetIndexedDBContext(),
       ChromeBlobStorageContext::GetFor(browser_context)));
 
-  geolocation_dispatcher_host_ = GeolocationDispatcherHost::New(
+  geolocation_dispatcher_host_ = new GeolocationDispatcherHost(
       GetID(), browser_context->GetGeolocationPermissionContext());
   AddFilter(geolocation_dispatcher_host_);
   gpu_message_filter_ = new GpuMessageFilter(GetID(), widget_helper_.get());
