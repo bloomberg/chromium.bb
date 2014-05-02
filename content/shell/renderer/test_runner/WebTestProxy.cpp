@@ -6,8 +6,6 @@
 
 #include <cctype>
 
-#include "base/callback_helpers.h"
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "content/shell/renderer/test_runner/event_sender.h"
 #include "content/shell/renderer/test_runner/MockColorChooser.h"
@@ -452,66 +450,32 @@ string WebTestProxyBase::captureTree(bool debugRenderTree)
 
 SkCanvas* WebTestProxyBase::capturePixels()
 {
-    TRACE_EVENT0("shell", "WebTestProxyBase::capturePixels");
     webWidget()->layout();
     if (m_testInterfaces->testRunner()->isPrinting())
         paintPagesWithBoundaries();
     else
         paintInvalidatedRegion();
 
-    DrawSelectionRect(canvas());
+    // See if we need to draw the selection bounds rect. Selection bounds
+    // rect is the rect enclosing the (possibly transformed) selection.
+    // The rect should be drawn after everything is laid out and painted.
+    if (m_testInterfaces->testRunner()->shouldDumpSelectionRect()) {
+        // If there is a selection rect - draw a red 1px border enclosing rect
+        WebRect wr = webView()->mainFrame()->selectionBoundsRect();
+        if (!wr.isEmpty()) {
+            // Render a red rectangle bounding selection rect
+            SkPaint paint;
+            paint.setColor(0xFFFF0000); // Fully opaque red
+            paint.setStyle(SkPaint::kStroke_Style);
+            paint.setFlags(SkPaint::kAntiAlias_Flag);
+            paint.setStrokeWidth(1.0f);
+            SkIRect rect; // Bounding rect
+            rect.set(wr.x, wr.y, wr.x + wr.width, wr.y + wr.height);
+            canvas()->drawIRect(rect, paint);
+        }
+    }
 
     return canvas();
-}
-
-void WebTestProxyBase::DrawSelectionRect(SkCanvas* canvas) {
-  // See if we need to draw the selection bounds rect. Selection bounds
-  // rect is the rect enclosing the (possibly transformed) selection.
-  // The rect should be drawn after everything is laid out and painted.
-  if (!m_testInterfaces->testRunner()->shouldDumpSelectionRect())
-    return;
-  // If there is a selection rect - draw a red 1px border enclosing rect
-  WebRect wr = webView()->mainFrame()->selectionBoundsRect();
-  if (wr.isEmpty())
-    return;
-  // Render a red rectangle bounding selection rect
-  SkPaint paint;
-  paint.setColor(0xFFFF0000);  // Fully opaque red
-  paint.setStyle(SkPaint::kStroke_Style);
-  paint.setFlags(SkPaint::kAntiAlias_Flag);
-  paint.setStrokeWidth(1.0f);
-  SkIRect rect;  // Bounding rect
-  rect.set(wr.x, wr.y, wr.x + wr.width, wr.y + wr.height);
-  canvas->drawIRect(rect, paint);
-}
-
-void WebTestProxyBase::didCompositeAndReadback(const SkBitmap& bitmap) {
-  TRACE_EVENT2("shell",
-               "WebTestProxyBase::didCompositeAndReadback",
-               "x",
-               bitmap.info().fWidth,
-               "y",
-               bitmap.info().fHeight);
-  SkCanvas canvas(bitmap);
-  DrawSelectionRect(&canvas);
-  base::ResetAndReturn(&m_compositeAndReadbackCallback).Run(bitmap);
-}
-
-void WebTestProxyBase::CapturePixelsAsync(
-    base::Callback<void(const SkBitmap&)> callback) {
-  m_compositeAndReadbackCallback = callback;
-  TRACE_EVENT0("shell", "WebTestProxyBase::CapturePixelsAsync");
-
-  // Do a layout here because it might leave compositing mode! x.x
-  // TODO(danakj): Remove this when we have kForceCompositingMode everywhere.
-  webWidget()->layout();
-
-  if (!webWidget()->compositeAndReadbackAsync(this)) {
-    TRACE_EVENT0("shell",
-                 "WebTestProxyBase::CapturePixelsAsync "
-                 "compositeAndReadbackAsync failed");
-    didCompositeAndReadback(SkBitmap());
-  }
 }
 
 void WebTestProxyBase::setLogConsoleOutput(bool enabled)

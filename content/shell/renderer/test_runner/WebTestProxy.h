@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
-#include "third_party/WebKit/public/platform/WebCompositeAndReadbackAsyncCallback.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -87,7 +86,7 @@ namespace content {
 
 class RenderFrame;
 
-class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
+class WebTestProxyBase {
 public:
     void setInterfaces(WebTestRunner::WebTestInterfaces*);
     void setDelegate(WebTestRunner::WebTestDelegate*);
@@ -104,7 +103,6 @@ public:
 
     std::string captureTree(bool debugRenderTree);
     SkCanvas* capturePixels();
-    void CapturePixelsAsync(base::Callback<void(const SkBitmap&)> callback);
 
     void setLogConsoleOutput(bool enabled);
 
@@ -131,9 +129,6 @@ public:
     void didForceResize();
 
     void postSpellCheckEvent(const blink::WebString& eventName);
-
-    // WebCompositeAndReadbackAsyncCallback implementation.
-    virtual void didCompositeAndReadback(const SkBitmap& bitmap);
 
 protected:
     WebTestProxyBase();
@@ -202,7 +197,6 @@ private:
     SkCanvas* canvas();
     void invalidateAll();
     void animateNow();
-    void DrawSelectionRect(SkCanvas* canvas);
 
     blink::WebWidget* webWidget();
 
@@ -222,7 +216,6 @@ private:
     bool m_animateScheduled;
     std::map<unsigned, std::string> m_resourceIdentifierMap;
     std::map<unsigned, blink::WebURLRequest> m_requestMap;
-    base::Callback<void(const SkBitmap&)> m_compositeAndReadbackCallback;
 
     bool m_logConsoleOutput;
     int m_chooserCount;
