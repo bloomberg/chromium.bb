@@ -16,4 +16,14 @@ PASS Math.round(feAFunc.intercept.baseVal * 100) is 10
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+    )
+  )
+)
 
