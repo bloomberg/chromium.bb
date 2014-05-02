@@ -2722,7 +2722,8 @@ TEST_F(GLES2ImplementationTest, GetString) {
   const char* expected_str =
       "foobar "
       "GL_CHROMIUM_flipy "
-      "GL_EXT_unpack_subimage";
+      "GL_EXT_unpack_subimage "
+      "GL_CHROMIUM_map_sub";
   const char kBad = 0x12;
   struct Cmds {
     cmd::SetBucketSize set_bucket_size1;
