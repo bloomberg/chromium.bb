@@ -963,7 +963,7 @@ void TileManager::AssignGpuMemoryToTiles(
   memory_stats_from_last_assign_.bytes_allocated =
       hard_bytes_allocatable - hard_bytes_left;
   memory_stats_from_last_assign_.bytes_unreleasable =
-      hard_bytes_allocatable - bytes_releasable_;
+      resource_pool_->acquired_memory_usage_bytes() - bytes_releasable_;
   memory_stats_from_last_assign_.bytes_over = bytes_that_exceeded_memory_budget;
 }
 
