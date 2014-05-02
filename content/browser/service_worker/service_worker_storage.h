@@ -18,10 +18,6 @@
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 namespace quota {
 class QuotaManagerProxy;
 }
@@ -50,7 +46,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
 
   ServiceWorkerStorage(const base::FilePath& path,
                        base::WeakPtr<ServiceWorkerContextCore> context,
-                       base::SequencedTaskRunner* database_task_runner,
                        quota::QuotaManagerProxy* quota_manager_proxy);
   ~ServiceWorkerStorage();
 
@@ -142,7 +137,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
 
   base::FilePath path_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
-  scoped_refptr<base::SequencedTaskRunner> database_task_runner_;
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerStorage);

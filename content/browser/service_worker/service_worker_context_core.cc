@@ -77,12 +77,11 @@ void ServiceWorkerContextCore::ProviderHostIterator::Initialize() {
 
 ServiceWorkerContextCore::ServiceWorkerContextCore(
     const base::FilePath& path,
-    base::SequencedTaskRunner* database_task_runner,
     quota::QuotaManagerProxy* quota_manager_proxy,
     ObserverListThreadSafe<ServiceWorkerContextObserver>* observer_list,
     scoped_ptr<ServiceWorkerProcessManager> process_manager)
-    : storage_(new ServiceWorkerStorage(
-          path, AsWeakPtr(), database_task_runner, quota_manager_proxy)),
+    : storage_(
+          new ServiceWorkerStorage(path, AsWeakPtr(), quota_manager_proxy)),
       embedded_worker_registry_(new EmbeddedWorkerRegistry(AsWeakPtr())),
       job_coordinator_(new ServiceWorkerJobCoordinator(AsWeakPtr())),
       process_manager_(process_manager.Pass()),

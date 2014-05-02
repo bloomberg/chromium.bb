@@ -74,7 +74,6 @@ class ServiceWorkerStorageTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     context_.reset(new ServiceWorkerContextCore(
         base::FilePath(),
-        base::MessageLoopProxy::current(),
         NULL,
         NULL,
         scoped_ptr<ServiceWorkerProcessManager>()));
