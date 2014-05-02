@@ -148,7 +148,7 @@ class WebGLContextLostFromLoseContextExtensionPage(page.Page):
       url='file://webgl.html?query=WEBGL_lose_context',
       page_set=page_set,
       base_dir=base_dir)
-    self.name = 'ContextLost.WebGLContextLostFromLoseContextExtension',
+    self.name = 'ContextLost.WebGLContextLostFromLoseContextExtension'
     self.script_to_evaluate_on_commit = harness_script
     self.kill_gpu_process = False
     self.force_garbage_collection = False
