@@ -44,8 +44,6 @@ class ExceptionState;
 class TextTrackCue : public RefCountedWillBeRefCountedGarbageCollected<TextTrackCue>, public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<TextTrackCue>);
 public:
-    static bool isInfiniteOrNonNumber(double value, ExceptionState&);
-
     static const AtomicString& cueShadowPseudoId()
     {
         DEFINE_STATIC_LOCAL(const AtomicString, cue, ("cue", AtomicString::ConstructFromLiteral));
@@ -63,10 +61,10 @@ public:
     void setId(const AtomicString&);
 
     double startTime() const { return m_startTime; }
-    void setStartTime(double, ExceptionState&);
+    void setStartTime(double);
 
     double endTime() const { return m_endTime; }
-    void setEndTime(double, ExceptionState&);
+    void setEndTime(double);
 
     bool pauseOnExit() const { return m_pauseOnExit; }
     void setPauseOnExit(bool);

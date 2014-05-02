@@ -77,22 +77,22 @@ shouldBe("m.high", "200.0");
 shouldBe("m.optimum", "12.5");
 
 debug("Set value to invalid value");
-shouldThrow('m.value = "value";', '"TypeError: Failed to set the \'value\' property on \'HTMLMeterElement\': The value provided is not a number."');
+shouldThrow('m.value = "value";');
 
 debug("Set min to NaN");
-shouldThrow('m.min = NaN;', '"TypeError: Failed to set the \'min\' property on \'HTMLMeterElement\': The value provided is not a number."');
+shouldThrow('m.min = NaN;');
 
 debug("Set max to Infinity");
-shouldThrow('m.max = Infinity;', '"TypeError: Failed to set the \'max\' property on \'HTMLMeterElement\': The value provided is infinite."');
+shouldThrow('m.max = Infinity;');
 
 debug("Set low to invalid value");
-shouldThrow('m.low = "low";', '"TypeError: Failed to set the \'low\' property on \'HTMLMeterElement\': The value provided is not a number."');
+shouldThrow('m.low = "low";');
 
 debug("Set high to NaN");
-shouldThrow('m.high = NaN;', '"TypeError: Failed to set the \'high\' property on \'HTMLMeterElement\': The value provided is not a number."');
+shouldThrow('m.high = NaN;');
 
 debug("Set optimum to Infinity");
-shouldThrow('m.optimum = Infinity;', '"TypeError: Failed to set the \'optimum\' property on \'HTMLMeterElement\': The value provided is infinite."');
+shouldThrow('m.optimum = Infinity;');
 
 debug("Set attributes to valid numbers");
 m.setAttribute("min", 0);

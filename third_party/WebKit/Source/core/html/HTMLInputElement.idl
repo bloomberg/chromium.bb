@@ -19,6 +19,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#htmlinputelement
+
 interface HTMLInputElement : HTMLElement {
     [Reflect] attribute DOMString accept;
     [Reflect] attribute DOMString align;
@@ -60,7 +62,7 @@ interface HTMLInputElement : HTMLElement {
     // See the discussion in https://bugs.webkit.org/show_bug.cgi?id=100085
     [TreatNullAs=NullString, RaisesException=Setter, CustomElementCallbacks] attribute DOMString value;
     [RaisesException=Setter, CustomElementCallbacks] attribute Date? valueAsDate;
-    [RaisesException=Setter, CustomElementCallbacks] attribute double valueAsNumber;
+    [RaisesException=Setter, CustomElementCallbacks] attribute unrestricted double valueAsNumber;
 
     [RaisesException, CustomElementCallbacks] void stepUp(optional long n);
     [RaisesException, CustomElementCallbacks] void stepDown(optional long n);

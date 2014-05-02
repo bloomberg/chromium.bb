@@ -17,10 +17,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-interface HTMLProgressElement : HTMLElement {
-             [RaisesException=Setter] attribute  double                value;
-             [RaisesException=Setter] attribute  double                max;
-    readonly attribute  double                position;
-    readonly attribute  NodeList              labels;
-};
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/the-button-element.html#htmlprogresselement
 
+[
+    TypeChecking=Unrestricted,
+] interface HTMLProgressElement : HTMLElement {
+             attribute double value;
+             attribute double max;
+    readonly attribute double position;
+    readonly attribute NodeList labels;
+};

@@ -23,6 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#mediacontroller
+
 [
     Constructor,
     ConstructorCallWith=ExecutionContext,

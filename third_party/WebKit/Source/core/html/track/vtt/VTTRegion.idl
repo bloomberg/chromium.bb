@@ -26,6 +26,7 @@
 [
     Constructor,
     RuntimeEnabled=WebVTTRegions,
+    TypeChecking=Unrestricted,
     WillBeGarbageCollected,
 ] interface VTTRegion {
     readonly attribute TextTrack track;
@@ -39,4 +40,3 @@
     [RaisesException=Setter] attribute double viewportAnchorY;
     [RaisesException=Setter] attribute DOMString scroll;
 };
-

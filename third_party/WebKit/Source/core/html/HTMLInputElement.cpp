@@ -1054,6 +1054,8 @@ double HTMLInputElement::valueAsNumber() const
 
 void HTMLInputElement::setValueAsNumber(double newValue, ExceptionState& exceptionState, TextFieldEventBehavior eventBehavior)
 {
+    // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-input-element-attributes.html#dom-input-valueasnumber
+    // On setting, if the new value is infinite, then throw a TypeError exception.
     if (std::isinf(newValue)) {
         exceptionState.throwTypeError(ExceptionMessages::notAFiniteNumber(newValue));
         return;

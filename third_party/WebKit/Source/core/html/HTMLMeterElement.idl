@@ -17,12 +17,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
-interface HTMLMeterElement : HTMLElement {
-             [RaisesException=Setter] attribute double value;
-             [RaisesException=Setter] attribute double min;
-             [RaisesException=Setter] attribute double max;
-             [RaisesException=Setter] attribute double low;
-             [RaisesException=Setter] attribute double high;
-             [RaisesException=Setter] attribute double optimum;
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/the-button-element.html#htmlmeterelement
+
+[
+    TypeChecking=Unrestricted,
+] interface HTMLMeterElement : HTMLElement {
+             attribute double value;
+             attribute double min;
+             attribute double max;
+             attribute double low;
+             attribute double high;
+             attribute double optimum;
     readonly attribute NodeList labels;
 };

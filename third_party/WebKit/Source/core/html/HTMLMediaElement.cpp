@@ -1926,10 +1926,11 @@ double HTMLMediaElement::defaultPlaybackRate() const
 
 void HTMLMediaElement::setDefaultPlaybackRate(double rate)
 {
-    if (m_defaultPlaybackRate != rate) {
-        m_defaultPlaybackRate = rate;
-        scheduleEvent(EventTypeNames::ratechange);
-    }
+    if (m_defaultPlaybackRate == rate)
+        return;
+
+    m_defaultPlaybackRate = rate;
+    scheduleEvent(EventTypeNames::ratechange);
 }
 
 double HTMLMediaElement::playbackRate() const
@@ -2105,16 +2106,17 @@ void HTMLMediaElement::setVolume(double vol, ExceptionState& exceptionState)
 {
     WTF_LOG(Media, "HTMLMediaElement::setVolume(%f)", vol);
 
+    if (m_volume == vol)
+        return;
+
     if (vol < 0.0f || vol > 1.0f) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexOutsideRange("volume", vol, 0.0, ExceptionMessages::InclusiveBound, 1.0, ExceptionMessages::InclusiveBound));
         return;
     }
 
-    if (m_volume != vol) {
-        m_volume = vol;
-        updateVolume();
-        scheduleEvent(EventTypeNames::volumechange);
-    }
+    m_volume = vol;
+    updateVolume();
+    scheduleEvent(EventTypeNames::volumechange);
 }
 
 bool HTMLMediaElement::muted() const

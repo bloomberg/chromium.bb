@@ -115,12 +115,10 @@ static const String& verticalGrowingRightKeyword()
     return verticallr;
 }
 
-static bool isInvalidPercentage(double value, ExceptionState& exceptionState)
+static bool isInvalidPercentage(int value, ExceptionState& exceptionState)
 {
-    if (TextTrackCue::isInfiniteOrNonNumber(value, exceptionState))
-        return true;
     if (value < 0 || value > 100) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexOutsideRange("value", value, 0.0, ExceptionMessages::InclusiveBound, 100.0, ExceptionMessages::InclusiveBound));
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexOutsideRange("value", value, 0, ExceptionMessages::InclusiveBound, 100, ExceptionMessages::InclusiveBound));
         return true;
     }
     return false;

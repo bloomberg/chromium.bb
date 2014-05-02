@@ -95,30 +95,30 @@ void HTMLProgressElement::attach(const AttachContext& context)
 double HTMLProgressElement::value() const
 {
     double value = getFloatingPointAttribute(valueAttr);
+    // Otherwise, if the parsed value was greater than or equal to the maximum
+    // value, then the current value of the progress bar is the maximum value
+    // of the progress bar. Otherwise, if parsing the value attribute's value
+    // resulted in an error, or a number less than or equal to zero, then the
+    // current value of the progress bar is zero.
     return !std::isfinite(value) || value < 0 ? 0 : std::min(value, max());
 }
 
-void HTMLProgressElement::setValue(double value, ExceptionState& exceptionState)
+void HTMLProgressElement::setValue(double value)
 {
-    if (!std::isfinite(value)) {
-        exceptionState.throwTypeError(ExceptionMessages::notAFiniteNumber(value));
-        return;
-    }
     setFloatingPointAttribute(valueAttr, std::max(value, 0.));
 }
 
 double HTMLProgressElement::max() const
 {
     double max = getFloatingPointAttribute(maxAttr);
+    // Otherwise, if the element has no max attribute, or if it has one but
+    // parsing it resulted in an error, or if the parsed value was less than or
+    // equal to zero, then the maximum value of the progress bar is 1.0.
     return !std::isfinite(max) || max <= 0 ? 1 : max;
 }
 
-void HTMLProgressElement::setMax(double max, ExceptionState& exceptionState)
+void HTMLProgressElement::setMax(double max)
 {
-    if (!std::isfinite(max)) {
-        exceptionState.throwTypeError(ExceptionMessages::notAFiniteNumber(max));
-        return;
-    }
     // FIXME: The specification says we should ignore the input value if it is inferior or equal to 0.
     setFloatingPointAttribute(maxAttr, max > 0 ? max : 1);
 }

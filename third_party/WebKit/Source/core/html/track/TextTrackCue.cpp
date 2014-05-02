@@ -42,15 +42,6 @@ namespace WebCore {
 
 static const int invalidCueIndex = -1;
 
-bool TextTrackCue::isInfiniteOrNonNumber(double value, ExceptionState& exceptionState)
-{
-    if (!std::isfinite(value)) {
-        exceptionState.throwTypeError(ExceptionMessages::notAFiniteNumber(value));
-        return true;
-    }
-    return false;
-}
-
 TextTrackCue::TextTrackCue(double start, double end)
     : m_startTime(start)
     , m_endTime(end)
@@ -98,12 +89,8 @@ void TextTrackCue::setId(const AtomicString& id)
     cueDidChange();
 }
 
-void TextTrackCue::setStartTime(double value, ExceptionState& exceptionState)
+void TextTrackCue::setStartTime(double value)
 {
-    // NaN, Infinity and -Infinity values should trigger a TypeError.
-    if (isInfiniteOrNonNumber(value, exceptionState))
-        return;
-
     // TODO(93143): Add spec-compliant behavior for negative time values.
     if (m_startTime == value || value < 0)
         return;
@@ -113,12 +100,8 @@ void TextTrackCue::setStartTime(double value, ExceptionState& exceptionState)
     cueDidChange();
 }
 
-void TextTrackCue::setEndTime(double value, ExceptionState& exceptionState)
+void TextTrackCue::setEndTime(double value)
 {
-    // NaN, Infinity and -Infinity values should trigger a TypeError.
-    if (isInfiniteOrNonNumber(value, exceptionState))
-        return;
-
     // TODO(93143): Add spec-compliant behavior for negative time values.
     if (m_endTime == value || value < 0)
         return;

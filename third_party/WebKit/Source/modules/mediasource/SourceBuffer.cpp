@@ -244,12 +244,12 @@ void SourceBuffer::setAppendWindowEnd(double end, ExceptionState& exceptionState
         return;
 
     // 3. If the new value equals NaN, then throw an InvalidAccessError and abort these steps.
-    // 4. If the new value is less than or equal to appendWindowStart then throw an InvalidAccessError
-    //    exception and abort these steps.
     if (std::isnan(end)) {
         exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::notAFiniteNumber(end));
         return;
     }
+    // 4. If the new value is less than or equal to appendWindowStart then throw an InvalidAccessError
+    //    exception and abort these steps.
     if (end <= m_appendWindowStart) {
         // FIXME: Use ExceptionState::indexExceedsMinimumBound() once it lands.
         exceptionState.throwDOMException(InvalidAccessError, "The value provided ('" + String::number(end) + "') is less than or equal to the minimum value (" + String::number(m_appendWindowStart) + ").");
