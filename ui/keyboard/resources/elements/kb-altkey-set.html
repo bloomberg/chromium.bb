@@ -4,7 +4,8 @@
   -- found in the LICENSE file.
   -->
 
-<polymer-element name="kb-altkey-set" attributes="offset char">
+<polymer-element name="kb-altkey-set" attributes="offset char"
+    on-pointerout="{{out}}">
   <template>
     <style>
       :host {

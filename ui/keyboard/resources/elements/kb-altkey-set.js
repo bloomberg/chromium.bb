@@ -4,4 +4,7 @@
 
 Polymer('kb-altkey-set', {
   offset: 0,
+  out: function(e) {
+    e.stopPropagation();
+  }
 });
