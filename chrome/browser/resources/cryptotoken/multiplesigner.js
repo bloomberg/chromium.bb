@@ -6,8 +6,6 @@
  * @fileoverview A multiple gnubby signer wraps the process of opening a number
  * of gnubbies, signing each challenge in an array of challenges until a
  * success condition is satisfied, and yielding each succeeding gnubby.
- *
- * @author juanlang@google.com (Juan Lang)
  */
 'use strict';
 
@@ -91,10 +89,9 @@ MultipleGnubbySigner.prototype.close = function() {
  * object's values are base64-encoded.
  * If the signer is currently idle, begins signing the new challenges.
  *
- * @param {Array} challenges
- * @param {boolean} finalChallenges
+ * @param {Array} challenges Encoded challenges
+ * @param {boolean} finalChallenges True iff there are no more challenges to add
  * @return {boolean} whether the challenges were successfully added.
- * @public
  */
 MultipleGnubbySigner.prototype.addEncodedChallenges =
     function(challenges, finalChallenges) {
@@ -120,10 +117,9 @@ MultipleGnubbySigner.prototype.addEncodedChallenges =
  * Adds challenges to the set of challenges being tried by this signer.
  * If the signer is currently idle, begins signing the new challenges.
  *
- * @param {Array.<SignHelperChallenge>} challenges
- * @param {boolean} finalChallenges
+ * @param {Array.<SignHelperChallenge>} challenges Challenges to add
+ * @param {boolean} finalChallenges True iff there are no more challnges to add
  * @return {boolean} whether the challenges were successfully added.
- * @public
  */
 MultipleGnubbySigner.prototype.addChallenges =
     function(challenges, finalChallenges) {
@@ -154,7 +150,6 @@ MultipleGnubbySigner.prototype.addChallenges =
  * challenges to sign, begins signing on the new gnubby with them.
  * @param {llGnubbyDeviceId} gnubbyIndex The index of the gnubby to add.
  * @return {boolean} Whether the gnubby was added successfully.
- * @public
  */
 MultipleGnubbySigner.prototype.addGnubby = function(gnubbyIndex) {
   if (this.numComplete_ && this.numComplete_ == this.signers_.length)
@@ -208,7 +203,7 @@ MultipleGnubbySigner.prototype.signFailedCallback_ = function(index, code) {
  * @param {number} index the index of the gnubby whose result this is
  * @param {usbGnubby} gnubby the underlying gnubby that succeded.
  * @param {number} code the result code of the sign operation
- * @param {SingleSignerResult=} signResult
+ * @param {SingleSignerResult=} signResult Result object
  * @private
  */
 MultipleGnubbySigner.prototype.signSucceededCallback_ =
@@ -255,10 +250,10 @@ MultipleGnubbySigner.prototype.notifyComplete_ = function() {
 };
 
 /**
- * @param {number} code
- * @param {usbGnubby} gnubby
- * @param {number} gnubbyIndex
- * @param {SingleSignerResult=} singleSignerResult
+ * @param {number} code Success status code
+ * @param {usbGnubby} gnubby The gnubby that succeeded
+ * @param {number} gnubbyIndex The gnubby's index
+ * @param {SingleSignerResult=} singleSignerResult Result object
  * @private
  */
 MultipleGnubbySigner.prototype.notifySuccess_ =

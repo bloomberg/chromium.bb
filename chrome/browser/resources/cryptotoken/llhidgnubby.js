@@ -81,7 +81,7 @@ llHidGnubby.prototype.destroy = function() {
 
 /**
  * Push frame to all clients.
- * @param {ArrayBuffer} f
+ * @param {ArrayBuffer} f Data to push
  * @private
  */
 llHidGnubby.prototype.publishFrame_ = function(f) {
@@ -188,7 +188,7 @@ llHidGnubby.prototype.readLoop_ = function() {
   // Instead we will see the device drop and re-appear on the bus.
   // Current libusb on some platforms gets unhappy when transfer are pending
   // when that happens.
-  // TODO(mschilder): revisit once Chrome stabilizes its behavior.
+  // TODO: revisit once Chrome stabilizes its behavior.
   if (this.updating) {
     console.log(UTIL_fmt('device updating. Ending readLoop()'));
     return;
@@ -218,8 +218,8 @@ llHidGnubby.prototype.readLoop_ = function() {
 
 /**
  * Check whether channel is locked for this request or not.
- * @param {number} cid
- * @param {number} cmd
+ * @param {number} cid Channel id
+ * @param {number} cmd Request command
  * @return {boolean} true if not locked for this request.
  * @private
  */
@@ -254,9 +254,9 @@ llHidGnubby.prototype.checkLock_ = function(cid, cmd) {
 
 /**
  * Update or grab lock.
- * @param {number} cid
- * @param {number} cmd
- * @param {number} arg
+ * @param {number} cid Channel ID
+ * @param {number} cmd Command
+ * @param {number} arg Command argument
  * @private
  */
 llHidGnubby.prototype.updateLock_ = function(cid, cmd, arg) {
@@ -299,7 +299,7 @@ llHidGnubby.prototype.updateLock_ = function(cid, cmd, arg) {
  * If queue was empty, initiate the write.
  * @param {number} cid The client's channel ID.
  * @param {number} cmd The command to send.
- * @param {ArrayBuffer} data
+ * @param {ArrayBuffer} data Command arguments
  */
 llHidGnubby.prototype.queueCommand = function(cid, cmd, data) {
   if (!this.dev) return;
@@ -336,7 +336,7 @@ llHidGnubby.prototype.queueCommand = function(cid, cmd, data) {
 
 /**
  * Sets the channel id in the frame.
- * @param {Uint8Array} frame
+ * @param {Uint8Array} frame Data frame
  * @param {number} cid The client's channel ID.
  * @private
  */
@@ -350,10 +350,10 @@ llHidGnubby.setCid_ = function(frame, cid) {
 /**
  * Updates the lock, and queues the frame for sending. Also begins sending if
  * no other writes are outstanding.
- * @param {ArrayBuffer} frame
+ * @param {ArrayBuffer} frame Data frame
  * @param {number} cid The client's channel ID.
  * @param {number} cmd The command to send.
- * @param {number} arg
+ * @param {number} arg Command argument
  * @private
  */
 llHidGnubby.prototype.queueFrame_ = function(frame, cid, cmd, arg) {
@@ -404,7 +404,7 @@ llHidGnubby.prototype.writePump_ = function() {
   );
 };
 /**
- * @param {function(Array)} cb
+ * @param {function(Array)} cb Enumeration callback
  */
 llHidGnubby.enumerate = function(cb) {
   chrome.hid.getDevices({'vendorId': 4176, 'productId': 512}, cb);
@@ -435,7 +435,7 @@ llHidGnubby.open = function(gnubbies, which, dev, cb) {
 };
 
 /**
- * @param {*} dev
+ * @param {*} dev A browser API device object
  * @return {llGnubbyDeviceId} A device identifier for the device.
  */
 llHidGnubby.deviceToDeviceId = function(dev) {
@@ -446,7 +446,7 @@ llHidGnubby.deviceToDeviceId = function(dev) {
 
 /**
  * Registers this implementation with gnubbies.
- * @param {Gnubbies} gnubbies
+ * @param {Gnubbies} gnubbies Gnubbies registry
  */
 llHidGnubby.register = function(gnubbies) {
   var HID_GNUBBY_IMPL = {

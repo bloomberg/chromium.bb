@@ -4,13 +4,12 @@
 
 /**
  * @fileoverview Implements an enroll helper using USB gnubbies.
- * @author juanlang@google.com (Juan Lang)
  */
 'use strict';
 
 /**
- * @param {!GnubbyFactory} factory
- * @param {!Countdown} timer
+ * @param {!GnubbyFactory} factory A factory for Gnubby instances
+ * @param {!Countdown} timer A timer for enroll timeout
  * @param {function(number, boolean)} errorCb Called when an enroll request
  *     fails with an error code and whether any gnubbies were found.
  * @param {function(string, string)} successCb Called with the result of a
@@ -100,7 +99,7 @@ UsbEnrollHelper.prototype.getSomeGnubbies_ = function() {
 /**
  * Called with the result of enumerating gnubbies.
  * @param {number} rc the result of the enumerate.
- * @param {Array.<llGnubbyDeviceId>} indexes
+ * @param {Array.<llGnubbyDeviceId>} indexes Device ids of enumerated gnubbies
  * @private
  */
 UsbEnrollHelper.prototype.enumerateCallback_ = function(rc, indexes) {
@@ -148,7 +147,7 @@ UsbEnrollHelper.prototype.maybeReEnumerateGnubbies_ = function() {
 
 /**
  * Called with the result of enumerating gnubby indexes.
- * @param {Array.<llGnubbyDeviceId>} indexes
+ * @param {Array.<llGnubbyDeviceId>} indexes Device ids of enumerated gnubbies
  * @private
  */
 UsbEnrollHelper.prototype.gotSomeGnubbies_ = function(indexes) {
@@ -201,8 +200,8 @@ UsbEnrollHelper.prototype.signerCompleted_ = function(anySucceeded, errorCode) {
 
 /**
  * Called when a MultipleGnubbySigner finds a gnubby that can enroll.
- * @param {number} code
- * @param {MultipleSignerResult} signResult
+ * @param {number} code Status code
+ * @param {MultipleSignerResult} signResult Signature results
  * @private
  */
 UsbEnrollHelper.prototype.signerFoundGnubby_ = function(code, signResult) {
@@ -224,7 +223,7 @@ UsbEnrollHelper.prototype.signerFoundGnubby_ = function(code, signResult) {
 /**
  * Attempts to match the gnubby's U2F version with an appropriate enroll
  * challenge.
- * @param {usbGnubby} gnubby
+ * @param {usbGnubby} gnubby Gnubby instance
  * @private
  */
 UsbEnrollHelper.prototype.matchEnrollVersionToGnubby_ = function(gnubby) {
@@ -236,7 +235,7 @@ UsbEnrollHelper.prototype.matchEnrollVersionToGnubby_ = function(gnubby) {
 
 /**
  * Called with the result of a version command.
- * @param {usbGnubby} gnubby
+ * @param {usbGnubby} gnubby Gnubby instance
  * @param {number} rc result of version command.
  * @param {ArrayBuffer=} data version.
  * @private
@@ -252,7 +251,7 @@ UsbEnrollHelper.prototype.gnubbyVersioned_ = function(gnubby, rc, data) {
 
 /**
  * Drops the gnubby from the list of eligible gnubbies.
- * @param {usbGnubby} gnubby
+ * @param {usbGnubby} gnubby Gnubby instance
  * @private
  */
 UsbEnrollHelper.prototype.removeWaitingGnubby_ = function(gnubby) {
@@ -266,7 +265,7 @@ UsbEnrollHelper.prototype.removeWaitingGnubby_ = function(gnubby) {
 /**
  * Drops the gnubby from the list of eligible gnubbies, as it has the wrong
  * version.
- * @param {usbGnubby} gnubby
+ * @param {usbGnubby} gnubby Gnubby instance
  * @private
  */
 UsbEnrollHelper.prototype.removeWrongVersionGnubby_ = function(gnubby) {
@@ -280,8 +279,8 @@ UsbEnrollHelper.prototype.removeWrongVersionGnubby_ = function(gnubby) {
 /**
  * Attempts enrolling a particular gnubby with a challenge of the appropriate
  * version.
- * @param {usbGnubby} gnubby
- * @param {string} version
+ * @param {usbGnubby} gnubby Gnubby instance
+ * @param {string} version Protocol version
  * @private
  */
 UsbEnrollHelper.prototype.tryEnroll_ = function(gnubby, version) {
@@ -298,7 +297,7 @@ UsbEnrollHelper.prototype.tryEnroll_ = function(gnubby, version) {
 
 /**
  * Finds the (first) challenge of the given version in this helper's challenges.
- * @param {string} version
+ * @param {string} version Protocol version
  * @return {Object} challenge, if found, or null if not.
  * @private
  */
@@ -313,10 +312,10 @@ UsbEnrollHelper.prototype.getChallengeOfVersion_ = function(version) {
 
 /**
  * Called with the result of an enroll request to a gnubby.
- * @param {usbGnubby} gnubby
- * @param {string} version
- * @param {number} code
- * @param {ArrayBuffer=} infoArray
+ * @param {usbGnubby} gnubby Gnubby instance
+ * @param {string} version Protocol version
+ * @param {number} code Status code
+ * @param {ArrayBuffer=} infoArray Returned data
  * @private
  */
 UsbEnrollHelper.prototype.enrollCallback_ =
@@ -374,8 +373,8 @@ UsbEnrollHelper.prototype.enrollCallback_ =
 };
 
 /**
- * @param {number} code
- * @param {boolean} anyGnubbies
+ * @param {number} code Status code
+ * @param {boolean} anyGnubbies If any gnubbies were found
  * @private
  */
 UsbEnrollHelper.prototype.notifyError_ = function(code, anyGnubbies) {
@@ -387,8 +386,8 @@ UsbEnrollHelper.prototype.notifyError_ = function(code, anyGnubbies) {
 };
 
 /**
- * @param {string} version
- * @param {string} info
+ * @param {string} version Protocol version
+ * @param {string} info B64 encoded success data
  * @private
  */
 UsbEnrollHelper.prototype.notifySuccess_ = function(version, info) {
@@ -400,8 +399,8 @@ UsbEnrollHelper.prototype.notifySuccess_ = function(version, info) {
 };
 
 /**
- * @param {number} code
- * @param {boolean} anyGnubbies
+ * @param {number} code Status code
+ * @param {boolean} anyGnubbies If any gnubbies were found
  * @private
  */
 UsbEnrollHelper.prototype.notifyProgress_ = function(code, anyGnubbies) {
@@ -422,7 +421,7 @@ function UsbEnrollHelperFactory(gnubbyFactory) {
 }
 
 /**
- * @param {!Countdown} timer
+ * @param {!Countdown} timer Timeout timer
  * @param {function(number, boolean)} errorCb Called when an enroll request
  *     fails with an error code and whether any gnubbies were found.
  * @param {function(string, string)} successCb Called with the result of a

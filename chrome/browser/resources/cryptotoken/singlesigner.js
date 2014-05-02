@@ -6,8 +6,6 @@
  * @fileoverview A single gnubby signer wraps the process of opening a gnubby,
  * signing each challenge in an array of challenges until a success condition
  * is satisfied, and finally yielding the gnubby upon success.
- *
- * @author juanlang@google.com (Juan Lang)
  */
 
 'use strict';
@@ -136,8 +134,8 @@ SingleGnubbySigner.prototype.closed_ = function() {
  * Adds challenges to the set of challenges being tried by this signer.
  * If the signer is currently idle, begins signing the new challenges.
  *
- * @param {Array.<SignHelperChallenge>} challenges
- * @param {boolean} finalChallenges
+ * @param {Array.<SignHelperChallenge>} challenges Sign challenges
+ * @param {boolean} finalChallenges True if there are no more challenges to add
  * @return {boolean} Whether the challenges were accepted.
  */
 SingleGnubbySigner.prototype.addChallenges =
@@ -240,7 +238,7 @@ SingleGnubbySigner.prototype.openCallback_ = function(rc, gnubby) {
       }
       break;
     default:
-      // TODO(juanlang): This won't be confused with success, but should it be
+      // TODO: This won't be confused with success, but should it be
       // part of the same namespace as the other error codes, which are
       // always in DeviceStatusCodes.*?
       this.goToError_(rc);
@@ -264,7 +262,7 @@ SingleGnubbySigner.prototype.versionCallback_ = function(rc, opt_data) {
 };
 
 /**
- * @param {number} challengeIndex
+ * @param {number} challengeIndex Index of challenge to sign
  * @private
  */
 SingleGnubbySigner.prototype.doSign_ = function(challengeIndex) {
@@ -297,10 +295,10 @@ SingleGnubbySigner.prototype.doSign_ = function(challengeIndex) {
     // Sign challenge for a different version of gnubby: return wrong data.
     this.signCallback_(challengeIndex, DeviceStatusCodes.WRONG_DATA_STATUS);
   } else {
-    var opt_nowink = this.forEnroll_;
+    var nowink = this.forEnroll_;
     this.gnubby_.sign(challengeHash, appIdHash, keyHandle,
         this.signCallback_.bind(this, challengeIndex),
-        opt_nowink);
+        nowink);
   }
 };
 
@@ -308,7 +306,7 @@ SingleGnubbySigner.prototype.doSign_ = function(challengeIndex) {
  * Called with the result of a single sign operation.
  * @param {number} challengeIndex the index of the challenge just attempted
  * @param {number} code the result of the sign operation
- * @param {ArrayBuffer=} opt_info
+ * @param {ArrayBuffer=} opt_info Optional result data
  * @private
  */
 SingleGnubbySigner.prototype.signCallback_ =
@@ -338,7 +336,7 @@ SingleGnubbySigner.prototype.signCallback_ =
       break;
 
     case DeviceStatusCodes.TIMEOUT_STATUS:
-      // TODO(juanlang): On a TIMEOUT_STATUS, sync first, then retry.
+      // TODO: On a TIMEOUT_STATUS, sync first, then retry.
     case DeviceStatusCodes.BUSY_STATUS:
       this.doSign_(this.challengeIndex_);
       break;
@@ -396,7 +394,7 @@ SingleGnubbySigner.prototype.signCallback_ =
 
 /**
  * Switches to the error state, and notifies caller.
- * @param {number} code
+ * @param {number} code Error code
  * @private
  */
 SingleGnubbySigner.prototype.goToError_ = function(code) {
@@ -410,9 +408,9 @@ SingleGnubbySigner.prototype.goToError_ = function(code) {
 
 /**
  * Switches to the success state, and notifies caller.
- * @param {number} code
- * @param {SignHelperChallenge=} opt_challenge
- * @param {ArrayBuffer=} opt_info
+ * @param {number} code Status code
+ * @param {SignHelperChallenge=} opt_challenge The challenge signed
+ * @param {ArrayBuffer=} opt_info Optional result data
  * @private
  */
 SingleGnubbySigner.prototype.goToSuccess_ =

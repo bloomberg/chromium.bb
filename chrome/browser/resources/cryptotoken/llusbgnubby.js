@@ -91,7 +91,7 @@ llUsbGnubby.prototype.destroy = function() {
 
 /**
  * Push frame to all clients.
- * @param {ArrayBuffer} f
+ * @param {ArrayBuffer} f Data frame
  * @private
  */
 llUsbGnubby.prototype.publishFrame_ = function(f) {
@@ -262,8 +262,8 @@ llUsbGnubby.prototype.writeOneRequest_ = function() {
 
 /**
  * Check whether channel is locked for this request or not.
- * @param {number} cid
- * @param {number} cmd
+ * @param {number} cid Channel id
+ * @param {number} cmd Command to be sent
  * @return {boolean} true if not locked for this request.
  * @private
  */
@@ -298,9 +298,9 @@ llUsbGnubby.prototype.checkLock_ = function(cid, cmd) {
 
 /**
  * Update or grab lock.
- * @param {number} cid
- * @param {number} cmd
- * @param {number} arg
+ * @param {number} cid Channel id
+ * @param {number} cmd Command
+ * @param {number} arg Command argument
  * @private
  */
 llUsbGnubby.prototype.updateLock_ = function(cid, cmd, arg) {
@@ -343,7 +343,7 @@ llUsbGnubby.prototype.updateLock_ = function(cid, cmd, arg) {
  * If queue was empty, initiate the write.
  * @param {number} cid The client's channel ID.
  * @param {number} cmd The command to send.
- * @param {ArrayBuffer} data
+ * @param {ArrayBuffer} data Command argument data
  */
 llUsbGnubby.prototype.queueCommand = function(cid, cmd, data) {
   if (!this.dev) return;
@@ -371,7 +371,7 @@ llUsbGnubby.prototype.queueCommand = function(cid, cmd, data) {
 };
 
 /**
- * @param {function(Array)} cb
+ * @param {function(Array)} cb Enumerate callback
  */
 llUsbGnubby.enumerate = function(cb) {
   chrome.usb.getDevices({'vendorId': 4176, 'productId': 529}, cb);
@@ -386,7 +386,7 @@ llUsbGnubby.enumerate = function(cb) {
  *     result of opening the device.
  */
 llUsbGnubby.open = function(gnubbies, which, dev, cb) {
-  /** @param {chrome.usb.ConnectionHandle=} handle */
+  /** @param {chrome.usb.ConnectionHandle=} handle Connection handle */
   function deviceOpened(handle) {
     if (!handle) {
       console.warn(UTIL_fmt('failed to open device. permissions issue?'));
@@ -457,7 +457,7 @@ llUsbGnubby.open = function(gnubbies, which, dev, cb) {
 };
 
 /**
- * @param {*} dev
+ * @param {*} dev Chrome usb device
  * @return {llGnubbyDeviceId} A device identifier for the device.
  */
 llUsbGnubby.deviceToDeviceId = function(dev) {
@@ -468,7 +468,7 @@ llUsbGnubby.deviceToDeviceId = function(dev) {
 
 /**
  * Registers this implementation with gnubbies.
- * @param {Gnubbies} gnubbies
+ * @param {Gnubbies} gnubbies Gnubbies singleton instance
  */
 llUsbGnubby.register = function(gnubbies) {
   var USB_GNUBBY_IMPL = {

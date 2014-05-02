@@ -5,12 +5,11 @@
 /**
  * @fileoverview Contains a simple factory for creating and opening usbGnubby
  * instances.
- * @author juanlang@google.com (Juan Lang)
  */
 'use strict';
 
 /**
- * @param {Gnubbies} gnubbies
+ * @param {Gnubbies} gnubbies Gnubbies singleton instance
  * @constructor
  * @implements {GnubbyFactory}
  */
@@ -39,7 +38,7 @@ UsbGnubbyFactory.prototype.openGnubby =
 
 /**
  * Enumerates gnubbies.
- * @param {function(number, Array.<llGnubbyDeviceId>)} cb
+ * @param {function(number, Array.<llGnubbyDeviceId>)} cb Enumerate callback
  */
 UsbGnubbyFactory.prototype.enumerate = function(cb) {
   this.gnubbies_.enumerate(cb);

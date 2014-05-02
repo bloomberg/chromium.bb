@@ -4,8 +4,6 @@
 
 /**
  * @fileoverview Handles web page requests for gnubby sign requests.
- *
- * @author juanlang@google.com (Juan Lang)
  */
 
 'use strict';
@@ -22,7 +20,8 @@ var signRequestQueue = new OriginKeyedRequestQueue();
  * @param {Function} sendResponse Called back with the result of the sign.
  * @param {boolean} toleratesMultipleResponses Whether the sendResponse
  *     callback can be called more than once, e.g. for progress updates.
- * @return {Closeable}
+ * @return {Closeable} Request handler that should be closed when the browser
+ *     message channel is closed.
  */
 function handleSignRequest(factory, sender, request, enforceAppIdValid,
     sendResponse, toleratesMultipleResponses) {
@@ -130,16 +129,16 @@ function isValidSignRequest(request) {
 
 /**
  * Adapter class representing a queued sign request.
- * @param {!SignData} signData
- * @param {!SignHelperFactory} factory
- * @param {Countdown} timer
- * @param {string} origin
- * @param {boolean} enforceAppIdValid
- * @param {function(number)} errorCb
- * @param {function(SignChallenge, string, string)} successCb
- * @param {(function(number)|undefined)} opt_progressCb
- * @param {string|undefined} opt_tlsChannelId
- * @param {string|undefined} opt_logMsgUrl
+ * @param {!SignData} signData Signature data
+ * @param {!SignHelperFactory} factory Factory for SignHelper instances
+ * @param {Countdown} timer Timeout timer
+ * @param {string} origin Signature origin
+ * @param {boolean} enforceAppIdValid If to enforce appId validity
+ * @param {function(number)} errorCb Error callback
+ * @param {function(SignChallenge, string, string)} successCb Success callback
+ * @param {(function(number)|undefined)} opt_progressCb Progress callback
+ * @param {string|undefined} opt_tlsChannelId TLS Channel Id
+ * @param {string|undefined} opt_logMsgUrl Url to post log messages to
  * @constructor
  * @implements {Closeable}
  */
@@ -222,7 +221,7 @@ QueuedSignRequest.prototype.signerFailed_ = function(code) {
  * Called when this request's signer succeeds.
  * @param {SignChallenge} challenge The challenge that was signed.
  * @param {string} info The sign result.
- * @param {string} browserData
+ * @param {string} browserData Browser data JSON
  * @private
  */
 QueuedSignRequest.prototype.signerSucceeded_ =
@@ -294,7 +293,7 @@ function Signer(helperFactory, timer, origin, enforceAppIdValid,
 /**
  * Creates a timer with an expiry greater than the expiration time of the given
  * timer.
- * @param {Countdown} timer
+ * @param {Countdown} timer Timeout timer
  * @private
  */
 Signer.prototype.createWatchdog_ = function(timer) {
@@ -353,7 +352,7 @@ Signer.prototype.addChallenges = function(signData, finalChallenges) {
 /**
  * Creates challenges for helper from challenges.
  * @param {Array.<SignChallenge>} challenges Challenges to add.
- * @return {Array.<SignHelperChallenge>}
+ * @return {Array.<SignHelperChallenge>} Encoded challenges
  * @private
  */
 Signer.prototype.encodeSignChallenges_ = function(challenges) {
@@ -491,7 +490,7 @@ Signer.prototype.close = function() {
 
 /**
  * Notifies the caller of error with the given error code.
- * @param {number} code
+ * @param {number} code Error code
  * @private
  */
 Signer.prototype.notifyError_ = function(code) {
@@ -506,7 +505,7 @@ Signer.prototype.notifyError_ = function(code) {
  * Notifies the caller of success.
  * @param {SignChallenge} challenge The challenge that was signed.
  * @param {string} info The sign result.
- * @param {string} browserData
+ * @param {string} browserData Browser data JSON
  * @private
  */
 Signer.prototype.notifySuccess_ = function(challenge, info, browserData) {
@@ -519,7 +518,7 @@ Signer.prototype.notifySuccess_ = function(challenge, info, browserData) {
 
 /**
  * Notifies the caller of progress with the error code.
- * @param {number} code
+ * @param {number} code Status code
  * @private
  */
 Signer.prototype.notifyProgress_ = function(code) {
@@ -571,8 +570,8 @@ Signer.mapError_ = function(code, anyGnubbies) {
 
 /**
  * Called by the helper upon error.
- * @param {number} code
- * @param {boolean} anyGnubbies
+ * @param {number} code Error code
+ * @param {boolean} anyGnubbies If any gnubbies were found
  * @private
  */
 Signer.prototype.helperError_ = function(code, anyGnubbies) {
@@ -603,8 +602,8 @@ Signer.prototype.helperSuccess_ = function(challenge, info) {
 
 /**
  * Called by helper to notify progress.
- * @param {number} code
- * @param {boolean} anyGnubbies
+ * @param {number} code Status code
+ * @param {boolean} anyGnubbies If any gnubbies were found
  * @private
  */
 Signer.prototype.helperProgress_ = function(code, anyGnubbies) {

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 // WebSafeBase64Escape and Unescape.
-// mschilder@google.com
 function B64_encode(bytes, opt_length) {
   if (!opt_length) opt_length = bytes.length;
   var b64out =
@@ -11,10 +10,10 @@ function B64_encode(bytes, opt_length) {
   var result = '';
   var shift = 0;
   var accu = 0;
-  var input_index = 0;
+  var inputIndex = 0;
   while (opt_length--) {
     accu <<= 8;
-    accu |= bytes[input_index++];
+    accu |= bytes[inputIndex++];
     shift += 8;
     while (shift >= 6) {
       var i = (accu >> (shift - 6)) & 63;
@@ -39,10 +38,10 @@ function base64_encode(bytes, opt_length) {
   var result = '';
   var shift = 0;
   var accu = 0;
-  var input_index = 0;
+  var inputIndex = 0;
   while (opt_length--) {
     accu <<= 8;
-    accu |= bytes[input_index++];
+    accu |= bytes[inputIndex++];
     shift += 8;
     while (shift >= 6) {
       var i = (accu >> (shift - 6)) & 63;

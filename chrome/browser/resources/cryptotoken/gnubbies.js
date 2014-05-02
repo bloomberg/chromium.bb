@@ -162,7 +162,7 @@ Gnubbies.prototype.enumerate = function(cb) {
 Gnubbies.INACTIVITY_TIMEOUT_MARGIN_MILLIS = 30000;
 
 /**
- * @param {number|undefined} opt_timeoutMillis
+ * @param {number|undefined} opt_timeoutMillis Timeout in milliseconds
  */
 Gnubbies.prototype.resetInactivityTimer = function(opt_timeoutMillis) {
   var millis = opt_timeoutMillis ?

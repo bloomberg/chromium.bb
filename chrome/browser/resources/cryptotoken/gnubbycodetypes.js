@@ -51,7 +51,7 @@ GnubbyCodeTypes.UNKNOWN_ERROR = 7;
  */
 GnubbyCodeTypes.NO_EXTENSION = 8;
 
-// TODO(jayini): change to none_enrolled_for_account and none_enrolled_present
+// TODO: change to none_enrolled_for_account and none_enrolled_present
 /**
  * No devices enrolled for this user.
  * @const

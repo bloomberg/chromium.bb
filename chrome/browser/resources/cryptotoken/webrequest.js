@@ -9,8 +9,8 @@
 
 /**
  * Gets the scheme + origin from a web url.
- * @param {string} url
- * @return {?string}
+ * @param {string} url Input url
+ * @return {?string} Scheme and origin part if url parses
  */
 function getOriginFromUrl(url) {
   var re = new RegExp('^(https?://)[^/]*/?');
@@ -27,8 +27,8 @@ function getOriginFromUrl(url) {
 
 /**
  * Parses the text as JSON and returns it as an array of strings.
- * @param {string} text
- * @return {Array.<string>}
+ * @param {string} text Input JSON
+ * @return {Array.<string>} Array of origins
  */
 function getOriginsFromJson(text) {
   try {
@@ -72,7 +72,7 @@ function fetchAppId(appId, cb) {
 
 /**
  * Retrieves a set of distinct app ids from the SignData.
- * @param {SignData=} signData
+ * @param {SignData=} signData Input signature data
  * @return {Array.<string>} array of distinct app ids.
  */
 function getDistinctAppIds(signData) {
@@ -92,7 +92,7 @@ function getDistinctAppIds(signData) {
 /**
  * Reorganizes the requests from the SignData to an array of
  * (appId, [Request]) tuples.
- * @param {SignData} signData
+ * @param {SignData} signData Input signature data
  * @return {Array.<[string, Array.<Request>]>} array of
  *     (appId, [Request]) tuples.
  */
@@ -126,7 +126,7 @@ function requestsByAppId(signData) {
 
 /**
  * Fetches the allowed origins for an appId.
- * @param {string} appId
+ * @param {string} appId Application id
  * @param {boolean} allowHttp Whether http is a valid scheme for an appId.
  *     (This should be false except on test domains.)
  * @param {function(number, !Array.<string>)} cb Called back with an HTTP
@@ -143,7 +143,7 @@ function fetchAllowedOriginsForAppId(appId, allowHttp, cb) {
     cb(200, allowedOrigins);
     return;
   }
-  // TODO(juanlang): hack for old enrolled gnubbies, don't treat
+  // TODO: hack for old enrolled gnubbies, don't treat
   // accounts.google.com/login.corp.google.com specially when cryptauth server
   // stops reporting them as appId.
   if (appId == 'https://accounts.google.com') {
@@ -158,7 +158,7 @@ function fetchAllowedOriginsForAppId(appId, allowHttp, cb) {
   }
   // Termination of this function relies in fetchAppId completing.
   // (Not completing would be a bug in XMLHttpRequest.)
-  // TODO(juanlang): provide a termination guarantee, e.g. with a timer?
+  // TODO: provide a termination guarantee, e.g. with a timer?
   fetchAppId(appId, function(rc, fetchedAppId, origins) {
     if (rc != 200) {
       console.log(UTIL_fmt('fetching ' + fetchedAppId + ' failed: ' + rc));
@@ -172,8 +172,8 @@ function fetchAllowedOriginsForAppId(appId, allowHttp, cb) {
 
 /**
  * Checks whether an appId is valid for a given origin.
- * @param {!string} appId
- * @param {!string} origin
+ * @param {!string} appId Application id
+ * @param {!string} origin Origin
  * @param {!Array.<string>} allowedOrigins the list of allowed origins for each
  *    appId.
  * @return {boolean} whether the appId is allowed for the origin.
@@ -233,10 +233,10 @@ function logMessage(logMsg, opt_logMsgUrl) {
 
 /**
  * Logs the result of fetching an appId.
- * @param {!string} appId
+ * @param {!string} appId Application Id
  * @param {number} millis elapsed time while fetching the appId.
  * @param {Array.<string>} allowedOrigins the allowed origins retrieved.
- * @param {string=} opt_logMsgUrl
+ * @param {string=} opt_logMsgUrl the url to post log messages to.
  */
 function logFetchAppIdResult(appId, millis, allowedOrigins, opt_logMsgUrl) {
   var logMsg = 'log=fetchappid&appid=' + appId + '&millis=' + millis +
@@ -246,9 +246,9 @@ function logFetchAppIdResult(appId, millis, allowedOrigins, opt_logMsgUrl) {
 
 /**
  * Logs a mismatch between an origin and an appId.
- * @param {string} origin
- * @param {!string} appId
- * @param {string=} opt_logMsgUrl
+ * @param {string} origin Origin
+ * @param {!string} appId Application id
+ * @param {string=} opt_logMsgUrl the url to post log messages to
  */
 function logInvalidOriginForAppId(origin, appId, opt_logMsgUrl) {
   var logMsg = 'log=originrejected&origin=' + origin + '&appid=' + appId;
@@ -272,7 +272,7 @@ function formatWebPageResponse(type, code, responseData) {
 }
 
 /**
- * @param {!string} string
+ * @param {!string} string Input string
  * @return {Array.<number>} SHA256 hash value of string.
  */
 function sha256HashOfString(string) {
@@ -287,7 +287,7 @@ function sha256HashOfString(string) {
  *     string.
  * 2. Converts valid JSON strings to a JS object.
  * 3. Otherwise, returns the input value unmodified.
- * @param {Object|string|undefined} opt_tlsChannelId
+ * @param {Object|string|undefined} opt_tlsChannelId TLS Channel id
  * @return {Object|string} The normalized TLS channel ID value.
  */
 function tlsChannelIdValue(opt_tlsChannelId) {
@@ -322,7 +322,7 @@ function tlsChannelIdValue(opt_tlsChannelId) {
  * @param {!string} serverChallenge The server's challenge, as a base64-
  *     encoded string.
  * @param {!string} origin The server's origin, as seen by the browser.
- * @param {Object|string|undefined} opt_tlsChannelId
+ * @param {Object|string|undefined} opt_tlsChannelId TLS Channel Id
  * @return {string} A string representation of the browser data object.
  */
 function makeBrowserData(type, serverChallenge, origin, opt_tlsChannelId) {
@@ -340,7 +340,7 @@ function makeBrowserData(type, serverChallenge, origin, opt_tlsChannelId) {
  * @param {!string} serverChallenge The server's challenge, as a base64-
  *     encoded string.
  * @param {!string} origin The server's origin, as seen by the browser.
- * @param {Object|string|undefined} opt_tlsChannelId
+ * @param {Object|string|undefined} opt_tlsChannelId TLS Channel Id
  * @return {string} A string representation of the browser data object.
  */
 function makeEnrollBrowserData(serverChallenge, origin, opt_tlsChannelId) {
@@ -354,7 +354,7 @@ function makeEnrollBrowserData(serverChallenge, origin, opt_tlsChannelId) {
  * @param {!string} serverChallenge The server's challenge, as a base64-
  *     encoded string.
  * @param {!string} origin The server's origin, as seen by the browser.
- * @param {Object|string|undefined} opt_tlsChannelId
+ * @param {Object|string|undefined} opt_tlsChannelId TLS Channel Id
  * @return {string} A string representation of the browser data object.
  */
 function makeSignBrowserData(serverChallenge, origin, opt_tlsChannelId) {
@@ -363,11 +363,11 @@ function makeSignBrowserData(serverChallenge, origin, opt_tlsChannelId) {
 }
 
 /**
- * @param {string} browserData
- * @param {string} appId
- * @param {string} encodedKeyHandle
- * @param {string=} version
- * @return {SignHelperChallenge}
+ * @param {string} browserData Browser data as JSON
+ * @param {string} appId Application Id
+ * @param {string} encodedKeyHandle B64 encoded key handle
+ * @param {string=} version Protocol version
+ * @return {SignHelperChallenge} Challenge object
  */
 function makeChallenge(browserData, appId, encodedKeyHandle, version) {
   var appIdHash = B64_encode(sha256HashOfString(appId));

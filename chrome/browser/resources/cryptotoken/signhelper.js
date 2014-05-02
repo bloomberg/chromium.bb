@@ -5,7 +5,6 @@
 /**
  * @fileoverview Provides a "bottom half" helper to assist with raw sign
  * requests.
- * @author juanlang@google.com (Juan Lang)
  */
 'use strict';
 

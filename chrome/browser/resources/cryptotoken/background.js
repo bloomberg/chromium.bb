@@ -23,10 +23,11 @@ var ENROLL_HELPER_FACTORY = new UsbEnrollHelperFactory(GNUBBY_FACTORY);
 /**
  * @param {boolean} toleratesMultipleResponses Whether the web page can handle
  *     multiple responses given to its sendResponse callback.
- * @param {Object} request
- * @param {MessageSender} sender
- * @param {Function} sendResponse
- * @return {Closeable}
+ * @param {Object} request Request object
+ * @param {MessageSender} sender Sender frame
+ * @param {Function} sendResponse Response callback
+ * @return {?Closeable} Optional handler object that should be closed when port
+ *     closes
  */
 function handleWebPageRequest(toleratesMultipleResponses, request, sender,
     sendResponse) {

@@ -4,7 +4,6 @@
 
 /**
  * @fileoverview Handles web page requests for gnubby enrollment.
- * @author juanlang@google.com (Juan Lang)
  */
 
 'use strict';
@@ -19,7 +18,8 @@
  * @param {Function} sendResponse Called back with the result of the enroll.
  * @param {boolean} toleratesMultipleResponses Whether the sendResponse
  *     callback can be called more than once, e.g. for progress updates.
- * @return {Closeable}
+ * @return {Closeable} A handler object to be closed when the browser channel
+ *     closes.
  */
 function handleEnrollRequest(factory, sender, request, enforceAppIdValid,
     sendResponse, toleratesMultipleResponses) {
@@ -229,9 +229,10 @@ Enroller.DEFAULT_TIMEOUT_MILLIS = 30 * 1000;
 
 /**
  * Performs an enroll request with the given enroll and sign challenges.
- * @param {Array.<Object>} enrollChallenges
- * @param {Array.<Object>} signChallenges
- * @param {boolean} enforceAppIdValid
+ * @param {Array.<Object>} enrollChallenges A set of enroll challenges
+ * @param {Array.<Object>} signChallenges A set of sign challenges for existing
+ *     enrollments for this user and appId
+ * @param {boolean} enforceAppIdValid Whether to enforce that appId is valid
  */
 Enroller.prototype.doEnroll =
     function(enrollChallenges, signChallenges, enforceAppIdValid) {
@@ -266,7 +267,7 @@ Enroller.prototype.doEnroll =
 
 /**
  * Encodes the enroll challenges for use by an enroll helper.
- * @param {Array.<Object>} enrollChallenges
+ * @param {Array.<Object>} enrollChallenges A set of enroll challenges
  * @return {Array.<EnrollHelperChallenge>} the encoded challenges.
  * @private
  */
@@ -451,7 +452,7 @@ Enroller.prototype.close = function() {
 
 /**
  * Notifies the caller with the error code.
- * @param {number} code
+ * @param {number} code Error code
  * @private
  */
 Enroller.prototype.notifyError_ = function(code) {
@@ -464,9 +465,9 @@ Enroller.prototype.notifyError_ = function(code) {
 
 /**
  * Notifies the caller of success with the provided response data.
- * @param {string} u2fVersion
- * @param {string} info
- * @param {string|undefined} opt_browserData
+ * @param {string} u2fVersion Protocol version
+ * @param {string} info Response data
+ * @param {string|undefined} opt_browserData Browser data used
  * @private
  */
 Enroller.prototype.notifySuccess_ =
@@ -480,7 +481,7 @@ Enroller.prototype.notifySuccess_ =
 
 /**
  * Notifies the caller of progress with the error code.
- * @param {number} code
+ * @param {number} code Status code
  * @private
  */
 Enroller.prototype.notifyProgress_ = function(code) {
@@ -526,8 +527,8 @@ Enroller.mapError_ = function(code, anyGnubbies) {
 
 /**
  * Called by the helper upon error.
- * @param {number} code
- * @param {boolean} anyGnubbies
+ * @param {number} code Error code
+ * @param {boolean} anyGnubbies If any gnubbies were found
  * @private
  */
 Enroller.prototype.helperError_ = function(code, anyGnubbies) {
@@ -558,8 +559,8 @@ Enroller.prototype.helperSuccess_ = function(u2fVersion, info) {
 
 /**
  * Called by helper to notify progress.
- * @param {number} code
- * @param {boolean} anyGnubbies
+ * @param {number} code Status code
+ * @param {boolean} anyGnubbies If any gnubbies were found
  * @private
  */
 Enroller.prototype.helperProgress_ = function(code, anyGnubbies) {

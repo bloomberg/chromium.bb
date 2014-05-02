@@ -4,8 +4,6 @@
 
 /**
  * @fileoverview Queue of pending requests from an origin.
- *
- * @author juanlang@google.com (Juan Lang)
  */
 'use strict';
 
@@ -69,7 +67,7 @@ function RequestQueue() {
 
 /**
  * Inserts this token into the queue.
- * @param {RequestToken} token
+ * @param {RequestToken} token Queue token
  * @private
  */
 RequestQueue.prototype.insertToken_ = function(token) {
@@ -86,7 +84,7 @@ RequestQueue.prototype.insertToken_ = function(token) {
 
 /**
  * Removes this token from the queue.
- * @param {RequestToken} token
+ * @param {RequestToken} token Queue token
  * @private
  */
 RequestQueue.prototype.removeToken_ = function(token) {
@@ -114,7 +112,7 @@ RequestQueue.prototype.removeToken_ = function(token) {
 /**
  * Completes this token's request, and begins the next queued request, if one
  * exists.
- * @param {RequestToken} token
+ * @param {RequestToken} token Queue token
  */
 RequestQueue.prototype.complete = function(token) {
   var next = token.next;
@@ -133,7 +131,7 @@ RequestQueue.prototype.empty = function() {
  * Queues this request, and, if it's the first request, begins work on it.
  * @param {function(QueuedRequestToken)} beginCb Called when work begins on this
  *     request.
- * @param {Countdown} timer
+ * @param {Countdown} timer Countdown timer
  * @return {QueuedRequestToken} A token for the request.
  */
 RequestQueue.prototype.queueRequest = function(beginCb, timer) {
@@ -163,11 +161,11 @@ function OriginKeyedRequestQueue() {
 
 /**
  * Queues this request, and, if it's the first request, begins work on it.
- * @param {string} appId
- * @param {string} origin
+ * @param {string} appId Application Id
+ * @param {string} origin Request origin
  * @param {function(QueuedRequestToken)} beginCb Called when work begins on this
  *     request.
- * @param {Countdown} timer
+ * @param {Countdown} timer Countdown timer
  * @return {QueuedRequestToken} A token for the request.
  */
 OriginKeyedRequestQueue.prototype.queueRequest =

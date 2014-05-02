@@ -4,14 +4,13 @@
 
 /**
  * @fileoverview Implements a sign helper using USB gnubbies.
- * @author juanlang@google.com (Juan Lang)
  */
 'use strict';
 
 var CORRUPT_sign = false;
 
 /**
- * @param {!GnubbyFactory} factory
+ * @param {!GnubbyFactory} factory Factory for gnubby instances
  * @param {Countdown} timer Timer after whose expiration the caller is no longer
  *     interested in the result of a sign request.
  * @param {function(number, boolean)} errorCb Called when a sign request fails
@@ -50,7 +49,7 @@ function UsbSignHelper(factory, timer, errorCb, successCb, opt_progressCb,
 
 /**
  * Attempts to sign the provided challenges.
- * @param {Array.<SignHelperChallenge>} challenges
+ * @param {Array.<SignHelperChallenge>} challenges Challenges to sign
  * @return {boolean} whether this set of challenges was accepted.
  */
 UsbSignHelper.prototype.doSign = function(challenges) {
@@ -78,7 +77,7 @@ UsbSignHelper.prototype.getSomeGnubbies_ = function() {
 /**
  * Called with the result of enumerating gnubbies.
  * @param {number} rc the result of the enumerate.
- * @param {Array.<llGnubbyDeviceId>} indexes
+ * @param {Array.<llGnubbyDeviceId>} indexes Indexes of found gnubbies
  */
 UsbSignHelper.prototype.enumerateCallback = function(rc, indexes) {
   if (rc) {
@@ -98,7 +97,7 @@ UsbSignHelper.prototype.enumerateCallback = function(rc, indexes) {
 
 /**
  * Called with the result of enumerating gnubby indexes.
- * @param {Array.<llGnubbyDeviceId>} indexes
+ * @param {Array.<llGnubbyDeviceId>} indexes Indexes of found gnubbies
  * @private
  */
 UsbSignHelper.prototype.gotSomeGnubbies_ = function(indexes) {
@@ -150,8 +149,8 @@ UsbSignHelper.prototype.signerCompleted_ = function(anySucceeded, errorCode) {
 /**
  * Called when a MultipleGnubbySigner finds a gnubby that has successfully
  * signed, or can successfully sign, one of the challenges.
- * @param {number} code
- * @param {MultipleSignerResult} signResult
+ * @param {number} code Status code
+ * @param {MultipleSignerResult} signResult Signer result object
  * @private
  */
 UsbSignHelper.prototype.signerFoundGnubby_ = function(code, signResult) {
@@ -168,9 +167,9 @@ UsbSignHelper.prototype.signerFoundGnubby_ = function(code, signResult) {
 
 /**
  * Reports the result of a successful sign operation.
- * @param {usbGnubby} gnubby
- * @param {SignHelperChallenge} challenge
- * @param {Uint8Array} info
+ * @param {usbGnubby} gnubby Gnubby instance
+ * @param {SignHelperChallenge} challenge Challenge signed
+ * @param {Uint8Array} info Result data
  * @private
  */
 UsbSignHelper.prototype.notifySuccess_ = function(gnubby, challenge, info) {
@@ -196,7 +195,7 @@ UsbSignHelper.prototype.notifySuccess_ = function(gnubby, challenge, info) {
 /**
  * Reports error to the caller.
  * @param {number} code error to report
- * @param {boolean} anyGnubbies
+ * @param {boolean} anyGnubbies If any gnubbies were found
  * @private
  */
 UsbSignHelper.prototype.notifyError_ = function(code, anyGnubbies) {
@@ -209,8 +208,8 @@ UsbSignHelper.prototype.notifyError_ = function(code, anyGnubbies) {
 
 /**
  * Retries signing a particular challenge on a gnubby.
- * @param {usbGnubby} gnubby
- * @param {SignHelperChallenge} challenge
+ * @param {usbGnubby} gnubby Gnubby instance
+ * @param {SignHelperChallenge} challenge Challenge to retry
  * @private
  */
 UsbSignHelper.prototype.retrySign_ = function(gnubby, challenge) {
@@ -223,9 +222,9 @@ UsbSignHelper.prototype.retrySign_ = function(gnubby, challenge) {
 
 /**
  * Called when a gnubby completes a sign request.
- * @param {usbGnubby} gnubby
- * @param {SignHelperChallenge} challenge
- * @param {number} code
+ * @param {usbGnubby} gnubby Gnubby instance
+ * @param {SignHelperChallenge} challenge Challenge to retry
+ * @param {number} code Previous status code
  * @private
  */
 UsbSignHelper.prototype.retrySignIfNotTimedOut_ =
@@ -246,8 +245,8 @@ UsbSignHelper.prototype.retrySignIfNotTimedOut_ =
 /**
  * Removes a gnubby that was waiting for touch from the list, with the given
  * error code. If this is the last gnubby, notifies the caller of the error.
- * @param {usbGnubby} gnubby
- * @param {number} code
+ * @param {usbGnubby} gnubby Gnubby instance
+ * @param {number} code Previous status code
  * @private
  */
 UsbSignHelper.prototype.removePreviouslyEligibleGnubby_ =
@@ -274,10 +273,10 @@ UsbSignHelper.prototype.removePreviouslyEligibleGnubby_ =
 
 /**
  * Called when a gnubby completes a sign request.
- * @param {usbGnubby} gnubby
- * @param {SignHelperChallenge} challenge
- * @param {number} code
- * @param {ArrayBuffer=} infoArray
+ * @param {usbGnubby} gnubby Gnubby instance
+ * @param {SignHelperChallenge} challenge Challenge signed
+ * @param {number} code Status code
+ * @param {ArrayBuffer=} infoArray Result data
  * @private
  */
 UsbSignHelper.prototype.signCallback_ =

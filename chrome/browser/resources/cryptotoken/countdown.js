@@ -4,7 +4,6 @@
 
 /**
  * @fileoverview Provides a countdown-based timer.
- * @author juanlang@google.com (Juan Lang)
  */
 'use strict';
 
@@ -55,6 +54,7 @@ function CountdownTimer(timeoutMillis, cb) {
   this.setTimeout(timeoutMillis || 0, cb);
 }
 
+/** Timer interval */
 CountdownTimer.TIMER_INTERVAL_MILLIS = 200;
 
 /**

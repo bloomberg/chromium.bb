@@ -14,43 +14,68 @@
 function llGnubby() {}
 
 // Commands of the USB interface.
-// //depot/google3/security/tools/gnubby/gnubbyd/gnubby_if.h
-llGnubby.CMD_PING =      0x81;
-llGnubby.CMD_ATR =       0x82;
-llGnubby.CMD_APDU =      0x83;
-llGnubby.CMD_LOCK =      0x84;
-llGnubby.CMD_SYSINFO =   0x85;
-llGnubby.CMD_PROMPT =    0x87;
-llGnubby.CMD_WINK =      0x88;
-llGnubby.CMD_USB_TEST =  0xb9;
-llGnubby.CMD_DFU =       0xba;
-llGnubby.CMD_SYNC =      0xbc;
-llGnubby.CMD_ERROR =     0xbf;
+/** Echo data through local processor only */
+llGnubby.CMD_PING = 0x81;
+/** Perform reset action and read ATR string */
+llGnubby.CMD_ATR = 0x82;
+/** Send raw APDU */
+llGnubby.CMD_APDU = 0x83;
+/** Send lock channel command */
+llGnubby.CMD_LOCK = 0x84;
+/** Obtain system information record */
+llGnubby.CMD_SYSINFO = 0x85;
+/** Control prompt flashing */
+llGnubby.CMD_PROMPT = 0x87;
+/** Send device identification wink */
+llGnubby.CMD_WINK = 0x88;
+/** USB test */
+llGnubby.CMD_USB_TEST = 0xb9;
+/** Device Firmware Upgrade */
+llGnubby.CMD_DFU = 0xba;
+/** Protocol resync command */
+llGnubby.CMD_SYNC = 0xbc;
+/** Error response */
+llGnubby.CMD_ERROR = 0xbf;
 
 // Low-level error codes.
-// //depot/google3/security/tools/gnubby/gnubbyd/gnubby_if.h
-// //depot/google3/security/tools/gnubby/client/gnubby_error_codes.h
-llGnubby.OK =            0;
-llGnubby.INVALID_CMD =   1;
-llGnubby.INVALID_PAR =   2;
-llGnubby.INVALID_LEN =   3;
-llGnubby.INVALID_SEQ =   4;
-llGnubby.TIMEOUT =       5;
-llGnubby.BUSY =          6;
+/** No error */
+llGnubby.OK = 0;
+/** Invalid command */
+llGnubby.INVALID_CMD = 1;
+/** Invalid parameter */
+llGnubby.INVALID_PAR = 2;
+/** Invalid message length */
+llGnubby.INVALID_LEN = 3;
+/** Invalid message sequencing */
+llGnubby.INVALID_SEQ = 4;
+/** Message has timed out */
+llGnubby.TIMEOUT = 5;
+/** CHannel is busy */
+llGnubby.BUSY = 6;
+/** Access denied */
 llGnubby.ACCESS_DENIED = 7;
-llGnubby.GONE =          8;
-llGnubby.VERIFY_ERROR =  9;
+/** Device is gone */
+llGnubby.GONE = 8;
+/** Verification error */
+llGnubby.VERIFY_ERROR = 9;
+/** Command requires channel lock */
 llGnubby.LOCK_REQUIRED = 10;
-llGnubby.SYNC_FAIL =     11;
-llGnubby.OTHER =         127;
+/** Sync error */
+llGnubby.SYNC_FAIL = 11;
+/** Other unspecified error */
+llGnubby.OTHER = 127;
 
 // Remote helper errors.
-llGnubby.NOTREMOTE =     263;
-llGnubby.COULDNOTDIAL =  264;
+/** Not a remote helper */
+llGnubby.NOTREMOTE = 263;
+/** Could not reach remote endpoint */
+llGnubby.COULDNOTDIAL = 264;
 
 // chrome.usb-related errors.
-llGnubby.NODEVICE =      512;
-llGnubby.NOPERMISSION =  666;
+/** No device */
+llGnubby.NODEVICE = 512;
+/** Permission denied */
+llGnubby.NOPERMISSION = 666;
 
 /** Destroys this low-level device instance. */
 llGnubby.prototype.destroy = function() {};
@@ -80,6 +105,6 @@ llGnubby.prototype.hasClient = function(who) {};
  * If queue was empty, initiate the write.
  * @param {number} cid The client's channel ID.
  * @param {number} cmd The command to send.
- * @param {ArrayBuffer} data
+ * @param {ArrayBuffer} data Command data
  */
 llGnubby.prototype.queueCommand = function(cid, cmd, data) {};

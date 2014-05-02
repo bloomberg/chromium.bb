@@ -4,7 +4,6 @@
 
 /**
  * @fileoverview Contains a factory interface for creating and opening gnubbies.
- * @author juanlang@google.com (Juan Lang)
  */
 'use strict';
 
@@ -16,7 +15,7 @@ function GnubbyFactory() {}
 
 /**
  * Enumerates gnubbies.
- * @param {function(number, Array.<llGnubbyDeviceId>)} cb
+ * @param {function(number, Array.<llGnubbyDeviceId>)} cb Enumerate callback
  */
 GnubbyFactory.prototype.enumerate = function(cb) {
 };

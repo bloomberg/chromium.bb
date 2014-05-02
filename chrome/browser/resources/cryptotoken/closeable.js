@@ -4,7 +4,6 @@
 
 /**
  * @fileoverview Defines a Closeable interface.
- * @author juanlang@google.com (Juan Lang)
  */
 'use strict';
 

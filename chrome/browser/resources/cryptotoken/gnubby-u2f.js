@@ -8,19 +8,31 @@
 'use strict';
 
 // Commands and flags of the Gnubby applet at
-// //depot/google3/security/tools/gnubby/applet/gnubby/src/pkgGnubby/Gnubby.java
-usbGnubby.U2F_ENROLL        = 0x01;
-usbGnubby.U2F_SIGN          = 0x02;
-usbGnubby.U2F_VERSION       = 0x03;
+/** Enroll */
+usbGnubby.U2F_ENROLL = 0x01;
+/** Request signature */
+usbGnubby.U2F_SIGN = 0x02;
+/** Request protocol version */
+usbGnubby.U2F_VERSION = 0x03;
 
-usbGnubby.APPLET_VERSION    = 0x11;  // First 3 bytes are applet version.
+/** Request applet version */
+usbGnubby.APPLET_VERSION = 0x11;  // First 3 bytes are applet version.
 
 // APDU.P1 flags
-usbGnubby.P1_TUP_REQUIRED   = 0x01;
-usbGnubby.P1_TUP_CONSUME    = 0x02;
-usbGnubby.P1_TUP_TESTONLY   = 0x04;
+/** Test of User Presence required */
+usbGnubby.P1_TUP_REQUIRED = 0x01;
+/** Consume a Test of User Presence */
+usbGnubby.P1_TUP_CONSUME = 0x02;
+/** Test signature only, no TUP. E.g. to check for existing enrollments. */
+usbGnubby.P1_TUP_TESTONLY = 0x04;
+/** Attest with device key */
 usbGnubby.P1_INDIVIDUAL_KEY = 0x80;
 
+/** Perform enrollment
+ * @param {ArrayBuffer|Uint8Array} challenge Enrollment challenge
+ * @param {ArrayBuffer|Uint8Array} appIdHash Hashed application id
+ * @param {function(...)} cb Result callback
+ */
 usbGnubby.prototype.enroll = function(challenge, appIdHash, cb) {
   var apdu = new Uint8Array(
       [0x00,
@@ -29,7 +41,7 @@ usbGnubby.prototype.enroll = function(challenge, appIdHash, cb) {
          usbGnubby.P1_INDIVIDUAL_KEY,
        0x00, 0x00, 0x00,
        challenge.length + appIdHash.length]);
-  // TODO(mschilder): only use P1_INDIVIDUAL_KEY for corp appIdHashes.
+  // TODO: only use P1_INDIVIDUAL_KEY for corp appIdHashes.
   var u8 = new Uint8Array(apdu.length + challenge.length +
       appIdHash.length + 2);
   for (var i = 0; i < apdu.length; ++i) u8[i] = apdu[i];
@@ -41,6 +53,14 @@ usbGnubby.prototype.enroll = function(challenge, appIdHash, cb) {
   this.apduReply_(u8.buffer, cb);
 };
 
+/** Request signature
+ * @param {ArrayBuffer|Uint8Array} challengeHash Hashed signature challenge
+ * @param {ArrayBuffer|Uint8Array} appIdHash Hashed application id
+ * @param {ArrayBuffer|Uint8Array} keyHandle Key handle to use
+ * @param {function(...)} cb Result callback
+ * @param {boolean=} opt_nowink Request signature without winking
+ *     (e.g. during enroll)
+ */
 usbGnubby.prototype.sign = function(challengeHash, appIdHash, keyHandle, cb,
                                     opt_nowink) {
   var apdu = new Uint8Array(
@@ -72,6 +92,9 @@ usbGnubby.prototype.sign = function(challengeHash, appIdHash, keyHandle, cb,
   this.apduReply_(u8.buffer, cb, opt_nowink);
 };
 
+/** Request version information
+ * @param {function(...)} cb Callback
+ */
 usbGnubby.prototype.version = function(cb) {
   if (!cb) cb = usbGnubby.defaultCallback;
   var apdu = new Uint8Array([0x00, usbGnubby.U2F_VERSION, 0x00, 0x00, 0x00,

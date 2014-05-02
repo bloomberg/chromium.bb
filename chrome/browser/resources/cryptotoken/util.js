@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Various string utility functions by mschilder@google.com
+/** @fileoverview Various string utility functions */
 'use strict';
 
 /**
