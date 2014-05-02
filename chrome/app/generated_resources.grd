@@ -14627,6 +14627,14 @@ Do you accept?
      If enabled, EmbeddedSearch API will be used to submit search queries in the search results page.
     </message>
     </if>
+
+    <!-- App install alerts flags -->
+    <message name="IDS_FLAGS_ENABLE_APP_INSTALL_ALERTS_NAME" desc="Title for the flag to allow app install alerts">
+      Enable app install alerts
+    </message>
+    <message name="IDS_FLAGS_ENABLE_APP_INSTALL_ALERTS_DESCRIPTION" desc="Description to allow app install alerts">
+      If enabled, websites will be parsed for app install alert meta tags.
+    </message>
   </messages>
   </release>
 </grit>

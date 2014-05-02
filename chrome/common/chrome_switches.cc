@@ -1320,6 +1320,9 @@ const char kDisableZeroSuggest[] = "disable-zero-suggest";
 const char kEnableAccessibilityTabSwitcher[] =
     "enable-accessibility-tab-switcher";
 
+// Enables app install alerts.
+const char kEnableAppInstallAlerts[]        = "enable-app-install-alerts";
+
 // Enables Contextual Search
 const char kEnableContextualSearch[]        = "contextual-search";
 
