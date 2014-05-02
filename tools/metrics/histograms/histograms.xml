@@ -40274,6 +40274,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="18" label="OTHER"/>
   <int value="19" label="CRX"/>
   <int value="20" label="APK"/>
+  <int value="21" label="DMG"/>
+  <int value="22" label="PKG"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary" type="int">

@@ -93,6 +93,8 @@ enum MaliciousExtensionType {
   EXTENSION_OTHER,  // Groups all other extensions into one bucket.
   EXTENSION_CRX,
   EXTENSION_APK,
+  EXTENSION_DMG,
+  EXTENSION_PKG,
   EXTENSION_MAX,
 };
 
@@ -117,6 +119,8 @@ MaliciousExtensionType GetExtensionType(const base::FilePath& f) {
   if (f.MatchesExtension(FILE_PATH_LITERAL(".grp"))) return EXTENSION_GRP;
   if (f.MatchesExtension(FILE_PATH_LITERAL(".crx"))) return EXTENSION_CRX;
   if (f.MatchesExtension(FILE_PATH_LITERAL(".apk"))) return EXTENSION_APK;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".dmg"))) return EXTENSION_DMG;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".pkg"))) return EXTENSION_PKG;
   return EXTENSION_OTHER;
 }
 
