@@ -296,10 +296,12 @@ void NativeDisplayDelegateX11::CreateFrameBuffer(const gfx::Size& size) {
   int current_height = DisplayHeight(display_, DefaultScreen(display_));
   VLOG(1) << "CreateFrameBuffer: new=" << size.width() << "x" << size.height()
           << " current=" << current_width << "x" << current_height;
+
+  DestroyUnusedCrtcs(size);
+
   if (size.width() == current_width && size.height() == current_height)
     return;
 
-  DestroyUnusedCrtcs(size);
   int mm_width = size.width() * kPixelsToMmScale;
   int mm_height = size.height() * kPixelsToMmScale;
   XRRSetScreenSize(
