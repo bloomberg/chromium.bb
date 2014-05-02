@@ -320,8 +320,8 @@ Clipboard::AuraX11Details::AuraX11Details()
           NULL)),
       atom_cache_(x_display_, kAtomsToCache),
       clipboard_requestor_(x_display_, x_window_,
-                           atom_cache_.GetAtom(kClipboard)),
-      primary_requestor_(x_display_, x_window_, XA_PRIMARY),
+                           atom_cache_.GetAtom(kClipboard), this),
+      primary_requestor_(x_display_, x_window_, XA_PRIMARY, this),
       clipboard_owner_(x_display_, x_window_, atom_cache_.GetAtom(kClipboard)),
       primary_owner_(x_display_, x_window_, XA_PRIMARY) {
   // We don't know all possible MIME types at compile time.
