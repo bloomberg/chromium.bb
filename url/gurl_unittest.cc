@@ -43,8 +43,8 @@ std::string TypesTestCase(const char* src) {
 
 }  // namespace
 
-// Different types of URLs should be handled differently by url_util, and
-// handed off to different canonicalizers.
+// Different types of URLs should be handled differently, and handed off to
+// different canonicalizers.
 TEST(GURLTest, Types) {
   // URLs with unknown schemes should be treated as path URLs, even when they
   // have things like "://".

@@ -75,7 +75,7 @@ inline Component MakeRange(int begin, int end) {
 //      return I_CAN_NOT_FIND_THE_SCHEME_DUDE;
 //
 //    if (IsStandardScheme(url, scheme))  // Not provided by this component
-//      url_parseParseStandardURL(url, url_len, &parsed);
+//      ParseStandardURL(url, url_len, &parsed);
 //    else if (IsFileURL(url, scheme))    // Not provided by this component
 //      ParseFileURL(url, url_len, &parsed);
 //    else

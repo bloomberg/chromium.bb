@@ -511,7 +511,7 @@ TEST(FilenameUtilTest, GenerateFileName) {
     },
     { // Now that we use src/url's ExtractFileName, this case falls back to
       // the hostname. If this behavior is not desirable, we'd better change
-      // ExtractFileName (in url_parse).
+      // ExtractFileName (in url_parse.cc).
       __LINE__,
       "http://www.google.com/path/",
       "",

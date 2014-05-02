@@ -39,12 +39,12 @@ DatabaseIdentifier DatabaseIdentifier::CreateFromOrigin(const GURL& origin) {
     return UniqueFileIdentifier();
 
   int port = origin.IntPort();
-  if (port == url_parse::PORT_INVALID)
+  if (port == url::PORT_INVALID)
     return DatabaseIdentifier();
 
   // We encode the default port for the specified scheme as 0. GURL
   // canonicalizes this as an unspecified port.
-  if (port == url_parse::PORT_UNSPECIFIED)
+  if (port == url::PORT_UNSPECIFIED)
     port = 0;
 
   return DatabaseIdentifier(origin.scheme(),

@@ -180,11 +180,10 @@ bool IsSignInContinueUrl(const GURL& url, size_t* user_index) {
 
   *user_index = 0;
   std::string query_str = url.query();
-  url_parse::Component query(0, query_str.length());
-  url_parse::Component key, value;
+  url::Component query(0, query_str.length());
+  url::Component key, value;
   const char kUserIndexKey[] = "authuser";
-  while (url_parse::ExtractQueryKeyValue(query_str.c_str(), &query, &key,
-                                         &value)) {
+  while (url::ExtractQueryKeyValue(query_str.c_str(), &query, &key, &value)) {
     if (key.is_nonempty() &&
         query_str.substr(key.begin, key.len) == kUserIndexKey) {
       base::StringToSizeT(query_str.substr(value.begin, value.len), user_index);
