@@ -981,20 +981,44 @@ bool BrowserPlugin::handleInputEvent(const blink::WebInputEvent& event,
 
   const blink::WebInputEvent* modified_event = &event;
   scoped_ptr<blink::WebTouchEvent> touch_event;
-  // WebKit gives BrowserPlugin a list of touches that are down, but the browser
-  // process expects a list of all touches. We modify the TouchEnd event here to
-  // match these expectations.
-  if (event.type == blink::WebInputEvent::TouchEnd) {
+  if (blink::WebInputEvent::isTouchEventType(event.type)) {
     const blink::WebTouchEvent* orig_touch_event =
         static_cast<const blink::WebTouchEvent*>(&event);
+
     touch_event.reset(new blink::WebTouchEvent());
     memcpy(touch_event.get(), orig_touch_event, sizeof(blink::WebTouchEvent));
-    if (touch_event->changedTouchesLength > 0) {
-      memcpy(&touch_event->touches[touch_event->touchesLength],
-             &touch_event->changedTouches,
-            touch_event->changedTouchesLength * sizeof(blink::WebTouchPoint));
+
+    // TODO(bokan): Blink passes back a WebGestureEvent with a touches,
+    // changedTouches, and targetTouches lists; however, it doesn't set
+    // the state field on the touches which is what the RenderWidget uses
+    // to create a WebCore::TouchEvent. crbug.com/358132 tracks removing
+    // these multiple lists from WebTouchEvent since they lead to misuse
+    // like this and are functionally unused. In the mean time we'll setup
+    // the state field here manually to fix multi-touch BrowserPlugins.
+    for (size_t i = 0; i < touch_event->touchesLength; ++i) {
+      blink::WebTouchPoint& touch = touch_event->touches[i];
+      touch.state = blink::WebTouchPoint::StateStationary;
+      for (size_t j = 0; j < touch_event->changedTouchesLength; ++j) {
+        blink::WebTouchPoint& changed_touch = touch_event->changedTouches[j];
+        if (touch.id == changed_touch.id) {
+          touch.state = changed_touch.state;
+          break;
+        }
+      }
     }
-    touch_event->touchesLength += touch_event->changedTouchesLength;
+
+    // For End and Cancel, Blink gives BrowserPlugin a list of touches that
+    // are down, but the browser process expects a list of all touches. We
+    // modify these events here to match these expectations.
+    if (event.type == blink::WebInputEvent::TouchEnd ||
+        event.type == blink::WebInputEvent::TouchCancel) {
+      if (touch_event->changedTouchesLength > 0) {
+        memcpy(&touch_event->touches[touch_event->touchesLength],
+               &touch_event->changedTouches,
+              touch_event->changedTouchesLength * sizeof(blink::WebTouchPoint));
+        touch_event->touchesLength += touch_event->changedTouchesLength;
+      }
+    }
     modified_event = touch_event.get();
   }
 
