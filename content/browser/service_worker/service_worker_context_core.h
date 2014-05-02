@@ -25,6 +25,7 @@ class GURL;
 
 namespace base {
 class FilePath;
+class SequencedTaskRunner;
 }
 
 namespace quota {
@@ -86,6 +87,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // be called on the thread which called AddObserver() of |observer_list|.
   ServiceWorkerContextCore(
       const base::FilePath& user_data_directory,
+      base::SequencedTaskRunner* database_task_runner,
       quota::QuotaManagerProxy* quota_manager_proxy,
       ObserverListThreadSafe<ServiceWorkerContextObserver>* observer_list,
       scoped_ptr<ServiceWorkerProcessManager> process_manager);
