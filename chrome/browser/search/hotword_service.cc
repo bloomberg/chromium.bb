@@ -26,7 +26,9 @@ const int kMaxTimesToShowOptInPopup = 10;
 // Allowed languages for hotwording.
 static const char* kSupportedLocales[] = {
   "en",
-  "en_us"
+  "de",
+  "fr",
+  "ru"
 };
 
 // Enum describing the state of the hotword preference.
@@ -113,7 +115,7 @@ bool HotwordService::DoesHotwordSupportLanguage(Profile* profile) {
   StringToLowerASCII(&normalized_locale);
 
   for (size_t i = 0; i < arraysize(kSupportedLocales); i++) {
-    if (kSupportedLocales[i] == normalized_locale)
+    if (normalized_locale.compare(0, 2, kSupportedLocales[i]) == 0)
       return true;
   }
   return false;
