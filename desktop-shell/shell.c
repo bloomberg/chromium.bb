@@ -172,7 +172,8 @@ struct shell_surface {
 
 	struct {
 		int left, right, top, bottom;
-	} margin;
+	} margin, next_margin;
+	bool has_next_margin;
 
 	int focus_count;
 };
@@ -2126,10 +2127,11 @@ static void
 set_margin(struct shell_surface *shsurf,
 	   int32_t left, int32_t right, int32_t top, int32_t bottom)
 {
-	shsurf->margin.left = left;
-	shsurf->margin.right = right;
-	shsurf->margin.top = top;
-	shsurf->margin.bottom = bottom;
+	shsurf->next_margin.left = left;
+	shsurf->next_margin.right = right;
+	shsurf->next_margin.top = top;
+	shsurf->next_margin.bottom = bottom;
+	shsurf->has_next_margin = true;
 }
 
 static void
@@ -5119,6 +5121,11 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 
 	if (es->width == 0)
 		return;
+
+	if (shsurf->has_next_margin) {
+		shsurf->margin = shsurf->next_margin;
+		shsurf->has_next_margin = false;
+	}
 
 	if (shsurf->state_changed) {
 		set_surface_type(shsurf);
