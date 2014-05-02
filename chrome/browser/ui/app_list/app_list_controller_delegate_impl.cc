@@ -74,7 +74,7 @@ void AppListControllerDelegateImpl::DoCreateShortcutsFlow(
   OnShowExtensionPrompt();
   chrome::ShowCreateChromeAppShortcutsDialog(
       parent_window, profile, extension,
-      base::Bind(&AppListControllerDelegateImpl::OnCloseExtensionPrompt,
+      base::Bind(&AppListControllerDelegateImpl::OnCloseCreateShortcutsPrompt,
                  base::Unretained(this)));
 }
 
@@ -127,3 +127,8 @@ bool AppListControllerDelegateImpl::ShouldShowUserIcon() {
 }
 
 void AppListControllerDelegateImpl::FillLaunchParams(AppLaunchParams* params) {}
+
+void AppListControllerDelegateImpl::OnCloseCreateShortcutsPrompt(
+    bool created) {
+  OnCloseExtensionPrompt();
+}

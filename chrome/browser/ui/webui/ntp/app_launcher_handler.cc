@@ -623,7 +623,7 @@ void AppLauncherHandler::HandleCreateAppShortcut(const base::ListValue* args) {
         web_ui()->GetWebContents());
   chrome::ShowCreateChromeAppShortcutsDialog(
       browser->window()->GetNativeWindow(), browser->profile(), extension,
-      base::Closure());
+      base::Callback<void(bool)>());
 }
 
 void AppLauncherHandler::HandleReorderApps(const base::ListValue* args) {

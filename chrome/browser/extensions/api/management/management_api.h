@@ -172,6 +172,23 @@ class ManagementUninstallSelfFunction : public ManagementUninstallFunctionBase {
   virtual bool RunImpl() OVERRIDE;
 };
 
+class ManagementCreateAppShortcutFunction : public AsyncManagementFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("management.createAppShortcut",
+      MANAGEMENT_CREATEAPPSHORTCUT);
+
+  ManagementCreateAppShortcutFunction();
+
+  void OnCloseShortcutPrompt(bool created);
+
+  static void SetAutoConfirmForTest(bool should_proceed);
+
+ protected:
+  virtual ~ManagementCreateAppShortcutFunction();
+
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class ManagementEventRouter : public content::NotificationObserver {
  public:
   explicit ManagementEventRouter(Profile* profile);

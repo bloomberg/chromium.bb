@@ -811,6 +811,7 @@ enum HistogramValue {
   FILESYSTEMPROVIDERINTERNAL_GETMETADATAREQUESTEDSUCCESS,
   FILESYSTEMPROVIDERINTERNAL_GETMETADATAREQUESTEDERROR,
   BROWSER_OPENTAB,
+  MANAGEMENT_CREATEAPPSHORTCUT,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms/histograms.xml.
   ENUM_BOUNDARY

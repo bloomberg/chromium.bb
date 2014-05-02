@@ -240,7 +240,7 @@ void ShowCreateChromeAppShortcutsDialog(
     gfx::NativeWindow parent_window,
     Profile* profile,
     const extensions::Extension* app,
-    const base::Closure& close_callback) {
+    const base::Callback<void(bool)>& close_callback) {
   CreateBrowserModalDialogViews(
       new CreateChromeApplicationShortcutView(profile, app, close_callback),
       parent_window)->Show();
@@ -519,7 +519,7 @@ void CreateUrlApplicationShortcutView::DidDownloadFavicon(
 CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
     Profile* profile,
     const extensions::Extension* app,
-    const base::Closure& close_callback)
+    const base::Callback<void(bool)>& close_callback)
         : CreateApplicationShortcutView(profile),
           close_callback_(close_callback),
           weak_ptr_factory_(this) {
@@ -543,13 +543,13 @@ CreateChromeApplicationShortcutView::~CreateChromeApplicationShortcutView() {}
 
 bool CreateChromeApplicationShortcutView::Accept() {
   if (!close_callback_.is_null())
-    close_callback_.Run();
+    close_callback_.Run(true);
   return CreateApplicationShortcutView::Accept();
 }
 
 bool CreateChromeApplicationShortcutView::Cancel() {
   if (!close_callback_.is_null())
-    close_callback_.Run();
+    close_callback_.Run(false);
   return CreateApplicationShortcutView::Cancel();
 }
 

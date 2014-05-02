@@ -56,6 +56,8 @@ class AppListControllerDelegateImpl : public AppListControllerDelegate {
   virtual void FillLaunchParams(AppLaunchParams* params);
 
  private:
+  void OnCloseCreateShortcutsPrompt(bool created);
+
   AppListService* service_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateImpl);

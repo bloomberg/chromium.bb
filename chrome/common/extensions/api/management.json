@@ -297,6 +297,23 @@
             "parameters": []
           }
         ]
+      },
+      {
+        "name": "createAppShortcut",
+        "description": "Display options to create shortcuts for an app. On Mac, only packaged app shortcuts can be created. Note: This function is only available to Chrome users on the dev channel.",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "This should be the id from an app item of $(ref:management.ExtensionInfo)."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters":  []
+          }
+        ]
       }
     ],
     "events": [

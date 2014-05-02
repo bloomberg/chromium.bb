@@ -25,6 +25,9 @@
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_utility_messages.h"
@@ -644,6 +647,77 @@ bool ManagementUninstallSelfFunction::RunImpl() {
   if (params->options.get() && params->options->show_confirm_dialog.get())
     show_confirm_dialog = *params->options->show_confirm_dialog;
   return Uninstall(extension_->id(), show_confirm_dialog);
+}
+
+ManagementCreateAppShortcutFunction::ManagementCreateAppShortcutFunction() {
+}
+
+ManagementCreateAppShortcutFunction::~ManagementCreateAppShortcutFunction() {
+}
+
+// static
+void ManagementCreateAppShortcutFunction::SetAutoConfirmForTest(
+    bool should_proceed) {
+  auto_confirm_for_test = should_proceed ? PROCEED : ABORT;
+}
+
+void ManagementCreateAppShortcutFunction::OnCloseShortcutPrompt(bool created) {
+  if (!created)
+    error_ = keys::kCreateShortcutCanceledError;
+  SendResponse(created);
+  Release();
+}
+
+bool ManagementCreateAppShortcutFunction::RunImpl() {
+  if (!user_gesture()) {
+    error_ = keys::kGestureNeededForCreateAppShortcutError;
+    return false;
+  }
+
+  scoped_ptr<management::CreateAppShortcut::Params> params(
+      management::CreateAppShortcut::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  const Extension* extension = service()->GetExtensionById(params->id, true);
+  if (!extension) {
+    error_ = ErrorUtils::FormatErrorMessage(keys::kNoExtensionError,
+                                            params->id);
+    return false;
+  }
+
+  if (!extension->is_app()) {
+    error_ = ErrorUtils::FormatErrorMessage(keys::kNotAnAppError, params->id);
+    return false;
+  }
+
+#if defined(OS_MACOSX)
+  if (!extension->is_platform_app()) {
+    error_ = keys::kCreateOnlyPackagedAppShortcutMac;
+    return false;
+  }
+#endif
+
+  Browser* browser = chrome::FindBrowserWithProfile(
+      GetProfile(), chrome::HOST_DESKTOP_TYPE_NATIVE);
+  if (!browser) {
+    // Shouldn't happen if we have user gesture.
+    error_ = keys::kNoBrowserToCreateShortcut;
+    return false;
+  }
+
+  // Matched with a Release() in OnCloseShortcutPrompt().
+  AddRef();
+
+  if (auto_confirm_for_test == DO_NOT_SKIP) {
+    chrome::ShowCreateChromeAppShortcutsDialog(
+        browser->window()->GetNativeWindow(), browser->profile(), extension,
+        base::Bind(&ManagementCreateAppShortcutFunction::OnCloseShortcutPrompt,
+           this));
+  } else {
+    OnCloseShortcutPrompt(auto_confirm_for_test == PROCEED);
+  }
+
+  // Response is sent async in OnCloseShortcutPrompt().
+  return true;
 }
 
 ManagementEventRouter::ManagementEventRouter(Profile* profile)

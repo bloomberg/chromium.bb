@@ -131,6 +131,24 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, MAYBE_Uninstall) {
   ASSERT_TRUE(RunExtensionSubtest("management/test", "uninstall.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, CreateAppShortcut) {
+  LoadExtensions();
+  base::FilePath basedir = test_data_dir_.AppendASCII("management");
+  LoadNamedExtension(basedir, "packaged_app");
+
+  extensions::ManagementCreateAppShortcutFunction::SetAutoConfirmForTest(true);
+  ASSERT_TRUE(RunExtensionSubtest("management/test",
+                                  "createAppShortcut.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
+                       CreateAppShortcutNotInStable) {
+  extensions::ScopedCurrentChannel channel(
+      chrome::VersionInfo::CHANNEL_STABLE);
+  ASSERT_TRUE(RunExtensionSubtest("management/test",
+                                  "createAppShortcutNotInStable.html"));
+}
+
 // Fails often on Windows dbg bots. http://crbug.com/177163
 #if defined(OS_WIN)
 #define MAYBE_ManagementPolicyAllowed DISABLED_ManagementPolicyAllowed

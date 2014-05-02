@@ -23,6 +23,10 @@ extern const char kNotAnAppError[];
 extern const char kUserCantModifyError[];
 extern const char kUninstallCanceledError[];
 extern const char kUserDidNotReEnableError[];
+extern const char kGestureNeededForCreateAppShortcutError[];
+extern const char kNoBrowserToCreateShortcut[];
+extern const char kCreateOnlyPackagedAppShortcutMac[];
+extern const char kCreateShortcutCanceledError[];
 
 
 }  // namespace extension_management_api_constants

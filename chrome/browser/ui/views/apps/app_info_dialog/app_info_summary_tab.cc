@@ -433,7 +433,7 @@ bool AppInfoSummaryTab::CanUninstallApp() const {
 void AppInfoSummaryTab::CreateShortcuts() {
   DCHECK(CanCreateShortcuts());
   chrome::ShowCreateChromeAppShortcutsDialog(
-      parent_window_, profile_, app_, base::Closure());
+      parent_window_, profile_, app_, base::Callback<void(bool)>());
 }
 
 bool AppInfoSummaryTab::CanCreateShortcuts() const {

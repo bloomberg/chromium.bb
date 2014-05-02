@@ -146,6 +146,34 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
+                       CreateAppShortcutConfirmDialog) {
+  const Extension* app = InstallExtension(
+      test_data_dir_.AppendASCII("api_test/management/packaged_app"), 1);
+  ASSERT_TRUE(app);
+
+  const std::string app_id = app->id();
+
+  scoped_refptr<ManagementCreateAppShortcutFunction> create_shortcut_function(
+      new ManagementCreateAppShortcutFunction());
+  create_shortcut_function->set_user_gesture(true);
+  ManagementCreateAppShortcutFunction::SetAutoConfirmForTest(true);
+  util::RunFunctionAndReturnSingleResult(
+      create_shortcut_function.get(),
+      base::StringPrintf("[\"%s\"]", app_id.c_str()),
+      browser());
+
+  create_shortcut_function = new ManagementCreateAppShortcutFunction();
+  create_shortcut_function->set_user_gesture(true);
+  ManagementCreateAppShortcutFunction::SetAutoConfirmForTest(false);
+  EXPECT_TRUE(MatchPattern(
+      util::RunFunctionAndReturnError(
+          create_shortcut_function.get(),
+          base::StringPrintf("[\"%s\"]", app_id.c_str()),
+          browser()),
+      keys::kCreateShortcutCanceledError));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
                        GetAllIncludesTerminated) {
   // Load an extension with a background page, so that we know it has a process
   // running.

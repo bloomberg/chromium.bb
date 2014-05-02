@@ -2282,6 +2282,9 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_CREATE_SHORTCUTS_MENU_CHKBOX" desc="Label of the checkbox to create an application shortcut in the system's applications menu.">
         Applications menu
       </message>
+      <message name="IDS_CREATE_SHORTCUTS_APP_FOLDER_CHKBOX" desc="Label of the checkbox to create an application shortcut in the system's applications folder.">
+        Applications folder
+      </message>
       <message name="IDS_CREATE_SHORTCUTS_START_MENU_CHKBOX" desc="Label of the checkbox to create an application shortcut in the start menu.">
         Start menu
       </message>

@@ -36,6 +36,7 @@
 #include "extensions/common/extension.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 #import "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -465,24 +466,6 @@ void UpdateFileTypes(NSMutableDictionary* plist,
 
 }  // namespace
 
-namespace chrome {
-
-void ShowCreateChromeAppShortcutsDialog(gfx::NativeWindow /*parent_window*/,
-                                        Profile* profile,
-                                        const extensions::Extension* app,
-                                        const base::Closure& close_callback) {
-  // Normally we would show a dialog, but since we always create the app
-  // shortcut in ~/Applications there are no options for the user to choose.
-  web_app::CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
-                           web_app::ShortcutLocations(),
-                           profile,
-                           app);
-  if (!close_callback.is_null())
-    close_callback.Run();
-}
-
-}  // namespace chrome
-
 namespace web_app {
 
 WebAppShortcutCreator::WebAppShortcutCreator(
@@ -862,6 +845,61 @@ void MaybeLaunchShortcut(const web_app::ShortcutInfo& shortcut_info) {
       base::Bind(&LaunchShimOnFileThread, shortcut_info));
 }
 
+// Called when the app's ShortcutInfo (with icon) is loaded when creating app
+// shortcuts.
+void CreateAppShortcutInfoLoaded(
+    Profile* profile,
+    const extensions::Extension* app,
+    const base::Callback<void(bool)>& close_callback,
+    const web_app::ShortcutInfo& shortcut_info) {
+  base::scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
+
+  NSButton* continue_button = [alert
+      addButtonWithTitle:l10n_util::GetNSString(IDS_CREATE_SHORTCUTS_COMMIT)];
+  [continue_button setKeyEquivalent:@""];
+
+  NSButton* cancel_button =
+      [alert addButtonWithTitle:l10n_util::GetNSString(IDS_CANCEL)];
+  [cancel_button setKeyEquivalent:@"\r"];
+
+  [alert setMessageText:l10n_util::GetNSString(IDS_CREATE_SHORTCUTS_LABEL)];
+  [alert setAlertStyle:NSInformationalAlertStyle];
+
+  base::scoped_nsobject<NSButton> application_folder_checkbox(
+      [[NSButton alloc] initWithFrame:NSZeroRect]);
+  [application_folder_checkbox setButtonType:NSSwitchButton];
+  [application_folder_checkbox
+      setTitle:l10n_util::GetNSString(IDS_CREATE_SHORTCUTS_APP_FOLDER_CHKBOX)];
+  [application_folder_checkbox setState:NSOnState];
+  [application_folder_checkbox sizeToFit];
+  [alert setAccessoryView:application_folder_checkbox];
+
+  const int kIconPreviewSizePixels = 128;
+  const int kIconPreviewTargetSize = 64;
+  const gfx::Image* icon = shortcut_info.favicon.GetBest(
+      kIconPreviewSizePixels, kIconPreviewSizePixels);
+
+  if (icon && !icon->IsEmpty()) {
+    NSImage* icon_image = icon->ToNSImage();
+    [icon_image
+        setSize:NSMakeSize(kIconPreviewTargetSize, kIconPreviewTargetSize)];
+    [alert setIcon:icon_image];
+  }
+
+  bool dialog_accepted = false;
+  if ([alert runModal] == NSAlertFirstButtonReturn &&
+      [application_folder_checkbox state] == NSOnState) {
+    dialog_accepted = true;
+    web_app::CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
+                             web_app::ShortcutLocations(),
+                             profile,
+                             app);
+  }
+
+  if (!close_callback.is_null())
+    close_callback.Run(dialog_accepted);
+}
+
 namespace internals {
 
 bool CreatePlatformShortcuts(
@@ -914,3 +952,21 @@ void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
 }  // namespace internals
 
 }  // namespace web_app
+
+namespace chrome {
+
+void ShowCreateChromeAppShortcutsDialog(
+    gfx::NativeWindow /*parent_window*/,
+    Profile* profile,
+    const extensions::Extension* app,
+    const base::Callback<void(bool)>& close_callback) {
+  web_app::UpdateShortcutInfoAndIconForApp(
+      app,
+      profile,
+      base::Bind(&web_app::CreateAppShortcutInfoLoaded,
+                 profile,
+                 app,
+                 close_callback));
+}
+
+}  // namespace chrome
