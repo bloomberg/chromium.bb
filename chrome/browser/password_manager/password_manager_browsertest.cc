@@ -674,7 +674,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
           PasswordStoreFactory::GetForProfile(browser()->profile(),
                                               Profile::IMPLICIT_ACCESS).get());
 
-  EXPECT_EQ(0U, password_store->stored_passwords().size());
+  EXPECT_TRUE(password_store->IsEmpty());
 
   NavigateToFile("/password/password_form.html");
 
@@ -695,9 +695,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   if (chrome::VersionInfo::GetChannel() ==
       chrome::VersionInfo::CHANNEL_UNKNOWN) {
     EXPECT_FALSE(observer.infobar_shown());
-    EXPECT_EQ(1U, password_store->stored_passwords().size());
+    EXPECT_FALSE(password_store->IsEmpty());
   } else {
     EXPECT_TRUE(observer.infobar_shown());
-    EXPECT_EQ(0U, password_store->stored_passwords().size());
+    EXPECT_TRUE(password_store->IsEmpty());
   }
 }

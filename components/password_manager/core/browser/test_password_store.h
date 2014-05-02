@@ -29,8 +29,13 @@ class TestPasswordStore : public PasswordStore {
   typedef std::map<std::string /* signon_realm */,
                    std::vector<autofill::PasswordForm> > PasswordMap;
 
-  PasswordMap stored_passwords();
+  const PasswordMap& stored_passwords() const;
   void Clear();
+
+  // Returns true if no passwords are stored in the store. Note that this is not
+  // as simple as asking whether stored_passwords().empty(), because the map can
+  // have entries of size 0.
+  bool IsEmpty() const;
 
  protected:
   virtual ~TestPasswordStore();

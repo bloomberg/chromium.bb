@@ -15,12 +15,25 @@ TestPasswordStore::TestPasswordStore()
 
 TestPasswordStore::~TestPasswordStore() {}
 
-TestPasswordStore::PasswordMap TestPasswordStore::stored_passwords() {
+const TestPasswordStore::PasswordMap& TestPasswordStore::stored_passwords()
+    const {
   return stored_passwords_;
 }
 
 void TestPasswordStore::Clear() {
   stored_passwords_.clear();
+}
+
+bool TestPasswordStore::IsEmpty() const {
+  // The store is empty, if the sum of all stored passwords across all entries
+  // in |stored_passwords_| is 0.
+  size_t number_of_passwords = 0u;
+  for (PasswordMap::const_iterator it = stored_passwords_.begin();
+       !number_of_passwords && it != stored_passwords_.end();
+       ++it) {
+    number_of_passwords += it->second.size();
+  }
+  return number_of_passwords == 0u;
 }
 
 bool TestPasswordStore::FormsAreEquivalent(const autofill::PasswordForm& lhs,
