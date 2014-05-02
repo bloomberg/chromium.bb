@@ -810,6 +810,9 @@ template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr)
 #define DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(type) // do nothing
 #define DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(type) // do nothing
 
+#define DEFINE_STATIC_REF_WILL_BE_PERSISTENT(type, name, arguments) \
+    DEFINE_STATIC_LOCAL(Persistent<type>, name, arguments)
+
 #else // !ENABLE(OILPAN)
 
 template<typename T>
@@ -875,6 +878,9 @@ template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr) { retu
 
 #define DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(type) \
     type::~type() { }
+
+#define DEFINE_STATIC_REF_WILL_BE_PERSISTENT(type, name, arguments) \
+    DEFINE_STATIC_REF(type, name, arguments)
 
 #endif // ENABLE(OILPAN)
 

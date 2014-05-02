@@ -44,13 +44,8 @@ namespace WebCore {
 
 const AnimatableValue* AnimatableValue::neutralValue()
 {
-#if ENABLE_OILPAN
-    DEFINE_STATIC_LOCAL(Persistent<AnimatableNeutral>, neutralSentinelValue, (AnimatableNeutral::create()));
-    return neutralSentinelValue.get();
-#else
-    DEFINE_STATIC_REF(AnimatableNeutral, neutralSentinelValue, (AnimatableNeutral::create()));
+    DEFINE_STATIC_REF_WILL_BE_PERSISTENT(AnimatableNeutral, neutralSentinelValue, (AnimatableNeutral::create()));
     return neutralSentinelValue;
-#endif
 }
 
 PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableValue::interpolate(const AnimatableValue* left, const AnimatableValue* right, double fraction)

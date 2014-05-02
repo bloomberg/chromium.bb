@@ -75,11 +75,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableStrokeDasharrayList::interpola
     if (from.isEmpty() && to.isEmpty())
         return takeConstRef(this);
     if (from.isEmpty() || to.isEmpty()) {
-#if ENABLE_OILPAN
-        DEFINE_STATIC_LOCAL(Persistent<AnimatableSVGLength>, zeroPixels, (AnimatableSVGLength::create(SVGLength::create())));
-#else
-        DEFINE_STATIC_REF(AnimatableSVGLength, zeroPixels, AnimatableSVGLength::create(SVGLength::create()).leakRef());
-#endif
+        DEFINE_STATIC_REF_WILL_BE_PERSISTENT(AnimatableSVGLength, zeroPixels, (AnimatableSVGLength::create(SVGLength::create())));
         if (from.isEmpty()) {
             from.append(zeroPixels);
             from.append(zeroPixels);
