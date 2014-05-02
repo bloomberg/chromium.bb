@@ -40,7 +40,8 @@ bool IsForwardMotion(VisualCursorDirection direction, const PangoItem* item) {
 }
 
 // Checks whether |range| contains |index|. This is not the same as calling
-// range.Contains(Range(index)), which returns true if |index| == |range.end()|.
+// |range.Contains(gfx::Range(index))| - as that would return true when
+// |index| == |range.end()|.
 bool IndexInRange(const Range& range, size_t index) {
   return index >= range.start() && index < range.end();
 }
@@ -248,7 +249,7 @@ std::vector<Rect> RenderTextPango::GetSubstringBounds(const Range& range) {
 
 size_t RenderTextPango::TextIndexToLayoutIndex(size_t index) const {
   DCHECK(layout_);
-  ptrdiff_t offset = UTF16IndexToOffset(text(), 0, index);
+  ptrdiff_t offset = gfx::UTF16IndexToOffset(text(), 0, index);
   // Clamp layout indices to the length of the text actually used for layout.
   offset = std::min<size_t>(offset, g_utf8_strlen(layout_text_, -1));
   const char* layout_pointer = g_utf8_offset_to_pointer(layout_text_, offset);
@@ -259,19 +260,24 @@ size_t RenderTextPango::LayoutIndexToTextIndex(size_t index) const {
   DCHECK(layout_);
   const char* layout_pointer = layout_text_ + index;
   const long offset = g_utf8_pointer_to_offset(layout_text_, layout_pointer);
-  return UTF16OffsetToIndex(text(), 0, offset);
+  return gfx::UTF16OffsetToIndex(text(), 0, offset);
 }
 
-bool RenderTextPango::IsValidCursorIndex(size_t index) {
-  if (index == 0 || index == text().length())
+bool RenderTextPango::IsCursorablePosition(size_t position) {
+  if (position == 0 && text().empty())
     return true;
-  if (!IsValidLogicalIndex(index))
+  if (position >= text().length())
+    return position == text().length();
+  if (!gfx::IsValidCodePointIndex(text(), position))
     return false;
 
   EnsureLayout();
-  ptrdiff_t offset = UTF16IndexToOffset(text(), 0, index);
-  // Check that the index is marked as a legitimate cursor position by Pango.
-  return offset < num_log_attrs_ && log_attrs_[offset].is_cursor_position;
+  ptrdiff_t offset = gfx::UTF16IndexToOffset(text(), 0, position);
+  // Check that the index corresponds with a valid text code point, that it is
+  // marked as a legitimate cursor position by Pango, and that it is not
+  // truncated from layout text (its glyph is shown on screen).
+  return (offset < num_log_attrs_ && log_attrs_[offset].is_cursor_position &&
+          offset < g_utf8_strlen(layout_text_, -1));
 }
 
 void RenderTextPango::ResetLayout() {
@@ -385,10 +391,11 @@ void RenderTextPango::DrawVisualText(Canvas* canvas) {
   ApplyTextShadows(&renderer);
 
   // TODO(derat): Use font-specific params: http://crbug.com/125235
-  const FontRenderParams& render_params = GetDefaultFontRenderParams();
+  const gfx::FontRenderParams& render_params =
+      gfx::GetDefaultFontRenderParams();
   const bool use_subpixel_rendering =
       render_params.subpixel_rendering !=
-          FontRenderParams::SUBPIXEL_RENDERING_NONE;
+          gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE;
   renderer.SetFontSmoothingSettings(
       render_params.antialiasing,
       use_subpixel_rendering && !background_is_transparent(),
@@ -396,16 +403,16 @@ void RenderTextPango::DrawVisualText(Canvas* canvas) {
 
   SkPaint::Hinting skia_hinting = SkPaint::kNormal_Hinting;
   switch (render_params.hinting) {
-    case FontRenderParams::HINTING_NONE:
+    case gfx::FontRenderParams::HINTING_NONE:
       skia_hinting = SkPaint::kNo_Hinting;
       break;
-    case FontRenderParams::HINTING_SLIGHT:
+    case gfx::FontRenderParams::HINTING_SLIGHT:
       skia_hinting = SkPaint::kSlight_Hinting;
       break;
-    case FontRenderParams::HINTING_MEDIUM:
+    case gfx::FontRenderParams::HINTING_MEDIUM:
       skia_hinting = SkPaint::kNormal_Hinting;
       break;
-    case FontRenderParams::HINTING_FULL:
+    case gfx::FontRenderParams::HINTING_FULL:
       skia_hinting = SkPaint::kFull_Hinting;
       break;
   }
