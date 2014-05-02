@@ -20611,6 +20611,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Times a profile name and/or avatar was updated.</summary>
 </histogram>
 
+<histogram name="Profile.UpgradeEnrollment" enum="ProfileUpgradeEnrollment">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    The process which leads a user to enroll in New Profile Management. Also
+    tracks if the user chooses to opt out, and tutorials which guide the user
+    into New Profile Management.
+  </summary>
+</histogram>
+
 <histogram name="Profile.VisitedLinksSize" units="MB">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Size of the visited links database.</summary>
@@ -39646,6 +39655,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="ProfileType" type="int">
   <int value="0" label="Original (default) profile"/>
   <int value="1" label="Secondary (user-created) profile"/>
+</enum>
+
+<enum name="ProfileUpgradeEnrollment" type="int">
+  <int value="0" label="User viewed the Upgrade promo card in the user menu."/>
+  <int value="1" label="User selected to view the intro tutorial."/>
+  <int value="2" label="User opted into New Profile Management by Promo card."/>
+  <int value="3" label="User closed the Upgrade card."/>
+  <int value="4" label="Used disabled New Profiles Management."/>
 </enum>
 
 <enum name="ProtectorError" type="int">

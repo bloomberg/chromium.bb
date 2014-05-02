@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -541,8 +542,13 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     // is indeed shown for the maximum number of times.
     browser_->profile()->GetPrefs()->SetInteger(
         prefs::kProfileAvatarTutorialShown, kProfileAvatarTutorialShowMax + 1);
+
+    ProfileMetrics::LogProfileUpgradeEnrollment(
+        ProfileMetrics::PROFILE_ENROLLMENT_CLOSE_WELCOME_CARD);
     ShowView(BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
   } else if (sender == tutorial_enable_new_profile_management_button_) {
+    ProfileMetrics::LogProfileUpgradeEnrollment(
+        ProfileMetrics::PROFILE_ENROLLMENT_ACCEPT_NEW_PROFILE_MGMT);
     profiles::EnableNewProfileManagementPreview();
   } else if (sender == remove_account_and_relaunch_button_) {
     RemoveAccount();
@@ -622,6 +628,8 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
   } else if (sender == add_account_link_) {
     ShowView(BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT, avatar_menu_.get());
   } else if (sender == tutorial_learn_more_link_) {
+    ProfileMetrics::LogProfileUpgradeEnrollment(
+        ProfileMetrics::PROFILE_ENROLLMENT_LAUNCH_LEARN_MORE);
     // TODO(guohui): update |learn_more_url| once it is decided.
     const GURL lear_more_url("https://support.google.com/chrome/?hl=en#to");
     chrome::NavigateParams params(
@@ -691,10 +699,10 @@ views::View* ProfileChooserView::CreateProfileChooserView(
       current_profile_view = CreateCurrentProfileView(item, false);
       if (view_mode_ == BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
         if (is_new_profile_management) {
-          tutorial_view = last_tutorial_mode == TUTORIAL_MODE_SEND_FEEDBACK ?
+          tutorial_view = tutorial_mode_ == TUTORIAL_MODE_SEND_FEEDBACK ?
               CreateSendPreviewFeedbackView() :
               CreatePreviewEnabledTutorialView(
-                  item, last_tutorial_mode == TUTORIAL_MODE_PREVIEW_ENABLED);
+                  item, tutorial_mode_ == TUTORIAL_MODE_PREVIEW_ENABLED);
         } else {
           tutorial_view = CreateNewProfileManagementPreviewView();
         }
@@ -707,6 +715,13 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   }
 
   if (tutorial_view) {
+    // Be sure not to track the tutorial display on View refresh, and only count
+    // the preview-promo view, shown when New Profile Management is off.
+    if (tutorial_mode_ != last_tutorial_mode &&
+        !switches::IsNewProfileManagement()) {
+      ProfileMetrics::LogProfileUpgradeEnrollment(
+          ProfileMetrics::PROFILE_ENROLLMENT_SHOW_PREVIEW_PROMO);
+    }
     layout->StartRow(1, 0);
     layout->AddView(tutorial_view);
   }
@@ -812,7 +827,7 @@ views::View* ProfileChooserView::CreateTutorialView(
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label->SetAutoColorReadabilityEnabled(false);
   title_label->SetEnabledColor(SK_ColorWHITE);
-  title_label ->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+  title_label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
       ui::ResourceBundle::MediumFont));
   layout->StartRow(1, 0);
   layout->AddView(title_label);
