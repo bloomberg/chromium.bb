@@ -2788,8 +2788,8 @@ LayoutUnit RenderBox::computeReplacedLogicalWidthUsing(Length logicalWidth) cons
                 return computeIntrinsicLogicalWidthUsing(logicalWidth, cw, borderAndPaddingLogicalWidth()) - borderAndPaddingLogicalWidth();
             if (cw > 0 || (!cw && (containerLogicalWidth.isFixed() || containerLogicalWidth.isPercent())))
                 return adjustContentBoxLogicalWidthForBoxSizing(minimumValueForLength(logicalWidth, cw));
+            return 0;
         }
-        // fall through
         case Intrinsic:
         case MinIntrinsic:
         case Auto:
