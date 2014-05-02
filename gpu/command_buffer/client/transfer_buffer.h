@@ -16,40 +16,6 @@ namespace gpu {
 
 class CommandBufferHelper;
 
-// Wraps RingBufferWrapper to provide aligned allocations.
-class AlignedRingBuffer : public RingBufferWrapper {
- public:
-  AlignedRingBuffer(
-      unsigned int alignment,
-      int32 shm_id,
-      RingBuffer::Offset base_offset,
-      unsigned int size,
-      CommandBufferHelper* helper,
-      void* base)
-      : RingBufferWrapper(base_offset, size, helper, base),
-        alignment_(alignment),
-        shm_id_(shm_id) {
-  }
-  ~AlignedRingBuffer();
-
-  // Hiding Alloc from RingBufferWrapper
-  void* Alloc(unsigned int size) {
-    return RingBufferWrapper::Alloc(RoundToAlignment(size));
-  }
-
-  int32 GetShmId() const {
-    return shm_id_;
-  }
-
- private:
-  unsigned int RoundToAlignment(unsigned int size) {
-    return (size + alignment_ - 1) & ~(alignment_ - 1);
-  }
-
-  unsigned int alignment_;
-  int32 shm_id_;
-};
-
 // Interface for managing the transfer buffer.
 class GPU_EXPORT TransferBufferInterface {
  public:
@@ -120,7 +86,7 @@ class GPU_EXPORT TransferBuffer : public TransferBufferInterface {
   void AllocateRingBuffer(unsigned int size);
 
   CommandBufferHelper* helper_;
-  scoped_ptr<AlignedRingBuffer> ring_buffer_;
+  scoped_ptr<RingBuffer> ring_buffer_;
 
   // size reserved for results
   unsigned int result_size_;

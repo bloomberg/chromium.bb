@@ -13,13 +13,16 @@
 
 namespace gpu {
 
-RingBuffer::RingBuffer(
-    Offset base_offset, unsigned int size, CommandBufferHelper* helper)
+RingBuffer::RingBuffer(unsigned int alignment, Offset base_offset,
+                       unsigned int size, CommandBufferHelper* helper,
+                       void* base)
     : helper_(helper),
       base_offset_(base_offset),
       size_(size),
       free_offset_(0),
-      in_use_offset_(0) {
+      in_use_offset_(0),
+      alignment_(alignment),
+      base_(static_cast<int8*>(base) - base_offset) {
 }
 
 RingBuffer::~RingBuffer() {
@@ -49,13 +52,16 @@ void RingBuffer::FreeOldestBlock() {
   blocks_.pop_front();
 }
 
-RingBuffer::Offset RingBuffer::Alloc(unsigned int size) {
+void* RingBuffer::Alloc(unsigned int size) {
   DCHECK_LE(size, size_) << "attempt to allocate more than maximum memory";
   DCHECK(blocks_.empty() || blocks_.back().state != IN_USE)
       << "Attempt to alloc another block before freeing the previous.";
   // Similarly to malloc, an allocation of 0 allocates at least 1 byte, to
   // return different pointers every time.
   if (size == 0) size = 1;
+  // Allocate rounded to alignment size so that the offsets are always
+  // memory-aligned.
+  size = RoundToAlignment(size);
 
   // Wait until there is enough room.
   while (size > GetLargestFreeSizeNoWaiting()) {
@@ -74,11 +80,12 @@ RingBuffer::Offset RingBuffer::Alloc(unsigned int size) {
   if (free_offset_ == size_) {
     free_offset_ = 0;
   }
-  return offset + base_offset_;
+  return GetPointer(offset + base_offset_);
 }
 
-void RingBuffer::FreePendingToken(RingBuffer::Offset offset,
+void RingBuffer::FreePendingToken(void* pointer,
                                   unsigned int token) {
+  Offset offset = GetOffset(pointer);
   offset -= base_offset_;
   DCHECK(!blocks_.empty()) << "no allocations to free";
   for (Container::reverse_iterator it = blocks_.rbegin();

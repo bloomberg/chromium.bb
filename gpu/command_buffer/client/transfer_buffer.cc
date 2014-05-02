@@ -13,9 +13,6 @@
 
 namespace gpu {
 
-AlignedRingBuffer::~AlignedRingBuffer() {
-}
-
 TransferBuffer::TransferBuffer(
     CommandBufferHelper* helper)
     : helper_(helper),
@@ -92,9 +89,8 @@ void TransferBuffer::AllocateRingBuffer(unsigned int size) {
     if (id != -1) {
       DCHECK(buffer);
       buffer_ = buffer;
-      ring_buffer_.reset(new AlignedRingBuffer(
+      ring_buffer_.reset(new RingBuffer(
           alignment_,
-          id,
           result_size_,
           buffer_->size() - result_size_,
           helper_,

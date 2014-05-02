@@ -25,11 +25,13 @@ class GPU_EXPORT RingBuffer {
 
   // Creates a RingBuffer.
   // Parameters:
+  //   alignment: Alignment for allocations.
   //   base_offset: The offset of the start of the buffer.
   //   size: The size of the buffer in bytes.
   //   helper: A CommandBufferHelper for dealing with tokens.
-  RingBuffer(
-      Offset base_offset, unsigned int size, CommandBufferHelper* helper);
+  //   base: The physical address that corresponds to base_offset.
+  RingBuffer(unsigned int alignment, Offset base_offset,
+             unsigned int size, CommandBufferHelper* helper, void* base);
 
   ~RingBuffer();
 
@@ -41,16 +43,16 @@ class GPU_EXPORT RingBuffer {
   //   size: the size of the memory block to allocate.
   //
   // Returns:
-  //   the offset of the allocated memory block.
-  Offset Alloc(unsigned int size);
+  //   the pointer to the allocated memory block.
+  void* Alloc(unsigned int size);
 
   // Frees a block of memory, pending the passage of a token. That memory won't
   // be re-allocated until the token has passed through the command stream.
   //
   // Parameters:
-  //   offset: the offset of the memory block to free.
+  //   pointer: the pointer to the memory block to free.
   //   token: the token value to wait for before re-using the memory.
-  void FreePendingToken(Offset offset, unsigned int token);
+  void FreePendingToken(void* pointer, unsigned int token);
 
   // Gets the size of the largest free block that is available without waiting.
   unsigned int GetLargestFreeSizeNoWaiting();
@@ -61,6 +63,22 @@ class GPU_EXPORT RingBuffer {
   unsigned int GetLargestFreeOrPendingSize() {
     return size_;
   }
+
+  // Gets a pointer to a memory block given the base memory and the offset.
+  void* GetPointer(RingBuffer::Offset offset) const {
+    return static_cast<int8*>(base_) + offset;
+  }
+
+  // Gets the offset to a memory block given the base memory and the address.
+  RingBuffer::Offset GetOffset(void* pointer) const {
+    return static_cast<int8*>(pointer) - static_cast<int8*>(base_);
+  }
+
+  // Rounds the given size to the alignment in use.
+  unsigned int RoundToAlignment(unsigned int size) {
+    return (size + alignment_ - 1) & ~(alignment_ - 1);
+  }
+
 
  private:
   enum State {
@@ -105,92 +123,13 @@ class GPU_EXPORT RingBuffer {
   // Range between in_use_mark and free_mark is in use.
   Offset in_use_offset_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(RingBuffer);
-};
+  // Alignment for allocations.
+  unsigned int alignment_;
 
-// This class functions just like RingBuffer, but its API uses pointers
-// instead of offsets.
-class RingBufferWrapper {
- public:
-  // Parameters:
-  //   base_offset: The offset to the start of the buffer
-  //   size: The size of the buffer in bytes.
-  //   helper: A CommandBufferHelper for dealing with tokens.
-  //   base: The physical address that corresponds to base_offset.
-  RingBufferWrapper(RingBuffer::Offset base_offset,
-                    unsigned int size,
-                    CommandBufferHelper* helper,
-                    void* base)
-      : allocator_(base_offset, size, helper),
-        base_(static_cast<int8*>(base) - base_offset) {
-  }
-
-  // Allocates a block of memory. If the buffer is out of directly available
-  // memory, this function may wait until memory that was freed "pending a
-  // token" can be re-used.
-  //
-  // Parameters:
-  //   size: the size of the memory block to allocate.
-  //
-  // Returns:
-  //   the pointer to the allocated memory block, or NULL if out of
-  //   memory.
-  void* Alloc(unsigned int size) {
-    RingBuffer::Offset offset = allocator_.Alloc(size);
-    return GetPointer(offset);
-  }
-
-  // Allocates a block of memory. If the buffer is out of directly available
-  // memory, this function may wait until memory that was freed "pending a
-  // token" can be re-used.
-  // This is a type-safe version of Alloc, returning a typed pointer.
-  //
-  // Parameters:
-  //   count: the number of elements to allocate.
-  //
-  // Returns:
-  //   the pointer to the allocated memory block, or NULL if out of
-  //   memory.
-  template <typename T> T* AllocTyped(unsigned int count) {
-    return static_cast<T*>(Alloc(count * sizeof(T)));
-  }
-
-  // Frees a block of memory, pending the passage of a token. That memory won't
-  // be re-allocated until the token has passed through the command stream.
-  //
-  // Parameters:
-  //   pointer: the pointer to the memory block to free.
-  //   token: the token value to wait for before re-using the memory.
-  void FreePendingToken(void* pointer, unsigned int token) {
-    DCHECK(pointer);
-    allocator_.FreePendingToken(GetOffset(pointer), token);
-  }
-
-  // Gets a pointer to a memory block given the base memory and the offset.
-  void* GetPointer(RingBuffer::Offset offset) const {
-    return static_cast<int8*>(base_) + offset;
-  }
-
-  // Gets the offset to a memory block given the base memory and the address.
-  RingBuffer::Offset GetOffset(void* pointer) const {
-    return static_cast<int8*>(pointer) - static_cast<int8*>(base_);
-  }
-
-  // Gets the size of the largest free block that is available without waiting.
-  unsigned int GetLargestFreeSizeNoWaiting() {
-    return allocator_.GetLargestFreeSizeNoWaiting();
-  }
-
-  // Gets the size of the largest free block that can be allocated if the
-  // caller can wait.
-  unsigned int GetLargestFreeOrPendingSize() {
-    return allocator_.GetLargestFreeOrPendingSize();
-  }
-
- private:
-  RingBuffer allocator_;
+  // The physical address that corresponds to base_offset.
   void* base_;
-  DISALLOW_IMPLICIT_CONSTRUCTORS(RingBufferWrapper);
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(RingBuffer);
 };
 
 }  // namespace gpu

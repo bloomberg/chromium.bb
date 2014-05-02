@@ -181,6 +181,17 @@ TEST_F(TransferBufferTest, TooLargeAllocation) {
   transfer_buffer_->FreePendingToken(ptr, 1);
 }
 
+TEST_F(TransferBufferTest, MemoryAlignmentAfterZeroAllocation) {
+  Initialize(32u);
+  void* ptr = transfer_buffer_->Alloc(0);
+  EXPECT_EQ((reinterpret_cast<uintptr_t>(ptr) & (kAlignment - 1)), 0u);
+  transfer_buffer_->FreePendingToken(ptr, -1);
+  // Check that the pointer is aligned on the following allocation.
+  ptr = transfer_buffer_->Alloc(4);
+  EXPECT_EQ((reinterpret_cast<uintptr_t>(ptr) & (kAlignment - 1)), 0u);
+  transfer_buffer_->FreePendingToken(ptr, 1);
+}
+
 TEST_F(TransferBufferTest, Flush) {
   Initialize(16u);
   unsigned int size_allocated = 0;
