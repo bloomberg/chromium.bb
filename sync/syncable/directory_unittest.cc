@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/test/values_test_util.h"
+#include "sync/internal_api/public/base/attachment_id_proto.h"
 #include "sync/syncable/syncable_proto_util.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/syncable/syncable_write_transaction.h"
@@ -84,21 +85,43 @@ DirOpenResult SyncableDirectoryTest::ReopenDirectory() {
 }
 
 // Creates an empty entry and sets the ID field to a default one.
-void SyncableDirectoryTest::CreateEntry(const std::string& entryname) {
-  CreateEntry(entryname, TestIdFactory::FromNumber(-99));
+void SyncableDirectoryTest::CreateEntry(const ModelType& model_type,
+                                        const std::string& entryname) {
+  CreateEntry(model_type, entryname, TestIdFactory::FromNumber(-99));
 }
 
 // Creates an empty entry and sets the ID field to id.
-void SyncableDirectoryTest::CreateEntry(const std::string& entryname,
+void SyncableDirectoryTest::CreateEntry(const ModelType& model_type,
+                                        const std::string& entryname,
                                         const int id) {
-  CreateEntry(entryname, TestIdFactory::FromNumber(id));
+  CreateEntry(model_type, entryname, TestIdFactory::FromNumber(id));
 }
-void SyncableDirectoryTest::CreateEntry(const std::string& entryname, Id id) {
+
+void SyncableDirectoryTest::CreateEntry(const ModelType& model_type,
+                                        const std::string& entryname,
+                                        const Id& id) {
+  CreateEntryWithAttachmentMetadata(
+      model_type, entryname, id, sync_pb::AttachmentMetadata());
+}
+
+void SyncableDirectoryTest::CreateEntryWithAttachmentMetadata(
+    const ModelType& model_type,
+    const std::string& entryname,
+    const Id& id,
+    const sync_pb::AttachmentMetadata& attachment_metadata) {
   WriteTransaction wtrans(FROM_HERE, UNITTEST, dir_.get());
-  MutableEntry me(&wtrans, CREATE, BOOKMARKS, wtrans.root_id(), entryname);
+  MutableEntry me(&wtrans, CREATE, model_type, wtrans.root_id(), entryname);
   ASSERT_TRUE(me.good());
   me.PutId(id);
+  me.PutAttachmentMetadata(attachment_metadata);
   me.PutIsUnsynced(true);
+}
+
+void SyncableDirectoryTest::DeleteEntry(const Id& id) {
+  WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
+  MutableEntry entry(&trans, GET_BY_ID, id);
+  ASSERT_TRUE(entry.good());
+  entry.PutIsDel(true);
 }
 
 DirOpenResult SyncableDirectoryTest::SimulateSaveAndReloadDir() {
@@ -411,8 +434,8 @@ TEST_F(SyncableDirectoryTest, ManageDeleteJournals) {
   int64 handle2 = 0;
   {
     // Create two bookmark entries and save in database.
-    CreateEntry("item1", id1);
-    CreateEntry("item2", id2);
+    CreateEntry(BOOKMARKS, "item1", id1);
+    CreateEntry(BOOKMARKS, "item2", id2);
     {
       WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
       MutableEntry item1(&trans, GET_BY_ID, id1);
@@ -529,7 +552,7 @@ TEST_F(SyncableDirectoryTest, TestBasicLookupNonExistantID) {
 }
 
 TEST_F(SyncableDirectoryTest, TestBasicLookupValidID) {
-  CreateEntry("rtc");
+  CreateEntry(BOOKMARKS, "rtc");
   ReadTransaction rtrans(FROM_HERE, dir().get());
   Entry e(&rtrans, GET_BY_ID, TestIdFactory::FromNumber(-99));
   ASSERT_TRUE(e.good());
@@ -1519,6 +1542,100 @@ TEST_F(SyncableDirectoryTest, StressTransactions) {
   for (int i = 0; i < kThreadCount; ++i) {
     base::PlatformThread::Join(threads[i]);
   }
+}
+
+// Verify that Directory is notifed when a MutableEntry's AttachmentMetadata
+// changes.
+TEST_F(SyncableDirectoryTest, MutableEntry_PutAttachmentMetadata) {
+  sync_pb::AttachmentMetadata attachment_metadata;
+  sync_pb::AttachmentMetadataRecord* record = attachment_metadata.add_record();
+  sync_pb::AttachmentIdProto attachment_id_proto =
+      syncer::CreateAttachmentIdProto();
+  *record->mutable_id() = attachment_id_proto;
+  ASSERT_FALSE(dir()->IsAttachmentLinked(attachment_id_proto));
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
+
+    // Create an entry with attachment metadata and see that the attachment id
+    // is not linked.
+    MutableEntry entry(
+        &trans, CREATE, PREFERENCES, trans.root_id(), "some entry");
+    entry.PutId(TestIdFactory::FromNumber(-1));
+    entry.PutIsUnsynced(true);
+    ASSERT_FALSE(dir()->IsAttachmentLinked(attachment_id_proto));
+
+    // Now add the attachment metadata and see that Directory believes it is
+    // linked.
+    entry.PutAttachmentMetadata(attachment_metadata);
+    ASSERT_TRUE(dir()->IsAttachmentLinked(attachment_id_proto));
+
+    // Clear out the attachment metadata and see that it's no longer linked.
+    sync_pb::AttachmentMetadata empty_attachment_metadata;
+    entry.PutAttachmentMetadata(empty_attachment_metadata);
+    ASSERT_FALSE(dir()->IsAttachmentLinked(attachment_id_proto));
+  }
+  ASSERT_FALSE(dir()->IsAttachmentLinked(attachment_id_proto));
+}
+
+// Verify that deleted entries with attachments will retain the attachments.
+TEST_F(SyncableDirectoryTest, Directory_DeleteDoesNotUnlinkAttachments) {
+  sync_pb::AttachmentMetadata attachment_metadata;
+  sync_pb::AttachmentMetadataRecord* record = attachment_metadata.add_record();
+  sync_pb::AttachmentIdProto attachment_id_proto =
+      syncer::CreateAttachmentIdProto();
+  *record->mutable_id() = attachment_id_proto;
+  ASSERT_FALSE(dir()->IsAttachmentLinked(attachment_id_proto));
+  const Id id = TestIdFactory::FromNumber(-1);
+
+  // Create an entry with attachment metadata and see that the attachment id
+  // is linked.
+  CreateEntryWithAttachmentMetadata(
+      PREFERENCES, "some entry", id, attachment_metadata);
+  ASSERT_TRUE(dir()->IsAttachmentLinked(attachment_id_proto));
+
+  // Delete the entry and see that it's still linked because the entry hasn't
+  // yet been purged.
+  DeleteEntry(id);
+  ASSERT_TRUE(dir()->IsAttachmentLinked(attachment_id_proto));
+
+  // Reload the Directory, purging the deleted entry, and see that the
+  // attachment is no longer linked.
+  SimulateSaveAndReloadDir();
+  ASSERT_FALSE(dir()->IsAttachmentLinked(attachment_id_proto));
+}
+
+// Verify that a given attachment can be referenced by multiple entries and that
+// any one of the references is sufficient to ensure it remains linked.
+TEST_F(SyncableDirectoryTest, Directory_LastReferenceUnlinksAttachments) {
+  // Create one attachment.
+  sync_pb::AttachmentMetadata attachment_metadata;
+  sync_pb::AttachmentMetadataRecord* record = attachment_metadata.add_record();
+  sync_pb::AttachmentIdProto attachment_id_proto =
+      syncer::CreateAttachmentIdProto();
+  *record->mutable_id() = attachment_id_proto;
+
+  // Create two entries, each referencing the attachment.
+  const Id id1 = TestIdFactory::FromNumber(-1);
+  const Id id2 = TestIdFactory::FromNumber(-2);
+  CreateEntryWithAttachmentMetadata(
+      PREFERENCES, "some entry", id1, attachment_metadata);
+  CreateEntryWithAttachmentMetadata(
+      PREFERENCES, "some other entry", id2, attachment_metadata);
+
+  // See that the attachment is considered linked.
+  ASSERT_TRUE(dir()->IsAttachmentLinked(attachment_id_proto));
+
+  // Delete the first entry, reload the Directory, see that the attachment is
+  // still linked.
+  DeleteEntry(id1);
+  SimulateSaveAndReloadDir();
+  ASSERT_TRUE(dir()->IsAttachmentLinked(attachment_id_proto));
+
+  // Delete the second entry, reload the Directory, see that the attachment is
+  // no loner linked.
+  DeleteEntry(id2);
+  SimulateSaveAndReloadDir();
+  ASSERT_FALSE(dir()->IsAttachmentLinked(attachment_id_proto));
 }
 
 }  // namespace syncable

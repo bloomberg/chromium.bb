@@ -36,6 +36,27 @@ void SetNodeSpecifics(const sync_pb::EntitySpecifics& entity_specifics,
   }
 }
 
+// Helper function to convert AttachmentId to AttachmentMetadataRecord.
+sync_pb::AttachmentMetadataRecord AttachmentIdToRecord(
+    const syncer::AttachmentId& attachment_id) {
+  sync_pb::AttachmentMetadataRecord record;
+  *record.mutable_id() = attachment_id.GetProto();
+  return record;
+}
+
+// Replace |write_nodes|'s attachment ids with |attachment_ids|.
+void SetAttachmentMetadata(const syncer::AttachmentIdList& attachment_ids,
+                           syncer::WriteNode* write_node) {
+  DCHECK(write_node);
+  sync_pb::AttachmentMetadata attachment_metadata;
+  std::transform(
+      attachment_ids.begin(),
+      attachment_ids.end(),
+      RepeatedFieldBackInserter(attachment_metadata.mutable_record()),
+      AttachmentIdToRecord);
+  write_node->SetAttachmentMetadata(attachment_metadata);
+}
+
 syncer::SyncData BuildRemoteSyncData(
     int64 sync_id,
     const syncer::BaseNode& read_node,
@@ -319,12 +340,11 @@ syncer::SyncError LogLookupFailure(
   }
 }
 
-syncer::SyncError AttemptDelete(
-    const syncer::SyncChange& change,
-    syncer::ModelType type,
-    const std::string& type_str,
-    syncer::WriteNode* node,
-    DataTypeErrorHandler* error_handler) {
+syncer::SyncError AttemptDelete(const syncer::SyncChange& change,
+                                syncer::ModelType type,
+                                const std::string& type_str,
+                                syncer::WriteNode* node,
+                                DataTypeErrorHandler* error_handler) {
   DCHECK_EQ(change.change_type(), syncer::SyncChange::ACTION_DELETE);
   if (change.sync_data().IsLocal()) {
     const std::string& tag = syncer::SyncDataLocal(change.sync_data()).GetTag();
@@ -368,12 +388,36 @@ syncer::SyncError AttemptDelete(
   return syncer::SyncError();
 }
 
+// A callback invoked on completion of AttachmentService::StoreAttachment.
+void IgnoreStoreResult(const syncer::AttachmentService::StoreResult&) {
+  // TODO(maniscalco): Here is where we're going to update the in-directory
+  // entry to indicate that the attachments have been successfully stored on
+  // disk.  Why do we care?  Because we might crash after persisting the
+  // directory to disk, but before we have persisted its attachments, leaving us
+  // with danging attachment ids.  Having a flag that indicates we've stored the
+  // entry will allow us to detect and filter entries with dangling attachment
+  // ids (bug 368353).
+}
+
+void StoreAttachments(syncer::AttachmentService* attachment_service,
+                      const syncer::AttachmentList& attachments) {
+  DCHECK(attachment_service);
+  syncer::AttachmentService::StoreCallback ignore_store_result =
+      base::Bind(&IgnoreStoreResult);
+  attachment_service->StoreAttachments(attachments, ignore_store_result);
+}
+
 }  // namespace
 
 syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const syncer::SyncChangeList& list_of_changes) {
   DCHECK(CalledOnValidThread());
+
+  // Keep track of brand new attachments so we can persist them on this device
+  // and upload them to the server.
+  syncer::AttachmentList new_attachments;
+
   syncer::WriteTransaction trans(from_here, share_handle());
 
   for (syncer::SyncChangeList::const_iterator iter = list_of_changes.begin();
@@ -391,20 +435,19 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
         NOTREACHED();
         return error;
       }
-      attachment_service_->OnSyncDataDelete(change.sync_data());
       if (merge_result_.get()) {
         merge_result_->set_num_items_deleted(
             merge_result_->num_items_deleted() + 1);
       }
     } else if (change.change_type() == syncer::SyncChange::ACTION_ADD) {
-      syncer::SyncError error =
-          HandleActionAdd(change, type_str, type, trans, &sync_node);
+      syncer::SyncError error = HandleActionAdd(
+          change, type_str, type, trans, &sync_node, &new_attachments);
       if (error.IsSet()) {
         return error;
       }
     } else if (change.change_type() == syncer::SyncChange::ACTION_UPDATE) {
-      syncer::SyncError error =
-          HandleActionUpdate(change, type_str, type, trans, &sync_node);
+      syncer::SyncError error = HandleActionUpdate(
+          change, type_str, type, trans, &sync_node, &new_attachments);
       if (error.IsSet()) {
         return error;
       }
@@ -422,6 +465,11 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
       return error;
     }
   }
+
+  if (!new_attachments.empty()) {
+    StoreAttachments(attachment_service_.get(), new_attachments);
+  }
+
   return syncer::SyncError();
 }
 
@@ -434,12 +482,14 @@ syncer::SyncError GenericChangeProcessor::HandleActionAdd(
     const std::string& type_str,
     const syncer::ModelType& type,
     const syncer::WriteTransaction& trans,
-    syncer::WriteNode* sync_node) {
+    syncer::WriteNode* sync_node,
+    syncer::AttachmentList* new_attachments) {
   // TODO(sync): Handle other types of creation (custom parents, folders,
   // etc.).
   syncer::ReadNode root_node(&trans);
+  const syncer::SyncDataLocal sync_data_local(change.sync_data());
   if (root_node.InitByTagLookup(syncer::ModelTypeToRootTag(
-          change.sync_data().GetDataType())) != syncer::BaseNode::INIT_OK) {
+          sync_data_local.GetDataType())) != syncer::BaseNode::INIT_OK) {
     syncer::SyncError error(FROM_HERE,
                             syncer::SyncError::DATATYPE_ERROR,
                             "Failed to look up root node for type " + type_str,
@@ -452,9 +502,7 @@ syncer::SyncError GenericChangeProcessor::HandleActionAdd(
   }
   syncer::WriteNode::InitUniqueByCreationResult result =
       sync_node->InitUniqueByCreation(
-          change.sync_data().GetDataType(),
-          root_node,
-          syncer::SyncDataLocal(change.sync_data()).GetTag());
+          sync_data_local.GetDataType(), root_node, sync_data_local.GetTag());
   if (result != syncer::WriteNode::INIT_SUCCESS) {
     std::string error_prefix = "Failed to create " + type_str + " node: " +
                                change.location().ToString() + ", ";
@@ -503,8 +551,18 @@ syncer::SyncError GenericChangeProcessor::HandleActionAdd(
     }
   }
   sync_node->SetTitle(change.sync_data().GetTitle());
-  SetNodeSpecifics(change.sync_data().GetSpecifics(), sync_node);
-  attachment_service_->OnSyncDataAdd(change.sync_data());
+  SetNodeSpecifics(sync_data_local.GetSpecifics(), sync_node);
+
+  syncer::AttachmentIdList attachment_ids = sync_data_local.GetAttachmentIds();
+  SetAttachmentMetadata(attachment_ids, sync_node);
+
+  // Return any newly added attachments.
+  const syncer::AttachmentList& local_attachments_for_upload =
+      sync_data_local.GetLocalAttachmentsForUpload();
+  new_attachments->insert(new_attachments->end(),
+                          local_attachments_for_upload.begin(),
+                          local_attachments_for_upload.end());
+
   if (merge_result_.get()) {
     merge_result_->set_num_items_added(merge_result_->num_items_added() + 1);
   }
@@ -519,12 +577,14 @@ syncer::SyncError GenericChangeProcessor::HandleActionUpdate(
     const std::string& type_str,
     const syncer::ModelType& type,
     const syncer::WriteTransaction& trans,
-    syncer::WriteNode* sync_node) {
+    syncer::WriteNode* sync_node,
+    syncer::AttachmentList* new_attachments) {
   // TODO(zea): consider having this logic for all possible changes?
+
+  const syncer::SyncDataLocal sync_data_local(change.sync_data());
   syncer::BaseNode::InitByLookupResult result =
-      sync_node->InitByClientTagLookup(
-          change.sync_data().GetDataType(),
-          syncer::SyncDataLocal(change.sync_data()).GetTag());
+      sync_node->InitByClientTagLookup(sync_data_local.GetDataType(),
+                                       sync_data_local.GetTag());
   if (result != syncer::BaseNode::INIT_OK) {
     std::string error_prefix = "Failed to load " + type_str + " node. " +
                                change.location().ToString() + ", ";
@@ -606,9 +666,16 @@ syncer::SyncError GenericChangeProcessor::HandleActionUpdate(
   }
 
   sync_node->SetTitle(change.sync_data().GetTitle());
-  SetNodeSpecifics(change.sync_data().GetSpecifics(), sync_node);
-  attachment_service_->OnSyncDataUpdate(sync_node->GetAttachmentIds(),
-                                        change.sync_data());
+  SetNodeSpecifics(sync_data_local.GetSpecifics(), sync_node);
+  SetAttachmentMetadata(sync_data_local.GetAttachmentIds(), sync_node);
+
+  // Return any newly added attachments.
+  const syncer::AttachmentList& local_attachments_for_upload =
+      sync_data_local.GetLocalAttachmentsForUpload();
+  new_attachments->insert(new_attachments->end(),
+                          local_attachments_for_upload.begin(),
+                          local_attachments_for_upload.end());
+
   if (merge_result_.get()) {
     merge_result_->set_num_items_modified(merge_result_->num_items_modified() +
                                           1);

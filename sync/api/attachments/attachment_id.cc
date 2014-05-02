@@ -5,7 +5,7 @@
 #include "sync/api/attachments/attachment_id.h"
 
 #include "base/logging.h"
-#include "base/rand_util.h"
+#include "sync/internal_api/public/base/attachment_id_proto.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer {
@@ -53,10 +53,7 @@ bool AttachmentId::operator<(const AttachmentId& other) const {
 
 // Static.
 AttachmentId AttachmentId::Create() {
-  // Only requirement here is that this id must be globally unique.
-  // TODO(maniscalco): Consider making this base64 encoded.
-  sync_pb::AttachmentIdProto proto;
-  proto.set_unique_id(base::RandBytesAsString(16));
+  sync_pb::AttachmentIdProto proto = CreateAttachmentIdProto();
   return AttachmentId(&proto);
 }
 

@@ -10,6 +10,7 @@
 #include "base/debug/trace_event.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "sync/internal_api/public/base/attachment_id_proto.h"
 #include "sync/internal_api/public/base/unique_position.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/syncable/entry.h"
@@ -123,6 +124,7 @@ DirOpenResult Directory::Open(
 }
 
 void Directory::InitializeIndices(MetahandlesMap* handles_map) {
+  ScopedKernelLock lock(this);
   kernel_->metahandles_map.swap(*handles_map);
   for (MetahandlesMap::const_iterator it = kernel_->metahandles_map.begin();
        it != kernel_->metahandles_map.end(); ++it) {
@@ -152,6 +154,7 @@ void Directory::InitializeIndices(MetahandlesMap* handles_map) {
            kernel_->ids_map.end()) << "Unexpected duplicate use of ID";
     kernel_->ids_map[entry->ref(ID).value()] = entry;
     DCHECK(!entry->is_dirty());
+    AddToAttachmentIndex(metahandle, entry->ref(ATTACHMENT_METADATA), lock);
   }
 }
 
@@ -362,6 +365,8 @@ bool Directory::InsertEntry(BaseWriteTransaction* trans,
       return false;
     }
   }
+  AddToAttachmentIndex(
+      entry->ref(META_HANDLE), entry->ref(ATTACHMENT_METADATA), *lock);
 
   // Should NEVER be created with a client tag or server tag.
   if (!SyncAssert(entry->ref(UNIQUE_SERVER_TAG).empty(), FROM_HERE,
@@ -406,6 +411,51 @@ bool Directory::ReindexParentId(BaseWriteTransaction* trans,
     entry->put(PARENT_ID, new_parent_id);
   }
   return true;
+}
+
+void Directory::RemoveFromAttachmentIndex(
+    const int64 metahandle,
+    const sync_pb::AttachmentMetadata& attachment_metadata,
+    const ScopedKernelLock& lock) {
+  for (int i = 0; i < attachment_metadata.record_size(); ++i) {
+    AttachmentIdUniqueId unique_id =
+        attachment_metadata.record(i).id().unique_id();
+    IndexByAttachmentId::iterator iter =
+        kernel_->index_by_attachment_id.find(unique_id);
+    if (iter != kernel_->index_by_attachment_id.end()) {
+      iter->second.erase(metahandle);
+      if (iter->second.empty()) {
+        kernel_->index_by_attachment_id.erase(iter);
+      }
+    }
+  }
+}
+
+void Directory::AddToAttachmentIndex(
+    const int64 metahandle,
+    const sync_pb::AttachmentMetadata& attachment_metadata,
+    const ScopedKernelLock& lock) {
+  for (int i = 0; i < attachment_metadata.record_size(); ++i) {
+    AttachmentIdUniqueId unique_id =
+        attachment_metadata.record(i).id().unique_id();
+    IndexByAttachmentId::iterator iter =
+        kernel_->index_by_attachment_id.find(unique_id);
+    if (iter == kernel_->index_by_attachment_id.end()) {
+      iter = kernel_->index_by_attachment_id.insert(std::make_pair(
+                                                        unique_id,
+                                                        MetahandleSet())).first;
+    }
+    iter->second.insert(metahandle);
+  }
+}
+
+void Directory::UpdateAttachmentIndex(
+    const int64 metahandle,
+    const sync_pb::AttachmentMetadata& old_metadata,
+    const sync_pb::AttachmentMetadata& new_metadata) {
+  ScopedKernelLock lock(this);
+  RemoveFromAttachmentIndex(metahandle, old_metadata, lock);
+  AddToAttachmentIndex(metahandle, new_metadata, lock);
 }
 
 bool Directory::unrecoverable_error_set(const BaseTransaction* trans) const {
@@ -548,6 +598,9 @@ bool Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
                       "Deleted entry still present",
                       (&trans)))
         return false;
+      RemoveFromAttachmentIndex(
+          entry->ref(META_HANDLE), entry->ref(ATTACHMENT_METADATA), lock);
+
       delete entry;
     }
     if (trans.unrecoverable_error_set())
@@ -607,7 +660,8 @@ void Directory::UnapplyEntry(EntryKernel* entry) {
 
 void Directory::DeleteEntry(bool save_to_journal,
                             EntryKernel* entry,
-                            EntryKernelSet* entries_to_journal) {
+                            EntryKernelSet* entries_to_journal,
+                            const ScopedKernelLock& lock) {
   int64 handle = entry->ref(META_HANDLE);
   ModelType server_type = GetModelTypeFromSpecifics(
       entry->ref(SERVER_SPECIFICS));
@@ -637,6 +691,7 @@ void Directory::DeleteEntry(bool save_to_journal,
         kernel_->server_tags_map.erase(entry->ref(UNIQUE_SERVER_TAG));
     DCHECK_EQ(1u, num_erased);
   }
+  RemoveFromAttachmentIndex(handle, entry->ref(ATTACHMENT_METADATA), lock);
 
   if (save_to_journal) {
     entries_to_journal->insert(entry);
@@ -704,7 +759,7 @@ bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet disabled_types,
                types_to_journal.Has(server_type)) &&
               (delete_journal_->IsDeleteJournalEnabled(local_type) ||
                delete_journal_->IsDeleteJournalEnabled(server_type));
-          DeleteEntry(save_to_journal, entry, &entries_to_journal);
+          DeleteEntry(save_to_journal, entry, &entries_to_journal, lock);
         }
       }
 
@@ -760,6 +815,17 @@ bool Directory::ResetVersionsForType(BaseWriteTransaction* trans,
   }
 
   return true;
+}
+
+bool Directory::IsAttachmentLinked(
+    const sync_pb::AttachmentIdProto& attachment_id_proto) const {
+  ScopedKernelLock lock(this);
+  IndexByAttachmentId::const_iterator iter =
+      kernel_->index_by_attachment_id.find(attachment_id_proto.unique_id());
+  if (iter != kernel_->index_by_attachment_id.end() && !iter->second.empty()) {
+    return true;
+  }
+  return false;
 }
 
 void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {

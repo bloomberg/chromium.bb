@@ -47,6 +47,9 @@ enum InvariantCheckLevel {
   FULL_DB_VERIFICATION = 2 // Check every entry.  This can be expensive.
 };
 
+// Directory stores and manages EntryKernels.
+//
+// This class is tightly coupled to several other classes (see friends).
 class SYNC_EXPORT Directory {
   friend class BaseTransaction;
   friend class Entry;
@@ -80,6 +83,9 @@ class SYNC_EXPORT Directory {
   typedef base::hash_map<int64, EntryKernel*> MetahandlesMap;
   typedef base::hash_map<std::string, EntryKernel*> IdsMap;
   typedef base::hash_map<std::string, EntryKernel*> TagsMap;
+  typedef std::string AttachmentIdUniqueId;
+  typedef base::hash_map<AttachmentIdUniqueId, MetahandleSet>
+      IndexByAttachmentId;
 
   static const base::FilePath::CharType kSyncDatabaseFilename[];
 
@@ -383,6 +389,14 @@ class SYNC_EXPORT Directory {
   // WARNING! This can be slow, as it iterates over all entries for a type.
   bool ResetVersionsForType(BaseWriteTransaction* trans, ModelType type);
 
+  // Returns true iff the attachment identified by |attachment_id_proto| is
+  // linked to an entry.
+  //
+  // An attachment linked to a deleted entry is still considered linked if the
+  // entry hasn't yet been purged.
+  bool IsAttachmentLinked(
+      const sync_pb::AttachmentIdProto& attachment_id_proto) const;
+
  protected:  // for friends, mainly used by Entry constructors
   virtual EntryKernel* GetEntryByHandle(int64 handle);
   virtual EntryKernel* GetEntryByHandle(int64 metahandle,
@@ -394,6 +408,11 @@ class SYNC_EXPORT Directory {
                  const Id& new_id);
   bool ReindexParentId(BaseWriteTransaction* trans, EntryKernel* const entry,
                        const Id& new_parent_id);
+  // Update the attachment index for |metahandle| removing it from the index
+  // under |old_metadata| entries and add it under |new_metadata| entries.
+  void UpdateAttachmentIndex(const int64 metahandle,
+                             const sync_pb::AttachmentMetadata& old_metadata,
+                             const sync_pb::AttachmentMetadata& new_metadata);
   void ClearDirtyMetahandles();
 
   DirOpenResult OpenImpl(
@@ -450,6 +469,17 @@ class SYNC_EXPORT Directory {
     // Contains non-deleted items, indexed according to parent and position
     // within parent.  Protected by the ScopedKernelLock.
     ParentChildIndex parent_child_index;
+
+    // This index keeps track of which metahandles refer to a given attachment.
+    // Think of it as the inverse of EntryKernel's AttachmentMetadata Records.
+    //
+    // Because entries can be undeleted (e.g. PutIsDel(false)), entries should
+    // not removed from the index until they are actually deleted from memory.
+    //
+    // All access should go through IsAttachmentLinked,
+    // RemoveFromAttachmentIndex, AddToAttachmentIndex, and
+    // UpdateAttachmentIndex methods to avoid iterator invalidation errors.
+    IndexByAttachmentId index_by_attachment_id;
 
     // 3 in-memory indices on bits used extremely frequently by the syncer.
     // |unapplied_update_metahandles| is keyed by the server model type.
@@ -543,7 +573,19 @@ class SYNC_EXPORT Directory {
   void UnapplyEntry(EntryKernel* entry);
   void DeleteEntry(bool save_to_journal,
                    EntryKernel* entry,
-                   EntryKernelSet* entries_to_journal);
+                   EntryKernelSet* entries_to_journal,
+                   const ScopedKernelLock& lock);
+
+  // Remove each of |metahandle|'s attachment ids from index_by_attachment_id.
+  void RemoveFromAttachmentIndex(
+      const int64 metahandle,
+      const sync_pb::AttachmentMetadata& attachment_metadata,
+      const ScopedKernelLock& lock);
+  // Add each of |metahandle|'s attachment ids to the index_by_attachment_id.
+  void AddToAttachmentIndex(
+      const int64 metahandle,
+      const sync_pb::AttachmentMetadata& attachment_metadata,
+      const ScopedKernelLock& lock);
 
   Kernel* kernel_;
 

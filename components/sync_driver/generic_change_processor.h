@@ -98,18 +98,27 @@ class GenericChangeProcessor : public ChangeProcessor,
   virtual syncer::UserShare* share_handle() const OVERRIDE;
 
  private:
-  // Helper methods for acting on changes coming from the datatype. These are
-  // logically part of ProcessSyncChanges.
+  // Logically part of ProcessSyncChanges.
+  //
+  // |new_attachments| is an output parameter containing newly added attachments
+  // that need to be stored.  This method will append to it.
   syncer::SyncError HandleActionAdd(const syncer::SyncChange& change,
                                     const std::string& type_str,
                                     const syncer::ModelType& type,
                                     const syncer::WriteTransaction& trans,
-                                    syncer::WriteNode* sync_node);
+                                    syncer::WriteNode* sync_node,
+                                    syncer::AttachmentList* new_attachments);
+
+  // Logically part of ProcessSyncChanges.
+  //
+  // |new_attachments| is an output parameter containing newly added attachments
+  // that need to be stored.  This method will append to it.
   syncer::SyncError HandleActionUpdate(const syncer::SyncChange& change,
                                        const std::string& type_str,
                                        const syncer::ModelType& type,
                                        const syncer::WriteTransaction& trans,
-                                       syncer::WriteNode* sync_node);
+                                       syncer::WriteNode* sync_node,
+                                       syncer::AttachmentList* new_attachments);
 
   // The SyncableService this change processor will forward changes on to.
   const base::WeakPtr<syncer::SyncableService> local_service_;
