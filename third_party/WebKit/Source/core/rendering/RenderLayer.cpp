@@ -1404,7 +1404,7 @@ void RenderLayer::addChild(RenderLayer* child, RenderLayer* beforeChild)
     } else
         setLastChild(child);
 
-    child->setParent(this);
+    child->m_parent = this;
 
     setNeedsToUpdateAncestorDependentProperties();
 
@@ -1475,7 +1475,7 @@ RenderLayer* RenderLayer::removeChild(RenderLayer* oldChild)
 
     oldChild->setPreviousSibling(0);
     oldChild->setNextSibling(0);
-    oldChild->setParent(0);
+    oldChild->m_parent = 0;
 
     oldChild->updateDescendantDependentFlags();
     if (subtreeContainsOutOfFlowPositionedLayer(oldChild)) {
@@ -3610,20 +3610,6 @@ bool RenderLayer::childBackgroundIsKnownToBeOpaqueInRect(const LayoutRect& local
             return true;
     }
     return false;
-}
-
-void RenderLayer::setParent(RenderLayer* parent)
-{
-    if (parent == m_parent)
-        return;
-
-    if (m_parent && !renderer()->documentBeingDestroyed())
-        compositor()->layerWillBeRemoved(m_parent, this);
-
-    m_parent = parent;
-
-    if (m_parent && !renderer()->documentBeingDestroyed())
-        compositor()->layerWasAdded(m_parent, this);
 }
 
 bool RenderLayer::shouldBeSelfPaintingLayer() const
