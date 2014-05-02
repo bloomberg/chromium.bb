@@ -202,11 +202,6 @@ crbug.com/318978 [ Linux ] permissionclient/plugin-permission.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/ [ Skip ]
 crbug.com/318978 [ Linux ] virtual/softwarecompositing/plugins/invalidate_rect.html [ Skip ]
 
-Bug(esprehn) virtual/softwarecompositing/render-surface-alpha-blending.html [ NeedsRebaseline ]
-Bug(esprehn) compositing/render-surface-alpha-blending.html [ NeedsRebaseline ]
-Bug(esprehn) virtual/gpu/fast/canvas/canvas-render-layer.html [ NeedsRebaseline ]
-Bug(esprehn) fast/canvas/canvas-render-layer.html [ NeedsRebaseline ]
-
 # Flaky tests under Linux Aura
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring.html [ ImageOnlyFailure Pass ]
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom-style.html [ ImageOnlyFailure Pass ]

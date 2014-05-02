@@ -9,5 +9,4 @@ layer at (0,0) size 800x600 transparent
   RenderBlock (positioned) {DIV} at (0,0) size 800x600 [bgcolor=#006400]
 layer at (0,0) size 800x1
   RenderBlock {DIV} at (0,0) size 800x1
-layer at (0,0) size 1x1
-  RenderHTMLCanvas {CANVAS} at (0,0) size 1x1
+    RenderHTMLCanvas {CANVAS} at (0,0) size 1x1
