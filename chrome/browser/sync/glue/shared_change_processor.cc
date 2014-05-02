@@ -4,17 +4,16 @@
 
 #include "chrome/browser/sync/glue/shared_change_processor.h"
 
-#include "chrome/browser/sync/profile_sync_components_factory.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "components/sync_driver/generic_change_processor.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
-#include "content/public/browser/browser_thread.h"
+#include "components/sync_driver/sync_api_component_factory.h"
 #include "sync/api/attachments/attachment_service.h"
 #include "sync/api/attachments/fake_attachment_service.h"
 #include "sync/api/sync_change.h"
 
 using base::AutoLock;
-using content::BrowserThread;
 
 namespace browser_sync {
 
@@ -22,10 +21,9 @@ SharedChangeProcessor::SharedChangeProcessor()
     : disconnected_(false),
       type_(syncer::UNSPECIFIED),
       sync_service_(NULL),
+      frontend_loop_(base::MessageLoopProxy::current()),
       generic_change_processor_(NULL),
       error_handler_(NULL) {
-  // We're always created on the UI thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 SharedChangeProcessor::~SharedChangeProcessor() {
@@ -33,7 +31,7 @@ SharedChangeProcessor::~SharedChangeProcessor() {
   // thread), or when the syncer::SyncableService stop's syncing (datatype
   // thread).  |generic_change_processor_|, if non-NULL, must be
   // deleted on |backend_loop_|.
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+  if (frontend_loop_->BelongsToCurrentThread()) {
     if (backend_loop_.get()) {
       if (!backend_loop_->DeleteSoon(FROM_HERE, generic_change_processor_)) {
         NOTREACHED();
@@ -49,7 +47,7 @@ SharedChangeProcessor::~SharedChangeProcessor() {
 }
 
 base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
-    ProfileSyncComponentsFactory* sync_factory,
+    browser_sync::SyncApiComponentFactory* sync_factory,
     GenericChangeProcessorFactory* processor_factory,
     ProfileSyncService* sync_service,
     DataTypeErrorHandler* error_handler,

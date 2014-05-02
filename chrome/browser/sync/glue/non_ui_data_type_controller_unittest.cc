@@ -62,7 +62,7 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
   SharedChangeProcessorMock() {}
 
   MOCK_METHOD6(Connect, base::WeakPtr<syncer::SyncableService>(
-      ProfileSyncComponentsFactory*,
+      browser_sync::SyncApiComponentFactory*,
       GenericChangeProcessorFactory*,
       ProfileSyncService*,
       DataTypeErrorHandler*,
