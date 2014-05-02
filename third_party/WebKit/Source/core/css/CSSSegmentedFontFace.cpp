@@ -184,14 +184,10 @@ bool CSSSegmentedFontFace::isLoaded() const
     return true;
 }
 
-void CSSSegmentedFontFace::willUseFontData(const FontDescription& fontDescription, UChar32 character)
+void CSSSegmentedFontFace::willUseFontData(const FontDescription& fontDescription)
 {
-    for (FontFaceList::reverse_iterator it = m_fontFaces.rbegin(); it != m_fontFaces.rend(); ++it) {
-        if ((*it)->loadStatus() != FontFace::Unloaded)
-            break;
-        if ((*it)->cssFontFace()->maybeScheduleFontLoad(fontDescription, character))
-            break;
-    }
+    for (FontFaceList::iterator it = m_fontFaces.begin(); it != m_fontFaces.end(); ++it)
+        (*it)->cssFontFace()->willUseFontData(fontDescription);
 }
 
 bool CSSSegmentedFontFace::checkFont(const String& text) const

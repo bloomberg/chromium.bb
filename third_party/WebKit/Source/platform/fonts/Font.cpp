@@ -245,11 +245,11 @@ CodePath Font::codePath(const TextRun& run) const
     return Character::characterRangeCodePath(run.characters16(), run.length());
 }
 
-void Font::willUseFontData(UChar32 character) const
+void Font::willUseFontData() const
 {
     const FontFamily& family = fontDescription().family();
     if (m_fontFallbackList && m_fontFallbackList->fontSelector() && !family.familyIsEmpty())
-        m_fontFallbackList->fontSelector()->willUseFontData(fontDescription(), family.family(), character);
+        m_fontFallbackList->fontSelector()->willUseFontData(fontDescription(), family.family());
 }
 
 static inline bool isInRange(UChar32 character, UChar32 lowerBound, UChar32 upperBound)

@@ -66,7 +66,7 @@ public:
 
     bool checkFont(const String&) const;
     void match(const String&, WillBeHeapVector<RefPtrWillBeMember<FontFace> >&) const;
-    void willUseFontData(const FontDescription&, UChar32);
+    void willUseFontData(const FontDescription&);
 
     void trace(Visitor*);
 

@@ -126,13 +126,16 @@ PassRefPtr<SimpleFontData> CSSFontFace::getFontData(const FontDescription& fontD
     return nullptr;
 }
 
-bool CSSFontFace::maybeScheduleFontLoad(const FontDescription& fontDescription, UChar32 character)
+void CSSFontFace::willUseFontData(const FontDescription& fontDescription)
 {
-    if (m_ranges.contains(character)) {
+    // Kicks off font load here only if the @font-face has no unicode-range.
+    // @font-faces with unicode-range will be loaded when a GlyphPage for the
+    // font is created.
+    // FIXME: Pass around the text to render from RenderText, and kick download
+    // if m_ranges intersects with the text. Make sure this does not cause
+    // performance regression.
+    if (m_ranges.isEntireRange())
         load(fontDescription);
-        return true;
-    }
-    return false;
 }
 
 void CSSFontFace::load(const FontDescription& fontDescription, CSSFontSelector* fontSelector)
@@ -214,14 +217,6 @@ CSSFontFace::UnicodeRangeSet::UnicodeRangeSet(const Vector<UnicodeRange>& ranges
     m_ranges.shrink(targetIndex);
 }
 
-bool CSSFontFace::UnicodeRangeSet::contains(UChar32 c) const
-{
-    if (isEntireRange())
-        return true;
-    Vector<UnicodeRange>::const_iterator it = std::lower_bound(m_ranges.begin(), m_ranges.end(), c);
-    return it != m_ranges.end() && it->contains(c);
-}
-
 bool CSSFontFace::UnicodeRangeSet::intersectsWith(const String& text) const
 {
     if (text.isEmpty())
@@ -235,7 +230,8 @@ bool CSSFontFace::UnicodeRangeSet::intersectsWith(const String& text) const
     while (index < text.length()) {
         UChar32 c = text.characterStartingAt(index);
         index += U16_LENGTH(c);
-        if (contains(c))
+        Vector<UnicodeRange>::const_iterator it = std::lower_bound(m_ranges.begin(), m_ranges.end(), c);
+        if (it != m_ranges.end() && it->contains(c))
             return true;
     }
     return false;
