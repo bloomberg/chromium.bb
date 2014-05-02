@@ -41,7 +41,7 @@ class MediaSourceVideoRenderer : public VideoRenderer {
     virtual void OnMediaSourceData(uint8_t* buffer, size_t buffer_size) = 0;
   };
 
-  MediaSourceVideoRenderer(Delegate* delegate);
+  explicit MediaSourceVideoRenderer(Delegate* data_forwarder);
   virtual ~MediaSourceVideoRenderer();
 
   // VideoRenderer interface.

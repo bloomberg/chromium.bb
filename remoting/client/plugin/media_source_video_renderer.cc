@@ -8,6 +8,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/session_config.h"
 #include "third_party/libwebm/source/mkvmuxer.hpp"
@@ -20,7 +21,7 @@ class MediaSourceVideoRenderer::VideoWriter : public mkvmuxer::IMkvWriter {
  public:
   typedef std::vector<uint8_t> DataBuffer;
 
-  VideoWriter(const webrtc::DesktopSize& frame_size);
+  explicit VideoWriter(const webrtc::DesktopSize& frame_size);
   virtual ~VideoWriter();
 
   const webrtc::DesktopSize& size() { return frame_size_; }
@@ -52,7 +53,24 @@ MediaSourceVideoRenderer::VideoWriter::VideoWriter(
   segment_.reset(new mkvmuxer::Segment());
   segment_->Init(this);
   segment_->set_mode(mkvmuxer::Segment::kLive);
+
+  // DateUTC is specified in nanoseconds from 0:00 on January 1st, 2001.
+  base::Time::Exploded millennium_exploded;
+  memset(&millennium_exploded, 0, sizeof(millennium_exploded));
+  millennium_exploded.year = 2001;
+  millennium_exploded.month = 1;
+  millennium_exploded.day_of_month = 1;
+  segment_->GetSegmentInfo()->set_date_utc(
+      (base::Time::Now() - base::Time::FromUTCExploded(millennium_exploded))
+          .InMicroseconds() *
+      base::Time::kNanosecondsPerMicrosecond);
+
   segment_->AddVideoTrack(frame_size_.width(), frame_size_.height(), 1);
+  mkvmuxer::VideoTrack* video_track =
+      reinterpret_cast<mkvmuxer::VideoTrack*>(segment_->GetTrackByNumber(1));
+  video_track->set_frame_rate(base::Time::kNanosecondsPerSecond /
+                              kFrameIntervalNs);
+  video_track->set_default_duration(base::Time::kNanosecondsPerSecond);
   mkvmuxer::SegmentInfo* const info = segment_->GetSegmentInfo();
   info->set_writing_app("ChromotingViewer");
   info->set_muxing_app("ChromotingViewer");
