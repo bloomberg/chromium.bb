@@ -377,7 +377,9 @@ class BuilderStatus(object):
       to be strings. If dashboard_url is None, the key will be excluded.
     """
     flat_dict = {'status' : str(self.status),
-                 'message' : str(self.message)}
+                 'message' : str(self.message),
+                 'reason' : str(None if self.message is None
+                                else self.message.reason)}
     if self.dashboard_url is not None:
       flat_dict['dashboard_url'] = str(self.dashboard_url)
     return flat_dict

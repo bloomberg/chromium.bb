@@ -1118,7 +1118,7 @@ class TestFindSuspects(MoxBase):
       tracebacks.append(results_lib.RecordedTraceback('Build', 'Build', ex,
                                                       str(ex)))
     message = validation_pool.ValidationFailedMessage(
-        'foo bar %r' % tracebacks, tracebacks, internal)
+        'foo bar %r' % tracebacks, tracebacks, internal, '%r' % tracebacks)
     results = validation_pool.CalculateSuspects.FindSuspects(patches, [message])
     self.assertEquals(set(suspects), results)
 
@@ -1619,6 +1619,33 @@ class LoadManifestTest(cros_test_lib.TempDirTestCase):
     self.assertEqual(self.pool.changes[0].fail_count, 2)
     self.assertEqual(self.pool.changes[0].pass_count, 0)
     self.assertEqual(self.pool.changes[0].total_fail_count, 3)
+
+
+class TestGetValidationFailedMessage(cros_test_lib.MockTestCase):
+  """Tests GetValidationFailedMessage."""
+
+  def setUp(self):
+    """Sets up a pool."""
+    self.pool = MakePool()
+
+  def testMeaningfulMessage(self):
+    """Tests that all essential components are in the message."""
+    self.pool._builder_name = 'foo'
+    self.pool.bulid_log = 'http://taco-url'
+    exception = Exception('failed!')
+    traceback = results_lib.RecordedTraceback(
+        'TacoStage', 'Taco', exception, 'traceback_str')
+    self.PatchObject(
+        results_lib.Results, 'GetTracebacks', return_value=[traceback])
+
+    msg = self.pool.GetValidationFailedMessage()
+    self.assertTrue(self.pool._builder_name in msg.message)
+    self.assertTrue('TacoStage' in msg.message)
+    self.assertTrue(str(exception) in msg.message)
+    self.assertTrue(self.pool.build_log in msg.message)
+
+    self.assertTrue('TacoStage' in msg.reason)
+    self.assertTrue(str(exception) in msg.reason)
 
 
 if __name__ == '__main__':

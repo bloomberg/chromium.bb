@@ -1054,19 +1054,21 @@ class _ManifestShim(object):
 class ValidationFailedMessage(object):
   """Message indicating that changes failed to be validated."""
 
-  def __init__(self, message, tracebacks, internal):
+  def __init__(self, message, tracebacks, internal, reason):
     """Create a ValidationFailedMessage object.
 
     Args:
       message: The message to print.
       tracebacks: Exceptions received by individual builders, if any.
       internal: Whether this failure occurred on an internal builder.
+      reason: A string describing the failure.
     """
     # Convert each of the input arguments into simple Python datastructures
     # (i.e. not generators) that can be easily pickled.
     self.message = str(message)
     self.tracebacks = tuple(tracebacks)
     self.internal = bool(internal)
+    self.reason = str(reason)
 
   def __str__(self):
     return self.message
@@ -2458,7 +2460,13 @@ class ValidationPool(object):
     if not details:
       details = ['cbuildbot failed']
 
-    return ValidationFailedMessage(' '.join(details), tracebacks, internal)
+    # reason does not include builder name or URL. This is mainly for
+    # populating the "failure message" column in the stats sheet.
+    reason = ' '.join(details)
+    details.append('in %s' % (self.build_log,))
+    msg = '%s: %s' % (self._builder_name, ' '.join(details))
+
+    return ValidationFailedMessage(msg, tracebacks, internal, reason)
 
   def HandleCouldNotApply(self, change):
     """Handler for when Paladin fails to apply a change.

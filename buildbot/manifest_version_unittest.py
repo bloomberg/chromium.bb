@@ -16,6 +16,7 @@ if __name__ == '__main__':
 
 from chromite.buildbot import manifest_version
 from chromite.buildbot import repository
+from chromite.buildbot import validation_pool
 from chromite.lib import git
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -261,10 +262,12 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
 
   def testUnpickleBuildStatus(self):
     """Tests that _UnpickleBuildStatus returns the correct values."""
+    failed_msg = validation_pool.ValidationFailedMessage(
+        'you failed', ['traceback'], True, 'taco')
     failed_input_status = manifest_version.BuilderStatus(
-        manifest_version.BuilderStatus.STATUS_FAILED, 'you failed!')
+        manifest_version.BuilderStatus.STATUS_FAILED, failed_msg)
     passed_input_status = manifest_version.BuilderStatus(
-        manifest_version.BuilderStatus.STATUS_PASSED, 'you passed!')
+        manifest_version.BuilderStatus.STATUS_PASSED, None)
 
     failed_output_status = self.manager._UnpickleBuildStatus(
         failed_input_status.AsPickledDict())

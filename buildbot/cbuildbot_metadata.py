@@ -513,7 +513,7 @@ class BuildData(object):
     mapping = {}
     # Dedup the messages from the slaves.
     for slave in self.GetFailedSlaves():
-      message = self.slaves[slave]['message']
+      message = self.slaves[slave]['reason']
       mapping[message] = mapping.get(message, []) + [slave]
 
     message_list = []
