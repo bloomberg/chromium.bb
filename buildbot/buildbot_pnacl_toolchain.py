@@ -12,6 +12,7 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import pynacl.platform
+import pynacl.file_tools
 
 import buildbot_lib
 import packages
@@ -22,6 +23,10 @@ TOOLCHAIN_BUILD_DIR = os.path.join(NACL_DIR, 'toolchain_build')
 TOOLCHAIN_BUILD_OUT_DIR = os.path.join(TOOLCHAIN_BUILD_DIR, 'out')
 
 TEMP_PACKAGES_FILE = os.path.join(TOOLCHAIN_BUILD_OUT_DIR, 'packages.txt')
+
+BUILD_DIR = os.path.join(NACL_DIR, 'build')
+PACKAGE_VERSION_DIR = os.path.join(BUILD_DIR, 'package_version')
+PACKAGE_VERSION_SCRIPT = os.path.join(PACKAGE_VERSION_DIR, 'package_version.py')
 
 # As this is a buildbot script, we want verbose logging. Note however, that
 # toolchain_build has its own log settings, controlled by its CLI flags.
@@ -40,20 +45,55 @@ host_os = buildbot_lib.GetHostPlatform()
 # This is a minimal context, not useful for running tests yet, but enough for
 # basic Step handling.
 context = buildbot_lib.BuildContext()
+buildbot_lib.SetDefaultContextAttributes(context)
+context['pnacl'] = True
 status = buildbot_lib.BuildStatus(context)
 
+toolchain_install_dir = os.path.join(
+    NACL_DIR,
+    'toolchain',
+    '%s_%s' % (host_os, pynacl.platform.GetArch()),
+    'pnacl_newlib')
 
 toolchain_build_cmd = [
     sys.executable,
     os.path.join(
         NACL_DIR, 'toolchain_build', 'toolchain_build_pnacl.py'),
-    '--verbose', '--sync', '--clobber', '--build-64bit-host']
+    '--verbose', '--sync', '--clobber', '--build-64bit-host',
+    '--install', toolchain_install_dir,
+]
+
 
 # Sync the git repos used by build.sh
 with buildbot_lib.Step('Sync build.sh repos', status, halt_on_fail=True):
   buildbot_lib.Command(context, toolchain_build_cmd + ['--legacy-repo-sync'])
 
-# Run toolchain_build.py first. Its outputs are not actually being used yet.
+# Clean out any installed toolchain parts that were built by previous bot runs.
+with buildbot_lib.Step('Sync TC install dir', status):
+  pynacl.file_tools.RemoveDirectoryIfPresent(toolchain_install_dir)
+  buildbot_lib.Command(
+      context,
+      [sys.executable, PACKAGE_VERSION_SCRIPT,
+       '--packages', 'pnacl_newlib', 'sync', '--extract'])
+
+# Run checkdeps so that the PNaCl toolchain trybots catch mistakes that would
+# cause the normal NaCl bots to fail.
+with buildbot_lib.Step('checkdeps', status):
+  buildbot_lib.Command(
+      context,
+      [sys.executable,
+       os.path.join(NACL_DIR, 'tools', 'checkdeps', 'checkdeps.py')])
+
+# Test the pinned toolchain. Since we don't yet have main waterfall
+# Windows or mac bots, we need to test the full assembled toolchain here.
+if host_os == 'win' or host_os == 'mac' or not pynacl.platform.IsArch64Bit():
+  with buildbot_lib.Step('Test NaCl-pinned toolchain', status):
+    buildbot_lib.SCons(context, args=['smoke_tests'], parallel=True)
+    buildbot_lib.SCons(context, args=['large_tests'], parallel=False)
+    buildbot_lib.SCons(context, args=['pnacl_generate_pexe=0',
+                                      'nonpexe_tests'], parallel=True)
+
+
 # toolchain_build outputs its own buildbot annotations, so don't use
 # buildbot_lib.Step to run it here.
 try:
@@ -75,6 +115,17 @@ except subprocess.CalledProcessError:
   # Ignore any failures and keep going (but make the bot stage red).
   print '@@@STEP_FAILURE@@@'
 sys.stdout.flush()
+
+# Since mac and windows bots don't build target libraries or run tests yet,
+# Run a basic sanity check that tests the host components (LLVM, binutils,
+# gold plugin)
+if host_os == 'win' or host_os == 'mac':
+  with buildbot_lib.Step('Test host binaries and gold plugin', status):
+    buildbot_lib.Command(
+        context,
+        [sys.executable,
+        os.path.join('tests', 'gold_plugin', 'gold_plugin_test.py'),
+        '--toolchaindir', toolchain_install_dir])
 
 if host_os != 'win':
   # TODO(dschuff): Fix windows regression test runner (upstream in the LLVM

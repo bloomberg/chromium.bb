@@ -47,9 +47,12 @@ def SetDefaultContextAttributes(context):
   Set default values for the attributes needed by the SCons function, so that
   SCons can be run without needing ParseStandardCommandLine
   """
-  context['platform'] = GetHostPlatform()
+  platform = GetHostPlatform()
+  context['platform'] = platform
   context['mode'] = 'opt'
   context['default_scons_mode'] = ['opt-host', 'nacl']
+  context['default_scons_platform'] = ('x86-64' if platform == 'win'
+                                       else 'x86-32')
   context['clang'] = False
   context['asan'] = False
   context['pnacl'] = False
