@@ -5,12 +5,15 @@
 #include "components/cronet/android/org_chromium_net_UrlRequest.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/macros.h"
 #include "components/cronet/android/url_request_context_peer.h"
 #include "components/cronet/android/url_request_peer.h"
 #include "jni/UrlRequest_jni.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
+
+using base::android::ConvertUTF8ToJavaString;
 
 namespace cronet {
 namespace {
@@ -263,7 +266,7 @@ static jstring GetErrorString(JNIEnv* env,
            "System error: %s(%d)",
            net::ErrorToString(error_code),
            error_code);
-  return env->NewStringUTF(buffer);
+  return ConvertUTF8ToJavaString(env, buffer).Release();
 }
 
 static jint GetHttpStatusCode(JNIEnv* env,
@@ -282,7 +285,7 @@ static jstring GetContentType(JNIEnv* env,
   }
   std::string type = request->content_type();
   if (!type.empty()) {
-    return env->NewStringUTF(type.c_str());
+    return ConvertUTF8ToJavaString(env, type.c_str()).Release();
   } else {
     return NULL;
   }

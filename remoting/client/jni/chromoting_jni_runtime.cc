@@ -53,17 +53,20 @@ static void LoadNative(JNIEnv* env, jclass clazz, jobject context) {
 }
 
 static jstring GetApiKey(JNIEnv* env, jclass clazz) {
-  return env->NewStringUTF(google_apis::GetAPIKey().c_str());
+  return ConvertUTF8ToJavaString(
+      env, google_apis::GetAPIKey().c_str()).Release();
 }
 
 static jstring GetClientId(JNIEnv* env, jclass clazz) {
-  return env->NewStringUTF(
-      google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING).c_str());
+  return ConvertUTF8ToJavaString(
+      env, google_apis::GetOAuth2ClientID(
+          google_apis::CLIENT_REMOTING).c_str()).Release();
 }
 
 static jstring GetClientSecret(JNIEnv* env, jclass clazz) {
-  return env->NewStringUTF(
-      google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_REMOTING).c_str());
+  return ConvertUTF8ToJavaString(
+      env, google_apis::GetOAuth2ClientSecret(
+          google_apis::CLIENT_REMOTING).c_str()).Release();
 }
 
 static void Connect(JNIEnv* env,

@@ -55,7 +55,7 @@ bool UrlRequestContextRegisterJni(JNIEnv* env) {
 }
 
 static jstring GetVersion(JNIEnv* env, jclass unused) {
-  return env->NewStringUTF(kVersion);
+  return base::android::ConvertUTF8ToJavaString(env, kVersion).Release();
 }
 
 // Sets global user-agent to be used for all subsequent requests.

@@ -4,6 +4,7 @@
 
 #include "base/android/library_loader/library_loader_hooks.h"
 
+#include "base/android/jni_string.h"
 #include "base/at_exit.h"
 #include "base/metrics/histogram.h"
 #include "jni/LibraryLoader_jni.h"
@@ -61,7 +62,7 @@ void SetVersionNumber(const char* version_number) {
 }
 
 jstring GetVersionNumber(JNIEnv* env, jclass clazz) {
-  return env->NewStringUTF(g_library_version_number);
+  return ConvertUTF8ToJavaString(env, g_library_version_number).Release();
 }
 
 static void RecordNativeLibraryHack(JNIEnv*, jclass, jboolean usedHack) {
