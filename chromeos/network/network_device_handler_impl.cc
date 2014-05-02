@@ -465,15 +465,7 @@ void NetworkDeviceHandlerImpl::ApplyCellularAllowRoamingToShill() {
   for (NetworkStateHandler::DeviceStateList::const_iterator it = list.begin();
       it != list.end(); ++it) {
     const DeviceState* device_state = *it;
-    bool current_device_value;
-    if (!device_state->properties().GetBooleanWithoutPathExpansion(
-             shill::kCellularAllowRoamingProperty, &current_device_value)) {
-      NET_LOG_ERROR(
-          "Could not get \"allow roaming\" property from cellular "
-          "device.",
-          device_state->path());
-      continue;
-    }
+    bool current_allow_roaming = device_state->allow_roaming();
 
     // If roaming is required by the provider, always try to set to true.
     bool new_device_value =
@@ -481,7 +473,7 @@ void NetworkDeviceHandlerImpl::ApplyCellularAllowRoamingToShill() {
 
     // Only set the value if the current value is different from
     // |new_device_value|.
-    if (new_device_value == current_device_value)
+    if (new_device_value == current_allow_roaming)
       continue;
 
     SetDevicePropertyInternal(device_state->path(),

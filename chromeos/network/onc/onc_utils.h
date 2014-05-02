@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/network/shill_property_util.h"
 #include "components/onc/onc_constants.h"
 
 namespace base {
@@ -124,6 +125,10 @@ CHROMEOS_EXPORT bool ResolveServerCertRefsInNetworks(
 CHROMEOS_EXPORT bool ResolveServerCertRefsInNetwork(
     const CertPEMsByGUIDMap& certs_by_guid,
     base::DictionaryValue* network_config);
+
+// Returns a network type pattern for matching the ONC type string.
+CHROMEOS_EXPORT NetworkTypePattern NetworkTypePatternFromOncType(
+    const std::string& type);
 
 }  // namespace onc
 }  // namespace chromeos

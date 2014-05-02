@@ -127,12 +127,12 @@ var availableTests = [
       callbackPass(function(result) {
         assertEq([{
                     "ConnectionState": "Connected",
-                    "GUID": "stub_ethernet",
-                    "Name": "eth0",
-                    "Type": "Ethernet",
                     "Ethernet": {
                       "Authentication": "None"
-                    }
+                    },
+                    "GUID": "stub_ethernet",
+                    "Name": "eth0",
+                    "Type": "Ethernet"
                   },
                   {
                     "ConnectionState": "Connected",
@@ -162,7 +162,6 @@ var availableTests = [
                   },
                   {
                     "Cellular": {
-                      "ActivateOverNonCellularNetwork": false,
                       "ActivationState": "not-activated",
                       "NetworkTechnology": "GSM",
                       "RoamingState": "home"

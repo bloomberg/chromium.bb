@@ -220,11 +220,6 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // connected using EAP, returns NULL.
   const FavoriteState* GetEAPForEthernet(const std::string& service_path) const;
 
-  // Generates a DictionaryValue of all NetworkState properties. Currently
-  // provided for debugging purposes only.
-  void GetNetworkStatePropertiesForTest(
-      base::DictionaryValue* dictionary) const;
-
   // Construct and initialize an instance for testing.
   static NetworkStateHandler* InitializeForTest();
 

@@ -651,5 +651,20 @@ bool ResolveServerCertRefsInNetwork(const CertPEMsByGUIDMap& certs_by_guid,
                                        network_config);
 }
 
+NetworkTypePattern NetworkTypePatternFromOncType(const std::string& type) {
+  if (type == ::onc::network_type::kAllTypes)
+    return NetworkTypePattern::Default();
+  if (type == ::onc::network_type::kCellular)
+    return NetworkTypePattern::Cellular();
+  if (type == ::onc::network_type::kEthernet)
+    return NetworkTypePattern::Ethernet();
+  if (type == ::onc::network_type::kVPN)
+    return NetworkTypePattern::VPN();
+  if (type == ::onc::network_type::kWiFi)
+    return NetworkTypePattern::WiFi();
+  NOTREACHED();
+  return NetworkTypePattern::Default();
+}
+
 }  // namespace onc
 }  // namespace chromeos

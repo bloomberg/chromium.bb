@@ -73,7 +73,6 @@ class FakeWiFiService : public WiFiService {
       network_properties.type = onc::network_type::kCellular;
       network_properties.json_extra =
           "    {"
-          "      \"ActivateOverNonCellularNetwork\": false,"
           "      \"ActivationState\": \"not-activated\","
           "      \"NetworkTechnology\": \"GSM\","
           "      \"RoamingState\": \"home\""

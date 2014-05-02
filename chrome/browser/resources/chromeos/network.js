@@ -8,7 +8,7 @@ var NetworkUI = function() {
   // specified then the first non empty value is used.
   var NETWORK_STATE_FIELDS = [
     'Name', 'Type', 'State', 'Profile', 'Connectable',
-    'Error', 'Address', 'Security',
+    'Error', 'Security',
     ['Cellular.NetworkTechnology', 'EAP.EAP'],
     'Cellular.ActivationState', 'Cellular.RoamingState',
     'Cellular.OutOfCredits', 'Strength'

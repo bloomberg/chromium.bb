@@ -23,6 +23,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
+#include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/shill_property_util.h"
 #include "components/onc/onc_constants.h"
 #include "extensions/browser/extension_function_registry.h"
@@ -174,7 +175,7 @@ bool NetworkingPrivateGetStateFunction::RunImpl() {
   }
 
   scoped_ptr<base::DictionaryValue> result_dict(new base::DictionaryValue);
-  state->GetProperties(result_dict.get());
+  state->GetStateProperties(result_dict.get());
   scoped_ptr<base::DictionaryValue> onc_network_part =
       chromeos::onc::TranslateShillServiceToONCPart(*result_dict,
           &chromeos::onc::kNetworkWithStateSignature);
@@ -274,35 +275,27 @@ bool NetworkingPrivateGetVisibleNetworksFunction::RunImpl() {
   scoped_ptr<api::GetVisibleNetworks::Params> params =
       api::GetVisibleNetworks::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-  std::string type_filter =
-      api::GetVisibleNetworks::Params::ToString(params->type);
+  NetworkTypePattern type = chromeos::onc::NetworkTypePatternFromOncType(
+      api::GetVisibleNetworks::Params::ToString(params->type));
 
   NetworkStateHandler::NetworkStateList network_states;
-  NetworkHandler::Get()->network_state_handler()->GetNetworkList(
-      &network_states);
+  NetworkHandler::Get()->network_state_handler()->GetNetworkListByType(
+      type, &network_states);
 
   base::ListValue* network_properties_list = new base::ListValue;
   for (NetworkStateHandler::NetworkStateList::iterator it =
            network_states.begin();
        it != network_states.end(); ++it) {
-    const std::string& service_path = (*it)->path();
     base::DictionaryValue shill_dictionary;
-    (*it)->GetProperties(&shill_dictionary);
+    (*it)->GetStateProperties(&shill_dictionary);
 
     scoped_ptr<base::DictionaryValue> onc_network_part =
-        chromeos::onc::TranslateShillServiceToONCPart(shill_dictionary,
-            &chromeos::onc::kNetworkWithStateSignature);
-
-    std::string onc_type;
-    onc_network_part->GetStringWithoutPathExpansion(onc::network_config::kType,
-                                                    &onc_type);
-    if (type_filter == onc::network_type::kAllTypes ||
-        onc_type == type_filter) {
-      onc_network_part->SetStringWithoutPathExpansion(
-          onc::network_config::kGUID,
-          service_path);
-      network_properties_list->Append(onc_network_part.release());
-    }
+        chromeos::onc::TranslateShillServiceToONCPart(
+            shill_dictionary, &chromeos::onc::kNetworkWithStateSignature);
+    // TODO(stevenjb): Fix this to always use GUID: crbug.com/284827
+    onc_network_part->SetStringWithoutPathExpansion(
+        onc::network_config::kGUID, (*it)->path());
+    network_properties_list->Append(onc_network_part.release());
   }
 
   SetResult(network_properties_list);

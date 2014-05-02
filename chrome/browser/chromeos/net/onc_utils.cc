@@ -27,7 +27,6 @@
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
 #include "chromeos/network/onc/onc_utils.h"
-#include "chromeos/network/shill_property_util.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_bypass_rules.h"
 #include "net/proxy/proxy_server.h"

@@ -170,59 +170,44 @@ bool NetworkState::InitialPropertiesReceived(
   return changed;
 }
 
-void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
-  // Keep care that these properties are the same as in |PropertyChanged|.
-  dictionary->SetStringWithoutPathExpansion(shill::kNameProperty, name());
-  dictionary->SetStringWithoutPathExpansion(shill::kTypeProperty, type());
-  dictionary->SetIntegerWithoutPathExpansion(shill::kSignalStrengthProperty,
-                                             signal_strength_);
+void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
+  ManagedState::GetStateProperties(dictionary);
+
+  // Properties shared by all types.
+  dictionary->SetStringWithoutPathExpansion(shill::kGuidProperty, guid());
   dictionary->SetStringWithoutPathExpansion(shill::kStateProperty,
-                                            connection_state_);
-  dictionary->SetBooleanWithoutPathExpansion(shill::kConnectableProperty,
-                                             connectable_);
-
-  dictionary->SetStringWithoutPathExpansion(shill::kErrorProperty, error_);
-
-  // IPConfig properties
-  base::DictionaryValue* ipconfig_properties = new base::DictionaryValue;
-  ipconfig_properties->SetStringWithoutPathExpansion(shill::kAddressProperty,
-                                                     ip_address_);
-  ipconfig_properties->SetStringWithoutPathExpansion(shill::kGatewayProperty,
-                                                     gateway_);
-  base::ListValue* name_servers = new base::ListValue;
-  name_servers->AppendStrings(dns_servers_);
-  ipconfig_properties->SetWithoutPathExpansion(shill::kNameServersProperty,
-                                               name_servers);
-  ipconfig_properties->SetStringWithoutPathExpansion(
-      shill::kWebProxyAutoDiscoveryUrlProperty,
-      web_proxy_auto_discovery_url_.spec());
-  dictionary->SetWithoutPathExpansion(shill::kIPConfigProperty,
-                                      ipconfig_properties);
-
-  dictionary->SetStringWithoutPathExpansion(shill::kActivationStateProperty,
-                                            activation_state_);
-  dictionary->SetStringWithoutPathExpansion(shill::kRoamingStateProperty,
-                                            roaming_);
+                                            connection_state());
+  dictionary->SetStringWithoutPathExpansion(shill::kErrorProperty, error());
   dictionary->SetStringWithoutPathExpansion(shill::kSecurityProperty,
-                                            security_);
-  dictionary->SetStringWithoutPathExpansion(shill::kEapMethodProperty,
-                                            eap_method_);
+                                            security());
 
-  // ui_data_ (contains ONC source) is intentionally omitted.
+  if (!NetworkTypePattern::Wireless().MatchesType(type()))
+    return;
 
-  dictionary->SetStringWithoutPathExpansion(
-      shill::kNetworkTechnologyProperty,
-      network_technology_);
-  dictionary->SetStringWithoutPathExpansion(shill::kDeviceProperty,
-                                            device_path_);
-  dictionary->SetStringWithoutPathExpansion(shill::kGuidProperty, guid_);
-  dictionary->SetStringWithoutPathExpansion(shill::kProfileProperty,
-                                            profile_path_);
-  dictionary->SetBooleanWithoutPathExpansion(
-      shill::kActivateOverNonCellularNetworkProperty,
-      activate_over_non_cellular_networks_);
-  dictionary->SetBooleanWithoutPathExpansion(shill::kOutOfCreditsProperty,
-                                             cellular_out_of_credits_);
+  // Wireless properties
+  dictionary->SetBooleanWithoutPathExpansion(shill::kConnectableProperty,
+                                             connectable());
+  dictionary->SetIntegerWithoutPathExpansion(shill::kSignalStrengthProperty,
+                                             signal_strength());
+
+  // Wifi properties
+  if (!NetworkTypePattern::WiFi().MatchesType(type())) {
+    dictionary->SetStringWithoutPathExpansion(shill::kEapMethodProperty,
+                                              eap_method());
+  }
+
+  // Mobile properties
+  if (NetworkTypePattern::Mobile().MatchesType(type())) {
+    dictionary->SetStringWithoutPathExpansion(
+        shill::kNetworkTechnologyProperty,
+        network_technology());
+    dictionary->SetStringWithoutPathExpansion(shill::kActivationStateProperty,
+                                              activation_state());
+    dictionary->SetStringWithoutPathExpansion(shill::kRoamingStateProperty,
+                                              roaming());
+    dictionary->SetBooleanWithoutPathExpansion(shill::kOutOfCreditsProperty,
+                                               cellular_out_of_credits());
+  }
 }
 
 bool NetworkState::RequiresActivation() const {

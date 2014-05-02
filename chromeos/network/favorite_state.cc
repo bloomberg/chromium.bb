@@ -25,13 +25,6 @@ FavoriteState::~FavoriteState() {
 
 bool FavoriteState::PropertyChanged(const std::string& key,
                                     const base::Value& value) {
-  // All property values except UIData (which may contain a lengthy
-  // certificate pattern) and passphrase entries get stored in |properties_|.
-  if (key != shill::kUIDataProperty &&
-      !shill_property_util::IsPassphraseKey(key)) {
-    properties_.SetWithoutPathExpansion(key, value.DeepCopy());
-  }
-
   if (ManagedStatePropertyChanged(key, value))
     return true;
   if (key == shill::kProfileProperty) {
@@ -44,10 +37,6 @@ bool FavoriteState::PropertyChanged(const std::string& key,
       return false;
     }
     ui_data_ = *new_ui_data;
-
-    // Add ONCSource to |properties_| for debugging.
-    properties_.SetStringWithoutPathExpansion(NetworkUIData::kKeyONCSource,
-                                              ui_data_.GetONCSourceAsString());
     return true;
   } else if (key == shill::kGuidProperty) {
     return GetStringValue(key, value, &guid_);
@@ -76,6 +65,18 @@ bool FavoriteState::PropertyChanged(const std::string& key,
     return true;
   }
   return false;
+}
+
+void FavoriteState::GetStateProperties(
+    base::DictionaryValue* dictionary) const {
+  ManagedState::GetStateProperties(dictionary);
+
+  dictionary->SetStringWithoutPathExpansion(shill::kGuidProperty, guid());
+  dictionary->SetStringWithoutPathExpansion(shill::kProfileProperty,
+                                            profile_path());
+  // Add ONCSource for debugging.
+  dictionary->SetStringWithoutPathExpansion(NetworkUIData::kKeyONCSource,
+                                            ui_data_.GetONCSourceAsString());
 }
 
 bool FavoriteState::IsFavorite() const {

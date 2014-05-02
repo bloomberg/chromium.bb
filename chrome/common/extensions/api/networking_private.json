@@ -182,7 +182,7 @@
       },
       {
         "name": "getVisibleNetworks",
-        "description": "Gets the list of visible networks, and returns a list of cached, read-only network properties for each.",
+        "description": "Returns a list of visible network objects with the following ONC properties: GUID, Type, Name, ConnectionState, ErrorState, WiFi.Security, WiFi.SignalStrength, Cellular.NetworkTechnology, Cellular.ActivationState, Cellular.RoamingState. Cellular.OutOfCredits",
         "parameters": [
           {
             "name": "type",

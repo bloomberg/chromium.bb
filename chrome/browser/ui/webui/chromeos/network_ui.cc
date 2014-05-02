@@ -105,7 +105,7 @@ void NetworkMessageHandler::GetNetworkState(
        it != network_list.end();
        ++it) {
     base::DictionaryValue* properties = new base::DictionaryValue;
-    (*it)->GetProperties(properties);
+    (*it)->GetStateProperties(properties);
     output->Set((*it)->path(), properties);
   }
 }
@@ -120,9 +120,9 @@ void NetworkMessageHandler::GetFavoriteState(
            favorite_list.begin();
        it != favorite_list.end();
        ++it) {
-    // Get the complete dictionary of FavoriteState properties.
-    const base::DictionaryValue& properties = (*it)->properties();
-    output->Set((*it)->path(), properties.DeepCopy());
+    base::DictionaryValue* properties = new base::DictionaryValue;
+    (*it)->GetStateProperties(properties);
+    output->Set((*it)->path(), properties);
   }
 }
 
