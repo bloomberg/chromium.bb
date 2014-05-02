@@ -186,7 +186,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget& eventTarget, 
 
 ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget& eventTarget, Blob* blob, ExceptionState& exceptionState)
 {
-    RefPtr<ImageBitmapLoader> loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), eventTarget.executionContext(), IntRect());
+    RefPtrWillBeRawPtr<ImageBitmapLoader> loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), eventTarget.executionContext(), IntRect());
     ScriptPromise promise = loader->promise();
     from(eventTarget).addLoader(loader);
     loader->loadBlobAsync(eventTarget.executionContext(), blob);
@@ -199,7 +199,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget& eventTarget, 
         exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
         return ScriptPromise();
     }
-    RefPtr<ImageBitmapLoader> loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), eventTarget.executionContext(), IntRect(sx, sy, sw, sh));
+    RefPtrWillBeRawPtr<ImageBitmapLoader> loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), eventTarget.executionContext(), IntRect(sx, sy, sw, sh));
     ScriptPromise promise = loader->promise();
     from(eventTarget).addLoader(loader);
     loader->loadBlobAsync(eventTarget.executionContext(), blob);
@@ -261,7 +261,7 @@ ImageBitmapFactories& ImageBitmapFactories::fromInternal(GlobalObject& object)
     return *supplement;
 }
 
-void ImageBitmapFactories::addLoader(PassRefPtr<ImageBitmapLoader> loader)
+void ImageBitmapFactories::addLoader(PassRefPtrWillBeRawPtr<ImageBitmapLoader> loader)
 {
     m_pendingLoaders.add(loader);
 }
@@ -283,6 +283,11 @@ ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(ImageBitmapFactories&
 void ImageBitmapFactories::ImageBitmapLoader::loadBlobAsync(ExecutionContext* context, Blob* blob)
 {
     m_loader.start(context, blob->blobDataHandle());
+}
+
+void ImageBitmapFactories::trace(Visitor* visitor)
+{
+    visitor->trace(m_pendingLoaders);
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::rejectPromise()
@@ -326,6 +331,11 @@ void ImageBitmapFactories::ImageBitmapLoader::didFinishLoading()
 void ImageBitmapFactories::ImageBitmapLoader::didFail(FileError::ErrorCode)
 {
     rejectPromise();
+}
+
+void ImageBitmapFactories::ImageBitmapLoader::trace(Visitor* visitor)
+{
+    visitor->trace(m_factory);
 }
 
 } // namespace WebCore
