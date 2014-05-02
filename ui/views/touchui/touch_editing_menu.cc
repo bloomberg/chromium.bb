@@ -39,11 +39,11 @@ namespace views {
 
 TouchEditingMenuView::TouchEditingMenuView(
     TouchEditingMenuController* controller,
-    gfx::Rect anchor_rect,
+    const gfx::Rect& anchor_rect,
+    const gfx::Size& handle_image_size,
     gfx::NativeView context)
     : BubbleDelegateView(NULL, views::BubbleBorder::BOTTOM_CENTER),
       controller_(controller) {
-  SetAnchorRect(anchor_rect);
   set_shadow(views::BubbleBorder::SMALL_SHADOW);
   set_parent_window(context);
   set_margins(gfx::Insets(kMenuMargin, kMenuMargin, kMenuMargin, kMenuMargin));
@@ -53,6 +53,16 @@ TouchEditingMenuView::TouchEditingMenuView(
   SetLayoutManager(new BoxLayout(BoxLayout::kHorizontal, 0, 0,
       kSpacingBetweenButtons));
   CreateButtons();
+
+  // After buttons are created, check if there is enough room between handles to
+  // show the menu and adjust anchor rect properly if needed, just in case the
+  // menu is needed to be shown under the selection.
+  gfx::Rect adjusted_anchor_rect(anchor_rect);
+  int menu_width = GetPreferredSize().width();
+  if (menu_width > anchor_rect.width() - handle_image_size.width())
+    adjusted_anchor_rect.Inset(0, 0, 0, -handle_image_size.height());
+  SetAnchorRect(adjusted_anchor_rect);
+
   views::BubbleDelegateView::CreateBubble(this);
   GetWidget()->Show();
 }
@@ -63,12 +73,15 @@ TouchEditingMenuView::~TouchEditingMenuView() {
 // static
 TouchEditingMenuView* TouchEditingMenuView::Create(
     TouchEditingMenuController* controller,
-    gfx::Rect anchor_rect,
+    const gfx::Rect& anchor_rect,
+    const gfx::Size& handle_image_size,
     gfx::NativeView context) {
   if (controller) {
     for (size_t i = 0; i < arraysize(kMenuCommands); i++) {
-      if (controller->IsCommandIdEnabled(kMenuCommands[i]))
-        return new TouchEditingMenuView(controller, anchor_rect, context);
+      if (controller->IsCommandIdEnabled(kMenuCommands[i])) {
+        return new TouchEditingMenuView(controller, anchor_rect,
+                                        handle_image_size, context);
+      }
     }
   }
   return NULL;

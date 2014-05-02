@@ -554,6 +554,7 @@ void TouchSelectionControllerImpl::ContextMenuTimerFired() {
 
   DCHECK(!context_menu_);
   context_menu_ = TouchEditingMenuView::Create(this, menu_anchor,
+                                               GetHandleImageSize(),
                                                client_view_->GetNativeView());
 }
 
