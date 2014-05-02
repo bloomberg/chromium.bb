@@ -50,6 +50,7 @@
               'bluetooth_socket.idl',
               'bookmark_manager_private.json',
               'bookmarks.json',
+              'browser.idl',
               'braille_display_private.idl',
               'cast_channel.idl',
               'cloud_print_private.json',

@@ -174,6 +174,7 @@ class APIPermission {
     kSystemInfoCpu,
     kSystemInfoMemory,
     kFirstRunPrivate,
+    kBrowser,
     kEnumBoundary
   };
 

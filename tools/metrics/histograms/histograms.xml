@@ -33790,6 +33790,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
       label="FILESYSTEMPROVIDERINTERNAL_GETMETADATAREQUESTEDSUCCESS"/>
   <int value="751"
       label="FILESYSTEMPROVIDERINTERNAL_GETMETADATAREQUESTEDERROR"/>
+  <int value="752" label="BROWSER_OPENTAB"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

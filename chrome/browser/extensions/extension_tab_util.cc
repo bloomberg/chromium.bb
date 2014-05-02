@@ -6,7 +6,9 @@
 
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
@@ -26,8 +28,11 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "extensions/common/constants.h"
+#include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "url/gurl.h"
@@ -55,7 +60,221 @@ WindowController* GetAppWindowController(const WebContents* contents) {
       app_window->session_id().id());
 }
 
+// |error_message| can optionally be passed in and will be set with an
+// appropriate message if the window cannot be found by id.
+Browser* GetBrowserInProfileWithId(Profile* profile,
+                                   const int window_id,
+                                   bool include_incognito,
+                                   std::string* error_message) {
+  Profile* incognito_profile =
+      include_incognito && profile->HasOffTheRecordProfile()
+          ? profile->GetOffTheRecordProfile()
+          : NULL;
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Browser* browser = *it;
+    if ((browser->profile() == profile ||
+         browser->profile() == incognito_profile) &&
+        ExtensionTabUtil::GetWindowId(browser) == window_id &&
+        browser->window()) {
+      return browser;
+    }
+  }
+
+  if (error_message)
+    *error_message = ErrorUtils::FormatErrorMessage(
+        keys::kWindowNotFoundError, base::IntToString(window_id));
+
+  return NULL;
+}
+
+Browser* CreateBrowser(ChromeAsyncExtensionFunction* function,
+                       int window_id,
+                       std::string* error) {
+  content::WebContents* web_contents = function->GetAssociatedWebContents();
+  DCHECK(web_contents);
+  DCHECK(web_contents->GetView());
+  DCHECK(web_contents->GetView()->GetNativeView());
+  DCHECK(!chrome::FindBrowserWithWebContents(web_contents));
+
+  chrome::HostDesktopType desktop_type =
+      chrome::GetHostDesktopTypeForNativeView(
+          web_contents->GetView()->GetNativeView());
+  Browser::CreateParams params(
+      Browser::TYPE_TABBED, function->GetProfile(), desktop_type);
+  Browser* browser = new Browser(params);
+  browser->window()->Show();
+  return browser;
+}
+
 }  // namespace
+
+ExtensionTabUtil::OpenTabParams::OpenTabParams()
+    : create_browser_if_needed(false) {
+}
+
+ExtensionTabUtil::OpenTabParams::~OpenTabParams() {
+}
+
+// Opens a new tab for a given extension. Returns NULL and sets |error| if an
+// error occurs.
+base::DictionaryValue* ExtensionTabUtil::OpenTab(
+    ChromeAsyncExtensionFunction* function,
+    const OpenTabParams& params,
+    std::string* error) {
+  // windowId defaults to "current" window.
+  int window_id = extension_misc::kCurrentWindowId;
+  if (params.window_id.get())
+    window_id = *params.window_id;
+
+  Browser* browser = GetBrowserFromWindowID(function, window_id, error);
+  if (!browser) {
+    if (!params.create_browser_if_needed) {
+      return NULL;
+    }
+    browser = CreateBrowser(function, window_id, error);
+    if (!browser)
+      return NULL;
+  }
+
+  // Ensure the selected browser is tabbed.
+  if (!browser->is_type_tabbed() && browser->IsAttemptingToCloseBrowser())
+    browser = chrome::FindTabbedBrowser(function->GetProfile(),
+                                        function->include_incognito(),
+                                        browser->host_desktop_type());
+
+  if (!browser || !browser->window()) {
+    // TODO(rpaquay): Error message?
+    return NULL;
+  }
+
+  // TODO(jstritar): Add a constant, chrome.tabs.TAB_ID_ACTIVE, that
+  // represents the active tab.
+  WebContents* opener = NULL;
+  if (params.opener_tab_id.get()) {
+    int opener_id = *params.opener_tab_id;
+
+    if (!ExtensionTabUtil::GetTabById(opener_id,
+                                      function->GetProfile(),
+                                      function->include_incognito(),
+                                      NULL,
+                                      NULL,
+                                      &opener,
+                                      NULL)) {
+      // TODO(rpaquay): Error message?
+      return NULL;
+    }
+  }
+
+  // TODO(rafaelw): handle setting remaining tab properties:
+  // -title
+  // -favIconUrl
+
+  std::string url_string;
+  GURL url;
+  if (params.url.get()) {
+    url_string = *params.url;
+    url = ExtensionTabUtil::ResolvePossiblyRelativeURL(
+        url_string, function->GetExtension());
+    if (!url.is_valid()) {
+      *error =
+          ErrorUtils::FormatErrorMessage(keys::kInvalidUrlError, url_string);
+      return NULL;
+    }
+  }
+
+  // Don't let extensions crash the browser or renderers.
+  if (ExtensionTabUtil::IsCrashURL(url)) {
+    *error = keys::kNoCrashBrowserError;
+    return NULL;
+  }
+
+  // Default to foreground for the new tab. The presence of 'active' property
+  // will override this default.
+  bool active = true;
+  if (params.active.get())
+    active = *params.active;
+
+  // Default to not pinning the tab. Setting the 'pinned' property to true
+  // will override this default.
+  bool pinned = false;
+  if (params.pinned.get())
+    pinned = *params.pinned;
+
+  // We can't load extension URLs into incognito windows unless the extension
+  // uses split mode. Special case to fall back to a tabbed window.
+  if (url.SchemeIs(kExtensionScheme) &&
+      !IncognitoInfo::IsSplitMode(function->GetExtension()) &&
+      browser->profile()->IsOffTheRecord()) {
+    Profile* profile = browser->profile()->GetOriginalProfile();
+    chrome::HostDesktopType desktop_type = browser->host_desktop_type();
+
+    browser = chrome::FindTabbedBrowser(profile, false, desktop_type);
+    if (!browser) {
+      browser = new Browser(
+          Browser::CreateParams(Browser::TYPE_TABBED, profile, desktop_type));
+      browser->window()->Show();
+    }
+  }
+
+  // If index is specified, honor the value, but keep it bound to
+  // -1 <= index <= tab_strip->count() where -1 invokes the default behavior.
+  int index = -1;
+  if (params.index.get())
+    index = *params.index;
+
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  index = std::min(std::max(index, -1), tab_strip->count());
+
+  int add_types = active ? TabStripModel::ADD_ACTIVE : TabStripModel::ADD_NONE;
+  add_types |= TabStripModel::ADD_FORCE_INDEX;
+  if (pinned)
+    add_types |= TabStripModel::ADD_PINNED;
+  chrome::NavigateParams navigate_params(
+      browser, url, content::PAGE_TRANSITION_LINK);
+  navigate_params.disposition =
+      active ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
+  navigate_params.tabstrip_index = index;
+  navigate_params.tabstrip_add_types = add_types;
+  chrome::Navigate(&navigate_params);
+
+  // The tab may have been created in a different window, so make sure we look
+  // at the right tab strip.
+  tab_strip = navigate_params.browser->tab_strip_model();
+  int new_index =
+      tab_strip->GetIndexOfWebContents(navigate_params.target_contents);
+  if (opener)
+    tab_strip->SetOpenerOfWebContentsAt(new_index, opener);
+
+  if (active)
+    navigate_params.target_contents->GetView()->SetInitialFocus();
+
+  // Return data about the newly created tab.
+  return ExtensionTabUtil::CreateTabValue(navigate_params.target_contents,
+                                          tab_strip,
+                                          new_index,
+                                          function->GetExtension());
+}
+
+Browser* ExtensionTabUtil::GetBrowserFromWindowID(
+    ChromeAsyncExtensionFunction* function,
+    int window_id,
+    std::string* error) {
+  if (window_id == extension_misc::kCurrentWindowId) {
+    Browser* result = function->GetCurrentBrowser();
+    if (!result || !result->window()) {
+      if (error)
+        *error = keys::kNoCurrentWindowError;
+      return NULL;
+    }
+    return result;
+  } else {
+    return GetBrowserInProfileWithId(function->GetProfile(),
+                                     window_id,
+                                     function->include_incognito(),
+                                     error);
+  }
+}
 
 int ExtensionTabUtil::GetWindowId(const Browser* browser) {
   return browser->session_id().id();

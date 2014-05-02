@@ -368,6 +368,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
         {APIPermission::kOverrideEscFullscreen,
          "app.window.fullscreen.overrideEsc"},
         {APIPermission::kWindowShape, "app.window.shape"},
+        {APIPermission::kBrowser, "browser"},
 
         // Settings override permissions.
         {APIPermission::kHomepage, "homepage",

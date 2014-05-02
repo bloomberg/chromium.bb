@@ -152,6 +152,10 @@
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "location": "component"
   },
+  "browser": {
+    "channel": "dev",
+    "extension_types": ["platform_app"]
+  },
   "browsingData": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]

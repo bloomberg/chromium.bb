@@ -1001,6 +1001,7 @@
         'browser/extensions/api/braille_display_private/braille_display_private_apitest.cc',
         'browser/extensions/api/braille_display_private/mock_braille_controller.cc',
         'browser/extensions/api/braille_display_private/mock_braille_controller.h',
+        'browser/extensions/api/browser/browser_apitest.cc',
         'browser/extensions/api/bookmarks/bookmark_apitest.cc',
         'browser/extensions/api/browsing_data/browsing_data_test.cc',
         'browser/extensions/api/cast_channel/cast_channel_apitest.cc',
