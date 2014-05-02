@@ -281,6 +281,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   virtual void SetWhitelistedShortcuts(const std::string& message) OVERRIDE;
   virtual void InspectedContentsClosing() OVERRIDE;
   virtual void OnLoadCompleted() OVERRIDE;
+  virtual InfoBarService* GetInfoBarService() OVERRIDE;
 
   void CreateDevToolsBrowser();
   BrowserWindow* GetInspectedBrowserWindow();

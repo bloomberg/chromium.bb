@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/file_select_helper.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -1011,6 +1012,12 @@ void DevToolsWindow::InspectedContentsClosing() {
   action_on_load_ = DevToolsToggleAction::NoOp();
   ignore_set_is_docked_ = true;
   web_contents_->GetRenderViewHost()->ClosePage();
+}
+
+InfoBarService* DevToolsWindow::GetInfoBarService() {
+  return is_docked_ ?
+      InfoBarService::FromWebContents(GetInspectedWebContents()) :
+      InfoBarService::FromWebContents(web_contents_);
 }
 
 void DevToolsWindow::OnLoadCompleted() {

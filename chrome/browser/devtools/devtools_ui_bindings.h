@@ -23,6 +23,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/size.h"
 
+class InfoBarService;
 class Profile;
 
 namespace content {
@@ -58,6 +59,7 @@ class DevToolsUIBindings : public content::NotificationObserver,
 
     virtual void InspectedContentsClosing() = 0;
     virtual void OnLoadCompleted() = 0;
+    virtual InfoBarService* GetInfoBarService() = 0;
   };
 
   explicit DevToolsUIBindings(content::WebContents* web_contents);

@@ -195,6 +195,7 @@ class DefaultBindingsDelegate : public DevToolsUIBindings::Delegate {
 
   virtual void InspectedContentsClosing() OVERRIDE;
   virtual void OnLoadCompleted() OVERRIDE {}
+  virtual InfoBarService* GetInfoBarService() OVERRIDE;
 
   content::WebContents* web_contents_;
   DISALLOW_COPY_AND_ASSIGN(DefaultBindingsDelegate);
@@ -215,6 +216,10 @@ void DefaultBindingsDelegate::OpenInNewTab(const std::string& url) {
 
 void DefaultBindingsDelegate::InspectedContentsClosing() {
   web_contents_->GetRenderViewHost()->ClosePage();
+}
+
+InfoBarService* DefaultBindingsDelegate::GetInfoBarService() {
+  return InfoBarService::FromWebContents(web_contents_);
 }
 
 }  // namespace
@@ -680,8 +685,7 @@ void DevToolsUIBindings::SearchCompleted(
 void DevToolsUIBindings::ShowDevToolsConfirmInfoBar(
     const base::string16& message,
     const InfoBarCallback& callback) {
-  DevToolsConfirmInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents_),
+  DevToolsConfirmInfoBarDelegate::Create(delegate_->GetInfoBarService(),
       callback, message);
 }
 
