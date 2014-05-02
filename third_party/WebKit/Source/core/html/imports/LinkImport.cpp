@@ -119,7 +119,7 @@ void LinkImport::importChildWasDestroyed(HTMLImportChild* child)
 
 bool LinkImport::isSync() const
 {
-    return m_owner && m_owner->isCreatedByParser() && !m_owner->async();
+    return m_owner && !m_owner->async();
 }
 
 HTMLLinkElement* LinkImport::link()

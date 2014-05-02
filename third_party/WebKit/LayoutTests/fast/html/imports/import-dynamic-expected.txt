@@ -4,7 +4,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 In script tag - This should be called first.
-PASS importIsLoaded is false
+PASS importIsLoaded is true
 In onload handler - This should be called later.
 PASS importIsLoaded is true
 PASS scriptIsExecuted is true
