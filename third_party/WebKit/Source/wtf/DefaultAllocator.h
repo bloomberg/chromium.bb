@@ -73,12 +73,12 @@ public:
     template <typename Return, typename Metadata>
     static Return backingMalloc(size_t size)
     {
-        return reinterpret_cast<Return>(partitionAllocGeneric(Partitions::getBufferPartition(), size));
+        return reinterpret_cast<Return>(backingAllocate(size));
     }
     template <typename Return, typename Metadata>
     static Return zeroedBackingMalloc(size_t size)
     {
-        void* result = partitionAllocGeneric(Partitions::getBufferPartition(), size);
+        void* result = backingAllocate(size);
         memset(result, 0, size);
         return reinterpret_cast<Return>(result);
     }
@@ -87,10 +87,7 @@ public:
     {
         return reinterpret_cast<Return>(fastMalloc(size));
     }
-    static void backingFree(void* address)
-    {
-        partitionFreeGeneric(Partitions::getBufferPartition(), address);
-    }
+    WTF_EXPORT static void backingFree(void* address);
     static void free(void* address)
     {
         fastFree(address);
@@ -132,6 +129,9 @@ public:
     {
         return *other;
     }
+
+private:
+    WTF_EXPORT static void* backingAllocate(size_t);
 };
 
 // The Windows compiler seems to be very eager to instantiate things it won't
