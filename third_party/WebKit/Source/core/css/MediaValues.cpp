@@ -196,10 +196,9 @@ bool MediaValues::computeLengthImpl(double value, CSSPrimitiveValue::UnitTypes t
         return false;
     }
 
+    ASSERT(factor > 0);
     result = value * factor;
     return true;
-
-    ASSERT(factor > 0);
 }
 
 } // namespace
