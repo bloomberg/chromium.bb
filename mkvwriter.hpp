@@ -20,7 +20,7 @@ namespace mkvmuxer {
 class MkvWriter : public IMkvWriter {
  public:
   MkvWriter();
-  MkvWriter(FILE* fp);
+  explicit MkvWriter(FILE* fp);
   virtual ~MkvWriter();
 
   // IMkvWriter interface

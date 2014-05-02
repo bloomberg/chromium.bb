@@ -17,7 +17,7 @@ namespace mkvparser {
 class MkvReader : public IMkvReader {
  public:
   MkvReader();
-  MkvReader(FILE* fp);
+  explicit MkvReader(FILE* fp);
   virtual ~MkvReader();
 
   int Open(const char*);
