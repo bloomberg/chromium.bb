@@ -42,7 +42,9 @@ bool GLSurface::InitializeOneOff() {
   // The default implementation is always the first one in list.
   GLImplementation impl = allowed_impls[0];
   bool fallback_to_osmesa = false;
-  if (cmd->HasSwitch(switches::kUseGL)) {
+  if (cmd->HasSwitch(switches::kOverrideUseGLWithOSMesaForTests)) {
+    impl = kGLImplementationOSMesaGL;
+  } else if (cmd->HasSwitch(switches::kUseGL)) {
     std::string requested_implementation_name =
         cmd->GetSwitchValueASCII(switches::kUseGL);
     if (requested_implementation_name == "any") {

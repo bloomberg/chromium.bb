@@ -217,15 +217,8 @@ void BrowserTestBase::SetUp() {
     use_osmesa = false;
 #endif
 
-  if (command_line->HasSwitch(switches::kUseGL)) {
-    NOTREACHED() <<
-        "kUseGL should not be used with tests. Try kUseGpuInTests instead.";
-  }
-
-  if (use_osmesa && !use_software_compositing_) {
-    command_line->AppendSwitchASCII(
-        switches::kUseGL, gfx::kGLImplementationOSMesaName);
-  }
+  if (use_osmesa && !use_software_compositing_)
+    command_line->AppendSwitch(switches::kOverrideUseGLWithOSMesaForTests);
 
   scoped_refptr<net::HostResolverProc> local_resolver =
       new LocalHostResolverProc();

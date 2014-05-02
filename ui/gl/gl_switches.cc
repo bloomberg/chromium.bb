@@ -60,12 +60,16 @@ const char kGpuSwitchingOptionNameForceDiscrete[]   = "force_discrete";
 // library first, but fall back to regular library if loading fails.
 const char kTestGLLib[]                     = "test-gl-lib";
 
+// Use hardware gpu, if available, for tests.
+const char kUseGpuInTests[] = "use-gpu-in-tests";
+
 // Disables GL drawing operations which produce pixel output. With this
 // the GL output will not be correct but tests will run faster.
 const char kDisableGLDrawingForTests[] = "disable-gl-drawing-for-tests";
 
-// Use hardware gpu, if available, for tests.
-const char kUseGpuInTests[] = "use-gpu-in-tests";
+// Forces the use of OSMesa instead of hardware gpu.
+const char kOverrideUseGLWithOSMesaForTests[] =
+    "override-use-gl-with-osmesa-for-tests";
 
 // This is the list of switches passed from this file that are passed from the
 // GpuProcessHost to the GPU Process. Add your switch to this list if you need
@@ -76,6 +80,8 @@ const char* kGLSwitchesCopiedFromGpuProcessHost[] = {
   kEnableGPUServiceLogging,
   kEnableGPUServiceTracing,
   kGpuNoContextLost,
+  kDisableGLDrawingForTests,
+  kOverrideUseGLWithOSMesaForTests,
 };
 const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches =
     arraysize(kGLSwitchesCopiedFromGpuProcessHost);
