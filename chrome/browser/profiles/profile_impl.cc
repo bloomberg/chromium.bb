@@ -4,6 +4,8 @@
 
 #include "chrome/browser/profiles/profile_impl.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -93,6 +95,7 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/page_zoom.h"
 #include "extensions/browser/extension_pref_store.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
@@ -657,6 +660,7 @@ void ProfileImpl::InitHostZoomMap() {
       prefs_->GetDictionary(prefs::kPerHostZoomLevels);
   // Careful: The returned value could be NULL if the pref has never been set.
   if (host_zoom_dictionary != NULL) {
+    std::vector<std::string> keys_to_remove;
     for (base::DictionaryValue::Iterator i(*host_zoom_dictionary); !i.IsAtEnd();
          i.Advance()) {
       const std::string& host(i.key());
@@ -664,7 +668,29 @@ void ProfileImpl::InitHostZoomMap() {
 
       bool success = i.value().GetAsDouble(&zoom_level);
       DCHECK(success);
+
+      // Filter out A) the empty host, B) zoom levels equal to the default; and
+      // remember them, so that we can later erase them from Prefs.
+      // Values of type A and B could have been stored due to crbug.com/364399.
+      // Values of type B could further have been stored before the default zoom
+      // level was set to its current value. In either case, SetZoomLevelForHost
+      // will ignore type B values, thus, to have consistency with HostZoomMap's
+      // internal state, these values must also be removed from Prefs.
+      if (host.empty() ||
+          content::ZoomValuesEqual(zoom_level,
+                                   host_zoom_map->GetDefaultZoomLevel())) {
+        keys_to_remove.push_back(host);
+        continue;
+      }
+
       host_zoom_map->SetZoomLevelForHost(host, zoom_level);
+    }
+
+    DictionaryPrefUpdate update(prefs_.get(), prefs::kPerHostZoomLevels);
+    base::DictionaryValue* host_zoom_dictionary = update.Get();
+    for (std::vector<std::string>::const_iterator it = keys_to_remove.begin();
+         it != keys_to_remove.end(); ++it) {
+      host_zoom_dictionary->RemoveWithoutPathExpansion(*it, NULL);
     }
   }
 
@@ -1090,7 +1116,7 @@ void ProfileImpl::OnZoomLevelChanged(
   double level = change.zoom_level;
   DictionaryPrefUpdate update(prefs_.get(), prefs::kPerHostZoomLevels);
   base::DictionaryValue* host_zoom_dictionary = update.Get();
-  if (level == host_zoom_map->GetDefaultZoomLevel()) {
+  if (content::ZoomValuesEqual(level, host_zoom_map->GetDefaultZoomLevel())) {
     host_zoom_dictionary->RemoveWithoutPathExpansion(change.host, NULL);
   } else {
     host_zoom_dictionary->SetWithoutPathExpansion(

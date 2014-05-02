@@ -3896,15 +3896,19 @@ void RenderViewImpl::zoomLimitsChanged(double minimum_level,
 
 void RenderViewImpl::zoomLevelChanged() {
   bool remember = !webview()->mainFrame()->document().isPluginDocument();
-  float zoom_level = webview()->zoomLevel();
+  double zoom_level = webview()->zoomLevel();
 
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, ZoomLevelChanged());
 
-  // Tell the browser which url got zoomed so it can update the menu and the
-  // saved values if necessary
-  Send(new ViewHostMsg_DidZoomURL(
-      routing_id_, zoom_level, remember,
-      GURL(webview()->mainFrame()->document().url())));
+  // Do not send empty URLs to the browser when we are just setting the default
+  // zoom level (from RendererPreferences) before the first navigation.
+  if (!webview()->mainFrame()->document().url().isEmpty()) {
+    // Tell the browser which url got zoomed so it can update the menu and the
+    // saved values if necessary
+    Send(new ViewHostMsg_DidZoomURL(
+        routing_id_, zoom_level, remember,
+        GURL(webview()->mainFrame()->document().url())));
+  }
 }
 
 double RenderViewImpl::zoomLevelToZoomFactor(double zoom_level) const {

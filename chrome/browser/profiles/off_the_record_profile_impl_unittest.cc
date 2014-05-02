@@ -19,6 +19,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/host_zoom_map.h"
+#include "content/public/common/page_zoom.h"
 #include "net/dns/mock_host_resolver.h"
 
 using content::HostZoomMap;
@@ -57,7 +58,7 @@ class TestingProfileWithHostZoomMap : public TestingProfile {
     double level = change.zoom_level;
     DictionaryPrefUpdate update(prefs_.get(), prefs::kPerHostZoomLevels);
     base::DictionaryValue* host_zoom_dictionary = update.Get();
-    if (level == host_zoom_map->GetDefaultZoomLevel()) {
+    if (content::ZoomValuesEqual(level, host_zoom_map->GetDefaultZoomLevel())) {
       host_zoom_dictionary->RemoveWithoutPathExpansion(change.host, NULL);
     } else {
       host_zoom_dictionary->SetWithoutPathExpansion(
