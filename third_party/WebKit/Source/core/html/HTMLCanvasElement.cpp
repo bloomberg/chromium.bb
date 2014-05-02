@@ -28,7 +28,6 @@
 #include "config.h"
 #include "core/html/HTMLCanvasElement.h"
 
-#include <math.h>
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionMessages.h"
@@ -45,6 +44,9 @@
 #include "core/html/canvas/WebGLContextEvent.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/rendering/RenderHTMLCanvas.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderView.h"
+#include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/graphics/Canvas2DImageBufferSurface.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -53,6 +55,7 @@
 #include "platform/graphics/gpu/WebGLImageBufferSurface.h"
 #include "platform/transforms/AffineTransform.h"
 #include "public/platform/Platform.h"
+#include <math.h>
 
 namespace WebCore {
 
@@ -171,8 +174,7 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
         if (!m_context) {
             blink::Platform::current()->histogramEnumeration("Canvas.ContextType", Context2d, ContextTypeCount);
             m_context = CanvasRenderingContext2D::create(this, static_cast<Canvas2DContextAttributes*>(attrs), document().inQuirksMode());
-            if (m_context)
-                scheduleLayerUpdate();
+            setNeedsCompositingUpdate();
         }
         return m_context.get();
     }
@@ -198,10 +200,8 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
         if (!m_context) {
             blink::Platform::current()->histogramEnumeration("Canvas.ContextType", contextType, ContextTypeCount);
             m_context = WebGLRenderingContext::create(this, static_cast<WebGLContextAttributes*>(attrs));
-            if (m_context) {
-                scheduleLayerUpdate();
-                updateExternallyAllocatedMemory();
-            }
+            setNeedsCompositingUpdate();
+            updateExternallyAllocatedMemory();
         }
         return m_context.get();
     }
@@ -517,10 +517,21 @@ void HTMLCanvasElement::createImageBufferInternal()
     m_imageBuffer->context()->setStrokeThickness(1);
     m_contextStateSaver = adoptPtr(new GraphicsContextStateSaver(*m_imageBuffer->context()));
 
-    // Recalculate compositing requirements if acceleration state changed.
-    if (m_context)
-        scheduleLayerUpdate();
-    return;
+    setNeedsCompositingUpdate();
+}
+
+void HTMLCanvasElement::setNeedsCompositingUpdate()
+{
+    if (!document().isActive())
+        return;
+    if (!m_context)
+        return;
+    if (!m_rendererIsCanvas)
+        return;
+    ASSERT(renderBox());
+    ASSERT(renderBox()->layer());
+    renderBox()->layer()->setNeedsToUpdateAncestorDependentProperties();
+    document().renderView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCanvasContextChange);
 }
 
 void HTMLCanvasElement::notifySurfaceInvalid()
