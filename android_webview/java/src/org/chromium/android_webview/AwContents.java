@@ -499,7 +499,7 @@ public class AwContents {
         mLayoutSizer.setDIPScale(mDIPScale);
         mWebContentsDelegate = new AwWebContentsDelegateAdapter(contentsClient, mContainerView);
         mContentsClientBridge = new AwContentsClientBridge(contentsClient,
-                mBrowserContext.getKeyStore(), mBrowserContext.getClientCertLookupTable());
+                mBrowserContext.getKeyStore(), AwContentsStatics.getClientCertLookupTable());
         mZoomControls = new AwZoomControls(this);
         mIoThreadClient = new IoThreadClientImpl();
         mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl();
@@ -1374,14 +1374,8 @@ public class AwContents {
         mContentViewCore.clearSslPreferences();
     }
 
-    /**
-     * @see android.webkit.WebView#clearClientCertPreferences()
-     */
-    public void clearClientCertPreferences() {
-        mBrowserContext.getClientCertLookupTable().clear();
-        if (mNativeAwContents == 0) return;
-        nativeClearClientCertPreferences(mNativeAwContents);
-    }
+    // TODO(sgurun) remove after this rolls in. To keep internal tree happy.
+    public void clearClientCertPreferences() { }
 
     /**
      * Method to return all hit test values relevant to public WebView API.
@@ -2088,6 +2082,7 @@ public class AwContents {
     private static native long nativeGetAwDrawGLFunction();
     private static native int nativeGetNativeInstanceCount();
     private static native void nativeSetShouldDownloadFavicons();
+
     private native void nativeSetJavaPeers(long nativeAwContents, AwContents awContents,
             AwWebContentsDelegate webViewWebContentsDelegate,
             AwContentsClientBridge contentsClientBridge,
@@ -2150,6 +2145,4 @@ public class AwContents {
     private native void nativeTrimMemory(long nativeAwContents, int level, boolean visible);
 
     private native void nativeCreatePdfExporter(long nativeAwContents, AwPdfExporter awPdfExporter);
-
-    private native void nativeClearClientCertPreferences(long nativeAwContents);
 }

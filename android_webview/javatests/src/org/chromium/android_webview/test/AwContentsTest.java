@@ -94,6 +94,8 @@ public class AwContentsTest extends AwTestBase {
         }
     }
 
+    @LargeTest
+    @Feature({"AndroidWebView"})
     public void testCreateAndGcManyTimes() throws Throwable {
         final int CONCURRENT_INSTANCES = 4;
         final int REPETITIONS = 16;

@@ -28,7 +28,6 @@ public class AwBrowserContext {
     private AwFormDatabase mFormDatabase;
     private HttpAuthDatabase mHttpAuthDatabase;
     private DefaultAndroidKeyStore mLocalKeyStore;
-    private ClientCertLookupTable mClientCertLookupTable;
 
     public AwBrowserContext(SharedPreferences sharedPreferences) {
         mSharedPreferences = sharedPreferences;
@@ -67,13 +66,6 @@ public class AwBrowserContext {
             mLocalKeyStore = new DefaultAndroidKeyStore();
         }
         return mLocalKeyStore;
-    }
-
-    public ClientCertLookupTable getClientCertLookupTable() {
-        if (mClientCertLookupTable == null) {
-            mClientCertLookupTable = new ClientCertLookupTable();
-        }
-        return mClientCertLookupTable;
     }
 
     /**

@@ -56,7 +56,6 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/ssl_status.h"
 #include "jni/AwContents_jni.h"
-#include "net/cert/cert_database.h"
 #include "net/cert/x509_certificate.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/base/l10n/l10n_util_android.h"
@@ -125,11 +124,6 @@ void OnIoThreadClientReady(content::RenderFrameHost* rfh) {
   int render_frame_id = rfh->GetRoutingID();
   AwResourceDispatcherHostDelegate::OnIoThreadClientReady(
       render_process_id, render_frame_id);
-}
-
-void NotifyClientCertificatesChanged() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  net::CertDatabase::GetInstance()->OnAndroidKeyStoreChanged();
 }
 
 }  // namespace
@@ -1038,13 +1032,6 @@ void AwContents::SetExtraHeadersForUrl(JNIEnv* env, jobject obj,
       GetResourceContext());
   resource_context->SetExtraHeaders(GURL(ConvertJavaStringToUTF8(env, url)),
                                     extra_headers);
-}
-
-void AwContents::ClearClientCertPreferences(JNIEnv* env, jobject obj) {
-  content::BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&NotifyClientCertificatesChanged));
 }
 
 void AwContents::SetJsOnlineProperty(JNIEnv* env,
