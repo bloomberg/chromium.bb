@@ -389,7 +389,7 @@ void DevToolsUIBindings::ActivateWindow() {
 }
 
 void DevToolsUIBindings::CloseWindow() {
-  delegate_->ActivateWindow();
+  delegate_->CloseWindow();
 }
 
 void DevToolsUIBindings::SetContentsInsets(
