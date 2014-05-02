@@ -397,6 +397,11 @@ void FrameView::setFrameRect(const IntRect& newRect)
     }
 
     viewportConstrainedVisibleContentSizeChanged(newRect.width() != oldRect.width(), newRect.height() != oldRect.height());
+
+    if (oldRect.size() != newRect.size()
+        && m_frame->isMainFrame()
+        && m_frame->settings()->pinchVirtualViewportEnabled())
+        page()->frameHost().pinchViewport().mainFrameDidChangeSize();
 }
 
 bool FrameView::scheduleAnimation()

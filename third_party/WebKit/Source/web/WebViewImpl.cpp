@@ -1621,12 +1621,15 @@ void WebViewImpl::resize(const WebSize& newSize)
         WebDevToolsAgentPrivate* agentPrivate = devToolsAgentPrivate();
         if (agentPrivate)
             agentPrivate->webViewResized(newSize);
-        WebLocalFrameImpl* webFrame = mainFrameImpl();
-        if (webFrame->frameView()) {
-            webFrame->frameView()->resize(m_size);
-            if (pinchVirtualViewportEnabled())
-                page()->frameHost().pinchViewport().mainFrameDidChangeSize();
-        }
+
+        // If the virtual viewport pinch mode is enabled, the main frame will be resized
+        // after layout so it can be sized to the contentsSize.
+        if (!pinchVirtualViewportEnabled() && mainFrameImpl()->frameView())
+            mainFrameImpl()->frameView()->resize(m_size);
+
+        if (pinchVirtualViewportEnabled())
+            page()->frameHost().pinchViewport().setSize(m_size);
+
     }
 
     if (settings()->viewportEnabled() && !m_fixedLayoutSizeLock) {
@@ -2892,11 +2895,15 @@ void WebViewImpl::refreshPageScaleFactorAfterLayout()
         m_pageScaleConstraintsSet.adjustFinalConstraintsToContentsSize(m_size, contentsSize(), verticalScrollbarWidth);
     }
 
+    if (pinchVirtualViewportEnabled())
+        mainFrameImpl()->frameView()->resize(m_pageScaleConstraintsSet.mainFrameSize(m_size, contentsSize()));
+
     float newPageScaleFactor = pageScaleFactor();
     if (m_pageScaleConstraintsSet.needsReset() && m_pageScaleConstraintsSet.finalConstraints().initialScale != -1) {
         newPageScaleFactor = m_pageScaleConstraintsSet.finalConstraints().initialScale;
         m_pageScaleConstraintsSet.setNeedsReset(false);
     }
+
     setPageScaleFactor(newPageScaleFactor);
 
     updateLayerTreeViewport();
