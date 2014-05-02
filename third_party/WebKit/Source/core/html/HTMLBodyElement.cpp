@@ -198,16 +198,13 @@ bool HTMLBodyElement::supportsFocus() const
     return rendererIsEditable() || HTMLElement::supportsFocus();
 }
 
-static int adjustForZoom(int value, Document* document)
+static double adjustForZoom(int value, Document* document)
 {
     LocalFrame* frame = document->frame();
     float zoomFactor = frame->pageZoomFactor();
     if (zoomFactor == 1)
-        return value;
-    // Needed because of truncation (rather than rounding) when scaling up.
-    if (zoomFactor > 1)
-        value++;
-    return static_cast<int>(value / zoomFactor);
+        return static_cast<double>(value);
+    return static_cast<double>(value) / zoomFactor;
 }
 
 // Blink, Gecko and Presto's quirks mode implementations of overflow set to the
@@ -221,7 +218,7 @@ static int adjustForZoom(int value, Document* document)
 // That said, Blink's {set}scroll{Top,Left} behaviors match Gecko's: even if there is a non-overflown
 // scrollable area, scrolling should not get propagated to the viewport in neither strict
 // or quirks modes.
-int HTMLBodyElement::scrollLeft()
+double HTMLBodyElement::scrollLeft()
 {
     Document& document = this->document();
     document.updateLayoutIgnorePendingStylesheets();
@@ -240,7 +237,7 @@ int HTMLBodyElement::scrollLeft()
     return view ? adjustForZoom(view->scrollX(), &document) : 0;
 }
 
-void HTMLBodyElement::setScrollLeft(int scrollLeft)
+void HTMLBodyElement::setScrollLeft(double scrollLeft)
 {
     Document& document = this->document();
     document.updateLayoutIgnorePendingStylesheets();
@@ -267,7 +264,7 @@ void HTMLBodyElement::setScrollLeft(int scrollLeft)
     view->setScrollPosition(IntPoint(static_cast<int>(scrollLeft * frame->pageZoomFactor()), view->scrollY()));
 }
 
-int HTMLBodyElement::scrollTop()
+double HTMLBodyElement::scrollTop()
 {
     Document& document = this->document();
     document.updateLayoutIgnorePendingStylesheets();
@@ -286,7 +283,7 @@ int HTMLBodyElement::scrollTop()
     return view ? adjustForZoom(view->scrollY(), &document) : 0;
 }
 
-void HTMLBodyElement::setScrollTop(int scrollTop)
+void HTMLBodyElement::setScrollTop(double scrollTop)
 {
     Document& document = this->document();
     document.updateLayoutIgnorePendingStylesheets();
@@ -313,7 +310,7 @@ void HTMLBodyElement::setScrollTop(int scrollTop)
     view->setScrollPosition(IntPoint(view->scrollX(), static_cast<int>(scrollTop * frame->pageZoomFactor())));
 }
 
-int HTMLBodyElement::scrollHeight()
+double HTMLBodyElement::scrollHeight()
 {
     // Update the document's layout.
     Document& document = this->document();
@@ -322,7 +319,7 @@ int HTMLBodyElement::scrollHeight()
     return view ? adjustForZoom(view->contentsHeight(), &document) : 0;
 }
 
-int HTMLBodyElement::scrollWidth()
+double HTMLBodyElement::scrollWidth()
 {
     // Update the document's layout.
     Document& document = this->document();
