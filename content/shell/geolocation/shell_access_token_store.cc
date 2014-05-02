@@ -45,7 +45,8 @@ void ShellAccessTokenStore::RespondOnOriginatingThread(
   // we provide a dummy access_token set to avoid hitting the server.
   AccessTokenSet access_token_set;
   access_token_set[GURL()] = base::ASCIIToUTF16("chromium_content_shell");
-  callback.Run(access_token_set, system_request_context_);
+  callback.Run(access_token_set, system_request_context_.get());
+  system_request_context_ = NULL;
 }
 
 void ShellAccessTokenStore::SaveAccessToken(
