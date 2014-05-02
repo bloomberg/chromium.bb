@@ -9,8 +9,6 @@
 #include "base/strings/stringprintf.h"
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/scrollbar_animation_controller.h"
-#include "cc/animation/scrollbar_animation_controller_linear_fade.h"
-#include "cc/animation/scrollbar_animation_controller_thinning.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/debug/layer_tree_debug_state.h"
@@ -1320,14 +1318,8 @@ void LayerImpl::SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
         ((layer_tree_impl()->total_page_scale_factor() >
           layer_tree_impl()->min_page_scale_factor()) ||
          !layer_tree_impl()->settings().use_pinch_zoom_scrollbars);
-    // Note that DidScrollUpdate() has the side-effect of setting the
-    // scrollbar's opacity to 1.0 even if the function returns false, so
-    // evaluate it last in the boolean expression.
-    bool should_animate = is_animatable_scrollbar &&
-                          scrollbar_animation_controller_->DidScrollUpdate(
-                              layer_tree_impl_->CurrentFrameTimeTicks());
-    if (should_animate)
-      layer_tree_impl_->StartScrollbarAnimation();
+    if (is_animatable_scrollbar)
+      scrollbar_animation_controller_->DidScrollUpdate();
   }
 }
 
@@ -1346,29 +1338,8 @@ void LayerImpl::DidBecomeActive() {
   if (scrollbar_animation_controller_)
     return;
 
-  switch (layer_tree_impl_->settings().scrollbar_animator) {
-  case LayerTreeSettings::LinearFade: {
-    base::TimeDelta fadeout_delay = base::TimeDelta::FromMilliseconds(
-        layer_tree_impl_->settings().scrollbar_linear_fade_delay_ms);
-    base::TimeDelta fadeout_length = base::TimeDelta::FromMilliseconds(
-        layer_tree_impl_->settings().scrollbar_linear_fade_length_ms);
-
-    scrollbar_animation_controller_ =
-        ScrollbarAnimationControllerLinearFade::Create(
-            this, fadeout_delay, fadeout_length)
-            .PassAs<ScrollbarAnimationController>();
-    break;
-  }
-  case LayerTreeSettings::Thinning: {
-    scrollbar_animation_controller_ =
-        ScrollbarAnimationControllerThinning::Create(this)
-            .PassAs<ScrollbarAnimationController>();
-    break;
-  }
-  case LayerTreeSettings::NoAnimator:
-    NOTREACHED();
-    break;
-  }
+  scrollbar_animation_controller_ =
+      layer_tree_impl_->CreateScrollbarAnimationController(this);
 }
 
 void LayerImpl::ClearScrollbars() {

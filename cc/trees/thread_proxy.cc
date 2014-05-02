@@ -1630,16 +1630,10 @@ void ThreadProxy::RenewTreePriorityOnImplThread() {
   RenewTreePriority();
 }
 
-void ThreadProxy::RequestScrollbarAnimationOnImplThread(base::TimeDelta delay) {
-  Proxy::ImplThreadTaskRunner()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ThreadProxy::StartScrollbarAnimationOnImplThread,
-                 impl_thread_weak_ptr_),
-      delay);
-}
-
-void ThreadProxy::StartScrollbarAnimationOnImplThread() {
-  impl().layer_tree_host_impl->StartScrollbarAnimation();
+void ThreadProxy::PostDelayedScrollbarFadeOnImplThread(
+    const base::Closure& start_fade,
+    base::TimeDelta delay) {
+  Proxy::ImplThreadTaskRunner()->PostDelayedTask(FROM_HERE, start_fade, delay);
 }
 
 void ThreadProxy::DidActivatePendingTree() {

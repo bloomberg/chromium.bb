@@ -31,7 +31,9 @@ ScrollbarLayerImplBase::ScrollbarLayerImplBase(
 ScrollbarLayerImplBase::~ScrollbarLayerImplBase() {}
 
 void ScrollbarLayerImplBase::PushPropertiesTo(LayerImpl* layer) {
+  float active_opacity = layer->opacity();
   LayerImpl::PushPropertiesTo(layer);
+  layer->SetOpacity(active_opacity);
   DCHECK(layer->ToScrollbarLayer());
   layer->ToScrollbarLayer()->set_is_overlay_scrollbar(is_overlay_scrollbar_);
   PushScrollClipPropertiesTo(layer);

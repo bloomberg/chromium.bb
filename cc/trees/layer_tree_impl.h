@@ -83,7 +83,8 @@ class CC_EXPORT LayerTreeImpl {
   base::TimeTicks CurrentFrameTimeTicks() const;
   void SetNeedsCommit();
   gfx::Size DrawViewportSize() const;
-  void StartScrollbarAnimation();
+  scoped_ptr<ScrollbarAnimationController> CreateScrollbarAnimationController(
+      LayerImpl* scrolling_layer);
   void DidAnimateScrollOffset();
 
   // Tree specific methods exposed to layer-impl tree.

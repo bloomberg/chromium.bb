@@ -41,8 +41,8 @@ class CC_EXPORT LayerTreeSettings {
     Thinning,
   };
   ScrollbarAnimator scrollbar_animator;
-  int scrollbar_linear_fade_delay_ms;
-  int scrollbar_linear_fade_length_ms;
+  int scrollbar_fade_delay_ms;
+  int scrollbar_fade_duration_ms;
   SkColor solid_color_scrollbar_color;
   bool calculate_top_controls_position;
   bool timeout_and_draw_when_animation_checkerboards;

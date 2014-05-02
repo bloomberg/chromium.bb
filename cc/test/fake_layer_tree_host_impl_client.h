@@ -39,8 +39,9 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   virtual void SendManagedMemoryStats() OVERRIDE {}
   virtual bool IsInsideDraw() OVERRIDE;
   virtual void RenewTreePriority() OVERRIDE {}
-  virtual void RequestScrollbarAnimationOnImplThread(base::TimeDelta)
-      OVERRIDE {}
+  virtual void PostDelayedScrollbarFadeOnImplThread(
+      const base::Closure& start_fade,
+      base::TimeDelta delay) OVERRIDE {}
   virtual void DidActivatePendingTree() OVERRIDE {}
   virtual void DidManageTiles() OVERRIDE {}
 };

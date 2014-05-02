@@ -7,6 +7,8 @@
 #include "base/debug/trace_event.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/scrollbar_animation_controller.h"
+#include "cc/animation/scrollbar_animation_controller_linear_fade.h"
+#include "cc/animation/scrollbar_animation_controller_thinning.h"
 #include "cc/base/math_util.h"
 #include "cc/base/util.h"
 #include "cc/debug/traced_value.h"
@@ -256,10 +258,10 @@ void LayerTreeImpl::SetCurrentlyScrollingLayer(LayerImpl* layer) {
   if (currently_scrolling_layer_ &&
       currently_scrolling_layer_->scrollbar_animation_controller())
     currently_scrolling_layer_->scrollbar_animation_controller()
-        ->DidScrollGestureEnd(CurrentFrameTimeTicks());
+        ->DidScrollEnd();
   currently_scrolling_layer_ = layer;
   if (layer && layer->scrollbar_animation_controller())
-    layer->scrollbar_animation_controller()->DidScrollGestureBegin();
+    layer->scrollbar_animation_controller()->DidScrollBegin();
 }
 
 void LayerTreeImpl::ClearCurrentlyScrollingLayer() {
@@ -694,8 +696,30 @@ gfx::Size LayerTreeImpl::DrawViewportSize() const {
   return layer_tree_host_impl_->DrawViewportSize();
 }
 
-void LayerTreeImpl::StartScrollbarAnimation() {
-  layer_tree_host_impl_->StartScrollbarAnimation();
+scoped_ptr<ScrollbarAnimationController>
+LayerTreeImpl::CreateScrollbarAnimationController(LayerImpl* scrolling_layer) {
+  DCHECK(settings().scrollbar_fade_delay_ms);
+  DCHECK(settings().scrollbar_fade_duration_ms);
+  base::TimeDelta delay =
+      base::TimeDelta::FromMilliseconds(settings().scrollbar_fade_delay_ms);
+  base::TimeDelta duration =
+      base::TimeDelta::FromMilliseconds(settings().scrollbar_fade_duration_ms);
+  switch (settings().scrollbar_animator) {
+    case LayerTreeSettings::LinearFade: {
+      return ScrollbarAnimationControllerLinearFade::Create(
+                 scrolling_layer, layer_tree_host_impl_, delay, duration)
+          .PassAs<ScrollbarAnimationController>();
+    }
+    case LayerTreeSettings::Thinning: {
+      return ScrollbarAnimationControllerThinning::Create(
+                 scrolling_layer, layer_tree_host_impl_, delay, duration)
+          .PassAs<ScrollbarAnimationController>();
+    }
+    case LayerTreeSettings::NoAnimator:
+      NOTREACHED();
+      break;
+  }
+  return scoped_ptr<ScrollbarAnimationController>();
 }
 
 void LayerTreeImpl::DidAnimateScrollOffset() {

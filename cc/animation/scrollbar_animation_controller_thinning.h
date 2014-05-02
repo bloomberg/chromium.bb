@@ -12,17 +12,16 @@
 namespace cc {
 class LayerImpl;
 
-// Scrollbar animation that partially fades and thins after an idle delay.
+// Scrollbar animation that partially fades and thins after an idle delay,
+// and reacts to mouse movements.
 class CC_EXPORT ScrollbarAnimationControllerThinning
     : public ScrollbarAnimationController {
  public:
   static scoped_ptr<ScrollbarAnimationControllerThinning> Create(
-      LayerImpl* scroll_layer);
-
-  static scoped_ptr<ScrollbarAnimationControllerThinning> CreateForTest(
       LayerImpl* scroll_layer,
-      base::TimeDelta animation_delay,
-      base::TimeDelta animation_duration);
+      ScrollbarAnimationControllerClient* client,
+      base::TimeDelta delay_before_starting,
+      base::TimeDelta duration);
 
   virtual ~ScrollbarAnimationControllerThinning();
 
@@ -32,21 +31,18 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
   bool mouse_is_over_scrollbar() const { return mouse_is_over_scrollbar_; }
   bool mouse_is_near_scrollbar() const { return mouse_is_near_scrollbar_; }
 
-  // ScrollbarAnimationController overrides.
-  virtual bool IsAnimating() const OVERRIDE;
-  virtual base::TimeDelta DelayBeforeStart(base::TimeTicks now) const OVERRIDE;
-
-  virtual bool Animate(base::TimeTicks now) OVERRIDE;
-  virtual void DidScrollGestureBegin() OVERRIDE;
-  virtual void DidScrollGestureEnd(base::TimeTicks now) OVERRIDE;
-  virtual void DidMouseMoveOffScrollbar(base::TimeTicks now) OVERRIDE;
-  virtual bool DidScrollUpdate(base::TimeTicks now) OVERRIDE;
-  virtual bool DidMouseMoveNear(base::TimeTicks now, float distance) OVERRIDE;
+  virtual void DidScrollUpdate() OVERRIDE;
+  virtual void DidMouseMoveOffScrollbar() OVERRIDE;
+  virtual void DidMouseMoveNear(float distance) OVERRIDE;
 
  protected:
-  ScrollbarAnimationControllerThinning(LayerImpl* scroll_layer,
-                                       base::TimeDelta animation_delay,
-                                       base::TimeDelta animation_duration);
+  ScrollbarAnimationControllerThinning(
+      LayerImpl* scroll_layer,
+      ScrollbarAnimationControllerClient* client,
+      base::TimeDelta delay_before_starting,
+      base::TimeDelta duration);
+
+  virtual void RunAnimationFrame(float progress) OVERRIDE;
 
  private:
   // Describes whether the current animation should INCREASE (darken / thicken)
@@ -56,9 +52,6 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
     INCREASE,
     DECREASE
   };
-  // Returns how far through the animation we are as a progress value from
-  // 0 to 1.
-  float AnimationProgressAtTime(base::TimeTicks now);
   float OpacityAtAnimationProgress(float progress);
   float ThumbThicknessScaleAtAnimationProgress(float progress);
   float AdjustScale(float new_value,
@@ -69,19 +62,12 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
 
   LayerImpl* scroll_layer_;
 
-  base::TimeTicks last_awaken_time_;
   bool mouse_is_over_scrollbar_;
   bool mouse_is_near_scrollbar_;
   // Are we narrowing or thickening the bars.
   AnimationChange thickness_change_;
   // Are we darkening or lightening the bars.
   AnimationChange opacity_change_;
-  // Should the animation be delayed or start immediately.
-  bool should_delay_animation_;
-  // If |should_delay_animation_| is true, delay the animation by this amount.
-  base::TimeDelta animation_delay_;
-  // The time for the animation to run.
-  base::TimeDelta animation_duration_;
   // How close should the mouse be to the scrollbar before we thicken it.
   float mouse_move_distance_to_trigger_animation_;
 

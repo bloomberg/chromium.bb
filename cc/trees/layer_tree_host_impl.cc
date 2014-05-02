@@ -2525,7 +2525,6 @@ void LayerTreeHostImpl::ScrollEnd() {
   if (top_controls_manager_)
     top_controls_manager_->ScrollEnd();
   ClearCurrentlyScrollingLayer();
-  StartScrollbarAnimation();
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
@@ -2589,10 +2588,8 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
     ScrollbarAnimationController* animation_controller =
         scroll_layer_impl ? scroll_layer_impl->scrollbar_animation_controller()
                           : NULL;
-    if (animation_controller) {
-      animation_controller->DidMouseMoveOffScrollbar(CurrentFrameTimeTicks());
-      StartScrollbarAnimation();
-    }
+    if (animation_controller)
+      animation_controller->DidMouseMoveOffScrollbar();
     scroll_layer_id_when_mouse_over_scrollbar_ = 0;
   }
 
@@ -2621,10 +2618,8 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
         std::min(distance_to_scrollbar,
                  DeviceSpaceDistanceToLayer(device_viewport_point, *it));
 
-  bool should_animate = animation_controller->DidMouseMoveNear(
-      CurrentFrameTimeTicks(), distance_to_scrollbar / device_scale_factor_);
-  if (should_animate)
-    StartScrollbarAnimation();
+  animation_controller->DidMouseMoveNear(distance_to_scrollbar /
+                                         device_scale_factor_);
 }
 
 bool LayerTreeHostImpl::HandleMouseOverScrollbar(LayerImpl* layer_impl,
@@ -2634,11 +2629,7 @@ bool LayerTreeHostImpl::HandleMouseOverScrollbar(LayerImpl* layer_impl,
     layer_impl = active_tree_->LayerById(scroll_layer_id);
     if (layer_impl && layer_impl->scrollbar_animation_controller()) {
       scroll_layer_id_when_mouse_over_scrollbar_ = scroll_layer_id;
-      bool should_animate =
-          layer_impl->scrollbar_animation_controller()->DidMouseMoveNear(
-              CurrentFrameTimeTicks(), 0);
-      if (should_animate)
-        StartScrollbarAnimation();
+      layer_impl->scrollbar_animation_controller()->DidMouseMoveNear(0);
     } else {
       scroll_layer_id_when_mouse_over_scrollbar_ = 0;
     }
@@ -2940,41 +2931,25 @@ void LayerTreeHostImpl::AnimateScrollbarsRecursive(LayerImpl* layer,
 
   ScrollbarAnimationController* scrollbar_controller =
       layer->scrollbar_animation_controller();
-  if (scrollbar_controller && scrollbar_controller->Animate(time)) {
-    TRACE_EVENT_INSTANT0(
-        "cc",
-        "LayerTreeHostImpl::SetNeedsAnimate due to AnimateScrollbars",
-        TRACE_EVENT_SCOPE_THREAD);
-    SetNeedsAnimate();
-  }
+  if (scrollbar_controller)
+    scrollbar_controller->Animate(time);
 
   for (size_t i = 0; i < layer->children().size(); ++i)
     AnimateScrollbarsRecursive(layer->children()[i], time);
 }
 
-void LayerTreeHostImpl::StartScrollbarAnimation() {
-  TRACE_EVENT0("cc", "LayerTreeHostImpl::StartScrollbarAnimation");
-  StartScrollbarAnimationRecursive(RootLayer(), CurrentFrameTimeTicks());
+void LayerTreeHostImpl::PostDelayedScrollbarFade(
+    const base::Closure& start_fade,
+    base::TimeDelta delay) {
+  client_->PostDelayedScrollbarFadeOnImplThread(start_fade, delay);
 }
 
-void LayerTreeHostImpl::StartScrollbarAnimationRecursive(LayerImpl* layer,
-                                                         base::TimeTicks time) {
-  if (!layer)
-    return;
-
-  ScrollbarAnimationController* scrollbar_controller =
-      layer->scrollbar_animation_controller();
-  if (scrollbar_controller && scrollbar_controller->IsAnimating()) {
-    base::TimeDelta delay = scrollbar_controller->DelayBeforeStart(time);
-    if (delay > base::TimeDelta()) {
-      client_->RequestScrollbarAnimationOnImplThread(delay);
-    } else if (scrollbar_controller->Animate(time)) {
-      SetNeedsAnimate();
-    }
-  }
-
-  for (size_t i = 0; i < layer->children().size(); ++i)
-    StartScrollbarAnimationRecursive(layer->children()[i], time);
+void LayerTreeHostImpl::SetNeedsScrollbarAnimationFrame() {
+  TRACE_EVENT_INSTANT0(
+      "cc",
+      "LayerTreeHostImpl::SetNeedsRedraw due to scrollbar fade",
+      TRACE_EVENT_SCOPE_THREAD);
+  SetNeedsAnimate();
 }
 
 void LayerTreeHostImpl::SetTreePriority(TreePriority priority) {

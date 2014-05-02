@@ -17,39 +17,28 @@ class CC_EXPORT ScrollbarAnimationControllerLinearFade
  public:
   static scoped_ptr<ScrollbarAnimationControllerLinearFade> Create(
       LayerImpl* scroll_layer,
-      base::TimeDelta fadeout_delay,
-      base::TimeDelta fadeout_length);
+      ScrollbarAnimationControllerClient* client,
+      base::TimeDelta delay_before_starting,
+      base::TimeDelta duration);
 
   virtual ~ScrollbarAnimationControllerLinearFade();
 
-  // ScrollbarAnimationController overrides.
-  virtual bool IsAnimating() const OVERRIDE;
-  virtual base::TimeDelta DelayBeforeStart(base::TimeTicks now) const OVERRIDE;
-
-  virtual bool Animate(base::TimeTicks now) OVERRIDE;
-  virtual void DidScrollGestureBegin() OVERRIDE;
-  virtual void DidScrollGestureEnd(base::TimeTicks now) OVERRIDE;
-  virtual void DidMouseMoveOffScrollbar(base::TimeTicks now) OVERRIDE;
-  virtual bool DidScrollUpdate(base::TimeTicks now) OVERRIDE;
-  virtual bool DidMouseMoveNear(base::TimeTicks now, float distance) OVERRIDE;
+  virtual void DidScrollUpdate() OVERRIDE;
 
  protected:
-  ScrollbarAnimationControllerLinearFade(LayerImpl* scroll_layer,
-                                         base::TimeDelta fadeout_delay,
-                                         base::TimeDelta fadeout_length);
+  ScrollbarAnimationControllerLinearFade(
+      LayerImpl* scroll_layer,
+      ScrollbarAnimationControllerClient* client,
+      base::TimeDelta delay_before_starting,
+      base::TimeDelta duration);
+
+  virtual void RunAnimationFrame(float progress) OVERRIDE;
 
  private:
-  float OpacityAtTime(base::TimeTicks now);
+  float OpacityAtTime(base::TimeTicks now) const;
   void ApplyOpacityToScrollbars(float opacity);
 
   LayerImpl* scroll_layer_;
-
-  base::TimeTicks last_awaken_time_;
-  bool scroll_gesture_in_progress_;
-  bool scroll_gesture_has_scrolled_;
-
-  base::TimeDelta fadeout_delay_;
-  base::TimeDelta fadeout_length_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollbarAnimationControllerLinearFade);
 };

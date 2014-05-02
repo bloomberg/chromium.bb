@@ -100,8 +100,9 @@ class ThreadProxy : public Proxy,
   virtual void SendManagedMemoryStats() OVERRIDE;
   virtual bool IsInsideDraw() OVERRIDE;
   virtual void RenewTreePriority() OVERRIDE;
-  virtual void RequestScrollbarAnimationOnImplThread(base::TimeDelta delay)
-      OVERRIDE;
+  virtual void PostDelayedScrollbarFadeOnImplThread(
+      const base::Closure& start_fade,
+      base::TimeDelta delay) OVERRIDE;
   virtual void DidActivatePendingTree() OVERRIDE;
   virtual void DidManageTiles() OVERRIDE;
 
@@ -193,7 +194,6 @@ class ThreadProxy : public Proxy,
                            base::DictionaryValue* state) const;
   void RenewTreePriorityOnImplThread();
   void SetSwapUsedIncompleteTileOnImplThread(bool used_incomplete_tile);
-  void StartScrollbarAnimationOnImplThread();
   void MainThreadHasStoppedFlingingOnImplThread();
   void SetInputThrottledUntilCommitOnImplThread(bool is_throttled);
   void SetDebugStateOnImplThread(const LayerTreeDebugState& debug_state);

@@ -11,103 +11,36 @@
 namespace cc {
 
 scoped_ptr<ScrollbarAnimationControllerLinearFade>
-ScrollbarAnimationControllerLinearFade::Create(LayerImpl* scroll_layer,
-                                               base::TimeDelta fadeout_delay,
-                                               base::TimeDelta fadeout_length) {
+ScrollbarAnimationControllerLinearFade::Create(
+    LayerImpl* scroll_layer,
+    ScrollbarAnimationControllerClient* client,
+    base::TimeDelta delay_before_starting,
+    base::TimeDelta duration) {
   return make_scoped_ptr(new ScrollbarAnimationControllerLinearFade(
-      scroll_layer, fadeout_delay, fadeout_length));
+      scroll_layer, client, delay_before_starting, duration));
 }
 
 ScrollbarAnimationControllerLinearFade::ScrollbarAnimationControllerLinearFade(
     LayerImpl* scroll_layer,
-    base::TimeDelta fadeout_delay,
-    base::TimeDelta fadeout_length)
-    : ScrollbarAnimationController(),
-      scroll_layer_(scroll_layer),
-      scroll_gesture_in_progress_(false),
-      scroll_gesture_has_scrolled_(false),
-      fadeout_delay_(fadeout_delay),
-      fadeout_length_(fadeout_length) {}
+    ScrollbarAnimationControllerClient* client,
+    base::TimeDelta delay_before_starting,
+    base::TimeDelta duration)
+    : ScrollbarAnimationController(client, delay_before_starting, duration),
+      scroll_layer_(scroll_layer) {
+}
 
 ScrollbarAnimationControllerLinearFade::
     ~ScrollbarAnimationControllerLinearFade() {}
 
-bool ScrollbarAnimationControllerLinearFade::IsAnimating() const {
-  return !last_awaken_time_.is_null();
+void ScrollbarAnimationControllerLinearFade::RunAnimationFrame(float progress) {
+  ApplyOpacityToScrollbars(1.f - progress);
+  if (progress == 1.f)
+    StopAnimation();
 }
 
-base::TimeDelta ScrollbarAnimationControllerLinearFade::DelayBeforeStart(
-    base::TimeTicks now) const {
-  if (now > last_awaken_time_ + fadeout_delay_)
-    return base::TimeDelta();
-  return fadeout_delay_ - (now - last_awaken_time_);
-}
-
-bool ScrollbarAnimationControllerLinearFade::Animate(base::TimeTicks now) {
-  float opacity = OpacityAtTime(now);
-  ApplyOpacityToScrollbars(opacity);
-  if (!opacity)
-    last_awaken_time_ = base::TimeTicks();
-  return IsAnimating() && DelayBeforeStart(now) == base::TimeDelta();
-}
-
-void ScrollbarAnimationControllerLinearFade::DidScrollGestureBegin() {
-  scroll_gesture_in_progress_ = true;
-  scroll_gesture_has_scrolled_ = false;
-}
-
-void ScrollbarAnimationControllerLinearFade::DidScrollGestureEnd(
-    base::TimeTicks now) {
-  // The animation should not be triggered if no scrolling has occurred.
-  if (scroll_gesture_has_scrolled_)
-    last_awaken_time_ = now;
-  scroll_gesture_has_scrolled_ = false;
-  scroll_gesture_in_progress_ = false;
-}
-
-void ScrollbarAnimationControllerLinearFade::DidMouseMoveOffScrollbar(
-    base::TimeTicks now) {
-  // Ignore mouse move events.
-}
-
-bool ScrollbarAnimationControllerLinearFade::DidScrollUpdate(
-    base::TimeTicks now) {
-  ApplyOpacityToScrollbars(1.0f);
-  // The animation should only be activated if the scroll updated occurred
-  // programatically, outside the scope of a scroll gesture.
-  if (scroll_gesture_in_progress_) {
-    last_awaken_time_ = base::TimeTicks();
-    scroll_gesture_has_scrolled_ = true;
-    return false;
-  }
-
-  last_awaken_time_ = now;
-  return true;
-}
-
-bool ScrollbarAnimationControllerLinearFade::DidMouseMoveNear(
-    base::TimeTicks now, float distance) {
-  // Ignore mouse move events.
-  return false;
-}
-
-float ScrollbarAnimationControllerLinearFade::OpacityAtTime(
-    base::TimeTicks now) {
-  if (scroll_gesture_has_scrolled_)
-    return 1.0f;
-
-  if (last_awaken_time_.is_null())
-    return 0.0f;
-
-  base::TimeDelta delta = now - last_awaken_time_;
-
-  if (delta <= fadeout_delay_)
-    return 1.0f;
-  if (delta < fadeout_delay_ + fadeout_length_) {
-    return (fadeout_delay_ + fadeout_length_ - delta).InSecondsF() /
-           fadeout_length_.InSecondsF();
-  }
-  return 0.0f;
+void ScrollbarAnimationControllerLinearFade::DidScrollUpdate() {
+  ScrollbarAnimationController::DidScrollUpdate();
+  ApplyOpacityToScrollbars(1.f);
 }
 
 void ScrollbarAnimationControllerLinearFade::ApplyOpacityToScrollbars(

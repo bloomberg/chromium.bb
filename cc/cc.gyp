@@ -52,6 +52,7 @@
         'animation/scroll_offset_animation_curve.cc',
         'animation/scroll_offset_animation_curve.h',
         'animation/scrollbar_animation_controller.h',
+        'animation/scrollbar_animation_controller.cc',
         'animation/scrollbar_animation_controller_linear_fade.cc',
         'animation/scrollbar_animation_controller_linear_fade.h',
         'animation/scrollbar_animation_controller_thinning.cc',

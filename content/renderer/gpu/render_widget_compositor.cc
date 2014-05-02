@@ -253,11 +253,16 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
 
 #if defined(OS_ANDROID)
   settings.max_partial_texture_updates = 0;
-  settings.scrollbar_animator = cc::LayerTreeSettings::LinearFade;
-  settings.solid_color_scrollbar_color =
-      (widget->UsingSynchronousRendererCompositor())  // It is Android Webview.
-          ? SK_ColorTRANSPARENT
-          : SkColorSetARGB(128, 128, 128, 128);
+  if (widget->UsingSynchronousRendererCompositor()) {
+    // Android WebView uses system scrollbars, so make ours invisible.
+    settings.scrollbar_animator = cc::LayerTreeSettings::NoAnimator;
+    settings.solid_color_scrollbar_color = SK_ColorTRANSPARENT;
+  } else {
+    settings.scrollbar_animator = cc::LayerTreeSettings::LinearFade;
+    settings.scrollbar_fade_delay_ms = 300;
+    settings.scrollbar_fade_duration_ms = 300;
+    settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
+  }
   settings.highp_threshold_min = 2048;
   // Android WebView handles root layer flings itself.
   settings.ignore_root_layer_flings =
@@ -295,6 +300,8 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
     settings.scrollbar_animator = cc::LayerTreeSettings::LinearFade;
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
   }
+  settings.scrollbar_fade_delay_ms = 500;
+  settings.scrollbar_fade_duration_ms = 300;
 #endif
 
   compositor->Initialize(settings);
