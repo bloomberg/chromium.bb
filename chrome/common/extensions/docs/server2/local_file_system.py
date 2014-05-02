@@ -69,6 +69,8 @@ class LocalFileSystem(FileSystem):
   filesystem.
   '''
   def __init__(self, base_path):
+    # Enforce POSIX path, so path validity checks pass for Windows.
+    base_path = base_path.replace(os.sep, '/')
     AssertIsDirectory(base_path)
     self._base_path = _ConvertToFilepath(base_path)
 
