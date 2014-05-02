@@ -42,9 +42,13 @@ INITIAL_ENV = {
   'BASE_SDK'        : '${BASE}/sdk',
   'BASE_LIB'        : '${BASE}/lib',
   'BASE_USR_ARCH'   : '${BASE_USR_%BCLIB_ARCH%}',
-  'BASE_USR_X8664'   : '${BASE}/usr-bc-x86-64',
+  'BASE_USR_X8632'  : '${BASE}/usr-bc-x86-32',
+  'BASE_USR_X8664'  : '${BASE}/usr-bc-x86-64',
+  'BASE_USR_ARM'    : '${BASE}/usr-bc-arm',
   'BASE_LIB_ARCH'   : '${BASE_LIB_%BCLIB_ARCH%}',
-  'BASE_LIB_X8664'   : '${BASE}/lib-bc-x86-64',
+  'BASE_LIB_X8632'  : '${BASE}/lib-bc-x86-32',
+  'BASE_LIB_X8664'  : '${BASE}/lib-bc-x86-64',
+  'BASE_LIB_ARM'    : '${BASE}/lib-bc-arm',
 
   'BASE_LLVM_BIN'   : '${BASE_LLVM}/bin',
   'TRANSLATOR_BIN'  :
