@@ -21,31 +21,49 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace {
+
+const char kTestExtensionId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+
+}  // namespace
+
 using base::FilePath;
 using testing::Contains;
 using testing::Eq;
 
 class AppInfoPermissionsTabTest : public testing::Test {
  protected:
-  AppInfoPermissionsTabTest() : window(NULL) {};
+  AppInfoPermissionsTabTest() : window_(NULL) {};
 
-  gfx::NativeWindow window;
-  TestingProfile profile;
+  scoped_ptr<base::DictionaryValue> ValidAppManifest() {
+    return extensions::DictionaryBuilder()
+        .Set("name", "Test App Name")
+        .Set("version", "2.0")
+        .Set("manifest_version", 2)
+        .Set("app",
+             extensions::DictionaryBuilder().Set(
+                 "background",
+                 extensions::DictionaryBuilder().Set(
+                     "scripts",
+                     extensions::ListBuilder().Append("background.js"))))
+        .Build();
+  }
+
+  gfx::NativeWindow window_;
+  TestingProfile profile_;
 
   // We need the UI thread in order to construct UI elements in the view.
-  content::TestBrowserThreadBundle thread_bundle;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 // Tests that an app with no permissions is treated correctly.
 TEST_F(AppInfoPermissionsTabTest, NoPermissionsObtainedCorrectly) {
   scoped_refptr<const extensions::Extension> app =
       extensions::ExtensionBuilder()
-          .SetManifest(
-               extensions::DictionaryBuilder().Set("name", "Test App Name").Set(
-                   "version", "2.0"))
-          .SetID("cedabbhfglmiikkmdgcpjdkocfcmbkee")
+          .SetManifest(ValidAppManifest())
+          .SetID(kTestExtensionId)
           .Build();
-  AppInfoPermissionsTab tab(window, &profile, app, base::Closure());
+  AppInfoPermissionsTab tab(window_, &profile_, app, base::Closure());
 
   EXPECT_TRUE(tab.GetRequiredPermissions()->IsEmpty());
   EXPECT_TRUE(tab.GetRequiredPermissionMessages().empty());
@@ -62,40 +80,36 @@ TEST_F(AppInfoPermissionsTabTest, NoPermissionsObtainedCorrectly) {
 TEST_F(AppInfoPermissionsTabTest, RequiredPermissionsObtainedCorrectly) {
   scoped_refptr<const extensions::Extension> app =
       extensions::ExtensionBuilder()
-          .SetManifest(
-               extensions::DictionaryBuilder()
-                   .Set("name", "Test App Name")
-                   .Set("version", "2.0")
-                   .Set("permissions",
-                        extensions::ListBuilder()
-                            .Append("location")  // A valid permission with a
-                                                 // message
-                            .Append("bad_perm")  // An invalid permission
-                            .Append("browsingData")  // An valid permission with
-                                                     // no message
-                            .Append("tabs")))  // Another valid permission with
-                                               // a message
-          .SetID("cedabbhfglmiikkmdgcpjdkocfcmbkee")
+          .SetManifest(ValidAppManifest())
+          .MergeManifest(extensions::DictionaryBuilder().Set(
+              "permissions",
+              extensions::ListBuilder()
+                  .Append("location")       // A valid permission with a
+                                            // message
+                  .Append("bad_perm")       // An invalid permission
+                  .Append("notifications")  // An valid permission with
+                                            // no message
+                  .Append("serial")))       // Another valid permission with
+                                            // a message
+          .SetID(kTestExtensionId)
           .Build();
-  AppInfoPermissionsTab tab(window, &profile, app, base::Closure());
+  AppInfoPermissionsTab tab(window_, &profile_, app, base::Closure());
 
   const extensions::PermissionSet* required_permissions =
       tab.GetRequiredPermissions();
   EXPECT_FALSE(required_permissions->IsEmpty());
-  EXPECT_EQ((size_t)3, required_permissions->GetAPIsAsStrings().size());
+  EXPECT_EQ(3U, required_permissions->GetAPIsAsStrings().size());
 
   EXPECT_TRUE(tab.GetOptionalPermissions()->IsEmpty());
   EXPECT_TRUE(tab.GetRetainedFilePermissions().empty());
 
   const std::vector<base::string16> required_permission_messages =
       tab.GetRequiredPermissionMessages();
-  EXPECT_EQ((size_t)2, required_permission_messages.size());
-  ASSERT_STREQ(l10n_util::GetStringUTF8(
-                   IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION).c_str(),
-               base::UTF16ToUTF8(required_permission_messages[0]).c_str());
-  ASSERT_STREQ(
-      l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_WARNING_TABS).c_str(),
-      base::UTF16ToUTF8(required_permission_messages[1]).c_str());
+  ASSERT_EQ(2U, required_permission_messages.size());
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION),
+            base::UTF16ToUTF8(required_permission_messages[0]));
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_WARNING_SERIAL),
+            base::UTF16ToUTF8(required_permission_messages[1]));
 }
 
 // Tests that an app's optional permissions are detected and converted to
@@ -103,40 +117,36 @@ TEST_F(AppInfoPermissionsTabTest, RequiredPermissionsObtainedCorrectly) {
 TEST_F(AppInfoPermissionsTabTest, OptionalPermissionsObtainedCorrectly) {
   scoped_refptr<const extensions::Extension> app =
       extensions::ExtensionBuilder()
-          .SetManifest(
-               extensions::DictionaryBuilder()
-                   .Set("name", "Test App Name")
-                   .Set("version", "2.0")
-                   .Set("optional_permissions",
-                        extensions::ListBuilder()
-                            .Append("bookmarks")  // A valid permission with a
-                                                  // message
-                            .Append("bad_perm")   // An invalid permission
-                            .Append("cookies")    // A valid permission with
-                                                  // no message
-                            .Append("tabs")))  // Another valid permission with
-                                               // a message
-          .SetID("cedabbhfglmiikkmdgcpjdkocfcmbkee")
+          .SetManifest(ValidAppManifest())
+          .MergeManifest(extensions::DictionaryBuilder().Set(
+              "optional_permissions",
+              extensions::ListBuilder()
+                  .Append("clipboardRead")  // A valid permission with a
+                                            // message
+                  .Append("bad_perm")       // An invalid permission
+                  .Append("idle")           // A valid permission with
+                                            // no message
+                  .Append("serial")))       // Another valid permission with
+                                            // a message
+          .SetID(kTestExtensionId)
           .Build();
-  AppInfoPermissionsTab tab(window, &profile, app, base::Closure());
+  AppInfoPermissionsTab tab(window_, &profile_, app, base::Closure());
 
   const extensions::PermissionSet* optional_permissions =
       tab.GetOptionalPermissions();
   EXPECT_FALSE(optional_permissions->IsEmpty());
-  EXPECT_EQ((size_t)3, optional_permissions->GetAPIsAsStrings().size());
+  EXPECT_EQ(3U, optional_permissions->GetAPIsAsStrings().size());
 
   EXPECT_TRUE(tab.GetRequiredPermissions()->IsEmpty());
   EXPECT_TRUE(tab.GetRetainedFilePermissions().empty());
 
   const std::vector<base::string16> optional_permission_messages =
       tab.GetOptionalPermissionMessages();
-  EXPECT_EQ((size_t)2, optional_permission_messages.size());
-  ASSERT_STREQ(
-      l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS).c_str(),
-      base::UTF16ToUTF8(optional_permission_messages[0]).c_str());
-  ASSERT_STREQ(
-      l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_WARNING_TABS).c_str(),
-      base::UTF16ToUTF8(optional_permission_messages[1]).c_str());
+  ASSERT_EQ(2U, optional_permission_messages.size());
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD),
+            base::UTF16ToUTF8(optional_permission_messages[0]));
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_WARNING_SERIAL),
+            base::UTF16ToUTF8(optional_permission_messages[1]));
 }
 
 // Tests that an app's retained files are detected and converted to paths
@@ -144,29 +154,19 @@ TEST_F(AppInfoPermissionsTabTest, OptionalPermissionsObtainedCorrectly) {
 TEST_F(AppInfoPermissionsTabTest, RetainedFilePermissionsObtainedCorrectly) {
   scoped_refptr<const extensions::Extension> app =
       extensions::ExtensionBuilder()
-          .SetManifest(extensions::DictionaryBuilder()
-                           .Set("name", "Test App Name")
-                           .Set("version", "2.0")
-                           .Set("manifest_version", 2)
-                           .Set("app",
-                                extensions::DictionaryBuilder().Set(
-                                    "background",
-                                    extensions::DictionaryBuilder().Set(
-                                        "scripts",
-                                        extensions::ListBuilder().Append(
-                                            "background.js"))))
-                           .Set("permissions",
-                                extensions::ListBuilder().Append(
-                                    extensions::DictionaryBuilder().Set(
-                                        "fileSystem",
-                                        extensions::ListBuilder().Append(
-                                            "retainEntries")))))
-          .SetID("cedabbhfglmiikkmdgcpjdkocfcmbkee")
+          .SetManifest(ValidAppManifest())
+          .MergeManifest(extensions::DictionaryBuilder().Set(
+              "permissions",
+              extensions::ListBuilder().Append(
+                  extensions::DictionaryBuilder().Set(
+                      "fileSystem",
+                      extensions::ListBuilder().Append("retainEntries")))))
+          .SetID(kTestExtensionId)
           .Build();
-  AppInfoPermissionsTab tab(window, &profile, app, base::Closure());
+  AppInfoPermissionsTab tab(window_, &profile_, app, base::Closure());
 
   apps::SavedFilesService* files_service =
-      apps::SavedFilesService::Get(&profile);
+      apps::SavedFilesService::Get(&profile_);
   files_service->RegisterFileEntry(
       app->id(), "file_id_1", FilePath(FILE_PATH_LITERAL("file_1.ext")), false);
   files_service->RegisterFileEntry(
@@ -179,7 +179,7 @@ TEST_F(AppInfoPermissionsTabTest, RetainedFilePermissionsObtainedCorrectly) {
   const extensions::PermissionSet* required_permissions =
       tab.GetRequiredPermissions();
   EXPECT_FALSE(required_permissions->IsEmpty());
-  EXPECT_EQ((size_t)2, required_permissions->GetAPIsAsStrings().size());
+  EXPECT_EQ(2U, required_permissions->GetAPIsAsStrings().size());
 
   EXPECT_TRUE(tab.GetOptionalPermissions()->IsEmpty());
 
@@ -187,15 +187,12 @@ TEST_F(AppInfoPermissionsTabTest, RetainedFilePermissionsObtainedCorrectly) {
   // using Contains.
   const std::vector<FilePath> retained_files = tab.GetRetainedFilePermissions();
   std::vector<FilePath::StringType> retained_file_paths;
-  for (std::vector<FilePath>::const_iterator it = retained_files.begin();
-       it != retained_files.end();
-       it++) {
-    retained_file_paths.push_back(it->value());
-  }
+  for (size_t i = 0; i < retained_files.size(); ++i)
+    retained_file_paths.push_back(retained_files[i].value());
 
   // Since we have no guarantees on the order of retained files, make sure the
   // list is the expected length and all required entries are present.
-  EXPECT_EQ((size_t)3, retained_files.size());
+  ASSERT_EQ(3U, retained_files.size());
   EXPECT_THAT(
       retained_file_paths,
       Contains(Eq(FilePath::StringType(FILE_PATH_LITERAL("file_1.ext")))));
@@ -208,11 +205,11 @@ TEST_F(AppInfoPermissionsTabTest, RetainedFilePermissionsObtainedCorrectly) {
 
   const std::vector<base::string16> retained_file_messages =
       tab.GetRetainedFilePermissionMessages();
-  EXPECT_EQ((size_t)3, retained_file_messages.size());
-  ASSERT_STREQ("file_1.ext",
+  ASSERT_EQ(3U, retained_file_messages.size());
+  EXPECT_STREQ("file_1.ext",
                base::UTF16ToUTF8(retained_file_messages[0]).c_str());
-  ASSERT_STREQ("file_2.ext",
+  EXPECT_STREQ("file_2.ext",
                base::UTF16ToUTF8(retained_file_messages[1]).c_str());
-  ASSERT_STREQ("file_3.ext",
+  EXPECT_STREQ("file_3.ext",
                base::UTF16ToUTF8(retained_file_messages[2]).c_str());
 }
