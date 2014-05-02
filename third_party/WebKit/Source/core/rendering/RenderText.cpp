@@ -40,6 +40,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/break_lines.h"
 #include "platform/fonts/Character.h"
+#include "platform/fonts/FontCache.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/TextBreakIterator.h"
@@ -751,6 +752,7 @@ ALWAYS_INLINE float RenderText::widthFromCache(const Font& f, int start, int len
     run.setCharacterScanForCodePath(!canUseSimpleFontCodePath());
     run.setTabSize(!style()->collapseWhiteSpace(), style()->tabSize());
     run.setXPos(xPos);
+    FontCachePurgePreventer fontCachePurgePreventer;
     return f.width(run, fallbackFonts, glyphOverflow);
 }
 
