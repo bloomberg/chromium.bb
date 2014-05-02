@@ -17,10 +17,6 @@ namespace base {
 class FilePath;
 }
 
-namespace gfx {
-class Screen;
-}
-
 namespace app_list {
 class ApplicationDragAndDropHost;
 class AppListMainView;
@@ -60,15 +56,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
                                    const gfx::Point& anchor_point_in_screen,
                                    views::BubbleBorder::Arrow arrow,
                                    bool border_accepts_events);
-
-  // Initializes the widget and use the center of the primary display for
-  // positioning.
-  void InitAsBubbleCenteredOnPrimaryDisplay(
-      gfx::NativeView parent,
-      PaginationModel* pagination_model,
-      gfx::Screen* screen_to_keep_centered_on,
-      views::BubbleBorder::Arrow arrow,
-      bool border_accepts_events);
 
   void SetBubbleArrow(views::BubbleBorder::Arrow arrow);
 
@@ -123,10 +110,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
                             bool border_accepts_events,
                             const gfx::Vector2d& anchor_offset);
 
-  // Gets the point at the center of the current screen.
-  // |screen_to_keep_centered_on_| must not be NULL.
-  gfx::Point GetCenterPoint();
-
   // Overridden from views::BubbleDelegateView:
   virtual void OnBeforeBubbleWidgetInit(
       views::Widget::InitParams* params,
@@ -164,10 +147,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   ObserverList<AppListViewObserver> observers_;
   scoped_ptr<HideViewAnimationObserver> animation_observer_;
-
-  // If non-NULL, the app list will remain centered on this screen's primary
-  // display.
-  gfx::Screen* screen_to_keep_centered_on_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListView);
 };

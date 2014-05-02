@@ -125,6 +125,9 @@ class AppListController : public ui::EventHandler,
   // Whether we should show or hide app list widget.
   bool is_visible_;
 
+  // Whether the app list should remain centered.
+  bool is_centered_;
+
   // The AppListView this class manages, owned by its widget.
   app_list::AppListView* view_;
 

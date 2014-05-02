@@ -113,6 +113,11 @@ gfx::Vector2d GetAnchorPositionOffsetToShelf(
   }
 }
 
+// Gets the point at the center of the screen.
+gfx::Point GetScreenCenter() {
+  return Shell::GetScreen()->GetPrimaryDisplay().bounds().CenterPoint();
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -121,6 +126,7 @@ gfx::Vector2d GetAnchorPositionOffsetToShelf(
 AppListController::AppListController()
     : pagination_model_(new app_list::PaginationModel),
       is_visible_(false),
+      is_centered_(false),
       view_(NULL),
       should_snap_back_(false) {
   Shell::GetInstance()->AddShellObserver(this);
@@ -165,12 +171,13 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
     aura::Window* root_window = window->GetRootWindow();
     aura::Window* container = GetRootWindowController(root_window)->
         GetContainer(kShellWindowId_AppListContainer);
-    if (app_list::switches::IsExperimentalAppListPositionEnabled()) {
+    is_centered_ = app_list::switches::IsExperimentalAppListPositionEnabled();
+    if (is_centered_) {
       // The experimental app list is centered over the primary display.
-      view->InitAsBubbleCenteredOnPrimaryDisplay(
+      view->InitAsBubbleAtFixedLocation(
           NULL,
           pagination_model_.get(),
-          Shell::GetScreen(),
+          GetScreenCenter(),
           views::BubbleBorder::FLOAT,
           true /* border_accepts_events */);
     } else {
@@ -302,8 +309,13 @@ void AppListController::ProcessLocatedEvent(ui::LocatedEvent* event) {
 }
 
 void AppListController::UpdateBounds() {
-  if (view_ && is_visible_)
-    view_->UpdateBounds();
+  if (!view_ || !is_visible_)
+    return;
+
+  view_->UpdateBounds();
+
+  if (is_centered_)
+    view_->SetAnchorPoint(GetScreenCenter());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
