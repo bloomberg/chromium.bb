@@ -168,6 +168,8 @@ def _SetEnvForPnacl(env, root):
       arch = '%s-linux' % arch
     elif env.Bit('host_mac'):
       arch = '%s-mac' % arch
+  if env.Bit('nonsfi_nacl'):
+    arch += '-nonsfi'
   arch_flag = ' -arch %s' % arch
   if env.Bit('pnacl_generate_pexe'):
     ld_arch_flag = ''

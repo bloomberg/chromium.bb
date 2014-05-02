@@ -1,0 +1,21 @@
+# -*- python -*-
+# Copyright (c) 2014 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# This component implements NaCl IRT interfaces in terms of POSIX APIs.
+if not env.Bit('posix'):
+  Return()
+
+# Since we are only targeting Unix, not Windows/MSVC, we can use C99
+# language features.
+env.FilterOut(CFLAGS='-Wdeclaration-after-statement')
+# Complaints about unused function arguments are too noisy.
+env.Append(CCFLAGS='-Wno-unused-parameter')
+# TODO(mseaborn): We can enforce -Wstrict-prototypes after the uses of
+# DEFINE_STUB/USE_STUB are gone.
+env.FilterOut(CFLAGS='-Wstrict-prototypes')
+
+env.ComponentLibrary('irt_nonsfi', ['irt_interfaces.c'])

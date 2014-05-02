@@ -29,6 +29,8 @@ RETCODE=0
 readonly SCONS_EVERYTHING=""
 readonly SCONS_S_M="small_tests medium_tests"
 readonly SCONS_S_M_IRT="small_tests_irt medium_tests_irt"
+# TODO(mseaborn): Enable more tests for Non-SFI Mode when they pass.
+readonly SCONS_NONSFI="nonsfi_nacl=1 run_hello_world_test_irt"
 # subset of tests used on toolchain builders
 readonly SCONS_TC_TESTS="small_tests medium_tests"
 
@@ -418,6 +420,9 @@ mode-buildbot-arm() {
     "${qemuflags} use_sandboxed_translator=1 translate_fast=1 \
        translate_in_build_step=0" \
     "toolchain_tests"
+
+  # Test Non-SFI Mode.
+  scons-stage-irt "arm" "${qemuflags}" "${SCONS_NONSFI}"
 }
 
 mode-buildbot-arm-hw() {
@@ -439,6 +444,9 @@ mode-buildbot-arm-hw() {
     "${hwflags} use_sandboxed_translator=1 translate_fast=1 \
        translate_in_build_step=0" \
     "toolchain_tests"
+
+  # Test Non-SFI Mode.
+  scons-stage-irt "arm" "${hwflags}" "${SCONS_NONSFI}"
 }
 
 mode-trybot-qemu() {
@@ -459,6 +467,9 @@ mode-trybot-qemu() {
 
   # non-pexe tests
   scons-stage-noirt "arm" "${qemuflags} pnacl_generate_pexe=0" "nonpexe_tests"
+
+  # Test Non-SFI Mode.
+  scons-stage-irt "arm" "${qemuflags}" "${SCONS_NONSFI}"
 }
 
 mode-buildbot-arm-dbg() {

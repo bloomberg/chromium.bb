@@ -72,6 +72,16 @@ def BuildScriptX86(status, context):
     SCons(context, parallel=True, mode=irt_mode,
           args=flags_run + ['use_sandboxed_translator=1', 'large_code'])
 
+  # Test Non-SFI Mode.
+  with Step('nonsfi_tests', status):
+    # The only architectures that the PNaCl toolchain supports Non-SFI
+    # versions of are currently x86-32 and ARM, and ARM testing is covered
+    # by buildbot_pnacl.sh rather than this Python script.
+    if context['default_scons_platform'] == 'x86-32':
+      # TODO(mseaborn): Enable more tests here when they pass.
+      SCons(context, parallel=True, mode=irt_mode,
+            args=flags_run + ['nonsfi_nacl=1', 'run_hello_world_test_irt'])
+
 
 def Main():
   context = BuildContext()

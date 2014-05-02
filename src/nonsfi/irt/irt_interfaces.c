@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/nonsfi/irt/irt_interfaces.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -478,7 +480,7 @@ static void irt_stub_func(const char *name) {
 
 #define DEFINE_STUB(name) \
     static void irt_stub_##name() { irt_stub_func(#name); }
-#define USE_STUB(s, name) (typeof(s.name)) irt_stub_##name
+#define USE_STUB(s, name) (__typeof__(s.name)) irt_stub_##name
 
 static const struct nacl_irt_basic irt_basic = {
   irt_exit,
@@ -608,7 +610,8 @@ static size_t irt_interface_query(const char *interface_ident,
   return 0;
 }
 
-int main(int argc, char **argv, char **environ) {
+int nacl_irt_nonsfi_entry(int argc, char **argv, char **environ,
+                          nacl_entry_func_t entry_func) {
   /* Find size of environ array. */
   size_t env_count = 0;
   while (environ[env_count] != NULL)
@@ -645,6 +648,12 @@ int main(int argc, char **argv, char **environ) {
   data[pos++] = 0;
   assert(pos == count);
 
+  entry_func(data);
+  return 1;
+}
+
+#if defined(DEFINE_MAIN)
+int main(int argc, char **argv, char **environ) {
   /*
    * On Linux, we rename _start() to _user_start() to avoid a clash
    * with the "_start" routine in the host toolchain.  On Mac OS X,
@@ -652,10 +661,13 @@ int main(int argc, char **argv, char **environ) {
    * unnecessary, because the host toolchain doesn't have a "_start"
    * routine.
    */
+  nacl_entry_func_t entry_func =
 #if defined(__APPLE__)
-  _start(data);
+    _start;
 #else
-  _user_start(data);
+    _user_start;
 #endif
-  return 1;
+
+  return nacl_irt_nonsfi_entry(argc, argv, environ, entry_func);
 }
+#endif

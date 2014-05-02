@@ -327,6 +327,11 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'pnacl_unsandboxed', default=False,
     desc='Translate pexe to an unsandboxed, host executable')
 
+  BitFromArgument(env, 'nonsfi_nacl', default=False,
+    desc='Use Non-SFI Mode instead of the original SFI Mode.  This uses '
+      'nonsfi_loader instead of sel_ldr, and it tells the PNaCl toolchain '
+      'to translate pexes to Non-SFI nexes.')
+
   BitFromArgument(env, 'browser_headless', default=False,
     desc='Where possible, set up a dummy display to run the browser on '
       'when running browser tests.  On Linux, this runs the browser through '
@@ -1293,6 +1298,15 @@ def AddBootstrap(env, executable, args):
 pre_base_env.AddMethod(AddBootstrap)
 
 
+def GetNonSfiLoader(env):
+  if 'TRUSTED_ENV' not in env:
+    return None
+  return env['TRUSTED_ENV'].File(
+      '${STAGING_DIR}/${PROGPREFIX}nonsfi_loader${PROGSUFFIX}')
+
+pre_base_env.AddMethod(GetNonSfiLoader)
+
+
 def GetIrtNexe(env, chrome_irt=False):
   image = ARGUMENTS.get('force_irt')
   if image:
@@ -1613,7 +1627,10 @@ def CommandSelLdrTestNacl(env, name, nexe,
     return env.CommandTest(name, command, size, **extra)
 
   if loader is None:
-    loader = env.GetSelLdr()
+    if env.Bit('nonsfi_nacl'):
+      loader = env.GetNonSfiLoader()
+    else:
+      loader = env.GetSelLdr()
     if loader is None:
       print 'WARNING: no sel_ldr found. Skipping test %s' % name
       return []
@@ -1673,7 +1690,12 @@ def CommandSelLdrTestNacl(env, name, nexe,
   else:
     loader_cmd = env.AddBootstrap(loader, [])
 
-  command = loader_cmd + sel_ldr_flags + ['--'] + command
+  if env.Bit('nonsfi_nacl'):
+    # nonsfi_loader does not accept the same flags as sel_ldr yet, so
+    # we ignore sel_ldr_flags here.
+    command = [loader] + command
+  else:
+    command = loader_cmd + sel_ldr_flags + ['--'] + command
 
   if env.Bit('host_linux'):
     extra['using_nacl_signal_handler'] = True
@@ -2127,6 +2149,8 @@ def MakeBaseTrustedEnv(platform=None):
       # KEEP THIS SORTED PLEASE
       'build/package_version/build.scons',
       'pynacl/build.scons',
+      'src/nonsfi/irt/build.scons',
+      'src/nonsfi/loader/build.scons',
       'src/shared/gio/build.scons',
       'src/shared/imc/build.scons',
       'src/shared/ldr/build.scons',
@@ -3040,6 +3064,7 @@ target_variant_map = [
     ('use_sandboxed_translator', 'sbtc'),
     ('nacl_glibc', 'glibc'),
     ('pnacl_generate_pexe', 'pexe'),
+    ('nonsfi_nacl', 'nonsfi'),
     ]
 for variant_bit, variant_suffix in target_variant_map:
   if nacl_env.Bit(variant_bit):

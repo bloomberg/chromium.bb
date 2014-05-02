@@ -591,7 +591,7 @@ def UnsandboxedIRT(arch):
           'output_subdir': 'lib-' + arch,
           # This lib #includes
           # arbitrary stuff from native_client/src/{include,untrusted,trusted}
-          'inputs': { 'support': os.path.join(NACL_DIR, 'pnacl', 'support'),
+          'inputs': { 'support': os.path.join(NACL_DIR, 'src', 'nonsfi', 'irt'),
                       'include': os.path.join(NACL_DIR, 'src'), },
           'commands': [
               # The NaCl headers insist on having a platform macro such as
@@ -603,7 +603,7 @@ def UnsandboxedIRT(arch):
               command.Command([
                   'gcc', '-m32', '-O2', '-Wall', '-Werror',
                   '-I%(top_srcdir)s/..', '-DNACL_LINUX=1',
-                  '-c', command.path.join('%(support)s', 'unsandboxed_irt.c'),
+                  '-c', command.path.join('%(support)s', 'irt_interfaces.c'),
                   '-o', command.path.join('%(output)s', 'unsandboxed_irt.o')]),
           ],
       },

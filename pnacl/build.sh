@@ -2468,11 +2468,13 @@ libs-support-unsandboxed() {
     local destdir="${INSTALL_LIB_NATIVE}"${arch}
     mkdir -p ${destdir}
     # The NaCl headers insist on having a platform macro such as
-    # NACL_LINUX defined, but unsandboxed_irt.c does not itself use
-    # any of these macros, so defining NACL_LINUX here even on
-    # non-Linux systems is OK.
-    gcc -m32 -O2 -Wall -Werror -I${NACL_ROOT}/.. -DNACL_LINUX=1 -c \
-        ${PNACL_SUPPORT}/unsandboxed_irt.c -o ${destdir}/unsandboxed_irt.o
+    # NACL_LINUX defined, but nonsfi/irt/irt_interfaces.c does not
+    # itself use any of these macros, so defining NACL_LINUX here even
+    # on non-Linux systems is OK.
+    gcc -m32 -O2 -Wall -Werror -I${NACL_ROOT}/.. -c \
+        -DNACL_LINUX=1 -DDEFINE_MAIN \
+        ${NACL_ROOT}/src/nonsfi/irt/irt_interfaces.c \
+        -o ${destdir}/unsandboxed_irt.o
   fi
 }
 
