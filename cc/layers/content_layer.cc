@@ -28,7 +28,10 @@ void ContentLayerPainter::Paint(SkCanvas* canvas,
                                 const gfx::Rect& content_rect,
                                 gfx::RectF* opaque) {
   base::TimeTicks paint_start = base::TimeTicks::HighResNow();
-  client_->PaintContents(canvas, content_rect, opaque);
+  client_->PaintContents(canvas,
+                         content_rect,
+                         opaque,
+                         ContentLayerClient::GRAPHICS_CONTEXT_ENABLED);
   base::TimeTicks paint_end = base::TimeTicks::HighResNow();
   // The start and end times might be the same if the paint was very fast or if
   // our timer granularity is poor. Treat this as a very short time duration
@@ -163,7 +166,10 @@ skia::RefPtr<SkPicture> ContentLayer::GetPicture() const {
 
   SkPictureRecorder recorder;
   SkCanvas* canvas = recorder.beginRecording(width, height, NULL, 0);
-  client_->PaintContents(canvas, gfx::Rect(width, height), &opaque);
+  client_->PaintContents(canvas,
+                         gfx::Rect(width, height),
+                         &opaque,
+                         ContentLayerClient::GRAPHICS_CONTEXT_ENABLED);
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder.endRecording());
   return picture;
 }

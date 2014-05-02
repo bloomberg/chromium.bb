@@ -18,9 +18,15 @@ namespace cc {
 
 class CC_EXPORT ContentLayerClient {
  public:
+  enum GraphicsContextStatus {
+    GRAPHICS_CONTEXT_DISABLED,
+    GRAPHICS_CONTEXT_ENABLED
+  };
+
   virtual void PaintContents(SkCanvas* canvas,
                              const gfx::Rect& clip,
-                             gfx::RectF* opaque) = 0;
+                             gfx::RectF* opaque,
+                             GraphicsContextStatus gc_status) = 0;
 
   // Called by the content layer during the update phase.
   // If the client paints LCD text, it may want to invalidate the layer.

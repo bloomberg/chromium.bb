@@ -15,11 +15,13 @@ FakeContentLayerClient::FakeContentLayerClient()
 FakeContentLayerClient::~FakeContentLayerClient() {
 }
 
-void FakeContentLayerClient::PaintContents(SkCanvas* canvas,
-    const gfx::Rect& paint_rect, gfx::RectF* opaque_rect) {
+void FakeContentLayerClient::PaintContents(
+    SkCanvas* canvas,
+    const gfx::Rect& paint_rect,
+    gfx::RectF* opaque_rect,
+    ContentLayerClient::GraphicsContextStatus gc_status) {
   last_canvas_ = canvas;
-  if (!canvas)
-    return;
+  last_context_status_ = gc_status;
 
   if (paint_all_opaque_)
     *opaque_rect = paint_rect;

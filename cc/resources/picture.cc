@@ -273,17 +273,23 @@ void Picture::Record(ContentLayerClient* painter,
                               &factory,
                               SkPicture::kUsePathBoundsForClip_RecordingFlag));
 
+  ContentLayerClient::GraphicsContextStatus graphics_context_status =
+      ContentLayerClient::GRAPHICS_CONTEXT_ENABLED;
+
   switch (recording_mode) {
     case RECORD_NORMALLY:
-      // Already setup for normal recording
+      // Already setup for normal recording.
       break;
     case RECORD_WITH_SK_NULL_CANVAS:
       canvas = skia::AdoptRef(SkCreateNullCanvas());
       break;
     case RECORD_WITH_PAINTING_DISABLED:
-      // Blink's GraphicsContext will disable painting when given a NULL
-      // canvas.
-      canvas.clear();
+      // We pass a disable flag through the paint calls when perfromance
+      // testing (the only time this case should ever arise) when we want to
+      // prevent the Blink GraphicsContext object from consuming any compute
+      // time.
+      canvas = skia::AdoptRef(SkCreateNullCanvas());
+      graphics_context_status = ContentLayerClient::GRAPHICS_CONTEXT_DISABLED;
       break;
     case RECORD_WITH_SKRECORD:
       recording.reset(new EXPERIMENTAL::SkRecording(layer_rect_.width(),
@@ -294,23 +300,21 @@ void Picture::Record(ContentLayerClient* painter,
       NOTREACHED();
   }
 
-  if (canvas) {
-    canvas->save();
-    canvas->translate(SkFloatToScalar(-layer_rect_.x()),
-                      SkFloatToScalar(-layer_rect_.y()));
+  canvas->save();
+  canvas->translate(SkFloatToScalar(-layer_rect_.x()),
+                    SkFloatToScalar(-layer_rect_.y()));
 
-    SkRect layer_skrect = SkRect::MakeXYWH(layer_rect_.x(),
-                                           layer_rect_.y(),
-                                           layer_rect_.width(),
-                                           layer_rect_.height());
-    canvas->clipRect(layer_skrect);
-  }
+  SkRect layer_skrect = SkRect::MakeXYWH(layer_rect_.x(),
+                                         layer_rect_.y(),
+                                         layer_rect_.width(),
+                                         layer_rect_.height());
+  canvas->clipRect(layer_skrect);
 
   gfx::RectF opaque_layer_rect;
-  painter->PaintContents(canvas.get(), layer_rect_, &opaque_layer_rect);
+  painter->PaintContents(
+      canvas.get(), layer_rect_, &opaque_layer_rect, graphics_context_status);
 
-  if (canvas)
-    canvas->restore();
+  canvas->restore();
   picture_ = skia::AdoptRef(recorder.endRecording());
   DCHECK(picture_);
 

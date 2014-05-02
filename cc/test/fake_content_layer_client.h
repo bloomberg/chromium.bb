@@ -27,9 +27,11 @@ class FakeContentLayerClient : public ContentLayerClient {
   FakeContentLayerClient();
   virtual ~FakeContentLayerClient();
 
-  virtual void PaintContents(SkCanvas* canvas,
-                             const gfx::Rect& rect,
-                             gfx::RectF* opaque_rect) OVERRIDE;
+  virtual void PaintContents(
+      SkCanvas* canvas,
+      const gfx::Rect& rect,
+      gfx::RectF* opaque_rect,
+      ContentLayerClient::GraphicsContextStatus gc_status) OVERRIDE;
   virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
   virtual bool FillsBoundsCompletely() const OVERRIDE;
 
@@ -51,6 +53,10 @@ class FakeContentLayerClient : public ContentLayerClient {
 
   SkCanvas* last_canvas() const { return last_canvas_; }
 
+  ContentLayerClient::GraphicsContextStatus last_context_status() const {
+    return last_context_status_;
+  }
+
  private:
   typedef std::vector<std::pair<gfx::RectF, SkPaint> > RectPaintVector;
   typedef std::vector<BitmapData> BitmapVector;
@@ -59,6 +65,7 @@ class FakeContentLayerClient : public ContentLayerClient {
   RectPaintVector draw_rects_;
   BitmapVector draw_bitmaps_;
   SkCanvas* last_canvas_;
+  ContentLayerClient::GraphicsContextStatus last_context_status_;
 };
 
 }  // namespace cc

@@ -170,7 +170,10 @@ skia::RefPtr<SkPicture> PictureLayer::GetPicture() const {
 
   SkPictureRecorder recorder;
   SkCanvas* canvas = recorder.beginRecording(width, height, NULL, 0);
-  client_->PaintContents(canvas, gfx::Rect(width, height), &opaque);
+  client_->PaintContents(canvas,
+                         gfx::Rect(width, height),
+                         &opaque,
+                         ContentLayerClient::GRAPHICS_CONTEXT_ENABLED);
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder.endRecording());
   return picture;
 }

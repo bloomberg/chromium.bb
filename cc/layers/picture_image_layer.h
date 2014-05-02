@@ -28,7 +28,8 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
   virtual void PaintContents(
       SkCanvas* canvas,
       const gfx::Rect& clip,
-      gfx::RectF* opaque) OVERRIDE;
+      gfx::RectF* opaque,
+      ContentLayerClient::GraphicsContextStatus gc_status) OVERRIDE;
   virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
   virtual bool FillsBoundsCompletely() const OVERRIDE;
 

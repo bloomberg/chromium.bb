@@ -26,9 +26,11 @@ class MaskContentLayerClient : public ContentLayerClient {
 
   virtual bool FillsBoundsCompletely() const OVERRIDE { return false; }
 
-  virtual void PaintContents(SkCanvas* canvas,
-                             const gfx::Rect& rect,
-                             gfx::RectF* opaque_rect) OVERRIDE {
+  virtual void PaintContents(
+      SkCanvas* canvas,
+      const gfx::Rect& rect,
+      gfx::RectF* opaque_rect,
+      ContentLayerClient::GraphicsContextStatus gc_status) OVERRIDE {
     SkPaint paint;
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setStrokeWidth(SkIntToScalar(2));
@@ -84,7 +86,8 @@ TEST_F(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
   MaskContentLayerClient client;
   client.PaintContents(&canvas,
                        gfx::Rect(100, 100),
-                       NULL);
+                       NULL,
+                       ContentLayerClient::GRAPHICS_CONTEXT_ENABLED);
   mask->SetBitmap(bitmap);
 
   scoped_refptr<SolidColorLayer> green = CreateSolidColorLayerWithBorder(

@@ -65,9 +65,11 @@ class BlueYellowLayerClient : public ContentLayerClient {
 
   virtual bool FillsBoundsCompletely() const OVERRIDE { return false; }
 
-  virtual void PaintContents(SkCanvas* canvas,
-                             const gfx::Rect& clip,
-                             gfx::RectF* opaque) OVERRIDE {
+  virtual void PaintContents(
+      SkCanvas* canvas,
+      const gfx::Rect& clip,
+      gfx::RectF* opaque,
+      ContentLayerClient::GraphicsContextStatus gc_status) OVERRIDE {
     *opaque = gfx::RectF(layer_rect_.width(), layer_rect_.height());
 
     SkPaint paint;
