@@ -40,7 +40,7 @@ namespace alarms {
     double? periodInMinutes;
   };
 
-  callback AlarmCallback = void (Alarm alarm);
+  callback AlarmCallback = void (optional Alarm alarm);
   callback AlarmListCallback = void (Alarm[] alarms);
   callback ClearCallback = void (boolean wasCleared);
 
