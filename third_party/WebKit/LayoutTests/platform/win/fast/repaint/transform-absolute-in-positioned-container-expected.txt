@@ -1,8 +1,18 @@
 Test for https://bugs.webkit.org/show_bug.cgi?id=17840. The rotated box should be correctly redrawn.
 
 Container
- (repaint rects
-  (rect 118 232 202 202)
-  (rect 76 190 286 286)
+ (GraphicsLayer
+  (bounds 802.00 585.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 802.00 585.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 118.00 232.00 202.00 202.00)
+        (rect 76.00 190.00 286.00 286.00)
+      )
+    )
+  )
 )
 

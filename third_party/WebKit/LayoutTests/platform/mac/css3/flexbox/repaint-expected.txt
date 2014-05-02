@@ -5,20 +5,30 @@
 
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.
-(repaint rects
-  (rect 0 214 800 72)
-  (rect 8 206 784 72)
-  (rect 8 206 784 72)
-  (rect 148 116 252 162)
-  (rect 8 206 392 72)
-  (rect 400 116 392 162)
-  (rect 148 116 644 90)
-  (rect 400 116 392 162)
-  (rect 148 116 644 90)
-  (rect 139 116 9 90)
-  (rect 148 116 644 90)
-  (rect 139 116 653 90)
-  (rect 148 116 644 90)
-  (rect 139 116 653 90)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 0.00 214.00 800.00 72.00)
+        (rect 8.00 206.00 784.00 72.00)
+        (rect 8.00 206.00 784.00 72.00)
+        (rect 148.00 116.00 252.00 162.00)
+        (rect 8.00 206.00 392.00 72.00)
+        (rect 400.00 116.00 392.00 162.00)
+        (rect 148.00 116.00 644.00 90.00)
+        (rect 400.00 116.00 392.00 162.00)
+        (rect 148.00 116.00 644.00 90.00)
+        (rect 139.00 116.00 9.00 90.00)
+        (rect 148.00 116.00 644.00 90.00)
+        (rect 139.00 116.00 653.00 90.00)
+        (rect 148.00 116.00 644.00 90.00)
+        (rect 139.00 116.00 653.00 90.00)
+      )
+    )
+  )
 )
 

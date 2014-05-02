@@ -1,7 +1,17 @@
 Repaint test for bug 15719
 
-(repaint rects
-  (rect 8 66 106 106)
-  (rect 28 66 106 106)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 66.00 106.00 106.00)
+        (rect 28.00 66.00 106.00 106.00)
+      )
+    )
+  )
 )
 

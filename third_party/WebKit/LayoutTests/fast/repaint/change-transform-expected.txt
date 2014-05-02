@@ -2,8 +2,18 @@ https://bugs.webkit.org/show_bug.cgi?id=19623
 
 Test for incomplete repaint when a non-layer object gains a transform. You should see a green square above. If you see any red, the test has failed.
 
-(repaint rects
-  (rect 10 10 100 100)
-  (rect 35 35 50 50)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 10.00 10.00 100.00 100.00)
+        (rect 35.00 35.00 50.00 50.00)
+      )
+    )
+  )
 )
 
