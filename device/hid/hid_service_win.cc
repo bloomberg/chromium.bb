@@ -218,20 +218,6 @@ void HidServiceWin::PlatformAddDevice(const std::string& device_path) {
     HidD_FreePreparsedData(preparsed_data);
   }
 
-  // Get the serial number
-  wchar_t str_property[512] = { 0 };
-  if (HidD_GetSerialNumberString(device_handle.Get(),
-                                 str_property,
-                                 sizeof(str_property))) {
-    device_info.serial_number = base::SysWideToUTF8(str_property);
-  }
-
-  if (HidD_GetProductString(device_handle.Get(),
-                            str_property,
-                            sizeof(str_property))) {
-    device_info.product_name = base::SysWideToUTF8(str_property);
-  }
-
   AddDevice(device_info);
 }
 
