@@ -33,9 +33,8 @@
       <include name="IDR_KEYBOARD_IMAGES_RELOAD" file="resources/images/reload.svg" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_RETURN" file="resources/images/return.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_RIGHT" file="resources/images/right.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_SEARCH" file="resources/images/search.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_SHIFT" file="resources/images/shift.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_SHIFT_FILLED" file="resources/images/shift-filled.svg" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_SEARCH" file="resources/images/search.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_SHIFT" file="resources/images/shift.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_SHUTDOWN" file="resources/images/shutdown.svg" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_TAB" file="resources/images/tab.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_UP" file="resources/images/up.svg" type="BINDATA" />
