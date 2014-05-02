@@ -145,7 +145,6 @@ class RenderingStats(object):
     self.recorded_pixel_counts = []
     self.rasterize_times = []
     self.rasterized_pixel_counts = []
-    self.approximated_pixel_percentages = []
     # End-to-end latency for MouseWheel scroll - from when mouse wheel event is
     # generated to when the scrolled page is buffer swapped.
     self.mouse_wheel_scroll_latency = []
@@ -165,7 +164,6 @@ class RenderingStats(object):
       self.recorded_pixel_counts.append([])
       self.rasterize_times.append([])
       self.rasterized_pixel_counts.append([])
-      self.approximated_pixel_percentages.append([])
       self.mouse_wheel_scroll_latency.append([])
       self.touch_scroll_latency.append([])
       self.js_touch_scroll_latency.append([])
@@ -251,9 +249,3 @@ class RenderingStats(object):
           event.args['data']['rasterize_time'])
       self.rasterized_pixel_counts[-1].append(
           event.args['data']['rasterized_pixel_count'])
-      if 'visible_content_area' in event.args['data']:
-        self.approximated_pixel_percentages[-1].append(round(
-            float(event.args['data']['approximated_visible_content_area']) /
-            float(event.args['data']['visible_content_area']) * 100.0, 3))
-      else:
-        self.approximated_pixel_percentages[-1].append(0.0)
