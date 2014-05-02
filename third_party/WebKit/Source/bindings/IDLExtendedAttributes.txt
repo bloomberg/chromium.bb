@@ -64,6 +64,7 @@ LegacyTreatAsPartialInterface
 LegacyOverloadString
 LogActivity=|GetterOnly|SetterOnly
 LogAllWorlds
+LogPreviousValue
 MeasureAs=*
 NamedConstructor=*
 NoInterfaceObject

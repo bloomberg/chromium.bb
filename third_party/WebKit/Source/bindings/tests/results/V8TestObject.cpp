@@ -1654,7 +1654,7 @@ static void activityLoggingAccessForAllWorldsLongAttributeAttributeGetterCallbac
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
     if (world.activityLogger())
-        world.activityLogger()->log("TestObject.activityLoggingAccessForAllWorldsLongAttribute", 0, 0, "Getter");
+        world.activityLogger()->logGetter("TestObject.activityLoggingAccessForAllWorldsLongAttribute");
     TestObjectV8Internal::activityLoggingAccessForAllWorldsLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -1673,8 +1673,7 @@ static void activityLoggingAccessForAllWorldsLongAttributeAttributeSetterCallbac
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
     if (world.activityLogger()) {
-        v8::Handle<v8::Value> loggerArg[] = { v8Value };
-        world.activityLogger()->log("TestObject.activityLoggingAccessForAllWorldsLongAttribute", 1, &loggerArg[0], "Setter");
+        world.activityLogger()->logSetter("TestObject.activityLoggingAccessForAllWorldsLongAttribute", v8Value);
     }
     TestObjectV8Internal::activityLoggingAccessForAllWorldsLongAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
@@ -1692,7 +1691,7 @@ static void activityLoggingGetterForAllWorldsLongAttributeAttributeGetterCallbac
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
     if (world.activityLogger())
-        world.activityLogger()->log("TestObject.activityLoggingGetterForAllWorldsLongAttribute", 0, 0, "Getter");
+        world.activityLogger()->logGetter("TestObject.activityLoggingGetterForAllWorldsLongAttribute");
     TestObjectV8Internal::activityLoggingGetterForAllWorldsLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -1741,8 +1740,7 @@ static void activityLoggingSetterForAllWorldsLongAttributeAttributeSetterCallbac
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
     if (world.activityLogger()) {
-        v8::Handle<v8::Value> loggerArg[] = { v8Value };
-        world.activityLogger()->log("TestObject.activityLoggingSetterForAllWorldsLongAttribute", 1, &loggerArg[0], "Setter");
+        world.activityLogger()->logSetter("TestObject.activityLoggingSetterForAllWorldsLongAttribute", v8Value);
     }
     TestObjectV8Internal::activityLoggingSetterForAllWorldsLongAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
@@ -2439,7 +2437,7 @@ static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterCal
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
     if (world.activityLogger())
-        world.activityLogger()->log("TestObject.activityLoggingAccessPerWorldBindingsLongAttribute", 0, 0, "Getter");
+        world.activityLogger()->logGetter("TestObject.activityLoggingAccessPerWorldBindingsLongAttribute");
     TestObjectV8Internal::activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -2458,8 +2456,7 @@ static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterCal
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
     if (world.activityLogger()) {
-        v8::Handle<v8::Value> loggerArg[] = { v8Value };
-        world.activityLogger()->log("TestObject.activityLoggingAccessPerWorldBindingsLongAttribute", 1, &loggerArg[0], "Setter");
+        world.activityLogger()->logSetter("TestObject.activityLoggingAccessPerWorldBindingsLongAttribute", v8Value);
     }
     TestObjectV8Internal::activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
@@ -2477,7 +2474,7 @@ static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterCal
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
     if (world.activityLogger())
-        world.activityLogger()->log("TestObject.activityLoggingAccessPerWorldBindingsLongAttribute", 0, 0, "Getter");
+        world.activityLogger()->logGetter("TestObject.activityLoggingAccessPerWorldBindingsLongAttribute");
     TestObjectV8Internal::activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterForMainWorld(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -2496,8 +2493,7 @@ static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterCal
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
     if (world.activityLogger()) {
-        v8::Handle<v8::Value> loggerArg[] = { v8Value };
-        world.activityLogger()->log("TestObject.activityLoggingAccessPerWorldBindingsLongAttribute", 1, &loggerArg[0], "Setter");
+        world.activityLogger()->logSetter("TestObject.activityLoggingAccessPerWorldBindingsLongAttribute", v8Value);
     }
     TestObjectV8Internal::activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterForMainWorld(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
@@ -2515,7 +2511,7 @@ static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeA
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
     if (world.activityLogger())
-        world.activityLogger()->log("TestObject.activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute", 0, 0, "Getter");
+        world.activityLogger()->logGetter("TestObject.activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute");
     TestObjectV8Internal::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -2534,8 +2530,7 @@ static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeA
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
     if (world.activityLogger()) {
-        v8::Handle<v8::Value> loggerArg[] = { v8Value };
-        world.activityLogger()->log("TestObject.activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute", 1, &loggerArg[0], "Setter");
+        world.activityLogger()->logSetter("TestObject.activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute", v8Value);
     }
     TestObjectV8Internal::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
@@ -2583,7 +2578,7 @@ static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterCal
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
     if (world.activityLogger())
-        world.activityLogger()->log("TestObject.activityLoggingGetterPerWorldBindingsLongAttribute", 0, 0, "Getter");
+        world.activityLogger()->logGetter("TestObject.activityLoggingGetterPerWorldBindingsLongAttribute");
     TestObjectV8Internal::activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -2616,7 +2611,7 @@ static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterCal
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
     if (world.activityLogger())
-        world.activityLogger()->log("TestObject.activityLoggingGetterPerWorldBindingsLongAttribute", 0, 0, "Getter");
+        world.activityLogger()->logGetter("TestObject.activityLoggingGetterPerWorldBindingsLongAttribute");
     TestObjectV8Internal::activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterForMainWorld(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -2649,7 +2644,7 @@ static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeA
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
     if (world.activityLogger())
-        world.activityLogger()->log("TestObject.activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute", 0, 0, "Getter");
+        world.activityLogger()->logGetter("TestObject.activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute");
     TestObjectV8Internal::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -4276,6 +4271,82 @@ static void unforgeableLongAttributeAttributeSetterCallback(v8::Local<v8::String
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestObjectV8Internal::unforgeableLongAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void activityLoggingSetterOnlyLogPreviousValueAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    v8SetReturnValueInt(info, impl->activityLoggingSetterOnlyLogPreviousValueAttribute());
+}
+
+static void activityLoggingSetterOnlyLogPreviousValueAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectV8Internal::activityLoggingSetterOnlyLogPreviousValueAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void activityLoggingSetterOnlyLogPreviousValueAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggingSetterOnlyLogPreviousValueAttribute", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
+    TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
+    impl->setActivityLoggingSetterOnlyLogPreviousValueAttribute(cppValue);
+}
+
+static void activityLoggingSetterOnlyLogPreviousValueAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
+    if (world.activityLogger()) {
+        TestObject* impl = V8TestObject::toNative(info.Holder());
+        int original = impl->activityLoggingSetterOnlyLogPreviousValueAttribute();
+        v8::Handle<v8::Value> originalValue = v8::Integer::New(info.GetIsolate(), original);
+        world.activityLogger()->logSetter("TestObject.activityLoggingSetterOnlyLogPreviousValueAttribute", v8Value, originalValue);
+    }
+    TestObjectV8Internal::activityLoggingSetterOnlyLogPreviousValueAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void activityLoggingLogPreviousValueInterfaceAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    v8SetReturnValueFast(info, WTF::getPtr(impl->activityLoggingLogPreviousValueInterfaceAttribute()), impl);
+}
+
+static void activityLoggingLogPreviousValueInterfaceAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
+    if (world.activityLogger())
+        world.activityLogger()->logGetter("TestObject.activityLoggingLogPreviousValueInterfaceAttribute");
+    TestObjectV8Internal::activityLoggingLogPreviousValueInterfaceAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void activityLoggingLogPreviousValueInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    TONATIVE_VOID(TestInterfaceEmpty*, cppValue, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
+    impl->setActivityLoggingLogPreviousValueInterfaceAttribute(WTF::getPtr(cppValue));
+}
+
+static void activityLoggingLogPreviousValueInterfaceAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
+    if (world.activityLogger()) {
+        TestObject* impl = V8TestObject::toNative(info.Holder());
+        RefPtr<TestInterfaceEmpty> original = impl->activityLoggingLogPreviousValueInterfaceAttribute();
+        v8::Handle<v8::Value> originalValue = toV8(original, info.Holder(), info.GetIsolate());
+        world.activityLogger()->logSetter("TestObject.activityLoggingLogPreviousValueInterfaceAttribute", v8Value, originalValue);
+    }
+    TestObjectV8Internal::activityLoggingLogPreviousValueInterfaceAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -7074,7 +7145,7 @@ static void activityLoggingAccessForAllWorldsMethodMethodCallback(const v8::Func
     DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
     if (world.activityLogger()) {
         Vector<v8::Handle<v8::Value> > loggerArgs = toNativeArguments<v8::Handle<v8::Value> >(info, 0);
-        world.activityLogger()->log("TestObject.activityLoggingAccessForAllWorldsMethod", info.Length(), loggerArgs.data(), "Method");
+        world.activityLogger()->logMethod("TestObject.activityLoggingAccessForAllWorldsMethod", info.Length(), loggerArgs.data());
     }
     TestObjectV8Internal::activityLoggingAccessForAllWorldsMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
@@ -7733,7 +7804,7 @@ static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallback(
     DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
     if (world.activityLogger()) {
         Vector<v8::Handle<v8::Value> > loggerArgs = toNativeArguments<v8::Handle<v8::Value> >(info, 0);
-        world.activityLogger()->log("TestObject.activityLoggingForAllWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data(), "Method");
+        world.activityLogger()->logMethod("TestObject.activityLoggingForAllWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data());
     }
     TestObjectV8Internal::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
@@ -7751,7 +7822,7 @@ static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallbackF
     DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
     if (world.activityLogger()) {
         Vector<v8::Handle<v8::Value> > loggerArgs = toNativeArguments<v8::Handle<v8::Value> >(info, 0);
-        world.activityLogger()->log("TestObject.activityLoggingForAllWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data(), "Method");
+        world.activityLogger()->logMethod("TestObject.activityLoggingForAllWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data());
     }
     TestObjectV8Internal::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodForMainWorld(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
@@ -7769,7 +7840,7 @@ static void activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCall
     DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
     if (world.activityLogger()) {
         Vector<v8::Handle<v8::Value> > loggerArgs = toNativeArguments<v8::Handle<v8::Value> >(info, 0);
-        world.activityLogger()->log("TestObject.activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data(), "Method");
+        world.activityLogger()->logMethod("TestObject.activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data());
     }
     TestObjectV8Internal::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
@@ -8342,6 +8413,8 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"urlStringAttribute", TestObjectV8Internal::urlStringAttributeAttributeGetterCallback, TestObjectV8Internal::urlStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"urlStringAttribute", TestObjectV8Internal::urlStringAttributeAttributeGetterCallback, TestObjectV8Internal::urlStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"unforgeableLongAttribute", TestObjectV8Internal::unforgeableLongAttributeAttributeGetterCallback, TestObjectV8Internal::unforgeableLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::PROHIBITS_OVERWRITING), static_cast<v8::PropertyAttribute>(v8::DontDelete), 0 /* on instance */},
+    {"activityLoggingSetterOnlyLogPreviousValueAttribute", TestObjectV8Internal::activityLoggingSetterOnlyLogPreviousValueAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingSetterOnlyLogPreviousValueAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"activityLoggingLogPreviousValueInterfaceAttribute", TestObjectV8Internal::activityLoggingLogPreviousValueInterfaceAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingLogPreviousValueInterfaceAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"testInterfaceAttribute", TestObjectV8Internal::testInterfaceAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"testInterfaceGarbageCollectedAttribute", TestObjectV8Internal::testInterfaceGarbageCollectedAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceGarbageCollectedAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"testInterfaceGarbageCollectedOrNullAttribute", TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

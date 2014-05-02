@@ -41,7 +41,11 @@ namespace blink {
 class WebDOMActivityLogger {
 public:
     virtual ~WebDOMActivityLogger() { }
-    virtual void log(const WebString& apiName, int argc, const v8::Handle<v8::Value>* argv, const WebString& extraInfo, const WebURL& url, const WebString& title) { }
+
+    virtual void logGetter(const WebString& apiName, const WebURL& url, const WebString& title) { }
+    virtual void logSetter(const WebString& apiName, const v8::Handle<v8::Value>& newValue, const WebURL& url, const WebString& title) { }
+    virtual void logSetter(const WebString& apiName, const v8::Handle<v8::Value>& newValue, const v8::Handle<v8::Value>& oldValue, const WebURL& url, const WebString& title) { }
+    virtual void logMethod(const WebString& apiName, int argc, const v8::Handle<v8::Value>* argv, const WebURL& url, const WebString& title) { }
 };
 
 // Checks if a logger already exists for the world identified

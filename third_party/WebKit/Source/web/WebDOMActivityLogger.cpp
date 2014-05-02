@@ -49,18 +49,41 @@ public:
     {
     }
 
-    virtual void log(const String& apiName, int argc, const v8::Handle<v8::Value>* argv, const String& extraInfo) OVERRIDE
+    virtual void logGetter(const String& apiName) OVERRIDE
     {
-        KURL url;
-        String title;
-        if (Document* document = currentDOMWindow(v8::Isolate::GetCurrent())->document()) {
-            url = document->url();
-            title = document->title();
-        }
-        m_domActivityLogger->log(WebString(apiName), argc, argv, WebString(extraInfo), WebURL(url), WebString(title));
+        m_domActivityLogger->logGetter(WebString(apiName), getURL(), getTitle());
+    }
+
+    virtual void logSetter(const String& apiName, const v8::Handle<v8::Value>& newValue) OVERRIDE
+    {
+        m_domActivityLogger->logSetter(WebString(apiName), newValue, getURL(), getTitle());
+    }
+
+    virtual void logSetter(const String& apiName, const v8::Handle<v8::Value>& newValue, const v8::Handle<v8::Value>& oldValue) OVERRIDE
+    {
+        m_domActivityLogger->logSetter(WebString(apiName), newValue, oldValue, getURL(), getTitle());
+    }
+
+    virtual void logMethod(const String& apiName, int argc, const v8::Handle<v8::Value>* argv) OVERRIDE
+    {
+        m_domActivityLogger->logMethod(WebString(apiName), argc, argv, getURL(), getTitle());
     }
 
 private:
+    WebURL getURL()
+    {
+        if (Document* document = currentDOMWindow(v8::Isolate::GetCurrent())->document())
+            return WebURL(document->url());
+        return WebURL();
+    }
+
+    WebString getTitle()
+    {
+        if (Document* document = currentDOMWindow(v8::Isolate::GetCurrent())->document())
+            return WebString(document->title());
+        return WebString();
+    }
+
     OwnPtr<WebDOMActivityLogger> m_domActivityLogger;
 };
 

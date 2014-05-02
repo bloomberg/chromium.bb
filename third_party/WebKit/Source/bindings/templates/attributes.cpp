@@ -171,7 +171,7 @@ v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info
     {% if world_suffix in attribute.activity_logging_world_list_for_getter %}
     DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
     if (world.activityLogger())
-        world.activityLogger()->log("{{interface_name}}.{{attribute.name}}", 0, 0, "Getter");
+        world.activityLogger()->logGetter("{{interface_name}}.{{attribute.name}}");
     {% endif %}
     {% if attribute.has_custom_getter %}
     {{v8_class}}::{{attribute.name}}AttributeGetterCustom(info);
@@ -323,8 +323,18 @@ v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackI
     {% if world_suffix in attribute.activity_logging_world_list_for_setter %}
     DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
     if (world.activityLogger()) {
-        v8::Handle<v8::Value> loggerArg[] = { v8Value };
-        world.activityLogger()->log("{{interface_name}}.{{attribute.name}}", 1, &loggerArg[0], "Setter");
+        {% if attribute.activity_logging_include_old_value_for_setter %}
+        {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
+        {% if attribute.cpp_value_original %}
+        {{attribute.cpp_type}} original = {{attribute.cpp_value_original}};
+        {% else %}
+        {{attribute.cpp_type}} original = {{attribute.cpp_value}};
+        {% endif %}
+        v8::Handle<v8::Value> originalValue = {{attribute.cpp_value_to_v8_value}};
+        world.activityLogger()->logSetter("{{interface_name}}.{{attribute.name}}", v8Value, originalValue);
+        {% else %}
+        world.activityLogger()->logSetter("{{interface_name}}.{{attribute.name}}", v8Value);
+        {% endif %}
     }
     {% endif %}
     {% if attribute.is_custom_element_callbacks or attribute.is_reflect %}
