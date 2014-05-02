@@ -83,7 +83,7 @@ void CustomElementMicrotaskQueue::enqueue(PassOwnPtr<CustomElementMicrotaskStep>
 CustomElementMicrotaskStep::Result CustomElementMicrotaskQueue::dispatch()
 {
     MicrotaskQueueInvocationScope scope(this);
-    Result result = Result(0);
+    Result result = CustomElementMicrotaskStep::Continue;
 
     unsigned i;
     for (i = 0; i < m_queue.size(); ++i) {

@@ -88,6 +88,7 @@ public:
     WeakPtr(PassRefPtr<WeakReference<T> > ref) : m_ref(ref) { }
 
     T* get() const { return m_ref ? m_ref->get() : 0; }
+    void clear() { m_ref.clear(); }
 
     T* operator->() const
     {

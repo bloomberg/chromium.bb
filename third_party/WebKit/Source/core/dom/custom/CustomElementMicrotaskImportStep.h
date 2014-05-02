@@ -36,10 +36,12 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
+#include "wtf/WeakPtr.h"
 
 namespace WebCore {
 
 class CustomElementMicrotaskQueue;
+class HTMLImportChild;
 
 // Processes the Custom Elements in an HTML Import. This is a
 // composite step which processes the Custom Elements created by
@@ -50,14 +52,18 @@ class CustomElementMicrotaskQueue;
 class CustomElementMicrotaskImportStep : public CustomElementMicrotaskStep {
     WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskImportStep);
 public:
-    static PassOwnPtr<CustomElementMicrotaskImportStep> create(PassRefPtr<CustomElementMicrotaskQueue>);
+    static PassOwnPtr<CustomElementMicrotaskImportStep> create(HTMLImportChild*);
     virtual ~CustomElementMicrotaskImportStep();
 
     // API for HTML Imports
-    void importDidFinish();
+    void importDidFinishLoading();
+    WeakPtr<CustomElementMicrotaskImportStep> weakPtr() { return m_weakFactory.createWeakPtr(); }
 
 private:
-    CustomElementMicrotaskImportStep(PassRefPtr<CustomElementMicrotaskQueue>);
+    CustomElementMicrotaskImportStep(HTMLImportChild*);
+
+    void didUpgradeAllCustomElements();
+    bool shouldWaitForImport() const;
 
     // CustomElementMicrotaskStep
     virtual Result process() OVERRIDE FINAL;
@@ -67,7 +73,9 @@ private:
 #endif
 
     bool m_importFinished;
+    WeakPtr<HTMLImportChild> m_import;
     RefPtr<CustomElementMicrotaskQueue> m_queue;
+    WeakPtrFactory<CustomElementMicrotaskImportStep> m_weakFactory;
 };
 
 }

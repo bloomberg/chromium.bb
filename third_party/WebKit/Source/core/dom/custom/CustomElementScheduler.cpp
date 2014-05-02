@@ -42,7 +42,6 @@
 #include "core/dom/custom/CustomElementMicrotaskResolutionStep.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/html/imports/HTMLImportChild.h"
-#include "core/html/imports/HTMLImportLoader.h"
 
 namespace WebCore {
 
@@ -85,7 +84,7 @@ CustomElementMicrotaskImportStep* CustomElementScheduler::scheduleImport(HTMLImp
     ASSERT(!import->isDone());
     ASSERT(import->parent());
 
-    OwnPtr<CustomElementMicrotaskImportStep> step = CustomElementMicrotaskImportStep::create(import->loader()->microtaskQueue());
+    OwnPtr<CustomElementMicrotaskImportStep> step = CustomElementMicrotaskImportStep::create(import);
     CustomElementMicrotaskImportStep* rawStep = step.get();
 
     // Ownership of the new step is transferred to the parent

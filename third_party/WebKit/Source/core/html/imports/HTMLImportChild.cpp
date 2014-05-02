@@ -33,6 +33,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/custom/CustomElement.h"
+#include "core/dom/custom/CustomElementMicrotaskDispatcher.h"
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
 #include "core/html/imports/HTMLImportChildClient.h"
 #include "core/html/imports/HTMLImportLoader.h"
@@ -48,7 +49,7 @@ HTMLImportChild::HTMLImportChild(Document& master, const KURL& url, SyncMode syn
     , m_master(master)
 #endif
     , m_url(url)
-    , m_customElementMicrotaskStep(0)
+    , m_weakFactory(this)
     , m_loader(0)
     , m_client(0)
 {
@@ -61,12 +62,6 @@ HTMLImportChild::~HTMLImportChild()
 {
     // importDestroyed() should be called before the destruction.
     ASSERT(!m_loader);
-
-    if (m_customElementMicrotaskStep) {
-        // if Custom Elements were blocked, must unblock them before death
-        m_customElementMicrotaskStep->importDidFinish();
-        m_customElementMicrotaskStep = 0;
-    }
 
     if (m_client)
         m_client->importChildWasDestroyed(this);
@@ -98,17 +93,43 @@ void HTMLImportChild::didFinish()
 {
     if (m_client)
         m_client->didFinish();
+}
 
-    if (m_customElementMicrotaskStep) {
-        m_customElementMicrotaskStep->importDidFinish();
-        m_customElementMicrotaskStep = 0;
+static bool hasAsyncImportAncestor(HTMLImport* import)
+{
+    for (HTMLImport* i = import; i; i = i->parent()) {
+        if (!i->isSync())
+            return true;
     }
+
+    return false;
 }
 
 void HTMLImportChild::didFinishLoading()
 {
     clearResource();
     stateWillChange();
+    if (m_customElementMicrotaskStep)
+        CustomElementMicrotaskDispatcher::instance().importDidFinish(m_customElementMicrotaskStep.get());
+    // FIXME(crbug.com/365956):
+    // This is needed because async import currently never consumes the queue and
+    // it prevents the children of such an async import from finishing.
+    // Their steps are never processed.
+    // Although this is clearly not the right fix,
+    // https://codereview.chromium.org/249563003/ should get rid of this part.
+    if (hasAsyncImportAncestor(this))
+        didFinishUpgradingCustomElements();
+}
+
+void HTMLImportChild::didFinishUpgradingCustomElements()
+{
+    stateWillChange();
+    m_customElementMicrotaskStep.clear();
+}
+
+bool HTMLImportChild::isLoaded() const
+{
+    return m_loader && m_loader->isDone();
 }
 
 Document* HTMLImportChild::importedDocument() const
@@ -159,7 +180,7 @@ void HTMLImportChild::ensureLoader()
 
     if (isSync() && !isDone()) {
         ASSERT(!m_customElementMicrotaskStep);
-        m_customElementMicrotaskStep = CustomElement::didCreateImport(this);
+        m_customElementMicrotaskStep = CustomElement::didCreateImport(this)->weakPtr();
     }
 }
 
@@ -181,7 +202,7 @@ void HTMLImportChild::shareLoader(HTMLImportChild* loader)
 
 bool HTMLImportChild::isDone() const
 {
-    return m_loader && m_loader->isDone();
+    return m_loader && m_loader->isDone() && !m_customElementMicrotaskStep;
 }
 
 bool HTMLImportChild::loaderHasError() const
@@ -215,8 +236,9 @@ HTMLLinkElement* HTMLImportChild::link() const
 void HTMLImportChild::showThis()
 {
     HTMLImport::showThis();
-    fprintf(stderr, " loader=%p sync=%s url=%s",
+    fprintf(stderr, " loader=%p step=%p sync=%s url=%s",
         m_loader,
+        m_customElementMicrotaskStep.get(),
         isSync() ? "Y" : "N",
         url().string().utf8().data());
 }
