@@ -81,14 +81,14 @@
                 consoleWrite("");
 
                 consoleWrite("Test non-finite playback rates");
-                testException("video.defaultPlaybackRate = -Infinity", '"TypeError: Failed to set the \'defaultPlaybackRate\' property on \'HTMLMediaElement\': The value provided is infinite."');
-                testException("video.defaultPlaybackRate = Infinity", '"TypeError: Failed to set the \'defaultPlaybackRate\' property on \'HTMLMediaElement\': The value provided is infinite."');
-                testException("video.defaultPlaybackRate = NaN", '"TypeError: Failed to set the \'defaultPlaybackRate\' property on \'HTMLMediaElement\': The value provided is not a number."');
+                testException("video.defaultPlaybackRate = -Infinity", '"TypeError: Failed to set the \'defaultPlaybackRate\' property on \'HTMLMediaElement\': The provided double value is non-finite."');
+                testException("video.defaultPlaybackRate = Infinity", '"TypeError: Failed to set the \'defaultPlaybackRate\' property on \'HTMLMediaElement\': The provided double value is non-finite."');
+                testException("video.defaultPlaybackRate = NaN", '"TypeError: Failed to set the \'defaultPlaybackRate\' property on \'HTMLMediaElement\': The provided double value is non-finite."');
                 consoleWrite("");
 
-                testException("video.playbackRate = -Infinity", '"TypeError: Failed to set the \'playbackRate\' property on \'HTMLMediaElement\': The value provided is infinite."');
-                testException("video.playbackRate = Infinity", '"TypeError: Failed to set the \'playbackRate\' property on \'HTMLMediaElement\': The value provided is infinite."');
-                testException("video.playbackRate = NaN", '"TypeError: Failed to set the \'playbackRate\' property on \'HTMLMediaElement\': The value provided is not a number."');
+                testException("video.playbackRate = -Infinity", '"TypeError: Failed to set the \'playbackRate\' property on \'HTMLMediaElement\': The provided double value is non-finite."');
+                testException("video.playbackRate = Infinity", '"TypeError: Failed to set the \'playbackRate\' property on \'HTMLMediaElement\': The provided double value is non-finite."');
+                testException("video.playbackRate = NaN", '"TypeError: Failed to set the \'playbackRate\' property on \'HTMLMediaElement\': The provided double value is non-finite."');
                 consoleWrite("");
 
                 endTest();

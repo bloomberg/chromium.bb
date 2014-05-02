@@ -129,9 +129,9 @@ public:
     double duration() const;
     bool paused() const;
     double defaultPlaybackRate() const;
-    void setDefaultPlaybackRate(double, ExceptionState&);
+    void setDefaultPlaybackRate(double);
     double playbackRate() const;
-    void setPlaybackRate(double, ExceptionState&);
+    void setPlaybackRate(double);
     void updatePlaybackRate();
     PassRefPtr<TimeRanges> played();
     PassRefPtr<TimeRanges> seekable() const;

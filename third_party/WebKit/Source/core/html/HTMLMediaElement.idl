@@ -26,6 +26,7 @@
 [
     ActiveDOMObject,
     RuntimeEnabled=Media,
+    TypeChecking=Unrestricted,
 ] interface HTMLMediaElement : HTMLElement {
 
     // error state
@@ -57,12 +58,11 @@
     readonly attribute boolean seeking;
 
     // playback state
-    // FIXME: generated bindings should check isfinite: http://crbug.com/354298
     [RaisesException=Setter] attribute double currentTime;
     readonly attribute unrestricted double duration;
     readonly attribute boolean paused;
-    [RaisesException=Setter] attribute double defaultPlaybackRate;
-    [RaisesException=Setter] attribute double playbackRate;
+    attribute double defaultPlaybackRate;
+    attribute double playbackRate;
     readonly attribute TimeRanges played;
     readonly attribute TimeRanges seekable;
     readonly attribute boolean ended;

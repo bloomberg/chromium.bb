@@ -4,9 +4,9 @@
 <script>
     waitForEvent('canplaythrough',
     function () {
-        testException("video.currentTime = -Infinity", '"TypeError: Failed to set the \'currentTime\' property on \'HTMLMediaElement\': The value provided is infinite."');
-        testException("video.currentTime = Infinity", '"TypeError: Failed to set the \'currentTime\' property on \'HTMLMediaElement\': The value provided is infinite."');
-        testException("video.currentTime = NaN", '"TypeError: Failed to set the \'currentTime\' property on \'HTMLMediaElement\': The value provided is not a number."');
+        testException("video.currentTime = -Infinity", '"TypeError: Failed to set the \'currentTime\' property on \'HTMLMediaElement\': The provided double value is non-finite."');
+        testException("video.currentTime = Infinity", '"TypeError: Failed to set the \'currentTime\' property on \'HTMLMediaElement\': The provided double value is non-finite."');
+        testException("video.currentTime = NaN", '"TypeError: Failed to set the \'currentTime\' property on \'HTMLMediaElement\': The provided double value is non-finite."');
         video.currentTime = 1.5;
         testExpected("video.currentTime.toFixed(1)", 1.5);
         video.play();
