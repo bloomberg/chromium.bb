@@ -7,7 +7,6 @@ layer at (0,0) size 800x521
         RenderBlock {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
         RenderTable {TABLE} at (10,290) size 40x40 [bgcolor=#FFFF77]
         RenderBlock (anonymous) at (0,340) size 115x65
-          RenderHTMLCanvas {CANVAS} at (10,10) size 40x40 [bgcolor=#FFFF77]
           RenderText {#text} at (0,0) size 0x0
         RenderBlock {P} at (0,421) size 115x20
           RenderText {#text} at (0,0) size 44x19
@@ -27,7 +26,6 @@ layer at (0,0) size 800x521
         RenderBlock {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
         RenderTable {TABLE} at (10,290) size 40x40 [bgcolor=#FFFF77]
         RenderBlock (anonymous) at (0,340) size 115x65
-          RenderHTMLCanvas {CANVAS} at (10,10) size 40x40 [bgcolor=#FFFF77]
           RenderText {#text} at (0,0) size 0x0
         RenderBlock {P} at (0,421) size 115x20
           RenderText {#text} at (0,0) size 44x19
@@ -41,7 +39,6 @@ layer at (0,0) size 800x521
         RenderBlock {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
         RenderTable {TABLE} at (10,290) size 40x40 [bgcolor=#FFFF77]
         RenderBlock (anonymous) at (0,340) size 115x65
-          RenderHTMLCanvas {CANVAS} at (10,10) size 40x40 [bgcolor=#FFFF77]
           RenderText {#text} at (0,0) size 0x0
         RenderBlock {P} at (0,421) size 115x20
           RenderText {#text} at (0,0) size 44x19
@@ -55,7 +52,6 @@ layer at (0,0) size 800x521
         RenderBlock {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
         RenderTable {TABLE} at (10,290) size 40x40 [bgcolor=#FFFF77]
         RenderBlock (anonymous) at (0,340) size 115x65
-          RenderHTMLCanvas {CANVAS} at (10,10) size 40x40 [bgcolor=#FFFF77]
           RenderText {#text} at (0,0) size 0x0
         RenderBlock {P} at (0,421) size 115x20
           RenderText {#text} at (0,0) size 44x19
@@ -69,7 +65,6 @@ layer at (0,0) size 800x521
         RenderBlock {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
         RenderTable {TABLE} at (10,290) size 40x40 [bgcolor=#FFFF77]
         RenderBlock (anonymous) at (0,340) size 115x65
-          RenderHTMLCanvas {CANVAS} at (10,10) size 40x40 [bgcolor=#FFFF77]
           RenderText {#text} at (0,0) size 0x0
         RenderBlock {P} at (0,421) size 115x20
           RenderText {#text} at (0,0) size 44x19
@@ -81,14 +76,24 @@ layer at (0,0) size 800x521
             text run at (79,0) width 36: " dolor"
 layer at (18,248) size 40x40
   RenderBlock {DIV} at (10,240) size 40x40 [bgcolor=#FFFF77]
+layer at (18,358) size 40x40
+  RenderHTMLCanvas {CANVAS} at (10,10) size 40x40 [bgcolor=#FFFF77]
 layer at (143,248) size 40x40
   RenderBlock {DIV} at (10,240) size 40x40 [bgcolor=#FFFF77]
+layer at (143,358) size 40x40
+  RenderHTMLCanvas {CANVAS} at (10,10) size 40x40 [bgcolor=#FFFF77]
 layer at (268,248) size 40x40
   RenderBlock {DIV} at (10,240) size 40x40 [bgcolor=#FFFF77]
+layer at (268,358) size 40x40
+  RenderHTMLCanvas {CANVAS} at (10,10) size 40x40 [bgcolor=#FFFF77]
 layer at (393,248) size 40x40
   RenderBlock {DIV} at (10,240) size 40x40 [bgcolor=#FFFF77]
+layer at (393,358) size 40x40
+  RenderHTMLCanvas {CANVAS} at (10,10) size 40x40 [bgcolor=#FFFF77]
 layer at (518,248) size 40x40
   RenderBlock {DIV} at (10,240) size 40x40 [bgcolor=#FFFF77]
+layer at (518,358) size 40x40
+  RenderHTMLCanvas {CANVAS} at (10,10) size 40x40 [bgcolor=#FFFF77]
 layer at (8,68) size 60x60
   RenderBlock (relative positioned) {DIV} at (0,60) size 60x60
 layer at (18,78) size 40x40

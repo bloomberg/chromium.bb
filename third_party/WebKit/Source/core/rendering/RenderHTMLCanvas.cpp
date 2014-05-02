@@ -46,15 +46,7 @@ RenderHTMLCanvas::RenderHTMLCanvas(HTMLCanvasElement* element)
 
 LayerType RenderHTMLCanvas::layerTypeRequired() const
 {
-    LayerType type = RenderReplaced::layerTypeRequired();
-    if (type != NoLayer)
-        return type;
-
-    HTMLCanvasElement* canvas = toHTMLCanvasElement(node());
-    if (canvas && canvas->renderingContext() && canvas->renderingContext()->isAccelerated())
-        return NormalLayer;
-
-    return NoLayer;
+    return NormalLayer;
 }
 
 void RenderHTMLCanvas::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
