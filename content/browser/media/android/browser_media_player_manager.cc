@@ -677,10 +677,13 @@ void BrowserMediaPlayerManager::OnUpdateSession(
   }
 
   drm_bridge->UpdateSession(session_id, &response[0], response.size());
-  // In EME v0.1b MediaKeys lives in the media element. So the |cdm_id|
-  // is the same as the |player_id|.
-  // TODO(xhwang): Separate |cdm_id| and |player_id|.
-  MediaPlayerAndroid* player = GetPlayer(cdm_id);
+
+  DrmBridgePlayerMap::const_iterator iter = drm_bridge_player_map_.find(cdm_id);
+  if (iter == drm_bridge_player_map_.end())
+    return;
+
+  int player_id = iter->second;
+  MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->OnKeyAdded();
 }
@@ -722,6 +725,14 @@ void BrowserMediaPlayerManager::RemovePlayer(int player_id) {
     MediaPlayerAndroid* player = *it;
     if (player->player_id() == player_id) {
       players_.erase(it);
+      break;
+    }
+  }
+
+  for (DrmBridgePlayerMap::iterator it = drm_bridge_player_map_.begin();
+       it != drm_bridge_player_map_.end(); ++it) {
+    if (it->second == player_id) {
+      drm_bridge_player_map_.erase(it);
       break;
     }
   }
@@ -772,10 +783,15 @@ void BrowserMediaPlayerManager::AddDrmBridge(int cdm_id,
 }
 
 void BrowserMediaPlayerManager::RemoveDrmBridge(int cdm_id) {
+  // TODO(xhwang): Detach DrmBridge from the player it's set to. In prefixed
+  // EME implementation the current code is fine because we always destroy the
+  // player before we destroy the DrmBridge. This will not always be the case
+  // in unprefixed EME implementation.
   for (ScopedVector<MediaDrmBridge>::iterator it = drm_bridges_.begin();
       it != drm_bridges_.end(); ++it) {
     if ((*it)->cdm_id() == cdm_id) {
       drm_bridges_.erase(it);
+      drm_bridge_player_map_.erase(cdm_id);
       break;
     }
   }
@@ -792,6 +808,9 @@ void BrowserMediaPlayerManager::OnSetCdm(int player_id, int cdm_id) {
   // TODO(qinmin): add the logic to decide whether we should create the
   // fullscreen surface for EME lv1.
   player->SetDrmBridge(drm_bridge);
+  // Do now support setting one CDM on multiple players.
+  DCHECK(drm_bridge_player_map_.find(cdm_id) == drm_bridge_player_map_.end());
+  drm_bridge_player_map_[cdm_id] = player_id;
 }
 
 void BrowserMediaPlayerManager::CreateSessionIfPermitted(

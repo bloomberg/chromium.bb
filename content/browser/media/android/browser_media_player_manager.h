@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_MEDIA_ANDROID_BROWSER_MEDIA_PLAYER_MANAGER_H_
 #define CONTENT_BROWSER_MEDIA_ANDROID_BROWSER_MEDIA_PLAYER_MANAGER_H_
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -217,6 +218,11 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
   // An array of managed media DRM bridges.
   ScopedVector<media::MediaDrmBridge> drm_bridges_;
+
+  // Map from DrmBridge cdm_id to MediaPlayerAndroid player_id to indicate that
+  // the DrmBridge is set on the MediaPlayerAndroid object.
+  typedef std::map<int, int> DrmBridgePlayerMap;
+  DrmBridgePlayerMap drm_bridge_player_map_;
 
   // The fullscreen video view object or NULL if video is not played in
   // fullscreen.
