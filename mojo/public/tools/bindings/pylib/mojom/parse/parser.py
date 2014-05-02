@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -360,24 +359,3 @@ def Parse(source, filename):
 
   tree = yacc.parse(source)
   return tree
-
-
-def main(argv):
-  if len(argv) < 2:
-    print "usage: %s filename" % argv[0]
-    return 0
-
-  for filename in argv[1:]:
-    with open(filename) as f:
-      print "%s:" % filename
-      try:
-        print Parse(f.read(), filename)
-      except ParseError, e:
-        print e
-        return 1
-
-  return 0
-
-
-if __name__ == '__main__':
-  sys.exit(main(sys.argv))
