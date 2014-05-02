@@ -92,8 +92,6 @@ crbug.com/310679 [ Mac ] fast/frames/frame-set-rotation-hit.html [ ImageOnlyFail
 crbug.com/310679 [ Mac ] fast/frames/frame-set-scaling-hit.html [ ImageOnlyFailure Pass ]
 crbug.com/318434 virtual/gpu/compositedscrolling/scrollbars/custom-scrollbar-with-incomplete-style.html [ ImageOnlyFailure ]
 
-crbug.com/365289 [ Mac ] fast/repaint/clipped-relative.html [ NeedsRebaseline ]
-crbug.com/365289 [ Mac ] fast/repaint/positioned-list-offset-change-repaint.html [ NeedsRebaseline ]
 crbug.com/365289 [ Mac ] fast/repaint/replaced-clipped-positioned-not-wrong-incremental-repainting.html [ NeedsRebaseline ]
 crbug.com/365289 [ Mac ] virtual/softwarecompositing/repaint/invalidations-on-composited-layers.html [ NeedsRebaseline ]
 
