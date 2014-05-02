@@ -63,9 +63,6 @@ private:
     RefPtr<Float32Array> m_curve;
 
     OverSampleType m_oversample;
-
-    // This synchronizes process() with setCurve().
-    mutable Mutex m_processLock;
 };
 
 } // namespace WebCore
