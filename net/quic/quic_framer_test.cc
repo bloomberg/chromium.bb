@@ -241,12 +241,12 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
     return accept_public_header_;
   }
 
-  virtual void OnDecryptedPacket(EncryptionLevel level) OVERRIDE {}
-
   virtual bool OnUnauthenticatedHeader(
       const QuicPacketHeader& header) OVERRIDE {
     return true;
   }
+
+  virtual void OnDecryptedPacket(EncryptionLevel level) OVERRIDE {}
 
   virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE {
     ++packet_count_;

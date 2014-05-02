@@ -68,9 +68,11 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   size_t num_bytes_buffered() const { return num_bytes_buffered_; }
   QuicStreamOffset num_bytes_consumed() const { return num_bytes_consumed_; }
 
-  int num_frames_received() { return num_frames_received_; }
+  int num_frames_received() const { return num_frames_received_; }
 
-  int num_duplicate_frames_received() { return num_duplicate_frames_received_; }
+  int num_duplicate_frames_received() const {
+    return num_duplicate_frames_received_;
+  }
 
  private:
   friend class test::QuicStreamSequencerPeer;

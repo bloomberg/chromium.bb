@@ -454,9 +454,6 @@ class NET_EXPORT_PRIVATE QuicConnection
     return sent_packet_manager_;
   }
 
-  // Make sure a stop waiting we got from our peer is sane.
-  bool ValidateStopWaitingFrame(const QuicStopWaitingFrame& stop_waiting);
-
   bool CanWrite(TransmissionType transmission_type,
                 HasRetransmittableData retransmittable,
                 IsHandshake handshake);
@@ -542,6 +539,9 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Make sure an ack we got from our peer is sane.
   bool ValidateAckFrame(const QuicAckFrame& incoming_ack);
+
+  // Make sure a stop waiting we got from our peer is sane.
+  bool ValidateStopWaitingFrame(const QuicStopWaitingFrame& stop_waiting);
 
   // Sends a version negotiation packet to the peer.
   void SendVersionNegotiationPacket();

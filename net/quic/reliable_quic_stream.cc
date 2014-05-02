@@ -167,11 +167,11 @@ void ReliableQuicStream::MaybeSendWindowUpdate() {
   flow_controller_.MaybeSendWindowUpdate(session()->connection());
 }
 
-int ReliableQuicStream::num_frames_received() {
+int ReliableQuicStream::num_frames_received() const {
   return sequencer_.num_frames_received();
 }
 
-int ReliableQuicStream::num_duplicate_frames_received() {
+int ReliableQuicStream::num_duplicate_frames_received() const {
   return sequencer_.num_duplicate_frames_received();
 }
 
@@ -381,7 +381,7 @@ void ReliableQuicStream::CloseWriteSide() {
   }
 }
 
-bool ReliableQuicStream::HasBufferedData() {
+bool ReliableQuicStream::HasBufferedData() const {
   return !queued_data_.empty();
 }
 
