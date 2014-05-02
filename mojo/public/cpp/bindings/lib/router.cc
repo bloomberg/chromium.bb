@@ -125,8 +125,9 @@ bool Router::HandleIncomingMessage(Message* message) {
     }
     MessageReceiver* responder = it->second;
     responders_.erase(it);
-    responder->Accept(message);
+    bool ok = responder->Accept(message);
     delete responder;
+    return ok;
   } else {
     if (incoming_receiver_)
       return incoming_receiver_->Accept(message);
