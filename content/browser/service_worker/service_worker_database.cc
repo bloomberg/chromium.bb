@@ -49,6 +49,10 @@
 //     (ex. "REG:http://example.com\x00123456")
 //   value: <ServiceWorkerRegistrationData serialized as a string>
 //
+//   key: "RES:" + <int64 'version_id'> + '\x00' + <int64 'resource_id'>
+//     (ex. "RES:123456\x00654321")
+//   value: <ServiceWorkerResourceRecord serialized as a string>
+//
 //   key: "URES:" + <int64 'uncommitted_resource_id'>
 //   value: <empty>
 
@@ -63,6 +67,7 @@ const char kNextVerIdKey[] = "INITDATA_NEXT_VERSION_ID";
 const char kUniqueOriginKey[] = "INITDATA_UNIQUE_ORIGIN:";
 
 const char kRegKeyPrefix[] = "REG:";
+const char kResKeyPrefix[] = "RES:";
 const char kKeySeparator = '\x00';
 
 const char kUncommittedResIdKeyPrefix[] = "URES:";
@@ -87,6 +92,19 @@ std::string CreateRegistrationKey(int64 registration_id,
                             origin.spec().c_str(),
                             kKeySeparator,
                             base::Int64ToString(registration_id).c_str());
+}
+
+std::string CreateResourceRecordKeyPrefix(int64 version_id) {
+  return base::StringPrintf("%s%s%c",
+                            kResKeyPrefix,
+                            base::Int64ToString(version_id).c_str(),
+                            kKeySeparator);
+}
+
+std::string CreateResourceRecordKey(int64 version_id,
+                                    int64 resource_id) {
+  return CreateResourceRecordKeyPrefix(version_id).append(
+      base::Int64ToString(resource_id));
 }
 
 std::string CreateUniqueOriginKey(const GURL& origin) {
@@ -120,15 +138,37 @@ void PutRegistrationDataToBatch(
   batch->Put(CreateRegistrationKey(data.registration_id(), origin), value);
 }
 
+void PutResourceRecordToBatch(
+    const ServiceWorkerDatabase::ResourceRecord& input,
+    int64 version_id,
+    leveldb::WriteBatch* batch) {
+  DCHECK(batch);
+
+  // Convert ResourceRecord to ServiceWorkerResourceRecord.
+  ServiceWorkerResourceRecord record;
+  record.set_resource_id(input.resource_id);
+  record.set_url(input.url.spec());
+
+  std::string value;
+  bool success = record.SerializeToString(&value);
+  DCHECK(success);
+  batch->Put(CreateResourceRecordKey(version_id, input.resource_id), value);
+}
+
 void PutUniqueOriginToBatch(const GURL& origin,
                             leveldb::WriteBatch* batch) {
   // Value should be empty.
   batch->Put(CreateUniqueOriginKey(origin), "");
 }
 
-bool ParseRegistrationData(
-    const std::string& serialized,
-    ServiceWorkerDatabase::RegistrationData* out) {
+void PutPurgeableResourceIdToBatch(int64 resource_id,
+                                   leveldb::WriteBatch* batch) {
+  // Value should be empty.
+  batch->Put(CreateResourceIdKey(kPurgeableResIdKeyPrefix, resource_id), "");
+}
+
+bool ParseRegistrationData(const std::string& serialized,
+                           ServiceWorkerDatabase::RegistrationData* out) {
   DCHECK(out);
   ServiceWorkerRegistrationData data;
   if (!data.ParseFromString(serialized))
@@ -136,8 +176,11 @@ bool ParseRegistrationData(
 
   GURL scope_url(data.scope_url());
   GURL script_url(data.script_url());
-  if (scope_url.GetOrigin() != script_url.GetOrigin())
+  if (!scope_url.is_valid() ||
+      !script_url.is_valid() ||
+      scope_url.GetOrigin() != script_url.GetOrigin()) {
     return false;
+  }
 
   // Convert ServiceWorkerRegistrationData to RegistrationData.
   out->registration_id = data.registration_id();
@@ -148,6 +191,23 @@ bool ParseRegistrationData(
   out->has_fetch_handler = data.has_fetch_handler();
   out->last_update_check =
       base::Time::FromInternalValue(data.last_update_check_time());
+  return true;
+}
+
+bool ParseResourceRecord(const std::string& serialized,
+                         ServiceWorkerDatabase::ResourceRecord* out) {
+  DCHECK(out);
+  ServiceWorkerResourceRecord record;
+  if (!record.ParseFromString(serialized))
+    return false;
+
+  GURL url(record.url());
+  if (!url.is_valid())
+    return false;
+
+  // Convert ServiceWorkerResourceRecord to ResourceRecord.
+  out->resource_id = record.resource_id();
+  out->url = url;
   return true;
 }
 
@@ -277,7 +337,8 @@ bool ServiceWorkerDatabase::ReadRegistration(
   if (!ReadRegistrationData(registration_id, origin, &value))
     return false;
 
-  // TODO(nhiroki): Read ResourceRecords tied with this registration.
+  if (!ReadResourceRecords(value.version_id, resources))
+    return false;
 
   *registration = value;
   return true;
@@ -300,7 +361,43 @@ bool ServiceWorkerDatabase::WriteRegistration(
 
   PutRegistrationDataToBatch(registration, &batch);
 
-  // TODO(nhiroki): Write |resources| into the database.
+  // Retrieve a previous version to sweep purgeable resources.
+  RegistrationData old_registration;
+  if (!ReadRegistrationData(registration.registration_id,
+                            registration.scope.GetOrigin(),
+                            &old_registration)) {
+    if (is_disabled_)
+      return false;
+    // Just not found.
+  } else {
+    DCHECK_LT(old_registration.version_id, registration.version_id);
+    // Currently resource sharing across versions and registrations is not
+    // suppported, so resource ids should not be overlapped between
+    // |registration| and |old_registration|.
+    // TODO(nhiroki): Add DCHECK to make sure the overlap does not exist.
+    if (!DeleteResourceRecords(old_registration.version_id, &batch))
+      return false;
+  }
+
+  // Used for avoiding multiple writes for the same resource id or url.
+  std::set<int64> pushed_resources;
+  std::set<GURL> pushed_urls;
+  for (std::vector<ResourceRecord>::const_iterator itr = resources.begin();
+       itr != resources.end(); ++itr) {
+    if (!itr->url.is_valid())
+      return false;
+
+    // Duplicated resource id or url should not exist.
+    DCHECK(pushed_resources.insert(itr->resource_id).second);
+    DCHECK(pushed_urls.insert(itr->url).second);
+
+    PutResourceRecordToBatch(*itr, registration.version_id, &batch);
+
+    // Delete a resource from the uncommitted list.
+    batch.Delete(CreateResourceIdKey(
+        kUncommittedResIdKeyPrefix, itr->resource_id));
+  }
+
   return WriteBatch(&batch);
 }
 
@@ -358,9 +455,19 @@ bool ServiceWorkerDatabase::DeleteRegistration(int64 registration_id,
     batch.Delete(CreateUniqueOriginKey(origin));
   }
 
+  // Delete a registration specified by |registration_id|.
   batch.Delete(CreateRegistrationKey(registration_id, origin));
 
-  // TODO(nhiroki): Delete ResourceRecords tied with this registration.
+  // Delete resource records associated with the registration.
+  for (std::vector<RegistrationData>::const_iterator itr =
+           registrations.begin(); itr != registrations.end(); ++itr) {
+    if (itr->registration_id == registration_id) {
+      if (!DeleteResourceRecords(itr->version_id, &batch))
+        return false;
+      break;
+    }
+  }
+
   return WriteBatch(&batch);
 }
 
@@ -490,6 +597,68 @@ bool ServiceWorkerDatabase::ReadRegistrationData(
   }
 
   *registration = parsed;
+  return true;
+}
+
+bool ServiceWorkerDatabase::ReadResourceRecords(
+    int64 version_id,
+    std::vector<ResourceRecord>* resources) {
+  DCHECK(resources);
+
+  std::string prefix = CreateResourceRecordKeyPrefix(version_id);
+  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+  for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
+    if (!itr->status().ok()) {
+      HandleError(FROM_HERE, itr->status());
+      resources->clear();
+      return false;
+    }
+
+    if (!RemovePrefix(itr->key().ToString(), prefix, NULL))
+      break;
+
+    ResourceRecord resource;
+    if (!ParseResourceRecord(itr->value().ToString(), &resource)) {
+      HandleError(FROM_HERE, leveldb::Status::Corruption("failed to parse"));
+      resources->clear();
+      return false;
+    }
+    resources->push_back(resource);
+  }
+  return true;
+}
+
+bool ServiceWorkerDatabase::DeleteResourceRecords(
+    int64 version_id,
+    leveldb::WriteBatch* batch) {
+  DCHECK(batch);
+
+  std::string prefix = CreateResourceRecordKeyPrefix(version_id);
+  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+  for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
+    if (!itr->status().ok()) {
+      HandleError(FROM_HERE, itr->status());
+      return false;
+    }
+
+    std::string key = itr->key().ToString();
+    std::string unprefixed;
+    if (!RemovePrefix(key, prefix, &unprefixed))
+      break;
+
+    int64 resource_id;
+    if (!base::StringToInt64(unprefixed, &resource_id)) {
+      HandleError(FROM_HERE, leveldb::Status::Corruption("failed to parse"));
+      return false;
+    }
+
+    // Remove a resource record.
+    batch->Delete(key);
+
+    // Currently resource sharing across versions and registrations is not
+    // supported, so we can purge this without caring about it.
+    PutPurgeableResourceIdToBatch(resource_id, batch);
+  }
   return true;
 }
 

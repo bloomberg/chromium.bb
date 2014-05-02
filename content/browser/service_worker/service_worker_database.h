@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_DATABASE_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_DATABASE_H_
 
+#include <map>
 #include <set>
 #include <vector>
 
@@ -142,6 +143,10 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   bool ReadRegistrationData(int64 registration_id,
                             const GURL& origin,
                             RegistrationData* registration);
+  bool ReadResourceRecords(int64 version_id,
+                           std::vector<ResourceRecord>* resources);
+  bool DeleteResourceRecords(int64 version_id,
+                             leveldb::WriteBatch* batch);
   bool ReadResourceIds(const char* id_key_prefix,
                        std::set<int64>* ids);
   bool WriteResourceIds(const char* id_key_prefix,
@@ -195,6 +200,9 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, OpenDatabase_InMemory);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, DatabaseVersion);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, GetNextAvailableIds);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, Registration_Basic);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, Registration_Overwrite);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, Registration_Multiple);
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDatabase);
 };
