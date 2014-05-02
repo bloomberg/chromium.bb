@@ -259,7 +259,9 @@ ProfileItemView::ProfileItemView(const AvatarMenu::Item& item,
   set_notify_enter_exit_on_child(true);
 
   image_view_ = new ProfileImageView();
-  gfx::ImageSkia profile_icon = *item_.icon.ToImageSkia();
+  // GetSizedAvatarIcon will resize the icon in case it's too large.
+  const gfx::ImageSkia profile_icon = *profiles::GetSizedAvatarIcon(item_.icon,
+      false, profiles::kAvatarIconWidth, kItemHeight).ToImageSkia();
   if (item_.active || item_.signin_required)
     image_view_->SetImage(GetBadgedIcon(profile_icon));
   else
