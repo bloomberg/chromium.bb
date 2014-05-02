@@ -73,10 +73,6 @@ base::Callback<T> RelayCallbackToTaskRunner(
     const tracked_objects::Location& from_here,
     const base::Callback<T>& callback) {
   DCHECK(task_runner->RunsTasksOnCurrentThread());
-
-  if (callback.is_null())
-    return base::Callback<T>();
-
   return base::Bind(&internal::RelayToTaskRunnerHelper<T>::Run,
                     make_scoped_refptr(task_runner), from_here,
                     callback);
