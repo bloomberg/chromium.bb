@@ -1174,10 +1174,6 @@ void BrowserView::ShowBookmarkAppBubble(
                                     extension_id);
 }
 
-void BrowserView::ShowBookmarkPrompt() {
-  GetLocationBarView()->ShowBookmarkPrompt();
-}
-
 void BrowserView::ShowTranslateBubble(content::WebContents* web_contents,
                                       translate::TranslateStep step,
                                       TranslateErrors::Type error_type) {

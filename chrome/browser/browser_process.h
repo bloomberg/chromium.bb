@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/host_desktop.h"
 
 class BackgroundModeManager;
-class BookmarkPromptController;
 class ChromeNetLog;
 class CRLSetFetcher;
 class DownloadRequestLimiter;
@@ -211,8 +210,6 @@ class BrowserProcess {
 
   virtual component_updater::PnaclComponentInstaller*
       pnacl_component_installer() = 0;
-
-  virtual BookmarkPromptController* bookmark_prompt_controller() = 0;
 
   virtual MediaFileSystemRegistry* media_file_system_registry() = 0;
 

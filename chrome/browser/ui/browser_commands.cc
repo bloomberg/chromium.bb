@@ -32,7 +32,6 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/accelerator_utils.h"
-#include "chrome/browser/ui/bookmarks/bookmark_prompt_controller.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -161,7 +160,7 @@ bool GetBookmarkOverrideCommand(
   return false;
 }
 
-void BookmarkCurrentPageInternal(Browser* browser, bool from_star) {
+void BookmarkCurrentPageInternal(Browser* browser) {
   content::RecordAction(UserMetricsAction("Star"));
 
   BookmarkModel* model =
@@ -181,8 +180,6 @@ void BookmarkCurrentPageInternal(Browser* browser, bool from_star) {
     FaviconTabHelper::FromWebContents(web_contents)->SaveFavicon();
   }
   bookmark_utils::AddIfNotBookmarked(model, url, title);
-  if (from_star && !was_bookmarked)
-    BookmarkPromptController::AddedBookmark(browser, url);
   // Make sure the model actually added a bookmark before showing the star. A
   // bookmark isn't created if the url is invalid.
   if (browser->window()->IsActive() && model->IsBookmarked(url)) {
@@ -743,11 +740,7 @@ void BookmarkCurrentPage(Browser* browser) {
     };
   }
 
-  BookmarkCurrentPageInternal(browser, false);
-}
-
-void BookmarkCurrentPageFromStar(Browser* browser) {
-  BookmarkCurrentPageInternal(browser, true);
+  BookmarkCurrentPageInternal(browser);
 }
 
 bool CanBookmarkCurrentPage(const Browser* browser) {

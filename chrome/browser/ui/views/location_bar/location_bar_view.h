@@ -199,9 +199,6 @@ class LocationBarView : public LocationBar,
     toolbar_origin_chip_view_ = toolbar_origin_chip_view;
   }
 
-  // Shows the bookmark prompt.
-  void ShowBookmarkPrompt();
-
   // Returns the screen coordinates of the omnibox (where the URL text appears,
   // not where the icons are shown).
   gfx::Point GetOmniboxViewOrigin() const;

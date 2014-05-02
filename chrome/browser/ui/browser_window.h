@@ -226,10 +226,6 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void ShowBookmarkAppBubble(const WebApplicationInfo& web_app_info,
                                      const std::string& extension_id) = 0;
 
-  // Shows the bookmark prompt.
-  // TODO(yosin): Make ShowBookmarkPrompt pure virtual.
-  virtual void ShowBookmarkPrompt() {}
-
   // Shows the translate bubble.
   virtual void ShowTranslateBubble(content::WebContents* contents,
                                    translate::TranslateStep step,

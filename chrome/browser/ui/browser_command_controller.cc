@@ -534,9 +534,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_BOOKMARK_PAGE:
       BookmarkCurrentPage(browser_);
       break;
-    case IDC_BOOKMARK_PAGE_FROM_STAR:
-      BookmarkCurrentPageFromStar(browser_);
-      break;
     case IDC_PIN_TO_START_SCREEN:
       TogglePagePinnedToStartScreen(browser_);
       break;
@@ -920,7 +917,6 @@ void BrowserCommandController::InitCommandState() {
 
   // Page-related commands
   command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION, true);
-  command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_AUTO_DETECT, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_UTF8, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_UTF16LE, true);

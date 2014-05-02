@@ -324,15 +324,6 @@
   </if>
   <!-- End of Bookmarks Editor strings. -->
 
-  <!-- Begin of Bookmarks Prompt strings. -->
-  <message name="IDS_BOOKMARK_PROMPT_MESSAGE" desc="Message of bookmark prompt">
-    Like this site? Click here to bookmark it!
-  </message>
-  <message name="IDS_BOOKMARK_PROMPT_DISMISS" desc="Link for dismissing bookmark prompt">
-    Dismiss
-  </message>
-  <!-- End of Bookmarks Prompt strings. -->
-
   <!-- Begin of Bookmarks Manager strings. -->
   <message name="IDS_BOOKMARK_MANAGER_TITLE" desc="Title of the bookmark manager window.">
     Bookmark Manager

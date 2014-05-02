@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/chrome_extensions_browser_client.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/bookmarks/bookmark_prompt_controller.h"
 #include "chrome/test/base/testing_browser_process_platform_part.h"
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -340,15 +339,6 @@ TestingBrowserProcess::pnacl_component_installer() {
   return NULL;
 }
 
-BookmarkPromptController* TestingBrowserProcess::bookmark_prompt_controller() {
-#if defined(OS_IOS)
-  NOTIMPLEMENTED();
-  return NULL;
-#else
-  return bookmark_prompt_controller_.get();
-#endif
-}
-
 MediaFileSystemRegistry* TestingBrowserProcess::media_file_system_registry() {
 #if defined(OS_IOS) || defined(OS_ANDROID)
   NOTIMPLEMENTED();
@@ -369,13 +359,6 @@ WebRtcLogUploader* TestingBrowserProcess::webrtc_log_uploader() {
   return NULL;
 }
 #endif
-
-void TestingBrowserProcess::SetBookmarkPromptController(
-    BookmarkPromptController* controller) {
-#if !defined(OS_IOS)
-  bookmark_prompt_controller_.reset(controller);
-#endif
-}
 
 void TestingBrowserProcess::SetSystemRequestContext(
     net::URLRequestContextGetter* context_getter) {

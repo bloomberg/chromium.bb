@@ -43,7 +43,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/origin_chip_info.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/bookmarks/bookmark_prompt_view.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/ev_bubble_view.h"
@@ -555,11 +554,6 @@ void LocationBarView::SetStarToggled(bool on) {
 
 void LocationBarView::SetTranslateIconToggled(bool on) {
   translate_icon_view_->SetToggled(on);
-}
-
-void LocationBarView::ShowBookmarkPrompt() {
-  if (star_view_ && star_view_->visible())
-    BookmarkPromptView::ShowPrompt(star_view_, profile()->GetPrefs());
 }
 
 gfx::Point LocationBarView::GetOmniboxViewOrigin() const {

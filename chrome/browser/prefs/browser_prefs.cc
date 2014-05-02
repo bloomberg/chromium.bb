@@ -90,7 +90,6 @@
 #include "chrome/common/metrics/caching_permuted_entropy_provider.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_manager.h"
-#include "components/bookmarks/core/browser/bookmark_prompt_prefs.h"
 #include "components/bookmarks/core/browser/bookmark_utils.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/rappor/rappor_service.h"
@@ -336,7 +335,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // User prefs. Please keep this list alphabetized.
   apps::RegisterProfilePrefs(registry);
   autofill::AutofillManager::RegisterProfilePrefs(registry);
-  BookmarkPromptPrefs::RegisterProfilePrefs(registry);
   bookmark_utils::RegisterProfilePrefs(registry);
   sync_driver::SyncPrefs::RegisterProfilePrefs(registry);
   ChromeContentBrowserClient::RegisterProfilePrefs(registry);

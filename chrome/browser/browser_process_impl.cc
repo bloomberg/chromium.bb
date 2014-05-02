@@ -63,7 +63,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/status_icons/status_tray.h"
-#include "chrome/browser/ui/bookmarks/bookmark_prompt_controller.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
@@ -607,14 +606,6 @@ DownloadStatusUpdater* BrowserProcessImpl::download_status_updater() {
   return download_status_updater_.get();
 }
 
-BookmarkPromptController* BrowserProcessImpl::bookmark_prompt_controller() {
-#if defined(OS_ANDROID)
-  return NULL;
-#else
-  return bookmark_prompt_controller_.get();
-#endif
-}
-
 MediaFileSystemRegistry* BrowserProcessImpl::media_file_system_registry() {
 #if defined(OS_ANDROID) || defined(OS_IOS)
     return NULL;
@@ -917,13 +908,6 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
     promo_resource_service_ = new PromoResourceService;
     promo_resource_service_->StartAfterDelay();
   }
-
-#if !defined(OS_ANDROID)
-  if (browser_defaults::bookmarks_enabled &&
-      BookmarkPromptController::IsEnabled()) {
-    bookmark_prompt_controller_.reset(new BookmarkPromptController());
-  }
-#endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   storage_monitor::StorageMonitor::Create();

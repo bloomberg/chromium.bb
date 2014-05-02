@@ -16,7 +16,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 StarView::StarView(CommandUpdater* command_updater)
-    : BubbleIconView(command_updater, IDC_BOOKMARK_PAGE_FROM_STAR) {
+    : BubbleIconView(command_updater, IDC_BOOKMARK_PAGE) {
   set_id(VIEW_ID_STAR_BUTTON);
   SetToggled(false);
 }
