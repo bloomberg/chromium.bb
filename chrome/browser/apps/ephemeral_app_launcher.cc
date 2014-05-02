@@ -132,7 +132,7 @@ EphemeralAppLauncher::~EphemeralAppLauncher() {}
 
 void EphemeralAppLauncher::StartObserving() {
   extension_registry_observer_.Add(
-      extensions::ExtensionRegistry::Get(profile()->GetOriginalProfile()));
+      extensions::ExtensionRegistry::Get(profile()));
 }
 
 void EphemeralAppLauncher::LaunchApp(const Extension* extension) const {
@@ -261,7 +261,6 @@ void EphemeralAppLauncher::WebContentsDestroyed(
 void EphemeralAppLauncher::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
-  DCHECK(extension);
   if (extension->id() == id()) {
     LaunchApp(extension);
     WebstoreStandaloneInstaller::CompleteInstall(std::string());
