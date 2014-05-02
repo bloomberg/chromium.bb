@@ -128,19 +128,24 @@
         },
         {
           'target_name': 'cloud_policy_proto_generated_compile',
-          'type': 'static_library',
+          'type': '<(component)',
           'sources': [
             '<(cloud_policy_proto_path)',
           ],
           'variables': {
             'proto_in_dir': '<(policy_out_dir)/policy',
             'proto_out_dir': 'policy/proto',
+            'cc_generator_options': 'dllexport_decl=POLICY_PROTO_EXPORT:',
+            'cc_include': 'components/policy/policy_proto_export.h',
           },
           'dependencies': [
             'cloud_policy_code_generate',
           ],
           'includes': [
             '../build/protoc.gypi',
+          ],
+          'defines': [
+            'POLICY_PROTO_COMPILATION',
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [4267, ],
@@ -194,7 +199,7 @@
         },
         {
           'target_name': 'cloud_policy_proto',
-          'type': 'static_library',
+          'type': '<(component)',
           'sources': [
             'policy/proto/chrome_extension_policy.proto',
             'policy/proto/device_management_backend.proto',
@@ -204,6 +209,8 @@
           'variables': {
             'proto_in_dir': 'policy/proto',
             'proto_out_dir': 'policy/proto',
+            'cc_generator_options': 'dllexport_decl=POLICY_PROTO_EXPORT:',
+            'cc_include': 'components/policy/policy_proto_export.h',
           },
           'includes': [
             '../build/protoc.gypi',
@@ -219,6 +226,9 @@
                 'policy/proto/device_management_local.proto',
               ],
             }],
+          ],
+          'defines': [
+            'POLICY_PROTO_COMPILATION',
           ],
         },
         {

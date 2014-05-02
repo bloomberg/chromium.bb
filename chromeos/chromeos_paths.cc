@@ -4,8 +4,10 @@
 
 #include "chromeos/chromeos_paths.h"
 
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/sys_info.h"
 
 namespace chromeos {
 
@@ -75,6 +77,28 @@ bool PathProvider(int key, base::FilePath* result) {
 
 void RegisterPathProvider() {
   PathService::RegisterProvider(PathProvider, PATH_START, PATH_END);
+}
+
+void RegisterStubPathOverrides(const base::FilePath& stubs_dir) {
+  CHECK(!base::SysInfo::IsRunningOnChromeOS());
+  // Override these paths on the desktop, so that enrollment and cloud
+  // policy work and can be tested.
+  base::FilePath parent = base::MakeAbsoluteFilePath(stubs_dir);
+  PathService::Override(
+      DIR_USER_POLICY_KEYS,
+      parent.AppendASCII("stub_user_policy"));
+  const bool is_absolute = true;
+  const bool create = false;
+  PathService::OverrideAndCreateIfNeeded(
+      FILE_OWNER_KEY,
+      parent.AppendASCII("stub_owner.key"),
+      is_absolute,
+      create);
+  PathService::OverrideAndCreateIfNeeded(
+      FILE_INSTALL_ATTRIBUTES,
+      parent.AppendASCII("stub_install_attributes.pb"),
+      is_absolute,
+      create);
 }
 
 }  // namespace chromeos

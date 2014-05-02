@@ -247,16 +247,6 @@ namespace internal {
 class DBusServices {
  public:
   explicit DBusServices(const content::MainFunctionParams& parameters) {
-    if (!base::SysInfo::IsRunningOnChromeOS()) {
-      // Override this path on the desktop, so that the user policy key can be
-      // stored by the stub SessionManagerClient.
-      base::FilePath user_data_dir;
-      if (PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-        PathService::Override(chromeos::DIR_USER_POLICY_KEYS,
-                              user_data_dir.AppendASCII("stub_user_policy"));
-      }
-    }
-
     // Initialize DBusThreadManager for the browser. This must be done after
     // the main message loop is started, as it uses the message loop.
     DBusThreadManager::Initialize();
@@ -404,6 +394,15 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
 }
 
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
+  base::FilePath user_data_dir;
+  if (!base::SysInfo::IsRunningOnChromeOS() &&
+      PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+    // Override some paths with stub locations so that cloud policy and
+    // enterprise enrollment work on desktop builds, for ease of
+    // development.
+    chromeos::RegisterStubPathOverrides(user_data_dir);
+  }
+
   dbus_services_.reset(new internal::DBusServices(parameters()));
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopStart();

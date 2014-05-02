@@ -1,8 +1,10 @@
 include_rules = [
   "+crypto",
   "+net",
+  "+policy/proto",
   "+third_party/cros_system_api",
   "+third_party/libxml",
+  "+third_party/protobuf",
   "+ui/gfx/geometry",
   "+ui/gfx/x"
 ]

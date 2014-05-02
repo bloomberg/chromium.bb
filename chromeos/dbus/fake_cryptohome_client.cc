@@ -5,12 +5,28 @@
 #include "chromeos/dbus/fake_cryptohome_client.h"
 
 #include "base/bind.h"
+#include "base/file_util.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
+#include "base/threading/worker_pool.h"
+#include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "crypto/nss_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "third_party/protobuf/src/google/protobuf/io/coded_stream.h"
+#include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream.h"
+#include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
+
+namespace {
+
+// Helper to asynchronously write a file in the WorkerPool.
+void PersistFile(const base::FilePath& path, const std::string& content) {
+  base::WriteFile(path, content.data(), content.size());
+}
+
+}  // namespace
 
 namespace chromeos {
 
@@ -20,8 +36,11 @@ FakeCryptohomeClient::FakeCryptohomeClient()
       tpm_is_ready_counter_(0),
       unmount_result_(true),
       system_salt_(GetStubSystemSalt()),
-      locked_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  base::FilePath cache_path;
+  locked_ = PathService::Get(chromeos::FILE_INSTALL_ATTRIBUTES, &cache_path) &&
+            base::PathExists(cache_path);
+}
 
 FakeCryptohomeClient::~FakeCryptohomeClient() {}
 
@@ -246,6 +265,58 @@ bool FakeCryptohomeClient::InstallAttributesSet(
 bool FakeCryptohomeClient::InstallAttributesFinalize(bool* successful) {
   locked_ = true;
   *successful = true;
+
+  // Persist the install attributes so that they can be reloaded if the
+  // browser is restarted. This is used for ease of development when device
+  // enrollment is required.
+  // The cryptohome::SerializedInstallAttributes protobuf lives in
+  // chrome/browser/chromeos, so it can't be used directly here; use the
+  // low-level protobuf API instead to just write the name-value pairs.
+  // The cache file is read by EnterpriseInstallAttributes::ReadCacheFile.
+  base::FilePath cache_path;
+  if (!PathService::Get(chromeos::FILE_INSTALL_ATTRIBUTES, &cache_path))
+    return false;
+
+  std::string result;
+  {
+    // |result| can be used only after the StringOutputStream goes out of
+    // scope.
+    google::protobuf::io::StringOutputStream result_stream(&result);
+    google::protobuf::io::CodedOutputStream result_output(&result_stream);
+
+    // These tags encode a variable-length value on the wire, which can be
+    // used to encode strings, bytes and messages. We only needs constants
+    // for tag numbers 1 and 2 (see install_attributes.proto).
+    const int kVarLengthTag1 = (1 << 3) | 0x2;
+    const int kVarLengthTag2 = (2 << 3) | 0x2;
+
+    typedef std::map<std::string, std::vector<uint8> >::const_iterator Iter;
+    for (Iter it = install_attrs_.begin(); it != install_attrs_.end(); ++it) {
+      std::string attr;
+      {
+        google::protobuf::io::StringOutputStream attr_stream(&attr);
+        google::protobuf::io::CodedOutputStream attr_output(&attr_stream);
+
+        attr_output.WriteVarint32(kVarLengthTag1);
+        attr_output.WriteVarint32(it->first.size());
+        attr_output.WriteString(it->first);
+        attr_output.WriteVarint32(kVarLengthTag2);
+        attr_output.WriteVarint32(it->second.size());
+        attr_output.WriteRaw(it->second.data(), it->second.size());
+      }
+
+      // Two CodedOutputStreams are needed because inner messages must be
+      // prefixed by their total length, which can't be easily computed before
+      // writing their tags and values.
+      result_output.WriteVarint32(kVarLengthTag2);
+      result_output.WriteVarint32(attr.size());
+      result_output.WriteRaw(attr.data(), attr.size());
+    }
+  }
+
+  base::WorkerPool::PostTask(
+      FROM_HERE, base::Bind(&PersistFile, cache_path, result), false);
+
   return true;
 }
 

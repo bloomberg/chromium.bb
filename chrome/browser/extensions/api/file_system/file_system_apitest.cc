@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetDisplayPath) {
 #if defined(OS_WIN) || defined(OS_POSIX)
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetDisplayPathPrettify) {
   ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(base::DIR_HOME,
-      test_root_folder_, false));
+      test_root_folder_, false, false));
 
   base::FilePath test_file = test_root_folder_.AppendASCII("gold.txt");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   base::FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
-      chrome::DIR_USER_DOCUMENTS, test_file.DirName(), false));
+      chrome::DIR_USER_DOCUMENTS, test_file.DirName(), false, false));
   FileSystemChooseEntryFunction::
       SkipPickerAndSelectSuggestedPathForTest();
   {
@@ -232,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   base::FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
-      chrome::DIR_USER_DOCUMENTS, test_file.DirName(), false));
+      chrome::DIR_USER_DOCUMENTS, test_file.DirName(), false, false));
   FileSystemChooseEntryFunction::
       SkipPickerAndSelectSuggestedPathForTest();
   ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_existing"))
@@ -244,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenMultipleSuggested) {
   base::FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
-      chrome::DIR_USER_DOCUMENTS, test_file.DirName(), false));
+      chrome::DIR_USER_DOCUMENTS, test_file.DirName(), false, false));
   FileSystemChooseEntryFunction::SkipPickerAndSelectSuggestedPathForTest();
   ASSERT_TRUE(RunPlatformAppTest(
       "api_test/file_system/open_multiple_with_suggested_name"))
@@ -323,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   ASSERT_FALSE(test_file.empty());
   base::FilePath test_directory = test_file.DirName();
   ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
-      kGraylistedPath, test_directory, false));
+      kGraylistedPath, test_directory, false, false));
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_directory);
   ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_directory"))
@@ -338,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   ASSERT_FALSE(test_file.empty());
   base::FilePath test_directory = test_file.DirName();
   ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
-      kGraylistedPath, test_directory, false));
+      kGraylistedPath, test_directory, false, false));
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_directory);
   ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_directory_cancel"))
@@ -354,7 +354,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   base::FilePath test_directory = test_file.DirName();
   base::FilePath parent_directory = test_directory.DirName();
   ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
-      kGraylistedPath, test_directory, false));
+      kGraylistedPath, test_directory, false, false));
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &parent_directory);
   ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_directory_cancel"))
@@ -373,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   base::FilePath test_directory = test_file.DirName();
   base::FilePath parent_directory = test_directory.DirName();
   ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
-      kGraylistedPath, parent_directory, false));
+      kGraylistedPath, parent_directory, false, false));
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_directory);
   ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_directory"))

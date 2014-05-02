@@ -233,13 +233,15 @@ bool PathService::Get(int key, FilePath* result) {
 
 // static
 bool PathService::Override(int key, const FilePath& path) {
-  // Just call the full function with true for the value of |create|.
-  return OverrideAndCreateIfNeeded(key, path, true);
+  // Just call the full function with true for the value of |create|, and
+  // assume that |path| may not be absolute yet.
+  return OverrideAndCreateIfNeeded(key, path, false, true);
 }
 
 // static
 bool PathService::OverrideAndCreateIfNeeded(int key,
                                             const FilePath& path,
+                                            bool is_absolute,
                                             bool create) {
   PathData* path_data = GetPathData();
   DCHECK(path_data);
@@ -259,9 +261,12 @@ bool PathService::OverrideAndCreateIfNeeded(int key,
   }
 
   // We need to have an absolute path.
-  file_path = MakeAbsoluteFilePath(file_path);
-  if (file_path.empty())
-    return false;
+  if (!is_absolute) {
+    file_path = MakeAbsoluteFilePath(file_path);
+    if (file_path.empty())
+      return false;
+  }
+  DCHECK(file_path.IsAbsolute());
 
   base::AutoLock scoped_lock(path_data->lock);
 
