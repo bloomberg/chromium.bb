@@ -156,8 +156,11 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
 
   // Attempts to asynchronously store |policy_blob| as user policy for the given
   // |username|. Upon completion of the store attempt, we will call callback.
+  // The |policy_key| argument is not sent to the session manager, but is used
+  // by the stub implementation to enable policy validation on desktop builds.
   virtual void StorePolicyForUser(const std::string& username,
                                   const std::string& policy_blob,
+                                  const std::string& policy_key,
                                   const StorePolicyCallback& callback) = 0;
 
   // Sends a request to store a policy blob for the specified device-local

@@ -37,7 +37,6 @@ const char kCrosSystemUnknownValue[] = "(error)";
 
 const char kHardwareClassCrosSystemKey[] = "hwid";
 const char kUnknownHardwareClass[] = "unknown";
-const char kSerialNumber[] = "sn";
 
 // File to get machine hardware info from, and key/value delimiters of
 // the file.
@@ -268,12 +267,6 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
       LoadOemManifestFromFile(base::FilePath(kOemManifestFilePath));
     }
     oem_manifest_loaded_ = true;
-  }
-
-  if (!base::SysInfo::IsRunningOnChromeOS() &&
-      machine_info_.find(kSerialNumber) == machine_info_.end()) {
-    // Set stub value for testing.
-    machine_info_[kSerialNumber] = "stub_serial_number";
   }
 
   // Finished loading the statistics.

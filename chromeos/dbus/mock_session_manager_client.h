@@ -43,8 +43,9 @@ class MockSessionManagerClient : public SessionManagerClient {
   MOCK_METHOD2(StoreDevicePolicy,
                void(const std::string&,
                     const StorePolicyCallback&));
-  MOCK_METHOD3(StorePolicyForUser,
+  MOCK_METHOD4(StorePolicyForUser,
                void(const std::string&,
+                    const std::string&,
                     const std::string&,
                     const StorePolicyCallback&));
   MOCK_METHOD3(StoreDeviceLocalAccountPolicy,

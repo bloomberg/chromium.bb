@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/session_manager_client.h"
 
+#include <map>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
@@ -11,7 +13,6 @@
 #include "base/location.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
-#include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/blocking_method_caller.h"
@@ -20,44 +21,9 @@
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
-#include "policy/proto/device_management_backend.pb.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
-
-namespace {
-
-// Returns a location for |file| that is specific to the given |username|.
-// These paths will be relative to DIR_USER_POLICY_KEYS, and can be used only
-// to store stub files.
-base::FilePath GetUserFilePath(const std::string& username, const char* file) {
-  base::FilePath keys_path;
-  if (!PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &keys_path))
-    return base::FilePath();
-  const std::string sanitized =
-      CryptohomeClient::GetStubSanitizedUsername(username);
-  return keys_path.AppendASCII(sanitized).AppendASCII(file);
-}
-
-// Helper to asynchronously retrieve a file's content.
-std::string GetFileContent(const base::FilePath& path) {
-  std::string result;
-  if (!path.empty())
-    base::ReadFileToString(path, &result);
-  return result;
-}
-
-// Helper to write a file in a background thread.
-void StoreFile(const base::FilePath& path, const std::string& data) {
-  const int size = static_cast<int>(data.size());
-  if (path.empty() ||
-      !base::CreateDirectory(path.DirName()) ||
-      base::WriteFile(path, data.data(), size) != size) {
-    LOG(WARNING) << "Failed to write to " << path.value();
-  }
-}
-
-}  // namespace
 
 // The SessionManagerClient implementation used in production.
 class SessionManagerClientImpl : public SessionManagerClient {
@@ -238,6 +204,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   virtual void StorePolicyForUser(
       const std::string& username,
       const std::string& policy_blob,
+      const std::string& ignored_policy_key,
       const StorePolicyCallback& callback) OVERRIDE {
     CallStorePolicyByUsername(login_manager::kSessionManagerStorePolicyForUser,
                               username,
@@ -581,94 +548,58 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
       const ActiveSessionsCallback& callback) OVERRIDE {}
   virtual void RetrieveDevicePolicy(
       const RetrievePolicyCallback& callback) OVERRIDE {
-    base::FilePath owner_key_path;
-    if (!PathService::Get(chromeos::FILE_OWNER_KEY, &owner_key_path)) {
-      callback.Run("");
-      return;
-    }
-    base::FilePath device_policy_path =
-        owner_key_path.DirName().AppendASCII("stub_device_policy");
-    base::PostTaskAndReplyWithResult(
-        base::WorkerPool::GetTaskRunner(false),
-        FROM_HERE,
-        base::Bind(&GetFileContent, device_policy_path),
-        callback);
+    callback.Run(device_policy_);
   }
   virtual void RetrievePolicyForUser(
       const std::string& username,
       const RetrievePolicyCallback& callback) OVERRIDE {
-    base::PostTaskAndReplyWithResult(
-        base::WorkerPool::GetTaskRunner(false),
-        FROM_HERE,
-        base::Bind(&GetFileContent, GetUserFilePath(username, "stub_policy")),
-        callback);
+    callback.Run(user_policies_[username]);
   }
   virtual std::string BlockingRetrievePolicyForUser(
       const std::string& username) OVERRIDE {
-    return GetFileContent(GetUserFilePath(username, "stub_policy"));
+    return user_policies_[username];
   }
   virtual void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_name,
       const RetrievePolicyCallback& callback) OVERRIDE {
-    RetrievePolicyForUser(account_name, callback);
+    callback.Run(user_policies_[account_name]);
   }
   virtual void StoreDevicePolicy(const std::string& policy_blob,
                                  const StorePolicyCallback& callback) OVERRIDE {
-    enterprise_management::PolicyFetchResponse response;
-    base::FilePath owner_key_path;
-    if (!response.ParseFromString(policy_blob) ||
-        !PathService::Get(chromeos::FILE_OWNER_KEY, &owner_key_path)) {
-      callback.Run(false);
-      return;
-    }
-
-    if (response.has_new_public_key()) {
-      base::WorkerPool::PostTask(
-          FROM_HERE,
-          base::Bind(&StoreFile, owner_key_path, response.new_public_key()),
-          false);
-    }
-
-    // Chrome will attempt to retrieve the device policy right after storing
-    // during enrollment, so make sure it's written before signaling
-    // completion.
-    // Note also that the owner key will be written before the device policy,
-    // if it was present in the blob.
-    base::FilePath device_policy_path =
-        owner_key_path.DirName().AppendASCII("stub_device_policy");
-    base::WorkerPool::PostTaskAndReply(
-        FROM_HERE,
-        base::Bind(&StoreFile, device_policy_path, policy_blob),
-        base::Bind(callback, true),
-        false);
+    device_policy_ = policy_blob;
+    callback.Run(true);
   }
   virtual void StorePolicyForUser(
       const std::string& username,
       const std::string& policy_blob,
+      const std::string& policy_key,
       const StorePolicyCallback& callback) OVERRIDE {
+    if (policy_key.empty()) {
+      user_policies_[username] = policy_blob;
+      callback.Run(true);
+      return;
+    }
     // The session manager writes the user policy key to a well-known
     // location. Do the same with the stub impl, so that user policy works and
     // can be tested on desktop builds.
-    enterprise_management::PolicyFetchResponse response;
-    if (!response.ParseFromString(policy_blob)) {
+    // TODO(joaodasilva): parse the PolicyFetchResponse in |policy_blob| to get
+    // the policy key directly, after moving the policy protobufs to a top-level
+    // directory. The |policy_key| argument to this method can then be removed.
+    // http://crbug.com/240269
+    base::FilePath key_path;
+    if (!PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &key_path)) {
       callback.Run(false);
       return;
     }
-
-    if (response.has_new_public_key()) {
-      base::FilePath key_path = GetUserFilePath(username, "policy.pub");
-      base::WorkerPool::PostTask(
-          FROM_HERE,
-          base::Bind(&StoreFile, key_path, response.new_public_key()),
-          false);
-    }
-
-    // This file isn't read directly by Chrome, but is used by this class to
-    // reload the user policy across restarts.
-    base::FilePath stub_policy_path = GetUserFilePath(username, "stub_policy");
+    const std::string sanitized =
+        CryptohomeClient::GetStubSanitizedUsername(username);
+    key_path = key_path.AppendASCII(sanitized).AppendASCII("policy.pub");
+    // Assume that the key write is successful.
+    user_policies_[username] = policy_blob;
     base::WorkerPool::PostTaskAndReply(
         FROM_HERE,
-        base::Bind(&StoreFile, stub_policy_path, policy_blob),
+        base::Bind(&SessionManagerClientStubImpl::StoreFileInBackground,
+                   key_path, policy_key),
         base::Bind(callback, true),
         false);
   }
@@ -676,15 +607,27 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
       const std::string& account_name,
       const std::string& policy_blob,
       const StorePolicyCallback& callback) OVERRIDE {
-    StorePolicyForUser(account_name, policy_blob, callback);
+    user_policies_[account_name] = policy_blob;
+    callback.Run(true);
   }
   virtual void SetFlagsForUser(const std::string& username,
                                const std::vector<std::string>& flags) OVERRIDE {
   }
+
+  static void StoreFileInBackground(const base::FilePath& path,
+                                    const std::string& data) {
+    const int size = static_cast<int>(data.size());
+    if (!base::CreateDirectory(path.DirName()) ||
+        base::WriteFile(path, data.data(), size) != size) {
+      LOG(WARNING) << "Failed to write policy key to " << path.value();
+    }
+  }
+
  private:
   StubDelegate* delegate_;  // Weak pointer; may be NULL.
   ObserverList<Observer> observers_;
   std::string device_policy_;
+  std::map<std::string, std::string> user_policies_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionManagerClientStubImpl);
 };

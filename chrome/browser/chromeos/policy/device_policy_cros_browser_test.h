@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
@@ -33,7 +34,8 @@ class DevicePolicyCrosTestHelper {
   DevicePolicyBuilder* device_policy() { return &device_policy_; }
 
  private:
-  void OverridePaths();
+  // Stores the device owner key and the install attributes.
+  base::ScopedTempDir temp_dir_;
 
   // Carries Chrome OS device policies for tests.
   DevicePolicyBuilder device_policy_;

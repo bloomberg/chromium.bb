@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/proto/install_attributes.pb.h"
-#include "chrome/common/chrome_paths.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
@@ -28,13 +27,13 @@ using ::testing::Return;
 
 namespace policy {
 
-DevicePolicyCrosTestHelper::DevicePolicyCrosTestHelper() {}
+DevicePolicyCrosTestHelper::DevicePolicyCrosTestHelper() {
+  CHECK(temp_dir_.CreateUniqueTempDir());
+}
 
 DevicePolicyCrosTestHelper::~DevicePolicyCrosTestHelper() {}
 
 void DevicePolicyCrosTestHelper::MarkAsEnterpriseOwned() {
-  OverridePaths();
-
   cryptohome::SerializedInstallAttributes install_attrs_proto;
   cryptohome::SerializedInstallAttributes::Attribute* attribute = NULL;
 
@@ -46,22 +45,20 @@ void DevicePolicyCrosTestHelper::MarkAsEnterpriseOwned() {
   attribute->set_name(EnterpriseInstallAttributes::kAttrEnterpriseUser);
   attribute->set_value(device_policy_.policy_data().username());
 
-  base::FilePath install_attrs_file;
-  ASSERT_TRUE(
-      PathService::Get(chromeos::FILE_INSTALL_ATTRIBUTES, &install_attrs_file));
+  base::FilePath install_attrs_file =
+      temp_dir_.path().AppendASCII("install_attributes.pb");
   const std::string install_attrs_blob(
       install_attrs_proto.SerializeAsString());
   ASSERT_EQ(static_cast<int>(install_attrs_blob.size()),
             base::WriteFile(install_attrs_file,
                             install_attrs_blob.c_str(),
                             install_attrs_blob.size()));
+  ASSERT_TRUE(PathService::Override(chromeos::FILE_INSTALL_ATTRIBUTES,
+                                    install_attrs_file));
 }
 
 void DevicePolicyCrosTestHelper::InstallOwnerKey() {
-  OverridePaths();
-
-  base::FilePath owner_key_file;
-  ASSERT_TRUE(PathService::Get(chromeos::FILE_OWNER_KEY, &owner_key_file));
+  base::FilePath owner_key_file = temp_dir_.path().AppendASCII("owner.key");
   std::vector<uint8> owner_key_bits;
   ASSERT_TRUE(
       device_policy()->GetSigningKey()->ExportPublicKey(&owner_key_bits));
@@ -70,15 +67,7 @@ void DevicePolicyCrosTestHelper::InstallOwnerKey() {
           reinterpret_cast<const char*>(vector_as_array(&owner_key_bits)),
           owner_key_bits.size()),
       static_cast<int>(owner_key_bits.size()));
-}
-
-void DevicePolicyCrosTestHelper::OverridePaths() {
-  // This is usually done by ChromeBrowserMainChromeOS, but some tests
-  // use the overridden paths before ChromeBrowserMain starts. Make sure that
-  // the paths are overridden before using them.
-  base::FilePath user_data_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
-  chromeos::RegisterStubPathOverrides(user_data_dir);
+  ASSERT_TRUE(PathService::Override(chromeos::FILE_OWNER_KEY, owner_key_file));
 }
 
 DevicePolicyCrosBrowserTest::DevicePolicyCrosBrowserTest()

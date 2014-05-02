@@ -145,8 +145,8 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
     chromeos::SessionManagerClient::StorePolicyCallback store_callback;
     EXPECT_CALL(session_manager_client_,
                 StorePolicyForUser(PolicyBuilder::kFakeUsername,
-                                   policy_.GetBlob(), _))
-        .WillOnce(SaveArg<2>(&store_callback));
+                                   policy_.GetBlob(), _, _))
+        .WillOnce(SaveArg<3>(&store_callback));
     store_->Store(policy_.policy());
     RunUntilIdle();
     Mock::VerifyAndClearExpectations(&session_manager_client_);
@@ -265,8 +265,8 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreFail) {
   chromeos::SessionManagerClient::StorePolicyCallback store_callback;
   EXPECT_CALL(session_manager_client_,
               StorePolicyForUser(PolicyBuilder::kFakeUsername,
-                                 policy_.GetBlob(), _))
-      .WillOnce(SaveArg<2>(&store_callback));
+                                 policy_.GetBlob(), _, _))
+      .WillOnce(SaveArg<3>(&store_callback));
   store_->Store(policy_.policy());
   RunUntilIdle();
   Mock::VerifyAndClearExpectations(&session_manager_client_);
@@ -290,7 +290,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreValidationError) {
   ExpectError(CloudPolicyStore::STATUS_VALIDATION_ERROR);
   EXPECT_CALL(session_manager_client_,
               StorePolicyForUser(PolicyBuilder::kFakeUsername,
-                                 policy_.GetBlob(), _))
+                                 policy_.GetBlob(), _, _))
       .Times(0);
   store_->Store(policy_.policy());
   RunUntilIdle();
@@ -311,7 +311,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreWithoutPolicyKey) {
   ExpectError(CloudPolicyStore::STATUS_VALIDATION_ERROR);
   EXPECT_CALL(session_manager_client_,
               StorePolicyForUser(PolicyBuilder::kFakeUsername,
-                                 policy_.GetBlob(), _))
+                                 policy_.GetBlob(), _, _))
       .Times(0);
   store_->Store(policy_.policy());
   RunUntilIdle();
@@ -327,7 +327,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreWithInvalidSignature) {
   ExpectError(CloudPolicyStore::STATUS_VALIDATION_ERROR);
   EXPECT_CALL(session_manager_client_,
               StorePolicyForUser(PolicyBuilder::kFakeUsername,
-                                 policy_.GetBlob(), _))
+                                 policy_.GetBlob(), _, _))
       .Times(0);
   store_->Store(policy_.policy());
   RunUntilIdle();

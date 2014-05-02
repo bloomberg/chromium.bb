@@ -319,6 +319,7 @@ void UserCloudPolicyStoreChromeOS::OnPolicyToStoreValidated(
   session_manager_client_->StorePolicyForUser(
       username_,
       policy_blob,
+      validator->policy()->new_public_key(),
       base::Bind(&UserCloudPolicyStoreChromeOS::OnPolicyStored,
                  weak_factory_.GetWeakPtr()));
 }
