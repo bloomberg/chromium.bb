@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#idl-def-MediaSource
+
 enum EndOfStreamError {
     "network",
     "decode"
@@ -38,6 +40,7 @@ enum EndOfStreamError {
     Constructor,
     ConstructorCallWith=ExecutionContext,
     RuntimeEnabled=MediaSource,
+    TypeChecking=Interface|Nullable|Unrestricted,
 ] interface MediaSource : EventTarget {
     // All the source buffers created by this object.
     readonly attribute SourceBufferList sourceBuffers;
@@ -45,7 +48,7 @@ enum EndOfStreamError {
     // Subset of sourceBuffers that provide data for the selected/enabled tracks.
     readonly attribute SourceBufferList activeSourceBuffers;
 
-    [RaisesException=Setter] attribute double duration;
+    [RaisesException=Setter] attribute unrestricted double duration;
 
     [RaisesException] SourceBuffer addSourceBuffer(DOMString type);
     [RaisesException] void removeSourceBuffer(SourceBuffer buffer);

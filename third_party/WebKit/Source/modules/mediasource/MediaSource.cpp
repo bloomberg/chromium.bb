@@ -75,9 +75,9 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& e
     WTF_LOG(Media, "MediaSource::addSourceBuffer(%s) %p", type.ascii().data(), this);
 
     // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type
-    // 1. If type is null or an empty then throw an InvalidAccessError exception and
-    // abort these steps.
-    if (type.isNull() || type.isEmpty()) {
+    // 1. If type is an empty string then throw an InvalidAccessError exception
+    // and abort these steps.
+    if (type.isEmpty()) {
         exceptionState.throwDOMException(InvalidAccessError, "The type provided is empty.");
         return 0;
     }
@@ -122,34 +122,28 @@ void MediaSource::removeSourceBuffer(SourceBuffer* buffer, ExceptionState& excep
     RefPtr<SourceBuffer> protect(buffer);
 
     // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-removeSourceBuffer-void-SourceBuffer-sourceBuffer
-    // 1. If sourceBuffer is null then throw an InvalidAccessError exception and
-    // abort these steps.
-    if (!buffer) {
-        exceptionState.throwDOMException(InvalidAccessError, "The SourceBuffer provided is invalid.");
-        return;
-    }
 
-    // 2. If sourceBuffer specifies an object that is not in sourceBuffers then
+    // 1. If sourceBuffer specifies an object that is not in sourceBuffers then
     // throw a NotFoundError exception and abort these steps.
     if (!m_sourceBuffers->length() || !m_sourceBuffers->contains(buffer)) {
         exceptionState.throwDOMException(NotFoundError, "The SourceBuffer provided is not contained in this MediaSource.");
         return;
     }
 
-    // 3. If the sourceBuffer.updating attribute equals true, then run the following steps: ...
+    // 2. If the sourceBuffer.updating attribute equals true, then run the following steps: ...
     buffer->abortIfUpdating();
 
-    // Steps 4-9 are related to updating audioTracks, videoTracks, and textTracks which aren't implmented yet.
+    // Steps 3-8 are related to updating audioTracks, videoTracks, and textTracks which aren't implmented yet.
     // FIXME(91649): support track selection
 
-    // 10. If sourceBuffer is in activeSourceBuffers, then remove sourceBuffer from activeSourceBuffers ...
+    // 9. If sourceBuffer is in activeSourceBuffers, then remove sourceBuffer from activeSourceBuffers ...
     m_activeSourceBuffers->remove(buffer);
 
-    // 11. Remove sourceBuffer from sourceBuffers and fire a removesourcebuffer event
+    // 10. Remove sourceBuffer from sourceBuffers and fire a removesourcebuffer event
     // on that object.
     m_sourceBuffers->remove(buffer);
 
-    // 12. Destroy all resources for sourceBuffer.
+    // 11. Destroy all resources for sourceBuffer.
     buffer->removedFromMediaSource();
 }
 

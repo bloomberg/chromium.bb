@@ -27,7 +27,7 @@
 
           mediasource_test(function(test, mediaElement, mediaSource)
           {
-              assert_throws("InvalidAccessError",
+              assert_throws(new TypeError(),
                           function() { mediaSource.removeSourceBuffer(null); },
                           "removeSourceBuffer() threw an exception when passed null.");
               test.done();

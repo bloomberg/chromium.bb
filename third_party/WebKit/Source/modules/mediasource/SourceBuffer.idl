@@ -39,6 +39,7 @@ enum AppendMode {
     ActiveDOMObject,
     NoInterfaceObject,
     RuntimeEnabled=MediaSource,
+    TypeChecking=Interface|Nullable|Unrestricted,
 ] interface SourceBuffer : EventTarget {
 
     // Gets or sets the AppendMode.
@@ -51,10 +52,10 @@ enum AppendMode {
     [RaisesException=Getter] readonly attribute TimeRanges buffered;
 
     // Applies an offset to media segment timestamps.
-    [RaisesException=Setter, TypeChecking=Unrestricted] attribute double timestampOffset;
+    [RaisesException=Setter] attribute double timestampOffset;
 
     // Presentation timestamp for the start of append window.
-    [RaisesException=Setter, TypeChecking=Unrestricted] attribute double appendWindowStart;
+    [RaisesException=Setter] attribute double appendWindowStart;
 
     // Presentation timestamp for the end of append window.
     [RaisesException=Setter] attribute unrestricted double appendWindowEnd;
@@ -67,6 +68,8 @@ enum AppendMode {
 
     // Abort the current segment append sequence.
     [RaisesException] void abort();
+    // Pending W3C bug: "Change SourceBuffer.remove() end parameter to 'unrestricted double'",
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=25518
     [RaisesException] void remove(double start, double end);
 };
 

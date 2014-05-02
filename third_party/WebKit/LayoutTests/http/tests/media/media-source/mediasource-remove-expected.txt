@@ -1,5 +1,6 @@
  
 PASS Test remove with an negative start. 
+PASS Test remove with non-finite start. 
 PASS Test remove with a start beyond the duration. 
 PASS Test remove with a start larger than the end. 
 PASS Test remove after SourceBuffer removed from mediaSource. 

@@ -42,7 +42,7 @@ String URLMediaSource::createObjectURL(ExecutionContext* executionContext, Media
     // Since WebWorkers cannot obtain MediaSource objects, we should be on the main thread.
     ASSERT(isMainThread());
 
-    if (!executionContext || !source)
+    if (!executionContext)
         return String();
     return DOMURL::createPublicURL(executionContext, source);
 }

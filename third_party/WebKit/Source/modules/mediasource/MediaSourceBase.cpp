@@ -229,7 +229,6 @@ void MediaSourceBase::endOfStream(const AtomicString& error, ExceptionState& exc
         endOfStreamInternal(blink::WebMediaSource::EndOfStreamStatusDecodeError, exceptionState);
     } else {
         ASSERT_NOT_REACHED(); // IDL enforcement should prevent this case.
-        exceptionState.throwTypeError("parameter 1 is not a valid enum value.");
     }
 }
 

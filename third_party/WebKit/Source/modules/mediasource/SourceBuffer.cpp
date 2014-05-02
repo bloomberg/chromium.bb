@@ -125,23 +125,19 @@ void SourceBuffer::setMode(const AtomicString& newMode, ExceptionState& exceptio
 {
     // Section 3.1 On setting mode attribute steps.
     // 1. Let new mode equal the new value being assigned to this attribute.
-    // 2. If new mode does not equal "segments" or "sequence", then throw an INVALID_ACCESS_ERR exception and abort
-    //    these steps.
-    //    Step 2 is unnecessary: IDL enforcement prevents this case and should just return immediately to script
-    //    without calling this method in this case.
-    // 3. If this object has been removed from the sourceBuffers attribute of the parent media source, then throw
+    // 2. If this object has been removed from the sourceBuffers attribute of the parent media source, then throw
     //    an INVALID_STATE_ERR exception and abort these steps.
-    // 4. If the updating attribute equals true, then throw an INVALID_STATE_ERR exception and abort these steps.
+    // 3. If the updating attribute equals true, then throw an INVALID_STATE_ERR exception and abort these steps.
     if (throwExceptionIfRemovedOrUpdating(isRemoved(), m_updating, exceptionState))
         return;
 
-    // 5. If the readyState attribute of the parent media source is in the "ended" state then run the following steps:
-    // 5.1 Set the readyState attribute of the parent media source to "open"
-    // 5.2 Queue a task to fire a simple event named sourceopen at the parent media source.
+    // 4. If the readyState attribute of the parent media source is in the "ended" state then run the following steps:
+    // 4.1 Set the readyState attribute of the parent media source to "open"
+    // 4.2 Queue a task to fire a simple event named sourceopen at the parent media source.
     m_source->openIfInEndedState();
 
-    // 6. If the append state equals PARSING_MEDIA_SEGMENT, then throw an INVALID_STATE_ERR and abort these steps.
-    // 7. If the new mode equals "sequence", then set the group start timestamp to the highest presentation end timestamp.
+    // 5. If the append state equals PARSING_MEDIA_SEGMENT, then throw an INVALID_STATE_ERR and abort these steps.
+    // 6. If the new mode equals "sequence", then set the group start timestamp to the highest presentation end timestamp.
     WebSourceBuffer::AppendMode appendMode = WebSourceBuffer::AppendModeSegments;
     if (newMode == sequenceKeyword())
         appendMode = WebSourceBuffer::AppendModeSequence;
@@ -150,7 +146,7 @@ void SourceBuffer::setMode(const AtomicString& newMode, ExceptionState& exceptio
         return;
     }
 
-    // 8. Update the attribute to new mode.
+    // 7. Update the attribute to new mode.
     m_mode = newMode;
 }
 
@@ -266,12 +262,6 @@ void SourceBuffer::appendBuffer(PassRefPtr<ArrayBuffer> data, ExceptionState& ex
 {
     // Section 3.2 appendBuffer()
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
-    // 1. If data is null then throw an InvalidAccessError exception and abort these steps.
-    if (!data) {
-        exceptionState.throwDOMException(InvalidAccessError, "The ArrayBuffer provided is invalid.");
-        return;
-    }
-
     appendBufferInternal(static_cast<const unsigned char*>(data->data()), data->byteLength(), exceptionState);
 }
 
@@ -279,12 +269,6 @@ void SourceBuffer::appendBuffer(PassRefPtr<ArrayBufferView> data, ExceptionState
 {
     // Section 3.2 appendBuffer()
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
-    // 1. If data is null then throw an InvalidAccessError exception and abort these steps.
-    if (!data) {
-        exceptionState.throwDOMException(InvalidAccessError, "The ArrayBuffer provided is invalid.");
-        return;
-    }
-
     appendBufferInternal(static_cast<const unsigned char*>(data->baseAddress()), data->byteLength(), exceptionState);
 }
 
@@ -483,29 +467,30 @@ void SourceBuffer::appendBufferInternal(const unsigned char* data, unsigned size
     // Section 3.2 appendBuffer()
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
 
-    // Step 1 is enforced by the caller.
-    // 2. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an InvalidStateError exception and abort these steps.
-    // 3. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
+    // 1. Run the prepare append algorithm.
+    // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#sourcebuffer-prepare-append
+    //  1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an InvalidStateError exception and abort these steps.
+    //  2. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
     if (throwExceptionIfRemovedOrUpdating(isRemoved(), m_updating, exceptionState))
         return;
 
     TRACE_EVENT_ASYNC_BEGIN0("media", "SourceBuffer::appendBuffer", this);
 
-    // 4. If the readyState attribute of the parent media source is in the "ended" state then run the following steps: ...
+    //  3. If the readyState attribute of the parent media source is in the "ended" state then run the following steps: ...
     m_source->openIfInEndedState();
 
-    // Steps 5-6
+    //  Steps 4-5 - end "prepare append" algorithm.
 
-    // 7. Add data to the end of the input buffer.
+    // 2. Add data to the end of the input buffer.
     m_pendingAppendData.append(data, size);
 
-    // 8. Set the updating attribute to true.
+    // 3. Set the updating attribute to true.
     m_updating = true;
 
-    // 9. Queue a task to fire a simple event named updatestart at this SourceBuffer object.
+    // 4. Queue a task to fire a simple event named updatestart at this SourceBuffer object.
     scheduleEvent(EventTypeNames::updatestart);
 
-    // 10. Asynchronously run the buffer append algorithm.
+    // 5. Asynchronously run the buffer append algorithm.
     m_appendBufferAsyncPartRunner.runAsync();
 
     TRACE_EVENT_ASYNC_STEP_INTO0("media", "SourceBuffer::appendBuffer", this, "waiting");
@@ -571,13 +556,13 @@ void SourceBuffer::appendStreamInternal(PassRefPtrWillBeRawPtr<Stream> stream, E
 {
     // Section 3.2 appendStream()
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendStream-void-Stream-stream-unsigned-long-long-maxSize
-    // 1. If stream is null then throw an InvalidAccessError exception and abort these steps.
-    if (!stream || stream->isNeutered()) {
-        exceptionState.throwDOMException(InvalidAccessError, stream ? "The stream provided has been neutered." : "The stream provided is invalid.");
+    // (0. If the stream has been neutered, then throw an InvalidAccessError exception and abort these steps.)
+    if (stream->isNeutered()) {
+        exceptionState.throwDOMException(InvalidAccessError, "The stream provided has been neutered.");
         return;
     }
 
-    // 2. Run the prepare append algorithm.
+    // 1. Run the prepare append algorithm.
     //  Section 3.5.4 Prepare Append Algorithm.
     //  https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#sourcebuffer-prepare-append
     //  1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an InvalidStateError exception and abort these steps.
@@ -592,13 +577,13 @@ void SourceBuffer::appendStreamInternal(PassRefPtrWillBeRawPtr<Stream> stream, E
 
     // Steps 4-5 of the prepare append algorithm are handled by m_webSourceBuffer.
 
-    // 3. Set the updating attribute to true.
+    // 2. Set the updating attribute to true.
     m_updating = true;
 
-    // 4. Queue a task to fire a simple event named updatestart at this SourceBuffer object.
+    // 3. Queue a task to fire a simple event named updatestart at this SourceBuffer object.
     scheduleEvent(EventTypeNames::updatestart);
 
-    // 5. Asynchronously run the stream append loop algorithm with stream and maxSize.
+    // 4. Asynchronously run the stream append loop algorithm with stream and maxSize.
 
     stream->neuter();
     m_loader = adoptPtr(new FileReaderLoader(FileReaderLoader::ReadByClient, this));

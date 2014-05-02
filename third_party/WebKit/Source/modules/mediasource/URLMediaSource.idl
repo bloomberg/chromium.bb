@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-partial interface URL {
-    [CallWith=ExecutionContext, TreatReturnedNullStringAs=Null] static DOMString createObjectURL(MediaSource? source);
+[
+    TypeChecking=Interface|Nullable,
+] partial interface URL {
+    [CallWith=ExecutionContext, TreatReturnedNullStringAs=Null] static DOMString createObjectURL(MediaSource source);
 };
