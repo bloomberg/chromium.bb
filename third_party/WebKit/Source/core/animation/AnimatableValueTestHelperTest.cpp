@@ -68,10 +68,6 @@ TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
         PrintToString(AnimatableColor::create(Color(0x000000FF), Color(0xFFFF0000))));
 
     EXPECT_EQ(
-        ::std::string("AnimatableDouble(1)"),
-        PrintToString(AnimatableDouble::create(1.0)));
-
-    EXPECT_EQ(
         ::std::string("AnimatableLength(5px)"),
         PrintToString(AnimatableLength::create(CSSPrimitiveValue::create(5, CSSPrimitiveValue::CSS_PX).get())));
 

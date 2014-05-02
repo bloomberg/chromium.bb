@@ -51,11 +51,6 @@ void PrintTo(const AnimatableColor& animColor, ::std::ostream* os)
         << animColor.visitedLinkColor().serialized().utf8().data() << ")";
 }
 
-void PrintTo(const AnimatableDouble& animDouble, ::std::ostream* os)
-{
-    PrintTo(*(animDouble.toCSSValue().get()), os, "AnimatableDouble");
-}
-
 void PrintTo(const AnimatableImage& animImage, ::std::ostream* os)
 {
     PrintTo(*(animImage.toCSSValue()), os, "AnimatableImage");
@@ -231,8 +226,6 @@ void PrintTo(const AnimatableValue& animValue, ::std::ostream* os)
         PrintTo(*(toAnimatableClipPathOperation(&animValue)), os);
     else if (animValue.isColor())
         PrintTo(*(toAnimatableColor(&animValue)), os);
-    else if (animValue.isDouble())
-        PrintTo(*(toAnimatableDouble(&animValue)), os);
     else if (animValue.isImage())
         PrintTo(*(toAnimatableImage(&animValue)), os);
     else if (animValue.isLength())

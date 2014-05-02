@@ -38,7 +38,6 @@
 
 #include "core/animation/AnimatableClipPathOperation.h"
 #include "core/animation/AnimatableColor.h"
-#include "core/animation/AnimatableDouble.h"
 #include "core/animation/AnimatableImage.h"
 #include "core/animation/AnimatableLength.h"
 #include "core/animation/AnimatableLengthBox.h"
@@ -68,7 +67,6 @@ bool operator==(const AnimatableValue&, const AnimatableValue&);
 
 void PrintTo(const AnimatableClipPathOperation&, ::std::ostream*);
 void PrintTo(const AnimatableColor&, ::std::ostream*);
-void PrintTo(const AnimatableDouble&, ::std::ostream*);
 void PrintTo(const AnimatableImage&, ::std::ostream*);
 void PrintTo(const AnimatableLength&, ::std::ostream*);
 void PrintTo(const AnimatableLengthBox&, ::std::ostream*);

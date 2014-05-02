@@ -31,8 +31,6 @@
 #include "config.h"
 #include "core/animation/AnimatableDouble.h"
 
-#include "core/css/CSSPrimitiveValue.h"
-
 #include <gtest/gtest.h>
 
 using namespace WebCore;
@@ -49,14 +47,6 @@ TEST(AnimationAnimatableDoubleTest, Equal)
 {
     EXPECT_TRUE(AnimatableDouble::create(10)->equals(AnimatableDouble::create(10).get()));
     EXPECT_FALSE(AnimatableDouble::create(5)->equals(AnimatableDouble::create(10).get()));
-}
-
-TEST(AnimationAnimatableDoubleTest, ToCSSValue)
-{
-    RefPtrWillBeRawPtr<CSSValue> cssValue5 = CSSPrimitiveValue::create(5, CSSPrimitiveValue::CSS_NUMBER);
-    RefPtrWillBeRawPtr<CSSValue> cssValue10 = CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_NUMBER);
-    EXPECT_TRUE(AnimatableDouble::create(5)->toCSSValue()->equals(*cssValue5.get()));
-    EXPECT_FALSE(AnimatableDouble::create(5)->toCSSValue()->equals(*cssValue10.get()));
 }
 
 TEST(AnimationAnimatableDoubleTest, ToDouble)
