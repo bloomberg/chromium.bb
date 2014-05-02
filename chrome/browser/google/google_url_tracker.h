@@ -94,7 +94,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   static void GoogleURLSearchCommitted(Profile* profile);
 
   // No one but GoogleURLTrackerInfoBarDelegate or test code should call these.
-  void AcceptGoogleURL(bool redo_searches);
+  void AcceptGoogleURL();
   void CancelGoogleURL();
   const GURL& google_url() const { return google_url_; }
   const GURL& fetched_google_url() const { return fetched_google_url_; }

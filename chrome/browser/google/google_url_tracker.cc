@@ -22,15 +22,14 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "net/base/load_flags.h"
-#include "net/base/net_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
 
 const char GoogleURLTracker::kDefaultGoogleHomepage[] =
-    "http://www.google.com/";
+    "https://www.google.com/";
 const char GoogleURLTracker::kSearchDomainCheckURL[] =
-    "https://www.google.com/searchdomaincheck?format=url&type=chrome";
+    "https://www.google.com/searchdomaincheck?format=domain&type=chrome";
 
 GoogleURLTracker::GoogleURLTracker(
     Profile* profile,
@@ -101,7 +100,7 @@ void GoogleURLTracker::GoogleURLSearchCommitted(Profile* profile) {
     tracker->SearchCommitted();
 }
 
-void GoogleURLTracker::AcceptGoogleURL(bool redo_searches) {
+void GoogleURLTracker::AcceptGoogleURL() {
   UpdatedDetails urls(google_url_, fetched_google_url_);
   google_url_ = fetched_google_url_;
   PrefService* prefs = profile_->GetPrefs();
@@ -112,7 +111,7 @@ void GoogleURLTracker::AcceptGoogleURL(bool redo_searches) {
       content::Source<Profile>(profile_),
       content::Details<UpdatedDetails>(&urls));
   need_to_prompt_ = false;
-  CloseAllEntries(redo_searches);
+  CloseAllEntries(true);
 }
 
 void GoogleURLTracker::CancelGoogleURL() {
@@ -132,14 +131,14 @@ void GoogleURLTracker::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
-  // See if the response data was valid.  It should be
-  // "<scheme>://[www.]google.<TLD>/".
+  // See if the response data was valid.  It should be ".google.<TLD>".
   std::string url_str;
   source->GetResponseAsString(&url_str);
   base::TrimWhitespace(url_str, base::TRIM_ALL, &url_str);
-  GURL url(url_str);
-  if (!url.is_valid() || (url.path().length() > 1) || url.has_query() ||
-      url.has_ref() ||
+  if (!StartsWithASCII(url_str, ".google.", false))
+    return;
+  GURL url("https://www" + url_str);
+  if ((url.path().length() > 1) || url.has_query() || url.has_ref() ||
       !google_util::IsGoogleDomainUrl(url, google_util::DISALLOW_SUBDOMAIN,
                                       google_util::DISALLOW_NON_STANDARD_PORTS))
     return;
@@ -151,33 +150,20 @@ void GoogleURLTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   if (last_prompted_url.is_empty()) {
     // On the very first run of Chrome, when we've never looked up the URL at
     // all, we should just silently switch over to whatever we get immediately.
-    AcceptGoogleURL(true);  // Arg is irrelevant.
-    return;
-  }
-
-  base::string16 fetched_host(net::StripWWWFromHost(fetched_google_url_));
-  if (fetched_google_url_ == google_url_) {
-    // Either the user has continually been on this URL, or we prompted for a
-    // different URL but have now changed back before they responded to any of
-    // the prompts.  In this latter case we want to close any infobars and stop
-    // prompting.
-    CancelGoogleURL();
-  } else if (fetched_host == net::StripWWWFromHost(google_url_)) {
-    // Similar to the above case, but this time the new URL differs from the
-    // existing one, probably due to switching between HTTP and HTTPS searching.
-    // Like before we want to close any infobars and stop prompting; we also
-    // want to silently accept the change in scheme.  We don't redo open
-    // searches so as to avoid suddenly changing a page the user might be
-    // interacting with; it's enough to simply get future searches right.
-    AcceptGoogleURL(false);
-  } else if (fetched_host == net::StripWWWFromHost(last_prompted_url)) {
-    // We've re-fetched a TLD the user previously turned down.  Although the new
-    // URL might have a different scheme than the old, we want to preserve the
-    // user's decision.  Note that it's possible that, like in the above two
-    // cases, we fetched yet another different URL in the meantime, which we
-    // have infobars prompting about; in this case, as in those above, we want
-    // to go ahead and close the infobars and stop prompting, since we've
-    // switched back away from that URL.
+    AcceptGoogleURL();
+  } else if ((fetched_google_url_ == google_url_) ||
+             (fetched_google_url_ == last_prompted_url)) {
+    // If we re-fetched the current URL, then either the user has continually
+    // been on this URL, or we prompted for a different URL but have now changed
+    // back before they responded to any of the prompts.
+    //
+    // If we re-fetched the last prompted URL, then we've refetched something
+    // the user previously turned down, and we should preserve their decision.
+    // Once again, we might have fetched a different URL in the meantime, which
+    // we have infobars prompting about.
+    //
+    // In both these cases, any existing infobars are about an irrelevant URL,
+    // so we should close them.
     CancelGoogleURL();
   } else {
     // We've fetched a URL with a different TLD than the user is currently using
@@ -185,13 +171,8 @@ void GoogleURLTracker::OnURLFetchComplete(const net::URLFetcher* source) {
     need_to_prompt_ = true;
 
     // As in all the above cases, there could be infobars prompting about some
-    // URL.  If these URLs have the same TLD (e.g. for scheme changes), we can
-    // simply leave the existing infobars open as their messages will still be
-    // accurate.  Otherwise we go ahead and close them because we need to
-    // display a new message.
-    // Note: |url| is the previous |fetched_google_url_|.
-    if (url.is_valid() && (fetched_host != net::StripWWWFromHost(url)))
-      CloseAllEntries(false);
+    // URL.  We go ahead and close them so we can display a new message.
+    CloseAllEntries(false);
   }
 }
 
