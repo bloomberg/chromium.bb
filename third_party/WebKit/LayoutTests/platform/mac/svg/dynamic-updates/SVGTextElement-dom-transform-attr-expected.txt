@@ -11,10 +11,20 @@ PASS textElement.getAttribute('transform') is "translate(0,-200)"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 8 209 73 18)
-  (rect 8 9 73 18)
-  (rect 8 209 73 18)
-  (rect 8 9 73 18)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 209.00 73.00 18.00)
+        (rect 8.00 9.00 73.00 18.00)
+        (rect 8.00 209.00 73.00 18.00)
+        (rect 8.00 9.00 73.00 18.00)
+      )
+    )
+  )
 )
 

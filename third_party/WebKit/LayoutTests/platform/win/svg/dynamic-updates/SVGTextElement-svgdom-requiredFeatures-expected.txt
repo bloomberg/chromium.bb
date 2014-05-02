@@ -13,17 +13,27 @@ PASS textElement.getBBox().width is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 8 8 27 4)
-  (rect 8 8 27 4)
-  (rect 8 8 27 4)
-  (rect 8 8 27 4)
-  (rect 8 8 27 4)
-  (rect 8 8 27 4)
-  (rect 8 8 27 4)
-  (rect 8 8 27 4)
-  (rect 8 8 27 4)
-  (rect 8 8 27 4)
-  (rect 8 8 27 4)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 8.00 27.00 4.00)
+        (rect 8.00 8.00 27.00 4.00)
+        (rect 8.00 8.00 27.00 4.00)
+        (rect 8.00 8.00 27.00 4.00)
+        (rect 8.00 8.00 27.00 4.00)
+        (rect 8.00 8.00 27.00 4.00)
+        (rect 8.00 8.00 27.00 4.00)
+        (rect 8.00 8.00 27.00 4.00)
+        (rect 8.00 8.00 27.00 4.00)
+        (rect 8.00 8.00 27.00 4.00)
+        (rect 8.00 8.00 27.00 4.00)
+      )
+    )
+  )
 )
 

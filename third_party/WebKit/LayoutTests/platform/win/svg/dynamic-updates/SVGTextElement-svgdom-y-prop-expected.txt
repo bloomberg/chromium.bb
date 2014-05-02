@@ -11,10 +11,20 @@ PASS textElement.y.baseVal.getItem(0).value is 20
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 8 43 75 19)
-  (rect 8 13 75 19)
-  (rect 8 43 75 19)
-  (rect 8 13 75 19)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 43.00 75.00 19.00)
+        (rect 8.00 13.00 75.00 19.00)
+        (rect 8.00 43.00 75.00 19.00)
+        (rect 8.00 13.00 75.00 19.00)
+      )
+    )
+  )
 )
 

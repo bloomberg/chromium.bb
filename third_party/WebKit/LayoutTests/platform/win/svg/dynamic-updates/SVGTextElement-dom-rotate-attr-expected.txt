@@ -11,10 +11,20 @@ PASS textElement.getAttribute('rotate') is "20"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 83 13 5 22)
-  (rect 8 32 80 3)
-  (rect 8 13 75 19)
-  (rect 8 13 80 22)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 83.00 13.00 5.00 22.00)
+        (rect 8.00 32.00 80.00 3.00)
+        (rect 8.00 13.00 75.00 19.00)
+        (rect 8.00 13.00 80.00 22.00)
+      )
+    )
+  )
 )
 

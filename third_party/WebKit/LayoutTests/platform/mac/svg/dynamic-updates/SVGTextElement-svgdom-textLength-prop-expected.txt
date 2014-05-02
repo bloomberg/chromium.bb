@@ -15,9 +15,19 @@ PASS textElement.getComputedTextLength() == lastLength is true
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 94 209 106 18)
-  (rect 8 209 86 18)
-  (rect 8 209 192 18)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 94.00 209.00 106.00 18.00)
+        (rect 8.00 209.00 86.00 18.00)
+        (rect 8.00 209.00 192.00 18.00)
+      )
+    )
+  )
 )
 
