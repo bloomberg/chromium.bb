@@ -1944,8 +1944,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Records the media type of every video being cast.</summary>
 </histogram>
 
+<histogram name="Cast.Sender.CastPlayerResult" enum="CastPlayBackState">
+  <owner>maybelle@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    Records the result of a request to play remotely on a per player app basis
+    within Chrome for Android.
+  </summary>
+</histogram>
+
 <histogram name="Cast.Sender.CastPlaySuccess" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated 04/2014, and replaced by Cast.Sender.CastPlayerResult.
+  </obsolete>
+  <owner>maybelle@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
   <summary>
     Records the result of a request to play remotely. The value will be true if
     the playback succeeded, and false if there was an error.
@@ -31332,6 +31345,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="6" label="MJPEG"/>
   <int value="7" label="NV21"/>
   <int value="8" label="YV12"/>
+</enum>
+
+<enum name="CastPlayBackState" type="int">
+  <int value="0" label="YT_PLAYER_SUCCESS"/>
+  <int value="1" label="YT_PLAYER_FAILURE"/>
+  <int value="2" label="DEFAULT_PLAYER_SUCCESS"/>
+  <int value="3" label="DEFAULT_PLAYER_FAILURE"/>
 </enum>
 
 <enum name="CatSixtyFour" type="int">
