@@ -34,7 +34,6 @@
 #include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
-#include "content/renderer/pepper/pepper_platform_context_3d.h"
 #include "content/renderer/pepper/pepper_url_loader_host.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/plugin_object.h"
@@ -738,10 +737,9 @@ void PepperPluginInstanceImpl::ScrollRect(int dx,
 void PepperPluginInstanceImpl::CommitBackingTexture() {
   if (!texture_layer_.get())
     return;
-  PlatformContext3D* context = bound_graphics_3d_->platform_context();
   gpu::Mailbox mailbox;
   uint32 sync_point = 0;
-  context->GetBackingMailbox(&mailbox, &sync_point);
+  bound_graphics_3d_->GetBackingMailbox(&mailbox, &sync_point);
   DCHECK(!mailbox.IsZero());
   DCHECK_NE(sync_point, 0u);
   texture_layer_->SetTextureMailboxWithoutReleaseCallback(
@@ -1921,8 +1919,7 @@ void PepperPluginInstanceImpl::UpdateLayer() {
   gpu::Mailbox mailbox;
   uint32 sync_point = 0;
   if (bound_graphics_3d_.get()) {
-    PlatformContext3D* context = bound_graphics_3d_->platform_context();
-    context->GetBackingMailbox(&mailbox, &sync_point);
+    bound_graphics_3d_->GetBackingMailbox(&mailbox, &sync_point);
     DCHECK_EQ(mailbox.IsZero(), sync_point == 0);
   }
   bool want_3d_layer = !mailbox.IsZero();

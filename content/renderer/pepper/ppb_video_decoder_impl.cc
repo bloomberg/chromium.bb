@@ -12,7 +12,6 @@
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/host_globals.h"
-#include "content/renderer/pepper/pepper_platform_context_3d.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
@@ -112,45 +111,33 @@ PPB_VideoDecoder_Impl::~PPB_VideoDecoder_Impl() { Destroy(); }
 PP_Resource PPB_VideoDecoder_Impl::Create(PP_Instance instance,
                                           PP_Resource graphics_context,
                                           PP_VideoDecoder_Profile profile) {
-  EnterResourceNoLock<PPB_Graphics3D_API> enter_context(graphics_context, true);
-  if (enter_context.failed())
-    return 0;
-  PPB_Graphics3D_Impl* graphics3d_impl =
-      static_cast<PPB_Graphics3D_Impl*>(enter_context.object());
-
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
       new PPB_VideoDecoder_Impl(instance));
-  if (decoder->Init(graphics_context,
-                    graphics3d_impl->platform_context(),
-                    graphics3d_impl->gles2_impl(),
-                    profile))
+  if (decoder->Init(graphics_context, profile))
     return decoder->GetReference();
   return 0;
 }
 
 bool PPB_VideoDecoder_Impl::Init(PP_Resource graphics_context,
-                                 PlatformContext3D* context,
-                                 gpu::gles2::GLES2Implementation* gles2_impl,
                                  PP_VideoDecoder_Profile profile) {
-  InitCommon(graphics_context, gles2_impl);
+  EnterResourceNoLock<PPB_Graphics3D_API> enter_context(graphics_context, true);
+  if (enter_context.failed())
+    return false;
 
-  int command_buffer_route_id = context->GetCommandBufferRouteId();
+  PPB_Graphics3D_Impl* graphics_3d =
+      static_cast<PPB_Graphics3D_Impl*>(enter_context.object());
+
+  int command_buffer_route_id = graphics_3d->GetCommandBufferRouteId();
   if (command_buffer_route_id == 0)
     return false;
 
+  InitCommon(graphics_context, graphics_3d->gles2_impl());
   FlushCommandBuffer();
-
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
 
   // This is not synchronous, but subsequent IPC messages will be buffered, so
   // it is okay to immediately send IPC messages through the returned channel.
-  GpuChannelHost* channel =
-      render_thread->EstablishGpuChannelSync(
-          CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
-
-  if (!channel)
-    return false;
-
+  GpuChannelHost* channel = graphics_3d->channel();
+  DCHECK(channel);
   decoder_ = channel->CreateVideoDecoder(command_buffer_route_id);
   return (decoder_ && decoder_->Initialize(PPToMediaProfile(profile), this));
 }

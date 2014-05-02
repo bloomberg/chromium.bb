@@ -377,8 +377,6 @@
     'renderer/pepper/pepper_platform_audio_input.h',
     'renderer/pepper/pepper_platform_audio_output.cc',
     'renderer/pepper/pepper_platform_audio_output.h',
-    'renderer/pepper/pepper_platform_context_3d.cc',
-    'renderer/pepper/pepper_platform_context_3d.h',
     'renderer/pepper/pepper_platform_video_capture.cc',
     'renderer/pepper/pepper_platform_video_capture.h',
     'renderer/pepper/pepper_plugin_instance_impl.cc',

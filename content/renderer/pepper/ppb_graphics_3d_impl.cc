@@ -8,11 +8,13 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/common/gpu/client/command_buffer_proxy_impl.h"
+#include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/pepper/host_globals.h"
-#include "content/renderer/pepper/pepper_platform_context_3d.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "ppapi/c/ppp_graphics_3d.h"
@@ -44,9 +46,21 @@ PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PP_Instance instance)
     : PPB_Graphics3D_Shared(instance),
       bound_to_instance_(false),
       commit_pending_(false),
+      sync_point_(0),
+      has_alpha_(false),
+      command_buffer_(NULL),
       weak_ptr_factory_(this) {}
 
-PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() { DestroyGLES2Impl(); }
+PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() {
+  DestroyGLES2Impl();
+  if (command_buffer_) {
+    DCHECK(channel_.get());
+    channel_->DestroyCommandBuffer(command_buffer_);
+    command_buffer_ = NULL;
+  }
+
+  channel_ = NULL;
+}
 
 // static
 PP_Resource PPB_Graphics3D_Impl::Create(PP_Instance instance,
@@ -120,7 +134,7 @@ gpu::CommandBuffer::State PPB_Graphics3D_Impl::WaitForGetOffsetInRange(
 }
 
 uint32_t PPB_Graphics3D_Impl::InsertSyncPoint() {
-  return platform_context_->GetGpuControl()->InsertSyncPoint();
+  return command_buffer_->InsertSyncPoint();
 }
 
 bool PPB_Graphics3D_Impl::BindToInstance(bool bind) {
@@ -128,7 +142,7 @@ bool PPB_Graphics3D_Impl::BindToInstance(bool bind) {
   return true;
 }
 
-bool PPB_Graphics3D_Impl::IsOpaque() { return platform_context_->IsOpaque(); }
+bool PPB_Graphics3D_Impl::IsOpaque() { return !has_alpha_; }
 
 void PPB_Graphics3D_Impl::ViewInitiatedPaint() {
   commit_pending_ = false;
@@ -139,15 +153,21 @@ void PPB_Graphics3D_Impl::ViewInitiatedPaint() {
 
 void PPB_Graphics3D_Impl::ViewFlushedPaint() {}
 
+int PPB_Graphics3D_Impl::GetCommandBufferRouteId() {
+  DCHECK(command_buffer_);
+  return command_buffer_->GetRouteID();
+}
+
 gpu::CommandBuffer* PPB_Graphics3D_Impl::GetCommandBuffer() {
-  return platform_context_->GetCommandBuffer();
+  return command_buffer_;
 }
 
 gpu::GpuControl* PPB_Graphics3D_Impl::GetGpuControl() {
-  return platform_context_->GetGpuControl();
+  return command_buffer_;
 }
 
 int32 PPB_Graphics3D_Impl::DoSwapBuffers() {
+  DCHECK(command_buffer_);
   // We do not have a GLES2 implementation when using an OOP proxy.
   // The plugin-side proxy is responsible for adding the SwapBuffers command
   // to the command buffer in that case.
@@ -156,7 +176,7 @@ int32 PPB_Graphics3D_Impl::DoSwapBuffers() {
 
   // Since the backing texture has been updated, a new sync point should be
   // inserted.
-  platform_context_->InsertSyncPointForBackingMailbox();
+  sync_point_ = command_buffer_->InsertSyncPoint();
 
   if (bound_to_instance_) {
     // If we are bound to the instance, we need to ask the compositor
@@ -170,8 +190,8 @@ int32 PPB_Graphics3D_Impl::DoSwapBuffers() {
     commit_pending_ = true;
   } else {
     // Wait for the command to complete on the GPU to allow for throttling.
-    platform_context_->Echo(base::Bind(&PPB_Graphics3D_Impl::OnSwapBuffers,
-                                       weak_ptr_factory_.GetWeakPtr()));
+    command_buffer_->Echo(base::Bind(&PPB_Graphics3D_Impl::OnSwapBuffers,
+                                     weak_ptr_factory_.GetWeakPtr()));
   }
 
   return PP_OK_COMPLETIONPENDING;
@@ -180,10 +200,6 @@ int32 PPB_Graphics3D_Impl::DoSwapBuffers() {
 bool PPB_Graphics3D_Impl::Init(PPB_Graphics3D_API* share_context,
                                const int32_t* attrib_list) {
   if (!InitRaw(share_context, attrib_list))
-    return false;
-
-  gpu::CommandBuffer* command_buffer = GetCommandBuffer();
-  if (!command_buffer->Initialize())
     return false;
 
   gpu::gles2::GLES2Implementation* share_gles2 = NULL;
@@ -209,24 +225,71 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
   if (!prefs.pepper_3d_enabled)
     return false;
 
-  platform_context_.reset(new PlatformContext3D);
-  if (!platform_context_)
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  if (!render_thread)
     return false;
 
-  PlatformContext3D* share_platform_context = NULL;
+  channel_ = render_thread->EstablishGpuChannelSync(
+      CAUSE_FOR_GPU_LAUNCH_PEPPERPLATFORMCONTEXT3DIMPL_INITIALIZE);
+  if (!channel_.get())
+    return false;
+
+  gfx::Size surface_size;
+  std::vector<int32> attribs;
+  gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
+  // TODO(alokp): Change GpuChannelHost::CreateOffscreenCommandBuffer()
+  // interface to accept width and height in the attrib_list so that
+  // we do not need to filter for width and height here.
+  if (attrib_list) {
+    for (const int32_t* attr = attrib_list; attr[0] != PP_GRAPHICS3DATTRIB_NONE;
+         attr += 2) {
+      switch (attr[0]) {
+        case PP_GRAPHICS3DATTRIB_WIDTH:
+          surface_size.set_width(attr[1]);
+          break;
+        case PP_GRAPHICS3DATTRIB_HEIGHT:
+          surface_size.set_height(attr[1]);
+          break;
+        case PP_GRAPHICS3DATTRIB_GPU_PREFERENCE:
+          gpu_preference =
+              (attr[1] == PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_LOW_POWER)
+                  ? gfx::PreferIntegratedGpu
+                  : gfx::PreferDiscreteGpu;
+          break;
+        case PP_GRAPHICS3DATTRIB_ALPHA_SIZE:
+          has_alpha_ = attr[1] > 0;
+        // fall-through
+        default:
+          attribs.push_back(attr[0]);
+          attribs.push_back(attr[1]);
+          break;
+      }
+    }
+    attribs.push_back(PP_GRAPHICS3DATTRIB_NONE);
+  }
+
+  CommandBufferProxyImpl* share_buffer = NULL;
   if (share_context) {
     PPB_Graphics3D_Impl* share_graphics =
         static_cast<PPB_Graphics3D_Impl*>(share_context);
-    share_platform_context = share_graphics->platform_context();
+    share_buffer = share_graphics->command_buffer_;
   }
 
-  if (!platform_context_->Init(attrib_list, share_platform_context))
+  command_buffer_ = channel_->CreateOffscreenCommandBuffer(
+      surface_size, share_buffer, attribs, GURL::EmptyGURL(), gpu_preference);
+  if (!command_buffer_)
     return false;
+  if (!command_buffer_->Initialize())
+    return false;
+  mailbox_ = gpu::Mailbox::Generate();
+  if (!command_buffer_->ProduceFrontBuffer(mailbox_))
+    return false;
+  sync_point_ = command_buffer_->InsertSyncPoint();
 
-  platform_context_->SetContextLostCallback(base::Bind(
+  command_buffer_->SetChannelErrorCallback(base::Bind(
       &PPB_Graphics3D_Impl::OnContextLost, weak_ptr_factory_.GetWeakPtr()));
 
-  platform_context_->SetOnConsoleMessageCallback(base::Bind(
+  command_buffer_->SetOnConsoleMessageCallback(base::Bind(
       &PPB_Graphics3D_Impl::OnConsoleMessage, weak_ptr_factory_.GetWeakPtr()));
   return true;
 }

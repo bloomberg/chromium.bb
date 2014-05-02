@@ -6,11 +6,13 @@
 #define CONTENT_RENDERER_PEPPER_PPB_GRAPHICS_3D_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "ppapi/shared_impl/ppb_graphics_3d_shared.h"
 #include "ppapi/shared_impl/resource.h"
 
 namespace content {
-class PlatformContext3D;
+class CommandBufferProxyImpl;
+class GpuChannelHost;
 
 class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
  public:
@@ -46,7 +48,14 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
   void ViewInitiatedPaint();
   void ViewFlushedPaint();
 
-  PlatformContext3D* platform_context() { return platform_context_.get(); }
+  void GetBackingMailbox(gpu::Mailbox* mailbox, uint32* sync_point) {
+    *mailbox = mailbox_;
+    *sync_point = sync_point_;
+  }
+
+  int GetCommandBufferRouteId();
+
+  GpuChannelHost* channel() { return channel_; }
 
  protected:
   virtual ~PPB_Graphics3D_Impl();
@@ -72,8 +81,13 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
   bool bound_to_instance_;
   // True when waiting for compositor to commit our backing texture.
   bool commit_pending_;
-  // The 3D Context. Responsible for providing the command buffer.
-  scoped_ptr<PlatformContext3D> platform_context_;
+
+  gpu::Mailbox mailbox_;
+  uint32 sync_point_;
+  bool has_alpha_;
+  scoped_refptr<GpuChannelHost> channel_;
+  CommandBufferProxyImpl* command_buffer_;
+
   base::WeakPtrFactory<PPB_Graphics3D_Impl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Graphics3D_Impl);
