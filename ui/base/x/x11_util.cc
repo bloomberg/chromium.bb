@@ -300,6 +300,15 @@ SharedMemorySupport QuerySharedMemorySupport(XDisplay* dpy) {
   return shared_memory_support;
 }
 
+bool QueryRenderSupport(Display* dpy) {
+  int dummy;
+  // We don't care about the version of Xrender since all the features which
+  // we use are included in every version.
+  static bool render_supported = XRenderQueryExtension(dpy, &dummy, &dummy);
+
+  return render_supported;
+}
+
 ::Cursor GetXCursor(int cursor_shape) {
   if (!cursor_cache)
     cursor_cache = new XCursorCache;
