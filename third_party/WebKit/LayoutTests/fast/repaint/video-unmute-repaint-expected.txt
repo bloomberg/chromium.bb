@@ -1,8 +1,18 @@
 This tests that we repaint the mute button when we change the volume
 
-(repaint rects
-  (rect 543 498 35 30)
-  (rect 578 501 24 24)
-  (rect 607 501 24 24)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 543.00 498.00 35.00 30.00)
+        (rect 578.00 501.00 24.00 24.00)
+        (rect 607.00 501.00 24.00 24.00)
+      )
+    )
+  )
 )
 

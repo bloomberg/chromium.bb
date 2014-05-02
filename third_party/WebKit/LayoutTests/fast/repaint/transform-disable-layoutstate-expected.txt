@@ -1,10 +1,20 @@
-(repaint rects
-  (rect 0 184 800 45)
-  (rect 8 176 784 45)
-  (rect 58 256 500 45)
-  (rect 58 256 500 45)
-  (rect 58 156 500 45)
-  (rect 62 142 492 55)
-  (rect 62 142 492 10)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 0.00 184.00 800.00 45.00)
+        (rect 8.00 176.00 784.00 45.00)
+        (rect 58.00 256.00 500.00 45.00)
+        (rect 58.00 256.00 500.00 45.00)
+        (rect 58.00 156.00 500.00 45.00)
+        (rect 62.00 142.00 492.00 55.00)
+        (rect 62.00 142.00 492.00 10.00)
+      )
+    )
+  )
 )
 

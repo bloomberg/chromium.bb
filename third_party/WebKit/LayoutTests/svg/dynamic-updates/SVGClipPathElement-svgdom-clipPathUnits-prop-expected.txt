@@ -10,8 +10,18 @@ PASS clipPathElement.clipPathUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_OBJECTB
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 18 8 90 100)
-  (rect 8 18 100 90)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 18.00 8.00 90.00 100.00)
+        (rect 8.00 18.00 100.00 90.00)
+      )
+    )
+  )
 )
 
