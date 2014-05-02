@@ -19,5 +19,7 @@ Modifications:
 * Added and imports gsutil/plugins/sso_auth.py to support prodaccess
   based authentication.
 * Added flag to bypass prodaccess authentication.
+* Remove autolaunching the browser during gsutil config.
+* Remove prompt for default project ID (Defaults to "0" now).
 
 Full license is in the COPYING file.

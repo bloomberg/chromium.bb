@@ -86,21 +86,14 @@ def OAuth2ApprovalFlow(oauth2_client, scopes, launch_browser=False):
         'callable [...] in [...] Popen.__del__" which can be ignored.]\n\n' % approval_url)
   else:
     sys.stdout.write(
-        'Please navigate your browser to the following URL:\n%s\n' %
+        'Please navigate your browser to the following URL:\n%s\n\n' %
         approval_url)
 
-  sys.stdout.write(
-      'In your browser you should see a page that requests you to authorize '
-      'gsutil to access\nGoogle Cloud Storage on your behalf. After you '
-      'approve, an authorization code will be displayed.\n\n')
   if (launch_browser and
       not webbrowser.open(approval_url, new=1, autoraise=True)):
     sys.stdout.write(
         'Launching browser appears to have failed; please navigate a browser '
         'to the following URL:\n%s\n' % approval_url)
-  # Short delay; webbrowser.open on linux insists on printing out a message
-  # which we don't want to run into the prompt for the auth code.
-  time.sleep(2)
   code = raw_input('Enter the authorization code: ')
 
   refresh_token, access_token = oauth2_client.ExchangeAuthorizationCode(

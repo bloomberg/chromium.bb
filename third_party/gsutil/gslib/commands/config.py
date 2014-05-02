@@ -540,33 +540,7 @@ class ConfigCommand(Command):
 
     config_file.write('default_api_version = %d\n' % api_version)
 
-    # Write the config file GSUtil section that includes the default
-    # project ID input from the user.
-    if launch_browser:
-      sys.stdout.write(
-          'Attempting to launch a browser to open the Google API console at '
-          'URL: %s\n\n'
-          '[Note: due to a Python bug, you may see a spurious error message '
-          '"object is not\n callable [...] in [...] Popen.__del__" which can '
-          'be ignored.]\n\n' % GOOG_API_CONSOLE_URI)
-      sys.stdout.write(
-          'In your browser you should see the API Console. Click "Storage" and '
-          'look for the value under "Identifying your project\n\n')
-      if not webbrowser.open(GOOG_API_CONSOLE_URI, new=1, autoraise=True):
-        sys.stdout.write(
-            'Launching browser appears to have failed; please navigate a '
-            'browser to the following URL:\n%s\n' % GOOG_API_CONSOLE_URI)
-      # Short delay; webbrowser.open on linux insists on printing out a message
-      # which we don't want to run into the prompt for the auth code.
-      time.sleep(2)
-    else:
-      sys.stdout.write(
-          '\nPlease navigate your browser to %s,\nthen click "Services" on the '
-          'left side panel and ensure you have Google Cloud\nStorage'
-          'activated, then click "Google Cloud Storage" on the left side '
-          'panel and\nfind the "x-goog-project-id" on that page.\n' %
-          GOOG_API_CONSOLE_URI)
-    default_project_id = raw_input('What is your project-id? ')
+    default_project_id = '0'
     project_id_section_prelude = """
 # 'default_project_id' specifies the default Google Cloud Storage project ID to
 # use with the 'mb' and 'ls' commands. If defined it overrides the default value
@@ -656,10 +630,6 @@ class ConfigCommand(Command):
       output_file = sys.stdout
     else:
       output_file = self._OpenConfigFile(output_file_name)
-      sys.stderr.write(
-          'This script will create a boto config file at\n%s\ncontaining your '
-          'credentials, based on your responses to the following questions.\n\n'
-          % output_file_name)
 
     # Catch ^C so we can restore the backup.
     signal.signal(signal.SIGINT, cleanup_handler)
@@ -684,9 +654,7 @@ class ConfigCommand(Command):
     if output_file_name != '-':
       output_file.close()
       sys.stderr.write(
-          '\nBoto config file "%s" created.\nIf you need to use a proxy to '
-          'use a proxy to access the Internet please see the instructions in '
-          'that file.\n' % output_file_name)
+          '\nBoto config file "%s" created.\n' % output_file_name)
 
     return 0
 
