@@ -894,8 +894,8 @@ crbug.com/344238 virtual/deferred/inspector/timeline/timeline-auto-record.html [
 crbug.com/344238 [ Mac Win Debug ] virtual/deferred/inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 crbug.com/344238 virtual/implsidepainting/inspector/timeline/timeline-auto-record.html [ Pass Failure ]
 
-crbug.com/369419 [ Mac ] svg/repaint/image-with-clip-path.svg [ ImageOnlyFailure ]
-crbug.com/369419 [ Linux Win ] fast/repaint/replaced-clipped-positioned-not-wrong-incremental-repainting.html [ Failure ]
+crbug.com/369419 [ Mac ] svg/repaint/image-with-clip-path.svg [ NeedsRebaseline ]
+crbug.com/369419 [ Linux Win ] fast/repaint/replaced-clipped-positioned-not-wrong-incremental-repainting.html [ NeedsRebaseline ]
 
 crbug.com/359194 css3/viewport-percentage-lengths/viewport-percentage-lengths-page-zoom.html [ NeedsManualRebaseline ]
 crbug.com/359194 editing/pasteboard/drag-drop-copy-text.html [ NeedsManualRebaseline ]
