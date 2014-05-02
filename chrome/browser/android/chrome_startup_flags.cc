@@ -52,11 +52,4 @@ void SetChromeSpecificCommandLineFlags() {
       channel == chrome::VersionInfo::CHANNEL_DEV) {
     SetCommandLineSwitch(switches::kEnableDomDistiller);
   }
-
-  // Enable the Fast Text Autosizer on local builds, canary and dev-channel.
-  if (channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
-      channel == chrome::VersionInfo::CHANNEL_CANARY ||
-      channel == chrome::VersionInfo::CHANNEL_DEV) {
-    SetCommandLineSwitch(switches::kEnableFastTextAutosizing);
-  }
 }
