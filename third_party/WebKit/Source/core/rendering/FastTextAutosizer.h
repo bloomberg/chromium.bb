@@ -274,6 +274,9 @@ private:
     const RenderObject* findTextLeaf(const RenderObject*, size_t&, TextLeafSearch);
     bool shouldDescendForTableInflation(RenderObject*);
     BlockFlags classifyBlock(const RenderObject*, BlockFlags mask = UINT_MAX);
+#ifdef AUTOSIZING_DOM_DEBUG_INFO
+    void writeClusterDebugInfo(Cluster*);
+#endif
 
     const Document* m_document;
     const RenderBlock* m_firstBlockToBeginLayout;

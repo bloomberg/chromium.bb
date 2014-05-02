@@ -43,30 +43,74 @@
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderView.h"
 
+#ifdef AUTOSIZING_DOM_DEBUG_INFO
+#include "core/dom/ExecutionContextTask.h"
+#endif
+
 using namespace std;
 
 namespace WebCore {
 
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
-static void writeDebugInfo(RenderObject* renderObject, const AtomicString& output)
+class WriteDebugInfoTask : public ExecutionContextTask {
+public:
+    WriteDebugInfoTask(PassRefPtr<Element> element, AtomicString value)
+        : m_element(element)
+        , m_value(value)
+    {
+    }
+
+    virtual void performTask(ExecutionContext*)
+    {
+        m_element->setAttribute("data-autosizing", m_value, ASSERT_NO_EXCEPTION);
+    }
+
+private:
+    RefPtr<Element> m_element;
+    AtomicString m_value;
+};
+
+static void writeDebugInfo(RenderObject* renderer, const AtomicString& output)
 {
-    Node* node = renderObject->node();
+    Node* node = renderer->node();
     if (!node)
         return;
     if (node->isDocumentNode())
         node = toDocument(node)->documentElement();
-    if (node->isElementNode())
-        toElement(node)->setAttribute("data-autosizing", output, ASSERT_NO_EXCEPTION);
+    if (!node->isElementNode())
+        return;
+    node->document().postTask(adoptPtr(new WriteDebugInfoTask(toElement(node), output)));
 }
 
-static void writeDebugPageInfo(const Document* document, float baseMultiplier, int layoutWidth, int frameWidth)
+void FastTextAutosizer::writeClusterDebugInfo(Cluster* cluster)
 {
-    if (Element* element = document->documentElement()) {
-        element->setAttribute("data-autosizing-pageinfo",
-            AtomicString(String::format("bm %f * (lw %d / fw %d)",
-                baseMultiplier, layoutWidth, frameWidth)),
-            ASSERT_NO_EXCEPTION);
+    String explanation = "";
+    if (cluster->m_flags & SUPPRESSING) {
+        explanation = "[suppressed]";
+    } else if (!(cluster->m_flags & (INDEPENDENT | WIDER_OR_NARROWER))) {
+        explanation = "[inherited]";
+    } else if (cluster->m_supercluster) {
+        explanation = "[supercluster]";
+    } else if (!clusterHasEnoughTextToAutosize(cluster)) {
+        explanation = "[insufficient-text]";
+    } else {
+        const RenderBlock* widthProvider = clusterWidthProvider(cluster->m_root);
+        if (cluster->m_hasTableAncestor && cluster->m_multiplier < multiplierFromBlock(widthProvider)) {
+            explanation = "[table-ancestor-limited]";
+        } else {
+            explanation = String::format("[from width %d of %s]",
+                static_cast<int>(widthFromBlock(widthProvider)), widthProvider->debugName().utf8().data());
+        }
     }
+    String pageInfo = "";
+    if (cluster->m_root->isRenderView()) {
+        pageInfo = String::format("; pageinfo: bm %f * (lw %d / fw %d)",
+            m_pageInfo.m_baseMultiplier, m_pageInfo.m_layoutWidth, m_pageInfo.m_frameWidth);
+    }
+    float multiplier = cluster->m_flags & SUPPRESSING ? 1.0 : cluster->m_multiplier;
+    writeDebugInfo(const_cast<RenderBlock*>(cluster->m_root),
+        AtomicString(String::format("cluster: %f %s%s", multiplier,
+            explanation.utf8().data(), pageInfo.utf8().data())));
 }
 #endif
 
@@ -288,9 +332,6 @@ FastTextAutosizer::BeginLayoutBehavior FastTextAutosizer::prepareForLayout(const
 #endif
 
     if (!m_firstBlockToBeginLayout) {
-#ifdef AUTOSIZING_DOM_DEBUG_INFO
-        writeDebugPageInfo(m_document, m_pageInfo.m_baseMultiplier, m_pageInfo.m_layoutWidth, m_pageInfo.m_frameWidth);
-#endif
         m_firstBlockToBeginLayout = block;
         prepareClusterStack(block->parent());
     } else if (block == currentCluster()->m_root) {
@@ -688,7 +729,13 @@ FastTextAutosizer::Cluster* FastTextAutosizer::maybeCreateCluster(const RenderBl
     if (!(flags & INDEPENDENT) && !(flags & EXPLICIT_WIDTH) && !!(flags & SUPPRESSING) == parentSuppresses)
         return 0;
 
-    return new Cluster(block, flags, parentCluster, getSupercluster(block));
+    Cluster* cluster = new Cluster(block, flags, parentCluster, getSupercluster(block));
+#ifdef AUTOSIZING_DOM_DEBUG_INFO
+    // Non-SUPPRESSING clusters are annotated in clusterMultiplier.
+    if (flags & SUPPRESSING)
+        writeClusterDebugInfo(cluster);
+#endif
+    return cluster;
 }
 
 FastTextAutosizer::Supercluster* FastTextAutosizer::getSupercluster(const RenderBlock* block)
@@ -735,25 +782,7 @@ float FastTextAutosizer::clusterMultiplier(Cluster* cluster)
     }
 
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
-    // FIXME(crbug.com/339213): Reduce redundant logic by storing the explanation category in the Cluster.
-    String explanation = "";
-    if (!(cluster->m_flags & (INDEPENDENT | WIDER_OR_NARROWER))) {
-        explanation = "[inherited]";
-    } else if (cluster->m_supercluster) {
-        explanation = "[supercluster]";
-    } else if (!clusterHasEnoughTextToAutosize(cluster)) {
-        explanation = "[insufficient-text]";
-    } else {
-        const RenderBlock* widthProvider = clusterWidthProvider(cluster->m_root);
-        if (cluster->m_hasTableAncestor && cluster->m_multiplier < multiplierFromBlock(widthProvider)) {
-            explanation = "[table-ancestor-limited]";
-        } else {
-            explanation = String::format("[from width %d of %s]",
-                static_cast<int>(widthFromBlock(widthProvider)), widthProvider->debugName().utf8().data());
-        }
-    }
-    writeDebugInfo(const_cast<RenderBlock*>(cluster->m_root),
-        AtomicString(String::format("cluster: %f %s", cluster->m_multiplier, explanation.utf8().data())));
+    writeClusterDebugInfo(cluster);
 #endif
 
     ASSERT(cluster->m_multiplier);
