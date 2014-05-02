@@ -1748,12 +1748,9 @@ def BuildFirmwareArchive(buildroot, board, archive_dir):
     The basename of the archived file, or None if the target board does
     not have firmware from source.
   """
-  patterns = ['*image*.bin', 'updater-*.sh', 'ec.bin', 'dts/*']
   firmware_root = os.path.join(buildroot, 'chroot', 'build', board, 'firmware')
-  source_list = []
-  for pattern in patterns:
-    source_list += [os.path.relpath(f, firmware_root)
-                    for f in glob.iglob(os.path.join(firmware_root, pattern))]
+  source_list = [os.path.relpath(f, firmware_root)
+                 for f in glob.iglob(os.path.join(firmware_root, '*'))]
   if not source_list:
     return None
 

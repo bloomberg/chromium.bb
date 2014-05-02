@@ -506,11 +506,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
       'updater-link.rw.sh',
       'x86-memtest')
     # Files which should be included in the archive.
-    fw_archived_files = (
-      'dts/emeraldlake2.dts',
-      'image-link.rw.bin',
-      'nv_image-link.bin',
-      'updater-link.rw.sh')
+    fw_archived_files = fw_files + ('dts/',)
     board = 'link'
     fw_test_root = os.path.join(self.tempdir, os.path.basename(__file__))
     fw_files_root = os.path.join(fw_test_root,
