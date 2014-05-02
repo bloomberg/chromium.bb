@@ -19,40 +19,24 @@ function getIntersectionArea(rect1, rect2) {
 }
 
 /**
- * @return {number} width of a scrollbar in pixels
- */
-function getScrollbarWidth() {
-  var parentDiv = document.createElement('div');
-  parentDiv.style.visibility = 'hidden';
-  var parentDivWidth = 500;
-  parentDiv.style.width = parentDivWidth + 'px';
-  document.body.appendChild(parentDiv);
-  parentDiv.style.overflow = 'scroll';
-  var childDiv = document.createElement('div');
-  childDiv.style.width = '100%';
-  parentDiv.appendChild(childDiv);
-  var childDivWidth = childDiv.offsetWidth;
-  parentDiv.parentNode.removeChild(parentDiv);
-  return parentDivWidth - childDivWidth;
-}
-
-/**
  * Create a new viewport.
  * @param {Window} window the window
  * @param {Object} sizer is the element which represents the size of the
  *     document in the viewport
  * @param {Function} viewportChangedCallback is run when the viewport changes
+ * @param {number} scrollbarWidth the width of scrollbars on the page
  */
 function Viewport(window,
                   sizer,
-                  viewportChangedCallback) {
+                  viewportChangedCallback,
+                  scrollbarWidth) {
   this.window_ = window;
   this.sizer_ = sizer;
   this.viewportChangedCallback_ = viewportChangedCallback;
   this.zoom_ = 1;
   this.documentDimensions_ = null;
   this.pageDimensions_ = [];
-  this.scrollbarWidth_ = getScrollbarWidth();
+  this.scrollbarWidth_ = scrollbarWidth;
   this.fittingType_ = Viewport.FittingType.NONE;
 
   window.addEventListener('scroll', this.updateViewport_.bind(this));
@@ -114,10 +98,12 @@ Viewport.prototype = {
    * Helper function called when the zoomed document size changes.
    */
   contentSizeChanged_: function() {
-    this.sizer_.style.width =
-        this.documentDimensions_.width * this.zoom_ + 'px';
-    this.sizer_.style.height =
-        this.documentDimensions_.height * this.zoom_ + 'px';
+    if (this.documentDimensions_) {
+      this.sizer_.style.width =
+          this.documentDimensions_.width * this.zoom_ + 'px';
+      this.sizer_.style.height =
+          this.documentDimensions_.height * this.zoom_ + 'px';
+    }
   },
 
   /**
@@ -189,8 +175,8 @@ Viewport.prototype = {
     this.zoom_ = newZoom;
     // Record the scroll position (relative to the middle of the window).
     var currentScrollPos = [
-      (this.window_.scrollX + this.window_.innerWidth / 2) / oldZoom,
-      (this.window_.scrollY + this.window_.innerHeight / 2) / oldZoom
+      (this.window_.pageXOffset + this.window_.innerWidth / 2) / oldZoom,
+      (this.window_.pageYOffset + this.window_.innerHeight / 2) / oldZoom
     ];
     this.contentSizeChanged_();
     // Scroll to the scaled scroll position.
@@ -250,14 +236,14 @@ Viewport.prototype = {
   getMostVisiblePage: function() {
     var firstVisiblePage = this.getPageAtY_(this.position.y / this.zoom_);
     var mostVisiblePage = {number: 0, area: 0};
+    var viewportRect = {
+      x: this.position.x / this.zoom_,
+      y: this.position.y / this.zoom_,
+      width: this.size.width / this.zoom_,
+      height: this.size.height / this.zoom_
+    };
     for (var i = firstVisiblePage; i < this.pageDimensions_.length; i++) {
-      var viewportRect = {
-        x: 0,
-        y: 0,
-        width: this.size.width,
-        height: this.size.height
-      };
-      var area = getIntersectionArea(this.getPageScreenRect(i),
+      var area = getIntersectionArea(this.pageDimensions_[i],
                                      viewportRect);
       // If we hit a page with 0 area overlap, we must have gone past the
       // pages visible in the viewport so we can break.
@@ -343,13 +329,12 @@ Viewport.prototype = {
     if (!this.documentDimensions_)
       return;
     // Track the last y-position so we stay at the same position after zooming.
-    var oldY = this.window_.scrollY / this.zoom_;
+    var oldY = this.window_.pageYOffset / this.zoom_;
     // When computing fit-to-width, the maximum width of a page in the document
     // is used, which is equal to the size of the document width.
     this.setZoom_(this.computeFittingZoom_(this.documentDimensions_, true));
     var page = this.getMostVisiblePage();
-    this.window_.scrollTo(this.pageDimensions_[page].x * this.zoom_,
-                          oldY * this.zoom_);
+    this.window_.scrollTo(0, oldY * this.zoom_);
     this.updateViewport_();
   },
 
@@ -403,7 +388,7 @@ Viewport.prototype = {
 
   /**
    * Go to the given page index.
-   * @param {number} page the index of the page to go to
+   * @param {number} page the index of the page to go to.
    */
   goToPage: function(page) {
     if (this.pageDimensions_.length == 0)
@@ -456,13 +441,20 @@ Viewport.prototype = {
           Viewport.PAGE_SHADOW.bottom
     };
 
-    // Compute the amount of empty space of the left of the page.
-    var spaceOnLeft = Math.max(
-        (this.size.width - pageDimensions.width * this.zoom_) / 2.0, 0);
+    // Compute the x-coordinate of the page within the document.
+    // TODO(raymes): This should really be set when the PDF plugin passes the
+    // page coordinates, but it isn't yet.
+    var x = (this.documentDimensions_.width - pageDimensions.width) / 2 +
+        Viewport.PAGE_SHADOW.left;
+    // Compute the space on the left of the document if the document fits
+    // completely in the screen.
+    var spaceOnLeft = (this.size.width -
+        this.documentDimensions_.width * this.zoom_) / 2;
+    spaceOnLeft = Math.max(spaceOnLeft, 0);
 
     return {
-      x: Viewport.PAGE_SHADOW.left + spaceOnLeft - this.window_.pageXOffset,
-      y: (insetDimensions.y * this.zoom_) - this.window_.pageYOffset,
+      x: x * this.zoom_ + spaceOnLeft - this.window_.pageXOffset,
+      y: insetDimensions.y * this.zoom_ - this.window_.pageYOffset,
       width: insetDimensions.width * this.zoom_,
       height: insetDimensions.height * this.zoom_
     };
