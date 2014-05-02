@@ -14,14 +14,17 @@ using content::BrowserThread;
 
 namespace component_updater {
 
-CrxDownloader::Result::Result() : error(0) {}
+CrxDownloader::Result::Result()
+    : error(0), downloaded_bytes(-1), total_bytes(-1) {
+}
 
 CrxDownloader::DownloadMetrics::DownloadMetrics()
     : downloader(kNone),
       error(0),
-      bytes_downloaded(-1),
-      bytes_total(-1),
-      download_time_ms(0) {}
+      downloaded_bytes(-1),
+      total_bytes(-1),
+      download_time_ms(0) {
+}
 
 // On Windows, the first downloader in the chain is a background downloader,
 // which uses the BITS service.
@@ -50,6 +53,11 @@ CrxDownloader::CrxDownloader(scoped_ptr<CrxDownloader> successor)
 }
 
 CrxDownloader::~CrxDownloader() {
+}
+
+void CrxDownloader::set_progress_callback(
+    const ProgressCallback& progress_callback) {
+  progress_callback_ = progress_callback;
 }
 
 GURL CrxDownloader::url() const {
@@ -139,5 +147,13 @@ void CrxDownloader::OnDownloadComplete(
   download_callback_.Run(result);
 }
 
-}  // namespace component_updater
+void CrxDownloader::OnDownloadProgress(const Result& result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  if (progress_callback_.is_null())
+    return;
+
+  progress_callback_.Run(result);
+}
+
+}  // namespace component_updater

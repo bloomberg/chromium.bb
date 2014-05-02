@@ -54,15 +54,22 @@ class CrxDownloaderTest : public testing::Test {
 
   void DownloadComplete(int crx_context, const CrxDownloader::Result& result);
 
+  void DownloadProgress(int crx_context, const CrxDownloader::Result& result);
+
  protected:
   scoped_ptr<CrxDownloader> crx_downloader_;
 
   CrxDownloader::DownloadCallback callback_;
+  CrxDownloader::ProgressCallback progress_callback_;
 
   int crx_context_;
 
   int num_download_complete_calls_;
   CrxDownloader::Result download_complete_result_;
+
+  // These members are updated by DownloadProgress.
+  int num_progress_calls_;
+  CrxDownloader::Result download_progress_result_;
 
   // A magic value for the context to be used in the tests.
   static const int kExpectedContext = 0xaabb;
@@ -80,8 +87,12 @@ CrxDownloaderTest::CrxDownloaderTest()
     : callback_(base::Bind(&CrxDownloaderTest::DownloadComplete,
                            base::Unretained(this),
                            kExpectedContext)),
+      progress_callback_(base::Bind(&CrxDownloaderTest::DownloadProgress,
+                                    base::Unretained(this),
+                                    kExpectedContext)),
       crx_context_(0),
       num_download_complete_calls_(0),
+      num_progress_calls_(0),
       blocking_task_runner_(BrowserThread::GetBlockingPool()->
           GetSequencedTaskRunnerWithShutdownBehavior(
               BrowserThread::GetBlockingPool()->GetSequenceToken(),
@@ -98,13 +109,17 @@ CrxDownloaderTest::~CrxDownloaderTest() {
 void CrxDownloaderTest::SetUp() {
   num_download_complete_calls_ = 0;
   download_complete_result_ = CrxDownloader::Result();
+  num_progress_calls_ = 0;
+  download_progress_result_ = CrxDownloader::Result();
   crx_downloader_.reset(CrxDownloader::Create(
       false,    // Do not use the background downloader in these tests.
       context_.get(),
       blocking_task_runner_));
+  crx_downloader_->set_progress_callback(progress_callback_);
 }
 
 void CrxDownloaderTest::TearDown() {
+  crx_downloader_.reset();
 }
 
 void CrxDownloaderTest::Quit() {
@@ -118,6 +133,12 @@ void CrxDownloaderTest::DownloadComplete(int crx_context,
   crx_context_ = crx_context;
   download_complete_result_ = result;
   Quit();
+}
+
+void CrxDownloaderTest::DownloadProgress(int crx_context,
+                                         const CrxDownloader::Result& result) {
+  ++num_progress_calls_;
+  download_progress_result_ = result;
 }
 
 void CrxDownloaderTest::RunThreads() {
@@ -146,6 +167,9 @@ TEST_F(CrxDownloaderTest, NoUrl) {
   EXPECT_EQ(kExpectedContext, crx_context_);
   EXPECT_EQ(-1, download_complete_result_.error);
   EXPECT_TRUE(download_complete_result_.response.empty());
+  EXPECT_EQ(-1, download_complete_result_.downloaded_bytes);
+  EXPECT_EQ(-1, download_complete_result_.total_bytes);
+  EXPECT_EQ(0, num_progress_calls_);
 }
 
 // Tests that downloading from one url is successful.
@@ -165,9 +189,15 @@ TEST_F(CrxDownloaderTest, OneUrl) {
   EXPECT_EQ(1, num_download_complete_calls_);
   EXPECT_EQ(kExpectedContext, crx_context_);
   EXPECT_EQ(0, download_complete_result_.error);
+  EXPECT_EQ(1843, download_complete_result_.downloaded_bytes);
+  EXPECT_EQ(1843, download_complete_result_.total_bytes);
   EXPECT_TRUE(ContentsEqual(download_complete_result_.response, test_file));
 
   EXPECT_TRUE(base::DeleteFile(download_complete_result_.response, false));
+
+  EXPECT_LE(1, num_progress_calls_);
+  EXPECT_EQ(1843, download_progress_result_.downloaded_bytes);
+  EXPECT_EQ(1843, download_progress_result_.total_bytes);
 }
 
 // Tests that specifying from two urls has no side effects. Expect a successful
@@ -198,9 +228,15 @@ TEST_F(CrxDownloaderTest, MAYBE_TwoUrls) {
   EXPECT_EQ(1, num_download_complete_calls_);
   EXPECT_EQ(kExpectedContext, crx_context_);
   EXPECT_EQ(0, download_complete_result_.error);
+  EXPECT_EQ(1843, download_complete_result_.downloaded_bytes);
+  EXPECT_EQ(1843, download_complete_result_.total_bytes);
   EXPECT_TRUE(ContentsEqual(download_complete_result_.response, test_file));
 
   EXPECT_TRUE(base::DeleteFile(download_complete_result_.response, false));
+
+  EXPECT_LE(1, num_progress_calls_);
+  EXPECT_EQ(1843, download_progress_result_.downloaded_bytes);
+  EXPECT_EQ(1843, download_progress_result_.total_bytes);
 }
 
 // Tests that an invalid host results in a download error.
@@ -275,9 +311,15 @@ TEST_F(CrxDownloaderTest, MAYBE_TwoUrls_FirstInvalid) {
   EXPECT_EQ(1, num_download_complete_calls_);
   EXPECT_EQ(kExpectedContext, crx_context_);
   EXPECT_EQ(0, download_complete_result_.error);
+  EXPECT_EQ(1843, download_complete_result_.downloaded_bytes);
+  EXPECT_EQ(1843, download_complete_result_.total_bytes);
   EXPECT_TRUE(ContentsEqual(download_complete_result_.response, test_file));
 
   EXPECT_TRUE(base::DeleteFile(download_complete_result_.response, false));
+
+  EXPECT_LE(1, num_progress_calls_);
+  EXPECT_EQ(1843, download_progress_result_.downloaded_bytes);
+  EXPECT_EQ(1843, download_progress_result_.total_bytes);
 }
 
 // Tests that the download succeeds if the first url is correct and the
@@ -302,9 +344,15 @@ TEST_F(CrxDownloaderTest, TwoUrls_SecondInvalid) {
   EXPECT_EQ(1, num_download_complete_calls_);
   EXPECT_EQ(kExpectedContext, crx_context_);
   EXPECT_EQ(0, download_complete_result_.error);
+  EXPECT_EQ(1843, download_complete_result_.downloaded_bytes);
+  EXPECT_EQ(1843, download_complete_result_.total_bytes);
   EXPECT_TRUE(ContentsEqual(download_complete_result_.response, test_file));
 
   EXPECT_TRUE(base::DeleteFile(download_complete_result_.response, false));
+
+  EXPECT_LE(1, num_progress_calls_);
+  EXPECT_EQ(1843, download_progress_result_.downloaded_bytes);
+  EXPECT_EQ(1843, download_progress_result_.total_bytes);
 }
 
 // Tests that the download fails if both urls are bad.

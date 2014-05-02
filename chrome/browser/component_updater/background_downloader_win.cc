@@ -99,7 +99,7 @@ namespace {
 const base::char16 kJobDescription[] = L"Chrome Component Updater";
 
 // How often the code looks for changes in the BITS job state.
-const int kJobPollingIntervalSec = 10;
+const int kJobPollingIntervalSec = 4;
 
 // How long BITS waits before retrying a job after the job encountered
 // a transient error. If this value is not set, the BITS default is 10 minutes.
@@ -197,10 +197,10 @@ HRESULT GetJobFileProperties(IBackgroundCopyFile* file,
 // in the job. If the values are not known or if an error has occurred,
 // a value of -1 is reported.
 HRESULT GetJobByteCount(IBackgroundCopyJob* job,
-                        int64* bytes_downloaded,
-                        int64* bytes_total) {
-  *bytes_downloaded = -1;
-  *bytes_total = -1;
+                        int64* downloaded_bytes,
+                        int64* total_bytes) {
+  *downloaded_bytes = -1;
+  *total_bytes = -1;
 
   if (!job)
     return E_FAIL;
@@ -211,11 +211,11 @@ HRESULT GetJobByteCount(IBackgroundCopyJob* job,
     return hr;
 
   if (job_progress.BytesTransferred <= kint64max)
-    *bytes_downloaded = job_progress.BytesTransferred;
+    *downloaded_bytes = job_progress.BytesTransferred;
 
   if (job_progress.BytesTotal <= kint64max &&
       job_progress.BytesTotal != BG_SIZE_UNKNOWN)
-    *bytes_total = job_progress.BytesTotal;
+    *total_bytes = job_progress.BytesTotal;
 
   return S_OK;
 }
@@ -413,12 +413,11 @@ BackgroundDownloader::~BackgroundDownloader() {
 void BackgroundDownloader::DoStartDownload(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&BackgroundDownloader::BeginDownload,
-                   base::Unretained(this),
-                   url));
+  BrowserThread::PostTask(BrowserThread::FILE,
+                          FROM_HERE,
+                          base::Bind(&BackgroundDownloader::BeginDownload,
+                                     base::Unretained(this),
+                                     url));
 }
 
 // Called once when this class is asked to do a download. Creates or opens
@@ -517,9 +516,9 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
     download_end_time >= download_start_time_ ?
     download_end_time - download_start_time_ : base::TimeDelta();
 
-  int64 bytes_downloaded = -1;
-  int64 bytes_total = -1;
-  GetJobByteCount(job_, &bytes_downloaded, &bytes_total);
+  int64 downloaded_bytes = -1;
+  int64 total_bytes = -1;
+  GetJobByteCount(job_, &downloaded_bytes, &total_bytes);
 
   base::FilePath response;
   if (SUCCEEDED(error)) {
@@ -535,8 +534,8 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
       // the file and job invariants. The byte counts for a job and its file
       // must match as a job only contains one file.
       DCHECK(progress.Completed);
-      DCHECK(bytes_downloaded == static_cast<int64>(progress.BytesTransferred));
-      DCHECK(bytes_total == static_cast<int64>(progress.BytesTotal));
+      DCHECK(downloaded_bytes == static_cast<int64>(progress.BytesTransferred));
+      DCHECK(total_bytes == static_cast<int64>(progress.BytesTotal));
       response = base::FilePath(local_name);
     } else {
       error = hr;
@@ -561,8 +560,8 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
   download_metrics.url = url();
   download_metrics.downloader = DownloadMetrics::kBits;
   download_metrics.error = error_to_report;
-  download_metrics.bytes_downloaded = bytes_downloaded;
-  download_metrics.bytes_total = bytes_total;
+  download_metrics.downloaded_bytes = downloaded_bytes;
+  download_metrics.total_bytes = total_bytes;
   download_metrics.download_time_ms = download_time.InMilliseconds();
 
   // Clean up stale jobs before invoking the callback.
@@ -573,14 +572,15 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
   Result result;
   result.error = error_to_report;
   result.response = response;
-  BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&BackgroundDownloader::OnDownloadComplete,
-                   base::Unretained(this),
-                   is_handled,
-                   result,
-                   download_metrics));
+  result.downloaded_bytes = downloaded_bytes;
+  result.total_bytes = total_bytes;
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&BackgroundDownloader::OnDownloadComplete,
+                                     base::Unretained(this),
+                                     is_handled,
+                                     result,
+                                     download_metrics));
 
   // Once the task is posted to the the UI thread, this object may be deleted
   // by its owner. It is not safe to access members of this object on the
@@ -639,6 +639,22 @@ void BackgroundDownloader::OnStateTransferring() {
   // Resets the baseline for detecting a stuck job since the job is transferring
   // data and it is making progress.
   job_stuck_begin_time_ = base::Time::Now();
+
+  int64 downloaded_bytes = -1;
+  int64 total_bytes = -1;
+  HRESULT hr = GetJobByteCount(job_, &downloaded_bytes, &total_bytes);
+  if (FAILED(hr))
+    return;
+
+  Result result;
+  result.downloaded_bytes = downloaded_bytes;
+  result.total_bytes = total_bytes;
+
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&BackgroundDownloader::OnDownloadProgress,
+                                     base::Unretained(this),
+                                     result));
 }
 
 // Called when the download was cancelled. Since the observer should have
@@ -749,4 +765,3 @@ bool BackgroundDownloader::IsStuck() {
 }
 
 }  // namespace component_updater
-

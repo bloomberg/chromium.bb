@@ -71,13 +71,15 @@ void UrlFetcherDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
   if (!fetch_error) {
     source->GetResponseAsFilePath(true, &result.response);
   }
+  result.downloaded_bytes = downloaded_bytes_;
+  result.total_bytes = total_bytes_;
 
   DownloadMetrics download_metrics;
   download_metrics.url = url();
   download_metrics.downloader = DownloadMetrics::kUrlFetcher;
   download_metrics.error = fetch_error;
-  download_metrics.bytes_downloaded = downloaded_bytes_;
-  download_metrics.bytes_total = total_bytes_;
+  download_metrics.downloaded_bytes = downloaded_bytes_;
+  download_metrics.total_bytes = total_bytes_;
   download_metrics.download_time_ms = download_time.InMilliseconds();
 
   base::FilePath local_path_;
@@ -94,9 +96,15 @@ void UrlFetcherDownloader::OnURLFetchDownloadProgress(
     int64 current,
     int64 total) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   downloaded_bytes_ = current;
   total_bytes_ = total;
+
+  Result result;
+  result.downloaded_bytes = downloaded_bytes_;
+  result.total_bytes = total_bytes_;
+
+  OnDownloadProgress(result);
 }
 
 }  // namespace component_updater
-

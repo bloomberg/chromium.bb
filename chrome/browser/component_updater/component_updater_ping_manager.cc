@@ -113,13 +113,13 @@ std::string PingSender::BuildDownloadCompleteEventElements(
     StringAppendF(&event, " url=\"%s\"", metrics.url.spec().c_str());
 
     // -1 means that the  byte counts are not known.
-    if (metrics.bytes_downloaded != -1) {
+    if (metrics.downloaded_bytes != -1) {
       StringAppendF(&event, " downloaded=\"%s\"",
-                    base::Int64ToString(metrics.bytes_downloaded).c_str());
+                    base::Int64ToString(metrics.downloaded_bytes).c_str());
     }
-    if (metrics.bytes_total != -1) {
+    if (metrics.total_bytes != -1) {
       StringAppendF(&event, " total=\"%s\"",
-                    base::Int64ToString(metrics.bytes_total).c_str());
+                    base::Int64ToString(metrics.total_bytes).c_str());
     }
 
     if (metrics.download_time_ms) {
@@ -189,4 +189,3 @@ void PingManager::OnUpdateComplete(const CrxUpdateItem* item) {
 }
 
 }  // namespace component_updater
-

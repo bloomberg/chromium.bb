@@ -143,8 +143,8 @@ TEST_F(ComponentUpdaterPingManagerTest, DISABLED_PingManagerTest) {
   download_metrics.url = GURL("http://host1/path1");
   download_metrics.downloader = CrxDownloader::DownloadMetrics::kUrlFetcher;
   download_metrics.error = -1;
-  download_metrics.bytes_downloaded = 123;
-  download_metrics.bytes_total = 456;
+  download_metrics.downloaded_bytes = 123;
+  download_metrics.total_bytes = 456;
   download_metrics.download_time_ms = 987;
   item.download_metrics.push_back(download_metrics);
 
@@ -152,8 +152,8 @@ TEST_F(ComponentUpdaterPingManagerTest, DISABLED_PingManagerTest) {
   download_metrics.url = GURL("http://host2/path2");
   download_metrics.downloader = CrxDownloader::DownloadMetrics::kBits;
   download_metrics.error = 0;
-  download_metrics.bytes_downloaded = 1230;
-  download_metrics.bytes_total = 4560;
+  download_metrics.downloaded_bytes = 1230;
+  download_metrics.total_bytes = 4560;
   download_metrics.download_time_ms = 9870;
   item.download_metrics.push_back(download_metrics);
 
@@ -175,4 +175,3 @@ TEST_F(ComponentUpdaterPingManagerTest, DISABLED_PingManagerTest) {
 }
 
 }  // namespace component_updater
-

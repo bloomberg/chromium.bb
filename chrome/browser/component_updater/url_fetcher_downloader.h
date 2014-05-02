@@ -53,4 +53,3 @@ class UrlFetcherDownloader : public CrxDownloader,
 }  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_URL_FETCHER_DOWNLOADER_H_
-

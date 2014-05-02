@@ -48,13 +48,13 @@ class CrxDownloader {
 
     int error;
 
-    int64 bytes_downloaded;   // -1 means that the byte count is unknown.
-    int64 bytes_total;
+    int64 downloaded_bytes;  // -1 means that the byte count is unknown.
+    int64 total_bytes;
 
     uint64 download_time_ms;
   };
 
-  // Contains the outcome of the download.
+  // Contains the progress or the outcome of the download.
   struct Result {
     Result();
 
@@ -63,6 +63,13 @@ class CrxDownloader {
 
     // Path of the downloaded file if the download was successful.
     base::FilePath response;
+
+    // Number of bytes actually downloaded, not including the bytes downloaded
+    // as a result of falling back on urls.
+    int64 downloaded_bytes;
+
+    // Number of bytes expected to be downloaded.
+    int64 total_bytes;
   };
 
   // The callback fires only once, regardless of how many urls are tried, and
@@ -72,6 +79,12 @@ class CrxDownloader {
   // specific error codes and download metrics.
   typedef base::Callback<void (const Result& result)> DownloadCallback;
 
+  // The callback may fire 0 or many times during a download. Since this
+  // class implements a chain of responsibility, the callback can fire for
+  // different urls and different downloaders. The number of actual downloaded
+  // bytes is not guaranteed to monotonically increment over time.
+  typedef base::Callback<void(const Result& result)> ProgressCallback;
+
   // Factory method to create an instance of this class and build the
   // chain of responsibility. |is_background_download| specifies that a
   // background downloader be used, if the platform supports it.
@@ -80,6 +93,8 @@ class CrxDownloader {
       net::URLRequestContextGetter* context_getter,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
   virtual ~CrxDownloader();
+
+  void set_progress_callback(const ProgressCallback& progress_callback);
 
   // Starts the download. One instance of the class handles one download only.
   // One instance of CrxDownloader can only be started once, otherwise the
@@ -107,7 +122,10 @@ class CrxDownloader {
                           const Result& result,
                           const DownloadMetrics& download_metrics);
 
-  // Returns the url which is currently downloaded from.
+  // Calls the callback when progress is made.
+  void OnDownloadProgress(const Result& result);
+
+  // Returns the url which is currently being downloaded from.
   GURL url() const;
 
  private:
@@ -116,6 +134,7 @@ class CrxDownloader {
   std::vector<GURL> urls_;
   scoped_ptr<CrxDownloader> successor_;
   DownloadCallback download_callback_;
+  ProgressCallback progress_callback_;
 
   std::vector<GURL>::iterator current_url_;
 
@@ -127,4 +146,3 @@ class CrxDownloader {
 }  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_CRX_DOWNLOADER_H_
-

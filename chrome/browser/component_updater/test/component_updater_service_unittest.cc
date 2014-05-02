@@ -26,6 +26,7 @@
 using content::BrowserThread;
 
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::InSequence;
 using ::testing::Mock;
 
@@ -373,6 +374,10 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
                         "abagagagagagagagagagagagagagagag"))
                 .Times(1);
     EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATE_DOWNLOADING,
+                        "jebgalgnebhfojomionfpkfelancnnkf"))
+                .Times(AnyNumber());
+    EXPECT_CALL(observer,
                 OnEvent(ServiceObserver::COMPONENT_UPDATE_READY,
                         "jebgalgnebhfojomionfpkfelancnnkf"))
                 .Times(1);
@@ -560,6 +565,10 @@ TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
                         "abagagagagagagagagagagagagagagag"))
                 .Times(1);
     EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATE_DOWNLOADING,
+                        "jebgalgnebhfojomionfpkfelancnnkf"))
+                .Times(AnyNumber());
+    EXPECT_CALL(observer,
                 OnEvent(ServiceObserver::COMPONENT_UPDATE_READY,
                         "jebgalgnebhfojomionfpkfelancnnkf"))
                 .Times(1);
@@ -746,6 +755,10 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
                 OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
                         "abagagagagagagagagagagagagagagag"))
                 .Times(1);
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATE_DOWNLOADING,
+                        "jebgalgnebhfojomionfpkfelancnnkf"))
+                .Times(AnyNumber());
     EXPECT_CALL(observer,
                 OnEvent(ServiceObserver::COMPONENT_UPDATE_READY,
                         "jebgalgnebhfojomionfpkfelancnnkf"))

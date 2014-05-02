@@ -203,9 +203,11 @@ class CrxUpdateService : public ComponentUpdateService {
   void OnUpdateCheckSucceeded(const UpdateResponse::Results& results);
   void OnUpdateCheckFailed(int error, const std::string& error_message);
 
-  void DownloadComplete(
-      scoped_ptr<CRXContext> crx_context,
-      const CrxDownloader::Result& download_result);
+  void DownloadProgress(const std::string& component_id,
+                        const CrxDownloader::Result& download_result);
+
+  void DownloadComplete(scoped_ptr<CRXContext> crx_context,
+                        const CrxDownloader::Result& download_result);
 
   Status OnDemandUpdateInternal(CrxUpdateItem* item);
 
@@ -697,6 +699,10 @@ void CrxUpdateService::UpdateComponent(CrxUpdateItem* workitem) {
   crx_downloader_.reset(CrxDownloader::Create(is_background_download,
                                               config_->RequestContext(),
                                               blocking_task_runner_));
+  crx_downloader_->set_progress_callback(
+      base::Bind(&CrxUpdateService::DownloadProgress,
+                 base::Unretained(this),
+                 crx_context->id));
   crx_downloader_->StartDownload(*urls,
                                  base::Bind(&CrxUpdateService::DownloadComplete,
                                             base::Unretained(this),
@@ -812,6 +818,16 @@ void CrxUpdateService::OnUpdateCheckFailed(int error,
   ScheduleNextRun(kStepDelayLong);
 }
 
+// Called when progress is being made downloading a CRX. The progress may
+// not monotonically increase due to how the CRX downloader switches between
+// different downloaders and fallback urls.
+void CrxUpdateService::DownloadProgress(
+    const std::string& component_id,
+    const CrxDownloader::Result& download_result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  NotifyObservers(Observer::COMPONENT_UPDATE_DOWNLOADING, component_id);
+}
+
 // Called when the CRX package has been downloaded to a temporary location.
 // Here we fire the notifications and schedule the component-specific installer
 // to be called in the file thread.
@@ -827,6 +843,8 @@ void CrxUpdateService::DownloadComplete(
   AppendDownloadMetrics(crx_downloader_->download_metrics(),
                         &crx->download_metrics);
 
+  crx_downloader_.reset();
+
   if (download_result.error) {
     if (crx->status == CrxUpdateItem::kDownloadingDiff) {
       crx->diff_error_category = kNetworkError;
@@ -835,7 +853,6 @@ void CrxUpdateService::DownloadComplete(
       size_t count = ChangeItemStatus(CrxUpdateItem::kDownloadingDiff,
                                       CrxUpdateItem::kCanUpdate);
       DCHECK_EQ(count, 1ul);
-      crx_downloader_.reset();
 
       ScheduleNextRun(kStepDelayShort);
       return;
@@ -845,7 +862,6 @@ void CrxUpdateService::DownloadComplete(
     size_t count = ChangeItemStatus(CrxUpdateItem::kDownloading,
                                     CrxUpdateItem::kNoUpdate);
     DCHECK_EQ(count, 1ul);
-    crx_downloader_.reset();
 
     // At this point, since both the differential and the full downloads failed,
     // the update for this component has finished with an error.
@@ -863,7 +879,6 @@ void CrxUpdateService::DownloadComplete(
                                CrxUpdateItem::kUpdating);
     }
     DCHECK_EQ(count, 1ul);
-    crx_downloader_.reset();
 
     // Why unretained? See comment at top of file.
     blocking_task_runner_->PostDelayedTask(
@@ -1042,4 +1057,3 @@ ComponentUpdateService* ComponentUpdateServiceFactory(
 }
 
 }  // namespace component_updater
-

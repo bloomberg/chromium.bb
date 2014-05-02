@@ -176,6 +176,9 @@ class ComponentUpdateService {
       // Sent when a component has not been updated following an update check:
       // either there was no update available, or an update failed.
       COMPONENT_NOT_UPDATED,
+
+      // Sent when component bytes are being downloaded.
+      COMPONENT_UPDATE_DOWNLOADING,
     };
 
     virtual ~Observer() {}
