@@ -30,6 +30,14 @@ bool IsImagination() {
   return false;
 }
 
+bool IsNvidia31() {
+  const char* vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+  const char* version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
+  return vendor && version &&
+         std::string(vendor).find("NVIDIA") != std::string::npos &&
+         std::string(version).find("OpenGL ES 3.1") != std::string::npos;
+}
+
 }
 
 // We only used threaded uploads when we can:
@@ -54,6 +62,7 @@ AsyncPixelTransferManager* AsyncPixelTransferManager::Create(
           context->HasExtension("GL_OES_EGL_image") &&
           !IsBroadcom() &&
           !IsImagination() &&
+          !IsNvidia31() &&
           !base::android::SysUtils::IsLowEndDevice()) {
         return new AsyncPixelTransferManagerEGL;
       }
