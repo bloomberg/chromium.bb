@@ -124,6 +124,7 @@ private:
 
     void setupScrollbar(blink::WebScrollbar::Orientation);
     FloatPoint clampOffsetToBoundaries(const FloatPoint&);
+    IntSize clampToOuterViewportSize(const IntSize&);
 
     LocalFrame* mainFrame() const;
 

@@ -73,8 +73,6 @@ public:
     // This is set when one of the inputs to finalConstraints changes.
     bool constraintsDirty() const { return m_constraintsDirty; }
 
-    WebCore::IntSize mainFrameSize(const WebCore::IntSize& viewportSize, const WebCore::IntSize& contentsSize) const;
-
 private:
     WebCore::PageScaleConstraints computeConstraintsStack() const;
 

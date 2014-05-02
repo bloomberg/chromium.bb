@@ -77,10 +77,12 @@ void PinchViewport::setSize(const IntSize& size)
     if (!m_innerViewportContainerLayer || !m_innerViewportScrollLayer)
         return;
 
-    if (m_size == size)
+    IntSize newSize = clampToOuterViewportSize(size);
+
+    if (m_size == newSize)
         return;
 
-    m_size = size;
+    m_size = newSize;
     m_innerViewportContainerLayer->setSize(m_size);
 
     // Make sure we clamp the offset to within the new bounds.
@@ -93,6 +95,14 @@ void PinchViewport::setSize(const IntSize& size)
 
 void PinchViewport::mainFrameDidChangeSize()
 {
+    // If we didn't set a size yet (the pinch viewport is initialized before the main frame's view),
+    // set it now to the main frame's size; otherwise, just make sure the inner viewport's size is
+    // clamped to the new frame size.
+    if (m_size.isZero())
+        setSize(contentsSize());
+    else
+        setSize(m_size);
+
     // In unit tests we may not have initialized the layer tree.
     if (m_innerViewportScrollLayer)
         m_innerViewportScrollLayer->setSize(contentsSize());
@@ -119,6 +129,7 @@ void PinchViewport::setLocation(const FloatPoint& newLocation)
 
     ScrollingCoordinator* coordinator = m_frameHost.page().scrollingCoordinator();
     ASSERT(coordinator);
+
     coordinator->scrollableAreaScrollLayerDidChange(this);
 }
 
@@ -365,6 +376,11 @@ FloatPoint PinchViewport::clampOffsetToBoundaries(const FloatPoint& offset)
     clampedOffset = clampedOffset.shrunkTo(FloatPoint(maximumScrollPosition()));
     clampedOffset = clampedOffset.expandedTo(FloatPoint(minimumScrollPosition()));
     return clampedOffset;
+}
+
+IntSize PinchViewport::clampToOuterViewportSize(const IntSize& size)
+{
+    return size.shrunkTo(contentsSize());
 }
 
 String PinchViewport::debugName(const GraphicsLayer* graphicsLayer)

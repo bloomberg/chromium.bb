@@ -485,14 +485,14 @@ public:
 
     WebLayerTreeView* layerTreeView() const { return m_layerTreeView; }
 
-    bool pinchVirtualViewportEnabled() const;
-
     bool matchesHeuristicsForGpuRasterizationForTesting() const { return m_matchesHeuristicsForGpuRasterization; }
 
 private:
     // TODO(bokan): Remains for legacy pinch. Remove once it's gone. Made private to
     // prevent external usage
     virtual void setPageScaleFactor(float scaleFactor, const WebPoint& origin) OVERRIDE;
+
+    bool pinchVirtualViewportEnabled() const;
 
     float legibleScale() const;
     void refreshPageScaleFactorAfterLayout();

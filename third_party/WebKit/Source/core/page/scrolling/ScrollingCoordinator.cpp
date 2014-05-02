@@ -348,9 +348,8 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
     GraphicsLayer* scrollLayer = scrollableArea->layerForScrolling();
 
     if (scrollLayer) {
-        ASSERT(m_page);
         // With pinch virtual viewport we no longer need to special case the main frame.
-        bool pinchVirtualViewportEnabled = m_page->settings().pinchVirtualViewportEnabled();
+        bool pinchVirtualViewportEnabled = m_page->mainFrame()->document()->settings()->pinchVirtualViewportEnabled();
         bool layerScrollShouldFireGraphicsLayerDidScroll = isForMainFrame(scrollableArea) && !pinchVirtualViewportEnabled;
         scrollLayer->setScrollableArea(scrollableArea, layerScrollShouldFireGraphicsLayerDidScroll);
     }
