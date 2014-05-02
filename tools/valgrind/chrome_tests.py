@@ -465,7 +465,8 @@ class ChromeTests:
     # tests if we're low on memory.
     jobs = max(1, int(multiprocessing.cpu_count() * 0.3))
     script_cmd = ["python", script, "-v",
-                  "--run-singly",  # run a separate DumpRenderTree for each test
+                  # run a separate DumpRenderTree for each test
+                  "--batch-size=1",
                   "--fully-parallel",
                   "--child-processes=%d" % jobs,
                   "--time-out-ms=200000",
@@ -520,9 +521,9 @@ class ChromeTests:
     try:
       f = open(chunk_file)
       if f:
-        str = f.read()
-        if len(str):
-          chunk_num = int(str)
+        chunk_str = f.read()
+        if len(chunk_str):
+          chunk_num = int(chunk_str)
         # This should be enough so that we have a couple of complete runs
         # of test data stored in the archive (although note that when we loop
         # that we almost guaranteed won't be at the end of the test list)
