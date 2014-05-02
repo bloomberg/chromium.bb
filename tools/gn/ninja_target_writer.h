@@ -33,8 +33,10 @@ class NinjaTargetWriter {
   // returns the string to be appended to source rules that encodes the
   // order-only dependencies for the current target. This will include the "|"
   // character so can just be appended to the source rules. If there are no
-  // implicit dependencies, returns the empty string.
-  std::string WriteInputDepsStampAndGetDep() const;
+  // implicit dependencies and no extra target dependencies passed in, returns
+  // the empty string.
+  std::string WriteInputDepsStampAndGetDep(
+      const std::vector<const Target*>& extra_hard_deps) const;
 
   // Returns the FileTemplate constructed from the outputs variable. This is
   // like FileTemplate::GetForTargetOutputs except this additionally trims the

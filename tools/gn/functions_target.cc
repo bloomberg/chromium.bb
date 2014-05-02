@@ -70,6 +70,14 @@ Value ExecuteGenericTarget(const char* target_type,
     "  reference the output or generated intermediate file directories,\n" \
     "  respectively.\n"
 
+#define ACTION_DEPS \
+    "  The \"deps\" for an action will always be completed before any part\n" \
+    "  of the action is run so it can depend on the output of previous\n" \
+    "  steps. The \"datadeps\" will be built if the action is built, but\n" \
+    "  may not have completed before all steps of the action are started.\n" \
+    "  This can give additional parallelism in the build for runtime-only\n" \
+    "  dependencies.\n"
+
 const char kAction[] = "action";
 const char kAction_HelpShort[] =
     "action: Declare a target that runs a script a single time.";
@@ -79,6 +87,8 @@ const char kAction_Help[] =
     "  This target type allows you to run a script a single time to produce\n"
     "  or more output files. If you want to run a script once for each of a\n"
     "  set of input files, see \"gn help action_foreach\".\n"
+    "\n"
+    "Inputs\n"
     "\n"
     "  In an action the \"sources\" and \"source_prereqs\" are treated the\n"
     "  same: they're both input dependencies on script execution with no\n"
@@ -91,6 +101,10 @@ const char kAction_Help[] =
     "  It is recommended you put inputs to your script in the \"sources\"\n"
     "  variable, and stuff like other Python files required to run your\n"
     "  script in the \"source_prereqs\" variable.\n"
+    "\n"
+    ACTION_DEPS
+    "\n"
+    "Outputs\n"
     "\n"
     "  You should specify files created by your script by specifying them in\n"
     "  the \"outputs\".\n"
@@ -145,6 +159,8 @@ const char kActionForEach_Help[] =
     "  of sources. If you want to run a script once that takes many files as\n"
     "  input, see \"gn help action\".\n"
     "\n"
+    "Inputs\n"
+    "\n"
     "  The script will be run once per file in the \"sources\" variable. The\n"
     "  \"outputs\" variable should specify one or more files with a source\n"
     "  expansion pattern in it (see \"gn help source_expansion\"). The output\n"
@@ -155,6 +171,10 @@ const char kActionForEach_Help[] =
     "  configuration file or a Python module it uses, those files should be\n"
     "  listed in the \"source_prereqs\" variable. These files are treated as\n"
     "  dependencies of each script invocation.\n"
+    "\n"
+    ACTION_DEPS
+    "\n"
+    "Outputs\n"
     "\n"
     SCRIPT_EXECUTION_CONTEXT
     "\n"

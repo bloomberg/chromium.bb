@@ -21,8 +21,9 @@ class TestingNinjaTargetWriter : public NinjaTargetWriter {
   virtual void Run() OVERRIDE {}
 
   // Make this public so the test can call it.
-  std::string WriteInputDepsStampAndGetDep() {
-    return NinjaTargetWriter::WriteInputDepsStampAndGetDep();
+  std::string WriteInputDepsStampAndGetDep(
+      const std::vector<const Target*>& extra_hard_deps) {
+    return NinjaTargetWriter::WriteInputDepsStampAndGetDep(extra_hard_deps);
   }
 };
 
@@ -58,7 +59,8 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDep) {
   {
     std::ostringstream stream;
     TestingNinjaTargetWriter writer(&base_target, setup.toolchain(), stream);
-    std::string dep = writer.WriteInputDepsStampAndGetDep();
+    std::string dep =
+        writer.WriteInputDepsStampAndGetDep(std::vector<const Target*>());
 
     EXPECT_TRUE(dep.empty());
     EXPECT_TRUE(stream.str().empty());
@@ -68,7 +70,8 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDep) {
   {
     std::ostringstream stream;
     TestingNinjaTargetWriter writer(&target, setup.toolchain(), stream);
-    std::string dep = writer.WriteInputDepsStampAndGetDep();
+    std::string dep =
+        writer.WriteInputDepsStampAndGetDep(std::vector<const Target*>());
 
     EXPECT_EQ(" | obj/foo/target.inputdeps.stamp", dep);
     EXPECT_EQ("obj/foo/target.inputdeps.stamp: stamp "
@@ -81,7 +84,8 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDep) {
   {
     std::ostringstream stream;
     TestingNinjaTargetWriter writer(&action, setup.toolchain(), stream);
-    std::string dep = writer.WriteInputDepsStampAndGetDep();
+    std::string dep =
+        writer.WriteInputDepsStampAndGetDep(std::vector<const Target*>());
 
     EXPECT_EQ(" | obj/foo/action.inputdeps.stamp", dep);
     EXPECT_EQ("obj/foo/action.inputdeps.stamp: stamp "

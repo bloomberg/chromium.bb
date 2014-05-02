@@ -146,7 +146,8 @@ void NinjaBinaryTargetWriter::WriteSources(
   const Target::FileList& sources = target_->sources();
   object_files->reserve(sources.size());
 
-  std::string implicit_deps = WriteInputDepsStampAndGetDep();
+  std::string implicit_deps =
+      WriteInputDepsStampAndGetDep(std::vector<const Target*>());
 
   for (size_t i = 0; i < sources.size(); i++) {
     const SourceFile& input_file = sources[i];

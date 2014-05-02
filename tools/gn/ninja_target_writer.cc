@@ -84,12 +84,14 @@ void NinjaTargetWriter::RunAndWriteFile(const Target* target,
                   static_cast<int>(contents.size()));
 }
 
-std::string NinjaTargetWriter::WriteInputDepsStampAndGetDep() const {
+std::string NinjaTargetWriter::WriteInputDepsStampAndGetDep(
+    const std::vector<const Target*>& extra_hard_deps) const {
   // For an action (where we run a script only once) the sources are the same
   // as the source prereqs.
   bool list_sources_as_input_deps = target_->output_type() == Target::ACTION;
 
-  if (target_->source_prereqs().empty() &&
+  if (extra_hard_deps.empty() &&
+      target_->source_prereqs().empty() &&
       target_->recursive_hard_deps().empty() &&
       (!list_sources_as_input_deps || target_->sources().empty()))
     return std::string();  // No input/hard deps.
@@ -131,6 +133,13 @@ std::string NinjaTargetWriter::WriteInputDepsStampAndGetDep() const {
        i != hard_deps.end(); ++i) {
     out_ << " ";
     path_output_.WriteFile(out_, helper_.GetTargetOutputFile(*i));
+  }
+
+  // Extra hard deps passed in.
+  for (size_t i = 0; i < extra_hard_deps.size(); i++) {
+    out_ << " ";
+    path_output_.WriteFile(out_,
+        helper_.GetTargetOutputFile(extra_hard_deps[i]));
   }
 
   out_ << "\n";

@@ -25,13 +25,23 @@ NinjaActionTargetWriter::~NinjaActionTargetWriter() {
 void NinjaActionTargetWriter::Run() {
   FileTemplate args_template(target_->action_values().args());
   std::string custom_rule_name = WriteRuleDefinition(args_template);
+
+  // Collect our deps to pass as "extra hard dependencies" for input deps. This
+  // will force all of the action's dependencies to be completed before the
+  // action is run. Usually, if an action has a dependency, it will be
+  // operating on the result of that previous step, so we need to be sure to
+  // serialize these.
+  std::vector<const Target*> extra_hard_deps;
+  for (size_t i = 0; i < target_->deps().size(); i++)
+    extra_hard_deps.push_back(target_->deps()[i].ptr);
+
   // For ACTIONs this is a bit inefficient since it creates an input dep
   // stamp file even though we're only going to use it once. It would save a
   // build step to skip this and write the order-only deps directly on the
   // build rule. This should probably be handled by WriteInputDepsStampAndGetDep
   // automatically if we supply a count of sources (so it can optimize based on
   // how many times things would be duplicated).
-  std::string implicit_deps = WriteInputDepsStampAndGetDep();
+  std::string implicit_deps = WriteInputDepsStampAndGetDep(extra_hard_deps);
   out_ << std::endl;
 
   // Collects all output files for writing below.
@@ -179,10 +189,22 @@ void NinjaActionTargetWriter::WriteStamp(
   out_ << ": "
        << helper_.GetRulePrefix(target_->settings())
        << "stamp";
+
+  // The action stamp depends on all output files from running the action.
   for (size_t i = 0; i < output_files.size(); i++) {
     out_ << " ";
     path_output_.WriteFile(out_, output_files[i]);
   }
+
+  // It also depends on all datadeps. These are needed at runtime and should
+  // be compiled when the action is, but don't need to be done before we run
+  // the action.
+  for (size_t i = 0; i < target_->datadeps().size(); i++) {
+    out_ << " ";
+    path_output_.WriteFile(out_,
+        helper_.GetTargetOutputFile(target_->datadeps()[i].ptr));
+  }
+
   out_ << std::endl;
 }
 
