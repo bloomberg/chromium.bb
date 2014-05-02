@@ -5058,7 +5058,7 @@
               'VCLinkerTool': {
                 'AdditionalLibraryDirectories': [
                   # TODO(hans): If make_clang_dir is absolute, this breaks.
-                  '<(DEPTH)/<(make_clang_dir)/lib/clang/3.5/lib/windows',
+                  '<(DEPTH)/<(make_clang_dir)/lib/clang/3.5.0/lib/windows',
                 ],
               },
               'target_conditions': [

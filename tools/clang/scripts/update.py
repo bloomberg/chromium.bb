@@ -139,10 +139,13 @@ def UpdateClang():
              ['&&', 'cmake', '-GNinja', '-DCMAKE_BUILD_TYPE=Release',
               '-DLLVM_ENABLE_ASSERTIONS=ON', LLVM_DIR])
   RunCommand(GetVSVersion().SetupScript('x86') + ['&&', 'ninja', 'compiler-rt'])
+
+  # TODO(hans): Make this (and the .gypi file) version number independent.
   asan_rt_lib_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'lib', 'clang',
-                                     '3.5', 'lib', 'windows')
+                                     '3.5.0', 'lib', 'windows')
   asan_rt_lib_dst_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang',
-                                     '3.5', 'lib', 'windows')
+                                     '3.5.0', 'lib', 'windows')
+
   if not os.path.exists(asan_rt_lib_dst_dir):
     os.makedirs(asan_rt_lib_dst_dir)
   for root, _, files in os.walk(asan_rt_lib_src_dir):
