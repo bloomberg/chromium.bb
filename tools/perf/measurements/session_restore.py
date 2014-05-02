@@ -6,7 +6,7 @@ import collections
 from measurements import startup
 from metrics import cpu
 from metrics import startup_metric
-
+from telemetry.core import util
 
 class SessionRestore(startup.Startup):
   """Performs a measurement of Chromium's Session restore performance.
@@ -26,6 +26,11 @@ class SessionRestore(startup.Startup):
     options.AppendExtraBrowserArgs([
         '--restore-last-session'
     ])
+
+  def TabForPage(self, page, browser):
+    # Detect that the session restore has completed.
+    util.WaitFor(lambda: len(browser.tabs), 30)
+    return browser.tabs[0]
 
   def CanRunForPage(self, page):
     # No matter how many pages in the pageset, just perform one test iteration.
@@ -54,9 +59,9 @@ class SessionRestore(startup.Startup):
     self._cpu_metric.Start(None, None)
 
   def MeasurePage(self, page, tab, results):
-
     tab.browser.foreground_tab.WaitForDocumentReadyStateToBeComplete()
-    # Record CPU usage from browser start to when all pages have loaded.
+
+    # Record CPU usage from browser start to when the foreground page is loaded.
     self._cpu_metric.Stop(None, None)
     self._cpu_metric.AddResults(tab, results, 'cpu_utilization')
 
