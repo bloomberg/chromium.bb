@@ -140,6 +140,11 @@ void ServiceWorkerGlobalScopeProxy::willDestroyWorkerGlobalScope()
     m_client.willDestroyWorkerContext();
 }
 
+void ServiceWorkerGlobalScopeProxy::workerGlobalScopeDestroyed()
+{
+    m_client.workerContextDestroyed();
+}
+
 ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl& embeddedWorker, ExecutionContext& executionContext, WebServiceWorkerContextClient& client)
     : m_embeddedWorker(embeddedWorker)
     , m_executionContext(executionContext)

@@ -44,8 +44,11 @@ class WebServiceWorkerNetworkProvider;
 class WebServiceWorkerResponse;
 class WebString;
 
+// FIXME: Remove this after chromium-side code is cleaned up.
+#define HAS_SERVICE_WORKER_CONTEXT_DESTROYED 1
+
 // This interface is implemented by the client. It is supposed to be created
-// on the main thread and then passed on to the worker thread to be owned
+// on the main thread and then passed on to the worker thread.
 // by a newly created WorkerGlobalScope. All methods of this class, except
 // for createServiceWorkerNetworkProvider() and workerContextFailedToStart(),
 // are called on the worker thread.
@@ -71,6 +74,9 @@ public:
     // WorkerGlobalScope is about to be destroyed. The client should clear
     // the WebServiceWorkerGlobalScopeProxy when this is called.
     virtual void willDestroyWorkerContext() { }
+
+    // WorkerGlobalScope is destroyed and the worker is ready to be terminated.
+    virtual void workerContextDestroyed() { }
 
     // Starting worker context is failed. This could happen when loading
     // worker script fails, or is asked to terminated before the context starts.

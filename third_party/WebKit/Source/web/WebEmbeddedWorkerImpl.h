@@ -83,9 +83,10 @@ private:
 
     WebEmbeddedWorkerStartData m_workerStartData;
 
-    // These are kept until startWorkerContext is called, and then passed on
-    // to WorkerContext.
     OwnPtr<WebServiceWorkerContextClient> m_workerContextClient;
+
+    // This is kept until startWorkerContext is called, and then passed on
+    // to WorkerContext.
     OwnPtr<WebWorkerPermissionClientProxy> m_permissionClient;
 
     // We retain ownership of this one which is for use on the

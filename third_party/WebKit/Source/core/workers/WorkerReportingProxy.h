@@ -55,10 +55,8 @@ public:
     virtual void workerGlobalScopeClosed() = 0;
 
     // Invoked when the thread is stopped and WorkerGlobalScope is being
-    // destructed.
-    // FIXME: Clarify when it should be called and merge it with
-    // willDestroyWorkerGlobalScope if we decide to always run it before
-    // destruction.
+    // destructed. (This is be the last method that is called on this
+    // interface)
     virtual void workerGlobalScopeDestroyed() = 0;
 
     // Invoked when the thread is about to be stopped and WorkerGlobalScope
