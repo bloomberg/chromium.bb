@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -21,9 +22,11 @@
 #include "device/bluetooth/bluetooth_profile_chromeos.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_chromeos.h"
 #include "device/bluetooth/bluetooth_socket.h"
+#include "device/bluetooth/bluetooth_socket_thread.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using device::BluetoothDevice;
+using device::BluetoothSocket;
 
 namespace {
 
@@ -116,10 +119,14 @@ namespace chromeos {
 
 BluetoothDeviceChromeOS::BluetoothDeviceChromeOS(
     BluetoothAdapterChromeOS* adapter,
-    const dbus::ObjectPath& object_path)
+    const dbus::ObjectPath& object_path,
+    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+    scoped_refptr<device::BluetoothSocketThread> socket_thread)
     : adapter_(adapter),
       object_path_(object_path),
       num_connecting_calls_(0),
+      ui_task_runner_(ui_task_runner),
+      socket_thread_(socket_thread),
       weak_ptr_factory_(this) {
   DBusThreadManager::Get()->GetBluetoothGattServiceClient()->AddObserver(this);
 

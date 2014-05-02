@@ -7,13 +7,19 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/sequenced_task_runner.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
 #include "chromeos/dbus/bluetooth_gatt_service_client.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_device.h"
+
+namespace device {
+class BluetoothSocketThread;
+}  // namespace device
 
 namespace chromeos {
 
@@ -93,8 +99,11 @@ class BluetoothDeviceChromeOS
  private:
   friend class BluetoothAdapterChromeOS;
 
-  BluetoothDeviceChromeOS(BluetoothAdapterChromeOS* adapter,
-                          const dbus::ObjectPath& object_path);
+  BluetoothDeviceChromeOS(
+      BluetoothAdapterChromeOS* adapter,
+      const dbus::ObjectPath& object_path,
+      scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+      scoped_refptr<device::BluetoothSocketThread> socket_thread);
   virtual ~BluetoothDeviceChromeOS();
 
   // BluetoothGattServiceClient::Observer overrides.
@@ -171,6 +180,10 @@ class BluetoothDeviceChromeOS
 
   // Number of ongoing calls to Connect().
   int num_connecting_calls_;
+
+  // UI thread task runner and socket thread object used to create sockets.
+  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
+  scoped_refptr<device::BluetoothSocketThread> socket_thread_;
 
   // During pairing this is set to an object that we don't own, but on which
   // we can make method calls to request, display or confirm PIN Codes and

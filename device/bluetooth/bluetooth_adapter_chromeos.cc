@@ -9,7 +9,10 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/sys_info.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromeos/dbus/bluetooth_adapter_client.h"
 #include "chromeos/dbus/bluetooth_agent_manager_client.h"
 #include "chromeos/dbus/bluetooth_agent_service_provider.h"
@@ -19,6 +22,7 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_device_chromeos.h"
 #include "device/bluetooth/bluetooth_pairing_chromeos.h"
+#include "device/bluetooth/bluetooth_socket_thread.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using device::BluetoothAdapter;
@@ -64,6 +68,9 @@ BluetoothAdapterChromeOS::BluetoothAdapterChromeOS()
     : num_discovery_sessions_(0),
       discovery_request_pending_(false),
       weak_ptr_factory_(this) {
+  ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  socket_thread_ = device::BluetoothSocketThread::Get();
+
   DBusThreadManager::Get()->GetBluetoothAdapterClient()->AddObserver(this);
   DBusThreadManager::Get()->GetBluetoothDeviceClient()->AddObserver(this);
   DBusThreadManager::Get()->GetBluetoothInputClient()->AddObserver(this);
@@ -282,7 +289,10 @@ void BluetoothAdapterChromeOS::DeviceAdded(
     return;
 
   BluetoothDeviceChromeOS* device_chromeos =
-      new BluetoothDeviceChromeOS(this, object_path);
+      new BluetoothDeviceChromeOS(this,
+                                  object_path,
+                                  ui_task_runner_,
+                                  socket_thread_);
   DCHECK(devices_.find(device_chromeos->GetAddress()) == devices_.end());
 
   devices_[device_chromeos->GetAddress()] = device_chromeos;
@@ -592,13 +602,7 @@ void BluetoothAdapterChromeOS::SetAdapter(const dbus::ObjectPath& object_path) {
 
   for (std::vector<dbus::ObjectPath>::iterator iter = device_paths.begin();
        iter != device_paths.end(); ++iter) {
-    BluetoothDeviceChromeOS* device_chromeos =
-        new BluetoothDeviceChromeOS(this, *iter);
-
-    devices_[device_chromeos->GetAddress()] = device_chromeos;
-
-    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                      DeviceAdded(this, device_chromeos));
+    DeviceAdded(*iter);
   }
 }
 

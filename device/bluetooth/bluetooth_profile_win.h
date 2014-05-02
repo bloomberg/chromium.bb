@@ -23,7 +23,7 @@ namespace device {
 class BluetoothAdapter;
 class BluetoothAdapterWin;
 class BluetoothDeviceWin;
-class BluetoothSocketThreadWin;
+class BluetoothSocketThread;
 class BluetoothSocketWin;
 
 class BluetoothProfileWin : public BluetoothProfile {
@@ -43,7 +43,7 @@ class BluetoothProfileWin : public BluetoothProfile {
 
   void Connect(const BluetoothDeviceWin* device,
                scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-               scoped_refptr<BluetoothSocketThreadWin> socket_thread,
+               scoped_refptr<BluetoothSocketThread> socket_thread,
                net::NetLog* net_log,
                const net::NetLog::Source& source,
                const base::Closure& callback,

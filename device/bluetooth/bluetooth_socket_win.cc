@@ -16,7 +16,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "device/bluetooth/bluetooth_init_win.h"
 #include "device/bluetooth/bluetooth_service_record_win.h"
-#include "device/bluetooth/bluetooth_socket_thread_win.h"
+#include "device/bluetooth/bluetooth_socket_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -26,7 +26,6 @@ namespace {
 
 const char kL2CAPNotSupported[] = "Bluetooth L2CAP protocal is not supported";
 const char kSocketAlreadyConnected[] = "Socket is already connected.";
-const char kSocketNotConnected[] = "Socket is not connected.";
 const char kInvalidRfcommPort[] = "Invalid RFCCOMM port.";
 const char kFailedToCreateSocket[] = "Failed to create socket.";
 const char kFailedToBindSocket[] = "Failed to bind socket.";
@@ -34,13 +33,6 @@ const char kFailedToListenOnSocket[] = "Failed to listen on socket.";
 const char kFailedToGetSockNameForSocket[] = "Failed to getsockname.";
 const char kBadUuid[] = "Bad uuid.";
 const char kWsaSetServiceError[] = "WSASetService error.";
-
-using device::BluetoothSocketWin;
-
-static void DeactivateSocket(
-    const scoped_refptr<device::BluetoothSocketThreadWin>& socket_thread) {
-  socket_thread->OnSocketDeactivate();
-}
 
 }  // namespace
 
@@ -62,9 +54,10 @@ struct BluetoothSocketWin::ServiceRegData {
 };
 
 // static
-scoped_refptr<BluetoothSocketWin> BluetoothSocketWin::CreateBluetoothSocket(
+scoped_refptr<BluetoothSocketWin>
+BluetoothSocketWin::CreateBluetoothSocket(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    scoped_refptr<BluetoothSocketThreadWin> socket_thread,
+    scoped_refptr<device::BluetoothSocketThread> socket_thread,
     net::NetLog* net_log,
     const net::NetLog::Source& source) {
   DCHECK(ui_task_runner->RunsTasksOnCurrentThread());
@@ -75,23 +68,16 @@ scoped_refptr<BluetoothSocketWin> BluetoothSocketWin::CreateBluetoothSocket(
 
 BluetoothSocketWin::BluetoothSocketWin(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    scoped_refptr<BluetoothSocketThreadWin> socket_thread,
+    scoped_refptr<BluetoothSocketThread> socket_thread,
     net::NetLog* net_log,
     const net::NetLog::Source& source)
-    : ui_task_runner_(ui_task_runner),
-      socket_thread_(socket_thread),
-      net_log_(net_log),
-      source_(source),
+    : BluetoothSocketNet(ui_task_runner, socket_thread, net_log, source),
       supports_rfcomm_(false),
       rfcomm_channel_(-1),
       bth_addr_(BTH_ADDR_NULL) {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  socket_thread->OnSocketActivate();
 }
 
 BluetoothSocketWin::~BluetoothSocketWin() {
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&DeactivateSocket, socket_thread_));
 }
 
 void BluetoothSocketWin::StartService(
@@ -101,9 +87,9 @@ void BluetoothSocketWin::StartService(
     const base::Closure& success_callback,
     const ErrorCompletionCallback& error_callback,
     const OnNewConnectionCallback& new_connection_callback) {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
 
-  socket_thread_->task_runner()->PostTask(
+  socket_thread()->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&BluetoothSocketWin::DoStartService,
                  this,
@@ -115,17 +101,11 @@ void BluetoothSocketWin::StartService(
                  new_connection_callback));
 }
 
-void BluetoothSocketWin::Close() {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  socket_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&BluetoothSocketWin::DoClose, this));
-}
-
 void BluetoothSocketWin::Connect(
     const BluetoothServiceRecord& service_record,
     const base::Closure& success_callback,
     const ErrorCompletionCallback& error_callback) {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
 
   const BluetoothServiceRecordWin* service_record_win =
       static_cast<const BluetoothServiceRecordWin*>(&service_record);
@@ -136,7 +116,7 @@ void BluetoothSocketWin::Connect(
     bth_addr_ = service_record_win->bth_addr();
   }
 
-  socket_thread_->task_runner()->PostTask(
+  socket_thread()->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(
           &BluetoothSocketWin::DoConnect,
@@ -146,69 +126,8 @@ void BluetoothSocketWin::Connect(
               &BluetoothSocketWin::PostErrorCompletion, this, error_callback)));
 }
 
-void BluetoothSocketWin::Disconnect(const base::Closure& success_callback) {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  socket_thread_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &BluetoothSocketWin::DoDisconnect,
-          this,
-          base::Bind(
-              &BluetoothSocketWin::PostSuccess, this, success_callback)));
-}
 
-void BluetoothSocketWin::Receive(
-    int buffer_size,
-    const ReceiveCompletionCallback& success_callback,
-    const ReceiveErrorCompletionCallback& error_callback) {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  socket_thread_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&BluetoothSocketWin::DoReceive,
-                 this,
-                 buffer_size,
-                 base::Bind(&BluetoothSocketWin::PostReceiveCompletion,
-                            this,
-                            success_callback),
-                 base::Bind(&BluetoothSocketWin::PostReceiveErrorCompletion,
-                            this,
-                            error_callback)));
-}
-
-void BluetoothSocketWin::Send(scoped_refptr<net::IOBuffer> buffer,
-                              int buffer_size,
-                              const SendCompletionCallback& success_callback,
-                              const ErrorCompletionCallback& error_callback) {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  socket_thread_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &BluetoothSocketWin::DoSend,
-          this,
-          buffer,
-          buffer_size,
-          base::Bind(
-              &BluetoothSocketWin::PostSendCompletion, this, success_callback),
-          base::Bind(
-              &BluetoothSocketWin::PostErrorCompletion, this, error_callback)));
-}
-
-void BluetoothSocketWin::DoClose() {
-  DCHECK(socket_thread_->task_runner()->RunsTasksOnCurrentThread());
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  if (tcp_socket_) {
-    tcp_socket_->Close();
-    tcp_socket_.reset(NULL);
-  }
-
-  // Note: Closing |tcp_socket_| above released all potential pending
-  // Send/Receive operations, so we can no safely release the state associated
-  // to those pending operations.
-  read_buffer_ = NULL;
-  std::queue<linked_ptr<WriteRequest> > empty;
-  write_queue_.swap(empty);
-
+void BluetoothSocketWin::ResetData() {
   if (service_reg_data_) {
     if (WSASetService(&service_reg_data_->service,RNRSERVICE_DELETE, 0) ==
         SOCKET_ERROR) {
@@ -221,10 +140,10 @@ void BluetoothSocketWin::DoClose() {
 void BluetoothSocketWin::DoConnect(
     const base::Closure& success_callback,
     const ErrorCompletionCallback& error_callback) {
-  DCHECK(socket_thread_->task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(socket_thread()->task_runner()->RunsTasksOnCurrentThread());
   base::ThreadRestrictions::AssertIOAllowed();
 
-  if (tcp_socket_) {
+  if (tcp_socket()) {
     error_callback.Run(kSocketAlreadyConnected);
     return;
   }
@@ -235,7 +154,7 @@ void BluetoothSocketWin::DoConnect(
     return;
   }
 
-  tcp_socket_.reset(new net::TCPSocket(net_log_, source_));
+  ResetTCPSocket();
   net::EnsureWinsockInit();
   SOCKET socket_fd = socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
   SOCKADDR_BTH sa;
@@ -260,7 +179,7 @@ void BluetoothSocketWin::DoConnect(
   // Note: We don't have a meaningful |IPEndPoint|, but that is ok since the
   // TCPSocket implementation does not actually require one.
   int net_result =
-      tcp_socket_->AdoptConnectedSocket(socket_fd, net::IPEndPoint());
+      tcp_socket()->AdoptConnectedSocket(socket_fd, net::IPEndPoint());
   if (net_result != net::OK) {
     error_callback.Run("Error connecting to socket: " +
                        std::string(net::ErrorToString(net_result)));
@@ -271,177 +190,6 @@ void BluetoothSocketWin::DoConnect(
   success_callback.Run();
 }
 
-void BluetoothSocketWin::DoDisconnect(const base::Closure& success_callback) {
-  DCHECK(socket_thread_->task_runner()->RunsTasksOnCurrentThread());
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  DoClose();
-  success_callback.Run();
-}
-
-void BluetoothSocketWin::DoReceive(
-    int buffer_size,
-    const ReceiveCompletionCallback& success_callback,
-    const ReceiveErrorCompletionCallback& error_callback) {
-  DCHECK(socket_thread_->task_runner()->RunsTasksOnCurrentThread());
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  if (!tcp_socket_) {
-    error_callback.Run(BluetoothSocketWin::kDisconnected, kSocketNotConnected);
-    return;
-  }
-
-  // Only one pending read at a time
-  if (read_buffer_.get()) {
-    error_callback.Run(BluetoothSocketWin::kIOPending,
-                       net::ErrorToString(net::ERR_IO_PENDING));
-    return;
-  }
-
-  scoped_refptr<net::IOBufferWithSize> buffer(
-      new net::IOBufferWithSize(buffer_size));
-  int read_result =
-      tcp_socket_->Read(buffer.get(),
-                        buffer->size(),
-                        base::Bind(&BluetoothSocketWin::OnSocketReadComplete,
-                                   this,
-                                   success_callback,
-                                   error_callback));
-
-  if (read_result > 0) {
-    success_callback.Run(read_result, buffer);
-  } else if (read_result == net::OK ||
-             read_result == net::ERR_CONNECTION_CLOSED) {
-    error_callback.Run(BluetoothSocketWin::kDisconnected,
-                       net::ErrorToString(net::ERR_CONNECTION_CLOSED));
-  } else if (read_result == net::ERR_IO_PENDING) {
-    read_buffer_ = buffer;
-  } else {
-    error_callback.Run(BluetoothSocketWin::kSystemError,
-                       net::ErrorToString(read_result));
-  }
-}
-
-void BluetoothSocketWin::OnSocketReadComplete(
-    const ReceiveCompletionCallback& success_callback,
-    const ReceiveErrorCompletionCallback& error_callback,
-    int read_result) {
-  DCHECK(socket_thread_->task_runner()->RunsTasksOnCurrentThread());
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  scoped_refptr<net::IOBufferWithSize> buffer;
-  buffer.swap(read_buffer_);
-  if (read_result > 0) {
-    success_callback.Run(read_result, buffer);
-  } else if (read_result == net::OK ||
-             read_result == net::ERR_CONNECTION_CLOSED) {
-    error_callback.Run(BluetoothSocketWin::kDisconnected,
-                       net::ErrorToString(net::ERR_CONNECTION_CLOSED));
-  } else {
-    error_callback.Run(BluetoothSocketWin::kSystemError,
-                       net::ErrorToString(read_result));
-  }
-}
-
-void BluetoothSocketWin::DoSend(scoped_refptr<net::IOBuffer> buffer,
-                                int buffer_size,
-                                const SendCompletionCallback& success_callback,
-                                const ErrorCompletionCallback& error_callback) {
-  DCHECK(socket_thread_->task_runner()->RunsTasksOnCurrentThread());
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  if (!tcp_socket_) {
-    error_callback.Run(kSocketNotConnected);
-    return;
-  }
-
-  linked_ptr<WriteRequest> request(new WriteRequest());
-  request->buffer = buffer;
-  request->buffer_size = buffer_size;
-  request->success_callback = success_callback;
-  request->error_callback = error_callback;
-
-  write_queue_.push(request);
-  if (write_queue_.size() == 1) {
-    SendFrontWriteRequest();
-  }
-}
-
-void BluetoothSocketWin::SendFrontWriteRequest() {
-  DCHECK(socket_thread_->task_runner()->RunsTasksOnCurrentThread());
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  if (!tcp_socket_)
-    return;
-
-  if (write_queue_.size() == 0)
-    return;
-
-  linked_ptr<WriteRequest> request = write_queue_.front();
-  net::CompletionCallback callback =
-      base::Bind(&BluetoothSocketWin::OnSocketWriteComplete,
-                 this,
-                 request->success_callback,
-                 request->error_callback);
-  int send_result =
-      tcp_socket_->Write(request->buffer, request->buffer_size, callback);
-  if (send_result != net::ERR_IO_PENDING) {
-    callback.Run(send_result);
-  }
-}
-
-void BluetoothSocketWin::OnSocketWriteComplete(
-    const SendCompletionCallback& success_callback,
-    const ErrorCompletionCallback& error_callback,
-    int send_result) {
-  DCHECK(socket_thread_->task_runner()->RunsTasksOnCurrentThread());
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  write_queue_.pop();
-
-  if (send_result >= net::OK) {
-    success_callback.Run(send_result);
-  } else {
-    error_callback.Run(net::ErrorToString(send_result));
-  }
-
-  // Don't call directly to avoid potentail large recursion.
-  socket_thread_->task_runner()->PostNonNestableTask(
-      FROM_HERE, base::Bind(&BluetoothSocketWin::SendFrontWriteRequest, this));
-}
-
-void BluetoothSocketWin::PostSuccess(const base::Closure& callback) {
-  ui_task_runner_->PostTask(FROM_HERE, callback);
-}
-
-void BluetoothSocketWin::PostErrorCompletion(
-    const ErrorCompletionCallback& callback,
-    const std::string& error) {
-  ui_task_runner_->PostTask(FROM_HERE, base::Bind(callback, error));
-}
-
-void BluetoothSocketWin::PostReceiveCompletion(
-    const ReceiveCompletionCallback& callback,
-    int io_buffer_size,
-    scoped_refptr<net::IOBuffer> io_buffer) {
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(callback, io_buffer_size, io_buffer));
-}
-
-void BluetoothSocketWin::PostReceiveErrorCompletion(
-    const ReceiveErrorCompletionCallback& callback,
-    ErrorReason reason,
-    const std::string& error_message) {
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(callback, reason, error_message));
-}
-
-void BluetoothSocketWin::PostSendCompletion(
-    const SendCompletionCallback& callback,
-    int bytes_written) {
-  ui_task_runner_->PostTask(FROM_HERE, base::Bind(callback, bytes_written));
-}
-
 void BluetoothSocketWin::DoStartService(
     const BluetoothUUID& uuid,
     const std::string& name,
@@ -449,8 +197,8 @@ void BluetoothSocketWin::DoStartService(
     const base::Closure& success_callback,
     const ErrorCompletionCallback& error_callback,
     const OnNewConnectionCallback& new_connection_callback) {
-  DCHECK(socket_thread_->task_runner()->RunsTasksOnCurrentThread());
-  DCHECK(!tcp_socket_ &&
+  DCHECK(socket_thread()->task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(!tcp_socket() &&
          !service_reg_data_ &&
          on_new_connection_callback_.is_null());
 
@@ -542,7 +290,7 @@ void BluetoothSocketWin::DoStartService(
     return;
   }
 
-  tcp_socket_ = scoped_socket.Pass();
+  SetTCPSocket(scoped_socket.Pass());
   service_reg_data_ = reg_data.Pass();
   on_new_connection_callback_ = new_connection_callback;
   DoAccept();
@@ -551,8 +299,8 @@ void BluetoothSocketWin::DoStartService(
 }
 
 void BluetoothSocketWin::DoAccept() {
-  DCHECK(socket_thread_->task_runner()->RunsTasksOnCurrentThread());
-  int result = tcp_socket_->Accept(
+  DCHECK(socket_thread()->task_runner()->RunsTasksOnCurrentThread());
+  int result = tcp_socket()->Accept(
       &accept_socket_,
       &accept_address_,
       base::Bind(&BluetoothSocketWin::OnAcceptOnSocketThread, this));
@@ -561,13 +309,13 @@ void BluetoothSocketWin::DoAccept() {
 }
 
 void BluetoothSocketWin::OnAcceptOnSocketThread(int accept_result) {
-  DCHECK(socket_thread_->task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(socket_thread()->task_runner()->RunsTasksOnCurrentThread());
   if (accept_result != net::OK) {
     LOG(WARNING) << "OnAccept error, net err=" << accept_result;
     return;
   }
 
-  ui_task_runner_->PostTask(
+  ui_task_runner()->PostTask(
     FROM_HERE,
     base::Bind(&BluetoothSocketWin::OnAcceptOnUI,
                this,
@@ -579,14 +327,14 @@ void BluetoothSocketWin::OnAcceptOnSocketThread(int accept_result) {
 void BluetoothSocketWin::OnAcceptOnUI(
     scoped_ptr<net::TCPSocket> accept_socket,
     const net::IPEndPoint& peer_address) {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
 
   scoped_refptr<BluetoothSocketWin> peer = CreateBluetoothSocket(
-          ui_task_runner_,
-          socket_thread_,
-          net_log_,
-          source_);
-  peer->tcp_socket_ = accept_socket.Pass();
+          ui_task_runner(),
+          socket_thread(),
+          net_log(),
+          source());
+  peer->SetTCPSocket(accept_socket.Pass());
 
   on_new_connection_callback_.Run(peer, peer_address);
 }

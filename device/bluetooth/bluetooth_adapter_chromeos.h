@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "chromeos/dbus/bluetooth_adapter_client.h"
 #include "chromeos/dbus/bluetooth_agent_service_provider.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
@@ -16,6 +17,10 @@
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
+
+namespace device {
+class BluetoothSocketThread;
+}  // namespace device
 
 namespace chromeos {
 
@@ -229,6 +234,10 @@ class BluetoothAdapterChromeOS
   // Instance of the D-Bus agent object used for pairing, initialized with
   // our own class as its delegate.
   scoped_ptr<BluetoothAgentServiceProvider> agent_;
+
+  // UI thread task runner and socket thread object used to create sockets.
+  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
+  scoped_refptr<device::BluetoothSocketThread> socket_thread_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

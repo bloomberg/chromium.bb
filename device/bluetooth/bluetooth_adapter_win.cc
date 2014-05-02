@@ -14,7 +14,7 @@
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "device/bluetooth/bluetooth_device_win.h"
-#include "device/bluetooth/bluetooth_socket_thread_win.h"
+#include "device/bluetooth/bluetooth_socket_thread.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
 
 namespace device {
@@ -249,7 +249,7 @@ void BluetoothAdapterWin::RemoveDiscoverySession(
 
 void BluetoothAdapterWin::Init() {
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  socket_thread_ = BluetoothSocketThreadWin::Get();
+  socket_thread_ = BluetoothSocketThread::Get();
   task_manager_ =
       new BluetoothTaskManagerWin(ui_task_runner_);
   task_manager_->AddObserver(this);

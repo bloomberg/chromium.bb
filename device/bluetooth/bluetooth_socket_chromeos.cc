@@ -4,187 +4,99 @@
 
 #include "device/bluetooth/bluetooth_socket_chromeos.h"
 
-#include <errno.h>
-#include <poll.h>
-#include <unistd.h>
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-
 #include <string>
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/posix/eintr_wrapper.h"
-#include "base/safe_strerror_posix.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "dbus/file_descriptor.h"
 #include "device/bluetooth/bluetooth_socket.h"
-#include "net/base/io_buffer.h"
+#include "device/bluetooth/bluetooth_socket_net.h"
+#include "device/bluetooth/bluetooth_socket_thread.h"
+#include "net/base/ip_endpoint.h"
+#include "net/base/net_errors.h"
+
+namespace {
+
+const char kSocketAlreadyConnected[] = "Socket is already connected.";
+
+}  // namespace
 
 namespace chromeos {
 
-BluetoothSocketChromeOS::BluetoothSocketChromeOS(int fd)
-    : fd_(fd) {
-  // Fetch the socket type so we read from it correctly.
-  int optval;
-  socklen_t opt_len = sizeof optval;
-  if (getsockopt(fd_, SOL_SOCKET, SO_TYPE, &optval, &opt_len) < 0) {
-    // Sequenced packet is the safest assumption since it won't result in
-    // truncated packets.
-    LOG(WARNING) << "Unable to get socket type: " << safe_strerror(errno);
-    optval = SOCK_SEQPACKET;
-  }
+// static
+scoped_refptr<BluetoothSocketChromeOS>
+BluetoothSocketChromeOS::CreateBluetoothSocket(
+    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+    scoped_refptr<device::BluetoothSocketThread> socket_thread,
+    net::NetLog* net_log,
+    const net::NetLog::Source& source) {
+  DCHECK(ui_task_runner->RunsTasksOnCurrentThread());
 
-  if (optval == SOCK_DGRAM || optval == SOCK_SEQPACKET) {
-    socket_type_ = L2CAP;
-  } else {
-    socket_type_ = RFCOMM;
-  }
+  return make_scoped_refptr(
+      new BluetoothSocketChromeOS(
+          ui_task_runner, socket_thread, net_log, source));
+}
+
+BluetoothSocketChromeOS::BluetoothSocketChromeOS(
+    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+    scoped_refptr<device::BluetoothSocketThread> socket_thread,
+    net::NetLog* net_log,
+    const net::NetLog::Source& source)
+    : BluetoothSocketNet(ui_task_runner, socket_thread, net_log, source) {
 }
 
 BluetoothSocketChromeOS::~BluetoothSocketChromeOS() {
-  close(fd_);
 }
 
-void BluetoothSocketChromeOS::Close() { NOTIMPLEMENTED(); }
-
-void BluetoothSocketChromeOS::Disconnect(const base::Closure& callback) {
-  NOTIMPLEMENTED();
-}
-
-void BluetoothSocketChromeOS::Receive(
-    int buffer_size,
-    const ReceiveCompletionCallback& success_callback,
-    const ReceiveErrorCompletionCallback& error_callback) {
-  NOTIMPLEMENTED();
-}
-
-void BluetoothSocketChromeOS::Send(
-    scoped_refptr<net::IOBuffer> buffer,
-    int buffer_size,
-    const SendCompletionCallback& success_callback,
+void BluetoothSocketChromeOS::Connect(
+    scoped_ptr<dbus::FileDescriptor> fd,
+    const base::Closure& success_callback,
     const ErrorCompletionCallback& error_callback) {
-  NOTIMPLEMENTED();
+  DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
+
+  socket_thread()->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &BluetoothSocketChromeOS::DoConnect,
+          this,
+          base::Passed(&fd),
+          base::Bind(&BluetoothSocketChromeOS::PostSuccess,
+                     this,
+                     success_callback),
+          base::Bind(&BluetoothSocketChromeOS::PostErrorCompletion,
+                     this,
+                     error_callback)));
 }
 
-#if 0
-bool BluetoothSocketChromeOS::Receive(net::GrowableIOBuffer *buffer) {
+void BluetoothSocketChromeOS::DoConnect(
+    scoped_ptr<dbus::FileDescriptor> fd,
+    const base::Closure& success_callback,
+    const ErrorCompletionCallback& error_callback) {
+  DCHECK(socket_thread()->task_runner()->RunsTasksOnCurrentThread());
   base::ThreadRestrictions::AssertIOAllowed();
-
-  if (socket_type_ == L2CAP) {
-    int count;
-    if (ioctl(fd_, FIONREAD, &count) < 0) {
-      error_message_ = safe_strerror(errno);
-      LOG(WARNING) << "Unable to get waiting data size: " << error_message_;
-      return true;
-    }
-
-    // No bytes waiting can mean either nothing to read, or the other end has
-    // been closed, and reading zero bytes always returns zero.
-    //
-    // We can't do a short read for fear of a race where data arrives between
-    // calls and we trunctate it. So use poll() to check for the POLLHUP flag.
-    if (count == 0) {
-      struct pollfd pollfd;
-
-      pollfd.fd = fd_;
-      pollfd.events = 0;
-      pollfd.revents = 0;
-
-      // Timeout parameter set to 0 so this call will not block.
-      if (HANDLE_EINTR(poll(&pollfd, 1, 0)) < 0) {
-        error_message_ = safe_strerror(errno);
-        LOG(WARNING) << "Unable to check whether socket is closed: "
-                     << error_message_;
-        return false;
-      }
-
-      if (pollfd.revents & POLLHUP) {
-        // TODO(keybuk, youngki): Agree a common way to flag disconnected.
-        error_message_ = "Disconnected";
-        return false;
-      }
-    }
-
-    buffer->SetCapacity(count);
-  } else {
-    buffer->SetCapacity(1024);
-  }
-
-  ssize_t bytes_read;
-  do {
-    if (buffer->RemainingCapacity() == 0)
-      buffer->SetCapacity(buffer->capacity() * 2);
-    bytes_read =
-        HANDLE_EINTR(read(fd_, buffer->data(), buffer->RemainingCapacity()));
-    if (bytes_read > 0)
-      buffer->set_offset(buffer->offset() + bytes_read);
-  } while (socket_type_ == RFCOMM && bytes_read > 0);
-
-  // Ignore an error if at least one read() call succeeded; it'll be returned
-  // the next read() call.
-  if (buffer->offset() > 0)
-    return true;
-
-  if (bytes_read < 0) {
-    if (errno == ECONNRESET || errno == ENOTCONN) {
-      // TODO(keybuk, youngki): Agree a common way to flag disconnected.
-      error_message_ = "Disconnected";
-      return false;
-    } else if (errno != EAGAIN && errno != EWOULDBLOCK) {
-      error_message_ = safe_strerror(errno);
-      return false;
-    }
-  }
-
-  if (bytes_read == 0 && socket_type_ == RFCOMM) {
-    // TODO(keybuk, youngki): Agree a common way to flag disconnected.
-    error_message_ = "Disconnected";
-    return false;
-  }
-
-  return true;
-}
-
-bool BluetoothSocketChromeOS::Send(net::DrainableIOBuffer *buffer) {
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  ssize_t bytes_written;
-  do {
-    bytes_written =
-        HANDLE_EINTR(write(fd_, buffer->data(), buffer->BytesRemaining()));
-    if (bytes_written > 0)
-      buffer->DidConsume(bytes_written);
-  } while (buffer->BytesRemaining() > 0 && bytes_written > 0);
-
-  if (bytes_written < 0) {
-    if (errno == EPIPE || errno == ECONNRESET || errno == ENOTCONN) {
-      // TODO(keybuk, youngki): Agree a common way to flag disconnected.
-      error_message_ = "Disconnected";
-      return false;
-    } else if (errno != EAGAIN && errno != EWOULDBLOCK) {
-      error_message_ = safe_strerror(errno);
-      return false;
-    }
-  }
-
-  return true;
-}
-
-std::string BluetoothSocketChromeOS::GetLastErrorMessage() const {
-  return error_message_;
-}
-#endif
-
-// static
-scoped_refptr<device::BluetoothSocket> BluetoothSocketChromeOS::Create(
-    dbus::FileDescriptor* fd) {
   DCHECK(fd->is_valid());
 
-  BluetoothSocketChromeOS* bluetooth_socket =
-      new BluetoothSocketChromeOS(fd->TakeValue());
-  return scoped_refptr<BluetoothSocketChromeOS>(bluetooth_socket);
+  if (tcp_socket()) {
+    error_callback.Run(kSocketAlreadyConnected);
+    return;
+  }
+
+  ResetTCPSocket();
+
+  // Note: We don't have a meaningful |IPEndPoint|, but that is ok since the
+  // TCPSocket implementation does not actually require one.
+  int net_result = tcp_socket()->AdoptConnectedSocket(fd->value(),
+                                                      net::IPEndPoint());
+  if (net_result != net::OK) {
+    error_callback.Run("Error connecting to socket: " +
+                       std::string(net::ErrorToString(net_result)));
+    return;
+  }
+
+  fd->TakeValue();
+  success_callback.Run();
 }
 
 }  // namespace chromeos

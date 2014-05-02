@@ -17,7 +17,7 @@ class MockBluetoothSocket : public BluetoothSocket {
  public:
   MockBluetoothSocket();
   MOCK_METHOD0(Close, void());
-  MOCK_METHOD1(Disconnect, void(const base::Closure& callback));
+  MOCK_METHOD1(Disconnect, void(const base::Closure& success_callback));
   MOCK_METHOD3(Receive,
                void(int count,
                     const ReceiveCompletionCallback& success_callback,

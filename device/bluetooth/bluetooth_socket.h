@@ -43,7 +43,7 @@ class BluetoothSocket : public base::RefCountedThreadSafe<BluetoothSocket> {
 
   // Gracefully disconnects the socket and calls |callback| upon completion.
   // There is no failure case, as this is a best effort operation.
-  virtual void Disconnect(const base::Closure& callback) = 0;
+  virtual void Disconnect(const base::Closure& success_callback) = 0;
 
   // Receives data from the socket and calls |success_callback| when data is
   // available. |buffer_size| specifies the maximum number of bytes that can be

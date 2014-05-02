@@ -17,14 +17,14 @@ namespace device {
 
 class BluetoothAdapterWin;
 class BluetoothServiceRecord;
-class BluetoothSocketThreadWin;
+class BluetoothSocketThread;
 
 class BluetoothDeviceWin : public BluetoothDevice {
  public:
   explicit BluetoothDeviceWin(
       const BluetoothTaskManagerWin::DeviceState& state,
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-      scoped_refptr<BluetoothSocketThreadWin> socket_thread,
+      scoped_refptr<BluetoothSocketThread> socket_thread,
       net::NetLog* net_log,
       const net::NetLog::Source& net_log_source);
   virtual ~BluetoothDeviceWin();
@@ -93,7 +93,7 @@ class BluetoothDeviceWin : public BluetoothDevice {
   void SetVisible(bool visible);
 
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
-  scoped_refptr<BluetoothSocketThreadWin> socket_thread_;
+  scoped_refptr<BluetoothSocketThread> socket_thread_;
   net::NetLog* net_log_;
   net::NetLog::Source net_log_source_;
 

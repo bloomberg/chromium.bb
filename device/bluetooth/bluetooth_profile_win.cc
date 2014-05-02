@@ -13,7 +13,7 @@
 #include "device/bluetooth/bluetooth_adapter_win.h"
 #include "device/bluetooth/bluetooth_device_win.h"
 #include "device/bluetooth/bluetooth_service_record.h"
-#include "device/bluetooth/bluetooth_socket_thread_win.h"
+#include "device/bluetooth/bluetooth_socket_thread.h"
 #include "device/bluetooth/bluetooth_socket_win.h"
 
 namespace {
@@ -119,7 +119,7 @@ void BluetoothProfileWin::Init(const BluetoothUUID& uuid,
 void BluetoothProfileWin::Connect(
     const BluetoothDeviceWin* device,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    scoped_refptr<BluetoothSocketThreadWin> socket_thread,
+    scoped_refptr<BluetoothSocketThread> socket_thread,
     net::NetLog* net_log,
     const net::NetLog::Source& source,
     const base::Closure& success_callback,

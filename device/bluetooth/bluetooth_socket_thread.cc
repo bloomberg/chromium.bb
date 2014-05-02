@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_socket_thread_win.h"
+#include "device/bluetooth/bluetooth_socket_thread.h"
 
 #include "base/lazy_instance.h"
 #include "base/sequenced_task_runner.h"
@@ -10,29 +10,29 @@
 
 namespace device {
 
-base::LazyInstance<scoped_refptr<BluetoothSocketThreadWin> > g_instance =
+base::LazyInstance<scoped_refptr<BluetoothSocketThread> > g_instance =
     LAZY_INSTANCE_INITIALIZER;
 
 // static
-scoped_refptr<BluetoothSocketThreadWin> BluetoothSocketThreadWin::Get() {
+scoped_refptr<BluetoothSocketThread> BluetoothSocketThread::Get() {
   if (!g_instance.Get().get()) {
-    g_instance.Get() = new BluetoothSocketThreadWin();
+    g_instance.Get() = new BluetoothSocketThread();
   }
   return g_instance.Get();
 }
 
-BluetoothSocketThreadWin::BluetoothSocketThreadWin()
+BluetoothSocketThread::BluetoothSocketThread()
     : active_socket_count_(0) {}
 
-BluetoothSocketThreadWin::~BluetoothSocketThreadWin() {}
+BluetoothSocketThread::~BluetoothSocketThread() {}
 
-void BluetoothSocketThreadWin::OnSocketActivate() {
+void BluetoothSocketThread::OnSocketActivate() {
   DCHECK(thread_checker_.CalledOnValidThread());
   active_socket_count_++;
   EnsureStarted();
 }
 
-void BluetoothSocketThreadWin::OnSocketDeactivate() {
+void BluetoothSocketThread::OnSocketDeactivate() {
   DCHECK(thread_checker_.CalledOnValidThread());
   active_socket_count_--;
   if (active_socket_count_ == 0 && thread_) {
@@ -42,19 +42,19 @@ void BluetoothSocketThreadWin::OnSocketDeactivate() {
   }
 }
 
-void BluetoothSocketThreadWin::EnsureStarted() {
+void BluetoothSocketThread::EnsureStarted() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (thread_)
     return;
 
   base::Thread::Options thread_options;
   thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
-  thread_.reset(new base::Thread("BluetoothSocketThreadWin"));
+  thread_.reset(new base::Thread("BluetoothSocketThread"));
   thread_->StartWithOptions(thread_options);
   task_runner_ = thread_->message_loop_proxy();
 }
 
-scoped_refptr<base::SequencedTaskRunner> BluetoothSocketThreadWin::task_runner()
+scoped_refptr<base::SequencedTaskRunner> BluetoothSocketThread::task_runner()
     const {
   DCHECK(active_socket_count_ > 0);
   DCHECK(thread_);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_THREAD_WIN_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_THREAD_WIN_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_THREAD_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_THREAD_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,22 +16,22 @@ class Thread;
 
 namespace device {
 
-// Thread abstraction used by |BluetoothSocketWWin| to perform IO operations on
-// the underlying platform sockets. An instance of this class can be shared by
-// many active sockets.
-class BluetoothSocketThreadWin
-    : public base::RefCountedThreadSafe<BluetoothSocketThreadWin> {
+// Thread abstraction used by |BluetoothSocketChromeOS| and |BluetoothSocketWin|
+// to perform IO operations on the underlying platform sockets. An instance of
+// this class can be shared by many active sockets.
+class BluetoothSocketThread
+    : public base::RefCountedThreadSafe<BluetoothSocketThread> {
  public:
-  static scoped_refptr<BluetoothSocketThreadWin> Get();
+  static scoped_refptr<BluetoothSocketThread> Get();
   void OnSocketActivate();
   void OnSocketDeactivate();
 
   scoped_refptr<base::SequencedTaskRunner> task_runner() const;
 
  private:
-  friend class base::RefCountedThreadSafe<BluetoothSocketThreadWin>;
-  BluetoothSocketThreadWin();
-  virtual ~BluetoothSocketThreadWin();
+  friend class base::RefCountedThreadSafe<BluetoothSocketThread>;
+  BluetoothSocketThread();
+  virtual ~BluetoothSocketThread();
 
   void EnsureStarted();
 
@@ -40,9 +40,9 @@ class BluetoothSocketThreadWin
   scoped_ptr<base::Thread> thread_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketThreadWin);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketThread);
 };
 
 }  // namespace device
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_THREAD_WIN_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_THREAD_H_
