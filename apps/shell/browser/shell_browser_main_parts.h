@@ -37,6 +37,10 @@ class ShellBrowserContext;
 class ShellDesktopController;
 class ShellExtensionsClient;
 
+#if defined(OS_CHROMEOS)
+class ShellNetworkController;
+#endif
+
 // Handles initialization of AppShell.
 class ShellBrowserMainParts : public content::BrowserMainParts,
                               public aura::WindowTreeHostObserver {
@@ -70,6 +74,9 @@ class ShellBrowserMainParts : public content::BrowserMainParts,
   // Creates and initializes the ExtensionSystem.
   void CreateExtensionSystem();
 
+#if defined(OS_CHROMEOS)
+  scoped_ptr<ShellNetworkController> network_controller_;
+#endif
   scoped_ptr<ShellDesktopController> desktop_controller_;
   scoped_ptr<ShellBrowserContext> browser_context_;
   scoped_ptr<ShellExtensionsClient> extensions_client_;

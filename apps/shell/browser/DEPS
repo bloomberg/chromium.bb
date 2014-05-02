@@ -1,6 +1,7 @@
 include_rules = [
   "+chromeos",
   "+components/user_prefs",
+  "+third_party/cros_system_api",
 
   # Override apps/DEPS to be more selective about content includes.
   "-content",

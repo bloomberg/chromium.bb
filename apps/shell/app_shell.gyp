@@ -128,6 +128,8 @@
         'browser/shell_extension_web_contents_observer.h',
         'browser/shell_extensions_browser_client.cc',
         'browser/shell_extensions_browser_client.h',
+        'browser/shell_network_controller_chromeos.cc',
+        'browser/shell_network_controller_chromeos.h',
         'common/shell_app_runtime.cc',
         'common/shell_app_runtime.h',
         'common/shell_content_client.cc',

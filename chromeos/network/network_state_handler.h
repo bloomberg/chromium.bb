@@ -49,15 +49,6 @@ class NetworkTypePattern;
 // keep properties up to date by managing the appropriate Shill observers.
 // It will invoke its own more specific observer methods when the specified
 // changes occur.
-//
-// Most *ByType or *ForType methods will accept any of the following for |type|.
-// See individual methods for specific notes.
-// * Any type defined in service_constants.h (e.g. shill::kTypeWifi)
-// * kMatchTypeDefault returns the default (active) network
-// * kMatchTypeNonVirtual returns the primary non virtual network
-// * kMatchTypeWired returns the primary wired network
-// * kMatchTypeWireless returns the primary wireless network
-// * kMatchTypeMobile returns the primary cellular or wimax network
 
 class CHROMEOS_EXPORT NetworkStateHandler
     : public internal::ShillPropertyHandler::Listener {
@@ -122,9 +113,10 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // observe this class and implement NetworkPropertyChanged().
   const NetworkState* GetNetworkState(const std::string& service_path) const;
 
-  // Returns the default network (which includes VPNs) based on the
-  // Shill Manager.DefaultNetwork property. Normally this is the same as
-  // ConnectedNetworkByType(kMatchTypeDefault), but the timing might differ.
+  // Returns the default network (which includes VPNs) based on the Shill
+  // Manager.DefaultNetwork property. Normally this is the same as
+  // ConnectedNetworkByType(NetworkTypePattern::Default()), but the timing might
+  // differ.
   const NetworkState* DefaultNetwork() const;
 
   // Returns the FavoriteState associated to DefaultNetwork. Returns NULL if,

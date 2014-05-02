@@ -24,6 +24,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
+#include "apps/shell/browser/shell_network_controller_chromeos.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #endif
 
@@ -61,6 +62,7 @@ void ShellBrowserMainParts::PreMainMessageLoopStart() {
 void ShellBrowserMainParts::PostMainMessageLoopStart() {
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Initialize();
+  network_controller_.reset(new ShellNetworkController);
 #endif
 }
 
@@ -144,6 +146,7 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 
 void ShellBrowserMainParts::PostDestroyThreads() {
 #if defined(OS_CHROMEOS)
+  network_controller_.reset();
   chromeos::DBusThreadManager::Shutdown();
 #endif
 }
