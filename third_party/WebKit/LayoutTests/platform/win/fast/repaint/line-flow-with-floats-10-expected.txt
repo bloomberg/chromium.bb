@@ -1,0 +1,17 @@
+
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 360.00 418.00 139.00)
+        (rect 14.00 363.00 48.00 64.00)
+        (rect 14.00 374.00 48.00 64.00)
+      )
+    )
+  )
+)
+

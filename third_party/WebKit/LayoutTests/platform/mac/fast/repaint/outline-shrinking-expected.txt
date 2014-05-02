@@ -2,10 +2,20 @@ This is a test for http://bugzilla.opendarwin.org/show_bug.cgi?id=9388 REGRESSIO
 
 There should be a green square and no trace of red.
 
-(repaint rects
-  (rect 4 16 788 200)
-  (rect 8 16 784 196)
-  (rect 4 108 108 108)
-  (rect 8 112 100 100)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 4.00 16.00 788.00 200.00)
+        (rect 8.00 16.00 784.00 196.00)
+        (rect 4.00 108.00 108.00 108.00)
+        (rect 8.00 112.00 100.00 100.00)
+      )
+    )
+  )
 )
 

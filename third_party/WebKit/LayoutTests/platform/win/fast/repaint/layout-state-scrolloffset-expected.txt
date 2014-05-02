@@ -1,6 +1,16 @@
 You should see the text 'after' in the inner box with no mangled pixels.
 after
- (repaint rects
-  (rect 100 120 50 19)
+ (GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 100.00 120.00 50.00 19.00)
+      )
+    )
+  )
 )
 

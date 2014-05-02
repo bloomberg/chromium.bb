@@ -10,8 +10,18 @@ This is a repaint test for http://bugs.webkit.org/show_bug.cgi?id=11277 REGRESSI
 
 
 Passed Test
-(repaint rects
-  (rect 8 136 80 17)
-  (rect 73 84 15 15)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 136.00 80.00 17.00)
+        (rect 73.00 84.00 15.00 15.00)
+      )
+    )
+  )
 )
 

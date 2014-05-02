@@ -3,14 +3,24 @@ This test checks that an outline change is correctly repainted.
 There should be a 5px green outline below.
 
 Lorem Ipsum
-(repaint rects
-  (rect 792 16 5 91)
-  (rect 8 102 789 5)
-  (rect 8 84 784 18)
-  (rect 8 79 789 28)
-  (rect 31 84 761 18)
-  (rect 31 79 766 28)
-  (rect 31 84 761 18)
-  (rect 31 79 766 28)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 792.00 16.00 5.00 91.00)
+        (rect 8.00 102.00 789.00 5.00)
+        (rect 8.00 84.00 784.00 18.00)
+        (rect 8.00 79.00 789.00 28.00)
+        (rect 31.00 84.00 761.00 18.00)
+        (rect 31.00 79.00 766.00 28.00)
+        (rect 31.00 84.00 761.00 18.00)
+        (rect 31.00 79.00 766.00 28.00)
+      )
+    )
+  )
 )
 

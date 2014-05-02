@@ -7,14 +7,24 @@ TEST PASS: The boxes will resize, maintaining their solid red rectangular outlin
 TEST FAIL: The boxes will resize, but the outlines will break. The first box will be missing small segments from either side of its bottom outline. The second box will have small red horizontal segments protruding inwards from both sides of the outline, where the bottom outline was before.
 
 
-(repaint rects
-  (rect 15 277 208 20)
-  (rect 15 273 208 4)
-  (rect 29 233 180 60)
-  (rect 29 233 180 40)
-  (rect 15 439 208 20)
-  (rect 15 435 208 4)
-  (rect 29 395 180 40)
-  (rect 29 395 180 60)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 15.00 277.00 208.00 20.00)
+        (rect 15.00 273.00 208.00 4.00)
+        (rect 29.00 233.00 180.00 60.00)
+        (rect 29.00 233.00 180.00 40.00)
+        (rect 15.00 439.00 208.00 20.00)
+        (rect 15.00 435.00 208.00 4.00)
+        (rect 29.00 395.00 180.00 40.00)
+        (rect 29.00 395.00 180.00 60.00)
+      )
+    )
+  )
 )
 

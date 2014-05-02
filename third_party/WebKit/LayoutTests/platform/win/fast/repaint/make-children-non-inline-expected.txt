@@ -9,11 +9,21 @@ about all the stuff
 that comes
 after
 the break.
-(repaint rects
-  (rect 8 64 784 180)
-  (rect 8 244 784 100)
-  (rect 8 64 784 100)
-  (rect 8 164 10 100)
-  (rect 8 264 784 80)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 64.00 784.00 180.00)
+        (rect 8.00 244.00 784.00 100.00)
+        (rect 8.00 64.00 784.00 100.00)
+        (rect 8.00 164.00 10.00 100.00)
+        (rect 8.00 264.00 784.00 80.00)
+      )
+    )
+  )
 )
 

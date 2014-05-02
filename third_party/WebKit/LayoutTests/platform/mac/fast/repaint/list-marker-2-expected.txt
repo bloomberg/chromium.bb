@@ -3,13 +3,23 @@ This is a test for http://bugs.webkit.org/show_bug.cgi?id=13209 REGRESSION (r187
 There should be only one bullet, at the bottom left of the rectangle.
 
 
-(repaint rects
-  (rect 8 148 784 50)
-  (rect 31 148 761 50)
-  (rect 31 94 761 104)
-  (rect 31 130 7 18)
-  (rect 31 180 7 18)
-  (rect 48 94 100 54)
-  (rect 48 94 100 104)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 148.00 784.00 50.00)
+        (rect 31.00 148.00 761.00 50.00)
+        (rect 31.00 94.00 761.00 104.00)
+        (rect 31.00 130.00 7.00 18.00)
+        (rect 31.00 180.00 7.00 18.00)
+        (rect 48.00 94.00 100.00 54.00)
+        (rect 48.00 94.00 100.00 104.00)
+      )
+    )
+  )
 )
 

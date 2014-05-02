@@ -2,10 +2,20 @@ This is a repaint test for https://bugs.webkit.org/show_bug.cgi?id=22159 Repaint
 
 If the test passes, you should not see any red below
 
-(repaint rects
-  (rect 0 140 220 60)
-  (rect 0 240 220 60)
-  (rect 0 140 220 50)
-  (rect 0 240 220 50)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 0.00 140.00 220.00 60.00)
+        (rect 0.00 240.00 220.00 60.00)
+        (rect 0.00 140.00 220.00 50.00)
+        (rect 0.00 240.00 220.00 50.00)
+      )
+    )
+  )
 )
 
