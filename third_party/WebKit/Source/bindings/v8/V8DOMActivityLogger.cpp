@@ -6,20 +6,30 @@
 #include "bindings/v8/V8DOMActivityLogger.h"
 
 #include "bindings/v8/V8Binding.h"
+#include "wtf/HashMap.h"
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 
+typedef HashMap<int, OwnPtr<V8DOMActivityLogger>, WTF::IntHash<int>, WTF::UnsignedWithZeroKeyHashTraits<int> > DOMActivityLoggerMap;
+
+static DOMActivityLoggerMap& domActivityLoggers()
+{
+    ASSERT(isMainThread());
+    DEFINE_STATIC_LOCAL(DOMActivityLoggerMap, map, ());
+    return map;
+}
+
 void V8DOMActivityLogger::setActivityLogger(int worldId, PassOwnPtr<V8DOMActivityLogger> logger)
 {
-    DOMWrapperWorld* world = DOMWrapperWorld::from(worldId);
-    if (world)
-        world->setActivityLogger(logger);
+    domActivityLoggers().set(worldId, logger);
 }
 
 V8DOMActivityLogger* V8DOMActivityLogger::activityLogger(int worldId)
 {
-    DOMWrapperWorld* world = DOMWrapperWorld::from(worldId);
-    return world ? world->activityLogger() : 0;
+    DOMActivityLoggerMap& loggers = domActivityLoggers();
+    DOMActivityLoggerMap::iterator it = loggers.find(worldId);
+    return it == loggers.end() ? 0 : it->value.get();
 }
 
 } // namespace WebCore

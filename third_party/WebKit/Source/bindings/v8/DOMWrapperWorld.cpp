@@ -57,7 +57,6 @@ DOMWrapperWorld::DOMWrapperWorld(int worldId, int extensionGroup)
     : m_worldId(worldId)
     , m_extensionGroup(extensionGroup)
     , m_domDataStore(adoptPtr(new DOMDataStore(isMainWorld())))
-    , m_activityLogger(nullptr)
 {
 }
 
@@ -95,14 +94,14 @@ DOMWrapperWorld::~DOMWrapperWorld()
         return;
 
     WorldMap& map = isolatedWorldMap();
-    WorldMap::iterator it = map.find(m_worldId);
-    if (it == map.end()) {
+    WorldMap::iterator i = map.find(m_worldId);
+    if (i == map.end()) {
         ASSERT_NOT_REACHED();
         return;
     }
-    ASSERT(it->value == this);
+    ASSERT(i->value == this);
 
-    map.remove(it);
+    map.remove(i);
     isolatedWorldCount--;
     ASSERT(map.size() == isolatedWorldCount);
 }
@@ -112,24 +111,12 @@ void DOMWrapperWorld::dispose()
     m_domDataStore.clear();
 }
 
+#ifndef NDEBUG
 static bool isIsolatedWorldId(int worldId)
 {
     return MainWorldId < worldId  && worldId < IsolatedWorldIdLimit;
 }
-
-DOMWrapperWorld* DOMWrapperWorld::from(int worldId)
-{
-    if (worldId == MainWorldId)
-        return &mainWorld();
-    if (isIsolatedWorldId(worldId)) {
-        WorldMap& map = isolatedWorldMap();
-        WorldMap::iterator it = map.find(worldId);
-        ASSERT(it != map.end());
-        return it->value;
-    }
-    // FIXME: We should support worker worlds.
-    return 0;
-}
+#endif
 
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(int worldId, int extensionGroup)
 {
@@ -200,16 +187,6 @@ void DOMWrapperWorld::setIsolatedWorldContentSecurityPolicy(int worldId, const S
         isolatedWorldContentSecurityPolicies().set(worldId, true);
     else
         isolatedWorldContentSecurityPolicies().remove(worldId);
-}
-
-V8DOMActivityLogger* DOMWrapperWorld::activityLogger() const
-{
-    return m_activityLogger.get();
-}
-
-void DOMWrapperWorld::setActivityLogger(PassOwnPtr<V8DOMActivityLogger> activityLogger)
-{
-    m_activityLogger = activityLogger;
 }
 
 } // namespace WebCore

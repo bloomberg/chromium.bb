@@ -43,6 +43,7 @@ namespace WebCore {
 V8PerContextData::V8PerContextData(v8::Handle<v8::Context> context)
     : m_wrapperBoilerplates(context->GetIsolate())
     , m_constructorMap(context->GetIsolate())
+    , m_activityLogger(0)
     , m_isolate(context->GetIsolate())
     , m_contextHolder(adoptPtr(new gin::ContextHolder(context->GetIsolate())))
     , m_context(m_isolate, context)
