@@ -389,6 +389,61 @@ component("gfx") {
   }
 }
 
+component("gfx_geometry") {
+  sources = [
+    "geometry/box_f.cc",
+    "geometry/box_f.h",
+    "geometry/cubic_bezier.h",
+    "geometry/cubic_bezier.cc",
+    "geometry/insets.cc",
+    "geometry/insets.h",
+    "geometry/insets_base.h",
+    "geometry/insets_f.cc",
+    "geometry/insets_f.h",
+    "geometry/matrix3_f.cc",
+    "geometry/matrix3_f.h",
+    "geometry/point.cc",
+    "geometry/point.h",
+    "geometry/point3_f.cc",
+    "geometry/point3_f.h",
+    "geometry/point_base.h",
+    "geometry/point_conversions.cc",
+    "geometry/point_conversions.h",
+    "geometry/point_f.cc",
+    "geometry/point_f.h",
+    "geometry/quad_f.cc",
+    "geometry/quad_f.h",
+    "geometry/rect.cc",
+    "geometry/rect.h",
+    "geometry/rect_base.h",
+    "geometry/rect_base_impl.h",
+    "geometry/rect_conversions.cc",
+    "geometry/rect_conversions.h",
+    "geometry/rect_f.cc",
+    "geometry/rect_f.h",
+    "geometry/r_tree.cc",
+    "geometry/r_tree.h",
+    "geometry/safe_integer_conversions.h",
+    "geometry/size.cc",
+    "geometry/size.h",
+    "geometry/size_base.h",
+    "geometry/size_conversions.cc",
+    "geometry/size_conversions.h",
+    "geometry/size_f.cc",
+    "geometry/size_f.h",
+    "geometry/vector2d.cc",
+    "geometry/vector2d.h",
+    "geometry/vector2d_conversions.cc",
+    "geometry/vector2d_conversions.h",
+    "geometry/vector2d_f.cc",
+    "geometry/vector2d_f.h",
+    "geometry/vector3d_f.cc",
+    "geometry/vector3d_f.h",
+  ]
+  defines = [ "GFX_IMPLEMENTATION" ]
+  deps = [ "//base" ]
+}
+
 source_set("gfx_test_support") {
   sources = [
     "test/gfx_util.cc",
