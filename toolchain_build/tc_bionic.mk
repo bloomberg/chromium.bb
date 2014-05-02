@@ -20,7 +20,7 @@ MAKEFILE_DEPS?=$(MAKEFILE_LIST)
 # of timestamp, since the directory can update when files change.
 #
 %dir.stamp :
-	$(MKDIR) -p $(dir $@)
+	mkdir -p $(dir $@)
 	@echo Directory Stamp > $@
 
 #
