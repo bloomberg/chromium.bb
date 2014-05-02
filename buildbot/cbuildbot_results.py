@@ -62,6 +62,14 @@ class StepFailure(Exception):
     return self.message
 
 
+class InfrastructureFailure(StepFailure):
+  """Raised if a stage fails due to infrastucture issues."""
+
+
+class TestLabFailure(InfrastructureFailure):
+  """Raised if a stage fails due to hardware lab infrastucture issues."""
+
+
 class RetriableStepFailure(StepFailure):
   """This exception is thrown when a step failed, but should be retried."""
 

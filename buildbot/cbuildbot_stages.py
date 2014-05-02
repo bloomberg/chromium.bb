@@ -3005,11 +3005,6 @@ class HWTestStage(BoardSpecificBuilderStage, ArchivingStageMixin):
     self.suite_config = suite_config
     self.wait_for_results = True
 
-  def _PrintFile(self, filename):
-    with open(filename) as f:
-      print f.read()
-
-
   def _CheckAborted(self):
     """Checks with GS to see if HWTest for this build's release_tag was aborted.
 
@@ -3028,34 +3023,31 @@ class HWTestStage(BoardSpecificBuilderStage, ArchivingStageMixin):
   # pylint: disable=W0212
   def _HandleStageException(self, exc_info):
     """Override and don't set status to FAIL but FORGIVEN instead."""
-    exc_type, exc_value = exc_info[:2]
-
+    exc_type = exc_info[0]
     # Deal with timeout errors specially.
     if issubclass(exc_type, timeout_util.TimeoutError):
       return self._HandleStageTimeoutException(exc_info)
 
-    # 2 for warnings returned by run_suite.py, or CLIENT_HTTP_CODE error
-    # returned by autotest_rpc_client.py. It is the former that we care about.
-    # 11, 12, 13 for cases when rpc is down, see autotest_rpc_errors.py.
-    codes_handled_as_warning = (2, 11, 12, 13)
-
     if self.suite_config.critical:
       return super(HWTestStage, self)._HandleStageException(exc_info)
-    is_lab_down = (issubclass(exc_type, lab_status.LabIsDownException) or
-                   issubclass(exc_type, lab_status.BoardIsDisabledException))
-    is_warning_code = (issubclass(exc_type, cros_build_lib.RunCommandError) and
-                       exc_value.result.returncode in codes_handled_as_warning)
-    if is_lab_down:
-      cros_build_lib.Warning('HWTest was skipped because the lab was down.')
+
+    if self._CheckAborted():
+      # HWTest was aborted. This is only applicable to CQ.
+      logging.warning(CQ_HWTEST_WAS_ABORTED)
       return self._HandleExceptionAsWarning(exc_info)
-    elif is_warning_code:
-      cros_build_lib.Warning('HWTest failed with warning code.')
+    elif issubclass(exc_type, commands.TestWarning):
+      # HWTest passed with warning. All builders should pass.
+      logging.warning('HWTest passed with warning code.')
       return self._HandleExceptionAsWarning(exc_info)
-    elif self._CheckAborted():
-      cros_build_lib.Warning(CQ_HWTEST_WAS_ABORTED)
-      return self._HandleExceptionAsWarning(exc_info)
-    else:
-      return super(HWTestStage, self)._HandleStageException(exc_info)
+    elif issubclass(exc_type, results_lib.InfrastructureFailure):
+      # Tests did not run correctly; builders that do not check in
+      # code should pass.
+      logging.warning('HWTest did not complete due to infrastructure issues '
+                      '(%s)', exc_type)
+      if not cbuildbot_config.IsPFQType(self._run.config.build_type):
+        return self._HandleExceptionAsWarning(exc_info)
+
+    return super(HWTestStage, self)._HandleStageException(exc_info)
 
   def _HandleStageTimeoutException(self, exc_info):
     if not self.suite_config.critical and not self.suite_config.fatal_timeouts:
@@ -3074,6 +3066,7 @@ class HWTestStage(BoardSpecificBuilderStage, ArchivingStageMixin):
       debug = self._run.options.debug_forced
     else:
       debug = self._run.options.debug
+
     lab_status.CheckLabStatus(self._current_board)
     with timeout_util.Timeout(
         self.suite_config.timeout  + constants.HWTEST_TIMEOUT_EXTENSION):

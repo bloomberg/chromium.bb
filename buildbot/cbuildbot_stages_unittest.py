@@ -42,7 +42,6 @@ from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import git_unittest
 from chromite.lib import gob_util
-from chromite.lib import gs_unittest
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import parallel_unittest
@@ -167,7 +166,7 @@ class StageTest(cros_test_lib.MoxTempDirTestCase,
   BOT_ID = 'x86-generic-paladin'
 
   # Subclasses can override this.  If non-None, value is inserted into
-  # self.run.attrs.release_tag.
+  # self._run.attrs.release_tag.
   RELEASE_TAG = None
 
   def setUp(self):
@@ -179,13 +178,14 @@ class StageTest(cros_test_lib.MoxTempDirTestCase,
     self._manager.__enter__()
 
     # These are here to make pylint happy.  Values filled in by _Prepare.
-    self.bot_id = None
+    self._bot_id = None
     self._current_board = None
     self._boards = None
+    self._run = None
 
   def _Prepare(self, bot_id=None, extra_config=None, cmd_args=None,
                extra_cmd_args=None):
-    """Prepare a BuilderRun at self.run for this test.
+    """Prepare a BuilderRun at self._run for this test.
 
     This method must allow being called more than once.  Subclasses can
     override this method, but those subclass methods should also call this one.
@@ -196,7 +196,7 @@ class StageTest(cros_test_lib.MoxTempDirTestCase,
     This will populate the following attributes on self:
       run: A BuilderRun object.
       bot_id: The bot id (name) that was used from config.config.
-      self._boards: Same as self.run.config.boards.  TODO(mtennant): remove.
+      self._boards: Same as self._run.config.boards.  TODO(mtennant): remove.
       self._current_board: First board in list, if there is one.
 
     Args:
@@ -207,7 +207,7 @@ class StageTest(cros_test_lib.MoxTempDirTestCase,
       extra_cmd_args: List to add to default cbuildbot command args.  This
         is a good way to adjust an options value for your test.
         Example: ['branch-name', 'some-branch-name'] will effectively cause
-        self.run.options.branch_name to be set to 'some-branch-name'.
+        self._run.options.branch_name to be set to 'some-branch-name'.
     """
     # Use cbuildbot parser to create options object and populate default values.
     parser = cbuildbot._CreateParser()
@@ -225,18 +225,18 @@ class StageTest(cros_test_lib.MoxTempDirTestCase,
     # The bot_id can either be specified as arg to _Prepare method or in the
     # cmd_args (as cbuildbot normally accepts it from command line).
     if args:
-      self.bot_id = args[0]
+      self._bot_id = args[0]
       if bot_id:
         # This means bot_id was specified as _Prepare arg and in cmd_args.
         # Make sure they are the same.
-        self.assertEquals(self.bot_id, bot_id)
+        self.assertEquals(self._bot_id, bot_id)
     else:
-      self.bot_id = bot_id or self.BOT_ID
-      args = [self.bot_id]
+      self._bot_id = bot_id or self.BOT_ID
+      args = [self._bot_id]
     cbuildbot._FinishParsing(options, args)
 
-    # Populate build_config corresponding to self.bot_id.
-    build_config = copy.deepcopy(config.config[self.bot_id])
+    # Populate build_config corresponding to self._bot_id.
+    build_config = copy.deepcopy(config.config[self._bot_id])
     build_config['manifest_repo_url'] = 'fake_url'
     if extra_config:
       build_config.update(extra_config)
@@ -250,10 +250,10 @@ class StageTest(cros_test_lib.MoxTempDirTestCase,
     self.assertEquals(options.buildroot, self.build_root)
 
     # Construct a real BuilderRun using options and build_config.
-    self.run = cbuildbot_run.BuilderRun(options, build_config, self._manager)
+    self._run = cbuildbot_run.BuilderRun(options, build_config, self._manager)
 
     if self.RELEASE_TAG is not None:
-      self.run.attrs.release_tag = self.RELEASE_TAG
+      self._run.attrs.release_tag = self.RELEASE_TAG
 
     portage_utilities._OVERLAY_LIST_CMD = '/bin/true'
 
@@ -273,10 +273,10 @@ class StageTest(cros_test_lib.MoxTempDirTestCase,
 
   def GetHWTestSuite(self):
     """Get the HW test suite for the current bot."""
-    hw_tests = self.run.config['hw_tests']
+    hw_tests = self._run.config['hw_tests']
     if not hw_tests:
       # TODO(milleral): Add HWTests back to lumpy-chrome-perf.
-      raise unittest.SkipTest('Missing HWTest for %s' % (self.bot_id,))
+      raise unittest.SkipTest('Missing HWTest for %s' % (self._bot_id,))
 
     return hw_tests[0]
 
@@ -335,7 +335,7 @@ class BuilderStageTest(AbstractStageTest):
     self._Prepare()
 
   def ConstructStage(self):
-    return bs.BuilderStage(self.run)
+    return bs.BuilderStage(self._run)
 
   def testGetPortageEnvVar(self):
     """Basic test case for _GetPortageEnvVar function."""
@@ -445,7 +445,7 @@ class BuilderStageTest(AbstractStageTest):
         self.handled_exceptions.append(str(exc_info[1]))
         raise TestError('nested')
 
-    stage = BadStage(self.run)
+    stage = BadStage(self._run)
     results_lib.Results.Clear()
     self.assertRaises(results_lib.StepFailure, self._RunCapture, stage)
 
@@ -483,10 +483,10 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
   def _Prepare(self, bot_id=None, **kwargs):
     super(ManifestVersionedSyncStageTest, self)._Prepare(bot_id, **kwargs)
 
-    self.run.config['manifest_version'] = self.manifest_version_url
-    self.sync_stage = stages.ManifestVersionedSyncStage(self.run)
+    self._run.config['manifest_version'] = self.manifest_version_url
+    self.sync_stage = stages.ManifestVersionedSyncStage(self._run)
     self.sync_stage.manifest_manager = self.manager
-    self.run.attrs.manifest_manager = self.manager
+    self._run.attrs.manifest_manager = self.manager
 
   def testManifestVersionedSyncOnePartBranch(self):
     """Tests basic ManifestVersionedSyncStage with branch ooga_booga"""
@@ -518,7 +518,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
                               dashboard_url=mox.IgnoreArg())
 
     self.mox.ReplayAll()
-    stage = stages.ManifestVersionedSyncCompletionStage(self.run,
+    stage = stages.ManifestVersionedSyncCompletionStage(self._run,
                                                         self.sync_stage,
                                                         success=True)
     stage.Run()
@@ -533,7 +533,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
 
 
     self.mox.ReplayAll()
-    stage = stages.ManifestVersionedSyncCompletionStage(self.run,
+    stage = stages.ManifestVersionedSyncCompletionStage(self._run,
                                                         self.sync_stage,
                                                         success=False)
     stage.Run()
@@ -542,7 +542,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
   def testManifestVersionedSyncCompletedIncomplete(self):
     """Tests basic ManifestVersionedSyncStageCompleted on incomplete build."""
     self.mox.ReplayAll()
-    stage = stages.ManifestVersionedSyncCompletionStage(self.run,
+    stage = stages.ManifestVersionedSyncCompletionStage(self._run,
                                                         self.sync_stage,
                                                         success=False)
     stage.Run()
@@ -609,13 +609,13 @@ class MasterSlaveSyncCompletionStage(AbstractStageTest):
   def _Prepare(self, bot_id=None, **kwargs):
     super(MasterSlaveSyncCompletionStage, self)._Prepare(bot_id, **kwargs)
 
-    self.run.config['manifest_version'] = True
-    self.run.config['build_type'] = self.build_type
-    self.run.config['master'] = True
+    self._run.config['manifest_version'] = True
+    self._run.config['build_type'] = self.build_type
+    self._run.config['master'] = True
 
   def ConstructStage(self):
-    sync_stage = stages.MasterSlaveSyncStage(self.run)
-    return stages.MasterSlaveSyncCompletionStage(self.run, sync_stage,
+    sync_stage = stages.MasterSlaveSyncStage(self._run)
+    return stages.MasterSlaveSyncCompletionStage(self._run, sync_stage,
                                                  success=True)
 
   def _GetTestConfig(self):
@@ -770,7 +770,7 @@ class InitSDKTest(RunCommandAbstractStageTest):
     self.PatchObject(cros_build_lib, 'GetChrootVersion', return_value='12')
 
   def ConstructStage(self):
-    return stages.InitSDKStage(self.run)
+    return stages.InitSDKStage(self._run)
 
   def testFullBuildWithExistingChroot(self):
     """Tests whether we create chroots for full builds."""
@@ -782,7 +782,7 @@ class InitSDKTest(RunCommandAbstractStageTest):
     """Tests whether we create chroots when needed."""
     self._PrepareBin()
     # Do not force chroot replacement in build config.
-    self.run._config.chroot_replace = False
+    self._run._config.chroot_replace = False
     self._Run(dir_exists=False)
     self.assertCommandContains(['cros_sdk'])
 
@@ -802,7 +802,7 @@ class InitSDKTest(RunCommandAbstractStageTest):
     """Tests whether the --nosdk option works."""
     self._PrepareFull(extra_cmd_args=['--nosdk'])
     # Do not force chroot replacement in build config.
-    self.run._config.chroot_replace = False
+    self._run._config.chroot_replace = False
     self._Run(dir_exists=True)
     self.assertCommandContains(['cros_sdk'], expected=False)
 
@@ -811,7 +811,7 @@ class SetupBoardTest(RunCommandAbstractStageTest):
   """Test building the board"""
 
   def ConstructStage(self):
-    return stages.SetupBoardStage(self.run, self._current_board)
+    return stages.SetupBoardStage(self._run, self._current_board)
 
   def _RunFull(self, dir_exists=False):
     """Helper for testing a full builder."""
@@ -843,7 +843,7 @@ class SetupBoardTest(RunCommandAbstractStageTest):
     self._Run(dir_exists)
     self.assertCommandContains(['./setup_board'])
     cmd = ['./setup_board', '--nousepkg']
-    self.assertCommandContains(cmd, expected=self.run.options.latest_toolchain)
+    self.assertCommandContains(cmd, expected=self._run.options.latest_toolchain)
     cmd = ['./setup_board', '--skip_chroot_upgrade']
     self.assertCommandContains(cmd, expected=False)
 
@@ -895,7 +895,7 @@ class SDKStageTest(AbstractStageTest):
     cros_build_lib.SudoRunCommand = self._OriginalSudoRunCommand
 
   def ConstructStage(self):
-    return stages.SDKPackageStage(self.run)
+    return stages.SDKPackageStage(self._run)
 
   def testTarballCreation(self):
     """Tests whether we package the tarball and correctly create a Manifest."""
@@ -954,21 +954,21 @@ class VMTestStageTest(AbstractStageTest):
     self._Prepare()
 
     # Simulate breakpad symbols being ready.
-    board_runattrs = self.run.GetBoardRunAttrs(self._current_board)
+    board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
     board_runattrs.SetParallel('breakpad_symbols_generated', True)
 
   def ConstructStage(self):
-    self.run.GetArchive().SetupArchivePath()
-    return stages.VMTestStage(self.run, self._current_board)
+    self._run.GetArchive().SetupArchivePath()
+    return stages.VMTestStage(self._run, self._current_board)
 
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
-    self.run.config['vm_tests'] = constants.FULL_AU_TEST_TYPE
+    self._run.config['vm_tests'] = constants.FULL_AU_TEST_TYPE
     self.RunStage()
 
   def testQuickTests(self):
     """Tests if quick unit and cros_au_test_harness tests are run correctly."""
-    self.run.config['vm_tests'] = constants.SIMPLE_AU_TEST_TYPE
+    self._run.config['vm_tests'] = constants.SIMPLE_AU_TEST_TYPE
     self.RunStage()
 
 
@@ -984,11 +984,11 @@ class UnitTestStageTest(AbstractStageTest):
     self._Prepare()
 
   def ConstructStage(self):
-    return stages.UnitTestStage(self.run, self._current_board)
+    return stages.UnitTestStage(self._run, self._current_board)
 
   def testQuickTests(self):
     self.mox.StubOutWithMock(os.path, 'exists')
-    self.run.config['quick_unit'] = True
+    self._run.config['quick_unit'] = True
     commands.RunUnitTests(self.build_root, self._current_board, full=False,
                           blacklist=[], extra_env=mox.IgnoreArg())
     image_dir = os.path.join(self.build_root,
@@ -1003,7 +1003,7 @@ class UnitTestStageTest(AbstractStageTest):
 
   def testQuickTestsAuGeneratorZipMissing(self):
     self.mox.StubOutWithMock(os.path, 'exists')
-    self.run.config['quick_unit'] = True
+    self._run.config['quick_unit'] = True
     commands.RunUnitTests(self.build_root, self._current_board, full=False,
                           blacklist=[], extra_env=mox.IgnoreArg())
     image_dir = os.path.join(self.build_root,
@@ -1018,7 +1018,7 @@ class UnitTestStageTest(AbstractStageTest):
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
     self.mox.StubOutWithMock(os.path, 'exists')
-    self.run.config['quick_unit'] = False
+    self._run.config['quick_unit'] = False
     commands.RunUnitTests(self.build_root, self._current_board, full=True,
                           blacklist=[], extra_env=mox.IgnoreArg())
     image_dir = os.path.join(self.build_root,
@@ -1036,6 +1036,7 @@ class HWTestStageTest(AbstractStageTest):
   """Tests for the HWTest stage."""
 
   BOT_ID = 'x86-mario-release'
+  VERSION = 'R36-5760.0.0'
   RELEASE_TAG = ''
 
   def setUp(self):
@@ -1043,7 +1044,7 @@ class HWTestStageTest(AbstractStageTest):
 
     self.mox.StubOutWithMock(lab_status, 'CheckLabStatus')
     self.mox.StubOutWithMock(commands, 'HaveCQHWTestsBeenAborted')
-    self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self.mox.StubOutWithMock(cros_build_lib, 'PrintBuildbotStepWarnings')
     self.mox.StubOutWithMock(cros_build_lib, 'PrintBuildbotStepFailure')
     self.mox.StubOutWithMock(cros_build_lib, 'Warning')
@@ -1051,20 +1052,21 @@ class HWTestStageTest(AbstractStageTest):
 
     self.suite_config = None
     self.suite = None
+    self.version = None
 
     self._Prepare()
 
-  def _Prepare(self, bot_id=None, **kwargs):
+  def _Prepare(self, bot_id=None, version=None, **kwargs):
     super(HWTestStageTest, self)._Prepare(bot_id, **kwargs)
 
-    self.run.options.log_dir = '/b/cbuild/mylogdir'
-
+    self.version = version or self.VERSION
+    self._run.options.log_dir = '/b/cbuild/mylogdir'
     self.suite_config = self.GetHWTestSuite()
     self.suite = self.suite_config.suite
 
   def ConstructStage(self):
-    self.run.GetArchive().SetupArchivePath()
-    return stages.HWTestStage(self.run, self._current_board, self.suite_config)
+    self._run.GetArchive().SetupArchivePath()
+    return stages.HWTestStage(self._run, self._current_board, self.suite_config)
 
   def _RunHWTestSuite(self, debug=False, returncode=0, fails=False,
                       timeout=False):
@@ -1076,36 +1078,33 @@ class HWTestStageTest(AbstractStageTest):
       fails: Whether the command as a whole should fail.
       timeout: Whether the the hw tests should time out.
     """
-    if config.IsCQType(self.run.config.build_type):
-      version = self.run.GetVersion()
-      for _ in range(1 + int(fails)):
+    if config.IsCQType(self._run.config.build_type):
+      version = self._run.GetVersion()
+      for _ in range(1 + int(returncode != 0)):
         commands.HaveCQHWTestsBeenAborted(version).AndReturn(False)
 
     lab_status.CheckLabStatus(mox.IgnoreArg())
-    m = commands.RunHWTestSuite(mox.IgnoreArg(),
-                                self.suite,
-                                self._current_board, mox.IgnoreArg(),
-                                mox.IgnoreArg(), mox.IgnoreArg(), True,
-                                mox.IgnoreArg(), mox.IgnoreArg(), debug)
 
-    # Raise an exception if the user wanted the command to fail.
-    if timeout:
-      m.AndRaise(timeout_util.TimeoutError('Timed out'))
-      cros_build_lib.PrintBuildbotStepFailure()
-      cros_build_lib.Error(mox.IgnoreArg())
-    elif returncode != 0:
+    if not debug:
+      m = cros_build_lib.RunCommand(mox.IgnoreArg(), error_code_ok=True)
       result = cros_build_lib.CommandResult(cmd='run_hw_tests',
                                             returncode=returncode)
-      m.AndRaise(cros_build_lib.RunCommandError('HWTests failed', result))
-
-      # Make sure failures are logged correctly.
-      if fails:
+      m.AndReturn(result)
+      # Raise an exception if the user wanted the command to fail.
+      if timeout:
+        m.AndRaise(timeout_util.TimeoutError('Timed out'))
         cros_build_lib.PrintBuildbotStepFailure()
         cros_build_lib.Error(mox.IgnoreArg())
+      elif returncode != 0:
+        # Make sure failures are logged correctly.
+        if fails:
+          cros_build_lib.PrintBuildbotStepFailure()
+          cros_build_lib.Error(mox.IgnoreArg())
+        else:
+          cros_build_lib.PrintBuildbotStepWarnings()
+          cros_build_lib.Warning(mox.IgnoreArg())
       else:
-        cros_build_lib.Warning(mox.IgnoreArg())
-        cros_build_lib.PrintBuildbotStepWarnings()
-        cros_build_lib.Warning(mox.IgnoreArg())
+        m.AndReturn(result)
 
     self.mox.ReplayAll()
     if fails or timeout:
@@ -1135,28 +1134,42 @@ class HWTestStageTest(AbstractStageTest):
     self._Prepare('x86-alex-paladin')
     self._RunHWTestSuite(timeout=True)
 
-  def testWithSuiteWithInfrastructureFailure(self):
-    """Tests that we warn correctly if we get a returncode of 2."""
-    self._RunHWTestSuite(returncode=2)
+  def testHandleWarningCodeForCQ(self):
+    """Tests that we pass CQ on a lab warning code"""
+    self._Prepare('x86-alex-paladin')
+    self._RunHWTestSuite(returncode=2, fails=False)
+
+  def testHandleWarningCodeForPFQ(self):
+    """Tests that we pass PFQ on a lab warning code"""
+    self._Prepare('daisy-chromium-pfq')
+    self._RunHWTestSuite(returncode=2, fails=False)
+
+  def testHandleWarningCodeForCanary(self):
+    """Tests that we pass canary on a lab warning code"""
+    self._Prepare('x86-alex-release')
+    self._RunHWTestSuite(returncode=2, fails=False)
+
+  def testHandleInfraErrorCodeForCQ(self):
+    """Tests that we fail CQ on returncode of 11."""
+    self._Prepare('x86-alex-paladin')
+    self._RunHWTestSuite(returncode=11, fails=True)
+
+  def testHandleInfraErrorCodeForPFQ(self):
+    """Tests that we fail PFQ on returncode of 11."""
+    self._Prepare('daisy-chromium-pfq')
+    self._RunHWTestSuite(returncode=11, fails=True)
+
+  def testHandleInfraErrorCodeForCanary(self):
+    """Tests that we pass canaries on returncode of 11."""
+    self._Prepare('x86-alex-release')
+    self._RunHWTestSuite(returncode=11, fails=False)
 
   def testWithSuiteWithFatalFailure(self):
     """Tests that we fail if we get a returncode of 1."""
     self._RunHWTestSuite(returncode=1, fails=True)
 
-  def testSendPerfResults(self):
-    """Tests that we can send perf results back correctly."""
-    self._Prepare('lumpy-chrome-perf')
-    self.suite = 'perf_v2'
-
-    self.mox.StubOutWithMock(stages.HWTestStage, '_PrintFile')
-
-    with gs_unittest.GSContextMock() as gs_mock:
-      gs_mock.SetDefaultCmdResult()
-      self._RunHWTestSuite()
-
   def testHandleLabDownAsWarning(self):
     """Test that buildbot warn when lab is down."""
-    cros_build_lib.Warning(mox.IgnoreArg())
     check_lab = lab_status.CheckLabStatus(mox.IgnoreArg())
     check_lab.AndRaise(lab_status.LabIsDownException('Lab is not up.'))
     cros_build_lib.PrintBuildbotStepWarnings()
@@ -1188,9 +1201,9 @@ class SignerResultsStageTest(AbstractStageTest):
 
 
   def ConstructStage(self):
-    archive_stage = stages.ArchiveStage(self.run, self._current_board)
+    archive_stage = stages.ArchiveStage(self._run, self._current_board)
     stage = stages.SignerResultsStage(
-        self.run, self._current_board, archive_stage)
+        self._run, self._current_board, archive_stage)
 
     return stage
 
@@ -1361,8 +1374,8 @@ class PaygenStageTest(StageTest):
     self._Prepare()
 
   def ConstructStage(self):
-    archive_stage = stages.ArchiveStage(self.run, self._current_board)
-    return stages.PaygenStage(self.run, self._current_board, archive_stage)
+    archive_stage = stages.ArchiveStage(self._run, self._current_board)
+    return stages.PaygenStage(self._run, self._current_board, archive_stage)
 
   def testPerformStageSuccess(self):
     """Test that SignerResultsStage works when signing works."""
@@ -1415,7 +1428,7 @@ class PaygenStageTest(StageTest):
 
       # The stage is constructed differently for trybots, so don't use
       # ConstructStage.
-      stage = stages.PaygenStage(self.run, self._current_board,
+      stage = stages.PaygenStage(self._run, self._current_board,
                                  archive_stage=None, channels=['foo', 'bar'])
       stage.PerformStage()
 
@@ -1491,13 +1504,13 @@ class AUTestStageTest(AbstractStageTest,
   def _Prepare(self, bot_id=None, **kwargs):
     super(AUTestStageTest, self)._Prepare(bot_id, **kwargs)
 
-    self.run.GetArchive().SetupArchivePath()
-    self.archive_stage = stages.ArchiveStage(self.run, self._current_board)
+    self._run.GetArchive().SetupArchivePath()
+    self.archive_stage = stages.ArchiveStage(self._run, self._current_board)
     self.suite_config = self.GetHWTestSuite()
     self.suite = self.suite_config.suite
 
   def ConstructStage(self):
-    return stages.AUTestStage(self.run, self._current_board, self.suite_config)
+    return stages.AUTestStage(self._run, self._current_board, self.suite_config)
 
   def testPerformStage(self):
     """Tests that we correctly generate a tarball and archive it."""
@@ -1519,11 +1532,11 @@ class UprevStageTest(AbstractStageTest):
     self._Prepare()
 
   def ConstructStage(self):
-    return stages.UprevStage(self.run)
+    return stages.UprevStage(self._run)
 
   def testBuildRev(self):
     """Uprevving the build without uprevving chrome."""
-    self.run.config['uprev'] = True
+    self._run.config['uprev'] = True
     commands.UprevPackages(self.build_root, self._boards, [], enter_chroot=True)
     self.mox.ReplayAll()
     self.RunStage()
@@ -1531,7 +1544,7 @@ class UprevStageTest(AbstractStageTest):
 
   def testNoRev(self):
     """No paths are enabled."""
-    self.run.config['uprev'] = False
+    self._run.config['uprev'] = False
     self.mox.ReplayAll()
     self.RunStage()
     self.mox.VerifyAll()
@@ -1558,8 +1571,8 @@ class BuildPackagesStageTest(AbstractStageTest):
     self.StartPatcher(BuilderRunMock())
 
   def ConstructStage(self):
-    self.run.attrs.release_tag = self._release_tag
-    return stages.BuildPackagesStage(self.run, self._current_board)
+    self._run.attrs.release_tag = self._release_tag
+    return stages.BuildPackagesStage(self._run, self._current_board)
 
   @contextlib.contextmanager
   def RunStageWithConfig(self):
@@ -1574,21 +1587,21 @@ class BuildPackagesStageTest(AbstractStageTest):
         yield rc
 
     except AssertionError as ex:
-      msg = '%s failed the following test:\n%s' % (self.bot_id, ex)
+      msg = '%s failed the following test:\n%s' % (self._bot_id, ex)
       raise AssertionError(msg)
 
   def RunTestsWithBotId(self, bot_id, options_tests=True):
     """Test with the config for the specified bot_id."""
     self._Prepare(bot_id)
-    self.run.options.tests = options_tests
+    self._run.options.tests = options_tests
 
     with self.RunStageWithConfig() as rc:
-      cfg = self.run.config
+      cfg = self._run.config
       rc.assertCommandContains(['./build_packages'])
       rc.assertCommandContains(['./build_packages', '--skip_chroot_upgrade'])
       rc.assertCommandContains(['./build_packages', '--nousepkg'],
                                expected=not cfg['usepkg_build_packages'])
-      build_tests = cfg['build_tests'] and self.run.options.tests
+      build_tests = cfg['build_tests'] and self._run.options.tests
       rc.assertCommandContains(['./build_packages', '--nowithautotest'],
                                expected=not build_tests)
 
@@ -1636,14 +1649,14 @@ class BuildImageStageTest(BuildPackagesStageTest):
     self.StartPatcher(BuildImageStageMock())
 
   def ConstructStage(self):
-    return stages.BuildImageStage(self.run, self._current_board)
+    return stages.BuildImageStage(self._run, self._current_board)
 
   def RunTestsWithReleaseConfig(self, release_tag):
     self._release_tag = release_tag
 
     with parallel_unittest.ParallelMock():
       with self.RunStageWithConfig() as rc:
-        cfg = self.run.config
+        cfg = self._run.config
         cmd = ['./build_image', '--version=%s' % (self._release_tag or '')]
         rc.assertCommandContains(cmd, expected=cfg['images'])
         rc.assertCommandContains(['./image_to_vm.sh'],
@@ -1655,8 +1668,8 @@ class BuildImageStageTest(BuildPackagesStageTest):
     """Test with the config for the specified bot_id."""
     release_tag = '0.0.1'
     self._Prepare(bot_id)
-    self.run.options.tests = options_tests
-    self.run.attrs.release_tag = release_tag
+    self._run.options.tests = options_tests
+    self._run.attrs.release_tag = release_tag
 
     task = self.RunTestsWithReleaseConfig
     steps = [lambda: task(tag) for tag in (None, release_tag)]
@@ -1683,21 +1696,21 @@ class UploadTestArtifactsStageTest(BuildPackagesStageTest):
     self.StartPatcher(UploadTestArtifactsStageMock())
 
   def ConstructStage(self):
-    return stages.UploadTestArtifactsStage(self.run, self._current_board)
+    return stages.UploadTestArtifactsStage(self._run, self._current_board)
 
   def RunTestsWithBotId(self, bot_id, options_tests=True):
     """Test with the config for the specified bot_id."""
     self._Prepare(bot_id)
-    self.run.options.tests = options_tests
-    self.run.attrs.release_tag = '0.0.1'
+    self._run.options.tests = options_tests
+    self._run.attrs.release_tag = '0.0.1'
 
     # Simulate images being ready.
-    board_runattrs = self.run.GetBoardRunAttrs(self._current_board)
+    board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
     board_runattrs.SetParallel('images_generated', True)
 
     with parallel_unittest.ParallelMock():
       with self.RunStageWithConfig() as rc:
-        cfg = self.run.config
+        cfg = self._run.config
         hw = cfg['upload_hw_test_artifacts']
         canary = (cfg['build_type'] == constants.CANARY_TYPE)
         rc.assertCommandContains(['--full_payload'], expected=hw and not canary)
@@ -1715,9 +1728,9 @@ class ArchivingStageTest(AbstractStageTest):
     self._Prepare()
 
   def ConstructStage(self):
-    self.run.GetArchive().SetupArchivePath()
-    archive_stage = stages.ArchiveStage(self.run, self._current_board)
-    return stages.ArchivingStage(self.run, self._current_board, archive_stage)
+    self._run.GetArchive().SetupArchivePath()
+    archive_stage = stages.ArchiveStage(self._run, self._current_board)
+    return stages.ArchivingStage(self._run, self._current_board, archive_stage)
 
 
 class ArchiveStageTest(AbstractStageTest):
@@ -1744,8 +1757,8 @@ class ArchiveStageTest(AbstractStageTest):
                                            **kwargs)
 
   def ConstructStage(self):
-    self.run.GetArchive().SetupArchivePath()
-    return stages.ArchiveStage(self.run, self._current_board)
+    self._run.GetArchive().SetupArchivePath()
+    return stages.ArchiveStage(self._run, self._current_board)
 
   def testArchive(self):
     """Simple did-it-run test."""
@@ -1804,11 +1817,11 @@ class UploadPrebuiltsStageTest(RunCommandAbstractStageTest):
   def _Prepare(self, bot_id=None, **kwargs):
     super(UploadPrebuiltsStageTest, self)._Prepare(bot_id, **kwargs)
 
-    self.run.options.prebuilts = True
+    self._run.options.prebuilts = True
 
   def ConstructStage(self):
-    return stages.UploadPrebuiltsStage(self.run,
-                                       self.run.config.boards[-1])
+    return stages.UploadPrebuiltsStage(self._run,
+                                       self._run.config.boards[-1])
 
   def _VerifyBoardMap(self, bot_id, count, board_map, public_args=None,
                       private_args=None):
@@ -1835,7 +1848,7 @@ class UploadPrebuiltsStageTest(RunCommandAbstractStageTest):
       count -= 1
     if board_map:
       self.assertCommandContains([self.CMD, '--set-version',
-                                  self.run.GetVersion()])
+                                  self._run.GetVersion()])
       count -= 1
     self.assertEqual(count, 0,
         'Number of asserts performed does not match (%d remaining)' % count)
@@ -1871,10 +1884,10 @@ class MasterUploadPrebuiltsStageTest(RunCommandAbstractStageTest):
   def _Prepare(self, bot_id=None, **kwargs):
     super(MasterUploadPrebuiltsStageTest, self)._Prepare(bot_id, **kwargs)
 
-    self.run.options.prebuilts = True
+    self._run.options.prebuilts = True
 
   def ConstructStage(self):
-    return stages.MasterUploadPrebuiltsStage(self.run)
+    return stages.MasterUploadPrebuiltsStage(self._run)
 
   def _RunStage(self, bot_id):
     """Run the stage under test with the given |bot_id| config.
@@ -1925,7 +1938,7 @@ class MasterUploadPrebuiltsStageTest(RunCommandAbstractStageTest):
 
     # We expect --set-version so long as build config has manifest_version=True.
     self.assertCommandContains([self.CMD, '--set-version', self.VERSION],
-                               expected=self.run.config.manifest_version)
+                               expected=self._run.config.manifest_version)
 
   def testMasterPaladinUpload(self):
     self._RunStage('master-paladin')
@@ -1953,15 +1966,15 @@ class UploadDevInstallerPrebuiltsStageTest(AbstractStageTest):
   def _Prepare(self, bot_id=None, **kwargs):
     super(UploadDevInstallerPrebuiltsStageTest, self)._Prepare(bot_id, **kwargs)
 
-    self.run.options.chrome_rev = None
-    self.run.options.prebuilts = True
-    self.run.config['dev_installer_prebuilts'] = True
-    self.run.config['binhost_bucket'] = 'gs://testbucket'
-    self.run.config['binhost_key'] = 'dontcare'
-    self.run.config['binhost_base_url'] = 'https://dontcare/here'
+    self._run.options.chrome_rev = None
+    self._run.options.prebuilts = True
+    self._run.config['dev_installer_prebuilts'] = True
+    self._run.config['binhost_bucket'] = 'gs://testbucket'
+    self._run.config['binhost_key'] = 'dontcare'
+    self._run.config['binhost_base_url'] = 'https://dontcare/here'
 
   def ConstructStage(self):
-    return stages.DevInstallerPrebuiltsStage(self.run,
+    return stages.DevInstallerPrebuiltsStage(self._run,
                                              self._current_board)
 
   def testDevInstallerUpload(self):
@@ -1969,9 +1982,9 @@ class UploadDevInstallerPrebuiltsStageTest(AbstractStageTest):
     version = 'R%s-%s' % (DEFAULT_CHROME_BRANCH, self.RELEASE_TAG)
 
     commands.UploadDevInstallerPrebuilts(
-        binhost_bucket=self.run.config.binhost_bucket,
-        binhost_key=self.run.config.binhost_key,
-        binhost_base_url=self.run.config.binhost_base_url,
+        binhost_bucket=self._run.config.binhost_bucket,
+        binhost_key=self._run.config.binhost_key,
+        binhost_base_url=self._run.config.binhost_base_url,
         buildroot=self.build_root,
         board=self._current_board,
         extra_args=mox.And(mox.IsA(list),
@@ -1996,7 +2009,7 @@ class PublishUprevChangesStageTest(AbstractStageTest):
         [['foo'], ['bar']])
 
   def ConstructStage(self):
-    return stages.PublishUprevChangesStage(self.run, success=True)
+    return stages.PublishUprevChangesStage(self._run, success=True)
 
   def testPush(self):
     """Test values for PublishUprevChanges."""
@@ -2004,7 +2017,7 @@ class PublishUprevChangesStageTest(AbstractStageTest):
                                 'push_overlays': constants.PUBLIC_OVERLAYS,
                                 'master': True},
                   extra_cmd_args=['--chrome_rev', constants.CHROME_REV_TOT])
-    self.run.options.prebuilts = True
+    self._run.options.prebuilts = True
     stages.commands.UprevPush(self.build_root, ['bar'], False)
 
     self.mox.ReplayAll()
@@ -2027,8 +2040,8 @@ class CPEExportStageTest(AbstractStageTest):
 
   def ConstructStage(self):
     """Create a CPEExportStage instance for testing"""
-    self.run.GetArchive().SetupArchivePath()
-    return stages.CPEExportStage(self.run, self._current_board)
+    self._run.GetArchive().SetupArchivePath()
+    return stages.CPEExportStage(self._run, self._current_board)
 
   def assertBoardAttrEqual(self, attr, expected_value):
     """Assert the value of a board run |attr| against |expected_value|."""
@@ -2038,7 +2051,7 @@ class CPEExportStageTest(AbstractStageTest):
   def _TestPerformStage(self):
     """Run PerformStage for the stage."""
     self._Prepare()
-    self.run.attrs.release_tag = BuilderRunMock.VERSION
+    self._run.attrs.release_tag = BuilderRunMock.VERSION
 
     self.stage = self.ConstructStage()
     self.stage.PerformStage()
@@ -2067,8 +2080,8 @@ class DebugSymbolsStageTest(AbstractStageTest):
 
   def ConstructStage(self):
     """Create a DebugSymbolsStage instance for testing"""
-    self.run.GetArchive().SetupArchivePath()
-    return stages.DebugSymbolsStage(self.run, self._current_board)
+    self._run.GetArchive().SetupArchivePath()
+    return stages.DebugSymbolsStage(self._run, self._current_board)
 
   def assertBoardAttrEqual(self, attr, expected_value):
     """Assert the value of a board run |attr| against |expected_value|."""
@@ -2085,7 +2098,7 @@ class DebugSymbolsStageTest(AbstractStageTest):
       }
 
     self._Prepare(extra_config=extra_config)
-    self.run.attrs.release_tag = BuilderRunMock.VERSION
+    self._run.attrs.release_tag = BuilderRunMock.VERSION
 
     self.tar_mock.side_effect = '/my/tar/ball'
     self.stage = self.ConstructStage()
@@ -2243,8 +2256,8 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
 
   def setUp(self):
     # Always stub RunCommmand out as we use it in every method.
-    self.bot_id = 'x86-generic-paladin'
-    build_config = config.config[self.bot_id]
+    self._bot_id = 'x86-generic-paladin'
+    build_config = config.config[self._bot_id]
     self.build_root = '/fake_root'
 
     # Create a class to hold
@@ -2267,7 +2280,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     self._manager = parallel.Manager()
     self._manager.__enter__()
 
-    self.run = cbuildbot_run.BuilderRun(options, build_config, self._manager)
+    self._run = cbuildbot_run.BuilderRun(options, build_config, self._manager)
 
     results_lib.Results.Clear()
 
@@ -2278,11 +2291,11 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
   def _runStages(self):
     """Run a couple of stages so we can capture the results"""
     # Run two pass stages, and one fail stage.
-    PassStage(self.run).Run()
-    Pass2Stage(self.run).Run()
+    PassStage(self._run).Run()
+    Pass2Stage(self._run).Run()
     self.assertRaises(
       results_lib.StepFailure,
-      FailStage(self.run).Run)
+      FailStage(self._run).Run)
 
   def _verifyRunResults(self, expectedResults, max_time=2.0):
     actualResults = results_lib.Results.Get()
@@ -2339,7 +2352,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     self.assertFalse(results_lib.Results.BuildSucceededSoFar())
 
   def _TestParallelStages(self, stage_objs):
-    builder = cbuildbot.SimpleBuilder(self.run)
+    builder = cbuildbot.SimpleBuilder(self._run)
     error = None
     with mock.patch.multiple(parallel._BackgroundTask, PRINT_INTERVAL=0.01):
       try:
@@ -2350,7 +2363,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     return error
 
   def testParallelStages(self):
-    stage_objs = [stage(self.run) for stage in
+    stage_objs = [stage(self._run) for stage in
                   (PassStage, SneakyFailStage, FailStage, SuicideStage,
                    Pass2Stage)]
     error = self._TestParallelStages(stage_objs)
@@ -2371,9 +2384,9 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
                        'Expected value %r to be passed between stages, but'
                        ' got %r.' % (SetAttrStage.VALUE, value))
     stage_objs = [
-        SetAttrStage(self.run),
-        GetAttrStage(self.run, assert_test, timeout=30),
-        GetAttrStage(self.run, assert_test, timeout=30),
+        SetAttrStage(self._run),
+        GetAttrStage(self._run, assert_test, timeout=30),
+        GetAttrStage(self._run, assert_test, timeout=30),
     ]
     error = self._TestParallelStages(stage_objs)
     self.assertFalse(error)
@@ -2385,7 +2398,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     self._verifyRunResults(expectedResults, max_time=30.0)
 
     # Make sure run attribute propagated up to the top, too.
-    value = self.run.attrs.GetParallel('unittest_value')
+    value = self._run.attrs.GetParallel('unittest_value')
     self.assertEqual(SetAttrStage.VALUE, value)
 
   def testParallelStageCommunicationTimeout(self):
@@ -2394,8 +2407,8 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
       self.assertEqual(value, SetAttrStage.VALUE,
                        'Expected value %r to be passed between stages, but'
                        ' got %r.' % (SetAttrStage.VALUE, value))
-    stage_objs = [SetAttrStage(self.run, delay=11),
-                  GetAttrStage(self.run, assert_test, timeout=1),
+    stage_objs = [SetAttrStage(self._run, delay=11),
+                  GetAttrStage(self._run, assert_test, timeout=1),
                  ]
     error = self._TestParallelStages(stage_objs)
     self.assertTrue(error)
@@ -2407,8 +2420,8 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
 
   def testParallelStageCommunicationNotQueueable(self):
     """Test setting non-queueable run attr in parallel stage."""
-    stage_objs = [SetAttrStage(self.run, attr='release_tag'),
-                  GetAttrStage(self.run, timeout=2),
+    stage_objs = [SetAttrStage(self._run, attr='release_tag'),
+                  GetAttrStage(self._run, timeout=2),
                  ]
     error = self._TestParallelStages(stage_objs)
     self.assertTrue(error)
@@ -2624,15 +2637,15 @@ class ReportStageTest(AbstractStageTest):
                      autospec=True, return_value=counter_value)
 
   def _SetupCommitQueueSyncPool(self):
-    self.sync_stage = stages.CommitQueueSyncStage(self.run)
+    self.sync_stage = stages.CommitQueueSyncStage(self._run)
     pool = validation_pool.ValidationPool(constants.BOTH_OVERLAYS,
-        self.build_root, build_number=3, builder_name=self.bot_id,
+        self.build_root, build_number=3, builder_name=self._bot_id,
         is_master=True, dryrun=True)
     pool.changes = [MockPatch()]
     self.sync_stage.pool = pool
 
   def ConstructStage(self):
-    return stages.ReportStage(self.run, self.sync_stage, None)
+    return stages.ReportStage(self._run, self.sync_stage, None)
 
   def testCheckResults(self):
     """Basic sanity check for results stage functionality"""
@@ -2769,7 +2782,7 @@ class BaseCQTest(StageTest):
   def _Prepare(self, bot_id=None, **kwargs):
     super(BaseCQTest, self)._Prepare(bot_id, **kwargs)
 
-    self.sync_stage = stages.CommitQueueSyncStage(self.run)
+    self.sync_stage = stages.CommitQueueSyncStage(self._run)
 
   def PerformSync(self, remote='cros', committed=False, tree_open=True,
                   tree_throttled=False, tracking_branch='master',
@@ -2815,8 +2828,8 @@ class BaseCQTest(StageTest):
     with tempfile.NamedTemporaryFile() as f:
       cPickle.dump(self.sync_stage.pool, f)
       f.flush()
-      self.run.options.validation_pool = f.name
-      self.sync_stage = stages.CommitQueueSyncStage(self.run)
+      self._run.options.validation_pool = f.name
+      self.sync_stage = stages.CommitQueueSyncStage(self._run)
       self.sync_stage.HandleSkip()
 
 
@@ -2951,7 +2964,7 @@ class PreCQLauncherStageTest(MasterCQSyncTest):
   def _Prepare(self, bot_id=None, **kwargs):
     super(PreCQLauncherStageTest, self)._Prepare(bot_id, **kwargs)
 
-    self.sync_stage = stages.PreCQLauncherStage(self.run)
+    self.sync_stage = stages.PreCQLauncherStage(self._run)
 
   def testTreeClosureIsOK(self):
     """Test that tree closures block commits."""
@@ -3016,13 +3029,13 @@ class ChromeSDKStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
   def _Prepare(self, bot_id=None, **kwargs):
     super(ChromeSDKStageTest, self)._Prepare(bot_id, **kwargs)
 
-    self.run.options.chrome_root = '/tmp/non-existent'
-    self.run.attrs.metadata.UpdateWithDict({'toolchain-tuple': ['target'],
+    self._run.options.chrome_root = '/tmp/non-existent'
+    self._run.attrs.metadata.UpdateWithDict({'toolchain-tuple': ['target'],
                                             'toolchain-url' : 'some-url'})
 
   def ConstructStage(self):
-    self.run.GetArchive().SetupArchivePath()
-    return stages.ChromeSDKStage(self.run, self._current_board)
+    self._run.GetArchive().SetupArchivePath()
+    return stages.ChromeSDKStage(self._run, self._current_board)
 
   def testIt(self):
     """A simple run-through test."""
@@ -3101,7 +3114,7 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
     super(BranchUtilStageTest, self)._Prepare(bot_id, **kwargs)
 
   def ConstructStage(self):
-    return stages.BranchUtilStage(self.run)
+    return stages.BranchUtilStage(self._run)
 
   def _VerifyPush(self, new_branch, rename_from=None, delete=False):
     """Verify that |new_branch| has been created.
@@ -3196,7 +3209,7 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
     # Verify only branch number is bumped.
     self.assertEquals(after.chrome_branch, before.chrome_branch)
     self.assertEquals(int(after.build_number) - int(before.build_number), 1)
-    self._VerifyPush(self.run.options.branch_name)
+    self._VerifyPush(self._run.options.branch_name)
 
   def testDeletion(self):
     """Branch deletion."""
@@ -3221,7 +3234,7 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
         partial_mock.ListRegex('git show-ref .*release-rename'),
         returncode=1)
     self.RunStage()
-    self._VerifyPush(self.run.options.rename_to, rename_from=self.norm_name)
+    self._VerifyPush(self._run.options.rename_to, rename_from=self.norm_name)
 
   def testDryRun(self):
     """Verify all pushes are done with --dryrun when --debug is set."""
@@ -3305,7 +3318,7 @@ class PatchChromeStageTest(AbstractStageTest):
     self.PatchObject(commands, 'PatchChrome')
 
   def ConstructStage(self):
-    return stages.PatchChromeStage(self.run)
+    return stages.PatchChromeStage(self._run)
 
   def testBasic(self):
     """Verify requested patches are applied."""

@@ -58,6 +58,10 @@ _TEST_FAILED = 'FAILED'
 class TestFailure(results_lib.StepFailure):
   """Raised if a test stage (e.g. VMTest) fails."""
 
+class TestWarning(results_lib.StepFailure):
+  """Raised if a test stage (e.g. VMTest) returns a warning code."""
+
+
 # =========================== Command Helpers =================================
 
 
@@ -757,9 +761,23 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                         cros_build_lib.CmdToStr(cmd))
   else:
     result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
-    if result.returncode:
-      raise TestFailure('** HWTests failed with code %d **'
-                        % result.returncode, possibly_flaky=True)
+
+    # 11, 12, 13 for cases when rpc is down, see autotest_rpc_errors.py.
+    infra_error_codes = (11, 12, 13)
+    # 2 for warnings returned by run_suite.py Note that 2 may also be
+    # CLIENT_HTTP_CODE error returned by autotest_rpc_client.py. We
+    # ignore that case for now.
+    lab_warning_codes = (2,)
+
+    if result.returncode in lab_warning_codes:
+      raise TestWarning('** Suite passed with a warning code **')
+    elif result.returncode in infra_error_codes:
+      raise results_lib.TestLabFailure(
+          '** HWTest did not complete due to infrastructure issues '
+          '(code %d) **' % result.returncode)
+    elif result.returncode != 0:
+      raise TestFailure('** HWTest failed (code %d) **' % result.returncode,
+                        possibly_flaky=True)
 
 
 def _GetAbortCQHWTestsURL(version, suite):
