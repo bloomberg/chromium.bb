@@ -14,6 +14,8 @@
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_restrictions.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -757,8 +759,11 @@ TEST_F(FileStreamTest, AsyncWriteClose) {
 }
 
 TEST_F(FileStreamTest, AsyncOpenAndDelete) {
-  scoped_ptr<FileStream> stream(
-      new FileStream(base::MessageLoopProxy::current()));
+  scoped_refptr<base::SequencedWorkerPool> pool(
+      new base::SequencedWorkerPool(1, "StreamTest"));
+
+  bool prev = base::ThreadRestrictions::SetIOAllowed(false);
+  scoped_ptr<FileStream> stream(new FileStream(pool.get()));
   int flags = base::File::FLAG_OPEN | base::File::FLAG_WRITE |
               base::File::FLAG_ASYNC;
   TestCompletionCallback open_callback;
@@ -768,9 +773,20 @@ TEST_F(FileStreamTest, AsyncOpenAndDelete) {
   // Delete the stream without waiting for the open operation to be
   // complete. Should be safe.
   stream.reset();
+
+  // Force an operation through the pool.
+  scoped_ptr<FileStream> stream2(new FileStream(pool.get()));
+  TestCompletionCallback open_callback2;
+  rv = stream2->Open(temp_file_path(), flags, open_callback2.callback());
+  EXPECT_EQ(OK, open_callback2.GetResult(rv));
+  stream2.reset();
+
+  pool->Shutdown();
+
   // open_callback won't be called.
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(open_callback.have_result());
+  base::ThreadRestrictions::SetIOAllowed(prev);
 }
 
 // Verify that async Write() errors are mapped correctly.

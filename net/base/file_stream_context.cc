@@ -182,10 +182,10 @@ FileStream::Context::IOResult FileStream::Context::CloseFileImpl() {
 
 void FileStream::Context::OnOpenCompleted(const CompletionCallback& callback,
                                           OpenResult open_result) {
-  if (open_result.file.IsValid() && !orphaned_) {
-    file_ = open_result.file.Pass();
+  file_ = open_result.file.Pass();
+  if (file_.IsValid() && !orphaned_)
     OnAsyncFileOpened();
-  }
+
   OnAsyncCompleted(IntToInt64(callback), open_result.error_code);
 }
 
