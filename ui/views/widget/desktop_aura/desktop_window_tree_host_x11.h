@@ -194,11 +194,17 @@ private:
   void SerializeImageRepresentation(const gfx::ImageSkiaRep& rep,
                                     std::vector<unsigned long>* data);
 
+  // Returns an 8888 ARGB visual. Can return NULL if there is no matching
+  // visual on this display.
+  Visual* GetARGBVisual();
+
   // See comment for variable open_windows_.
   static std::list<XID>& open_windows();
 
   // Map the window (shows it) taking into account the given |show_state|.
   void MapWindow(ui::WindowShowState show_state);
+
+  void SetWindowTransparency();
 
   // ui::PlatformEventDispatcher:
   virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
@@ -245,6 +251,9 @@ private:
 
   // True if the window has title-bar / borders provided by the window manager.
   bool use_native_frame_;
+
+  // Whether we used an ARGB visual for our window.
+  bool use_argb_visual_;
 
   scoped_ptr<DesktopDispatcherClient> dispatcher_client_;
 

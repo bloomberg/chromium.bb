@@ -11,6 +11,7 @@
 #include <X11/Xutil.h>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -40,6 +41,7 @@
 #include "ui/views/ime/input_method.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/views_delegate.h"
+#include "ui/views/views_switches.h"
 #include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
@@ -75,6 +77,7 @@ const char* kAtomsToCache[] = {
   "WM_DELETE_WINDOW",
   "WM_PROTOCOLS",
   "WM_S0",
+  "_NET_WM_CM_S0",
   "_NET_WM_ICON",
   "_NET_WM_NAME",
   "_NET_WM_PID",
@@ -131,6 +134,7 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       is_fullscreen_(false),
       is_always_on_top_(false),
       use_native_frame_(false),
+      use_argb_visual_(false),
       drag_drop_client_(NULL),
       current_cursor_(ui::kCursorNull),
       native_widget_delegate_(native_widget_delegate),
@@ -246,6 +250,8 @@ void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
 
   x11_window_move_client_.reset(new X11DesktopWindowMoveClient);
   aura::client::SetWindowMoveClient(window(), x11_window_move_client_.get());
+
+  SetWindowTransparency();
 
   native_widget_delegate_->OnNativeWidgetCreated(true);
 }
@@ -948,15 +954,41 @@ void DesktopWindowTreeHostX11::InitX11Window(
   if (swa.override_redirect)
     attribute_mask |= CWOverrideRedirect;
 
+  // Detect whether we're running inside a compositing manager. If so, try to
+  // use the ARGB visual. Otherwise, just use our parent's visual.
+  Visual* visual = CopyFromParent;
+  int depth = CopyFromParent;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTransparentVisuals) &&
+      XGetSelectionOwner(xdisplay_,
+                         atom_cache_.GetAtom("_NET_WM_CM_S0")) != None) {
+    Visual* rgba_visual = GetARGBVisual();
+    if (rgba_visual) {
+      visual = rgba_visual;
+      depth = 32;
+
+      attribute_mask |= CWColormap;
+      swa.colormap = XCreateColormap(xdisplay_, x_root_window_, visual,
+                                     AllocNone);
+
+      // x.org will BadMatch if we don't set a border when the depth isn't the
+      // same as the parent depth.
+      attribute_mask |= CWBorderPixel;
+      swa.border_pixel = 0;
+
+      use_argb_visual_ = true;
+    }
+  }
+
   bounds_ = params.bounds;
   xwindow_ = XCreateWindow(
       xdisplay_, x_root_window_,
       bounds_.x(), bounds_.y(),
       bounds_.width(), bounds_.height(),
       0,               // border width
-      CopyFromParent,  // depth
+      depth,
       InputOutput,
-      CopyFromParent,  // visual
+      visual,
       attribute_mask,
       &swa);
   if (ui::PlatformEventSource::GetInstance())
@@ -1238,6 +1270,39 @@ void DesktopWindowTreeHostX11::SerializeImageRepresentation(
       data->push_back(bitmap.getColor(x, y));
 }
 
+Visual* DesktopWindowTreeHostX11::GetARGBVisual() {
+  XVisualInfo visual_template;
+  visual_template.screen = 0;
+  Visual* to_return = NULL;
+
+  int visuals_len;
+  XVisualInfo* visual_list = XGetVisualInfo(xdisplay_,
+                                            VisualScreenMask,
+                                            &visual_template, &visuals_len);
+  for (int i = 0; i < visuals_len; ++i) {
+    // Why support only 8888 ARGB? Because it's all that GTK+ supports. In
+    // gdkvisual-x11.cc, they look for this specific visual and use it for all
+    // their alpha channel using needs.
+    //
+    // TODO(erg): While the following does find a valid visual, some GL drivers
+    // don't believe that this has an alpha channel. According to marcheu@,
+    // this should work on open source driver though. (It doesn't work with
+    // NVidia's binaries currently.) http://crbug.com/369209
+    if (visual_list[i].depth == 32 &&
+        visual_list[i].visual->red_mask == 0xff0000 &&
+        visual_list[i].visual->green_mask == 0x00ff00 &&
+        visual_list[i].visual->blue_mask == 0x0000ff) {
+      to_return = visual_list[i].visual;
+      break;
+    }
+  }
+
+  if (visual_list)
+    XFree(visual_list);
+
+  return to_return;
+}
+
 std::list<XID>& DesktopWindowTreeHostX11::open_windows() {
   if (!open_windows_)
     open_windows_ = new std::list<XID>();
@@ -1289,6 +1354,12 @@ void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
   if (ui::X11EventSource::GetInstance())
     ui::X11EventSource::GetInstance()->BlockUntilWindowMapped(xwindow_);
   window_mapped_ = true;
+}
+
+void DesktopWindowTreeHostX11::SetWindowTransparency() {
+  compositor()->SetHostHasTransparentBackground(use_argb_visual_);
+  window()->SetTransparent(use_argb_visual_);
+  content_window_->SetTransparent(use_argb_visual_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
