@@ -30,7 +30,7 @@ below:
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 -->
 
@@ -272,9 +272,6 @@ below:
       <message name="IDS_FORM_FILE_NO_FILE_LABEL" desc="text to display in file button used in HTML forms when no file is selected">
         No file chosen
       </message>
-      <message name="IDS_FORM_FILE_NO_FILE_DRAG_LABEL" desc="text to display in file button used in HTML forms when no file is selected to indicate that files can be dragged onto the file button">
-        Drag file here
-      </message>
       <message name="IDS_FORM_FILE_MULTIPLE_UPLOAD" desc="text to display next to file buttons in HTML forms when 2 or more files are selected for uploading. This is not used for a case that just 1 file is selected.">
         <ph name="NUMBER_OF_FILES">$1<ex>3</ex></ph> files
       </message>
@@ -322,10 +319,6 @@ below:
         Clear Recent Searches
       </message>
 
-      <message name="IDS_IMAGE_TITLE_FOR_FILENAME" desc="window title for a standalone image (uses mutiplication symbol, not x)">
-        <ph name="FILENAME">%s<ex>My Cool Image.gif</ex></ph><ph name="WIDTH">%d<ex>400</ex></ph>×<ph name="HEIGHT">%d<ex>600</ex></ph>
-      </message>
-
       <message name="IDS_AX_ROLE_WEB_AREA" desc="accessibility role description for web area">
         HTML content
       </message>
@@ -341,15 +334,17 @@ below:
       <message name="IDS_AX_ROLE_HEADING" desc="accessibility role description for headings">
         heading
       </message>
-      <message name="IDS_AX_ROLE_FOOTER" desc="accessibility role description for footers">
-        footer
-      </message>
-      <message name="IDS_AX_ROLE_STEPPER" desc="accessibility role description for a stepper - a control where you can use up/down arrows to increment or decrement it. The name 'stepper' is how this user interface element is described by VoiceOver on Mac OS X; the translation should be consistent with VoiceOver.">
-        stepper
-      </message>
-      <message name="IDS_AX_ROLE_TOGGLE_BUTTON" desc="accessibility role description for a toggle button">
-        toggle button
-      </message>
+      <if expr="is_macosx">
+        <message name="IDS_AX_ROLE_FOOTER" desc="accessibility role description for footers">
+          footer
+        </message>
+        <message name="IDS_AX_ROLE_STEPPER" desc="accessibility role description for a stepper - a control where you can use up/down arrows to increment or decrement it. The name 'stepper' is how this user interface element is described by VoiceOver on Mac OS X; the translation should be consistent with VoiceOver.">
+          stepper
+        </message>
+        <message name="IDS_AX_ROLE_TOGGLE_BUTTON" desc="accessibility role description for a toggle button">
+          toggle button
+        </message>
+      </if>
 
       <message name="IDS_AX_BUTTON_ACTION_VERB" desc="Verb stating the action that will occur when a button is pressed, as used by accessibility.">
         press
@@ -587,10 +582,10 @@ below:
         Value must be <ph name="MAXIMUM_DATE_OR_TIME">$1<ex>12/31/2013</ex></ph> or earlier.
       </message>
       <message name="IDS_FORM_VALIDATION_BAD_INPUT_DATETIME" desc="Heading or short sentence shown when a user specified an incomplete value or an invalid date (such as 02/31/2012) to a date/time form control in a webpage.">
-	Please enter a valid value. The field is incomplete or has an invalid date.
+        Please enter a valid value. The field is incomplete or has an invalid date.
       </message>
       <message name="IDS_FORM_VALIDATION_BAD_INPUT_NUMBER" desc="Heading or short sentence shown when a user entered a non-number string to a number field in a webpage.">
-	Please enter a number.
+        Please enter a number.
       </message>
 
 <!-- The following IDS_FORM_VALIDATION_* messages were taken from Mozilla's dom.properties file.
@@ -673,10 +668,6 @@ below:
 
       <message name="IDS_PDF_PAGE_LOADING" desc="A message displayed on the PDF page while page is loading.">
         Loading...
-      </message>
-
-      <message name="IDS_PDF_LOADING_PROGRESS" desc="A message displayed on the PDF control to indicate loading progress.">
-        Loading document: <ph name="PAGE_NUMBER">%d<ex>3</ex></ph>/<ph name="NUMBER_OF_PAGES">%d<ex>15</ex></ph> pages...
       </message>
 
       <message name="IDS_PDF_PAGE_LOAD_FAILED" desc="A message displayed on the PDF control to indicate that the PDF document failed to load.">
