@@ -20,9 +20,10 @@ namespace extensions {
 
 namespace {
 
-// Return an extension which imports a module with the given |id|.
+// Return an extension with |id| which imports a module with the given
+// |import_id|.
 scoped_refptr<Extension> CreateExtensionImportingModule(
-    const std::string& import_id) {
+    const std::string& import_id, const std::string& id) {
   scoped_ptr<base::DictionaryValue> manifest =
       DictionaryBuilder()
           .Set("name", "Has Dependent Modules")
@@ -34,6 +35,7 @@ scoped_refptr<Extension> CreateExtensionImportingModule(
 
   return ExtensionBuilder().SetManifest(manifest.Pass())
                            .AddFlags(Extension::FROM_WEBSTORE)
+                           .SetID(id)
                            .Build();
 }
 
@@ -81,8 +83,9 @@ testing::AssertionResult SharedModuleServiceUnitTest::InstallExtension(
 TEST_F(SharedModuleServiceUnitTest, AddDependentSharedModules) {
   // Create an extension that has a dependency.
   std::string import_id = id_util::GenerateId("id");
+  std::string extension_id = id_util::GenerateId("extension_id");
   scoped_refptr<Extension> extension =
-      CreateExtensionImportingModule(import_id);
+      CreateExtensionImportingModule(import_id, extension_id);
 
   PendingExtensionManager* pending_extension_manager =
       service_->pending_extension_manager();
@@ -114,9 +117,10 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUninstall) {
 
   EXPECT_TRUE(InstallExtension(shared_module));
 
+  std::string extension_id = id_util::GenerateId("extension_id");
   // Create and install an extension that imports our new module.
   scoped_refptr<Extension> importing_extension =
-      CreateExtensionImportingModule(shared_module->id());
+      CreateExtensionImportingModule(shared_module->id(), extension_id);
   EXPECT_TRUE(InstallExtension(importing_extension));
 
   // Uninstall the extension that imports our module.
@@ -131,6 +135,40 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUninstall) {
   // depended upon it.
   EXPECT_FALSE(registry_->GetExtensionById(shared_module->id(),
                                            ExtensionRegistry::EVERYTHING));
+}
+
+TEST_F(SharedModuleServiceUnitTest, WhitelistedImports) {
+  std::string whitelisted_id = id_util::GenerateId("whitelisted");
+  std::string nonwhitelisted_id = id_util::GenerateId("nonwhitelisted");
+  // Create a module which exports to a restricted whitelist.
+  scoped_ptr<base::DictionaryValue> manifest =
+      DictionaryBuilder()
+          .Set("name", "Shared Module")
+          .Set("version", "1.0")
+          .Set("manifest_version", 2)
+          .Set("export",
+               DictionaryBuilder().Set("whitelist",
+                                       ListBuilder()
+                                           .Append(whitelisted_id))
+                                  .Set("resources",
+                                       ListBuilder().Append("*"))).Build();
+  scoped_refptr<Extension> shared_module =
+      ExtensionBuilder().SetManifest(manifest.Pass())
+                        .AddFlags(Extension::FROM_WEBSTORE)
+                        .SetID(id_util::GenerateId("shared_module"))
+                        .Build();
+
+  EXPECT_TRUE(InstallExtension(shared_module));
+
+  // Create and install an extension with the whitelisted ID.
+  scoped_refptr<Extension> whitelisted_extension =
+      CreateExtensionImportingModule(shared_module->id(), whitelisted_id);
+  EXPECT_TRUE(InstallExtension(whitelisted_extension));
+
+  // Try to install an extension with an ID that is not whitelisted.
+  scoped_refptr<Extension> nonwhitelisted_extension =
+      CreateExtensionImportingModule(shared_module->id(), nonwhitelisted_id);
+  EXPECT_FALSE(InstallExtension(nonwhitelisted_extension));
 }
 
 }  // namespace extensions

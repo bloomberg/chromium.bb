@@ -171,6 +171,7 @@ const char kWebview[] = "webview";
 const char kWebviewAccessibleResources[] = "accessible_resources";
 const char kWebviewName[] = "name";
 const char kWebviewPartitions[] = "partitions";
+const char kWhitelist[] = "whitelist";
 
 }  // namespace manifest_keys
 
@@ -330,6 +331,10 @@ const char kInvalidExportResources[] =
     "Invalid value for 'export.resources'.";
 const char kInvalidExportResourcesString[] =
     "Invalid value for 'export.resources[*]'.";
+const char kInvalidExportWhitelist[] =
+    "Invalid value for 'export.whitelist'.";
+const char kInvalidExportWhitelistString[] =
+    "Invalid value for 'export.whitelist[*]'.";
 const char kInvalidFileAccessList[] =
     "Invalid value for 'file_access'.";
 const char kInvalidFileAccessValue[] =

@@ -36,6 +36,11 @@ class SharedModuleInfo : public Extension::ManifestData {
   static bool IsSharedModule(const Extension* extension);
   static bool IsExportAllowed(const Extension* extension,
                               const std::string& relative_path);
+  // Check against the shared module's whitelist to see if |other_id| can import
+  // its resources. If no whitelist is specified, all extensions can import this
+  // extension.
+  static bool IsExportAllowedByWhitelist(const Extension* extension,
+                                         const std::string& other_id);
 
   // Functions relating to importing resources.
   static bool ImportsExtensionById(const Extension* extension,
@@ -46,6 +51,9 @@ class SharedModuleInfo : public Extension::ManifestData {
  private:
   // This extension exports the following resources to other extensions.
   URLPatternSet exported_set_;
+
+  // Optional list of extensions from which importing is allowed.
+  std::set<std::string> export_whitelist_;
 
   // Optional list of module imports of other extensions.
   std::vector<ImportInfo> imports_;

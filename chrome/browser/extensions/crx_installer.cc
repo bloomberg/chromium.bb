@@ -491,7 +491,6 @@ void CrxInstaller::CheckImportsAndRequirements() {
         SharedModuleInfo::GetImports(extension());
     std::vector<SharedModuleInfo::ImportInfo>::const_iterator i;
     for (i = imports.begin(); i != imports.end(); ++i) {
-      Version version_required(i->minimum_version);
       const Extension* imported_module =
           service->GetExtensionById(i->extension_id, true);
       if (imported_module &&
@@ -499,6 +498,14 @@ void CrxInstaller::CheckImportsAndRequirements() {
         ReportFailureFromUIThread(
             CrxInstallerError(l10n_util::GetStringFUTF16(
                 IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_SHARED_MODULE,
+                base::ASCIIToUTF16(i->extension_id))));
+        return;
+      } else if (imported_module &&
+          !SharedModuleInfo::IsExportAllowedByWhitelist(imported_module,
+                                                        extension()->id())) {
+        ReportFailureFromUIThread(
+            CrxInstallerError(l10n_util::GetStringFUTF16(
+                IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_WHITELISTED,
                 base::ASCIIToUTF16(i->extension_id))));
         return;
       }

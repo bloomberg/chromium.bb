@@ -39,6 +39,26 @@ TEST_F(SharedModuleManifestTest, ExportsAll) {
       << manifest.name();
   EXPECT_TRUE(SharedModuleInfo::IsExportAllowed(extension.get(), "foo/bar"))
       << manifest.name();
+
+  EXPECT_TRUE(SharedModuleInfo::IsExportAllowedByWhitelist(extension.get(),
+                  kImportId1)) << manifest.name();
+  EXPECT_TRUE(SharedModuleInfo::IsExportAllowedByWhitelist(extension.get(),
+                  kImportId2)) << manifest.name();
+  EXPECT_FALSE(SharedModuleInfo::IsExportAllowedByWhitelist(extension.get(),
+                  kNoImport)) << manifest.name();
+}
+
+TEST_F(SharedModuleManifestTest, ExportWhitelistAll) {
+  Manifest manifest("shared_module_export_no_whitelist.json");
+
+  scoped_refptr<Extension> extension = LoadAndExpectSuccess(manifest);
+
+  EXPECT_TRUE(SharedModuleInfo::IsExportAllowedByWhitelist(extension.get(),
+                  kImportId1)) << manifest.name();
+  EXPECT_TRUE(SharedModuleInfo::IsExportAllowedByWhitelist(extension.get(),
+                  kImportId2)) << manifest.name();
+  EXPECT_TRUE(SharedModuleInfo::IsExportAllowedByWhitelist(extension.get(),
+                  kNoImport)) << manifest.name();
 }
 
 TEST_F(SharedModuleManifestTest, ExportFoo) {
@@ -66,6 +86,12 @@ TEST_F(SharedModuleManifestTest, ExportParseErrors) {
              "Invalid value for 'export.resources'."),
     Testcase("shared_module_export_resource_not_string.json",
              "Invalid value for 'export.resources[1]'."),
+    Testcase("shared_module_export_whitelist_item_not_id.json",
+             "Invalid value for 'export.whitelist[0]'."),
+    Testcase("shared_module_export_whitelist_item_not_string.json",
+             "Invalid value for 'export.whitelist[0]'."),
+    Testcase("shared_module_export_whitelist_not_list.json",
+             "Invalid value for 'export.whitelist'."),
   };
   RunTestcases(testcases, arraysize(testcases), EXPECT_TYPE_ERROR);
 }

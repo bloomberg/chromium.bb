@@ -84,6 +84,17 @@ bool SharedModuleInfo::IsExportAllowed(const Extension* extension,
 }
 
 // static
+bool SharedModuleInfo::IsExportAllowedByWhitelist(const Extension* extension,
+                                                  const std::string& other_id) {
+  const SharedModuleInfo& info = GetSharedModuleInfo(extension);
+  if (info.export_whitelist_.empty())
+    return true;
+  if (info.export_whitelist_.find(other_id) != info.export_whitelist_.end())
+    return true;
+  return false;
+}
+
+// static
 bool SharedModuleInfo::ImportsExtensionById(const Extension* extension,
                                             const std::string& other_id) {
   const SharedModuleInfo& info = GetSharedModuleInfo(extension);
@@ -127,6 +138,23 @@ bool SharedModuleInfo::Parse(const Extension* extension,
     if (!export_value->GetList(keys::kResources, &resources_list)) {
       *error = base::ASCIIToUTF16(errors::kInvalidExportResources);
       return false;
+    }
+    if (export_value->HasKey(keys::kWhitelist)) {
+      const base::ListValue* whitelist = NULL;
+      if (!export_value->GetList(keys::kWhitelist, &whitelist)) {
+        *error = base::ASCIIToUTF16(errors::kInvalidExportWhitelist);
+        return false;
+      }
+      for (size_t i = 0; i < whitelist->GetSize(); ++i) {
+        std::string extension_id;
+        if (!whitelist->GetString(i, &extension_id) ||
+            !Extension::IdIsValid(extension_id)) {
+          *error = ErrorUtils::FormatErrorMessageUTF16(
+              errors::kInvalidExportWhitelistString, base::IntToString(i));
+          return false;
+        }
+        export_whitelist_.insert(extension_id);
+      }
     }
     for (size_t i = 0; i < resources_list->GetSize(); ++i) {
       std::string resource_path;
