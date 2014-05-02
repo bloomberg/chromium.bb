@@ -1561,6 +1561,17 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       }
     }
 
+    {
+      // Enable load stale cache if this session is in the field trial or
+      // the user explicitly enabled it.
+      std::string group =
+          base::FieldTrialList::FindFullName("LoadStaleCacheExperiment");
+      if (group == "Enabled" || browser_command_line.HasSwitch(
+              switches::kEnableOfflineLoadStaleCache)) {
+        command_line->AppendSwitch(switches::kEnableOfflineLoadStaleCache);
+      }
+    }
+
     // Please keep this in alphabetical order.
     static const char* const kSwitchNames[] = {
       autofill::switches::kDisableIgnoreAutocompleteOff,

@@ -158,6 +158,7 @@ extern const char kEnableNetBenchmarking[];
 extern const char kEnableNetworkTime[];
 extern const char kEnableNpnHttpOnly[];
 extern const char kEnableOfflineAutoReload[];
+extern const char kEnableOfflineLoadStaleCache[];
 extern const char kEnableOriginChip[];
 extern const char kEnableOriginChipLeadingLocationBar[];
 extern const char kEnableOriginChipTrailingLocationBar[];

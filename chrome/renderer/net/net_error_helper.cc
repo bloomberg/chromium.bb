@@ -171,10 +171,15 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
   if (template_html.empty()) {
     NOTREACHED() << "unable to load template.";
   } else {
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    bool load_stale_cache_enabled =
+        command_line->HasSwitch(switches::kEnableOfflineLoadStaleCache);
+
     base::DictionaryValue error_strings;
     LocalizedError::GetStrings(error.reason, error.domain.utf8(),
                                error.unreachableURL, is_failed_post,
-                               error.staleCopyInCache && !is_failed_post,
+                               (load_stale_cache_enabled &&
+                                error.staleCopyInCache && !is_failed_post),
                                RenderThread::Get()->GetLocale(),
                                render_frame()->GetRenderView()->
                                    GetAcceptLanguages(),
@@ -202,12 +207,17 @@ void NetErrorHelper::EnablePageHelperFunctions() {
 
 void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
                                      bool is_failed_post) {
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    bool load_stale_cache_enabled =
+        command_line->HasSwitch(switches::kEnableOfflineLoadStaleCache);
+
   base::DictionaryValue error_strings;
   LocalizedError::GetStrings(error.reason,
                              error.domain.utf8(),
                              error.unreachableURL,
                              is_failed_post,
-                             error.staleCopyInCache && !is_failed_post,
+                             (load_stale_cache_enabled &&
+                              error.staleCopyInCache && !is_failed_post),
                              RenderThread::Get()->GetLocale(),
                              render_frame()->GetRenderView()->
                                  GetAcceptLanguages(),

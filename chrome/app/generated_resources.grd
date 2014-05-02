@@ -13968,6 +13968,12 @@ Do you accept?
     <message name="IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_DESCRIPTION" desc="Description of the flag to make pages which failed to load while offline auto-reload">
       Pages that fail to load while the browser is offline will be auto-reloaded when the browser is online again.
     </message>
+    <message name="IDS_FLAGS_ENABLE_OFFLINE_LOAD_STALE_NAME" desc="Name of the flag to enable offering users the option of loading a stale copy of a page when an error occurs.">
+      Enable Offline Load Stale Button
+    </message>
+    <message name="IDS_FLAGS_ENABLE_OFFLINE_LOAD_STALE_DESCRIPTION" desc="Description of the flag to enable offering users the option of loading a stale copy of a page when an error occurs.">
+      When a page fails to load, if a stale copy of the page exists in the browser, a button will be presented to allow the user to load that stale copy.
+    </message>
 
     <message name="IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_NAME" desc="Name of about:flags option to turn on the virtual keyboard">
       Virtual Keyboard

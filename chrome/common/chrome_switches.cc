@@ -543,6 +543,9 @@ const char kEnableNpnHttpOnly[]             = "enable-npn-http";
 // Enable auto-reload of error pages if offline.
 const char kEnableOfflineAutoReload[]       = "enable-offline-auto-reload";
 
+// Enable offering a "Load stale copy" option to the user if offline.
+const char kEnableOfflineLoadStaleCache[]   = "enable-offline-load-stale-cache";
+
 // Controls which branch of the origin chip experiment is enabled. The first
 // flag (enable-origin-chip) is equivalent to the third
 // (enable-origin-chip-trailing-location-bar) and exists for backwards

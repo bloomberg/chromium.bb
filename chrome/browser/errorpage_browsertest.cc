@@ -205,6 +205,11 @@ class ErrorPageTest : public InProcessBrowserTest {
     HISTORY_NAVIGATE_FORWARD,
   };
 
+  // Needed for StaleCacheStatus and StaleCacheStatusFailedCorrections tests.
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(switches::kEnableOfflineLoadStaleCache);
+  }
+
   // Navigates the active tab to a mock url created for the file at |file_path|.
   void NavigateToFileURL(const base::FilePath::StringType& file_path) {
     ui_test_utils::NavigateToURL(
