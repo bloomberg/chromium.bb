@@ -55,6 +55,10 @@ class UI_BASE_EXPORT TouchEditable : public ui::SimpleMenuModel::Delegate {
   // Tells the editable to open context menu.
   virtual void OpenContextMenu(const gfx::Point& anchor) = 0;
 
+  // Tells the editable to end touch editing and destroy touch selection
+  // controller it owns.
+  virtual void DestroyTouchSelection() = 0;
+
  protected:
   virtual ~TouchEditable() {}
 };

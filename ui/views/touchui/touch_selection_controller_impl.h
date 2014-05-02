@@ -19,7 +19,8 @@ namespace views {
 class VIEWS_EXPORT TouchSelectionControllerImpl
     : public ui::TouchSelectionController,
       public TouchEditingMenuController,
-      public WidgetObserver {
+      public WidgetObserver,
+      public ui::EventHandler {
  public:
   class EditingHandleView;
 
@@ -68,6 +69,11 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
   virtual void OnWidgetBoundsChanged(Widget* widget,
                                      const gfx::Rect& new_bounds) OVERRIDE;
+
+  // Overriden from ui::EventHandler.
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
 
   // Time to show context menu.
   void ContextMenuTimerFired();

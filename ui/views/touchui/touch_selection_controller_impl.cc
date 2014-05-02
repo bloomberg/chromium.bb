@@ -7,6 +7,8 @@
 #include "base/time/time.h"
 #include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
+#include "ui/aura/client/cursor_client.h"
+#include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
@@ -330,10 +332,12 @@ TouchSelectionControllerImpl::TouchSelectionControllerImpl(
       client_view_->GetNativeView());
   if (client_widget_)
     client_widget_->AddObserver(this);
+  aura::Env::GetInstance()->AddPreTargetHandler(this);
 }
 
 TouchSelectionControllerImpl::~TouchSelectionControllerImpl() {
   HideContextMenu();
+  aura::Env::GetInstance()->RemovePreTargetHandler(this);
   if (client_widget_)
     client_widget_->RemoveObserver(this);
 }
@@ -520,6 +524,21 @@ void TouchSelectionControllerImpl::OnWidgetBoundsChanged(
   DCHECK_EQ(client_widget_, widget);
   HideContextMenu();
   SelectionChanged();
+}
+
+void TouchSelectionControllerImpl::OnKeyEvent(ui::KeyEvent* event) {
+  client_view_->DestroyTouchSelection();
+}
+
+void TouchSelectionControllerImpl::OnMouseEvent(ui::MouseEvent* event) {
+  aura::client::CursorClient* cursor_client = aura::client::GetCursorClient(
+      client_view_->GetNativeView()->GetRootWindow());
+  if (!cursor_client || cursor_client->IsMouseEventsEnabled())
+    client_view_->DestroyTouchSelection();
+}
+
+void TouchSelectionControllerImpl::OnScrollEvent(ui::ScrollEvent* event) {
+  client_view_->DestroyTouchSelection();
 }
 
 void TouchSelectionControllerImpl::ContextMenuTimerFired() {

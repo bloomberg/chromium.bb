@@ -92,7 +92,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     textfield_widget_->SetContentsView(container);
     container->AddChildView(textfield_);
 
-    textfield_->SetBoundsRect(params.bounds);
+    textfield_->SetBoundsRect(gfx::Rect(0, 0, 200, 20));
     textfield_->set_id(1);
     textfield_widget_->Show();
 
@@ -600,6 +600,9 @@ class TestTouchEditable : public ui::TouchEditable {
   virtual void OpenContextMenu(const gfx::Point& anchor) OVERRIDE {
     NOTREACHED();
   }
+  virtual void DestroyTouchSelection() OVERRIDE {
+    NOTREACHED();
+  }
 
   // Overridden from ui::SimpleMenuModel::Delegate.
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
@@ -777,6 +780,65 @@ TEST_F(TouchSelectionControllerImplTest, QuickMenuAdjustsAnchorRect) {
   // of scope.
   widget_->CloseNow();
   widget_ = NULL;
+}
+
+TEST_F(TouchSelectionControllerImplTest, MouseEventDeactivatesTouchSelection) {
+  CreateTextfield();
+  EXPECT_FALSE(GetSelectionController());
+
+  aura::test::EventGenerator generator(
+      textfield_widget_->GetNativeView()->GetRootWindow());
+
+  generator.set_current_location(gfx::Point(5, 5));
+  RunPendingMessages();
+
+  // Start touch editing; then move mouse over the textfield and ensure it
+  // deactivates touch selection.
+  StartTouchEditing();
+  EXPECT_TRUE(GetSelectionController());
+  generator.MoveMouseTo(gfx::Point(5, 10));
+  RunPendingMessages();
+  EXPECT_FALSE(GetSelectionController());
+
+  generator.MoveMouseTo(gfx::Point(5, 50));
+  RunPendingMessages();
+
+  // Start touch editing; then move mouse out of the textfield, but inside the
+  // winow and ensure it deactivates touch selection.
+  StartTouchEditing();
+  EXPECT_TRUE(GetSelectionController());
+  generator.MoveMouseTo(gfx::Point(5, 55));
+  RunPendingMessages();
+  EXPECT_FALSE(GetSelectionController());
+
+  generator.MoveMouseTo(gfx::Point(5, 500));
+  RunPendingMessages();
+
+  // Start touch editing; then move mouse out of the textfield and window and
+  // ensure it deactivates touch selection.
+  StartTouchEditing();
+  EXPECT_TRUE(GetSelectionController());
+  generator.MoveMouseTo(5, 505);
+  RunPendingMessages();
+  EXPECT_FALSE(GetSelectionController());
+}
+
+TEST_F(TouchSelectionControllerImplTest, KeyEventDeactivatesTouchSelection) {
+  CreateTextfield();
+  EXPECT_FALSE(GetSelectionController());
+
+  aura::test::EventGenerator generator(
+      textfield_widget_->GetNativeView()->GetRootWindow());
+
+  RunPendingMessages();
+
+  // Start touch editing; then press a key and ensure it deactivates touch
+  // selection.
+  StartTouchEditing();
+  EXPECT_TRUE(GetSelectionController());
+  generator.PressKey(ui::VKEY_A, 0);
+  RunPendingMessages();
+  EXPECT_FALSE(GetSelectionController());
 }
 
 }  // namespace views

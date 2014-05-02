@@ -68,6 +68,7 @@ class CONTENT_EXPORT TouchEditableImplAura
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
+  virtual void DestroyTouchSelection() OVERRIDE;
 
  protected:
   TouchEditableImplAura();

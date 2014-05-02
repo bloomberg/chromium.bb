@@ -353,6 +353,10 @@ void TouchEditableImplAura::ExecuteCommand(int command_id, int event_flags) {
   EndTouchEditing(false);
 }
 
+void TouchEditableImplAura::DestroyTouchSelection() {
+  EndTouchEditing(false);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TouchEditableImplAura, private:
 
