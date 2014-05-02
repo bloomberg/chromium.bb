@@ -817,14 +817,17 @@ FileTransferController.prototype = {
    * @this {FileTransferController}
    */
   onPaste_: function(event) {
+    // If the event has destDirectory property, paste files into the directory.
+    // This occurs when the command fires from menu item 'Paste into folder'.
+    var destination = event.destDirectory || this.currentDirectoryContentEntry;
+
     // Need to update here since 'beforepaste' doesn't fire.
     if (!this.isDocumentWideEvent_() ||
-        !this.canPasteOrDrop_(event.clipboardData,
-                              this.currentDirectoryContentEntry)) {
+        !this.canPasteOrDrop_(event.clipboardData, destination)) {
       return;
     }
     event.preventDefault();
-    var effect = this.paste(event.clipboardData);
+    var effect = this.paste(event.clipboardData, destination);
 
     // On cut, we clear the clipboard after the file is pasted/moved so we don't
     // try to move/delete the original file again.

@@ -429,6 +429,9 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_PASTE_BUTTON_LABEL" desc="Button Label.">
     Paste
   </message>
+  <message name="IDS_FILE_BROWSER_PASTE_INTO_FOLDER_BUTTON_LABEL" desc="Menu item label, pasting files into the selected folder.">
+    Paste into folder
+  </message>
   <message name="IDS_FILE_BROWSER_COPY_BUTTON_LABEL" desc="Button Label.">
     Copy
   </message>
