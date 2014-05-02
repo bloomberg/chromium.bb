@@ -203,7 +203,6 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
 
   const GURL& current_url = web_ui()->GetWebContents()->GetURL();
   signin::Source source = signin::GetSourceForPromoURL(current_url);
-  DCHECK(source != signin::SOURCE_UNKNOWN);
   if (source == signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT ||
       source == signin::SOURCE_AVATAR_BUBBLE_SIGN_IN) {
     // Drop the leading slash in the path.
@@ -386,7 +385,6 @@ void InlineLoginHandlerImpl::SyncStarterCallback(
 
   const GURL& current_url = contents->GetLastCommittedURL();
   signin::Source source = signin::GetSourceForPromoURL(current_url);
-  DCHECK(source != signin::SOURCE_UNKNOWN);
   bool auto_close = signin::IsAutoCloseEnabledInURL(current_url);
 
   if (result == OneClickSigninSyncStarter::SYNC_SETUP_FAILURE) {
