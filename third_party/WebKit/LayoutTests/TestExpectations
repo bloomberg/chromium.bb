@@ -912,9 +912,6 @@ crbug.com/366387 svg/as-object/deep-nested-embedded-svg-size-changes-no-layout-t
 crbug.com/366387 svg/as-object/deep-nested-embedded-svg-size-changes-no-layout-triggers-2.html [ Crash ]
 crbug.com/366387 svg/as-object/nested-embedded-svg-size-changes.html [ Crash ]
 
-crbug.com/369376 fast/images/image-zoom-to-25.html [ NeedsRebaseline ]
-crbug.com/369376 virtual/deferred/fast/images/image-zoom-to-25.html [ NeedsRebaseline ]
-
 # Disabling this for now since Chromium CL changes output. Will re-enable once Chromium side lands.
 Bug(simonhatch) http/tests/loading/promote-img-in-viewport-priority.html [ Skip ]
 
