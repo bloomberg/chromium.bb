@@ -492,11 +492,7 @@ class TestRunner : public ::WebTestRunner::WebTestRunner,
   // Simulates a click on a desktop notification.
   bool SimulateWebNotificationClick(const std::string& value);
 
-  // Speech input related functions.
-  void AddMockSpeechInputResult(const std::string& result,
-                                double confidence,
-                                const std::string& language);
-  void SetMockSpeechInputDumpRect(bool value);
+  // Speech recognition related functions.
   void AddMockSpeechRecognitionResult(const std::string& transcript,
                                       double confidence);
   void SetMockSpeechRecognitionError(const std::string& error,

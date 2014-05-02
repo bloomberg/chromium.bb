@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "content/shell/common/test_runner/test_preferences.h"
-#include "content/shell/renderer/test_runner/MockWebSpeechInputController.h"
 #include "content/shell/renderer/test_runner/MockWebSpeechRecognizer.h"
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebPermissions.h"
@@ -237,10 +236,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetMIDISysexPermission(bool value);
   void GrantWebNotificationPermission(gin::Arguments* args);
   bool SimulateWebNotificationClick(const std::string& value);
-  void AddMockSpeechInputResult(const std::string& result,
-                                double confidence,
-                                const std::string& language);
-  void SetMockSpeechInputDumpRect(bool value);
   void AddMockSpeechRecognitionResult(const std::string& transcript,
                                       double confidence);
   void SetMockSpeechRecognitionError(const std::string& error,
@@ -467,10 +462,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::GrantWebNotificationPermission)
       .SetMethod("simulateWebNotificationClick",
                  &TestRunnerBindings::SimulateWebNotificationClick)
-      .SetMethod("addMockSpeechInputResult",
-                 &TestRunnerBindings::AddMockSpeechInputResult)
-      .SetMethod("setMockSpeechInputDumpRect",
-                 &TestRunnerBindings::SetMockSpeechInputDumpRect)
       .SetMethod("addMockSpeechRecognitionResult",
                  &TestRunnerBindings::AddMockSpeechRecognitionResult)
       .SetMethod("setMockSpeechRecognitionError",
@@ -1186,18 +1177,6 @@ bool TestRunnerBindings::SimulateWebNotificationClick(
   if (runner_)
     return runner_->SimulateWebNotificationClick(value);
   return false;
-}
-
-void TestRunnerBindings::AddMockSpeechInputResult(const std::string& result,
-                                                  double confidence,
-                                                  const std::string& language) {
-  if (runner_)
-    runner_->AddMockSpeechInputResult(result, confidence, language);
-}
-
-void TestRunnerBindings::SetMockSpeechInputDumpRect(bool value) {
-  if (runner_)
-    runner_->SetMockSpeechInputDumpRect(value);
 }
 
 void TestRunnerBindings::AddMockSpeechRecognitionResult(
@@ -2521,21 +2500,6 @@ void TestRunner::GrantWebNotificationPermission(const std::string& origin,
 
 bool TestRunner::SimulateWebNotificationClick(const std::string& value) {
   return notification_presenter_->SimulateClick(value);
-}
-
-void TestRunner::AddMockSpeechInputResult(const std::string& result,
-                                          double confidence,
-                                          const std::string& language) {
-#if ENABLE_INPUT_SPEECH
-  proxy_->speechInputControllerMock()->addMockRecognitionResult(
-      WebString::fromUTF8(result), confidence, WebString::fromUTF8(language));
-#endif
-}
-
-void TestRunner::SetMockSpeechInputDumpRect(bool value) {
-#if ENABLE_INPUT_SPEECH
-  proxy_->speechInputControllerMock()->setDumpRect(value);
-#endif
 }
 
 void TestRunner::AddMockSpeechRecognitionResult(const std::string& transcript,

@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "content/shell/renderer/test_runner/event_sender.h"
 #include "content/shell/renderer/test_runner/MockColorChooser.h"
-#include "content/shell/renderer/test_runner/MockWebSpeechInputController.h"
 #include "content/shell/renderer/test_runner/MockWebSpeechRecognizer.h"
 #include "content/shell/renderer/test_runner/SpellCheckClient.h"
 #include "content/shell/renderer/test_runner/TestCommon.h"
@@ -342,10 +341,6 @@ void WebTestProxyBase::setDelegate(WebTestDelegate* delegate)
 {
     m_delegate = delegate;
     m_spellcheck->setDelegate(delegate);
-#if ENABLE_INPUT_SPEECH
-    if (m_speechInputController.get())
-        m_speechInputController->setDelegate(delegate);
-#endif
     if (m_speechRecognizer.get())
         m_speechRecognizer->setDelegate(delegate);
 }
@@ -383,10 +378,6 @@ void WebTestProxyBase::reset()
     m_logConsoleOutput = true;
     if (m_midiClient.get())
         m_midiClient->resetMock();
-#if ENABLE_INPUT_SPEECH
-    if (m_speechInputController.get())
-        m_speechInputController->clearResults();
-#endif
 }
 
 WebSpellCheckClient* WebTestProxyBase::spellCheckClient() const
@@ -640,14 +631,6 @@ WebMIDIClientMock* WebTestProxyBase::midiClientMock()
         m_midiClient.reset(new WebMIDIClientMock);
     return m_midiClient.get();
 }
-
-#if ENABLE_INPUT_SPEECH
-MockWebSpeechInputController* WebTestProxyBase::speechInputControllerMock()
-{
-    DCHECK(m_speechInputController.get());
-    return m_speechInputController.get();
-}
-#endif
 
 MockWebSpeechRecognizer* WebTestProxyBase::speechRecognizerMock()
 {
@@ -934,20 +917,6 @@ WebNotificationPresenter* WebTestProxyBase::notificationPresenter()
 WebMIDIClient* WebTestProxyBase::webMIDIClient()
 {
     return midiClientMock();
-}
-
-WebSpeechInputController* WebTestProxyBase::speechInputController(WebSpeechInputListener* listener)
-{
-#if ENABLE_INPUT_SPEECH
-    if (!m_speechInputController.get()) {
-        m_speechInputController.reset(new MockWebSpeechInputController(listener));
-        m_speechInputController->setDelegate(m_delegate);
-    }
-    return m_speechInputController.get();
-#else
-    DCHECK(listener);
-    return 0;
-#endif
 }
 
 WebSpeechRecognizer* WebTestProxyBase::speechRecognizer()

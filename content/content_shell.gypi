@@ -193,8 +193,6 @@
         'shell/renderer/test_runner/MockWebRTCDataChannelHandler.h',
         'shell/renderer/test_runner/MockWebRTCPeerConnectionHandler.cpp',
         'shell/renderer/test_runner/MockWebRTCPeerConnectionHandler.h',
-        'shell/renderer/test_runner/MockWebSpeechInputController.cpp',
-        'shell/renderer/test_runner/MockWebSpeechInputController.h',
         'shell/renderer/test_runner/MockWebSpeechRecognizer.cpp',
         'shell/renderer/test_runner/MockWebSpeechRecognizer.h',
         'shell/renderer/test_runner/SpellCheckClient.cpp',

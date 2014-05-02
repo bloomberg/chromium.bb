@@ -52,8 +52,6 @@ class WebNotificationPresenter;
 class WebPlugin;
 class WebRange;
 class WebSerializedScriptValue;
-class WebSpeechInputController;
-class WebSpeechInputListener;
 class WebSpeechRecognizer;
 class WebSpellCheckClient;
 class WebString;
@@ -74,7 +72,6 @@ typedef unsigned WebColor;
 }
 
 namespace WebTestRunner {
-class MockWebSpeechInputController;
 class MockWebSpeechRecognizer;
 class SpellCheckClient;
 class TestInterfaces;
@@ -121,7 +118,6 @@ public:
     void discardBackingStore();
 
     blink::WebMIDIClientMock* midiClientMock();
-    WebTestRunner::MockWebSpeechInputController* speechInputControllerMock();
     WebTestRunner::MockWebSpeechRecognizer* speechRecognizerMock();
 
     WebTestRunner::WebTaskList* taskList() { return &m_taskList; }
@@ -161,7 +157,6 @@ protected:
     void printPage(blink::WebLocalFrame*);
     blink::WebNotificationPresenter* notificationPresenter();
     blink::WebMIDIClient* webMIDIClient();
-    blink::WebSpeechInputController* speechInputController(blink::WebSpeechInputListener*);
     blink::WebSpeechRecognizer* speechRecognizer();
     bool requestPointerLock();
     void requestPointerUnlock();
@@ -229,8 +224,6 @@ private:
 
     scoped_ptr<blink::WebMIDIClientMock> m_midiClient;
     scoped_ptr<WebTestRunner::MockWebSpeechRecognizer> m_speechRecognizer;
-    scoped_ptr<WebTestRunner::MockWebSpeechInputController>
-        m_speechInputController;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(WebTestProxyBase);
@@ -321,10 +314,6 @@ public:
     virtual blink::WebMIDIClient* webMIDIClient()
     {
         return WebTestProxyBase::webMIDIClient();
-    }
-    virtual blink::WebSpeechInputController* speechInputController(blink::WebSpeechInputListener* listener)
-    {
-        return WebTestProxyBase::speechInputController(listener);
     }
     virtual blink::WebSpeechRecognizer* speechRecognizer()
     {
