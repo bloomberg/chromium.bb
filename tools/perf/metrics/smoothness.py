@@ -64,3 +64,9 @@ class SmoothnessMetric(timeline_based_metric.TimelineBasedMetric):
     # We use 19ms as a somewhat looser threshold, instead of 1000.0/60.0.
     percentile_95 = statistics.Percentile(frame_times, 95.0)
     results.Add('mostly_smooth', 'score', 1.0 if percentile_95 < 19.0 else 0.0)
+
+    # Mean percentage of pixels approximated (missing tiles, low resolution
+    # tiles, non-ideal resolution tiles)
+    results.Add('mean_pixels_approximated', 'percent',
+                round(statistics.ArithmeticMean(
+                    FlattenList(stats.approximated_pixel_percentages)), 3))
