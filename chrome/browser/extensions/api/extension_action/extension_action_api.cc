@@ -27,6 +27,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/image_util.h"
 #include "extensions/common/error_utils.h"
@@ -415,10 +416,8 @@ void ExtensionActionAPI::ExtensionActionExecuted(
 //
 
 ExtensionActionStorageManager::ExtensionActionStorageManager(Profile* profile)
-    : profile_(profile) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
+    : profile_(profile), extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
                  content::NotificationService::AllBrowserContextsAndSources());
 
@@ -430,41 +429,36 @@ ExtensionActionStorageManager::ExtensionActionStorageManager(Profile* profile)
 ExtensionActionStorageManager::~ExtensionActionStorageManager() {
 }
 
+void ExtensionActionStorageManager::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  if (!ExtensionActionManager::Get(profile_)->GetBrowserAction(*extension)) {
+    return;
+  }
+
+  StateStore* storage = ExtensionSystem::Get(profile_)->state_store();
+  if (storage) {
+    storage->GetExtensionValue(
+        extension->id(),
+        kBrowserActionStorageKey,
+        base::Bind(&ExtensionActionStorageManager::ReadFromStorage,
+                   AsWeakPtr(),
+                   extension->id()));
+  }
+};
+
 void ExtensionActionStorageManager::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-      if (!ExtensionActionManager::Get(profile_)->
-          GetBrowserAction(*extension)) {
-        break;
-      }
+  DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED);
+  ExtensionAction* extension_action =
+      content::Source<ExtensionAction>(source).ptr();
+  Profile* profile = content::Details<Profile>(details).ptr();
+  if (profile != profile_)
+    return;
 
-      StateStore* storage = ExtensionSystem::Get(profile_)->state_store();
-      if (storage) {
-        storage->GetExtensionValue(extension->id(), kBrowserActionStorageKey,
-            base::Bind(&ExtensionActionStorageManager::ReadFromStorage,
-                       AsWeakPtr(), extension->id()));
-      }
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED: {
-      ExtensionAction* extension_action =
-          content::Source<ExtensionAction>(source).ptr();
-      Profile* profile = content::Details<Profile>(details).ptr();
-      if (profile != profile_)
-        break;
-
-      WriteToStorage(extension_action);
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
+  WriteToStorage(extension_action);
 }
 
 void ExtensionActionStorageManager::WriteToStorage(
