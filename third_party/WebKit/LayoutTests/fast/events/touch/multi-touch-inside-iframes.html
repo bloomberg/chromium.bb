@@ -56,6 +56,7 @@ function onTouch(event, receiver)
             shouldBe("ev.targetTouches.length", "1");
             shouldBe("ev.touches[0].pageX", "50");
             shouldBe("ev.touches[0].pageY", "50");
+            shouldBe('ev.touches[0].identifier', '0');
             shouldBeEqualToString('ev.touches[0].target.ownerDocument.title', 'iframe1');
             shouldBeEqualToString('ev.changedTouches[0].target.ownerDocument.title', 'iframe1');
             shouldBeEqualToString('ev.targetTouches[0].target.ownerDocument.title', 'iframe1');
@@ -64,21 +65,30 @@ function onTouch(event, receiver)
             shouldBeEqualToString('ev.type', 'touchmove');
             shouldBeEqualToString('touchreceiver', 'iframe1');
             shouldBe("ev.changedTouches.length", "1");
-            shouldBe("ev.touches.length", "1");
+            shouldBe("ev.touches.length", "2");
             shouldBe("ev.targetTouches.length", "1");
             shouldBe("ev.touches[0].pageX", "150");
             shouldBe("ev.touches[0].pageY", "150");
+            shouldBe('ev.touches[0].identifier', '0');
+            shouldBe('ev.touches[1].identifier', '1');
+            shouldBe('ev.changedTouches[0].identifier', '0');
             shouldBeEqualToString('ev.touches[0].target.ownerDocument.title', 'iframe1');
             shouldBeEqualToString('ev.changedTouches[0].target.ownerDocument.title', 'iframe1');
             shouldBeEqualToString('ev.targetTouches[0].target.ownerDocument.title', 'iframe1');
+            shouldBeEqualToString('ev.touches[1].target.nodeName', '#document');
+            shouldBeEqualToString('ev.touches[1].target.title', 'iframe1');
             break;
         case 2:
             shouldBeEqualToString('ev.type', 'touchend');
             shouldBeEqualToString('touchreceiver', 'iframe1');
             shouldBe("ev.changedTouches.length", "1");
-            shouldBe("ev.touches.length", "0");
+            shouldBe("ev.touches.length", "1");
             shouldBe("ev.targetTouches.length", "0");
             shouldBeEqualToString('ev.changedTouches[0].target.ownerDocument.title', 'iframe1');
+            shouldBe('ev.changedTouches[0].identifier', '0');
+            shouldBeEqualToString('ev.touches[0].target.nodeName', '#document');
+            shouldBeEqualToString('ev.touches[0].target.title', 'iframe1');
+            shouldBe('ev.touches[0].identifier', '1');
             break;
         case 3:
             shouldBeEqualToString('ev.type', 'touchstart');

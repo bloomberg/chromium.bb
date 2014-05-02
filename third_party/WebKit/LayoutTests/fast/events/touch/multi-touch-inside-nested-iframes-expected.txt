@@ -25,21 +25,27 @@ Moves the first touch outside inner iframe.
 PASS ev.type is "touchmove"
 PASS touchreceiver is "iframe1"
 PASS ev.changedTouches.length is 1
-PASS ev.touches.length is 1
+PASS ev.touches.length is 2
 PASS ev.targetTouches.length is 1
 PASS ev.touches[0].pageX is 200
 PASS ev.touches[0].pageY is 200
 PASS ev.touches[0].target.ownerDocument.title is "iframe1"
 PASS ev.changedTouches[0].target.ownerDocument.title is "iframe1"
 PASS ev.targetTouches[0].target.ownerDocument.title is "iframe1"
+PASS ev.touches[1].target.nodeName is "#document"
+PASS ev.touches[1].target.title is "iframe1"
 
 Release the first touch.
 PASS ev.type is "touchend"
 PASS touchreceiver is "iframe1"
 PASS ev.changedTouches.length is 1
-PASS ev.touches.length is 0
+PASS ev.touches.length is 1
 PASS ev.targetTouches.length is 0
+PASS ev.changedTouches[0].identifier is 0
 PASS ev.changedTouches[0].target.ownerDocument.title is "iframe1"
+PASS ev.touches[0].identifier is 1
+PASS ev.touches[0].target.nodeName is "#document"
+PASS ev.touches[0].target.title is "iframe1"
 
 Third touch is on outer iframe, nothing should happen.
 

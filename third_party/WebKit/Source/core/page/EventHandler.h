@@ -41,6 +41,7 @@
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
+#include "wtf/HashTraits.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
@@ -369,10 +370,13 @@ private:
 
     RefPtr<Node> m_previousWheelScrolledNode;
 
-    typedef HashMap<int, RefPtr<EventTarget> > TouchTargetMap;
-    TouchTargetMap m_originatingTouchPointTargets;
-    RefPtr<Document> m_originatingTouchPointDocument;
-    unsigned m_originatingTouchPointTargetKey;
+    // The target of each active touch point indexed by the touch ID.
+    typedef HashMap<unsigned, RefPtr<EventTarget>, DefaultHash<unsigned>::Hash, WTF::UnsignedWithZeroKeyHashTraits<unsigned> > TouchTargetMap;
+    TouchTargetMap m_targetForTouchID;
+
+    // If set, the document of the active touch sequence. Unset if no touch sequence active.
+    RefPtr<Document> m_touchSequenceDocument;
+
     bool m_touchPressed;
 
     RefPtr<Node> m_scrollGestureHandlingNode;

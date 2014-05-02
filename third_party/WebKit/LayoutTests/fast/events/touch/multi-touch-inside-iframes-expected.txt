@@ -16,6 +16,7 @@ PASS ev.touches.length is 1
 PASS ev.targetTouches.length is 1
 PASS ev.touches[0].pageX is 50
 PASS ev.touches[0].pageY is 50
+PASS ev.touches[0].identifier is 0
 PASS ev.touches[0].target.ownerDocument.title is "iframe1"
 PASS ev.changedTouches[0].target.ownerDocument.title is "iframe1"
 PASS ev.targetTouches[0].target.ownerDocument.title is "iframe1"
@@ -27,21 +28,30 @@ Moves the first touch outside iframe1.
 PASS ev.type is "touchmove"
 PASS touchreceiver is "iframe1"
 PASS ev.changedTouches.length is 1
-PASS ev.touches.length is 1
+PASS ev.touches.length is 2
 PASS ev.targetTouches.length is 1
 PASS ev.touches[0].pageX is 150
 PASS ev.touches[0].pageY is 150
+PASS ev.touches[0].identifier is 0
+PASS ev.touches[1].identifier is 1
+PASS ev.changedTouches[0].identifier is 0
 PASS ev.touches[0].target.ownerDocument.title is "iframe1"
 PASS ev.changedTouches[0].target.ownerDocument.title is "iframe1"
 PASS ev.targetTouches[0].target.ownerDocument.title is "iframe1"
+PASS ev.touches[1].target.nodeName is "#document"
+PASS ev.touches[1].target.title is "iframe1"
 
 Release the first touch.
 PASS ev.type is "touchend"
 PASS touchreceiver is "iframe1"
 PASS ev.changedTouches.length is 1
-PASS ev.touches.length is 0
+PASS ev.touches.length is 1
 PASS ev.targetTouches.length is 0
 PASS ev.changedTouches[0].target.ownerDocument.title is "iframe1"
+PASS ev.changedTouches[0].identifier is 0
+PASS ev.touches[0].target.nodeName is "#document"
+PASS ev.touches[0].target.title is "iframe1"
+PASS ev.touches[0].identifier is 1
 
 Third touch is on iframe2, nothing should happen.
 PASS document.elementFromPoint(261, 101).id is "iframe2"
