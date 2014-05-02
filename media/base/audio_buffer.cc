@@ -11,11 +11,6 @@
 
 namespace media {
 
-static base::TimeDelta CalculateDuration(int frames, double sample_rate) {
-  return base::TimeDelta::FromMicroseconds(
-      frames * base::Time::kMicrosecondsPerSecond / sample_rate);
-}
-
 AudioBuffer::AudioBuffer(SampleFormat sample_format,
                          ChannelLayout channel_layout,
                          int channel_count,
@@ -23,7 +18,8 @@ AudioBuffer::AudioBuffer(SampleFormat sample_format,
                          int frame_count,
                          bool create_buffer,
                          const uint8* const* data,
-                         const base::TimeDelta timestamp)
+                         const base::TimeDelta timestamp,
+                         const base::TimeDelta duration)
     : sample_format_(sample_format),
       channel_layout_(channel_layout),
       channel_count_(channel_count),
@@ -32,7 +28,7 @@ AudioBuffer::AudioBuffer(SampleFormat sample_format,
       trim_start_(0),
       end_of_stream_(!create_buffer && data == NULL && frame_count == 0),
       timestamp_(timestamp),
-      duration_(CalculateDuration(adjusted_frame_count_, sample_rate_)) {
+      duration_(duration) {
   CHECK_GE(channel_count_, 0);
   CHECK_LE(channel_count_, limits::kMaxChannels);
   CHECK_GE(frame_count, 0);
@@ -95,7 +91,8 @@ scoped_refptr<AudioBuffer> AudioBuffer::CopyFrom(
     int sample_rate,
     int frame_count,
     const uint8* const* data,
-    const base::TimeDelta timestamp) {
+    const base::TimeDelta timestamp,
+    const base::TimeDelta duration) {
   // If you hit this CHECK you likely have a bug in a demuxer. Go fix it.
   CHECK_GT(frame_count, 0);  // Otherwise looks like an EOF buffer.
   CHECK(data[0]);
@@ -106,7 +103,8 @@ scoped_refptr<AudioBuffer> AudioBuffer::CopyFrom(
                                             frame_count,
                                             true,
                                             data,
-                                            timestamp));
+                                            timestamp,
+                                            duration));
 }
 
 // static
@@ -124,6 +122,7 @@ scoped_refptr<AudioBuffer> AudioBuffer::CreateBuffer(
                                             frame_count,
                                             true,
                                             NULL,
+                                            kNoTimestamp(),
                                             kNoTimestamp()));
 }
 
@@ -133,7 +132,8 @@ scoped_refptr<AudioBuffer> AudioBuffer::CreateEmptyBuffer(
     int channel_count,
     int sample_rate,
     int frame_count,
-    const base::TimeDelta timestamp) {
+    const base::TimeDelta timestamp,
+    const base::TimeDelta duration) {
   CHECK_GT(frame_count, 0);  // Otherwise looks like an EOF buffer.
   // Since data == NULL, format doesn't matter.
   return make_scoped_refptr(new AudioBuffer(kSampleFormatF32,
@@ -143,7 +143,8 @@ scoped_refptr<AudioBuffer> AudioBuffer::CreateEmptyBuffer(
                                             frame_count,
                                             false,
                                             NULL,
-                                            timestamp));
+                                            timestamp,
+                                            duration));
 }
 
 // static
@@ -155,6 +156,7 @@ scoped_refptr<AudioBuffer> AudioBuffer::CreateEOSBuffer() {
                                             0,
                                             false,
                                             NULL,
+                                            kNoTimestamp(),
                                             kNoTimestamp()));
 }
 
@@ -244,23 +246,33 @@ void AudioBuffer::TrimStart(int frames_to_trim) {
   CHECK_GE(frames_to_trim, 0);
   CHECK_LE(frames_to_trim, adjusted_frame_count_);
 
-  // Adjust the number of frames in this buffer and where the start really is.
+  // Adjust timestamp_ and duration_ to reflect the smaller number of frames.
+  double offset = static_cast<double>(duration_.InMicroseconds()) *
+                  frames_to_trim / adjusted_frame_count_;
+  base::TimeDelta offset_as_time =
+      base::TimeDelta::FromMicroseconds(static_cast<int64>(offset));
+  timestamp_ += offset_as_time;
+  duration_ -= offset_as_time;
+
+  // Finally adjust the number of frames in this buffer and where the start
+  // really is.
   adjusted_frame_count_ -= frames_to_trim;
   trim_start_ += frames_to_trim;
-
-  // Adjust timestamp_ and duration_ to reflect the smaller number of frames.
-  const base::TimeDelta old_duration = duration_;
-  duration_ = CalculateDuration(adjusted_frame_count_, sample_rate_);
-  timestamp_ += old_duration - duration_;
 }
 
 void AudioBuffer::TrimEnd(int frames_to_trim) {
   CHECK_GE(frames_to_trim, 0);
   CHECK_LE(frames_to_trim, adjusted_frame_count_);
 
-  // Adjust the number of frames and duration for this buffer.
+  // Adjust duration_ only to reflect the smaller number of frames.
+  double offset = static_cast<double>(duration_.InMicroseconds()) *
+                  frames_to_trim / adjusted_frame_count_;
+  base::TimeDelta offset_as_time =
+      base::TimeDelta::FromMicroseconds(static_cast<int64>(offset));
+  duration_ -= offset_as_time;
+
+  // Finally adjust the number of frames in this buffer.
   adjusted_frame_count_ -= frames_to_trim;
-  duration_ = CalculateDuration(adjusted_frame_count_, sample_rate_);
 }
 
 }  // namespace media

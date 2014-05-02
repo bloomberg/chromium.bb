@@ -86,32 +86,41 @@ class TestVideoConfig {
 };
 
 // Create an AudioBuffer containing |frames| frames of data, where each sample
-// is of type T.  |start| and |increment| are used to specify the values for the
-// samples, which are created in channel order.  The value for frame and channel
-// is determined by:
+// is of type T.
 //
-//   |start| + |channel| * |frames| * |increment| + index * |increment|
+// For interleaved formats, each frame will have the data from |channels|
+// channels interleaved. |start| and |increment| are used to specify the values
+// for the samples. Since this is interleaved data, channel 0 data will be:
+//   |start|
+//   |start| + |channels| * |increment|
+//   |start| + 2 * |channels| * |increment|, and so on.
+// Data for subsequent channels is similar. No check is done that |format|
+// requires data to be of type T, but it is verified that |format| is an
+// interleaved format.
 //
-// E.g., for a stereo buffer the values in channel 0 will be:
-//   start
-//   start + increment
-//   start + 2 * increment, ...
+// For planar formats, there will be a block for each of |channel| channels.
+// |start| and |increment| are used to specify the values for the samples, which
+// are created in channel order. Since this is planar data, channel 0 data will
+// be:
+//   |start|
+//   |start| + |increment|
+//   |start| + 2 * |increment|, and so on.
+// Data for channel 1 will follow where channel 0 ends. Subsequent channels are
+// similar. No check is done that |format| requires data to be of type T, but it
+// is verified that |format| is a planar format.
 //
-// While, values in channel 1 will be:
-//   start + frames * increment
-//   start + (frames + 1) * increment
-//   start + (frames + 2) * increment, ...
-//
-// |start_time| will be used as the start time for the samples.
+// |start_time| will be used as the start time for the samples. |duration| is
+// the duration.
 template <class T>
 scoped_refptr<AudioBuffer> MakeAudioBuffer(SampleFormat format,
                                            ChannelLayout channel_layout,
-                                           size_t channel_count,
+                                           int channel_count,
                                            int sample_rate,
                                            T start,
                                            T increment,
-                                           size_t frames,
-                                           base::TimeDelta timestamp);
+                                           int frames,
+                                           base::TimeDelta timestamp,
+                                           base::TimeDelta duration);
 
 // Create a fake video DecoderBuffer for testing purpose. The buffer contains
 // part of video decoder config info embedded so that the testing code can do

@@ -1026,7 +1026,9 @@ bool ContentDecryptorDelegate::DeserializeAudioFrames(
         audio_samples_per_second_,
         frame_count,
         &channel_ptrs[0],
-        base::TimeDelta::FromMicroseconds(timestamp));
+        base::TimeDelta::FromMicroseconds(timestamp),
+        base::TimeDelta::FromMicroseconds(audio_samples_per_second_ /
+                                          frame_count));
     frames->push_back(frame);
 
     cur += frame_size;

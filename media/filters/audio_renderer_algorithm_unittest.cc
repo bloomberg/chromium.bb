@@ -113,6 +113,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
               1,
               1,
               kFrameSize,
+              kNoTimestamp(),
               kNoTimestamp());
           break;
         case kSampleFormatS16:
@@ -124,6 +125,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
               1,
               1,
               kFrameSize,
+              kNoTimestamp(),
               kNoTimestamp());
           break;
         case kSampleFormatS32:
@@ -135,6 +137,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
               1,
               1,
               kFrameSize,
+              kNoTimestamp(),
               kNoTimestamp());
           break;
         default:

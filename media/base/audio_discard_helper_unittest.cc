@@ -33,6 +33,7 @@ static scoped_refptr<AudioBuffer> CreateDecodedBuffer(int frames) {
                          0.0f,
                          kDataStep,
                          frames,
+                         kNoTimestamp(),
                          kNoTimestamp());
 }
 

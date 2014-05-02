@@ -227,6 +227,8 @@ void AudioBufferConverter::ConvertIfPossible() {
 
   // Compute the timestamp.
   output_buffer->set_timestamp(timestamp_helper_.GetTimestamp());
+  output_buffer->set_duration(
+      timestamp_helper_.GetFrameDuration(request_frames));
   timestamp_helper_.AddFrames(request_frames);
 
   queued_outputs_.push_back(output_buffer);

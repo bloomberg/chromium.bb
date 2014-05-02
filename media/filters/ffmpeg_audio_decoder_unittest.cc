@@ -175,7 +175,7 @@ TEST_F(FFmpegAudioDecoderTest, ProduceAudioSamples) {
   ASSERT_EQ(3u, decoded_audio_.size());
   ExpectDecodedAudio(0, 0, 2902);
   ExpectDecodedAudio(1, 2902, 13061);
-  ExpectDecodedAudio(2, 15963, 23219);
+  ExpectDecodedAudio(2, 15963, 23220);
 
   // Call one more time to trigger EOS.
   Decode();

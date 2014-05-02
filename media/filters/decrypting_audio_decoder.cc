@@ -371,6 +371,8 @@ void DecryptingAudioDecoder::EnqueueFrames(
     }
 
     frame->set_timestamp(current_time);
+    frame->set_duration(
+        timestamp_helper_->GetFrameDuration(frame->frame_count()));
     timestamp_helper_->AddFrames(frame->frame_count());
   }
 }

@@ -288,7 +288,8 @@ class AudioRendererImplTest : public ::testing::Test {
                                kPlayingAudio,
                                0.0f,
                                size,
-                               next_timestamp_->GetTimestamp());
+                               next_timestamp_->GetTimestamp(),
+                               next_timestamp_->GetFrameDuration(size));
     next_timestamp_->AddFrames(size);
 
     DeliverBuffer(AudioDecoder::kOk, buffer);
