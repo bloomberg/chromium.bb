@@ -137,12 +137,12 @@ deps = {
         Var('git_url') + '/external/trace-viewer.git@2cdaa9933db2f6475f96703082b99b5e71d091af',
     'src/third_party/usrsctp/usrsctplib':
         Var('git_url') + '/external/usrsctplib.git@368d86efa422ae7e549399f8c35783c0e80232f0',
+    'src/third_party/web-page-replay':
+        Var('git_url') + '/external/web-page-replay.git@4edb10429743bf53ef58ec9440e8034ae5f93ff5',
     'src/third_party/webdriver/pylib':
         Var('git_url') + '/external/selenium/py.git@8212c8017c92a1ba740caf01c1acefb3674a6a44',
     'src/third_party/webgl/src':
         Var('git_url') + '/external/khronosgroup/webgl.git@dd5d37f23dcbdba91f1cf623ba10b2c0ea78ea38',
-    'src/third_party/webpagereplay':
-        Var('git_url') + '/external/web-page-replay.git@1cf80576c1c4beb6185af0ac70eb7379c5e8262b',
     'src/third_party/webrtc':
         Var('git_url') + '/external/webrtc/trunk/webrtc.git@cfed80f78803395dd066261afb5c5d99e5048d5d',
     'src/third_party/yasm/source/patched-yasm':
