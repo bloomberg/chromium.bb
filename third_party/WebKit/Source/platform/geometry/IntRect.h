@@ -160,6 +160,11 @@ public:
     operator SkRect() const;
     operator SkIRect() const;
 
+#ifndef NDEBUG
+    // Prints the rect to the screen.
+    void show();
+#endif
+
 private:
     IntPoint m_location;
     IntSize m_size;

@@ -169,6 +169,11 @@ public:
         return LayoutRect(LayoutUnit::nearlyMin() / 2, LayoutUnit::nearlyMin() / 2, LayoutUnit::nearlyMax(), LayoutUnit::nearlyMax());
     }
 
+#ifndef NDEBUG
+    // Prints the rect to the screen.
+    void show(bool showRawValue = false);
+#endif
+
 private:
     LayoutPoint m_location;
     LayoutSize m_size;

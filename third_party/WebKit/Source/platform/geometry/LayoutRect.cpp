@@ -34,6 +34,7 @@
 #include "platform/LayoutUnit.h"
 #include "platform/geometry/FloatRect.h"
 #include <algorithm>
+#include <stdio.h>
 
 namespace WebCore {
 
@@ -117,6 +118,16 @@ void LayoutRect::scale(float xAxisScale, float yAxisScale)
     m_location.scale(xAxisScale, yAxisScale);
     m_size.scale(xAxisScale, yAxisScale);
 }
+
+#ifndef NDEBUG
+void LayoutRect::show(bool showRawValue)
+{
+    if (showRawValue)
+        printf("Rect (in raw layout units): [x=%d y=%d maxX=%d maxY=%d]\n", x().rawValue(), y().rawValue(), maxX().rawValue(), maxY().rawValue());
+    else
+        printf("Rect (in pixels): [x=%lf y=%lf maxX=%lf maxY=%lf]\n", x().toDouble(), y().toDouble(), maxX().toDouble(), maxY().toDouble());
+}
+#endif
 
 LayoutRect unionRect(const Vector<LayoutRect>& rects)
 {
