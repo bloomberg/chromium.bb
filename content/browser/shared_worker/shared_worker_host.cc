@@ -5,7 +5,7 @@
 #include "content/browser/shared_worker/shared_worker_host.h"
 
 #include "base/metrics/histogram.h"
-#include "content/browser/devtools/shared_worker_devtools_manager.h"
+#include "content/browser/devtools/embedded_worker_devtools_manager.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/message_port_service.h"
@@ -33,14 +33,14 @@ void WorkerCrashCallback(int render_process_unique_id, int render_frame_id) {
 
 void NotifyWorkerScriptLoadedOnUI(int worker_process_id, int worker_route_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  SharedWorkerDevToolsManager::GetInstance()->WorkerContextStarted(
+  EmbeddedWorkerDevToolsManager::GetInstance()->WorkerContextStarted(
       worker_process_id, worker_route_id);
 }
 
 void NotifyWorkerDestroyedOnUI(int worker_process_id, int worker_route_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  SharedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(worker_process_id,
-                                                              worker_route_id);
+  EmbeddedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(
+      worker_process_id, worker_route_id);
 }
 
 }  // namespace

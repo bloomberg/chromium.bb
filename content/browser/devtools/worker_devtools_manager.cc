@@ -12,8 +12,8 @@
 #include "content/browser/devtools/devtools_manager_impl.h"
 #include "content/browser/devtools/devtools_protocol.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
+#include "content/browser/devtools/embedded_worker_devtools_manager.h"
 #include "content/browser/devtools/ipc_devtools_agent_host.h"
-#include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/devtools/worker_devtools_message_filter.h"
 #include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/devtools_messages.h"
@@ -29,7 +29,7 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForWorker(
     int worker_process_id,
     int worker_route_id) {
   if (WorkerService::EmbeddedSharedWorkerEnabled()) {
-    return SharedWorkerDevToolsManager::GetInstance()
+    return EmbeddedWorkerDevToolsManager::GetInstance()
         ->GetDevToolsAgentHostForWorker(worker_process_id, worker_route_id);
   } else {
     return WorkerDevToolsManager::GetDevToolsAgentHostForWorker(

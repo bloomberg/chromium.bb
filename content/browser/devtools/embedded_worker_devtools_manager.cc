@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/devtools/shared_worker_devtools_manager.h"
+#include "content/browser/devtools/embedded_worker_devtools_manager.h"
 
 #include "content/browser/devtools/devtools_manager_impl.h"
 #include "content/browser/devtools/devtools_protocol.h"
@@ -19,8 +19,9 @@ namespace content {
 
 namespace {
 
-bool SendMessageToWorker(const SharedWorkerDevToolsManager::WorkerId& worker_id,
-                         IPC::Message* message) {
+bool SendMessageToWorker(
+    const EmbeddedWorkerDevToolsManager::WorkerId& worker_id,
+    IPC::Message* message) {
   RenderProcessHost* host = RenderProcessHost::FromID(worker_id.first);
   if (!host) {
     delete message;
@@ -33,11 +34,11 @@ bool SendMessageToWorker(const SharedWorkerDevToolsManager::WorkerId& worker_id,
 
 }  // namespace
 
-class SharedWorkerDevToolsManager::SharedWorkerDevToolsAgentHost
+class EmbeddedWorkerDevToolsManager::EmbeddedWorkerDevToolsAgentHost
     : public IPCDevToolsAgentHost,
       public IPC::Listener {
  public:
-  explicit SharedWorkerDevToolsAgentHost(WorkerId worker_id)
+  explicit EmbeddedWorkerDevToolsAgentHost(WorkerId worker_id)
       : worker_id_(worker_id), worker_attached_(true) {
     AddRef();
     if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first))
@@ -58,7 +59,7 @@ class SharedWorkerDevToolsManager::SharedWorkerDevToolsAgentHost
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(SharedWorkerDevToolsAgentHost, msg)
+    IPC_BEGIN_MESSAGE_MAP(EmbeddedWorkerDevToolsAgentHost, msg)
     IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,
                         OnDispatchOnInspectorFrontend)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_SaveAgentRuntimeState,
@@ -89,9 +90,10 @@ class SharedWorkerDevToolsManager::SharedWorkerDevToolsAgentHost
   WorkerId worker_id() const { return worker_id_; }
 
  private:
-  virtual ~SharedWorkerDevToolsAgentHost() {
+  virtual ~EmbeddedWorkerDevToolsAgentHost() {
     CHECK(!worker_attached_);
-    SharedWorkerDevToolsManager::GetInstance()->RemoveInspectedWorkerData(this);
+    EmbeddedWorkerDevToolsManager::GetInstance()->RemoveInspectedWorkerData(
+        this);
   }
 
   void OnDispatchOnInspectorFrontend(const std::string& message) {
@@ -104,16 +106,16 @@ class SharedWorkerDevToolsManager::SharedWorkerDevToolsAgentHost
   WorkerId worker_id_;
   bool worker_attached_;
   std::string state_;
-  DISALLOW_COPY_AND_ASSIGN(SharedWorkerDevToolsAgentHost);
+  DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerDevToolsAgentHost);
 };
 
 // static
-SharedWorkerDevToolsManager* SharedWorkerDevToolsManager::GetInstance() {
+EmbeddedWorkerDevToolsManager* EmbeddedWorkerDevToolsManager::GetInstance() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return Singleton<SharedWorkerDevToolsManager>::get();
+  return Singleton<EmbeddedWorkerDevToolsManager>::get();
 }
 
-DevToolsAgentHost* SharedWorkerDevToolsManager::GetDevToolsAgentHostForWorker(
+DevToolsAgentHost* EmbeddedWorkerDevToolsManager::GetDevToolsAgentHostForWorker(
     int worker_process_id,
     int worker_route_id) {
   WorkerId id(worker_process_id, worker_route_id);
@@ -126,24 +128,26 @@ DevToolsAgentHost* SharedWorkerDevToolsManager::GetDevToolsAgentHostForWorker(
   if (info->state() != WORKER_UNINSPECTED)
     return info->agent_host();
 
-  SharedWorkerDevToolsAgentHost* agent_host =
-      new SharedWorkerDevToolsAgentHost(id);
+  EmbeddedWorkerDevToolsAgentHost* agent_host =
+      new EmbeddedWorkerDevToolsAgentHost(id);
   info->set_agent_host(agent_host);
   info->set_state(WORKER_INSPECTED);
   return agent_host;
 }
 
-SharedWorkerDevToolsManager::SharedWorkerDevToolsManager() {}
+EmbeddedWorkerDevToolsManager::EmbeddedWorkerDevToolsManager() {
+}
 
-SharedWorkerDevToolsManager::~SharedWorkerDevToolsManager() {}
+EmbeddedWorkerDevToolsManager::~EmbeddedWorkerDevToolsManager() {
+}
 
-bool SharedWorkerDevToolsManager::WorkerCreated(
+bool EmbeddedWorkerDevToolsManager::SharedWorkerCreated(
     int worker_process_id,
     int worker_route_id,
     const SharedWorkerInstance& instance) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const WorkerId id(worker_process_id, worker_route_id);
-  WorkerInfoMap::iterator it = FindExistingWorkerInfo(instance);
+  WorkerInfoMap::iterator it = FindExistingSharedWorkerInfo(instance);
   if (it == workers_.end()) {
     scoped_ptr<WorkerInfo> info(new WorkerInfo(instance));
     workers_.set(id, info.Pass());
@@ -156,8 +160,8 @@ bool SharedWorkerDevToolsManager::WorkerCreated(
   return true;
 }
 
-void SharedWorkerDevToolsManager::WorkerDestroyed(int worker_process_id,
-                                                  int worker_route_id) {
+void EmbeddedWorkerDevToolsManager::WorkerDestroyed(int worker_process_id,
+                                                    int worker_route_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const WorkerId id(worker_process_id, worker_route_id);
   WorkerInfoMap::iterator it = workers_.find(id);
@@ -168,7 +172,7 @@ void SharedWorkerDevToolsManager::WorkerDestroyed(int worker_process_id,
       workers_.erase(it);
       break;
     case WORKER_INSPECTED: {
-      SharedWorkerDevToolsAgentHost* agent_host = info->agent_host();
+      EmbeddedWorkerDevToolsAgentHost* agent_host = info->agent_host();
       if (!agent_host->IsAttached()) {
         scoped_ptr<WorkerInfo> worker_info = workers_.take_and_erase(it);
         agent_host->DetachFromWorker();
@@ -198,8 +202,8 @@ void SharedWorkerDevToolsManager::WorkerDestroyed(int worker_process_id,
   }
 }
 
-void SharedWorkerDevToolsManager::WorkerContextStarted(int worker_process_id,
-                                                       int worker_route_id) {
+void EmbeddedWorkerDevToolsManager::WorkerContextStarted(int worker_process_id,
+                                                         int worker_route_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const WorkerId id(worker_process_id, worker_route_id);
   WorkerInfoMap::iterator it = workers_.find(id);
@@ -211,8 +215,8 @@ void SharedWorkerDevToolsManager::WorkerContextStarted(int worker_process_id,
   info->set_state(WORKER_INSPECTED);
 }
 
-void SharedWorkerDevToolsManager::RemoveInspectedWorkerData(
-    SharedWorkerDevToolsAgentHost* agent_host) {
+void EmbeddedWorkerDevToolsManager::RemoveInspectedWorkerData(
+    EmbeddedWorkerDevToolsAgentHost* agent_host) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const WorkerId id(agent_host->worker_id());
   scoped_ptr<WorkerInfo> worker_info = workers_.take_and_erase(id);
@@ -234,8 +238,8 @@ void SharedWorkerDevToolsManager::RemoveInspectedWorkerData(
   }
 }
 
-SharedWorkerDevToolsManager::WorkerInfoMap::iterator
-SharedWorkerDevToolsManager::FindExistingWorkerInfo(
+EmbeddedWorkerDevToolsManager::WorkerInfoMap::iterator
+EmbeddedWorkerDevToolsManager::FindExistingSharedWorkerInfo(
     const SharedWorkerInstance& instance) {
   WorkerInfoMap::iterator it = workers_.begin();
   for (; it != workers_.end(); ++it) {
@@ -245,6 +249,8 @@ SharedWorkerDevToolsManager::FindExistingWorkerInfo(
   return it;
 }
 
-void SharedWorkerDevToolsManager::ResetForTesting() { workers_.clear(); }
+void EmbeddedWorkerDevToolsManager::ResetForTesting() {
+  workers_.clear();
+}
 
 }  // namespace content
