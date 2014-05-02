@@ -223,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoredTabsShouldHaveRootWindow) {
 #endif  // USE_AURA
 
 // Verify that restored tabs have correct disposition. Only one tab should
-// have disposition->visibility state.
+// have "visible" visibility state, the rest should not.
 // (http://crbug.com/155365 http://crbug.com/118269)
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
     RestoredTabsHaveCorrectVisibilityState) {
