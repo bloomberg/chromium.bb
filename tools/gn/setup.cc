@@ -7,7 +7,6 @@
 #include <stdlib.h>
 
 #include <algorithm>
-#include <sstream>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -134,8 +133,6 @@ void DecrementWorkCount() {
 
 // CommonSetup -----------------------------------------------------------------
 
-const char CommonSetup::kBuildArgFileName[] = "gn.args";
-
 CommonSetup::CommonSetup()
     : build_settings_(),
       loader_(new LoaderImpl(&build_settings_)),
@@ -218,8 +215,7 @@ bool CommonSetup::RunPostMessageLoop() {
 Setup::Setup()
     : CommonSetup(),
       empty_settings_(&empty_build_settings_, std::string()),
-      dotfile_scope_(&empty_settings_),
-      fill_arguments_(true) {
+      dotfile_scope_(&empty_settings_) {
   empty_settings_.set_toolchain_label(Label());
   build_settings_.set_item_defined_callback(
       base::Bind(&ItemDefinedCallback, scheduler_.main_loop(), builder_));
@@ -240,6 +236,8 @@ bool Setup::DoSetup(const std::string& build_dir) {
       cmdline->HasSwitch(kTracelogSwitch))
     EnableTracing();
 
+  if (!FillArguments(*cmdline))
+    return false;
   if (!FillSourceDir(*cmdline))
     return false;
   if (!RunConfigFile())
@@ -248,10 +246,6 @@ bool Setup::DoSetup(const std::string& build_dir) {
     return false;
   if (!FillBuildDir(build_dir))  // Must be after FillSourceDir to resolve.
     return false;
-  if (fill_arguments_) {
-    if (!FillArguments(*cmdline))
-      return false;
-  }
   FillPythonPath();
 
   return true;
@@ -268,54 +262,15 @@ Scheduler* Setup::GetScheduler() {
   return &scheduler_;
 }
 
-SourceFile Setup::GetBuildArgFile() const {
-  return SourceFile(build_settings_.build_dir().value() + kBuildArgFileName);
-}
-
 bool Setup::FillArguments(const CommandLine& cmdline) {
-  // Add a dependency on the build arguments file. If this changes, we want
-  // to re-generated the build.
-  g_scheduler->AddGenDependency(build_settings_.GetFullPath(GetBuildArgFile()));
+  std::string args = cmdline.GetSwitchValueASCII(kSwitchArgs);
+  if (args.empty())
+    return true;  // Nothing to set.
 
-  // Use the args on the command line if specified, and save them. Do this even
-  // if the list is empty (this means clear any defaults).
-  if (cmdline.HasSwitch(kSwitchArgs)) {
-    if (!FillArgsFromCommandLine(cmdline.GetSwitchValueASCII(kSwitchArgs)))
-      return false;
-    SaveArgsToFile();
-    return true;
-  }
-
-  // No command line args given, use the arguments from the build dir (if any).
-  return FillArgsFromFile();
-}
-
-bool Setup::FillArgsFromCommandLine(const std::string& args) {
   args_input_file_.reset(new InputFile(SourceFile()));
   args_input_file_->SetContents(args);
-  args_input_file_->set_friendly_name("the command-line \"--args\"");
-  return FillArgsFromArgsInputFile();
-}
+  args_input_file_->set_friendly_name("the command-line \"--args\" settings");
 
-bool Setup::FillArgsFromFile() {
-  SourceFile build_arg_source_file = GetBuildArgFile();
-  base::FilePath build_arg_file =
-      build_settings_.GetFullPath(build_arg_source_file);
-
-  std::string contents;
-  if (!base::ReadFileToString(build_arg_file, &contents))
-    return true;  // File doesn't exist, continue with default args.
-  if (contents.empty())
-    return true;  // Empty file, do nothing.
-
-  args_input_file_.reset(new InputFile(build_arg_source_file));
-  args_input_file_->SetContents(contents);
-  args_input_file_->set_friendly_name(
-      "build arg file (use \"gn args <out_dir>\" to edit)");
-  return FillArgsFromArgsInputFile();
-}
-
-bool Setup::FillArgsFromArgsInputFile() {
   Err err;
   args_tokens_ = Tokenizer::Tokenize(args_input_file_.get(), &err);
   if (err.has_error()) {
@@ -340,35 +295,6 @@ bool Setup::FillArgsFromArgsInputFile() {
   Scope::KeyValueMap overrides;
   arg_scope.GetCurrentScopeValues(&overrides);
   build_settings_.build_args().AddArgOverrides(overrides);
-  return true;
-}
-
-bool Setup::SaveArgsToFile() {
-  Scope::KeyValueMap args = build_settings_.build_args().GetAllOverrides();
-
-  std::ostringstream stream;
-  for (Scope::KeyValueMap::const_iterator i = args.begin();
-       i != args.end(); ++i) {
-    stream << i->first.as_string() << " = " << i->second.ToString(true);
-    stream << std::endl;
-  }
-
-  // For the first run, the build output dir might not be created yet, so do
-  // that so we can write a file into it. Ignore errors, we'll catch the error
-  // when we try to write a file to it below.
-  base::FilePath build_arg_file =
-      build_settings_.GetFullPath(GetBuildArgFile());
-  base::CreateDirectory(build_arg_file.DirName());
-
-  std::string contents = stream.str();
-  if (base::WriteFile(build_arg_file, contents.c_str(), contents.size()) ==
-      -1) {
-    Err(Location(), "Args file could not be written.",
-      "The file is \"" + FilePathToUTF8(build_arg_file) +
-        "\"").PrintToStdout();
-    return false;
-  }
-
   return true;
 }
 

@@ -203,7 +203,6 @@
         'test_with_scope.cc',
         'test_with_scope.h',
         'tokenizer_unittest.cc',
-        'value_unittest.cc',
         'visibility_unittest.cc',
       ],
       'dependencies': [

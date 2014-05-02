@@ -106,8 +106,7 @@ class Value {
   void SetScopeValue(scoped_ptr<Scope> scope);
 
   // Converts the given value to a string. Returns true if strings should be
-  // quoted or the ToString of a string should be the string itself. If the
-  // string is quoted, it will also enable escaping.
+  // quoted or the ToString of a string should be the string itself.
   std::string ToString(bool quote_strings) const;
 
   // Verifies that the value is of the given type. If it isn't, returns
