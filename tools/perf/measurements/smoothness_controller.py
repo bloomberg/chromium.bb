@@ -1,6 +1,7 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import sys
 
 from measurements import smooth_gesture_util
 from metrics import smoothness
@@ -21,6 +22,7 @@ class MissingDisplayFrameRateError(page_measurement.MeasurementFailure):
 class SmoothnessController(object):
   def __init__(self):
     self._timeline_model = None
+    self._tracing_timeline_data = None
 
   def Start(self, page, tab):
     custom_categories = ['webkit.console', 'benchmark']
@@ -39,8 +41,9 @@ class SmoothnessController(object):
     # Stop tracing for smoothness metric.
     if tab.browser.platform.IsRawDisplayFrameRateSupported():
       tab.browser.platform.StopRawDisplayFrameRateMeasurement()
-    tracing_timeline_data = tab.browser.StopTracing()
-    self._timeline_model = TimelineModel(timeline_data=tracing_timeline_data)
+    self._tracing_timeline_data = tab.browser.StopTracing()
+    self._timeline_model = TimelineModel(
+      timeline_data=self._tracing_timeline_data)
 
   def AddResults(self, tab, results):
     # Add results of smoothness metric. This computes the smoothness metric for
@@ -69,10 +72,14 @@ class SmoothnessController(object):
     # TODO(nednguyen): when crbug.com/239179 is marked fixed, makes sure that
     # page sets are responsible for issueing the markers themselves.
     if len(smooth_records) == 0:
-      assert run_smooth_actions_record, (
-        'SmoothnessController fails to issue markers for the whole '
-        'interaction.')
-      smooth_records = [run_smooth_actions_record]
+      if run_smooth_actions_record is None:
+        sys.stderr.write('Raw tracing data:\n')
+        sys.stderr.write(repr(self._tracing_timeline_data.EventData()))
+        sys.stderr.write('\n')
+        raise Exception('SmoothnessController failed to issue markers for the '
+                        'whole interaction.')
+      else:
+        smooth_records = [run_smooth_actions_record]
 
     # Create an interaction_record for this legacy measurement. Since we don't
     # wrap the results that is sent to smoothnes metric, the logical_name will
