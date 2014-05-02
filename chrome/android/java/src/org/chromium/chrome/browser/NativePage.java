@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import android.graphics.Bitmap;
 import android.view.View;
 
 /**
@@ -29,7 +28,7 @@ public interface NativePage {
     /**
      * @return The hostname for this page, e.g. "newtab" or "bookmarks".
      */
-    public String getHost();
+    String getHost();
 
     /**
      * @return The background color of the page.
@@ -39,20 +38,10 @@ public interface NativePage {
     /**
      * Updates the native page based on the given url.
      */
-    public void updateForUrl(String url);
+    void updateForUrl(String url);
 
     /**
      * Called after a page has been removed from the view hierarchy and will no longer be used.
      */
-    public void destroy();
-
-    /**
-     * @return An unscaled screenshot of the page.
-     */
-    Bitmap getBitmap();
-
-    /**
-     * @return A screenshot of the page scaled to the specified size.
-     */
-    Bitmap getBitmap(int width, int height);
+    void destroy();
 }
