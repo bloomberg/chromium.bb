@@ -158,4 +158,29 @@ TEST_F(BitmapImageTest, maybeAnimated)
     EXPECT_FALSE(m_image->maybeAnimated());
 }
 
+#if USE(QCMSLIB)
+
+TEST_F(BitmapImageTest, jpegHasColorProfile)
+{
+    loadImage("/LayoutTests/fast/images/resources/icc-v2-gbr.jpg");
+    EXPECT_EQ(1u, decodedFramesCount());
+    EXPECT_TRUE(m_image->hasColorProfile());
+}
+
+TEST_F(BitmapImageTest, pngHasColorProfile)
+{
+    loadImage("/LayoutTests/fast/images/resources/palatted-color-png-gamma-one-color-profile.png");
+    EXPECT_EQ(1u, decodedFramesCount());
+    EXPECT_TRUE(m_image->hasColorProfile());
+}
+
+TEST_F(BitmapImageTest, webpHasColorProfile)
+{
+    loadImage("/LayoutTests/fast/images/resources/webp-color-profile-lossy.webp");
+    EXPECT_EQ(1u, decodedFramesCount());
+    EXPECT_TRUE(m_image->hasColorProfile());
+}
+
+#endif // USE(QCMSLIB)
+
 } // namespace

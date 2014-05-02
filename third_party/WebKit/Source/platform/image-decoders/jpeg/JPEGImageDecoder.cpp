@@ -396,6 +396,7 @@ public:
                 if (m_transform && m_info.out_color_space == JCS_EXT_BGRA)
                     m_info.out_color_space = JCS_EXT_RGBA;
 #endif
+                m_decoder->setHasColorProfile(!!m_transform);
             }
 #endif
             // Don't allocate a giant and superfluous memory buffer when the
@@ -595,6 +596,7 @@ JPEGImageDecoder::JPEGImageDecoder(ImageSource::AlphaOption alphaOption,
     ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption,
     size_t maxDecodedBytes)
     : ImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes)
+    , m_hasColorProfile(false)
 {
 }
 

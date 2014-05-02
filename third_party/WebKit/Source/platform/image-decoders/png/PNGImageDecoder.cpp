@@ -219,6 +219,7 @@ PNGImageDecoder::PNGImageDecoder(ImageSource::AlphaOption alphaOption,
     size_t maxDecodedBytes)
     : ImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes)
     , m_doNothingOnFailure(false)
+    , m_hasColorProfile(false)
 {
 }
 
@@ -355,6 +356,7 @@ void PNGImageDecoder::headerAvailable()
         readColorProfile(png, info, colorProfile);
         bool decodedImageHasAlpha = (colorType & PNG_COLOR_MASK_ALPHA) || trnsCount;
         m_reader->createColorTransform(colorProfile, decodedImageHasAlpha);
+        m_hasColorProfile = !!m_reader->colorTransform();
     }
 #endif
 

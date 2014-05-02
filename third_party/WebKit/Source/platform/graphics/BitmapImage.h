@@ -67,6 +67,7 @@ public:
     virtual bool getHotSpot(IntPoint&) const OVERRIDE;
 
     virtual bool dataChanged(bool allDataReceived) OVERRIDE;
+    bool hasColorProfile() const;
     virtual String filenameExtension() const OVERRIDE;
 
     // It may look unusual that there is no start animation call as public API.  This is because

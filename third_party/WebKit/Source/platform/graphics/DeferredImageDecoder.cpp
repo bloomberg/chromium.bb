@@ -54,6 +54,7 @@ DeferredImageDecoder::DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecode
     , m_actualDecoder(actualDecoder)
     , m_orientation(DefaultImageOrientation)
     , m_repetitionCount(cAnimationNone)
+    , m_hasColorProfile(false)
 {
 }
 
@@ -141,6 +142,11 @@ bool DeferredImageDecoder::isSizeAvailable()
     return m_actualDecoder ? m_actualDecoder->isSizeAvailable() : true;
 }
 
+bool DeferredImageDecoder::hasColorProfile() const
+{
+    return m_actualDecoder ? m_actualDecoder->hasColorProfile() : m_hasColorProfile;
+}
+
 IntSize DeferredImageDecoder::size() const
 {
     return m_actualDecoder ? m_actualDecoder->size() : m_size;
@@ -216,6 +222,7 @@ void DeferredImageDecoder::activateLazyDecoding()
     m_size = m_actualDecoder->size();
     m_orientation = m_actualDecoder->orientation();
     m_filenameExtension = m_actualDecoder->filenameExtension();
+    m_hasColorProfile = m_actualDecoder->hasColorProfile();
     const bool isSingleFrame = m_actualDecoder->repetitionCount() == cAnimationNone || (m_allDataReceived && m_actualDecoder->frameCount() == 1u);
     m_frameGenerator = ImageFrameGenerator::create(SkISize::Make(m_actualDecoder->decodedSize().width(), m_actualDecoder->decodedSize().height()), m_data, m_allDataReceived, !isSingleFrame);
 }

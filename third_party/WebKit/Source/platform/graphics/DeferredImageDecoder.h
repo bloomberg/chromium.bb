@@ -61,6 +61,7 @@ public:
     void setData(SharedBuffer& data, bool allDataReceived);
 
     bool isSizeAvailable();
+    bool hasColorProfile() const;
     IntSize size() const;
     IntSize frameSizeAtIndex(size_t index) const;
     size_t frameCount();
@@ -94,6 +95,7 @@ private:
     IntSize m_size;
     ImageOrientation m_orientation;
     int m_repetitionCount;
+    bool m_hasColorProfile;
 
     Vector<OwnPtr<ImageFrame> > m_lazyDecodedFrames;
     RefPtr<ImageFrameGenerator> m_frameGenerator;

@@ -46,6 +46,7 @@ public:
     // ImageDecoder
     virtual String filenameExtension() const OVERRIDE { return "jpg"; }
     virtual bool isSizeAvailable() OVERRIDE;
+    virtual bool hasColorProfile() const OVERRIDE { return m_hasColorProfile; }
     virtual IntSize decodedSize() const OVERRIDE { return m_decodedSize; }
     virtual bool setSize(unsigned width, unsigned height) OVERRIDE;
     virtual ImageFrame* frameBufferAtIndex(size_t) OVERRIDE;
@@ -59,6 +60,7 @@ public:
     void jpegComplete();
 
     void setOrientation(ImageOrientation orientation) { m_orientation = orientation; }
+    void setHasColorProfile(bool hasColorProfile) { m_hasColorProfile = hasColorProfile; }
     void setDecodedSize(unsigned width, unsigned height);
 
 private:
@@ -69,6 +71,7 @@ private:
 
     OwnPtr<JPEGImageReader> m_reader;
     IntSize m_decodedSize;
+    bool m_hasColorProfile;
 };
 
 } // namespace WebCore

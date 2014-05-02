@@ -78,6 +78,11 @@ bool ImageSource::isSizeAvailable()
     return m_decoder && m_decoder->isSizeAvailable();
 }
 
+bool ImageSource::hasColorProfile() const
+{
+    return m_decoder && m_decoder->hasColorProfile();
+}
+
 IntSize ImageSource::size(RespectImageOrientationEnum shouldRespectOrientation) const
 {
     return frameSizeAtIndex(0, shouldRespectOrientation);

@@ -55,6 +55,7 @@ WEBPImageDecoder::WEBPImageDecoder(ImageSource::AlphaOption alphaOption,
     , m_decoder(0)
     , m_formatFlags(0)
     , m_frameBackgroundHasAlpha(false)
+    , m_hasColorProfile(false)
 #if USE(QCMSLIB)
     , m_haveReadProfile(false)
     , m_transform(0)
@@ -212,6 +213,10 @@ bool WEBPImageDecoder::updateDemuxer()
         hasAnimation = (m_formatFlags & ANIMATION_FLAG);
         if (!hasAnimation)
             m_repetitionCount = cAnimationNone;
+#if USE(QCMSLIB)
+        if ((m_formatFlags & ICCP_FLAG) && !ignoresGammaAndColorProfile())
+            m_hasColorProfile = true;
+#endif
         if (!setSize(WebPDemuxGetI(m_demux, WEBP_FF_CANVAS_WIDTH), WebPDemuxGetI(m_demux, WEBP_FF_CANVAS_HEIGHT)))
             return setFailed();
     }

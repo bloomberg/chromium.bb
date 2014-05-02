@@ -36,7 +36,6 @@
 #include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
 #include "wtf/RefPtr.h"
-#include "wtf/Threading.h"
 #include "wtf/text/WTFString.h"
 #include "wtf/Vector.h"
 
@@ -149,13 +148,16 @@ public:
     // Number of bytes in the decoded frame requested. Return 0 if not yet decoded.
     virtual unsigned frameBytesAtIndex(size_t) const;
 
+    ImageOrientation orientation() const { return m_orientation; }
+
     static bool deferredImageDecodingEnabled();
 
     void setIgnoreGammaAndColorProfile(bool flag) { m_ignoreGammaAndColorProfile = flag; }
     bool ignoresGammaAndColorProfile() const { return m_ignoreGammaAndColorProfile; }
 
-    ImageOrientation orientation() const { return m_orientation; }
+    virtual bool hasColorProfile() const { return false; }
 
+#if USE(QCMSLIB)
     enum { iccColorProfileHeaderLength = 128 };
 
     static bool rgbColorProfile(const char* profileData, unsigned profileLength)
@@ -172,7 +174,6 @@ public:
         return !memcmp(&profileData[12], "mntr", 4) || !memcmp(&profileData[12], "scnr", 4);
     }
 
-#if USE(QCMSLIB)
     class OutputDeviceProfile {
     public:
         OutputDeviceProfile()
