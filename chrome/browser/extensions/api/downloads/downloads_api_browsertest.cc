@@ -291,6 +291,8 @@ class DownloadExtensionTest : public ExtensionApiTest {
   }
 
   content::RenderProcessHost* AddFilenameDeterminer() {
+    ExtensionDownloadsEventRouter::SetDetermineFilenameTimeoutSecondsForTesting(
+        2);
     content::WebContents* tab = chrome::AddSelectedTabWithURL(
         current_browser(),
         extension_->GetResourceURL("empty.html"),
@@ -2354,9 +2356,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   EXPECT_STREQ(kPayloadData, disk_data.c_str());
 }
 
-// Test is flaky: http://crbug.com/302071
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       DISABLED_DownloadExtensionTest_OnDeterminingFilename_NoChange) {
+                       DownloadExtensionTest_OnDeterminingFilename_NoChange) {
   GoOnTheRecord();
   LoadExtension("downloads_split");
   AddFilenameDeterminer();
@@ -2423,6 +2424,145 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                           "    \"previous\": \"in_progress\","
                           "    \"current\": \"complete\"}}]",
                           result_id)));
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+                       DownloadExtensionTest_OnDeterminingFilename_Timeout) {
+  GoOnTheRecord();
+  LoadExtension("downloads_split");
+  AddFilenameDeterminer();
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
+  std::string download_url = test_server()->GetURL("slow?0").spec();
+
+  ExtensionDownloadsEventRouter::SetDetermineFilenameTimeoutSecondsForTesting(
+      0);
+
+  // Start downloading a file.
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsDownloadFunction(), base::StringPrintf(
+          "[{\"url\": \"%s\"}]", download_url.c_str())));
+  ASSERT_TRUE(result.get());
+  int result_id = -1;
+  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(item);
+  ScopedCancellingItem canceller(item);
+  ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
+
+  // Wait for the onCreated and onDeterminingFilename events.
+  ASSERT_TRUE(WaitFor(downloads::OnCreated::kEventName,
+      base::StringPrintf("[{\"danger\": \"safe\","
+                          "  \"incognito\": false,"
+                          "  \"id\": %d,"
+                          "  \"mime\": \"text/plain\","
+                          "  \"paused\": false,"
+                          "  \"url\": \"%s\"}]",
+                          result_id,
+                          download_url.c_str())));
+  ASSERT_TRUE(WaitFor(
+      downloads::OnDeterminingFilename::kEventName,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"filename\":\"slow.txt\"}]",
+                         result_id)));
+  ASSERT_TRUE(item->GetTargetFilePath().empty());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
+
+  // Do not respond to the onDeterminingFilename.
+
+  // The download should complete successfully.
+  ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"filename\": {"
+                         "    \"previous\": \"\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename("slow.txt").c_str())));
+  ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"state\": {"
+                         "    \"previous\": \"in_progress\","
+                         "    \"current\": \"complete\"}}]",
+                         result_id)));
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+                       DownloadExtensionTest_OnDeterminingFilename_Twice) {
+  GoOnTheRecord();
+  LoadExtension("downloads_split");
+  AddFilenameDeterminer();
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
+  std::string download_url = test_server()->GetURL("slow?0").spec();
+
+  // Start downloading a file.
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsDownloadFunction(), base::StringPrintf(
+          "[{\"url\": \"%s\"}]", download_url.c_str())));
+  ASSERT_TRUE(result.get());
+  int result_id = -1;
+  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(item);
+  ScopedCancellingItem canceller(item);
+  ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
+
+  // Wait for the onCreated and onDeterminingFilename events.
+  ASSERT_TRUE(WaitFor(downloads::OnCreated::kEventName,
+      base::StringPrintf("[{\"danger\": \"safe\","
+                          "  \"incognito\": false,"
+                          "  \"id\": %d,"
+                          "  \"mime\": \"text/plain\","
+                          "  \"paused\": false,"
+                          "  \"url\": \"%s\"}]",
+                          result_id,
+                          download_url.c_str())));
+  ASSERT_TRUE(WaitFor(
+      downloads::OnDeterminingFilename::kEventName,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"filename\":\"slow.txt\"}]",
+                         result_id)));
+  ASSERT_TRUE(item->GetTargetFilePath().empty());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
+
+  // Respond to the onDeterminingFilename.
+  std::string error;
+  ASSERT_TRUE(ExtensionDownloadsEventRouter::DetermineFilename(
+      browser()->profile(),
+      false,
+      GetExtensionId(),
+      result_id,
+      base::FilePath(),
+      downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      &error));
+  EXPECT_EQ("", error);
+
+  // Calling DetermineFilename again should return an error instead of calling
+  // DownloadTargetDeterminer.
+  ASSERT_FALSE(ExtensionDownloadsEventRouter::DetermineFilename(
+      browser()->profile(),
+      false,
+      GetExtensionId(),
+      result_id,
+      base::FilePath(FILE_PATH_LITERAL("different")),
+      downloads::FILENAME_CONFLICT_ACTION_OVERWRITE,
+      &error));
+  EXPECT_EQ(errors::kTooManyListeners, error);
+
+  // The download should complete successfully.
+  ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"filename\": {"
+                         "    \"previous\": \"\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename("slow.txt").c_str())));
+  ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"state\": {"
+                         "    \"previous\": \"in_progress\","
+                         "    \"current\": \"complete\"}}]",
+                         result_id)));
 }
 
 IN_PROC_BROWSER_TEST_F(

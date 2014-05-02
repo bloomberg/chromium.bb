@@ -241,6 +241,9 @@ void DownloadTargetDeterminer::NotifyExtensionsDone(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(20) << "Extension suggested path: " << suggested_path.AsUTF8Unsafe();
 
+  // Extensions should not call back here more than once.
+  DCHECK_EQ(STATE_RESERVE_VIRTUAL_PATH, next_state_);
+
   if (!suggested_path.empty()) {
     // If an extension overrides the filename, then the target directory will be
     // forced to download_prefs_->DownloadPath() since extensions cannot place
@@ -284,6 +287,8 @@ void DownloadTargetDeterminer::ReserveVirtualPathDone(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(20) << "Reserved path: " << path.AsUTF8Unsafe()
             << " Verified:" << verified;
+  DCHECK_EQ(STATE_PROMPT_USER_FOR_DOWNLOAD_PATH, next_state_);
+
   should_prompt_ = (should_prompt_ || !verified);
   virtual_path_ = path;
   DoLoop();
@@ -315,6 +320,8 @@ void DownloadTargetDeterminer::PromptUserForDownloadPathDone(
     CancelOnFailureAndDeleteSelf();
     return;
   }
+  DCHECK_EQ(STATE_DETERMINE_LOCAL_PATH, next_state_);
+
   virtual_path_ = virtual_path;
   download_prefs_->SetSaveFilePath(virtual_path_.DirName());
   DoLoop();
@@ -345,6 +352,8 @@ void DownloadTargetDeterminer::DetermineLocalPathDone(
     CancelOnFailureAndDeleteSelf();
     return;
   }
+  DCHECK_EQ(STATE_DETERMINE_MIME_TYPE, next_state_);
+
   local_path_ = local_path;
   DoLoop();
 }
@@ -372,6 +381,8 @@ void DownloadTargetDeterminer::DetermineMimeTypeDone(
     const std::string& mime_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(20) << "MIME type: " << mime_type;
+  DCHECK_EQ(STATE_DETERMINE_IF_HANDLED_SAFELY_BY_BROWSER, next_state_);
+
   mime_type_ = mime_type;
   DoLoop();
 }
@@ -477,8 +488,9 @@ DownloadTargetDeterminer::Result
 void DownloadTargetDeterminer::DetermineIfHandledSafelyDone(
     bool is_handled_safely) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  is_filetype_handled_safely_ = is_handled_safely;
   DVLOG(20) << "Is file type handled safely: " << is_filetype_handled_safely_;
+  DCHECK_EQ(STATE_CHECK_DOWNLOAD_URL, next_state_);
+  is_filetype_handled_safely_ = is_handled_safely;
   DoLoop();
 }
 
@@ -499,6 +511,7 @@ void DownloadTargetDeterminer::CheckDownloadUrlDone(
     content::DownloadDangerType danger_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(20) << "URL Check Result:" << danger_type;
+  DCHECK_EQ(STATE_CHECK_VISITED_REFERRER_BEFORE, next_state_);
   danger_type_ = danger_type;
   DoLoop();
 }
@@ -549,6 +562,7 @@ DownloadTargetDeterminer::Result
 void DownloadTargetDeterminer::CheckVisitedReferrerBeforeDone(
     bool visited_referrer_before) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(STATE_DETERMINE_INTERMEDIATE_PATH, next_state_);
   if (IsDangerousFile(
           visited_referrer_before ? VISITED_REFERRER : NO_VISITS_TO_REFERRER))
     danger_type_ = content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
