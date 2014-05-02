@@ -18,6 +18,8 @@
 #include "extensions/browser/extension_system.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 namespace file_system_provider {
 namespace {
@@ -85,7 +87,7 @@ void Service::SetFileSystemFactoryForTests(
 
 int Service::MountFileSystem(const std::string& extension_id,
                              const std::string& file_system_name) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Restrict number of file systems to prevent system abusing.
   if (file_system_map_.size() + 1 > kMaxFileSystems) {
@@ -151,7 +153,7 @@ int Service::MountFileSystem(const std::string& extension_id,
 
 bool Service::UnmountFileSystem(const std::string& extension_id,
                                 int file_system_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const ProvidedFileSystemMap::iterator file_system_it =
       file_system_map_.find(file_system_id);
@@ -199,7 +201,7 @@ bool Service::UnmountFileSystem(const std::string& extension_id,
 }
 
 bool Service::RequestUnmount(int file_system_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ProvidedFileSystemMap::iterator file_system_it =
       file_system_map_.find(file_system_id);
@@ -214,7 +216,7 @@ bool Service::RequestUnmount(int file_system_id) {
 }
 
 std::vector<ProvidedFileSystemInfo> Service::GetProvidedFileSystemInfoList() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::vector<ProvidedFileSystemInfo> result;
   for (ProvidedFileSystemMap::const_iterator it = file_system_map_.begin();
@@ -228,7 +230,7 @@ std::vector<ProvidedFileSystemInfo> Service::GetProvidedFileSystemInfoList() {
 ProvidedFileSystemInterface* Service::GetProvidedFileSystem(
     const std::string& extension_id,
     int file_system_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const ProvidedFileSystemMap::const_iterator file_system_it =
       file_system_map_.find(file_system_id);
@@ -263,7 +265,7 @@ void Service::OnExtensionUnloaded(
 
 ProvidedFileSystemInterface* Service::GetProvidedFileSystem(
     const std::string& mount_point_name) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const MountPointNameToIdMap::const_iterator mapping_it =
       mount_point_name_to_id_map_.find(mount_point_name);

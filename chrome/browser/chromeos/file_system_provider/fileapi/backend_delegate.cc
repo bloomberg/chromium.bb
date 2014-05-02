@@ -23,7 +23,7 @@ BackendDelegate::~BackendDelegate() {}
 
 fileapi::AsyncFileUtil* BackendDelegate::GetAsyncFileUtil(
     fileapi::FileSystemType type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(fileapi::kFileSystemTypeProvided, type);
   return async_file_util_.get();
 }
@@ -34,7 +34,7 @@ BackendDelegate::CreateFileStreamReader(
     int64 offset,
     const base::Time& expected_modification_time,
     fileapi::FileSystemContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(fileapi::kFileSystemTypeProvided, url.type());
   NOTIMPLEMENTED();
   return scoped_ptr<webkit_blob::FileStreamReader>();
@@ -44,7 +44,7 @@ scoped_ptr<fileapi::FileStreamWriter> BackendDelegate::CreateFileStreamWriter(
     const fileapi::FileSystemURL& url,
     int64 offset,
     fileapi::FileSystemContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(fileapi::kFileSystemTypeProvided, url.type());
   NOTIMPLEMENTED();
   return scoped_ptr<fileapi::FileStreamWriter>();

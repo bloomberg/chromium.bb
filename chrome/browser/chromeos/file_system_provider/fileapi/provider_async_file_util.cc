@@ -56,7 +56,7 @@ void ProviderAsyncFileUtil::CreateOrOpen(
     const fileapi::FileSystemURL& url,
     int file_flags,
     const CreateOrOpenCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::PlatformFile platform_file = base::kInvalidPlatformFileValue;
   if ((file_flags & base::PLATFORM_FILE_CREATE) ||
       (file_flags & base::PLATFORM_FILE_OPEN_ALWAYS) ||
@@ -78,7 +78,7 @@ void ProviderAsyncFileUtil::EnsureFileExists(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const EnsureFileExistsCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   callback.Run(base::File::FILE_ERROR_SECURITY, false /* created */);
 }
 
@@ -88,7 +88,7 @@ void ProviderAsyncFileUtil::CreateDirectory(
     bool exclusive,
     bool recursive,
     const StatusCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
@@ -96,7 +96,7 @@ void ProviderAsyncFileUtil::GetFileInfo(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const GetFileInfoCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
                           base::Bind(&GetFileInfoOnUIThread,
@@ -109,7 +109,7 @@ void ProviderAsyncFileUtil::ReadDirectory(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   NOTIMPLEMENTED();
   callback.Run(base::File::FILE_ERROR_NOT_FOUND, EntryList(), false);
 }
@@ -120,7 +120,7 @@ void ProviderAsyncFileUtil::Touch(
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
     const StatusCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
@@ -129,7 +129,7 @@ void ProviderAsyncFileUtil::Truncate(
     const fileapi::FileSystemURL& url,
     int64 length,
     const StatusCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
@@ -140,7 +140,7 @@ void ProviderAsyncFileUtil::CopyFileLocal(
     CopyOrMoveOption option,
     const CopyFileProgressCallback& progress_callback,
     const StatusCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
@@ -150,7 +150,7 @@ void ProviderAsyncFileUtil::MoveFileLocal(
     const fileapi::FileSystemURL& dest_url,
     CopyOrMoveOption option,
     const StatusCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
@@ -159,7 +159,7 @@ void ProviderAsyncFileUtil::CopyInForeignFile(
     const base::FilePath& src_file_path,
     const fileapi::FileSystemURL& dest_url,
     const StatusCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
@@ -167,7 +167,7 @@ void ProviderAsyncFileUtil::DeleteFile(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const StatusCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
@@ -175,7 +175,7 @@ void ProviderAsyncFileUtil::DeleteDirectory(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const StatusCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
@@ -183,7 +183,7 @@ void ProviderAsyncFileUtil::DeleteRecursively(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const StatusCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
@@ -191,7 +191,7 @@ void ProviderAsyncFileUtil::CreateSnapshotFile(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const CreateSnapshotFileCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   NOTIMPLEMENTED();
   callback.Run(base::File::FILE_ERROR_NOT_FOUND,
                base::File::Info(),
