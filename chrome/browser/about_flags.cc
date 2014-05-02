@@ -1739,11 +1739,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(app_list::switches::kEnableExperimentalAppList)
   },
   {
-    "enable-experimental-app-list-position",
-    IDS_FLAGS_ENABLE_EXPERIMENTAL_APP_LIST_POSITION_NAME,
-    IDS_FLAGS_ENABLE_EXPERIMENTAL_APP_LIST_POSITION_DESCRIPTION,
+    "enable-centered-app-list",
+    IDS_FLAGS_ENABLE_CENTERED_APP_LIST_NAME,
+    IDS_FLAGS_ENABLE_CENTERED_APP_LIST_DESCRIPTION,
     kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(app_list::switches::kEnableExperimentalAppListPosition)
+    SINGLE_VALUE_TYPE(app_list::switches::kEnableCenteredAppList)
   },
 #endif
   {

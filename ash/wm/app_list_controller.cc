@@ -171,7 +171,7 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
     aura::Window* root_window = window->GetRootWindow();
     aura::Window* container = GetRootWindowController(root_window)->
         GetContainer(kShellWindowId_AppListContainer);
-    is_centered_ = app_list::switches::IsExperimentalAppListPositionEnabled();
+    is_centered_ = app_list::switches::IsCenteredAppListEnabled();
     if (is_centered_) {
       // The experimental app list is centered over the primary display.
       view->InitAsBubbleAtFixedLocation(

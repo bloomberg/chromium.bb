@@ -63,8 +63,8 @@ gfx::Point AppListWin::FindAnchorPoint(const gfx::Size& view_size,
   // never overlap the taskbar.
   positioner.WorkAreaSubtract(taskbar_rect);
 
-  // The experimental app list is placed in the center of the screen.
-  if (app_list::switches::IsExperimentalAppListPositionEnabled())
+  // Special case for app list in the center of the screen.
+  if (app_list::switches::IsCenteredAppListEnabled())
     return positioner.GetAnchorPointForScreenCenter();
 
   // Find which edge of the screen the taskbar is attached to.

@@ -14,8 +14,8 @@ namespace switches {
 APP_LIST_EXPORT extern const char kDisableSyncAppList[];
 APP_LIST_EXPORT extern const char kDisableVoiceSearch[];
 APP_LIST_EXPORT extern const char kEnableAppInfo[];
+APP_LIST_EXPORT extern const char kEnableCenteredAppList[];
 APP_LIST_EXPORT extern const char kEnableExperimentalAppList[];
-APP_LIST_EXPORT extern const char kEnableExperimentalAppListPosition[];
 APP_LIST_EXPORT extern const char kEnableHotwordAlwaysOn[];
 APP_LIST_EXPORT extern const char kEnableSyncAppList[];
 
@@ -29,7 +29,7 @@ bool APP_LIST_EXPORT IsAppInfoEnabled();
 
 bool APP_LIST_EXPORT IsExperimentalAppListEnabled();
 
-bool APP_LIST_EXPORT IsExperimentalAppListPositionEnabled();
+bool APP_LIST_EXPORT IsCenteredAppListEnabled();
 
 }  // namespace switches
 }  // namespace app_list
