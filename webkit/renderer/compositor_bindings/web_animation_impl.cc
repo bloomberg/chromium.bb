@@ -134,7 +134,10 @@ bool WebAnimationImpl::alternatesDirection() const {
 }
 
 void WebAnimationImpl::setAlternatesDirection(bool alternates) {
-  return animation_->set_direction(cc::Animation::Alternate);
+  if (alternates)
+    animation_->set_direction(cc::Animation::Alternate);
+  else
+    animation_->set_direction(cc::Animation::Normal);
 }
 #endif
 

@@ -50,6 +50,8 @@ TEST(WebAnimationTest, ModifiedSettings) {
   EXPECT_EQ(WebAnimation::DirectionReverse, animation->direction());
 #else
   EXPECT_TRUE(animation->alternatesDirection());
+  animation->setAlternatesDirection(false);
+  EXPECT_FALSE(animation->alternatesDirection());
 #endif
 }
 
