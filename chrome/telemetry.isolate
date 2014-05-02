@@ -32,7 +32,7 @@
           '../tools/crx_id/',
           '../tools/telemetry/',
           '../third_party/android_testrunner/',
-          '../third_party/web-page-replay/',
+          '../third_party/webpagereplay/',
         ],
       },
     }],
