@@ -101,7 +101,7 @@ extern const char kDisableXSSAuditor[];
 CONTENT_EXPORT extern const char kDisableZeroCopy[];
 CONTENT_EXPORT extern const char kDomAutomationController[];
 CONTENT_EXPORT extern const char kEnableBleedingEdgeRenderingFastPaths[];
-CONTENT_EXPORT extern const char kEnableDeferredFilters[];
+CONTENT_EXPORT extern const char kDisableDeferredFilters[];
 CONTENT_EXPORT extern const char kEnableAcceleratedFixedRootBackground[];
 CONTENT_EXPORT extern const char kEnableAcceleratedOverflowScroll[];
 CONTENT_EXPORT extern const char kEnableLayerSquashing[];
