@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 
 #include "base/command_line.h"
+#include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/user_metrics.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PermissionBubbleManager);
 
@@ -44,6 +46,7 @@ PermissionBubbleManager::~PermissionBubbleManager() {
 }
 
 void PermissionBubbleManager::AddRequest(PermissionBubbleRequest* request) {
+  content::RecordAction(base::UserMetricsAction("PermissionBubbleRequest"));
   // TODO(gbillock): is there a race between an early request on a
   // newly-navigated page and the to-be-cleaned-up requests on the previous
   // page? We should maybe listen to DidStartNavigationToPendingEntry (and
@@ -79,6 +82,8 @@ void PermissionBubbleManager::AddRequest(PermissionBubbleRequest* request) {
   }
 
   if (bubble_showing_) {
+    content::RecordAction(
+        base::UserMetricsAction("PermissionBubbleRequestQueued"));
     queued_requests_.push_back(request);
     return;
   }

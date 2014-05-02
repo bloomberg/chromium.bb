@@ -9276,6 +9276,21 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="PermissionBubbleRequest">
+  <owner>gbillock@chromium.org</owner>
+  <owner>leng@chromium.org</owner>
+  <description>A website requested a permission.</description>
+</action>
+
+<action name="PermissionBubbleRequestQueued">
+  <owner>gbillock@chromium.org</owner>
+  <owner>leng@chromium.org</owner>
+  <description>
+    A website requested a permission which was queued because an existing
+    permission request was already visible.
+  </description>
+</action>
+
 <action name="PlatformVerificationAccepted">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
