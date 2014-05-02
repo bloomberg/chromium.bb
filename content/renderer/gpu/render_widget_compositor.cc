@@ -23,6 +23,9 @@
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/debug/micro_benchmark.h"
 #include "cc/layers/layer.h"
+#include "cc/output/copy_output_request.h"
+#include "cc/output/copy_output_result.h"
+#include "cc/resources/single_release_callback.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/child/child_shared_bitmap_manager.h"
 #include "content/common/content_switches_internal.h"
@@ -31,8 +34,10 @@
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "third_party/WebKit/public/platform/WebCompositeAndReadbackAsyncCallback.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
+#include "ui/gfx/frame_time.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/native_theme/native_theme_switches.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
@@ -552,6 +557,31 @@ bool RenderWidgetCompositor::compositeAndReadback(
     void *pixels, const WebRect& rect_in_device_viewport) {
   return layer_tree_host_->CompositeAndReadback(pixels,
                                                 rect_in_device_viewport);
+}
+
+void CompositeAndReadbackAsyncCallback(
+    blink::WebCompositeAndReadbackAsyncCallback* callback,
+    scoped_ptr<cc::CopyOutputResult> result) {
+  if (result->HasBitmap()) {
+    scoped_ptr<SkBitmap> result_bitmap = result->TakeBitmap();
+    callback->didCompositeAndReadback(*result_bitmap);
+  } else {
+    callback->didCompositeAndReadback(SkBitmap());
+  }
+}
+
+void RenderWidgetCompositor::compositeAndReadbackAsync(
+    blink::WebCompositeAndReadbackAsyncCallback* callback) {
+  DCHECK(layer_tree_host_->root_layer());
+  scoped_ptr<cc::CopyOutputRequest> request =
+      cc::CopyOutputRequest::CreateBitmapRequest(
+          base::Bind(&CompositeAndReadbackAsyncCallback, callback));
+  layer_tree_host_->root_layer()->RequestCopyOfOutput(request.Pass());
+  if (!threaded_) {
+    widget_->webwidget()->animate(0.0);
+    widget_->webwidget()->layout();
+    layer_tree_host_->Composite(gfx::FrameTime::Now());
+  }
 }
 
 void RenderWidgetCompositor::finishAllRendering() {

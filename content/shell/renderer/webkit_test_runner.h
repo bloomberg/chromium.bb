@@ -18,6 +18,7 @@
 #include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 #include "v8/include/v8.h"
 
+class SkBitmap;
 class SkCanvas;
 
 namespace blink {
@@ -130,6 +131,8 @@ class WebKitTestRunner : public RenderViewObserver,
   // After finishing the test, retrieves the audio, text, and pixel dumps from
   // the TestRunner library and sends them to the browser process.
   void CaptureDump();
+  void CaptureDumpPixels(const SkBitmap& snapshot);
+  void CaptureDumpComplete();
 
   WebTestProxyBase* proxy_;
 

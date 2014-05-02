@@ -640,6 +640,7 @@ void WebKitTestRunner::Reset() {
 void WebKitTestRunner::CaptureDump() {
   WebTestInterfaces* interfaces =
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
+  TRACE_EVENT0("shell", "WebKitTestRunner::CaptureDump");
 
   if (interfaces->testRunner()->shouldDumpAsAudio()) {
     std::vector<unsigned char> vector_data;
@@ -651,25 +652,49 @@ void WebKitTestRunner::CaptureDump() {
 
     if (test_config_.enable_pixel_dumping &&
         interfaces->testRunner()->shouldGeneratePixelResults()) {
-      SkBitmap snapshot;
-      CopyCanvasToBitmap(proxy()->capturePixels(), &snapshot);
-
-      SkAutoLockPixels snapshot_lock(snapshot);
-      base::MD5Digest digest;
-      base::MD5Sum(snapshot.getPixels(), snapshot.getSize(), &digest);
-      std::string actual_pixel_hash = base::MD5DigestToBase16(digest);
-
-      if (actual_pixel_hash == test_config_.expected_pixel_hash) {
-        SkBitmap empty_image;
-        Send(new ShellViewHostMsg_ImageDump(
-            routing_id(), actual_pixel_hash, empty_image));
-      } else {
-        Send(new ShellViewHostMsg_ImageDump(
-            routing_id(), actual_pixel_hash, snapshot));
-      }
+      proxy()->CapturePixelsAsync(base::Bind(
+          &WebKitTestRunner::CaptureDumpPixels, base::Unretained(this)));
+      return;
     }
   }
 
+  CaptureDumpComplete();
+}
+
+void WebKitTestRunner::CaptureDumpPixels(const SkBitmap& compositor_snapshot) {
+  SkBitmap snapshot = compositor_snapshot;
+
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  if (!cmd->HasSwitch(switches::kForceCompositingMode) &&
+      !cmd->HasSwitch(switches::kEnableThreadedCompositing)) {
+    // If the readback fails because we're not in compositing mode, do a
+    // synchronous software readback here. This can go away when we have FCM
+    // always.
+    if (!snapshot.info().fWidth || snapshot.info().fHeight)
+      CopyCanvasToBitmap(proxy()->capturePixels(), &snapshot);
+  }
+
+  DCHECK_NE(0, snapshot.info().fWidth);
+  DCHECK_NE(0, snapshot.info().fHeight);
+
+  SkAutoLockPixels snapshot_lock(snapshot);
+  base::MD5Digest digest;
+  base::MD5Sum(snapshot.getPixels(), snapshot.getSize(), &digest);
+  std::string actual_pixel_hash = base::MD5DigestToBase16(digest);
+
+  if (actual_pixel_hash == test_config_.expected_pixel_hash) {
+    SkBitmap empty_image;
+    Send(new ShellViewHostMsg_ImageDump(
+        routing_id(), actual_pixel_hash, empty_image));
+  } else {
+    Send(new ShellViewHostMsg_ImageDump(
+        routing_id(), actual_pixel_hash, snapshot));
+  }
+
+  CaptureDumpComplete();
+}
+
+void WebKitTestRunner::CaptureDumpComplete() {
   render_view()->GetWebView()->mainFrame()->stopLoading();
 
   base::MessageLoop::current()->PostTask(
