@@ -30,6 +30,7 @@ class ManifestService {
   ~ManifestService();
 
   void StartupInitializationComplete();
+  bool OpenResource(const char* file, int* fd);
 
  private:
   scoped_ptr<IPC::ChannelProxy> channel_;

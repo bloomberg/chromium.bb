@@ -41,6 +41,7 @@ namespace plugin {
 
 class ErrorInfo;
 class Manifest;
+class OpenManifestEntryAsyncCallback;
 class Plugin;
 class SrpcClient;
 class ServiceRuntime;
@@ -87,13 +88,19 @@ struct OpenManifestEntryResource {
  public:
   OpenManifestEntryResource(const std::string& target_url,
                             struct NaClFileInfo* finfo,
-                            bool* op_complete)
+                            bool* op_complete,
+                            OpenManifestEntryAsyncCallback* callback)
       : url(target_url),
         file_info(finfo),
-        op_complete_ptr(op_complete) {}
+        op_complete_ptr(op_complete),
+        callback(callback) {}
+  ~OpenManifestEntryResource();
+  void MaybeRunCallback(int32_t pp_error);
+
   std::string url;
   struct NaClFileInfo* file_info;
   bool* op_complete_ptr;
+  OpenManifestEntryAsyncCallback* callback;
 };
 
 struct CloseManifestEntryResource {
@@ -169,6 +176,15 @@ class PluginReverseInterface: public nacl::ReverseInterface {
   void AddQuotaManagedFile(const nacl::string& file_id,
                            const pp::FileIO& file_io);
   void AddTempQuotaManagedFile(const nacl::string& file_id);
+
+  // This is a sibling of OpenManifestEntry. While OpenManifestEntry is
+  // a sync function and must be called on a non-main thread,
+  // OpenManifestEntryAsync must be called on the main thread. Upon completion
+  // (even on error), callback will be invoked. The caller has responsibility
+  // to keep the memory passed to info until callback is invoked.
+  void OpenManifestEntryAsync(const nacl::string& key,
+                              struct NaClFileInfo* info,
+                              OpenManifestEntryAsyncCallback* callback);
 
  protected:
   virtual void PostMessage_MainThreadContinuation(PostMessageResource* p,

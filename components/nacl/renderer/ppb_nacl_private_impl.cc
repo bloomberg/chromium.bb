@@ -164,13 +164,13 @@ class ChannelConnectedCallback {
   DISALLOW_COPY_AND_ASSIGN(ChannelConnectedCallback);
 };
 
-// Thin adapter from PP_ManifestService to ManifestServiceChannel::Delegate.
+// Thin adapter from PPP_ManifestService to ManifestServiceChannel::Delegate.
 // Note that user_data is managed by the caller of LaunchSelLdr. Please see
 // also PP_ManifestService's comment for more details about resource
 // management.
 class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
  public:
-  ManifestServiceProxy(const PP_ManifestService* manifest_service,
+  ManifestServiceProxy(const PPP_ManifestService* manifest_service,
                        void* user_data)
       : manifest_service_(*manifest_service),
         user_data_(user_data) {
@@ -190,7 +190,30 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
     }
   }
 
+  virtual void OpenResource(
+      const std::string& key,
+      const ManifestServiceChannel::OpenResourceCallback& callback) OVERRIDE {
+    if (!user_data_)
+      return;
+
+    // The allocated callback will be freed in DidOpenResource, which is always
+    // called regardless whether OpenResource() succeeds or fails.
+    if (!PP_ToBool(manifest_service_.OpenResource(
+            user_data_,
+            key.c_str(),
+            DidOpenResource,
+            new ManifestServiceChannel::OpenResourceCallback(callback)))) {
+      user_data_ = NULL;
+    }
+  }
+
  private:
+  static void DidOpenResource(void* user_data, PP_FileHandle file_handle) {
+    scoped_ptr<ManifestServiceChannel::OpenResourceCallback> callback(
+        static_cast<ManifestServiceChannel::OpenResourceCallback*>(user_data));
+    callback->Run(file_handle);
+  }
+
   void Quit() {
     if (!user_data_)
       return;
@@ -200,7 +223,7 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
     user_data_ = NULL;
   }
 
-  PP_ManifestService manifest_service_;
+  PPP_ManifestService manifest_service_;
   void* user_data_;
   DISALLOW_COPY_AND_ASSIGN(ManifestServiceProxy);
 };
@@ -215,7 +238,7 @@ void LaunchSelLdr(PP_Instance instance,
                   PP_Bool enable_dyncode_syscalls,
                   PP_Bool enable_exception_handling,
                   PP_Bool enable_crash_throttling,
-                  const PP_ManifestService* manifest_service_interface,
+                  const PPP_ManifestService* manifest_service_interface,
                   void* manifest_service_user_data,
                   void* imc_handle,
                   struct PP_Var* error_message,
@@ -327,7 +350,14 @@ void LaunchSelLdr(PP_Instance instance,
   }
 
   // Stash the manifest service handle as well.
+  // For security hardening, disable the IPCs for open_resource() when they
+  // aren't needed.  PNaCl doesn't expose open_resource(), and the new
+  // open_resource() IPCs are currently only used for Non-SFI NaCl so far,
+  // not SFI NaCl. Note that enable_dyncode_syscalls is true if and only if
+  // the plugin is a non-PNaCl plugin.
   if (load_manager &&
+      enable_dyncode_syscalls &&
+      uses_nonsfi_mode &&
       IsValidChannelHandle(
           launch_result.manifest_service_ipc_channel_handle)) {
     scoped_ptr<ManifestServiceChannel> manifest_service_channel(

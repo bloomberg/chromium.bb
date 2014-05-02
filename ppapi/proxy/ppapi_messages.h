@@ -756,6 +756,11 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_ChannelCreated,
 // Notify the renderer that the PPAPI channel gets ready in the plugin.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_StartupInitializationComplete);
 
+// Calls renderer to open a resource file for nacl_irt_open_resource().
+IPC_SYNC_MESSAGE_CONTROL1_1(PpapiHostMsg_OpenResource,
+                            std::string /* key */,
+                            ppapi::proxy::SerializedHandle /* fd */)
+
 // Logs the given message to the console of all instances.
 IPC_MESSAGE_CONTROL4(PpapiHostMsg_LogWithSource,
                      PP_Instance /* instance */,

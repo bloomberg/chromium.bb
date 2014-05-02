@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Wed Apr 30 14:13:27 2014. */
+/* From private/ppb_nacl_private.idl modified Sat May  3 04:07:13 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -15,8 +15,8 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PP_MANIFESTSERVICE_INTERFACE_1_0 "PP_ManifestService;1.0"
-#define PP_MANIFESTSERVICE_INTERFACE PP_MANIFESTSERVICE_INTERFACE_1_0
+#define PPP_MANIFESTSERVICE_INTERFACE_1_0 "PPP_ManifestService;1.0"
+#define PPP_MANIFESTSERVICE_INTERFACE PPP_MANIFESTSERVICE_INTERFACE_1_0
 
 #define PPB_NACL_PRIVATE_INTERFACE_1_0 "PPB_NaCl_Private;1.0"
 #define PPB_NACL_PRIVATE_INTERFACE PPB_NACL_PRIVATE_INTERFACE_1_0
@@ -168,6 +168,17 @@ struct PP_PNaClOptions {
  */
 
 /**
+ * @addtogroup Typedefs
+ * @{
+ */
+/* Callback invoked upon completion of PPP_ManifestService::OpenResource(). */
+typedef void (*PP_OpenResourceCompletionCallback)(void* user_data,
+                                                  PP_FileHandle file_handle);
+/**
+ * @}
+ */
+
+/**
  * @addtogroup Interfaces
  * @{
  */
@@ -178,14 +189,21 @@ struct PP_PNaClOptions {
  * Once false is called, as the service has been destructed, all functions
  * should never be called afterwords.
  */
-struct PP_ManifestService_1_0 {
+struct PPP_ManifestService_1_0 {
   /* Called when ManifestService should be destructed. */
   PP_Bool (*Quit)(void* user_data);
   /* Called when PPAPI initialization in the NaCl plugin is finished. */
   PP_Bool (*StartupInitializationComplete)(void* user_data);
+  /* Called when irt_open_resource() is invoked in the NaCl plugin.
+   * Upon completion, callback will be invoked with given callback_user_data
+   * and the result file handle (or PP_kInvalidFileHandle on error). */
+  PP_Bool (*OpenResource)(void* user_data,
+                          const char* entry_key,
+                          PP_OpenResourceCompletionCallback callback,
+                          void* callback_user_data);
 };
 
-typedef struct PP_ManifestService_1_0 PP_ManifestService;
+typedef struct PPP_ManifestService_1_0 PPP_ManifestService;
 
 /* PPB_NaCl_Private */
 struct PPB_NaCl_Private_1_0 {
@@ -218,7 +236,7 @@ struct PPB_NaCl_Private_1_0 {
       PP_Bool enable_dyncode_syscalls,
       PP_Bool enable_exception_handling,
       PP_Bool enable_crash_throttling,
-      const struct PP_ManifestService_1_0* manifest_service_interface,
+      const struct PPP_ManifestService_1_0* manifest_service_interface,
       void* manifest_service_user_data,
       void* imc_handle,
       struct PP_Var* error_message,

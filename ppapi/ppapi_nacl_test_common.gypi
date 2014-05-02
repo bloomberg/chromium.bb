@@ -19,6 +19,7 @@
       'nacl_newlib_out_dir': '<(PRODUCT_DIR)/>(nexe_destination_dir)/newlib',
       'nacl_glibc_out_dir': '<(PRODUCT_DIR)/>(nexe_destination_dir)/glibc',
       'nacl_pnacl_newlib_out_dir': '<(PRODUCT_DIR)/>(nexe_destination_dir)/pnacl',
+      'nacl_pnacl_newlib_nonsfi_out_dir': '<(PRODUCT_DIR)/>(nexe_destination_dir)/nonsfi',
       'target_conditions': [
         ['nexe_target!=""', {
           # These variables are used for nexe building and for library building.
@@ -33,6 +34,7 @@
           'nmf_glibc%': '>(nacl_glibc_out_dir)/>(nexe_target).nmf',
           'out_pnacl_newlib%': '>(nacl_pnacl_newlib_out_dir)/>(nexe_target)_newlib_pnacl.pexe',
           'nmf_pnacl_newlib%': '>(nacl_pnacl_newlib_out_dir)/>(nexe_target).nmf',
+          'out_pnacl_newlib_x86_32_nonsfi_nexe': '>(nacl_pnacl_newlib_nonsfi_out_dir)/>(nexe_target)_pnacl_newlib_x32_nonsfi.nexe',
         }],
       ],
     },
@@ -62,10 +64,21 @@
           },
         ],
       }],
-      ['test_files!=[] and build_pnacl_newlib==1 and disable_pnacl==0', {
+      # Nonsfi pnacl copy is covered below. Currently, these are exclusive.
+      ['test_files!=[] and build_pnacl_newlib==1 and disable_pnacl==0 and enable_x86_32_nonsfi==0', {
         'copies': [
           {
             'destination': '>(nacl_pnacl_newlib_out_dir)',
+            'files': [
+              '>@(test_files)',
+            ],
+          },
+        ],
+      }],
+      ['test_files!=[] and build_pnacl_newlib==1 and enable_x86_32_nonsfi==1', {
+        'copies': [
+          {
+            'destination': '>(nacl_pnacl_newlib_nonsfi_out_dir)',
             'files': [
               '>@(test_files)',
             ],

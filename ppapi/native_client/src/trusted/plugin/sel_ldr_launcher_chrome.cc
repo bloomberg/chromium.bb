@@ -27,7 +27,7 @@ void SelLdrLauncherChrome::Start(
     bool enable_dyncode_syscalls,
     bool enable_exception_handling,
     bool enable_crash_throttling,
-    const PP_ManifestService* manifest_service_interface,
+    const PPP_ManifestService* manifest_service_interface,
     void* manifest_service_user_data,
     PP_Var* error_message,
     pp::CompletionCallback callback) {

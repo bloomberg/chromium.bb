@@ -1170,6 +1170,46 @@
             },
           ],
         },
+        {
+          'target_name': 'nonsfi_irt_manifest_file',
+          'type': 'none',
+          'variables': {
+            'nexe_target': 'irt_manifest_file',
+            'enable_x86_32': 0,
+            'enable_x86_64': 0,
+            'enable_x86_32_nonsfi': 1,
+            'build_pnacl_newlib': 1,
+            # create_nmf.py doesn't support nonsfi.
+            # TODO(crbug.com/368949): Clean this up after nonsfi support on
+            # create_nmf.py.
+            'generate_nmf': 0,
+            'nexe_destination_dir': 'nacl_test_data',
+            'link_flags': [
+              '-lnacl_ppapi_util',
+              '-lppapi_cpp',
+              '-lppapi',
+              '-lnacl',
+            ],
+            'sources': [
+              'manifest_file/irt_manifest_file_test.cc',
+            ],
+            'test_files': [
+              # TODO(ncbray) move into chrome/test/data/nacl when all tests are
+              # converted.
+              '<(DEPTH)/ppapi/native_client/tools/browser_tester/browserdata/nacltest.js',
+              'manifest_file/irt_manifest_file.nmf',
+              'manifest_file/irt_manifest_file_test.html',
+              'manifest_file/test_file.txt',
+            ],
+          },
+          'dependencies': [
+            '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+            '<(DEPTH)/ppapi/ppapi_nacl.gyp:ppapi_cpp_lib',
+            '<(DEPTH)/ppapi/native_client/native_client.gyp:ppapi_lib',
+            '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib',
+            'nacl_ppapi_util',
+          ],
+        },
       ],
     }],
   ],
