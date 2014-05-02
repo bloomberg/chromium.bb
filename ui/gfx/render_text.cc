@@ -501,26 +501,28 @@ void RenderText::SetCursorPosition(size_t position) {
 void RenderText::MoveCursor(BreakType break_type,
                             VisualCursorDirection direction,
                             bool select) {
-  SelectionModel position(cursor_position(), selection_model_.caret_affinity());
+  SelectionModel cursor(cursor_position(), selection_model_.caret_affinity());
   // Cancelling a selection moves to the edge of the selection.
   if (break_type != LINE_BREAK && !selection().is_empty() && !select) {
     SelectionModel selection_start = GetSelectionModelForSelectionStart();
     int start_x = GetCursorBounds(selection_start, true).x();
-    int cursor_x = GetCursorBounds(position, true).x();
+    int cursor_x = GetCursorBounds(cursor, true).x();
     // Use the selection start if it is left (when |direction| is CURSOR_LEFT)
     // or right (when |direction| is CURSOR_RIGHT) of the selection end.
     if (direction == CURSOR_RIGHT ? start_x > cursor_x : start_x < cursor_x)
-      position = selection_start;
-    // For word breaks, use the nearest word boundary in the appropriate
-    // |direction|.
+      cursor = selection_start;
+    // Use the nearest word boundary in the proper |direction| for word breaks.
     if (break_type == WORD_BREAK)
-      position = GetAdjacentSelectionModel(position, break_type, direction);
+      cursor = GetAdjacentSelectionModel(cursor, break_type, direction);
+    // Use an adjacent selection model if the cursor is not at a valid position.
+    if (!IsValidCursorIndex(cursor.caret_pos()))
+      cursor = GetAdjacentSelectionModel(cursor, CHARACTER_BREAK, direction);
   } else {
-    position = GetAdjacentSelectionModel(position, break_type, direction);
+    cursor = GetAdjacentSelectionModel(cursor, break_type, direction);
   }
   if (select)
-    position.set_selection_start(selection().start());
-  MoveCursorTo(position);
+    cursor.set_selection_start(selection().start());
+  MoveCursorTo(cursor);
 }
 
 bool RenderText::MoveCursorTo(const SelectionModel& model) {
@@ -528,9 +530,8 @@ bool RenderText::MoveCursorTo(const SelectionModel& model) {
   size_t text_length = text().length();
   Range range(std::min(model.selection().start(), text_length),
               std::min(model.caret_pos(), text_length));
-  // The current model only supports caret positions at valid character indices.
-  if (!IsCursorablePosition(range.start()) ||
-      !IsCursorablePosition(range.end()))
+  // The current model only supports caret positions at valid cursor indices.
+  if (!IsValidCursorIndex(range.start()) || !IsValidCursorIndex(range.end()))
     return false;
   SelectionModel sel(range, model.caret_affinity());
   bool changed = sel != selection_model_;
@@ -548,7 +549,8 @@ bool RenderText::MoveCursorTo(const Point& point, bool select) {
 bool RenderText::SelectRange(const Range& range) {
   Range sel(std::min(range.start(), text().length()),
             std::min(range.end(), text().length()));
-  if (!IsCursorablePosition(sel.start()) || !IsCursorablePosition(sel.end()))
+  // Allow selection bounds at valid indicies amid multi-character graphemes.
+  if (!IsValidLogicalIndex(sel.start()) || !IsValidLogicalIndex(sel.end()))
     return false;
   LogicalCursorDirection affinity =
       (sel.is_reversed() || sel.is_empty()) ? CURSOR_FORWARD : CURSOR_BACKWARD;
@@ -767,6 +769,21 @@ void RenderText::DrawCursor(Canvas* canvas, const SelectionModel& position) {
   canvas->FillRect(GetCursorBounds(position, true), cursor_color_);
 }
 
+bool RenderText::IsValidLogicalIndex(size_t index) {
+  // Check that the index is at a valid code point (not mid-surrgate-pair) and
+  // that it's not truncated from the layout text (its glyph may be shown).
+  //
+  // Indices within truncated text are disallowed so users can easily interact
+  // with the underlying truncated text using the ellipsis as a proxy. This lets
+  // users select all text, select the truncated text, and transition from the
+  // last rendered glyph to the end of the text without getting invisible cursor
+  // positions nor needing unbounded arrow key presses to traverse the ellipsis.
+  return index == 0 || index == text().length() ||
+      (index < text().length() &&
+       (truncate_length_ == 0 || index < truncate_length_) &&
+       IsValidCodePointIndex(text(), index));
+}
+
 Rect RenderText::GetCursorBounds(const SelectionModel& caret,
                                  bool insert_mode) {
   // TODO(ckocagil): Support multiline. This function should return the height
@@ -774,9 +791,8 @@ Rect RenderText::GetCursorBounds(const SelectionModel& caret,
   //                 the multiline size, eliminate its use here.
 
   EnsureLayout();
-
   size_t caret_pos = caret.caret_pos();
-  DCHECK(IsCursorablePosition(caret_pos));
+  DCHECK(IsValidLogicalIndex(caret_pos));
   // In overtype mode, ignore the affinity and always indicate that we will
   // overtype the next character.
   LogicalCursorDirection caret_affinity =
@@ -817,7 +833,7 @@ size_t RenderText::IndexOfAdjacentGrapheme(size_t index,
   if (direction == CURSOR_FORWARD) {
     while (index < text().length()) {
       index++;
-      if (IsCursorablePosition(index))
+      if (IsValidCursorIndex(index))
         return index;
     }
     return text().length();
@@ -825,7 +841,7 @@ size_t RenderText::IndexOfAdjacentGrapheme(size_t index,
 
   while (index > 0) {
     index--;
-    if (IsCursorablePosition(index))
+    if (IsValidCursorIndex(index))
       return index;
   }
   return 0;
@@ -1108,7 +1124,7 @@ bool RenderText::RangeContainsCaret(const Range& range,
 
 void RenderText::MoveCursorTo(size_t position, bool select) {
   size_t cursor = std::min(position, text().length());
-  if (IsCursorablePosition(cursor))
+  if (IsValidCursorIndex(cursor))
     SetSelectionModel(SelectionModel(
         Range(select ? selection().start() : cursor, cursor),
         (cursor == 0) ? CURSOR_FORWARD : CURSOR_BACKWARD));

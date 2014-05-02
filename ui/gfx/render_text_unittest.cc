@@ -44,8 +44,7 @@ const wchar_t kRtlLtrRtl[] = L"\x5d0" L"a" L"\x5d1";
 #endif
 
 // Checks whether |range| contains |index|. This is not the same as calling
-// |range.Contains(gfx::Range(index))| - as that would return true when
-// |index| == |range.end()|.
+// range.Contains(Range(index)), which returns true if |index| == |range.end()|.
 bool IndexInRange(const Range& range, size_t index) {
   return index >= range.start() && index < range.end();
 }
@@ -295,9 +294,9 @@ TEST_F(RenderTextTest, ObscuredText) {
   EXPECT_EQ(1U, render_text->TextIndexToLayoutIndex(2U));
   EXPECT_EQ(0U, render_text->LayoutIndexToTextIndex(0U));
   EXPECT_EQ(2U, render_text->LayoutIndexToTextIndex(1U));
-  EXPECT_TRUE(render_text->IsCursorablePosition(0U));
-  EXPECT_FALSE(render_text->IsCursorablePosition(1U));
-  EXPECT_TRUE(render_text->IsCursorablePosition(2U));
+  EXPECT_TRUE(render_text->IsValidCursorIndex(0U));
+  EXPECT_FALSE(render_text->IsValidCursorIndex(1U));
+  EXPECT_TRUE(render_text->IsValidCursorIndex(2U));
 
   // FindCursorPosition() should not return positions between a surrogate pair.
   render_text->SetDisplayRect(Rect(0, 0, 20, 20));
@@ -443,11 +442,11 @@ TEST_F(RenderTextTest, ElidedText) {
 
   scoped_ptr<RenderText> expected_render_text(RenderText::CreateInstance());
   expected_render_text->SetFontList(FontList("serif, Sans serif, 12px"));
-  expected_render_text->SetDisplayRect(gfx::Rect(0, 0, 9999, 100));
+  expected_render_text->SetDisplayRect(Rect(0, 0, 9999, 100));
 
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetFontList(FontList("serif, Sans serif, 12px"));
-  render_text->SetElideBehavior(gfx::ELIDE_AT_END);
+  render_text->SetElideBehavior(ELIDE_AT_END);
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     // Compute expected width
@@ -461,7 +460,7 @@ TEST_F(RenderTextTest, ElidedText) {
       input.append(WideToUTF16(L" MMMMMMMMMMM"));
 
     render_text->SetText(input);
-    render_text->SetDisplayRect(gfx::Rect(0, 0, expected_width, 100));
+    render_text->SetDisplayRect(Rect(0, 0, expected_width, 100));
     EXPECT_EQ(input, render_text->text())
         << "->For case " << i << ": " << cases[i].text << "\n";
     EXPECT_EQ(WideToUTF16(cases[i].layout_text), render_text->GetLayoutText())
@@ -473,14 +472,14 @@ TEST_F(RenderTextTest, ElidedText) {
 TEST_F(RenderTextTest, ElidedObscuredText) {
   scoped_ptr<RenderText> expected_render_text(RenderText::CreateInstance());
   expected_render_text->SetFontList(FontList("serif, Sans serif, 12px"));
-  expected_render_text->SetDisplayRect(gfx::Rect(0, 0, 9999, 100));
+  expected_render_text->SetDisplayRect(Rect(0, 0, 9999, 100));
   expected_render_text->SetText(WideToUTF16(L"**\x2026"));
 
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetFontList(FontList("serif, Sans serif, 12px"));
-  render_text->SetElideBehavior(gfx::ELIDE_AT_END);
+  render_text->SetElideBehavior(ELIDE_AT_END);
   render_text->SetDisplayRect(
-      gfx::Rect(0, 0, expected_render_text->GetContentWidth(), 100));
+      Rect(0, 0, expected_render_text->GetContentWidth(), 100));
   render_text->SetObscured(true);
   render_text->SetText(WideToUTF16(L"abcdef"));
   EXPECT_EQ(WideToUTF16(L"abcdef"), render_text->text());
@@ -892,26 +891,58 @@ TEST_F(RenderTextTest, GraphemePositions) {
     { kText3, 50, 6, 6 },
   };
 
-  // TODO(asvitkine): Disable tests that fail on XP bots due to lack of complete
-  //                  font support for some scripts - http://crbug.com/106450
 #if defined(OS_WIN)
+  // TODO(msw): XP fails due to lack of font support: http://crbug.com/106450
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return;
 #endif
 
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
+    SCOPED_TRACE(base::StringPrintf("Testing cases[%" PRIuS "]", i));
     render_text->SetText(cases[i].text);
 
     size_t next = render_text->IndexOfAdjacentGrapheme(cases[i].index,
                                                        CURSOR_FORWARD);
     EXPECT_EQ(cases[i].expected_next, next);
-    EXPECT_TRUE(render_text->IsCursorablePosition(next));
+    EXPECT_TRUE(render_text->IsValidCursorIndex(next));
 
     size_t previous = render_text->IndexOfAdjacentGrapheme(cases[i].index,
                                                            CURSOR_BACKWARD);
     EXPECT_EQ(cases[i].expected_previous, previous);
-    EXPECT_TRUE(render_text->IsCursorablePosition(previous));
+    EXPECT_TRUE(render_text->IsValidCursorIndex(previous));
+  }
+}
+
+TEST_F(RenderTextTest, MidGraphemeSelectionBounds) {
+#if defined(OS_WIN)
+  // TODO(msw): XP fails due to lack of font support: http://crbug.com/106450
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return;
+#endif
+
+  // Test that selection bounds may be set amid multi-character graphemes.
+  const base::string16 kHindi = WideToUTF16(L"\x0915\x093f");
+  const base::string16 kThai = WideToUTF16(L"\x0e08\x0e33");
+  const base::string16 cases[] = { kHindi, kThai };
+
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  for (size_t i = 0; i < arraysize(cases); i++) {
+    SCOPED_TRACE(base::StringPrintf("Testing cases[%" PRIuS "]", i));
+    render_text->SetText(cases[i]);
+    EXPECT_TRUE(render_text->IsValidLogicalIndex(1));
+#if !defined(OS_MACOSX)
+    EXPECT_FALSE(render_text->IsValidCursorIndex(1));
+#endif
+    EXPECT_TRUE(render_text->SelectRange(Range(2, 1)));
+    EXPECT_EQ(Range(2, 1), render_text->selection());
+    EXPECT_EQ(1U, render_text->cursor_position());
+    // Although selection bounds may be set within a multi-character grapheme,
+    // cursor movement (e.g. via arrow key) should avoid those indices.
+    render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, false);
+    EXPECT_EQ(0U, render_text->cursor_position());
+    render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
+    EXPECT_EQ(2U, render_text->cursor_position());
   }
 }
 
@@ -941,9 +972,8 @@ TEST_F(RenderTextTest, EdgeSelectionModels) {
     { kHebrewLatin, base::i18n::RIGHT_TO_LEFT },
   };
 
-  // TODO(asvitkine): Disable tests that fail on XP bots due to lack of complete
-  //                  font support for some scripts - http://crbug.com/106450
 #if defined(OS_WIN)
+  // TODO(msw): XP fails due to lack of font support: http://crbug.com/106450
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return;
 #endif

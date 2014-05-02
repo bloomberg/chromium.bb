@@ -1336,7 +1336,7 @@ bool Textfield::GetCompositionCharacterBounds(uint32 index,
   size_t text_index = composition_range.start() + index;
   if (composition_range.end() <= text_index)
     return false;
-  if (!render_text->IsCursorablePosition(text_index)) {
+  if (!render_text->IsValidCursorIndex(text_index)) {
     text_index = render_text->IndexOfAdjacentGrapheme(
         text_index, gfx::CURSOR_BACKWARD);
   }
