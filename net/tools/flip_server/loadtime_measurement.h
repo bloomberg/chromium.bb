@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+#include "base/file_util.h"
 #include "base/strings/string_split.h"
 
 // Class to handle loadtime measure related urls, which all start with testing
@@ -28,7 +29,7 @@ class LoadtimeMeasurement {
                       const std::string& pageload_html_file)
       : num_urls_(0), pageload_html_file_(pageload_html_file) {
     std::string urls_string;
-    read_file_to_string(urls_file.c_str(), &urls_string);
+    base::ReadFileToString(urls_file, &urls_string);
     base::SplitString(urls_string, '\n', &urls_);
     num_urls_ = urls_.size();
   }
@@ -41,7 +42,7 @@ class LoadtimeMeasurement {
     // remove "/testing/" from uri to get the action
     std::string action = uri.substr(9);
     if (pageload_html_file_.find(action) != std::string::npos) {
-      read_file_to_string(pageload_html_file_.c_str(), &output);
+      base::ReadFileToString(pageload_html_file_, &output);
       return;
     }
     if (action.find("get_total_iteration") == 0) {
@@ -86,22 +87,6 @@ class LoadtimeMeasurement {
   }
 
  private:
-  void read_file_to_string(const char* filename, std::string* output) {
-    output->clear();
-    int fd = open(filename, 0, "r");
-    if (fd == -1)
-      return;
-    char buffer[4096];
-    ssize_t read_status = read(fd, buffer, sizeof(buffer));
-    while (read_status > 0) {
-      output->append(buffer, static_cast<size_t>(read_status));
-      do {
-        read_status = read(fd, buffer, sizeof(buffer));
-      } while (read_status <= 0 && errno == EINTR);
-    }
-    close(fd);
-  }
-
   int num_urls_;
   std::vector<std::string> urls_;
   std::map<std::string, int> loadtimes_;
