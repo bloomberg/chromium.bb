@@ -120,3 +120,6 @@ TracingControllerTest.EnableCaptureAndDisableMonitoringWithFilePath
 
 # http://crbug.com/343604
 MSE_ClearKey/EncryptedMediaTest.ConfigChangeVideo/0
+
+# http://crbug.com/362852
+WebRtcBrowserTests/WebRtcBrowserTest.*
