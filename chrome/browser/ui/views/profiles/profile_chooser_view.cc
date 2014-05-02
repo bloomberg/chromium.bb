@@ -300,7 +300,7 @@ class EditableProfileName : public views::LabelButton,
 // A title card with one back button right aligned and one label center aligned.
 class TitleCard : public views::View {
  public:
-   TitleCard(int message_id, views::ButtonListener* listener,
+  TitleCard(int message_id, views::ButtonListener* listener,
              views::ImageButton** back_button) {
     back_button_ = new views::ImageButton(listener);
     back_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
@@ -324,6 +324,37 @@ class TitleCard : public views::View {
 
     AddChildView(back_button_);
     AddChildView(title_label_);
+  }
+
+  // Creates a new view that has the |title_card| with padding at the top, an
+  // edge-to-edge separator below, and the specified |view| at the bottom.
+  static views::View* AddPaddedTitleCard(views::View* view,
+                                         TitleCard* title_card,
+                                         int width) {
+    views::View* titled_view = new views::View();
+    views::GridLayout* layout = new views::GridLayout(titled_view);
+    titled_view->SetLayoutManager(layout);
+
+    // Column set 0 is a single column layout with horizontal padding at left
+    // and right, and column set 1 is a single column layout with no padding.
+    views::ColumnSet* columns = layout->AddColumnSet(0);
+    columns->AddPaddingColumn(1, views::kButtonHEdgeMarginNew);
+    int available_width = width - 2 * views::kButtonHEdgeMarginNew;
+    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
+        views::GridLayout::FIXED, available_width, available_width);
+    columns->AddPaddingColumn(1, views::kButtonHEdgeMarginNew);
+    layout->AddColumnSet(1)->AddColumn(views::GridLayout::FILL,
+        views::GridLayout::FILL, 0,views::GridLayout::FIXED, width, width);
+
+    layout->StartRowWithPadding(1, 0, 0, views::kButtonVEdgeMarginNew);
+    layout->AddView(title_card);
+    layout->StartRowWithPadding(1, 1, 0, views::kRelatedControlVerticalSpacing);
+    layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+
+    layout->StartRow(1, 1);
+    layout->AddView(view);
+
+    return titled_view;
   }
 
  private:
@@ -904,7 +935,11 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
         views::ImageButton::ALIGN_LEFT, views::ImageButton::ALIGN_MIDDLE);
     ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
     question_mark_button_->SetImage(views::ImageButton::STATE_NORMAL,
-                                    rb->GetImageSkiaNamed(IDR_QUESTION_MARK));
+        rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_QUESTION_STABLE));
+    question_mark_button_->SetImage(views::ImageButton::STATE_HOVERED,
+        rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_QUESTION_HOVER));
+    question_mark_button_->SetImage(views::ImageButton::STATE_PRESSED,
+        rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_QUESTION_SELECT));
     gfx::Size preferred_size = question_mark_button_->GetPreferredSize();
     question_mark_button_->SetBounds(
         0, 0, preferred_size.width(), preferred_size.height());
@@ -1104,30 +1139,6 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
 
 views::View* ProfileChooserView::CreateGaiaSigninView(
     bool add_secondary_account) {
-  views::View* view = new views::View();
-  views::GridLayout* layout =
-      CreateSingleColumnLayout(view, kFixedGaiaViewWidth);
-
-  // Adds title.
-  views::View* padded_title = new views::View();
-  int available_width = kFixedGaiaViewWidth - 2 * views::kButtonHEdgeMarginNew;
-  views::GridLayout* padded_layout = CreateSingleColumnLayout(
-      padded_title, available_width);
-  padded_layout->SetInsets(views::kButtonVEdgeMarginNew,
-                           views::kButtonHEdgeMarginNew,
-                           views::kButtonVEdgeMarginNew,
-                           views::kButtonHEdgeMarginNew);
-  padded_layout->StartRow(1, 0);
-  padded_layout->AddView(new TitleCard(
-      add_secondary_account ? IDS_PROFILES_GAIA_ADD_ACCOUNT_TITLE :
-                              IDS_PROFILES_GAIA_SIGNIN_TITLE,
-      this, &gaia_signin_cancel_button_));
-
-  layout->StartRow(1, 0);
-  layout->AddView(padded_title);
-  layout->StartRow(1, 0);
-  layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
-
   // Adds Gaia signin webview
   Profile* profile = browser_->profile();
   views::WebView* web_view = new views::WebView(profile);
@@ -1140,27 +1151,22 @@ views::View* ProfileChooserView::CreateGaiaSigninView(
   web_view->SetPreferredSize(
       gfx::Size(kFixedGaiaViewWidth, kFixedGaiaViewHeight));
 
-  layout->StartRow(1, 0);
-  layout->AddView(web_view);
-
-  return view;
+  TitleCard* title_card = new TitleCard(
+      add_secondary_account ? IDS_PROFILES_GAIA_ADD_ACCOUNT_TITLE :
+                              IDS_PROFILES_GAIA_SIGNIN_TITLE,
+      this, &gaia_signin_cancel_button_);
+  return TitleCard::AddPaddedTitleCard(
+      web_view, title_card, kFixedGaiaViewWidth);
 }
 
 views::View* ProfileChooserView::CreateAccountRemovalView() {
   views::View* view = new views::View();
   views::GridLayout* layout = CreateSingleColumnLayout(
       view, kFixedAccountRemovalViewWidth - 2 * views::kButtonHEdgeMarginNew);
-  layout->SetInsets(views::kButtonVEdgeMarginNew,
+  layout->SetInsets(0,
                     views::kButtonHEdgeMarginNew,
                     views::kButtonVEdgeMarginNew,
                     views::kButtonHEdgeMarginNew);
-
-  // Adds title.
-  layout->StartRow(1, 0);
-  layout->AddView(new TitleCard(IDS_PROFILES_ACCOUNT_REMOVAL_TITLE, this,
-                                &account_removal_cancel_button_));
-  layout->StartRowWithPadding(1, 0, 0, views::kRelatedControlVerticalSpacing);
-  layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
 
   const std::string& primary_account = SigninManagerFactory::GetForProfile(
       browser_->profile())->GetAuthenticatedUsername();
@@ -1208,7 +1214,10 @@ views::View* ProfileChooserView::CreateAccountRemovalView() {
     layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
   }
 
-  return view;
+  TitleCard* title_card = new TitleCard(IDS_PROFILES_ACCOUNT_REMOVAL_TITLE,
+      this, &account_removal_cancel_button_);
+  return TitleCard::AddPaddedTitleCard(view, title_card,
+      kFixedAccountRemovalViewWidth);
 }
 
 views::View* ProfileChooserView::CreateNewProfileManagementPreviewView() {
@@ -1226,17 +1235,10 @@ views::View* ProfileChooserView::CreateEndPreviewView() {
   views::View* view = new views::View();
   views::GridLayout* layout = CreateSingleColumnLayout(
       view, kFixedAccountRemovalViewWidth - 2 * views::kButtonHEdgeMarginNew);
-  layout->SetInsets(views::kButtonVEdgeMarginNew,
+  layout->SetInsets(0,
                     views::kButtonHEdgeMarginNew,
                     views::kButtonVEdgeMarginNew,
                     views::kButtonHEdgeMarginNew);
-
-  // Adds title.
-  layout->StartRow(1, 0);
-  layout->AddView(new TitleCard(IDS_PROFILES_END_PREVIEW, this,
-                                &end_preview_cancel_button_));
-  layout->StartRowWithPadding(1, 0, 0, views::kRelatedControlVerticalSpacing);
-  layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
 
   // Adds main text.
   views::Label* content_label = new views::Label(
@@ -1259,6 +1261,9 @@ views::View* ProfileChooserView::CreateEndPreviewView() {
       1, 0, 0, views::kUnrelatedControlVerticalSpacing);
   layout->AddView(end_preview_and_relaunch_button_);
 
-  return view;
+  TitleCard* title_card = new TitleCard(
+      IDS_PROFILES_END_PREVIEW, this, &end_preview_cancel_button_);
+  return TitleCard::AddPaddedTitleCard(
+      view, title_card, kFixedAccountRemovalViewWidth);
 }
 

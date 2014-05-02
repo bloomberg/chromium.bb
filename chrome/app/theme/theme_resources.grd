@@ -361,6 +361,9 @@
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_CARET" file="common/carrot_blue.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_AVATAR_PHOTO_FRAME" file="common/avatar_photo_frame.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_EDIT_CAMERA" file="common/edit_camera.png" />
+        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_QUESTION_STABLE" file="common/profile_menu_question_stable.png" />
+        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_QUESTION_HOVER" file="common/profile_menu_question_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_QUESTION_SELECT" file="common/profile_menu_question_select.png" />
       </if>
       <if expr="not is_android and not is_ios and not chromeos">
         <!-- User Manager tutorial -->
@@ -369,7 +372,6 @@
         <structure type="chrome_scaled_image" name="IDR_ICON_USER_MANAGER_TUTORIAL_GUESTS" file="common/user_manager_tutorial/guests.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_USER_MANAGER_TUTORIAL_FRIENDS" file="common/user_manager_tutorial/family_and_friends.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_USER_MANAGER_TUTORIAL_COMPLETE" file="common/user_manager_tutorial/complete.png" />
-
       </if>
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_ICON_ADD_USER_WHITE" file="icon_add_user_white.png" />
