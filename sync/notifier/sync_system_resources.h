@@ -116,6 +116,11 @@ class SYNC_EXPORT_PRIVATE SyncNetworkChannel
   virtual void UpdateCredentials(const std::string& email,
       const std::string& token) = 0;
 
+  // Return value from GetInvalidationClientType will be passed to
+  // invalidation::CreateInvalidationClient. Subclass should return one of the
+  // values from ipc::invalidation::ClientType enum from types.proto.
+  virtual int GetInvalidationClientType() = 0;
+
   // Subclass should implement RequestDetailedStatus to provide debugging
   // information.
   virtual void RequestDetailedStatus(

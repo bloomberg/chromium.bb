@@ -43,6 +43,7 @@ class SYNC_EXPORT_PRIVATE PushClientChannel
   // credentials.
   virtual void UpdateCredentials(const std::string& email,
       const std::string& token) OVERRIDE;
+  virtual int GetInvalidationClientType() OVERRIDE;
 
   // notifier::PushClient::Observer implementation.
   virtual void OnNotificationsEnabled() OVERRIDE;

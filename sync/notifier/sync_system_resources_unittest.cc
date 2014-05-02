@@ -191,6 +191,10 @@ class TestSyncNetworkChannel : public SyncNetworkChannel {
       const std::string& token) OVERRIDE {
   }
 
+  virtual int GetInvalidationClientType() OVERRIDE {
+    return 0;
+  }
+
   virtual void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> callback) OVERRIDE {
     base::DictionaryValue value;

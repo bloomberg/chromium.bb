@@ -13,7 +13,6 @@
 #include "base/tracked_objects.h"
 #include "google/cacheinvalidation/include/invalidation-client.h"
 #include "google/cacheinvalidation/include/types.h"
-#include "google/cacheinvalidation/types.pb.h"
 #include "jingle/notifier/listener/push_client.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/object_id_invalidation_map.h"
@@ -76,15 +75,12 @@ void SyncInvalidationListener::Start(
   DCHECK(delegate);
   delegate_ = delegate;
 
-#if defined(OS_IOS)
-  int client_type = ipc::invalidation::ClientType::CHROME_SYNC_IOS;
-#else
-  int client_type = ipc::invalidation::ClientType::CHROME_SYNC;
-#endif
-  invalidation_client_.reset(
-      create_invalidation_client_callback.Run(
-          &sync_system_resources_, client_type, client_id,
-          kApplicationName, this));
+  invalidation_client_.reset(create_invalidation_client_callback.Run(
+      &sync_system_resources_,
+      sync_network_channel_->GetInvalidationClientType(),
+      client_id,
+      kApplicationName,
+      this));
   invalidation_client_->Start();
 
   registration_manager_.reset(

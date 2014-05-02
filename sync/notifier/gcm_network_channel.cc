@@ -14,6 +14,7 @@
 // is safe to exclude these protos from Android build.
 #include "google/cacheinvalidation/android_channel.pb.h"
 #include "google/cacheinvalidation/channel_common.pb.h"
+#include "google/cacheinvalidation/types.pb.h"
 #endif
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/http/http_status_code.h"
@@ -363,6 +364,14 @@ void GCMNetworkChannel::RequestDetailedStatus(
 void GCMNetworkChannel::UpdateCredentials(const std::string& email,
                                           const std::string& token) {
   // Do nothing. We get access token by requesting it for every message.
+}
+
+int GCMNetworkChannel::GetInvalidationClientType() {
+#if defined(OS_IOS)
+  return ipc::invalidation::ClientType::CHROME_SYNC_GCM_IOS;
+#else
+  return ipc::invalidation::ClientType::CHROME_SYNC_GCM_DESKTOP;
+#endif
 }
 
 void GCMNetworkChannel::ResetRegisterBackoffEntryForTest(

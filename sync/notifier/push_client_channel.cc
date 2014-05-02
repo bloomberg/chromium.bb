@@ -6,6 +6,7 @@
 
 #include "base/stl_util.h"
 #include "google/cacheinvalidation/client_gateway.pb.h"
+#include "google/cacheinvalidation/types.pb.h"
 #include "jingle/notifier/listener/push_client.h"
 
 namespace syncer {
@@ -38,6 +39,14 @@ PushClientChannel::~PushClientChannel() {
 void PushClientChannel::UpdateCredentials(
     const std::string& email, const std::string& token) {
   push_client_->UpdateCredentials(email, token);
+}
+
+int PushClientChannel::GetInvalidationClientType() {
+#if defined(OS_IOS)
+  return ipc::invalidation::ClientType::CHROME_SYNC_IOS;
+#else
+  return ipc::invalidation::ClientType::CHROME_SYNC;
+#endif
 }
 
 void PushClientChannel::RequestDetailedStatus(

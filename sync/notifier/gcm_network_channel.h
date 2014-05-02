@@ -66,6 +66,7 @@ class SYNC_EXPORT_PRIVATE GCMNetworkChannel
   // SyncNetworkChannel implementation.
   virtual void UpdateCredentials(const std::string& email,
                                  const std::string& token) OVERRIDE;
+  virtual int GetInvalidationClientType() OVERRIDE;
   virtual void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> callback) OVERRIDE;
 
