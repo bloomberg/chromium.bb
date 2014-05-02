@@ -538,12 +538,8 @@ void GpuCommandBufferStub::OnInitialize(
     return;
   }
 
-  gpu_control_.reset(
-      new gpu::GpuControlService(context_group_->image_manager(),
-                                 NULL,
-                                 context_group_->mailbox_manager(),
-                                 NULL,
-                                 decoder_->GetCapabilities()));
+  gpu_control_service_.reset(
+      new gpu::GpuControlService(context_group_->image_manager(), NULL));
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableGPUServiceLogging)) {
@@ -587,7 +583,7 @@ void GpuCommandBufferStub::OnInitialize(
       shared_state_shm.Pass(), kSharedStateSize));
 
   GpuCommandBufferMsg_Initialize::WriteReplyParams(
-      reply_message, true, gpu_control_->GetCapabilities());
+      reply_message, true, decoder_->GetCapabilities());
   Send(reply_message);
 
   if (handle_.is_null() && !active_url_.is_empty()) {
@@ -942,19 +938,16 @@ void GpuCommandBufferStub::OnRegisterGpuMemoryBuffer(
     return;
   }
 #endif
-  if (gpu_control_) {
-    gpu_control_->RegisterGpuMemoryBuffer(id,
-                                          gpu_memory_buffer,
-                                          width,
-                                          height,
-                                          internalformat);
+  if (gpu_control_service_) {
+    gpu_control_service_->RegisterGpuMemoryBuffer(
+        id, gpu_memory_buffer, width, height, internalformat);
   }
 }
 
 void GpuCommandBufferStub::OnDestroyGpuMemoryBuffer(int32 id) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnDestroyGpuMemoryBuffer");
-  if (gpu_control_)
-    gpu_control_->DestroyGpuMemoryBuffer(id);
+  if (gpu_control_service_)
+    gpu_control_service_->UnregisterGpuMemoryBuffer(id);
 }
 
 void GpuCommandBufferStub::SendConsoleMessage(

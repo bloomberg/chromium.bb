@@ -21,8 +21,6 @@ struct GPU_EXPORT Capabilities {
   bool texture_storage;
   bool discard_framebuffer;
   bool sync_query;
-
-  // Capabilities below are not populated by GLES2Decoder.
   bool map_image;
 
   Capabilities();

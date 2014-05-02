@@ -252,7 +252,7 @@ class GpuCommandBufferStub
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
   scoped_ptr<gpu::GpuScheduler> scheduler_;
   scoped_refptr<gfx::GLSurface> surface_;
-  scoped_ptr<gpu::GpuControlService> gpu_control_;
+  scoped_ptr<gpu::GpuControlService> gpu_control_service_;
 
   scoped_ptr<GpuMemoryManagerClientState> memory_manager_client_state_;
   // The last memory allocation received from the GpuMemoryManager (used to

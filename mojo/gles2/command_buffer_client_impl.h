@@ -9,9 +9,9 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
-#include "gpu/command_buffer/common/gpu_control.h"
 #include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/services/gles2/command_buffer.mojom.h"

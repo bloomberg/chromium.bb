@@ -11,7 +11,6 @@
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/service/context_group.h"
-#include "gpu/command_buffer/service/gpu_control_service.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/gles2_conform_support/egl/config.h"
 #include "gpu/gles2_conform_support/egl/surface.h"
@@ -170,8 +169,7 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
     return EGL_NO_SURFACE;
   }
 
-  gpu_control_.reset(new gpu::GpuControlService(
-      NULL, NULL, group->mailbox_manager(), NULL, decoder_->GetCapabilities()));
+  gpu_control_service_.reset(new gpu::GpuControlService(NULL, NULL));
 
   command_buffer->SetPutOffsetChangeCallback(
       base::Bind(&gpu::GpuScheduler::PutChanged,
@@ -237,7 +235,7 @@ EGLContext Display::CreateContext(EGLConfig config,
                                           transfer_buffer_.get(),
                                           bind_generates_resources,
                                           lose_context_when_out_of_memory,
-                                          gpu_control_.get()));
+                                          this));
 
   if (!context_->Initialize(
       kTransferBufferSize,
@@ -269,6 +267,54 @@ bool Display::MakeCurrent(EGLSurface draw, EGLSurface read, EGLContext ctx) {
     gles2::SetGLContext(context_.get());
   }
   return true;
+}
+
+gpu::Capabilities Display::GetCapabilities() {
+  return decoder_->GetCapabilities();
+}
+
+gfx::GpuMemoryBuffer* Display::CreateGpuMemoryBuffer(
+    size_t width,
+    size_t height,
+    unsigned internalformat,
+    int32* id) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+void Display::DestroyGpuMemoryBuffer(int32 id) {
+  NOTIMPLEMENTED();
+}
+
+uint32 Display::InsertSyncPoint() {
+  NOTIMPLEMENTED();
+  return 0u;
+}
+
+void Display::SignalSyncPoint(uint32 sync_point,
+                             const base::Closure& callback) {
+  NOTIMPLEMENTED();
+}
+
+void Display::SignalQuery(uint32 query, const base::Closure& callback) {
+  NOTIMPLEMENTED();
+}
+
+void Display::SetSurfaceVisible(bool visible) {
+  NOTIMPLEMENTED();
+}
+
+void Display::SendManagedMemoryStats(const gpu::ManagedMemoryStats& stats) {
+  NOTIMPLEMENTED();
+}
+
+void Display::Echo(const base::Closure& callback) {
+  NOTIMPLEMENTED();
+}
+
+uint32 Display::CreateStreamTexture(uint32 texture_id) {
+  NOTIMPLEMENTED();
+  return 0;
 }
 
 }  // namespace egl

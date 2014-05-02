@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_COMMAND_BUFFER_COMMON_GPU_CONTROL_H_
-#define GPU_COMMAND_BUFFER_COMMON_GPU_CONTROL_H_
+#ifndef GPU_COMMAND_BUFFER_CLIENT_GPU_CONTROL_H_
+#define GPU_COMMAND_BUFFER_CLIENT_GPU_CONTROL_H_
 
 #include <vector>
 
@@ -68,4 +68,4 @@ class GPU_EXPORT GpuControl {
 
 }  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_COMMON_GPU_CONTROL_H_
+#endif  // GPU_COMMAND_BUFFER_CLIENT_GPU_CONTROL_H_

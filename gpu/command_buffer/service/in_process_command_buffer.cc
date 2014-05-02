@@ -24,6 +24,7 @@
 #include "base/sequence_checker.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/threading/thread.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer_factory.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
@@ -296,8 +297,11 @@ bool InProcessCommandBuffer::Initialize(
       base::Bind(&RunTaskWithResult<bool>, init_task, &result, &completion));
   completion.Wait();
 
-  if (result)
+  if (result) {
     capabilities_ = capabilities;
+    capabilities_.map_image =
+        capabilities_.map_image && g_gpu_memory_buffer_factory;
+  }
   return result;
 }
 
@@ -409,15 +413,11 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
     DestroyOnGpuThread();
     return false;
   }
+  *params.capabilities = decoder_->GetCapabilities();
 
   gpu_control_.reset(
       new GpuControlService(decoder_->GetContextGroup()->image_manager(),
-                            g_gpu_memory_buffer_factory,
-                            decoder_->GetContextGroup()->mailbox_manager(),
-                            decoder_->GetQueryManager(),
-                            decoder_->GetCapabilities()));
-
-  *params.capabilities = gpu_control_->GetCapabilities();
+                            decoder_->GetQueryManager()));
 
   if (!params.is_offscreen) {
     decoder_->SetResizeCallback(base::Bind(
@@ -609,16 +609,37 @@ gfx::GpuMemoryBuffer* InProcessCommandBuffer::CreateGpuMemoryBuffer(
     unsigned internalformat,
     int32* id) {
   CheckSequencedThread();
-  base::AutoLock lock(command_buffer_lock_);
-  return gpu_control_->CreateGpuMemoryBuffer(width,
-                                             height,
-                                             internalformat,
-                                             id);
+
+  *id = -1;
+  linked_ptr<gfx::GpuMemoryBuffer> buffer =
+      make_linked_ptr(g_gpu_memory_buffer_factory->CreateGpuMemoryBuffer(
+          width, height, internalformat));
+  if (!buffer.get())
+    return NULL;
+
+  static int32 next_id = 1;
+  *id = next_id++;
+
+  base::Closure task = base::Bind(&GpuControlService::RegisterGpuMemoryBuffer,
+                                  base::Unretained(gpu_control_.get()),
+                                  *id,
+                                  buffer->GetHandle(),
+                                  width,
+                                  height,
+                                  internalformat);
+
+  QueueTask(task);
+
+  gpu_memory_buffers_[*id] = buffer;
+  return buffer.get();
 }
 
 void InProcessCommandBuffer::DestroyGpuMemoryBuffer(int32 id) {
   CheckSequencedThread();
-  base::Closure task = base::Bind(&GpuControl::DestroyGpuMemoryBuffer,
+  GpuMemoryBufferMap::iterator it = gpu_memory_buffers_.find(id);
+  if (it != gpu_memory_buffers_.end())
+    gpu_memory_buffers_.erase(it);
+  base::Closure task = base::Bind(&GpuControlService::UnregisterGpuMemoryBuffer,
                                   base::Unretained(gpu_control_.get()),
                                   id);
 
@@ -667,7 +688,7 @@ void InProcessCommandBuffer::SignalSyncPointOnGpuThread(
 void InProcessCommandBuffer::SignalQuery(unsigned query,
                                          const base::Closure& callback) {
   CheckSequencedThread();
-  QueueTask(base::Bind(&GpuControl::SignalQuery,
+  QueueTask(base::Bind(&GpuControlService::SignalQuery,
                        base::Unretained(gpu_control_.get()),
                        query,
                        WrapCallback(callback)));

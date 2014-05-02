@@ -9,8 +9,10 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
+#include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/gpu_control_service.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_context.h"
@@ -34,7 +36,7 @@ namespace egl {
 class Config;
 class Surface;
 
-class Display {
+class Display : private gpu::GpuControl {
  public:
   explicit Display(EGLNativeDisplayType display_id);
   virtual ~Display();
@@ -72,6 +74,24 @@ class Display {
   void DestroyContext(EGLContext ctx);
   bool MakeCurrent(EGLSurface draw, EGLSurface read, EGLContext ctx);
 
+  // GpuControl implementation.
+  virtual gpu::Capabilities GetCapabilities() OVERRIDE;
+  virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(size_t width,
+                                                      size_t height,
+                                                      unsigned internalformat,
+                                                      int32* id) OVERRIDE;
+  virtual void DestroyGpuMemoryBuffer(int32 id) OVERRIDE;
+  virtual uint32 InsertSyncPoint() OVERRIDE;
+  virtual void SignalSyncPoint(uint32 sync_point,
+                               const base::Closure& callback) OVERRIDE;
+  virtual void SignalQuery(uint32 query,
+                           const base::Closure& callback) OVERRIDE;
+  virtual void SetSurfaceVisible(bool visible) OVERRIDE;
+  virtual void SendManagedMemoryStats(
+      const gpu::ManagedMemoryStats& stats) OVERRIDE;
+  virtual void Echo(const base::Closure& callback) OVERRIDE;
+  virtual uint32 CreateStreamTexture(uint32 texture_id) OVERRIDE;
+
  private:
   EGLNativeDisplayType display_id_;
 
@@ -84,7 +104,7 @@ class Display {
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::GpuScheduler> gpu_scheduler_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
-  scoped_ptr<gpu::GpuControl> gpu_control_;
+  scoped_ptr<gpu::GpuControlService> gpu_control_service_;
   scoped_refptr<gfx::GLContext> gl_context_;
   scoped_refptr<gfx::GLSurface> gl_surface_;
   scoped_ptr<gpu::gles2::GLES2CmdHelper> gles2_cmd_helper_;

@@ -7,8 +7,8 @@
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
+#include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "gpu/command_buffer/common/gpu_control.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/host_resource.h"
 

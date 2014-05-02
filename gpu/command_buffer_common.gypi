@@ -23,7 +23,6 @@
     'command_buffer/common/gles2_cmd_format_autogen.h',
     'command_buffer/common/gles2_cmd_ids.h',
     'command_buffer/common/gles2_cmd_ids_autogen.h',
-    'command_buffer/common/gpu_control.h',
     'command_buffer/common/id_allocator.cc',
     'command_buffer/common/id_allocator.h',
     'command_buffer/common/mailbox.cc',

@@ -5,17 +5,19 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_IN_PROCESS_COMMAND_BUFFER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_IN_PROCESS_COMMAND_BUFFER_H_
 
+#include <map>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "gpu/command_buffer/common/gpu_control.h"
 #include "gpu/gpu_export.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
@@ -50,6 +52,7 @@ class ShaderTranslatorCache;
 }
 
 class CommandBufferServiceBase;
+class GpuControlService;
 class GpuMemoryBufferFactory;
 class GpuScheduler;
 class TransferBufferManagerInterface;
@@ -201,6 +204,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   State last_state_;
   int32 last_put_offset_;
   gpu::Capabilities capabilities_;
+  typedef std::map<int32, linked_ptr<gfx::GpuMemoryBuffer> > GpuMemoryBufferMap;
+  GpuMemoryBufferMap gpu_memory_buffers_;
 
   // Accessed on both threads:
   scoped_ptr<CommandBufferServiceBase> command_buffer_;
@@ -209,7 +214,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   scoped_refptr<Service> service_;
   State state_after_last_flush_;
   base::Lock state_after_last_flush_lock_;
-  scoped_ptr<GpuControl> gpu_control_;
+  scoped_ptr<GpuControlService> gpu_control_;
   scoped_refptr<gfx::GLShareGroup> gl_share_group_;
 
 #if defined(OS_ANDROID)

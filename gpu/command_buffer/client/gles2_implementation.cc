@@ -6,24 +6,24 @@
 
 #include "gpu/command_buffer/client/gles2_implementation.h"
 
+#include <GLES2/gl2ext.h>
+#include <GLES2/gl2extchromium.h>
 #include <algorithm>
+#include <limits>
 #include <map>
 #include <queue>
 #include <set>
-#include <limits>
 #include <sstream>
 #include <string>
-#include <GLES2/gl2ext.h>
-#include <GLES2/gl2extchromium.h>
 #include "base/bind.h"
 #include "gpu/command_buffer/client/buffer_tracker.h"
+#include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_tracker.h"
 #include "gpu/command_buffer/client/program_info_manager.h"
 #include "gpu/command_buffer/client/query_tracker.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/client/vertex_array_object_manager.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "gpu/command_buffer/common/gpu_control.h"
 #include "gpu/command_buffer/common/trace_event.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -32,8 +32,8 @@
 #endif
 
 #if defined(GPU_CLIENT_DEBUG)
-#include "ui/gl/gl_switches.h"
 #include "base/command_line.h"
+#include "ui/gl/gl_switches.h"
 #endif
 
 namespace gpu {

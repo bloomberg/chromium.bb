@@ -26,12 +26,12 @@ class GPU_EXPORT ImageManager
   ImageManager();
 
   // Overridden from GpuMemoryBufferManagerInterface:
-  virtual bool RegisterGpuMemoryBuffer(int32 id,
+  virtual void RegisterGpuMemoryBuffer(int32 id,
                                        gfx::GpuMemoryBufferHandle buffer,
                                        size_t width,
                                        size_t height,
                                        unsigned internalformat) OVERRIDE;
-  virtual void DestroyGpuMemoryBuffer(int32 id) OVERRIDE;
+  virtual void UnregisterGpuMemoryBuffer(int32 id) OVERRIDE;
 
   void AddImage(gfx::GLImage* gl_image, int32 service_id);
   void RemoveImage(int32 service_id);

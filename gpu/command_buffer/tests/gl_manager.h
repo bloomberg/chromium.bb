@@ -5,8 +5,10 @@
 #ifndef GPU_COMMAND_BUFFER_TESTS_GL_MANAGER_H_
 #define GPU_COMMAND_BUFFER_TESTS_GL_MANAGER_H_
 
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "ui/gfx/size.h"
 
@@ -39,7 +41,7 @@ class ShareGroup;
 
 };
 
-class GLManager {
+class GLManager : private GpuControl {
  public:
   struct Options {
     Options();
@@ -63,7 +65,7 @@ class GLManager {
     GpuMemoryBufferFactory* gpu_memory_buffer_factory;
   };
   GLManager();
-  ~GLManager();
+  virtual ~GLManager();
 
   void Initialize(const Options& options);
   void Destroy();
@@ -94,6 +96,23 @@ class GLManager {
 
   const gpu::gles2::FeatureInfo::Workarounds& workarounds() const;
 
+  // GpuControl implementation.
+  virtual Capabilities GetCapabilities() OVERRIDE;
+  virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(size_t width,
+                                                      size_t height,
+                                                      unsigned internalformat,
+                                                      int32* id) OVERRIDE;
+  virtual void DestroyGpuMemoryBuffer(int32 id) OVERRIDE;
+  virtual uint32 InsertSyncPoint() OVERRIDE;
+  virtual void SignalSyncPoint(uint32 sync_point,
+                               const base::Closure& callback) OVERRIDE;
+  virtual void SignalQuery(uint32 query,
+                           const base::Closure& callback) OVERRIDE;
+  virtual void SetSurfaceVisible(bool visible) OVERRIDE;
+  virtual void SendManagedMemoryStats(const ManagedMemoryStats& stats) OVERRIDE;
+  virtual void Echo(const base::Closure& callback) OVERRIDE;
+  virtual uint32 CreateStreamTexture(uint32 texture_id) OVERRIDE;
+
  private:
   void PumpCommands();
   bool GetBufferChanged(int32 transfer_buffer_id);
@@ -102,7 +121,7 @@ class GLManager {
   scoped_refptr<gles2::MailboxManager> mailbox_manager_;
   scoped_refptr<gfx::GLShareGroup> share_group_;
   scoped_ptr<CommandBufferService> command_buffer_;
-  scoped_ptr<GpuControlService> gpu_control_;
+  scoped_ptr<GpuControlService> gpu_control_service_;
   scoped_ptr<gles2::GLES2Decoder> decoder_;
   scoped_ptr<GpuScheduler> gpu_scheduler_;
   scoped_refptr<gfx::GLSurface> surface_;
@@ -111,6 +130,10 @@ class GLManager {
   scoped_ptr<TransferBuffer> transfer_buffer_;
   scoped_ptr<gles2::GLES2Implementation> gles2_implementation_;
   bool context_lost_allowed_;
+
+  // Client GpuControl implementation.
+  GpuMemoryBufferFactory* gpu_memory_buffer_factory_;
+  base::ScopedPtrHashMap<int32, gfx::GpuMemoryBuffer> memory_buffers_;
 
   // Used on Android to virtualize GL for all contexts.
   static int use_count_;

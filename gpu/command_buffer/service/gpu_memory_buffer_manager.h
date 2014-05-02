@@ -15,12 +15,12 @@ class GPU_EXPORT GpuMemoryBufferManagerInterface {
  public:
   virtual ~GpuMemoryBufferManagerInterface() {}
 
-  virtual bool RegisterGpuMemoryBuffer(int32 id,
+  virtual void RegisterGpuMemoryBuffer(int32 id,
                                        gfx::GpuMemoryBufferHandle buffer,
                                        size_t width,
                                        size_t height,
                                        unsigned internalformat) = 0;
-  virtual void DestroyGpuMemoryBuffer(int32 id) = 0;
+  virtual void UnregisterGpuMemoryBuffer(int32 id) = 0;
 };
 
 }  // namespace gpu

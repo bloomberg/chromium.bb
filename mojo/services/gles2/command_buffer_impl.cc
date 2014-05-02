@@ -112,11 +112,7 @@ bool CommandBufferImpl::DoInitialize(
     return false;
 
   gpu_control_.reset(
-      new gpu::GpuControlService(context_group->image_manager(),
-                                 NULL,
-                                 context_group->mailbox_manager(),
-                                 NULL,
-                                 decoder_->GetCapabilities()));
+      new gpu::GpuControlService(context_group->image_manager(), NULL));
 
   command_buffer_->SetPutOffsetChangeCallback(base::Bind(
       &gpu::GpuScheduler::PutChanged, base::Unretained(scheduler_.get())));

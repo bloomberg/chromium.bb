@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "gpu/command_buffer/common/gpu_control.h"
+#include "gpu/command_buffer/client/gpu_control.h"
 
 namespace gpu {
 namespace gles2 {
