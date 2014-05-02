@@ -281,7 +281,8 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
   return downloaded_files
 
 
-def ArchivePackageArchives(tar_dir, package_target, package_name, archives):
+def ArchivePackageArchives(tar_dir, package_target, package_name, archives,
+                           extra_archives=[]):
   """Archives local package archives to the tar directory.
 
   Args:
@@ -289,19 +290,19 @@ def ArchivePackageArchives(tar_dir, package_target, package_name, archives):
     package_target: Package target of the package to archive.
     package_name: Package name of the package to archive.
     archives: List of archive file paths where archives currently live.
+    extra_archives: Extra archives that are expected to be build elsewhere.
   Returns:
     Returns the local package file that was archived.
   """
-  local_package_file = package_locations.GetLocalPackageFile(
-      tar_dir,
-      package_target,
-      package_name
-  )
-
+  local_package_file = package_locations.GetLocalPackageFile(tar_dir,
+                                                             package_target,
+                                                             package_name)
   archive_list = []
 
   package_desc = package_info.PackageInfo()
-  for archive in archives:
+  package_archives = ([(archive, False) for archive in archives] +
+                      [(archive, True) for archive in extra_archives])
+  for archive, skip_missing in package_archives:
     archive_url = None
     if '@' in archive:
       archive, archive_url = archive.split('@', 1)
@@ -317,12 +318,7 @@ def ArchivePackageArchives(tar_dir, package_target, package_name, archives):
         tar_src_dir = extract_param
 
     archive_hash = archive_info.GetArchiveHash(archive)
-    if archive_hash is None:
-      raise IOError('Invalid package: %s.' % archive)
-
     archive_name = os.path.basename(archive)
-
-    archive_list.append(archive)
     archive_desc = archive_info.ArchiveInfo(archive_name,
                                             archive_hash,
                                             url=archive_url,
@@ -330,12 +326,20 @@ def ArchivePackageArchives(tar_dir, package_target, package_name, archives):
                                             extract_dir=extract_dir)
     package_desc.AppendArchive(archive_desc)
 
+    if archive_hash is None:
+      if skip_missing:
+        logging.info('Skipping archival of missing file: %s', archive)
+        continue
+      raise IOError('Invalid package: %s.' % archive)
+    archive_list.append(archive)
+
   # We do not need to archive the package if it already matches. But if the
   # local package file is invalid or does not match, then we should recreate
   # the json file.
   if os.path.isfile(local_package_file):
     try:
-      current_package_desc = package_info.PackageInfo(local_package_file)
+      current_package_desc = package_info.PackageInfo(local_package_file,
+                                                      skip_missing=True)
       if current_package_desc == package_desc:
         return
     except ValueError:
@@ -459,7 +463,7 @@ def UploadPackage(storage, revision, tar_dir, package_target, package_name,
 
 
 def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
-                          downloader=None):
+                          downloader=None, skip_missing=False):
   """Extracts package targets from the tar directory to the destination.
 
   Each package archive within a package will be verified before being
@@ -477,22 +481,17 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
     downloader = pynacl.gsd_storage.HttpDownload
 
   for package_target, package_name in package_target_packages:
-    package_file = package_locations.GetLocalPackageFile(
-        tar_dir,
-        package_target,
-        package_name
-    )
-    package_desc = package_info.PackageInfo(package_file)
-    dest_package_dir = package_locations.GetFullDestDir(
-        dest_dir,
-        package_target,
-        package_name
-    )
-    dest_package_file = package_locations.GetDestPackageFile(
-        dest_dir,
-        package_target,
-        package_name
-    )
+    package_file = package_locations.GetLocalPackageFile(tar_dir,
+                                                         package_target,
+                                                         package_name)
+    package_desc = package_info.PackageInfo(package_file,
+                                            skip_missing=skip_missing)
+    dest_package_dir = package_locations.GetFullDestDir(dest_dir,
+                                                        package_target,
+                                                        package_name)
+    dest_package_file = package_locations.GetDestPackageFile(dest_dir,
+                                                             package_target,
+                                                             package_name)
 
     # Only do the extraction if the extract packages do not match.
     if os.path.isfile(dest_package_file):
@@ -530,10 +529,15 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
       # they do not match.
       archive_hash = archive_info.GetArchiveHash(archive_file)
       if archive_hash != archive_desc.hash:
+        if archive_desc.url is None:
+          if skip_missing:
+            logging.info('Skipping extraction of missing archive: %s' %
+                         archive_file)
+            continue
+          raise IOError('Invalid archive file and URL: %s' % archive_file)
+
         logging.warn('Expected archive missing, downloading: %s',
                      archive_desc.name)
-        if archive_desc.url is None:
-          raise IOError('Invalid archive file and URL: %s' % archive_file)
 
         pynacl.file_tools.MakeParentDirectoryIfAbsent(archive_file)
         downloader(archive_desc.url, archive_file)
@@ -597,6 +601,10 @@ def _ArchiveCmdArgParser(subparser):
     required=True,
     help='Package name archives will be packaged into.')
   subparser.add_argument(
+    '--extra-archive', metavar='ARCHIVE', dest='archive__extra_archive',
+    action='append', default=[],
+    help='Extra archives that are expected to be built elsewhere.')
+  subparser.add_argument(
     metavar='TAR(,SRCDIR(:EXTRACTDIR))(@URL)', dest='archive__archives',
     nargs='+',
     help='Package archive with an optional tar information and url.'
@@ -620,19 +628,17 @@ def _DoArchiveCmd(arguments):
                     + ' Did you forget to add "$PACKAGE_TARGET/"?')
 
   for package_target, package_name in package_target_packages:
-    ArchivePackageArchives(
-        arguments.tar_dir,
-        package_target,
-        package_name,
-        arguments.archive__archives
-    )
+    ArchivePackageArchives(arguments.tar_dir,
+                           package_target,
+                           package_name,
+                           arguments.archive__archives,
+                           extra_archives=arguments.archive__extra_archive)
 
     if arguments.archive__extract:
-      ExtractPackageTargets(
-          [(package_target, package_name)],
-          arguments.tar_dir,
-          arguments.dest_dir
-      )
+      ExtractPackageTargets([(package_target, package_name)],
+                            arguments.tar_dir,
+                            arguments.dest_dir,
+                            skip_missing=True)
 
 
 def _ExtractCmdArgParser(subparser):
@@ -844,6 +850,65 @@ def _DoGetRevisionCmd(arguments):
   print revision_desc.GetRevisionNumber()
 
 
+def _FillEmptyTarsParser(subparser):
+  subparser.description = 'Fill missing archives with empty ones in a package.'
+  subparser.add_argument(
+    '--fill-package', metavar='NAME', dest='fillemptytars_package',
+    required=True,
+    help='Package name to fill empty archives of.')
+
+
+def _DoFillEmptyTarsCmd(arguments):
+  package_target_packages = GetPackageTargetPackages(
+      arguments.fillemptytars_package,
+      arguments.package_target_packages
+  )
+  if not package_target_packages:
+    raise NameError('Unknown package: %s.' % arguments.fillemptytars_package
+                    + ' Did you forget to add "$PACKAGE_TARGET/"?')
+
+  for package_target, package_name in package_target_packages:
+    package_path = package_locations.GetLocalPackageFile(arguments.tar_dir,
+                                                         package_target,
+                                                         package_name)
+
+    package_desc = package_info.PackageInfo(package_path, skip_missing=True)
+    output_package_desc = package_info.PackageInfo()
+    for archive in package_desc.GetArchiveList():
+      # If archive does not exist, fill it with an empty one.
+      archive_data = archive.GetArchiveData()
+      if archive_data.hash:
+        output_package_desc.AppendArchive(archive)
+      else:
+        logging.info('Filling missing archive: %s.', archive_data.name)
+        if (archive_data.name.endswith('.tar.gz') or
+            archive_data.name.endswith('.tgz')):
+          mode = 'w:gz'
+        elif archive_data.name.endswith('.bz2'):
+          mode = 'w:bz2'
+        elif archive_data.name.endswith('.tar'):
+          mode = 'w:'
+        else:
+          raise NameError('Unknown archive type: %s.' % archive_data.name)
+
+        archive_file = package_locations.GetLocalPackageArchiveFile(
+            arguments.tar_dir,
+            package_target,
+            package_name,
+            archive_data.name
+            )
+
+        tar_file = cygtar.CygTar(archive_file, mode)
+        tar_file.Close()
+        tar_hash = archive_info.GetArchiveHash(archive_file)
+
+        empty_archive = archive_info.ArchiveInfo(name=archive_data.name,
+                                                 archive_hash=tar_hash)
+        output_package_desc.AppendArchive(empty_archive)
+
+    output_package_desc.SavePackageFile(package_path)
+
+
 CommandFuncs = collections.namedtuple(
     'CommandFuncs',
     ['parse_func', 'do_cmd_func'])
@@ -857,6 +922,7 @@ COMMANDS = {
     'sync': CommandFuncs(_SyncCmdArgParser, _DoSyncCmd),
     'setrevision': CommandFuncs(_SetRevisionCmdArgParser, _DoSetRevisionCmd),
     'getrevision': CommandFuncs(_GetRevisionCmdArgParser, _DoGetRevisionCmd),
+    'fillemptytars': CommandFuncs(_FillEmptyTarsParser, _DoFillEmptyTarsCmd),
 }
 
 
