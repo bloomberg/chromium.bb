@@ -184,7 +184,7 @@ SPECIAL_CASES = {
         # Absolute path here is resolved as relative to the source root.
         "License File": "/webkit/LICENSE",
     },
-    os.path.join('third_party', 'webpagereplay'): {
+    os.path.join('third_party', 'web-page-replay'): {
         "Name": "webpagereplay",
         "URL": "http://code.google.com/p/web-page-replay",
         "License": "Apache 2.0",
