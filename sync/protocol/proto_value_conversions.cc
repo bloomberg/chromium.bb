@@ -508,6 +508,14 @@ base::DictionaryValue* FaviconSyncFlagsToValue(
   return value;
 }
 
+base::DictionaryValue* EnhancedBookmarksFlagsToValue(
+    const sync_pb::EnhancedBookmarksFlags& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_BOOL(enabled);
+  SET_STR(extension_id);
+  return value;
+}
+
 }  // namespace
 
 base::DictionaryValue* ExperimentsSpecificsToValue(
@@ -519,7 +527,7 @@ base::DictionaryValue* ExperimentsSpecificsToValue(
   SET_EXPERIMENT_ENABLED_FIELD(pre_commit_update_avoidance);
   SET(favicon_sync, FaviconSyncFlagsToValue);
   SET_EXPERIMENT_ENABLED_FIELD(gcm_channel);
-  SET_EXPERIMENT_ENABLED_FIELD(enhanced_bookmarks);
+  SET(enhanced_bookmarks, EnhancedBookmarksFlagsToValue);
   SET_EXPERIMENT_ENABLED_FIELD(gcm_invalidations);
   return value;
 }
