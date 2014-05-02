@@ -10,7 +10,17 @@ PASS imageElement.getAttribute('x') is "0"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 18 8 190 200)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 18.00 8.00 190.00 200.00)
+      )
+    )
+  )
 )
 

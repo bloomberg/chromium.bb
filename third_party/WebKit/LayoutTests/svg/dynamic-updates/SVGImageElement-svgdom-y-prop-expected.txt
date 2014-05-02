@@ -10,7 +10,17 @@ PASS imageElement.y.baseVal.value is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 8 18 200 190)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 18.00 200.00 190.00)
+      )
+    )
+  )
 )
 

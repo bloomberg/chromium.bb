@@ -10,8 +10,18 @@ PASS markerElement.markerHeight.baseVal.value is 2
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 138 138 55 55)
-  (rect 128 133 70 70)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 138.00 138.00 55.00 55.00)
+        (rect 128.00 133.00 70.00 70.00)
+      )
+    )
+  )
 )
 

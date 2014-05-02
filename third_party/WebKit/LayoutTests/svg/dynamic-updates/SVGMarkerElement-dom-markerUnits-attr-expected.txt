@@ -10,8 +10,18 @@ PASS markerElement.getAttribute('markerUnits') is "strokeWidth"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 137 138 56 56)
-  (rect 128 133 70 70)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 137.00 138.00 56.00 56.00)
+        (rect 128.00 133.00 70.00 70.00)
+      )
+    )
+  )
 )
 

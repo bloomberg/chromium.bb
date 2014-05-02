@@ -11,12 +11,21 @@ PASS foreignObjectElement.getAttribute('y') is "80"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 108 8 150 70)
-  (rect 108 88 150 150)
-  (rect 108 8 150 70)
-  (rect 108 88 150 150)
-  (rect 108 -72 150 20)
-  (rect 108 88 150 20)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 108.00 8.00 150.00 70.00)
+        (rect 108.00 88.00 150.00 150.00)
+        (rect 108.00 8.00 150.00 70.00)
+        (rect 108.00 88.00 150.00 150.00)
+        (rect 108.00 88.00 150.00 20.00)
+      )
+    )
+  )
 )
 

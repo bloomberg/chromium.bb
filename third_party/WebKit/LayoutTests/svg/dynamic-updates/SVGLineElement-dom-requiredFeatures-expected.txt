@@ -18,12 +18,22 @@ PASS lineElement.getBBox().height is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 24 24 188 188)
-  (rect 24 24 188 188)
-  (rect 24 24 188 188)
-  (rect 24 24 188 188)
-  (rect 24 24 188 188)
-  (rect 24 24 188 188)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 24.00 24.00 188.00 188.00)
+        (rect 24.00 24.00 188.00 188.00)
+        (rect 24.00 24.00 188.00 188.00)
+        (rect 24.00 24.00 188.00 188.00)
+        (rect 24.00 24.00 188.00 188.00)
+        (rect 24.00 24.00 188.00 188.00)
+      )
+    )
+  )
 )
 
