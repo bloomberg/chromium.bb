@@ -8,7 +8,7 @@ Typical usage is:
 
  $ cd src/chrome/test/data/search/tools/
  $ sudo instant_extended_manual_tests.py record \
-     ../../../../../third_party/web-page-replay/replay.py \
+     ../../../../../third_party/webpagereplay/replay.py \
      ../../../../../out/Debug/interactive_ui_tests \
      ../replay/archive.wpr
 
