@@ -20,7 +20,7 @@ window.addEventListener("load", function(){
     for (var i = 0; i < 5; ++i)
         eventSender.zoomPageIn();
 
-    shouldBeCloseTo('document.getElementById("bla").offsetWidth', 10, 1/64);
+    shouldBeTrue('document.getElementById("bla").offsetWidth==10');
 }, true);
 </script>
 </body>

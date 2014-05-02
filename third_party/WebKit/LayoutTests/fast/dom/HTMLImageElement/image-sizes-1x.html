@@ -18,11 +18,11 @@
         shouldBe('document.getElementById("default_sizes").currentSrc', '"../../hidpi/resources/image-set-2x.png"');
         shouldBe('document.getElementById("invalid_length").clientWidth', 'window.innerWidth');
         shouldBe('document.getElementById("invalid_length").currentSrc', '"../../hidpi/resources/image-set-2x.png"');
-        shouldBeCloseTo('document.getElementById("src_and_w").clientWidth', 700, 1/64);
+        shouldBe('document.getElementById("src_and_w").clientWidth', '700');
         shouldBe('document.getElementById("src_and_w").currentSrc', '"resources/image-set-4x.png"');
-        shouldBeCloseTo('document.getElementById("src_and_w2").clientWidth', 700, 1/64);
+        shouldBe('document.getElementById("src_and_w2").clientWidth', '700');
         shouldBe('document.getElementById("src_and_w2").currentSrc', '"../../hidpi/resources/image-set-1x.png"');
-        shouldBeCloseTo('document.getElementById("x_and_w").clientWidth', 700, 1/64);
+        shouldBe('document.getElementById("x_and_w").clientWidth', '700');
         shouldBe('document.getElementById("x_and_w").currentSrc', '"resources/image-set-4x.png"');
         shouldBe('document.getElementById("x_and_w2").clientWidth', '400');
         shouldBe('document.getElementById("x_and_w2").currentSrc', '"../../hidpi/resources/image-set-2x.png"');

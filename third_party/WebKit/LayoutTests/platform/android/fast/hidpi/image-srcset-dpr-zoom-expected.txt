@@ -1,6 +1,0 @@
-PASS successfullyParsed is true
-
-TEST COMPLETE
-PASS document.getElementById("foo").clientWidth==200 is true
-This test passes if the image below is a 200px wide green square when the deviceScaleFactor is 1, since the user has zoomed in.
-
