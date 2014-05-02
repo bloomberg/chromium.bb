@@ -10,8 +10,18 @@ PASS filterElement.getAttribute('y') is "0"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 8 108 200 200)
-  (rect 8 8 200 200)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 108.00 200.00 200.00)
+        (rect 8.00 8.00 200.00 200.00)
+      )
+    )
+  )
 )
 

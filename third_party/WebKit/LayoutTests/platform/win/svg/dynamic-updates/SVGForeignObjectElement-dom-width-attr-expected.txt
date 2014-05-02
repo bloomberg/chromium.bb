@@ -11,11 +11,21 @@ PASS foreignObjectElement.getAttribute('width') is "150"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 110 88 148 150)
-  (rect 108 88 2 150)
-  (rect 108 88 150 150)
-  (rect 108 88 42 40)
-  (rect 108 88 150 20)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 110.00 88.00 148.00 150.00)
+        (rect 108.00 88.00 2.00 150.00)
+        (rect 108.00 88.00 150.00 150.00)
+        (rect 108.00 88.00 42.00 40.00)
+        (rect 108.00 88.00 150.00 20.00)
+      )
+    )
+  )
 )
 
