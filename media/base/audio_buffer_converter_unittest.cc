@@ -29,7 +29,6 @@ static scoped_refptr<AudioBuffer> MakeTestBuffer(int sample_rate,
                                 0,
                                 1,
                                 frames,
-                                base::TimeDelta::FromSeconds(0),
                                 base::TimeDelta::FromSeconds(0));
 }
 

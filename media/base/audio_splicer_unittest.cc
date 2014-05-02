@@ -35,16 +35,15 @@ class AudioSplicerTest : public ::testing::Test {
   }
 
   scoped_refptr<AudioBuffer> GetNextInputBuffer(float value, int frame_size) {
-    scoped_refptr<AudioBuffer> buffer = MakeAudioBuffer<float>(
-        kSampleFormat,
-        kChannelLayout,
-        kChannels,
-        kDefaultSampleRate,
-        value,
-        0.0f,
-        frame_size,
-        input_timestamp_helper_.GetTimestamp(),
-        input_timestamp_helper_.GetFrameDuration(frame_size));
+    scoped_refptr<AudioBuffer> buffer =
+        MakeAudioBuffer<float>(kSampleFormat,
+                               kChannelLayout,
+                               kChannels,
+                               kDefaultSampleRate,
+                               value,
+                               0.0f,
+                               frame_size,
+                               input_timestamp_helper_.GetTimestamp());
     input_timestamp_helper_.AddFrames(frame_size);
     return buffer;
   }
@@ -139,8 +138,7 @@ class AudioSplicerTest : public ::testing::Test {
                                     input->sample_rate(),
                                     input->frame_count(),
                                     &input->channel_data()[0],
-                                    input->timestamp(),
-                                    input->duration());
+                                    input->timestamp());
     return splicer_.AddInput(buffer_copy);
   }
 
@@ -248,7 +246,8 @@ TEST_F(AudioSplicerTest, GapInsertion) {
   base::TimeDelta gap_duration = input_2->timestamp() - gap_timestamp;
   EXPECT_GT(gap_duration, base::TimeDelta());
   EXPECT_EQ(gap_timestamp, output_2->timestamp());
-  EXPECT_EQ(gap_duration, output_2->duration());
+  EXPECT_NEAR(
+      gap_duration.InMicroseconds(), output_2->duration().InMicroseconds(), 1);
   EXPECT_EQ(kGapSize, output_2->frame_count());
   EXPECT_TRUE(VerifyData(output_2, 0.0f));
 
@@ -444,7 +443,7 @@ TEST_F(AudioSplicerTest, PartialOverlapCrossfade) {
   VerifyPreSpliceOutput(overlapped_buffer,
                         overlapping_buffer,
                         221,
-                        base::TimeDelta::FromMicroseconds(5012));
+                        base::TimeDelta::FromMicroseconds(5011));
 
   // Due to rounding the crossfade size may vary by up to a frame.
   const int kExpectedCrossfadeSize = 220;
@@ -619,11 +618,13 @@ TEST_F(AudioSplicerTest, IncorrectlyMarkedSplice) {
       GetNextInputBuffer(1.0f, kBufferSize);
   // Fuzz the duration slightly so that the buffer overlaps the splice timestamp
   // by a microsecond, which is not enough to crossfade.
-  first_buffer->set_duration(first_buffer->duration() +
-                             base::TimeDelta::FromMicroseconds(1));
-  splicer_.SetSpliceTimestamp(input_timestamp_helper_.GetTimestamp());
+  const base::TimeDelta kSpliceTimestamp =
+      input_timestamp_helper_.GetTimestamp() -
+      base::TimeDelta::FromMicroseconds(1);
+  splicer_.SetSpliceTimestamp(kSpliceTimestamp);
   scoped_refptr<AudioBuffer> second_buffer =
       GetNextInputBuffer(0.0f, kBufferSize);
+  second_buffer->set_timestamp(kSpliceTimestamp);
 
   // The splicer should be internally queuing input since |first_buffer| is part
   // of the supposed splice.
