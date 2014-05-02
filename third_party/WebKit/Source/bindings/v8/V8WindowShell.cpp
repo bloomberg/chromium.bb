@@ -230,15 +230,8 @@ bool V8WindowShell::initialize()
             context->SetErrorMessageForCodeGenerationFromStrings(v8String(m_isolate, csp->evalDisabledErrorMessage()));
         }
     } else {
-        // Using the default security token means that the canAccess is always
-        // called, which is slow.
-        // FIXME: Use tokens where possible. This will mean keeping track of all
-        //        created contexts so that they can all be updated when the
-        //        document domain
-        //        changes.
-        context->UseDefaultSecurityToken();
-
         SecurityOrigin* origin = m_world->isolatedWorldSecurityOrigin();
+        setSecurityToken(origin);
         if (origin && InspectorInstrumentation::hasFrontends()) {
             InspectorInstrumentation::didCreateIsolatedContext(m_frame, ScriptState::current(m_isolate), origin);
         }
@@ -376,7 +369,6 @@ void V8WindowShell::clearDocumentProperty()
 
 void V8WindowShell::setSecurityToken(SecurityOrigin* origin)
 {
-    ASSERT(m_world->isMainWorld());
     // If two tokens are equal, then the SecurityOrigins canAccess each other.
     // If two tokens are not equal, then we have to call canAccess.
     // Note: we can't use the HTTPOrigin if it was set from the DOM.
@@ -384,8 +376,10 @@ void V8WindowShell::setSecurityToken(SecurityOrigin* origin)
     // We stick with an empty token if document.domain was modified or if we
     // are in the initial empty document, so that we can do a full canAccess
     // check in those cases.
-    if (!origin->domainWasSetInDOM()
-        && !m_frame->loader().stateMachine()->isDisplayingInitialEmptyDocument())
+    bool delaySet = m_world->isMainWorld()
+        && (origin->domainWasSetInDOM()
+            || m_frame->loader().stateMachine()->isDisplayingInitialEmptyDocument());
+    if (origin && !delaySet)
         token = origin->toString();
 
     // An empty or "null" token means we always have to call
