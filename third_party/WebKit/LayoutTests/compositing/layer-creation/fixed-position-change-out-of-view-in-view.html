@@ -10,6 +10,7 @@
   <script type="text/javascript">
     if (window.testRunner && window.internals) {
       testRunner.dumpAsText();
+      internals.settings.setForceCompositingMode(true);
       internals.settings.setAcceleratedCompositingForFixedPositionEnabled(true);
 
       addEventListener("load", function() {
@@ -29,11 +30,11 @@
 ancestor. To make sure this test covers the intended scenario, we force the
 body element to be tall, so that the FrameView is scrolling. -->
 <body style="height: 4000px;">
-  Layer tree when the fixed elements are out-of-view (should be blank):
+  Layer tree when the fixed elements are out-of-view (should have just a root layer):
   <pre id="layerTree1"></pre>
   Layer tree when the fixed elements are in-view (both fixed elements should have layers):
   <pre id="layerTree2"></pre>
-  Layer tree when the fixed elements are out-of-view again (should be blank):
+  Layer tree when the fixed elements are out-of-view again (should have just a root layer):
   <pre id="layerTree3"></pre>
   <div id="fixed1" style="position: fixed; top: -100px; left: 100px; width: 10px; height: 10px"></div>
   <div id="fixed2" style="position: fixed; top: 100px; left: 100px; width: 10px; height: 0px"></div>

@@ -20,8 +20,10 @@
   </style>
 
   <script type="text/javascript">
-    if (window.internals)
+    if (window.internals) {
+      window.internals.settings.setForceCompositingMode(true);
       window.internals.settings.setAcceleratedCompositingForFixedPositionEnabled(true);
+    }
 
     if (window.testRunner) {
       testRunner.dumpAsText();

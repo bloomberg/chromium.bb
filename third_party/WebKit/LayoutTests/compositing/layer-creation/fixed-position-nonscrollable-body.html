@@ -38,8 +38,10 @@
   </style>
 
   <script type="text/javascript">
-    if (window.internals)
+    if (window.internals) {
       window.internals.settings.setAcceleratedCompositingForFixedPositionEnabled(true);
+      window.internals.settings.setForceCompositingMode(true);
+    }
 
     if (window.testRunner) {
       testRunner.dumpAsText();
