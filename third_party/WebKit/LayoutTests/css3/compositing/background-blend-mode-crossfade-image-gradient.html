@@ -11,6 +11,10 @@
         float: left;
     }
 </style>
+<script>
+if (window.internals)
+    window.internals.settings.setForceCompositingMode(true);
+</script>
 <!-- This file should contain a corss-faded image between a duck and a circle, on top of a linear gradient for every type of blending -->
 <body>
     <div style="background-blend-mode: normal, normal"></div>

@@ -66,6 +66,8 @@ border:solid orange;
 height:200px}
 </style>
 <script type="text/javascript">
+if (window.internals)
+    window.internals.settings.setForceCompositingMode(true);
 function domfunc(){
 var row= document.getElementById("row_par");
 var cell= document.getElementById("spacer");

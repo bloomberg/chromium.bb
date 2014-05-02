@@ -23,6 +23,8 @@
     <script>
         if (window.testRunner)
             testRunner.dumpAsTextWithPixelResults();
+        if (window.internals)
+            window.internals.settings.setForceCompositingMode(true);
     </script>
 </head>
 <body>

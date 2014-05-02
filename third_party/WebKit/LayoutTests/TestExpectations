@@ -127,6 +127,16 @@ crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass 
 
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]
 
+crbug.com/361729 css3/compositing/background-blend-mode-crossfade-image-gradient.html [ NeedsRebaseline ]
+crbug.com/361729 fast/backgrounds/transformed-body-background.html [ NeedsRebaseline ]
+crbug.com/361729 fast/backgrounds/transformed-body-html-background.html [ NeedsRebaseline ]
+crbug.com/361729 fast/backgrounds/transformed-html-body-background.html [ NeedsRebaseline ]
+crbug.com/361729 fast/multicol/paginate-block-replaced.html [ NeedsRebaseline ]
+crbug.com/361729 fast/transforms/rotated-transform-affects-scrolling-1.html [ NeedsRebaseline ]
+crbug.com/361729 fast/transforms/rotated-transform-affects-scrolling-2.html [ NeedsRebaseline ]
+crbug.com/361729 tables/mozilla_expected_failures/marvin/backgr_layers-show.html [ NeedsRebaseline ]
+crbug.com/361729 tables/mozilla_expected_failures/marvin/table_overflow_dirty_reflow_row.html [ NeedsRebaseline ]
+
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/elements-001.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/non-element-nodes-001.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/events/event-dispatch/test-001.html [ Failure ]
