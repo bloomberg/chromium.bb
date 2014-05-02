@@ -1,6 +1,0 @@
-This test verifies the keycode sent when we press Menu key. This test applies only to Linux and Windows.
-
-
-Type=keydown,keyCode=93,ctrlKey=false,shiftKey=false,altKey=false,metaKey=false
-Type=contextmenu,keyCode=3,ctrlKey=false,shiftKey=false,altKey=false,metaKey=false
-Type=keyup,keyCode=93,ctrlKey=false,shiftKey=false,altKey=false,metaKey=false
