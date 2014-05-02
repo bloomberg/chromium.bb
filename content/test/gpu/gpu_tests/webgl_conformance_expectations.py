@@ -32,6 +32,10 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Fail('conformance/glsl/bugs/nested-structs-with-same-name.html',
         bug=368910)
 
+    # Flaky on Win / Mac
+    self.Fail('conformance/extensions/webgl-draw-buffers.html',
+        ['win', 'mac'], bug=369349)
+
     # Windows failures
     self.Fail('conformance/extensions/oes-texture-float.html',
         ['win'], bug=368919)
