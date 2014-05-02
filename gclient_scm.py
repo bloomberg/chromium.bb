@@ -161,7 +161,7 @@ class SCMWrapper(object):
     """Attempt to determine the remote URL for this SCMWrapper."""
     # Git
     if os.path.exists(os.path.join(self.checkout_path, '.git')):
-      actual_remote_url = shlex.split(self._Capture(
+      actual_remote_url = shlex.split(scm.GIT.Capture(
           ['config', '--local', '--get-regexp', r'remote.*.url'],
           cwd=self.checkout_path))[1]
 
@@ -171,7 +171,7 @@ class SCMWrapper(object):
         mirror = git_cache.Mirror(url)
         if (mirror.exists() and mirror.mirror_path.replace('\\', '/') ==
             actual_remote_url.replace('\\', '/')):
-          actual_remote_url = shlex.split(self._Capture(
+          actual_remote_url = shlex.split(scm.GIT.Capture(
               ['config', '--local', '--get-regexp', r'remote.*.url'],
               cwd=mirror.mirror_path))[1]
       return actual_remote_url
