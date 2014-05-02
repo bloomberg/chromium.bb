@@ -148,8 +148,6 @@ extern const base::char16 kUnicodeReplacementCharacter;
 // |*begin| will be updated to point to the last character consumed so it
 // can be incremented in a loop and will be ready for the next character.
 // (for a single-byte ASCII character, it will not be changed).
-//
-// Implementation is in url_canon_icu.cc.
 URL_EXPORT bool ReadUTFChar(const char* str, int* begin, int length,
                             unsigned* code_point_out);
 
@@ -225,10 +223,8 @@ inline void AppendUTF8EscapedValue(unsigned char_value, CanonOutput* output) {
 // |*begin| will be updated to point to the last character consumed so it
 // can be incremented in a loop and will be ready for the next character.
 // (for a single-16-bit-word character, it will not be changed).
-//
-// Implementation is in url_canon_icu.cc.
 URL_EXPORT bool ReadUTFChar(const base::char16* str, int* begin, int length,
-                            unsigned* code_point);
+                            unsigned* code_point_out);
 
 // Equivalent to U16_APPEND_UNSAFE in ICU but uses our output method.
 inline void AppendUTF16Value(unsigned code_point,

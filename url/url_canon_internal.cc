@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "url/url_canon_internal.h"
+
 #include <errno.h>
 #include <stdlib.h>
 
 #include <cstdio>
 #include <string>
 
-#include "url/url_canon_internal.h"
+#include "base/strings/utf_string_conversion_utils.h"
 
 namespace url {
 
@@ -243,6 +245,32 @@ void AppendStringOfType(const base::char16* source, int length,
                         CanonOutput* output) {
   DoAppendStringOfType<base::char16, base::char16>(
       source, length, type, output);
+}
+
+bool ReadUTFChar(const char* str, int* begin, int length,
+                 unsigned* code_point_out) {
+  // This depends on ints and int32s being the same thing.  If they're not, it
+  // will fail to compile.
+  // TODO(mmenke):  This should probably be fixed.
+  if (!base::ReadUnicodeCharacter(str, length, begin, code_point_out) ||
+      !base::IsValidCharacter(*code_point_out)) {
+    *code_point_out = kUnicodeReplacementCharacter;
+    return false;
+  }
+  return true;
+}
+
+bool ReadUTFChar(const base::char16* str, int* begin, int length,
+                 unsigned* code_point_out) {
+  // This depends on ints and int32s being the same thing.  If they're not, it
+  // will fail to compile.
+  // TODO(mmenke):  This should probably be fixed.
+  if (!base::ReadUnicodeCharacter(str, length, begin, code_point_out) ||
+      !base::IsValidCharacter(*code_point_out)) {
+    *code_point_out = kUnicodeReplacementCharacter;
+    return false;
+  }
+  return true;
 }
 
 void AppendInvalidNarrowString(const char* spec, int begin, int end,

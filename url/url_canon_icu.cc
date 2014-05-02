@@ -184,47 +184,4 @@ bool IDNToASCII(const base::char16* src, int src_len, CanonOutputW* output) {
   }
 }
 
-bool ReadUTFChar(const char* str, int* begin, int length,
-                 unsigned* code_point_out) {
-  int code_point;  // Avoids warning when U8_NEXT writes -1 to it.
-  U8_NEXT(str, *begin, length, code_point);
-  *code_point_out = static_cast<unsigned>(code_point);
-
-  // The ICU macro above moves to the next char, we want to point to the last
-  // char consumed.
-  (*begin)--;
-
-  // Validate the decoded value.
-  if (U_IS_UNICODE_CHAR(code_point))
-    return true;
-  *code_point_out = kUnicodeReplacementCharacter;
-  return false;
-}
-
-bool ReadUTFChar(const base::char16* str, int* begin, int length,
-                 unsigned* code_point) {
-  if (U16_IS_SURROGATE(str[*begin])) {
-    if (!U16_IS_SURROGATE_LEAD(str[*begin]) || *begin + 1 >= length ||
-        !U16_IS_TRAIL(str[*begin + 1])) {
-      // Invalid surrogate pair.
-      *code_point = kUnicodeReplacementCharacter;
-      return false;
-    } else {
-      // Valid surrogate pair.
-      *code_point = U16_GET_SUPPLEMENTARY(str[*begin], str[*begin + 1]);
-      (*begin)++;
-    }
-  } else {
-    // Not a surrogate, just one 16-bit word.
-    *code_point = str[*begin];
-  }
-
-  if (U_IS_UNICODE_CHAR(*code_point))
-    return true;
-
-  // Invalid code point.
-  *code_point = kUnicodeReplacementCharacter;
-  return false;
-}
-
 }  // namespace url
