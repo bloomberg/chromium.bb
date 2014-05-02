@@ -82,7 +82,9 @@ private:
     explicit SpeechInput(PassOwnPtr<SpeechInputClient>);
 
     OwnPtr<SpeechInputClient> m_client;
-    WillBeHeapHashMap<int, RawPtrWillBeWeakMember<SpeechInputListener> > m_listeners;
+    // FIXME: Oilpan: SpeechInputListener is a weak pointer, but it needs manual
+    // processing. We keep it raw here to avoid the default weak processing.
+    WillBeHeapHashMap<int, SpeechInputListener*> m_listeners;
     int m_nextListenerId;
 };
 

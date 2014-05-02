@@ -60,7 +60,7 @@ int SpeechInput::registerListener(SpeechInputListener* listener)
 {
 #if defined(DEBUG)
     // Check if already present.
-    for (WillBeHeapHashMap<int, RawPtrWillBeWeakMember<SpeechInputListener> >::iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
+    for (WillBeHeapHashMap<int, SpeechInputListener*>::iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
         ASSERT(it->value != listener);
 #endif
 
@@ -123,6 +123,7 @@ const char* SpeechInput::supplementName()
 
 void SpeechInput::trace(Visitor* visitor)
 {
+    visitor->trace(m_listeners);
     visitor->registerWeakMembers<SpeechInput, &SpeechInput::clearWeakMembers>(this);
 }
 
@@ -134,8 +135,8 @@ void provideSpeechInputTo(Page& page, PassOwnPtr<SpeechInputClient> client)
 void SpeechInput::clearWeakMembers(Visitor* visitor)
 {
     Vector<int> deadListenerIds;
-    WillBeHeapHashMap<int, RawPtrWillBeWeakMember<SpeechInputListener> >::const_iterator end = m_listeners.end();
-    for (WillBeHeapHashMap<int, RawPtrWillBeWeakMember<SpeechInputListener> >::const_iterator it = m_listeners.begin(); it != end; ++it) {
+    WillBeHeapHashMap<int, SpeechInputListener*>::const_iterator end = m_listeners.end();
+    for (WillBeHeapHashMap<int, SpeechInputListener*>::const_iterator it = m_listeners.begin(); it != end; ++it) {
         if (!visitor->isAlive(it->value)) {
             deadListenerIds.append(it->key);
             m_client->cancelRecognition(it->key);
