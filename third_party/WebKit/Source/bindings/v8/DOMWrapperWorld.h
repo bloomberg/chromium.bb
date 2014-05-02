@@ -43,8 +43,9 @@
 namespace WebCore {
 
 class DOMDataStore;
-class ScriptController;
 class ExecutionContext;
+class ScriptController;
+class V8DOMActivityLogger;
 
 enum WorldIdConstants {
     MainWorldId = 0,
@@ -91,7 +92,7 @@ public:
     // Associates an isolated world (see above for description) with a security
     // origin. XMLHttpRequest instances used in that world will be considered
     // to come from that origin, not the frame's.
-    static void setIsolatedWorldSecurityOrigin(int worldID, PassRefPtr<SecurityOrigin>);
+    static void setIsolatedWorldSecurityOrigin(int worldId, PassRefPtr<SecurityOrigin>);
     SecurityOrigin* isolatedWorldSecurityOrigin();
 
     // Associated an isolated world with a Content Security Policy. Resources
@@ -102,7 +103,7 @@ public:
     // FIXME: Right now, resource injection simply bypasses the main world's
     // DOM. More work is necessary to allow the isolated world's policy to be
     // applied correctly.
-    static void setIsolatedWorldContentSecurityPolicy(int worldID, const String& policy);
+    static void setIsolatedWorldContentSecurityPolicy(int worldId, const String& policy);
     bool isolatedWorldHasContentSecurityPolicy();
 
     bool isMainWorld() const { return m_worldId == MainWorldId; }
@@ -111,7 +112,9 @@ public:
 
     int worldId() const { return m_worldId; }
     int extensionGroup() const { return m_extensionGroup; }
-    DOMDataStore& domDataStore() { return *m_domDataStore; }
+    DOMDataStore& domDataStore() const { return *m_domDataStore; }
+    V8DOMActivityLogger* activityLogger() const { return m_activityLogger; }
+    void setActivityLogger(V8DOMActivityLogger* activityLogger) { m_activityLogger = activityLogger; }
 
     static void setWorldOfInitializingWindow(DOMWrapperWorld* world)
     {
@@ -130,6 +133,8 @@ private:
     const int m_worldId;
     const int m_extensionGroup;
     OwnPtr<DOMDataStore> m_domDataStore;
+    // This is owned by a static hash map in V8DOMActivityLogger.
+    V8DOMActivityLogger* m_activityLogger;
 };
 
 } // namespace WebCore

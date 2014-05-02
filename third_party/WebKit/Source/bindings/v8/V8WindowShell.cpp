@@ -39,6 +39,7 @@
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMActivityLogger.h"
 #include "bindings/v8/V8GCForContextDispose.h"
 #include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/V8Initializer.h"
@@ -215,7 +216,7 @@ bool V8WindowShell::initialize()
             setInjectedScriptContextDebugId(context, m_frame->script().contextDebugId(mainWindow->context()));
     }
 
-    m_scriptState->perContextData()->setActivityLogger(V8DOMActivityLogger::activityLogger(m_world->worldId()));
+    m_scriptState->world().setActivityLogger(V8DOMActivityLogger::activityLogger(m_world->worldId()));
     if (!installDOMWindow()) {
         disposeContext(DoNotDetachGlobal);
         return false;

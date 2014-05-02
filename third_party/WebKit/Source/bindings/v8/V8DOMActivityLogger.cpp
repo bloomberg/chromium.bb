@@ -7,7 +7,6 @@
 
 #include "bindings/v8/V8Binding.h"
 #include "wtf/HashMap.h"
-#include "wtf/MainThread.h"
 
 namespace WebCore {
 

@@ -57,6 +57,7 @@ DOMWrapperWorld::DOMWrapperWorld(int worldId, int extensionGroup)
     : m_worldId(worldId)
     , m_extensionGroup(extensionGroup)
     , m_domDataStore(adoptPtr(new DOMDataStore(isMainWorld())))
+    , m_activityLogger(0)
 {
 }
 
@@ -94,14 +95,14 @@ DOMWrapperWorld::~DOMWrapperWorld()
         return;
 
     WorldMap& map = isolatedWorldMap();
-    WorldMap::iterator i = map.find(m_worldId);
-    if (i == map.end()) {
+    WorldMap::iterator it = map.find(m_worldId);
+    if (it == map.end()) {
         ASSERT_NOT_REACHED();
         return;
     }
-    ASSERT(i->value == this);
+    ASSERT(it->value == this);
 
-    map.remove(i);
+    map.remove(it);
     isolatedWorldCount--;
     ASSERT(map.size() == isolatedWorldCount);
 }
