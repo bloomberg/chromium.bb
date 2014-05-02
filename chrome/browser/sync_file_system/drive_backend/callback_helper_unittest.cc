@@ -88,5 +88,13 @@ TEST(DriveBackendCallbackHelperTest, RunOnOtherThreadTest) {
   thread.Stop();
 }
 
+TEST(DriveBackendCallbackHelperTest, PassNullFunctionTest) {
+  base::MessageLoop message_loop;
+  base::Closure closure = RelayCallbackToCurrentThread(
+      FROM_HERE,
+      base::Closure());
+  EXPECT_TRUE(closure.is_null());
+}
+
 }  // namespace drive_backend
 }  // namespace sync_file_system
