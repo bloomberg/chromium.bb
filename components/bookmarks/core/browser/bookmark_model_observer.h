@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_BOOKMARKS_CORE_BROWSER_BOOKMARK_MODEL_OBSERVER_H_
 #define COMPONENTS_BOOKMARKS_CORE_BROWSER_BOOKMARK_MODEL_OBSERVER_H_
 
+#include <set>
+
 class BookmarkModel;
 class BookmarkNode;
+class GURL;
 
 // Observer for the BookmarkModel.
 class BookmarkModelObserver {
@@ -45,10 +48,13 @@ class BookmarkModelObserver {
   // |old_index| the index of the removed node in |parent| before it was
   // removed.
   // |node| is the node that was removed.
+  // |removed_urls| is populated with the urls which no longer have any
+  // bookmarks associated with them.
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int old_index,
-                                   const BookmarkNode* node) = 0;
+                                   const BookmarkNode* node,
+                                   const std::set<GURL>& removed_urls) = 0;
 
   // Invoked before the title or url of a node is changed.
   virtual void OnWillChangeBookmarkNode(BookmarkModel* model,
@@ -97,7 +103,10 @@ class BookmarkModelObserver {
   virtual void OnWillRemoveAllBookmarks(BookmarkModel* model) {}
 
   // Invoked when all non-permanent bookmark nodes have been removed.
-  virtual void BookmarkAllNodesRemoved(BookmarkModel* model) = 0;
+  // |removed_urls| is populated with the urls which no longer have any
+  // bookmarks associated with them.
+  virtual void BookmarkAllNodesRemoved(BookmarkModel* model,
+                                       const std::set<GURL>& removed_urls) = 0;
 
   // Invoked before a set of model changes that is initiated by a single user
   // action. For example, this is called a single time when pasting from the

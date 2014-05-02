@@ -180,8 +180,8 @@ void RecentlyUsedFoldersComboModel::BookmarkNodeRemoved(
     BookmarkModel* model,
     const BookmarkNode* parent,
     int old_index,
-    const BookmarkNode* node) {
-}
+    const BookmarkNode* node,
+    const std::set<GURL>& removed_urls) {}
 
 void RecentlyUsedFoldersComboModel::BookmarkNodeChanged(
     BookmarkModel* model,
@@ -199,7 +199,8 @@ void RecentlyUsedFoldersComboModel::BookmarkNodeChildrenReordered(
 }
 
 void RecentlyUsedFoldersComboModel::BookmarkAllNodesRemoved(
-    BookmarkModel* model) {
+    BookmarkModel* model,
+    const std::set<GURL>& removed_urls) {
   // Changing is rare enough that we don't attempt to readjust the contents.
   // Update |items_| so we aren't left pointing to a deleted node.
   bool changed = false;

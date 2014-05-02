@@ -405,7 +405,8 @@ void BookmarksBridge::BookmarkNodeAdded(BookmarkModel* model,
 void BookmarksBridge::BookmarkNodeRemoved(BookmarkModel* model,
                                           const BookmarkNode* parent,
                                           int old_index,
-                                          const BookmarkNode* node) {
+                                          const BookmarkNode* node,
+                                          const std::set<GURL>& removed_urls) {
   if (!IsLoaded())
     return;
 

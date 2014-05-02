@@ -62,13 +62,6 @@ class BookmarkClient {
   // that ensure that the action is posted from the correct thread.
   virtual void RecordAction(const base::UserMetricsAction& action) = 0;
 
-  // Notifies the history backend about urls of removed bookmarks.
-  // TODO(sdefresne): remove this method from the BookmarkClient (by having
-  // the client register itself as a BookmarkModelObserver if it is interested
-  // in the events), http://crbug.com/364433
-  virtual void NotifyHistoryAboutRemovedBookmarks(
-      const std::set<GURL>& removed_bookmark_urls) = 0;
-
  protected:
   virtual ~BookmarkClient() {}
 };

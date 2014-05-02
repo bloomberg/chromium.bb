@@ -175,10 +175,12 @@ class BookmarkModelTest : public testing::Test,
     ++before_remove_count_;
   }
 
-  virtual void BookmarkNodeRemoved(BookmarkModel* model,
-                                   const BookmarkNode* parent,
-                                   int old_index,
-                                   const BookmarkNode* node) OVERRIDE {
+  virtual void BookmarkNodeRemoved(
+      BookmarkModel* model,
+      const BookmarkNode* parent,
+      int old_index,
+      const BookmarkNode* node,
+      const std::set<GURL>& removed_urls) OVERRIDE {
     ++removed_count_;
     observer_details_.Set(parent, NULL, old_index, -1);
   }
@@ -220,7 +222,9 @@ class BookmarkModelTest : public testing::Test,
     ++extensive_changes_ended_count_;
   }
 
-  virtual void BookmarkAllNodesRemoved(BookmarkModel* model) OVERRIDE {
+  virtual void BookmarkAllNodesRemoved(
+      BookmarkModel* model,
+      const std::set<GURL>& removed_urls) OVERRIDE {
     ++all_bookmarks_removed_;
   }
 

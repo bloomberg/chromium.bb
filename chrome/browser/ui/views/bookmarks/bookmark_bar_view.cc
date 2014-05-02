@@ -1024,14 +1024,17 @@ void BookmarkBarView::BookmarkNodeAdded(BookmarkModel* model,
 void BookmarkBarView::BookmarkNodeRemoved(BookmarkModel* model,
                                           const BookmarkNode* parent,
                                           int old_index,
-                                          const BookmarkNode* node) {
+                                          const BookmarkNode* node,
+                                          const std::set<GURL>& removed_urls) {
   // Close the menu if the menu is showing for the deleted node.
   if (bookmark_menu_ && bookmark_menu_->node() == node)
     bookmark_menu_->Cancel();
   BookmarkNodeRemovedImpl(model, parent, old_index);
 }
 
-void BookmarkBarView::BookmarkAllNodesRemoved(BookmarkModel* model) {
+void BookmarkBarView::BookmarkAllNodesRemoved(
+    BookmarkModel* model,
+    const std::set<GURL>& removed_urls) {
   UpdateOtherBookmarksVisibility();
 
   StopThrobbing(true);

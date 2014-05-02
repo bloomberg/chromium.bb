@@ -33,8 +33,6 @@ class TestBookmarkClient : public BookmarkClient {
       const NodeSet& nodes,
       NodeTypedCountPairs* node_typed_count_pairs) OVERRIDE;
   virtual void RecordAction(const base::UserMetricsAction& action) OVERRIDE;
-  virtual void NotifyHistoryAboutRemovedBookmarks(
-      const std::set<GURL>& removed_bookmark_urls) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestBookmarkClient);

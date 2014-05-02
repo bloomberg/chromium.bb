@@ -17,9 +17,22 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
 
+namespace {
+
+void NotifyHistoryOfRemovedURLs(Profile* profile,
+                                const std::set<GURL>& removed_urls) {
+  HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
+  if (history_service)
+    history_service->URLsNoLongerBookmarked(removed_urls);
+}
+
+}  // namespace
+
 ChromeBookmarkClient::ChromeBookmarkClient(Profile* profile, bool index_urls)
     : profile_(profile),
       model_(new BookmarkModel(this, index_urls)) {
+  model_->AddObserver(this);
   // Listen for changes to favicons so that we can update the favicon of the
   // node appropriately.
   registrar_.Add(this,
@@ -28,6 +41,8 @@ ChromeBookmarkClient::ChromeBookmarkClient(Profile* profile, bool index_urls)
 }
 
 ChromeBookmarkClient::~ChromeBookmarkClient() {
+  model_->RemoveObserver(this);
+
   registrar_.RemoveAll();
 }
 
@@ -78,19 +93,6 @@ void ChromeBookmarkClient::RecordAction(const base::UserMetricsAction& action) {
   content::RecordAction(action);
 }
 
-void ChromeBookmarkClient::NotifyHistoryAboutRemovedBookmarks(
-    const std::set<GURL>& removed_bookmark_urls) {
-  if (removed_bookmark_urls.empty()) {
-    // No point in sending out notification if the starred state didn't change.
-    return;
-  }
-
-  HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  if (history_service)
-    history_service->URLsNoLongerBookmarked(removed_bookmark_urls);
-}
-
 void ChromeBookmarkClient::Observe(
     int type,
     const content::NotificationSource& source,
@@ -110,4 +112,22 @@ void ChromeBookmarkClient::Observe(
 
 void ChromeBookmarkClient::Shutdown() {
   model_->Shutdown();
+}
+
+void ChromeBookmarkClient::BookmarkModelChanged() {
+}
+
+void ChromeBookmarkClient::BookmarkNodeRemoved(
+    BookmarkModel* model,
+    const BookmarkNode* parent,
+    int old_index,
+    const BookmarkNode* node,
+    const std::set<GURL>& removed_urls) {
+  NotifyHistoryOfRemovedURLs(profile_, removed_urls);
+}
+
+void ChromeBookmarkClient::BookmarkAllNodesRemoved(
+    BookmarkModel* model,
+    const std::set<GURL>& removed_urls) {
+  NotifyHistoryOfRemovedURLs(profile_, removed_urls);
 }

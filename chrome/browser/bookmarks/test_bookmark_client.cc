@@ -37,8 +37,4 @@ void TestBookmarkClient::GetTypedCountForNodes(
 void TestBookmarkClient::RecordAction(const base::UserMetricsAction& action) {
 }
 
-void TestBookmarkClient::NotifyHistoryAboutRemovedBookmarks(
-    const std::set<GURL>& removed_bookmark_urls) {
-}
-
 }  // namespace test

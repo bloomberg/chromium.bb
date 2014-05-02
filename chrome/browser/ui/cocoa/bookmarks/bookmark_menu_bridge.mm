@@ -128,14 +128,18 @@ void BookmarkMenuBridge::BookmarkNodeAdded(BookmarkModel* model,
   InvalidateMenu();
 }
 
-void BookmarkMenuBridge::BookmarkNodeRemoved(BookmarkModel* model,
-                                             const BookmarkNode* parent,
-                                             int old_index,
-                                             const BookmarkNode* node) {
+void BookmarkMenuBridge::BookmarkNodeRemoved(
+    BookmarkModel* model,
+    const BookmarkNode* parent,
+    int old_index,
+    const BookmarkNode* node,
+    const std::set<GURL>& removed_urls) {
   InvalidateMenu();
 }
 
-void BookmarkMenuBridge::BookmarkAllNodesRemoved(BookmarkModel* model) {
+void BookmarkMenuBridge::BookmarkAllNodesRemoved(
+    BookmarkModel* model,
+    const std::set<GURL>& removed_urls) {
   InvalidateMenu();
 }
 

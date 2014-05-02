@@ -66,15 +66,19 @@ void BookmarkBarBridge::BookmarkNodeAdded(BookmarkModel* model,
     [controller_ nodeAdded:model parent:parent index:index];
 }
 
-void BookmarkBarBridge::BookmarkNodeRemoved(BookmarkModel* model,
-                                            const BookmarkNode* parent,
-                                            int old_index,
-                                            const BookmarkNode* node) {
+void BookmarkBarBridge::BookmarkNodeRemoved(
+    BookmarkModel* model,
+    const BookmarkNode* parent,
+    int old_index,
+    const BookmarkNode* node,
+    const std::set<GURL>& removed_urls) {
   if (!batch_mode_)
     [controller_ nodeRemoved:model parent:parent index:old_index];
 }
 
-void BookmarkBarBridge::BookmarkAllNodesRemoved(BookmarkModel* model) {
+void BookmarkBarBridge::BookmarkAllNodesRemoved(
+    BookmarkModel* model,
+    const std::set<GURL>& removed_urls) {
   [controller_ loaded:model];
 }
 

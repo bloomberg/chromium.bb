@@ -47,13 +47,15 @@ void BookmarkModelObserverForCocoa::BookmarkNodeRemoved(
     BookmarkModel* model,
     const BookmarkNode* parent,
     int old_index,
-    const BookmarkNode* node) {
+    const BookmarkNode* node,
+    const std::set<GURL>& removed_urls) {
   // See comment in BookmarkNodeMoved.
   Notify(YES);
 }
 
 void BookmarkModelObserverForCocoa::BookmarkAllNodesRemoved(
-    BookmarkModel* model) {
+    BookmarkModel* model,
+    const std::set<GURL>& removed_urls) {
   Notify(YES);
 }
 

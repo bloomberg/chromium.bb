@@ -282,10 +282,12 @@ void BookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
                                              *tree_node));
 }
 
-void BookmarkEventRouter::BookmarkNodeRemoved(BookmarkModel* model,
-                                              const BookmarkNode* parent,
-                                              int index,
-                                              const BookmarkNode* node) {
+void BookmarkEventRouter::BookmarkNodeRemoved(
+    BookmarkModel* model,
+    const BookmarkNode* parent,
+    int index,
+    const BookmarkNode* node,
+    const std::set<GURL>& removed_urls) {
   bookmarks::OnRemoved::RemoveInfo remove_info;
   remove_info.parent_id = base::Int64ToString(parent->id());
   remove_info.index = index;
@@ -295,7 +297,9 @@ void BookmarkEventRouter::BookmarkNodeRemoved(BookmarkModel* model,
                                              remove_info));
 }
 
-void BookmarkEventRouter::BookmarkAllNodesRemoved(BookmarkModel* model) {
+void BookmarkEventRouter::BookmarkAllNodesRemoved(
+    BookmarkModel* model,
+    const std::set<GURL>& removed_urls) {
   NOTREACHED();
   // TODO(shashishekhar) Currently this notification is only used on Android,
   // which does not support extensions. If Desktop needs to support this, add

@@ -376,10 +376,12 @@ void BookmarkEditorView::BookmarkNodeAdded(BookmarkModel* model,
   Reset();
 }
 
-void BookmarkEditorView::BookmarkNodeRemoved(BookmarkModel* model,
-                                             const BookmarkNode* parent,
-                                             int index,
-                                             const BookmarkNode* node) {
+void BookmarkEditorView::BookmarkNodeRemoved(
+    BookmarkModel* model,
+    const BookmarkNode* parent,
+    int index,
+    const BookmarkNode* node,
+    const std::set<GURL>& removed_urls) {
   if ((details_.type == EditDetails::EXISTING_NODE &&
        details_.existing_node->HasAncestor(node)) ||
       (parent_ && parent_->HasAncestor(node))) {
@@ -390,12 +392,15 @@ void BookmarkEditorView::BookmarkNodeRemoved(BookmarkModel* model,
   }
 }
 
-void BookmarkEditorView::BookmarkAllNodesRemoved(BookmarkModel* model) {
+void BookmarkEditorView::BookmarkAllNodesRemoved(
+    BookmarkModel* model,
+    const std::set<GURL>& removed_urls) {
   Reset();
 }
 
 void BookmarkEditorView::BookmarkNodeChildrenReordered(
-    BookmarkModel* model, const BookmarkNode* node) {
+    BookmarkModel* model,
+    const BookmarkNode* node) {
   Reset();
 }
 

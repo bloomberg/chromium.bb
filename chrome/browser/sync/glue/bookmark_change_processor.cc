@@ -268,14 +268,18 @@ int64 BookmarkChangeProcessor::CreateSyncNode(const BookmarkNode* parent,
   return sync_child.GetId();
 }
 
-void BookmarkChangeProcessor::BookmarkNodeRemoved(BookmarkModel* model,
-                                                  const BookmarkNode* parent,
-                                                  int index,
-                                                  const BookmarkNode* node) {
+void BookmarkChangeProcessor::BookmarkNodeRemoved(
+    BookmarkModel* model,
+    const BookmarkNode* parent,
+    int index,
+    const BookmarkNode* node,
+    const std::set<GURL>& removed_urls) {
   RemoveSyncNodeHierarchy(node);
 }
 
-void BookmarkChangeProcessor::BookmarkAllNodesRemoved(BookmarkModel* model) {
+void BookmarkChangeProcessor::BookmarkAllNodesRemoved(
+    BookmarkModel* model,
+    const std::set<GURL>& removed_urls) {
   RemoveAllSyncNodes();
 }
 

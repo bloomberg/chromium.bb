@@ -112,14 +112,18 @@ void BookmarkTabHelper::BookmarkNodeAdded(BookmarkModel* model,
   UpdateStarredStateForCurrentURL();
 }
 
-void BookmarkTabHelper::BookmarkNodeRemoved(BookmarkModel* model,
-                                            const BookmarkNode* parent,
-                                            int old_index,
-                                            const BookmarkNode* node) {
+void BookmarkTabHelper::BookmarkNodeRemoved(
+    BookmarkModel* model,
+    const BookmarkNode* parent,
+    int old_index,
+    const BookmarkNode* node,
+    const std::set<GURL>& removed_urls) {
   UpdateStarredStateForCurrentURL();
 }
 
-void BookmarkTabHelper::BookmarkAllNodesRemoved(BookmarkModel* model) {
+void BookmarkTabHelper::BookmarkAllNodesRemoved(
+    BookmarkModel* model,
+    const std::set<GURL>& removed_urls) {
   UpdateStarredStateForCurrentURL();
 }
 

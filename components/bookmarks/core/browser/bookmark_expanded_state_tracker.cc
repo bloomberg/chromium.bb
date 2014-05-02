@@ -80,7 +80,8 @@ void BookmarkExpandedStateTracker::BookmarkNodeRemoved(
     BookmarkModel* model,
     const BookmarkNode* parent,
     int old_index,
-    const BookmarkNode* node) {
+    const BookmarkNode* node,
+    const std::set<GURL>& removed_urls) {
   if (!node->is_folder())
     return;  // Only care about folders.
 
@@ -89,7 +90,8 @@ void BookmarkExpandedStateTracker::BookmarkNodeRemoved(
 }
 
 void BookmarkExpandedStateTracker::BookmarkAllNodesRemoved(
-    BookmarkModel* model) {
+    BookmarkModel* model,
+    const std::set<GURL>& removed_urls) {
   // Ask for the nodes again, which removes any nodes that were deleted.
   GetExpandedNodes();
 }

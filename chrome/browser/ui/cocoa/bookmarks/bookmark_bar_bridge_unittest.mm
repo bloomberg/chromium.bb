@@ -122,7 +122,7 @@ TEST_F(BookmarkBarBridgeTest, TestRedirect) {
   bridge->BookmarkNodeChanged(NULL, NULL);
   bridge->BookmarkNodeFaviconChanged(NULL, NULL);
   bridge->BookmarkNodeChildrenReordered(NULL, NULL);
-  bridge->BookmarkNodeRemoved(NULL, NULL, 0, NULL);
+  bridge->BookmarkNodeRemoved(NULL, NULL, 0, NULL, std::set<GURL>());
 
   // 8 calls above plus an initial Loaded() in init routine makes 9
   EXPECT_TRUE([controller.get()->callbacks_ count] == 9);

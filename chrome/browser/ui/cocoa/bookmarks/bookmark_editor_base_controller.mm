@@ -140,16 +140,20 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
       [controller_ modelChangedPreserveSelection:YES];
   }
 
-  virtual void BookmarkNodeRemoved(BookmarkModel* model,
-                                   const BookmarkNode* parent,
-                                   int old_index,
-                                   const BookmarkNode* node) OVERRIDE {
+  virtual void BookmarkNodeRemoved(
+      BookmarkModel* model,
+      const BookmarkNode* parent,
+      int old_index,
+      const BookmarkNode* node,
+      const std::set<GURL>& removed_urls) OVERRIDE {
     [controller_ nodeRemoved:node fromParent:parent];
     if (node->is_folder())
       [controller_ modelChangedPreserveSelection:NO];
   }
 
-  virtual void BookmarkAllNodesRemoved(BookmarkModel* model) OVERRIDE {
+  virtual void BookmarkAllNodesRemoved(
+      BookmarkModel* model,
+      const std::set<GURL>& removed_urls) OVERRIDE {
     [controller_ modelChangedPreserveSelection:NO];
   }
 

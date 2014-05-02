@@ -193,13 +193,8 @@ void BookmarkModel::RemoveAll() {
   if (store_.get())
     store_->ScheduleSave();
 
-  // TODO(sdefresne): remove this method from the BookmarkClient (by having
-  // the client register itself as a BookmarkModelObserver if it is interested
-  // in the events), http://crbug.com/364433
-  client_->NotifyHistoryAboutRemovedBookmarks(removed_urls);
-
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
-                    BookmarkAllNodesRemoved(this));
+                    BookmarkAllNodesRemoved(this, removed_urls));
 }
 
 void BookmarkModel::Move(const BookmarkNode* node,
@@ -764,13 +759,10 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
   if (store_.get())
     store_->ScheduleSave();
 
-  // TODO(sdefresne): remove this method from the BookmarkClient (by having
-  // the client register itself as a BookmarkModelObserver if it is interested
-  // in the events), http://crbug.com/364433
-  client_->NotifyHistoryAboutRemovedBookmarks(removed_urls);
-
-  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
-                    BookmarkNodeRemoved(this, parent, index, node.get()));
+  FOR_EACH_OBSERVER(
+      BookmarkModelObserver,
+      observers_,
+      BookmarkNodeRemoved(this, parent, index, node.get(), removed_urls));
 }
 
 void BookmarkModel::RemoveNodeFromURLSet(BookmarkNode* node) {
