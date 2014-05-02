@@ -737,15 +737,6 @@ void RenderObject::invalidateContainerPreferredLogicalWidths()
     }
 }
 
-void RenderObject::setLayerNeedsFullRepaint()
-{
-    ASSERT(hasLayer());
-    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-        setShouldDoFullRepaintAfterLayout(true);
-    else
-        toRenderLayerModelObject(this)->layer()->repainter().setRepaintStatus(NeedsFullRepaint);
-}
-
 void RenderObject::setLayerNeedsFullRepaintForPositionedMovementLayout()
 {
     ASSERT(hasLayer());
@@ -1693,10 +1684,7 @@ void RenderObject::repaintOverflowIfNeeded()
 
 bool RenderObject::checkForRepaint() const
 {
-    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-        return !document().view()->needsFullRepaint() && everHadLayout();
-
-    return !document().view()->needsFullRepaint() && !hasLayer() && everHadLayout();
+    return !document().view()->needsFullRepaint() && everHadLayout();
 }
 
 bool RenderObject::checkForRepaintDuringLayout() const

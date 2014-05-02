@@ -302,7 +302,6 @@ private:
 #endif
 
     void addAbsoluteRectForLayer(LayoutRect& result);
-    void setLayerNeedsFullRepaint();
     void setLayerNeedsFullRepaintForPositionedMovementLayout();
     bool requiresAnonymousTableWrappers(const RenderObject*) const;
 
@@ -1303,8 +1302,6 @@ inline void RenderObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLay
     if (!alreadyNeededLayout) {
         if (markParents == MarkContainingBlockChain && (!layouter || layouter->root() != this))
             markContainingBlocksForLayout(true, 0, layouter);
-        if (hasLayer())
-            setLayerNeedsFullRepaint();
     }
 }
 
