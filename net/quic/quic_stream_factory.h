@@ -186,6 +186,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   };
 
   typedef std::map<QuicServerId, QuicClientSession*> SessionMap;
+  typedef std::map<QuicClientSession*, QuicServerId> SessionIdMap;
   typedef std::set<QuicServerId> AliasSet;
   typedef std::map<QuicClientSession*, AliasSet> SessionAliasMap;
   typedef std::set<QuicClientSession*> SessionSet;
@@ -220,6 +221,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       const QuicServerId& server_id,
       const scoped_ptr<QuicServerInfo>& server_info);
 
+  void ProcessGoingAwaySession(QuicClientSession* session,
+                               const QuicServerId& server_id);
+
   bool require_confirmation_;
   HostResolver* host_resolver_;
   ClientSocketFactory* client_socket_factory_;
@@ -235,7 +239,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   scoped_ptr<QuicConnectionHelper> helper_;
 
   // Contains owning pointers to all sessions that currently exist.
-  SessionSet all_sessions_;
+  SessionIdMap all_sessions_;
   // Contains non-owning pointers to currently active session
   // (not going away session, once they're implemented).
   SessionMap active_sessions_;

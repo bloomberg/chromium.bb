@@ -977,6 +977,14 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
     return result;
   }
 
+  if (using_quic_) {
+    if (result < 0)
+      return result;
+    stream_ = quic_request_.ReleaseStream();
+    next_state_ = STATE_NONE;
+    return OK;
+  }
+
   if (!ssl_started && result < 0 && original_url_.get()) {
     HistogramBrokenAlternateProtocolLocation(
         BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_IMPL_JOB);
@@ -984,14 +992,6 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
     session_->http_server_properties()->SetBrokenAlternateProtocol(
         HostPortPair::FromURL(*original_url_));
     return result;
-  }
-
-  if (using_quic_) {
-    if (result < 0)
-      return result;
-    stream_ = quic_request_.ReleaseStream();
-    next_state_ = STATE_NONE;
-    return OK;
   }
 
   if (result < 0 && !ssl_started)

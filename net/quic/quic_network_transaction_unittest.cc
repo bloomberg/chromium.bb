@@ -281,6 +281,15 @@ class QuicNetworkTransactionTest
     EXPECT_EQ(ALTERNATE_PROTOCOL_BROKEN, alternate.protocol);
   }
 
+  void ExpectQuicAlternateProtocolMapping() {
+    ASSERT_TRUE(session_->http_server_properties()->HasAlternateProtocol(
+        HostPortPair::FromURL(request_.url)));
+    const PortAlternateProtocolPair alternate =
+        session_->http_server_properties()->GetAlternateProtocol(
+            HostPortPair::FromURL(request_.url));
+    EXPECT_EQ(QUIC, alternate.protocol);
+  }
+
   void AddHangingNonAlternateProtocolSocketData() {
     MockConnect hanging_connect(SYNCHRONOUS, ERR_IO_PENDING);
     hanging_data_.set_connect_data(hanging_connect);
@@ -824,6 +833,33 @@ TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
 
   EXPECT_TRUE(quic_data.at_read_eof());
   EXPECT_TRUE(quic_data.at_write_eof());
+}
+
+TEST_P(QuicNetworkTransactionTest, NoBrokenAlternateProtocolOnConnectFailure) {
+  HttpStreamFactory::EnableNpnSpdy3();  // Enables QUIC too.
+
+  // Alternate-protocol job will fail before creating a QUIC session.
+  StaticSocketDataProvider quic_data(NULL, 0, NULL, 0);
+  quic_data.set_connect_data(MockConnect(SYNCHRONOUS,
+                                         ERR_INTERNET_DISCONNECTED));
+  socket_factory_.AddSocketDataProvider(&quic_data);
+
+  // Main job which will succeed even though the alternate job fails.
+  MockRead http_reads[] = {
+    MockRead("HTTP/1.1 200 OK\r\n\r\n"),
+    MockRead("hello from http"),
+    MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+    MockRead(ASYNC, OK)
+  };
+
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
+                                     NULL, 0);
+  socket_factory_.AddSocketDataProvider(&http_data);
+
+  CreateSession();
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::COLD_START);
+  SendRequestAndExpectHttpResponse("hello from http");
+  ExpectQuicAlternateProtocolMapping();
 }
 
 TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {

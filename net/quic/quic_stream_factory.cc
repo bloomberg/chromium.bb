@@ -430,7 +430,10 @@ QuicStreamFactory::QuicStreamFactory(
 
 QuicStreamFactory::~QuicStreamFactory() {
   CloseAllSessions(ERR_ABORTED);
-  STLDeleteElements(&all_sessions_);
+  while (!all_sessions_.empty()) {
+    delete all_sessions_.begin()->first;
+    all_sessions_.erase(all_sessions_.begin());
+  }
   STLDeleteValues(&active_jobs_);
 }
 
@@ -556,7 +559,6 @@ void QuicStreamFactory::OnIdleSession(QuicClientSession* session) {
 }
 
 void QuicStreamFactory::OnSessionGoingAway(QuicClientSession* session) {
-  const QuicConnectionStats& stats = session->connection()->GetStats();
   const AliasSet& aliases = session_aliases_[session];
   for (AliasSet::const_iterator it = aliases.begin(); it != aliases.end();
        ++it) {
@@ -569,28 +571,9 @@ void QuicStreamFactory::OnSessionGoingAway(QuicClientSession* session) {
     }
 
     active_sessions_.erase(*it);
-    if (!http_server_properties_)
-      continue;
-
-    if (!session->IsCryptoHandshakeConfirmed()) {
-      // TODO(rch):  In the special case where the session has received no
-      // packets from the peer, we should consider blacklisting this
-      // differently so that we still race TCP but we don't consider the
-      // session connected until the handshake has been confirmed.
-      HistogramBrokenAlternateProtocolLocation(
-          BROKEN_ALTERNATE_PROTOCOL_LOCATION_QUIC_STREAM_FACTORY);
-      http_server_properties_->SetBrokenAlternateProtocol(it->host_port_pair());
-      UMA_HISTOGRAM_COUNTS("Net.QuicHandshakeNotConfirmedNumPacketsReceived",
-                           stats.packets_received);
-      continue;
-    }
-
-    HttpServerProperties::NetworkStats network_stats;
-    network_stats.srtt = base::TimeDelta::FromMicroseconds(stats.srtt_us);
-    network_stats.bandwidth_estimate = stats.estimated_bandwidth;
-    http_server_properties_->SetServerNetworkStats(it->host_port_pair(),
-                                                   network_stats);
+    ProcessGoingAwaySession(session, *it);
   }
+  ProcessGoingAwaySession(session, all_sessions_[session]);
   if (!aliases.empty()) {
     const IpAliasKey ip_alias_key(session->connection()->peer_address(),
                                   aliases.begin()->is_https());
@@ -605,8 +588,8 @@ void QuicStreamFactory::OnSessionGoingAway(QuicClientSession* session) {
 void QuicStreamFactory::OnSessionClosed(QuicClientSession* session) {
   DCHECK_EQ(0u, session->GetNumOpenStreams());
   OnSessionGoingAway(session);
-  all_sessions_.erase(session);
   delete session;
+  all_sessions_.erase(session);
 }
 
 void QuicStreamFactory::CancelRequest(QuicStreamRequest* request) {
@@ -624,7 +607,7 @@ void QuicStreamFactory::CloseAllSessions(int error) {
   }
   while (!all_sessions_.empty()) {
     size_t initial_size = all_sessions_.size();
-    (*all_sessions_.begin())->CloseSessionOnError(error);
+    all_sessions_.begin()->first->CloseSessionOnError(error);
     DCHECK_NE(initial_size, all_sessions_.size());
   }
   DCHECK(all_sessions_.empty());
@@ -773,7 +756,7 @@ int QuicStreamFactory::CreateSession(
       connection, socket.Pass(), writer.Pass(), this,
       quic_crypto_client_stream_factory_, server_info.Pass(), server_id,
       config, &crypto_config_, net_log.net_log());
-  all_sessions_.insert(*session);  // owning pointer
+  all_sessions_[*session] = server_id;  // owning pointer
   return OK;
 }
 
@@ -815,6 +798,34 @@ void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
     // Don't check the certificates for insecure QUIC.
     cached->SetProofValid();
   }
+}
+
+void QuicStreamFactory::ProcessGoingAwaySession(
+    QuicClientSession* session,
+    const QuicServerId& server_id) {
+  if (!http_server_properties_)
+    return;
+
+  const QuicConnectionStats& stats = session->connection()->GetStats();
+  if (!session->IsCryptoHandshakeConfirmed()) {
+    // TODO(rch):  In the special case where the session has received no
+    // packets from the peer, we should consider blacklisting this
+    // differently so that we still race TCP but we don't consider the
+    // session connected until the handshake has been confirmed.
+    HistogramBrokenAlternateProtocolLocation(
+        BROKEN_ALTERNATE_PROTOCOL_LOCATION_QUIC_STREAM_FACTORY);
+    http_server_properties_->SetBrokenAlternateProtocol(
+        server_id.host_port_pair());
+    UMA_HISTOGRAM_COUNTS("Net.QuicHandshakeNotConfirmedNumPacketsReceived",
+                         stats.packets_received);
+    return;
+  }
+
+  HttpServerProperties::NetworkStats network_stats;
+  network_stats.srtt = base::TimeDelta::FromMicroseconds(stats.srtt_us);
+  network_stats.bandwidth_estimate = stats.estimated_bandwidth;
+  http_server_properties_->SetServerNetworkStats(server_id.host_port_pair(),
+                                                 network_stats);
 }
 
 }  // namespace net

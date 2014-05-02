@@ -72,10 +72,10 @@ class QuicStreamFactoryPeer {
 
   static bool IsLiveSession(QuicStreamFactory* factory,
                             QuicClientSession* session) {
-    for (QuicStreamFactory::SessionSet::iterator it =
+    for (QuicStreamFactory::SessionIdMap::iterator it =
              factory->all_sessions_.begin();
          it != factory->all_sessions_.end(); ++it) {
-      if (*it == session)
+      if (it->first == session)
         return true;
     }
     return false;

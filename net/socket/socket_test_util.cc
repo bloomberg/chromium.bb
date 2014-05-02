@@ -1540,7 +1540,7 @@ const BoundNetLog& MockUDPClientSocket::NetLog() const {
 int MockUDPClientSocket::Connect(const IPEndPoint& address) {
   connected_ = true;
   peer_addr_ = address;
-  return OK;
+  return data_->connect_data().result;
 }
 
 void MockUDPClientSocket::OnReadComplete(const MockRead& data) {
