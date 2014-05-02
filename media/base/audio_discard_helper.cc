@@ -103,10 +103,8 @@ bool AudioDiscardHelper::ProcessBuffers(
     DCHECK(encoded_buffer->discard_padding() == base::TimeDelta());
   }
 
-  // Assign timestamp and duration to the buffer.
+  // Assign timestamp to the buffer.
   decoded_buffer->set_timestamp(timestamp_helper_.GetTimestamp());
-  decoded_buffer->set_duration(
-      timestamp_helper_.GetFrameDuration(decoded_buffer->frame_count()));
   timestamp_helper_.AddFrames(decoded_buffer->frame_count());
   return true;
 }

@@ -151,29 +151,25 @@ gfx::Size TestVideoConfig::LargeCodedSize() {
 template <class T>
 scoped_refptr<AudioBuffer> MakeAudioBuffer(SampleFormat format,
                                            ChannelLayout channel_layout,
-                                           int channel_count,
+                                           size_t channel_count,
                                            int sample_rate,
                                            T start,
                                            T increment,
-                                           int frames,
-                                           base::TimeDelta timestamp,
-                                           base::TimeDelta duration) {
-  int channels = ChannelLayoutToChannelCount(channel_layout);
-  scoped_refptr<AudioBuffer> output = AudioBuffer::CreateBuffer(
-      format, channel_layout, channel_count, sample_rate, frames);
+                                           size_t frames,
+                                           base::TimeDelta timestamp) {
+  const size_t channels = ChannelLayoutToChannelCount(channel_layout);
+  scoped_refptr<AudioBuffer> output =
+      AudioBuffer::CreateBuffer(format,
+                                channel_layout,
+                                static_cast<int>(channel_count),
+                                sample_rate,
+                                static_cast<int>(frames));
   output->set_timestamp(timestamp);
-  output->set_duration(duration);
 
-  // Create a block of memory with values:
-  //   start
-  //   start + increment
-  //   start + 2 * increment, ...
-  // For interleaved data, raw data will be:
-  //   start
-  //   start + channels * increment
-  //   start + 2 * channels * increment, ...
-  //
-  // For planar data, values in channel 0 will be:
+  const bool is_planar =
+      format == kSampleFormatPlanarS16 || format == kSampleFormatPlanarF32;
+
+  // Values in channel 0 will be:
   //   start
   //   start + increment
   //   start + 2 * increment, ...
@@ -181,13 +177,13 @@ scoped_refptr<AudioBuffer> MakeAudioBuffer(SampleFormat format,
   //   start + frames * increment
   //   start + (frames + 1) * increment
   //   start + (frames + 2) * increment, ...
-  const size_t output_size =
-      output->channel_data().size() == 1 ? frames * channels : frames;
-  for (size_t ch = 0; ch < output->channel_data().size(); ++ch) {
-    T* buffer = reinterpret_cast<T*>(output->channel_data()[ch]);
-    const T v = static_cast<T>(start + ch * output_size * increment);
-    for (size_t i = 0; i < output_size; ++i) {
-      buffer[i] = static_cast<T>(v + i * increment);
+  for (size_t ch = 0; ch < channels; ++ch) {
+    T* buffer =
+        reinterpret_cast<T*>(output->channel_data()[is_planar ? ch : 0]);
+    const T v = static_cast<T>(start + ch * frames * increment);
+    for (size_t i = 0; i < frames; ++i) {
+      buffer[is_planar ? i : ch + i * channels] =
+          static_cast<T>(v + i * increment);
     }
   }
   return output;
@@ -199,13 +195,12 @@ scoped_refptr<AudioBuffer> MakeAudioBuffer(SampleFormat format,
   template scoped_refptr<AudioBuffer> MakeAudioBuffer<type>( \
       SampleFormat format,                                   \
       ChannelLayout channel_layout,                          \
-      int channel_count,                                     \
+      size_t channel_count,                                  \
       int sample_rate,                                       \
       type start,                                            \
       type increment,                                        \
-      int frames,                                            \
-      base::TimeDelta start_time,                            \
-      base::TimeDelta duration)
+      size_t frames,                                         \
+      base::TimeDelta start_time)
 DEFINE_MAKE_AUDIO_BUFFER_INSTANCE(uint8);
 DEFINE_MAKE_AUDIO_BUFFER_INSTANCE(int16);
 DEFINE_MAKE_AUDIO_BUFFER_INSTANCE(int32);

@@ -34,16 +34,13 @@ class MEDIA_EXPORT AudioBuffer
   // number of buffers must be equal to |channel_count|. |frame_count| is the
   // number of frames in each buffer. |data| must not be null and |frame_count|
   // must be >= 0.
-  //
-  // TODO(jrummell): Compute duration rather than pass it in.
   static scoped_refptr<AudioBuffer> CopyFrom(SampleFormat sample_format,
                                              ChannelLayout channel_layout,
                                              int channel_count,
                                              int sample_rate,
                                              int frame_count,
                                              const uint8* const* data,
-                                             const base::TimeDelta timestamp,
-                                             const base::TimeDelta duration);
+                                             const base::TimeDelta timestamp);
 
   // Create an AudioBuffer with |frame_count| frames. Buffer is allocated, but
   // not initialized. Timestamp and duration are set to kNoTimestamp().
@@ -59,8 +56,7 @@ class MEDIA_EXPORT AudioBuffer
       int channel_count,
       int sample_rate,
       int frame_count,
-      const base::TimeDelta timestamp,
-      const base::TimeDelta duration);
+      const base::TimeDelta timestamp);
 
   // Create a AudioBuffer indicating we've reached end of stream.
   // Calling any method other than end_of_stream() on the resulting buffer
@@ -102,7 +98,6 @@ class MEDIA_EXPORT AudioBuffer
   base::TimeDelta timestamp() const { return timestamp_; }
   base::TimeDelta duration() const { return duration_; }
   void set_timestamp(base::TimeDelta timestamp) { timestamp_ = timestamp; }
-  void set_duration(base::TimeDelta duration) { duration_ = duration; }
 
   // If there's no data in this buffer, it represents end of stream.
   bool end_of_stream() const { return end_of_stream_; }
@@ -126,8 +121,7 @@ class MEDIA_EXPORT AudioBuffer
               int frame_count,
               bool create_buffer,
               const uint8* const* data,
-              const base::TimeDelta timestamp,
-              const base::TimeDelta duration);
+              const base::TimeDelta timestamp);
 
   virtual ~AudioBuffer();
 

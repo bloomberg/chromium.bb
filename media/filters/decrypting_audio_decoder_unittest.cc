@@ -104,7 +104,6 @@ class DecryptingAudioDecoderTest : public testing::Test {
                                                     channels,
                                                     kSampleRate,
                                                     kFakeAudioFrameSize,
-                                                    kNoTimestamp(),
                                                     kNoTimestamp());
     decoded_frame_list_.push_back(decoded_frame_);
 
@@ -363,14 +362,12 @@ TEST_F(DecryptingAudioDecoderTest, DecryptAndDecode_MultipleFrames) {
       ChannelLayoutToChannelCount(config_.channel_layout()),
       kSampleRate,
       kFakeAudioFrameSize,
-      kNoTimestamp(),
       kNoTimestamp());
   scoped_refptr<AudioBuffer> frame_b = AudioBuffer::CreateEmptyBuffer(
       config_.channel_layout(),
       ChannelLayoutToChannelCount(config_.channel_layout()),
       kSampleRate,
       kFakeAudioFrameSize,
-      kNoTimestamp(),
       kNoTimestamp());
   decoded_frame_list_.push_back(frame_a);
   decoded_frame_list_.push_back(frame_b);
