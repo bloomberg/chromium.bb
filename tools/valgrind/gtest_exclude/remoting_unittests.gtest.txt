@@ -1,6 +1,2 @@
 # http://crbug.com/241856
 VideoSchedulerTest.StartAndStop
-
-# http://crbug.com/369191
-MonitoredVideoStubTest.OnChannelConnected
-MonitoredVideoStubTest.OnChannelStayConnected

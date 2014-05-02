@@ -14,6 +14,7 @@
 
 using ::testing::_;
 using ::testing::AnyNumber;
+using ::testing::AtMost;
 using ::testing::InvokeWithoutArgs;
 
 namespace remoting {
@@ -46,6 +47,10 @@ class MonitoredVideoStubTest : public testing::Test {
 
 TEST_F(MonitoredVideoStubTest, OnChannelConnected) {
   EXPECT_CALL(*this, OnVideoChannelStatus(true));
+  // On slow machines, the connectivity check timer may fire before the test
+  // finishes, so we expect to see at most one transition to not ready.
+  EXPECT_CALL(*this, OnVideoChannelStatus(false)).Times(AtMost(1));
+
   monitor_->ProcessVideoPacket(packet_.Pass(), base::Closure());
   base::RunLoop().RunUntilIdle();
 }
@@ -64,7 +69,10 @@ TEST_F(MonitoredVideoStubTest, OnChannelDisconnected) {
 TEST_F(MonitoredVideoStubTest, OnChannelStayConnected) {
   // Verify no extra connected events are fired when packets are received
   // frequently
-  EXPECT_CALL(*this, OnVideoChannelStatus(_)).Times(1);
+  EXPECT_CALL(*this, OnVideoChannelStatus(true));
+  // On slow machines, the connectivity check timer may fire before the test
+  // finishes, so we expect to see at most one transition to not ready.
+  EXPECT_CALL(*this, OnVideoChannelStatus(false)).Times(AtMost(1));
 
   monitor_->ProcessVideoPacket(packet_.Pass(), base::Closure());
   monitor_->ProcessVideoPacket(packet_.Pass(), base::Closure());
