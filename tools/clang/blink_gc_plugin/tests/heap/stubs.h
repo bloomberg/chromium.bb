@@ -53,9 +53,10 @@ class VectorDestructorBase<inlineCapacity, true, false> {};
 template<>
 class VectorDestructorBase<0, true, true> {};
 
-template<typename T,
-         size_t inlineCapacity = 0,
-         typename Allocator = DefaultAllocator>
+template<
+    typename T,
+    size_t inlineCapacity = 0,
+    typename Allocator = DefaultAllocator>
 class Vector : public VectorDestructorBase<inlineCapacity,
                                            Allocator::isGarbageCollected,
                                            VectorTraits<T>::needsDestruction> {
@@ -63,6 +64,49 @@ public:
     size_t size();
     T& operator[](size_t);
 };
+
+template<
+    typename T,
+    size_t inlineCapacity = 0,
+    typename Allocator = DefaultAllocator>
+class Deque {};
+
+template<
+    typename ValueArg,
+    typename HashArg = void,
+    typename TraitsArg = void,
+    typename Allocator = DefaultAllocator>
+class HashSet {};
+
+template<
+    typename ValueArg,
+    typename HashArg = void,
+    typename TraitsArg = void,
+    typename Allocator = DefaultAllocator>
+class ListHashSet {};
+
+template<
+    typename ValueArg,
+    typename HashArg = void,
+    typename TraitsArg = void,
+    typename Allocator = DefaultAllocator>
+class LinkedHashSet {};
+
+template<
+    typename ValueArg,
+    typename HashArg = void,
+    typename TraitsArg = void,
+    typename Allocator = DefaultAllocator>
+class HashCountedSet {};
+
+template<
+    typename KeyArg,
+    typename MappedArg,
+    typename HashArg = void,
+    typename KeyTraitsArg = void,
+    typename MappedTraitsArg = void,
+    typename Allocator = DefaultAllocator>
+class HashMap {};
 
 }
 
@@ -107,6 +151,13 @@ public:
     bool operator!() const { return false; }
 };
 
+template<typename T> class WeakMember {
+public:
+    operator T*() const { return 0; }
+    T* operator->() { return 0; }
+    bool operator!() const { return false; }
+};
+
 template<typename T> class Persistent {
 public:
     operator T*() const { return 0; }
@@ -122,12 +173,36 @@ public:
 template<typename T, size_t inlineCapacity = 0>
 class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> { };
 
+template<typename T, size_t inlineCapacity = 0>
+class HeapDeque : public Vector<T, inlineCapacity, HeapAllocator> { };
+
+template<typename T>
+class HeapHashSet : public HashSet<T, void, void, HeapAllocator> { };
+
+template<typename T>
+class HeapListHashSet : public ListHashSet<T, void, void, HeapAllocator> { };
+
+template<typename T>
+class HeapLinkedHashSet : public LinkedHashSet<T, void, void, HeapAllocator> {
+};
+
+template<typename T>
+class HeapHashCountedSet : public HashCountedSet<T, void, void, HeapAllocator> {
+};
+
+template<typename K, typename V>
+class HeapHashMap : public HashMap<K, V, void, void, void, HeapAllocator> { };
+
 template<typename T>
 class PersistentHeapVector : public Vector<T, 0, HeapAllocator> { };
 
 class Visitor {
 public:
-    template<typename T> void trace(const T&);
+    template<typename T>
+    void trace(const T&);
+
+    template<typename T, void (T::*method)(Visitor*)>
+    void registerWeakMembers(const T* obj);
 };
 
 class GarbageCollectedMixin {

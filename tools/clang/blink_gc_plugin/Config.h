@@ -56,24 +56,33 @@ class Config {
 
   static bool IsWTFCollection(const std::string& name) {
     return name == "Vector" ||
+           name == "Deque" ||
            name == "HashSet" ||
-           name == "HashMap" ||
-           name == "HashCountedSet" ||
            name == "ListHashSet" ||
-           name == "Deque";
-  }
-
-  static bool IsPersistentGCCollection(const std::string& name) {
-    return name == "PersistentHeapVector" ||
-           name == "PersistentHeapHashMap" ||
-           name == "PersistentHeapHashSet";
+           name == "LinkedHashSet" ||
+           name == "HashCountedSet" ||
+           name == "HashMap";
   }
 
   static bool IsGCCollection(const std::string& name) {
     return name == "HeapVector" ||
-           name == "HeapHashMap" ||
+           name == "HeapDeque" ||
            name == "HeapHashSet" ||
+           name == "HeapListHashSet" ||
+           name == "HeapLinkedHashSet" ||
+           name == "HeapHashCountedSet" ||
+           name == "HeapHashMap" ||
            IsPersistentGCCollection(name);
+  }
+
+  static bool IsPersistentGCCollection(const std::string& name) {
+    return name == "PersistentHeapVector" ||
+           name == "PersistentHeapDeque" ||
+           name == "PersistentHeapHashSet" ||
+           name == "PersistentHeapListHashSet" ||
+           name == "PersistentHeapLinkedHashSet" ||
+           name == "PersistentHeapHashCountedSet" ||
+           name == "PersistentHeapHashMap";
   }
 
   static bool IsHashMap(const std::string& name) {

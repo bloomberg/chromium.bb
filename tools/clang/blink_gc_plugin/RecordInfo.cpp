@@ -504,11 +504,9 @@ Edge* RecordInfo::CreateEdge(const Type* type) {
     for (TemplateArgs::iterator it = args.begin(); it != args.end(); ++it) {
       if (Edge* member = CreateEdge(*it)) {
         edge->members().push_back(member);
-      } else {
-        // We failed to create an edge so abort the entire edge construction.
-        delete edge;  // Will delete the already allocated members.
-        return 0;
       }
+      // TODO: Handle the case where we fail to create an edge (eg, if the
+      // argument is a primitive type or just not fully known yet).
     }
     return edge;
   }
