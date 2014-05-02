@@ -394,7 +394,7 @@ void Scheduler::SetupPollingMechanisms(bool needs_begin_frame) {
 // If the scheduler is busy, we queue the BeginFrame to be handled later as
 // a BeginRetroFrame.
 void Scheduler::BeginFrame(const BeginFrameArgs& args) {
-  TRACE_EVENT0("cc", "Scheduler::BeginFrame");
+  TRACE_EVENT1("cc", "Scheduler::BeginFrame", "frame_time", args.frame_time);
   DCHECK(settings_.throttle_frame_production);
 
   bool should_defer_begin_frame;
@@ -443,13 +443,18 @@ void Scheduler::BeginRetroFrame() {
   while (!begin_retro_frame_args_.empty() &&
          now > AdjustedBeginImplFrameDeadline(begin_retro_frame_args_.front(),
                                               draw_duration_estimate)) {
+    TRACE_EVENT1("cc",
+                 "Scheduler::BeginRetroFrame discarding",
+                 "frame_time",
+                 begin_retro_frame_args_.front().frame_time);
     begin_retro_frame_args_.pop_front();
   }
 
   if (begin_retro_frame_args_.empty()) {
     DCHECK(settings_.throttle_frame_production);
-    TRACE_EVENT_INSTANT0(
-        "cc", "Scheduler::BeginRetroFrames expired", TRACE_EVENT_SCOPE_THREAD);
+    TRACE_EVENT_INSTANT0("cc",
+                         "Scheduler::BeginRetroFrames all expired",
+                         TRACE_EVENT_SCOPE_THREAD);
   } else {
     BeginImplFrame(begin_retro_frame_args_.front());
     begin_retro_frame_args_.pop_front();
@@ -483,7 +488,8 @@ void Scheduler::PostBeginRetroFrameIfNeeded() {
 // for a BeginMainFrame+activation to complete before it times out and draws
 // any asynchronous animation and scroll/pinch updates.
 void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
-  TRACE_EVENT0("cc", "Scheduler::BeginImplFrame");
+  TRACE_EVENT1(
+      "cc", "Scheduler::BeginImplFrame", "frame_time", args.frame_time);
   DCHECK(state_machine_.begin_impl_frame_state() ==
          SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
   DCHECK(state_machine_.HasInitializedOutputSurface());
