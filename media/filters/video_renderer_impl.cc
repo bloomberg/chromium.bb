@@ -26,6 +26,7 @@ VideoRendererImpl::VideoRendererImpl(
     bool drop_frames)
     : task_runner_(task_runner),
       video_frame_stream_(task_runner, decoders.Pass(), set_decryptor_ready_cb),
+      low_delay_(false),
       received_end_of_stream_(false),
       frame_available_(&lock_),
       state_(kUninitialized),
@@ -167,6 +168,8 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
   DCHECK(!get_time_cb.is_null());
   DCHECK(!get_duration_cb.is_null());
   DCHECK_EQ(kUninitialized, state_);
+
+  low_delay_ = low_delay;
 
   init_cb_ = init_cb;
   statistics_cb_ = statistics_cb;
@@ -407,7 +410,8 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
 bool VideoRendererImpl::ShouldTransitionToPrerolled_Locked() {
   return state_ == kPrerolling &&
       (!video_frame_stream_.CanReadWithoutStalling() ||
-       ready_frames_.size() >= static_cast<size_t>(limits::kMaxVideoFrames));
+       ready_frames_.size() >= static_cast<size_t>(limits::kMaxVideoFrames) ||
+       (low_delay_ && ready_frames_.size() > 0));
 }
 
 void VideoRendererImpl::AddReadyFrame_Locked(
@@ -453,6 +457,7 @@ void VideoRendererImpl::AttemptRead_Locked() {
   switch (state_) {
     case kPaused:
     case kPrerolling:
+    case kPrerolled:
     case kPlaying:
       pending_read_ = true;
       video_frame_stream_.Read(base::Bind(&VideoRendererImpl::FrameReady,
@@ -461,7 +466,6 @@ void VideoRendererImpl::AttemptRead_Locked() {
 
     case kUninitialized:
     case kInitializing:
-    case kPrerolled:
     case kFlushing:
     case kFlushed:
     case kEnded:

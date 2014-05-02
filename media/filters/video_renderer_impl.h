@@ -137,6 +137,9 @@ class MEDIA_EXPORT VideoRendererImpl
   // Provides video frames to VideoRendererImpl.
   VideoFrameStream video_frame_stream_;
 
+  // Flag indicating low-delay mode.
+  bool low_delay_;
+
   // Queue of incoming frames yet to be painted.
   typedef std::deque<scoped_refptr<VideoFrame> > VideoFrameQueue;
   VideoFrameQueue ready_frames_;
