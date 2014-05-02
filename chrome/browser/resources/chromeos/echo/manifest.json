@@ -5,12 +5,13 @@
   "version": "1.0.0",
   "description": "Chrome Goodies",
   "manifest_version": 2,
-  "content_security_policy": "default-src 'self'; connect-src 'self' https://chromeos-registration.googleapis.com",
+  "content_security_policy": "default-src 'self'; connect-src 'self' https://chromeos-registration.googleapis.com; script-src 'self' https://ssl.google-analytics.com",
   "permissions": [
       "alarms",
       "cookies",
       "chromeosInfoPrivate",
       "echoPrivate",
+      "metricsPrivate",
       "notifications",
       "https://*/*"
    ],
