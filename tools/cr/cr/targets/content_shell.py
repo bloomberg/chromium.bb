@@ -9,10 +9,6 @@ import cr
 
 class ContentShellTarget(cr.NamedTarget):
   NAME = 'content_shell'
-  DEFAULT = cr.Config.From(
-      #  CR_URL is the page to open when the target is run.
-      CR_URL='https://www.google.com/',
-  )
   CONFIG = cr.Config.From(
       CR_RUN_ARGUMENTS=cr.Config.Optional('-d "{CR_URL!e}"'),
       CR_TARGET_NAME='ContentShell',
