@@ -5,8 +5,9 @@
 define("mojo/apps/js/test/js_to_cpp_unittest", [
     "mojo/apps/js/test/js_to_cpp.mojom",
     "mojo/public/js/bindings/connection",
-], function(jsToCpp, connector) {
-  var connection, kIterations = 100, kBadValue = 13;
+    "mojo/public/js/bindings/connector",
+], function(jsToCpp, connection, connector) {
+  var retainedConnection, kBadValue = 13;
 
   function JsSideConnection(cppSide) {
     this.cppSide_ = cppSide;
@@ -20,8 +21,9 @@ define("mojo/apps/js/test/js_to_cpp_unittest", [
 
   };
 
-  JsSideConnection.prototype.echo = function (arg) {
-    var i, arg2;
+  JsSideConnection.prototype.echo = function (numIterations, arg) {
+    var arg2;
+    var i;
 
     // Ensure negative values are negative.
     if (arg.si64 > 0)
@@ -36,7 +38,7 @@ define("mojo/apps/js/test/js_to_cpp_unittest", [
     if (arg.si8 > 0)
       arg.si8 = kBadValue;
 
-    for (i = 0; i < kIterations; ++i) {
+    for (i = 0; i < numIterations; ++i) {
       arg2 = new jsToCpp.EchoArgs();
       arg2.si64 = -1;
       arg2.si32 = -1;
@@ -45,10 +47,38 @@ define("mojo/apps/js/test/js_to_cpp_unittest", [
       arg2.name = "going";
       this.cppSide_.echoResponse(arg, arg2);
     }
+    this.cppSide_.testFinished();
+  };
+
+  JsSideConnection.prototype.bitFlip = function (arg) {
+    var iteration = 0;
+    var stopSignalled = false;
+    var proto = connector.Connector.prototype;
+    proto.realAccept = proto.accept;
+    proto.accept = function (message) {
+      var offset = iteration / 8;
+      var mask;
+      var value;
+      if (offset < message.buffer.arrayBuffer.byteLength) {
+        mask = 1 << (iteration % 8);
+        value = message.buffer.dataView.getUint8(offset) ^ mask;
+        message.buffer.dataView.setUint8(offset, value);
+        return this.realAccept(message);
+      }
+      stopSignalled = true;
+      return false;
+    };
+    while (!stopSignalled) {
+      this.cppSide_.bitFlipResponse(arg);
+      iteration += 1;
+    }
+    proto.accept = proto.realAccept;
+    proto.realAccept = null;
+    this.cppSide_.testFinished();
   };
 
   return function(handle) {
-    connection = new connector.Connection(handle, JsSideConnection,
-                                          jsToCpp.CppSideProxy);
+    retainedConnection = new connection.Connection(handle, JsSideConnection,
+                                                   jsToCpp.CppSideProxy);
   };
 });

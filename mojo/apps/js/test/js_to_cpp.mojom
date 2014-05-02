@@ -23,15 +23,18 @@ struct EchoArgs {
 
 [Peer=JsSide]
 interface CppSide {
-  StartTest();  // Sent to notify that the JS side is now ready.
+  StartTest();  // Sent for all tests to notify that the JS side is now ready.
+  TestFinished();  // Sent in echo / bit-flip tests to indicate end.
   PingResponse();
   EchoResponse(EchoArgs arg1, EchoArgs arg2);
+  BitFlipResponse(EchoArgs arg);
 };
 
 [Peer=CppSide]
 interface JsSide {
   Ping();
-  Echo(EchoArgs arg);
+  Echo(int32 numIterations, EchoArgs arg);
+  BitFlip(EchoArgs arg);
 };
 
 }

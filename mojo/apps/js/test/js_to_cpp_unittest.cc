@@ -61,6 +61,54 @@ bool IsRunningOnIsolatedBot() {
   return false;
 }
 
+// NOTE: Callers will need to have established an AllocationScope, or you're
+// gonna have a bad time.
+js_to_cpp::EchoArgs BuildSampleEchoArgs() {
+    js_to_cpp::EchoArgs::Builder builder;
+    builder.set_si64(kExpectedInt64Value);
+    builder.set_si32(kExpectedInt32Value);
+    builder.set_si16(kExpectedInt16Value);
+    builder.set_si8(kExpectedInt8Value);
+    builder.set_ui64(kExpectedUInt64Value);
+    builder.set_ui32(kExpectedUInt32Value);
+    builder.set_ui16(kExpectedUInt16Value);
+    builder.set_ui8(kExpectedUInt8Value);
+    builder.set_float_val(kExpectedFloatVal);
+    builder.set_float_inf(kExpectedFloatInf);
+    builder.set_float_nan(kExpectedFloatNan);
+    builder.set_double_val(kExpectedDoubleVal);
+    builder.set_double_inf(kExpectedDoubleInf);
+    builder.set_double_nan(kExpectedDoubleNan);
+    builder.set_name("coming");
+    mojo::Array<mojo::String>::Builder string_array(3);
+    string_array[0] = "one";
+    string_array[1] = "two";
+    string_array[2] = "three";
+    builder.set_string_array(string_array.Finish());
+    return builder.Finish();
+}
+
+void CheckSampleEchoArgs(const js_to_cpp::EchoArgs& arg) {
+    EXPECT_EQ(kExpectedInt64Value, arg.si64());
+    EXPECT_EQ(kExpectedInt32Value, arg.si32());
+    EXPECT_EQ(kExpectedInt16Value, arg.si16());
+    EXPECT_EQ(kExpectedInt8Value, arg.si8());
+    EXPECT_EQ(kExpectedUInt64Value, arg.ui64());
+    EXPECT_EQ(kExpectedUInt32Value, arg.ui32());
+    EXPECT_EQ(kExpectedUInt16Value, arg.ui16());
+    EXPECT_EQ(kExpectedUInt8Value, arg.ui8());
+    EXPECT_EQ(kExpectedFloatVal, arg.float_val());
+    EXPECT_EQ(kExpectedFloatInf, arg.float_inf());
+    EXPECT_NAN(arg.float_nan());
+    EXPECT_EQ(kExpectedDoubleVal, arg.double_val());
+    EXPECT_EQ(kExpectedDoubleInf, arg.double_inf());
+    EXPECT_NAN(arg.double_nan());
+    EXPECT_EQ(std::string("coming"), arg.name().To<std::string>());
+    EXPECT_EQ(std::string("one"), arg.string_array()[0].To<std::string>());
+    EXPECT_EQ(std::string("two"), arg.string_array()[1].To<std::string>());
+    EXPECT_EQ(std::string("three"), arg.string_array()[2].To<std::string>());
+}
+
 // Base Provider implementation class. It's expected that tests subclass and
 // override the appropriate Provider functions. When test is done quit the
 // run_loop().
@@ -81,12 +129,20 @@ class CppSideConnection : public js_to_cpp::CppSide {
     NOTREACHED();
   }
 
+  virtual void TestFinished() OVERRIDE {
+    NOTREACHED();
+  }
+
   virtual void PingResponse() OVERRIDE {
     NOTREACHED();
   }
 
   virtual void EchoResponse(const js_to_cpp::EchoArgs& arg1,
                             const js_to_cpp::EchoArgs& arg2) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void BitFlipResponse(const js_to_cpp::EchoArgs& arg1) OVERRIDE {
     NOTREACHED();
   }
 
@@ -127,77 +183,76 @@ class PingCppSideConnection : public CppSideConnection {
 // Test that parameters are passed with correct values.
 class EchoCppSideConnection : public CppSideConnection {
  public:
-  explicit EchoCppSideConnection() : message_count_(0) {}
+  explicit EchoCppSideConnection() :
+      message_count_(0),
+      termination_seen_(false) {
+  }
   virtual ~EchoCppSideConnection() {}
 
   // js_to_cpp::CppSide:
   virtual void StartTest() OVERRIDE {
     AllocationScope scope;
-    js_to_cpp::EchoArgs::Builder builder;
-    builder.set_si64(kExpectedInt64Value);
-    builder.set_si32(kExpectedInt32Value);
-    builder.set_si16(kExpectedInt16Value);
-    builder.set_si8(kExpectedInt8Value);
-    builder.set_ui64(kExpectedUInt64Value);
-    builder.set_ui32(kExpectedUInt32Value);
-    builder.set_ui16(kExpectedUInt16Value);
-    builder.set_ui8(kExpectedUInt8Value);
-    builder.set_float_val(kExpectedFloatVal);
-    builder.set_float_inf(kExpectedFloatInf);
-    builder.set_float_nan(kExpectedFloatNan);
-    builder.set_double_val(kExpectedDoubleVal);
-    builder.set_double_inf(kExpectedDoubleInf);
-    builder.set_double_nan(kExpectedDoubleNan);
-    builder.set_name("coming");
-    mojo::Array<mojo::String>::Builder string_array(3);
-    string_array[0] = "one";
-    string_array[1] = "two";
-    string_array[2] = "three";
-    builder.set_string_array(string_array.Finish());
-    client_->Echo(builder.Finish());
+    client_->Echo(kExpectedMessageCount, BuildSampleEchoArgs());
   }
 
   virtual void EchoResponse(const js_to_cpp::EchoArgs& arg1,
                             const js_to_cpp::EchoArgs& arg2) OVERRIDE {
-    EXPECT_EQ(kExpectedInt64Value, arg1.si64());
-    EXPECT_EQ(kExpectedInt32Value, arg1.si32());
-    EXPECT_EQ(kExpectedInt16Value, arg1.si16());
-    EXPECT_EQ(kExpectedInt8Value, arg1.si8());
-    EXPECT_EQ(kExpectedUInt64Value, arg1.ui64());
-    EXPECT_EQ(kExpectedUInt32Value, arg1.ui32());
-    EXPECT_EQ(kExpectedUInt16Value, arg1.ui16());
-    EXPECT_EQ(kExpectedUInt8Value, arg1.ui8());
-    EXPECT_EQ(kExpectedFloatVal, arg1.float_val());
-    EXPECT_EQ(kExpectedFloatInf, arg1.float_inf());
-    EXPECT_NAN(arg1.float_nan());
-    EXPECT_EQ(kExpectedDoubleVal, arg1.double_val());
-    EXPECT_EQ(kExpectedDoubleInf, arg1.double_inf());
-    EXPECT_NAN(arg1.double_nan());
-    EXPECT_EQ(std::string("coming"), arg1.name().To<std::string>());
-    EXPECT_EQ(std::string("one"), arg1.string_array()[0].To<std::string>());
-    EXPECT_EQ(std::string("two"), arg1.string_array()[1].To<std::string>());
-    EXPECT_EQ(std::string("three"), arg1.string_array()[2].To<std::string>());
-
+    message_count_ += 1;
+    CheckSampleEchoArgs(arg1);
     EXPECT_EQ(-1, arg2.si64());
     EXPECT_EQ(-1, arg2.si32());
     EXPECT_EQ(-1, arg2.si16());
     EXPECT_EQ(-1, arg2.si8());
     EXPECT_EQ(std::string("going"), arg2.name().To<std::string>());
+  }
 
-    message_count_ += 1;
-    if (message_count_ == kExpectedMessageCount)
-      run_loop_->Quit();
+  virtual void TestFinished() OVERRIDE {
+    termination_seen_ = true;
+    run_loop()->Quit();
   }
 
   bool DidSucceed() {
-    return message_count_ == kExpectedMessageCount;
+    return termination_seen_ && message_count_ == kExpectedMessageCount;
   }
 
  private:
   static const int kExpectedMessageCount = 100;
   int message_count_;
+  bool termination_seen_;
   DISALLOW_COPY_AND_ASSIGN(EchoCppSideConnection);
 };
+
+// Test that corrupted messages don't wreak havoc.
+class BitFlipCppSideConnection : public CppSideConnection {
+ public:
+  explicit BitFlipCppSideConnection() : termination_seen_(false) {}
+  virtual ~BitFlipCppSideConnection() {}
+
+  // js_to_cpp::CppSide:
+  virtual void StartTest() OVERRIDE {
+    AllocationScope scope;
+    client_->BitFlip(BuildSampleEchoArgs());
+  }
+
+  virtual void BitFlipResponse(const js_to_cpp::EchoArgs& arg1) OVERRIDE {
+    // TODO(tsepez): How to check, may be corrupt in various ways.
+  }
+
+  virtual void TestFinished() OVERRIDE {
+    termination_seen_ = true;
+    run_loop()->Quit();
+  }
+
+  bool DidSucceed() {
+    return termination_seen_;
+  }
+
+ private:
+  bool termination_seen_;
+  DISALLOW_COPY_AND_ASSIGN(BitFlipCppSideConnection);
+};
+
+}  // namespace
 
 class JsToCppTest : public testing::Test {
  public:
@@ -244,6 +299,15 @@ TEST_F(JsToCppTest, Echo) {
   EXPECT_TRUE(cpp_side_connection.DidSucceed());
 }
 
-}  // namespace
+// TODO(tsepez): Disabled due to http://crbug.com/366797.
+TEST_F(JsToCppTest, DISABLED_BitFlip) {
+  if (IsRunningOnIsolatedBot())
+    return;
+
+  BitFlipCppSideConnection cpp_side_connection;
+  RunTest("mojo/apps/js/test/js_to_cpp_unittest", &cpp_side_connection);
+  EXPECT_TRUE(cpp_side_connection.DidSucceed());
+}
+
 }  // namespace js
 }  // namespace mojo
