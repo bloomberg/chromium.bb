@@ -144,7 +144,7 @@ ScriptValue eventListenerHandler(Document* document, EventListener* listener)
     v8::Handle<v8::Object> function = v8Listener->getListenerObject(document);
     if (function.IsEmpty())
         return ScriptValue();
-    return ScriptValue(function, isolate);
+    return ScriptValue(ScriptState::from(context), function);
 }
 
 ScriptState* eventListenerHandlerScriptState(LocalFrame* frame, EventListener* listener)

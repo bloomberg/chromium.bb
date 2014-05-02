@@ -210,7 +210,7 @@ void setStateForPromise(v8::Handle<v8::Object> promise, V8PromiseCustom::Promise
     internal->SetInternalField(V8PromiseCustom::InternalResultIndex, value);
     ExecutionContext* context = currentExecutionContext(isolate);
     if (InspectorInstrumentation::isPromiseTrackerEnabled(context))
-        InspectorInstrumentation::didUpdatePromiseState(context, ScriptObject(ScriptState::current(isolate), promise), state, ScriptValue(value, isolate));
+        InspectorInstrumentation::didUpdatePromiseState(context, ScriptObject(ScriptState::current(isolate), promise), state, ScriptValue(ScriptState::current(isolate), value));
 }
 
 class TaskPerformScopeForInstrumentation {

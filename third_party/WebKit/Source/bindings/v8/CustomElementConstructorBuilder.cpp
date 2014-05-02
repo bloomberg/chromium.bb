@@ -234,7 +234,7 @@ bool CustomElementConstructorBuilder::didRegisterDefinition(CustomElementDefinit
 
 ScriptValue CustomElementConstructorBuilder::bindingsReturnValue() const
 {
-    return ScriptValue(m_constructor, m_scriptState->isolate());
+    return ScriptValue(m_scriptState.get(), m_constructor);
 }
 
 bool CustomElementConstructorBuilder::hasValidPrototypeChainFor(const WrapperTypeInfo* type) const

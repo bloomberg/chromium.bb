@@ -87,9 +87,8 @@ void ScheduledAction::execute(LocalFrame* frame)
         return;
 
     TRACE_EVENT0("v8", "ScheduledAction::execute");
-    v8::HandleScope handleScope(m_scriptState->isolate());
+    ScriptState::Scope scope(m_scriptState.get());
     if (!m_function.isEmpty()) {
-        ScriptState::Scope scope(m_scriptState.get());
         Vector<v8::Handle<v8::Value> > info;
         createLocalHandlesForArgs(&info);
         frame->script().callFunction(m_function.newLocal(m_scriptState->isolate()), m_scriptState->context()->Global(), info.size(), info.data());

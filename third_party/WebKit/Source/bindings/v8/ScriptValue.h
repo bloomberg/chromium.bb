@@ -46,21 +46,38 @@ class ScriptValue {
 public:
     ScriptValue()
         : m_isolate(0)
+        , m_scriptState(nullptr)
     {
     }
 
     virtual ~ScriptValue();
 
+    // FIXME: This method is deprecated and will be removed soon.
+    // We should always pass a ScriptState when creating a new ScriptValue.
     ScriptValue(v8::Handle<v8::Value> value, v8::Isolate* isolate)
         : m_isolate(isolate)
+        , m_scriptState(nullptr)
         , m_value(value.IsEmpty() ? nullptr : SharedPersistent<v8::Value>::create(value, isolate))
+    {
+    }
+
+    ScriptValue(ScriptState* scriptState, v8::Handle<v8::Value> value)
+        : m_isolate(scriptState->isolate())
+        , m_scriptState(scriptState)
+        , m_value(value.IsEmpty() ? nullptr : SharedPersistent<v8::Value>::create(value, scriptState->isolate()))
     {
     }
 
     ScriptValue(const ScriptValue& value)
         : m_isolate(value.m_isolate)
+        , m_scriptState(value.m_scriptState)
         , m_value(value.m_value)
     {
+    }
+
+    ScriptState* scriptState() const
+    {
+        return m_scriptState.get();
     }
 
     v8::Isolate* isolate() const
@@ -73,8 +90,9 @@ public:
     ScriptValue& operator=(const ScriptValue& value)
     {
         if (this != &value) {
-            m_value = value.m_value;
             m_isolate = value.m_isolate;
+            m_scriptState = value.m_scriptState;
+            m_value = value.m_value;
         }
         return *this;
     }
@@ -145,6 +163,9 @@ public:
 
 private:
     mutable v8::Isolate* m_isolate;
+    // FIXME: m_scriptState is not yet used.
+    // We will start using it once we remove ScriptValue(v8::Handle<v8::Value> value, v8::Isolate* isolate).
+    mutable RefPtr<ScriptState> m_scriptState;
     RefPtr<SharedPersistent<v8::Value> > m_value;
 };
 

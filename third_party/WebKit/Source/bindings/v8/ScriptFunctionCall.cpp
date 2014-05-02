@@ -60,55 +60,55 @@ void ScriptCallArgumentHandler::appendArgument(const String& argument)
 {
     v8::Isolate* isolate = m_scriptState->isolate();
     ScriptState::Scope scope(m_scriptState.get());
-    m_arguments.append(ScriptValue(v8String(isolate, argument), isolate));
+    m_arguments.append(ScriptValue(m_scriptState.get(), v8String(isolate, argument)));
 }
 
 void ScriptCallArgumentHandler::appendArgument(const char* argument)
 {
     v8::Isolate* isolate = m_scriptState->isolate();
     ScriptState::Scope scope(m_scriptState.get());
-    m_arguments.append(ScriptValue(v8String(isolate, argument), isolate));
+    m_arguments.append(ScriptValue(m_scriptState.get(), v8String(isolate, argument)));
 }
 
 void ScriptCallArgumentHandler::appendArgument(long argument)
 {
     v8::Isolate* isolate = m_scriptState->isolate();
     ScriptState::Scope scope(m_scriptState.get());
-    m_arguments.append(ScriptValue(v8::Number::New(isolate, argument), isolate));
+    m_arguments.append(ScriptValue(m_scriptState.get(), v8::Number::New(isolate, argument)));
 }
 
 void ScriptCallArgumentHandler::appendArgument(long long argument)
 {
     v8::Isolate* isolate = m_scriptState->isolate();
     ScriptState::Scope scope(m_scriptState.get());
-    m_arguments.append(ScriptValue(v8::Number::New(isolate, argument), isolate));
+    m_arguments.append(ScriptValue(m_scriptState.get(), v8::Number::New(isolate, argument)));
 }
 
 void ScriptCallArgumentHandler::appendArgument(unsigned argument)
 {
     v8::Isolate* isolate = m_scriptState->isolate();
     ScriptState::Scope scope(m_scriptState.get());
-    m_arguments.append(ScriptValue(v8::Number::New(isolate, argument), isolate));
+    m_arguments.append(ScriptValue(m_scriptState.get(), v8::Number::New(isolate, argument)));
 }
 
 void ScriptCallArgumentHandler::appendArgument(unsigned long argument)
 {
     v8::Isolate* isolate = m_scriptState->isolate();
     ScriptState::Scope scope(m_scriptState.get());
-    m_arguments.append(ScriptValue(v8::Number::New(isolate, argument), isolate));
+    m_arguments.append(ScriptValue(m_scriptState.get(), v8::Number::New(isolate, argument)));
 }
 
 void ScriptCallArgumentHandler::appendArgument(int argument)
 {
     v8::Isolate* isolate = m_scriptState->isolate();
     ScriptState::Scope scope(m_scriptState.get());
-    m_arguments.append(ScriptValue(v8::Number::New(isolate, argument), isolate));
+    m_arguments.append(ScriptValue(m_scriptState.get(), v8::Number::New(isolate, argument)));
 }
 
 void ScriptCallArgumentHandler::appendArgument(bool argument)
 {
     v8::Isolate* isolate = m_scriptState->isolate();
-    m_arguments.append(ScriptValue(v8Boolean(argument, isolate), isolate));
+    m_arguments.append(ScriptValue(m_scriptState.get(), v8Boolean(argument, isolate)));
 }
 
 void ScriptCallArgumentHandler::appendArgument(const Vector<ScriptValue>& argument)
@@ -118,7 +118,7 @@ void ScriptCallArgumentHandler::appendArgument(const Vector<ScriptValue>& argume
     v8::Handle<v8::Array> result = v8::Array::New(isolate, argument.size());
     for (size_t i = 0; i < argument.size(); ++i)
         result->Set(v8::Integer::New(isolate, i), argument[i].v8Value());
-    m_arguments.append(ScriptValue(result, isolate));
+    m_arguments.append(ScriptValue(m_scriptState.get(), result));
 }
 
 ScriptFunctionCall::ScriptFunctionCall(const ScriptObject& thisObject, const String& name)
@@ -156,7 +156,7 @@ ScriptValue ScriptFunctionCall::call(bool& hadException, bool reportExceptions)
         return ScriptValue();
     }
 
-    return ScriptValue(result, m_scriptState->isolate());
+    return ScriptValue(m_scriptState.get(), result);
 }
 
 ScriptValue ScriptFunctionCall::call()

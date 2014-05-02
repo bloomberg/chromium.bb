@@ -292,8 +292,7 @@ void ImageBitmapFactories::trace(Visitor* visitor)
 
 void ImageBitmapFactories::ImageBitmapLoader::rejectPromise()
 {
-    v8::Isolate* isolate = m_resolver->scriptState()->isolate();
-    m_resolver->reject(ScriptValue(v8::Null(isolate), isolate));
+    m_resolver->reject(ScriptValue(m_resolver->scriptState(), v8::Null(m_resolver->scriptState()->isolate())));
     m_factory->didFinishLoading(this);
 }
 

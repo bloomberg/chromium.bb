@@ -81,8 +81,8 @@ ScriptValue InjectedScriptHost::nodeAsScriptValue(ScriptState* scriptState, Node
 
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeAsScriptValue", "InjectedScriptHost", v8::Handle<v8::Object>(), isolate);
     if (!BindingSecurity::shouldAllowAccessToNode(isolate, node, exceptionState))
-        return ScriptValue(v8::Null(isolate), isolate);
-    return ScriptValue(toV8(node, v8::Handle<v8::Object>(), isolate), isolate);
+        return ScriptValue(scriptState, v8::Null(isolate));
+    return ScriptValue(scriptState, toV8(node, v8::Handle<v8::Object>(), isolate));
 }
 
 void V8InjectedScriptHost::inspectedObjectMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)

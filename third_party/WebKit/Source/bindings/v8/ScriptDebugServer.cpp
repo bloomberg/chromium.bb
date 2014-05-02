@@ -350,7 +350,7 @@ ScriptValue ScriptDebugServer::currentCallFramesInner(ScopeInfoDetails scopeDeta
         return ScriptValue();
 
     v8::Context::Scope contextScope(pausedContext);
-    return ScriptValue(toV8(currentCallFrame.release(), v8::Handle<v8::Object>(), pausedContext->GetIsolate()), pausedContext->GetIsolate());
+    return ScriptValue(ScriptState::from(pausedContext), toV8(currentCallFrame.release(), v8::Handle<v8::Object>(), pausedContext->GetIsolate()));
 }
 
 ScriptValue ScriptDebugServer::currentCallFrames()
@@ -409,7 +409,7 @@ void ScriptDebugServer::handleProgramBreak(v8::Handle<v8::Object> executionState
     }
 
     m_executionState.set(m_isolate, executionState);
-    listener->didPause(ScriptState::from(m_pausedContext), currentCallFrames(), ScriptValue(exception, m_pausedContext->GetIsolate()), breakpointIds);
+    listener->didPause(ScriptState::from(m_pausedContext), currentCallFrames(), ScriptValue(ScriptState::from(m_pausedContext), exception), breakpointIds);
 
     m_runningNestedMessageLoop = true;
     runMessageLoopOnPause(m_pausedContext);
@@ -619,12 +619,12 @@ void ScriptDebugServer::runScript(ScriptState* scriptState, const String& script
     *wasThrown = false;
     if (tryCatch.HasCaught()) {
         *wasThrown = true;
-        *result = ScriptValue(tryCatch.Exception(), m_isolate);
+        *result = ScriptValue(scriptState, tryCatch.Exception());
         v8::Local<v8::Message> message = tryCatch.Message();
         if (!message.IsEmpty())
             *exceptionMessage = toCoreStringWithUndefinedOrNullCheck(message->Get());
     } else {
-        *result = ScriptValue(value, m_isolate);
+        *result = ScriptValue(scriptState, value);
     }
 }
 

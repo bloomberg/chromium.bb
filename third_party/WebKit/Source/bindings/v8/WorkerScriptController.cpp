@@ -185,7 +185,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
         state->columnNumber = message->GetStartColumn() + 1;
         TOSTRING_DEFAULT(V8StringResource<>, sourceURL, message->GetScriptResourceName(), ScriptValue());
         state->sourceURL = sourceURL;
-        state->exception = ScriptValue(block.Exception(), m_isolate);
+        state->exception = ScriptValue(m_scriptState.get(), block.Exception());
         block.Reset();
     } else
         state->hadException = false;
@@ -193,7 +193,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
     if (result.IsEmpty() || result->IsUndefined())
         return ScriptValue();
 
-    return ScriptValue(result, m_isolate);
+    return ScriptValue(m_scriptState.get(), result);
 }
 
 void WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtrWillBeRawPtr<ErrorEvent>* errorEvent)

@@ -242,7 +242,7 @@ bool Dictionary::get(const String& key, ScriptValue& value) const
     if (!getKey(key, v8Value))
         return false;
 
-    value = ScriptValue(v8Value, m_isolate);
+    value = ScriptValue(ScriptState::current(m_isolate), v8Value);
     return true;
 }
 

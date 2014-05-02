@@ -369,11 +369,11 @@ V8_VALUE_TO_CPP_VALUE = {
     'CompareHow': 'static_cast<Range::CompareHow>({v8_value}->Int32Value())',
     'Dictionary': 'Dictionary({v8_value}, info.GetIsolate())',
     'EventTarget': 'V8DOMWrapper::isDOMWrapper({v8_value}) ? toWrapperTypeInfo(v8::Handle<v8::Object>::Cast({v8_value}))->toEventTarget(v8::Handle<v8::Object>::Cast({v8_value})) : 0',
-    'MediaQueryListListener': 'MediaQueryListListener::create(ScriptValue({v8_value}, info.GetIsolate()))',
+    'MediaQueryListListener': 'MediaQueryListListener::create(ScriptValue(ScriptState::current(info.GetIsolate()), {v8_value}))',
     'NodeFilter': 'toNodeFilter({v8_value}, info.GetIsolate())',
     'Promise': 'ScriptPromise({v8_value}, info.GetIsolate())',
     'SerializedScriptValue': 'SerializedScriptValue::create({v8_value}, info.GetIsolate())',
-    'ScriptValue': 'ScriptValue({v8_value}, info.GetIsolate())',
+    'ScriptValue': 'ScriptValue(ScriptState::current(info.GetIsolate()), {v8_value})',
     'Window': 'toDOMWindow({v8_value}, info.GetIsolate())',
     'XPathNSResolver': 'toXPathNSResolver({v8_value}, info.GetIsolate())',
 }

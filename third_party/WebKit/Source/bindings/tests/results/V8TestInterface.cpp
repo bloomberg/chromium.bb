@@ -1088,7 +1088,7 @@ static void partialVoidMethodPartialCallbackTypeArgMethod(const v8::FunctionCall
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
-    TONATIVE_VOID(ScriptValue, partialCallbackTypeArg, ScriptValue(info[0], info.GetIsolate()));
+    TONATIVE_VOID(ScriptValue, partialCallbackTypeArg, ScriptValue(ScriptState::current(info.GetIsolate()), info[0]));
     ASSERT(impl);
     TestPartialInterface::partialVoidMethodPartialCallbackTypeArg(*impl, partialCallbackTypeArg);
 }

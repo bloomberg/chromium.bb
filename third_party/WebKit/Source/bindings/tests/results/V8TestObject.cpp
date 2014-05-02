@@ -680,7 +680,7 @@ static void voidCallbackFunctionAttributeAttributeSetter(v8::Local<v8::Value> v8
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(v8Value, info.GetIsolate()));
+    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(ScriptState::current(info.GetIsolate()), v8Value));
     impl->setVoidCallbackFunctionAttribute(cppValue);
 }
 
@@ -709,7 +709,7 @@ static void anyCallbackFunctionOptionalAnyArgAttributeAttributeSetter(v8::Local<
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(v8Value, info.GetIsolate()));
+    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(ScriptState::current(info.GetIsolate()), v8Value));
     impl->setAnyCallbackFunctionOptionalAnyArgAttribute(cppValue);
 }
 
@@ -916,7 +916,7 @@ static void anyAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(v8Value, info.GetIsolate()));
+    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(ScriptState::current(info.GetIsolate()), v8Value));
     impl->setAnyAttribute(cppValue);
 }
 
@@ -1776,7 +1776,7 @@ static void cachedAttributeAnyAttributeAttributeSetter(v8::Local<v8::Value> v8Va
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(v8Value, info.GetIsolate()));
+    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(ScriptState::current(info.GetIsolate()), v8Value));
     impl->setCachedAttributeAnyAttribute(cppValue);
     V8HiddenValue::deleteHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "cachedAttributeAnyAttribute")); // Invalidate the cached value.
 }
@@ -1807,7 +1807,7 @@ static void callWithExecutionContextAnyAttributeAttributeSetter(v8::Local<v8::Va
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(v8Value, info.GetIsolate()));
+    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(ScriptState::current(info.GetIsolate()), v8Value));
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     impl->setCallWithExecutionContextAnyAttribute(scriptContext, cppValue);
 }
@@ -1838,7 +1838,7 @@ static void callWithScriptStateAnyAttributeAttributeSetter(v8::Local<v8::Value> 
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(v8Value, info.GetIsolate()));
+    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(ScriptState::current(info.GetIsolate()), v8Value));
     impl->setCallWithScriptStateAnyAttribute(state, cppValue);
 }
 
@@ -1869,7 +1869,7 @@ static void callWithExecutionContextAndScriptStateAnyAttributeAttributeSetter(v8
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(v8Value, info.GetIsolate()));
+    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(ScriptState::current(info.GetIsolate()), v8Value));
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     impl->setCallWithExecutionContextAndScriptStateAnyAttribute(state, scriptContext, cppValue);
 }
@@ -3105,7 +3105,7 @@ static void cachedAttributeRaisesExceptionGetterAnyAttributeAttributeSetter(v8::
     v8::Handle<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "cachedAttributeRaisesExceptionGetterAnyAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(holder);
-    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(v8Value, info.GetIsolate()));
+    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(ScriptState::current(info.GetIsolate()), v8Value));
     impl->setCachedAttributeRaisesExceptionGetterAnyAttribute(cppValue, exceptionState);
     exceptionState.throwIfNeeded();
     V8HiddenValue::deleteHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "cachedAttributeRaisesExceptionGetterAnyAttribute")); // Invalidate the cached value.
@@ -5025,7 +5025,7 @@ static void voidMethodVoidCallbackFunctionArgMethod(const v8::FunctionCallbackIn
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(ScriptValue, voidCallbackFunctionArg, ScriptValue(info[0], info.GetIsolate()));
+    TONATIVE_VOID(ScriptValue, voidCallbackFunctionArg, ScriptValue(ScriptState::current(info.GetIsolate()), info[0]));
     impl->voidMethodVoidCallbackFunctionArg(voidCallbackFunctionArg);
 }
 
@@ -5043,7 +5043,7 @@ static void voidMethodAnyCallbackFunctionOptionalAnyArgMethod(const v8::Function
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(ScriptValue, anyCallbackFunctionOptionalAnyArgArg, ScriptValue(info[0], info.GetIsolate()));
+    TONATIVE_VOID(ScriptValue, anyCallbackFunctionOptionalAnyArgArg, ScriptValue(ScriptState::current(info.GetIsolate()), info[0]));
     impl->voidMethodAnyCallbackFunctionOptionalAnyArg(anyCallbackFunctionOptionalAnyArgArg);
 }
 
@@ -5123,7 +5123,7 @@ static void voidMethodMediaQueryListListenerArgMethod(const v8::FunctionCallback
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(RefPtrWillBeRawPtr<MediaQueryListListener>, mediaQueryListListenerArg, MediaQueryListListener::create(ScriptValue(info[0], info.GetIsolate())));
+    TONATIVE_VOID(RefPtrWillBeRawPtr<MediaQueryListListener>, mediaQueryListListenerArg, MediaQueryListListener::create(ScriptValue(ScriptState::current(info.GetIsolate()), info[0])));
     impl->voidMethodMediaQueryListListenerArg(mediaQueryListListenerArg);
 }
 
@@ -5141,7 +5141,7 @@ static void voidMethodAnyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& in
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(ScriptValue, anyArg, ScriptValue(info[0], info.GetIsolate()));
+    TONATIVE_VOID(ScriptValue, anyArg, ScriptValue(ScriptState::current(info.GetIsolate()), info[0]));
     impl->voidMethodAnyArg(anyArg);
 }
 

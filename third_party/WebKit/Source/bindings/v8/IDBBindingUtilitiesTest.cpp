@@ -105,7 +105,7 @@ TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyStringValue)
     v8::Local<v8::Object> object = v8::Object::New(isolate);
     object->Set(v8AtomicString(isolate, "foo"), v8AtomicString(isolate, "zoo"));
 
-    ScriptValue scriptValue(object, isolate);
+    ScriptValue scriptValue(ScriptState::current(isolate), object);
 
     checkKeyPathStringValue(isolate, scriptValue, "foo", "zoo");
     checkKeyPathNullValue(isolate, scriptValue, "bar");
@@ -117,7 +117,7 @@ TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyNumberValue)
     v8::Local<v8::Object> object = v8::Object::New(isolate);
     object->Set(v8AtomicString(isolate, "foo"), v8::Number::New(isolate, 456));
 
-    ScriptValue scriptValue(object, isolate);
+    ScriptValue scriptValue(ScriptState::current(isolate), object);
 
     checkKeyPathNumberValue(isolate, scriptValue, "foo", 456);
     checkKeyPathNullValue(isolate, scriptValue, "bar");
@@ -131,7 +131,7 @@ TEST_F(IDBKeyFromValueAndKeyPathTest, SubProperty)
     subProperty->Set(v8AtomicString(isolate, "bar"), v8AtomicString(isolate, "zee"));
     object->Set(v8AtomicString(isolate, "foo"), subProperty);
 
-    ScriptValue scriptValue(object, isolate);
+    ScriptValue scriptValue(ScriptState::current(isolate), object);
 
     checkKeyPathStringValue(isolate, scriptValue, "foo.bar", "zee");
     checkKeyPathNullValue(isolate, scriptValue, "bar");

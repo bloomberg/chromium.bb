@@ -127,7 +127,7 @@ PassRefPtr<ScriptArguments> createScriptArguments(const v8::FunctionCallbackInfo
 
     Vector<ScriptValue> arguments;
     for (int i = skipArgumentCount; i < v8arguments.Length(); ++i)
-        arguments.append(ScriptValue(v8arguments[i], isolate));
+        arguments.append(ScriptValue(scriptState, v8arguments[i]));
 
     return ScriptArguments::create(scriptState, arguments);
 }

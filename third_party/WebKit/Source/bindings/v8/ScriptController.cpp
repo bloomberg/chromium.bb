@@ -177,8 +177,6 @@ v8::Local<v8::Value> ScriptController::callFunction(ExecutionContext* context, v
 
 v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Handle<v8::Context> context, const ScriptSourceCode& source, AccessControlStatus corsStatus)
 {
-    v8::Context::Scope scope(context);
-
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "EvaluateScript", "data", InspectorEvaluateScriptEvent::data(m_frame, source.url().string(), source.startLine()));
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willEvaluateScript(m_frame, source.url().string(), source.startLine());
@@ -588,6 +586,7 @@ ScriptValue ScriptController::evaluateScriptInMainWorld(const ScriptSourceCode& 
     v8::Handle<v8::Context> v8Context = toV8Context(m_isolate, m_frame, DOMWrapperWorld::mainWorld());
     if (v8Context.IsEmpty())
         return ScriptValue();
+    v8::Context::Scope scope(v8Context);
 
     RefPtr<LocalFrame> protect(m_frame);
     if (m_frame->loader().stateMachine()->isDisplayingInitialEmptyDocument())
@@ -602,7 +601,7 @@ ScriptValue ScriptController::evaluateScriptInMainWorld(const ScriptSourceCode& 
     if (object.IsEmpty())
         return ScriptValue();
 
-    return ScriptValue(object, m_isolate);
+    return ScriptValue(ScriptState::from(v8Context), object);
 }
 
 void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<ScriptSourceCode>& sources, int extensionGroup, Vector<ScriptValue>* results)
@@ -610,32 +609,25 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<Sc
     ASSERT(worldID > 0);
 
     v8::HandleScope handleScope(m_isolate);
-    v8::Local<v8::Array> v8Results;
-    {
-        v8::EscapableHandleScope evaluateHandleScope(m_isolate);
-        RefPtr<DOMWrapperWorld> world = DOMWrapperWorld::ensureIsolatedWorld(worldID, extensionGroup);
-        V8WindowShell* isolatedWorldShell = windowShell(*world);
+    RefPtr<DOMWrapperWorld> world = DOMWrapperWorld::ensureIsolatedWorld(worldID, extensionGroup);
+    V8WindowShell* isolatedWorldShell = windowShell(*world);
+    if (!isolatedWorldShell->isContextInitialized())
+        return;
 
-        if (!isolatedWorldShell->isContextInitialized())
-            return;
+    v8::Local<v8::Context> context = isolatedWorldShell->context();
+    v8::Context::Scope contextScope(context);
+    v8::Local<v8::Array> resultArray = v8::Array::New(m_isolate, sources.size());
 
-        v8::Local<v8::Context> context = isolatedWorldShell->context();
-        v8::Context::Scope contextScope(context);
-        v8::Local<v8::Array> resultArray = v8::Array::New(m_isolate, sources.size());
-
-        for (size_t i = 0; i < sources.size(); ++i) {
-            v8::Local<v8::Value> evaluationResult = executeScriptAndReturnValue(context, sources[i]);
-            if (evaluationResult.IsEmpty())
-                evaluationResult = v8::Local<v8::Value>::New(m_isolate, v8::Undefined(m_isolate));
-            resultArray->Set(i, evaluationResult);
-        }
-
-        v8Results = evaluateHandleScope.Escape(resultArray);
+    for (size_t i = 0; i < sources.size(); ++i) {
+        v8::Local<v8::Value> evaluationResult = executeScriptAndReturnValue(context, sources[i]);
+        if (evaluationResult.IsEmpty())
+            evaluationResult = v8::Local<v8::Value>::New(m_isolate, v8::Undefined(m_isolate));
+        resultArray->Set(i, evaluationResult);
     }
 
-    if (results && !v8Results.IsEmpty()) {
-        for (size_t i = 0; i < v8Results->Length(); ++i)
-            results->append(ScriptValue(v8Results->Get(i), m_isolate));
+    if (results) {
+        for (size_t i = 0; i < resultArray->Length(); ++i)
+            results->append(ScriptValue(ScriptState::from(context), resultArray->Get(i)));
     }
 }
 

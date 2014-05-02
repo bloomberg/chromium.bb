@@ -86,7 +86,7 @@ TEST_F(ScriptPromiseTest, castPromise)
     if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled())
         return;
     ScriptPromise promise = ScriptPromiseResolver::create(m_isolate)->promise();
-    ScriptPromise newPromise = ScriptPromise::cast(ScriptValue(promise.v8Value(), m_isolate));
+    ScriptPromise newPromise = ScriptPromise::cast(ScriptValue(ScriptState::current(m_isolate), promise.v8Value()));
 
     ASSERT_FALSE(promise.isEmpty());
     EXPECT_EQ(V8PromiseCustom::Pending, state(promise));
@@ -97,9 +97,9 @@ TEST_F(ScriptPromiseTest, castNonPromise)
 {
     if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled())
         return;
-    ScriptValue value = ScriptValue(v8String(m_isolate, "hello"), m_isolate);
-    ScriptPromise promise1 = ScriptPromise::cast(ScriptValue(value.v8Value(), m_isolate));
-    ScriptPromise promise2 = ScriptPromise::cast(ScriptValue(value.v8Value(), m_isolate));
+    ScriptValue value = ScriptValue(ScriptState::current(m_isolate), v8String(m_isolate, "hello"));
+    ScriptPromise promise1 = ScriptPromise::cast(ScriptValue(value));
+    ScriptPromise promise2 = ScriptPromise::cast(ScriptValue(value));
 
     ASSERT_FALSE(promise1.isEmpty());
     ASSERT_FALSE(promise2.isEmpty());
