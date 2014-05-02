@@ -615,6 +615,10 @@ bool RenderLayerCompositor::updateSquashingAssignment(RenderLayer* layer, Squash
         if (!changedSquashingLayer)
             return true;
 
+        // If we've modified the collection of squashed layers, we must update
+        // the graphics layer geometry.
+        squashingState.mostRecentMapping->setNeedsGraphicsLayerUpdate();
+
         layer->clipper().clearClipRectsIncludingDescendants();
 
         // If we need to repaint, do so before allocating the layer to the squashing layer.
@@ -630,7 +634,10 @@ bool RenderLayerCompositor::updateSquashingAssignment(RenderLayer* layer, Squash
 
         return true;
     } else if (compositedLayerUpdate == RemoveFromSquashingLayer) {
-        layer->setGroupedMapping(0);
+        if (layer->groupedMapping()) {
+            layer->groupedMapping()->setNeedsGraphicsLayerUpdate();
+            layer->setGroupedMapping(0);
+        }
 
         // This layer and all of its descendants have cached repaints rects that are relative to
         // the repaint container, so change when compositing changes; we need to update them here.

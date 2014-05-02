@@ -2042,8 +2042,8 @@ bool CompositedLayerMapping::updateSquashingLayerAssignment(RenderLayer* layer, 
     if (nextSquashedLayerIndex < m_squashedLayers.size()) {
         if (!paintInfo.isEquivalentForSquashing(m_squashedLayers[nextSquashedLayerIndex])) {
             updatedAssignment = true;
+            m_squashedLayers[nextSquashedLayerIndex] = paintInfo;
         }
-        m_squashedLayers[nextSquashedLayerIndex] = paintInfo;
     } else {
         m_squashedLayers.append(paintInfo);
         updatedAssignment = true;
