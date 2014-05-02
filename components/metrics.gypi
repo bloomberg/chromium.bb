@@ -12,11 +12,35 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        'component_metrics_proto',
       ],
       'sources': [
         'metrics/metrics_hashes.cc',
         'metrics/metrics_hashes.h',
+        'metrics/metrics_log_base.cc',
+        'metrics/metrics_log_base.h',
+        'metrics/metrics_log_manager.cc',
+        'metrics/metrics_log_manager.h',
       ],
+    },
+    {
+      # Protobuf compiler / generator for UMA (User Metrics Analysis).
+      'target_name': 'component_metrics_proto',
+      'type': 'static_library',
+      'sources': [
+        'metrics/proto/chrome_user_metrics_extension.proto',
+        'metrics/proto/histogram_event.proto',
+        'metrics/proto/omnibox_event.proto',
+        'metrics/proto/perf_data.proto',
+        'metrics/proto/profiler_event.proto',
+        'metrics/proto/system_profile.proto',
+        'metrics/proto/user_action_event.proto',
+      ],
+      'variables': {
+        'proto_in_dir': 'metrics/proto',
+        'proto_out_dir': 'components/metrics/proto',
+      },
+      'includes': [ '../build/protoc.gypi' ],
     },
   ],
 }

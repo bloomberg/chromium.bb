@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/common/metrics/proto/omnibox_event.pb.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 
 class AutocompleteInput;
 class AutocompleteProviderListener;

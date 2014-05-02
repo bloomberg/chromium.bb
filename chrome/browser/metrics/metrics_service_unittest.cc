@@ -26,6 +26,8 @@
 
 namespace {
 
+using metrics::MetricsLogManager;
+
 class TestMetricsService : public MetricsService {
  public:
   TestMetricsService() {}

@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/common/metrics/proto/system_profile.pb.h"
+#include "components/metrics/proto/system_profile.pb.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 

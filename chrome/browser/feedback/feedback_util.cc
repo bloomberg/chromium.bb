@@ -34,7 +34,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/metrics/metrics_log_manager.h"
+#include "components/metrics/metrics_log_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"

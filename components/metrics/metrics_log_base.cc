@@ -1,16 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics/metrics_log_base.h"
+#include "components/metrics/metrics_log_base.h"
 
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
-#include "chrome/common/chrome_version_info.h"
-#include "chrome/common/metrics/proto/histogram_event.pb.h"
-#include "chrome/common/metrics/proto/system_profile.pb.h"
-#include "chrome/common/metrics/proto/user_action_event.pb.h"
 #include "components/metrics/metrics_hashes.h"
+#include "components/metrics/proto/histogram_event.pb.h"
+#include "components/metrics/proto/system_profile.pb.h"
+#include "components/metrics/proto/user_action_event.pb.h"
 
 using base::Histogram;
 using base::HistogramBase;
@@ -22,30 +21,12 @@ using metrics::HistogramEventProto;
 using metrics::SystemProfileProto;
 using metrics::UserActionEventProto;
 
+namespace metrics {
 namespace {
 
 // Any id less than 16 bytes is considered to be a testing id.
 bool IsTestingID(const std::string& id) {
   return id.size() < 16;
-}
-
-SystemProfileProto::Channel AsProtobufChannel(
-    chrome::VersionInfo::Channel channel) {
-  switch (channel) {
-    case chrome::VersionInfo::CHANNEL_UNKNOWN:
-      return SystemProfileProto::CHANNEL_UNKNOWN;
-    case chrome::VersionInfo::CHANNEL_CANARY:
-      return SystemProfileProto::CHANNEL_CANARY;
-    case chrome::VersionInfo::CHANNEL_DEV:
-      return SystemProfileProto::CHANNEL_DEV;
-    case chrome::VersionInfo::CHANNEL_BETA:
-      return SystemProfileProto::CHANNEL_BETA;
-    case chrome::VersionInfo::CHANNEL_STABLE:
-      return SystemProfileProto::CHANNEL_STABLE;
-    default:
-      NOTREACHED();
-      return SystemProfileProto::CHANNEL_UNKNOWN;
-  }
 }
 
 }  // namespace
@@ -66,8 +47,6 @@ MetricsLogBase::MetricsLogBase(const std::string& client_id,
   uma_proto_.set_session_id(session_id);
   uma_proto_.mutable_system_profile()->set_build_timestamp(GetBuildTime());
   uma_proto_.mutable_system_profile()->set_app_version(version_string);
-  uma_proto_.mutable_system_profile()->set_channel(
-      AsProtobufChannel(chrome::VersionInfo::GetChannel()));
 }
 
 MetricsLogBase::~MetricsLogBase() {}
@@ -136,8 +115,7 @@ void MetricsLogBase::RecordHistogramDelta(const std::string& histogram_name,
   histogram_proto->set_name_hash(Hash(histogram_name));
   histogram_proto->set_sum(snapshot.sum());
 
-  for (scoped_ptr<SampleCountIterator> it = snapshot.Iterator();
-       !it->Done();
+  for (scoped_ptr<SampleCountIterator> it = snapshot.Iterator(); !it->Done();
        it->Next()) {
     HistogramBase::Sample min;
     HistogramBase::Sample max;
@@ -160,3 +138,5 @@ void MetricsLogBase::RecordHistogramDelta(const std::string& histogram_name,
     }
   }
 }
+
+}  // namespace metrics

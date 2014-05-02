@@ -1,16 +1,18 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics/metrics_log_base.h"
+#include "components/metrics/metrics_log_base.h"
 
 #include <string>
 
 #include "base/base64.h"
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/sample_vector.h"
-#include "chrome/common/metrics/proto/chrome_user_metrics_extension.pb.h"
+#include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace metrics {
 
 namespace {
 
@@ -57,8 +59,6 @@ TEST(MetricsLogBaseTest, EmptyRecord) {
   expected.mutable_system_profile()->set_build_timestamp(
       parsed.system_profile().build_timestamp());
   expected.mutable_system_profile()->set_app_version("bogus version");
-  expected.mutable_system_profile()->set_channel(
-      parsed.system_profile().channel());
   expected.mutable_system_profile()->mutable_hardware()->set_hardware_class(
       "sample-class");
 
@@ -78,9 +78,9 @@ TEST(MetricsLogBaseTest, HistogramBucketFields) {
   ranges.set_range(7, 12);
 
   base::SampleVector samples(&ranges);
-  samples.Accumulate(3, 1);  // Bucket 1-5.
-  samples.Accumulate(6, 1);  // Bucket 5-7.
-  samples.Accumulate(8, 1);  // Bucket 8-9. (7-8 skipped)
+  samples.Accumulate(3, 1);   // Bucket 1-5.
+  samples.Accumulate(6, 1);   // Bucket 5-7.
+  samples.Accumulate(8, 1);   // Bucket 8-9. (7-8 skipped)
   samples.Accumulate(10, 1);  // Bucket 10-11. (9-10 skipped)
   samples.Accumulate(11, 1);  // Bucket 11-12.
 
@@ -121,3 +121,5 @@ TEST(MetricsLogBaseTest, HistogramBucketFields) {
   EXPECT_TRUE(histogram_proto.bucket(4).has_max());
   EXPECT_EQ(12, histogram_proto.bucket(4).max());
 }
+
+}  // namespace metrics

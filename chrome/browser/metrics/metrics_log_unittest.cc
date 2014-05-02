@@ -23,12 +23,13 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/metrics/proto/profiler_event.pb.h"
-#include "chrome/common/metrics/proto/system_profile.pb.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/metrics/metrics_hashes.h"
+#include "components/metrics/proto/profiler_event.pb.h"
+#include "components/metrics/proto/system_profile.pb.h"
 #include "components/variations/metrics_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/process_type.h"
@@ -648,6 +649,11 @@ TEST_F(MetricsLogTest, RecordProfilerData) {
     EXPECT_EQ(ProfilerEventProto::TrackedObject::RENDERER,
               tracked_object->process_type());
   }
+}
+
+TEST_F(MetricsLogTest, ChromeChannelWrittenToProtobuf) {
+  TestMetricsLog log("user@test.com", kSessionId, MetricsLog::ONGOING_LOG);
+  EXPECT_TRUE(log.uma_proto().system_profile().has_channel());
 }
 
 #if defined(OS_CHROMEOS)

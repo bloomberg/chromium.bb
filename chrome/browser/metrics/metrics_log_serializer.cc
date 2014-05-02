@@ -14,6 +14,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 
+using metrics::MetricsLogBase;
+using metrics::MetricsLogManager;
+
 namespace {
 
 // The number of "initial" logs to save, and hope to send during a future Chrome

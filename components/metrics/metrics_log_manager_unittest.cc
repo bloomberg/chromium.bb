@@ -1,16 +1,18 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics/metrics_log_manager.h"
+#include "components/metrics/metrics_log_manager.h"
 
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/sha1.h"
-#include "chrome/common/metrics/metrics_log_base.h"
+#include "components/metrics/metrics_log_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace metrics {
 
 namespace {
 
@@ -421,3 +423,5 @@ TEST(MetricsLogManagerTest, SerializedLog) {
   EXPECT_TRUE(log2.log_text().empty());
   EXPECT_TRUE(log2.log_hash().empty());
 }
+
+}  // namespace metrics

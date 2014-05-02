@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics/metrics_log_manager.h"
+#include "components/metrics/metrics_log_manager.h"
 
 #include <algorithm>
 
@@ -10,7 +10,9 @@
 #include "base/sha1.h"
 #include "base/strings/string_util.h"
 #include "base/timer/elapsed_timer.h"
-#include "chrome/common/metrics/metrics_log_base.h"
+#include "components/metrics/metrics_log_base.h"
+
+namespace metrics {
 
 MetricsLogManager::SerializedLog::SerializedLog() {}
 MetricsLogManager::SerializedLog::~SerializedLog() {}
@@ -143,8 +145,9 @@ void MetricsLogManager::DiscardLastProvisionalStore() {
   if (last_provisional_store_index_ == -1)
     return;
   std::vector<SerializedLog>* source_list =
-      (last_provisional_store_type_ == MetricsLogBase::ONGOING_LOG) ?
-          &unsent_ongoing_logs_ : &unsent_initial_logs_;
+      (last_provisional_store_type_ == MetricsLogBase::ONGOING_LOG)
+          ? &unsent_ongoing_logs_
+          : &unsent_initial_logs_;
   DCHECK_LT(static_cast<unsigned int>(last_provisional_store_index_),
             source_list->size());
   source_list->erase(source_list->begin() + last_provisional_store_index_);
@@ -201,3 +204,5 @@ void MetricsLogManager::CompressCurrentLog(SerializedLog* compressed_log) {
   current_log_->GetEncodedLog(&log_text);
   compressed_log->SwapLogText(&log_text);
 }
+
+}  // namespace metrics

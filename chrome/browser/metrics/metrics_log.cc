@@ -37,12 +37,12 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
-#include "chrome/common/metrics/proto/omnibox_event.pb.h"
-#include "chrome/common/metrics/proto/profiler_event.pb.h"
-#include "chrome/common/metrics/proto/system_profile.pb.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/metrics/proto/profiler_event.pb.h"
+#include "components/metrics/proto/system_profile.pb.h"
 #include "components/nacl/common/nacl_process_type.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_client.h"
@@ -67,6 +67,7 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 #endif  // OS_CHROMEOS
 
 using content::GpuDataManager;
+using metrics::MetricsLogBase;
 using metrics::OmniboxEventProto;
 using metrics::ProfilerEventProto;
 using metrics::SystemProfileProto;
@@ -204,6 +205,25 @@ ProfilerEventProto::TrackedObject::ProcessType AsProtobufProcessType(
     default:
       NOTREACHED();
       return ProfilerEventProto::TrackedObject::UNKNOWN;
+  }
+}
+
+SystemProfileProto::Channel AsProtobufChannel(
+    chrome::VersionInfo::Channel channel) {
+  switch (channel) {
+    case chrome::VersionInfo::CHANNEL_UNKNOWN:
+      return SystemProfileProto::CHANNEL_UNKNOWN;
+    case chrome::VersionInfo::CHANNEL_CANARY:
+      return SystemProfileProto::CHANNEL_CANARY;
+    case chrome::VersionInfo::CHANNEL_DEV:
+      return SystemProfileProto::CHANNEL_DEV;
+    case chrome::VersionInfo::CHANNEL_BETA:
+      return SystemProfileProto::CHANNEL_BETA;
+    case chrome::VersionInfo::CHANNEL_STABLE:
+      return SystemProfileProto::CHANNEL_STABLE;
+    default:
+      NOTREACHED();
+      return SystemProfileProto::CHANNEL_UNKNOWN;
   }
 }
 
@@ -386,6 +406,9 @@ MetricsLog::MetricsLog(const std::string& client_id,
                      MetricsLog::GetVersionString()),
       creation_time_(base::TimeTicks::Now()),
       extension_metrics_(uma_proto()->client_id()) {
+  uma_proto()->mutable_system_profile()->set_channel(
+      AsProtobufChannel(chrome::VersionInfo::CHANNEL_STABLE));
+
 #if defined(OS_CHROMEOS)
   metrics_log_chromeos_.reset(new MetricsLogChromeOS(uma_proto()));
 #endif  // OS_CHROMEOS

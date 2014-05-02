@@ -8,6 +8,8 @@
 #include "chrome/browser/metrics/metrics_log_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using metrics::MetricsLogManager;
+
 namespace {
 
 const size_t kListLengthLimit = 3;

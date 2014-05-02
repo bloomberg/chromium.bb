@@ -1,17 +1,18 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_METRICS_METRICS_LOG_MANAGER_H_
-#define CHROME_COMMON_METRICS_METRICS_LOG_MANAGER_H_
-
+#ifndef COMPONENTS_METRICS_METRICS_LOG_MANAGER_H_
+#define COMPONENTS_METRICS_METRICS_LOG_MANAGER_H_
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/metrics/metrics_log_base.h"
+#include "components/metrics/metrics_log_base.h"
+
+namespace metrics {
 
 // Manages all the log objects used by a MetricsService implementation. Keeps
 // track of both an in progress log and a log that is staged for uploading as
@@ -165,9 +166,7 @@ class MetricsLogManager {
   // |max_ongoing_log_store_size_|).
   // NOTE: This clears the contents of |log| (to avoid an expensive copy),
   // so the log should be discarded after this call.
-  void StoreLog(SerializedLog* log,
-                LogType log_type,
-                StoreType store_type);
+  void StoreLog(SerializedLog* log, LogType log_type, StoreType store_type);
 
   // Compresses |current_log_| into |compressed_log|.
   void CompressCurrentLog(SerializedLog* compressed_log);
@@ -209,4 +208,6 @@ class MetricsLogManager {
   DISALLOW_COPY_AND_ASSIGN(MetricsLogManager);
 };
 
-#endif  // CHROME_COMMON_METRICS_METRICS_LOG_MANAGER_H_
+}  // namespace metrics
+
+#endif  // COMPONENTS_METRICS_METRICS_LOG_MANAGER_H_

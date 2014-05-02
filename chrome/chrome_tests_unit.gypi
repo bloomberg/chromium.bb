@@ -1855,8 +1855,6 @@
         'common/mac/objc_method_swizzle_unittest.mm',
         'common/mac/objc_zombie_unittest.mm',
         'common/metrics/caching_permuted_entropy_provider_unittest.cc',
-        'common/metrics/metrics_log_base_unittest.cc',
-        'common/metrics/metrics_log_manager_unittest.cc',
         'common/metrics/variations/experiment_labels_unittest.cc',
         'common/metrics/variations/variations_util_unittest.cc',
         'common/multi_process_lock_unittest.cc',
@@ -1980,6 +1978,7 @@
         ['OS!="ios"', {
           'dependencies': [
             '../components/components.gyp:autofill_content_test_support',
+            '../components/components.gyp:component_metrics_proto',
             '../components/components.gyp:data_reduction_proxy_test_support',
             '../components/components_strings.gyp:components_strings',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',

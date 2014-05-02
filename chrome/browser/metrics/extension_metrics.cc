@@ -11,7 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/metrics/proto/system_profile.pb.h"
+#include "components/metrics/proto/system_profile.pb.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
 #include "third_party/smhasher/src/City.h"

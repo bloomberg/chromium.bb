@@ -207,10 +207,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/metrics/caching_permuted_entropy_provider.h"
-#include "chrome/common/metrics/metrics_log_manager.h"
 #include "chrome/common/net/test_server_locations.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "components/metrics/metrics_log_manager.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/metrics_util.h"
 #include "content/public/browser/child_process_data.h"
@@ -252,6 +252,7 @@ using content::BrowserThread;
 using content::ChildProcessData;
 using content::LoadNotificationDetails;
 using content::PluginService;
+using metrics::MetricsLogManager;
 
 namespace {
 

@@ -9,14 +9,14 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "chrome/common/metrics/metrics_log_manager.h"
+#include "components/metrics/metrics_log_manager.h"
 
 namespace base {
 class ListValue;
 }
 
 // Serializer for persisting metrics logs to prefs.
-class MetricsLogSerializer : public MetricsLogManager::LogSerializer {
+class MetricsLogSerializer : public metrics::MetricsLogManager::LogSerializer {
  public:
   // Used to produce a histogram that keeps track of the status of recalling
   // persisted per logs.
@@ -39,13 +39,13 @@ class MetricsLogSerializer : public MetricsLogManager::LogSerializer {
   MetricsLogSerializer();
   virtual ~MetricsLogSerializer();
 
-  // Implementation of MetricsLogManager::LogSerializer
+  // Implementation of metrics::MetricsLogManager::LogSerializer
   virtual void SerializeLogs(
-      const std::vector<MetricsLogManager::SerializedLog>& logs,
-      MetricsLogManager::LogType log_type) OVERRIDE;
+      const std::vector<metrics::MetricsLogManager::SerializedLog>& logs,
+      metrics::MetricsLogManager::LogType log_type) OVERRIDE;
   virtual void DeserializeLogs(
-      MetricsLogManager::LogType log_type,
-      std::vector<MetricsLogManager::SerializedLog>* logs) OVERRIDE;
+      metrics::MetricsLogManager::LogType log_type,
+      std::vector<metrics::MetricsLogManager::SerializedLog>* logs) OVERRIDE;
 
  private:
   // Encodes the textual log data from |local_list| and writes it to the given
@@ -54,7 +54,7 @@ class MetricsLogSerializer : public MetricsLogManager::LogSerializer {
   // |list_length_limit| logs and |byte_limit| bytes of logs have been
   // stored. At least one of those two arguments must be non-zero.
   static void WriteLogsToPrefList(
-      const std::vector<MetricsLogManager::SerializedLog>& local_list,
+      const std::vector<metrics::MetricsLogManager::SerializedLog>& local_list,
       size_t list_length_limit,
       size_t byte_limit,
       base::ListValue* list);
@@ -63,7 +63,7 @@ class MetricsLogSerializer : public MetricsLogManager::LogSerializer {
   // |local_list| and returning a status code.
   static LogReadStatus ReadLogsFromPrefList(
       const base::ListValue& list,
-      std::vector<MetricsLogManager::SerializedLog>* local_list);
+      std::vector<metrics::MetricsLogManager::SerializedLog>* local_list);
 
   FRIEND_TEST_ALL_PREFIXES(MetricsLogSerializerTest, EmptyLogList);
   FRIEND_TEST_ALL_PREFIXES(MetricsLogSerializerTest, SingleElementLogList);

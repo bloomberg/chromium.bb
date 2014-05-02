@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "chrome/common/metrics/proto/system_profile.pb.h"
+#include "components/metrics/proto/system_profile.pb.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_set.h"

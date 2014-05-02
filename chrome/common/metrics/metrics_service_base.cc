@@ -6,7 +6,7 @@
 
 #include <cstdlib>
 
-#include "chrome/common/metrics/metrics_log_base.h"
+#include "components/metrics/metrics_log_base.h"
 
 using base::Histogram;
 

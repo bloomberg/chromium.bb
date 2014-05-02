@@ -12,7 +12,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/common/metrics/proto/perf_data.pb.h"
+#include "components/metrics/proto/perf_data.pb.h"
 
 namespace metrics {
 

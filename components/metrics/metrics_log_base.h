@@ -1,26 +1,25 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // This file defines a set of user experience metrics data recorded by
 // the MetricsService.  This is the unit of data that is sent to the server.
 
-#ifndef CHROME_COMMON_METRICS_METRICS_LOG_BASE_H_
-#define CHROME_COMMON_METRICS_METRICS_LOG_BASE_H_
+#ifndef COMPONENTS_METRICS_METRICS_LOG_BASE_H_
+#define COMPONENTS_METRICS_METRICS_LOG_BASE_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
-#include "chrome/common/metrics/proto/chrome_user_metrics_extension.pb.h"
-#include "content/public/common/page_transition_types.h"
-
-class GURL;
+#include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 
 namespace base {
 class HistogramSamples;
 }  // namespace base
+
+namespace metrics {
 
 // This class provides base functionality for logging metrics data.
 class MetricsLogBase {
@@ -106,4 +105,6 @@ class MetricsLogBase {
   DISALLOW_COPY_AND_ASSIGN(MetricsLogBase);
 };
 
-#endif  // CHROME_COMMON_METRICS_METRICS_LOG_BASE_H_
+}  // namespace metrics
+
+#endif  // COMPONENTS_METRICS_METRICS_LOG_BASE_H_
