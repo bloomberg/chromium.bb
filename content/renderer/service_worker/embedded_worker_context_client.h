@@ -70,6 +70,7 @@ class EmbeddedWorkerContextClient
   virtual void workerContextFailedToStart();
   virtual void workerContextStarted(blink::WebServiceWorkerContextProxy* proxy);
   virtual void willDestroyWorkerContext();
+  virtual void workerContextDestroyed();
   virtual void reportException(const blink::WebString& error_message,
                                int line_number,
                                int column_number,
