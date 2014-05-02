@@ -1379,7 +1379,6 @@
         'browser/ui/views/location_bar/zoom_bubble_view_browsertest.cc',
         'browser/ui/views/profiles/avatar_menu_button_browsertest.cc',
         'browser/ui/views/profiles/new_avatar_menu_button_browsertest.cc',
-        'browser/ui/views/profiles/profile_chooser_view_browsertest.cc',
         'browser/ui/views/select_file_dialog_extension_browsertest.cc',
         'browser/ui/views/toolbar/browser_actions_container_browsertest.cc',
         'browser/ui/views/toolbar/toolbar_view_browsertest.cc',

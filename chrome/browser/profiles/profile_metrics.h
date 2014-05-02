@@ -61,8 +61,8 @@ class ProfileMetrics {
   };
 
   enum ProfileType {
-    ORIGINAL = 0,             // Refers to the original/default profile
-    SECONDARY,                // Refers to a user-created profile
+    ORIGINAL = 0,         // Refers to the original/default profile
+    SECONDARY,            // Refers to a user-created profile
     NUM_PROFILE_TYPE_METRICS
   };
 
@@ -80,22 +80,6 @@ class ProfileMetrics {
     NUM_PROFILE_AUTH_METRICS
   };
 
-  // Enum for tracking if new profile management is enabled and Promo views.
-  // This is used in a histogram; the items should not be removed or re-ordered.
-  enum ProfileUpgradeEnrollment {
-    // User viewed the Upgrade promo card in the user menu.
-    PROFILE_ENROLLMENT_SHOW_PREVIEW_PROMO,
-    // User selected to view the intro tutorial.
-    PROFILE_ENROLLMENT_LAUNCH_LEARN_MORE,
-    // User opted into New Profile Management via Promo card.
-    PROFILE_ENROLLMENT_ACCEPT_NEW_PROFILE_MGMT,
-    // User closed the Upgrade card.
-    PROFILE_ENROLLMENT_CLOSE_WELCOME_CARD,
-    // Used disabled New Profile Management.
-    PROFILE_ENROLLMENT_DISABLE_NEW_PROFILE_MGMT,
-    NUM_PROFILE_ENROLLMENT_METRICS,
-  };
-
   static void UpdateReportedProfilesStatistics(ProfileManager* manager);
 
   static void LogNumberOfProfiles(ProfileManager* manager);
@@ -107,7 +91,6 @@ class ProfileMetrics {
   static void LogProfileSwitchUser(ProfileOpen metric);
   static void LogProfileSyncInfo(ProfileSync metric);
   static void LogProfileAuthResult(ProfileAuth metric);
-  static void LogProfileUpgradeEnrollment(ProfileUpgradeEnrollment metric);
 
   // These functions should only be called on the UI thread because they hook
   // into g_browser_process through a helper function.
