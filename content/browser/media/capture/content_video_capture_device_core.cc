@@ -48,17 +48,12 @@ ThreadSafeCaptureOracle::ThreadSafeCaptureOracle(
       oracle_(oracle.Pass()),
       params_(params),
       capture_size_updated_(false) {
-  switch (params_.requested_format.pixel_format) {
-    case media::PIXEL_FORMAT_I420:
-      video_frame_format_ = media::VideoFrame::I420;
-      break;
-    case media::PIXEL_FORMAT_TEXTURE:
-      video_frame_format_ = media::VideoFrame::NATIVE_TEXTURE;
-      break;
-    default:
-      LOG(FATAL) << "Unexpected pixel_format "
-                 << params_.requested_format.pixel_format;
-  }
+  // Frame dimensions must each be an even integer since the client wants (or
+  // will convert to) YUV420.
+  capture_size_ = gfx::Size(
+      MakeEven(params.requested_format.frame_size.width()),
+      MakeEven(params.requested_format.frame_size.height()));
+  frame_rate_ = params.requested_format.frame_rate;
 }
 
 ThreadSafeCaptureOracle::~ThreadSafeCaptureOracle() {}
@@ -74,8 +69,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
     return false;  // Capture is stopped.
 
   scoped_refptr<media::VideoCaptureDevice::Client::Buffer> output_buffer =
-      client_->ReserveOutputBuffer(video_frame_format_,
-                                   params_.requested_format.frame_size);
+      client_->ReserveOutputBuffer(media::VideoFrame::I420, capture_size_);
   const bool should_capture =
       oracle_->ObserveEventAndDecideCapture(event, event_time);
   const bool content_is_dirty =
@@ -116,30 +110,27 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   TRACE_EVENT_ASYNC_BEGIN2("mirroring", "Capture", output_buffer.get(),
                            "frame_number", frame_number,
                            "trigger", event_name);
-  // NATIVE_TEXTURE frames wrap a texture mailbox, which we don't have at the
-  // moment.  We do not construct those frames.
-  if (video_frame_format_ != media::VideoFrame::NATIVE_TEXTURE) {
-    *storage = media::VideoFrame::WrapExternalPackedMemory(
-        video_frame_format_,
-        params_.requested_format.frame_size,
-        gfx::Rect(params_.requested_format.frame_size),
-        params_.requested_format.frame_size,
-        static_cast<uint8*>(output_buffer->data()),
-        output_buffer->size(),
-        base::SharedMemory::NULLHandle(),
-        base::TimeDelta(),
-        base::Closure());
-  }
+  *storage = media::VideoFrame::WrapExternalPackedMemory(
+      media::VideoFrame::I420,
+      capture_size_,
+      gfx::Rect(capture_size_),
+      capture_size_,
+      static_cast<uint8*>(output_buffer->data()),
+      output_buffer->size(),
+      base::SharedMemory::NULLHandle(),
+      base::TimeDelta(),
+      base::Closure());
   *callback = base::Bind(&ThreadSafeCaptureOracle::DidCaptureFrame,
                          this,
-                         frame_number,
-                         output_buffer);
+                         output_buffer,
+                         *storage,
+                         frame_number);
   return true;
 }
 
 gfx::Size ThreadSafeCaptureOracle::GetCaptureSize() const {
   base::AutoLock guard(lock_);
-  return params_.requested_format.frame_size;
+  return capture_size_;
 }
 
 void ThreadSafeCaptureOracle::UpdateCaptureSize(const gfx::Size& source_size) {
@@ -155,11 +146,11 @@ void ThreadSafeCaptureOracle::UpdateCaptureSize(const gfx::Size& source_size) {
         source_size.height() > params_.requested_format.frame_size.height()) {
       gfx::Rect capture_rect = media::ComputeLetterboxRegion(
           gfx::Rect(params_.requested_format.frame_size), source_size);
-      params_.requested_format.frame_size.SetSize(
-          MakeEven(capture_rect.width()), MakeEven(capture_rect.height()));
+      capture_size_ = gfx::Size(MakeEven(capture_rect.width()),
+                                MakeEven(capture_rect.height()));
     } else {
-      params_.requested_format.frame_size.SetSize(
-          MakeEven(source_size.width()), MakeEven(source_size.height()));
+      capture_size_ = gfx::Size(MakeEven(source_size.width()),
+                                MakeEven(source_size.height()));
     }
     capture_size_updated_ = true;
   }
@@ -177,9 +168,9 @@ void ThreadSafeCaptureOracle::ReportError(const std::string& reason) {
 }
 
 void ThreadSafeCaptureOracle::DidCaptureFrame(
-    int frame_number,
     const scoped_refptr<media::VideoCaptureDevice::Client::Buffer>& buffer,
     const scoped_refptr<media::VideoFrame>& frame,
+    int frame_number,
     base::TimeTicks timestamp,
     bool success) {
   base::AutoLock guard(lock_);
@@ -192,9 +183,12 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
 
   if (success) {
     if (oracle_->CompleteCapture(frame_number, timestamp)) {
-      media::VideoCaptureFormat format = params_.requested_format;
-      format.frame_size = frame->coded_size();
-      client_->OnIncomingCapturedVideoFrame(buffer, format, frame, timestamp);
+      client_->OnIncomingCapturedVideoFrame(
+          buffer,
+          media::VideoCaptureFormat(
+              capture_size_, frame_rate_, media::PIXEL_FORMAT_I420),
+          frame,
+          timestamp);
     }
   }
 }
@@ -217,21 +211,14 @@ void ContentVideoCaptureDeviceCore::AllocateAndStart(
     return;
   }
 
-  if (params.requested_format.pixel_format != media::PIXEL_FORMAT_I420 &&
-      params.requested_format.pixel_format != media::PIXEL_FORMAT_TEXTURE) {
-    std::string error_msg = base::StringPrintf(
-        "unsupported format: %d", params.requested_format.pixel_format);
+  if (params.requested_format.frame_size.width() < kMinFrameWidth ||
+      params.requested_format.frame_size.height() < kMinFrameHeight) {
+    std::string error_msg =
+        "invalid frame size: " + params.requested_format.frame_size.ToString();
     DVLOG(1) << error_msg;
     client->OnError(error_msg);
     return;
   }
-
-  media::VideoCaptureParams new_params = params;
-  // Frame dimensions must each be an even integer since the client wants (or
-  // will convert to) YUV420.
-  new_params.requested_format.frame_size.SetSize(
-      MakeEven(params.requested_format.frame_size.width()),
-      MakeEven(params.requested_format.frame_size.height()));
 
   base::TimeDelta capture_period = base::TimeDelta::FromMicroseconds(
       1000000.0 / params.requested_format.frame_rate + 0.5);
@@ -240,17 +227,16 @@ void ContentVideoCaptureDeviceCore::AllocateAndStart(
       new VideoCaptureOracle(capture_period,
                              kAcceleratedSubscriberIsSupported));
   oracle_proxy_ =
-      new ThreadSafeCaptureOracle(client.Pass(), oracle.Pass(), new_params);
+      new ThreadSafeCaptureOracle(client.Pass(), oracle.Pass(), params);
 
   // Starts the capture machine asynchronously.
   BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI,
-      FROM_HERE,
+      BrowserThread::UI, FROM_HERE,
       base::Bind(&VideoCaptureMachine::Start,
                  base::Unretained(capture_machine_.get()),
-                 oracle_proxy_,
-                 new_params),
-      base::Bind(&ContentVideoCaptureDeviceCore::CaptureStarted, AsWeakPtr()));
+                 oracle_proxy_),
+      base::Bind(&ContentVideoCaptureDeviceCore::CaptureStarted,
+                 AsWeakPtr()));
 
   TransitionStateTo(kCapturing);
 }

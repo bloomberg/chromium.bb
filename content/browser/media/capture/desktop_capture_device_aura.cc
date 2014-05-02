@@ -97,8 +97,8 @@ class DesktopVideoCaptureMachine
   virtual ~DesktopVideoCaptureMachine();
 
   // VideoCaptureFrameSource overrides.
-  virtual bool Start(const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy,
-                     const media::VideoCaptureParams& params) OVERRIDE;
+  virtual bool Start(
+      const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy) OVERRIDE;
   virtual void Stop(const base::Closure& callback) OVERRIDE;
 
   // Implements aura::WindowObserver.
@@ -162,9 +162,6 @@ class DesktopVideoCaptureMachine
   // Makes all the decisions about which frames to copy, and how.
   scoped_refptr<ThreadSafeCaptureOracle> oracle_proxy_;
 
-  // The capture parameters for this capture.
-  media::VideoCaptureParams capture_params_;
-
   // YUV readback pipeline.
   scoped_ptr<content::ReadbackYUVInterface> yuv_readback_pipeline_;
 
@@ -186,8 +183,7 @@ DesktopVideoCaptureMachine::DesktopVideoCaptureMachine(
 DesktopVideoCaptureMachine::~DesktopVideoCaptureMachine() {}
 
 bool DesktopVideoCaptureMachine::Start(
-    const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy,
-    const media::VideoCaptureParams& params) {
+    const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   desktop_window_ = content::DesktopMediaID::GetAuraWindowById(window_id_);
@@ -201,7 +197,6 @@ bool DesktopVideoCaptureMachine::Start(
 
   DCHECK(oracle_proxy.get());
   oracle_proxy_ = oracle_proxy;
-  capture_params_ = params;
 
   // Update capture size.
   UpdateCaptureSize();
@@ -299,14 +294,7 @@ void CopyOutputFinishedForVideo(
   if (!cursor_bitmap.isNull())
     RenderCursorOnVideoFrame(target, cursor_bitmap, cursor_position);
   release_callback->Run(0, false);
-  capture_frame_cb.Run(target, start_time, result);
-}
-
-void RunSingleReleaseCallback(scoped_ptr<cc::SingleReleaseCallback> cb,
-                              const std::vector<uint32>& sync_points) {
-  // TODO(hshi): handle release of multiple sync points.
-  DCHECK_EQ(1u, sync_points.size());
-  cb->Run(sync_points[0], false);
+  capture_frame_cb.Run(start_time, result);
 }
 
 void DesktopVideoCaptureMachine::DidCopyOutput(
@@ -345,29 +333,6 @@ bool DesktopVideoCaptureMachine::ProcessCopyOutputResponse(
     scoped_ptr<cc::CopyOutputResult> result) {
   if (result->IsEmpty() || result->size().IsEmpty() || !desktop_layer_)
     return false;
-
-  if (capture_params_.requested_format.pixel_format ==
-      media::PIXEL_FORMAT_TEXTURE) {
-    DCHECK(!video_frame);
-    cc::TextureMailbox texture_mailbox;
-    scoped_ptr<cc::SingleReleaseCallback> release_callback;
-    result->TakeTexture(&texture_mailbox, &release_callback);
-    DCHECK(texture_mailbox.IsTexture());
-    if (!texture_mailbox.IsTexture())
-      return false;
-    video_frame = media::VideoFrame::WrapNativeTexture(
-        make_scoped_ptr(new gpu::MailboxHolder(texture_mailbox.mailbox(),
-                                               texture_mailbox.target(),
-                                               texture_mailbox.sync_point())),
-        base::Bind(&RunSingleReleaseCallback, base::Passed(&release_callback)),
-        result->size(),
-        gfx::Rect(result->size()),
-        result->size(),
-        base::TimeDelta(),
-        media::VideoFrame::ReadPixelsCB());
-    capture_frame_cb.Run(video_frame, start_time, true);
-    return true;
-  }
 
   // Compute the dest size we want after the letterboxing resize. Make the
   // coordinates and sizes even because we letterbox in YUV space
@@ -517,11 +482,7 @@ void DesktopCaptureDeviceAura::AllocateAndStart(
     const media::VideoCaptureParams& params,
     scoped_ptr<Client> client) {
   DVLOG(1) << "Allocating " << params.requested_format.frame_size.ToString();
-  media::VideoCaptureParams new_params = params;
-  // Desktop capture devices ignore the requested size and return the actual
-  // captured desktop size.
-  new_params.requested_format.frame_size.SetSize(0, 0);
-  core_->AllocateAndStart(new_params, client.Pass());
+  core_->AllocateAndStart(params, client.Pass());
 }
 
 void DesktopCaptureDeviceAura::StopAndDeAllocate() {
