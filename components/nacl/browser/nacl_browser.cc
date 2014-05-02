@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/file_proxy.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -140,7 +141,6 @@ base::File OpenNaClExecutableImpl(const base::FilePath& file_path) {
 
 NaClBrowser::NaClBrowser()
     : weak_factory_(this),
-      irt_platform_file_(base::kInvalidPlatformFileValue),
       irt_filepath_(),
       irt_state_(NaClResourceUninitialized),
       validation_cache_file_path_(),
@@ -172,8 +172,6 @@ void NaClBrowser::EarlyStartup() {
 }
 
 NaClBrowser::~NaClBrowser() {
-  if (irt_platform_file_ != base::kInvalidPlatformFileValue)
-    base::ClosePlatformFile(irt_platform_file_);
 }
 
 void NaClBrowser::InitIrtFilePath() {
@@ -224,11 +222,11 @@ bool NaClBrowser::IsOk() const {
   return ok_;
 }
 
-base::PlatformFile NaClBrowser::IrtFile() const {
+const base::File& NaClBrowser::IrtFile() const {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   CHECK_EQ(irt_state_, NaClResourceReady);
-  CHECK_NE(irt_platform_file_, base::kInvalidPlatformFileValue);
-  return irt_platform_file_;
+  CHECK(irt_file_.IsValid());
+  return irt_file_;
 }
 
 void NaClBrowser::EnsureAllResourcesAvailable() {
@@ -243,28 +241,27 @@ void NaClBrowser::EnsureIrtAvailable() {
   if (IsOk() && irt_state_ == NaClResourceUninitialized) {
     irt_state_ = NaClResourceRequested;
     // TODO(ncbray) use blocking pool.
-    if (!base::FileUtilProxy::CreateOrOpen(
-            content::BrowserThread::GetMessageLoopProxyForThread(
-                content::BrowserThread::FILE)
-                .get(),
-            irt_filepath_,
-            base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
-            base::Bind(&NaClBrowser::OnIrtOpened,
-                       weak_factory_.GetWeakPtr()))) {
+    scoped_ptr<base::FileProxy> file_proxy(new base::FileProxy(
+        content::BrowserThread::GetMessageLoopProxyForThread(
+                content::BrowserThread::FILE).get()));
+    base::FileProxy* proxy = file_proxy.get();
+    if (!proxy->CreateOrOpen(irt_filepath_,
+                             base::File::FLAG_OPEN | base::File::FLAG_READ,
+                             base::Bind(&NaClBrowser::OnIrtOpened,
+                                        weak_factory_.GetWeakPtr(),
+                                        Passed(&file_proxy)))) {
       LOG(ERROR) << "Internal error, NaCl disabled.";
       MarkAsFailed();
     }
   }
 }
 
-void NaClBrowser::OnIrtOpened(base::File::Error error_code,
-                              base::PassPlatformFile file,
-                              bool created) {
+void NaClBrowser::OnIrtOpened(scoped_ptr<base::FileProxy> file_proxy,
+                              base::File::Error error_code) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK_EQ(irt_state_, NaClResourceRequested);
-  DCHECK(!created);
-  if (error_code == base::File::FILE_OK) {
-    irt_platform_file_ = file.ReleaseValue();
+  if (file_proxy->IsValid()) {
+    irt_file_ = file_proxy->TakeFile();
   } else {
     LOG(ERROR) << "Failed to open NaCl IRT file \""
                << irt_filepath_.LossyDisplayName()

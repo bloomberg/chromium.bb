@@ -805,11 +805,13 @@ bool NaClProcessHost::StartNaClExecution() {
   }
 
   if (params.uses_irt) {
-    base::PlatformFile irt_file = nacl_browser->IrtFile();
-    CHECK_NE(irt_file, base::kInvalidPlatformFileValue);
+    const base::File& irt_file = nacl_browser->IrtFile();
+    CHECK(irt_file.IsValid());
     // Send over the IRT file handle.  We don't close our own copy!
-    if (!ShareHandleToSelLdr(data.handle, irt_file, false, &params.handles))
+    if (!ShareHandleToSelLdr(data.handle, irt_file.GetPlatformFile(), false,
+                             &params.handles)) {
       return false;
+    }
   }
 
 #if defined(OS_MACOSX)

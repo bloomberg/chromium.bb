@@ -10,16 +10,18 @@
 #include "base/bind.h"
 #include "base/containers/mru_cache.h"
 #include "base/files/file.h"
-#include "base/files/file_util_proxy.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "base/time/time.h"
 #include "components/nacl/browser/nacl_browser_delegate.h"
 #include "components/nacl/browser/nacl_validation_cache.h"
 
 class URLPattern;
 class GURL;
+
+namespace base {
+class FileProxy;
+}
 
 namespace nacl {
 
@@ -56,7 +58,7 @@ class NaClBrowser {
   const base::FilePath& GetIrtFilePath();
 
   // IRT file handle, only available when IsReady().
-  base::PlatformFile IrtFile() const;
+  const base::File& IrtFile() const;
 
   // Methods for testing GDB debug stub in browser. If test adds debug stub
   // port listener, Chrome will allocate a currently-unused TCP port number for
@@ -138,8 +140,8 @@ class NaClBrowser {
 
   void OpenIrtLibraryFile();
 
-  void OnIrtOpened(base::File::Error error_code,
-                   base::PassPlatformFile file, bool created);
+  void OnIrtOpened(scoped_ptr<base::FileProxy> file_proxy,
+                   base::File::Error error_code);
 
   void InitValidationCacheFilePath();
   void EnsureValidationCacheAvailable();
@@ -158,7 +160,7 @@ class NaClBrowser {
   // Singletons get destroyed at shutdown.
   base::WeakPtrFactory<NaClBrowser> weak_factory_;
 
-  base::PlatformFile irt_platform_file_;
+  base::File irt_file_;
   base::FilePath irt_filepath_;
   NaClResourceState irt_state_;
   NaClValidationCache validation_cache_;
