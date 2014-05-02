@@ -2042,18 +2042,6 @@ blink::WebMediaPlayer* RenderViewImpl::CreateMediaPlayer(
 #endif  // defined(OS_ANDROID)
 }
 
-void RenderViewImpl::didDisownOpener(blink::WebLocalFrame* frame) {
-  // We only need to notify the browser if the active, top-level frame clears
-  // its opener.  We can ignore cases where a swapped out frame clears its
-  // opener after hearing about it from the browser, and the browser does not
-  // (yet) care about subframe openers.
-  if (is_swapped_out_ || frame->parent())
-    return;
-
-  // Notify WebContents and all its swapped out RenderViews.
-  Send(new ViewHostMsg_DidDisownOpener(routing_id_));
-}
-
 void RenderViewImpl::Repaint(const gfx::Size& size) {
   OnRepaint(size);
 }

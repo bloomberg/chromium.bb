@@ -434,6 +434,10 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFinishLoad,
 // making a URL spoof possible.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidAccessInitialDocument)
 
+// Sent when the frame sets its opener to null, disowning it for the lifetime of
+// the window. Sent for top-level frames.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_DidDisownOpener)
+
 // Following message is used to communicate the values received by the
 // callback binding the JS to Cpp.
 // An instance of browser that has an automation host listening to it can

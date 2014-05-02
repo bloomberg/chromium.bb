@@ -3419,20 +3419,6 @@ void WebContentsImpl::DidChangeLoadProgress(double progress) {
     delegate_->LoadProgressChanged(this, progress);
 }
 
-void WebContentsImpl::DidDisownOpener(RenderViewHost* rvh) {
-  if (opener_) {
-    // Clear our opener so that future cross-process navigations don't have an
-    // opener assigned.
-    RemoveDestructionObserver(opener_);
-    opener_ = NULL;
-  }
-
-  // Notify all swapped out RenderViewHosts for this tab.  This is important
-  // in case we go back to them, or if another window in those processes tries
-  // to access window.opener.
-  GetRenderManager()->DidDisownOpener(rvh);
-}
-
 void WebContentsImpl::DidAccessInitialDocument() {
   has_accessed_initial_document_ = true;
 
@@ -3444,6 +3430,20 @@ void WebContentsImpl::DidAccessInitialDocument() {
 
   // Update the URL display.
   NotifyNavigationStateChanged(content::INVALIDATE_TYPE_URL);
+}
+
+void WebContentsImpl::DidDisownOpener(RenderFrameHost* render_frame_host) {
+  if (opener_) {
+    // Clear our opener so that future cross-process navigations don't have an
+    // opener assigned.
+    RemoveDestructionObserver(opener_);
+    opener_ = NULL;
+  }
+
+  // Notify all swapped out RenderViewHosts for this tab.  This is important
+  // in case we go back to them, or if another window in those processes tries
+  // to access window.opener.
+  GetRenderManager()->DidDisownOpener(render_frame_host->GetRenderViewHost());
 }
 
 void WebContentsImpl::DocumentAvailableInMainFrame(

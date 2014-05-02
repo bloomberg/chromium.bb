@@ -290,6 +290,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                                     OnRunBeforeUnloadConfirm)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidAccessInitialDocument,
                         OnDidAccessInitialDocument)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidDisownOpener, OnDidDisownOpener)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_RequestPermission,
                         OnRequestDesktopNotificationPermission)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Show,
@@ -678,6 +679,15 @@ void RenderFrameHostImpl::OnCancelDesktopNotification(int notification_id) {
 
 void RenderFrameHostImpl::OnDidAccessInitialDocument() {
   delegate_->DidAccessInitialDocument();
+}
+
+void RenderFrameHostImpl::OnDidDisownOpener() {
+  if (GetParent()) {
+    // This shouldn't be called for non-main-frames.
+    NOTREACHED();
+    return;
+  }
+  delegate_->DidDisownOpener(this);
 }
 
 void RenderFrameHostImpl::SetPendingShutdown(const base::Closure& on_swap_out) {

@@ -492,7 +492,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnClose();
   void OnRequestMove(const gfx::Rect& pos);
   void OnDidChangeLoadProgress(double load_progress);
-  void OnDidDisownOpener();
   void OnDocumentAvailableInMainFrame();
   void OnDocumentOnLoadCompletedInMainFrame(int32 page_id);
   void OnToggleFullscreen(bool enter_fullscreen);

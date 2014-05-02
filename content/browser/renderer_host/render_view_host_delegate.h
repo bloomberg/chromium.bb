@@ -140,10 +140,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // entirely loaded).
   virtual void DidChangeLoadProgress(double progress) {}
 
-  // The RenderView set its opener to null, disowning it for the lifetime of
-  // the window.
-  virtual void DidDisownOpener(RenderViewHost* rvh) {}
-
   // The RenderView's main frame document element is ready. This happens when
   // the document has finished parsing.
   virtual void DocumentAvailableInMainFrame(RenderViewHost* render_view_host) {}

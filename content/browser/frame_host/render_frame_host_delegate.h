@@ -83,6 +83,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // is no longer safe to display a pending URL without risking a URL spoof.
   virtual void DidAccessInitialDocument() {}
 
+  // The frame set its opener to null, disowning it for the lifetime of the
+  // window. Only called for the top-level frame.
+  virtual void DidDisownOpener(RenderFrameHost* render_frame_host) {}
+
   // Return this object cast to a WebContents, if it is one. If the object is
   // not a WebContents, returns NULL.
   virtual WebContents* GetAsWebContents();

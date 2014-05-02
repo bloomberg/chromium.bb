@@ -1154,10 +1154,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateTargetURL,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeLoadProgress,
                     double /* load_progress */)
 
-// Sent when the renderer main frame sets its opener to null, disowning it for
-// the lifetime of the window.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DidDisownOpener)
-
 // Sent when the document element is available for the top-level frame.  This
 // happens after the page starts loading, but before all resources are
 // finished.

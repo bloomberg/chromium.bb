@@ -339,6 +339,7 @@ class CONTENT_EXPORT WebContentsImpl
                                       bool is_reload,
                                       IPC::Message* reply_msg) OVERRIDE;
   virtual void DidAccessInitialDocument() OVERRIDE;
+  virtual void DidDisownOpener(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual WebContents* GetAsWebContents() OVERRIDE;
   virtual bool IsNeverVisible() OVERRIDE;
 
@@ -370,7 +371,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void RequestMove(const gfx::Rect& new_bounds) OVERRIDE;
   virtual void DidCancelLoading() OVERRIDE;
   virtual void DidChangeLoadProgress(double progress) OVERRIDE;
-  virtual void DidDisownOpener(RenderViewHost* rvh) OVERRIDE;
   virtual void DocumentAvailableInMainFrame(
       RenderViewHost* render_view_host) OVERRIDE;
   virtual void DocumentOnLoadCompletedInMainFrame(

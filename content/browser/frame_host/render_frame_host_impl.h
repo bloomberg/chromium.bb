@@ -224,6 +224,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
       const ShowDesktopNotificationHostMsgParams& params);
   void OnCancelDesktopNotification(int notification_id);
   void OnDidAccessInitialDocument();
+  void OnDidDisownOpener();
 
   // Returns whether the given URL is allowed to commit in the current process.
   // This is a more conservative check than RenderProcessHost::FilterURL, since
