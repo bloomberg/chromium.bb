@@ -290,8 +290,8 @@ void SpeechRecognitionManagerImpl::StopAudioCaptureForSession(int session_id) {
 
 // Here begins the SpeechRecognitionEventListener interface implementation,
 // which will simply relay the events to the proper listener registered for the
-// particular session (most likely InputTagSpeechDispatcherHost) and to the
-// catch-all listener provided by the delegate (if any).
+// particular session and to the catch-all listener provided by the delegate
+// (if any).
 
 void SpeechRecognitionManagerImpl::OnRecognitionStart(int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

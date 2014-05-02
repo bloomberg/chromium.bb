@@ -187,8 +187,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // RenderViewHostDelegate.
   virtual void SyncRendererPrefs() = 0;
 
-  virtual void ToggleSpeechInput() = 0;
-
   // Returns the current WebKit preferences.
   virtual WebPreferences GetWebkitPreferences() = 0;
 

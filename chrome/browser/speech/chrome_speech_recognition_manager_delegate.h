@@ -59,8 +59,7 @@ class ChromeSpeechRecognitionManagerDelegate
   static void CheckRenderViewType(
       base::Callback<void(bool ask_user, bool is_allowed)> callback,
       int render_process_id,
-      int render_view_id,
-      bool js_api);
+      int render_view_id);
 
   scoped_refptr<OptionalRequestInfo> optional_request_info_;
   scoped_refptr<TabWatcher> tab_watcher_;

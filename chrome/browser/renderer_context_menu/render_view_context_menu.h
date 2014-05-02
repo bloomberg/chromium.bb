@@ -226,7 +226,6 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   void AppendSearchWebForImageItems();
   void AppendSpellingSuggestionsSubMenu();
   void AppendSpellcheckOptionsSubMenu();
-  void AppendSpeechInputOptionsSubMenu();
   void AppendProtocolHandlerSubMenu();
 
   // Opens the specified URL string in a new tab.
@@ -265,7 +264,6 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   // a text selection.
   GURL selection_navigation_url_;
 
-  ui::SimpleMenuModel speech_input_submenu_model_;
   ui::SimpleMenuModel protocol_handler_submenu_model_;
   ProtocolHandlerRegistry* protocol_handler_registry_;
 

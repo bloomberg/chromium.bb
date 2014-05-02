@@ -14,8 +14,7 @@ SpeechRecognitionSessionContext::SpeechRecognitionSessionContext()
       guest_render_view_id(MSG_ROUTING_NONE),
       embedder_render_process_id(0),
       embedder_render_view_id(MSG_ROUTING_NONE),
-      request_id(0),
-      requested_by_page_element(true) {
+      request_id(0) {
 }
 
 SpeechRecognitionSessionContext::~SpeechRecognitionSessionContext() {

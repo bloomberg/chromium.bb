@@ -1052,12 +1052,9 @@ void OpenUpdateChromeDialog(Browser* browser) {
 }
 
 void ToggleSpeechInput(Browser* browser) {
-  WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-  web_contents->GetRenderViewHost()->ToggleSpeechInput();
-
   SearchTabHelper* search_tab_helper =
-      SearchTabHelper::FromWebContents(web_contents);
+      SearchTabHelper::FromWebContents(
+          browser->tab_strip_model()->GetActiveWebContents());
   // |search_tab_helper| can be null in unit tests.
   if (search_tab_helper)
     search_tab_helper->ToggleVoiceSearch();

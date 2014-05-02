@@ -1497,10 +1497,6 @@ void RenderViewHostImpl::SendOrientationChangeEvent(int orientation) {
   Send(new ViewMsg_OrientationChangeEvent(GetRoutingID(), orientation));
 }
 
-void RenderViewHostImpl::ToggleSpeechInput() {
-  Send(new InputTagSpeechMsg_ToggleSpeechInput(GetRoutingID()));
-}
-
 bool RenderViewHostImpl::IsWaitingForUnloadACK() const {
   return rvh_state_ == STATE_WAITING_FOR_UNLOAD_ACK ||
          rvh_state_ == STATE_WAITING_FOR_CLOSE ||

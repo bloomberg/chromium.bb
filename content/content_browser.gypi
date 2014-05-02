@@ -1221,8 +1221,6 @@
     'browser/speech/google_one_shot_remote_engine.h',
     'browser/speech/google_streaming_remote_engine.cc',
     'browser/speech/google_streaming_remote_engine.h',
-    'browser/speech/input_tag_speech_dispatcher_host.cc',
-    'browser/speech/input_tag_speech_dispatcher_host.h',
     'browser/speech/speech_recognition_dispatcher_host.cc',
     'browser/speech/speech_recognition_dispatcher_host.h',
     'browser/speech/speech_recognition_engine.cc',
@@ -1711,11 +1709,7 @@
         ['exclude', '^browser/renderer_host/pepper/'],
       ],
     }],
-    ['input_speech==0', {
-      'sources/': [
-        ['exclude', '^browser/speech/input_tag_speech_dispatcher_host\\.(cc|h)$'],
-      ],
-    }, {  # input_speech==1
+    ['input_speech==1', {
       'dependencies': [
         '../third_party/flac/flac.gyp:libflac',
         '../third_party/speex/speex.gyp:libspeex',

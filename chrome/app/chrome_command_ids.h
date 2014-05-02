@@ -343,11 +343,6 @@
 // Context menu items in the status tray
 #define IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND 51100
 
-// Context menu items for speech recognition
-#define IDC_SPEECH_INPUT_MENU 51200
-#define IDC_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES 51201
-#define IDC_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT 51202
-
 // Context menu items for media stream status tray
 #define IDC_MEDIA_STREAM_DEVICE_STATUS_TRAY 51300
 #define IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_FIRST 51301

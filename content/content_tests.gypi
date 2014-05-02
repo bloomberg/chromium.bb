@@ -1105,7 +1105,6 @@
             'browser/service_worker/service_worker_browsertest.cc',
             'browser/session_history_browsertest.cc',
             'browser/site_per_process_browsertest.cc',
-            'browser/speech/input_tag_speech_browsertest.cc',
             'browser/speech/speech_recognition_browsertest.cc',
             'browser/tracing/tracing_controller_browsertest.cc',
             'browser/web_contents/opened_by_dom_browsertest.cc',

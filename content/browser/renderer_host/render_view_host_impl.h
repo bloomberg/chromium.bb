@@ -203,7 +203,6 @@ class CONTENT_EXPORT RenderViewHostImpl
                                 const std::string& value) OVERRIDE;
   virtual void Zoom(PageZoom zoom) OVERRIDE;
   virtual void SyncRendererPrefs() OVERRIDE;
-  virtual void ToggleSpeechInput() OVERRIDE;
   virtual WebPreferences GetWebkitPreferences() OVERRIDE;
   virtual void UpdateWebkitPreferences(
       const WebPreferences& prefs) OVERRIDE;

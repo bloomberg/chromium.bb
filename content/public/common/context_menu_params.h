@@ -112,9 +112,6 @@ struct CONTENT_EXPORT ContextMenuParams {
   // and the misspelled_word is not empty.
   std::vector<base::string16> dictionary_suggestions;
 
-  // If editable, flag for whether node is speech-input enabled.
-  bool speech_input_enabled;
-
   // If editable, flag for whether spell check is enabled or not.
   bool spellcheck_enabled;
 

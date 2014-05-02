@@ -105,8 +105,7 @@ void SpeechRecognitionDispatcherHost::OnStartRequest(
   }
 
   // TODO(lazyboy): Check if filter_profanities should use |render_process_id|
-  // instead of |render_process_id_|. We are also using the same value in
-  // input_tag_dispatcher_host.cc
+  // instead of |render_process_id_|.
   bool filter_profanities =
       SpeechRecognitionManagerImpl::GetInstance() &&
       SpeechRecognitionManagerImpl::GetInstance()->delegate() &&
@@ -138,7 +137,6 @@ void SpeechRecognitionDispatcherHost::OnStartRequestOnIO(
   if (embedder_render_process_id)
     context.guest_render_view_id = params.render_view_id;
   context.request_id = params.request_id;
-  context.requested_by_page_element = false;
 
   SpeechRecognitionSessionConfig config;
   config.is_legacy_api = false;

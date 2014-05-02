@@ -199,9 +199,6 @@ const struct UmaEnumCommandIdPair {
   { 46, IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS },
   { 47, IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS },
   { 48, IDC_CONTENT_CONTEXT_ADDSEARCHENGINE },
-  { 49, IDC_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES },
-  { 50, IDC_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT },
-  { 51, IDC_SPEECH_INPUT_MENU },
   { 52, IDC_CONTENT_CONTEXT_OPENLINKWITH },
   { 53, IDC_CHECK_SPELLING_WHILE_TYPING },
   { 54, IDC_SPELLCHECK_MENU },
@@ -412,7 +409,6 @@ RenderViewContextMenu::RenderViewContextMenu(
                        this,
                        &menu_model_,
                        base::Bind(MenuItemMatchesParams, params_)),
-      speech_input_submenu_model_(this),
       protocol_handler_submenu_model_(this),
       protocol_handler_registry_(
           ProtocolHandlerRegistryFactory::GetForProfile(profile_)),
@@ -1022,7 +1018,6 @@ void RenderViewContextMenu::AppendEditableItems() {
 
   if (use_spellcheck_and_search)
     AppendSpellcheckOptionsSubMenu();
-  AppendSpeechInputOptionsSubMenu();
   AppendPlatformEditableItems();
 
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
@@ -1044,24 +1039,6 @@ void RenderViewContextMenu::AppendSpellcheckOptionsSubMenu() {
   }
   spellchecker_submenu_observer_->InitMenu(params_);
   observers_.AddObserver(spellchecker_submenu_observer_.get());
-}
-
-void RenderViewContextMenu::AppendSpeechInputOptionsSubMenu() {
-  if (params_.speech_input_enabled) {
-    speech_input_submenu_model_.AddCheckItem(
-        IDC_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES,
-        l10n_util::GetStringUTF16(
-            IDS_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES));
-
-    speech_input_submenu_model_.AddItemWithStringId(
-        IDC_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT,
-        IDS_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT);
-
-    menu_model_.AddSubMenu(
-        IDC_SPEECH_INPUT_MENU,
-        l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPEECH_INPUT_MENU),
-        &speech_input_submenu_model_);
-  }
 }
 
 void RenderViewContextMenu::AppendProtocolHandlerSubMenu() {
@@ -1377,11 +1354,6 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_SPELLCHECK_MENU:
       return true;
 
-    case IDC_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES:
-    case IDC_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT:
-    case IDC_SPEECH_INPUT_MENU:
-      return true;
-
     case IDC_CONTENT_CONTEXT_OPENLINKWITH:
       return true;
 
@@ -1426,14 +1398,6 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
       id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     return extension_items_.IsCommandIdChecked(id);
   }
-
-#if defined(ENABLE_INPUT_SPEECH)
-  // Check box for menu item 'Block offensive words'.
-  if (id == IDC_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES) {
-    return profile_->GetPrefs()->GetBoolean(
-        prefs::kSpeechRecognitionFilterProfanities);
-  }
-#endif
 
   return false;
 }
@@ -1858,24 +1822,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         search_engine_tab_helper->delegate()->
             ConfirmAddSearchProvider(new TemplateURL(profile_, data), profile_);
       }
-      break;
-    }
-
-#if defined(ENABLE_INPUT_SPEECH)
-    case IDC_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES: {
-      profile_->GetPrefs()->SetBoolean(
-          prefs::kSpeechRecognitionFilterProfanities,
-          !profile_->GetPrefs()->GetBoolean(
-              prefs::kSpeechRecognitionFilterProfanities));
-      break;
-    }
-#endif
-    case IDC_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT: {
-      GURL url(chrome::kSpeechInputAboutURL);
-      GURL localized_url = google_util::AppendGoogleLocaleParam(url);
-      // Open URL with no referrer field (because user clicked on menu item).
-      OpenURL(localized_url, GURL(), NEW_FOREGROUND_TAB,
-              content::PAGE_TRANSITION_LINK);
       break;
     }
 

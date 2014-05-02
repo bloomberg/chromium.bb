@@ -45,7 +45,6 @@
       'app/nibs/OneClickSigninBubble.xib',
       'app/nibs/OneClickSigninDialog.xib',
       'app/nibs/SaveAccessoryView.xib',
-      'app/nibs/SpeechRecognitionBubble.xib',
       'app/nibs/TaskManager.xib',
       'app/nibs/Toolbar.xib',
       'app/nibs/WrenchMenu.xib',

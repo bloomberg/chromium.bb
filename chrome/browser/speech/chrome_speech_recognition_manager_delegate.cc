@@ -373,8 +373,7 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRecognitionIsAllowed(
                           base::Bind(&CheckRenderViewType,
                                      callback,
                                      render_process_id,
-                                     render_view_id,
-                                     !context.requested_by_page_element));
+                                     render_view_id));
 }
 
 content::SpeechRecognitionEventListener*
@@ -397,8 +396,7 @@ bool ChromeSpeechRecognitionManagerDelegate::FilterProfanities(
 void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
     base::Callback<void(bool ask_user, bool is_allowed)> callback,
     int render_process_id,
-    int render_view_id,
-    bool js_api) {
+    int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const content::RenderViewHost* render_view_host =
       content::RenderViewHost::FromID(render_process_id, render_view_id);
@@ -407,16 +405,9 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
   bool check_permission = false;
 
   if (!render_view_host) {
-    if (!js_api) {
-      // If there is no render view, we cannot show the speech bubble, so this
-      // is not allowed.
-      allowed = false;
-      check_permission = false;
-    } else {
-      // This happens for extensions. Manifest should be checked for permission.
-      allowed = true;
-      check_permission = false;
-    }
+    // This happens for extensions. Manifest should be checked for permission.
+    allowed = true;
+    check_permission = false;
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::Bind(callback, check_permission, allowed));
     return;
@@ -434,28 +425,14 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
 
   extensions::ViewType view_type = extensions::GetViewType(web_contents);
 
-  // TODO(kalman): Also enable speech bubble for extension popups
-  // (VIEW_TYPE_EXTENSION_POPUP) once popup-like control UI works properly in
-  // extensions: http://crbug.com/163851.
-  // Right now the extension popup closes and dismisses immediately on user
-  // click.
   if (view_type == extensions::VIEW_TYPE_TAB_CONTENTS ||
       view_type == extensions::VIEW_TYPE_APP_WINDOW ||
       view_type == extensions::VIEW_TYPE_VIRTUAL_KEYBOARD ||
-      // Only allow requests through JavaScript API (|js_api| = true).
-      // Requests originating from html element (|js_api| = false) would want
-      // to show bubble which isn't quite intuitive from a background page. Also
-      // see todo above about issues with rendering such bubbles from extension
-      // popups.
-      (view_type == extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE &&
-       js_api)) {
-    // If it is a tab, we can show the speech input bubble or check for
-    // permission. For apps, this means manifest would be checked for
-    // permission.
-
+      view_type == extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+    // If it is a tab, we can check for permission. For apps, this means
+    // manifest would be checked for permission.
     allowed = true;
-    if (js_api)
-      check_permission = true;
+    check_permission = true;
   }
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,

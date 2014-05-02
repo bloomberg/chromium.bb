@@ -85,7 +85,6 @@
 #include "content/renderer/idle_user_detector.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/input_handler_manager.h"
-#include "content/renderer/input_tag_speech_dispatcher.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/load_progress_tracker.h"
 #include "content/renderer/media/audio_device_factory.h"
@@ -671,7 +670,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       has_scrolled_focused_editable_node_into_rect_(false),
       push_messaging_dispatcher_(NULL),
       geolocation_dispatcher_(NULL),
-      input_tag_speech_dispatcher_(NULL),
       speech_recognition_dispatcher_(NULL),
       media_stream_dispatcher_(NULL),
       browser_plugin_manager_(NULL),
@@ -3860,16 +3858,6 @@ blink::WebGeolocationClient* RenderViewImpl::geolocationClient() {
   if (!geolocation_dispatcher_)
     geolocation_dispatcher_ = new GeolocationDispatcher(this);
   return geolocation_dispatcher_;
-}
-
-blink::WebSpeechInputController* RenderViewImpl::speechInputController(
-    blink::WebSpeechInputListener* listener) {
-#if defined(ENABLE_INPUT_SPEECH)
-  if (!input_tag_speech_dispatcher_)
-    input_tag_speech_dispatcher_ =
-        new InputTagSpeechDispatcher(this, listener);
-#endif
-  return input_tag_speech_dispatcher_;
 }
 
 blink::WebSpeechRecognizer* RenderViewImpl::speechRecognizer() {

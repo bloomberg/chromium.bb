@@ -26,6 +26,8 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 
+// TODO(hans): Remove this once we've stopped running Blink tests that depend
+// on it (crbug.com/223198).
 class MockWebSpeechInputController : public blink::WebSpeechInputController {
 public:
     explicit MockWebSpeechInputController(blink::WebSpeechInputListener*);

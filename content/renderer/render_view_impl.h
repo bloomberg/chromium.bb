@@ -106,8 +106,6 @@ class WebMouseEvent;
 class WebPeerConnectionHandler;
 class WebPeerConnectionHandlerClient;
 class WebSocketStreamHandle;
-class WebSpeechInputController;
-class WebSpeechInputListener;
 class WebSpeechRecognizer;
 class WebStorageNamespace;
 class WebTouchEvent;
@@ -142,7 +140,6 @@ class GeolocationDispatcher;
 class HistoryController;
 class HistoryEntry;
 class ImageResourceFetcher;
-class InputTagSpeechDispatcher;
 class LoadProgressTracker;
 class MidiDispatcher;
 class MediaStreamClient;
@@ -467,8 +464,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void didUpdateInspectorSetting(const blink::WebString& key,
                                          const blink::WebString& value);
   virtual blink::WebGeolocationClient* geolocationClient();
-  virtual blink::WebSpeechInputController* speechInputController(
-      blink::WebSpeechInputListener* listener);
   virtual blink::WebSpeechRecognizer* speechRecognizer();
   virtual void zoomLimitsChanged(double minimum_level, double maximum_level);
   virtual void zoomLevelChanged();
@@ -1137,9 +1132,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // The geolocation dispatcher attached to this view, lazily initialized.
   GeolocationDispatcher* geolocation_dispatcher_;
-
-  // The speech dispatcher attached to this view, lazily initialized.
-  InputTagSpeechDispatcher* input_tag_speech_dispatcher_;
 
   // The speech recognition dispatcher attached to this view, lazily
   // initialized.

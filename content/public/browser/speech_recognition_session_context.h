@@ -46,14 +46,6 @@ struct CONTENT_EXPORT SpeechRecognitionSessionContext {
 
   int request_id;
 
-  // Determines whether recognition was requested by a page element (in which
-  // case its coordinates are passed in |element_rect|).
-  bool requested_by_page_element;
-
-  // The coordinates of the page element for placing the bubble (valid only when
-  // |requested_by_page_element| = true).
-  gfx::Rect element_rect;
-
   // A texual description of the context (website, extension name) that is
   // requesting recognition, for prompting security notifications to the user.
   std::string context_name;
