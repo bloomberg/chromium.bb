@@ -67,6 +67,7 @@ html:not(.focus-outline-visible)
 
 #apps-developer-tools-promo .close-button {
   background: url(chrome://theme/IDR_CLOSE_DIALOG) no-repeat center center;
+  border: 0;
   height: 14px;
   width: 14px;
   z-index: 1;

@@ -487,6 +487,9 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       base::ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
           GURL(extension_urls::GetWebstoreItemDetailURLPrefix() +
                    kAppsDeveloperToolsExtensionId)).spec()));
+  source->AddString(
+      "extensionSettingsAppDevToolsPromoClose",
+      l10n_util::GetStringUTF16(IDS_CLOSE));
   source->AddString("extensionSettingsCrashMessage",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_CRASHED_EXTENSION));
   source->AddString("extensionSettingsInDevelopment",
