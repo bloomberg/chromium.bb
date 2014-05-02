@@ -300,25 +300,33 @@ _DISABLE_NACL = 'disable_nacl'
 _USE_DRM = 'use_drm'
 
 
-_APP_SHELL_FLAG = 'app_shell'
 _CHROME_INTERNAL_FLAG = 'chrome_internal'
 _CONTENT_SHELL_FLAG = 'content_shell'
 _ECS_FLAG = 'ecs'
 _HIGHDPI_FLAG = 'highdpi'
 _PDF_FLAG = 'chrome_pdf'
-STAGING_FLAGS = (_APP_SHELL_FLAG, _CHROME_INTERNAL_FLAG, _CONTENT_SHELL_FLAG,
-                 _HIGHDPI_FLAG, _PDF_FLAG)
+STAGING_FLAGS = (
+  _CHROME_INTERNAL_FLAG,
+  _CONTENT_SHELL_FLAG,
+  _HIGHDPI_FLAG,
+  _PDF_FLAG,
+)
 
 _CHROME_SANDBOX_DEST = 'chrome-sandbox'
 C = Conditions
 
 
-_COPY_PATHS = (
-  Path('app_shell',
-       exe=True,
-       cond=C.StagingFlagSet(_APP_SHELL_FLAG)),
-  Path('app_shell.pak',
-       cond=C.StagingFlagSet(_APP_SHELL_FLAG)),
+_COPY_PATHS_APP_SHELL = (
+  Path('app_shell', exe=True),
+  Path('app_shell.pak'),
+  Path('chrome_sandbox', mode=0o4755, dest=_CHROME_SANDBOX_DEST),
+  Path('icudtl.dat', cond=C.GypSet('icu_use_data_file_flag')),
+  Path('libffmpegsumo.so', exe=True, optional=True),
+  Path('libosmesa.so', exe=True, optional=True),
+  Path('libpdf.so', exe=True, cond=C.StagingFlagSet(_PDF_FLAG)),
+)
+
+_COPY_PATHS_CHROME = (
   Path('ash_shell',
        cond=C.GypSet(_USE_DRM)),
   Path('aura_demo',
@@ -453,6 +461,13 @@ _COPY_PATHS_CONTENT_SHELL = (
   Path('watchdog/wd.dmp', cond=C.StagingFlagNotSet(_ECS_FLAG)),
 )
 
+_COPY_PATHS_MAP = {
+  'app_shell': _COPY_PATHS_APP_SHELL,
+  'chrome': _COPY_PATHS_CHROME,
+  'content_shell': _COPY_PATHS_CONTENT_SHELL,
+}
+
+
 def _FixPermissions(dest_base):
   """Last minute permission fixes."""
   cros_build_lib.DebugRunCommand(['chmod', '-R', 'a+r', dest_base])
@@ -460,25 +475,24 @@ def _FixPermissions(dest_base):
       ['find', dest_base, '-perm', '/110', '-exec', 'chmod', 'a+x', '{}', '+'])
 
 
-def GetCopyPaths(content_shell=False):
+def GetCopyPaths(deployment_type='chrome'):
   """Returns the list of copy paths used as a filter for staging files.
 
   Args:
-    content_shell: Boolean on whether to return the copy paths used for a
-                   content shell deployment or a chrome deployment.
+    deployment_type: String describing the deployment type. One of "app_shell",
+                     "chrome", and "content_shell".
 
   Returns:
     The list of paths to use as a filter for staging files.
   """
-  if content_shell:
-    return _COPY_PATHS_CONTENT_SHELL
-  else:
-    return _COPY_PATHS
-
+  paths = _COPY_PATHS_MAP.get(deployment_type)
+  if paths is None:
+    raise RuntimeError('Invalid deployment type "%s"' % deployment_type)
+  return paths
 
 def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
                             sloppy=False, gyp_defines=None, staging_flags=None,
-                            strip_flags=None, copy_paths=_COPY_PATHS):
+                            strip_flags=None, copy_paths=_COPY_PATHS_CHROME):
   """Populates a staging directory with necessary build artifacts.
 
   If |strict| is set, then we decide what to stage based on the |gyp_defines|

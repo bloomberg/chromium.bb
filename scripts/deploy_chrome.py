@@ -104,7 +104,7 @@ class DeployChrome(object):
 
     # Used to track whether deploying content_shell or chrome to a device.
     self.content_shell = False
-    self.copy_paths = chrome_util.GetCopyPaths(False)
+    self.copy_paths = chrome_util.GetCopyPaths('chrome')
     self.chrome_dir = _CHROME_DIR
 
   def _GetRemoteMountFree(self, remote_dir):
@@ -325,20 +325,29 @@ class DeployChrome(object):
 
   def _CheckDeployType(self):
     if self.options.build_dir:
-      if os.path.exists(os.path.join(self.options.build_dir, 'system.unand')):
+      def BinaryExists(filename):
+        """Checks if the passed-in file is present in the build directory."""
+        return os.path.exists(os.path.join(self.options.build_dir, filename))
+
+      if BinaryExists('system.unand'):
         # Unand Content shell deployment.
         self.content_shell = True
         self.options.build_dir = os.path.join(self.options.build_dir,
                                               'system.unand/chrome/')
         self.options.dostrip = False
         self.options.target_dir = _ANDROID_DIR
-        self.copy_paths = chrome_util.GetCopyPaths(True)
-      elif os.path.exists(os.path.join(self.options.build_dir,
-                                       'content_shell')) and not os.path.exists(
-          os.path.join(self.options.build_dir, 'chrome')):
-        # Content shell deployment
+        self.copy_paths = chrome_util.GetCopyPaths('content_shell')
+      elif BinaryExists('content_shell') and not BinaryExists('chrome'):
+        # Content shell deployment.
         self.content_shell = True
-        self.copy_paths = chrome_util.GetCopyPaths(True)
+        self.copy_paths = chrome_util.GetCopyPaths('content_shell')
+      elif BinaryExists('app_shell') and not BinaryExists('chrome'):
+        # app_shell deployment.
+        self.copy_paths = chrome_util.GetCopyPaths('app_shell')
+        # TODO(derat): Update _Deploy() and remove this after figuring out how
+        # app_shell should be executed.
+        self.options.startui = False
+
     elif self.options.local_pkg_path or self.options.gs_path:
       # Package deployment.
       pkg_path = self.options.local_pkg_path
@@ -362,7 +371,7 @@ class DeployChrome(object):
       if self.content_shell:
         self.options.dostrip = False
         self.options.target_dir = _ANDROID_DIR
-        self.copy_paths = chrome_util.GetCopyPaths(True)
+        self.copy_paths = chrome_util.GetCopyPaths('content_shell')
         self.chrome_dir = _ANDROID_DIR
 
   def _PrepareStagingDir(self):
