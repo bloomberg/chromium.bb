@@ -31,7 +31,7 @@
     }],
     [ 'use_seccomp_bpf==1', {
       'sources': [
-        'seccomp-bpf/bpf_tests.h',
+        'seccomp-bpf/bpf_tests_unittest.cc',
         'seccomp-bpf/codegen_unittest.cc',
         'seccomp-bpf/errorcode_unittest.cc',
         'seccomp-bpf/sandbox_bpf_unittest.cc',

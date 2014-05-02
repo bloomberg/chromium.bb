@@ -71,6 +71,17 @@
         'tests/unit_tests.cc',
         'tests/unit_tests.h',
       ],
+      'conditions': [
+        [ 'use_seccomp_bpf==1', {
+          'sources': [
+            'seccomp-bpf/bpf_tests.cc',
+            'seccomp-bpf/bpf_tests.h',
+          ],
+          'dependencies': [
+            'seccomp_bpf',
+          ]
+        }],
+      ],
     },
     {
       # The main sandboxing test target.
@@ -112,6 +123,7 @@
         'seccomp-bpf/linux_seccomp.h',
         'seccomp-bpf/sandbox_bpf.cc',
         'seccomp-bpf/sandbox_bpf.h',
+        'seccomp-bpf/sandbox_bpf_compatibility_policy.h',
         'seccomp-bpf/sandbox_bpf_policy.h',
         'seccomp-bpf/syscall.cc',
         'seccomp-bpf/syscall.h',

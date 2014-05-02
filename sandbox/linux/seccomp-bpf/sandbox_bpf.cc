@@ -25,6 +25,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "sandbox/linux/seccomp-bpf/codegen.h"
+#include "sandbox/linux/seccomp-bpf/sandbox_bpf_compatibility_policy.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
@@ -201,25 +202,6 @@ class RedirectToUserSpacePolicyWrapper : public SandboxBPFPolicy {
 intptr_t BPFFailure(const struct arch_seccomp_data&, void* aux) {
   SANDBOX_DIE(static_cast<char*>(aux));
 }
-
-// This class allows compatibility with the old, deprecated SetSandboxPolicy.
-class CompatibilityPolicy : public SandboxBPFPolicy {
- public:
-  CompatibilityPolicy(SandboxBPF::EvaluateSyscall syscall_evaluator, void* aux)
-      : syscall_evaluator_(syscall_evaluator), aux_(aux) {
-    DCHECK(syscall_evaluator_);
-  }
-
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
-                                    int system_call_number) const OVERRIDE {
-    return syscall_evaluator_(sandbox_compiler, system_call_number, aux_);
-  }
-
- private:
-  SandboxBPF::EvaluateSyscall syscall_evaluator_;
-  void* aux_;
-  DISALLOW_COPY_AND_ASSIGN(CompatibilityPolicy);
-};
 
 }  // namespace
 
@@ -498,7 +480,7 @@ void SandboxBPF::SetSandboxPolicyDeprecated(EvaluateSyscall syscall_evaluator,
   if (sandbox_has_started_ || !conds_) {
     SANDBOX_DIE("Cannot change policy after sandbox has started");
   }
-  SetSandboxPolicy(new CompatibilityPolicy(syscall_evaluator, aux));
+  SetSandboxPolicy(new CompatibilityPolicy<void>(syscall_evaluator, aux));
 }
 
 // Don't take a scoped_ptr here, polymorphism make their use awkward.

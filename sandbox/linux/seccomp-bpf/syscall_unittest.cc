@@ -70,7 +70,7 @@ TEST(Syscall, TrivialSyscallOneArg) {
 
 // SIGSYS trap handler that will be called on __NR_uname.
 intptr_t CopySyscallArgsToAux(const struct arch_seccomp_data& args, void* aux) {
-  // |aux| is a pointer to our BPF_AUX.
+  // |aux| is our BPF_AUX pointer.
   std::vector<uint64_t>* const seen_syscall_args =
       static_cast<std::vector<uint64_t>*>(aux);
   BPF_ASSERT(arraysize(args.args) == 6);
@@ -78,7 +78,9 @@ intptr_t CopySyscallArgsToAux(const struct arch_seccomp_data& args, void* aux) {
   return -ENOMEM;
 }
 
-ErrorCode CopyAllArgsOnUnamePolicy(SandboxBPF* sandbox, int sysno, void* aux) {
+ErrorCode CopyAllArgsOnUnamePolicy(SandboxBPF* sandbox,
+                                   int sysno,
+                                   std::vector<uint64_t>* aux) {
   if (!SandboxBPF::IsValidSyscallNumber(sysno)) {
     return ErrorCode(ENOSYS);
   }
@@ -94,7 +96,7 @@ ErrorCode CopyAllArgsOnUnamePolicy(SandboxBPF* sandbox, int sysno, void* aux) {
 BPF_TEST(Syscall,
          SyntheticSixArgs,
          CopyAllArgsOnUnamePolicy,
-         std::vector<uint64_t> /* BPF_AUX */) {
+         std::vector<uint64_t> /* (*BPF_AUX) */) {
   const int kExpectedValue = 42;
   // In this test we only pass integers to the kernel. We might want to make
   // additional tests to try other types. What we will see depends on
@@ -116,17 +118,17 @@ BPF_TEST(Syscall,
                             syscall_args[5]) == -ENOMEM);
 
   // We expect the trap handler to have copied the 6 arguments.
-  BPF_ASSERT(BPF_AUX.size() == 6);
+  BPF_ASSERT(BPF_AUX->size() == 6);
 
   // Don't loop here so that we can see which argument does cause the failure
   // easily from the failing line.
   // uint64_t is the type passed to our SIGSYS handler.
-  BPF_ASSERT(BPF_AUX[0] == static_cast<uint64_t>(syscall_args[0]));
-  BPF_ASSERT(BPF_AUX[1] == static_cast<uint64_t>(syscall_args[1]));
-  BPF_ASSERT(BPF_AUX[2] == static_cast<uint64_t>(syscall_args[2]));
-  BPF_ASSERT(BPF_AUX[3] == static_cast<uint64_t>(syscall_args[3]));
-  BPF_ASSERT(BPF_AUX[4] == static_cast<uint64_t>(syscall_args[4]));
-  BPF_ASSERT(BPF_AUX[5] == static_cast<uint64_t>(syscall_args[5]));
+  BPF_ASSERT((*BPF_AUX)[0] == static_cast<uint64_t>(syscall_args[0]));
+  BPF_ASSERT((*BPF_AUX)[1] == static_cast<uint64_t>(syscall_args[1]));
+  BPF_ASSERT((*BPF_AUX)[2] == static_cast<uint64_t>(syscall_args[2]));
+  BPF_ASSERT((*BPF_AUX)[3] == static_cast<uint64_t>(syscall_args[3]));
+  BPF_ASSERT((*BPF_AUX)[4] == static_cast<uint64_t>(syscall_args[4]));
+  BPF_ASSERT((*BPF_AUX)[5] == static_cast<uint64_t>(syscall_args[5]));
 }
 
 TEST(Syscall, ComplexSyscallSixArgs) {

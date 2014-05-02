@@ -73,7 +73,6 @@ class SANDBOX_EXPORT SandboxBPF {
   typedef ErrorCode (*EvaluateSyscall)(SandboxBPF* sandbox_compiler,
                                        int system_call_number,
                                        void* aux);
-  typedef std::vector<std::pair<EvaluateSyscall, void*> > Evaluators;
   // A vector of BPF instructions that need to be installed as a filter
   // program in the kernel.
   typedef std::vector<struct sock_filter> Program;
