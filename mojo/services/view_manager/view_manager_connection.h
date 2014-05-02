@@ -31,7 +31,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   ViewManagerConnection();
   virtual ~ViewManagerConnection();
 
-  uint16_t id() const { return id_; }
+  TransportConnectionId id() const { return id_; }
 
   // Invoked from Service when connection is established.
   void Initialize(
@@ -48,58 +48,58 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   void NotifyNodeHierarchyChanged(const NodeId& node,
                                   const NodeId& new_parent,
                                   const NodeId& old_parent,
-                                  ChangeId change_id);
+                                  TransportChangeId change_id);
   void NotifyNodeViewReplaced(const NodeId& node,
                               const ViewId& new_view_id,
                               const ViewId& old_view_id,
-                              ChangeId change_id);
+                              TransportChangeId change_id);
 
  private:
-  typedef std::map<uint16_t, Node*> NodeMap;
-  typedef std::map<uint16_t, View*> ViewMap;
+  typedef std::map<TransportConnectionSpecificNodeId, Node*> NodeMap;
+  typedef std::map<TransportConnectionSpecificViewId, View*> ViewMap;
 
   // Deletes a node owned by this connection. Returns true on success. |source|
   // is the connection that originated the change.
   bool DeleteNodeImpl(ViewManagerConnection* source,
                       const NodeId& node_id,
-                      ChangeId change_id);
+                      TransportChangeId change_id);
 
   // Deletes a view owned by this connection. Returns true on success. |source|
   // is the connection that originated the change.
   bool DeleteViewImpl(ViewManagerConnection* source,
                       const ViewId& view_id,
-                      ChangeId change_id);
+                      TransportChangeId change_id);
 
   // Sets the view associated with a node.
   bool SetViewImpl(const NodeId& node_id,
                    const ViewId& view_id,
-                   ChangeId change_id);
+                   TransportChangeId change_id);
 
   // Overridden from IViewManager:
-  virtual void CreateNode(uint16_t node_id,
+  virtual void CreateNode(TransportConnectionSpecificNodeId node_id,
                           const Callback<void(bool)>& callback) OVERRIDE;
-  virtual void DeleteNode(uint32_t transport_node_id,
-                          ChangeId change_id,
+  virtual void DeleteNode(TransportNodeId transport_node_id,
+                          TransportChangeId change_id,
                           const Callback<void(bool)>& callback) OVERRIDE;
-  virtual void AddNode(uint32_t parent_id,
-                       uint32_t child_id,
-                       ChangeId change_id,
+  virtual void AddNode(TransportNodeId parent_id,
+                       TransportNodeId child_id,
+                       TransportChangeId change_id,
                        const Callback<void(bool)>& callback) OVERRIDE;
   virtual void RemoveNodeFromParent(
-      uint32_t node_id,
-      ChangeId change_id,
+      TransportNodeId node_id,
+      TransportChangeId change_id,
       const Callback<void(bool)>& callback) OVERRIDE;
   virtual void GetNodeTree(
-      uint32_t node_id,
+      TransportNodeId node_id,
       const Callback<void(Array<INode>)>& callback) OVERRIDE;
-  virtual void CreateView(uint16_t view_id,
+  virtual void CreateView(TransportConnectionSpecificViewId view_id,
                           const Callback<void(bool)>& callback) OVERRIDE;
-  virtual void DeleteView(uint32_t transport_view_id,
-                          ChangeId change_id,
+  virtual void DeleteView(TransportViewId transport_view_id,
+                          TransportChangeId change_id,
                           const Callback<void(bool)>& callback) OVERRIDE;
-  virtual void SetView(uint32_t transport_node_id,
-                       uint32_t transport_view_id,
-                       ChangeId change_id,
+  virtual void SetView(TransportNodeId transport_node_id,
+                       TransportViewId transport_view_id,
+                       TransportChangeId change_id,
                        const Callback<void(bool)>& callback) OVERRIDE;
 
   // Overridden from NodeDelegate:
@@ -112,7 +112,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
 
   // Id of this connection as assigned by RootNodeManager. Assigned in
   // Initialize().
-  uint16_t id_;
+  TransportConnectionId id_;
 
   NodeMap node_map_;
 

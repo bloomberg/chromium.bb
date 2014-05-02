@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/environment/environment.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 #include "mojo/shell/shell_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,9 +24,6 @@ namespace view_manager {
 namespace {
 
 base::RunLoop* current_run_loop = NULL;
-
-// TODO(sky): remove and include a common header.
-typedef uint32_t ChangeId;
 
 uint16_t FirstIdFromTransportId(uint32_t id) {
   return static_cast<uint16_t>((id >> 16) & 0xFFFF);
@@ -45,7 +43,7 @@ void DoRunLoop() {
 }
 
 // Converts |id| into a string.
-std::string NodeIdToString(uint32_t id) {
+std::string NodeIdToString(TransportNodeId id) {
   return (id == 0) ? "null" :
       base::StringPrintf("%d,%d", FirstIdFromTransportId(id),
                          SecondIdFromTransportId(id));
@@ -66,9 +64,9 @@ struct TestNode {
                               NodeIdToString(view_id).c_str());
   }
 
-  uint32_t parent_id;
-  uint32_t node_id;
-  uint32_t view_id;
+  TransportNodeId parent_id;
+  TransportNodeId node_id;
+  TransportNodeId view_id;
 };
 
 // Callback that results in a vector of INodes. The INodes are converted to
@@ -86,18 +84,21 @@ void INodesCallback(std::vector<TestNode>* test_nodes,
 }
 
 // Creates an id used for transport from the specified parameters.
-uint32_t CreateNodeId(uint16_t connection_id, uint16_t node_id) {
+TransportNodeId CreateNodeId(TransportConnectionId connection_id,
+                             TransportConnectionSpecificNodeId node_id) {
   return (connection_id << 16) | node_id;
 }
 
 // Creates an id used for transport from the specified parameters.
-uint32_t CreateViewId(uint16_t connection_id, uint16_t view_id) {
+TransportViewId CreateViewId(TransportConnectionId connection_id,
+                             TransportConnectionSpecificViewId view_id) {
   return (connection_id << 16) | view_id;
 }
 
 // Creates a node with the specified id. Returns true on success. Blocks until
 // we get back result from server.
-bool CreateNode(IViewManager* view_manager, uint16_t id) {
+bool CreateNode(IViewManager* view_manager,
+                TransportConnectionSpecificNodeId id) {
   bool result = false;
   view_manager->CreateNode(id, base::Bind(&BooleanCallback, &result));
   DoRunLoop();
@@ -108,8 +109,8 @@ bool CreateNode(IViewManager* view_manager, uint16_t id) {
 
 // Deletes a node, blocking until done.
 bool DeleteNode(IViewManager* view_manager,
-                uint32_t node_id,
-                ChangeId change_id) {
+                TransportNodeId node_id,
+                TransportChangeId change_id) {
   bool result = false;
   view_manager->DeleteNode(node_id, change_id,
                            base::Bind(&BooleanCallback, &result));
@@ -119,9 +120,9 @@ bool DeleteNode(IViewManager* view_manager,
 
 // Adds a node, blocking until done.
 bool AddNode(IViewManager* view_manager,
-             uint32_t parent,
-             uint32_t child,
-             ChangeId change_id) {
+             TransportNodeId parent,
+             TransportNodeId child,
+             TransportChangeId change_id) {
   bool result = false;
   view_manager->AddNode(parent, child, change_id,
                         base::Bind(&BooleanCallback, &result));
@@ -131,8 +132,8 @@ bool AddNode(IViewManager* view_manager,
 
 // Removes a node, blocking until done.
 bool RemoveNodeFromParent(IViewManager* view_manager,
-                          uint32_t node_id,
-                          ChangeId change_id) {
+                          TransportNodeId node_id,
+                          TransportChangeId change_id) {
   bool result = false;
   view_manager->RemoveNodeFromParent(node_id, change_id,
                                      base::Bind(&BooleanCallback, &result));
@@ -141,7 +142,7 @@ bool RemoveNodeFromParent(IViewManager* view_manager,
 }
 
 void GetNodeTree(IViewManager* view_manager,
-                 uint32_t node_id,
+                 TransportNodeId node_id,
                  std::vector<TestNode>* nodes) {
   view_manager->GetNodeTree(node_id, base::Bind(&INodesCallback, nodes));
   DoRunLoop();
@@ -149,7 +150,8 @@ void GetNodeTree(IViewManager* view_manager,
 
 // Creates a view with the specified id. Returns true on success. Blocks until
 // we get back result from server.
-bool CreateView(IViewManager* view_manager, uint16_t id) {
+bool CreateView(IViewManager* view_manager,
+                TransportConnectionSpecificViewId id) {
   bool result = false;
   view_manager->CreateView(id, base::Bind(&BooleanCallback, &result));
   DoRunLoop();
@@ -159,9 +161,9 @@ bool CreateView(IViewManager* view_manager, uint16_t id) {
 // Sets a view on the specified node. Returns true on success. Blocks until we
 // get back result from server.
 bool SetView(IViewManager* view_manager,
-             uint32_t node_id,
-             uint32_t view_id,
-             ChangeId change_id) {
+             TransportNodeId node_id,
+             TransportViewId view_id,
+             TransportChangeId change_id) {
   bool result = false;
   view_manager->SetView(node_id, view_id, change_id,
                         base::Bind(&BooleanCallback, &result));
@@ -177,7 +179,7 @@ class ViewManagerClientImpl : public IViewManagerClient {
  public:
   ViewManagerClientImpl() : id_(0), quit_count_(0) {}
 
-  uint16_t id() const { return id_; }
+  TransportConnectionId id() const { return id_; }
 
   Changes GetAndClearChanges() {
     Changes changes;
@@ -199,15 +201,16 @@ class ViewManagerClientImpl : public IViewManagerClient {
 
  private:
   // IViewManagerClient overrides:
-  virtual void OnConnectionEstablished(uint16_t connection_id) OVERRIDE {
+  virtual void OnConnectionEstablished(
+      TransportConnectionId connection_id) OVERRIDE {
     id_ = connection_id;
     if (current_run_loop)
       current_run_loop->Quit();
   }
-  virtual void OnNodeHierarchyChanged(uint32_t node,
-                                      uint32_t new_parent,
-                                      uint32_t old_parent,
-                                      ChangeId change_id) OVERRIDE {
+  virtual void OnNodeHierarchyChanged(TransportNodeId node,
+                                      TransportNodeId new_parent,
+                                      TransportNodeId old_parent,
+                                      TransportChangeId change_id) OVERRIDE {
     changes_.push_back(
         base::StringPrintf(
             "change_id=%d node=%s new_parent=%s old_parent=%s",
@@ -216,10 +219,10 @@ class ViewManagerClientImpl : public IViewManagerClient {
             NodeIdToString(old_parent).c_str()));
     QuitIfNecessary();
   }
-  virtual void OnNodeViewReplaced(uint32_t node,
-                                  uint32_t new_view_id,
-                                  uint32_t old_view_id,
-                                  ChangeId change_id) OVERRIDE {
+  virtual void OnNodeViewReplaced(TransportNodeId node,
+                                  TransportViewId new_view_id,
+                                  TransportViewId old_view_id,
+                                  TransportChangeId change_id) OVERRIDE {
     changes_.push_back(
         base::StringPrintf(
             "change_id=%d node=%s new_view=%s old_view=%s",
@@ -234,7 +237,7 @@ class ViewManagerClientImpl : public IViewManagerClient {
       current_run_loop->Quit();
   }
 
-  uint16_t id_;
+  TransportConnectionId id_;
 
   // Used to determine when/if to quit the run loop.
   size_t quit_count_;

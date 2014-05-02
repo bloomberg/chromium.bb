@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "mojo/services/native_viewport/native_viewport.mojom.h"
+#include "mojo/services/view_manager/ids.h"
 #include "mojo/services/view_manager/node.h"
 #include "mojo/services/view_manager/node_delegate.h"
 #include "mojo/services/view_manager/view_manager_export.h"
@@ -32,7 +33,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
    public:
     ScopedChange(ViewManagerConnection* connection,
                  RootNodeManager* root,
-                 ChangeId change_id);
+                 TransportChangeId change_id);
     ~ScopedChange();
 
    private:
@@ -45,13 +46,13 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
   virtual ~RootNodeManager();
 
   // Returns the id for the next ViewManagerConnection.
-  uint16_t GetAndAdvanceNextConnectionId();
+  TransportConnectionId GetAndAdvanceNextConnectionId();
 
   void AddConnection(ViewManagerConnection* connection);
   void RemoveConnection(ViewManagerConnection* connection);
 
   // Returns the connection by id.
-  ViewManagerConnection* GetConnection(uint16_t connection_id);
+  ViewManagerConnection* GetConnection(TransportConnectionId connection_id);
 
   // Returns the Node identified by |id|.
   Node* GetNode(const NodeId& id);
@@ -71,16 +72,16 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
  private:
   // Tracks a change.
   struct Change {
-    Change(int32_t connection_id, ChangeId change_id)
+    Change(TransportConnectionId connection_id, TransportChangeId change_id)
         : connection_id(connection_id),
           change_id(change_id) {
     }
 
-    int32_t connection_id;
-    ChangeId change_id;
+    TransportConnectionId connection_id;
+    TransportChangeId change_id;
   };
 
-  typedef std::map<uint16_t, ViewManagerConnection*> ConnectionMap;
+  typedef std::map<TransportConnectionId, ViewManagerConnection*> ConnectionMap;
 
   // Invoked when a particular connection is about to make a change. Records
   // the |change_id| so that it can be supplied to the clients by way of
@@ -88,7 +89,8 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
   // Changes should never nest, meaning each PrepareForChange() must be
   // balanced with a call to FinishChange() with no PrepareForChange()
   // in between.
-  void PrepareForChange(ViewManagerConnection* connection, ChangeId change_id);
+  void PrepareForChange(ViewManagerConnection* connection,
+                        TransportChangeId change_id);
 
   // Balances a call to PrepareForChange().
   void FinishChange();
@@ -109,7 +111,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
                                   const ViewId& old_view_id) OVERRIDE;
 
   // ID to use for next ViewManagerConnection.
-  uint16_t next_connection_id_;
+  TransportConnectionId next_connection_id_;
 
   // Set of ViewManagerConnections.
   ConnectionMap connection_map_;

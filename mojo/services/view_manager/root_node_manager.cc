@@ -13,13 +13,13 @@ namespace view_manager {
 namespace {
 
 // Id for the root node.
-const uint16_t kRootId = 1;
+const TransportConnectionSpecificNodeId kRootId = 1;
 
 }  // namespace
 
 RootNodeManager::ScopedChange::ScopedChange(ViewManagerConnection* connection,
                                             RootNodeManager* root,
-                                            ChangeId change_id)
+                                            TransportChangeId change_id)
     : root_(root) {
   root_->PrepareForChange(connection, change_id);
 }
@@ -36,8 +36,8 @@ RootNodeManager::RootNodeManager()
 RootNodeManager::~RootNodeManager() {
 }
 
-uint16_t RootNodeManager::GetAndAdvanceNextConnectionId() {
-  const uint16_t id = next_connection_id_++;
+TransportConnectionId RootNodeManager::GetAndAdvanceNextConnectionId() {
+  const TransportConnectionId id = next_connection_id_++;
   DCHECK_LT(id, next_connection_id_);
   return id;
 }
@@ -51,7 +51,8 @@ void RootNodeManager::RemoveConnection(ViewManagerConnection* connection) {
   connection_map_.erase(connection->id());
 }
 
-ViewManagerConnection* RootNodeManager::GetConnection(uint16_t connection_id) {
+ViewManagerConnection* RootNodeManager::GetConnection(
+    TransportConnectionId connection_id) {
   ConnectionMap::iterator i = connection_map_.find(connection_id);
   return i == connection_map_.end() ? NULL : i->second;
 }
@@ -73,7 +74,8 @@ void RootNodeManager::NotifyNodeHierarchyChanged(const NodeId& node,
                                                  const NodeId& old_parent) {
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
-    const ChangeId change_id = (change_ && i->first == change_->connection_id) ?
+    const TransportChangeId change_id =
+        (change_ && i->first == change_->connection_id) ?
         change_->change_id : 0;
     i->second->NotifyNodeHierarchyChanged(
         node, new_parent, old_parent, change_id);
@@ -81,12 +83,13 @@ void RootNodeManager::NotifyNodeHierarchyChanged(const NodeId& node,
 }
 
 void RootNodeManager::NotifyNodeViewReplaced(const NodeId& node,
-                                            const ViewId& new_view_id,
-                                            const ViewId& old_view_id) {
+                                             const ViewId& new_view_id,
+                                             const ViewId& old_view_id) {
   // TODO(sky): make a macro for this.
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
-    const ChangeId change_id = (change_ && i->first == change_->connection_id) ?
+    const TransportChangeId change_id =
+        (change_ && i->first == change_->connection_id) ?
         change_->change_id : 0;
     i->second->NotifyNodeViewReplaced(node, new_view_id, old_view_id,
                                       change_id);
@@ -94,7 +97,7 @@ void RootNodeManager::NotifyNodeViewReplaced(const NodeId& node,
 }
 
 void RootNodeManager::PrepareForChange(ViewManagerConnection* connection,
-                                       ChangeId change_id) {
+                                       TransportChangeId change_id) {
   DCHECK(!change_.get());  // Should only ever have one change in flight.
   change_.reset(new Change(connection->id(), change_id));
 }
