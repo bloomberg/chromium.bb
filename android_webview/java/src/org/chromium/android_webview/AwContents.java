@@ -64,6 +64,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -912,7 +913,7 @@ public class AwContents {
         Map<String, String> extraHeaders = params.getExtraHeaders();
         if (extraHeaders != null) {
             for (String header : extraHeaders.keySet()) {
-                if (REFERER.equals(header.toLowerCase())) {
+                if (REFERER.equals(header.toLowerCase(Locale.US))) {
                     params.setReferrer(new Referrer(extraHeaders.remove(header), 1));
                     params.setExtraHeaders(extraHeaders);
                     break;
