@@ -27,7 +27,7 @@ cr.define('options', function() {
 
     /**
      * The handlers list.
-     * @type {DeletableItemList}
+     * @type {options.HandlersList}
      * @private
      */
     handlersList_: null,

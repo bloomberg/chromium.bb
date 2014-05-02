@@ -6,7 +6,6 @@ cr.define('options', function() {
   /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
   /** @const */ var List = cr.ui.List;
   /** @const */ var ListItem = cr.ui.ListItem;
-  /** @const */ var HandlerOptions = options.HandlerOptions;
   /** @const */ var DeletableItem = options.DeletableItem;
   /** @const */ var DeletableItemList = options.DeletableItemList;
 
@@ -168,7 +167,6 @@ cr.define('options', function() {
     decorate: function() {
       ListItem.prototype.decorate.call(this);
 
-      var self = this;
       var delegate = {
         removeHandler: function(index, handler) {
           chrome.send('removeHandler', [handler]);

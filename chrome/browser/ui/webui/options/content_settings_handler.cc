@@ -1209,9 +1209,9 @@ void ContentSettingsHandler::RemoveExceptionFromHostContentSettingsMap(
   rv = args->GetString(2, &pattern);
   DCHECK(rv);
 
-  // The third argument to this handler is optional.
+  // The fourth argument to this handler is optional.
   std::string secondary_pattern;
-  if (args->GetSize() == 3U) {
+  if (args->GetSize() >= 4U) {
     rv = args->GetString(3, &secondary_pattern);
     DCHECK(rv);
   }
