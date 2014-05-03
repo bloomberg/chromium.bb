@@ -326,6 +326,8 @@ void CompositorImpl::SetVisible(bool visible) {
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     settings.initial_debug_state.SetRecordRenderingStats(
         command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));
+    settings.initial_debug_state.show_fps_counter =
+        command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
 
     host_ = cc::LayerTreeHost::CreateSingleThreaded(
         this, this, HostSharedBitmapManager::current(), settings);
