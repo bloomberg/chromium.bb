@@ -2,20 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(ajwong): These vars need to be configured somehow.
-ffmpeg_branding = "Chrome"
-build_ffmpegsumo = true
-
-# TODO(ajwong): These vars should be determined by conditional logic and
-# pulled out into a .gni which can be shared by ffmpeg_generated.gni.
-os_config = "linux"
-ffmpeg_config = cpu_arch
+import("ffmpeg_options.gni")
 
 # Path to platform configuration files.
-platform_config_root = "chromium/config/$ffmpeg_branding/$os_config/$ffmpeg_config"
+platform_config_root =
+    "chromium/config/$ffmpeg_branding/$os_config/$ffmpeg_arch"
 
 # Stub generator script and signatures of all functions used by Chrome.
-generate_stubs_script = "../../tools/generate_stubs/generate_stubs.py"
+generate_stubs_script = "//tools/generate_stubs/generate_stubs.py"
 
 # Used by ffmpeg_generate_stubs and ffmpeg_generate_def
 sig_files = [ "chromium/ffmpegsumo.sigs" ]
@@ -118,7 +112,7 @@ action("ffmpeg_generate_stubs") {
 
 if (build_ffmpegsumo) {
   shared_library("ffmpegsumo") {
-    sources = ffmpeg_c_sources + ffmpeg_asm_sources + [
+    sources = ffmpeg_c_sources + ffmpeg_gas_sources + [
       "$platform_config_root/config.h",
       "$platform_config_root/libavutil/avconfig.h",
     ]
@@ -169,26 +163,13 @@ if (build_ffmpegsumo) {
         "-mthumb",
         "-march=armv7-a",
         "-mtune=cortex-a8",
+        "-mfpu=${arm_fpu}"
       ]
-      #TODO(ajwong): Handle arm options.
-#                ['arm_neon == 0', {
-#                  'cflags': [
-#                    '-mfpu=vfpv3-d16',
-#                  ],
-#                }, {
-#                  'cflags': [
-#                    '-mfpu=neon',
-#                  ],
-#                }],
-#                ['arm_float_abi == "hard"', {
-#                  'cflags': [
-#                    '-DHAVE_VFP_ARGS=1'
-#                  ],
-#                }, {
-#                  'cflags': [
-#                    '-DHAVE_VFP_ARGS=0'
-#                  ],
-#                }],
+      if (arm_float_abi == "hard") {
+        cflags += [ "-DHAVE_VFP_ARGS=1" ]
+      } else {
+        cflags += [ "-DHAVE_VFP_ARGS=0" ]
+      }
     } else if (cpu_arch == "mipsel") {
       cflags += [
         "-mips32",
@@ -196,9 +177,7 @@ if (build_ffmpegsumo) {
       ]
     }
 
-    # TODO(ajwong): How to handle os_posix?
-    # ['os_posix == 1 and OS != "mac"',
-    if (is_linux) {
+    if (is_posix && !is_mac) {
       defines += [
         "_ISOC99_SOURCE",
         "_LARGEFILE_SOURCE",
@@ -220,17 +199,14 @@ if (build_ffmpegsumo) {
         # Don't warn about libavformat using its own deprecated APIs.
         "-Wno-deprecated-declarations",
       ]
-      cflags -= [
-        # Ensure the symbols are exported.
-        #
-        # TODO(ajwong): Manually tag the API that we use to be
-        # exported.
-# TODO(ajwong): I can't remove it if it wasn't already there...how ot always remove?
-#        "-fvisibility=hidden"
-      ]
+      # Ensure the symbols are exported.
+      #
+      # TODO(ajwong): Manually tag the API that we use to be
+      # exported.
+      configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
       ldflags = [
         "-Wl,-Bsymbolic",
-        "-L$target_gen_dir",
+        "-L", rebase_path(target_gen_dir, root_build_dir),
       ]
       libs = [ "z" ]
 # TODO(ajwong): How to handle openbsd? Especially w/o the is_posix?
@@ -284,7 +260,7 @@ if (build_ffmpegsumo) {
     } else if (is_win) {
 # TODO(ajwong):
 # Original conditional
-#  ['clang == 1 or (OS == "win" and (MSVS_VERSION == "2013" or MSVS_VERSION == "2013e"))', 
+#  ['clang == 1 or (OS == "win" and (MSVS_VERSION == "2013" or MSVS_VERSION == "2013e"))',
       if (is_clang) {
         defines += [
           "inline=__inline",
@@ -390,6 +366,7 @@ if (is_win) {
       "$target_gen_dir/$stubs_filename_root.cc",
       "$target_gen_dir/$stubs_filename_root.h",
     ]
+    configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
     defines = [
       "__STDC_CONSTANT_MACROS",  # FFmpeg uses INT64_C.
     ]

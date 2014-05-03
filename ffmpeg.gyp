@@ -74,8 +74,6 @@
       }],
     ],
 
-    'ffmpeg_variant%': '<(target_arch)',
-
     'build_ffmpegsumo%': 1,
 
     # Locations for generated artifacts.
