@@ -97,8 +97,8 @@ int URLRequestPostInterceptor::GetCount() const {
 
 std::vector<std::string>
 URLRequestPostInterceptor::GetRequests() const {
- base::AutoLock auto_lock(interceptor_lock_);
- return requests_;
+  base::AutoLock auto_lock(interceptor_lock_);
+  return requests_;
 }
 
 std::string URLRequestPostInterceptor::GetRequestsAsString() const {
@@ -258,4 +258,3 @@ URLRequestPostInterceptor* URLRequestPostInterceptorFactory::CreateInterceptor(
 }
 
 }  // namespace component_updater
-

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/component_updater/cld_component_installer.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -80,7 +83,7 @@ bool CldComponentInstallerTraits::CanAutoUpdate() const {
 bool CldComponentInstallerTraits::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
-  return true; // Nothing custom here.
+  return true;  // Nothing custom here.
 }
 
 base::FilePath CldComponentInstallerTraits::GetInstalledPath(

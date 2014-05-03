@@ -38,7 +38,7 @@ const base::FilePath::CharType kDataPath[] =
     FILE_PATH_LITERAL("components/flapper/NONEXISTENT");
 #endif
 #endif
-}
+}  // namespace
 
 // TODO(jschuh): Get Pepper Flash supported on Win64 build.
 // http://crbug.com/179716
@@ -86,4 +86,3 @@ TEST(ComponentInstallerTest, MAYBE_PepperFlashCheck) {
 }
 
 }  // namespace component_updater
-

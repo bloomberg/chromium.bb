@@ -25,9 +25,9 @@ class ComponentUpdaterPingManagerTest : public testing::Test {
 
   void RunThreadsUntilIdle();
 
- // Overrides from testing::Test.
- virtual void SetUp() OVERRIDE;
- virtual void TearDown() OVERRIDE;
+  // Overrides from testing::Test.
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
  protected:
   scoped_ptr<PingManager> ping_manager_;

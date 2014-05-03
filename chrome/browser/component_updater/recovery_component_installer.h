@@ -25,4 +25,3 @@ void RegisterPrefsForRecoveryComponent(PrefRegistrySimple* registry);
 }  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_RECOVERY_COMPONENT_INSTALLER_H_
-

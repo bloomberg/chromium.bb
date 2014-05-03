@@ -4,6 +4,9 @@
 
 #include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 
+#include <string>
+#include <vector>
+
 #include "base/atomicops.h"
 #include "base/base_paths.h"
 #include "base/bind.h"
@@ -51,14 +54,13 @@ std::string SanitizeForPath(const std::string& input) {
 
 // Set the component's hash to the multi-CRX PNaCl package.
 void SetPnaclHash(CrxComponent* component) {
- static const uint8 sha256_hash[32] =
-     { // This corresponds to AppID: hnimpnehoodheedghdeeijklkeaacbdc
-       0x7d, 0x8c, 0xfd, 0x47, 0xee, 0x37, 0x44, 0x36, 0x73, 0x44,
-       0x89, 0xab, 0xa4, 0x00, 0x21, 0x32, 0x4a, 0x06, 0x06, 0xf1, 0x51,
-       0x3c, 0x51, 0xba, 0x31, 0x2f, 0xbc, 0xb3, 0x99, 0x07, 0xdc, 0x9c};
+  static const uint8 sha256_hash[32] = {
+      // This corresponds to AppID: hnimpnehoodheedghdeeijklkeaacbdc
+      0x7d, 0x8c, 0xfd, 0x47, 0xee, 0x37, 0x44, 0x36, 0x73, 0x44,
+      0x89, 0xab, 0xa4, 0x00, 0x21, 0x32, 0x4a, 0x06, 0x06, 0xf1, 0x51,
+      0x3c, 0x51, 0xba, 0x31, 0x2f, 0xbc, 0xb3, 0x99, 0x07, 0xdc, 0x9c};
 
-  component->pk_hash.assign(sha256_hash,
-                            &sha256_hash[arraysize(sha256_hash)]);
+  component->pk_hash.assign(sha256_hash, &sha256_hash[arraysize(sha256_hash)]);
 }
 
 // If we don't have Pnacl installed, this is the version we claim.
@@ -422,8 +424,8 @@ void GetProfileInformation(PnaclComponentInstaller* pci) {
   // Do not actually register PNaCl for component updates, for CHROMEOS.
   // Just get the profile information and delete the per-profile files
   // if they exist.
- BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                         base::Bind(&ReapOldChromeOSPnaclFiles, pci));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(&ReapOldChromeOSPnaclFiles, pci));
 }
 
 }  // namespace

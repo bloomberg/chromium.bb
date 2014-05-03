@@ -82,4 +82,3 @@ std::string GetCrxComponentID(const CrxComponent& component);
 }  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_UPDATER_UTILS_H_
-

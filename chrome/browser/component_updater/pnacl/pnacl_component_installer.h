@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_COMPONENT_UPDATER_PNACL_PNACL_COMPONENT_INSTALLER_H_
 
 #include <list>
+#include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"

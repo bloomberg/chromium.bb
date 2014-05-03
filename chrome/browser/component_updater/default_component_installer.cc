@@ -173,7 +173,7 @@ void DefaultComponentInstaller::StartRegistration(
   // browser startup.
   for (std::vector<base::FilePath>::iterator iter = older_dirs.begin();
        iter != older_dirs.end(); ++iter) {
-   base::DeleteFile(*iter, true);
+    base::DeleteFile(*iter, true);
   }
 
   content::BrowserThread::PostTask(
@@ -218,4 +218,3 @@ void DefaultComponentInstaller::FinishRegistration(
 }
 
 }  // namespace component_updater
-

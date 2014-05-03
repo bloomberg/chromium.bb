@@ -148,6 +148,7 @@ class ComponentUpdaterTest : public testing::Test {
   URLRequestPostInterceptor* post_interceptor_;   // Owned by the factory.
 
   scoped_ptr<GetInterceptor> get_interceptor_;
+
  private:
   TestConfigurator* test_config_;
   base::FilePath test_data_dir_;

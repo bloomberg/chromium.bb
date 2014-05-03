@@ -203,7 +203,7 @@ TEST_F(UpdateCheckerTest, UpdateNetworkError) {
   // Setting this expectation simulates a network error since the
   // file is not found. Since setting the expectation fails, this function
   // owns |request_matcher|.
-  scoped_ptr<PartialMatch> request_matcher( new PartialMatch("updatecheck"));
+  scoped_ptr<PartialMatch> request_matcher(new PartialMatch("updatecheck"));
   EXPECT_FALSE(post_interceptor_->ExpectRequest(request_matcher.get(),
                                                 test_file("no such file")));
 
@@ -232,4 +232,3 @@ TEST_F(UpdateCheckerTest, UpdateNetworkError) {
 }
 
 }  // namespace component_updater
-

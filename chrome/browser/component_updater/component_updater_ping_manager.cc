@@ -4,6 +4,8 @@
 
 #include "chrome/browser/component_updater/component_updater_ping_manager.h"
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/guid.h"
 #include "base/logging.h"

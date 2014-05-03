@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_BACKGROUND_DOWNLOADER_WIN_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_BACKGROUND_DOWNLOADER_WIN_H_
 
-#include "chrome/browser/component_updater/crx_downloader.h"
-
 #include <windows.h>
 #include <bits.h>
 
@@ -14,6 +12,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/win/scoped_comptr.h"
+#include "chrome/browser/component_updater/crx_downloader.h"
 
 namespace component_updater {
 
@@ -93,4 +92,3 @@ class BackgroundDownloader : public CrxDownloader {
 }  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_BACKGROUND_DOWNLOADER_WIN_H_
-

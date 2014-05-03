@@ -329,8 +329,6 @@ HRESULT GetBitsManager(IBackgroundCopyManager** bits_manager) {
   ScopedComPtr<IBackgroundCopyManager> object;
   HRESULT hr = object.CreateInstance(__uuidof(BackgroundCopyManager));
   if (FAILED(hr)) {
-    VLOG(1) << "Failed to instantiate BITS." << std::hex << hr;
-    // TODO: add UMA pings.
     return hr;
   }
   *bits_manager = object.Detach();
@@ -525,7 +523,7 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
     DCHECK(job_);
     std::vector<ScopedComPtr<IBackgroundCopyFile> > files;
     GetFilesInJob(job_, &files);
-    DCHECK(files.size() == 1);
+    DCHECK_EQ(1u, files.size());
     base::string16 local_name;
     BG_FILE_PROGRESS progress = {0};
     HRESULT hr = GetJobFileProperties(files[0], &local_name, NULL, &progress);

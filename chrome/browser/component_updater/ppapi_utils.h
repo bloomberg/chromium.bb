@@ -10,5 +10,3 @@
 bool IsSupportedPepperInterface(const char* name);
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_PPAPI_UTILS_H_
-
-

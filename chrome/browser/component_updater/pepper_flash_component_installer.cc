@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component_updater/flash_component_installer.h"
-
 #include <string.h>
 
 #include <vector>
@@ -25,6 +23,7 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
+#include "chrome/browser/component_updater/flash_component_installer.h"
 #include "chrome/browser/component_updater/ppapi_utils.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/common/chrome_constants.h"
@@ -35,10 +34,9 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/pepper_plugin_info.h"
+#include "flapper_version.h"  // In SHARED_INTERMEDIATE_DIR.  NOLINT
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
-
-#include "flapper_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 using content::BrowserThread;
 using content::PluginService;
@@ -512,4 +510,3 @@ void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
 }
 
 }  // namespace component_updater
-

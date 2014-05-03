@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include <string>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -34,7 +35,7 @@
 #include "media/cdm/ppapi/supported_cdm_versions.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
-#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
+#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR. NOLINT
 
 using content::BrowserThread;
 using content::PluginService;
@@ -374,4 +375,3 @@ void RegisterWidevineCdmComponent(ComponentUpdateService* cus) {
 }
 
 }  // namespace component_updater
-

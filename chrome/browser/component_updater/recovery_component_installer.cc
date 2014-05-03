@@ -4,6 +4,8 @@
 
 #include "chrome/browser/component_updater/recovery_component_installer.h"
 
+#include <string>
+
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -92,7 +94,7 @@ void RecoveryUpdateVersionHelper(const Version& version, PrefService* prefs) {
 
 RecoveryComponentInstaller::RecoveryComponentInstaller(
       const Version& version, PrefService* prefs)
-    : current_version_(version), prefs_(prefs){
+    : current_version_(version), prefs_(prefs) {
   DCHECK(version.IsValid());
 }
 
@@ -158,4 +160,3 @@ void RegisterPrefsForRecoveryComponent(PrefRegistrySimple* registry) {
 }
 
 }  // namespace component_updater
-

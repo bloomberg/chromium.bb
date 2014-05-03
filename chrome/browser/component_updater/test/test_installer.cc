@@ -4,6 +4,8 @@
 
 #include "chrome/browser/component_updater/test/test_installer.h"
 
+#include <string>
+
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/values.h"
@@ -82,4 +84,3 @@ bool VersionedTestInstaller::GetInstalledFile(const std::string& file,
 }
 
 }  // namespace component_updater
-

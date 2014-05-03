@@ -174,14 +174,14 @@ class CrxUpdateService : public ComponentUpdateService {
   virtual content::ResourceThrottle* GetOnDemandResourceThrottle(
       net::URLRequest* request, const std::string& crx_id) OVERRIDE;
 
-   // Context for a crx download url request.
-   struct CRXContext {
-     ComponentInstaller* installer;
-     std::vector<uint8> pk_hash;
-     std::string id;
-     std::string fingerprint;
-     CRXContext() : installer(NULL) {}
-   };
+  // Context for a crx download url request.
+  struct CRXContext {
+    ComponentInstaller* installer;
+    std::vector<uint8> pk_hash;
+    std::string id;
+    std::string fingerprint;
+    CRXContext() : installer(NULL) {}
+  };
 
  private:
   enum ErrorCategory {
@@ -806,7 +806,6 @@ void CrxUpdateService::OnUpdateCheckSucceeded(
   ScheduleNextRun(num_updates_pending > 0 ? kStepDelayShort : kStepDelayLong);
 }
 
-// TODO: record UMA stats.
 void CrxUpdateService::OnUpdateCheckFailed(int error,
                                            const std::string& error_message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

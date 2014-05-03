@@ -1294,7 +1294,7 @@ class  CancelResourceController: public TestResourceController {
   virtual ~CancelResourceController() {
     // Check that the throttle has been resumed by the time we
     // exit the test.
-    CHECK(resume_called_ == 1);
+    CHECK_EQ(1, resume_called_);
     delete throttle_;
   }
   virtual void Cancel() OVERRIDE { CHECK(false); }

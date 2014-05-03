@@ -174,4 +174,3 @@ std::string GetCrxComponentID(const CrxComponent& component) {
 }
 
 }  // namespace component_updater
-

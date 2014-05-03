@@ -4,6 +4,9 @@
 
 #include "chrome/browser/component_updater/swiftshader_component_installer.h"
 
+#include <string>
+#include <vector>
+
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -186,7 +189,7 @@ UpdateChecker::UpdateChecker(ComponentUpdateService* cus)
 }
 
 void UpdateChecker::OnGpuInfoUpdate() {
-  GpuDataManager *gpu_data_manager = GpuDataManager::GetInstance();
+  GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
 
   if (!gpu_data_manager->GpuAccessAllowed(NULL) ||
       gpu_data_manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL) ||
@@ -223,7 +226,7 @@ void RegisterSwiftShaderPath(ComponentUpdateService* cus) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&RegisterSwiftShaderWithChrome, path));
 
-  UpdateChecker *update_checker = new UpdateChecker(cus);
+  UpdateChecker* update_checker = new UpdateChecker(cus);
   GpuDataManager::GetInstance()->AddObserver(update_checker);
   update_checker->OnGpuInfoUpdate();
   // We leak update_checker here, because it has to stick around for the life
@@ -252,4 +255,3 @@ void RegisterSwiftShaderComponent(ComponentUpdateService* cus) {
 }
 
 }  // namespace component_updater
-
