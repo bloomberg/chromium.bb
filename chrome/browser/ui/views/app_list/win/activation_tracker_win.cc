@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/views/app_list/win/activation_tracker_win.h"
 
 #include "base/time/time.h"
+#include "chrome/browser/ui/app_list/app_list_shower_views.h"
+#include "chrome/browser/ui/views/app_list/win/app_list_service_win.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -16,17 +18,15 @@ const int kFocusCheckIntervalMS = 250;
 
 }  // namespace
 
-ActivationTrackerWin::ActivationTrackerWin(
-    app_list::AppListView* view,
-    const base::Closure& on_should_dismiss)
-    : view_(view),
-      on_should_dismiss_(on_should_dismiss),
+ActivationTrackerWin::ActivationTrackerWin(AppListServiceWin* service)
+    : service_(service),
       taskbar_has_focus_(false) {
-  view_->AddObserver(this);
+  service_->shower().app_list()->AddObserver(this);
 }
 
 ActivationTrackerWin::~ActivationTrackerWin() {
-  view_->RemoveObserver(this);
+  DCHECK(service_->shower().app_list());
+  service_->shower().app_list()->RemoveObserver(this);
   timer_.Stop();
 }
 
@@ -51,7 +51,7 @@ void ActivationTrackerWin::MaybeDismissAppList() {
   if (!ShouldDismissAppList())
     return;
 
-  on_should_dismiss_.Run();
+  service_->DismissAppList();
 }
 
 bool ActivationTrackerWin::ShouldDismissAppList() {
@@ -92,7 +92,8 @@ bool ActivationTrackerWin::ShouldDismissAppList() {
   while (focused_hwnd) {
     // If the focused window is the right click menu (called a jump list) or
     // the app list, don't hide the launcher.
-    if (focused_hwnd == jump_list_hwnd || focused_hwnd == view_->GetHWND())
+    HWND app_list_hwnd = service_->shower().app_list()->GetHWND();
+    if (focused_hwnd == jump_list_hwnd || focused_hwnd == app_list_hwnd)
       return false;
 
     if (focused_hwnd == taskbar_hwnd) {

@@ -72,7 +72,7 @@
       ],
     }],
     ['<(toolkit_views)==0 or >(nacl_untrusted_build)==1', {
-      'sources/': [ ['exclude', '_views\\.(h|cc)$'] ]
+      'sources/': [ ['exclude', '_views(_browsertest|_unittest)?\\.(h|cc)$'] ]
     }],
     ['<(use_aura)==0 or >(nacl_untrusted_build)==1', {
       'sources/': [ ['exclude', '_aura(_browsertest|_unittest)?\\.(h|cc)$'],

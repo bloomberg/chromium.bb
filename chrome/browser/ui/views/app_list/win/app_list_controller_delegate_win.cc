@@ -7,17 +7,15 @@
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
 #include "chrome/browser/metro_utils/metro_chrome_win.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_icon_win.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/browser/ui/views/app_list/win/app_list_service_win.h"
-#include "extensions/common/extension.h"
 #include "ui/base/resource/resource_bundle.h"
 
 AppListControllerDelegateWin::AppListControllerDelegateWin(
-    AppListServiceWin* service)
-    : AppListControllerDelegateImpl(service),
-      service_(service) {}
+    AppListServiceViews* service)
+    : AppListControllerDelegateViews(service) {}
 
 AppListControllerDelegateWin::~AppListControllerDelegateWin() {}
 
@@ -25,26 +23,10 @@ bool AppListControllerDelegateWin::ForceNativeDesktop() const {
   return true;
 }
 
-void AppListControllerDelegateWin::ViewClosing() {
-  service_->OnViewBeingDestroyed();
-}
-
 gfx::ImageSkia AppListControllerDelegateWin::GetWindowIcon() {
   gfx::ImageSkia* resource = ResourceBundle::GetSharedInstance().
       GetImageSkiaNamed(GetAppListIconResourceId());
   return *resource;
-}
-
-void AppListControllerDelegateWin::OnShowExtensionPrompt() {
-  service_->set_can_close(false);
-}
-
-void AppListControllerDelegateWin::OnCloseExtensionPrompt() {
-  service_->set_can_close(true);
-}
-
-bool AppListControllerDelegateWin::CanDoCreateShortcutsFlow() {
-  return true;
 }
 
 void AppListControllerDelegateWin::FillLaunchParams(AppLaunchParams* params) {

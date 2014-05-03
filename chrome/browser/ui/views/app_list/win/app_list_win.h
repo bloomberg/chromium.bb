@@ -5,26 +5,21 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_APP_LIST_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_APP_LIST_WIN_H_
 
-#include "base/callback_forward.h"
-#include "chrome/browser/ui/app_list/app_list.h"
-#include "chrome/browser/ui/views/app_list/win/activation_tracker_win.h"
-#include "ui/app_list/views/app_list_view.h"
+namespace app_list {
+class AppListView;
+}
 
 namespace gfx {
 class Display;
 class Point;
+class Rect;
 class Size;
-}  // namespace gfx
+}
 
-// Responsible for positioning, hiding and showing an AppListView on Windows.
-// This includes watching window activation/deactivation messages to determine
-// if the user has clicked away from it.
-class AppListWin : public AppList {
+// Responsible for positioning an AppListView on Windows.
+// TODO(tapted): Shouldn't be a class - move the static member functions out.
+class AppListWin {
  public:
-  AppListWin(app_list::AppListView* view,
-             const base::Closure& on_should_dismiss);
-  virtual ~AppListWin();
-
   // Finds the position for a window to anchor it to the taskbar. This chooses
   // the most appropriate position for the window based on whether the taskbar
   // exists, the position of the taskbar, and the mouse cursor. Returns the
@@ -35,22 +30,7 @@ class AppListWin : public AppList {
                                     const gfx::Point& cursor,
                                     const gfx::Rect& taskbar_rect);
 
-  // AppList overrides.
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual void MoveNearCursor() OVERRIDE;
-  virtual bool IsVisible() OVERRIDE;
-  virtual void Prerender() OVERRIDE;
-  virtual gfx::NativeWindow GetWindow() OVERRIDE;
-  virtual void SetProfile(Profile* profile) OVERRIDE;
-
- private:
-  // Weak pointer. The view manages its own lifetime.
-  app_list::AppListView* view_;
-  ActivationTrackerWin activation_tracker_;
-  bool window_icon_updated_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListWin);
+  static void MoveNearCursor(app_list::AppListView* view);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_APP_LIST_WIN_H_
