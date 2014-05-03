@@ -385,7 +385,9 @@ public class AwSettings {
                 mEventHandler.runOnUiThreadBlockingAndLocked(new Runnable() {
                     @Override
                     public void run() {
-                        nativeUpdateInitialPageScaleLocked(mNativeAwSettings);
+                        if (mNativeAwSettings != 0) {
+                            nativeUpdateInitialPageScaleLocked(mNativeAwSettings);
+                        }
                     }
                 });
             }
@@ -467,7 +469,9 @@ public class AwSettings {
                 mEventHandler.runOnUiThreadBlockingAndLocked(new Runnable() {
                     @Override
                     public void run() {
-                        nativeUpdateFormDataPreferencesLocked(mNativeAwSettings);
+                        if (mNativeAwSettings != 0) {
+                            nativeUpdateFormDataPreferencesLocked(mNativeAwSettings);
+                        }
                     }
                 });
             }
@@ -512,7 +516,9 @@ public class AwSettings {
                 mEventHandler.runOnUiThreadBlockingAndLocked(new Runnable() {
                     @Override
                     public void run() {
-                        nativeUpdateUserAgentLocked(mNativeAwSettings);
+                        if (mNativeAwSettings != 0) {
+                            nativeUpdateUserAgentLocked(mNativeAwSettings);
+                        }
                     }
                 });
             }
@@ -544,8 +550,10 @@ public class AwSettings {
                 mEventHandler.runOnUiThreadBlockingAndLocked(new Runnable() {
                     @Override
                     public void run() {
-                        updateWebkitPreferencesOnUiThreadLocked();
-                        nativeResetScrollAndScaleState(mNativeAwSettings);
+                        if (mNativeAwSettings != 0) {
+                            updateWebkitPreferencesOnUiThreadLocked();
+                            nativeResetScrollAndScaleState(mNativeAwSettings);
+                        }
                     }
                 });
             }
@@ -1481,7 +1489,9 @@ public class AwSettings {
                 mEventHandler.runOnUiThreadBlockingAndLocked(new Runnable() {
                     @Override
                     public void run() {
-                        nativeUpdateRendererPreferencesLocked(mNativeAwSettings);
+                        if (mNativeAwSettings != 0) {
+                            nativeUpdateRendererPreferencesLocked(mNativeAwSettings);
+                        }
                     }
                 });
             }
@@ -1539,6 +1549,7 @@ public class AwSettings {
     @CalledByNative
     private void updateEverything() {
         synchronized (mAwSettingsLock) {
+            assert mNativeAwSettings != 0;
             nativeUpdateEverythingLocked(mNativeAwSettings);
         }
     }
@@ -1546,6 +1557,7 @@ public class AwSettings {
     @CalledByNative
     private void populateWebPreferences(long webPrefsPtr) {
         synchronized (mAwSettingsLock) {
+            assert mNativeAwSettings != 0;
             nativePopulateWebPreferencesLocked(mNativeAwSettings, webPrefsPtr);
         }
     }
@@ -1553,7 +1565,9 @@ public class AwSettings {
     private void updateWebkitPreferencesOnUiThreadLocked() {
         assert mEventHandler.mHandler != null;
         ThreadUtils.assertOnUiThread();
-        nativeUpdateWebkitPreferencesLocked(mNativeAwSettings);
+        if (mNativeAwSettings != 0) {
+            nativeUpdateWebkitPreferencesLocked(mNativeAwSettings);
+        }
     }
 
     private native long nativeInit(long webContentsPtr);

@@ -61,9 +61,7 @@ import java.io.File;
 import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -239,11 +237,6 @@ public class AwContents {
     // Reference to the active mNativeAwContents pointer while it is active use
     // (ie before it is destroyed).
     private CleanupReference mCleanupReference;
-
-    // A list of references to native pointers where the Java counterpart has been
-    // destroyed, but are held here because they are waiting for onDetachFromWindow
-    // to release GL resources. This is cleared inside onDetachFromWindow.
-    private List<CleanupReference> mPendingDetachCleanupReferences;
 
     //--------------------------------------------------------------------------------------------
     private class IoThreadClientImpl implements AwContentsIoThreadClient {
@@ -643,13 +636,17 @@ public class AwContents {
     }
 
     /**
-     * Deletes the native counterpart of this object. Normally happens immediately,
-     * but maybe deferred until the appropriate time for GL resource cleanup. Either way
-     * this is transparent to the caller: after this function returns the object is
-     * effectively dead and methods are no-ops.
+     * Deletes the native counterpart of this object.
      */
     public void destroy() {
         if (mCleanupReference != null) {
+            assert mNativeAwContents != 0;
+            // If we are attached, we have to call native detach to clean up
+            // hardware resources.
+            if (mIsAttachedToWindow) {
+                nativeOnDetachedFromWindow(mNativeAwContents);
+            }
+
             // We explicitly do not null out the mContentViewCore reference here
             // because ContentViewCore already has code to deal with the case
             // methods are called on it after it's been destroyed, and other
@@ -657,17 +654,7 @@ public class AwContents {
             mContentViewCore.destroy();
             mNativeAwContents = 0;
 
-            // We cannot destroy immediately if we are still attached to the window.
-            // Instead if we make sure to null out the native pointer so there is no more native
-            // calls, and delay the actual destroy until onDetachedFromWindow.
-            if (mIsAttachedToWindow) {
-                if (mPendingDetachCleanupReferences == null) {
-                    mPendingDetachCleanupReferences = new ArrayList<CleanupReference>();
-                }
-                mPendingDetachCleanupReferences.add(mCleanupReference);
-            } else {
-                mCleanupReference.cleanupNow();
-            }
+            mCleanupReference.cleanupNow();
             mCleanupReference = null;
         }
 
@@ -1627,13 +1614,6 @@ public class AwContents {
         }
 
         mScrollAccessibilityHelper.removePostedCallbacks();
-
-        if (mPendingDetachCleanupReferences != null) {
-            for (int i = 0; i < mPendingDetachCleanupReferences.size(); ++i) {
-                mPendingDetachCleanupReferences.get(i).cleanupNow();
-            }
-            mPendingDetachCleanupReferences = null;
-        }
     }
 
     /**
