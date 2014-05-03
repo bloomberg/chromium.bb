@@ -159,16 +159,4 @@ void LengthStyleInterpolation::trace(Visitor* visitor)
     StyleInterpolation::trace(visitor);
 }
 
-void DefaultStyleInterpolation::apply(StyleResolverState& state) const
-{
-    StyleBuilder::applyProperty(m_id, state, toInterpolableBool(m_cachedValue.get())->value() ? m_endCSSValue.get() : m_startCSSValue.get());
-}
-
-void DefaultStyleInterpolation::trace(Visitor* visitor)
-{
-    StyleInterpolation::trace(visitor);
-    visitor->trace(m_startCSSValue);
-    visitor->trace(m_endCSSValue);
-}
-
 }

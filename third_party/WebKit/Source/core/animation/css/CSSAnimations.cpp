@@ -843,46 +843,6 @@ const StylePropertyShorthand& CSSAnimations::animatableProperties()
     return propertyShorthand;
 }
 
-// Animation properties are not allowed to be affected by Web Animations.
-// http://dev.w3.org/fxtf/web-animations/#not-animatable
-bool CSSAnimations::isAllowedAnimation(CSSPropertyID property)
-{
-    switch (property) {
-    case CSSPropertyAnimation:
-    case CSSPropertyAnimationDelay:
-    case CSSPropertyAnimationDirection:
-    case CSSPropertyAnimationDuration:
-    case CSSPropertyAnimationFillMode:
-    case CSSPropertyAnimationIterationCount:
-    case CSSPropertyAnimationName:
-    case CSSPropertyAnimationPlayState:
-    case CSSPropertyAnimationTimingFunction:
-    case CSSPropertyDisplay:
-    case CSSPropertyTransition:
-    case CSSPropertyTransitionDelay:
-    case CSSPropertyTransitionDuration:
-    case CSSPropertyTransitionProperty:
-    case CSSPropertyTransitionTimingFunction:
-    case CSSPropertyWebkitAnimation:
-    case CSSPropertyWebkitAnimationDelay:
-    case CSSPropertyWebkitAnimationDirection:
-    case CSSPropertyWebkitAnimationDuration:
-    case CSSPropertyWebkitAnimationFillMode:
-    case CSSPropertyWebkitAnimationIterationCount:
-    case CSSPropertyWebkitAnimationName:
-    case CSSPropertyWebkitAnimationPlayState:
-    case CSSPropertyWebkitAnimationTimingFunction:
-    case CSSPropertyWebkitTransition:
-    case CSSPropertyWebkitTransitionDelay:
-    case CSSPropertyWebkitTransitionDuration:
-    case CSSPropertyWebkitTransitionProperty:
-    case CSSPropertyWebkitTransitionTimingFunction:
-        return false;
-    default:
-        return true;
-    }
-}
-
 void CSSAnimations::trace(Visitor* visitor)
 {
     visitor->trace(m_transitions);

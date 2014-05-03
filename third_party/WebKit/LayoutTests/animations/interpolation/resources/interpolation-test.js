@@ -414,17 +414,9 @@
     }, 10000);
   }
 
-  function disableWebAnimationsTest() {
-    if (webAnimationsTest) {
-      fragment.querySelector('#web-animations-tests').remove();
-      webAnimationsTest = false;
-    }
-  }
-
   window.runAsRefTest = runAsRefTest;
   window.testInterpolationAt = testInterpolationAt;
   window.assertInterpolation = assertInterpolation;
   window.convertToReference = convertToReference;
   window.afterTest = afterTest;
-  window.disableWebAnimationsTest = disableWebAnimationsTest;
 })();
