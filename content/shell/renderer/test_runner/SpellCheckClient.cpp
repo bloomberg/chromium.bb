@@ -10,11 +10,11 @@
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
 
+using namespace WebTestRunner;
 using namespace blink;
-using namespace content;
 using namespace std;
 
-namespace WebTestRunner {
+namespace content {
 
 namespace {
 
@@ -141,4 +141,4 @@ WebString SpellCheckClient::autoCorrectWord(const WebString&)
     return WebString();
 }
 
-}
+}  // namespace content

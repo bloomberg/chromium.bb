@@ -4,9 +4,7 @@
 
 #include "content/shell/renderer/test_runner/MockWebAudioDevice.h"
 
-using namespace blink;
-
-namespace WebTestRunner {
+namespace content {
 
 MockWebAudioDevice::MockWebAudioDevice(double sampleRate)
     : m_sampleRate(sampleRate)
@@ -30,4 +28,4 @@ double MockWebAudioDevice::sampleRate()
     return m_sampleRate;
 }
 
-} // namespace WebTestRunner
+}  // namespace content

@@ -9,7 +9,7 @@
 #include "content/shell/renderer/test_runner/TestCommon.h"
 #include "third_party/WebKit/public/platform/WebAudioDevice.h"
 
-namespace WebTestRunner {
+namespace content {
 
 class MockWebAudioDevice : public blink::WebAudioDevice {
 public:
@@ -26,6 +26,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MockWebAudioDevice);
 };
 
-} // namespace WebTestRunner
+} // namespace content
 
 #endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKWEBAUDIODEVICE_H_

@@ -15,17 +15,19 @@ class WebTestProxyBase;
 }
 
 namespace WebTestRunner {
-
 class WebTestDelegate;
+}
+
+namespace content {
 
 class SpellCheckClient : public blink::WebSpellCheckClient {
 public:
     explicit SpellCheckClient(content::WebTestProxyBase*);
     virtual ~SpellCheckClient();
 
-    void setDelegate(WebTestDelegate*);
+    void setDelegate(WebTestRunner::WebTestDelegate*);
 
-    WebTaskList* taskList() { return &m_taskList; }
+    WebTestRunner::WebTaskList* taskList() { return &m_taskList; }
     MockSpellCheck* mockSpellCheck() { return &m_spellcheck; }
 
     // blink::WebSpellCheckClient implementation.
@@ -46,15 +48,15 @@ private:
     blink::WebString m_lastRequestedTextCheckString;
     blink::WebTextCheckingCompletion* m_lastRequestedTextCheckingCompletion;
 
-    WebTaskList m_taskList;
+    WebTestRunner::WebTaskList m_taskList;
 
-    WebTestDelegate* m_delegate;
+    WebTestRunner::WebTestDelegate* m_delegate;
 
     content::WebTestProxyBase* m_webTestProxy;
 
     DISALLOW_COPY_AND_ASSIGN(SpellCheckClient);
 };
 
-}
+}  // namespace content
 
 #endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_SPELLCHECKCLIENT_H_

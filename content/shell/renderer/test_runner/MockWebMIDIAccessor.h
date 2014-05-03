@@ -15,33 +15,34 @@ class WebMIDIAccessorClient;
 }
 
 namespace WebTestRunner {
-
 class TestInterfaces;
+}
+
+namespace content {
 
 class MockWebMIDIAccessor : public blink::WebMIDIAccessor {
 public:
-    explicit MockWebMIDIAccessor(blink::WebMIDIAccessorClient*, TestInterfaces*);
+    explicit MockWebMIDIAccessor(blink::WebMIDIAccessorClient*, WebTestRunner::TestInterfaces*);
     virtual ~MockWebMIDIAccessor();
 
     // blink::WebMIDIAccessor implementation.
     virtual void startSession() OVERRIDE;
-    virtual void sendMIDIData(
-        unsigned portIndex,
-        const unsigned char* data,
-        size_t length,
-        double timestamp) OVERRIDE { }
+    virtual void sendMIDIData(unsigned portIndex,
+                              const unsigned char* data,
+                              size_t length,
+                              double timestamp) OVERRIDE {}
 
     // WebTask related methods
-    WebTaskList* taskList() { return &m_taskList; }
+    WebTestRunner::WebTaskList* taskList() { return &m_taskList; }
 
 private:
     blink::WebMIDIAccessorClient* m_client;
-    WebTaskList m_taskList;
-    TestInterfaces* m_interfaces;
+    WebTestRunner::WebTaskList m_taskList;
+    WebTestRunner::TestInterfaces* m_interfaces;
 
     DISALLOW_COPY_AND_ASSIGN(MockWebMIDIAccessor);
 };
 
-} // namespace WebTestRunner
+}  // namespace content
 
 #endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKWEBMIDIACCESSOR_H_

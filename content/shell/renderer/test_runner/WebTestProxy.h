@@ -73,7 +73,6 @@ typedef unsigned WebColor;
 
 namespace WebTestRunner {
 class MockWebSpeechRecognizer;
-class SpellCheckClient;
 class TestInterfaces;
 class WebTestDelegate;
 class WebTestInterfaces;
@@ -83,6 +82,7 @@ class WebUserMediaClientMock;
 namespace content {
 
 class RenderFrame;
+class SpellCheckClient;
 
 class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
 public:
@@ -207,7 +207,7 @@ private:
 
     WebTestRunner::WebTaskList m_taskList;
 
-    scoped_ptr<WebTestRunner::SpellCheckClient> m_spellcheck;
+    scoped_ptr<SpellCheckClient> m_spellcheck;
     scoped_ptr<WebTestRunner::WebUserMediaClientMock> m_userMediaClient;
 
     // Painting.

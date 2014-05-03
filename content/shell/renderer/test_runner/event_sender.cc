@@ -177,7 +177,7 @@ std::vector<std::string> MakeMenuItemStringsFor(
       strings.push_back(*item);
     }
     WebVector<WebString> suggestions;
-    WebTestRunner::MockSpellCheck::fillSuggestionList(
+    MockSpellCheck::fillSuggestionList(
         context_menu->misspelledWord, &suggestions);
     for (size_t i = 0; i < suggestions.size(); ++i) {
       strings.push_back(suggestions[i].utf8());

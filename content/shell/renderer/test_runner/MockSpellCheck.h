@@ -12,7 +12,7 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
 
-namespace WebTestRunner {
+namespace content {
 
 // A mock implementation of a spell-checker used for WebKit tests.
 // This class only implements the minimal functionarities required by WebKit
@@ -64,6 +64,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MockSpellCheck);
 };
 
-}
+}  // namespace content
 
 #endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKSPELLCHECK_H_
