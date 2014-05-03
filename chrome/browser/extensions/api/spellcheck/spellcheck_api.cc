@@ -25,7 +25,8 @@ SpellcheckDictionaryInfo* GetSpellcheckDictionaryInfo(
   return spellcheck_info;
 }
 
-SpellcheckService::DictionaryFormat GetDictionaryFormat(std::string format) {
+SpellcheckService::DictionaryFormat GetDictionaryFormat(
+    const std::string& format) {
   if (format == "hunspell") {
     return SpellcheckService::DICT_HUNSPELL;
   } else if (format == "text") {

@@ -95,7 +95,7 @@ ExtensionUpdater* GetExtensionUpdater(Profile* profile) {
     return profile->GetExtensionService()->updater();
 }
 
-GURL GetImageURLFromData(std::string contents) {
+GURL GetImageURLFromData(const std::string& contents) {
   std::string contents_base64;
   base::Base64Encode(contents, &contents_base64);
 
@@ -834,7 +834,7 @@ bool DeveloperPrivateEnableFunction::RunSync() {
 }
 
 void DeveloperPrivateEnableFunction::OnRequirementsChecked(
-    std::string extension_id,
+    const std::string& extension_id,
     std::vector<std::string> requirements_errors) {
   if (requirements_errors.empty()) {
     ExtensionService* service = GetProfile()->GetExtensionService();

@@ -278,7 +278,7 @@ class DeveloperPrivateEnableFunction
   virtual ~DeveloperPrivateEnableFunction();
 
   // Callback for requirements checker.
-  void OnRequirementsChecked(std::string extension_id,
+  void OnRequirementsChecked(const std::string& extension_id,
                              std::vector<std::string> requirements_errors);
   // ExtensionFunction:
   virtual bool RunSync() OVERRIDE;

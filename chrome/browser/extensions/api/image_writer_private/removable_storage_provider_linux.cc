@@ -22,7 +22,7 @@ static uint64 get_int_attr(const char* attr){
   return result;
 }
 
-static int get_device_blk_size(std::string path) {
+static int get_device_blk_size(const std::string& path) {
   base::FilePath file_path(path);
   std::string device = file_path.BaseName().value();
 
