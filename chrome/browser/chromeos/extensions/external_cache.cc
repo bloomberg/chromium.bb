@@ -108,6 +108,18 @@ void ExternalCache::OnDamagedFileDetected(const base::FilePath& path) {
   LOG(ERROR) << "ExternalCache cannot find external_crx " << path.value();
 }
 
+void ExternalCache::RemoveExtensions(const std::vector<std::string>& ids) {
+  if (ids.empty())
+    return;
+
+  for (size_t i = 0; i < ids.size(); ++i) {
+    cached_extensions_->Remove(ids[i], NULL);
+    extensions_->Remove(ids[i], NULL);
+    local_cache_.RemoveExtension(ids[i]);
+  }
+  UpdateExtensionLoader();
+}
+
 void ExternalCache::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
@@ -133,10 +145,14 @@ void ExternalCache::OnExtensionDownloadFailed(
     if (!cached_extensions_->HasKey(id)) {
       LOG(ERROR) << "ExternalCache extension " << id
                  << " not found on update server";
+      delegate_->OnExtensionDownloadFailed(id, error);
+    } else {
+      delegate_->OnExtensionLoadedInCache(id);
     }
   } else {
     LOG(ERROR) << "ExternalCache failed to download extension " << id
                << ", error " << error;
+    delegate_->OnExtensionDownloadFailed(id, error);
   }
 }
 
@@ -293,6 +309,8 @@ void ExternalCache::OnPutExtension(const std::string& id,
                    file_path.value());
 
   cached_extensions_->Set(id, entry);
+  if (delegate_)
+    delegate_->OnExtensionLoadedInCache(id);
   UpdateExtensionLoader();
 }
 

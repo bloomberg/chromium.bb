@@ -44,6 +44,12 @@ class ExternalCache : public content::NotificationObserver,
     // Caller owns |prefs|.
     virtual void OnExtensionListsUpdated(
         const base::DictionaryValue* prefs) = 0;
+    // Called after extension with |id| is loaded in cache.
+    virtual void OnExtensionLoadedInCache(const std::string& id) {}
+    // Called when extension with |id| is failed with downloading for |error|.
+    virtual void OnExtensionDownloadFailed(
+        const std::string& id,
+        extensions::ExtensionDownloaderDelegate::Error error) {}
 
     // Cache needs to provide already installed extensions otherwise they
     // will be removed. Cache calls this function to get version of installed
@@ -109,6 +115,10 @@ class ExternalCache : public content::NotificationObserver,
   // the extension is damaged then this method can be used to remove it from
   // the cache and retry to download it after a restart.
   void OnDamagedFileDetected(const base::FilePath& path);
+
+  // Removes extensions listed in |ids| from external cache, corresponding crx
+  // files will be removed from disk too.
+  void RemoveExtensions(const std::vector<std::string>& ids);
 
  private:
   // Notifies the that the cache has been updated, providing
