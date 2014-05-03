@@ -24,7 +24,7 @@ import java.util.List;
  * ListAdapter to customize the view of items in the list.
  */
 class AppMenuAdapter extends BaseAdapter {
-    private static final int VIEW_TYPE_COUNT = 3;
+    private static final int VIEW_TYPE_COUNT = 4;
 
     /**
      * Regular Android menu item that contains a title and an icon if icon is specified.
@@ -39,6 +39,10 @@ class AppMenuAdapter extends BaseAdapter {
      * Menu item that has three buttons. Every one of these buttons is displayed as an icon.
      */
     private static final int THREE_BUTTON_MENU_ITEM = 2;
+    /**
+     * Menu item that has four buttons. Every one of these buttons is displayed as an icon.
+     */
+    private static final int FOUR_BUTTON_MENU_ITEM = 3;
 
     private final AppMenu mAppMenu;
     private final LayoutInflater mInflater;
@@ -65,7 +69,9 @@ class AppMenuAdapter extends BaseAdapter {
     @Override
     public int getItemViewType(int position) {
         if (getItem(position).hasSubMenu()) {
-            if (getItem(position).getSubMenu().size() == 3) {
+            if (getItem(position).getSubMenu().size() == 4) {
+                return FOUR_BUTTON_MENU_ITEM;
+            } else if (getItem(position).getSubMenu().size() == 3) {
                 return THREE_BUTTON_MENU_ITEM;
             } else if (getItem(position).getSubMenu().size() == 2) {
                 return TITLE_BUTTON_MENU_ITEM;
@@ -142,6 +148,27 @@ class AppMenuAdapter extends BaseAdapter {
                 convertView.setEnabled(false);
                 break;
             }
+            case FOUR_BUTTON_MENU_ITEM: {
+                FourButtonMenuItemViewHolder holder = null;
+                if (convertView == null) {
+                    holder = new FourButtonMenuItemViewHolder();
+                    convertView = mInflater.inflate(R.layout.four_button_menu_item, null);
+                    holder.buttonOne = (ImageButton) convertView.findViewById(R.id.button_one);
+                    holder.buttonTwo = (ImageButton) convertView.findViewById(R.id.button_two);
+                    holder.buttonThree = (ImageButton) convertView.findViewById(R.id.button_three);
+                    holder.buttonFour = (ImageButton) convertView.findViewById(R.id.button_four);
+                    convertView.setTag(holder);
+                } else {
+                    holder = (FourButtonMenuItemViewHolder) convertView.getTag();
+                }
+                setupImageButton(holder.buttonOne, item.getSubMenu().getItem(0));
+                setupImageButton(holder.buttonTwo, item.getSubMenu().getItem(1));
+                setupImageButton(holder.buttonThree, item.getSubMenu().getItem(2));
+                setupImageButton(holder.buttonFour, item.getSubMenu().getItem(3));
+                convertView.setFocusable(false);
+                convertView.setEnabled(false);
+                break;
+            }
             case TITLE_BUTTON_MENU_ITEM: {
                 TitleButtonMenuItemViewHolder holder = null;
                 if (convertView == null) {
@@ -204,6 +231,13 @@ class AppMenuAdapter extends BaseAdapter {
         public ImageButton buttonOne;
         public ImageButton buttonTwo;
         public ImageButton buttonThree;
+    }
+
+    static class FourButtonMenuItemViewHolder {
+        public ImageButton buttonOne;
+        public ImageButton buttonTwo;
+        public ImageButton buttonThree;
+        public ImageButton buttonFour;
     }
 
     static class TitleButtonMenuItemViewHolder {
