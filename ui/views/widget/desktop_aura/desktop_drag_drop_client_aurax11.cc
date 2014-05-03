@@ -20,6 +20,7 @@
 #include "ui/events/event.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
+#include "ui/views/widget/desktop_aura/x11_topmost_window_finder.h"
 #include "ui/wm/public/drag_drop_client.h"
 #include "ui/wm/public/drag_drop_delegate.h"
 
@@ -63,7 +64,6 @@ const char* kAtomsToCache[] = {
   "XdndStatus",
   "XdndTypeList",
   ui::Clipboard::kMimeTypeText,
-  "_NET_WM_WINDOW_TYPE_MENU",
   NULL
 };
 
@@ -75,67 +75,18 @@ static base::LazyInstance<
     std::map< ::Window, views::DesktopDragDropClientAuraX11*> >::Leaky
         g_live_client_map = LAZY_INSTANCE_INITIALIZER;
 
-// Helper class to FindWindowFor which looks for a drag target under the
-// cursor.
-class DragTargetWindowFinder : public ui::EnumerateWindowsDelegate {
- public:
-  DragTargetWindowFinder(XID ignored_icon_window,
-                         Atom menu_type_atom,
-                         gfx::Point screen_loc)
-      : ignored_icon_window_(ignored_icon_window),
-        output_window_(None),
-        menu_type_atom_(menu_type_atom),
-        screen_loc_(screen_loc) {
-    ui::EnumerateTopLevelWindows(this);
-  }
-
-  virtual ~DragTargetWindowFinder() {}
-
-  XID window() const { return output_window_; }
-
- protected:
-  virtual bool ShouldStopIterating(XID window) OVERRIDE {
-    if (window == ignored_icon_window_)
-      return false;
-
-    if (!ui::IsWindowVisible(window))
-      return false;
-
-    if (!ui::WindowContainsPoint(window, screen_loc_))
-      return false;
-
-    int value = 0;
-    if (ui::PropertyExists(window, "WM_STATE") ||
-        (ui::GetIntProperty(window, "_NET_WM_WINDOW_TYPE", &value) &&
-         static_cast<Atom>(value) == menu_type_atom_)) {
-      output_window_ = window;
-      return true;
-    }
-
-    return false;
-  }
-
- private:
-  XID ignored_icon_window_;
-  XID output_window_;
-  const Atom menu_type_atom_;
-  gfx::Point screen_loc_;
-
-  DISALLOW_COPY_AND_ASSIGN(DragTargetWindowFinder);
-};
-
 // Returns the topmost X11 window at |screen_point| if it is advertising that
 // is supports the Xdnd protocol. Will return the window under the pointer as
 // |mouse_window|. If there's a Xdnd aware window, it will be returned in
 // |dest_window|.
 void FindWindowFor(const gfx::Point& screen_point,
-                   ::Window* mouse_window, ::Window* dest_window,
-                   Atom menu_type_atom) {
-  DragTargetWindowFinder finder(None, menu_type_atom, screen_point);
-  *mouse_window = finder.window();
+                   ::Window* mouse_window,
+                   ::Window* dest_window) {
+  views::X11TopmostWindowFinder finder;
+  *mouse_window = finder.FindWindowAt(screen_point);
   *dest_window = None;
 
-  if (finder.window() == None)
+  if (*mouse_window == None)
     return;
 
   // Figure out which window we should test as XdndAware. If mouse_window has
@@ -724,8 +675,7 @@ void DesktopDragDropClientAuraX11::OnMouseMovement(XMotionEvent* event) {
   // Find the current window the cursor is over.
   ::Window mouse_window = None;
   ::Window dest_window = None;
-  FindWindowFor(screen_point, &mouse_window, &dest_window,
-                atom_cache_.GetAtom("_NET_WM_WINDOW_TYPE_MENU"));
+  FindWindowFor(screen_point, &mouse_window, &dest_window);
 
   if (source_current_window_ != dest_window) {
     if (source_current_window_ != None)

@@ -375,6 +375,8 @@
         'widget/desktop_aura/x11_desktop_window_move_client.h',
         'widget/desktop_aura/x11_scoped_capture.cc',
         'widget/desktop_aura/x11_scoped_capture.h',
+        'widget/desktop_aura/x11_topmost_window_finder.cc',
+        'widget/desktop_aura/x11_topmost_window_finder.h',
         'widget/desktop_aura/x11_whole_screen_move_loop.cc',
         'widget/desktop_aura/x11_whole_screen_move_loop.h',
         'widget/desktop_aura/x11_whole_screen_move_loop_delegate.h',
