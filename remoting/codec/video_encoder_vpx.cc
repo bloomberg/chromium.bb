@@ -257,39 +257,36 @@ bool VideoEncoderVpx::Initialize(const webrtc::DesktopSize& size) {
   active_map_height_ = (image_->h + kMacroBlockSize - 1) / kMacroBlockSize;
   active_map_.reset(new uint8[active_map_width_ * active_map_height_]);
 
-  // YUV image size is 1.5 times of a plane. Multiplication is performed first
-  // to avoid rounding error.
-  const int y_plane_size = image_->w * image_->h;
-  const int uv_width = (image_->w + 1) / 2;
-  const int uv_height = (image_->h + 1) / 2;
-  const int uv_plane_size = uv_width * uv_height;
-  const int yuv_image_size = y_plane_size + uv_plane_size * 2;
+  // libyuv's fast-path requires 16-byte aligned pointers and strides, so pad
+  // the Y, U and V planes' strides to multiples of 16 bytes.
+  const int y_stride = ((image_->w - 1) & ~15) + 16;
+  const int uv_unaligned_stride = y_stride / 2;
+  const int uv_stride = ((uv_unaligned_stride - 1) & ~15) + 16;
 
-  // libvpx may try to access memory after the buffer (it still
-  // doesn't use it) - it copies the data in 16x16 blocks:
-  // crbug.com/119633 . Here we workaround that problem by adding
-  // padding at the end of the buffer. Overreading to U and V buffers
-  // is safe so the padding is necessary only at the end.
-  //
-  // TODO(sergeyu): Remove this padding when the bug is fixed in libvpx.
-  const int active_map_area = active_map_width_ * kMacroBlockSize *
-      active_map_height_ * kMacroBlockSize;
-  const int padding_size = active_map_area - y_plane_size;
-  const int buffer_size = yuv_image_size + padding_size;
+  // libvpx accesses the source image in macro blocks, and will over-read
+  // if the image is not padded out to the next macroblock: crbug.com/119633.
+  // Pad the Y, U and V planes' height out to compensate.
+  // Assuming macroblocks are 16x16, aligning the planes' strides above also
+  // macroblock aligned them.
+  DCHECK_EQ(16, kMacroBlockSize);
+  const int y_rows = active_map_height_ * kMacroBlockSize;
+  const int uv_rows = y_rows / 2;
 
+  // Allocate a YUV buffer large enough for the aligned data & padding.
+  const int buffer_size = y_stride * y_rows + 2 * uv_stride * uv_rows;
   yuv_image_.reset(new uint8[buffer_size]);
 
   // Reset image value to 128 so we just need to fill in the y plane.
-  memset(yuv_image_.get(), 128, yuv_image_size);
+  memset(yuv_image_.get(), 128, buffer_size);
 
   // Fill in the information for |image_|.
   unsigned char* image = reinterpret_cast<unsigned char*>(yuv_image_.get());
   image_->planes[0] = image;
-  image_->planes[1] = image + y_plane_size;
-  image_->planes[2] = image + y_plane_size + uv_plane_size;
-  image_->stride[0] = image_->w;
-  image_->stride[1] = uv_width;
-  image_->stride[2] = uv_width;
+  image_->planes[1] = image_->planes[0] + y_stride * y_rows;
+  image_->planes[2] = image_->planes[1] + uv_stride * uv_rows;
+  image_->stride[0] = y_stride;
+  image_->stride[1] = uv_stride;
+  image_->stride[2] = uv_stride;
 
   // Initialize the codec.
   codec_ = init_codec_.Run(size);
