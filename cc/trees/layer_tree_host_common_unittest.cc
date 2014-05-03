@@ -3027,6 +3027,34 @@ TEST_F(LayerTreeHostCommonTest,
 }
 
 TEST_F(LayerTreeHostCommonTest,
+       SingularNonAnimatingTransformDoesNotPreventClearingDrawProperties) {
+  scoped_refptr<Layer> root = Layer::Create();
+
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  host->SetRootLayer(root);
+
+  gfx::Transform identity_matrix;
+  gfx::Transform uninvertible_matrix(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+  ASSERT_FALSE(uninvertible_matrix.IsInvertible());
+
+  SetLayerPropertiesForTesting(root.get(),
+                               uninvertible_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(100, 100),
+                               true,
+                               false);
+
+  root->draw_properties().sorted_for_recursion = true;
+
+  EXPECT_FALSE(root->TransformIsAnimating());
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  EXPECT_FALSE(root->draw_properties().sorted_for_recursion);
+}
+
+TEST_F(LayerTreeHostCommonTest,
        DrawableAndVisibleContentRectsForLayersInClippedRenderSurface) {
   scoped_refptr<Layer> root = Layer::Create();
   scoped_refptr<Layer> render_surface1 = Layer::Create();

@@ -1174,6 +1174,9 @@ static void PreCalculateMetaInformation(
   bool has_delegated_content = layer->HasDelegatedContent();
   int num_descendants_that_draw_content = 0;
 
+  layer->draw_properties().sorted_for_recursion = false;
+  layer->draw_properties().has_child_with_a_scroll_parent = false;
+
   if (!HasInvertibleOrAnimatedTransform(layer)) {
     // Layers with singular transforms should not be drawn, the whole subtree
     // can be skipped.
@@ -1187,9 +1190,6 @@ static void PreCalculateMetaInformation(
     // infinity for our purposes.
     num_descendants_that_draw_content = 1000;
   }
-
-  layer->draw_properties().sorted_for_recursion = false;
-  layer->draw_properties().has_child_with_a_scroll_parent = false;
 
   if (layer->clip_parent())
     recursive_data->num_unclipped_descendants++;
