@@ -13,14 +13,6 @@ class TapSuppressionControllerClient {
  public:
   virtual ~TapSuppressionControllerClient() {}
 
-  // Derived classes should implement this function to return the maximum time
-  // they allow between a GestureFlingCancel and its corresponding tap down.
-  virtual int MaxCancelToDownTimeInMs() = 0;
-
-  // Derived classes should implement this function to return the maximum time
-  // they allow between a single tap's down and up events.
-  virtual int MaxTapGapTimeInMs() = 0;
-
   // Called whenever the deferred tap down (if saved) should be dropped totally.
   virtual void DropStashedTapDown() = 0;
 

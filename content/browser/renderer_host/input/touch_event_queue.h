@@ -55,12 +55,29 @@ class CONTENT_EXPORT TouchEventQueue {
     TOUCH_SCROLLING_MODE_DEFAULT = TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE
   };
 
-  // The |client| must outlive the TouchEventQueue. If
-  // |touchmove_suppression_length_dips| <= 0, touch move suppression is
-  // disabled.
-  TouchEventQueue(TouchEventQueueClient* client,
-                  TouchScrollingMode mode,
-                  double touchmove_suppression_length_dips);
+  struct CONTENT_EXPORT Config {
+    Config();
+
+    // Determines the bounds of the (square) touchmove slop suppression region.
+    // Defaults to 0 (disabled).
+    double touchmove_slop_suppression_length_dips;
+
+    // Determines the type of touch scrolling.
+    // Defaults to TouchEventQueue:::TOUCH_SCROLLING_MODE_DEFAULT.
+    TouchEventQueue::TouchScrollingMode touch_scrolling_mode;
+
+    // Controls whether touch ack timeouts will trigger touch cancellation.
+    // Defaults to 200ms.
+    base::TimeDelta touch_ack_timeout_delay;
+
+    // Whether the platform supports touch ack timeout behavior.
+    // Defaults to false (disabled).
+    bool touch_ack_timeout_supported;
+  };
+
+  // The |client| must outlive the TouchEventQueue.
+  TouchEventQueue(TouchEventQueueClient* client, const Config& config);
+
   ~TouchEventQueue();
 
   // Adds an event to the queue. The event may be coalesced with previously
@@ -95,7 +112,7 @@ class CONTENT_EXPORT TouchEventQueue {
   // Sets whether a delayed touch ack will cancel and flush the current
   // touch sequence. Note that, if the timeout was previously disabled, enabling
   // it will take effect only for the following touch sequence.
-  void SetAckTimeoutEnabled(bool enabled, base::TimeDelta ack_timeout_delay);
+  void SetAckTimeoutEnabled(bool enabled);
 
   bool empty() const WARN_UNUSED_RESULT {
     return touch_queue_.empty();
@@ -200,7 +217,7 @@ class CONTENT_EXPORT TouchEventQueue {
   };
   TouchFilteringState touch_filtering_state_;
 
-  // Optional handler for timed-out touch event acks, disabled by default.
+  // Optional handler for timed-out touch event acks.
   bool ack_timeout_enabled_;
   scoped_ptr<TouchTimeoutHandler> timeout_handler_;
 
@@ -210,12 +227,12 @@ class CONTENT_EXPORT TouchEventQueue {
 
   // Whether touch events should remain buffered and dispatched asynchronously
   // while a scroll sequence is active.  In this mode, touchmove's are throttled
-  // and ack'ed immediately, but remain buffered in |pending_async_touch_move_|
+  // and ack'ed immediately, but remain buffered in |pending_async_touchmove_|
   // until a sufficient time period has elapsed since the last sent touch event.
   // For details see the design doc at http://goo.gl/lVyJAa.
   bool send_touch_events_async_;
-  bool needs_async_touch_move_for_outer_slop_region_;
-  scoped_ptr<TouchEventWithLatencyInfo> pending_async_touch_move_;
+  bool needs_async_touchmove_for_outer_slop_region_;
+  scoped_ptr<TouchEventWithLatencyInfo> pending_async_touchmove_;
   double last_sent_touch_timestamp_sec_;
 
   // How touch events are handled during scrolling.  For now this is a global
