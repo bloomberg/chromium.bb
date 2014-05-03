@@ -15,6 +15,12 @@ namespace cc {
 
 class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
  public:
+  enum ColorSpace {
+    REC_601,       // SDTV standard with restricted "studio swing" color range.
+    REC_601_JPEG,  // Full color range [0, 255] variant of the above.
+    COLOR_SPACE_LAST = REC_601_JPEG
+  };
+
   virtual ~YUVVideoDrawQuad();
 
   static scoped_ptr<YUVVideoDrawQuad> Create();
@@ -27,7 +33,8 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
               unsigned y_plane_resource_id,
               unsigned u_plane_resource_id,
               unsigned v_plane_resource_id,
-              unsigned a_plane_resource_id);
+              unsigned a_plane_resource_id,
+              ColorSpace color_space);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
@@ -38,13 +45,15 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
               unsigned y_plane_resource_id,
               unsigned u_plane_resource_id,
               unsigned v_plane_resource_id,
-              unsigned a_plane_resource_id);
+              unsigned a_plane_resource_id,
+              ColorSpace color_space);
 
   gfx::RectF tex_coord_rect;
   unsigned y_plane_resource_id;
   unsigned u_plane_resource_id;
   unsigned v_plane_resource_id;
   unsigned a_plane_resource_id;
+  ColorSpace color_space;
 
   virtual void IterateResources(const ResourceIteratorCallback& callback)
       OVERRIDE;

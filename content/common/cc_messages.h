@@ -131,6 +131,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(cc::FilterOperation::FilterType,
                           cc::FilterOperation::FILTER_TYPE_LAST )
 IPC_ENUM_TRAITS_MAX_VALUE(cc::ResourceFormat, cc::RESOURCE_FORMAT_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(SkXfermode::Mode, SkXfermode::kLastMode)
+IPC_ENUM_TRAITS_MAX_VALUE(cc::YUVVideoDrawQuad::ColorSpace,
+                          cc::YUVVideoDrawQuad::COLOR_SPACE_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(cc::RenderPass::Id)
   IPC_STRUCT_TRAITS_MEMBER(layer_id)
@@ -220,6 +222,7 @@ IPC_STRUCT_TRAITS_BEGIN(cc::YUVVideoDrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(u_plane_resource_id)
   IPC_STRUCT_TRAITS_MEMBER(v_plane_resource_id)
   IPC_STRUCT_TRAITS_MEMBER(a_plane_resource_id)
+  IPC_STRUCT_TRAITS_MEMBER(color_space)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::SharedQuadState)

@@ -225,6 +225,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
             resource_provider->best_texture_format());
     resource_provider->AllocateForTesting(plane_resources[i]);
   }
+  YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::REC_601;
   scoped_ptr<YUVVideoDrawQuad> yuv_quad = YUVVideoDrawQuad::Create();
   yuv_quad->SetNew(shared_state2.get(),
                    rect,
@@ -234,7 +235,8 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                    plane_resources[0],
                    plane_resources[1],
                    plane_resources[2],
-                   plane_resources[3]);
+                   plane_resources[3],
+                   color_space);
   AppendQuad(yuv_quad.PassAs<DrawQuad>());
 
   AppendSharedQuadState(shared_state.Pass());

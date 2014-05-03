@@ -560,6 +560,7 @@ int VideoFrame::rows(size_t plane) const {
         return height;
     // Fallthrough.
     case YV12:
+    case YV12J:
     case I420:
       if (plane == kYPlane)
         return height;

@@ -183,6 +183,10 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
       DCHECK_GE(frame_resources_.size(), 3u);
       if (frame_resources_.size() < 3u)
         break;
+      YUVVideoDrawQuad::ColorSpace color_space =
+          frame_->format() == media::VideoFrame::YV12J
+              ? YUVVideoDrawQuad::REC_601_JPEG
+              : YUVVideoDrawQuad::REC_601;
       gfx::RectF tex_coord_rect(
           tex_x_offset, tex_y_offset, tex_width_scale, tex_height_scale);
       scoped_ptr<YUVVideoDrawQuad> yuv_video_quad = YUVVideoDrawQuad::Create();
@@ -195,7 +199,8 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
           frame_resources_[0],
           frame_resources_[1],
           frame_resources_[2],
-          frame_resources_.size() > 3 ? frame_resources_[3] : 0);
+          frame_resources_.size() > 3 ? frame_resources_[3] : 0,
+          color_space);
       quad_sink->Append(yuv_video_quad.PassAs<DrawQuad>());
       break;
     }

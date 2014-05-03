@@ -200,6 +200,7 @@ class CCMessagesTest : public testing::Test {
     EXPECT_EQ(a->u_plane_resource_id, b->u_plane_resource_id);
     EXPECT_EQ(a->v_plane_resource_id, b->v_plane_resource_id);
     EXPECT_EQ(a->a_plane_resource_id, b->a_plane_resource_id);
+    EXPECT_EQ(a->color_space, b->color_space);
   }
 
   void Compare(const TransferableResource& a, const TransferableResource& b) {
@@ -259,6 +260,8 @@ TEST_F(CCMessagesTest, AllQuads) {
   ResourceProvider::ResourceId arbitrary_resourceid3 = 23;
   ResourceProvider::ResourceId arbitrary_resourceid4 = 16;
   SkScalar arbitrary_sigma = SkFloatToScalar(2.0f);
+  YUVVideoDrawQuad::ColorSpace arbitrary_color_space =
+      YUVVideoDrawQuad::REC_601;
 
   FilterOperations arbitrary_filters1;
   arbitrary_filters1.Append(FilterOperation::CreateGrayscaleFilter(
@@ -430,7 +433,8 @@ TEST_F(CCMessagesTest, AllQuads) {
                       arbitrary_resourceid1,
                       arbitrary_resourceid2,
                       arbitrary_resourceid3,
-                      arbitrary_resourceid4);
+                      arbitrary_resourceid4,
+                      arbitrary_color_space);
   scoped_ptr<DrawQuad> yuvvideo_cmp = yuvvideo_in->Copy(
       yuvvideo_in->shared_quad_state);
 

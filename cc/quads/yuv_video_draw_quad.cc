@@ -29,7 +29,8 @@ void YUVVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                               unsigned y_plane_resource_id,
                               unsigned u_plane_resource_id,
                               unsigned v_plane_resource_id,
-                              unsigned a_plane_resource_id) {
+                              unsigned a_plane_resource_id,
+                              ColorSpace color_space) {
   bool needs_blending = false;
   DrawQuad::SetAll(shared_quad_state, DrawQuad::YUV_VIDEO_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
@@ -38,6 +39,7 @@ void YUVVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   this->u_plane_resource_id = u_plane_resource_id;
   this->v_plane_resource_id = v_plane_resource_id;
   this->a_plane_resource_id = a_plane_resource_id;
+  this->color_space = color_space;
 }
 
 void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
@@ -49,7 +51,8 @@ void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                               unsigned y_plane_resource_id,
                               unsigned u_plane_resource_id,
                               unsigned v_plane_resource_id,
-                              unsigned a_plane_resource_id) {
+                              unsigned a_plane_resource_id,
+                              ColorSpace color_space) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::YUV_VIDEO_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
   this->tex_coord_rect = tex_coord_rect;
@@ -57,6 +60,7 @@ void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->u_plane_resource_id = u_plane_resource_id;
   this->v_plane_resource_id = v_plane_resource_id;
   this->a_plane_resource_id = a_plane_resource_id;
+  this->color_space = color_space;
 }
 
 void YUVVideoDrawQuad::IterateResources(
