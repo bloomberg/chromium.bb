@@ -43,6 +43,7 @@
             height: 100px;
             width: 100px;
             background-color: black;
+            position: relative;
         }
     </style>
 
@@ -87,7 +88,7 @@
             if(!window.internals)
                 return;
 
-            var divs = ['predecessor', 'container', 'scrolled1', 'scrolled2', 'scrolled3', 'fixed-descendant', 'successor', 'root'];
+            var divs = ['predecessor', 'container', 'scrolled1', 'scrolled2', 'scrolled3', 'fixed-descendant', 'successor', 'root', 'descendant'];
             for (var i = 0; i < divs.length; i++) {
                 var div1 = document.getElementById(divs[i]);
                 for (var j = 0; j < divs.length; j++) {
@@ -122,7 +123,7 @@
     <div class='positioned' id='predecessor'></div>
     <div class='container' id='container'>
         <div class='scrolled' id='scrolled1'>
-            <div class='descendant'></div>
+            <div id='descendant' class='descendant'></div>
         </div>
         <div class='scrolled' style='z-index:2;' id='scrolled2'>
             <div class='descendant'></div>
