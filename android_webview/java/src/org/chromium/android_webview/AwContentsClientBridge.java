@@ -147,6 +147,7 @@ public class AwContentsClientBridge {
         }
 
         private void provideResponse(AndroidPrivateKey androidKey, byte[][] certChain) {
+            if (mNativeContentsClientBridge == 0) return;
             nativeProvideClientCertificateResponse(mNativeContentsClientBridge, mId,
                     certChain, androidKey);
         }
@@ -197,6 +198,7 @@ public class AwContentsClientBridge {
     @CalledByNative
     protected void selectClientCertificate(final int id, final String[] keyTypes,
             byte[][] encodedPrincipals, final String host, final int port) {
+        assert mNativeContentsClientBridge != 0;
         ClientCertLookupTable.Cert cert = mLookupTable.getCertData(host, port);
         if (mLookupTable.isDenied(host, port)) {
             nativeProvideClientCertificateResponse(mNativeContentsClientBridge, id,
