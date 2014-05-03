@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_view.h"
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -127,6 +129,23 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 @end
 
+// The window used for the permission bubble controller.
+// Subclassed to allow browser-handled keyboard events to be passed from the
+// permission bubble to its parent window, which is a browser window.
+@interface PermissionBubbleWindow : InfoBubbleWindow
+@end
+
+@implementation PermissionBubbleWindow
+- (BOOL)performKeyEquivalent:(NSEvent*)event {
+  content::NativeWebKeyboardEvent wrappedEvent(event);
+  if ([BrowserWindowUtils shouldHandleKeyboardEvent:wrappedEvent]) {
+    return [BrowserWindowUtils handleKeyboardEvent:event
+                                          inWindow:[self parentWindow]];
+  }
+  return [super performKeyEquivalent:event];
+}
+@end
+
 @interface PermissionBubbleController ()
 
 // Returns an autoreleased NSView displaying the icon and label for |request|.
@@ -187,11 +206,12 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
                     bridge:(PermissionBubbleCocoa*)bridge {
   DCHECK(parentWindow);
   DCHECK(bridge);
-  base::scoped_nsobject<InfoBubbleWindow> window([[InfoBubbleWindow alloc]
-      initWithContentRect:ui::kWindowSizeDeterminedLater
-                styleMask:NSBorderlessWindowMask
-                  backing:NSBackingStoreBuffered
-                    defer:NO]);
+  base::scoped_nsobject<PermissionBubbleWindow> window(
+      [[PermissionBubbleWindow alloc]
+          initWithContentRect:ui::kWindowSizeDeterminedLater
+                    styleMask:NSBorderlessWindowMask
+                      backing:NSBackingStoreBuffered
+                        defer:NO]);
   [window setAllowedAnimations:info_bubble::kAnimateNone];
   if ((self = [super initWithWindow:window
                        parentWindow:parentWindow
