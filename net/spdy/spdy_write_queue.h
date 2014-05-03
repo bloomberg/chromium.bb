@@ -78,6 +78,8 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
     ~PendingWrite();
   };
 
+  bool removing_writes_;
+
   // The actual write queue, binned by priority.
   std::deque<PendingWrite> queue_[NUM_PRIORITIES];
 

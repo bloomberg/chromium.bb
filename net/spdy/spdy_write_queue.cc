@@ -26,7 +26,7 @@ SpdyWriteQueue::PendingWrite::PendingWrite(
 
 SpdyWriteQueue::PendingWrite::~PendingWrite() {}
 
-SpdyWriteQueue::SpdyWriteQueue() {}
+SpdyWriteQueue::SpdyWriteQueue() : removing_writes_(false) {}
 
 SpdyWriteQueue::~SpdyWriteQueue() {
   Clear();
@@ -55,6 +55,7 @@ void SpdyWriteQueue::Enqueue(RequestPriority priority,
 bool SpdyWriteQueue::Dequeue(SpdyFrameType* frame_type,
                              scoped_ptr<SpdyBufferProducer>* frame_producer,
                              base::WeakPtr<SpdyStream>* stream) {
+  CHECK(!removing_writes_);
   for (int i = MAXIMUM_PRIORITY; i >= MINIMUM_PRIORITY; --i) {
     if (!queue_[i].empty()) {
       PendingWrite pending_write = queue_[i].front();
@@ -72,6 +73,8 @@ bool SpdyWriteQueue::Dequeue(SpdyFrameType* frame_type,
 
 void SpdyWriteQueue::RemovePendingWritesForStream(
     const base::WeakPtr<SpdyStream>& stream) {
+  CHECK(!removing_writes_);
+  removing_writes_ = true;
   RequestPriority priority = stream->priority();
   CHECK_GE(priority, MINIMUM_PRIORITY);
   CHECK_LE(priority, MAXIMUM_PRIORITY);
@@ -103,10 +106,13 @@ void SpdyWriteQueue::RemovePendingWritesForStream(
     }
   }
   queue->erase(out_it, queue->end());
+  removing_writes_ = false;
 }
 
 void SpdyWriteQueue::RemovePendingWritesForStreamsAfter(
     SpdyStreamId last_good_stream_id) {
+  CHECK(!removing_writes_);
+  removing_writes_ = true;
   for (int i = MINIMUM_PRIORITY; i <= MAXIMUM_PRIORITY; ++i) {
     // Do the actual deletion and removal, preserving FIFO-ness.
     std::deque<PendingWrite>* queue = &queue_[i];
@@ -123,9 +129,12 @@ void SpdyWriteQueue::RemovePendingWritesForStreamsAfter(
     }
     queue->erase(out_it, queue->end());
   }
+  removing_writes_ = false;
 }
 
 void SpdyWriteQueue::Clear() {
+  CHECK(!removing_writes_);
+  removing_writes_ = true;
   for (int i = MINIMUM_PRIORITY; i <= MAXIMUM_PRIORITY; ++i) {
     for (std::deque<PendingWrite>::iterator it = queue_[i].begin();
          it != queue_[i].end(); ++it) {
@@ -133,6 +142,7 @@ void SpdyWriteQueue::Clear() {
     }
     queue_[i].clear();
   }
+  removing_writes_ = false;
 }
 
 }  // namespace net
