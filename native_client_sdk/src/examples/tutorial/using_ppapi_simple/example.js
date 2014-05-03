@@ -13,7 +13,7 @@ function moduleDidLoad() {
 // - exit message (prefixed with PS_EXIT_MESSAGE)
 function handleMessage(message) {
   if (message.data.indexOf("exit:") == 0) {
-    // When we recieve the exit message we post an empty reply back to
+    // When we receive the exit message we post an empty reply back to
     // confirm, at which point the module will exit.
     message.srcElement.postMessage({"exit" : ""});
   } else if (message.data.indexOf("tty:") == 0) {

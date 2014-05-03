@@ -493,7 +493,7 @@ void NaClProcessHost::OnDebugExceptionHandlerLaunchedByBroker(bool success) {
 }
 #endif
 
-// Needed to handle sync messages in OnMessageRecieved.
+// Needed to handle sync messages in OnMessageReceived.
 bool NaClProcessHost::Send(IPC::Message* msg) {
   return process_->Send(msg);
 }

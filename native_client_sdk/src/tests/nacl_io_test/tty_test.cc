@@ -238,9 +238,9 @@ TEST_F(TtyTest, TtyICANON) {
   ASSERT_EQ(0, IsReadable(tty_fd));
 }
 
-static int g_recieved_signal;
+static int g_received_signal;
 
-static void sighandler(int sig) { g_recieved_signal = sig; }
+static void sighandler(int sig) { g_received_signal = sig; }
 
 TEST_F(TtyTest, WindowSize) {
   // Get current window size
@@ -252,14 +252,14 @@ TEST_F(TtyTest, WindowSize) {
   sighandler_t old_handler = ki_signal(SIGWINCH, new_handler);
   ASSERT_NE(SIG_ERR, old_handler) << "signal return error: " << errno;
 
-  g_recieved_signal = 0;
+  g_received_signal = 0;
 
   // Set a new windows size
   struct winsize winsize;
   winsize.ws_col = 100;
   winsize.ws_row = 200;
   EXPECT_EQ(0, dev_tty_->Ioctl(TIOCSWINSZ, &winsize));
-  EXPECT_EQ(SIGWINCH, g_recieved_signal);
+  EXPECT_EQ(SIGWINCH, g_received_signal);
 
   // Restore old signal handler
   EXPECT_EQ(new_handler, ki_signal(SIGWINCH, old_handler));
