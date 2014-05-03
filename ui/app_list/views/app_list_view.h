@@ -35,7 +35,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
                                     public AppListViewDelegateObserver,
                                     public SpeechUIModelObserver {
  public:
-
   // Takes ownership of |delegate|.
   explicit AppListView(AppListViewDelegate* delegate);
   virtual ~AppListView();

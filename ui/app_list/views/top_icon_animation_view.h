@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_VIEWS_TOP_ICON_ANIMATION_VIEW_H
-#define UI_APP_LIST_VIEWS_TOP_ICON_ANIMATION_VIEW_H
+#ifndef UI_APP_LIST_VIEWS_TOP_ICON_ANIMATION_VIEW_H_
+#define UI_APP_LIST_VIEWS_TOP_ICON_ANIMATION_VIEW_H_
 
 #include "base/observer_list.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -75,4 +75,4 @@ class TopIconAnimationView : public views::View,
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_VIEWS_TOP_ICON_ANIMATION_VIEW_H
+#endif  // UI_APP_LIST_VIEWS_TOP_ICON_ANIMATION_VIEW_H_

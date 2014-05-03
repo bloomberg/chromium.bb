@@ -43,7 +43,7 @@ class SearchResultView : public views::CustomButton,
   // Internal class name.
   static const char kViewClassName[];
 
-  SearchResultView(SearchResultListView* list_view);
+  explicit SearchResultView(SearchResultListView* list_view);
   virtual ~SearchResultView();
 
   // Sets/gets SearchResult displayed by this view.

@@ -6,6 +6,7 @@
 #define UI_APP_LIST_VIEWS_APPS_GRID_VIEW_H_
 
 #include <set>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

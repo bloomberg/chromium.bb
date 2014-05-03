@@ -5,6 +5,12 @@
 #ifndef UI_APP_LIST_VIEWS_FOLDER_HEADER_VIEW_DELEGATE_H_
 #define UI_APP_LIST_VIEWS_FOLDER_HEADER_VIEW_DELEGATE_H_
 
+#include <string>
+
+namespace ui {
+class Event;
+}
+
 namespace app_list {
 
 class AppListFolderItem;

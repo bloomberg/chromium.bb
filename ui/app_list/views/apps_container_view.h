@@ -5,6 +5,8 @@
 #ifndef UI_APP_LIST_VIEWS_APPS_CONTAINER_VIEW_H_
 #define UI_APP_LIST_VIEWS_APPS_CONTAINER_VIEW_H_
 
+#include <vector>
+
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/views/top_icon_animation_view.h"
 #include "ui/views/view.h"

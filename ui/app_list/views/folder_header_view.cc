@@ -4,6 +4,8 @@
 
 #include "ui/app_list/views/folder_header_view.h"
 
+#include <algorithm>
+
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
