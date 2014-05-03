@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/focus/external_focus_tracker.h"
@@ -169,7 +168,7 @@ bool FindBarHost::IsFindBarVisible() {
 void FindBarHost::RestoreSavedFocus() {
   if (focus_tracker() == NULL) {
     // TODO(brettw): Focus() should be on WebContentsView.
-    find_bar_controller_->web_contents()->GetView()->Focus();
+    find_bar_controller_->web_contents()->Focus();
   } else {
     focus_tracker()->FocusLastFocusedExternalView();
   }
@@ -366,8 +365,7 @@ void FindBarHost::OnVisibilityChanged() {
 
 void FindBarHost::GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect) {
   gfx::Rect frame_rect = host()->GetTopLevelWidget()->GetWindowBoundsInScreen();
-  content::WebContentsView* tab_view =
-      find_bar_controller_->web_contents()->GetView();
-  gfx::Rect webcontents_rect = tab_view->GetViewBounds();
+  gfx::Rect webcontents_rect =
+      find_bar_controller_->web_contents()->GetViewBounds();
   avoid_overlapping_rect->Offset(0, webcontents_rect.y() - frame_rect.y());
 }

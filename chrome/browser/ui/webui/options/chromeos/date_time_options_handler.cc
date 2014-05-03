@@ -11,7 +11,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/system_clock_client.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -73,7 +72,7 @@ void DateTimeOptionsHandler::HandleShowSetTime(const base::ListValue* args) {
   // Make sure the clock status hasn't changed since the button was clicked.
   if (can_set_time_) {
     SetTimeDialog::ShowDialog(
-        web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow());
+        web_ui()->GetWebContents()->GetTopLevelNativeWindow());
   }
 }
 

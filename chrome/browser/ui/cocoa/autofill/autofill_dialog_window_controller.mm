@@ -20,7 +20,6 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_textfield.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #import "ui/base/cocoa/flipped_view.h"
 #include "ui/base/cocoa/window_size_constants.h"
@@ -213,8 +212,7 @@ const CGFloat kMinimumContentsHeight = 101;
 
 - (CGFloat)maxHeight {
   NSRect dialogFrameRect = [[self window] frame];
-  NSRect browserFrameRect =
-      [webContents_->GetView()->GetTopLevelNativeWindow() frame];
+  NSRect browserFrameRect = [webContents_->GetTopLevelNativeWindow() frame];
   dialogFrameRect.size.height =
       NSMaxY(dialogFrameRect) - NSMinY(browserFrameRect);
   dialogFrameRect = [[self window] contentRectForFrameRect:dialogFrameRect];

@@ -29,7 +29,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/webplugininfo.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -272,7 +271,7 @@ void PluginObserver::RenderFrameCreated(
   // where we have instances on both Ash and Native desktop.
 
   // We will do both tests. Both have some factor of unreliability.
-  aura::Window* window = web_contents()->GetView()->GetNativeView();
+  aura::Window* window = web_contents()->GetNativeView();
   if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH ||
       chrome::GetHostDesktopTypeForNativeView(window) ==
       chrome::HOST_DESKTOP_TYPE_ASH) {

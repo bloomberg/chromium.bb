@@ -30,7 +30,6 @@
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
-#include "content/public/browser/web_contents_view.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -242,7 +241,7 @@ void PrintingMessageFilter::CreatePrintDialogForFile(
     return;
   print_dialog_cloud::CreatePrintDialogForFile(
       wc->GetBrowserContext(),
-      wc->GetView()->GetTopLevelNativeWindow(),
+      wc->GetTopLevelNativeWindow(),
       path,
       wc->GetTitle(),
       base::string16(),

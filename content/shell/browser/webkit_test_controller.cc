@@ -24,7 +24,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/shell/browser/shell.h"
@@ -277,7 +276,7 @@ bool WebKitTestController::PrepareForLayoutTest(
         PAGE_TRANSITION_TYPED | PAGE_TRANSITION_FROM_ADDRESS_BAR);
     params.should_clear_history_list = true;
     main_window_->web_contents()->GetController().LoadURLWithParams(params);
-    main_window_->web_contents()->GetView()->Focus();
+    main_window_->web_contents()->Focus();
   }
   main_window_->web_contents()->GetRenderViewHost()->SetActive(true);
   main_window_->web_contents()->GetRenderViewHost()->Focus();

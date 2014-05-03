@@ -10,7 +10,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "ipc/ipc_message.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -182,7 +181,7 @@ void WebView::OnFocus() {
     if (current_fs_view)
       current_fs_view->Focus();
   } else {
-    web_contents()->GetView()->Focus();
+    web_contents()->Focus();
   }
 }
 
@@ -262,7 +261,7 @@ void WebView::AttachWebContents() {
 
   const gfx::NativeView view_to_attach = is_embedding_fullscreen_widget_ ?
       web_contents()->GetFullscreenRenderWidgetHostView()->GetNativeView() :
-      web_contents()->GetView()->GetNativeView();
+      web_contents()->GetNativeView();
   OnBoundsChanged(bounds());
   if (holder_->native_view() == view_to_attach)
     return;

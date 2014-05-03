@@ -54,7 +54,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/ash_resources.h"
 #include "grit/locale_settings.h"
@@ -1639,7 +1638,7 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
 }
 
 gfx::NativeWindow InternetOptionsHandler::GetNativeWindow() const {
-  return web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow();
+  return web_ui()->GetWebContents()->GetTopLevelNativeWindow();
 }
 
 void InternetOptionsHandler::NetworkCommandCallback(

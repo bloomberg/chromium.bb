@@ -31,7 +31,7 @@ class StreamsPrivateAPI : public BrowserContextKeyedAPI,
   virtual ~StreamsPrivateAPI();
 
   void ExecuteMimeTypeHandler(const std::string& extension_id,
-                              const content::WebContents* web_contents,
+                              content::WebContents* web_contents,
                               scoped_ptr<content::StreamHandle> stream,
                               int64 expected_content_size);
 

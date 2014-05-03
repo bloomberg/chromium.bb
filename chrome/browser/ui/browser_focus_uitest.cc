@@ -33,7 +33,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -287,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocus) {
 
       // Activate the location bar or the page.
       if (kFocusPage[i][j]) {
-        browser()->tab_strip_model()->GetWebContentsAt(j)->GetView()->Focus();
+        browser()->tab_strip_model()->GetWebContentsAt(j)->Focus();
       } else {
         chrome::FocusLocationBar(browser());
       }

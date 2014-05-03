@@ -34,7 +34,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/geoposition.h"
 #include "content/public/common/webplugininfo.h"
 #include "gpu/config/gpu_info.h"
@@ -531,7 +530,7 @@ void GetFingerprintInternal(
 void GetFingerprint(
     uint64 obfuscated_gaia_id,
     const gfx::Rect& window_bounds,
-    const content::WebContents& web_contents,
+    content::WebContents* web_contents,
     const std::string& version,
     const std::string& charset,
     const std::string& accept_languages,
@@ -539,12 +538,11 @@ void GetFingerprint(
     const std::string& app_locale,
     const std::string& user_agent,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback) {
-  gfx::Rect content_bounds;
-  web_contents.GetView()->GetContainerBounds(&content_bounds);
+  gfx::Rect content_bounds = web_contents->GetContainerBounds();
 
   blink::WebScreenInfo screen_info;
   content::RenderWidgetHostView* host_view =
-      web_contents.GetRenderWidgetHostView();
+      web_contents->GetRenderWidgetHostView();
   if (host_view)
     host_view->GetRenderWidgetHost()->GetWebScreenInfo(&screen_info);
 

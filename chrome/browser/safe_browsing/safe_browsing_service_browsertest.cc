@@ -39,7 +39,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "net/cookies/cookie_store.h"
 #include "sql/connection.h"
 #include "sql/statement.h"

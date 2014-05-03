@@ -42,7 +42,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/browser_test_utils.h"
@@ -215,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoredTabsShouldHaveRootWindow) {
   // Check the restored tabs have a root window.
   for (int i = 0; i < tabs; ++i) {
     content::WebContents* contents = tab_strip_model->GetWebContentsAt(i);
-    gfx::NativeView window = contents->GetView()->GetNativeView();
+    gfx::NativeView window = contents->GetNativeView();
     bool tab_has_root_window = !!window->GetRootWindow();
     EXPECT_TRUE(tab_has_root_window);
   }

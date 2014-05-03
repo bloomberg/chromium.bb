@@ -26,8 +26,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_view.h"
-
 using base::UserMetricsAction;
 using content::WebContents;
 
@@ -840,7 +838,7 @@ void TabStripModel::AddWebContents(WebContents* contents,
   if (WebContents* old_contents = GetActiveWebContents()) {
     if ((add_types & ADD_ACTIVE) == 0) {
       apps::ResizeWebContents(contents,
-                              old_contents->GetView()->GetContainerSize());
+                              old_contents->GetContainerBounds().size());
     }
   }
 }

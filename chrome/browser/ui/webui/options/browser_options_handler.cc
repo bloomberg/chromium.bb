@@ -82,7 +82,6 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/page_zoom.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -1362,7 +1361,7 @@ void BrowserOptionsHandler::HandleSelectDownloadLocation(
       &info,
       0,
       base::FilePath::StringType(),
-      web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(),
+      web_ui()->GetWebContents()->GetTopLevelNativeWindow(),
       NULL);
 }
 

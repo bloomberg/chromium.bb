@@ -37,7 +37,6 @@
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_transition_types.h"
 #include "ui/gfx/rect.h"
@@ -187,7 +186,7 @@ class PrerenderContents::WebContentsDelegateImpl
   }
 
   virtual gfx::Size GetSizeForNewRenderView(
-      const WebContents* web_contents) const OVERRIDE {
+      WebContents* web_contents) const OVERRIDE {
     // Have to set the size of the RenderView on initialization to be sure it is
     // set before the RenderView is hidden on all platforms (esp. Android).
     return prerender_contents_->size_;

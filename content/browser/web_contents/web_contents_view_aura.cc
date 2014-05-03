@@ -70,7 +70,7 @@
 #include "ui/wm/public/drag_drop_delegate.h"
 
 namespace content {
-WebContentsViewPort* CreateWebContentsView(
+WebContentsView* CreateWebContentsView(
     WebContentsImpl* web_contents,
     WebContentsViewDelegate* delegate,
     RenderViewHostDelegateView** render_view_host_delegate_view) {
@@ -159,7 +159,7 @@ class OverscrollWindowDelegate : public ImageWindowDelegate {
       web_contents_window()->delegate()->OnGestureEvent(event);
   }
 
-  WebContents* web_contents_;
+  WebContentsImpl* web_contents_;
 
   // The window is displayed both during the gesture, and after the gesture
   // while the navigation is in progress. During the gesture, it is necessary to
@@ -979,10 +979,6 @@ void WebContentsViewAura::GetContainerBounds(gfx::Rect *out) const {
   *out = window_->GetBoundsInScreen();
 }
 
-void WebContentsViewAura::OnTabCrashed(base::TerminationStatus status,
-                                       int error_code) {
-}
-
 void WebContentsViewAura::SizeContents(const gfx::Size& size) {
   gfx::Rect bounds = window_->bounds();
   if (bounds.size() != size) {
@@ -1035,7 +1031,7 @@ gfx::Rect WebContentsViewAura::GetViewBounds() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WebContentsViewAura, WebContentsViewPort implementation:
+// WebContentsViewAura, WebContentsView implementation:
 
 void WebContentsViewAura::CreateView(
     const gfx::Size& initial_size, gfx::NativeView context) {

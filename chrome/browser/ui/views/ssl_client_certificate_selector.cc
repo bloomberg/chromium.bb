@@ -14,7 +14,6 @@
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -267,7 +266,7 @@ void SSLClientCertificateSelector::ButtonPressed(
     net::X509Certificate* cert = GetSelectedCert();
     if (cert)
       ShowCertificateViewer(web_contents_,
-                            web_contents_->GetView()->GetTopLevelNativeWindow(),
+                            web_contents_->GetTopLevelNativeWindow(),
                             cert);
   }
 }

@@ -33,7 +33,6 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/renderer_preferences.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -217,7 +216,7 @@ WebContents* OpenApplicationWindow(const AppLaunchParams& params) {
 
   // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial
   //                focus explicitly.
-  web_contents->GetView()->SetInitialFocus();
+  web_contents->SetInitialFocus();
   return web_contents;
 }
 

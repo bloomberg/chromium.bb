@@ -13,7 +13,6 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 
 using web_modal::WebContentsModalDialogManager;
 using web_modal::NativeWebContentsModalDialog;
@@ -90,5 +89,5 @@ NSWindow* ConstrainedWindowMac::GetParentWindow() const {
   if (browser)
     return browser->window()->GetNativeWindow();
 
-  return web_contents_->GetView()->GetTopLevelNativeWindow();
+  return web_contents_->GetTopLevelNativeWindow();
 }

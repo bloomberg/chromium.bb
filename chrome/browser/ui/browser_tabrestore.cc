@@ -17,7 +17,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 
 using content::WebContents;
 using content::NavigationController;
@@ -62,7 +61,7 @@ WebContents* CreateRestoredTab(
       browser->tab_strip_model()->GetActiveWebContents();
   if (base_web_contents) {
     create_params.initial_size =
-        base_web_contents->GetView()->GetContainerSize();
+        base_web_contents->GetContainerBounds().size();
   }
   WebContents* web_contents = content::WebContents::CreateWithSessionStorage(
       create_params,

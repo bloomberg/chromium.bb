@@ -51,7 +51,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_registry.h"
@@ -342,7 +341,7 @@ void TabHelper::OnDidGetApplicationInfo(int32 page_id,
   switch (pending_web_app_action_) {
     case CREATE_SHORTCUT: {
       chrome::ShowCreateWebAppShortcutsDialog(
-          web_contents()->GetView()->GetTopLevelNativeWindow(),
+          web_contents()->GetTopLevelNativeWindow(),
           web_contents());
       break;
     }

@@ -57,7 +57,6 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -1311,7 +1310,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 
 // Called before |contents| is deactivated.
 - (void)tabDeactivatedWithContents:(content::WebContents*)contents {
-  contents->GetView()->StoreFocus();
+  contents->StoreFocus();
 }
 
 // Called when a notification is received from the model to select a particular
@@ -1357,7 +1356,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 
   if (newContents) {
     newContents->WasShown();
-    newContents->GetView()->RestoreFocus();
+    newContents->RestoreFocus();
   }
 }
 
@@ -2235,5 +2234,5 @@ NSView* GetSheetParentViewForWebContents(WebContents* web_contents) {
   //
   // Changing it? Do not forget to modify
   // -[TabStripController swapInTabAtIndex:] too.
-  return [web_contents->GetView()->GetNativeView() superview];
+  return [web_contents->GetNativeView() superview];
 }

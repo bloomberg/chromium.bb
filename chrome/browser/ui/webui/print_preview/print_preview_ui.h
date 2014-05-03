@@ -149,8 +149,7 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
    public:
     virtual bool IsAutoCancelEnabled() = 0;
     virtual void DidGetPreviewPageCount(int page_count) = 0;
-    virtual void DidRenderPreviewPage(
-        const content::WebContents& preview_dialog) = 0;
+    virtual void DidRenderPreviewPage(content::WebContents* preview_dialog) = 0;
   };
 
   static void SetDelegateForTesting(TestingDelegate* delegate);

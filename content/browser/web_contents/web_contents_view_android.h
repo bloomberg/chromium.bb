@@ -6,18 +6,18 @@
 #define CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_ANDROID_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/web_contents/web_contents_view.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
-#include "content/port/browser/web_contents_view_port.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/context_menu_params.h"
 #include "ui/gfx/rect_f.h"
 
 namespace content {
 class ContentViewCoreImpl;
+class WebContentsImpl;
 
 // Android-specific implementation of the WebContentsView.
-class WebContentsViewAndroid : public WebContentsViewPort,
+class WebContentsViewAndroid : public WebContentsView,
                                public RenderViewHostDelegateView {
  public:
   WebContentsViewAndroid(WebContentsImpl* web_contents,
@@ -34,8 +34,6 @@ class WebContentsViewAndroid : public WebContentsViewPort,
   virtual gfx::NativeView GetContentNativeView() const OVERRIDE;
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE;
   virtual void GetContainerBounds(gfx::Rect* out) const OVERRIDE;
-  virtual void OnTabCrashed(base::TerminationStatus status,
-                            int error_code) OVERRIDE;
   virtual void SizeContents(const gfx::Size& size) OVERRIDE;
   virtual void Focus() OVERRIDE;
   virtual void SetInitialFocus() OVERRIDE;
@@ -43,8 +41,6 @@ class WebContentsViewAndroid : public WebContentsViewPort,
   virtual void RestoreFocus() OVERRIDE;
   virtual DropData* GetDropData() const OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
-
-  // WebContentsViewPort implementation ----------------------------------------
   virtual void CreateView(
       const gfx::Size& initial_size, gfx::NativeView context) OVERRIDE;
   virtual RenderWidgetHostViewBase* CreateViewForWidget(

@@ -34,7 +34,7 @@ namespace content {
 WebContentsViewGuest::WebContentsViewGuest(
     WebContentsImpl* web_contents,
     BrowserPluginGuest* guest,
-    scoped_ptr<WebContentsViewPort> platform_view,
+    scoped_ptr<WebContentsView> platform_view,
     RenderViewHostDelegateView* platform_view_delegate_view)
     : web_contents_(web_contents),
       guest_(guest),
@@ -57,7 +57,7 @@ gfx::NativeView WebContentsViewGuest::GetContentNativeView() const {
 }
 
 gfx::NativeWindow WebContentsViewGuest::GetTopLevelNativeWindow() const {
-  return guest_->embedder_web_contents()->GetView()->GetTopLevelNativeWindow();
+  return guest_->embedder_web_contents()->GetTopLevelNativeWindow();
 }
 
 void WebContentsViewGuest::OnGuestInitialized(WebContentsView* parent_view) {
@@ -202,10 +202,6 @@ WebContents* WebContentsViewGuest::web_contents() {
 
 void WebContentsViewGuest::RestoreFocus() {
   platform_view_->RestoreFocus();
-}
-
-void WebContentsViewGuest::OnTabCrashed(base::TerminationStatus status,
-                                        int error_code) {
 }
 
 void WebContentsViewGuest::Focus() {

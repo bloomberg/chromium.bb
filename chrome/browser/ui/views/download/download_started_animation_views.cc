@@ -5,7 +5,6 @@
 #include "chrome/browser/download/download_started_animation.h"
 
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/linear_animation.h"
@@ -67,7 +66,7 @@ DownloadStartedAnimationViews::DownloadStartedAnimationViews(
 
   // If we're too small to show the download image, then don't bother -
   // the shelf will be enough.
-  web_contents->GetView()->GetContainerBounds(&web_contents_bounds_);
+  web_contents_bounds_= web_contents->GetContainerBounds();
   if (web_contents_bounds_.height() < kDownloadImage->height())
     return;
 
@@ -78,7 +77,7 @@ DownloadStartedAnimationViews::DownloadStartedAnimationViews(
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.accept_events = false;
-  params.parent = web_contents->GetView()->GetNativeView();
+  params.parent = web_contents->GetNativeView();
   popup_->Init(params);
   popup_->SetOpacity(0x00);
   popup_->SetContentsView(this);

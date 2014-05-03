@@ -21,7 +21,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/test/browser_test_utils.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -101,10 +100,9 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   mouse_event.button = blink::WebMouseEvent::ButtonRight;
   mouse_event.x = 15;
   mouse_event.y = 15;
-  gfx::Rect offset;
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  tab->GetView()->GetContainerBounds(&offset);
+  gfx::Rect offset = tab->GetContainerBounds();
   mouse_event.globalX = 15 + offset.x();
   mouse_event.globalY = 15 + offset.y();
   mouse_event.clickCount = 1;

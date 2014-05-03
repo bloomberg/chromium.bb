@@ -23,7 +23,6 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -194,8 +193,8 @@ void StartPageHandler::HandleLaunchApp(const base::ListValue* args) {
 
   AppListControllerDelegate* controller = AppListService::Get(
       chrome::GetHostDesktopTypeForNativeView(
-          web_ui()->GetWebContents()->GetView()->GetNativeView()))
-      ->GetControllerDelegate();
+          web_ui()->GetWebContents()->GetNativeView()))->
+              GetControllerDelegate();
   controller->ActivateApp(profile,
                           app,
                           AppListControllerDelegate::LAUNCH_FROM_APP_LIST,

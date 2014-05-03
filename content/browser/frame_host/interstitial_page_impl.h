@@ -27,7 +27,6 @@ class NavigationControllerImpl;
 class RenderViewHostImpl;
 class RenderWidgetHostView;
 class WebContentsView;
-class WebContentsImpl;
 
 enum ResourceRequestAction {
   BLOCK,

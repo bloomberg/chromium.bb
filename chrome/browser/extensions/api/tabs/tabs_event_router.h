@@ -156,7 +156,7 @@ class TabsEventRouter : public TabStripModelObserver,
 
   // Gets the TabEntry for the given |contents|. Returns TabEntry* if
   // found, NULL if not.
-  TabEntry* GetTabEntry(const content::WebContents* contents);
+  TabEntry* GetTabEntry(content::WebContents* contents);
 
   std::map<int, TabEntry> tab_entries_;
 

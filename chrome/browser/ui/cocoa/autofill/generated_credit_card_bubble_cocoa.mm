@@ -15,7 +15,6 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
-#include "content/public/browser/web_contents_view.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/native_theme/native_theme.h"
@@ -195,7 +194,7 @@ GeneratedCreditCardBubbleCocoa::~GeneratedCreditCardBubbleCocoa() {}
 void GeneratedCreditCardBubbleCocoa::Show() {
   DCHECK(controller_.get());
   NSView* browser_view =
-      controller_->web_contents()->GetView()->GetNativeView();
+      controller_->web_contents()->GetNativeView();
   NSWindow* parent_window = [browser_view window];
   LocationBarViewMac* location_bar =
       [[parent_window windowController] locationBarBridge];

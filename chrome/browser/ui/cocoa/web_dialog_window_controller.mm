@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/size.h"
@@ -344,7 +343,7 @@ void WebDialogWindowDelegateBridge::HandleKeyboardEvent(
 - (void)loadDialogContents {
   webContents_.reset(WebContents::Create(
       WebContents::CreateParams(delegate_->browser_context())));
-  [[self window] setContentView:webContents_->GetView()->GetNativeView()];
+  [[self window] setContentView:webContents_->GetNativeView()];
   webContents_->SetDelegate(delegate_.get());
 
   // This must be done before loading the page; see the comments in

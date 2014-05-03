@@ -12,7 +12,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view_aura.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -140,8 +139,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     ASSERT_TRUE(test_server()->Start());
     GURL test_url(test_server()->GetURL(url));
     NavigateToURL(shell(), test_url);
-    aura::Window* content =
-        shell()->web_contents()->GetView()->GetContentNativeView();
+    aura::Window* content = shell()->web_contents()->GetContentNativeView();
     content->GetHost()->SetBounds(gfx::Rect(800, 600));
   }
 
@@ -176,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   view_aura->SetTouchEditableForTest(touch_editable);
   RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
       web_contents->GetRenderWidgetHostView());
-  aura::Window* content = web_contents->GetView()->GetContentNativeView();
+  aura::Window* content = web_contents->GetContentNativeView();
   aura::test::EventGenerator generator(content->GetRootWindow(), content);
   gfx::Rect bounds = content->GetBoundsInRootWindow();
 
@@ -362,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   view_aura->SetTouchEditableForTest(touch_editable);
   RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
       web_contents->GetRenderWidgetHostView());
-  aura::Window* content = web_contents->GetView()->GetContentNativeView();
+  aura::Window* content = web_contents->GetContentNativeView();
   aura::test::EventGenerator generator(content->GetRootWindow(), content);
   gfx::Rect bounds = content->GetBoundsInRootWindow();
   EXPECT_EQ(GetRenderWidgetHostViewAura(touch_editable), rwhva);

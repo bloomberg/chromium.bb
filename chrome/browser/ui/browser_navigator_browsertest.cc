@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -26,8 +27,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
-#include "ipc/ipc_message.h"
 
 using content::WebContents;
 
@@ -131,7 +130,7 @@ WebContents* BrowserNavigatorTest::CreateWebContents() {
       browser()->tab_strip_model()->GetActiveWebContents();
   if (base_web_contents) {
     create_params.initial_size =
-        base_web_contents->GetView()->GetContainerSize();
+        base_web_contents->GetContainerBounds().size();
   }
   return WebContents::Create(create_params);
 }
@@ -736,7 +735,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, DISABLED_TargetContents_Popup) {
   // All platforms should respect size however provided width > 400 (Mac has a
   // minimum window width of 400).
   EXPECT_EQ(p.window_bounds.size(),
-            p.target_contents->GetView()->GetContainerSize());
+            p.target_contents->GetContainerBounds().size());
 
   // We should have two windows, the new popup and the browser() provided by the
   // framework.

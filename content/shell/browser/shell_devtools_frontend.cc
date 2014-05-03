@@ -13,7 +13,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/content_client.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -90,7 +89,7 @@ void ShellDevToolsFrontend::Activate() {
 }
 
 void ShellDevToolsFrontend::Focus() {
-  web_contents()->GetView()->Focus();
+  web_contents()->Focus();
 }
 
 void ShellDevToolsFrontend::InspectElementAt(int x, int y) {

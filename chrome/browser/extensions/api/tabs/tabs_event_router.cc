@@ -203,8 +203,8 @@ void TabsEventRouter::TabCreatedAt(WebContents* contents,
 }
 
 void TabsEventRouter::TabInsertedAt(WebContents* contents,
-                                       int index,
-                                       bool active) {
+                                    int index,
+                                    bool active) {
   // If tab is new, send created event.
   int tab_id = ExtensionTabUtil::GetTabId(contents);
   if (!GetTabEntry(contents)) {
@@ -472,8 +472,7 @@ void TabsEventRouter::DispatchTabUpdatedEvent(
   EventRouter::Get(profile)->BroadcastEvent(event.Pass());
 }
 
-TabsEventRouter::TabEntry* TabsEventRouter::GetTabEntry(
-    const WebContents* contents) {
+TabsEventRouter::TabEntry* TabsEventRouter::GetTabEntry(WebContents* contents) {
   int tab_id = ExtensionTabUtil::GetTabId(contents);
   std::map<int, TabEntry>::iterator i = tab_entries_.find(tab_id);
   if (tab_entries_.end() == i)

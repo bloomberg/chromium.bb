@@ -8,7 +8,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -83,7 +82,7 @@ void HideUserManager() {
     // Initialize the web view.
     webContents_.reset(content::WebContents::Create(
         content::WebContents::CreateParams(profile)));
-    window.contentView = webContents_->GetView()->GetNativeView();
+    window.contentView = webContents_->GetNativeView();
     DCHECK(window.contentView);
 
     [[NSNotificationCenter defaultCenter]

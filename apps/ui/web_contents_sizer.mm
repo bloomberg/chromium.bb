@@ -7,13 +7,12 @@
 #import <Cocoa/Cocoa.h>
 
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 
 namespace apps {
 
 void ResizeWebContents(content::WebContents* web_contents,
                        const gfx::Size& new_size) {
-  NSView* view = web_contents->GetView()->GetNativeView();
+  NSView* view = web_contents->GetNativeView();
   NSRect old_wcv_frame = [view frame];
   CGFloat new_x = old_wcv_frame.origin.x;
   CGFloat new_y =

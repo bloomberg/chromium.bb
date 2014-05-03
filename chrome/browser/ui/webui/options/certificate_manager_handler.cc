@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/webui/certificate_viewer_webui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
@@ -1154,7 +1153,7 @@ void CertificateManagerHandler::ShowImportErrors(
 }
 
 gfx::NativeWindow CertificateManagerHandler::GetParentWindow() const {
-  return web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow();
+  return web_ui()->GetWebContents()->GetTopLevelNativeWindow();
 }
 
 }  // namespace options

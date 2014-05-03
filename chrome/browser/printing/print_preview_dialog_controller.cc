@@ -40,7 +40,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/webplugininfo.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
@@ -138,7 +137,7 @@ void PrintPreviewDialogDelegate::GetDialogSize(gfx::Size* size) const {
     size->SetToMax(host->GetMaximumDialogSize());
     size->Enlarge(-2 * kBorder, -kBorder);
   } else {
-    size->SetToMax(initiator_->GetView()->GetContainerSize());
+    size->SetToMax(initiator_->GetContainerBounds().size());
     size->Enlarge(-2 * kBorder, -2 * kBorder);
   }
 

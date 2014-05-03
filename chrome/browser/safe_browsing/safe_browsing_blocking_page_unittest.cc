@@ -17,14 +17,12 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/test/web_contents_tester.h"
 
 using content::InterstitialPage;
 using content::NavigationEntry;
 using content::WebContents;
 using content::WebContentsTester;
-using content::WebContentsView;
 
 static const char* kGoogleURL = "http://www.google.com/";
 static const char* kGoodURL = "http://www.goodguys.com/";

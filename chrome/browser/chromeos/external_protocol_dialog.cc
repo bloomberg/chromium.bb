@@ -10,7 +10,6 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -108,7 +107,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
 
   gfx::NativeWindow parent_window;
   if (web_contents) {
-    parent_window = web_contents->GetView()->GetTopLevelNativeWindow();
+    parent_window = web_contents->GetTopLevelNativeWindow();
   } else {
     // Dialog is top level if we don't have a web_contents associated with us.
     parent_window = NULL;

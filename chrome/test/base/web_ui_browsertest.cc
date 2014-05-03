@@ -277,9 +277,8 @@ class PrintContentBrowserClient : public chrome::ChromeContentBrowserClient {
 
  private:
   // ChromeContentBrowserClient implementation:
-  virtual content::WebContentsViewPort* OverrideCreateWebContentsView(
-      content::WebContents* web_contents,
-      content::RenderViewHostDelegateView** view) OVERRIDE {
+  virtual content::WebContentsViewDelegate* GetWebContentsViewDelegate(
+      content::WebContents* web_contents) OVERRIDE {
     preview_dialog_ = web_contents;
     observer_.reset(new WebUIJsInjectionReadyObserver(
         preview_dialog_, browser_test_, preload_test_fixture_,

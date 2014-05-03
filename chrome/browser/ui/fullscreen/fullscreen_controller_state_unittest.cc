@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -525,7 +524,7 @@ TEST_F(FullscreenControllerStateUnitTest, OneCapturedFullscreenedTab) {
   // TODO(miu): Need to make an adjustment to content::WebContentsViewMac for
   // the following to work:
 #if !defined(OS_MACOSX)
-  EXPECT_EQ(kCaptureSize, first_tab->GetView()->GetViewBounds().size());
+  EXPECT_EQ(kCaptureSize, first_tab->GetViewBounds().size());
 #endif
 
   // Switch back to the first tab and exit fullscreen.

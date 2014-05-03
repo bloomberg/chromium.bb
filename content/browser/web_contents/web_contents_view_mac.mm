@@ -68,7 +68,7 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 @end
 
 namespace content {
-WebContentsViewPort* CreateWebContentsView(
+WebContentsView* CreateWebContentsView(
     WebContentsImpl* web_contents,
     WebContentsViewDelegate* delegate,
     RenderViewHostDelegateView** render_view_host_delegate_view) {
@@ -150,10 +150,6 @@ void WebContentsViewMac::StartDragging(
                    dragOperationMask:mask
                                image:gfx::NSImageFromImageSkia(image)
                               offset:offset];
-}
-
-void WebContentsViewMac::OnTabCrashed(base::TerminationStatus /* status */,
-                                      int /* error_code */) {
 }
 
 void WebContentsViewMac::SizeContents(const gfx::Size& size) {

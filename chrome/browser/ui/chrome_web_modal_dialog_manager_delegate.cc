@@ -6,7 +6,6 @@
 
 #include "chrome/browser/platform_util.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 
 ChromeWebModalDialogManagerDelegate::ChromeWebModalDialogManagerDelegate() {
 }
@@ -16,5 +15,5 @@ ChromeWebModalDialogManagerDelegate::~ChromeWebModalDialogManagerDelegate() {
 
 bool ChromeWebModalDialogManagerDelegate::IsWebContentsVisible(
     content::WebContents* web_contents) {
-  return platform_util::IsVisible(web_contents->GetView()->GetNativeView());
+  return platform_util::IsVisible(web_contents->GetNativeView());
 }

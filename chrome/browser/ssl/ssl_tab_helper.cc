@@ -28,7 +28,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_errors.h"
@@ -123,7 +122,7 @@ bool SSLCertResultInfoBarDelegate::Accept() {
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
   ShowCertificateViewer(web_contents,
-                        web_contents->GetView()->GetTopLevelNativeWindow(),
+                        web_contents->GetTopLevelNativeWindow(),
                         cert_.get());
   return false;  // Hiding the infobar just as the dialog opens looks weird.
 }

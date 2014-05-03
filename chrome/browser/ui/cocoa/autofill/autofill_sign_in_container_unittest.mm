@@ -12,7 +12,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
@@ -69,7 +68,7 @@ TEST_F(AutofillSignInContainerTest, Subviews) {
   // isKindOfClass would be the better choice, but
   // WebContentsViewCocoaClass is defined in content, and not public.
   bool hasWebView =[[container_ view] isEqual:
-      [container_ webContents]->GetView()->GetNativeView()];
+      [container_ webContents]->GetNativeView()];
 
   EXPECT_TRUE(hasWebView);
 }

@@ -239,8 +239,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   // Hides a visible popup menu.
   void HideSelectPopupMenu();
 
-  void OnTabCrashed();
-
   // All sizes and offsets are in CSS pixels as cached by the renderer.
   void UpdateFrameInfo(const gfx::Vector2dF& scroll_offset,
                        float page_scale_factor,

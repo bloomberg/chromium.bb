@@ -8,7 +8,6 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/ui/sad_tab.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SadTabHelper);
 

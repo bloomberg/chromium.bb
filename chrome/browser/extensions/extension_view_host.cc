@@ -15,7 +15,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/common/extension_messages.h"
@@ -276,7 +275,7 @@ ExtensionViewHost::GetWebContentsModalDialogHost() {
 }
 
 bool ExtensionViewHost::IsWebContentsVisible(WebContents* web_contents) {
-  return platform_util::IsVisible(web_contents->GetView()->GetNativeView());
+  return platform_util::IsVisible(web_contents->GetNativeView());
 }
 
 gfx::NativeView ExtensionViewHost::GetHostView() const {
@@ -286,7 +285,7 @@ gfx::NativeView ExtensionViewHost::GetHostView() const {
 gfx::Point ExtensionViewHost::GetDialogPosition(const gfx::Size& size) {
   if (!GetVisibleWebContents())
     return gfx::Point();
-  gfx::Rect bounds = GetVisibleWebContents()->GetView()->GetViewBounds();
+  gfx::Rect bounds = GetVisibleWebContents()->GetViewBounds();
   return gfx::Point(
       std::max(0, (bounds.width() - size.width()) / 2),
       std::max(0, (bounds.height() - size.height()) / 2));
@@ -295,7 +294,7 @@ gfx::Point ExtensionViewHost::GetDialogPosition(const gfx::Size& size) {
 gfx::Size ExtensionViewHost::GetMaximumDialogSize() {
   if (!GetVisibleWebContents())
     return gfx::Size();
-  return GetVisibleWebContents()->GetView()->GetViewBounds().size();
+  return GetVisibleWebContents()->GetViewBounds().size();
 }
 
 void ExtensionViewHost::AddObserver(

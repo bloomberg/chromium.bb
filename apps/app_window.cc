@@ -31,7 +31,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/media_stream_request.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -328,7 +327,6 @@ void AppWindow::Init(const GURL& url,
     // We want to show the window only when the content has been painted. For
     // that to happen, we need to define a size for the content, otherwise the
     // layout will happen in a 0x0 area.
-    // Note: WebContents::GetView() is guaranteed to be non-null.
     gfx::Insets frame_insets = native_app_window_->GetFrameInsets();
     gfx::Rect initial_bounds = new_params.GetInitialWindowBounds(frame_insets);
     initial_bounds.Inset(frame_insets);

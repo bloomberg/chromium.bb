@@ -36,7 +36,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/rect.h"
@@ -337,7 +336,7 @@ void WebUILoginView::AboutToRequestFocusFromTabTraversal(bool reverse) {
   // Return the focus to the web contents.
   webui_login_->web_contents()->FocusThroughTabTraversal(reverse);
   GetWidget()->Activate();
-  webui_login_->web_contents()->GetView()->Focus();
+  webui_login_->web_contents()->Focus();
 }
 
 void WebUILoginView::Observe(int type,

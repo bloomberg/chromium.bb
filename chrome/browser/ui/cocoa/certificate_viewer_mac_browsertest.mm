@@ -11,7 +11,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/x509_certificate.h"
@@ -34,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(SSLCertificateViewerCocoaTest, Basic) {
   ASSERT_TRUE(cert.get());
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  gfx::NativeWindow window = web_contents->GetView()->GetTopLevelNativeWindow();
+  gfx::NativeWindow window = web_contents->GetTopLevelNativeWindow();
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());

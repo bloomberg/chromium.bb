@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/generated_resources.h"
@@ -195,7 +194,7 @@ void PackExtensionHandler::HandleSelectFilePathMessage(
       &info,
       file_type_index,
       base::FilePath::StringType(),
-      web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(),
+      web_ui()->GetWebContents()->GetTopLevelNativeWindow(),
       NULL);
 }
 

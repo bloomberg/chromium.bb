@@ -95,14 +95,12 @@ class QuotaPermissionContext;
 class RenderFrameHost;
 class RenderProcessHost;
 class RenderViewHost;
-class RenderViewHostDelegateView;
 class ResourceContext;
 class SiteInstance;
 class SpeechRecognitionManagerDelegate;
 class VibrationProvider;
 class WebContents;
 class WebContentsViewDelegate;
-class WebContentsViewPort;
 struct MainFunctionParams;
 struct Referrer;
 struct ShowDesktopNotificationHostMsgParams;
@@ -134,14 +132,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // browser_main_parts.h.
   virtual BrowserMainParts* CreateBrowserMainParts(
       const MainFunctionParams& parameters);
-
-  // Allows an embedder to return their own WebContentsViewPort implementation.
-  // Return NULL to let the default one for the platform be created. Otherwise
-  // |render_view_host_delegate_view| also needs to be provided, and it is
-  // owned by the embedder.
-  virtual WebContentsViewPort* OverrideCreateWebContentsView(
-      WebContents* web_contents,
-      RenderViewHostDelegateView** render_view_host_delegate_view);
 
   // If content creates the WebContentsView implementation, it will ask the
   // embedder to return an (optional) delegate to customize it. The view will

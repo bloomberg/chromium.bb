@@ -19,7 +19,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/shell/browser/webkit_test_controller.h"
 #include "content/shell/common/shell_switches.h"
 #include "net/base/filename_util.h"
@@ -171,7 +170,7 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(
   OPENFILENAME save_as;
   ZeroMemory(&save_as, sizeof(save_as));
   save_as.lStructSize = sizeof(OPENFILENAME);
-  save_as.hwndOwner = item->GetWebContents()->GetView()->GetNativeView()->
+  save_as.hwndOwner = item->GetWebContents()->GetNativeView()->
       GetHost()->GetAcceleratedWidget();
   save_as.lpstrFile = file_name;
   save_as.nMaxFile = arraysize(file_name);

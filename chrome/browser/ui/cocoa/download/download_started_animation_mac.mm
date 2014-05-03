@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #import "chrome/browser/ui/cocoa/animatable_image.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
@@ -49,8 +48,7 @@ class DownloadAnimationWebObserver;
     // against the left edge, and three times the download image's height from
     // the bottom of the tab, assuming there is enough room. If there isn't
     // enough, don't show the animation and let the shelf speak for itself.
-    gfx::Rect bounds;
-    webContents->GetView()->GetContainerBounds(&bounds);
+    gfx::Rect bounds = webContents->GetContainerBounds();
     imageWidth_ = [image size].width;
     CGFloat imageHeight = [image size].height;
 
@@ -60,7 +58,7 @@ class DownloadAnimationWebObserver;
       return nil;
     }
 
-    NSView* tabContentsView = webContents->GetView()->GetNativeView();
+    NSView* tabContentsView = webContents->GetNativeView();
     NSWindow* parentWindow = [tabContentsView window];
     if (!parentWindow) {
       // The tab is no longer frontmost.

@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -202,7 +201,7 @@ void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
   SendUserList();
   web_ui()->CallJavascriptFunction("cr.ui.Oobe.showUserManagerScreen");
   desktop_type_ = chrome::GetHostDesktopTypeForNativeView(
-      web_ui()->GetWebContents()->GetView()->GetNativeView());
+      web_ui()->GetWebContents()->GetNativeView());
 }
 
 void UserManagerScreenHandler::HandleAddUser(const base::ListValue* args) {

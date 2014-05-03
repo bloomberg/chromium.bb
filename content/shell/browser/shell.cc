@@ -18,7 +18,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/shell/browser/notify_done_forwarder.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
@@ -176,7 +175,7 @@ void Shell::LoadURLForFrame(const GURL& url, const std::string& frame_name) {
       PAGE_TRANSITION_TYPED | PAGE_TRANSITION_FROM_ADDRESS_BAR);
   params.frame_name = frame_name;
   web_contents_->GetController().LoadURLWithParams(params);
-  web_contents_->GetView()->Focus();
+  web_contents_->Focus();
 }
 
 void Shell::LoadDataWithBaseURL(const GURL& url, const std::string& data,
@@ -188,7 +187,7 @@ void Shell::LoadDataWithBaseURL(const GURL& url, const std::string& data,
   params.virtual_url_for_data_url = url;
   params.override_user_agent = NavigationController::UA_OVERRIDE_FALSE;
   web_contents_->GetController().LoadURLWithParams(params);
-  web_contents_->GetView()->Focus();
+  web_contents_->Focus();
 }
 
 void Shell::AddNewContents(WebContents* source,
@@ -204,17 +203,17 @@ void Shell::AddNewContents(WebContents* source,
 
 void Shell::GoBackOrForward(int offset) {
   web_contents_->GetController().GoToOffset(offset);
-  web_contents_->GetView()->Focus();
+  web_contents_->Focus();
 }
 
 void Shell::Reload() {
   web_contents_->GetController().Reload(false);
-  web_contents_->GetView()->Focus();
+  web_contents_->Focus();
 }
 
 void Shell::Stop() {
   web_contents_->Stop();
-  web_contents_->GetView()->Focus();
+  web_contents_->Focus();
 }
 
 void Shell::UpdateNavigationControls(bool to_different_document) {
@@ -252,7 +251,7 @@ void Shell::CloseDevTools() {
 gfx::NativeView Shell::GetContentView() {
   if (!web_contents_)
     return NULL;
-  return web_contents_->GetView()->GetNativeView();
+  return web_contents_->GetNativeView();
 }
 
 WebContents* Shell::OpenURLFromTab(WebContents* source,

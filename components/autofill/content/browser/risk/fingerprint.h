@@ -53,7 +53,7 @@ class Fingerprint;
 void GetFingerprint(
     uint64 obfuscated_gaia_id,
     const gfx::Rect& window_bounds,
-    const content::WebContents& web_contents,
+    content::WebContents* web_contents,
     const std::string& version,
     const std::string& charset,
     const std::string& accept_languages,

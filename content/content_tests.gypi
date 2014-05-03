@@ -202,8 +202,6 @@
         'test/test_render_view_host_factory.h',
         'test/test_web_contents.cc',
         'test/test_web_contents.h',
-        'test/test_web_contents_view.cc',
-        'test/test_web_contents_view.h',
         'test/web_gesture_curve_mock.cc',
         'test/web_gesture_curve_mock.h',
         'test/weburl_loader_mock.cc',

@@ -10,7 +10,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/base/test/ui_controls.h"
 
@@ -26,8 +25,7 @@ class MouseLeaveTest : public InProcessBrowserTest {
 
     content::WebContents* tab =
         browser()->tab_strip_model()->GetActiveWebContents();
-    gfx::Rect tab_view_bounds;
-    tab->GetView()->GetContainerBounds(&tab_view_bounds);
+    gfx::Rect tab_view_bounds = tab->GetContainerBounds();
 
     gfx::Point in_content_point(
         tab_view_bounds.x() + tab_view_bounds.width() / 2,

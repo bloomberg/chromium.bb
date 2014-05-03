@@ -26,7 +26,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
@@ -187,7 +186,7 @@ gfx::NativeWindow NativeWindowForWebContents(content::WebContents* contents) {
   if (!contents)
     return NULL;
 
-  return contents->GetView()->GetTopLevelNativeWindow();
+  return contents->GetTopLevelNativeWindow();
 }
 
 }  // namespace

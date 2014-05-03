@@ -10,7 +10,6 @@
 #import "chrome/browser/ui/cocoa/website_settings/permission_bubble_controller.h"
 #import "chrome/browser/ui/website_settings/permission_bubble_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 
 PermissionBubbleCocoa::PermissionBubbleCocoa(NSWindow* parent_window)
     : parent_window_(parent_window), delegate_(NULL), bubbleController_(nil) {}

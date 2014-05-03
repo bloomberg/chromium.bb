@@ -34,7 +34,6 @@
 #include "net/base/filename_util.h"
 
 #if defined(OS_WIN)
-#include "content/public/browser/web_contents_view.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #endif
@@ -326,8 +325,7 @@ IN_PROC_BROWSER_TEST_F(ChromePluginTest, WindowedNPAPIPluginHidden) {
   EXPECT_EQ(expected_title2, title_watcher2.WaitAndGetTitle());
 
   HWND child = NULL;
-  HWND hwnd =
-      tab->GetView()->GetNativeView()->GetHost()->GetAcceleratedWidget();
+  HWND hwnd = tab->GetNativeView()->GetHost()->GetAcceleratedWidget();
   EnumChildWindows(hwnd, EnumerateChildren,reinterpret_cast<LPARAM>(&child));
 
   RECT region;

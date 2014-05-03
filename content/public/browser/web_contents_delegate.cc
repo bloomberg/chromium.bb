@@ -196,7 +196,7 @@ void WebContentsDelegate::Detach(WebContents* web_contents) {
 }
 
 gfx::Size WebContentsDelegate::GetSizeForNewRenderView(
-    const WebContents* web_contents) const {
+   WebContents* web_contents) const {
   return gfx::Size();
 }
 

@@ -5,7 +5,6 @@
 #include "apps/ui/web_contents_sizer.h"
 
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
@@ -18,7 +17,7 @@ namespace apps {
 void ResizeWebContents(content::WebContents* web_contents,
                        const gfx::Size& new_size) {
 #if defined(USE_AURA)
-  aura::Window* window = web_contents->GetView()->GetNativeView();
+  aura::Window* window = web_contents->GetNativeView();
   window->SetBounds(gfx::Rect(window->bounds().origin(), new_size));
 #elif defined(OS_ANDROID)
   content::RenderWidgetHostView* view = web_contents->GetRenderWidgetHostView();

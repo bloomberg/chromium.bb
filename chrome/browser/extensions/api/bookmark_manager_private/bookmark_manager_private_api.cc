@@ -30,7 +30,6 @@
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/view_type_utils.h"
@@ -544,7 +543,7 @@ bool BookmarkManagerPrivateStartDragFunction::RunOnReady() {
       source = ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
 
     chrome::DragBookmarks(
-        GetProfile(), nodes, web_contents->GetView()->GetNativeView(), source);
+        GetProfile(), nodes, web_contents->GetNativeView(), source);
 
     return true;
   } else {

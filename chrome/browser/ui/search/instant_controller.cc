@@ -31,7 +31,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "net/base/escape.h"
 #include "net/base/network_change_notifier.h"
 #include "url/gurl.h"
@@ -91,7 +90,7 @@ bool InstantController::SubmitQuery(const base::string16& search_terms) {
     // page. (NOTE: in particular, we do not send the query to NTPs.)
     SearchTabHelper::FromWebContents(instant_tab_->contents())->Submit(
         search_terms);
-    instant_tab_->contents()->GetView()->Focus();
+    instant_tab_->contents()->Focus();
     EnsureSearchTermsAreSet(instant_tab_->contents(), search_terms);
     return true;
   }

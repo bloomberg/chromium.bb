@@ -27,7 +27,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "extensions/common/extension.h"
 
 #if defined(OS_MACOSX)

@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 
 ChromeWebContentsViewDelegateMac::ChromeWebContentsViewDelegateMac(
     content::WebContents* web_contents)

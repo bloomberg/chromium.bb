@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/views/passwords/manage_password_item_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
@@ -101,7 +100,7 @@ void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
 
   if (is_fullscreen) {
     manage_passwords_bubble_->set_parent_window(
-        web_contents->GetView()->GetTopLevelNativeWindow());
+        web_contents->GetTopLevelNativeWindow());
   }
 
   views::BubbleDelegateView::CreateBubble(manage_passwords_bubble_);

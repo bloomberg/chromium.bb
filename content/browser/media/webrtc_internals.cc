@@ -6,12 +6,12 @@
 
 #include "base/command_line.h"
 #include "content/browser/media/webrtc_internals_ui_observer.h"
+#include "content/browser/web_contents/web_contents_view.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/content_switches.h"
 
 using base::ProcessId;
@@ -232,7 +232,7 @@ void WebRTCInternals::EnableAecDump(content::WebContents* web_contents) {
       NULL,
       0,
       FILE_PATH_LITERAL(""),
-      web_contents->GetView()->GetTopLevelNativeWindow(),
+      web_contents->GetTopLevelNativeWindow(),
       NULL);
 #endif
 #endif

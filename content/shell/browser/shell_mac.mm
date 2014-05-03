@@ -12,7 +12,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/shell/app/resource.h"
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
 #include "url/gurl.h"
@@ -243,7 +242,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
 }
 
 void Shell::PlatformSetContents() {
-  NSView* web_view = web_contents_->GetView()->GetNativeView();
+  NSView* web_view = web_contents_->GetNativeView();
   [web_view setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
 
   if (headless_) {
@@ -267,7 +266,7 @@ void Shell::SizeTo(const gfx::Size& content_size) {
     [window().contentView setFrame:frame];
     return;
   }
-  NSView* web_view = web_contents_->GetView()->GetNativeView();
+  NSView* web_view = web_contents_->GetNativeView();
   NSRect frame = NSMakeRect(0, 0, content_size.width(), content_size.height());
   [web_view setFrame:frame];
 }

@@ -16,7 +16,6 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

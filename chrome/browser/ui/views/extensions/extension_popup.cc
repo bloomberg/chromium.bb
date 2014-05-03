@@ -23,7 +23,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "ui/gfx/insets.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -251,7 +250,7 @@ void ExtensionPopup::ShowBubble() {
   GetWidget()->Show();
 
   // Focus on the host contents when the bubble is first shown.
-  host()->host_contents()->GetView()->Focus();
+  host()->host_contents()->Focus();
 
   if (inspect_with_devtools_) {
     DevToolsWindow::OpenDevToolsWindow(host()->render_view_host(),

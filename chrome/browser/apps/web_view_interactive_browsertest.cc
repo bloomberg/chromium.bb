@@ -20,7 +20,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -225,8 +224,7 @@ class WebViewInteractiveTest
     guest_web_contents_ = source->GetWebContents();
     embedder_web_contents_ = guest_web_contents_->GetEmbedderWebContents();
 
-    gfx::Rect offset;
-    embedder_web_contents_->GetView()->GetContainerBounds(&offset);
+    gfx::Rect offset = embedder_web_contents_->GetContainerBounds();
     corner_ = gfx::Point(offset.x(), offset.y());
 
     const testing::TestInfo* const test_info =
@@ -689,9 +687,8 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DragDropWithinWebView) {
 
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(GetPlatformAppWindow()));
 
-  gfx::Rect offset;
   embedder_web_contents_ = GetFirstAppWindowWebContents();
-  embedder_web_contents_->GetView()->GetContainerBounds(&offset);
+  gfx::Rect offset = embedder_web_contents_->GetContainerBounds();
   corner_ = gfx::Point(offset.x(), offset.y());
 
   // In the drag drop test we add 20px padding to the page body because on

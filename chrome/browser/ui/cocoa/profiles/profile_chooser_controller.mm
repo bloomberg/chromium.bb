@@ -42,7 +42,6 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -1372,7 +1371,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       content::Referrer(),
       content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
-  NSView* webview = webContents_->GetView()->GetNativeView();
+  NSView* webview = webContents_->GetNativeView();
   [webview setFrameSize:NSMakeSize(kFixedGaiaViewWidth, kFixedGaiaViewHeight)];
   [container addSubview:webview];
   yOffset = NSMaxY([webview frame]);

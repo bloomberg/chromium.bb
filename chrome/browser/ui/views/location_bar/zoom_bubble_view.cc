@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/views/location_bar/zoom_view.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -73,8 +72,7 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
 
     // If we do not have an anchor view, parent the bubble to the content area.
     if (!anchor_to_view) {
-      zoom_bubble_->set_parent_window(
-          web_contents->GetView()->GetTopLevelNativeWindow());
+      zoom_bubble_->set_parent_window(web_contents->GetTopLevelNativeWindow());
     }
 
     views::BubbleDelegateView::CreateBubble(zoom_bubble_);

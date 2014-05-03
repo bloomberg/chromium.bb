@@ -15,7 +15,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "ui/base/base_window.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/background.h"
@@ -78,7 +77,7 @@ ExtensionDialog* ExtensionDialog::Show(
   host->view()->SetVisible(true);
 
   // Ensure the DOM JavaScript can respond immediately to keyboard shortcuts.
-  host->host_contents()->GetView()->Focus();
+  host->host_contents()->Focus();
   return dialog;
 }
 

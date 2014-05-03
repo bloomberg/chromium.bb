@@ -18,7 +18,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
@@ -109,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents != NULL);
   views::Widget::CreateWindowWithParent(
-      view, web_contents->GetView()->GetTopLevelNativeWindow());
+      view, web_contents->GetTopLevelNativeWindow());
   view->GetWidget()->Show();
 
   // TestWebDialogView should quit current message loop on size change.

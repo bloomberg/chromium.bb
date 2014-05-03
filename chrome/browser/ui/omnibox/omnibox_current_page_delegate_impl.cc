@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -101,8 +100,7 @@ void OmniboxCurrentPageDelegateImpl::OnFocusChanged(
 void OmniboxCurrentPageDelegateImpl::DoPrerender(
     const AutocompleteMatch& match) {
   content::WebContents* web_contents = controller_->GetWebContents();
-  gfx::Rect container_bounds;
-  web_contents->GetView()->GetContainerBounds(&container_bounds);
+  gfx::Rect container_bounds = web_contents->GetContainerBounds();
 
   InstantSearchPrerenderer* prerenderer =
       InstantSearchPrerenderer::GetForProfile(profile_);

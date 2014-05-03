@@ -17,7 +17,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_view.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/rect.h"
@@ -222,7 +221,7 @@ class FullscreenObserver : public WebContentsObserver {
     contentsNativeView = fullscreenView->GetNativeView();
   } else {
     isEmbeddingFullscreenWidget_ = NO;
-    contentsNativeView = contents_->GetView()->GetNativeView();
+    contentsNativeView = contents_->GetNativeView();
   }
   [contentsNativeView setFrame:[self frameForContentsView]];
   if ([subviews count] == 0) {
@@ -242,7 +241,7 @@ class FullscreenObserver : public WebContentsObserver {
   // transitioning between composited and non-composited mode.
   // http://crbug.com/279472
   if (!fullscreenView)
-    contents_->GetView()->SetAllowOverlappingViews(true);
+    contents_->SetAllowOverlappingViews(true);
 }
 
 - (void)changeWebContents:(WebContents*)newContents {

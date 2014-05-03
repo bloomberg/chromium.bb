@@ -71,7 +71,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -232,7 +231,7 @@ void ReloadInternal(Browser* browser,
   WebContents* new_tab = GetTabAndRevertIfNecessary(browser, disposition);
   new_tab->UserGestureDone();
   if (!new_tab->FocusLocationBarByDefault())
-    new_tab->GetView()->Focus();
+    new_tab->Focus();
   if (ignore_cache)
     new_tab->GetController().ReloadIgnoringCache(true);
   else
@@ -555,8 +554,7 @@ void NewTab(Browser* browser) {
 
   if (browser->is_type_tabbed()) {
     AddTabAt(browser, GURL(), -1, true);
-    browser->tab_strip_model()->GetActiveWebContents()->GetView()->
-        RestoreFocus();
+    browser->tab_strip_model()->GetActiveWebContents()->RestoreFocus();
   } else {
     ScopedTabbedBrowserDisplayer displayer(browser->profile(),
                                            browser->host_desktop_type());
@@ -566,7 +564,7 @@ void NewTab(Browser* browser) {
     // The call to AddBlankTabAt above did not set the focus to the tab as its
     // window was not active, so we have to do it explicitly.
     // See http://crbug.com/6380.
-    b->tab_strip_model()->GetActiveWebContents()->GetView()->RestoreFocus();
+    b->tab_strip_model()->GetActiveWebContents()->RestoreFocus();
   }
 }
 

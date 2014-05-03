@@ -34,7 +34,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -388,7 +387,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, MAYBE_WindowFeatures) {
                    DontCheckTitle);
 
   // Check that the new popup has (roughly) the requested size.
-  gfx::Size window_size = popup->GetView()->GetContainerSize();
+  gfx::Size window_size = popup->GetContainerBounds().size();
   EXPECT_TRUE(349 <= window_size.width() && window_size.width() <= 351);
   EXPECT_TRUE(249 <= window_size.height() && window_size.height() <= 251);
 }

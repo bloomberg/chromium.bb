@@ -519,7 +519,7 @@ void PrintPreviewUI::OnDidPreviewPage(int page_number,
   base::FundamentalValue ui_identifier(id_);
   base::FundamentalValue request_id(preview_request_id);
   if (g_testing_delegate)
-    g_testing_delegate->DidRenderPreviewPage(*web_ui()->GetWebContents());
+    g_testing_delegate->DidRenderPreviewPage(web_ui()->GetWebContents());
   web_ui()->CallJavascriptFunction(
       "onDidPreviewPage", number, ui_identifier, request_id);
   if (g_testing_delegate && g_testing_delegate->IsAutoCancelEnabled())

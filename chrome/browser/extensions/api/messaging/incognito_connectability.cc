@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -79,8 +78,7 @@ bool IncognitoConnectability::Query(const Extension* extension,
           IDS_EXTENSION_PROMPT_APP_CONNECT_FROM_INCOGNITO :
           IDS_EXTENSION_PROMPT_EXTENSION_CONNECT_FROM_INCOGNITO;
       result = chrome::ShowMessageBox(
-          web_contents ? web_contents->GetView()->GetTopLevelNativeWindow()
-                       : NULL,
+          web_contents ? web_contents->GetTopLevelNativeWindow() : NULL,
           base::string16(),  // no title
           l10n_util::GetStringFUTF16(template_id,
                                      base::UTF8ToUTF16(origin.spec()),

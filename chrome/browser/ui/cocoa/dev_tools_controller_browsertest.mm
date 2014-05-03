@@ -14,7 +14,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 
 class DevToolsControllerTest : public InProcessBrowserTest {
  public:
@@ -35,17 +34,15 @@ IN_PROC_BROWSER_TEST_F(DevToolsControllerTest, AllowOverlappingViews) {
       browser()->tab_strip_model()->GetActiveWebContents();
   DevToolsWindow* dev_tools =
       DevToolsWindow::GetDockedInstanceForInspectedTab(web_contents);
-  content::WebContentsView* dev_tools_view =
-      dev_tools->web_contents()->GetView();
 
   // Without the find bar.
-  EXPECT_TRUE(dev_tools_view->GetAllowOverlappingViews());
+  EXPECT_TRUE(dev_tools->web_contents()->GetAllowOverlappingViews());
 
   // With the find bar.
   browser()->GetFindBarController()->find_bar()->Show(false);
-  EXPECT_TRUE(dev_tools_view->GetAllowOverlappingViews());
+  EXPECT_TRUE(dev_tools->web_contents()->GetAllowOverlappingViews());
 
   // Without the find bar.
   browser()->GetFindBarController()->find_bar()->Hide(false);
-  EXPECT_TRUE(dev_tools_view->GetAllowOverlappingViews());
+  EXPECT_TRUE(dev_tools->web_contents()->GetAllowOverlappingViews());
 }

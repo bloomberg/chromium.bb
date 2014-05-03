@@ -8,7 +8,6 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension_messages.h"
 #include "ipc/ipc_message_macros.h"
@@ -44,11 +43,11 @@ void ShellAppWindow::Init(BrowserContext* context, gfx::Size initial_size) {
 void ShellAppWindow::LoadURL(const GURL& url) {
   content::NavigationController::LoadURLParams params(url);
   web_contents_->GetController().LoadURLWithParams(params);
-  web_contents_->GetView()->Focus();
+  web_contents_->Focus();
 }
 
 aura::Window* ShellAppWindow::GetNativeWindow() {
-  return web_contents_->GetView()->GetNativeView();
+  return web_contents_->GetNativeView();
 }
 
 int ShellAppWindow::GetRenderViewRoutingID() {

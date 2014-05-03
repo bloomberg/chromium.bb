@@ -1070,7 +1070,7 @@ void RenderFrameHostManager::CommitPending() {
     delegate_->SetFocusToLocationBar(false);
   } else if (focus_render_view &&
              render_frame_host_->render_view_host()->GetView()) {
-    render_frame_host_->render_view_host()->GetView()->Focus();
+    render_frame_host_->render_view_host()->Focus();
   }
 
   // Notify that we've swapped RenderFrameHosts. We do this before shutting down

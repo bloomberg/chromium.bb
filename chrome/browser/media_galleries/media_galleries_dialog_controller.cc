@@ -18,7 +18,6 @@
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/media_galleries_permission.h"
@@ -207,7 +206,7 @@ void MediaGalleriesDialogController::OnAddFolderClicked() {
       NULL,
       0,
       base::FilePath::StringType(),
-      web_contents_->GetView()->GetTopLevelNativeWindow(),
+      web_contents_->GetTopLevelNativeWindow(),
       NULL);
 }
 

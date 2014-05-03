@@ -17,7 +17,6 @@
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 
 namespace {
 
@@ -77,7 +76,7 @@ void CocoaSignInDelegate::HandleKeyboardEvent(
   webContents_.reset(
       content::WebContents::Create(
           content::WebContents::CreateParams(dialog_->delegate()->profile())));
-  NSView* webContentView = webContents_->GetView()->GetNativeView();
+  NSView* webContentView = webContents_->GetNativeView();
   [self setView:webContentView];
 }
 

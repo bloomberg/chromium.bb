@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 
 @implementation OverlayableContentsController
 

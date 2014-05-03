@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "ui/views/win/hwnd_util.h"
 
 using content::BrowserThread;
@@ -62,7 +61,7 @@ void AdvancedOptionsUtilities::ShowManageSSLCertificates(
   CRYPTUI_CERT_MGR_STRUCT cert_mgr = { 0 };
   cert_mgr.dwSize = sizeof(CRYPTUI_CERT_MGR_STRUCT);
   cert_mgr.hwndParent = views::HWNDForNativeWindow(
-      web_contents->GetView()->GetTopLevelNativeWindow());
+      web_contents->GetTopLevelNativeWindow());
   ::CryptUIDlgCertMgr(&cert_mgr);
 }
 

@@ -8,7 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/shell/browser/shell_platform_data_aura.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -138,7 +137,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     web_view_ = new views::WebView(web_contents->GetBrowserContext());
     web_view_->SetWebContents(web_contents);
     web_view_->SetPreferredSize(size);
-    web_contents->GetView()->Focus();
+    web_contents->Focus();
     contents_view_->AddChildView(web_view_);
     Layout();
 
@@ -174,7 +173,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     // Convert from content coordinates to window coordinates.
     // This code copied from chrome_web_contents_view_delegate_views.cc
     aura::Window* web_contents_window =
-        shell_->web_contents()->GetView()->GetNativeView();
+        shell_->web_contents()->GetNativeView();
     aura::Window* root_window = web_contents_window->GetRootWindow();
     aura::client::ScreenPositionClient* screen_position_client =
         aura::client::GetScreenPositionClient(root_window);
@@ -514,7 +513,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
 void Shell::PlatformSetContents() {
   if (headless_) {
     CHECK(platform_);
-    aura::Window* content = web_contents_->GetView()->GetNativeView();
+    aura::Window* content = web_contents_->GetNativeView();
     aura::Window* parent = platform_->host()->window();
     if (!parent->Contains(content)) {
       parent->AddChild(content);

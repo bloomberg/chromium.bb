@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "ui/aura/window.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"

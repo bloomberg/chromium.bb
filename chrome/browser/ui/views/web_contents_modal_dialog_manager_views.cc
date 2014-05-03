@@ -10,7 +10,6 @@
 #include "components/web_modal/single_web_contents_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "content/public/browser/web_contents_view.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 #include "ui/views/border.h"

@@ -27,7 +27,6 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
@@ -92,13 +91,11 @@ Browser* CreateBrowser(ChromeUIThreadExtensionFunction* function,
                        std::string* error) {
   content::WebContents* web_contents = function->GetAssociatedWebContents();
   DCHECK(web_contents);
-  DCHECK(web_contents->GetView());
-  DCHECK(web_contents->GetView()->GetNativeView());
+  DCHECK(web_contents->GetNativeView());
   DCHECK(!chrome::FindBrowserWithWebContents(web_contents));
 
   chrome::HostDesktopType desktop_type =
-      chrome::GetHostDesktopTypeForNativeView(
-          web_contents->GetView()->GetNativeView());
+      chrome::GetHostDesktopTypeForNativeView(web_contents->GetNativeView());
   Browser::CreateParams params(
       Browser::TYPE_TABBED, function->GetProfile(), desktop_type);
   Browser* browser = new Browser(params);
@@ -247,7 +244,7 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
     tab_strip->SetOpenerOfWebContentsAt(new_index, opener);
 
   if (active)
-    navigate_params.target_contents->GetView()->SetInitialFocus();
+    navigate_params.target_contents->SetInitialFocus();
 
   // Return data about the newly created tab.
   return ExtensionTabUtil::CreateTabValue(navigate_params.target_contents,
@@ -289,7 +286,7 @@ int ExtensionTabUtil::GetWindowIdOfTabStripModel(
   return -1;
 }
 
-int ExtensionTabUtil::GetTabId(const WebContents* web_contents) {
+int ExtensionTabUtil::GetTabId(WebContents* web_contents) {
   return SessionID::IdForTab(web_contents);
 }
 
@@ -302,7 +299,7 @@ int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
 }
 
 base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
-    const WebContents* contents,
+    WebContents* contents,
     TabStripModel* tab_strip,
     int tab_index,
     const Extension* extension) {
@@ -335,7 +332,7 @@ base::ListValue* ExtensionTabUtil::CreateTabList(
 }
 
 base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
-    const WebContents* contents,
+    WebContents* contents,
     TabStripModel* tab_strip,
     int tab_index) {
   // If we have a matching AppWindow with a controller, get the tab value
@@ -364,9 +361,9 @@ base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
   result->SetBoolean(keys::kIncognitoKey,
                      contents->GetBrowserContext()->IsOffTheRecord());
   result->SetInteger(keys::kWidthKey,
-                     contents->GetView()->GetContainerSize().width());
+                     contents->GetContainerBounds().size().width());
   result->SetInteger(keys::kHeightKey,
-                     contents->GetView()->GetContainerSize().height());
+                     contents->GetContainerBounds().size().height());
 
   // Privacy-sensitive fields: these should be stripped off by
   // ScrubTabValueForExtension if the extension should not see them.
@@ -388,7 +385,7 @@ base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
 }
 
 void ExtensionTabUtil::ScrubTabValueForExtension(
-    const WebContents* contents,
+    WebContents* contents,
     const Extension* extension,
     base::DictionaryValue* tab_info) {
   bool has_permission =

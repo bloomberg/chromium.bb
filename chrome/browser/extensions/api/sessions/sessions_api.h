@@ -73,7 +73,7 @@ class SessionsRestoreFunction : public ChromeSyncExtensionFunction {
 
  private:
   void SetInvalidIdError(const std::string& invalid_id);
-  void SetResultRestoredTab(const content::WebContents* contents);
+  void SetResultRestoredTab(content::WebContents* contents);
   bool SetResultRestoredWindow(int window_id);
   bool RestoreMostRecentlyClosed(Browser* browser);
   bool RestoreLocalSession(const SessionId& session_id, Browser* browser);

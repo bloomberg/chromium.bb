@@ -42,7 +42,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
@@ -203,7 +202,7 @@ class DefaultBindingsDelegate : public DevToolsUIBindings::Delegate {
 
 void DefaultBindingsDelegate::ActivateWindow() {
   web_contents_->GetDelegate()->ActivateContents(web_contents_);
-  web_contents_->GetView()->Focus();
+  web_contents_->Focus();
 }
 
 void DefaultBindingsDelegate::OpenInNewTab(const std::string& url) {

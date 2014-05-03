@@ -21,7 +21,6 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "jni/AwAutofillManagerDelegate_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -95,8 +94,7 @@ void AwAutofillManagerDelegate::ShowAutofillPopup(
   delegate_ = delegate;
 
   // Convert element_bounds to be in screen space.
-  gfx::Rect client_area;
-  web_contents_->GetView()->GetContainerBounds(&client_area);
+  gfx::Rect client_area = web_contents_->GetContainerBounds();
   gfx::RectF element_bounds_in_screen_space =
       element_bounds + client_area.OffsetFromOrigin();
 

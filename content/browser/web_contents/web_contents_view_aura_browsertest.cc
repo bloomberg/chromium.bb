@@ -16,9 +16,9 @@
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_entry_screenshot_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/web_contents/web_contents_view.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -182,7 +182,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     EXPECT_TRUE(controller.CanGoBack());
     EXPECT_FALSE(controller.CanGoForward());
 
-    aura::Window* content = web_contents->GetView()->GetContentNativeView();
+    aura::Window* content = web_contents->GetContentNativeView();
     gfx::Rect bounds = content->GetBoundsInRootWindow();
     aura::test::EventGenerator generator(content->GetRootWindow(), content);
     const int kScrollDurationMs = 20;
@@ -319,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   web_contents->GetController().GoBack();
   EXPECT_EQ(1, GetCurrentIndex());
 
-  aura::Window* content = web_contents->GetView()->GetContentNativeView();
+  aura::Window* content = web_contents->GetContentNativeView();
   ui::EventProcessor* dispatcher = content->GetHost()->event_processor();
   gfx::Rect bounds = content->GetBoundsInRootWindow();
 
@@ -442,7 +442,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_OverscrollScreenshot) {
     // index 3 to index 2, and index 3 should have a screenshot.
     base::string16 expected_title = base::ASCIIToUTF16("Title: #2");
     content::TitleWatcher title_watcher(web_contents, expected_title);
-    aura::Window* content = web_contents->GetView()->GetContentNativeView();
+    aura::Window* content = web_contents->GetContentNativeView();
     gfx::Rect bounds = content->GetBoundsInRootWindow();
     aura::test::EventGenerator generator(content->GetRootWindow(), content);
     generator.GestureScrollSequence(
@@ -582,7 +582,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   ExecuteSyncJSFunction(web_contents->GetMainFrame(), "navigate_next()");
   EXPECT_EQ(1, GetCurrentIndex());
 
-  aura::Window* content = web_contents->GetView()->GetContentNativeView();
+  aura::Window* content = web_contents->GetContentNativeView();
   gfx::Rect bounds = content->GetBoundsInRootWindow();
   aura::test::EventGenerator generator(content->GetRootWindow(), content);
   generator.GestureScrollSequence(
@@ -591,7 +591,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       base::TimeDelta::FromMilliseconds(20),
       1);
 
-  window->AddChild(shell()->web_contents()->GetView()->GetContentNativeView());
+  window->AddChild(shell()->web_contents()->GetContentNativeView());
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
@@ -604,7 +604,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   ExecuteSyncJSFunction(web_contents->GetMainFrame(), "navigate_next()");
   EXPECT_EQ(1, GetCurrentIndex());
 
-  aura::Window* content = web_contents->GetView()->GetContentNativeView();
+  aura::Window* content = web_contents->GetContentNativeView();
   gfx::Rect bounds = content->GetBoundsInRootWindow();
   aura::test::EventGenerator generator(content->GetRootWindow(), content);
   generator.GestureScrollSequence(
@@ -613,7 +613,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       base::TimeDelta::FromMilliseconds(20),
       1);
 
-  delete web_contents->GetView()->GetContentNativeView();
+  delete web_contents->GetContentNativeView();
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
@@ -644,7 +644,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   EXPECT_TRUE(controller.CanGoBack());
   EXPECT_TRUE(controller.CanGoForward());
 
-  aura::Window* content = web_contents->GetView()->GetContentNativeView();
+  aura::Window* content = web_contents->GetContentNativeView();
   gfx::Rect bounds = content->GetBoundsInRootWindow();
   aura::test::EventGenerator generator(content->GetRootWindow(), content);
 

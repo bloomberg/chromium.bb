@@ -15,7 +15,6 @@
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "ui/base/cocoa/base_view.h"
 #include "ui/base/cocoa/focus_tracker.h"
 #include "ui/gfx/mac/scoped_ns_disable_screen_updates.h"
@@ -132,8 +131,8 @@ using content::WebContents;
   if (devToolsWindow_) {
     const DevToolsContentsResizingStrategy& strategy =
         devToolsWindow_->GetContentsResizingStrategy();
-    devToolsWindow_->web_contents()->GetView()->SetOverlayView(
-        contents->GetView(),
+    devToolsWindow_->web_contents()->SetOverlayView(
+        contents,
         gfx::Point(strategy.insets().left(), strategy.insets().top()));
     [devToolsContainerView_ setContentsResizingStrategy:strategy];
   } else {
@@ -154,15 +153,14 @@ using content::WebContents;
   // |devToolsView| is a WebContentsViewCocoa object, whose ViewID was
   // set to VIEW_ID_TAB_CONTAINER initially, so we need to change it to
   // VIEW_ID_DEV_TOOLS_DOCKED here.
-  NSView* devToolsView =
-      devToolsWindow_->web_contents()->GetView()->GetNativeView();
+  NSView* devToolsView = devToolsWindow_->web_contents()->GetNativeView();
   view_id_util::SetID(devToolsView, VIEW_ID_DEV_TOOLS_DOCKED);
 
   [devToolsContainerView_ showDevTools:devToolsView];
 }
 
 - (void)hideDevToolsView {
-  devToolsWindow_->web_contents()->GetView()->RemoveOverlayView();
+  devToolsWindow_->web_contents()->RemoveOverlayView();
   [devToolsContainerView_ hideDevTools];
   [focusTracker_ restoreFocusInWindow:[devToolsContainerView_ window]];
   focusTracker_.reset();

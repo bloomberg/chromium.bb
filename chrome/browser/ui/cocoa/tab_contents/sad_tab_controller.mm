@@ -8,7 +8,6 @@
 #include "base/mac/mac_util.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 
 namespace chrome {
 
@@ -42,7 +41,7 @@ void SadTabCocoa::Close() {
     webContents_ = webContents;
 
     if (webContents_) {  // NULL in unit_tests.
-      NSView* ns_view = webContents_->GetView()->GetNativeView();
+      NSView* ns_view = webContents_->GetNativeView();
       [[self view] setAutoresizingMask:
           (NSViewWidthSizable | NSViewHeightSizable)];
       [ns_view addSubview:[self view]];

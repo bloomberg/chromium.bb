@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/auto_keep_alive.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/webview/webview.h"

@@ -13,7 +13,6 @@
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 
 using web_modal::WebContentsModalDialogHost;
 using web_modal::ModalDialogHostObserver;
@@ -38,7 +37,7 @@ class PrintPreviewTestBrowserWindow
   // The web contents modal dialog must be parented to *something*; use the
   // WebContents window since there is no true browser window for unit tests.
   virtual gfx::NativeView GetHostView() const OVERRIDE {
-    return FindBrowser()->tab_strip_model()->GetActiveWebContents()->GetView()->
+    return FindBrowser()->tab_strip_model()->GetActiveWebContents()->
         GetNativeView();
   }
 

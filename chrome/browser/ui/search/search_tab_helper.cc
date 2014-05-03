@@ -39,7 +39,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "grit/generated_resources.h"
@@ -432,7 +431,7 @@ void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
       // from changing the omnibox value and closing the popup without user
       // interaction.
       if (!omnibox->model()->popup_model()->IsOpen())
-        web_contents()->GetView()->Focus();
+        web_contents()->Focus();
       break;
   }
 #endif

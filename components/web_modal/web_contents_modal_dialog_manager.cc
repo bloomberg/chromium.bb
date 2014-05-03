@@ -9,7 +9,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 using content::WebContents;

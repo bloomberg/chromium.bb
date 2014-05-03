@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #import "ui/base/cocoa/find_pasteboard.h"
 #import "ui/base/cocoa/focus_tracker.h"
@@ -328,7 +327,7 @@ const float kRightEdgeOffset = 25;
   if (!(focusTracker_.get() &&
         [focusTracker_ restoreFocusInWindow:[findBarView_ window]])) {
     // Fall back to giving focus to the tab contents.
-    findBarBridge_->GetFindBarController()->web_contents()->GetView()->Focus();
+    findBarBridge_->GetFindBarController()->web_contents()->Focus();
   }
   focusTracker_.reset(nil);
 }
@@ -541,7 +540,7 @@ const float kRightEdgeOffset = 25;
     return frame.origin.x;
 
   // Get the size of the container.
-  gfx::Rect containerRect(contents->GetView()->GetContainerSize());
+  gfx::Rect containerRect(contents->GetContainerBounds().size());
 
   // Position the FindBar on the top right corner.
   viewRect.set_x(

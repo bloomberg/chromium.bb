@@ -7,7 +7,6 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "ui/aura/window.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/layer_tree_owner.h"
@@ -84,8 +83,7 @@ void ContentsWebView::OnLayerRecreated(ui::Layer* old_layer,
 void ContentsWebView::CloneWebContentsLayer() {
   if (!web_contents())
     return;
-  cloned_layer_tree_ = wm::RecreateLayers(
-      web_contents()->GetView()->GetNativeView());
+  cloned_layer_tree_ = wm::RecreateLayers(web_contents()->GetNativeView());
   if (!cloned_layer_tree_ || !cloned_layer_tree_->root()) {
     cloned_layer_tree_.reset();
     return;

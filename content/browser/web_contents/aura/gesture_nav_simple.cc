@@ -8,8 +8,8 @@
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/web_contents/web_contents_view.h"
 #include "content/public/browser/overscroll_configuration.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/content_client.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/window.h"
@@ -159,7 +159,7 @@ void GestureNavSimple::ApplyEffectsForDelta(float delta_x) {
 }
 
 gfx::Rect GestureNavSimple::GetVisibleBounds() const {
-  return web_contents_->GetView()->GetNativeView()->bounds();
+  return web_contents_->GetNativeView()->bounds();
 }
 
 void GestureNavSimple::OnOverscrollUpdate(float delta_x, float delta_y) {
@@ -199,7 +199,7 @@ void GestureNavSimple::OnOverscrollModeChange(OverscrollMode old_mode,
   arrow_->set_delegate(arrow_delegate_.get());
   arrow_->SetFillsBoundsOpaquely(false);
 
-  aura::Window* window = web_contents_->GetView()->GetNativeView();
+  aura::Window* window = web_contents_->GetNativeView();
   const gfx::Rect& window_bounds = window->bounds();
   completion_threshold_ = window_bounds.width() *
       GetOverscrollConfig(OVERSCROLL_CONFIG_HORIZ_THRESHOLD_COMPLETE);

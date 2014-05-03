@@ -74,7 +74,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -96,6 +95,7 @@
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/date_time_chooser_android.h"
+#include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "content/common/java_bridge_messages.h"
@@ -1025,7 +1025,7 @@ WebContents* WebContentsImpl::Clone() {
   // We pass our own opener so that the cloned page can access it if it was
   // before.
   CreateParams create_params(GetBrowserContext(), GetSiteInstance());
-  create_params.initial_size = view_->GetContainerSize();
+  create_params.initial_size = GetContainerBounds().size();
   WebContentsImpl* tc = CreateWithOpener(create_params, opener_);
   tc->GetController().CopyStateFrom(controller_);
   FOR_EACH_OBSERVER(WebContentsObserver,
@@ -1068,30 +1068,24 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
       params.browser_context, params.site_instance, params.routing_id,
       params.main_frame_routing_id);
 
-  view_.reset(GetContentClient()->browser()->
-      OverrideCreateWebContentsView(this, &render_view_host_delegate_view_));
-  if (view_) {
-    CHECK(render_view_host_delegate_view_);
+  WebContentsViewDelegate* delegate =
+      GetContentClient()->browser()->GetWebContentsViewDelegate(this);
+
+  if (browser_plugin_guest_) {
+    scoped_ptr<WebContentsView> platform_view(CreateWebContentsView(
+        this, delegate, &render_view_host_delegate_view_));
+
+    WebContentsViewGuest* rv = new WebContentsViewGuest(
+        this, browser_plugin_guest_.get(), platform_view.Pass(),
+        render_view_host_delegate_view_);
+    render_view_host_delegate_view_ = rv;
+    view_.reset(rv);
   } else {
-    WebContentsViewDelegate* delegate =
-        GetContentClient()->browser()->GetWebContentsViewDelegate(this);
-
-    if (browser_plugin_guest_) {
-      scoped_ptr<WebContentsViewPort> platform_view(CreateWebContentsView(
-          this, delegate, &render_view_host_delegate_view_));
-
-      WebContentsViewGuest* rv = new WebContentsViewGuest(
-          this, browser_plugin_guest_.get(), platform_view.Pass(),
-          render_view_host_delegate_view_);
-      render_view_host_delegate_view_ = rv;
-      view_.reset(rv);
-    } else {
-      // Regular WebContentsView.
-      view_.reset(CreateWebContentsView(
-          this, delegate, &render_view_host_delegate_view_));
-    }
-    CHECK(render_view_host_delegate_view_);
+    // Regular WebContentsView.
+    view_.reset(CreateWebContentsView(
+        this, delegate, &render_view_host_delegate_view_));
   }
+  CHECK(render_view_host_delegate_view_);
   CHECK(view_.get());
 
   gfx::Size initial_size = params.initial_size;
@@ -1428,7 +1422,7 @@ void WebContentsImpl::CreateNewWindow(
   create_params.main_frame_routing_id = main_frame_route_id;
   if (!is_guest) {
     create_params.context = view_->GetNativeView();
-    create_params.initial_size = view_->GetContainerSize();
+    create_params.initial_size = GetContainerBounds().size();
   } else {
     // This makes |new_contents| act as a guest.
     // For more info, see comment above class BrowserPluginGuest.
@@ -1448,7 +1442,7 @@ void WebContentsImpl::CreateNewWindow(
   // will be shown immediately).
   if (!params.opener_suppressed) {
     if (!is_guest) {
-      WebContentsViewPort* new_view = new_contents->view_.get();
+      WebContentsView* new_view = new_contents->view_.get();
 
       // TODO(brettw): It seems bogus that we have to call this function on the
       // newly created object and give it one of its own member variables.
@@ -1946,6 +1940,48 @@ void WebContentsImpl::ExecuteCustomContextMenuCommand(
 
   focused_frame->Send(new FrameMsg_CustomContextMenuAction(
       focused_frame->GetRoutingID(), context, action));
+}
+
+gfx::NativeView WebContentsImpl::GetNativeView() {
+  return view_->GetNativeView();
+}
+
+gfx::NativeView WebContentsImpl::GetContentNativeView() {
+  return view_->GetContentNativeView();
+}
+
+gfx::NativeWindow WebContentsImpl::GetTopLevelNativeWindow() {
+  return view_->GetTopLevelNativeWindow();
+}
+
+gfx::Rect WebContentsImpl::GetViewBounds() {
+  return view_->GetViewBounds();
+}
+
+gfx::Rect WebContentsImpl::GetContainerBounds() {
+  gfx::Rect rv;
+  view_->GetContainerBounds(&rv);
+  return rv;
+}
+
+DropData* WebContentsImpl::GetDropData() {
+  return view_->GetDropData();
+}
+
+void WebContentsImpl::Focus() {
+  view_->Focus();
+}
+
+void WebContentsImpl::SetInitialFocus() {
+  view_->SetInitialFocus();
+}
+
+void WebContentsImpl::StoreFocus() {
+  view_->StoreFocus();
+}
+
+void WebContentsImpl::RestoreFocus() {
+  view_->RestoreFocus();
 }
 
 void WebContentsImpl::FocusThroughTabTraversal(bool reverse) {
@@ -3266,7 +3302,11 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
   SetIsLoading(rvh, false, true, NULL);
   NotifyDisconnected();
   SetIsCrashed(status, error_code);
-  GetView()->OnTabCrashed(GetCrashedStatus(), crashed_error_code_);
+
+#if defined(OS_ANDROID)
+  if (GetRenderViewHostImpl()->media_player_manager())
+    GetRenderViewHostImpl()->media_player_manager()->DestroyAllMediaPlayers();
+#endif
 
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
@@ -3800,6 +3840,7 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
 }
 
 #if defined(OS_ANDROID)
+
 base::android::ScopedJavaLocalRef<jobject>
 WebContentsImpl::GetJavaWebContents() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -3818,6 +3859,27 @@ bool WebContentsImpl::CreateRenderViewForInitialEmptyDocument() {
                                           MSG_ROUTING_NONE,
                                           NULL);
 }
+
+#elif defined(OS_MACOSX)
+
+void WebContentsImpl::SetAllowOverlappingViews(bool overlapping) {
+  view_->SetAllowOverlappingViews(overlapping);
+}
+
+bool WebContentsImpl::GetAllowOverlappingViews() {
+  return view_->GetAllowOverlappingViews();
+}
+
+void WebContentsImpl::SetOverlayView(WebContents* overlay,
+                                     const gfx::Point& offset) {
+  view_->SetOverlayView(static_cast<WebContentsImpl*>(overlay)->GetView(),
+                        offset);
+}
+
+void WebContentsImpl::RemoveOverlayView() {
+  view_->RemoveOverlayView();
+}
+
 #endif
 
 void WebContentsImpl::OnDialogClosed(int render_process_id,
@@ -3860,7 +3922,7 @@ void WebContentsImpl::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {
   RenderWidgetHostViewBase* rwh_view = view_->CreateViewForWidget(rvh);
   // Can be NULL during tests.
   if (rwh_view)
-    rwh_view->SetSize(GetView()->GetContainerSize());
+    rwh_view->SetSize(GetContainerBounds().size());
 }
 
 bool WebContentsImpl::IsHidden() {
@@ -3908,12 +3970,12 @@ void WebContentsImpl::ClearAllPowerSaveBlockers() {
   power_save_blockers_.clear();
 }
 
-gfx::Size WebContentsImpl::GetSizeForNewRenderView() const {
+gfx::Size WebContentsImpl::GetSizeForNewRenderView() {
   gfx::Size size;
   if (delegate_)
     size = delegate_->GetSizeForNewRenderView(this);
   if (size.IsEmpty())
-    size = view_->GetContainerSize();
+    size = GetContainerBounds().size();
   return size;
 }
 

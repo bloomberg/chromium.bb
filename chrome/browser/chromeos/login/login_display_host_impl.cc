@@ -71,7 +71,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
 #include "media/audio/sounds/sounds_manager.h"
@@ -960,7 +959,7 @@ void LoginDisplayHostImpl::ShowWebUI() {
   }
   LOG(WARNING) << "Login WebUI >> Show already initialized UI";
   login_window_->Show();
-  login_view_->GetWebContents()->GetView()->Focus();
+  login_view_->GetWebContents()->Focus();
   login_view_->SetStatusAreaVisible(status_area_saved_visibility_);
   login_view_->OnPostponedShow();
 

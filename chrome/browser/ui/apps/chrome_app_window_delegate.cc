@@ -22,7 +22,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents_view.h"
 #include "extensions/common/constants.h"
 
 #if defined(USE_ASH)
@@ -245,5 +244,5 @@ void ChromeAppWindowDelegate::SetWebContentsBlocked(
 
 bool ChromeAppWindowDelegate::IsWebContentsVisible(
     content::WebContents* web_contents) {
-  return platform_util::IsVisible(web_contents->GetView()->GetNativeView());
+  return platform_util::IsVisible(web_contents->GetNativeView());
 }

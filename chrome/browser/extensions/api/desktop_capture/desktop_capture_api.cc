@@ -18,7 +18,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "net/base/net_util.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
@@ -131,13 +130,13 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
     Observe(web_contents);
 
     render_view = web_contents->GetRenderViewHost();
-    parent_window = web_contents->GetView()->GetTopLevelNativeWindow();
+    parent_window = web_contents->GetTopLevelNativeWindow();
   } else {
     origin_ = GetExtension()->url();
     target_name = base::UTF8ToUTF16(GetExtension()->name());
     render_view = render_view_host();
     parent_window =
-        GetAssociatedWebContents()->GetView()->GetTopLevelNativeWindow();
+        GetAssociatedWebContents()->GetTopLevelNativeWindow();
   }
   render_process_id_ = render_view->GetProcess()->GetID();
   render_view_id_ = render_view->GetRoutingID();

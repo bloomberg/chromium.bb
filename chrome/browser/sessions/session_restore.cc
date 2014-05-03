@@ -49,7 +49,6 @@
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
 #include "net/base/network_change_notifier.h"
@@ -1074,8 +1073,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
     // TODO(jcampan): http://crbug.com/8123 we should not need to set the
     //                initial focus explicitly.
-    browser->tab_strip_model()->GetActiveWebContents()->
-        GetView()->SetInitialFocus();
+    browser->tab_strip_model()->GetActiveWebContents()->SetInitialFocus();
 
     if (!browser_shown_) {
       browser_shown_ = true;

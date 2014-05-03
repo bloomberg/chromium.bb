@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "extensions/browser/extension_system.h"
 
 ChromeNewWindowDelegateChromeos::ChromeNewWindowDelegateChromeos() {}
@@ -64,7 +63,7 @@ void ChromeNewWindowDelegateChromeos::OpenCrosh() {
                              false));
   browser->window()->Show();
   browser->window()->Activate();
-  page->GetView()->Focus();
+  page->Focus();
 }
 
 void ChromeNewWindowDelegateChromeos::ShowKeyboardOverlay() {

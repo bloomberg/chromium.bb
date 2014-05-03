@@ -41,7 +41,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/quota_service.h"
@@ -955,7 +954,7 @@ void BookmarksIOFunction::ShowSelectFileDialog(
   file_type_info.extensions.resize(1);
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("html"));
   gfx::NativeWindow owning_window = web_contents ?
-      platform_util::GetTopLevel(web_contents->GetView()->GetNativeView())
+      platform_util::GetTopLevel(web_contents->GetNativeView())
           : NULL;
 #if defined(OS_WIN)
   if (!owning_window &&

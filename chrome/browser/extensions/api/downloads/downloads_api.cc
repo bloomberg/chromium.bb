@@ -61,7 +61,6 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_registry.h"
@@ -1292,8 +1291,7 @@ void DownloadsAcceptDangerFunction::PromptOrWait(int download_id, int retries) {
     SendResponse(error_.empty());
     return;
   }
-  bool visible = platform_util::IsVisible(
-      web_contents->GetView()->GetNativeView());
+  bool visible = platform_util::IsVisible(web_contents->GetNativeView());
   if (!visible) {
     if (retries > 0) {
       base::MessageLoopForUI::current()->PostDelayedTask(
@@ -1417,7 +1415,7 @@ bool DownloadsDragFunction::RunAsync() {
   RecordApiFunctions(DOWNLOADS_FUNCTION_DRAG);
   gfx::Image* icon = g_browser_process->icon_manager()->LookupIconFromFilepath(
       download_item->GetTargetFilePath(), IconLoader::NORMAL);
-  gfx::NativeView view = web_contents->GetView()->GetNativeView();
+  gfx::NativeView view = web_contents->GetNativeView();
   {
     // Enable nested tasks during DnD, while |DragDownload()| blocks.
     base::MessageLoop::ScopedNestableTaskAllower allow(

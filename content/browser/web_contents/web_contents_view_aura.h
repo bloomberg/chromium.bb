@@ -10,9 +10,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
+#include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/content_export.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
-#include "content/port/browser/web_contents_view_port.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/wm/public/drag_drop_delegate.h"
@@ -35,10 +35,10 @@ class WebContentsViewDelegate;
 class WebContentsImpl;
 class WebDragDestDelegate;
 
-class CONTENT_EXPORT WebContentsViewAura
-    : public WebContentsViewPort,
+class WebContentsViewAura
+    : public WebContentsView,
       public RenderViewHostDelegateView,
-      NON_EXPORTED_BASE(public OverscrollControllerDelegate),
+      public OverscrollControllerDelegate,
       public ui::ImplicitAnimationObserver,
       public aura::WindowDelegate,
       public aura::client::DragDropDelegate {
@@ -46,9 +46,10 @@ class CONTENT_EXPORT WebContentsViewAura
   WebContentsViewAura(WebContentsImpl* web_contents,
                       WebContentsViewDelegate* delegate);
 
-  void SetupOverlayWindowForTesting();
+  CONTENT_EXPORT void SetupOverlayWindowForTesting();
 
-  void SetTouchEditableForTest(TouchEditableImplAura* touch_editable);
+  CONTENT_EXPORT void SetTouchEditableForTest(
+      TouchEditableImplAura* touch_editable);
 
  private:
   class WindowObserver;
@@ -105,8 +106,6 @@ class CONTENT_EXPORT WebContentsViewAura
   virtual gfx::NativeView GetContentNativeView() const OVERRIDE;
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE;
   virtual void GetContainerBounds(gfx::Rect *out) const OVERRIDE;
-  virtual void OnTabCrashed(base::TerminationStatus status,
-                            int error_code) OVERRIDE;
   virtual void SizeContents(const gfx::Size& size) OVERRIDE;
   virtual void Focus() OVERRIDE;
   virtual void SetInitialFocus() OVERRIDE;
@@ -114,8 +113,6 @@ class CONTENT_EXPORT WebContentsViewAura
   virtual void RestoreFocus() OVERRIDE;
   virtual DropData* GetDropData() const OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
-
-  // Overridden from WebContentsViewPort:
   virtual void CreateView(
       const gfx::Size& initial_size, gfx::NativeView context) OVERRIDE;
   virtual RenderWidgetHostViewBase* CreateViewForWidget(

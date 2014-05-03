@@ -22,7 +22,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/save_page_type.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -211,7 +210,7 @@ SavePackageFilePicker::SavePackageFilePicker(
         &file_type_info,
         file_type_index,
         default_extension_copy,
-        platform_util::GetTopLevel(web_contents->GetView()->GetNativeView()),
+        platform_util::GetTopLevel(web_contents->GetNativeView()),
         NULL);
   } else {
     // Just use 'suggested_path_copy' instead of opening the dialog prompt.

@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -231,7 +230,7 @@ const double kWidthOfMouseResizeArea = 15.0;
   NSRect contentFrame = [self contentRectForFrameRect:[[self window] frame]];
   contentFrame.origin = NSZeroPoint;
 
-  NSView* contentView = webContents->GetView()->GetNativeView();
+  NSView* contentView = webContents->GetNativeView();
   if (!NSEqualRects([contentView frame], contentFrame))
     [contentView setFrame:contentFrame];
 }
@@ -331,7 +330,7 @@ const double kWidthOfMouseResizeArea = 15.0;
 }
 
 - (void)webContentsInserted:(WebContents*)contents {
-  NSView* view = contents->GetView()->GetNativeView();
+  NSView* view = contents->GetNativeView();
   [[[self window] contentView] addSubview:view];
   [view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 
@@ -339,7 +338,7 @@ const double kWidthOfMouseResizeArea = 15.0;
 }
 
 - (void)webContentsDetached:(WebContents*)contents {
-  [contents->GetView()->GetNativeView() removeFromSuperview];
+  [contents->GetNativeView() removeFromSuperview];
 }
 
 - (PanelTitlebarViewCocoa*)titlebarView {
@@ -691,7 +690,7 @@ const double kWidthOfMouseResizeArea = 15.0;
   content::WebContents* webContents = panel->GetWebContents();
   if (!webContents)
     return;
-  NSView* contentView = webContents->GetView()->GetNativeView();
+  NSView* contentView = webContents->GetNativeView();
   if (NSHeight([self contentRectForFrameRect:[[self window] frame]]) <= 0) {
     // No need to retain the view before it is removed from its superview
     // because WebContentsView keeps a reference to this view.

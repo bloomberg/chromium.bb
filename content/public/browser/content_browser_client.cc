@@ -15,12 +15,6 @@ BrowserMainParts* ContentBrowserClient::CreateBrowserMainParts(
   return NULL;
 }
 
-WebContentsViewPort* ContentBrowserClient::OverrideCreateWebContentsView(
-    WebContents* web_contents,
-    RenderViewHostDelegateView** render_view_host_delegate_view) {
-  return NULL;
-}
-
 WebContentsViewDelegate* ContentBrowserClient::GetWebContentsViewDelegate(
     WebContents* web_contents) {
   return NULL;

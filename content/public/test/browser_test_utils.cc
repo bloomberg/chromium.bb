@@ -14,6 +14,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
+#include "content/browser/web_contents/web_contents_view.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -23,7 +24,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/test/test_utils.h"
 #include "grit/webui_resources.h"
 #include "net/base/filename_util.h"
@@ -221,8 +221,8 @@ void CrashTab(WebContents* web_contents) {
 void SimulateMouseClick(WebContents* web_contents,
                         int modifiers,
                         blink::WebMouseEvent::Button button) {
-  int x = web_contents->GetView()->GetContainerSize().width() / 2;
-  int y = web_contents->GetView()->GetContainerSize().height() / 2;
+  int x = web_contents->GetContainerBounds().width() / 2;
+  int y = web_contents->GetContainerBounds().height() / 2;
   SimulateMouseClickAt(web_contents, modifiers, button, gfx::Point(x, y));
 }
 
@@ -237,8 +237,7 @@ void SimulateMouseClickAt(WebContents* web_contents,
   mouse_event.y = point.y();
   mouse_event.modifiers = modifiers;
   // Mac needs globalX/globalY for events to plugins.
-  gfx::Rect offset;
-  web_contents->GetView()->GetContainerBounds(&offset);
+  gfx::Rect offset = web_contents->GetContainerBounds();
   mouse_event.globalX = point.x() + offset.x();
   mouse_event.globalY = point.y() + offset.y();
   mouse_event.clickCount = 1;

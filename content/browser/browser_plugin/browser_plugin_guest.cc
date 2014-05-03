@@ -35,7 +35,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/media_stream_request.h"

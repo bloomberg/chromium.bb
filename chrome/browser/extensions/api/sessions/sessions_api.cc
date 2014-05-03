@@ -405,7 +405,7 @@ void SessionsRestoreFunction::SetInvalidIdError(const std::string& invalid_id) {
 
 
 void SessionsRestoreFunction::SetResultRestoredTab(
-    const content::WebContents* contents) {
+    content::WebContents* contents) {
   scoped_ptr<base::DictionaryValue> tab_value(
       ExtensionTabUtil::CreateTabValue(contents, GetExtension()));
   scoped_ptr<tabs::Tab> tab(tabs::Tab::FromValue(*tab_value));

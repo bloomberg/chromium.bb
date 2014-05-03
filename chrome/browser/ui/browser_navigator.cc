@@ -39,7 +39,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -340,7 +339,7 @@ content::WebContents* CreateTargetContents(const chrome::NavigateParams& params,
       tab_util::GetSiteInstanceForNewTab(params.browser->profile(), url));
   if (params.source_contents) {
     create_params.initial_size =
-        params.source_contents->GetView()->GetContainerSize();
+        params.source_contents->GetContainerBounds().size();
     if (params.should_set_opener)
       create_params.opener = params.source_contents;
   }
@@ -661,7 +660,7 @@ void Navigate(NavigateParams* params) {
       (params->disposition == NEW_FOREGROUND_TAB ||
        params->disposition == NEW_WINDOW) &&
       (params->tabstrip_add_types & TabStripModel::ADD_INHERIT_OPENER))
-    params->source_contents->GetView()->Focus();
+    params->source_contents->Focus();
 
   if (params->source_contents == params->target_contents ||
       (swapped_in_prerender && params->disposition == CURRENT_TAB)) {

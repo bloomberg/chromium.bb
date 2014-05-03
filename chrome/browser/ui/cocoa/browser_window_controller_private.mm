@@ -41,7 +41,6 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #import "ui/base/cocoa/focus_tracker.h"
 #include "ui/base/ui_base_types.h"
 
@@ -999,12 +998,12 @@ willPositionSheet:(NSWindow*)sheet
   // transitioning between composited and non-composited mode.
   // http://crbug.com/279472
   allowOverlappingViews = YES;
-  contents->GetView()->SetAllowOverlappingViews(allowOverlappingViews);
+  contents->SetAllowOverlappingViews(allowOverlappingViews);
 
   DevToolsWindow* devToolsWindow =
       DevToolsWindow::GetDockedInstanceForInspectedTab(contents);
   if (devToolsWindow) {
-    devToolsWindow->web_contents()->GetView()->
+    devToolsWindow->web_contents()->
         SetAllowOverlappingViews(allowOverlappingViews);
   }
 }

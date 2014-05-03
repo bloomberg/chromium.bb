@@ -25,7 +25,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/context_menu_params.h"
 #include "extensions/browser/view_type_utils.h"
 #include "grit/generated_resources.h"
@@ -300,7 +299,7 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
       gfx::Rect rect = rvh->GetView()->GetViewBounds();
       chrome::ShowConfirmBubble(
 #if defined(TOOLKIT_VIEWS)
-          proxy_->GetWebContents()->GetView()->GetTopLevelNativeWindow(),
+          proxy_->GetWebContents()->GetTopLevelNativeWindow(),
 #else
           rvh->GetView()->GetNativeView(),
 #endif

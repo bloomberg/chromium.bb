@@ -33,7 +33,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -589,7 +588,7 @@ void TabDragController::RestoreFocus() {
     if (is_dragging_new_browser_) {
       content::WebContents* active_contents = source_dragged_contents();
       if (active_contents && !active_contents->FocusLocationBarByDefault())
-        active_contents->GetView()->Focus();
+        active_contents->Focus();
     }
     return;
   }

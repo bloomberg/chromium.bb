@@ -24,10 +24,10 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
-#include "content/port/browser/web_contents_view_port.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -283,7 +283,7 @@ void InterstitialPageImpl::Hide() {
   if (render_view_host_->GetView() &&
       render_view_host_->GetView()->HasFocus() &&
       controller_->delegate()->GetRenderViewHost()->GetView()) {
-    controller_->delegate()->GetRenderViewHost()->GetView()->Focus();
+    controller_->delegate()->GetRenderViewHost()->Focus();
   }
 
   // Delete this and call Shutdown on the RVH asynchronously, as we may have
@@ -576,11 +576,10 @@ RenderViewHost* InterstitialPageImpl::CreateRenderViewHost() {
 WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
   if (!enabled() || !create_view_)
     return NULL;
-  WebContentsView* web_contents_view = web_contents()->GetView();
-  WebContentsViewPort* web_contents_view_port =
-      static_cast<WebContentsViewPort*>(web_contents_view);
+  WebContentsView* wcv =
+      static_cast<WebContentsImpl*>(web_contents())->GetView();
   RenderWidgetHostViewBase* view =
-      web_contents_view_port->CreateViewForWidget(render_view_host_);
+      wcv->CreateViewForWidget(render_view_host_);
   render_view_host_->SetView(view);
   render_view_host_->AllowBindings(BINDINGS_POLICY_DOM_AUTOMATION);
 
@@ -592,10 +591,10 @@ WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
                                       false);
   controller_->delegate()->RenderFrameForInterstitialPageCreated(
       frame_tree_.root()->current_frame_host());
-  view->SetSize(web_contents_view->GetContainerSize());
+  view->SetSize(web_contents()->GetContainerBounds().size());
   // Don't show the interstitial until we have navigated to it.
   view->Hide();
-  return web_contents_view;
+  return wcv;
 }
 
 void InterstitialPageImpl::Proceed() {
@@ -703,7 +702,7 @@ void InterstitialPageImpl::Focus() {
   // Focus the native window.
   if (!enabled())
     return;
-  render_view_host_->GetView()->Focus();
+  render_view_host_->Focus();
 }
 
 void InterstitialPageImpl::FocusThroughTabTraversal(bool reverse) {

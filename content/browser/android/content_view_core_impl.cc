@@ -275,8 +275,9 @@ void ContentViewCoreImpl::InitWebContents() {
       this, NOTIFICATION_WEB_CONTENTS_CONNECTED,
       Source<WebContents>(web_contents_));
 
-  static_cast<WebContentsViewAndroid*>(web_contents_->GetView())->
-      SetContentViewCore(this);
+  static_cast<WebContentsViewAndroid*>(
+      static_cast<WebContentsImpl*>(web_contents_)->GetView())->
+          SetContentViewCore(this);
   DCHECK(!web_contents_->GetUserData(kContentViewUserDataKey));
   web_contents_->SetUserData(kContentViewUserDataKey,
                              new ContentViewUserData(this));
@@ -420,13 +421,6 @@ void ContentViewCoreImpl::PauseOrResumeGeolocation(bool should_pause) {
       geolocation_needs_pause_ = false;
     }
   }
-}
-
-void ContentViewCoreImpl::OnTabCrashed() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
 }
 
 // All positions and sizes are in CSS pixels.
@@ -1656,8 +1650,8 @@ void ContentViewCoreImpl::OnSmartClipDataExtracted(
 }
 
 void ContentViewCoreImpl::WebContentsDestroyed(WebContents* web_contents) {
-  WebContentsViewAndroid* wcva =
-      static_cast<WebContentsViewAndroid*>(web_contents->GetView());
+  WebContentsViewAndroid* wcva = static_cast<WebContentsViewAndroid*>(
+      static_cast<WebContentsImpl*>(web_contents)->GetView());
   DCHECK(wcva);
   wcva->SetContentViewCore(NULL);
 }

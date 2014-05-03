@@ -22,7 +22,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/referrer.h"
 #include "jni/DownloadController_jni.h"
 #include "net/cookies/cookie_options.h"

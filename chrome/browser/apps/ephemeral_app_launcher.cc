@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -38,7 +37,7 @@ gfx::NativeWindow NativeWindowForWebContents(content::WebContents* contents) {
   if (!contents)
     return NULL;
 
-  return contents->GetView()->GetTopLevelNativeWindow();
+  return contents->GetTopLevelNativeWindow();
 }
 
 }  // namespace

@@ -17,7 +17,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents_view.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/views/focus/focus_manager.h"
@@ -190,7 +189,7 @@ void ChromeWebContentsViewDelegateViews::SizeChanged(const gfx::Size& size) {
 aura::Window* ChromeWebContentsViewDelegateViews::GetActiveNativeView() {
   return web_contents_->GetFullscreenRenderWidgetHostView() ?
       web_contents_->GetFullscreenRenderWidgetHostView()->GetNativeView() :
-      web_contents_->GetView()->GetNativeView();
+      web_contents_->GetNativeView();
 }
 
 views::Widget* ChromeWebContentsViewDelegateViews::GetTopLevelWidget() {
@@ -208,7 +207,7 @@ void ChromeWebContentsViewDelegateViews::SetInitialFocus() {
     if (web_contents_->GetDelegate())
       web_contents_->GetDelegate()->SetFocusToLocationBar(false);
   } else {
-    web_contents_->GetView()->Focus();
+    web_contents_->Focus();
   }
 }
 

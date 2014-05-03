@@ -16,7 +16,6 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/base/cocoa/window_size_constants.h"
@@ -199,8 +198,7 @@ NewCreditCardBubbleCocoa::~NewCreditCardBubbleCocoa() {
 }
 
 void NewCreditCardBubbleCocoa::Show() {
-  NSView* browser_view =
-      controller_->web_contents()->GetView()->GetNativeView();
+  NSView* browser_view = controller_->web_contents()->GetNativeView();
   NSWindow* parent_window = [browser_view window];
   BrowserWindowController* bwc = [BrowserWindowController
       browserWindowControllerForWindow:parent_window];

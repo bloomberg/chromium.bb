@@ -5,7 +5,6 @@
 #include "content/shell/browser/shell.h"
 
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/shell/browser/shell_platform_data_aura.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_screen.h"
@@ -50,7 +49,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
 
 void Shell::PlatformSetContents() {
   CHECK(platform_);
-  aura::Window* content = web_contents_->GetView()->GetNativeView();
+  aura::Window* content = web_contents_->GetNativeView();
   aura::Window* parent = platform_->host()->window();
   if (parent->Contains(content))
     return;

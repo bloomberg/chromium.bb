@@ -26,7 +26,7 @@ int ExtensionTabUtil::GetWindowIdOfTabStripModel(
 }
 
 // static
-int ExtensionTabUtil::GetTabId(const WebContents* web_contents) {
+int ExtensionTabUtil::GetTabId(WebContents* web_contents) {
   return SessionID::IdForTab(web_contents);
 }
 
@@ -38,7 +38,7 @@ int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
 
 // static
 base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
-    const WebContents* contents,
+    WebContents* contents,
     TabStripModel* tab_strip,
     int tab_index,
     const Extension* extension) {
@@ -55,7 +55,7 @@ base::ListValue* ExtensionTabUtil::CreateTabList(const Browser* browser,
 
 // static
 base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
-    const WebContents* contents,
+    WebContents* contents,
     TabStripModel* tab_strip,
     int tab_index) {
   NOTIMPLEMENTED();

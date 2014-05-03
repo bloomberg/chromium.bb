@@ -21,7 +21,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -41,7 +40,7 @@ Profile* PasswordManagerHandler::GetProfile() {
 
 #if !defined(OS_ANDROID)
 gfx::NativeWindow PasswordManagerHandler::GetNativeWindow() {
-  return web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow();
+  return web_ui()->GetWebContents()->GetTopLevelNativeWindow();
 }
 #endif
 

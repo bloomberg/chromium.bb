@@ -25,7 +25,6 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -1257,7 +1256,7 @@ void AutofillDialogViews::Show() {
   // Listen for size changes on the browser.
   views::Widget* browser_widget =
       views::Widget::GetTopLevelWidgetForNativeView(
-          delegate_->GetWebContents()->GetView()->GetNativeView());
+          delegate_->GetWebContents()->GetNativeView());
   observer_.Add(browser_widget);
 
   // Listen for unhandled mouse presses on the non-client view.

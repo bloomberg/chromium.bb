@@ -23,7 +23,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/rect.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
@@ -35,11 +35,6 @@ class TimeTicks;
 
 namespace blink {
 struct WebFindOptions;
-}
-
-namespace gfx {
-class Rect;
-class Size;
 }
 
 namespace net {
@@ -57,8 +52,8 @@ class RenderViewHost;
 class RenderWidgetHostView;
 class SiteInstance;
 class WebContentsDelegate;
-class WebContentsView;
 struct CustomContextMenuContext;
+struct DropData;
 struct RendererPreferences;
 
 // WebContents is the core class in content/. A WebContents renders web content
@@ -68,7 +63,7 @@ struct RendererPreferences;
 //   scoped_ptr<content::WebContents> web_contents(
 //       content::WebContents::Create(
 //           content::WebContents::CreateParams(browser_context)));
-//   gfx::NativeView view = web_contents->GetView()->GetNativeView();
+//   gfx::NativeView view = web_contents->GetNativeView();
 //   // |view| is an HWND, NSView*, GtkWidget*, etc.; insert it into the view
 //   // hierarchy wherever it needs to go.
 //
@@ -209,9 +204,6 @@ class WebContents : public PageNavigator,
   // Returns the currently active fullscreen widget. If there is none, returns
   // NULL.
   virtual RenderWidgetHostView* GetFullscreenRenderWidgetHostView() const = 0;
-
-  // The WebContentsView will never change and is guaranteed non-NULL.
-  virtual WebContentsView* GetView() const = 0;
 
   // Create a WebUI page for the given url. In most cases, this doesn't need to
   // be called by embedders since content will create its own WebUI objects as
@@ -371,6 +363,42 @@ class WebContents : public PageNavigator,
       int action, const CustomContextMenuContext& context) = 0;
 
   // Views and focus -----------------------------------------------------------
+
+  // Returns the native widget that contains the contents of the tab.
+  virtual gfx::NativeView GetNativeView() = 0;
+
+  // Returns the native widget with the main content of the tab (i.e. the main
+  // render view host, though there may be many popups in the tab as children of
+  // the container).
+  virtual gfx::NativeView GetContentNativeView() = 0;
+
+  // Returns the outermost native view. This will be used as the parent for
+  // dialog boxes.
+  virtual gfx::NativeWindow GetTopLevelNativeWindow() = 0;
+
+  // Computes the rectangle for the native widget that contains the contents of
+  // the tab in the screen coordinate system.
+  virtual gfx::Rect GetContainerBounds() = 0;
+
+  // Get the bounds of the View, relative to the parent.
+  virtual gfx::Rect GetViewBounds() = 0;
+
+  // Returns the current drop data, if any.
+  virtual DropData* GetDropData() = 0;
+
+  // Sets focus to the native widget for this tab.
+  virtual void Focus() = 0;
+
+  // Sets focus to the appropriate element when the WebContents is shown the
+  // first time.
+  virtual void SetInitialFocus() = 0;
+
+  // Stores the currently focused view.
+  virtual void StoreFocus() = 0;
+
+  // Restores focus to the last focus view. If StoreFocus has not yet been
+  // invoked, SetInitialFocus is invoked.
+  virtual void RestoreFocus() = 0;
 
   // Focuses the first (last if |reverse| is true) element in the page.
   // Invoked when this tab is getting the focus through tab traversal (|reverse|
@@ -545,6 +573,24 @@ class WebContents : public PageNavigator,
   CONTENT_EXPORT static WebContents* FromJavaWebContents(
       jobject jweb_contents_android);
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() = 0;
+#elif defined(OS_MACOSX)
+  // The web contents view assumes that its view will never be overlapped by
+  // another view (either partially or fully). This allows it to perform
+  // optimizations. If the view is in a view hierarchy where it might be
+  // overlapped by another view, notify the view by calling this with |true|.
+  virtual void SetAllowOverlappingViews(bool overlapping) = 0;
+
+  // Returns true if overlapping views are allowed, false otherwise.
+  virtual bool GetAllowOverlappingViews() = 0;
+
+  // To draw two overlapping web contents view, the underlaying one should
+  // know about the overlaying one. Caller must ensure that |overlay| exists
+  // until |RemoveOverlayView| is called.
+  virtual void SetOverlayView(WebContents* overlay,
+                              const gfx::Point& offset) = 0;
+
+  // Removes the previously set overlay view.
+  virtual void RemoveOverlayView() = 0;
 #endif  // OS_ANDROID
 
  private:

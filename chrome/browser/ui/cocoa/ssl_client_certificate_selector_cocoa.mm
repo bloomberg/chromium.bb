@@ -15,7 +15,6 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_mac.h"

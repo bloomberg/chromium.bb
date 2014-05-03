@@ -447,8 +447,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // This is optional for implementations of WebContentsDelegate; if the
   // delegate doesn't provide a size, the current WebContentsView's size will be
   // used.
-  virtual gfx::Size GetSizeForNewRenderView(
-      const WebContents* web_contents) const;
+  virtual gfx::Size GetSizeForNewRenderView(WebContents* web_contents) const;
 
   // Notification that validation of a form displayed by the |web_contents|
   // has failed. There can only be one message per |web_contents| at a time.

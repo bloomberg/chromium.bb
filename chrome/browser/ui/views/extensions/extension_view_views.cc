@@ -9,7 +9,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/common/view_type.h"
 #include "ui/events/event.h"
@@ -134,13 +133,13 @@ void ExtensionViewViews::PreferredSizeChanged() {
 }
 
 void ExtensionViewViews::OnFocus() {
-  host()->host_contents()->GetView()->Focus();
+  host()->host_contents()->Focus();
 }
 
 void ExtensionViewViews::CreateWidgetHostView() {
   DCHECK(!initialized_);
   initialized_ = true;
-  Attach(host_->host_contents()->GetView()->GetNativeView());
+  Attach(host_->host_contents()->GetNativeView());
   host_->CreateRenderViewSoon();
   SetVisible(false);
 }

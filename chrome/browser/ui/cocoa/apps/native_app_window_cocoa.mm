@@ -18,7 +18,6 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "extensions/common/extension.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/skia_util.h"
@@ -349,7 +348,7 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
   window_controller_.reset(
       [[NativeAppWindowController alloc] initWithWindow:window.release()]);
 
-  NSView* view = WebContents()->GetView()->GetNativeView();
+  NSView* view = WebContents()->GetNativeView();
   [view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 
   InstallView();
@@ -387,7 +386,7 @@ NSUInteger NativeAppWindowCocoa::GetWindowStyleMask() const {
 }
 
 void NativeAppWindowCocoa::InstallView() {
-  NSView* view = WebContents()->GetView()->GetNativeView();
+  NSView* view = WebContents()->GetNativeView();
   if (has_frame_) {
     [view setFrame:[[window() contentView] bounds]];
     [[window() contentView] addSubview:view];
@@ -420,7 +419,7 @@ void NativeAppWindowCocoa::InstallView() {
 }
 
 void NativeAppWindowCocoa::UninstallView() {
-  NSView* view = WebContents()->GetView()->GetNativeView();
+  NSView* view = WebContents()->GetNativeView();
   [view removeFromSuperview];
 }
 
@@ -666,7 +665,7 @@ void NativeAppWindowCocoa::UpdateDraggableRegionViews() {
   // All ControlRegionViews should be added as children of the WebContentsView,
   // because WebContentsView will be removed and re-added when entering and
   // leaving fullscreen mode.
-  NSView* webView = WebContents()->GetView()->GetNativeView();
+  NSView* webView = WebContents()->GetNativeView();
   NSInteger webViewWidth = NSWidth([webView bounds]);
   NSInteger webViewHeight = NSHeight([webView bounds]);
 
@@ -716,7 +715,7 @@ bool NativeAppWindowCocoa::IsAlwaysOnTop() const {
 
 void NativeAppWindowCocoa::RenderViewCreated(content::RenderViewHost* rvh) {
   if (IsActive())
-    WebContents()->GetView()->RestoreFocus();
+    WebContents()->RestoreFocus();
 }
 
 bool NativeAppWindowCocoa::IsFrameless() const {
@@ -795,7 +794,7 @@ void NativeAppWindowCocoa::WindowDidBecomeKey() {
     rwhv->SetActive(true);
   app_window_->OnNativeWindowActivated();
 
-  WebContents()->GetView()->RestoreFocus();
+  WebContents()->RestoreFocus();
 }
 
 void NativeAppWindowCocoa::WindowDidResignKey() {
@@ -806,7 +805,7 @@ void NativeAppWindowCocoa::WindowDidResignKey() {
   if ([NSApp isActive] && ([NSApp keyWindow] == window()))
     return;
 
-  WebContents()->GetView()->StoreFocus();
+  WebContents()->StoreFocus();
 
   content::RenderWidgetHostView* rwhv =
       WebContents()->GetRenderWidgetHostView();

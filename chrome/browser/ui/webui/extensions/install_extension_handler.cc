@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/drop_data.h"
@@ -63,7 +62,7 @@ void InstallExtensionHandler::RegisterMessages() {
 void InstallExtensionHandler::HandleStartDragMessage(
     const base::ListValue* args) {
   content::DropData* drop_data =
-      web_ui()->GetWebContents()->GetView()->GetDropData();
+      web_ui()->GetWebContents()->GetDropData();
   if (!drop_data) {
     DLOG(ERROR) << "No current drop data.";
     return;

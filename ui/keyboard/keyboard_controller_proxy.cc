@@ -11,7 +11,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/bindings_policy.h"
 #include "ui/aura/layout_manager.h"
@@ -122,7 +121,7 @@ aura::Window* KeyboardControllerProxy::GetKeyboardWindow() {
     LoadContents(GetVirtualKeyboardUrl());
   }
 
-  return keyboard_contents_->GetView()->GetNativeView();
+  return keyboard_contents_->GetNativeView();
 }
 
 bool KeyboardControllerProxy::HasKeyboardWindow() const {

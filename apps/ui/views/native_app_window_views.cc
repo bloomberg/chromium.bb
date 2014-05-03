@@ -9,7 +9,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "extensions/common/draggable_region.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/path.h"
@@ -233,7 +232,7 @@ bool NativeAppWindowViews::ShouldDescendIntoChildForEventHandling(
     gfx::NativeView child,
     const gfx::Point& location) {
 #if defined(USE_AURA)
-  if (child->Contains(web_view_->web_contents()->GetView()->GetNativeView())) {
+  if (child->Contains(web_view_->web_contents()->GetNativeView())) {
     // App window should claim mouse events that fall within the draggable
     // region.
     return !draggable_region_.get() ||

@@ -60,7 +60,7 @@ class ExtensionTabUtil {
 
   static int GetWindowId(const Browser* browser);
   static int GetWindowIdOfTabStripModel(const TabStripModel* tab_strip_model);
-  static int GetTabId(const content::WebContents* web_contents);
+  static int GetTabId(content::WebContents* web_contents);
   static std::string GetTabStatusText(bool is_loading);
   static int GetWindowIdOfTab(const content::WebContents* web_contents);
   static base::ListValue* CreateTabList(const Browser* browser,
@@ -75,12 +75,12 @@ class ExtensionTabUtil {
   // permissions of the extension, the object may or may not include sensitive
   // data such as the tab's URL.
   static base::DictionaryValue* CreateTabValue(
-      const content::WebContents* web_contents,
+      content::WebContents* web_contents,
       const Extension* extension) {
     return CreateTabValue(web_contents, NULL, -1, extension);
   }
   static base::DictionaryValue* CreateTabValue(
-      const content::WebContents* web_contents,
+      content::WebContents* web_contents,
       TabStripModel* tab_strip,
       int tab_index,
       const Extension* extension);
@@ -88,18 +88,18 @@ class ExtensionTabUtil {
   // Creates a Tab object but performs no extension permissions checks; the
   // returned object will contain privacy-sensitive data.
   static base::DictionaryValue* CreateTabValue(
-      const content::WebContents* web_contents) {
+      content::WebContents* web_contents) {
     return CreateTabValue(web_contents, NULL, -1);
   }
   static base::DictionaryValue* CreateTabValue(
-      const content::WebContents* web_contents,
+      content::WebContents* web_contents,
       TabStripModel* tab_strip,
       int tab_index);
 
   // Removes any privacy-sensitive fields from a Tab object if appropriate,
   // given the permissions of the extension and the tab in question.  The
   // tab_info object is modified in place.
-  static void ScrubTabValueForExtension(const content::WebContents* contents,
+  static void ScrubTabValueForExtension(content::WebContents* contents,
                                         const Extension* extension,
                                         base::DictionaryValue* tab_info);
 

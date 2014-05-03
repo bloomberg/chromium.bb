@@ -63,7 +63,7 @@ class TestWebContents;
 class WebContentsDelegate;
 class WebContentsImpl;
 class WebContentsObserver;
-class WebContentsViewPort;
+class WebContentsView;
 class WebContentsViewDelegate;
 struct AXEventNotificationDetails;
 struct ColorSuggestion;
@@ -74,7 +74,7 @@ struct ResourceRequestDetails;
 
 // Factory function for the implementations that content knows about. Takes
 // ownership of |delegate|.
-WebContentsViewPort* CreateWebContentsView(
+WebContentsView* CreateWebContentsView(
     WebContentsImpl* web_contents,
     WebContentsViewDelegate* delegate,
     RenderViewHostDelegateView** render_view_host_delegate_view);
@@ -174,6 +174,8 @@ class CONTENT_EXPORT WebContentsImpl
       RenderViewHost* render_view_host,
       const ResourceRedirectDetails& details);
 
+  WebContentsView* GetView() const;
+
   // WebContents ------------------------------------------------------
   virtual WebContentsDelegate* GetDelegate() OVERRIDE;
   virtual void SetDelegate(WebContentsDelegate* delegate) OVERRIDE;
@@ -196,7 +198,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual RenderWidgetHostView* GetRenderWidgetHostView() const OVERRIDE;
   virtual RenderWidgetHostView* GetFullscreenRenderWidgetHostView() const
       OVERRIDE;
-  virtual WebContentsView* GetView() const OVERRIDE;
   virtual WebUI* CreateWebUI(const GURL& url) OVERRIDE;
   virtual WebUI* GetWebUI() const OVERRIDE;
   virtual WebUI* GetCommittedWebUI() const OVERRIDE;
@@ -254,6 +255,16 @@ class CONTENT_EXPORT WebContentsImpl
       const CustomContextMenuContext& context) OVERRIDE;
   virtual void ExecuteCustomContextMenuCommand(
       int action, const CustomContextMenuContext& context) OVERRIDE;
+  virtual gfx::NativeView GetNativeView() OVERRIDE;
+  virtual gfx::NativeView GetContentNativeView() OVERRIDE;
+  virtual gfx::NativeWindow GetTopLevelNativeWindow() OVERRIDE;
+  virtual gfx::Rect GetContainerBounds() OVERRIDE;
+  virtual gfx::Rect GetViewBounds() OVERRIDE;
+  virtual DropData* GetDropData() OVERRIDE;
+  virtual void Focus() OVERRIDE;
+  virtual void SetInitialFocus() OVERRIDE;
+  virtual void StoreFocus() OVERRIDE;
+  virtual void RestoreFocus() OVERRIDE;
   virtual void FocusThroughTabTraversal(bool reverse) OVERRIDE;
   virtual bool ShowingInterstitialPage() const OVERRIDE;
   virtual InterstitialPage* GetInterstitialPage() const OVERRIDE;
@@ -307,6 +318,12 @@ class CONTENT_EXPORT WebContentsImpl
 #if defined(OS_ANDROID)
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents()
       OVERRIDE;
+#elif defined(OS_MACOSX)
+  virtual void SetAllowOverlappingViews(bool overlapping) OVERRIDE;
+  virtual bool GetAllowOverlappingViews() OVERRIDE;
+  virtual void SetOverlayView(WebContents* overlay,
+                              const gfx::Point& offset) OVERRIDE;
+  virtual void RemoveOverlayView() OVERRIDE;
 #endif
 
   // Implementation of PageNavigator.
@@ -841,7 +858,7 @@ class CONTENT_EXPORT WebContentsImpl
   void ClearAllPowerSaveBlockers();
 
   // Helper function to invoke WebContentsDelegate::GetSizeForNewRenderView().
-  gfx::Size GetSizeForNewRenderView() const;
+  gfx::Size GetSizeForNewRenderView();
 
   void OnFrameRemoved(RenderViewHostImpl* render_view_host,
                       int frame_routing_id);
@@ -865,7 +882,7 @@ class CONTENT_EXPORT WebContentsImpl
   NavigationControllerImpl controller_;
 
   // The corresponding view.
-  scoped_ptr<WebContentsViewPort> view_;
+  scoped_ptr<WebContentsView> view_;
 
   // The view of the RVHD. Usually this is our WebContentsView implementation,
   // but if an embedder uses a different WebContentsView, they'll need to

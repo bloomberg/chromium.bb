@@ -36,7 +36,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "webkit/common/webpreferences.h"
@@ -465,9 +464,8 @@ void CloudPrintFlowHandler::HandleSetPageParameters(
 }
 
 void CloudPrintFlowHandler::StoreDialogClientSize() const {
-  if (web_ui() && web_ui()->GetWebContents() &&
-      web_ui()->GetWebContents()->GetView()) {
-    gfx::Size size = web_ui()->GetWebContents()->GetView()->GetContainerSize();
+  if (web_ui() && web_ui()->GetWebContents()) {
+    gfx::Size size = web_ui()->GetWebContents()->GetContainerBounds().size();
     Profile* profile = Profile::FromWebUI(web_ui());
     profile->GetPrefs()->SetInteger(prefs::kCloudPrintDialogWidth,
                                     size.width());

@@ -2,25 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_VIEW_H_
-#define CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_VIEW_H_
+#ifndef CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_H_
+#define CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_H_
 
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/process/kill.h"
+#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
 namespace content {
+class RenderViewHost;
+class RenderWidgetHost;
+class RenderWidgetHostViewBase;
 struct DropData;
 
 // The WebContentsView is an interface that is implemented by the platform-
 // dependent web contents views. The WebContents uses this interface to talk to
 // them.
-class CONTENT_EXPORT WebContentsView {
+class WebContentsView {
  public:
   virtual ~WebContentsView() {}
 
@@ -39,17 +42,6 @@ class CONTENT_EXPORT WebContentsView {
   // Computes the rectangle for the native widget that contains the contents of
   // the tab in the screen coordinate system.
   virtual void GetContainerBounds(gfx::Rect* out) const = 0;
-
-  // Helper function for GetContainerBounds. Most callers just want to know the
-  // size, and this makes it more clear.
-  gfx::Size GetContainerSize() const {
-    gfx::Rect rc;
-    GetContainerBounds(&rc);
-    return gfx::Size(rc.width(), rc.height());
-  }
-
-  // Used to notify the view that a tab has crashed.
-  virtual void OnTabCrashed(base::TerminationStatus status, int error_code) = 0;
 
   // TODO(brettw) this is a hack. It's used in two places at the time of this
   // writing: (1) when render view hosts switch, we need to size the replaced
@@ -81,6 +73,36 @@ class CONTENT_EXPORT WebContentsView {
   // Get the bounds of the View, relative to the parent.
   virtual gfx::Rect GetViewBounds() const = 0;
 
+  virtual void CreateView(
+      const gfx::Size& initial_size, gfx::NativeView context) = 0;
+
+  // Sets up the View that holds the rendered web page, receives messages for
+  // it and contains page plugins. The host view should be sized to the current
+  // size of the WebContents.
+  virtual RenderWidgetHostViewBase* CreateViewForWidget(
+      RenderWidgetHost* render_widget_host) = 0;
+
+  // Creates a new View that holds a popup and receives messages for it.
+  virtual RenderWidgetHostViewBase* CreateViewForPopupWidget(
+      RenderWidgetHost* render_widget_host) = 0;
+
+  // Sets the page title for the native widgets corresponding to the view. This
+  // is not strictly necessary and isn't expected to be displayed anywhere, but
+  // can aid certain debugging tools such as Spy++ on Windows where you are
+  // trying to find a specific window.
+  virtual void SetPageTitle(const base::string16& title) = 0;
+
+  // Invoked when the WebContents is notified that the RenderView has been
+  // fully created.
+  virtual void RenderViewCreated(RenderViewHost* host) = 0;
+
+  // Invoked when the WebContents is notified that the RenderView has been
+  // swapped in.
+  virtual void RenderViewSwappedIn(RenderViewHost* host) = 0;
+
+  // Invoked to enable/disable overscroll gesture navigation.
+  virtual void SetOverscrollControllerEnabled(bool enabled) = 0;
+
 #if defined(OS_MACOSX)
   // The web contents view assumes that its view will never be overlapped by
   // another view (either partially or fully). This allows it to perform
@@ -99,9 +121,17 @@ class CONTENT_EXPORT WebContentsView {
 
   // Removes the previously set overlay view.
   virtual void RemoveOverlayView() = 0;
+
+  // If we close the tab while a UI control is in an event-tracking
+  // loop, the control may message freed objects and crash.
+  // WebContents::Close() calls IsEventTracking(), and if it returns
+  // true CloseTabAfterEventTracking() is called and the close is not
+  // completed.
+  virtual bool IsEventTracking() const = 0;
+  virtual void CloseTabAfterEventTracking() = 0;
 #endif
 };
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_VIEW_H_
+#endif  // CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_H_

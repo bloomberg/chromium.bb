@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "url/gurl.h"
 
@@ -46,7 +45,7 @@ chrome::NavigateParams BlockedWindowParams::CreateNavigateParams(
   nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   nav_params.user_gesture = user_gesture_;
   nav_params.should_set_opener = !opener_suppressed_;
-  web_contents->GetView()->GetContainerBounds(&nav_params.window_bounds);
+  nav_params.window_bounds = web_contents->GetContainerBounds();
   if (features_.xSet)
     nav_params.window_bounds.set_x(features_.x);
   if (features_.ySet)

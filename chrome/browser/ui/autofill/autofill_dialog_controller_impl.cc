@@ -73,7 +73,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/component_scaled_resources.h"
@@ -257,13 +256,12 @@ void GetBillingInfoFromOutputs(const FieldValueMap& output,
 // window might be a browser window for a Chrome tab, or it might be an app
 // window for a platform app.
 ui::BaseWindow* GetBaseWindowForWebContents(
-    const content::WebContents* web_contents) {
+    content::WebContents* web_contents) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (browser)
     return browser->window();
 
-  gfx::NativeWindow native_window =
-      web_contents->GetView()->GetTopLevelNativeWindow();
+  gfx::NativeWindow native_window = web_contents->GetTopLevelNativeWindow();
   apps::AppWindow* app_window =
       apps::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
           native_window);
@@ -1442,7 +1440,7 @@ gfx::Image AutofillDialogControllerImpl::GetGeneratedCardImage(
   const int kCardHeightPx = 190;
   const gfx::Size size(kCardWidthPx, kCardHeightPx);
   ui::ScaleFactor scale_factor = ui::GetScaleFactorForNativeView(
-      web_contents()->GetView()->GetNativeView());
+      web_contents()->GetNativeView());
   gfx::Canvas canvas(size, ui::GetImageScale(scale_factor), false);
 
   gfx::Rect display_rect(size);
@@ -2850,7 +2848,7 @@ void AutofillDialogControllerImpl::LoadRiskFingerprintData() {
       g_browser_process->local_state()->GetInt64(::prefs::kInstallDate));
 
   risk::GetFingerprint(
-      obfuscated_gaia_id, window_bounds, *web_contents(),
+      obfuscated_gaia_id, window_bounds, web_contents(),
       chrome::VersionInfo().Version(), charset, accept_languages, install_time,
       g_browser_process->GetApplicationLocale(), GetUserAgent(),
       base::Bind(&AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData,
