@@ -488,12 +488,14 @@ void ContentViewCoreImpl::OnBackgroundColorChanged(SkColor color) {
   Java_ContentViewCore_onBackgroundColorChanged(env, obj.obj(), color);
 }
 
-void ContentViewCoreImpl::ShowSelectPopupMenu(
+void ContentViewCoreImpl::ShowSelectPopupMenu(const gfx::Rect& bounds,
     const std::vector<MenuItem>& items, int selected_item, bool multiple) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
     return;
+
+  ScopedJavaLocalRef<jobject> bounds_rect(CreateJavaRect(env, bounds));
 
   // For multi-select list popups we find the list of previous selections by
   // iterating through the items. But for single selection popups we take the
@@ -532,8 +534,11 @@ void ContentViewCoreImpl::ShowSelectPopupMenu(
   ScopedJavaLocalRef<jobjectArray> items_array(
       base::android::ToJavaArrayOfStrings(env, labels));
   Java_ContentViewCore_showSelectPopup(env, j_obj.obj(),
-                                       items_array.obj(), enabled_array.obj(),
-                                       multiple, selected_array.obj());
+                                       bounds_rect.obj(),
+                                       items_array.obj(),
+                                       enabled_array.obj(),
+                                       multiple,
+                                       selected_array.obj());
 }
 
 void ContentViewCoreImpl::HideSelectPopupMenu() {

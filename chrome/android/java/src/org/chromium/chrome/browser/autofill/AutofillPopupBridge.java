@@ -74,7 +74,7 @@ public class AutofillPopupBridge implements AutofillPopupDelegate{
      */
     @CalledByNative
     private void show(AutofillSuggestion[] suggestions) {
-        if (mAutofillPopup != null) mAutofillPopup.show(suggestions);
+        if (mAutofillPopup != null) mAutofillPopup.filterAndShow(suggestions);
     }
 
     /**

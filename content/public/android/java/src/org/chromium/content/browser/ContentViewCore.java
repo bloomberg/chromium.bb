@@ -64,7 +64,9 @@ import org.chromium.content.browser.input.ImeAdapter;
 import org.chromium.content.browser.input.ImeAdapter.AdapterInputConnectionFactory;
 import org.chromium.content.browser.input.InputMethodManagerWrapper;
 import org.chromium.content.browser.input.InsertionHandleController;
+import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content.browser.input.SelectPopupDialog;
+import org.chromium.content.browser.input.SelectPopupDropdown;
 import org.chromium.content.browser.input.SelectPopupItem;
 import org.chromium.content.browser.input.SelectionHandleController;
 import org.chromium.content.common.ContentSwitches;
@@ -227,7 +229,7 @@ public class ContentViewCore
     private ZoomControlsDelegate mZoomControlsDelegate;
 
     private PopupZoomer mPopupZoomer;
-    private SelectPopupDialog mSelectPopupDialog;
+    private SelectPopup mSelectPopup;
 
     private Runnable mFakeMouseMoveRunnable = null;
 
@@ -627,14 +629,14 @@ public class ContentViewCore
             public void didNavigateMainFrame(String url, String baseUrl,
                     boolean isNavigationToDifferentPage, boolean isNavigationInPage) {
                 if (!isNavigationToDifferentPage) return;
-                hidePopupDialog();
+                hidePopups();
                 resetScrollInProgress();
                 resetGestureDetection();
             }
 
             @Override
             public void renderProcessGone(boolean wasOomProtected) {
-                hidePopupDialog();
+                hidePopups();
                 resetScrollInProgress();
                 // No need to reset gesture detection as the detector will have
                 // been destroyed in the RenderWidgetHostView.
@@ -1358,7 +1360,7 @@ public class ContentViewCore
      */
     public void onHide() {
         assert mNativeContentViewCore != 0;
-        hidePopupDialog();
+        hidePopups();
         setInjectedAccessibility(false);
         nativeOnHide(mNativeContentViewCore);
     }
@@ -1373,7 +1375,7 @@ public class ContentViewCore
         return mContentSettings;
     }
 
-    private void hidePopupDialog() {
+    private void hidePopups() {
         hideSelectPopup();
         hideHandles();
         hideSelectActionBar();
@@ -1412,7 +1414,7 @@ public class ContentViewCore
     @SuppressLint("MissingSuperCall")
     public void onDetachedFromWindow() {
         setInjectedAccessibility(false);
-        hidePopupDialog();
+        hidePopups();
         mZoomControlsDelegate.dismissZoomPicker();
         unregisterAccessibilityContentObserver();
 
@@ -1870,7 +1872,7 @@ public class ContentViewCore
         if (mNativeContentViewCore != 0) {
             nativeSelectPopupMenuItems(mNativeContentViewCore, indices);
         }
-        mSelectPopupDialog = null;
+        mSelectPopup = null;
     }
 
     /**
@@ -2333,20 +2335,25 @@ public class ContentViewCore
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private void showSelectPopup(String[] items, int[] enabled, boolean multiple,
+    private void showSelectPopup(Rect bounds, String[] items, int[] enabled, boolean multiple,
             int[] selectedIndices) {
         if (mContainerView.getParent() == null || mContainerView.getVisibility() != View.VISIBLE) {
             selectPopupMenuItems(null);
             return;
         }
 
-        hideSelectPopup();
         assert items.length == enabled.length;
         List<SelectPopupItem> popupItems = new ArrayList<SelectPopupItem>();
         for (int i = 0; i < items.length; i++) {
             popupItems.add(new SelectPopupItem(items[i], enabled[i]));
         }
-        mSelectPopupDialog = SelectPopupDialog.show(this, popupItems, multiple, selectedIndices);
+        hidePopups();
+        if (DeviceUtils.isTablet(mContext) && !multiple) {
+            mSelectPopup = new SelectPopupDropdown(this, popupItems, bounds, selectedIndices);
+        } else {
+            mSelectPopup = new SelectPopupDialog(this, popupItems, multiple, selectedIndices);
+        }
+        mSelectPopup.show();
     }
 
     /**
@@ -2354,17 +2361,14 @@ public class ContentViewCore
      */
     @CalledByNative
     private void hideSelectPopup() {
-        if (mSelectPopupDialog != null) {
-            mSelectPopupDialog.hide();
-            mSelectPopupDialog = null;
-        }
+        if (mSelectPopup != null) mSelectPopup.hide();
     }
 
     /**
-     * @return The visible select popup dialog being shown.
+     * @return The visible select popup being shown.
      */
-    public SelectPopupDialog getSelectPopupForTest() {
-        return mSelectPopupDialog;
+    public SelectPopup getSelectPopupForTest() {
+        return mSelectPopup;
     }
 
     @SuppressWarnings("unused")

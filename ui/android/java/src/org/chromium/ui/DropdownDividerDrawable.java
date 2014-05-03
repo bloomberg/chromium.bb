@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.ui.autofill;
+package org.chromium.ui;
 
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
@@ -11,12 +11,12 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 
-class AutofillDividerDrawable extends Drawable {
+class DropdownDividerDrawable extends Drawable {
 
     private Paint mPaint;
     private Rect mDividerRect;
 
-    public AutofillDividerDrawable() {
+    public DropdownDividerDrawable() {
         mPaint = new Paint();
         mDividerRect = new Rect();
     }

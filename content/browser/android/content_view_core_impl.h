@@ -232,7 +232,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   // |multiple| defines if it should support multi-select.
   // If not |multiple|, |selected_item| sets the initially selected item.
   // Otherwise, item's "checked" flag selects it.
-  void ShowSelectPopupMenu(const std::vector<MenuItem>& items,
+  void ShowSelectPopupMenu(const gfx::Rect& bounds,
+                           const std::vector<MenuItem>& items,
                            int selected_item,
                            bool multiple);
   // Hides a visible popup menu.

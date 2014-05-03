@@ -171,7 +171,7 @@ public class AutofillPopupTest extends ChromeShellTestBase {
         });
 
         waitForAnchorViewAdd(view);
-        View anchorView = view.findViewById(R.id.autofill_popup_window);
+        View anchorView = view.findViewById(R.id.dropdown_popup_window);
 
         assertTrue(anchorView.getTag() instanceof AutofillPopup);
         final AutofillPopup popup = (AutofillPopup) anchorView.getTag();
@@ -306,7 +306,7 @@ public class AutofillPopupTest extends ChromeShellTestBase {
                 CriteriaHelper.pollForCriteria(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
-                        return view.findViewById(R.id.autofill_popup_window) != null;
+                        return view.findViewById(R.id.dropdown_popup_window) != null;
                     }
                 }));
     }

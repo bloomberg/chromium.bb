@@ -58,7 +58,7 @@ public class AwAutofillManagerDelegate {
                 });
         }
         mAutofillPopup.setAnchorRect(x, y, width, height);
-        mAutofillPopup.show(suggestions);
+        mAutofillPopup.filterAndShow(suggestions);
     }
 
     @CalledByNative

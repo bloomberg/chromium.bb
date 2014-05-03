@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * Handles the popup dialog for the <select> HTML tag support.
  */
-public class SelectPopupDialog {
+public class SelectPopupDialog implements SelectPopup {
     private static final int[] SELECT_DIALOG_ATTRS = {
         R.attr.select_dialog_multichoice,
         R.attr.select_dialog_singlechoice
@@ -34,7 +34,7 @@ public class SelectPopupDialog {
     private final ContentViewCore mContentViewCore;
     private final Context mContext;
 
-    private SelectPopupDialog(ContentViewCore contentViewCore, List<SelectPopupItem> items,
+    public SelectPopupDialog(ContentViewCore contentViewCore, List<SelectPopupItem> items,
             boolean multiple, int[] selected) {
         mContentViewCore = contentViewCore;
         mContext = mContentViewCore.getContext();
@@ -121,27 +121,13 @@ public class SelectPopupDialog {
         return indices;
     }
 
-    /**
-     * Hides the select dialog.
-     */
-    public void hide() {
-        mListBoxPopup.cancel();
+    @Override
+    public void show() {
+        mListBoxPopup.show();
     }
 
-    /**
-     * Shows the popup menu triggered by the passed ContentView.
-     * Hides any currently shown popup.
-     * @param items           Items to show.
-     * @param multiple        Whether the popup menu should support multi-select.
-     * @param selectedIndices Indices of selected items.
-     * @return                The select dialog created.
-     */
-    public static SelectPopupDialog show(
-            ContentViewCore contentViewCore, List<SelectPopupItem> items,
-            boolean multiple, int[] selectedIndices) {
-        SelectPopupDialog dialog = new SelectPopupDialog(
-                contentViewCore, items, multiple, selectedIndices);
-        dialog.mListBoxPopup.show();
-        return dialog;
+    @Override
+    public void hide() {
+        mListBoxPopup.cancel();
     }
 }
