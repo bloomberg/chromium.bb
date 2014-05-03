@@ -133,8 +133,8 @@ static const int maximumCursorSize = 128;
 static const double minimumCursorScale = 0.001;
 
 // The minimum amount of time an element stays active after a ShowPress
-// This is roughly 2 frames, which should be long enough to be noticeable.
-static const double minimumActiveInterval = 0.032;
+// This is roughly 9 frames, which should be long enough to be noticeable.
+static const double minimumActiveInterval = 0.15;
 
 #if OS(MACOSX)
 static const double TextDragDelay = 0.15;
@@ -2164,8 +2164,9 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
             hitType |= HitTestRequest::ReadOnly;
     } else if (gestureEvent.type() == PlatformEvent::GestureTap) {
         hitType |= HitTestRequest::Release;
-        // If the Tap is received very shortly after ShowPress, we want to delay clearing
-        // of the active state so that it's visible to the user for at least one frame.
+        // If the Tap is received very shortly after ShowPress, we want to
+        // delay clearing of the active state so that it's visible to the user
+        // for at least a couple of frames.
         activeInterval = WTF::currentTime() - m_lastShowPressTimestamp;
         shouldKeepActiveForMinInterval = m_lastShowPressTimestamp && activeInterval < minimumActiveInterval;
         if (shouldKeepActiveForMinInterval)
