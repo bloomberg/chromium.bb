@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "5.1",
+  "version": "5.2",
   "entries": [
     {
       "id": 1,
@@ -931,6 +931,21 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "disable_d3d11"
+      ]
+    },
+    {
+      "id": 71,
+      "description": "Vivante's support of OES_standard_derivatives is buggy",
+      "cr_bugs": [368005],
+      "os": {
+        "type": "android"
+      },
+      "gl_extensions": {
+        "op": "contains",
+        "value": "GL_VIV_shader_binary"
+      },
+      "features": [
+        "disable_oes_standard_derivatives"
       ]
     }
   ]
