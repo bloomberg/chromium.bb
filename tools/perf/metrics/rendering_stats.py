@@ -145,6 +145,7 @@ class RenderingStats(object):
     self.recorded_pixel_counts = []
     self.rasterize_times = []
     self.rasterized_pixel_counts = []
+    self.approximated_pixel_percentages = []
     # End-to-end latency for MouseWheel scroll - from when mouse wheel event is
     # generated to when the scrolled page is buffer swapped.
     self.mouse_wheel_scroll_latency = []
@@ -164,6 +165,7 @@ class RenderingStats(object):
       self.recorded_pixel_counts.append([])
       self.rasterize_times.append([])
       self.rasterized_pixel_counts.append([])
+      self.approximated_pixel_percentages.append([])
       self.mouse_wheel_scroll_latency.append([])
       self.touch_scroll_latency.append([])
       self.js_touch_scroll_latency.append([])
@@ -233,19 +235,21 @@ class RenderingStats(object):
   def _InitMainThreadRenderingStatsFromTimeline(self, process, timeline_range):
     event_name = 'BenchmarkInstrumentation::MainThreadRenderingStats'
     for event in self._GatherEvents(event_name, process, timeline_range):
-      self.paint_times[-1].append(1000.0 *
-          event.args['data']['paint_time'])
-      self.painted_pixel_counts[-1].append(
-          event.args['data']['painted_pixel_count'])
-      self.record_times[-1].append(1000.0 *
-          event.args['data']['record_time'])
-      self.recorded_pixel_counts[-1].append(
-          event.args['data']['recorded_pixel_count'])
+      data = event.args['data']
+      self.paint_times[-1].append(1000.0 * data['paint_time'])
+      self.painted_pixel_counts[-1].append(data['painted_pixel_count'])
+      self.record_times[-1].append(1000.0 * data['record_time'])
+      self.recorded_pixel_counts[-1].append(data['recorded_pixel_count'])
 
   def _InitImplThreadRenderingStatsFromTimeline(self, process, timeline_range):
     event_name = 'BenchmarkInstrumentation::ImplThreadRenderingStats'
     for event in self._GatherEvents(event_name, process, timeline_range):
-      self.rasterize_times[-1].append(1000.0 *
-          event.args['data']['rasterize_time'])
-      self.rasterized_pixel_counts[-1].append(
-          event.args['data']['rasterized_pixel_count'])
+      data = event.args['data']
+      self.rasterize_times[-1].append(1000.0 * data['rasterize_time'])
+      self.rasterized_pixel_counts[-1].append(data['rasterized_pixel_count'])
+      if data.get('visible_content_area', 0):
+        self.approximated_pixel_percentages[-1].append(
+            round(float(data['approximated_visible_content_area']) /
+                  float(data['visible_content_area']) * 100.0, 3))
+      else:
+        self.approximated_pixel_percentages[-1].append(0.0)

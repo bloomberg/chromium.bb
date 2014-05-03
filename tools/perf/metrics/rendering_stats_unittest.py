@@ -12,6 +12,7 @@ from metrics.rendering_stats import ComputeTouchScrollLatency
 from metrics.rendering_stats import HasRenderingStats
 from metrics.rendering_stats import RenderingStats
 from metrics.rendering_stats import NotEnoughFramesError
+from telemetry.util.statistics import DivideIfPossibleOrZero
 import telemetry.core.timeline.bounds as timeline_bounds
 from telemetry.core.timeline import model
 import telemetry.core.timeline.async_slice as tracing_async_slice
@@ -47,6 +48,7 @@ class ReferenceRenderingStats(object):
     self.recorded_pixel_counts = []
     self.rasterize_times = []
     self.rasterized_pixel_counts = []
+    self.approximated_pixel_percentages = []
 
   def AppendNewRange(self):
     self.frame_timestamps.append([])
@@ -57,6 +59,7 @@ class ReferenceRenderingStats(object):
     self.recorded_pixel_counts.append([])
     self.rasterize_times.append([])
     self.rasterized_pixel_counts.append([])
+    self.approximated_pixel_percentages.append([])
 
 class ReferenceInputLatencyStats(object):
   """ Stores expected data for comparison with actual input latency stats """
@@ -119,7 +122,9 @@ def AddImplThreadRenderingStats(mock_timer, thread, first_frame,
   # Create randonm data and timestap for impl thread rendering stats.
   data = { 'frame_count': 1,
            'rasterize_time': mock_timer.Advance(5, 10) / 1000.0,
-           'rasterized_pixel_count': 1280*720 }
+           'rasterized_pixel_count': 1280*720,
+           'visible_content_area': random.uniform(0, 100),
+           'approximated_visible_content_area': random.uniform(0, 5)}
   timestamp = mock_timer.Get()
 
   # Add a slice with the event data to the given thread.
@@ -142,6 +147,9 @@ def AddImplThreadRenderingStats(mock_timer, thread, first_frame,
 
   ref_stats.rasterize_times[-1].append(data['rasterize_time'] * 1000.0)
   ref_stats.rasterized_pixel_counts[-1].append(data['rasterized_pixel_count'])
+  ref_stats.approximated_pixel_percentages[-1].append(
+      round(DivideIfPossibleOrZero(data['approximated_visible_content_area'],
+                                   data['visible_content_area']) * 100.0, 3))
 
 
 def AddInputLatencyStats(mock_timer, input_type, start_thread, end_thread,
@@ -359,6 +367,8 @@ class RenderingStatsUnitTest(unittest.TestCase):
     self.assertEquals(stats.rasterize_times, renderer_ref_stats.rasterize_times)
     self.assertEquals(stats.rasterized_pixel_counts,
                       renderer_ref_stats.rasterized_pixel_counts)
+    self.assertEquals(stats.approximated_pixel_percentages,
+                      renderer_ref_stats.approximated_pixel_percentages)
     self.assertEquals(stats.paint_times, renderer_ref_stats.paint_times)
     self.assertEquals(stats.painted_pixel_counts,
                       renderer_ref_stats.painted_pixel_counts)
