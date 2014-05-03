@@ -17,6 +17,9 @@ namespace data_reduction_proxy {
 // Code for handling http SpdyProxy authentication.
 class HttpAuthHandlerDataReductionProxy : public net::HttpAuthHandler {
  public:
+  // Returns the data reduction proxy auth scheme.
+  static std::string Scheme();
+
   class Factory : public net::HttpAuthHandlerFactory {
    public:
     // Constructs a new spdyproxy handler factory which mints handlers that

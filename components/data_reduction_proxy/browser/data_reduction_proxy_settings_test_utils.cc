@@ -68,6 +68,7 @@ DataReductionProxySettingsTestBase::DataReductionProxySettingsTestBase()
 DataReductionProxySettingsTestBase::~DataReductionProxySettingsTestBase() {}
 
 void DataReductionProxySettingsTestBase::AddProxyToCommandLine() {
+  DataReductionProxySettings::SetAllowed(true);
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxy, kDataReductionProxy);
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -78,6 +79,7 @@ void DataReductionProxySettingsTestBase::AddProxyToCommandLine() {
 
 // testing::Test implementation:
 void DataReductionProxySettingsTestBase::SetUp() {
+  DataReductionProxySettings::SetAllowed(true);
   PrefRegistrySimple* registry = pref_service_.registry();
   registry->RegisterListPref(prefs::kDailyHttpOriginalContentLength);
   registry->RegisterListPref(prefs::kDailyHttpReceivedContentLength);
@@ -107,7 +109,7 @@ void DataReductionProxySettingsTestBase::SetUp() {
 template <class C>
 void DataReductionProxySettingsTestBase::ResetSettings() {
   MockDataReductionProxySettings<C>* settings =
-      new MockDataReductionProxySettings<C>;
+      new MockDataReductionProxySettings<C>();
   EXPECT_CALL(*settings, GetOriginalProfilePrefs())
       .Times(AnyNumber())
       .WillRepeatedly(Return(&pref_service_));
@@ -208,14 +210,20 @@ void DataReductionProxySettingsTestBase::CheckProbeOnIPChange(
 
 void DataReductionProxySettingsTestBase::CheckOnPrefChange(
     bool enabled,
-    bool expected_enabled) {
+    bool expected_enabled,
+    bool managed) {
   // Always have a sucessful probe for pref change tests.
   SetProbeResult(kProbeURLWithOKResponse,
                  "OK",
                  FetchResult(enabled, true),
                  true,
                  expected_enabled ? 1 : 0);
-  pref_service_.SetBoolean(prefs::kDataReductionProxyEnabled, enabled);
+  if (managed) {
+    pref_service_.SetManagedPref(prefs::kDataReductionProxyEnabled,
+                                 base::Value::CreateBooleanValue(enabled));
+  } else {
+    pref_service_.SetBoolean(prefs::kDataReductionProxyEnabled, enabled);
+  }
   base::MessageLoop::current()->RunUntilIdle();
   // Never expect the proxy to be restricted for pref change tests.
   CheckProxyConfigs(expected_enabled, false);
@@ -232,13 +240,12 @@ void DataReductionProxySettingsTestBase::CheckInitDataReductionProxy(
                  enabled_at_startup ? 1 : 0);
   scoped_ptr<DataReductionProxyConfigurator> configurator(
       new TestDataReductionProxyConfig());
+  settings_->SetProxyConfigurator(configurator.Pass());
   scoped_refptr<net::TestURLRequestContextGetter> request_context =
       new net::TestURLRequestContextGetter(base::MessageLoopProxy::current());
-  settings_->InitDataReductionProxySettings(
-      &pref_service_,
-      &pref_service_,
-      request_context.get(),
-      configurator.Pass());
+  settings_->InitDataReductionProxySettings(&pref_service_,
+                                            &pref_service_,
+                                            request_context.get());
 
   base::MessageLoop::current()->RunUntilIdle();
   CheckProxyConfigs(enabled_at_startup, false);

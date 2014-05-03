@@ -27,6 +27,10 @@ class ResourceContext;
 class WebContents;
 }
 
+namespace data_reduction_proxy {
+class DataReductionProxySettings;
+}
+
 namespace net {
 class CookieStore;
 }
@@ -34,6 +38,8 @@ class CookieStore;
 namespace visitedlink {
 class VisitedLinkMaster;
 }
+
+using data_reduction_proxy::DataReductionProxySettings;
 
 namespace android_webview {
 
@@ -74,6 +80,9 @@ class AwBrowserContext : public content::BrowserContext,
   AwQuotaManagerBridge* GetQuotaManagerBridge();
 
   AwFormDatabaseService* GetFormDatabaseService();
+
+  DataReductionProxySettings* GetDataReductionProxySettings();
+
   void CreateUserPrefServiceIfNecessary();
 
   // content::BrowserContext implementation.
@@ -138,6 +147,8 @@ class AwBrowserContext : public content::BrowserContext,
   scoped_ptr<content::ResourceContext> resource_context_;
 
   scoped_ptr<PrefService> user_pref_service_;
+
+  scoped_ptr<DataReductionProxySettings> data_reduction_proxy_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserContext);
 };

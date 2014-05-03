@@ -176,6 +176,15 @@ URLRequestContextBuilder::HttpNetworkSessionParams::HttpNetworkSessionParams()
 URLRequestContextBuilder::HttpNetworkSessionParams::~HttpNetworkSessionParams()
 {}
 
+URLRequestContextBuilder::SchemeFactory::SchemeFactory(
+    const std::string& auth_scheme,
+    net::HttpAuthHandlerFactory* auth_handler_factory)
+    : scheme(auth_scheme), factory(auth_handler_factory) {
+}
+
+URLRequestContextBuilder::SchemeFactory::~SchemeFactory() {
+}
+
 URLRequestContextBuilder::URLRequestContextBuilder()
     : data_enabled_(false),
       file_enabled_(false),
@@ -231,9 +240,15 @@ URLRequestContext* URLRequestContextBuilder::Build() {
           4,  // TODO(willchan): Find a better constant somewhere.
           context->net_log()));
   storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);
-  storage->set_http_auth_handler_factory(
+  HttpAuthHandlerRegistryFactory* http_auth_handler_registry_factory =
       net::HttpAuthHandlerRegistryFactory::CreateDefault(
-          context->host_resolver()));
+           context->host_resolver());
+  for (size_t i = 0; i < extra_http_auth_handlers_.size(); ++i) {
+    http_auth_handler_registry_factory->RegisterSchemeFactory(
+        extra_http_auth_handlers_[i].scheme,
+        extra_http_auth_handlers_[i].factory);
+  }
+  storage->set_http_auth_handler_factory(http_auth_handler_registry_factory);
   storage->set_cookie_store(new CookieMonster(NULL, NULL));
   storage->set_transport_security_state(new net::TransportSecurityState());
   storage->set_http_server_properties(

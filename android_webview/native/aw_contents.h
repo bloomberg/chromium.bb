@@ -208,6 +208,7 @@ class AwContents : public FindHelper::Listener,
   void TrimMemory(JNIEnv* env, jobject obj, jint level, jboolean visible);
 
  private:
+  void InitDataReductionProxyIfNecessary();
   void InitAutofillIfNecessary(bool enabled);
   void DidDrawGL(const DrawGLResult& result);
 

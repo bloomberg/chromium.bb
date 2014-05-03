@@ -43,6 +43,7 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/browser_thread.h"
@@ -56,6 +57,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/ssl_status.h"
 #include "jni/AwContents_jni.h"
+#include "net/base/auth.h"
 #include "net/cert/x509_certificate.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/base/l10n/l10n_util_android.h"
@@ -76,6 +78,7 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
+using data_reduction_proxy::DataReductionProxySettings;
 using navigation_interception::InterceptNavigationDelegate;
 using content::BrowserThread;
 using content::ContentViewCore;
@@ -169,6 +172,7 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
 
   AwAutofillManagerDelegate* autofill_manager_delegate =
       AwAutofillManagerDelegate::FromWebContents(web_contents_.get());
+  InitDataReductionProxyIfNecessary();
   if (autofill_manager_delegate)
     InitAutofillIfNecessary(autofill_manager_delegate->GetSaveFormData());
 }
@@ -215,6 +219,12 @@ void AwContents::SetSaveFormData(bool enabled) {
     AwAutofillManagerDelegate::FromWebContents(web_contents_.get())->
         SetSaveFormData(enabled);
   }
+}
+
+void AwContents::InitDataReductionProxyIfNecessary() {
+  AwBrowserContext* browser_context =
+      AwBrowserContext::FromWebContents(web_contents_.get());
+  browser_context->CreateUserPrefServiceIfNecessary();
 }
 
 void AwContents::InitAutofillIfNecessary(bool enabled) {

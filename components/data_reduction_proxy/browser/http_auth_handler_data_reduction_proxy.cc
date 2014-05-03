@@ -17,6 +17,12 @@
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_request_info.h"
 
+namespace {
+
+const char kDataReductionProxyAuthScheme[] = "spdyproxy";
+
+}
+
 namespace data_reduction_proxy {
 
 using net::AuthCredentials;
@@ -28,6 +34,11 @@ using net::HttpAuthHandler;
 using net::HttpAuthHandlerFactory;
 using net::HttpRequestInfo;
 using net::HttpUtil;
+
+// static
+std::string HttpAuthHandlerDataReductionProxy::Scheme() {
+  return kDataReductionProxyAuthScheme;
+}
 
 HttpAuthHandlerDataReductionProxy::Factory::Factory(
     const std::vector<GURL>& authorized_spdyproxy_origins) {
@@ -125,7 +136,8 @@ bool HttpAuthHandlerDataReductionProxy::ParseChallenge(
     HttpAuthChallengeTokenizer* challenge) {
 
   // Verify the challenge's auth-scheme.
-  if (!LowerCaseEqualsASCII(challenge->scheme(), "spdyproxy")) {
+  if (!LowerCaseEqualsASCII(challenge->scheme(),
+                            kDataReductionProxyAuthScheme)) {
     VLOG(1) << "Parsed challenge without SpdyProxy type";
     return false;
   }

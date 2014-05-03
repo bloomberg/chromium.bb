@@ -44,6 +44,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/browser/http_auth_handler_data_reduction_proxy.h"
 #include "components/policy/core/common/policy_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -600,7 +601,7 @@ void IOThread::InitAsync() {
 #endif
   globals_->ssl_config_service = GetSSLConfigService();
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  if (DataReductionProxySettings::IsDataReductionProxyAllowed()) {
+  if (DataReductionProxySettings::IsIncludedInFieldTrialOrFlags()) {
     spdyproxy_auth_origins_ =
         DataReductionProxySettings::GetDataReductionProxies();
   }
@@ -876,44 +877,7 @@ void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(
       data_reduction_proxy::prefs::kDataReductionProxy, std::string());
   registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
-  registry->RegisterInt64Pref(
-      data_reduction_proxy::prefs::kHttpReceivedContentLength, 0);
-  registry->RegisterInt64Pref(
-      data_reduction_proxy::prefs::kHttpOriginalContentLength, 0);
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  registry->RegisterListPref(
-      data_reduction_proxy::prefs::kDailyHttpOriginalContentLength);
-  registry->RegisterListPref(
-      data_reduction_proxy::prefs::kDailyHttpReceivedContentLength);
-  registry->RegisterListPref(
-      data_reduction_proxy::prefs::
-          kDailyOriginalContentLengthWithDataReductionProxyEnabled);
-  registry->RegisterListPref(
-      data_reduction_proxy::prefs::
-          kDailyContentLengthWithDataReductionProxyEnabled);
-  registry->RegisterListPref(
-      data_reduction_proxy::prefs::
-          kDailyContentLengthHttpsWithDataReductionProxyEnabled);
-  registry->RegisterListPref(
-      data_reduction_proxy::prefs::
-          kDailyContentLengthShortBypassWithDataReductionProxyEnabled
-      );
-  registry->RegisterListPref(
-      data_reduction_proxy::prefs::
-          kDailyContentLengthLongBypassWithDataReductionProxyEnabled);
-  registry->RegisterListPref(
-      data_reduction_proxy::prefs::
-          kDailyContentLengthUnknownWithDataReductionProxyEnabled);
-  registry->RegisterListPref(
-      data_reduction_proxy::prefs::
-          kDailyOriginalContentLengthViaDataReductionProxy);
-  registry->RegisterListPref(
-      data_reduction_proxy::
-          prefs::kDailyContentLengthViaDataReductionProxy);
-  registry->RegisterInt64Pref(
-      data_reduction_proxy::prefs::
-          kDailyHttpContentLengthLastUpdateDate, 0L);
-#endif
+  data_reduction_proxy::RegisterPrefs(registry);
   registry->RegisterBooleanPref(prefs::kBuiltInDnsClientEnabled, true);
   registry->RegisterBooleanPref(prefs::kQuickCheckEnabled, true);
 }

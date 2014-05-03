@@ -6,6 +6,8 @@
 
 #include "build/build_config.h"
 #include "net/base/request_priority.h"
+#include "net/http/http_auth_handler.h"
+#include "net/http/http_auth_handler_factory.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -34,6 +36,27 @@ class LocalHttpTestServer : public SpawnedTestServer {
       : SpawnedTestServer(SpawnedTestServer::TYPE_HTTP,
                           ScopedCustomUrlRequestTestHttpHost::value(),
                           base::FilePath()) {}
+};
+
+class MockHttpAuthHandlerFactory : public HttpAuthHandlerFactory {
+ public:
+  explicit MockHttpAuthHandlerFactory(int return_code) :
+      return_code_(return_code) {}
+  virtual ~MockHttpAuthHandlerFactory() {}
+
+  virtual int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
+                                HttpAuth::Target target,
+                                const GURL& origin,
+                                CreateReason reason,
+                                int nonce_count,
+                                const BoundNetLog& net_log,
+                                scoped_ptr<HttpAuthHandler>* handler) OVERRIDE {
+    handler->reset();
+    return return_code_;
+  }
+
+ private:
+  int return_code_;
 };
 
 class URLRequestContextBuilderTest : public PlatformTest {
@@ -81,6 +104,28 @@ TEST_F(URLRequestContextBuilderTest, UserAgent) {
   request.Start();
   base::MessageLoop::current()->Run();
   EXPECT_EQ("Bar", delegate.data_received());
+}
+
+TEST_F(URLRequestContextBuilderTest, ExtraHttpAuthHandlerFactory) {
+  GURL gurl("www.google.com");
+  const int kBasicReturnCode = net::OK;
+  MockHttpAuthHandlerFactory* mock_factory_basic =
+      new MockHttpAuthHandlerFactory(kBasicReturnCode);
+  scoped_ptr<HttpAuthHandler> handler;
+  builder_.add_http_auth_handler_factory("ExtraScheme", mock_factory_basic);
+  scoped_ptr<URLRequestContext> context(builder_.Build());
+  // Verify that a handler is returned for and added scheme.
+  EXPECT_EQ(kBasicReturnCode,
+            context->http_auth_handler_factory()->CreateAuthHandlerFromString(
+                "ExtraScheme",
+                HttpAuth::AUTH_SERVER,
+                gurl,
+                BoundNetLog(),
+                &handler));
+  // Verify that a handler isn't returned for a bogus scheme.
+  EXPECT_EQ(ERR_UNSUPPORTED_AUTH_SCHEME,
+            context->http_auth_handler_factory()->CreateAuthHandlerFromString(
+                "Bogus", HttpAuth::AUTH_SERVER, gurl, BoundNetLog(), &handler));
 }
 
 }  // namespace

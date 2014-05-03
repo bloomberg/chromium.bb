@@ -96,7 +96,7 @@ class DataReductionProxySettingsTestBase : public testing::Test {
                             const std::string& response,
                             bool request_success,
                             bool expected_enabled);
-  void CheckOnPrefChange(bool enabled, bool expected_enabled);
+  void CheckOnPrefChange(bool enabled, bool expected_enabled, bool managed);
   void CheckInitDataReductionProxy(bool enabled_at_startup);
 
   TestingPrefServiceSimple pref_service_;

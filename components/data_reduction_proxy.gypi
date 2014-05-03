@@ -18,9 +18,15 @@
         '..',
       ],
       'sources': [
+        'data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.cc',
+        'data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h',
+        'data_reduction_proxy/browser/data_reduction_proxy_config_service.cc',
+        'data_reduction_proxy/browser/data_reduction_proxy_config_service.h',
         'data_reduction_proxy/browser/data_reduction_proxy_configurator.h',
         'data_reduction_proxy/browser/data_reduction_proxy_metrics.cc',
         'data_reduction_proxy/browser/data_reduction_proxy_metrics.h',
+        'data_reduction_proxy/browser/data_reduction_proxy_prefs.cc',
+        'data_reduction_proxy/browser/data_reduction_proxy_prefs.h',
         'data_reduction_proxy/browser/data_reduction_proxy_settings.cc',
         'data_reduction_proxy/browser/data_reduction_proxy_settings.h',
         'data_reduction_proxy/browser/http_auth_handler_data_reduction_proxy.cc',
@@ -32,6 +38,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../components/components.gyp:user_prefs',
       ],
       'include_dirs': [
         '..',

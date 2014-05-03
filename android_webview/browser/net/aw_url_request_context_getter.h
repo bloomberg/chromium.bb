@@ -22,6 +22,12 @@ class URLRequestContext;
 class URLRequestJobFactory;
 }
 
+namespace data_reduction_proxy {
+class DataReductionProxyConfigService;
+}
+
+using data_reduction_proxy::DataReductionProxyConfigService;
+
 namespace android_webview {
 
 class AwNetworkDelegate;
@@ -37,6 +43,8 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
   virtual scoped_refptr<base::SingleThreadTaskRunner>
       GetNetworkTaskRunner() const OVERRIDE;
+
+  DataReductionProxyConfigService* proxy_config_service();
 
  private:
   friend class AwBrowserContext;
@@ -55,7 +63,7 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   const base::FilePath partition_path_;
   scoped_refptr<net::CookieStore> cookie_store_;
   scoped_ptr<net::URLRequestContext> url_request_context_;
-  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
+  scoped_ptr<DataReductionProxyConfigService> proxy_config_service_;
   scoped_ptr<net::URLRequestJobFactory> job_factory_;
   scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
 

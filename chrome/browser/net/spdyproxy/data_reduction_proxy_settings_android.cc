@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
@@ -54,28 +55,41 @@ enum {
   NUM_SPDY_PROXY_AUTH_STATE
 };
 
+const char kEnabled[] = "Enabled";
+
 }  // namespace
 
 DataReductionProxySettingsAndroid::DataReductionProxySettingsAndroid(
-    JNIEnv* env, jobject obj): DataReductionProxySettings() {
+    JNIEnv* env, jobject obj) : DataReductionProxySettings() {
+#if defined(SPDY_PROXY_AUTH_VALUE)
+  SetKey(SPDY_PROXY_AUTH_VALUE);
+#endif
+  SetAllowed(IsIncludedInFieldTrialOrFlags());
+  SetPromoAllowed(base::FieldTrialList::FindFullName(
+      "DataCompressionProxyPromoVisibility") == kEnabled);
 }
 
-DataReductionProxySettingsAndroid::DataReductionProxySettingsAndroid() {}
+DataReductionProxySettingsAndroid::DataReductionProxySettingsAndroid() {
+#if defined(SPDY_PROXY_AUTH_VALUE)
+  SetKey(SPDY_PROXY_AUTH_VALUE);
+#endif
+}
 
-DataReductionProxySettingsAndroid::~DataReductionProxySettingsAndroid() {}
+DataReductionProxySettingsAndroid::~DataReductionProxySettingsAndroid() {
+}
 
 void DataReductionProxySettingsAndroid::InitDataReductionProxySettings(
     JNIEnv* env,
     jobject obj) {
+  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+
   scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
-      configurator(
-          new DataReductionProxyChromeConfigurator(
-              ProfileManager::GetActiveUserProfile()->GetPrefs()));
+      configurator(new DataReductionProxyChromeConfigurator(prefs));
+  SetProxyConfigurator(configurator.Pass());
   DataReductionProxySettings::InitDataReductionProxySettings(
-      ProfileManager::GetActiveUserProfile()->GetPrefs(),
+      prefs,
       g_browser_process->local_state(),
-      ProfileManager::GetActiveUserProfile()->GetRequestContext(),
-      configurator.Pass());
+      ProfileManager::GetActiveUserProfile()->GetRequestContext());
 }
 
 void DataReductionProxySettingsAndroid::BypassHostPattern(

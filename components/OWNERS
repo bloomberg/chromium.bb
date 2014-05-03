@@ -16,9 +16,9 @@ per-file bookmarks*=blundell@chromium.org
 # Temporary for the duration of the bookmarks componentization.
 per-file bookmarks*=droger@chromium.org
 
-per-file chrome_proxy*=bengr@chromium.org
-per-file chrome_proxy*=marq@chromium.org
-per-file chrome_proxy*=bolian@chromium.org
+per-file data_reduction_proxy*=bengr@chromium.org
+per-file data_reduction_proxy*=marq@chromium.org
+per-file data_reduction_proxy*=bolian@chromium.org
 
 per-file cloud_devices*=gene@chromium.org
 per-file cloud_devices*=noamsml@chromium.org
