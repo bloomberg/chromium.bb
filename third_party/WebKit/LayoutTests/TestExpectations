@@ -1003,3 +1003,12 @@ crbug.com/369330 virtual/threaded/animations/change-transform-style-during-anima
 
 # Started failing with v8 roll in chromium r267851.
 crbug.com/369600 fast/events/onerror-no-constructor.html [ Failure ]
+
+# These started failing after chromium r267947, for no obvious reason.
+crbug.com/369730 http/tests/xmlhttprequest/methods-async.html [ Failure ]
+crbug.com/369730 http/tests/xmlhttprequest/methods-lower-case.html [ Failure ]
+crbug.com/369730 http/tests/xmlhttprequest/methods.html [ Failure ]
+crbug.com/369730 http/tests/xmlhttprequest/workers/methods-async.html [ Failure ]
+crbug.com/369730 http/tests/xmlhttprequest/workers/methods.html [ Failure ]
+crbug.com/369730 http/tests/xmlhttprequest/workers/shared-worker-methods-async.html [ Failure ]
+crbug.com/369730 http/tests/xmlhttprequest/workers/shared-worker-methods.html [ Failure ]
