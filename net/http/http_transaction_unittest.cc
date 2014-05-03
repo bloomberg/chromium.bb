@@ -285,6 +285,8 @@ int MockNetworkTransaction::Read(net::IOBuffer* buf, int buf_len,
                                  const net::CompletionCallback& callback) {
   int data_len = static_cast<int>(data_.size());
   int num = std::min(buf_len, data_len - data_cursor_);
+  if (test_mode_ & TEST_MODE_SLOW_READ)
+    num = std::min(num, 1);
   if (num) {
     memcpy(buf->data(), data_.data() + data_cursor_, num);
     data_cursor_ += num;

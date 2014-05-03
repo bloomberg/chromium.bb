@@ -541,132 +541,124 @@ void URLRequestJob::DoneReadingRedirectResponse() {
 }
 
 void URLRequestJob::FilteredDataRead(int bytes_read) {
-  DCHECK(filter_.get());  // don't add data if there is no filter
+  DCHECK(filter_);
   filter_->FlushStreamBuffer(bytes_read);
 }
 
 bool URLRequestJob::ReadFilteredData(int* bytes_read) {
-  DCHECK(filter_.get());  // don't add data if there is no filter
-  DCHECK(filtered_read_buffer_.get() !=
-         NULL);                             // we need to have a buffer to fill
-  DCHECK_GT(filtered_read_buffer_len_, 0);  // sanity check
-  DCHECK_LT(filtered_read_buffer_len_, 1000000);  // sanity check
-  DCHECK(raw_read_buffer_.get() ==
-         NULL);  // there should be no raw read buffer yet
+  DCHECK(filter_);
+  DCHECK(filtered_read_buffer_);
+  DCHECK_GT(filtered_read_buffer_len_, 0);
+  DCHECK_LT(filtered_read_buffer_len_, 1000000);  // Sanity check.
+  DCHECK(!raw_read_buffer_);
 
-  bool rv = false;
   *bytes_read = 0;
+  bool rv = false;
 
-  if (is_done())
-    return true;
+  for (;;) {
+    if (is_done())
+      return true;
 
-  if (!filter_needs_more_output_space_ && !filter_->stream_data_len()) {
-    // We don't have any raw data to work with, so
-    // read from the socket.
-    int filtered_data_read;
-    if (ReadRawDataForFilter(&filtered_data_read)) {
-      if (filtered_data_read > 0) {
-        filter_->FlushStreamBuffer(filtered_data_read);  // Give data to filter.
+    if (!filter_needs_more_output_space_ && !filter_->stream_data_len()) {
+      // We don't have any raw data to work with, so read from the transaction.
+      int filtered_data_read;
+      if (ReadRawDataForFilter(&filtered_data_read)) {
+        if (filtered_data_read > 0) {
+          // Give data to filter.
+          filter_->FlushStreamBuffer(filtered_data_read);
+        } else {
+          return true;  // EOF.
+        }
       } else {
-        return true;  // EOF
+        return false;  // IO Pending (or error).
       }
-    } else {
-      return false;  // IO Pending (or error)
-    }
-  }
-
-  if ((filter_->stream_data_len() || filter_needs_more_output_space_)
-      && !is_done()) {
-    // Get filtered data.
-    int filtered_data_len = filtered_read_buffer_len_;
-    Filter::FilterStatus status;
-    int output_buffer_size = filtered_data_len;
-    status = filter_->ReadData(filtered_read_buffer_->data(),
-                               &filtered_data_len);
-
-    if (filter_needs_more_output_space_ && 0 == filtered_data_len) {
-      // filter_needs_more_output_space_ was mistaken... there are no more bytes
-      // and we should have at least tried to fill up the filter's input buffer.
-      // Correct the state, and try again.
-      filter_needs_more_output_space_ = false;
-      return ReadFilteredData(bytes_read);
     }
 
-    switch (status) {
-      case Filter::FILTER_DONE: {
+    if ((filter_->stream_data_len() || filter_needs_more_output_space_) &&
+        !is_done()) {
+      // Get filtered data.
+      int filtered_data_len = filtered_read_buffer_len_;
+      int output_buffer_size = filtered_data_len;
+      Filter::FilterStatus status =
+          filter_->ReadData(filtered_read_buffer_->data(), &filtered_data_len);
+
+      if (filter_needs_more_output_space_ && !filtered_data_len) {
+        // filter_needs_more_output_space_ was mistaken... there are no more
+        // bytes and we should have at least tried to fill up the filter's input
+        // buffer. Correct the state, and try again.
         filter_needs_more_output_space_ = false;
-        *bytes_read = filtered_data_len;
-        postfilter_bytes_read_ += filtered_data_len;
-        rv = true;
-        break;
+        continue;
       }
-      case Filter::FILTER_NEED_MORE_DATA: {
-        filter_needs_more_output_space_ =
-            (filtered_data_len == output_buffer_size);
-        // We have finished filtering all data currently in the buffer.
-        // There might be some space left in the output buffer. One can
-        // consider reading more data from the stream to feed the filter
-        // and filling up the output buffer. This leads to more complicated
-        // buffer management and data notification mechanisms.
-        // We can revisit this issue if there is a real perf need.
-        if (filtered_data_len > 0) {
+      filter_needs_more_output_space_ =
+          (filtered_data_len == output_buffer_size);
+
+      switch (status) {
+        case Filter::FILTER_DONE: {
+          filter_needs_more_output_space_ = false;
           *bytes_read = filtered_data_len;
           postfilter_bytes_read_ += filtered_data_len;
           rv = true;
-        } else {
-          // Read again since we haven't received enough data yet (e.g., we may
-          // not have a complete gzip header yet)
-          rv = ReadFilteredData(bytes_read);
+          break;
         }
-        break;
+        case Filter::FILTER_NEED_MORE_DATA: {
+          // We have finished filtering all data currently in the buffer.
+          // There might be some space left in the output buffer. One can
+          // consider reading more data from the stream to feed the filter
+          // and filling up the output buffer. This leads to more complicated
+          // buffer management and data notification mechanisms.
+          // We can revisit this issue if there is a real perf need.
+          if (filtered_data_len > 0) {
+            *bytes_read = filtered_data_len;
+            postfilter_bytes_read_ += filtered_data_len;
+            rv = true;
+          } else {
+            // Read again since we haven't received enough data yet (e.g., we
+            // may not have a complete gzip header yet).
+            continue;
+          }
+          break;
+        }
+        case Filter::FILTER_OK: {
+          *bytes_read = filtered_data_len;
+          postfilter_bytes_read_ += filtered_data_len;
+          rv = true;
+          break;
+        }
+        case Filter::FILTER_ERROR: {
+          DVLOG(1) << __FUNCTION__ << "() "
+                   << "\"" << (request_ ? request_->url().spec() : "???")
+                   << "\"" << " Filter Error";
+          filter_needs_more_output_space_ = false;
+          NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
+                     ERR_CONTENT_DECODING_FAILED));
+          rv = false;
+          break;
+        }
+        default: {
+          NOTREACHED();
+          filter_needs_more_output_space_ = false;
+          rv = false;
+          break;
+        }
       }
-      case Filter::FILTER_OK: {
-        filter_needs_more_output_space_ =
-            (filtered_data_len == output_buffer_size);
-        *bytes_read = filtered_data_len;
-        postfilter_bytes_read_ += filtered_data_len;
-        rv = true;
-        break;
+
+      // If logging all bytes is enabled, log the filtered bytes read.
+      if (rv && request() && request()->net_log().IsLoggingBytes() &&
+          filtered_data_len > 0) {
+        request()->net_log().AddByteTransferEvent(
+            NetLog::TYPE_URL_REQUEST_JOB_FILTERED_BYTES_READ,
+            filtered_data_len, filtered_read_buffer_->data());
       }
-      case Filter::FILTER_ERROR: {
-        DVLOG(1) << __FUNCTION__ << "() "
-                 << "\"" << (request_ ? request_->url().spec() : "???") << "\""
-                 << " Filter Error";
-        filter_needs_more_output_space_ = false;
-        NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
-                   ERR_CONTENT_DECODING_FAILED));
-        rv = false;
-        break;
-      }
-      default: {
-        NOTREACHED();
-        filter_needs_more_output_space_ = false;
-        rv = false;
-        break;
-      }
+    } else {
+      // we are done, or there is no data left.
+      rv = true;
     }
-    DVLOG(2) << __FUNCTION__ << "() "
-             << "\"" << (request_ ? request_->url().spec() : "???") << "\""
-             << " rv = " << rv
-             << " post bytes read = " << filtered_data_len
-             << " pre total = " << prefilter_bytes_read_
-             << " post total = "
-             << postfilter_bytes_read_;
-    // If logging all bytes is enabled, log the filtered bytes read.
-    if (rv && request() && request()->net_log().IsLoggingBytes() &&
-        filtered_data_len > 0) {
-      request()->net_log().AddByteTransferEvent(
-          NetLog::TYPE_URL_REQUEST_JOB_FILTERED_BYTES_READ,
-          filtered_data_len, filtered_read_buffer_->data());
-    }
-  } else {
-    // we are done, or there is no data left.
-    rv = true;
+    break;
   }
 
   if (rv) {
-    // When we successfully finished a read, we no longer need to
-    // save the caller's buffers. Release our reference.
+    // When we successfully finished a read, we no longer need to save the
+    // caller's buffers. Release our reference.
     filtered_read_buffer_ = NULL;
     filtered_read_buffer_len_ = 0;
   }
