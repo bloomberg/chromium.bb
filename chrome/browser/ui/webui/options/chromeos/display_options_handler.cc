@@ -142,7 +142,6 @@ scoped_ptr<base::ListValue> GetResolutionsForExternalDisplay(
   scoped_ptr<base::ListValue> js_resolutions(new base::ListValue);
 
   gfx::Size current_size = display_info.bounds_in_native().size();
-  gfx::Insets current_overscan = display_info.GetOverscanInsetsInPixel();
   int largest_index = -1;
   int largest_area = -1;
 
@@ -170,8 +169,6 @@ scoped_ptr<base::ListValue> GetResolutionsForExternalDisplay(
       resolution_info->SetBoolean("selected", true);
     }
 
-    resolution.Enlarge(
-        -current_overscan.width(), -current_overscan.height());
     resolution_info->SetInteger("width", resolution.width());
     resolution_info->SetInteger("height", resolution.height());
     resolution_info->SetDouble("refreshRate", display_mode.refresh_rate);
@@ -451,9 +448,7 @@ void DisplayOptionsHandler::HandleSetResolution(const base::ListValue* args) {
 
   const ash::DisplayInfo& display_info =
       GetDisplayManager()->GetDisplayInfo(display_id);
-  gfx::Insets current_overscan = display_info.GetOverscanInsetsInPixel();
   gfx::Size new_resolution = gfx::ToFlooredSize(gfx::SizeF(width, height));
-  new_resolution.Enlarge(current_overscan.width(), current_overscan.height());
   gfx::Size old_resolution = display_info.bounds_in_native().size();
   bool has_new_resolution = false;
   bool has_old_resolution = false;
