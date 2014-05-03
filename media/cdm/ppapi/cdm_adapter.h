@@ -106,6 +106,14 @@ class CdmAdapter : public pp::Instance,
   virtual cdm::FileIO* CreateFileIO(cdm::FileIOClient* client) OVERRIDE;
 
  private:
+  // These are reported to UMA server. Do not change the existing values!
+  enum OutputProtectionStatus {
+    OUTPUT_PROTECTION_QUERIED = 0,
+    OUTPUT_PROTECTION_NO_EXTERNAL_LINK = 1,
+    OUTPUT_PROTECTION_ALL_EXTERNAL_LINKS_PROTECTED = 2,
+    OUTPUT_PROTECTION_MAX = 3
+  };
+
   typedef linked_ptr<DecryptedBlockImpl> LinkedDecryptedBlock;
   typedef linked_ptr<VideoFrameImpl> LinkedVideoFrame;
   typedef linked_ptr<AudioFramesImpl> LinkedAudioFrames;
@@ -165,6 +173,10 @@ class CdmAdapter : public pp::Instance,
 #endif  // !defined(NDEBUG)
 
 #if defined(OS_CHROMEOS)
+  void ReportOutputProtectionUMA(OutputProtectionStatus status);
+  void ReportOutputProtectionQuery();
+  void ReportOutputProtectionQueryResult();
+
   void SendPlatformChallengeDone(int32_t result);
   void EnableProtectionDone(int32_t result);
   void QueryOutputProtectionStatusDone(int32_t result);
@@ -184,6 +196,11 @@ class CdmAdapter : public pp::Instance,
   uint32_t output_link_mask_;
   uint32_t output_protection_mask_;
   bool query_output_protection_in_progress_;
+
+  // Tracks whether an output protection query and a positive query result (no
+  // unprotected external link) have been reported to UMA.
+  bool uma_for_output_protection_query_reported_;
+  bool uma_for_output_protection_positive_result_reported_;
 #endif
 
   PpbBufferAllocator allocator_;

@@ -8887,6 +8887,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>EME NeedKey event count.</summary>
 </histogram>
 
+<histogram name="Media.EME.OutputProtection" enum="MediaOutputProtectionStatus">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    Output protection query status and result. One query and one positive (no
+    unprotected external links) result (if any) are reported per CDM instance.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.Unknown.addKey" enum="MediaKeyException">
   <owner>xhwang@chromium.org</owner>
   <summary>addKey result using an unknown key system.</summary>
@@ -37170,6 +37178,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="kSuccess"/>
   <int value="2" label="kKeySystemNotSupported"/>
   <int value="3" label="kInvalidPlayerState"/>
+</enum>
+
+<enum name="MediaOutputProtectionStatus" type="int">
+  <int value="0" label="Queried"/>
+  <int value="1" label="No external link"/>
+  <int value="2" label="All external links protected"/>
 </enum>
 
 <enum name="MigrationNssToPemNetworkTypes" type="int">

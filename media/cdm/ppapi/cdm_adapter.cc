@@ -9,6 +9,7 @@
 #include "media/cdm/ppapi/cdm_logging.h"
 #include "media/cdm/ppapi/supported_cdm_versions.h"
 #include "ppapi/c/ppb_console.h"
+#include "ppapi/cpp/private/uma_private.h"
 
 #if defined(CHECK_DOCUMENT_URL)
 #include "ppapi/cpp/dev/url_util_dev.h"
@@ -224,6 +225,8 @@ CdmAdapter::CdmAdapter(PP_Instance instance, pp::Module* module)
       output_link_mask_(0),
       output_protection_mask_(0),
       query_output_protection_in_progress_(false),
+      uma_for_output_protection_query_reported_(false),
+      uma_for_output_protection_positive_result_reported_(false),
 #endif
       allocator_(this),
       cdm_(NULL),
@@ -841,6 +844,7 @@ void CdmAdapter::QueryOutputProtectionStatus() {
           &CdmAdapter::QueryOutputProtectionStatusDone));
   if (result == PP_OK_COMPLETIONPENDING) {
     query_output_protection_in_progress_ = true;
+    ReportOutputProtectionQuery();
     return;
   }
 
@@ -883,6 +887,45 @@ cdm::FileIO* CdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
 }
 
 #if defined(OS_CHROMEOS)
+void CdmAdapter::ReportOutputProtectionUMA(OutputProtectionStatus status) {
+  pp::UMAPrivate uma_interface_(this);
+  uma_interface_.HistogramEnumeration(
+      "Media.EME.OutputProtection", status, OUTPUT_PROTECTION_MAX);
+}
+
+void CdmAdapter::ReportOutputProtectionQuery() {
+  if (uma_for_output_protection_query_reported_)
+    return;
+
+  ReportOutputProtectionUMA(OUTPUT_PROTECTION_QUERIED);
+  uma_for_output_protection_query_reported_ = true;
+}
+
+void CdmAdapter::ReportOutputProtectionQueryResult() {
+  if (uma_for_output_protection_positive_result_reported_)
+    return;
+
+  // Report UMAs for output protection query result.
+  uint32_t external_links = (output_link_mask_ & ~cdm::kLinkTypeInternal);
+
+  if (!external_links) {
+    ReportOutputProtectionUMA(OUTPUT_PROTECTION_NO_EXTERNAL_LINK);
+    uma_for_output_protection_positive_result_reported_ = true;
+    return;
+  }
+
+  if ((output_protection_mask_ & external_links) == external_links) {
+    ReportOutputProtectionUMA(
+        OUTPUT_PROTECTION_ALL_EXTERNAL_LINKS_PROTECTED);
+    uma_for_output_protection_positive_result_reported_ = true;
+    return;
+  }
+
+  // Do not report a negative result because it could be a false negative.
+  // Instead, we will calculate number of negatives using the total number of
+  // queries and success results.
+}
+
 void CdmAdapter::SendPlatformChallengeDone(int32_t result) {
   challenge_in_progress_ = false;
 
@@ -927,6 +970,8 @@ void CdmAdapter::QueryOutputProtectionStatusDone(int32_t result) {
   // Return a protection status of none on error.
   if (result != PP_OK)
     output_link_mask_ = output_protection_mask_ = 0;
+  else
+    ReportOutputProtectionQueryResult();
 
   cdm_->OnQueryOutputProtectionStatus(output_link_mask_,
                                       output_protection_mask_);
