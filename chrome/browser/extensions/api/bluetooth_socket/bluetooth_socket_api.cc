@@ -68,7 +68,7 @@ BluetoothSocketAsyncApiFunction::BluetoothSocketAsyncApiFunction() {}
 
 BluetoothSocketAsyncApiFunction::~BluetoothSocketAsyncApiFunction() {}
 
-bool BluetoothSocketAsyncApiFunction::RunImpl() {
+bool BluetoothSocketAsyncApiFunction::RunAsync() {
   if (!PrePrepare() || !Prepare()) {
     return false;
   }
@@ -208,25 +208,25 @@ void BluetoothSocketSetPausedFunction::Work() {
   results_ = bluetooth_socket::SetPaused::Results::Create();
 }
 
-bool BluetoothSocketListenUsingRfcommFunction::RunImpl() {
+bool BluetoothSocketListenUsingRfcommFunction::RunAsync() {
   // TODO(keybuk): Implement.
   SetError("Not yet implemented.");
   return false;
 }
 
-bool BluetoothSocketListenUsingInsecureRfcommFunction::RunImpl() {
+bool BluetoothSocketListenUsingInsecureRfcommFunction::RunAsync() {
   // TODO(keybuk): Implement.
   SetError("Not yet implemented.");
   return false;
 }
 
-bool BluetoothSocketListenUsingL2capFunction::RunImpl() {
+bool BluetoothSocketListenUsingL2capFunction::RunAsync() {
   // TODO(keybuk): Implement.
   SetError("Not yet implemented.");
   return false;
 }
 
-bool BluetoothSocketConnectFunction::RunImpl() {
+bool BluetoothSocketConnectFunction::RunAsync() {
   // TODO(keybuk): Implement.
   SetError("Not yet implemented.");
   return false;

@@ -95,10 +95,10 @@ class MediaGalleriesGetMediaFileSystemsFunction
 
  protected:
   virtual ~MediaGalleriesGetMediaFileSystemsFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
-  // Bottom half for RunImpl, invoked after the preferences is initialized.
+  // Bottom half for RunAsync, invoked after the preferences is initialized.
   void OnPreferencesInit(
       MediaGalleries::GetMediaFileSystemsInteractivity interactive);
 
@@ -132,10 +132,10 @@ class MediaGalleriesGetAllMediaFileSystemMetadataFunction
 
  protected:
   virtual ~MediaGalleriesGetAllMediaFileSystemMetadataFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
-  // Bottom half for RunImpl, invoked after the preferences is initialized.
+  // Bottom half for RunAsync, invoked after the preferences is initialized.
   // Gets the list of permitted galleries and checks if they are available.
   void OnPreferencesInit();
 
@@ -154,10 +154,10 @@ class MediaGalleriesAddUserSelectedFolderFunction
 
  protected:
   virtual ~MediaGalleriesAddUserSelectedFolderFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
-  // Bottom half for RunImpl, invoked after the preferences is initialized.
+  // Bottom half for RunAsync, invoked after the preferences is initialized.
   void OnPreferencesInit();
 
   // Callback for the directory prompt request, with the input from the user.
@@ -187,10 +187,10 @@ class MediaGalleriesDropPermissionForMediaFileSystemFunction
 
  protected:
   virtual ~MediaGalleriesDropPermissionForMediaFileSystemFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
-  // Bottom half for RunImpl, invoked after the preferences is initialized.
+  // Bottom half for RunAsync, invoked after the preferences is initialized.
   void OnPreferencesInit(MediaGalleryPrefId pref_id);
 };
 
@@ -202,10 +202,10 @@ class MediaGalleriesStartMediaScanFunction
 
  protected:
   virtual ~MediaGalleriesStartMediaScanFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
-  // Bottom half for RunImpl, invoked after the preferences is initialized.
+  // Bottom half for RunAsync, invoked after the preferences is initialized.
   void OnPreferencesInit();
 };
 
@@ -217,10 +217,10 @@ class MediaGalleriesCancelMediaScanFunction
 
  protected:
   virtual ~MediaGalleriesCancelMediaScanFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
-  // Bottom half for RunImpl, invoked after the preferences is initialized.
+  // Bottom half for RunAsync, invoked after the preferences is initialized.
   void OnPreferencesInit();
 };
 
@@ -232,7 +232,7 @@ class MediaGalleriesAddScanResultsFunction
 
  protected:
   virtual ~MediaGalleriesAddScanResultsFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   // Pulled out for testing.
   virtual MediaGalleriesScanResultDialogController* MakeDialog(
@@ -241,7 +241,7 @@ class MediaGalleriesAddScanResultsFunction
       const base::Closure& on_finish);
 
  private:
-  // Bottom half for RunImpl, invoked after the preferences is initialized.
+  // Bottom half for RunAsync, invoked after the preferences is initialized.
   void OnPreferencesInit();
 
   // Grabs galleries from the media file system registry and passes them to
@@ -259,10 +259,10 @@ class MediaGalleriesGetMetadataFunction : public ChromeAsyncExtensionFunction {
 
  protected:
   virtual ~MediaGalleriesGetMetadataFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
-  // Bottom half for RunImpl, invoked after the preferences is initialized.
+  // Bottom half for RunAsync, invoked after the preferences is initialized.
   void OnPreferencesInit(bool mime_type_only, const std::string& blob_uuid);
 
   void SniffMimeType(bool mime_type_only,

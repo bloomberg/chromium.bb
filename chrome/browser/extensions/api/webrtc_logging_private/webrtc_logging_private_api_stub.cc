@@ -20,7 +20,7 @@ WebrtcLoggingPrivateSetMetaDataFunction() {}
 WebrtcLoggingPrivateSetMetaDataFunction::
 ~WebrtcLoggingPrivateSetMetaDataFunction() {}
 
-bool WebrtcLoggingPrivateSetMetaDataFunction::RunImpl() {
+bool WebrtcLoggingPrivateSetMetaDataFunction::RunAsync() {
   SetError(kErrorNotSupported);
   SendResponse(false);
   return false;
@@ -33,7 +33,7 @@ WebrtcLoggingPrivateStartFunction::WebrtcLoggingPrivateStartFunction() {}
 
 WebrtcLoggingPrivateStartFunction::~WebrtcLoggingPrivateStartFunction() {}
 
-bool WebrtcLoggingPrivateStartFunction::RunImpl() {
+bool WebrtcLoggingPrivateStartFunction::RunAsync() {
   SetError(kErrorNotSupported);
   SendResponse(false);
   return false;
@@ -48,7 +48,7 @@ WebrtcLoggingPrivateSetUploadOnRenderCloseFunction() {}
 WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::
 ~WebrtcLoggingPrivateSetUploadOnRenderCloseFunction() {}
 
-bool WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::RunImpl() {
+bool WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::RunAsync() {
   SetError(kErrorNotSupported);
   SendResponse(false);
   return false;
@@ -58,7 +58,7 @@ WebrtcLoggingPrivateStopFunction::WebrtcLoggingPrivateStopFunction() {}
 
 WebrtcLoggingPrivateStopFunction::~WebrtcLoggingPrivateStopFunction() {}
 
-bool WebrtcLoggingPrivateStopFunction::RunImpl() {
+bool WebrtcLoggingPrivateStopFunction::RunAsync() {
   SetError(kErrorNotSupported);
   SendResponse(false);
   return false;
@@ -71,7 +71,7 @@ WebrtcLoggingPrivateUploadFunction::WebrtcLoggingPrivateUploadFunction() {}
 
 WebrtcLoggingPrivateUploadFunction::~WebrtcLoggingPrivateUploadFunction() {}
 
-bool WebrtcLoggingPrivateUploadFunction::RunImpl() {
+bool WebrtcLoggingPrivateUploadFunction::RunAsync() {
   SetError(kErrorNotSupported);
   SendResponse(false);
   return false;
@@ -86,7 +86,7 @@ WebrtcLoggingPrivateDiscardFunction::WebrtcLoggingPrivateDiscardFunction() {}
 
 WebrtcLoggingPrivateDiscardFunction::~WebrtcLoggingPrivateDiscardFunction() {}
 
-bool WebrtcLoggingPrivateDiscardFunction::RunImpl() {
+bool WebrtcLoggingPrivateDiscardFunction::RunAsync() {
   SetError(kErrorNotSupported);
   SendResponse(false);
   return false;

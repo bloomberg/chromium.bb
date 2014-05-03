@@ -37,7 +37,7 @@ class PageCaptureSaveAsMHTMLFunction : public ChromeAsyncExtensionFunction {
 
  private:
   virtual ~PageCaptureSaveAsMHTMLFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Called on the file thread.

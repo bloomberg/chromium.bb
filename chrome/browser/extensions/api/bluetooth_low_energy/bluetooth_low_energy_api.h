@@ -53,7 +53,7 @@ namespace api {
 // Base class for bluetoothLowEnergy API functions. This class handles some of
 // the common logic involved in all API functions, such as checking for
 // platform support and returning the correct error.
-class BluetoothLowEnergyExtensionFunction : public UIThreadExtensionFunction {
+class BluetoothLowEnergyExtensionFunction : public AsyncExtensionFunction {
  public:
   BluetoothLowEnergyExtensionFunction();
 
@@ -61,10 +61,10 @@ class BluetoothLowEnergyExtensionFunction : public UIThreadExtensionFunction {
   virtual ~BluetoothLowEnergyExtensionFunction();
 
   // ExtensionFunction override.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   // Implemented by individual bluetoothLowEnergy extension functions to perform
-  // the body of the function. This invoked asynchonously after RunImpl after
+  // the body of the function. This invoked asynchonously after RunAsync after
   // the BluetoothLowEnergyEventRouter has obtained a handle on the
   // BluetoothAdapter.
   virtual bool DoWork() = 0;

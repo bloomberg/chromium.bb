@@ -142,7 +142,7 @@ class BluetoothGetDeviceFunction : public BluetoothExtensionFunction {
   virtual ~BluetoothGetDeviceFunction();
 };
 
-class BluetoothAddProfileFunction : public UIThreadExtensionFunction {
+class BluetoothAddProfileFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.addProfile", BLUETOOTH_ADDPROFILE)
 
@@ -150,7 +150,7 @@ class BluetoothAddProfileFunction : public UIThreadExtensionFunction {
 
  protected:
   virtual ~BluetoothAddProfileFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   virtual void RegisterProfile(
       const device::BluetoothProfile::Options& options,
@@ -187,40 +187,40 @@ class BluetoothConnectFunction : public BluetoothExtensionFunction {
   void OnErrorCallback(const std::string& error);
 };
 
-class BluetoothDisconnectFunction : public UIThreadExtensionFunction {
+class BluetoothDisconnectFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.disconnect", BLUETOOTH_DISCONNECT)
 
  protected:
   virtual ~BluetoothDisconnectFunction() {}
 
-  // UIThreadExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  // AsyncExtensionFunction:
+  virtual bool RunAsync() OVERRIDE;
 };
 
-class BluetoothSendFunction : public UIThreadExtensionFunction {
+class BluetoothSendFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.send", BLUETOOTH_WRITE)
 
  protected:
   virtual ~BluetoothSendFunction() {}
 
-  // UIThreadExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  // AsyncExtensionFunction:
+  virtual bool RunAsync() OVERRIDE;
 };
 
-class BluetoothUpdateSocketFunction : public UIThreadExtensionFunction {
+class BluetoothUpdateSocketFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.updateSocket", BLUETOOTH_UPDATE_SOCKET)
 
  protected:
   virtual ~BluetoothUpdateSocketFunction() {}
 
-  // UIThreadExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  // AsyncExtensionFunction:
+  virtual bool RunAsync() OVERRIDE;
 };
 
-class BluetoothSetSocketPausedFunction : public UIThreadExtensionFunction {
+class BluetoothSetSocketPausedFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.setSocketPaused",
                              BLUETOOTH_SET_SOCKET_PAUSED)
@@ -228,30 +228,30 @@ class BluetoothSetSocketPausedFunction : public UIThreadExtensionFunction {
  protected:
   virtual ~BluetoothSetSocketPausedFunction() {}
 
-  // UIThreadExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  // AsyncExtensionFunction:
+  virtual bool RunAsync() OVERRIDE;
 };
 
-class BluetoothGetSocketFunction : public UIThreadExtensionFunction {
+class BluetoothGetSocketFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.getSocket", BLUETOOTH_GET_SOCKET)
 
  protected:
   virtual ~BluetoothGetSocketFunction() {}
 
-  // UIThreadExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  // AsyncExtensionFunction:
+  virtual bool RunAsync() OVERRIDE;
 };
 
-class BluetoothGetSocketsFunction : public UIThreadExtensionFunction {
+class BluetoothGetSocketsFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.getSockets", BLUETOOTH_GET_SOCKETS)
 
  protected:
   virtual ~BluetoothGetSocketsFunction() {}
 
-  // UIThreadExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  // AsyncExtensionFunction:
+  virtual bool RunAsync() OVERRIDE;
 };
 
 class BluetoothGetLocalOutOfBandPairingDataFunction

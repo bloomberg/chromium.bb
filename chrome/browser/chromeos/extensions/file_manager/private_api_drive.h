@@ -41,7 +41,7 @@ class FileBrowserPrivateGetDriveEntryPropertiesFunction
   virtual ~FileBrowserPrivateGetDriveEntryPropertiesFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void CompleteGetFileProperties(drive::FileError error);
@@ -62,10 +62,10 @@ class FileBrowserPrivatePinDriveFileFunction
   virtual ~FileBrowserPrivatePinDriveFileFunction() {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
-  // Callback for RunImpl().
+  // Callback for RunAsync().
   void OnPinStateSet(drive::FileError error);
 };
 
@@ -89,7 +89,7 @@ class FileBrowserPrivateGetDriveFilesFunction
   virtual ~FileBrowserPrivateGetDriveFilesFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   // Gets the file on the top of the |remaining_drive_paths_| or sends the
@@ -117,7 +117,7 @@ class FileBrowserPrivateCancelFileTransfersFunction
   virtual ~FileBrowserPrivateCancelFileTransfersFunction() {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 class FileBrowserPrivateSearchDriveFunction
@@ -131,7 +131,7 @@ class FileBrowserPrivateSearchDriveFunction
  protected:
   virtual ~FileBrowserPrivateSearchDriveFunction() {}
 
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   // Callback for Search().
@@ -159,7 +159,7 @@ class FileBrowserPrivateSearchDriveMetadataFunction
  protected:
   virtual ~FileBrowserPrivateSearchDriveMetadataFunction() {}
 
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   // Callback for SearchMetadata();
@@ -199,7 +199,7 @@ class FileBrowserPrivateRequestAccessTokenFunction
   virtual ~FileBrowserPrivateRequestAccessTokenFunction() {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   // Callback with a cached auth token (if available) or a fetched one.
   void OnAccessTokenFetched(google_apis::GDataErrorCode code,
@@ -217,7 +217,7 @@ class FileBrowserPrivateGetShareUrlFunction
   virtual ~FileBrowserPrivateGetShareUrlFunction() {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   // Callback with an url to the sharing dialog as |share_url|, called by
   // FileSystem::GetShareUrl.
@@ -233,7 +233,7 @@ class FileBrowserPrivateRequestDriveShareFunction
 
  protected:
   virtual ~FileBrowserPrivateRequestDriveShareFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   // Called back after the drive file system operation is finished.

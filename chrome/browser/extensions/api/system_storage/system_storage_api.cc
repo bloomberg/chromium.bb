@@ -18,7 +18,7 @@ SystemStorageGetInfoFunction::SystemStorageGetInfoFunction() {
 SystemStorageGetInfoFunction::~SystemStorageGetInfoFunction() {
 }
 
-bool SystemStorageGetInfoFunction::RunImpl() {
+bool SystemStorageGetInfoFunction::RunAsync() {
   StorageInfoProvider::Get()->StartQueryInfo(
       base::Bind(&SystemStorageGetInfoFunction::OnGetStorageInfoCompleted,
                  this));
@@ -39,7 +39,7 @@ void SystemStorageGetInfoFunction::OnGetStorageInfoCompleted(bool success) {
 SystemStorageEjectDeviceFunction::~SystemStorageEjectDeviceFunction() {
 }
 
-bool SystemStorageEjectDeviceFunction::RunImpl() {
+bool SystemStorageEjectDeviceFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   scoped_ptr<EjectDevice::Params> params(EjectDevice::Params::Create(*args_));
@@ -103,7 +103,7 @@ SystemStorageGetAvailableCapacityFunction::
     ~SystemStorageGetAvailableCapacityFunction() {
 }
 
-bool SystemStorageGetAvailableCapacityFunction::RunImpl() {
+bool SystemStorageGetAvailableCapacityFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   scoped_ptr<GetAvailableCapacity::Params> params(

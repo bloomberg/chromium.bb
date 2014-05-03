@@ -192,7 +192,7 @@ class InputImeKeyEventHandledFunction : public AsyncExtensionFunction {
   virtual ~InputImeKeyEventHandledFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 class InputImeSendKeyEventsFunction : public AsyncExtensionFunction {
@@ -204,7 +204,7 @@ class InputImeSendKeyEventsFunction : public AsyncExtensionFunction {
   virtual ~InputImeSendKeyEventsFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 class InputImeHideInputViewFunction : public AsyncExtensionFunction {
@@ -216,7 +216,7 @@ class InputImeHideInputViewFunction : public AsyncExtensionFunction {
   virtual ~InputImeHideInputViewFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 class InputImeAPI : public BrowserContextKeyedAPI,

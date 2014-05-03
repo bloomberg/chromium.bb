@@ -131,18 +131,18 @@ void PermissionsRequestFunction::InstallUIProceed() {
   results_ = Request::Results::Create(true);
   SendResponse(true);
 
-  Release();  // Balanced in RunImpl().
+  Release();  // Balanced in RunAsync().
 }
 
 void PermissionsRequestFunction::InstallUIAbort(bool user_initiated) {
   SendResponse(true);
 
-  Release();  // Balanced in RunImpl().
+  Release();  // Balanced in RunAsync().
 }
 
 PermissionsRequestFunction::~PermissionsRequestFunction() {}
 
-bool PermissionsRequestFunction::RunImpl() {
+bool PermissionsRequestFunction::RunAsync() {
   results_ = Request::Results::Create(false);
 
   if (!user_gesture() &&

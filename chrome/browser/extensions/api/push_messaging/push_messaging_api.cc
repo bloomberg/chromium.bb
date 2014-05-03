@@ -90,7 +90,7 @@ PushMessagingGetChannelIdFunction::PushMessagingGetChannelIdFunction()
 
 PushMessagingGetChannelIdFunction::~PushMessagingGetChannelIdFunction() {}
 
-bool PushMessagingGetChannelIdFunction::RunImpl() {
+bool PushMessagingGetChannelIdFunction::RunAsync() {
   // Fetch the function arguments.
   scoped_ptr<glue::GetChannelId::Params> params(
       glue::GetChannelId::Params::Create(*args_));
@@ -222,7 +222,7 @@ void PushMessagingGetChannelIdFunction::ReportResult(
                             timeout);
   }
 
-  // Balanced in RunImpl.
+  // Balanced in RunAsync.
   Release();
 }
 

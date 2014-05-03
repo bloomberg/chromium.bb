@@ -105,7 +105,7 @@ class HistoryFunctionWithCallback : public HistoryFunction {
   virtual ~HistoryFunctionWithCallback();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   // Return true if the async call was completed, false otherwise.
   virtual bool RunAsyncImpl() = 0;
@@ -164,7 +164,7 @@ class HistoryAddUrlFunction : public HistoryFunction {
   virtual ~HistoryAddUrlFunction() {}
 
   // HistoryFunctionWithCallback:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 class HistoryDeleteAllFunction : public HistoryFunctionWithCallback {
@@ -190,7 +190,7 @@ class HistoryDeleteUrlFunction : public HistoryFunction {
   virtual ~HistoryDeleteUrlFunction() {}
 
   // HistoryFunctionWithCallback:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 class HistoryDeleteRangeFunction : public HistoryFunctionWithCallback {

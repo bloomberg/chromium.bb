@@ -66,7 +66,7 @@ class PushMessagingGetChannelIdFunction
   virtual ~PushMessagingGetChannelIdFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("pushMessaging.getChannelId",
                              PUSHMESSAGING_GETCHANNELID)
 

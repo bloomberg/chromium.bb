@@ -794,7 +794,7 @@ BrowserActionOpenPopupFunction::BrowserActionOpenPopupFunction()
     : response_sent_(false) {
 }
 
-bool BrowserActionOpenPopupFunction::RunImpl() {
+bool BrowserActionOpenPopupFunction::RunAsync() {
   ExtensionToolbarModel* model = ExtensionToolbarModel::Get(GetProfile());
   if (!model) {
     error_ = kInternalError;

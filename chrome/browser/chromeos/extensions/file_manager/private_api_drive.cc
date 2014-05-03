@@ -349,7 +349,7 @@ FileBrowserPrivateGetDriveEntryPropertiesFunction::
 FileBrowserPrivateGetDriveEntryPropertiesFunction::
     ~FileBrowserPrivateGetDriveEntryPropertiesFunction() {}
 
-bool FileBrowserPrivateGetDriveEntryPropertiesFunction::RunImpl() {
+bool FileBrowserPrivateGetDriveEntryPropertiesFunction::RunAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   using api::file_browser_private::GetDriveEntryProperties::Params;
@@ -390,7 +390,7 @@ void FileBrowserPrivateGetDriveEntryPropertiesFunction::
   SendResponse(true);
 }
 
-bool FileBrowserPrivatePinDriveFileFunction::RunImpl() {
+bool FileBrowserPrivatePinDriveFileFunction::RunAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   using extensions::api::file_browser_private::PinDriveFile::Params;
@@ -437,7 +437,7 @@ FileBrowserPrivateGetDriveFilesFunction::
     ~FileBrowserPrivateGetDriveFilesFunction() {
 }
 
-bool FileBrowserPrivateGetDriveFilesFunction::RunImpl() {
+bool FileBrowserPrivateGetDriveFilesFunction::RunAsync() {
   using extensions::api::file_browser_private::GetDriveFiles::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -503,7 +503,7 @@ void FileBrowserPrivateGetDriveFilesFunction::OnFileReady(
   GetFileOrSendResponse();
 }
 
-bool FileBrowserPrivateCancelFileTransfersFunction::RunImpl() {
+bool FileBrowserPrivateCancelFileTransfersFunction::RunAsync() {
   using extensions::api::file_browser_private::CancelFileTransfers::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -557,7 +557,7 @@ bool FileBrowserPrivateCancelFileTransfersFunction::RunImpl() {
   return true;
 }
 
-bool FileBrowserPrivateSearchDriveFunction::RunImpl() {
+bool FileBrowserPrivateSearchDriveFunction::RunAsync() {
   using extensions::api::file_browser_private::SearchDrive::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -626,7 +626,7 @@ void FileBrowserPrivateSearchDriveFunction::OnEntryDefinitionList(
   SendResponse(true);
 }
 
-bool FileBrowserPrivateSearchDriveMetadataFunction::RunImpl() {
+bool FileBrowserPrivateSearchDriveMetadataFunction::RunAsync() {
   using api::file_browser_private::SearchDriveMetadata::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -770,7 +770,7 @@ bool FileBrowserPrivateGetDriveConnectionStateFunction::RunSync() {
   return true;
 }
 
-bool FileBrowserPrivateRequestAccessTokenFunction::RunImpl() {
+bool FileBrowserPrivateRequestAccessTokenFunction::RunAsync() {
   using extensions::api::file_browser_private::RequestAccessToken::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -804,7 +804,7 @@ void FileBrowserPrivateRequestAccessTokenFunction::OnAccessTokenFetched(
   SendResponse(true);
 }
 
-bool FileBrowserPrivateGetShareUrlFunction::RunImpl() {
+bool FileBrowserPrivateGetShareUrlFunction::RunAsync() {
   using extensions::api::file_browser_private::GetShareUrl::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -842,7 +842,7 @@ void FileBrowserPrivateGetShareUrlFunction::OnGetShareUrl(
   SendResponse(true);
 }
 
-bool FileBrowserPrivateRequestDriveShareFunction::RunImpl() {
+bool FileBrowserPrivateRequestDriveShareFunction::RunAsync() {
   using extensions::api::file_browser_private::RequestDriveShare::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);

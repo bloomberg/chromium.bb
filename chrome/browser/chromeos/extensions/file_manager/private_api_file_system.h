@@ -42,7 +42,7 @@ class FileBrowserPrivateRequestFileSystemFunction
   virtual ~FileBrowserPrivateRequestFileSystemFunction() {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void RespondSuccessOnUIThread(const std::string& name,
@@ -81,7 +81,7 @@ class FileWatchFunctionBase : public LoggedAsyncExtensionFunction {
       const std::string& extension_id) = 0;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   // Calls SendResponse() with |success| converted to base::Value.
   void Respond(bool success);
@@ -133,7 +133,7 @@ class FileBrowserPrivateGetSizeStatsFunction
   virtual ~FileBrowserPrivateGetSizeStatsFunction() {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void GetDriveAvailableSpaceCallback(drive::FileError error,
@@ -157,7 +157,7 @@ class FileBrowserPrivateValidatePathNameLengthFunction
   void OnFilePathLimitRetrieved(size_t current_length, size_t max_length);
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 // Implements the chrome.fileBrowserPrivate.formatVolume method.
@@ -172,7 +172,7 @@ class FileBrowserPrivateFormatVolumeFunction
   virtual ~FileBrowserPrivateFormatVolumeFunction() {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 // Implements the chrome.fileBrowserPrivate.startCopy method.
@@ -186,10 +186,10 @@ class FileBrowserPrivateStartCopyFunction
   virtual ~FileBrowserPrivateStartCopyFunction() {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
-  // Part of RunImpl(). Called after Copy() is started on IO thread.
+  // Part of RunAsync(). Called after Copy() is started on IO thread.
   void RunAfterStartCopy(int operation_id);
 };
 
@@ -204,7 +204,7 @@ class FileBrowserPrivateCancelCopyFunction
   virtual ~FileBrowserPrivateCancelCopyFunction() {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 }  // namespace extensions

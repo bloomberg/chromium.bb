@@ -12,7 +12,7 @@
 #include "ui/base/window_open_disposition.h"
 
 class Browser;
-class ChromeAsyncExtensionFunction;
+class ChromeUIThreadExtensionFunction;
 class GURL;
 class Profile;
 class TabStripModel;
@@ -53,9 +53,10 @@ class ExtensionTabUtil {
   // Opens a new tab given an extension function |function| and creation
   // parameters |params|. Returns a Tab object if successful, or NULL and
   // optionally sets |error| if an error occurs.
-  static base::DictionaryValue* OpenTab(ChromeAsyncExtensionFunction* function,
-                                        const OpenTabParams& params,
-                                        std::string* error);
+  static base::DictionaryValue* OpenTab(
+      ChromeUIThreadExtensionFunction* function,
+      const OpenTabParams& params,
+      std::string* error);
 
   static int GetWindowId(const Browser* browser);
   static int GetWindowIdOfTabStripModel(const TabStripModel* tab_strip_model);
@@ -64,9 +65,10 @@ class ExtensionTabUtil {
   static int GetWindowIdOfTab(const content::WebContents* web_contents);
   static base::ListValue* CreateTabList(const Browser* browser,
                                         const Extension* extension);
-  static Browser* GetBrowserFromWindowID(ChromeAsyncExtensionFunction* function,
-                                         int window_id,
-                                         std::string* error_message);
+  static Browser* GetBrowserFromWindowID(
+      ChromeUIThreadExtensionFunction* function,
+      int window_id,
+      std::string* error_message);
 
   // Creates a Tab object (see chrome/common/extensions/api/tabs.json) with
   // information about the state of a browser tab.  Depending on the

@@ -39,7 +39,7 @@ class ShellCreateWindowFunction : public UIThreadExtensionFunction {
 
  private:
   virtual ~ShellCreateWindowFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual ResponseAction Run() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ShellCreateWindowFunction);
 };

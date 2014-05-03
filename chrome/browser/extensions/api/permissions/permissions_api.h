@@ -72,7 +72,7 @@ class PermissionsRequestFunction : public ChromeAsyncExtensionFunction,
   virtual ~PermissionsRequestFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   scoped_ptr<ExtensionInstallPrompt> install_ui_;

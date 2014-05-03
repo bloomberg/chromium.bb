@@ -139,7 +139,7 @@ void AppWindowCreateFunction::SendDelayedResponse() {
   SendResponse(true);
 }
 
-bool AppWindowCreateFunction::RunImpl() {
+bool AppWindowCreateFunction::RunAsync() {
   // Don't create app window if the system is shutting down.
   if (extensions::ExtensionsBrowserClient::Get()->IsShuttingDown())
     return false;

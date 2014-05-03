@@ -34,7 +34,9 @@ class MultipleArgumentsResponseValue
     } else {
       function->SetResultList(make_scoped_ptr(result));
     }
-    DCHECK_EQ("", function->GetError());
+    // It would be nice to DCHECK(error.empty()) but some legacy extension
+    // function implementations... I'm looking at chrome.input.ime... do this
+    // for some reason.
   }
 
   virtual ~MultipleArgumentsResponseValue() {}
@@ -45,7 +47,8 @@ class MultipleArgumentsResponseValue
 class ErrorResponseValue : public ExtensionFunction::ResponseValueObject {
  public:
   ErrorResponseValue(ExtensionFunction* function, const std::string& error) {
-    DCHECK_NE("", error);
+    // It would be nice to DCHECK(!error.empty()) but too many legacy extension
+    // function implementations don't set error but signal failure.
     function->SetError(error);
   }
 
@@ -232,24 +235,8 @@ ExtensionFunction::ResponseAction ExtensionFunction::RespondLater() {
   return scoped_ptr<ResponseActionObject>(new RespondLaterAction());
 }
 
-void ExtensionFunction::Run() {
-  if (!RunImpl())
-    SendResponse(false);
-}
-
-bool ExtensionFunction::RunImpl() {
-  RunImplTypesafe()->Execute();
-  return true;
-}
-
-ExtensionFunction::ResponseAction ExtensionFunction::RunImplTypesafe() {
-  NOTREACHED()
-      << "ExtensionFunctions must override either RunImpl or RunImplTypesafe";
-  return RespondNow(NoArguments());
-}
-
-void ExtensionFunction::SendResponseTypesafe(ResponseValue response) {
-  SendResponse(response->Apply());
+void ExtensionFunction::Respond(ResponseValue result) {
+  SendResponse(result->Apply());
 }
 
 bool ExtensionFunction::ShouldSkipQuotaLimiting() const {
@@ -275,6 +262,10 @@ void ExtensionFunction::SendResponseImpl(bool success) {
     results_.reset(new base::ListValue());
 
   response_callback_.Run(type, *results_, GetError());
+}
+
+void ExtensionFunction::OnRespondingLater(ResponseValue value) {
+  SendResponse(value->Apply());
 }
 
 UIThreadExtensionFunction::UIThreadExtensionFunction()
@@ -369,15 +360,19 @@ AsyncExtensionFunction::AsyncExtensionFunction() {
 AsyncExtensionFunction::~AsyncExtensionFunction() {
 }
 
+ExtensionFunction::ResponseAction AsyncExtensionFunction::Run() {
+  return RunAsync() ? RespondLater() : RespondNow(Error(error_));
+}
+
 SyncExtensionFunction::SyncExtensionFunction() {
 }
 
 SyncExtensionFunction::~SyncExtensionFunction() {
 }
 
-bool SyncExtensionFunction::RunImpl() {
-  SendResponse(RunSync());
-  return true;
+ExtensionFunction::ResponseAction SyncExtensionFunction::Run() {
+  return RespondNow(RunSync() ? MultipleArguments(results_.get())
+                              : Error(error_));
 }
 
 SyncIOThreadExtensionFunction::SyncIOThreadExtensionFunction() {
@@ -386,7 +381,7 @@ SyncIOThreadExtensionFunction::SyncIOThreadExtensionFunction() {
 SyncIOThreadExtensionFunction::~SyncIOThreadExtensionFunction() {
 }
 
-bool SyncIOThreadExtensionFunction::RunImpl() {
-  SendResponse(RunSync());
-  return true;
+ExtensionFunction::ResponseAction SyncIOThreadExtensionFunction::Run() {
+  return RespondNow(RunSync() ? MultipleArguments(results_.get())
+                              : Error(error_));
 }

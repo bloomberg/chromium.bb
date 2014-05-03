@@ -162,7 +162,7 @@ class DeveloperPrivateGetItemsInfoFunction
   virtual ~DeveloperPrivateGetItemsInfoFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   scoped_ptr<developer::ItemInfo> CreateItemInfo(const Extension& item,
@@ -291,7 +291,7 @@ class DeveloperPrivateChooseEntryFunction : public ChromeAsyncExtensionFunction,
                                             public EntryPickerClient {
  protected:
   virtual ~DeveloperPrivateChooseEntryFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
   bool ShowPicker(ui::SelectFileDialog::Type picker_type,
                   const base::FilePath& last_directory,
                   const base::string16& select_title,
@@ -312,7 +312,7 @@ class DeveloperPrivateLoadUnpackedFunction
 
  protected:
   virtual ~DeveloperPrivateLoadUnpackedFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   // EntryPickerCLient implementation.
   virtual void FileSelected(const base::FilePath& path) OVERRIDE;
@@ -327,7 +327,7 @@ class DeveloperPrivateChoosePathFunction
 
  protected:
   virtual ~DeveloperPrivateChoosePathFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   // EntryPickerClient functions.
   virtual void FileSelected(const base::FilePath& path) OVERRIDE;
@@ -352,7 +352,7 @@ class DeveloperPrivatePackDirectoryFunction
 
  protected:
   virtual ~DeveloperPrivatePackDirectoryFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   scoped_refptr<PackExtensionJob> pack_job_;
@@ -385,7 +385,7 @@ class DeveloperPrivateLoadDirectoryFunction
   virtual ~DeveloperPrivateLoadDirectoryFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   void ClearExistingDirectoryContent(const base::FilePath& project_path);
 
@@ -442,7 +442,7 @@ class DeveloperPrivateRequestFileSourceFunction
   virtual ~DeveloperPrivateRequestFileSourceFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void LaunchCallback(const base::DictionaryValue& results);
@@ -460,7 +460,7 @@ class DeveloperPrivateOpenDevToolsFunction
   virtual ~DeveloperPrivateOpenDevToolsFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 }  // namespace api

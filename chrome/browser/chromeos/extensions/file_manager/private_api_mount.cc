@@ -25,7 +25,7 @@ namespace file_browser_private = extensions::api::file_browser_private;
 
 namespace extensions {
 
-bool FileBrowserPrivateAddMountFunction::RunImpl() {
+bool FileBrowserPrivateAddMountFunction::RunAsync() {
   using file_browser_private::AddMount::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -89,7 +89,7 @@ void FileBrowserPrivateAddMountFunction::RunAfterMarkCacheFileAsMounted(
       chromeos::MOUNT_TYPE_ARCHIVE);
 }
 
-bool FileBrowserPrivateRemoveMountFunction::RunImpl() {
+bool FileBrowserPrivateRemoveMountFunction::RunAsync() {
   using file_browser_private::RemoveMount::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -143,7 +143,7 @@ bool FileBrowserPrivateRemoveMountFunction::RunImpl() {
   return true;
 }
 
-bool FileBrowserPrivateGetVolumeMetadataListFunction::RunImpl() {
+bool FileBrowserPrivateGetVolumeMetadataListFunction::RunAsync() {
   if (args_->GetSize())
     return false;
 

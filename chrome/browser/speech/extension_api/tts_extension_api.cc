@@ -135,7 +135,7 @@ void TtsExtensionEventHandler::OnTtsEvent(Utterance* utterance,
     delete this;
 }
 
-bool TtsSpeakFunction::RunImpl() {
+bool TtsSpeakFunction::RunAsync() {
   std::string text;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &text));
   if (text.size() > 32768) {

@@ -376,7 +376,7 @@ class SafeManifestJSONParser : public UtilityProcessHostClient {
 
 }  // namespace
 
-bool ManagementGetPermissionWarningsByManifestFunction::RunImpl() {
+bool ManagementGetPermissionWarningsByManifestFunction::RunAsync() {
   scoped_ptr<management::GetPermissionWarningsByManifest::Params> params(
       management::GetPermissionWarningsByManifest::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -409,7 +409,7 @@ void ManagementGetPermissionWarningsByManifestFunction::OnParseSuccess(
       management::GetPermissionWarningsByManifest::Results::Create(warnings);
   SendResponse(true);
 
-  // Matched with AddRef() in RunImpl().
+  // Matched with AddRef() in RunAsync().
   Release();
 }
 
@@ -418,7 +418,7 @@ void ManagementGetPermissionWarningsByManifestFunction::OnParseFailure(
   error_ = error;
   SendResponse(false);
 
-  // Matched with AddRef() in RunImpl().
+  // Matched with AddRef() in RunAsync().
   Release();
 }
 
@@ -460,7 +460,7 @@ ManagementSetEnabledFunction::ManagementSetEnabledFunction() {
 ManagementSetEnabledFunction::~ManagementSetEnabledFunction() {
 }
 
-bool ManagementSetEnabledFunction::RunImpl() {
+bool ManagementSetEnabledFunction::RunAsync() {
   scoped_ptr<management::SetEnabled::Params> params(
       management::SetEnabled::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -611,7 +611,7 @@ ManagementUninstallFunction::ManagementUninstallFunction() {
 ManagementUninstallFunction::~ManagementUninstallFunction() {
 }
 
-bool ManagementUninstallFunction::RunImpl() {
+bool ManagementUninstallFunction::RunAsync() {
   scoped_ptr<management::Uninstall::Params> params(
       management::Uninstall::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(extension_);
@@ -638,7 +638,7 @@ ManagementUninstallSelfFunction::ManagementUninstallSelfFunction() {
 ManagementUninstallSelfFunction::~ManagementUninstallSelfFunction() {
 }
 
-bool ManagementUninstallSelfFunction::RunImpl() {
+bool ManagementUninstallSelfFunction::RunAsync() {
   scoped_ptr<management::UninstallSelf::Params> params(
       management::UninstallSelf::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -668,7 +668,7 @@ void ManagementCreateAppShortcutFunction::OnCloseShortcutPrompt(bool created) {
   Release();
 }
 
-bool ManagementCreateAppShortcutFunction::RunImpl() {
+bool ManagementCreateAppShortcutFunction::RunAsync() {
   if (!user_gesture()) {
     error_ = keys::kGestureNeededForCreateAppShortcutError;
     return false;

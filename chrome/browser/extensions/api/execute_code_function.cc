@@ -162,7 +162,7 @@ bool ExecuteCodeFunction::HasPermission() {
   return true;
 }
 
-bool ExecuteCodeFunction::RunImpl() {
+bool ExecuteCodeFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(Init());
 
   if (!details_->code.get() && !details_->file.get()) {

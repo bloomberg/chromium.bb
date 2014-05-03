@@ -98,7 +98,7 @@ base::FilePath GetDefaultFilepathForBookmarkExport() {
 
 }  // namespace
 
-bool BookmarksFunction::RunImpl() {
+bool BookmarksFunction::RunAsync() {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
   if (!model->loaded()) {
     // Bookmarks are not ready yet.  We'll wait.

@@ -56,7 +56,7 @@ class DebuggerAttachFunction : public DebuggerFunction {
   virtual ~DebuggerAttachFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 // Implements the debugger.detach() extension function.
@@ -70,7 +70,7 @@ class DebuggerDetachFunction : public DebuggerFunction {
   virtual ~DebuggerDetachFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 // Implements the debugger.sendCommand() extension function.
@@ -85,7 +85,7 @@ class DebuggerSendCommandFunction : public DebuggerFunction {
   virtual ~DebuggerSendCommandFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 // Implements the debugger.getTargets() extension function.
@@ -99,7 +99,7 @@ class DebuggerGetTargetsFunction : public DebuggerFunction {
   virtual ~DebuggerGetTargetsFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void SendTargetList(const std::vector<DevToolsTargetImpl*>& target_list);

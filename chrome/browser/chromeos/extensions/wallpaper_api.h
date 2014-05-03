@@ -29,7 +29,7 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
   virtual ~WallpaperSetWallpaperFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   virtual void OnWallpaperDecoded(const gfx::ImageSkia& image) OVERRIDE;

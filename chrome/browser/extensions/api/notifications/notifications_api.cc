@@ -177,7 +177,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
   virtual content::WebContents* GetWebContents() const OVERRIDE {
     // We're holding a reference to api_function_, so we know it'll be valid
     // until ReleaseRVH is called, and api_function_ (as a
-    // UIThreadExtensionFunction) will zero out its copy of render_view_host
+    // AsyncExtensionFunction) will zero out its copy of render_view_host
     // when the RVH goes away.
     if (!api_function_.get())
       return NULL;
@@ -451,7 +451,7 @@ bool NotificationsApiFunction::CanRunWhileDisabled() const {
   return false;
 }
 
-bool NotificationsApiFunction::RunImpl() {
+bool NotificationsApiFunction::RunAsync() {
   if (IsNotificationsApiAvailable() && IsNotificationsApiEnabled()) {
     return RunNotificationsApi();
   } else {

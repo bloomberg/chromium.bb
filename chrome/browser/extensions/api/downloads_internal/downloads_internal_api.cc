@@ -19,7 +19,7 @@ DownloadsInternalDetermineFilenameFunction::
 typedef extensions::api::downloads_internal::DetermineFilename::Params
     DetermineFilenameParams;
 
-bool DownloadsInternalDetermineFilenameFunction::RunImpl() {
+bool DownloadsInternalDetermineFilenameFunction::RunAsync() {
   scoped_ptr<DetermineFilenameParams> params(
       DetermineFilenameParams::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());

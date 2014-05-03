@@ -32,7 +32,7 @@ bool CaptureWebContentsFunction::HasPermission() {
   return true;
 }
 
-bool CaptureWebContentsFunction::RunImpl() {
+bool CaptureWebContentsFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(args_);
 
   context_id_ = extension_misc::kCurrentWindowId;

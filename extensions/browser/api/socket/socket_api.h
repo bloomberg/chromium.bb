@@ -407,7 +407,7 @@ class SocketGetNetworkListFunction : public AsyncExtensionFunction {
 
  protected:
   virtual ~SocketGetNetworkListFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void GetNetworkListOnFileThread();

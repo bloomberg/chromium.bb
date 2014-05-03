@@ -368,7 +368,7 @@ void MediaGalleriesEventRouter::DispatchEventToExtension(
 MediaGalleriesGetMediaFileSystemsFunction::
     ~MediaGalleriesGetMediaFileSystemsFunction() {}
 
-bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
+bool MediaGalleriesGetMediaFileSystemsFunction::RunAsync() {
   media_galleries::UsageCount(media_galleries::GET_MEDIA_FILE_SYSTEMS);
   scoped_ptr<GetMediaFileSystems::Params> params(
       GetMediaFileSystems::Params::Create(*args_));
@@ -476,7 +476,7 @@ void MediaGalleriesGetMediaFileSystemsFunction::GetMediaFileSystemsForExtension(
 MediaGalleriesGetAllMediaFileSystemMetadataFunction::
     ~MediaGalleriesGetAllMediaFileSystemMetadataFunction() {}
 
-bool MediaGalleriesGetAllMediaFileSystemMetadataFunction::RunImpl() {
+bool MediaGalleriesGetAllMediaFileSystemMetadataFunction::RunAsync() {
   media_galleries::UsageCount(
       media_galleries::GET_ALL_MEDIA_FILE_SYSTEM_METADATA);
   return Setup(GetProfile(), &error_, base::Bind(
@@ -538,7 +538,7 @@ void MediaGalleriesGetAllMediaFileSystemMetadataFunction::OnGetGalleries(
 MediaGalleriesAddUserSelectedFolderFunction::
     ~MediaGalleriesAddUserSelectedFolderFunction() {}
 
-bool MediaGalleriesAddUserSelectedFolderFunction::RunImpl() {
+bool MediaGalleriesAddUserSelectedFolderFunction::RunAsync() {
   media_galleries::UsageCount(media_galleries::ADD_USER_SELECTED_FOLDER);
   return Setup(GetProfile(), &error_, base::Bind(
       &MediaGalleriesAddUserSelectedFolderFunction::OnPreferencesInit, this));
@@ -647,7 +647,7 @@ MediaGalleriesAddUserSelectedFolderFunction::GetMediaFileSystemsForExtension(
 MediaGalleriesDropPermissionForMediaFileSystemFunction::
     ~MediaGalleriesDropPermissionForMediaFileSystemFunction() {}
 
-bool MediaGalleriesDropPermissionForMediaFileSystemFunction::RunImpl() {
+bool MediaGalleriesDropPermissionForMediaFileSystemFunction::RunAsync() {
   media_galleries::UsageCount(
       media_galleries::DROP_PERMISSION_FOR_MEDIA_FILE_SYSTEM);
 
@@ -689,7 +689,7 @@ void MediaGalleriesDropPermissionForMediaFileSystemFunction::OnPreferencesInit(
 
 MediaGalleriesStartMediaScanFunction::~MediaGalleriesStartMediaScanFunction() {}
 
-bool MediaGalleriesStartMediaScanFunction::RunImpl() {
+bool MediaGalleriesStartMediaScanFunction::RunAsync() {
   media_galleries::UsageCount(media_galleries::START_MEDIA_SCAN);
   if (!CheckScanPermission(GetExtension(), &error_)) {
     MediaGalleriesEventRouter::Get(GetProfile())->OnScanError(
@@ -717,7 +717,7 @@ MediaGalleriesCancelMediaScanFunction::
     ~MediaGalleriesCancelMediaScanFunction() {
 }
 
-bool MediaGalleriesCancelMediaScanFunction::RunImpl() {
+bool MediaGalleriesCancelMediaScanFunction::RunAsync() {
   media_galleries::UsageCount(media_galleries::CANCEL_MEDIA_SCAN);
   if (!CheckScanPermission(GetExtension(), &error_)) {
     MediaGalleriesEventRouter::Get(GetProfile())->OnScanError(
@@ -736,7 +736,7 @@ void MediaGalleriesCancelMediaScanFunction::OnPreferencesInit() {
 
 MediaGalleriesAddScanResultsFunction::~MediaGalleriesAddScanResultsFunction() {}
 
-bool MediaGalleriesAddScanResultsFunction::RunImpl() {
+bool MediaGalleriesAddScanResultsFunction::RunAsync() {
   media_galleries::UsageCount(media_galleries::ADD_SCAN_RESULTS);
   if (!CheckScanPermission(GetExtension(), &error_)) {
     // We don't fire a scan progress error here, as it would be unintuitive.
@@ -811,7 +811,7 @@ void MediaGalleriesAddScanResultsFunction::ReturnGalleries(
 
 MediaGalleriesGetMetadataFunction::~MediaGalleriesGetMetadataFunction() {}
 
-bool MediaGalleriesGetMetadataFunction::RunImpl() {
+bool MediaGalleriesGetMetadataFunction::RunAsync() {
   std::string blob_uuid;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &blob_uuid));
 

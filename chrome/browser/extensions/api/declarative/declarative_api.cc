@@ -68,7 +68,7 @@ bool RulesFunction::HasPermission() {
   return availability.is_available();
 }
 
-bool RulesFunction::RunImpl() {
+bool RulesFunction::RunAsync() {
   std::string event_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &event_name));
 
@@ -93,7 +93,7 @@ bool RulesFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(rules_registry_.get());
 
   if (content::BrowserThread::CurrentlyOn(rules_registry_->owner_thread())) {
-    bool success = RunImplOnCorrectThread();
+    bool success = RunAsyncOnCorrectThread();
     SendResponse(success);
   } else {
     scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
@@ -102,14 +102,14 @@ bool RulesFunction::RunImpl() {
     base::PostTaskAndReplyWithResult(
         message_loop_proxy.get(),
         FROM_HERE,
-        base::Bind(&RulesFunction::RunImplOnCorrectThread, this),
+        base::Bind(&RulesFunction::RunAsyncOnCorrectThread, this),
         base::Bind(&RulesFunction::SendResponse, this));
   }
 
   return true;
 }
 
-bool EventsEventAddRulesFunction::RunImplOnCorrectThread() {
+bool EventsEventAddRulesFunction::RunAsyncOnCorrectThread() {
   scoped_ptr<AddRules::Params> params(AddRules::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -121,7 +121,7 @@ bool EventsEventAddRulesFunction::RunImplOnCorrectThread() {
   return error_.empty();
 }
 
-bool EventsEventRemoveRulesFunction::RunImplOnCorrectThread() {
+bool EventsEventRemoveRulesFunction::RunAsyncOnCorrectThread() {
   scoped_ptr<RemoveRules::Params> params(RemoveRules::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -135,7 +135,7 @@ bool EventsEventRemoveRulesFunction::RunImplOnCorrectThread() {
   return error_.empty();
 }
 
-bool EventsEventGetRulesFunction::RunImplOnCorrectThread() {
+bool EventsEventGetRulesFunction::RunAsyncOnCorrectThread() {
   scoped_ptr<GetRules::Params> params(GetRules::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

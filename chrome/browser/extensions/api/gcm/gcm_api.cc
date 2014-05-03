@@ -78,7 +78,7 @@ bool IsMessageKeyValid(const std::string& key) {
 
 namespace extensions {
 
-bool GcmApiFunction::RunImpl() {
+bool GcmApiFunction::RunAsync() {
   if (!IsGcmApiEnabled())
     return false;
 

@@ -23,7 +23,7 @@ class ExecuteCodeFunction : public ChromeAsyncExtensionFunction {
 
   // ExtensionFunction implementation.
   virtual bool HasPermission() OVERRIDE;
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   // Initialize |details_| if it hasn't already been.
   virtual bool Init() = 0;

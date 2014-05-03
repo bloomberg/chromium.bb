@@ -41,11 +41,11 @@ class NotificationsApiFunction : public ChromeAsyncExtensionFunction {
   // notifications for a notifier have been disabled.
   virtual bool CanRunWhileDisabled() const;
 
-  // Called inside of RunImpl.
+  // Called inside of RunAsync.
   virtual bool RunNotificationsApi() = 0;
 
   // UITHreadExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   message_center::NotificationType MapApiTemplateTypeToType(
       api::notifications::TemplateType type);

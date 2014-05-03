@@ -64,7 +64,7 @@ WebrtcLoggingPrivateSetMetaDataFunction() {}
 WebrtcLoggingPrivateSetMetaDataFunction::
 ~WebrtcLoggingPrivateSetMetaDataFunction() {}
 
-bool WebrtcLoggingPrivateSetMetaDataFunction::RunImpl() {
+bool WebrtcLoggingPrivateSetMetaDataFunction::RunAsync() {
   scoped_ptr<SetMetaData::Params> params(SetMetaData::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -104,7 +104,7 @@ WebrtcLoggingPrivateStartFunction::WebrtcLoggingPrivateStartFunction() {}
 
 WebrtcLoggingPrivateStartFunction::~WebrtcLoggingPrivateStartFunction() {}
 
-bool WebrtcLoggingPrivateStartFunction::RunImpl() {
+bool WebrtcLoggingPrivateStartFunction::RunAsync() {
   scoped_ptr<Start::Params> params(Start::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -140,7 +140,7 @@ WebrtcLoggingPrivateSetUploadOnRenderCloseFunction() {}
 WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::
 ~WebrtcLoggingPrivateSetUploadOnRenderCloseFunction() {}
 
-bool WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::RunImpl() {
+bool WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::RunAsync() {
   scoped_ptr<SetUploadOnRenderClose::Params> params(
       SetUploadOnRenderClose::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -163,7 +163,7 @@ WebrtcLoggingPrivateStopFunction::WebrtcLoggingPrivateStopFunction() {}
 
 WebrtcLoggingPrivateStopFunction::~WebrtcLoggingPrivateStopFunction() {}
 
-bool WebrtcLoggingPrivateStopFunction::RunImpl() {
+bool WebrtcLoggingPrivateStopFunction::RunAsync() {
   scoped_ptr<Stop::Params> params(Stop::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -197,7 +197,7 @@ WebrtcLoggingPrivateUploadFunction::WebrtcLoggingPrivateUploadFunction() {}
 
 WebrtcLoggingPrivateUploadFunction::~WebrtcLoggingPrivateUploadFunction() {}
 
-bool WebrtcLoggingPrivateUploadFunction::RunImpl() {
+bool WebrtcLoggingPrivateUploadFunction::RunAsync() {
   scoped_ptr<Upload::Params> params(Upload::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -237,7 +237,7 @@ WebrtcLoggingPrivateDiscardFunction::WebrtcLoggingPrivateDiscardFunction() {}
 
 WebrtcLoggingPrivateDiscardFunction::~WebrtcLoggingPrivateDiscardFunction() {}
 
-bool WebrtcLoggingPrivateDiscardFunction::RunImpl() {
+bool WebrtcLoggingPrivateDiscardFunction::RunAsync() {
   scoped_ptr<Discard::Params> params(Discard::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

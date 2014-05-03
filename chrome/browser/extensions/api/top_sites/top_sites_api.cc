@@ -17,7 +17,7 @@ TopSitesGetFunction::TopSitesGetFunction()
 
 TopSitesGetFunction::~TopSitesGetFunction() {}
 
-bool TopSitesGetFunction::RunImpl() {
+bool TopSitesGetFunction::RunAsync() {
   history::TopSites* ts = GetProfile()->GetTopSites();
   if (!ts)
     return false;

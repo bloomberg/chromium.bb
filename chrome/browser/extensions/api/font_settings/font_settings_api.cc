@@ -298,7 +298,7 @@ bool FontSettingsSetFontFunction::RunSync() {
   return true;
 }
 
-bool FontSettingsGetFontListFunction::RunImpl() {
+bool FontSettingsGetFontListFunction::RunAsync() {
   content::GetFontListAsync(
       Bind(&FontSettingsGetFontListFunction::FontListHasLoaded, this));
   return true;

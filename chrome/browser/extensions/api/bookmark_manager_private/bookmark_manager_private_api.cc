@@ -440,7 +440,7 @@ bool BookmarkManagerPrivateSortChildrenFunction::RunOnReady() {
   return true;
 }
 
-bool BookmarkManagerPrivateGetStringsFunction::RunImpl() {
+bool BookmarkManagerPrivateGetStringsFunction::RunAsync() {
   base::DictionaryValue* localized_strings = new base::DictionaryValue();
 
   localized_strings->SetString("title",

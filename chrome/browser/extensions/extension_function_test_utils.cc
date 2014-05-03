@@ -257,9 +257,9 @@ bool RunFunction(UIThreadExtensionFunction* function,
 
   function->set_browser_context(browser->profile());
   function->set_include_incognito(flags & INCLUDE_INCOGNITO);
-  function->Run();
+  function->Run()->Execute();
 
-  // If the RunImpl of |function| didn't already call SendResponse, run the
+  // If the RunAsync of |function| didn't already call SendResponse, run the
   // message loop until they do.
   if (!response_delegate.HasResponse()) {
     response_delegate.set_should_post_quit(true);

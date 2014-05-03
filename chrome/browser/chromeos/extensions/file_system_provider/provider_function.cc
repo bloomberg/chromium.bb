@@ -94,12 +94,12 @@ void FileSystemProviderInternalFunction::FulfillRequest(
     SetErrorResponse(kSecurityErrorName, kResponseFailedErrorMessage);
 }
 
-bool FileSystemProviderInternalFunction::RunImpl() {
+bool FileSystemProviderInternalFunction::RunSync() {
   DCHECK(args_);
   if (!Parse())
     return true;
 
-  SendResponse(RunSync());
+  SendResponse(RunWhenValid());
   return true;
 }
 

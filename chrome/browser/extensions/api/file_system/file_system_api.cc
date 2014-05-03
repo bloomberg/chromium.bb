@@ -353,7 +353,7 @@ void FileSystemEntryFunction::HandleWritableFileError(
   SendResponse(false);
 }
 
-bool FileSystemGetWritableEntryFunction::RunImpl() {
+bool FileSystemGetWritableEntryFunction::RunAsync() {
   std::string filesystem_name;
   std::string filesystem_path;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &filesystem_name));
@@ -833,7 +833,7 @@ void FileSystemChooseEntryFunction::BuildSuggestion(
   }
 }
 
-bool FileSystemChooseEntryFunction::RunImpl() {
+bool FileSystemChooseEntryFunction::RunAsync() {
   scoped_ptr<ChooseEntry::Params> params(ChooseEntry::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -902,7 +902,7 @@ bool FileSystemChooseEntryFunction::RunImpl() {
   return true;
 }
 
-bool FileSystemRetainEntryFunction::RunImpl() {
+bool FileSystemRetainEntryFunction::RunAsync() {
   std::string entry_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &entry_id));
   SavedFilesService* saved_files_service = SavedFilesService::Get(GetProfile());
@@ -957,7 +957,7 @@ bool FileSystemIsRestorableFunction::RunSync() {
   return true;
 }
 
-bool FileSystemRestoreEntryFunction::RunImpl() {
+bool FileSystemRestoreEntryFunction::RunAsync() {
   std::string entry_id;
   bool needs_new_entry;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &entry_id));

@@ -16,7 +16,7 @@ struct CreateWindowOptions;
 }
 }
 
-class AppWindowCreateFunction : public UIThreadExtensionFunction {
+class AppWindowCreateFunction : public AsyncExtensionFunction {
  public:
   AppWindowCreateFunction();
   DECLARE_EXTENSION_FUNCTION("app.window.create", APP_WINDOW_CREATE)
@@ -25,7 +25,7 @@ class AppWindowCreateFunction : public UIThreadExtensionFunction {
 
  protected:
   virtual ~AppWindowCreateFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   bool GetBoundsSpec(

@@ -117,12 +117,12 @@ class BookmarksFunction : public ChromeAsyncExtensionFunction,
                           public BaseBookmarkModelObserver {
  public:
   // AsyncExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  protected:
   virtual ~BookmarksFunction() {}
 
-  // RunImpl semantic equivalent called when the bookmarks are ready.
+  // RunAsync semantic equivalent called when the bookmarks are ready.
   virtual bool RunOnReady() = 0;
 
   // Helper to get the bookmark id as int64 from the given string id.

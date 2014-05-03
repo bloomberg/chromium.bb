@@ -85,7 +85,7 @@ class FeedbackPrivateGetSystemInformationFunction
 
  protected:
   virtual ~FeedbackPrivateGetSystemInformationFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void OnCompleted(
@@ -100,7 +100,7 @@ class FeedbackPrivateSendFeedbackFunction
 
  protected:
   virtual ~FeedbackPrivateSendFeedbackFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void OnCompleted(bool success);

@@ -26,7 +26,7 @@ MusicManagerPrivateGetDeviceIdFunction::
     ~MusicManagerPrivateGetDeviceIdFunction() {
 }
 
-bool MusicManagerPrivateGetDeviceIdFunction::RunImpl() {
+bool MusicManagerPrivateGetDeviceIdFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DeviceId::GetDeviceId(
       this->extension_id(),

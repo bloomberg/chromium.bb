@@ -19,7 +19,7 @@ class IdleQueryStateFunction : public ChromeAsyncExtensionFunction {
   virtual ~IdleQueryStateFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void IdleStateCallback(IdleState state);

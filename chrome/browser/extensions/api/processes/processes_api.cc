@@ -538,7 +538,7 @@ void ProcessesAPI::OnListenerRemoved(const EventListenerInfo& details) {
 GetProcessIdForTabFunction::GetProcessIdForTabFunction() : tab_id_(-1) {
 }
 
-bool GetProcessIdForTabFunction::RunImpl() {
+bool GetProcessIdForTabFunction::RunAsync() {
 #if defined(ENABLE_TASK_MANAGER)
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id_));
 
@@ -592,14 +592,14 @@ void GetProcessIdForTabFunction::GetProcessIdForTab() {
     SendResponse(true);
   }
 
-  // Balance the AddRef in the RunImpl.
+  // Balance the AddRef in the RunAsync.
   Release();
 }
 
 TerminateFunction::TerminateFunction() : process_id_(-1) {
 }
 
-bool TerminateFunction::RunImpl() {
+bool TerminateFunction::RunAsync() {
 #if defined(ENABLE_TASK_MANAGER)
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &process_id_));
 
@@ -662,7 +662,7 @@ void TerminateFunction::TerminateProcess() {
     SendResponse(true);
   }
 
-  // Balance the AddRef in the RunImpl.
+  // Balance the AddRef in the RunAsync.
   Release();
 #else
   error_ = errors::kExtensionNotSupported;
@@ -680,7 +680,7 @@ GetProcessInfoFunction::GetProcessInfoFunction()
 GetProcessInfoFunction::~GetProcessInfoFunction() {
 }
 
-bool GetProcessInfoFunction::RunImpl() {
+bool GetProcessInfoFunction::RunAsync() {
 #if defined(ENABLE_TASK_MANAGER)
   base::Value* processes = NULL;
 
@@ -763,7 +763,7 @@ void GetProcessInfoFunction::GatherProcessInfo() {
   SetResult(processes);
   SendResponse(true);
 
-  // Balance the AddRef in the RunImpl.
+  // Balance the AddRef in the RunAsync.
   Release();
 #endif  // defined(ENABLE_TASK_MANAGER)
 }

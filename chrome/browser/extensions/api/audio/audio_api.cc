@@ -46,7 +46,7 @@ void AudioAPI::OnDeviceChanged() {
   }
 }
 
-bool AudioGetInfoFunction::RunImpl() {
+bool AudioGetInfoFunction::RunAsync() {
   AudioService* service =
       AudioAPI::GetFactoryInstance()->Get(GetProfile())->GetService();
   DCHECK(service);

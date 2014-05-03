@@ -148,7 +148,7 @@ class TabsUpdateFunction : public ChromeAsyncExtensionFunction {
   content::WebContents* web_contents_;
 
  private:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
   void OnExecuteCodeFinished(const std::string& error,
                              int32 on_page_id,
                              const GURL& on_url,
@@ -181,7 +181,7 @@ class TabsDetectLanguageFunction : public ChromeAsyncExtensionFunction,
                                    public content::NotificationObserver {
  private:
   virtual ~TabsDetectLanguageFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,

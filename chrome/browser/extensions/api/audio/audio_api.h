@@ -45,7 +45,7 @@ class AudioGetInfoFunction : public ChromeAsyncExtensionFunction {
 
  protected:
   virtual ~AudioGetInfoFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void OnGetInfoCompleted(const OutputInfo& output_info,

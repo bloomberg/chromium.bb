@@ -88,7 +88,7 @@ class FileSystemGetWritableEntryFunction : public FileSystemEntryFunction {
 
  protected:
   virtual ~FileSystemGetWritableEntryFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void CheckPermissionAndSendResponse();
@@ -145,7 +145,7 @@ class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
   class FilePicker;
 
   virtual ~FileSystemChooseEntryFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
   void ShowPicker(const ui::SelectFileDialog::FileTypeInfo& file_type_info,
                   ui::SelectFileDialog::Type picker_type);
 
@@ -176,7 +176,7 @@ class FileSystemRetainEntryFunction : public ChromeAsyncExtensionFunction {
 
  protected:
   virtual ~FileSystemRetainEntryFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   // Retains the file entry referenced by |entry_id| in apps::SavedFilesService.
@@ -207,7 +207,7 @@ class FileSystemRestoreEntryFunction : public FileSystemEntryFunction {
 
  protected:
   virtual ~FileSystemRestoreEntryFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 }  // namespace extensions

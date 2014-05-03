@@ -545,7 +545,7 @@ DebuggerAttachFunction::DebuggerAttachFunction() {
 DebuggerAttachFunction::~DebuggerAttachFunction() {
 }
 
-bool DebuggerAttachFunction::RunImpl() {
+bool DebuggerAttachFunction::RunAsync() {
   scoped_ptr<Attach::Params> params(Attach::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -600,7 +600,7 @@ DebuggerDetachFunction::DebuggerDetachFunction() {
 DebuggerDetachFunction::~DebuggerDetachFunction() {
 }
 
-bool DebuggerDetachFunction::RunImpl() {
+bool DebuggerDetachFunction::RunAsync() {
   scoped_ptr<Detach::Params> params(Detach::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -622,7 +622,7 @@ DebuggerSendCommandFunction::DebuggerSendCommandFunction() {
 DebuggerSendCommandFunction::~DebuggerSendCommandFunction() {
 }
 
-bool DebuggerSendCommandFunction::RunImpl() {
+bool DebuggerSendCommandFunction::RunAsync() {
   scoped_ptr<SendCommand::Params> params(SendCommand::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -705,7 +705,7 @@ DebuggerGetTargetsFunction::DebuggerGetTargetsFunction() {
 DebuggerGetTargetsFunction::~DebuggerGetTargetsFunction() {
 }
 
-bool DebuggerGetTargetsFunction::RunImpl() {
+bool DebuggerGetTargetsFunction::RunAsync() {
   DevToolsTargetImpl::EnumerateAllTargets(
       base::Bind(&DebuggerGetTargetsFunction::SendTargetList, this));
   return true;

@@ -93,7 +93,7 @@ WallpaperSetWallpaperFunction::WallpaperSetWallpaperFunction() {
 WallpaperSetWallpaperFunction::~WallpaperSetWallpaperFunction() {
 }
 
-bool WallpaperSetWallpaperFunction::RunImpl() {
+bool WallpaperSetWallpaperFunction::RunAsync() {
   params_ = set_wallpaper::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_);
 

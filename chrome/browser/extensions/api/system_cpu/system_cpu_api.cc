@@ -18,7 +18,7 @@ SystemCpuGetInfoFunction::SystemCpuGetInfoFunction() {
 SystemCpuGetInfoFunction::~SystemCpuGetInfoFunction() {
 }
 
-bool SystemCpuGetInfoFunction::RunImpl() {
+bool SystemCpuGetInfoFunction::RunAsync() {
   CpuInfoProvider::Get()->StartQueryInfo(
       base::Bind(&SystemCpuGetInfoFunction::OnGetCpuInfoCompleted, this));
   return true;

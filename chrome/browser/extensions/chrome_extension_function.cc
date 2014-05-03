@@ -17,13 +17,14 @@
 using content::RenderViewHost;
 using content::WebContents;
 
-ChromeAsyncExtensionFunction::ChromeAsyncExtensionFunction() {}
+ChromeUIThreadExtensionFunction::ChromeUIThreadExtensionFunction() {
+}
 
-Profile* ChromeAsyncExtensionFunction::GetProfile() const {
+Profile* ChromeUIThreadExtensionFunction::GetProfile() const {
   return Profile::FromBrowserContext(context_);
 }
 
-bool ChromeAsyncExtensionFunction::CanOperateOnWindow(
+bool ChromeUIThreadExtensionFunction::CanOperateOnWindow(
     const extensions::WindowController* window_controller) const {
   const extensions::Extension* extension = GetExtension();
   // |extension| is NULL for unit tests only.
@@ -41,7 +42,7 @@ bool ChromeAsyncExtensionFunction::CanOperateOnWindow(
 }
 
 // TODO(stevenjb): Replace this with GetExtensionWindowController().
-Browser* ChromeAsyncExtensionFunction::GetCurrentBrowser() {
+Browser* ChromeUIThreadExtensionFunction::GetCurrentBrowser() {
   // If the delegate has an associated browser, return it.
   if (dispatcher()) {
     extensions::WindowController* window_controller =
@@ -80,7 +81,7 @@ Browser* ChromeAsyncExtensionFunction::GetCurrentBrowser() {
 }
 
 extensions::WindowController*
-ChromeAsyncExtensionFunction::GetExtensionWindowController() {
+ChromeUIThreadExtensionFunction::GetExtensionWindowController() {
   // If the delegate has an associated window controller, return it.
   if (dispatcher()) {
     extensions::WindowController* window_controller =
@@ -93,7 +94,8 @@ ChromeAsyncExtensionFunction::GetExtensionWindowController() {
       ->CurrentWindowForFunction(this);
 }
 
-content::WebContents* ChromeAsyncExtensionFunction::GetAssociatedWebContents() {
+content::WebContents*
+ChromeUIThreadExtensionFunction::GetAssociatedWebContents() {
   content::WebContents* web_contents =
       UIThreadExtensionFunction::GetAssociatedWebContents();
   if (web_contents)
@@ -105,13 +107,24 @@ content::WebContents* ChromeAsyncExtensionFunction::GetAssociatedWebContents() {
   return browser->tab_strip_model()->GetActiveWebContents();
 }
 
+ChromeUIThreadExtensionFunction::~ChromeUIThreadExtensionFunction() {
+}
+
+ChromeAsyncExtensionFunction::ChromeAsyncExtensionFunction() {
+}
+
 ChromeAsyncExtensionFunction::~ChromeAsyncExtensionFunction() {}
 
-ChromeSyncExtensionFunction::ChromeSyncExtensionFunction() {}
+ExtensionFunction::ResponseAction ChromeAsyncExtensionFunction::Run() {
+  return RunAsync() ? RespondLater() : RespondNow(Error(error_));
+}
 
-bool ChromeSyncExtensionFunction::RunImpl() {
-  SendResponse(RunSync());
-  return true;
+ChromeSyncExtensionFunction::ChromeSyncExtensionFunction() {
 }
 
 ChromeSyncExtensionFunction::~ChromeSyncExtensionFunction() {}
+
+ExtensionFunction::ResponseAction ChromeSyncExtensionFunction::Run() {
+  return RespondNow(RunSync() ? MultipleArguments(results_.get())
+                              : Error(error_));
+}

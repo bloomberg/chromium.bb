@@ -85,7 +85,7 @@ bool FileSystemProviderUnmountFunction::RunSync() {
   return true;
 }
 
-bool FileSystemProviderInternalUnmountRequestedSuccessFunction::RunSync() {
+bool FileSystemProviderInternalUnmountRequestedSuccessFunction::RunWhenValid() {
   using api::file_system_provider_internal::UnmountRequestedSuccess::Params;
   scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -95,7 +95,7 @@ bool FileSystemProviderInternalUnmountRequestedSuccessFunction::RunSync() {
   return true;
 }
 
-bool FileSystemProviderInternalUnmountRequestedErrorFunction::RunSync() {
+bool FileSystemProviderInternalUnmountRequestedErrorFunction::RunWhenValid() {
   using api::file_system_provider_internal::UnmountRequestedError::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -104,7 +104,8 @@ bool FileSystemProviderInternalUnmountRequestedErrorFunction::RunSync() {
   return true;
 }
 
-bool FileSystemProviderInternalGetMetadataRequestedSuccessFunction::RunSync() {
+bool
+FileSystemProviderInternalGetMetadataRequestedSuccessFunction::RunWhenValid() {
   using api::file_system_provider_internal::GetMetadataRequestedSuccess::Params;
   scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -114,7 +115,8 @@ bool FileSystemProviderInternalGetMetadataRequestedSuccessFunction::RunSync() {
   return true;
 }
 
-bool FileSystemProviderInternalGetMetadataRequestedErrorFunction::RunSync() {
+bool
+FileSystemProviderInternalGetMetadataRequestedErrorFunction::RunWhenValid() {
   using api::file_system_provider_internal::GetMetadataRequestedError::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);

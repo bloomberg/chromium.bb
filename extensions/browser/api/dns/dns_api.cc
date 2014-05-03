@@ -30,7 +30,7 @@ DnsResolveFunction::DnsResolveFunction()
 
 DnsResolveFunction::~DnsResolveFunction() {}
 
-bool DnsResolveFunction::RunImpl() {
+bool DnsResolveFunction::RunAsync() {
   scoped_ptr<Resolve::Params> params(Resolve::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

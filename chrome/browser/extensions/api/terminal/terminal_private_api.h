@@ -20,7 +20,7 @@ class TerminalPrivateFunction : public ChromeAsyncExtensionFunction {
   virtual ~TerminalPrivateFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   // Override with actual extension function implementation.
   virtual bool RunTerminalFunction() = 0;

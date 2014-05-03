@@ -638,7 +638,7 @@ void SocketGetInfoFunction::Work() {
   SetResult(info.ToValue().release());
 }
 
-bool SocketGetNetworkListFunction::RunImpl() {
+bool SocketGetNetworkListFunction::RunAsync() {
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE,
       FROM_HERE,

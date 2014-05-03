@@ -95,7 +95,7 @@ void ActivityLogAPI::OnExtensionActivity(scoped_refptr<Action> activity) {
   EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
-bool ActivityLogPrivateGetExtensionActivitiesFunction::RunImpl() {
+bool ActivityLogPrivateGetExtensionActivitiesFunction::RunAsync() {
   scoped_ptr<activity_log_private::GetExtensionActivities::Params> params(
       activity_log_private::GetExtensionActivities::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -176,7 +176,7 @@ void ActivityLogPrivateGetExtensionActivitiesFunction::OnLookupCompleted(
   SendResponse(true);
 }
 
-bool ActivityLogPrivateDeleteActivitiesFunction::RunImpl() {
+bool ActivityLogPrivateDeleteActivitiesFunction::RunAsync() {
   scoped_ptr<activity_log_private::DeleteActivities::Params> params(
       activity_log_private::DeleteActivities::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -195,14 +195,14 @@ bool ActivityLogPrivateDeleteActivitiesFunction::RunImpl() {
   return true;
 }
 
-bool ActivityLogPrivateDeleteDatabaseFunction::RunImpl() {
+bool ActivityLogPrivateDeleteDatabaseFunction::RunAsync() {
   ActivityLog* activity_log = ActivityLog::GetInstance(GetProfile());
   DCHECK(activity_log);
   activity_log->DeleteDatabase();
   return true;
 }
 
-bool ActivityLogPrivateDeleteUrlsFunction::RunImpl() {
+bool ActivityLogPrivateDeleteUrlsFunction::RunAsync() {
   scoped_ptr<activity_log_private::DeleteUrls::Params> params(
       activity_log_private::DeleteUrls::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());

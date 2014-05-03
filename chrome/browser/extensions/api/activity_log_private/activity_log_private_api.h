@@ -71,7 +71,7 @@ class ActivityLogPrivateGetExtensionActivitiesFunction
   virtual ~ActivityLogPrivateGetExtensionActivitiesFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void OnLookupCompleted(
@@ -89,7 +89,7 @@ class ActivityLogPrivateDeleteActivitiesFunction
   virtual ~ActivityLogPrivateDeleteActivitiesFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 // The implementation of activityLogPrivate.deleteDatabase
@@ -103,7 +103,7 @@ class ActivityLogPrivateDeleteDatabaseFunction
   virtual ~ActivityLogPrivateDeleteDatabaseFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 // The implementation of activityLogPrivate.deleteUrls
@@ -117,7 +117,7 @@ class ActivityLogPrivateDeleteUrlsFunction
   virtual ~ActivityLogPrivateDeleteUrlsFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 }  // namespace extensions

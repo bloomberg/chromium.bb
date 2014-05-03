@@ -36,7 +36,7 @@ class WebrtcLoggingPrivateSetMetaDataFunction
   virtual ~WebrtcLoggingPrivateSetMetaDataFunction();
 
   // ExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   // Must be called on UI thread.
   void SetMetaDataCallback(bool success, const std::string& error_message);
@@ -53,7 +53,7 @@ class WebrtcLoggingPrivateStartFunction
   virtual ~WebrtcLoggingPrivateStartFunction();
 
   // ExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   // Must be called on UI thread.
   void StartCallback(bool success, const std::string& error_message);
@@ -70,7 +70,7 @@ class WebrtcLoggingPrivateSetUploadOnRenderCloseFunction
   virtual ~WebrtcLoggingPrivateSetUploadOnRenderCloseFunction();
 
   // ExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 class WebrtcLoggingPrivateStopFunction
@@ -84,7 +84,7 @@ class WebrtcLoggingPrivateStopFunction
   virtual ~WebrtcLoggingPrivateStopFunction();
 
   // ExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   // Must be called on UI thread.
   void StopCallback(bool success, const std::string& error_message);
@@ -101,7 +101,7 @@ class WebrtcLoggingPrivateUploadFunction
   virtual ~WebrtcLoggingPrivateUploadFunction();
 
   // ExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   // Must be called on UI thread.
   void UploadCallback(bool success, const std::string& report_id,
@@ -119,7 +119,7 @@ class WebrtcLoggingPrivateDiscardFunction
   virtual ~WebrtcLoggingPrivateDiscardFunction();
 
   // ExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   // Must be called on UI thread.
   void DiscardCallback(bool success, const std::string& error_message);

@@ -39,7 +39,7 @@ class FileSystemProviderInternalUnmountRequestedSuccessFunction
 
  protected:
   virtual ~FileSystemProviderInternalUnmountRequestedSuccessFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunWhenValid() OVERRIDE;
 };
 
 class FileSystemProviderInternalUnmountRequestedErrorFunction
@@ -51,7 +51,7 @@ class FileSystemProviderInternalUnmountRequestedErrorFunction
 
  protected:
   virtual ~FileSystemProviderInternalUnmountRequestedErrorFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunWhenValid() OVERRIDE;
 };
 
 class FileSystemProviderInternalGetMetadataRequestedSuccessFunction
@@ -63,7 +63,7 @@ class FileSystemProviderInternalGetMetadataRequestedSuccessFunction
 
  protected:
   virtual ~FileSystemProviderInternalGetMetadataRequestedSuccessFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunWhenValid() OVERRIDE;
 };
 
 class FileSystemProviderInternalGetMetadataRequestedErrorFunction
@@ -75,7 +75,7 @@ class FileSystemProviderInternalGetMetadataRequestedErrorFunction
 
  protected:
   virtual ~FileSystemProviderInternalGetMetadataRequestedErrorFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunWhenValid() OVERRIDE;
 };
 
 }  // namespace extensions

@@ -71,7 +71,7 @@ class CookiesGetFunction : public ChromeAsyncExtensionFunction {
   virtual ~CookiesGetFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void GetCookieOnIOThread();
@@ -94,7 +94,7 @@ class CookiesGetAllFunction : public ChromeAsyncExtensionFunction {
   virtual ~CookiesGetAllFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void GetAllCookiesOnIOThread();
@@ -115,7 +115,7 @@ class CookiesSetFunction : public ChromeAsyncExtensionFunction {
 
  protected:
   virtual ~CookiesSetFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void SetCookieOnIOThread();
@@ -140,7 +140,7 @@ class CookiesRemoveFunction : public ChromeAsyncExtensionFunction {
   virtual ~CookiesRemoveFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void RemoveCookieOnIOThread();

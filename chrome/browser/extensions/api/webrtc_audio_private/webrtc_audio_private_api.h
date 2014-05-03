@@ -117,7 +117,7 @@ class WebrtcAudioPrivateGetSinksFunction : public WebrtcAudioPrivateFunction {
   // Sequence of events is that we query the list of sinks on the
   // AudioManager's thread, then calculate HMACs on the IO thread,
   // then finish on the UI thread.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
   void DoQuery();
   virtual void OnOutputDeviceNames(
       scoped_ptr<media::AudioDeviceNames> raw_ids) OVERRIDE;
@@ -133,7 +133,7 @@ class WebrtcAudioPrivateGetActiveSinkFunction
   DECLARE_EXTENSION_FUNCTION("webrtcAudioPrivate.getActiveSink",
                              WEBRTC_AUDIO_PRIVATE_GET_ACTIVE_SINK);
 
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
   virtual void OnControllerList(
       const content::RenderViewHost::AudioOutputControllerList&
       controllers) OVERRIDE;
@@ -152,7 +152,7 @@ class WebrtcAudioPrivateSetActiveSinkFunction
   DECLARE_EXTENSION_FUNCTION("webrtcAudioPrivate.setActiveSink",
                              WEBRTC_AUDIO_PRIVATE_SET_ACTIVE_SINK);
 
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
   virtual void OnControllerList(
       const content::RenderViewHost::AudioOutputControllerList&
       controllers) OVERRIDE;
@@ -184,7 +184,7 @@ class WebrtcAudioPrivateGetAssociatedSinkFunction
   DECLARE_EXTENSION_FUNCTION("webrtcAudioPrivate.getAssociatedSink",
                              WEBRTC_AUDIO_PRIVATE_GET_ASSOCIATED_SINK);
 
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   // This implementation is slightly complicated because of different
   // thread requirements for the various functions we need to invoke.

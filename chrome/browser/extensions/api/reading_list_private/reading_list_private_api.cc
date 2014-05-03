@@ -25,7 +25,7 @@ using dom_distiller::ArticleEntry;
 using dom_distiller::DomDistillerService;
 using dom_distiller::DomDistillerServiceFactory;
 
-bool ReadingListPrivateAddEntryFunction::RunImpl() {
+bool ReadingListPrivateAddEntryFunction::RunAsync() {
   scoped_ptr<AddEntry::Params> params(AddEntry::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   GURL url_to_add(params->entry.url);

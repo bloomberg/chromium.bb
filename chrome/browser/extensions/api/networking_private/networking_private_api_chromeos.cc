@@ -80,7 +80,7 @@ NetworkingPrivateGetPropertiesFunction::
   ~NetworkingPrivateGetPropertiesFunction() {
 }
 
-bool NetworkingPrivateGetPropertiesFunction::RunImpl() {
+bool NetworkingPrivateGetPropertiesFunction::RunAsync() {
   scoped_ptr<api::GetProperties::Params> params =
       api::GetProperties::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -118,7 +118,7 @@ NetworkingPrivateGetManagedPropertiesFunction::
   ~NetworkingPrivateGetManagedPropertiesFunction() {
 }
 
-bool NetworkingPrivateGetManagedPropertiesFunction::RunImpl() {
+bool NetworkingPrivateGetManagedPropertiesFunction::RunAsync() {
   scoped_ptr<api::GetManagedProperties::Params> params =
       api::GetManagedProperties::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -160,7 +160,7 @@ NetworkingPrivateGetStateFunction::
   ~NetworkingPrivateGetStateFunction() {
 }
 
-bool NetworkingPrivateGetStateFunction::RunImpl() {
+bool NetworkingPrivateGetStateFunction::RunAsync() {
   scoped_ptr<api::GetState::Params> params =
       api::GetState::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -192,7 +192,7 @@ NetworkingPrivateSetPropertiesFunction::
 ~NetworkingPrivateSetPropertiesFunction() {
 }
 
-bool NetworkingPrivateSetPropertiesFunction::RunImpl() {
+bool NetworkingPrivateSetPropertiesFunction::RunAsync() {
   scoped_ptr<api::SetProperties::Params> params =
       api::SetProperties::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -228,7 +228,7 @@ NetworkingPrivateCreateNetworkFunction::
 ~NetworkingPrivateCreateNetworkFunction() {
 }
 
-bool NetworkingPrivateCreateNetworkFunction::RunImpl() {
+bool NetworkingPrivateCreateNetworkFunction::RunAsync() {
   scoped_ptr<api::CreateNetwork::Params> params =
       api::CreateNetwork::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -271,7 +271,7 @@ NetworkingPrivateGetVisibleNetworksFunction::
 ~NetworkingPrivateGetVisibleNetworksFunction() {
 }
 
-bool NetworkingPrivateGetVisibleNetworksFunction::RunImpl() {
+bool NetworkingPrivateGetVisibleNetworksFunction::RunAsync() {
   scoped_ptr<api::GetVisibleNetworks::Params> params =
       api::GetVisibleNetworks::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -435,7 +435,7 @@ void NetworkingPrivateStartConnectFunction::ConnectionStartFailed(
   SendResponse(false);
 }
 
-bool NetworkingPrivateStartConnectFunction::RunImpl() {
+bool NetworkingPrivateStartConnectFunction::RunAsync() {
   scoped_ptr<api::StartConnect::Params> params =
       api::StartConnect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -471,7 +471,7 @@ void NetworkingPrivateStartDisconnectFunction::DisconnectionStartFailed(
   SendResponse(false);
 }
 
-bool NetworkingPrivateStartDisconnectFunction::RunImpl() {
+bool NetworkingPrivateStartDisconnectFunction::RunAsync() {
   scoped_ptr<api::StartDisconnect::Params> params =
       api::StartDisconnect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -494,7 +494,7 @@ NetworkingPrivateVerifyDestinationFunction::
   ~NetworkingPrivateVerifyDestinationFunction() {
 }
 
-bool NetworkingPrivateVerifyDestinationFunction::RunImpl() {
+bool NetworkingPrivateVerifyDestinationFunction::RunAsync() {
   scoped_ptr<api::VerifyDestination::Params> params =
       api::VerifyDestination::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -532,7 +532,7 @@ NetworkingPrivateVerifyAndEncryptCredentialsFunction::
   ~NetworkingPrivateVerifyAndEncryptCredentialsFunction() {
 }
 
-bool NetworkingPrivateVerifyAndEncryptCredentialsFunction::RunImpl() {
+bool NetworkingPrivateVerifyAndEncryptCredentialsFunction::RunAsync() {
   scoped_ptr<api::VerifyAndEncryptCredentials::Params> params =
       api::VerifyAndEncryptCredentials::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -573,7 +573,7 @@ NetworkingPrivateVerifyAndEncryptDataFunction::
   ~NetworkingPrivateVerifyAndEncryptDataFunction() {
 }
 
-bool NetworkingPrivateVerifyAndEncryptDataFunction::RunImpl() {
+bool NetworkingPrivateVerifyAndEncryptDataFunction::RunAsync() {
   scoped_ptr<api::VerifyAndEncryptData::Params> params =
       api::VerifyAndEncryptData::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -613,7 +613,7 @@ NetworkingPrivateSetWifiTDLSEnabledStateFunction::
   ~NetworkingPrivateSetWifiTDLSEnabledStateFunction() {
 }
 
-bool NetworkingPrivateSetWifiTDLSEnabledStateFunction::RunImpl() {
+bool NetworkingPrivateSetWifiTDLSEnabledStateFunction::RunAsync() {
   scoped_ptr<api::SetWifiTDLSEnabledState::Params> params =
       api::SetWifiTDLSEnabledState::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -653,7 +653,7 @@ NetworkingPrivateGetWifiTDLSStatusFunction::
   ~NetworkingPrivateGetWifiTDLSStatusFunction() {
 }
 
-bool NetworkingPrivateGetWifiTDLSStatusFunction::RunImpl() {
+bool NetworkingPrivateGetWifiTDLSStatusFunction::RunAsync() {
   scoped_ptr<api::GetWifiTDLSStatus::Params> params =
       api::GetWifiTDLSStatus::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -690,7 +690,7 @@ void NetworkingPrivateGetWifiTDLSStatusFunction::Failure(
 NetworkingPrivateGetCaptivePortalStatusFunction::
     ~NetworkingPrivateGetCaptivePortalStatusFunction() {}
 
-bool NetworkingPrivateGetCaptivePortalStatusFunction::RunImpl() {
+bool NetworkingPrivateGetCaptivePortalStatusFunction::RunAsync() {
   scoped_ptr<api::GetCaptivePortalStatus::Params> params =
       api::GetCaptivePortalStatus::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);

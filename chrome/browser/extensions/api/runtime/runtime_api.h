@@ -129,7 +129,7 @@ class RuntimeGetBackgroundPageFunction : public ChromeAsyncExtensionFunction {
 
  protected:
   virtual ~RuntimeGetBackgroundPageFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void OnPageLoaded(ExtensionHost*);
@@ -163,7 +163,7 @@ class RuntimeRequestUpdateCheckFunction : public ChromeAsyncExtensionFunction,
   RuntimeRequestUpdateCheckFunction();
  protected:
   virtual ~RuntimeRequestUpdateCheckFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   // Implements content::NotificationObserver interface.
   virtual void Observe(int type,

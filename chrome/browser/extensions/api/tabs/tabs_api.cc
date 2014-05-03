@@ -106,7 +106,7 @@ using api::tabs::InjectDetails;
 
 namespace {
 
-bool GetBrowserFromWindowID(ChromeAsyncExtensionFunction* function,
+bool GetBrowserFromWindowID(ChromeUIThreadExtensionFunction* function,
                             int window_id,
                             Browser** browser) {
   std::string error;
@@ -1052,7 +1052,7 @@ bool TabsHighlightFunction::HighlightTab(TabStripModel* tabstrip,
 TabsUpdateFunction::TabsUpdateFunction() : web_contents_(NULL) {
 }
 
-bool TabsUpdateFunction::RunImpl() {
+bool TabsUpdateFunction::RunAsync() {
   scoped_ptr<tabs::Update::Params> params(tabs::Update::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -1522,7 +1522,7 @@ void TabsCaptureVisibleTabFunction::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-bool TabsDetectLanguageFunction::RunImpl() {
+bool TabsDetectLanguageFunction::RunAsync() {
   scoped_ptr<tabs::DetectLanguage::Params> params(
       tabs::DetectLanguage::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());

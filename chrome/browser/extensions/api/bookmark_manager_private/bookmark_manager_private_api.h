@@ -197,7 +197,7 @@ class BookmarkManagerPrivateGetStringsFunction : public AsyncExtensionFunction {
   virtual ~BookmarkManagerPrivateGetStringsFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 class BookmarkManagerPrivateStartDragFunction

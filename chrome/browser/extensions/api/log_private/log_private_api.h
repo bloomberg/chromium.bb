@@ -85,7 +85,7 @@ class LogPrivateGetHistoricalFunction : public AsyncExtensionFunction {
 
  protected:
   virtual ~LogPrivateGetHistoricalFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void OnSystemLogsLoaded(scoped_ptr<system_logs::SystemLogsResponse> sys_info);

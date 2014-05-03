@@ -92,7 +92,7 @@ class DownloadsDownloadFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.download", DOWNLOADS_DOWNLOAD)
   DownloadsDownloadFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  protected:
   virtual ~DownloadsDownloadFunction();
@@ -176,7 +176,7 @@ class DownloadsRemoveFileFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.removeFile", DOWNLOADS_REMOVEFILE)
   DownloadsRemoveFileFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  protected:
   virtual ~DownloadsRemoveFileFunction();
@@ -197,7 +197,7 @@ class DownloadsAcceptDangerFunction : public ChromeAsyncExtensionFunction {
 
   DECLARE_EXTENSION_FUNCTION("downloads.acceptDanger", DOWNLOADS_ACCEPTDANGER)
   DownloadsAcceptDangerFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  protected:
   virtual ~DownloadsAcceptDangerFunction();
@@ -215,7 +215,7 @@ class DownloadsShowFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.show", DOWNLOADS_SHOW)
   DownloadsShowFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  protected:
   virtual ~DownloadsShowFunction();
@@ -229,7 +229,7 @@ class DownloadsShowDefaultFolderFunction : public ChromeAsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION(
       "downloads.showDefaultFolder", DOWNLOADS_SHOWDEFAULTFOLDER)
   DownloadsShowDefaultFolderFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  protected:
   virtual ~DownloadsShowDefaultFolderFunction();
@@ -269,7 +269,7 @@ class DownloadsDragFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.drag", DOWNLOADS_DRAG)
   DownloadsDragFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  protected:
   virtual ~DownloadsDragFunction();
@@ -282,7 +282,7 @@ class DownloadsGetFileIconFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.getFileIcon", DOWNLOADS_GETFILEICON)
   DownloadsGetFileIconFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
   void SetIconExtractorForTesting(DownloadFileIconExtractor* extractor);
 
  protected:

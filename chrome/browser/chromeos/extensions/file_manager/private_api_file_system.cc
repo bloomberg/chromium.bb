@@ -258,7 +258,7 @@ bool FileBrowserPrivateRequestFileSystemFunction::
   return true;
 }
 
-bool FileBrowserPrivateRequestFileSystemFunction::RunImpl() {
+bool FileBrowserPrivateRequestFileSystemFunction::RunAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   using extensions::api::file_browser_private::RequestFileSystem::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
@@ -340,7 +340,7 @@ void FileWatchFunctionBase::Respond(bool success) {
   SendResponse(success);
 }
 
-bool FileWatchFunctionBase::RunImpl() {
+bool FileWatchFunctionBase::RunAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!render_view_host() || !render_view_host()->GetProcess())
@@ -394,7 +394,7 @@ void FileBrowserPrivateRemoveFileWatchFunction::PerformFileWatchOperation(
   Respond(true);
 }
 
-bool FileBrowserPrivateGetSizeStatsFunction::RunImpl() {
+bool FileBrowserPrivateGetSizeStatsFunction::RunAsync() {
   using extensions::api::file_browser_private::GetSizeStats::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -469,7 +469,7 @@ void FileBrowserPrivateGetSizeStatsFunction::GetSizeStatsCallback(
   SendResponse(true);
 }
 
-bool FileBrowserPrivateValidatePathNameLengthFunction::RunImpl() {
+bool FileBrowserPrivateValidatePathNameLengthFunction::RunAsync() {
   using extensions::api::file_browser_private::ValidatePathNameLength::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -508,7 +508,7 @@ void FileBrowserPrivateValidatePathNameLengthFunction::OnFilePathLimitRetrieved(
   SendResponse(true);
 }
 
-bool FileBrowserPrivateFormatVolumeFunction::RunImpl() {
+bool FileBrowserPrivateFormatVolumeFunction::RunAsync() {
   using extensions::api::file_browser_private::FormatVolume::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -529,7 +529,7 @@ bool FileBrowserPrivateFormatVolumeFunction::RunImpl() {
   return true;
 }
 
-bool FileBrowserPrivateStartCopyFunction::RunImpl() {
+bool FileBrowserPrivateStartCopyFunction::RunAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   using  extensions::api::file_browser_private::StartCopy::Params;
@@ -578,7 +578,7 @@ void FileBrowserPrivateStartCopyFunction::RunAfterStartCopy(
   SendResponse(true);
 }
 
-bool FileBrowserPrivateCancelCopyFunction::RunImpl() {
+bool FileBrowserPrivateCancelCopyFunction::RunAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   using  extensions::api::file_browser_private::CancelCopy::Params;

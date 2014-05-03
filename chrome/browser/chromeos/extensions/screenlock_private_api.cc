@@ -61,7 +61,7 @@ ScreenlockPrivateGetLockedFunction::ScreenlockPrivateGetLockedFunction() {}
 
 ScreenlockPrivateGetLockedFunction::~ScreenlockPrivateGetLockedFunction() {}
 
-bool ScreenlockPrivateGetLockedFunction::RunImpl() {
+bool ScreenlockPrivateGetLockedFunction::RunAsync() {
   bool locked = false;
   chromeos::ScreenLocker* locker =
       chromeos::ScreenLocker::default_screen_locker();
@@ -76,7 +76,7 @@ ScreenlockPrivateSetLockedFunction::ScreenlockPrivateSetLockedFunction() {}
 
 ScreenlockPrivateSetLockedFunction::~ScreenlockPrivateSetLockedFunction() {}
 
-bool ScreenlockPrivateSetLockedFunction::RunImpl() {
+bool ScreenlockPrivateSetLockedFunction::RunAsync() {
   scoped_ptr<screenlock::SetLocked::Params> params(
       screenlock::SetLocked::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -98,7 +98,7 @@ ScreenlockPrivateShowMessageFunction::ScreenlockPrivateShowMessageFunction() {}
 
 ScreenlockPrivateShowMessageFunction::~ScreenlockPrivateShowMessageFunction() {}
 
-bool ScreenlockPrivateShowMessageFunction::RunImpl() {
+bool ScreenlockPrivateShowMessageFunction::RunAsync() {
   scoped_ptr<screenlock::ShowMessage::Params> params(
       screenlock::ShowMessage::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -118,7 +118,7 @@ ScreenlockPrivateShowButtonFunction::
 ScreenlockPrivateShowButtonFunction::
   ~ScreenlockPrivateShowButtonFunction() {}
 
-bool ScreenlockPrivateShowButtonFunction::RunImpl() {
+bool ScreenlockPrivateShowButtonFunction::RunAsync() {
   scoped_ptr<screenlock::ShowButton::Params> params(
       screenlock::ShowButton::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -157,7 +157,7 @@ ScreenlockPrivateHideButtonFunction::ScreenlockPrivateHideButtonFunction() {}
 
 ScreenlockPrivateHideButtonFunction::~ScreenlockPrivateHideButtonFunction() {}
 
-bool ScreenlockPrivateHideButtonFunction::RunImpl() {
+bool ScreenlockPrivateHideButtonFunction::RunAsync() {
   chromeos::ScreenLocker* locker =
       chromeos::ScreenLocker::default_screen_locker();
   if (locker) {
@@ -175,7 +175,7 @@ ScreenlockPrivateSetAuthTypeFunction::ScreenlockPrivateSetAuthTypeFunction() {}
 
 ScreenlockPrivateSetAuthTypeFunction::~ScreenlockPrivateSetAuthTypeFunction() {}
 
-bool ScreenlockPrivateSetAuthTypeFunction::RunImpl() {
+bool ScreenlockPrivateSetAuthTypeFunction::RunAsync() {
   scoped_ptr<screenlock::SetAuthType::Params> params(
       screenlock::SetAuthType::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -201,7 +201,7 @@ ScreenlockPrivateGetAuthTypeFunction::ScreenlockPrivateGetAuthTypeFunction() {}
 
 ScreenlockPrivateGetAuthTypeFunction::~ScreenlockPrivateGetAuthTypeFunction() {}
 
-bool ScreenlockPrivateGetAuthTypeFunction::RunImpl() {
+bool ScreenlockPrivateGetAuthTypeFunction::RunAsync() {
   chromeos::ScreenLocker* locker =
       chromeos::ScreenLocker::default_screen_locker();
   if (locker) {
@@ -225,7 +225,7 @@ ScreenlockPrivateAcceptAuthAttemptFunction::
 ScreenlockPrivateAcceptAuthAttemptFunction::
     ~ScreenlockPrivateAcceptAuthAttemptFunction() {}
 
-bool ScreenlockPrivateAcceptAuthAttemptFunction::RunImpl() {
+bool ScreenlockPrivateAcceptAuthAttemptFunction::RunAsync() {
   scoped_ptr<screenlock::AcceptAuthAttempt::Params> params(
       screenlock::AcceptAuthAttempt::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());

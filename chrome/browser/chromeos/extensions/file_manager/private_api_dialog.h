@@ -29,7 +29,7 @@ class FileBrowserPrivateCancelDialogFunction
   virtual ~FileBrowserPrivateCancelDialogFunction() {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 class FileBrowserPrivateSelectFileFunction
@@ -42,7 +42,7 @@ class FileBrowserPrivateSelectFileFunction
   virtual ~FileBrowserPrivateSelectFileFunction() {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   // A callback method to handle the result of GetSelectedFileInfo.
@@ -62,7 +62,7 @@ class FileBrowserPrivateSelectFilesFunction
   virtual ~FileBrowserPrivateSelectFilesFunction() {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   // A callback method to handle the result of GetSelectedFileInfo.

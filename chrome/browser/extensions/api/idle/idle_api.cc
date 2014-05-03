@@ -30,7 +30,7 @@ int ClampThreshold(int threshold) {
 
 namespace extensions {
 
-bool IdleQueryStateFunction::RunImpl() {
+bool IdleQueryStateFunction::RunAsync() {
   int threshold;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &threshold));
   threshold = ClampThreshold(threshold);

@@ -142,7 +142,7 @@ bool FeedbackPrivateGetUserEmailFunction::RunSync() {
   return true;
 }
 
-bool FeedbackPrivateGetSystemInformationFunction::RunImpl() {
+bool FeedbackPrivateGetSystemInformationFunction::RunAsync() {
   // TODO(rkc): Remove logging once crbug.com/284662 is closed.
   LOG(WARNING) << "FEEDBACK_DEBUG: System information requested.";
   FeedbackService* service =
@@ -161,7 +161,7 @@ void FeedbackPrivateGetSystemInformationFunction::OnCompleted(
   SendResponse(true);
 }
 
-bool FeedbackPrivateSendFeedbackFunction::RunImpl() {
+bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
   scoped_ptr<feedback_private::SendFeedback::Params> params(
       feedback_private::SendFeedback::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());

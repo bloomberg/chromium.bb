@@ -87,7 +87,7 @@ bool TestResetQuotaFunction::RunSafe() {
   return true;
 }
 
-bool TestSendMessageFunction::RunImpl() {
+bool TestSendMessageFunction::RunAsync() {
   scoped_ptr<PassMessage::Params> params(PassMessage::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   content::NotificationService::current()->Notify(

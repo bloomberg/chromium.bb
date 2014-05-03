@@ -87,7 +87,7 @@ Browser* GetBrowserInProfileWithId(Profile* profile,
   return NULL;
 }
 
-Browser* CreateBrowser(ChromeAsyncExtensionFunction* function,
+Browser* CreateBrowser(ChromeUIThreadExtensionFunction* function,
                        int window_id,
                        std::string* error) {
   content::WebContents* web_contents = function->GetAssociatedWebContents();
@@ -118,7 +118,7 @@ ExtensionTabUtil::OpenTabParams::~OpenTabParams() {
 // Opens a new tab for a given extension. Returns NULL and sets |error| if an
 // error occurs.
 base::DictionaryValue* ExtensionTabUtil::OpenTab(
-    ChromeAsyncExtensionFunction* function,
+    ChromeUIThreadExtensionFunction* function,
     const OpenTabParams& params,
     std::string* error) {
   // windowId defaults to "current" window.
@@ -257,7 +257,7 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
 }
 
 Browser* ExtensionTabUtil::GetBrowserFromWindowID(
-    ChromeAsyncExtensionFunction* function,
+    ChromeUIThreadExtensionFunction* function,
     int window_id,
     std::string* error) {
   if (window_id == extension_misc::kCurrentWindowId) {

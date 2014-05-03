@@ -15,7 +15,7 @@
 
 namespace windows_util {
 
-bool GetWindowFromWindowID(ChromeAsyncExtensionFunction* function,
+bool GetWindowFromWindowID(ChromeUIThreadExtensionFunction* function,
                            int window_id,
                            extensions::WindowController** controller) {
   if (window_id == extension_misc::kCurrentWindowId) {

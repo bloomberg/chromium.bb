@@ -87,7 +87,7 @@ void SniffMimeType(PathAndMimeTypeSet* path_mime_set,
 
 }  // namespace
 
-bool FileBrowserPrivateExecuteTaskFunction::RunImpl() {
+bool FileBrowserPrivateExecuteTaskFunction::RunAsync() {
   using extensions::api::file_browser_private::ExecuteTask::Params;
   using extensions::api::file_browser_private::ExecuteTask::Results::Create;
   const scoped_ptr<Params> params(Params::Create(*args_));
@@ -146,7 +146,7 @@ void FileBrowserPrivateExecuteTaskFunction::OnTaskExecuted(
                extensions::api::file_browser_private::TASK_RESULT_FAILED);
 }
 
-bool FileBrowserPrivateGetFileTasksFunction::RunImpl() {
+bool FileBrowserPrivateGetFileTasksFunction::RunAsync() {
   using extensions::api::file_browser_private::GetFileTasks::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);

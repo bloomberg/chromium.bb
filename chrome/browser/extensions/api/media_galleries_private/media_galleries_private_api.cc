@@ -159,7 +159,7 @@ MediaGalleriesPrivateAddGalleryWatchFunction::
 ~MediaGalleriesPrivateAddGalleryWatchFunction() {
 }
 
-bool MediaGalleriesPrivateAddGalleryWatchFunction::RunImpl() {
+bool MediaGalleriesPrivateAddGalleryWatchFunction::RunAsync() {
   DCHECK(GetProfile());
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!render_view_host() || !render_view_host()->GetProcess())
@@ -245,7 +245,7 @@ MediaGalleriesPrivateRemoveGalleryWatchFunction::
 ~MediaGalleriesPrivateRemoveGalleryWatchFunction() {
 }
 
-bool MediaGalleriesPrivateRemoveGalleryWatchFunction::RunImpl() {
+bool MediaGalleriesPrivateRemoveGalleryWatchFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!render_view_host() || !render_view_host()->GetProcess())
     return false;
@@ -304,7 +304,7 @@ MediaGalleriesPrivateGetAllGalleryWatchFunction::
 ~MediaGalleriesPrivateGetAllGalleryWatchFunction() {
 }
 
-bool MediaGalleriesPrivateGetAllGalleryWatchFunction::RunImpl() {
+bool MediaGalleriesPrivateGetAllGalleryWatchFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!render_view_host() || !render_view_host()->GetProcess())
     return false;
@@ -342,7 +342,7 @@ MediaGalleriesPrivateRemoveAllGalleryWatchFunction::
 ~MediaGalleriesPrivateRemoveAllGalleryWatchFunction() {
 }
 
-bool MediaGalleriesPrivateRemoveAllGalleryWatchFunction::RunImpl() {
+bool MediaGalleriesPrivateRemoveAllGalleryWatchFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!render_view_host() || !render_view_host()->GetProcess())
     return false;
@@ -377,7 +377,7 @@ MediaGalleriesPrivateGetHandlersFunction::
 ~MediaGalleriesPrivateGetHandlersFunction() {
 }
 
-bool MediaGalleriesPrivateGetHandlersFunction::RunImpl() {
+bool MediaGalleriesPrivateGetHandlersFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   ExtensionService* service =

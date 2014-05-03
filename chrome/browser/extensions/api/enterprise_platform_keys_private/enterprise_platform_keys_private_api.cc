@@ -289,7 +289,7 @@ EPKPChallengeMachineKey::EPKPChallengeMachineKey(
 EPKPChallengeMachineKey::~EPKPChallengeMachineKey() {
 }
 
-bool EPKPChallengeMachineKey::RunImpl() {
+bool EPKPChallengeMachineKey::RunAsync() {
   scoped_ptr<api_epkp::ChallengeMachineKey::Params>
       params(api_epkp::ChallengeMachineKey::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -416,7 +416,7 @@ void EPKPChallengeUserKey::RegisterProfilePrefs(
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-bool EPKPChallengeUserKey::RunImpl() {
+bool EPKPChallengeUserKey::RunAsync() {
   scoped_ptr<api_epkp::ChallengeUserKey::Params> params(
       api_epkp::ChallengeUserKey::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());

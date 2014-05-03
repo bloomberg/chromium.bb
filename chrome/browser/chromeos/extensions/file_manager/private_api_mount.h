@@ -30,11 +30,11 @@ class FileBrowserPrivateAddMountFunction : public LoggedAsyncExtensionFunction {
   virtual ~FileBrowserPrivateAddMountFunction() {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   // Part of Run(). Called after MarkCacheFielAsMounted for Drive File System.
-  // (or directly called from RunImpl() for other file system).
+  // (or directly called from RunAsync() for other file system).
   void RunAfterMarkCacheFileAsMounted(const base::FilePath& display_name,
                                       drive::FileError error,
                                       const base::FilePath& file_path);
@@ -52,7 +52,7 @@ class FileBrowserPrivateRemoveMountFunction
   virtual ~FileBrowserPrivateRemoveMountFunction() {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 // Implements chrome.fileBrowserPrivate.getVolumeMetadataList method.
@@ -66,7 +66,7 @@ class FileBrowserPrivateGetVolumeMetadataListFunction
   virtual ~FileBrowserPrivateGetVolumeMetadataListFunction() {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 }  // namespace extensions

@@ -77,7 +77,7 @@ TerminalPrivateFunction::TerminalPrivateFunction() {}
 
 TerminalPrivateFunction::~TerminalPrivateFunction() {}
 
-bool TerminalPrivateFunction::RunImpl() {
+bool TerminalPrivateFunction::RunAsync() {
   return RunTerminalFunction();
 }
 

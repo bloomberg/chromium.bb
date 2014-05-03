@@ -29,7 +29,7 @@ class PreferencesPrivateGetSyncCategoriesWithoutPassphraseFunction
   virtual void OnStateChanged() OVERRIDE;
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(
       PreferencesPrivateGetSyncCategoriesWithoutPassphraseFunction);

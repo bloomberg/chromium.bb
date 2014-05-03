@@ -107,7 +107,7 @@ BluetoothLowEnergyExtensionFunction::BluetoothLowEnergyExtensionFunction() {
 BluetoothLowEnergyExtensionFunction::~BluetoothLowEnergyExtensionFunction() {
 }
 
-bool BluetoothLowEnergyExtensionFunction::RunImpl() {
+bool BluetoothLowEnergyExtensionFunction::RunAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   BluetoothLowEnergyEventRouter* event_router =

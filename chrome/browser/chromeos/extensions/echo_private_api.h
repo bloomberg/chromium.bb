@@ -46,7 +46,7 @@ class EchoPrivateGetOobeTimestampFunction
 
  protected:
   virtual ~EchoPrivateGetOobeTimestampFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   bool GetOobeTimestampOnFileThread();
@@ -102,7 +102,7 @@ class EchoPrivateGetUserConsentFunction : public ChromeAsyncExtensionFunction,
  protected:
   virtual ~EchoPrivateGetUserConsentFunction();
 
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   // chromeos::EchoDialogListener overrides.

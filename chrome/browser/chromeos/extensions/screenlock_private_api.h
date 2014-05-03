@@ -21,7 +21,8 @@ class ScreenlockPrivateGetLockedFunction : public ChromeAsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("screenlockPrivate.getLocked",
                              SCREENLOCKPRIVATE_GETLOCKED)
   ScreenlockPrivateGetLockedFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
+
  private:
   virtual ~ScreenlockPrivateGetLockedFunction();
   DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateGetLockedFunction);
@@ -32,7 +33,8 @@ class ScreenlockPrivateSetLockedFunction : public ChromeAsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("screenlockPrivate.setLocked",
                              SCREENLOCKPRIVATE_SETLOCKED)
   ScreenlockPrivateSetLockedFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
+
  private:
   virtual ~ScreenlockPrivateSetLockedFunction();
   DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateSetLockedFunction);
@@ -44,7 +46,8 @@ class ScreenlockPrivateShowMessageFunction
   DECLARE_EXTENSION_FUNCTION("screenlockPrivate.showMessage",
                              SCREENLOCKPRIVATE_SHOWMESSAGE)
   ScreenlockPrivateShowMessageFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
+
  private:
   virtual ~ScreenlockPrivateShowMessageFunction();
   DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateShowMessageFunction );
@@ -56,7 +59,8 @@ class ScreenlockPrivateShowButtonFunction
   DECLARE_EXTENSION_FUNCTION("screenlockPrivate.showButton",
                              SCREENLOCKPRIVATE_SHOWBUTTON)
   ScreenlockPrivateShowButtonFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
+
  private:
   virtual ~ScreenlockPrivateShowButtonFunction();
   void OnImageLoaded(const gfx::Image& image);
@@ -69,7 +73,7 @@ class ScreenlockPrivateHideButtonFunction
   DECLARE_EXTENSION_FUNCTION("screenlockPrivate.hideButton",
                              SCREENLOCKPRIVATE_HIDEBUTTON)
   ScreenlockPrivateHideButtonFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   virtual ~ScreenlockPrivateHideButtonFunction();
@@ -83,7 +87,7 @@ class ScreenlockPrivateSetAuthTypeFunction
   DECLARE_EXTENSION_FUNCTION("screenlockPrivate.setAuthType",
                              SCREENLOCKPRIVATE_SETAUTHTYPE)
   ScreenlockPrivateSetAuthTypeFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   virtual ~ScreenlockPrivateSetAuthTypeFunction();
@@ -96,7 +100,7 @@ class ScreenlockPrivateGetAuthTypeFunction
   DECLARE_EXTENSION_FUNCTION("screenlockPrivate.getAuthType",
                              SCREENLOCKPRIVATE_GETAUTHTYPE)
   ScreenlockPrivateGetAuthTypeFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   virtual ~ScreenlockPrivateGetAuthTypeFunction();
@@ -109,7 +113,7 @@ class ScreenlockPrivateAcceptAuthAttemptFunction
   DECLARE_EXTENSION_FUNCTION("screenlockPrivate.acceptAuthAttempt",
                              SCREENLOCKPRIVATE_ACCEPTAUTHATTEMPT)
   ScreenlockPrivateAcceptAuthAttemptFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   virtual ~ScreenlockPrivateAcceptAuthAttemptFunction();

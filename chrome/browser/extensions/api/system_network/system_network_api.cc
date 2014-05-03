@@ -17,7 +17,7 @@ SystemNetworkGetNetworkInterfacesFunction::
 SystemNetworkGetNetworkInterfacesFunction::
     ~SystemNetworkGetNetworkInterfacesFunction() {}
 
-bool SystemNetworkGetNetworkInterfacesFunction::RunImpl() {
+bool SystemNetworkGetNetworkInterfacesFunction::RunAsync() {
   content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&SystemNetworkGetNetworkInterfacesFunction::
           GetListOnFileThread,

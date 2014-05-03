@@ -74,7 +74,7 @@ class FileBrowserPrivateZipSelectionFunction
   virtual ~FileBrowserPrivateZipSelectionFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   // Receives the result from ZipFileCreator.
   void OnZipDone(bool success);
@@ -107,7 +107,7 @@ class FileBrowserPrivateInstallWebstoreItemFunction
   virtual ~FileBrowserPrivateInstallWebstoreItemFunction() {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
   void OnInstallComplete(bool success, const std::string& error);
 
  private:
@@ -124,7 +124,7 @@ class FileBrowserPrivateRequestWebStoreAccessTokenFunction
 
  protected:
   virtual ~FileBrowserPrivateRequestWebStoreAccessTokenFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   scoped_ptr<google_apis::AuthServiceInterface> auth_service_;

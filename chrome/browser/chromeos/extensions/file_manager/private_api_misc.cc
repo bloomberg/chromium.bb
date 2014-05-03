@@ -168,7 +168,7 @@ FileBrowserPrivateZipSelectionFunction::
 FileBrowserPrivateZipSelectionFunction::
     ~FileBrowserPrivateZipSelectionFunction() {}
 
-bool FileBrowserPrivateZipSelectionFunction::RunImpl() {
+bool FileBrowserPrivateZipSelectionFunction::RunAsync() {
   using extensions::api::file_browser_private::ZipSelection::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -253,7 +253,7 @@ bool FileBrowserPrivateZoomFunction::RunSync() {
   return true;
 }
 
-bool FileBrowserPrivateInstallWebstoreItemFunction::RunImpl() {
+bool FileBrowserPrivateInstallWebstoreItemFunction::RunAsync() {
   using extensions::api::file_browser_private::InstallWebstoreItem::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -308,7 +308,7 @@ FileBrowserPrivateRequestWebStoreAccessTokenFunction::
     ~FileBrowserPrivateRequestWebStoreAccessTokenFunction() {
 }
 
-bool FileBrowserPrivateRequestWebStoreAccessTokenFunction::RunImpl() {
+bool FileBrowserPrivateRequestWebStoreAccessTokenFunction::RunAsync() {
   std::vector<std::string> scopes;
   scopes.push_back(kCWSScope);
 

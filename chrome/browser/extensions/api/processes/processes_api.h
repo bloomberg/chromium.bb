@@ -139,7 +139,7 @@ class GetProcessIdForTabFunction : public ChromeAsyncExtensionFunction {
 
  private:
   virtual ~GetProcessIdForTabFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   void GetProcessIdForTab();
 
@@ -161,8 +161,7 @@ class TerminateFunction : public ChromeAsyncExtensionFunction {
 
  private:
   virtual ~TerminateFunction() {}
-  virtual bool RunImpl() OVERRIDE;
-
+  virtual bool RunAsync() OVERRIDE;
 
   void TerminateProcess();
 
@@ -181,7 +180,7 @@ class GetProcessInfoFunction : public ChromeAsyncExtensionFunction {
 
  private:
   virtual ~GetProcessInfoFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   void GatherProcessInfo();
 

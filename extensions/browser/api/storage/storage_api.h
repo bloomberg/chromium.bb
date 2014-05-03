@@ -22,7 +22,7 @@ class SettingsFunction : public UIThreadExtensionFunction {
 
   // ExtensionFunction:
   virtual bool ShouldSkipQuotaLimiting() const OVERRIDE;
-  virtual ResponseAction RunImplTypesafe() OVERRIDE;
+  virtual ResponseAction Run() OVERRIDE;
 
   // Extension settings function implementations should do their work here.
   // The StorageFrontend makes sure this is posted to the appropriate thread.
@@ -48,7 +48,7 @@ class SettingsFunction : public UIThreadExtensionFunction {
                                ValueStore* storage);
 
  private:
-  // Called via PostTask from RunImplTypesafe. Calls RunWithStorage and then
+  // Called via PostTask from Run. Calls RunWithStorage and then
   // SendResponse with its success value.
   void AsyncRunWithStorage(ValueStore* storage);
 

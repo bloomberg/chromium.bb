@@ -21,7 +21,7 @@ ImageWriterPrivateWriteFromUrlFunction::
     ~ImageWriterPrivateWriteFromUrlFunction() {
 }
 
-bool ImageWriterPrivateWriteFromUrlFunction::RunImpl() {
+bool ImageWriterPrivateWriteFromUrlFunction::RunAsync() {
   scoped_ptr<image_writer_api::WriteFromUrl::Params> params(
       image_writer_api::WriteFromUrl::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -65,7 +65,7 @@ ImageWriterPrivateWriteFromFileFunction::
     ~ImageWriterPrivateWriteFromFileFunction() {
 }
 
-bool ImageWriterPrivateWriteFromFileFunction::RunImpl() {
+bool ImageWriterPrivateWriteFromFileFunction::RunAsync() {
   std::string filesystem_name;
   std::string filesystem_path;
   std::string storage_unit_id;
@@ -109,7 +109,7 @@ ImageWriterPrivateCancelWriteFunction::
     ~ImageWriterPrivateCancelWriteFunction() {
 }
 
-bool ImageWriterPrivateCancelWriteFunction::RunImpl() {
+bool ImageWriterPrivateCancelWriteFunction::RunAsync() {
   image_writer::OperationManager::Get(GetProfile())->CancelWrite(
       extension_id(),
       base::Bind(&ImageWriterPrivateCancelWriteFunction::OnWriteCancelled,
@@ -134,7 +134,7 @@ ImageWriterPrivateDestroyPartitionsFunction::
     ~ImageWriterPrivateDestroyPartitionsFunction() {
 }
 
-bool ImageWriterPrivateDestroyPartitionsFunction::RunImpl() {
+bool ImageWriterPrivateDestroyPartitionsFunction::RunAsync() {
   scoped_ptr<image_writer_api::DestroyPartitions::Params> params(
       image_writer_api::DestroyPartitions::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -166,7 +166,7 @@ ImageWriterPrivateListRemovableStorageDevicesFunction::
   ~ImageWriterPrivateListRemovableStorageDevicesFunction() {
 }
 
-bool ImageWriterPrivateListRemovableStorageDevicesFunction::RunImpl() {
+bool ImageWriterPrivateListRemovableStorageDevicesFunction::RunAsync() {
   RemovableStorageProvider::GetAllDevices(
     base::Bind(
       &ImageWriterPrivateListRemovableStorageDevicesFunction::OnDeviceListReady,

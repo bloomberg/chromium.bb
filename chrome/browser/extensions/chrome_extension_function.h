@@ -18,11 +18,11 @@ namespace extensions {
 class WindowController;
 }
 
-// A chrome specific analog to AsyncExtensionFunction. This has access
-// the a chrome Profile.
-class ChromeAsyncExtensionFunction : public UIThreadExtensionFunction {
+// A chrome specific analog to AsyncExtensionFunction. This has access to a
+// chrome Profile.
+class ChromeUIThreadExtensionFunction : public UIThreadExtensionFunction {
  public:
-  ChromeAsyncExtensionFunction();
+  ChromeUIThreadExtensionFunction();
 
   Profile* GetProfile() const;
 
@@ -59,21 +59,39 @@ class ChromeAsyncExtensionFunction : public UIThreadExtensionFunction {
   virtual content::WebContents* GetAssociatedWebContents() OVERRIDE;
 
  protected:
-  virtual ~ChromeAsyncExtensionFunction();
+  virtual ~ChromeUIThreadExtensionFunction();
 };
 
-// A chrome specific analog to SyncExtensionFunction. This has access
-// the a chrome Profile.
-class ChromeSyncExtensionFunction : public ChromeAsyncExtensionFunction {
+// A chrome specific analog to AsyncExtensionFunction. This has access to a
+// chrome Profile.
+class ChromeAsyncExtensionFunction : public ChromeUIThreadExtensionFunction {
+ public:
+  ChromeAsyncExtensionFunction();
+
+ protected:
+  virtual ~ChromeAsyncExtensionFunction();
+
+  // Deprecated, see AsyncExtensionFunction::RunAsync.
+  virtual bool RunAsync() = 0;
+
+ private:
+  virtual ResponseAction Run() OVERRIDE;
+};
+
+// A chrome specific analog to SyncExtensionFunction. This has access to a
+// chrome Profile.
+class ChromeSyncExtensionFunction : public ChromeUIThreadExtensionFunction {
  public:
   ChromeSyncExtensionFunction();
 
-  virtual bool RunImpl() OVERRIDE;
-
-  virtual bool RunSync() = 0;
-
  protected:
   virtual ~ChromeSyncExtensionFunction();
+
+  // Deprecated, see SyncExtensionFunction::RunSync.
+  virtual bool RunSync() = 0;
+
+ private:
+  virtual ResponseAction Run() OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_CHROME_EXTENSION_FUNCTION_H_

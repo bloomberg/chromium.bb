@@ -54,7 +54,7 @@ void PageCaptureSaveAsMHTMLFunction::SetTestDelegate(TestDelegate* delegate) {
   test_delegate_ = delegate;
 }
 
-bool PageCaptureSaveAsMHTMLFunction::RunImpl() {
+bool PageCaptureSaveAsMHTMLFunction::RunAsync() {
   params_ = SaveAsMHTML::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 

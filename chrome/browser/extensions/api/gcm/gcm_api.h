@@ -26,7 +26,7 @@ class GcmApiFunction : public AsyncExtensionFunction {
   virtual ~GcmApiFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE FINAL;
+  virtual bool RunAsync() OVERRIDE FINAL;
 
   // Actual implementation of specific functions.
   virtual bool DoWork() = 0;

@@ -59,7 +59,7 @@ class AutomationWebContentsObserver
 // if this doesn't turn accessibility on for the first time (e.g. if a
 // RendererAccessibility object existed already because a screenreader has been
 // run at some point).
-bool AutomationInternalEnableCurrentTabFunction::RunImpl() {
+bool AutomationInternalEnableCurrentTabFunction::RunAsync() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableAutomationAPI)) {
     return false;
@@ -88,7 +88,7 @@ bool AutomationInternalEnableCurrentTabFunction::RunImpl() {
   return true;
 }
 
-bool AutomationInternalPerformActionFunction::RunImpl() {
+bool AutomationInternalPerformActionFunction::RunAsync() {
   using api::automation_internal::PerformAction::Params;
   scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());

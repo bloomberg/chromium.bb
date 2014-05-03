@@ -174,7 +174,7 @@ LogPrivateGetHistoricalFunction::LogPrivateGetHistoricalFunction() {
 LogPrivateGetHistoricalFunction::~LogPrivateGetHistoricalFunction() {
 }
 
-bool LogPrivateGetHistoricalFunction::RunImpl() {
+bool LogPrivateGetHistoricalFunction::RunAsync() {
   // Get parameters
   scoped_ptr<api::log_private::GetHistorical::Params> params(
       api::log_private::GetHistorical::Params::Create(*args_));

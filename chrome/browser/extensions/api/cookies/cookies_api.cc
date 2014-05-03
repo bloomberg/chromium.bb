@@ -205,7 +205,7 @@ CookiesGetFunction::CookiesGetFunction() {
 CookiesGetFunction::~CookiesGetFunction() {
 }
 
-bool CookiesGetFunction::RunImpl() {
+bool CookiesGetFunction::RunAsync() {
   parsed_args_ = Get::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parsed_args_.get());
 
@@ -278,7 +278,7 @@ CookiesGetAllFunction::CookiesGetAllFunction() {
 CookiesGetAllFunction::~CookiesGetAllFunction() {
 }
 
-bool CookiesGetAllFunction::RunImpl() {
+bool CookiesGetAllFunction::RunAsync() {
   parsed_args_ = GetAll::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parsed_args_.get());
 
@@ -343,7 +343,7 @@ CookiesSetFunction::CookiesSetFunction() : success_(false) {
 CookiesSetFunction::~CookiesSetFunction() {
 }
 
-bool CookiesSetFunction::RunImpl() {
+bool CookiesSetFunction::RunAsync() {
   parsed_args_ = Set::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parsed_args_.get());
 
@@ -458,7 +458,7 @@ CookiesRemoveFunction::CookiesRemoveFunction() {
 CookiesRemoveFunction::~CookiesRemoveFunction() {
 }
 
-bool CookiesRemoveFunction::RunImpl() {
+bool CookiesRemoveFunction::RunAsync() {
   parsed_args_ = Remove::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parsed_args_.get());
 

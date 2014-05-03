@@ -76,7 +76,7 @@ void DesktopCaptureChooseDesktopMediaFunction::Cancel() {
   }
 }
 
-bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
+bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetSize() > 0);
 
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &request_id_));

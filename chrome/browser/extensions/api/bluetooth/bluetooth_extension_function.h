@@ -21,7 +21,7 @@ namespace api {
 // Base class for bluetooth extension functions. This class initializes
 // bluetooth adapter and calls (on the UI thread) DoWork() implemented by
 // individual bluetooth extension functions.
-class BluetoothExtensionFunction : public UIThreadExtensionFunction {
+class BluetoothExtensionFunction : public AsyncExtensionFunction {
  public:
   BluetoothExtensionFunction();
 
@@ -29,7 +29,7 @@ class BluetoothExtensionFunction : public UIThreadExtensionFunction {
   virtual ~BluetoothExtensionFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void RunOnAdapterReady(scoped_refptr<device::BluetoothAdapter> adapter);

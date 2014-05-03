@@ -204,7 +204,7 @@ content::ResourceContext* WebrtcAudioPrivateFunction::resource_context() const {
   return resource_context_;
 }
 
-bool WebrtcAudioPrivateGetSinksFunction::RunImpl() {
+bool WebrtcAudioPrivateGetSinksFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   InitResourceContext();
@@ -233,7 +233,7 @@ void WebrtcAudioPrivateGetSinksFunction::OnOutputDeviceNames(
   // normally runs) because there is one instance of this object per
   // function call, no actor outside of this object is modifying the
   // results_ member, and the different method invocations on this
-  // object run strictly in sequence; first RunImpl on the UI thread,
+  // object run strictly in sequence; first RunAsync on the UI thread,
   // then DoQuery on the audio IO thread, then DoneOnUIThread on the
   // UI thread.
   results_.reset(wap::GetSinks::Results::Create(results).release());
@@ -248,7 +248,7 @@ void WebrtcAudioPrivateGetSinksFunction::DoneOnUIThread() {
   SendResponse(true);
 }
 
-bool WebrtcAudioPrivateGetActiveSinkFunction::RunImpl() {
+bool WebrtcAudioPrivateGetActiveSinkFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   InitResourceContext();
 
@@ -306,7 +306,7 @@ WebrtcAudioPrivateSetActiveSinkFunction::
 ~WebrtcAudioPrivateSetActiveSinkFunction() {
 }
 
-bool WebrtcAudioPrivateSetActiveSinkFunction::RunImpl() {
+bool WebrtcAudioPrivateSetActiveSinkFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<wap::SetActiveSink::Params> params(
       wap::SetActiveSink::Params::Create(*args_));
@@ -391,7 +391,7 @@ WebrtcAudioPrivateGetAssociatedSinkFunction::
 ~WebrtcAudioPrivateGetAssociatedSinkFunction() {
 }
 
-bool WebrtcAudioPrivateGetAssociatedSinkFunction::RunImpl() {
+bool WebrtcAudioPrivateGetAssociatedSinkFunction::RunAsync() {
   params_ = wap::GetAssociatedSink::Params::Create(*args_);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   EXTENSION_FUNCTION_VALIDATE(params_.get());

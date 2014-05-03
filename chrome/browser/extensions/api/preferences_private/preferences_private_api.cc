@@ -27,12 +27,12 @@ PreferencesPrivateGetSyncCategoriesWithoutPassphraseFunction::OnStateChanged() {
       ProfileSyncServiceFactory::GetForProfile(GetProfile());
   if (sync_service->sync_initialized()) {
     sync_service->RemoveObserver(this);
-    RunImpl();
-    Release();  // Balanced in RunImpl().
+    RunAsync();
+    Release();  // Balanced in RunAsync().
   }
 }
 
-bool PreferencesPrivateGetSyncCategoriesWithoutPassphraseFunction::RunImpl() {
+bool PreferencesPrivateGetSyncCategoriesWithoutPassphraseFunction::RunAsync() {
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(GetProfile());
   if (!sync_service)

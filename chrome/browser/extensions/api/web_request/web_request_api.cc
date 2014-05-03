@@ -2417,7 +2417,7 @@ void WebRequestHandlerBehaviorChangedFunction::OnQuotaExceeded(
                  profile_id(), warnings));
 
   // Continue gracefully.
-  Run();
+  RunSync();
 }
 
 bool WebRequestHandlerBehaviorChangedFunction::RunSync() {

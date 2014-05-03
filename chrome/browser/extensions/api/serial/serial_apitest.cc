@@ -36,7 +36,7 @@ namespace extensions {
 
 class FakeSerialGetDevicesFunction : public AsyncExtensionFunction {
  public:
-  virtual bool RunImpl() OVERRIDE {
+  virtual bool RunAsync() OVERRIDE {
     base::ListValue* devices = new base::ListValue();
     base::DictionaryValue* device0 = new base::DictionaryValue();
     device0->SetString("path", "/dev/fakeserial");

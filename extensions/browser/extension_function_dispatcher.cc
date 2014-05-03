@@ -274,7 +274,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
                             static_cast<content::BrowserContext*>(profile_id));
     UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.FunctionCalls",
                                 function->histogram_value());
-    function->Run();
+    function->Run()->Execute();
   } else {
     function->OnQuotaExceeded(violation_error);
   }
@@ -382,7 +382,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
         extension->id(), params.name, args.Pass(), browser_context_);
     UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.FunctionCalls",
                                 function->histogram_value());
-    function->Run();
+    function->Run()->Execute();
   } else {
     function->OnQuotaExceeded(violation_error);
   }

@@ -14,7 +14,7 @@ SystemMemoryGetInfoFunction::SystemMemoryGetInfoFunction() {}
 
 SystemMemoryGetInfoFunction::~SystemMemoryGetInfoFunction() {}
 
-bool SystemMemoryGetInfoFunction::RunImpl() {
+bool SystemMemoryGetInfoFunction::RunAsync() {
   MemoryInfoProvider::Get()->StartQueryInfo(
       base::Bind(&SystemMemoryGetInfoFunction::OnGetMemoryInfoCompleted, this));
   return true;

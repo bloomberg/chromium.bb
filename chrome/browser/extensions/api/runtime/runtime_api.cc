@@ -470,7 +470,7 @@ void RuntimeEventRouter::OnExtensionUninstalled(
 #endif  // defined(ENABLE_EXTENSIONS)
 }
 
-bool RuntimeGetBackgroundPageFunction::RunImpl() {
+bool RuntimeGetBackgroundPageFunction::RunAsync() {
   ExtensionSystem* system = ExtensionSystem::Get(GetProfile());
   ExtensionHost* host = system->process_manager()->
       GetBackgroundHostForExtension(extension_id());
@@ -525,7 +525,7 @@ RuntimeRequestUpdateCheckFunction::RuntimeRequestUpdateCheckFunction() {
                  content::NotificationService::AllSources());
 }
 
-bool RuntimeRequestUpdateCheckFunction::RunImpl() {
+bool RuntimeRequestUpdateCheckFunction::RunAsync() {
   ExtensionSystem* system = ExtensionSystem::Get(GetProfile());
   ExtensionService* service = system->extension_service();
   ExtensionUpdater* updater = service->updater();

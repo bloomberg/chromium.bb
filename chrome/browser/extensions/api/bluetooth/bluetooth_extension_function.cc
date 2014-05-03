@@ -46,7 +46,7 @@ BluetoothExtensionFunction::BluetoothExtensionFunction() {
 BluetoothExtensionFunction::~BluetoothExtensionFunction() {
 }
 
-bool BluetoothExtensionFunction::RunImpl() {
+bool BluetoothExtensionFunction::RunAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!IsBluetoothSupported(browser_context())) {

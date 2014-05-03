@@ -989,7 +989,7 @@ DownloadsDownloadFunction::DownloadsDownloadFunction() {}
 
 DownloadsDownloadFunction::~DownloadsDownloadFunction() {}
 
-bool DownloadsDownloadFunction::RunImpl() {
+bool DownloadsDownloadFunction::RunAsync() {
   scoped_ptr<downloads::Download::Params> params(
       downloads::Download::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -1238,7 +1238,7 @@ DownloadsRemoveFileFunction::DownloadsRemoveFileFunction() {
 DownloadsRemoveFileFunction::~DownloadsRemoveFileFunction() {
 }
 
-bool DownloadsRemoveFileFunction::RunImpl() {
+bool DownloadsRemoveFileFunction::RunAsync() {
   scoped_ptr<downloads::RemoveFile::Params> params(
       downloads::RemoveFile::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -1271,7 +1271,7 @@ DownloadsAcceptDangerFunction::~DownloadsAcceptDangerFunction() {}
 DownloadsAcceptDangerFunction::OnPromptCreatedCallback*
     DownloadsAcceptDangerFunction::on_prompt_created_ = NULL;
 
-bool DownloadsAcceptDangerFunction::RunImpl() {
+bool DownloadsAcceptDangerFunction::RunAsync() {
   scoped_ptr<downloads::AcceptDanger::Params> params(
       downloads::AcceptDanger::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -1348,7 +1348,7 @@ DownloadsShowFunction::DownloadsShowFunction() {}
 
 DownloadsShowFunction::~DownloadsShowFunction() {}
 
-bool DownloadsShowFunction::RunImpl() {
+bool DownloadsShowFunction::RunAsync() {
   scoped_ptr<downloads::Show::Params> params(
       downloads::Show::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -1365,7 +1365,7 @@ DownloadsShowDefaultFolderFunction::DownloadsShowDefaultFolderFunction() {}
 
 DownloadsShowDefaultFolderFunction::~DownloadsShowDefaultFolderFunction() {}
 
-bool DownloadsShowDefaultFolderFunction::RunImpl() {
+bool DownloadsShowDefaultFolderFunction::RunAsync() {
   DownloadManager* manager = NULL;
   DownloadManager* incognito_manager = NULL;
   GetManagers(GetProfile(), include_incognito(), &manager, &incognito_manager);
@@ -1403,7 +1403,7 @@ DownloadsDragFunction::DownloadsDragFunction() {}
 
 DownloadsDragFunction::~DownloadsDragFunction() {}
 
-bool DownloadsDragFunction::RunImpl() {
+bool DownloadsDragFunction::RunAsync() {
   scoped_ptr<downloads::Drag::Params> params(
       downloads::Drag::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -1497,7 +1497,7 @@ void DownloadsGetFileIconFunction::SetIconExtractorForTesting(
   icon_extractor_.reset(extractor);
 }
 
-bool DownloadsGetFileIconFunction::RunImpl() {
+bool DownloadsGetFileIconFunction::RunAsync() {
   scoped_ptr<downloads::GetFileIcon::Params> params(
       downloads::GetFileIcon::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -1604,7 +1604,7 @@ bool ExtensionDownloadsEventRouter::IsShelfEnabled() const {
 //
 // When the extension's event handler calls |suggestCallback|,
 // downloads_custom_bindings.js calls
-// DownloadsInternalDetermineFilenameFunction::RunImpl, which calls
+// DownloadsInternalDetermineFilenameFunction::RunAsync, which calls
 // EDER::DetermineFilename, which notifies the item's EDERD.
 //
 // When the last extension's event handler returns, EDERD calls one of the two

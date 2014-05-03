@@ -37,8 +37,7 @@ CloudPrintPrivateSetupConnectorFunction::
     ~CloudPrintPrivateSetupConnectorFunction() {
 }
 
-
-bool CloudPrintPrivateSetupConnectorFunction::RunImpl() {
+bool CloudPrintPrivateSetupConnectorFunction::RunAsync() {
 #if defined(ENABLE_FULL_PRINTING)
   using api::cloud_print_private::SetupConnector::Params;
   scoped_ptr<Params> params(Params::Create(*args_));
@@ -73,7 +72,7 @@ CloudPrintPrivateGetHostNameFunction::CloudPrintPrivateGetHostNameFunction() {
 CloudPrintPrivateGetHostNameFunction::~CloudPrintPrivateGetHostNameFunction() {
 }
 
-bool CloudPrintPrivateGetHostNameFunction::RunImpl() {
+bool CloudPrintPrivateGetHostNameFunction::RunAsync() {
   SetResult(new base::StringValue(
       CloudPrintTestsDelegate::instance() ?
       CloudPrintTestsDelegate::instance()->GetHostName() :
@@ -94,7 +93,7 @@ void CloudPrintPrivateGetPrintersFunction::SendResults(
   SendResponse(true);
 }
 
-bool CloudPrintPrivateGetPrintersFunction::RunImpl() {
+bool CloudPrintPrivateGetPrintersFunction::RunAsync() {
 #if defined(ENABLE_FULL_PRINTING)
   std::vector<std::string> result;
   if (CloudPrintTestsDelegate::instance()) {
@@ -120,7 +119,7 @@ CloudPrintPrivateGetClientIdFunction::CloudPrintPrivateGetClientIdFunction() {
 CloudPrintPrivateGetClientIdFunction::~CloudPrintPrivateGetClientIdFunction() {
 }
 
-bool CloudPrintPrivateGetClientIdFunction::RunImpl() {
+bool CloudPrintPrivateGetClientIdFunction::RunAsync() {
   SetResult(new base::StringValue(
       CloudPrintTestsDelegate::instance() ?
       CloudPrintTestsDelegate::instance()->GetClientId() :

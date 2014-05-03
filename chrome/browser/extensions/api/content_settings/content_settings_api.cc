@@ -246,7 +246,7 @@ bool ContentSettingsContentSettingSetFunction::RunSync() {
   return true;
 }
 
-bool ContentSettingsContentSettingGetResourceIdentifiersFunction::RunImpl() {
+bool ContentSettingsContentSettingGetResourceIdentifiersFunction::RunAsync() {
   ContentSettingsType content_type;
   EXTENSION_FUNCTION_VALIDATE(RemoveContentType(args_.get(), &content_type));
 

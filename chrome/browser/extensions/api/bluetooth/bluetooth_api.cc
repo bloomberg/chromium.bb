@@ -315,7 +315,7 @@ BluetoothAddProfileFunction::BluetoothAddProfileFunction() {}
 
 BluetoothAddProfileFunction::~BluetoothAddProfileFunction() {}
 
-bool BluetoothAddProfileFunction::RunImpl() {
+bool BluetoothAddProfileFunction::RunAsync() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   scoped_ptr<AddProfile::Params> params(AddProfile::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
@@ -474,37 +474,37 @@ void BluetoothConnectFunction::OnErrorCallback(const std::string& error) {
   SendResponse(false);
 }
 
-bool BluetoothDisconnectFunction::RunImpl() {
+bool BluetoothDisconnectFunction::RunAsync() {
   // TODO(keybuk): Remove.
   SetError("Removed. Use chrome.bluetoothSocket.disconnect() instead.");
   return false;
 }
 
-bool BluetoothSendFunction::RunImpl() {
+bool BluetoothSendFunction::RunAsync() {
   // TODO(keybuk): Remove.
   SetError("Removed. Use chrome.bluetoothSocket.send() instead.");
   return false;
 }
 
-bool BluetoothUpdateSocketFunction::RunImpl() {
+bool BluetoothUpdateSocketFunction::RunAsync() {
   // TODO(keybuk): Remove.
   SetError("Removed. Use chrome.bluetoothSocket.update() instead.");
   return false;
 }
 
-bool BluetoothSetSocketPausedFunction::RunImpl() {
+bool BluetoothSetSocketPausedFunction::RunAsync() {
   // TODO(keybuk): Remove.
   SetError("Removed. Use chrome.bluetoothSocket.setPaused() instead.");
   return false;
 }
 
-bool BluetoothGetSocketFunction::RunImpl() {
+bool BluetoothGetSocketFunction::RunAsync() {
   // TODO(keybuk): Remove.
   SetError("Removed. Use chrome.bluetoothSocket.getInfo() instead.");
   return false;
 }
 
-bool BluetoothGetSocketsFunction::RunImpl() {
+bool BluetoothGetSocketsFunction::RunAsync() {
   // TODO(keybuk): Remove.
   SetError("Removed. Use chrome.bluetoothSocket.getSockets() instead.");
   return false;

@@ -516,7 +516,7 @@ bool InputImeCommitTextFunction::RunSync() {
   return true;
 }
 
-bool InputImeHideInputViewFunction::RunImpl() {
+bool InputImeHideInputViewFunction::RunAsync() {
   InputMethodEngineInterface* engine =
       InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
   if (!engine) {
@@ -526,7 +526,7 @@ bool InputImeHideInputViewFunction::RunImpl() {
   return true;
 }
 
-bool InputImeSendKeyEventsFunction::RunImpl() {
+bool InputImeSendKeyEventsFunction::RunAsync() {
   scoped_ptr<SendKeyEvents::Params> parent_params(
       SendKeyEvents::Params::Create(*args_));
   const SendKeyEvents::Params::Parameters& params =
@@ -765,7 +765,7 @@ bool InputImeDeleteSurroundingTextFunction::RunSync() {
   return true;
 }
 
-bool InputImeKeyEventHandledFunction::RunImpl() {
+bool InputImeKeyEventHandledFunction::RunAsync() {
   scoped_ptr<KeyEventHandled::Params> params(
       KeyEventHandled::Params::Create(*args_));
   InputImeEventRouter::GetInstance()->OnKeyEventHandled(

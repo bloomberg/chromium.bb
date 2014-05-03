@@ -88,7 +88,7 @@ class MediaGalleriesPrivateAddGalleryWatchFunction
   virtual ~MediaGalleriesPrivateAddGalleryWatchFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void OnPreferencesInit(const std::string& pref_id);
@@ -108,7 +108,7 @@ class MediaGalleriesPrivateRemoveGalleryWatchFunction
   virtual ~MediaGalleriesPrivateRemoveGalleryWatchFunction();
 
   // SyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void OnPreferencesInit(const std::string& pref_id);
@@ -124,7 +124,7 @@ class MediaGalleriesPrivateGetAllGalleryWatchFunction
   virtual ~MediaGalleriesPrivateGetAllGalleryWatchFunction();
 
   // SyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void OnPreferencesInit();
@@ -140,7 +140,7 @@ class MediaGalleriesPrivateRemoveAllGalleryWatchFunction
   virtual ~MediaGalleriesPrivateRemoveAllGalleryWatchFunction();
 
   // SyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void OnPreferencesInit();
@@ -157,7 +157,7 @@ class MediaGalleriesPrivateGetHandlersFunction
   virtual ~MediaGalleriesPrivateGetHandlersFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 }  // namespace extensions

@@ -284,7 +284,7 @@ FileBrowserHandlerInternalSelectFileFunction::
 FileBrowserHandlerInternalSelectFileFunction::
     ~FileBrowserHandlerInternalSelectFileFunction() {}
 
-bool FileBrowserHandlerInternalSelectFileFunction::RunImpl() {
+bool FileBrowserHandlerInternalSelectFileFunction::RunAsync() {
   scoped_ptr<SelectFile::Params> params(SelectFile::Params::Create(*args_));
 
   base::FilePath suggested_name(params->selection_params.suggested_name);

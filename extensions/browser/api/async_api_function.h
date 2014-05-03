@@ -12,7 +12,7 @@ namespace extensions {
 
 // AsyncApiFunction provides convenient thread management for APIs that need to
 // do essentially all their work on a thread other than the UI thread.
-class AsyncApiFunction : public UIThreadExtensionFunction {
+class AsyncApiFunction : public AsyncExtensionFunction {
  protected:
   AsyncApiFunction();
   virtual ~AsyncApiFunction();
@@ -38,8 +38,8 @@ class AsyncApiFunction : public UIThreadExtensionFunction {
   // Respond. Guaranteed to happen on UI thread.
   virtual bool Respond() = 0;
 
-  // ExtensionFunction::RunImpl()
-  virtual bool RunImpl() OVERRIDE;
+  // ExtensionFunction::RunAsync()
+  virtual bool RunAsync() OVERRIDE;
 
  protected:
   content::BrowserThread::ID work_thread_id() const { return work_thread_id_; }

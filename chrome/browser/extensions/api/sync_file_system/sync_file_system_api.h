@@ -32,7 +32,7 @@ class SyncFileSystemDeleteFileSystemFunction
 
  protected:
   virtual ~SyncFileSystemDeleteFileSystemFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void DidDeleteFileSystem(base::File::Error error);
@@ -46,7 +46,7 @@ class SyncFileSystemGetFileStatusFunction
 
  protected:
   virtual ~SyncFileSystemGetFileStatusFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void DidGetFileStatus(
@@ -63,7 +63,7 @@ class SyncFileSystemGetFileStatusesFunction
 
  protected:
   virtual ~SyncFileSystemGetFileStatusesFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   typedef std::pair<sync_file_system::SyncStatusCode,
@@ -89,7 +89,7 @@ class SyncFileSystemGetUsageAndQuotaFunction
 
  protected:
   virtual ~SyncFileSystemGetUsageAndQuotaFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void DidGetUsageAndQuota(quota::QuotaStatusCode status,
@@ -105,7 +105,7 @@ class SyncFileSystemRequestFileSystemFunction
 
  protected:
   virtual ~SyncFileSystemRequestFileSystemFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   typedef SyncFileSystemRequestFileSystemFunction self;

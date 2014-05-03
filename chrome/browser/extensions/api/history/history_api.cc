@@ -270,7 +270,7 @@ HistoryFunctionWithCallback::HistoryFunctionWithCallback() {
 HistoryFunctionWithCallback::~HistoryFunctionWithCallback() {
 }
 
-bool HistoryFunctionWithCallback::RunImpl() {
+bool HistoryFunctionWithCallback::RunAsync() {
   AddRef();  // Balanced in SendAysncRepose() and below.
   bool retval = RunAsyncImpl();
   if (false == retval)
@@ -286,7 +286,7 @@ void HistoryFunctionWithCallback::SendAsyncResponse() {
 
 void HistoryFunctionWithCallback::SendResponseToCallback() {
   SendResponse(true);
-  Release();  // Balanced in RunImpl().
+  Release();  // Balanced in RunAsync().
 }
 
 bool HistoryGetVisitsFunction::RunAsyncImpl() {
@@ -370,7 +370,7 @@ void HistorySearchFunction::SearchComplete(
   SendAsyncResponse();
 }
 
-bool HistoryAddUrlFunction::RunImpl() {
+bool HistoryAddUrlFunction::RunAsync() {
   scoped_ptr<AddUrl::Params> params(AddUrl::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -386,7 +386,7 @@ bool HistoryAddUrlFunction::RunImpl() {
   return true;
 }
 
-bool HistoryDeleteUrlFunction::RunImpl() {
+bool HistoryDeleteUrlFunction::RunAsync() {
   scoped_ptr<DeleteUrl::Params> params(DeleteUrl::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

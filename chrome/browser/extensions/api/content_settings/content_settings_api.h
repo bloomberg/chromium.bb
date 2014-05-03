@@ -61,7 +61,7 @@ class ContentSettingsContentSettingGetResourceIdentifiersFunction
   virtual ~ContentSettingsContentSettingGetResourceIdentifiersFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtensionApiTest,

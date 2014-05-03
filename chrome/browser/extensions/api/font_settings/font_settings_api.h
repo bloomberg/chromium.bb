@@ -142,7 +142,7 @@ class FontSettingsGetFontListFunction : public ChromeAsyncExtensionFunction {
   virtual ~FontSettingsGetFontListFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void FontListHasLoaded(scoped_ptr<base::ListValue> list);

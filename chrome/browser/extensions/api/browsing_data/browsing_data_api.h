@@ -86,7 +86,7 @@ class BrowsingDataRemoverFunction : public ChromeAsyncExtensionFunction,
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  protected:
   virtual ~BrowsingDataRemoverFunction() {}

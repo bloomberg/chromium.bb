@@ -68,10 +68,15 @@ class FileSystemProviderInternalFunction : public ChromeSyncExtensionFunction {
       scoped_ptr<chromeos::file_system_provider::RequestValue> value,
       bool has_next);
 
-  // ChromeSyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  // Subclasses implement this for their functionality.
+  // Called after Parse() is successful, such that |request_id_| and
+  // |request_manager_| have been fully initialized.
+  virtual bool RunWhenValid() = 0;
 
  private:
+  // ChromeSyncExtensionFunction overrides.
+  virtual bool RunSync() OVERRIDE;
+
   // Parses the request in order to extract the request manager. If fails, then
   // sets a response and returns false.
   bool Parse();

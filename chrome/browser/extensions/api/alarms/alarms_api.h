@@ -27,7 +27,7 @@ class AlarmsCreateFunction : public ChromeAsyncExtensionFunction {
   virtual ~AlarmsCreateFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("alarms.create", ALARMS_CREATE)
  private:
   void Callback();
@@ -44,7 +44,7 @@ class AlarmsGetFunction : public ChromeAsyncExtensionFunction {
   virtual ~AlarmsGetFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   void Callback(const std::string& name, Alarm* alarm);
@@ -56,7 +56,8 @@ class AlarmsGetAllFunction : public ChromeAsyncExtensionFunction {
   virtual ~AlarmsGetAllFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
+
  private:
   void Callback(const AlarmList* alarms);
   DECLARE_EXTENSION_FUNCTION("alarms.getAll", ALARMS_GETALL)
@@ -67,7 +68,8 @@ class AlarmsClearFunction : public ChromeAsyncExtensionFunction {
   virtual ~AlarmsClearFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
+
  private:
   void Callback(const std::string& name, bool success);
   DECLARE_EXTENSION_FUNCTION("alarms.clear", ALARMS_CLEAR)
@@ -78,7 +80,8 @@ class AlarmsClearAllFunction : public ChromeAsyncExtensionFunction {
   virtual ~AlarmsClearAllFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
+
  private:
   void Callback();
   DECLARE_EXTENSION_FUNCTION("alarms.clearAll", ALARMS_CLEARALL)

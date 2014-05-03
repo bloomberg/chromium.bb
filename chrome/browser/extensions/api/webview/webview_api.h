@@ -18,7 +18,7 @@
 namespace extensions {
 
 // An abstract base class for async webview APIs. It does a process ID check
-// in RunImpl, and then calls RunImplSafe which must be overriden by all
+// in RunAsync, and then calls RunAsyncSafe which must be overriden by all
 // subclasses.
 class WebviewExtensionFunction : public AsyncExtensionFunction {
  public:
@@ -28,10 +28,10 @@ class WebviewExtensionFunction : public AsyncExtensionFunction {
   virtual ~WebviewExtensionFunction() {}
 
   // ExtensionFunction implementation.
-  virtual bool RunImpl() OVERRIDE FINAL;
+  virtual bool RunAsync() OVERRIDE FINAL;
 
  private:
-  virtual bool RunImplSafe(WebViewGuest* guest) = 0;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) = 0;
 };
 
 class WebviewContextMenusCreateFunction : public AsyncExtensionFunction {
@@ -44,7 +44,7 @@ class WebviewContextMenusCreateFunction : public AsyncExtensionFunction {
   virtual ~WebviewContextMenusCreateFunction() {}
 
   // ExtensionFunction implementation.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebviewContextMenusCreateFunction);
@@ -60,7 +60,7 @@ class WebviewContextMenusUpdateFunction : public AsyncExtensionFunction {
   virtual ~WebviewContextMenusUpdateFunction() {}
 
   // ExtensionFunction implementation.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebviewContextMenusUpdateFunction);
@@ -76,7 +76,7 @@ class WebviewContextMenusRemoveFunction : public AsyncExtensionFunction {
   virtual ~WebviewContextMenusRemoveFunction() {}
 
   // ExtensionFunction implementation.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebviewContextMenusRemoveFunction);
@@ -92,7 +92,7 @@ class WebviewContextMenusRemoveAllFunction : public AsyncExtensionFunction {
   virtual ~WebviewContextMenusRemoveAllFunction() {}
 
   // ExtensionFunction implementation.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebviewContextMenusRemoveAllFunction);
@@ -109,7 +109,7 @@ class WebviewClearDataFunction : public WebviewExtensionFunction {
 
  private:
   // WebviewExtensionFunction implementation.
-  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
 
   uint32 GetRemovalMask();
   void ClearDataDone();
@@ -214,7 +214,7 @@ class WebviewSetZoomFunction : public WebviewExtensionFunction {
   virtual ~WebviewSetZoomFunction();
 
  private:
-  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewSetZoomFunction);
 };
@@ -229,7 +229,7 @@ class WebviewGetZoomFunction : public WebviewExtensionFunction {
   virtual ~WebviewGetZoomFunction();
 
  private:
-  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewGetZoomFunction);
 };
@@ -248,7 +248,7 @@ class WebviewFindFunction : public WebviewExtensionFunction {
 
  private:
   // WebviewExtensionFunction implementation.
-  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewFindFunction);
 };
@@ -264,7 +264,7 @@ class WebviewStopFindingFunction : public WebviewExtensionFunction {
 
  private:
   // WebviewExtensionFunction implementation.
-  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewStopFindingFunction);
 };
@@ -280,7 +280,7 @@ class WebviewGoFunction : public WebviewExtensionFunction {
 
  private:
   // WebviewExtensionFunction implementation.
-  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewGoFunction);
 };
@@ -296,7 +296,7 @@ class WebviewReloadFunction : public WebviewExtensionFunction {
 
  private:
   // WebviewExtensionFunction implementation.
-  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewReloadFunction);
 };
@@ -312,7 +312,7 @@ class WebviewSetPermissionFunction : public WebviewExtensionFunction {
 
  private:
   // WebviewExtensionFunction implementation.
-  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewSetPermissionFunction);
 };
@@ -329,7 +329,7 @@ class WebviewOverrideUserAgentFunction: public WebviewExtensionFunction {
 
  private:
   // WebviewExtensionFunction implementation.
-  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewOverrideUserAgentFunction);
 };
@@ -345,7 +345,7 @@ class WebviewStopFunction : public WebviewExtensionFunction {
 
  private:
   // WebviewExtensionFunction implementation.
-  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewStopFunction);
 };
@@ -361,7 +361,7 @@ class WebviewTerminateFunction : public WebviewExtensionFunction {
 
  private:
   // WebviewExtensionFunction implementation.
-  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewTerminateFunction);
 };

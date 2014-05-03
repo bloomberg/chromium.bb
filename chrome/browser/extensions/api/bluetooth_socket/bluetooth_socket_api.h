@@ -31,15 +31,15 @@ class BluetoothSocketEventDispatcher;
 // thread while providing methods to manage resources of that class. This
 // follows the pattern of AsyncApiFunction, but does not derive from it,
 // because BluetoothApiSocket methods must be called on the UI Thread.
-class BluetoothSocketAsyncApiFunction : public UIThreadExtensionFunction {
+class BluetoothSocketAsyncApiFunction : public AsyncExtensionFunction {
  public:
   BluetoothSocketAsyncApiFunction();
 
  protected:
   virtual ~BluetoothSocketAsyncApiFunction();
 
-  // UIThreadExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  // AsyncExtensionFunction:
+  virtual bool RunAsync() OVERRIDE;
 
   bool PrePrepare();
   bool Respond();
@@ -114,8 +114,7 @@ class BluetoothSocketSetPausedFunction
   BluetoothSocketEventDispatcher* socket_event_dispatcher_;
 };
 
-class BluetoothSocketListenUsingRfcommFunction
-    : public UIThreadExtensionFunction {
+class BluetoothSocketListenUsingRfcommFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothSocket.listenUsingRfcomm",
                              BLUETOOTHSOCKET_LISTENUSINGRFCOMM);
@@ -123,12 +122,12 @@ class BluetoothSocketListenUsingRfcommFunction
  protected:
   virtual ~BluetoothSocketListenUsingRfcommFunction() {}
 
-  // UIThreadExtensionFunction override:
-  virtual bool RunImpl() OVERRIDE;
+  // AsyncExtensionFunction override:
+  virtual bool RunAsync() OVERRIDE;
 };
 
 class BluetoothSocketListenUsingInsecureRfcommFunction
-    : public UIThreadExtensionFunction {
+    : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothSocket.listenUsingInsecureRfcomm",
                              BLUETOOTHSOCKET_LISTENUSINGINSECURERFCOMM);
@@ -136,12 +135,11 @@ class BluetoothSocketListenUsingInsecureRfcommFunction
  protected:
   virtual ~BluetoothSocketListenUsingInsecureRfcommFunction() {}
 
-  // UIThreadExtensionFunction override:
-  virtual bool RunImpl() OVERRIDE;
+  // AsyncExtensionFunction override:
+  virtual bool RunAsync() OVERRIDE;
 };
 
-class BluetoothSocketListenUsingL2capFunction
-    : public UIThreadExtensionFunction {
+class BluetoothSocketListenUsingL2capFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothSocket.listenUsingL2cap",
                              BLUETOOTHSOCKET_LISTENUSINGL2CAP);
@@ -149,11 +147,11 @@ class BluetoothSocketListenUsingL2capFunction
  protected:
   virtual ~BluetoothSocketListenUsingL2capFunction() {}
 
-  // UIThreadExtensionFunction override:
-  virtual bool RunImpl() OVERRIDE;
+  // AsyncExtensionFunction override:
+  virtual bool RunAsync() OVERRIDE;
 };
 
-class BluetoothSocketConnectFunction : public UIThreadExtensionFunction {
+class BluetoothSocketConnectFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothSocket.connect",
                              BLUETOOTHSOCKET_CONNECT);
@@ -161,8 +159,8 @@ class BluetoothSocketConnectFunction : public UIThreadExtensionFunction {
  protected:
   virtual ~BluetoothSocketConnectFunction() {}
 
-  // UIThreadExtensionFunction override:
-  virtual bool RunImpl() OVERRIDE;
+  // AsyncExtensionFunction override:
+  virtual bool RunAsync() OVERRIDE;
 };
 
 class BluetoothSocketDisconnectFunction

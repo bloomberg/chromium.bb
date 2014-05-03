@@ -230,7 +230,7 @@ IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
 
 IdentityGetAuthTokenFunction::~IdentityGetAuthTokenFunction() {}
 
-bool IdentityGetAuthTokenFunction::RunImpl() {
+bool IdentityGetAuthTokenFunction::RunAsync() {
   if (GetProfile()->IsOffTheRecord()) {
     error_ = identity_constants::kOffTheRecord;
     return false;
@@ -710,7 +710,7 @@ IdentityLaunchWebAuthFlowFunction::~IdentityLaunchWebAuthFlowFunction() {
     auth_flow_.release()->DetachDelegateAndDelete();
 }
 
-bool IdentityLaunchWebAuthFlowFunction::RunImpl() {
+bool IdentityLaunchWebAuthFlowFunction::RunAsync() {
   if (GetProfile()->IsOffTheRecord()) {
     error_ = identity_constants::kOffTheRecord;
     return false;
@@ -767,7 +767,7 @@ void IdentityLaunchWebAuthFlowFunction::OnAuthFlowFailure(
       break;
   }
   SendResponse(false);
-  Release();  // Balanced in RunImpl.
+  Release();  // Balanced in RunAsync.
 }
 
 void IdentityLaunchWebAuthFlowFunction::OnAuthFlowURLChange(
@@ -775,7 +775,7 @@ void IdentityLaunchWebAuthFlowFunction::OnAuthFlowURLChange(
   if (redirect_url.GetWithEmptyPath() == final_url_prefix_) {
     SetResult(new base::StringValue(redirect_url.spec()));
     SendResponse(true);
-    Release();  // Balanced in RunImpl.
+    Release();  // Balanced in RunAsync.
   }
 }
 

@@ -28,7 +28,7 @@ class DnsResolveFunction : public AsyncExtensionFunction {
   virtual ~DnsResolveFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   void WorkOnIOThread();
   void RespondOnUIThread();

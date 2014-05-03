@@ -23,7 +23,7 @@ namespace extensions {
 class TtsSpeakFunction : public ChromeAsyncExtensionFunction {
  private:
   virtual ~TtsSpeakFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("tts.speak", TTS_SPEAK)
 };
 

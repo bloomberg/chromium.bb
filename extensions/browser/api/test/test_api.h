@@ -81,7 +81,7 @@ class TestSendMessageFunction : public AsyncExtensionFunction {
   virtual ~TestSendMessageFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 class TestGetConfigFunction : public TestExtensionFunction {

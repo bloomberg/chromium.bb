@@ -21,6 +21,8 @@ namespace OnLaunched = apps::shell_api::shell::OnLaunched;
 namespace apps {
 namespace {
 
+const char kInvalidArguments[] = "Invalid arguments";
+
 // Creates a function call result to send to the renderer.
 DictionaryValue* CreateResult(apps::ShellAppWindow* app_window) {
   int view_id = app_window->GetRenderViewRoutingID();
@@ -49,14 +51,14 @@ ShellCreateWindowFunction::ShellCreateWindowFunction() {
 ShellCreateWindowFunction::~ShellCreateWindowFunction() {
 }
 
-bool ShellCreateWindowFunction::RunImpl() {
+ExtensionFunction::ResponseAction ShellCreateWindowFunction::Run() {
   scoped_ptr<CreateWindow::Params> params(CreateWindow::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
+  EXTENSION_FUNCTION_VALIDATE_TYPESAFE(params.get());
 
   // Convert "main.html" to "chrome-extension:/<id>/main.html".
   GURL url = GetExtension()->GetResourceURL(params->url);
   if (!url.is_valid())
-    return false;
+    return RespondNow(Error(kInvalidArguments));
 
   // The desktop keeps ownership of the window.
   apps::ShellAppWindow* app_window =
@@ -65,11 +67,7 @@ bool ShellCreateWindowFunction::RunImpl() {
   app_window->LoadURL(url);
 
   // Create the reply to send to the renderer.
-  DictionaryValue* result = CreateResult(app_window);
-  SetResult(result);
-
-  SendResponse(true /* success */);
-  return true;
+  return RespondNow(SingleArgument(CreateResult(app_window)));
 }
 
 }  // namespace apps

@@ -24,7 +24,7 @@ class ReadingListPrivateAddEntryFunction : public ChromeAsyncExtensionFunction {
   virtual ~ReadingListPrivateAddEntryFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 };
 
 class ReadingListPrivateRemoveEntryFunction

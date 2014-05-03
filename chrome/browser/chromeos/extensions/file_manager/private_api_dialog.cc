@@ -25,14 +25,14 @@ SelectFileDialogExtension::RoutingID GetFileDialogRoutingID(
 
 }  // namespace
 
-bool FileBrowserPrivateCancelDialogFunction::RunImpl() {
+bool FileBrowserPrivateCancelDialogFunction::RunAsync() {
   SelectFileDialogExtension::OnFileSelectionCanceled(
       GetFileDialogRoutingID(this));
   SendResponse(true);
   return true;
 }
 
-bool FileBrowserPrivateSelectFileFunction::RunImpl() {
+bool FileBrowserPrivateSelectFileFunction::RunAsync() {
   using extensions::api::file_browser_private::SelectFile::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -73,7 +73,7 @@ void FileBrowserPrivateSelectFileFunction::GetSelectedFileInfoResponse(
   SendResponse(true);
 }
 
-bool FileBrowserPrivateSelectFilesFunction::RunImpl() {
+bool FileBrowserPrivateSelectFilesFunction::RunAsync() {
   using extensions::api::file_browser_private::SelectFiles::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);

@@ -363,7 +363,7 @@ class BrowserActionOpenPopupFunction : public ChromeAsyncExtensionFunction,
   virtual ~BrowserActionOpenPopupFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,

@@ -62,7 +62,7 @@ WindowController* WindowControllerList::FindWindowById(int id) const {
 }
 
 WindowController* WindowControllerList::FindWindowForFunctionById(
-    const ChromeAsyncExtensionFunction* function,
+    const ChromeUIThreadExtensionFunction* function,
     int id) const {
   WindowController* controller = FindWindowById(id);
   if (controller && function->CanOperateOnWindow(controller))
@@ -71,7 +71,7 @@ WindowController* WindowControllerList::FindWindowForFunctionById(
 }
 
 WindowController* WindowControllerList::CurrentWindowForFunction(
-    const ChromeAsyncExtensionFunction* function) const {
+    const ChromeUIThreadExtensionFunction* function) const {
   WindowController* result = NULL;
   // Returns either the focused window (if any), or the last window in the list.
   for (ControllerList::const_iterator iter = windows().begin();

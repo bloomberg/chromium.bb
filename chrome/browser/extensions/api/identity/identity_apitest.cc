@@ -48,7 +48,7 @@ namespace utils = extension_function_test_utils;
 static const char kAccessToken[] = "auth_token";
 static const char kExtensionId[] = "ext_id";
 
-// This helps us be able to wait until an AsyncExtensionFunction calls
+// This helps us be able to wait until an UIThreadExtensionFunction calls
 // SendResponse.
 class SendResponseDelegate
     : public UIThreadExtensionFunction::DelegateForTests {
@@ -109,7 +109,7 @@ class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
 
     function->set_browser_context(browser()->profile());
     function->set_has_callback(true);
-    function->Run();
+    function->Run()->Execute();
   }
 
   std::string WaitForError(UIThreadExtensionFunction* function) {
@@ -132,7 +132,7 @@ class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
 
  private:
   void RunMessageLoopUntilResponse() {
-    // If the RunImpl of |function| didn't already call SendResponse, run the
+    // If the RunAsync of |function| didn't already call SendResponse, run the
     // message loop until they do.
     if (!response_delegate_->HasResponse()) {
       response_delegate_->set_should_post_quit(true);

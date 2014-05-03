@@ -112,7 +112,7 @@ ChromeosInfoPrivateGetFunction::ChromeosInfoPrivateGetFunction() {
 ChromeosInfoPrivateGetFunction::~ChromeosInfoPrivateGetFunction() {
 }
 
-bool ChromeosInfoPrivateGetFunction::RunImpl() {
+bool ChromeosInfoPrivateGetFunction::RunAsync() {
   base::ListValue* list = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetList(0, &list));
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());

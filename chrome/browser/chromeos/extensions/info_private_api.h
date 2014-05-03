@@ -23,7 +23,7 @@ class ChromeosInfoPrivateGetFunction : public AsyncExtensionFunction {
  protected:
   virtual ~ChromeosInfoPrivateGetFunction();
 
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunAsync() OVERRIDE;
 
  private:
   // Returns a newly allocate value, or null.

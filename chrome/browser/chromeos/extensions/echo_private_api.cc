@@ -150,7 +150,7 @@ EchoPrivateGetOobeTimestampFunction::EchoPrivateGetOobeTimestampFunction() {
 EchoPrivateGetOobeTimestampFunction::~EchoPrivateGetOobeTimestampFunction() {
 }
 
-bool EchoPrivateGetOobeTimestampFunction::RunImpl() {
+bool EchoPrivateGetOobeTimestampFunction::RunAsync() {
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(
@@ -199,7 +199,7 @@ EchoPrivateGetUserConsentFunction::CreateForTest(
 
 EchoPrivateGetUserConsentFunction::~EchoPrivateGetUserConsentFunction() {}
 
-bool EchoPrivateGetUserConsentFunction::RunImpl() {
+bool EchoPrivateGetUserConsentFunction::RunAsync() {
    CheckRedeemOffersAllowed();
    return true;
 }

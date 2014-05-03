@@ -342,7 +342,7 @@ SessionsGetDevicesFunction::CreateSessionModel(
 scoped_ptr<api::sessions::Device> SessionsGetDevicesFunction::CreateDeviceModel(
     const browser_sync::SyncedSession* session) {
   int max_results = api::sessions::MAX_SESSION_RESULTS;
-  // Already validated in RunImpl().
+  // Already validated in RunAsync().
   scoped_ptr<GetDevices::Params> params(GetDevices::Params::Create(*args_));
   if (params->filter && params->filter->max_results)
     max_results = *params->filter->max_results;

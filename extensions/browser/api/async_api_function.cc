@@ -16,7 +16,7 @@ AsyncApiFunction::AsyncApiFunction() : work_thread_id_(BrowserThread::IO) {}
 
 AsyncApiFunction::~AsyncApiFunction() {}
 
-bool AsyncApiFunction::RunImpl() {
+bool AsyncApiFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!PrePrepare() || !Prepare()) {
