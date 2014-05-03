@@ -1408,8 +1408,6 @@ void Element::attach(const AttachContext& context)
             activeAnimations->setAnimationStyleChange(false);
         }
     }
-
-    document().didRecalculateStyleForElement();
 }
 
 void Element::detach(const AttachContext& context)
@@ -1511,6 +1509,7 @@ PassRefPtr<RenderStyle> Element::styleForRenderer()
         activeAnimations->updateAnimationFlags(*style);
     }
 
+    document().didRecalculateStyleForElement();
     return style.release();
 }
 
@@ -1581,8 +1580,6 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     }
 
     ASSERT(oldStyle);
-
-    document().didRecalculateStyleForElement();
 
     if (localChange != NoChange)
         updateCallbackSelectors(oldStyle.get(), newStyle.get());
