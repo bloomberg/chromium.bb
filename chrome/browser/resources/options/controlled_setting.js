@@ -171,7 +171,8 @@ cr.define('options', function() {
                                          path: '?id=' + extensionId});
           };
 
-          var disableButton = extensionContainer.querySelector('button');
+          var disableButton = extensionContainer.querySelector(
+              '.controlled-setting-bubble-extension-disable-button');
           disableButton.onclick = function() {
             chrome.send('disableExtension', [extensionId]);
           };
