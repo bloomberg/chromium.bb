@@ -968,15 +968,33 @@ TEST_F(AudioRendererImplTest, TimeUpdatesOnFirstBuffer) {
   EXPECT_TRUE(ConsumeBufferedData(kFramesToConsume, NULL));
   WaitForPendingRead();
 
-  // Ensure we received a time update for the first buffer and it's zero.
+  // ConsumeBufferedData() uses an audio delay of zero, so ensure we received
+  // a time update that's equal to |kFramesToConsume| from above.
   timestamp_helper.SetBaseTimestamp(base::TimeDelta());
-  EXPECT_EQ(timestamp_helper.base_timestamp(), last_time_update());
   timestamp_helper.AddFrames(kFramesToConsume);
+  EXPECT_EQ(timestamp_helper.GetTimestamp(), last_time_update());
 
-  // ConsumeBufferedData() uses an audio delay of zero, so the next buffer
-  // should have a timestamp equal to the duration of |kFramesToConsume|.
+  // The next time update should match the remaining frames_buffered().
+  timestamp_helper.AddFrames(frames_buffered());
   EXPECT_TRUE(ConsumeBufferedData(frames_buffered(), NULL));
   EXPECT_EQ(timestamp_helper.GetTimestamp(), last_time_update());
+}
+
+TEST_F(AudioRendererImplTest, ImmediateEndOfStream) {
+  Initialize();
+  {
+    SCOPED_TRACE("Preroll()");
+    WaitableMessageLoopEvent event;
+    renderer_->Preroll(base::TimeDelta(), event.GetPipelineStatusCB());
+    WaitForPendingRead();
+    DeliverEndOfStream();
+    event.RunAndWaitForStatus(PIPELINE_OK);
+  }
+  Play();
+
+  // Read a single frame. We shouldn't be able to satisfy it.
+  EXPECT_FALSE(ConsumeBufferedData(1, NULL));
+  WaitForEnded();
 }
 
 }  // namespace media

@@ -20,6 +20,7 @@
 #include "media/base/audio_splicer.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream.h"
+#include "media/filters/audio_clock.h"
 #include "media/filters/decrypting_demuxer_stream.h"
 
 namespace media {
@@ -57,8 +58,6 @@ AudioRendererImpl::AudioRendererImpl(
       pending_read_(false),
       received_end_of_stream_(false),
       rendered_end_of_stream_(false),
-      audio_time_buffered_(kNoTimestamp()),
-      current_time_(kNoTimestamp()),
       underflow_disabled_(false),
       preroll_aborted_(false),
       weak_factory_(this) {
@@ -169,8 +168,7 @@ void AudioRendererImpl::ResetDecoderDone() {
     DCHECK_EQ(state_, kPaused);
     DCHECK(!flush_cb_.is_null());
 
-    audio_time_buffered_ = kNoTimestamp();
-    current_time_ = kNoTimestamp();
+    audio_clock_.reset(new AudioClock(audio_parameters_.sample_rate()));
     received_end_of_stream_ = false;
     rendered_end_of_stream_ = false;
     preroll_aborted_ = false;
@@ -287,6 +285,8 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
                             hw_params.bits_per_sample(),
                             hardware_config_->GetHighLatencyBufferSize());
   }
+
+  audio_clock_.reset(new AudioClock(audio_parameters_.sample_rate()));
 
   audio_buffer_stream_.Initialize(
       stream,
@@ -565,27 +565,33 @@ bool AudioRendererImpl::IsBeforePrerollTime(
 int AudioRendererImpl::Render(AudioBus* audio_bus,
                               int audio_delay_milliseconds) {
   const int requested_frames = audio_bus->frames();
-  base::TimeDelta current_time = kNoTimestamp();
-  base::TimeDelta max_time = kNoTimestamp();
   base::TimeDelta playback_delay = base::TimeDelta::FromMilliseconds(
       audio_delay_milliseconds);
-
+  const int delay_frames = static_cast<int>(playback_delay.InSecondsF() *
+                                            audio_parameters_.sample_rate());
   int frames_written = 0;
+  base::Closure time_cb;
   base::Closure underflow_cb;
   {
     base::AutoLock auto_lock(lock_);
 
     // Ensure Stop() hasn't destroyed our |algorithm_| on the pipeline thread.
-    if (!algorithm_)
+    if (!algorithm_) {
+      audio_clock_->WroteSilence(requested_frames, delay_frames);
       return 0;
+    }
 
     float playback_rate = algorithm_->playback_rate();
-    if (playback_rate == 0)
+    if (playback_rate == 0) {
+      audio_clock_->WroteSilence(requested_frames, delay_frames);
       return 0;
+    }
 
     // Mute audio by returning 0 when not playing.
-    if (state_ != kPlaying)
+    if (state_ != kPlaying) {
+      audio_clock_->WroteSilence(requested_frames, delay_frames);
       return 0;
+    }
 
     // We use the following conditions to determine end of playback:
     //   1) Algorithm can not fill the audio callback buffer
@@ -602,8 +608,15 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
     //   3) We are in the kPlaying state
     //
     // Otherwise the buffer has data we can send to the device.
-    const base::TimeDelta time_before_filling = algorithm_->GetTime();
-    frames_written = algorithm_->FillBuffer(audio_bus, requested_frames);
+    const base::TimeDelta media_timestamp_before_filling =
+        audio_clock_->CurrentMediaTimestamp();
+    if (algorithm_->frames_buffered() > 0) {
+      frames_written = algorithm_->FillBuffer(audio_bus, requested_frames);
+      audio_clock_->WroteAudio(
+          frames_written, delay_frames, playback_rate, algorithm_->GetTime());
+    }
+    audio_clock_->WroteSilence(requested_frames - frames_written, delay_frames);
+
     if (frames_written == 0) {
       const base::TimeTicks now = now_cb_.Run();
 
@@ -628,46 +641,15 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
                                         weak_factory_.GetWeakPtr()));
     }
 
-    // Adjust the delay according to playback rate.
-    base::TimeDelta adjusted_playback_delay = base::TimeDelta::FromMicroseconds(
-        ceil(playback_delay.InMicroseconds() * playback_rate));
-
-    // The |audio_time_buffered_| is the ending timestamp of the last frame
-    // buffered at the audio device. |playback_delay| is the amount of time
-    // buffered at the audio device. The current time can be computed by their
-    // difference.
-    if (audio_time_buffered_ != kNoTimestamp()) {
-      base::TimeDelta previous_time = current_time_;
-      current_time_ = audio_time_buffered_ - adjusted_playback_delay;
-
-      // Time can change in one of two ways:
-      //   1) The time of the audio data at the audio device changed, or
-      //   2) The playback delay value has changed
-      //
-      // We only want to set |current_time| (and thus execute |time_cb_|) if
-      // time has progressed and we haven't signaled end of stream yet.
-      //
-      // Why? The current latency of the system results in getting the last call
-      // to FillBuffer() later than we'd like, which delays firing the 'ended'
-      // event, which delays the looping/trigging performance of short sound
-      // effects.
-      //
-      // TODO(scherkus): revisit this and switch back to relying on playback
-      // delay after we've revamped our audio IPC subsystem.
-      if (current_time_ > previous_time && !rendered_end_of_stream_) {
-        current_time = current_time_;
-      }
-    } else if (frames_written > 0) {
-      // Nothing has been buffered yet, so use the first buffer's timestamp.
-      DCHECK(time_before_filling != kNoTimestamp());
-      current_time_ = current_time =
-          time_before_filling - adjusted_playback_delay;
+    // We only want to execute |time_cb_| if time has progressed and we haven't
+    // signaled end of stream yet.
+    if (media_timestamp_before_filling !=
+            audio_clock_->CurrentMediaTimestamp() &&
+        !rendered_end_of_stream_) {
+      time_cb = base::Bind(time_cb_,
+                           audio_clock_->CurrentMediaTimestamp(),
+                           audio_clock_->last_endpoint_timestamp());
     }
-
-    // The call to FillBuffer() on |algorithm_| has increased the amount of
-    // buffered audio data. Update the new amount of time buffered.
-    max_time = algorithm_->GetTime();
-    audio_time_buffered_ = max_time;
 
     if (frames_written > 0) {
       UpdateEarliestEndTime_Locked(
@@ -675,8 +657,8 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
     }
   }
 
-  if (current_time != kNoTimestamp() && max_time != kNoTimestamp())
-    time_cb_.Run(current_time, max_time);
+  if (!time_cb.is_null())
+    time_cb.Run();
 
   if (!underflow_cb.is_null())
     underflow_cb.Run();

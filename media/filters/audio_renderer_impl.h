@@ -37,11 +37,12 @@ class SingleThreadTaskRunner;
 
 namespace media {
 
-class AudioBus;
 class AudioBufferConverter;
+class AudioBus;
+class AudioClock;
+class AudioHardwareConfig;
 class AudioSplicer;
 class DecryptingDemuxerStream;
-class AudioHardwareConfig;
 
 class MEDIA_EXPORT AudioRendererImpl
     : public AudioRenderer,
@@ -246,10 +247,7 @@ class MEDIA_EXPORT AudioRendererImpl
   bool received_end_of_stream_;
   bool rendered_end_of_stream_;
 
-  // The timestamp of the last frame (i.e. furthest in the future) buffered as
-  // well as the current time that takes current playback delay into account.
-  base::TimeDelta audio_time_buffered_;
-  base::TimeDelta current_time_;
+  scoped_ptr<AudioClock> audio_clock_;
 
   base::TimeDelta preroll_timestamp_;
 
