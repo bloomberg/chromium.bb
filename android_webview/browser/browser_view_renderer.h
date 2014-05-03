@@ -5,6 +5,8 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_BROWSER_VIEW_RENDERER_H_
 #define ANDROID_WEBVIEW_BROWSER_BROWSER_VIEW_RENDERER_H_
 
+#include "android_webview/browser/global_tile_manager.h"
+#include "android_webview/browser/global_tile_manager_client.h"
 #include "android_webview/browser/shared_renderer_state.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
@@ -22,6 +24,7 @@ struct AwDrawSWFunctionTable;
 namespace content {
 class ContentViewCore;
 class SynchronousCompositor;
+struct SynchronousCompositorMemoryPolicy;
 class WebContents;
 }
 
@@ -52,8 +55,11 @@ class BrowserViewRendererJavaHelper {
 
 // Interface for all the WebView-specific content rendering operations.
 // Provides software and hardware rendering and the Capture Picture API.
-class BrowserViewRenderer : public content::SynchronousCompositorClient {
+class BrowserViewRenderer : public content::SynchronousCompositorClient,
+                            public GlobalTileManagerClient {
  public:
+  static void CalculateTileMemoryPolicy();
+
   BrowserViewRenderer(
       BrowserViewRendererClient* client,
       SharedRendererState* shared_renderer_state,
@@ -101,10 +107,12 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   bool IsVisible() const;
   gfx::Rect GetScreenRect() const;
 
-  // Force invoke the compositor to run produce a 1x1 software frame that is
-  // immediately discarded. This is a hack to force invoke parts of the
-  // compositor that are not directly exposed here.
-  void ForceFakeCompositeSW();
+  // Set the memory policy in shared renderer state and request the tiles from
+  // GlobalTileManager. The actually amount of memory allowed by
+  // GlobalTileManager may not be equal to what's requested in |policy|.
+  void RequestMemoryPolicy(content::SynchronousCompositorMemoryPolicy& policy);
+
+  void TrimMemory(const int level, const bool visible);
 
   // SynchronousCompositorClient overrides
   virtual void DidInitializeCompositor(
@@ -127,6 +135,11 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
                              gfx::Vector2dF latest_overscroll_delta,
                              gfx::Vector2dF current_fling_velocity) OVERRIDE;
 
+  // GlobalTileManagerClient overrides
+  virtual size_t GetNumTiles() const OVERRIDE;
+  virtual void SetNumTiles(size_t num_tiles,
+                           bool effective_immediately) OVERRIDE;
+
  private:
   // Checks the continuous invalidate and block invalidate state, and schedule
   // invalidates appropriately. If |force_invalidate| is true, then send a view
@@ -140,8 +153,17 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   // then we keep ticking the SynchronousCompositor so it can make progress.
   void FallbackTickFired();
 
+  // Force invoke the compositor to run produce a 1x1 software frame that is
+  // immediately discarded. This is a hack to force invoke parts of the
+  // compositor that are not directly exposed here.
+  void ForceFakeCompositeSW();
+
+  void EnforceMemoryPolicyImmediately(
+      content::SynchronousCompositorMemoryPolicy policy);
+
   gfx::Vector2d max_scroll_offset() const;
 
+  content::SynchronousCompositorMemoryPolicy CalculateDesiredMemoryPolicy();
   // For debug tracing or logging. Return the string representation of this
   // view renderer's state and the |draw_info| if provided.
   std::string ToString(AwDrawGLInfo* draw_info) const;
@@ -198,6 +220,13 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   // visible skew (especially noticeable when scrolling up and down in the same
   // spot over a period of time).
   gfx::Vector2dF overscroll_rounding_error_;
+
+  GlobalTileManager::Key tile_manager_key_;
+
+  // The following 2 are used to construct a memory policy and set the memory
+  // policy on the shared_renderer_state_ atomically.
+  size_t num_tiles_;
+  size_t num_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserViewRenderer);
 };

@@ -9,11 +9,15 @@
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/android/jni_android.h"
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/android/synchronous_compositor.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -23,12 +27,26 @@
 using base::android::AttachCurrentThread;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
+using content::BrowserThread;
+using content::SynchronousCompositorMemoryPolicy;
 
 namespace android_webview {
 
 namespace {
 
 const int64 kFallbackTickTimeoutInMilliseconds = 20;
+
+// Used to calculate memory allocation. Determined experimentally.
+const size_t kMemoryMultiplier = 10;
+const size_t kBytesPerPixel = 4;
+const size_t kMemoryAllocationStep = 5 * 1024 * 1024;
+
+// Used to calculate tile allocation. Determined experimentally.
+const size_t kTileMultiplier = 12;
+const size_t kTileAllocationStep = 20;
+// This will be set by static function CalculateTileMemoryPolicy() during init.
+// See AwMainDelegate::BasicStartupComplete.
+size_t g_tile_area;
 
 class AutoResetWithLock {
  public:
@@ -56,6 +74,22 @@ class AutoResetWithLock {
 };
 
 }  // namespace
+
+// static
+void BrowserViewRenderer::CalculateTileMemoryPolicy() {
+  CommandLine* cl = CommandLine::ForCurrentProcess();
+  const char kDefaultTileSize[] = "384";
+
+  if (!cl->HasSwitch(switches::kDefaultTileWidth))
+    cl->AppendSwitchASCII(switches::kDefaultTileWidth, kDefaultTileSize);
+
+  if (!cl->HasSwitch(switches::kDefaultTileHeight))
+    cl->AppendSwitchASCII(switches::kDefaultTileHeight, kDefaultTileSize);
+
+  size_t tile_size;
+  base::StringToSizeT(kDefaultTileSize, &tile_size);
+  g_tile_area = tile_size * tile_size;
+}
 
 BrowserViewRenderer::BrowserViewRenderer(
     BrowserViewRendererClient* client,
@@ -90,6 +124,99 @@ BrowserViewRenderer::BrowserViewRenderer(
 
 BrowserViewRenderer::~BrowserViewRenderer() {
   content::SynchronousCompositor::SetClientForWebContents(web_contents_, NULL);
+  // OnDetachedFromWindow should be called before the destructor, so the memory
+  // policy should have already been updated.
+}
+
+// This function updates the cached memory policy in shared renderer state, as
+// well as the tile resource allocation in GlobalTileManager.
+void BrowserViewRenderer::TrimMemory(const int level, const bool visible) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Constants from Android ComponentCallbacks2.
+  enum {
+    TRIM_MEMORY_RUNNING_LOW = 10,
+    TRIM_MEMORY_UI_HIDDEN = 20,
+    TRIM_MEMORY_BACKGROUND = 40,
+  };
+
+  // Not urgent enough. TRIM_MEMORY_UI_HIDDEN is treated specially because
+  // it does not indicate memory pressure, but merely that the app is
+  // backgrounded.
+  if (level < TRIM_MEMORY_RUNNING_LOW || level == TRIM_MEMORY_UI_HIDDEN)
+    return;
+
+  // Do not release resources on view we expect to get DrawGL soon.
+  if (level < TRIM_MEMORY_BACKGROUND && visible)
+    return;
+
+  // Just set the memory limit to 0 and drop all tiles. This will be reset to
+  // normal levels in the next DrawGL call.
+  SynchronousCompositorMemoryPolicy zero_policy;
+  if (shared_renderer_state_->GetMemoryPolicy() == zero_policy)
+    return;
+
+  TRACE_EVENT0("android_webview", "BrowserViewRenderer::TrimMemory");
+
+  RequestMemoryPolicy(zero_policy);
+  EnforceMemoryPolicyImmediately(zero_policy);
+}
+
+SynchronousCompositorMemoryPolicy
+BrowserViewRenderer::CalculateDesiredMemoryPolicy() {
+  SynchronousCompositorMemoryPolicy policy;
+  size_t width = draw_gl_input_.global_visible_rect.width();
+  size_t height = draw_gl_input_.global_visible_rect.height();
+  policy.bytes_limit = kMemoryMultiplier * kBytesPerPixel * width * height;
+  // Round up to a multiple of kMemoryAllocationStep.
+  policy.bytes_limit =
+      (policy.bytes_limit / kMemoryAllocationStep + 1) * kMemoryAllocationStep;
+
+  size_t tiles = std::max(width * height * kTileMultiplier / g_tile_area, 1u);
+  // Round up to a multiple of kTileAllocationStep. The minimum number of tiles
+  // is also kTileAllocationStep.
+  tiles = (tiles + kTileAllocationStep - 1) / kTileAllocationStep *
+          kTileAllocationStep;
+  policy.num_resources_limit = tiles;
+  return policy;
+}
+
+// This function updates the cached memory policy in shared renderer state, as
+// well as the tile resource allocation in GlobalTileManager.
+void BrowserViewRenderer::RequestMemoryPolicy(
+    SynchronousCompositorMemoryPolicy& new_policy) {
+  // This will be used in SetNumTiles.
+  num_bytes_ = new_policy.bytes_limit;
+
+  GlobalTileManager* manager = GlobalTileManager::GetInstance();
+
+  // The following line will call BrowserViewRenderer::SetTilesNum().
+  manager->RequestTiles(new_policy.num_resources_limit, tile_manager_key_);
+}
+
+void BrowserViewRenderer::SetNumTiles(size_t num_tiles,
+                                      bool effective_immediately) {
+  if (num_tiles == num_tiles_)
+    return;
+  num_tiles_ = num_tiles;
+
+  SynchronousCompositorMemoryPolicy new_policy;
+  new_policy.num_resources_limit = num_tiles_;
+  new_policy.bytes_limit = num_bytes_;
+  shared_renderer_state_->SetMemoryPolicy(new_policy);
+
+  if (effective_immediately)
+    EnforceMemoryPolicyImmediately(new_policy);
+}
+
+void BrowserViewRenderer::EnforceMemoryPolicyImmediately(
+    SynchronousCompositorMemoryPolicy new_policy) {
+  shared_renderer_state_->GetCompositor()->SetMemoryPolicy(new_policy);
+  ForceFakeCompositeSW();
+  shared_renderer_state_->SetMemoryPolicyDirty(false);
+}
+
+size_t BrowserViewRenderer::GetNumTiles() const {
+  return shared_renderer_state_->GetMemoryPolicy().num_resources_limit;
 }
 
 bool BrowserViewRenderer::OnDraw(jobject java_canvas,
@@ -106,10 +233,23 @@ bool BrowserViewRenderer::OnDraw(jobject java_canvas,
     return false;
   if (is_hardware_canvas && attached_to_window_) {
     shared_renderer_state_->SetDrawGLInput(draw_gl_input_);
+
+    SynchronousCompositorMemoryPolicy old_policy =
+        shared_renderer_state_->GetMemoryPolicy();
+    SynchronousCompositorMemoryPolicy new_policy =
+        CalculateDesiredMemoryPolicy();
+    RequestMemoryPolicy(new_policy);
     // We should be performing a hardware draw here. If we don't have the
     // compositor yet or if RequestDrawGL fails, it means we failed this draw
     // and thus return false here to clear to background color for this draw.
-    return has_compositor_ && client_->RequestDrawGL(java_canvas, false);
+    bool did_draw_gl =
+        has_compositor_ && client_->RequestDrawGL(java_canvas, false);
+    if (did_draw_gl)
+      GlobalTileManager::GetInstance()->DidUse(tile_manager_key_);
+    else
+      RequestMemoryPolicy(old_policy);
+
+    return did_draw_gl;
   }
   // Perform a software draw
   return DrawSWInternal(java_canvas, clip);
@@ -230,11 +370,18 @@ void BrowserViewRenderer::OnAttachedToWindow(int width, int height) {
   attached_to_window_ = true;
   width_ = width;
   height_ = height;
+  tile_manager_key_ = GlobalTileManager::GetInstance()->PushBack(this);
 }
 
 void BrowserViewRenderer::OnDetachedFromWindow() {
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnDetachedFromWindow");
   attached_to_window_ = false;
+  SynchronousCompositorMemoryPolicy zero_policy;
+  RequestMemoryPolicy(zero_policy);
+  GlobalTileManager::GetInstance()->Remove(tile_manager_key_);
+  // The hardware resources are released in the destructor of hardware renderer,
+  // so we don't need to do it here.
+  // See AwContents::ReleaseHardwareDrawOnRenderThread(JNIEnv*, jobject).
 }
 
 bool BrowserViewRenderer::IsAttachedToWindow() const {
@@ -268,6 +415,8 @@ void BrowserViewRenderer::DidDestroyCompositor(
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   has_compositor_ = false;
   shared_renderer_state_->SetCompositorOnUiThread(NULL);
+  SynchronousCompositorMemoryPolicy zero_policy;
+  DCHECK(shared_renderer_state_->GetMemoryPolicy() == zero_policy);
 }
 
 void BrowserViewRenderer::SetContinuousInvalidate(bool invalidate) {

@@ -1045,28 +1045,12 @@ void AwContents::TrimMemory(JNIEnv* env,
                             jobject obj,
                             jint level,
                             jboolean visible) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (!shared_renderer_state_.IsHardwareInitialized())
     return;
 
-  shared_renderer_state_.AppendClosure(
-      base::Bind(&AwContents::TrimMemoryOnRenderThread,
-                 base::Unretained(this),
-                 level,
-                 visible));
-  RequestDrawGL(NULL, true);
-}
-
-void AwContents::TrimMemoryOnRenderThread(int level, bool visible) {
-  if (hardware_renderer_ && hardware_renderer_->TrimMemory(level, visible)) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&AwContents::ForceFakeComposite, ui_thread_weak_ptr_));
-  }
-}
-
-void AwContents::ForceFakeComposite() {
-  browser_view_renderer_.ForceFakeCompositeSW();
+  browser_view_renderer_.TrimMemory(level, visible);
 }
 
 void SetShouldDownloadFavicons(JNIEnv* env, jclass jclazz) {

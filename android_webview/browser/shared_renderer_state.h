@@ -55,6 +55,12 @@ class SharedRendererState {
 
   // This function can be called on both UI and RT thread.
   content::SynchronousCompositor* GetCompositor();
+
+  void SetMemoryPolicy(const content::SynchronousCompositorMemoryPolicy policy);
+  content::SynchronousCompositorMemoryPolicy GetMemoryPolicy() const;
+
+  void SetMemoryPolicyDirty(bool is_dirty);
+  bool IsMemoryPolicyDirty() const;
   void SetDrawGLInput(const DrawGLInput& input);
   DrawGLInput GetDrawGLInput() const;
 
@@ -78,6 +84,10 @@ class SharedRendererState {
   // Accessed by both UI and RT thread.
   mutable base::Lock lock_;
   content::SynchronousCompositor* compositor_;
+  content::SynchronousCompositorMemoryPolicy memory_policy_;
+  // Set to true when SetMemoryPolicy called with a different memory policy.
+  // Set to false when memory policy is read and enforced to compositor.
+  bool memory_policy_dirty_;
   DrawGLInput draw_gl_input_;
   std::queue<base::Closure> closure_queue_;
   bool hardware_initialized_;

@@ -12,7 +12,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_local.h"
-#include "content/public/browser/android/synchronous_compositor.h"
 
 struct AwDrawGLInfo;
 
@@ -30,15 +29,12 @@ class HardwareRenderer {
   explicit HardwareRenderer(SharedRendererState* state);
   ~HardwareRenderer();
 
-  static void CalculateTileMemoryPolicy();
-
   bool DrawGL(AwDrawGLInfo* draw_info, DrawGLResult* result);
-  bool TrimMemory(int level, bool visible);
 
  private:
   friend class internal::DeferredGpuCommandService;
 
-  void SetMemoryPolicy(content::SynchronousCompositorMemoryPolicy& new_policy);
+  void SetCompositorMemoryPolicy();
 
   SharedRendererState* shared_renderer_state_;
 
@@ -46,9 +42,8 @@ class HardwareRenderer {
   EGLContext last_egl_context_;
 
   scoped_refptr<AwGLSurface> gl_surface_;
-  content::SynchronousCompositorMemoryPolicy memory_policy_;
 
-  GLViewRendererManager::Key manager_key_;
+  GLViewRendererManager::Key renderer_manager_key_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareRenderer);
 };

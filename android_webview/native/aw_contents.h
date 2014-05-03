@@ -210,11 +210,9 @@ class AwContents : public FindHelper::Listener,
  private:
   void InitAutofillIfNecessary(bool enabled);
   void DidDrawGL(const DrawGLResult& result);
-  void ForceFakeComposite();
 
   void InitializeHardwareDrawOnRenderThread();
   void ReleaseHardwareDrawOnRenderThread();
-  void TrimMemoryOnRenderThread(int level, bool visible);
 
   base::WeakPtrFactory<AwContents> weak_factory_on_ui_thread_;
   base::WeakPtr<AwContents> ui_thread_weak_ptr_;
