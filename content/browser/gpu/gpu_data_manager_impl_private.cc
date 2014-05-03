@@ -237,9 +237,17 @@ void DisplayReconfigCallback(CGDirectDisplayID display,
 
 #if defined(OS_ANDROID)
 void ApplyAndroidWorkarounds(const gpu::GPUInfo& gpu_info,
-                             CommandLine* command_line) {
+                             CommandLine* command_line,
+                             std::set<int>* workarounds) {
   std::string vendor(StringToLowerASCII(gpu_info.gl_vendor));
   std::string renderer(StringToLowerASCII(gpu_info.gl_renderer));
+  std::string version(StringToLowerASCII(gpu_info.gl_version));
+
+  if (vendor.find("nvidia") != std::string::npos &&
+      version.find("3.1") != std::string::npos) {
+    workarounds->insert(gpu::USE_VIRTUALIZED_GL_CONTEXTS);
+  }
+
   bool is_img =
       gpu_info.gl_vendor.find("Imagination") != std::string::npos;
 
@@ -988,7 +996,8 @@ void GpuDataManagerImplPrivate::InitializeImpl(
   UpdatePreliminaryBlacklistedFeatures();
 
 #if defined(OS_ANDROID)
-  ApplyAndroidWorkarounds(gpu_info, CommandLine::ForCurrentProcess());
+  ApplyAndroidWorkarounds(
+      gpu_info, CommandLine::ForCurrentProcess(), &gpu_driver_bugs_);
 #endif  // OS_ANDROID
 }
 
