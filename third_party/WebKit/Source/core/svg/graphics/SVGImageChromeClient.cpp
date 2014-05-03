@@ -29,6 +29,7 @@
 #include "config.h"
 #include "core/svg/graphics/SVGImageChromeClient.h"
 
+#include "core/dom/ScriptForbiddenScope.h"
 #include "core/frame/FrameView.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/graphics/ImageObserver.h"
@@ -80,12 +81,13 @@ void SVGImageChromeClient::scheduleAnimation()
 
 void SVGImageChromeClient::animationTimerFired(Timer<SVGImageChromeClient>*)
 {
-    // In principle, we should call requestAnimationFrame callbacks here, but
-    // we know there aren't any because script is forbidden inside SVGImages.
-    if (m_image) {
-        m_image->frameView()->page()->animator().serviceScriptedAnimations(monotonicallyIncreasingTime());
-        m_image->frameView()->updateLayoutAndStyleForPainting();
-    }
+    if (!m_image)
+        return;
+    // serviceScriptedAnimations runs requestAnimationFrame callbacks, but SVG
+    // images can't have any so we assert there's no script.
+    ScriptForbiddenScope forbidScript;
+    m_image->frameView()->page()->animator().serviceScriptedAnimations(monotonicallyIncreasingTime());
+    m_image->frameView()->updateLayoutAndStyleForPainting();
 }
 
 }
