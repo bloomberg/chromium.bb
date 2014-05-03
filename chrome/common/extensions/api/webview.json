@@ -46,6 +46,22 @@
         }
       },
       {
+        "id": "ContextMenuItem",
+        "type": "object",
+        "description": "An item in the context menu.",
+        "properties": {
+          "label": {
+            "type": "string",
+            "description": "label of the item",
+            "optional": true
+          },
+          "commandId": {
+            "type": "integer",
+            "description": "id of the input item"
+          }
+        }
+      },
+      {
         "id": "RemovalOptions",
         "type": "object",
         "description": "Options that determine exactly what data will be removed.",

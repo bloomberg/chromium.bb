@@ -34,6 +34,14 @@ var utils = require('utils');
 //     is prevented, then its dispatch function will return false in its event
 //     handler. The event must have a custom handler for this to be meaningful.
 var WEB_VIEW_EXPERIMENTAL_EVENTS = {
+  'contextmenu': {
+    evt: CreateEvent('webview.contextmenu'),
+    cancelable: true,
+    customHandler: function(webViewInternal, event, webViewEvent) {
+      webViewInternal.handleContextMenu(event, webViewEvent);
+    },
+    fields: ['items']
+  },
   'findupdate': {
     evt: CreateEvent('webview.onFindReply'),
     fields: [
@@ -135,6 +143,22 @@ WebViewInternal.prototype.maybeAttachWebRequestEventToObject =
         enumerable: true
       }
   );
+};
+
+/** @private */
+WebViewInternal.prototype.handleContextMenu = function(e, webViewEvent) {
+  var requestId = e.requestId;
+  var self = this;
+  // Construct the event.menu object.
+  var menu = {
+    show: function(items) {
+      // TODO(lazyboy): Implement.
+      window.console.log('menu.show() Not implemented yet');
+    }
+  };
+  webViewEvent.menu = menu;
+  var webviewNode = this.webviewNode;
+  webviewNode.dispatchEvent(webViewEvent);
 };
 
 /**

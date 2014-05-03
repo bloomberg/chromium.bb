@@ -38,6 +38,11 @@ class CONTENT_EXPORT WebContentsViewGuest
 
   void OnGuestInitialized(WebContentsView* parent_view);
 
+  // Converts the guest specific coordinates in |params| to embedder specific
+  // ones.
+  ContextMenuParams ConvertContextMenuParams(
+      const ContextMenuParams& params) const;
+
   // WebContentsView implementation --------------------------------------------
 
   virtual gfx::NativeView GetNativeView() const OVERRIDE;

@@ -71,6 +71,30 @@ void WebContentsViewGuest::OnGuestInitialized(WebContentsView* parent_view) {
 #endif  // defined(USE_AURA)
 }
 
+ContextMenuParams WebContentsViewGuest::ConvertContextMenuParams(
+    const ContextMenuParams& params) const {
+#if defined(USE_AURA)
+  // Context menu uses ScreenPositionClient::ConvertPointToScreen() in aura
+  // to calculate popup position. Guest's native view
+  // (platform_view_->GetNativeView()) is part of the embedder's view hierarchy,
+  // but is placed at (0, 0) w.r.t. the embedder's position. Therefore, |offset|
+  // is added to |params|.
+  gfx::Rect embedder_bounds;
+  guest_->embedder_web_contents()->GetView()->GetContainerBounds(
+      &embedder_bounds);
+  gfx::Rect guest_bounds;
+  GetContainerBounds(&guest_bounds);
+
+  gfx::Vector2d offset = guest_bounds.origin() - embedder_bounds.origin();
+  ContextMenuParams params_in_embedder = params;
+  params_in_embedder.x += offset.x();
+  params_in_embedder.y += offset.y();
+  return params_in_embedder;
+#else
+  return params;
+#endif
+}
+
 void WebContentsViewGuest::GetContainerBounds(gfx::Rect* out) const {
   // We need embedder container's bounds to calculate our bounds.
   guest_->embedder_web_contents()->GetView()->GetContainerBounds(out);
@@ -216,27 +240,8 @@ void WebContentsViewGuest::TakeFocus(bool reverse) {
 
 void WebContentsViewGuest::ShowContextMenu(RenderFrameHost* render_frame_host,
                                            const ContextMenuParams& params) {
-#if defined(USE_AURA)
-  // Context menu uses ScreenPositionClient::ConvertPointToScreen() in aura
-  // to calculate popup position. Guest's native view
-  // (platform_view_->GetNativeView()) is part of the embedder's view hierarchy,
-  // but is placed at (0, 0) w.r.t. the embedder's position. Therefore, |offset|
-  // is added to |params|.
-  gfx::Rect embedder_bounds;
-  guest_->embedder_web_contents()->GetView()->GetContainerBounds(
-      &embedder_bounds);
-  gfx::Rect guest_bounds;
-  GetContainerBounds(&guest_bounds);
-
-  gfx::Vector2d offset = guest_bounds.origin() - embedder_bounds.origin();
-  ContextMenuParams params_in_embedder = params;
-  params_in_embedder.x += offset.x();
-  params_in_embedder.y += offset.y();
   platform_view_delegate_view_->ShowContextMenu(
-      render_frame_host, params_in_embedder);
-#else
-  platform_view_delegate_view_->ShowContextMenu(render_frame_host, params);
-#endif  // defined(USE_AURA)
+      render_frame_host, ConvertContextMenuParams(params));
 }
 
 void WebContentsViewGuest::StartDragging(

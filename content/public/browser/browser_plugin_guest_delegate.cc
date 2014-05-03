@@ -45,4 +45,9 @@ BrowserPluginGuestDelegate::GetJavaScriptDialogManager() {
   return NULL;
 }
 
+bool BrowserPluginGuestDelegate::HandleContextMenu(
+    const ContextMenuParams& params) {
+  return false;
+}
+
 }  // namespace content

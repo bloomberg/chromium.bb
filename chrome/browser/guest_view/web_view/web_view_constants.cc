@@ -10,6 +10,7 @@ namespace webview {
 const char kEventClose[] = "webview.onClose";
 const char kEventConsoleMessage[] = "webview.onConsoleMessage";
 const char kEventContentLoad[] = "webview.onContentLoad";
+const char kEventContextMenu[] = "webview.contextmenu";
 const char kEventDialog[] = "webview.onDialog";
 const char kEventExit[] = "webview.onExit";
 const char kEventFindReply[] = "webview.onFindReply";
@@ -27,6 +28,7 @@ const char kEventUnresponsive[] = "webview.onUnresponsive";
 const char kEventZoomChange[] = "webview.onZoomChange";
 
 // Parameters/properties on events.
+const char kContextMenuItems[] = "items";
 const char kDefaultPromptText[] = "defaultPromptText";
 const char kFindSearchText[] = "searchText";
 const char kFindFinalUpdate[] = "finalUpdate";
@@ -77,6 +79,8 @@ const char kFindCanceled[] = "canceled";
 const char kParameterUserAgentOverride[] = "userAgentOverride";
 
 // Miscellaneous.
+const char kMenuItemCommandId[] = "commandId";
+const char kMenuItemLabel[] = "label";
 const unsigned int kMaxOutstandingPermissionRequests = 1024;
 const int kInvalidPermissionRequestID = 0;
 

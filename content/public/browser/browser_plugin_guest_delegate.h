@@ -19,6 +19,7 @@
 namespace content {
 
 class JavaScriptDialogManager;
+struct ContextMenuParams;
 struct NativeWebKeyboardEvent;
 
 // Objects implement this interface to get notified about changes in the guest
@@ -127,6 +128,9 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // Returns a pointer to a service to manage JavaScript dialogs. May return
   // NULL in which case dialogs aren't shown.
   virtual JavaScriptDialogManager* GetJavaScriptDialogManager();
+
+  // Returns true if the context menu operation was handled by the delegate.
+  virtual bool HandleContextMenu(const ContextMenuParams& params);
 };
 
 }  // namespace content

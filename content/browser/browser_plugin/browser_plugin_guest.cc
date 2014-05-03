@@ -36,6 +36,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/common/context_menu_params.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/result_codes.h"
@@ -633,10 +634,17 @@ ColorChooser* BrowserPluginGuest::OpenColorChooser(
 }
 
 bool BrowserPluginGuest::HandleContextMenu(const ContextMenuParams& params) {
-  // TODO(fsamuel): We show the regular page context menu handler for now until
-  // we implement the Apps Context Menu API for Browser Plugin (see
-  // http://crbug.com/140315).
-  return false;  // Will be handled by WebContentsViewGuest.
+  if (delegate_) {
+    WebContentsViewGuest* view_guest =
+        static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
+    ContextMenuParams context_menu_params =
+        view_guest->ConvertContextMenuParams(params);
+
+    return delegate_->HandleContextMenu(context_menu_params);
+  }
+
+  // Will be handled by WebContentsViewGuest.
+  return false;
 }
 
 void BrowserPluginGuest::HandleKeyboardEvent(

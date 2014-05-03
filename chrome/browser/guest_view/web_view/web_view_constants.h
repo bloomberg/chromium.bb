@@ -13,6 +13,7 @@ namespace webview {
 extern const char kEventClose[];
 extern const char kEventConsoleMessage[];
 extern const char kEventContentLoad[];
+extern const char kEventContextMenu[];
 extern const char kEventDialog[];
 extern const char kEventExit[];
 extern const char kEventFindReply[];
@@ -30,6 +31,7 @@ extern const char kEventUnresponsive[];
 extern const char kEventZoomChange[];
 
 // Parameters/properties on events.
+extern const char kContextMenuItems[];
 extern const char kDefaultPromptText[];
 extern const char kFindSearchText[];
 extern const char kFindFinalUpdate[];
@@ -81,6 +83,8 @@ extern const char kFindDone[];
 extern const char kParameterUserAgentOverride[];
 
 // Miscellaneous.
+extern const char kMenuItemCommandId[];
+extern const char kMenuItemLabel[];
 extern const unsigned int kMaxOutstandingPermissionRequests;
 extern const int kInvalidPermissionRequestID;
 

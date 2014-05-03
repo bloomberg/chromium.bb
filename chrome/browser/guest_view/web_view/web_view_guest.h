@@ -10,6 +10,7 @@
 #include "chrome/browser/guest_view/guest_view.h"
 #include "chrome/browser/guest_view/web_view/javascript_dialog_helper.h"
 #include "chrome/browser/guest_view/web_view/web_view_find_helper.h"
+#include "chrome/common/extensions/api/webview.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -23,6 +24,10 @@ namespace extensions {
 class ScriptExecutor;
 class WebviewFindFunction;
 }  // namespace extensions
+
+namespace ui {
+class SimpleMenuModel;
+}  // namespace ui
 
 // A WebViewGuest is a WebContentsObserver on the guest WebContents of a
 // <webview> tag. It provides the browser-side implementation of the <webview>
@@ -46,6 +51,10 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   // GuestViewBase implementation.
   virtual void Attach(content::WebContents* embedder_web_contents,
                       const base::DictionaryValue& args) OVERRIDE;
+
+  // BrowserPluginGuestDelegate public implementation.
+  virtual bool HandleContextMenu(
+      const content::ContextMenuParams& params) OVERRIDE;
 
   // GuestDelegate implementation.
   virtual void AddMessageToConsole(int32 level,
@@ -207,6 +216,11 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   static void RecordUserInitiatedUMA(const PermissionResponseInfo& info,
                                      bool allow);
+
+  // Returns the top level items (ignoring submenus) as Value.
+  static scoped_ptr<base::ListValue> MenuModelToValue(
+      const ui::SimpleMenuModel& menu_model);
+
   // WebContentsObserver implementation.
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
@@ -276,6 +290,10 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   scoped_ptr<extensions::ScriptExecutor> script_executor_;
 
   content::NotificationRegistrar notification_registrar_;
+
+  // A counter to generate a unique request id for a context menu request.
+  // We only need the ids to be unique for a given WebViewGuest.
+  int current_context_menu_request_id_;
 
   // A counter to generate a unique request id for a permission request.
   // We only need the ids to be unique for a given WebViewGuest.

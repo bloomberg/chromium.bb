@@ -141,7 +141,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   // Programmatically closes the context menu.
   void Cancel();
 
-  const ui::MenuModel& menu_model() const { return menu_model_; }
+  const ui::SimpleMenuModel& menu_model() const { return menu_model_; }
   const content::ContextMenuParams& params() const { return params_; }
 
   // SimpleMenuModel::Delegate implementation.
