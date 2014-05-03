@@ -565,6 +565,7 @@ TEST_F(TemplateURLTest, ReplaceCursorPosition) {
       "{google:baseURL}?{searchTerms}&{google:cursorPosition}",
       "http://www.google.com/?foo&cp=15&" },
   };
+  UIThreadSearchTermsData::SetGoogleBaseURL("http://www.google.com/");
   TemplateURLData data;
   data.input_encodings.push_back("UTF-8");
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
@@ -601,6 +602,7 @@ TEST_F(TemplateURLTest, ReplaceCurrentPageUrl) {
       "{google:baseURL}?{searchTerms}&{google:currentPageUrl}",
       "http://www.google.com/?foo&url=http%3A%2F%2Fg.com%2F%2B-%2F*%26%3D&" },
   };
+  UIThreadSearchTermsData::SetGoogleBaseURL("http://www.google.com/");
   TemplateURLData data;
   data.input_encodings.push_back("UTF-8");
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
@@ -1297,6 +1299,7 @@ TEST_F(TemplateURLTest, IsSearchResults) {
 }
 
 TEST_F(TemplateURLTest, ReflectsBookmarkBarPinned) {
+  UIThreadSearchTermsData::SetGoogleBaseURL("http://www.google.com/");
   TemplateURLData data;
   data.input_encodings.push_back("UTF-8");
   data.SetURL("{google:baseURL}?{google:bookmarkBarPinned}q={searchTerms}");
