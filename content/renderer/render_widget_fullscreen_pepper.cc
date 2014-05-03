@@ -170,18 +170,6 @@ class PepperWidget : public WebWidget {
   virtual void layout() {
   }
 
-  virtual void paint(WebCanvas* canvas, const WebRect& rect, PaintOptions) {
-    if (!widget_->plugin())
-      return;
-
-    SkAutoCanvasRestore auto_restore(canvas, true);
-    float canvas_scale = widget_->deviceScaleFactor();
-    canvas->scale(canvas_scale, canvas_scale);
-
-    WebRect plugin_rect(0, 0, size_.width, size_.height);
-    widget_->plugin()->Paint(canvas, plugin_rect, rect);
-  }
-
   virtual void setCompositorSurfaceReady() {
   }
 
