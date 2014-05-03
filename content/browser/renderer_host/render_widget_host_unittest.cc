@@ -11,8 +11,6 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
-#include "content/browser/renderer_host/input/tap_suppression_controller.h"
-#include "content/browser/renderer_host/input/tap_suppression_controller_client.h"
 #include "content/browser/renderer_host/input/touch_event_queue.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
@@ -199,7 +197,6 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
       int routing_id)
       : RenderWidgetHostImpl(delegate, process, routing_id, false),
         unresponsive_timer_fired_(false) {
-    input_router_impl_ = static_cast<InputRouterImpl*>(input_router_.get());
     acked_touch_event_type_ = blink::WebInputEvent::Undefined;
   }
 
@@ -250,13 +247,10 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     overscroll_controller_->set_delegate(overscroll_delegate_.get());
   }
 
-  void DisableGestureDebounce() {
-    gesture_event_queue().set_debounce_enabled_for_testing(false);
-  }
+  void DisableGestureDebounce() { set_debounce_interval_time_ms(0); }
 
   void set_debounce_interval_time_ms(int delay_ms) {
-    gesture_event_queue().
-        set_debounce_interval_time_ms_for_testing(delay_ms);
+    gesture_event_queue().set_debounce_interval_time_ms_for_testing(delay_ms);
   }
 
   bool TouchEventQueueEmpty() const {
@@ -308,12 +302,11 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   void SetupForInputRouterTest() {
-    mock_input_router_ = new MockInputRouter(this);
-    input_router_.reset(mock_input_router_);
+    input_router_.reset(new MockInputRouter(this));
   }
 
   MockInputRouter* mock_input_router() {
-    return mock_input_router_;
+    return static_cast<MockInputRouter*>(input_router_.get());
   }
 
  protected:
@@ -322,26 +315,28 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   const TouchEventQueue& touch_event_queue() const {
-    return input_router_impl_->touch_event_queue_;
+    return input_router_impl()->touch_event_queue_;
   }
 
   const GestureEventQueue& gesture_event_queue() const {
-    return input_router_impl_->gesture_event_queue_;
+    return input_router_impl()->gesture_event_queue_;
   }
 
   GestureEventQueue& gesture_event_queue() {
-    return input_router_impl_->gesture_event_queue_;
+    return input_router_impl()->gesture_event_queue_;
   }
 
  private:
+  const InputRouterImpl* input_router_impl() const {
+    return static_cast<InputRouterImpl*>(input_router_.get());
+  }
+
+  InputRouterImpl* input_router_impl() {
+    return static_cast<InputRouterImpl*>(input_router_.get());
+  }
+
   bool unresponsive_timer_fired_;
   WebInputEvent::Type acked_touch_event_type_;
-
-  // |input_router_impl_| and |mock_input_router_| are owned by
-  // RenderWidgetHostImpl.  The handles below are provided for convenience so
-  // that we don't have to reinterpret_cast it all the time.
-  InputRouterImpl* input_router_impl_;
-  MockInputRouter* mock_input_router_;
 
   scoped_ptr<TestOverscrollDelegate> overscroll_delegate_;
 
@@ -616,6 +611,9 @@ class RenderWidgetHostTest : public testing::Test {
     view_.reset(new TestView(host_.get()));
     host_->SetView(view_.get());
     host_->Init();
+
+    // Tests for debounce-related behavior will explicitly enable debouncing.
+    host_->DisableGestureDebounce();
   }
   virtual void TearDown() {
     view_.reset();
@@ -1518,7 +1516,6 @@ TEST_F(RenderWidgetHostTest, ScrollEventsOverscrollWithZeroFling) {
 // overscroll nav instead of completing it.
 TEST_F(RenderWidgetHostTest, ReverseFlingCancelsOverscroll) {
   host_->SetupForOverscrollControllerTest();
-  host_->DisableGestureDebounce();
   process_->sink().ClearMessages();
   view_->set_bounds(gfx::Rect(0, 0, 400, 200));
   view_->Show();
@@ -1571,7 +1568,6 @@ TEST_F(RenderWidgetHostTest, ReverseFlingCancelsOverscroll) {
 TEST_F(RenderWidgetHostTest, GestureScrollOverscrolls) {
   // Turn off debounce handling for test isolation.
   host_->SetupForOverscrollControllerTest();
-  host_->DisableGestureDebounce();
   process_->sink().ClearMessages();
 
   SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
@@ -1625,7 +1621,6 @@ TEST_F(RenderWidgetHostTest, GestureScrollOverscrolls) {
 TEST_F(RenderWidgetHostTest, GestureScrollConsumedHorizontal) {
   // Turn off debounce handling for test isolation.
   host_->SetupForOverscrollControllerTest();
-  host_->DisableGestureDebounce();
   process_->sink().ClearMessages();
 
   SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
@@ -2080,7 +2075,6 @@ TEST_F(RenderWidgetHostTest, OverscrollDirectionChange) {
 // move events do reach the renderer.
 TEST_F(RenderWidgetHostTest, OverscrollMouseMoveCompletion) {
   host_->SetupForOverscrollControllerTest();
-  host_->DisableGestureDebounce();
   process_->sink().ClearMessages();
   view_->set_bounds(gfx::Rect(0, 0, 400, 200));
   view_->Show();
@@ -2171,7 +2165,6 @@ TEST_F(RenderWidgetHostTest, OverscrollMouseMoveCompletion) {
 // reset after the end of the scroll.
 TEST_F(RenderWidgetHostTest, OverscrollStateResetsAfterScroll) {
   host_->SetupForOverscrollControllerTest();
-  host_->DisableGestureDebounce();
   process_->sink().ClearMessages();
   view_->set_bounds(gfx::Rect(0, 0, 400, 200));
   view_->Show();
@@ -2246,6 +2239,7 @@ TEST_F(RenderWidgetHostTest, OverscrollResetsOnBlur) {
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
+  EXPECT_EQ(2U, process_->sink().message_count());
 
   host_->Blur();
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
@@ -2257,7 +2251,8 @@ TEST_F(RenderWidgetHostTest, OverscrollResetsOnBlur) {
 
   SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
                        WebGestureEvent::Touchscreen);
-  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
 
   // Start a scroll gesture again. This should correctly start the overscroll
   // after the threshold.
@@ -2274,7 +2269,7 @@ TEST_F(RenderWidgetHostTest, OverscrollResetsOnBlur) {
                        WebGestureEvent::Touchscreen);
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->completed_mode());
-  process_->sink().ClearMessages();
+  EXPECT_EQ(3U, process_->sink().message_count());
 }
 
 std::string GetInputMessageTypes(RenderWidgetHostProcess* process) {
@@ -2297,7 +2292,6 @@ std::string GetInputMessageTypes(RenderWidgetHostProcess* process) {
 
 TEST_F(RenderWidgetHostTest, TouchEmulator) {
   simulated_event_time_delta_seconds_ = 0.1;
-  host_->DisableGestureDebounce();
   // Immediately ack all touches instead of sending them to the renderer.
   host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
   host_->OnMessageReceived(

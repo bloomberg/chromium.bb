@@ -4,45 +4,43 @@
 
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 
-#include "content/browser/renderer_host/input/tap_suppression_controller.h"
-#include "content/browser/renderer_host/input/tap_suppression_controller_client.h"
-
-// The default implementation of the TouchpadTapSuppressionController does not
-// suppress taps. Touchpad tap suppression is needed only on CrOS.
-
 namespace content {
 
 TouchpadTapSuppressionController::TouchpadTapSuppressionController(
-    TouchpadTapSuppressionControllerClient* /* client */)
-    : client_(NULL) {}
+    TouchpadTapSuppressionControllerClient* client,
+    const TapSuppressionController::Config& config)
+    : client_(client), controller_(this, config) {
+}
 
 TouchpadTapSuppressionController::~TouchpadTapSuppressionController() {}
 
-void TouchpadTapSuppressionController::GestureFlingCancel() {}
+void TouchpadTapSuppressionController::GestureFlingCancel() {
+  controller_.GestureFlingCancel();
+}
 
-void TouchpadTapSuppressionController::GestureFlingCancelAck(
-    bool /*processed*/) {
+void TouchpadTapSuppressionController::GestureFlingCancelAck(bool processed) {
+  controller_.GestureFlingCancelAck(processed);
 }
 
 bool TouchpadTapSuppressionController::ShouldDeferMouseDown(
-    const MouseEventWithLatencyInfo& /*event*/) {
-  return false;
+    const MouseEventWithLatencyInfo& event) {
+  bool should_defer = controller_.ShouldDeferTapDown();
+  if (should_defer)
+    stashed_mouse_down_ = event;
+  return should_defer;
 }
 
-bool TouchpadTapSuppressionController::ShouldSuppressMouseUp() { return false; }
-
-int TouchpadTapSuppressionController::MaxCancelToDownTimeInMs() {
-  return 0;
-}
-
-int TouchpadTapSuppressionController::MaxTapGapTimeInMs() {
-  return 0;
+bool TouchpadTapSuppressionController::ShouldSuppressMouseUp() {
+  return controller_.ShouldSuppressTapEnd();
 }
 
 void TouchpadTapSuppressionController::DropStashedTapDown() {
 }
 
 void TouchpadTapSuppressionController::ForwardStashedTapDown() {
+  // Mouse downs are not handled by gesture event filter; so, they are
+  // immediately forwarded to the renderer.
+  client_->SendMouseEventImmediately(stashed_mouse_down_);
 }
 
 }  // namespace content

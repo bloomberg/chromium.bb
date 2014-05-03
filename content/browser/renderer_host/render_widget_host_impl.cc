@@ -31,6 +31,7 @@
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/dip_util.h"
+#include "content/browser/renderer_host/input/input_router_config_helper.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_controller.h"
@@ -229,7 +230,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   accessibility_mode_ =
       BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode();
 
-  input_router_.reset(new InputRouterImpl(process_, this, this, routing_id_));
+  input_router_.reset(new InputRouterImpl(
+      process_, this, this, routing_id_, GetInputRouterConfigForPlatform()));
 
   touch_emulator_.reset();
 
@@ -1218,7 +1220,8 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   waiting_for_screen_rects_ack_ = false;
 
   // Reset to ensure that input routing works with a new renderer.
-  input_router_.reset(new InputRouterImpl(process_, this, this, routing_id_));
+  input_router_.reset(new InputRouterImpl(
+      process_, this, this, routing_id_, GetInputRouterConfigForPlatform()));
 
   if (overscroll_controller_)
     overscroll_controller_->Reset();

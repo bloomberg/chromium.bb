@@ -5,12 +5,10 @@
 #include "content/browser/renderer_host/input/touch_event_queue.h"
 
 #include "base/auto_reset.h"
-#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/common/input/web_touch_event_traits.h"
-#include "content/public/common/content_switches.h"
 #include "ui/gfx/geometry/point_f.h"
 
 using blink::WebInputEvent;
@@ -34,8 +32,6 @@ const double kApplicationSlopRegionLengthDipsSqared = 15. * 15.;
 // slop determination when using fractional DIP coordinates (assuming the slop
 // region and DPI scale are reasonably proportioned).
 const float kSlopEpsilon = .05f;
-
-typedef std::vector<TouchEventWithLatencyInfo> WebTouchEventWithLatencyList;
 
 TouchEventWithLatencyInfo ObtainCancelEventForTouchEvent(
     const TouchEventWithLatencyInfo& event_to_cancel) {
@@ -73,7 +69,9 @@ class TouchEventQueue::TouchTimeoutHandler {
         timeout_delay_(timeout_delay),
         pending_ack_state_(PENDING_ACK_NONE),
         timeout_monitor_(base::Bind(&TouchTimeoutHandler::OnTimeOut,
-                                    base::Unretained(this))) {}
+                                    base::Unretained(this))) {
+    DCHECK(timeout_delay != base::TimeDelta());
+  }
 
   ~TouchTimeoutHandler() {}
 
@@ -197,42 +195,42 @@ class TouchEventQueue::TouchMoveSlopSuppressor {
   TouchMoveSlopSuppressor(double slop_suppression_length_dips)
       : slop_suppression_length_dips_squared_(slop_suppression_length_dips *
                                               slop_suppression_length_dips),
-        suppressing_touch_moves_(false) {}
+        suppressing_touchmoves_(false) {}
 
   bool FilterEvent(const WebTouchEvent& event) {
     if (WebTouchEventTraits::IsTouchSequenceStart(event)) {
       touch_sequence_start_position_ =
           gfx::PointF(event.touches[0].position);
-      suppressing_touch_moves_ = slop_suppression_length_dips_squared_ != 0;
+      suppressing_touchmoves_ = slop_suppression_length_dips_squared_ != 0;
     }
 
     if (event.type != WebInputEvent::TouchMove)
       return false;
 
-    if (suppressing_touch_moves_) {
+    if (suppressing_touchmoves_) {
       // Movement with a secondary pointer should terminate suppression.
       if (event.touchesLength > 1) {
-        suppressing_touch_moves_ = false;
+        suppressing_touchmoves_ = false;
       } else if (event.touchesLength == 1) {
         // Movement outside of the slop region should terminate suppression.
         gfx::PointF position(event.touches[0].position);
         if ((position - touch_sequence_start_position_).LengthSquared() >
             slop_suppression_length_dips_squared_)
-          suppressing_touch_moves_ = false;
+          suppressing_touchmoves_ = false;
       }
     }
-    return suppressing_touch_moves_;
+    return suppressing_touchmoves_;
   }
 
   void ConfirmTouchEvent(InputEventAckState ack_result) {
     if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
-      suppressing_touch_moves_ = false;
+      suppressing_touchmoves_ = false;
   }
 
  private:
   double slop_suppression_length_dips_squared_;
   gfx::PointF touch_sequence_start_position_;
-  bool suppressing_touch_moves_;
+  bool suppressing_touchmoves_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchMoveSlopSuppressor);
 };
@@ -316,26 +314,37 @@ class CoalescedWebTouchEvent {
 
   // This is the list of the original events that were coalesced, each requiring
   // future ack dispatch to the client.
+  typedef std::vector<TouchEventWithLatencyInfo> WebTouchEventWithLatencyList;
   WebTouchEventWithLatencyList events_to_ack_;
 
   DISALLOW_COPY_AND_ASSIGN(CoalescedWebTouchEvent);
 };
 
+TouchEventQueue::Config::Config()
+    : touchmove_slop_suppression_length_dips(0),
+      touch_scrolling_mode(TOUCH_SCROLLING_MODE_DEFAULT),
+      touch_ack_timeout_delay(base::TimeDelta::FromMilliseconds(200)),
+      touch_ack_timeout_supported(false) {
+}
+
 TouchEventQueue::TouchEventQueue(TouchEventQueueClient* client,
-                                 TouchScrollingMode mode,
-                                 double touchmove_suppression_length_dips)
+                                 const Config& config)
     : client_(client),
       dispatching_touch_ack_(NULL),
       dispatching_touch_(false),
       touch_filtering_state_(TOUCH_FILTERING_STATE_DEFAULT),
-      ack_timeout_enabled_(false),
+      ack_timeout_enabled_(config.touch_ack_timeout_supported),
       touchmove_slop_suppressor_(new TouchMoveSlopSuppressor(
-          touchmove_suppression_length_dips + kSlopEpsilon)),
+          config.touchmove_slop_suppression_length_dips + kSlopEpsilon)),
       send_touch_events_async_(false),
-      needs_async_touch_move_for_outer_slop_region_(false),
+      needs_async_touchmove_for_outer_slop_region_(false),
       last_sent_touch_timestamp_sec_(0),
-      touch_scrolling_mode_(mode) {
+      touch_scrolling_mode_(config.touch_scrolling_mode) {
   DCHECK(client);
+  if (ack_timeout_enabled_) {
+    timeout_handler_.reset(
+        new TouchTimeoutHandler(this, config.touch_ack_timeout_delay));
+  }
 }
 
 TouchEventQueue::~TouchEventQueue() {
@@ -447,22 +456,22 @@ void TouchEventQueue::ForwardNextEventToRenderer() {
     // application be sent touches at key points in the gesture stream,
     // e.g., when the application slop region is exceeded or touchmove
     // coalescing fails because of different modifiers.
-    const bool send_touch_move_now =
+    const bool send_touchmove_now =
         size() > 1 ||
         (touch.event.timeStampSeconds >=
          last_sent_touch_timestamp_sec_ + kAsyncTouchMoveIntervalSec) ||
-        (needs_async_touch_move_for_outer_slop_region_ &&
+        (needs_async_touchmove_for_outer_slop_region_ &&
          OutsideApplicationSlopRegion(touch.event,
                                       touch_sequence_start_position_)) ||
-        (pending_async_touch_move_ &&
-         !pending_async_touch_move_->CanCoalesceWith(touch));
+        (pending_async_touchmove_ &&
+         !pending_async_touchmove_->CanCoalesceWith(touch));
 
-    if (!send_touch_move_now) {
-      if (!pending_async_touch_move_) {
-        pending_async_touch_move_.reset(new TouchEventWithLatencyInfo(touch));
+    if (!send_touchmove_now) {
+      if (!pending_async_touchmove_) {
+        pending_async_touchmove_.reset(new TouchEventWithLatencyInfo(touch));
       } else {
-        DCHECK(pending_async_touch_move_->CanCoalesceWith(touch));
-        pending_async_touch_move_->CoalesceWith(touch);
+        DCHECK(pending_async_touchmove_->CanCoalesceWith(touch));
+        pending_async_touchmove_->CoalesceWith(touch);
       }
       DCHECK_EQ(1U, size());
       PopTouchEventToClient(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -480,14 +489,14 @@ void TouchEventQueue::ForwardNextEventToRenderer() {
   // Flush any pending async touch move. If it can be combined with the current
   // (touchmove) event, great, otherwise send it immediately but separately. Its
   // ack will trigger forwarding of the original |touch| event.
-  if (pending_async_touch_move_) {
-    if (pending_async_touch_move_->CanCoalesceWith(touch)) {
-      pending_async_touch_move_->CoalesceWith(touch);
-      pending_async_touch_move_->event.cancelable = !send_touch_events_async_;
-      touch = *pending_async_touch_move_.Pass();
+  if (pending_async_touchmove_) {
+    if (pending_async_touchmove_->CanCoalesceWith(touch)) {
+      pending_async_touchmove_->CoalesceWith(touch);
+      pending_async_touchmove_->event.cancelable = !send_touch_events_async_;
+      touch = *pending_async_touchmove_.Pass();
     } else {
       scoped_ptr<TouchEventWithLatencyInfo> async_move =
-          pending_async_touch_move_.Pass();
+          pending_async_touchmove_.Pass();
       async_move->event.cancelable = false;
       touch_queue_.push_front(new CoalescedWebTouchEvent(*async_move, true));
       SendTouchEventImmediately(*async_move);
@@ -534,9 +543,9 @@ void TouchEventQueue::OnGestureScrollEvent(
       }
     }
 
-    pending_async_touch_move_.reset();
+    pending_async_touchmove_.reset();
     send_touch_events_async_ = true;
-    needs_async_touch_move_for_outer_slop_region_ = true;
+    needs_async_touchmove_for_outer_slop_region_ = true;
     return;
   }
 
@@ -579,11 +588,11 @@ void TouchEventQueue::OnGestureEventAck(
   // Note that there's no guarantee that this ACK is for the most recent
   // gesture event (or even part of the current sequence).  Worst case, the
   // delay in updating the absorption state will result in minor UI glitches.
-  // A valid |pending_async_touch_move_| will be flushed when the next event is
+  // A valid |pending_async_touchmove_| will be flushed when the next event is
   // forwarded.
   send_touch_events_async_ = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
   if (!send_touch_events_async_)
-    needs_async_touch_move_for_outer_slop_region_ = false;
+    needs_async_touchmove_for_outer_slop_region_ = false;
 }
 
 void TouchEventQueue::OnHasTouchEventHandlers(bool has_handlers) {
@@ -601,7 +610,7 @@ void TouchEventQueue::OnHasTouchEventHandlers(bool has_handlers) {
     // TODO(jdduke): Synthesize a TouchCancel if necessary to update Blink touch
     // state tracking (e.g., if the touch handler was removed mid-sequence).
     touch_filtering_state_ = DROP_ALL_TOUCHES;
-    pending_async_touch_move_.reset();
+    pending_async_touchmove_.reset();
     if (timeout_handler_)
       timeout_handler_->Reset();
     if (!touch_queue_.empty())
@@ -621,29 +630,30 @@ bool TouchEventQueue::IsPendingAckTouchStart() const {
   return (event.type == WebInputEvent::TouchStart);
 }
 
-void TouchEventQueue::SetAckTimeoutEnabled(bool enabled,
-                                           base::TimeDelta ack_timeout_delay) {
-  if (!enabled) {
-    ack_timeout_enabled_ = false;
-    if (touch_filtering_state_ == FORWARD_TOUCHES_UNTIL_TIMEOUT)
-      touch_filtering_state_ = FORWARD_ALL_TOUCHES;
-    // Only reset the |timeout_handler_| if the timer is running and has not yet
-    // timed out. This ensures that an already timed out sequence is properly
-    // flushed by the handler.
-    if (timeout_handler_ && timeout_handler_->IsTimeoutTimerRunning())
-      timeout_handler_->Reset();
-    return;
-  }
-
-  ack_timeout_enabled_ = true;
+void TouchEventQueue::SetAckTimeoutEnabled(bool enabled) {
+  // The timeout handler is valid only if explicitly supported in the config.
   if (!timeout_handler_)
-    timeout_handler_.reset(new TouchTimeoutHandler(this, ack_timeout_delay));
-  else
-    timeout_handler_->set_timeout_delay(ack_timeout_delay);
+    return;
+
+  if (ack_timeout_enabled_ == enabled)
+    return;
+
+  ack_timeout_enabled_ = enabled;
+
+  if (enabled)
+    return;
+
+  if (touch_filtering_state_ == FORWARD_TOUCHES_UNTIL_TIMEOUT)
+    touch_filtering_state_ = FORWARD_ALL_TOUCHES;
+  // Only reset the |timeout_handler_| if the timer is running and has not yet
+  // timed out. This ensures that an already timed out sequence is properly
+  // flushed by the handler.
+  if (timeout_handler_ && timeout_handler_->IsTimeoutTimerRunning())
+    timeout_handler_->Reset();
 }
 
 bool TouchEventQueue::HasPendingAsyncTouchMoveForTesting() const {
-  return pending_async_touch_move_;
+  return pending_async_touchmove_;
 }
 
 bool TouchEventQueue::IsTimeoutRunningForTesting() const {
@@ -658,7 +668,7 @@ TouchEventQueue::GetLatestEventForTesting() const {
 void TouchEventQueue::FlushQueue() {
   DCHECK(!dispatching_touch_ack_);
   DCHECK(!dispatching_touch_);
-  pending_async_touch_move_.reset();
+  pending_async_touchmove_.reset();
   if (touch_filtering_state_ != DROP_ALL_TOUCHES)
     touch_filtering_state_ = DROP_TOUCHES_IN_SEQUENCE;
   while (!touch_queue_.empty())
@@ -700,14 +710,14 @@ scoped_ptr<CoalescedWebTouchEvent> TouchEventQueue::PopTouchEvent() {
 
 void TouchEventQueue::SendTouchEventImmediately(
     const TouchEventWithLatencyInfo& touch) {
-  if (needs_async_touch_move_for_outer_slop_region_) {
+  if (needs_async_touchmove_for_outer_slop_region_) {
     // Any event other than a touchmove (e.g., touchcancel or secondary
     // touchstart) after a scroll has started will interrupt the need to send a
     // an outer slop-region exceeding touchmove.
     if (touch.event.type != WebInputEvent::TouchMove ||
         OutsideApplicationSlopRegion(touch.event,
                                      touch_sequence_start_position_))
-      needs_async_touch_move_for_outer_slop_region_ = false;
+      needs_async_touchmove_for_outer_slop_region_ = false;
   }
 
   client_->SendTouchEventImmediately(touch);

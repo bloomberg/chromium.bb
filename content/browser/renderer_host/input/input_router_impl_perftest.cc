@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/input/input_ack_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
@@ -11,7 +10,6 @@
 #include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
-#include "content/public/common/content_switches.h"
 #include "ipc/ipc_sender.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -206,17 +204,14 @@ class InputRouterImplPerfTest : public testing::Test {
  protected:
   // testing::Test
   virtual void SetUp() OVERRIDE {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableGestureDebounce)) {
-      CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kDisableGestureDebounce);
-    }
-
     sender_.reset(new NullIPCSender());
     client_.reset(new NullInputRouterClient());
     ack_handler_.reset(new NullInputAckHandler());
-    input_router_.reset(new InputRouterImpl(
-        sender_.get(), client_.get(), ack_handler_.get(), MSG_ROUTING_NONE));
+    input_router_.reset(new InputRouterImpl(sender_.get(),
+                                            client_.get(),
+                                            ack_handler_.get(),
+                                            MSG_ROUTING_NONE,
+                                            InputRouterImpl::Config()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -238,10 +233,12 @@ class InputRouterImplPerfTest : public testing::Test {
     input_router_->SendTouchEvent(TouchEventWithLatencyInfo(touch, latency));
   }
 
-  void SendEventAck(blink::WebInputEvent::Type type,
-                    InputEventAckState ack_result) {
+  void SendEventAckIfNecessary(const blink::WebInputEvent& event,
+                               InputEventAckState ack_result) {
+    if (WebInputEventTraits::IgnoresAckDisposition(event))
+      return;
     InputHostMsg_HandleInputEvent_ACK response(
-        0, type, ack_result, ui::LatencyInfo());
+        0, event.type, ack_result, ui::LatencyInfo());
     input_router_->OnMessageReceived(response);
   }
 
@@ -290,11 +287,11 @@ class InputRouterImplPerfTest : public testing::Test {
 
       for (; i < event_count; ++i, ++ack_i) {
         SendEvent(events[i], CreateLatencyInfo());
-        SendEventAck(events[ack_i].type, INPUT_EVENT_ACK_STATE_CONSUMED);
+        SendEventAckIfNecessary(events[ack_i], INPUT_EVENT_ACK_STATE_CONSUMED);
       }
 
       if (ack_delay)
-        SendEventAck(events.back().type, INPUT_EVENT_ACK_STATE_CONSUMED);
+        SendEventAckIfNecessary(events.back(), INPUT_EVENT_ACK_STATE_CONSUMED);
 
       EXPECT_EQ(event_count, GetAndResetSentEventCount());
       EXPECT_EQ(event_count, GetAndResetAckCount());
@@ -322,11 +319,12 @@ class InputRouterImplPerfTest : public testing::Test {
         // Touches may not be forwarded after the scroll sequence has begun, so
         // only ack if necessary.
         if (!AckCount()) {
-          SendEventAck(touches[i].type, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+          SendEventAckIfNecessary(touches[i],
+                                  INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
         }
 
         SendEvent(gestures[i], CreateLatencyInfo());
-        SendEventAck(gestures[i].type, INPUT_EVENT_ACK_STATE_CONSUMED);
+        SendEventAckIfNecessary(gestures[i], INPUT_EVENT_ACK_STATE_CONSUMED);
         EXPECT_EQ(2U, GetAndResetAckCount());
       }
     }
