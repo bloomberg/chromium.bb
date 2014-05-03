@@ -54,8 +54,7 @@ html:not(.focus-outline-visible)
   content: url(apps_developer_tools_promo_48.png);
 }
 
-#apps-developer-tools-promo-text,
-#apps-developer-tools-promo-link {
+#apps-developer-tools-promo-text {
   -webkit-margin-start: 5px;
 }
 
