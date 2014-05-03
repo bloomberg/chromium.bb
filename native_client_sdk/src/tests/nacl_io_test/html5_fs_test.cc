@@ -223,7 +223,7 @@ TEST_F(Html5FsTest, OpenForCreate) {
   ASSERT_EQ(0, fs->Open(path, O_CREAT, &node));
 
   // Check that the file still has data.
-  size_t size;
+  off_t size;
   EXPECT_EQ(0, node->GetSize(&size));
   EXPECT_EQ(strlen(contents), size);
 
@@ -359,7 +359,7 @@ TEST_F(Html5FsTest, GetStat) {
   EXPECT_EQ(modified_time, statbuf.st_mtime);
 
   // Test Get* and Isa* methods.
-  size_t size;
+  off_t size;
   EXPECT_EQ(0, node->GetSize(&size));
   EXPECT_EQ(strlen(contents), size);
   EXPECT_FALSE(node->IsaDir());

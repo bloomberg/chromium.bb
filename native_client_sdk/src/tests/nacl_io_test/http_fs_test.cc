@@ -254,7 +254,7 @@ TEST(HttpFsDirTest, Remove) {
 
 TEST(HttpFsDirTest, ParseManifest) {
   StringMap_t args;
-  size_t result_size = 0;
+  off_t result_size = 0;
 
   HttpFsForTesting fs(args, NULL);
 

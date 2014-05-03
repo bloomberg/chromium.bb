@@ -31,7 +31,7 @@ struct HandleAttr {
   HandleAttr() : offs(0), flags(0) {}
   bool IsBlocking() const { return !(flags & O_NONBLOCK); }
 
-  size_t offs;
+  off_t offs;
   int flags;
 };
 

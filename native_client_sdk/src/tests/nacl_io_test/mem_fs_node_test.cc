@@ -68,7 +68,7 @@ class DirNodeForTesting : public DirNode {
 TEST(MemFsNodeTest, File) {
   MemFsNodeForTesting file;
   ScopedNode result_node;
-  size_t result_size = 0;
+  off_t result_size = 0;
   int result_bytes = 0;
 
   EXPECT_EQ(0, file.Init(0));
@@ -120,7 +120,7 @@ TEST(MemFsNodeTest, File) {
 
 TEST(MemFsNodeTest, FTruncate) {
   MemFsNodeForTesting file;
-  size_t result_size = 0;
+  off_t result_size = 0;
   int result_bytes = 0;
 
   char data[1024];
@@ -197,7 +197,7 @@ TEST(MemFsNodeTest, Directory) {
   s_alloc_num = 0;
   DirNodeForTesting root;
   ScopedNode result_node;
-  size_t result_size = 0;
+  off_t result_size = 0;
   int result_bytes = 0;
 
   root.Init(0);

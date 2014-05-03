@@ -390,7 +390,7 @@ Error HttpFs::LoadManifest(const std::string& manifest_name,
   if (error)
     return error;
 
-  size_t size;
+  off_t size;
   error = manifest_node->GetSize(&size);
   if (error)
     return error;

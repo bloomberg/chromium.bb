@@ -94,7 +94,7 @@ class Node : public sdk_util::RefObject {
   virtual int GetType();
   virtual void SetType(int type);
   // Assume that |out_size| is non-NULL.
-  virtual Error GetSize(size_t* out_size);
+  virtual Error GetSize(off_t* out_size);
   // Returns 0 if node is a TTY
   virtual Error Isatty();
 

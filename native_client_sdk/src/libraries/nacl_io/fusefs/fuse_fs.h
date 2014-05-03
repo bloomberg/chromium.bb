@@ -53,7 +53,7 @@ class FuseFsNode : public Node {
   virtual Error Tcgetattr(struct termios* termios_p);
   virtual Error Tcsetattr(int optional_actions,
                           const struct termios* termios_p);
-  virtual Error GetSize(size_t* out_size);
+  virtual Error GetSize(off_t* out_size);
 
  protected:
   struct fuse_operations* fuse_ops_;

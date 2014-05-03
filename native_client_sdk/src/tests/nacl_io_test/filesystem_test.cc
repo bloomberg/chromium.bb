@@ -40,7 +40,7 @@ TEST(FilesystemTest, Sanity) {
   ScopedNode root;
   ScopedNode result_node;
 
-  size_t result_size = 0;
+  off_t result_size = 0;
   int result_bytes = 0;
   char buf1[1024];
 

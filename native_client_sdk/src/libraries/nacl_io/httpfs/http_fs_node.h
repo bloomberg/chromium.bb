@@ -34,7 +34,7 @@ class HttpFsNode : public Node {
                       const void* buf,
                       size_t count,
                       int* out_bytes);
-  virtual Error GetSize(size_t* out_size);
+  virtual Error GetSize(off_t* out_size);
 
   void SetCachedSize(off_t size);
   void SetMode(int mode);
@@ -61,13 +61,14 @@ class HttpFsNode : public Node {
                              int* out_bytes);
   Error DownloadPartial(const HandleAttr& attr,
                         void* buf,
-                        size_t count,
+                        off_t count,
                         int* out_bytes);
 
-  Error DownloadToTemp(int* out_bytes);
+  Error DownloadToTemp(off_t* out_bytes);
 
   // Read as much as possible from |loader|, using |buffer_| as a scratch area.
-  Error ReadEntireResponseToTemp(const ScopedResource& loader, int* out_bytes);
+  Error ReadEntireResponseToTemp(const ScopedResource& loader,
+                                 off_t* out_bytes);
   // Read as much as possible from |loader|, storing the result in
   // |cached_data_|.
   Error ReadEntireResponseToCache(const ScopedResource& loader, int* out_bytes);

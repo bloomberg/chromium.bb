@@ -34,7 +34,7 @@ class Html5FsNode : public Node {
                       int* out_bytes);
 
   virtual int GetType();
-  virtual Error GetSize(size_t* out_size);
+  virtual Error GetSize(off_t* out_size);
   virtual bool IsaDir();
   virtual bool IsaFile();
 

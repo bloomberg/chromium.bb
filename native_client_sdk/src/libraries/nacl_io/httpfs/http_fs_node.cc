@@ -83,30 +83,30 @@ StringMap_t ParseHeaders(const char* headers, int32_t headers_length) {
   return result;
 }
 
-bool ParseContentLength(const StringMap_t& headers, size_t* content_length) {
+bool ParseContentLength(const StringMap_t& headers, off_t* content_length) {
   StringMap_t::const_iterator iter = headers.find("Content-Length");
   if (iter == headers.end())
     return false;
 
-  *content_length = strtoul(iter->second.c_str(), NULL, 10);
+  *content_length = strtoull(iter->second.c_str(), NULL, 10);
   return true;
 }
 
 bool ParseContentRange(const StringMap_t& headers,
-                       size_t* read_start,
-                       size_t* read_end,
-                       size_t* entity_length) {
+                       off_t* read_start,
+                       off_t* read_end,
+                       off_t* entity_length) {
   StringMap_t::const_iterator iter = headers.find("Content-Range");
   if (iter == headers.end())
     return false;
 
   // The key should look like "bytes ##-##/##" or "bytes ##-##/*". The last
   // value is the entity length, which can potentially be * (i.e. unknown).
-  size_t read_start_int;
-  size_t read_end_int;
-  size_t entity_length_int;
+  off_t read_start_int;
+  off_t read_end_int;
+  off_t entity_length_int;
   int result = sscanf(iter->second.c_str(),
-                      "bytes %" SCNuS "-%" SCNuS "/%" SCNuS,
+                      "bytes %" SCNi64 "-%" SCNi64 "/%" SCNi64,
                       &read_start_int,
                       &read_end_int,
                       &entity_length_int);
@@ -198,7 +198,7 @@ Error HttpFsNode::Write(const HandleAttr& attr,
   return EACCES;
 }
 
-Error HttpFsNode::GetSize(size_t* out_size) {
+Error HttpFsNode::GetSize(off_t* out_size) {
   *out_size = 0;
 
   // TODO(binji): This value should be cached properly; i.e. obey the caching
@@ -244,7 +244,7 @@ Error HttpFsNode::GetStat_Locked(struct stat* stat) {
     if (error)
       return error;
 
-    size_t entity_length;
+    off_t entity_length;
     if (ParseContentLength(response_headers, &entity_length)) {
       SetCachedSize(static_cast<off_t>(entity_length));
     } else if (cache_content_) {
@@ -258,7 +258,7 @@ Error HttpFsNode::GetStat_Locked(struct stat* stat) {
       // "Content-Length" header. Read the entire entity, and throw it away.
       // Don't use DownloadToCache, as that will still allocate enough memory
       // for the entire entity.
-      int bytes_read;
+      off_t bytes_read;
       error = DownloadToTemp(&bytes_read);
       if (error)
         return error;
@@ -367,7 +367,7 @@ Error HttpFsNode::DownloadToCache() {
   if (error)
     return error;
 
-  size_t content_length = 0;
+  off_t content_length = 0;
   if (ParseContentLength(response_headers, &content_length)) {
     cached_data_.resize(content_length);
     int real_size;
@@ -395,7 +395,7 @@ Error HttpFsNode::ReadPartialFromCache(const HandleAttr& attr,
                                        int count,
                                        int* out_bytes) {
   *out_bytes = 0;
-  size_t size = cached_data_.size();
+  off_t size = cached_data_.size();
 
   if (attr.offs + count > size)
     count = size - attr.offs;
@@ -410,7 +410,7 @@ Error HttpFsNode::ReadPartialFromCache(const HandleAttr& attr,
 
 Error HttpFsNode::DownloadPartial(const HandleAttr& attr,
                                   void* buf,
-                                  size_t count,
+                                  off_t count,
                                   int* out_bytes) {
   *out_bytes = 0;
 
@@ -420,7 +420,7 @@ Error HttpFsNode::DownloadPartial(const HandleAttr& attr,
   // Range request is inclusive: 0-99 returns 100 bytes.
   snprintf(&buffer[0],
            sizeof(buffer),
-           "bytes=%" PRIuS "-%" PRIuS,
+           "bytes=%" PRIi64 "-%" PRIi64,
            attr.offs,
            attr.offs + count - 1);
   headers["Range"] = buffer;
@@ -447,10 +447,10 @@ Error HttpFsNode::DownloadPartial(const HandleAttr& attr,
     return error;
   }
 
-  size_t read_start = 0;
+  off_t read_start = 0;
   if (statuscode == STATUSCODE_OK) {
     // No partial result, read everything starting from the part we care about.
-    size_t content_length;
+    off_t content_length;
     if (ParseContentLength(response_headers, &content_length)) {
       if (attr.offs >= content_length)
         return EINVAL;
@@ -462,8 +462,8 @@ Error HttpFsNode::DownloadPartial(const HandleAttr& attr,
     }
   } else if (statuscode == STATUSCODE_PARTIAL_CONTENT) {
     // Determine from the headers where we are reading.
-    size_t read_end;
-    size_t entity_length;
+    off_t read_end;
+    off_t entity_length;
     if (ParseContentRange(
             response_headers, &read_start, &read_end, &entity_length)) {
       if (read_start > attr.offs || read_start > read_end) {
@@ -501,7 +501,7 @@ Error HttpFsNode::DownloadPartial(const HandleAttr& attr,
   return ReadResponseToBuffer(loader, buf, count, out_bytes);
 }
 
-Error HttpFsNode::DownloadToTemp(int* out_bytes) {
+Error HttpFsNode::DownloadToTemp(off_t* out_bytes) {
   StringMap_t headers;
   ScopedResource loader(filesystem_->ppapi());
   ScopedResource request(filesystem_->ppapi());
@@ -518,7 +518,7 @@ Error HttpFsNode::DownloadToTemp(int* out_bytes) {
   if (error)
     return error;
 
-  size_t content_length = 0;
+  off_t content_length = 0;
   if (ParseContentLength(response_headers, &content_length)) {
     *out_bytes = content_length;
     return 0;
@@ -528,7 +528,7 @@ Error HttpFsNode::DownloadToTemp(int* out_bytes) {
 }
 
 Error HttpFsNode::ReadEntireResponseToTemp(const ScopedResource& loader,
-                                           int* out_bytes) {
+                                           off_t* out_bytes) {
   *out_bytes = 0;
 
   const int kBytesToRead = MAX_READ_BUFFER_SIZE;

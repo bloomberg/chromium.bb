@@ -165,7 +165,7 @@ int Node::GetLinks() { return stat_.st_nlink; }
 
 int Node::GetMode() { return stat_.st_mode & ~S_IFMT; }
 
-Error Node::GetSize(size_t* out_size) {
+Error Node::GetSize(off_t* out_size) {
   *out_size = stat_.st_size;
   return 0;
 }

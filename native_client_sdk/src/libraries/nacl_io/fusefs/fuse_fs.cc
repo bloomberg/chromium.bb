@@ -257,7 +257,7 @@ Error FuseFsNode::Tcsetattr(int optional_actions,
   return ENOSYS;
 }
 
-Error FuseFsNode::GetSize(size_t* out_size) {
+Error FuseFsNode::GetSize(off_t* out_size) {
   struct stat statbuf;
   Error error = GetStat(&statbuf);
   if (error)

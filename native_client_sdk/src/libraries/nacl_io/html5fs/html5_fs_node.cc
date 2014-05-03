@@ -229,7 +229,7 @@ Error Html5FsNode::Write(const HandleAttr& attr,
 
 int Html5FsNode::GetType() { return fileio_resource_ ? S_IFREG : S_IFDIR; }
 
-Error Html5FsNode::GetSize(size_t* out_size) {
+Error Html5FsNode::GetSize(off_t* out_size) {
   *out_size = 0;
 
   if (IsaDir())
@@ -243,7 +243,7 @@ Error Html5FsNode::GetSize(size_t* out_size) {
   if (result != PP_OK)
     return PPErrorToErrno(result);
 
-  *out_size = static_cast<size_t>(info.size);
+  *out_size = info.size;
   return 0;
 }
 
