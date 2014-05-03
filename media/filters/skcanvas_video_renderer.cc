@@ -88,7 +88,7 @@ static void FastPaint(
   }
 
   if (video_frame->format() == media::VideoFrame::YV12J) {
-    yuv_type = media::YV12;
+    yuv_type = media::YV12J;
     y_shift = 1;
   }
 
@@ -229,7 +229,6 @@ static void ConvertVideoFrameToBitmap(
   switch (video_frame->format()) {
     case media::VideoFrame::YV12:
     case media::VideoFrame::I420:
-    case media::VideoFrame::YV12J:
       media::ConvertYUVToRGB32(
           video_frame->data(media::VideoFrame::kYPlane) + y_offset,
           video_frame->data(media::VideoFrame::kUPlane) + uv_offset,
@@ -241,6 +240,20 @@ static void ConvertVideoFrameToBitmap(
           video_frame->stride(media::VideoFrame::kUPlane),
           bitmap->rowBytes(),
           media::YV12);
+      break;
+
+    case media::VideoFrame::YV12J:
+      media::ConvertYUVToRGB32(
+          video_frame->data(media::VideoFrame::kYPlane) + y_offset,
+          video_frame->data(media::VideoFrame::kUPlane) + uv_offset,
+          video_frame->data(media::VideoFrame::kVPlane) + uv_offset,
+          static_cast<uint8*>(bitmap->getPixels()),
+          video_frame->visible_rect().width(),
+          video_frame->visible_rect().height(),
+          video_frame->stride(media::VideoFrame::kYPlane),
+          video_frame->stride(media::VideoFrame::kUPlane),
+          bitmap->rowBytes(),
+          media::YV12J);
       break;
 
     case media::VideoFrame::YV16:

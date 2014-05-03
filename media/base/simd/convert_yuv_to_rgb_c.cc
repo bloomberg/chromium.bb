@@ -38,21 +38,22 @@ namespace media {
 static inline void ConvertYUVToRGB32_C(uint8 y,
                                        uint8 u,
                                        uint8 v,
-                                       uint8* rgb_buf) {
-  int b = kCoefficientsRgbY[256+u][B_INDEX];
-  int g = kCoefficientsRgbY[256+u][G_INDEX];
-  int r = kCoefficientsRgbY[256+u][R_INDEX];
-  int a = kCoefficientsRgbY[256+u][A_INDEX];
+                                       uint8* rgb_buf,
+                                       const int16 convert_table[1024][4]) {
+  int b = convert_table[256+u][B_INDEX];
+  int g = convert_table[256+u][G_INDEX];
+  int r = convert_table[256+u][R_INDEX];
+  int a = convert_table[256+u][A_INDEX];
 
-  b = paddsw(b, kCoefficientsRgbY[512+v][B_INDEX]);
-  g = paddsw(g, kCoefficientsRgbY[512+v][G_INDEX]);
-  r = paddsw(r, kCoefficientsRgbY[512+v][R_INDEX]);
-  a = paddsw(a, kCoefficientsRgbY[512+v][A_INDEX]);
+  b = paddsw(b, convert_table[512+v][B_INDEX]);
+  g = paddsw(g, convert_table[512+v][G_INDEX]);
+  r = paddsw(r, convert_table[512+v][R_INDEX]);
+  a = paddsw(a, convert_table[512+v][A_INDEX]);
 
-  b = paddsw(b, kCoefficientsRgbY[y][B_INDEX]);
-  g = paddsw(g, kCoefficientsRgbY[y][G_INDEX]);
-  r = paddsw(r, kCoefficientsRgbY[y][R_INDEX]);
-  a = paddsw(a, kCoefficientsRgbY[y][A_INDEX]);
+  b = paddsw(b, convert_table[y][B_INDEX]);
+  g = paddsw(g, convert_table[y][G_INDEX]);
+  r = paddsw(r, convert_table[y][R_INDEX]);
+  a = paddsw(a, convert_table[y][A_INDEX]);
 
   b >>= 6;
   g >>= 6;
@@ -69,18 +70,19 @@ static inline void ConvertYUVAToARGB_C(uint8 y,
                                        uint8 u,
                                        uint8 v,
                                        uint8 a,
-                                       uint8* rgb_buf) {
-  int b = kCoefficientsRgbY[256+u][0];
-  int g = kCoefficientsRgbY[256+u][1];
-  int r = kCoefficientsRgbY[256+u][2];
+                                       uint8* rgb_buf,
+                                       const int16 convert_table[1024][4]) {
+  int b = convert_table[256+u][0];
+  int g = convert_table[256+u][1];
+  int r = convert_table[256+u][2];
 
-  b = paddsw(b, kCoefficientsRgbY[512+v][0]);
-  g = paddsw(g, kCoefficientsRgbY[512+v][1]);
-  r = paddsw(r, kCoefficientsRgbY[512+v][2]);
+  b = paddsw(b, convert_table[512+v][0]);
+  g = paddsw(g, convert_table[512+v][1]);
+  r = paddsw(r, convert_table[512+v][2]);
 
-  b = paddsw(b, kCoefficientsRgbY[y][0]);
-  g = paddsw(g, kCoefficientsRgbY[y][1]);
-  r = paddsw(r, kCoefficientsRgbY[y][2]);
+  b = paddsw(b, convert_table[y][0]);
+  g = paddsw(g, convert_table[y][1]);
+  r = paddsw(r, convert_table[y][2]);
 
   b >>= 6;
   g >>= 6;
@@ -100,15 +102,16 @@ void ConvertYUVToRGB32Row_C(const uint8* y_buf,
                             const uint8* u_buf,
                             const uint8* v_buf,
                             uint8* rgb_buf,
-                            ptrdiff_t width) {
+                            ptrdiff_t width,
+                            const int16 convert_table[1024][4]) {
   for (int x = 0; x < width; x += 2) {
     uint8 u = u_buf[x >> 1];
     uint8 v = v_buf[x >> 1];
     uint8 y0 = y_buf[x];
-    ConvertYUVToRGB32_C(y0, u, v, rgb_buf);
+    ConvertYUVToRGB32_C(y0, u, v, rgb_buf, convert_table);
     if ((x + 1) < width) {
       uint8 y1 = y_buf[x + 1];
-      ConvertYUVToRGB32_C(y1, u, v, rgb_buf + 4);
+      ConvertYUVToRGB32_C(y1, u, v, rgb_buf + 4, convert_table);
     }
     rgb_buf += 8;  // Advance 2 pixels.
   }
@@ -119,17 +122,18 @@ void ConvertYUVAToARGBRow_C(const uint8* y_buf,
                             const uint8* v_buf,
                             const uint8* a_buf,
                             uint8* rgba_buf,
-                            ptrdiff_t width) {
+                            ptrdiff_t width,
+                            const int16 convert_table[1024][4]) {
   for (int x = 0; x < width; x += 2) {
     uint8 u = u_buf[x >> 1];
     uint8 v = v_buf[x >> 1];
     uint8 y0 = y_buf[x];
     uint8 a0 = a_buf[x];
-    ConvertYUVAToARGB_C(y0, u, v, a0, rgba_buf);
+    ConvertYUVAToARGB_C(y0, u, v, a0, rgba_buf, convert_table);
     if ((x + 1) < width) {
       uint8 y1 = y_buf[x + 1];
       uint8 a1 = a_buf[x + 1];
-      ConvertYUVAToARGB_C(y1, u, v, a1, rgba_buf + 4);
+      ConvertYUVAToARGB_C(y1, u, v, a1, rgba_buf + 4, convert_table);
     }
     rgba_buf += 8;  // Advance 2 pixels.
   }
@@ -144,17 +148,18 @@ void ScaleYUVToRGB32Row_C(const uint8* y_buf,
                           const uint8* v_buf,
                           uint8* rgb_buf,
                           ptrdiff_t width,
-                          ptrdiff_t source_dx) {
+                          ptrdiff_t source_dx,
+                          const int16 convert_table[1024][4]) {
   int x = 0;
   for (int i = 0; i < width; i += 2) {
     int y = y_buf[x >> 16];
     int u = u_buf[(x >> 17)];
     int v = v_buf[(x >> 17)];
-    ConvertYUVToRGB32_C(y, u, v, rgb_buf);
+    ConvertYUVToRGB32_C(y, u, v, rgb_buf, convert_table);
     x += source_dx;
     if ((i + 1) < width) {
       y = y_buf[x >> 16];
-      ConvertYUVToRGB32_C(y, u, v, rgb_buf+4);
+      ConvertYUVToRGB32_C(y, u, v, rgb_buf+4, convert_table);
       x += source_dx;
     }
     rgb_buf += 8;
@@ -166,13 +171,14 @@ void LinearScaleYUVToRGB32Row_C(const uint8* y_buf,
                                 const uint8* v_buf,
                                 uint8* rgb_buf,
                                 ptrdiff_t width,
-                                ptrdiff_t source_dx) {
+                                ptrdiff_t source_dx,
+                                const int16 convert_table[1024][4]) {
   // Avoid point-sampling for down-scaling by > 2:1.
   int source_x = 0;
   if (source_dx >= 0x20000)
     source_x += 0x8000;
   LinearScaleYUVToRGB32RowWithRange_C(y_buf, u_buf, v_buf, rgb_buf, width,
-                                      source_x, source_dx);
+                                      source_x, source_dx, convert_table);
 }
 
 void LinearScaleYUVToRGB32RowWithRange_C(const uint8* y_buf,
@@ -181,7 +187,8 @@ void LinearScaleYUVToRGB32RowWithRange_C(const uint8* y_buf,
                                          uint8* rgb_buf,
                                          int dest_width,
                                          int x,
-                                         int source_dx) {
+                                         int source_dx,
+                                         const int16 convert_table[1024][4]) {
   for (int i = 0; i < dest_width; i += 2) {
     int y0 = y_buf[x >> 16];
     int y1 = y_buf[(x >> 16) + 1];
@@ -194,14 +201,14 @@ void LinearScaleYUVToRGB32RowWithRange_C(const uint8* y_buf,
     int y = (y_frac * y1 + (y_frac ^ 65535) * y0) >> 16;
     int u = (uv_frac * u1 + (uv_frac ^ 65535) * u0) >> 16;
     int v = (uv_frac * v1 + (uv_frac ^ 65535) * v0) >> 16;
-    ConvertYUVToRGB32_C(y, u, v, rgb_buf);
+    ConvertYUVToRGB32_C(y, u, v, rgb_buf, convert_table);
     x += source_dx;
     if ((i + 1) < dest_width) {
       y0 = y_buf[x >> 16];
       y1 = y_buf[(x >> 16) + 1];
       y_frac = (x & 65535);
       y = (y_frac * y1 + (y_frac ^ 65535) * y0) >> 16;
-      ConvertYUVToRGB32_C(y, u, v, rgb_buf+4);
+      ConvertYUVToRGB32_C(y, u, v, rgb_buf+4, convert_table);
       x += source_dx;
     }
     rgb_buf += 8;
@@ -218,7 +225,7 @@ void ConvertYUVToRGB32_C(const uint8* yplane,
                          int uvstride,
                          int rgbstride,
                          YUVType yuv_type) {
-  unsigned int y_shift = yuv_type;
+  unsigned int y_shift = GetVerticalShift(yuv_type);
   for (int y = 0; y < height; ++y) {
     uint8* rgb_row = rgbframe + y * rgbstride;
     const uint8* y_ptr = yplane + y * ystride;
@@ -229,7 +236,8 @@ void ConvertYUVToRGB32_C(const uint8* yplane,
                            u_ptr,
                            v_ptr,
                            rgb_row,
-                           width);
+                           width,
+                           GetLookupTable(yuv_type));
   }
 }
 
@@ -258,7 +266,8 @@ void ConvertYUVAToARGB_C(const uint8* yplane,
                            v_ptr,
                            a_ptr,
                            rgba_row,
-                           width);
+                           width,
+                           GetLookupTable(yuv_type));
   }
 }
 

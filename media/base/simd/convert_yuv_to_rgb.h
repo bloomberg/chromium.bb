@@ -28,7 +28,8 @@ MEDIA_EXPORT void ConvertYUVToRGB32Row_C(const uint8* yplane,
                                          const uint8* uplane,
                                          const uint8* vplane,
                                          uint8* rgbframe,
-                                         ptrdiff_t width);
+                                         ptrdiff_t width,
+                                         const int16 convert_table[1024][4]);
 
 MEDIA_EXPORT void ConvertYUVAToARGB_C(const uint8* yplane,
                                       const uint8* uplane,
@@ -48,7 +49,8 @@ MEDIA_EXPORT void ConvertYUVAToARGBRow_C(const uint8* yplane,
                                          const uint8* vplane,
                                          const uint8* aplane,
                                          uint8* rgbframe,
-                                         ptrdiff_t width);
+                                         ptrdiff_t width,
+                                         const int16 convert_table[1024][4]);
 
 MEDIA_EXPORT void ConvertYUVToRGB32_SSE(const uint8* yplane,
                                         const uint8* uplane,
@@ -90,22 +92,27 @@ MEDIA_EXPORT void ScaleYUVToRGB32Row_C(const uint8* y_buf,
                                        const uint8* v_buf,
                                        uint8* rgb_buf,
                                        ptrdiff_t width,
-                                       ptrdiff_t source_dx);
+                                       ptrdiff_t source_dx,
+                                       const int16 convert_table[1024][4]);
 
-MEDIA_EXPORT void LinearScaleYUVToRGB32Row_C(const uint8* y_buf,
-                                             const uint8* u_buf,
-                                             const uint8* v_buf,
-                                             uint8* rgb_buf,
-                                             ptrdiff_t width,
-                                             ptrdiff_t source_dx);
+MEDIA_EXPORT void LinearScaleYUVToRGB32Row_C(
+    const uint8* y_buf,
+    const uint8* u_buf,
+    const uint8* v_buf,
+    uint8* rgb_buf,
+    ptrdiff_t width,
+    ptrdiff_t source_dx,
+    const int16 convert_table[1024][4]);
 
-MEDIA_EXPORT void LinearScaleYUVToRGB32RowWithRange_C(const uint8* y_buf,
-                                                      const uint8* u_buf,
-                                                      const uint8* v_buf,
-                                                      uint8* rgb_buf,
-                                                      int dest_width,
-                                                      int source_x,
-                                                      int source_dx);
+MEDIA_EXPORT void LinearScaleYUVToRGB32RowWithRange_C(
+    const uint8* y_buf,
+    const uint8* u_buf,
+    const uint8* v_buf,
+    uint8* rgb_buf,
+    int dest_width,
+    int source_x,
+    int source_dx,
+    const int16 convert_table[1024][4]);
 
 }  // namespace media
 
@@ -123,62 +130,75 @@ MEDIA_EXPORT void ConvertYUVToRGB32Row_MMX(const uint8* yplane,
                                            const uint8* uplane,
                                            const uint8* vplane,
                                            uint8* rgbframe,
-                                           ptrdiff_t width);
+                                           ptrdiff_t width,
+                                           const int16 convert_table[1024][4]);
 
 MEDIA_EXPORT void ConvertYUVAToARGBRow_MMX(const uint8* yplane,
                                            const uint8* uplane,
                                            const uint8* vplane,
                                            const uint8* aplane,
                                            uint8* rgbframe,
-                                           ptrdiff_t width);
+                                           ptrdiff_t width,
+                                           const int16 convert_table[1024][4]);
 
 MEDIA_EXPORT void ConvertYUVToRGB32Row_SSE(const uint8* yplane,
                                            const uint8* uplane,
                                            const uint8* vplane,
                                            uint8* rgbframe,
-                                           ptrdiff_t width);
+                                           ptrdiff_t width,
+                                           const int16 convert_table[1024][4]);
 
 MEDIA_EXPORT void ScaleYUVToRGB32Row_MMX(const uint8* y_buf,
                                          const uint8* u_buf,
                                          const uint8* v_buf,
                                          uint8* rgb_buf,
                                          ptrdiff_t width,
-                                         ptrdiff_t source_dx);
+                                         ptrdiff_t source_dx,
+                                         const int16 convert_table[1024][4]);
 
 MEDIA_EXPORT void ScaleYUVToRGB32Row_SSE(const uint8* y_buf,
                                          const uint8* u_buf,
                                          const uint8* v_buf,
                                          uint8* rgb_buf,
                                          ptrdiff_t width,
-                                         ptrdiff_t source_dx);
+                                         ptrdiff_t source_dx,
+                                         const int16 convert_table[1024][4]);
 
-MEDIA_EXPORT void ScaleYUVToRGB32Row_SSE2_X64(const uint8* y_buf,
-                                              const uint8* u_buf,
-                                              const uint8* v_buf,
-                                              uint8* rgb_buf,
-                                              ptrdiff_t width,
-                                              ptrdiff_t source_dx);
+MEDIA_EXPORT void ScaleYUVToRGB32Row_SSE2_X64(
+    const uint8* y_buf,
+    const uint8* u_buf,
+    const uint8* v_buf,
+    uint8* rgb_buf,
+    ptrdiff_t width,
+    ptrdiff_t source_dx,
+    const int16 convert_table[1024][4]);
 
-MEDIA_EXPORT void LinearScaleYUVToRGB32Row_MMX(const uint8* y_buf,
-                                               const uint8* u_buf,
-                                               const uint8* v_buf,
-                                               uint8* rgb_buf,
-                                               ptrdiff_t width,
-                                               ptrdiff_t source_dx);
+MEDIA_EXPORT void LinearScaleYUVToRGB32Row_MMX(
+    const uint8* y_buf,
+    const uint8* u_buf,
+    const uint8* v_buf,
+    uint8* rgb_buf,
+    ptrdiff_t width,
+    ptrdiff_t source_dx,
+    const int16 convert_table[1024][4]);
 
-MEDIA_EXPORT void LinearScaleYUVToRGB32Row_SSE(const uint8* y_buf,
-                                               const uint8* u_buf,
-                                               const uint8* v_buf,
-                                               uint8* rgb_buf,
-                                               ptrdiff_t width,
-                                               ptrdiff_t source_dx);
+MEDIA_EXPORT void LinearScaleYUVToRGB32Row_SSE(
+    const uint8* y_buf,
+    const uint8* u_buf,
+    const uint8* v_buf,
+    uint8* rgb_buf,
+    ptrdiff_t width,
+    ptrdiff_t source_dx,
+    const int16 convert_table[1024][4]);
 
-MEDIA_EXPORT void LinearScaleYUVToRGB32Row_MMX_X64(const uint8* y_buf,
-                                                   const uint8* u_buf,
-                                                   const uint8* v_buf,
-                                                   uint8* rgb_buf,
-                                                   ptrdiff_t width,
-                                                   ptrdiff_t source_dx);
+MEDIA_EXPORT void LinearScaleYUVToRGB32Row_MMX_X64(
+    const uint8* y_buf,
+    const uint8* u_buf,
+    const uint8* v_buf,
+    uint8* rgb_buf,
+    ptrdiff_t width,
+    ptrdiff_t source_dx,
+    const int16 convert_table[1024][4]);
 
 }  // extern "C"
 
