@@ -45,6 +45,7 @@
 #include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "webkit/child/resource_loader_bridge.h"
 
 #if defined(OS_WIN)
 #include "content/common/handle_enumerator_win.h"
@@ -371,6 +372,11 @@ bool ChildThread::Send(IPC::Message* msg) {
 MessageRouter* ChildThread::GetRouter() {
   DCHECK(base::MessageLoop::current() == message_loop());
   return &router_;
+}
+
+webkit_glue::ResourceLoaderBridge* ChildThread::CreateBridge(
+    const RequestInfo& request_info) {
+  return resource_dispatcher()->CreateBridge(request_info);
 }
 
 base::SharedMemory* ChildThread::AllocateSharedMemory(size_t buf_size) {

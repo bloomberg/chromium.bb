@@ -19,8 +19,10 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/child/resource_loader_bridge.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
 
+using webkit_glue::ResourceLoaderBridge;
 using webkit_glue::ResourceResponseInfo;
 
 namespace content {
@@ -162,37 +164,37 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     dispatcher_.reset();
   }
 
-  RequestInfo* CreateRequestInfo(RequestExtraData* extra_data) {
-    RequestInfo* request_info = new RequestInfo();
-    request_info->method = "GET";
-    request_info->url = GURL(test_page_url);
-    request_info->first_party_for_cookies = GURL(test_page_url);
-    request_info->referrer = GURL();
-    request_info->headers = std::string();
-    request_info->load_flags = 0;
-    request_info->requestor_pid = 0;
-    request_info->request_type = ResourceType::SUB_RESOURCE;
-    request_info->appcache_host_id = appcache::kNoHostId;
-    request_info->routing_id = 0;
-    request_info->extra_data = extra_data;
+  ResourceLoaderBridge* CreateBridge() {
+    RequestInfo request_info;
+    request_info.method = "GET";
+    request_info.url = GURL(test_page_url);
+    request_info.first_party_for_cookies = GURL(test_page_url);
+    request_info.referrer = GURL();
+    request_info.headers = std::string();
+    request_info.load_flags = 0;
+    request_info.requestor_pid = 0;
+    request_info.request_type = ResourceType::SUB_RESOURCE;
+    request_info.appcache_host_id = appcache::kNoHostId;
+    request_info.routing_id = 0;
+    RequestExtraData extra_data;
+    request_info.extra_data = &extra_data;
 
-    return request_info;
+    return dispatcher_->CreateBridge(request_info);
   }
 
   std::vector<IPC::Message> message_queue_;
   static scoped_ptr<ResourceDispatcher> dispatcher_;
 };
 
-// static
+/*static*/
 scoped_ptr<ResourceDispatcher> ResourceDispatcherTest::dispatcher_;
 
 // Does a simple request and tests that the correct data is received.
 TEST_F(ResourceDispatcherTest, RoundTrip) {
-  RequestExtraData extra_data;
-  scoped_ptr<RequestInfo> request_info(CreateRequestInfo(&extra_data));
   TestRequestCallback callback;
+  ResourceLoaderBridge* bridge = CreateBridge();
 
-  dispatcher_->StartAsync(*request_info.get(), NULL, &callback);
+  bridge->Start(&callback);
 
   ProcessMessages();
 
@@ -201,6 +203,8 @@ TEST_F(ResourceDispatcherTest, RoundTrip) {
   //EXPECT_TRUE(callback.complete());
   //EXPECT_STREQ(test_page_contents, callback.data().c_str());
   //EXPECT_EQ(test_page_contents_len, callback.total_encoded_data_length());
+
+  delete bridge;
 }
 
 // Tests that the request IDs are straight when there are multiple requests.
@@ -325,13 +329,14 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
 TEST_F(DeferredResourceLoadingTest, DeferredLoadTest) {
   base::MessageLoopForIO message_loop;
 
-  RequestExtraData extra_data;
-  scoped_ptr<RequestInfo> request_info(CreateRequestInfo(&extra_data));
-  dispatcher_->StartAsync(*request_info.get(), NULL, this);
+  ResourceLoaderBridge* bridge = CreateBridge();
+
+  bridge->Start(this);
   InitMessages();
 
   // Dispatch deferred messages.
   message_loop.RunUntilIdle();
+  delete bridge;
 }
 
 class TimeConversionTest : public ResourceDispatcherTest,
@@ -343,9 +348,8 @@ class TimeConversionTest : public ResourceDispatcherTest,
   }
 
   void PerformTest(const ResourceResponseHead& response_head) {
-    RequestExtraData extra_data;
-    scoped_ptr<RequestInfo> request_info(CreateRequestInfo(&extra_data));
-    dispatcher_->StartAsync(*request_info.get(), NULL, this);
+    scoped_ptr<ResourceLoaderBridge> bridge(CreateBridge());
+    bridge->Start(this);
 
     dispatcher_->OnMessageReceived(
         ResourceMsg_ReceivedResponse(0, response_head));
