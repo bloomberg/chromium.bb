@@ -114,7 +114,9 @@ void {{proxy_name}}::{{method.name}}(
   if (!receiver_->AcceptWithResponder(&message, responder))
     delete responder;
 {%- else %}
-  receiver_->Accept(&message);
+  bool ok MOJO_ALLOW_UNUSED = receiver_->Accept(&message);
+  // This return value may be ignored as !ok implies the Connector has
+  // encountered an error, which will be visible through other means.
 {%- endif %}
 }
 {%- endfor %}
@@ -153,7 +155,10 @@ void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
   mojo::internal::ResponseMessageBuilder builder(
       {{message_name}}, payload_size, request_id_);
   {{build_message(params_name, method.response_parameters)}}
-  responder_->Accept(&message);
+  bool ok MOJO_ALLOW_UNUSED = responder_->Accept(&message);
+  // TODO(darin): !ok returned here indicates a malformed message, and that may
+  // be good reason to close the connection. However, we don't have a way to do
+  // that from here. We should add a way.
   delete responder_;
   responder_ = NULL;
 }

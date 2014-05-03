@@ -83,7 +83,7 @@ class MessageReceiver {
   // The receiver may mutate the given message.  Returns true if the message
   // was accepted and false otherwise, indicating that the message was invalid
   // or malformed.
-  virtual bool Accept(Message* message) = 0;
+  virtual bool Accept(Message* message) MOJO_WARN_UNUSED_RESULT = 0;
 
   // A variant on Accept that registers a MessageReceiver (known as the
   // responder) to handle the response message generated from the given
@@ -94,8 +94,8 @@ class MessageReceiver {
   // |responder| and will delete it after calling |responder->Accept| or upon
   // its own destruction.
   //
-  virtual bool AcceptWithResponder(Message* message,
-                                   MessageReceiver* responder) = 0;
+  virtual bool AcceptWithResponder(
+      Message* message, MessageReceiver* responder) MOJO_WARN_UNUSED_RESULT = 0;
 };
 
 // Read a single message from the pipe and dispatch to the given receiver.  The
