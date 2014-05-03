@@ -38,6 +38,35 @@ void DoWorkCallback(const base::Callback<bool()>& callback) {
   callback.Run();
 }
 
+// TODO(armansito): Remove this function once the described bug is fixed.
+// (See crbug.com/368368).
+//
+// Converts an apibtle::Characteristic to a base::Value. This function is
+// necessary, as json_schema_compiler::util::AddItemToList has no template
+// specialization for user defined enums, which get treated as integers. This is
+// because Characteristic contains a list of enum CharacteristicProperty.
+scoped_ptr<base::DictionaryValue> CharacteristicToValue(
+    apibtle::Characteristic* from) {
+  // Copy the properties. Use Characteristic::ToValue to generate the result
+  // dictionary without the properties, to prevent json_schema_compiler from
+  // failing.
+  std::vector<apibtle::CharacteristicProperty> properties = from->properties;
+  from->properties.clear();
+  scoped_ptr<base::DictionaryValue> to = from->ToValue();
+
+  // Manually set each property.
+  scoped_ptr<base::ListValue> property_list(new base::ListValue());
+  for (std::vector<apibtle::CharacteristicProperty>::iterator iter =
+           properties.begin();
+       iter != properties.end();
+       ++iter)
+    property_list->Append(new base::StringValue(apibtle::ToString(*iter)));
+
+  to->Set("properties", property_list.release());
+
+  return to.Pass();
+}
+
 }  // namespace
 
 namespace extensions {
@@ -175,10 +204,48 @@ bool BluetoothLowEnergyGetCharacteristicFunction::DoWork() {
 }
 
 bool BluetoothLowEnergyGetCharacteristicsFunction::DoWork() {
-  // TODO(armansito): Implement.
-  SetError("Call not supported.");
-  SendResponse(false);
-  return false;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BluetoothLowEnergyEventRouter* event_router =
+      GetEventRouter(browser_context());
+
+  // The adapter must be initialized at this point, but return an error instead
+  // of asserting.
+  if (!event_router->HasAdapter()) {
+    SetError(kErrorAdapterNotInitialized);
+    SendResponse(false);
+    return false;
+  }
+
+  scoped_ptr<apibtle::GetCharacteristics::Params> params(
+      apibtle::GetCharacteristics::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+
+  std::string service_id = params->service_id;
+
+  BluetoothLowEnergyEventRouter::CharacteristicList characteristic_list;
+  if (!event_router->GetCharacteristics(service_id, &characteristic_list)) {
+    SetError(
+        base::StringPrintf(kErrorServiceNotFoundFormat, service_id.c_str()));
+
+    SendResponse(false);
+    return false;
+  }
+
+  // Manually construct the result instead of using
+  // apibtle::GetCharacteristics::Result::Create as it doesn't convert lists of
+  // enums correctly.
+  scoped_ptr<base::ListValue> result(new base::ListValue());
+  for (BluetoothLowEnergyEventRouter::CharacteristicList::iterator iter =
+           characteristic_list.begin();
+       iter != characteristic_list.end();
+       ++iter)
+    result->Append(CharacteristicToValue(iter->get()).release());
+
+  SetResult(result.release());
+  SendResponse(true);
+
+  return true;
 }
 
 bool BluetoothLowEnergyGetIncludedServicesFunction::DoWork() {

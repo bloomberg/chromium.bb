@@ -10,17 +10,21 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
+#include "device/bluetooth/test/mock_bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using device::BluetoothUUID;
 using device::BluetoothAdapter;
 using device::BluetoothDevice;
+using device::BluetoothGattCharacteristic;
 using device::BluetoothGattService;
 using device::MockBluetoothAdapter;
 using device::MockBluetoothDevice;
+using device::MockBluetoothGattCharacteristic;
 using device::MockBluetoothGattService;
 using testing::Return;
+using testing::ReturnRefOfCopy;
 using testing::_;
 
 namespace utils = extension_function_test_utils;
@@ -32,8 +36,31 @@ const char kTestLeDeviceName[] = "Test LE Device";
 
 const char kTestServiceId0[] = "service_id0";
 const char kTestServiceUuid0[] = "1234";
+
 const char kTestServiceId1[] = "service_id1";
 const char kTestServiceUuid1[] = "5678";
+
+const char kTestCharacteristicId0[] = "char_id0";
+const char kTestCharacteristicUuid0[] = "1211";
+const BluetoothGattCharacteristic::Properties kTestCharacteristicProperties0 =
+    BluetoothGattCharacteristic::kPropertyBroadcast |
+    BluetoothGattCharacteristic::kPropertyRead |
+    BluetoothGattCharacteristic::kPropertyWriteWithoutResponse |
+    BluetoothGattCharacteristic::kPropertyIndicate;
+const uint8 kTestCharacteristicDefaultValue0[] = {0x01, 0x02, 0x03, 0x04, 0x05};
+
+const char kTestCharacteristicId1[] = "char_id1";
+const char kTestCharacteristicUuid1[] = "1212";
+const BluetoothGattCharacteristic::Properties kTestCharacteristicProperties1 =
+    BluetoothGattCharacteristic::kPropertyRead |
+    BluetoothGattCharacteristic::kPropertyWrite |
+    BluetoothGattCharacteristic::kPropertyNotify;
+const uint8 kTestCharacteristicDefaultValue1[] = {0x06, 0x07, 0x08};
+
+const char kTestCharacteristicId2[] = "char_id1";
+const char kTestCharacteristicUuid2[] = "1213";
+const BluetoothGattCharacteristic::Properties kTestCharacteristicProperties2 =
+    BluetoothGattCharacteristic::kPropertyNone;
 
 class BluetoothLowEnergyApiTest : public ExtensionApiTest {
  public:
@@ -79,6 +106,43 @@ class BluetoothLowEnergyApiTest : public ExtensionApiTest {
         BluetoothUUID(kTestServiceUuid1),
         false /* is_primary */,
         false /* is_local */));
+
+    // Assign characteristics some random properties and permissions. They don't
+    // need to reflect what the characteristic is actually capable of, since
+    // the JS API just passes values through from
+    // device::BluetoothGattCharacteristic.
+    std::vector<uint8> default_value;
+    chrc0_.reset(new testing::NiceMock<MockBluetoothGattCharacteristic>(
+        service0_.get(),
+        kTestCharacteristicId0,
+        BluetoothUUID(kTestCharacteristicUuid0),
+        false /* is_local */,
+        kTestCharacteristicProperties0,
+        BluetoothGattCharacteristic::kPermissionNone));
+    default_value.assign(kTestCharacteristicDefaultValue0,
+                         (kTestCharacteristicDefaultValue0 +
+                          sizeof(kTestCharacteristicDefaultValue0)));
+    ON_CALL(*chrc0_, GetValue()).WillByDefault(ReturnRefOfCopy(default_value));
+
+    chrc1_.reset(new testing::NiceMock<MockBluetoothGattCharacteristic>(
+        service0_.get(),
+        kTestCharacteristicId1,
+        BluetoothUUID(kTestCharacteristicUuid1),
+        false /* is_local */,
+        kTestCharacteristicProperties1,
+        BluetoothGattCharacteristic::kPermissionNone));
+    default_value.assign(kTestCharacteristicDefaultValue1,
+                         (kTestCharacteristicDefaultValue1 +
+                          sizeof(kTestCharacteristicDefaultValue1)));
+    ON_CALL(*chrc1_, GetValue()).WillByDefault(ReturnRefOfCopy(default_value));
+
+    chrc2_.reset(new testing::NiceMock<MockBluetoothGattCharacteristic>(
+        service1_.get(),
+        kTestCharacteristicId2,
+        BluetoothUUID(kTestCharacteristicUuid2),
+        false /* is_local */,
+        kTestCharacteristicProperties2,
+        BluetoothGattCharacteristic::kPermissionNone));
   }
 
  protected:
@@ -91,6 +155,9 @@ class BluetoothLowEnergyApiTest : public ExtensionApiTest {
   scoped_ptr<testing::NiceMock<MockBluetoothDevice> > device_;
   scoped_ptr<testing::NiceMock<MockBluetoothGattService> > service0_;
   scoped_ptr<testing::NiceMock<MockBluetoothGattService> > service1_;
+  scoped_ptr<testing::NiceMock<MockBluetoothGattCharacteristic> > chrc0_;
+  scoped_ptr<testing::NiceMock<MockBluetoothGattCharacteristic> > chrc1_;
+  scoped_ptr<testing::NiceMock<MockBluetoothGattCharacteristic> > chrc2_;
 
  private:
   scoped_refptr<extensions::Extension> empty_extension_;
@@ -256,6 +323,41 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetIncludedServices) {
 
   listener.Reply("go");
   listener.Reset();
+
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  listener.Reply("go");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  event_router()->GattServiceRemoved(device_.get(), service0_.get());
+  event_router()->DeviceRemoved(mock_adapter_, device_.get());
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetCharacteristics) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  std::vector<BluetoothGattCharacteristic*> characteristics;
+  characteristics.push_back(chrc0_.get());
+  characteristics.push_back(chrc1_.get());
+
+  event_router()->DeviceAdded(mock_adapter_, device_.get());
+  event_router()->GattServiceAdded(device_.get(), service0_.get());
+
+  EXPECT_CALL(*mock_adapter_, GetDevice(_)).Times(3).WillRepeatedly(
+      Return(device_.get()));
+  EXPECT_CALL(*device_, GetGattService(kTestServiceId0))
+      .Times(3)
+      .WillOnce(Return(static_cast<BluetoothGattService*>(NULL)))
+      .WillRepeatedly(Return(service0_.get()));
+  EXPECT_CALL(*service0_, GetCharacteristics())
+      .Times(2)
+      .WillOnce(Return(std::vector<BluetoothGattCharacteristic*>()))
+      .WillOnce(Return(characteristics));
+
+  ExtensionTestMessageListener listener("ready", true);
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("bluetooth_low_energy/get_characteristics")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
   listener.Reply("go");

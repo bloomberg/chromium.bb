@@ -61,7 +61,7 @@ class BluetoothLowEnergyEventRouter
   // with the Bluetooth device with address |device_address| in |out_services|.
   // Returns false, if no device with the given address is known. If the device
   // is found but it has no GATT services, then returns true and leaves
-  // |out_services| as empty. Returns true, on success. |out_services| must not
+  // |out_services| empty. Returns true, on success. |out_services| must not
   // be NULL. If it is non-empty, then its contents will be cleared.
   typedef std::vector<linked_ptr<api::bluetooth_low_energy::Service> >
       ServiceList;
@@ -82,6 +82,18 @@ class BluetoothLowEnergyEventRouter
   // contents will be cleared.
   bool GetIncludedServices(const std::string& instance_id,
                            ServiceList* out_services) const;
+
+  // Returns the list of api::bluetooth_low_energy::Characteristic objects
+  // associated with the GATT service with instance ID |instance_id| in
+  // |out_characteristics|. Returns false, if no service with the given instance
+  // ID is known. If the service is found but it has no characteristics, then
+  // returns true and leaves |out_characteristics| empty. Returns true on
+  // success. |out_characteristics| must not be NULL and if it is non-empty,
+  // then its contents will be cleared.
+  typedef std::vector<linked_ptr<api::bluetooth_low_energy::Characteristic> >
+      CharacteristicList;
+  bool GetCharacteristics(const std::string& instance_id,
+                          CharacteristicList* out_characteristics) const;
 
   // Initializes the adapter for testing. Used by unit tests only.
   void SetAdapterForTesting(device::BluetoothAdapter* adapter);
@@ -153,6 +165,7 @@ class BluetoothLowEnergyEventRouter
   // device::BluetoothGattService that owns the characteristic.
   typedef std::map<std::string, GattObjectData> InstanceIdToObjectDataMap;
   InstanceIdToObjectDataMap service_ids_to_objects_;
+  InstanceIdToObjectDataMap chrc_ids_to_objects_;
 
   // Sets of BluetoothDevice and BluetoothGattService objects that are being
   // observed, used to remove the BluetoothLowEnergyEventRouter as an observer
