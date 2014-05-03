@@ -569,12 +569,12 @@ def GenerateJavaCoverageReport(options):
 def LogcatDump(options):
   # Print logcat, kill logcat monitor
   bb_annotations.PrintNamedStep('logcat_dump')
-  logcat_file = os.path.join(CHROME_OUT_DIR, options.target, 'full_log')
+  logcat_file = os.path.join(CHROME_OUT_DIR, options.target, 'full_log.txt')
   RunCmd([SrcPath('build' , 'android', 'adb_logcat_printer.py'),
           '--output-path', logcat_file, LOGCAT_DIR])
   gs_path = MakeGSPath(options, 'chromium-android/logcat_dumps')
-  RunCmd([bb_utils.GSUTIL_PATH, '-h', 'Content-Type:text/plain',
-          'cp', logcat_file, 'gs://%s' % gs_path])
+  RunCmd([bb_utils.GSUTIL_PATH, 'cp', '-z', 'txt', logcat_file,
+          'gs://%s' % gs_path])
   bb_annotations.PrintLink('logcat dump', '%s/%s' % (GS_AUTH_URL, gs_path))
 
 
@@ -584,7 +584,7 @@ def RunStackToolSteps(options):
   Stack tool is run for logcat dump, optionally for ASAN.
   """
   bb_annotations.PrintNamedStep('Run stack tool with logcat dump')
-  logcat_file = os.path.join(CHROME_OUT_DIR, options.target, 'full_log')
+  logcat_file = os.path.join(CHROME_OUT_DIR, options.target, 'full_log.txt')
   RunCmd([os.path.join(CHROME_SRC_DIR, 'third_party', 'android_platform',
           'development', 'scripts', 'stack'),
           '--more-info', logcat_file])
