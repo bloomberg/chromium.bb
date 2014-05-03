@@ -108,11 +108,13 @@ static base::LazyInstance<AVFoundationInternal> g_avfoundation_handle =
 bool AVFoundationGlue::IsAVFoundationSupported() {
   // DeviceMonitorMac will initialize this static bool from the main UI thread
   // once, during Chrome startup so this construction is thread safe.
+  // Use AVFoundation if possible, enabled, and QTKit is not explicitly forced.
+  static CommandLine* command_line = CommandLine::ForCurrentProcess();
   static bool is_av_foundation_supported = base::mac::IsOSLionOrLater() &&
-      (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAVFoundation) ||
-          base::FieldTrialList::FindFullName("AVFoundationMacVideoCapture")
-              == "Enabled") && [AVFoundationBundle() load];
+      ((command_line->HasSwitch(switches::kEnableAVFoundation) &&
+      !command_line->HasSwitch(switches::kForceQTKit)) ||
+      base::FieldTrialList::FindFullName("AVFoundationMacVideoCapture")
+          == "Enabled") && [AVFoundationBundle() load];
   return is_av_foundation_supported;
 }
 
