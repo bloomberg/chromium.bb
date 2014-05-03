@@ -1081,36 +1081,48 @@ public class ContentViewCore
      * @see View#onTouchEvent(MotionEvent)
      */
     public boolean onTouchEvent(MotionEvent event) {
-        MotionEvent offset = createOffsetMotionEvent(event);
+        TraceEvent.begin("onTouchEvent");
+        try {
+            cancelRequestToScrollFocusedEditableNodeIntoView();
 
-        cancelRequestToScrollFocusedEditableNodeIntoView();
+            final int eventAction = event.getActionMasked();
 
-        final int eventAction = offset.getActionMasked();
+            // Only these actions have any effect on gesture detection.  Other
+            // actions have no corresponding WebTouchEvent type and may confuse the
+            // touch pipline, so we ignore them entirely.
+            if (eventAction != MotionEvent.ACTION_DOWN
+                    && eventAction != MotionEvent.ACTION_UP
+                    && eventAction != MotionEvent.ACTION_CANCEL
+                    && eventAction != MotionEvent.ACTION_MOVE
+                    && eventAction != MotionEvent.ACTION_POINTER_DOWN
+                    && eventAction != MotionEvent.ACTION_POINTER_UP) {
+                return false;
+            }
 
-        // Only these actions have any effect on gesture detection.  Other
-        // actions have no corresponding WebTouchEvent type and may confuse the
-        // touch pipline, so we ignore them entirely.
-        if (eventAction != MotionEvent.ACTION_DOWN
-                && eventAction != MotionEvent.ACTION_UP
-                && eventAction != MotionEvent.ACTION_CANCEL
-                && eventAction != MotionEvent.ACTION_MOVE
-                && eventAction != MotionEvent.ACTION_POINTER_DOWN
-                && eventAction != MotionEvent.ACTION_POINTER_UP) {
-            return false;
+            if (mNativeContentViewCore == 0) return false;
+
+            // A zero offset is quite common, in which case the unnecessary copy should be avoided.
+            MotionEvent offset = null;
+            if (mCurrentTouchOffsetX != 0 || mCurrentTouchOffsetY != 0) {
+                offset = createOffsetMotionEvent(event);
+                event = offset;
+            }
+
+            final int pointerCount = event.getPointerCount();
+            final boolean consumed = nativeOnTouchEvent(mNativeContentViewCore, event,
+                    event.getEventTime(), eventAction,
+                    pointerCount, event.getHistorySize(), event.getActionIndex(),
+                    event.getX(), event.getY(),
+                    pointerCount > 1 ? event.getX(1) : 0,
+                    pointerCount > 1 ? event.getY(1) : 0,
+                    event.getPointerId(0), pointerCount > 1 ? event.getPointerId(1) : -1,
+                    event.getTouchMajor(), pointerCount > 1 ? event.getTouchMajor(1) : 0);
+
+            if (offset != null) offset.recycle();
+            return consumed;
+        } finally {
+            TraceEvent.end("onTouchEvent");
         }
-
-        if (mNativeContentViewCore == 0) return false;
-        final int pointerCount = offset.getPointerCount();
-        boolean consumed = nativeOnTouchEvent(mNativeContentViewCore, offset,
-                offset.getEventTime(), eventAction,
-                pointerCount, offset.getHistorySize(), offset.getActionIndex(),
-                offset.getX(), offset.getY(),
-                pointerCount > 1 ? offset.getX(1) : 0,
-                pointerCount > 1 ? offset.getY(1) : 0,
-                offset.getPointerId(0), pointerCount > 1 ? offset.getPointerId(1) : -1,
-                offset.getTouchMajor(), pointerCount > 1 ? offset.getTouchMajor(1) : 0);
-        offset.recycle();
-        return consumed;
     }
 
     public void setIgnoreRemainingTouchEvents() {
@@ -1613,25 +1625,27 @@ public class ContentViewCore
     public boolean onHoverEvent(MotionEvent event) {
         TraceEvent.begin("onHoverEvent");
         MotionEvent offset = createOffsetMotionEvent(event);
+        try {
+            if (mBrowserAccessibilityManager != null) {
+                return mBrowserAccessibilityManager.onHoverEvent(offset);
+            }
 
-        if (mBrowserAccessibilityManager != null) {
-            return mBrowserAccessibilityManager.onHoverEvent(offset);
-        }
+            // Work around Android bug where the x, y coordinates of a hover exit
+            // event are incorrect when touch exploration is on.
+            if (mTouchExplorationEnabled && offset.getAction() == MotionEvent.ACTION_HOVER_EXIT) {
+                return true;
+            }
 
-        // Work around Android bug where the x, y coordinates of a hover exit
-        // event are incorrect when touch exploration is on.
-        if (mTouchExplorationEnabled && offset.getAction() == MotionEvent.ACTION_HOVER_EXIT) {
+            mContainerView.removeCallbacks(mFakeMouseMoveRunnable);
+            if (mNativeContentViewCore != 0) {
+                nativeSendMouseMoveEvent(mNativeContentViewCore, offset.getEventTime(),
+                        offset.getX(), offset.getY());
+            }
             return true;
+        } finally {
+            offset.recycle();
+            TraceEvent.end("onHoverEvent");
         }
-
-        mContainerView.removeCallbacks(mFakeMouseMoveRunnable);
-        if (mNativeContentViewCore != 0) {
-            nativeSendMouseMoveEvent(mNativeContentViewCore, offset.getEventTime(),
-                    offset.getX(), offset.getY());
-        }
-        TraceEvent.end("onHoverEvent");
-        offset.recycle();
-        return true;
     }
 
     /**
@@ -1653,6 +1667,7 @@ public class ContentViewCore
                         @Override
                         public void run() {
                             onHoverEvent(eventFakeMouseMove);
+                            eventFakeMouseMove.recycle();
                         }
                     };
                     mContainerView.postDelayed(mFakeMouseMoveRunnable, 250);
