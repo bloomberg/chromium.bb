@@ -35,5 +35,9 @@ message ExtensionSpecifics {
 
   // The name of the extension. Used for bookmark apps.
   optional string name = 6;
+
+  // Whether this extension was installed remotely, and hasn't been approved by
+  // a user in chrome yet.
+  optional bool remote_install = 7;
 }
 

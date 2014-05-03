@@ -18,13 +18,15 @@ namespace extensions {
 ExtensionSyncData::ExtensionSyncData()
     : uninstalled_(false),
       enabled_(false),
-      incognito_enabled_(false) {
+      incognito_enabled_(false),
+      remote_install_(false) {
 }
 
 ExtensionSyncData::ExtensionSyncData(const syncer::SyncData& sync_data)
     : uninstalled_(false),
       enabled_(false),
-      incognito_enabled_(false) {
+      incognito_enabled_(false),
+      remote_install_(false) {
   PopulateFromSyncData(sync_data);
 }
 
@@ -32,7 +34,8 @@ ExtensionSyncData::ExtensionSyncData(const syncer::SyncChange& sync_change)
     : uninstalled_(
         sync_change.change_type() == syncer::SyncChange::ACTION_DELETE),
       enabled_(false),
-      incognito_enabled_(false) {
+      incognito_enabled_(false),
+      remote_install_(false) {
   PopulateFromSyncData(sync_change.sync_data());
 }
 
@@ -43,6 +46,7 @@ ExtensionSyncData::ExtensionSyncData(const Extension& extension,
       uninstalled_(false),
       enabled_(enabled),
       incognito_enabled_(incognito_enabled),
+      remote_install_(false),
       version_(extension.from_bookmark() ? base::Version("0")
                                          : *extension.version()),
       update_url_(ManifestURL::GetUpdateURL(&extension)),
@@ -71,6 +75,7 @@ void ExtensionSyncData::PopulateExtensionSpecifics(
   specifics->set_version(version_.GetString());
   specifics->set_enabled(enabled_);
   specifics->set_incognito_enabled(incognito_enabled_);
+  specifics->set_remote_install(remote_install_);
   specifics->set_name(name_);
 }
 
@@ -95,6 +100,7 @@ void ExtensionSyncData::PopulateFromExtensionSpecifics(
   version_ = specifics_version;
   enabled_ = specifics.enabled();
   incognito_enabled_ = specifics.incognito_enabled();
+  remote_install_ = specifics.remote_install();
   name_ = specifics.name();
 }
 

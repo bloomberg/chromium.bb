@@ -28,6 +28,7 @@ class AppSyncDataTest : public testing::Test {
     extension_specifics->set_version(kValidVersion);
     extension_specifics->set_enabled(false);
     extension_specifics->set_incognito_enabled(true);
+    extension_specifics->set_remote_install(false);
     extension_specifics->set_name(kName);
   }
 };
