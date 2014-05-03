@@ -841,14 +841,18 @@ const RenderBlock* FastTextAutosizer::maxClusterWidthProvider(const Supercluster
             result = widthProvider;
         }
     }
+    RELEASE_ASSERT(result);
     return result;
 }
 
 float FastTextAutosizer::widthFromBlock(const RenderBlock* block)
 {
+    RELEASE_ASSERT(block);
+    RELEASE_ASSERT(block->style());
     if (block->isTable()) {
         RenderBlock* containingBlock = block->containingBlock();
-        ASSERT(block->containingBlock());
+        // containingBlock should only be null in detached subtrees.
+        RELEASE_ASSERT(block->containingBlock());
         if (block->style()->logicalWidth().isSpecified())
             return floatValueForLength(block->style()->logicalWidth(), containingBlock->contentLogicalWidth().toFloat());
         return containingBlock->contentLogicalWidth().toFloat();
