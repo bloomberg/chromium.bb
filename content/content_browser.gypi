@@ -905,8 +905,6 @@
     'browser/renderer_host/input/input_router_client.h',
     'browser/renderer_host/input/input_router_impl.cc',
     'browser/renderer_host/input/input_router_impl.h',
-    'browser/renderer_host/input/input_router_config_helper.cc',
-    'browser/renderer_host/input/input_router_config_helper.h',
     'browser/renderer_host/input/motion_event_android.cc',
     'browser/renderer_host/input/motion_event_android.h',
     'browser/renderer_host/input/motion_event_web.cc',
@@ -940,10 +938,12 @@
     'browser/renderer_host/input/touch_event_queue.h',
     'browser/renderer_host/input/touch_action_filter.cc',
     'browser/renderer_host/input/touch_action_filter.h',
+    'browser/renderer_host/input/touchpad_tap_suppression_controller_aura.cc',
     'browser/renderer_host/input/touchpad_tap_suppression_controller.cc',
     'browser/renderer_host/input/touchpad_tap_suppression_controller.h',
     'browser/renderer_host/input/touchscreen_tap_suppression_controller.cc',
     'browser/renderer_host/input/touchscreen_tap_suppression_controller.h',
+    'browser/renderer_host/input/touchscreen_tap_suppression_controller_stub.cc',
     'browser/renderer_host/input/web_input_event_builders_android.cc',
     'browser/renderer_host/input/web_input_event_builders_android.h',
     'browser/renderer_host/input/web_input_event_builders_win.cc',
@@ -1647,13 +1647,27 @@
         ['exclude', '^browser/gamepad/gamepad_platform_data_fetcher_linux\\.cc$'],
       ],
     }],
+    ['use_aura!=1 and OS!="android"', {
+      'sources!': [
+        'browser/renderer_host/input/touchscreen_tap_suppression_controller.cc',
+        'browser/renderer_host/tap_suppression_controller.cc',
+      ],
+    }, {
+      'sources!': [
+        'browser/renderer_host/input/touchscreen_tap_suppression_controller_stub.cc',
+      ],
+    }],
     ['use_aura==1', {
       'dependencies': [
         '../ui/aura/aura.gyp:aura',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
       ],
+      'sources/': [
+        ['exclude', '^browser/renderer_host/input/touchpad_tap_suppression_controller.cc'],
+      ],
     }, {
       'sources/': [
+        ['exclude', '^browser/renderer_host/input/touchpad_tap_suppression_controller_aura.cc'],
         ['exclude', '^browser/renderer_host/render_widget_host_view_aura.cc'],
         ['exclude', '^browser/renderer_host/render_widget_host_view_aura.h'],
         ['exclude', '^browser/web_contents/touch_editable_impl_aura.cc'],

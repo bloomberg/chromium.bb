@@ -15,7 +15,6 @@ namespace content {
 class MockTapSuppressionController : public TapSuppressionController,
                                      public TapSuppressionControllerClient {
  public:
-  using TapSuppressionController::DISABLED;
   using TapSuppressionController::NOTHING;
   using TapSuppressionController::GFC_IN_PROGRESS;
   using TapSuppressionController::TAP_DOWN_STASHED;
@@ -33,8 +32,10 @@ class MockTapSuppressionController : public TapSuppressionController,
     STASHED_TAP_DOWN_FORWARDED           = 1 << 7,
   };
 
-  MockTapSuppressionController(const TapSuppressionController::Config& config)
-      : TapSuppressionController(this, config),
+  MockTapSuppressionController()
+      : TapSuppressionController(this),
+        max_cancel_to_down_time_in_ms_(1),
+        max_tap_gap_time_in_ms_(1),
         last_actions_(NONE),
         time_(),
         timer_started_(false) {
@@ -85,6 +86,14 @@ class MockTapSuppressionController : public TapSuppressionController,
     }
   }
 
+  void set_max_cancel_to_down_time_in_ms(int val) {
+    max_cancel_to_down_time_in_ms_ = val;
+  }
+
+  void set_max_tap_gap_time_in_ms(int val) {
+    max_tap_gap_time_in_ms_ = val;
+  }
+
   State state() { return state_; }
 
   int last_actions() { return last_actions_; }
@@ -105,6 +114,14 @@ class MockTapSuppressionController : public TapSuppressionController,
 
  private:
   // TapSuppressionControllerClient implementation
+  virtual int MaxCancelToDownTimeInMs() OVERRIDE {
+    return max_cancel_to_down_time_in_ms_;
+  }
+
+  virtual int MaxTapGapTimeInMs() OVERRIDE {
+    return max_tap_gap_time_in_ms_;
+  }
+
   virtual void DropStashedTapDown() OVERRIDE {
     last_actions_ |= TAP_DOWN_DROPPED;
   }
@@ -118,6 +135,9 @@ class MockTapSuppressionController : public TapSuppressionController,
   using TapSuppressionController::GestureFlingCancelAck;
   using TapSuppressionController::ShouldDeferTapDown;
   using TapSuppressionController::ShouldSuppressTapEnd;
+
+  int max_cancel_to_down_time_in_ms_;
+  int max_tap_gap_time_in_ms_;
 
   int last_actions_;
 
@@ -138,20 +158,11 @@ class TapSuppressionControllerTest : public testing::Test {
  protected:
   // testing::Test
   virtual void SetUp() {
-    tap_suppression_controller_.reset(
-        new MockTapSuppressionController(GetConfig()));
+    tap_suppression_controller_.reset(new MockTapSuppressionController());
   }
 
   virtual void TearDown() {
     tap_suppression_controller_.reset();
-  }
-
-  static TapSuppressionController::Config GetConfig() {
-    TapSuppressionController::Config config;
-    config.enabled = true;
-    config.max_cancel_to_down_time = base::TimeDelta::FromMilliseconds(10);
-    config.max_tap_gap_time = base::TimeDelta::FromMilliseconds(10);
-    return config;
   }
 
   scoped_ptr<MockTapSuppressionController> tap_suppression_controller_;
@@ -160,6 +171,9 @@ class TapSuppressionControllerTest : public testing::Test {
 // Test TapSuppressionController for when GestureFlingCancel Ack comes before
 // TapDown and everything happens without any delays.
 TEST_F(TapSuppressionControllerTest, GFCAckBeforeTapFast) {
+  tap_suppression_controller_->set_max_cancel_to_down_time_in_ms(10);
+  tap_suppression_controller_->set_max_tap_gap_time_in_ms(10);
+
   // Send GestureFlingCancel.
   tap_suppression_controller_->SendGestureFlingCancel();
   EXPECT_EQ(MockTapSuppressionController::NONE,
@@ -193,6 +207,9 @@ TEST_F(TapSuppressionControllerTest, GFCAckBeforeTapFast) {
 // Test TapSuppressionController for when GestureFlingCancel Ack comes before
 // TapDown, but there is a small delay between TapDown and TapUp.
 TEST_F(TapSuppressionControllerTest, GFCAckBeforeTapInsufficientlyLateTapUp) {
+  tap_suppression_controller_->set_max_cancel_to_down_time_in_ms(10);
+  tap_suppression_controller_->set_max_tap_gap_time_in_ms(10);
+
   // Send GestureFlingCancel.
   tap_suppression_controller_->SendGestureFlingCancel();
   EXPECT_EQ(MockTapSuppressionController::NONE,
@@ -234,6 +251,9 @@ TEST_F(TapSuppressionControllerTest, GFCAckBeforeTapInsufficientlyLateTapUp) {
 // Test TapSuppressionController for when GestureFlingCancel Ack comes before
 // TapDown, but there is a long delay between TapDown and TapUp.
 TEST_F(TapSuppressionControllerTest, GFCAckBeforeTapSufficientlyLateTapUp) {
+  tap_suppression_controller_->set_max_cancel_to_down_time_in_ms(10);
+  tap_suppression_controller_->set_max_tap_gap_time_in_ms(10);
+
   // Send GestureFlingCancel.
   tap_suppression_controller_->SendGestureFlingCancel();
   EXPECT_EQ(MockTapSuppressionController::NONE,
@@ -274,6 +294,9 @@ TEST_F(TapSuppressionControllerTest, GFCAckBeforeTapSufficientlyLateTapUp) {
 // Test TapSuppressionController for when GestureFlingCancel Ack comes before
 // TapDown, but there is a small delay between the Ack and TapDown.
 TEST_F(TapSuppressionControllerTest, GFCAckBeforeTapInsufficientlyLateTapDown) {
+  tap_suppression_controller_->set_max_cancel_to_down_time_in_ms(10);
+  tap_suppression_controller_->set_max_tap_gap_time_in_ms(10);
+
   // Send GestureFlingCancel.
   tap_suppression_controller_->SendGestureFlingCancel();
   EXPECT_EQ(MockTapSuppressionController::NONE,
@@ -315,6 +338,9 @@ TEST_F(TapSuppressionControllerTest, GFCAckBeforeTapInsufficientlyLateTapDown) {
 // Test TapSuppressionController for when GestureFlingCancel Ack comes before
 // TapDown, but there is a long delay between the Ack and TapDown.
 TEST_F(TapSuppressionControllerTest, GFCAckBeforeTapSufficientlyLateTapDown) {
+  tap_suppression_controller_->set_max_cancel_to_down_time_in_ms(10);
+  tap_suppression_controller_->set_max_tap_gap_time_in_ms(10);
+
   // Send GestureFlingCancel.
   tap_suppression_controller_->SendGestureFlingCancel();
   EXPECT_EQ(MockTapSuppressionController::NONE,
@@ -355,6 +381,9 @@ TEST_F(TapSuppressionControllerTest, GFCAckBeforeTapSufficientlyLateTapDown) {
 // Test TapSuppressionController for when unprocessed GestureFlingCancel Ack
 // comes after TapDown and everything happens without any delay.
 TEST_F(TapSuppressionControllerTest, GFCAckUnprocessedAfterTapFast) {
+  tap_suppression_controller_->set_max_cancel_to_down_time_in_ms(10);
+  tap_suppression_controller_->set_max_tap_gap_time_in_ms(10);
+
   // Send GestureFlingCancel.
   tap_suppression_controller_->SendGestureFlingCancel();
   EXPECT_EQ(MockTapSuppressionController::NONE,
@@ -388,6 +417,9 @@ TEST_F(TapSuppressionControllerTest, GFCAckUnprocessedAfterTapFast) {
 // Test TapSuppressionController for when processed GestureFlingCancel Ack comes
 // after TapDown and everything happens without any delay.
 TEST_F(TapSuppressionControllerTest, GFCAckProcessedAfterTapFast) {
+  tap_suppression_controller_->set_max_cancel_to_down_time_in_ms(10);
+  tap_suppression_controller_->set_max_tap_gap_time_in_ms(10);
+
   // Send GestureFlingCancel.
   tap_suppression_controller_->SendGestureFlingCancel();
   EXPECT_EQ(MockTapSuppressionController::NONE,
@@ -421,6 +453,9 @@ TEST_F(TapSuppressionControllerTest, GFCAckProcessedAfterTapFast) {
 // Test TapSuppressionController for when GestureFlingCancel Ack comes after
 // TapDown and there is a small delay between the Ack and TapUp.
 TEST_F(TapSuppressionControllerTest, GFCAckAfterTapInsufficientlyLateTapUp) {
+  tap_suppression_controller_->set_max_cancel_to_down_time_in_ms(10);
+  tap_suppression_controller_->set_max_tap_gap_time_in_ms(10);
+
   // Send GestureFlingCancel.
   tap_suppression_controller_->SendGestureFlingCancel();
   EXPECT_EQ(MockTapSuppressionController::NONE,
@@ -462,6 +497,9 @@ TEST_F(TapSuppressionControllerTest, GFCAckAfterTapInsufficientlyLateTapUp) {
 // Test TapSuppressionController for when GestureFlingCancel Ack comes after
 // TapDown and there is a long delay between the Ack and TapUp.
 TEST_F(TapSuppressionControllerTest, GFCAckAfterTapSufficientlyLateTapUp) {
+  tap_suppression_controller_->set_max_cancel_to_down_time_in_ms(10);
+  tap_suppression_controller_->set_max_tap_gap_time_in_ms(10);
+
   // Send GestureFlingCancel.
   tap_suppression_controller_->SendGestureFlingCancel();
   EXPECT_EQ(MockTapSuppressionController::NONE,
@@ -498,42 +536,5 @@ TEST_F(TapSuppressionControllerTest, GFCAckAfterTapSufficientlyLateTapUp) {
   EXPECT_EQ(MockTapSuppressionController::NOTHING,
             tap_suppression_controller_->state());
 }
-
-// Test that no suppression occurs if the TapSuppressionController is disabled.
-TEST_F(TapSuppressionControllerTest, NoSuppressionIfDisabled) {
-  TapSuppressionController::Config disabled_config;
-  disabled_config.enabled = false;
-  tap_suppression_controller_.reset(
-      new MockTapSuppressionController(disabled_config));
-
-  // Send GestureFlingCancel.
-  tap_suppression_controller_->SendGestureFlingCancel();
-  EXPECT_EQ(MockTapSuppressionController::NONE,
-            tap_suppression_controller_->last_actions());
-  EXPECT_EQ(MockTapSuppressionController::DISABLED,
-            tap_suppression_controller_->state());
-
-  // Send GestureFlingCancel Ack.
-  tap_suppression_controller_->SendGestureFlingCancelAck(true);
-  EXPECT_EQ(MockTapSuppressionController::NONE,
-            tap_suppression_controller_->last_actions());
-  EXPECT_EQ(MockTapSuppressionController::DISABLED,
-            tap_suppression_controller_->state());
-
-  // Send TapDown. This TapDown should not be suppressed.
-  tap_suppression_controller_->SendTapDown();
-  EXPECT_EQ(MockTapSuppressionController::TAP_DOWN_FORWARDED,
-            tap_suppression_controller_->last_actions());
-  EXPECT_EQ(MockTapSuppressionController::DISABLED,
-            tap_suppression_controller_->state());
-
-  // Send TapUp. This TapUp should not be suppressed.
-  tap_suppression_controller_->SendTapUp();
-  EXPECT_EQ(MockTapSuppressionController::TAP_UP_FORWARDED,
-            tap_suppression_controller_->last_actions());
-  EXPECT_EQ(MockTapSuppressionController::DISABLED,
-            tap_suppression_controller_->state());
-}
-
 
 }  // namespace content

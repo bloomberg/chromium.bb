@@ -34,7 +34,7 @@ class GestureEventQueueTest : public testing::Test,
 
   // testing::Test
   virtual void SetUp() OVERRIDE {
-    queue_.reset(new GestureEventQueue(this, this, DefaultConfig()));
+    queue_.reset(new GestureEventQueue(this, this));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -68,13 +68,6 @@ class GestureEventQueueTest : public testing::Test,
   }
 
  protected:
-  static GestureEventQueue::Config DefaultConfig() {
-    return GestureEventQueue::Config();
-  }
-
-  void SetUpForDebounce(int interval_ms) {
-    queue()->set_debounce_interval_time_ms_for_testing(interval_ms);
-  }
 
   // Returns the result of |GestureEventQueue::ShouldForward()|.
   bool SimulateGestureEvent(const WebGestureEvent& gesture) {
@@ -139,6 +132,14 @@ class GestureEventQueueTest : public testing::Test,
 
   const WebGestureEvent& last_acked_event() const {
     return last_acked_event_;
+  }
+
+  void DisableDebounce() {
+    queue()->set_debounce_enabled_for_testing(false);
+  }
+
+  void set_debounce_interval_time_ms(int ms) {
+    queue()->set_debounce_interval_time_ms_for_testing(ms);
   }
 
   void set_synchronous_ack(InputEventAckState ack_result) {
@@ -207,6 +208,9 @@ class GestureEventQueueWithSourceTest
 #endif  // GTEST_HAS_PARAM_TEST
 
 TEST_F(GestureEventQueueTest, CoalescesScrollGestureEvents) {
+  // Turn off debounce handling for test isolation.
+  DisableDebounce();
+
   // Test coalescing of only GestureScrollUpdate events.
   // Simulate gesture events.
 
@@ -282,6 +286,9 @@ TEST_F(GestureEventQueueTest, CoalescesScrollGestureEvents) {
 
 TEST_F(GestureEventQueueTest,
        DoesNotCoalesceScrollGestureEventsFromDifferentDevices) {
+  // Turn off debounce handling for test isolation.
+  DisableDebounce();
+
   // Test that GestureScrollUpdate events from Touchscreen and Touchpad do not
   // coalesce.
 
@@ -326,6 +333,9 @@ TEST_F(GestureEventQueueTest,
 }
 
 TEST_F(GestureEventQueueTest, CoalescesScrollAndPinchEvents) {
+  // Turn off debounce handling for test isolation.
+  DisableDebounce();
+
   // Test coalescing of only GestureScrollUpdate events.
   // Simulate gesture events.
 
@@ -558,6 +568,9 @@ TEST_F(GestureEventQueueTest, CoalescesScrollAndPinchEvents) {
 }
 
 TEST_F(GestureEventQueueTest, CoalescesMultiplePinchEventSequences) {
+  // Turn off debounce handling for test isolation.
+  DisableDebounce();
+
   // Simulate a pinch sequence.
   SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
                        WebGestureEvent::Touchscreen);
@@ -648,6 +661,9 @@ TEST_F(GestureEventQueueTest, CoalescesMultiplePinchEventSequences) {
 }
 
 TEST_F(GestureEventQueueTest, CoalescesPinchSequencesWithEarlyAck) {
+  // Turn off debounce handling for test isolation.
+  DisableDebounce();
+
   SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
                        WebGestureEvent::Touchscreen);
   SendInputEventACK(WebInputEvent::GestureScrollBegin,
@@ -711,6 +727,9 @@ TEST_F(GestureEventQueueTest, CoalescesPinchSequencesWithEarlyAck) {
 
 TEST_F(GestureEventQueueTest,
        DoesNotCoalescePinchGestureEventsWithDifferentModifiers) {
+  // Turn off debounce handling for test isolation.
+  DisableDebounce();
+
   // Insert an event to force queueing of gestures.
   SimulateGestureEvent(WebInputEvent::GestureTapCancel,
                        WebGestureEvent::Touchscreen);
@@ -774,6 +793,9 @@ TEST_F(GestureEventQueueTest,
 }
 
 TEST_F(GestureEventQueueTest, CoalescesScrollAndPinchEventsIdentity) {
+  // Turn off debounce handling for test isolation.
+  DisableDebounce();
+
   // Insert an event to force queueing of gestures.
   SimulateGestureEvent(WebInputEvent::GestureTapCancel,
                        WebGestureEvent::Touchscreen);
@@ -888,6 +910,9 @@ TEST_F(GestureEventQueueTest, SyncAckQueuesEvent) {
 
 // Tests an event with an async ack followed by an event with a sync ack.
 TEST_F(GestureEventQueueTest, AsyncThenSyncAck) {
+  // Turn off debounce handling for test isolation.
+  DisableDebounce();
+
   SimulateGestureEvent(WebInputEvent::GestureTapDown,
                        WebGestureEvent::Touchscreen);
 
@@ -910,6 +935,9 @@ TEST_F(GestureEventQueueTest, AsyncThenSyncAck) {
 }
 
 TEST_F(GestureEventQueueTest, CoalescesScrollAndPinchEventWithSyncAck) {
+  // Turn off debounce handling for test isolation.
+  DisableDebounce();
+
   // Simulate a pinch sequence.
   SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
                        WebGestureEvent::Touchscreen);
@@ -956,6 +984,8 @@ TEST_F(GestureEventQueueTest, CoalescesScrollAndPinchEventWithSyncAck) {
 TEST_P(GestureEventQueueWithSourceTest, GestureFlingCancelsFiltered) {
   WebGestureEvent::SourceDevice source_device = GetParam();
 
+  // Turn off debounce handling for test isolation.
+  DisableDebounce();
   // GFC without previous GFS is dropped.
   SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
@@ -1051,7 +1081,7 @@ INSTANTIATE_TEST_CASE_P(AllSources,
 // debounce interval, that Scrolls are not and that the deferred events are
 // sent after that timer fires.
 TEST_F(GestureEventQueueTest, DebounceDefersFollowingGestureEvents) {
-  SetUpForDebounce(3);
+  set_debounce_interval_time_ms(3);
 
   SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,
                        WebGestureEvent::Touchscreen);
@@ -1114,8 +1144,7 @@ TEST_F(GestureEventQueueTest, DebounceDefersFollowingGestureEvents) {
 // interval and are discarded if a GestureScrollUpdate event arrives before the
 // interval end.
 TEST_F(GestureEventQueueTest, DebounceDropsDeferredEvents) {
-  SetUpForDebounce(3);
-
+  set_debounce_interval_time_ms(3);
   EXPECT_FALSE(ScrollingInProgress());
 
   SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,

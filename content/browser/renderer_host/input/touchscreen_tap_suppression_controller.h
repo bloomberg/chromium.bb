@@ -6,22 +6,20 @@
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCHSCREEN_TAP_SUPPRESSION_CONTROLLER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/renderer_host/input/tap_suppression_controller.h"
+#include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller_client.h"
-#include "content/port/browser/event_with_latency_info.h"
 
 namespace content {
 
 class GestureEventQueue;
+class TapSuppressionController;
 
 // Controls the suppression of touchscreen taps immediately following the
 // dispatch of a GestureFlingCancel event.
 class TouchscreenTapSuppressionController
     : public TapSuppressionControllerClient {
  public:
-  TouchscreenTapSuppressionController(
-      GestureEventQueue* geq,
-      const TapSuppressionController::Config& config);
+  explicit TouchscreenTapSuppressionController(GestureEventQueue* geq);
   virtual ~TouchscreenTapSuppressionController();
 
   // Should be called on arrival of GestureFlingCancel events.
@@ -37,6 +35,8 @@ class TouchscreenTapSuppressionController
 
  private:
   // TapSuppressionControllerClient implementation.
+  virtual int MaxCancelToDownTimeInMs() OVERRIDE;
+  virtual int MaxTapGapTimeInMs() OVERRIDE;
   virtual void DropStashedTapDown() OVERRIDE;
   virtual void ForwardStashedTapDown() OVERRIDE;
 
@@ -47,7 +47,7 @@ class TouchscreenTapSuppressionController
   ScopedGestureEvent stashed_show_press_;
 
   // The core controller of tap suppression.
-  TapSuppressionController controller_;
+  scoped_ptr<TapSuppressionController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchscreenTapSuppressionController);
 };

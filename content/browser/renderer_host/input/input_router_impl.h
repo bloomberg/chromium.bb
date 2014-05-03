@@ -40,17 +40,10 @@ class CONTENT_EXPORT InputRouterImpl
       public NON_EXPORTED_BASE(TouchEventQueueClient),
       public NON_EXPORTED_BASE(TouchpadTapSuppressionControllerClient) {
  public:
-  struct CONTENT_EXPORT Config {
-    Config();
-    GestureEventQueue::Config gesture_config;
-    TouchEventQueue::Config touch_config;
-  };
-
   InputRouterImpl(IPC::Sender* sender,
                   InputRouterClient* client,
                   InputAckHandler* ack_handler,
-                  int routing_id,
-                  const Config& config);
+                  int routing_id);
   virtual ~InputRouterImpl();
 
   // InputRouter
@@ -200,9 +193,8 @@ private:
 
   // Called when a touch timeout-affecting bit has changed, in turn toggling the
   // touch ack timeout feature of the |touch_event_queue_| as appropriate. Input
-  // to that determination includes current view properties and the allowed
-  // touch action. Note that this will only affect platforms that have a
-  // non-zero touch timeout configuration.
+  // to that determination includes current view properties, the allowed touch
+  // action and the command-line configured |touch_ack_timeout_supported_|.
   void UpdateTouchAckTimeoutEnabled();
 
   // If a flush has been requested, signals a completed flush to the client if
@@ -264,6 +256,10 @@ private:
 
   // The time when an input event was sent to the client.
   base::TimeTicks input_event_start_time_;
+
+  // Whether touch ack timeout handling has been enabled via the command line.
+  bool touch_ack_timeout_supported_;
+  base::TimeDelta touch_ack_timeout_delay_;
 
   // Cached flags from |OnViewUpdated()|, defaults to 0.
   int current_view_flags_;

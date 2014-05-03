@@ -10,9 +10,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
-#include "content/browser/renderer_host/input/tap_suppression_controller.h"
-#include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
-#include "content/browser/renderer_host/input/touchscreen_tap_suppression_controller.h"
 #include "content/common/content_export.h"
 #include "content/port/browser/event_with_latency_info.h"
 #include "content/port/common/input_event_ack_state.h"
@@ -23,6 +20,9 @@ namespace content {
 class GestureEventQueueTest;
 class InputRouter;
 class MockRenderWidgetHost;
+class TouchpadTapSuppressionController;
+class TouchpadTapSuppressionControllerClient;
+class TouchscreenTapSuppressionController;
 
 // Interface with which the GestureEventQueue can forward gesture events, and
 // dispatch gesture event responses.
@@ -61,25 +61,9 @@ class CONTENT_EXPORT GestureEventQueueClient {
 // http://crbug.com/148443.
 class CONTENT_EXPORT GestureEventQueue {
  public:
-  struct CONTENT_EXPORT Config {
-    Config();
-
-    // Controls touchpad-related tap suppression, disabled by default.
-    TapSuppressionController::Config touchpad_tap_suppression_config;
-
-    // Controls touchscreen-related tap suppression, disabled by default.
-    TapSuppressionController::Config touchscreen_tap_suppression_config;
-
-    // Determines whether non-scroll gesture events are "debounced" during an
-    // active scroll sequence, suppressing brief scroll interruptions.
-    // Zero by default (disabled).
-    base::TimeDelta debounce_interval;
-  };
-
   // Both |client| and |touchpad_client| must outlive the GestureEventQueue.
   GestureEventQueue(GestureEventQueueClient* client,
-                    TouchpadTapSuppressionControllerClient* touchpad_client,
-                    const Config& config);
+                     TouchpadTapSuppressionControllerClient* touchpad_client);
   ~GestureEventQueue();
 
   // Returns |true| if the caller should immediately forward the provided
@@ -112,8 +96,12 @@ class CONTENT_EXPORT GestureEventQueue {
            debouncing_deferral_queue_.empty();
   }
 
-  void set_debounce_interval_time_ms_for_testing(int interval_ms) {
-    debounce_interval_ = base::TimeDelta::FromMilliseconds(interval_ms);
+  void set_debounce_enabled_for_testing(bool enabled) {
+    debounce_enabled_ = enabled;
+  }
+
+  void set_debounce_interval_time_ms_for_testing(int interval_time_ms) {
+    debounce_interval_time_ms_ = interval_time_ms;
   }
 
  private:
@@ -200,12 +188,14 @@ class CONTENT_EXPORT GestureEventQueue {
   // tap.
   // TODO(mohsen): Move touchpad tap suppression out of GestureEventQueue since
   // GEQ is meant to only be used for touchscreen gesture events.
-  TouchpadTapSuppressionController touchpad_tap_suppression_controller_;
+  scoped_ptr<TouchpadTapSuppressionController>
+      touchpad_tap_suppression_controller_;
 
   // An object tracking the state of touchscreen on the delivery of gesture tap
   // events to the renderer to filter taps immediately after a touchscreen fling
   // canceling tap.
-  TouchscreenTapSuppressionController touchscreen_tap_suppression_controller_;
+  scoped_ptr<TouchscreenTapSuppressionController>
+      touchscreen_tap_suppression_controller_;
 
   typedef std::deque<GestureEventWithLatencyInfo> GestureQueue;
 
@@ -223,9 +213,13 @@ class CONTENT_EXPORT GestureEventQueue {
   // Queue of events that have been deferred for debounce.
   GestureQueue debouncing_deferral_queue_;
 
-  // Time window in which to debounce scroll/fling ends. Note that an interval
-  // of zero effectively disables debouncing.
-  base::TimeDelta debounce_interval_;
+  // Time window in which to debounce scroll/fling ends.
+  // TODO(rjkroege): Make this dynamically configurable.
+  int debounce_interval_time_ms_;
+
+  // Whether scroll-ending events should be deferred when a scroll is active.
+  // Defaults to true.
+  bool debounce_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureEventQueue);
 };

@@ -10,25 +10,16 @@
 
 namespace content {
 
-TapSuppressionController::Config::Config()
-    : enabled(false),
-      max_cancel_to_down_time(base::TimeDelta::FromMilliseconds(180)),
-      max_tap_gap_time(base::TimeDelta::FromMilliseconds(500)) {}
-
 TapSuppressionController::TapSuppressionController(
-    TapSuppressionControllerClient* client,
-    const Config& config)
+    TapSuppressionControllerClient* client)
     : client_(client),
-      state_(config.enabled ? NOTHING : DISABLED),
-      max_cancel_to_down_time_(config.max_cancel_to_down_time),
-      max_tap_gap_time_(config.max_tap_gap_time) {}
+      state_(TapSuppressionController::NOTHING) {
+}
 
 TapSuppressionController::~TapSuppressionController() {}
 
 void TapSuppressionController::GestureFlingCancel() {
   switch (state_) {
-    case DISABLED:
-      break;
     case NOTHING:
     case GFC_IN_PROGRESS:
     case LAST_CANCEL_STOPPED_FLING:
@@ -42,7 +33,6 @@ void TapSuppressionController::GestureFlingCancel() {
 void TapSuppressionController::GestureFlingCancelAck(bool processed) {
   base::TimeTicks event_time = Now();
   switch (state_) {
-    case DISABLED:
     case NOTHING:
       break;
     case GFC_IN_PROGRESS:
@@ -67,21 +57,23 @@ void TapSuppressionController::GestureFlingCancelAck(bool processed) {
 bool TapSuppressionController::ShouldDeferTapDown() {
   base::TimeTicks event_time = Now();
   switch (state_) {
-    case DISABLED:
     case NOTHING:
       return false;
     case GFC_IN_PROGRESS:
       state_ = TAP_DOWN_STASHED;
-      StartTapDownTimer(max_tap_gap_time_);
+      StartTapDownTimer(
+          base::TimeDelta::FromMilliseconds(client_->MaxTapGapTimeInMs()));
       return true;
     case TAP_DOWN_STASHED:
       NOTREACHED() << "TapDown on TAP_DOWN_STASHED state";
       state_ = NOTHING;
       return false;
     case LAST_CANCEL_STOPPED_FLING:
-      if ((event_time - fling_cancel_time_) < max_cancel_to_down_time_) {
+      if ((event_time - fling_cancel_time_).InMilliseconds()
+          < client_->MaxCancelToDownTimeInMs()) {
         state_ = TAP_DOWN_STASHED;
-        StartTapDownTimer(max_tap_gap_time_);
+        StartTapDownTimer(
+            base::TimeDelta::FromMilliseconds(client_->MaxTapGapTimeInMs()));
         return true;
       } else {
         state_ = NOTHING;
@@ -94,7 +86,6 @@ bool TapSuppressionController::ShouldDeferTapDown() {
 
 bool TapSuppressionController::ShouldSuppressTapEnd() {
   switch (state_) {
-    case DISABLED:
     case NOTHING:
     case GFC_IN_PROGRESS:
       return false;
@@ -124,10 +115,7 @@ void TapSuppressionController::StopTapDownTimer() {
 
 void TapSuppressionController::TapDownTimerExpired() {
   switch (state_) {
-    case DISABLED:
     case NOTHING:
-      NOTREACHED() << "Timer fired on invalid state.";
-      break;
     case GFC_IN_PROGRESS:
     case LAST_CANCEL_STOPPED_FLING:
       NOTREACHED() << "Timer fired on invalid state.";

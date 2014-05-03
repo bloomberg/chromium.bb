@@ -41,7 +41,12 @@ class TouchEventQueueTest : public testing::Test,
 
   // testing::Test
   virtual void SetUp() OVERRIDE {
-    ResetQueueWithConfig(CreateConfig());
+    ResetQueueWithParameters(touch_scrolling_mode_, slop_length_dips_);
+  }
+
+  virtual void SetTouchScrollingMode(TouchEventQueue::TouchScrollingMode mode) {
+    touch_scrolling_mode_ = mode;
+    ResetQueueWithParameters(touch_scrolling_mode_, slop_length_dips_);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -79,28 +84,13 @@ class TouchEventQueueTest : public testing::Test,
 
  protected:
 
-  TouchEventQueue::Config CreateConfig() {
-    TouchEventQueue::Config config;
-    config.touch_scrolling_mode = touch_scrolling_mode_;
-    config.touchmove_slop_suppression_length_dips = slop_length_dips_;
-    return config;
-  }
-
-  void SetTouchScrollingMode(TouchEventQueue::TouchScrollingMode mode) {
-    touch_scrolling_mode_ = mode;
-    ResetQueueWithConfig(CreateConfig());
+  void SetUpForTimeoutTesting(base::TimeDelta timeout_delay) {
+    queue_->SetAckTimeoutEnabled(true, timeout_delay);
   }
 
   void SetUpForTouchMoveSlopTesting(double slop_length_dips) {
     slop_length_dips_ = slop_length_dips;
-    ResetQueueWithConfig(CreateConfig());
-  }
-
-  void SetUpForTimeoutTesting(base::TimeDelta timeout_delay) {
-    TouchEventQueue::Config config = CreateConfig();
-    config.touch_ack_timeout_delay = timeout_delay;
-    config.touch_ack_timeout_supported = true;
-    ResetQueueWithConfig(config);
+    ResetQueueWithParameters(touch_scrolling_mode_, slop_length_dips_);
   }
 
   void SendTouchEvent(const WebTouchEvent& event) {
@@ -193,7 +183,9 @@ class TouchEventQueueTest : public testing::Test,
     queue_->OnHasTouchEventHandlers(has_handlers);
   }
 
-  void SetAckTimeoutDisabled() { queue_->SetAckTimeoutEnabled(false); }
+  void SetAckTimeoutDisabled() {
+    queue_->SetAckTimeoutEnabled(false, base::TimeDelta());
+  }
 
   bool IsTimeoutEnabled() const { return queue_->ack_timeout_enabled(); }
 
@@ -235,8 +227,9 @@ class TouchEventQueueTest : public testing::Test,
     touch_event_.ResetPoints();
   }
 
-  void ResetQueueWithConfig(const TouchEventQueue::Config& config) {
-    queue_.reset(new TouchEventQueue(this, config));
+  void ResetQueueWithParameters(TouchEventQueue::TouchScrollingMode mode,
+                                double slop_length_dips) {
+    queue_.reset(new TouchEventQueue(this, mode, slop_length_dips));
     queue_->OnHasTouchEventHandlers(true);
   }
 

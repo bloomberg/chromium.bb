@@ -161,6 +161,9 @@ const char kDisableFlash3d[]                = "disable-flash-3d";
 // Disable Stage3D inside of flapper.
 const char kDisableFlashStage3d[]           = "disable-flash-stage3d";
 
+// Disable deferral of scroll-ending gesture events when a scroll is active.
+const char kDisableGestureDebounce[]        = "disable-gesture-debounce";
+
 const char kDisableGestureTapHighlight[]    = "disable-gesture-tap-highlight";
 
 // Disable GL multisampling.
@@ -835,6 +838,10 @@ const char kTestSandbox[]                   = "test-sandbox";
 
 // Type of the current test harness ("browser" or "ui").
 const char kTestType[]                      = "test-type";
+
+// Enable timeout-based touch event cancellation if a touch ack is delayed.
+// If unspecified, touch timeout behavior will be disabled.
+const char kTouchAckTimeoutDelayMs[]        = "touch-ack-timeout-delay-ms";
 
 const char kTouchScrollingMode[]            = "touch-scrolling-mode";
 const char kTouchScrollingModeAsyncTouchmove[] = "async-touchmove";

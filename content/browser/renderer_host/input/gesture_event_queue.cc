@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/renderer_host/input/input_router.h"
@@ -15,25 +16,34 @@ using blink::WebGestureEvent;
 using blink::WebInputEvent;
 
 namespace content {
+namespace {
 
-GestureEventQueue::Config::Config() {
-}
+// Default debouncing interval duration: if a scroll is in progress, non-scroll
+// events during this interval are deferred to either its end or discarded on
+// receipt of another GestureScrollUpdate.
+static const int kDebouncingIntervalTimeMs = 30;
+
+}  // namespace
 
 GestureEventQueue::GestureEventQueue(
     GestureEventQueueClient* client,
-    TouchpadTapSuppressionControllerClient* touchpad_client,
-    const Config& config)
-    : client_(client),
-      fling_in_progress_(false),
-      scrolling_in_progress_(false),
-      ignore_next_ack_(false),
-      touchpad_tap_suppression_controller_(
-          touchpad_client, config.touchpad_tap_suppression_config),
-      touchscreen_tap_suppression_controller_(
-          this, config.touchscreen_tap_suppression_config),
-      debounce_interval_(config.debounce_interval) {
+    TouchpadTapSuppressionControllerClient* touchpad_client)
+     : client_(client),
+       fling_in_progress_(false),
+       scrolling_in_progress_(false),
+       ignore_next_ack_(false),
+       touchpad_tap_suppression_controller_(
+           new TouchpadTapSuppressionController(touchpad_client)),
+       touchscreen_tap_suppression_controller_(
+           new TouchscreenTapSuppressionController(this)),
+       debounce_interval_time_ms_(kDebouncingIntervalTimeMs),
+       debounce_enabled_(true) {
   DCHECK(client);
-  DCHECK(touchpad_client);
+  DCHECK(touchpad_tap_suppression_controller_);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGestureDebounce)) {
+    debounce_enabled_ = false;
+  }
 }
 
 GestureEventQueue::~GestureEventQueue() { }
@@ -56,14 +66,14 @@ bool GestureEventQueue::ShouldDiscardFlingCancelEvent(
 
 bool GestureEventQueue::ShouldForwardForBounceReduction(
     const GestureEventWithLatencyInfo& gesture_event) {
-  if (debounce_interval_ <= base::TimeDelta())
+  if (!debounce_enabled_)
     return true;
   switch (gesture_event.event.type) {
     case WebInputEvent::GestureScrollUpdate:
       if (!scrolling_in_progress_) {
         debounce_deferring_timer_.Start(
             FROM_HERE,
-            debounce_interval_,
+            base::TimeDelta::FromMilliseconds(debounce_interval_time_ms_),
             this,
             &GestureEventQueue::SendScrollEndingEventsNow);
       } else {
@@ -117,9 +127,9 @@ bool GestureEventQueue::ShouldForwardForTapSuppression(
   switch (gesture_event.event.type) {
     case WebInputEvent::GestureFlingCancel:
       if (gesture_event.event.sourceDevice == WebGestureEvent::Touchscreen)
-        touchscreen_tap_suppression_controller_.GestureFlingCancel();
+        touchscreen_tap_suppression_controller_->GestureFlingCancel();
       else
-        touchpad_tap_suppression_controller_.GestureFlingCancel();
+        touchpad_tap_suppression_controller_->GestureFlingCancel();
       return true;
     case WebInputEvent::GestureTapDown:
     case WebInputEvent::GestureShowPress:
@@ -128,8 +138,8 @@ bool GestureEventQueue::ShouldForwardForTapSuppression(
     case WebInputEvent::GestureTap:
     case WebInputEvent::GestureDoubleTap:
       if (gesture_event.event.sourceDevice == WebGestureEvent::Touchscreen) {
-        return !touchscreen_tap_suppression_controller_.FilterTapEvent(
-            gesture_event);
+        return !touchscreen_tap_suppression_controller_->
+            FilterTapEvent(gesture_event);
       }
       return true;
     default:
@@ -190,9 +200,9 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
   const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
   if (type == WebInputEvent::GestureFlingCancel) {
     if (event_with_latency.event.sourceDevice == WebGestureEvent::Touchscreen)
-      touchscreen_tap_suppression_controller_.GestureFlingCancelAck(processed);
+      touchscreen_tap_suppression_controller_->GestureFlingCancelAck(processed);
     else
-      touchpad_tap_suppression_controller_.GestureFlingCancelAck(processed);
+      touchpad_tap_suppression_controller_->GestureFlingCancelAck(processed);
   }
   DCHECK_LT(event_index, coalesced_gesture_events_.size());
   coalesced_gesture_events_.erase(coalesced_gesture_events_.begin() +
@@ -228,7 +238,7 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
 
 TouchpadTapSuppressionController*
     GestureEventQueue::GetTouchpadTapSuppressionController() {
-  return &touchpad_tap_suppression_controller_;
+  return touchpad_tap_suppression_controller_.get();
 }
 
 bool GestureEventQueue::ExpectingGestureAck() const {

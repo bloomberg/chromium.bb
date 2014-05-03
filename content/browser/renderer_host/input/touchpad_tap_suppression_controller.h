@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCHPAD_TAP_SUPPRESSION_CONTROLLER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCHPAD_TAP_SUPPRESSION_CONTROLLER_H_
 
-#include "content/browser/renderer_host/input/tap_suppression_controller.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller_client.h"
 #include "content/common/content_export.h"
 #include "content/port/browser/event_with_latency_info.h"
@@ -27,9 +27,8 @@ class CONTENT_EXPORT TouchpadTapSuppressionControllerClient {
 class TouchpadTapSuppressionController : public TapSuppressionControllerClient {
  public:
   // The |client| must outlive the TouchpadTapSupressionController.
-  TouchpadTapSuppressionController(
-      TouchpadTapSuppressionControllerClient* client,
-      const TapSuppressionController::Config& config);
+  explicit TouchpadTapSuppressionController(
+      TouchpadTapSuppressionControllerClient* client);
   virtual ~TouchpadTapSuppressionController();
 
   // Should be called on arrival of GestureFlingCancel events.
@@ -52,6 +51,8 @@ class TouchpadTapSuppressionController : public TapSuppressionControllerClient {
   friend class MockRenderWidgetHost;
 
   // TapSuppressionControllerClient implementation.
+  virtual int MaxCancelToDownTimeInMs() OVERRIDE;
+  virtual int MaxTapGapTimeInMs() OVERRIDE;
   virtual void DropStashedTapDown() OVERRIDE;
   virtual void ForwardStashedTapDown() OVERRIDE;
 
@@ -59,7 +60,7 @@ class TouchpadTapSuppressionController : public TapSuppressionControllerClient {
   MouseEventWithLatencyInfo stashed_mouse_down_;
 
   // The core controller of tap suppression.
-  TapSuppressionController controller_;
+  scoped_ptr<TapSuppressionController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchpadTapSuppressionController);
 };

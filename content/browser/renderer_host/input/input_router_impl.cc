@@ -31,6 +31,13 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
+#if defined(OS_ANDROID)
+#include "ui/gfx/android/view_configuration.h"
+#include "ui/gfx/screen.h"
+#else
+#include "ui/events/gestures/gesture_configuration.h"
+#endif
+
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
@@ -42,6 +49,57 @@ using blink::WebMouseWheelEvent;
 
 namespace content {
 namespace {
+
+// TODO(jdduke): Instead of relying on command line flags or conditional
+// conditional compilation here, we should instead use an InputRouter::Settings
+// construct, supplied and customized by the RenderWidgetHostView. See
+// crbug.com/343917.
+bool GetTouchAckTimeoutDelay(base::TimeDelta* touch_ack_timeout_delay) {
+  CommandLine* parsed_command_line = CommandLine::ForCurrentProcess();
+  if (!parsed_command_line->HasSwitch(switches::kTouchAckTimeoutDelayMs))
+    return false;
+
+  std::string timeout_string = parsed_command_line->GetSwitchValueASCII(
+      switches::kTouchAckTimeoutDelayMs);
+  size_t timeout_ms;
+  if (!base::StringToSizeT(timeout_string, &timeout_ms))
+    return false;
+
+  *touch_ack_timeout_delay = base::TimeDelta::FromMilliseconds(timeout_ms);
+  return true;
+}
+
+#if defined(OS_ANDROID)
+double GetTouchMoveSlopSuppressionLengthDips() {
+  const double touch_slop_length_pixels =
+      static_cast<double>(gfx::ViewConfiguration::GetTouchSlopInPixels());
+  const double device_scale_factor =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().device_scale_factor();
+  return touch_slop_length_pixels / device_scale_factor;
+}
+#elif defined(USE_AURA)
+double GetTouchMoveSlopSuppressionLengthDips() {
+  return ui::GestureConfiguration::max_touch_move_in_pixels_for_click();
+}
+#else
+double GetTouchMoveSlopSuppressionLengthDips() {
+  return 0;
+}
+#endif
+
+TouchEventQueue::TouchScrollingMode GetTouchScrollingMode() {
+  std::string modeString = CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(switches::kTouchScrollingMode);
+  if (modeString == switches::kTouchScrollingModeAsyncTouchmove)
+    return TouchEventQueue::TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE;
+  if (modeString == switches::kTouchScrollingModeSyncTouchmove)
+    return TouchEventQueue::TOUCH_SCROLLING_MODE_SYNC_TOUCHMOVE;
+  if (modeString == switches::kTouchScrollingModeTouchcancel)
+    return TouchEventQueue::TOUCH_SCROLLING_MODE_TOUCHCANCEL;
+  if (modeString != "")
+    LOG(ERROR) << "Invalid --touch-scrolling-mode option: " << modeString;
+  return TouchEventQueue::TOUCH_SCROLLING_MODE_DEFAULT;
+}
 
 const char* GetEventAckName(InputEventAckState ack_result) {
   switch(ack_result) {
@@ -57,14 +115,10 @@ const char* GetEventAckName(InputEventAckState ack_result) {
 
 } // namespace
 
-InputRouterImpl::Config::Config() {
-}
-
 InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
                                  InputRouterClient* client,
                                  InputAckHandler* ack_handler,
-                                 int routing_id,
-                                 const Config& config)
+                                 int routing_id)
     : sender_(sender),
       client_(client),
       ack_handler_(ack_handler),
@@ -73,14 +127,19 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
       move_caret_pending_(false),
       mouse_move_pending_(false),
       mouse_wheel_pending_(false),
+      touch_ack_timeout_supported_(false),
       current_view_flags_(0),
       current_ack_source_(ACK_SOURCE_NONE),
       flush_requested_(false),
-      touch_event_queue_(this, config.touch_config),
-      gesture_event_queue_(this, this, config.gesture_config) {
+      touch_event_queue_(this,
+                         GetTouchScrollingMode(),
+                         GetTouchMoveSlopSuppressionLengthDips()),
+      gesture_event_queue_(this, this) {
   DCHECK(sender);
   DCHECK(client);
   DCHECK(ack_handler);
+  touch_ack_timeout_supported_ =
+      GetTouchAckTimeoutDelay(&touch_ack_timeout_delay_);
   UpdateTouchAckTimeoutEnabled();
 }
 
@@ -689,6 +748,11 @@ void InputRouterImpl::ProcessAckForOverscroll(const WebInputEvent& event,
 }
 
 void InputRouterImpl::UpdateTouchAckTimeoutEnabled() {
+  if (!touch_ack_timeout_supported_) {
+    touch_event_queue_.SetAckTimeoutEnabled(false, base::TimeDelta());
+    return;
+  }
+
   // Mobile sites tend to be well-behaved with respect to touch handling, so
   // they have less need for the touch timeout fallback.
   const bool fixed_page_scale = (current_view_flags_ & FIXED_PAGE_SCALE) != 0;
@@ -703,7 +767,8 @@ void InputRouterImpl::UpdateTouchAckTimeoutEnabled() {
   const bool touch_ack_timeout_enabled = !fixed_page_scale &&
                                          !mobile_viewport &&
                                          !touch_action_none;
-  touch_event_queue_.SetAckTimeoutEnabled(touch_ack_timeout_enabled);
+  touch_event_queue_.SetAckTimeoutEnabled(touch_ack_timeout_enabled,
+                                          touch_ack_timeout_delay_);
 }
 
 void InputRouterImpl::SignalFlushedIfNecessary() {
