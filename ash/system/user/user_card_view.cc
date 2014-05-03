@@ -11,6 +11,7 @@
 #include "ash/session/user_info.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/user/config.h"
 #include "ash/system/user/rounded_image_view.h"
@@ -35,6 +36,14 @@
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/box_layout.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/ash_view_ids.h"
+#include "ash/media_delegate.h"
+#include "ash/system/tray/media_security/media_capture_observer.h"
+#include "ui/views/controls/image_view.h"
+#include "ui/views/layout/fill_layout.h"
+#endif
+
 namespace ash {
 namespace tray {
 
@@ -45,6 +54,70 @@ const int kUserDetailsVerticalPadding = 5;
 // The invisible word joiner character, used as a marker to indicate the start
 // and end of the user's display name in the public account user card's text.
 const base::char16 kDisplayNameMark[] = {0x2060, 0};
+
+#if defined(OS_CHROMEOS)
+class MediaIndicator : public views::View, public MediaCaptureObserver {
+ public:
+  explicit MediaIndicator(MultiProfileIndex index)
+      : index_(index), label_(new views::Label) {
+    SetLayoutManager(new views::FillLayout);
+    views::ImageView* icon = new views::ImageView;
+    icon->SetImage(ui::ResourceBundle::GetSharedInstance()
+                       .GetImageNamed(IDR_AURA_UBER_TRAY_RECORDING_RED)
+                       .ToImageSkia());
+    AddChildView(icon);
+    label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+        ui::ResourceBundle::SmallFont));
+    OnMediaCaptureChanged();
+    Shell::GetInstance()->system_tray_notifier()->AddMediaCaptureObserver(this);
+    set_id(VIEW_ID_USER_VIEW_MEDIA_INDICATOR);
+  }
+
+  virtual ~MediaIndicator() {
+    Shell::GetInstance()->system_tray_notifier()->RemoveMediaCaptureObserver(
+        this);
+  }
+
+  // MediaCaptureObserver:
+  virtual void OnMediaCaptureChanged() OVERRIDE {
+    Shell* shell = Shell::GetInstance();
+    content::BrowserContext* context =
+        shell->session_state_delegate()->GetBrowserContextByIndex(index_);
+    MediaCaptureState state =
+        Shell::GetInstance()->media_delegate()->GetMediaCaptureState(context);
+    int res_id = 0;
+    switch (state) {
+      case MEDIA_CAPTURE_AUDIO_VIDEO:
+        res_id = IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_AUDIO_VIDEO;
+        break;
+      case MEDIA_CAPTURE_AUDIO:
+        res_id = IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_AUDIO;
+        break;
+      case MEDIA_CAPTURE_VIDEO:
+        res_id = IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_VIDEO;
+        break;
+      case MEDIA_CAPTURE_NONE:
+        break;
+    }
+    SetMessage(res_id ? l10n_util::GetStringUTF16(res_id) : base::string16());
+  }
+
+  views::View* GetMessageView() { return label_; }
+
+  void SetMessage(const base::string16& message) {
+    SetVisible(!message.empty());
+    label_->SetText(message);
+    label_->SetVisible(!message.empty());
+  }
+
+ private:
+  MultiProfileIndex index_;
+  views::Label* label_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaIndicator);
+};
+#endif
 
 // The user details shown in public account mode. This is essentially a label
 // but with custom painting code as the text is styled with multiple colors and
@@ -301,7 +374,7 @@ void UserCardView::AddUserContent(user::LoginStatus login_status,
                                   int multiprofile_index) {
   views::View* icon = CreateIcon(login_status, multiprofile_index);
   AddChildView(icon);
-  views::Label* username = NULL;
+  views::Label* user_name = NULL;
   SessionStateDelegate* delegate =
       Shell::GetInstance()->session_state_delegate();
   if (!multiprofile_index) {
@@ -313,12 +386,12 @@ void UserCardView::AddUserContent(user::LoginStatus login_status,
       user_name_string = base::ASCIIToUTF16(
           delegate->GetUserInfo(multiprofile_index)->GetEmail());
     if (!user_name_string.empty()) {
-      username = new views::Label(user_name_string);
-      username->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+      user_name = new views::Label(user_name_string);
+      user_name->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     }
   }
 
-  views::Label* additional = NULL;
+  views::Label* user_email = NULL;
   if (login_status != user::LOGGED_IN_GUEST &&
       (multiprofile_index || !IsMultiAccountSupportedAndUserActive())) {
     base::string16 user_email_string =
@@ -328,37 +401,55 @@ void UserCardView::AddUserContent(user::LoginStatus login_status,
             : base::UTF8ToUTF16(
                   delegate->GetUserInfo(multiprofile_index)->GetEmail());
     if (!user_email_string.empty()) {
-      additional = new views::Label(user_email_string);
-      additional->SetFontList(
+      user_email = new views::Label(user_email_string);
+      user_email->SetFontList(
           ui::ResourceBundle::GetSharedInstance().GetFontList(
               ui::ResourceBundle::SmallFont));
-      additional->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+      user_email->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     }
   }
 
   // Adjust text properties dependent on if it is an active or inactive user.
   if (multiprofile_index) {
     // Fade the text of non active users to 50%.
-    SkColor text_color = additional->enabled_color();
+    SkColor text_color = user_email->enabled_color();
     text_color = SkColorSetA(text_color, SkColorGetA(text_color) / 2);
-    if (additional)
-      additional->SetDisabledColor(text_color);
-    if (username)
-      username->SetDisabledColor(text_color);
+    if (user_email)
+      user_email->SetDisabledColor(text_color);
+    if (user_name)
+      user_name->SetDisabledColor(text_color);
   }
 
-  if (additional && username) {
+  if (user_email && user_name) {
     views::View* details = new views::View;
     details->SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kVertical, 0, kUserDetailsVerticalPadding, 0));
-    details->AddChildView(username);
-    details->AddChildView(additional);
+    details->AddChildView(user_name);
+    details->AddChildView(user_email);
     AddChildView(details);
   } else {
-    if (username)
-      AddChildView(username);
-    if (additional)
-      AddChildView(additional);
+    if (user_name)
+      AddChildView(user_name);
+    if (user_email) {
+#if defined(OS_CHROMEOS)
+      // Only non active user can have a media indicator.
+      MediaIndicator* media_indicator = new MediaIndicator(multiprofile_index);
+      views::View* email_indicator_view = new views::View;
+      email_indicator_view->SetLayoutManager(new views::BoxLayout(
+          views::BoxLayout::kHorizontal, 0, 0, kTrayPopupPaddingBetweenItems));
+      email_indicator_view->AddChildView(user_email);
+      email_indicator_view->AddChildView(media_indicator);
+
+      views::View* details = new views::View;
+      details->SetLayoutManager(new views::BoxLayout(
+          views::BoxLayout::kVertical, 0, kUserDetailsVerticalPadding, 0));
+      details->AddChildView(email_indicator_view);
+      details->AddChildView(media_indicator->GetMessageView());
+      AddChildView(details);
+#else
+      AddChildView(user_email);
+#endif
+    }
   }
 }
 

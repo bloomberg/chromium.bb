@@ -30,6 +30,7 @@
 #include "ash/system/chromeos/session/last_window_closed_observer.h"
 #include "ash/system/chromeos/session/logout_button_observer.h"
 #include "ash/system/chromeos/session/session_length_limit_observer.h"
+#include "ash/system/tray/media_security/media_capture_observer.h"
 #include "base/time/time.h"
 #endif
 
@@ -92,6 +93,9 @@ class ASH_EXPORT SystemTrayNotifier {
   void AddEnterpriseDomainObserver(EnterpriseDomainObserver* observer);
   void RemoveEnterpriseDomainObserver(EnterpriseDomainObserver* observer);
 
+  void AddMediaCaptureObserver(MediaCaptureObserver* observer);
+  void RemoveMediaCaptureObserver(MediaCaptureObserver* observer);
+
   void AddScreenCaptureObserver(ScreenCaptureObserver* observer);
   void RemoveScreenCaptureObserver(ScreenCaptureObserver* observer);
 
@@ -133,6 +137,7 @@ class ASH_EXPORT SystemTrayNotifier {
   void NotifyRequestToggleWifi();
   void NotifyOnCaptivePortalDetected(const std::string& service_path);
   void NotifyEnterpriseDomainChanged();
+  void NotifyMediaCaptureChanged();
   void NotifyScreenCaptureStart(const base::Closure& stop_callback,
                                 const base::string16& sharing_app_name);
   void NotifyScreenCaptureStop();
@@ -164,6 +169,7 @@ class ASH_EXPORT SystemTrayNotifier {
   ObserverList<NetworkPortalDetectorObserver>
       network_portal_detector_observers_;
   ObserverList<EnterpriseDomainObserver> enterprise_domain_observers_;
+  ObserverList<MediaCaptureObserver> media_capture_observers_;
   ObserverList<ScreenCaptureObserver> screen_capture_observers_;
   ObserverList<ScreenShareObserver> screen_share_observers_;
   ObserverList<LastWindowClosedObserver> last_window_closed_observers_;

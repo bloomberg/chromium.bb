@@ -5,7 +5,18 @@
 #ifndef ASH_MEDIA_DELEGATE_H_
 #define ASH_MEDIA_DELEGATE_H_
 
+namespace content {
+class BrowserContext;
+}
+
 namespace ash {
+
+enum MediaCaptureState {
+  MEDIA_CAPTURE_NONE = 0,
+  MEDIA_CAPTURE_AUDIO = 1 << 0,
+  MEDIA_CAPTURE_VIDEO = 1 << 1,
+  MEDIA_CAPTURE_AUDIO_VIDEO = MEDIA_CAPTURE_AUDIO | MEDIA_CAPTURE_VIDEO,
+};
 
 // A delegate class to control media playback.
 class MediaDelegate {
@@ -20,6 +31,11 @@ class MediaDelegate {
 
   // Handles the Previous Track Media shortcut key.
   virtual void HandleMediaPrevTrack() = 0;
+
+  // Returns the current media recording state of web contents
+  // that belongs to the |context|.
+  virtual MediaCaptureState GetMediaCaptureState(
+      content::BrowserContext* context) = 0;
 };
 
 }  // namespace ash

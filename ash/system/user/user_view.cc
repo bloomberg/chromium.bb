@@ -283,8 +283,8 @@ void UserView::Layout() {
     int remaining_width = contents_area.width() - logout_area.width();
     if (IsMultiProfileSupportedAndUserActive() ||
         IsMultiAccountSupportedAndUserActive()) {
-      // In multiprofile case |user_card_view_| and |logout_button_| have to
-      // have the same height.
+      // In multiprofile/multiaccount case |user_card_view_| and
+      // |logout_button_| have to have the same height.
       int y = std::min(user_card_area.y(), logout_area.y());
       int height = std::max(user_card_area.height(), logout_area.height());
       logout_area.set_y(y);

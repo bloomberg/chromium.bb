@@ -151,6 +151,16 @@ void SystemTrayNotifier::RemoveEnterpriseDomainObserver(
   enterprise_domain_observers_.RemoveObserver(observer);
 }
 
+void SystemTrayNotifier::AddMediaCaptureObserver(
+    MediaCaptureObserver* observer) {
+  media_capture_observers_.AddObserver(observer);
+}
+
+void SystemTrayNotifier::RemoveMediaCaptureObserver(
+    MediaCaptureObserver* observer) {
+  media_capture_observers_.RemoveObserver(observer);
+}
+
 void SystemTrayNotifier::AddScreenCaptureObserver(
     ScreenCaptureObserver* observer) {
   screen_capture_observers_.AddObserver(observer);
@@ -352,6 +362,11 @@ void SystemTrayNotifier::NotifyOnCaptivePortalDetected(
 void SystemTrayNotifier::NotifyEnterpriseDomainChanged() {
   FOR_EACH_OBSERVER(EnterpriseDomainObserver, enterprise_domain_observers_,
       OnEnterpriseDomainChanged());
+}
+
+void SystemTrayNotifier::NotifyMediaCaptureChanged() {
+  FOR_EACH_OBSERVER(
+      MediaCaptureObserver, media_capture_observers_, OnMediaCaptureChanged());
 }
 
 void SystemTrayNotifier::NotifyScreenCaptureStart(

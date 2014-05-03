@@ -333,6 +333,8 @@
         'browser/ui/ash/launcher/multi_profile_app_window_launcher_controller.h',
         'browser/ui/ash/launcher/multi_profile_browser_status_monitor.cc',
         'browser/ui/ash/launcher/multi_profile_browser_status_monitor.h',
+        'browser/ui/ash/media_delegate_chromeos.cc',
+        'browser/ui/ash/media_delegate_chromeos.h',
         'browser/ui/ash/multi_user/multi_user_context_menu.cc',
         'browser/ui/ash/multi_user/multi_user_context_menu.h',
         'browser/ui/ash/multi_user/multi_user_context_menu_chromeos.cc',

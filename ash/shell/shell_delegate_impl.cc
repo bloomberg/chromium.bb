@@ -11,7 +11,7 @@
 #include "ash/media_delegate.h"
 #include "ash/new_window_delegate.h"
 #include "ash/session/session_state_delegate.h"
-#include "ash/session/session_state_delegate_stub.h"
+#include "ash/session/user_info.h"
 #include "ash/shell/context_menu.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/keyboard_controller_proxy_stub.h"
@@ -21,6 +21,7 @@
 #include "ash/system/tray/default_system_tray_delegate.h"
 #include "ash/wm/window_state.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/input_method_event_filter.h"
 
@@ -33,6 +34,7 @@ class NewWindowDelegateImpl : public NewWindowDelegate {
   NewWindowDelegateImpl() {}
   virtual ~NewWindowDelegateImpl() {}
 
+  // NewWindowDelegate:
   virtual void NewTab() OVERRIDE {}
   virtual void NewWindow(bool incognito) OVERRIDE {
     ash::shell::ToplevelWindow::CreateParams create_params;
@@ -56,12 +58,113 @@ class MediaDelegateImpl : public MediaDelegate {
   MediaDelegateImpl() {}
   virtual ~MediaDelegateImpl() {}
 
+  // MediaDelegate:
   virtual void HandleMediaNextTrack() OVERRIDE {}
   virtual void HandleMediaPlayPause() OVERRIDE {}
   virtual void HandleMediaPrevTrack() OVERRIDE {}
+  virtual MediaCaptureState GetMediaCaptureState(
+      content::BrowserContext* context) OVERRIDE {
+    return MEDIA_CAPTURE_VIDEO;
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaDelegateImpl);
+};
+
+class UserInfoImpl : public UserInfo {
+ public:
+  UserInfoImpl() {}
+  virtual ~UserInfoImpl() {}
+
+  // UserInfo:
+  virtual base::string16 GetDisplayName() const OVERRIDE {
+    return base::UTF8ToUTF16("stub-user");
+  }
+  virtual base::string16 GetGivenName() const OVERRIDE {
+    return base::UTF8ToUTF16("Stub");
+  }
+  virtual std::string GetEmail() const OVERRIDE {
+    return "stub-user@domain.com";
+  }
+  virtual std::string GetUserID() const OVERRIDE { return GetEmail(); }
+  virtual const gfx::ImageSkia& GetImage() const OVERRIDE {
+    return user_image_;
+  }
+
+ private:
+  gfx::ImageSkia user_image_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserInfoImpl);
+};
+
+class SessionStateDelegateImpl : public SessionStateDelegate {
+ public:
+  SessionStateDelegateImpl()
+      : screen_locked_(false), user_info_(new UserInfoImpl()) {}
+
+  virtual ~SessionStateDelegateImpl() {}
+
+  // SessionStateDelegate:
+  virtual content::BrowserContext* GetBrowserContextByIndex(
+      MultiProfileIndex index) OVERRIDE {
+    return Shell::GetInstance()->delegate()->GetActiveBrowserContext();
+  }
+  virtual content::BrowserContext* GetBrowserContextForWindow(
+      aura::Window* window) OVERRIDE {
+    return Shell::GetInstance()->delegate()->GetActiveBrowserContext();
+  }
+  virtual int GetMaximumNumberOfLoggedInUsers() const OVERRIDE { return 3; }
+  virtual int NumberOfLoggedInUsers() const OVERRIDE {
+    // ash_shell has 2 users.
+    return 2;
+  }
+  virtual bool IsActiveUserSessionStarted() const OVERRIDE { return true; }
+  virtual bool CanLockScreen() const OVERRIDE { return true; }
+  virtual bool IsScreenLocked() const OVERRIDE { return screen_locked_; }
+  virtual bool ShouldLockScreenBeforeSuspending() const OVERRIDE {
+    return false;
+  }
+  virtual void LockScreen() OVERRIDE {
+    shell::CreateLockScreen();
+    screen_locked_ = true;
+    Shell::GetInstance()->UpdateShelfVisibility();
+  }
+  virtual void UnlockScreen() OVERRIDE {
+    screen_locked_ = false;
+    Shell::GetInstance()->UpdateShelfVisibility();
+  }
+  virtual bool IsUserSessionBlocked() const OVERRIDE {
+    return !IsActiveUserSessionStarted() || IsScreenLocked();
+  }
+  virtual SessionState GetSessionState() const OVERRIDE {
+    // Assume that if session is not active we're at login.
+    return IsActiveUserSessionStarted() ? SESSION_STATE_ACTIVE
+                                        : SESSION_STATE_LOGIN_PRIMARY;
+  }
+  virtual const UserInfo* GetUserInfo(MultiProfileIndex index) const OVERRIDE {
+    return user_info_.get();
+  }
+  virtual const UserInfo* GetUserInfo(
+      content::BrowserContext* context) const OVERRIDE {
+    return user_info_.get();
+  }
+  virtual bool ShouldShowAvatar(aura::Window* window) const OVERRIDE {
+    return !user_info_->GetImage().isNull();
+  }
+  virtual void SwitchActiveUser(const std::string& user_id) OVERRIDE {}
+  virtual void CycleActiveUser(CycleUser cycle_user) OVERRIDE {}
+  virtual void AddSessionStateObserver(
+      ash::SessionStateObserver* observer) OVERRIDE {}
+  virtual void RemoveSessionStateObserver(
+      ash::SessionStateObserver* observer) OVERRIDE {}
+
+ private:
+  bool screen_locked_;
+
+  // A pseudo user info.
+  scoped_ptr<UserInfo> user_info_;
+
+  DISALLOW_COPY_AND_ASSIGN(SessionStateDelegateImpl);
 };
 
 }  // namespace
@@ -149,7 +252,7 @@ ash::UserWallpaperDelegate* ShellDelegateImpl::CreateUserWallpaperDelegate() {
 }
 
 ash::SessionStateDelegate* ShellDelegateImpl::CreateSessionStateDelegate() {
-  return new SessionStateDelegateStub;
+  return new SessionStateDelegateImpl;
 }
 
 ash::AccessibilityDelegate* ShellDelegateImpl::CreateAccessibilityDelegate() {

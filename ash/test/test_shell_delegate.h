@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "ash/media_delegate.h"
 #include "ash/shell_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -63,7 +64,11 @@ class TestShellDelegate : public ShellDelegate {
 
   int num_exit_requests() const { return num_exit_requests_; }
 
-  TestSessionStateDelegate* test_session_state_delegate();
+  TestSessionStateDelegate* test_session_state_delegate() {
+    return test_session_state_delegate_;
+  }
+
+  void SetMediaCaptureState(MediaCaptureState state);
 
  private:
   int num_exit_requests_;

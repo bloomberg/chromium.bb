@@ -14,6 +14,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/message_loop/message_loop.h"
@@ -400,6 +401,11 @@ void MultiUserWindowManagerChromeOS::ActiveUserChanged(
   animation_.reset(
       new UserSwichAnimatorChromeOS(
           this, user_id, GetAdjustedAnimationTimeInMS(kUserFadeTimeMS)));
+  // Call notifier here instead of observing ActiveUserChanged because
+  // this must happen after MultiUserWindowManagerChromeOS is notified.
+  ash::Shell::GetInstance()
+      ->system_tray_notifier()
+      ->NotifyMediaCaptureChanged();
 }
 
 void MultiUserWindowManagerChromeOS::OnWindowDestroyed(aura::Window* window) {

@@ -305,6 +305,17 @@ Server message: <ph name="server_msg">$3<ex>Incorrect password</ex></ph>
     Stop
   </message>
 
+  <!-- Status tray media recording state strings. -->
+  <message name="IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_AUDIO" desc="label used to indicate that the microphone is used by a background user">
+    Micropohne is in use.
+  </message>
+  <message name="IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_VIDEO" desc="label used to indicate that the camera is used by a background user">
+    Camera is in use.
+  </message>
+  <message name="IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_AUDIO_VIDEO" desc="label used to indicate that the camera and microphone are used by a background user">
+    Camera and microphone are in use.
+  </message>
+
   <!-- Status tray screen share strings. -->
   <message name="IDS_ASH_STATUS_TRAY_SCREEN_SHARE_STOP" desc="label used for screen sharing stop button">
     Stop

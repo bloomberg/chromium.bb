@@ -77,6 +77,7 @@
 
       <structure type="chrome_scaled_image" name="IDR_AURA_WARNING_ICON" file="common/alert_small.png" />
 
+      <!-- TODO(oshima): Make following resources cros only -->
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ACCESSIBILITY" file="cros/status/status_accessibility_mode.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK" file="cros/status/status_accessibility_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BLUETOOTH" file="cros/status/status_bluetooth.png" />
@@ -187,6 +188,8 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_VPN" file="cros/network/statusbar_vpn_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_VPN_BADGE" file="cros/network/statusbar_network_vpn_badge.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_WIRED" file="cros/network/statusbar_wired.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_RECORDING" file="cros/status/status_recording.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_RECORDING_RED" file="cros/status/status_recording_red.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VIRTUAL_KEYBOARD" file="cros/status/status_virtual_keyboard.png" />
       </if>
 
