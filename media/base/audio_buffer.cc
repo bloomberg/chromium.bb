@@ -266,4 +266,47 @@ void AudioBuffer::TrimEnd(int frames_to_trim) {
   duration_ = CalculateDuration(adjusted_frame_count_, sample_rate_);
 }
 
+void AudioBuffer::TrimRange(int start, int end) {
+  CHECK_GE(start, 0);
+  CHECK_LE(end, adjusted_frame_count_);
+
+  const int frames_to_trim = end - start;
+  CHECK_GE(frames_to_trim, 0);
+  CHECK_LE(frames_to_trim, adjusted_frame_count_);
+
+  const int bytes_per_channel = SampleFormatToBytesPerChannel(sample_format_);
+  const int frames_to_copy = adjusted_frame_count_ - end;
+  if (frames_to_copy > 0) {
+    switch (sample_format_) {
+      case kSampleFormatPlanarS16:
+      case kSampleFormatPlanarF32:
+        // Planar data must be shifted per channel.
+        for (int ch = 0; ch < channel_count_; ++ch) {
+          memmove(channel_data_[ch] + (trim_start_ + start) * bytes_per_channel,
+                  channel_data_[ch] + (trim_start_ + end) * bytes_per_channel,
+                  bytes_per_channel * frames_to_copy);
+        }
+        break;
+      case kSampleFormatU8:
+      case kSampleFormatS16:
+      case kSampleFormatS32:
+      case kSampleFormatF32: {
+        // Interleaved data can be shifted all at once.
+        const int frame_size = channel_count_ * bytes_per_channel;
+        memmove(channel_data_[0] + (trim_start_ + start) * frame_size,
+                channel_data_[0] + (trim_start_ + end) * frame_size,
+                frame_size * frames_to_copy);
+        break;
+      }
+      case kUnknownSampleFormat:
+        NOTREACHED() << "Invalid sample format!";
+    }
+  } else {
+    CHECK_EQ(frames_to_copy, 0);
+  }
+
+  // Trim the leftover data off the end of the buffer and update duration.
+  TrimEnd(frames_to_trim);
+}
+
 }  // namespace media

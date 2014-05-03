@@ -418,7 +418,8 @@ bool OpusAudioDecoder::ConfigureDecoder() {
     return false;
   }
 
-  discard_helper_.reset(new AudioDiscardHelper(config_.samples_per_second()));
+  discard_helper_.reset(
+      new AudioDiscardHelper(config_.samples_per_second(), 0));
   start_input_timestamp_ = kNoTimestamp();
   return true;
 }

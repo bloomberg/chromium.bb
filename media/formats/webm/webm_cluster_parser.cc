@@ -416,8 +416,9 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
   }
 
   if (discard_padding != 0) {
-    buffer->set_discard_padding(base::TimeDelta::FromMicroseconds(
-                                    discard_padding / 1000));
+    buffer->set_discard_padding(std::make_pair(
+        base::TimeDelta(),
+        base::TimeDelta::FromMicroseconds(discard_padding / 1000)));
   }
 
   return track->AddBuffer(buffer);

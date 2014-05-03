@@ -50,6 +50,11 @@ static base::Time ExtractTimelineOffset(AVFormatContext* format_context) {
   return base::Time();
 }
 
+static base::TimeDelta FramesToTimeDelta(int frames, double sample_rate) {
+  return base::TimeDelta::FromMicroseconds(
+      frames * base::Time::kMicrosecondsPerSecond / sample_rate);
+}
+
 //
 // FFmpegDemuxerStream
 //
@@ -189,20 +194,28 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
     }
 
     int skip_samples_size = 0;
-    uint8* skip_samples = av_packet_get_side_data(packet.get(),
-                                                  AV_PKT_DATA_SKIP_SAMPLES,
-                                                  &skip_samples_size);
+    const uint32* skip_samples_ptr =
+        reinterpret_cast<const uint32*>(av_packet_get_side_data(
+            packet.get(), AV_PKT_DATA_SKIP_SAMPLES, &skip_samples_size));
     const int kSkipSamplesValidSize = 10;
-    const int kSkipSamplesOffset = 4;
+    const int kSkipEndSamplesOffset = 1;
     if (skip_samples_size >= kSkipSamplesValidSize) {
-      int discard_padding_samples = base::ByteSwapToLE32(
-          *(reinterpret_cast<const uint32*>(skip_samples +
-                                            kSkipSamplesOffset)));
-      // TODO(vigneshv): Change decoder buffer to use number of samples so that
-      // this conversion can be avoided.
-      buffer->set_discard_padding(base::TimeDelta::FromMicroseconds(
-          discard_padding_samples * 1000000.0 /
-          audio_decoder_config().samples_per_second()));
+      // Because FFmpeg rolls codec delay and skip samples into one we can only
+      // allow front discard padding on the first buffer.  Otherwise the discard
+      // helper can't figure out which data to discard.  See AudioDiscardHelper.
+      int discard_front_samples = base::ByteSwapToLE32(*skip_samples_ptr);
+      if (last_packet_timestamp_ != kNoTimestamp()) {
+        DLOG(ERROR) << "Skip samples are only allowed for the first packet.";
+        discard_front_samples = 0;
+      }
+
+      const int discard_end_samples =
+          base::ByteSwapToLE32(*(skip_samples_ptr + kSkipEndSamplesOffset));
+      const int samples_per_second =
+          audio_decoder_config().samples_per_second();
+      buffer->set_discard_padding(std::make_pair(
+          FramesToTimeDelta(discard_front_samples, samples_per_second),
+          FramesToTimeDelta(discard_end_samples, samples_per_second)));
     }
 
     if (decrypt_config)

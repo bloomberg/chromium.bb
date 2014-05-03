@@ -855,6 +855,17 @@ TEST_P(PipelineIntegrationTest, MediaSource_ADTS_TimestampOffset) {
   EXPECT_TRUE(WaitUntilOnEnded());
 }
 
+TEST_F(PipelineIntegrationTest, BasicPlaybackHashed_MP3) {
+  ASSERT_TRUE(Start(GetTestDataFilePath("sfx.mp3"), PIPELINE_OK, kHashed));
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+
+  // Verify codec delay and preroll are stripped.
+  EXPECT_EQ("3.05,2.87,3.00,3.32,3.58,4.08,", GetAudioHash());
+}
+
 TEST_P(PipelineIntegrationTest, MediaSource_MP3) {
   MockMediaSource source("sfx.mp3", kMP3, kAppendWholeFile, GetParam());
   StartHashedPipelineWithMediaSource(&source);

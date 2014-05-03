@@ -11,14 +11,121 @@ namespace media {
 
 static const int kSampleRate = 48000;
 
-static void VerifyBus(AudioBus* bus, int frames, float start, float increment) {
+
+static void VerifyBusWithOffset(AudioBus* bus,
+                                int offset,
+                                int frames,
+                                float start,
+                                float increment) {
   for (int ch = 0; ch < bus->channels(); ++ch) {
     const float v = start + ch * bus->frames() * increment;
-    for (int i = 0; i < frames; ++i) {
+    for (int i = offset; i < frames; ++i) {
       ASSERT_FLOAT_EQ(v + i * increment, bus->channel(ch)[i]) << "i=" << i
                                                               << ", ch=" << ch;
     }
   }
+}
+
+static void VerifyBus(AudioBus* bus, int frames, float start, float increment) {
+  VerifyBusWithOffset(bus, 0, frames, start, increment);
+}
+
+static void TrimRangeTest(SampleFormat sample_format) {
+  const ChannelLayout channel_layout = CHANNEL_LAYOUT_4_0;
+  const int channels = ChannelLayoutToChannelCount(channel_layout);
+  const int frames = kSampleRate / 10;
+  const base::TimeDelta timestamp = base::TimeDelta();
+  const base::TimeDelta duration = base::TimeDelta::FromMilliseconds(100);
+  scoped_refptr<AudioBuffer> buffer = MakeAudioBuffer<float>(sample_format,
+                                                             channel_layout,
+                                                             channels,
+                                                             kSampleRate,
+                                                             0,
+                                                             1,
+                                                             frames,
+                                                             timestamp);
+  EXPECT_EQ(frames, buffer->frame_count());
+  EXPECT_EQ(timestamp, buffer->timestamp());
+  EXPECT_EQ(duration, buffer->duration());
+
+  scoped_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
+
+  // Verify all frames before trimming.
+  buffer->ReadFrames(frames, 0, 0, bus.get());
+  VerifyBus(bus.get(), frames, 0, 1);
+
+  // Trim 10ms of frames from the middle of the buffer.
+  int trim_start = frames / 2;
+  const int trim_length = kSampleRate / 100;
+  const base::TimeDelta trim_duration = base::TimeDelta::FromMilliseconds(10);
+  buffer->TrimRange(trim_start, trim_start + trim_length);
+  EXPECT_EQ(frames - trim_length, buffer->frame_count());
+  EXPECT_EQ(timestamp, buffer->timestamp());
+  EXPECT_EQ(duration - trim_duration, buffer->duration());
+  bus->Zero();
+  buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
+  VerifyBus(bus.get(), trim_start, 0, 1);
+  VerifyBusWithOffset(
+      bus.get(), trim_start, buffer->frame_count() - trim_start, 0, 1);
+
+  // Trim 10ms of frames from the start, which just adjusts the buffer's
+  // internal start offset.
+  buffer->TrimStart(trim_length);
+  trim_start -= trim_length;
+  EXPECT_EQ(frames - 2 * trim_length, buffer->frame_count());
+  EXPECT_EQ(timestamp + trim_duration, buffer->timestamp());
+  EXPECT_EQ(duration - 2 * trim_duration, buffer->duration());
+  bus->Zero();
+  buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
+  VerifyBus(bus.get(), trim_start, trim_length, 1);
+  VerifyBusWithOffset(
+      bus.get(), trim_start, buffer->frame_count() - trim_start, 0, 1);
+
+  // Trim 10ms of frames from the end, which just adjusts the buffer's frame
+  // count.
+  buffer->TrimEnd(trim_length);
+  EXPECT_EQ(frames - 3 * trim_length, buffer->frame_count());
+  EXPECT_EQ(timestamp + trim_duration, buffer->timestamp());
+  EXPECT_EQ(duration - 3 * trim_duration, buffer->duration());
+  bus->Zero();
+  buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
+  VerifyBus(bus.get(), trim_start, trim_length, 1);
+  VerifyBusWithOffset(
+      bus.get(), trim_start, buffer->frame_count() - trim_start, 0, 1);
+
+  // Trim another 10ms from the inner portion of the buffer.
+  buffer->TrimRange(trim_start, trim_start + trim_length);
+  EXPECT_EQ(frames - 4 * trim_length, buffer->frame_count());
+  EXPECT_EQ(timestamp + trim_duration, buffer->timestamp());
+  EXPECT_EQ(duration - 4 * trim_duration, buffer->duration());
+  bus->Zero();
+  buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
+  VerifyBus(bus.get(), trim_start, trim_length, 1);
+  VerifyBusWithOffset(
+      bus.get(), trim_start, buffer->frame_count() - trim_start, 0, 1);
+
+  // Trim off the end using TrimRange() to ensure end index is exclusive.
+  buffer->TrimRange(buffer->frame_count() - trim_length, buffer->frame_count());
+  EXPECT_EQ(frames - 5 * trim_length, buffer->frame_count());
+  EXPECT_EQ(timestamp + trim_duration, buffer->timestamp());
+  EXPECT_EQ(duration - 5 * trim_duration, buffer->duration());
+  bus->Zero();
+  buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
+  VerifyBus(bus.get(), trim_start, trim_length, 1);
+  VerifyBusWithOffset(
+      bus.get(), trim_start, buffer->frame_count() - trim_start, 0, 1);
+
+  // Trim off the start using TrimRange() to ensure start index is inclusive.
+  buffer->TrimRange(0, trim_length);
+  trim_start -= trim_length;
+  EXPECT_EQ(frames - 6 * trim_length, buffer->frame_count());
+  EXPECT_EQ(timestamp + trim_duration, buffer->timestamp());
+  EXPECT_EQ(duration - 6 * trim_duration, buffer->duration());
+  bus->Zero();
+  buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
+  VerifyBus(bus.get(), trim_start, 2 * trim_length, 1);
+  VerifyBusWithOffset(
+      bus.get(), trim_start, buffer->frame_count() - trim_start, 0, 1);
 }
 
 TEST(AudioBufferTest, CopyFrom) {
@@ -310,6 +417,14 @@ TEST(AudioBufferTest, Trim) {
   EXPECT_EQ(0, buffer->frame_count());
   EXPECT_EQ(start_time + 5 * ten_ms, buffer->timestamp());
   EXPECT_EQ(base::TimeDelta(), buffer->duration());
+}
+
+TEST(AudioBufferTest, TrimRangePlanar) {
+  TrimRangeTest(kSampleFormatPlanarF32);
+}
+
+TEST(AudioBufferTest, TrimRangeInterleaved) {
+  TrimRangeTest(kSampleFormatF32);
 }
 
 }  // namespace media

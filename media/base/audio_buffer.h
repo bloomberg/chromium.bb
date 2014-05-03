@@ -83,6 +83,10 @@ class MEDIA_EXPORT AudioBuffer
   // Duration is adjusted to reflect the fewer frames.
   void TrimEnd(int frames_to_trim);
 
+  // Trim an AudioBuffer by removing |end - start| frames from [|start|, |end|).
+  // Even if |start| is zero, timestamp() is not adjusted, only duration().
+  void TrimRange(int start, int end);
+
   // Return the number of channels.
   int channel_count() const { return channel_count_; }
 

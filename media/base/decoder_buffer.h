@@ -6,6 +6,7 @@
 #define MEDIA_BASE_DECODER_BUFFER_H_
 
 #include <string>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/aligned_memory.h"
@@ -105,12 +106,16 @@ class MEDIA_EXPORT DecoderBuffer
     return side_data_size_;
   }
 
-  base::TimeDelta discard_padding() const {
+  // A discard window indicates the amount of data which should be discard from
+  // this buffer after decoding.  The first value is the amount of the front and
+  // the second the amount off the back.
+  typedef std::pair<base::TimeDelta, base::TimeDelta> DiscardPadding;
+  const DiscardPadding& discard_padding() const {
     DCHECK(!end_of_stream());
     return discard_padding_;
   }
 
-  void set_discard_padding(const base::TimeDelta discard_padding) {
+  void set_discard_padding(const DiscardPadding& discard_padding) {
     DCHECK(!end_of_stream());
     discard_padding_ = discard_padding;
   }
@@ -166,7 +171,7 @@ class MEDIA_EXPORT DecoderBuffer
   int side_data_size_;
   scoped_ptr<uint8, base::AlignedFreeDeleter> side_data_;
   scoped_ptr<DecryptConfig> decrypt_config_;
-  base::TimeDelta discard_padding_;
+  DiscardPadding discard_padding_;
   base::TimeDelta splice_timestamp_;
 
   // Constructor helper method for memory allocations.

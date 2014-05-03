@@ -427,7 +427,8 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
 
   // Success!
   av_frame_.reset(av_frame_alloc());
-  discard_helper_.reset(new AudioDiscardHelper(config_.samples_per_second()));
+  discard_helper_.reset(new AudioDiscardHelper(config_.samples_per_second(),
+                                               config_.codec_delay()));
   av_sample_format_ = codec_context_->sample_fmt;
 
   if (codec_context_->channels !=
