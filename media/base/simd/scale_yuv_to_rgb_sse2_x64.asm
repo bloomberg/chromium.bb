@@ -32,21 +32,17 @@ mangle(SYMBOL):
 ; 4. ARGB frame
 ; 5. Width
 ; 6. Source dx
-; 7. Convert table
 
-PROLOGUE  7, 7, 3, Y, U, V, ARGB, WIDTH, SOURCE_DX, R1
+PROLOGUE  6, 7, 3, Y, U, V, ARGB, WIDTH, SOURCE_DX, COMP
 
 %define     TABLEq   r10
 %define     Xq       r11
 %define     INDEXq   r12
-%define     COMPq    R1q
-%define     COMPd    R1d
-
   PUSH      r10
   PUSH      r11
   PUSH      r12
 
-  mov TABLEq, R1q
+  LOAD_SYM  TABLEq, mangle(kCoefficientsRgbY)
 
   ; Set Xq index to 0.
   xor       Xq, Xq

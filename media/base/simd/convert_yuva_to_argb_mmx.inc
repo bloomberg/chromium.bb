@@ -9,9 +9,11 @@
 
 mangle(SYMBOL):
   %assign   stack_offset 0
-  PROLOGUE  7, 7, 3, Y, U, V, A, ARGB, WIDTH, TABLE, TEMP
+  PROLOGUE  6, 7, 3, Y, U, V, A, ARGB, WIDTH, TEMP
+  extern    mangle(kCoefficientsRgbY)
   PUSH      WIDTHq
   DEFINE_ARGS Y, U, V, A, ARGB, TABLE, TEMP
+  LOAD_SYM  TABLEq, mangle(kCoefficientsRgbY)
   jmp       .convertend
 
 .convertloop:

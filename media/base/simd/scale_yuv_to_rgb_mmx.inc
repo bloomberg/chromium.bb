@@ -19,9 +19,8 @@ mangle(SYMBOL):
 ; 4. ARGB frame
 ; 5. Width
 ; 6. Source dx
-; 7. Lookup table address
 
-PROLOGUE  7, 7, 3, Y, U, V, ARGB, R1, R2, TEMP
+PROLOGUE  6, 7, 3, Y, U, V, ARGB, R1, R2, TEMP
 
 %ifdef ARCH_X86_64
 %define     WORD_SIZE   QWORD
@@ -34,11 +33,10 @@ PROLOGUE  7, 7, 3, Y, U, V, ARGB, R1, R2, TEMP
 
 %define     SOURCE_DX   WORD_SIZE [rsp]
 
-  mov       R1q, TEMPq
-
+  LOAD_SYM  R1q, mangle(kCoefficientsRgbY)
 %define     WIDTH       WORD_SIZE [rsp + gprsize]
 %define     TABLE       R1q
-%define     Xq          R2q
+%define     Xq           R2q
 
   ; Set Xq index to 0.
   xor       Xq, Xq

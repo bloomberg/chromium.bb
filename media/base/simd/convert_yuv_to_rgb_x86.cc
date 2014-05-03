@@ -9,7 +9,6 @@
 #endif
 
 #include "media/base/simd/convert_yuv_to_rgb.h"
-#include "media/base/simd/yuv_to_rgb_table.h"
 #include "media/base/yuv_convert.h"
 
 namespace media {
@@ -24,7 +23,7 @@ void ConvertYUVToRGB32_MMX(const uint8* yplane,
                            int uvstride,
                            int rgbstride,
                            YUVType yuv_type) {
-  unsigned int y_shift = GetVerticalShift(yuv_type);
+  unsigned int y_shift = yuv_type;
   for (int y = 0; y < height; ++y) {
     uint8* rgb_row = rgbframe + y * rgbstride;
     const uint8* y_ptr = yplane + y * ystride;
@@ -35,8 +34,7 @@ void ConvertYUVToRGB32_MMX(const uint8* yplane,
                              u_ptr,
                              v_ptr,
                              rgb_row,
-                             width,
-                             GetLookupTable(yuv_type));
+                             width);
   }
 
   EmptyRegisterState();
@@ -54,7 +52,7 @@ void ConvertYUVAToARGB_MMX(const uint8* yplane,
                            int astride,
                            int rgbstride,
                            YUVType yuv_type) {
-  unsigned int y_shift = GetVerticalShift(yuv_type);
+  unsigned int y_shift = yuv_type;
   for (int y = 0; y < height; ++y) {
     uint8* rgb_row = rgbframe + y * rgbstride;
     const uint8* y_ptr = yplane + y * ystride;
@@ -67,8 +65,7 @@ void ConvertYUVAToARGB_MMX(const uint8* yplane,
                              v_ptr,
                              a_ptr,
                              rgb_row,
-                             width,
-                             GetLookupTable(yuv_type));
+                             width);
   }
 
   EmptyRegisterState();
@@ -84,7 +81,7 @@ void ConvertYUVToRGB32_SSE(const uint8* yplane,
                            int uvstride,
                            int rgbstride,
                            YUVType yuv_type) {
-  unsigned int y_shift = GetVerticalShift(yuv_type);
+  unsigned int y_shift = yuv_type;
   for (int y = 0; y < height; ++y) {
     uint8* rgb_row = rgbframe + y * rgbstride;
     const uint8* y_ptr = yplane + y * ystride;
@@ -95,8 +92,7 @@ void ConvertYUVToRGB32_SSE(const uint8* yplane,
                              u_ptr,
                              v_ptr,
                              rgb_row,
-                             width,
-                             GetLookupTable(yuv_type));
+                             width);
   }
 
   EmptyRegisterState();

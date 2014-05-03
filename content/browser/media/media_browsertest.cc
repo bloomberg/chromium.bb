@@ -231,7 +231,8 @@ IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv420pH264)) {
 }
 
 IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuvj420pH264)) {
-  RunColorFormatTest("yuvj420p.mp4", "ENDED");
+  // TODO(rileya): Support YUVJ420P properly http://crbug.com/310273
+  RunColorFormatTest("yuvj420p.mp4", "FAILED");
 }
 
 IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv422pH264)) {

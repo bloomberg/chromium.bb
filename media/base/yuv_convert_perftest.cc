@@ -9,7 +9,6 @@
 #include "base/path_service.h"
 #include "base/time/time.h"
 #include "media/base/simd/convert_yuv_to_rgb.h"
-#include "media/base/simd/yuv_to_rgb_table.h"
 #include "media/base/yuv_convert.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -77,8 +76,7 @@ TEST_F(YUVConvertPerfTest, ConvertYUVToRGB32Row_MMX) {
           yuv_bytes_.get() + kSourceUOffset + (chroma_row * kSourceWidth / 2),
           yuv_bytes_.get() + kSourceVOffset + (chroma_row * kSourceWidth / 2),
           rgb_bytes_converted_.get(),
-          kWidth,
-          kCoefficientsRgbY);
+          kWidth);
     }
   }
   double total_time_seconds =
@@ -102,8 +100,7 @@ TEST_F(YUVConvertPerfTest, ConvertYUVToRGB32Row_SSE) {
           yuv_bytes_.get() + kSourceUOffset + (chroma_row * kSourceWidth / 2),
           yuv_bytes_.get() + kSourceVOffset + (chroma_row * kSourceWidth / 2),
           rgb_bytes_converted_.get(),
-          kWidth,
-          kCoefficientsRgbY);
+          kWidth);
     }
   }
   double total_time_seconds =
@@ -129,8 +126,7 @@ TEST_F(YUVConvertPerfTest, ScaleYUVToRGB32Row_MMX) {
           yuv_bytes_.get() + kSourceVOffset + (chroma_row * kSourceWidth / 2),
           rgb_bytes_converted_.get(),
           kWidth,
-          kSourceDx,
-          kCoefficientsRgbY);
+          kSourceDx);
     }
   }
   double total_time_seconds =
@@ -156,8 +152,7 @@ TEST_F(YUVConvertPerfTest, ScaleYUVToRGB32Row_SSE) {
           yuv_bytes_.get() + kSourceVOffset + (chroma_row * kSourceWidth / 2),
           rgb_bytes_converted_.get(),
           kWidth,
-          kSourceDx,
-          kCoefficientsRgbY);
+          kSourceDx);
     }
   }
   double total_time_seconds =
@@ -183,8 +178,7 @@ TEST_F(YUVConvertPerfTest, LinearScaleYUVToRGB32Row_MMX) {
           yuv_bytes_.get() + kSourceVOffset + (chroma_row * kSourceWidth / 2),
           rgb_bytes_converted_.get(),
           kWidth,
-          kSourceDx,
-          kCoefficientsRgbY);
+          kSourceDx);
     }
   }
   double total_time_seconds =
@@ -210,8 +204,7 @@ TEST_F(YUVConvertPerfTest, LinearScaleYUVToRGB32Row_SSE) {
           yuv_bytes_.get() + kSourceVOffset + (chroma_row * kSourceWidth / 2),
           rgb_bytes_converted_.get(),
           kWidth,
-          kSourceDx,
-          kCoefficientsRgbY);
+          kSourceDx);
     }
   }
   double total_time_seconds =

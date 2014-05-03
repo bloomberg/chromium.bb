@@ -32,9 +32,8 @@ mangle(SYMBOL):
 ; 4. ARGB frame
 ; 5. Width
 ; 6. Source dx
-; 7. Conversion lookup table
 
-PROLOGUE  7, 7, 3, Y, U, V, ARGB, WIDTH, SOURCE_DX, R1
+PROLOGUE  6, 7, 3, Y, U, V, ARGB, WIDTH, SOURCE_DX, COMPL
 
 %define     TABLEq     r10
 %define     Xq         r11
@@ -42,9 +41,6 @@ PROLOGUE  7, 7, 3, Y, U, V, ARGB, WIDTH, SOURCE_DX, R1
 %define     COMPRd     r13d
 %define     COMPRq     r13
 %define     FRACTIONq  r14
-%define     COMPL      R1
-%define     COMPLq     R1q
-%define     COMPLd     R1d
 
   PUSH      TABLEq
   PUSH      Xq
@@ -60,7 +56,7 @@ PROLOGUE  7, 7, 3, Y, U, V, ARGB, WIDTH, SOURCE_DX, R1
   POP       TABLEq
 %endmacro
 
-  mov       TABLEq, R1q
+  LOAD_SYM  TABLEq, mangle(kCoefficientsRgbY)
 
   imul      WIDTHq, SOURCE_DXq           ; source_width = width * source_dx
   xor       Xq, Xq                       ; x = 0
