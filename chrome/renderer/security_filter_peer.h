@@ -9,10 +9,6 @@
 #include "webkit/common/resource_response_info.h"
 #include "webkit/common/resource_type.h"
 
-namespace webkit_glue {
-class ResourceLoaderBridge;
-}
-
 // The SecurityFilterPeer is a proxy to a
 // content::RequestPeer instance.  It is used to pre-process
 // unsafe resources (such as mixed-content resource).
@@ -53,11 +49,9 @@ class SecurityFilterPeer : public content::RequestPeer {
                                   int64 total_transfer_size) OVERRIDE;
 
  protected:
-  SecurityFilterPeer(webkit_glue::ResourceLoaderBridge* resource_loader_bridge,
-                     content::RequestPeer* peer);
+  explicit SecurityFilterPeer(content::RequestPeer* peer);
 
   content::RequestPeer* original_peer_;
-  webkit_glue::ResourceLoaderBridge* resource_loader_bridge_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SecurityFilterPeer);
@@ -67,9 +61,7 @@ class SecurityFilterPeer : public content::RequestPeer {
 // Subclasses should implement DataReady() to process the data as necessary.
 class BufferedPeer : public SecurityFilterPeer {
  public:
-  BufferedPeer(webkit_glue::ResourceLoaderBridge* resource_loader_bridge,
-               content::RequestPeer* peer,
-               const std::string& mime_type);
+  BufferedPeer(content::RequestPeer* peer, const std::string& mime_type);
   virtual ~BufferedPeer();
 
   // content::RequestPeer Implementation.
@@ -104,16 +96,13 @@ class BufferedPeer : public SecurityFilterPeer {
 
 // The ReplaceContentPeer cancels the request and serves the provided data as
 // content instead.
-// TODO(jcampan): we do not as of now cancel the request, as we do not have
-// access to the resource_loader_bridge in the SecurityFilterPeer factory
-// method.  For now the resource is still being fetched, but ignored, as once
-// we have provided the replacement content, the associated pending request
+// TODO(jcampan): For now the resource is still being fetched, but ignored, as
+// once we have provided the replacement content, the associated pending request
 // in ResourceDispatcher is removed and further OnReceived* notifications are
 // ignored.
 class ReplaceContentPeer : public SecurityFilterPeer {
  public:
-  ReplaceContentPeer(webkit_glue::ResourceLoaderBridge* resource_loader_bridge,
-                     content::RequestPeer* peer,
+  ReplaceContentPeer(content::RequestPeer* peer,
                      const std::string& mime_type,
                      const std::string& data);
   virtual ~ReplaceContentPeer();

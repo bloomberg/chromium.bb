@@ -16,6 +16,7 @@
 #include "content/child/ftp_directory_listing_response_delegate.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
+#include "content/child/resource_dispatcher.h"
 #include "content/child/sync_load_response.h"
 #include "content/common/resource_request_body.h"
 #include "content/public/child/request_peer.h"
@@ -400,7 +401,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_info.extra_data = request.extraData();
   referrer_policy_ = request.referrerPolicy();
   request_info.referrer_policy = request.referrerPolicy();
-  bridge_.reset(ChildThread::current()->CreateBridge(request_info));
+  bridge_.reset(ChildThread::current()->resource_dispatcher()->CreateBridge(
+      request_info));
 
   if (!request.httpBody().isNull()) {
     // GET and HEAD requests shouldn't have http bodies.
