@@ -696,7 +696,9 @@ void SourceState::OnSourceInitDone(bool success,
 ChunkDemuxerStream::ChunkDemuxerStream(Type type, bool splice_frames_enabled)
     : type_(type),
       state_(UNINITIALIZED),
-      splice_frames_enabled_(splice_frames_enabled) {}
+      splice_frames_enabled_(splice_frames_enabled),
+      partial_append_window_trimming_enabled_(false) {
+}
 
 void ChunkDemuxerStream::StartReturningData() {
   DVLOG(1) << "ChunkDemuxerStream::StartReturningData()";
@@ -827,6 +829,16 @@ bool ChunkDemuxerStream::UpdateAudioConfig(const AudioDecoderConfig& config,
   base::AutoLock auto_lock(lock_);
   if (!stream_) {
     DCHECK_EQ(state_, UNINITIALIZED);
+
+    // Enable partial append window support for a limited set of codecs and only
+    // on platforms that have splice frames enabled.
+    // TODO(dalecurtis): Verify this works for codecs other than MP3 and Vorbis.
+    // Right now we want to be extremely conservative to ensure we don't break
+    // the world.
+    partial_append_window_trimming_enabled_ =
+        splice_frames_enabled_ &&
+        (config.codec() == kCodecMP3 || config.codec() == kCodecVorbis);
+
     stream_.reset(
         new SourceBufferStream(config, log_cb, splice_frames_enabled_));
     return true;

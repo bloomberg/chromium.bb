@@ -1038,6 +1038,8 @@ TEST_P(ChunkDemuxerTest, Init) {
       EXPECT_EQ(kSampleFormatPlanarF32, config.sample_format());
       EXPECT_EQ(is_audio_encrypted,
                 audio_stream->audio_decoder_config().is_encrypted());
+      EXPECT_TRUE(static_cast<ChunkDemuxerStream*>(audio_stream)
+                      ->supports_partial_append_window_trimming());
     } else {
       EXPECT_FALSE(audio_stream);
     }
@@ -1047,6 +1049,8 @@ TEST_P(ChunkDemuxerTest, Init) {
       EXPECT_TRUE(video_stream);
       EXPECT_EQ(is_video_encrypted,
                 video_stream->video_decoder_config().is_encrypted());
+      EXPECT_FALSE(static_cast<ChunkDemuxerStream*>(video_stream)
+                       ->supports_partial_append_window_trimming());
     } else {
       EXPECT_FALSE(video_stream);
     }
@@ -1087,6 +1091,8 @@ TEST_P(ChunkDemuxerTest, InitText) {
     ASSERT_TRUE(text_stream);
     EXPECT_EQ(DemuxerStream::TEXT, text_stream->type());
     EXPECT_EQ(kTextSubtitles, text_config.kind());
+    EXPECT_FALSE(static_cast<ChunkDemuxerStream*>(text_stream)
+                     ->supports_partial_append_window_trimming());
 
     DemuxerStream* audio_stream = demuxer_->GetStream(DemuxerStream::AUDIO);
     if (has_audio) {
@@ -1102,6 +1108,8 @@ TEST_P(ChunkDemuxerTest, InitText) {
       EXPECT_EQ(kSampleFormatPlanarF32, config.sample_format());
       EXPECT_EQ(is_audio_encrypted,
                 audio_stream->audio_decoder_config().is_encrypted());
+      EXPECT_TRUE(static_cast<ChunkDemuxerStream*>(audio_stream)
+                      ->supports_partial_append_window_trimming());
     } else {
       EXPECT_FALSE(audio_stream);
     }
@@ -1111,6 +1119,8 @@ TEST_P(ChunkDemuxerTest, InitText) {
       EXPECT_TRUE(video_stream);
       EXPECT_EQ(is_video_encrypted,
                 video_stream->video_decoder_config().is_encrypted());
+      EXPECT_FALSE(static_cast<ChunkDemuxerStream*>(video_stream)
+                       ->supports_partial_append_window_trimming());
     } else {
       EXPECT_FALSE(video_stream);
     }
@@ -3026,11 +3036,14 @@ TEST_P(ChunkDemuxerTest, AppendWindow_Audio) {
       kSourceId, kAudioTrackNum,
       "0K 30K 60K 90K 120K 150K 180K 210K 240K 270K 300K 330K");
 
-  // Verify that frames that start outside the window are not included
+  // Verify that frames that end outside the window are not included
   // in the buffer. Also verify that buffers that start inside the
   // window and extend beyond the end of the window are not included.
-  CheckExpectedRanges(kSourceId, "{ [30,270) }");
-  CheckExpectedBuffers(stream, "30 60 90 120 150 180 210 240");
+  //
+  // The first 20ms of the first buffer should be trimmed off since it
+  // overlaps the start of the append window.
+  CheckExpectedRanges(kSourceId, "{ [20,270) }");
+  CheckExpectedBuffers(stream, "20 30 60 90 120 150 180 210 240");
 
   // Extend the append window to [20,650).
   append_window_end_for_next_append_ = base::TimeDelta::FromMilliseconds(650);
@@ -3039,7 +3052,22 @@ TEST_P(ChunkDemuxerTest, AppendWindow_Audio) {
   AppendSingleStreamCluster(
       kSourceId, kAudioTrackNum,
       "360K 390K 420K 450K 480K 510K 540K 570K 600K 630K");
-  CheckExpectedRanges(kSourceId, "{ [30,270) [360,630) }");
+  CheckExpectedRanges(kSourceId, "{ [20,270) [360,630) }");
+}
+
+TEST_P(ChunkDemuxerTest, AppendWindow_AudioOverlapStartAndEnd) {
+  ASSERT_TRUE(InitDemuxer(HAS_AUDIO));
+
+  // Set the append window to [10,20).
+  append_window_start_for_next_append_ = base::TimeDelta::FromMilliseconds(10);
+  append_window_end_for_next_append_ = base::TimeDelta::FromMilliseconds(20);
+
+  // Append a cluster that starts before and ends after the append window.
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, "0K");
+
+  // Verify that everything is dropped in this case.  No partial append should
+  // be generated.
+  CheckExpectedRanges(kSourceId, "{ }");
 }
 
 TEST_P(ChunkDemuxerTest, AppendWindow_Text) {

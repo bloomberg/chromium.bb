@@ -96,6 +96,10 @@ class ChunkDemuxerStream : public DemuxerStream {
     stream_->set_memory_limit_for_testing(memory_limit);
   }
 
+  bool supports_partial_append_window_trimming() const {
+    return partial_append_window_trimming_enabled_;
+  }
+
  private:
   enum State {
     UNINITIALIZED,
@@ -118,6 +122,7 @@ class ChunkDemuxerStream : public DemuxerStream {
   State state_;
   ReadCB read_cb_;
   const bool splice_frames_enabled_;
+  bool partial_append_window_trimming_enabled_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChunkDemuxerStream);
 };
