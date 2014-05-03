@@ -132,6 +132,7 @@ private:
     double m_appendWindowEnd;
 
     Vector<unsigned char> m_pendingAppendData;
+    size_t m_pendingAppendDataOffset;
     AsyncMethodRunner<SourceBuffer> m_appendBufferAsyncPartRunner;
 
     double m_pendingRemoveStart;

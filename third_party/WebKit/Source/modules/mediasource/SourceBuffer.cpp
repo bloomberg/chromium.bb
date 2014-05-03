@@ -89,6 +89,7 @@ SourceBuffer::SourceBuffer(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSou
     , m_timestampOffset(0)
     , m_appendWindowStart(0)
     , m_appendWindowEnd(std::numeric_limits<double>::infinity())
+    , m_pendingAppendDataOffset(0)
     , m_appendBufferAsyncPartRunner(this, &SourceBuffer::appendBufferAsyncPart)
     , m_pendingRemoveStart(-1)
     , m_pendingRemoveEnd(-1)
@@ -378,6 +379,7 @@ void SourceBuffer::abortIfUpdating()
     // 3.1. Abort the buffer append and stream append loop algorithms if they are running.
     m_appendBufferAsyncPartRunner.stop();
     m_pendingAppendData.clear();
+    m_pendingAppendDataOffset = 0;
 
     m_removeAsyncPartRunner.stop();
     m_pendingRemoveStart = -1;
@@ -474,7 +476,7 @@ void SourceBuffer::appendBufferInternal(const unsigned char* data, unsigned size
     if (throwExceptionIfRemovedOrUpdating(isRemoved(), m_updating, exceptionState))
         return;
 
-    TRACE_EVENT_ASYNC_BEGIN0("media", "SourceBuffer::appendBuffer", this);
+    TRACE_EVENT_ASYNC_BEGIN1("media", "SourceBuffer::appendBuffer", this, "size", size);
 
     //  3. If the readyState attribute of the parent media source is in the "ended" state then run the following steps: ...
     m_source->openIfInEndedState();
@@ -483,6 +485,7 @@ void SourceBuffer::appendBufferInternal(const unsigned char* data, unsigned size
 
     // 2. Add data to the end of the input buffer.
     m_pendingAppendData.append(data, size);
+    m_pendingAppendDataOffset = 0;
 
     // 3. Set the updating attribute to true.
     m_updating = true;
@@ -493,32 +496,54 @@ void SourceBuffer::appendBufferInternal(const unsigned char* data, unsigned size
     // 5. Asynchronously run the buffer append algorithm.
     m_appendBufferAsyncPartRunner.runAsync();
 
-    TRACE_EVENT_ASYNC_STEP_INTO0("media", "SourceBuffer::appendBuffer", this, "waiting");
+    TRACE_EVENT_ASYNC_STEP_INTO0("media", "SourceBuffer::appendBuffer", this, "initialDelay");
 }
 
 void SourceBuffer::appendBufferAsyncPart()
 {
     ASSERT(m_updating);
 
-    TRACE_EVENT_ASYNC_STEP_INTO0("media", "SourceBuffer::appendBuffer", this, "appending");
-
     // Section 3.5.4 Buffer Append Algorithm
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#sourcebuffer-buffer-append
 
     // 1. Run the segment parser loop algorithm.
     // Step 2 doesn't apply since we run Step 1 synchronously here.
-    size_t appendSize = m_pendingAppendData.size();
-    if (!appendSize) {
-        // Resize buffer for 0 byte appends so we always have a valid pointer.
-        // We need to convey all appends, even 0 byte ones to |m_webSourceBuffer|
-        // so that it can clear its end of stream state if necessary.
-        m_pendingAppendData.resize(1);
+    ASSERT(m_pendingAppendData.size() >= m_pendingAppendDataOffset);
+    size_t appendSize = m_pendingAppendData.size() - m_pendingAppendDataOffset;
+
+    // Impose an arbitrary max size for a single append() call so that an append
+    // doesn't block the renderer event loop very long. This value was selected
+    // by looking at YouTube SourceBuffer usage across a variety of bitrates.
+    // This value allows relatively large appends while keeping append() call
+    // duration in the  ~5-15ms range.
+    const size_t MaxAppendSize = 128 * 1024;
+    if (appendSize > MaxAppendSize)
+        appendSize = MaxAppendSize;
+
+    TRACE_EVENT_ASYNC_STEP_INTO1("media", "SourceBuffer::appendBuffer", this, "appending", "appendSize", static_cast<unsigned>(appendSize));
+
+    // |zero| is used for 0 byte appends so we always have a valid pointer.
+    // We need to convey all appends, even 0 byte ones to |m_webSourceBuffer|
+    // so that it can clear its end of stream state if necessary.
+    unsigned char zero = 0;
+    unsigned char* appendData = &zero;
+    if (appendSize)
+        appendData = m_pendingAppendData.data() + m_pendingAppendDataOffset;
+
+    m_webSourceBuffer->append(appendData, appendSize, &m_timestampOffset);
+
+    m_pendingAppendDataOffset += appendSize;
+
+    if (m_pendingAppendDataOffset < m_pendingAppendData.size()) {
+        m_appendBufferAsyncPartRunner.runAsync();
+        TRACE_EVENT_ASYNC_STEP_INTO0("media", "SourceBuffer::appendBuffer", this, "nextPieceDelay");
+        return;
     }
-    m_webSourceBuffer->append(m_pendingAppendData.data(), appendSize, &m_timestampOffset);
 
     // 3. Set the updating attribute to false.
     m_updating = false;
     m_pendingAppendData.clear();
+    m_pendingAppendDataOffset = 0;
 
     // 4. Queue a task to fire a simple event named update at this SourceBuffer object.
     scheduleEvent(EventTypeNames::update);
