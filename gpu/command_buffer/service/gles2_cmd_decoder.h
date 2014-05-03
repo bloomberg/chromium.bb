@@ -152,6 +152,8 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   virtual void ClearAllAttributes() const = 0;
   virtual void RestoreAllAttributes() const = 0;
 
+  virtual void SetIgnoreCachedStateForTest(bool ignore) = 0;
+
   // Gets the QueryManager for this context.
   virtual QueryManager* GetQueryManager() = 0;
 

@@ -18,7 +18,7 @@ namespace gles2 {
 
 namespace {
 
-void EnableDisable(GLenum pname, bool enable) {
+static void EnableDisable(GLenum pname, bool enable) {
   if (enable) {
     glEnable(pname);
   } else {
@@ -92,6 +92,7 @@ ContextState::ContextState(FeatureInfo* feature_info,
                            Logger* logger)
     : active_texture_unit(0),
       pack_reverse_row_order(false),
+      ignore_cached_state(false),
       fbo_binding_for_scissor_workaround_dirty_(false),
       feature_info_(feature_info),
       error_state_(ErrorState::Create(error_state_client, logger)) {

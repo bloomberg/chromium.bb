@@ -72,7 +72,26 @@ void GLES2DecoderRGBBackbufferTest::SetUp() {
 void GLES2DecoderManualInitTest::SetUp() {
 }
 
-TEST_F(GLES2DecoderTest, GetIntegervCached) {
+void GLES2DecoderManualInitTest::EnableDisableTest(GLenum cap,
+                                                   bool enable,
+                                                   bool expect_set) {
+  if (expect_set) {
+    SetupExpectationsForEnableDisable(cap, enable);
+  }
+  if (enable) {
+    Enable cmd;
+    cmd.Init(cap);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  } else {
+    Disable cmd;
+    cmd.Init(cap);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  }
+}
+
+TEST_P(GLES2DecoderTest, GetIntegervCached) {
   struct TestInfo {
     GLenum pname;
     GLint expected;
@@ -108,7 +127,7 @@ TEST_F(GLES2DecoderTest, GetIntegervCached) {
   }
 }
 
-TEST_F(GLES2DecoderWithShaderTest, GetMaxValueInBufferCHROMIUM) {
+TEST_P(GLES2DecoderWithShaderTest, GetMaxValueInBufferCHROMIUM) {
   SetupIndexBuffer();
   GetMaxValueInBufferCHROMIUM::Result* result =
       static_cast<GetMaxValueInBufferCHROMIUM::Result*>(shared_memory_address_);
@@ -189,7 +208,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetMaxValueInBufferCHROMIUM) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderTest, SharedIds) {
+TEST_P(GLES2DecoderTest, SharedIds) {
   GenSharedIdsCHROMIUM gen_cmd;
   RegisterSharedIdsCHROMIUM reg_cmd;
   DeleteSharedIdsCHROMIUM del_cmd;
@@ -260,7 +279,7 @@ TEST_F(GLES2DecoderTest, SharedIds) {
   EXPECT_EQ(kOffset + 1, ids[1]);
 }
 
-TEST_F(GLES2DecoderTest, GenSharedIdsCHROMIUMBadArgs) {
+TEST_P(GLES2DecoderTest, GenSharedIdsCHROMIUMBadArgs) {
   const GLuint kNamespaceId = id_namespaces::kTextures;
   GenSharedIdsCHROMIUM cmd;
   cmd.Init(kNamespaceId, 0, -1, kSharedMemoryId, kSharedMemoryOffset);
@@ -271,7 +290,7 @@ TEST_F(GLES2DecoderTest, GenSharedIdsCHROMIUMBadArgs) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderTest, RegisterSharedIdsCHROMIUMBadArgs) {
+TEST_P(GLES2DecoderTest, RegisterSharedIdsCHROMIUMBadArgs) {
   const GLuint kNamespaceId = id_namespaces::kTextures;
   RegisterSharedIdsCHROMIUM cmd;
   cmd.Init(kNamespaceId, -1, kSharedMemoryId, kSharedMemoryOffset);
@@ -282,7 +301,7 @@ TEST_F(GLES2DecoderTest, RegisterSharedIdsCHROMIUMBadArgs) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderTest, RegisterSharedIdsCHROMIUMDuplicateIds) {
+TEST_P(GLES2DecoderTest, RegisterSharedIdsCHROMIUMDuplicateIds) {
   const GLuint kNamespaceId = id_namespaces::kTextures;
   const GLuint kRegisterId = 3;
   RegisterSharedIdsCHROMIUM cmd;
@@ -295,7 +314,7 @@ TEST_F(GLES2DecoderTest, RegisterSharedIdsCHROMIUMDuplicateIds) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, DeleteSharedIdsCHROMIUMBadArgs) {
+TEST_P(GLES2DecoderTest, DeleteSharedIdsCHROMIUMBadArgs) {
   const GLuint kNamespaceId = id_namespaces::kTextures;
   DeleteSharedIdsCHROMIUM cmd;
   cmd.Init(kNamespaceId, -1, kSharedMemoryId, kSharedMemoryOffset);
@@ -306,7 +325,7 @@ TEST_F(GLES2DecoderTest, DeleteSharedIdsCHROMIUMBadArgs) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderTest, IsBuffer) {
+TEST_P(GLES2DecoderTest, IsBuffer) {
   EXPECT_FALSE(DoIsBuffer(client_buffer_id_));
   DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
   EXPECT_TRUE(DoIsBuffer(client_buffer_id_));
@@ -314,7 +333,7 @@ TEST_F(GLES2DecoderTest, IsBuffer) {
   EXPECT_FALSE(DoIsBuffer(client_buffer_id_));
 }
 
-TEST_F(GLES2DecoderTest, IsFramebuffer) {
+TEST_P(GLES2DecoderTest, IsFramebuffer) {
   EXPECT_FALSE(DoIsFramebuffer(client_framebuffer_id_));
   DoBindFramebuffer(
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
@@ -330,7 +349,7 @@ TEST_F(GLES2DecoderTest, IsFramebuffer) {
   EXPECT_FALSE(DoIsFramebuffer(client_framebuffer_id_));
 }
 
-TEST_F(GLES2DecoderTest, IsProgram) {
+TEST_P(GLES2DecoderTest, IsProgram) {
   // IsProgram is true as soon as the program is created.
   EXPECT_TRUE(DoIsProgram(client_program_id_));
   EXPECT_CALL(*gl_, DeleteProgram(kServiceProgramId))
@@ -340,7 +359,7 @@ TEST_F(GLES2DecoderTest, IsProgram) {
   EXPECT_FALSE(DoIsProgram(client_program_id_));
 }
 
-TEST_F(GLES2DecoderTest, IsRenderbuffer) {
+TEST_P(GLES2DecoderTest, IsRenderbuffer) {
   EXPECT_FALSE(DoIsRenderbuffer(client_renderbuffer_id_));
   DoBindRenderbuffer(
       GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
@@ -349,14 +368,14 @@ TEST_F(GLES2DecoderTest, IsRenderbuffer) {
   EXPECT_FALSE(DoIsRenderbuffer(client_renderbuffer_id_));
 }
 
-TEST_F(GLES2DecoderTest, IsShader) {
+TEST_P(GLES2DecoderTest, IsShader) {
   // IsShader is true as soon as the program is created.
   EXPECT_TRUE(DoIsShader(client_shader_id_));
   DoDeleteShader(client_shader_id_, kServiceShaderId);
   EXPECT_FALSE(DoIsShader(client_shader_id_));
 }
 
-TEST_F(GLES2DecoderTest, IsTexture) {
+TEST_P(GLES2DecoderTest, IsTexture) {
   EXPECT_FALSE(DoIsTexture(client_texture_id_));
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   EXPECT_TRUE(DoIsTexture(client_texture_id_));
@@ -364,7 +383,7 @@ TEST_F(GLES2DecoderTest, IsTexture) {
   EXPECT_FALSE(DoIsTexture(client_texture_id_));
 }
 
-TEST_F(GLES2DecoderTest, GetMultipleIntegervCHROMIUMValidArgs) {
+TEST_P(GLES2DecoderTest, GetMultipleIntegervCHROMIUMValidArgs) {
   const GLsizei kCount = 3;
   GLenum* pnames = GetSharedMemoryAs<GLenum*>();
   pnames[0] = GL_DEPTH_WRITEMASK;
@@ -402,7 +421,7 @@ TEST_F(GLES2DecoderTest, GetMultipleIntegervCHROMIUMValidArgs) {
   EXPECT_EQ(kSentinel, results[num_results]);  // End of results
 }
 
-TEST_F(GLES2DecoderTest, GetMultipleIntegervCHROMIUMInvalidArgs) {
+TEST_P(GLES2DecoderTest, GetMultipleIntegervCHROMIUMInvalidArgs) {
   const GLsizei kCount = 3;
   // Offset the pnames because GLGetError will use the first uint32.
   const uint32 kPnameOffset = sizeof(uint32);
@@ -512,7 +531,7 @@ TEST_F(GLES2DecoderTest, GetMultipleIntegervCHROMIUMInvalidArgs) {
   EXPECT_EQ(kSentinel, results[num_results]);  // End of results
 }
 
-TEST_F(GLES2DecoderManualInitTest, BindGeneratesResourceFalse) {
+TEST_P(GLES2DecoderManualInitTest, BindGeneratesResourceFalse) {
   InitState init;
   init.gl_version = "3.0";
   InitDecoder(init);
@@ -538,25 +557,25 @@ TEST_F(GLES2DecoderManualInitTest, BindGeneratesResourceFalse) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, EnableFeatureCHROMIUMBadBucket) {
+TEST_P(GLES2DecoderTest, EnableFeatureCHROMIUMBadBucket) {
   const uint32 kBadBucketId = 123;
   EnableFeatureCHROMIUM cmd;
   cmd.Init(kBadBucketId, shared_memory_id_, shared_memory_offset_);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderTest, RequestExtensionCHROMIUMBadBucket) {
+TEST_P(GLES2DecoderTest, RequestExtensionCHROMIUMBadBucket) {
   const uint32 kBadBucketId = 123;
   RequestExtensionCHROMIUM cmd;
   cmd.Init(kBadBucketId);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderTest, BeginQueryEXTDisabled) {
+TEST_P(GLES2DecoderTest, BeginQueryEXTDisabled) {
   // Test something fails if off.
 }
 
-TEST_F(GLES2DecoderManualInitTest, BeginEndQueryEXT) {
+TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXT) {
   InitState init;
   init.extensions = "GL_EXT_occlusion_query_boolean";
   init.gl_version = "opengl es 2.0";
@@ -737,7 +756,7 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
   test->ResetDecoder();
 }
 
-TEST_F(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryIdFails) {
+TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryIdFails) {
   for (size_t i = 0; i < arraysize(kQueryTypes); ++i) {
     CheckBeginEndQueryBadMemoryFails(this,
                                      kNewClientId,
@@ -748,7 +767,7 @@ TEST_F(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryIdFails) {
   }
 }
 
-TEST_F(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryOffsetFails) {
+TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryOffsetFails) {
   for (size_t i = 0; i < arraysize(kQueryTypes); ++i) {
     // Out-of-bounds.
     CheckBeginEndQueryBadMemoryFails(this,
@@ -767,7 +786,7 @@ TEST_F(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryOffsetFails) {
   }
 }
 
-TEST_F(GLES2DecoderTest, BeginEndQueryEXTCommandsIssuedCHROMIUM) {
+TEST_P(GLES2DecoderTest, BeginEndQueryEXTCommandsIssuedCHROMIUM) {
   BeginQueryEXT begin_cmd;
 
   GenHelper<GenQueriesEXTImmediate>(kNewClientId);
@@ -794,7 +813,7 @@ TEST_F(GLES2DecoderTest, BeginEndQueryEXTCommandsIssuedCHROMIUM) {
   EXPECT_FALSE(query->pending());
 }
 
-TEST_F(GLES2DecoderTest, BeginEndQueryEXTGetErrorQueryCHROMIUM) {
+TEST_P(GLES2DecoderTest, BeginEndQueryEXTGetErrorQueryCHROMIUM) {
   BeginQueryEXT begin_cmd;
 
   GenHelper<GenQueriesEXTImmediate>(kNewClientId);
@@ -829,7 +848,7 @@ TEST_F(GLES2DecoderTest, BeginEndQueryEXTGetErrorQueryCHROMIUM) {
             static_cast<GLenum>(sync->result));
 }
 
-TEST_F(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
+TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   InitState init;
   init.extensions = "GL_EXT_occlusion_query_boolean GL_ARB_sync";
   init.gl_version = "opengl es 2.0";
@@ -888,7 +907,7 @@ TEST_F(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   ResetDecoder();
 }
 
-TEST_F(GLES2DecoderTest, IsEnabledReturnsCachedValue) {
+TEST_P(GLES2DecoderTest, IsEnabledReturnsCachedValue) {
   // NOTE: There are no expectations because no GL functions should be
   // called for DEPTH_TEST or STENCIL_TEST
   static const GLenum kStates[] = {
@@ -913,7 +932,7 @@ TEST_F(GLES2DecoderTest, IsEnabledReturnsCachedValue) {
   }
 }
 
-TEST_F(GLES2DecoderManualInitTest, GpuMemoryManagerCHROMIUM) {
+TEST_P(GLES2DecoderManualInitTest, GpuMemoryManagerCHROMIUM) {
   InitState init;
   init.extensions = "GL_ARB_texture_rectangle";
   init.gl_version = "3.0";
@@ -987,7 +1006,7 @@ class SizeOnlyMemoryTracker : public MemoryTracker {
 
 }  // anonymous namespace.
 
-TEST_F(GLES2DecoderManualInitTest, MemoryTrackerInitialSize) {
+TEST_P(GLES2DecoderManualInitTest, MemoryTrackerInitialSize) {
   scoped_refptr<SizeOnlyMemoryTracker> memory_tracker =
       new SizeOnlyMemoryTracker();
   set_memory_tracker(memory_tracker.get());
@@ -1000,7 +1019,7 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerInitialSize) {
   EXPECT_EQ(0u, memory_tracker->GetPoolSize(MemoryTracker::kManaged));
 }
 
-TEST_F(GLES2DecoderManualInitTest, MemoryTrackerTexImage2D) {
+TEST_P(GLES2DecoderManualInitTest, MemoryTrackerTexImage2D) {
   scoped_refptr<SizeOnlyMemoryTracker> memory_tracker =
       new SizeOnlyMemoryTracker();
   set_memory_tracker(memory_tracker.get());
@@ -1058,7 +1077,7 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerTexImage2D) {
   EXPECT_EQ(64u, memory_tracker->GetPoolSize(MemoryTracker::kUnmanaged));
 }
 
-TEST_F(GLES2DecoderManualInitTest, MemoryTrackerTexStorage2DEXT) {
+TEST_P(GLES2DecoderManualInitTest, MemoryTrackerTexStorage2DEXT) {
   scoped_refptr<SizeOnlyMemoryTracker> memory_tracker =
       new SizeOnlyMemoryTracker();
   set_memory_tracker(memory_tracker.get());
@@ -1079,7 +1098,7 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerTexStorage2DEXT) {
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest, MemoryTrackerCopyTexImage2D) {
+TEST_P(GLES2DecoderManualInitTest, MemoryTrackerCopyTexImage2D) {
   GLenum target = GL_TEXTURE_2D;
   GLint level = 0;
   GLenum internal_format = GL_RGBA;
@@ -1122,7 +1141,7 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerCopyTexImage2D) {
   EXPECT_EQ(128u, memory_tracker->GetPoolSize(MemoryTracker::kUnmanaged));
 }
 
-TEST_F(GLES2DecoderManualInitTest, MemoryTrackerRenderbufferStorage) {
+TEST_P(GLES2DecoderManualInitTest, MemoryTrackerRenderbufferStorage) {
   scoped_refptr<SizeOnlyMemoryTracker> memory_tracker =
       new SizeOnlyMemoryTracker();
   set_memory_tracker(memory_tracker.get());
@@ -1157,7 +1176,7 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerRenderbufferStorage) {
   EXPECT_EQ(128u, memory_tracker->GetPoolSize(MemoryTracker::kUnmanaged));
 }
 
-TEST_F(GLES2DecoderManualInitTest, MemoryTrackerBufferData) {
+TEST_P(GLES2DecoderManualInitTest, MemoryTrackerBufferData) {
   scoped_refptr<SizeOnlyMemoryTracker> memory_tracker =
       new SizeOnlyMemoryTracker();
   set_memory_tracker(memory_tracker.get());
@@ -1190,6 +1209,16 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerBufferData) {
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
   EXPECT_EQ(128u, memory_tracker->GetPoolSize(MemoryTracker::kManaged));
 }
+
+INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest, ::testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderWithShaderTest, ::testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderManualInitTest, ::testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(Service,
+                        GLES2DecoderRGBBackbufferTest,
+                        ::testing::Bool());
 
 }  // namespace gles2
 }  // namespace gpu

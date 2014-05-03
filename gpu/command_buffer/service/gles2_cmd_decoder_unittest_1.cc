@@ -37,6 +37,8 @@ class GLES2DecoderTest1 : public GLES2DecoderTestBase {
   GLES2DecoderTest1() { }
 };
 
+INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest1, ::testing::Bool());
+
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::GenerateMipmap, 0>(
     bool valid) {

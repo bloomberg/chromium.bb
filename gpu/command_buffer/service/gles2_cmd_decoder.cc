@@ -278,15 +278,6 @@ static bool StringIsValidForGLES(const char* str) {
   return true;
 }
 
-// Wrapper for glEnable/glDisable that doesn't suck.
-static void EnableDisable(GLenum pname, bool enable) {
-  if (enable) {
-    glEnable(pname);
-  } else {
-    glDisable(pname);
-  }
-}
-
 // This class prevents any GL errors that occur when it is in scope from
 // being reported to the client.
 class ScopedGLErrorSuppressor {
@@ -661,6 +652,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   virtual void ResetAsyncPixelTransferManagerForTest() OVERRIDE;
   virtual void SetAsyncPixelTransferManagerForTest(
       AsyncPixelTransferManager* manager) OVERRIDE;
+  virtual void SetIgnoreCachedStateForTest(bool ignore) OVERRIDE;
   void ProcessFinishedAsyncTransfers();
 
   virtual bool GetServiceTextureId(uint32 client_texture_id,
@@ -1929,7 +1921,7 @@ ScopedResolvedFrameBufferBinder::ScopedResolvedFrameBufferBinder(
   glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, targetid);
   const int width = decoder_->offscreen_size_.width();
   const int height = decoder_->offscreen_size_.height();
-  glDisable(GL_SCISSOR_TEST);
+  decoder->state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
   decoder->BlitFramebufferHelper(0,
                                  0,
                                  width,
@@ -1951,7 +1943,7 @@ ScopedResolvedFrameBufferBinder::~ScopedResolvedFrameBufferBinder() {
       "ScopedResolvedFrameBufferBinder::dtor", decoder_->GetErrorState());
   decoder_->RestoreCurrentFramebufferBindings();
   if (decoder_->state_.enable_flags.scissor_test) {
-    glEnable(GL_SCISSOR_TEST);
+    decoder_->state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, true);
   }
 }
 
@@ -3059,12 +3051,12 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
     if (backbuffer_needs_clear_bits_) {
       glClearColor(0, 0, 0, (GLES2Util::GetChannelsForFormat(
           offscreen_target_color_format_) & 0x0008) != 0 ? 0 : 1);
-      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+      state_.SetDeviceColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
       glClearStencil(0);
       glStencilMask(-1);
       glClearDepth(1.0f);
-      glDepthMask(true);
-      glDisable(GL_SCISSOR_TEST);
+      state_.SetDeviceDepthMask(GL_TRUE);
+      state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
       glClear(backbuffer_needs_clear_bits_);
       backbuffer_needs_clear_bits_ = 0;
       RestoreClearState();
@@ -3567,13 +3559,13 @@ bool GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
     ScopedFrameBufferBinder binder(this, offscreen_target_frame_buffer_->id());
     glClearColor(0, 0, 0, (GLES2Util::GetChannelsForFormat(
         offscreen_target_color_format_) & 0x0008) != 0 ? 0 : 1);
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    state_.SetDeviceColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glClearStencil(0);
-    glStencilMaskSeparate(GL_FRONT, -1);
-    glStencilMaskSeparate(GL_BACK, -1);
+    state_.SetDeviceStencilMaskSeparate(GL_FRONT, -1);
+    state_.SetDeviceStencilMaskSeparate(GL_BACK, -1);
     glClearDepth(0);
-    glDepthMask(GL_TRUE);
-    glDisable(GL_SCISSOR_TEST);
+    state_.SetDeviceDepthMask(GL_TRUE);
+    state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     RestoreClearState();
   }
@@ -3836,23 +3828,25 @@ bool GLES2DecoderImpl::BoundFramebufferHasStencilAttachment() {
 
 void GLES2DecoderImpl::ApplyDirtyState() {
   if (framebuffer_state_.clear_state_dirty) {
-    glColorMask(
-        state_.color_mask_red, state_.color_mask_green, state_.color_mask_blue,
-        state_.color_mask_alpha &&
-            BoundFramebufferHasColorAttachmentWithAlpha(true));
+    bool have_alpha = BoundFramebufferHasColorAttachmentWithAlpha(true);
+    state_.SetDeviceColorMask(state_.color_mask_red,
+                              state_.color_mask_green,
+                              state_.color_mask_blue,
+                              state_.color_mask_alpha && have_alpha);
+
     bool have_depth = BoundFramebufferHasDepthAttachment();
-    glDepthMask(state_.depth_mask && have_depth);
-    EnableDisable(GL_DEPTH_TEST, state_.enable_flags.depth_test && have_depth);
+    state_.SetDeviceDepthMask(state_.depth_mask && have_depth);
+
     bool have_stencil = BoundFramebufferHasStencilAttachment();
-    glStencilMaskSeparate(
+    state_.SetDeviceStencilMaskSeparate(
         GL_FRONT, have_stencil ? state_.stencil_front_writemask : 0);
-    glStencilMaskSeparate(
+    state_.SetDeviceStencilMaskSeparate(
         GL_BACK, have_stencil ? state_.stencil_back_writemask : 0);
-    EnableDisable(
+
+    state_.SetDeviceCapabilityState(
+        GL_DEPTH_TEST, state_.enable_flags.depth_test && have_depth);
+    state_.SetDeviceCapabilityState(
         GL_STENCIL_TEST, state_.enable_flags.stencil_test && have_stencil);
-    EnableDisable(GL_CULL_FACE, state_.enable_flags.cull_face);
-    EnableDisable(GL_SCISSOR_TEST, state_.enable_flags.scissor_test);
-    EnableDisable(GL_BLEND, state_.enable_flags.blend);
     framebuffer_state_.clear_state_dirty = false;
   }
 }
@@ -3923,6 +3917,10 @@ void GLES2DecoderImpl::ClearAllAttributes() const {
 
 void GLES2DecoderImpl::RestoreAllAttributes() const {
   state_.RestoreVertexAttribs();
+}
+
+void GLES2DecoderImpl::SetIgnoreCachedStateForTest(bool ignore) {
+  state_.SetIgnoreCachedStateForTest(ignore);
 }
 
 void GLES2DecoderImpl::OnFboChanged() const {
@@ -5018,7 +5016,7 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
         (GLES2Util::GetChannelsForFormat(
              framebuffer->GetColorAttachmentFormat()) & 0x0008) != 0 ? 0.0f :
                                                                        1.0f);
-    glColorMask(true, true, true, true);
+    state_.SetDeviceColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     clear_bits |= GL_COLOR_BUFFER_BIT;
   }
 
@@ -5032,11 +5030,11 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
   if (framebuffer->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT) ||
       framebuffer->HasUnclearedAttachment(GL_DEPTH_STENCIL_ATTACHMENT)) {
     glClearDepth(1.0f);
-    glDepthMask(true);
+    state_.SetDeviceDepthMask(GL_TRUE);
     clear_bits |= GL_DEPTH_BUFFER_BIT;
   }
 
-  glDisable(GL_SCISSOR_TEST);
+  state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
   glClear(clear_bits);
 
   framebuffer_manager()->MarkAttachmentsAsCleared(
@@ -5062,7 +5060,7 @@ void GLES2DecoderImpl::RestoreClearState() {
   glClearStencil(state_.stencil_clear);
   glClearDepth(state_.depth_clear);
   if (state_.enable_flags.scissor_test) {
-    glEnable(GL_SCISSOR_TEST);
+    state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, true);
   }
 }
 
@@ -5239,10 +5237,11 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
     return;
   }
 
-  glDisable(GL_SCISSOR_TEST);
+  state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
   BlitFramebufferHelper(
       srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
-  EnableDisable(GL_SCISSOR_TEST, state_.enable_flags.scissor_test);
+  state_.SetDeviceCapabilityState(GL_SCISSOR_TEST,
+                                  state_.enable_flags.scissor_test);
 }
 
 void GLES2DecoderImpl::RenderbufferStorageMultisampleHelper(
@@ -5481,11 +5480,11 @@ bool GLES2DecoderImpl::VerifyMultisampleRenderbufferIntegrity(
   GLboolean scissor_enabled = false;
   glGetBooleanv(GL_SCISSOR_TEST, &scissor_enabled);
   if (scissor_enabled)
-    glDisable(GL_SCISSOR_TEST);
+    state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
 
-  GLboolean color_mask[4] = {true, true, true, true};
+  GLboolean color_mask[4] = {GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE};
   glGetBooleanv(GL_COLOR_WRITEMASK, color_mask);
-  glColorMask(true, true, true, true);
+  state_.SetDeviceColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
   GLfloat clear_color[4] = {0.0f, 0.0f, 0.0f, 0.0f};
   glGetFloatv(GL_COLOR_CLEAR_VALUE, clear_color);
@@ -5514,9 +5513,10 @@ bool GLES2DecoderImpl::VerifyMultisampleRenderbufferIntegrity(
 
   // Restore cached state.
   if (scissor_enabled)
-    glEnable(GL_SCISSOR_TEST);
+    state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, true);
 
-  glColorMask(color_mask[0], color_mask[1], color_mask[2], color_mask[3]);
+  state_.SetDeviceColorMask(
+      color_mask[0], color_mask[1], color_mask[2], color_mask[3]);
   glClearColor(clear_color[0], clear_color[1], clear_color[2], clear_color[3]);
   glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, draw_framebuffer);
   glBindFramebufferEXT(GL_READ_FRAMEBUFFER, read_framebuffer);
@@ -7832,8 +7832,8 @@ bool GLES2DecoderImpl::ClearLevel(
     glClearStencil(0);
     glStencilMask(-1);
     glClearDepth(1.0f);
-    glDepthMask(true);
-    glDisable(GL_SCISSOR_TEST);
+    state_.SetDeviceDepthMask(GL_TRUE);
+    state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
     glClear(GL_DEPTH_BUFFER_BIT | (have_stencil ? GL_STENCIL_BUFFER_BIT : 0));
 
     RestoreClearState();
@@ -9159,8 +9159,8 @@ void GLES2DecoderImpl::DoSwapBuffers() {
           ScopedFrameBufferBinder binder(this,
                                          offscreen_saved_frame_buffer_->id());
           glClearColor(0, 0, 0, 0);
-          glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-          glDisable(GL_SCISSOR_TEST);
+          state_.SetDeviceColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+          state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
           glClear(GL_COLOR_BUFFER_BIT);
           RestoreClearState();
         }

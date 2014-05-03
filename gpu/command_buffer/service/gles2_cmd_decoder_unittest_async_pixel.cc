@@ -54,7 +54,7 @@ namespace gles2 {
 
 using namespace cmds;
 
-TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
+TEST_P(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
   InitState init;
   init.extensions = "GL_CHROMIUM_async_pixel_transfers";
   init.gl_version = "3.0";
@@ -317,7 +317,7 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
   manager = NULL;
 }
 
-TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransferManager) {
+TEST_P(GLES2DecoderManualInitTest, AsyncPixelTransferManager) {
   InitState init;
   init.extensions = "GL_CHROMIUM_async_pixel_transfers";
   init.gl_version = "3.0";

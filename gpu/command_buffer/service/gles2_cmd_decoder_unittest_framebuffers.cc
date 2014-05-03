@@ -54,15 +54,14 @@ namespace gles2 {
 
 using namespace cmds;
 
-class GLES2DecoderTestWithExtensionsOnGLES2
-    : public GLES2DecoderTest,
-      public ::testing::WithParamInterface<const char*> {
+class GLES2DecoderTestWithExtensionsOnGLES2 : public GLES2DecoderTest {
  public:
   GLES2DecoderTestWithExtensionsOnGLES2() {}
 
-  virtual void SetUp() {
+  virtual void SetUp() {}
+  void Init(const char* extensions) {
     InitState init;
-    init.extensions = GetParam();
+    init.extensions = extensions;
     init.gl_version = "opengl es 2.0";
     init.has_alpha = true;
     init.has_depth = true;
@@ -72,7 +71,7 @@ class GLES2DecoderTestWithExtensionsOnGLES2
   }
 };
 
-TEST_F(GLES2DecoderTest, CheckFramebufferStatusWithNoBoundTarget) {
+TEST_P(GLES2DecoderTest, CheckFramebufferStatusWithNoBoundTarget) {
   EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(_)).Times(0);
   CheckFramebufferStatus::Result* result =
       static_cast<CheckFramebufferStatus::Result*>(shared_memory_address_);
@@ -83,7 +82,7 @@ TEST_F(GLES2DecoderTest, CheckFramebufferStatusWithNoBoundTarget) {
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE), *result);
 }
 
-TEST_F(GLES2DecoderWithShaderTest, BindAndDeleteFramebuffer) {
+TEST_P(GLES2DecoderWithShaderTest, BindAndDeleteFramebuffer) {
   SetupTexture();
   AddExpectationsForSimulatedAttrib0(kNumVertices, 0);
   SetupExpectationsForApplyingDefaultDirtyState();
@@ -106,7 +105,7 @@ TEST_F(GLES2DecoderWithShaderTest, BindAndDeleteFramebuffer) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, FramebufferRenderbufferWithNoBoundTarget) {
+TEST_P(GLES2DecoderTest, FramebufferRenderbufferWithNoBoundTarget) {
   EXPECT_CALL(*gl_, FramebufferRenderbufferEXT(_, _, _, _)).Times(0);
   FramebufferRenderbuffer cmd;
   cmd.Init(GL_FRAMEBUFFER,
@@ -117,7 +116,7 @@ TEST_F(GLES2DecoderTest, FramebufferRenderbufferWithNoBoundTarget) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, FramebufferTexture2DWithNoBoundTarget) {
+TEST_P(GLES2DecoderTest, FramebufferTexture2DWithNoBoundTarget) {
   EXPECT_CALL(*gl_, FramebufferTexture2DEXT(_, _, _, _, _)).Times(0);
   FramebufferTexture2D cmd;
   cmd.Init(GL_FRAMEBUFFER,
@@ -129,7 +128,7 @@ TEST_F(GLES2DecoderTest, FramebufferTexture2DWithNoBoundTarget) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithNoBoundTarget) {
+TEST_P(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithNoBoundTarget) {
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))
@@ -146,7 +145,7 @@ TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithNoBoundTarget) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithRenderbuffer) {
+TEST_P(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithRenderbuffer) {
   DoBindFramebuffer(
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
   EXPECT_CALL(*gl_, GetError())
@@ -188,7 +187,7 @@ TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithRenderbuffer) {
   EXPECT_EQ(static_cast<GLuint>(*result_value), client_renderbuffer_id_);
 }
 
-TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithTexture) {
+TEST_P(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithTexture) {
   DoBindFramebuffer(
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
   EXPECT_CALL(*gl_, GetError())
@@ -232,7 +231,7 @@ TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithTexture) {
   EXPECT_EQ(static_cast<GLuint>(*result_value), client_texture_id_);
 }
 
-TEST_F(GLES2DecoderTest, GetRenderbufferParameterivWithNoBoundTarget) {
+TEST_P(GLES2DecoderTest, GetRenderbufferParameterivWithNoBoundTarget) {
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))
@@ -247,7 +246,7 @@ TEST_F(GLES2DecoderTest, GetRenderbufferParameterivWithNoBoundTarget) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, RenderbufferStorageWithNoBoundTarget) {
+TEST_P(GLES2DecoderTest, RenderbufferStorageWithNoBoundTarget) {
   EXPECT_CALL(*gl_, RenderbufferStorageEXT(_, _, _, _)).Times(0);
   RenderbufferStorage cmd;
   cmd.Init(GL_RENDERBUFFER, GL_RGBA4, 3, 4);
@@ -475,7 +474,7 @@ void GLES2DecoderTest::CheckReadPixelsOutOfRange(GLint in_read_x,
   }
 }
 
-TEST_F(GLES2DecoderTest, ReadPixels) {
+TEST_P(GLES2DecoderTest, ReadPixels) {
   const GLsizei kWidth = 5;
   const GLsizei kHeight = 3;
   const GLint kBytesPerPixel = 3;
@@ -523,7 +522,7 @@ TEST_F(GLES2DecoderTest, ReadPixels) {
   }
 }
 
-TEST_F(GLES2DecoderRGBBackbufferTest, ReadPixelsNoAlphaBackbuffer) {
+TEST_P(GLES2DecoderRGBBackbufferTest, ReadPixelsNoAlphaBackbuffer) {
   const GLsizei kWidth = 3;
   const GLsizei kHeight = 3;
   const GLint kBytesPerPixel = 4;
@@ -579,7 +578,7 @@ TEST_F(GLES2DecoderRGBBackbufferTest, ReadPixelsNoAlphaBackbuffer) {
   }
 }
 
-TEST_F(GLES2DecoderTest, ReadPixelsOutOfRange) {
+TEST_P(GLES2DecoderTest, ReadPixelsOutOfRange) {
   static GLint tests[][4] = {
       {
        -2, -1, 9, 5,
@@ -610,7 +609,7 @@ TEST_F(GLES2DecoderTest, ReadPixelsOutOfRange) {
   }
 }
 
-TEST_F(GLES2DecoderTest, ReadPixelsInvalidArgs) {
+TEST_P(GLES2DecoderTest, ReadPixelsInvalidArgs) {
   typedef ReadPixels::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
   uint32 result_shm_id = kSharedMemoryId;
@@ -708,7 +707,7 @@ TEST_F(GLES2DecoderTest, ReadPixelsInvalidArgs) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderManualInitTest, ReadPixelsAsyncError) {
+TEST_P(GLES2DecoderManualInitTest, ReadPixelsAsyncError) {
   InitState init;
   init.extensions = "GL_ARB_sync";
   init.gl_version = "opengl es 3.0";
@@ -762,7 +761,7 @@ TEST_F(GLES2DecoderManualInitTest, ReadPixelsAsyncError) {
 
 // Check that if a renderbuffer is attached and GL returns
 // GL_FRAMEBUFFER_COMPLETE that the buffer is cleared and state is restored.
-TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearColor) {
+TEST_P(GLES2DecoderTest, FramebufferRenderbufferClearColor) {
   DoBindFramebuffer(
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
   ClearColor color_cmd;
@@ -780,6 +779,7 @@ TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearColor) {
   EXPECT_CALL(*gl_, ClearColor(0.1f, 0.2f, 0.3f, 0.4f))
       .Times(1)
       .RetiresOnSaturation();
+  SetupExpectationsForEnableDisable(GL_SCISSOR_TEST, true);
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
@@ -799,7 +799,7 @@ TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearColor) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearDepth) {
+TEST_P(GLES2DecoderTest, FramebufferRenderbufferClearDepth) {
   DoBindFramebuffer(
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
   ClearDepthf depth_cmd;
@@ -831,7 +831,7 @@ TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearDepth) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearStencil) {
+TEST_P(GLES2DecoderTest, FramebufferRenderbufferClearStencil) {
   DoBindFramebuffer(
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
   ClearStencil stencil_cmd;
@@ -864,7 +864,7 @@ TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearStencil) {
 }
 
 #if 0  // Turn this test on once we allow GL_DEPTH_STENCIL_ATTACHMENT
-TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearDepthStencil) {
+TEST_P(GLES2DecoderTest, FramebufferRenderbufferClearDepthStencil) {
   DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
                     kServiceFramebufferId);
   ClearDepthf depth_cmd;
@@ -893,7 +893,7 @@ TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearDepthStencil) {
 }
 #endif
 
-TEST_F(GLES2DecoderManualInitTest, ActualAlphaMatchesRequestedAlpha) {
+TEST_P(GLES2DecoderManualInitTest, ActualAlphaMatchesRequestedAlpha) {
   InitState init;
   init.gl_version = "3.0";
   init.has_alpha = true;
@@ -920,7 +920,7 @@ TEST_F(GLES2DecoderManualInitTest, ActualAlphaMatchesRequestedAlpha) {
   EXPECT_EQ(8, result->GetData()[0]);
 }
 
-TEST_F(GLES2DecoderManualInitTest, ActualAlphaDoesNotMatchRequestedAlpha) {
+TEST_P(GLES2DecoderManualInitTest, ActualAlphaDoesNotMatchRequestedAlpha) {
   InitState init;
   init.gl_version = "3.0";
   init.has_alpha = true;
@@ -946,7 +946,7 @@ TEST_F(GLES2DecoderManualInitTest, ActualAlphaDoesNotMatchRequestedAlpha) {
   EXPECT_EQ(0, result->GetData()[0]);
 }
 
-TEST_F(GLES2DecoderManualInitTest, ActualDepthMatchesRequestedDepth) {
+TEST_P(GLES2DecoderManualInitTest, ActualDepthMatchesRequestedDepth) {
   InitState init;
   init.gl_version = "3.0";
   init.has_depth = true;
@@ -973,7 +973,7 @@ TEST_F(GLES2DecoderManualInitTest, ActualDepthMatchesRequestedDepth) {
   EXPECT_EQ(24, result->GetData()[0]);
 }
 
-TEST_F(GLES2DecoderManualInitTest, ActualDepthDoesNotMatchRequestedDepth) {
+TEST_P(GLES2DecoderManualInitTest, ActualDepthDoesNotMatchRequestedDepth) {
   InitState init;
   init.gl_version = "3.0";
   init.has_depth = true;
@@ -999,7 +999,7 @@ TEST_F(GLES2DecoderManualInitTest, ActualDepthDoesNotMatchRequestedDepth) {
   EXPECT_EQ(0, result->GetData()[0]);
 }
 
-TEST_F(GLES2DecoderManualInitTest, ActualStencilMatchesRequestedStencil) {
+TEST_P(GLES2DecoderManualInitTest, ActualStencilMatchesRequestedStencil) {
   InitState init;
   init.gl_version = "3.0";
   init.has_stencil = true;
@@ -1026,7 +1026,7 @@ TEST_F(GLES2DecoderManualInitTest, ActualStencilMatchesRequestedStencil) {
   EXPECT_EQ(8, result->GetData()[0]);
 }
 
-TEST_F(GLES2DecoderManualInitTest, ActualStencilDoesNotMatchRequestedStencil) {
+TEST_P(GLES2DecoderManualInitTest, ActualStencilDoesNotMatchRequestedStencil) {
   InitState init;
   init.gl_version = "3.0";
   init.has_stencil = true;
@@ -1052,7 +1052,7 @@ TEST_F(GLES2DecoderManualInitTest, ActualStencilDoesNotMatchRequestedStencil) {
   EXPECT_EQ(0, result->GetData()[0]);
 }
 
-TEST_F(GLES2DecoderManualInitTest, PackedDepthStencilReportsCorrectValues) {
+TEST_P(GLES2DecoderManualInitTest, PackedDepthStencilReportsCorrectValues) {
   InitState init;
   init.extensions = "GL_OES_packed_depth_stencil";
   init.gl_version = "opengl es 2.0";
@@ -1094,7 +1094,7 @@ TEST_F(GLES2DecoderManualInitTest, PackedDepthStencilReportsCorrectValues) {
   EXPECT_EQ(24, result->GetData()[0]);
 }
 
-TEST_F(GLES2DecoderManualInitTest, PackedDepthStencilNoRequestedStencil) {
+TEST_P(GLES2DecoderManualInitTest, PackedDepthStencilNoRequestedStencil) {
   InitState init;
   init.extensions = "GL_OES_packed_depth_stencil";
   init.gl_version = "opengl es 2.0";
@@ -1135,7 +1135,7 @@ TEST_F(GLES2DecoderManualInitTest, PackedDepthStencilNoRequestedStencil) {
   EXPECT_EQ(24, result->GetData()[0]);
 }
 
-TEST_F(GLES2DecoderManualInitTest, PackedDepthStencilRenderbufferDepth) {
+TEST_P(GLES2DecoderManualInitTest, PackedDepthStencilRenderbufferDepth) {
   InitState init;
   init.extensions = "GL_OES_packed_depth_stencil";
   init.gl_version = "opengl es 2.0";
@@ -1204,7 +1204,7 @@ TEST_F(GLES2DecoderManualInitTest, PackedDepthStencilRenderbufferDepth) {
   EXPECT_EQ(24, result->GetData()[0]);
 }
 
-TEST_F(GLES2DecoderManualInitTest, PackedDepthStencilRenderbufferStencil) {
+TEST_P(GLES2DecoderManualInitTest, PackedDepthStencilRenderbufferStencil) {
   InitState init;
   init.extensions = "GL_OES_packed_depth_stencil";
   init.gl_version = "opengl es 2.0";
@@ -1273,7 +1273,7 @@ TEST_F(GLES2DecoderManualInitTest, PackedDepthStencilRenderbufferStencil) {
   EXPECT_EQ(0, result->GetData()[0]);
 }
 
-TEST_F(GLES2DecoderTest, FramebufferRenderbufferGLError) {
+TEST_P(GLES2DecoderTest, FramebufferRenderbufferGLError) {
   DoBindFramebuffer(
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
   EXPECT_CALL(*gl_, GetError())
@@ -1296,7 +1296,7 @@ TEST_F(GLES2DecoderTest, FramebufferRenderbufferGLError) {
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, FramebufferTexture2DGLError) {
+TEST_P(GLES2DecoderTest, FramebufferTexture2DGLError) {
   const GLsizei kWidth = 5;
   const GLsizei kHeight = 3;
   const GLenum kFormat = GL_RGB;
@@ -1335,7 +1335,7 @@ TEST_F(GLES2DecoderTest, FramebufferTexture2DGLError) {
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, RenderbufferStorageGLError) {
+TEST_P(GLES2DecoderTest, RenderbufferStorageGLError) {
   DoBindRenderbuffer(
       GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
   EXPECT_CALL(*gl_, GetError())
@@ -1351,7 +1351,7 @@ TEST_F(GLES2DecoderTest, RenderbufferStorageGLError) {
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, RenderbufferStorageBadArgs) {
+TEST_P(GLES2DecoderTest, RenderbufferStorageBadArgs) {
   DoBindRenderbuffer(
       GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
   EXPECT_CALL(*gl_, RenderbufferStorageEXT(_, _, _, _))
@@ -1366,7 +1366,7 @@ TEST_F(GLES2DecoderTest, RenderbufferStorageBadArgs) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest,
+TEST_P(GLES2DecoderManualInitTest,
        RenderbufferStorageMultisampleCHROMIUMGLError) {
   InitState init;
   init.extensions = "GL_EXT_framebuffer_multisample";
@@ -1390,7 +1390,7 @@ TEST_F(GLES2DecoderManualInitTest,
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest,
+TEST_P(GLES2DecoderManualInitTest,
        RenderbufferStorageMultisampleCHROMIUMBadArgs) {
   InitState init;
   init.extensions = "GL_EXT_framebuffer_multisample";
@@ -1426,7 +1426,7 @@ TEST_F(GLES2DecoderManualInitTest,
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest, RenderbufferStorageMultisampleCHROMIUM) {
+TEST_P(GLES2DecoderManualInitTest, RenderbufferStorageMultisampleCHROMIUM) {
   InitState init;
   init.extensions = "GL_EXT_framebuffer_multisample";
   init.gl_version = "2.1";
@@ -1459,7 +1459,7 @@ TEST_F(GLES2DecoderManualInitTest, RenderbufferStorageMultisampleCHROMIUM) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest,
+TEST_P(GLES2DecoderManualInitTest,
        RenderbufferStorageMultisampleEXTNotSupported) {
   InitState init;
   init.extensions = "GL_EXT_framebuffer_multisample";
@@ -1481,71 +1481,94 @@ TEST_F(GLES2DecoderManualInitTest,
 }
 
 class GLES2DecoderMultisampledRenderToTextureTest
-    : public GLES2DecoderTestWithExtensionsOnGLES2 {};
-
-TEST_P(GLES2DecoderMultisampledRenderToTextureTest,
-       NotCompatibleWithRenderbufferStorageMultisampleCHROMIUM) {
-  DoBindRenderbuffer(
-      GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
-  RenderbufferStorageMultisampleCHROMIUM cmd;
-  cmd.Init(GL_RENDERBUFFER,
-           TestHelper::kMaxSamples,
-           GL_RGBA4,
-           TestHelper::kMaxRenderbufferSize,
-           1);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
-}
-
-TEST_P(GLES2DecoderMultisampledRenderToTextureTest,
-       RenderbufferStorageMultisampleEXT) {
-  DoBindRenderbuffer(
-      GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
-  InSequence sequence;
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
-  if (strstr(GetParam(), "GL_IMG_multisampled_render_to_texture")) {
-    EXPECT_CALL(
-        *gl_,
-        RenderbufferStorageMultisampleIMG(GL_RENDERBUFFER,
-                                          TestHelper::kMaxSamples,
-                                          GL_RGBA,
-                                          TestHelper::kMaxRenderbufferSize,
-                                          1))
-        .Times(1)
-        .RetiresOnSaturation();
-  } else {
-    EXPECT_CALL(
-        *gl_,
-        RenderbufferStorageMultisampleEXT(GL_RENDERBUFFER,
-                                          TestHelper::kMaxSamples,
-                                          GL_RGBA,
-                                          TestHelper::kMaxRenderbufferSize,
-                                          1))
-        .Times(1)
-        .RetiresOnSaturation();
+    : public GLES2DecoderTestWithExtensionsOnGLES2 {
+ public:
+  void TestNotCompatibleWithRenderbufferStorageMultisampleCHROMIUM() {
+    DoBindRenderbuffer(
+        GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
+    RenderbufferStorageMultisampleCHROMIUM cmd;
+    cmd.Init(GL_RENDERBUFFER,
+             TestHelper::kMaxSamples,
+             GL_RGBA4,
+             TestHelper::kMaxRenderbufferSize,
+             1);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   }
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
-  RenderbufferStorageMultisampleEXT cmd;
-  cmd.Init(GL_RENDERBUFFER,
-           TestHelper::kMaxSamples,
-           GL_RGBA4,
-           TestHelper::kMaxRenderbufferSize,
-           1);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  void TestRenderbufferStorageMultisampleEXT(const char* extension) {
+    DoBindRenderbuffer(
+        GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
+    InSequence sequence;
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+    if (strstr(extension, "GL_IMG_multisampled_render_to_texture")) {
+      EXPECT_CALL(
+          *gl_,
+          RenderbufferStorageMultisampleIMG(GL_RENDERBUFFER,
+                                            TestHelper::kMaxSamples,
+                                            GL_RGBA,
+                                            TestHelper::kMaxRenderbufferSize,
+                                            1))
+          .Times(1)
+          .RetiresOnSaturation();
+    } else {
+      EXPECT_CALL(
+          *gl_,
+          RenderbufferStorageMultisampleEXT(GL_RENDERBUFFER,
+                                            TestHelper::kMaxSamples,
+                                            GL_RGBA,
+                                            TestHelper::kMaxRenderbufferSize,
+                                            1))
+          .Times(1)
+          .RetiresOnSaturation();
+    }
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+    RenderbufferStorageMultisampleEXT cmd;
+    cmd.Init(GL_RENDERBUFFER,
+             TestHelper::kMaxSamples,
+             GL_RGBA4,
+             TestHelper::kMaxRenderbufferSize,
+             1);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(Service,
+                        GLES2DecoderMultisampledRenderToTextureTest,
+                        ::testing::Bool());
+
+TEST_P(GLES2DecoderMultisampledRenderToTextureTest,
+       NotCompatibleWithRenderbufferStorageMultisampleCHROMIUM_EXT) {
+  Init("GL_EXT_multisampled_render_to_texture");
+  TestNotCompatibleWithRenderbufferStorageMultisampleCHROMIUM();
 }
 
-INSTANTIATE_TEST_CASE_P(
-    GLES2DecoderMultisampledRenderToTextureTests,
-    GLES2DecoderMultisampledRenderToTextureTest,
-    ::testing::Values("GL_EXT_multisampled_render_to_texture",
-                      "GL_IMG_multisampled_render_to_texture"));
+TEST_P(GLES2DecoderMultisampledRenderToTextureTest,
+       NotCompatibleWithRenderbufferStorageMultisampleCHROMIUM_IMG) {
+  Init("GL_IMG_multisampled_render_to_texture");
+  TestNotCompatibleWithRenderbufferStorageMultisampleCHROMIUM();
+}
 
-TEST_F(GLES2DecoderTest, ReadPixelsGLError) {
+TEST_P(GLES2DecoderMultisampledRenderToTextureTest,
+       RenderbufferStorageMultisampleEXT_EXT) {
+  Init("GL_EXT_multisampled_render_to_texture");
+  TestRenderbufferStorageMultisampleEXT(
+      "GL_EXT_multisampled_render_to_texture");
+}
+
+TEST_P(GLES2DecoderMultisampledRenderToTextureTest,
+       RenderbufferStorageMultisampleEXT_IMG) {
+  Init("GL_IMG_multisampled_render_to_texture");
+  TestRenderbufferStorageMultisampleEXT(
+      "GL_IMG_multisampled_render_to_texture");
+}
+
+TEST_P(GLES2DecoderTest, ReadPixelsGLError) {
   GLenum kFormat = GL_RGBA;
   GLint x = 0;
   GLint y = 0;
@@ -1581,7 +1604,7 @@ TEST_F(GLES2DecoderTest, ReadPixelsGLError) {
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, UnClearedAttachmentsGetClearedOnClear) {
+TEST_P(GLES2DecoderWithShaderTest, UnClearedAttachmentsGetClearedOnClear) {
   const GLuint kFBOClientTextureId = 4100;
   const GLuint kFBOServiceTextureId = 4101;
 
@@ -1625,10 +1648,7 @@ TEST_F(GLES2DecoderWithShaderTest, UnClearedAttachmentsGetClearedOnClear) {
                                          false,    // depth enabled
                                          0,        // front stencil mask
                                          0,        // back stencil mask
-                                         false,    // stencil enabled
-                                         false,    // cull_face_enabled
-                                         false,    // scissor_test_enabled
-                                         false);   // blend_enabled
+                                         false);   // stencil enabled
 
   EXPECT_CALL(*gl_, Clear(GL_COLOR_BUFFER_BIT)).Times(1).RetiresOnSaturation();
 
@@ -1638,7 +1658,7 @@ TEST_F(GLES2DecoderWithShaderTest, UnClearedAttachmentsGetClearedOnClear) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, UnClearedAttachmentsGetClearedOnReadPixels) {
+TEST_P(GLES2DecoderWithShaderTest, UnClearedAttachmentsGetClearedOnReadPixels) {
   const GLuint kFBOClientTextureId = 4100;
   const GLuint kFBOServiceTextureId = 4101;
 
@@ -1704,7 +1724,7 @@ TEST_F(GLES2DecoderWithShaderTest, UnClearedAttachmentsGetClearedOnReadPixels) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest,
+TEST_P(GLES2DecoderManualInitTest,
        UnClearedAttachmentsGetClearedOnReadPixelsAndDrawBufferGetsRestored) {
   InitState init;
   init.extensions = "GL_EXT_framebuffer_multisample";
@@ -1734,6 +1754,10 @@ TEST_F(GLES2DecoderManualInitTest,
                          0,
                          GL_NO_ERROR);
 
+  // Enable GL_SCISSOR_TEST to make sure we disable it in the clear,
+  // then re-enable after.
+  DoEnableDisable(GL_SCISSOR_TEST, true);
+
   SetupExpectationsForFramebufferClearingMulti(
       kServiceFramebufferId,  // read framebuffer service id
       0,                      // backbuffer service id
@@ -1742,10 +1766,10 @@ TEST_F(GLES2DecoderManualInitTest,
       0,
       0,
       0,
-      0,       // color
-      0,       // stencil
-      1.0f,    // depth
-      false);  // scissor test
+      0,      // color
+      0,      // stencil
+      1.0f,   // depth
+      true);  // scissor test
 
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -1775,7 +1799,7 @@ TEST_F(GLES2DecoderManualInitTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, CopyTexImageWithInCompleteFBOFails) {
+TEST_P(GLES2DecoderWithShaderTest, CopyTexImageWithInCompleteFBOFails) {
   GLenum target = GL_TEXTURE_2D;
   GLint level = 0;
   GLenum internal_format = GL_RGBA;
@@ -1854,12 +1878,12 @@ void GLES2DecoderWithShaderTest::CheckRenderbufferChangesMarkFBOAsNotComplete(
                       0);
 }
 
-TEST_F(GLES2DecoderWithShaderTest,
+TEST_P(GLES2DecoderWithShaderTest,
        RenderbufferChangesMarkFBOAsNotCompleteBoundFBO) {
   CheckRenderbufferChangesMarkFBOAsNotComplete(true);
 }
 
-TEST_F(GLES2DecoderWithShaderTest,
+TEST_P(GLES2DecoderWithShaderTest,
        RenderbufferChangesMarkFBOAsNotCompleteUnboundFBO) {
   CheckRenderbufferChangesMarkFBOAsNotComplete(false);
 }
@@ -1962,16 +1986,16 @@ void GLES2DecoderWithShaderTest::CheckTextureChangesMarkFBOAsNotComplete(
                       0);
 }
 
-TEST_F(GLES2DecoderWithShaderTest, TextureChangesMarkFBOAsNotCompleteBoundFBO) {
+TEST_P(GLES2DecoderWithShaderTest, TextureChangesMarkFBOAsNotCompleteBoundFBO) {
   CheckTextureChangesMarkFBOAsNotComplete(true);
 }
 
-TEST_F(GLES2DecoderWithShaderTest,
+TEST_P(GLES2DecoderWithShaderTest,
        TextureChangesMarkFBOAsNotCompleteUnboundFBO) {
   CheckTextureChangesMarkFBOAsNotComplete(false);
 }
 
-TEST_F(GLES2DecoderTest, CanChangeSurface) {
+TEST_P(GLES2DecoderTest, CanChangeSurface) {
   scoped_refptr<GLSurfaceMock> other_surface(new GLSurfaceMock);
   EXPECT_CALL(*other_surface.get(), GetBackingFrameBufferObject())
       .WillOnce(Return(7));
@@ -1980,7 +2004,7 @@ TEST_F(GLES2DecoderTest, CanChangeSurface) {
   decoder_->SetSurface(other_surface);
 }
 
-TEST_F(GLES2DecoderTest, DrawBuffersEXTImmediateSuccceeds) {
+TEST_P(GLES2DecoderTest, DrawBuffersEXTImmediateSuccceeds) {
   const GLsizei count = 1;
   const GLenum bufs[] = {GL_COLOR_ATTACHMENT0};
   DrawBuffersEXTImmediate& cmd = *GetImmediateAs<DrawBuffersEXTImmediate>();
@@ -1993,7 +2017,7 @@ TEST_F(GLES2DecoderTest, DrawBuffersEXTImmediateSuccceeds) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, DrawBuffersEXTImmediateFails) {
+TEST_P(GLES2DecoderTest, DrawBuffersEXTImmediateFails) {
   const GLsizei count = 1;
   const GLenum bufs[] = {GL_COLOR_ATTACHMENT1_EXT};
   DrawBuffersEXTImmediate& cmd = *GetImmediateAs<DrawBuffersEXTImmediate>();
@@ -2005,7 +2029,7 @@ TEST_F(GLES2DecoderTest, DrawBuffersEXTImmediateFails) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, DrawBuffersEXTImmediateBackbuffer) {
+TEST_P(GLES2DecoderTest, DrawBuffersEXTImmediateBackbuffer) {
   const GLsizei count = 1;
   const GLenum bufs[] = {GL_BACK};
   DrawBuffersEXTImmediate& cmd = *GetImmediateAs<DrawBuffersEXTImmediate>();
@@ -2024,7 +2048,7 @@ TEST_F(GLES2DecoderTest, DrawBuffersEXTImmediateBackbuffer) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest, InvalidateFramebufferBinding) {
+TEST_P(GLES2DecoderManualInitTest, InvalidateFramebufferBinding) {
   InitState init;
   init.gl_version = "opengl es 3.0";
   InitDecoder(init);
@@ -2038,7 +2062,7 @@ TEST_F(GLES2DecoderManualInitTest, InvalidateFramebufferBinding) {
       gfx::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT"));
 }
 
-TEST_F(GLES2DecoderManualInitTest, DiscardFramebufferEXT) {
+TEST_P(GLES2DecoderManualInitTest, DiscardFramebufferEXT) {
   InitState init;
   init.extensions = "GL_EXT_discard_framebuffer";
   init.gl_version = "opengl es 2.0";
@@ -2080,7 +2104,7 @@ TEST_F(GLES2DecoderManualInitTest, DiscardFramebufferEXT) {
   EXPECT_FALSE(framebuffer->IsCleared());
 }
 
-TEST_F(GLES2DecoderTest, DiscardFramebufferEXTUnsupported) {
+TEST_P(GLES2DecoderTest, DiscardFramebufferEXTUnsupported) {
   const GLenum target = GL_FRAMEBUFFER;
   const GLsizei count = 1;
   const GLenum attachments[] = {GL_COLOR_EXT};
@@ -2093,7 +2117,7 @@ TEST_F(GLES2DecoderTest, DiscardFramebufferEXTUnsupported) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest, ReadFormatExtension) {
+TEST_P(GLES2DecoderManualInitTest, ReadFormatExtension) {
   InitState init;
   init.extensions = "GL_OES_read_format";
   init.gl_version = "2.1";
@@ -2153,7 +2177,7 @@ TEST_F(GLES2DecoderManualInitTest, ReadFormatExtension) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest, NoReadFormatExtension) {
+TEST_P(GLES2DecoderManualInitTest, NoReadFormatExtension) {
   InitState init;
   init.gl_version = "2.1";
   init.bind_generates_resource = true;

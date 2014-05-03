@@ -72,9 +72,60 @@ class GLES2DecoderGeometryInstancingTest : public GLES2DecoderWithShaderTest {
   }
 };
 
+INSTANTIATE_TEST_CASE_P(Service,
+                        GLES2DecoderGeometryInstancingTest,
+                        ::testing::Bool());
+
+void GLES2DecoderManualInitTest::DirtyStateMaskTest(GLuint color_bits,
+                                                    bool depth_mask,
+                                                    GLuint front_stencil_mask,
+                                                    GLuint back_stencil_mask) {
+  ColorMask color_mask_cmd;
+  color_mask_cmd.Init((color_bits & 0x1000) != 0,
+                      (color_bits & 0x0100) != 0,
+                      (color_bits & 0x0010) != 0,
+                      (color_bits & 0x0001) != 0);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(color_mask_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  DepthMask depth_mask_cmd;
+  depth_mask_cmd.Init(depth_mask);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(depth_mask_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  StencilMaskSeparate front_stencil_mask_cmd;
+  front_stencil_mask_cmd.Init(GL_FRONT, front_stencil_mask);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(front_stencil_mask_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  StencilMaskSeparate back_stencil_mask_cmd;
+  back_stencil_mask_cmd.Init(GL_BACK, back_stencil_mask);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(back_stencil_mask_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  SetupExpectationsForApplyingDirtyState(
+      false,               // Framebuffer is RGB
+      true,                // Framebuffer has depth
+      true,                // Framebuffer has stencil
+      color_bits,          // color bits
+      depth_mask,          // depth mask
+      false,               // depth enabled
+      front_stencil_mask,  // front stencil mask
+      back_stencil_mask,   // back stencil mask
+      false);              // stencil enabled
+
+  EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
+      .Times(1)
+      .RetiresOnSaturation();
+  DrawArrays draw_cmd;
+  draw_cmd.Init(GL_TRIANGLES, 0, kNumVertices);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(draw_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 // Test that with an RGB backbuffer if we set the color mask to 1,1,1,1 it is
 // set to 1,1,1,0 at Draw time but is 1,1,1,1 at query time.
-TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMask) {
+TEST_P(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMask) {
   ColorMask cmd;
   cmd.Init(true, true, true, true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -90,10 +141,7 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMask) {
                                          false,   // depth enabled
                                          0,       // front stencil mask
                                          0,       // back stencil mask
-                                         false,   // stencil enabled
-                                         false,   // cull_face_enabled
-                                         false,   // scissor_test_enabled
-                                         false);  // blend_enabled
+                                         false);  // stencil enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -127,7 +175,7 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMask) {
 
 // Test that with no depth if we set DepthMask true that it's set to false at
 // draw time but querying it returns true.
-TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferDepthMask) {
+TEST_P(GLES2DecoderRGBBackbufferTest, RGBBackbufferDepthMask) {
   EXPECT_CALL(*gl_, DepthMask(true)).Times(0).RetiresOnSaturation();
   DepthMask cmd;
   cmd.Init(true);
@@ -144,10 +192,7 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferDepthMask) {
                                          false,   // depth enabled
                                          0,       // front stencil mask
                                          0,       // back stencil mask
-                                         false,   // stencil enabled
-                                         false,   // cull_face_enabled
-                                         false,   // scissor_test_enabled
-                                         false);  // blend_enabled
+                                         false);  // stencil enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -178,7 +223,7 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferDepthMask) {
 
 // Test that with no stencil if we set the stencil mask it's still set to 0 at
 // draw time but gets our value if we query.
-TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferStencilMask) {
+TEST_P(GLES2DecoderRGBBackbufferTest, RGBBackbufferStencilMask) {
   const GLint kMask = 123;
   EXPECT_CALL(*gl_, StencilMask(kMask)).Times(0).RetiresOnSaturation();
   StencilMask cmd;
@@ -196,10 +241,7 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferStencilMask) {
                                          false,   // depth enabled
                                          0,       // front stencil mask
                                          0,       // back stencil mask
-                                         false,   // stencil enabled
-                                         false,   // cull_face_enabled
-                                         false,   // scissor_test_enabled
-                                         false);  // blend_enabled
+                                         false);  // stencil enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -229,7 +271,7 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferStencilMask) {
 }
 
 // Test that if an FBO is bound we get the correct masks.
-TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMaskFBO) {
+TEST_P(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMaskFBO) {
   ColorMask cmd;
   cmd.Init(true, true, true, true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -251,10 +293,7 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMaskFBO) {
                                          false,   // depth enabled
                                          0,       // front stencil mask
                                          0,       // back stencil mask
-                                         false,   // stencil enabled
-                                         false,   // cull_face_enabled
-                                         false,   // scissor_test_enabled
-                                         false);  // blend_enabled
+                                         false);  // stencil enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -310,10 +349,7 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMaskFBO) {
                                          false,   // depth enabled
                                          0,       // front stencil mask
                                          0,       // back stencil mask
-                                         false,   // stencil enabled
-                                         false,   // cull_face_enabled
-                                         false,   // scissor_test_enabled
-                                         false);  // blend_enabled
+                                         false);  // stencil enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -339,10 +375,7 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMaskFBO) {
                                          false,   // depth enabled
                                          0,       // front stencil mask
                                          0,       // back stencil mask
-                                         false,   // stencil enabled
-                                         false,   // cull_face_enabled
-                                         false,   // scissor_test_enabled
-                                         false);  // blend_enabled
+                                         false);  // stencil enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -351,7 +384,7 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMaskFBO) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest, DepthEnableWithDepth) {
+TEST_P(GLES2DecoderManualInitTest, DepthEnableWithDepth) {
   InitState init;
   init.gl_version = "3.0";
   init.has_depth = true;
@@ -375,10 +408,7 @@ TEST_F(GLES2DecoderManualInitTest, DepthEnableWithDepth) {
                                          true,    // depth enabled
                                          0,       // front stencil mask
                                          0,       // back stencil mask
-                                         false,   // stencil enabled
-                                         false,   // cull_face_enabled
-                                         false,   // scissor_test_enabled
-                                         false);  // blend_enabled
+                                         false);  // stencil enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -407,7 +437,7 @@ TEST_F(GLES2DecoderManualInitTest, DepthEnableWithDepth) {
   EXPECT_EQ(1, result->GetData()[0]);
 }
 
-TEST_F(GLES2DecoderManualInitTest, DepthEnableWithoutRequestedDepth) {
+TEST_P(GLES2DecoderManualInitTest, DepthEnableWithoutRequestedDepth) {
   InitState init;
   init.gl_version = "3.0";
   init.has_depth = true;
@@ -430,10 +460,7 @@ TEST_F(GLES2DecoderManualInitTest, DepthEnableWithoutRequestedDepth) {
                                          false,   // depth enabled
                                          0,       // front stencil mask
                                          0,       // back stencil mask
-                                         false,   // stencil enabled
-                                         false,   // cull_face_enabled
-                                         false,   // scissor_test_enabled
-                                         false);  // blend_enabled
+                                         false);  // stencil enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -462,7 +489,7 @@ TEST_F(GLES2DecoderManualInitTest, DepthEnableWithoutRequestedDepth) {
   EXPECT_EQ(1, result->GetData()[0]);
 }
 
-TEST_F(GLES2DecoderManualInitTest, StencilEnableWithStencil) {
+TEST_P(GLES2DecoderManualInitTest, StencilEnableWithStencil) {
   InitState init;
   init.gl_version = "3.0";
   init.has_stencil = true;
@@ -486,10 +513,7 @@ TEST_F(GLES2DecoderManualInitTest, StencilEnableWithStencil) {
                                          false,   // depth enabled
                                          -1,      // front stencil mask
                                          -1,      // back stencil mask
-                                         true,    // stencil enabled
-                                         false,   // cull_face_enabled
-                                         false,   // scissor_test_enabled
-                                         false);  // blend_enabled
+                                         true);   // stencil enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -518,7 +542,7 @@ TEST_F(GLES2DecoderManualInitTest, StencilEnableWithStencil) {
   EXPECT_EQ(1, result->GetData()[0]);
 }
 
-TEST_F(GLES2DecoderManualInitTest, StencilEnableWithoutRequestedStencil) {
+TEST_P(GLES2DecoderManualInitTest, StencilEnableWithoutRequestedStencil) {
   InitState init;
   init.gl_version = "3.0";
   init.has_stencil = true;
@@ -541,10 +565,7 @@ TEST_F(GLES2DecoderManualInitTest, StencilEnableWithoutRequestedStencil) {
                                          false,   // depth enabled
                                          0,       // front stencil mask
                                          0,       // back stencil mask
-                                         false,   // stencil enabled
-                                         false,   // cull_face_enabled
-                                         false,   // scissor_test_enabled
-                                         false);  // blend_enabled
+                                         false);  // stencil enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -573,7 +594,98 @@ TEST_F(GLES2DecoderManualInitTest, StencilEnableWithoutRequestedStencil) {
   EXPECT_EQ(1, result->GetData()[0]);
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawArraysNoAttributesSucceeds) {
+TEST_P(GLES2DecoderManualInitTest, CachedColorMask) {
+  InitState init;
+  init.gl_version = "3.0";
+  init.has_alpha = true;
+  init.has_depth = true;
+  init.has_stencil = true;
+  init.request_alpha = true;
+  init.request_depth = true;
+  init.request_stencil = true;
+  init.bind_generates_resource = true;
+  InitDecoder(init);
+
+  SetupDefaultProgram();
+  SetupAllNeededVertexBuffers();
+  SetupTexture();
+
+  // Test all color_bits combinations twice.
+  for (int i = 0; i < 32; i++) {
+    GLuint color_bits = (i & 1 ? 0x0001 : 0x0000) | (i & 2 ? 0x0010 : 0x0000) |
+                        (i & 4 ? 0x0100 : 0x0000) | (i & 8 ? 0x1000 : 0x0000);
+
+    // Toggle depth_test to force ApplyDirtyState each time.
+    DirtyStateMaskTest(color_bits, false, 0xffffffff, 0xffffffff);
+    DirtyStateMaskTest(color_bits, true, 0xffffffff, 0xffffffff);
+    DirtyStateMaskTest(color_bits, false, 0xffffffff, 0xffffffff);
+  }
+}
+
+TEST_P(GLES2DecoderManualInitTest, CachedDepthMask) {
+  InitState init;
+  init.gl_version = "3.0";
+  init.has_alpha = true;
+  init.has_depth = true;
+  init.has_stencil = true;
+  init.request_alpha = true;
+  init.request_depth = true;
+  init.request_stencil = true;
+  init.bind_generates_resource = true;
+  InitDecoder(init);
+
+  SetupDefaultProgram();
+  SetupAllNeededVertexBuffers();
+  SetupTexture();
+
+  // Test all depth_mask combinations twice.
+  for (int i = 0; i < 4; i++) {
+    bool depth_mask = (i & 1) == 1;
+
+    // Toggle color masks to force ApplyDirtyState each time.
+    DirtyStateMaskTest(0x1010, depth_mask, 0xffffffff, 0xffffffff);
+    DirtyStateMaskTest(0x0101, depth_mask, 0xffffffff, 0xffffffff);
+    DirtyStateMaskTest(0x1010, depth_mask, 0xffffffff, 0xffffffff);
+  }
+}
+
+TEST_P(GLES2DecoderManualInitTest, CachedStencilMask) {
+  InitState init;
+  init.gl_version = "3.0";
+  init.has_alpha = true;
+  init.has_depth = true;
+  init.has_stencil = true;
+  init.request_alpha = true;
+  init.request_depth = true;
+  init.request_stencil = true;
+  init.bind_generates_resource = true;
+  InitDecoder(init);
+
+  SetupDefaultProgram();
+  SetupAllNeededVertexBuffers();
+  SetupTexture();
+
+  // Test all stencil_mask combinations twice.
+  for (int i = 0; i < 4; i++) {
+    GLuint stencil_mask = (i & 1) ? 0xf0f0f0f0 : 0x0f0f0f0f;
+
+    // Toggle color masks to force ApplyDirtyState each time.
+    DirtyStateMaskTest(0x1010, true, stencil_mask, 0xffffffff);
+    DirtyStateMaskTest(0x0101, true, stencil_mask, 0xffffffff);
+    DirtyStateMaskTest(0x1010, true, stencil_mask, 0xffffffff);
+  }
+
+  for (int i = 0; i < 4; i++) {
+    GLuint stencil_mask = (i & 1) ? 0xf0f0f0f0 : 0x0f0f0f0f;
+
+    // Toggle color masks to force ApplyDirtyState each time.
+    DirtyStateMaskTest(0x1010, true, 0xffffffff, stencil_mask);
+    DirtyStateMaskTest(0x0101, true, 0xffffffff, stencil_mask);
+    DirtyStateMaskTest(0x1010, true, 0xffffffff, stencil_mask);
+  }
+}
+
+TEST_P(GLES2DecoderWithShaderTest, DrawArraysNoAttributesSucceeds) {
   SetupTexture();
   AddExpectationsForSimulatedAttrib0(kNumVertices, 0);
   SetupExpectationsForApplyingDefaultDirtyState();
@@ -588,7 +700,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysNoAttributesSucceeds) {
 }
 
 // Tests when the math overflows (0x40000000 * sizeof GLfloat)
-TEST_F(GLES2DecoderWithShaderTest, DrawArraysSimulatedAttrib0OverflowFails) {
+TEST_P(GLES2DecoderWithShaderTest, DrawArraysSimulatedAttrib0OverflowFails) {
   const GLsizei kLargeCount = 0x40000000;
   SetupTexture();
   EXPECT_CALL(*gl_, DrawArrays(_, _, _)).Times(0).RetiresOnSaturation();
@@ -600,7 +712,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysSimulatedAttrib0OverflowFails) {
 }
 
 // Tests when the math overflows (0x7FFFFFFF + 1 = 0x8000000 verts)
-TEST_F(GLES2DecoderWithShaderTest, DrawArraysSimulatedAttrib0PosToNegFails) {
+TEST_P(GLES2DecoderWithShaderTest, DrawArraysSimulatedAttrib0PosToNegFails) {
   const GLsizei kLargeCount = 0x7FFFFFFF;
   SetupTexture();
   EXPECT_CALL(*gl_, DrawArrays(_, _, _)).Times(0).RetiresOnSaturation();
@@ -612,7 +724,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysSimulatedAttrib0PosToNegFails) {
 }
 
 // Tests when the driver returns an error
-TEST_F(GLES2DecoderWithShaderTest, DrawArraysSimulatedAttrib0OOMFails) {
+TEST_P(GLES2DecoderWithShaderTest, DrawArraysSimulatedAttrib0OOMFails) {
   const GLsizei kFakeLargeCount = 0x1234;
   SetupTexture();
   AddExpectationsForSimulatedAttrib0WithError(
@@ -626,7 +738,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysSimulatedAttrib0OOMFails) {
 }
 
 // Test that we lose context.
-TEST_F(GLES2DecoderManualInitTest, LoseContextWhenOOM) {
+TEST_P(GLES2DecoderManualInitTest, LoseContextWhenOOM) {
   InitState init;
   init.gl_version = "3.0";
   init.has_alpha = true;
@@ -655,7 +767,7 @@ TEST_F(GLES2DecoderManualInitTest, LoseContextWhenOOM) {
   EXPECT_TRUE(decoder_->WasContextLost());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawArraysBadTextureUsesBlack) {
+TEST_P(GLES2DecoderWithShaderTest, DrawArraysBadTextureUsesBlack) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   // This is an NPOT texture. As the default filtering requires mips
   // this should trigger replacing with black textures before rendering.
@@ -699,7 +811,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysBadTextureUsesBlack) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawArraysMissingAttributesFails) {
+TEST_P(GLES2DecoderWithShaderTest, DrawArraysMissingAttributesFails) {
   DoEnableVertexAttribArray(1);
 
   EXPECT_CALL(*gl_, DrawArrays(_, _, _)).Times(0);
@@ -709,7 +821,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysMissingAttributesFails) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest,
+TEST_P(GLES2DecoderWithShaderTest,
        DrawArraysMissingAttributesZeroCountSucceeds) {
   DoEnableVertexAttribArray(1);
 
@@ -720,7 +832,7 @@ TEST_F(GLES2DecoderWithShaderTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawArraysValidAttributesSucceeds) {
+TEST_P(GLES2DecoderWithShaderTest, DrawArraysValidAttributesSucceeds) {
   SetupTexture();
   SetupVertexBuffer();
   DoEnableVertexAttribArray(1);
@@ -739,7 +851,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysValidAttributesSucceeds) {
 
 // Same as DrawArraysValidAttributesSucceeds, but with workaround
 // |init_vertex_attributes|.
-TEST_F(GLES2DecoderManualInitTest, InitVertexAttributes) {
+TEST_P(GLES2DecoderManualInitTest, InitVertexAttributes) {
   CommandLine command_line(0, NULL);
   command_line.AppendSwitchASCII(
       switches::kGpuDriverBugWorkarounds,
@@ -769,7 +881,7 @@ TEST_F(GLES2DecoderManualInitTest, InitVertexAttributes) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawArraysDeletedBufferFails) {
+TEST_P(GLES2DecoderWithShaderTest, DrawArraysDeletedBufferFails) {
   SetupVertexBuffer();
   DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
   DeleteVertexBuffer();
@@ -781,7 +893,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysDeletedBufferFails) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawArraysDeletedProgramSucceeds) {
+TEST_P(GLES2DecoderWithShaderTest, DrawArraysDeletedProgramSucceeds) {
   SetupTexture();
   AddExpectationsForSimulatedAttrib0(kNumVertices, 0);
   SetupExpectationsForApplyingDefaultDirtyState();
@@ -795,7 +907,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysDeletedProgramSucceeds) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawArraysWithInvalidModeFails) {
+TEST_P(GLES2DecoderWithShaderTest, DrawArraysWithInvalidModeFails) {
   SetupVertexBuffer();
   DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
 
@@ -809,7 +921,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysWithInvalidModeFails) {
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawArraysInvalidCountFails) {
+TEST_P(GLES2DecoderWithShaderTest, DrawArraysInvalidCountFails) {
   SetupVertexBuffer();
   DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
 
@@ -847,7 +959,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysInvalidCountFails) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawArraysInstancedANGLEFails) {
+TEST_P(GLES2DecoderWithShaderTest, DrawArraysInstancedANGLEFails) {
   SetupTexture();
   SetupVertexBuffer();
   DoEnableVertexAttribArray(1);
@@ -862,7 +974,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysInstancedANGLEFails) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawArraysInstancedANGLENoAttributesFails) {
   SetupTexture();
 
@@ -875,7 +987,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawArraysInstancedANGLESimulatedAttrib0) {
   SetupTexture();
   SetupVertexBuffer();
@@ -900,7 +1012,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawArraysInstancedANGLEMissingAttributesFails) {
   DoEnableVertexAttribArray(1);
 
@@ -911,7 +1023,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawArraysInstancedANGLEMissingAttributesZeroCountSucceeds) {
   DoEnableVertexAttribArray(1);
 
@@ -922,7 +1034,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawArraysInstancedANGLEValidAttributesSucceeds) {
   SetupTexture();
   SetupVertexBuffer();
@@ -940,7 +1052,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawArraysInstancedANGLEWithInvalidModeFails) {
   SetupVertexBuffer();
   DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
@@ -955,7 +1067,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawArraysInstancedANGLEInvalidPrimcountFails) {
   SetupVertexBuffer();
   DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
@@ -968,7 +1080,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
 }
 
 // Per-instance data is twice as large, but number of instances is half
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawArraysInstancedANGLELargeInstanceSucceeds) {
   SetupTexture();
   SetupVertexBuffer();
@@ -990,7 +1102,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
 }
 
 // Per-instance data is twice as large, but divisor is twice
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawArraysInstancedANGLELargeDivisorSucceeds) {
   SetupTexture();
   SetupVertexBuffer();
@@ -1011,7 +1123,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderGeometryInstancingTest, DrawArraysInstancedANGLELargeFails) {
+TEST_P(GLES2DecoderGeometryInstancingTest, DrawArraysInstancedANGLELargeFails) {
   SetupTexture();
   SetupVertexBuffer();
   DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
@@ -1038,7 +1150,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest, DrawArraysInstancedANGLELargeFails) {
 }
 
 // Per-index data is twice as large, but number of indices is half
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawArraysInstancedANGLELargeIndexSucceeds) {
   SetupTexture();
   SetupVertexBuffer();
@@ -1059,7 +1171,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawArraysInstancedANGLENoDivisor0Fails) {
   SetupTexture();
   SetupVertexBuffer();
@@ -1079,7 +1191,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawElementsNoAttributesSucceeds) {
+TEST_P(GLES2DecoderWithShaderTest, DrawElementsNoAttributesSucceeds) {
   SetupTexture();
   SetupIndexBuffer();
   AddExpectationsForSimulatedAttrib0(kMaxValidIndex + 1, 0);
@@ -1100,7 +1212,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsNoAttributesSucceeds) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawElementsMissingAttributesFails) {
+TEST_P(GLES2DecoderWithShaderTest, DrawElementsMissingAttributesFails) {
   SetupIndexBuffer();
   DoEnableVertexAttribArray(1);
 
@@ -1114,7 +1226,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsMissingAttributesFails) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest,
+TEST_P(GLES2DecoderWithShaderTest,
        DrawElementsMissingAttributesZeroCountSucceeds) {
   SetupIndexBuffer();
   DoEnableVertexAttribArray(1);
@@ -1126,7 +1238,7 @@ TEST_F(GLES2DecoderWithShaderTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawElementsExtraAttributesFails) {
+TEST_P(GLES2DecoderWithShaderTest, DrawElementsExtraAttributesFails) {
   SetupIndexBuffer();
   DoEnableVertexAttribArray(6);
 
@@ -1140,7 +1252,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsExtraAttributesFails) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawElementsValidAttributesSucceeds) {
+TEST_P(GLES2DecoderWithShaderTest, DrawElementsValidAttributesSucceeds) {
   SetupTexture();
   SetupVertexBuffer();
   SetupIndexBuffer();
@@ -1164,7 +1276,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsValidAttributesSucceeds) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawElementsDeletedBufferFails) {
+TEST_P(GLES2DecoderWithShaderTest, DrawElementsDeletedBufferFails) {
   SetupVertexBuffer();
   SetupIndexBuffer();
   DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
@@ -1180,7 +1292,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsDeletedBufferFails) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawElementsDeletedProgramSucceeds) {
+TEST_P(GLES2DecoderWithShaderTest, DrawElementsDeletedProgramSucceeds) {
   SetupTexture();
   SetupIndexBuffer();
   AddExpectationsForSimulatedAttrib0(kMaxValidIndex + 1, 0);
@@ -1198,7 +1310,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsDeletedProgramSucceeds) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawElementsWithInvalidModeFails) {
+TEST_P(GLES2DecoderWithShaderTest, DrawElementsWithInvalidModeFails) {
   SetupVertexBuffer();
   SetupIndexBuffer();
   DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
@@ -1219,7 +1331,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsWithInvalidModeFails) {
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawElementsInvalidCountFails) {
+TEST_P(GLES2DecoderWithShaderTest, DrawElementsInvalidCountFails) {
   SetupVertexBuffer();
   SetupIndexBuffer();
   DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
@@ -1239,7 +1351,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsInvalidCountFails) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawElementsOutOfRangeIndicesFails) {
+TEST_P(GLES2DecoderWithShaderTest, DrawElementsOutOfRangeIndicesFails) {
   SetupVertexBuffer();
   SetupIndexBuffer();
   DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
@@ -1255,7 +1367,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsOutOfRangeIndicesFails) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawElementsOddOffsetForUint16Fails) {
+TEST_P(GLES2DecoderWithShaderTest, DrawElementsOddOffsetForUint16Fails) {
   SetupVertexBuffer();
   SetupIndexBuffer();
   DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
@@ -1268,7 +1380,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsOddOffsetForUint16Fails) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawElementsInstancedANGLEFails) {
+TEST_P(GLES2DecoderWithShaderTest, DrawElementsInstancedANGLEFails) {
   SetupTexture();
   SetupVertexBuffer();
   SetupIndexBuffer();
@@ -1288,7 +1400,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsInstancedANGLEFails) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawElementsInstancedANGLENoAttributesFails) {
   SetupTexture();
   SetupIndexBuffer();
@@ -1306,7 +1418,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawElementsInstancedANGLESimulatedAttrib0) {
   SetupTexture();
   SetupVertexBuffer();
@@ -1342,7 +1454,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawElementsInstancedANGLEMissingAttributesFails) {
   SetupIndexBuffer();
   DoEnableVertexAttribArray(1);
@@ -1358,7 +1470,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawElementsInstancedANGLEMissingAttributesZeroCountSucceeds) {
   SetupIndexBuffer();
   DoEnableVertexAttribArray(1);
@@ -1370,7 +1482,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawElementsInstancedANGLEValidAttributesSucceeds) {
   SetupIndexBuffer();
   SetupTexture();
@@ -1399,7 +1511,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawElementsInstancedANGLEWithInvalidModeFails) {
   SetupIndexBuffer();
   SetupVertexBuffer();
@@ -1424,7 +1536,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
 }
 
 // Per-instance data is twice as large, but number of instances is half
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawElementsInstancedANGLELargeInstanceSucceeds) {
   SetupTexture();
   SetupIndexBuffer();
@@ -1461,7 +1573,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
 }
 
 // Per-instance data is twice as large, but divisor is twice
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawElementsInstancedANGLELargeDivisorSucceeds) {
   SetupTexture();
   SetupIndexBuffer();
@@ -1491,7 +1603,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawElementsInstancedANGLELargeFails) {
   SetupTexture();
   SetupIndexBuffer();
@@ -1527,7 +1639,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawElementsInstancedANGLEInvalidPrimcountFails) {
   SetupTexture();
   SetupIndexBuffer();
@@ -1552,7 +1664,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
 }
 
 // Per-index data is twice as large, but values of indices are smaller
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawElementsInstancedANGLELargeIndexSucceeds) {
   SetupTexture();
   SetupIndexBuffer();
@@ -1582,7 +1694,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderGeometryInstancingTest,
+TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawElementsInstancedANGLENoDivisor0Fails) {
   SetupTexture();
   SetupIndexBuffer();
@@ -1607,7 +1719,7 @@ TEST_F(GLES2DecoderGeometryInstancingTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawArraysClearsAfterTexImage2DNULL) {
+TEST_P(GLES2DecoderWithShaderTest, DrawArraysClearsAfterTexImage2DNULL) {
   SetupAllNeededVertexBuffers();
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   // Create an uncleared texture with 2 levels.
@@ -1653,7 +1765,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysClearsAfterTexImage2DNULL) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawElementsClearsAfterTexImage2DNULL) {
+TEST_P(GLES2DecoderWithShaderTest, DrawElementsClearsAfterTexImage2DNULL) {
   SetupAllNeededVertexBuffers();
   SetupIndexBuffer();
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
@@ -1712,7 +1824,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsClearsAfterTexImage2DNULL) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawClearsAfterTexImage2DNULLInFBO) {
+TEST_P(GLES2DecoderWithShaderTest, DrawClearsAfterTexImage2DNULLInFBO) {
   const GLuint kFBOClientTextureId = 4100;
   const GLuint kFBOServiceTextureId = 4101;
 
@@ -1758,10 +1870,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawClearsAfterTexImage2DNULLInFBO) {
                                          false,   // depth enabled
                                          0,       // front stencil mask
                                          0,       // back stencil mask
-                                         false,   // stencil enabled
-                                         false,   // cull_face_enabled
-                                         false,   // scissor_test_enabled
-                                         false);  // blend_enabled
+                                         false);  // stencil enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -1779,7 +1888,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawClearsAfterTexImage2DNULLInFBO) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawWitFBOThatCantClearDoesNotDraw) {
+TEST_P(GLES2DecoderWithShaderTest, DrawWitFBOThatCantClearDoesNotDraw) {
   const GLuint kFBOClientTextureId = 4100;
   const GLuint kFBOServiceTextureId = 4101;
 
@@ -1816,7 +1925,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawWitFBOThatCantClearDoesNotDraw) {
   EXPECT_EQ(GL_INVALID_FRAMEBUFFER_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawClearsAfterRenderbufferStorageInFBO) {
+TEST_P(GLES2DecoderWithShaderTest, DrawClearsAfterRenderbufferStorageInFBO) {
   SetupTexture();
   DoBindRenderbuffer(
       GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
@@ -1850,10 +1959,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawClearsAfterRenderbufferStorageInFBO) {
                                          false,   // depth enabled
                                          0,       // front stencil mask
                                          0,       // back stencil mask
-                                         false,   // stencil enabled
-                                         false,   // cull_face_enabled
-                                         false,   // scissor_test_enabled
-                                         false);  // blend_enabled
+                                         false);  // stencil enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -1864,7 +1970,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawClearsAfterRenderbufferStorageInFBO) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest, DrawArraysClearsAfterTexImage2DNULLCubemap) {
+TEST_P(GLES2DecoderManualInitTest, DrawArraysClearsAfterTexImage2DNULLCubemap) {
   InitState init;
   init.gl_version = "opengl es 2.0";
   init.has_alpha = true;
@@ -1939,7 +2045,7 @@ TEST_F(GLES2DecoderManualInitTest, DrawArraysClearsAfterTexImage2DNULLCubemap) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderWithShaderTest,
+TEST_P(GLES2DecoderWithShaderTest,
        DrawClearsAfterRenderbuffersWithMultipleAttachments) {
   const GLuint kFBOClientTextureId = 4100;
   const GLuint kFBOServiceTextureId = 4101;
@@ -2002,10 +2108,7 @@ TEST_F(GLES2DecoderWithShaderTest,
                                          false,   // depth enabled
                                          0,       // front stencil mask
                                          0,       // back stencil mask
-                                         false,   // stencil enabled
-                                         false,   // cull_face_enabled
-                                         false,   // scissor_test_enabled
-                                         false);  // blend_enabled
+                                         false);  // stencil enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -2016,7 +2119,7 @@ TEST_F(GLES2DecoderWithShaderTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest,
+TEST_P(GLES2DecoderWithShaderTest,
        DrawingWithFBOTwiceChecksForFBOCompleteOnce) {
   const GLuint kFBOClientTextureId = 4100;
   const GLuint kFBOServiceTextureId = 4101;
@@ -2067,10 +2170,7 @@ TEST_F(GLES2DecoderWithShaderTest,
                                          false,   // depth enabled
                                          0,       // front stencil mask
                                          0,       // back stencil mask
-                                         false,   // stencil enabled
-                                         false,   // cull_face_enabled
-                                         false,   // scissor_test_enabled
-                                         false);  // blend_enabled
+                                         false);  // stencil enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -2088,7 +2188,7 @@ TEST_F(GLES2DecoderWithShaderTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest, DrawClearsDepthTexture) {
+TEST_P(GLES2DecoderManualInitTest, DrawClearsDepthTexture) {
   InitState init;
   init.extensions = "GL_ANGLE_depth_texture";
   init.gl_version = "opengl es 2.0";
@@ -2118,6 +2218,10 @@ TEST_F(GLES2DecoderManualInitTest, DrawClearsDepthTexture) {
                0,
                0);
 
+  // Enable GL_SCISSOR_TEST to make sure we disable it in the clear,
+  // then re-enable it.
+  DoEnableDisable(GL_SCISSOR_TEST, true);
+
   EXPECT_CALL(*gl_, GenFramebuffersEXT(1, _)).Times(1).RetiresOnSaturation();
   EXPECT_CALL(*gl_, BindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _))
       .Times(1)
@@ -2138,12 +2242,12 @@ TEST_F(GLES2DecoderManualInitTest, DrawClearsDepthTexture) {
   EXPECT_CALL(*gl_, ClearStencil(0)).Times(1).RetiresOnSaturation();
   EXPECT_CALL(*gl_, StencilMask(-1)).Times(1).RetiresOnSaturation();
   EXPECT_CALL(*gl_, ClearDepth(1.0f)).Times(1).RetiresOnSaturation();
-  EXPECT_CALL(*gl_, DepthMask(true)).Times(1).RetiresOnSaturation();
-  EXPECT_CALL(*gl_, Disable(GL_SCISSOR_TEST)).Times(1).RetiresOnSaturation();
+  SetupExpectationsForDepthMask(true);
+  SetupExpectationsForEnableDisable(GL_SCISSOR_TEST, false);
 
   EXPECT_CALL(*gl_, Clear(GL_DEPTH_BUFFER_BIT)).Times(1).RetiresOnSaturation();
 
-  SetupExpectationsForRestoreClearState(0.0f, 0.0f, 0.0f, 0.0f, 0, 1.0f, false);
+  SetupExpectationsForRestoreClearState(0.0f, 0.0f, 0.0f, 0.0f, 0, 1.0f, true);
 
   EXPECT_CALL(*gl_, DeleteFramebuffersEXT(1, _)).Times(1).RetiresOnSaturation();
   EXPECT_CALL(*gl_, BindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, 0))

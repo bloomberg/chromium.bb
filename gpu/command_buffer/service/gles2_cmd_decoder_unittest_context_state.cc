@@ -66,6 +66,10 @@ class GLES2DecoderRestoreStateTest : public GLES2DecoderManualInitTest {
                               uint32 active_unit);
 };
 
+INSTANTIATE_TEST_CASE_P(Service,
+                        GLES2DecoderRestoreStateTest,
+                        ::testing::Bool());
+
 void GLES2DecoderRestoreStateTest::AddExpectationsForActiveTexture(
     GLenum unit) {
   EXPECT_CALL(*gl_, ActiveTexture(unit)).Times(1).RetiresOnSaturation();
@@ -94,7 +98,7 @@ void GLES2DecoderRestoreStateTest::InitializeContextState(
   state->active_texture_unit = active_unit;
 }
 
-TEST_F(GLES2DecoderRestoreStateTest, NullPreviousStateBGR) {
+TEST_P(GLES2DecoderRestoreStateTest, NullPreviousStateBGR) {
   InitState init;
   init.gl_version = "3.0";
   init.bind_generates_resource = true;
@@ -123,7 +127,7 @@ TEST_F(GLES2DecoderRestoreStateTest, NullPreviousStateBGR) {
   GetDecoder()->RestoreAllTextureUnitBindings(NULL);
 }
 
-TEST_F(GLES2DecoderRestoreStateTest, NullPreviousState) {
+TEST_P(GLES2DecoderRestoreStateTest, NullPreviousState) {
   InitState init;
   init.gl_version = "3.0";
   InitDecoder(init);
@@ -148,7 +152,7 @@ TEST_F(GLES2DecoderRestoreStateTest, NullPreviousState) {
   GetDecoder()->RestoreAllTextureUnitBindings(NULL);
 }
 
-TEST_F(GLES2DecoderRestoreStateTest, WithPreviousStateBGR) {
+TEST_P(GLES2DecoderRestoreStateTest, WithPreviousStateBGR) {
   InitState init;
   init.gl_version = "3.0";
   init.bind_generates_resource = true;
@@ -173,7 +177,7 @@ TEST_F(GLES2DecoderRestoreStateTest, WithPreviousStateBGR) {
   GetDecoder()->RestoreAllTextureUnitBindings(&prev_state);
 }
 
-TEST_F(GLES2DecoderRestoreStateTest, WithPreviousState) {
+TEST_P(GLES2DecoderRestoreStateTest, WithPreviousState) {
   InitState init;
   init.gl_version = "3.0";
   InitDecoder(init);
@@ -197,7 +201,7 @@ TEST_F(GLES2DecoderRestoreStateTest, WithPreviousState) {
   GetDecoder()->RestoreAllTextureUnitBindings(&prev_state);
 }
 
-TEST_F(GLES2DecoderRestoreStateTest, ActiveUnit1) {
+TEST_P(GLES2DecoderRestoreStateTest, ActiveUnit1) {
   InitState init;
   init.gl_version = "3.0";
   InitDecoder(init);
@@ -228,7 +232,7 @@ TEST_F(GLES2DecoderRestoreStateTest, ActiveUnit1) {
   GetDecoder()->RestoreAllTextureUnitBindings(&prev_state);
 }
 
-TEST_F(GLES2DecoderRestoreStateTest, NonDefaultUnit0BGR) {
+TEST_P(GLES2DecoderRestoreStateTest, NonDefaultUnit0BGR) {
   InitState init;
   init.gl_version = "3.0";
   init.bind_generates_resource = true;
@@ -267,7 +271,7 @@ TEST_F(GLES2DecoderRestoreStateTest, NonDefaultUnit0BGR) {
   GetDecoder()->RestoreAllTextureUnitBindings(&prev_state);
 }
 
-TEST_F(GLES2DecoderRestoreStateTest, NonDefaultUnit1BGR) {
+TEST_P(GLES2DecoderRestoreStateTest, NonDefaultUnit1BGR) {
   InitState init;
   init.gl_version = "3.0";
   init.bind_generates_resource = true;
@@ -300,7 +304,7 @@ TEST_F(GLES2DecoderRestoreStateTest, NonDefaultUnit1BGR) {
   GetDecoder()->RestoreAllTextureUnitBindings(&prev_state);
 }
 
-TEST_F(GLES2DecoderRestoreStateTest, DefaultUnit0) {
+TEST_P(GLES2DecoderRestoreStateTest, DefaultUnit0) {
   InitState init;
   init.gl_version = "3.0";
   InitDecoder(init);
@@ -337,7 +341,7 @@ TEST_F(GLES2DecoderRestoreStateTest, DefaultUnit0) {
   GetDecoder()->RestoreAllTextureUnitBindings(&prev_state);
 }
 
-TEST_F(GLES2DecoderRestoreStateTest, DefaultUnit1) {
+TEST_P(GLES2DecoderRestoreStateTest, DefaultUnit1) {
   InitState init;
   init.gl_version = "3.0";
   InitDecoder(init);
@@ -366,6 +370,44 @@ TEST_F(GLES2DecoderRestoreStateTest, DefaultUnit1) {
   AddExpectationsForActiveTexture(GL_TEXTURE0);
 
   GetDecoder()->RestoreAllTextureUnitBindings(&prev_state);
+}
+
+TEST_P(GLES2DecoderManualInitTest, ContextStateCapabilityCaching) {
+  struct TestInfo {
+    GLenum gl_enum;
+    bool default_state;
+    bool expect_set;
+  };
+
+  // TODO(vmiura): Should autogen this to match build_gles2_cmd_buffer.py.
+  TestInfo test[] = {{GL_BLEND, false, true},
+                     {GL_CULL_FACE, false, true},
+                     {GL_DEPTH_TEST, false, false},
+                     {GL_DITHER, true, true},
+                     {GL_POLYGON_OFFSET_FILL, false, true},
+                     {GL_SAMPLE_ALPHA_TO_COVERAGE, false, true},
+                     {GL_SAMPLE_COVERAGE, false, true},
+                     {GL_SCISSOR_TEST, false, true},
+                     {GL_STENCIL_TEST, false, false},
+                     {0, false, false}};
+
+  InitState init;
+  init.gl_version = "2.1";
+  InitDecoder(init);
+
+  for (int i = 0; test[i].gl_enum; i++) {
+    bool enable_state = test[i].default_state;
+
+    // Test setting default state initially is ignored.
+    EnableDisableTest(test[i].gl_enum, enable_state, test[i].expect_set);
+
+    // Test new and cached state changes.
+    for (int n = 0; n < 3; n++) {
+      enable_state = !enable_state;
+      EnableDisableTest(test[i].gl_enum, enable_state, test[i].expect_set);
+      EnableDisableTest(test[i].gl_enum, enable_state, test[i].expect_set);
+    }
+  }
 }
 
 // TODO(vmiura): Tests for VAO restore.

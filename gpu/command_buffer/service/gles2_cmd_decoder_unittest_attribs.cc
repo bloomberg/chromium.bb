@@ -54,7 +54,7 @@ namespace gles2 {
 
 using namespace cmds;
 
-TEST_F(GLES2DecoderWithShaderTest, GetVertexAttribPointervSucceeds) {
+TEST_P(GLES2DecoderWithShaderTest, GetVertexAttribPointervSucceeds) {
   const float dummy = 0;
   const GLuint kOffsetToTestFor = sizeof(dummy) * 4;
   const GLuint kIndexToTest = 1;
@@ -83,7 +83,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetVertexAttribPointervSucceeds) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, GetVertexAttribPointervBadArgsFails) {
+TEST_P(GLES2DecoderWithShaderTest, GetVertexAttribPointervBadArgsFails) {
   const GLuint kIndexToTest = 1;
   GetVertexAttribPointerv::Result* result =
       static_cast<GetVertexAttribPointerv::Result*>(shared_memory_address_);
@@ -126,7 +126,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetVertexAttribPointervBadArgsFails) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderWithShaderTest, BindBufferToDifferentTargetFails) {
+TEST_P(GLES2DecoderWithShaderTest, BindBufferToDifferentTargetFails) {
   // Bind the buffer to GL_ARRAY_BUFFER
   DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
   // Attempt to rebind to GL_ELEMENT_ARRAY_BUFFER
@@ -139,7 +139,7 @@ TEST_F(GLES2DecoderWithShaderTest, BindBufferToDifferentTargetFails) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, VertexAttribPointer) {
+TEST_P(GLES2DecoderWithShaderTest, VertexAttribPointer) {
   SetupVertexBuffer();
   static const GLenum types[] = {
       GL_BYTE,  GL_UNSIGNED_BYTE, GL_SHORT, GL_UNSIGNED_SHORT,
@@ -385,6 +385,10 @@ class GLES2DecoderVertexArraysOESTest : public GLES2DecoderWithShaderTest {
   }
 };
 
+INSTANTIATE_TEST_CASE_P(Service,
+                        GLES2DecoderVertexArraysOESTest,
+                        ::testing::Bool());
+
 class GLES2DecoderEmulatedVertexArraysOESTest
     : public GLES2DecoderVertexArraysOESTest {
  public:
@@ -404,113 +408,117 @@ class GLES2DecoderEmulatedVertexArraysOESTest
   }
 };
 
+INSTANTIATE_TEST_CASE_P(Service,
+                        GLES2DecoderEmulatedVertexArraysOESTest,
+                        ::testing::Bool());
+
 // Test vertex array objects with native support
-TEST_F(GLES2DecoderVertexArraysOESTest, GenVertexArraysOESValidArgs) {
+TEST_P(GLES2DecoderVertexArraysOESTest, GenVertexArraysOESValidArgs) {
   GenVertexArraysOESValidArgs();
 }
-TEST_F(GLES2DecoderEmulatedVertexArraysOESTest, GenVertexArraysOESValidArgs) {
+TEST_P(GLES2DecoderEmulatedVertexArraysOESTest, GenVertexArraysOESValidArgs) {
   GenVertexArraysOESValidArgs();
 }
 
-TEST_F(GLES2DecoderVertexArraysOESTest, GenVertexArraysOESInvalidArgs) {
+TEST_P(GLES2DecoderVertexArraysOESTest, GenVertexArraysOESInvalidArgs) {
   GenVertexArraysOESInvalidArgs();
 }
-TEST_F(GLES2DecoderEmulatedVertexArraysOESTest, ) {
+TEST_P(GLES2DecoderEmulatedVertexArraysOESTest, ) {
   GenVertexArraysOESInvalidArgs();
 }
 
-TEST_F(GLES2DecoderVertexArraysOESTest, GenVertexArraysOESImmediateValidArgs) {
+TEST_P(GLES2DecoderVertexArraysOESTest, GenVertexArraysOESImmediateValidArgs) {
   GenVertexArraysOESImmediateValidArgs();
 }
-TEST_F(GLES2DecoderEmulatedVertexArraysOESTest,
+TEST_P(GLES2DecoderEmulatedVertexArraysOESTest,
        GenVertexArraysOESImmediateValidArgs) {
   GenVertexArraysOESImmediateValidArgs();
 }
 
-TEST_F(GLES2DecoderVertexArraysOESTest,
+TEST_P(GLES2DecoderVertexArraysOESTest,
        GenVertexArraysOESImmediateInvalidArgs) {
   GenVertexArraysOESImmediateInvalidArgs();
 }
-TEST_F(GLES2DecoderEmulatedVertexArraysOESTest,
+TEST_P(GLES2DecoderEmulatedVertexArraysOESTest,
        GenVertexArraysOESImmediateInvalidArgs) {
   GenVertexArraysOESImmediateInvalidArgs();
 }
 
-TEST_F(GLES2DecoderVertexArraysOESTest, DeleteVertexArraysOESValidArgs) {
+TEST_P(GLES2DecoderVertexArraysOESTest, DeleteVertexArraysOESValidArgs) {
   DeleteVertexArraysOESValidArgs();
 }
-TEST_F(GLES2DecoderEmulatedVertexArraysOESTest,
+TEST_P(GLES2DecoderEmulatedVertexArraysOESTest,
        DeleteVertexArraysOESValidArgs) {
   DeleteVertexArraysOESValidArgs();
 }
 
-TEST_F(GLES2DecoderVertexArraysOESTest, DeleteVertexArraysOESInvalidArgs) {
+TEST_P(GLES2DecoderVertexArraysOESTest, DeleteVertexArraysOESInvalidArgs) {
   DeleteVertexArraysOESInvalidArgs();
 }
-TEST_F(GLES2DecoderEmulatedVertexArraysOESTest,
+TEST_P(GLES2DecoderEmulatedVertexArraysOESTest,
        DeleteVertexArraysOESInvalidArgs) {
   DeleteVertexArraysOESInvalidArgs();
 }
 
-TEST_F(GLES2DecoderVertexArraysOESTest,
+TEST_P(GLES2DecoderVertexArraysOESTest,
        DeleteVertexArraysOESImmediateValidArgs) {
   DeleteVertexArraysOESImmediateValidArgs();
 }
-TEST_F(GLES2DecoderEmulatedVertexArraysOESTest,
+TEST_P(GLES2DecoderEmulatedVertexArraysOESTest,
        DeleteVertexArraysOESImmediateValidArgs) {
   DeleteVertexArraysOESImmediateValidArgs();
 }
 
-TEST_F(GLES2DecoderVertexArraysOESTest,
+TEST_P(GLES2DecoderVertexArraysOESTest,
        DeleteVertexArraysOESImmediateInvalidArgs) {
   DeleteVertexArraysOESImmediateInvalidArgs();
 }
-TEST_F(GLES2DecoderEmulatedVertexArraysOESTest,
+TEST_P(GLES2DecoderEmulatedVertexArraysOESTest,
        DeleteVertexArraysOESImmediateInvalidArgs) {
   DeleteVertexArraysOESImmediateInvalidArgs();
 }
 
-TEST_F(GLES2DecoderVertexArraysOESTest,
+TEST_P(GLES2DecoderVertexArraysOESTest,
        DeleteBoundVertexArraysOESImmediateValidArgs) {
   DeleteBoundVertexArraysOESImmediateValidArgs();
 }
-TEST_F(GLES2DecoderEmulatedVertexArraysOESTest,
+TEST_P(GLES2DecoderEmulatedVertexArraysOESTest,
        DeleteBoundVertexArraysOESImmediateValidArgs) {
   DeleteBoundVertexArraysOESImmediateValidArgs();
 }
 
-TEST_F(GLES2DecoderVertexArraysOESTest, IsVertexArrayOESValidArgs) {
+TEST_P(GLES2DecoderVertexArraysOESTest, IsVertexArrayOESValidArgs) {
   IsVertexArrayOESValidArgs();
 }
-TEST_F(GLES2DecoderEmulatedVertexArraysOESTest, IsVertexArrayOESValidArgs) {
+TEST_P(GLES2DecoderEmulatedVertexArraysOESTest, IsVertexArrayOESValidArgs) {
   IsVertexArrayOESValidArgs();
 }
 
-TEST_F(GLES2DecoderVertexArraysOESTest,
+TEST_P(GLES2DecoderVertexArraysOESTest,
        IsVertexArrayOESInvalidArgsBadSharedMemoryId) {
   IsVertexArrayOESInvalidArgsBadSharedMemoryId();
 }
-TEST_F(GLES2DecoderEmulatedVertexArraysOESTest,
+TEST_P(GLES2DecoderEmulatedVertexArraysOESTest,
        IsVertexArrayOESInvalidArgsBadSharedMemoryId) {
   IsVertexArrayOESInvalidArgsBadSharedMemoryId();
 }
 
-TEST_F(GLES2DecoderVertexArraysOESTest, BindVertexArrayOESValidArgs) {
+TEST_P(GLES2DecoderVertexArraysOESTest, BindVertexArrayOESValidArgs) {
   BindVertexArrayOESValidArgs();
 }
-TEST_F(GLES2DecoderEmulatedVertexArraysOESTest, BindVertexArrayOESValidArgs) {
+TEST_P(GLES2DecoderEmulatedVertexArraysOESTest, BindVertexArrayOESValidArgs) {
   BindVertexArrayOESValidArgs();
 }
 
-TEST_F(GLES2DecoderVertexArraysOESTest, BindVertexArrayOESValidArgsNewId) {
+TEST_P(GLES2DecoderVertexArraysOESTest, BindVertexArrayOESValidArgsNewId) {
   BindVertexArrayOESValidArgsNewId();
 }
-TEST_F(GLES2DecoderEmulatedVertexArraysOESTest,
+TEST_P(GLES2DecoderEmulatedVertexArraysOESTest,
        BindVertexArrayOESValidArgsNewId) {
   BindVertexArrayOESValidArgsNewId();
 }
 
-TEST_F(GLES2DecoderTest, BufferDataGLError) {
+TEST_P(GLES2DecoderTest, BufferDataGLError) {
   GLenum target = GL_ARRAY_BUFFER;
   GLsizeiptr size = 4;
   DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);

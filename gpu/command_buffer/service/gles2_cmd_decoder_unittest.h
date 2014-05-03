@@ -66,6 +66,12 @@ class GLES2DecoderManualInitTest : public GLES2DecoderWithShaderTest {
 
   // Override default setup so nothing gets setup.
   virtual void SetUp();
+
+  void DirtyStateMaskTest(GLuint color_bits,
+                          bool depth_mask,
+                          GLuint front_stencil_mask,
+                          GLuint back_stencil_mask);
+  void EnableDisableTest(GLenum cap, bool enable, bool expect_set);
 };
 
 }  // namespace gles2

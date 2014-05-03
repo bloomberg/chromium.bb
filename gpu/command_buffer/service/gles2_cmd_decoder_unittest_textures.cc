@@ -54,7 +54,7 @@ namespace gles2 {
 
 using namespace cmds;
 
-TEST_F(GLES2DecoderTest, GenerateMipmapWrongFormatsFails) {
+TEST_P(GLES2DecoderTest, GenerateMipmapWrongFormatsFails) {
   EXPECT_CALL(*gl_, GenerateMipmapEXT(_)).Times(0);
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(
@@ -65,7 +65,7 @@ TEST_F(GLES2DecoderTest, GenerateMipmapWrongFormatsFails) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, GenerateMipmapHandlesOutOfMemory) {
+TEST_P(GLES2DecoderTest, GenerateMipmapHandlesOutOfMemory) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   TextureManager* manager = group().texture_manager();
   TextureRef* texture_ref = manager->GetTexture(client_texture_id_);
@@ -96,7 +96,7 @@ TEST_F(GLES2DecoderTest, GenerateMipmapHandlesOutOfMemory) {
   EXPECT_FALSE(texture->GetLevelSize(GL_TEXTURE_2D, 2, &width, &height));
 }
 
-TEST_F(GLES2DecoderTest, GenerateMipmapClearsUnclearedTexture) {
+TEST_P(GLES2DecoderTest, GenerateMipmapClearsUnclearedTexture) {
   EXPECT_CALL(*gl_, GenerateMipmapEXT(_)).Times(0);
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(
@@ -124,7 +124,7 @@ TEST_F(GLES2DecoderTest, GenerateMipmapClearsUnclearedTexture) {
 
 // Same as GenerateMipmapClearsUnclearedTexture, but with workaround
 // |set_texture_filters_before_generating_mipmap|.
-TEST_F(GLES2DecoderManualInitTest, SetTextureFiltersBeforeGenerateMipmap) {
+TEST_P(GLES2DecoderManualInitTest, SetTextureFiltersBeforeGenerateMipmap) {
   CommandLine command_line(0, NULL);
   command_line.AppendSwitchASCII(
       switches::kGpuDriverBugWorkarounds,
@@ -171,7 +171,7 @@ TEST_F(GLES2DecoderManualInitTest, SetTextureFiltersBeforeGenerateMipmap) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, ActiveTextureValidArgs) {
+TEST_P(GLES2DecoderTest, ActiveTextureValidArgs) {
   EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE1));
   SpecializedSetup<ActiveTexture, 0>(true);
   ActiveTexture cmd;
@@ -180,7 +180,7 @@ TEST_F(GLES2DecoderTest, ActiveTextureValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, ActiveTextureInvalidArgs) {
+TEST_P(GLES2DecoderTest, ActiveTextureInvalidArgs) {
   EXPECT_CALL(*gl_, ActiveTexture(_)).Times(0);
   SpecializedSetup<ActiveTexture, 0>(false);
   ActiveTexture cmd;
@@ -192,7 +192,7 @@ TEST_F(GLES2DecoderTest, ActiveTextureInvalidArgs) {
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, TexSubImage2DValidArgs) {
+TEST_P(GLES2DecoderTest, TexSubImage2DValidArgs) {
   const int kWidth = 16;
   const int kHeight = 8;
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
@@ -234,7 +234,7 @@ TEST_F(GLES2DecoderTest, TexSubImage2DValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, TexSubImage2DBadArgs) {
+TEST_P(GLES2DecoderTest, TexSubImage2DBadArgs) {
   const int kWidth = 16;
   const int kHeight = 8;
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
@@ -418,7 +418,7 @@ TEST_F(GLES2DecoderTest, TexSubImage2DBadArgs) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderTest, CopyTexSubImage2DValidArgs) {
+TEST_P(GLES2DecoderTest, CopyTexSubImage2DValidArgs) {
   const int kWidth = 16;
   const int kHeight = 8;
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
@@ -442,7 +442,7 @@ TEST_F(GLES2DecoderTest, CopyTexSubImage2DValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, CopyTexSubImage2DBadArgs) {
+TEST_P(GLES2DecoderTest, CopyTexSubImage2DBadArgs) {
   const int kWidth = 16;
   const int kHeight = 8;
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
@@ -480,7 +480,7 @@ TEST_F(GLES2DecoderTest, CopyTexSubImage2DBadArgs) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, TexImage2DRedefinitionSucceeds) {
+TEST_P(GLES2DecoderTest, TexImage2DRedefinitionSucceeds) {
   const int kWidth = 16;
   const int kHeight = 8;
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
@@ -564,7 +564,7 @@ TEST_F(GLES2DecoderTest, TexImage2DRedefinitionSucceeds) {
   }
 }
 
-TEST_F(GLES2DecoderTest, TexImage2DGLError) {
+TEST_P(GLES2DecoderTest, TexImage2DGLError) {
   GLenum target = GL_TEXTURE_2D;
   GLint level = 0;
   GLenum internal_format = GL_RGBA;
@@ -611,7 +611,7 @@ TEST_F(GLES2DecoderTest, TexImage2DGLError) {
   EXPECT_FALSE(texture->GetLevelSize(GL_TEXTURE_2D, level, &width, &height));
 }
 
-TEST_F(GLES2DecoderTest, CopyTexImage2DGLError) {
+TEST_P(GLES2DecoderTest, CopyTexImage2DGLError) {
   GLenum target = GL_TEXTURE_2D;
   GLint level = 0;
   GLenum internal_format = GL_RGBA;
@@ -640,7 +640,7 @@ TEST_F(GLES2DecoderTest, CopyTexImage2DGLError) {
   EXPECT_FALSE(texture->GetLevelSize(GL_TEXTURE_2D, level, &width, &height));
 }
 
-TEST_F(GLES2DecoderManualInitTest, CompressedTexImage2DBucketBadBucket) {
+TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DBucketBadBucket) {
   InitState init;
   init.extensions = "GL_EXT_texture_compression_s3tc";
   init.gl_version = "3.0";
@@ -679,7 +679,7 @@ struct S3TCTestData {
 
 }  // anonymous namespace.
 
-TEST_F(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
+TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
   InitState init;
   init.extensions = "GL_EXT_texture_compression_s3tc";
   init.gl_version = "3.0";
@@ -837,7 +837,7 @@ TEST_F(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
   }
 }
 
-TEST_F(GLES2DecoderManualInitTest, CompressedTexImage2DETC1) {
+TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DETC1) {
   InitState init;
   init.extensions = "GL_OES_compressed_ETC1_RGB8_texture";
   init.gl_version = "opengl es 2.0";
@@ -914,7 +914,7 @@ TEST_F(GLES2DecoderManualInitTest, CompressedTexImage2DETC1) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest, EGLImageExternalBindTexture) {
+TEST_P(GLES2DecoderManualInitTest, EGLImageExternalBindTexture) {
   InitState init;
   init.extensions = "GL_OES_EGL_image_external";
   init.gl_version = "opengl es 2.0";
@@ -932,7 +932,7 @@ TEST_F(GLES2DecoderManualInitTest, EGLImageExternalBindTexture) {
   EXPECT_TRUE(texture_ref->texture()->target() == GL_TEXTURE_EXTERNAL_OES);
 }
 
-TEST_F(GLES2DecoderManualInitTest, EGLImageExternalGetBinding) {
+TEST_P(GLES2DecoderManualInitTest, EGLImageExternalGetBinding) {
   InitState init;
   init.extensions = "GL_OES_EGL_image_external";
   init.gl_version = "opengl es 2.0";
@@ -962,7 +962,7 @@ TEST_F(GLES2DecoderManualInitTest, EGLImageExternalGetBinding) {
   EXPECT_EQ(client_texture_id_, (uint32)result->GetData()[0]);
 }
 
-TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTextureDefaults) {
+TEST_P(GLES2DecoderManualInitTest, EGLImageExternalTextureDefaults) {
   InitState init;
   init.extensions = "GL_OES_EGL_image_external";
   init.gl_version = "opengl es 2.0";
@@ -979,7 +979,7 @@ TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTextureDefaults) {
   EXPECT_TRUE(texture->wrap_t() == GL_CLAMP_TO_EDGE);
 }
 
-TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTextureParam) {
+TEST_P(GLES2DecoderManualInitTest, EGLImageExternalTextureParam) {
   InitState init;
   init.extensions = "GL_OES_EGL_image_external";
   init.gl_version = "opengl es 2.0";
@@ -1027,7 +1027,7 @@ TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTextureParam) {
   EXPECT_TRUE(texture->wrap_t() == GL_CLAMP_TO_EDGE);
 }
 
-TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTextureParamInvalid) {
+TEST_P(GLES2DecoderManualInitTest, EGLImageExternalTextureParamInvalid) {
   InitState init;
   init.extensions = "GL_OES_EGL_image_external";
   init.gl_version = "opengl es 2.0";
@@ -1059,7 +1059,7 @@ TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTextureParamInvalid) {
   EXPECT_TRUE(texture->wrap_t() == GL_CLAMP_TO_EDGE);
 }
 
-TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTexImage2DError) {
+TEST_P(GLES2DecoderManualInitTest, EGLImageExternalTexImage2DError) {
   InitState init;
   init.extensions = "GL_OES_EGL_image_external";
   init.gl_version = "opengl es 2.0";
@@ -1093,7 +1093,7 @@ TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTexImage2DError) {
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest, DefaultTextureZero) {
+TEST_P(GLES2DecoderManualInitTest, DefaultTextureZero) {
   InitState init;
   init.gl_version = "3.0";
   InitDecoder(init);
@@ -1111,7 +1111,7 @@ TEST_F(GLES2DecoderManualInitTest, DefaultTextureZero) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest, DefaultTextureBGR) {
+TEST_P(GLES2DecoderManualInitTest, DefaultTextureBGR) {
   InitState init;
   init.gl_version = "3.0";
   init.bind_generates_resource = true;
@@ -1134,7 +1134,7 @@ TEST_F(GLES2DecoderManualInitTest, DefaultTextureBGR) {
 }
 
 // Test that default texture 0 is immutable.
-TEST_F(GLES2DecoderManualInitTest, NoDefaultTexParameterf) {
+TEST_P(GLES2DecoderManualInitTest, NoDefaultTexParameterf) {
   InitState init;
   init.gl_version = "3.0";
   InitDecoder(init);
@@ -1166,7 +1166,7 @@ TEST_F(GLES2DecoderManualInitTest, NoDefaultTexParameterf) {
   }
 }
 
-TEST_F(GLES2DecoderManualInitTest, NoDefaultTexParameteri) {
+TEST_P(GLES2DecoderManualInitTest, NoDefaultTexParameteri) {
   InitState init;
   init.gl_version = "3.0";
   InitDecoder(init);
@@ -1198,7 +1198,7 @@ TEST_F(GLES2DecoderManualInitTest, NoDefaultTexParameteri) {
   }
 }
 
-TEST_F(GLES2DecoderManualInitTest, NoDefaultTexParameterfv) {
+TEST_P(GLES2DecoderManualInitTest, NoDefaultTexParameterfv) {
   InitState init;
   init.gl_version = "3.0";
   InitDecoder(init);
@@ -1238,7 +1238,7 @@ TEST_F(GLES2DecoderManualInitTest, NoDefaultTexParameterfv) {
   }
 }
 
-TEST_F(GLES2DecoderManualInitTest, NoDefaultTexParameteriv) {
+TEST_P(GLES2DecoderManualInitTest, NoDefaultTexParameteriv) {
   InitState init;
   init.gl_version = "3.0";
   InitDecoder(init);
@@ -1278,7 +1278,7 @@ TEST_F(GLES2DecoderManualInitTest, NoDefaultTexParameteriv) {
   }
 }
 
-TEST_F(GLES2DecoderManualInitTest, NoDefaultTexImage2D) {
+TEST_P(GLES2DecoderManualInitTest, NoDefaultTexImage2D) {
   InitState init;
   init.gl_version = "3.0";
   InitDecoder(init);
@@ -1304,7 +1304,7 @@ TEST_F(GLES2DecoderManualInitTest, NoDefaultTexImage2D) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest, NoDefaultTexSubImage2D) {
+TEST_P(GLES2DecoderManualInitTest, NoDefaultTexSubImage2D) {
   InitState init;
   init.gl_version = "3.0";
   InitDecoder(init);
@@ -1331,7 +1331,7 @@ TEST_F(GLES2DecoderManualInitTest, NoDefaultTexSubImage2D) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleBindTexture) {
+TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleBindTexture) {
   InitState init;
   init.extensions = "GL_ARB_texture_rectangle";
   init.gl_version = "3.0";
@@ -1349,7 +1349,7 @@ TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleBindTexture) {
   EXPECT_TRUE(texture->target() == GL_TEXTURE_RECTANGLE_ARB);
 }
 
-TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleGetBinding) {
+TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleGetBinding) {
   InitState init;
   init.extensions = "GL_ARB_texture_rectangle";
   init.gl_version = "3.0";
@@ -1380,7 +1380,7 @@ TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleGetBinding) {
   EXPECT_EQ(client_texture_id_, (uint32)result->GetData()[0]);
 }
 
-TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleTextureDefaults) {
+TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleTextureDefaults) {
   InitState init;
   init.extensions = "GL_ARB_texture_rectangle";
   init.gl_version = "3.0";
@@ -1397,7 +1397,7 @@ TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleTextureDefaults) {
   EXPECT_TRUE(texture->wrap_t() == GL_CLAMP_TO_EDGE);
 }
 
-TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleTextureParam) {
+TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleTextureParam) {
   InitState init;
   init.extensions = "GL_ARB_texture_rectangle";
   init.gl_version = "3.0";
@@ -1446,7 +1446,7 @@ TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleTextureParam) {
   EXPECT_TRUE(texture->wrap_t() == GL_CLAMP_TO_EDGE);
 }
 
-TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleTextureParamInvalid) {
+TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleTextureParamInvalid) {
   InitState init;
   init.extensions = "GL_ARB_texture_rectangle";
   init.gl_version = "3.0";
@@ -1479,7 +1479,7 @@ TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleTextureParamInvalid) {
   EXPECT_TRUE(texture->wrap_t() == GL_CLAMP_TO_EDGE);
 }
 
-TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleTexImage2DError) {
+TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleTexImage2DError) {
   InitState init;
   init.extensions = "GL_ARB_texture_rectangle";
   init.gl_version = "3.0";
@@ -1514,7 +1514,7 @@ TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleTexImage2DError) {
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest, TexSubImage2DClearsAfterTexImage2DNULL) {
+TEST_P(GLES2DecoderManualInitTest, TexSubImage2DClearsAfterTexImage2DNULL) {
   InitState init;
   init.gl_version = "opengl es 2.0";
   init.has_alpha = true;
@@ -1577,7 +1577,7 @@ TEST_F(GLES2DecoderManualInitTest, TexSubImage2DClearsAfterTexImage2DNULL) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderTest, TexSubImage2DDoesNotClearAfterTexImage2DNULLThenData) {
+TEST_P(GLES2DecoderTest, TexSubImage2DDoesNotClearAfterTexImage2DNULLThenData) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(
       GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0, 0);
@@ -1632,7 +1632,7 @@ TEST_F(GLES2DecoderTest, TexSubImage2DDoesNotClearAfterTexImage2DNULLThenData) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(
+TEST_P(
     GLES2DecoderManualInitTest,
     TexSubImage2DDoesNotClearAfterTexImage2DNULLThenDataWithTexImage2DIsFaster) {
   CommandLine command_line(0, NULL);
@@ -1710,7 +1710,7 @@ TEST_F(
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderTest, TexSubImage2DClearsAfterTexImage2DWithDataThenNULL) {
+TEST_P(GLES2DecoderTest, TexSubImage2DClearsAfterTexImage2DWithDataThenNULL) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   // Put in data (so it should be marked as cleared)
   DoTexImage2D(GL_TEXTURE_2D,
@@ -1767,7 +1767,7 @@ TEST_F(GLES2DecoderTest, TexSubImage2DClearsAfterTexImage2DWithDataThenNULL) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderTest, CopyTexImage2DMarksTextureAsCleared) {
+TEST_P(GLES2DecoderTest, CopyTexImage2DMarksTextureAsCleared) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
 
   TextureManager* manager = group().texture_manager();
@@ -1791,7 +1791,7 @@ TEST_F(GLES2DecoderTest, CopyTexImage2DMarksTextureAsCleared) {
   EXPECT_TRUE(texture->SafeToRenderFrom());
 }
 
-TEST_F(GLES2DecoderTest, CopyTexSubImage2DClearsUnclearedTexture) {
+TEST_P(GLES2DecoderTest, CopyTexSubImage2DClearsUnclearedTexture) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(
       GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0, 0);
@@ -1814,7 +1814,7 @@ TEST_F(GLES2DecoderTest, CopyTexSubImage2DClearsUnclearedTexture) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderManualInitTest, CompressedImage2DMarksTextureAsCleared) {
+TEST_P(GLES2DecoderManualInitTest, CompressedImage2DMarksTextureAsCleared) {
   InitState init;
   init.extensions = "GL_EXT_texture_compression_s3tc";
   init.gl_version = "3.0";
@@ -1850,7 +1850,7 @@ TEST_F(GLES2DecoderManualInitTest, CompressedImage2DMarksTextureAsCleared) {
   EXPECT_TRUE(texture_ref->texture()->SafeToRenderFrom());
 }
 
-TEST_F(GLES2DecoderTest, TextureUsageAngleExtNotEnabledByDefault) {
+TEST_P(GLES2DecoderTest, TextureUsageAngleExtNotEnabledByDefault) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
 
   TexParameteri cmd;
@@ -1860,7 +1860,7 @@ TEST_F(GLES2DecoderTest, TextureUsageAngleExtNotEnabledByDefault) {
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, ProduceAndConsumeTextureCHROMIUM) {
+TEST_P(GLES2DecoderTest, ProduceAndConsumeTextureCHROMIUM) {
   Mailbox mailbox = Mailbox::Generate();
 
   memcpy(shared_memory_address_, mailbox.name, sizeof(mailbox.name));
@@ -1941,7 +1941,7 @@ TEST_F(GLES2DecoderTest, ProduceAndConsumeTextureCHROMIUM) {
   EXPECT_EQ(kServiceTextureId, texture->service_id());
 }
 
-TEST_F(GLES2DecoderManualInitTest, DepthTextureBadArgs) {
+TEST_P(GLES2DecoderManualInitTest, DepthTextureBadArgs) {
   InitState init;
   init.extensions = "GL_ANGLE_depth_texture";
   init.gl_version = "opengl es 2.0";
@@ -2022,7 +2022,7 @@ TEST_F(GLES2DecoderManualInitTest, DepthTextureBadArgs) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest, GenerateMipmapDepthTexture) {
+TEST_P(GLES2DecoderManualInitTest, GenerateMipmapDepthTexture) {
   InitState init;
   init.extensions = "GL_ANGLE_depth_texture";
   init.gl_version = "opengl es 2.0";
@@ -2049,7 +2049,7 @@ TEST_F(GLES2DecoderManualInitTest, GenerateMipmapDepthTexture) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, BindTexImage2DCHROMIUM) {
+TEST_P(GLES2DecoderTest, BindTexImage2DCHROMIUM) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(
       GL_TEXTURE_2D, 0, GL_RGBA, 3, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0, 0);
@@ -2096,7 +2096,7 @@ TEST_F(GLES2DecoderTest, BindTexImage2DCHROMIUM) {
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
 }
 
-TEST_F(GLES2DecoderTest, BindTexImage2DCHROMIUMCubeMapNotAllowed) {
+TEST_P(GLES2DecoderTest, BindTexImage2DCHROMIUMCubeMapNotAllowed) {
   group().image_manager()->AddImage(gfx::GLImage::CreateGLImage(0).get(), 1);
   DoBindTexture(GL_TEXTURE_CUBE_MAP, client_texture_id_, kServiceTextureId);
 
@@ -2106,7 +2106,7 @@ TEST_F(GLES2DecoderTest, BindTexImage2DCHROMIUMCubeMapNotAllowed) {
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, OrphanGLImageWithTexImage2D) {
+TEST_P(GLES2DecoderTest, OrphanGLImageWithTexImage2D) {
   group().image_manager()->AddImage(gfx::GLImage::CreateGLImage(0).get(), 1);
   DoBindTexture(GL_TEXTURE_CUBE_MAP, client_texture_id_, kServiceTextureId);
 
@@ -2124,7 +2124,7 @@ TEST_F(GLES2DecoderTest, OrphanGLImageWithTexImage2D) {
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
 }
 
-TEST_F(GLES2DecoderTest, ReleaseTexImage2DCHROMIUM) {
+TEST_P(GLES2DecoderTest, ReleaseTexImage2DCHROMIUM) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(
       GL_TEXTURE_2D, 0, GL_RGBA, 3, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0, 0);
@@ -2195,7 +2195,7 @@ class MockGLImage : public gfx::GLImage {
   virtual ~MockGLImage() {}
 };
 
-TEST_F(GLES2DecoderWithShaderTest, UseTexImage) {
+TEST_P(GLES2DecoderWithShaderTest, UseTexImage) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(GL_TEXTURE_2D,
                0,
@@ -2321,7 +2321,7 @@ TEST_F(GLES2DecoderWithShaderTest, UseTexImage) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(fbrb_cmd));
 }
 
-TEST_F(GLES2DecoderManualInitTest, DrawWithGLImageExternal) {
+TEST_P(GLES2DecoderManualInitTest, DrawWithGLImageExternal) {
   InitState init;
   init.extensions = "GL_OES_EGL_image_external";
   init.gl_version = "opengl es 2.0";
@@ -2386,7 +2386,7 @@ TEST_F(GLES2DecoderManualInitTest, DrawWithGLImageExternal) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest, TexImage2DFloatOnGLES2) {
+TEST_P(GLES2DecoderManualInitTest, TexImage2DFloatOnGLES2) {
   InitState init;
   init.extensions = "GL_OES_texture_float";
   init.gl_version = "opengl es 2.0";
@@ -2409,7 +2409,7 @@ TEST_F(GLES2DecoderManualInitTest, TexImage2DFloatOnGLES2) {
                0);
 }
 
-TEST_F(GLES2DecoderManualInitTest, TexImage2DFloatOnGLES3) {
+TEST_P(GLES2DecoderManualInitTest, TexImage2DFloatOnGLES3) {
   InitState init;
   init.extensions = "GL_OES_texture_float GL_EXT_color_buffer_float";
   init.gl_version = "opengl es 3.0";
@@ -2434,7 +2434,7 @@ TEST_F(GLES2DecoderManualInitTest, TexImage2DFloatOnGLES3) {
                0);
 }
 
-TEST_F(GLES2DecoderManualInitTest, TexSubImage2DFloatOnGLES3) {
+TEST_P(GLES2DecoderManualInitTest, TexSubImage2DFloatOnGLES3) {
   InitState init;
   init.extensions = "GL_OES_texture_float GL_EXT_color_buffer_float";
   init.gl_version = "opengl es 3.0";
@@ -2480,7 +2480,7 @@ TEST_F(GLES2DecoderManualInitTest, TexSubImage2DFloatOnGLES3) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest, TexSubImage2DFloatDoesClearOnGLES3) {
+TEST_P(GLES2DecoderManualInitTest, TexSubImage2DFloatDoesClearOnGLES3) {
   InitState init;
   init.extensions = "GL_OES_texture_float GL_EXT_color_buffer_float";
   init.gl_version = "opengl es 3.0";
@@ -2536,7 +2536,7 @@ TEST_F(GLES2DecoderManualInitTest, TexSubImage2DFloatDoesClearOnGLES3) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderManualInitTest, TexImage2DFloatConvertsFormatDesktop) {
+TEST_P(GLES2DecoderManualInitTest, TexImage2DFloatConvertsFormatDesktop) {
   InitState init;
   init.extensions = "GL_ARB_texture_float";
   init.gl_version = "2.1";
@@ -2659,32 +2659,36 @@ class GLES2DecoderCompressedFormatsTest : public GLES2DecoderManualInitTest {
   }
 };
 
-TEST_F(GLES2DecoderCompressedFormatsTest, GetCompressedTextureFormatsS3TC) {
+INSTANTIATE_TEST_CASE_P(Service,
+                        GLES2DecoderCompressedFormatsTest,
+                        ::testing::Bool());
+
+TEST_P(GLES2DecoderCompressedFormatsTest, GetCompressedTextureFormatsS3TC) {
   const GLenum formats[] = {
       GL_COMPRESSED_RGB_S3TC_DXT1_EXT, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT,
       GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT};
   CheckFormats("GL_EXT_texture_compression_s3tc", formats, 4);
 }
 
-TEST_F(GLES2DecoderCompressedFormatsTest, GetCompressedTextureFormatsATC) {
+TEST_P(GLES2DecoderCompressedFormatsTest, GetCompressedTextureFormatsATC) {
   const GLenum formats[] = {GL_ATC_RGB_AMD, GL_ATC_RGBA_EXPLICIT_ALPHA_AMD,
                             GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD};
   CheckFormats("GL_AMD_compressed_ATC_texture", formats, 3);
 }
 
-TEST_F(GLES2DecoderCompressedFormatsTest, GetCompressedTextureFormatsPVRTC) {
+TEST_P(GLES2DecoderCompressedFormatsTest, GetCompressedTextureFormatsPVRTC) {
   const GLenum formats[] = {
       GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG, GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG,
       GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG, GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG};
   CheckFormats("GL_IMG_texture_compression_pvrtc", formats, 4);
 }
 
-TEST_F(GLES2DecoderCompressedFormatsTest, GetCompressedTextureFormatsETC1) {
+TEST_P(GLES2DecoderCompressedFormatsTest, GetCompressedTextureFormatsETC1) {
   const GLenum formats[] = {GL_ETC1_RGB8_OES};
   CheckFormats("GL_OES_compressed_ETC1_RGB8_texture", formats, 1);
 }
 
-TEST_F(GLES2DecoderManualInitTest, GetNoCompressedTextureFormats) {
+TEST_P(GLES2DecoderManualInitTest, GetNoCompressedTextureFormats) {
   InitState init;
   init.gl_version = "3.0";
   init.bind_generates_resource = true;
@@ -2721,7 +2725,7 @@ TEST_F(GLES2DecoderManualInitTest, GetNoCompressedTextureFormats) {
 }
 
 // TODO(gman): Complete this test.
-// TEST_F(GLES2DecoderTest, CompressedTexImage2DGLError) {
+// TEST_P(GLES2DecoderTest, CompressedTexImage2DGLError) {
 // }
 
 // TODO(gman): CompressedTexImage2D
