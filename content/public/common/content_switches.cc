@@ -447,12 +447,6 @@ const char kEnableLogging[]                 = "enable-logging";
 // Enables the memory benchmarking extension
 const char kEnableMemoryBenchmarking[]      = "enable-memory-benchmarking";
 
-// Make the values returned to window.performance.memory more granular and more
-// up to date in shared worker. Without this flag, the memory information is
-// still available, but it is bucketized and updated less frequently.
-const char kEnableSharedWorkerMemoryInfo[] =
-    "enable-shared-worker-memory-info";
-
 // On Windows, converts the page to the currently-installed monitor profile.
 // This does NOT enable color management for images. The source is still
 // assumed to be sRGB.
@@ -476,6 +470,12 @@ const char kEnableOverscrollNotifications[] = "enable-overscroll-notifications";
 
 // Enables compositor-accelerated touch-screen pinch gestures.
 const char kEnablePinch[]                   = "enable-pinch";
+
+// Make the values returned to window.performance.memory more granular and more
+// up to date in shared worker. Without this flag, the memory information is
+// still available, but it is bucketized and updated less frequently. This flag
+// also applys to workers.
+const char kEnablePreciseMemoryInfo[] = "enable-precise-memory-info";
 
 // Enable caching of pre-parsed JS script data.  See http://crbug.com/32407.
 const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";

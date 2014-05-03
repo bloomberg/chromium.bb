@@ -16,7 +16,6 @@
 #include "content/worker/worker_thread.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebSharedWorker.h"
 
 namespace content {
@@ -46,9 +45,6 @@ WebSharedWorkerStub::WebSharedWorkerStub(
     // is attached or explicit resume notification is received.
     impl_->pauseWorkerContextOnStart();
   }
-  blink::WebRuntimeFeatures::enablePreciseMemoryInfo(
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSharedWorkerMemoryInfo));
 
   worker_devtools_agent_.reset(new SharedWorkerDevToolsAgent(route_id, impl_));
   client()->set_devtools_agent(worker_devtools_agent_.get());

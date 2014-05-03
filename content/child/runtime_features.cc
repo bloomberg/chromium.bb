@@ -153,6 +153,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (command_line.HasSwitch(switches::kEnableBleedingEdgeRenderingFastPaths))
     WebRuntimeFeatures::enableBleedingEdgeFastPaths(true);
+
+  if (command_line.HasSwitch(switches::kEnablePreciseMemoryInfo))
+    WebRuntimeFeatures::enablePreciseMemoryInfo(true);
 }
 
 }  // namespace content
