@@ -664,4 +664,27 @@ TEST(KURLTest, ProtocolIs)
     EXPECT_TRUE(invalidUTF8.protocolIs(""));
 }
 
+TEST(KURLTest, strippedForUseAsReferrer)
+{
+    struct ReferrerCase {
+        const char* input;
+        const char* output;
+    } referrerCases[] = {
+        {"data:text/html;charset=utf-8,<html></html>", ""},
+        {"javascript:void(0);", ""},
+        {"about:config", ""},
+        {"https://www.google.com/", "https://www.google.com/"},
+        {"http://me@news.google.com:8888/", "http://news.google.com:8888/"},
+        {"http://:pass@news.google.com:8888/foo", "http://news.google.com:8888/foo"},
+        {"http://me:pass@news.google.com:8888/", "http://news.google.com:8888/"},
+        {"https://www.google.com/a?f#b", "https://www.google.com/a?f"},
+    };
+
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(referrerCases); i++) {
+        WebCore::KURL kurl(WebCore::ParsedURLString, referrerCases[i].input);
+        WTF::String referrer = kurl.strippedForUseAsReferrer();
+        EXPECT_STREQ(referrerCases[i].output, referrer.utf8().data());
+    }
+}
+
 } // namespace

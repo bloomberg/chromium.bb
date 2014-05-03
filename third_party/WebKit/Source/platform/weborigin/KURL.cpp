@@ -133,11 +133,14 @@ String KURL::strippedForUseAsReferrer() const
     if (protocolIsAbout() || protocolIs("data") || protocolIs("javascript"))
         return String();
 
-    KURL referrer(*this);
-    referrer.setUser(String());
-    referrer.setPass(String());
-    referrer.removeFragmentIdentifier();
-    return referrer.string();
+    if (m_parsed.username.is_nonempty() || m_parsed.password.is_nonempty() || m_parsed.ref.is_nonempty()) {
+        KURL referrer(*this);
+        referrer.setUser(String());
+        referrer.setPass(String());
+        referrer.removeFragmentIdentifier();
+        return referrer.string();
+    }
+    return string();
 }
 
 bool KURL::isLocalFile() const
