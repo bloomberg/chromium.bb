@@ -5,7 +5,9 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 
 #include <string>
+
 #include "base/message_loop/message_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -46,12 +48,14 @@ const base::FilePath::CharType kServiceWorkerDirectory[] =
 ServiceWorkerStorage::ServiceWorkerStorage(
     const base::FilePath& path,
     base::WeakPtr<ServiceWorkerContextCore> context,
+    base::SequencedTaskRunner* database_task_runner,
     quota::QuotaManagerProxy* quota_manager_proxy)
     : last_registration_id_(0),
       last_version_id_(0),
       last_resource_id_(0),
       simulated_lazy_initted_(false),
       context_(context),
+      database_task_runner_(database_task_runner),
       quota_manager_proxy_(quota_manager_proxy) {
   if (!path.empty())
     path_ = path.Append(kServiceWorkerDirectory);

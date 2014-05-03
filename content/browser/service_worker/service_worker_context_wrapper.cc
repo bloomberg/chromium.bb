@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 
 #include "base/files/file_path.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
@@ -26,22 +27,12 @@ ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {
 void ServiceWorkerContextWrapper::Init(
     const base::FilePath& user_data_directory,
     quota::QuotaManagerProxy* quota_manager_proxy) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&ServiceWorkerContextWrapper::Init,
-                   this,
-                   user_data_directory,
-                   make_scoped_refptr(quota_manager_proxy)));
-    return;
-  }
-  DCHECK(!context_core_);
-  context_core_.reset(new ServiceWorkerContextCore(
-      user_data_directory,
-      quota_manager_proxy,
-      observer_list_,
-      make_scoped_ptr(new ServiceWorkerProcessManager(this))));
+  scoped_refptr<base::SequencedTaskRunner> database_task_runner =
+      BrowserThread::GetBlockingPool()->
+          GetSequencedTaskRunnerWithShutdownBehavior(
+              BrowserThread::GetBlockingPool()->GetSequenceToken(),
+              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  InitInternal(user_data_directory, database_task_runner, quota_manager_proxy);
 }
 
 void ServiceWorkerContextWrapper::Shutdown() {
@@ -135,6 +126,37 @@ void ServiceWorkerContextWrapper::AddObserver(
 void ServiceWorkerContextWrapper::RemoveObserver(
     ServiceWorkerContextObserver* observer) {
   observer_list_->RemoveObserver(observer);
+}
+
+void ServiceWorkerContextWrapper::InitForTesting(
+    const base::FilePath& user_data_directory,
+    base::SequencedTaskRunner* database_task_runner,
+    quota::QuotaManagerProxy* quota_manager_proxy) {
+  InitInternal(user_data_directory, database_task_runner, quota_manager_proxy);
+}
+
+void ServiceWorkerContextWrapper::InitInternal(
+    const base::FilePath& user_data_directory,
+    base::SequencedTaskRunner* database_task_runner,
+    quota::QuotaManagerProxy* quota_manager_proxy) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&ServiceWorkerContextWrapper::InitInternal,
+                   this,
+                   user_data_directory,
+                   make_scoped_refptr(database_task_runner),
+                   make_scoped_refptr(quota_manager_proxy)));
+    return;
+  }
+  DCHECK(!context_core_);
+  context_core_.reset(new ServiceWorkerContextCore(
+      user_data_directory,
+      database_task_runner,
+      quota_manager_proxy,
+      observer_list_,
+      make_scoped_ptr(new ServiceWorkerProcessManager(this))));
 }
 
 }  // namespace content
