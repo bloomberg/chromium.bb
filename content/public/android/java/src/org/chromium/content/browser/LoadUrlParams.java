@@ -19,17 +19,18 @@ import java.util.Map;
 @JNINamespace("content")
 public class LoadUrlParams {
     // Should match NavigationController::LoadUrlType exactly. See comments
-    // there for proper usage. Values are initialized in initializeConstants.
-    public static int LOAD_TYPE_DEFAULT;
-    public static int LOAD_TYPE_BROWSER_INITIATED_HTTP_POST;
-    public static int LOAD_TYPE_DATA;
+    // there for proper usage. initializeConstants() checks that the values
+    // are correct.
+    public static final int LOAD_TYPE_DEFAULT = 0;
+    public static final int LOAD_TYPE_BROWSER_INITIATED_HTTP_POST = 1;
+    public static final int LOAD_TYPE_DATA = 2;
 
     // Should match NavigationController::UserAgentOverrideOption exactly.
-    // See comments there for proper usage. Values are initialized in
-    // initializeConstants.
-    public static int UA_OVERRIDE_INHERIT;
-    public static int UA_OVERRIDE_FALSE;
-    public static int UA_OVERRIDE_TRUE;
+    // See comments there for proper usage. initializeConstants() checks that
+    // the values are correct.
+    public static final int UA_OVERRIDE_INHERIT = 0;
+    public static final int UA_OVERRIDE_FALSE = 1;
+    public static final int UA_OVERRIDE_TRUE = 2;
 
     // Fields with counterparts in NavigationController::LoadURLParams.
     // Package private so that ContentViewCore.loadUrl can pass them down to
@@ -61,9 +62,6 @@ public class LoadUrlParams {
      * @param transitionType the PageTransitionType constant corresponding to the load
      */
     public LoadUrlParams(String url, int transitionType) {
-        // Check initializeConstants was called.
-        assert LOAD_TYPE_DEFAULT != LOAD_TYPE_BROWSER_INITIATED_HTTP_POST;
-
         mUrl = url;
         mTransitionType = transitionType;
 
@@ -379,12 +377,12 @@ public class LoadUrlParams {
             int ua_override_inherit,
             int ua_override_false,
             int ua_override_true) {
-        LOAD_TYPE_DEFAULT = load_type_default;
-        LOAD_TYPE_BROWSER_INITIATED_HTTP_POST = load_type_browser_initiated_http_post;
-        LOAD_TYPE_DATA = load_type_data;
-        UA_OVERRIDE_INHERIT = ua_override_inherit;
-        UA_OVERRIDE_FALSE = ua_override_false;
-        UA_OVERRIDE_TRUE = ua_override_true;
+        assert LOAD_TYPE_DEFAULT == load_type_default;
+        assert LOAD_TYPE_BROWSER_INITIATED_HTTP_POST == load_type_browser_initiated_http_post;
+        assert LOAD_TYPE_DATA == load_type_data;
+        assert UA_OVERRIDE_INHERIT == ua_override_inherit;
+        assert UA_OVERRIDE_FALSE == ua_override_false;
+        assert UA_OVERRIDE_TRUE == ua_override_true;
     }
 
     /**
