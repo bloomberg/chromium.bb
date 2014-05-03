@@ -25,4 +25,3 @@ M V EI: org.chromium.chrome.browser.ChromeBrowserProvider$BookmarkNode.thumbnail
 M V EI: org.chromium.content.browser.LoadUrlParams.getPostData() may expose internal representation by returning LoadUrlParams.mPostData  At LoadUrlParams.java
 M M LI: Incorrect lazy initialization of static field org.chromium.chrome.browser.sync.ProfileSyncService.sSyncSetupManager in org.chromium.chrome.browser.sync.ProfileSyncService.get(Context)  At ProfileSyncService.java
 M B OS: org.chromium.tools.binary_size.Addr2LineWorkerPool$Addr2LineWorker$Addr2LineTask.run() may fail to close stream  At Addr2LineWorkerPool.java
-M B RV: Exceptional return value of java.io.File.mkdirs() ignored in new org.chromium.tools.binary_size.NmDumper$Output(NmDumper)  At NmDumper.java

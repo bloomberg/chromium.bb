@@ -91,7 +91,8 @@ class NmDumper {
 
         private Output() {
             try {
-                new File(mOutPath).getParentFile().mkdirs();
+                File parentDir = new File(mOutPath).getParentFile();
+                assert (parentDir.mkdirs() || parentDir.isDirectory());
                 outWriter = new PrintWriter(mOutPath);
             } catch (FileNotFoundException e) {
                 throw new RuntimeException("Can't open output file: " + mOutPath, e);
@@ -99,7 +100,8 @@ class NmDumper {
 
             if (mFailPath != null) {
                 try {
-                    new File(mFailPath).getParentFile().mkdirs();
+                    File parentDir = new File(mFailPath).getParentFile();
+                    assert (parentDir.mkdirs() || parentDir.isDirectory());
                     failWriter = new PrintWriter(mFailPath);
                 } catch (FileNotFoundException e) {
                     throw new RuntimeException("Can't open fail file: " + mFailPath, e);
@@ -110,7 +112,8 @@ class NmDumper {
 
             if (mSkipPath != null) {
                 try {
-                    new File(mSkipPath).getParentFile().mkdirs();
+                    File parentDir = new File(mSkipPath).getParentFile();
+                    assert (parentDir.mkdirs() || parentDir.isDirectory());
                     skipWriter = new PrintWriter(mSkipPath);
                 } catch (IOException e) {
                     throw new RuntimeException("Can't open skip file: " + mSkipPath, e);
