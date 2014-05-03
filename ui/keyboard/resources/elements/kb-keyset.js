@@ -4,6 +4,8 @@
 
 Polymer('kb-keyset', {
   align: "center",
+  // Propagate flick gestures to keys in this keyset.
+  flick: true,
   isDefault: false,
   nextKeyset: undefined,
   // Weight offsets for positioning the keyset.

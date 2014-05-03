@@ -424,7 +424,8 @@ Polymer('kb-keyboard', {
       return;
     }
     // Triggers swipe hintText if it's a purely vertical swipe.
-    if (!(direction & (SwipeDirection.LEFT | SwipeDirection.RIGHT))) {
+    if (this.activeKeyset.flick &&
+        !(direction & (SwipeDirection.LEFT | SwipeDirection.RIGHT))) {
       // Check if event is relevant to us.
       if ((!detail.endSwipe) || (detail.isComplex))
         return;

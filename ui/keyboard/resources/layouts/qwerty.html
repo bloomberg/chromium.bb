@@ -5,10 +5,9 @@
   -->
 
 
-<kb-keyset id="qwerty-upper" pitch="10 20">
-  <kb-row>
-    <kb-key-sequence keys="QWERTYUIOP" hintTexts="1234567890">
-    </kb-key-sequence>
+<kb-keyset id="qwerty-upper" flick=false pitch="10 20">
+  <kb-row class="hide-hint-text">
+    <kb-key-sequence keys="QWERTYUIOP" hintTexts="1234567890"></kb-key-sequence>
     <kb-key class="dark" char="&#x0008;" image="backspace.png"
         repeat sound="keypress-delete" stretch weight="110"></kb-key>
   </kb-row>
@@ -39,10 +38,9 @@
   </kb-altkey-container>
 </kb-keyset>
 
-<kb-keyset id="qwerty-lower" isDefault=true pitch="10 20">
-  <kb-row>
-    <kb-key-sequence keys="qwertyuiop" hintTexts="1234567890">
-    </kb-key-sequence>
+<kb-keyset id="qwerty-lower" flick=false isDefault=true pitch="10 20">
+  <kb-row class="hide-hint-text">
+    <kb-key-sequence keys="qwertyuiop" hintTexts="1234567890"></kb-key-sequence>
     <kb-key class="dark" char="&#x0008;" repeat stretch align="right"
         image="backspace.png" sound="keypress-delete" weight="110"></kb-key>
   </kb-row>
