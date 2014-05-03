@@ -254,7 +254,7 @@ int EditArgsFile(const std::string& build_dir) {
 #endif
       base::CreateDirectory(arg_file.DirName());
       base::WriteFile(arg_file, argfile_default_contents.c_str(),
-                      argfile_default_contents.size());
+                      static_cast<int>(argfile_default_contents.size()));
     }
 
     ScopedTrace editor_trace(TraceItem::TRACE_SETUP, "Waiting for editor");
