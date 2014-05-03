@@ -167,8 +167,8 @@ void ScopedTrace::Done() {
 }
 
 void EnableTracing() {
-  CHECK(!trace_log);
-  trace_log = new TraceLog;
+  if (!trace_log)
+    trace_log = new TraceLog;
 }
 
 void AddTrace(TraceItem* item) {
@@ -204,6 +204,7 @@ std::string SummarizeTraces() {
       case TraceItem::TRACE_CHECK_HEADER:
         headers_checked++;
         break;
+      case TraceItem::TRACE_SETUP:
       case TraceItem::TRACE_FILE_LOAD:
       case TraceItem::TRACE_FILE_WRITE:
       case TraceItem::TRACE_DEFINE_TARGET:
@@ -265,6 +266,9 @@ void SaveTraces(const base::FilePath& file_name) {
 
     out << ",\"cat\":";
     switch (item.type()) {
+      case TraceItem::TRACE_SETUP:
+        out << "\"setup\"";
+        break;
       case TraceItem::TRACE_FILE_LOAD:
         out << "\"load\"";
         break;

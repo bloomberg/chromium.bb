@@ -17,8 +17,9 @@ TEST(Escape, Shell) {
   opts.mode = ESCAPE_SHELL;
   std::string result = EscapeString("asdf: \"$\\bar", opts, NULL);
 #if defined(OS_WIN)
-  // Windows shell doesn't escape backslashes.
-  EXPECT_EQ("\"asdf: \"$\\bar\"", result);
+  // Windows shell doesn't escape backslashes, but it does backslash-escape
+  // quotes.
+  EXPECT_EQ("\"asdf: \\\"$\\bar\"", result);
 #else
   EXPECT_EQ("\"asdf: \\\"$\\\\bar\"", result);
 #endif

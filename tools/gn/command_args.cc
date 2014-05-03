@@ -2,20 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <map>
 
+#include "base/command_line.h"
+#include "base/environment.h"
+#include "base/file_util.h"
+#include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "tools/gn/commands.h"
+#include "tools/gn/filesystem_utils.h"
 #include "tools/gn/input_file.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/setup.h"
 #include "tools/gn/standard_out.h"
 #include "tools/gn/tokenizer.h"
+#include "tools/gn/trace.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#include <shellapi.h>
+#endif
 
 namespace commands {
 
 namespace {
+
+const char kSwitchList[] = "list";
+const char kSwitchShort[] = "short";
 
 bool DoesLineBeginWithComment(const base::StringPiece& line) {
   // Skip whitespace.
@@ -95,67 +112,50 @@ void PrintArgHelp(const base::StringPiece& name, const Value& value) {
   }
 }
 
-}  // namespace
-
-extern const char kArgs[] = "args";
-extern const char kArgs_HelpShort[] =
-    "args: Display configurable arguments declared by the build.";
-extern const char kArgs_Help[] =
-    "gn args [arg name]\n"
-    "  Displays all arguments declared by buildfiles along with their\n"
-    "  description. Build arguments are anything in a declare_args() block\n"
-    "  in any buildfile. The comment preceding the declaration will be\n"
-    "  displayed here (so comment well!).\n"
-    "\n"
-    "  These arguments can be overridden on the command-line:\n"
-    "    --args=\"doom_melon_setting=5 component_build=1\"\n"
-    "  or in a toolchain definition (see \"gn help buildargs\" for more on\n"
-    "  how this all works).\n"
-    "\n"
-    "  If \"arg name\" is specified, only the information for that argument\n"
-    "  will be displayed. Otherwise all arguments will be displayed.\n";
-
-int RunArgs(const std::vector<std::string>& args) {
+int ListArgs(const std::string& build_dir) {
   Setup* setup = new Setup;
   setup->set_check_for_bad_items(false);
-  // TODO(brettw) bug 343726: Use a temporary directory instead of this
-  // default one to avoid messing up any build that's in there.
-  if (!setup->DoSetup("//out/Default/") || !setup->Run())
+  if (!setup->DoSetup(build_dir) || !setup->Run())
     return 1;
 
   Scope::KeyValueMap build_args;
   setup->build_settings().build_args().MergeDeclaredArguments(&build_args);
 
-  if (args.size() == 1) {
-    // Get help on a specific command.
-    Scope::KeyValueMap::const_iterator found_arg = build_args.find(args[0]);
+  // Find all of the arguments we care about. Use a regular map so they're
+  // sorted nicely when we write them out.
+  std::map<base::StringPiece, Value> sorted_args;
+  std::string list_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kSwitchList);
+  if (list_value.empty()) {
+    // List all values.
+    for (Scope::KeyValueMap::const_iterator i = build_args.begin();
+         i != build_args.end(); ++i)
+      sorted_args.insert(*i);
+  } else {
+    // List just the one specified as the parameter to --list.
+    Scope::KeyValueMap::const_iterator found_arg = build_args.find(list_value);
     if (found_arg == build_args.end()) {
       Err(Location(), "Unknown build argument.",
-          "You asked for \"" + args[0] + "\" which I didn't find in any "
-          "buildfile\nassociated with this build.");
+          "You asked for \"" + list_value + "\" which I didn't find in any "
+          "build file\nassociated with this build.").PrintToStdout();
       return 1;
     }
-    PrintArgHelp(args[0], found_arg->second);
-    return 0;
-  } else if (args.size() > 1) {
-    // Too many arguments.
-    Err(Location(), "You're holding it wrong.",
-        "Usage: \"gn args [arg name]\"").PrintToStdout();
-    return 1;
+    sorted_args.insert(*found_arg);
   }
 
-  // List all arguments. First put them in a regular map so they're sorted.
-  std::map<base::StringPiece, Value> sorted_args;
-  for (Scope::KeyValueMap::const_iterator i = build_args.begin();
-       i != build_args.end(); ++i)
-    sorted_args.insert(*i);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchShort)) {
+    // Short key=value output.
+    for (std::map<base::StringPiece, Value>::iterator i = sorted_args.begin();
+         i != sorted_args.end(); ++i) {
+      OutputString(i->first.as_string());
+      OutputString(" = ");
+      OutputString(i->second.ToString(true));
+      OutputString("\n");
+    }
+    return 0;
+  }
 
-  OutputString(
-      "Available build arguments. Note that the which arguments are declared\n"
-      "and their default values may depend on other arguments or the current\n"
-      "platform and architecture. So setting some values may add, remove, or\n"
-      "change the default value of other values.\n\n");
-
+  // Long output.
   for (std::map<base::StringPiece, Value>::iterator i = sorted_args.begin();
        i != sorted_args.end(); ++i) {
     PrintArgHelp(i->first, i->second);
@@ -163,6 +163,185 @@ int RunArgs(const std::vector<std::string>& args) {
   }
 
   return 0;
+}
+
+#if defined(OS_WIN)
+
+bool RunEditor(const base::FilePath& file_to_edit) {
+  SHELLEXECUTEINFO info;
+  memset(&info, 0, sizeof(info));
+  info.cbSize = sizeof(info);
+  info.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_CLASSNAME;
+  info.lpFile = file_to_edit.value().c_str();
+  info.nShow = SW_SHOW;
+  info.lpClass = L".txt";
+  if (!::ShellExecuteEx(&info)) {
+    Err(Location(), "Couldn't run editor.",
+        "Just edit \"" + FilePathToUTF8(file_to_edit) +
+        "\" manually instead.").PrintToStdout();
+    return false;
+  }
+
+  if (!info.hProcess) {
+    // Windows re-used an existing process.
+    OutputString("\"" + FilePathToUTF8(file_to_edit) +
+                 "\" opened in editor, save it and press <Enter> when done.\n");
+    getchar();
+  } else {
+    OutputString("Waiting for editor on \"" + FilePathToUTF8(file_to_edit) +
+                 "\"...\n");
+    ::WaitForSingleObject(info.hProcess, INFINITE);
+    ::CloseHandle(info.hProcess);
+  }
+  return true;
+}
+
+#else  // POSIX
+
+void RunEditor(const base::FilePath& file_to_edit) {
+  // Prefer $VISUAL, then $EDITOR, then vi.
+  const char* editor_ptr = getenv("VISUAL");
+  if (!editor_ptr)
+    editor_ptr = getenv("EDITOR");
+  if (!editor_ptr)
+    editor_ptr = "vi";
+
+  std::string cmd(editor_ptr);
+  cmd.append(" \"");
+
+  // Its impossible to do this properly since we don't know the user's shell,
+  // but quoting and escaping internal quotes should handle 99.999% of all
+  // cases.
+  std::string escaped_name = file_to_edit.value();
+  ReplaceSubstringsAfterOffset(&escaped_name, 0, "\"", "\\\"");
+  cmd.append(escaped_name);
+  cmd.push_back('"');
+
+  OutputString("Waiting for editor on \"" + file_to_edit.value() +
+               "\"...\n");
+  return system(cmd.c_str()) == 0;
+}
+
+#endif
+
+int EditArgsFile(const std::string& build_dir) {
+  {
+    // Scope the setup. We only use it for some basic state. We'll do the
+    // "real" build below in the gen command.
+    Setup setup;
+    setup.set_check_for_bad_items(false);
+    // Don't fill build arguments. We're about to edit the file which supplies
+    // these in the first place.
+    setup.set_fill_arguments(false);
+    if (!setup.DoSetup(build_dir))
+      return 1;
+
+    // Ensure the file exists. Need to normalize path separators since on
+    // Windows they can come out as forward slashes here, and that confuses some
+    // of the commands.
+    base::FilePath arg_file =
+        setup.build_settings().GetFullPath(setup.GetBuildArgFile())
+        .NormalizePathSeparators();
+    if (!base::PathExists(arg_file)) {
+      std::string argfile_default_contents =
+          "# Build arguments go here. Examples:\n"
+          "#   enable_doom_melon = true\n"
+          "#   crazy_something = \"absolutely\"\n";
+#if defined(OS_WIN)
+      // Use Windows lineendings for this file since it will often open in
+      // Notepad which can't handle Unix ones.
+      ReplaceSubstringsAfterOffset(&argfile_default_contents, 0, "\n", "\r\n");
+#endif
+      base::CreateDirectory(arg_file.DirName());
+      base::WriteFile(arg_file, argfile_default_contents.c_str(),
+                      argfile_default_contents.size());
+    }
+
+    ScopedTrace editor_trace(TraceItem::TRACE_SETUP, "Waiting for editor");
+    if (!RunEditor(arg_file))
+      return 1;
+  }
+
+  // Now do a normal "gen" command.
+  OutputString("Generating files...\n");
+  std::vector<std::string> gen_commands;
+  gen_commands.push_back(build_dir);
+  return RunGen(gen_commands);
+}
+
+}  // namespace
+
+extern const char kArgs[] = "args";
+extern const char kArgs_HelpShort[] =
+    "args: Display or configure arguments declared by the build.";
+extern const char kArgs_Help[] =
+    "gn args [arg name]\n"
+    "\n"
+    "  See also \"gn help buildargs\" for a more high-level overview of how\n"
+    "  build arguments work.\n"
+    "\n"
+    "Usage\n"
+    "  gn args <dir_name>\n"
+    "      Open the arguments for the given build directory in an editor\n"
+    "      (as specified by the EDITOR environment variable). If the given\n"
+    "      build directory doesn't exist, it will be created and an empty\n"
+    "      args file will be opened in the editor. You would type something\n"
+    "      like this into that file:\n"
+    "          enable_doom_melon=false\n"
+    "          os=\"android\"\n"
+    "\n"
+    "      Note: you can edit the build args manually by editing the file\n"
+    "      \"args.gn\" in the build directory and then running\n"
+    "      \"gn gen <build_dir>\".\n"
+    "\n"
+    "  gn args <dir_name> --list[=<exact_arg>] [--short]\n"
+    "      Lists all build arguments available in the current configuration,\n"
+    "      or, if an exact_arg is specified for the list flag, just that one\n"
+    "      build argument.\n"
+    "\n"
+    "      The output will list the declaration location, default value, and\n"
+    "      comment preceeding the declaration. If --short is specified,\n"
+    "      only the names and values will be printed.\n"
+    "\n"
+    "      If the dir_name is specified, the build configuration will be\n"
+    "      taken from that build directory. The reason this is needed is that\n"
+    "      the definition of some arguments is dependent on the build\n"
+    "      configuration, so setting some values might add, remove, or change\n"
+    "      the default values for other arguments. Specifying your exact\n"
+    "      configuration allows the proper arguments to be displayed.\n"
+    "\n"
+    "      Instead of specifying the dir_name, you can also use the\n"
+    "      command-line flag to specify the build configuration:\n"
+    "        --args=<exact list of args to use>\n"
+    "\n"
+    "Examples\n"
+    "  gn args out/Debug\n"
+    "    Opens an editor with the args for out/Debug.\n"
+    "\n"
+    "  gn args out/Debug --list --short\n"
+    "    Prints all arguments with their default values for the out/Debug\n"
+    "    build.\n"
+    "\n"
+    "  gn args out/Debug --list=cpu_arch\n"
+    "    Prints information about the \"cpu_arch\" argument for the out/Debug\n"
+    "    build.\n"
+    "\n"
+    "  gn args --list --args=\"os=\\\"android\\\" enable_doom_melon=true\"\n"
+    "    Prints all arguments with the default values for a build with the\n"
+    "    given arguments set (which may affect the values of other\n"
+    "    arguments).\n";
+
+int RunArgs(const std::vector<std::string>& args) {
+  if (args.size() != 1) {
+    Err(Location(), "Exactly one build dir needed.",
+        "Usage: \"gn args <build_dir>\"\n"
+        "Or see \"gn help args\" for more variants.").PrintToStdout();
+    return 1;
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchList))
+    return ListArgs(args[0]);
+  return EditArgsFile(args[0]);
 }
 
 }  // namespace commands

@@ -10,5 +10,5 @@ config("wtl_includes") {
 # actually generate anything linkable, and inject the required config for
 # making the include directories work.
 group("wtl") {
-  all_dependent_configs = ":wtl_includes"
+  all_dependent_configs = [ ":wtl_includes" ]
 }

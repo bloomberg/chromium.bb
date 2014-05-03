@@ -19,6 +19,7 @@ class Label;
 class TraceItem {
  public:
   enum Type {
+    TRACE_SETUP,
     TRACE_FILE_LOAD,
     TRACE_FILE_PARSE,
     TRACE_FILE_EXECUTE,
