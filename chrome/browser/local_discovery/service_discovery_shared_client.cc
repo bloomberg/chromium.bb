@@ -27,20 +27,19 @@
 namespace {
 
 #if defined(OS_WIN)
-bool IsFirewallReady() {
+void ReportFirewallStats() {
   base::FilePath exe_path;
   if (!PathService::Get(base::FILE_EXE, &exe_path))
-    return false;
+    return;
   base::ElapsedTimer timer;
   scoped_ptr<installer::FirewallManager> manager =
       installer::FirewallManager::Create(BrowserDistribution::GetDistribution(),
                                          exe_path);
   if (!manager)
-    return false;
+    return;
   bool is_ready = manager->CanUseLocalPorts();
   UMA_HISTOGRAM_TIMES("LocalDiscovery.FirewallAccessTime", timer.Elapsed());
   UMA_HISTOGRAM_BOOLEAN("LocalDiscovery.IsFirewallReady", is_ready);
-  return is_ready;
 }
 #endif  // OS_WIN
 
@@ -79,12 +78,12 @@ scoped_refptr<ServiceDiscoverySharedClient>
 #else
 
 #if defined(OS_WIN)
-  static bool is_firewall_ready = IsFirewallReady();
-  if (!is_firewall_ready) {
-    // TODO(vitalybuka): Remove after we find what to do with firewall for
-    // user-level installs. crbug.com/366408
-    return new ServiceDiscoveryClientUtility();
-  }
+  static bool reported =
+      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                              base::Bind(&ReportFirewallStats));
+  // TODO(vitalybuka): Switch to |ServiceDiscoveryClientMdns| after we find what
+  // to do with firewall for user-level installs. crbug.com/366408
+  return new ServiceDiscoveryClientUtility();
 #endif  // OS_WIN
   return new ServiceDiscoveryClientMdns();
 #endif
