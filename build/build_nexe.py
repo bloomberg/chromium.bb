@@ -121,6 +121,25 @@ def IsEnvFlagTrue(flag_name, default=False):
   return bool(re.search(r'^([tTyY]|1:?)', flag_value))
 
 
+def GetIntegerEnv(flag_name, default=0):
+  """Parses and returns integer environment variable.
+
+  Args:
+    flag_name: a string name of a flag.
+    default: default return value if the flag is not set.
+
+  Returns:
+    Integer value of the flag.
+  """
+  flag_value = os.environ.get(flag_name)
+  if flag_value is None:
+    return default
+  try:
+    return int(flag_value)
+  except ValueError:
+    raise Error('Invalid ' + flag_name + ': ' + flag_value)
+
+
 class Builder(object):
   """Builder object maintains options and generates build command-lines.
 
@@ -218,6 +237,7 @@ class Builder(object):
     goma_config = self.GetGomaConfig(options.gomadir, arch, toolname)
     self.gomacc = goma_config.get('gomacc', '')
     self.goma_burst = goma_config.get('burst', False)
+    self.goma_threads = goma_config.get('threads', 1)
 
     # Use unoptimized native objects for debug IRT builds for faster compiles.
     if (self.is_pnacl_toolchain
@@ -484,11 +504,10 @@ class Builder(object):
           self.Log('Strange gomacc %s found, try another one: %s' % (gomacc, e))
 
     if goma_config:
-      default_value = False
-      if self.osname == 'linux':
-        default_value = True
-      goma_config['burst'] = IsEnvFlagTrue('NACL_GOMA_BURST',
-                                           default=default_value)
+      goma_config['burst'] = IsEnvFlagTrue('NACL_GOMA_BURST')
+      default_threads = 100 if self.osname == 'linux' else 1
+      goma_config['threads'] = GetIntegerEnv('NACL_GOMA_THREADS',
+                                             default=default_threads)
     return goma_config
 
   def NeedsRebuild(self, outd, out, src, rebuilt=False):
@@ -926,22 +945,41 @@ def Main(argv):
       build.Translate(list(files)[0])
       return 0
 
-    if build.gomacc and build.goma_burst:  # execute gomacc as many as possible.
+    if build.gomacc and (build.goma_burst or build.goma_threads > 1):
       returns = Queue.Queue()
-      def CompileThread(filename, queue):
+
+      # Push all files into the inputs queue
+      inputs = Queue.Queue()
+      for filename in files:
+        inputs.put(filename)
+
+      def CompileThread(input_queue, output_queue):
         try:
-          queue.put(build.Compile(filename))
+          while True:
+            try:
+              filename = input_queue.get_nowait()
+            except Queue.Empty:
+              return
+            output_queue.put(build.Compile(filename))
         except Exception:
           # Put current exception info to the queue.
-          queue.put(sys.exc_info())
-      build_threads = []
+          output_queue.put(sys.exc_info())
+
+      # Don't limit number of threads in the burst mode.
+      if build.goma_burst:
+        num_threads = len(files)
+      else:
+        num_threads = min(build.goma_threads, len(files))
+
       # Start parallel build.
-      for filename in files:
-        thr = threading.Thread(target=CompileThread, args=(filename, returns))
+      build_threads = []
+      for _ in xrange(num_threads):
+        thr = threading.Thread(target=CompileThread, args=(inputs, returns))
         thr.start()
         build_threads.append(thr)
-      for thr in build_threads:
-        thr.join()
+
+      # Wait for results.
+      for _ in files:
         out = returns.get()
         # An exception raised in the thread may come through the queue.
         # Raise it again here.
@@ -950,6 +988,15 @@ def Main(argv):
           raise out[0], None, out[2]
         elif out:
           objs.append(out)
+
+      assert inputs.empty()
+
+      # Wait until all threads have stopped and verify that there are no more
+      # results.
+      for thr in build_threads:
+        thr.join()
+      assert returns.empty()
+
     else:  # slow path.
       for filename in files:
         out = build.Compile(filename)
