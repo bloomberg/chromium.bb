@@ -494,7 +494,7 @@ class TestGetSwarmResults(TestCase):
         'Results from some shards are missing: 1\n')
 
 
-def chromium_tasks(retrieval_url, file_hash):
+def chromium_tasks(retrieval_url, file_hash, extra_args):
   return [
     {
       u'action': [
@@ -502,7 +502,7 @@ def chromium_tasks(retrieval_url, file_hash):
         u'--hash', file_hash,
         u'--namespace', u'default-gzip',
         u'--isolate-server', retrieval_url,
-      ],
+      ] + (['--'] + list(extra_args) if extra_args else []),
       u'decorate_output': False,
       u'test_name': u'Run Test',
       u'hard_time_out': 2*60*60,
@@ -526,7 +526,8 @@ def generate_expected_json(
     isolate_server,
     profile,
     test_case_name=TEST_NAME,
-    file_hash=FILE_HASH):
+    file_hash=FILE_HASH,
+    extra_args=None):
   expected = {
     u'cleanup': u'root',
     u'configurations': [
@@ -543,7 +544,7 @@ def generate_expected_json(
     u'env_vars': env.copy(),
     u'restart_on_failure': True,
     u'test_case_name': test_case_name,
-    u'tests': chromium_tasks(isolate_server, file_hash),
+    u'tests': chromium_tasks(isolate_server, file_hash, extra_args),
     u'working_dir': unicode(working_dir),
   }
   if shards > 1:
@@ -583,6 +584,7 @@ class ManifestTest(TestCase):
         namespace='default-gzip',
         isolated_hash=FILE_HASH,
         task_name=TEST_NAME,
+        extra_args=None,
         shards=2,
         env=env,
         dimensions=dimensions,
@@ -614,6 +616,7 @@ class ManifestTest(TestCase):
         namespace='default-gzip',
         isolated_hash=FILE_HASH,
         task_name=TEST_NAME,
+        extra_args=None,
         shards=1,
         env={},
         dimensions=dimensions,
@@ -642,6 +645,7 @@ class ManifestTest(TestCase):
         namespace='default-gzip',
         isolated_hash=FILE_HASH,
         task_name=TEST_NAME,
+        extra_args=None,
         shards=1,
         env={},
         dimensions=dimensions,
@@ -663,6 +667,40 @@ class ManifestTest(TestCase):
         profile=True)
     self.assertEqual(expected, manifest_json)
 
+  def test_manifest_with_extra_args(self):
+    env = {
+      u'GTEST_SHARD_INDEX': u'%(instance_index)s',
+      u'GTEST_TOTAL_SHARDS': u'%(num_instances)s',
+    }
+    dimensions = {'os': 'Windows'}
+    manifest = swarming.Manifest(
+        isolate_server='http://localhost:8081',
+        namespace='default-gzip',
+        isolated_hash=FILE_HASH,
+        task_name=TEST_NAME,
+        extra_args=['--extra-cmd-arg=1234', 'some more'],
+        shards=2,
+        env=env,
+        dimensions=dimensions,
+        working_dir='swarm_tests',
+        deadline=60*60,
+        verbose=False,
+        profile=False,
+        priority=101)
+
+    swarming.chromium_setup(manifest)
+    manifest_json = json.loads(manifest.to_json())
+
+    expected = generate_expected_json(
+        shards=2,
+        dimensions={u'os': u'Windows'},
+        env={},
+        working_dir='swarm_tests',
+        isolate_server=u'http://localhost:8081',
+        profile=False,
+        extra_args=['--extra-cmd-arg=1234', 'some more'])
+    self.assertEqual(expected, manifest_json)
+
   def test_process_manifest_success(self):
     self.mock(swarming.net, 'url_read', lambda url, data=None: '{}')
     self.mock(swarming.isolateserver, 'get_storage',
@@ -674,6 +712,7 @@ class ManifestTest(TestCase):
         namespace='default',
         isolated_hash=FILE_HASH,
         task_name=TEST_NAME,
+        extra_args=['--some-arg', '123'],
         shards=1,
         dimensions={},
         env={},
@@ -696,6 +735,7 @@ class ManifestTest(TestCase):
         namespace='default',
         isolated_hash=FILE_HASH,
         task_name=TEST_NAME,
+        extra_args=['--some-arg', '123'],
         shards=1,
         dimensions=dimensions,
         env={},
@@ -1029,7 +1069,8 @@ class MainTest(TestCase):
           ])
     self._check_output(
         '',
-        'Usage: swarming.py trigger [options] (hash|isolated)\n\n'
+        'Usage: swarming.py trigger [options] (hash|isolated) [-- extra_args]'
+        '\n\n'
         'swarming.py: error: Must pass one .isolated file or its hash (sha1).'
         '\n')
 
@@ -1038,7 +1079,8 @@ class MainTest(TestCase):
       main(['trigger'])
     self._check_output(
         '',
-        'Usage: swarming.py trigger [options] (hash|isolated)\n\n'
+        'Usage: swarming.py trigger [options] (hash|isolated) [-- extra_args]'
+        '\n\n'
         'swarming.py: error: --swarming is required.'
         '\n')
 
@@ -1048,7 +1090,8 @@ class MainTest(TestCase):
         main(['trigger', '-T' 'foo', 'foo.isolated'])
     self._check_output(
         '',
-        'Usage: swarming.py trigger [options] (hash|isolated)\n\n'
+        'Usage: swarming.py trigger [options] (hash|isolated) [-- extra_args]'
+        '\n\n'
         'swarming.py: error: --swarming is required.'
         '\n')
 
@@ -1058,7 +1101,8 @@ class MainTest(TestCase):
         main(['trigger', 'T', 'foo', 'foo.isolated'])
     self._check_output(
         '',
-        'Usage: swarming.py trigger [options] (hash|isolated)\n\n'
+        'Usage: swarming.py trigger [options] (hash|isolated) [-- extra_args]'
+        '\n\n'
         'swarming.py: error: Use one of --indir or --isolate-server.'
         '\n')
 
@@ -1069,7 +1113,8 @@ class MainTest(TestCase):
         main(['trigger', '-T', 'foo'])
     self._check_output(
         '',
-        'Usage: swarming.py trigger [options] (hash|isolated)\n\n'
+        'Usage: swarming.py trigger [options] (hash|isolated) [-- extra_args]'
+        '\n\n'
         'swarming.py: error: Must pass one .isolated file or its hash (sha1).'
         '\n')
 
@@ -1081,7 +1126,8 @@ class MainTest(TestCase):
           ])
     self._check_output(
         '',
-        'Usage: swarming.py trigger [options] (hash|isolated)\n\n'
+        'Usage: swarming.py trigger [options] (hash|isolated) [-- extra_args]'
+        '\n\n'
         'swarming.py: error: Please at least specify one --dimension\n')
 
   def test_trigger_env(self):

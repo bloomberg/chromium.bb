@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.4.6'
+__version__ = '0.4.7'
 
 import datetime
 import getpass
@@ -64,18 +64,20 @@ class Manifest(object):
   Also includes code to zip code and upload itself.
   """
   def __init__(
-      self, isolate_server, namespace, isolated_hash, task_name, shards, env,
-      dimensions, working_dir, deadline, verbose, profile, priority):
+      self, isolate_server, namespace, isolated_hash, task_name, extra_args,
+      shards, env, dimensions, working_dir, deadline, verbose, profile,
+      priority):
     """Populates a manifest object.
       Args:
         isolate_server - isolate server url.
         namespace - isolate server namespace to use.
-        isolated_hash - The manifest's sha-1 that the slave is going to fetch.
-        task_name - The name to give the task request.
-        shards - The number of swarming shards to request.
+        isolated_hash - the manifest's sha-1 that the slave is going to fetch.
+        task_name - the name to give the task request.
+        extra_args - additional arguments to pass to isolated command.
+        shards - the number of swarming shards to request.
         env - environment variables to set.
         dimensions - dimensions to filter the task on.
-        working_dir - Relative working directory to start the script.
+        working_dir - relative working directory to start the script.
         deadline - maximum pending time before this task expires.
         verbose - if True, have the slave print more details.
         profile - if True, have the slave print more timing data.
@@ -89,6 +91,7 @@ class Manifest(object):
     self.storage = isolateserver.get_storage(isolate_server, 'default')
 
     self.isolated_hash = isolated_hash
+    self.extra_args = tuple(extra_args or [])
     self.bundle = zip_package.ZipPackage(ROOT_DIR)
 
     self._task_name = task_name
@@ -522,6 +525,12 @@ def chromium_setup(manifest):
   if manifest.verbose or manifest.profile:
     # Have it print the profiling section.
     run_cmd.append('--verbose')
+
+  # Pass all extra args for run_isolated.py, it will pass them to the command.
+  if manifest.extra_args:
+    run_cmd.append('--')
+    run_cmd.extend(manifest.extra_args)
+
   manifest.add_task('Run Test', run_cmd)
 
   # Clean up
@@ -569,8 +578,8 @@ def archive(isolate_server, namespace, isolated, algo, verbose):
 
 
 def process_manifest(
-    swarming, isolate_server, namespace, isolated_hash, task_name, shards,
-    dimensions, env, working_dir, deadline, verbose, profile, priority):
+    swarming, isolate_server, namespace, isolated_hash, task_name, extra_args,
+    shards, dimensions, env, working_dir, deadline, verbose, profile, priority):
   """Processes the manifest file and send off the swarming task request."""
   try:
     manifest = Manifest(
@@ -578,6 +587,7 @@ def process_manifest(
         namespace=namespace,
         isolated_hash=isolated_hash,
         task_name=task_name,
+        extra_args=extra_args,
         shards=shards,
         dimensions=dimensions,
         env=env,
@@ -643,6 +653,7 @@ def trigger(
     namespace,
     file_hash_or_isolated,
     task_name,
+    extra_args,
     shards,
     dimensions,
     env,
@@ -678,6 +689,7 @@ def trigger(
       namespace=namespace,
       isolated_hash=file_hash,
       task_name=task_name,
+      extra_args=extra_args,
       shards=shards,
       dimensions=dimensions,
       deadline=deadline,
@@ -837,6 +849,14 @@ def add_collect_options(parser):
   parser.add_option_group(parser.task_output_group)
 
 
+def extract_isolated_command_extra_args(args):
+  try:
+    index = args.index('--')
+  except ValueError:
+    return (args, [])
+  return (args[:index], args[index+1:])
+
+
 @subcommand.usage('task_name')
 def CMDcollect(parser, args):
   """Retrieves results of a Swarming task.
@@ -919,7 +939,7 @@ def CMDquery(parser, args):
   return 0
 
 
-@subcommand.usage('[hash|isolated]')
+@subcommand.usage('(hash|isolated) [-- extra_args]')
 def CMDrun(parser, args):
   """Triggers a task and wait for the results.
 
@@ -927,6 +947,7 @@ def CMDrun(parser, args):
   """
   add_trigger_options(parser)
   add_collect_options(parser)
+  args, isolated_cmd_args = extract_isolated_command_extra_args(args)
   options, args = parser.parse_args(args)
   process_trigger_options(parser, options, args)
 
@@ -937,6 +958,7 @@ def CMDrun(parser, args):
         namespace=options.namespace,
         file_hash_or_isolated=args[0],
         task_name=options.task_name,
+        extra_args=isolated_cmd_args,
         shards=options.shards,
         dimensions=options.dimensions,
         env=dict(options.env),
@@ -968,7 +990,7 @@ def CMDrun(parser, args):
     return 1
 
 
-@subcommand.usage("(hash|isolated)")
+@subcommand.usage("(hash|isolated) [-- extra_args]")
 def CMDtrigger(parser, args):
   """Triggers a Swarming task.
 
@@ -977,8 +999,12 @@ def CMDtrigger(parser, args):
   Swarming manifest file to the Swarming server.
 
   If an .isolated file is specified instead of an hash, it is first archived.
+
+  Passes all extra arguments provided after '--' as additional command line
+  arguments for an isolated command specified in *.isolate file.
   """
   add_trigger_options(parser)
+  args, isolated_cmd_args = extract_isolated_command_extra_args(args)
   options, args = parser.parse_args(args)
   process_trigger_options(parser, options, args)
 
@@ -989,8 +1015,9 @@ def CMDtrigger(parser, args):
         namespace=options.namespace,
         file_hash_or_isolated=args[0],
         task_name=options.task_name,
-        dimensions=options.dimensions,
+        extra_args=isolated_cmd_args,
         shards=options.shards,
+        dimensions=options.dimensions,
         env=dict(options.env),
         working_dir=options.working_dir,
         deadline=options.deadline,
