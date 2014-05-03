@@ -1402,18 +1402,10 @@ void Element::attach(const AttachContext& context)
     createPseudoElementIfNeeded(AFTER);
     createPseudoElementIfNeeded(BACKDROP);
 
-    if (hasRareData()) {
-        ElementRareData* data = elementRareData();
-        if (data->hasElementFlag(NeedsFocusAppearanceUpdateSoonAfterAttach)) {
-            if (isFocusable() && document().focusedElement() == this)
-                document().updateFocusAppearanceSoon(false /* don't restore selection */);
-            data->clearElementFlag(NeedsFocusAppearanceUpdateSoonAfterAttach);
-        }
-        if (!renderer()) {
-            if (ActiveAnimations* activeAnimations = data->activeAnimations()) {
-                activeAnimations->cssAnimations().cancel();
-                activeAnimations->setAnimationStyleChange(false);
-            }
+    if (hasRareData() && !renderer()) {
+        if (ActiveAnimations* activeAnimations = elementRareData()->activeAnimations()) {
+            activeAnimations->cssAnimations().cancel();
+            activeAnimations->setAnimationStyleChange(false);
         }
     }
 
@@ -2074,39 +2066,24 @@ void Element::focus(bool restorePreviousSelection, FocusType type)
     if (!inDocument())
         return;
 
-    Document& doc = document();
-    if (doc.focusedElement() == this)
+    if (document().focusedElement() == this)
         return;
 
-    // If the stylesheets have already been loaded we can reliably check isFocusable.
-    // If not, we continue and set the focused node on the focus controller below so
-    // that it can be updated soon after attach.
-    if (doc.isRenderingReady()) {
-        doc.updateLayoutIgnorePendingStylesheets();
-        if (!isFocusable())
-            return;
-    }
-
-    if (!supportsFocus())
+    if (!document().isActive())
         return;
 
-    RefPtr<Node> protect;
-    if (Page* page = doc.page()) {
-        // Focus and change event handlers can cause us to lose our last ref.
-        // If a focus event handler changes the focus to a different node it
-        // does not make sense to continue and update appearence.
-        protect = this;
-        if (!page->focusController().setFocusedElement(this, doc.frame(), type))
-            return;
-    }
+    document().updateLayoutIgnorePendingStylesheets();
+    if (!isFocusable())
+        return;
+
+    RefPtr<Node> protect(this);
+    if (!document().page()->focusController().setFocusedElement(this, document().frame(), type))
+        return;
 
     // Setting the focused node above might have invalidated the layout due to scripts.
-    doc.updateLayoutIgnorePendingStylesheets();
-
-    if (!isFocusable()) {
-        setElementFlag(NeedsFocusAppearanceUpdateSoonAfterAttach);
+    document().updateLayoutIgnorePendingStylesheets();
+    if (!isFocusable())
         return;
-    }
 
     cancelFocusAppearanceUpdate();
     updateFocusAppearance(restorePreviousSelection);
@@ -2504,8 +2481,6 @@ Locale& Element::locale() const
 
 void Element::cancelFocusAppearanceUpdate()
 {
-    if (hasRareData())
-        clearElementFlag(NeedsFocusAppearanceUpdateSoonAfterAttach);
     if (document().focusedElement() == this)
         document().cancelFocusAppearanceUpdate();
 }

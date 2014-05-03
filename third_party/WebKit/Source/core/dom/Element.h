@@ -79,14 +79,13 @@ enum SpellcheckAttributeState {
 
 enum ElementFlags {
     TabIndexWasSetExplicitly = 1 << 0,
-    NeedsFocusAppearanceUpdateSoonAfterAttach = 1 << 1,
-    StyleAffectedByEmpty = 1 << 2,
-    IsInCanvasSubtree = 1 << 3,
-    ContainsFullScreenElement = 1 << 4,
-    IsInTopLayer = 1 << 5,
-    HasPendingResources = 1 << 6,
+    StyleAffectedByEmpty = 1 << 1,
+    IsInCanvasSubtree = 1 << 2,
+    ContainsFullScreenElement = 1 << 3,
+    IsInTopLayer = 1 << 4,
+    HasPendingResources = 1 << 5,
 
-    NumberOfElementFlags = 7, // Required size of bitfield used to store the flags.
+    NumberOfElementFlags = 6, // Required size of bitfield used to store the flags.
 };
 
 class Element : public ContainerNode {
