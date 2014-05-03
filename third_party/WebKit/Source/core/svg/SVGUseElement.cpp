@@ -194,6 +194,30 @@ Document* SVGUseElement::externalDocument() const
     return 0;
 }
 
+void transferUseWidthAndHeightIfNeeded(const SVGUseElement& use, SVGElement* shadowElement, const SVGElement& originalElement)
+{
+    ASSERT(shadowElement);
+    if (isSVGSymbolElement(*shadowElement)) {
+        // Spec (<use> on <symbol>): This generated 'svg' will always have explicit values for attributes width and height.
+        // If attributes width and/or height are provided on the 'use' element, then these attributes
+        // will be transferred to the generated 'svg'. If attributes width and/or height are not specified,
+        // the generated 'svg' element will use values of 100% for these attributes.
+        shadowElement->setAttribute(SVGNames::widthAttr, use.width()->isSpecified() ? AtomicString(use.width()->currentValue()->valueAsString()) : "100%");
+        shadowElement->setAttribute(SVGNames::heightAttr, use.height()->isSpecified() ? AtomicString(use.height()->currentValue()->valueAsString()) : "100%");
+    } else if (isSVGSVGElement(*shadowElement)) {
+        // Spec (<use> on <svg>): If attributes width and/or height are provided on the 'use' element, then these
+        // values will override the corresponding attributes on the 'svg' in the generated tree.
+        if (use.width()->isSpecified())
+            shadowElement->setAttribute(SVGNames::widthAttr, AtomicString(use.width()->currentValue()->valueAsString()));
+        else
+            shadowElement->setAttribute(SVGNames::widthAttr, originalElement.getAttribute(SVGNames::widthAttr));
+        if (use.height()->isSpecified())
+            shadowElement->setAttribute(SVGNames::heightAttr, AtomicString(use.height()->currentValue()->valueAsString()));
+        else
+            shadowElement->setAttribute(SVGNames::heightAttr, originalElement.getAttribute(SVGNames::heightAttr));
+    }
+}
+
 void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (!isSupportedAttribute(attrName)) {
@@ -209,6 +233,10 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
         || attrName == SVGNames::widthAttr
         || attrName == SVGNames::heightAttr) {
         updateRelativeLengthsInformation();
+        if (m_targetElementInstance) {
+            ASSERT(m_targetElementInstance->correspondingElement());
+            transferUseWidthAndHeightIfNeeded(*this, m_targetElementInstance->shadowTreeElement(), *m_targetElementInstance->correspondingElement());
+        }
         if (renderer)
             RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
         return;
@@ -467,6 +495,9 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
     // shadow tree elements <-> instances in the instance tree.
     associateInstancesWithShadowTreeElements(shadowTreeRootElement->firstChild(), m_targetElementInstance.get());
 
+    ASSERT(m_targetElementInstance->correspondingElement());
+    transferUseWidthAndHeightIfNeeded(*this, m_targetElementInstance->shadowTreeElement(), *m_targetElementInstance->correspondingElement());
+
     // If no shadow tree element is present, this means that the reference root
     // element was removed, as it is disallowed (ie. <use> on <foreignObject>)
     // Do NOT leave an inconsistent instance tree around, instead destruct it.
@@ -702,6 +733,7 @@ void SVGUseElement::expandUseElementsInShadowTree(Node* element)
         if (target && !isDisallowedElement(target)) {
             RefPtr<Element> newChild = target->cloneElementWithChildren();
             ASSERT(newChild->isSVGElement());
+            transferUseWidthAndHeightIfNeeded(*use, toSVGElement(newChild.get()), *target);
             cloneParent->appendChild(newChild.release());
         }
 

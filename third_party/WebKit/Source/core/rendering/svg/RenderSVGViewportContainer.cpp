@@ -67,54 +67,6 @@ void RenderSVGViewportContainer::calcViewport()
     SVGLengthContext lengthContext(element);
     m_viewport = FloatRect(svg->x()->currentValue()->value(lengthContext), svg->y()->currentValue()->value(lengthContext), svg->width()->currentValue()->value(lengthContext), svg->height()->currentValue()->value(lengthContext));
 
-    SVGElement* correspondingElement = svg->correspondingElement();
-    if (correspondingElement && svg->isInShadowTree()) {
-        const HashSet<SVGElementInstance*>& instances = correspondingElement->instancesForElement();
-        ASSERT(!instances.isEmpty());
-
-        SVGUseElement* useElement = 0;
-        const HashSet<SVGElementInstance*>::const_iterator end = instances.end();
-        for (HashSet<SVGElementInstance*>::const_iterator it = instances.begin(); it != end; ++it) {
-            const SVGElementInstance* instance = (*it);
-            ASSERT(isSVGSVGElement(instance->correspondingElement()) || isSVGSymbolElement(instance->correspondingElement()));
-            if (instance->shadowTreeElement() == svg) {
-                ASSERT(correspondingElement == instance->correspondingElement());
-                useElement = instance->directUseElement();
-                if (!useElement)
-                    useElement = instance->correspondingUseElement();
-                break;
-            }
-        }
-
-        ASSERT(useElement);
-        bool isSymbolElement = isSVGSymbolElement(*correspondingElement);
-
-        // Spec (<use> on <symbol>): This generated 'svg' will always have explicit values for attributes width and height.
-        // If attributes width and/or height are provided on the 'use' element, then these attributes
-        // will be transferred to the generated 'svg'. If attributes width and/or height are not specified,
-        // the generated 'svg' element will use values of 100% for these attributes.
-
-        // Spec (<use> on <svg>): If attributes width and/or height are provided on the 'use' element, then these
-        // values will override the corresponding attributes on the 'svg' in the generated tree.
-
-        SVGLengthContext lengthContext(element);
-        if (useElement->hasAttribute(SVGNames::widthAttr))
-            m_viewport.setWidth(useElement->width()->currentValue()->value(lengthContext));
-        else if (isSymbolElement && svg->hasAttribute(SVGNames::widthAttr)) {
-            RefPtr<SVGLength> containerWidth = SVGLength::create(LengthModeWidth);
-            containerWidth->setValueAsString("100%", ASSERT_NO_EXCEPTION);
-            m_viewport.setWidth(containerWidth->value(lengthContext));
-        }
-
-        if (useElement->hasAttribute(SVGNames::heightAttr))
-            m_viewport.setHeight(useElement->height()->currentValue()->value(lengthContext));
-        else if (isSymbolElement && svg->hasAttribute(SVGNames::heightAttr)) {
-            RefPtr<SVGLength> containerHeight = SVGLength::create(LengthModeHeight);
-            containerHeight->setValueAsString("100%", ASSERT_NO_EXCEPTION);
-            m_viewport.setHeight(containerHeight->value(lengthContext));
-        }
-    }
-
     if (oldViewport != m_viewport) {
         setNeedsBoundariesUpdate();
         setNeedsTransformUpdate();
