@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "mojo/system/message_in_transit.h"
+#include "mojo/system/transport_data.h"
 
 namespace mojo {
 namespace system {
@@ -45,7 +46,10 @@ void RawChannel::WriteBuffer::GetBuffers(std::vector<Buffer>* buffers) const {
     return;
 
   MessageInTransit* message = message_queue_.front();
-  if (!message->secondary_buffer_size()) {
+  size_t transport_data_buffer_size = message->transport_data() ?
+      message->transport_data()->buffer_size() : 0;
+
+  if (!transport_data_buffer_size) {
     // Only write from the main buffer.
     DCHECK_LT(offset_, message->main_buffer_size());
     DCHECK_LE(bytes_to_write, message->main_buffer_size());
@@ -57,12 +61,12 @@ void RawChannel::WriteBuffer::GetBuffers(std::vector<Buffer>* buffers) const {
   }
 
   if (offset_ >= message->main_buffer_size()) {
-    // Only write from the secondary buffer.
+    // Only write from the transport data buffer.
     DCHECK_LT(offset_ - message->main_buffer_size(),
-              message->secondary_buffer_size());
-    DCHECK_LE(bytes_to_write, message->secondary_buffer_size());
+              transport_data_buffer_size);
+    DCHECK_LE(bytes_to_write, transport_data_buffer_size);
     Buffer buffer = {
-        static_cast<const char*>(message->secondary_buffer()) +
+        static_cast<const char*>(message->transport_data()->buffer()) +
             (offset_ - message->main_buffer_size()),
         bytes_to_write};
     buffers->push_back(buffer);
@@ -71,14 +75,16 @@ void RawChannel::WriteBuffer::GetBuffers(std::vector<Buffer>* buffers) const {
 
   // Write from both buffers.
   DCHECK_EQ(bytes_to_write, message->main_buffer_size() - offset_ +
-                                message->secondary_buffer_size());
+                                transport_data_buffer_size);
   Buffer buffer1 = {
-      static_cast<const char*>(message->main_buffer()) + offset_,
-      message->main_buffer_size() - offset_};
+    static_cast<const char*>(message->main_buffer()) + offset_,
+    message->main_buffer_size() - offset_
+  };
   buffers->push_back(buffer1);
   Buffer buffer2 = {
-      static_cast<const char*>(message->secondary_buffer()),
-      message->secondary_buffer_size()};
+    static_cast<const char*>(message->transport_data()->buffer()),
+    transport_data_buffer_size
+  };
   buffers->push_back(buffer2);
 }
 
@@ -159,7 +165,8 @@ bool RawChannel::WriteMessage(scoped_ptr<MessageInTransit> message) {
   DCHECK(message);
 
   // TODO(vtl)
-  if (message->has_platform_handles()) {
+  if (message->transport_data() &&
+      message->transport_data()->has_platform_handles()) {
     NOTIMPLEMENTED();
     return false;
   }

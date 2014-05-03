@@ -40,7 +40,7 @@ DispatcherTransport Dispatcher::HandleTableAccess::TryStartTransport(
 }
 
 // static
-void Dispatcher::MessageInTransitAccess::StartSerialize(
+void Dispatcher::TransportDataAccess::StartSerialize(
     Dispatcher* dispatcher,
     Channel* channel,
     size_t* max_size,
@@ -50,7 +50,7 @@ void Dispatcher::MessageInTransitAccess::StartSerialize(
 }
 
 // static
-bool Dispatcher::MessageInTransitAccess::EndSerializeAndClose(
+bool Dispatcher::TransportDataAccess::EndSerializeAndClose(
     Dispatcher* dispatcher,
     Channel* channel,
     void* destination,
@@ -62,7 +62,7 @@ bool Dispatcher::MessageInTransitAccess::EndSerializeAndClose(
 }
 
 // static
-scoped_refptr<Dispatcher> Dispatcher::MessageInTransitAccess::Deserialize(
+scoped_refptr<Dispatcher> Dispatcher::TransportDataAccess::Deserialize(
     Channel* channel,
     int32_t type,
     const void* source,

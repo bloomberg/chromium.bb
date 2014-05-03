@@ -40,7 +40,7 @@ scoped_ptr<MessageInTransit> MakeTestMessage(uint32_t num_bytes) {
   return make_scoped_ptr(
       new MessageInTransit(MessageInTransit::kTypeMessagePipeEndpoint,
                            MessageInTransit::kSubtypeMessagePipeEndpointData,
-                           num_bytes, 0, bytes.empty() ? NULL : &bytes[0]));
+                           num_bytes, bytes.empty() ? NULL : &bytes[0]));
 }
 
 bool CheckMessageData(const void* bytes, uint32_t num_bytes) {

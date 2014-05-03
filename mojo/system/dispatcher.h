@@ -27,9 +27,9 @@ class Dispatcher;
 class DispatcherTransport;
 class HandleTable;
 class LocalMessagePipeEndpoint;
-class MessageInTransit;
 class ProxyMessagePipeEndpoint;
 class RawSharedBufferMapping;
+class TransportData;
 class Waiter;
 
 namespace test {
@@ -146,18 +146,19 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
     static DispatcherTransport TryStartTransport(Dispatcher* dispatcher);
   };
 
-  // A |MessageInTransit| may serialize dispatchers that are attached to it to a
-  // given |Channel| and then (probably in a different process) deserialize.
+  // A |TransportData| may serialize dispatchers that are given to it (and which
+  // were previously attached to the |MessageInTransit| that is creating it) to
+  // a given |Channel| and then (probably in a different process) deserialize.
   // Note that the |MessageInTransit| "owns" (i.e., has the only ref to) these
   // dispatchers, so there are no locking issues. (There's no lock ordering
   // issue, and in fact no need to take dispatcher locks at all.)
   // TODO(vtl): Consider making another wrapper similar to |DispatcherTransport|
   // (but with an owning, unique reference), and having
   // |CreateEquivalentDispatcherAndCloseImplNoLock()| return that wrapper (and
-  // |MessageInTransit| only holding on to such wrappers).
-  class MessageInTransitAccess {
+  // |MessageInTransit|, etc. only holding on to such wrappers).
+  class TransportDataAccess {
    private:
-    friend class MessageInTransit;
+    friend class TransportData;
 
     // Serialization API. These functions may only be called on such
     // dispatchers. (|channel| is the |Channel| to which the dispatcher is to be
@@ -286,16 +287,16 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseNoLock();
 
   // API to serialize dispatchers to a |Channel|, exposed to only
-  // |MessageInTransit| (via |MessageInTransitAccess|). They may only be called
-  // on a dispatcher attached to a |MessageInTransit| (and in particular not in
+  // |TransportData| (via |TransportData|). They may only be called on a
+  // dispatcher attached to a |MessageInTransit| (and in particular not in
   // |CoreImpl|'s handle table).
   //
   // Starts the serialization. Returns (via the two "out" parameters) the
   // maximum amount of space that may be needed to serialize this dispatcher to
   // the given |Channel| (no more than
-  // |MessageInTransit::kMaxSerializedDispatcherSize|) and the maximum number of
+  // |TransportData::kMaxSerializedDispatcherSize|) and the maximum number of
   // |PlatformHandle|s that may need to be attached (no more than
-  // |MessageInTransit::kMaxSerializedDispatcherPlatformHandles|). If this
+  // |TransportData::kMaxSerializedDispatcherPlatformHandles|). If this
   // dispatcher cannot be serialized to the given |Channel|, |*max_size| and
   // |*max_platform_handles| should be set to zero. A call to this method will
   // ALWAYS be followed by a call to |EndSerializeAndClose()| (even if this

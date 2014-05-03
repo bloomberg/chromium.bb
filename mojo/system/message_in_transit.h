@@ -5,6 +5,7 @@
 #ifndef MOJO_SYSTEM_MESSAGE_IN_TRANSIT_H_
 #define MOJO_SYSTEM_MESSAGE_IN_TRANSIT_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <vector>
@@ -12,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/embedder/platform_handle.h"
 #include "mojo/system/dispatcher.h"
 #include "mojo/system/system_impl_export.h"
 
@@ -20,13 +20,14 @@ namespace mojo {
 namespace system {
 
 class Channel;
+class TransportData;
 
 // This class is used to represent data in transit. It is thread-unsafe.
 //
 // |MessageInTransit| buffers:
 //
 // A |MessageInTransit| can be serialized by writing the main buffer and then,
-// if it has one, the secondary buffer. Both buffers are
+// if it has one, the transport data buffer. Both buffers are
 // |kMessageAlignment|-byte aligned and a multiple of |kMessageAlignment| bytes
 // in size.
 //
@@ -36,11 +37,8 @@ class Channel;
 // |kMessageAlignment|-byte aligned), and then any padding needed to make the
 // main buffer a multiple of |kMessageAlignment| bytes in size.
 //
-// The secondary buffer consists first of a table of |HandleTableEntry|s (each
-// of which is already a multiple of |kMessageAlignment| in size), followed by
-// data needed for the |HandleTableEntry|s: A |HandleTableEntry| consists of an
-// offset (in bytes, relative to the start of the secondary buffer; we guarantee
-// that it's a multiple of |kMessageAlignment|), and a size (in bytes).
+// See |TransportData| for a description of the (serialized) transport data
+// buffer.
 class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
  public:
   typedef uint16_t Type;
@@ -69,14 +67,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // quantity (which must be a power of 2).
   static const size_t kMessageAlignment = 8;
 
-  // The maximum size of a single serialized dispatcher. This must be a multiple
-  // of |kMessageAlignment|.
-  static const size_t kMaxSerializedDispatcherSize = 10000;
-
-  // The maximum number of platform handles to attach for a single serialized
-  // dispatcher.
-  static const size_t kMaxSerializedDispatcherPlatformHandles = 2;
-
   // Forward-declare |Header| so that |View| can use it:
  private:
   struct Header;
@@ -90,12 +80,10 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     // |buffer| should be |kMessageAlignment|-byte aligned.
     View(size_t message_size, const void* buffer);
 
-    // Checks the following things versus pre-determined limits:
-    //   - |num_bytes()| and |main_buffer_size()|,
-    //   - |num_handles()| and |secondary_buffer_size()|,
-    //   - the entries in the handle entry table (that the sizes and offsets are
-    //     valid).
-    // Note: It does not check the serialized dispatcher data itself.
+    // Checks that the given |View| appears to be for a valid message, within
+    // predetermined limits (e.g., |num_bytes()| and |main_buffer_size()|, that
+    // |transport_data_buffer()|/|transport_data_buffer_size()| is for valid
+    // transport data -- see |TransportData::ValidateBuffer()|).
     //
     // It returns true (and leaves |error_message| alone) if this object appears
     // to be a valid message (according to the above) and false, pointing
@@ -108,11 +96,11 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     size_t main_buffer_size() const {
       return RoundUpMessageAlignment(sizeof(Header) + header()->num_bytes);
     }
-    const void* secondary_buffer() const {
+    const void* transport_data_buffer() const {
       return (total_size() > main_buffer_size()) ?
           static_cast<const char*>(buffer_) + main_buffer_size() : NULL;
     }
-    size_t secondary_buffer_size() const {
+    size_t transport_data_buffer_size() const {
       return total_size() - main_buffer_size();
     }
     size_t total_size() const { return header()->total_size; }
@@ -120,7 +108,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     const void* bytes() const {
       return static_cast<const char*>(buffer_) + sizeof(Header);
     }
-    uint32_t num_handles() const { return header()->num_handles; }
     Type type() const { return header()->type; }
     Subtype subtype() const { return header()->subtype; }
     EndpointId source_id() const { return header()->source_id; }
@@ -141,7 +128,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   MessageInTransit(Type type,
                    Subtype subtype,
                    uint32_t num_bytes,
-                   uint32_t num_handles,
                    const void* bytes);
   // Constructs a |MessageInTransit| from a |View|.
   explicit MessageInTransit(const View& message_view);
@@ -172,19 +158,12 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // stays alive through the call.
   void SerializeAndCloseDispatchers(Channel* channel);
 
-  // Deserializes any dispatchers from the secondary buffer. This message must
-  // not have any dispatchers attached.
-  // TODO(vtl): Having to copy the secondary buffer (in the constructor from a
-  // |View|) is suboptimal. Maybe this should just be done in the constructor?
-  void DeserializeDispatchers(Channel* channel);
-
   // Gets the main buffer and its size (in number of bytes), respectively.
   const void* main_buffer() const { return main_buffer_.get(); }
   size_t main_buffer_size() const { return main_buffer_size_; }
 
-  // Gets the secondary buffer and its size (in number of bytes), respectively.
-  const void* secondary_buffer() const { return secondary_buffer_.get(); }
-  size_t secondary_buffer_size() const { return secondary_buffer_size_; }
+  // Gets the transport data buffer (if any).
+  const TransportData* transport_data() const { return transport_data_.get(); }
 
   // Gets the total size of the message (see comment in |Header|, below).
   size_t total_size() const { return header()->total_size; }
@@ -195,8 +174,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // Gets the message data (of size |num_bytes()| bytes).
   const void* bytes() const { return main_buffer_.get() + sizeof(Header); }
   void* bytes() { return main_buffer_.get() + sizeof(Header); }
-
-  uint32_t num_handles() const { return header()->num_handles; }
 
   Type type() const { return header()->type; }
   Subtype subtype() const { return header()->subtype; }
@@ -220,25 +197,13 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     return dispatchers_ && !dispatchers_->empty();
   }
 
-  // Gets the platform-specific handles attached to this message; this may
-  // return null if there are none. Note that the caller may mutate the set of
-  // platform-specific handles.
-  std::vector<embedder::PlatformHandle>* platform_handles() {
-    return platform_handles_.get();
-  }
-
-  // Returns true if this message has platform-specific handles attached.
-  bool has_platform_handles() const {
-    return platform_handles_ && !platform_handles_->empty();
-  }
-
   // Rounds |n| up to a multiple of |kMessageAlignment|.
   static inline size_t RoundUpMessageAlignment(size_t n) {
     return (n + kMessageAlignment - 1) & ~(kMessageAlignment - 1);
   }
 
  private:
-  // To allow us to make assertions about |Header| in the .cc file.
+  // To allow us to make compile-assertions about |Header| in the .cc file.
   struct PrivateStructForCompileAsserts;
 
   // Header for the data (main buffer). Must be a multiple of
@@ -256,28 +221,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     EndpointId destination_id;  // 4 bytes.
     // Size of actual message data.
     uint32_t num_bytes;
-    // Number of handles "attached".
-    uint32_t num_handles;
-  };
-
-  struct HandleTableEntry {
-    int32_t type;  // From |Dispatcher::Type| (|kTypeUnknown| for "invalid").
-    uint32_t offset;  // Relative to the start of the secondary buffer.
-    uint32_t size;  // (Not including any padding.)
     uint32_t unused;
   };
-
-  // The maximum possible size of a valid secondary buffer.
-  static const size_t kMaxSecondaryBufferSize;
-
-  // The maximum total number of platform handles that may be attached.
-  static const size_t kMaxPlatformHandles;
-
-  // Validates the secondary buffer. Returns null on success, or a
-  // human-readable error message (meant for logging/debugging) on error.
-  static const char* ValidateSecondaryBuffer(size_t num_handles,
-                                             const void* secondary_buffer,
-                                             size_t secondary_buffer_size);
 
   const Header* header() const {
     return reinterpret_cast<const Header*>(main_buffer_.get());
@@ -289,20 +234,13 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   const size_t main_buffer_size_;
   const scoped_ptr<char, base::AlignedFreeDeleter> main_buffer_;  // Never null.
 
-  size_t secondary_buffer_size_;
-  scoped_ptr<char, base::AlignedFreeDeleter> secondary_buffer_;  // May be null.
+  scoped_ptr<TransportData> transport_data_;  // May be null.
 
   // Any dispatchers that may be attached to this message. These dispatchers
   // should be "owned" by this message, i.e., have a ref count of exactly 1. (We
   // allow a dispatcher entry to be null, in case it couldn't be duplicated for
   // some reason.)
   scoped_ptr<std::vector<scoped_refptr<Dispatcher> > > dispatchers_;
-
-  // Any platform-specific handles attached to this message (for inter-process
-  // transport). The vector (if any) owns the handles that it contains (and is
-  // responsible for closing them).
-  // TODO(vtl): With C++11, change it to a vector of |ScopedPlatformHandles|.
-  scoped_ptr<std::vector<embedder::PlatformHandle> > platform_handles_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageInTransit);
 };

@@ -72,14 +72,13 @@ MojoResult MessagePipe::WriteMessage(
     std::vector<DispatcherTransport>* transports,
     MojoWriteMessageFlags flags) {
   DCHECK(port == 0 || port == 1);
-  uint32_t num_handles =
-      transports ? static_cast<uint32_t>(transports->size()) : 0;
   return EnqueueMessageInternal(
       GetPeerPort(port),
       make_scoped_ptr(new MessageInTransit(
           MessageInTransit::kTypeMessagePipeEndpoint,
           MessageInTransit::kSubtypeMessagePipeEndpointData,
-          num_bytes, num_handles, bytes)),
+          num_bytes,
+          bytes)),
       transports);
 }
 
@@ -226,9 +225,6 @@ MojoResult MessagePipe::EnqueueMessageInternal(
       return result;
   }
 
-  if (message->has_dispatchers())
-    DCHECK_EQ(message->dispatchers()->size(), message->num_handles());
-
   // The endpoint's |EnqueueMessage()| may not report failure.
   endpoints_[port]->EnqueueMessage(message.Pass());
   return MOJO_RESULT_OK;
@@ -239,7 +235,6 @@ MojoResult MessagePipe::AttachTransportsNoLock(
     MessageInTransit* message,
     std::vector<DispatcherTransport>* transports) {
   DCHECK(!message->has_dispatchers());
-  DCHECK_EQ(transports->size(), message->num_handles());
 
   // You're not allowed to send either handle to a message pipe over the message
   // pipe, so check for this. (The case of trying to write a handle to itself is
