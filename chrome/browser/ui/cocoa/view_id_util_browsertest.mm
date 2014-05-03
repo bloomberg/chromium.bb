@@ -43,8 +43,7 @@ class ViewIDTest : public InProcessBrowserTest {
   }
 
   void DoTest() {
-    // Make sure FindBar is created to test
-    // VIEW_ID_FIND_IN_PAGE_TEXT_FIELD and VIEW_ID_FIND_IN_PAGE.
+    // Make sure FindBar is created to test VIEW_ID_FIND_IN_PAGE_TEXT_FIELD.
     chrome::ShowFindBar(browser());
 
     // Make sure docked devtools is created to test VIEW_ID_DEV_TOOLS_DOCKED

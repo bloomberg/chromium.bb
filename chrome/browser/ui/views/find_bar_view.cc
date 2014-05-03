@@ -78,7 +78,6 @@ FindBarView::FindBarView(FindBarHost* host)
       find_previous_button_(NULL),
       find_next_button_(NULL),
       close_button_(NULL) {
-  set_id(VIEW_ID_FIND_IN_PAGE);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   find_text_ = new views::Textfield;

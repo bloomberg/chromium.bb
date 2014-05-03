@@ -66,7 +66,6 @@ enum ViewID {
 
   // Find in page.
   VIEW_ID_FIND_IN_PAGE_TEXT_FIELD,
-  VIEW_ID_FIND_IN_PAGE,
 
   // Tab Container window.
   VIEW_ID_TAB_CONTAINER,

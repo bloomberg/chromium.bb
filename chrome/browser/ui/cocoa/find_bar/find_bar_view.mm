@@ -144,10 +144,6 @@ CGFloat kCurveSize = 8;
   return NSDragOperationNone;
 }
 
-- (ViewID)viewID {
-  return VIEW_ID_FIND_IN_PAGE;
-}
-
 // Specifies that mouse events over this view should be ignored by the
 // render host.
 - (BOOL)nonWebContentView {
