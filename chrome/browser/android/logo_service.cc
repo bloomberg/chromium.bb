@@ -6,6 +6,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -35,7 +36,11 @@ GURL GetGoogleDoodleURL(Profile* profile) {
   std::string path = kGoogleDoodleURLPath;
   GURL::Replacements replacements;
   replacements.SetPathStr(path);
-  return GoogleURLTracker::GoogleURL(profile).ReplaceComponents(replacements);
+
+  GURL base_url(google_util::CommandLineGoogleBaseURL());
+  if (!base_url.is_valid())
+    base_url = GoogleURLTracker::GoogleURL(profile);
+  return base_url.ReplaceComponents(replacements);
 }
 
 class LogoDecoderDelegate : public ImageDecoder::Delegate {
