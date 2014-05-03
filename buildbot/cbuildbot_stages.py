@@ -2550,6 +2550,11 @@ class BuildPackagesStage(BoardSpecificBuilderStage, ArchivingStageMixin):
     # If we have rietveld patches, always compile Chrome from source.
     noworkon = not self._run.options.rietveld_patches
 
+    # Upload new partial-metadata.json and set Chrome version
+    version_metadata = {'chrome': self._run.attrs.chrome_version}
+    self._run.attrs.metadata.UpdateKeyDictWithDict('version', version_metadata)
+    self.UploadMetadata(filename=constants.PARTIAL_METADATA_JSON)
+
     commands.Build(self._build_root,
                    self._current_board,
                    build_autotest=self._run.ShouldBuildAutotest(),
@@ -2560,7 +2565,6 @@ class BuildPackagesStage(BoardSpecificBuilderStage, ArchivingStageMixin):
                    chrome_root=self._run.options.chrome_root,
                    noworkon=noworkon,
                    extra_env=self._env)
-
 
 class ChromeSDKStage(BoardSpecificBuilderStage, ArchivingStageMixin):
   """Run through the simple chrome workflow."""
@@ -4314,6 +4318,14 @@ class ReportBuildStartStage(bs.BuilderStage, ArchivingStageMixin):
         os.path.join(build_root, constants.SDK_VERSION_FILE),
         ignore_missing=True)
 
+    start_time = results_lib.Results.start_time
+    start_time_stamp = cros_build_lib.UserDateTimeFormat(timeval=start_time)
+
+    verinfo = self._run.GetVersionInfo(build_root)
+    platform_tag = getattr(self._run.attrs, 'release_tag')
+    if not platform_tag:
+      platform_tag = verinfo.VersionString()
+
     metadata = {
         # Version of the metadata format.
         'metadata-version': '2',
@@ -4324,6 +4336,15 @@ class ReportBuildStartStage(bs.BuilderStage, ArchivingStageMixin):
         'build-number': self._run.buildnumber,
         'builder-name': os.environ.get('BUILDBOT_BUILDERNAME', ''),
         'child-configs': child_configs,
+
+        'time': {
+            'start': start_time_stamp,
+        },
+        'version': {
+            'full': self._run.GetVersion(),
+            'milestone': verinfo.chrome_branch,
+            'platform': platform_tag,
+        },
 
         # Data for the toolchain used.
         'sdk-version': sdk_verinfo.get('SDK_LATEST_VERSION', '<unknown>'),
@@ -4522,7 +4543,6 @@ class ReportStage(bs.BuilderStage, ArchivingStageMixin):
       A JSON-able dictionary representation of the metadata object.
     """
     builder_run = self._run
-    build_root = self._build_root
     config = config or builder_run.config
 
     commit_queue_stages = (CommitQueueSyncStage, PreCQSyncStage)
@@ -4536,7 +4556,7 @@ class ReportStage(bs.BuilderStage, ArchivingStageMixin):
                                            MasterSlaveSyncCompletionStage))
 
     return cbuildbot_metadata.CBuildbotMetadata.GetReportMetadataDict(
-        builder_run, build_root, get_changes_from_pool,
+        builder_run, get_changes_from_pool,
         get_statuses_from_slaves, config, stage, final_status, sync_instance,
         completion_instance)
 

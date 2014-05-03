@@ -1559,6 +1559,7 @@ class BuildPackagesStageTest(AbstractStageTest):
 
   def ConstructStage(self):
     self.run.attrs.release_tag = self._release_tag
+    self.run.attrs.chrome_version = 'testVersion'
     return stages.BuildPackagesStage(self.run, self._current_board)
 
   @contextlib.contextmanager
