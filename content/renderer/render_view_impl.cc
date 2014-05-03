@@ -2320,13 +2320,6 @@ void RenderViewImpl::didChangeIcon(WebLocalFrame* frame,
   SendUpdateFaviconURL(urls);
 }
 
-void RenderViewImpl::didHandleOnloadEvents(WebLocalFrame* frame) {
-  if (webview()->mainFrame() == frame) {
-    Send(new ViewHostMsg_DocumentOnLoadCompletedInMainFrame(routing_id_,
-                                                            page_id_));
-  }
-}
-
 void RenderViewImpl::didUpdateCurrentHistoryItem(WebLocalFrame* frame) {
   StartNavStateSyncTimerIfNecessary();
 }

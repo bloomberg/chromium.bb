@@ -67,14 +67,14 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                const ContextMenuParams& params) {}
 
   // A JavaScript message, confirmation or prompt should be shown.
-  virtual void RunJavaScriptMessage(RenderFrameHost* rfh,
+  virtual void RunJavaScriptMessage(RenderFrameHost* render_frame_host,
                                     const base::string16& message,
                                     const base::string16& default_prompt,
                                     const GURL& frame_url,
                                     JavaScriptMessageType type,
                                     IPC::Message* reply_msg) {}
 
-  virtual void RunBeforeUnloadConfirm(RenderFrameHost* rfh,
+  virtual void RunBeforeUnloadConfirm(RenderFrameHost* render_frame_host,
                                       const base::string16& message,
                                       bool is_reload,
                                       IPC::Message* reply_msg) {}
@@ -86,6 +86,11 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // The frame set its opener to null, disowning it for the lifetime of the
   // window. Only called for the top-level frame.
   virtual void DidDisownOpener(RenderFrameHost* render_frame_host) {}
+
+  // The onload handler in the frame has completed. Only called for the top-
+  // level frame.
+  virtual void DocumentOnLoadCompleted(RenderFrameHost* render_frame_host,
+                                       int32 page_id) {}
 
   // Return this object cast to a WebContents, if it is one. If the object is
   // not a WebContents, returns NULL.

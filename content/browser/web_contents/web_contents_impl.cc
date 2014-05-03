@@ -3067,7 +3067,7 @@ void WebContentsImpl::ShowContextMenu(RenderFrameHost* render_frame_host,
 }
 
 void WebContentsImpl::RunJavaScriptMessage(
-    RenderFrameHost* rfh,
+    RenderFrameHost* render_frame_host,
     const base::string16& message,
     const base::string16& default_prompt,
     const GURL& frame_url,
@@ -3077,7 +3077,7 @@ void WebContentsImpl::RunJavaScriptMessage(
   // showing an interstitial as it's shown over the previous page and we don't
   // want the hidden page's dialogs to interfere with the interstitial.
   bool suppress_this_message =
-      static_cast<RenderViewHostImpl*>(rfh->GetRenderViewHost())->
+      static_cast<RenderViewHostImpl*>(render_frame_host->GetRenderViewHost())->
           IsSwappedOut() ||
       ShowingInterstitialPage() ||
       !delegate_ ||
@@ -3097,8 +3097,8 @@ void WebContentsImpl::RunJavaScriptMessage(
         default_prompt,
         base::Bind(&WebContentsImpl::OnDialogClosed,
                    base::Unretained(this),
-                   rfh->GetProcess()->GetID(),
-                   rfh->GetRoutingID(),
+                   render_frame_host->GetProcess()->GetID(),
+                   render_frame_host->GetRoutingID(),
                    reply_msg,
                    false),
         &suppress_this_message);
@@ -3107,7 +3107,8 @@ void WebContentsImpl::RunJavaScriptMessage(
   if (suppress_this_message) {
     // If we are suppressing messages, just reply as if the user immediately
     // pressed "Cancel", passing true to |dialog_was_suppressed|.
-    OnDialogClosed(rfh->GetProcess()->GetID(), rfh->GetRoutingID(), reply_msg,
+    OnDialogClosed(render_frame_host->GetProcess()->GetID(),
+                   render_frame_host->GetRoutingID(), reply_msg,
                    true, false, base::string16());
   }
 
@@ -3116,13 +3117,14 @@ void WebContentsImpl::RunJavaScriptMessage(
 }
 
 void WebContentsImpl::RunBeforeUnloadConfirm(
-    RenderFrameHost* rfh,
+    RenderFrameHost* render_frame_host,
     const base::string16& message,
     bool is_reload,
     IPC::Message* reply_msg) {
-  RenderFrameHostImpl* rfhi = static_cast<RenderFrameHostImpl*>(rfh);
+  RenderFrameHostImpl* rfhi =
+      static_cast<RenderFrameHostImpl*>(render_frame_host);
   RenderViewHostImpl* rvhi =
-      static_cast<RenderViewHostImpl*>(rfh->GetRenderViewHost());
+      static_cast<RenderViewHostImpl*>(render_frame_host->GetRenderViewHost());
   if (delegate_)
     delegate_->WillRunBeforeUnloadConfirm();
 
@@ -3141,7 +3143,8 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
   dialog_manager_->RunBeforeUnloadDialog(
       this, message, is_reload,
       base::Bind(&WebContentsImpl::OnDialogClosed, base::Unretained(this),
-                 rfh->GetProcess()->GetID(), rfh->GetRoutingID(), reply_msg,
+                 render_frame_host->GetProcess()->GetID(),
+                 render_frame_host->GetRoutingID(), reply_msg,
                  false));
 }
 
@@ -3446,14 +3449,8 @@ void WebContentsImpl::DidDisownOpener(RenderFrameHost* render_frame_host) {
   GetRenderManager()->DidDisownOpener(render_frame_host->GetRenderViewHost());
 }
 
-void WebContentsImpl::DocumentAvailableInMainFrame(
-    RenderViewHost* render_view_host) {
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DocumentAvailableInMainFrame());
-}
-
-void WebContentsImpl::DocumentOnLoadCompletedInMainFrame(
-    RenderViewHost* render_view_host,
+void WebContentsImpl::DocumentOnLoadCompleted(
+    RenderFrameHost* render_frame_host,
     int32 page_id) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DocumentOnLoadCompletedInMainFrame(page_id));
@@ -3465,6 +3462,11 @@ void WebContentsImpl::DocumentOnLoadCompletedInMainFrame(
       Details<int>(&page_id));
 }
 
+void WebContentsImpl::DocumentAvailableInMainFrame(
+    RenderViewHost* render_view_host) {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    DocumentAvailableInMainFrame());
+}
 void WebContentsImpl::RouteCloseEvent(RenderViewHost* rvh) {
   // Tell the active RenderViewHost to run unload handlers and close, as long
   // as the request came from a RenderViewHost in the same BrowsingInstance.

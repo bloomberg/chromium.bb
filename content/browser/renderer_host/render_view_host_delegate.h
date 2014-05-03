@@ -144,11 +144,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // the document has finished parsing.
   virtual void DocumentAvailableInMainFrame(RenderViewHost* render_view_host) {}
 
-  // The onload handler in the RenderView's main frame has completed.
-  virtual void DocumentOnLoadCompletedInMainFrame(
-      RenderViewHost* render_view_host,
-      int32 page_id) {}
-
   // The page wants to close the active view in this tab.
   virtual void RouteCloseEvent(RenderViewHost* rvh) {}
 

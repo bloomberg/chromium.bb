@@ -328,18 +328,20 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void WorkerCrashed(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void ShowContextMenu(RenderFrameHost* render_frame_host,
                                const ContextMenuParams& params) OVERRIDE;
-  virtual void RunJavaScriptMessage(RenderFrameHost* rfh,
+  virtual void RunJavaScriptMessage(RenderFrameHost* render_frame_host,
                                     const base::string16& message,
                                     const base::string16& default_prompt,
                                     const GURL& frame_url,
                                     JavaScriptMessageType type,
                                     IPC::Message* reply_msg) OVERRIDE;
-  virtual void RunBeforeUnloadConfirm(RenderFrameHost* rfh,
+  virtual void RunBeforeUnloadConfirm(RenderFrameHost* render_frame_host,
                                       const base::string16& message,
                                       bool is_reload,
                                       IPC::Message* reply_msg) OVERRIDE;
   virtual void DidAccessInitialDocument() OVERRIDE;
   virtual void DidDisownOpener(RenderFrameHost* render_frame_host) OVERRIDE;
+  virtual void DocumentOnLoadCompleted(RenderFrameHost* render_frame_host,
+                                       int32 page_id) OVERRIDE;
   virtual WebContents* GetAsWebContents() OVERRIDE;
   virtual bool IsNeverVisible() OVERRIDE;
 
@@ -373,9 +375,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DidChangeLoadProgress(double progress) OVERRIDE;
   virtual void DocumentAvailableInMainFrame(
       RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DocumentOnLoadCompletedInMainFrame(
-      RenderViewHost* render_view_host,
-      int32 page_id) OVERRIDE;
   virtual void RouteCloseEvent(RenderViewHost* rvh) OVERRIDE;
   virtual void RouteMessageEvent(
       RenderViewHost* rvh,

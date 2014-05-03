@@ -428,6 +428,11 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_OpenURL, FrameHostMsg_OpenURL_Params)
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFinishLoad,
                     GURL /* validated_url */)
 
+// Sent when after the onload handler has been invoked for the document
+// in this frame. Sent for top-level frames.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DocumentOnLoadCompleted,
+                    int32 /* page_id */)
+
 // Notifies that the initial empty document of a view has been accessed.
 // After this, it is no longer safe to show a pending navigation's URL without
 // making a URL spoof possible.

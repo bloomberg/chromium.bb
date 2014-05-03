@@ -680,7 +680,6 @@ class CONTENT_EXPORT RenderViewImpl
                        const blink::WebString& title,
                        blink::WebTextDirection direction);
   void didChangeIcon(blink::WebLocalFrame*, blink::WebIconURL::Type);
-  void didHandleOnloadEvents(blink::WebLocalFrame* frame);
   void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
   void didChangeScrollOffset(blink::WebLocalFrame* frame);
   bool willCheckAndDispatchMessageEvent(

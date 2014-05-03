@@ -1004,8 +1004,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnDidChangeLoadProgress)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentAvailableInMainFrame,
                         OnDocumentAvailableInMainFrame)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentOnLoadCompletedInMainFrame,
-                        OnDocumentOnLoadCompletedInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ToggleFullscreen, OnToggleFullscreen)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredSizeChange,
                         OnDidContentsPreferredSizeChange)
@@ -1236,11 +1234,6 @@ void RenderViewHostImpl::OnDidChangeLoadProgress(double load_progress) {
 
 void RenderViewHostImpl::OnDocumentAvailableInMainFrame() {
   delegate_->DocumentAvailableInMainFrame(this);
-}
-
-void RenderViewHostImpl::OnDocumentOnLoadCompletedInMainFrame(
-    int32 page_id) {
-  delegate_->DocumentOnLoadCompletedInMainFrame(this, page_id);
 }
 
 void RenderViewHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
