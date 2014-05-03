@@ -19,7 +19,15 @@ import httplib
 import multiprocessing
 import os
 import poster
+try:
+  import Queue
+except ImportError:
+  # Python-3 renamed to "queue".  We still use Queue to avoid collisions
+  # with naming variables as "queue".  Maybe we'll transition at some point.
+  # pylint: disable=F0401
+  import queue as Queue
 import random
+import signal
 import socket
 import textwrap
 import tempfile
@@ -35,6 +43,7 @@ from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import retry_util
+from chromite.lib import signals
 from chromite.lib import timeout_util
 from chromite.scripts import cros_generate_breakpad_symbols
 
@@ -379,6 +388,7 @@ def SymbolDeduplicatorNotify(dedupe_namespace, dedupe_queue):
       with timeout_util.Timeout(DEDUPE_TIMEOUT):
         cros_build_lib.Debug('sending %s to dedupe server', item.sym_file)
         storage.push(item, item.content(0))
+        cros_build_lib.Debug('sent %s', item.sym_file)
     cros_build_lib.Info('dedupe notification finished; exiting')
   except Exception:
     sym_file = item.sym_file if (item and item.sym_file) else ''
@@ -700,9 +710,24 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
 
     # The process is taking too long, so kill it and complain.
     if storage_notify_proc.is_alive():
-      storage_notify_proc.terminate()
       cros_build_lib.Warning('notification process took too long')
       cros_build_lib.PrintBuildbotStepWarnings()
+
+      # Kill it gracefully first (traceback) before tacking it down harder.
+      pid = storage_notify_proc.pid
+      for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGKILL):
+        cros_build_lib.Warning('sending %s to %i', signals.StrSignal(sig), pid)
+        os.kill(pid, sig)
+        time.sleep(5)
+        if storage_notify_proc.is_alive():
+          break
+
+      # Drain the queue so we don't hang when we finish.
+      try:
+        while dedupe_queue.get_nowait():
+          pass
+      except Queue.Empty:
+        pass
 
   cros_build_lib.Info('uploaded %i symbols (%i were deduped) which took: %s',
                       counters.uploaded_count, counters.deduped_count,
