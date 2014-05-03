@@ -20,9 +20,6 @@ class AccessibilityUI : public WebUIController {
   virtual ~AccessibilityUI();
 
  private:
-  void SendTargetsData(const WebUIDataSource::GotDataCallback& callback);
-  bool HandleRequestCallback(const std::string& path,
-                             const WebUIDataSource::GotDataCallback& callback);
   void ToggleAccessibility(const base::ListValue* args);
   void ToggleGlobalAccessibility(const base::ListValue* args);
   void RequestAccessibilityTree(const base::ListValue* args);
