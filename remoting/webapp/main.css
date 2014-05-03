@@ -707,6 +707,10 @@ html.apps-v2.scrollable {
   display: none !important;
 }
 
+.full-width {
+  width: 100%;
+}
+
 .full-height {
   height: 100%;
 }
@@ -745,7 +749,6 @@ html.apps-v2.scrollable {
 /* video-container needs relative position so that mediasource-video-output can
  * be positioned relative to the parent with position:absolute. */
 #video-container {
-  width: 100%;
   position: relative;
 }
 
