@@ -376,8 +376,8 @@ bool Setup::SaveArgsToFile() {
   // Notepad which can't handle Unix ones.
   ReplaceSubstringsAfterOffset(&contents, 0, "\n", "\r\n");
 #endif
-  if (base::WriteFile(build_arg_file, contents.c_str(), contents.size()) ==
-      -1) {
+  if (base::WriteFile(build_arg_file, contents.c_str(),
+      static_cast<int>(contents.size())) == -1) {
     Err(Location(), "Args file could not be written.",
       "The file is \"" + FilePathToUTF8(build_arg_file) +
         "\"").PrintToStdout();
