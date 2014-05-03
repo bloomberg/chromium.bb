@@ -6,6 +6,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/time/time.h"
 #include "content/browser/fileapi/blob_storage_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,6 +42,10 @@ TEST(BlobStorageContextTest, IncrementDecrementRef) {
   blob_data_handle = context.GetBlobDataFromUUID(kId);
   EXPECT_TRUE(blob_data_handle);
   blob_data_handle.reset();
+  {  // Clean up for ASAN
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
 
   // Make sure its still there after inc/dec.
   EXPECT_TRUE(host.IncrementBlobRefCount(kId));
@@ -48,6 +53,10 @@ TEST(BlobStorageContextTest, IncrementDecrementRef) {
   blob_data_handle = context.GetBlobDataFromUUID(kId);
   EXPECT_TRUE(blob_data_handle);
   blob_data_handle.reset();
+  {  // Clean up for ASAN
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
 
   // Make sure it goes away in the end.
   EXPECT_TRUE(host.DecrementBlobRefCount(kId));
@@ -82,6 +91,10 @@ TEST(BlobStorageContextTest, BlobDataHandle) {
   // Should disappear after dropping both handles.
   blob_data_handle.reset();
   another_handle.reset();
+  {  // Clean up for ASAN
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
   blob_data_handle = context.GetBlobDataFromUUID(kId);
   EXPECT_FALSE(blob_data_handle);
 }
@@ -131,6 +144,12 @@ TEST(BlobStorageContextTest, CompoundBlobs) {
   blob_data_handle = context.AddFinishedBlob(blob_data2.get());
   ASSERT_TRUE(blob_data_handle.get());
   EXPECT_TRUE(*(blob_data_handle->data()) == *canonicalized_blob_data2.get());
+
+  blob_data_handle.reset();
+  {  // Clean up for ASAN
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
 }
 
 TEST(BlobStorageContextTest, PublicBlobUrls) {
@@ -150,6 +169,10 @@ TEST(BlobStorageContextTest, PublicBlobUrls) {
   ASSERT_TRUE(blob_data_handle.get());
   EXPECT_EQ(kId, blob_data_handle->data()->uuid());
   blob_data_handle.reset();
+  {  // Clean up for ASAN
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
 
   // The url registration should keep the blob alive even after
   // explicit references are dropped.
@@ -157,6 +180,10 @@ TEST(BlobStorageContextTest, PublicBlobUrls) {
   blob_data_handle = context.GetBlobDataFromPublicURL(kUrl);
   EXPECT_TRUE(blob_data_handle);
   blob_data_handle.reset();
+  {  // Clean up for ASAN
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
 
   // Finally get rid of the url registration and the blob.
   EXPECT_TRUE(host.RevokePublicBlobURL(kUrl));
