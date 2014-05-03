@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "google_apis/gcm/engine/checkin_request.h"
+#include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
 #include "net/base/backoff_entry.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -91,6 +92,7 @@ class CheckinRequestTest : public testing::Test {
   checkin_proto::ChromeBuildProto chrome_build_proto_;
   std::vector<std::string> account_ids_;
   scoped_ptr<CheckinRequest> request_;
+  GCMStatsRecorder recorder_;
 };
 
 CheckinRequestTest::CheckinRequestTest()
@@ -136,7 +138,8 @@ void CheckinRequestTest::CreateRequest(uint64 android_id,
       request_info,
       kDefaultBackoffPolicy,
       base::Bind(&CheckinRequestTest::FetcherCallback, base::Unretained(this)),
-      url_request_context_getter_.get()));
+      url_request_context_getter_.get(),
+      &recorder_));
 
   // Setting android_id_ and security_token_ to blank value, not used elsewhere
   // in the tests.

@@ -24,6 +24,8 @@ class URLRequestContextGetter;
 
 namespace gcm {
 
+class GCMStatsRecorder;
+
 // Enables making check-in requests with the GCM infrastructure. When called
 // with android_id and security_token both set to 0 it is an initial check-in
 // used to obtain credentials. These should be persisted and used for subsequent
@@ -60,7 +62,8 @@ class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
                  const RequestInfo& request_info,
                  const net::BackoffEntry::Policy& backoff_policy,
                  const CheckinRequestCallback& callback,
-                 net::URLRequestContextGetter* request_context_getter);
+                 net::URLRequestContextGetter* request_context_getter,
+                 GCMStatsRecorder* recorder);
   virtual ~CheckinRequest();
 
   void Start();
@@ -80,6 +83,9 @@ class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
   GURL checkin_url_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
   const RequestInfo request_info_;
+
+  // Recorder that records GCM activities for debugging purpose. Not owned.
+  GCMStatsRecorder* recorder_;
 
   base::WeakPtrFactory<CheckinRequest> weak_ptr_factory_;
 

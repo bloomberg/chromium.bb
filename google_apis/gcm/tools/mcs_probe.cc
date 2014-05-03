@@ -438,7 +438,8 @@ void MCSProbe::CheckIn() {
       request_info,
       kDefaultBackoffPolicy,
       base::Bind(&MCSProbe::OnCheckInCompleted, base::Unretained(this)),
-      url_request_context_getter_.get()));
+      url_request_context_getter_.get(),
+      &recorder_));
   checkin_request_->Start();
 }
 

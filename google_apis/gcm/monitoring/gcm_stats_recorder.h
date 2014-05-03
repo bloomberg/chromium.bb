@@ -49,6 +49,12 @@ class GCM_EXPORT GCMStatsRecorder {
     virtual ~ConnectionActivity();
   };
 
+  // Contains relevant data of a check-in activity.
+  struct GCM_EXPORT CheckinActivity : Activity {
+    CheckinActivity();
+    virtual ~CheckinActivity();
+  };
+
   // Contains relevant data of a registration/unregistration step.
   struct GCM_EXPORT RegistrationActivity : Activity {
     RegistrationActivity();
@@ -82,6 +88,7 @@ class GCM_EXPORT GCMStatsRecorder {
     RecordedActivities();
     virtual ~RecordedActivities();
 
+    std::vector<GCMStatsRecorder::CheckinActivity> checkin_activities;
     std::vector<GCMStatsRecorder::ConnectionActivity> connection_activities;
     std::vector<GCMStatsRecorder::RegistrationActivity> registration_activities;
     std::vector<GCMStatsRecorder::ReceivingActivity> receiving_activities;
@@ -105,6 +112,19 @@ class GCM_EXPORT GCMStatsRecorder {
   // All RecordXXXX methods below will record one activity. It will be inserted
   // to the front of a queue so that entries in the queue had reverse
   // chronological order.
+
+  // Records that a check-in has been initiated.
+  void RecordCheckinInitiated(uint64 android_id);
+
+  // Records that a check-in has been delayed due to backoff.
+  void RecordCheckinDelayedDueToBackoff(int64 delay_msec);
+
+  // Records that a check-in request has succeeded.
+  void RecordCheckinSuccess();
+
+  // Records that a check-in request has failed. If a retry will be tempted then
+  // will_retry should be true.
+  void RecordCheckinFailure(std::string status, bool will_retry);
 
   // Records that a connection to MCS has been initiated.
   void RecordConnectionInitiated(const std::string& host);
@@ -182,6 +202,9 @@ class GCM_EXPORT GCMStatsRecorder {
   // Collect all recorded activities into the struct.
   void CollectActivities(RecordedActivities* recorder_activities) const;
 
+  const std::deque<CheckinActivity>& checkin_activities() const {
+    return checkin_activities_;
+  }
   const std::deque<ConnectionActivity>& connection_activities() const {
     return connection_activities_;
   }
@@ -196,6 +219,8 @@ class GCM_EXPORT GCMStatsRecorder {
   }
 
  protected:
+  void RecordCheckin(const std::string& event,
+                     const std::string& details);
   void RecordConnection(const std::string& event,
                         const std::string& details);
   void RecordRegistration(const std::string& app_id,
@@ -215,6 +240,7 @@ class GCM_EXPORT GCMStatsRecorder {
 
   bool is_recording_;
 
+  std::deque<CheckinActivity> checkin_activities_;
   std::deque<ConnectionActivity> connection_activities_;
   std::deque<RegistrationActivity> registration_activities_;
   std::deque<ReceivingActivity> receiving_activities_;

@@ -312,7 +312,8 @@ void GCMClientImpl::StartCheckin() {
                          kDefaultBackoffPolicy,
                          base::Bind(&GCMClientImpl::OnCheckinCompleted,
                                     weak_ptr_factory_.GetWeakPtr()),
-                         url_request_context_getter_));
+                         url_request_context_getter_,
+                         &recorder_));
   checkin_request_->Start();
 }
 

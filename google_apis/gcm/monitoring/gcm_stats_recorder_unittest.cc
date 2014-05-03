@@ -15,6 +15,8 @@ namespace gcm {
 
 namespace {
 
+static uint64 kAndroidId = 4U;
+static const char kCheckinStatus[] = "URL_FETCHING_FAILED";
 static const char kHost[] = "www.example.com";
 static const char kAppId[] = "app id 1";
 static const char kFrom[] = "from";
@@ -36,6 +38,16 @@ static const RegistrationRequest::Status kRegistrationStatus =
     RegistrationRequest::SUCCESS;
 static const UnregistrationRequest::Status kUnregistrationStatus =
     UnregistrationRequest::SUCCESS;
+
+static const char kCheckinInitiatedEvent[] = "Checkin initiated";
+static const char kCheckinInitiatedDetails[] = "Android Id: 4";
+static const char kCheckinDelayedDueToBackoffEvent[] = "Checkin backoff";
+static const char kCheckinDelayedDueToBackoffDetails[] =
+    "Delayed for 15000 msec";
+static const char kCheckinSuccessEvent[] = "Checkin succeeded";
+static const char kCheckinSuccessDetails[] = "";
+static const char kCheckinFailureEvent[] = "Checkin failed";
+static const char kCheckinFailureDetails[] = "URL_FETCHING_FAILED. Will retry.";
 
 static const char kConnectionInitiatedEvent[] = "Connection initiated";
 static const char kConnectionInitiatedDetails[] = "www.example.com";
@@ -91,6 +103,10 @@ class GCMStatsRecorderTest : public testing::Test {
   virtual ~GCMStatsRecorderTest();
   virtual void SetUp() OVERRIDE;
 
+  void VerifyRecordedCheckinCount(int expected_count) {
+    EXPECT_EQ(expected_count,
+              static_cast<int>(recorder_.checkin_activities().size()));
+  }
   void VerifyRecordedConnectionCount(int expected_count) {
     EXPECT_EQ(expected_count,
               static_cast<int>(recorder_.connection_activities().size()));
@@ -106,6 +122,34 @@ class GCMStatsRecorderTest : public testing::Test {
   void VerifyRecordedSendingCount(int expected_count) {
     EXPECT_EQ(expected_count,
               static_cast<int>(recorder_.sending_activities().size()));
+  }
+
+  void VerifyCheckinInitiated(const std::string& remark) {
+    VerifyCheckin(recorder_.checkin_activities(),
+                  kCheckinInitiatedEvent,
+                  kCheckinInitiatedDetails,
+                  remark);
+  }
+
+  void VerifyCheckinDelayedDueToBackoff(const std::string& remark) {
+    VerifyCheckin(recorder_.checkin_activities(),
+                  kCheckinDelayedDueToBackoffEvent,
+                  kCheckinDelayedDueToBackoffDetails,
+                  remark);
+  }
+
+  void VerifyCheckinSuccess(const std::string& remark) {
+    VerifyCheckin(recorder_.checkin_activities(),
+                  kCheckinSuccessEvent,
+                  kCheckinSuccessDetails,
+                  remark);
+  }
+
+  void VerifyCheckinFailure(const std::string& remark) {
+    VerifyCheckin(recorder_.checkin_activities(),
+                  kCheckinFailureEvent,
+                  kCheckinFailureDetails,
+                  remark);
   }
 
   void VerifyConnectionInitiated(const std::string& remark) {
@@ -234,6 +278,15 @@ class GCMStatsRecorderTest : public testing::Test {
   }
 
  protected:
+  void VerifyCheckin(
+      const std::deque<GCMStatsRecorder::CheckinActivity>& queue,
+      const std::string& event,
+      const std::string& details,
+      const std::string& remark) {
+    EXPECT_EQ(event, queue.front().event) << remark;
+    EXPECT_EQ(details, queue.front().details) << remark;
+  }
+
   void VerifyConnection(
       const std::deque<GCMStatsRecorder::ConnectionActivity>& queue,
       const std::string& event,
@@ -318,6 +371,24 @@ TEST_F(GCMStatsRecorderTest, ClearLogTest) {
 
   recorder_.Clear();
   VerifyRecordedSendingCount(0);
+}
+
+TEST_F(GCMStatsRecorderTest, CheckinTest) {
+  recorder_.RecordCheckinInitiated(kAndroidId);
+  VerifyRecordedCheckinCount(1);
+  VerifyCheckinInitiated("1st call");
+
+  recorder_.RecordCheckinDelayedDueToBackoff(kDelay);
+  VerifyRecordedCheckinCount(2);
+  VerifyCheckinDelayedDueToBackoff("2nd call");
+
+  recorder_.RecordCheckinSuccess();
+  VerifyRecordedCheckinCount(3);
+  VerifyCheckinSuccess("3rd call");
+
+  recorder_.RecordCheckinFailure(kCheckinStatus, true);
+  VerifyRecordedCheckinCount(4);
+  VerifyCheckinFailure("4th call");
 }
 
 TEST_F(GCMStatsRecorderTest, ConnectionTest) {

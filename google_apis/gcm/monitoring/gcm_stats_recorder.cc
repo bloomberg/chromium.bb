@@ -19,7 +19,7 @@ const uint32 MAX_LOGGED_ACTIVITY_COUNT = 100;
 
 namespace {
 
-// Insert an itme to the front of deque while maintaining the size of the deque.
+// Insert an item to the front of deque while maintaining the size of the deque.
 // Overflow item is discarded.
 template <typename T>
 T* InsertCircularBuffer(std::deque<T>* q, const T& item) {
@@ -147,6 +147,12 @@ GCMStatsRecorder::Activity::Activity()
 GCMStatsRecorder::Activity::~Activity() {
 }
 
+GCMStatsRecorder::CheckinActivity::CheckinActivity() {
+}
+
+GCMStatsRecorder::CheckinActivity::~CheckinActivity() {
+}
+
 GCMStatsRecorder::ConnectionActivity::ConnectionActivity() {
 }
 
@@ -189,10 +195,52 @@ void GCMStatsRecorder::SetRecording(bool recording) {
 }
 
 void GCMStatsRecorder::Clear() {
+  checkin_activities_.clear();
   connection_activities_.clear();
   registration_activities_.clear();
   receiving_activities_.clear();
   sending_activities_.clear();
+}
+
+void GCMStatsRecorder::RecordCheckin(
+    const std::string& event,
+    const std::string& details) {
+  CheckinActivity data;
+  CheckinActivity* inserted_data = InsertCircularBuffer(
+      &checkin_activities_, data);
+  inserted_data->event = event;
+  inserted_data->details = details;
+}
+
+void GCMStatsRecorder::RecordCheckinInitiated(uint64 android_id) {
+  if (!is_recording_)
+    return;
+  RecordCheckin("Checkin initiated",
+                base::StringPrintf("Android Id: %" PRIu64, android_id));
+}
+
+void GCMStatsRecorder::RecordCheckinDelayedDueToBackoff(int64 delay_msec) {
+  if (!is_recording_)
+    return;
+  RecordCheckin("Checkin backoff",
+                base::StringPrintf("Delayed for %" PRId64 " msec",
+                                   delay_msec));
+}
+
+void GCMStatsRecorder::RecordCheckinSuccess() {
+  if (!is_recording_)
+    return;
+  RecordCheckin("Checkin succeeded", std::string());
+}
+
+void GCMStatsRecorder::RecordCheckinFailure(std::string status,
+                                            bool will_retry) {
+  if (!is_recording_)
+    return;
+  RecordCheckin("Checkin failed", base::StringPrintf(
+      "%s.%s",
+      status.c_str(),
+      will_retry ? " Will retry." : "Will not retry."));
 }
 
 void GCMStatsRecorder::RecordConnection(
@@ -364,6 +412,10 @@ void GCMStatsRecorder::RecordDataMessageRecieved(
 
 void GCMStatsRecorder::CollectActivities(
     RecordedActivities* recorder_activities) const {
+  recorder_activities->checkin_activities.insert(
+      recorder_activities->checkin_activities.begin(),
+      checkin_activities_.begin(),
+      checkin_activities_.end());
   recorder_activities->connection_activities.insert(
       recorder_activities->connection_activities.begin(),
       connection_activities_.begin(),
