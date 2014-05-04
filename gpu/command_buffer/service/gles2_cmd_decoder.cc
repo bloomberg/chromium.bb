@@ -4706,7 +4706,7 @@ error::Error GLES2DecoderImpl::HandleBindAttribLocation(
   if (name == NULL) {
     return error::kOutOfBounds;
   }
-  String name_str(name, name_size);
+  std::string name_str(name, name_size);
   DoBindAttribLocation(program, index, name_str.c_str());
   return error::kNoError;
 }
@@ -4771,7 +4771,7 @@ error::Error GLES2DecoderImpl::HandleBindUniformLocationCHROMIUM(
   if (name == NULL) {
     return error::kOutOfBounds;
   }
-  String name_str(name, name_size);
+  std::string name_str(name, name_size);
   DoBindUniformLocationCHROMIUM(program, location, name_str.c_str());
   return error::kNoError;
 }
@@ -7621,7 +7621,7 @@ error::Error GLES2DecoderImpl::HandleGetAttribLocation(
   if (!name) {
     return error::kOutOfBounds;
   }
-  String name_str(name, name_size);
+  std::string name_str(name, name_size);
   return GetAttribLocationHelper(
     c.program, c.location_shm_id, c.location_shm_offset, name_str);
 }
@@ -7680,7 +7680,7 @@ error::Error GLES2DecoderImpl::HandleGetUniformLocation(
   if (!name) {
     return error::kOutOfBounds;
   }
-  String name_str(name, name_size);
+  std::string name_str(name, name_size);
   return GetUniformLocationHelper(
     c.program, c.location_shm_id, c.location_shm_offset, name_str);
 }

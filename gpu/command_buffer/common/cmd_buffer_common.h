@@ -41,8 +41,8 @@ inline size_t RoundSizeToMultipleOfEntries(size_t size_in_bytes) {
 
 // Struct that defines the command header in the command buffer.
 struct CommandHeader {
-  Uint32 size:21;
-  Uint32 command:11;
+  uint32 size:21;
+  uint32 command:11;
 
   GPU_EXPORT static const int32 kMaxSize = (1 << 21) - 1;
 
@@ -82,8 +82,8 @@ COMPILE_ASSERT(sizeof(CommandHeader) == 4, Sizeof_CommandHeader_is_not_4);
 // Union that defines possible command buffer entries.
 union CommandBufferEntry {
   CommandHeader value_header;
-  Uint32 value_uint32;
-  Int32 value_int32;
+  uint32 value_uint32;
+  int32 value_int32;
   float value_float;
 };
 
