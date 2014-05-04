@@ -27,8 +27,10 @@
 #endif
 
 // This macro is currently C++-only, but we want to use it in the C core.h.
-#ifdef __cplusplus
 // Used to assert things at compile time.
+#if __cplusplus >= 201103L
+#define MOJO_COMPILE_ASSERT(expr, msg) static_assert(expr, #msg)
+#elif defined(__cplusplus)
 namespace mojo { template <bool> struct CompileAssert {}; }
 #define MOJO_COMPILE_ASSERT(expr, msg) \
     typedef ::mojo::CompileAssert<(bool(expr))> msg[bool(expr) ? 1 : -1]
