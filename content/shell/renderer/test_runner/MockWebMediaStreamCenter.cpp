@@ -19,7 +19,7 @@
 
 using namespace blink;
 
-namespace WebTestRunner {
+namespace content {
 
 class NewTrackTask : public WebMethodTask<MockWebMediaStreamCenter> {
 public:
@@ -123,4 +123,4 @@ blink::WebAudioSourceProvider* MockWebMediaStreamCenter::createWebAudioSourceFro
     return NULL;
 }
 
-}
+}  // namespace content

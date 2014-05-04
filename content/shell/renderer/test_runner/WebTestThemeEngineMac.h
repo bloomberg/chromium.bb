@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "third_party/WebKit/public/platform/WebThemeEngine.h"
 
-namespace WebTestRunner {
+namespace content {
 
 class WebTestThemeEngineMac : public blink::WebThemeEngine {
 public:
@@ -43,6 +43,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(WebTestThemeEngineMac);
 };
 
-}
+}  // namespace content
 
 #endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTTHEMEENGINEMAC_H_

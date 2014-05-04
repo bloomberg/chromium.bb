@@ -87,8 +87,6 @@ using blink::WebScreenOrientationType;
 using blink::WebTestingSupport;
 using blink::WebVector;
 using blink::WebView;
-using WebTestRunner::WebTask;
-using WebTestRunner::WebTestInterfaces;
 
 namespace content {
 

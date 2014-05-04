@@ -202,8 +202,7 @@ void AccessibilityController::NotificationReceived(
       argv);
 }
 
-void AccessibilityController::SetDelegate(
-    WebTestRunner::WebTestDelegate* delegate) {
+void AccessibilityController::SetDelegate(WebTestDelegate* delegate) {
   delegate_ = delegate;
 }
 

@@ -27,7 +27,7 @@
 using namespace blink;
 using namespace std;
 
-namespace WebTestRunner {
+namespace content {
 
 namespace {
 
@@ -296,7 +296,7 @@ void TestPlugin::updateGeometry(const WebRect& frameRect, const WebRect& clipRec
     } else {
         size_t bytes = 4 * m_rect.width * m_rect.height;
         scoped_ptr<base::SharedMemory> bitmap =
-                content::RenderThread::Get()->HostAllocateSharedMemoryBuffer(bytes);
+            RenderThread::Get()->HostAllocateSharedMemoryBuffer(bytes);
         if (!bitmap->Map(bytes)) {
             m_textureMailbox = cc::TextureMailbox();
         } else {
@@ -690,4 +690,4 @@ bool TestPlugin::isSupportedMimeType(const WebString& mimeType)
            || mimeType == canCreateWithoutRendererMimeType();
 }
 
-}
+}  // namespace content

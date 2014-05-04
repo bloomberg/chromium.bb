@@ -27,13 +27,10 @@ struct WebURLError;
 }
 
 namespace content {
-class WebTestProxyBase;
-struct TestPreferences;
-}
-
-namespace WebTestRunner {
 
 class WebTask;
+class WebTestProxyBase;
+struct TestPreferences;
 
 class WebTestDelegate {
 public:
@@ -85,7 +82,7 @@ public:
     virtual blink::WebURL rewriteLayoutTestsURL(const std::string& utf8URL) = 0;
 
     // Manages the settings to used for layout tests.
-    virtual content::TestPreferences* preferences() = 0;
+    virtual TestPreferences* preferences() = 0;
     virtual void applyPreferences() = 0;
 
     // Enables or disables synchronous resize mode. When enabled, all window-sizing machinery is
@@ -118,7 +115,7 @@ public:
     virtual void setDeviceScaleFactor(float) = 0;
 
     // Controls which WebView should be focused.
-    virtual void setFocus(content::WebTestProxyBase*, bool) = 0;
+    virtual void setFocus(WebTestProxyBase*, bool) = 0;
 
     // Controls whether all cookies should be accepted or writing cookies in a
     // third-party context is blocked.
@@ -152,9 +149,9 @@ public:
 
     // Returns a text dump the back/forward history for the WebView associated
     // with the given WebTestProxyBase.
-    virtual std::string dumpHistoryForWindow(content::WebTestProxyBase*) = 0;
+    virtual std::string dumpHistoryForWindow(WebTestProxyBase*) = 0;
 };
 
-}
+}  // namespace content
 
 #endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTDELEGATE_H_

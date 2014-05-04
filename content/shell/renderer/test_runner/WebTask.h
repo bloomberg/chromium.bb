@@ -7,7 +7,7 @@
 
 #include <vector>
 
-namespace WebTestRunner {
+namespace content {
 
 class WebTaskList;
 
@@ -72,6 +72,6 @@ protected:
     T* m_object;
 };
 
-}
+}  // namespace content
 
 #endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTASK_H_

@@ -45,7 +45,6 @@
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using namespace WebTestRunner;
 using namespace blink;
 using namespace std;
 

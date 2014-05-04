@@ -71,23 +71,20 @@ struct WebWindowFeatures;
 typedef unsigned WebColor;
 }
 
-namespace WebTestRunner {
+namespace content {
+
 class MockWebSpeechRecognizer;
+class RenderFrame;
+class SpellCheckClient;
 class TestInterfaces;
 class WebTestDelegate;
 class WebTestInterfaces;
 class WebUserMediaClientMock;
-}
-
-namespace content {
-
-class RenderFrame;
-class SpellCheckClient;
 
 class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
 public:
-    void setInterfaces(WebTestRunner::WebTestInterfaces*);
-    void setDelegate(WebTestRunner::WebTestDelegate*);
+    void setInterfaces(WebTestInterfaces*);
+    void setDelegate(WebTestDelegate*);
     void setWidget(blink::WebWidget*);
 
     void reset();
@@ -118,9 +115,9 @@ public:
     void discardBackingStore();
 
     blink::WebMIDIClientMock* midiClientMock();
-    WebTestRunner::MockWebSpeechRecognizer* speechRecognizerMock();
+    MockWebSpeechRecognizer* speechRecognizerMock();
 
-    WebTestRunner::WebTaskList* taskList() { return &m_taskList; }
+    WebTaskList* taskList() { return &m_taskList; }
 
     blink::WebView* webView();
 
@@ -201,14 +198,14 @@ private:
 
     blink::WebWidget* webWidget();
 
-    WebTestRunner::TestInterfaces* m_testInterfaces;
-    ::WebTestRunner::WebTestDelegate* m_delegate;
+    TestInterfaces* m_testInterfaces;
+    WebTestDelegate* m_delegate;
     blink::WebWidget* m_webWidget;
 
-    WebTestRunner::WebTaskList m_taskList;
+    WebTaskList m_taskList;
 
     scoped_ptr<SpellCheckClient> m_spellcheck;
-    scoped_ptr<WebTestRunner::WebUserMediaClientMock> m_userMediaClient;
+    scoped_ptr<WebUserMediaClientMock> m_userMediaClient;
 
     // Painting.
     scoped_ptr<SkCanvas> m_canvas;
@@ -223,7 +220,7 @@ private:
     int m_chooserCount;
 
     scoped_ptr<blink::WebMIDIClientMock> m_midiClient;
-    scoped_ptr<WebTestRunner::MockWebSpeechRecognizer> m_speechRecognizer;
+    scoped_ptr<MockWebSpeechRecognizer> m_speechRecognizer;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(WebTestProxyBase);

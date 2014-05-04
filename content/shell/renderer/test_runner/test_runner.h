@@ -28,33 +28,30 @@ class ArrayBufferView;
 class Arguments;
 }
 
-namespace WebTestRunner {
-class TestInterfaces;
-class WebTestDelegate;
-}
-
 namespace content {
 
 class InvokeCallbackTask;
 class NotificationPresenter;
+class TestInterfaces;
 class TestPageOverlay;
 class WebPermissions;
+class WebTestDelegate;
 class WebTestProxyBase;
 
-class TestRunner : public ::WebTestRunner::WebTestRunner,
+class TestRunner : public WebTestRunner,
                    public base::SupportsWeakPtr<TestRunner> {
  public:
-  explicit TestRunner(::WebTestRunner::TestInterfaces*);
+  explicit TestRunner(TestInterfaces*);
   virtual ~TestRunner();
 
   void Install(blink::WebFrame* frame);
 
-  void SetDelegate(::WebTestRunner::WebTestDelegate*);
+  void SetDelegate(WebTestDelegate*);
   void SetWebView(blink::WebView*, WebTestProxyBase*);
 
   void Reset();
 
-  ::WebTestRunner::WebTaskList* taskList() { return &task_list_; }
+  WebTaskList* taskList() { return &task_list_; }
 
   void SetTestIsRunning(bool);
   bool TestIsRunning() const { return test_is_running_; }
@@ -127,7 +124,7 @@ class TestRunner : public ::WebTestRunner::WebTestRunner,
     virtual ~WorkItem() {}
 
     // Returns true if this started a load.
-    virtual bool Run(::WebTestRunner::WebTestDelegate*, blink::WebView*) = 0;
+    virtual bool Run(WebTestDelegate*, blink::WebView*) = 0;
   };
 
  private:
@@ -150,20 +147,19 @@ class TestRunner : public ::WebTestRunner::WebTestRunner,
 
     void set_frozen(bool frozen) { frozen_ = frozen; }
     bool is_empty() { return queue_.empty(); }
-    ::WebTestRunner::WebTaskList* taskList() { return &task_list_; }
+    WebTaskList* taskList() { return &task_list_; }
 
    private:
     void ProcessWork();
 
-    class WorkQueueTask : public ::WebTestRunner::WebMethodTask<WorkQueue> {
+    class WorkQueueTask : public WebMethodTask<WorkQueue> {
      public:
-      WorkQueueTask(WorkQueue* object) :
-          ::WebTestRunner::WebMethodTask<WorkQueue>(object) { }
+      WorkQueueTask(WorkQueue* object) : WebMethodTask<WorkQueue>(object) {}
 
       virtual void runIfValid() OVERRIDE;
     };
 
-    ::WebTestRunner::WebTaskList task_list_;
+    WebTaskList task_list_;
     std::deque<WorkItem*> queue_;
     bool frozen_;
     TestRunner* controller_;
@@ -678,10 +674,10 @@ class TestRunner : public ::WebTestRunner::WebTestRunner,
   std::vector<unsigned char> audio_data_;
 
   // Used for test timeouts.
-  ::WebTestRunner::WebTaskList task_list_;
+  WebTaskList task_list_;
 
-  ::WebTestRunner::TestInterfaces* test_interfaces_;
-  ::WebTestRunner::WebTestDelegate* delegate_;
+  TestInterfaces* test_interfaces_;
+  WebTestDelegate* delegate_;
   blink::WebView* web_view_;
   TestPageOverlay* page_overlay_;
   WebTestProxyBase* proxy_;

@@ -9,11 +9,9 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebPermissionClient.h"
 
-namespace WebTestRunner {
-class WebTestDelegate;
-}
-
 namespace content {
+
+class WebTestDelegate;
 
 class WebPermissions : public blink::WebPermissionClient {
 public:
@@ -39,11 +37,11 @@ public:
     // Resets the policy to allow everything, except for running insecure content.
     void reset();
 
-    void setDelegate(WebTestRunner::WebTestDelegate*);
+    void setDelegate(WebTestDelegate*);
     void setDumpCallbacks(bool);
 
 private:
-    WebTestRunner::WebTestDelegate* m_delegate;
+    WebTestDelegate* m_delegate;
     bool m_dumpCallbacks;
 
     bool m_imagesAllowed;

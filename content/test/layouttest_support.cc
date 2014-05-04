@@ -197,8 +197,7 @@ std::string DumpHistoryItem(HistoryEntry::HistoryNode* node,
     result.append(indent, ' ');
   }
 
-  std::string url =
-      WebTestRunner::normalizeLayoutTestURL(item.urlString().utf8());
+  std::string url = normalizeLayoutTestURL(item.urlString().utf8());
   result.append(url);
   if (!item.target().isEmpty()) {
     result.append(" (in frame \"");

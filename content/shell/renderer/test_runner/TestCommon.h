@@ -14,7 +14,7 @@
 #define snprintf(str, size, ...) _snprintf_s(str, size, size, __VA_ARGS__)
 #endif
 
-namespace WebTestRunner {
+namespace content {
 
 inline bool isASCIIAlpha(char ch) { return (ch | 0x20) >= 'a' && (ch | 0x20) <= 'z'; }
 
@@ -22,6 +22,6 @@ inline bool isNotASCIIAlpha(char ch) { return !isASCIIAlpha(ch); }
 
 std::string normalizeLayoutTestURL(const std::string& url);
 
-}
+}  // namespace content
 
 #endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_TESTCOMMON_H_

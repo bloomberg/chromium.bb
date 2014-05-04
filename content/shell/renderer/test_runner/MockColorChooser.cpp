@@ -7,7 +7,6 @@
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/WebTestProxy.h"
 
-using namespace WebTestRunner;
 using namespace blink;
 using namespace std;
 

@@ -150,7 +150,7 @@ void GamepadController::Install(WebFrame* frame) {
   GamepadControllerBindings::Install(weak_factory_.GetWeakPtr(), frame);
 }
 
-void GamepadController::SetDelegate(WebTestRunner::WebTestDelegate* delegate) {
+void GamepadController::SetDelegate(WebTestDelegate* delegate) {
   delegate_ = delegate;
 }
 

@@ -10,7 +10,6 @@
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
 
-using namespace WebTestRunner;
 using namespace blink;
 using namespace std;
 
@@ -32,7 +31,7 @@ private:
     CallbackMethodType m_callback;
 };
 
-}
+}  // namespace
 
 SpellCheckClient::SpellCheckClient(WebTestProxyBase* webTestProxy)
     : m_lastRequestedTextCheckingCompletion(0)

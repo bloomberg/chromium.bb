@@ -16,7 +16,7 @@ class WebAudioSourceProvider;
 class WebMediaStreamCenterClient;
 };
 
-namespace WebTestRunner {
+namespace content {
 
 class TestInterfaces;
 
@@ -45,6 +45,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MockWebMediaStreamCenter);
 };
 
-}
+}  // namespace content
 
 #endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKWEBMEDIASTREAMCENTER_H_

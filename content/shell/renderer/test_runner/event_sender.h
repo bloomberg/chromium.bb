@@ -30,12 +30,10 @@ namespace gin {
 class Arguments;
 }
 
-namespace WebTestRunner {
+namespace content {
+
 class TestInterfaces;
 class WebTestDelegate;
-}
-
-namespace content {
 
 // Key event location code introduced in DOM Level 3.
 // See also: http://www.w3.org/TR/DOM-Level-3-Events/#events-keyboardevents
@@ -48,12 +46,12 @@ enum KeyLocationCode {
 
 class EventSender : public base::SupportsWeakPtr<EventSender> {
  public:
-  explicit EventSender(WebTestRunner::TestInterfaces*);
+  explicit EventSender(TestInterfaces*);
   virtual ~EventSender();
 
   void Reset();
   void Install(blink::WebFrame*);
-  void SetDelegate(WebTestRunner::WebTestDelegate*);
+  void SetDelegate(WebTestDelegate*);
   void SetWebView(blink::WebView*);
 
   void SetContextMenuData(const blink::WebContextMenuData&);
@@ -66,7 +64,7 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
                int modifiers,
                KeyLocationCode location);
 
-  WebTestRunner::WebTaskList* taskList() { return &task_list_; }
+  WebTaskList* taskList() { return &task_list_; }
 
  private:
   friend class EventSenderBindings;
@@ -221,10 +219,10 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   int wm_sys_dead_char_;
 #endif
 
-  WebTestRunner::WebTaskList task_list_;
+  WebTaskList task_list_;
 
-  WebTestRunner::TestInterfaces* interfaces_;
-  WebTestRunner::WebTestDelegate* delegate_;
+  TestInterfaces* interfaces_;
+  WebTestDelegate* delegate_;
   blink::WebView* view_;
 
   bool force_layout_on_events_;

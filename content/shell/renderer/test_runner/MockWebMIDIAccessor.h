@@ -14,15 +14,13 @@ namespace blink {
 class WebMIDIAccessorClient;
 }
 
-namespace WebTestRunner {
-class TestInterfaces;
-}
-
 namespace content {
+
+class TestInterfaces;
 
 class MockWebMIDIAccessor : public blink::WebMIDIAccessor {
 public:
-    explicit MockWebMIDIAccessor(blink::WebMIDIAccessorClient*, WebTestRunner::TestInterfaces*);
+    explicit MockWebMIDIAccessor(blink::WebMIDIAccessorClient*, TestInterfaces*);
     virtual ~MockWebMIDIAccessor();
 
     // blink::WebMIDIAccessor implementation.
@@ -33,12 +31,12 @@ public:
                               double timestamp) OVERRIDE {}
 
     // WebTask related methods
-    WebTestRunner::WebTaskList* taskList() { return &m_taskList; }
+    WebTaskList* taskList() { return &m_taskList; }
 
 private:
     blink::WebMIDIAccessorClient* m_client;
-    WebTestRunner::WebTaskList m_taskList;
-    WebTestRunner::TestInterfaces* m_interfaces;
+    WebTaskList m_taskList;
+    TestInterfaces* m_interfaces;
 
     DISALLOW_COPY_AND_ASSIGN(MockWebMIDIAccessor);
 };

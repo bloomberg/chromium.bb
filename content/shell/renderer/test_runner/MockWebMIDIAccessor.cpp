@@ -11,13 +11,12 @@
 #include "third_party/WebKit/public/platform/WebMIDIAccessorClient.h"
 
 using namespace blink;
-using WebTestRunner::TestInterfaces;
 
 namespace content {
 
 namespace {
 
-class DidStartSessionTask : public WebTestRunner::WebMethodTask<MockWebMIDIAccessor> {
+class DidStartSessionTask : public WebMethodTask<MockWebMIDIAccessor> {
 public:
     DidStartSessionTask(MockWebMIDIAccessor* object, blink::WebMIDIAccessorClient* client, bool result)
         : WebMethodTask<MockWebMIDIAccessor>(object)

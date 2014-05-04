@@ -12,7 +12,7 @@
 using namespace blink;
 using namespace std;
 
-namespace WebTestRunner {
+namespace content {
 
 namespace {
 
@@ -224,4 +224,4 @@ void MockWebSpeechRecognizer::StepTask::runIfValid()
     m_object->m_delegate->postTask(new StepTask(m_object));
 }
 
-}
+}  // namespace content

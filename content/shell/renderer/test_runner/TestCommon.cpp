@@ -6,7 +6,7 @@
 
 using namespace std;
 
-namespace WebTestRunner {
+namespace content {
 
 namespace {
 
@@ -17,7 +17,7 @@ const char fileTestPrefix[] = "(file test):";
 const char dataUrlPattern[] = "data:";
 const string::size_type dataUrlPatternSize = sizeof(dataUrlPattern) - 1;
 
-}
+}  // namespace
 
 string normalizeLayoutTestURL(const string& url)
 {
@@ -34,4 +34,4 @@ string normalizeLayoutTestURL(const string& url)
     return result;
 }
 
-}
+}  // namespace content

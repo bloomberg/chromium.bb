@@ -20,9 +20,7 @@
 
 using namespace blink;
 
-using content::MockConstraints;
-
-namespace WebTestRunner {
+namespace content {
 
 class UserMediaRequestTask : public WebMethodTask<WebUserMediaClientMock> {
 public:
@@ -178,4 +176,4 @@ void WebUserMediaClientMock::cancelMediaDevicesRequest(const WebMediaDevicesRequ
 {
 }
 
-}
+}  // namespace content

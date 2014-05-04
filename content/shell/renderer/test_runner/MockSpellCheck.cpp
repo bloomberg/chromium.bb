@@ -8,7 +8,6 @@
 #include "content/shell/renderer/test_runner/TestCommon.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 
-using namespace WebTestRunner;
 using namespace blink;
 using namespace std;
 

@@ -21,7 +21,7 @@ bool MockGrammarCheck::checkGrammarOfString(const WebString& text, vector<WebTex
 {
     DCHECK(results);
     base::string16 stringText = text;
-    if (find_if(stringText.begin(), stringText.end(), WebTestRunner::isASCIIAlpha) == stringText.end())
+    if (find_if(stringText.begin(), stringText.end(), isASCIIAlpha) == stringText.end())
         return true;
 
     // Find matching grammatical errors from known ones. This function has to

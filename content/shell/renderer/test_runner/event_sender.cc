@@ -138,7 +138,7 @@ bool OutsideMultiClickRadius(const WebPoint& a, const WebPoint& b) {
 // helpful.
 std::vector<std::string> MakeMenuItemStringsFor(
     WebContextMenuData* context_menu,
-    WebTestRunner::WebTestDelegate* delegate) {
+    WebTestDelegate* delegate) {
   // These constants are based on Safari's context menu because tests are made
   // for it.
   static const char* kNonEditableMenuStrings[] = {
@@ -203,7 +203,7 @@ WebMouseEvent::Button GetButtonTypeFromButtonNumber(int button_code) {
   return WebMouseEvent::ButtonMiddle;
 }
 
-class MouseDownTask : public WebTestRunner::WebMethodTask<EventSender> {
+class MouseDownTask : public WebMethodTask<EventSender> {
  public:
   MouseDownTask(EventSender* obj, int button_number, int modifiers)
       : WebMethodTask<EventSender>(obj),
@@ -219,7 +219,7 @@ class MouseDownTask : public WebTestRunner::WebMethodTask<EventSender> {
   int modifiers_;
 };
 
-class MouseUpTask : public WebTestRunner::WebMethodTask<EventSender> {
+class MouseUpTask : public WebMethodTask<EventSender> {
  public:
   MouseUpTask(EventSender* obj, int button_number, int modifiers)
       : WebMethodTask<EventSender>(obj),
@@ -235,7 +235,7 @@ class MouseUpTask : public WebTestRunner::WebMethodTask<EventSender> {
   int modifiers_;
 };
 
-class KeyDownTask : public WebTestRunner::WebMethodTask<EventSender> {
+class KeyDownTask : public WebMethodTask<EventSender> {
  public:
   KeyDownTask(EventSender* obj,
               const std::string code_str,
@@ -1007,7 +1007,7 @@ EventSender::SavedEvent::SavedEvent()
       milliseconds(0),
       modifiers(0) {}
 
-EventSender::EventSender(WebTestRunner::TestInterfaces* interfaces)
+EventSender::EventSender(TestInterfaces* interfaces)
     : interfaces_(interfaces),
       delegate_(NULL),
       view_(NULL),
@@ -1079,7 +1079,7 @@ void EventSender::Install(WebFrame* frame) {
   EventSenderBindings::Install(weak_factory_.GetWeakPtr(), frame);
 }
 
-void EventSender::SetDelegate(WebTestRunner::WebTestDelegate* delegate) {
+void EventSender::SetDelegate(WebTestDelegate* delegate) {
   delegate_ = delegate;
 }
 
@@ -1402,7 +1402,7 @@ void EventSender::SetPageZoomFactor(double zoom_factor) {
 
   for (size_t i = 0; i < window_list.size(); ++i) {
     window_list.at(i)->webView()->setZoomLevel(
-        content::ZoomFactorToZoomLevel(zoom_factor));
+        ZoomFactorToZoomLevel(zoom_factor));
   }
 }
 

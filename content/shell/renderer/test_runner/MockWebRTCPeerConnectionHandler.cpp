@@ -20,9 +20,8 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 
 using namespace blink;
-using namespace content;
 
-namespace WebTestRunner {
+namespace content {
 
 class RTCSessionDescriptionRequestSuccededTask : public WebMethodTask<MockWebRTCPeerConnectionHandler> {
 public:
@@ -283,4 +282,4 @@ void MockWebRTCPeerConnectionHandler::stop()
     m_stopped = true;
 }
 
-}
+}  // namespace content

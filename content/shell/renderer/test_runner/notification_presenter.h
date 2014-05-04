@@ -12,11 +12,9 @@
 #include "third_party/WebKit/public/web/WebNotification.h"
 #include "third_party/WebKit/public/web/WebNotificationPresenter.h"
 
-namespace WebTestRunner {
-class WebTestDelegate;
-}
-
 namespace content {
+
+class WebTestDelegate;
 
 // A class that implements WebNotificationPresenter for the TestRunner library.
 class NotificationPresenter : public blink::WebNotificationPresenter {
@@ -33,9 +31,7 @@ class NotificationPresenter : public blink::WebNotificationPresenter {
   // Called by the TestRunner to reset the presenter to an default state.
   void Reset();
 
-  void set_delegate(WebTestRunner::WebTestDelegate* delegate) {
-    delegate_ = delegate;
-  }
+  void set_delegate(WebTestDelegate* delegate) { delegate_ = delegate; }
 
   // blink::WebNotificationPresenter interface
   virtual bool show(const blink::WebNotification& notification);
@@ -48,7 +44,7 @@ class NotificationPresenter : public blink::WebNotificationPresenter {
       blink::WebNotificationPermissionCallback* callback);
 
  private:
-  WebTestRunner::WebTestDelegate* delegate_;
+  WebTestDelegate* delegate_;
 
   // Map of known origins and whether they are allowed to show notifications.
   typedef std::map<std::string, bool> KnownOriginMap;

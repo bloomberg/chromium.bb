@@ -12,9 +12,8 @@
 #include "content/shell/renderer/test_runner/test_runner.h"
 
 using namespace blink;
-using namespace content;
 
-namespace WebTestRunner {
+namespace content {
 
 WebTestInterfaces::WebTestInterfaces()
     : m_interfaces(new TestInterfaces())
@@ -90,4 +89,4 @@ WebAudioDevice* WebTestInterfaces::createAudioDevice(double sampleRate)
     return new MockWebAudioDevice(sampleRate);
 }
 
-}
+}  // namespace content

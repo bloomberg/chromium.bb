@@ -15,7 +15,7 @@ using blink::WebColor;
 using blink::WebRect;
 using blink::WebThemeEngine;
 
-namespace WebTestRunner {
+namespace content {
 
 static const SkColor edgeColor     = SK_ColorBLACK;
 static const SkColor readOnlyColor = SkColorSetRGB(0xe9, 0xc2, 0xa6);
@@ -645,4 +645,4 @@ void WebTestThemeEngineMock::paint(
     }
 }
 
-} // namespace WebTestRunner
+}  // namespace content

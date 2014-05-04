@@ -47,7 +47,8 @@
 #endif
 
 using namespace blink;
-using namespace WebTestRunner;
+
+namespace content {
 
 namespace {
 
@@ -58,12 +59,11 @@ WebString V8StringToWebString(v8::Handle<v8::String> v8_str) {
   return WebString::fromUTF8(chars.get());
 }
 
-class HostMethodTask :
-      public ::WebTestRunner::WebMethodTask<content::TestRunner> {
+class HostMethodTask : public WebMethodTask<TestRunner> {
  public:
-  typedef void (content::TestRunner::*CallbackMethodType)();
-  HostMethodTask(content::TestRunner* object, CallbackMethodType callback)
-      : WebMethodTask<content::TestRunner>(object), callback_(callback) {}
+  typedef void (TestRunner::*CallbackMethodType)();
+  HostMethodTask(TestRunner* object, CallbackMethodType callback)
+      : WebMethodTask<TestRunner>(object), callback_(callback) {}
 
   virtual void runIfValid() OVERRIDE {
     (m_object->*callback_)();
@@ -75,13 +75,10 @@ class HostMethodTask :
 
 }  // namespace
 
-namespace content {
-
-class InvokeCallbackTask : public WebMethodTask<content::TestRunner> {
+class InvokeCallbackTask : public WebMethodTask<TestRunner> {
  public:
-  InvokeCallbackTask(content::TestRunner* object,
-                     v8::Handle<v8::Function> callback)
-      : WebMethodTask<content::TestRunner>(object),
+  InvokeCallbackTask(TestRunner* object, v8::Handle<v8::Function> callback)
+      : WebMethodTask<TestRunner>(object),
         callback_(blink::mainThreadIsolate(), callback) {}
 
   virtual void runIfValid() OVERRIDE {
@@ -1353,7 +1350,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
       web_view_(NULL),
       page_overlay_(NULL),
       web_permissions_(new WebPermissions()),
-      notification_presenter_(new content::NotificationPresenter()),
+      notification_presenter_(new NotificationPresenter()),
       weak_factory_(this) {}
 
 TestRunner::~TestRunner() {}

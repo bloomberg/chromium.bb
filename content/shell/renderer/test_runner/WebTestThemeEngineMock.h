@@ -8,25 +8,22 @@
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebThemeEngine.h"
 
-using blink::WebRect;
-using blink::WebThemeEngine;
-
-namespace WebTestRunner {
+namespace content {
 
 class WebTestThemeEngineMock : public blink::WebThemeEngine {
 public:
     virtual ~WebTestThemeEngineMock() { }
 
     // WebThemeEngine methods:
-    virtual blink::WebSize getSize(WebThemeEngine::Part);
+    virtual blink::WebSize getSize(blink::WebThemeEngine::Part);
 
     virtual void paint(blink::WebCanvas*,
-        WebThemeEngine::Part,
-        WebThemeEngine::State,
+        blink::WebThemeEngine::Part,
+        blink::WebThemeEngine::State,
         const blink::WebRect&,
-        const WebThemeEngine::ExtraParams*);
+        const blink::WebThemeEngine::ExtraParams*);
 };
 
-} // namespace WebTestRunner
+}  // namespace content
 
 #endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTTHEMEENGINEMOCK_H_

@@ -9,7 +9,6 @@
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
-using namespace WebTestRunner;
 using namespace std;
 
 namespace content {

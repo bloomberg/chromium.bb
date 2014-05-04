@@ -36,7 +36,7 @@ struct LeakDetectionResult;
 // This is the renderer side of the webkit test runner.
 class WebKitTestRunner : public RenderViewObserver,
                          public RenderViewObserverTracker<WebKitTestRunner>,
-                         public WebTestRunner::WebTestDelegate {
+                         public WebTestDelegate {
  public:
   explicit WebKitTestRunner(RenderView* render_view);
   virtual ~WebKitTestRunner();
@@ -67,9 +67,8 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual void setScreenOrientation(
       const blink::WebScreenOrientationType& orientation) OVERRIDE;
   virtual void printMessage(const std::string& message) OVERRIDE;
-  virtual void postTask(::WebTestRunner::WebTask* task) OVERRIDE;
-  virtual void postDelayedTask(::WebTestRunner::WebTask* task,
-                               long long ms) OVERRIDE;
+  virtual void postTask(WebTask* task) OVERRIDE;
+  virtual void postDelayedTask(WebTask* task, long long ms) OVERRIDE;
   virtual blink::WebString registerIsolatedFileSystem(
       const blink::WebVector<blink::WebString>& absolute_filenames) OVERRIDE;
   virtual long long getCurrentTimeInMillisecond() OVERRIDE;

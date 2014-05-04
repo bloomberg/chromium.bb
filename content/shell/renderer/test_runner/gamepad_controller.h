@@ -12,11 +12,9 @@ namespace blink {
 class WebFrame;
 }
 
-namespace WebTestRunner {
-class WebTestDelegate;
-}
-
 namespace content {
+
+class WebTestDelegate;
 
 class GamepadController : public base::SupportsWeakPtr<GamepadController> {
  public:
@@ -25,7 +23,7 @@ class GamepadController : public base::SupportsWeakPtr<GamepadController> {
 
   void Reset();
   void Install(blink::WebFrame* frame);
-  void SetDelegate(WebTestRunner::WebTestDelegate* delegate);
+  void SetDelegate(WebTestDelegate* delegate);
 
  private:
   friend class GamepadControllerBindings;
@@ -48,7 +46,7 @@ class GamepadController : public base::SupportsWeakPtr<GamepadController> {
 
   blink::WebGamepads gamepads_;
 
-  WebTestRunner::WebTestDelegate* delegate_;
+  WebTestDelegate* delegate_;
 
   base::WeakPtrFactory<GamepadController> weak_factory_;
 

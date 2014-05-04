@@ -12,7 +12,7 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebUserMediaClient.h"
 
-namespace WebTestRunner {
+namespace content {
 
 class WebTestDelegate;
 
@@ -36,6 +36,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(WebUserMediaClientMock);
 };
 
-}
+}  // namespace content
 
 #endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBUSERMEDIACLIENTMOCK_H_

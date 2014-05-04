@@ -9,7 +9,7 @@
 
 using namespace std;
 
-namespace WebTestRunner {
+namespace content {
 
 WebTask::WebTask(WebTaskList* list)
     : m_taskList(list)
@@ -50,4 +50,4 @@ void WebTaskList::revokeAll()
         m_tasks[0]->cancel();
 }
 
-}
+}  // namespace content

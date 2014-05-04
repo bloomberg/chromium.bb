@@ -24,17 +24,16 @@
 #include "third_party/WebKit/public/web/WebView.h"
 
 using namespace blink;
-using namespace content;
 using namespace std;
 
-namespace WebTestRunner {
+namespace content {
 
 TestInterfaces::TestInterfaces()
-    : m_accessibilityController(new content::AccessibilityController())
-    , m_eventSender(new content::EventSender(this))
-    , m_gamepadController(new content::GamepadController())
-    , m_textInputController(new content::TextInputController())
-    , m_testRunner(new content::TestRunner(this))
+    : m_accessibilityController(new AccessibilityController())
+    , m_eventSender(new EventSender(this))
+    , m_gamepadController(new GamepadController())
+    , m_textInputController(new TextInputController())
+    , m_testRunner(new TestRunner(this))
     , m_delegate(0)
 {
     blink::setLayoutTestMode(true);
@@ -158,17 +157,17 @@ void TestInterfaces::windowClosed(WebTestProxyBase* proxy)
     m_windowList.erase(pos);
 }
 
-content::AccessibilityController* TestInterfaces::accessibilityController()
+AccessibilityController* TestInterfaces::accessibilityController()
 {
     return m_accessibilityController.get();
 }
 
-content::EventSender* TestInterfaces::eventSender()
+EventSender* TestInterfaces::eventSender()
 {
     return m_eventSender.get();
 }
 
-content::TestRunner* TestInterfaces::testRunner()
+TestRunner* TestInterfaces::testRunner()
 {
     return m_testRunner.get();
 }
@@ -202,4 +201,4 @@ WebThemeEngine* TestInterfaces::themeEngine()
     return m_themeEngine.get();
 }
 
-}
+}  // namespace content

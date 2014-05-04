@@ -18,11 +18,9 @@ class WebString;
 class WebView;
 }
 
-namespace WebTestRunner {
-class WebTestDelegate;
-}
-
 namespace content {
+
+class WebTestDelegate;
 
 class AccessibilityController :
       public base::SupportsWeakPtr<AccessibilityController> {
@@ -37,7 +35,7 @@ class AccessibilityController :
   void NotificationReceived(const blink::WebAXObject& target,
                             const std::string& notification_name);
 
-  void SetDelegate(WebTestRunner::WebTestDelegate* delegate);
+  void SetDelegate(WebTestDelegate* delegate);
   void SetWebView(blink::WebView* web_view);
 
  private:
@@ -64,7 +62,7 @@ class AccessibilityController :
 
   v8::Persistent<v8::Function> notification_callback_;
 
-  WebTestRunner::WebTestDelegate* delegate_;
+  WebTestDelegate* delegate_;
   blink::WebView* web_view_;
 
   base::WeakPtrFactory<AccessibilityController> weak_factory_;

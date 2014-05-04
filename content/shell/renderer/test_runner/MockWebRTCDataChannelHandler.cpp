@@ -11,7 +11,7 @@
 
 using namespace blink;
 
-namespace WebTestRunner {
+namespace content {
 
 class DataChannelReadyStateTask : public WebMethodTask<MockWebRTCDataChannelHandler> {
 public:
@@ -115,4 +115,4 @@ void MockWebRTCDataChannelHandler::close()
     m_delegate->postTask(new DataChannelReadyStateTask(this, m_client, WebRTCDataChannelHandlerClient::ReadyStateClosed));
 }
 
-}
+}  // namespace content

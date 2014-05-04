@@ -67,7 +67,7 @@ static NSWindow* alwaysInactiveWindow = nil;
 
 @end
 
-namespace WebTestRunner {
+namespace content {
 
 namespace {
 
@@ -83,7 +83,7 @@ ThemeTrackEnableState stateToHIEnableState(WebThemeEngine::State state)
     }
 }
 
-}
+}  // namespace
 
 void WebTestThemeEngineMac::paintScrollbarThumb(
     WebCanvas* canvas,
@@ -174,4 +174,4 @@ void WebTestThemeEngineMac::paintNSScrollerScrollbarThumb(
     [NSGraphicsContext restoreGraphicsState];
 }
 
-}
+}  // namespace content
