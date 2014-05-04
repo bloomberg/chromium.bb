@@ -289,6 +289,12 @@ void ProfileMetrics::LogProfileAuthResult(ProfileAuth metric) {
                             NUM_PROFILE_AUTH_METRICS);
 }
 
+void ProfileMetrics::LogProfileUpgradeEnrollment(
+    ProfileUpgradeEnrollment metric) {
+  UMA_HISTOGRAM_ENUMERATION("Profile.UpgradeEnrollment", metric,
+                            NUM_PROFILE_ENROLLMENT_METRICS);
+}
+
 void ProfileMetrics::LogProfileLaunch(Profile* profile) {
   base::FilePath profile_path = profile->GetPath();
   UMA_HISTOGRAM_ENUMERATION("Profile.LaunchBrowser",

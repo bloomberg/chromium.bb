@@ -31,7 +31,9 @@ class NewAvatarButton : public views::MenuButton,
 
  private:
   friend class NewAvatarMenuButtonTest;
+  friend class ProfileChooserViewBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(NewAvatarMenuButtonTest, SignOut);
+  FRIEND_TEST_ALL_PREFIXES(ProfileChooserViewBrowserTest, ViewProfileUMA);
 
   // ProfileInfoCacheObserver:
   virtual void OnProfileAdded(const base::FilePath& profile_path) OVERRIDE;
