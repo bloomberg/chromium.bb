@@ -512,3 +512,31 @@ component("ui_base") {
     #'hard_dependency': 1,
   #}
 }
+
+source_set("ui_base_test_support") {
+  sources = [
+    "test/ui_controls.h",
+    "test/ui_controls_aura.cc",
+    "test/ui_controls_internal_win.cc",
+    "test/ui_controls_internal_win.h",
+    "test/ui_controls_mac.mm",
+    "test/ui_controls_win.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//skia",
+    "//testing/gtest",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+  ]
+
+  if (!is_ios) {
+    sources += [
+      "ime/dummy_input_method.cc",
+      "ime/dummy_input_method.h",
+      "ime/dummy_text_input_client.cc",
+      "ime/dummy_text_input_client.h",
+    ]
+  }
+}
