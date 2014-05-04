@@ -2797,6 +2797,19 @@ set_xwayland(struct shell_surface *shsurf, int x, int y, uint32_t flags)
 	shsurf->state_changed = true;
 }
 
+static void
+shell_interface_set_fullscreen(struct shell_surface *shsurf,
+			       uint32_t method,
+			       uint32_t framerate,
+			       struct weston_output *output)
+{
+	surface_clear_next_states(shsurf);
+	set_fullscreen(shsurf, method, framerate, output);
+
+	shsurf->next_state.fullscreen = true;
+	shsurf->state_changed = true;
+}
+
 static int
 shell_interface_move(struct shell_surface *shsurf, struct weston_seat *ws)
 {
@@ -6113,7 +6126,7 @@ module_init(struct weston_compositor *ec,
 	ec->shell_interface.get_primary_view = get_primary_view;
 	ec->shell_interface.set_toplevel = set_toplevel;
 	ec->shell_interface.set_transient = set_transient;
-	ec->shell_interface.set_fullscreen = set_fullscreen;
+	ec->shell_interface.set_fullscreen = shell_interface_set_fullscreen;
 	ec->shell_interface.set_xwayland = set_xwayland;
 	ec->shell_interface.move = shell_interface_move;
 	ec->shell_interface.resize = surface_resize;
