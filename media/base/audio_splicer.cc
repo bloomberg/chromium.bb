@@ -289,7 +289,7 @@ bool AudioSplicer::AddInput(const scoped_refptr<AudioBuffer>& input) {
 
   // The first post splice buffer is expected to match |splice_timestamp_|.
   if (!post_splice_sanitizer_->HasNextBuffer())
-    DCHECK(splice_timestamp_ == input->timestamp());
+    CHECK(splice_timestamp_ == input->timestamp());
 
   // At this point we have all the fade out preroll buffers from the decoder.
   // We now need to wait until we have enough data to perform the crossfade (or
@@ -433,6 +433,12 @@ scoped_ptr<AudioBus> AudioSplicer::ExtractCrossfadeFromPreSplice(
       frames_before_splice = 0;
     }
   }
+
+  // Ensure outputs were properly allocated.  The method should not have been
+  // called if there is not enough data to crossfade.
+  // TODO(dalecurtis): Convert to DCHECK() once http://crbug.com/356073 fixed.
+  CHECK(output_bus);
+  CHECK(*crossfade_buffer);
 
   // All necessary buffers have been processed, it's safe to reset.
   pre_splice_sanitizer_->Reset();
