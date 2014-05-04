@@ -3640,7 +3640,6 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
     // Now iterate the changedTouches list and m_targets within it, sending
     // events to the targets as required.
     bool swallowedEvent = false;
-    RefPtrWillBeRawPtr<TouchList> emptyList = TouchList::create();
     for (unsigned state = 0; state != PlatformTouchPoint::TouchStateEnd; ++state) {
         if (!changedTouches[state].m_touches)
             continue;
