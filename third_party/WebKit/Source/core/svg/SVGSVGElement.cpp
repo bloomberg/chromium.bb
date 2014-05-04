@@ -213,9 +213,6 @@ void SVGSVGElement::updateCurrentTranslate()
 {
     if (RenderObject* object = renderer())
         object->setNeedsLayout();
-
-    if (parentNode() == document() && document().renderer())
-        document().renderer()->repaint();
 }
 
 void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
