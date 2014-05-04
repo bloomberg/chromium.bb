@@ -174,7 +174,7 @@ IDBAny::IDBAny(PassRefPtrWillBeRawPtr<IDBIndex> value)
 {
 }
 
-IDBAny::IDBAny(PassRefPtr<IDBTransaction> value)
+IDBAny::IDBAny(PassRefPtrWillBeRawPtr<IDBTransaction> value)
     : m_type(IDBTransactionType)
     , m_idbTransaction(value)
     , m_integer(0)
@@ -239,6 +239,7 @@ void IDBAny::trace(Visitor* visitor)
     visitor->trace(m_idbDatabase);
     visitor->trace(m_idbIndex);
     visitor->trace(m_idbObjectStore);
+    visitor->trace(m_idbTransaction);
     visitor->trace(m_idbKey);
 }
 

@@ -200,13 +200,13 @@ void ExecutableWithDatabase::start(IDBFactory* idbFactory, SecurityOrigin*, cons
     idbOpenDBRequest->addEventListener(EventTypeNames::success, callback, false);
 }
 
-static PassRefPtr<IDBTransaction> transactionForDatabase(ExecutionContext* executionContext, IDBDatabase* idbDatabase, const String& objectStoreName, const String& mode = IDBTransaction::modeReadOnly())
+static PassRefPtrWillBeRawPtr<IDBTransaction> transactionForDatabase(ExecutionContext* executionContext, IDBDatabase* idbDatabase, const String& objectStoreName, const String& mode = IDBTransaction::modeReadOnly())
 {
     TrackExceptionState exceptionState;
-    RefPtr<IDBTransaction> idbTransaction = idbDatabase->transaction(executionContext, objectStoreName, mode, exceptionState);
+    RefPtrWillBeRawPtr<IDBTransaction> idbTransaction = idbDatabase->transaction(executionContext, objectStoreName, mode, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
-    return idbTransaction;
+    return idbTransaction.release();
 }
 
 static PassRefPtrWillBeRawPtr<IDBObjectStore> objectStoreForTransaction(IDBTransaction* idbTransaction, const String& objectStoreName)
@@ -492,7 +492,7 @@ public:
         RefPtrWillBeRawPtr<IDBDatabase> idbDatabase = prpDatabase;
         if (!requestCallback()->isActive())
             return;
-        RefPtr<IDBTransaction> idbTransaction = transactionForDatabase(context(), idbDatabase.get(), m_objectStoreName);
+        RefPtrWillBeRawPtr<IDBTransaction> idbTransaction = transactionForDatabase(context(), idbDatabase.get(), m_objectStoreName);
         if (!idbTransaction) {
             m_requestCallback->sendFailure("Could not get transaction");
             return;
@@ -730,7 +730,7 @@ public:
         RefPtrWillBeRawPtr<IDBDatabase> idbDatabase = prpDatabase;
         if (!requestCallback()->isActive())
             return;
-        RefPtr<IDBTransaction> idbTransaction = transactionForDatabase(context(), idbDatabase.get(), m_objectStoreName, IDBTransaction::modeReadWrite());
+        RefPtrWillBeRawPtr<IDBTransaction> idbTransaction = transactionForDatabase(context(), idbDatabase.get(), m_objectStoreName, IDBTransaction::modeReadWrite());
         if (!idbTransaction) {
             m_requestCallback->sendFailure("Could not get transaction");
             return;

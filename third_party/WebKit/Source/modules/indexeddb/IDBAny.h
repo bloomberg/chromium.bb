@@ -129,7 +129,7 @@ private:
     explicit IDBAny(PassRefPtrWillBeRawPtr<IDBDatabase>);
     explicit IDBAny(PassRefPtrWillBeRawPtr<IDBIndex>);
     explicit IDBAny(PassRefPtrWillBeRawPtr<IDBObjectStore>);
-    explicit IDBAny(PassRefPtr<IDBTransaction>);
+    explicit IDBAny(PassRefPtrWillBeRawPtr<IDBTransaction>);
     explicit IDBAny(PassRefPtrWillBeRawPtr<IDBKey>);
     explicit IDBAny(const IDBKeyPath&);
     explicit IDBAny(const String&);
@@ -145,7 +145,7 @@ private:
     const RefPtrWillBeMember<IDBDatabase> m_idbDatabase;
     const RefPtrWillBeMember<IDBIndex> m_idbIndex;
     const RefPtrWillBeMember<IDBObjectStore> m_idbObjectStore;
-    const RefPtr<IDBTransaction> m_idbTransaction;
+    const RefPtrWillBeMember<IDBTransaction> m_idbTransaction;
     const RefPtrWillBeMember<IDBKey> m_idbKey;
     const IDBKeyPath m_idbKeyPath;
     const RefPtr<SharedBuffer> m_buffer;

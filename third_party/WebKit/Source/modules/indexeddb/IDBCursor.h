@@ -123,7 +123,7 @@ private:
     RefPtrWillBeMember<IDBRequest> m_request;
     const blink::WebIDBCursor::Direction m_direction;
     RefPtrWillBeMember<IDBAny> m_source;
-    RefPtr<IDBTransaction> m_transaction;
+    RefPtrWillBeMember<IDBTransaction> m_transaction;
     bool m_gotValue;
     bool m_keyDirty;
     bool m_primaryKeyDirty;

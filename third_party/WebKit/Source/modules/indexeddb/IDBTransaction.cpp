@@ -220,7 +220,7 @@ void IDBTransaction::abort(ExceptionState& exceptionState)
         request->abort();
     }
 
-    RefPtr<IDBTransaction> selfRef = this;
+    RefPtrWillBeRawPtr<IDBTransaction> selfRef(this);
     if (backendDB())
         backendDB()->abort(m_id);
 }
@@ -243,7 +243,7 @@ void IDBTransaction::onAbort(PassRefPtrWillBeRawPtr<DOMError> prpError)
 {
     IDB_TRACE("IDBTransaction::onAbort");
     if (m_contextStopped) {
-        RefPtr<IDBTransaction> protect(this);
+        RefPtrWillBeRawPtr<IDBTransaction> protect(this);
         m_database->transactionFinished(this);
         return;
     }
@@ -285,7 +285,7 @@ void IDBTransaction::onComplete()
 {
     IDB_TRACE("IDBTransaction::onComplete");
     if (m_contextStopped) {
-        RefPtr<IDBTransaction> protect(this);
+        RefPtrWillBeRawPtr<IDBTransaction> protect(this);
         m_database->transactionFinished(this);
         return;
     }
@@ -298,7 +298,7 @@ void IDBTransaction::onComplete()
     enqueueEvent(Event::create(EventTypeNames::complete));
 
     // If script has stopped and GC has completed, database may have last reference to this object.
-    RefPtr<IDBTransaction> protect(this);
+    RefPtrWillBeRawPtr<IDBTransaction> protect(this);
     m_database->transactionFinished(this);
 }
 

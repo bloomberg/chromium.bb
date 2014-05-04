@@ -104,6 +104,7 @@ void IDBCursor::trace(Visitor* visitor)
 {
     visitor->trace(m_request);
     visitor->trace(m_source);
+    visitor->trace(m_transaction);
     visitor->trace(m_key);
     visitor->trace(m_primaryKey);
 }
