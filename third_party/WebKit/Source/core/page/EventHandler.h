@@ -334,7 +334,6 @@ private:
     Timer<EventHandler> m_fakeMouseMoveEventTimer;
 
     bool m_svgPan;
-    RefPtr<SVGElementInstance> m_lastInstanceUnderMouse;
 
     RenderLayerScrollableArea* m_resizeScrollableArea;
 

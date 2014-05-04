@@ -309,10 +309,10 @@ void SVGAnimateMotionElement::applyResultsToTarget()
         return;
 
     // ...except in case where we have additional instances in <use> trees.
-    const HashSet<SVGElementInstance*>& instances = targetElement->instancesForElement();
-    const HashSet<SVGElementInstance*>::const_iterator end = instances.end();
-    for (HashSet<SVGElementInstance*>::const_iterator it = instances.begin(); it != end; ++it) {
-        SVGElement* shadowTreeElement = (*it)->shadowTreeElement();
+    const HashSet<SVGElement*>& instances = targetElement->instancesForElement();
+    const HashSet<SVGElement*>::const_iterator end = instances.end();
+    for (HashSet<SVGElement*>::const_iterator it = instances.begin(); it != end; ++it) {
+        SVGElement* shadowTreeElement = *it;
         ASSERT(shadowTreeElement);
         AffineTransform* transform = shadowTreeElement->supplementalTransform();
         if (!transform)

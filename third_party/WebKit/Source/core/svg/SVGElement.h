@@ -108,7 +108,7 @@ public:
     void invalidateSVGAttributes() { ensureUniqueElementData().m_animatedSVGAttributesAreDirty = true; }
     void invalidateSVGPresentationAttributeStyle() { ensureUniqueElementData().m_presentationAttributeStyleIsDirty = true; }
 
-    const HashSet<SVGElementInstance*>& instancesForElement() const;
+    const HashSet<SVGElement*>& instancesForElement() const;
 
     bool getBoundingBox(FloatRect&);
 
@@ -121,6 +121,7 @@ public:
 
     SVGElement* correspondingElement();
     void setCorrespondingElement(SVGElement*);
+    SVGUseElement* correspondingUseElement() const;
 
     void synchronizeAnimatedSVGAttribute(const QualifiedName&) const;
 

@@ -99,9 +99,6 @@ SVGElementInstance::SVGElementInstance(SVGUseElement* correspondingUseElement, S
     ASSERT(m_element);
     ScriptWrappable::init(this);
 
-    // Register as instance for passed element.
-    m_element->mapInstanceToElement(this);
-
 #ifndef NDEBUG
     instanceCounter.increment();
 #endif
@@ -140,7 +137,7 @@ void SVGElementInstance::detach()
         node->detach();
 
     // Deregister as instance for passed element, if we haven't already.
-    if (m_element->instancesForElement().contains(this))
+    if (m_element->instancesForElement().contains(shadowTreeElement()))
         m_element->removeInstanceMapping(this);
     // DO NOT clear ref to m_element because JavaScriptCore uses it for garbage collection
 
@@ -156,6 +153,9 @@ void SVGElementInstance::setShadowTreeElement(SVGElement* element)
 {
     ASSERT(element);
     m_shadowTreeElement = element;
+    // Register as instance for passed element.
+    m_element->mapInstanceToElement(this);
+
 }
 
 void SVGElementInstance::appendChild(PassRefPtr<SVGElementInstance> child)
@@ -171,18 +171,14 @@ void SVGElementInstance::invalidateAllInstancesOfElement(SVGElement* element)
     if (element->instanceUpdatesBlocked())
         return;
 
-    const HashSet<SVGElementInstance*>& set = element->instancesForElement();
+    const HashSet<SVGElement*>& set = element->instancesForElement();
     if (set.isEmpty())
         return;
 
     // Mark all use elements referencing 'element' for rebuilding
-    const HashSet<SVGElementInstance*>::const_iterator end = set.end();
-    for (HashSet<SVGElementInstance*>::const_iterator it = set.begin(); it != end; ++it) {
-        ASSERT((*it)->shadowTreeElement());
-        ASSERT((*it)->shadowTreeElement()->correspondingElement());
-        ASSERT((*it)->shadowTreeElement()->correspondingElement() == (*it)->correspondingElement());
-        ASSERT((*it)->correspondingElement() == element);
-        (*it)->shadowTreeElement()->setCorrespondingElement(0);
+    const HashSet<SVGElement*>::const_iterator end = set.end();
+    for (HashSet<SVGElement*>::const_iterator it = set.begin(); it != end; ++it) {
+        (*it)->setCorrespondingElement(0);
 
         if (SVGUseElement* element = (*it)->correspondingUseElement()) {
             ASSERT(element->inDocument());

@@ -896,9 +896,9 @@ void SVGUseElement::invalidateShadowTree()
 void SVGUseElement::invalidateDependentShadowTrees()
 {
     // Recursively invalidate dependent <use> shadow trees
-    const HashSet<SVGElementInstance*>& instances = instancesForElement();
-    const HashSet<SVGElementInstance*>::const_iterator end = instances.end();
-    for (HashSet<SVGElementInstance*>::const_iterator it = instances.begin(); it != end; ++it) {
+    const HashSet<SVGElement*>& instances = instancesForElement();
+    const HashSet<SVGElement*>::const_iterator end = instances.end();
+    for (HashSet<SVGElement*>::const_iterator it = instances.begin(); it != end; ++it) {
         if (SVGUseElement* element = (*it)->correspondingUseElement()) {
             ASSERT(element->inDocument());
             element->invalidateShadowTree();

@@ -31,7 +31,6 @@ namespace WebCore {
 class CSSCursorImageValue;
 class SVGCursorElement;
 class SVGElement;
-class SVGElementInstance;
 
 class SVGElementRareData : public NoBaseWillBeGarbageCollectedFinalized<SVGElementRareData> {
     WTF_MAKE_NONCOPYABLE(SVGElementRareData); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
@@ -65,8 +64,8 @@ public:
         return rareDataMap().get(element);
     }
 
-    HashSet<SVGElementInstance*>& elementInstances() { return m_elementInstances; }
-    const HashSet<SVGElementInstance*>& elementInstances() const { return m_elementInstances; }
+    HashSet<SVGElement*>& elementInstances() { return m_elementInstances; }
+    const HashSet<SVGElement*>& elementInstances() const { return m_elementInstances; }
 
     bool instanceUpdatesBlocked() const { return m_instancesUpdatesBlocked; }
     void setInstanceUpdatesBlocked(bool value) { m_instancesUpdatesBlocked = value; }
@@ -146,7 +145,7 @@ public:
 
 private:
     RawPtrWillBeWeakMember<SVGElement> m_owner;
-    HashSet<SVGElementInstance*> m_elementInstances;
+    HashSet<SVGElement*> m_elementInstances;
     RawPtrWillBeWeakMember<SVGCursorElement> m_cursorElement;
     RawPtrWillBeWeakMember<CSSCursorImageValue> m_cursorImageValue;
     SVGElement* m_correspondingElement;

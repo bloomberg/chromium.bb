@@ -532,10 +532,10 @@ void SVGElement::mapInstanceToElement(SVGElementInstance* instance)
 {
     ASSERT(instance);
 
-    HashSet<SVGElementInstance*>& instances = ensureSVGRareData()->elementInstances();
-    ASSERT(!instances.contains(instance));
+    HashSet<SVGElement*>& instances = ensureSVGRareData()->elementInstances();
+    ASSERT(!instances.contains(instance->shadowTreeElement()));
 
-    instances.add(instance);
+    instances.add(instance->shadowTreeElement());
 }
 
 void SVGElement::removeInstanceMapping(SVGElementInstance* instance)
@@ -543,16 +543,19 @@ void SVGElement::removeInstanceMapping(SVGElementInstance* instance)
     ASSERT(instance);
     ASSERT(hasSVGRareData());
 
-    HashSet<SVGElementInstance*>& instances = svgRareData()->elementInstances();
-    ASSERT(instances.contains(instance));
+    if (!instance->shadowTreeElement())
+        return;
 
-    instances.remove(instance);
+    HashSet<SVGElement*>& instances = svgRareData()->elementInstances();
+    ASSERT(instances.contains(instance->shadowTreeElement()));
+
+    instances.remove(instance->shadowTreeElement());
 }
 
-const HashSet<SVGElementInstance*>& SVGElement::instancesForElement() const
+const HashSet<SVGElement*>& SVGElement::instancesForElement() const
 {
     if (!hasSVGRareData()) {
-        DEFINE_STATIC_LOCAL(HashSet<SVGElementInstance*>, emptyInstances, ());
+        DEFINE_STATIC_LOCAL(HashSet<SVGElement*>, emptyInstances, ());
         return emptyInstances;
     }
     return svgRareData()->elementInstances();
@@ -613,6 +616,15 @@ SVGElement* SVGElement::correspondingElement()
     return hasSVGRareData() ? svgRareData()->correspondingElement() : 0;
 }
 
+SVGUseElement* SVGElement::correspondingUseElement() const
+{
+    if (ShadowRoot* root = containingShadowRoot()) {
+        if (isSVGUseElement(root->host()) && (root->type() == ShadowRoot::UserAgentShadowRoot))
+            return toSVGUseElement(root->host());
+    }
+    return 0;
+}
+
 void SVGElement::setCorrespondingElement(SVGElement* correspondingElement)
 {
     ensureSVGRareData()->setCorrespondingElement(correspondingElement);
@@ -620,9 +632,7 @@ void SVGElement::setCorrespondingElement(SVGElement* correspondingElement)
 
 bool SVGElement::inUseShadowTree() const
 {
-    if (ShadowRoot* root = containingShadowRoot())
-        return isSVGUseElement(root->host()) && (root->type() == ShadowRoot::UserAgentShadowRoot);
-    return false;
+    return correspondingUseElement();
 }
 
 bool SVGElement::supportsSpatialNavigationFocus() const
@@ -775,7 +785,7 @@ bool SVGElement::haveLoadedRequiredResources()
     return true;
 }
 
-static inline void collectInstancesForSVGElement(SVGElement* element, HashSet<SVGElementInstance*>& instances)
+static inline void collectInstancesForSVGElement(SVGElement* element, HashSet<SVGElement*>& instances)
 {
     ASSERT(element);
     if (element->containingShadowRoot())
@@ -795,14 +805,11 @@ bool SVGElement::addEventListener(const AtomicString& eventType, PassRefPtr<Even
         return false;
 
     // Add event listener to all shadow tree DOM element instances
-    HashSet<SVGElementInstance*> instances;
+    HashSet<SVGElement*> instances;
     collectInstancesForSVGElement(this, instances);
-    const HashSet<SVGElementInstance*>::const_iterator end = instances.end();
-    for (HashSet<SVGElementInstance*>::const_iterator it = instances.begin(); it != end; ++it) {
-        ASSERT((*it)->shadowTreeElement());
-        ASSERT((*it)->correspondingElement() == this);
-
-        bool result = (*it)->shadowTreeElement()->Node::addEventListener(eventType, listener, useCapture);
+    const HashSet<SVGElement*>::const_iterator end = instances.end();
+    for (HashSet<SVGElement*>::const_iterator it = instances.begin(); it != end; ++it) {
+        bool result = (*it)->Node::addEventListener(eventType, listener, useCapture);
         ASSERT_UNUSED(result, result);
     }
 
@@ -811,7 +818,7 @@ bool SVGElement::addEventListener(const AtomicString& eventType, PassRefPtr<Even
 
 bool SVGElement::removeEventListener(const AtomicString& eventType, EventListener* listener, bool useCapture)
 {
-    HashSet<SVGElementInstance*> instances;
+    HashSet<SVGElement*> instances;
     collectInstancesForSVGElement(this, instances);
     if (instances.isEmpty())
         return Node::removeEventListener(eventType, listener, useCapture);
@@ -828,11 +835,9 @@ bool SVGElement::removeEventListener(const AtomicString& eventType, EventListene
         return false;
 
     // Remove event listener from all shadow tree DOM element instances
-    const HashSet<SVGElementInstance*>::const_iterator end = instances.end();
-    for (HashSet<SVGElementInstance*>::const_iterator it = instances.begin(); it != end; ++it) {
-        ASSERT((*it)->correspondingElement() == this);
-
-        SVGElement* shadowTreeElement = (*it)->shadowTreeElement();
+    const HashSet<SVGElement*>::const_iterator end = instances.end();
+    for (HashSet<SVGElement*>::const_iterator it = instances.begin(); it != end; ++it) {
+        SVGElement* shadowTreeElement = *it;
         ASSERT(shadowTreeElement);
 
         if (shadowTreeElement->Node::removeEventListener(eventType, listener, useCapture))

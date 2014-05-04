@@ -148,10 +148,10 @@ Vector<SVGElement*> findElementInstances(SVGElement* targetElement)
 
     animatedElements.append(targetElement);
 
-    const HashSet<SVGElementInstance*>& instances = targetElement->instancesForElement();
-    const HashSet<SVGElementInstance*>::const_iterator end = instances.end();
-    for (HashSet<SVGElementInstance*>::const_iterator it = instances.begin(); it != end; ++it) {
-        if (SVGElement* shadowTreeElement = (*it)->shadowTreeElement())
+    const HashSet<SVGElement*>& instances = targetElement->instancesForElement();
+    const HashSet<SVGElement*>::const_iterator end = instances.end();
+    for (HashSet<SVGElement*>::const_iterator it = instances.begin(); it != end; ++it) {
+        if (SVGElement* shadowTreeElement = *it)
             animatedElements.append(shadowTreeElement);
     }
 
@@ -231,10 +231,10 @@ static inline void applyCSSPropertyToTargetAndInstances(SVGElement* targetElemen
     applyCSSPropertyToTarget(targetElement, id, valueAsString);
 
     // If the target element has instances, update them as well, w/o requiring the <use> tree to be rebuilt.
-    const HashSet<SVGElementInstance*>& instances = targetElement->instancesForElement();
-    const HashSet<SVGElementInstance*>::const_iterator end = instances.end();
-    for (HashSet<SVGElementInstance*>::const_iterator it = instances.begin(); it != end; ++it) {
-        if (SVGElement* shadowTreeElement = (*it)->shadowTreeElement())
+    const HashSet<SVGElement*>& instances = targetElement->instancesForElement();
+    const HashSet<SVGElement*>::const_iterator end = instances.end();
+    for (HashSet<SVGElement*>::const_iterator it = instances.begin(); it != end; ++it) {
+        if (SVGElement* shadowTreeElement = *it)
             applyCSSPropertyToTarget(shadowTreeElement, id, valueAsString);
     }
 }
@@ -251,10 +251,10 @@ static inline void removeCSSPropertyFromTargetAndInstances(SVGElement* targetEle
     removeCSSPropertyFromTarget(targetElement, id);
 
     // If the target element has instances, update them as well, w/o requiring the <use> tree to be rebuilt.
-    const HashSet<SVGElementInstance*>& instances = targetElement->instancesForElement();
-    const HashSet<SVGElementInstance*>::const_iterator end = instances.end();
-    for (HashSet<SVGElementInstance*>::const_iterator it = instances.begin(); it != end; ++it) {
-        if (SVGElement* shadowTreeElement = (*it)->shadowTreeElement())
+    const HashSet<SVGElement*>& instances = targetElement->instancesForElement();
+    const HashSet<SVGElement*>::const_iterator end = instances.end();
+    for (HashSet<SVGElement*>::const_iterator it = instances.begin(); it != end; ++it) {
+        if (SVGElement* shadowTreeElement = *it)
             removeCSSPropertyFromTarget(shadowTreeElement, id);
     }
 }
@@ -276,10 +276,10 @@ static inline void notifyTargetAndInstancesAboutAnimValChange(SVGElement* target
     notifyTargetAboutAnimValChange(targetElement, attributeName);
 
     // If the target element has instances, update them as well, w/o requiring the <use> tree to be rebuilt.
-    const HashSet<SVGElementInstance*>& instances = targetElement->instancesForElement();
-    const HashSet<SVGElementInstance*>::const_iterator end = instances.end();
-    for (HashSet<SVGElementInstance*>::const_iterator it = instances.begin(); it != end; ++it) {
-        if (SVGElement* shadowTreeElement = (*it)->shadowTreeElement())
+    const HashSet<SVGElement*>& instances = targetElement->instancesForElement();
+    const HashSet<SVGElement*>::const_iterator end = instances.end();
+    for (HashSet<SVGElement*>::const_iterator it = instances.begin(); it != end; ++it) {
+        if (SVGElement* shadowTreeElement = *it)
             notifyTargetAboutAnimValChange(shadowTreeElement, attributeName);
     }
 }
