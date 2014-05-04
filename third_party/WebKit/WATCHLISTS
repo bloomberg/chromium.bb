@@ -65,6 +65,10 @@
     'fetch': {
       'filepath': 'Source/core/fetch',
     },
+    'filters': {
+      'filepath': 'Source/platform/graphics/filters' \
+                  '|Source/core/svg/graphics/filters'
+    },
     'heap': {
       'filepath': 'Source/heap' \
                   '|Source/platform/heap',
