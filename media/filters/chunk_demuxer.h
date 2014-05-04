@@ -121,7 +121,7 @@ class ChunkDemuxerStream : public DemuxerStream {
   mutable base::Lock lock_;
   State state_;
   ReadCB read_cb_;
-  const bool splice_frames_enabled_;
+  bool splice_frames_enabled_;
   bool partial_append_window_trimming_enabled_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChunkDemuxerStream);
