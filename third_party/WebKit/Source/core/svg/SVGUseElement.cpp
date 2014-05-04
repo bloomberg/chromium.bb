@@ -481,7 +481,7 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
 
     // Build shadow tree from instance tree
     // This also handles the special cases: <use> on <symbol>, <use> on <svg>.
-    buildShadowTree(target, m_targetElementInstance.get());
+    buildShadowTree(target, m_targetElementInstance.get(), shadowTreeRootElement);
 
     // Expand all <use> elements in the shadow tree.
     // Expand means: replace the actual <use> element by what it references.
@@ -491,25 +491,27 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
     // Expand means: replace the actual <symbol> element by the <svg> element.
     expandSymbolElementsInShadowTree(shadowTreeRootElement);
 
-    // Now that the shadow tree is completly expanded, we can associate
-    // shadow tree elements <-> instances in the instance tree.
-    associateInstancesWithShadowTreeElements(shadowTreeRootElement->firstChild(), m_targetElementInstance.get());
-
-    ASSERT(m_targetElementInstance->correspondingElement());
-    transferUseWidthAndHeightIfNeeded(*this, m_targetElementInstance->shadowTreeElement(), *m_targetElementInstance->correspondingElement());
-
     // If no shadow tree element is present, this means that the reference root
     // element was removed, as it is disallowed (ie. <use> on <foreignObject>)
     // Do NOT leave an inconsistent instance tree around, instead destruct it.
-    if (!m_targetElementInstance->shadowTreeElement()) {
+    Node* shadowTreeTargetNode = shadowTreeRootElement->firstChild();
+    if (!shadowTreeTargetNode) {
         clearResourceReferences();
         return;
     }
 
-    ASSERT(m_targetElementInstance->shadowTreeElement()->parentNode() == shadowTreeRootElement);
+    // Now that the shadow tree is completly expanded, we can associate
+    // shadow tree elements <-> instances in the instance tree.
+    associateInstancesWithShadowTreeElements(shadowTreeTargetNode, m_targetElementInstance.get());
+
+    SVGElement* shadowTreeTargetElement = toSVGElement(shadowTreeTargetNode);
+    ASSERT(shadowTreeTargetElement->correspondingElement());
+    transferUseWidthAndHeightIfNeeded(*this, shadowTreeTargetElement, *shadowTreeTargetElement->correspondingElement());
+
+    ASSERT(shadowTreeTargetElement->parentNode() == shadowTreeRootElement);
 
     // Transfer event listeners assigned to the referenced element to our shadow tree elements.
-    transferEventListenersToShadowTree(m_targetElementInstance.get());
+    transferEventListenersToShadowTree(shadowTreeTargetElement);
 
     // Update relative length information.
     updateRelativeLengthsInformation();
@@ -551,7 +553,7 @@ void SVGUseElement::toClipPath(Path& path)
 {
     ASSERT(path.isEmpty());
 
-    Node* n = m_targetElementInstance ? m_targetElementInstance->shadowTreeElement() : 0;
+    Node* n = userAgentShadowRoot()->firstChild();
     if (!n)
         return;
 
@@ -571,12 +573,10 @@ void SVGUseElement::toClipPath(Path& path)
 
 RenderObject* SVGUseElement::rendererClipChild() const
 {
-    Node* n = m_targetElementInstance ? m_targetElementInstance->shadowTreeElement() : 0;
-    if (!n)
-        return 0;
-
-    if (n->isSVGElement() && isDirectReference(*n))
-        return toSVGElement(n)->renderer();
+    if (Node* n = userAgentShadowRoot()->firstChild()) {
+        if (n->isSVGElement() && isDirectReference(*n))
+            return toSVGElement(n)->renderer();
+    }
 
     return 0;
 }
@@ -682,7 +682,7 @@ static inline void removeDisallowedElementsFromSubtree(Element& subtree)
     }
 }
 
-void SVGUseElement::buildShadowTree(SVGElement* target, SVGElementInstance* targetInstance)
+void SVGUseElement::buildShadowTree(SVGElement* target, SVGElementInstance* targetInstance, ShadowRoot* shadowTreeRootElement)
 {
     // For instance <use> on <foreignObject> (direct case).
     if (isDisallowedElement(target))
@@ -698,7 +698,7 @@ void SVGUseElement::buildShadowTree(SVGElement* target, SVGElementInstance* targ
     if (subtreeContainsDisallowedElement(newChild.get()))
         removeDisallowedElementsFromSubtree(*newChild);
 
-    userAgentShadowRoot()->appendChild(newChild.release());
+    shadowTreeRootElement->appendChild(newChild.release());
 }
 
 void SVGUseElement::expandUseElementsInShadowTree(Node* element)
@@ -808,21 +808,18 @@ void SVGUseElement::expandSymbolElementsInShadowTree(Node* element)
         expandSymbolElementsInShadowTree(child.get());
 }
 
-void SVGUseElement::transferEventListenersToShadowTree(SVGElementInstance* target)
+void SVGUseElement::transferEventListenersToShadowTree(SVGElement* shadowTreeTargetElement)
 {
-    if (!target)
+    if (!shadowTreeTargetElement)
         return;
 
-    SVGElement* originalElement = target->correspondingElement();
+    SVGElement* originalElement = shadowTreeTargetElement->correspondingElement();
     ASSERT(originalElement);
+    if (EventTargetData* data = originalElement->eventTargetData())
+        data->eventListenerMap.copyEventListenersNotCreatedFromMarkupToTarget(shadowTreeTargetElement);
 
-    if (SVGElement* shadowTreeElement = target->shadowTreeElement()) {
-        if (EventTargetData* data = originalElement->eventTargetData())
-            data->eventListenerMap.copyEventListenersNotCreatedFromMarkupToTarget(shadowTreeElement);
-    }
-
-    for (SVGElementInstance* instance = target->firstChild(); instance; instance = instance->nextSibling())
-        transferEventListenersToShadowTree(instance);
+    for (SVGElement* child = Traversal<SVGElement>::firstChild(*shadowTreeTargetElement); child; child = Traversal<SVGElement>::nextSibling(*child))
+        transferEventListenersToShadowTree(child);
 }
 
 void SVGUseElement::associateInstancesWithShadowTreeElements(Node* target, SVGElementInstance* targetInstance)
