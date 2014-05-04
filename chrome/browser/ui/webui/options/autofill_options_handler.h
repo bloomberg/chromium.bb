@@ -55,6 +55,11 @@ class AutofillOptionsHandler : public OptionsPageUIHandler,
   // |args| - A string, the GUID of the address to load.
   void LoadAddressEditor(const base::ListValue* args);
 
+  // Requests input form layout information for a specific country code. Calls
+  // into WebUI with the layout information.
+  // |args| - A string, the country code to load.
+  void LoadAddressEditorComponents(const base::ListValue* args);
+
   // Requests profile data for a specific credit card. Calls into WebUI with the
   // loaded profile data to open the credit card editor.
   // |args| - A string, the GUID of the credit card to load.

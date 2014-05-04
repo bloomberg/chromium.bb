@@ -489,7 +489,8 @@ cr.define('options.autofillOptions', function() {
       var info = new Array();
       info[0] = index;
       info[1] = numbers;
-      info[2] = $('country').value;
+      info[2] = document.querySelector(
+          '#autofill-edit-address-overlay [field=country]').value;
       this.validationRequests_++;
       chrome.send('validatePhoneNumbers', info);
     },

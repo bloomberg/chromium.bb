@@ -2,66 +2,26 @@
   <div class="close-button"></div>
   <h1 id="autofill-address-title"></h1>
   <div class="content-area">
-    <div>
-      <div id="autofill-name-labels">
-        <span i18n-content="autofillFirstNameLabel"></span>
-        <span i18n-content="autofillMiddleNameLabel"></span>
-        <span i18n-content="autofillLastNameLabel"></span>
-      </div>
-    </div>
-    <div>
-      <list id="full-name-list"></list>
-    </div>
-
-    <label class="settings-row">
-      <div i18n-content="autofillCompanyNameLabel"></div>
-      <input id="company-name" type="text">
-    </label>
-
-    <label class="settings-row">
-      <div i18n-content="autofillAddrLine1Label"></div>
-      <input id="addr-line-1" type="text">
-    </label>
-
-    <label class="settings-row">
-      <div i18n-content="autofillAddrLine2Label"></div>
-      <input id="addr-line-2" type="text">
-    </label>
-
-    <div class="input-group settings-row">
-      <label>
-        <div i18n-content="autofillCityLabel"></div>
-        <input id="city" type="text">
-      </label>
-
-      <label>
-        <div id="state-label"></div>
-        <input id="state" type="text">
-      </label>
-
-      <label>
-        <div id="postal-code-label"></div>
-        <input id="postal-code" type="text">
-      </label>
+    <div id="autofill-edit-address-fields">
     </div>
 
     <div class="settings-row">
       <label>
         <div i18n-content="autofillCountryLabel"></div>
-        <select id="country"></select>
+        <select class="country" field="country"></select>
       </label>
     </div>
 
     <div class="input-group settings-row">
       <div>
         <div i18n-content="autofillPhoneLabel"></div>
-        <list id="phone-list"
+        <list class="short" field="phone"
             i18n-values="placeholder:autofillAddPhonePlaceholder"></list>
       </div>
 
       <div>
         <div i18n-content="autofillEmailLabel"></div>
-        <list id="email-list"
+        <list class="short" field="email"
             i18n-values="placeholder:autofillAddEmailPlaceholder"></list>
       </div>
     </div>
