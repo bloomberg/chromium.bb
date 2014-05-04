@@ -25,3 +25,6 @@ SSLClientSocketTest.*
 
 # DrM-i#1465
 URLRequestTest.ResolveShortcutTest
+
+# Crashes, http://crbug.com/369840
+ProxyResolverV8TracingTest.MultipleResolvers
