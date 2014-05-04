@@ -1,0 +1,11 @@
+Test for resizing the Textarea below it's min intrinsic size.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS document.getElementById("textInputID").style.width is "9px"
+PASS document.getElementById("textInputID").style.height; is "9px"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

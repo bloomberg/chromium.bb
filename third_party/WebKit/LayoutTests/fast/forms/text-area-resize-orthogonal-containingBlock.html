@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<pre id="console"></pre>
+<div id="res" style="-webkit-writing-mode: vertical-lr; width:800px; height:700px">
+<textarea style="-webkit-writing-mode: horizontal-tb; width:400px; height:400px; min-width:10%; min-height:10%" id="textInputID">
+Some text
+</textarea>
+</div>
+<script>
+description("<b>Test for resizing the Textarea below it's initial size and with orthogonal containing block.</b>");
+test();
+
+function log(msg)
+{
+    document.getElementById('console').appendChild(document.createTextNode(msg + '\n'));
+}
+
+function test()
+{
+    if (window.testRunner)
+        testDragAndMove();
+    else
+        log("\n\nThis test needs window.testRunner and window.eventSender to work. To manually test it, drag the textarea below. \nFor test to pass the width and height of textarea should not go below min-width and min-height\n\n");
+}
+
+function testDragAndMove()
+{
+    var startX = document.getElementById("textInputID").offsetLeft + 400;
+    var startY = document.getElementById("textInputID").offsetTop + 400;
+
+    eventSender.dragMode = false;
+    eventSender.mouseMoveTo(startX,startY);
+    eventSender.mouseDown();
+    // Then drag it.
+    eventSender.mouseMoveTo(startX - 395, startY - 395);
+    eventSender.mouseUp();
+
+    // The min-width/min-height includes padding and border and width/height does not include padding and border.
+    // So when we set say min-width = 200px it means actual minimum width of box to be 194px (as 2px
+    // paddding and 1px border on all side).
+    // Also the containing block is orthogonal to the textarea so min-width will be 10% of height of containing block
+    // and min-height is 10% of width of containing block.
+    shouldBeEqualToString('document.getElementById("textInputID").style.width', '64px');
+    shouldBeEqualToString('document.getElementById("textInputID").style.height;', '74px');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+Test for resizing the Textarea below the minimum size set.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS document.getElementById("textInputID").style.width is "194px"
+PASS document.getElementById("textInputID").style.height; is "194px"
+PASS document.getElementById("textInputID").style.width is "114px"
+PASS document.getElementById("textInputID").style.height; is "84px"
+PASS document.getElementById("textInputID").style.width is "74px"
+PASS document.getElementById("textInputID").style.height; is "74px"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
