@@ -11,7 +11,7 @@ vars = {
     'git_url':
          'https://chromium.googlesource.com',
     'webkit_rev':
-         '@531fe6951d3a0c6e239ff34b2b037c191a793351',
+         '@af14338d97392d8411a50137e1c8305d5289784e',
     'angle_revision':
          '74697cf2064c0a2c0d7e1b1b28db439286766a05'
 }
@@ -122,9 +122,9 @@ deps = {
     'src/third_party/skia/gyp':
         Var('git_url') + '/external/skia/gyp.git@5558450099591dffc0a241e4c65e878e614c4c53',
     'src/third_party/skia/include':
-        Var('git_url') + '/external/skia/include.git@a92579d00463a0002a20a49af68da8260d73600f',
+        Var('git_url') + '/external/skia/include.git@408cb61cd625026f204980897f638ed6ba3cf3e8',
     'src/third_party/skia/src':
-        Var('git_url') + '/external/skia/src.git@a519ef7a6ea47b7b200a81f5205b77fea69a88e8',
+        Var('git_url') + '/external/skia/src.git@ac7277f4472c75c2c3358705cc300e78550b0472',
     'src/third_party/smhasher/src':
         Var('git_url') + '/external/smhasher.git@e87738e57558e0ec472b2fc3a643b838e5b6e88f',
     'src/third_party/snappy/src':
@@ -152,7 +152,7 @@ deps = {
     'src/tools/grit':
         Var('git_url') + '/external/grit-i18n.git@1370f19146300b010e054e20bd733e183ba6f30e',
     'src/tools/gyp':
-        Var('git_url') + '/external/gyp.git@9a184eea4849278fd557627adcf48cb8e2ff9f67',
+        Var('git_url') + '/external/gyp.git@152521d7f30794d72674e56e1a03271991b9c423',
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@6be0a66a1ebd7ebc5abc1b2f405a945f6d871521',
     'src/tools/swarming_client':
