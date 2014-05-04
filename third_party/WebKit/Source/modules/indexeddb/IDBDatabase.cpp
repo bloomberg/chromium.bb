@@ -67,9 +67,9 @@ const char IDBDatabase::transactionFinishedErrorMessage[] = "The transaction has
 const char IDBDatabase::transactionReadOnlyErrorMessage[] = "The transaction is read-only.";
 const char IDBDatabase::databaseClosedErrorMessage[] = "The database connection is closed.";
 
-PassRefPtr<IDBDatabase> IDBDatabase::create(ExecutionContext* context, PassOwnPtr<WebIDBDatabase> database, PassRefPtr<IDBDatabaseCallbacks> callbacks)
+PassRefPtrWillBeRawPtr<IDBDatabase> IDBDatabase::create(ExecutionContext* context, PassOwnPtr<WebIDBDatabase> database, PassRefPtr<IDBDatabaseCallbacks> callbacks)
 {
-    RefPtr<IDBDatabase> idbDatabase(adoptRef(new IDBDatabase(context, database, callbacks)));
+    RefPtrWillBeRawPtr<IDBDatabase> idbDatabase(adoptRefWillBeRefCountedGarbageCollected(new IDBDatabase(context, database, callbacks)));
     idbDatabase->suspendIfNeeded();
     return idbDatabase.release();
 }
@@ -81,15 +81,29 @@ IDBDatabase::IDBDatabase(ExecutionContext* context, PassOwnPtr<WebIDBDatabase> b
     , m_contextStopped(false)
     , m_databaseCallbacks(callbacks)
 {
+#if !ENABLE(OILPAN)
     // We pass a reference of this object before it can be adopted.
     relaxAdoptionRequirement();
+#endif
     ScriptWrappable::init(this);
     m_databaseCallbacks->connect(this);
 }
 
 IDBDatabase::~IDBDatabase()
 {
-    close();
+#if !ENABLE(OILPAN)
+    ASSERT(m_transactions.isEmpty());
+    ASSERT(m_enqueuedEvents.isEmpty());
+#endif
+    if (!m_closePending && m_backend)
+        m_backend->close();
+}
+
+void IDBDatabase::trace(Visitor* visitor)
+{
+    visitor->trace(m_versionChangeTransaction);
+    visitor->trace(m_transactions);
+    visitor->trace(m_enqueuedEvents);
 }
 
 int64_t IDBDatabase::nextTransactionId()

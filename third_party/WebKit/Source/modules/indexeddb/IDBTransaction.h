@@ -124,7 +124,7 @@ private:
     };
 
     int64_t m_id;
-    RefPtr<IDBDatabase> m_database;
+    RefPtrWillBeMember<IDBDatabase> m_database;
     const Vector<String> m_objectStoreNames;
     RawPtrWillBeMember<IDBOpenDBRequest> m_openDBRequest;
     const blink::WebIDBDatabase::TransactionMode m_mode;

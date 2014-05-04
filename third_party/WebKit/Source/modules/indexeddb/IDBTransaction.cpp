@@ -111,6 +111,7 @@ IDBTransaction::~IDBTransaction()
 
 void IDBTransaction::trace(Visitor* visitor)
 {
+    visitor->trace(m_database);
     visitor->trace(m_openDBRequest);
     visitor->trace(m_error);
     visitor->trace(m_requestList);

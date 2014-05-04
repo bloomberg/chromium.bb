@@ -88,7 +88,7 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBData
 
     ASSERT(m_databaseCallbacks);
 
-    RefPtr<IDBDatabase> idbDatabase = IDBDatabase::create(executionContext(), backend, m_databaseCallbacks.release());
+    RefPtrWillBeRawPtr<IDBDatabase> idbDatabase = IDBDatabase::create(executionContext(), backend, m_databaseCallbacks.release());
     idbDatabase->setMetadata(metadata);
 
     if (oldVersion == IDBDatabaseMetadata::NoIntVersion) {
@@ -118,7 +118,7 @@ void IDBOpenDBRequest::onSuccess(PassOwnPtr<WebIDBDatabase> backend, const IDBDa
     if (!shouldEnqueueEvent())
         return;
 
-    RefPtr<IDBDatabase> idbDatabase;
+    RefPtrWillBeRawPtr<IDBDatabase> idbDatabase;
     if (resultAsAny()) {
         // Previous onUpgradeNeeded call delivered the backend.
         ASSERT(!backend.get());

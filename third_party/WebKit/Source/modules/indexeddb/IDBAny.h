@@ -126,7 +126,7 @@ private:
     explicit IDBAny(Type);
     explicit IDBAny(PassRefPtr<DOMStringList>);
     explicit IDBAny(PassRefPtrWillBeRawPtr<IDBCursor>);
-    explicit IDBAny(PassRefPtr<IDBDatabase>);
+    explicit IDBAny(PassRefPtrWillBeRawPtr<IDBDatabase>);
     explicit IDBAny(PassRefPtrWillBeRawPtr<IDBIndex>);
     explicit IDBAny(PassRefPtrWillBeRawPtr<IDBObjectStore>);
     explicit IDBAny(PassRefPtr<IDBTransaction>);
@@ -142,7 +142,7 @@ private:
     // Only one of the following should ever be in use at any given time, except that BufferType uses two and BufferKeyAndKeyPathType uses four.
     const RefPtr<DOMStringList> m_domStringList;
     const RefPtrWillBeMember<IDBCursor> m_idbCursor;
-    const RefPtr<IDBDatabase> m_idbDatabase;
+    const RefPtrWillBeMember<IDBDatabase> m_idbDatabase;
     const RefPtrWillBeMember<IDBIndex> m_idbIndex;
     const RefPtrWillBeMember<IDBObjectStore> m_idbObjectStore;
     const RefPtr<IDBTransaction> m_idbTransaction;

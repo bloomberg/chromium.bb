@@ -319,7 +319,7 @@ namespace {
 // cursor success handlers are kept alive.
 class IndexPopulator FINAL : public EventListener {
 public:
-    static PassRefPtr<IndexPopulator> create(ScriptState* scriptState, PassRefPtr<IDBDatabase> database, int64_t transactionId, int64_t objectStoreId, const IDBIndexMetadata& indexMetadata)
+    static PassRefPtr<IndexPopulator> create(ScriptState* scriptState, PassRefPtrWillBeRawPtr<IDBDatabase> database, int64_t transactionId, int64_t objectStoreId, const IDBIndexMetadata& indexMetadata)
     {
         return adoptRef(new IndexPopulator(scriptState, database, transactionId, objectStoreId, indexMetadata));
     }
@@ -330,7 +330,7 @@ public:
     }
 
 private:
-    IndexPopulator(ScriptState* scriptState, PassRefPtr<IDBDatabase> database, int64_t transactionId, int64_t objectStoreId, const IDBIndexMetadata& indexMetadata)
+    IndexPopulator(ScriptState* scriptState, PassRefPtrWillBeRawPtr<IDBDatabase> database, int64_t transactionId, int64_t objectStoreId, const IDBIndexMetadata& indexMetadata)
         : EventListener(CPPEventListenerType)
         , m_scriptState(scriptState)
         , m_database(database)
@@ -379,7 +379,7 @@ private:
     }
 
     RefPtr<ScriptState> m_scriptState;
-    RefPtr<IDBDatabase> m_database;
+    RefPtrWillBePersistent<IDBDatabase> m_database;
     const int64_t m_transactionId;
     const int64_t m_objectStoreId;
     const IDBIndexMetadata m_indexMetadata;

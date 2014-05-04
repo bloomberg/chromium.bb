@@ -160,7 +160,7 @@ IDBAny::IDBAny(PassRefPtrWillBeRawPtr<IDBCursor> value)
 {
 }
 
-IDBAny::IDBAny(PassRefPtr<IDBDatabase> value)
+IDBAny::IDBAny(PassRefPtrWillBeRawPtr<IDBDatabase> value)
     : m_type(IDBDatabaseType)
     , m_idbDatabase(value)
     , m_integer(0)
@@ -236,6 +236,7 @@ IDBAny::IDBAny(int64_t value)
 void IDBAny::trace(Visitor* visitor)
 {
     visitor->trace(m_idbCursor);
+    visitor->trace(m_idbDatabase);
     visitor->trace(m_idbIndex);
     visitor->trace(m_idbObjectStore);
     visitor->trace(m_idbKey);

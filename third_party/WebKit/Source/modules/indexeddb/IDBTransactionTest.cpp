@@ -92,7 +92,7 @@ TEST_F(IDBTransactionTest, EnsureLifetime)
 {
     OwnPtr<FakeWebIDBDatabase> backend = FakeWebIDBDatabase::create();
     RefPtr<FakeIDBDatabaseCallbacks> connection = FakeIDBDatabaseCallbacks::create();
-    RefPtr<IDBDatabase> db = IDBDatabase::create(executionContext(), backend.release(), connection);
+    RefPtrWillBePersistent<IDBDatabase> db = IDBDatabase::create(executionContext(), backend.release(), connection);
 
     const int64_t transactionId = 1234;
     const Vector<String> transactionScope;
@@ -137,7 +137,7 @@ TEST_F(IDBTransactionTest, TransactionFinish)
 {
     OwnPtr<FakeWebIDBDatabase> backend = FakeWebIDBDatabase::create();
     RefPtr<FakeIDBDatabaseCallbacks> connection = FakeIDBDatabaseCallbacks::create();
-    RefPtr<IDBDatabase> db = IDBDatabase::create(executionContext(), backend.release(), connection);
+    RefPtrWillBePersistent<IDBDatabase> db = IDBDatabase::create(executionContext(), backend.release(), connection);
 
     const int64_t transactionId = 1234;
     const Vector<String> transactionScope;
@@ -187,8 +187,9 @@ TEST_F(IDBTransactionTest, TransactionFinish)
 #if ENABLE(OILPAN)
     Heap::collectAllGarbage();
     EXPECT_EQ(0u, set.size());
-#endif
+#else
     EXPECT_EQ(1, db->refCount());
+#endif
 }
 
 } // namespace

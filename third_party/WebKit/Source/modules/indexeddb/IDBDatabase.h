@@ -51,12 +51,17 @@ class DOMError;
 class ExceptionState;
 class ExecutionContext;
 
-class IDBDatabase FINAL : public RefCounted<IDBDatabase>, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject {
-    REFCOUNTED_EVENT_TARGET(IDBDatabase);
+class IDBDatabase FINAL
+    : public RefCountedWillBeRefCountedGarbageCollected<IDBDatabase>
+    , public ScriptWrappable
+    , public EventTargetWithInlineData
+    , public ActiveDOMObject {
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<IDBDatabase>);
 
 public:
-    static PassRefPtr<IDBDatabase> create(ExecutionContext*, PassOwnPtr<blink::WebIDBDatabase>, PassRefPtr<IDBDatabaseCallbacks>);
+    static PassRefPtrWillBeRawPtr<IDBDatabase> create(ExecutionContext*, PassOwnPtr<blink::WebIDBDatabase>, PassRefPtr<IDBDatabaseCallbacks>);
     virtual ~IDBDatabase();
+    void trace(Visitor*);
 
     void setMetadata(const IDBDatabaseMetadata& metadata) { m_metadata = metadata; }
     void indexCreated(int64_t objectStoreId, const IDBIndexMetadata&);
@@ -139,8 +144,8 @@ private:
 
     IDBDatabaseMetadata m_metadata;
     OwnPtr<blink::WebIDBDatabase> m_backend;
-    RefPtrWillBePersistent<IDBTransaction> m_versionChangeTransaction;
-    typedef WillBePersistentHeapHashMap<int64_t, RefPtrWillBeMember<IDBTransaction> > TransactionMap;
+    RefPtrWillBeMember<IDBTransaction> m_versionChangeTransaction;
+    typedef WillBeHeapHashMap<int64_t, RefPtrWillBeMember<IDBTransaction> > TransactionMap;
     TransactionMap m_transactions;
 
     bool m_closePending;
@@ -148,7 +153,7 @@ private:
 
     // Keep track of the versionchange events waiting to be fired on this
     // database so that we can cancel them if the database closes.
-    WillBePersistentHeapVector<RefPtrWillBeMember<Event> > m_enqueuedEvents;
+    WillBeHeapVector<RefPtrWillBeMember<Event> > m_enqueuedEvents;
 
     RefPtr<IDBDatabaseCallbacks> m_databaseCallbacks;
 };

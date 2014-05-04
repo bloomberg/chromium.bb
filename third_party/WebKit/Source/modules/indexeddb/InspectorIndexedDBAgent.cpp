@@ -139,7 +139,7 @@ public:
         : m_scriptState(scriptState) { }
     virtual ~ExecutableWithDatabase() { };
     void start(IDBFactory*, SecurityOrigin*, const String& databaseName);
-    virtual void execute(PassRefPtr<IDBDatabase>) = 0;
+    virtual void execute(PassRefPtrWillBeRawPtr<IDBDatabase>) = 0;
     virtual RequestCallback* requestCallback() = 0;
     ExecutionContext* context() const { return m_scriptState->executionContext(); }
     ScriptState* scriptState() const { return m_scriptState.get(); }
@@ -175,7 +175,7 @@ public:
             return;
         }
 
-        RefPtr<IDBDatabase> idbDatabase = requestResult->idbDatabase();
+        RefPtrWillBeRawPtr<IDBDatabase> idbDatabase = requestResult->idbDatabase();
         m_executableWithDatabase->execute(idbDatabase);
         IDBPendingTransactionMonitor::from(*context).deactivateNewTransactions();
         idbDatabase->close();
@@ -263,9 +263,9 @@ public:
 
     virtual ~DatabaseLoader() { }
 
-    virtual void execute(PassRefPtr<IDBDatabase> prpDatabase) OVERRIDE
+    virtual void execute(PassRefPtrWillBeRawPtr<IDBDatabase> prpDatabase) OVERRIDE
     {
-        RefPtr<IDBDatabase> idbDatabase = prpDatabase;
+        RefPtrWillBeRawPtr<IDBDatabase> idbDatabase = prpDatabase;
         if (!requestCallback()->isActive())
             return;
 
@@ -487,9 +487,9 @@ public:
 
     virtual ~DataLoader() { }
 
-    virtual void execute(PassRefPtr<IDBDatabase> prpDatabase) OVERRIDE
+    virtual void execute(PassRefPtrWillBeRawPtr<IDBDatabase> prpDatabase) OVERRIDE
     {
-        RefPtr<IDBDatabase> idbDatabase = prpDatabase;
+        RefPtrWillBeRawPtr<IDBDatabase> idbDatabase = prpDatabase;
         if (!requestCallback()->isActive())
             return;
         RefPtr<IDBTransaction> idbTransaction = transactionForDatabase(context(), idbDatabase.get(), m_objectStoreName);
@@ -725,9 +725,9 @@ public:
     {
     }
 
-    virtual void execute(PassRefPtr<IDBDatabase> prpDatabase) OVERRIDE
+    virtual void execute(PassRefPtrWillBeRawPtr<IDBDatabase> prpDatabase) OVERRIDE
     {
-        RefPtr<IDBDatabase> idbDatabase = prpDatabase;
+        RefPtrWillBeRawPtr<IDBDatabase> idbDatabase = prpDatabase;
         if (!requestCallback()->isActive())
             return;
         RefPtr<IDBTransaction> idbTransaction = transactionForDatabase(context(), idbDatabase.get(), m_objectStoreName, IDBTransaction::modeReadWrite());
