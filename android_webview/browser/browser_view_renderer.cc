@@ -171,11 +171,10 @@ BrowserViewRenderer::CalculateDesiredMemoryPolicy() {
   policy.bytes_limit =
       (policy.bytes_limit / kMemoryAllocationStep + 1) * kMemoryAllocationStep;
 
-  size_t tiles = std::max(width * height * kTileMultiplier / g_tile_area, 1u);
+  size_t tiles = width * height * kTileMultiplier / g_tile_area;
   // Round up to a multiple of kTileAllocationStep. The minimum number of tiles
   // is also kTileAllocationStep.
-  tiles = (tiles + kTileAllocationStep - 1) / kTileAllocationStep *
-          kTileAllocationStep;
+  tiles = (tiles / kTileAllocationStep + 1) * kTileAllocationStep;
   policy.num_resources_limit = tiles;
   return policy;
 }
