@@ -37,8 +37,8 @@ bool IsMockMediaStreamWithVideo(const WebURL& url) {
 
 namespace content {
 
-TestMediaStreamClient::TestMediaStreamClient(RenderView* render_view)
-    : RenderViewObserver(render_view) {}
+TestMediaStreamClient::TestMediaStreamClient(RenderFrame* render_frame)
+    : RenderFrameObserver(render_frame) {}
 
 TestMediaStreamClient::~TestMediaStreamClient() {}
 

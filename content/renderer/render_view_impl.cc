@@ -88,16 +88,10 @@
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/load_progress_tracker.h"
 #include "content/renderer/media/audio_device_factory.h"
-#include "content/renderer/media/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
-#include "content/renderer/media/media_stream_impl.h"
 #include "content/renderer/media/midi_dispatcher.h"
-#include "content/renderer/media/render_media_log.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
-#include "content/renderer/media/webmediaplayer_impl.h"
-#include "content/renderer/media/webmediaplayer_ms.h"
-#include "content/renderer/media/webmediaplayer_params.h"
 #include "content/renderer/memory_benchmarking_extension.h"
 #include "content/renderer/mhtml_generator.h"
 #include "content/renderer/push_messaging_dispatcher.h"
@@ -121,7 +115,6 @@
 #include "content/renderer/web_ui_mojo.h"
 #include "content/renderer/websharedworker_proxy.h"
 #include "media/audio/audio_output_device.h"
-#include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_switches.h"
 #include "media/filters/audio_renderer_impl.h"
@@ -184,7 +177,6 @@
 #include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
-#include "third_party/WebKit/public/web/WebUserMediaClient.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "third_party/WebKit/public/web/default/WebRenderTheme.h"
@@ -203,15 +195,11 @@
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
 
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/android/address_detector.h"
 #include "content/renderer/android/content_detector.h"
 #include "content/renderer/android/email_detector.h"
 #include "content/renderer/android/phone_number_detector.h"
-#include "content/renderer/android/synchronous_compositor_factory.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
-#include "content/renderer/media/android/stream_texture_factory_impl.h"
-#include "content/renderer/media/android/webmediaplayer_android.h"
 #include "net/android/network_library.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
@@ -270,9 +258,7 @@ using blink::WebImage;
 using blink::WebInputElement;
 using blink::WebInputEvent;
 using blink::WebLocalFrame;
-using blink::WebMediaPlayer;
 using blink::WebMediaPlayerAction;
-using blink::WebMediaPlayerClient;
 using blink::WebMouseEvent;
 using blink::WebNavigationPolicy;
 using blink::WebNavigationType;
@@ -673,8 +659,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       speech_recognition_dispatcher_(NULL),
       media_stream_dispatcher_(NULL),
       browser_plugin_manager_(NULL),
-      media_stream_client_(NULL),
-      web_user_media_client_(NULL),
       midi_dispatcher_(NULL),
       devtools_agent_(NULL),
       accessibility_mode_(AccessibilityModeOff),
@@ -2014,32 +1998,6 @@ void RenderViewImpl::initializeLayerTreeView() {
 
 // blink::WebFrameClient -----------------------------------------------------
 
-blink::WebMediaPlayer* RenderViewImpl::CreateMediaPlayer(
-    RenderFrame* render_frame,
-    blink::WebLocalFrame* frame,
-    const blink::WebURL& url,
-    blink::WebMediaPlayerClient* client) {
-  FOR_EACH_OBSERVER(
-      RenderViewObserver, observers_, WillCreateMediaPlayer(frame, client));
-
-  WebMediaPlayer* player = CreateWebMediaPlayerForMediaStream(frame, url,
-                                                              client);
-  if (player)
-    return player;
-
-#if defined(OS_ANDROID)
-  return CreateAndroidWebMediaPlayer(frame, url, client);
-#else
-  WebMediaPlayerParams params(
-      base::Bind(&ContentRendererClient::DeferMediaLoad,
-                 base::Unretained(GetContentClient()->renderer()),
-                 static_cast<RenderFrame*>(render_frame)),
-      RenderThreadImpl::current()->GetAudioRendererMixerManager()->CreateInput(
-          routing_id_, render_frame->GetRoutingID()));
-  return new WebMediaPlayerImpl(frame, client, AsWeakPtr(), params);
-#endif  // defined(OS_ANDROID)
-}
-
 void RenderViewImpl::Repaint(const gfx::Size& size) {
   OnRepaint(size);
 }
@@ -2353,34 +2311,6 @@ BrowserPluginManager* RenderViewImpl::GetBrowserPluginManager() {
   return browser_plugin_manager_.get();
 }
 
-bool RenderViewImpl::InitializeMediaStreamClient() {
-  if (media_stream_client_)
-    return true;
-
-  if (!RenderThreadImpl::current())  // Will be NULL during unit tests.
-    return false;
-
-#if defined(OS_ANDROID)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableWebRTC))
-    return false;
-#endif
-
-#if defined(ENABLE_WEBRTC)
-  if (!media_stream_dispatcher_)
-    media_stream_dispatcher_ = new MediaStreamDispatcher(this);
-
-  MediaStreamImpl* media_stream_impl = new MediaStreamImpl(
-      this,
-      media_stream_dispatcher_,
-      RenderThreadImpl::current()->GetMediaStreamDependencyFactory());
-  media_stream_client_ = media_stream_impl;
-  web_user_media_client_ = media_stream_impl;
-  return true;
-#else
-  return false;
-#endif
-}
-
 void RenderViewImpl::UpdateScrollState(WebFrame* frame) {
   WebSize offset = frame->scrollOffset();
   WebSize minimum_offset = frame->minimumScrollOffset();
@@ -2583,22 +2513,6 @@ void RenderViewImpl::DidStartLoading() {
 
 void RenderViewImpl::DidStopLoading() {
   main_render_frame_->didStopLoading();
-}
-
-void RenderViewImpl::DidPlay(blink::WebMediaPlayer* player) {
-  Send(new ViewHostMsg_MediaPlayingNotification(routing_id_,
-                                                reinterpret_cast<int64>(player),
-                                                player->hasVideo(),
-                                                player->hasAudio()));
-}
-
-void RenderViewImpl::DidPause(blink::WebMediaPlayer* player) {
-  Send(new ViewHostMsg_MediaPausedNotification(
-      routing_id_, reinterpret_cast<int64>(player)));
-}
-
-void RenderViewImpl::PlayerGone(blink::WebMediaPlayer* player) {
-  DidPause(player);
 }
 
 void RenderViewImpl::SyncNavigationState() {
@@ -3930,14 +3844,6 @@ blink::WebPageVisibilityState RenderViewImpl::visibilityState() const {
   return current_state;
 }
 
-blink::WebUserMediaClient* RenderViewImpl::userMediaClient() {
-  // This can happen in tests, in which case it's OK to return NULL.
-  if (!InitializeMediaStreamClient())
-    return NULL;
-
-  return web_user_media_client_;
-}
-
 blink::WebMIDIClient* RenderViewImpl::webMIDIClient() {
   if (!midi_dispatcher_)
     midi_dispatcher_ = new MidiDispatcher(this);
@@ -3955,28 +3861,6 @@ void RenderViewImpl::draggableRegionsChanged() {
       RenderViewObserver,
       observers_,
       DraggableRegionsChanged(webview()->mainFrame()));
-}
-
-WebMediaPlayer* RenderViewImpl::CreateWebMediaPlayerForMediaStream(
-    WebFrame* frame,
-    const blink::WebURL& url,
-    WebMediaPlayerClient* client) {
-#if defined(ENABLE_WEBRTC)
-  if (!InitializeMediaStreamClient()) {
-    LOG(ERROR) << "Failed to initialize MediaStreamClient";
-    return NULL;
-  }
-  if (media_stream_client_->IsMediaStream(url)) {
-#if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
-    bool found_neon =
-        (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
-    UMA_HISTOGRAM_BOOLEAN("Platform.WebRtcNEONFound", found_neon);
-#endif  // defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
-    return new WebMediaPlayerMS(frame, client, AsWeakPtr(),
-                                media_stream_client_, new RenderMediaLog());
-  }
-#endif  // defined(ENABLE_WEBRTC)
-  return NULL;
 }
 
 #if defined(OS_ANDROID)
@@ -4040,46 +3924,6 @@ bool RenderViewImpl::openDateTimeChooser(
 void RenderViewImpl::DismissDateTimeDialog() {
   DCHECK(date_time_picker_client_);
   date_time_picker_client_.reset(NULL);
-}
-
-WebMediaPlayer* RenderViewImpl::CreateAndroidWebMediaPlayer(
-      WebFrame* frame,
-      const blink::WebURL& url,
-      WebMediaPlayerClient* client) {
-  GpuChannelHost* gpu_channel_host =
-      RenderThreadImpl::current()->EstablishGpuChannelSync(
-          CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
-  if (!gpu_channel_host) {
-    LOG(ERROR) << "Failed to establish GPU channel for media player";
-    return NULL;
-  }
-
-  scoped_refptr<StreamTextureFactory> stream_texture_factory;
-  if (UsingSynchronousRendererCompositor()) {
-    SynchronousCompositorFactory* factory =
-        SynchronousCompositorFactory::GetInstance();
-    stream_texture_factory = factory->CreateStreamTextureFactory(routing_id_);
-  } else {
-    scoped_refptr<webkit::gpu::ContextProviderWebContext> context_provider =
-        RenderThreadImpl::current()->SharedMainThreadContextProvider();
-
-    if (!context_provider.get()) {
-      LOG(ERROR) << "Failed to get context3d for media player";
-      return NULL;
-    }
-
-    stream_texture_factory = StreamTextureFactoryImpl::Create(
-        context_provider, gpu_channel_host, routing_id_);
-  }
-
-  return new WebMediaPlayerAndroid(
-      frame,
-      client,
-      AsWeakPtr(),
-      media_player_manager_,
-      stream_texture_factory,
-      RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
-      new RenderMediaLog());
 }
 
 #endif  // defined(OS_ANDROID)
@@ -4270,13 +4114,6 @@ void RenderViewImpl::EnableAutoResizeForTesting(const gfx::Size& min_size,
 
 void RenderViewImpl::DisableAutoResizeForTesting(const gfx::Size& new_size) {
   OnDisableAutoResize(new_size);
-}
-
-void RenderViewImpl::SetMediaStreamClientForTesting(
-    MediaStreamClient* media_stream_client) {
-  DCHECK(!media_stream_client_);
-  DCHECK(!web_user_media_client_);
-  media_stream_client_ = media_stream_client;
 }
 
 void RenderViewImpl::OnReleaseDisambiguationPopupBitmap(

@@ -514,6 +514,10 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(FrameHostMsg_EndColorChooser, OnEndColorChooser)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SetSelectedColorInColorChooser,
                         OnSetSelectedColorInColorChooser)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_MediaPlayingNotification,
+                        OnMediaPlayingNotification)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_MediaPausedNotification,
+                        OnMediaPausedNotification)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidLoadResourceFromMemoryCache,
                         OnDidLoadResourceFromMemoryCache)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidDisplayInsecureContent,
@@ -536,10 +540,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                                 OnBrowserPluginMessage(message))
     IPC_MESSAGE_HANDLER(ImageHostMsg_DidDownloadImage, OnDidDownloadImage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MediaPlayingNotification,
-                        OnMediaPlayingNotification)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MediaPausedNotification,
-                        OnMediaPausedNotification)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidFirstVisuallyNonEmptyPaint,
                         OnFirstVisuallyNonEmptyPaint)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowValidationMessage,
@@ -2864,7 +2864,7 @@ void WebContentsImpl::OnMediaPlayingNotification(int64 player_cookie,
   }
 
   if (blocker) {
-    power_save_blockers_[render_view_message_source_][player_cookie] =
+    power_save_blockers_[render_frame_message_source_][player_cookie] =
         blocker.release();
   }
 #endif  // !defined(OS_CHROMEOS)
@@ -2873,8 +2873,8 @@ void WebContentsImpl::OnMediaPlayingNotification(int64 player_cookie,
 void WebContentsImpl::OnMediaPausedNotification(int64 player_cookie) {
   // Chrome OS does its own detection of audio and video.
 #if !defined(OS_CHROMEOS)
-  delete power_save_blockers_[render_view_message_source_][player_cookie];
-  power_save_blockers_[render_view_message_source_].erase(player_cookie);
+  delete power_save_blockers_[render_frame_message_source_][player_cookie];
+  power_save_blockers_[render_frame_message_source_].erase(player_cookie);
 #endif  // !defined(OS_CHROMEOS)
 }
 
@@ -3083,6 +3083,7 @@ void WebContentsImpl::RenderFrameCreated(RenderFrameHost* render_frame_host) {
 }
 
 void WebContentsImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
+  ClearPowerSaveBlockers(render_frame_host);
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
                     RenderFrameDeleted(render_frame_host));
@@ -3298,7 +3299,6 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
   if (dialog_manager_)
     dialog_manager_->CancelActiveAndPendingDialogs(this);
 
-  ClearPowerSaveBlockers(rvh);
   SetIsLoading(rvh, false, true, NULL);
   NotifyDisconnected();
   SetIsCrashed(status, error_code);
@@ -3314,7 +3314,6 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
 }
 
 void WebContentsImpl::RenderViewDeleted(RenderViewHost* rvh) {
-  ClearPowerSaveBlockers(rvh);
   GetRenderManager()->RenderViewDeleted(rvh);
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, RenderViewDeleted(rvh));
 }
@@ -3958,9 +3957,9 @@ BrowserPluginGuestManager*
 }
 
 void WebContentsImpl::ClearPowerSaveBlockers(
-    RenderViewHost* render_view_host) {
-  STLDeleteValues(&power_save_blockers_[render_view_host]);
-  power_save_blockers_.erase(render_view_host);
+    RenderFrameHost* render_frame_host) {
+  STLDeleteValues(&power_save_blockers_[render_frame_host]);
+  power_save_blockers_.erase(render_frame_host);
 }
 
 void WebContentsImpl::ClearAllPowerSaveBlockers() {

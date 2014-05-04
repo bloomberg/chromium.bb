@@ -35,7 +35,6 @@
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/top_controls_state.h"
 #include "content/public/renderer/render_view.h"
-#include "content/renderer/media/webmediaplayer_delegate.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
@@ -100,8 +99,6 @@ class WebIconURL;
 class WebImage;
 class WebPeerConnection00Handler;
 class WebPeerConnection00HandlerClient;
-class WebMediaPlayer;
-class WebMediaPlayerClient;
 class WebMouseEvent;
 class WebPeerConnectionHandler;
 class WebPeerConnectionHandlerClient;
@@ -110,7 +107,6 @@ class WebSpeechRecognizer;
 class WebStorageNamespace;
 class WebTouchEvent;
 class WebURLRequest;
-class WebUserMediaClient;
 struct WebActiveWheelFlingParameters;
 struct WebDateTimeChooserParams;
 struct WebFileChooserParams;
@@ -142,7 +138,6 @@ class HistoryEntry;
 class ImageResourceFetcher;
 class LoadProgressTracker;
 class MidiDispatcher;
-class MediaStreamClient;
 class MediaStreamDispatcher;
 class MouseLockDispatcher;
 class NavigationState;
@@ -174,7 +169,6 @@ class CONTENT_EXPORT RenderViewImpl
       NON_EXPORTED_BASE(public blink::WebViewClient),
       NON_EXPORTED_BASE(public blink::WebPageSerializerClient),
       public RenderView,
-      NON_EXPORTED_BASE(public WebMediaPlayerDelegate),
       public base::SupportsWeakPtr<RenderViewImpl> {
  public:
   // Creates a new RenderView. |opener_id| is the routing ID of the RenderView
@@ -228,6 +222,7 @@ class CONTENT_EXPORT RenderViewImpl
 
   RenderFrameImpl* main_render_frame() { return main_render_frame_.get(); }
 
+  // TODO(jam): move to RenderFrameImpl
   MediaStreamDispatcher* media_stream_dispatcher() {
     return media_stream_dispatcher_;
   }
@@ -352,12 +347,6 @@ class CONTENT_EXPORT RenderViewImpl
   // periodic timer so we don't send too many messages.
   void SyncNavigationState();
 
-  // Temporary call until all this media code moves to RenderFrame.
-  // TODO(jam): remove me
-  blink::WebMediaPlayer* CreateMediaPlayer(RenderFrame* render_frame,
-                                           blink::WebLocalFrame* frame,
-                                           const blink::WebURL& url,
-                                           blink::WebMediaPlayerClient* client);
   // Returns the length of the session history of this RenderView. Note that
   // this only coincides with the actual length of the session history if this
   // RenderView is the currently active RenderView of a WebContents.
@@ -380,10 +369,6 @@ class CONTENT_EXPORT RenderViewImpl
   void EnableAutoResizeForTesting(const gfx::Size& min_size,
                                   const gfx::Size& max_size);
   void DisableAutoResizeForTesting(const gfx::Size& new_size);
-
-  // Overrides the MediaStreamClient used when creating MediaStream players.
-  // Must be called before any players are created.
-  void SetMediaStreamClientForTesting(MediaStreamClient* media_stream_client);
 
   // IPC::Listener implementation ----------------------------------------------
 
@@ -474,7 +459,6 @@ class CONTENT_EXPORT RenderViewImpl
                                        const blink::WebURL& url,
                                        const blink::WebString& title);
   virtual blink::WebPageVisibilityState visibilityState() const;
-  virtual blink::WebUserMediaClient* userMediaClient();
   virtual blink::WebMIDIClient* webMIDIClient();
   virtual blink::WebPushClient* webPushClient();
   virtual void draggableRegionsChanged();
@@ -529,12 +513,6 @@ class CONTENT_EXPORT RenderViewImpl
                                       TopControlsState current,
                                       bool animate) OVERRIDE;
 #endif
-
-  // WebMediaPlayerDelegate implementation -----------------------
-
-  virtual void DidPlay(blink::WebMediaPlayer* player) OVERRIDE;
-  virtual void DidPause(blink::WebMediaPlayer* player) OVERRIDE;
-  virtual void PlayerGone(blink::WebMediaPlayer* player) OVERRIDE;
 
   // Please do not add your stuff randomly to the end here. If there is an
   // appropriate section, add it there. If not, there are some random functions
@@ -835,11 +813,6 @@ class CONTENT_EXPORT RenderViewImpl
   // Check whether the preferred size has changed.
   void CheckPreferredSize();
 
-  // Initializes |media_stream_client_|, returning true if successful. Returns
-  // false if it wasn't possible to create a MediaStreamClient (e.g., WebRTC is
-  // disabled) in which case |media_stream_client_| is NULL.
-  bool InitializeMediaStreamClient();
-
   // This callback is triggered when DownloadFavicon completes, either
   // succesfully or with a failure. See DownloadFavicon for more
   // details.
@@ -889,17 +862,7 @@ class CONTENT_EXPORT RenderViewImpl
 #if defined(OS_ANDROID)
   // Launch an Android content intent with the given URL.
   void LaunchAndroidContentIntent(const GURL& intent_url, size_t request_id);
-
-  blink::WebMediaPlayer* CreateAndroidWebMediaPlayer(
-      blink::WebFrame* frame,
-      const blink::WebURL& url,
-      blink::WebMediaPlayerClient* client);
 #endif
-
-  blink::WebMediaPlayer* CreateWebMediaPlayerForMediaStream(
-      blink::WebFrame* frame,
-      const blink::WebURL& url,
-      blink::WebMediaPlayerClient* client);
 
   // Sends a reply to the current find operation handling if it was a
   // synchronous find request.
@@ -1144,10 +1107,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // BrowserPluginManager attached to this view; lazily initialized.
   scoped_refptr<BrowserPluginManager> browser_plugin_manager_;
-
-  // MediaStreamClient attached to this view; lazily initialized.
-  MediaStreamClient* media_stream_client_;
-  blink::WebUserMediaClient* web_user_media_client_;
 
   // MidiClient attached to this view; lazily initialized.
   MidiDispatcher* midi_dispatcher_;

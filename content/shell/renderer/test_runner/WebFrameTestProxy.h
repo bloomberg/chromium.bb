@@ -202,6 +202,10 @@ public:
         // RenderFrameImpl::willStartUsingPeerConnectionHandler can not be mocked.
         // See http://crbug/363285.
     }
+    virtual blink::WebUserMediaClient* userMediaClient()
+    {
+        return m_baseProxy->userMediaClient();
+    }
     virtual bool willCheckAndDispatchMessageEvent(blink::WebLocalFrame* sourceFrame, blink::WebFrame* targetFrame, blink::WebSecurityOrigin target, blink::WebDOMMessageEvent event)
     {
         if (m_baseProxy->willCheckAndDispatchMessageEvent(sourceFrame, targetFrame, target, event))
