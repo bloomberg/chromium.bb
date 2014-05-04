@@ -1425,8 +1425,6 @@ const char kDeviceRemoved[] = "DeviceRemoved";
 const char kDiskAdded[] = "DiskAdded";
 const char kDiskChanged[] = "DiskChanged";
 const char kDiskRemoved[] = "DiskRemoved";
-// TODO(benchan): Deprecate FormattingFinished signal (crosbug.com/22981)
-const char kFormattingFinished[] = "FormattingFinished";
 const char kFormatCompleted[] = "FormatCompleted";
 const char kMountCompleted[] = "MountCompleted";
 
