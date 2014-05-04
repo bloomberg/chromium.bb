@@ -999,5 +999,3 @@ crbug.com/369730 http/tests/xmlhttprequest/workers/methods-async.html [ Failure 
 crbug.com/369730 http/tests/xmlhttprequest/workers/methods.html [ Failure ]
 crbug.com/369730 http/tests/xmlhttprequest/workers/shared-worker-methods-async.html [ Failure ]
 crbug.com/369730 http/tests/xmlhttprequest/workers/shared-worker-methods.html [ Failure ]
-
-crbug.com/313438 svg/custom/relative-sized-shadow-tree-content-with-symbol.xhtml [ NeedsRebaseline ]
