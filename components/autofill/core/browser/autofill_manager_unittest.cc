@@ -34,6 +34,7 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/forms_seen_state.h"
 #include "grit/component_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -633,7 +634,18 @@ class AutofillManagerTest : public testing::Test {
   }
 
   void FormsSeen(const std::vector<FormData>& forms) {
-    autofill_manager_->OnFormsSeen(forms, base::TimeTicks());
+    autofill_manager_->OnFormsSeen(forms, base::TimeTicks(),
+                                   autofill::NO_SPECIAL_FORMS_SEEN);
+  }
+
+  void PartialFormsSeen(const std::vector<FormData>& forms) {
+    autofill_manager_->OnFormsSeen(forms, base::TimeTicks(),
+                                   autofill::PARTIAL_FORMS_SEEN);
+  }
+
+  void DynamicFormsSeen(const std::vector<FormData>& forms) {
+    autofill_manager_->OnFormsSeen(forms, base::TimeTicks(),
+                                   autofill::DYNAMIC_FORMS_SEEN);
   }
 
   void FormSubmitted(const FormData& form) {

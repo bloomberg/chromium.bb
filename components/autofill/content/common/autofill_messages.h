@@ -14,6 +14,7 @@
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/form_field_data_predictions.h"
+#include "components/autofill/core/common/forms_seen_state.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/web_element_descriptor.h"
@@ -27,6 +28,8 @@
 
 #define IPC_MESSAGE_START AutofillMsgStart
 
+IPC_ENUM_TRAITS_MAX_VALUE(autofill::FormsSeenState,
+                          autofill::FORMS_SEEN_STATE_NUM_STATES - 1)
 IPC_ENUM_TRAITS_MAX_VALUE(base::i18n::TextDirection,
                           base::i18n::TEXT_DIRECTION_NUM_DIRECTIONS - 1)
 
@@ -174,9 +177,10 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_AccountCreationFormsDetected,
 
 // Notification that forms have been seen that are candidates for
 // filling/submitting by the AutofillManager.
-IPC_MESSAGE_ROUTED2(AutofillHostMsg_FormsSeen,
+IPC_MESSAGE_ROUTED3(AutofillHostMsg_FormsSeen,
                     std::vector<autofill::FormData> /* forms */,
-                    base::TimeTicks /* timestamp */)
+                    base::TimeTicks /* timestamp */,
+                    autofill::FormsSeenState /* state */)
 
 // Notification that password forms have been seen that are candidates for
 // filling/submitting by the password manager.

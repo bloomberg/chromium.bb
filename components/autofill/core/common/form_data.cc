@@ -79,20 +79,6 @@ bool FormData::operator!=(const FormData& form) const {
   return !operator==(form);
 }
 
-bool FormData::operator<(const FormData& form) const {
-  if (name != form.name)
-    return name < form.name;
-  if (StringToLowerASCII(method) != StringToLowerASCII(form.method))
-    return StringToLowerASCII(method) < StringToLowerASCII(form.method);
-  if (origin != form.origin)
-    return origin < form.origin;
-  if (action != form.action)
-    return action < form.action;
-  if (user_submitted != form.user_submitted)
-    return user_submitted < form.user_submitted;
-  return fields < form.fields;
-}
-
 std::ostream& operator<<(std::ostream& os, const FormData& form) {
   os << base::UTF16ToUTF8(form.name) << " "
      << base::UTF16ToUTF8(form.method) << " "

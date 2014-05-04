@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/forms_seen_state.h"
 
 class GURL;
 
@@ -118,7 +119,8 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   void SetTestDelegate(autofill::AutofillManagerTestDelegate* delegate);
 
   void OnFormsSeen(const std::vector<FormData>& forms,
-                   const base::TimeTicks& timestamp);
+                   const base::TimeTicks& timestamp,
+                   autofill::FormsSeenState state);
 
   // Processes the submitted |form|, saving any new Autofill data and uploading
   // the possible field types for the submitted fields to the crowdsourcing
@@ -310,8 +312,8 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   bool user_did_autofill_;
   // Has the user edited a field that was previously autofilled?
   bool user_did_edit_autofilled_field_;
-  // When the form finished loading.
-  std::map<FormData, base::TimeTicks> forms_loaded_timestamps_;
+  // When the page finished loading.
+  base::TimeTicks forms_loaded_timestamp_;
   // When the user first interacted with a potentially fillable form on this
   // page.
   base::TimeTicks initial_interaction_timestamp_;

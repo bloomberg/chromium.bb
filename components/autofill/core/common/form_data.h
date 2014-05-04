@@ -23,9 +23,6 @@ struct FormData {
   bool operator==(const FormData& form) const;
   bool operator!=(const FormData& form) const;
 
-  // Allow FormData to be a key in STL containers.
-  bool operator<(const FormData& form) const;
-
   // The name of the form.
   base::string16 name;
   // GET or POST.
