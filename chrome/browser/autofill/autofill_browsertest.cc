@@ -162,7 +162,10 @@ class AutofillTest : public InProcessBrowserTest {
   // The function returns after the PersonalDataManager is updated.
   void FillFormAndSubmit(const std::string& filename, const FormMap& data) {
     GURL url = test_server()->GetURL("files/autofill/" + filename);
-    ui_test_utils::NavigateToURL(browser(), url);
+    chrome::NavigateParams params(browser(), url,
+                                  content::PAGE_TRANSITION_LINK);
+    params.disposition = NEW_FOREGROUND_TAB;
+    ui_test_utils::NavigateToURL(&params);
 
     std::string js;
     for (FormMap::const_iterator i = data.begin(); i != data.end(); ++i) {

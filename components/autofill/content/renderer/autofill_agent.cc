@@ -136,6 +136,7 @@ AutofillAgent::AutofillAgent(content::RenderView* render_view,
       has_new_forms_for_browser_(false),
       ignore_text_changes_(false),
       is_popup_possibly_visible_(false),
+      main_frame_processed_(false),
       weak_ptr_factory_(this) {
   render_view->GetWebView()->setAutofillClient(this);
 
@@ -170,31 +171,11 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
 }
 
 void AutofillAgent::DidFinishDocumentLoad(WebLocalFrame* frame) {
-  // Record timestamp on document load. This is used to record overhead of
-  // Autofill feature.
-  forms_seen_timestamp_ = base::TimeTicks::Now();
+  // If the main frame just finished loading, we should process it.
+  if (!frame->parent())
+    main_frame_processed_ = false;
 
-  // The document has now been fully loaded.  Scan for forms to be sent up to
-  // the browser.
-  std::vector<FormData> forms;
-  bool has_more_forms = false;
-  if (!frame->parent()) {
-    form_elements_.clear();
-    has_more_forms = form_cache_.ExtractFormsAndFormElements(
-        *frame, kRequiredAutofillFields, &forms, &form_elements_);
-  } else {
-    form_cache_.ExtractForms(*frame, &forms);
-  }
-
-  autofill::FormsSeenState state = has_more_forms ?
-      autofill::PARTIAL_FORMS_SEEN : autofill::NO_SPECIAL_FORMS_SEEN;
-
-  // Always communicate to browser process for topmost frame.
-  if (!forms.empty() || !frame->parent()) {
-    Send(new AutofillHostMsg_FormsSeen(routing_id(), forms,
-                                       forms_seen_timestamp_,
-                                       state));
-  }
+  ProcessForms(*frame);
 }
 
 void AutofillAgent::FrameDetached(WebFrame* frame) {
@@ -682,6 +663,25 @@ void AutofillAgent::PreviewFieldWithValue(const base::string16& value,
                           node->suggestedValue().length());
 }
 
+void AutofillAgent::ProcessForms(const WebLocalFrame& frame) {
+  // Record timestamp of when the forms are first seen. This is used to
+  // measure the overhead of the Autofill feature.
+  base::TimeTicks forms_seen_timestamp = base::TimeTicks::Now();
+
+  std::vector<FormData> forms;
+  form_cache_.ExtractNewForms(frame, &forms);
+
+  // Always communicate to browser process for topmost frame.
+  if (!forms.empty() ||
+      (!frame.parent() && !main_frame_processed_)) {
+    Send(new AutofillHostMsg_FormsSeen(routing_id(), forms,
+                                       forms_seen_timestamp));
+  }
+
+  if (!frame.parent())
+    main_frame_processed_ = true;
+}
+
 void AutofillAgent::HidePopup() {
   if (!is_popup_possibly_visible_)
     return;
@@ -693,13 +693,13 @@ void AutofillAgent::HidePopup() {
   Send(new AutofillHostMsg_HidePopup(routing_id()));
 }
 
-// TODO(isherman): Decide if we want to support non-password autofill with AJAX.
 void AutofillAgent::didAssociateFormControls(const WebVector<WebNode>& nodes) {
   for (size_t i = 0; i < nodes.size(); ++i) {
-    WebFrame* frame = nodes[i].document().frame();
+    WebLocalFrame* frame = nodes[i].document().frame();
     // Only monitors dynamic forms created in the top frame. Dynamic forms
     // inserted in iframes are not captured yet.
     if (frame && !frame->parent()) {
+      ProcessForms(*frame);
       password_autofill_agent_->OnDynamicFormsSeen(frame);
       return;
     }

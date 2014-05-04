@@ -31,20 +31,10 @@ class FormCache {
   FormCache();
   ~FormCache();
 
-  // Scans the DOM in |frame| extracting and storing forms.
-  // Fills |forms| with extracted forms.
-  void ExtractForms(const blink::WebFrame& frame,
-                    std::vector<FormData>* forms);
-
-  // Scans the DOM in |frame| extracting and storing forms.
-  // Fills |forms| with extracted forms and |web_form_elements| with associated
-  // web form elements. Returns true if there are unextracted forms due to
-  // |minimum_required_fields| limit, else false.
-  bool ExtractFormsAndFormElements(
-      const blink::WebFrame& frame,
-      size_t minimum_required_fields,
-      std::vector<FormData>* forms,
-      std::vector<blink::WebFormElement>* web_form_elements);
+  // Scans the DOM in |frame| extracting and storing forms that have not been
+  // seen before. Fills |forms| with extracted forms.
+  void ExtractNewForms(const blink::WebFrame& frame,
+                       std::vector<FormData>* forms);
 
   // Resets the forms for the specified |frame|.
   void ResetFrame(const blink::WebFrame& frame);
@@ -62,6 +52,9 @@ class FormCache {
  private:
   // The cached web frames.
   std::set<blink::WebDocument> web_documents_;
+
+  // The cached forms per frame. Used to prevent re-extraction of forms.
+  std::map<const blink::WebFrame*, std::set<FormData> > parsed_forms_;
 
   // The cached initial values for <select> elements.
   std::map<const blink::WebSelectElement, base::string16>
