@@ -23,29 +23,17 @@
 #include <pthread.h>
 #include <errno.h>
 #include <limits.h>
-#include <stdlib.h>
 
 #define LOG_TAG "HAL"
-#ifdef ANDROID
 #include <utils/Log.h>
-#else
-#include <stdio.h>
-#include <unistd.h>
-#include <log/log.h>
-#endif
-
-#if defined(__LP64__)
-#define _64 "64"
-#else
-#define _64 ""
-#endif
 
 /** Base path of the hal modules */
-#ifndef HAL_LIBRARY_PATH1
-#define HAL_LIBRARY_PATH1 "/system/lib" _64 "/hw"
-#endif
-#ifndef HAL_LIBRARY_PATH2
-#define HAL_LIBRARY_PATH2 "/vendor/lib" _64 "/hw"
+#if defined(__LP64__)
+#define HAL_LIBRARY_PATH1 "/system/lib64/hw"
+#define HAL_LIBRARY_PATH2 "/vendor/lib64/hw"
+#else
+#define HAL_LIBRARY_PATH1 "/system/lib/hw"
+#define HAL_LIBRARY_PATH2 "/vendor/lib/hw"
 #endif
 
 /**
@@ -141,14 +129,6 @@ static int load(const char *id,
 static int hw_module_exists(char *path, size_t path_len, const char *name,
                             const char *subname)
 {
-    char *hal_library_path = getenv("HAL_LIBRARY_PATH");
-    if (hal_library_path) {
-        snprintf(path, path_len, "%s/%s.%s.so",
-                 hal_library_path, name, subname);
-        if (access(path, R_OK) == 0)
-            return 0;
-    }
-
     snprintf(path, path_len, "%s/%s.%s.so",
              HAL_LIBRARY_PATH2, name, subname);
     if (access(path, R_OK) == 0)

@@ -37,12 +37,8 @@
 #endif
 #include <stdarg.h>
 
-#ifdef ANDROID
 #include <log/uio.h>
 #include <log/logd.h>
-#else
-#include <android/log.h>
-#endif
 
 #ifdef __cplusplus
 extern "C" {
