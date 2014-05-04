@@ -9,10 +9,7 @@
 
 mangle(SYMBOL):
   %assign   stack_offset 0
-  PROLOGUE  5, 7, 3, Y, U, V, ARGB, WIDTH, TEMP, TABLE
-
-  extern    mangle(kCoefficientsRgbY)
-  LOAD_SYM  TABLEq, mangle(kCoefficientsRgbY)
+  PROLOGUE  6, 7, 3, Y, U, V, ARGB, WIDTH, TABLE, TEMP
 
   jmp       .convertend
 

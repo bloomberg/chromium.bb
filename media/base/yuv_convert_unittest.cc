@@ -11,6 +11,7 @@
 #include "media/base/simd/convert_rgb_to_yuv.h"
 #include "media/base/simd/convert_yuv_to_rgb.h"
 #include "media/base/simd/filter_yuv.h"
+#include "media/base/simd/yuv_to_rgb_table.h"
 #include "media/base/yuv_convert.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
@@ -162,6 +163,7 @@ class YUVScaleTest : public ::testing::TestWithParam<YUVScaleTestData> {
   YUVScaleTest() {
     switch (GetParam().yuv_type) {
       case media::YV12:
+      case media::YV12J:
         ReadYV12Data(&yuv_bytes_);
         break;
       case media::YV16:
@@ -178,6 +180,7 @@ class YUVScaleTest : public ::testing::TestWithParam<YUVScaleTestData> {
   uint8* v_plane() {
     switch (GetParam().yuv_type) {
       case media::YV12:
+      case media::YV12J:
         return yuv_bytes_.get() + kSourceVOffset;
       case media::YV16:
         return yuv_bytes_.get() + kSourceYSize * 3 / 2;
@@ -618,12 +621,14 @@ TEST(YUVConvertTest, ConvertYUVToRGB32Row_MMX) {
                          yuv_bytes.get() + kSourceUOffset,
                          yuv_bytes.get() + kSourceVOffset,
                          rgb_bytes_reference.get(),
-                         kWidth);
+                         kWidth,
+                         GetLookupTable(YV12));
   ConvertYUVToRGB32Row_MMX(yuv_bytes.get(),
                            yuv_bytes.get() + kSourceUOffset,
                            yuv_bytes.get() + kSourceVOffset,
                            rgb_bytes_converted.get(),
-                           kWidth);
+                           kWidth,
+                           GetLookupTable(YV12));
   media::EmptyRegisterState();
   EXPECT_EQ(0, memcmp(rgb_bytes_reference.get(),
                       rgb_bytes_converted.get(),
@@ -647,12 +652,14 @@ TEST(YUVConvertTest, ConvertYUVToRGB32Row_SSE) {
                          yuv_bytes.get() + kSourceUOffset,
                          yuv_bytes.get() + kSourceVOffset,
                          rgb_bytes_reference.get(),
-                         kWidth);
+                         kWidth,
+                         GetLookupTable(YV12));
   ConvertYUVToRGB32Row_SSE(yuv_bytes.get(),
                            yuv_bytes.get() + kSourceUOffset,
                            yuv_bytes.get() + kSourceVOffset,
                            rgb_bytes_converted.get(),
-                           kWidth);
+                           kWidth,
+                           GetLookupTable(YV12));
   media::EmptyRegisterState();
   EXPECT_EQ(0, memcmp(rgb_bytes_reference.get(),
                       rgb_bytes_converted.get(),
@@ -678,13 +685,15 @@ TEST(YUVConvertTest, ScaleYUVToRGB32Row_MMX) {
                        yuv_bytes.get() + kSourceVOffset,
                        rgb_bytes_reference.get(),
                        kWidth,
-                       kSourceDx);
+                       kSourceDx,
+                       GetLookupTable(YV12));
   ScaleYUVToRGB32Row_MMX(yuv_bytes.get(),
                          yuv_bytes.get() + kSourceUOffset,
                          yuv_bytes.get() + kSourceVOffset,
                          rgb_bytes_converted.get(),
                          kWidth,
-                         kSourceDx);
+                         kSourceDx,
+                         GetLookupTable(YV12));
   media::EmptyRegisterState();
   EXPECT_EQ(0, memcmp(rgb_bytes_reference.get(),
                       rgb_bytes_converted.get(),
@@ -710,13 +719,15 @@ TEST(YUVConvertTest, ScaleYUVToRGB32Row_SSE) {
                        yuv_bytes.get() + kSourceVOffset,
                        rgb_bytes_reference.get(),
                        kWidth,
-                       kSourceDx);
+                       kSourceDx,
+                       GetLookupTable(YV12));
   ScaleYUVToRGB32Row_SSE(yuv_bytes.get(),
                          yuv_bytes.get() + kSourceUOffset,
                          yuv_bytes.get() + kSourceVOffset,
                          rgb_bytes_converted.get(),
                          kWidth,
-                         kSourceDx);
+                         kSourceDx,
+                         GetLookupTable(YV12));
   media::EmptyRegisterState();
   EXPECT_EQ(0, memcmp(rgb_bytes_reference.get(),
                       rgb_bytes_converted.get(),
@@ -742,13 +753,15 @@ TEST(YUVConvertTest, LinearScaleYUVToRGB32Row_MMX) {
                              yuv_bytes.get() + kSourceVOffset,
                              rgb_bytes_reference.get(),
                              kWidth,
-                             kSourceDx);
+                             kSourceDx,
+                             GetLookupTable(YV12));
   LinearScaleYUVToRGB32Row_MMX(yuv_bytes.get(),
                                yuv_bytes.get() + kSourceUOffset,
                                yuv_bytes.get() + kSourceVOffset,
                                rgb_bytes_converted.get(),
                                kWidth,
-                               kSourceDx);
+                               kSourceDx,
+                               GetLookupTable(YV12));
   media::EmptyRegisterState();
   EXPECT_EQ(0, memcmp(rgb_bytes_reference.get(),
                       rgb_bytes_converted.get(),
@@ -774,13 +787,15 @@ TEST(YUVConvertTest, LinearScaleYUVToRGB32Row_SSE) {
                              yuv_bytes.get() + kSourceVOffset,
                              rgb_bytes_reference.get(),
                              kWidth,
-                             kSourceDx);
+                             kSourceDx,
+                             GetLookupTable(YV12));
   LinearScaleYUVToRGB32Row_SSE(yuv_bytes.get(),
                                yuv_bytes.get() + kSourceUOffset,
                                yuv_bytes.get() + kSourceVOffset,
                                rgb_bytes_converted.get(),
                                kWidth,
-                               kSourceDx);
+                               kSourceDx,
+                               GetLookupTable(YV12));
   media::EmptyRegisterState();
   EXPECT_EQ(0, memcmp(rgb_bytes_reference.get(),
                       rgb_bytes_converted.get(),
@@ -924,13 +939,15 @@ TEST(YUVConvertTest, ScaleYUVToRGB32Row_SSE2_X64) {
                        yuv_bytes.get() + kSourceVOffset,
                        rgb_bytes_reference.get(),
                        kWidth,
-                       kSourceDx);
+                       kSourceDx,
+                       GetLookupTable(YV12));
   ScaleYUVToRGB32Row_SSE2_X64(yuv_bytes.get(),
                               yuv_bytes.get() + kSourceUOffset,
                               yuv_bytes.get() + kSourceVOffset,
                               rgb_bytes_converted.get(),
                               kWidth,
-                              kSourceDx);
+                              kSourceDx,
+                              GetLookupTable(YV12));
   media::EmptyRegisterState();
   EXPECT_EQ(0, memcmp(rgb_bytes_reference.get(),
                       rgb_bytes_converted.get(),
@@ -950,13 +967,15 @@ TEST(YUVConvertTest, LinearScaleYUVToRGB32Row_MMX_X64) {
                              yuv_bytes.get() + kSourceVOffset,
                              rgb_bytes_reference.get(),
                              kWidth,
-                             kSourceDx);
+                             kSourceDx,
+                             GetLookupTable(YV12));
   LinearScaleYUVToRGB32Row_MMX_X64(yuv_bytes.get(),
                                    yuv_bytes.get() + kSourceUOffset,
                                    yuv_bytes.get() + kSourceVOffset,
                                    rgb_bytes_converted.get(),
                                    kWidth,
-                                   kSourceDx);
+                                   kSourceDx,
+                                   GetLookupTable(YV12));
   media::EmptyRegisterState();
   EXPECT_EQ(0, memcmp(rgb_bytes_reference.get(),
                       rgb_bytes_converted.get(),

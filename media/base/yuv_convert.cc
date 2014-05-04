@@ -25,6 +25,7 @@
 #include "media/base/simd/convert_rgb_to_yuv.h"
 #include "media/base/simd/convert_yuv_to_rgb.h"
 #include "media/base/simd/filter_yuv.h"
+#include "media/base/simd/yuv_to_rgb_table.h"
 
 #if defined(ARCH_CPU_X86_FAMILY)
 #if defined(COMPILER_MSVC)
@@ -79,21 +80,24 @@ typedef void (*ConvertYUVToRGB32RowProc)(const uint8*,
                                          const uint8*,
                                          const uint8*,
                                          uint8*,
-                                         ptrdiff_t);
+                                         ptrdiff_t,
+                                         const int16[1024][4]);
 
 typedef void (*ConvertYUVAToARGBRowProc)(const uint8*,
                                          const uint8*,
                                          const uint8*,
                                          const uint8*,
                                          uint8*,
-                                         ptrdiff_t);
+                                         ptrdiff_t,
+                                         const int16[1024][4]);
 
 typedef void (*ScaleYUVToRGB32RowProc)(const uint8*,
                                        const uint8*,
                                        const uint8*,
                                        uint8*,
                                        ptrdiff_t,
-                                       ptrdiff_t);
+                                       ptrdiff_t,
+                                       const int16[1024][4]);
 
 static FilterYUVRowsProc g_filter_yuv_rows_proc_ = NULL;
 static ConvertYUVToRGB32RowProc g_convert_yuv_to_rgb32_row_proc_ = NULL;
@@ -111,6 +115,31 @@ void EmptyRegisterStateIntrinsic() { _mm_empty(); }
 #endif
 typedef void (*EmptyRegisterStateProc)();
 static EmptyRegisterStateProc g_empty_register_state_proc_ = NULL;
+
+// Get the appropriate value to bitshift by for vertical indices.
+int GetVerticalShift(YUVType type) {
+  switch (type) {
+    case YV16:
+      return 0;
+    case YV12:
+    case YV12J:
+      return 1;
+  }
+  NOTREACHED();
+  return 0;
+}
+
+const int16 (&GetLookupTable(YUVType type))[1024][4] {
+  switch (type) {
+    case YV12:
+    case YV16:
+      return kCoefficientsRgbY;
+    case YV12J:
+      return kCoefficientsRgbY_JPEG;
+  }
+  NOTREACHED();
+  return kCoefficientsRgbY;
+}
 
 void InitializeCPUSpecificYUVConversions() {
   CHECK(!g_filter_yuv_rows_proc_);
@@ -222,7 +251,7 @@ void ScaleYUVToRGB32(const uint8* y_buf,
   if (source_width > kFilterBufferSize || view_rotate)
     filter = FILTER_NONE;
 
-  unsigned int y_shift = yuv_type;
+  unsigned int y_shift = GetVerticalShift(yuv_type);
   // Diagram showing origin and direction of source sampling.
   // ->0   4<-
   // 7       3
@@ -354,14 +383,25 @@ void ScaleYUVToRGB32(const uint8* y_buf,
       v_ptr = v_buf + (source_y >> y_shift) * uv_pitch;
     }
     if (source_dx == kFractionMax) {  // Not scaled
-      g_convert_yuv_to_rgb32_row_proc_(y_ptr, u_ptr, v_ptr, dest_pixel, width);
+      g_convert_yuv_to_rgb32_row_proc_(
+          y_ptr, u_ptr, v_ptr, dest_pixel, width, kCoefficientsRgbY);
     } else {
       if (filter & FILTER_BILINEAR_H) {
-        g_linear_scale_yuv_to_rgb32_row_proc_(
-            y_ptr, u_ptr, v_ptr, dest_pixel, width, source_dx);
+        g_linear_scale_yuv_to_rgb32_row_proc_(y_ptr,
+                                              u_ptr,
+                                              v_ptr,
+                                              dest_pixel,
+                                              width,
+                                              source_dx,
+                                              kCoefficientsRgbY);
       } else {
-        g_scale_yuv_to_rgb32_row_proc_(
-            y_ptr, u_ptr, v_ptr, dest_pixel, width, source_dx);
+        g_scale_yuv_to_rgb32_row_proc_(y_ptr,
+                                       u_ptr,
+                                       v_ptr,
+                                       dest_pixel,
+                                       width,
+                                       source_dx,
+                                       kCoefficientsRgbY);
       }
     }
   }
@@ -505,7 +545,8 @@ void ScaleYUVToRGB32WithRect(const uint8* y_buf,
                                           rgb_buf,
                                           dest_rect_width,
                                           source_left,
-                                          x_step);
+                                          x_step,
+                                          kCoefficientsRgbY);
     } else {
       // If the frame is too large then we linear scale a single row.
       LinearScaleYUVToRGB32RowWithRange_C(y0_ptr,
@@ -514,7 +555,8 @@ void ScaleYUVToRGB32WithRect(const uint8* y_buf,
                                           rgb_buf,
                                           dest_rect_width,
                                           source_left,
-                                          x_step);
+                                          x_step,
+                                          kCoefficientsRgbY);
     }
 
     // Advance vertically in the source and destination image.
