@@ -6380,3 +6380,9 @@
    fun:_ZN4mojo9RemotePtrINS_11ShellClientEE5resetENS_16ScopedHandleBaseINS_15InterfaceHandleIS1_EEEEPNS_5ShellEPNS_12ErrorHandlerEP15MojoAsyncWaiter
    fun:_ZN7content19MojoApplicationHost4InitEv
 }
+{
+   bug_369843
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content27ServiceWorkerContextWrapper12InitInternalERKN4base8FilePathEPNS1_19SequencedTaskRunnerEPN5quota17QuotaManagerProxyE
+}
