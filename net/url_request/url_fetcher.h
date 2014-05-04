@@ -276,7 +276,7 @@ class NET_EXPORT URLFetcher {
   // if an error prevented any response from being received.
   virtual int GetResponseCode() const = 0;
 
-  // Cookies recieved.
+  // Cookies received.
   virtual const ResponseCookies& GetCookies() const = 0;
 
   // Reports that the received content was malformed.

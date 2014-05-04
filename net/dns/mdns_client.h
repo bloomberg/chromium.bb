@@ -27,7 +27,7 @@ class RecordParsed;
 // time out after a reasonable number of seconds.
 class NET_EXPORT MDnsTransaction {
  public:
-  // Used to signify what type of result the transaction has recieved.
+  // Used to signify what type of result the transaction has received.
   enum Result {
     // Passed whenever a record is found.
     RESULT_RECORD,

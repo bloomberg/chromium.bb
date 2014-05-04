@@ -211,9 +211,9 @@ class NET_EXPORT NSSCertDatabase {
   // thread on which this is called is the thread on which |observer| will be
   // called back with notifications.
   // NOTE: CertDatabase::AddObserver should be preferred. Observers registered
-  // here will only recieve notifications generated directly through the
+  // here will only receive notifications generated directly through the
   // NSSCertDatabase, but not those from the CertDatabase. The CertDatabase
-  // observers will recieve both.
+  // observers will receive both.
   void AddObserver(Observer* observer);
 
   // Unregisters |observer| from receiving notifications.  This must be called

@@ -108,7 +108,7 @@ class HttpNetworkLayerTest : public PlatformTest {
   // Simulates a request through a proxy which returns a bypass, which is then
   // retried through a second proxy that doesn't bypass.
   // Checks that the expected requests were issued, the expected content was
-  // recieved, and the first proxy |bad_proxy| was marked as bad.
+  // received, and the first proxy |bad_proxy| was marked as bad.
   void TestProxyFallback(const std::string& bad_proxy) {
     MockRead data_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"
