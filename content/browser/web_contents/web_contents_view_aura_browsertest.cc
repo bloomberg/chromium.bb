@@ -616,8 +616,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   delete web_contents->GetContentNativeView();
 }
 
+// TODO(dalecurtis): Test disabled due to flakiness.  http://crbug.com/369871.
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
-                       RepeatedQuickOverscrollGestures) {
+                       DISABLED_RepeatedQuickOverscrollGestures) {
   ASSERT_NO_FATAL_FAILURE(
       StartTestWithPage("files/overscroll_navigation.html"));
 
