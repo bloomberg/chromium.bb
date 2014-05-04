@@ -1670,7 +1670,9 @@ template<typename T>
 struct GCInfoTrait<Vector<T, 0, HeapAllocator> > {
     static const GCInfo* get()
     {
+#if ENABLE(GC_TRACING)
         typedef Vector<T, 0, HeapAllocator> TargetType;
+#endif
         static const GCInfo info = {
             TraceTrait<Vector<T, 0, HeapAllocator> >::trace,
             0,

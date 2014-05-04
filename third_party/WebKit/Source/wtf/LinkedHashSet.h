@@ -675,7 +675,6 @@ struct IsWeak<LinkedHashSetNode<T> > {
 
 inline void swap(LinkedHashSetNodeBase& a, LinkedHashSetNodeBase& b)
 {
-    typedef LinkedHashSetNodeBase Base;
     swap(a.m_prev, b.m_prev);
     swap(a.m_next, b.m_next);
     if (b.m_next) {
