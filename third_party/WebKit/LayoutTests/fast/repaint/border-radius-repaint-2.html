@@ -4,6 +4,12 @@
 <title>Repaint test for crbug.com/222851</title>
 <script src="resources/text-based-repaint.js" type="text/javascript"></script>
 <script>
+if (window.internals) {
+    // Avoid the noise caused by change of scrollbar existence.
+    internals.settings.setOverlayScrollbarsEnabled(true);
+    internals.settings.setMockScrollbarsEnabled(true);
+}
+
 function repaintTest() {
     document.getElementById('target').style.height = '2px';
 }
