@@ -40,6 +40,7 @@ class FileIO;
 namespace plugin {
 
 class ErrorInfo;
+class Manifest;
 class OpenManifestEntryAsyncCallback;
 class Plugin;
 class SrpcClient;
@@ -146,7 +147,7 @@ class PluginReverseInterface: public nacl::ReverseInterface {
  public:
   PluginReverseInterface(nacl::WeakRefAnchor* anchor,
                          Plugin* plugin,
-                         int32_t manifest_id,
+                         const Manifest* manifest,
                          ServiceRuntime* service_runtime,
                          pp::CompletionCallback init_done_cb,
                          pp::CompletionCallback crash_cb);
@@ -205,7 +206,7 @@ class PluginReverseInterface: public nacl::ReverseInterface {
   nacl::WeakRefAnchor* anchor_;  // holds a ref
   Plugin* plugin_;  // value may be copied, but should be used only in
                     // main thread in WeakRef-protected callbacks.
-  int32_t manifest_id_;
+  const Manifest* manifest_;
   ServiceRuntime* service_runtime_;
   NaClMutex mu_;
   NaClCondVar cv_;
@@ -222,7 +223,7 @@ class ServiceRuntime {
   // TODO(sehr): This class should also implement factory methods, using the
   // Start method below.
   ServiceRuntime(Plugin* plugin,
-                 int32_t manifest_id,
+                 const Manifest* manifest,
                  bool main_service_runtime,
                  bool uses_nonsfi_mode,
                  pp::CompletionCallback init_done_cb,

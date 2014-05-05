@@ -28,6 +28,7 @@ class DescWrapper;
 
 namespace plugin {
 
+class Manifest;
 class NaClSubprocess;
 class Plugin;
 class PnaclCoordinator;
@@ -42,7 +43,7 @@ class PnaclTranslateThread {
   // Start the translation process. It will continue to run and consume data
   // as it is passed in with PutBytes.
   void RunTranslate(const pp::CompletionCallback& finish_callback,
-                    int32_t manifest_id,
+                    const Manifest* manifest,
                     const std::vector<TempFile*>* obj_files,
                     TempFile* nexe_file,
                     nacl::DescWrapper* invalid_desc_wrapper,
@@ -68,7 +69,7 @@ class PnaclTranslateThread {
  private:
   // Starts an individual llc or ld subprocess used for translation.
   NaClSubprocess* StartSubprocess(const nacl::string& url,
-                                  int32_t manifest_id,
+                                  const Manifest* manifest,
                                   ErrorInfo* error_info);
   // Helper thread entry point for translation. Takes a pointer to
   // PnaclTranslateThread and calls DoTranslate().
@@ -113,7 +114,7 @@ class PnaclTranslateThread {
   int64_t compile_time_;
 
   // Data about the translation files, owned by the coordinator
-  int32_t manifest_id_;
+  const Manifest* manifest_;
   const std::vector<TempFile*>* obj_files_;
   TempFile* nexe_file_;
   nacl::DescWrapper* invalid_desc_wrapper_;

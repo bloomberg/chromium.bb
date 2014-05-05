@@ -9,6 +9,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/native_client/src/trusted/plugin/file_utils.h"
+#include "ppapi/native_client/src/trusted/plugin/manifest.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin.h"
 #include "ppapi/native_client/src/trusted/plugin/pnacl_coordinator.h"
 #include "ppapi/native_client/src/trusted/plugin/utility.h"

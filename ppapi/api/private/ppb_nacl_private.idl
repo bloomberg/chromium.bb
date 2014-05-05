@@ -411,25 +411,4 @@ interface PPB_NaCl_Private {
   void DownloadManifestToBuffer([in] PP_Instance instance,
                                 [out] PP_Var data,
                                 [in] PP_CompletionCallback callback);
-
-  int32_t CreatePnaclManifest([in] PP_Instance instance);
-  int32_t CreateJsonManifest([in] PP_Instance instance,
-                             [in] str_t manifest_base_url,
-                             [in] str_t sandbox_isa,
-                             [in] str_t manifest_data);
-
-  void DestroyManifest([in] PP_Instance instance,
-                       [in] int32_t manifest_id);
-
-  PP_Bool GetManifestProgramURL([in] PP_Instance instance,
-                                [in] int32_t manifest_id,
-                                [out] PP_Var full_url,
-                                [out] PP_PNaClOptions pnacl_options,
-                                [out] PP_Bool uses_nonsfi_mode);
-
-  PP_Bool ManifestResolveKey([in] PP_Instance instance,
-                             [in] int32_t manifest_id,
-                             [in] str_t key,
-                             [out] PP_Var full_url,
-                             [out] PP_PNaClOptions pnacl_options);
 };
