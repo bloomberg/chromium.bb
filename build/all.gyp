@@ -642,6 +642,7 @@
           'conditions': [
             ['OS!="win"', {
               'dependencies': [
+                '../net/net.gyp:hpack_fuzz_wrapper',
                 '../net/net.gyp:dns_fuzz_stub',
                 '../skia/skia.gyp:filter_fuzz_stub',
               ],

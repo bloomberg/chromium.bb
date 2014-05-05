@@ -50,10 +50,11 @@ int main(int argc, char** argv) {
 
   DVLOG(1) << "Reading input from " << file_to_parse;
   HpackFuzzUtil::Input input;
-  CHECK(base::ReadFileToString(base::FilePath(file_to_parse), &input.input));
+  CHECK(base::ReadFileToString(base::FilePath::FromUTF8Unsafe(file_to_parse),
+                               &input.input));
 
   DVLOG(1) << "Writing output to " << file_to_write;
-  base::File file_out(base::FilePath(file_to_write),
+  base::File file_out(base::FilePath::FromUTF8Unsafe(file_to_write),
                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   CHECK(file_out.IsValid()) << file_out.error_details();
 

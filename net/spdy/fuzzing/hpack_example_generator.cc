@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
                     &example_count);
 
   DVLOG(1) << "Writing output to " << file_to_write;
-  base::File file_out(base::FilePath(file_to_write),
+  base::File file_out(base::FilePath::FromUTF8Unsafe(file_to_write),
                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   CHECK(file_out.IsValid()) << file_out.error_details();
 

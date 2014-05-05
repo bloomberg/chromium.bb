@@ -35,7 +35,8 @@ int main(int argc, char** argv) {
 
   DVLOG(1) << "Reading input from " << file_to_parse;
   HpackFuzzUtil::Input input;
-  CHECK(base::ReadFileToString(base::FilePath(file_to_parse), &input.input));
+  CHECK(base::ReadFileToString(base::FilePath::FromUTF8Unsafe(file_to_parse),
+                               &input.input));
 
   HpackFuzzUtil::FuzzerContext context;
   HpackFuzzUtil::InitializeFuzzerContext(&context);

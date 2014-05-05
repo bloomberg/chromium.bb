@@ -1093,6 +1093,45 @@
           'msvs_disabled_warnings': [4267, ],
         },
         {
+          'target_name': 'hpack_example_generator',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'net',
+          ],
+          'sources': [
+            'spdy/fuzzing/hpack_example_generator.cc',
+          ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [4267, ],
+        },
+        {
+          'target_name': 'hpack_fuzz_mutator',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'net',
+          ],
+          'sources': [
+            'spdy/fuzzing/hpack_fuzz_mutator.cc',
+          ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [4267, ],
+        },
+        {
+          'target_name': 'hpack_fuzz_wrapper',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'net',
+          ],
+          'sources': [
+            'spdy/fuzzing/hpack_fuzz_wrapper.cc',
+          ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [4267, ],
+        },
+        {
           'target_name': 'net_watcher',
           'type': 'executable',
           'dependencies': [
@@ -1350,39 +1389,6 @@
             'tools/quic/quic_server_bin.cc',
           ],
         },
-        {
-          'target_name': 'hpack_example_generator',
-          'type': 'executable',
-          'dependencies': [
-            '../base/base.gyp:base',
-            'net',
-          ],
-          'sources': [
-            'spdy/fuzzing/hpack_example_generator.cc',
-          ],
-        },
-        {
-          'target_name': 'hpack_fuzz_mutator',
-          'type': 'executable',
-          'dependencies': [
-            '../base/base.gyp:base',
-            'net',
-          ],
-          'sources': [
-            'spdy/fuzzing/hpack_fuzz_mutator.cc',
-          ],
-        },
-        {
-          'target_name': 'hpack_fuzz_wrapper',
-          'type': 'executable',
-          'dependencies': [
-            '../base/base.gyp:base',
-            'net',
-          ],
-          'sources': [
-            'spdy/fuzzing/hpack_fuzz_wrapper.cc',
-          ],
-        }
       ]
     }],
     ['OS=="android"', {
