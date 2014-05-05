@@ -154,10 +154,6 @@ public:
 
         // This value must come after the last length unit type to enable iteration over the length unit types.
         LengthUnitTypeCount,
-
-        // FIXME: This is used by AnimatableLength to represent calc objects and is not a type of length value.
-        //        Remove this once we no longer need the distinction.
-        UnitTypeCalc,
     };
 
     typedef Vector<double, CSSPrimitiveValue::LengthUnitTypeCount> CSSLengthArray;

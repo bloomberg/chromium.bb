@@ -31,127 +31,53 @@
 #include "config.h"
 #include "core/animation/AnimatableLength.h"
 
-#include "core/css/CSSPrimitiveValueMappings.h"
 #include "platform/CalculationValue.h"
 #include "platform/animation/AnimationUtilities.h"
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<AnimatableLength> AnimatableLength::create(CSSValue* value)
+namespace {
+
+double clampNumber(double value, ValueRange range)
 {
-    ASSERT(canCreateFrom(value));
-    if (value->isPrimitiveValue()) {
-        CSSPrimitiveValue* primitiveValue = WebCore::toCSSPrimitiveValue(value);
-        const CSSCalcValue* calcValue = primitiveValue->cssCalcValue();
-        if (calcValue)
-            return create(calcValue->expressionNode(), primitiveValue);
-        CSSPrimitiveValue::LengthUnitType unitType;
-        bool isPrimitiveLength = CSSPrimitiveValue::unitTypeToLengthUnitType(primitiveValue->primitiveType(), unitType);
-        ASSERT_UNUSED(isPrimitiveLength, isPrimitiveLength);
-        const double scale = CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(primitiveValue->primitiveType());
-        return create(primitiveValue->getDoubleValue() * scale, unitType, primitiveValue);
-    }
-
-    if (value->isCalcValue())
-        return create(toCSSCalcValue(value)->expressionNode());
-
-    ASSERT_NOT_REACHED();
-    return nullptr;
+    if (range == ValueRangeNonNegative)
+        return std::max(value, 0.0);
+    ASSERT(range == ValueRangeAll);
+    return value;
 }
 
-bool AnimatableLength::canCreateFrom(const CSSValue* value)
-{
-    ASSERT(value);
-    if (value->isPrimitiveValue()) {
-        const CSSPrimitiveValue* primitiveValue = WebCore::toCSSPrimitiveValue(value);
-        if (primitiveValue->cssCalcValue())
-            return true;
+} // namespace
 
-        CSSPrimitiveValue::LengthUnitType type;
-        // Only returns true if the type is a primitive length unit.
-        return CSSPrimitiveValue::unitTypeToLengthUnitType(primitiveValue->primitiveType(), type);
-    }
-    return value->isCalcValue();
+AnimatableLength::AnimatableLength(const Length& length, float zoom)
+{
+    ASSERT(zoom);
+    PixelsAndPercent pixelsAndPercent = length.pixelsAndPercent();
+    m_pixels = pixelsAndPercent.pixels / zoom;
+    m_percent = pixelsAndPercent.percent;
+    m_hasPixels = length.type() != Percent;
+    m_hasPercent = !length.isFixed();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> AnimatableLength::toCSSValue(NumberRange range) const
+Length AnimatableLength::length(float zoom, ValueRange range) const
 {
-    return toCSSPrimitiveValue(range);
-}
-
-Length AnimatableLength::toLength(const CSSToLengthConversionData& conversionData, NumberRange range) const
-{
-    // Avoid creating a CSSValue in the common cases
-    if (m_lengthUnitType == CSSPrimitiveValue::UnitTypePixels)
-        return Length(clampedNumber(range) * conversionData.zoom(), Fixed);
-    if (m_lengthUnitType == CSSPrimitiveValue::UnitTypePercentage)
-        return Length(clampedNumber(range), Percent);
-
-    return toCSSPrimitiveValue(range)->convertToLength<AnyConversion>(conversionData);
+    if (!m_hasPercent)
+        return Length(clampNumber(m_pixels, range) * zoom, Fixed);
+    if (!m_hasPixels)
+        return Length(clampNumber(m_percent, range), Percent);
+    return Length(CalculationValue::create(PixelsAndPercent(m_pixels * zoom, m_percent), range));
 }
 
 PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLength::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     const AnimatableLength* length = toAnimatableLength(value);
-    CSSPrimitiveValue::LengthUnitType type = commonUnitType(length);
-    if (!isCalc(type))
-        return AnimatableLength::create(blend(m_lengthValue, length->m_lengthValue, fraction), type);
-    return AnimatableLength::create(scale(1 - fraction).get(), length->scale(fraction).get());
+    return create(blend(m_pixels, length->m_pixels, fraction), blend(m_percent, length->m_percent, fraction),
+        m_hasPixels || length->m_hasPixels, m_hasPercent || length->m_hasPercent);
 }
 
 bool AnimatableLength::equalTo(const AnimatableValue* value) const
 {
     const AnimatableLength* length = toAnimatableLength(value);
-    if (m_lengthUnitType != length->m_lengthUnitType)
-        return false;
-    if (isCalc())
-        return m_calcExpression == length->m_calcExpression || m_calcExpression->equals(*length->m_calcExpression);
-    return m_lengthValue == length->m_lengthValue;
-}
-
-PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> AnimatableLength::toCSSCalcExpressionNode() const
-{
-    if (isCalc())
-        return m_calcExpression;
-    return CSSCalcValue::createExpressionNode(toCSSPrimitiveValue(AllValues), m_lengthValue == trunc(m_lengthValue));
-}
-
-static bool isCompatibleWithRange(const CSSPrimitiveValue* primitiveValue, NumberRange range)
-{
-    ASSERT(primitiveValue);
-    if (range == AllValues)
-        return true;
-    if (primitiveValue->isCalculated())
-        return primitiveValue->cssCalcValue()->permittedValueRange() == ValueRangeNonNegative;
-    return primitiveValue->getDoubleValue() >= 0;
-}
-
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> AnimatableLength::toCSSPrimitiveValue(NumberRange range) const
-{
-    if (!m_cachedCSSPrimitiveValue || !isCompatibleWithRange(m_cachedCSSPrimitiveValue.get(), range)) {
-        if (isCalc())
-            m_cachedCSSPrimitiveValue = CSSPrimitiveValue::create(CSSCalcValue::create(m_calcExpression, range == AllValues ? ValueRangeAll : ValueRangeNonNegative));
-        else
-            m_cachedCSSPrimitiveValue = CSSPrimitiveValue::create(clampedNumber(range), static_cast<CSSPrimitiveValue::UnitTypes>(CSSPrimitiveValue::lengthUnitTypeToUnitType(m_lengthUnitType)));
-    }
-    return m_cachedCSSPrimitiveValue;
-}
-
-PassRefPtrWillBeRawPtr<AnimatableLength> AnimatableLength::scale(double factor) const
-{
-    if (isCalc()) {
-        return AnimatableLength::create(CSSCalcValue::createExpressionNode(
-            m_calcExpression,
-            CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(factor, CSSPrimitiveValue::CSS_NUMBER)),
-            CalcMultiply));
-    }
-    return AnimatableLength::create(m_lengthValue * factor, m_lengthUnitType);
-}
-
-void AnimatableLength::trace(Visitor* visitor)
-{
-    visitor->trace(m_calcExpression);
-    visitor->trace(m_cachedCSSPrimitiveValue);
+    return m_pixels == length->m_pixels && m_percent == length->m_percent && m_hasPixels == length->m_hasPixels && m_hasPercent == length->m_hasPercent;
 }
 
 } // namespace WebCore

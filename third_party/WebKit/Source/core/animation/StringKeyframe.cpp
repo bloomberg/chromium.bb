@@ -5,7 +5,6 @@
 #include "config.h"
 #include "core/animation/StringKeyframe.h"
 
-#include "core/animation/AnimatableLength.h"
 #include "core/animation/Interpolation.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -76,7 +75,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyRight:
     case CSSPropertyWidth:
     case CSSPropertyHeight:
-        if (AnimatableLength::canCreateFrom(fromCSSValue) && AnimatableLength::canCreateFrom(toCSSValue))
+        if (LengthStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthStyleInterpolation::canCreateFrom(*toCSSValue))
             return LengthStyleInterpolation::create(fromCSSValue, toCSSValue, property);
         break;
     default:

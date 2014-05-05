@@ -67,43 +67,9 @@ TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
         ::std::string("AnimatableColor(rgba(0, 0, 0, 0), #ff0000)"),
         PrintToString(AnimatableColor::create(Color(0x000000FF), Color(0xFFFF0000))));
 
-    EXPECT_EQ(
-        ::std::string("AnimatableLength(5px)"),
-        PrintToString(AnimatableLength::create(CSSPrimitiveValue::create(5, CSSPrimitiveValue::CSS_PX).get())));
-
-    EXPECT_EQ(
-        ::std::string("AnimatableLengthBox(AnimatableLength(1px), AnimatableLength(2em), AnimatableLength(3rem), AnimatableLength(4pt))"),
-        PrintToString(AnimatableLengthBox::create(
-            AnimatableLength::create(CSSPrimitiveValue::create(1, CSSPrimitiveValue::CSS_PX).get()),
-            AnimatableLength::create(CSSPrimitiveValue::create(2, CSSPrimitiveValue::CSS_EMS).get()),
-            AnimatableLength::create(CSSPrimitiveValue::create(3, CSSPrimitiveValue::CSS_REMS).get()),
-            AnimatableLength::create(CSSPrimitiveValue::create(4, CSSPrimitiveValue::CSS_PT).get())
-            )));
-
-    EXPECT_EQ(
-        ::std::string("AnimatableLengthPoint(AnimatableLength(5%), AnimatableLength(6px))"),
-        PrintToString(AnimatableLengthPoint::create(
-            AnimatableLength::create(CSSPrimitiveValue::create(5, CSSPrimitiveValue::CSS_PERCENTAGE).get()),
-            AnimatableLength::create(CSSPrimitiveValue::create(6, CSSPrimitiveValue::CSS_PX).get())
-            )));
-
-    EXPECT_EQ(
-        ::std::string("AnimatableLengthSize(AnimatableLength(3rem), AnimatableLength(4pt))"),
-        PrintToString(AnimatableLengthSize::create(
-            AnimatableLength::create(CSSPrimitiveValue::create(3, CSSPrimitiveValue::CSS_REMS).get()),
-            AnimatableLength::create(CSSPrimitiveValue::create(4, CSSPrimitiveValue::CSS_PT).get())
-            )));
-
     EXPECT_THAT(
         PrintToString(const_cast<AnimatableValue*>(AnimatableValue::neutralValue())),
         testing::StartsWith("AnimatableNeutral@"));
-
-    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> > v1;
-    v1.append(AnimatableLength::create(CSSPrimitiveValue::create(3, CSSPrimitiveValue::CSS_REMS).get()));
-    v1.append(AnimatableLength::create(CSSPrimitiveValue::create(4, CSSPrimitiveValue::CSS_PT).get()));
-    EXPECT_EQ(
-        ::std::string("AnimatableRepeatable(AnimatableLength(3rem), AnimatableLength(4pt))"),
-        PrintToString(AnimatableRepeatable::create(v1)));
 
     RefPtr<SVGLength> length1cm = SVGLength::create(LengthModeOther);
     RefPtr<SVGLength> length2cm = SVGLength::create(LengthModeOther);

@@ -6,7 +6,6 @@
 #include "core/animation/Animation.h"
 
 #include "bindings/v8/Dictionary.h"
-#include "core/animation/AnimatableLength.h"
 #include "core/animation/AnimationClock.h"
 #include "core/animation/AnimationHelpers.h"
 #include "core/animation/AnimationTestHelper.h"

@@ -935,7 +935,6 @@ unsigned short CSSPrimitiveValue::lengthUnitTypeToUnitType(LengthUnitType type)
         return CSSPrimitiveValue::CSS_VMIN;
     case UnitTypeViewportMax:
         return CSSPrimitiveValue::CSS_VMAX;
-    case UnitTypeCalc:
     case LengthUnitTypeCount:
         break;
     }

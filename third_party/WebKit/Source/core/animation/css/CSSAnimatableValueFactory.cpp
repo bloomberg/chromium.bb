@@ -66,17 +66,9 @@ static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLength(const Length& le
 {
     switch (length.type()) {
     case Fixed:
-        return AnimatableLength::create(adjustFloatForAbsoluteZoom(length.value(), style), CSSPrimitiveValue::UnitTypePixels);
     case Percent:
-        return AnimatableLength::create(length.value(), CSSPrimitiveValue::UnitTypePercentage);
-    case Calculated: {
-        const CalculationValue& calc = length.calculationValue();
-        if (calc.pixels() && calc.percent())
-            return AnimatableLength::create(CSSCalcValue::createExpressionNode(adjustFloatForAbsoluteZoom(calc.pixels(), style), calc.percent()));
-        if (calc.percent())
-            return createFromLength(Length(calc.percent(), Percent), style);
-        return createFromLength(Length(calc.pixels(), Fixed), style);
-    }
+    case Calculated:
+        return AnimatableLength::create(length, style.effectiveZoom());
     case Auto:
     case Intrinsic:
     case MinIntrinsic:

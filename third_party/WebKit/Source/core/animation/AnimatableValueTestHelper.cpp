@@ -56,42 +56,6 @@ void PrintTo(const AnimatableImage& animImage, ::std::ostream* os)
     PrintTo(*(animImage.toCSSValue()), os, "AnimatableImage");
 }
 
-void PrintTo(const AnimatableLength& animLength, ::std::ostream* os)
-{
-    PrintTo(*(animLength.toCSSValue().get()), os, "AnimatableLength");
-}
-
-void PrintTo(const AnimatableLengthBox& animLengthBox, ::std::ostream* os)
-{
-    *os << "AnimatableLengthBox(";
-    PrintTo(*(animLengthBox.left()), os);
-    *os << ", ";
-    PrintTo(*(animLengthBox.right()), os);
-    *os << ", ";
-    PrintTo(*(animLengthBox.top()), os);
-    *os << ", ";
-    PrintTo(*(animLengthBox.bottom()), os);
-    *os << ")";
-}
-
-void PrintTo(const AnimatableLengthPoint& animLengthPoint, ::std::ostream* os)
-{
-    *os << "AnimatableLengthPoint(";
-    PrintTo(*(animLengthPoint.x()), os);
-    *os << ", ";
-    PrintTo(*(animLengthPoint.y()), os);
-    *os << ")";
-}
-
-void PrintTo(const AnimatableLengthSize& animLengthSize, ::std::ostream* os)
-{
-    *os << "AnimatableLengthSize(";
-    PrintTo(*(animLengthSize.width()), os);
-    *os << ", ";
-    PrintTo(*(animLengthSize.height()), os);
-    *os << ")";
-}
-
 void PrintTo(const AnimatableNeutral& animValue, ::std::ostream* os)
 {
     *os << "AnimatableNeutral@" << &animValue;
@@ -228,14 +192,6 @@ void PrintTo(const AnimatableValue& animValue, ::std::ostream* os)
         PrintTo(*(toAnimatableColor(&animValue)), os);
     else if (animValue.isImage())
         PrintTo(*(toAnimatableImage(&animValue)), os);
-    else if (animValue.isLength())
-        PrintTo(*(toAnimatableLength(&animValue)), os);
-    else if (animValue.isLengthBox())
-        PrintTo(*(toAnimatableLengthBox(&animValue)), os);
-    else if (animValue.isLengthPoint())
-        PrintTo(*(toAnimatableLengthPoint(&animValue)), os);
-    else if (animValue.isLengthSize())
-        PrintTo(*(toAnimatableLengthSize(&animValue)), os);
     else if (animValue.isNeutral())
         PrintTo(*(static_cast<const AnimatableNeutral*>(&animValue)), os);
     else if (animValue.isRepeatable())

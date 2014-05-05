@@ -51,7 +51,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> unknownAnimatableValue(double n)
 
 PassRefPtrWillBeRawPtr<AnimatableValue> pixelAnimatableValue(double n)
 {
-    return AnimatableLength::create(CSSPrimitiveValue::create(n, CSSPrimitiveValue::CSS_PX).get());
+    return AnimatableLength::create(Length(n, Fixed), 1);
 }
 
 AnimatableValueKeyframeVector keyframesAtZeroAndOne(PassRefPtrWillBeRawPtr<AnimatableValue> zeroValue, PassRefPtrWillBeRawPtr<AnimatableValue> oneValue)
@@ -81,7 +81,7 @@ void expectDoubleValue(double expectedValue, PassRefPtrWillBeRawPtr<Interpolatio
 
     double actualValue;
     if (value->isLength())
-        actualValue = toCSSPrimitiveValue(toAnimatableLength(value.get())->toCSSValue().get())->getDoubleValue();
+        actualValue = toAnimatableLength(value.get())->length(1, ValueRangeAll).value();
     else
         actualValue = toCSSPrimitiveValue(toAnimatableUnknown(value.get())->toCSSValue().get())->getDoubleValue();
 

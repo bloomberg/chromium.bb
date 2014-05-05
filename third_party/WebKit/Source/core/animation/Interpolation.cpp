@@ -5,8 +5,7 @@
 #include "config.h"
 #include "core/animation/Interpolation.h"
 
-#include "core/animation/AnimatableDouble.h"
-#include "core/animation/AnimatableLength.h"
+#include "core/css/CSSCalculationValue.h"
 #include "core/css/resolver/AnimatedStyleBuilder.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
@@ -79,6 +78,20 @@ void LegacyStyleInterpolation::apply(StyleResolverState& state) const
 void LegacyStyleInterpolation::trace(Visitor* visitor)
 {
     StyleInterpolation::trace(visitor);
+}
+
+bool LengthStyleInterpolation::canCreateFrom(const CSSValue& value)
+{
+    if (value.isPrimitiveValue()) {
+        const CSSPrimitiveValue& primitiveValue = WebCore::toCSSPrimitiveValue(value);
+        if (primitiveValue.cssCalcValue())
+            return true;
+
+        CSSPrimitiveValue::LengthUnitType type;
+        // Only returns true if the type is a primitive length unit.
+        return CSSPrimitiveValue::unitTypeToLengthUnitType(primitiveValue.primitiveType(), type);
+    }
+    return value.isCalcValue();
 }
 
 PassOwnPtrWillBeRawPtr<InterpolableValue> LengthStyleInterpolation::lengthToInterpolableValue(CSSValue* value)

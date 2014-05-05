@@ -39,10 +39,6 @@
 #include "core/animation/AnimatableClipPathOperation.h"
 #include "core/animation/AnimatableColor.h"
 #include "core/animation/AnimatableImage.h"
-#include "core/animation/AnimatableLength.h"
-#include "core/animation/AnimatableLengthBox.h"
-#include "core/animation/AnimatableLengthPoint.h"
-#include "core/animation/AnimatableLengthSize.h"
 #include "core/animation/AnimatableNeutral.h"
 #include "core/animation/AnimatableRepeatable.h"
 #include "core/animation/AnimatableSVGLength.h"
@@ -68,10 +64,6 @@ bool operator==(const AnimatableValue&, const AnimatableValue&);
 void PrintTo(const AnimatableClipPathOperation&, ::std::ostream*);
 void PrintTo(const AnimatableColor&, ::std::ostream*);
 void PrintTo(const AnimatableImage&, ::std::ostream*);
-void PrintTo(const AnimatableLength&, ::std::ostream*);
-void PrintTo(const AnimatableLengthBox&, ::std::ostream*);
-void PrintTo(const AnimatableLengthPoint&, ::std::ostream*);
-void PrintTo(const AnimatableLengthSize&, ::std::ostream*);
 void PrintTo(const AnimatableNeutral&, ::std::ostream*);
 void PrintTo(const AnimatableRepeatable&, ::std::ostream*);
 void PrintTo(const AnimatableSVGLength&, ::std::ostream*);

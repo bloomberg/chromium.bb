@@ -104,6 +104,8 @@ public:
         return adoptRefWillBeNoop(new LengthStyleInterpolation(lengthToInterpolableValue(start), lengthToInterpolableValue(end), id));
     }
 
+    static bool canCreateFrom(const CSSValue&);
+
     virtual void apply(StyleResolverState&) const OVERRIDE;
 
     virtual void trace(Visitor*) OVERRIDE;
