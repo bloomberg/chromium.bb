@@ -225,6 +225,12 @@ int hw_get_module(const char *id, const struct hw_module_t **module);
 int hw_get_module_by_class(const char *class_id, const char *inst,
                            const struct hw_module_t **module);
 
+/**
+ * Provide a function to handle log messages.
+ */
+typedef int (*hwcplus_log_fn_t)(int prio, const char* tag, const char* msg);
+void hwcplus_set_log_fn(hwcplus_log_fn_t fn);
+
 __END_DECLS
 
 #endif  /* ANDROID_INCLUDE_HARDWARE_HARDWARE_H */

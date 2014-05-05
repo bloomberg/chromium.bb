@@ -19,7 +19,16 @@
 
 #include <sys/cdefs.h>
 #include <stddef.h>
+#ifdef ANDROID
 #include <sys/system_properties.h>
+#else
+#ifndef PROP_NAME_MAX
+#define PROP_NAME_MAX  32
+#endif
+#ifndef PROP_VALUE_MAX
+#define PROP_VALUE_MAX  92
+#endif
+#endif
 
 #ifdef __cplusplus
 extern "C" {
