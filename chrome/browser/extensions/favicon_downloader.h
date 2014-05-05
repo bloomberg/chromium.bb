@@ -69,7 +69,6 @@ class FaviconDownloader : public content::WebContentsObserver {
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual void DidUpdateFaviconURL(
-      int32 page_id,
       const std::vector<content::FaviconURL>& candidates) OVERRIDE;
 
   // Whether we have received favicons from the renderer.

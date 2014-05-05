@@ -65,10 +65,9 @@ public abstract class WebContentsObserverAndroid {
 
     /**
      * Called when the page had painted something non-empty.
-     * @param pageId unique ID of the page in history entries.
      */
     @CalledByNative
-    public void didFirstVisuallyNonEmptyPaint(int pageId) {
+    public void didFirstVisuallyNonEmptyPaint() {
     }
 
     /**

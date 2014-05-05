@@ -47,7 +47,7 @@ class ContentsObserver : public WebContentsObserver {
     loaded_ = true;
   }
 
-  virtual void DidUpdateFaviconURL(int32 page_id,
+  virtual void DidUpdateFaviconURL(
       const std::vector<content::FaviconURL>& candidates) OVERRIDE {
     if (!candidates.empty())
       got_favicons_ = true;

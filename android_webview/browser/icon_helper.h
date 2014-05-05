@@ -42,7 +42,7 @@ class IconHelper : public content::WebContentsObserver {
   void SetListener(Listener* listener);
 
   // From WebContentsObserver
-  virtual void DidUpdateFaviconURL(int32 page_id,
+  virtual void DidUpdateFaviconURL(
       const std::vector<content::FaviconURL>& candidates) OVERRIDE;
   virtual void DidStartNavigationToPendingEntry(
       const GURL& url,

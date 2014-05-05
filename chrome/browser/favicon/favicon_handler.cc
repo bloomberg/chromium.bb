@@ -370,7 +370,6 @@ void FaviconHandler::SetFaviconOnNavigationEntry(
 }
 
 void FaviconHandler::OnUpdateFaviconURL(
-    int32 page_id,
     const std::vector<FaviconURL>& candidates) {
   image_urls_.clear();
   best_favicon_candidate_ = FaviconCandidate();

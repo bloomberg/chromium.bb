@@ -120,8 +120,7 @@ void PermissionBubbleManager::SetView(PermissionBubbleView* view) {
   ShowBubble();
 }
 
-void PermissionBubbleManager::DocumentOnLoadCompletedInMainFrame(
-    int32 page_id) {
+void PermissionBubbleManager::DocumentOnLoadCompletedInMainFrame() {
   request_url_has_loaded_ = true;
   // This is scheduled because while all calls to the browser have been
   // issued at DOMContentLoaded, they may be bouncing around in scheduled

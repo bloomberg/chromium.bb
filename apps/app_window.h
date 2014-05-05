@@ -405,7 +405,7 @@ class AppWindow : public content::NotificationObserver,
       OVERRIDE;
 
   // content::WebContentsObserver implementation.
-  virtual void DidFirstVisuallyNonEmptyPaint(int32 page_id) OVERRIDE;
+  virtual void DidFirstVisuallyNonEmptyPaint() OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

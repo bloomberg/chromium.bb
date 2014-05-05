@@ -97,8 +97,7 @@ class FaviconHandler {
 
   // Message Handler.  Must be public, because also called from
   // PrerenderContents. Collects the |image_urls| list.
-  void OnUpdateFaviconURL(int32 page_id,
-                          const std::vector<content::FaviconURL>& candidates);
+  void OnUpdateFaviconURL(const std::vector<content::FaviconURL>& candidates);
 
   // Processes the current image_irls_ entry, requesting the image from the
   // history / download service.

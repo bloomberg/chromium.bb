@@ -121,7 +121,7 @@ void ShellDevToolsFrontend::RenderViewCreated(
                                          frontend_host_.get());
 }
 
-void ShellDevToolsFrontend::DocumentOnLoadCompletedInMainFrame(int32 page_id) {
+void ShellDevToolsFrontend::DocumentOnLoadCompletedInMainFrame() {
   web_contents()->GetMainFrame()->ExecuteJavaScript(
       base::ASCIIToUTF16("InspectorFrontendAPI.setUseSoftMenu(true);"));
 }

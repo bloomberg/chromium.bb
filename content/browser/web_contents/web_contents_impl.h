@@ -357,8 +357,8 @@ class CONTENT_EXPORT WebContentsImpl
                                       IPC::Message* reply_msg) OVERRIDE;
   virtual void DidAccessInitialDocument() OVERRIDE;
   virtual void DidDisownOpener(RenderFrameHost* render_frame_host) OVERRIDE;
-  virtual void DocumentOnLoadCompleted(RenderFrameHost* render_frame_host,
-                                       int32 page_id) OVERRIDE;
+  virtual void DocumentOnLoadCompleted(
+      RenderFrameHost* render_frame_host) OVERRIDE;
   virtual WebContents* GetAsWebContents() OVERRIDE;
   virtual bool IsNeverVisible() OVERRIDE;
 
@@ -763,9 +763,8 @@ class CONTENT_EXPORT WebContentsImpl
                           const GURL& image_url,
                           const std::vector<SkBitmap>& bitmaps,
                           const std::vector<gfx::Size>& original_bitmap_sizes);
-  void OnUpdateFaviconURL(int32 page_id,
-                          const std::vector<FaviconURL>& candidates);
-  void OnFirstVisuallyNonEmptyPaint(int32 page_id);
+  void OnUpdateFaviconURL(const std::vector<FaviconURL>& candidates);
+  void OnFirstVisuallyNonEmptyPaint();
   void OnMediaPlayingNotification(int64 player_cookie,
                                   bool has_video,
                                   bool has_audio);

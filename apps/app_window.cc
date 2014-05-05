@@ -479,7 +479,7 @@ bool AppWindow::PreHandleGestureEvent(WebContents* source,
          event.type == blink::WebGestureEvent::GesturePinchEnd;
 }
 
-void AppWindow::DidFirstVisuallyNonEmptyPaint(int32 page_id) {
+void AppWindow::DidFirstVisuallyNonEmptyPaint() {
   first_paint_complete_ = true;
   if (show_on_first_paint_) {
     DCHECK(delayed_show_type_ == SHOW_ACTIVE ||

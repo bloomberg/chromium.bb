@@ -173,7 +173,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // This method is invoked once the onload handler of the main frame has
   // completed.
-  virtual void DocumentOnLoadCompletedInMainFrame(int32 page_id) {}
+  virtual void DocumentOnLoadCompletedInMainFrame() {}
 
   // This method is invoked when the document in the given frame finished
   // loading. At this point, scripts marked as defer were executed, and
@@ -239,7 +239,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // This method is invoked when the renderer has completed its first paint
   // after a non-empty layout.
-  virtual void DidFirstVisuallyNonEmptyPaint(int32 page_id) {}
+  virtual void DidFirstVisuallyNonEmptyPaint() {}
 
   // These two methods correspond to the points in time when the spinner of the
   // tab starts and stops spinning.
@@ -301,8 +301,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   virtual void UserAgentOverrideSet(const std::string& user_agent) {}
 
   // Invoked when new FaviconURL candidates are received from the renderer.
-  virtual void DidUpdateFaviconURL(int32 page_id,
-                                   const std::vector<FaviconURL>& candidates) {}
+  virtual void DidUpdateFaviconURL(const std::vector<FaviconURL>& candidates) {}
 
   // Invoked when a pepper plugin creates and shows or destroys a fullscreen
   // render widget.

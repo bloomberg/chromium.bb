@@ -72,7 +72,7 @@ enum NotificationType {
   // Other load-related (not from NavigationController) ----------------------
 
   // Corresponds to ViewHostMsg_DocumentOnLoadCompletedInMainFrame. The source
-  // is the WebContents and the details the page_id.
+  // is the WebContents.
   // DEPRECATED: Use WebContentsObserver::DocumentOnLoadCompletedInMainFrame()
   NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
 

@@ -87,7 +87,7 @@ class TestFaviconDownloader : public FaviconDownloader {
   }
 
   void UpdateFaviconURLs(const std::vector<content::FaviconURL>& candidates) {
-    FaviconDownloader::DidUpdateFaviconURL(0, candidates);
+    FaviconDownloader::DidUpdateFaviconURL(candidates);
   }
 
   void set_initial_favicon_urls(const std::vector<content::FaviconURL>& urls) {

@@ -174,7 +174,6 @@ class PluginFaviconMessageObserver : public WebContentsObserver {
   }
 
   virtual void DidUpdateFaviconURL(
-      int32 page_id,
       const std::vector<FaviconURL>& candidates) OVERRIDE {
     favicon_received_ = true;
   }
@@ -399,7 +398,7 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
     PluginFaviconMessageObserver observer(contents());
     EXPECT_TRUE(ntp_rvh->OnMessageReceived(
                     ViewHostMsg_UpdateFaviconURL(
-                        rvh()->GetRoutingID(), 0, icons)));
+                        rvh()->GetRoutingID(), icons)));
     EXPECT_TRUE(observer.favicon_received());
   }
   // Create one more view in the same SiteInstance where ntp_rvh
@@ -422,7 +421,7 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
     PluginFaviconMessageObserver observer(contents());
     EXPECT_TRUE(
         dest_rvh->OnMessageReceived(
-            ViewHostMsg_UpdateFaviconURL(rvh()->GetRoutingID(), 101, icons)));
+            ViewHostMsg_UpdateFaviconURL(rvh()->GetRoutingID(), icons)));
     EXPECT_TRUE(observer.favicon_received());
   }
 
@@ -433,7 +432,7 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
     PluginFaviconMessageObserver observer(contents());
     EXPECT_TRUE(
         ntp_rvh->OnMessageReceived(
-            ViewHostMsg_UpdateFaviconURL(rvh()->GetRoutingID(), 101, icons)));
+            ViewHostMsg_UpdateFaviconURL(rvh()->GetRoutingID(), icons)));
     EXPECT_FALSE(observer.favicon_received());
   }
 

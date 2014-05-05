@@ -188,7 +188,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   void OnDetach();
   void OnFrameFocused();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
-  void OnDocumentOnLoadCompleted(int32 page_id);
+  void OnDocumentOnLoadCompleted();
   void OnDidStartProvisionalLoadForFrame(int parent_routing_id,
                                          const GURL& url);
   void OnDidFailProvisionalLoadWithError(

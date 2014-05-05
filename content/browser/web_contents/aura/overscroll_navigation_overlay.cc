@@ -301,8 +301,7 @@ void OverscrollNavigationOverlay::OnWindowSliderDestroyed() {
   }
 }
 
-void OverscrollNavigationOverlay::DocumentOnLoadCompletedInMainFrame(
-    int32 page_id) {
+void OverscrollNavigationOverlay::DocumentOnLoadCompletedInMainFrame() {
   // Use the last committed entry rather than the active one, in case a
   // pending entry has been created.
   int committed_entry_id =
@@ -314,7 +313,7 @@ void OverscrollNavigationOverlay::DocumentOnLoadCompletedInMainFrame(
   }
 }
 
-void OverscrollNavigationOverlay::DidFirstVisuallyNonEmptyPaint(int32 page_id) {
+void OverscrollNavigationOverlay::DidFirstVisuallyNonEmptyPaint() {
   int visible_entry_id =
       web_contents_->GetController().GetVisibleEntry()->GetUniqueID();
   if (visible_entry_id == pending_entry_id_ || !pending_entry_id_) {

@@ -57,7 +57,7 @@ void IconHelper::DownloadFaviconCallback(
     listener_->OnReceivedIcon(image_url, bitmaps[0]);
 }
 
-void IconHelper::DidUpdateFaviconURL(int32 page_id,
+void IconHelper::DidUpdateFaviconURL(
     const std::vector<content::FaviconURL>& candidates) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   for (std::vector<content::FaviconURL>::const_iterator i = candidates.begin();

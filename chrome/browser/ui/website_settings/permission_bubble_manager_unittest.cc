@@ -86,7 +86,7 @@ class PermissionBubbleManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   void WaitForCoalescing() {
-    manager_->DocumentOnLoadCompletedInMainFrame(0);
+    manager_->DocumentOnLoadCompletedInMainFrame();
     base::MessageLoop::current()->RunUntilIdle();
   }
 

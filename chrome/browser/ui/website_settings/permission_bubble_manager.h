@@ -67,7 +67,7 @@ class PermissionBubbleManager
 
   // TODO(leng): Finalize policy for permission requests with iFrames.
   // DocumentLoadedInFrame() might be needed as well.
-  virtual void DocumentOnLoadCompletedInMainFrame(int32 page_id) OVERRIDE;
+  virtual void DocumentOnLoadCompletedInMainFrame() OVERRIDE;
 
   // If a page on which permissions requests are pending is navigated,
   // they will be finalized as if canceled by the user.

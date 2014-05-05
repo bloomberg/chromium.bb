@@ -41,7 +41,6 @@ class FaviconBitmapHandler : public content::WebContentsObserver {
 
   // content::WebContentObserver implementation.
   virtual void DidUpdateFaviconURL(
-    int32 page_id,
     const std::vector<content::FaviconURL>& candidates) OVERRIDE;
 
  private:
@@ -73,7 +72,6 @@ class FaviconBitmapHandler : public content::WebContentsObserver {
 };
 
 void FaviconBitmapHandler::DidUpdateFaviconURL(
-    int32 page_id,
     const std::vector<content::FaviconURL>& candidates) {
   // This function receives a complete list of faviocn urls for the page.
   // It may get called multiple times with the same list, and will also get

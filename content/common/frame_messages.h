@@ -430,8 +430,7 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFinishLoad,
 
 // Sent when after the onload handler has been invoked for the document
 // in this frame. Sent for top-level frames.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_DocumentOnLoadCompleted,
-                    int32 /* page_id */)
+IPC_MESSAGE_ROUTED0(FrameHostMsg_DocumentOnLoadCompleted)
 
 // Notifies that the initial empty document of a view has been accessed.
 // After this, it is no longer safe to show a pending navigation's URL without

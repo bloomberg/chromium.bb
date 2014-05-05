@@ -359,11 +359,10 @@ void RenderFrameHostImpl::OnOpenURL(
       params.should_replace_current_entry, params.user_gesture);
 }
 
-void RenderFrameHostImpl::OnDocumentOnLoadCompleted(
-    int32 page_id) {
+void RenderFrameHostImpl::OnDocumentOnLoadCompleted() {
   // This message is only sent for top-level frames. TODO(avi): when frame tree
   // mirroring works correctly, add a check here to enforce it.
-  delegate_->DocumentOnLoadCompleted(this, page_id);
+  delegate_->DocumentOnLoadCompleted(this);
 }
 
 void RenderFrameHostImpl::OnDidStartProvisionalLoadForFrame(

@@ -191,14 +191,13 @@ void FaviconTabHelper::DidNavigateMainFrame(
 }
 
 void FaviconTabHelper::DidUpdateFaviconURL(
-    int32 page_id,
     const std::vector<content::FaviconURL>& candidates) {
   DCHECK(!candidates.empty());
   favicon_urls_ = candidates;
 
-  favicon_handler_->OnUpdateFaviconURL(page_id, candidates);
+  favicon_handler_->OnUpdateFaviconURL(candidates);
   if (touch_icon_handler_.get())
-    touch_icon_handler_->OnUpdateFaviconURL(page_id, candidates);
+    touch_icon_handler_->OnUpdateFaviconURL(candidates);
 }
 
 FaviconService* FaviconTabHelper::GetFaviconService() {

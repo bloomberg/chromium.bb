@@ -3250,8 +3250,7 @@ void RenderViewImpl::DidFlushPaint() {
     if (data->did_first_visually_non_empty_layout() &&
         !data->did_first_visually_non_empty_paint()) {
       data->set_did_first_visually_non_empty_paint(true);
-      Send(new ViewHostMsg_DidFirstVisuallyNonEmptyPaint(routing_id_,
-                                                         page_id_));
+      Send(new ViewHostMsg_DidFirstVisuallyNonEmptyPaint(routing_id_));
     }
 
     // TODO(jar): The following code should all be inside a method, probably in
@@ -4131,7 +4130,7 @@ void RenderViewImpl::DidCommitCompositorFrame() {
 
 void RenderViewImpl::SendUpdateFaviconURL(const std::vector<FaviconURL>& urls) {
   if (!urls.empty())
-    Send(new ViewHostMsg_UpdateFaviconURL(routing_id_, page_id_, urls));
+    Send(new ViewHostMsg_UpdateFaviconURL(routing_id_, urls));
 }
 
 void RenderViewImpl::DidStopLoadingIcons() {

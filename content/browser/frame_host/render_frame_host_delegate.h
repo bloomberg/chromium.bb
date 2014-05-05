@@ -89,8 +89,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // The onload handler in the frame has completed. Only called for the top-
   // level frame.
-  virtual void DocumentOnLoadCompleted(RenderFrameHost* render_frame_host,
-                                       int32 page_id) {}
+  virtual void DocumentOnLoadCompleted(RenderFrameHost* render_frame_host) {}
 
   // Return this object cast to a WebContents, if it is one. If the object is
   // not a WebContents, returns NULL.

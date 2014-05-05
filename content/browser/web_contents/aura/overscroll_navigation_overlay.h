@@ -91,8 +91,8 @@ class CONTENT_EXPORT OverscrollNavigationOverlay
   virtual void OnWindowSliderDestroyed() OVERRIDE;
 
   // Overridden from WebContentsObserver:
-  virtual void DocumentOnLoadCompletedInMainFrame(int32 page_id) OVERRIDE;
-  virtual void DidFirstVisuallyNonEmptyPaint(int32 page_id) OVERRIDE;
+  virtual void DocumentOnLoadCompletedInMainFrame() OVERRIDE;
+  virtual void DidFirstVisuallyNonEmptyPaint() OVERRIDE;
   virtual void DidStopLoading(RenderViewHost* host) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 

@@ -235,7 +235,7 @@ class DevToolsUIBindings::FrontendWebContentsObserver
   // contents::WebContentsObserver:
   virtual void AboutToNavigateRenderView(
       content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DocumentOnLoadCompletedInMainFrame(int32 page_id) OVERRIDE;
+  virtual void DocumentOnLoadCompletedInMainFrame() OVERRIDE;
 
   DevToolsUIBindings* devtools_bindings_;
   DISALLOW_COPY_AND_ASSIGN(FrontendWebContentsObserver);
@@ -257,7 +257,7 @@ void DevToolsUIBindings::FrontendWebContentsObserver::AboutToNavigateRenderView(
 }
 
 void DevToolsUIBindings::FrontendWebContentsObserver::
-    DocumentOnLoadCompletedInMainFrame(int32 page_id) {
+    DocumentOnLoadCompletedInMainFrame() {
   devtools_bindings_->DocumentOnLoadCompletedInMainFrame();
 }
 

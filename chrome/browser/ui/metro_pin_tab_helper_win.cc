@@ -419,7 +419,6 @@ void MetroPinTabHelper::DidNavigateMainFrame(
 }
 
 void MetroPinTabHelper::DidUpdateFaviconURL(
-    int32 page_id,
     const std::vector<content::FaviconURL>& candidates) {
   favicon_url_candidates_ = candidates;
 }

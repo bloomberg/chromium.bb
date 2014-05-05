@@ -62,7 +62,6 @@ class FaviconTabHelper : public content::WebContentsObserver,
   // content::WebContentsObserver override. Must be public, because also
   // called from PrerenderContents.
   virtual void DidUpdateFaviconURL(
-      int32 page_id,
       const std::vector<content::FaviconURL>& candidates) OVERRIDE;
 
   // Saves the favicon for the current page.

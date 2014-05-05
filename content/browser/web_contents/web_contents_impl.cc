@@ -2839,10 +2839,9 @@ void WebContentsImpl::OnDidDownloadImage(
 }
 
 void WebContentsImpl::OnUpdateFaviconURL(
-    int32 page_id,
     const std::vector<FaviconURL>& candidates) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidUpdateFaviconURL(page_id, candidates));
+                    DidUpdateFaviconURL(candidates));
 }
 
 void WebContentsImpl::OnMediaPlayingNotification(int64 player_cookie,
@@ -2878,9 +2877,9 @@ void WebContentsImpl::OnMediaPausedNotification(int64 player_cookie) {
 #endif  // !defined(OS_CHROMEOS)
 }
 
-void WebContentsImpl::OnFirstVisuallyNonEmptyPaint(int32 page_id) {
+void WebContentsImpl::OnFirstVisuallyNonEmptyPaint() {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidFirstVisuallyNonEmptyPaint(page_id));
+                    DidFirstVisuallyNonEmptyPaint());
 }
 
 void WebContentsImpl::DidChangeVisibleSSLState() {
@@ -3489,16 +3488,15 @@ void WebContentsImpl::DidDisownOpener(RenderFrameHost* render_frame_host) {
 }
 
 void WebContentsImpl::DocumentOnLoadCompleted(
-    RenderFrameHost* render_frame_host,
-    int32 page_id) {
+    RenderFrameHost* render_frame_host) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DocumentOnLoadCompletedInMainFrame(page_id));
+                    DocumentOnLoadCompletedInMainFrame());
 
   // TODO(avi): Remove. http://crbug.com/170921
   NotificationService::current()->Notify(
       NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       Source<WebContents>(this),
-      Details<int>(&page_id));
+      NotificationService::NoDetails());
 }
 
 void WebContentsImpl::DocumentAvailableInMainFrame(

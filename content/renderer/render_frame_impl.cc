@@ -2014,10 +2014,8 @@ void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame) {
 
 void RenderFrameImpl::didHandleOnloadEvents(blink::WebLocalFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
-  if (!frame->parent()) {
-    Send(new FrameHostMsg_DocumentOnLoadCompleted(routing_id_,
-                                                  render_view_->page_id_));
-  }
+  if (!frame->parent())
+    Send(new FrameHostMsg_DocumentOnLoadCompleted(routing_id_));
 }
 
 void RenderFrameImpl::didFailLoad(blink::WebLocalFrame* frame,
