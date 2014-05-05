@@ -55,27 +55,29 @@ const StylePropertySet* HTMLTableSectionElement::additionalPresentationAttribute
     return 0;
 }
 
+PassRefPtr<HTMLElement> HTMLTableSectionElement::insertRow(ExceptionState& exceptionState)
+{
+    // The default 'index' argument value is -1.
+    return insertRow(-1, exceptionState);
+}
+
 // these functions are rather slow, since we need to get the row at
 // the index... but they aren't used during usual HTML parsing anyway
 PassRefPtr<HTMLElement> HTMLTableSectionElement::insertRow(int index, ExceptionState& exceptionState)
 {
-    RefPtr<HTMLTableRowElement> row;
     RefPtr<HTMLCollection> children = rows();
-    int numRows = children ? (int)children->length() : 0;
+    int numRows = children ? static_cast<int>(children->length()) : 0;
     if (index < -1 || index > numRows) {
         exceptionState.throwDOMException(IndexSizeError, "The provided index (" + String::number(index) + " is outside the range [-1, " + String::number(numRows) + "].");
+        return nullptr;
+    }
+
+    RefPtr<HTMLTableRowElement> row = HTMLTableRowElement::create(document());
+    if (numRows == index || index == -1) {
+        appendChild(row, exceptionState);
     } else {
-        row = HTMLTableRowElement::create(document());
-        if (numRows == index || index == -1)
-            appendChild(row, exceptionState);
-        else {
-            Node* n;
-            if (index < 1)
-                n = firstChild();
-            else
-                n = children->item(index);
-            insertBefore(row, n, exceptionState);
-        }
+        Node* n = index ? children->item(index) : firstChild();
+        insertBefore(row, n, exceptionState);
     }
     return row.release();
 }
