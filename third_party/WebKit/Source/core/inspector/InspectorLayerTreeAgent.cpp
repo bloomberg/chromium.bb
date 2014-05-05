@@ -35,7 +35,7 @@
 
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/IdentifiersFactory.h"
-#include "core/inspector/InspectorDOMAgent.h"
+#include "core/inspector/InspectorNodeIds.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
@@ -50,10 +50,6 @@
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebLayer.h"
 #include "wtf/text/Base64.h"
-
-namespace {
-const char LayerTreeAgentObjectGroup[] = "layerTreeAgent";
-}
 
 namespace WebCore {
 
@@ -94,7 +90,7 @@ static PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::ScrollRect> > build
     return scrollRects->length() ? scrollRects.release() : nullptr;
 }
 
-static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLayer* graphicsLayer, BackendNodeId nodeId)
+static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLayer* graphicsLayer, int nodeId)
 {
     blink::WebLayer* webLayer = graphicsLayer->platformLayer();
     RefPtr<TypeBuilder::LayerTree::Layer> layerObject = TypeBuilder::LayerTree::Layer::create()
@@ -134,11 +130,10 @@ static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLay
     return layerObject;
 }
 
-InspectorLayerTreeAgent::InspectorLayerTreeAgent(InspectorDOMAgent* domAgent, Page* page)
+InspectorLayerTreeAgent::InspectorLayerTreeAgent(Page* page)
     : InspectorBaseAgent<InspectorLayerTreeAgent>("LayerTree")
     , m_frontend(0)
     , m_page(page)
-    , m_domAgent(domAgent)
 {
 }
 
@@ -179,12 +174,11 @@ void InspectorLayerTreeAgent::disable(ErrorString*)
     m_instrumentingAgents->setInspectorLayerTreeAgent(0);
     m_snapshotById.clear();
     ErrorString unused;
-    m_domAgent->releaseBackendNodeIds(&unused, LayerTreeAgentObjectGroup);
 }
 
 void InspectorLayerTreeAgent::layerTreeDidChange()
 {
-    m_frontend->layerTreeDidChange(buildLayerTree(LayerTreeAgentObjectGroup));
+    m_frontend->layerTreeDidChange(buildLayerTree());
 }
 
 void InspectorLayerTreeAgent::didPaint(RenderObject*, const GraphicsLayer* graphicsLayer, GraphicsContext*, const LayoutRect& rect)
@@ -201,7 +195,7 @@ void InspectorLayerTreeAgent::didPaint(RenderObject*, const GraphicsLayer* graph
     m_frontend->layerPainted(idForLayer(graphicsLayer), domRect.release());
 }
 
-PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > InspectorLayerTreeAgent::buildLayerTree(const String& nodeGroup)
+PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > InspectorLayerTreeAgent::buildLayerTree()
 {
     RenderLayerCompositor* compositor = renderLayerCompositor();
     if (!compositor || !compositor->inCompositingMode())
@@ -209,27 +203,27 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > InspectorLayerTre
 
     LayerIdToNodeIdMap layerIdToNodeIdMap;
     RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > layers = TypeBuilder::Array<TypeBuilder::LayerTree::Layer>::create();
-    buildLayerIdToNodeIdMap(compositor->rootRenderLayer(), nodeGroup, layerIdToNodeIdMap);
+    buildLayerIdToNodeIdMap(compositor->rootRenderLayer(), layerIdToNodeIdMap);
     gatherGraphicsLayers(compositor->rootGraphicsLayer(), layerIdToNodeIdMap, layers);
     return layers.release();
 }
 
-void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(RenderLayer* root, const String& nodeGroup, LayerIdToNodeIdMap& layerIdToNodeIdMap)
+void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(RenderLayer* root, LayerIdToNodeIdMap& layerIdToNodeIdMap)
 {
     if (root->hasCompositedLayerMapping()) {
         if (Node* node = root->renderer()->generatingNode()) {
             GraphicsLayer* graphicsLayer = root->compositedLayerMapping()->childForSuperlayers();
-            layerIdToNodeIdMap.set(graphicsLayer->platformLayer()->id(), idForNode(node, nodeGroup));
+            layerIdToNodeIdMap.set(graphicsLayer->platformLayer()->id(), idForNode(node));
         }
     }
     for (RenderLayer* child = root->firstChild(); child; child = child->nextSibling())
-        buildLayerIdToNodeIdMap(child, nodeGroup, layerIdToNodeIdMap);
+        buildLayerIdToNodeIdMap(child, layerIdToNodeIdMap);
     if (!root->renderer()->isRenderIFrame())
         return;
     FrameView* childFrameView = toFrameView(toRenderWidget(root->renderer())->widget());
     if (RenderView* childRenderView = childFrameView->renderView()) {
         if (RenderLayerCompositor* childCompositor = childRenderView->compositor())
-            buildLayerIdToNodeIdMap(childCompositor->rootRenderLayer(), nodeGroup, layerIdToNodeIdMap);
+            buildLayerIdToNodeIdMap(childCompositor->rootRenderLayer(), layerIdToNodeIdMap);
     }
 }
 
@@ -245,9 +239,9 @@ void InspectorLayerTreeAgent::gatherGraphicsLayers(GraphicsLayer* root, HashMap<
         gatherGraphicsLayers(root->children()[i], layerIdToNodeIdMap, layers);
 }
 
-int InspectorLayerTreeAgent::idForNode(Node* node, const String& nodeGroup)
+int InspectorLayerTreeAgent::idForNode(Node* node)
 {
-    return m_domAgent->backendNodeIdForNode(node, nodeGroup);
+    return InspectorNodeIds::idForNode(node);
 }
 
 RenderLayerCompositor* InspectorLayerTreeAgent::renderLayerCompositor()

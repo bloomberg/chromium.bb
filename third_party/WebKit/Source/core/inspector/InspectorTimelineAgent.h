@@ -65,7 +65,6 @@ class FrameHost;
 class GraphicsContext;
 class GraphicsLayer;
 class InspectorClient;
-class InspectorDOMAgent;
 class InspectorFrontend;
 class InspectorOverlay;
 class InspectorPageAgent;
@@ -115,10 +114,10 @@ public:
         uint64_t limitGPUMemoryBytes;
     };
 
-    static PassOwnPtr<InspectorTimelineAgent> create(InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent, InspectorLayerTreeAgent* layerTreeAgent,
+    static PassOwnPtr<InspectorTimelineAgent> create(InspectorPageAgent* pageAgent, InspectorLayerTreeAgent* layerTreeAgent,
         InspectorOverlay* overlay, InspectorType type, InspectorClient* client)
     {
-        return adoptPtr(new InspectorTimelineAgent(pageAgent, domAgent, layerTreeAgent, overlay, type, client));
+        return adoptPtr(new InspectorTimelineAgent(pageAgent, layerTreeAgent, overlay, type, client));
     }
 
     virtual ~InspectorTimelineAgent();
@@ -232,7 +231,7 @@ private:
 
     friend class TimelineRecordStack;
 
-    InspectorTimelineAgent(InspectorPageAgent*, InspectorDOMAgent*, InspectorLayerTreeAgent*, InspectorOverlay*, InspectorType, InspectorClient*);
+    InspectorTimelineAgent(InspectorPageAgent*, InspectorLayerTreeAgent*, InspectorOverlay*, InspectorType, InspectorClient*);
 
     // Trace event handlers
     void onBeginImplSideFrame(const TraceEventDispatcher::TraceEvent&);
@@ -277,7 +276,6 @@ private:
     void localToPageQuad(const RenderObject& renderer, const LayoutRect&, FloatQuad*);
     long long nodeId(Node*);
     long long nodeId(RenderObject*);
-    void releaseNodeIds();
 
     double timestamp();
 
@@ -289,7 +287,6 @@ private:
     void setLiveEvents(const String&);
 
     InspectorPageAgent* m_pageAgent;
-    InspectorDOMAgent* m_domAgent;
     InspectorLayerTreeAgent* m_layerTreeAgent;
     InspectorFrontend::Timeline* m_frontend;
     InspectorClient* m_client;

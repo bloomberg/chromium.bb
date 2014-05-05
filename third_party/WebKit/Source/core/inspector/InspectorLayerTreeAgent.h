@@ -43,7 +43,6 @@
 namespace WebCore {
 
 class GraphicsContextSnapshot;
-class InspectorDOMAgent;
 class InstrumentingAgents;
 class Page;
 class RenderLayerCompositor;
@@ -52,9 +51,9 @@ typedef String ErrorString;
 
 class InspectorLayerTreeAgent FINAL : public InspectorBaseAgent<InspectorLayerTreeAgent>, public InspectorBackendDispatcher::LayerTreeCommandHandler {
 public:
-    static PassOwnPtr<InspectorLayerTreeAgent> create(InspectorDOMAgent* domAgent, Page* page)
+    static PassOwnPtr<InspectorLayerTreeAgent> create(Page* page)
     {
-        return adoptPtr(new InspectorLayerTreeAgent(domAgent, page));
+        return adoptPtr(new InspectorLayerTreeAgent(page));
     }
     virtual ~InspectorLayerTreeAgent();
 
@@ -81,25 +80,24 @@ public:
     virtual void profileSnapshot(ErrorString*, const String& snapshotId, const int* minRepeatCount, const double* minDuration, RefPtr<TypeBuilder::Array<TypeBuilder::Array<double> > >&) OVERRIDE;
 
     // Called by other agents.
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > buildLayerTree(const String& nodeGroup);
+    PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > buildLayerTree();
 
 private:
     static unsigned s_lastSnapshotId;
 
-    InspectorLayerTreeAgent(InspectorDOMAgent*, Page*);
+    explicit InspectorLayerTreeAgent(Page*);
 
     RenderLayerCompositor* renderLayerCompositor();
     GraphicsLayer* layerById(ErrorString*, const String& layerId);
     const GraphicsContextSnapshot* snapshotById(ErrorString*, const String& snapshotId);
 
     typedef HashMap<int, int> LayerIdToNodeIdMap;
-    void buildLayerIdToNodeIdMap(RenderLayer*, const String& nodeGroup, LayerIdToNodeIdMap&);
+    void buildLayerIdToNodeIdMap(RenderLayer*, LayerIdToNodeIdMap&);
     void gatherGraphicsLayers(GraphicsLayer*, HashMap<int, int>& layerIdToNodeIdMap, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
-    int idForNode(Node*, const String& nodeGroup);
+    int idForNode(Node*);
 
     InspectorFrontend::LayerTree* m_frontend;
     Page* m_page;
-    InspectorDOMAgent* m_domAgent;
     Vector<int, 2> m_pageOverlayLayerIds;
 
     typedef HashMap<String, RefPtr<GraphicsContextSnapshot> > SnapshotById;

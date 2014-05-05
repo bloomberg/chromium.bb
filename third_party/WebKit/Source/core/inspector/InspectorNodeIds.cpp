@@ -27,4 +27,9 @@ int InspectorNodeIds::idForNode(Node* node)
     return result;
 }
 
+Node* InspectorNodeIds::nodeForId(int id)
+{
+    return nodeIds().node(id);
+}
+
 }

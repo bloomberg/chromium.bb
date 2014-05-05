@@ -40,9 +40,9 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorCounters.h"
-#include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorLayerTreeAgent.h"
+#include "core/inspector/InspectorNodeIds.h"
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
@@ -137,10 +137,6 @@ static const char Rasterize[] = "Rasterize";
 static const char PaintSetup[] = "PaintSetup";
 
 static const char EmbedderCallback[] = "EmbedderCallback";
-}
-
-namespace {
-const char BackendNodeIdGroup[] = "timeline";
 }
 
 using TypeBuilder::Timeline::TimelineEvent;
@@ -276,7 +272,6 @@ void InspectorTimelineAgent::clearFrontend()
     RefPtr<TypeBuilder::Array<TimelineEvent> > events;
     stop(&error, events);
     disable(&error);
-    releaseNodeIds();
     m_frontend = 0;
 }
 
@@ -318,7 +313,6 @@ void InspectorTimelineAgent::start(ErrorString* errorString, const int* maxCallS
         return;
     }
 
-    releaseNodeIds();
     if (maxCallStackDepth && *maxCallStackDepth >= 0)
         m_maxCallStackDepth = *maxCallStackDepth;
     else
@@ -513,7 +507,7 @@ void InspectorTimelineAgent::didLayout(RenderObject* root)
 void InspectorTimelineAgent::layerTreeDidChange()
 {
     ASSERT(!m_pendingLayerTreeData);
-    m_pendingLayerTreeData = m_layerTreeAgent->buildLayerTree(BackendNodeIdGroup);
+    m_pendingLayerTreeData = m_layerTreeAgent->buildLayerTree();
 }
 
 void InspectorTimelineAgent::willUpdateLayerTree()
@@ -1152,11 +1146,10 @@ void InspectorTimelineAgent::unwindRecordStack()
     }
 }
 
-InspectorTimelineAgent::InspectorTimelineAgent(InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent, InspectorLayerTreeAgent* layerTreeAgent,
+InspectorTimelineAgent::InspectorTimelineAgent(InspectorPageAgent* pageAgent, InspectorLayerTreeAgent* layerTreeAgent,
     InspectorOverlay* overlay, InspectorType type, InspectorClient* client)
     : InspectorBaseAgent<InspectorTimelineAgent>("Timeline")
     , m_pageAgent(pageAgent)
-    , m_domAgent(domAgent)
     , m_layerTreeAgent(layerTreeAgent)
     , m_frontend(0)
     , m_client(client)
@@ -1243,19 +1236,12 @@ void InspectorTimelineAgent::localToPageQuad(const RenderObject& renderer, const
 
 long long InspectorTimelineAgent::nodeId(Node* node)
 {
-    return m_domAgent && node ? m_domAgent->backendNodeIdForNode(node, BackendNodeIdGroup) : 0;
+    return node ? InspectorNodeIds::idForNode(node)  : 0;
 }
 
 long long InspectorTimelineAgent::nodeId(RenderObject* renderer)
 {
-    return nodeId(renderer->generatingNode());
-}
-
-void InspectorTimelineAgent::releaseNodeIds()
-{
-    ErrorString unused;
-    if (m_domAgent)
-        m_domAgent->releaseBackendNodeIds(&unused, BackendNodeIdGroup);
+    return InspectorNodeIds::idForNode(renderer->generatingNode());
 }
 
 double InspectorTimelineAgent::timestamp()

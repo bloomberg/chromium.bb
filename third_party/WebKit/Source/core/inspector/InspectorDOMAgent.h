@@ -68,7 +68,6 @@ class ShadowRoot;
 struct HighlightConfig;
 
 typedef String ErrorString;
-typedef int BackendNodeId;
 
 
 struct EventListenerInfo {
@@ -135,7 +134,6 @@ public:
     virtual void requestNode(ErrorString*, const String& objectId, int* nodeId) OVERRIDE;
     virtual void pushNodeByPathToFrontend(ErrorString*, const String& path, int* nodeId) OVERRIDE;
     virtual void pushNodesByBackendIdsToFrontend(ErrorString*, const RefPtr<JSONArray>& nodeIds, RefPtr<TypeBuilder::Array<int> >&) OVERRIDE;
-    virtual void releaseBackendNodeIds(ErrorString*, const String& nodeGroup) OVERRIDE;
     virtual void hideHighlight(ErrorString*) OVERRIDE;
     virtual void highlightRect(ErrorString*, int x, int y, int width, int height, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor) OVERRIDE;
     virtual void highlightQuad(ErrorString*, const RefPtr<JSONArray>& quad, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor) OVERRIDE;
@@ -178,7 +176,6 @@ public:
     Node* nodeForId(int nodeId);
     int boundNodeId(Node*);
     void setDOMListener(DOMListener*);
-    BackendNodeId backendNodeIdForNode(Node*, const String& nodeGroup);
 
     static String documentURLString(Document*);
 
@@ -238,7 +235,6 @@ private:
 
     Node* nodeForPath(const String& path);
 
-    void discardBackendBindings();
     void discardFrontendBindings();
 
     void innerHighlightQuad(PassOwnPtr<FloatQuad>, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor);
@@ -251,18 +247,13 @@ private:
     InspectorFrontend::DOM* m_frontend;
     DOMListener* m_domListener;
     NodeToIdMap m_documentNodeToIdMap;
-    typedef HashMap<RefPtr<Node>, BackendNodeId> NodeToBackendIdMap;
-    HashMap<String, NodeToBackendIdMap> m_nodeGroupToBackendIdMap;
     // Owns node mappings for dangling nodes.
     Vector<OwnPtr<NodeToIdMap> > m_danglingNodeToIdMaps;
     HashMap<int, Node*> m_idToNode;
     HashMap<int, NodeToIdMap*> m_idToNodesMap;
     HashSet<int> m_childrenRequested;
     HashMap<int, int> m_cachedChildCount;
-    typedef HashMap<BackendNodeId, std::pair<Node*, String> > BackendIdToNodeMap;
-    BackendIdToNodeMap m_backendIdToNode;
     int m_lastNodeId;
-    BackendNodeId m_lastBackendNodeId;
     RefPtr<Document> m_document;
     typedef HashMap<String, Vector<RefPtr<Node> > > SearchResults;
     SearchResults m_searchResults;

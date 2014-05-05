@@ -98,7 +98,7 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
 {
     m_agents.append(WorkerRuntimeAgent::create(m_injectedScriptManager.get(), m_debugServer.get(), workerGlobalScope));
 
-    OwnPtr<InspectorTimelineAgent> timelineAgent = InspectorTimelineAgent::create(0, 0, 0, 0, InspectorTimelineAgent::WorkerInspector, 0);
+    OwnPtr<InspectorTimelineAgent> timelineAgent = InspectorTimelineAgent::create(0, 0, 0, InspectorTimelineAgent::WorkerInspector, 0);
     m_agents.append(WorkerDebuggerAgent::create(m_debugServer.get(), workerGlobalScope, m_injectedScriptManager.get()));
 
     m_agents.append(InspectorProfilerAgent::create(m_injectedScriptManager.get(), 0));

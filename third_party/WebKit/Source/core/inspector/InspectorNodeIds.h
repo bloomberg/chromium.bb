@@ -12,6 +12,7 @@ class Node;
 class InspectorNodeIds {
 public:
     static int idForNode(Node*);
+    static Node* nodeForId(int);
 };
 
 } // namespace WebCore
