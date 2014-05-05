@@ -122,7 +122,7 @@ deps = {
     "/trunk/src@331",
 
   "src/third_party/leveldatabase/src":
-    (Var("googlecode_url") % "leveldb") + "/trunk@79",
+    (Var("googlecode_url") % "leveldb") + "/trunk@80",
 
   "src/third_party/libc++/trunk":
     Var("llvm_url") + "/libcxx/trunk@" + Var("libcxx_revision"),
