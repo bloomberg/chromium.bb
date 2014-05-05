@@ -37,8 +37,8 @@
 
 #if ENABLE(SVG_FONTS)
 #include "SVGNames.h"
+#include "core/dom/XMLDocument.h"
 #include "core/html/HTMLCollection.h"
-#include "core/svg/SVGDocument.h"
 #include "core/svg/SVGFontElement.h"
 #endif
 
@@ -113,7 +113,7 @@ bool FontResource::ensureSVGFontData()
 {
     if (!m_externalSVGDocument && !errorOccurred() && !isLoading()) {
         if (m_data) {
-            m_externalSVGDocument = SVGDocument::create();
+            m_externalSVGDocument = XMLDocument::createSVG();
 
             OwnPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("application/xml");
             String svgSource = decoder->decode(m_data->data(), m_data->size());

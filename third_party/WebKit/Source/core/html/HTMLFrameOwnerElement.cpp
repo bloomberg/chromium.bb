@@ -32,7 +32,6 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
-#include "core/svg/SVGDocument.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 
@@ -170,11 +169,11 @@ bool HTMLFrameOwnerElement::isKeyboardFocusable() const
     return m_contentFrame && HTMLElement::isKeyboardFocusable();
 }
 
-SVGDocument* HTMLFrameOwnerElement::getSVGDocument(ExceptionState& exceptionState) const
+Document* HTMLFrameOwnerElement::getSVGDocument(ExceptionState& exceptionState) const
 {
     Document* doc = contentDocument();
     if (doc && doc->isSVGDocument())
-        return toSVGDocument(doc);
+        return doc;
     return 0;
 }
 

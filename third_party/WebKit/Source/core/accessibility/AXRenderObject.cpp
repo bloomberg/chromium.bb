@@ -65,7 +65,7 @@
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
-#include "core/svg/SVGDocument.h"
+#include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/text/PlatformLocale.h"
@@ -2024,7 +2024,7 @@ AXSVGRoot* AXRenderObject::remoteSVGRootElement() const
     if (!doc || !doc->isSVGDocument())
         return 0;
 
-    SVGSVGElement* rootElement = toSVGDocument(doc)->rootElement();
+    SVGSVGElement* rootElement = doc->accessSVGExtensions().rootElement();
     if (!rootElement)
         return 0;
     RenderObject* rendererRoot = rootElement->renderer();

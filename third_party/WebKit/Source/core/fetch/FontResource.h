@@ -35,9 +35,9 @@
 
 namespace WebCore {
 
+class Document;
 class ResourceFetcher;
 class FontPlatformData;
-class SVGDocument;
 class SVGFontElement;
 class FontCustomPlatformData;
 
@@ -82,7 +82,7 @@ private:
     Timer<FontResource> m_fontLoadWaitLimitTimer;
 
 #if ENABLE(SVG_FONTS)
-    RefPtr<WebCore::SVGDocument> m_externalSVGDocument;
+    RefPtr<WebCore::Document> m_externalSVGDocument;
 #endif
 
     friend class MemoryCache;

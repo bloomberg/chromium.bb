@@ -21,6 +21,7 @@
 #ifndef SVGDocumentExtensions_h
 #define SVGDocumentExtensions_h
 
+#include "platform/geometry/FloatPoint.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -85,6 +86,14 @@ public:
     void removePendingSVGFontFaceElementsForRemoval();
 #endif
 
+    bool zoomAndPanEnabled() const;
+
+    void startPan(const FloatPoint& start);
+    void updatePan(const FloatPoint& pos) const;
+
+    static SVGSVGElement* rootElement(const Document&);
+    SVGSVGElement* rootElement() const;
+
 private:
     Document* m_document; // weak reference
     HashSet<SVGSVGElement*> m_timeContainers; // For SVG 1.2 support this will need to be made more general.
@@ -99,6 +108,7 @@ private:
     HashMap<SVGElement*, OwnPtr<HashSet<SVGElement*> > > m_elementDependencies;
     OwnPtr<SVGResourcesCache> m_resourcesCache;
     HashSet<SVGSVGElement*> m_relativeLengthSVGRoots; // Root SVG elements with relative length descendants.
+    FloatPoint m_translate;
 #if !ASSERT_DISABLED
     bool m_inRelativeLengthSVGRootsInvalidation;
 #endif

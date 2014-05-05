@@ -22,7 +22,6 @@
 #define HTMLFrameOwnerElement_h
 
 #include "core/html/HTMLElement.h"
-#include "core/svg/SVGDocument.h"
 #include "wtf/HashCountedSet.h"
 
 namespace WebCore {
@@ -51,7 +50,7 @@ public:
     // RenderObject when using fallback content.
     RenderPart* renderPart() const;
 
-    SVGDocument* getSVGDocument(ExceptionState&) const;
+    Document* getSVGDocument(ExceptionState&) const;
 
     virtual ScrollbarMode scrollingMode() const { return ScrollbarAuto; }
 

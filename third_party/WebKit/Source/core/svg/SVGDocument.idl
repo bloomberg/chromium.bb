@@ -19,7 +19,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-partial interface Document {
+[
+    ImplementedAs=SVGDocumentExtensions
+] partial interface Document {
     [MeasureAs=SVGDocumentRootElement] readonly attribute SVGSVGElement        rootElement;
 };
 

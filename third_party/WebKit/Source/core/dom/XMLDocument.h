@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-class XMLDocument : public Document {
+class XMLDocument FINAL : public Document {
 public:
     static PassRefPtr<XMLDocument> create(const DocumentInit& initializer = DocumentInit())
     {
@@ -41,6 +41,11 @@ public:
     static PassRefPtr<XMLDocument> createXHTML(const DocumentInit& initializer = DocumentInit())
     {
         return adoptRef(new XMLDocument(initializer, XMLDocumentClass | XHTMLDocumentClass));
+    }
+
+    static PassRefPtr<XMLDocument> createSVG(const DocumentInit& initializer = DocumentInit())
+    {
+        return adoptRef(new XMLDocument(initializer, XMLDocumentClass | SVGDocumentClass));
     }
 
 protected:

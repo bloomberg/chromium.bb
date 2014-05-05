@@ -2961,8 +2961,6 @@
             'svg/SVGDescElement.h',
             'svg/SVGDiscardElement.cpp',
             'svg/SVGDiscardElement.h',
-            'svg/SVGDocument.cpp',
-            'svg/SVGDocument.h',
             'svg/SVGDocumentExtensions.cpp',
             'svg/SVGElement.cpp',
             'svg/SVGElementInstance.cpp',

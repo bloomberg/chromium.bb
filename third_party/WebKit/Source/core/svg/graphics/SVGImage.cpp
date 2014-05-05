@@ -39,7 +39,7 @@
 #include "core/page/Chrome.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
-#include "core/svg/SVGDocument.h"
+#include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGFEImageElement.h"
 #include "core/svg/SVGImageElement.h"
 #include "core/svg/SVGSVGElement.h"
@@ -92,7 +92,7 @@ bool SVGImage::currentFrameHasSingleSecurityOrigin() const
 
     RELEASE_ASSERT(frame->document()->loadEventFinished());
 
-    SVGSVGElement* rootElement = toSVGDocument(frame->document())->rootElement();
+    SVGSVGElement* rootElement = frame->document()->accessSVGExtensions().rootElement();
     if (!rootElement)
         return true;
 
@@ -122,7 +122,7 @@ static SVGSVGElement* svgRootElement(Page* page)
     if (!page)
         return 0;
     LocalFrame* frame = page->mainFrame();
-    return toSVGDocument(frame->document())->rootElement();
+    return frame->document()->accessSVGExtensions().rootElement();
 }
 
 void SVGImage::setContainerSize(const IntSize& size)

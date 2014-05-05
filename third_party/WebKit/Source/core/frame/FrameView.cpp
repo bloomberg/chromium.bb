@@ -70,7 +70,7 @@
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
-#include "core/svg/SVGDocument.h"
+#include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
 #include "platform/TraceEvent.h"
 #include "platform/fonts/FontCache.h"
@@ -1535,7 +1535,7 @@ bool FrameView::scrollToAnchor(const String& name)
     m_frame->document()->setCSSTarget(anchorNode);
 
     if (m_frame->document()->isSVGDocument()) {
-        if (SVGSVGElement* svg = toSVGDocument(m_frame->document())->rootElement()) {
+        if (SVGSVGElement* svg = SVGDocumentExtensions::rootElement(*m_frame->document())) {
             svg->setupInitialView(name, anchorNode);
             if (!anchorNode)
                 return true;

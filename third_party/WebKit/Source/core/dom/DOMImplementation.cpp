@@ -49,7 +49,6 @@
 #include "core/html/TextDocument.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Page.h"
-#include "core/svg/SVGDocument.h"
 #include "platform/ContentType.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/graphics/Image.h"
@@ -204,9 +203,7 @@ PassRefPtr<XMLDocument> DOMImplementation::createDocument(const AtomicString& na
     RefPtr<XMLDocument> doc;
     DocumentInit init = DocumentInit::fromContext(m_document.contextDocument());
     if (namespaceURI == SVGNames::svgNamespaceURI) {
-        // FIXME: This should be an XMLDocument as per DOM4 but we need to get rid of SVGDocument first.
-        // SVGDocument no longer exists in SVG2.
-        doc = SVGDocument::create(init);
+        doc = XMLDocument::createSVG(init);
     } else if (namespaceURI == HTMLNames::xhtmlNamespaceURI) {
         doc = XMLDocument::createXHTML(init.withRegistrationContext(m_document.registrationContext()));
     } else {
@@ -374,7 +371,7 @@ PassRefPtr<Document> DOMImplementation::createDocument(const String& type, const
     if (isTextMIMEType(type))
         return TextDocument::create(init);
     if (type == "image/svg+xml")
-        return SVGDocument::create(init);
+        return XMLDocument::createSVG(init);
     if (isXMLMIMEType(type))
         return XMLDocument::create(init);
 
