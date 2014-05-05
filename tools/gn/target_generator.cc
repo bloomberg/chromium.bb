@@ -117,8 +117,16 @@ void TargetGenerator::GenerateTarget(Scope* scope,
                "I am very confused.");
   }
 
-  if (!err->has_error())
-    scope->settings()->build_settings()->ItemDefined(target.PassAs<Item>());
+  if (err->has_error())
+    return;
+
+  // Save this target for the file.
+  Scope::ItemVector* collector = scope->GetItemCollector();
+  if (!collector) {
+    *err = Err(function_call, "Can't define a target in this context.");
+    return;
+  }
+  collector->push_back(new scoped_ptr<Item>(target.PassAs<Item>()));
 }
 
 const BuildSettings* TargetGenerator::GetBuildSettings() const {

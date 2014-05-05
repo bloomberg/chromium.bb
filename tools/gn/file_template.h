@@ -14,6 +14,7 @@
 
 struct EscapeOptions;
 class ParseNode;
+class SourceFile;
 class Target;
 
 extern const char kSourceExpansion_Help[];
@@ -61,6 +62,8 @@ class FileTemplate {
   // set. In this case you should not use this object.
   FileTemplate(const Value& t, Err* err);
   FileTemplate(const std::vector<std::string>& t);
+  FileTemplate(const std::vector<SourceFile>& t);
+
   ~FileTemplate();
 
   // Returns an output template representing the given target's script
@@ -80,6 +83,9 @@ class FileTemplate {
              const ParseNode* origin,
              std::vector<Value>* dest,
              Err* err) const;
+
+  // Low-level version of Apply that handles one source file. The results
+  // will be *appended* to the output.
   void ApplyString(const std::string& input,
                    std::vector<std::string>* output) const;
 

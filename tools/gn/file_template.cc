@@ -91,6 +91,13 @@ FileTemplate::FileTemplate(const std::vector<std::string>& t)
     ParseOneTemplateString(t[i]);
 }
 
+FileTemplate::FileTemplate(const std::vector<SourceFile>& t)
+    : has_substitutions_(false) {
+  std::fill(types_required_, &types_required_[Subrange::NUM_TYPES], false);
+  for (size_t i = 0; i < t.size(); i++)
+    ParseOneTemplateString(t[i].value());
+}
+
 FileTemplate::~FileTemplate() {
 }
 
@@ -121,6 +128,7 @@ void FileTemplate::Apply(const Value& sources,
 
   const std::vector<Value>& sources_list = sources.list_value();
   for (size_t i = 0; i < sources_list.size(); i++) {
+    string_output.clear();
     if (!sources_list[i].VerifyTypeIs(Value::STRING, err))
       return;
 
@@ -140,17 +148,18 @@ void FileTemplate::ApplyString(const std::string& str,
       subst[i] = GetSubstitution(str, static_cast<Subrange::Type>(i));
   }
 
-  output->resize(templates_.container().size());
+  size_t first_output_index = output->size();
+  output->resize(output->size() + templates_.container().size());
   for (size_t template_i = 0;
        template_i < templates_.container().size(); template_i++) {
     const Template& t = templates_[template_i];
-    (*output)[template_i].clear();
+    std::string& cur_output = (*output)[first_output_index + template_i];
     for (size_t subrange_i = 0; subrange_i < t.container().size();
          subrange_i++) {
       if (t[subrange_i].type == Subrange::LITERAL)
-        (*output)[template_i].append(t[subrange_i].literal);
+        cur_output.append(t[subrange_i].literal);
       else
-        (*output)[template_i].append(subst[t[subrange_i].type]);
+        cur_output.append(subst[t[subrange_i].type]);
     }
   }
 }

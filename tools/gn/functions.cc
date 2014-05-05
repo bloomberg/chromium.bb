@@ -243,8 +243,14 @@ Value RunConfig(const FunctionCallNode* function,
   if (err->has_error())
     return Value();
 
-  // Mark as complete.
-  scope->settings()->build_settings()->ItemDefined(config.PassAs<Item>());
+  // Save the generated item.
+  Scope::ItemVector* collector = scope->GetItemCollector();
+  if (!collector) {
+    *err = Err(function, "Can't define a config in this context.");
+    return Value();
+  }
+  collector->push_back(new scoped_ptr<Item>(config.PassAs<Item>()));
+
   return Value();
 }
 
@@ -646,6 +652,7 @@ struct FunctionInfoInitializer {
     INSERT_FUNCTION(Defined, false)
     INSERT_FUNCTION(ExecScript, false)
     INSERT_FUNCTION(GetEnv, false)
+    INSERT_FUNCTION(GetTargetOutputs, false)
     INSERT_FUNCTION(Import, false)
     INSERT_FUNCTION(Print, false)
     INSERT_FUNCTION(ProcessFileTemplate, false)

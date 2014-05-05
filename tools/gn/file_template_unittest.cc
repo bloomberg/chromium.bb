@@ -19,6 +19,7 @@ TEST(FileTemplate, Static) {
   ASSERT_EQ(1u, result.size());
   EXPECT_EQ("something_static", result[0]);
 
+  result.clear();
   t.ApplyString("lalala", &result);
   ASSERT_EQ(1u, result.size());
   EXPECT_EQ("something_static", result[0]);

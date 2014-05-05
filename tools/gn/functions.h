@@ -147,6 +147,14 @@ Value RunGetEnv(Scope* scope,
                 const std::vector<Value>& args,
                 Err* err);
 
+extern const char kGetTargetOutputs[];
+extern const char kGetTargetOutputs_HelpShort[];
+extern const char kGetTargetOutputs_Help[];
+Value RunGetTargetOutputs(Scope* scope,
+                          const FunctionCallNode* function,
+                          const std::vector<Value>& args,
+                          Err* err);
+
 extern const char kGroup[];
 extern const char kGroup_HelpShort[];
 extern const char kGroup_Help[];

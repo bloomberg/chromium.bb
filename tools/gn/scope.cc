@@ -22,21 +22,24 @@ Scope::Scope(const Settings* settings)
     : const_containing_(NULL),
       mutable_containing_(NULL),
       settings_(settings),
-      mode_flags_(0) {
+      mode_flags_(0),
+      item_collector_(NULL) {
 }
 
 Scope::Scope(Scope* parent)
     : const_containing_(NULL),
       mutable_containing_(parent),
       settings_(parent->settings()),
-      mode_flags_(0) {
+      mode_flags_(0),
+      item_collector_(NULL) {
 }
 
 Scope::Scope(const Scope* parent)
     : const_containing_(parent),
       mutable_containing_(NULL),
       settings_(parent->settings()),
-      mode_flags_(0) {
+      mode_flags_(0),
+      item_collector_(NULL) {
 }
 
 Scope::~Scope() {
@@ -388,6 +391,14 @@ const SourceDir& Scope::GetSourceDir() const {
   if (containing())
     return containing()->GetSourceDir();
   return source_dir_;
+}
+
+Scope::ItemVector* Scope::GetItemCollector() {
+  if (item_collector_)
+    return item_collector_;
+  if (mutable_containing())
+    return mutable_containing()->GetItemCollector();
+  return NULL;
 }
 
 void Scope::SetProperty(const void* key, void* value) {

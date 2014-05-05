@@ -62,6 +62,9 @@ Value Template::Invoke(Scope* scope,
 
   ScopePerFileProvider per_file_provider(&template_scope, true);
 
+  // Targets defined in the template go in the collector for the invoking file.
+  template_scope.set_item_collector(scope->GetItemCollector());
+
   // We jump through some hoops to avoid copying the invocation scope when
   // setting it in the template scope (since the invocation scope may have
   // large lists of source files in it and could be expensive to copy).

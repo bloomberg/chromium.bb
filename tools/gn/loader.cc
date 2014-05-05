@@ -247,6 +247,10 @@ void LoaderImpl::BackgroundLoadFile(const Settings* settings,
   ScopePerFileProvider per_file_provider(&our_scope, true);
   our_scope.set_source_dir(file_name.GetDir());
 
+  // Targets, etc. generated as part of running this file will end up here.
+  Scope::ItemVector collected_items;
+  our_scope.set_item_collector(&collected_items);
+
   ScopedTrace trace(TraceItem::TRACE_FILE_EXECUTE, file_name.value());
   trace.SetToolchain(settings->toolchain_label());
 
@@ -254,6 +258,10 @@ void LoaderImpl::BackgroundLoadFile(const Settings* settings,
   root->Execute(&our_scope, &err);
   if (err.has_error())
     g_scheduler->FailWithError(err);
+
+  // Pass all of the items that were defined off to the builder.
+  for (size_t i = 0; i < collected_items.size(); i++)
+    settings->build_settings()->ItemDefined(collected_items[i]->Pass());
 
   trace.Done();
 

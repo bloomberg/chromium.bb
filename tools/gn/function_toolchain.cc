@@ -119,7 +119,13 @@ Value RunToolchain(Scope* scope,
   if (!block_scope.CheckForUnusedVars(err))
     return Value();
 
-  scope->settings()->build_settings()->ItemDefined(toolchain.PassAs<Item>());
+  // Save this target for the file.
+  Scope::ItemVector* collector = scope->GetItemCollector();
+  if (!collector) {
+    *err = Err(function, "Can't define a toolchain in this context.");
+    return Value();
+  }
+  collector->push_back(new scoped_ptr<Item>(toolchain.PassAs<Item>()));
   return Value();
 }
 

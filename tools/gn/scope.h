@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "tools/gn/err.h"
 #include "tools/gn/pattern.h"
 #include "tools/gn/source_dir.h"
@@ -18,6 +19,7 @@
 
 class FunctionCallNode;
 class ImportManager;
+class Item;
 class ParseNode;
 class Settings;
 class TargetManager;
@@ -37,6 +39,9 @@ class Template;
 class Scope {
  public:
   typedef base::hash_map<base::StringPiece, Value> KeyValueMap;
+  // Holds an owning list of scoped_ptrs of Items (since we can't make a vector
+  // of scoped_ptrs).
+  typedef ScopedVector< scoped_ptr<Item> > ItemVector;
 
   // Allows code to provide values for built-in variables. This class will
   // automatically register itself on construction and deregister itself on
@@ -224,6 +229,26 @@ class Scope {
   const SourceDir& GetSourceDir() const;
   void set_source_dir(const SourceDir& d) { source_dir_ = d; }
 
+  // The item collector is where Items (Targets, Configs, etc.) go that have
+  // been defined. If a scope can generate items, this non-owning pointer will
+  // point to the storage for such items. The creator of this scope will be
+  // responsible for setting up the collector and then dealing with the
+  // collected items once execution of the context is complete.
+  //
+  // The items in a scope are collected as we go and then dispatched at the end
+  // of execution of a scope so that we can query the previously-generated
+  // targets (like getting the outputs).
+  //
+  // This can be null if the current scope can not generate items (like for
+  // imports and such).
+  //
+  // When retrieving the collector, the non-const scopes are recursively
+  // queried. The collector is not copied for closures, etc.
+  void set_item_collector(ItemVector* collector) {
+    item_collector_ = collector;
+  }
+  ItemVector* GetItemCollector();
+
   // Properties are opaque pointers that code can use to set state on a Scope
   // that it can retrieve later.
   //
@@ -282,6 +307,8 @@ class Scope {
   // Owning pointers, must be deleted.
   typedef std::map<std::string, const Template*> TemplateMap;
   TemplateMap templates_;
+
+  ItemVector* item_collector_;
 
   // Opaque pointers. See SetProperty() above.
   typedef std::map<const void*, void*> PropertyMap;
