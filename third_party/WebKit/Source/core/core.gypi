@@ -1653,6 +1653,8 @@
             'rendering/compositing/CompositedLayerMapping.cpp',
             'rendering/compositing/CompositedLayerMapping.h',
             'rendering/compositing/CompositedLayerMappingPtr.h',
+            'rendering/compositing/CompositingLayerAssigner.cpp',
+            'rendering/compositing/CompositingLayerAssigner.h',
             'rendering/compositing/CompositingPropertyUpdater.cpp',
             'rendering/compositing/CompositingPropertyUpdater.h',
             'rendering/compositing/CompositingReasonFinder.cpp',
