@@ -1,13 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/usb/usb_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser.h"
 #include "components/usb_service/usb_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/api/usb/usb_api.h"
 #include "net/base/io_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -35,7 +35,7 @@ ACTION_TEMPLATE(InvokeUsbTransferCallback,
 // standards-noncompliant behaviour of their compiler.
 #if defined(OS_WIN)
 #pragma warning(push)
-#pragma warning(disable:4373)
+#pragma warning(disable : 4373)
 #endif
 
 class MockUsbDeviceHandle : public UsbDeviceHandle {
@@ -44,24 +44,43 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
 
   MOCK_METHOD0(Close, void());
 
-  MOCK_METHOD10(ControlTransfer, void(const UsbEndpointDirection direction,
-      const TransferRequestType request_type, const TransferRecipient recipient,
-      const uint8 request, const uint16 value, const uint16 index,
-      net::IOBuffer* buffer, const size_t length, const unsigned int timeout,
-      const UsbTransferCallback& callback));
+  MOCK_METHOD10(ControlTransfer,
+                void(const UsbEndpointDirection direction,
+                     const TransferRequestType request_type,
+                     const TransferRecipient recipient,
+                     const uint8 request,
+                     const uint16 value,
+                     const uint16 index,
+                     net::IOBuffer* buffer,
+                     const size_t length,
+                     const unsigned int timeout,
+                     const UsbTransferCallback& callback));
 
-  MOCK_METHOD6(BulkTransfer, void(const UsbEndpointDirection direction,
-      const uint8 endpoint, net::IOBuffer* buffer, const size_t length,
-      const unsigned int timeout, const UsbTransferCallback& callback));
+  MOCK_METHOD6(BulkTransfer,
+               void(const UsbEndpointDirection direction,
+                    const uint8 endpoint,
+                    net::IOBuffer* buffer,
+                    const size_t length,
+                    const unsigned int timeout,
+                    const UsbTransferCallback& callback));
 
-  MOCK_METHOD6(InterruptTransfer, void(const UsbEndpointDirection direction,
-      const uint8 endpoint, net::IOBuffer* buffer, const size_t length,
-      const unsigned int timeout, const UsbTransferCallback& callback));
+  MOCK_METHOD6(InterruptTransfer,
+               void(const UsbEndpointDirection direction,
+                    const uint8 endpoint,
+                    net::IOBuffer* buffer,
+                    const size_t length,
+                    const unsigned int timeout,
+                    const UsbTransferCallback& callback));
 
-  MOCK_METHOD8(IsochronousTransfer, void(const UsbEndpointDirection direction,
-      const uint8 endpoint, net::IOBuffer* buffer, const size_t length,
-      const unsigned int packets, const unsigned int packet_length,
-      const unsigned int timeout, const UsbTransferCallback& callback));
+  MOCK_METHOD8(IsochronousTransfer,
+               void(const UsbEndpointDirection direction,
+                    const uint8 endpoint,
+                    net::IOBuffer* buffer,
+                    const size_t length,
+                    const unsigned int packets,
+                    const unsigned int packet_length,
+                    const unsigned int timeout,
+                    const UsbTransferCallback& callback));
 
   MOCK_METHOD0(ResetDevice, bool());
 
@@ -82,8 +101,7 @@ class MockUsbConfigDescriptor : public UsbConfigDescriptor {
 class MockUsbDevice : public UsbDevice {
  public:
   explicit MockUsbDevice(MockUsbDeviceHandle* mock_handle)
-     : UsbDevice(),
-       mock_handle_(mock_handle) {
+      : UsbDevice(), mock_handle_(mock_handle) {
     mock_handle->set_device(this);
   }
 
@@ -205,7 +223,13 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferEvent) {
               ControlTransfer(usb_service::USB_DIRECTION_OUTBOUND,
                               UsbDeviceHandle::STANDARD,
                               UsbDeviceHandle::DEVICE,
-                              1, 2, 3, _, 1, _, _))
+                              1,
+                              2,
+                              3,
+                              _,
+                              1,
+                              _,
+                              _))
       .WillOnce(
           InvokeUsbTransferCallback<9>(usb_service::USB_TRANSFER_COMPLETED));
   EXPECT_CALL(*mock_device_handle_.get(),

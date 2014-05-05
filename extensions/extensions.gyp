@@ -221,6 +221,7 @@
       'type': 'static_library',
       'dependencies': [
         '../components/components.gyp:keyed_service_content',
+        '../components/components.gyp:usb_service',
         '../content/content.gyp:content_browser',
         '../skia/skia.gyp:skia',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
@@ -292,6 +293,10 @@
         'browser/api/storage/weak_unlimited_settings_storage.h',
         'browser/api/test/test_api.cc',
         'browser/api/test/test_api.h',
+        'browser/api/usb/usb_api.cc',
+        'browser/api/usb/usb_api.h',
+        'browser/api/usb/usb_device_resource.cc',
+        'browser/api/usb/usb_device_resource.h',
         'browser/api_activity_monitor.h',
         'browser/app_sorting.h',
         'browser/blacklist_state.h',
@@ -404,6 +409,9 @@
           'sources!': [
             'browser/browser_context_keyed_service_factories.cc',
             'browser/browser_context_keyed_service_factories.h',
+          ],
+          'dependencies!': [
+            '../components/components.gyp:usb_service',
           ],
         }],
       ],

@@ -732,10 +732,6 @@
     "extension_types": ["extension"],
     "location": "component"
   },
-  "usb": {
-    "dependencies": ["permission:usb"],
-    "contexts": ["blessed_extension"]
-  },
   "virtualKeyboardPrivate": {
     "platforms": ["chromeos"],
     "dependencies": ["permission:virtualKeyboardPrivate"],

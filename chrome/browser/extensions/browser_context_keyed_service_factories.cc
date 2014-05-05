@@ -47,7 +47,6 @@
 #include "chrome/browser/extensions/api/system_info/system_info_api.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
-#include "chrome/browser/extensions/api/usb/usb_device_resource.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/api/webrtc_audio_private/webrtc_audio_private_api.h"
@@ -64,6 +63,7 @@
 #include "chrome/browser/extensions/token_cache/token_cache_service_factory.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
 #include "extensions/browser/api/api_resource_manager.h"
+#include "extensions/browser/api/usb/usb_device_resource.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api_factory.h"

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_USB_USB_DEVICE_RESOURCE_H_
-#define CHROME_BROWSER_EXTENSIONS_API_USB_USB_DEVICE_RESOURCE_H_
+#ifndef EXTENSIONS_BROWSER_API_USB_USB_DEVICE_RESOURCE_H_
+#define EXTENSIONS_BROWSER_API_USB_USB_DEVICE_RESOURCE_H_
 
 #include <set>
 #include <string>
@@ -12,11 +12,11 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "chrome/common/extensions/api/usb.h"
 #include "components/usb_service/usb_device_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
+#include "extensions/common/api/usb.h"
 
 namespace net {
 class IOBuffer;
@@ -47,4 +47,4 @@ class UsbDeviceResource : public ApiResource {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_USB_USB_DEVICE_RESOURCE_H_
+#endif  // EXTENSIONS_BROWSER_API_USB_USB_DEVICE_RESOURCE_H_

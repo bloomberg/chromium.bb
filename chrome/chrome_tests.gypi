@@ -818,6 +818,8 @@
         '../apps/app_shim/test/app_shim_host_manager_test_api_mac.cc',
         '../apps/app_shim/test/app_shim_host_manager_test_api_mac.h',
         '../apps/load_and_launch_browsertest.cc',
+        '../extensions/browser/api/usb/usb_apitest.cc',
+        '../extensions/browser/api/usb/usb_manual_apitest.cc',
         # TODO(blundell): Bring up a components_browsertests target and move
         # this test to be in that target. crbug.com/283846
         '../components/autofill/content/renderer/password_form_conversion_utils_browsertest.cc',
@@ -1091,8 +1093,6 @@
         'browser/extensions/api/terminal/terminal_private_apitest.cc',
         'browser/extensions/api/test/apitest_apitest.cc',
         'browser/extensions/api/top_sites/top_sites_apitest.cc',
-        'browser/extensions/api/usb/usb_apitest.cc',
-        'browser/extensions/api/usb/usb_manual_apitest.cc',
         'browser/extensions/api/web_navigation/web_navigation_apitest.cc',
         'browser/extensions/api/web_request/web_request_apitest.cc',
         'browser/extensions/api/webrtc_audio_private/webrtc_audio_private_browsertest.cc',

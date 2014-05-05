@@ -119,7 +119,6 @@
               'tabs.json',
               'terminal_private.json',
               'types.json',
-              'usb.idl',
               'virtual_keyboard_private.json',
               'web_navigation.json',
               'web_request.json',

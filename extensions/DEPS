@@ -26,9 +26,12 @@ specific_include_rules = {
 
     # Temporarily allowed testing includes.  See above.
     # TODO(jamescook): Remove these. http://crbug.com/162530
+    "+chrome/browser/extensions/api/permissions/permissions_api.h",
     "+chrome/browser/extensions/extension_api_unittest.h",
+    "+chrome/browser/extensions/extension_apitest.h",
     "+chrome/browser/extensions/extension_service_unittest.h",
     "+chrome/browser/extensions/test_extension_system.h",
+    "+chrome/browser/ui/browser.h",
     "+chrome/common/chrome_paths.h",
     "+chrome/common/extensions/features/feature_channel.h",
     "+chrome/common/extensions/manifest_tests/extension_manifest_test.h",

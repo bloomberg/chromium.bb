@@ -1,23 +1,23 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/usb/usb_api.h"
+#include "extensions/browser/api/usb/usb_api.h"
 
 #include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "chrome/browser/extensions/api/usb/usb_device_resource.h"
-#include "chrome/common/extensions/api/usb.h"
 #include "components/usb_service/usb_device_handle.h"
 #include "components/usb_service/usb_service.h"
+#include "extensions/browser/api/usb/usb_device_resource.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/api/usb.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
 
-namespace usb = extensions::api::usb;
+namespace usb = extensions::core_api::usb;
 namespace BulkTransfer = usb::BulkTransfer;
 namespace ClaimInterface = usb::ClaimInterface;
 namespace CloseDevice = usb::CloseDevice;
@@ -97,14 +97,13 @@ const char kErrorConvertTransferType[] = "Invalid endpoint type.";
 const char kErrorConvertUsageType[] = "Invalid usage type.";
 const char kErrorMalformedParameters[] = "Error parsing parameters.";
 const char kErrorNoDevice[] = "No such device.";
-const char kErrorPermissionDenied[] =
-    "Permission to access device was denied";
+const char kErrorPermissionDenied[] = "Permission to access device was denied";
 const char kErrorInvalidTransferLength[] =
     "Transfer length must be a positive number less than 104,857,600.";
 const char kErrorInvalidNumberOfPackets[] =
     "Number of packets must be a positive number less than 4,194,304.";
-const char kErrorInvalidPacketLength[] = "Packet length must be a "
-    "positive number less than 65,536.";
+const char kErrorInvalidPacketLength[] =
+    "Packet length must be a positive number less than 65,536.";
 const char kErrorResetDevice[] =
     "Error resetting the device. The device has been closed.";
 
@@ -148,9 +147,8 @@ bool ConvertSynchronizationTypeToApi(const UsbSynchronizationType& input,
   }
 }
 
-bool ConvertTransferTypeToApi(
-    const UsbTransferType& input,
-    usb::TransferType* output) {
+bool ConvertTransferTypeToApi(const UsbTransferType& input,
+                              usb::TransferType* output) {
   switch (input) {
     case usb_service::USB_TRANSFER_CONTROL:
       *output = usb::TRANSFER_TYPE_CONTROL;
@@ -187,8 +185,7 @@ bool ConvertUsageTypeToApi(const UsbUsageType& input, usb::UsageType* output) {
   }
 }
 
-bool ConvertDirection(const Direction& input,
-                      UsbEndpointDirection* output) {
+bool ConvertDirection(const Direction& input, UsbEndpointDirection* output) {
   switch (input) {
     case usb::DIRECTION_IN:
       *output = usb_service::USB_DIRECTION_INBOUND;
@@ -244,7 +241,7 @@ bool ConvertRecipient(const Recipient& input,
   }
 }
 
-template<class T>
+template <class T>
 bool GetTransferSize(const T& input, size_t* output) {
   if (input.direction == usb::DIRECTION_IN) {
     const int* length = input.length.get();
@@ -262,18 +259,19 @@ bool GetTransferSize(const T& input, size_t* output) {
   return false;
 }
 
-template<class T>
+template <class T>
 scoped_refptr<net::IOBuffer> CreateBufferForTransfer(
-    const T& input, UsbEndpointDirection direction, size_t size) {
-
+    const T& input,
+    UsbEndpointDirection direction,
+    size_t size) {
   if (size >= kMaxTransferLength)
     return NULL;
 
   // Allocate a |size|-bytes buffer, or a one-byte buffer if |size| is 0. This
   // is due to an impedance mismatch between IOBuffer and URBs. An IOBuffer
   // cannot represent a zero-length buffer, while an URB can.
-  scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(std::max(
-      static_cast<size_t>(1), size));
+  scoped_refptr<net::IOBuffer> buffer =
+      new net::IOBuffer(std::max(static_cast<size_t>(1), size));
 
   if (direction == usb_service::USB_DIRECTION_INBOUND) {
     return buffer;
@@ -327,9 +325,12 @@ void RequestUsbDevicesAccessHelper(
     callback.Run(devices.Pass());
     return;
   }
-  (*i)->RequestUsbAcess(interface_id, base::Bind(RequestUsbDevicesAccessHelper,
-                                                 base::Passed(devices.Pass()),
-                                                 i, interface_id, callback));
+  (*i)->RequestUsbAcess(interface_id,
+                        base::Bind(RequestUsbDevicesAccessHelper,
+                                   base::Passed(devices.Pass()),
+                                   i,
+                                   interface_id,
+                                   callback));
 }
 
 void RequestUsbDevicesAccess(
@@ -341,25 +342,27 @@ void RequestUsbDevicesAccess(
     return;
   }
   std::vector<scoped_refptr<UsbDevice> >::iterator i = devices->begin();
-  (*i)->RequestUsbAcess(
-      interface_id,
-      base::Bind(RequestUsbDevicesAccessHelper, base::Passed(devices.Pass()),
-                 i, interface_id, callback));
+  (*i)->RequestUsbAcess(interface_id,
+                        base::Bind(RequestUsbDevicesAccessHelper,
+                                   base::Passed(devices.Pass()),
+                                   i,
+                                   interface_id,
+                                   callback));
 }
 #endif  // OS_CHROMEOS
 
-base::DictionaryValue* CreateTransferInfo(
-    UsbTransferStatus status,
-    scoped_refptr<net::IOBuffer> data,
-    size_t length) {
+base::DictionaryValue* CreateTransferInfo(UsbTransferStatus status,
+                                          scoped_refptr<net::IOBuffer> data,
+                                          size_t length) {
   base::DictionaryValue* result = new base::DictionaryValue();
   result->SetInteger(kResultCodeKey, status);
-  result->Set(kDataKey, base::BinaryValue::CreateWithCopiedBuffer(data->data(),
-                                                                  length));
+  result->Set(kDataKey,
+              base::BinaryValue::CreateWithCopiedBuffer(data->data(), length));
   return result;
 }
 
-base::Value* PopulateConnectionHandle(int handle, int vendor_id,
+base::Value* PopulateConnectionHandle(int handle,
+                                      int vendor_id,
                                       int product_id) {
   ConnectionHandle result;
   result.handle = handle;
@@ -397,8 +400,7 @@ base::Value* PopulateInterfaceDescriptor(
 
 namespace extensions {
 
-UsbAsyncApiFunction::UsbAsyncApiFunction()
-    : manager_(NULL) {
+UsbAsyncApiFunction::UsbAsyncApiFunction() : manager_(NULL) {
 }
 
 UsbAsyncApiFunction::~UsbAsyncApiFunction() {
@@ -414,8 +416,7 @@ bool UsbAsyncApiFunction::Respond() {
   return error_.empty();
 }
 
-scoped_refptr<UsbDevice>
-UsbAsyncApiFunction::GetDeviceOrOrCompleteWithError(
+scoped_refptr<UsbDevice> UsbAsyncApiFunction::GetDeviceOrOrCompleteWithError(
     const Device& input_device) {
   const uint16_t vendor_id = input_device.vendor_id;
   const uint16_t product_id = input_device.product_id;
@@ -489,9 +490,11 @@ void UsbAsyncApiFunction::CompleteWithError(const std::string& error) {
   AsyncWorkCompleted();
 }
 
-UsbAsyncApiTransferFunction::UsbAsyncApiTransferFunction() {}
+UsbAsyncApiTransferFunction::UsbAsyncApiTransferFunction() {
+}
 
-UsbAsyncApiTransferFunction::~UsbAsyncApiTransferFunction() {}
+UsbAsyncApiTransferFunction::~UsbAsyncApiTransferFunction() {
+}
 
 void UsbAsyncApiTransferFunction::OnCompleted(UsbTransferStatus status,
                                               scoped_refptr<net::IOBuffer> data,
@@ -504,7 +507,8 @@ void UsbAsyncApiTransferFunction::OnCompleted(UsbTransferStatus status,
 }
 
 bool UsbAsyncApiTransferFunction::ConvertDirectionSafely(
-    const Direction& input, UsbEndpointDirection* output) {
+    const Direction& input,
+    UsbEndpointDirection* output) {
   const bool converted = ConvertDirection(input, output);
   if (!converted)
     SetError(kErrorConvertDirection);
@@ -512,7 +516,8 @@ bool UsbAsyncApiTransferFunction::ConvertDirectionSafely(
 }
 
 bool UsbAsyncApiTransferFunction::ConvertRequestTypeSafely(
-    const RequestType& input, UsbDeviceHandle::TransferRequestType* output) {
+    const RequestType& input,
+    UsbDeviceHandle::TransferRequestType* output) {
   const bool converted = ConvertRequestType(input, output);
   if (!converted)
     SetError(kErrorConvertRequestType);
@@ -520,16 +525,19 @@ bool UsbAsyncApiTransferFunction::ConvertRequestTypeSafely(
 }
 
 bool UsbAsyncApiTransferFunction::ConvertRecipientSafely(
-    const Recipient& input, UsbDeviceHandle::TransferRecipient* output) {
+    const Recipient& input,
+    UsbDeviceHandle::TransferRecipient* output) {
   const bool converted = ConvertRecipient(input, output);
   if (!converted)
     SetError(kErrorConvertRecipient);
   return converted;
 }
 
-UsbFindDevicesFunction::UsbFindDevicesFunction() {}
+UsbFindDevicesFunction::UsbFindDevicesFunction() {
+}
 
-UsbFindDevicesFunction::~UsbFindDevicesFunction() {}
+UsbFindDevicesFunction::~UsbFindDevicesFunction() {
+}
 
 bool UsbFindDevicesFunction::Prepare() {
   parameters_ = FindDevices::Params::Create(*args_);
@@ -539,12 +547,11 @@ bool UsbFindDevicesFunction::Prepare() {
 
 void UsbFindDevicesFunction::AsyncWorkStart() {
   scoped_ptr<base::ListValue> result(new base::ListValue());
-
   const uint16_t vendor_id = parameters_->options.vendor_id;
   const uint16_t product_id = parameters_->options.product_id;
-  int interface_id = parameters_->options.interface_id.get() ?
-      *parameters_->options.interface_id.get() :
-      UsbDevicePermissionData::ANY_INTERFACE;
+  int interface_id = parameters_->options.interface_id.get()
+                         ? *parameters_->options.interface_id.get()
+                         : UsbDevicePermissionData::ANY_INTERFACE;
   UsbDevicePermission::CheckParam param(vendor_id, product_id, interface_id);
   if (!PermissionsData::CheckAPIPermissionWithParam(
           GetExtension(), APIPermission::kUsbDevice, &param)) {
@@ -553,7 +560,7 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
     return;
   }
 
-  UsbService *service = UsbService::GetInstance();
+  UsbService* service = UsbService::GetInstance();
   if (!service) {
     CompleteWithError(kErrorInitService);
     return;
@@ -562,8 +569,7 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
   ScopedDeviceVector devices(new DeviceVector());
   service->GetDevices(devices.get());
 
-  for (DeviceVector::iterator it = devices->begin();
-      it != devices->end();) {
+  for (DeviceVector::iterator it = devices->begin(); it != devices->end();) {
     if ((*it)->vendor_id() != vendor_id || (*it)->product_id() != product_id) {
       it = devices->erase(it);
     } else {
@@ -573,7 +579,8 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
 
 #if defined(OS_CHROMEOS)
   RequestUsbDevicesAccess(
-      devices.Pass(), interface_id,
+      devices.Pass(),
+      interface_id,
       base::Bind(&UsbFindDevicesFunction::OpenDevices, this));
 #else
   OpenDevices(devices.Pass());
@@ -584,8 +591,7 @@ void UsbFindDevicesFunction::OpenDevices(ScopedDeviceVector devices) {
   base::ListValue* result = new base::ListValue();
 
   for (size_t i = 0; i < devices->size(); ++i) {
-    scoped_refptr<UsbDeviceHandle> device_handle =
-      devices->at(i)->Open();
+    scoped_refptr<UsbDeviceHandle> device_handle = devices->at(i)->Open();
     if (device_handle)
       device_handles_.push_back(device_handle);
   }
@@ -596,8 +602,8 @@ void UsbFindDevicesFunction::OpenDevices(ScopedDeviceVector devices) {
         new UsbDeviceResource(extension_->id(), device_handle);
 
     result->Append(PopulateConnectionHandle(manager_->Add(resource),
-                                             parameters_->options.vendor_id,
-                                             parameters_->options.product_id));
+                                            parameters_->options.vendor_id,
+                                            parameters_->options.product_id));
   }
 
   SetResult(result);
@@ -655,9 +661,11 @@ void UsbGetDevicesFunction::AsyncWorkStart() {
   AsyncWorkCompleted();
 }
 
-UsbRequestAccessFunction::UsbRequestAccessFunction() {}
+UsbRequestAccessFunction::UsbRequestAccessFunction() {
+}
 
-UsbRequestAccessFunction::~UsbRequestAccessFunction() {}
+UsbRequestAccessFunction::~UsbRequestAccessFunction() {
+}
 
 bool UsbRequestAccessFunction::Prepare() {
   parameters_ = RequestAccess::Params::Create(*args_);
@@ -669,11 +677,12 @@ void UsbRequestAccessFunction::AsyncWorkStart() {
 #if defined(OS_CHROMEOS)
   scoped_refptr<UsbDevice> device =
       GetDeviceOrOrCompleteWithError(parameters_->device);
-  if (!device) return;
+  if (!device)
+    return;
 
-  device->RequestUsbAcess(parameters_->interface_id,
-                          base::Bind(&UsbRequestAccessFunction::OnCompleted,
-                                     this));
+  device->RequestUsbAcess(
+      parameters_->interface_id,
+      base::Bind(&UsbRequestAccessFunction::OnCompleted, this));
 #else
   SetResult(new base::FundamentalValue(false));
   CompleteWithError(kErrorNotSupported);
@@ -685,9 +694,11 @@ void UsbRequestAccessFunction::OnCompleted(bool success) {
   AsyncWorkCompleted();
 }
 
-UsbOpenDeviceFunction::UsbOpenDeviceFunction() {}
+UsbOpenDeviceFunction::UsbOpenDeviceFunction() {
+}
 
-UsbOpenDeviceFunction::~UsbOpenDeviceFunction() {}
+UsbOpenDeviceFunction::~UsbOpenDeviceFunction() {
+}
 
 bool UsbOpenDeviceFunction::Prepare() {
   parameters_ = OpenDevice::Params::Create(*args_);
@@ -698,7 +709,8 @@ bool UsbOpenDeviceFunction::Prepare() {
 void UsbOpenDeviceFunction::AsyncWorkStart() {
   scoped_refptr<UsbDevice> device =
       GetDeviceOrOrCompleteWithError(parameters_->device);
-  if (!device) return;
+  if (!device)
+    return;
 
   handle_ = device->Open();
   if (!handle_) {
@@ -714,9 +726,11 @@ void UsbOpenDeviceFunction::AsyncWorkStart() {
   AsyncWorkCompleted();
 }
 
-UsbListInterfacesFunction::UsbListInterfacesFunction() {}
+UsbListInterfacesFunction::UsbListInterfacesFunction() {
+}
 
-UsbListInterfacesFunction::~UsbListInterfacesFunction() {}
+UsbListInterfacesFunction::~UsbListInterfacesFunction() {
+}
 
 bool UsbListInterfacesFunction::Prepare() {
   parameters_ = ListInterfaces::Params::Create(*args_);
@@ -727,7 +741,8 @@ bool UsbListInterfacesFunction::Prepare() {
 void UsbListInterfacesFunction::AsyncWorkStart() {
   scoped_refptr<UsbDeviceHandle> device_handle =
       GetDeviceHandleOrCompleteWithError(parameters_->handle);
-  if (!device_handle) return;
+  if (!device_handle)
+    return;
 
   scoped_refptr<UsbConfigDescriptor> config =
       device_handle->device()->ListInterfaces();
@@ -741,18 +756,21 @@ void UsbListInterfacesFunction::AsyncWorkStart() {
   result_.reset(new base::ListValue());
 
   for (size_t i = 0, num_interfaces = config->GetNumInterfaces();
-      i < num_interfaces; ++i) {
-    scoped_refptr<const UsbInterfaceDescriptor>
-        usb_interface(config->GetInterface(i));
+       i < num_interfaces;
+       ++i) {
+    scoped_refptr<const UsbInterfaceDescriptor> usb_interface(
+        config->GetInterface(i));
     for (size_t j = 0, num_descriptors = usb_interface->GetNumAltSettings();
-            j < num_descriptors; ++j) {
-      scoped_refptr<const UsbInterfaceAltSettingDescriptor> descriptor
-          = usb_interface->GetAltSetting(j);
+         j < num_descriptors;
+         ++j) {
+      scoped_refptr<const UsbInterfaceAltSettingDescriptor> descriptor =
+          usb_interface->GetAltSetting(j);
       std::vector<linked_ptr<EndpointDescriptor> > endpoints;
       for (size_t k = 0, num_endpoints = descriptor->GetNumEndpoints();
-          k < num_endpoints; k++) {
-        scoped_refptr<const UsbEndpointDescriptor> endpoint
-            = descriptor->GetEndpoint(k);
+           k < num_endpoints;
+           k++) {
+        scoped_refptr<const UsbEndpointDescriptor> endpoint =
+            descriptor->GetEndpoint(k);
         linked_ptr<EndpointDescriptor> endpoint_desc(new EndpointDescriptor());
 
         TransferType type;
@@ -784,13 +802,13 @@ void UsbListInterfacesFunction::AsyncWorkStart() {
         endpoints.push_back(endpoint_desc);
       }
 
-      result_->Append(PopulateInterfaceDescriptor(
-          descriptor->GetInterfaceNumber(),
-          descriptor->GetAlternateSetting(),
-          descriptor->GetInterfaceClass(),
-          descriptor->GetInterfaceSubclass(),
-          descriptor->GetInterfaceProtocol(),
-          &endpoints));
+      result_->Append(
+          PopulateInterfaceDescriptor(descriptor->GetInterfaceNumber(),
+                                      descriptor->GetAlternateSetting(),
+                                      descriptor->GetInterfaceClass(),
+                                      descriptor->GetInterfaceSubclass(),
+                                      descriptor->GetInterfaceProtocol(),
+                                      &endpoints));
     }
   }
 
@@ -834,9 +852,11 @@ bool UsbListInterfacesFunction::ConvertUsageTypeSafely(
   return converted;
 }
 
-UsbCloseDeviceFunction::UsbCloseDeviceFunction() {}
+UsbCloseDeviceFunction::UsbCloseDeviceFunction() {
+}
 
-UsbCloseDeviceFunction::~UsbCloseDeviceFunction() {}
+UsbCloseDeviceFunction::~UsbCloseDeviceFunction() {
+}
 
 bool UsbCloseDeviceFunction::Prepare() {
   parameters_ = CloseDevice::Params::Create(*args_);
@@ -847,16 +867,19 @@ bool UsbCloseDeviceFunction::Prepare() {
 void UsbCloseDeviceFunction::AsyncWorkStart() {
   scoped_refptr<UsbDeviceHandle> device_handle =
       GetDeviceHandleOrCompleteWithError(parameters_->handle);
-  if (!device_handle) return;
+  if (!device_handle)
+    return;
 
   device_handle->Close();
   RemoveUsbDeviceResource(parameters_->handle.handle);
   AsyncWorkCompleted();
 }
 
-UsbClaimInterfaceFunction::UsbClaimInterfaceFunction() {}
+UsbClaimInterfaceFunction::UsbClaimInterfaceFunction() {
+}
 
-UsbClaimInterfaceFunction::~UsbClaimInterfaceFunction() {}
+UsbClaimInterfaceFunction::~UsbClaimInterfaceFunction() {
+}
 
 bool UsbClaimInterfaceFunction::Prepare() {
   parameters_ = ClaimInterface::Params::Create(*args_);
@@ -867,7 +890,8 @@ bool UsbClaimInterfaceFunction::Prepare() {
 void UsbClaimInterfaceFunction::AsyncWorkStart() {
   scoped_refptr<UsbDeviceHandle> device_handle =
       GetDeviceHandleOrCompleteWithError(parameters_->handle);
-  if (!device_handle) return;
+  if (!device_handle)
+    return;
 
   bool success = device_handle->ClaimInterface(parameters_->interface_number);
 
@@ -876,9 +900,11 @@ void UsbClaimInterfaceFunction::AsyncWorkStart() {
   AsyncWorkCompleted();
 }
 
-UsbReleaseInterfaceFunction::UsbReleaseInterfaceFunction() {}
+UsbReleaseInterfaceFunction::UsbReleaseInterfaceFunction() {
+}
 
-UsbReleaseInterfaceFunction::~UsbReleaseInterfaceFunction() {}
+UsbReleaseInterfaceFunction::~UsbReleaseInterfaceFunction() {
+}
 
 bool UsbReleaseInterfaceFunction::Prepare() {
   parameters_ = ReleaseInterface::Params::Create(*args_);
@@ -889,7 +915,8 @@ bool UsbReleaseInterfaceFunction::Prepare() {
 void UsbReleaseInterfaceFunction::AsyncWorkStart() {
   scoped_refptr<UsbDeviceHandle> device_handle =
       GetDeviceHandleOrCompleteWithError(parameters_->handle);
-  if (!device_handle) return;
+  if (!device_handle)
+    return;
 
   bool success = device_handle->ReleaseInterface(parameters_->interface_number);
   if (!success)
@@ -898,10 +925,12 @@ void UsbReleaseInterfaceFunction::AsyncWorkStart() {
 }
 
 UsbSetInterfaceAlternateSettingFunction::
-    UsbSetInterfaceAlternateSettingFunction() {}
+    UsbSetInterfaceAlternateSettingFunction() {
+}
 
 UsbSetInterfaceAlternateSettingFunction::
-    ~UsbSetInterfaceAlternateSettingFunction() {}
+    ~UsbSetInterfaceAlternateSettingFunction() {
+}
 
 bool UsbSetInterfaceAlternateSettingFunction::Prepare() {
   parameters_ = SetInterfaceAlternateSetting::Params::Create(*args_);
@@ -912,20 +941,22 @@ bool UsbSetInterfaceAlternateSettingFunction::Prepare() {
 void UsbSetInterfaceAlternateSettingFunction::AsyncWorkStart() {
   scoped_refptr<UsbDeviceHandle> device_handle =
       GetDeviceHandleOrCompleteWithError(parameters_->handle);
-  if (!device_handle) return;
+  if (!device_handle)
+    return;
 
   bool success = device_handle->SetInterfaceAlternateSetting(
-      parameters_->interface_number,
-      parameters_->alternate_setting);
+      parameters_->interface_number, parameters_->alternate_setting);
   if (!success)
     SetError(kErrorCannotSetInterfaceAlternateSetting);
 
   AsyncWorkCompleted();
 }
 
-UsbControlTransferFunction::UsbControlTransferFunction() {}
+UsbControlTransferFunction::UsbControlTransferFunction() {
+}
 
-UsbControlTransferFunction::~UsbControlTransferFunction() {}
+UsbControlTransferFunction::~UsbControlTransferFunction() {
+}
 
 bool UsbControlTransferFunction::Prepare() {
   parameters_ = ControlTransfer::Params::Create(*args_);
@@ -936,7 +967,8 @@ bool UsbControlTransferFunction::Prepare() {
 void UsbControlTransferFunction::AsyncWorkStart() {
   scoped_refptr<UsbDeviceHandle> device_handle =
       GetDeviceHandleOrCompleteWithError(parameters_->handle);
-  if (!device_handle) return;
+  if (!device_handle)
+    return;
 
   const ControlTransferInfo& transfer = parameters_->transfer_info;
 
@@ -957,8 +989,8 @@ void UsbControlTransferFunction::AsyncWorkStart() {
     return;
   }
 
-  scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(
-      transfer, direction, size);
+  scoped_refptr<net::IOBuffer> buffer =
+      CreateBufferForTransfer(transfer, direction, size);
   if (!buffer.get()) {
     CompleteWithError(kErrorMalformedParameters);
     return;
@@ -977,9 +1009,11 @@ void UsbControlTransferFunction::AsyncWorkStart() {
       base::Bind(&UsbControlTransferFunction::OnCompleted, this));
 }
 
-UsbBulkTransferFunction::UsbBulkTransferFunction() {}
+UsbBulkTransferFunction::UsbBulkTransferFunction() {
+}
 
-UsbBulkTransferFunction::~UsbBulkTransferFunction() {}
+UsbBulkTransferFunction::~UsbBulkTransferFunction() {
+}
 
 bool UsbBulkTransferFunction::Prepare() {
   parameters_ = BulkTransfer::Params::Create(*args_);
@@ -990,7 +1024,8 @@ bool UsbBulkTransferFunction::Prepare() {
 void UsbBulkTransferFunction::AsyncWorkStart() {
   scoped_refptr<UsbDeviceHandle> device_handle =
       GetDeviceHandleOrCompleteWithError(parameters_->handle);
-  if (!device_handle) return;
+  if (!device_handle)
+    return;
 
   const GenericTransferInfo& transfer = parameters_->transfer_info;
 
@@ -1007,8 +1042,8 @@ void UsbBulkTransferFunction::AsyncWorkStart() {
     return;
   }
 
-  scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(
-      transfer, direction, size);
+  scoped_refptr<net::IOBuffer> buffer =
+      CreateBufferForTransfer(transfer, direction, size);
   if (!buffer.get()) {
     CompleteWithError(kErrorMalformedParameters);
     return;
@@ -1023,9 +1058,11 @@ void UsbBulkTransferFunction::AsyncWorkStart() {
       base::Bind(&UsbBulkTransferFunction::OnCompleted, this));
 }
 
-UsbInterruptTransferFunction::UsbInterruptTransferFunction() {}
+UsbInterruptTransferFunction::UsbInterruptTransferFunction() {
+}
 
-UsbInterruptTransferFunction::~UsbInterruptTransferFunction() {}
+UsbInterruptTransferFunction::~UsbInterruptTransferFunction() {
+}
 
 bool UsbInterruptTransferFunction::Prepare() {
   parameters_ = InterruptTransfer::Params::Create(*args_);
@@ -1036,7 +1073,8 @@ bool UsbInterruptTransferFunction::Prepare() {
 void UsbInterruptTransferFunction::AsyncWorkStart() {
   scoped_refptr<UsbDeviceHandle> device_handle =
       GetDeviceHandleOrCompleteWithError(parameters_->handle);
-  if (!device_handle) return;
+  if (!device_handle)
+    return;
 
   const GenericTransferInfo& transfer = parameters_->transfer_info;
 
@@ -1053,8 +1091,8 @@ void UsbInterruptTransferFunction::AsyncWorkStart() {
     return;
   }
 
-  scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(
-      transfer, direction, size);
+  scoped_refptr<net::IOBuffer> buffer =
+      CreateBufferForTransfer(transfer, direction, size);
   if (!buffer.get()) {
     CompleteWithError(kErrorMalformedParameters);
     return;
@@ -1069,9 +1107,11 @@ void UsbInterruptTransferFunction::AsyncWorkStart() {
       base::Bind(&UsbInterruptTransferFunction::OnCompleted, this));
 }
 
-UsbIsochronousTransferFunction::UsbIsochronousTransferFunction() {}
+UsbIsochronousTransferFunction::UsbIsochronousTransferFunction() {
+}
 
-UsbIsochronousTransferFunction::~UsbIsochronousTransferFunction() {}
+UsbIsochronousTransferFunction::~UsbIsochronousTransferFunction() {
+}
 
 bool UsbIsochronousTransferFunction::Prepare() {
   parameters_ = IsochronousTransfer::Params::Create(*args_);
@@ -1082,7 +1122,8 @@ bool UsbIsochronousTransferFunction::Prepare() {
 void UsbIsochronousTransferFunction::AsyncWorkStart() {
   scoped_refptr<UsbDeviceHandle> device_handle =
       GetDeviceHandleOrCompleteWithError(parameters_->handle);
-  if (!device_handle) return;
+  if (!device_handle)
+    return;
 
   const IsochronousTransferInfo& transfer = parameters_->transfer_info;
   const GenericTransferInfo& generic_transfer = transfer.transfer_info;
@@ -1115,8 +1156,8 @@ void UsbIsochronousTransferFunction::AsyncWorkStart() {
     return;
   }
 
-  scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(
-      generic_transfer, direction, size);
+  scoped_refptr<net::IOBuffer> buffer =
+      CreateBufferForTransfer(generic_transfer, direction, size);
   if (!buffer.get()) {
     CompleteWithError(kErrorMalformedParameters);
     return;
@@ -1133,9 +1174,11 @@ void UsbIsochronousTransferFunction::AsyncWorkStart() {
       base::Bind(&UsbIsochronousTransferFunction::OnCompleted, this));
 }
 
-UsbResetDeviceFunction::UsbResetDeviceFunction() {}
+UsbResetDeviceFunction::UsbResetDeviceFunction() {
+}
 
-UsbResetDeviceFunction::~UsbResetDeviceFunction() {}
+UsbResetDeviceFunction::~UsbResetDeviceFunction() {
+}
 
 bool UsbResetDeviceFunction::Prepare() {
   parameters_ = ResetDevice::Params::Create(*args_);
@@ -1146,7 +1189,8 @@ bool UsbResetDeviceFunction::Prepare() {
 void UsbResetDeviceFunction::AsyncWorkStart() {
   scoped_refptr<UsbDeviceHandle> device_handle =
       GetDeviceHandleOrCompleteWithError(parameters_->handle);
-  if (!device_handle) return;
+  if (!device_handle)
+    return;
 
   bool success = device_handle->ResetDevice();
   if (!success) {

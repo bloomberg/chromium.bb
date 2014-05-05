@@ -30,6 +30,7 @@
           'sockets_udp.idl',
           'storage.json',
           'test.json',
+          'usb.idl',
         ],
         'cc_dir': 'extensions/common/api',
         'root_namespace': 'extensions::core_api',
