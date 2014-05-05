@@ -5,12 +5,14 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GPU_CONTROL_H_
 #define GPU_COMMAND_BUFFER_CLIENT_GPU_CONTROL_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/mailbox.h"
-#include "gpu/command_buffer/common/types.h"
 #include "gpu/gpu_export.h"
 
 namespace gfx {
@@ -34,22 +36,22 @@ class GPU_EXPORT GpuControl {
       size_t width,
       size_t height,
       unsigned internalformat,
-      int32* id) = 0;
+      int32_t* id) = 0;
 
   // Destroy a gpu memory buffer. The ID must be positive.
-  virtual void DestroyGpuMemoryBuffer(int32 id) = 0;
+  virtual void DestroyGpuMemoryBuffer(int32_t id) = 0;
 
   // Inserts a sync point, returning its ID. Sync point IDs are global and can
   // be used for cross-context synchronization.
-  virtual uint32 InsertSyncPoint() = 0;
+  virtual uint32_t InsertSyncPoint() = 0;
 
   // Runs |callback| when a sync point is reached.
-  virtual void SignalSyncPoint(uint32 sync_point,
+  virtual void SignalSyncPoint(uint32_t sync_point,
                                const base::Closure& callback) = 0;
 
   // Runs |callback| when a query created via glCreateQueryEXT() has cleared
   // passed the glEndQueryEXT() point.
-  virtual void SignalQuery(uint32 query, const base::Closure& callback) = 0;
+  virtual void SignalQuery(uint32_t query, const base::Closure& callback) = 0;
 
   virtual void SetSurfaceVisible(bool visible) = 0;
 
@@ -60,7 +62,7 @@ class GPU_EXPORT GpuControl {
 
   // Attaches an external stream to the texture given by |texture_id| and
   // returns a stream identifier.
-  virtual uint32 CreateStreamTexture(uint32 texture_id) = 0;
+  virtual uint32_t CreateStreamTexture(uint32_t texture_id) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuControl);

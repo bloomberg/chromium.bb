@@ -5,11 +5,12 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_CONSTANTS_H_
 #define GPU_COMMAND_BUFFER_COMMON_CONSTANTS_H_
 
-#include "gpu/command_buffer/common/types.h"
+#include <stddef.h>
+#include <stdint.h>
 
 namespace gpu {
 
-typedef int32 CommandBufferOffset;
+typedef int32_t CommandBufferOffset;
 const CommandBufferOffset kInvalidCommandBufferOffset = -1;
 
 // This enum must stay in sync with NPDeviceContext3DError.
@@ -46,10 +47,10 @@ namespace error {
 
 // Invalid shared memory Id, returned by RegisterSharedMemory in case of
 // failure.
-const int32 kInvalidSharedMemoryId = -1;
+const int32_t kInvalidSharedMemoryId = -1;
 
 // Common Command Buffer shared memory transfer buffer ID.
-const int32 kCommandBufferSharedMemoryId = 4;
+const int32_t kCommandBufferSharedMemoryId = 4;
 
 // The size to set for the program cache.
 const size_t kDefaultMaxProgramCacheMemoryBytes = 6 * 1024 * 1024;

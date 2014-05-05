@@ -18,7 +18,7 @@ class MockErrorState : public ErrorState {
   MockErrorState();
   virtual ~MockErrorState();
 
-  MOCK_METHOD0(GetGLError, uint32());
+  MOCK_METHOD0(GetGLError, uint32_t());
   MOCK_METHOD5(SetGLError, void(
       const char* filename, int line,
       unsigned error, const char* function_name, const char* msg));

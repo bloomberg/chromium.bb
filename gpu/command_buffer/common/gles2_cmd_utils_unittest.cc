@@ -20,7 +20,7 @@ class GLES2UtilTest : public testing:: Test {
 };
 
 TEST_F(GLES2UtilTest, SafeMultiplyUint32) {
-  uint32 result = 0;
+  uint32_t result = 0;
   EXPECT_TRUE(SafeMultiplyUint32(2u, 3u, &result));
   EXPECT_EQ(6u, result);
   EXPECT_FALSE(SafeMultiplyUint32(0x80000000u, 2u, &result));
@@ -32,7 +32,7 @@ TEST_F(GLES2UtilTest, SafeMultiplyUint32) {
 }
 
 TEST_F(GLES2UtilTest, SafeAddUint32) {
-  uint32 result = 0;
+  uint32_t result = 0;
   EXPECT_TRUE(SafeAddUint32(2u, 3u, &result));
   EXPECT_EQ(5u, result);
   EXPECT_FALSE(SafeAddUint32(0x80000000u, 0x80000000u, &result));
@@ -48,9 +48,9 @@ TEST_F(GLES2UtilTest, SafeAddUint32) {
 }
 
 TEST_F(GLES2UtilTest, SafeAddInt32) {
-  int32 result = 0;
-  const int32 kMax = std::numeric_limits<int32>::max();
-  const int32 kMin = std::numeric_limits<int32>::min();
+  int32_t result = 0;
+  const int32_t kMax = std::numeric_limits<int32_t>::max();
+  const int32_t kMin = std::numeric_limits<int32_t>::min();
   EXPECT_TRUE(SafeAddInt32(2, 3, &result));
   EXPECT_EQ(5, result);
   EXPECT_FALSE(SafeAddInt32(kMax, 1, &result));
@@ -89,11 +89,11 @@ TEST_F(GLES2UtilTest, GLGetNumValuesReturned) {
 }
 
 TEST_F(GLES2UtilTest, ComputeImageDataSizesFormats) {
-  const uint32 kWidth = 16;
-  const uint32 kHeight = 12;
-  uint32 size;
-  uint32 unpadded_row_size;
-  uint32 padded_row_size;
+  const uint32_t kWidth = 16;
+  const uint32_t kHeight = 12;
+  uint32_t size;
+  uint32_t unpadded_row_size;
+  uint32_t padded_row_size;
   EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
       kWidth, kHeight, GL_RGB, GL_UNSIGNED_BYTE, 1, &size, &unpadded_row_size,
       &padded_row_size));
@@ -146,11 +146,11 @@ TEST_F(GLES2UtilTest, ComputeImageDataSizesFormats) {
 }
 
 TEST_F(GLES2UtilTest, ComputeImageDataSizeTypes) {
-  const uint32 kWidth = 16;
-  const uint32 kHeight = 12;
-  uint32 size;
-  uint32 unpadded_row_size;
-  uint32 padded_row_size;
+  const uint32_t kWidth = 16;
+  const uint32_t kHeight = 12;
+  uint32_t size;
+  uint32_t unpadded_row_size;
+  uint32_t padded_row_size;
   EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
       kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE, 1, &size, &unpadded_row_size,
       &padded_row_size));
@@ -184,11 +184,11 @@ TEST_F(GLES2UtilTest, ComputeImageDataSizeTypes) {
 }
 
 TEST_F(GLES2UtilTest, ComputeImageDataSizesUnpackAlignment) {
-  const uint32 kWidth = 19;
-  const uint32 kHeight = 12;
-  uint32 size;
-  uint32 unpadded_row_size;
-  uint32 padded_row_size;
+  const uint32_t kWidth = 19;
+  const uint32_t kHeight = 12;
+  uint32_t size;
+  uint32_t unpadded_row_size;
+  uint32_t padded_row_size;
   EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
       kWidth, kHeight, GL_RGB, GL_UNSIGNED_BYTE, 1, &size, &unpadded_row_size,
       &padded_row_size));

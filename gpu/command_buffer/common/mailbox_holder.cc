@@ -9,8 +9,8 @@ namespace gpu {
 MailboxHolder::MailboxHolder() : texture_target(0), sync_point(0) {}
 
 MailboxHolder::MailboxHolder(const Mailbox& mailbox,
-                             uint32 texture_target,
-                             uint32 sync_point)
+                             uint32_t texture_target,
+                             uint32_t sync_point)
     : mailbox(mailbox),
       texture_target(texture_target),
       sync_point(sync_point) {}

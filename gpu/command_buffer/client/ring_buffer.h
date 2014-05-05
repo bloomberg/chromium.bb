@@ -10,7 +10,7 @@
 #include <deque>
 
 #include "base/logging.h"
-#include "gpu/command_buffer/common/types.h"
+#include "base/macros.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {

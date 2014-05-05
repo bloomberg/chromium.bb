@@ -5,11 +5,13 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_MAPPED_MEMORY_H_
 #define GPU_COMMAND_BUFFER_CLIENT_MAPPED_MEMORY_H_
 
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "gpu/command_buffer/client/fenced_allocator.h"
 #include "gpu/command_buffer/common/buffer.h"
-#include "gpu/command_buffer/common/types.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
@@ -19,7 +21,7 @@ class CommandBufferHelper;
 // Manages a shared memory segment.
 class GPU_EXPORT MemoryChunk {
  public:
-  MemoryChunk(int32 shm_id,
+  MemoryChunk(int32_t shm_id,
               scoped_refptr<gpu::Buffer> shm,
               CommandBufferHelper* helper,
               const base::Closure& poll_callback);
@@ -42,7 +44,7 @@ class GPU_EXPORT MemoryChunk {
   }
 
   // The shared memory id for this chunk.
-  int32 shm_id() const {
+  int32_t shm_id() const {
     return shm_id_;
   }
 
@@ -93,7 +95,7 @@ class GPU_EXPORT MemoryChunk {
   bool IsInChunk(void* pointer) const {
     return pointer >= shm_->memory() &&
            pointer <
-               reinterpret_cast<const int8*>(shm_->memory()) + shm_->size();
+               reinterpret_cast<const int8_t*>(shm_->memory()) + shm_->size();
   }
 
   // Returns true of any memory in this chunk is in use.
@@ -106,7 +108,7 @@ class GPU_EXPORT MemoryChunk {
   }
 
  private:
-  int32 shm_id_;
+  int32_t shm_id_;
   scoped_refptr<gpu::Buffer> shm_;
   FencedAllocatorWrapper allocator_;
 
@@ -144,7 +146,7 @@ class GPU_EXPORT MappedMemoryManager {
   // Returns:
   //   pointer to allocated block of memory. NULL if failure.
   void* Alloc(
-      unsigned int size, int32* shm_id, unsigned int* shm_offset);
+      unsigned int size, int32_t* shm_id, unsigned int* shm_offset);
 
   // Frees a block of memory.
   //
@@ -158,7 +160,7 @@ class GPU_EXPORT MappedMemoryManager {
   // Parameters:
   //   pointer: the pointer to the memory block to free.
   //   token: the token value to wait for before re-using the memory.
-  void FreePendingToken(void* pointer, int32 token);
+  void FreePendingToken(void* pointer, int32_t token);
 
   // Free Any Shared memory that is not in use.
   void FreeUnused();

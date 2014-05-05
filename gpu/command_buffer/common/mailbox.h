@@ -5,9 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_MAILBOX_H_
 #define GPU_COMMAND_BUFFER_MAILBOX_H_
 
+#include <stdint.h>
 #include <string.h>
 
-#include "gpu/command_buffer/common/types.h"
 #include "gpu/gpu_export.h"
 
 // From gl2/gl2ext.h.
@@ -21,7 +21,7 @@ struct GPU_EXPORT Mailbox {
   Mailbox();
   bool IsZero() const;
   void SetZero();
-  void SetName(const int8* name);
+  void SetName(const int8_t* name);
 
   // Generate a unique unguessable mailbox name.
   static Mailbox Generate();
@@ -31,7 +31,7 @@ struct GPU_EXPORT Mailbox {
   // check, only to catch bugs where clients forgot to call Mailbox::Generate.
   bool Verify() const;
 
-  int8 name[GL_MAILBOX_SIZE_CHROMIUM];
+  int8_t name[GL_MAILBOX_SIZE_CHROMIUM];
   bool operator<(const Mailbox& other) const {
     return memcmp(this, &other, sizeof other) < 0;
   }

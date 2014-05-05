@@ -7,17 +7,19 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_ID_ALLOCATOR_H_
 #define GPU_COMMAND_BUFFER_CLIENT_ID_ALLOCATOR_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "gpu/command_buffer/common/types.h"
+#include "base/macros.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
 
 // A resource ID, key to the resource maps.
-typedef uint32 ResourceId;
+typedef uint32_t ResourceId;
 // Invalid resource ID.
 static const ResourceId kInvalidResource = 0u;
 

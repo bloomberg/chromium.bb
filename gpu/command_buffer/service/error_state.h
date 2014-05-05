@@ -7,8 +7,10 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_ERROR_STATE_H_
 #define GPU_COMMAND_BUFFER_SERVICE_ERROR_STATE_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
-#include "gpu/command_buffer/common/types.h"
+#include "base/macros.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
@@ -67,7 +69,7 @@ class GPU_EXPORT ErrorState {
 
   static ErrorState* Create(ErrorStateClient* client, Logger* logger);
 
-  virtual uint32 GetGLError() = 0;
+  virtual uint32_t GetGLError() = 0;
 
   virtual void SetGLError(
       const char* filename,

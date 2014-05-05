@@ -5,10 +5,10 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_BUFFER_H_
 #define GPU_COMMAND_BUFFER_COMMON_BUFFER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
-#include "gpu/command_buffer/common/types.h"
 #include "gpu/gpu_export.h"
 
 namespace base {

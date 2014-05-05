@@ -8,12 +8,13 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_UTILS_H_
 #define GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_UTILS_H_
 
+#include <stdint.h>
+
 #include <limits>
 #include <string>
 #include <vector>
 
 #include "gpu/command_buffer/common/gles2_utils_export.h"
-#include "gpu/command_buffer/common/types.h"
 
 namespace gpu {
 namespace gles2 {
@@ -23,12 +24,12 @@ namespace gles2 {
 
 // Multiplies 2 32 bit unsigned numbers checking for overflow.
 // If there was no overflow returns true.
-inline bool SafeMultiplyUint32(uint32 a, uint32 b, uint32* dst) {
+inline bool SafeMultiplyUint32(uint32_t a, uint32_t b, uint32_t* dst) {
   if (b == 0) {
     *dst = 0;
     return true;
   }
-  uint32 v = a * b;
+  uint32_t v = a * b;
   if (v / b != a) {
     *dst = 0;
     return false;
@@ -38,7 +39,7 @@ inline bool SafeMultiplyUint32(uint32 a, uint32 b, uint32* dst) {
 }
 
 // Does an add checking for overflow.  If there was no overflow returns true.
-inline bool SafeAddUint32(uint32 a, uint32 b, uint32* dst) {
+inline bool SafeAddUint32(uint32_t a, uint32_t b, uint32_t* dst) {
   if (a + b < a) {
     *dst = 0;
     return false;
@@ -48,10 +49,10 @@ inline bool SafeAddUint32(uint32 a, uint32 b, uint32* dst) {
 }
 
 // Does an add checking for overflow.  If there was no overflow returns true.
-inline bool SafeAddInt32(int32 a, int32 b, int32* dst) {
-  int64 sum64 = static_cast<int64>(a) + b;
-  int32 sum32 = static_cast<int32>(sum64);
-  bool safe = sum64 == static_cast<int64>(sum32);
+inline bool SafeAddInt32(int32_t a, int32_t b, int32_t* dst) {
+  int64_t sum64 = static_cast<int64_t>(a) + b;
+  int32_t sum32 = static_cast<int32_t>(sum64);
+  bool safe = sum64 == static_cast<int64_t>(sum32);
   *dst = safe ? sum32 : 0;
   return safe;
 }
@@ -59,7 +60,7 @@ inline bool SafeAddInt32(int32 a, int32 b, int32* dst) {
 // Return false if |value| is more than a 32 bit integer can represent.
 template<typename T>
 inline bool FitInt32NonNegative(T value) {
-  const int32 max = std::numeric_limits<int32>::max();
+  const int32_t max = std::numeric_limits<int32_t>::max();
   return (std::numeric_limits<T>::max() <= max ||
           value <= static_cast<T>(max));
 }
@@ -83,7 +84,7 @@ class GLES2_UTILS_EXPORT GLES2Util {
   };
 
   struct EnumToString {
-    uint32 value;
+    uint32_t value;
     const char* name;
   };
 
@@ -113,12 +114,12 @@ class GLES2_UTILS_EXPORT GLES2Util {
   int GLGetNumValuesReturned(int id) const;
 
   // Computes the size of a single group of elements from a format and type pair
-  static uint32 ComputeImageGroupSize(int format, int type);
+  static uint32_t ComputeImageGroupSize(int format, int type);
 
   // Computes the size of an image row including alignment padding
   static bool ComputeImagePaddedRowSize(
       int width, int format, int type, int unpack_alignment,
-      uint32* padded_row_size);
+      uint32_t* padded_row_size);
 
   // Computes the size of image data for TexImage2D and TexSubImage2D.
   // Optionally the unpadded and padded row sizes can be returned. If height < 2
@@ -126,40 +127,40 @@ class GLES2_UTILS_EXPORT GLES2Util {
   // padding is not necessary.
   static bool ComputeImageDataSizes(
       int width, int height, int format, int type, int unpack_alignment,
-      uint32* size, uint32* unpadded_row_size, uint32* padded_row_size);
+      uint32_t* size, uint32_t* unpadded_row_size, uint32_t* padded_row_size);
 
   static size_t RenderbufferBytesPerPixel(int format);
 
-  static uint32 GetGLDataTypeSizeForUniforms(int type);
+  static uint32_t GetGLDataTypeSizeForUniforms(int type);
 
-  static size_t GetGLTypeSizeForTexturesAndBuffers(uint32 type);
+  static size_t GetGLTypeSizeForTexturesAndBuffers(uint32_t type);
 
-  static uint32 GLErrorToErrorBit(uint32 gl_error);
+  static uint32_t GLErrorToErrorBit(uint32_t gl_error);
 
-  static uint32 GLErrorBitToGLError(uint32 error_bit);
+  static uint32_t GLErrorBitToGLError(uint32_t error_bit);
 
-  static uint32 IndexToGLFaceTarget(int index);
+  static uint32_t IndexToGLFaceTarget(int index);
 
-  static uint32 GetPreferredGLReadPixelsFormat(uint32 internal_format);
+  static uint32_t GetPreferredGLReadPixelsFormat(uint32_t internal_format);
 
-  static uint32 GetPreferredGLReadPixelsType(
-      uint32 internal_format, uint32 texture_type);
+  static uint32_t GetPreferredGLReadPixelsType(
+      uint32_t internal_format, uint32_t texture_type);
 
   // Returns a bitmask for the channels the given format supports.
   // See ChannelBits.
-  static uint32 GetChannelsForFormat(int format);
+  static uint32_t GetChannelsForFormat(int format);
 
   // Returns a bitmask for the channels the given attachment type needs.
-  static uint32 GetChannelsNeededForAttachmentType(
-      int type, uint32 max_color_attachments);
+  static uint32_t GetChannelsNeededForAttachmentType(
+      int type, uint32_t max_color_attachments);
 
-  static bool IsNPOT(uint32 value) {
+  static bool IsNPOT(uint32_t value) {
     return value > 0 && (value & (value - 1)) != 0;
   }
 
-  static std::string GetStringEnum(uint32 value);
-  static std::string GetStringBool(uint32 value);
-  static std::string GetStringError(uint32 value);
+  static std::string GetStringEnum(uint32_t value);
+  static std::string GetStringBool(uint32_t value);
+  static std::string GetStringError(uint32_t value);
 
   // Parses a uniform name.
   //   array_pos: the position of the last '[' character in name.
@@ -178,7 +179,7 @@ class GLES2_UTILS_EXPORT GLES2Util {
 
  private:
   static std::string GetQualifiedEnumString(
-      const EnumToString* table, size_t count, uint32 value);
+      const EnumToString* table, size_t count, uint32_t value);
 
   static const EnumToString* const enum_to_string_table_;
   static const size_t enum_to_string_table_len_;
@@ -191,18 +192,18 @@ class GLES2_UTILS_EXPORT ContextCreationAttribHelper {
  public:
   ContextCreationAttribHelper();
 
-  void Serialize(std::vector<int32>* attribs);
-  bool Parse(const std::vector<int32>& attribs);
+  void Serialize(std::vector<int32_t>* attribs);
+  bool Parse(const std::vector<int32_t>& attribs);
 
   // -1 if invalid or unspecified.
-  int32 alpha_size_;
-  int32 blue_size_;
-  int32 green_size_;
-  int32 red_size_;
-  int32 depth_size_;
-  int32 stencil_size_;
-  int32 samples_;
-  int32 sample_buffers_;
+  int32_t alpha_size_;
+  int32_t blue_size_;
+  int32_t green_size_;
+  int32_t red_size_;
+  int32_t depth_size_;
+  int32_t stencil_size_;
+  int32_t samples_;
+  int32_t sample_buffers_;
   bool buffer_preserved_;
   bool share_resources_;
   bool bind_generates_resource_;

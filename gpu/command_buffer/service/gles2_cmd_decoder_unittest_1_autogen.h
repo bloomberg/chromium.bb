@@ -1488,7 +1488,7 @@ TEST_P(GLES2DecoderTest1, GetProgramivInvalidArgs2_1) {
 
 TEST_P(GLES2DecoderTest1, GetProgramInfoLogValidArgs) {
   const char* kInfo = "hello";
-  const uint32 kBucketId = 123;
+  const uint32_t kBucketId = 123;
   SpecializedSetup<cmds::GetProgramInfoLog, 0>(true);
 
   cmds::GetProgramInfoLog cmd;
@@ -1503,7 +1503,7 @@ TEST_P(GLES2DecoderTest1, GetProgramInfoLogValidArgs) {
 }
 
 TEST_P(GLES2DecoderTest1, GetProgramInfoLogInvalidArgs) {
-  const uint32 kBucketId = 123;
+  const uint32_t kBucketId = 123;
   cmds::GetProgramInfoLog cmd;
   cmd.Init(kInvalidClientId, kBucketId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));

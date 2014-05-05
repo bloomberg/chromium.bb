@@ -10,13 +10,14 @@
 
 #include <KHR/khrplatform.h>
 
+#include <stdint.h>
 #include <string.h>
 
 #include "base/atomicops.h"
+#include "base/macros.h"
 #include "gpu/command_buffer/common/bitfield_helpers.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/common/gles2_cmd_ids.h"
-#include "gpu/command_buffer/common/types.h"
 
 // GL types are forward declared to avoid including the GL headers. The problem
 // is determining which GL headers to include from code that is common to the
@@ -83,19 +84,19 @@ struct SizedResult {
   // Returns the total size in bytes of the SizedResult for a given number of
   // results including the size field.
   static size_t ComputeSize(size_t num_results) {
-    return sizeof(T) * num_results + sizeof(uint32);  // NOLINT
+    return sizeof(T) * num_results + sizeof(uint32_t);  // NOLINT
   }
 
   // Returns the total size in bytes of the SizedResult for a given size of
   // results.
   static size_t ComputeSizeFromBytes(size_t size_of_result_in_bytes) {
-    return size_of_result_in_bytes + sizeof(uint32);  // NOLINT
+    return size_of_result_in_bytes + sizeof(uint32_t);  // NOLINT
   }
 
   // Returns the maximum number of results for a given buffer size.
-  static uint32 ComputeMaxResults(size_t size_of_buffer) {
-    return (size_of_buffer >= sizeof(uint32)) ?
-        ((size_of_buffer - sizeof(uint32)) / sizeof(T)) : 0;  // NOLINT
+  static uint32_t ComputeMaxResults(size_t size_of_buffer) {
+    return (size_of_buffer >= sizeof(uint32_t)) ?
+        ((size_of_buffer - sizeof(uint32_t)) / sizeof(T)) : 0;  // NOLINT
   }
 
   // Set the size for a given number of results.
@@ -104,7 +105,7 @@ struct SizedResult {
   }
 
   // Get the number of elements in the result
-  int32 GetNumResults() const {
+  int32_t GetNumResults() const {
     return size / sizeof(T);  // NOLINT
   }
 
@@ -113,31 +114,31 @@ struct SizedResult {
     memcpy(dst, &data, size);
   }
 
-  uint32 size;  // in bytes.
-  int32 data;  // this is just here to get an offset.
+  uint32_t size;  // in bytes.
+  int32_t data;  // this is just here to get an offset.
 };
 
-COMPILE_ASSERT(sizeof(SizedResult<int8>) == 8, SizedResult_size_not_8);
-COMPILE_ASSERT(offsetof(SizedResult<int8>, size) == 0,
+COMPILE_ASSERT(sizeof(SizedResult<int8_t>) == 8, SizedResult_size_not_8);
+COMPILE_ASSERT(offsetof(SizedResult<int8_t>, size) == 0,
                OffsetOf_SizedResult_size_not_0);
-COMPILE_ASSERT(offsetof(SizedResult<int8>, data) == 4,
+COMPILE_ASSERT(offsetof(SizedResult<int8_t>, data) == 4,
                OffsetOf_SizedResult_data_not_4);
 
 // The data for one attrib or uniform from GetProgramInfoCHROMIUM.
 struct ProgramInput {
-  uint32 type;             // The type (GL_VEC3, GL_MAT3, GL_SAMPLER_2D, etc.
-  int32 size;              // The size (how big the array is for uniforms)
-  uint32 location_offset;  // offset from ProgramInfoHeader to 'size' locations
-                           // for uniforms, 1 for attribs.
-  uint32 name_offset;      // offset from ProgrmaInfoHeader to start of name.
-  uint32 name_length;      // length of the name.
+  uint32_t type;             // The type (GL_VEC3, GL_MAT3, GL_SAMPLER_2D, etc.
+  int32_t size;              // The size (how big the array is for uniforms)
+  uint32_t location_offset;  // offset from ProgramInfoHeader to 'size'
+                             // locations for uniforms, 1 for attribs.
+  uint32_t name_offset;      // offset from ProgrmaInfoHeader to start of name.
+  uint32_t name_length;      // length of the name.
 };
 
 // The format of the bucket filled out by GetProgramInfoCHROMIUM
 struct ProgramInfoHeader {
-  uint32 link_status;
-  uint32 num_attribs;
-  uint32 num_uniforms;
+  uint32_t link_status;
+  uint32_t num_attribs;
+  uint32_t num_uniforms;
   // ProgramInput inputs[num_attribs + num_uniforms];
 };
 
@@ -149,7 +150,7 @@ struct QuerySync {
   }
 
   base::subtle::Atomic32 process_count;
-  uint64 result;
+  uint64_t result;
 };
 
 struct AsyncUploadSync {
@@ -157,12 +158,12 @@ struct AsyncUploadSync {
     base::subtle::Release_Store(&async_upload_token, 0);
   }
 
-  void SetAsyncUploadToken(uint32 token) {
+  void SetAsyncUploadToken(uint32_t token) {
     DCHECK_NE(token, 0u);
     base::subtle::Release_Store(&async_upload_token, token);
   }
 
-  bool HasAsyncUploadTokenPassed(uint32 token) {
+  bool HasAsyncUploadTokenPassed(uint32_t token) {
     DCHECK_NE(token, 0u);
     uint32_t current_token = base::subtle::Acquire_Load(&async_upload_token);
     return (current_token - token < 0x80000000);
