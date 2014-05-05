@@ -1084,6 +1084,7 @@
         'browser/metrics/metrics_log_serializer_unittest.cc',
         'browser/metrics/metrics_reporting_scheduler_unittest.cc',
         'browser/metrics/metrics_service_unittest.cc',
+        'browser/metrics/metrics_state_manager_unittest.cc',
         'browser/metrics/thread_watcher_unittest.cc',
         'browser/metrics/thread_watcher_android_unittest.cc',
         'browser/metrics/time_ticks_experiment_unittest.cc',

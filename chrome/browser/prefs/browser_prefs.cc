@@ -37,7 +37,6 @@
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
-#include "chrome/browser/metrics/cloned_install_detector.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
@@ -87,7 +86,6 @@
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
-#include "chrome/common/metrics/caching_permuted_entropy_provider.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/bookmarks/core/browser/bookmark_utils.h"
@@ -235,8 +233,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   KeywordEditorController::RegisterPrefs(registry);
   MetricsLog::RegisterPrefs(registry);
   MetricsService::RegisterPrefs(registry);
-  metrics::CachingPermutedEntropyProvider::RegisterPrefs(registry);
-  metrics::ClonedInstallDetector::RegisterPrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterPrefs(registry);
   ProfileInfoCache::RegisterPrefs(registry);
   profiles::RegisterPrefs(registry);

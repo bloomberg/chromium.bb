@@ -6,7 +6,7 @@
 
 #include "base/prefs/testing_pref_service.h"
 #include "chrome/browser/metrics/machine_id_provider.h"
-#include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/metrics/metrics_state_manager.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,8 +37,7 @@ TEST(ClonedInstallDetectorTest, SaveId) {
 
 TEST(ClonedInstallDetectorTest, DetectClone) {
   TestingPrefServiceSimple prefs;
-  ClonedInstallDetector::RegisterPrefs(prefs.registry());
-  MetricsService::RegisterPrefs(prefs.registry());
+  MetricsStateManager::RegisterPrefs(prefs.registry());
 
   // Save a machine id that will cause a clone to be detected.
   prefs.SetInteger(prefs::kMetricsMachineId, kTestHashedId + 1);

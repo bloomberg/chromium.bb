@@ -107,9 +107,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // thread.
   void StartMetricsRecording();
 
-  // Returns true if the user opted in to sending metric reports.
-  bool IsMetricsReportingEnabled();
-
   // Record time from process startup to present time in an UMA histogram.
   void RecordBrowserStartupTime();
 
