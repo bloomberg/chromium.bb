@@ -35,6 +35,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/test/integration/fake_server_invalidation_service.h"
 #include "chrome/browser/sync/test/integration/p2p_invalidation_forwarder.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
@@ -234,6 +235,8 @@ void SyncTest::TearDown() {
 
   // Stop the local sync test server. This is a no-op if one wasn't started.
   TearDownLocalTestServer();
+
+  fake_server_.reset();
 }
 
 void SyncTest::SetUpCommandLine(base::CommandLine* cl) {
@@ -326,6 +329,7 @@ bool SyncTest::SetupClients() {
   browsers_.resize(num_clients_);
   clients_.resize(num_clients_);
   invalidation_forwarders_.resize(num_clients_);
+  fake_server_invalidation_services_.resize(num_clients_);
   for (int i = 0; i < num_clients_; ++i) {
     InitializeInstance(i);
   }
@@ -352,14 +356,6 @@ void SyncTest::InitializeInstance(int index) {
   EXPECT_FALSE(GetBrowser(index) == NULL) << "Could not create Browser "
                                           << index << ".";
 
-  invalidation::P2PInvalidationService* p2p_invalidation_service =
-      static_cast<invalidation::P2PInvalidationService*>(
-          InvalidationServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-              GetProfile(index),
-              TestUsesSelfNotifications() ?
-                  BuildSelfNotifyingP2PInvalidationService
-                  : BuildRealisticP2PInvalidationService));
-  p2p_invalidation_service->UpdateCredentials(username_, password_);
 
   // Make sure the ProfileSyncService has been created before creating the
   // ProfileSyncServiceHarness - some tests expect the ProfileSyncService to
@@ -381,11 +377,7 @@ void SyncTest::InitializeInstance(int index) {
           password_);
   EXPECT_FALSE(GetClient(index) == NULL) << "Could not create Client "
                                          << index << ".";
-
-  // Start listening for and emitting notificaitons of commits.
-  invalidation_forwarders_[index] =
-      new P2PInvalidationForwarder(clients_[index]->service(),
-                                   p2p_invalidation_service);
+  InitializeInvalidations(index);
 
   test::WaitForBookmarkModelToLoad(
       BookmarkModelFactory::GetForProfile(GetProfile(index)));
@@ -393,6 +385,32 @@ void SyncTest::InitializeInstance(int index) {
       GetProfile(index), Profile::EXPLICIT_ACCESS));
   ui_test_utils::WaitForTemplateURLServiceToLoad(
       TemplateURLServiceFactory::GetForProfile(GetProfile(index)));
+}
+
+void SyncTest::InitializeInvalidations(int index) {
+  if (server_type_ == IN_PROCESS_FAKE_SERVER) {
+    CHECK(fake_server_.get());
+    fake_server::FakeServerInvalidationService* invalidation_service =
+        static_cast<fake_server::FakeServerInvalidationService*>(
+            InvalidationServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+                GetProfile(index),
+                fake_server::FakeServerInvalidationService::Build));
+    fake_server_->AddObserver(invalidation_service);
+    fake_server_invalidation_services_[index] = invalidation_service;
+  } else {
+    invalidation::P2PInvalidationService* p2p_invalidation_service =
+        static_cast<invalidation::P2PInvalidationService*>(
+            InvalidationServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+                GetProfile(index),
+                TestUsesSelfNotifications() ?
+                    BuildSelfNotifyingP2PInvalidationService
+                    : BuildRealisticP2PInvalidationService));
+    p2p_invalidation_service->UpdateCredentials(username_, password_);
+    // Start listening for and emitting notifications of commits.
+    invalidation_forwarders_[index] =
+        new P2PInvalidationForwarder(clients_[index]->service(),
+                                     p2p_invalidation_service);
+  }
 }
 
 bool SyncTest::SetupSync() {
@@ -434,10 +452,19 @@ void SyncTest::CleanUpOnMainThread() {
   chrome::CloseAllBrowsers();
   content::RunAllPendingInMessageLoop();
 
+  if (fake_server_.get()) {
+    std::vector<fake_server::FakeServerInvalidationService*>::const_iterator it;
+    for (it = fake_server_invalidation_services_.begin();
+         it != fake_server_invalidation_services_.end(); ++it) {
+      fake_server_->RemoveObserver(*it);
+    }
+  }
+
   // All browsers should be closed at this point, or else we could see memory
   // corruption in QuitBrowser().
   CHECK_EQ(0U, chrome::GetTotalBrowserCount());
   invalidation_forwarders_.clear();
+  fake_server_invalidation_services_.clear();
   clients_.clear();
 }
 
@@ -605,8 +632,6 @@ void SyncTest::SetUpTestServerIfRequired() {
       LOG(FATAL) << "Failed to set up local test server";
   } else if (server_type_ == IN_PROCESS_FAKE_SERVER) {
     fake_server_.reset(new fake_server::FakeServer());
-    // Similar to LOCAL_LIVE_SERVER, we must start this for XMPP.
-    SetUpLocalPythonTestServer();
     SetupMockGaiaResponses();
   } else if (server_type_ == EXTERNAL_LIVE_SERVER) {
     // Nothing to do; we'll just talk to the URL we were given.
@@ -725,6 +750,10 @@ bool SyncTest::IsTestServerRunning() {
 }
 
 void SyncTest::EnableNetwork(Profile* profile) {
+  // TODO(pvalenzuela): Remove this restriction when FakeServer's observers
+  // (namely FakeServerInvaldationService) are aware of a network disconnect.
+  ASSERT_NE(IN_PROCESS_FAKE_SERVER, server_type_)
+      << "FakeServer does not support EnableNetwork.";
   SetProxyConfig(profile->GetRequestContext(),
                  net::ProxyConfig::CreateDirect());
   if (notifications_enabled_) {
@@ -735,6 +764,10 @@ void SyncTest::EnableNetwork(Profile* profile) {
 }
 
 void SyncTest::DisableNetwork(Profile* profile) {
+  // TODO(pvalenzuela): Remove this restriction when FakeServer's observers
+  // (namely FakeServerInvaldationService) are aware of a network disconnect.
+  ASSERT_NE(IN_PROCESS_FAKE_SERVER, server_type_)
+      << "FakeServer does not support DisableNetwork.";
   DisableNotificationsImpl();
   // Set the current proxy configuration to a nonexistent proxy to effectively
   // disable networking.

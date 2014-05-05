@@ -32,6 +32,7 @@ class CommandLine;
 
 namespace fake_server {
 class FakeServer;
+class FakeServerInvalidationService;
 }
 
 namespace net {
@@ -363,6 +364,10 @@ class SyncTest : public InProcessBrowserTest {
   // of test being run and command line args passed in.
   void DecideServerType();
 
+  // Sets up the client-side invalidations infrastructure depending on the
+  // value of |server_type_|.
+  void InitializeInvalidations(int index);
+
   // Python sync test server, started on demand.
   syncer::LocalSyncTestServer sync_server_;
 
@@ -398,6 +403,10 @@ class SyncTest : public InProcessBrowserTest {
   // A set of objects to listen for commit activity and broadcast notifications
   // of this activity to its peer sync clients.
   ScopedVector<P2PInvalidationForwarder> invalidation_forwarders_;
+
+  // Collection of pointers to FakeServerInvalidation objects for each profile.
+  std::vector<fake_server::FakeServerInvalidationService*>
+      fake_server_invalidation_services_;
 
   // Sync profile against which changes to individual profiles are verified. We
   // don't need a corresponding verifier sync client because the contents of the
