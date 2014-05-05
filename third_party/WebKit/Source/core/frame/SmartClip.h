@@ -49,7 +49,8 @@ public:
     {
     }
 
-    String toString();
+    IntRect getRect() const;
+    String getClipData() const;
 
 private:
     RefPtr<Node> m_node;
