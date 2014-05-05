@@ -30,9 +30,12 @@ class BookmarkUtilsTest : public testing::Test,
         grouped_changes_ended_count_(0) {}
   virtual ~BookmarkUtilsTest() {}
 
+// Copy and paste is not yet supported on iOS. http://crbug.com/228147
+#if !defined(OS_IOS)
   virtual void TearDown() OVERRIDE {
     ui::Clipboard::DestroyClipboardForCurrentThread();
   }
+#endif  // !defined(OS_IOS)
 
   // Certain user actions require multiple changes to the bookmark model,
   // however these modifications need to be atomic for the undo framework. The
@@ -252,6 +255,8 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesConjunction) {
   }
 }
 
+// Copy and paste is not yet supported on iOS. http://crbug.com/228147
+#if !defined(OS_IOS)
 TEST_F(BookmarkUtilsTest, CopyPaste) {
   test::TestBookmarkClient client;
   scoped_ptr<BookmarkModel> model(client.CreateModel(false));
@@ -305,6 +310,7 @@ TEST_F(BookmarkUtilsTest, CutToClipboard) {
   // And make sure we can paste from the clipboard.
   EXPECT_TRUE(CanPasteFromClipboard(model->other_node()));
 }
+#endif  // !defined(OS_IOS)
 
 TEST_F(BookmarkUtilsTest, GetParentForNewNodes) {
   test::TestBookmarkClient client;

@@ -43,6 +43,7 @@
         'bookmarks/core/browser/bookmark_node.h',
         'bookmarks/core/browser/bookmark_node_data.cc',
         'bookmarks/core/browser/bookmark_node_data.h',
+        'bookmarks/core/browser/bookmark_node_data_ios.cc',
         'bookmarks/core/browser/bookmark_node_data_mac.cc',
         'bookmarks/core/browser/bookmark_node_data_views.cc',
         'bookmarks/core/browser/bookmark_pasteboard_helper_mac.h',
