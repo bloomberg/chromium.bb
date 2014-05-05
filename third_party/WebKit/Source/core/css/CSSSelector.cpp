@@ -34,7 +34,6 @@
 #include "wtf/HashMap.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringHash.h"
 
 #ifndef NDEBUG
 #include <stdio.h>
@@ -276,106 +275,117 @@ struct NameToPseudoStruct {
     unsigned type:8;
 };
 
+// This table should be kept sorted.
 const static NameToPseudoStruct pseudoTypeMap[] = {
-{"active",                        CSSSelector::PseudoActive},
-{"after",                         CSSSelector::PseudoAfter},
 {"-webkit-any(",                  CSSSelector::PseudoAny},
 {"-webkit-any-link",              CSSSelector::PseudoAnyLink},
 {"-webkit-autofill",              CSSSelector::PseudoAutofill},
-{"backdrop",                      CSSSelector::PseudoBackdrop},
-{"before",                        CSSSelector::PseudoBefore},
-{"checked",                       CSSSelector::PseudoChecked},
-{"default",                       CSSSelector::PseudoDefault},
-{"disabled",                      CSSSelector::PseudoDisabled},
-{"read-only",                     CSSSelector::PseudoReadOnly},
-{"read-write",                    CSSSelector::PseudoReadWrite},
-{"valid",                         CSSSelector::PseudoValid},
-{"invalid",                       CSSSelector::PseudoInvalid},
 {"-webkit-drag",                  CSSSelector::PseudoDrag},
-{"empty",                         CSSSelector::PseudoEmpty},
-{"enabled",                       CSSSelector::PseudoEnabled},
-{"first-child",                   CSSSelector::PseudoFirstChild},
-{"first-letter",                  CSSSelector::PseudoFirstLetter},
-{"first-line",                    CSSSelector::PseudoFirstLine},
-{"first-of-type",                 CSSSelector::PseudoFirstOfType},
 {"-webkit-full-page-media",       CSSSelector::PseudoFullPageMedia},
-{"nth-child(",                    CSSSelector::PseudoNthChild},
-{"nth-of-type(",                  CSSSelector::PseudoNthOfType},
-{"nth-last-child(",               CSSSelector::PseudoNthLastChild},
-{"nth-last-of-type(",             CSSSelector::PseudoNthLastOfType},
-{"focus",                         CSSSelector::PseudoFocus},
-{"hover",                         CSSSelector::PseudoHover},
-{"indeterminate",                 CSSSelector::PseudoIndeterminate},
-{"last-child",                    CSSSelector::PseudoLastChild},
-{"last-of-type",                  CSSSelector::PseudoLastOfType},
-{"link",                          CSSSelector::PseudoLink},
-{"lang(",                         CSSSelector::PseudoLang},
-{"not(",                          CSSSelector::PseudoNot},
-{"only-child",                    CSSSelector::PseudoOnlyChild},
-{"only-of-type",                  CSSSelector::PseudoOnlyOfType},
-{"optional",                      CSSSelector::PseudoOptional},
-{"required",                      CSSSelector::PseudoRequired},
+{"-webkit-full-screen",           CSSSelector::PseudoFullScreen},
+{"-webkit-full-screen-ancestor",  CSSSelector::PseudoFullScreenAncestor},
+{"-webkit-full-screen-document",  CSSSelector::PseudoFullScreenDocument},
 {"-webkit-resizer",               CSSSelector::PseudoResizer},
-{"root",                          CSSSelector::PseudoRoot},
 {"-webkit-scrollbar",             CSSSelector::PseudoScrollbar},
 {"-webkit-scrollbar-button",      CSSSelector::PseudoScrollbarButton},
 {"-webkit-scrollbar-corner",      CSSSelector::PseudoScrollbarCorner},
 {"-webkit-scrollbar-thumb",       CSSSelector::PseudoScrollbarThumb},
 {"-webkit-scrollbar-track",       CSSSelector::PseudoScrollbarTrack},
 {"-webkit-scrollbar-track-piece", CSSSelector::PseudoScrollbarTrackPiece},
-{"selection",                     CSSSelector::PseudoSelection},
-{"target",                        CSSSelector::PseudoTarget},
-{"visited",                       CSSSelector::PseudoVisited},
-{"window-inactive",               CSSSelector::PseudoWindowInactive},
-{"decrement",                     CSSSelector::PseudoDecrement},
-{"increment",                     CSSSelector::PseudoIncrement},
-{"start",                         CSSSelector::PseudoStart},
-{"end",                           CSSSelector::PseudoEnd},
-{"horizontal",                    CSSSelector::PseudoHorizontal},
-{"vertical",                      CSSSelector::PseudoVertical},
-{"double-button",                 CSSSelector::PseudoDoubleButton},
-{"single-button",                 CSSSelector::PseudoSingleButton},
-{"no-button",                     CSSSelector::PseudoNoButton},
+{"active",                        CSSSelector::PseudoActive},
+{"after",                         CSSSelector::PseudoAfter},
+{"backdrop",                      CSSSelector::PseudoBackdrop},
+{"before",                        CSSSelector::PseudoBefore},
+{"checked",                       CSSSelector::PseudoChecked},
+{"content",                       CSSSelector::PseudoContent},
 {"corner-present",                CSSSelector::PseudoCornerPresent},
-{"first",                         CSSSelector::PseudoFirstPage},
-{"left",                          CSSSelector::PseudoLeftPage},
-{"right",                         CSSSelector::PseudoRightPage},
-{"-webkit-full-screen",           CSSSelector::PseudoFullScreen},
-{"-webkit-full-screen-document",  CSSSelector::PseudoFullScreenDocument},
-{"-webkit-full-screen-ancestor",  CSSSelector::PseudoFullScreenAncestor},
-{"cue(",                          CSSSelector::PseudoCue},
 {"cue",                           CSSSelector::PseudoWebKitCustomElement},
+{"cue(",                          CSSSelector::PseudoCue},
+{"decrement",                     CSSSelector::PseudoDecrement},
+{"default",                       CSSSelector::PseudoDefault},
+{"disabled",                      CSSSelector::PseudoDisabled},
+{"double-button",                 CSSSelector::PseudoDoubleButton},
+{"empty",                         CSSSelector::PseudoEmpty},
+{"enabled",                       CSSSelector::PseudoEnabled},
+{"end",                           CSSSelector::PseudoEnd},
+{"first",                         CSSSelector::PseudoFirstPage},
+{"first-child",                   CSSSelector::PseudoFirstChild},
+{"first-letter",                  CSSSelector::PseudoFirstLetter},
+{"first-line",                    CSSSelector::PseudoFirstLine},
+{"first-of-type",                 CSSSelector::PseudoFirstOfType},
+{"focus",                         CSSSelector::PseudoFocus},
 {"future",                        CSSSelector::PseudoFutureCue},
-{"past",                          CSSSelector::PseudoPastCue},
-{"in-range",                      CSSSelector::PseudoInRange},
-{"out-of-range",                  CSSSelector::PseudoOutOfRange},
-{"scope",                         CSSSelector::PseudoScope},
-{"unresolved",                    CSSSelector::PseudoUnresolved},
+{"horizontal",                    CSSSelector::PseudoHorizontal},
 {"host",                          CSSSelector::PseudoHost},
 {"host(",                         CSSSelector::PseudoHost},
 {"host-context(",                 CSSSelector::PseudoHostContext},
-{"content",                       CSSSelector::PseudoContent},
+{"hover",                         CSSSelector::PseudoHover},
+{"in-range",                      CSSSelector::PseudoInRange},
+{"increment",                     CSSSelector::PseudoIncrement},
+{"indeterminate",                 CSSSelector::PseudoIndeterminate},
+{"invalid",                       CSSSelector::PseudoInvalid},
+{"lang(",                         CSSSelector::PseudoLang},
+{"last-child",                    CSSSelector::PseudoLastChild},
+{"last-of-type",                  CSSSelector::PseudoLastOfType},
+{"left",                          CSSSelector::PseudoLeftPage},
+{"link",                          CSSSelector::PseudoLink},
+{"no-button",                     CSSSelector::PseudoNoButton},
+{"not(",                          CSSSelector::PseudoNot},
+{"nth-child(",                    CSSSelector::PseudoNthChild},
+{"nth-last-child(",               CSSSelector::PseudoNthLastChild},
+{"nth-last-of-type(",             CSSSelector::PseudoNthLastOfType},
+{"nth-of-type(",                  CSSSelector::PseudoNthOfType},
+{"only-child",                    CSSSelector::PseudoOnlyChild},
+{"only-of-type",                  CSSSelector::PseudoOnlyOfType},
+{"optional",                      CSSSelector::PseudoOptional},
+{"out-of-range",                  CSSSelector::PseudoOutOfRange},
+{"past",                          CSSSelector::PseudoPastCue},
+{"read-only",                     CSSSelector::PseudoReadOnly},
+{"read-write",                    CSSSelector::PseudoReadWrite},
+{"required",                      CSSSelector::PseudoRequired},
+{"right",                         CSSSelector::PseudoRightPage},
+{"root",                          CSSSelector::PseudoRoot},
+{"scope",                         CSSSelector::PseudoScope},
+{"selection",                     CSSSelector::PseudoSelection},
 {"shadow",                        CSSSelector::PseudoShadow},
+{"single-button",                 CSSSelector::PseudoSingleButton},
+{"start",                         CSSSelector::PseudoStart},
+{"target",                        CSSSelector::PseudoTarget},
+{"unresolved",                    CSSSelector::PseudoUnresolved},
+{"valid",                         CSSSelector::PseudoValid},
+{"vertical",                      CSSSelector::PseudoVertical},
+{"visited",                       CSSSelector::PseudoVisited},
+{"window-inactive",               CSSSelector::PseudoWindowInactive},
 };
 
-static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
-{
-    static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoType = 0;
-    if (!nameToPseudoType) {
-        nameToPseudoType = new HashMap<StringImpl*, CSSSelector::PseudoType>;
+class NameToPseudoCompare {
+public:
+    NameToPseudoCompare(const AtomicString& key) : m_key(key) { ASSERT(m_key.is8Bit()); }
 
-        size_t pseudoCount = WTF_ARRAY_LENGTH(pseudoTypeMap);
-        for (size_t i = 0; i < pseudoCount; i++) {
-            const char* str = pseudoTypeMap[i].string;
-            CSSSelector::PseudoType type;
-            type = static_cast<CSSSelector::PseudoType>(pseudoTypeMap[i].type);
-            // This is a one-time leak.
-            AtomicString* name = new AtomicString(str, strlen(str), AtomicString::ConstructFromLiteral);
-            nameToPseudoType->set(name->impl(), type);
-        }
+    bool operator()(const NameToPseudoStruct& entry, const NameToPseudoStruct&)
+    {
+        ASSERT(entry.string);
+        const char* key = reinterpret_cast<const char*>(m_key.characters8());
+        // If strncmp returns 0, then either the keys are equal, or |m_key| sorts before |entry|.
+        return strncmp(entry.string, key, m_key.length()) < 0;
     }
 
-    return nameToPseudoType;
+private:
+    const AtomicString& m_key;
+};
+
+static CSSSelector::PseudoType nameToPseudoType(const AtomicString& name)
+{
+    if (name.isNull() || !name.is8Bit())
+        return CSSSelector::PseudoUnknown;
+
+    const NameToPseudoStruct* pseudoTypeMapEnd = pseudoTypeMap + WTF_ARRAY_LENGTH(pseudoTypeMap);
+    NameToPseudoStruct dummyKey = { 0, CSSSelector::PseudoUnknown };
+    const NameToPseudoStruct* match = std::lower_bound(pseudoTypeMap, pseudoTypeMapEnd, dummyKey, NameToPseudoCompare(name));
+    if (match == pseudoTypeMapEnd || match->string != name.string())
+        return CSSSelector::PseudoUnknown;
+
+    return static_cast<CSSSelector::PseudoType>(match->type);
 }
 
 #ifndef NDEBUG
@@ -412,13 +422,9 @@ void CSSSelector::show() const
 
 CSSSelector::PseudoType CSSSelector::parsePseudoType(const AtomicString& name)
 {
-    if (name.isNull())
-        return PseudoUnknown;
-    HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoType = nameToPseudoTypeMap();
-    HashMap<StringImpl*, CSSSelector::PseudoType>::iterator slot = nameToPseudoType->find(name.impl());
-
-    if (slot != nameToPseudoType->end())
-        return slot->value;
+    CSSSelector::PseudoType pseudoType = nameToPseudoType(name);
+    if (pseudoType != PseudoUnknown)
+        return pseudoType;
 
     if (name.startsWith("-webkit-"))
         return PseudoWebKitCustomElement;
