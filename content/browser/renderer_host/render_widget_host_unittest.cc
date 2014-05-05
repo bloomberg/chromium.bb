@@ -602,7 +602,7 @@ class RenderWidgetHostTest : public testing::Test {
 #if defined(USE_AURA)
     ImageTransportFactory::InitializeForUnitTests(
         scoped_ptr<ui::ContextFactory>(new ui::InProcessContextFactory));
-    aura::Env::CreateInstance();
+    aura::Env::CreateInstance(true);
     screen_.reset(aura::TestScreen::Create());
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
 #endif

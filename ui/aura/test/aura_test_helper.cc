@@ -55,7 +55,7 @@ AuraTestHelper::~AuraTestHelper() {
 void AuraTestHelper::SetUp() {
   setup_called_ = true;
 
-  Env::CreateInstance();
+  Env::CreateInstance(true);
   // Unit tests generally don't want to query the system, rather use the state
   // from RootWindow.
   EnvTestHelper(Env::GetInstance()).SetInputStateLookup(

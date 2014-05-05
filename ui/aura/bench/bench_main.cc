@@ -304,7 +304,7 @@ int main(int argc, char** argv) {
   base::i18n::InitializeICU();
 
   base::MessageLoopForUI message_loop;
-  aura::Env::CreateInstance();
+  aura::Env::CreateInstance(true);
   scoped_ptr<aura::TestScreen> test_screen(
       aura::TestScreen::CreateFullscreen());
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen.get());

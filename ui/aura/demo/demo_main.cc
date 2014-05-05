@@ -128,7 +128,7 @@ int DemoMain() {
   // Create the message-loop here before creating the root window.
   base::MessageLoopForUI message_loop;
 
-  aura::Env::CreateInstance();
+  aura::Env::CreateInstance(true);
   scoped_ptr<aura::TestScreen> test_screen(aura::TestScreen::Create());
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen.get());
   scoped_ptr<aura::WindowTreeHost> host(

@@ -46,7 +46,7 @@ class TouchEmulatorTest : public testing::Test,
   // testing::Test
   virtual void SetUp() OVERRIDE {
 #if defined(USE_AURA)
-    aura::Env::CreateInstance();
+    aura::Env::CreateInstance(true);
     screen_.reset(aura::TestScreen::Create());
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
 #endif

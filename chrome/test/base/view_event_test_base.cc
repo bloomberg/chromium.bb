@@ -134,7 +134,7 @@ void ViewEventTestBase::SetUp() {
   context = ash::Shell::GetPrimaryRootWindow();
   context->GetHost()->Show();
 #endif  // !OS_WIN
-  aura::Env::CreateInstance();
+  aura::Env::CreateInstance(true);
 #elif defined(USE_AURA)
   // Instead of using the ash shell, use an AuraTestHelper to create and manage
   // the test screen.

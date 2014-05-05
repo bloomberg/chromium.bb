@@ -60,7 +60,7 @@ void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
   // Ensure Aura knows where to open new windows.
   window_context = wm_test_helper_->host()->window();
 #else
-  aura::Env::CreateInstance();
+  aura::Env::CreateInstance(true);
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, CreateDesktopScreen());
 #endif

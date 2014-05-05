@@ -15,7 +15,7 @@
 namespace wm {
 
 WMTestHelper::WMTestHelper(const gfx::Size& default_window_size) {
-  aura::Env::CreateInstance();
+  aura::Env::CreateInstance(true);
   host_.reset(aura::WindowTreeHost::Create(gfx::Rect(default_window_size)));
   host_->InitHost();
   aura::client::SetWindowTreeClient(host_->window(), this);

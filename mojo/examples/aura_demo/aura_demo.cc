@@ -187,7 +187,7 @@ extern "C" AURA_DEMO_EXPORT MojoResult CDECL MojoMain(
   // TODO(beng): This crashes in a DCHECK on X11 because this thread's
   //             MessageLoop is not of TYPE_UI. I think we need a way to build
   //             Aura that doesn't define platform-specific stuff.
-  aura::Env::CreateInstance();
+  aura::Env::CreateInstance(true);
   mojo::examples::AuraDemo app(shell_handle);
   loop.Run();
 

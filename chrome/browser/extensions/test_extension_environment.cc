@@ -32,7 +32,7 @@ TestExtensionEnvironment::TestExtensionEnvironment()
       extension_service_(NULL),
       extension_prefs_(NULL) {
 #if defined(USE_AURA)
-  aura::Env::CreateInstance();
+  aura::Env::CreateInstance(true);
 #endif
 }
 

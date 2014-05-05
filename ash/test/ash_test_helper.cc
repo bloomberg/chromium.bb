@@ -138,7 +138,7 @@ void AshTestHelper::TearDown() {
 
 void AshTestHelper::RunAllPendingInMessageLoop() {
   DCHECK(base::MessageLoopForUI::current() == message_loop_);
-  aura::Env::CreateInstance();
+  aura::Env::CreateInstance(true);
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
 }

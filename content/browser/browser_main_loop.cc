@@ -1070,7 +1070,7 @@ bool BrowserMainLoop::InitializeToolkit() {
 
   // Env creates the compositor. Aura widgets need the compositor to be created
   // before they can be initialized by the browser.
-  aura::Env::CreateInstance();
+  aura::Env::CreateInstance(true);
 #endif  // defined(USE_AURA)
 
   if (parts_)

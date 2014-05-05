@@ -31,10 +31,10 @@ Env::~Env() {
 }
 
 //static
-void Env::CreateInstance() {
+void Env::CreateInstance(bool create_event_source) {
   if (!instance_) {
     instance_ = new Env;
-    instance_->Init();
+    instance_->Init(create_event_source);
   }
 }
 
@@ -67,10 +67,10 @@ bool Env::IsMouseButtonDown() const {
 ////////////////////////////////////////////////////////////////////////////////
 // Env, private:
 
-void Env::Init() {
+void Env::Init(bool create_event_source) {
   ui::Compositor::Initialize();
 
-  if (!ui::PlatformEventSource::GetInstance())
+  if (create_event_source && !ui::PlatformEventSource::GetInstance())
     event_source_ = ui::PlatformEventSource::CreateDefault();
 }
 
