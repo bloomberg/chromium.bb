@@ -93,9 +93,7 @@ bool SwappedOutMessages::CanHandleWhileSwappedOut(
       break;
   }
 
-  // Check with the embedder as well.
-  ContentClient* client = GetContentClient();
-  return client->CanHandleWhileSwappedOut(msg);
+  return false;
 }
 
 }  // namespace content

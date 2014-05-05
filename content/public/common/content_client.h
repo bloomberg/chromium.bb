@@ -94,10 +94,6 @@ class CONTENT_EXPORT ContentClient {
   // Returns whether the given message should be sent in a swapped out renderer.
   virtual bool CanSendWhileSwappedOut(const IPC::Message* message);
 
-  // Returns whether the given message should be processed in the browser on
-  // behalf of a swapped out renderer.
-  virtual bool CanHandleWhileSwappedOut(const IPC::Message& message);
-
   // Returns a string describing the embedder product name and version,
   // of the form "productname/version", with no other slashes.
   // Used as part of the user agent string.

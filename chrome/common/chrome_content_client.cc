@@ -493,14 +493,6 @@ void ChromeContentClient::AddAdditionalSchemes(
 #endif
 }
 
-bool ChromeContentClient::CanHandleWhileSwappedOut(
-    const IPC::Message& msg) {
-  // Any Chrome-specific messages (apart from those listed in
-  // CanSendWhileSwappedOut) that must be handled by the browser when sent from
-  // swapped out renderers.
-  return false;
-}
-
 std::string ChromeContentClient::GetProduct() const {
   return ::GetProduct();
 }

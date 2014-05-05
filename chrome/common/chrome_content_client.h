@@ -29,7 +29,6 @@ class ChromeContentClient : public content::ContentClient {
   virtual void AddAdditionalSchemes(
       std::vector<std::string>* standard_schemes,
       std::vector<std::string>* saveable_shemes) OVERRIDE;
-  virtual bool CanHandleWhileSwappedOut(const IPC::Message& msg) OVERRIDE;
   virtual std::string GetProduct() const OVERRIDE;
   virtual std::string GetUserAgent() const OVERRIDE;
   virtual base::string16 GetLocalizedString(int message_id) const OVERRIDE;
