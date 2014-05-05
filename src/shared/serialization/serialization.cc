@@ -98,6 +98,7 @@ bool SerializationBuffer::Deserialize(char **cstr_out) {
 
   size_t used = nbytes;
   if (!Deserialize(buffer, &used)) {
+    delete[] buffer;
     return false;
   }
   if (used > nbytes) {
