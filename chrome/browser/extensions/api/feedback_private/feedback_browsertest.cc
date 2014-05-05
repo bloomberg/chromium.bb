@@ -81,7 +81,15 @@ class FeedbackTest : public ExtensionBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowFeedback) {
+// Disabled test; it is crashing on ChromeOS build bots intermittently.
+// See http://crbug.com/369886.
+#if defined(OS_CHROMEOS)
+#define MAYBE_ShowFeedback DISABLED_ShowFeedback
+#else
+#define MAYBE_ShowFeedback ShowFeedback
+#endif
+
+IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowFeedback) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
