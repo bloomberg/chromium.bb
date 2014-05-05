@@ -16,6 +16,7 @@
 #include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/common/nacl_types.h"
 #include "components/nacl/renderer/histogram.h"
+#include "components/nacl/renderer/json_manifest.h"
 #include "components/nacl/renderer/manifest_downloader.h"
 #include "components/nacl/renderer/manifest_service_channel.h"
 #include "components/nacl/renderer/nexe_load_manager.h"
@@ -87,7 +88,15 @@ typedef base::ScopedPtrHashMap<PP_Instance, NexeLoadManager>
 base::LazyInstance<NexeLoadManagerMap> g_load_manager_map =
     LAZY_INSTANCE_INITIALIZER;
 
-NexeLoadManager* GetNexeLoadManager(PP_Instance instance) {
+typedef base::ScopedPtrHashMap<int32_t, nacl::JsonManifest> JsonManifestMap;
+
+base::LazyInstance<JsonManifestMap> g_manifest_map =
+    LAZY_INSTANCE_INITIALIZER;
+
+const int kPNaClManifestId = std::numeric_limits<int>::max();
+int g_next_manifest_id = 0;
+
+nacl::NexeLoadManager* GetNexeLoadManager(PP_Instance instance) {
   NexeLoadManagerMap& map = g_load_manager_map.Get();
   NexeLoadManagerMap::iterator iter = map.find(instance);
   if (iter != map.end())
@@ -991,6 +1000,111 @@ void DownloadManifestToBufferCompletion(PP_Instance instance,
   callback.func(callback.user_data, pp_error);
 }
 
+int32_t CreatePNaClManifest(PP_Instance /* instance */) {
+  return kPNaClManifestId;
+}
+
+int32_t CreateJsonManifest(PP_Instance instance,
+                           const char* manifest_url,
+                           const char* isa_type,
+                           const char* manifest_data) {
+  int32_t manifest_id = g_next_manifest_id;
+  g_next_manifest_id++;
+
+  scoped_ptr<nacl::JsonManifest> j(
+      new nacl::JsonManifest(
+          manifest_url,
+          isa_type,
+          PP_ToBool(IsNonSFIModeEnabled()),
+          PP_ToBool(NaClDebugEnabledForURL(manifest_url))));
+  JsonManifest::ErrorInfo error_info;
+  if (j->Init(manifest_data, &error_info)) {
+    g_manifest_map.Get().add(manifest_id, j.Pass());
+    return manifest_id;
+  }
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  if (load_manager)
+    load_manager->ReportLoadError(error_info.error, error_info.string);
+  return -1;
+}
+
+void DestroyManifest(PP_Instance /* instance */,
+                     int32_t manifest_id) {
+  if (manifest_id == kPNaClManifestId)
+    return;
+  g_manifest_map.Get().erase(manifest_id);
+}
+
+PP_Bool ManifestGetProgramURL(PP_Instance instance,
+                              int32_t manifest_id,
+                              PP_Var* pp_full_url,
+                              PP_PNaClOptions* pnacl_options,
+                              PP_Bool* pp_uses_nonsfi_mode) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  if (manifest_id == kPNaClManifestId) {
+    if (load_manager) {
+      load_manager->ReportLoadError(
+          PP_NACL_ERROR_MANIFEST_GET_NEXE_URL,
+          "pnacl manifest does not contain a program.");
+    }
+    return PP_FALSE;
+  }
+
+  JsonManifestMap::iterator it = g_manifest_map.Get().find(manifest_id);
+  if (it == g_manifest_map.Get().end())
+    return PP_FALSE;
+
+  bool uses_nonsfi_mode;
+  std::string full_url;
+  JsonManifest::ErrorInfo error_info;
+  if (it->second->GetProgramURL(&full_url, pnacl_options, &uses_nonsfi_mode,
+                                &error_info)) {
+    *pp_full_url = ppapi::StringVar::StringToPPVar(full_url);
+    *pp_uses_nonsfi_mode = PP_FromBool(uses_nonsfi_mode);
+    return PP_TRUE;
+  }
+
+  if (load_manager)
+    load_manager->ReportLoadError(error_info.error, error_info.string);
+  return PP_FALSE;
+}
+
+PP_Bool ManifestResolveKey(PP_Instance instance,
+                           int32_t manifest_id,
+                           const char* key,
+                           PP_Var* pp_full_url,
+                           PP_PNaClOptions* pnacl_options) {
+  if (manifest_id == kPNaClManifestId) {
+    pnacl_options->translate = PP_FALSE;
+    // We can only resolve keys in the files/ namespace.
+    const std::string kFilesPrefix = "files/";
+    std::string key_string(key);
+    if (key_string.find(kFilesPrefix) == std::string::npos) {
+      nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+      if (load_manager)
+        load_manager->ReportLoadError(PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
+                                      "key did not start with files/");
+      return PP_FALSE;
+    }
+    std::string key_basename = key_string.substr(kFilesPrefix.length());
+    std::string pnacl_url =
+        std::string("chrome://pnacl-translator/") + GetSandboxArch() + "/" +
+        key_basename;
+    *pp_full_url = ppapi::StringVar::StringToPPVar(pnacl_url);
+    return PP_TRUE;
+  }
+
+  JsonManifestMap::iterator it = g_manifest_map.Get().find(manifest_id);
+  if (it == g_manifest_map.Get().end())
+    return PP_FALSE;
+
+  std::string full_url;
+  bool ok = it->second->ResolveKey(key, &full_url, pnacl_options);
+  if (ok)
+    *pp_full_url = ppapi::StringVar::StringToPPVar(full_url);
+  return PP_FromBool(ok);
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -1030,7 +1144,12 @@ const PPB_NaCl_Private nacl_interface = {
   &GetManifestURLArgument,
   &IsPNaCl,
   &DevInterfacesEnabled,
-  &DownloadManifestToBuffer
+  &DownloadManifestToBuffer,
+  &CreatePNaClManifest,
+  &CreateJsonManifest,
+  &DestroyManifest,
+  &ManifestGetProgramURL,
+  &ManifestResolveKey
 };
 
 }  // namespace

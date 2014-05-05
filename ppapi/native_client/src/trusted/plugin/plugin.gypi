@@ -8,7 +8,6 @@
     'common_sources': [
       'file_downloader.cc',
       'file_utils.cc',
-      'json_manifest.cc',
       'module_ppapi.cc',
       'nacl_subprocess.cc',
       'plugin.cc',

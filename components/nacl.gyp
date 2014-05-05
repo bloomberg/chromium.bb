@@ -159,6 +159,8 @@
             'nacl/renderer/manifest_downloader.h',
             'nacl/renderer/manifest_service_channel.cc',
             'nacl/renderer/manifest_service_channel.h',
+            'nacl/renderer/json_manifest.cc',
+            'nacl/renderer/json_manifest.h',
             'nacl/renderer/nexe_load_manager.cc',
             'nacl/renderer/nexe_load_manager.h',
             'nacl/renderer/pnacl_translation_resource_host.cc',
@@ -175,6 +177,7 @@
           ],
           'dependencies': [
             '../content/content.gyp:content_renderer',
+            '../third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
             '../third_party/WebKit/public/blink.gyp:blink',
             '../webkit/common/webkit_common.gyp:webkit_common',
           ],
