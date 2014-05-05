@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/files/file_enumerator.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/rand_util.h"
@@ -37,7 +38,7 @@ const char kTitlePageOfAppEngineAdminPage[] = "Instances";
 // on the running system. This test is not meant to run in the main browser
 // test suite since normal tester machines do not have webcams. Chrome will use
 // its fake camera for both tests, but Firefox will use the real webcam in the
-// Firefox interop test.
+// Firefox interop test. Thus, this test must on a machine with a real webcam.
 //
 // This test will bring up a AppRTC instance on localhost and verify that the
 // call gets up when connecting to the same room from two tabs in a browser.
@@ -184,6 +185,22 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
                                &firefox_);
   }
 
+  bool HasWebcamOnSystem() {
+#if defined(OS_LINUX)
+    // Implementation note: normally we would be able to figure this out with
+    // MediaStreamTrack.getSources, but we can't ask Chrome since it runs in
+    // fake device mode where it will not enumerate webcams on the system.
+    // Therefore, look for /dev/video* entries directly since this test only
+    // runs on Linux for now anyway.
+    base::FileEnumerator dev_video(base::FilePath(FILE_PATH_LITERAL("/dev")),
+                                   false, base::FileEnumerator::FILES,
+                                   FILE_PATH_LITERAL("video*"));
+    return !dev_video.Next().empty();
+#endif
+    NOTREACHED();
+    return false;
+  }
+
  private:
   base::ProcessHandle dev_appserver_;
   base::ProcessHandle firefox_;
@@ -230,6 +247,12 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest,
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return;
 #endif
+  if (!HasWebcamOnSystem()) {
+    LOG(INFO)
+        << "Didn't find a webcam on the system; skipping test since Firefox "
+        << "needs to be able to acquire a webcam.";
+    return;
+  }
 
   DetectErrorsInJavaScript();
   ASSERT_TRUE(LaunchApprtcInstanceOnLocalhost());
