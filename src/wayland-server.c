@@ -313,7 +313,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		if (closure == NULL && errno == ENOMEM) {
 			wl_resource_post_no_memory(resource);
 			break;
-		} else if ((closure == NULL && errno == EINVAL) ||
+		} else if (closure == NULL ||
 			   wl_closure_lookup_objects(closure, &client->objects) < 0) {
 			wl_resource_post_error(client->display_resource,
 					       WL_DISPLAY_ERROR_INVALID_METHOD,
@@ -321,6 +321,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 					       object->interface->name,
 					       object->id,
 					       message->name);
+			wl_closure_destroy(closure);
 			break;
 		}
 
