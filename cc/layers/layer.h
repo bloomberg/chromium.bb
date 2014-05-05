@@ -363,6 +363,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   virtual void SetIsMask(bool is_mask) {}
   virtual void ReduceMemoryUsage() {}
   virtual void OnOutputSurfaceCreated() {}
+  virtual bool IsSuitableForGpuRasterization() const;
 
   virtual scoped_refptr<base::debug::ConvertableToTraceFormat> TakeDebugInfo();
 

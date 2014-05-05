@@ -197,6 +197,7 @@ class CC_EXPORT LayerTreeHost {
   void set_has_gpu_rasterization_trigger(bool has_trigger) {
     has_gpu_rasterization_trigger_ = has_trigger;
   }
+  bool UseGpuRasterization() const;
 
   void SetViewportSize(const gfx::Size& device_viewport_size);
   void SetOverdrawBottomHeight(float overdraw_bottom_height);
@@ -399,6 +400,7 @@ class CC_EXPORT LayerTreeHost {
   gfx::Transform impl_transform_;
   bool trigger_idle_updates_;
   bool has_gpu_rasterization_trigger_;
+  bool content_is_suitable_for_gpu_rasterization_;
 
   SkColor background_color_;
   bool has_transparent_background_;

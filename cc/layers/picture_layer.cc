@@ -53,7 +53,7 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   }
 
   layer_impl->SetIsMask(is_mask_);
-  layer_impl->SetUseGpuRasterization(ShouldUseGpuRasterization());
+  layer_impl->SetUseGpuRasterization(layer_tree_host()->UseGpuRasterization());
 
   // Unlike other properties, invalidation must always be set on layer_impl.
   // See PictureLayerImpl::PushPropertiesTo for more details.
@@ -142,17 +142,6 @@ void PictureLayer::SetIsMask(bool is_mask) {
   is_mask_ = is_mask;
 }
 
-bool PictureLayer::ShouldUseGpuRasterization() const {
-  if (layer_tree_host()->settings().gpu_rasterization_forced) {
-    return true;
-  } else if (layer_tree_host()->settings().gpu_rasterization_enabled) {
-    return layer_tree_host()->has_gpu_rasterization_trigger() &&
-           pile_->is_suitable_for_gpu_rasterization();
-  } else {
-    return false;
-  }
-}
-
 bool PictureLayer::SupportsLCDText() const {
   return true;
 }
@@ -176,6 +165,10 @@ skia::RefPtr<SkPicture> PictureLayer::GetPicture() const {
                          ContentLayerClient::GRAPHICS_CONTEXT_ENABLED);
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder.endRecording());
   return picture;
+}
+
+bool PictureLayer::IsSuitableForGpuRasterization() const {
+  return pile_->is_suitable_for_gpu_rasterization();
 }
 
 void PictureLayer::RunMicroBenchmark(MicroBenchmark* benchmark) {

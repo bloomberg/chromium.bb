@@ -4970,55 +4970,135 @@ class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestHighResRequiredAfterEvictingUIResources);
 
+class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
+ protected:
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    settings->impl_side_painting = true;
+
+    EXPECT_FALSE(settings->gpu_rasterization_enabled);
+    EXPECT_FALSE(settings->gpu_rasterization_forced);
+  }
+
+  virtual void SetupTree() OVERRIDE {
+    LayerTreeHostTest::SetupTree();
+
+    scoped_refptr<PictureLayer> layer = PictureLayer::Create(&layer_client_);
+    layer->SetBounds(gfx::Size(10, 10));
+    layer->SetIsDrawable(true);
+    layer_tree_host()->root_layer()->AddChild(layer);
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    Layer* root = layer_tree_host()->root_layer();
+    PictureLayer* layer = static_cast<PictureLayer*>(root->child_at(0));
+    PicturePile* pile = layer->GetPicturePileForTesting();
+
+    // Verify default values.
+    EXPECT_TRUE(root->IsSuitableForGpuRasterization());
+    EXPECT_TRUE(layer->IsSuitableForGpuRasterization());
+    EXPECT_TRUE(pile->is_suitable_for_gpu_rasterization());
+    EXPECT_FALSE(layer_tree_host()->has_gpu_rasterization_trigger());
+    EXPECT_FALSE(layer_tree_host()->UseGpuRasterization());
+
+    // Setting gpu rasterization trigger does not enable gpu rasterization.
+    layer_tree_host()->set_has_gpu_rasterization_trigger(true);
+    EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
+    EXPECT_FALSE(layer_tree_host()->UseGpuRasterization());
+
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    LayerImpl* root = host_impl->pending_tree()->root_layer();
+    PictureLayerImpl* layer_impl =
+        static_cast<PictureLayerImpl*>(root->children()[0]);
+
+    EXPECT_FALSE(layer_impl->ShouldUseGpuRasterization());
+  }
+
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    LayerImpl* root = host_impl->active_tree()->root_layer();
+    PictureLayerImpl* layer_impl =
+        static_cast<PictureLayerImpl*>(root->children()[0]);
+
+    EXPECT_FALSE(layer_impl->ShouldUseGpuRasterization());
+    EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+  FakeContentLayerClient layer_client_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationDefault);
+
 class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
  protected:
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
     settings->impl_side_painting = true;
+
+    EXPECT_FALSE(settings->gpu_rasterization_enabled);
     settings->gpu_rasterization_enabled = true;
   }
 
   virtual void SetupTree() OVERRIDE {
     LayerTreeHostTest::SetupTree();
 
-    scoped_refptr<PictureLayer> parent = PictureLayer::Create(&client_);
-    parent->SetBounds(gfx::Size(10, 10));
-    layer_tree_host()->root_layer()->AddChild(parent);
-
-    scoped_refptr<Layer> child = PictureLayer::Create(&client_);
-    child->SetBounds(gfx::Size(10, 10));
-    parent->AddChild(child);
-
-    layer_tree_host()->set_has_gpu_rasterization_trigger(true);
+    scoped_refptr<PictureLayer> layer = PictureLayer::Create(&layer_client_);
+    layer->SetBounds(gfx::Size(10, 10));
+    layer->SetIsDrawable(true);
+    layer_tree_host()->root_layer()->AddChild(layer);
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() OVERRIDE {
+    Layer* root = layer_tree_host()->root_layer();
+    PictureLayer* layer = static_cast<PictureLayer*>(root->child_at(0));
+    PicturePile* pile = layer->GetPicturePileForTesting();
+
+    // Verify default values.
+    EXPECT_TRUE(root->IsSuitableForGpuRasterization());
+    EXPECT_TRUE(layer->IsSuitableForGpuRasterization());
+    EXPECT_TRUE(pile->is_suitable_for_gpu_rasterization());
+    EXPECT_FALSE(layer_tree_host()->has_gpu_rasterization_trigger());
+    EXPECT_FALSE(layer_tree_host()->UseGpuRasterization());
+
+    // Gpu rasterization trigger is relevant.
+    layer_tree_host()->set_has_gpu_rasterization_trigger(true);
+    EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
+    EXPECT_TRUE(layer_tree_host()->UseGpuRasterization());
+
+    // Content-based veto is relevant as well.
+    pile->SetUnsuitableForGpuRasterizationForTesting();
+    EXPECT_FALSE(pile->is_suitable_for_gpu_rasterization());
+    EXPECT_FALSE(layer->IsSuitableForGpuRasterization());
+    // Veto will take effect when layers are updated.
+    // The results will be verified after commit is completed below.
+    // Since we are manually marking picture pile as unsuitable,
+    // make sure that the layer gets a chance to update.
+    layer->SetNeedsDisplay();
+    PostSetNeedsCommitToMainThread();
+  }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     LayerImpl* root = host_impl->pending_tree()->root_layer();
-    PictureLayerImpl* parent =
+    PictureLayerImpl* layer_impl =
         static_cast<PictureLayerImpl*>(root->children()[0]);
-    PictureLayerImpl* child =
-        static_cast<PictureLayerImpl*>(parent->children()[0]);
 
-    EXPECT_TRUE(parent->ShouldUseGpuRasterization());
-    EXPECT_TRUE(child->ShouldUseGpuRasterization());
+    EXPECT_FALSE(layer_impl->ShouldUseGpuRasterization());
   }
 
   virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     LayerImpl* root = host_impl->active_tree()->root_layer();
-    PictureLayerImpl* parent =
+    PictureLayerImpl* layer_impl =
         static_cast<PictureLayerImpl*>(root->children()[0]);
-    PictureLayerImpl* child =
-        static_cast<PictureLayerImpl*>(parent->children()[0]);
 
-    EXPECT_TRUE(parent->ShouldUseGpuRasterization());
-    EXPECT_TRUE(child->ShouldUseGpuRasterization());
+    EXPECT_FALSE(layer_impl->ShouldUseGpuRasterization());
     EndTest();
   }
 
   virtual void AfterTest() OVERRIDE {}
 
-  FakeContentLayerClient client_;
+  FakeContentLayerClient layer_client_;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationEnabled);
@@ -5027,55 +5107,69 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
  protected:
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
     settings->impl_side_painting = true;
+
+    EXPECT_FALSE(settings->gpu_rasterization_forced);
     settings->gpu_rasterization_forced = true;
   }
 
   virtual void SetupTree() OVERRIDE {
     LayerTreeHostTest::SetupTree();
 
-    scoped_refptr<PictureLayer> parent = PictureLayer::Create(&client_);
-    parent->SetBounds(gfx::Size(10, 10));
-    layer_tree_host()->root_layer()->AddChild(parent);
-
-    scoped_refptr<Layer> child = PictureLayer::Create(&client_);
-    child->SetBounds(gfx::Size(10, 10));
-    parent->AddChild(child);
-
-    layer_tree_host()->set_has_gpu_rasterization_trigger(false);
+    scoped_refptr<PictureLayer> layer = PictureLayer::Create(&layer_client_);
+    layer->SetBounds(gfx::Size(10, 10));
+    layer->SetIsDrawable(true);
+    layer_tree_host()->root_layer()->AddChild(layer);
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() OVERRIDE {
+    Layer* root = layer_tree_host()->root_layer();
+    PictureLayer* layer = static_cast<PictureLayer*>(root->child_at(0));
+    PicturePile* pile = layer->GetPicturePileForTesting();
+
+    // Verify default values.
+    EXPECT_TRUE(root->IsSuitableForGpuRasterization());
+    EXPECT_TRUE(layer->IsSuitableForGpuRasterization());
+    EXPECT_TRUE(pile->is_suitable_for_gpu_rasterization());
+    EXPECT_FALSE(layer_tree_host()->has_gpu_rasterization_trigger());
+
+    // With gpu rasterization forced, gpu rasterization trigger is irrelevant.
+    EXPECT_TRUE(layer_tree_host()->UseGpuRasterization());
+    layer_tree_host()->set_has_gpu_rasterization_trigger(true);
+    EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
+    EXPECT_TRUE(layer_tree_host()->UseGpuRasterization());
+
+    // Content-based veto is irrelevant as well.
+    pile->SetUnsuitableForGpuRasterizationForTesting();
+    EXPECT_FALSE(pile->is_suitable_for_gpu_rasterization());
+    EXPECT_FALSE(layer->IsSuitableForGpuRasterization());
+    // Veto will take effect when layers are updated.
+    // The results will be verified after commit is completed below.
+    // Since we are manually marking picture pile as unsuitable,
+    // make sure that the layer gets a chance to update.
+    layer->SetNeedsDisplay();
+    PostSetNeedsCommitToMainThread();
+  }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     LayerImpl* root = host_impl->pending_tree()->root_layer();
-    PictureLayerImpl* parent =
+    PictureLayerImpl* layer_impl =
         static_cast<PictureLayerImpl*>(root->children()[0]);
-    PictureLayerImpl* child =
-        static_cast<PictureLayerImpl*>(parent->children()[0]);
 
-    // All layers should use GPU rasterization, regardless of whether a GPU
-    // rasterization trigger has been set.
-    EXPECT_TRUE(parent->ShouldUseGpuRasterization());
-    EXPECT_TRUE(child->ShouldUseGpuRasterization());
+    EXPECT_TRUE(layer_impl->ShouldUseGpuRasterization());
   }
 
   virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     LayerImpl* root = host_impl->active_tree()->root_layer();
-    PictureLayerImpl* parent =
+    PictureLayerImpl* layer_impl =
         static_cast<PictureLayerImpl*>(root->children()[0]);
-    PictureLayerImpl* child =
-        static_cast<PictureLayerImpl*>(parent->children()[0]);
 
-    // All layers should use GPU rasterization, regardless of whether a GPU
-    // rasterization trigger has been set.
-    EXPECT_TRUE(parent->ShouldUseGpuRasterization());
-    EXPECT_TRUE(child->ShouldUseGpuRasterization());
+    EXPECT_TRUE(layer_impl->ShouldUseGpuRasterization());
     EndTest();
   }
 
   virtual void AfterTest() OVERRIDE {}
 
-  FakeContentLayerClient client_;
+  FakeContentLayerClient layer_client_;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationForced);

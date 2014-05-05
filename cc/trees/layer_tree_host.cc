@@ -109,6 +109,7 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
       max_page_scale_factor_(1.f),
       trigger_idle_updates_(true),
       has_gpu_rasterization_trigger_(false),
+      content_is_suitable_for_gpu_rasterization_(true),
       background_color_(SK_ColorWHITE),
       has_transparent_background_(false),
       partial_texture_update_requests_(0),
@@ -589,6 +590,10 @@ void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {
   if (hud_layer_.get())
     hud_layer_->RemoveFromParent();
 
+  // Reset gpu rasterization flag.
+  // This flag is sticky until a new tree comes along.
+  content_is_suitable_for_gpu_rasterization_ = true;
+
   SetNeedsFullTreeSync();
 }
 
@@ -606,6 +611,17 @@ void LayerTreeHost::SetDebugState(const LayerTreeDebugState& debug_state) {
 
   SetNeedsCommit();
   proxy_->SetDebugState(debug_state);
+}
+
+bool LayerTreeHost::UseGpuRasterization() const {
+  if (settings_.gpu_rasterization_forced) {
+    return true;
+  } else if (settings_.gpu_rasterization_enabled) {
+    return has_gpu_rasterization_trigger_ &&
+           content_is_suitable_for_gpu_rasterization_;
+  } else {
+    return false;
+  }
 }
 
 void LayerTreeHost::SetViewportSize(const gfx::Size& device_viewport_size) {
@@ -982,6 +998,15 @@ void LayerTreeHost::PaintLayerContents(
       DCHECK(!it->paint_properties().bounds.IsEmpty());
       *did_paint_content |= it->Update(queue, &occlusion_tracker);
       *need_more_updates |= it->NeedMoreUpdates();
+      // Note the '&&' with previous is-suitable state.
+      // This means that once the layer-tree becomes unsuitable for gpu
+      // rasterization due to some content, it will continue to be unsuitable
+      // even if that content is replaced by gpu-friendly content.
+      // This is to avoid switching back-and-forth between gpu and sw
+      // rasterization which may be both bad for performance and visually
+      // jarring.
+      content_is_suitable_for_gpu_rasterization_ &=
+          it->IsSuitableForGpuRasterization();
     }
 
     occlusion_tracker.LeaveLayer(it);

@@ -1043,6 +1043,10 @@ bool Layer::NeedMoreUpdates() {
   return false;
 }
 
+bool Layer::IsSuitableForGpuRasterization() const {
+  return true;
+}
+
 scoped_refptr<base::debug::ConvertableToTraceFormat> Layer::TakeDebugInfo() {
   if (client_)
     return client_->TakeDebugInfo();
