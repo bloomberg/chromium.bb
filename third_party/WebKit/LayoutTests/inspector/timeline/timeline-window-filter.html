@@ -25,7 +25,7 @@ function test()
     model.loadFromFile({}, new WebInspector.Progress());
     timeline._currentViews[0]._refresh();
 
-    overviewPane._update();
+    overviewPane.update();
     InspectorTest.addResult("OverviewPane:");
     dumpDividers(overviewPane._overviewCalculator);
     InspectorTest.addResult("");

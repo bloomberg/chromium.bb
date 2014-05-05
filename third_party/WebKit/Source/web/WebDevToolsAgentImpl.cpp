@@ -197,6 +197,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebViewImpl* webViewImpl,
     WebDevToolsAgentClient* client)
     : m_hostId(client->hostIdentifier())
+    , m_layerTreeId(0)
     , m_client(client)
     , m_webViewImpl(webViewImpl)
     , m_attached(false)
@@ -256,6 +257,7 @@ void WebDevToolsAgentImpl::didNavigate()
 
 void WebDevToolsAgentImpl::didBeginFrame(int frameId)
 {
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "BeginMainThreadFrame", "layerTreeId", m_layerTreeId);
     if (InspectorController* ic = inspectorController())
         ic->didBeginFrame(frameId);
 }
@@ -268,14 +270,14 @@ void WebDevToolsAgentImpl::didCancelFrame()
 
 void WebDevToolsAgentImpl::willComposite()
 {
-    TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "CompositeLayers", "mainFrame", mainFrame());
+    TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "CompositeLayers", "layerTreeId", m_layerTreeId);
     if (InspectorController* ic = inspectorController())
         ic->willComposite();
 }
 
 void WebDevToolsAgentImpl::didComposite()
 {
-    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "CompositeLayers", "mainFrame", mainFrame());
+    TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "CompositeLayers");
     if (InspectorController* ic = inspectorController())
         ic->didComposite();
 }
@@ -640,6 +642,7 @@ void WebDevToolsAgentImpl::setProcessId(long processId)
 
 void WebDevToolsAgentImpl::setLayerTreeId(int layerTreeId)
 {
+    m_layerTreeId = layerTreeId;
     inspectorController()->setLayerTreeId(layerTreeId);
 }
 

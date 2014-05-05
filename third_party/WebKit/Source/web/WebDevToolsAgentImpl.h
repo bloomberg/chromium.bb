@@ -138,6 +138,7 @@ private:
     WebCore::LocalFrame* mainFrame();
 
     int m_hostId;
+    int m_layerTreeId;
     WebDevToolsAgentClient* m_client;
     WebViewImpl* m_webViewImpl;
     bool m_attached;
