@@ -15,18 +15,6 @@ ViewManager::ViewManager(Shell* shell)
       synchronizer_(new ViewManagerSynchronizer(this)) {}
 ViewManager::~ViewManager() {}
 
-void ViewManager::BuildNodeTree(const mojo::Callback<void()>& callback) {
-  synchronizer_->BuildNodeTree(callback);
-}
-
-void ViewManager::AddObserver(ViewManagerObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void ViewManager::RemoveObserver(ViewManagerObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 }  // namespace view_manager
 }  // namespace services
 }  // namespace mojo

@@ -5,7 +5,6 @@
 #ifndef MOJO_SERVICES_VIEW_MANAGER_IDS_H_
 #define MOJO_SERVICES_VIEW_MANAGER_IDS_H_
 
-#include "mojo/services/public/cpp/view_manager/util.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 #include "mojo/services/view_manager/view_manager_export.h"
 
@@ -56,8 +55,16 @@ struct MOJO_VIEW_MANAGER_EXPORT ViewId {
 };
 
 // Functions for converting to/from structs and transport values.
+inline uint16_t FirstIdFromTransportId(uint32_t id) {
+  return static_cast<uint16_t>((id >> 16) & 0xFFFF);
+}
+
+inline uint16_t SecondIdFromTransportId(uint32_t id) {
+  return static_cast<uint16_t>(id & 0xFFFF);
+}
+
 inline NodeId NodeIdFromTransportId(TransportNodeId id) {
-  return NodeId(HiWord(id), LoWord(id));
+  return NodeId(FirstIdFromTransportId(id), SecondIdFromTransportId(id));
 }
 
 inline TransportNodeId NodeIdToTransportId(const NodeId& id) {
@@ -65,7 +72,7 @@ inline TransportNodeId NodeIdToTransportId(const NodeId& id) {
 }
 
 inline ViewId ViewIdFromTransportId(TransportViewId id) {
-  return ViewId(HiWord(id), LoWord(id));
+  return ViewId(FirstIdFromTransportId(id), SecondIdFromTransportId(id));
 }
 
 inline TransportViewId ViewIdToTransportId(const ViewId& id) {

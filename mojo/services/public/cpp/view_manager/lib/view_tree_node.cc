@@ -118,8 +118,6 @@ ViewTreeNode::~ViewTreeNode() {
   if (parent_)
     parent_->RemoveChild(this);
 
-  if (manager_)
-    ViewManagerPrivate(manager_).synchronizer()->DestroyViewTreeNode(id_);
 }
 
 void ViewTreeNode::AddObserver(ViewTreeNodeObserver* observer) {
@@ -131,15 +129,19 @@ void ViewTreeNode::RemoveObserver(ViewTreeNodeObserver* observer) {
 }
 
 void ViewTreeNode::AddChild(ViewTreeNode* child) {
-  LocalAddChild(child);
-  if (manager_)
-    ViewManagerPrivate(manager_).synchronizer()->AddChild(child->id(), id_);
+  ScopedTreeNotifier notifier(child, child->parent(), this);
+  if (child->parent())
+    RemoveChildImpl(child, &child->parent_->children_);
+  children_.push_back(child);
+  child->parent_ = this;
+  ViewManagerPrivate(manager_).synchronizer()->AddChild(child->id(), id_);
 }
 
 void ViewTreeNode::RemoveChild(ViewTreeNode* child) {
-  LocalRemoveChild(child);
-  if (manager_)
-    ViewManagerPrivate(manager_).synchronizer()->RemoveChild(child->id(), id_);
+  DCHECK_EQ(this, child->parent());
+  ScopedTreeNotifier(child, this, NULL);
+  RemoveChildImpl(child, &children_);
+  ViewManagerPrivate(manager_).synchronizer()->RemoveChild(child->id(), id_);
 }
 
 bool ViewTreeNode::Contains(ViewTreeNode* child) const {
@@ -148,23 +150,6 @@ bool ViewTreeNode::Contains(ViewTreeNode* child) const {
       return true;
   }
   return false;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ViewTreeNode, private:
-
-void ViewTreeNode::LocalAddChild(ViewTreeNode* child) {
-  ScopedTreeNotifier notifier(child, child->parent(), this);
-  if (child->parent())
-    RemoveChildImpl(child, &child->parent_->children_);
-  children_.push_back(child);
-  child->parent_ = this;
-}
-
-void ViewTreeNode::LocalRemoveChild(ViewTreeNode* child) {
-  DCHECK_EQ(this, child->parent());
-  ScopedTreeNotifier(child, this, NULL);
-  RemoveChildImpl(child, &children_);
 }
 
 }  // namespace view_manager

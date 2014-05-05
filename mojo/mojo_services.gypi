@@ -154,7 +154,6 @@
       'sources': [
         'services/public/cpp/view_manager/lib/view.cc',
         'services/public/cpp/view_manager/lib/view_manager.cc',
-        'services/public/cpp/view_manager/lib/view_manager_observer.h',
         'services/public/cpp/view_manager/lib/view_manager_private.cc',
         'services/public/cpp/view_manager/lib/view_manager_private.h',
         'services/public/cpp/view_manager/lib/view_manager_synchronizer.cc',
@@ -181,8 +180,6 @@
         '../testing/gtest.gyp:gtest',
         'mojo_environment_chromium',
         'mojo_run_all_unittests',
-        'mojo_shell_test_support',
-        'mojo_view_manager_bindings',
         'mojo_view_manager_lib',
       ],
       'sources': [

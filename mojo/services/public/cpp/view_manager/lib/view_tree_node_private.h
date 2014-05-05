@@ -24,16 +24,6 @@ class ViewTreeNodePrivate {
 
   void ClearParent() { node_->parent_ = NULL; }
 
-  void set_id(TransportNodeId id) { node_->id_ = id; }
-
-  void set_view_manager(ViewManager* manager) {
-    node_->manager_ = manager;
-  }
-
-  void LocalAddChild(ViewTreeNode* child) {
-    node_->LocalAddChild(child);
-  }
-
  private:
   ViewTreeNode* node_;
 
