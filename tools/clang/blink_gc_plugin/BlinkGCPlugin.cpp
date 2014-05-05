@@ -116,6 +116,10 @@ const char kDerivesNonStackAllocated[] =
     "[blink-gc] Stack-allocated class %0 derives class %1"
     " which is not stack allocated.";
 
+const char kClassOverridesNew[] =
+    "[blink-gc] Garbage collected class %0"
+    " is not permitted to override its new operator.";
+
 struct BlinkGCPluginOptions {
   BlinkGCPluginOptions() : enable_oilpan(false), dump_graph(false) {}
   bool enable_oilpan;
@@ -564,6 +568,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         diagnostic_.getCustomDiagID(getErrorLevel(), kMissingFinalizeDispatch);
     diag_derives_non_stack_allocated_ =
         diagnostic_.getCustomDiagID(getErrorLevel(), kDerivesNonStackAllocated);
+    diag_class_overrides_new_ =
+        diagnostic_.getCustomDiagID(getErrorLevel(), kClassOverridesNew);
 
     // Register note messages.
     diag_field_requires_tracing_note_ = diagnostic_.getCustomDiagID(
@@ -699,6 +705,9 @@ class BlinkGCPluginConsumer : public ASTConsumer {
       CheckLeftMostDerived(info);
 
       CheckDispatch(info);
+
+      if (CXXMethodDecl* newop = info->DeclaresNewOperator())
+        ReportClassOverridesNew(info, newop);
 
       // TODO: Remove this exception once TreeShared is properly traced.
       if (!info->IsTreeShared()) {
@@ -1236,6 +1245,13 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         << info->record() << base->info()->record();
   }
 
+  void ReportClassOverridesNew(RecordInfo* info, CXXMethodDecl* newop) {
+    SourceLocation loc = newop->getLocStart();
+    SourceManager& manager = instance_.getSourceManager();
+    FullSourceLoc full_loc(loc, manager);
+    diagnostic_.Report(full_loc, diag_class_overrides_new_) << info->record();
+  }
+
   void NoteManualDispatchMethod(CXXMethodDecl* dispatch) {
     SourceLocation loc = dispatch->getLocStart();
     SourceManager& manager = instance_.getSourceManager();
@@ -1316,6 +1332,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   unsigned diag_missing_trace_dispatch_;
   unsigned diag_missing_finalize_dispatch_;
   unsigned diag_derives_non_stack_allocated_;
+  unsigned diag_class_overrides_new_;
 
   unsigned diag_field_requires_tracing_note_;
   unsigned diag_raw_ptr_to_gc_managed_class_note_;

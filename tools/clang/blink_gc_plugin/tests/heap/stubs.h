@@ -7,6 +7,14 @@
 
 #include "stddef.h"
 
+#define WTF_MAKE_FAST_ALLOCATED                 \
+    public:                                     \
+    void* operator new(size_t, void* p);        \
+    void* operator new[](size_t, void* p);      \
+    void* operator new(size_t size);            \
+    private:                                    \
+    typedef int __thisIsHereToForceASemicolonAfterThisMacro
+
 namespace WTF {
 
 template<typename T> class RefCounted { };

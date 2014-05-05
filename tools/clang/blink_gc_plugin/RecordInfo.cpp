@@ -230,6 +230,16 @@ bool RecordInfo::IsOnlyPlacementNewable() {
   return is_only_placement_newable_;
 }
 
+CXXMethodDecl* RecordInfo::DeclaresNewOperator() {
+  for (CXXRecordDecl::method_iterator it = record_->method_begin();
+       it != record_->method_end();
+       ++it) {
+    if (it->getNameAsString() == kNewOperatorName && it->getNumParams() == 1)
+      return *it;
+  }
+  return 0;
+}
+
 // An object requires a tracing method if it has any fields that need tracing.
 bool RecordInfo::RequiresTraceMethod() {
   if (IsStackAllocated())
