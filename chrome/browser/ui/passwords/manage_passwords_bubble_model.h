@@ -67,20 +67,22 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   // content to the user. We shouldn't log to UMA in this case.
   void OnCloseWithoutLogging();
 
-  ManagePasswordsBubbleState manage_passwords_bubble_state() {
+  ManagePasswordsBubbleState manage_passwords_bubble_state() const {
     return manage_passwords_bubble_state_;
   }
 
-  bool WaitingToSavePassword() {
+  bool WaitingToSavePassword() const {
     return manage_passwords_bubble_state() == PASSWORD_TO_BE_SAVED;
   }
 
-  const base::string16& title() { return title_; }
-  const autofill::PasswordForm& pending_credentials() {
+  const base::string16& title() const { return title_; }
+  const autofill::PasswordForm& pending_credentials() const {
     return pending_credentials_;
   }
-  const autofill::PasswordFormMap& best_matches() { return best_matches_; }
-  const base::string16& manage_link() { return manage_link_; }
+  const autofill::PasswordFormMap& best_matches() const {
+    return best_matches_;
+  }
+  const base::string16& manage_link() const { return manage_link_; }
 
   // Gets and sets the reason the bubble was displayed; exposed for testing.
   password_manager::metrics_util::UIDisplayDisposition display_disposition()

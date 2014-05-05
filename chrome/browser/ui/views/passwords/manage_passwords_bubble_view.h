@@ -27,12 +27,72 @@ class LabelButton;
 class GridLayout;
 }
 
+// The ManagePasswordsBubbleView controls the contents of the bubble which
+// pops up when Chrome offers to save a user's password, or when the user
+// interacts with the Omnibox icon. It has two distinct states:
+//
+// 1. PendingView: Offers the user the possibility of saving credentials.
+// 2. ManageView: Displays the current page's saved credentials.
+//
+// TODO(mkwst): Add a third state: "Informing the user that the current page
+// is blacklisted."
 class ManagePasswordsBubbleView : public ManagePasswordsBubble,
-                                  public views::BubbleDelegateView,
-                                  public views::ButtonListener,
-                                  public views::ComboboxListener,
-                                  public views::LinkListener {
+                                  public views::BubbleDelegateView {
  public:
+  // A view offering the user the ability to save credentials. Contains a
+  // single ManagePasswordItemView, along with a "Save Passwords" button
+  // and a rejection combobox.
+  class PendingView : public views::View,
+                      public views::ButtonListener,
+                      public views::ComboboxListener {
+   public:
+    explicit PendingView(ManagePasswordsBubbleView* parent);
+    virtual ~PendingView();
+
+   private:
+    // views::ButtonListener:
+    virtual void ButtonPressed(views::Button* sender,
+                               const ui::Event& event) OVERRIDE;
+
+    // Handles the event when the user changes an index of a combobox.
+    virtual void OnPerformAction(views::Combobox* source) OVERRIDE;
+
+    ManagePasswordsBubbleView* parent_;
+
+    views::BlueButton* save_button_;
+
+    // The combobox doesn't take ownership of its model. If we created a
+    // combobox we need to ensure that we delete the model here, and because the
+    // combobox uses the model in it's destructor, we need to make sure we
+    // delete the model _after_ the combobox itself is deleted.
+    scoped_ptr<SavePasswordRefusalComboboxModel> combobox_model_;
+    scoped_ptr<views::Combobox> refuse_combobox_;
+  };
+
+  // A view offering the user a list of her currently saved credentials
+  // for the current page, along with a "Manage passwords" link and a
+  // "Done" button.
+  class ManageView : public views::View,
+                     public views::ButtonListener,
+                     public views::LinkListener {
+   public:
+    explicit ManageView(ManagePasswordsBubbleView* parent);
+    virtual ~ManageView();
+
+   private:
+    // views::ButtonListener:
+    virtual void ButtonPressed(views::Button* sender,
+                               const ui::Event& event) OVERRIDE;
+
+    // views::LinkListener:
+    virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+
+    ManagePasswordsBubbleView* parent_;
+
+    views::Link* manage_link_;
+    views::LabelButton* done_button_;
+  };
+
   // Shows the bubble.
   static void ShowBubble(content::WebContents* web_contents,
                          DisplayReason reason);
@@ -44,31 +104,10 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   static bool IsShowing();
 
  private:
-  enum ColumnSetType {
-    // | | (FILL, FILL) | |
-    // Used for the bubble's header, the credentials list, and for simple
-    // messages like "No passwords".
-    SINGLE_VIEW_COLUMN_SET = 0,
-
-    // | | (TRAILING, CENTER) | | (TRAILING, CENTER) | |
-    // Used for buttons at the bottom of the bubble which should nest at the
-    // bottom-right corner.
-    DOUBLE_BUTTON_COLUMN_SET = 1,
-
-    // | | (LEADING, CENTER) | | (TRAILING, CENTER) | |
-    // Used for buttons at the bottom of the bubble which should occupy
-    // the corners.
-    LINK_BUTTON_COLUMN_SET = 2,
-  };
-
   ManagePasswordsBubbleView(content::WebContents* web_contents,
                             views::View* anchor_view,
                             DisplayReason reason);
   virtual ~ManagePasswordsBubbleView();
-
-  // Construct an appropriate ColumnSet for the given |type|, and add it
-  // to |layout|.
-  void BuildColumnSet(views::GridLayout* layout, ColumnSetType type);
 
   // If the bubble is not anchored to a view, places the bubble in the top
   // right (left in RTL) of the |screen_bounds| that contain |web_contents_|'s
@@ -92,32 +131,10 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   virtual void Init() OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
 
-  // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
-
-  // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
-
-  // Handles the event when the user changes an index of a combobox.
-  virtual void OnPerformAction(views::Combobox* source) OVERRIDE;
-
   // Singleton instance of the Password bubble. The Password bubble can only be
   // shown on the active browser window, so there is no case in which it will be
   // shown twice at the same time.
   static ManagePasswordsBubbleView* manage_passwords_bubble_;
-
-  // The views that are shown in the bubble.
-  views::BlueButton* save_button_;
-  views::Link* manage_link_;
-  views::LabelButton* done_button_;
-
-  // The combobox doesn't take ownership of it's model. If we created a combobox
-  // we need to ensure that we delete the model here, and because the combobox
-  // uses the model in it's destructor, we need to make sure we delete the model
-  // _after_ the combobox itself is deleted.
-  scoped_ptr<SavePasswordRefusalComboboxModel> combobox_model_;
-  scoped_ptr<views::Combobox> refuse_combobox_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleView);
 };

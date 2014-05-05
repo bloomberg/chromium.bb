@@ -25,16 +25,17 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
       ManagePasswordsBubbleUIController::FromWebContents(web_contents_);
 
-  if (manage_passwords_bubble_ui_controller->password_to_be_saved())
+  if (manage_passwords_bubble_ui_controller->password_to_be_saved()) {
     manage_passwords_bubble_state_ = PASSWORD_TO_BE_SAVED;
-  else
+    pending_credentials_ =
+        manage_passwords_bubble_ui_controller->PendingCredentials();
+  } else {
     manage_passwords_bubble_state_ = MANAGE_PASSWORDS;
+  }
 
   title_ = l10n_util::GetStringUTF16(
       (manage_passwords_bubble_state_ == PASSWORD_TO_BE_SAVED) ?
           IDS_SAVE_PASSWORD : IDS_MANAGE_PASSWORDS);
-  pending_credentials_ =
-      manage_passwords_bubble_ui_controller->PendingCredentials();
   best_matches_ = manage_passwords_bubble_ui_controller->best_matches();
   manage_link_ =
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS_LINK);
