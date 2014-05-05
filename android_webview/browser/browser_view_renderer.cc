@@ -114,7 +114,9 @@ BrowserViewRenderer::BrowserViewRenderer(
       compositor_needs_continuous_invalidate_(false),
       block_invalidates_(false),
       width_(0),
-      height_(0) {
+      height_(0),
+      num_tiles_(0u),
+      num_bytes_(0u) {
   CHECK(web_contents_);
   content::SynchronousCompositor::SetClientForWebContents(web_contents_, this);
 

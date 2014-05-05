@@ -21,6 +21,7 @@ SharedRendererState::SharedRendererState(
       client_on_ui_(client),
       weak_factory_on_ui_thread_(this),
       ui_thread_weak_ptr_(weak_factory_on_ui_thread_.GetWeakPtr()),
+      compositor_(NULL),
       memory_policy_dirty_(false),
       hardware_initialized_(false) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
