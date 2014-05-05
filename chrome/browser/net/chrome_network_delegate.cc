@@ -768,6 +768,7 @@ bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
   static const char* const kLocalAccessWhiteList[] = {
       "/home/chronos/user/Downloads",
       "/home/chronos/user/log",
+      "/home/chronos/user/WebRTC Logs",
       "/media",
       "/opt/oem",
       "/usr/share/chromeos-assets",
