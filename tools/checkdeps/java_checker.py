@@ -56,7 +56,7 @@ class JavaChecker(object):
         if d == 'out':
           dirs.remove(d)
         # Skip third-party directories.
-        if d == 'third_party':
+        if d in ('third_party', 'ThirdParty'):
           dirs.remove(d)
       for f in files:
         if f.endswith('.java'):
