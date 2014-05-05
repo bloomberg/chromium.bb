@@ -250,7 +250,7 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         style->addToTextDecorationsInEffect(style->textDecoration());
 
     if (style->overflowX() != OVISIBLE || style->overflowY() != OVISIBLE)
-        adjustOverflow(style, e);
+        adjustOverflow(style);
 
     // Cull out any useless layers and also repeat patterns into additional layers.
     style->adjustBackgroundLayers();
@@ -378,7 +378,7 @@ void StyleAdjuster::adjustStyleForTagName(RenderStyle* style, RenderStyle* paren
     }
 }
 
-void StyleAdjuster::adjustOverflow(RenderStyle* style, Element* element)
+void StyleAdjuster::adjustOverflow(RenderStyle* style)
 {
     ASSERT(style->overflowX() != OVISIBLE || style->overflowY() != OVISIBLE);
 
