@@ -82,6 +82,8 @@ URLFetcherCore::URLFetcherCore(URLFetcher* fetcher,
       upload_content_set_(false),
       upload_range_offset_(0),
       upload_range_length_(0),
+      referrer_policy_(
+          URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
       is_chunked_upload_(false),
       was_cancelled_(false),
       stop_on_redirect_(false),
@@ -202,6 +204,11 @@ int URLFetcherCore::GetLoadFlags() const {
 
 void URLFetcherCore::SetReferrer(const std::string& referrer) {
   referrer_ = referrer;
+}
+
+void URLFetcherCore::SetReferrerPolicy(
+    URLRequest::ReferrerPolicy referrer_policy) {
+  referrer_policy_ = referrer_policy;
 }
 
 void URLFetcherCore::SetExtraRequestHeaders(
@@ -510,6 +517,7 @@ void URLFetcherCore::StartURLRequest() {
     request_->EnableChunkedUpload();
   request_->SetLoadFlags(flags);
   request_->SetReferrer(referrer_);
+  request_->set_referrer_policy(referrer_policy_);
   request_->set_first_party_for_cookies(first_party_for_cookies_.is_empty() ?
       original_url_ : first_party_for_cookies_);
   if (url_request_data_key_ && !url_request_create_data_callback_.is_null()) {

@@ -50,6 +50,8 @@ class NET_EXPORT_PRIVATE URLFetcherImpl : public URLFetcher {
   virtual void SetLoadFlags(int load_flags) OVERRIDE;
   virtual int GetLoadFlags() const OVERRIDE;
   virtual void SetReferrer(const std::string& referrer) OVERRIDE;
+  virtual void SetReferrerPolicy(
+      URLRequest::ReferrerPolicy referrer_policy) OVERRIDE;
   virtual void SetExtraRequestHeaders(
       const std::string& extra_request_headers) OVERRIDE;
   virtual void AddExtraRequestHeader(const std::string& header_line) OVERRIDE;
