@@ -1039,7 +1039,7 @@ emit_types_forward_declarations(struct protocol *protocol,
 					continue;
 
 				m->all_null = 0;
-				p = wl_array_add(types, sizeof *p);
+				p = fail_on_null(wl_array_add(types, sizeof *p));
 				*p = a->interface_name;
 				break;
 			default:
