@@ -24,4 +24,8 @@ bool VideoDecoder::CanReadWithoutStalling() const {
   return true;
 }
 
+int VideoDecoder::GetMaxDecodeRequests() const {
+  return 1;
+}
+
 }  // namespace media

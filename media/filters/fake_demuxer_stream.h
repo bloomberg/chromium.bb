@@ -49,6 +49,9 @@ class FakeDemuxerStream : public DemuxerStream {
   // Satisfies the pending read with the next scheduled status and buffer.
   void SatisfyRead();
 
+  // Satisfies pending read request and then holds the following read.
+  void SatisfyReadAndHoldNext();
+
   // Satisfies the pending read (if any) with kAborted and NULL. This call
   // always clears |hold_next_read_|.
   void Reset();

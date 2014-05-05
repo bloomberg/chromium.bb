@@ -47,11 +47,16 @@ class MEDIA_EXPORT VideoDecoder {
                           const PipelineStatusCB& status_cb) = 0;
 
   // Requests a |buffer| to be decoded. The status of the decoder and decoded
-  // frame are returned via the provided callback. Only one decode may be in
-  // flight at any given time.
+  // frame are returned via the provided callback. Some decoders may allow
+  // decoding multiple buffers in parallel. Callers should call
+  // GetMaxDecodeRequests() to get number of buffers that may be decoded in
+  // parallel. Decoder must call |decode_cb| in the same order in which Decode()
+  // is called.
   //
   // Implementations guarantee that the callback will not be called from within
-  // this method.
+  // this method and that |decode_cb| will not be blocked on the following
+  // Decode() calls (i.e. |decode_cb| will be called even Decode() is never
+  // called again).
   //
   // If the returned status is kOk:
   // - Non-EOS (end of stream) frame contains decoded video data.
@@ -65,6 +70,8 @@ class MEDIA_EXPORT VideoDecoder {
   // Some VideoDecoders may queue up multiple VideoFrames from a single
   // DecoderBuffer, if we have any such queued frames this will return the next
   // one. Otherwise we return a NULL VideoFrame.
+  //
+  // TODO(xhwang): Revisit this method.
   virtual scoped_refptr<VideoFrame> GetDecodeOutput();
 
   // Resets decoder state, fulfilling all pending DecodeCB and dropping extra
@@ -88,6 +95,9 @@ class MEDIA_EXPORT VideoDecoder {
   // this will always return true. Override and return false for decoders that
   // use a fixed set of VideoFrames for decoding.
   virtual bool CanReadWithoutStalling() const;
+
+  // Returns maximum number of parallel decode requests.
+  virtual int GetMaxDecodeRequests() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoDecoder);

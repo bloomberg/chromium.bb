@@ -88,6 +88,9 @@ class MEDIA_EXPORT DecoderStream {
   // behavior.
   bool CanReadWithoutStalling() const;
 
+  // Returns true if one more decode request can be submitted to the decoder.
+  bool CanDecodeMore() const;
+
   // Allows callers to register for notification of splice buffers from the
   // demuxer.  I.e., DecoderBuffer::splice_timestamp() is not kNoTimestamp().
   //
@@ -129,9 +132,6 @@ class MEDIA_EXPORT DecoderStream {
   // Satisfy pending |read_cb_| with |status| and |output|.
   void SatisfyRead(Status status,
                    const scoped_refptr<Output>& output);
-
-  // Abort pending |read_cb_|.
-  void AbortRead();
 
   // Decodes |buffer| and returns the result via OnDecodeOutputReady().
   void Decode(const scoped_refptr<DecoderBuffer>& buffer);
@@ -189,6 +189,13 @@ class MEDIA_EXPORT DecoderStream {
   // splice_timestamp() of kNoTimestamp() is encountered.
   bool active_splice_;
 
+  // Decoded buffers that haven't been read yet. Used when the decoder supports
+  // parallel decoding.
+  std::list<scoped_refptr<Output> > ready_outputs_;
+
+  // Number of outstanding decode requests sent to the |decoder_|.
+  int pending_decode_requests_;
+
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<DecoderStream<StreamType> > weak_factory_;
 
@@ -199,6 +206,9 @@ class MEDIA_EXPORT DecoderStream {
 
 template <>
 bool DecoderStream<DemuxerStream::AUDIO>::CanReadWithoutStalling() const;
+
+template <>
+bool DecoderStream<DemuxerStream::AUDIO>::CanDecodeMore() const;
 
 typedef DecoderStream<DemuxerStream::VIDEO> VideoFrameStream;
 typedef DecoderStream<DemuxerStream::AUDIO> AudioBufferStream;

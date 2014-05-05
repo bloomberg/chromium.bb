@@ -111,6 +111,15 @@ void FakeDemuxerStream::SatisfyRead() {
   DoRead();
 }
 
+void FakeDemuxerStream::SatisfyReadAndHoldNext() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_EQ(read_to_hold_, next_read_num_);
+  DCHECK(!read_cb_.is_null());
+
+  ++read_to_hold_;
+  DoRead();
+}
+
 void FakeDemuxerStream::Reset() {
   read_to_hold_ = -1;
 
