@@ -197,7 +197,7 @@ void StyleResolver::appendCSSStyleSheet(CSSStyleSheet* cssSheet)
 void StyleResolver::appendPendingAuthorStyleSheets()
 {
     setBuildScopedStyleTreeInDocumentOrder(false);
-    for (ListHashSet<CSSStyleSheet*, 16>::iterator it = m_pendingStyleSheets.begin(); it != m_pendingStyleSheets.end(); ++it)
+    for (WillBeHeapListHashSet<RawPtrWillBeMember<CSSStyleSheet>, 16>::iterator it = m_pendingStyleSheets.begin(); it != m_pendingStyleSheets.end(); ++it)
         appendCSSStyleSheet(*it);
 
     m_pendingStyleSheets.clear();
@@ -1461,6 +1461,7 @@ void StyleResolver::trace(Visitor* visitor)
     visitor->trace(m_uncommonAttributeRuleSet);
     visitor->trace(m_watchedSelectorsRules);
     visitor->trace(m_treeBoundaryCrossingRules);
+    visitor->trace(m_pendingStyleSheets);
 }
 
 } // namespace WebCore

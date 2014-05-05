@@ -304,10 +304,7 @@ private:
 
     OwnPtrWillBeMember<ViewportStyleResolver> m_viewportStyleResolver;
 
-    // FIXME: Oilpan: This should be a WillBeHeapListHashSet.
-    // This is safe for now, but should be updated when we support
-    // heap allocated ListHashSets.
-    ListHashSet<CSSStyleSheet*, 16> m_pendingStyleSheets;
+    WillBeHeapListHashSet<RawPtrWillBeMember<CSSStyleSheet>, 16> m_pendingStyleSheets;
 
     ScopedStyleTree m_styleTree;
 

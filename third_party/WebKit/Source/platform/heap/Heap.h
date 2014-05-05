@@ -39,6 +39,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/LinkedHashSet.h"
+#include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
@@ -1295,6 +1296,8 @@ public:
     static const size_t kMaxUnquantizedAllocation = maxHeapObjectSize;
 };
 
+// This is a static-only class used as a trait on collections to make them heap allocated.
+// However see also HeapListHashSetAllocator.
 class HeapAllocator {
 public:
     typedef HeapAllocatorQuantizer Quantizer;
@@ -1335,15 +1338,12 @@ public:
         visitor->mark(buffer, FinalizedHeapObjectHeader::fromPayload(buffer)->traceCallback());
     }
 
-    static void markNoTracing(Visitor* visitor, const void* t)
-    {
-        visitor->mark(t, reinterpret_cast<TraceCallback>(0));
-    }
+    static void markNoTracing(Visitor* visitor, const void* t) { visitor->markNoTracing(t); }
 
     template<typename T, typename Traits>
     static void trace(Visitor* visitor, T& t)
     {
-        CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, WeakPointersActWeak, T, Traits>::mark(visitor, t);
+        CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, WeakPointersActWeak, T, Traits>::trace(visitor, t);
     }
 
     template<typename T>
@@ -1414,10 +1414,66 @@ public:
         return *other;
     }
 
+    static bool isAlive(Visitor* visitor, void* pointer) { return visitor->isAlive(pointer); }
+
 private:
     template<typename T, size_t u, typename V> friend class WTF::Vector;
     template<typename T, typename U, typename V, typename W> friend class WTF::HashSet;
     template<typename T, typename U, typename V, typename W, typename X, typename Y> friend class WTF::HashMap;
+};
+
+template<typename Value>
+static void traceListHashSetValue(Visitor* visitor, Value& value)
+{
+    // We use the default hash traits for the value in the node, because
+    // ListHashSet does not let you specify any specific ones.
+    // We don't allow ListHashSet of WeakMember, so we set that one false
+    // (there's an assert elsewhere), but we have to specify some value for the
+    // strongify template argument, so we specify WeakPointersActWeak,
+    // arbitrarily.
+    CollectionBackingTraceTrait<WTF::ShouldBeTraced<WTF::HashTraits<Value> >::value, false, WeakPointersActWeak, Value, WTF::HashTraits<Value> >::trace(visitor, value);
+}
+
+// The inline capacity is just a dummy template argument to match the off-heap
+// allocator.
+// This inherits from the static-only HeapAllocator trait class, but we do
+// declare pointers to instances. These pointers are always null, and no
+// objects are instantiated.
+template<typename ValueArg, size_t inlineCapacity>
+struct HeapListHashSetAllocator : public HeapAllocator {
+    typedef HeapAllocator TableAllocator;
+    typedef WTF::ListHashSetNode<ValueArg, HeapListHashSetAllocator> Node;
+
+public:
+    class AllocatorProvider {
+    public:
+        // For the heap allocation we don't need an actual allocator object, so we just
+        // return null.
+        HeapListHashSetAllocator* get() const { return 0; }
+
+        // No allocator object is needed.
+        void createAllocatorIfNeeded() { }
+
+        // There is no allocator object in the HeapListHashSet (unlike in
+        // the regular ListHashSet) so there is nothing to swap.
+        void swap(AllocatorProvider& other) { }
+    };
+
+    void deallocate(void* dummy) { }
+
+    // This is not a static method even though it could be, because it
+    // needs to match the one that the (off-heap) ListHashSetAllocator
+    // has. The 'this' pointer will always be null.
+    void* allocateNode()
+    {
+        COMPILE_ASSERT(!WTF::IsWeak<ValueArg>::value, WeakPointersInAListHashSetWillJustResultInNullEntriesInTheSetThatsNotWhatYouWantConsiderUsingLinkedHashSetInstead);
+        return malloc<void*, Node>(sizeof(Node));
+    }
+
+    static void traceValue(Visitor* visitor, Node* node)
+    {
+        traceListHashSetValue(visitor, node->m_value);
+    }
 };
 
 // FIXME: These should just be template aliases:
@@ -1446,6 +1502,12 @@ template<
     typename HashArg = typename DefaultHash<ValueArg>::Hash,
     typename TraitsArg = HashTraits<ValueArg> >
 class HeapLinkedHashSet : public LinkedHashSet<ValueArg, HashArg, TraitsArg, HeapAllocator> { };
+
+template<
+    typename ValueArg,
+    size_t inlineCapacity = 0, // The inlineCapacity is just a dummy to match ListHashSet (off-heap).
+    typename HashArg = typename DefaultHash<ValueArg>::Hash>
+class HeapListHashSet : public ListHashSet<ValueArg, inlineCapacity, HashArg, HeapListHashSetAllocator<ValueArg, inlineCapacity> > { };
 
 template<
     typename Value,
@@ -1663,7 +1725,32 @@ struct GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator> > {
         };
         return &info;
     }
-    static const GCInfo info;
+};
+
+template<typename ValueArg, size_t inlineCapacity, typename U>
+struct GCInfoTrait<ListHashSet<ValueArg, inlineCapacity, U, HeapListHashSetAllocator<ValueArg, inlineCapacity> > > {
+    static const GCInfo* get()
+    {
+        static const GCInfo info = {
+            TraceTrait<ListHashSet<ValueArg, inlineCapacity, U, HeapListHashSetAllocator<ValueArg, inlineCapacity> > >::trace,
+            0,
+            false // ListHashSet needs no finalization though its backing might.
+        };
+        return &info;
+    }
+};
+
+template<typename T, typename Allocator>
+struct GCInfoTrait<WTF::ListHashSetNode<T, Allocator> > {
+    static const GCInfo* get()
+    {
+        static const GCInfo info = {
+            TraceTrait<WTF::ListHashSetNode<T, Allocator> >::trace,
+            WTF::ListHashSetNode<T, Allocator>::finalize,
+            WTF::HashTraits<T>::needsDestruction // The node needs destruction if its data does.
+        };
+        return &info;
+    }
 };
 
 template<typename T>
@@ -1807,7 +1894,7 @@ struct GCInfoTrait<HeapHashTableBacking<Table> > {
 
 template<typename T, typename Traits>
 struct BaseVisitVectorBackingTrait {
-    static void mark(WebCore::Visitor* visitor, void* self)
+    static void trace(WebCore::Visitor* visitor, void* self)
     {
         // The allocator can oversize the allocation a little, according to
         // the allocation granularity. The extra size is included in the
@@ -1822,42 +1909,70 @@ struct BaseVisitVectorBackingTrait {
         // elements to mark.
         size_t length = header->payloadSize() / sizeof(T);
         for (size_t i = 0; i < length; i++)
-            CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, WeakPointersActStrong, T, Traits>::mark(visitor, array[i]);
+            CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, WeakPointersActStrong, T, Traits>::trace(visitor, array[i]);
     }
 };
 
+// Almost all hash table backings are visited with this specialization.
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename Table>
 struct BaseVisitHashTableBackingTrait {
     typedef typename Table::ValueType Value;
     typedef typename Table::ValueTraits Traits;
-    static void mark(WebCore::Visitor* visitor, void* self)
+    static void trace(WebCore::Visitor* visitor, void* self)
     {
         Value* array = reinterpret_cast<Value*>(self);
         WebCore::FinalizedHeapObjectHeader* header = WebCore::FinalizedHeapObjectHeader::fromPayload(self);
         size_t length = header->payloadSize() / sizeof(Value);
         for (size_t i = 0; i < length; i++) {
             if (!WTF::HashTableHelper<Value, typename Table::ExtractorType, typename Table::KeyTraitsType>::isEmptyOrDeletedBucket(array[i]))
-                CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, strongify, Value, Traits>::mark(visitor, array[i]);
+                CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, strongify, Value, Traits>::trace(visitor, array[i]);
+        }
+    }
+};
+
+// This specialization of BaseVisitHashTableBackingTrait is for the backing of
+// HeapListHashSet. This is for the case that we find a reference to the
+// backing from the stack. That probably means we have a GC while we are in a
+// ListHashSet method since normal API use does not put pointers to the backing
+// on the stack.
+template<ShouldWeakPointersBeMarkedStrongly strongify, typename NodeContents, size_t inlineCapacity, typename T, typename U, typename V, typename W, typename X, typename Y>
+struct BaseVisitHashTableBackingTrait<strongify, WTF::HashTable<WTF::ListHashSetNode<NodeContents, HeapListHashSetAllocator<T, inlineCapacity> >*, U, V, W, X, Y, HeapAllocator> > {
+    typedef WTF::ListHashSetNode<NodeContents, HeapListHashSetAllocator<T, inlineCapacity> > Node;
+    typedef WTF::HashTable<Node*, U, V, W, X, Y, HeapAllocator> Table;
+    static void trace(WebCore::Visitor* visitor, void* self)
+    {
+        Node** array = reinterpret_cast<Node**>(self);
+        WebCore::FinalizedHeapObjectHeader* header = WebCore::FinalizedHeapObjectHeader::fromPayload(self);
+        size_t length = header->payloadSize() / sizeof(Node*);
+        for (size_t i = 0; i < length; i++) {
+            if (!WTF::HashTableHelper<Node*, typename Table::ExtractorType, typename Table::KeyTraitsType>::isEmptyOrDeletedBucket(array[i])) {
+                traceListHashSetValue(visitor, array[i]->m_value);
+                // Just mark the node without tracing because we already traced
+                // the contents, and there is no need to trace the next and
+                // prev fields since iterating over the hash table backing will
+                // find the whole chain.
+                visitor->markNoTracing(array[i]);
+            }
         }
     }
 };
 
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename Key, typename Value, typename Traits>
 struct BaseVisitKeyValuePairTrait {
-    static void mark(WebCore::Visitor* visitor, WTF::KeyValuePair<Key, Value>& self)
+    static void trace(WebCore::Visitor* visitor, WTF::KeyValuePair<Key, Value>& self)
     {
         ASSERT(WTF::ShouldBeTraced<Traits>::value || (Traits::isWeak && strongify == WeakPointersActStrong));
-        CollectionBackingTraceTrait<WTF::ShouldBeTraced<typename Traits::KeyTraits>::value, Traits::KeyTraits::isWeak, strongify, Key, typename Traits::KeyTraits>::mark(visitor, self.key);
-        CollectionBackingTraceTrait<WTF::ShouldBeTraced<typename Traits::ValueTraits>::value, Traits::ValueTraits::isWeak, strongify, Value, typename Traits::ValueTraits>::mark(visitor, self.value);
+        CollectionBackingTraceTrait<WTF::ShouldBeTraced<typename Traits::KeyTraits>::value, Traits::KeyTraits::isWeak, strongify, Key, typename Traits::KeyTraits>::trace(visitor, self.key);
+        CollectionBackingTraceTrait<WTF::ShouldBeTraced<typename Traits::ValueTraits>::value, Traits::ValueTraits::isWeak, strongify, Value, typename Traits::ValueTraits>::trace(visitor, self.value);
     }
 };
 
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename Value, typename Traits>
 struct BaseVisitLinkedNodeTrait {
-    static void mark(WebCore::Visitor* visitor, WTF::LinkedHashSetNode<Value>& self)
+    static void trace(WebCore::Visitor* visitor, WTF::LinkedHashSetNode<Value>& self)
     {
         ASSERT(WTF::ShouldBeTraced<Traits>::value || (Traits::isWeak && strongify == WeakPointersActStrong));
-        CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, strongify, Value, Traits>::mark(visitor, self.m_value);
+        CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, strongify, Value, Traits>::trace(visitor, self.m_value);
     }
 };
 
@@ -1865,16 +1980,16 @@ struct BaseVisitLinkedNodeTrait {
 // do nothing, even if WeakPointersActStrong.
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename U>
 struct CollectionBackingTraceTrait<false, false, strongify, T, U> {
-    static void mark(Visitor*, const T&) { }
-    static void mark(Visitor*, const void*) { }
+    static void trace(Visitor*, const T&) { }
+    static void trace(Visitor*, const void*) { }
 };
 
 // Catch-all for things that don't need marking. They have weak pointers, but
 // we are not marking weak pointers in this object in this GC.
 template<typename T, typename U>
 struct CollectionBackingTraceTrait<false, true, WeakPointersActWeak, T, U> {
-    static void mark(Visitor*, const T&) { }
-    static void mark(Visitor*, const void*) { }
+    static void trace(Visitor*, const T&) { }
+    static void trace(Visitor*, const void*) { }
 };
 
 // For each type that we understand we have the strongified case and the
@@ -1909,14 +2024,29 @@ template<bool isWeak, ShouldWeakPointersBeMarkedStrongly strongify, typename Key
 struct CollectionBackingTraceTrait<true, isWeak, strongify, WTF::KeyValuePair<Key, Value>, Traits> : public BaseVisitKeyValuePairTrait<strongify, Key, Value, Traits> {
 };
 
-// List hash set node that would not normally need marking, but strongified.
+// Linked hash set node that would not normally need marking, but strongified.
 template<typename Value, typename Traits>
 struct CollectionBackingTraceTrait<false, true, WeakPointersActStrong, WTF::LinkedHashSetNode<Value>, Traits> : public BaseVisitLinkedNodeTrait<WeakPointersActStrong, Value, Traits> {
 };
 
-// List hash set node that needs marking, optionally also strongified.
+// Linked hash set node that needs marking, optionally also strongified.
 template<bool isWeak, ShouldWeakPointersBeMarkedStrongly strongify, typename Value, typename Traits>
 struct CollectionBackingTraceTrait<true, isWeak, strongify, WTF::LinkedHashSetNode<Value>, Traits> : public BaseVisitLinkedNodeTrait<strongify, Value, Traits> {
+};
+
+// ListHashSetNode pointers (a ListHashSet is implemented as a hash table of these pointers).
+template<ShouldWeakPointersBeMarkedStrongly strongify, typename Value, size_t inlineCapacity, typename Traits>
+struct CollectionBackingTraceTrait<true, false, strongify, WTF::ListHashSetNode<Value, HeapListHashSetAllocator<Value, inlineCapacity> >*, Traits> {
+    typedef WTF::ListHashSetNode<Value, HeapListHashSetAllocator<Value, inlineCapacity> > Node;
+    static void trace(WebCore::Visitor* visitor, Node* node)
+    {
+        traceListHashSetValue(visitor, node->m_value);
+        // Just mark the node without tracing because we already traced the
+        // contents, and there is no need to trace the next and prev fields
+        // since iterating over the hash table backing will find the whole
+        // chain.
+        visitor->markNoTracing(node);
+    }
 };
 
 // Vector backing that needs marking. We don't support weak members in vectors,
@@ -1928,7 +2058,7 @@ struct CollectionBackingTraceTrait<true, isWeak, strongify, HeapVectorBacking<T,
 // Member always needs marking, never weak.
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
 struct CollectionBackingTraceTrait<true, false, strongify, Member<T>, Traits> {
-    static void mark(WebCore::Visitor* visitor, Member<T> self)
+    static void trace(WebCore::Visitor* visitor, Member<T> self)
     {
         visitor->mark(self.get());
     }
@@ -1937,7 +2067,7 @@ struct CollectionBackingTraceTrait<true, false, strongify, Member<T>, Traits> {
 // Weak member never has needsMarking, always weak, strongified case.
 template<typename T, typename Traits>
 struct CollectionBackingTraceTrait<false, true, WeakPointersActStrong, WeakMember<T>, Traits> {
-    static void mark(WebCore::Visitor* visitor, WeakMember<T> self)
+    static void trace(WebCore::Visitor* visitor, WeakMember<T> self)
     {
         // This can mark weak members as if they were strong. The reason we
         // need this is that we don't do weak processing unless we reach the
@@ -1956,7 +2086,7 @@ struct CollectionBackingTraceTrait<false, true, WeakPointersActStrong, WeakMembe
 // removed from the collection.
 template<bool isWeak, ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
 struct CollectionBackingTraceTrait<true, isWeak, strongify, T, Traits> {
-    static void mark(WebCore::Visitor* visitor, T& t)
+    static void trace(WebCore::Visitor* visitor, T& t)
     {
         TraceTrait<T>::trace(visitor, &t);
     }
@@ -1969,7 +2099,7 @@ struct TraceTrait<HeapVectorBacking<T, Traits> > {
     {
         COMPILE_ASSERT(!Traits::isWeak, WeDontSupportWeaknessInHeapVectorsOrDeques);
         if (WTF::ShouldBeTraced<Traits>::value)
-            CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, false, WeakPointersActWeak, HeapVectorBacking<T, Traits>, void>::mark(visitor, self);
+            CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, false, WeakPointersActWeak, HeapVectorBacking<T, Traits>, void>::trace(visitor, self);
     }
     static void mark(Visitor* visitor, const Backing* backing)
     {
@@ -1996,14 +2126,14 @@ struct TraceTrait<HeapHashTableBacking<Table> > {
     static void trace(WebCore::Visitor* visitor, void* self)
     {
         if (WTF::ShouldBeTraced<Traits>::value || Traits::isWeak)
-            CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, WeakPointersActStrong, Backing, void>::mark(visitor, self);
+            CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, WeakPointersActStrong, Backing, void>::trace(visitor, self);
     }
     static void mark(Visitor* visitor, const Backing* backing)
     {
         if (WTF::ShouldBeTraced<Traits>::value || Traits::isWeak)
             visitor->mark(backing, &trace);
         else
-            visitor->mark(backing, 0);
+            visitor->markNoTracing(backing); // If we know the trace function will do nothing there is no need to call it.
     }
     static void checkGCInfo(Visitor* visitor, const Backing* backing)
     {
@@ -2035,6 +2165,8 @@ template<typename T, typename U, typename V>
 struct GCInfoTrait<HeapHashSet<T, U, V> > : public GCInfoTrait<HashSet<T, U, V, HeapAllocator> > { };
 template<typename T, typename U, typename V>
 struct GCInfoTrait<HeapLinkedHashSet<T, U, V> > : public GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator> > { };
+template<typename T, size_t inlineCapacity, typename U>
+struct GCInfoTrait<HeapListHashSet<T, inlineCapacity, U> > : public GCInfoTrait<ListHashSet<T, inlineCapacity, U, HeapListHashSetAllocator<T, inlineCapacity> > > { };
 template<typename T, size_t inlineCapacity>
 struct GCInfoTrait<HeapVector<T, inlineCapacity> > : public GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator> > { };
 template<typename T, size_t inlineCapacity>
