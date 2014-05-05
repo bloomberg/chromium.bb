@@ -5,6 +5,7 @@
 #include "extensions/browser/event_listener_map.h"
 
 #include "base/values.h"
+#include "content/public/browser/render_process_host.h"
 #include "extensions/browser/event_router.h"
 #include "ipc/ipc_message.h"
 
@@ -18,11 +19,12 @@ EventListener::EventListener(const std::string& event_name,
                              const std::string& extension_id,
                              content::RenderProcessHost* process,
                              scoped_ptr<DictionaryValue> filter)
-    : event_name(event_name),
-      extension_id(extension_id),
-      process(process),
-      filter(filter.Pass()),
-      matcher_id(-1) {}
+    : event_name_(event_name),
+      extension_id_(extension_id),
+      process_(process),
+      filter_(filter.Pass()),
+      matcher_id_(-1) {
+}
 
 EventListener::~EventListener() {}
 
@@ -30,20 +32,30 @@ bool EventListener::Equals(const EventListener* other) const {
   // We don't check matcher_id equality because we want a listener with a
   // filter that hasn't been added to EventFilter to match one that is
   // equivalent but has.
-  return event_name == other->event_name &&
-      extension_id == other->extension_id &&
-      process == other->process &&
-      ((!!filter.get()) == (!!other->filter.get())) &&
-      (!filter.get() || filter->Equals(other->filter.get()));
+  return event_name_ == other->event_name_ &&
+         extension_id_ == other->extension_id_ && process_ == other->process_ &&
+         ((!!filter_.get()) == (!!other->filter_.get())) &&
+         (!filter_.get() || filter_->Equals(other->filter_.get()));
 }
 
 scoped_ptr<EventListener> EventListener::Copy() const {
   scoped_ptr<DictionaryValue> filter_copy;
-  if (filter)
-    filter_copy.reset(filter->DeepCopy());
-  return scoped_ptr<EventListener>(new EventListener(event_name, extension_id,
-                                                     process,
-                                                     filter_copy.Pass()));
+  if (filter_)
+    filter_copy.reset(filter_->DeepCopy());
+  return scoped_ptr<EventListener>(new EventListener(
+      event_name_, extension_id_, process_, filter_copy.Pass()));
+}
+
+bool EventListener::IsLazy() const {
+  return !process_;
+}
+
+void EventListener::MakeLazy() {
+  process_ = NULL;
+}
+
+content::BrowserContext* EventListener::GetBrowserContext() const {
+  return process_ ? process_->GetBrowserContext() : NULL;
 }
 
 EventListenerMap::EventListenerMap(Delegate* delegate)
@@ -55,16 +67,16 @@ EventListenerMap::~EventListenerMap() {}
 bool EventListenerMap::AddListener(scoped_ptr<EventListener> listener) {
   if (HasListener(listener.get()))
     return false;
-  if (listener->filter) {
-    scoped_ptr<EventMatcher> matcher(ParseEventMatcher(listener->filter.get()));
-    MatcherID id = event_filter_.AddEventMatcher(listener->event_name,
-                                                 matcher.Pass());
-    listener->matcher_id = id;
+  if (listener->filter()) {
+    scoped_ptr<EventMatcher> matcher(ParseEventMatcher(listener->filter()));
+    MatcherID id =
+        event_filter_.AddEventMatcher(listener->event_name(), matcher.Pass());
+    listener->set_matcher_id(id);
     listeners_by_matcher_id_[id] = listener.get();
-    filtered_events_.insert(listener->event_name);
+    filtered_events_.insert(listener->event_name());
   }
   linked_ptr<EventListener> listener_ptr(listener.release());
-  listeners_[listener_ptr->event_name].push_back(listener_ptr);
+  listeners_[listener_ptr->event_name()].push_back(listener_ptr);
 
   delegate_->OnListenerAdded(listener_ptr.get());
 
@@ -78,7 +90,7 @@ scoped_ptr<EventMatcher> EventListenerMap::ParseEventMatcher(
 }
 
 bool EventListenerMap::RemoveListener(const EventListener* listener) {
-  ListenerList& listeners = listeners_[listener->event_name];
+  ListenerList& listeners = listeners_[listener->event_name()];
   for (ListenerList::iterator it = listeners.begin(); it != listeners.end();
        it++) {
     if ((*it)->Equals(listener)) {
@@ -107,14 +119,14 @@ bool EventListenerMap::HasListenerForExtension(
 
   for (ListenerList::iterator it2 = it->second.begin();
        it2 != it->second.end(); it2++) {
-    if ((*it2)->extension_id == extension_id)
+    if ((*it2)->extension_id() == extension_id)
       return true;
   }
   return false;
 }
 
 bool EventListenerMap::HasListener(const EventListener* listener) {
-  ListenerMap::iterator it = listeners_.find(listener->event_name);
+  ListenerMap::iterator it = listeners_.find(listener->event_name());
   if (it == listeners_.end())
     return false;
   for (ListenerList::iterator it2 = it->second.begin();
@@ -132,7 +144,8 @@ bool EventListenerMap::HasProcessListener(content::RenderProcessHost* process,
        it++) {
     for (ListenerList::iterator it2 = it->second.begin();
          it2 != it->second.end(); it2++) {
-      if ((*it2)->process == process && (*it2)->extension_id == extension_id)
+      if ((*it2)->process() == process &&
+          (*it2)->extension_id() == extension_id)
         return true;
     }
   }
@@ -145,7 +158,7 @@ void EventListenerMap::RemoveLazyListenersForExtension(
        it++) {
     for (ListenerList::iterator it2 = it->second.begin();
          it2 != it->second.end();) {
-      if (!(*it2)->process && (*it2)->extension_id == extension_id) {
+      if ((*it2)->IsLazy() && (*it2)->extension_id() == extension_id) {
         CleanupListener(it2->get());
         it2 = it->second.erase(it2);
       } else {
@@ -216,7 +229,7 @@ void EventListenerMap::RemoveListenersForProcess(
        it++) {
     for (ListenerList::iterator it2 = it->second.begin();
          it2 != it->second.end();) {
-      if ((*it2)->process == process) {
+      if ((*it2)->process() == process) {
         linked_ptr<EventListener> listener(*it2);
         CleanupListener(it2->get());
         it2 = it->second.erase(it2);
@@ -230,10 +243,10 @@ void EventListenerMap::RemoveListenersForProcess(
 
 void EventListenerMap::CleanupListener(EventListener* listener) {
   // If the listener doesn't have a filter then we have nothing to clean up.
-  if (listener->matcher_id == -1)
+  if (listener->matcher_id() == -1)
     return;
-  event_filter_.RemoveEventMatcher(listener->matcher_id);
-  CHECK_EQ(1u, listeners_by_matcher_id_.erase(listener->matcher_id));
+  event_filter_.RemoveEventMatcher(listener->matcher_id());
+  CHECK_EQ(1u, listeners_by_matcher_id_.erase(listener->matcher_id()));
 }
 
 bool EventListenerMap::IsFilteredEvent(const Event& event) const {

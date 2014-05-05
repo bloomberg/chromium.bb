@@ -216,22 +216,20 @@ void EventRouter::UnregisterObserver(Observer* observer) {
 }
 
 void EventRouter::OnListenerAdded(const EventListener* listener) {
-  const EventListenerInfo details(
-      listener->event_name,
-      listener->extension_id,
-      listener->process ? listener->process->GetBrowserContext() : NULL);
-  std::string base_event_name = GetBaseEventName(listener->event_name);
+  const EventListenerInfo details(listener->event_name(),
+                                  listener->extension_id(),
+                                  listener->GetBrowserContext());
+  std::string base_event_name = GetBaseEventName(listener->event_name());
   ObserverMap::iterator observer = observers_.find(base_event_name);
   if (observer != observers_.end())
     observer->second->OnListenerAdded(details);
 }
 
 void EventRouter::OnListenerRemoved(const EventListener* listener) {
-  const EventListenerInfo details(
-      listener->event_name,
-      listener->extension_id,
-      listener->process ? listener->process->GetBrowserContext() : NULL);
-  std::string base_event_name = GetBaseEventName(listener->event_name);
+  const EventListenerInfo details(listener->event_name(),
+                                  listener->extension_id(),
+                                  listener->GetBrowserContext());
+  std::string base_event_name = GetBaseEventName(listener->event_name());
   ObserverMap::iterator observer = observers_.find(base_event_name);
   if (observer != observers_.end())
     observer->second->OnListenerRemoved(details);
@@ -296,7 +294,7 @@ void EventRouter::RemoveFilteredEventListener(
   listeners_.RemoveListener(&listener);
 
   if (remove_lazy_listener) {
-    listener.process = NULL;
+    listener.MakeLazy();
     bool removed = listeners_.RemoveListener(&listener);
 
     if (removed)
@@ -454,9 +452,9 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
        it != listeners.end(); it++) {
     const EventListener* listener = *it;
     if (restrict_to_extension_id.empty() ||
-        restrict_to_extension_id == listener->extension_id) {
-      if (!listener->process) {
-        DispatchLazyEvent(listener->extension_id, event, &already_dispatched);
+        restrict_to_extension_id == listener->extension_id()) {
+      if (listener->IsLazy()) {
+        DispatchLazyEvent(listener->extension_id(), event, &already_dispatched);
       }
     }
   }
@@ -465,13 +463,13 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
        it != listeners.end(); it++) {
     const EventListener* listener = *it;
     if (restrict_to_extension_id.empty() ||
-        restrict_to_extension_id == listener->extension_id) {
-      if (listener->process) {
-        EventDispatchIdentifier dispatch_id(
-            listener->process->GetBrowserContext(), listener->extension_id);
+        restrict_to_extension_id == listener->extension_id()) {
+      if (listener->process()) {
+        EventDispatchIdentifier dispatch_id(listener->GetBrowserContext(),
+                                            listener->extension_id());
         if (!ContainsKey(already_dispatched, dispatch_id)) {
-          DispatchEventToProcess(listener->extension_id, listener->process,
-              event);
+          DispatchEventToProcess(
+              listener->extension_id(), listener->process(), event);
         }
       }
     }

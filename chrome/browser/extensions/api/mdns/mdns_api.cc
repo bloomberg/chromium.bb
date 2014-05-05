@@ -88,7 +88,7 @@ void MDnsAPI::UpdateMDnsListeners(const EventListenerInfo& details) {
           .GetEventListenersByName(details.event_name);
   for (EventListenerMap::ListenerList::const_iterator it = listeners.begin();
        it != listeners.end(); ++it) {
-    base::DictionaryValue* filter = ((*it)->filter.get());
+    base::DictionaryValue* filter = ((*it)->filter());
 
     std::string filter_value;
     filter->GetStringASCII(kEventFilterServiceTypeKey, &filter_value);
