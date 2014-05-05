@@ -148,6 +148,7 @@ void ScriptedAnimationController::executeCallbacks(double monotonicTimeNow)
             else
                 callback->handleEvent(highResNowMs);
             InspectorInstrumentation::didFireAnimationFrame(cookie);
+            TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
         }
     }
 

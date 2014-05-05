@@ -124,6 +124,7 @@ v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(Exec
     v8::Local<v8::Value> result = V8ScriptRunner::callFunction(handlerFunction, context, receiver, WTF_ARRAY_LENGTH(parameters), parameters, isolate);
 
     InspectorInstrumentation::didCallFunction(cookie);
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
 
     return result;
 }

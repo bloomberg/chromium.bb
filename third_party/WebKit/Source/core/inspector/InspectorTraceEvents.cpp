@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/inspector/InspectorTraceEvents.h"
 
+#include "bindings/v8/ScriptGCEvent.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -271,6 +272,25 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorFunctionCallEvent::dat
     data->setNumber("scriptLine", scriptLine);
     if (LocalFrame* frame = frameForExecutionContext(context))
         data->setString("frame", toHexString(frame));
+    return TracedValue::fromJSONValue(data);
+}
+
+static size_t usedHeapSize()
+{
+    HeapInfo info;
+    ScriptGCEvent::getHeapSize(info);
+    return info.usedJSHeapSize;
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorUpdateCountersEvent::data()
+{
+    RefPtr<JSONObject> data = JSONObject::create();
+    if (isMainThread()) {
+        data->setNumber("documents", InspectorCounters::counterValue(InspectorCounters::DocumentCounter));
+        data->setNumber("nodes", InspectorCounters::counterValue(InspectorCounters::NodeCounter));
+        data->setNumber("jsEventListeners", InspectorCounters::counterValue(InspectorCounters::JSEventListenerCounter));
+    }
+    data->setNumber("jsHeapSizeUsed", static_cast<double>(usedHeapSize()));
     return TracedValue::fromJSONValue(data);
 }
 

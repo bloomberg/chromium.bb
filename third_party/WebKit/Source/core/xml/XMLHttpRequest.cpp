@@ -455,6 +455,7 @@ void XMLHttpRequest::dispatchReadyStateChangeEvent()
                 flushAction = FlushProgressEvent;
         }
         m_progressEventThrottle.dispatchReadyStateChangeEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::readystatechange), flushAction);
+        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
     }
 
     InspectorInstrumentation::didDispatchXHRReadyStateChangeEvent(cookie);
@@ -466,6 +467,7 @@ void XMLHttpRequest::dispatchReadyStateChangeEvent()
             InspectorInstrumentation::didDispatchXHRLoadEvent(cookie);
         }
         dispatchThrottledProgressEventSnapshot(EventTypeNames::loadend);
+        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
     }
 }
 

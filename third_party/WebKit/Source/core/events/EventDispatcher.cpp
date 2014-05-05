@@ -33,6 +33,7 @@
 #include "core/events/WindowEventContext.h"
 #include "core/frame/FrameView.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "platform/TraceEvent.h"
 #include "wtf/RefPtr.h"
 
@@ -129,6 +130,7 @@ bool EventDispatcher::dispatch()
     m_event->setTarget(windowEventContext.target());
     m_event->setCurrentTarget(0);
     InspectorInstrumentation::didDispatchEvent(cookie);
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
 
     return !m_event->defaultPrevented();
 }

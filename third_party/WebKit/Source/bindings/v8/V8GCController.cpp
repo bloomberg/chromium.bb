@@ -46,6 +46,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLTemplateElement.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/svg/SVGElement.h"
 #include "platform/TraceEvent.h"
 
@@ -391,6 +392,7 @@ void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
     }
 
     TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "GCEvent", "usedHeapSizeAfter", usedHeapSize(isolate));
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "", InspectorUpdateCountersEvent::data());
 }
 
 void V8GCController::minorGCEpilogue(v8::Isolate* isolate)

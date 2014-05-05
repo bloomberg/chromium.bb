@@ -519,6 +519,7 @@ void HTMLDocumentParser::pumpPendingSpeculations()
     TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ParseHTML", "endLine", lineNumber().zeroBasedInt());
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didWriteHTML(cookie, lineNumber().zeroBasedInt());
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
 }
 
 void HTMLDocumentParser::forcePlaintextForTextDocument()

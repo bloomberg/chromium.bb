@@ -120,6 +120,11 @@ public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int scriptId, const String& scriptName, int scriptLine);
 };
 
+class InspectorUpdateCountersEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data();
+};
+
 } // namespace WebCore
 
 

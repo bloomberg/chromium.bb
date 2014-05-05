@@ -94,6 +94,7 @@ ScriptValue InjectedScriptBase::callFunctionWithEvalEnabled(ScriptFunctionCall& 
         scriptState->setEvalEnabled(false);
 
     InspectorInstrumentation::didCallFunction(cookie);
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
     return resultValue;
 }
 

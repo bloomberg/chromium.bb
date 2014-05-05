@@ -154,6 +154,7 @@ void DOMTimer::fired()
     action->execute(context);
 
     InspectorInstrumentation::didFireTimer(cookie);
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
 
     timerNestingLevel = 0;
 }
