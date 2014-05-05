@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "components/bookmarks/core/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/core/browser/bookmark_model.h"
 #include "url/gurl.h"
@@ -108,10 +107,6 @@ void WaitForBookmarkModelToLoad(BookmarkModel* model) {
   run_loop.Run();
   model->RemoveObserver(&observer);
   DCHECK(model->loaded());
-}
-
-void WaitForBookmarkModelToLoad(Profile* profile) {
-  WaitForBookmarkModelToLoad(BookmarkModelFactory::GetForProfile(profile));
 }
 
 std::string ModelStringFromNode(const BookmarkNode* node) {

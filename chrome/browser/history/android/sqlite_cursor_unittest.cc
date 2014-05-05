@@ -11,6 +11,7 @@
 #include "base/android/jni_string.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/history/android/android_history_provider_service.h"
 #include "chrome/browser/history/android/android_history_types.h"
@@ -60,7 +61,8 @@ class SQLiteCursorTest : public testing::Test,
         chrome::kInitialProfile);
 
     testing_profile_->CreateBookmarkModel(true);
-    test::WaitForBookmarkModelToLoad(testing_profile_);
+    test::WaitForBookmarkModelToLoad(
+        BookmarkModelFactory::GetForProfile(testing_profile_));
 
     testing_profile_->CreateFaviconService();
     ASSERT_TRUE(testing_profile_->CreateHistoryService(true, false));

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -46,7 +47,8 @@ class BookmarkBarViewInstantExtendedTest : public BrowserWithTestWindowTest {
 TEST_F(BookmarkBarViewInstantExtendedTest, AppsShortcutVisibility) {
   ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
   profile()->CreateBookmarkModel(true);
-  test::WaitForBookmarkModelToLoad(profile());
+  test::WaitForBookmarkModelToLoad(
+      BookmarkModelFactory::GetForProfile(profile()));
   BookmarkBarView bookmark_bar_view(browser(), NULL);
   bookmark_bar_view.set_owned_by_client();
   browser()->profile()->GetPrefs()->SetBoolean(

@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_backend.h"
@@ -189,7 +190,8 @@ void InMemoryURLIndexTest::SetUp() {
   // We cannot access the database until the backend has been loaded.
   ASSERT_TRUE(profile_.CreateHistoryService(true, false));
   profile_.CreateBookmarkModel(true);
-  test::WaitForBookmarkModelToLoad(&profile_);
+  test::WaitForBookmarkModelToLoad(
+      BookmarkModelFactory::GetForProfile(&profile_));
   profile_.BlockUntilHistoryProcessesPendingRequests();
   profile_.BlockUntilHistoryIndexIsRefreshed();
   history_service_ = HistoryServiceFactory::GetForProfile(

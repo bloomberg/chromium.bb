@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/history/android/android_history_types.h"
 #include "chrome/common/chrome_constants.h"
@@ -52,7 +53,8 @@ class AndroidHistoryProviderServiceTest : public testing::Test {
         chrome::kInitialProfile);
 
     testing_profile_->CreateBookmarkModel(true);
-    test::WaitForBookmarkModelToLoad(testing_profile_);
+    test::WaitForBookmarkModelToLoad(
+        BookmarkModelFactory::GetForProfile(testing_profile_));
     ASSERT_TRUE(testing_profile_->CreateHistoryService(true, false));
     service_.reset(new AndroidHistoryProviderService(testing_profile_));
   }

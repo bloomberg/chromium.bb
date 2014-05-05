@@ -29,12 +29,12 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::SetUp();
 
     profile()->CreateBookmarkModel(true);
-    test::WaitForBookmarkModelToLoad(profile());
+    BookmarkModel* bookmark_model =
+        BookmarkModelFactory::GetForProfile(profile());
+    test::WaitForBookmarkModelToLoad(bookmark_model);
 
     bookmark_utils::AddIfNotBookmarked(
-        BookmarkModelFactory::GetForProfile(profile()),
-        GURL(kTestBookmarkURL),
-        base::string16());
+        bookmark_model, GURL(kTestBookmarkURL), base::string16());
   }
 
   virtual void TearDown() OVERRIDE {

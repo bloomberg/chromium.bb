@@ -9,13 +9,11 @@
 
 class BookmarkModel;
 class BookmarkNode;
-class Profile;
 
 namespace test {
 
 // Blocks until |model| finishes loading.
 void WaitForBookmarkModelToLoad(BookmarkModel* model);
-void WaitForBookmarkModelToLoad(Profile* profile);
 
 // Return the descendants of |node| as a string useful for verifying node
 // modifications. The format of the resulting string is:
