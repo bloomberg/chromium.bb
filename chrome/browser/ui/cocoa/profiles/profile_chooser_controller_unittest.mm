@@ -400,16 +400,20 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
 
   NSButton* genericAccount =
       static_cast<NSButton*>([accountsListSubviews objectAtIndex:0]);
-  EXPECT_EQ(@selector(showAccountRemovalView:), [genericAccount action]);
-  EXPECT_EQ(controller(), [genericAccount target]);
-  EXPECT_NE(-1, [genericAccount tag]);
+  NSButton* genericAccountDelete =
+      static_cast<NSButton*>([[genericAccount subviews] objectAtIndex:0]);
+  EXPECT_EQ(@selector(showAccountRemovalView:), [genericAccountDelete action]);
+  EXPECT_EQ(controller(), [genericAccountDelete target]);
+  EXPECT_NE(-1, [genericAccountDelete tag]);
 
   // Primary accounts are always last.
   NSButton* primaryAccount =
       static_cast<NSButton*>([accountsListSubviews objectAtIndex:1]);
-  EXPECT_EQ(@selector(showAccountRemovalView:), [primaryAccount action]);
-  EXPECT_EQ(controller(), [primaryAccount target]);
-  EXPECT_EQ(-1, [primaryAccount tag]);
+  NSButton* primaryAccountDelete =
+      static_cast<NSButton*>([[primaryAccount subviews] objectAtIndex:0]);
+  EXPECT_EQ(@selector(showAccountRemovalView:), [primaryAccountDelete action]);
+  EXPECT_EQ(controller(), [primaryAccountDelete target]);
+  EXPECT_EQ(-1, [primaryAccountDelete tag]);
 
   // There should be another separator.
   EXPECT_TRUE([[subviews objectAtIndex:3] isKindOfClass:[NSBox class]]);

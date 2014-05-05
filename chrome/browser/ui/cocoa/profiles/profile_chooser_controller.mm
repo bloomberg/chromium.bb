@@ -715,9 +715,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                      frameOrigin:(NSPoint)frameOrigin
                           action:(SEL)action;
 
-// Creates an email account button with |title| and a remove icon.
+// Creates an email account button with |title| and a remove icon. |tag|
+// indicates which account the button refers to.
 - (NSButton*)accountButtonWithRect:(NSRect)rect
-                             title:(const std::string&)title;
+                             title:(const std::string&)title
+                               tag:(int)tag;
 
 @end
 
@@ -1337,19 +1339,19 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     // Save the original email address, as the button text could be elided.
     currentProfileAccounts_[i] = accounts[i];
     NSButton* accountButton = [self accountButtonWithRect:rect
-                                                    title:accounts[i]];
-    [accountButton setTag:i];
+                                                    title:accounts[i]
+                                                      tag:i];
     [container addSubview:accountButton];
     rect.origin.y = NSMaxY([accountButton frame]);
   }
 
   // The primary account should always be listed first.
   NSButton* accountButton = [self accountButtonWithRect:rect
-                                                  title:primaryAccount];
+                                                  title:primaryAccount
+                                                    tag:kPrimaryProfileTag];
   [container addSubview:accountButton];
   [container setFrameSize:NSMakeSize(NSWidth([container frame]),
                                      NSMaxY([accountButton frame]))];
-  [accountButton setTag:kPrimaryProfileTag];
   return container.autorelease();
 }
 
@@ -1522,20 +1524,39 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (NSButton*)accountButtonWithRect:(NSRect)rect
-                             title:(const std::string&)title {
+                             title:(const std::string&)title
+                               tag:(int)tag {
   NSColor* backgroundColor = gfx::SkColorToCalibratedNSColor(
       profiles::kAvatarBubbleAccountsBackgroundColor);
   base::scoped_nsobject<BackgroundColorHoverButton> button(
       [[BackgroundColorHoverButton alloc] initWithFrame:rect
                                       imageTitleSpacing:0
                                         backgroundColor:backgroundColor]);
-
-  [button setTitle:ElideEmail(title, rect.size.width)];
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  NSImage* defaultImage = rb->GetNativeImageNamed(IDR_CLOSE_1).AsNSImage();
+  CGFloat kDeleteButtonWidth = [defaultImage size].width;
+  CGFloat availableWidth = rect.size.width -
+      kDeleteButtonWidth - kHorizontalSpacing;
+  [button setTitle:ElideEmail(title, availableWidth)];
   [button setAlignment:NSLeftTextAlignment];
   [button setBordered:NO];
-  [button setTarget:self];
-  [button setAction:@selector(showAccountRemovalView:)];
 
+  // Delete button.
+  rect.origin = NSMakePoint(availableWidth, 0);
+  rect.size.width = kDeleteButtonWidth;
+  base::scoped_nsobject<HoverImageButton> deleteButton(
+      [[HoverImageButton alloc] initWithFrame:rect]);
+  [deleteButton setBordered:NO];
+  [deleteButton setDefaultImage:defaultImage];
+  [deleteButton setHoverImage:rb->GetNativeImageNamed(
+      IDR_CLOSE_1_H).ToNSImage()];
+  [deleteButton setPressedImage:rb->GetNativeImageNamed(
+      IDR_CLOSE_1_P).ToNSImage()];
+  [deleteButton setTarget:self];
+  [deleteButton setAction:@selector(showAccountRemovalView:)];
+  [deleteButton setTag:tag];
+
+  [button addSubview:deleteButton];
   return button.autorelease();
 }
 

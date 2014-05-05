@@ -1137,21 +1137,40 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
                                              bool is_primary_account,
                                              int width) {
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  const gfx::ImageSkia* menu_marker =
+  const gfx::ImageSkia* default_image =
       rb->GetImageNamed(IDR_CLOSE_1).ToImageSkia();
+  int kDeleteButtonWidth = default_image->width();
+  int available_width = width -
+      kDeleteButtonWidth - views::kButtonHEdgeMarginNew;
 
   views::LabelButton* email_button = new BackgroundColorHoverButton(
-      this,
+      NULL,
       gfx::ElideEmail(base::UTF8ToUTF16(account),
                       rb->GetFontList(ui::ResourceBundle::BaseFont),
-                      width - menu_marker->width()),
+                      available_width),
       gfx::ImageSkia(),
       gfx::ImageSkia());
   layout->StartRow(1, 0);
   layout->AddView(email_button);
 
+  // Delete button.
+  views::ImageButton* delete_button = new views::ImageButton(this);
+  delete_button->SetImageAlignment(views::ImageButton::ALIGN_RIGHT,
+                                   views::ImageButton::ALIGN_MIDDLE);
+  delete_button->SetImage(views::ImageButton::STATE_NORMAL,
+                          default_image);
+  delete_button->SetImage(views::ImageButton::STATE_HOVERED,
+                          rb->GetImageSkiaNamed(IDR_CLOSE_1_H));
+  delete_button->SetImage(views::ImageButton::STATE_PRESSED,
+                          rb->GetImageSkiaNamed(IDR_CLOSE_1_P));
+  delete_button->SetBounds(
+      available_width, 0, kDeleteButtonWidth, kButtonHeight);
+
+  email_button->set_notify_enter_exit_on_child(true);
+  email_button->AddChildView(delete_button);
+
   // Save the original email address, as the button text could be elided.
-  current_profile_accounts_map_[email_button] = account;
+  current_profile_accounts_map_[delete_button] = account;
 }
 
 views::View* ProfileChooserView::CreateGaiaSigninView(
