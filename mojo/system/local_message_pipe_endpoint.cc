@@ -70,11 +70,11 @@ void LocalMessagePipeEndpoint::CancelAllWaiters() {
   waiter_list_.CancelAllWaiters();
 }
 
-MojoResult LocalMessagePipeEndpoint::ReadMessage(
-    void* bytes, uint32_t* num_bytes,
-    std::vector<scoped_refptr<Dispatcher> >* dispatchers,
-    uint32_t* num_dispatchers,
-    MojoReadMessageFlags flags) {
+MojoResult LocalMessagePipeEndpoint::ReadMessage(void* bytes,
+                                                 uint32_t* num_bytes,
+                                                 DispatcherVector* dispatchers,
+                                                 uint32_t* num_dispatchers,
+                                                 MojoReadMessageFlags flags) {
   DCHECK(is_open_);
   DCHECK(!dispatchers || dispatchers->empty());
 
@@ -97,8 +97,7 @@ MojoResult LocalMessagePipeEndpoint::ReadMessage(
   else
     enough_space = false;
 
-  if (std::vector<scoped_refptr<Dispatcher> >* queued_dispatchers =
-          message->dispatchers()) {
+  if (DispatcherVector* queued_dispatchers = message->dispatchers()) {
     if (num_dispatchers)
       *num_dispatchers = static_cast<uint32_t>(queued_dispatchers->size());
     if (enough_space) {

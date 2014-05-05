@@ -162,7 +162,7 @@ MojoResult MessagePipeDispatcher::WriteMessageImplNoLock(
 MojoResult MessagePipeDispatcher::ReadMessageImplNoLock(
     void* bytes,
     uint32_t* num_bytes,
-    std::vector<scoped_refptr<Dispatcher> >* dispatchers,
+    DispatcherVector* dispatchers,
     uint32_t* num_dispatchers,
     MojoReadMessageFlags flags) {
   lock().AssertAcquired();

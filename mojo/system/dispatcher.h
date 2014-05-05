@@ -32,6 +32,8 @@ class RawSharedBufferMapping;
 class TransportData;
 class Waiter;
 
+typedef std::vector<scoped_refptr<Dispatcher> > DispatcherVector;
+
 namespace test {
 
 // Test helper. We need to declare it here so we can friend it.
@@ -77,12 +79,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   // |dispatchers| must be non-null but empty, if |num_dispatchers| is non-null
   // and nonzero. On success, it will be set to the dispatchers to be received
   // (and assigned handles) as part of the message.
-  MojoResult ReadMessage(
-      void* bytes,
-      uint32_t* num_bytes,
-      std::vector<scoped_refptr<Dispatcher> >* dispatchers,
-      uint32_t* num_dispatchers,
-      MojoReadMessageFlags flags);
+  MojoResult ReadMessage(void* bytes,
+                         uint32_t* num_bytes,
+                         DispatcherVector* dispatchers,
+                         uint32_t* num_dispatchers,
+                         MojoReadMessageFlags flags);
   MojoResult WriteData(const void* elements,
                        uint32_t* elements_num_bytes,
                        MojoWriteDataFlags flags);
@@ -205,12 +206,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
       uint32_t num_bytes,
       std::vector<DispatcherTransport>* transports,
       MojoWriteMessageFlags flags);
-  virtual MojoResult ReadMessageImplNoLock(
-      void* bytes,
-      uint32_t* num_bytes,
-      std::vector<scoped_refptr<Dispatcher> >* dispatchers,
-      uint32_t* num_dispatchers,
-      MojoReadMessageFlags flags);
+  virtual MojoResult ReadMessageImplNoLock(void* bytes,
+                                           uint32_t* num_bytes,
+                                           DispatcherVector* dispatchers,
+                                           uint32_t* num_dispatchers,
+                                           MojoReadMessageFlags flags);
   virtual MojoResult WriteDataImplNoLock(const void* elements,
                                          uint32_t* num_bytes,
                                          MojoWriteDataFlags flags);

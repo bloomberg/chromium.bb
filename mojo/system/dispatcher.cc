@@ -108,11 +108,10 @@ MojoResult Dispatcher::WriteMessage(
   return WriteMessageImplNoLock(bytes, num_bytes, transports, flags);
 }
 
-MojoResult Dispatcher::ReadMessage(
-    void* bytes,
-    uint32_t* num_bytes,
-    std::vector<scoped_refptr<Dispatcher> >* dispatchers,
-    uint32_t* num_dispatchers,
+MojoResult Dispatcher::ReadMessage(void* bytes,
+                                   uint32_t* num_bytes,
+                                   DispatcherVector* dispatchers,
+                                   uint32_t* num_dispatchers,
     MojoReadMessageFlags flags) {
   DCHECK(!num_dispatchers || *num_dispatchers == 0 ||
          (dispatchers && dispatchers->empty()));
@@ -256,12 +255,11 @@ MojoResult Dispatcher::WriteMessageImplNoLock(
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::ReadMessageImplNoLock(
-    void* /*bytes*/,
-    uint32_t* /*num_bytes*/,
-    std::vector<scoped_refptr<Dispatcher> >* /*dispatchers*/,
-    uint32_t* /*num_dispatchers*/,
-    MojoReadMessageFlags /*flags*/) {
+MojoResult Dispatcher::ReadMessageImplNoLock(void* /*bytes*/,
+                                             uint32_t* /*num_bytes*/,
+                                             DispatcherVector* /*dispatchers*/,
+                                             uint32_t* /*num_dispatchers*/,
+                                             MojoReadMessageFlags /*flags*/) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for message pipe dispatchers.

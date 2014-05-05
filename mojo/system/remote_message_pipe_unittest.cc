@@ -483,7 +483,7 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   // Read from MP 1, port 1.
   char read_buffer[100] = { 0 };
   uint32_t read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
-  std::vector<scoped_refptr<Dispatcher> > read_dispatchers;
+  DispatcherVector read_dispatchers;
   uint32_t read_num_dispatchers = 10;  // Maximum to get.
   EXPECT_EQ(MOJO_RESULT_OK,
             mp1->ReadMessage(1, read_buffer, &read_buffer_size,

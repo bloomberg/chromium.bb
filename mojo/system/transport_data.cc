@@ -46,9 +46,8 @@ struct TransportData::PrivateStructForCompileAsserts {
                  sizeof_MessageInTransit_HandleTableEntry_invalid);
 };
 
-TransportData::TransportData(
-    scoped_ptr<std::vector<scoped_refptr<Dispatcher> > > dispatchers,
-    Channel* channel)
+TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
+                             Channel* channel)
     : buffer_size_(0) {
   DCHECK(dispatchers);
   DCHECK(channel);
@@ -219,18 +218,17 @@ const char* TransportData::ValidateBuffer(const void* buffer,
 }
 
 // static
-scoped_ptr<std::vector<scoped_refptr<Dispatcher> > >
-    TransportData::DeserializeDispatchersFromBuffer(const void* buffer,
-                                                    size_t buffer_size,
-                                                    Channel* channel) {
+scoped_ptr<DispatcherVector> TransportData::DeserializeDispatchersFromBuffer(
+    const void* buffer,
+    size_t buffer_size,
+    Channel* channel) {
   DCHECK(buffer);
   DCHECK_GT(buffer_size, 0u);
   DCHECK(channel);
 
   const Header* header = static_cast<const Header*>(buffer);
   const size_t num_handles = header->num_handles;
-  scoped_ptr<std::vector<scoped_refptr<Dispatcher> > > dispatchers(
-      new std::vector<scoped_refptr<Dispatcher> >(num_handles));
+  scoped_ptr<DispatcherVector> dispatchers(new DispatcherVector(num_handles));
 
   const HandleTableEntry* handle_table =
       reinterpret_cast<const HandleTableEntry*>(

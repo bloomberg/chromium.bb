@@ -82,13 +82,12 @@ MojoResult MessagePipe::WriteMessage(
       transports);
 }
 
-MojoResult MessagePipe::ReadMessage(
-    unsigned port,
-    void* bytes,
-    uint32_t* num_bytes,
-    std::vector<scoped_refptr<Dispatcher> >* dispatchers,
-    uint32_t* num_dispatchers,
-    MojoReadMessageFlags flags) {
+MojoResult MessagePipe::ReadMessage(unsigned port,
+                                    void* bytes,
+                                    uint32_t* num_bytes,
+                                    DispatcherVector* dispatchers,
+                                    uint32_t* num_dispatchers,
+                                    MojoReadMessageFlags flags) {
   DCHECK(port == 0 || port == 1);
 
   base::AutoLock locker(lock_);
@@ -259,8 +258,7 @@ MojoResult MessagePipe::AttachTransportsNoLock(
 
   // Clone the dispatchers and attach them to the message. (This must be done as
   // a separate loop, since we want to leave the dispatchers alone on failure.)
-  scoped_ptr<std::vector<scoped_refptr<Dispatcher> > >
-      dispatchers(new std::vector<scoped_refptr<Dispatcher> >());
+  scoped_ptr<DispatcherVector> dispatchers(new DispatcherVector());
   dispatchers->reserve(transports->size());
   for (size_t i = 0; i < transports->size(); i++) {
     if ((*transports)[i].is_valid()) {

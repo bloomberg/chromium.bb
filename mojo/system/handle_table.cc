@@ -76,9 +76,8 @@ std::pair<MojoHandle, MojoHandle> HandleTable::AddDispatcherPair(
                         AddDispatcherNoSizeCheck(dispatcher1));
 }
 
-bool HandleTable::AddDispatcherVector(
-    const std::vector<scoped_refptr<Dispatcher> >& dispatchers,
-    MojoHandle* handles) {
+bool HandleTable::AddDispatcherVector(const DispatcherVector& dispatchers,
+                                      MojoHandle* handles) {
   DCHECK_LE(dispatchers.size(), kMaxMessageNumHandles);
   DCHECK(handles);
   // TODO(vtl): |std::numeric_limits<size_t>::max()| isn't a compile-time

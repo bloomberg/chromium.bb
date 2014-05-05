@@ -18,11 +18,11 @@ void MessagePipeEndpoint::CancelAllWaiters() {
   NOTREACHED();
 }
 
-MojoResult MessagePipeEndpoint::ReadMessage(
-    void* /*bytes*/, uint32_t* /*num_bytes*/,
-    std::vector<scoped_refptr<Dispatcher> >* /*dispatchers*/,
-    uint32_t* /*num_dispatchers*/,
-    MojoReadMessageFlags /*flags*/) {
+MojoResult MessagePipeEndpoint::ReadMessage(void* /*bytes*/,
+                                            uint32_t* /*num_bytes*/,
+                                            DispatcherVector* /*dispatchers*/,
+                                            uint32_t* /*num_dispatchers*/,
+                                            MojoReadMessageFlags /*flags*/) {
   NOTREACHED();
   return MOJO_RESULT_INTERNAL;
 }

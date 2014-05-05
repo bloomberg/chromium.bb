@@ -21,6 +21,8 @@ class Core;
 class Dispatcher;
 class DispatcherTransport;
 
+typedef std::vector<scoped_refptr<Dispatcher> > DispatcherVector;
+
 // Test-only function (defined/used in embedder/test_embedder.cc). Declared here
 // so it can be friended.
 namespace internal {
@@ -74,9 +76,8 @@ class MOJO_SYSTEM_IMPL_EXPORT HandleTable {
   // of the dispatchers may be invalid (null). Returns true on success and false
   // on failure (if the handle table is full), in which case it leaves
   // |handles[...]| untouched (and all dispatchers unadded).
-  bool AddDispatcherVector(
-      const std::vector<scoped_refptr<Dispatcher> >& dispatchers,
-      MojoHandle* handles);
+  bool AddDispatcherVector(const DispatcherVector& dispatchers,
+                           MojoHandle* handles);
 
   // Tries to mark the given handles as busy and start transport on them (i.e.,
   // take their dispatcher locks); |transports| must be sized to contain

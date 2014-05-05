@@ -149,8 +149,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // not be referenced from anywhere else (in particular, not from the handle
   // table), i.e., each dispatcher must have a reference count of 1. This
   // message must not already have dispatchers.
-  void SetDispatchers(
-      scoped_ptr<std::vector<scoped_refptr<Dispatcher> > > dispatchers);
+  void SetDispatchers(scoped_ptr<DispatcherVector> dispatchers);
 
   // Serializes any dispatchers to the secondary buffer. This message must not
   // already have a secondary buffer (so this must only be called once). The
@@ -188,9 +187,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // Gets the dispatchers attached to this message; this may return null if
   // there are none. Note that the caller may mutate the set of dispatchers
   // (e.g., take ownership of all the dispatchers, leaving the vector empty).
-  std::vector<scoped_refptr<Dispatcher> >* dispatchers() {
-    return dispatchers_.get();
-  }
+  DispatcherVector* dispatchers() { return dispatchers_.get(); }
 
   // Returns true if this message has dispatchers attached.
   bool has_dispatchers() const {
@@ -240,7 +237,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // should be "owned" by this message, i.e., have a ref count of exactly 1. (We
   // allow a dispatcher entry to be null, in case it couldn't be duplicated for
   // some reason.)
-  scoped_ptr<std::vector<scoped_refptr<Dispatcher> > > dispatchers_;
+  scoped_ptr<DispatcherVector> dispatchers_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageInTransit);
 };

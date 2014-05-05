@@ -269,7 +269,7 @@ MojoResult Core::ReadMessage(MojoHandle message_pipe_handle,
   if (!num_handles || *num_handles == 0)
     return dispatcher->ReadMessage(bytes, num_bytes, NULL, num_handles, flags);
 
-  std::vector<scoped_refptr<Dispatcher> > dispatchers;
+  DispatcherVector dispatchers;
   MojoResult rv = dispatcher->ReadMessage(bytes, num_bytes,
                                           &dispatchers, num_handles,
                                           flags);
@@ -537,7 +537,7 @@ MojoResult Core::WaitManyInternal(const MojoHandle* handles,
                                   MojoDeadline deadline) {
   DCHECK_GT(num_handles, 0u);
 
-  std::vector<scoped_refptr<Dispatcher> > dispatchers;
+  DispatcherVector dispatchers;
   dispatchers.reserve(num_handles);
   for (uint32_t i = 0; i < num_handles; i++) {
     scoped_refptr<Dispatcher> dispatcher = GetDispatcher(handles[i]);

@@ -60,11 +60,11 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
   // operation involves both endpoints.
   virtual void Close();
   virtual void CancelAllWaiters();
-  virtual MojoResult ReadMessage(
-      void* bytes, uint32_t* num_bytes,
-      std::vector<scoped_refptr<Dispatcher> >* dispatchers,
-      uint32_t* num_dispatchers,
-      MojoReadMessageFlags flags);
+  virtual MojoResult ReadMessage(void* bytes,
+                                 uint32_t* num_bytes,
+                                 DispatcherVector* dispatchers,
+                                 uint32_t* num_dispatchers,
+                                 MojoReadMessageFlags flags);
   virtual MojoResult AddWaiter(Waiter* waiter,
                                MojoWaitFlags flags,
                                MojoResult wake_result);

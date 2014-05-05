@@ -151,7 +151,7 @@ bool MessageInTransit::GetNextMessageSize(const void* buffer,
 }
 
 void MessageInTransit::SetDispatchers(
-    scoped_ptr<std::vector<scoped_refptr<Dispatcher> > > dispatchers) {
+    scoped_ptr<DispatcherVector> dispatchers) {
   DCHECK(dispatchers);
   DCHECK(!dispatchers_);
 

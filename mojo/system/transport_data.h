@@ -79,9 +79,7 @@ class MOJO_SYSTEM_IMPL_EXPORT TransportData {
   // dispatcher.
   static const size_t kMaxSerializedDispatcherPlatformHandles = 2;
 
-  TransportData(
-      scoped_ptr<std::vector<scoped_refptr<Dispatcher> > > dispatchers,
-      Channel* channel);
+  TransportData(scoped_ptr<DispatcherVector> dispatchers, Channel* channel);
   ~TransportData();
 
   const void* buffer() const { return buffer_.get(); }
@@ -112,10 +110,10 @@ class MOJO_SYSTEM_IMPL_EXPORT TransportData {
   // Deserializes dispatchers from the given (serialized) transport data buffer
   // (typically from a |MessageInTransit::View|). |buffer| should be non-null
   // and |buffer_size| should be nonzero.
-  static scoped_ptr<std::vector<scoped_refptr<Dispatcher> > >
-      DeserializeDispatchersFromBuffer(const void* buffer,
-                                       size_t buffer_size,
-                                       Channel* channel);
+  static scoped_ptr<DispatcherVector> DeserializeDispatchersFromBuffer(
+      const void* buffer,
+      size_t buffer_size,
+      Channel* channel);
 
  private:
   // To allow us to make compile-assertions about |Header|, etc. in the .cc

@@ -58,7 +58,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe :
   MojoResult ReadMessage(unsigned port,
                          void* bytes,
                          uint32_t* num_bytes,
-                         std::vector<scoped_refptr<Dispatcher> >* dispatchers,
+                         DispatcherVector* dispatchers,
                          uint32_t* num_dispatchers,
                          MojoReadMessageFlags flags);
   MojoResult AddWaiter(unsigned port,
