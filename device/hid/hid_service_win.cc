@@ -204,17 +204,7 @@ void HidServiceWin::PlatformAddDevice(const std::string& device_path) {
         device_info.has_report_id = (button_caps[0].ReportID != 0);
       }
     }
-    // If report IDs are supported, adjust all the expected report sizes
-    // down by one byte. This is because Windows will always provide sizes
-    // which assume the presence of a report ID.
-    if (device_info.has_report_id) {
-      if (device_info.input_report_size > 0)
-        device_info.input_report_size -= 1;
-      if (device_info.output_report_size > 0)
-        device_info.output_report_size -= 1;
-      if (device_info.feature_report_size > 0)
-        device_info.feature_report_size -= 1;
-    }
+
     HidD_FreePreparsedData(preparsed_data);
   }
 

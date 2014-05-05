@@ -142,18 +142,22 @@ void HidConnectionWin::Read(scoped_refptr<net::IOBufferWithSize> buffer,
     return;
   }
 
-  if (buffer->size() < device_info().input_report_size) {
+  // This fairly awkward logic is correct: If Windows does not expect a device
+  // to supply a report ID in its input reports, it requires the buffer to be
+  // 1 byte larger than what the device actually sends.
+  int receive_buffer_size = device_info().input_report_size;
+  int expected_buffer_size = receive_buffer_size;
+  if (!device_info().has_report_id)
+    expected_buffer_size -= 1;
+
+  if (buffer->size() < expected_buffer_size) {
     callback.Run(false, 0);
     return;
   }
 
-  // If the device doesn't support report IDs, the caller should not be
-  // expecting one; however, Windows will always expect enough space for one,
-  // so we need to use a buffer with one extra byte of space in this case.
   scoped_refptr<net::IOBufferWithSize> receive_buffer(buffer);
-  if (!device_info().has_report_id)
-    receive_buffer = new net::IOBufferWithSize(buffer->size() + 1);
-
+  if (receive_buffer_size != expected_buffer_size)
+    receive_buffer = new net::IOBufferWithSize(receive_buffer_size);
   scoped_refptr<PendingHidTransfer> transfer(
       new PendingHidTransfer(this, buffer, receive_buffer, callback));
   transfers_.insert(transfer);
@@ -183,7 +187,7 @@ void HidConnectionWin::Write(uint8_t report_id,
   memcpy(output_buffer->data() + 1, buffer->data(), buffer->size());
 
   scoped_refptr<PendingHidTransfer> transfer(
-      new PendingHidTransfer(this, buffer, NULL, callback));
+      new PendingHidTransfer(this, output_buffer, NULL, callback));
   transfers_.insert(transfer);
   transfer->TakeResultFromWindowsAPI(
       WriteFile(file_.Get(),
@@ -204,14 +208,18 @@ void HidConnectionWin::GetFeatureReport(
     return;
   }
 
-  if (buffer->size() < device_info().feature_report_size) {
+  int receive_buffer_size = device_info().feature_report_size;
+  int expected_buffer_size = receive_buffer_size;
+  if (!device_info().has_report_id)
+    expected_buffer_size -= 1;
+  if (buffer->size() < expected_buffer_size) {
     callback.Run(false, 0);
     return;
   }
 
   scoped_refptr<net::IOBufferWithSize> receive_buffer(buffer);
-  if (!device_info().has_report_id)
-    receive_buffer = new net::IOBufferWithSize(buffer->size() + 1);
+  if (receive_buffer_size != expected_buffer_size)
+    receive_buffer = new net::IOBufferWithSize(receive_buffer_size);
 
   // The first byte of the destination buffer is the report ID being requested.
   receive_buffer->data()[0] = report_id;
@@ -240,11 +248,6 @@ void HidConnectionWin::SendFeatureReport(
     return;
   }
 
-  if (buffer->size() < device_info().feature_report_size) {
-    callback.Run(false, 0);
-    return;
-  }
-
   // The Windows API always wants either a report ID (if supported) or
   // zero at the front of every output report.
   scoped_refptr<net::IOBufferWithSize> output_buffer(buffer);
@@ -253,7 +256,7 @@ void HidConnectionWin::SendFeatureReport(
   memcpy(output_buffer->data() + 1, buffer->data(), buffer->size());
 
   scoped_refptr<PendingHidTransfer> transfer(
-      new PendingHidTransfer(this, buffer, NULL, callback));
+      new PendingHidTransfer(this, output_buffer, NULL, callback));
   transfer->TakeResultFromWindowsAPI(
       DeviceIoControl(file_.Get(),
                       IOCTL_HID_SET_FEATURE,
