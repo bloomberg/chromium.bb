@@ -805,7 +805,7 @@ TEST_F(FileUtilTest, ChangeDirectoryPermissionsAndEnumerate) {
   FileEnumerator f1(subdir_path, true, FileEnumerator::FILES);
   EXPECT_TRUE(PathExists(subdir_path));
   FindResultCollector c1(f1);
-  EXPECT_EQ(c1.size(), 0);
+  EXPECT_EQ(0, c1.size());
   EXPECT_FALSE(GetPosixFilePermissions(file_name, &mode));
 
   // Give the permissions to the directory.
@@ -817,7 +817,7 @@ TEST_F(FileUtilTest, ChangeDirectoryPermissionsAndEnumerate) {
   FileEnumerator f2(subdir_path, true, FileEnumerator::FILES);
   FindResultCollector c2(f2);
   EXPECT_TRUE(c2.HasFile(file_name));
-  EXPECT_EQ(c2.size(), 1);
+  EXPECT_EQ(1, c2.size());
 
   // Delete the file.
   EXPECT_TRUE(DeleteFile(subdir_path, true));
@@ -1788,8 +1788,8 @@ TEST_F(FileUtilTest, DetectDirectoryTest) {
 TEST_F(FileUtilTest, FileEnumeratorTest) {
   // Test an empty directory.
   FileEnumerator f0(temp_dir_.path(), true, FILES_AND_DIRECTORIES);
-  EXPECT_EQ(f0.Next().value(), FPL(""));
-  EXPECT_EQ(f0.Next().value(), FPL(""));
+  EXPECT_EQ(FPL(""), f0.Next().value());
+  EXPECT_EQ(FPL(""), f0.Next().value());
 
   // Test an empty directory, non-recursively, including "..".
   FileEnumerator f0_dotdot(temp_dir_.path(), false,
@@ -1825,7 +1825,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
   EXPECT_TRUE(c1.HasFile(file2_abs));
   EXPECT_TRUE(c1.HasFile(dir2file));
   EXPECT_TRUE(c1.HasFile(dir2innerfile));
-  EXPECT_EQ(c1.size(), 4);
+  EXPECT_EQ(4, c1.size());
 
   // Only enumerate directories.
   FileEnumerator f2(temp_dir_.path(), true, FileEnumerator::DIRECTORIES);
@@ -1833,7 +1833,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
   EXPECT_TRUE(c2.HasFile(dir1));
   EXPECT_TRUE(c2.HasFile(dir2));
   EXPECT_TRUE(c2.HasFile(dir2inner));
-  EXPECT_EQ(c2.size(), 3);
+  EXPECT_EQ(3, c2.size());
 
   // Only enumerate directories non-recursively.
   FileEnumerator f2_non_recursive(
@@ -1841,7 +1841,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
   FindResultCollector c2_non_recursive(f2_non_recursive);
   EXPECT_TRUE(c2_non_recursive.HasFile(dir1));
   EXPECT_TRUE(c2_non_recursive.HasFile(dir2));
-  EXPECT_EQ(c2_non_recursive.size(), 2);
+  EXPECT_EQ(2, c2_non_recursive.size());
 
   // Only enumerate directories, non-recursively, including "..".
   FileEnumerator f2_dotdot(temp_dir_.path(), false,
@@ -1851,7 +1851,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
   EXPECT_TRUE(c2_dotdot.HasFile(dir1));
   EXPECT_TRUE(c2_dotdot.HasFile(dir2));
   EXPECT_TRUE(c2_dotdot.HasFile(temp_dir_.path().Append(FPL(".."))));
-  EXPECT_EQ(c2_dotdot.size(), 3);
+  EXPECT_EQ(3, c2_dotdot.size());
 
   // Enumerate files and directories.
   FileEnumerator f3(temp_dir_.path(), true, FILES_AND_DIRECTORIES);
@@ -1863,7 +1863,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
   EXPECT_TRUE(c3.HasFile(dir2file));
   EXPECT_TRUE(c3.HasFile(dir2inner));
   EXPECT_TRUE(c3.HasFile(dir2innerfile));
-  EXPECT_EQ(c3.size(), 7);
+  EXPECT_EQ(7, c3.size());
 
   // Non-recursive operation.
   FileEnumerator f4(temp_dir_.path(), false, FILES_AND_DIRECTORIES);
@@ -1872,7 +1872,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
   EXPECT_TRUE(c4.HasFile(dir2));
   EXPECT_TRUE(c4.HasFile(file1));
   EXPECT_TRUE(c4.HasFile(file2_abs));
-  EXPECT_EQ(c4.size(), 4);
+  EXPECT_EQ(4, c4.size());
 
   // Enumerate with a pattern.
   FileEnumerator f5(temp_dir_.path(), true, FILES_AND_DIRECTORIES, FPL("dir*"));
@@ -1882,7 +1882,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
   EXPECT_TRUE(c5.HasFile(dir2file));
   EXPECT_TRUE(c5.HasFile(dir2inner));
   EXPECT_TRUE(c5.HasFile(dir2innerfile));
-  EXPECT_EQ(c5.size(), 5);
+  EXPECT_EQ(5, c5.size());
 
 #if defined(OS_WIN)
   {
@@ -1900,7 +1900,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
       EXPECT_TRUE(c6.HasFile(inner2));
       EXPECT_TRUE(c6.HasFile(inner2.Append(FPL("innerfile.txt"))));
       EXPECT_TRUE(c6.HasFile(dir1.Append(FPL("dir2file.txt"))));
-      EXPECT_EQ(c6.size(), 3);
+      EXPECT_EQ(3, c6.size());
     }
 
     // No changes for non recursive operation.
@@ -1910,7 +1910,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
     EXPECT_TRUE(c7.HasFile(dir2));
     EXPECT_TRUE(c7.HasFile(file1));
     EXPECT_TRUE(c7.HasFile(file2_abs));
-    EXPECT_EQ(c7.size(), 4);
+    EXPECT_EQ(4, c7.size());
 
     // Should not enumerate inside dir1 when using recursion.
     FileEnumerator f8(temp_dir_.path(), true, FILES_AND_DIRECTORIES);
@@ -1922,7 +1922,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
     EXPECT_TRUE(c8.HasFile(dir2file));
     EXPECT_TRUE(c8.HasFile(dir2inner));
     EXPECT_TRUE(c8.HasFile(dir2innerfile));
-    EXPECT_EQ(c8.size(), 7);
+    EXPECT_EQ(7, c8.size());
   }
 #endif
 
@@ -1978,24 +1978,23 @@ TEST_F(FileUtilTest, ReadFile) {
   // Read the file with smaller buffer.
   int bytes_read_small = ReadFile(
       file_path, &small_buffer[0], static_cast<int>(small_buffer.size()));
-  EXPECT_EQ(bytes_read_small, static_cast<int>(small_buffer.size()));
+  EXPECT_EQ(static_cast<int>(small_buffer.size()), bytes_read_small);
   EXPECT_EQ(
-      std::string(small_buffer.begin(), small_buffer.end()),
-      std::string(kTestData.begin(), kTestData.begin() + small_buffer.size()));
+      std::string(kTestData.begin(), kTestData.begin() + small_buffer.size()),
+      std::string(small_buffer.begin(), small_buffer.end()));
 
   // Read the file with buffer which have exactly same size.
   int bytes_read_exact = ReadFile(
       file_path, &exact_buffer[0], static_cast<int>(exact_buffer.size()));
-  EXPECT_EQ(bytes_read_exact, static_cast<int>(kTestData.size()));
-  EXPECT_EQ(std::string(exact_buffer.begin(), exact_buffer.end()), kTestData);
+  EXPECT_EQ(static_cast<int>(kTestData.size()), bytes_read_exact);
+  EXPECT_EQ(kTestData, std::string(exact_buffer.begin(), exact_buffer.end()));
 
   // Read the file with larger buffer.
   int bytes_read_large = ReadFile(
       file_path, &large_buffer[0], static_cast<int>(large_buffer.size()));
-  EXPECT_EQ(bytes_read_large, static_cast<int>(kTestData.size()));
-  EXPECT_EQ(std::string(large_buffer.begin(),
-                        large_buffer.begin() + kTestData.size()),
-            kTestData);
+  EXPECT_EQ(static_cast<int>(kTestData.size()), bytes_read_large);
+  EXPECT_EQ(kTestData, std::string(large_buffer.begin(),
+                                   large_buffer.begin() + kTestData.size()));
 
   // Make sure the return value is -1 if the file doesn't exist.
   FilePath file_path_not_exist =
@@ -2081,7 +2080,7 @@ TEST_F(FileUtilTest, TouchFile) {
   // This timestamp is divisible by one day (in local timezone),
   // to make it work on FAT too.
   ASSERT_TRUE(Time::FromString("Wed, 16 Nov 1994, 00:00:00",
-                                     &access_time));
+                               &access_time));
 
   Time modification_time;
   // Note that this timestamp is divisible by two (seconds) - FAT stores
@@ -2092,10 +2091,10 @@ TEST_F(FileUtilTest, TouchFile) {
   ASSERT_TRUE(TouchFile(foobar, access_time, modification_time));
   File::Info file_info;
   ASSERT_TRUE(GetFileInfo(foobar, &file_info));
-  EXPECT_EQ(file_info.last_accessed.ToInternalValue(),
-            access_time.ToInternalValue());
-  EXPECT_EQ(file_info.last_modified.ToInternalValue(),
-            modification_time.ToInternalValue());
+  EXPECT_EQ(access_time.ToInternalValue(),
+            file_info.last_accessed.ToInternalValue());
+  EXPECT_EQ(modification_time.ToInternalValue(),
+            file_info.last_modified.ToInternalValue());
 }
 
 TEST_F(FileUtilTest, IsDirectoryEmpty) {
