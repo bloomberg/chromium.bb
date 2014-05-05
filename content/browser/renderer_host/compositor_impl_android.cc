@@ -259,7 +259,8 @@ void CompositorImpl::Composite() {
 
 void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
   root_layer_->RemoveAllChildren();
-  root_layer_->AddChild(root_layer);
+  if (root_layer)
+    root_layer_->AddChild(root_layer);
 }
 
 void CompositorImpl::SetWindowSurface(ANativeWindow* window) {

@@ -13,7 +13,6 @@
 #include "base/message_loop/message_loop.h"
 #include "cc/layers/layer.h"
 #include "content/browser/android/content_view_core_impl.h"
-#include "content/browser/android/layer_tree_build_helper_impl.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/content_view_layer_renderer.h"
 #include "content/public/browser/android/layer_tree_build_helper.h"
@@ -27,6 +26,24 @@
 using base::android::ScopedJavaLocalRef;
 
 namespace content {
+
+namespace {
+
+class LayerTreeBuildHelperImpl : public LayerTreeBuildHelper {
+ public:
+  LayerTreeBuildHelperImpl() {}
+  virtual ~LayerTreeBuildHelperImpl() {}
+
+  virtual scoped_refptr<cc::Layer> GetLayerTree(
+      scoped_refptr<cc::Layer> content_root_layer) OVERRIDE {
+    return content_root_layer;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LayerTreeBuildHelperImpl);
+};
+
+}  // anonymous namespace
 
 // static
 bool ContentViewRenderView::RegisterContentViewRenderView(JNIEnv* env) {
@@ -75,8 +92,10 @@ void ContentViewRenderView::SetCurrentContentViewCore(
   InitCompositor();
   ContentViewCoreImpl* content_view_core =
       reinterpret_cast<ContentViewCoreImpl*>(native_content_view_core);
-  compositor_->SetRootLayer(
-      layer_tree_build_helper_->GetLayerTree(content_view_core->GetLayer()));
+  compositor_->SetRootLayer(content_view_core
+                                ? layer_tree_build_helper_->GetLayerTree(
+                                      content_view_core->GetLayer())
+                                : scoped_refptr<cc::Layer>());
 }
 
 void ContentViewRenderView::SurfaceCreated(

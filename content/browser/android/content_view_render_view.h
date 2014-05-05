@@ -56,7 +56,6 @@ class ContentViewRenderView : public CompositorClient {
   bool buffers_swapped_during_composite_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
-  scoped_refptr<cc::Layer> root_layer_;
   scoped_ptr<LayerTreeBuildHelper> layer_tree_build_helper_;
 
   scoped_ptr<content::Compositor> compositor_;

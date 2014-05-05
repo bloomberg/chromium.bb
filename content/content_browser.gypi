@@ -285,8 +285,6 @@
     'browser/android/in_process/synchronous_input_event_filter.h',
     'browser/android/interstitial_page_delegate_android.cc',
     'browser/android/interstitial_page_delegate_android.h',
-    'browser/android/layer_tree_build_helper_impl.cc',
-    'browser/android/layer_tree_build_helper_impl.h',
     'browser/android/load_url_params.cc',
     'browser/android/load_url_params.h',
     'browser/android/overscroll_glow.h',
