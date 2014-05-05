@@ -192,7 +192,6 @@ extern const char kLoadPlugin[];
 CONTENT_EXPORT extern const char kLogGpuControlListDecisions[];
 CONTENT_EXPORT extern const char kLoggingLevel[];
 CONTENT_EXPORT extern const char kLogNetLog[];
-extern const char kLogPluginMessages[];
 extern const char kMaxUntiledLayerHeight[];
 extern const char kMaxUntiledLayerWidth[];
 extern const char kMemoryMetrics[];

@@ -245,8 +245,6 @@ PluginChannel::PluginChannel()
       filter_(new MessageFilter()),
       npp_(new struct _NPP) {
   set_send_unblocking_only_during_unblock_dispatch();
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
 
   // Register |npp_| as the default owner for any object we receive via IPC,
   // and register it with WebBindings as a valid owner.

@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_util.h"
@@ -21,7 +20,6 @@
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/sync_point_manager.h"
-#include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/image_manager.h"
@@ -407,8 +405,6 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
   DCHECK(client_id);
 
   channel_id_ = IPC::Channel::GenerateVerifiedChannelID("gpu");
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
 }
 
 
@@ -453,11 +449,6 @@ int GpuChannel::TakeRendererFileDescriptor() {
 #endif  // defined(OS_POSIX)
 
 bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
-  if (log_messages_) {
-    DVLOG(1) << "received message @" << &message << " on channel @" << this
-             << " with type " << message.type();
-  }
-
   if (message.type() == GpuCommandBufferMsg_WaitForTokenInRange::ID ||
       message.type() == GpuCommandBufferMsg_WaitForGetOffsetInRange::ID) {
     // Move Wait commands to the head of the queue, so the renderer
@@ -480,10 +471,6 @@ bool GpuChannel::Send(IPC::Message* message) {
   // The GPU process must never send a synchronous IPC message to the renderer
   // process. This could result in deadlock.
   DCHECK(!message->is_sync());
-  if (log_messages_) {
-    DVLOG(1) << "sending message @" << message << " on channel @" << this
-             << " with type " << message->type();
-  }
 
   if (!channel_) {
     delete message;

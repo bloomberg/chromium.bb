@@ -195,7 +195,6 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
     switches::kEnableStatsTable,
     switches::kFullMemoryCrashReport,
     switches::kLoggingLevel,
-    switches::kLogPluginMessages,
     switches::kNoSandbox,
     switches::kPluginStartupDialog,
     switches::kTestSandbox,

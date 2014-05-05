@@ -218,7 +218,6 @@ class GpuChannel : public IPC::Listener,
   typedef IDMap<GpuCommandBufferStub, IDMapOwnPointer> StubMap;
   StubMap stubs_;
 
-  bool log_messages_;  // True if we should log sent and received messages.
   gpu::gles2::DisallowedFeatures disallowed_features_;
   GpuWatchdog* watchdog_;
   bool software_;
