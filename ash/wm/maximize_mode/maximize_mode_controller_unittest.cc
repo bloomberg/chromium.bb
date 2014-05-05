@@ -7,10 +7,8 @@
 #include "ash/accelerometer/accelerometer_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
-#include "ash/test/test_volume_control_delegate.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/vector3d_f.h"
@@ -150,7 +148,7 @@ TEST_F(MaximizeModeControllerTest, EnterExitThresholds) {
 // Tests that when the hinge is nearly vertically aligned, the current state
 // persists as the computed angle is highly inaccurate in this orientation.
 TEST_F(MaximizeModeControllerTest, HingeAligned) {
-  // Laptop in normal orientation lid open 90 degrees.
+   // Laptop in normal orientation lid open 90 degrees.
   TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, 1.0f),
                              gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
   EXPECT_FALSE(IsMaximizeModeStarted());
@@ -311,7 +309,7 @@ TEST_F(MaximizeModeControllerTest, BlocksKeyboard) {
   EXPECT_EQ(0u, counter.event_count());
   counter.reset();
 
-  // Touch should not be blocked.
+ // Touch should not be blocked.
   event_generator.PressTouch();
   event_generator.ReleaseTouch();
   EXPECT_GT(counter.event_count(), 0u);
@@ -327,34 +325,6 @@ TEST_F(MaximizeModeControllerTest, BlocksKeyboard) {
   event_generator.ReleaseKey(ui::VKEY_ESCAPE, 0);
   EXPECT_GT(counter.event_count(), 0u);
   counter.reset();
-}
-
-// Tests that maximize mode does not block Volume Up & Down events.
-TEST_F(MaximizeModeControllerTest, AllowsVolumeControl) {
-  aura::Window* root = Shell::GetPrimaryRootWindow();
-  aura::test::EventGenerator event_generator(root, root);
-
-  TestVolumeControlDelegate* volume_delegate =
-      new TestVolumeControlDelegate(false);
-  ash::Shell::GetInstance()->system_tray_delegate()->SetVolumeControlDelegate(
-      scoped_ptr<VolumeControlDelegate>(volume_delegate).Pass());
-
-  // Trigger maximize mode by opening to 270 to begin the test in maximize mode.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, -1.0f),
-                             gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
-  ASSERT_TRUE(IsMaximizeModeStarted());
-
-  // Verify volume down button event is not blocked
-  ASSERT_EQ(0, volume_delegate->handle_volume_down_count());
-  event_generator.PressKey(ui::VKEY_VOLUME_DOWN, 0);
-  event_generator.ReleaseKey(ui::VKEY_VOLUME_DOWN, 0);
-  EXPECT_EQ(1, volume_delegate->handle_volume_down_count());
-
-  // Verify volume up event is not blocked
-  ASSERT_EQ(0, volume_delegate->handle_volume_up_count());
-  event_generator.PressKey(ui::VKEY_VOLUME_UP, 0);
-  event_generator.ReleaseKey(ui::VKEY_VOLUME_UP, 0);
-  EXPECT_EQ(1, volume_delegate->handle_volume_up_count());
 }
 
 TEST_F(MaximizeModeControllerTest, LaptopTest) {

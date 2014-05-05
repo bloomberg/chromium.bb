@@ -842,8 +842,6 @@
         'test/test_system_tray_delegate.h',
         'test/test_user_wallpaper_delegate.cc',
         'test/test_user_wallpaper_delegate.h',
-        'test/test_volume_control_delegate.cc',
-        'test/test_volume_control_delegate.h',
         'test/ui_controls_factory_ash.cc',
         'test/ui_controls_factory_ash.h',
       ],

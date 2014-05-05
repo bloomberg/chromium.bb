@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "ash/accelerators/accelerator_controller.h"
-
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/accessibility_delegate.h"
 #include "ash/ash_switches.h"
@@ -19,7 +18,6 @@
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_screenshot_delegate.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/test/test_volume_control_delegate.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -69,6 +67,55 @@ class ReleaseAccelerator : public ui::Accelerator {
       : ui::Accelerator(keycode, modifiers) {
     set_type(ui::ET_KEY_RELEASED);
   }
+};
+
+class DummyVolumeControlDelegate : public VolumeControlDelegate {
+ public:
+  explicit DummyVolumeControlDelegate(bool consume)
+      : consume_(consume),
+        handle_volume_mute_count_(0),
+        handle_volume_down_count_(0),
+        handle_volume_up_count_(0) {
+  }
+  virtual ~DummyVolumeControlDelegate() {}
+
+  virtual bool HandleVolumeMute(const ui::Accelerator& accelerator) OVERRIDE {
+    ++handle_volume_mute_count_;
+    last_accelerator_ = accelerator;
+    return consume_;
+  }
+  virtual bool HandleVolumeDown(const ui::Accelerator& accelerator) OVERRIDE {
+    ++handle_volume_down_count_;
+    last_accelerator_ = accelerator;
+    return consume_;
+  }
+  virtual bool HandleVolumeUp(const ui::Accelerator& accelerator) OVERRIDE {
+    ++handle_volume_up_count_;
+    last_accelerator_ = accelerator;
+    return consume_;
+  }
+
+  int handle_volume_mute_count() const {
+    return handle_volume_mute_count_;
+  }
+  int handle_volume_down_count() const {
+    return handle_volume_down_count_;
+  }
+  int handle_volume_up_count() const {
+    return handle_volume_up_count_;
+  }
+  const ui::Accelerator& last_accelerator() const {
+    return last_accelerator_;
+  }
+
+ private:
+  const bool consume_;
+  int handle_volume_mute_count_;
+  int handle_volume_down_count_;
+  int handle_volume_up_count_;
+  ui::Accelerator last_accelerator_;
+
+  DISALLOW_COPY_AND_ASSIGN(DummyVolumeControlDelegate);
 };
 
 class DummyBrightnessControlDelegate : public BrightnessControlDelegate {
@@ -667,8 +714,8 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   const ui::Accelerator volume_down(ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
   const ui::Accelerator volume_up(ui::VKEY_VOLUME_UP, ui::EF_NONE);
   {
-    TestVolumeControlDelegate* delegate =
-        new TestVolumeControlDelegate(false);
+    DummyVolumeControlDelegate* delegate =
+        new DummyVolumeControlDelegate(false);
     ash::Shell::GetInstance()->system_tray_delegate()->SetVolumeControlDelegate(
         scoped_ptr<VolumeControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_volume_mute_count());
@@ -685,7 +732,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_EQ(volume_up, delegate->last_accelerator());
   }
   {
-    TestVolumeControlDelegate* delegate = new TestVolumeControlDelegate(true);
+    DummyVolumeControlDelegate* delegate = new DummyVolumeControlDelegate(true);
     ash::Shell::GetInstance()->system_tray_delegate()->SetVolumeControlDelegate(
         scoped_ptr<VolumeControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_volume_mute_count());
@@ -1143,8 +1190,8 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
     EXPECT_TRUE(ProcessWithContext(volume_mute));
     EXPECT_TRUE(ProcessWithContext(volume_down));
     EXPECT_TRUE(ProcessWithContext(volume_up));
-    TestVolumeControlDelegate* delegate =
-        new TestVolumeControlDelegate(false);
+    DummyVolumeControlDelegate* delegate =
+        new DummyVolumeControlDelegate(false);
     ash::Shell::GetInstance()->system_tray_delegate()->SetVolumeControlDelegate(
         scoped_ptr<VolumeControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_volume_mute_count());
@@ -1161,7 +1208,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
     EXPECT_EQ(volume_up, delegate->last_accelerator());
   }
   {
-    TestVolumeControlDelegate* delegate = new TestVolumeControlDelegate(true);
+    DummyVolumeControlDelegate* delegate = new DummyVolumeControlDelegate(true);
     ash::Shell::GetInstance()->system_tray_delegate()->SetVolumeControlDelegate(
         scoped_ptr<VolumeControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_volume_mute_count());

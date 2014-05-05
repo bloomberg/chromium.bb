@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/events/event_targeter.h"
-#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace ash {
 
@@ -55,19 +54,8 @@ void BlockKeyboardAndTouchpadTargeter::SetDefaultTargeter(
 ui::EventTarget* BlockKeyboardAndTouchpadTargeter::FindTargetForEvent(
     ui::EventTarget* root,
     ui::Event* event) {
-  if (event->HasNativeEvent()) {
-    if (event->IsMouseEvent())
-      return NULL;
-    if (event->IsKeyEvent()) {
-      // TODO(bruthig): Fix this to block rewritten volume keys
-      // (i.e. F9 and F10)  from the device's keyboard. https://crbug.com/368669
-      ui::KeyEvent* key_event = static_cast<ui::KeyEvent*>(event);
-      if (key_event->key_code() != ui::VKEY_VOLUME_DOWN &&
-          key_event->key_code() != ui::VKEY_VOLUME_UP) {
-        return NULL;
-      }
-    }
-  }
+  if (event->HasNativeEvent() && (event->IsMouseEvent() || event->IsKeyEvent()))
+    return NULL;
   return default_targeter_->FindTargetForEvent(root, event);
 }
 
