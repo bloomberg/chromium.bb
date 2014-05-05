@@ -5413,4 +5413,24 @@ TEST_F(WebFrameTest, RenderBlockPercentHeightDescendants)
     EXPECT_FALSE(anonymousBlock->hasPercentHeightDescendants());
 }
 
+TEST_F(WebFrameTest, HasVisibleContentOnVisibleFrames)
+{
+    registerMockedHttpURLLoad("visible_frames.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "visible_frames.html");
+    for (WebFrame* frame = webViewImpl->mainFrameImpl()->traverseNext(false); frame; frame = frame->traverseNext(false)) {
+        EXPECT_TRUE(frame->hasVisibleContent());
+    }
+}
+
+TEST_F(WebFrameTest, HasVisibleContentOnHiddenFrames)
+{
+    registerMockedHttpURLLoad("hidden_frames.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "hidden_frames.html");
+    for (WebFrame* frame = webViewImpl->mainFrameImpl()->traverseNext(false); frame; frame = frame->traverseNext(false)) {
+        EXPECT_FALSE(frame->hasVisibleContent());
+    }
+}
+
 } // namespace

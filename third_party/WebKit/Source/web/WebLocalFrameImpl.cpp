@@ -594,6 +594,10 @@ WebSize WebLocalFrameImpl::contentsSize() const
 
 bool WebLocalFrameImpl::hasVisibleContent() const
 {
+    if (RenderPart* renderer = frame()->ownerRenderer()) {
+        if (renderer->style()->visibility() != VISIBLE)
+            return false;
+    }
     return frame()->view()->visibleWidth() > 0 && frame()->view()->visibleHeight() > 0;
 }
 
