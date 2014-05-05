@@ -252,18 +252,6 @@ bool fontAntialiasingEnabledForTest()
     return WebCore::isFontAntialiasingEnabledForTest();
 }
 
-// FIXME(dro): Remove after Chromium side rename landed.
-void setFontSmoothingEnabledForTest(bool value)
-{
-    setFontAntialiasingEnabledForTest(value);
-}
-
-// FIXME(dro): Remove after Chromium side rename landed.
-bool fontSmoothingEnabledForTest()
-{
-    return fontAntialiasingEnabledForTest();
-}
-
 void enableLogChannel(const char* name)
 {
 #if !LOG_DISABLED

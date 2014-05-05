@@ -1603,7 +1603,7 @@ class Port(object):
                              ['--enable-webkit-text-subpixel-positioning']),
             VirtualTestSuite('windows-directwrite',
                              'fast/text',
-                             ['--enable-direct-write', '--enable-font-smoothing']),
+                             ['--enable-direct-write', '--enable-font-antialiasing']),
         ]
 
     @memoized
