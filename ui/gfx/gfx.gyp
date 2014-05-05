@@ -465,6 +465,9 @@
         'animation/animation_unittest.cc',
         'animation/multi_animation_unittest.cc',
         'animation/slide_animation_unittest.cc',
+        'animation/tween_unittest.cc',
+        'blit_unittest.cc',
+        'break_list_unittest.cc',
         'codec/png_codec_unittest.cc',
         'color_utils_unittest.cc',
         'display_unittest.cc',
@@ -486,9 +489,12 @@
         'range/range_mac_unittest.mm',
         'range/range_unittest.cc',
         'range/range_win_unittest.cc',
+        'sequential_id_generator_unittest.cc',
         'shadow_value_unittest.cc',
         'skbitmap_operations_unittest.cc',
         'skrect_conversion_unittest.cc',
+        'transform_util_unittest.cc',
+        'utf16_indexing_unittest.cc',
       ],
       'dependencies': [
         '../../base/base.gyp:base',
@@ -499,6 +505,7 @@
         '../../third_party/libpng/libpng.gyp:libpng',
         'gfx',
         'gfx_geometry',
+        'gfx_test_support',
       ],
       'conditions': [
         ['OS == "ios"', {
