@@ -253,8 +253,8 @@ bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& ne
 {
     class EnableLiveEditScope {
     public:
-        explicit EnableLiveEditScope(v8::Isolate* isolate) : m_isolate(isolate) { v8::Debug::SetLiveEditEnabled(true, m_isolate); }
-        ~EnableLiveEditScope() { v8::Debug::SetLiveEditEnabled(false, m_isolate); }
+        explicit EnableLiveEditScope(v8::Isolate* isolate) : m_isolate(isolate) { v8::Debug::SetLiveEditEnabled(m_isolate, true); }
+        ~EnableLiveEditScope() { v8::Debug::SetLiveEditEnabled(m_isolate, false); }
     private:
         v8::Isolate* m_isolate;
     };
@@ -365,7 +365,7 @@ ScriptValue ScriptDebugServer::currentCallFramesForAsyncStack()
 
 void ScriptDebugServer::interruptAndRun(PassOwnPtr<Task> task, v8::Isolate* isolate)
 {
-    v8::Debug::DebugBreakForCommand(new ClientDataImpl(task), isolate);
+    v8::Debug::DebugBreakForCommand(isolate, new ClientDataImpl(task));
 }
 
 void ScriptDebugServer::runPendingTasks()
