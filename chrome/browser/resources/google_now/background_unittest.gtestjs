@@ -336,9 +336,7 @@ TEST_F(TEST_NAME, 'RequestNotificationGroupsFromServerFailure', function() {
 TEST_F(TEST_NAME, 'RequestAndUpdateOptInOptedIn', function() {
   this.makeAndRegisterMockApis([
     'chrome.storage.local.set',
-    'onStateChange',
-    'requestFromServer',
-    'scheduleNextPoll'
+    'requestFromServer'
   ]);
 
   this.mockApis.expects(once()).requestFromServer('GET', 'settings/optin')
@@ -349,14 +347,11 @@ TEST_F(TEST_NAME, 'RequestAndUpdateOptInOptedIn', function() {
   this.mockApis.expects(once())
       .chrome_storage_local_set(eqJSON({googleNowEnabled: true}));
 
-  this.mockApis.expects(once()).onStateChange();
-
-  this.mockApis.expects(never()).scheduleNextPoll();
-
   var thenCalled = false;
   var catchCalled = false;
-  requestAndUpdateOptedIn().then(function() {
+  requestAndUpdateOptedIn().then(function(optedIn) {
     thenCalled = true;
+    assertTrue(optedIn);
   }).catch(function() {
     catchCalled = true;
   });
@@ -367,9 +362,7 @@ TEST_F(TEST_NAME, 'RequestAndUpdateOptInOptedIn', function() {
 TEST_F(TEST_NAME, 'RequestAndUpdateOptInOptedOut', function() {
   this.makeAndRegisterMockApis([
     'chrome.storage.local.set',
-    'onStateChange',
-    'requestFromServer',
-    'scheduleNextPoll'
+    'requestFromServer'
   ]);
 
   this.mockApis.expects(once()).requestFromServer('GET', 'settings/optin')
@@ -377,11 +370,31 @@ TEST_F(TEST_NAME, 'RequestAndUpdateOptInOptedOut', function() {
         status: 200,
         responseText: '{"value": false}'})));
 
+  this.mockApis.expects(once())
+      .chrome_storage_local_set(eqJSON({googleNowEnabled: false}));
+
+  var thenCalled = false;
+  var catchCalled = false;
+  requestAndUpdateOptedIn().then(function(optedIn) {
+    thenCalled = true;
+    assertFalse(optedIn);
+  }).catch(function() {
+    catchCalled = true;
+  });
+  assertTrue(thenCalled);
+  assertFalse(catchCalled);
+});
+
+TEST_F(TEST_NAME, 'RequestAndUpdateOptInFailure', function() {
+  this.makeAndRegisterMockApis([
+    'chrome.storage.local.set',
+    'requestFromServer'
+  ]);
+
+  this.mockApis.expects(once()).requestFromServer('GET', 'settings/optin')
+      .will(returnValue(Promise.reject({status: 404})));
+
   this.mockApis.expects(never()).chrome_storage_local_set();
-
-  this.mockApis.expects(never()).onStateChange();
-
-  this.mockApis.expects(once()).scheduleNextPoll(eqJSON({}), false);
 
   var thenCalled = false;
   var catchCalled = false;
@@ -394,32 +407,71 @@ TEST_F(TEST_NAME, 'RequestAndUpdateOptInOptedOut', function() {
   assertTrue(catchCalled);
 });
 
-TEST_F(TEST_NAME, 'RequestAndUpdateOptInFailure', function() {
+/**
+ * pollOptedInNoImmediateRecheck Tests
+ */
+TEST_F(TEST_NAME, 'pollOptedInNoImmediateRecheckOptedIn', function() {
   this.makeAndRegisterMockApis([
-    'chrome.storage.local.set',
-    'onStateChange',
-    'requestFromServer',
-    'scheduleNextPoll'
+    'requestAndUpdateOptedIn',
+    'instrumented.metricsPrivate.getVariationParams',
+    'optInPollAttempts.start'
   ]);
 
-  this.mockApis.expects(once()).requestFromServer('GET', 'settings/optin')
-      .will(returnValue(Promise.reject({status: 404})));
+  this.mockApis.expects(once()).requestAndUpdateOptedIn()
+      .will(returnValue(Promise.resolve(true)));
 
-  this.mockApis.expects(never()).chrome_storage_local_set();
+  this.mockApis.expects(never())
+      .instrumented_metricsPrivate_getVariationParams();
 
-  this.mockApis.expects(never()).onStateChange();
+  this.mockApis.expects(never()).optInPollAttempts_start();
 
-  this.mockApis.expects(never()).scheduleNextPoll();
+  pollOptedInNoImmediateRecheck();
+});
 
-  var thenCalled = false;
-  var catchCalled = false;
-  requestAndUpdateOptedIn().then(function() {
-    thenCalled = true;
-  }).catch(function() {
-    catchCalled = true;
-  });
-  assertFalse(thenCalled);
-  assertTrue(catchCalled);
+TEST_F(TEST_NAME, 'pollOptedInNoImmediateRecheckOptedOut', function() {
+  this.makeAndRegisterMockApis([
+    'requestAndUpdateOptedIn',
+    'instrumented.metricsPrivate.getVariationParams',
+    'optInPollAttempts.start'
+  ]);
+
+  this.mockApis.expects(once()).requestAndUpdateOptedIn()
+      .will(returnValue(Promise.resolve(false)));
+
+  var getVariationParamsSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once())
+      .instrumented_metricsPrivate_getVariationParams(
+          getVariationParamsSavedArgs.match(eq('GoogleNow')),
+          getVariationParamsSavedArgs.match(ANYTHING))
+      .will(invokeCallback(getVariationParamsSavedArgs, 1, {}));
+
+  this.mockApis.expects(once())
+      .optInPollAttempts_start(DEFAULT_OPTIN_CHECK_PERIOD_SECONDS);
+
+  pollOptedInNoImmediateRecheck();
+});
+
+TEST_F(TEST_NAME, 'pollOptedInNoImmediateRecheckFailure', function() {
+  this.makeAndRegisterMockApis([
+    'requestAndUpdateOptedIn',
+    'instrumented.metricsPrivate.getVariationParams',
+    'optInPollAttempts.start'
+  ]);
+
+  this.mockApis.expects(once()).requestAndUpdateOptedIn()
+      .will(returnValue(Promise.reject()));
+
+  var getVariationParamsSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once())
+      .instrumented_metricsPrivate_getVariationParams(
+          getVariationParamsSavedArgs.match(eq('GoogleNow')),
+          getVariationParamsSavedArgs.match(ANYTHING))
+      .will(invokeCallback(getVariationParamsSavedArgs, 1, {}));
+
+  this.mockApis.expects(once())
+      .optInPollAttempts_start(DEFAULT_OPTIN_CHECK_PERIOD_SECONDS);
+
+  pollOptedInNoImmediateRecheck();
 });
 
 /**
@@ -531,6 +583,7 @@ TEST_F(TEST_NAME, 'CombineGroup', function() {
  */
 function mockInitializeDependencies(fixture) {
   fixture.makeAndRegisterMockGlobals([
+    'pollOptedInNoImmediateRecheck',
     'recordEvent',
     'removeAllCards',
     'setBackgroundEnable',
@@ -545,6 +598,8 @@ function mockInitializeDependencies(fixture) {
     'instrumented.notifications.getAll',
     'instrumented.notifications.getPermissionLevel',
     'instrumented.webstorePrivate.getBrowserLogin',
+    'optInPollAttempts.isRunning',
+    'optInPollAttempts.stop',
     'tasks.add',
     'updateCardsAttempts.isRunning',
     'updateCardsAttempts.stop'
@@ -607,6 +662,14 @@ function expectStateMachineCalls(
       will(
           invokeCallback(
               updateCardsAttemptsIsRunningSavedArgs, 0, undefined));
+
+  var optInPollAttemptsIsRunningSavedArgs = new SaveMockArguments();
+  fixture.mockApis.expects(once()).
+      optInPollAttempts_isRunning(
+          optInPollAttemptsIsRunningSavedArgs.match(ANYTHING)).
+      will(
+          invokeCallback(
+              optInPollAttemptsIsRunningSavedArgs, 0, undefined));
 }
 
 /**
@@ -659,6 +722,8 @@ TEST_F(TEST_NAME,'Initialize_SignedOut', function() {
   this.mockGlobals.expects(never()).startPollingCards();
   this.mockGlobals.expects(once()).stopPollingCards();
   this.mockGlobals.expects(once()).removeAllCards();
+  this.mockGlobals.expects(never()).pollOptedInNoImmediateRecheck();
+  this.mockApis.expects(once()).optInPollAttempts_stop();
 
   // Invoking the tested function.
   initialize();
@@ -688,6 +753,8 @@ TEST_F(TEST_NAME,'Initialize_NotificationDisabled', function() {
   this.mockGlobals.expects(never()).startPollingCards();
   this.mockGlobals.expects(once()).stopPollingCards();
   this.mockGlobals.expects(once()).removeAllCards();
+  this.mockGlobals.expects(never()).pollOptedInNoImmediateRecheck();
+  this.mockApis.expects(once()).optInPollAttempts_stop();
 
   // Invoking the tested function.
   initialize();
@@ -717,6 +784,8 @@ TEST_F(TEST_NAME, 'Initialize_NoBackground', function() {
   this.mockGlobals.expects(once()).startPollingCards();
   this.mockGlobals.expects(never()).stopPollingCards();
   this.mockGlobals.expects(never()).removeAllCards();
+  this.mockGlobals.expects(never()).pollOptedInNoImmediateRecheck();
+  this.mockApis.expects(once()).optInPollAttempts_stop();
 
   // Invoking the tested function.
   initialize();
@@ -743,9 +812,11 @@ TEST_F(TEST_NAME, 'Initialize_GoogleNowDisabled', function() {
       testGoogleNowEnabled);
 
   this.mockGlobals.expects(once()).setBackgroundEnable(false);
-  this.mockGlobals.expects(once()).startPollingCards();
-  this.mockGlobals.expects(never()).stopPollingCards();
+  this.mockGlobals.expects(never()).startPollingCards();
+  this.mockGlobals.expects(once()).stopPollingCards();
   this.mockGlobals.expects(once()).removeAllCards();
+  this.mockGlobals.expects(once()).pollOptedInNoImmediateRecheck();
+  this.mockApis.expects(never()).optInPollAttempts_stop();
 
   // Invoking the tested function.
   initialize();
@@ -776,6 +847,8 @@ TEST_F(TEST_NAME, 'Initialize_RunGoogleNow', function() {
   this.mockGlobals.expects(once()).startPollingCards();
   this.mockGlobals.expects(never()).stopPollingCards();
   this.mockGlobals.expects(never()).removeAllCards();
+  this.mockGlobals.expects(never()).pollOptedInNoImmediateRecheck();
+  this.mockApis.expects(once()).optInPollAttempts_stop();
 
   // Invoking the tested function.
   initialize();
@@ -792,11 +865,13 @@ TEST_F(TEST_NAME, 'NoCardsSignedOut', function() {
       'recordEvent',
       'removeAllCards',
       'setBackgroundEnable',
-      'setShouldPollCards']);
+      'setShouldPollCards',
+      'setShouldPollOptInStatus']);
 
   this.mockGlobals.stubs().removeAllCards();
   this.mockGlobals.stubs().setBackgroundEnable(ANYTHING);
   this.mockGlobals.stubs().setShouldPollCards(ANYTHING);
+  this.mockGlobals.stubs().setShouldPollOptInStatus(ANYTHING);
 
   this.mockGlobals.expects(once()).recordEvent(
       GoogleNowEvent.STOPPED);
@@ -817,11 +892,13 @@ TEST_F(TEST_NAME, 'NoCardsNotificationsDisabled', function() {
       'recordEvent',
       'removeAllCards',
       'setBackgroundEnable',
-      'setShouldPollCards']);
+      'setShouldPollCards',
+      'setShouldPollOptInStatus']);
 
   this.mockGlobals.stubs().removeAllCards();
   this.mockGlobals.stubs().setBackgroundEnable(ANYTHING);
   this.mockGlobals.stubs().setShouldPollCards(ANYTHING);
+  this.mockGlobals.stubs().setShouldPollOptInStatus(ANYTHING);
 
   this.mockGlobals.expects(once()).recordEvent(
       GoogleNowEvent.STOPPED);
@@ -842,11 +919,13 @@ TEST_F(TEST_NAME, 'NoCardsGoogleNowDisabled', function() {
       'recordEvent',
       'removeAllCards',
       'setBackgroundEnable',
-      'setShouldPollCards']);
+      'setShouldPollCards',
+      'setShouldPollOptInStatus']);
 
   this.mockGlobals.stubs().removeAllCards();
   this.mockGlobals.stubs().setBackgroundEnable(ANYTHING);
   this.mockGlobals.stubs().setShouldPollCards(ANYTHING);
+  this.mockGlobals.stubs().setShouldPollOptInStatus(ANYTHING);
 
   this.mockGlobals.expects(never()).recordEvent(
       GoogleNowEvent.STOPPED);
@@ -867,11 +946,13 @@ TEST_F(TEST_NAME, 'NoCardsEverythingEnabled', function() {
       'recordEvent',
       'removeAllCards',
       'setBackgroundEnable',
-      'setShouldPollCards']);
+      'setShouldPollCards',
+      'setShouldPollOptInStatus']);
 
   this.mockGlobals.stubs().removeAllCards();
   this.mockGlobals.stubs().setBackgroundEnable(ANYTHING);
   this.mockGlobals.stubs().setShouldPollCards(ANYTHING);
+  this.mockGlobals.stubs().setShouldPollOptInStatus(ANYTHING);
 
   this.mockGlobals.expects(never()).recordEvent(
       GoogleNowEvent.STOPPED);
@@ -1195,7 +1276,7 @@ TEST_F(TEST_NAME, 'ProcessServerResponse', function() {
   };
 
   this.makeAndRegisterMockGlobals([
-    'scheduleNextPoll'
+    'scheduleNextCardsPoll'
   ]);
 
   this.makeAndRegisterMockApis([
@@ -1213,8 +1294,8 @@ TEST_F(TEST_NAME, 'ProcessServerResponse', function() {
         recentDismissals: recentDismissals
       });
 
-  this.mockGlobals.expects(once()).
-      scheduleNextPoll(eqJSON(expectedUpdatedGroups), true);
+  this.mockGlobals.expects(once())
+      .scheduleNextCardsPoll(eqJSON(expectedUpdatedGroups));
 
   // Invoking the tested function.
   processServerResponse(serverResponse);
@@ -1231,8 +1312,7 @@ TEST_F(TEST_NAME, 'ProcessServerResponseGoogleNowDisabled', function() {
   };
 
   this.makeAndRegisterMockGlobals([
-    'onStateChange',
-    'scheduleNextPoll',
+    'scheduleNextCardsPoll'
   ]);
 
   this.makeAndRegisterMockApis([
@@ -1243,9 +1323,7 @@ TEST_F(TEST_NAME, 'ProcessServerResponseGoogleNowDisabled', function() {
   this.mockApis.expects(once()).
       chrome_storage_local_set(eqJSON({googleNowEnabled: false}));
 
-  this.mockGlobals.expects(once()).onStateChange();
-
-  this.mockGlobals.expects(once()).scheduleNextPoll(eqJSON({}), false);
+  this.mockGlobals.expects(never()).scheduleNextCardsPoll();
 
   // Invoking the tested function.
   processServerResponse(serverResponse);

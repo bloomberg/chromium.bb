@@ -792,7 +792,6 @@ function setupAttemptManagerTest(fixture) {
 
   fixture.makeMockLocalFunctions([
     'attempt',
-    'planForNextCallback',
     'isRunningCallback'
   ]);
   fixture.makeAndRegisterMockApis([
@@ -908,8 +907,8 @@ TEST_F('GoogleNowUtilityUnitTest', 'AttemptManagerExponGrowth', function() {
   var test = setupAttemptManagerTest(this);
   var testStoredRetryDelay = 433;
 
-  // Call planForNext, which prepares next attempt. Current retry time
-  // is less than 1/2 of the maximum delay.
+  // Call scheduleRetry, which schedules a retry.
+  // Current retry time is less than 1/2 of the maximum delay.
   // Expectations.
   var expectedRetryDelaySeconds =
       testStoredRetryDelay * 2 * (1 + testRandomValue * 0.2);
@@ -925,10 +924,16 @@ TEST_F('GoogleNowUtilityUnitTest', 'AttemptManagerExponGrowth', function() {
         periodInMinutes: testMaximumDelaySeconds / 60}));
   this.mockApis.expects(once()).chrome_storage_local_set(
       eqJSON(createTestAttemptStorageEntry(expectedRetryDelaySeconds)));
-  this.mockLocalFunctions.expects(once()).planForNextCallback();
   // Invocation.
-  test.attempts.planForNext(
-      this.mockLocalFunctions.functions().planForNextCallback);
+  var thenCalled = false;
+  var catchCalled = false;
+  test.attempts.scheduleRetry().then(function(request) {
+    thenCalled = true;
+  }).catch(function(request) {
+    catchCalled = true;
+  });
+  assertTrue(thenCalled);
+  assertFalse(catchCalled);
 });
 
 TEST_F('GoogleNowUtilityUnitTest', 'AttemptManagerGrowthLimit', function() {
@@ -938,8 +943,8 @@ TEST_F('GoogleNowUtilityUnitTest', 'AttemptManagerGrowthLimit', function() {
   var test = setupAttemptManagerTest(this);
   var testStoredRetryDelay = 1500;
 
-  // Call planForNext, which prepares next attempt. Current retry time
-  // is greater than 1/2 of the maximum delay.
+  // Call scheduleRetry, which schedules a retry.
+  // Current retry time is greater than 1/2 of the maximum delay.
   // Expectations.
   var expectedRetryDelaySeconds = testMaximumDelaySeconds;
   expectChromeLocalStorageGet(
@@ -955,10 +960,16 @@ TEST_F('GoogleNowUtilityUnitTest', 'AttemptManagerGrowthLimit', function() {
       }));
   this.mockApis.expects(once()).chrome_storage_local_set(
       eqJSON(createTestAttemptStorageEntry(expectedRetryDelaySeconds)));
-  this.mockLocalFunctions.expects(once()).planForNextCallback();
   // Invocation.
-  test.attempts.planForNext(
-      this.mockLocalFunctions.functions().planForNextCallback);
+  var thenCalled = false;
+  var catchCalled = false;
+  test.attempts.scheduleRetry().then(function(request) {
+    thenCalled = true;
+  }).catch(function(request) {
+    catchCalled = true;
+  });
+  assertTrue(thenCalled);
+  assertFalse(catchCalled);
 });
 
 TEST_F('GoogleNowUtilityUnitTest', 'AttemptManagerAlarm', function() {

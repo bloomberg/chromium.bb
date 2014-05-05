@@ -879,21 +879,19 @@ function buildAttemptManager(
   }
 
   /**
-   * Schedules next attempt.
-   * @param {number=} opt_previousDelaySeconds Previous delay in a sequence of
-   *     retry attempts, if specified. Not specified for scheduling first retry
-   *     in the exponential sequence.
+   * Schedules the alarm with a random factor to reduce the chance that all
+   * clients will fire their timers at the same time.
+   * @param {number} durationSeconds Number of seconds before firing the alarm.
    */
-  function scheduleNextAttempt(opt_previousDelaySeconds) {
-    var base = opt_previousDelaySeconds ? opt_previousDelaySeconds * 2 :
-                                          initialDelaySeconds;
-    var newRetryDelaySeconds =
-        Math.min(base * (1 + 0.2 * Math.random()), maximumDelaySeconds);
+  function scheduleAlarm(durationSeconds) {
+    var randomizedRetryDuration =
+        Math.min(durationSeconds * (1 + 0.2 * Math.random()),
+                 maximumDelaySeconds);
 
-    createAlarm(newRetryDelaySeconds);
+    createAlarm(randomizedRetryDuration);
 
     var items = {};
-    items[currentDelayStorageKey] = newRetryDelaySeconds;
+    items[currentDelayStorageKey] = randomizedRetryDuration;
     chrome.storage.local.set(items);
   }
 
@@ -908,7 +906,7 @@ function buildAttemptManager(
       createAlarm(opt_firstDelaySeconds);
       chrome.storage.local.remove(currentDelayStorageKey);
     } else {
-      scheduleNextAttempt();
+      scheduleAlarm(initialDelaySeconds);
     }
   }
 
@@ -921,21 +919,24 @@ function buildAttemptManager(
   }
 
   /**
-   * Plans for the next attempt.
-   * @param {function()} callback Completion callback. It will be invoked after
-   *     the planning is done.
+   * Schedules an exponential backoff retry.
+   * @return {Promise} A promise to schedule the retry.
    */
-  function planForNext(callback) {
+  function scheduleRetry() {
     var request = {};
     request[currentDelayStorageKey] = undefined;
-    fillFromChromeLocalStorage(request, PromiseRejection.ALLOW)
+    return fillFromChromeLocalStorage(request, PromiseRejection.ALLOW)
         .catch(function() {
           request[currentDelayStorageKey] = maximumDelaySeconds;
           return Promise.resolve(request);
-        }).then(function(items) {
-          console.log('planForNext-get-storage ' + JSON.stringify(items));
-          scheduleNextAttempt(items[currentDelayStorageKey]);
-          callback();
+        })
+        .then(function(items) {
+          console.log('scheduleRetry-get-storage ' + JSON.stringify(items));
+          var retrySeconds = initialDelaySeconds;
+          if (items[currentDelayStorageKey]) {
+            retrySeconds = items[currentDelayStorageKey] * 2;
+          }
+          scheduleAlarm(retrySeconds);
         });
   }
 
@@ -949,7 +950,7 @@ function buildAttemptManager(
 
   return {
     start: start,
-    planForNext: planForNext,
+    scheduleRetry: scheduleRetry,
     stop: stop,
     isRunning: isRunning
   };

@@ -54,14 +54,14 @@ var MAXIMUM_POLLING_PERIOD_SECONDS = 60 * 60;  // 1 hour
  * Initial period for polling for Google Now optin notification after push
  * messaging indicates Google Now is enabled.
  */
-var INITIAL_OPTIN_POLLING_PERIOD_SECONDS = 60;  // 1 minute
+var INITIAL_OPTIN_RECHECK_PERIOD_SECONDS = 60;  // 1 minute
 
 /**
  * Maximum period for polling for Google Now optin notification after push
  * messaging indicates Google Now is enabled. It is expected that the alarm
  * will be stopped after this.
  */
-var MAXIMUM_OPTIN_POLLING_PERIOD_SECONDS = 16 * 60;  // 16 minutes
+var MAXIMUM_OPTIN_RECHECK_PERIOD_SECONDS = 16 * 60;  // 16 minutes
 
 /**
  * Initial period for retrying the server request for dismissing cards.
@@ -205,6 +205,7 @@ wrapper.instrumentChromeApiFunction(
     'notifications.onShowSettings.addListener', 0);
 wrapper.instrumentChromeApiFunction('permissions.contains', 1);
 wrapper.instrumentChromeApiFunction('pushMessaging.onMessage.addListener', 0);
+wrapper.instrumentChromeApiFunction('storage.onChanged.addListener', 0);
 wrapper.instrumentChromeApiFunction('runtime.onInstalled.addListener', 0);
 wrapper.instrumentChromeApiFunction('runtime.onStartup.addListener', 0);
 wrapper.instrumentChromeApiFunction('tabs.create', 1);
@@ -214,11 +215,16 @@ var updateCardsAttempts = buildAttemptManager(
     requestCards,
     INITIAL_POLLING_PERIOD_SECONDS,
     MAXIMUM_POLLING_PERIOD_SECONDS);
-var optInCheckAttempts = buildAttemptManager(
+var optInPollAttempts = buildAttemptManager(
     'optin',
-    pollOptedIn,
-    INITIAL_OPTIN_POLLING_PERIOD_SECONDS,
-    MAXIMUM_OPTIN_POLLING_PERIOD_SECONDS);
+    pollOptedInNoImmediateRecheck,
+    INITIAL_POLLING_PERIOD_SECONDS,
+    MAXIMUM_POLLING_PERIOD_SECONDS);
+var optInRecheckAttempts = buildAttemptManager(
+    'optin-recheck',
+    pollOptedInWithRecheck,
+    INITIAL_OPTIN_RECHECK_PERIOD_SECONDS,
+    MAXIMUM_OPTIN_RECHECK_PERIOD_SECONDS);
 var dismissalAttempts = buildAttemptManager(
     'dismiss',
     retryPendingDismissals,
@@ -425,39 +431,52 @@ function combineGroup(combinedCards, storedGroup) {
 }
 
 /**
+ * Calculates the soonest poll time from a map of groups as an absolute time.
+ * @param {Object.<string, StoredNotificationGroup>} groups Map from group name
+ *     to group information.
+ * @return {number} The next poll time based off of the groups.
+ */
+function calculateNextPollTimeMilliseconds(groups) {
+  var nextPollTime = null;
+
+  for (var groupName in groups) {
+    var group = groups[groupName];
+    if (group.nextPollTime !== undefined) {
+      nextPollTime = nextPollTime == null ?
+          group.nextPollTime : Math.min(group.nextPollTime, nextPollTime);
+    }
+  }
+
+  // At least one of the groups must have nextPollTime.
+  verify(nextPollTime != null, 'calculateNextPollTime: nextPollTime is null');
+  return nextPollTime;
+}
+
+/**
  * Schedules next cards poll.
  * @param {Object.<string, StoredNotificationGroup>} groups Map from group name
  *     to group information.
- * @param {boolean} isOptedIn True if the user is opted in to Google Now.
  */
-function scheduleNextPoll(groups, isOptedIn) {
-  if (isOptedIn) {
-    var nextPollTime = null;
+function scheduleNextCardsPoll(groups) {
+  var nextPollTimeMs = calculateNextPollTimeMilliseconds(groups);
 
-    for (var groupName in groups) {
-      var group = groups[groupName];
-      if (group.nextPollTime !== undefined) {
-        nextPollTime = nextPollTime == null ?
-            group.nextPollTime : Math.min(group.nextPollTime, nextPollTime);
-      }
-    }
+  var nextPollDelaySeconds = Math.max(
+      (nextPollTimeMs - Date.now()) / MS_IN_SECOND,
+      MINIMUM_POLLING_PERIOD_SECONDS);
+  updateCardsAttempts.start(nextPollDelaySeconds);
+}
 
-    // At least one of the groups must have nextPollTime.
-    verify(nextPollTime != null, 'scheduleNextPoll: nextPollTime is null');
-
-    var nextPollDelaySeconds = Math.max(
-        (nextPollTime - Date.now()) / MS_IN_SECOND,
-        MINIMUM_POLLING_PERIOD_SECONDS);
-    updateCardsAttempts.start(nextPollDelaySeconds);
-  } else {
-    instrumented.metricsPrivate.getVariationParams(
-        'GoogleNow', function(params) {
-      var optinPollPeriodSeconds =
-          parseInt(params && params.optinPollPeriodSeconds, 10) ||
-          DEFAULT_OPTIN_CHECK_PERIOD_SECONDS;
-      updateCardsAttempts.start(optinPollPeriodSeconds);
-    });
-  }
+/**
+ * Schedules the next opt-in check poll.
+ */
+function scheduleOptInCheckPoll() {
+  instrumented.metricsPrivate.getVariationParams(
+      'GoogleNow', function(params) {
+    var optinPollPeriodSeconds =
+        parseInt(params && params.optinPollPeriodSeconds, 10) ||
+        DEFAULT_OPTIN_CHECK_PERIOD_SECONDS;
+    optInPollAttempts.start(optinPollPeriodSeconds);
+  });
 }
 
 /**
@@ -488,13 +507,6 @@ function processServerResponse(response) {
 
   if (response.googleNowDisabled) {
     chrome.storage.local.set({googleNowEnabled: false});
-    // TODO(robliao): Remove the line below once the server stops sending groups
-    // with 'googleNowDisabled' responses.
-    response.groups = {};
-    // Google Now was enabled; now it's disabled. This is a state change.
-    onStateChange();
-    // Start the Google Now Disabled polling period.
-    scheduleNextPoll({}, false);
     // Stop processing now. The state change will clear the cards.
     return Promise.reject();
   }
@@ -573,7 +585,7 @@ function processServerResponse(response) {
       updatedGroups[groupName] = storedGroup;
     }
 
-    scheduleNextPoll(updatedGroups, !response.googleNowDisabled);
+    scheduleNextCardsPoll(updatedGroups);
     return {
       updatedGroups: updatedGroups,
       recentDismissals: updatedRecentDismissals
@@ -638,10 +650,27 @@ function requestNotificationGroupsFromServer(groupNames) {
 }
 
 /**
+ * Performs an opt-in poll without an immediate recheck.
+ * If the response is not opted-in, schedule an opt-in check poll.
+ */
+function pollOptedInNoImmediateRecheck() {
+  requestAndUpdateOptedIn()
+      .then(function(optedIn) {
+        if (!optedIn) {
+          // Request a repoll if we're not opted in.
+          return Promise.reject();
+        }
+      })
+      .catch(function() {
+        scheduleOptInCheckPoll();
+      });
+}
+
+/**
  * Requests the account opted-in state from the server and updates any
  * state as necessary.
  * @return {Promise} A promise to request and update the opted-in state.
- *     The promise resolves if the opt-in state is true.
+ *     The promise resolves with the opt-in state.
  */
 function requestAndUpdateOptedIn() {
   console.log('requestOptedIn from ' + NOTIFICATION_CARDS_URL);
@@ -654,15 +683,8 @@ function requestAndUpdateOptedIn() {
       return parsedResponse.value;
     }
   }).then(function(optedIn) {
-    if (optedIn) {
-      chrome.storage.local.set({googleNowEnabled: true});
-      // Google Now was disabled, now it's enabled. This is a state change.
-      onStateChange();
-      return Promise.resolve();
-    } else {
-      scheduleNextPoll({}, false);
-      return Promise.reject();
-    }
+    chrome.storage.local.set({googleNowEnabled: optedIn});
+    return optedIn;
   });
 }
 
@@ -695,12 +717,7 @@ function getGroupsToRequest() {
  */
 function requestNotificationCards() {
   console.log('requestNotificationCards');
-
-  return isGoogleNowEnabled()
-      .then(function(googleNowEnabled) {
-        return googleNowEnabled ? Promise.resolve() : requestAndUpdateOptedIn();
-      })
-      .then(getGroupsToRequest)
+  return getGroupsToRequest()
       .then(requestNotificationGroupsFromServer)
       .then(processServerResponse)
       .then(function(processedResponse) {
@@ -731,10 +748,10 @@ function requestCards() {
     console.log('requestCards-task-begin');
     updateCardsAttempts.isRunning(function(running) {
       if (running) {
-        updateCardsAttempts.planForNext(function() {
-          // The cards are requested only if there are no unsent dismissals.
-          processPendingDismissals().then(requestNotificationCards);
-        });
+        // The cards are requested only if there are no unsent dismissals.
+        processPendingDismissals()
+            .then(requestNotificationCards)
+            .catch(updateCardsAttempts.scheduleRetry);
       }
     });
   });
@@ -851,9 +868,7 @@ function processPendingDismissals() {
  */
 function retryPendingDismissals() {
   tasks.add(RETRY_DISMISS_TASK_NAME, function() {
-    dismissalAttempts.planForNext(function() {
-      processPendingDismissals();
-     });
+    processPendingDismissals().catch(dismissalAttempts.scheduleRetry);
   });
 }
 
@@ -1006,6 +1021,28 @@ function setShouldPollCards(shouldPollCardsRequest) {
 }
 
 /**
+ * Starts or stops the optin check.
+ * @param {boolean} shouldPollOptInStatus true to start and false to stop
+ *     polling the optin status.
+ */
+function setShouldPollOptInStatus(shouldPollOptInStatus) {
+  optInPollAttempts.isRunning(function(currentValue) {
+    if (shouldPollOptInStatus != currentValue) {
+      console.log(
+          'Action Taken setShouldPollOptInStatus=' + shouldPollOptInStatus);
+      if (shouldPollOptInStatus) {
+        pollOptedInNoImmediateRecheck();
+      } else {
+        optInPollAttempts.stop();
+      }
+    } else {
+      console.log(
+          'Action Ignored setShouldPollOptInStatus=' + shouldPollOptInStatus);
+    }
+  });
+}
+
+/**
  * Enables or disables the Google Now background permission.
  * @param {boolean} backgroundEnable true to run in the background.
  *     false to not run in the background.
@@ -1066,13 +1103,13 @@ function updateRunningState(
       'googleNowEnabled=' + googleNowEnabled);
 
   var shouldPollCards = false;
+  var shouldPollOptInStatus = false;
   var shouldSetBackground = false;
-  var shouldClearCards = true;
 
   if (signedIn && notificationEnabled) {
-    shouldClearCards = !googleNowEnabled;
+    shouldPollCards = googleNowEnabled;
+    shouldPollOptInStatus = !googleNowEnabled;
     shouldSetBackground = canEnableBackground && googleNowEnabled;
-    shouldPollCards = true;
   } else {
     recordEvent(GoogleNowEvent.STOPPED);
   }
@@ -1082,11 +1119,12 @@ function updateRunningState(
   console.log(
       'Requested Actions shouldSetBackground=' + shouldSetBackground + ' ' +
       'setShouldPollCards=' + shouldPollCards + ' ' +
-      'shouldClearCards=' + shouldClearCards);
+      'shouldPollOptInStatus=' + shouldPollOptInStatus);
 
   setBackgroundEnable(shouldSetBackground);
   setShouldPollCards(shouldPollCards);
-  if (shouldClearCards) {
+  setShouldPollOptInStatus(shouldPollOptInStatus);
+  if (!shouldPollCards) {
     removeAllCards();
   }
 }
@@ -1152,30 +1190,35 @@ function isGoogleNowEnabled() {
  * Sometimes we get the response to the opted in result too soon during
  * push messaging. We'll recheck the optin state a few times before giving up.
  */
-function pollOptedIn() {
+function pollOptedInWithRecheck() {
   /**
    * Cleans up any state used to recheck the opt-in poll.
    */
   function clearPollingState() {
     localStorage.removeItem('optedInCheckCount');
-    optInCheckAttempts.stop();
+    optInRecheckAttempts.stop();
   }
 
   if (localStorage.optedInCheckCount === undefined) {
     localStorage.optedInCheckCount = 0;
-    optInCheckAttempts.start();
+    optInRecheckAttempts.start();
   }
 
   console.log(new Date() +
       ' checkOptedIn Attempt ' + localStorage.optedInCheckCount);
 
-  requestAndUpdateOptedIn().then(function() {
-    clearPollingState();
-    requestCards();
+  requestAndUpdateOptedIn().then(function(optedIn) {
+    if (optedIn) {
+      clearPollingState();
+      return Promise.resolve();
+    } else {
+      // If we're not opted in, reject to retry.
+      return Promise.reject();
+    }
   }).catch(function() {
     if (localStorage.optedInCheckCount < 5) {
       localStorage.optedInCheckCount++;
-      optInCheckAttempts.planForNext(function() {});
+      optInRecheckAttempts.scheduleRetry();
     } else {
       clearPollingState();
     }
@@ -1259,6 +1302,15 @@ instrumented.notifications.onShowSettings.addListener(function() {
   openUrl(SETTINGS_URL);
 });
 
+// Handles state change notifications for the Google Now enabled bit.
+instrumented.storage.onChanged.addListener(function(changes, areaName) {
+  if (areaName === 'local') {
+    if ('googleNowEnabled' in changes) {
+      onStateChange();
+    }
+  }
+});
+
 instrumented.pushMessaging.onMessage.addListener(function(message) {
   // message.payload will be '' when the extension first starts.
   // Each time after signing in, we'll get latest payload for all channels.
@@ -1288,7 +1340,7 @@ instrumented.pushMessaging.onMessage.addListener(function(message) {
             notificationGroups: items.notificationGroups
           });
 
-          pollOptedIn();
+          pollOptedInWithRecheck();
         }
       });
     });
