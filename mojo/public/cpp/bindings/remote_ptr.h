@@ -86,6 +86,7 @@ class RemotePtr {
   // Move-only constructor and operator=.
   RemotePtr(RValue other) : state_(other.object->release()) {}
   RemotePtr& operator=(RValue other) {
+    delete state_;
     state_ = other.object->release();
     return *this;
   }
