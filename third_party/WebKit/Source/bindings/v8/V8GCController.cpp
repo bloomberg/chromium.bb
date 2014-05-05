@@ -306,10 +306,18 @@ private:
     bool m_constructRetainedObjectInfos;
 };
 
+static unsigned long long usedHeapSize(v8::Isolate* isolate)
+{
+    v8::HeapStatistics heapStatistics;
+    isolate->GetHeapStatistics(&heapStatistics);
+    return heapStatistics.used_heap_size();
+}
+
 void V8GCController::gcPrologue(v8::GCType type, v8::GCCallbackFlags flags)
 {
     // FIXME: It would be nice if the GC callbacks passed the Isolate directly....
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "GCEvent", "usedHeapSizeBefore", usedHeapSize(isolate));
     if (type == v8::kGCTypeScavenge)
         minorGCPrologue(isolate);
     else if (type == v8::kGCTypeMarkSweepCompact)
@@ -381,6 +389,8 @@ void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
         // Forces a precise GC at the end of the current event loop.
         Heap::setForcePreciseGCForTesting();
     }
+
+    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "GCEvent", "usedHeapSizeAfter", usedHeapSize(isolate));
 }
 
 void V8GCController::minorGCEpilogue(v8::Isolate* isolate)

@@ -80,6 +80,7 @@ private:
 };
 
 
+// FIXME(361045): remove ScriptGCEvent once DevTools Timeline migrates to tracing.
 class ScriptGCEvent
 {
 public:
