@@ -37,6 +37,14 @@ import name_utilities
 import template_expander
 
 
+def case_insensitive_matching(name):
+    return (name == ('HTMLEvents')
+            or name == 'Event'
+            or name == 'Events'
+            or name.startswith('UIEvent')
+            or name.startswith('CustomEvent')
+            or name.startswith('MouseEvent'))
+
 class EventFactoryWriter(name_macros.Writer):
     defaults = {
         'ImplementedAs': None,
@@ -50,6 +58,7 @@ class EventFactoryWriter(name_macros.Writer):
         'cpp_name': name_utilities.cpp_name,
         'enable_conditional': name_utilities.enable_conditional_if_endif,
         'lower_first': name_utilities.lower_first,
+        'case_insensitive_matching': case_insensitive_matching,
         'script_name': name_utilities.script_name,
     }
 
