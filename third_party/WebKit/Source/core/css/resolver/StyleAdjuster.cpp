@@ -162,7 +162,7 @@ static bool parentStyleForcesZIndexToCreateStackingContext(const RenderStyle* pa
     return isDisplayFlexibleBox(parentStyle->display()) || isDisplayGridBox(parentStyle->display());
 }
 
-static bool hasWillChangeThatCreatesStackingContext(const RenderStyle* style, Element* e)
+static bool hasWillChangeThatCreatesStackingContext(const RenderStyle* style)
 {
     for (size_t i = 0; i < style->willChangeProperties().size(); ++i) {
         switch (style->willChangeProperties()[i]) {
@@ -234,7 +234,7 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         || style->position() == StickyPosition
         || style->position() == FixedPosition
         || isInTopLayer(e, style)
-        || hasWillChangeThatCreatesStackingContext(style, e)))
+        || hasWillChangeThatCreatesStackingContext(style)))
         style->setZIndex(0);
 
     // will-change:transform should result in the same rendering behavior as having a transform,
