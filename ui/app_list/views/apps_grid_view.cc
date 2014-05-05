@@ -217,6 +217,8 @@ class SynchronousDrag : public ui::DragSourceWin {
     shortcut_path_ = shortcut_path;
   }
 
+  bool running() { return running_; }
+
   bool CanRun() {
     return has_shortcut_path_ && !running_;
   }
@@ -473,10 +475,20 @@ void AppsGridView::StartSettingUpSynchronousDrag() {
 
 bool AppsGridView::RunSynchronousDrag() {
 #if defined(OS_WIN)
-  if (synchronous_drag_ && synchronous_drag_->CanRun()) {
+  if (!synchronous_drag_)
+    return false;
+
+  if (synchronous_drag_->CanRun()) {
+    if (IsDraggingForReparentInHiddenGridView())
+      folder_delegate_->SetRootLevelDragViewVisible(false);
     synchronous_drag_->Run();
     synchronous_drag_ = NULL;
     return true;
+  } else if (!synchronous_drag_->running()) {
+    // The OS drag is not ready yet. If the root grid has a drag view because
+    // a reparent has started, ensure it is visible.
+    if (IsDraggingForReparentInHiddenGridView())
+      folder_delegate_->SetRootLevelDragViewVisible(true);
   }
 #endif
   return false;
@@ -762,6 +774,11 @@ void AppsGridView::ClearDragState(bool cancel_reparent) {
   drag_start_page_ = -1;
   drag_view_offset_ = gfx::Point();
   dragging_for_reparent_item_ = false;
+}
+
+void AppsGridView::SetDragViewVisible(bool visible) {
+  DCHECK(drag_view_);
+  SetViewHidden(drag_view_, !visible, true);
 }
 
 void AppsGridView::SetDragAndDropHostOfCurrentAppList(

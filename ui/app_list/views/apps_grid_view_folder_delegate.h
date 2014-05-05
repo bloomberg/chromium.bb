@@ -53,6 +53,10 @@ class APP_LIST_EXPORT AppsGridViewFolderDelegate {
   // Returns true if the associated folder item is an OEM folder.
   virtual bool IsOEMFolder() const = 0;
 
+  // Hides or show the root level's grid view. This is needed so that the
+  // synchronous drag has an icon for reparenting while it loads.
+  virtual void SetRootLevelDragViewVisible(bool visible) = 0;
+
  protected:
   virtual ~AppsGridViewFolderDelegate() {}
 };

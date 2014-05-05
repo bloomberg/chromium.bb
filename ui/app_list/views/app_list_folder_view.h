@@ -106,6 +106,7 @@ class AppListFolderView : public views::View,
       bool events_forwarded_to_drag_drop_host) OVERRIDE;
   virtual bool IsPointOutsideOfFolderBoundary(const gfx::Point& point) OVERRIDE;
   virtual bool IsOEMFolder() const OVERRIDE;
+  virtual void SetRootLevelDragViewVisible(bool visible) OVERRIDE;
 
   AppsContainerView* container_view_;  // Not owned.
   AppListMainView* app_list_main_view_;   // Not Owned.

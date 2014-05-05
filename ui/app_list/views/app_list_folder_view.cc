@@ -302,6 +302,10 @@ bool AppListFolderView::IsOEMFolder() const {
   return folder_item_->folder_type() == AppListFolderItem::FOLDER_TYPE_OEM;
 }
 
+void AppListFolderView::SetRootLevelDragViewVisible(bool visible) {
+  container_view_->apps_grid_view()->SetDragViewVisible(visible);
+}
+
 void AppListFolderView::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_BUTTON;
   state->name = accessible_name_;

@@ -215,6 +215,8 @@ class TestAppsGridViewFolderDelegate : public AppsGridViewFolderDelegate {
 
   virtual bool IsOEMFolder() const OVERRIDE { return false; }
 
+  virtual void SetRootLevelDragViewVisible(bool visible) OVERRIDE {}
+
   bool show_bubble() { return show_bubble_; }
 
  private:
