@@ -33,32 +33,26 @@ RtpSender::RtpSender(
 
 RtpSender::~RtpSender() {}
 
-bool RtpSender::InitializeAudio(const CastTransportAudioConfig& config) {
-  storage_.reset(new PacketStorage(config.rtp.max_outstanding_frames));
-  if (!storage_->IsValid()) {
-    return false;
-  }
+void RtpSender::InitializeAudio(const CastTransportAudioConfig& config) {
+  storage_.reset(new PacketStorage(clock_, config.base.rtp_config.history_ms));
   config_.audio = true;
-  config_.ssrc = config.rtp.config.ssrc;
-  config_.payload_type = config.rtp.config.payload_type;
+  config_.ssrc = config.base.ssrc;
+  config_.payload_type = config.base.rtp_config.payload_type;
   config_.frequency = config.frequency;
   config_.audio_codec = config.codec;
-  packetizer_.reset(new RtpPacketizer(transport_, storage_.get(), config_));
-  return true;
+  packetizer_.reset(
+      new RtpPacketizer(transport_, storage_.get(), config_));
 }
 
-bool RtpSender::InitializeVideo(const CastTransportVideoConfig& config) {
-  storage_.reset(new PacketStorage(config.rtp.max_outstanding_frames));
-  if (!storage_->IsValid()) {
-    return false;
-  }
+void RtpSender::InitializeVideo(const CastTransportVideoConfig& config) {
+  storage_.reset(new PacketStorage(clock_, config.base.rtp_config.history_ms));
   config_.audio = false;
-  config_.ssrc = config.rtp.config.ssrc;
-  config_.payload_type = config.rtp.config.payload_type;
+  config_.ssrc = config.base.ssrc;
+  config_.payload_type = config.base.rtp_config.payload_type;
   config_.frequency = kVideoFrequency;
   config_.video_codec = config.codec;
-  packetizer_.reset(new RtpPacketizer(transport_, storage_.get(), config_));
-  return true;
+  packetizer_.reset(
+      new RtpPacketizer(transport_, storage_.get(), config_));
 }
 
 void RtpSender::IncomingEncodedVideoFrame(const EncodedVideoFrame* video_frame,
@@ -95,10 +89,6 @@ void RtpSender::ResendPackets(
         // Get packet from storage.
         success = storage_->GetPacket(frame_id, packet_id, &packets_to_resend);
 
-        // Check that we got at least one packet.
-        DCHECK(packet_id != 0 || success)
-            << "Failed to resend frame " << static_cast<int>(frame_id);
-
         // Resend packet to the network.
         if (success) {
           VLOG(3) << "Resend " << static_cast<int>(frame_id) << ":"
@@ -117,10 +107,6 @@ void RtpSender::ResendPackets(
            ++set_it) {
         uint16 packet_id = *set_it;
         success = storage_->GetPacket(frame_id, packet_id, &packets_to_resend);
-
-        // Check that we got at least one packet.
-        DCHECK(set_it != packets_set.begin() || success)
-            << "Failed to resend frame " << frame_id;
 
         // Resend packet to the network.
         if (success) {

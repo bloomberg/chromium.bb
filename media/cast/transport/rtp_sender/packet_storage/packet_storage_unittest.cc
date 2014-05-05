@@ -16,45 +16,117 @@ namespace media {
 namespace cast {
 namespace transport {
 
-static int kStoredFrames = 10;
+static const int kMaxDeltaStoredMs = 500;
+static const base::TimeDelta kDeltaBetweenFrames =
+    base::TimeDelta::FromMilliseconds(33);
+
+static const int64 kStartMillisecond = INT64_C(12345678900000);
 
 class PacketStorageTest : public ::testing::Test {
  protected:
-  PacketStorageTest() : packet_storage_(kStoredFrames) {
+  PacketStorageTest() : packet_storage_(&testing_clock_, kMaxDeltaStoredMs) {
+    testing_clock_.Advance(
+        base::TimeDelta::FromMilliseconds(kStartMillisecond));
   }
 
+  base::SimpleTestTickClock testing_clock_;
   PacketStorage packet_storage_;
 
   DISALLOW_COPY_AND_ASSIGN(PacketStorageTest);
 };
 
-TEST_F(PacketStorageTest, PacketContent) {
-  base::TimeTicks frame_tick;
-  for (uint32 frame_id = 0; frame_id < 200; ++frame_id) {
-    for (uint16 packet_id = 0; packet_id < 5; ++packet_id) {
-      Packet test_packet(frame_id + 1, packet_id);
-      packet_storage_.StorePacket(
-          frame_id,
-          packet_id,
-          PacedPacketSender::MakePacketKey(frame_tick,
-                                           1, // ssrc
-                                           packet_id),
-          new base::RefCountedData<Packet>(test_packet));
+TEST_F(PacketStorageTest, TimeOut) {
+  Packet test_123(100, 123);  // 100 insertions of the value 123.
+  SendPacketVector packets;
+  for (uint32 frame_id = 0; frame_id < 30; ++frame_id) {
+    base::TimeTicks frame_tick = testing_clock_.NowTicks();
+    for (uint16 packet_id = 0; packet_id < 10; ++packet_id) {
+      packet_storage_.StorePacket(frame_id,
+                                  packet_id,
+                                  PacedPacketSender::MakePacketKey(frame_tick,
+                                                                   1, // ssrc
+                                                                   packet_id),
+                                  new base::RefCountedData<Packet>(test_123));
     }
+    testing_clock_.Advance(kDeltaBetweenFrames);
+  }
 
-    for (uint32 f = 0; f <= frame_id; f++) {
-      for (uint16 packet_id = 0; packet_id < 5; ++packet_id) {
-        SendPacketVector packets;
-        if (packet_storage_.GetPacket32(f, packet_id, &packets)) {
-          EXPECT_GT(f + kStoredFrames, frame_id);
-          EXPECT_EQ(f + 1, packets.back().second->data.size());
-          EXPECT_EQ(packet_id, packets.back().second->data[0]);
-          EXPECT_TRUE(packet_storage_.GetPacket(f & 0xff, packet_id, &packets));
-          EXPECT_TRUE(packets.back().second->data ==
-                      packets.front().second->data);
-        } else {
-          EXPECT_LE(f + kStoredFrames, frame_id);
-        }
+  // All packets belonging to the first 14 frames is expected to be expired.
+  for (uint32 frame_id = 0; frame_id < 14; ++frame_id) {
+    for (uint16 packet_id = 0; packet_id < 10; ++packet_id) {
+      Packet packet;
+      EXPECT_FALSE(packet_storage_.GetPacket(frame_id, packet_id, &packets));
+    }
+  }
+  // All packets belonging to the next 15 frames is expected to be valid.
+  for (uint32 frame_id = 14; frame_id < 30; ++frame_id) {
+    for (uint16 packet_id = 0; packet_id < 10; ++packet_id) {
+      EXPECT_TRUE(packet_storage_.GetPacket(frame_id, packet_id, &packets));
+      EXPECT_TRUE(packets.front().second->data == test_123);
+    }
+  }
+}
+
+TEST_F(PacketStorageTest, MaxNumberOfPackets) {
+  Packet test_123(100, 123);  // 100 insertions of the value 123.
+  SendPacketVector packets;
+
+  uint32 frame_id = 0;
+  base::TimeTicks frame_tick = testing_clock_.NowTicks();
+  for (uint16 packet_id = 0; packet_id <= PacketStorage::kMaxStoredPackets;
+       ++packet_id) {
+    packet_storage_.StorePacket(frame_id,
+                                packet_id,
+                                PacedPacketSender::MakePacketKey(frame_tick,
+                                                                 1, // ssrc
+                                                                 packet_id),
+                                new base::RefCountedData<Packet>(test_123));
+  }
+  uint16 packet_id = 0;
+  EXPECT_FALSE(packet_storage_.GetPacket(frame_id, packet_id, &packets));
+
+  ++packet_id;
+  for (; packet_id <= PacketStorage::kMaxStoredPackets; ++packet_id) {
+    EXPECT_TRUE(packet_storage_.GetPacket(frame_id, packet_id, &packets));
+    EXPECT_TRUE(packets.back().second->data == test_123);
+  }
+}
+
+TEST_F(PacketStorageTest, PacketContent) {
+  Packet test_123(100, 123);  // 100 insertions of the value 123.
+  Packet test_234(200, 234);  // 200 insertions of the value 234.
+  SendPacketVector packets;
+
+  for (uint32 frame_id = 0; frame_id < 10; ++frame_id) {
+    base::TimeTicks frame_tick = testing_clock_.NowTicks();
+    for (uint16 packet_id = 0; packet_id < 10; ++packet_id) {
+      // Every other packet.
+      if (packet_id % 2 == 0) {
+        packet_storage_.StorePacket(frame_id,
+                                    packet_id,
+                                    PacedPacketSender::MakePacketKey(frame_tick,
+                                                                     1, // ssrc
+                                                                     packet_id),
+                                    new base::RefCountedData<Packet>(test_123));
+      } else {
+        packet_storage_.StorePacket(frame_id,
+                                    packet_id,
+                                    PacedPacketSender::MakePacketKey(frame_tick,
+                                                                     1, // ssrc
+                                                                     packet_id),
+                                    new base::RefCountedData<Packet>(test_234));
+      }
+    }
+    testing_clock_.Advance(kDeltaBetweenFrames);
+  }
+  for (uint32 frame_id = 0; frame_id < 10; ++frame_id) {
+    for (uint16 packet_id = 0; packet_id < 10; ++packet_id) {
+      EXPECT_TRUE(packet_storage_.GetPacket(frame_id, packet_id, &packets));
+      // Every other packet.
+      if (packet_id % 2 == 0) {
+        EXPECT_TRUE(packets.back().second->data == test_123);
+      } else {
+        EXPECT_TRUE(packets.back().second->data == test_234);
       }
     }
   }

@@ -150,7 +150,7 @@ std::vector<CastRtpParams> SupportedVideoParams() {
 
 bool ToAudioSenderConfig(const CastRtpParams& params,
                          AudioSenderConfig* config) {
-  config->rtp_config.ssrc = params.payload.ssrc;
+  config->sender_ssrc = params.payload.ssrc;
   config->incoming_feedback_ssrc = params.payload.feedback_ssrc;
   config->rtp_config.payload_type = params.payload.payload_type;
   config->rtp_config.max_delay_ms = params.payload.max_latency_ms;
@@ -168,7 +168,7 @@ bool ToAudioSenderConfig(const CastRtpParams& params,
 
 bool ToVideoSenderConfig(const CastRtpParams& params,
                          VideoSenderConfig* config) {
-  config->rtp_config.ssrc = params.payload.ssrc;
+  config->sender_ssrc = params.payload.ssrc;
   config->incoming_feedback_ssrc = params.payload.feedback_ssrc;
   config->rtp_config.payload_type = params.payload.payload_type;
   config->rtp_config.max_delay_ms = params.payload.max_latency_ms;

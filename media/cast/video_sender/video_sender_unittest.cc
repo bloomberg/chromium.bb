@@ -109,6 +109,7 @@ class VideoSenderTest : public ::testing::Test {
                             task_runner_,
                             task_runner_,
                             task_runner_);
+    transport::CastTransportVideoConfig transport_config;
     net::IPEndPoint dummy_endpoint;
     transport_sender_.reset(new transport::CastTransportSenderImpl(
         NULL,
@@ -119,6 +120,7 @@ class VideoSenderTest : public ::testing::Test {
         base::TimeDelta(),
         task_runner_,
         &transport_));
+    transport_sender_->InitializeVideo(transport_config);
   }
 
   virtual ~VideoSenderTest() {}
@@ -134,7 +136,7 @@ class VideoSenderTest : public ::testing::Test {
 
   void InitEncoder(bool external) {
     VideoSenderConfig video_config;
-    video_config.rtp_config.ssrc = 1;
+    video_config.sender_ssrc = 1;
     video_config.incoming_feedback_ssrc = 2;
     video_config.rtcp_c_name = "video_test@10.1.1.1";
     video_config.rtp_config.payload_type = 127;

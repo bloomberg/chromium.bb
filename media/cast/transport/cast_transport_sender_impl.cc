@@ -74,7 +74,7 @@ CastTransportSenderImpl::~CastTransportSenderImpl() {
 
 void CastTransportSenderImpl::InitializeAudio(
     const CastTransportAudioConfig& config) {
-  pacer_.RegisterAudioSsrc(config.rtp.config.ssrc);
+  pacer_.RegisterAudioSsrc(config.base.ssrc);
   audio_sender_.reset(new TransportAudioSender(
       config, clock_, transport_task_runner_, &pacer_));
   if (audio_sender_->initialized())
@@ -85,7 +85,7 @@ void CastTransportSenderImpl::InitializeAudio(
 
 void CastTransportSenderImpl::InitializeVideo(
     const CastTransportVideoConfig& config) {
-  pacer_.RegisterVideoSsrc(config.rtp.config.ssrc);
+  pacer_.RegisterVideoSsrc(config.base.ssrc);
   video_sender_.reset(new TransportVideoSender(
       config, clock_, transport_task_runner_, &pacer_));
   if (video_sender_->initialized())

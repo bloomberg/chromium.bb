@@ -30,7 +30,7 @@ enum RtcpMode {
 struct AudioSenderConfig {
   AudioSenderConfig();
 
-  // The sender ssrc is in rtp_config.ssrc.
+  uint32 sender_ssrc;
   uint32 incoming_feedback_ssrc;
 
   int rtcp_interval;
@@ -49,7 +49,7 @@ struct AudioSenderConfig {
 struct VideoSenderConfig {
   VideoSenderConfig();
 
-  // The sender ssrc is in rtp_config.ssrc.
+  uint32 sender_ssrc;
   uint32 incoming_feedback_ssrc;
 
   int rtcp_interval;
