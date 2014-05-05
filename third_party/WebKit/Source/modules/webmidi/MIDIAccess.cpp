@@ -116,13 +116,13 @@ void MIDIAccess::didAddOutputPort(const String& id, const String& manufacturer, 
     m_outputs.append(MIDIOutput::create(this, portIndex, id, manufacturer, name, version));
 }
 
-void MIDIAccess::didStartSession(bool success)
+void MIDIAccess::didStartSession(bool success, const String& error, const String& message)
 {
     ASSERT(isMainThread());
     if (success)
         m_resolver->resolve(this);
     else
-        m_resolver->reject(DOMError::create("InvalidStateError"));
+        m_resolver->reject(DOMError::create(error, message));
 }
 
 void MIDIAccess::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)

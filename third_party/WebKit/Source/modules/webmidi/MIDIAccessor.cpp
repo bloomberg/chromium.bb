@@ -77,7 +77,12 @@ void MIDIAccessor::didAddOutputPort(const WebString& id, const WebString& manufa
 
 void MIDIAccessor::didStartSession(bool success)
 {
-    m_client->didStartSession(success);
+    m_client->didStartSession(success, "InvalidStateError", "");
+}
+
+void MIDIAccessor::didStartSession(bool success, const WebString& error, const WebString& message)
+{
+    m_client->didStartSession(success, error, message);
 }
 
 void MIDIAccessor::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)
