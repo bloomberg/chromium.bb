@@ -4,7 +4,7 @@
 
 body {
   margin: 10px 10px 0;
-<if expr="not is_android">
+<if expr="not is_android and not is_ios">
   min-width: 47em;
 </if>
   /* Should match needs-restart.height + 5 */
