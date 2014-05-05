@@ -38,6 +38,10 @@ class ManagePasswordsBubbleUIControllerMock
   virtual void NeverSavePassword() OVERRIDE;
   bool never_saved_password() const { return never_saved_password_; }
 
+  void SetPasswordFormMap(const autofill::PasswordFormMap& map) {
+    password_form_map_ = map;
+  }
+
   virtual const autofill::PasswordForm& PendingCredentials() const OVERRIDE;
 
   // True if this controller is installed on |web_contents()|.

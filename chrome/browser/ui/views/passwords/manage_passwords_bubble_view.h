@@ -93,6 +93,24 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
     views::LabelButton* done_button_;
   };
 
+  // A view offering the user the ability to re-enable the password manager for
+  // a specific site after she's decided to "never save passwords".
+  class BlacklistedView : public views::View, public views::ButtonListener {
+   public:
+    explicit BlacklistedView(ManagePasswordsBubbleView* parent);
+    virtual ~BlacklistedView();
+
+   private:
+    // views::ButtonListener:
+    virtual void ButtonPressed(views::Button* sender,
+                               const ui::Event& event) OVERRIDE;
+
+    ManagePasswordsBubbleView* parent_;
+
+    views::BlueButton* unblacklist_button_;
+    views::LabelButton* done_button_;
+  };
+
   // Shows the bubble.
   static void ShowBubble(content::WebContents* web_contents,
                          DisplayReason reason);

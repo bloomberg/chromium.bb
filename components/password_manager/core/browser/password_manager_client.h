@@ -36,13 +36,19 @@ class PasswordManagerClient {
   // that this form doesn't need to be saved.
   virtual void PromptUserToSavePassword(PasswordFormManager* form_to_save) = 0;
 
-  // Called when a password is autofilled. Default implementation is a no-op.
+  // Called when a password is autofilled. |best_matches| contains the
+  // PasswordForm into which a password was filled: the client may choose to
+  // save this to the PasswordStore, for example. Default implementation is a
+  // noop.
   virtual void PasswordWasAutofilled(
       const autofill::PasswordFormMap& best_matches) const {}
 
-  // Called when password autofill is blocked by the blacklist. Default
-  // implementation is a no-op.
-  virtual void PasswordAutofillWasBlocked() const {}
+  // Called when password autofill is blocked by the blacklist. |best_matches|
+  // contains the PasswordForm that flags the current site as being on the
+  // blacklist. The client may choose to remove this from the PasswordStore in
+  // order to unblacklist a site, for example. Default implementation is a noop.
+  virtual void PasswordAutofillWasBlocked(
+      const autofill::PasswordFormMap& best_matches) const {}
 
   // Called to authenticate the autofill password data.  If authentication is
   // successful, this should continue filling the form.

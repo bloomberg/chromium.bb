@@ -111,11 +111,12 @@ void ChromePasswordManagerClient::PasswordWasAutofilled(
     manage_passwords_bubble_ui_controller->OnPasswordAutofilled(best_matches);
 }
 
-void ChromePasswordManagerClient::PasswordAutofillWasBlocked() const {
-  ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
+void ChromePasswordManagerClient::PasswordAutofillWasBlocked(
+    const autofill::PasswordFormMap& best_matches) const {
+  ManagePasswordsBubbleUIController* controller =
       ManagePasswordsBubbleUIController::FromWebContents(web_contents());
-  if (manage_passwords_bubble_ui_controller && IsTheHotNewBubbleUIEnabled())
-    manage_passwords_bubble_ui_controller->OnBlacklistBlockedAutofill();
+  if (controller && IsTheHotNewBubbleUIEnabled())
+    controller->OnBlacklistBlockedAutofill(best_matches);
 }
 
 void ChromePasswordManagerClient::AuthenticateAutofillAndFillForm(

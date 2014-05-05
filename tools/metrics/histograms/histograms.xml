@@ -38437,6 +38437,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="Opened automatically / Offering a password to save"/>
   <int value="1" label="Opened manually / Offering a password to save"/>
   <int value="2" label="Opened manually / Managing saved passwords"/>
+  <int value="3" label="Opened manually / Site is blacklisted"/>
 </enum>
 
 <enum name="PasswordGenerationEvent" type="int">
@@ -38889,6 +38890,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="3" label="Clicked 'Never'"/>
   <int value="4" label="Clicked 'Manage passwords'"/>
   <int value="5" label="Clicked 'Done'"/>
+  <int value="6" label="Clicked 'Enable password manager'"/>
 </enum>
 
 <enum name="PepperInterface" type="int">

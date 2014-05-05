@@ -79,7 +79,10 @@ void ManagePasswordsViewTest::SetupPendingPassword() {
 }
 
 void ManagePasswordsViewTest::SetupBlackistedPassword() {
-  controller()->OnBlacklistBlockedAutofill();
+  base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
+  autofill::PasswordFormMap map;
+  map[kTestUsername] = test_form();
+  controller()->OnBlacklistBlockedAutofill(map);
   controller()->UpdateIconAndBubbleState(view());
 }
 

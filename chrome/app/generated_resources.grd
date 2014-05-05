@@ -7551,6 +7551,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager">
           Save password
         </message>
+        <message name="IDS_PASSWORD_MANAGER_UNBLACKLIST_BUTTON" desc="Buton text to re-enable the password manager after blacklisting.">
+          Enable password manager
+        </message>
         <message name="IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON" desc="Button text for the 'Save Password' infobar's 'Never remember for this site' option">
           Never for this site
         </message>
@@ -13171,6 +13174,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </message>
     <message name="IDS_MANAGE_PASSWORDS" desc="The title text that is used in the manage passwords bubble when a password is autofilled or after a user has stored a password.">
       Saved passwords for this site:
+    </message>
+    <message name="IDS_MANAGE_PASSWORDS_BLACKLISTED" desc="The text that is used in the manage passwords bubble when the current site is blacklisted.">
+      The password manager is disabled for this site; no passwords are saved.
     </message>
     <message name="IDS_MANAGE_PASSWORDS_NO_PASSWORDS" desc="The text that is used in the manage passwords bubble when all passwords have been deleted.">
       No passwords saved.

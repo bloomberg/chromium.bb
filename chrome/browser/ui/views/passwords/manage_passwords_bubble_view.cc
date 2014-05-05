@@ -275,6 +275,56 @@ void ManagePasswordsBubbleView::ManageView::LinkClicked(views::Link* source,
   parent_->Close();
 }
 
+// ManagePasswordsBubbleView::BlacklistedView ---------------------------------
+
+ManagePasswordsBubbleView::BlacklistedView::BlacklistedView(
+    ManagePasswordsBubbleView* parent)
+    : parent_(parent) {
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
+
+  // Add the title.
+  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
+  AddTitleRow(layout, parent_->model());
+
+  // Add the "Hey! You blacklisted this site!" text.
+  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
+  views::Label* blacklisted = new views::Label(
+      l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_BLACKLISTED));
+  blacklisted->SetMultiLine(true);
+  layout->AddView(blacklisted);
+
+  // Then add the "enable password manager" and "Done" buttons.
+  unblacklist_button_ = new views::BlueButton(
+      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_UNBLACKLIST_BUTTON));
+  done_button_ =
+      new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_DONE));
+  done_button_->SetStyle(views::Button::STYLE_BUTTON);
+
+  BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
+  layout->StartRowWithPadding(
+      0, DOUBLE_BUTTON_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
+  layout->AddView(unblacklist_button_);
+  layout->AddView(done_button_);
+
+  // Extra padding for visual awesomeness.
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+}
+
+ManagePasswordsBubbleView::BlacklistedView::~BlacklistedView() {
+}
+
+void ManagePasswordsBubbleView::BlacklistedView::ButtonPressed(
+    views::Button* sender,
+    const ui::Event& event) {
+  if (sender == done_button_)
+    parent_->model()->OnDoneClicked();
+  else if (sender == unblacklist_button_)
+    parent_->model()->OnUnblacklistClicked();
+  else
+    NOTREACHED();
+  parent_->Close();
+}
 
 // ManagePasswordsBubbleView --------------------------------------------------
 
@@ -374,6 +424,8 @@ void ManagePasswordsBubbleView::Init() {
 
   if (model()->WaitingToSavePassword())
     AddChildView(new PendingView(this));
+  else if (model()->NeverSavingPasswords())
+    AddChildView(new BlacklistedView(this));
   else
     AddChildView(new ManageView(this));
 }

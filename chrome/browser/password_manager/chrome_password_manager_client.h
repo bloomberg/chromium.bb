@@ -43,7 +43,8 @@ class ChromePasswordManagerClient
       password_manager::PasswordFormManager* form_to_save) OVERRIDE;
   virtual void PasswordWasAutofilled(
       const autofill::PasswordFormMap& best_matches) const OVERRIDE;
-  virtual void PasswordAutofillWasBlocked() const OVERRIDE;
+  virtual void PasswordAutofillWasBlocked(
+      const autofill::PasswordFormMap& best_matches) const OVERRIDE;
   virtual void AuthenticateAutofillAndFillForm(
       scoped_ptr<autofill::PasswordFormFillData> fill_data) OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;

@@ -49,6 +49,9 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   // by the user.
   void OnNeverForThisSiteClicked();
 
+  // Called by the view code when the site is unblacklisted.
+  void OnUnblacklistClicked();
+
   // Called by the view code when the save button in clicked by the user.
   void OnSaveClicked();
 
@@ -72,7 +75,11 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   }
 
   bool WaitingToSavePassword() const {
-    return manage_passwords_bubble_state() == PASSWORD_TO_BE_SAVED;
+    return manage_passwords_bubble_state_ == PASSWORD_TO_BE_SAVED;
+  }
+
+  bool NeverSavingPasswords() const {
+    return manage_passwords_bubble_state_ == NEVER_SAVE_PASSWORDS;
   }
 
   const base::string16& title() const { return title_; }

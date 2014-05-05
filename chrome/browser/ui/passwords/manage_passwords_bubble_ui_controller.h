@@ -38,8 +38,11 @@ class ManagePasswordsBubbleUIController
   // the manage password icon.
   void OnPasswordAutofilled(const autofill::PasswordFormMap& password_form_map);
 
-  // Called when a form is _not_ autofilled due to user blacklisting.
-  void OnBlacklistBlockedAutofill();
+  // Called when a form is _not_ autofilled due to user blacklisting. This
+  // stores a copy of |password_form_map| so that we can offer the user the
+  // ability to reenable the manager for this form.
+  void OnBlacklistBlockedAutofill(
+      const autofill::PasswordFormMap& password_form_map);
 
   // PasswordStore::Observer implementation.
   virtual void OnLoginsChanged(
@@ -52,6 +55,9 @@ class ManagePasswordsBubbleUIController
   // Called from the model when the user chooses to never save passwords; passes
   // the action off to the FormManager.
   virtual void NeverSavePassword();
+
+  // Called from the model when the user chooses to unblacklist the site.
+  virtual void UnblacklistSite();
 
   // Open a new tab, pointing to the password manager settings page.
   virtual void NavigateToPasswordManagerSettingsPage();
@@ -93,6 +99,12 @@ class ManagePasswordsBubbleUIController
   explicit ManagePasswordsBubbleUIController(
       content::WebContents* web_contents);
 
+  // All previously stored credentials for a specific site. Set by
+  // OnPasswordSubmitted(), OnPasswordAutofilled(), or
+  // OnBlacklistBlockedAutofill(). Protected, not private, so we can mess with
+  // the value in ManagePasswordsBubbleUIControllerMock.
+  autofill::PasswordFormMap password_form_map_;
+
  private:
   friend class content::WebContentsUserData<ManagePasswordsBubbleUIController>;
 
@@ -113,10 +125,6 @@ class ManagePasswordsBubbleUIController
   // this password?" prompt, we ask this object to save or blacklist the
   // associated login information in Chrome's password store.
   scoped_ptr<password_manager::PasswordFormManager> form_manager_;
-
-  // All previously stored credentials for a specific site.  Set by
-  // OnPasswordSubmitted() or OnPasswordAutofilled().
-  autofill::PasswordFormMap password_form_map_;
 
   bool manage_passwords_icon_to_be_shown_;
   bool password_to_be_saved_;

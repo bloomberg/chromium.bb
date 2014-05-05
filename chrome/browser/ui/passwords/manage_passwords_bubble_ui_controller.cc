@@ -80,7 +80,10 @@ void ManagePasswordsBubbleUIController::OnPasswordAutofilled(
   UpdateBubbleAndIconVisibility();
 }
 
-void ManagePasswordsBubbleUIController::OnBlacklistBlockedAutofill() {
+void ManagePasswordsBubbleUIController::OnBlacklistBlockedAutofill(
+    const PasswordFormMap& password_form_map) {
+  password_form_map_ = password_form_map;
+  origin_ = password_form_map_.begin()->second->origin;
   manage_passwords_icon_to_be_shown_ = true;
   password_to_be_saved_ = false;
   manage_passwords_bubble_needs_showing_ = false;
@@ -130,11 +133,32 @@ void ManagePasswordsBubbleUIController::
 void ManagePasswordsBubbleUIController::SavePassword() {
   DCHECK(form_manager_.get());
   form_manager_->Save();
+  password_to_be_saved_ = false;
 }
 
 void ManagePasswordsBubbleUIController::NeverSavePassword() {
   DCHECK(form_manager_.get());
   form_manager_->PermanentlyBlacklist();
+  autofill_blocked_ = true;
+  password_to_be_saved_ = false;
+  UpdateBubbleAndIconVisibility();
+}
+
+void ManagePasswordsBubbleUIController::UnblacklistSite() {
+  // We're in one of two states: either the user _just_ blacklisted the site
+  // by clicking "Never save" in the pending bubble, or the user is visiting
+  // a blacklisted site.
+  //
+  // Either way, |password_form_map_| has been populated with the relevant
+  // form. We can safely pull it out, send it over to the password store
+  // for removal, and update our internal state.
+  DCHECK(!password_form_map_.empty());
+  password_manager::PasswordStore* password_store =
+      GetPasswordStore(web_contents());
+  if (password_store)
+    password_store->RemoveLogin(*password_form_map_.begin()->second);
+  autofill_blocked_ = false;
+  UpdateBubbleAndIconVisibility();
 }
 
 void ManagePasswordsBubbleUIController::DidNavigateMainFrame(
