@@ -35,14 +35,6 @@ class DOMActivityLogger: public blink::WebDOMActivityLogger {
   explicit DOMActivityLogger(const std::string& extension_id);
   virtual ~DOMActivityLogger();
 
-  // This will soon be deprecated, and converted to the logX methods below.
-  virtual void log(const blink::WebString& api_name,
-                   int argc,
-                   const v8::Handle<v8::Value> argv[],
-                   const blink::WebString& call_type,
-                   const blink::WebURL& url,
-                   const blink::WebString& title);
-
   // Check (using the WebKit API) if there is no logger attached to the world
   // corresponding to world_id, and if so, construct a new logger and attach it.
   // world_id = 0 indicates the main world.

@@ -48,27 +48,6 @@ DOMActivityLogger::DOMActivityLogger(const std::string& extension_id)
 
 DOMActivityLogger::~DOMActivityLogger() {}
 
-void DOMActivityLogger::log(
-    const WebString& api_name,
-    int argc,
-    const v8::Handle<v8::Value> argv[],
-    const WebString& call_type,
-    const WebURL& url,
-    const WebString& title) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  std::string api_name_utf8 = api_name.utf8();
-  for (int i = 0; i < argc; ++i)
-    AppendV8Value(api_name_utf8, argv[i], args.get());
-
-  DomActionType::Type type = DomActionType::METHOD;
-  if (call_type == "Getter")
-    type = DomActionType::GETTER;
-  else if (call_type == "Setter")
-    type = DomActionType::SETTER;
-  // else DomActionType::METHOD is correct.
-  SendDomActionMessage(api_name_utf8, url, title, type, args.Pass());
-}
-
 void DOMActivityLogger::AttachToWorld(int world_id,
                                       const std::string& extension_id) {
 #if defined(ENABLE_EXTENSIONS)
