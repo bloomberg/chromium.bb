@@ -10,6 +10,7 @@
 #include "sync/api/attachments/attachment_service.h"
 #include "sync/api/attachments/attachment_service_proxy.h"
 #include "sync/api/attachments/attachment_store.h"
+#include "sync/api/attachments/attachment_uploader.h"
 
 namespace syncer {
 
@@ -17,7 +18,8 @@ namespace syncer {
 class SYNC_EXPORT FakeAttachmentService : public AttachmentService,
                                           public base::NonThreadSafe {
  public:
-  explicit FakeAttachmentService(scoped_ptr<AttachmentStore> attachment_store);
+  FakeAttachmentService(scoped_ptr<AttachmentStore> attachment_store,
+                        scoped_ptr<AttachmentUploader> attachment_uploader);
   virtual ~FakeAttachmentService();
 
   // Create a FakeAttachmentService suitable for use in tests.
@@ -45,6 +47,7 @@ class SYNC_EXPORT FakeAttachmentService : public AttachmentService,
                  const AttachmentStore::Result& result);
 
   const scoped_ptr<AttachmentStore> attachment_store_;
+  const scoped_ptr<AttachmentUploader> attachment_uploader_;
   // Must be last data member.
   base::WeakPtrFactory<FakeAttachmentService> weak_ptr_factory_;
 

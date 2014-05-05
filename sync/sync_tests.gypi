@@ -476,6 +476,7 @@
           'api/attachments/attachment_id_unittest.cc',
           'api/attachments/attachment_service_proxy_unittest.cc',
           'api/attachments/fake_attachment_store_unittest.cc',
+          'api/attachments/fake_attachment_uploader_unittest.cc',
           'api/sync_change_unittest.cc',
           'api/sync_data_unittest.cc',
           'api/sync_error_unittest.cc',

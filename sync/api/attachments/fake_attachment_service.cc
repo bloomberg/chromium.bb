@@ -8,14 +8,19 @@
 #include "base/message_loop/message_loop.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/api/attachments/fake_attachment_store.h"
+#include "sync/api/attachments/fake_attachment_uploader.h"
 
 namespace syncer {
 
 FakeAttachmentService::FakeAttachmentService(
-    scoped_ptr<AttachmentStore> attachment_store)
-    : attachment_store_(attachment_store.Pass()), weak_ptr_factory_(this) {
+    scoped_ptr<AttachmentStore> attachment_store,
+    scoped_ptr<AttachmentUploader> attachment_uploader)
+    : attachment_store_(attachment_store.Pass()),
+      attachment_uploader_(attachment_uploader.Pass()),
+      weak_ptr_factory_(this) {
   DCHECK(CalledOnValidThread());
   DCHECK(attachment_store_);
+  DCHECK(attachment_uploader_);
 }
 
 FakeAttachmentService::~FakeAttachmentService() {
@@ -26,8 +31,11 @@ FakeAttachmentService::~FakeAttachmentService() {
 scoped_ptr<syncer::AttachmentService> FakeAttachmentService::CreateForTest() {
   scoped_ptr<syncer::AttachmentStore> attachment_store(
       new syncer::FakeAttachmentStore(base::MessageLoopProxy::current()));
+  scoped_ptr<AttachmentUploader> attachment_uploader(
+      new FakeAttachmentUploader);
   scoped_ptr<syncer::AttachmentService> attachment_service(
-      new syncer::FakeAttachmentService(attachment_store.Pass()));
+      new syncer::FakeAttachmentService(attachment_store.Pass(),
+                                        attachment_uploader.Pass()));
   return attachment_service.Pass();
 }
 

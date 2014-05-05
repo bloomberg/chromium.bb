@@ -11,6 +11,7 @@
 #include "components/sync_driver/data_type_error_handler_mock.h"
 #include "sync/api/attachments/fake_attachment_service.h"
 #include "sync/api/attachments/fake_attachment_store.h"
+#include "sync/api/attachments/fake_attachment_uploader.h"
 #include "sync/api/fake_syncable_service.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_merge_result.h"
@@ -44,8 +45,11 @@ class MockAttachmentService : public syncer::FakeAttachmentService {
 };
 
 MockAttachmentService::MockAttachmentService()
-    : FakeAttachmentService(scoped_ptr<syncer::AttachmentStore>(
-          new syncer::FakeAttachmentStore(base::MessageLoopProxy::current()))) {
+    : FakeAttachmentService(
+          scoped_ptr<syncer::AttachmentStore>(new syncer::FakeAttachmentStore(
+              base::MessageLoopProxy::current())),
+          scoped_ptr<syncer::AttachmentUploader>(
+              new syncer::FakeAttachmentUploader)) {
 }
 
 MockAttachmentService::~MockAttachmentService() {
