@@ -1397,7 +1397,7 @@ def UploadArchivedFile(archive_path, upload_urls, filename, debug,
 
 def UploadSymbols(buildroot, board, official, cnt, failed_list):
   """Upload debug symbols for this build."""
-  log_cmd = ['upload_symbols', '--board', board, '--dedupe']
+  log_cmd = ['upload_symbols', '--board', board]
   if failed_list is not None:
     log_cmd += ['--failed-list', str(failed_list)]
   if official:
@@ -1406,19 +1406,10 @@ def UploadSymbols(buildroot, board, official, cnt, failed_list):
     log_cmd += ['--upload-limit', str(cnt)]
   cros_build_lib.Info('Running: %s' % cros_build_lib.CmdToStr(log_cmd))
 
-  if official:
-    dedupe_namespace = upload_symbols.OFFICIAL_DEDUPE_NAMESPACE
-  else:
-    dedupe_namespace = upload_symbols.STAGING_DEDUPE_NAMESPACE
-
-  # TODO(vapier): Delete this once http://crbug.com/355843 is fixed.
-  old_log = cros_build_lib.logger.getEffectiveLevel()
-  cros_build_lib.logger.setLevel(logging.DEBUG)
   ret = upload_symbols.UploadSymbols(
       board=board, official=official, upload_limit=cnt,
       root=os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR),
-      failed_list=failed_list, dedupe_namespace=dedupe_namespace)
-  cros_build_lib.logger.setLevel(old_log)
+      failed_list=failed_list)
   if ret:
     # TODO(davidjames): Convert this to a fatal error.
     # See http://crbug.com/212437
