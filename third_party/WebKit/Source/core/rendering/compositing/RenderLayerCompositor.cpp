@@ -1397,9 +1397,6 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
     if (requiresHorizontalScrollbarLayer()) {
         if (!m_layerForHorizontalScrollbar) {
             m_layerForHorizontalScrollbar = GraphicsLayer::create(graphicsLayerFactory(), this);
-        }
-
-        if (m_layerForHorizontalScrollbar->parent() != controlsParent) {
             controlsParent->addChild(m_layerForHorizontalScrollbar.get());
 
             if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
@@ -1416,9 +1413,6 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
     if (requiresVerticalScrollbarLayer()) {
         if (!m_layerForVerticalScrollbar) {
             m_layerForVerticalScrollbar = GraphicsLayer::create(graphicsLayerFactory(), this);
-        }
-
-        if (m_layerForVerticalScrollbar->parent() != controlsParent) {
             controlsParent->addChild(m_layerForVerticalScrollbar.get());
 
             if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
@@ -1435,8 +1429,6 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
     if (requiresScrollCornerLayer()) {
         if (!m_layerForScrollCorner) {
             m_layerForScrollCorner = GraphicsLayer::create(graphicsLayerFactory(), this);
-        }
-        if (m_layerForScrollCorner->parent() != controlsParent) {
             controlsParent->addChild(m_layerForScrollCorner.get());
         }
     } else if (m_layerForScrollCorner) {
