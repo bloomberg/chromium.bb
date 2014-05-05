@@ -47,7 +47,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/policy/cloud/user_policy_signin_service_android.h"
+#include "chrome/browser/policy/cloud/user_policy_signin_service_mobile.h"
 #else
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
 #endif

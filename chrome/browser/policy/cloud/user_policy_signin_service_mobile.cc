@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/cloud/user_policy_signin_service_android.h"
+#include "chrome/browser/policy/cloud/user_policy_signin_service_mobile.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -32,7 +32,13 @@ enterprise_management::DeviceRegisterRequest::Type GetRegistrationType() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kFakeCloudPolicyType))
     return enterprise_management::DeviceRegisterRequest::BROWSER;
+#if defined(OS_IOS)
+  return enterprise_management::DeviceRegisterRequest::IOS_BROWSER;
+#elif defined(OS_ANDROID)
   return enterprise_management::DeviceRegisterRequest::ANDROID_BROWSER;
+#else
+#error "This file can be built only on OS_IOS or OS_ANDROID."
+#endif
 }
 
 }  // namespace
@@ -53,12 +59,39 @@ UserPolicySigninService::UserPolicySigninService(
                                   system_request_context),
       weak_factory_(this),
       oauth2_token_service_(token_service),
-      profile_prefs_(profile->GetPrefs()) {}
+      profile_prefs_(profile->GetPrefs()) {
+#if defined(OS_IOS)
+  // iOS doesn't create this service with the Profile; instead it's created
+  // a little bit later. See UserPolicySigninServiceFactory.
+  InitializeOnProfileReady(profile);
+#endif
+}
 
 UserPolicySigninService::~UserPolicySigninService() {}
 
 void UserPolicySigninService::RegisterForPolicy(
     const std::string& username,
+    const PolicyRegistrationCallback& callback) {
+  RegisterForPolicyInternal(username, "", callback);
+}
+
+#if !defined(OS_ANDROID)
+void UserPolicySigninService::RegisterForPolicyWithAccessToken(
+    const std::string& username,
+    const std::string& access_token,
+    const PolicyRegistrationCallback& callback) {
+  RegisterForPolicyInternal(username, access_token, callback);
+}
+
+// static
+std::vector<std::string> UserPolicySigninService::GetScopes() {
+  return CloudPolicyClientRegistrationHelper::GetScopes();
+}
+#endif
+
+void UserPolicySigninService::RegisterForPolicyInternal(
+    const std::string& username,
+    const std::string& access_token,
     const PolicyRegistrationCallback& callback) {
   // Create a new CloudPolicyClient for fetching the DMToken.
   scoped_ptr<CloudPolicyClient> policy_client = CreateClientForRegistrationOnly(
@@ -75,13 +108,27 @@ void UserPolicySigninService::RegisterForPolicy(
   registration_helper_.reset(new CloudPolicyClientRegistrationHelper(
       policy_client.get(),
       GetRegistrationType()));
-  registration_helper_->StartRegistration(
-      oauth2_token_service_,
-      username,
-      base::Bind(&UserPolicySigninService::CallPolicyRegistrationCallback,
-                 base::Unretained(this),
-                 base::Passed(&policy_client),
-                 callback));
+
+  if (access_token.empty()) {
+    registration_helper_->StartRegistration(
+        oauth2_token_service_,
+        username,
+        base::Bind(&UserPolicySigninService::CallPolicyRegistrationCallback,
+                   base::Unretained(this),
+                   base::Passed(&policy_client),
+                   callback));
+  } else {
+#if defined(OS_ANDROID)
+    NOTREACHED();
+#else
+    registration_helper_->StartRegistrationWithAccessToken(
+        access_token,
+        base::Bind(&UserPolicySigninService::CallPolicyRegistrationCallback,
+                   base::Unretained(this),
+                   base::Passed(&policy_client),
+                   callback));
+#endif
+  }
 }
 
 void UserPolicySigninService::CallPolicyRegistrationCallback(
@@ -135,6 +182,11 @@ void UserPolicySigninService::OnInitializationCompleted(
       base::Bind(&UserPolicySigninService::RegisterCloudPolicyService,
                  weak_factory_.GetWeakPtr()),
       try_registration_delay);
+}
+
+void UserPolicySigninService::ShutdownUserCloudPolicyManager() {
+  CancelPendingRegistration();
+  UserPolicySigninServiceBase::ShutdownUserCloudPolicyManager();
 }
 
 void UserPolicySigninService::RegisterCloudPolicyService() {

@@ -28,8 +28,8 @@
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
-#include "chrome/browser/policy/cloud/user_policy_signin_service_android.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
+#include "chrome/browser/policy/cloud/user_policy_signin_service_mobile.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"

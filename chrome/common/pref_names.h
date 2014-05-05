@@ -173,10 +173,8 @@ extern const char kHttpServerProperties[];
 extern const char kSpdyServers[];
 extern const char kAlternateProtocolServers[];
 extern const char kDisabledSchemes[];
-#if defined(OS_ANDROID)
-extern const char kLastPolicyCheckTime[];
-#endif
 #if defined(OS_ANDROID) || defined(OS_IOS)
+extern const char kLastPolicyCheckTime[];
 extern const char kManagedBookmarks[];
 #endif
 extern const char kInstantUIZeroSuggestUrlPrefix[];
