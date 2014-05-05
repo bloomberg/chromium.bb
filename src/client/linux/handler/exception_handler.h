@@ -146,6 +146,10 @@ class ExceptionHandler {
     crash_handler_ = callback;
   }
 
+  void set_crash_generation_client(CrashGenerationClient* client) {
+    crash_generation_client_.reset(client);
+  }
+
   // Writes a minidump immediately.  This can be used to capture the execution
   // state independently of a crash.
   // Returns true on success.
@@ -200,7 +204,7 @@ class ExceptionHandler {
 
   // Returns whether out-of-process dump generation is used or not.
   bool IsOutOfProcess() const {
-      return crash_generation_client_.get() != NULL;
+    return crash_generation_client_.get() != NULL;
   }
 
   // Add information about a memory mapping. This can be used if
