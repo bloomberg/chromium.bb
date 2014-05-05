@@ -312,7 +312,7 @@ TEST_F(SystemTrayTest, SystemTrayNotifications) {
   RunAllPendingInMessageLoop();
   ASSERT_TRUE(test_item->notification_view() != NULL);
 
-  // Show the detailed view, ensure the notification view remains.
+  // Show the detailed view, ensure the notificaiton view remains.
   tray->ShowDetailedView(detailed_item, 0, false, BUBBLE_CREATE_NEW);
   RunAllPendingInMessageLoop();
   ASSERT_TRUE(detailed_item->detailed_view() != NULL);

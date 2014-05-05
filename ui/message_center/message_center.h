@@ -65,7 +65,7 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   // VISIBILITY_TRANSIENT or VISIBILITY_SETTINGS.
   virtual NotificationList::PopupNotifications GetPopupNotifications() = 0;
 
-  // Management of NotificationBlockers.
+  // Management of NotificaitonBlockers.
   virtual void AddNotificationBlocker(NotificationBlocker* blocker) = 0;
   virtual void RemoveNotificationBlocker(NotificationBlocker* blocker) = 0;
 

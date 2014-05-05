@@ -332,11 +332,11 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndSystemTray) {
   // even more, but still visible.
   GetSystemTray()->ShowNotificationView(test_item);
   EXPECT_TRUE(GetTray()->IsPopupVisible());
-  gfx::Rect work_area_with_tray_notification = GetPopupWorkArea();
+  gfx::Rect work_area_with_tray_notificaiton = GetPopupWorkArea();
   EXPECT_GT(work_area.size().GetArea(),
-            work_area_with_tray_notification.size().GetArea());
+            work_area_with_tray_notificaiton.size().GetArea());
   EXPECT_GT(work_area_with_tray.size().GetArea(),
-            work_area_with_tray_notification.size().GetArea());
+            work_area_with_tray_notificaiton.size().GetArea());
 
   // Close system tray, only system tray notifications.
   GetSystemTray()->ClickedOutsideBubble();
@@ -344,7 +344,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndSystemTray) {
   gfx::Rect work_area_with_notification = GetPopupWorkArea();
   EXPECT_GT(work_area.size().GetArea(),
             work_area_with_notification.size().GetArea());
-  EXPECT_LT(work_area_with_tray_notification.size().GetArea(),
+  EXPECT_LT(work_area_with_tray_notificaiton.size().GetArea(),
             work_area_with_notification.size().GetArea());
 
   // Close the system tray notifications.

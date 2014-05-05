@@ -51,7 +51,7 @@ class CrasInputStream : public AgcAudioStream<AudioInputStream> {
                           const timespec* sample_ts,
                           void* arg);
 
-  // Handles notification that there was an error with the playback stream.
+  // Handles notificaiton that there was an error with the playback stream.
   static int StreamError(cras_client* client,
                          cras_stream_id_t stream_id,
                          int err,

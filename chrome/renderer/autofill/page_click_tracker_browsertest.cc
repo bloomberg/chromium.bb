@@ -167,7 +167,7 @@ TEST_F(PageClickTrackerTest, PageClickTrackerInputFocusLost) {
   EXPECT_FALSE(test_listener_.form_control_element_lost_focus_called_);
   test_listener_.ClearResults();
 
-  // Select another text field to test that the notification for the
+  // Select another text field to test that the notifcation for the
   // first text field losing focus is sent.
   EXPECT_TRUE(SimulateElementClick("text_2"));
   EXPECT_TRUE(test_listener_.form_control_element_lost_focus_called_);
@@ -205,7 +205,7 @@ TEST_F(PageClickTrackerTest, PageClickTrackerTextAreaFocusLost) {
   EXPECT_FALSE(test_listener_.form_control_element_lost_focus_called_);
   test_listener_.ClearResults();
 
-  // Select another textarea field to test that the notification for the
+  // Select another textarea field to test that the notifcation for the
   // first textarea field losing focus is sent.
   EXPECT_TRUE(SimulateElementClick("textarea_2"));
   EXPECT_TRUE(test_listener_.form_control_element_lost_focus_called_);

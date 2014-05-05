@@ -54,7 +54,7 @@ class MEDIA_EXPORT CrasUnifiedStream : public AudioOutputStream {
                              const timespec* output_ts,
                              void* arg);
 
-  // Handles notification that there was an error with the playback stream.
+  // Handles notificaiton that there was an error with the playback stream.
   static int StreamError(cras_client* client,
                          cras_stream_id_t stream_id,
                          int err,

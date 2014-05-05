@@ -20,7 +20,7 @@ class TabStripModel;
 
 namespace content {
 class NotificationSource;
-class NotificationDetails;
+class NotifictaionDetails;
 class WebContents;
 }
 

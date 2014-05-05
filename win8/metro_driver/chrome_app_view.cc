@@ -777,7 +777,7 @@ void ChromeAppView::CheckForOSKActivation() {
   // process. If yes then fire the notification once for when the OSK is shown
   // and once for when it is hidden.
   // TODO(ananta)
-  // Take this out when the documented input pane notification issues are
+  // Take this out when the documented input pane notifcation issues are
   // addressed.
   HWND osk = ::FindWindow(kOSKClassName, NULL);
   if (::IsWindow(osk)) {

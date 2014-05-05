@@ -11,7 +11,7 @@
 
 namespace content {
 class MessageLoopRunner;
-class NotificationSource;
+class NotificaitonSource;
 }
 
 // Common base class for a custom notification observer that waits

@@ -382,7 +382,7 @@ void SyncTest::InitializeInstance(int index) {
   EXPECT_FALSE(GetClient(index) == NULL) << "Could not create Client "
                                          << index << ".";
 
-  // Start listening for and emitting notifications of commits.
+  // Start listening for and emitting notificaitons of commits.
   invalidation_forwarders_[index] =
       new P2PInvalidationForwarder(clients_[index]->service(),
                                    p2p_invalidation_service);
