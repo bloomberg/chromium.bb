@@ -11,7 +11,7 @@ namespace android_webview {
 namespace devtools_instrumentation {
 
 namespace internal {
-const char kCategory[] = "Java,devtools";
+const char kCategory[] = "Java,devtools,disabled-by-default-devtools.timeline";
 const char kEmbedderCallback[] = "EmbedderCallback";
 const char kCallbackNameArgument[] = "callbackName";
 }  // namespace internal
