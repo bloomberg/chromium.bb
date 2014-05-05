@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble.h"
+#include "chrome/browser/ui/views/passwords/save_password_refusal_combobox_model.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -106,12 +107,17 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   // shown twice at the same time.
   static ManagePasswordsBubbleView* manage_passwords_bubble_;
 
-  // The buttons that are shown in the bubble.
+  // The views that are shown in the bubble.
   views::BlueButton* save_button_;
-  views::Combobox* refuse_combobox_;
-
   views::Link* manage_link_;
   views::LabelButton* done_button_;
+
+  // The combobox doesn't take ownership of it's model. If we created a combobox
+  // we need to ensure that we delete the model here, and because the combobox
+  // uses the model in it's destructor, we need to make sure we delete the model
+  // _after_ the combobox itself is deleted.
+  scoped_ptr<SavePasswordRefusalComboboxModel> combobox_model_;
+  scoped_ptr<views::Combobox> refuse_combobox_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleView);
 };

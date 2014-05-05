@@ -14,5 +14,5 @@ void ManagePasswordsIcon::SetState(State state) {
   if (state_ == state)
     return;
   state_ = state;
-  SetStateInternal(state);
+  UpdateVisibleUI();
 }

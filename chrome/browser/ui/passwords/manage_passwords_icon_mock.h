@@ -18,7 +18,8 @@ class ManagePasswordsIconMock : public ManagePasswordsIcon {
   int bubble_shown_count() const { return bubble_shown_count_; }
 
  protected:
-  virtual void SetStateInternal(State state) OVERRIDE;
+  // ManagePasswordsIcon:
+  virtual void UpdateVisibleUI() OVERRIDE;
 
  private:
   int bubble_shown_count_;
