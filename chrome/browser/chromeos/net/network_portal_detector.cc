@@ -47,8 +47,6 @@ class NetworkPortalDetectorStubImpl : public NetworkPortalDetector {
   virtual bool IsEnabled() OVERRIDE { return false; }
   virtual void Enable(bool /* start_detection */) OVERRIDE {}
   virtual bool StartDetectionIfIdle() OVERRIDE { return false; }
-  virtual void SetStrategy(
-      PortalDetectorStrategy::StrategyId /* id */) OVERRIDE {}
 };
 
 }  // namespace
