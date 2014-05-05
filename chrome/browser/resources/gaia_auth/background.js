@@ -163,6 +163,8 @@ BackgroundBridge.prototype = {
     this.channelMain_.registerMessage(
         'getScrapedPasswords',
         this.onGetScrapedPasswords_.bind(this));
+    this.channelMain_.registerMessage(
+        'apiResponse', this.onAPIResponse_.bind(this));
 
     this.channelMain_.send({
       'name': 'channelConnected'
@@ -339,6 +341,14 @@ BackgroundBridge.prototype = {
       passwords[this.passwordStore_[property]] = true;
     }
     return Object.keys(passwords);
+  },
+
+  /**
+   * Handler for 'apiResponse' signal sent from the main script. Passes on the
+   * |msg| to the injected script.
+   */
+  onAPIResponse_: function(msg) {
+    this.channelInjected_.send(msg);
   },
 
   onAPICall_: function(msg) {

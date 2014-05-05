@@ -16,6 +16,26 @@ Authenticator.THIS_EXTENSION_ORIGIN =
     'chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik';
 
 /**
+ * The lowest version of the credentials passing API supported.
+ * @type {number}
+ */
+Authenticator.MIN_API_VERSION_VERSION = 1;
+
+/**
+ * The highest version of the credentials passing API supported.
+ * @type {number}
+ */
+Authenticator.MAX_API_VERSION_VERSION = 2;
+
+/**
+ * The key types supported for credentials passing API 2 and higher.
+ * @type {Array} Array of strings.
+ */
+Authenticator.API_KEY_TYPES = [
+  'KEY_TYPE_PASSWORD_PLAIN',
+];
+
+/**
  * Singleton getter of Authenticator.
  * @return {Object} The singleton instance of Authenticator.
  */
@@ -28,7 +48,14 @@ Authenticator.getInstance = function() {
 
 Authenticator.prototype = {
   email_: null,
-  password_: null,
+
+  // Depending on the key type chosen, this will contain the plain text password
+  // or a credential derived from it along with the information required to
+  // repeat the derivation, such as a salt. The information will be encoded so
+  // that it contains printable ASCII characters only. The exact encoding is TBD
+  // when support for key types other than plain text password is added.
+  passwordBytes_: null,
+
   attemptToken_: null,
 
   // Input params from extension initialization URL.
@@ -175,7 +202,8 @@ Authenticator.prototype = {
     var msg = {
       'method': 'completeLogin',
       'email': (opt_extraMsg && opt_extraMsg.email) || this.email_,
-      'password': (opt_extraMsg && opt_extraMsg.password) || this.password_,
+      'password': (opt_extraMsg && opt_extraMsg.password) ||
+                  this.passwordBytes_,
       'usingSAML': this.isSAMLFlow_,
       'chooseWhatToSync': this.chooseWhatToSync_ || false,
       'skipForNow': opt_extraMsg && opt_extraMsg.skipForNow,
@@ -231,10 +259,10 @@ Authenticator.prototype = {
     if (isSAMLPage && !this.isSAMLFlow_) {
       // GAIA redirected to a SAML login page. The credentials provided to this
       // page will determine what user gets logged in. The credentials obtained
-      // from the GAIA login from are no longer relevant and can be discarded.
+      // from the GAIA login form are no longer relevant and can be discarded.
       this.isSAMLFlow_ = true;
       this.email_ = null;
-      this.password_ = null;
+      this.passwordBytes_ = null;
     }
 
     window.parent.postMessage({
@@ -260,10 +288,46 @@ Authenticator.prototype = {
    */
   onAPICall_: function(msg) {
     var call = msg.call;
+    if (call.method == 'initialize') {
+      // TODO(bartfab): There was no |requestedVersion| parameter in version 1
+      // of the API. Remove this code once all consumers have switched to
+      // version 2 or higher.
+      if (!call.hasOwnProperty('requestedVersion')) {
+        if (Authenticator.MIN_API_VERSION_VERSION == 1) {
+          this.apiVersion_ = 1;
+          this.initialized_ = true;
+          this.sendInitializationSuccess_();
+        }
+        // The glue code for API version 1 interprets all responses as success.
+        // Instead of reporting failure, do not send any response at all.
+        return;
+      }
+
+      if (!Number.isInteger(call.requestedVersion) ||
+          call.requestedVersion < Authenticator.MIN_API_VERSION_VERSION) {
+        this.sendInitializationFailure_();
+        return;
+      }
+
+      this.apiVersion_ = Math.min(call.requestedVersion,
+                                  Authenticator.MAX_API_VERSION_VERSION);
+      this.initialized_ = true;
+      this.sendInitializationSuccess_();
+      return;
+    }
+
     if (call.method == 'add') {
+      if (this.apiVersion_ > 1 &&
+          Authenticator.API_KEY_TYPES.indexOf(call.keyType) == -1) {
+        console.error('Authenticator.onAPICall_: unsupported key type');
+        return;
+      }
       this.apiToken_ = call.token;
       this.email_ = call.user;
-      this.password_ = call.password;
+      if (this.apiVersion_ == 1)
+        this.passwordBytes_ = call.password;
+      else
+        this.passwordBytes_ = call.passwordBytes;
     } else if (call.method == 'confirm') {
       if (call.token != this.apiToken_)
         console.error('Authenticator.onAPICall_: token mismatch');
@@ -272,13 +336,31 @@ Authenticator.prototype = {
     }
   },
 
+  sendInitializationSuccess_: function() {
+    var response = {
+      result: 'initialized',
+      version: this.apiVersion_
+    };
+    if (this.apiVersion_ >= 2)
+      response['keyTypes'] = Authenticator.API_KEY_TYPES;
+
+    this.supportChannel_.send({name: 'apiResponse', response: response});
+  },
+
+  sendInitializationFailure_: function() {
+    this.supportChannel_.send({
+      name: 'apiResponse',
+      response: {result: 'initialization_failed'}
+    });
+  },
+
   onConfirmLogin_: function() {
     if (!this.isSAMLFlow_) {
       this.completeLogin_();
       return;
     }
 
-    var apiUsed = !!this.password_;
+    var apiUsed = !!this.passwordBytes_;
 
     // Retrieve the e-mail address of the user who just authenticated from GAIA.
     window.parent.postMessage({method: 'retrieveAuthenticatedUserEmail',
@@ -307,7 +389,7 @@ Authenticator.prototype = {
   maybeCompleteSAMLLogin_: function() {
     // SAML login is complete when the user's e-mail address has been retrieved
     // from GAIA and the user has successfully confirmed the password.
-    if (this.email_ !== null && this.password_ !== null)
+    if (this.email_ !== null && this.passwordBytes_ !== null)
       this.completeLogin_();
   },
 
@@ -317,7 +399,7 @@ Authenticator.prototype = {
         function(passwords) {
           for (var i = 0; i < passwords.length; ++i) {
             if (passwords[i] == password) {
-              this.password_ = passwords[i];
+              this.passwordBytes_ = passwords[i];
               this.maybeCompleteSAMLLogin_();
               return;
             }
@@ -332,7 +414,7 @@ Authenticator.prototype = {
     var msg = e.data;
     if (msg.method == 'attemptLogin' && this.isGaiaMessage_(e)) {
       this.email_ = msg.email;
-      this.password_ = msg.password;
+      this.passwordBytes_ = msg.password;
       this.attemptToken_ = msg.attemptToken;
       this.chooseWhatToSync_ = msg.chooseWhatToSync;
       this.isSAMLFlow_ = false;
@@ -340,7 +422,7 @@ Authenticator.prototype = {
         this.supportChannel_.send({name: 'startAuth'});
     } else if (msg.method == 'clearOldAttempts' && this.isGaiaMessage_(e)) {
       this.email_ = null;
-      this.password_ = null;
+      this.passwordBytes_ = null;
       this.attemptToken_ = null;
       this.isSAMLFlow_ = false;
       this.onLoginUILoaded_();

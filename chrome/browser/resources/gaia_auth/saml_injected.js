@@ -20,8 +20,9 @@
 
   /**
    * The credential passing API is used by sending messages to the SAML page's
-   * |window| object. This class forwards the calls to a background script via a
-   * |Channel|.
+   * |window| object. This class forwards API calls from the SAML page to a
+   * background script and API responses from the background script to the SAML
+   * page. Communication with the background script occurs via a |Channel|.
    */
   APICallForwarder.prototype = {
     // Channel to which API calls are forwarded.
@@ -33,6 +34,9 @@
      */
     init: function(channel) {
       this.channel_ = channel;
+      this.channel_.registerMessage('apiResponse',
+                                    this.onAPIResponse_.bind(this));
+
       window.addEventListener('message', this.onMessage_.bind(this));
     },
 
@@ -43,15 +47,14 @@
           event.data.type != 'gaia_saml_api') {
         return;
       }
-      if (event.data.call.method == 'initialize') {
-        // Respond to the |initialize| call directly.
-        event.source.postMessage({
-            type: 'gaia_saml_api_reply',
-            response: {result: 'initialized', version: 1}}, '/');
-      } else {
-        // Forward all other calls.
-        this.channel_.send({name: 'apiCall', call: event.data.call});
-      }
+      // Forward API calls to the background script.
+      this.channel_.send({name: 'apiCall', call: event.data.call});
+    },
+
+    onAPIResponse_: function(msg) {
+      // Forward API responses to the SAML page.
+      window.postMessage({type: 'gaia_saml_api_reply', response: msg.response},
+                         '/');
     }
   };
 
