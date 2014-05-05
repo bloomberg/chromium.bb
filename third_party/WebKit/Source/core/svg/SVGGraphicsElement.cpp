@@ -196,7 +196,7 @@ void SVGGraphicsElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
     }
 
-    SVGElementInstance::InvalidationGuard invalidationGuard(this);
+    SVGElement::InvalidationGuard invalidationGuard(this);
 
     // Reattach so the isValid() check will be run again during renderer creation.
     if (SVGTests::isKnownAttribute(attrName)) {

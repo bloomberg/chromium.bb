@@ -117,7 +117,7 @@ void SVGCursorElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
     }
 
-    SVGElementInstance::InvalidationGuard invalidationGuard(this);
+    SVGElement::InvalidationGuard invalidationGuard(this);
 
     // Any change of a cursor specific attribute triggers this recalc.
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator it = m_clients.begin();

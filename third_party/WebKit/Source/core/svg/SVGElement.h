@@ -155,6 +155,27 @@ public:
 
     bool inUseShadowTree() const;
 
+    class InvalidationGuard {
+        WTF_MAKE_NONCOPYABLE(InvalidationGuard);
+    public:
+        InvalidationGuard(SVGElement* element) : m_element(element) { }
+        ~InvalidationGuard() { m_element->invalidateInstances(); }
+    private:
+        SVGElement* m_element;
+    };
+
+    class InstanceUpdateBlocker {
+        WTF_MAKE_NONCOPYABLE(InstanceUpdateBlocker);
+    public:
+        InstanceUpdateBlocker(SVGElement* targetElement);
+        ~InstanceUpdateBlocker();
+
+    private:
+        SVGElement* m_targetElement;
+    };
+
+    void invalidateInstances();
+
 protected:
     SVGElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
 

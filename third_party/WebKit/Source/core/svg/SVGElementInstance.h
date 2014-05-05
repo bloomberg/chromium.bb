@@ -73,27 +73,6 @@ public:
 
     inline Document* ownerDocument() const;
 
-    class InvalidationGuard {
-        WTF_MAKE_NONCOPYABLE(InvalidationGuard);
-    public:
-        InvalidationGuard(SVGElement* element) : m_element(element) { }
-        ~InvalidationGuard() { SVGElementInstance::invalidateAllInstancesOfElement(m_element); }
-    private:
-        SVGElement* m_element;
-    };
-
-    class InstanceUpdateBlocker {
-        WTF_MAKE_NONCOPYABLE(InstanceUpdateBlocker);
-    public:
-        InstanceUpdateBlocker(SVGElement* targetElement);
-        ~InstanceUpdateBlocker();
-
-    private:
-        SVGElement* m_targetElement;
-    };
-
-    static void invalidateAllInstancesOfElement(SVGElement*);
-
     virtual void trace(Visitor*) { }
 
     // EventTarget API

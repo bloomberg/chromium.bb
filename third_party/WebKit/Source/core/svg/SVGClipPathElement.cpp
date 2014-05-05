@@ -74,7 +74,7 @@ void SVGClipPathElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
     }
 
-    SVGElementInstance::InvalidationGuard invalidationGuard(this);
+    SVGElement::InvalidationGuard invalidationGuard(this);
 
     RenderSVGResourceContainer* renderer = toRenderSVGResourceContainer(this->renderer());
     if (renderer)

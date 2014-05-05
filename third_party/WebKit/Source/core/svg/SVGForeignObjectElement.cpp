@@ -120,7 +120,7 @@ void SVGForeignObjectElement::svgAttributeChanged(const QualifiedName& attrName)
         setNeedsStyleRecalc(LocalStyleChange);
     }
 
-    SVGElementInstance::InvalidationGuard invalidationGuard(this);
+    SVGElement::InvalidationGuard invalidationGuard(this);
 
     bool isLengthAttribute = attrName == SVGNames::xAttr
                           || attrName == SVGNames::yAttr

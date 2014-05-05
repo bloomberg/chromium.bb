@@ -562,7 +562,7 @@ void SVGSMILElement::svgAttributeChanged(const QualifiedName& attrName)
     else if (attrName == SVGNames::attributeNameAttr)
         setAttributeName(constructQualifiedName(this, fastGetAttribute(SVGNames::attributeNameAttr)));
     else if (attrName.matches(XLinkNames::hrefAttr)) {
-        SVGElementInstance::InvalidationGuard invalidationGuard(this);
+        SVGElement::InvalidationGuard invalidationGuard(this);
         buildPendingResource();
         if (m_targetElement)
             clearAnimatedType(m_targetElement);

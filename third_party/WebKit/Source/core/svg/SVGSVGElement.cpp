@@ -316,7 +316,7 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
             object->setNeedsTransformUpdate();
     }
 
-    SVGElementInstance::InvalidationGuard invalidationGuard(this);
+    SVGElement::InvalidationGuard invalidationGuard(this);
 
     if (updateRelativeLengthsOrViewBox
         || SVGZoomAndPan::isKnownAttribute(attrName)) {

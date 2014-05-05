@@ -342,7 +342,7 @@ void SVGElement::removedFrom(ContainerNode* rootParent)
         document().accessSVGExtensions().removeAllElementReferencesForTarget(this);
     }
 
-    SVGElementInstance::invalidateAllInstancesOfElement(this);
+    invalidateInstances();
 }
 
 void SVGElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
@@ -351,7 +351,7 @@ void SVGElement::childrenChanged(bool changedByParser, Node* beforeChange, Node*
 
     // Invalidate all SVGElementInstances associated with us.
     if (!changedByParser)
-        SVGElementInstance::invalidateAllInstancesOfElement(this);
+        invalidateInstances();
 }
 
 CSSPropertyID SVGElement::cssPropertyIdForSVGAttributeName(const QualifiedName& attrName)
@@ -952,13 +952,13 @@ void SVGElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     CSSPropertyID propId = SVGElement::cssPropertyIdForSVGAttributeName(attrName);
     if (propId > 0) {
-        SVGElementInstance::invalidateAllInstancesOfElement(this);
+        invalidateInstances();
         return;
     }
 
     if (attrName == HTMLNames::classAttr) {
         classAttributeChanged(AtomicString(m_className->currentValue()->value()));
-        SVGElementInstance::invalidateAllInstancesOfElement(this);
+        invalidateInstances();
         return;
     }
 
@@ -969,7 +969,7 @@ void SVGElement::svgAttributeChanged(const QualifiedName& attrName)
             toRenderSVGResourceContainer(object)->idChanged();
         if (inDocument())
             buildPendingResourcesIfNeeded();
-        SVGElementInstance::invalidateAllInstancesOfElement(this);
+        invalidateInstances();
         return;
     }
 }
@@ -1045,6 +1045,45 @@ bool SVGElement::hasFocusEventListeners() const
 {
     return hasEventListeners(EventTypeNames::focusin) || hasEventListeners(EventTypeNames::focusout)
         || hasEventListeners(EventTypeNames::focus) || hasEventListeners(EventTypeNames::blur);
+}
+
+void SVGElement::invalidateInstances()
+{
+    if (!inDocument())
+        return;
+
+    if (instanceUpdatesBlocked())
+        return;
+
+    const HashSet<SVGElement*>& set = instancesForElement();
+    if (set.isEmpty())
+        return;
+
+    // Mark all use elements referencing 'element' for rebuilding
+    const HashSet<SVGElement*>::const_iterator end = set.end();
+    for (HashSet<SVGElement*>::const_iterator it = set.begin(); it != end; ++it) {
+        (*it)->setCorrespondingElement(0);
+
+        if (SVGUseElement* element = (*it)->correspondingUseElement()) {
+            ASSERT(element->inDocument());
+            element->invalidateShadowTree();
+        }
+    }
+
+    document().updateRenderTreeIfNeeded();
+}
+
+SVGElement::InstanceUpdateBlocker::InstanceUpdateBlocker(SVGElement* targetElement)
+    : m_targetElement(targetElement)
+{
+    if (m_targetElement)
+        m_targetElement->setInstanceUpdatesBlocked(true);
+}
+
+SVGElement::InstanceUpdateBlocker::~InstanceUpdateBlocker()
+{
+    if (m_targetElement)
+        m_targetElement->setInstanceUpdatesBlocked(false);
 }
 
 #ifndef NDEBUG

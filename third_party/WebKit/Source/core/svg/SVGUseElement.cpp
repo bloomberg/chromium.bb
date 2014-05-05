@@ -225,7 +225,7 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
     }
 
-    SVGElementInstance::InvalidationGuard invalidationGuard(this);
+    SVGElement::InvalidationGuard invalidationGuard(this);
 
     RenderObject* renderer = this->renderer();
     if (attrName == SVGNames::xAttr

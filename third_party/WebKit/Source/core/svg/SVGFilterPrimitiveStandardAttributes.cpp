@@ -103,7 +103,7 @@ void SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(const QualifiedNa
         return;
     }
 
-    SVGElementInstance::InvalidationGuard invalidationGuard(this);
+    SVGElement::InvalidationGuard invalidationGuard(this);
     invalidate();
 }
 

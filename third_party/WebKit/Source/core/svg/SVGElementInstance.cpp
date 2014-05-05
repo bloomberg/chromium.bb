@@ -163,32 +163,6 @@ void SVGElementInstance::appendChild(PassRefPtr<SVGElementInstance> child)
     appendChildToContainer<SVGElementInstance, SVGElementInstance>(*child, *this);
 }
 
-void SVGElementInstance::invalidateAllInstancesOfElement(SVGElement* element)
-{
-    if (!element || !element->inDocument())
-        return;
-
-    if (element->instanceUpdatesBlocked())
-        return;
-
-    const HashSet<SVGElement*>& set = element->instancesForElement();
-    if (set.isEmpty())
-        return;
-
-    // Mark all use elements referencing 'element' for rebuilding
-    const HashSet<SVGElement*>::const_iterator end = set.end();
-    for (HashSet<SVGElement*>::const_iterator it = set.begin(); it != end; ++it) {
-        (*it)->setCorrespondingElement(0);
-
-        if (SVGUseElement* element = (*it)->correspondingUseElement()) {
-            ASSERT(element->inDocument());
-            element->invalidateShadowTree();
-        }
-    }
-
-    element->document().updateRenderTreeIfNeeded();
-}
-
 const AtomicString& SVGElementInstance::interfaceName() const
 {
     return EventTargetNames::SVGElementInstance;
@@ -245,19 +219,6 @@ EventTargetData& SVGElementInstance::ensureEventTargetData()
     // As we're forwarding those calls to the correspondingElement(), no one should ever call this function.
     ASSERT_NOT_REACHED();
     return *eventTargetData();
-}
-
-SVGElementInstance::InstanceUpdateBlocker::InstanceUpdateBlocker(SVGElement* targetElement)
-    : m_targetElement(targetElement)
-{
-    if (m_targetElement)
-        m_targetElement->setInstanceUpdatesBlocked(true);
-}
-
-SVGElementInstance::InstanceUpdateBlocker::~InstanceUpdateBlocker()
-{
-    if (m_targetElement)
-        m_targetElement->setInstanceUpdatesBlocked(false);
 }
 
 }

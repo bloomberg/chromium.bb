@@ -255,7 +255,7 @@ void SVGTextContentElement::svgAttributeChanged(const QualifiedName& attrName)
     if (attrName == SVGNames::textLengthAttr)
         m_textLengthIsSpecifiedByUser = true;
 
-    SVGElementInstance::InvalidationGuard invalidationGuard(this);
+    SVGElement::InvalidationGuard invalidationGuard(this);
 
     if (RenderObject* renderer = this->renderer())
         RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
