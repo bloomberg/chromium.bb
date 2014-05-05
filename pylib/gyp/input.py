@@ -860,17 +860,15 @@ def ExpandVariables(input, phase, variables, build_file):
         use_shell = False
 
       # Check for a cached value to avoid executing commands, or generating
-      # file lists more than once.
-      # TODO(http://code.google.com/p/gyp/issues/detail?id=112): It is
-      # possible that the command being invoked depends on the current
-      # directory. For that case the syntax needs to be extended so that the
-      # directory is also used in cache_key (it becomes a tuple).
+      # file lists more than once. The cache key contains the command to be
+      # run as well as the directory to run it from, to account for commands
+      # that depend on their current directory.
       # TODO(http://code.google.com/p/gyp/issues/detail?id=111): In theory,
       # someone could author a set of GYP files where each time the command
       # is invoked it produces different output by design. When the need
       # arises, the syntax should be extended to support no caching off a
       # command's output so it is run every time.
-      cache_key = str(contents)
+      cache_key = (str(contents), build_file_dir)
       cached_value = cached_command_results.get(cache_key, None)
       if cached_value is None:
         gyp.DebugOutput(gyp.DEBUG_VARIABLES,
