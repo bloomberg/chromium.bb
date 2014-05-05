@@ -3811,8 +3811,7 @@
           }],
           ['use_custom_libcxx==1', {
             'dependencies': [
-              '<(DEPTH)/third_party/libc++/libc++.gyp:libc++',
-              '<(DEPTH)/third_party/libc++abi/libc++abi.gyp:libc++abi',
+              '<(DEPTH)/third_party/libc++/libc++.gyp:libcxx_proxy',
             ],
           }],
           ['order_profiling!=0 and (chromeos==1 or OS=="linux" or OS=="android")', {

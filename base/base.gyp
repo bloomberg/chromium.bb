@@ -978,8 +978,7 @@
       'conditions': [
         ['use_custom_libcxx==1', {
           'dependencies!': [
-            '../third_party/libc++/libc++.gyp:libc++',
-            '../third_party/libc++abi/libc++abi.gyp:libc++abi',
+            '../third_party/libc++/libc++.gyp:libcxx_proxy',
           ],
         }],
       ],

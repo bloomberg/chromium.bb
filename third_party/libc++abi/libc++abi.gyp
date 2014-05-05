@@ -6,12 +6,7 @@
   'targets': [
     {
       'target_name': 'libc++abi',
-      'type': 'shared_library',
-      'variables': {
-        'prune_self_dependency': 1,
-        # Don't add this target to the dependencies of targets with type=none.
-        'link_dependency': 1,
-      },
+      'type': 'static_library',
       'dependencies=': [],
       'sources': [
         'trunk/src/abort_message.cpp',
@@ -56,21 +51,6 @@
         '-Wnewline-eof',
         '-nostdinc++',
       ],
-      'direct_dependent_settings': {
-        'target_conditions': [
-          ['_type!="none"', {
-            'include_dirs': [
-              'trunk/include',
-            ],
-            'cflags_cc': [
-              '-nostdinc++',
-            ],
-            'ldflags': [
-              '-L<(PRODUCT_DIR)/lib/',
-            ],
-          }],
-        ],
-      },
       'cflags_cc!': [
         '-fno-rtti',
       ],
