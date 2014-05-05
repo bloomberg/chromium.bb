@@ -11,72 +11,163 @@
  */
 nl{
     Languages{
+        ach{"Akoli"}
+        af{"Afrikaans"}
+        ak{"Akan"}
         am{"Amhaars"}
         ar{"Arabisch"}
         ar_001{"Modern standaard Arabisch"}
+        az{"Azerbeidzjaans"}
+        ban{"Balinees"}
+        be{"Wit-Russisch"}
+        bem{"Bemba"}
         bg{"Bulgaars"}
+        bh{"Bihari"}
         bn{"Bengaals"}
+        br{"Bretons"}
+        bs{"Bosnisch"}
         ca{"Catalaans"}
+        ceb{"Cebuano"}
+        chr{"Cherokee"}
+        ckb{"Soranî"}
+        co{"Corsicaans"}
         cs{"Tsjechisch"}
+        cy{"Welsh"}
         da{"Deens"}
         de{"Duits"}
         de_AT{"Oostenrijks Duits"}
         de_CH{"Zwitsers Hoogduits"}
+        ee{"Ewe"}
         el{"Grieks"}
         en{"Engels"}
         en_AU{"Australisch Engels"}
         en_CA{"Canadees Engels"}
         en_GB{"Brits Engels"}
         en_US{"Amerikaans Engels"}
+        eo{"Esperanto"}
         es{"Spaans"}
         es_419{"Latijns-Amerikaans Spaans"}
         es_ES{"Europees Spaans"}
         es_MX{"Mexicaans Spaans"}
         et{"Estlands"}
+        eu{"Baskisch"}
         fa{"Perzisch"}
         fi{"Fins"}
         fil{"Filipijns"}
+        fo{"Faeröers"}
         fr{"Frans"}
         fr_CA{"Canadees Frans"}
         fr_CH{"Zwitsers Frans"}
+        fy{"West-Fries"}
+        ga{"Iers"}
+        gaa{"Ga"}
+        gd{"Schots Gaelic"}
+        gl{"Galicisch"}
+        gn{"Guaraní"}
         gu{"Gujarati"}
+        ha{"Hausa"}
+        haw{"Hawaïaans"}
         he{"Hebreeuws"}
         hi{"Hindi"}
         hr{"Kroatisch"}
+        ht{"Haïtiaans"}
         hu{"Hongaars"}
+        hy{"Armeens"}
+        ia{"Interlingua"}
         id{"Indonesisch"}
+        ig{"Igbo"}
+        is{"IJslands"}
         it{"Italiaans"}
         ja{"Japans"}
+        ka{"Georgisch"}
+        kg{"Kongo"}
+        kk{"Kazachs"}
+        km{"Khmer"}
         kn{"Kannada"}
         ko{"Koreaans"}
+        ku{"Koerdisch"}
+        ky{"Kirgizisch"}
+        la{"Latijn"}
+        lg{"Ganda"}
+        ln{"Lingala"}
+        lo{"Laotiaans"}
+        loz{"Lozi"}
         lt{"Litouws"}
+        lua{"Luba-Lulua"}
         lv{"Letlands"}
+        mfe{"Morisyen"}
+        mg{"Malagasisch"}
+        mi{"Maori"}
+        mk{"Macedonisch"}
         ml{"Malayalam"}
+        mn{"Mongools"}
+        mo{"Moldavisch"}
         mr{"Marathi"}
         ms{"Maleis"}
+        mt{"Maltees"}
+        my{"Birmees"}
+        nb{"Noors - Bokmål"}
+        ne{"Nepalees"}
         nl{"Nederlands"}
         nl_BE{"Vlaams"}
+        nn{"Noors - Nynorsk"}
         no{"Noors"}
+        nso{"Noord-Sotho"}
+        ny{"Nyanja"}
+        nyn{"Nyankole"}
+        oc{"Occitaans"}
+        om{"Oromo"}
+        or{"Odia"}
+        pa{"Punjabi"}
         pl{"Pools"}
+        ps{"Pasjtoe"}
         pt{"Portugees"}
         pt_BR{"Braziliaans Portugees"}
         pt_PT{"Europees Portugees"}
+        qu{"Quechua"}
+        rm{"Reto-Romaans"}
+        rn{"Kirundi"}
         ro{"Roemeens"}
         ru{"Russisch"}
+        rw{"Kinyarwanda"}
+        sd{"Sindhi"}
+        sh{"Servokroatisch"}
+        si{"Singalees"}
         sk{"Slowaaks"}
         sl{"Sloveens"}
+        sn{"Shona"}
+        so{"Somalisch"}
+        sq{"Albanees"}
         sr{"Servisch"}
+        st{"Zuid-Sotho"}
+        su{"Soendanees"}
         sv{"Zweeds"}
         sw{"Swahili"}
         ta{"Tamil"}
         te{"Telugu"}
+        tg{"Tadzjieks"}
         th{"Thais"}
+        ti{"Tigrinya"}
+        tk{"Turkmeens"}
+        tn{"Tswana"}
+        to{"Tongaans"}
         tr{"Turks"}
+        tt{"Tataars"}
+        tum{"Toemboeka"}
+        tw{"Twi"}
+        ug{"Oeigoers"}
         uk{"Oekraïens"}
+        ur{"Urdu"}
+        uz{"Oezbeeks"}
         vi{"Vietnamees"}
+        wo{"Wolof"}
+        xh{"Xhosa"}
+        yi{"Jiddisch"}
+        yo{"Yoruba"}
         zh{"Chinees"}
         zh_Hans{"Vereenvoudigd Chinees"}
         zh_Hant{"Traditioneel Chinees"}
+        zu{"Zulu"}
     }
     LanguagesShort{
         az{"Azeri"}

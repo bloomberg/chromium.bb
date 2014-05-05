@@ -11,72 +11,163 @@
  */
 lv{
     Languages{
+        ach{"ačolu"}
+        af{"afrikandu"}
+        ak{"akanu"}
         am{"amharu"}
         ar{"arābu"}
         ar_001{"mūsdienu standarta arābu"}
+        az{"azerbaidžāņu"}
+        ban{"baliešu"}
+        be{"baltkrievu"}
+        bem{"bembu"}
         bg{"bulgāru"}
+        bh{"biharu"}
         bn{"bengāļu"}
+        br{"bretoņu"}
+        bs{"bosniešu"}
         ca{"katalāņu"}
+        ceb{"sebuāņu"}
+        chr{"čiroku"}
+        ckb{"kurdu (Sorani)"}
+        co{"korsikāņu"}
         cs{"čehu"}
+        cy{"velsiešu"}
         da{"dāņu"}
         de{"vācu"}
         de_AT{"Austrijas vācu"}
         de_CH{"Šveices augšvācu"}
+        ee{"evu"}
         el{"grieķu"}
         en{"angļu"}
         en_AU{"Austrālijas angļu"}
         en_CA{"Kanādas angļu"}
         en_GB{"Lielbritānijas angļu"}
         en_US{"ASV angļu"}
+        eo{"esperanto"}
         es{"spāņu"}
         es_419{"Latīņamerikas spāņu"}
         es_ES{"Eiropas spāņu"}
         es_MX{"Meksikas spāņu"}
         et{"igauņu"}
+        eu{"basku"}
         fa{"persiešu"}
         fi{"somu"}
         fil{"filipīniešu"}
+        fo{"fēru"}
         fr{"franču"}
         fr_CA{"Kanādas franču"}
         fr_CH{"Šveices franču"}
+        fy{"rietumfrīzu"}
+        ga{"īru"}
+        gaa{"ga"}
+        gd{"gēlu"}
+        gl{"galisiešu"}
+        gn{"gvaranu"}
         gu{"gudžaratu"}
+        ha{"hausu"}
+        haw{"havajiešu"}
         he{"ivrits"}
         hi{"hindi"}
         hr{"horvātu"}
+        ht{"haitiešu"}
         hu{"ungāru"}
+        hy{"armēņu"}
+        ia{"interlingva"}
         id{"indonēziešu"}
+        ig{"igbo"}
+        is{"īslandiešu"}
         it{"itāļu"}
         ja{"japāņu"}
+        ka{"gruzīnu"}
+        kg{"kongu"}
+        kk{"kazahu"}
+        km{"khmeru"}
         kn{"kannadu"}
         ko{"korejiešu"}
+        ku{"kurdu"}
+        ky{"kirgīzu"}
+        la{"latīņu"}
+        lg{"gandu"}
+        ln{"lingala"}
+        lo{"laosiešu"}
+        loz{"lozu"}
         lt{"lietuviešu"}
+        lua{"lubalulva"}
         lv{"latviešu"}
+        mfe{"Maurīcijas kreolu"}
+        mg{"malagasu"}
+        mi{"maoru"}
+        mk{"maķedoniešu"}
         ml{"malajalu"}
+        mn{"mongoļu"}
+        mo{"moldāvu"}
         mr{"maratu"}
         ms{"malajiešu"}
+        mt{"maltiešu"}
+        my{"birmiešu"}
+        nb{"norvēģu bukmols"}
+        ne{"nepāliešu"}
         nl{"holandiešu"}
         nl_BE{"flāmu"}
+        nn{"jaunnorvēģu"}
         no{"norvēģu"}
+        nso{"ziemeļsotu"}
+        ny{"čičeva"}
+        nyn{"ņankolu"}
+        oc{"oksitāņu"}
+        om{"oromu"}
+        or{"oriju"}
+        pa{"pandžabu"}
         pl{"poļu"}
+        ps{"puštu"}
         pt{"portugāļu"}
         pt_BR{"Brazīlijas portugāļu"}
         pt_PT{"Eiropas portugāļu"}
+        qu{"kečvu"}
+        rm{"retoromāņu"}
+        rn{"rundu"}
         ro{"rumāņu"}
         ru{"krievu"}
+        rw{"kiņaruanda"}
+        sd{"sindhu"}
+        sh{"serbu-horvātu"}
+        si{"singāļu"}
         sk{"slovāku"}
         sl{"slovēņu"}
+        sn{"šonu"}
+        so{"somāļu"}
+        sq{"albāņu"}
         sr{"serbu"}
+        st{"dienvidsotu"}
+        su{"sundaniešu"}
         sv{"zviedru"}
         sw{"svahili"}
         ta{"tamilu"}
         te{"telugu"}
+        tg{"tadžiku"}
         th{"taju"}
+        ti{"tigrinja"}
+        tk{"turkmēņu"}
+        tn{"cvanu"}
+        to{"tongiešu"}
         tr{"turku"}
+        tt{"tatāru"}
+        tum{"tumbuku"}
+        tw{"tvī"}
+        ug{"uiguru"}
         uk{"ukraiņu"}
+        ur{"urdu"}
+        uz{"uzbeku"}
         vi{"vjetnamiešu"}
+        wo{"volofu"}
+        xh{"khosu"}
+        yi{"jidišs"}
+        yo{"jorubu"}
         zh{"ķīniešu"}
         zh_Hans{"ķīniešu vienkāršotā"}
         zh_Hant{"ķīniešu tradicionālā"}
+        zu{"zulu"}
     }
     LanguagesShort{
         az{"azerbaidžāņu"}

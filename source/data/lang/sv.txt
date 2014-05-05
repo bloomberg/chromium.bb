@@ -11,72 +11,163 @@
  */
 sv{
     Languages{
+        ach{"acholi"}
+        af{"afrikaans"}
+        ak{"akan"}
         am{"amhariska"}
         ar{"arabiska"}
         ar_001{"modern standardarabiska"}
+        az{"azerbajdzjanska"}
+        ban{"balinesiska"}
+        be{"vitryska"}
+        bem{"bemba"}
         bg{"bulgariska"}
+        bh{"bihari"}
         bn{"bengali"}
+        br{"bretonska"}
+        bs{"bosniska"}
         ca{"katalanska"}
+        ceb{"cebuano"}
+        chr{"cherokesiska"}
+        ckb{"soranisk kurdiska"}
+        co{"korsikanska"}
         cs{"tjeckiska"}
+        cy{"walesiska"}
         da{"danska"}
         de{"tyska"}
         de_AT{"österrikisk tyska"}
         de_CH{"schweizisk högtyska"}
+        ee{"ewe"}
         el{"grekiska"}
         en{"engelska"}
         en_AU{"australisk engelska"}
         en_CA{"kanadensisk engelska"}
         en_GB{"brittisk engelska"}
         en_US{"amerikansk engelska"}
+        eo{"esperanto"}
         es{"spanska"}
         es_419{"latinamerikansk spanska"}
         es_ES{"europeisk spanska"}
         es_MX{"mexikansk spanska"}
         et{"estniska"}
+        eu{"baskiska"}
         fa{"persiska"}
         fi{"finska"}
         fil{"filippinska"}
+        fo{"färöiska"}
         fr{"franska"}
         fr_CA{"kanadensisk franska"}
         fr_CH{"schweizisk franska"}
+        fy{"västfrisiska"}
+        ga{"iriska"}
+        gaa{"gã"}
+        gd{"höglandsskotska"}
+        gl{"galiciska"}
+        gn{"guaraní"}
         gu{"gujarati"}
+        ha{"haussa"}
+        haw{"hawaiiska"}
         he{"hebreiska"}
         hi{"hindi"}
         hr{"kroatiska"}
+        ht{"haitiska"}
         hu{"ungerska"}
+        hy{"armeniska"}
+        ia{"interlingua"}
         id{"indonesiska"}
+        ig{"ibo"}
+        is{"isländska"}
         it{"italienska"}
         ja{"japanska"}
+        ka{"georgiska"}
+        kg{"kikongo"}
+        kk{"kazakiska"}
+        km{"kambodjanska"}
         kn{"kannada"}
         ko{"koreanska"}
+        ku{"kurdiska"}
+        ky{"kirgisiska"}
+        la{"latin"}
+        lg{"luganda"}
+        ln{"lingala"}
+        lo{"laotiska"}
+        loz{"lozi"}
         lt{"litauiska"}
+        lua{"luba-lulua"}
         lv{"lettiska"}
+        mfe{"mauritansk kreol"}
+        mg{"malagassiska"}
+        mi{"maori"}
+        mk{"makedonska"}
         ml{"malayalam"}
+        mn{"mongoliska"}
+        mo{"moldaviska"}
         mr{"marathi"}
         ms{"malajiska"}
+        mt{"maltesiska"}
+        my{"burmesiska"}
+        nb{"norskt bokmål"}
+        ne{"nepalesiska"}
         nl{"nederländska"}
         nl_BE{"flamländska"}
+        nn{"nynorska"}
         no{"norska"}
+        nso{"nordsotho"}
+        ny{"nyanja"}
+        nyn{"nyankole"}
+        oc{"occitanska"}
+        om{"oromo"}
+        or{"oriya"}
+        pa{"punjabi"}
         pl{"polska"}
+        ps{"afghanska"}
         pt{"portugisiska"}
         pt_BR{"brasiliansk portugisiska"}
         pt_PT{"europeisk portugisiska"}
+        qu{"quechua"}
+        rm{"rätoromanska"}
+        rn{"rundi"}
         ro{"rumänska"}
         ru{"ryska"}
+        rw{"kinjarwanda"}
+        sd{"sindhi"}
+        sh{"serbokroatiska"}
+        si{"singalesiska"}
         sk{"slovakiska"}
         sl{"slovenska"}
+        sn{"shona"}
+        so{"somaliska"}
+        sq{"albanska"}
         sr{"serbiska"}
+        st{"sydsotho"}
+        su{"sundanesiska"}
         sv{"svenska"}
         sw{"swahili"}
         ta{"tamil"}
         te{"telugiska"}
+        tg{"tadzjikiska"}
         th{"thailändska"}
+        ti{"tigrinja"}
+        tk{"turkmeniska"}
+        tn{"tswana"}
+        to{"tonganska"}
         tr{"turkiska"}
+        tt{"tatariska"}
+        tum{"tumbuka"}
+        tw{"twi"}
+        ug{"uiguriska"}
         uk{"ukrainska"}
+        ur{"urdu"}
+        uz{"uzbekiska"}
         vi{"vietnamesiska"}
+        wo{"wolof"}
+        xh{"xhosa"}
+        yi{"jiddisch"}
+        yo{"yoruba"}
         zh{"kinesiska"}
         zh_Hans{"förenklad kinesiska"}
         zh_Hant{"traditionell kinesiska"}
+        zu{"zulu"}
     }
     LanguagesShort{
         az{"azeriska"}

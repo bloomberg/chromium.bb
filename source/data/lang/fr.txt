@@ -11,72 +11,163 @@
  */
 fr{
     Languages{
+        ach{"acoli"}
+        af{"afrikaans"}
+        ak{"akan"}
         am{"amharique"}
         ar{"arabe"}
         ar_001{"arabe standard moderne"}
+        az{"azéri"}
+        ban{"balinais"}
+        be{"biélorusse"}
+        bem{"bemba"}
         bg{"bulgare"}
+        bh{"bihari"}
         bn{"bengali"}
+        br{"breton"}
+        bs{"bosniaque"}
         ca{"catalan"}
+        ceb{"cebuano"}
+        chr{"cherokee"}
+        ckb{"sorani"}
+        co{"corse"}
         cs{"tchèque"}
+        cy{"gallois"}
         da{"danois"}
         de{"allemand"}
         de_AT{"allemand autrichien"}
         de_CH{"allemand suisse"}
+        ee{"éwé"}
         el{"grec"}
         en{"anglais"}
         en_AU{"anglais australien"}
         en_CA{"anglais canadien"}
         en_GB{"anglais britannique"}
         en_US{"anglais américain"}
+        eo{"espéranto"}
         es{"espagnol"}
         es_419{"espagnol latino-américain"}
         es_ES{"espagnol d’Europe"}
         es_MX{"espagnol mexicain"}
         et{"estonien"}
+        eu{"basque"}
         fa{"persan"}
         fi{"finnois"}
         fil{"filipino"}
+        fo{"féroïen"}
         fr{"français"}
         fr_CA{"français canadien"}
         fr_CH{"français suisse"}
+        fy{"frison occidental"}
+        ga{"irlandais"}
+        gaa{"ga"}
+        gd{"gaélique écossais"}
+        gl{"galicien"}
+        gn{"guarani"}
         gu{"gujarati"}
+        ha{"haoussa"}
+        haw{"hawaïen"}
         he{"hébreu"}
         hi{"hindi"}
         hr{"croate"}
+        ht{"haïtien"}
         hu{"hongrois"}
+        hy{"arménien"}
+        ia{"interlingua"}
         id{"indonésien"}
+        ig{"igbo"}
+        is{"islandais"}
         it{"italien"}
         ja{"japonais"}
+        ka{"géorgien"}
+        kg{"kongo"}
+        kk{"kazakh"}
+        km{"khmer"}
         kn{"kannada"}
         ko{"coréen"}
+        ku{"kurde"}
+        ky{"kirghize"}
+        la{"latin"}
+        lg{"ganda"}
+        ln{"lingala"}
+        lo{"lao"}
+        loz{"lozi"}
         lt{"lituanien"}
+        lua{"luba-lulua"}
         lv{"letton"}
+        mfe{"créole mauricien"}
+        mg{"malgache"}
+        mi{"maori"}
+        mk{"macédonien"}
         ml{"malayalam"}
+        mn{"mongol"}
+        mo{"moldave"}
         mr{"marathe"}
         ms{"malais"}
+        mt{"maltais"}
+        my{"birman"}
+        nb{"norvégien bokmål"}
+        ne{"népalais"}
         nl{"néerlandais"}
         nl_BE{"flamand"}
+        nn{"norvégien nynorsk"}
         no{"norvégien"}
+        nso{"sotho du Nord"}
+        ny{"nyanja"}
+        nyn{"nyankolé"}
+        oc{"occitan"}
+        om{"oromo"}
+        or{"oriya"}
+        pa{"pendjabi"}
         pl{"polonais"}
+        ps{"pachto"}
         pt{"portugais"}
         pt_BR{"portugais brésilien"}
         pt_PT{"portugais d’Europe"}
+        qu{"quechua"}
+        rm{"romanche"}
+        rn{"roundi"}
         ro{"roumain"}
         ru{"russe"}
+        rw{"rwanda"}
+        sd{"sindhi"}
+        sh{"serbo-croate"}
+        si{"cinghalais"}
         sk{"slovaque"}
         sl{"slovène"}
+        sn{"shona"}
+        so{"somali"}
+        sq{"albanais"}
         sr{"serbe"}
+        st{"sesotho"}
+        su{"soundanais"}
         sv{"suédois"}
         sw{"swahili"}
         ta{"tamoul"}
         te{"télougou"}
+        tg{"tadjik"}
         th{"thaï"}
+        ti{"tigrigna"}
+        tk{"turkmène"}
+        tn{"tswana"}
+        to{"tonguien"}
         tr{"turc"}
+        tt{"tatar"}
+        tum{"tumbuka"}
+        tw{"twi"}
+        ug{"ouïghour"}
         uk{"ukrainien"}
+        ur{"ourdou"}
+        uz{"ouzbek"}
         vi{"vietnamien"}
+        wo{"wolof"}
+        xh{"xhosa"}
+        yi{"yiddish"}
+        yo{"yoruba"}
         zh{"chinois"}
         zh_Hans{"chinois simplifié"}
         zh_Hant{"chinois traditionnel"}
+        zu{"zoulou"}
     }
     LanguagesShort{
         az{"azéri"}

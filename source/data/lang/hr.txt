@@ -11,72 +11,163 @@
  */
 hr{
     Languages{
+        ach{"acoli"}
+        af{"afrikaans"}
+        ak{"akanski"}
         am{"amharski"}
         ar{"arapski"}
         ar_001{"moderni standardni arapski"}
+        az{"azerbajdžanski"}
+        ban{"balinezijski"}
+        be{"bjeloruski"}
+        bem{"bemba"}
         bg{"bugarski"}
+        bh{"bihari"}
         bn{"bengalski"}
+        br{"bretonski"}
+        bs{"bosanski"}
         ca{"katalonski"}
+        ceb{"cebuano"}
+        chr{"čeroki"}
+        ckb{"soranski kurdski"}
+        co{"korzički"}
         cs{"češki"}
+        cy{"velški"}
         da{"danski"}
         de{"njemački"}
         de_AT{"austrijski njemački"}
         de_CH{"gornjonjemački (švicarski)"}
+        ee{"ewe"}
         el{"grčki"}
         en{"engleski"}
         en_AU{"australski engleski"}
         en_CA{"kanadski engleski"}
         en_GB{"britanski engleski"}
         en_US{"američki engleski"}
+        eo{"esperanto"}
         es{"španjolski"}
         es_419{"latinoamerički španjolski"}
         es_ES{"europski španjolski"}
         es_MX{"meksički španjolski"}
         et{"estonski"}
+        eu{"baskijski"}
         fa{"perzijski"}
         fi{"finski"}
         fil{"filipino"}
+        fo{"ferojski"}
         fr{"francuski"}
         fr_CA{"kanadski francuski"}
         fr_CH{"švicarski francuski"}
+        fy{"zapadnofrizijski"}
+        ga{"irski"}
+        gaa{"ga"}
+        gd{"škotski-galski"}
+        gl{"galicijski"}
+        gn{"guarani"}
         gu{"gudžaratski"}
+        ha{"hausa"}
+        haw{"havajski"}
         he{"hebrejski"}
         hi{"hindski"}
         hr{"hrvatski"}
+        ht{"kreolski"}
         hu{"mađarski"}
+        hy{"armenski"}
+        ia{"interlingua"}
         id{"indonezijski"}
+        ig{"igbo"}
+        is{"islandski"}
         it{"talijanski"}
         ja{"japanski"}
+        ka{"gruzijski"}
+        kg{"kongo"}
+        kk{"kazaški"}
+        km{"kmerski"}
         kn{"kannadski"}
         ko{"korejski"}
+        ku{"kurdski"}
+        ky{"kirgiški"}
+        la{"latinski"}
+        lg{"ganda"}
+        ln{"lingala"}
+        lo{"laoski"}
+        loz{"lozi"}
         lt{"litavski"}
+        lua{"luba-lulua"}
         lv{"latvijski"}
+        mfe{"mauricijski kreolski"}
+        mg{"malgaški"}
+        mi{"maorski"}
+        mk{"makedonski"}
         ml{"malajalamski"}
+        mn{"mongolski"}
+        mo{"moldavski"}
         mr{"marathski"}
         ms{"malajski"}
+        mt{"malteški"}
+        my{"burmanski"}
+        nb{"književni norveški"}
+        ne{"nepalski"}
         nl{"nizozemski"}
         nl_BE{"flamanski"}
+        nn{"novonorveški"}
         no{"norveški"}
+        nso{"sjeverni sotho"}
+        ny{"nyanja"}
+        nyn{"nyankole"}
+        oc{"okcitanski"}
+        om{"oromski"}
+        or{"orijski"}
+        pa{"pandžapski"}
         pl{"poljski"}
+        ps{"paštu"}
         pt{"portugalski"}
         pt_BR{"brazilski portugalski"}
         pt_PT{"europski portugalski"}
+        qu{"kečua"}
+        rm{"romanš"}
+        rn{"rundi"}
         ro{"rumunjski"}
         ru{"ruski"}
+        rw{"kinyarwanda"}
+        sd{"sindhi"}
+        sh{"srpsko-hrvatski"}
+        si{"sinhaleški"}
         sk{"slovački"}
         sl{"slovenski"}
+        sn{"shona"}
+        so{"somalski"}
+        sq{"albanski"}
         sr{"srpski"}
+        st{"sesotski"}
+        su{"sundanski"}
         sv{"švedski"}
         sw{"svahili"}
         ta{"tamilski"}
         te{"telugu"}
+        tg{"tadžički"}
         th{"tajlandski"}
+        ti{"tigrinya"}
+        tk{"turkmenski"}
+        tn{"cvana"}
+        to{"tonganski"}
         tr{"turski"}
+        tt{"tatarski"}
+        tum{"tumbuka"}
+        tw{"twi"}
+        ug{"uighur"}
         uk{"ukrajinski"}
+        ur{"urdski"}
+        uz{"uzbečki"}
         vi{"vijetnamski"}
+        wo{"wolof"}
+        xh{"xhosa"}
+        yi{"jidiš"}
+        yo{"joruba"}
         zh{"kineski"}
         zh_Hans{"kineski (pojednostavljeni)"}
         zh_Hant{"kineski (tradicionalni)"}
+        zu{"zulu"}
     }
     LanguagesShort{
         az{"azerski"}

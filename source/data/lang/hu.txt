@@ -11,72 +11,163 @@
  */
 hu{
     Languages{
+        ach{"akoli"}
+        af{"afrikaans"}
+        ak{"akan"}
         am{"amhara"}
         ar{"arab"}
         ar_001{"modern szabányos arab"}
+        az{"azerbajdzsáni"}
+        ban{"balinéz"}
+        be{"belorusz"}
+        bem{"bemba"}
         bg{"bolgár"}
+        bh{"bihari"}
         bn{"bengáli"}
+        br{"breton"}
+        bs{"bosnyák"}
         ca{"katalán"}
+        ceb{"cebui"}
+        chr{"cseroki"}
+        ckb{"szoráni kurd"}
+        co{"korzikai"}
         cs{"cseh"}
+        cy{"walesi"}
         da{"dán"}
         de{"német"}
         de_AT{"osztrák német"}
         de_CH{"svájci felnémet"}
+        ee{"eve"}
         el{"görög"}
         en{"angol"}
         en_AU{"ausztrál angol"}
         en_CA{"kanadai angol"}
         en_GB{"brit angol"}
         en_US{"amerikai angol"}
+        eo{"eszperantó"}
         es{"spanyol"}
         es_419{"latin-amerikai spanyol"}
         es_ES{"európai spanyol"}
         es_MX{"spanyol (mexikói)"}
         et{"észt"}
+        eu{"baszk"}
         fa{"perzsa"}
         fi{"finn"}
         fil{"filippínó"}
+        fo{"feröeri"}
         fr{"francia"}
         fr_CA{"kanadai francia"}
         fr_CH{"svájci francia"}
+        fy{"fríz"}
+        ga{"ír"}
+        gaa{"ga"}
+        gd{"skót gael"}
+        gl{"galíciai"}
+        gn{"guarani"}
         gu{"gudzsarati"}
+        ha{"hausza"}
+        haw{"hawaii"}
         he{"héber"}
         hi{"hindi"}
         hr{"horvát"}
+        ht{"haiti"}
         hu{"magyar"}
+        hy{"örmény"}
+        ia{"interlingva"}
         id{"indonéz"}
+        ig{"igbó"}
+        is{"izlandi"}
         it{"olasz"}
         ja{"japán"}
+        ka{"grúz"}
+        kg{"kongo"}
+        kk{"kazah"}
+        km{"kambodzsai"}
         kn{"kannada"}
         ko{"koreai"}
+        ku{"kurd"}
+        ky{"kirgiz"}
+        la{"latin"}
+        lg{"ganda"}
+        ln{"lingala"}
+        lo{"laoszi"}
+        loz{"lozi"}
         lt{"litván"}
+        lua{"luba-lulua"}
         lv{"lett"}
+        mfe{"mauritiusi kreol"}
+        mg{"málgas"}
+        mi{"maori"}
+        mk{"macedón"}
         ml{"malajálam"}
+        mn{"mongol"}
+        mo{"moldvai"}
         mr{"marathi"}
         ms{"maláj"}
+        mt{"máltai"}
+        my{"burmai"}
+        nb{"norvég bokmal"}
+        ne{"nepáli"}
         nl{"holland"}
         nl_BE{"flamand"}
+        nn{"norvég nynorsk"}
         no{"norvég"}
+        nso{"északi szotó"}
+        ny{"nyanja"}
+        nyn{"nyankole"}
+        oc{"okszitán"}
+        om{"oromói"}
+        or{"orija"}
+        pa{"pandzsábi"}
         pl{"lengyel"}
+        ps{"pastu"}
         pt{"portugál"}
         pt_BR{"brazíliai portugál"}
         pt_PT{"európai portugál"}
+        qu{"kecsua"}
+        rm{"réto-román"}
+        rn{"kirundi"}
         ro{"román"}
         ru{"orosz"}
+        rw{"kiruanda"}
+        sd{"szindhi"}
+        sh{"szerbhorvát"}
+        si{"szingaléz"}
         sk{"szlovák"}
         sl{"szlovén"}
+        sn{"sona"}
+        so{"szomáliai"}
+        sq{"albán"}
         sr{"szerb"}
+        st{"szeszotó"}
+        su{"szundanéz"}
         sv{"svéd"}
         sw{"szuahéli"}
         ta{"tamil"}
         te{"telugu"}
+        tg{"tadzsik"}
         th{"thai"}
+        ti{"tigrinja"}
+        tk{"türkmén"}
+        tn{"szecsuáni"}
+        to{"tonga"}
         tr{"török"}
+        tt{"tatár"}
+        tum{"tumbuka"}
+        tw{"twi"}
+        ug{"ujgur"}
         uk{"ukrán"}
+        ur{"urdu"}
+        uz{"üzbég"}
         vi{"vietnami"}
+        wo{"volof"}
+        xh{"hosza"}
+        yi{"jiddis"}
+        yo{"joruba"}
         zh{"kínai"}
         zh_Hans{"egyszerűsített kínai"}
         zh_Hant{"hagyományos kínai"}
+        zu{"zulu"}
     }
     LanguagesShort{
         az{"azeri"}

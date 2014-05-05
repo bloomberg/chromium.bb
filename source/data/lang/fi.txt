@@ -11,72 +11,163 @@
  */
 fi{
     Languages{
+        ach{"atšoli"}
+        af{"afrikaans"}
+        ak{"akan"}
         am{"amhara"}
         ar{"arabia"}
         ar_001{"yleisarabia"}
+        az{"azeri"}
+        ban{"bali"}
+        be{"valkovenäjä"}
+        bem{"bemba"}
         bg{"bulgaria"}
+        bh{"bihari"}
         bn{"bengali"}
+        br{"bretoni"}
+        bs{"bosnia"}
         ca{"katalaani"}
+        ceb{"cebuano"}
+        chr{"cherokee"}
+        ckb{"sorani"}
+        co{"korsika"}
         cs{"tšekki"}
+        cy{"kymri"}
         da{"tanska"}
         de{"saksa"}
         de_AT{"itävallansaksa"}
         de_CH{"sveitsinyläsaksa"}
+        ee{"ewe"}
         el{"kreikka"}
         en{"englanti"}
         en_AU{"australianenglanti"}
         en_CA{"kanadanenglanti"}
         en_GB{"britannianenglanti"}
         en_US{"amerikanenglanti"}
+        eo{"esperanto"}
         es{"espanja"}
         es_419{"amerikanespanja"}
         es_ES{"espanjanespanja"}
         es_MX{"meksikonespanja"}
         et{"viro"}
+        eu{"baski"}
         fa{"farsi"}
         fi{"suomi"}
         fil{"filipino"}
+        fo{"fääri"}
         fr{"ranska"}
         fr_CA{"kanadanranska"}
         fr_CH{"sveitsinranska"}
+        fy{"länsifriisi"}
+        ga{"iiri"}
+        gaa{"ga"}
+        gd{"gaeli"}
+        gl{"galicia"}
+        gn{"guarani"}
         gu{"gudžarati"}
+        ha{"hausa"}
+        haw{"havaiji"}
         he{"heprea"}
         hi{"hindi"}
         hr{"kroatia"}
+        ht{"haiti"}
         hu{"unkari"}
+        hy{"armenia"}
+        ia{"interlingua"}
         id{"indonesia"}
+        ig{"igbo"}
+        is{"islanti"}
         it{"italia"}
         ja{"japani"}
+        ka{"georgia"}
+        kg{"kongo"}
+        kk{"kazakki"}
+        km{"khmer"}
         kn{"kannada"}
         ko{"korea"}
+        ku{"kurdi"}
+        ky{"kirgiisi"}
+        la{"latina"}
+        lg{"ganda"}
+        ln{"lingala"}
+        lo{"lao"}
+        loz{"lozi"}
         lt{"liettua"}
+        lua{"luluanluba"}
         lv{"latvia"}
+        mfe{"morisyen"}
+        mg{"malagassi"}
+        mi{"maori"}
+        mk{"makedonia"}
         ml{"malajalam"}
+        mn{"mongoli"}
+        mo{"moldova"}
         mr{"marathi"}
         ms{"malaiji"}
+        mt{"malta"}
+        my{"burma"}
+        nb{"norjan bokmål"}
+        ne{"nepali"}
         nl{"hollanti"}
         nl_BE{"flaami"}
+        nn{"norjan nynorsk"}
         no{"norja"}
+        nso{"pohjoissotho"}
+        ny{"njandža"}
+        nyn{"nyankole"}
+        oc{"oksitaani"}
+        om{"oromo"}
+        or{"orija"}
+        pa{"pandžabi"}
         pl{"puola"}
+        ps{"paštu"}
         pt{"portugali"}
         pt_BR{"brasilianportugali"}
         pt_PT{"portugalinportugali"}
+        qu{"ketšua"}
+        rm{"retoromaani"}
+        rn{"rundi"}
         ro{"romania"}
         ru{"venäjä"}
+        rw{"ruanda"}
+        sd{"sindhi"}
+        sh{"serbokroaatti"}
+        si{"sinhala"}
         sk{"slovakki"}
         sl{"sloveeni"}
+        sn{"šona"}
+        so{"somali"}
+        sq{"albania"}
         sr{"serbia"}
+        st{"eteläsotho"}
+        su{"sunda"}
         sv{"ruotsi"}
         sw{"swahili"}
         ta{"tamili"}
         te{"telugu"}
+        tg{"tadžikki"}
         th{"thai"}
+        ti{"tigrinja"}
+        tk{"turkmeeni"}
+        tn{"tswana"}
+        to{"tonga"}
         tr{"turkki"}
+        tt{"tataari"}
+        tum{"tumbuka"}
+        tw{"twi"}
+        ug{"uiguuri"}
         uk{"ukraina"}
+        ur{"urdu"}
+        uz{"uzbekki"}
         vi{"vietnam"}
+        wo{"wolof"}
+        xh{"xhosa"}
+        yi{"jiddiš"}
+        yo{"joruba"}
         zh{"kiina"}
         zh_Hans{"yksinkertaistettu kiina"}
         zh_Hant{"perinteinen kiina"}
+        zu{"zulu"}
     }
     LanguagesShort{
         az{"azeri"}

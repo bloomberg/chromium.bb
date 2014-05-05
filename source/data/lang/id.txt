@@ -11,72 +11,163 @@
  */
 id{
     Languages{
+        ach{"Acoli"}
+        af{"Afrikaans"}
+        ak{"Akan"}
         am{"Amharik"}
         ar{"Arab"}
         ar_001{"Arab Standar Modern"}
+        az{"Azerbaijan"}
+        ban{"Bali"}
+        be{"Belarusia"}
+        bem{"Bemba"}
         bg{"Bulgar"}
+        bh{"Bihari"}
         bn{"Bengali"}
+        br{"Breton"}
+        bs{"Bosnia"}
         ca{"Katalan"}
+        ceb{"Sebuano"}
+        chr{"Cherokee"}
+        ckb{"Kurdi Sorani"}
+        co{"Korsika"}
         cs{"Cheska"}
+        cy{"Welsh"}
         da{"Dansk"}
         de{"Jerman"}
         de_AT{"Jerman Austria"}
         de_CH{"Jerman Tinggi Swiss"}
+        ee{"Ewe"}
         el{"Yunani"}
         en{"Inggris"}
         en_AU{"Inggris Australia"}
         en_CA{"Inggris Kanada"}
         en_GB{"Inggris Inggris"}
         en_US{"Inggris Amerika"}
+        eo{"Esperanto"}
         es{"Spanyol"}
         es_419{"Spanyol Amerika Latin"}
         es_ES{"Spanyol Eropa"}
         es_MX{"Spanyol Meksiko"}
         et{"Esti"}
+        eu{"Bask"}
         fa{"Persia"}
         fi{"Suomi"}
         fil{"Filipino"}
+        fo{"Faro"}
         fr{"Prancis"}
         fr_CA{"Prancis Kanada"}
         fr_CH{"Prancis Swiss"}
+        fy{"Frisia Barat"}
+        ga{"Irlandia"}
+        gaa{"Ga"}
+        gd{"Gaelik Skotlandia"}
+        gl{"Galisia"}
+        gn{"Guarani"}
         gu{"Gujarati"}
+        ha{"Hausa"}
+        haw{"Hawaii"}
         he{"Ibrani"}
         hi{"Hindi"}
         hr{"Kroasia"}
+        ht{"Haiti"}
         hu{"Hungaria"}
+        hy{"Armenia"}
+        ia{"Interlingua"}
         id{"Bahasa Indonesia"}
+        ig{"Igbo"}
+        is{"Islandia"}
         it{"Italia"}
         ja{"Jepang"}
+        ka{"Georgia"}
+        kg{"Kongo"}
+        kk{"Kazakh"}
+        km{"Khmer"}
         kn{"Kannada"}
         ko{"Korea"}
+        ku{"Kurdi"}
+        ky{"Kirgiz"}
+        la{"Latin"}
+        lg{"Ganda"}
+        ln{"Lingala"}
+        lo{"Lao"}
+        loz{"Lozi"}
         lt{"Lituavi"}
+        lua{"Luba-Lulua"}
         lv{"Latvi"}
+        mfe{"Morisien"}
+        mg{"Malagasi"}
+        mi{"Maori"}
+        mk{"Makedonia"}
         ml{"Malayalam"}
+        mn{"Mongolia"}
+        mo{"Moldavia"}
         mr{"Marathi"}
         ms{"Melayu"}
+        mt{"Malta"}
+        my{"Burma"}
+        nb{"Bokmål Norwegia"}
+        ne{"Nepali"}
         nl{"Belanda"}
         nl_BE{"Flemish"}
+        nn{"Nynorsk Norwegia"}
         no{"Norwegia"}
+        nso{"Sotho Utara"}
+        ny{"Nyanja"}
+        nyn{"Nyankole"}
+        oc{"Ositania"}
+        om{"Oromo"}
+        or{"Oriya"}
+        pa{"Punjabi"}
         pl{"Polski"}
+        ps{"Pashto"}
         pt{"Portugis"}
         pt_BR{"Portugis Brasil"}
         pt_PT{"Portugis Eropa"}
+        qu{"Quechua"}
+        rm{"Reto-Roman"}
+        rn{"Rundi"}
         ro{"Rumania"}
         ru{"Rusia"}
+        rw{"Kinyarwanda"}
+        sd{"Sindhi"}
+        sh{"Serbo-Kroasia"}
+        si{"Sinhala"}
         sk{"Slovak"}
         sl{"Sloven"}
+        sn{"Shona"}
+        so{"Somali"}
+        sq{"Albania"}
         sr{"Serb"}
+        st{"Sotho Selatan"}
+        su{"Sunda"}
         sv{"Swedia"}
         sw{"Swahili"}
         ta{"Tamil"}
         te{"Telugu"}
+        tg{"Tajik"}
         th{"Thai"}
+        ti{"Tigrinya"}
+        tk{"Turkmen"}
+        tn{"Tswana"}
+        to{"Tonga"}
         tr{"Turki"}
+        tt{"Tatar"}
+        tum{"Tumbuka"}
+        tw{"Twi"}
+        ug{"Uyghur"}
         uk{"Ukraina"}
+        ur{"Urdu"}
+        uz{"Uzbek"}
         vi{"Vietnam"}
+        wo{"Wolof"}
+        xh{"Xhosa"}
+        yi{"Yiddish"}
+        yo{"Yoruba"}
         zh{"China"}
         zh_Hans{"China (Aksara Sederhana)"}
         zh_Hant{"China (Aksara Tradisional)"}
+        zu{"Zulu"}
     }
     LanguagesShort{
         az{"Azeri"}

@@ -11,72 +11,163 @@
  */
 de{
     Languages{
+        ach{"Acholi-Sprache"}
+        af{"Afrikaans"}
+        ak{"Akan"}
         am{"Amharisch"}
         ar{"Arabisch"}
         ar_001{"Modernes Hocharabisch"}
+        az{"Aserbaidschanisch"}
+        ban{"Balinesisch"}
+        be{"Weißrussisch"}
+        bem{"Bemba-Sprache"}
         bg{"Bulgarisch"}
+        bh{"Biharisch"}
         bn{"Bengalisch"}
+        br{"Bretonisch"}
+        bs{"Bosnisch"}
         ca{"Katalanisch"}
+        ceb{"Cebuano"}
+        chr{"Cherokee"}
+        ckb{"Sorani"}
+        co{"Korsisch"}
         cs{"Tschechisch"}
+        cy{"Walisisch"}
         da{"Dänisch"}
         de{"Deutsch"}
         de_AT{"Österreichisches Deutsch"}
         de_CH{"Schweizer Hochdeutsch"}
+        ee{"Ewe-Sprache"}
         el{"Griechisch"}
         en{"Englisch"}
         en_AU{"Australisches Englisch"}
         en_CA{"Kanadisches Englisch"}
         en_GB{"Britisches Englisch"}
         en_US{"Amerikanisches Englisch"}
+        eo{"Esperanto"}
         es{"Spanisch"}
         es_419{"Lateinamerikanisches Spanisch"}
         es_ES{"Europäisches Spanisch"}
         es_MX{"Mexikanisches Spanisch"}
         et{"Estnisch"}
+        eu{"Baskisch"}
         fa{"Persisch"}
         fi{"Finnisch"}
         fil{"Filipino"}
+        fo{"Färöisch"}
         fr{"Französisch"}
         fr_CA{"Kanadisches Französisch"}
         fr_CH{"Schweizer Französisch"}
+        fy{"Westfriesisch"}
+        ga{"Irisch"}
+        gaa{"Ga-Sprache"}
+        gd{"Schottisches Gälisch"}
+        gl{"Galizisch"}
+        gn{"Guarani"}
         gu{"Gujarati"}
+        ha{"Hausa"}
+        haw{"Hawaiisch"}
         he{"Hebräisch"}
         hi{"Hindi"}
         hr{"Kroatisch"}
+        ht{"Haitianisch"}
         hu{"Ungarisch"}
+        hy{"Armenisch"}
+        ia{"Interlingua"}
         id{"Indonesisch"}
+        ig{"Igbo-Sprache"}
+        is{"Isländisch"}
         it{"Italienisch"}
         ja{"Japanisch"}
+        ka{"Georgisch"}
+        kg{"Kongolesisch"}
+        kk{"Kasachisch"}
+        km{"Kambodschanisch"}
         kn{"Kannada"}
         ko{"Koreanisch"}
+        ku{"Kurdisch"}
+        ky{"Kirgisisch"}
+        la{"Latein"}
+        lg{"Ganda-Sprache"}
+        ln{"Lingala"}
+        lo{"Laotisch"}
+        loz{"Rotse-Sprache"}
         lt{"Litauisch"}
+        lua{"Luba-Lulua"}
         lv{"Lettisch"}
+        mfe{"Morisyen"}
+        mg{"Malagassi-Sprache"}
+        mi{"Maori"}
+        mk{"Mazedonisch"}
         ml{"Malayalam"}
+        mn{"Mongolisch"}
+        mo{"Moldauisch"}
         mr{"Marathi"}
         ms{"Malaiisch"}
+        mt{"Maltesisch"}
+        my{"Birmanisch"}
+        nb{"Norwegisch Bokmål"}
+        ne{"Nepalesisch"}
         nl{"Niederländisch"}
         nl_BE{"Flämisch"}
+        nn{"Norwegisch Nynorsk"}
         no{"Norwegisch"}
+        nso{"Nord-Sotho-Sprache"}
+        ny{"Nyanja-Sprache"}
+        nyn{"Nyankole"}
+        oc{"Okzitanisch"}
+        om{"Oromo"}
+        or{"Orija"}
+        pa{"Pandschabisch"}
         pl{"Polnisch"}
+        ps{"Paschtu"}
         pt{"Portugiesisch"}
         pt_BR{"Brasilianisches Portugiesisch"}
         pt_PT{"Europäisches Portugiesisch"}
+        qu{"Quechua"}
+        rm{"Rätoromanisch"}
+        rn{"Rundi-Sprache"}
         ro{"Rumänisch"}
         ru{"Russisch"}
+        rw{"Ruandisch"}
+        sd{"Sindhi"}
+        sh{"Serbo-Kroatisch"}
+        si{"Singhalesisch"}
         sk{"Slowakisch"}
         sl{"Slowenisch"}
+        sn{"Shona"}
+        so{"Somali"}
+        sq{"Albanisch"}
         sr{"Serbisch"}
+        st{"Süd-Sotho-Sprache"}
+        su{"Sundanesisch"}
         sv{"Schwedisch"}
         sw{"Suaheli"}
         ta{"Tamilisch"}
         te{"Telugu"}
+        tg{"Tadschikisch"}
         th{"Thailändisch"}
+        ti{"Tigrinja"}
+        tk{"Turkmenisch"}
+        tn{"Tswana-Sprache"}
+        to{"Tongaisch"}
         tr{"Türkisch"}
+        tt{"Tatarisch"}
+        tum{"Tumbuka-Sprache"}
+        tw{"Twi"}
+        ug{"Uigurisch"}
         uk{"Ukrainisch"}
+        ur{"Urdu"}
+        uz{"Usbekisch"}
         vi{"Vietnamesisch"}
+        wo{"Wolof"}
+        xh{"Xhosa"}
+        yi{"Jiddisch"}
+        yo{"Yoruba"}
         zh{"Chinesisch"}
         zh_Hans{"Chinesisch (vereinfacht)"}
         zh_Hant{"Chinesisch (traditionell)"}
+        zu{"Zulu"}
     }
     LanguagesShort{
         az{"Aserbaidschanisch"}

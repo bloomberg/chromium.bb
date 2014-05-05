@@ -57,6 +57,7 @@ GENRB_SOURCE =\
  lv.txt\
  ml.txt\
  mr.txt\
+ ms.txt\
  nb.txt\
  nl.txt\
  pl.txt\
@@ -106,7 +107,7 @@ GENRB_SOURCE =\
  mg.txt\
  mk.txt\
  mn.txt\
- mo.txt\
+ mo.txt ro_MD.txt\
  mt.txt\
  my.txt\
  ne.txt\

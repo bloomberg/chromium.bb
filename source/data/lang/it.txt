@@ -11,72 +11,163 @@
  */
 it{
     Languages{
+        ach{"acioli"}
+        af{"afrikaans"}
+        ak{"akan"}
         am{"amarico"}
         ar{"arabo"}
         ar_001{"arabo moderno standard"}
+        az{"azerbaigiano"}
+        ban{"balinese"}
+        be{"bielorusso"}
+        bem{"wemba"}
         bg{"bulgaro"}
+        bh{"bihari"}
         bn{"bengalese"}
+        br{"bretone"}
+        bs{"bosniaco"}
         ca{"catalano"}
+        ceb{"cebuano"}
+        chr{"cherokee"}
+        ckb{"curdo sorani"}
+        co{"corso"}
         cs{"ceco"}
+        cy{"gallese"}
         da{"danese"}
         de{"tedesco"}
         de_AT{"tedesco austriaco"}
         de_CH{"alto tedesco svizzero"}
+        ee{"ewe"}
         el{"greco"}
         en{"inglese"}
         en_AU{"inglese australiano"}
         en_CA{"inglese canadese"}
         en_GB{"inglese britannico"}
         en_US{"inglese americano"}
+        eo{"esperanto"}
         es{"spagnolo"}
         es_419{"spagnolo latinoamericano"}
         es_ES{"spagnolo europeo"}
         es_MX{"spagnolo messicano"}
         et{"estone"}
+        eu{"basco"}
         fa{"persiano"}
         fi{"finlandese"}
         fil{"filippino"}
+        fo{"faroese"}
         fr{"francese"}
         fr_CA{"francese canadese"}
         fr_CH{"francese svizzero"}
+        fy{"frisone occidentale"}
+        ga{"irlandese"}
+        gaa{"ga"}
+        gd{"gaelico scozzese"}
+        gl{"galiziano"}
+        gn{"guarana"}
         gu{"gujarati"}
+        ha{"haussa"}
+        haw{"hawaiano"}
         he{"ebraico"}
         hi{"hindi"}
         hr{"croato"}
+        ht{"haitiano"}
         hu{"ungherese"}
+        hy{"armeno"}
+        ia{"interlingua"}
         id{"indonesiano"}
+        ig{"igbo"}
+        is{"islandese"}
         it{"italiano"}
         ja{"giapponese"}
+        ka{"georgiano"}
+        kg{"kongo"}
+        kk{"kazako"}
+        km{"khmer"}
         kn{"kannada"}
         ko{"coreano"}
+        ku{"curdo"}
+        ky{"kirghiso"}
+        la{"latino"}
+        lg{"ganda"}
+        ln{"lingala"}
+        lo{"lao"}
+        loz{"lozi"}
         lt{"lituano"}
+        lua{"luba-lulua"}
         lv{"lettone"}
+        mfe{"creolo mauriziano"}
+        mg{"malgascio"}
+        mi{"maori"}
+        mk{"macedone"}
         ml{"malayalam"}
+        mn{"mongolo"}
+        mo{"moldavo"}
         mr{"marathi"}
         ms{"malese"}
+        mt{"maltese"}
+        my{"birmano"}
+        nb{"norvegese bokmal"}
+        ne{"nepalese"}
         nl{"olandese"}
         nl_BE{"fiammingo"}
+        nn{"norvegese nynorsk"}
         no{"norvegese"}
+        nso{"sotho del nord"}
+        ny{"nyanja"}
+        nyn{"nyankole"}
+        oc{"occitano"}
+        om{"oromo"}
+        or{"oriya"}
+        pa{"punjabi"}
         pl{"polacco"}
+        ps{"pashto"}
         pt{"portoghese"}
         pt_BR{"portoghese brasiliano"}
         pt_PT{"portoghese europeo"}
+        qu{"quechua"}
+        rm{"romancio"}
+        rn{"rundi"}
         ro{"rumeno"}
         ru{"russo"}
+        rw{"kinyarwanda"}
+        sd{"sindhi"}
+        sh{"serbo-croato"}
+        si{"singalese"}
         sk{"slovacco"}
         sl{"sloveno"}
+        sn{"shona"}
+        so{"somalo"}
+        sq{"albanese"}
         sr{"serbo"}
+        st{"sotho del sud"}
+        su{"sundanese"}
         sv{"svedese"}
         sw{"swahili"}
         ta{"tamil"}
         te{"telugu"}
+        tg{"tagicco"}
         th{"thai"}
+        ti{"tigrino"}
+        tk{"turcomanno"}
+        tn{"tswana"}
+        to{"tongano"}
         tr{"turco"}
+        tt{"tatarico"}
+        tum{"tumbuka"}
+        tw{"ci"}
+        ug{"uigurico"}
         uk{"ucraino"}
+        ur{"urdu"}
+        uz{"usbeco"}
         vi{"vietnamita"}
+        wo{"wolof"}
+        xh{"xhosa"}
+        yi{"yiddish"}
+        yo{"yoruba"}
         zh{"cinese"}
         zh_Hans{"cinese semplificato"}
         zh_Hant{"cinese tradizionale"}
+        zu{"zulu"}
     }
     LanguagesShort{
         az{"azero"}

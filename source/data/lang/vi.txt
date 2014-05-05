@@ -11,66 +11,156 @@
  */
 vi{
     Languages{
+        ach{"Tiếng Acoli"}
+        af{"Tiếng Nam Phi"}
+        ak{"Tiếng Akan"}
         am{"Tiếng Amharic"}
         ar{"Tiếng Ả Rập"}
         ar_001{"Tiếng Ả Rập Hiện đại"}
+        az{"Tiếng Azerbaijan"}
+        ban{"Tiếng Bali"}
+        be{"Tiếng Belarus"}
+        bem{"Tiếng Bemba"}
         bg{"Tiếng Bulgaria"}
+        bh{"Tiếng Bihari"}
         bn{"Tiếng Bengali"}
+        br{"Tiếng Breton"}
+        bs{"Tiếng Nam Tư"}
         ca{"Tiếng Catalan"}
+        ceb{"Tiếng Cebuano"}
+        chr{"Tiếng Cherokee"}
+        ckb{"Tiếng Kurd Sorani"}
+        co{"Tiếng Corse"}
         cs{"Tiếng Séc"}
+        cy{"Tiếng Wales"}
         da{"Tiếng Đan Mạch"}
         de{"Tiếng Đức"}
         de_CH{"Tiếng Thượng Giéc-man (Thụy Sĩ)"}
+        ee{"Tiếng Ewe"}
         el{"Tiếng Hy Lạp"}
         en{"Tiếng Anh"}
         en_GB{"Tiếng Anh (Anh)"}
         en_US{"Tiếng Anh (Mỹ)"}
+        eo{"Tiếng Quốc Tế Ngữ"}
         es{"Tiếng Tây Ban Nha"}
         es_419{"Tiếng Tây Ban Nha (Mỹ La tinh)"}
         es_ES{"Tiếng Tây Ban Nha (I-bê-ri)"}
         et{"Tiếng Estonia"}
+        eu{"Tiếng Basque"}
         fa{"Tiếng Ba Tư"}
         fi{"Tiếng Phần Lan"}
         fil{"Tiếng Philipin"}
+        fo{"Tiếng Faore"}
         fr{"Tiếng Pháp"}
+        fy{"Tiếng Frisia"}
+        ga{"Tiếng Ai-len"}
+        gaa{"Tiếng Ga"}
+        gd{"Tiếng Xentơ (Xcốt len)"}
+        gl{"Tiếng Galician"}
+        gn{"Tiếng Guarani"}
         gu{"Tiếng Gujarati"}
+        ha{"Tiếng Hausa"}
+        haw{"Tiếng Hawaii"}
         he{"Tiếng Do Thái"}
         hi{"Tiếng Hindi"}
         hr{"Tiếng Croatia"}
+        ht{"Tiếng Haiti"}
         hu{"Tiếng Hungary"}
+        hy{"Tiếng Armenia"}
+        ia{"Tiếng Khoa Học Quốc Tế"}
         id{"Tiếng Indonesia"}
+        ig{"Tiếng Igbo"}
+        is{"Tiếng Iceland"}
         it{"Tiếng Ý"}
         ja{"Tiếng Nhật"}
+        ka{"Tiếng Gruzia"}
+        kk{"Tiếng Kazakh"}
+        km{"Tiếng Campuchia"}
         kn{"Tiếng Kannada"}
         ko{"Tiếng Hàn Quốc"}
+        ku{"Tiếng Kurd"}
+        ky{"Tiếng Kyrgyz"}
+        la{"Tiếng La-tinh"}
+        lg{"Tiếng Ganda"}
+        ln{"Tiếng Lingala"}
+        lo{"Tiếng Lào"}
+        loz{"Tiếng Lozi"}
         lt{"Tiếng Lít-va"}
+        lua{"Tiếng Luba-Lulua"}
         lv{"Tiếng Latvia"}
+        mfe{"Tiếng Morisyen"}
+        mg{"Tiếng Malagasy"}
+        mi{"Tiếng Maori"}
+        mk{"Tiếng Macedonia"}
         ml{"Tiếng Malayalam"}
+        mn{"Tiếng Mông Cổ"}
+        mo{"Tiếng Moldova"}
         mr{"Tiếng Marathi"}
         ms{"Tiếng Malaysia"}
+        mt{"Tiếng Malt"}
+        my{"Tiếng Miến Điện"}
+        nb{"Tiếng Na Uy (Bokmål)"}
+        ne{"Tiếng Nepal"}
         nl{"Tiếng Hà Lan"}
         nl_BE{"Tiếng Flemish"}
+        nn{"Tiếng Na Uy (Nynorsk)"}
         no{"Tiếng Na Uy"}
+        nso{"Bắc Sotho"}
+        ny{"Tiếng Nyanja"}
+        nyn{"Tiếng Nyankole"}
+        oc{"Tiếng Occitan"}
+        om{"Tiếng Oromo"}
+        or{"Tiếng Ô-ri-a"}
+        pa{"Tiếng Punjab"}
         pl{"Tiếng Ba Lan"}
+        ps{"Tiếng Pashto"}
         pt{"Tiếng Bồ Đào Nha"}
         pt_BR{"Tiếng Bồ Đào Nha (Braxin)"}
         pt_PT{"Tiếng Bồ Đào Nha (I-bê-ri)"}
+        qu{"Tiếng Quechua"}
+        rm{"Tiếng Romansh"}
+        rn{"Tiếng Rundi"}
         ro{"Tiếng Romania"}
         ru{"Tiếng Nga"}
+        rw{"Tiếng Kinyarwanda"}
+        sd{"Tiếng Sindhi"}
+        sh{"Tiếng Xéc bi - Croatia"}
+        si{"Tiếng Sinhala"}
         sk{"Tiếng Slovak"}
         sl{"Tiếng Slovenia"}
+        sn{"Tiếng Shona"}
+        so{"Tiếng Somali"}
+        sq{"Tiếng An-ba-ni"}
         sr{"Tiếng Serbia"}
+        st{"Tiếng Sesotho"}
+        su{"Tiếng Sudan"}
         sv{"Tiếng Thụy Điển"}
         sw{"Tiếng Swahili"}
         ta{"Tiếng Tamil"}
         te{"Tiếng Telugu"}
+        tg{"Tiếng Tajik"}
         th{"Tiếng Thái"}
+        ti{"Tiếng Tigrigya"}
+        tk{"Tiếng Turk"}
+        tn{"Tiếng Tswana"}
+        to{"Tiếng Tonga"}
         tr{"Tiếng Thổ Nhĩ Kỳ"}
+        tt{"Tiếng Tatar"}
+        tum{"Tiếng Tumbuka"}
+        tw{"Tiếng Twi"}
+        ug{"Tiếng Duy Ngô Nhĩ"}
         uk{"Tiếng Ucraina"}
+        ur{"Tiếng Uđu"}
+        uz{"Tiếng Uzbek"}
         vi{"Tiếng Việt"}
+        wo{"Tiếng Wolof"}
+        xh{"Tiếng Xhosa"}
+        yi{"Tiếng Y-đit"}
+        yo{"Tiếng Yoruba"}
         zh{"Tiếng Trung"}
         zh_Hans{"Tiếng Trung (Giản thể)"}
         zh_Hant{"Tiếng Trung (Phồn thể)"}
+        zu{"Tiếng Zulu"}
     }
     LanguagesShort{
         az{"Tiếng Azeri"}

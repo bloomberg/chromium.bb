@@ -7,17 +7,24 @@
 # Remove display names for languages that are not listed in the accept-language
 # list of Chromium.
 function filter_display_language_names {
-  UI_LANG_PATTERN="(${UI_LANGUAGES})[^a-z]"
+  for lang in $(grep -v '^#' accept_lang.list)
+  do
+    # Set $OP to '|' only if $ACCEPT_LANG_PATTERN is not empty.
+    OP=${ACCEPT_LANG_PATTERN:+|}
+    ACCEPT_LANG_PATTERN="${ACCEPT_LANG_PATTERN}${OP}${lang}"
+  done
+  ACCEPT_LANG_PATTERN="(${ACCEPT_LANG_PATTERN})[^a-z]"
 
-  echo "Filtering out display names for non-UI languages in ${langdatapath}"
+  echo "Filtering out display names for non-A-L languages ${langdatapath}"
   for lang in $(grep -v '^#' chrome_ui_languages.list)
   do
     target=${langdatapath}/${lang}.txt
+    echo Overwriting ${target} ...
     sed -r -i \
     '/^    Keys\{$/,/^    \}$/d
      /^    Languages\{$/, /^    \}$/ {
        /^    Languages\{$/p
-       /^        '${UI_LANG_PATTERN}'/p
+       /^        '${ACCEPT_LANG_PATTERN}'/p
        /^    \}$/p
        d
      }
@@ -29,6 +36,13 @@ function filter_display_language_names {
 
 # Keep only the minimum locale data for non-UI languages.
 function abridge_locale_data_for_non_ui_languages {
+  for lang in $(grep -v '^#' chrome_ui_languages.list)
+  do
+    # Set $OP to '|' only if $UI_LANGUAGES is not empty.
+    OP=${UI_LANGUAGES:+|}
+    UI_LANGUAGES="${UI_LANGUAGES}${OP}${lang}"
+  done
+
   EXTRA_LANGUAGES=$(egrep -v -e '^#' -e "(${UI_LANGUAGES})" accept_lang.list)
 
   echo Creating minimum locale data in ${localedatapath}
@@ -39,6 +53,7 @@ function abridge_locale_data_for_non_ui_languages {
     echo Overwriting ${target} ...
     sed -n -r -i \
       '1, /^'${lang}'\{$/p
+       /^    "%%ALIAS"\{/p
        /^    AuxExemplarCharacters\{.*\}$/p
        /^    AuxExemplarCharacters\{$/, /^    \}$/p
        /^    ExemplarCharacters\{.*\}$/p
@@ -108,7 +123,7 @@ function remove_exemplar_cities {
 
 # Keep only duration and compound in units* sections.
 function filter_locale_data {
-  for i in "${dataroot}/locales/*.txt"
+  for i in ${dataroot}/locales/*.txt
   do
     echo Overwriting $i ...
     sed -r -i \
@@ -133,12 +148,6 @@ dataroot="$(dirname $0)/../source/data"
 localedatapath="${dataroot}/locales"
 langdatapath="${dataroot}/lang"
 
-for lang in $(grep -v '^#' chrome_ui_languages.list)
-do
-  # Set $OP to '|' only if $UI_LANGUAGES is not empty.
-  OP=${UI_LANGUAGES:+|}
-  UI_LANGUAGES="${UI_LANGUAGES}${OP}${lang}"
-done
 
 
 filter_display_language_names

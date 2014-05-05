@@ -11,72 +11,163 @@
  */
 lt{
     Languages{
+        ach{"akolių"}
+        af{"afrikanų"}
+        ak{"akanų"}
         am{"amharų"}
         ar{"arabų"}
         ar_001{"šiuolaikinė standartinė arabų"}
+        az{"azerbaidžaniečių"}
+        ban{"balinezų"}
+        be{"baltarusių"}
+        bem{"bemba"}
         bg{"bulgarų"}
+        bh{"biharų"}
         bn{"bengalų"}
+        br{"bretonų"}
+        bs{"bosnių"}
         ca{"katalonų"}
+        ceb{"cebuanų"}
+        chr{"čerokių"}
+        ckb{"soranių kurdų"}
+        co{"korsikiečių"}
         cs{"čekų"}
+        cy{"valų"}
         da{"danų"}
         de{"vokiečių"}
         de_AT{"Austrijos vokiečių"}
         de_CH{"Šveicarijos aukštutinė vokiečių"}
+        ee{"eve"}
         el{"graikų"}
         en{"anglų"}
         en_AU{"Australijos anglų"}
         en_CA{"Kanados anglų"}
         en_GB{"Didžiosios Britanijos anglų"}
         en_US{"Jungtinių Valstijų anglų"}
+        eo{"esperanto"}
         es{"ispanų"}
         es_419{"Lotynų Amerikos ispanų"}
         es_ES{"Europos ispanų"}
         es_MX{"Meksikos ispanų"}
         et{"estų"}
+        eu{"baskų"}
         fa{"persų"}
         fi{"suomių"}
         fil{"filipiniečių"}
+        fo{"farerų"}
         fr{"prancūzų"}
         fr_CA{"Kanados prancūzų"}
         fr_CH{"Šveicarijos prancūzų"}
+        fy{"vakarų fryzų"}
+        ga{"airių"}
+        gaa{"ga"}
+        gd{"škotų (gėlų)"}
+        gl{"galisų"}
+        gn{"gvaranių"}
         gu{"gudžaratų"}
+        ha{"hausų"}
+        haw{"havajiečių"}
         he{"hebrajų"}
         hi{"hindi"}
         hr{"kroatų"}
+        ht{"Haičio"}
         hu{"vengrų"}
+        hy{"armėnų"}
+        ia{"interlingva"}
         id{"indoneziečių"}
+        ig{"igbų"}
+        is{"islandų"}
         it{"italų"}
         ja{"japonų"}
+        ka{"gruzinų"}
+        kg{"Kongo"}
+        kk{"kazachų"}
+        km{"khmerų"}
         kn{"kanadų"}
         ko{"korėjiečių"}
+        ku{"kurdų"}
+        ky{"kirgizų"}
+        la{"lotynų"}
+        lg{"ganda"}
+        ln{"lingala"}
+        lo{"laosiečių"}
+        loz{"lozi"}
         lt{"lietuvių"}
+        lua{"luba lulua"}
         lv{"latvių"}
+        mfe{"morisijų"}
+        mg{"malagasų"}
+        mi{"maorių"}
+        mk{"makedonų"}
         ml{"malajalių"}
+        mn{"mongolų"}
+        mo{"moldavų"}
         mr{"maratų"}
         ms{"malajiečių"}
+        mt{"maltiečių"}
+        my{"birmiečių"}
+        nb{"Norvegijos rašytinė – būkmolų"}
+        ne{"nepaliečių"}
         nl{"olandų"}
         nl_BE{"flamandų"}
+        nn{"naujoji norvegų"}
         no{"norvegų"}
+        nso{"šiaurės sothų"}
+        ny{"nianja"}
+        nyn{"niankole"}
+        oc{"očitarų"}
+        om{"oromų"}
+        or{"orijų"}
+        pa{"pendžabų"}
         pl{"lenkų"}
+        ps{"puštūnų"}
         pt{"portugalų"}
         pt_BR{"Brazilijos portugalų"}
         pt_PT{"Europos portugalų"}
+        qu{"kečujų"}
+        rm{"retoromanų"}
+        rn{"rundi"}
         ro{"rumunų"}
         ru{"rusų"}
+        rw{"kinjarvanda"}
+        sd{"sindų"}
+        sh{"serbų-kroatų"}
+        si{"sinhalų"}
         sk{"slovakų"}
         sl{"slovėnų"}
+        sn{"šona"}
+        so{"somaliečių"}
+        sq{"albanų"}
         sr{"serbų"}
+        st{"pietų sesuto"}
+        su{"sundų"}
         sv{"švedų"}
         sw{"suahilių"}
         ta{"tamilų"}
         te{"telugų"}
+        tg{"tadžikų"}
         th{"tajų"}
+        ti{"tigrajų"}
+        tk{"turkmėnų"}
+        tn{"tsvana"}
+        to{"tonganų"}
         tr{"turkų"}
+        tt{"totorių"}
+        tum{"tumbukų"}
+        tw{"tvi"}
+        ug{"uigūrų"}
         uk{"ukrainiečių"}
+        ur{"urdų"}
+        uz{"uzbekų"}
         vi{"vietnamiečių"}
+        wo{"volofų"}
+        xh{"kosų"}
+        yi{"jidiš"}
+        yo{"jorubų"}
         zh{"kinų"}
         zh_Hans{"supaprastintoji kinų"}
         zh_Hant{"tradicinė kinų"}
+        zu{"zulų"}
     }
     LanguagesShort{
         az{"azeri"}
