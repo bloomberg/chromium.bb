@@ -482,6 +482,14 @@
                   '|chrome/browser/ui/gtk/panels'\
                   '|chrome/browser/ui/views/panels'
     },
+    'password_manager': {
+      'filepath': 'chrome/.*/password_'\
+                  '|chrome/browser/ui/passwords'\
+                  '|chrome/browser/ui/views/passwords'\
+                  '|chrome/test/data/password'\
+                  '|components/autofill.*password'
+                  '|components/password_'\
+    },
     'pepper_api': {
       'filepath': 'ppapi/api'\
                   '|ppapi/c',
@@ -851,6 +859,7 @@
               'rjkroege@chromium.org'],
     'panels': ['dimich@chromium.org', 'jennb@chromium.org',
                'dcheng@chromium.org', 'jianli@chromium.org'],
+    'password_manager': ['mkwst+watchlist@chromium.org'],
     'pepper_api': ['piman+watch@chromium.org', 'ihf+watch@chromium.org',
                    'yusukes+watch@chromium.org', 'raymes+watch@chromium.org',
                    'noelallen@chromium.org', 'binji+watch@chromium.org',
