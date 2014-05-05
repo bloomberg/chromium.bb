@@ -484,7 +484,9 @@ void SourceBuffer::appendBufferInternal(const unsigned char* data, unsigned size
     //  Steps 4-5 - end "prepare append" algorithm.
 
     // 2. Add data to the end of the input buffer.
-    m_pendingAppendData.append(data, size);
+    ASSERT(data || size == 0);
+    if (data)
+        m_pendingAppendData.append(data, size);
     m_pendingAppendDataOffset = 0;
 
     // 3. Set the updating attribute to true.

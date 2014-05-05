@@ -9,7 +9,9 @@ PASS Test set MediaSource.duration during a pending appendBuffer() for one of it
 PASS Test MediaSource.endOfStream() during a pending appendBuffer() for one of its SourceBuffers. 
 PASS Test set SourceBuffer.timestampOffset during a pending appendBuffer(). 
 PASS Test appending an empty ArrayBufferView. 
+PASS Test appending a neutered ArrayBufferView. 
 PASS Test appending an empty ArrayBuffer. 
+PASS Test appending a neutered ArrayBuffer. 
 PASS Test abort in the middle of an initialization segment. 
 PASS Test abort in the middle of a media segment. 
 PASS Test appending null. 
