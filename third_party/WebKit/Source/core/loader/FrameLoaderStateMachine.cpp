@@ -39,11 +39,6 @@ FrameLoaderStateMachine::FrameLoaderStateMachine()
 {
 }
 
-bool FrameLoaderStateMachine::startedFirstRealLoad() const
-{
-    return m_state >= StartedFirstRealLoad;
-}
-
 bool FrameLoaderStateMachine::committedFirstRealDocumentLoad() const
 {
     return m_state >= CommittedFirstRealLoad;

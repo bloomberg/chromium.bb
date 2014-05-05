@@ -46,12 +46,10 @@ public:
     enum State {
         CreatingInitialEmptyDocument,
         DisplayingInitialEmptyDocument,
-        StartedFirstRealLoad,
         CommittedFirstRealLoad,
         CommittedMultipleRealLoads
     };
 
-    bool startedFirstRealLoad() const;
     bool committedFirstRealDocumentLoad() const;
     bool creatingInitialEmptyDocument() const;
     bool isDisplayingInitialEmptyDocument() const;

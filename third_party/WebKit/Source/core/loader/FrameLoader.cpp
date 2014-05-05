@@ -626,7 +626,7 @@ bool FrameLoader::isScriptTriggeredFormSubmissionInChildFrame(const FrameLoadReq
 
 FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& request)
 {
-    if (m_frame->tree().parent() && !m_stateMachine.startedFirstRealLoad())
+    if (m_frame->tree().parent() && !m_stateMachine.committedFirstRealDocumentLoad())
         return FrameLoadTypeInitialInChildFrame;
     if (!m_frame->tree().parent() && !m_frame->page()->backForward().backForwardListCount())
         return FrameLoadTypeStandard;
@@ -1220,9 +1220,6 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
         return;
 
     const ResourceRequest& request = action.resourceRequest();
-
-    if (!m_stateMachine.startedFirstRealLoad())
-        m_stateMachine.advanceTo(FrameLoaderStateMachine::StartedFirstRealLoad);
 
     // The current load should replace the history item if it is the first real
     // load of the frame.

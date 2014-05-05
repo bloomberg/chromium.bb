@@ -4569,7 +4569,7 @@ void Document::finishedParsing()
         // adding extra latency. Note that the first render tree update can be expensive since it
         // triggers the parsing of the default stylesheets which are compiled-in.
         const bool mainResourceWasAlreadyRequested =
-            m_frame->loader().stateMachine()->startedFirstRealLoad();
+            m_frame->loader().stateMachine()->committedFirstRealDocumentLoad();
 
         // FrameLoader::finishedParsing() might end up calling Document::implicitClose() if all
         // resource loads are complete. HTMLObjectElements can start loading their resources from
