@@ -8,7 +8,6 @@
 The real entry plumbing is in toolchain_main.py.
 """
 
-import collections
 import fnmatch
 import platform
 import os
@@ -211,6 +210,20 @@ NATIVE_ENOUGH_MAP = {
 # The list of targets to build toolchains for.
 TARGET_LIST = ['arm', 'i686']
 UPLOAD_TARGETS = ['arm']
+
+# GDB is built by toolchain_build but injected into package targets built by
+# other means. List out what package targets, packages, and the tar file we are
+# injecting on top of here.
+GDB_INJECT_HOSTS = [
+  ('win', 'x86-64'),
+  ('darwin', 'x86-64'),
+  ('linux', 'x86-32'),
+  ]
+
+GDB_INJECT_PACKAGES = [
+  ('nacl_x86_newlib', ['naclsdk.tgz']),
+  ('nacl_x86_glibc', ['toolchain.tar.bz2']),
+  ]
 
 # These are extra arguments to pass gcc's configure that vary by target.
 TARGET_GCC_CONFIG = {
@@ -890,7 +903,7 @@ def GetPackageTargets():
   will be combined together. This package target dictionary describes the final
   output of the entire build.
   """
-  package_targets = collections.defaultdict(dict)
+  package_targets = {}
 
   for target_arch in UPLOAD_TARGETS:
     # Each package target contains non-platform specific newlib and gcc libs.
@@ -905,9 +918,10 @@ def GetPackageTargets():
       platform_triple = pynacl.platform.PlatformTriple(platform, arch)
       binutils_package = ForHost('binutils_%s' % target_arch, platform_triple)
       gcc_package = ForHost('gcc_%s' % target_arch, platform_triple)
+      gdb_package = ForHost('gdb', platform_triple)
 
       # Create a list of packages for a target.
-      platform_packages = [binutils_package, gcc_package]
+      platform_packages = [binutils_package, gcc_package, gdb_package]
       combined_packages = shared_packages + platform_packages
 
       os_name = pynacl.platform.GetOS(platform)
@@ -915,7 +929,22 @@ def GetPackageTargets():
       package_target = '%s_%s' % (os_name, arch_name)
       package_name = 'nacl_%s_newlib' % (pynacl.platform.GetArch(target_arch))
 
-      package_targets[package_target][package_name] = combined_packages
+      package_target_dict = package_targets.setdefault(package_target, {})
+      package_target_dict.setdefault(package_name, []).extend(combined_packages)
+
+  # GDB is a special and shared, we will inject it into various other packages.
+  for platform, arch in GDB_INJECT_HOSTS:
+    platform_triple = pynacl.platform.PlatformTriple(platform, arch)
+    os_name = pynacl.platform.GetOS(platform)
+    arch_name = pynacl.platform.GetArch(arch)
+
+    gdb_packages = [ForHost('gdb', platform_triple)]
+    package_target = '%s_%s' % (os_name, arch_name)
+
+    for package_name, package_archives in GDB_INJECT_PACKAGES:
+      combined_packages = package_archives + gdb_packages
+      package_target_dict = package_targets.setdefault(package_target, {})
+      package_target_dict.setdefault(package_name, []).extend(combined_packages)
 
   return dict(package_targets)
 

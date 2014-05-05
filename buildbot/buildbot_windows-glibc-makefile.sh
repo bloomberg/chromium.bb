@@ -112,17 +112,20 @@ done
 echo @@@STEP_LINK@download@http://gsdview.appspot.com/${GSD_BUCKET}/${UPLOAD_LOC}/@@@
 
 echo @@@BUILD_STEP archive_extract_package@@@
-${NATIVE_PYTHON} build/package_version/package_version.py archive \
-    --archive-package=nacl_x86_glibc --extract \
-    tools/toolchain.tar.bz2,toolchain/win_x86@https://storage.googleapis.com/${GSD_BUCKET}/${UPLOAD_LOC}/toolchain_win_x86.tar.bz2
+${NATIVE_PYTHON} build/package_version/package_version.py \
+  archive --archive-package=nacl_x86_glibc --extract \
+  --extra-archive gdb_i686_w64_mingw32.tgz \
+  tools/toolchain.tar.bz2,toolchain/win_x86@https://storage.googleapis.com/${GSD_BUCKET}/${UPLOAD_LOC}/toolchain_win_x86.tar.bz2 \
 
 echo @@@BUILD_STEP upload_package_info@@@
 ${NATIVE_PYTHON} build/package_version/package_version.py \
-    --cloud-bucket=${GSD_BUCKET} --annotate \
-    upload --upload-package=nacl_x86_glibc --revision=${UPLOAD_REV}
+  --cloud-bucket=${GSD_BUCKET} --annotate \
+  upload --skip-missing \
+  --upload-package=nacl_x86_glibc --revision=${UPLOAD_REV}
 
-if [[ "${BUILD_COMPATIBLE_TOOLCHAINS:-yes}" != "no" ]]; then
-  echo @@@BUILD_STEP sync backports@@@
-  rm -rf tools/BACKPORTS/ppapi*
-  tools/BACKPORTS/build_backports.sh VERSIONS win glibc
-fi
+# sync_backports is obsolete and should probably be removed.
+# if [[ "${BUILD_COMPATIBLE_TOOLCHAINS:-yes}" != "no" ]]; then
+#   echo @@@BUILD_STEP sync backports@@@
+#   rm -rf tools/BACKPORTS/ppapi*
+#   tools/BACKPORTS/build_backports.sh VERSIONS win glibc
+# fi

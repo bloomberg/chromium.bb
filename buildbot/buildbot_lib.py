@@ -59,6 +59,7 @@ def SetDefaultContextAttributes(context):
   context['use_glibc'] = False
   context['use_breakpad_tools'] = False
   context['max_jobs'] = 8
+  context['scons_args'] = []
 
 def ParseStandardCommandLine(context):
   """
@@ -85,6 +86,8 @@ def ParseStandardCommandLine(context):
                     help='Only run validator regression test')
   parser.add_option('--asan', dest='asan', default=False,
                     action='store_true', help='Build trusted code with ASan.')
+  parser.add_option('--scons-args', dest='scons_args', default =[],
+                    action='append', help='Extra scons arguments.')
   parser.add_option('--step-suffix', metavar='SUFFIX', default='',
                     help='Append SUFFIX to buildbot step names.')
   parser.add_option('--no-gyp', dest='no_gyp', default=False,
@@ -145,6 +148,7 @@ def ParseStandardCommandLine(context):
   context['no_gyp'] = options.no_gyp
   context['coverage'] = options.coverage
   context['use_breakpad_tools'] = options.use_breakpad_tools
+  context['scons_args'] = options.scons_args
   # Don't run gyp on coverage builds.
   if context['coverage']:
     context['no_gyp'] = True
@@ -341,6 +345,7 @@ def SCons(context, mode=None, platform=None, parallel=False, browser_test=False,
       '--mode='+','.join(mode),
       'platform='+platform,
       ])
+  cmd.extend(context['scons_args'])
   if context['clang']: cmd.append('--clang')
   if context['asan']: cmd.append('--asan')
   if context['use_glibc']: cmd.append('--nacl_glibc')

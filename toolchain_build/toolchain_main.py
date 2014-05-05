@@ -298,7 +298,10 @@ class PackageBuilder(object):
 
         include_package = False
         for component in components:
-          archive_name = component + '.tgz'
+          if '.' in component:
+            archive_name = component
+          else:
+            archive_name = component + '.tgz'
           cache_item = self._build_once.GetCachedDirItemForPackage(component)
           if cache_item is None:
             archive_desc = archive_info.ArchiveInfo(archive_name)

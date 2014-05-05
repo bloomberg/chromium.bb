@@ -149,8 +149,6 @@ GCC_VERSION = 4.4.3
 NACL_GCC_GIT_BASE = 4e0ae761f59baae95282ab07efa9b831ac524642
 NEWLIB_VERSION = 1.20.0
 NACL_NEWLIB_GIT_BASE = 151b2c72fb87849bbc6e3ef569718c6344eed2e6
-GDB_VERSION = 6.8
-NACL_GDB_GIT_BASE = 5540d856ee177a454c2b8871c6498d0524b0c6f9
 GLIBC_VERSION = 2.9
 NACL_GLIBC_GIT_BASE = 5c46008d0874c9b9d5f5f201a10e975d1fe84787
 
@@ -161,7 +159,7 @@ NACL_GLIBC_GIT_BASE = 5c46008d0874c9b9d5f5f201a10e975d1fe84787
 SRC:
 	mkdir SRC
 
-git-sources := binutils gcc gdb glibc linux-headers-for-nacl newlib
+git-sources := binutils gcc glibc linux-headers-for-nacl newlib
 
 nacl-name = $(patsubst nacl-linux-headers-for-nacl,linux-headers-for-nacl,nacl-$*)
 
@@ -822,46 +820,6 @@ endif
 gcc: BUILD/stamp-$(CROSSARCH)-gcc
 
 ##################################################################
-# gdb:
-# Builds gdb.
-##################################################################
-# Only linux and windows are supported.
-BUILD/stamp-$(CROSSARCH)-gdb: | SRC/gdb BUILD
-	rm -rf BUILD/build-gdb-$(CROSSARCH)
-	mkdir BUILD/build-gdb-$(CROSSARCH)
-ifeq ($(PLATFORM),win)
-	cd BUILD/build-gdb-$(CROSSARCH) && \
-	  CC="x86_64-w64-mingw32-gcc -m32" \
-	  CC_FOR_BUILD="x86_64-w64-mingw32-gcc -m32" \
-	  LDFLAGS="$(USER_LDFLAGS)" \
-	  CFLAGS="$(USER_CFLAGS)" \
-	  ../../SRC/gdb/configure \
-	    --prefix=$(PREFIX) \
-	    --without-python \
-	    --host=x86_64-w64-mingw32 \
-	    --target=x86_64-nacl \
-	    --enable-targets=arm-none-nacl-eabi
-	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) all
-	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) DESTDIR=$(DESTDIR) install
-else
-	cd BUILD/build-gdb-$(CROSSARCH) && \
-	  CC="gcc -m32" \
-	  LDFLAGS="$(USER_LDFLAGS)" \
-	  CFLAGS="$(USER_CFLAGS)" \
-	  ../../SRC/gdb/configure \
-	    --prefix=$(PREFIX) \
-	    --target=x86_64-nacl \
-	    --enable-targets=arm-none-eabi-nacl
-	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) all
-	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) DESTDIR=$(DESTDIR) install
-endif
-	touch $@
-
-.PHONY: gdb
-gdb: BUILD/stamp-$(CROSSARCH)-gdb
-
-
-##################################################################
 # Install headers from the NaCl tree locally for the gcc build to see.
 ##################################################################
 .PHONY: headers_for_build
@@ -904,12 +862,6 @@ endif
 	$(MAKE) -f $(THISMAKEFILE) export-headers
 	$(MAKE) -f $(THISMAKEFILE) glibc-adhoc-files
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-full-gcc
-ifeq ($(CANNED_REVISION), no)
-ifeq ($(PLATFORM), win)
-else
-	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-gdb
-endif
-endif
 	$(CREATE_REDIRECTORS) "$(DESTDIR)$(PREFIX)"
 	for dir in lib32 lib64 ; do ( \
 	  cd $(DESTDIR)$(PREFIX)/$(CROSSARCH)/$$dir ; \
@@ -964,12 +916,6 @@ ifeq ($(CANNED_REVISION), no)
 	$(MAKE) -f $(THISMAKEFILE) headers_for_build
 endif
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-gcc
-ifeq ($(CANNED_REVISION), no)
-ifeq ($(PLATFORM), win)
-else
-	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-gdb
-endif
-endif
 	$(CREATE_REDIRECTORS) "$(DESTDIR)$(PREFIX)"
 	rm -rf "$(DESTDIR)$(PREFIX)"/{include,lib/*.a*,lib/*.so*,lib32,lib64}
 
@@ -986,7 +932,6 @@ buildbot-build-with-newlib: | \
 # because these are not changed from upstream.
 BINUTILS_PATCHNAME := naclbinutils-$(BINUTILS_VERSION)-r$(shell $(SVNVERSION) | tr : _)
 GCC_PATCHNAME := naclgcc-$(GCC_VERSION)-r$(shell $(SVNVERSION) | tr : _)
-#GDB_PATCHNAME := naclgdb-$(GDB_VERSION)-r$(shell $(SVNVERSION) | tr : _)
 GLIBC_PATCHNAME := naclglibc-$(GLIBC_VERSION)-r$(shell $(SVNVERSION) | tr : _)
 NEWLIB_PATCHNAME := naclnewlib-$(NEWLIB_VERSION)-r$(shell $(SVNVERSION) | tr : _)
 
@@ -1024,8 +969,7 @@ buildbot-build-with-glibc: | \
 .PHONY: buildbot-mark-version
 buildbot-mark-version: | \
   pinned-src-binutils \
-  pinned-src-gcc \
-  pinned-src-gdb
+  pinned-src-gcc
 	cd SRC/binutils
 	printf -- "--- SRC/binutils/bfd/version.h\n\
 	+++ SRC/binutils/bfd/version.h\n\
@@ -1035,12 +979,6 @@ buildbot-mark-version: | \
 	patch -p0
 	LC_ALL=C $(SVN) info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1\2\3+' > SRC/gcc/gcc/DATESTAMP
 	echo "Native Client r`LC_ALL=C $(SVNVERSION)`, Git Commit `cd SRC/gcc ; LC_ALL=C git rev-parse HEAD`" > SRC/gcc/gcc/DEV-PHASE
-	printf -- "--- SRC/gdb/gdb/version.in\n\
-	+++ SRC/gdb/gdb/version.in\n\
-	@@ -1 +1 @@\n\
-	-`cat SRC/gdb/gdb/version.in`\n\
-	+`cat SRC/gdb/gdb/version.in` `LC_ALL=C $(SVN) info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1\2\3+'` (Native Client r`LC_ALL=C $(SVNVERSION)`, Git Commit `cd SRC/gdb ; LC_ALL=C git rev-parse HEAD`)\n" |\
-	patch -p0
 endif
 
 ##################################################################

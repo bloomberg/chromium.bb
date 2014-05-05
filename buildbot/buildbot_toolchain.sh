@@ -98,29 +98,51 @@ echo @@@BUILD_STEP archive_build@@@
 )
 echo @@@STEP_LINK@download@http://gsdview.appspot.com/${GSD_BUCKET}/toolchain/${UPLOAD_REV}/@@@
 
-echo @@@BUILD_STEP archive_extract_package@@@
-${NATIVE_PYTHON} ../build/package_version/package_version.py archive \
-  --archive-package=nacl_x86_newlib --extract \
-  naclsdk.tgz,sdk/nacl-sdk@https://storage.googleapis.com/${GSD_BUCKET}/toolchain/${UPLOAD_REV}/naclsdk_${PLATFORM}_x86.tgz
-
-${NATIVE_PYTHON} ../build/package_version/package_version.py \
-    --cloud-bucket=${GSD_BUCKET} --annotate \
-    upload --upload-package=nacl_x86_newlib --revision=${UPLOAD_REV}
-
-cd ..
 if [[ ${PLATFORM} == win ]]; then
-  ${NATIVE_PYTHON} buildbot/buildbot_standard.py opt 64 newlib
+  GDB_TGZ=gdb_i686_w64_mingw32.tgz
 elif [[ ${PLATFORM} == mac ]]; then
-  ${NATIVE_PYTHON} buildbot/buildbot_standard.py opt 32 newlib
+  GDB_TGZ=gdb_x86_64_apple_darwin.tgz
 elif [[ ${PLATFORM} == linux ]]; then
-  ${NATIVE_PYTHON} buildbot/buildbot_standard.py opt 32 newlib
+  GDB_TGZ=gdb_i686_linux.tgz
 else
   echo "ERROR, bad platform."
   exit 1
 fi
 
-if [[ "${DONT_BUILD_COMPATIBLE_TOOLCHAINS:-no}" != "yes" ]]; then
-  echo @@@BUILD_STEP sync backports@@@
-  rm -rf tools/BACKPORTS/ppapi*
-  tools/BACKPORTS/build_backports.sh VERSIONS ${PLATFORM} newlib
+echo @@@BUILD_STEP archive_extract_package@@@
+${NATIVE_PYTHON} ../build/package_version/package_version.py \
+  archive --archive-package=nacl_x86_newlib --extract \
+  --extra-archive ${GDB_TGZ} \
+  naclsdk.tgz,sdk/nacl-sdk@https://storage.googleapis.com/${GSD_BUCKET}/toolchain/${UPLOAD_REV}/naclsdk_${PLATFORM}_x86.tgz \
+
+${NATIVE_PYTHON} ../build/package_version/package_version.py \
+  --cloud-bucket=${GSD_BUCKET} --annotate \
+  upload --skip-missing \
+  --upload-package=nacl_x86_newlib --revision=${UPLOAD_REV}
+
+# Before we start testing, put in dummy mock archives so gyp can still untar
+# the entire package.
+${NATIVE_PYTHON} ../build/package_version/package_version.py fillemptytars \
+  --fill-package nacl_x86_newlib
+
+cd ..
+if [[ ${PLATFORM} == win ]]; then
+  ${NATIVE_PYTHON} buildbot/buildbot_standard.py --scons-args='no_gdb_tests=1' \
+    --step-suffix=' (32)' opt 32 glibopt 64 newlib
+elif [[ ${PLATFORM} == mac ]]; then
+  ${NATIVE_PYTHON} buildbot/buildbot_standard.py --scons-args='no_gdb_tests=1' \
+    opt 32 newlib
+elif [[ ${PLATFORM} == linux ]]; then
+  ${NATIVE_PYTHON} buildbot/buildbot_standard.py --scons-args='no_gdb_tests=1' \
+    opt 32 newlib
+else
+  echo "ERROR, bad platform."
+  exit 1
 fi
+
+# sync_backports is obsolete and should probably be removed.
+# if [[ "${DONT_BUILD_COMPATIBLE_TOOLCHAINS:-no}" != "yes" ]]; then
+#   echo @@@BUILD_STEP sync backports@@@
+#   rm -rf tools/BACKPORTS/ppapi*
+#   tools/BACKPORTS/build_backports.sh VERSIONS ${PLATFORM} newlib
+# fi

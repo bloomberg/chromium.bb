@@ -103,14 +103,16 @@ done
 echo @@@STEP_LINK@download@http://gsdview.appspot.com/${GSD_BUCKET}/${UPLOAD_LOC}/@@@
 
 echo @@@BUILD_STEP archive_extract_package@@@
-python build/package_version/package_version.py archive \
-    --archive-package=nacl_x86_glibc --extract \
-    tools/toolchain.tar.bz2,toolchain/mac_x86@https://storage.googleapis.com/${GSD_BUCKET}/${UPLOAD_LOC}/toolchain_mac_x86.tar.bz2
+python build/package_version/package_version.py \
+  archive --archive-package=nacl_x86_glibc --extract \
+  --extra-archive gdb_x86_64_apple_darwin.tgz \
+  tools/toolchain.tar.bz2,toolchain/mac_x86@https://storage.googleapis.com/${GSD_BUCKET}/${UPLOAD_LOC}/toolchain_mac_x86.tar.bz2 \
 
 echo @@@BUILD_STEP upload_package_info@@@
 python build/package_version/package_version.py \
-    --cloud-bucket ${GSD_BUCKET} --annotate \
-    upload --upload-package=nacl_x86_glibc --revision=${UPLOAD_REV}
+  --cloud-bucket ${GSD_BUCKET} --annotate \
+  upload --skip-missing \
+  --upload-package=nacl_x86_glibc --revision=${UPLOAD_REV}
 
 # The script should exit nonzero if any test run fails.
 # But that should not short-circuit the script due to the 'set -e' behavior.
@@ -120,13 +122,21 @@ fail() {
   return 0
 }
 
-export INSIDE_TOOLCHAIN=1
-python buildbot/buildbot_standard.py opt 32 glibc || fail
+# Before we start testing, put in dummy mock archives so gyp can still untar
+# the entire package.
+python build/package_version/package_version.py fillemptytars \
+  --fill-package nacl_x86_glibc
 
-if [[ "${BUILD_COMPATIBLE_TOOLCHAINS:-yes}" != "no" ]]; then
-  echo @@@BUILD_STEP sync backports@@@
-  rm -rf tools/BACKPORTS/ppapi*
-  tools/BACKPORTS/build_backports.sh VERSIONS mac glibc
-fi
+export INSIDE_TOOLCHAIN=1
+python buildbot/buildbot_standard.py --scons-args='no_gdb_tests=1' \
+  opt 32 glibc || fail
+
+
+# sync_backports is obsolete and should probably be removed.
+# if [[ "${BUILD_COMPATIBLE_TOOLCHAINS:-yes}" != "no" ]]; then
+#   echo @@@BUILD_STEP sync backports@@@
+#   rm -rf tools/BACKPORTS/ppapi*
+#   tools/BACKPORTS/build_backports.sh VERSIONS mac glibc
+# fi
 
 exit $exit_status
