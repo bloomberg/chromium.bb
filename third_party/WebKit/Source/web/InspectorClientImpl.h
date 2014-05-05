@@ -75,6 +75,8 @@ public:
 
     virtual void setTraceEventCallback(const String& categoryFilter, TraceEventCallback) OVERRIDE;
     virtual void resetTraceEventCallback() OVERRIDE;
+    virtual void enableTracing(const String& categoryFilter) OVERRIDE;
+    virtual void disableTracing() OVERRIDE;
 
     virtual void startGPUEventsRecording() OVERRIDE;
     virtual void stopGPUEventsRecording() OVERRIDE;

@@ -168,6 +168,18 @@ void InspectorClientImpl::setTraceEventCallback(const String& categoryFilter, Tr
         agent->setTraceEventCallback(categoryFilter, callback);
 }
 
+void InspectorClientImpl::enableTracing(const String& categoryFilter)
+{
+    if (WebDevToolsAgentImpl* agent = devToolsAgent())
+        agent->enableTracing(categoryFilter);
+}
+
+void InspectorClientImpl::disableTracing()
+{
+    if (WebDevToolsAgentImpl* agent = devToolsAgent())
+        agent->disableTracing();
+}
+
 void InspectorClientImpl::resetTraceEventCallback()
 {
     if (WebDevToolsAgentImpl* agent = devToolsAgent())

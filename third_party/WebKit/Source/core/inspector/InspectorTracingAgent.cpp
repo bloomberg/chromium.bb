@@ -23,9 +23,10 @@ namespace {
 const char devtoolsMetadataEventCategory[] = TRACE_DISABLED_BY_DEFAULT("devtools.timeline");
 }
 
-InspectorTracingAgent::InspectorTracingAgent()
+InspectorTracingAgent::InspectorTracingAgent(InspectorClient* client)
     : InspectorBaseAgent<InspectorTracingAgent>("Tracing")
     , m_layerTreeId(0)
+    , m_client(client)
 {
 }
 
@@ -34,17 +35,12 @@ void InspectorTracingAgent::restore()
     emitMetadataEvents();
 }
 
-void InspectorTracingAgent::start(ErrorString*, const String&, const String&, const double*, String* outSessionId)
+void InspectorTracingAgent::start(ErrorString*, const String& categoryFilter, const String&, const double*, String* outSessionId)
 {
-    innerStart();
-    *outSessionId = sessionId();
-}
-
-void InspectorTracingAgent::innerStart()
-{
-    String sessionId = IdentifiersFactory::createIdentifier();
-    m_state->setString(TracingAgentState::sessionId, sessionId);
+    m_state->setString(TracingAgentState::sessionId, IdentifiersFactory::createIdentifier());
+    m_client->enableTracing(categoryFilter);
     emitMetadataEvents();
+    *outSessionId = sessionId();
 }
 
 String InspectorTracingAgent::sessionId()

@@ -21,28 +21,28 @@ class InspectorTracingAgent FINAL
     , public InspectorBackendDispatcher::TracingCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorTracingAgent);
 public:
-    static PassOwnPtr<InspectorTracingAgent> create()
+    static PassOwnPtr<InspectorTracingAgent> create(InspectorClient* client)
     {
-        return adoptPtr(new InspectorTracingAgent());
+        return adoptPtr(new InspectorTracingAgent(client));
     }
 
     // Base agent methods.
     virtual void restore() OVERRIDE;
 
     // Protocol method implementations.
-    virtual void start(ErrorString*, const String&, const String&, const double*, String* sessionId) OVERRIDE;
+    virtual void start(ErrorString*, const String& categoryFilter, const String&, const double*, String* sessionId) OVERRIDE;
 
     // Methods for other agents to use.
     void setLayerTreeId(int);
 
 private:
-    InspectorTracingAgent();
+    explicit InspectorTracingAgent(InspectorClient*);
 
-    void innerStart();
     void emitMetadataEvents();
     String sessionId();
 
     int m_layerTreeId;
+    InspectorClient* m_client;
 };
 
 }

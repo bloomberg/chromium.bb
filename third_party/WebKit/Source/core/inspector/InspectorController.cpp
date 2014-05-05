@@ -100,7 +100,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     m_layerTreeAgent = layerTreeAgentPtr.get();
     m_agents.append(layerTreeAgentPtr.release());
 
-    OwnPtr<InspectorTracingAgent> tracingAgentPtr = InspectorTracingAgent::create();
+    OwnPtr<InspectorTracingAgent> tracingAgentPtr = InspectorTracingAgent::create(inspectorClient);
     m_tracingAgent = tracingAgentPtr.get();
     m_agents.append(tracingAgentPtr.release());
 
