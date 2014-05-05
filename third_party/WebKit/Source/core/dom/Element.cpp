@@ -1492,6 +1492,11 @@ PassRefPtr<RenderStyle> Element::styleForRenderer()
 
     RefPtr<RenderStyle> style;
 
+    // FIXME: Instead of clearing updates that may have been added from calls to styleForElement
+    // outside recalcStyle, we should just never set them if we're not inside recalcStyle.
+    if (ActiveAnimations* activeAnimations = this->activeAnimations())
+        activeAnimations->cssAnimations().setPendingUpdate(nullptr);
+
     if (hasCustomStyleCallbacks())
         style = customStyleForRenderer();
     if (!style)
