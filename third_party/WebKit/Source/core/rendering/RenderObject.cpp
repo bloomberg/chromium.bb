@@ -1513,6 +1513,11 @@ const char* RenderObject::invalidationReasonToString(InvalidationReason reason) 
 
 void RenderObject::repaintTreeAfterLayout()
 {
+    // If we didn't need invalidation then our children don't need as well.
+    // Skip walking down the tree as everything should be fine below us.
+    if (!shouldCheckForInvalidationAfterLayout())
+        return;
+
     clearRepaintState();
 
     for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
@@ -3402,6 +3407,7 @@ void RenderObject::clearRepaintState()
     setShouldDoFullRepaintIfSelfPaintingLayer(false);
     setShouldRepaintOverflow(false);
     setLayoutDidGetCalled(false);
+    setMayNeedInvalidation(false);
 }
 
 } // namespace WebCore

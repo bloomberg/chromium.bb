@@ -520,6 +520,24 @@ crbug.com/307777 [ Android ] virtual/softwarecompositing/overflow/get-transform-
 crbug.com/307777 [ Android ] webaudio/stereo2mono-down-mixing.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 
+crbug.com/320139 fast/repaint/abspos-shift-image-incorrect-repaint.html [ NeedsRebaseline ]
+crbug.com/320139 fast/repaint/clipped-relative.html [ NeedsRebaseline ]
+crbug.com/320139 fast/repaint/float-overflow-right.html [ NeedsRebaseline ]
+crbug.com/320139 fast/repaint/float-overflow.html [ NeedsRebaseline ]
+crbug.com/320139 fast/repaint/layout-state-scrolloffset.html [ NeedsRebaseline ]
+crbug.com/320139 fast/repaint/layout-state-scrolloffset2.html [ NeedsRebaseline ]
+crbug.com/320139 fast/repaint/layout-state-scrolloffset3.html [ NeedsRebaseline ]
+crbug.com/320139 fast/repaint/list-marker-2.html [ NeedsRebaseline ]
+crbug.com/320139 fast/repaint/outline-child-repaint.html [ NeedsRebaseline ]
+crbug.com/320139 fast/repaint/positioned-list-offset-change-repaint.html [ NeedsRebaseline ]
+crbug.com/320139 fast/repaint/shift-relative-positioned-container-with-image-removal.html [ NeedsRebaseline ]
+crbug.com/320139 fast/repaint/table-cell-move.html [ NeedsRebaseline ]
+crbug.com/320139 fast/repaint/table-section-overflow.html [ NeedsRebaseline ]
+crbug.com/320139 fast/repaint/replaced-clipped-positioned-not-wrong-incremental-repainting.html [ NeedsRebaseline ]
+crbug.com/320139 fast/repaint/repaint-table-row-in-composited-document.html [ NeedsRebaseline ]
+crbug.com/320139 fast/repaint/table-row.html [ NeedsRebaseline ]
+crbug.com/320139 fast/repaint/table-section-repaint.html [ NeedsRebaseline ]
+
 # Exceeds the number of file descriptors allowed when allocating shared bitmaps.
 crbug.com/351897 [ Mac ] virtual/softwarecompositing/overflow/universal-accelerated-overflow-scroll.html [ Crash Pass ]
 

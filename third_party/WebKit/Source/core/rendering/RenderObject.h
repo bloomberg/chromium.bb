@@ -1010,6 +1010,21 @@ public:
     bool layoutDidGetCalled() { return m_bitfields.layoutDidGetCalled(); }
     void setLayoutDidGetCalled(bool b) { m_bitfields.setLayoutDidGetCalled(b); }
 
+    bool mayNeedInvalidation() { return m_bitfields.mayNeedInvalidation(); }
+    void setMayNeedInvalidation(bool b)
+    {
+        m_bitfields.setMayNeedInvalidation(b);
+
+        // Make sure our parent is marked as needing invalidation.
+        if (b && parent() && !parent()->mayNeedInvalidation())
+            parent()->setMayNeedInvalidation(b);
+    }
+
+    bool shouldCheckForInvalidationAfterLayout()
+    {
+        return layoutDidGetCalled() || mayNeedInvalidation();
+    }
+
     bool shouldDisableLayoutState() const { return hasColumns() || hasTransform() || hasReflection() || style()->isFlippedBlocksWritingMode(); }
 
     void setNeedsOverflowRecalcAfterStyleChange();
@@ -1125,6 +1140,9 @@ private:
             , m_shouldDoFullRepaintAfterLayout(false)
             , m_shouldRepaintOverflow(false)
             , m_shouldDoFullRepaintIfSelfPaintingLayer(false)
+            // FIXME: We should remove mayNeedInvalidation once we are able to
+            // use the other layout flags to detect the same cases. crbug.com/370118
+            , m_mayNeedInvalidation(false)
             , m_onlyNeededPositionedMovementLayout(false)
             , m_needsPositionedMovementLayout(false)
             , m_normalChildNeedsLayout(false)
@@ -1159,11 +1177,12 @@ private:
         {
         }
 
-        // 32 bits have been used in the first word, and 5 in the second.
+        // 32 bits have been used in the first word, and 6 in the second.
         ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
         ADD_BOOLEAN_BITFIELD(shouldDoFullRepaintAfterLayout, ShouldDoFullRepaintAfterLayout);
         ADD_BOOLEAN_BITFIELD(shouldRepaintOverflow, ShouldRepaintOverflow);
         ADD_BOOLEAN_BITFIELD(shouldDoFullRepaintIfSelfPaintingLayer, ShouldDoFullRepaintIfSelfPaintingLayer);
+        ADD_BOOLEAN_BITFIELD(mayNeedInvalidation, MayNeedInvalidation);
         ADD_BOOLEAN_BITFIELD(onlyNeededPositionedMovementLayout, OnlyNeededPositionedMovementLayout);
         ADD_BOOLEAN_BITFIELD(needsPositionedMovementLayout, NeedsPositionedMovementLayout);
         ADD_BOOLEAN_BITFIELD(normalChildNeedsLayout, NormalChildNeedsLayout);

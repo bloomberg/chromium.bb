@@ -1558,6 +1558,9 @@ void RenderBox::repaintTreeAfterLayout()
     ASSERT(RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
     ASSERT(!needsLayout());
 
+    if (!shouldCheckForInvalidationAfterLayout())
+        return;
+
     const LayoutRect oldRepaintRect = previousRepaintRect();
     const LayoutPoint oldPositionFromRepaintContainer = previousPositionFromRepaintContainer();
     RenderLayerModelObject* repaintContainer = containerForRepaint();

@@ -2316,6 +2316,9 @@ bool RenderBlockFlow::positionNewFloats()
 
         RenderBox* childBox = floatingObject->renderer();
 
+        // FIXME Investigate if this can be removed. crbug.com/370006
+        childBox->setMayNeedInvalidation(true);
+
         LayoutUnit childLogicalLeftMargin = style()->isLeftToRightDirection() ? marginStartForChild(childBox) : marginEndForChild(childBox);
         LayoutRect oldRect = childBox->frameRect();
 

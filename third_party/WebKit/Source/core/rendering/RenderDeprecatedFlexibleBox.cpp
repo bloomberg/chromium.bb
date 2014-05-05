@@ -999,6 +999,9 @@ void RenderDeprecatedFlexibleBox::placeChild(RenderBox* child, const LayoutPoint
 {
     LayoutRect oldRect = child->frameRect();
 
+    // FIXME Investigate if this can be removed based on other flags. crbug.com/370010
+    child->setMayNeedInvalidation(true);
+
     // Place the child.
     child->setLocation(location);
 

@@ -362,6 +362,9 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
 
 void RenderBlock::repaintTreeAfterLayout()
 {
+    if (!shouldCheckForInvalidationAfterLayout())
+        return;
+
     RenderBox::repaintTreeAfterLayout();
 
     // Take care of positioned objects. This is required as LayoutState keeps a single clip rect.
