@@ -466,7 +466,7 @@ class End2EndTest : public ::testing::Test {
                  int audio_sampling_frequency,
                  bool external_audio_decoder,
                  int max_number_of_video_buffers_used) {
-    audio_sender_config_.sender_ssrc = 1;
+    audio_sender_config_.rtp_config.ssrc = 1;
     audio_sender_config_.incoming_feedback_ssrc = 2;
     audio_sender_config_.rtp_config.payload_type = 96;
     audio_sender_config_.use_external_encoder = false;
@@ -477,7 +477,7 @@ class End2EndTest : public ::testing::Test {
 
     audio_receiver_config_.feedback_ssrc =
         audio_sender_config_.incoming_feedback_ssrc;
-    audio_receiver_config_.incoming_ssrc = audio_sender_config_.sender_ssrc;
+    audio_receiver_config_.incoming_ssrc = audio_sender_config_.rtp_config.ssrc;
     audio_receiver_config_.rtp_payload_type =
         audio_sender_config_.rtp_config.payload_type;
     audio_receiver_config_.use_external_decoder = external_audio_decoder;
@@ -488,7 +488,7 @@ class End2EndTest : public ::testing::Test {
     test_receiver_audio_callback_->SetExpectedSamplingFrequency(
         audio_receiver_config_.frequency);
 
-    video_sender_config_.sender_ssrc = 3;
+    video_sender_config_.rtp_config.ssrc = 3;
     video_sender_config_.incoming_feedback_ssrc = 4;
     video_sender_config_.rtp_config.payload_type = 97;
     video_sender_config_.use_external_encoder = false;
@@ -506,20 +506,11 @@ class End2EndTest : public ::testing::Test {
 
     video_receiver_config_.feedback_ssrc =
         video_sender_config_.incoming_feedback_ssrc;
-    video_receiver_config_.incoming_ssrc = video_sender_config_.sender_ssrc;
+    video_receiver_config_.incoming_ssrc = video_sender_config_.rtp_config.ssrc;
     video_receiver_config_.rtp_payload_type =
         video_sender_config_.rtp_config.payload_type;
     video_receiver_config_.use_external_decoder = false;
     video_receiver_config_.codec = video_sender_config_.codec;
-
-    transport_audio_config_.base.ssrc = audio_sender_config_.sender_ssrc;
-    transport_audio_config_.codec = audio_sender_config_.codec;
-    transport_audio_config_.base.rtp_config = audio_sender_config_.rtp_config;
-    transport_audio_config_.frequency = audio_sender_config_.frequency;
-    transport_audio_config_.channels = audio_sender_config_.channels;
-    transport_video_config_.base.ssrc = video_sender_config_.sender_ssrc;
-    transport_video_config_.codec = video_sender_config_.codec;
-    transport_video_config_.base.rtp_config = video_sender_config_.rtp_config;
   }
 
   void FeedAudioFrames(int count, bool will_be_checked) {
@@ -573,8 +564,6 @@ class End2EndTest : public ::testing::Test {
         base::TimeDelta::FromSeconds(1),
         task_runner_,
         &sender_to_receiver_));
-    transport_sender_->InitializeAudio(transport_audio_config_);
-    transport_sender_->InitializeVideo(transport_video_config_);
 
     cast_sender_ =
         CastSender::Create(cast_environment_sender_, transport_sender_.get());
@@ -661,8 +650,6 @@ class End2EndTest : public ::testing::Test {
   VideoReceiverConfig video_receiver_config_;
   AudioSenderConfig audio_sender_config_;
   VideoSenderConfig video_sender_config_;
-  transport::CastTransportAudioConfig transport_audio_config_;
-  transport::CastTransportVideoConfig transport_video_config_;
 
   base::TimeTicks start_time_;
   base::SimpleTestTickClock* testing_clock_sender_;
@@ -982,13 +969,15 @@ TEST_F(End2EndTest, DISABLED_DropEveryOtherFrame3Buffers) {
 TEST_F(End2EndTest, CryptoVideo) {
   Configure(transport::kVp8, transport::kPcm16, 32000, false, 1);
 
-  transport_video_config_.base.aes_iv_mask =
+  video_sender_config_.rtp_config.aes_iv_mask =
       ConvertFromBase16String("1234567890abcdeffedcba0987654321");
-  transport_video_config_.base.aes_key =
+  video_sender_config_.rtp_config.aes_key =
       ConvertFromBase16String("deadbeefcafeb0b0b0b0cafedeadbeef");
 
-  video_receiver_config_.aes_iv_mask = transport_video_config_.base.aes_iv_mask;
-  video_receiver_config_.aes_key = transport_video_config_.base.aes_key;
+  video_receiver_config_.aes_iv_mask =
+      video_sender_config_.rtp_config.aes_iv_mask;
+  video_receiver_config_.aes_key =
+      video_sender_config_.rtp_config.aes_key;
 
   Create();
 
@@ -1018,13 +1007,15 @@ TEST_F(End2EndTest, CryptoVideo) {
 TEST_F(End2EndTest, CryptoAudio) {
   Configure(transport::kVp8, transport::kPcm16, 32000, false, 1);
 
-  transport_audio_config_.base.aes_iv_mask =
+  audio_sender_config_.rtp_config.aes_iv_mask =
       ConvertFromBase16String("abcdeffedcba12345678900987654321");
-  transport_audio_config_.base.aes_key =
+    audio_sender_config_.rtp_config.aes_key =
       ConvertFromBase16String("deadbeefcafecafedeadbeefb0b0b0b0");
 
-  audio_receiver_config_.aes_iv_mask = transport_audio_config_.base.aes_iv_mask;
-  audio_receiver_config_.aes_key = transport_audio_config_.base.aes_key;
+  audio_receiver_config_.aes_iv_mask =
+      audio_sender_config_.rtp_config.aes_iv_mask;
+  audio_receiver_config_.aes_key =
+      audio_sender_config_.rtp_config.aes_key;
 
   Create();
 

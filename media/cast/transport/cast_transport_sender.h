@@ -12,8 +12,7 @@
 // 2. Create CastSender (accepts CastTransportSender as an input).
 // 3. Call CastTransportSender::SetPacketReceiver to ensure that the packets
 //    received by the CastTransportSender will be sent to the CastSender.
-// 4. Initialize audio and/or video.
-// Steps 3 & 4 can be done interchangeably.
+// Steps 3 can be done interchangeably.
 
 // Destruction: The CastTransportSender is assumed to be valid as long as the
 // CastSender is alive. Therefore the CastSender should be destructed before the
@@ -69,7 +68,7 @@ class CastTransportSender : public base::NonThreadSafe {
 
   // Audio/Video initialization.
   // Encoded frames cannot be transmitted until the relevant initialize method
-  // is called.
+  // is called. Usually called by CastSender.
   virtual void InitializeAudio(const CastTransportAudioConfig& config) = 0;
 
   virtual void InitializeVideo(const CastTransportVideoConfig& config) = 0;

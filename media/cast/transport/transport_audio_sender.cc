@@ -20,9 +20,9 @@ TransportAudioSender::TransportAudioSender(
     PacedSender* const paced_packet_sender)
     : rtp_sender_(clock, transport_task_runner, paced_packet_sender),
       encryptor_() {
-  rtp_sender_.InitializeAudio(config);
-  initialized_ =
-      encryptor_.Initialize(config.base.aes_key, config.base.aes_iv_mask);
+  initialized_ = rtp_sender_.InitializeAudio(config) &&
+      encryptor_.Initialize(config.rtp.config.aes_key,
+                            config.rtp.config.aes_iv_mask);
 }
 
 TransportAudioSender::~TransportAudioSender() {}
@@ -30,6 +30,9 @@ TransportAudioSender::~TransportAudioSender() {}
 void TransportAudioSender::InsertCodedAudioFrame(
     const EncodedAudioFrame* audio_frame,
     const base::TimeTicks& recorded_time) {
+  if (!initialized_) {
+    return;
+  }
   if (encryptor_.initialized()) {
     EncodedAudioFrame encrypted_frame;
     if (!EncryptAudioFrame(*audio_frame, &encrypted_frame)) {
@@ -44,6 +47,9 @@ void TransportAudioSender::InsertCodedAudioFrame(
 bool TransportAudioSender::EncryptAudioFrame(
     const EncodedAudioFrame& audio_frame,
     EncodedAudioFrame* encrypted_frame) {
+  if (!initialized_) {
+    return false;
+  }
   if (!encryptor_.Encrypt(
           audio_frame.frame_id, audio_frame.data, &encrypted_frame->data))
     return false;
@@ -56,6 +62,9 @@ bool TransportAudioSender::EncryptAudioFrame(
 
 void TransportAudioSender::ResendPackets(
     const MissingFramesAndPacketsMap& missing_frames_and_packets) {
+  if (!initialized_) {
+    return;
+  }
   rtp_sender_.ResendPackets(missing_frames_and_packets);
 }
 

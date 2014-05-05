@@ -26,7 +26,6 @@ static const uint16 kSeqNum = 33;
 static const int kMaxPacketLength = 1500;
 static const int kSsrc = 0x12345;
 static const unsigned int kFrameSize = 5000;
-static const int kMaxPacketStorageTimeMs = 300;
 static const uint32 kStartFrameId = UINT32_C(0xffffffff);
 }
 
@@ -102,7 +101,7 @@ class RtpPacketizerTest : public ::testing::Test {
   RtpPacketizerTest()
       : task_runner_(new test::FakeSingleThreadTaskRunner(&testing_clock_)),
         video_frame_(),
-        packet_storage_(&testing_clock_, kMaxPacketStorageTimeMs) {
+        packet_storage_(200) {
     config_.sequence_number = kSeqNum;
     config_.ssrc = kSsrc;
     config_.payload_type = kPayload;

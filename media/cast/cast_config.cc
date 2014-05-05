@@ -22,8 +22,7 @@ namespace cast {
 // these classes to centralize the logic?
 
 VideoSenderConfig::VideoSenderConfig()
-    : sender_ssrc(0),
-      incoming_feedback_ssrc(0),
+    : incoming_feedback_ssrc(0),
       rtcp_interval(kDefaultRtcpIntervalMs),
       rtcp_mode(kRtcpReducedSize),
       use_external_encoder(false),
@@ -41,8 +40,7 @@ VideoSenderConfig::VideoSenderConfig()
       number_of_encode_threads(1) {}
 
 AudioSenderConfig::AudioSenderConfig()
-    : sender_ssrc(0),
-      incoming_feedback_ssrc(0),
+    : incoming_feedback_ssrc(0),
       rtcp_interval(kDefaultRtcpIntervalMs),
       rtcp_mode(kRtcpReducedSize),
       use_external_encoder(false),

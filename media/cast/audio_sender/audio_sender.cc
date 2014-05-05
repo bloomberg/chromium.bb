@@ -50,7 +50,7 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
             NULL,
             audio_config.rtcp_mode,
             base::TimeDelta::FromMilliseconds(audio_config.rtcp_interval),
-            audio_config.sender_ssrc,
+            audio_config.rtp_config.ssrc,
             audio_config.incoming_feedback_ssrc,
             audio_config.rtcp_c_name),
       timers_initialized_(false),
@@ -65,6 +65,16 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
                                     weak_factory_.GetWeakPtr())));
     cast_initialization_cb_ = audio_encoder_->InitializationResult();
   }
+
+  media::cast::transport::CastTransportAudioConfig transport_config;
+  transport_config.codec = audio_config.codec;
+  transport_config.rtp.config = audio_config.rtp_config;
+  transport_config.frequency = audio_config.frequency;
+  transport_config.channels = audio_config.channels;
+  transport_config.rtp.max_outstanding_frames =
+      audio_config.rtp_config.max_delay_ms / 100 + 1;
+  transport_sender_->InitializeAudio(transport_config);
+
   transport_sender_->SubscribeAudioRtpStatsCallback(
       base::Bind(&AudioSender::StoreStatistics, weak_factory_.GetWeakPtr()));
 }

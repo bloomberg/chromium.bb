@@ -57,6 +57,9 @@ class UdpTransport : public PacketSender {
   // response from UdpSocket::RecvFrom().
   void ReceiveNextPacket(int length_or_status);
 
+  // Schedule packet receiving, if needed.
+  void ScheduleReceiveNextPacket();
+
   void OnSent(const scoped_refptr<net::IOBuffer>& buf,
               PacketRef packet,
               const base::Closure& cb,
@@ -67,6 +70,7 @@ class UdpTransport : public PacketSender {
   net::IPEndPoint remote_addr_;
   const scoped_ptr<net::UDPSocket> udp_socket_;
   bool send_pending_;
+  bool receive_pending_;
   bool client_connected_;
   scoped_ptr<Packet> next_packet_;
   scoped_refptr<net::WrappedIOBuffer> recv_buf_;
