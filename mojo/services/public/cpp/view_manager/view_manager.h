@@ -7,13 +7,18 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
+#include "mojo/public/cpp/bindings/callback.h"
+#include "mojo/services/public/cpp/view_manager/view_tree_node.h"
 
 namespace mojo {
 class Shell;
 namespace services {
 namespace view_manager {
 
+class ViewManagerObserver;
 class ViewManagerSynchronizer;
+class ViewTreeNode;
 
 // Approximately encapsulates the View Manager service.
 // Owns a synchronizer that keeps a client model in sync with the service.
@@ -25,11 +30,21 @@ class ViewManager {
   explicit ViewManager(Shell* shell);
   ~ViewManager();
 
+  void BuildNodeTree(const mojo::Callback<void()>& callback);
+
+  ViewTreeNode* tree() { return tree_.get(); }
+
  private:
   friend class ViewManagerPrivate;
 
+  void AddObserver(ViewManagerObserver* observer);
+  void RemoveObserver(ViewManagerObserver* observer);
+
   Shell* shell_;
   scoped_ptr<ViewManagerSynchronizer> synchronizer_;
+  scoped_ptr<ViewTreeNode> tree_;
+
+  ObserverList<ViewManagerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManager);
 };

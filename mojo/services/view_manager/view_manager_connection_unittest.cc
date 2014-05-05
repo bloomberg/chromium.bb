@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/environment/environment.h"
+#include "mojo/services/public/cpp/view_manager/util.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 #include "mojo/shell/shell_test_helper.h"
@@ -25,14 +26,6 @@ namespace {
 
 base::RunLoop* current_run_loop = NULL;
 
-uint16_t FirstIdFromTransportId(uint32_t id) {
-  return static_cast<uint16_t>((id >> 16) & 0xFFFF);
-}
-
-uint16_t SecondIdFromTransportId(uint32_t id) {
-  return static_cast<uint16_t>(id & 0xFFFF);
-}
-
 // Sets |current_run_loop| and runs it. It is expected that someone else quits
 // the loop.
 void DoRunLoop() {
@@ -45,8 +38,7 @@ void DoRunLoop() {
 // Converts |id| into a string.
 std::string NodeIdToString(TransportNodeId id) {
   return (id == 0) ? "null" :
-      base::StringPrintf("%d,%d", FirstIdFromTransportId(id),
-                         SecondIdFromTransportId(id));
+      base::StringPrintf("%d,%d", HiWord(id), LoWord(id));
 }
 
 // Boolean callback. Sets |result_cache| to the value of |result| and quits
