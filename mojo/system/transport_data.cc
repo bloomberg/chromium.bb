@@ -106,6 +106,7 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
   Header* header = reinterpret_cast<Header*>(buffer_.get());
   header->num_handles = static_cast<uint32_t>(num_handles);
   // TODO(vtl): platform_handle_table_offset and num_platform_handles
+  // (Okay to not set |unused| since we cleared the entire buffer.)
 
   HandleTableEntry* handle_table = reinterpret_cast<HandleTableEntry*>(
       buffer_.get() + handle_table_start_offset);
@@ -131,6 +132,7 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
       handle_table[i].type = static_cast<int32_t>(dispatcher->GetType());
       handle_table[i].offset = static_cast<uint32_t>(current_offset);
       handle_table[i].size = static_cast<uint32_t>(actual_size);
+      // (Okay to not set |unused| since we cleared the entire buffer.)
 
 #if DCHECK_IS_ON
       DCHECK_LE(actual_size, all_max_sizes[i]);

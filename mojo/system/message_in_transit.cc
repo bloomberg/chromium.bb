@@ -93,6 +93,7 @@ MessageInTransit::MessageInTransit(Type type,
   header()->source_id = kInvalidEndpointId;
   header()->destination_id = kInvalidEndpointId;
   header()->num_bytes = num_bytes;
+  header()->unused = 0;
   // Note: If dispatchers are subsequently attached, then |total_size| will have
   // to be adjusted.
   UpdateTotalSize();
