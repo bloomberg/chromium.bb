@@ -18,12 +18,16 @@
       }
 
       :host(.active) {
-        background-color: #afafaf;
+        background-color: #dddddd
       }
 
       :host(:first-child) {
         border-top-left-radius: 2px;
         border-bottom-left-radius: 2px;
+      }
+
+      :host(:not(:first-child)) .key{
+        border-left: solid 2px #dddddd;
       }
 
       :host(:last-child) {
@@ -33,7 +37,7 @@
 
       :host .key {
         bottom: 0;
-        color: #ffffff;
+        color: #666666;
         font-family: roboto-bold;
         font-weight: 100;
         height: 1.2em;
