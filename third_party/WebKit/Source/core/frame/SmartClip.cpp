@@ -61,14 +61,33 @@ static Node* nodeInsideFrame(Node* node)
     return 0;
 }
 
-IntRect SmartClipData::getRect() const
+// FIXME: SmartClipData is eventually returned via
+// SLookSmartClip.DataExtractionListener:
+// http://img-developer.samsung.com/onlinedocs/sms/com/samsung/android/sdk/look/...
+// however the original author of this change chose to use a string-serialization
+// format (presumably to make IPC easy?).
+// If we're going to use this as a Pickle format, we should at least have the
+// read/write code in one place!
+String SmartClipData::toString()
 {
-    return m_rect;
-}
+    if (!m_node)
+        return emptyString();
 
-String SmartClipData::getClipData() const
-{
-    return m_string;
+    const UChar fieldSeparator = 0xFFFE;
+    const UChar rowSeparator = 0xFFFF;
+
+    StringBuilder result;
+    result.append(String::number(m_rect.x()));
+    result.append(fieldSeparator);
+    result.append(String::number(m_rect.y()));
+    result.append(fieldSeparator);
+    result.append(String::number(m_rect.width()));
+    result.append(fieldSeparator);
+    result.append(String::number(m_rect.height()));
+    result.append(fieldSeparator);
+    result.append(m_string);
+    result.append(rowSeparator);
+    return result.toString();
 }
 
 SmartClip::SmartClip(PassRefPtr<LocalFrame> frame)

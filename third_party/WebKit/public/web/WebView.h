@@ -418,7 +418,7 @@ public:
 
     // SmartClip support ---------------------------------------------------
 
-    virtual void getSmartClipData(WebRect, WebString*, WebRect*) = 0;
+    virtual WebString getSmartClipData(WebRect) = 0;
 
 
     // Popup menu ----------------------------------------------------------

@@ -3448,14 +3448,12 @@ void WebViewImpl::showContextMenu()
     m_contextMenuAllowed = false;
 }
 
-void WebViewImpl::getSmartClipData(WebRect rect, WebString* clipText, WebRect* clipRect)
+WebString WebViewImpl::getSmartClipData(WebRect rect)
 {
     LocalFrame* frame = toLocalFrame(focusedWebCoreFrame());
     if (!frame)
-        return;
-    SmartClipData clipData = WebCore::SmartClip(frame).dataForRect(rect);
-    *clipText = clipData.getClipData();
-    *clipRect = clipData.getRect();
+        return WebString();
+    return WebCore::SmartClip(frame).dataForRect(rect).toString();
 }
 
 void WebViewImpl::hidePopups()

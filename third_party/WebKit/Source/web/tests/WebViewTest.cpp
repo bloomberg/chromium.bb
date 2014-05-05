@@ -1436,17 +1436,15 @@ TEST_F(WebViewTest, DispatchesFocusBlurOnViewToggle)
 
 TEST_F(WebViewTest, SmartClipData)
 {
-    WebString clipData;
-    WebRect clipRect;
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("Ahem.ttf"));
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("smartclip.html"));
     WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "smartclip.html");
     webView->resize(WebSize(500, 500));
     webView->layout();
     WebRect cropRect(300, 125, 100, 50);
-    webView->getSmartClipData(cropRect, &clipData, &clipRect);
 
-    EXPECT_FALSE(clipData.isEmpty());
+    // FIXME: We should test the structure of the data we get back.
+    EXPECT_FALSE(webView->getSmartClipData(cropRect).isEmpty());
 }
 
 class CreateChildCounterFrameClient : public FrameTestHelpers::TestWebFrameClient {
