@@ -667,6 +667,9 @@ const char kLoggingLevel[]                  = "log-level";
 // Enables saving net log events to a file and sets the file name to use.
 const char kLogNetLog[]                     = "log-net-log";
 
+// Make plugin processes log their sent and received messages to VLOG(1).
+const char kLogPluginMessages[]             = "log-plugin-messages";
+
 // Sets the width and height above which a composited layer will get tiled.
 const char kMaxUntiledLayerHeight[]         = "max-untiled-layer-height";
 const char kMaxUntiledLayerWidth[]          = "max-untiled-layer-width";

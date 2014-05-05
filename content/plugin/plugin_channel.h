@@ -92,6 +92,7 @@ class PluginChannel : public NPChannelBase {
   int renderer_id_;
 
   int in_send_;  // Tracks if we're in a Send call.
+  bool log_messages_;  // True if we should log sent and received messages.
   bool incognito_; // True if the renderer is in incognito mode.
   scoped_refptr<MessageFilter> filter_;  // Handles the modal dialog events.
 
