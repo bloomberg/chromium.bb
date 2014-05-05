@@ -23,7 +23,7 @@ struct NaClInterfaceTable {
 #define NACL_INTERFACE_TABLE(name, value) { name, &value, sizeof(value) }
 const NaClInterfaceTable kIrtInterfaces[] = {
   NACL_INTERFACE_TABLE(NACL_IRT_BASIC_v0_1, kIrtBasic),
-  NACL_INTERFACE_TABLE(NACL_IRT_DEV_FDIO_v0_1, kIrtFdIO),
+  NACL_INTERFACE_TABLE(NACL_IRT_FDIO_v0_1, kIrtFdIO),
   NACL_INTERFACE_TABLE(NACL_IRT_MEMORY_v0_3, kIrtMemory),
   NACL_INTERFACE_TABLE(NACL_IRT_THREAD_v0_1, kIrtThread),
   NACL_INTERFACE_TABLE(NACL_IRT_FUTEX_v0_1, kIrtFutex),
