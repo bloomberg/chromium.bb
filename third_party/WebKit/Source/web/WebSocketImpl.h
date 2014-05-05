@@ -32,6 +32,7 @@
 #define WebSocketImpl_h
 
 #include "modules/websockets/WebSocketChannelClient.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebCommon.h"
 #include "public/web/WebSocket.h"
 #include "public/web/WebSocketClient.h"
@@ -75,7 +76,7 @@ public:
     virtual void didClose(unsigned long bufferedAmount, ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) OVERRIDE;
 
 private:
-    RefPtr<WebCore::WebSocketChannel> m_private;
+    RefPtrWillBePersistent<WebCore::WebSocketChannel> m_private;
     WebSocketClient* m_client;
     BinaryType m_binaryType;
 };

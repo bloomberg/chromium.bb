@@ -56,14 +56,17 @@ class SocketStreamHandle;
 class SocketStreamError;
 class WebSocketChannelClient;
 
-class MainThreadWebSocketChannel FINAL : public SocketStreamHandleClient, public WebSocketChannel, public FileReaderLoaderClient {
-    WTF_MAKE_FAST_ALLOCATED;
+class MainThreadWebSocketChannel FINAL : public WebSocketChannel, public SocketStreamHandleClient, public FileReaderLoaderClient {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     // You can specify the source file and the line number information
     // explicitly by passing the last parameter.
     // In the usual case, they are set automatically and you don't have to
     // pass it.
-    static PassRefPtr<MainThreadWebSocketChannel> create(Document* document, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0) { return adoptRef(new MainThreadWebSocketChannel(document, client, sourceURL, lineNumber)); }
+    static PassRefPtrWillBeRawPtr<MainThreadWebSocketChannel> create(Document* document, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0)
+    {
+        return adoptRefWillBeRefCountedGarbageCollected(new MainThreadWebSocketChannel(document, client, sourceURL, lineNumber));
+    }
     virtual ~MainThreadWebSocketChannel();
 
     bool send(const char* data, int length);

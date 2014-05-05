@@ -48,7 +48,7 @@
 
 namespace WebCore {
 
-PassRefPtr<WebSocketChannel> WebSocketChannel::create(ExecutionContext* context, WebSocketChannelClient* client)
+PassRefPtrWillBeRawPtr<WebSocketChannel> WebSocketChannel::create(ExecutionContext* context, WebSocketChannelClient* client)
 {
     ASSERT(context);
     ASSERT(client);

@@ -690,6 +690,7 @@ size_t WebSocket::getFramingOverhead(size_t payloadSize)
 
 void WebSocket::trace(Visitor* visitor)
 {
+    visitor->trace(m_channel);
     visitor->trace(m_eventQueue);
 }
 

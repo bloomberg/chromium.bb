@@ -63,15 +63,15 @@ class WebSocketHandshakeRequest;
 
 // This class may replace MainThreadWebSocketChannel.
 class NewWebSocketChannelImpl FINAL : public WebSocketChannel, public blink::WebSocketHandleClient, public ContextLifecycleObserver {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     // You can specify the source file and the line number information
     // explicitly by passing the last parameter.
     // In the usual case, they are set automatically and you don't have to
     // pass it.
-    static PassRefPtr<NewWebSocketChannelImpl> create(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0)
+    static PassRefPtrWillBeRawPtr<NewWebSocketChannelImpl> create(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0)
     {
-        return adoptRef(new NewWebSocketChannelImpl(context, client, sourceURL, lineNumber));
+        return adoptRefWillBeRefCountedGarbageCollected(new NewWebSocketChannelImpl(context, client, sourceURL, lineNumber));
     }
     virtual ~NewWebSocketChannelImpl();
 
@@ -92,6 +92,8 @@ public:
 
     virtual void suspend() OVERRIDE;
     virtual void resume() OVERRIDE;
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     enum MessageType {
@@ -153,7 +155,7 @@ private:
     KURL m_url;
     // m_identifier > 0 means calling scriptContextExecution() returns a Document.
     unsigned long m_identifier;
-    OwnPtr<BlobLoader> m_blobLoader;
+    OwnPtrWillBeMember<BlobLoader> m_blobLoader;
     Deque<Message> m_messages;
     Vector<char> m_receivingMessageData;
 

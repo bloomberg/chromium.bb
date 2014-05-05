@@ -229,6 +229,12 @@ void WorkerThreadableWebSocketChannel::resume()
         m_bridge->resume();
 }
 
+void WorkerThreadableWebSocketChannel::trace(Visitor* visitor)
+{
+    visitor->trace(m_workerGlobalScope);
+    WebSocketChannel::trace(visitor);
+}
+
 WorkerThreadableWebSocketChannel::Peer::Peer(PassRefPtr<WeakReference<Peer> > reference, PassRefPtr<ThreadableWebSocketChannelClientWrapper> clientWrapper, WorkerLoaderProxy& loaderProxy, ExecutionContext* context, const String& sourceURL, unsigned lineNumber, PassOwnPtr<ThreadableWebSocketChannelSyncHelper> syncHelper)
     : m_workerClientWrapper(clientWrapper)
     , m_loaderProxy(loaderProxy)

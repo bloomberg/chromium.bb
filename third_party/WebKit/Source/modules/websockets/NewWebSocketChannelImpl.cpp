@@ -58,7 +58,7 @@ using blink::WebSocketHandle;
 
 namespace WebCore {
 
-class NewWebSocketChannelImpl::BlobLoader FINAL : public FileReaderLoaderClient {
+class NewWebSocketChannelImpl::BlobLoader FINAL : public NoBaseWillBeGarbageCollectedFinalized<NewWebSocketChannelImpl::BlobLoader>, public FileReaderLoaderClient {
 public:
     BlobLoader(PassRefPtr<BlobDataHandle>, NewWebSocketChannelImpl*);
     virtual ~BlobLoader() { }
@@ -71,8 +71,13 @@ public:
     virtual void didFinishLoading() OVERRIDE;
     virtual void didFail(FileError::ErrorCode) OVERRIDE;
 
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_channel);
+    }
+
 private:
-    NewWebSocketChannelImpl* m_channel;
+    RawPtrWillBeMember<NewWebSocketChannelImpl> m_channel;
     FileReaderLoader m_loader;
 };
 
@@ -306,7 +311,7 @@ void NewWebSocketChannelImpl::sendInternal()
         }
         case MessageTypeBlob:
             ASSERT(!m_blobLoader);
-            m_blobLoader = adoptPtr(new BlobLoader(message.blobDataHandle, this));
+            m_blobLoader = adoptPtrWillBeNoop(new BlobLoader(message.blobDataHandle, this));
             break;
         case MessageTypeArrayBuffer: {
             WebSocketHandle::MessageType type =
@@ -520,6 +525,12 @@ void NewWebSocketChannelImpl::didFailLoadingBlob(FileError::ErrorCode errorCode)
     // FIXME: Generate human-friendly reason message.
     failAsError("Failed to load Blob: error code = " + String::number(errorCode));
     // |this| can be deleted here.
+}
+
+void NewWebSocketChannelImpl::trace(Visitor* visitor)
+{
+    visitor->trace(m_blobLoader);
+    WebSocketChannel::trace(visitor);
 }
 
 } // namespace WebCore

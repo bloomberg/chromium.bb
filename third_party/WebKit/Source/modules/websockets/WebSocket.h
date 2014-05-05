@@ -38,6 +38,7 @@
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/Timer.h"
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Deque.h"
 #include "wtf/Forward.h"
@@ -206,7 +207,7 @@ private:
         BinaryTypeArrayBuffer
     };
 
-    RefPtr<WebSocketChannel> m_channel;
+    RefPtrWillBeMember<WebSocketChannel> m_channel;
 
     State m_state;
     KURL m_url;

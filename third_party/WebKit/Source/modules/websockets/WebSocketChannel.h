@@ -32,6 +32,7 @@
 #define WebSocketChannel_h
 
 #include "core/frame/ConsoleTypes.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
@@ -45,11 +46,14 @@ class KURL;
 class ExecutionContext;
 class WebSocketChannelClient;
 
-class WebSocketChannel : public RefCounted<WebSocketChannel> {
+// FIXME: WebSocketChannel needs to be RefCountedGarbageCollected to support manual ref/deref
+// in MainThreadWebSocketChannelImpl. We should change it to GarbageCollectedFinalized once
+// we remove MainThreadWebSocketChannelImpl.
+class WebSocketChannel : public RefCountedWillBeRefCountedGarbageCollected<WebSocketChannel> {
     WTF_MAKE_NONCOPYABLE(WebSocketChannel);
 public:
     WebSocketChannel() { }
-    static PassRefPtr<WebSocketChannel> create(ExecutionContext*, WebSocketChannelClient*);
+    static PassRefPtrWillBeRawPtr<WebSocketChannel> create(ExecutionContext*, WebSocketChannelClient*);
 
     enum SendResult {
         SendSuccess,
@@ -105,6 +109,8 @@ public:
     virtual void resume() = 0;
 
     virtual ~WebSocketChannel() { }
+
+    virtual void trace(Visitor*) { }
 };
 
 } // namespace WebCore
