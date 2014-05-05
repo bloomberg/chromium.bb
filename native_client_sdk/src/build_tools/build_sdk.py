@@ -502,7 +502,7 @@ def GypNinjaBuild_Pnacl(rel_out_dir, target_arch):
   out_dir = MakeNinjaRelPath(rel_out_dir)
   gyp_file = os.path.join(SRC_DIR, 'ppapi', 'native_client', 'src',
                           'untrusted', 'pnacl_irt_shim', 'pnacl_irt_shim.gyp')
-  targets = ['pnacl_irt_shim_aot']
+  targets = ['shim_aot']
   GypNinjaBuild(target_arch, gyp_py, gyp_file, targets, out_dir, False)
 
 
@@ -1030,4 +1030,3 @@ if __name__ == '__main__':
     sys.exit(main(sys.argv))
   except KeyboardInterrupt:
     buildbot_common.ErrorExit('build_sdk: interrupted')
-

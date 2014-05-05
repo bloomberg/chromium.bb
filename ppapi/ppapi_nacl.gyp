@@ -186,7 +186,7 @@
           },
           # Shim is a dependency for the nexe because we pre-translate.
           'dependencies': [
-            '<(DEPTH)/ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:pnacl_irt_shim_aot',
+            '<(DEPTH)/ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:shim_aot',
           ],
           'actions': [
             {
@@ -221,7 +221,7 @@
           },
           # Shim is a dependency for the nexe because we pre-translate.
           'dependencies': [
-            '<(DEPTH)/ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:pnacl_irt_shim_aot',
+            '<(DEPTH)/ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:shim_aot',
           ],
           'actions': [
             {
@@ -245,7 +245,7 @@
           },
           # Shim is a dependency for the nexe because we pre-translate.
           'dependencies': [
-            '<(DEPTH)/ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:pnacl_irt_shim_aot',
+            '<(DEPTH)/ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:shim_aot',
           ],
           'actions': [
             {

@@ -36,7 +36,7 @@
     'conditions': [
       ['disable_nacl==0 and disable_pnacl==0 and disable_nacl_untrusted==0', {
         'dependencies': [
-          '../../../../../ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:pnacl_irt_shim_browser',
+          '../../../../../ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:shim_browser',
           '../../../../../native_client/tools.gyp:prep_toolchain',
           'untar_pnacl_translator',
         ],

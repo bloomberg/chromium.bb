@@ -9,7 +9,10 @@
   'targets': [
     {
       # The full library, which PNaCl uses for offline .pexe -> .nexe.
-      'target_name': 'pnacl_irt_shim_aot',
+      # We keep the target names in this file short to avoid having really long
+      # path names on Windows.
+      # https://code.google.com/p/nativeclient/issues/detail?id=3846
+      'target_name': 'shim_aot',
       'type': 'none',
       'variables': {
         'nlib_target': 'libpnacl_irt_shim.a',
@@ -50,10 +53,10 @@
     # If we ever change that hook interface or change the in-IRT shim's ABI,
     # we would need to clear the translation cache to match the new IRT.
     {
-      'target_name': 'pnacl_irt_shim_browser',
+      'target_name': 'shim_browser',
       'type': 'none',
       'variables': {
-        # Same name as pnacl_irt_shim_aot, so that we don't need to change
+        # Same output file name as shim_aot, so that we don't need to change
         # the linker commandlines, but output to the "for_browser" directory,
         # and have the pnacl_support_extension copy from that directory.
         'nlib_target': 'libpnacl_irt_shim.a',
@@ -85,7 +88,7 @@
       # Second half of shim library for PNaCl in-browser translation.
       # This half goes into the IRT and is returned by the unstable
       # IRT hook interface.
-      'target_name': 'pnacl_irt_shim_for_irt',
+      'target_name': 'shim_for_irt',
       'type': 'none',
       'variables': {
         'nlib_target': 'libpnacl_irt_shim_for_irt.a',
