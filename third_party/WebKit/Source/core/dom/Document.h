@@ -690,7 +690,6 @@ public:
     EventListener* getWindowAttributeEventListener(const AtomicString& eventType);
 
     PassRefPtrWillBeRawPtr<Event> createEvent(const String& eventType, ExceptionState&);
-    PassRefPtrWillBeRawPtr<Event> createEvent(ExceptionState&);
 
     // keep track of what types of event listeners are registered, so we don't
     // dispatch events unnecessarily

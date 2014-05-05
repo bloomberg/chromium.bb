@@ -261,7 +261,6 @@ public:
         FormAssociationByParser = 248,
         SVGSVGElementInDocument = 250,
         SVGDocumentRootElement = 251,
-        DocumentCreateEventOptionalArgument = 252,
         MediaErrorEncrypted = 253,
         EventSourceURL = 254,
         WebSocketURL = 255,

@@ -63,7 +63,7 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
     // DOM Level 2 Events (DocumentEvents interface)
 
-    [RaisesException] Event createEvent(optional DOMString eventType);
+    [RaisesException] Event createEvent(DOMString eventType);
 
     // DOM Level 2 Traversal and Range (DocumentRange interface)
 
