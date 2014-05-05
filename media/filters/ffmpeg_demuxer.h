@@ -129,7 +129,10 @@ class FFmpegDemuxerStream : public DemuxerStream {
   DecoderBufferQueue buffer_queue_;
   ReadCB read_cb_;
 
+#if defined(USE_PROPRIETARY_CODECS)
   scoped_ptr<FFmpegH264ToAnnexBBitstreamConverter> bitstream_converter_;
+#endif
+
   bool bitstream_converter_enabled_;
 
   std::string encryption_key_id_;

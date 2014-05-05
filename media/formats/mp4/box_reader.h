@@ -29,7 +29,10 @@ struct MEDIA_EXPORT Box {
 class MEDIA_EXPORT BufferReader {
  public:
   BufferReader(const uint8* buf, const int size)
-    : buf_(buf), size_(size), pos_(0) {}
+      : buf_(buf), size_(size), pos_(0) {
+    CHECK(buf);
+    CHECK_GE(size, 0);
+  }
 
   bool HasBytes(int count) { return (pos() + count <= size()); }
 

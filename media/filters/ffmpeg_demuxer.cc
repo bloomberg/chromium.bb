@@ -95,10 +95,12 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
   // Calculate the duration.
   duration_ = ConvertStreamTimestamp(stream->time_base, stream->duration);
 
+#if defined(USE_PROPRIETARY_CODECS)
   if (stream_->codec->codec_id == AV_CODEC_ID_H264) {
     bitstream_converter_.reset(
         new FFmpegH264ToAnnexBBitstreamConverter(stream_->codec));
   }
+#endif
 
   if (is_encrypted) {
     AVDictionaryEntry* key = av_dict_get(stream->metadata, "enc_key_id", NULL,
@@ -127,11 +129,13 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
     return;
   }
 
+#if defined(USE_PROPRIETARY_CODECS)
   // Convert the packet if there is a bitstream filter.
   if (packet->data && bitstream_converter_enabled_ &&
       !bitstream_converter_->ConvertPacket(packet.get())) {
     LOG(ERROR) << "Format conversion failed.";
   }
+#endif
 
   // Get side data if any. For now, the only type of side_data is VP8 Alpha. We
   // keep this generic so that other side_data types in the future can be
@@ -293,8 +297,13 @@ void FFmpegDemuxerStream::Read(const ReadCB& read_cb) {
 
 void FFmpegDemuxerStream::EnableBitstreamConverter() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+#if defined(USE_PROPRIETARY_CODECS)
   CHECK(bitstream_converter_.get());
   bitstream_converter_enabled_ = true;
+#else
+  NOTREACHED() << "Proprietary codecs not enabled.";
+#endif
 }
 
 bool FFmpegDemuxerStream::SupportsConfigChanges() { return false; }

@@ -349,6 +349,15 @@ AVCDecoderConfigurationRecord::~AVCDecoderConfigurationRecord() {}
 FourCC AVCDecoderConfigurationRecord::BoxType() const { return FOURCC_AVCC; }
 
 bool AVCDecoderConfigurationRecord::Parse(BoxReader* reader) {
+  return ParseInternal(reader);
+}
+
+bool AVCDecoderConfigurationRecord::Parse(const uint8* data, int data_size) {
+  BufferReader reader(data, data_size);
+  return ParseInternal(&reader);
+}
+
+bool AVCDecoderConfigurationRecord::ParseInternal(BufferReader* reader) {
   RCHECK(reader->Read1(&version) && version == 1 &&
          reader->Read1(&profile_indication) &&
          reader->Read1(&profile_compatibility) &&
@@ -358,6 +367,8 @@ bool AVCDecoderConfigurationRecord::Parse(BoxReader* reader) {
   RCHECK(reader->Read1(&length_size_minus_one) &&
          (length_size_minus_one & 0xfc) == 0xfc);
   length_size = (length_size_minus_one & 0x3) + 1;
+
+  RCHECK(length_size != 3); // Only values of 1, 2, and 4 are valid.
 
   uint8 num_sps;
   RCHECK(reader->Read1(&num_sps) && (num_sps & 0xe0) == 0xe0);

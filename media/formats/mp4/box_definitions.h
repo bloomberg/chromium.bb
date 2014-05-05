@@ -150,6 +150,13 @@ struct MEDIA_EXPORT HandlerReference : Box {
 struct MEDIA_EXPORT AVCDecoderConfigurationRecord : Box {
   DECLARE_BOX_METHODS(AVCDecoderConfigurationRecord);
 
+  // Parses AVCDecoderConfigurationRecord data encoded in |data|.
+  // Note: This method is intended to parse data outside the MP4StreamParser
+  //       context and therefore the box header is not expected to be present
+  //       in |data|.
+  // Returns true if |data| was successfully parsed.
+  bool Parse(const uint8* data, int data_size);
+
   uint8 version;
   uint8 profile_indication;
   uint8 profile_compatibility;
@@ -161,6 +168,9 @@ struct MEDIA_EXPORT AVCDecoderConfigurationRecord : Box {
 
   std::vector<SPS> sps_list;
   std::vector<PPS> pps_list;
+
+ private:
+  bool ParseInternal(BufferReader* reader);
 };
 
 struct MEDIA_EXPORT PixelAspectRatioBox : Box {
