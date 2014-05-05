@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_NET_NETWORK_PORTAL_DETECTOR_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/chromeos/login/screens/error_screen.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_strategy.h"
 #include "net/url_request/url_fetcher.h"
 
 namespace chromeos {
@@ -16,7 +16,7 @@ class NetworkState;
 // This class handles all notifications about network changes from
 // NetworkStateHandler and delegates portal detection for the active
 // network to CaptivePortalService.
-class NetworkPortalDetector : public ErrorScreen::Observer {
+class NetworkPortalDetector {
  public:
   enum CaptivePortalStatus {
     CAPTIVE_PORTAL_STATUS_UNKNOWN  = 0,
@@ -96,8 +96,9 @@ class NetworkPortalDetector : public ErrorScreen::Observer {
   // started.
   virtual bool StartDetectionIfIdle() = 0;
 
-  virtual void OnErrorScreenShow() OVERRIDE {}
-  virtual void OnErrorScreenHide() OVERRIDE {}
+  // Sets current strategy according to |id|. If current detection id
+  // doesn't equal to |id|, detection is restarted.
+  virtual void SetStrategy(PortalDetectorStrategy::StrategyId id) = 0;
 
   // Initializes network portal detector for testing. The
   // |network_portal_detector| will be owned by the internal pointer

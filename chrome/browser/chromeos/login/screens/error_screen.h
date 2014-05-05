@@ -9,7 +9,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "chrome/browser/chromeos/login/login_performer.h"
 #include "chrome/browser/chromeos/login/oobe_display.h"
 #include "chrome/browser/chromeos/login/screens/error_screen_actor_delegate.h"
@@ -25,13 +24,6 @@ class ErrorScreen : public WizardScreen,
                     public ErrorScreenActorDelegate,
                     public LoginPerformer::Delegate {
  public:
-  class Observer {
-   public:
-    virtual ~Observer() {}
-    virtual void OnErrorScreenShow() = 0;
-    virtual void OnErrorScreenHide() = 0;
-  };
-
   enum UIState {
     UI_STATE_UNKNOWN = 0,
     UI_STATE_UPDATE,
@@ -53,9 +45,6 @@ class ErrorScreen : public WizardScreen,
 
   ErrorScreen(ScreenObserver* screen_observer, ErrorScreenActor* actor);
   virtual ~ErrorScreen();
-
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
 
   // WizardScreen implementation.
   virtual void PrepareToShow() OVERRIDE;
@@ -117,11 +106,9 @@ class ErrorScreen : public WizardScreen,
 
   OobeDisplay::Screen parent_screen_;
 
-  base::WeakPtrFactory<ErrorScreen> weak_factory_;
-
-  ObserverList<Observer> observers_;
-
   scoped_ptr<LoginPerformer> guest_login_performer_;
+
+  base::WeakPtrFactory<ErrorScreen> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ErrorScreen);
 };
