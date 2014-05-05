@@ -23,6 +23,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/common/media_stream_request.h"
 #include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
@@ -37,18 +38,126 @@ using content::BrowserThread;
 
 namespace {
 
-bool HasAvailableDevicesForRequest(const content::MediaStreamRequest& request) {
-  bool has_audio_device =
-      request.audio_type == content::MEDIA_NO_SERVICE ||
-      !MediaCaptureDevicesDispatcher::GetInstance()->GetAudioCaptureDevices()
-          .empty();
-  bool has_video_device =
-      request.video_type == content::MEDIA_NO_SERVICE ||
-      !MediaCaptureDevicesDispatcher::GetInstance()->GetVideoCaptureDevices()
-          .empty();
+// This prefix is combined with request security origins to store media access
+// permissions that the user has granted a specific page navigation instance.
+// The string value stored with the navigation instance will contain one or more
+// kMediaPermissionXxx constants that indicates the permission(s) that the user
+// has granted the page.
+const char kMediaPermissionKeyPrefix[] = "media_permissions#";
+const base::char16 kMediaPermissionAudio = static_cast<base::char16>('a');
+const base::char16 kMediaPermissionVideo = static_cast<base::char16>('v');
 
-  return has_audio_device && has_video_device;
+bool HasAvailableDevicesForRequest(const content::MediaStreamRequest& request) {
+  const content::MediaStreamDevices* audio_devices =
+      request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE ?
+          &MediaCaptureDevicesDispatcher::GetInstance()
+              ->GetAudioCaptureDevices() :
+          NULL;
+
+  const content::MediaStreamDevices* video_devices =
+      request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE ?
+          &MediaCaptureDevicesDispatcher::GetInstance()
+              ->GetVideoCaptureDevices() :
+          NULL;
+
+  // Check if we're being asked for audio and/or video and that either of those
+  // lists is empty.  If they are, we do not have devices available for the
+  // request.
+  // TODO(tommi): It's kind of strange to have this here since if we fail this
+  // test, there'll be a UI shown that indicates to the user that access to
+  // non-existing audio/video devices has been denied.  The user won't have
+  // any way to change that but there will be a UI shown which indicates that
+  // access is blocked.
+  if ((audio_devices != NULL && audio_devices->empty()) ||
+      (video_devices != NULL && video_devices->empty())) {
+    return false;
+  }
+
+  // Note: we check requested_[audio|video]_device_id before dereferencing
+  // [audio|video]_devices.  If the requested device id is non-empty, then
+  // the corresponding device list must not be NULL.
+
+  if (!request.requested_audio_device_id.empty() &&
+      !audio_devices->FindById(request.requested_audio_device_id)) {
+    return false;
+  }
+
+  if (!request.requested_video_device_id.empty() &&
+      !video_devices->FindById(request.requested_video_device_id)) {
+    return false;
+  }
+
+  return true;
 }
+
+base::string16 GetMediaPermissionsFromNavigationEntry(
+    content::NavigationEntry* navigation_entry,
+    const content::MediaStreamRequest& request) {
+  const std::string key(kMediaPermissionKeyPrefix +
+                        request.security_origin.spec());
+
+  base::string16 permissions;
+  if (!navigation_entry->GetExtraData(key, &permissions)) {
+    DCHECK(permissions.empty());
+  }
+
+  return permissions;
+}
+
+void SetMediaPermissionsForNavigationEntry(
+    content::NavigationEntry* navigation_entry,
+    const content::MediaStreamRequest& request,
+    const base::string16& permissions) {
+  const std::string key(kMediaPermissionKeyPrefix +
+                        request.security_origin.spec());
+  permissions.empty() ?
+      navigation_entry->ClearExtraData(key) :
+      navigation_entry->SetExtraData(key, permissions);
+}
+
+void SetMediaPermissionsForNavigationEntry(
+    content::NavigationEntry* navigation_entry,
+    const content::MediaStreamRequest& request,
+    bool allow_audio,
+    bool allow_video) {
+  base::string16 permissions;
+  if (allow_audio)
+    permissions += kMediaPermissionAudio;
+  if (allow_video)
+    permissions += kMediaPermissionVideo;
+  SetMediaPermissionsForNavigationEntry(navigation_entry, request, permissions);
+}
+
+bool IsRequestAllowedByNavigationEntry(
+    content::NavigationEntry* navigation_entry,
+    const content::MediaStreamRequest& request) {
+  using content::MEDIA_NO_SERVICE;
+  using content::MEDIA_DEVICE_AUDIO_CAPTURE;
+  using content::MEDIA_DEVICE_VIDEO_CAPTURE;
+
+  // If we aren't being asked for at least one of these two, fail right away.
+  if (!navigation_entry ||
+      (request.audio_type != MEDIA_DEVICE_AUDIO_CAPTURE &&
+       request.video_type != MEDIA_DEVICE_VIDEO_CAPTURE)) {
+    return false;
+  }
+
+  base::string16 permissions =
+      GetMediaPermissionsFromNavigationEntry(navigation_entry, request);
+
+  bool audio_requested_and_granted =
+      request.audio_type == MEDIA_DEVICE_AUDIO_CAPTURE &&
+      permissions.find(kMediaPermissionAudio) != base::string16::npos;
+
+  bool video_requested_and_granted =
+      request.video_type == MEDIA_DEVICE_VIDEO_CAPTURE &&
+      permissions.find(kMediaPermissionVideo) != base::string16::npos;
+
+  return
+      (audio_requested_and_granted || request.audio_type == MEDIA_NO_SERVICE) &&
+      (video_requested_and_granted || request.video_type == MEDIA_NO_SERVICE);
+}
+
 
 bool IsInKioskMode() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
@@ -200,21 +309,16 @@ bool MediaStreamDevicesController::DismissInfoBarAndTakeActionOnSettings() {
     return true;
   }
 
-  if (request_.request_type == content::MEDIA_OPEN_DEVICE) {
-    bool no_matched_audio_device =
-        (request_.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE &&
-         !request_.requested_audio_device_id.empty() &&
-         MediaCaptureDevicesDispatcher::GetInstance()->GetRequestedAudioDevice(
-             request_.requested_audio_device_id) == NULL);
-    bool no_matched_video_device =
-        (request_.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE &&
-         !request_.requested_video_device_id.empty() &&
-         MediaCaptureDevicesDispatcher::GetInstance()->GetRequestedVideoDevice(
-             request_.requested_video_device_id) == NULL);
-    if (no_matched_audio_device || no_matched_video_device) {
-      Deny(false, content::MEDIA_DEVICE_PERMISSION_DENIED);
-      return true;
-    }
+  // Check if the navigation entry has previously been granted access.
+  // We do this after the IsDefaultMediaAccessBlocked check to handle the use
+  // case where the user modifies the content settings to 'deny' after having
+  // previously granted the page access and the permissions in the
+  // NavigationEntry are out of date.
+  content::NavigationEntry* navigation_entry =
+      web_contents_->GetController().GetVisibleEntry();
+  if (IsRequestAllowedByNavigationEntry(navigation_entry, request_)) {
+    Accept(false);
+    return true;
   }
 
   // Show the infobar.
@@ -305,6 +409,15 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
                                           get_default_video_device,
                                           &devices);
         }
+
+        // Tag this navigation entry with the granted permissions.
+        // This avoids repeated prompts for requests accessed via http.
+        content::NavigationEntry* navigation_entry =
+            web_contents_->GetController().GetVisibleEntry();
+        if (navigation_entry) {
+          SetMediaPermissionsForNavigationEntry(
+              navigation_entry, request_, audio_allowed, video_allowed);
+        }
         break;
       }
       case content::MEDIA_DEVICE_ACCESS: {
@@ -353,6 +466,14 @@ void MediaStreamDevicesController::Deny(
     content::MediaStreamRequestResult result) {
   DLOG(WARNING) << "MediaStreamDevicesController::Deny: " << result;
   NotifyUIRequestDenied();
+
+  // Clear previously allowed permissions from the navigation entry if any.
+  content::NavigationEntry* navigation_entry =
+      web_contents_->GetController().GetVisibleEntry();
+  if (navigation_entry) {
+    SetMediaPermissionsForNavigationEntry(
+        navigation_entry, request_, false, false);
+  }
 
   if (update_content_setting) {
     CHECK_EQ(content::MEDIA_DEVICE_PERMISSION_DENIED, result);
@@ -591,7 +712,7 @@ void MediaStreamDevicesController::SetPermission(bool allowed) const {
       CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
   if (request_permissions_.find(content::MEDIA_DEVICE_AUDIO_CAPTURE) !=
       request_permissions_.end()) {
-      profile_->GetHostContentSettingsMap()->SetContentSetting(
+    profile_->GetHostContentSettingsMap()->SetContentSetting(
         primary_pattern,
         ContentSettingsPattern::Wildcard(),
         CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,

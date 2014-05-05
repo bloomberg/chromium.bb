@@ -46,7 +46,7 @@ enum MediaStreamRequestType {
   MEDIA_DEVICE_ACCESS = 0,
   MEDIA_GENERATE_STREAM,
   MEDIA_ENUMERATE_DEVICES,
-  MEDIA_OPEN_DEVICE
+  MEDIA_OPEN_DEVICE  // Only used in requests made by Pepper.
 };
 
 // Facing mode for video capture.
@@ -164,7 +164,16 @@ struct CONTENT_EXPORT MediaStreamDevice {
   AudioDeviceParameters matched_output;
 };
 
-typedef std::vector<MediaStreamDevice> MediaStreamDevices;
+class CONTENT_EXPORT MediaStreamDevices
+    : public std::vector<MediaStreamDevice> {
+ public:
+  MediaStreamDevices();
+  MediaStreamDevices(size_t count, const MediaStreamDevice& value);
+
+  // Looks for a MediaStreamDevice based on its ID.
+  // Returns NULL if not found.
+  const MediaStreamDevice* FindById(const std::string& device_id) const;
+};
 
 typedef std::map<MediaStreamType, MediaStreamDevices> MediaStreamDeviceMap;
 
