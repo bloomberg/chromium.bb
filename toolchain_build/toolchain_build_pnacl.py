@@ -62,11 +62,8 @@ GIT_REPOS = {
 GIT_BASE_URL = 'https://chromium.googlesource.com/native_client/'
 GIT_DEPS_FILE = os.path.join(NACL_DIR, 'pnacl', 'COMPONENT_REVISIONS')
 
-# TODO(dschuff): Some of this cygwin/mingw logic duplicates stuff in command.py
-# and the mechanism for switching between cygwin and mingw is bad.
-# Path to the hermetic cygwin
+# TODO(dschuff): Some of this mingw logic duplicates stuff in command.py
 BUILD_CROSS_MINGW = False
-CYGWIN_PATH = os.path.join(NACL_DIR, 'cygwin')
 # Path to the mingw cross-compiler libs on Ubuntu
 CROSS_MINGW_LIBPATH = '/usr/lib/gcc/i686-w64-mingw32/4.6'
 # Path and version of the native mingw compiler to be installed on Windows hosts
@@ -81,7 +78,7 @@ BITCODE_BIASES = tuple(bias for bias in ('portable', 'x86-32', 'x86-64', 'arm'))
 MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 
 def TripleIsWindows(t):
-  return fnmatch.fnmatch(t, '*-mingw32*') or fnmatch.fnmatch(t, '*cygwin*')
+  return fnmatch.fnmatch(t, '*-mingw32*')
 
 
 def CompilersForHost(host):
@@ -131,10 +128,9 @@ def ConfigureHostArchFlags(host):
     # that we don't want to have to distribute alongside our binaries.
     # So just disable it, and compiler messages will always be in US English.
     configure_args.append('--disable-nls')
-    if not command.Runnable.use_cygwin:
-      configure_args.extend(['LDFLAGS=-L%(abs_libdl)s',
-                             'CFLAGS=-isystem %(abs_libdl)s',
-                             'CXXFLAGS=-isystem %(abs_libdl)s'])
+    configure_args.extend(['LDFLAGS=-L%(abs_libdl)s',
+                           'CFLAGS=-isystem %(abs_libdl)s',
+                           'CXXFLAGS=-isystem %(abs_libdl)s'])
   return configure_args
 
 
@@ -166,8 +162,7 @@ def CmakeHostArchFlags(host, options):
 
 def MakeCommand(host):
   make_command = ['make']
-  if (not pynacl.platform.IsWindows() or
-      command.Runnable.use_cygwin):
+  if not pynacl.platform.IsWindows():
     # The make that ships with msys sometimes hangs when run with -j.
     # The ming32-make that comes with the compiler itself reportedly doesn't
     # have this problem, but it has issues with pathnames with LLVM's build.
@@ -185,13 +180,7 @@ def MakeCommand(host):
 def CopyWindowsHostLibs(host):
   if not TripleIsWindows(host):
     return []
-  if command.Runnable.use_cygwin:
-    libs = ('cyggcc_s-1.dll', 'cygiconv-2.dll', 'cygwin1.dll', 'cygintl-8.dll',
-            'cygstdc++-6.dll', 'cygz.dll')
-    return [command.Copy(
-                    os.path.join(CYGWIN_PATH, 'bin', lib),
-                    os.path.join('%(output)s', 'bin', lib))
-                for lib in libs]
+
   if pynacl.platform.IsWindows():
     lib_path = os.path.join(MINGW_PATH, 'bin')
     # The native minGW compiler uses winpthread, but the Ubuntu cross compiler
@@ -257,7 +246,7 @@ def TestsuiteSources(GetGitSyncCmds):
 
 def HostLibs(host):
   libs = {}
-  if TripleIsWindows(host) and not command.Runnable.use_cygwin:
+  if TripleIsWindows(host):
     if pynacl.platform.IsWindows():
       ar = 'ar'
     else:
@@ -406,7 +395,7 @@ def HostTools(host, options):
     tools.update(llvm_cmake)
   else:
     tools.update(llvm_autoconf)
-  if TripleIsWindows(host) and not command.Runnable.use_cygwin:
+  if TripleIsWindows(host):
     tools[H('binutils_pnacl')]['dependencies'].append('libdl')
     tools[H('llvm')]['dependencies'].append('libdl')
   return tools
@@ -594,7 +583,7 @@ if __name__ == '__main__':
     SyncPNaClRepos(revisions)
     sys.exit(0)
 
-  if pynacl.platform.IsWindows() and not command.Runnable.use_cygwin:
+  if pynacl.platform.IsWindows():
     InstallMinGWHostCompiler()
 
   packages = {}

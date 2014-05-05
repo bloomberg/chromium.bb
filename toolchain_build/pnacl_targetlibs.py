@@ -42,8 +42,7 @@ TARGET_TOOLS = [ tool + '_FOR_TARGET=' + PnaclTool(name)
 
 def MakeCommand():
   make_command = ['make']
-  if (not pynacl.platform.IsWindows() and
-      not command.Runnable.use_cygwin):
+  if not pynacl.platform.IsWindows():
     # The make that ships with msys sometimes hangs when run with -j.
     # The ming32-make that comes with the compiler itself reportedly doesn't
     # have this problem, but it has issues with pathnames with LLVM's build.
@@ -57,7 +56,7 @@ def Mangle(component_name, extra):
   return component_name + '_' + pynacl.gsd_storage.LegalizeName(extra)
 
 def TripleIsWindows(t):
-  return fnmatch.fnmatch(t, '*-mingw32*') or fnmatch.fnmatch(t, '*cygwin*')
+  return fnmatch.fnmatch(t, '*-mingw32*')
 
 # Copy the driver scripts to the working directory, with extra config to set
 # paths to the compiled host binaries. This could also be done by injecting -B

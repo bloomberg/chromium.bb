@@ -67,25 +67,21 @@ def PlatformEnvironment(extra_paths):
   env = os.environ.copy()
   paths = []
   if sys.platform == 'win32':
-    if Runnable.use_cygwin:
-      # Use the hermetic cygwin.
-      paths = [os.path.join(NACL_DIR, 'cygwin', 'bin')]
-    else:
-      # TODO(bradnelson): switch to something hermetic.
-      mingw = os.environ.get('MINGW', r'c:\mingw')
-      msys = os.path.join(mingw, 'msys', '1.0')
-      if not os.path.exists(msys):
-        msys = os.path.join(mingw, 'msys')
-      # We need both msys (posix like build environment) and MinGW (windows
-      # build of tools like gcc). We add <MINGW>/msys/[1.0/]bin to the path to
-      # get sh.exe. We add <MINGW>/bin to allow direct invocation on MinGW
-      # tools. We also add an msys style path (/mingw/bin) to get things like
-      # gcc from inside msys.
-      paths = [
-          '/mingw/bin',
-          os.path.join(mingw, 'bin'),
-          os.path.join(msys, 'bin'),
-      ]
+    # TODO(bradnelson): switch to something hermetic.
+    mingw = os.environ.get('MINGW', r'c:\mingw')
+    msys = os.path.join(mingw, 'msys', '1.0')
+    if not os.path.exists(msys):
+      msys = os.path.join(mingw, 'msys')
+    # We need both msys (posix like build environment) and MinGW (windows
+    # build of tools like gcc). We add <MINGW>/msys/[1.0/]bin to the path to
+    # get sh.exe. We add <MINGW>/bin to allow direct invocation on MinGW
+    # tools. We also add an msys style path (/mingw/bin) to get things like
+    # gcc from inside msys.
+    paths = [
+        '/mingw/bin',
+        os.path.join(mingw, 'bin'),
+        os.path.join(msys, 'bin'),
+    ]
   env['PATH'] = os.pathsep.join(
       paths + extra_paths + env.get('PATH', '').split(os.pathsep))
   return env
@@ -93,8 +89,6 @@ def PlatformEnvironment(extra_paths):
 
 class Runnable(object):
   """An object representing a single command."""
-  use_cygwin = False
-
   def __init__(self, func, *args, **kwargs):
     """Construct a runnable which will call 'func' with 'args' and 'kwargs'.
 
