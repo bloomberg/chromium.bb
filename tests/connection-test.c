@@ -516,6 +516,8 @@ TEST(connection_marshal_too_big)
 	struct marshal_data data;
 	char *big_string = malloc(5000);
 
+	assert(big_string);
+
 	memset(big_string, ' ', 4999);
 	big_string[4999] = '\0';
 
