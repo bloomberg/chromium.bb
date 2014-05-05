@@ -33,6 +33,7 @@
 #include "core/animation/ActiveAnimations.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/htmlediting.h"
@@ -3029,9 +3030,12 @@ PassRefPtr<RenderStyle> RenderObject::getUncachedPseudoStyleFromParentOrShadowHo
     if (!node())
         return nullptr;
 
-    if (Element* shadowHost = node()->shadowHost()) {
-        if (shadowHost->isFormControlElement())
-            return shadowHost->renderer()->getUncachedPseudoStyle(PseudoStyleRequest(SELECTION));
+    if (ShadowRoot* root = node()->containingShadowRoot()) {
+        if (root->type() == ShadowRoot::UserAgentShadowRoot) {
+            if (Element* shadowHost = node()->shadowHost()) {
+                return shadowHost->renderer()->getUncachedPseudoStyle(PseudoStyleRequest(SELECTION));
+            }
+        }
     }
 
     return getUncachedPseudoStyle(PseudoStyleRequest(SELECTION));
