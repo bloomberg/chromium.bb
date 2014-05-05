@@ -82,10 +82,10 @@ struct GridSpan {
         }
 
         size_t gridLineIndex = std::max<int>(0, firstLineBeforeOppositePositionIndex - position.spanPosition() + 1);
-        size_t resolvedGridLinePosition = gridLines[gridLineIndex];
-        if (resolvedGridLinePosition > resolvedOppositePosition.toInt())
-            resolvedGridLinePosition = resolvedOppositePosition.toInt();
-        return GridSpan::create(GridResolvedPosition(resolvedGridLinePosition), resolvedOppositePosition);
+        GridResolvedPosition resolvedGridLinePosition = GridResolvedPosition(gridLines[gridLineIndex]);
+        if (resolvedGridLinePosition > resolvedOppositePosition)
+            resolvedGridLinePosition = resolvedOppositePosition;
+        return GridSpan::create(resolvedGridLinePosition, resolvedOppositePosition);
     }
 
     static PassOwnPtr<GridSpan> createWithFinalNamedSpanAgainstOpposite(const GridResolvedPosition& resolvedOppositePosition, const GridPosition& position, const Vector<size_t>& gridLines)
@@ -96,10 +96,9 @@ struct GridSpan {
             firstLineAfterOppositePositionIndex = firstLineAfterOppositePosition - gridLines.begin();
 
         size_t gridLineIndex = std::min(gridLines.size() - 1, firstLineAfterOppositePositionIndex + position.spanPosition() - 1);
-        size_t resolvedGridLinePositionInteger = GridResolvedPosition::adjustGridPositionForAfterEndSide(gridLines[gridLineIndex]);
-        GridResolvedPosition resolvedGridLinePosition = GridResolvedPosition(resolvedGridLinePositionInteger);
-        if (resolvedGridLinePosition < resolvedOppositePosition.toInt())
-            resolvedGridLinePosition = resolvedOppositePosition.toInt();
+        GridResolvedPosition resolvedGridLinePosition = GridResolvedPosition::adjustGridPositionForAfterEndSide(gridLines[gridLineIndex]);
+        if (resolvedGridLinePosition < resolvedOppositePosition)
+            resolvedGridLinePosition = resolvedOppositePosition;
         return GridSpan::create(resolvedOppositePosition, resolvedGridLinePosition);
     }
 

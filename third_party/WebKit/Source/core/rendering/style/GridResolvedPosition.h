@@ -29,18 +29,18 @@ enum GridTrackSizingDirection {
 // Wraps a size_t integer just for the purpose of knowing what we manipulate in the grid code.
 class GridResolvedPosition {
 public:
-    static size_t adjustGridPositionForAfterEndSide(size_t resolvedPosition)
+    static GridResolvedPosition adjustGridPositionForAfterEndSide(size_t resolvedPosition)
     {
-        return resolvedPosition ? resolvedPosition - 1 : 0;
+        return resolvedPosition ? GridResolvedPosition(resolvedPosition - 1) : GridResolvedPosition(0);
     }
 
-    static size_t adjustGridPositionForSide(size_t resolvedPosition, GridPositionSide side)
+    static GridResolvedPosition adjustGridPositionForSide(size_t resolvedPosition, GridPositionSide side)
     {
         // An item finishing on the N-th line belongs to the N-1-th cell.
         if (side == ColumnEndSide || side == RowEndSide)
             return adjustGridPositionForAfterEndSide(resolvedPosition);
 
-        return resolvedPosition;
+        return GridResolvedPosition(resolvedPosition);
     }
 
     static GridSpan resolveGridPositionsFromAutoPlacementPosition(const RenderBox&, GridTrackSizingDirection, const GridResolvedPosition&);
@@ -60,7 +60,7 @@ public:
         ASSERT(position.integerPosition());
         size_t integerPosition = position.integerPosition() - 1;
 
-        m_integerPosition = adjustGridPositionForSide(integerPosition, side);
+        m_integerPosition = adjustGridPositionForSide(integerPosition, side).toInt();
     }
 
     GridResolvedPosition& operator++()
