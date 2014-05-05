@@ -60,6 +60,10 @@ const char *kAsanDefaultOptions =
 #if defined(OS_LINUX) || defined(OS_MACOSX)
 extern "C"
 __attribute__((no_sanitize_address))
+__attribute__((visibility("default")))
+// The function isn't referenced from the executable itself. Make sure it isn't
+// stripped by the linker.
+__attribute__((used))
 const char *__asan_default_options() {
   return kAsanDefaultOptions;
 }
