@@ -122,6 +122,8 @@ public:
     // warranted before painting again).
     virtual void paint(WebCanvas*, const WebRect& viewPort, PaintOptions = ReadbackFromCompositorIfAvailable) { }
 
+    virtual void paintCompositedDeprecated(WebCanvas*, const WebRect&) { }
+
     // The caller is responsible for keeping the WebCompositeAndReadbackAsyncCallback
     // object alive until it is called.
     virtual bool compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) { return false; }

@@ -1806,6 +1806,24 @@ void WebViewImpl::paint(WebCanvas* canvas, const WebRect& rect, PaintOptions opt
     }
 }
 
+#if OS(ANDROID)
+void WebViewImpl::paintCompositedDeprecated(WebCanvas* canvas, const WebRect& rect)
+{
+    // Note: This method exists on OS(ANDROID) and will hopefully be
+    //       removed once the link disambiguation feature renders using
+    //       the compositor.
+    ASSERT(isAcceleratedCompositingActive());
+
+    FrameView* view = page()->mainFrame()->view();
+    PaintBehavior oldPaintBehavior = view->paintBehavior();
+    view->setPaintBehavior(oldPaintBehavior | PaintBehaviorFlattenCompositingLayers);
+
+    PageWidgetDelegate::paint(m_page.get(), pageOverlays(), canvas, rect, isTransparent() ? PageWidgetDelegate::Translucent : PageWidgetDelegate::Opaque);
+
+    view->setPaintBehavior(oldPaintBehavior);
+}
+#endif
+
 bool WebViewImpl::compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback* callback)
 {
     if (!isAcceleratedCompositingActive())
