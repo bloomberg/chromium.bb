@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
 #include "mojo/public/cpp/bindings/remote_ptr.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 
 namespace mojo {
@@ -23,11 +24,20 @@ class ViewManagerSynchronizer : public IViewManagerClient {
   explicit ViewManagerSynchronizer(ViewManager* view_manager);
   virtual ~ViewManagerSynchronizer();
 
+  bool connected() const { return connected_; }
+
   // API exposed to the node implementation that pushes local changes to the
   // service.
   uint16_t CreateViewTreeNode();
-  void AddChild(uint16_t child_id, uint16_t parent_id);
-  void RemoveChild(uint16_t child_id, uint16_t parent_id);
+  void DestroyViewTreeNode(TransportNodeId node_id);
+
+  // These methods take TransportIds. For views owned by the current connection,
+  // the connection id high word can be zero. In all cases, the TransportId 0x1
+  // refers to the root node.
+  void AddChild(TransportNodeId child_id, TransportNodeId parent_id);
+  void RemoveChild(TransportNodeId child_id, TransportNodeId parent_id);
+
+  void BuildNodeTree(const Callback<void()>& callback);
 
  private:
   friend class ViewManagerTransaction;
@@ -58,9 +68,17 @@ class ViewManagerSynchronizer : public IViewManagerClient {
   //             the queue?
   uint32_t GetNextChangeId();
 
+  // Called from transactions to notify when a commit is made to the service and
+  // when a response is received.
+  void NotifyCommit();
+  void NotifyCommitResponse(bool success);
+
   // Removes |transaction| from the pending queue. |transaction| must be at the
   // front of the queue.
   void RemoveFromPendingQueue(ViewManagerTransaction* transaction);
+
+  void OnTreeReceived(const Callback<void()>& callback,
+                      const Array<INode>& data);
 
   ViewManager* view_manager_;
   bool connected_;

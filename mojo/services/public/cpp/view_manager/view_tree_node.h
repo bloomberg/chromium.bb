@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 
 namespace mojo {
 namespace services {
@@ -26,7 +27,7 @@ class ViewTreeNode {
   ~ViewTreeNode();
 
   // Configuration.
-  uint16_t id() const { return id_; }
+  TransportNodeId id() const { return id_; }
   void set_owned_by_parent(bool owned_by_parent) {
     owned_by_parent_ = owned_by_parent;
   }
@@ -48,8 +49,11 @@ class ViewTreeNode {
  private:
   friend class ViewTreeNodePrivate;
 
+  void LocalAddChild(ViewTreeNode* child);
+  void LocalRemoveChild(ViewTreeNode* child);
+
   ViewManager* manager_;
-  uint16_t id_;
+  TransportNodeId id_;
   bool owned_by_parent_;
   ViewTreeNode* parent_;
   Children children_;
