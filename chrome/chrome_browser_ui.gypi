@@ -1626,8 +1626,6 @@
         'browser/ui/views/first_run_bubble.h',
         'browser/ui/views/first_run_dialog.cc',
         'browser/ui/views/first_run_dialog.h',
-        'browser/ui/views/frame/app_panel_browser_frame_view.cc',
-        'browser/ui/views/frame/app_panel_browser_frame_view.h',
         'browser/ui/views/frame/browser_command_handler_x11.cc',
         'browser/ui/views/frame/browser_command_handler_x11.h',
         'browser/ui/views/frame/browser_frame.cc',
@@ -3033,8 +3031,6 @@
               ],
               'sources/': [
                 ['exclude', '^browser/ui/cocoa/*'],
-                ['exclude', '^browser/ui/views/frame/app_panel_browser_frame_view.cc'],
-                ['exclude', '^browser/ui/views/frame/app_panel_browser_frame_view.h'],
                 ['exclude', '^browser/ui/views/uninstall_view.cc'],
                 ['exclude', '^browser/ui/views/uninstall_view.h'],
                 ['include', '^browser/ui/window_sizer/window_sizer.cc'],
