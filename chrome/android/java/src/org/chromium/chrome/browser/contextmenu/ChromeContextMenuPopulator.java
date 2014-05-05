@@ -67,9 +67,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                     UrlUtilities.isDownloadableScheme(params.getSrcUrl()));
 
             if (mDelegate.canLoadOriginalImage()) {
-                menu.findItem(R.id.contextmenu_open_original_image_in_new_tab).setVisible(false);
-            } else {
                 menu.findItem(R.id.contextmenu_open_image_in_new_tab).setVisible(false);
+            } else {
+                menu.findItem(R.id.contextmenu_open_original_image_in_new_tab).setVisible(false);
             }
 
             final TemplateUrlService templateUrlServiceInstance = TemplateUrlService.getInstance();
