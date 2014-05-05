@@ -1071,7 +1071,7 @@
         },
       ],
     }],  # OS=="win"
-    ['OS=="win" and fastbuild==0 and target_arch=="ia32"', {
+    ['OS=="win" and fastbuild==0 and target_arch=="ia32" and syzyasan==1', {
       'variables': {
         'dest_dir': '<(PRODUCT_DIR)/syzygy',
       },
