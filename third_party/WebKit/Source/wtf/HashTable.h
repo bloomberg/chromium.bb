@@ -1115,9 +1115,7 @@ namespace WTF {
     void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::trace(typename Allocator::Visitor* visitor)
     {
         // If someone else already marked the backing and queued up the trace
-        // and/or weak callback then we are done. This optimization does not
-        // happen for ListHashSet since its iterator does not point at the
-        // backing.
+        // and/or weak callback then we are done.
         if (!m_table || visitor->isAlive(m_table))
             return;
         // Normally, we mark the backing store without performing trace. This

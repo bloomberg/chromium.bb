@@ -68,30 +68,28 @@ struct IsGarbageCollectedMixin {
     static bool const value = (sizeof(TrueType) == sizeof(hasAdjustAndMark<T>(0))) && (sizeof(TrueType) == sizeof(hasIsAlive<T>(0)));
 };
 
-#define COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage)                                                          \
-    do {                                                                                                              \
-        typedef typename WTF::RemoveConst<T>::Type NonConstType;                                                      \
-        typedef WTF::IsSubclassOfTemplate<NonConstType, GarbageCollected> GarbageCollectedSubclass;                   \
-        typedef IsGarbageCollectedMixin<NonConstType> GarbageCollectedMixinSubclass;                                  \
-        typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapHashSet> HeapHashSetSubclass;                            \
-        typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapLinkedHashSet> HeapLinkedHashSetSubclass;                \
-        typedef WTF::IsSubclassOfTemplateTypenameSizeTypename<NonConstType, HeapListHashSet> HeapListHashSetSubclass; \
-        typedef WTF::IsSubclassOfTemplate5<NonConstType, HeapHashMap> HeapHashMapSubclass;                            \
-        typedef WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapVector> HeapVectorSubclass;                   \
-        typedef WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapDeque> HeapDequeSubclass;                     \
-        typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapHashCountedSet> HeapHashCountedSetSubclass;              \
-        typedef WTF::IsSubclassOfTemplate<NonConstType, HeapTerminatedArray> HeapTerminatedArraySubclass;             \
-        COMPILE_ASSERT(GarbageCollectedSubclass::value ||                                                             \
-            GarbageCollectedMixinSubclass::value ||                                                                   \
-            HeapHashSetSubclass::value ||                                                                             \
-            HeapLinkedHashSetSubclass::value ||                                                                       \
-            HeapListHashSetSubclass::value ||                                                                         \
-            HeapHashMapSubclass::value ||                                                                             \
-            HeapVectorSubclass::value ||                                                                              \
-            HeapDequeSubclass::value ||                                                                               \
-            HeapHashCountedSetSubclass::value ||                                                                      \
-            HeapTerminatedArraySubclass::value,                                                                       \
-            ErrorMessage);                                                                                            \
+#define COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage)                                              \
+    do {                                                                                                  \
+        typedef typename WTF::RemoveConst<T>::Type NonConstType;                                          \
+        typedef WTF::IsSubclassOfTemplate<NonConstType, GarbageCollected> GarbageCollectedSubclass;       \
+        typedef IsGarbageCollectedMixin<NonConstType> GarbageCollectedMixinSubclass;                      \
+        typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapHashSet> HeapHashSetSubclass;                \
+        typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapLinkedHashSet> HeapLinkedHashSetSubclass;    \
+        typedef WTF::IsSubclassOfTemplate5<NonConstType, HeapHashMap> HeapHashMapSubclass;                \
+        typedef WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapVector> HeapVectorSubclass;       \
+        typedef WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapDeque> HeapDequeSubclass;         \
+        typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapHashCountedSet> HeapHashCountedSetSubclass;  \
+        typedef WTF::IsSubclassOfTemplate<NonConstType, HeapTerminatedArray> HeapTerminatedArraySubclass; \
+        COMPILE_ASSERT(GarbageCollectedSubclass::value ||                                                 \
+            GarbageCollectedMixinSubclass::value ||                                                       \
+            HeapHashSetSubclass::value ||                                                                 \
+            HeapLinkedHashSetSubclass::value ||                                                           \
+            HeapHashMapSubclass::value ||                                                                 \
+            HeapVectorSubclass::value ||                                                                  \
+            HeapDequeSubclass::value ||                                                                   \
+            HeapHashCountedSetSubclass::value ||                                                          \
+            HeapTerminatedArraySubclass::value,                                                           \
+            ErrorMessage);                                                                                \
     } while (0)
 
 template<typename T> class Member;
@@ -444,12 +442,6 @@ template<
     typename TraitsArg = HashTraits<ValueArg> >
 class PersistentHeapLinkedHashSet : public PersistentHeapCollectionBase<HeapLinkedHashSet<ValueArg, HashArg, TraitsArg> > { };
 
-template<
-    typename ValueArg,
-    size_t inlineCapacity = 0,
-    typename HashArg = typename DefaultHash<ValueArg>::Hash>
-class PersistentHeapListHashSet : public PersistentHeapCollectionBase<HeapListHashSet<ValueArg, inlineCapacity, HashArg> > { };
-
 template<typename T, typename U, typename V>
 class PersistentHeapHashCountedSet : public PersistentHeapCollectionBase<HeapHashCountedSet<T, U, V> > { };
 
@@ -775,8 +767,6 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define WillBePersistentHeapHashSet WebCore::PersistentHeapHashSet
 #define WillBeHeapLinkedHashSet WebCore::HeapLinkedHashSet
 #define WillBePersistentHeapLinkedHashSet WebCore::PersistentHeapLinkedHashSet
-#define WillBeHeapListHashSet WebCore::HeapListHashSet
-#define WillBePersistentHeapListHashSet WebCore::PersistentHeapListHashSet
 #define WillBeHeapVector WebCore::HeapVector
 #define WillBePersistentHeapVector WebCore::PersistentHeapVector
 #define WillBeHeapDeque WebCore::HeapDeque
@@ -859,8 +849,6 @@ public:
 #define WillBePersistentHeapHashSet WTF::HashSet
 #define WillBeHeapLinkedHashSet WTF::LinkedHashSet
 #define WillBePersistentLinkedHeapHashSet WTF::LinkedHashSet
-#define WillBeHeapListHashSet WTF::ListHashSet
-#define WillBePersistentListHeapHashSet WTF::ListHashSet
 #define WillBeHeapVector WTF::Vector
 #define WillBePersistentHeapVector WTF::Vector
 #define WillBeHeapDeque WTF::Deque
@@ -1089,14 +1077,6 @@ struct NeedsTracing<LinkedHashSet<T, U, V> > {
 template<typename T, typename U, typename V, typename W, typename X>
 struct NeedsTracing<HashMap<T, U, V, W, X> > {
     static const bool value = false;
-};
-
-template<typename T, size_t inlineCapacity>
-struct NeedsTracing<ListHashSetNode<T, WebCore::HeapListHashSetAllocator<T, inlineCapacity> > *> {
-    // All heap allocated node pointers need visiting to keep the nodes alive,
-    // regardless of whether they contain pointers to other heap allocated
-    // objects.
-    static const bool value = true;
 };
 
 } // namespace WTF
