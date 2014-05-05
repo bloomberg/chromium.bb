@@ -164,8 +164,6 @@ public:
     // Allows updates of layer content without repainting.
     void contentChanged(ContentChangeType);
 
-    bool canRender3DTransforms() const;
-
     enum UpdateLayerPositionsFlag {
         CheckForRepaint = 1 << 0,
         NeedsFullRepaintInBacking = 1 << 1,

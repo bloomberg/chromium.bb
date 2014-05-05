@@ -271,7 +271,7 @@ void CompositedLayerMapping::updateTransform(const RenderStyle* style)
     TransformationMatrix t;
     if (m_owningLayer.hasTransform()) {
         style->applyTransform(t, toRenderBox(renderer())->pixelSnappedBorderBoxRect().size(), RenderStyle::ExcludeTransformOrigin);
-        makeMatrixRenderable(t, compositor()->canRender3DTransforms());
+        makeMatrixRenderable(t, compositor()->hasAcceleratedCompositing());
     }
 
     m_graphicsLayer->setTransform(t);

@@ -95,8 +95,6 @@ public:
 
     bool acceleratedCompositingForOverflowScrollEnabled() const;
 
-    bool canRender3DTransforms() const;
-
     bool rootShouldAlwaysComposite() const;
 
     // Copy the accelerated compositing related flags from Settings

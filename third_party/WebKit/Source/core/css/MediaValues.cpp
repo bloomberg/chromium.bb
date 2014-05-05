@@ -118,7 +118,7 @@ bool MediaValues::calculateThreeDEnabled(LocalFrame* frame) const
     ASSERT(frame && frame->contentRenderer() && frame->contentRenderer()->compositor());
     bool threeDEnabled = false;
     if (RenderView* view = frame->contentRenderer())
-        threeDEnabled = view->compositor()->canRender3DTransforms();
+        threeDEnabled = view->compositor()->hasAcceleratedCompositing();
     return threeDEnabled;
 }
 

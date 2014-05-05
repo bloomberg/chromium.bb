@@ -227,11 +227,6 @@ void RenderLayer::contentChanged(ContentChangeType changeType)
         m_compositedLayerMapping->contentChanged(changeType);
 }
 
-bool RenderLayer::canRender3DTransforms() const
-{
-    return compositor()->canRender3DTransforms();
-}
-
 bool RenderLayer::paintsWithFilters() const
 {
     if (!renderer()->hasFilter())
@@ -550,7 +545,7 @@ void RenderLayer::updateTransform()
         ASSERT(box);
         m_transform->makeIdentity();
         box->style()->applyTransform(*m_transform, box->pixelSnappedBorderBoxRect().size(), RenderStyle::IncludeTransformOrigin);
-        makeMatrixRenderable(*m_transform, canRender3DTransforms());
+        makeMatrixRenderable(*m_transform, compositor()->hasAcceleratedCompositing());
     }
 
     if (had3DTransform != has3DTransform())
@@ -587,7 +582,7 @@ TransformationMatrix RenderLayer::currentTransform(RenderStyle::ApplyTransformOr
         RenderBox* box = renderBox();
         TransformationMatrix currTransform;
         box->style()->applyTransform(currTransform, box->pixelSnappedBorderBoxRect().size(), RenderStyle::ExcludeTransformOrigin);
-        makeMatrixRenderable(currTransform, canRender3DTransforms());
+        makeMatrixRenderable(currTransform, compositor()->hasAcceleratedCompositing());
         return currTransform;
     }
 

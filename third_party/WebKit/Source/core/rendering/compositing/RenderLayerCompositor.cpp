@@ -228,11 +228,6 @@ bool RenderLayerCompositor::acceleratedCompositingForOverflowScrollEnabled() con
     return m_compositingReasonFinder.hasOverflowScrollTrigger();
 }
 
-bool RenderLayerCompositor::canRender3DTransforms() const
-{
-    return hasAcceleratedCompositing();
-}
-
 void RenderLayerCompositor::setCompositingLayersNeedRebuild()
 {
     // FIXME: crbug.com/332248 ideally this could be merged with setNeedsCompositingUpdate().
