@@ -40,13 +40,17 @@
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/WebIDBCallbacksImpl.h"
 #include "platform/SharedBuffer.h"
+#include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebIDBKey.h"
 #include "public/platform/WebIDBKeyRange.h"
+#include "public/platform/WebVector.h"
 
+using blink::WebBlobInfo;
 using blink::WebIDBCallbacks;
 using blink::WebIDBCursor;
 using blink::WebIDBDatabase;
+using blink::WebVector;
 
 namespace WebCore {
 
@@ -177,7 +181,9 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBObjectStore::put(ExecutionContext* executi
         return nullptr;
     }
 
-    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(value, 0, exceptionState, toIsolate(executionContext));
+    Vector<WebBlobInfo> blobInfo;
+
+    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(value, &blobInfo, exceptionState, toIsolate(executionContext));
     if (exceptionState.hadException())
         return nullptr;
 
@@ -186,6 +192,7 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBObjectStore::put(ExecutionContext* executi
         exceptionState.throwDOMException(DataCloneError, "The object store currently does not support blob values.");
         return nullptr;
     }
+    ASSERT(blobInfo.isEmpty());
 
     const IDBKeyPath& keyPath = m_metadata.keyPath;
     const bool usesInLineKeys = !keyPath.isNull();
@@ -241,7 +248,8 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBObjectStore::put(ExecutionContext* executi
     Vector<char> wireBytes;
     serializedValue->toWireBytes(wireBytes);
     RefPtr<SharedBuffer> valueBuffer = SharedBuffer::adoptVector(wireBytes);
-    backendDB()->put(m_transaction->id(), id(), blink::WebData(valueBuffer), key.release(), static_cast<WebIDBDatabase::PutMode>(putMode), WebIDBCallbacksImpl::create(request).leakPtr(), indexIds, indexKeys);
+
+    backendDB()->put(m_transaction->id(), id(), blink::WebData(valueBuffer), blobInfo, key.release(), static_cast<WebIDBDatabase::PutMode>(putMode), WebIDBCallbacksImpl::create(request).leakPtr(), indexIds, indexKeys);
     return request.release();
 }
 

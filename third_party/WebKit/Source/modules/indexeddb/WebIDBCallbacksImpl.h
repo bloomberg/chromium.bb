@@ -58,21 +58,13 @@ public:
     // Pointers transfer ownership.
     virtual void onError(const blink::WebIDBDatabaseError&) OVERRIDE;
     virtual void onSuccess(const blink::WebVector<blink::WebString>&) OVERRIDE;
-    // TODO(ericu): Remove this version, here only for the 3-side patch dance.
-    virtual void onSuccess(blink::WebIDBCursor*, const blink::WebIDBKey&, const blink::WebIDBKey& primaryKey, const blink::WebData&);
     virtual void onSuccess(blink::WebIDBCursor*, const blink::WebIDBKey&, const blink::WebIDBKey& primaryKey, const blink::WebData&, const blink::WebVector<blink::WebBlobInfo>&) OVERRIDE;
     virtual void onSuccess(blink::WebIDBDatabase*, const blink::WebIDBMetadata&) OVERRIDE;
     virtual void onSuccess(const blink::WebIDBKey&) OVERRIDE;
-    // TODO(ericu): Remove this version, here only for the 3-side patch dance.
-    virtual void onSuccess(const blink::WebData&);
     virtual void onSuccess(const blink::WebData&, const blink::WebVector<blink::WebBlobInfo>&) OVERRIDE;
-    // TODO(ericu): Remove this version, here only for the 3-side patch dance.
-    virtual void onSuccess(const blink::WebData&, const blink::WebIDBKey&, const blink::WebIDBKeyPath&);
     virtual void onSuccess(const blink::WebData&, const blink::WebVector<blink::WebBlobInfo>&, const blink::WebIDBKey&, const blink::WebIDBKeyPath&) OVERRIDE;
     virtual void onSuccess(long long) OVERRIDE;
     virtual void onSuccess() OVERRIDE;
-    // TODO(ericu): Remove this version, here only for the 3-side patch dance.
-    virtual void onSuccess(const blink::WebIDBKey&, const blink::WebIDBKey& primaryKey, const blink::WebData&);
     virtual void onSuccess(const blink::WebIDBKey&, const blink::WebIDBKey& primaryKey, const blink::WebData&, const blink::WebVector<blink::WebBlobInfo>&) OVERRIDE;
     virtual void onBlocked(long long oldVersion) OVERRIDE;
     virtual void onUpgradeNeeded(long long oldVersion, blink::WebIDBDatabase*, const blink::WebIDBMetadata&, unsigned short dataLoss, blink::WebString dataLossMessage) OVERRIDE;

@@ -89,12 +89,6 @@ void WebIDBCallbacksImpl::onSuccess(const WebVector<blink::WebString>& webString
     m_request->onSuccess(stringList);
 }
 
-void WebIDBCallbacksImpl::onSuccess(WebIDBCursor* cursor, const WebIDBKey& key, const WebIDBKey& primaryKey, const WebData& value)
-{
-    OwnPtr<Vector<blink::WebBlobInfo> > blobInfo(adoptPtr(new Vector<blink::WebBlobInfo>()));
-    m_request->onSuccess(adoptPtr(cursor), key, primaryKey, value, blobInfo.release());
-}
-
 void WebIDBCallbacksImpl::onSuccess(WebIDBCursor* cursor, const WebIDBKey& key, const WebIDBKey& primaryKey, const WebData& value, const WebVector<WebBlobInfo>& webBlobInfo)
 {
     m_request->onSuccess(adoptPtr(cursor), key, primaryKey, value, ConvertBlobInfo(webBlobInfo));
@@ -110,21 +104,9 @@ void WebIDBCallbacksImpl::onSuccess(const WebIDBKey& key)
     m_request->onSuccess(key);
 }
 
-void WebIDBCallbacksImpl::onSuccess(const WebData& value)
-{
-    OwnPtr<Vector<blink::WebBlobInfo> > blobInfo(adoptPtr(new Vector<blink::WebBlobInfo>()));
-    m_request->onSuccess(value, blobInfo.release());
-}
-
 void WebIDBCallbacksImpl::onSuccess(const WebData& value, const WebVector<WebBlobInfo>& webBlobInfo)
 {
     m_request->onSuccess(value, ConvertBlobInfo(webBlobInfo));
-}
-
-void WebIDBCallbacksImpl::onSuccess(const WebData& value, const WebIDBKey& key, const WebIDBKeyPath& keyPath)
-{
-    OwnPtr<Vector<blink::WebBlobInfo> > blobInfo(adoptPtr(new Vector<blink::WebBlobInfo>()));
-    m_request->onSuccess(value, blobInfo.release(), key, keyPath);
 }
 
 void WebIDBCallbacksImpl::onSuccess(const WebData& value, const WebVector<WebBlobInfo>& webBlobInfo, const WebIDBKey& key, const WebIDBKeyPath& keyPath)
@@ -140,12 +122,6 @@ void WebIDBCallbacksImpl::onSuccess(long long value)
 void WebIDBCallbacksImpl::onSuccess()
 {
     m_request->onSuccess();
-}
-
-void WebIDBCallbacksImpl::onSuccess(const WebIDBKey& key, const WebIDBKey& primaryKey, const WebData& value)
-{
-    OwnPtr<Vector<blink::WebBlobInfo> > blobInfo(adoptPtr(new Vector<blink::WebBlobInfo>()));
-    m_request->onSuccess(key, primaryKey, value, blobInfo.release());
 }
 
 void WebIDBCallbacksImpl::onSuccess(const WebIDBKey& key, const WebIDBKey& primaryKey, const WebData& value, const WebVector<WebBlobInfo>& webBlobInfo)
