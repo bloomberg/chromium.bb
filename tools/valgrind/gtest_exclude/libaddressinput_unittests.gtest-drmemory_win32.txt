@@ -1,6 +1,6 @@
 # fail in native run
 RuleTest.CanonicalizeSubKeyTest
-# fail on bot only, cannot reproduce locally
-AddressValidatorTest.EmptyAddressNoFatalFailure
-AddressValidatorTest.RegionHasRules
-AddressValidatorTest.USZipCode
+# fail on bot only and fail natively, cannot reproduce locally
+AddressValidatorTest.*
+CountryRulesAggregatorTest.ValidRulesets
+ExampleAddressValidatorTest.examples
