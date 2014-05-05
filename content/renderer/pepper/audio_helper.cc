@@ -53,7 +53,7 @@ void AudioHelper::StreamCreated(base::SharedMemoryHandle shared_memory_handle,
                                 size_t shared_memory_size,
                                 base::SyncSocket::Handle socket_handle) {
   if (TrackedCallback::IsPending(create_callback_)) {
-    // Trusted side of proxy can specify a callback to recieve handles. In
+    // Trusted side of proxy can specify a callback to receive handles. In
     // this case we don't need to map any data or start the thread since it
     // will be handled by the proxy.
     shared_memory_for_create_callback_.reset(

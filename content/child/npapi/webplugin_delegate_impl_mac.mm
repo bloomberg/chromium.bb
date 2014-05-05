@@ -354,7 +354,7 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   }
   NPCocoaEvent* plugin_event = event_converter->plugin_event();
 
-  // The plugin host recieves events related to drags starting outside the
+  // The plugin host receives events related to drags starting outside the
   // plugin, but the NPAPI Cocoa event model spec says plugins shouldn't receive
   // them, so filter them out.
   // If WebKit adds a page capture mode (like the plugin capture mode that

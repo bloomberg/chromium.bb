@@ -623,7 +623,7 @@ void NPN_InvalidateRect(NPP id, NPRect *invalidRect) {
   // Before a windowless plugin can refresh part of its drawing area, it must
   // first invalidate it.  This function causes the NPP_HandleEvent method to
   // pass an update event or a paint message to the plug-in.  After calling
-  // this method, the plug-in recieves a paint message asynchronously.
+  // this method, the plug-in receives a paint message asynchronously.
 
   // The browser redraws invalid areas of the document and any windowless
   // plug-ins at regularly timed intervals. To force a paint message, the

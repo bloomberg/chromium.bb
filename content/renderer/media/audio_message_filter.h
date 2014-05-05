@@ -45,7 +45,7 @@ class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
                                                          int render_frame_id);
 
   // When set, AudioMessageFilter will update the AudioHardwareConfig with new
-  // configuration values as recieved by OnOutputDeviceChanged().  The provided
+  // configuration values as received by OnOutputDeviceChanged().  The provided
   // |config| must outlive AudioMessageFilter.
   void SetAudioHardwareConfig(media::AudioHardwareConfig* config);
 
