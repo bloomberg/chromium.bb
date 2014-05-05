@@ -57,7 +57,7 @@ const BluetoothGattCharacteristic::Properties kTestCharacteristicProperties1 =
     BluetoothGattCharacteristic::kPropertyNotify;
 const uint8 kTestCharacteristicDefaultValue1[] = {0x06, 0x07, 0x08};
 
-const char kTestCharacteristicId2[] = "char_id1";
+const char kTestCharacteristicId2[] = "char_id2";
 const char kTestCharacteristicUuid2[] = "1213";
 const BluetoothGattCharacteristic::Properties kTestCharacteristicProperties2 =
     BluetoothGattCharacteristic::kPropertyNone;
@@ -363,6 +363,104 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetCharacteristics) {
   listener.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  event_router()->GattServiceRemoved(device_.get(), service0_.get());
+  event_router()->DeviceRemoved(mock_adapter_, device_.get());
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetCharacteristic) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  event_router()->DeviceAdded(mock_adapter_, device_.get());
+  event_router()->GattServiceAdded(device_.get(), service0_.get());
+  event_router()->GattCharacteristicAdded(service0_.get(), chrc0_.get());
+
+  EXPECT_CALL(*mock_adapter_, GetDevice(_))
+      .Times(4)
+      .WillOnce(Return(static_cast<BluetoothDevice*>(NULL)))
+      .WillRepeatedly(Return(device_.get()));
+
+  EXPECT_CALL(*device_, GetGattService(kTestServiceId0))
+      .Times(3)
+      .WillOnce(Return(static_cast<BluetoothGattService*>(NULL)))
+      .WillRepeatedly(Return(service0_.get()));
+
+  EXPECT_CALL(*service0_, GetCharacteristic(kTestCharacteristicId0))
+      .Times(2)
+      .WillOnce(Return(static_cast<BluetoothGattCharacteristic*>(NULL)))
+      .WillOnce(Return(chrc0_.get()));
+
+  // Load the extension and wait for first test.
+  ExtensionTestMessageListener listener("ready", true);
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("bluetooth_low_energy/get_characteristic")));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  listener.Reply("go");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  event_router()->GattCharacteristicRemoved(service0_.get(), chrc0_.get());
+  event_router()->GattServiceRemoved(device_.get(), service0_.get());
+  event_router()->DeviceRemoved(mock_adapter_, device_.get());
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, CharacteristicProperties) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  event_router()->DeviceAdded(mock_adapter_, device_.get());
+  event_router()->GattServiceAdded(device_.get(), service0_.get());
+  event_router()->GattCharacteristicAdded(service0_.get(), chrc0_.get());
+
+  EXPECT_CALL(*mock_adapter_, GetDevice(_))
+      .Times(12)
+      .WillRepeatedly(Return(device_.get()));
+  EXPECT_CALL(*device_, GetGattService(kTestServiceId0))
+      .Times(12)
+      .WillRepeatedly(Return(service0_.get()));
+  EXPECT_CALL(*service0_, GetCharacteristic(kTestCharacteristicId0))
+      .Times(12)
+      .WillRepeatedly(Return(chrc0_.get()));
+  EXPECT_CALL(*chrc0_, GetProperties())
+      .Times(12)
+      .WillOnce(Return(BluetoothGattCharacteristic::kPropertyNone))
+      .WillOnce(Return(BluetoothGattCharacteristic::kPropertyBroadcast))
+      .WillOnce(Return(BluetoothGattCharacteristic::kPropertyRead))
+      .WillOnce(
+           Return(BluetoothGattCharacteristic::kPropertyWriteWithoutResponse))
+      .WillOnce(Return(BluetoothGattCharacteristic::kPropertyWrite))
+      .WillOnce(Return(BluetoothGattCharacteristic::kPropertyNotify))
+      .WillOnce(Return(BluetoothGattCharacteristic::kPropertyIndicate))
+      .WillOnce(Return(
+          BluetoothGattCharacteristic::kPropertyAuthenticatedSignedWrites))
+      .WillOnce(
+           Return(BluetoothGattCharacteristic::kPropertyExtendedProperties))
+      .WillOnce(Return(BluetoothGattCharacteristic::kPropertyReliableWrite))
+      .WillOnce(
+           Return(BluetoothGattCharacteristic::kPropertyWriteableAuxiliaries))
+      .WillOnce(Return(
+          BluetoothGattCharacteristic::kPropertyBroadcast |
+          BluetoothGattCharacteristic::kPropertyRead |
+          BluetoothGattCharacteristic::kPropertyWriteWithoutResponse |
+          BluetoothGattCharacteristic::kPropertyWrite |
+          BluetoothGattCharacteristic::kPropertyNotify |
+          BluetoothGattCharacteristic::kPropertyIndicate |
+          BluetoothGattCharacteristic::kPropertyAuthenticatedSignedWrites |
+          BluetoothGattCharacteristic::kPropertyExtendedProperties |
+          BluetoothGattCharacteristic::kPropertyReliableWrite |
+          BluetoothGattCharacteristic::kPropertyWriteableAuxiliaries));
+
+  ExtensionTestMessageListener listener("ready", true);
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
+      "bluetooth_low_energy/characteristic_properties")));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  listener.Reply("go");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  event_router()->GattCharacteristicRemoved(service0_.get(), chrc0_.get());
   event_router()->GattServiceRemoved(device_.get(), service0_.get());
   event_router()->DeviceRemoved(mock_adapter_, device_.get());
 }

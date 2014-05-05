@@ -21,6 +21,8 @@ namespace {
 
 const char kErrorAdapterNotInitialized[] =
     "Could not initialize Bluetooth adapter.";
+const char kErrorCharacteristicNotFoundFormat[] =
+    "Characteristic with ID \"%s\" not found.";
 const char kErrorDeviceNotFoundFormat[] =
     "Device with address \"%s\" not found.";
 const char kErrorServiceNotFoundFormat[] = "Service with ID \"%s\" not found.";
@@ -197,10 +199,40 @@ bool BluetoothLowEnergyGetServicesFunction::DoWork() {
 }
 
 bool BluetoothLowEnergyGetCharacteristicFunction::DoWork() {
-  // TODO(armansito): Implement.
-  SetError("Call not supported.");
-  SendResponse(false);
-  return false;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BluetoothLowEnergyEventRouter* event_router =
+      GetEventRouter(browser_context());
+
+  // The adapter must be initialized at this point, but return an error instead
+  // of asserting.
+  if (!event_router->HasAdapter()) {
+    SetError(kErrorAdapterNotInitialized);
+    SendResponse(false);
+    return false;
+  }
+
+  scoped_ptr<apibtle::GetCharacteristic::Params> params(
+      apibtle::GetCharacteristic::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+
+  std::string characteristic_id = params->characteristic_id;
+
+  apibtle::Characteristic characteristic;
+  if (!event_router->GetCharacteristic(characteristic_id, &characteristic)) {
+    SetError(base::StringPrintf(kErrorCharacteristicNotFoundFormat,
+                                characteristic_id.c_str()));
+    SendResponse(false);
+    return false;
+  }
+
+  // Manually construct the result instead of using
+  // apibtle::GetCharacteristic::Result::Create as it doesn't convert lists of
+  // enums correctly.
+  SetResult(CharacteristicToValue(&characteristic).release());
+  SendResponse(true);
+
+  return true;
 }
 
 bool BluetoothLowEnergyGetCharacteristicsFunction::DoWork() {
