@@ -24,16 +24,26 @@ static uint32 kMagic = 0x864088dd;
 // Version history:
 // Version 1: b6cb7cfe/r74487 by shess@chromium.org on 2011-02-10
 // Version 2: 2b59b0a6/r253924 by shess@chromium.org on 2014-02-27
+// Version 3: ????????/r?????? by shess@chromium.org on 2014-04-??
 
 // Version 2 layout is identical to version 1.  The sort order of |index_|
 // changed from |int32| to |uint32| to match the change of |SBPrefix|.
-static uint32 kVersion = 0x2;
+// Version 3 adds storage for full hashes.
+static uint32 kVersion = 0x3;
 
 typedef struct {
   uint32 magic;
   uint32 version;
   uint32 index_size;
   uint32 deltas_size;
+} FileHeader_v2;
+
+typedef struct {
+  uint32 magic;
+  uint32 version;
+  uint32 index_size;
+  uint32 deltas_size;
+  uint32 full_hashes_size;
 } FileHeader;
 
 // Common std::vector<> implementations add capacity by multiplying from the
@@ -84,10 +94,13 @@ bool PrefixSet::PrefixLess(const IndexPair& a, const IndexPair& b) {
 PrefixSet::PrefixSet() {
 }
 
-PrefixSet::PrefixSet(IndexVector* index, std::vector<uint16>* deltas) {
-  DCHECK(index && deltas);
+PrefixSet::PrefixSet(IndexVector* index,
+                     std::vector<uint16>* deltas,
+                     std::vector<SBFullHash>* full_hashes) {
+  DCHECK(index && deltas && full_hashes);
   index_.swap(*index);
   deltas_.swap(*deltas);
+  full_hashes_.swap(*full_hashes);
 }
 
 PrefixSet::~PrefixSet() {}
@@ -156,7 +169,9 @@ scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
   if (!base::GetFileSize(filter_name, &size_64))
     return scoped_ptr<PrefixSet>();
   using base::MD5Digest;
-  if (size_64 < static_cast<int64>(sizeof(FileHeader) + sizeof(MD5Digest)))
+  // TODO(shess): Revert to sizeof(FileHeader) for sanity check once v2 is
+  // deprecated.
+  if (size_64 < static_cast<int64>(sizeof(FileHeader_v2) + sizeof(MD5Digest)))
     return scoped_ptr<PrefixSet>();
 
   base::ScopedFILE file(base::OpenFile(filter_name, "rb"));
@@ -168,6 +183,12 @@ scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
   if (read != 1)
     return scoped_ptr<PrefixSet>();
 
+  // The file looks valid, start building the digest.
+  base::MD5Context context;
+  base::MD5Init(&context);
+  base::MD5Update(&context, base::StringPiece(reinterpret_cast<char*>(&header),
+                                              sizeof(header)));
+
   if (header.magic != kMagic)
     return scoped_ptr<PrefixSet>();
 
@@ -176,9 +197,36 @@ scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
 
   // TODO(shess): Version 1 and 2 use the same file structure, with version 1
   // data using a signed sort.  For M-35, the data is re-sorted before return.
-  // After M-35, just drop v1 support. <http://crbug.com/346405>
-  if (header.version != kVersion && header.version != 1)
+  // After M-36, just drop v1 support. <http://crbug.com/346405>
+  // TODO(shess): <http://crbug.com/368044> for removing v2 support.
+  size_t header_size = sizeof(header);
+  if (header.version == 2 || header.version == 1) {
+    // Rewind the file and restart building the digest with the old header
+    // structure.
+    FileHeader_v2 v2_header;
+    if (0 != fseek(file.get(), 0, SEEK_SET))
+      return scoped_ptr<PrefixSet>();
+
+    size_t read = fread(&v2_header, sizeof(v2_header), 1, file.get());
+    if (read != 1)
+      return scoped_ptr<PrefixSet>();
+
+    base::MD5Init(&context);
+    base::MD5Update(&context,
+                    base::StringPiece(reinterpret_cast<char*>(&v2_header),
+                                      sizeof(v2_header)));
+
+    // The current header is a superset of the old header, fill it in with the
+    // information read.
+    header.magic = v2_header.magic;
+    header.version = v2_header.version;
+    header.index_size = v2_header.index_size;
+    header.deltas_size = v2_header.deltas_size;
+    header.full_hashes_size = 0;
+    header_size = sizeof(v2_header);
+  } else if (header.version != kVersion) {
     return scoped_ptr<PrefixSet>();
+  }
 
   IndexVector index;
   const size_t index_bytes = sizeof(index[0]) * header.index_size;
@@ -186,17 +234,15 @@ scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
   std::vector<uint16> deltas;
   const size_t deltas_bytes = sizeof(deltas[0]) * header.deltas_size;
 
+  std::vector<SBFullHash> full_hashes;
+  const size_t full_hashes_bytes =
+      sizeof(full_hashes[0]) * header.full_hashes_size;
+
   // Check for bogus sizes before allocating any space.
-  const size_t expected_bytes =
-      sizeof(header) + index_bytes + deltas_bytes + sizeof(MD5Digest);
+  const size_t expected_bytes = header_size +
+      index_bytes + deltas_bytes + full_hashes_bytes + sizeof(MD5Digest);
   if (static_cast<int64>(expected_bytes) != size_64)
     return scoped_ptr<PrefixSet>();
-
-  // The file looks valid, start building the digest.
-  base::MD5Context context;
-  base::MD5Init(&context);
-  base::MD5Update(&context, base::StringPiece(reinterpret_cast<char*>(&header),
-                                              sizeof(header)));
 
   // Read the index vector.  Herb Sutter indicates that vectors are
   // guaranteed to be contiuguous, so reading to where element 0 lives
@@ -222,6 +268,19 @@ scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
                                       deltas_bytes));
   }
 
+  // Read vector of full hashes.
+  if (header.full_hashes_size) {
+    full_hashes.resize(header.full_hashes_size);
+    read = fread(&(full_hashes[0]), sizeof(full_hashes[0]), full_hashes.size(),
+                 file.get());
+    if (read != full_hashes.size())
+      return scoped_ptr<PrefixSet>();
+    base::MD5Update(&context,
+                    base::StringPiece(
+                        reinterpret_cast<char*>(&(full_hashes[0])),
+                        full_hashes_bytes));
+  }
+
   base::MD5Digest calculated_digest;
   base::MD5Final(&calculated_digest, &context);
 
@@ -236,13 +295,15 @@ scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
   // For version 1, fetch the prefixes and re-sort.
   if (header.version == 1) {
     std::vector<SBPrefix> prefixes;
-    PrefixSet(&index, &deltas).GetPrefixes(&prefixes);
+    PrefixSet(&index, &deltas, &full_hashes).GetPrefixes(&prefixes);
     std::sort(prefixes.begin(), prefixes.end());
+
+    // v1 cannot have full hashes, so no need to propagate a copy here.
     return PrefixSetBuilder(prefixes).GetPrefixSetNoHashes().Pass();
   }
 
-  // Steals contents of |index| and |deltas| via swap().
-  return scoped_ptr<PrefixSet>(new PrefixSet(&index, &deltas));
+  // Steals vector contents using swap().
+  return scoped_ptr<PrefixSet>(new PrefixSet(&index, &deltas, &full_hashes));
 }
 
 bool PrefixSet::WriteFile(const base::FilePath& filter_name) const {
@@ -251,10 +312,12 @@ bool PrefixSet::WriteFile(const base::FilePath& filter_name) const {
   header.version = kVersion;
   header.index_size = static_cast<uint32>(index_.size());
   header.deltas_size = static_cast<uint32>(deltas_.size());
+  header.full_hashes_size = static_cast<uint32>(full_hashes_.size());
 
   // Sanity check that the 32-bit values never mess things up.
   if (static_cast<size_t>(header.index_size) != index_.size() ||
-      static_cast<size_t>(header.deltas_size) != deltas_.size()) {
+      static_cast<size_t>(header.deltas_size) != deltas_.size() ||
+      static_cast<size_t>(header.full_hashes_size) != full_hashes_.size()) {
     NOTREACHED();
     return false;
   }
@@ -298,6 +361,19 @@ bool PrefixSet::WriteFile(const base::FilePath& filter_name) const {
                     base::StringPiece(
                         reinterpret_cast<const char*>(&(deltas_[0])),
                         deltas_bytes));
+  }
+
+  if (full_hashes_.size()) {
+    const size_t elt_size = sizeof(full_hashes_[0]);
+    const size_t elts = full_hashes_.size();
+    const size_t full_hashes_bytes = elt_size * elts;
+    written = fwrite(&(full_hashes_[0]), elt_size, elts, file.get());
+    if (written != elts)
+      return false;
+    base::MD5Update(&context,
+                    base::StringPiece(
+                        reinterpret_cast<const char*>(&(full_hashes_[0])),
+                        full_hashes_bytes));
   }
 
   base::MD5Digest digest;

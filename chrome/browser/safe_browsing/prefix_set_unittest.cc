@@ -37,7 +37,8 @@ class PrefixSetTest : public PlatformTest {
   static const size_t kVersionOffset = 1 * sizeof(uint32);
   static const size_t kIndexSizeOffset = 2 * sizeof(uint32);
   static const size_t kDeltasSizeOffset = 3 * sizeof(uint32);
-  static const size_t kPayloadOffset = 4 * sizeof(uint32);
+  static const size_t kFullHashesSizeOffset = 4 * sizeof(uint32);
+  static const size_t kPayloadOffset = 5 * sizeof(uint32);
 
   // Generate a set of random prefixes to share between tests.  For
   // most tests this generation was a large fraction of the test time.
@@ -398,6 +399,38 @@ TEST_F(PrefixSetTest, ReadWrite) {
     ASSERT_TRUE(prefix_set.get());
     CheckPrefixes(*prefix_set, prefixes);
   }
+
+  // Test that full hashes are persisted.
+  {
+    std::vector<SBFullHash> hashes;
+    hashes.push_back(SBFullHashForString("one"));
+    hashes.push_back(SBFullHashForString("two"));
+    hashes.push_back(SBFullHashForString("three"));
+
+    std::vector<SBPrefix> prefixes(shared_prefixes_);
+
+    // Remove any collisions from the prefixes.
+    for (size_t i = 0; i < hashes.size(); ++i) {
+      std::vector<SBPrefix>::iterator iter =
+          std::lower_bound(prefixes.begin(), prefixes.end(), hashes[i].prefix);
+      if (iter != prefixes.end() && *iter == hashes[i].prefix)
+        prefixes.erase(iter);
+    }
+
+    PrefixSetBuilder builder(prefixes);
+    ASSERT_TRUE(builder.GetPrefixSet(hashes)->WriteFile(filename));
+
+    scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
+    ASSERT_TRUE(prefix_set.get());
+    CheckPrefixes(*prefix_set, prefixes);
+
+    EXPECT_TRUE(prefix_set->Exists(hashes[0]));
+    EXPECT_TRUE(prefix_set->Exists(hashes[1]));
+    EXPECT_TRUE(prefix_set->Exists(hashes[2]));
+    EXPECT_FALSE(prefix_set->PrefixExists(hashes[0].prefix));
+    EXPECT_FALSE(prefix_set->PrefixExists(hashes[1].prefix));
+    EXPECT_FALSE(prefix_set->PrefixExists(hashes[2].prefix));
+  }
 }
 
 // Check that |CleanChecksum()| makes an acceptable checksum.
@@ -461,6 +494,17 @@ TEST_F(PrefixSetTest, CorruptionDeltasSize) {
 
   ASSERT_NO_FATAL_FAILURE(
       ModifyAndCleanChecksum(filename, kDeltasSizeOffset, 1));
+  scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
+  ASSERT_FALSE(prefix_set.get());
+}
+
+// Bad |full_hashes_| size is caught by the sanity check.
+TEST_F(PrefixSetTest, CorruptionFullHashesSize) {
+  base::FilePath filename;
+  ASSERT_TRUE(GetPrefixSetFile(&filename));
+
+  ASSERT_NO_FATAL_FAILURE(
+      ModifyAndCleanChecksum(filename, kFullHashesSizeOffset, 1));
   scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
   ASSERT_FALSE(prefix_set.get());
 }
@@ -664,6 +708,34 @@ TEST_F(PrefixSetTest, Version2) {
   scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(golden_path);
   ASSERT_TRUE(prefix_set.get());
   CheckPrefixes(*prefix_set, ref_prefixes);
+}
+#endif
+
+// Test that a golden v3 file can be read by the current code.  All platforms
+// generating v3 files are little-endian, so there is no point to testing this
+// transition if/when a big-endian port is added.
+#if defined(ARCH_CPU_LITTLE_ENDIAN)
+TEST_F(PrefixSetTest, Version3) {
+  std::vector<SBPrefix> ref_prefixes;
+  ASSERT_TRUE(ReadReferencePrefixes(&ref_prefixes));
+
+  const char kBasename[] = "PrefixSetVersion3";
+  base::FilePath golden_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &golden_path));
+  golden_path = golden_path.AppendASCII("SafeBrowsing");
+  golden_path = golden_path.AppendASCII(kBasename);
+
+  scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(golden_path);
+  ASSERT_TRUE(prefix_set.get());
+  CheckPrefixes(*prefix_set, ref_prefixes);
+
+  const SBFullHash kHash1 = SBFullHashForString("www.evil.com/malware.html");
+  const SBFullHash kHash2 = SBFullHashForString("www.evil.com/phishing.html");
+
+  EXPECT_TRUE(prefix_set->Exists(kHash1));
+  EXPECT_TRUE(prefix_set->Exists(kHash2));
+  EXPECT_FALSE(prefix_set->PrefixExists(kHash1.prefix));
+  EXPECT_FALSE(prefix_set->PrefixExists(kHash2.prefix));
 }
 #endif
 

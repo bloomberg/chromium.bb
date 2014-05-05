@@ -83,7 +83,9 @@ class PrefixSet {
   FRIEND_TEST_ALL_PREFIXES(PrefixSetTest, FullHashBuild);
   FRIEND_TEST_ALL_PREFIXES(PrefixSetTest, IntMinMax);
   FRIEND_TEST_ALL_PREFIXES(PrefixSetTest, OneElement);
+  FRIEND_TEST_ALL_PREFIXES(PrefixSetTest, ReadWrite);
   FRIEND_TEST_ALL_PREFIXES(PrefixSetTest, ReadWriteSigned);
+  FRIEND_TEST_ALL_PREFIXES(PrefixSetTest, Version3);
 
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingStoreFileTest, BasicStore);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingStoreFileTest, DeleteChunks);
@@ -120,9 +122,10 @@ class PrefixSet {
   // Used by |PrefixSetBuilder|.
   PrefixSet();
 
-  // Helper for |LoadFile()|.  Steals the contents of |index| and
-  // |deltas| using |swap()|.
-  PrefixSet(IndexVector* index, std::vector<uint16>* deltas);
+  // Helper for |LoadFile()|.  Steals vector contents using |swap()|.
+  PrefixSet(IndexVector* index,
+            std::vector<uint16>* deltas,
+            std::vector<SBFullHash>* full_hashes);
 
   // Top-level index of prefix to offset in |deltas_|.  Each pair
   // indicates a base prefix and where the deltas from that prefix
