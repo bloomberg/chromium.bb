@@ -38,6 +38,7 @@ group("root") {
     #"//sdch",
     "//skia",
     #"//third_party/WebKit/Source/platform",
+    "//third_party/flac",
     "//third_party/icu",
     "//third_party/leveldatabase",
     "//third_party/libpng",
