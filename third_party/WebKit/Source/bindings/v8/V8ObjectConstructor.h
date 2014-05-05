@@ -32,6 +32,7 @@
 #define V8ObjectConstructor_h
 
 #include "bindings/v8/V8PerIsolateData.h"
+#include "bindings/v8/V8RecursionScope.h"
 
 #include <v8.h>
 
@@ -48,6 +49,7 @@ public:
 
     ConstructorMode(v8::Isolate* isolate)
         : m_isolate(isolate)
+        , m_microtaskSuppression(isolate)
     {
         V8PerIsolateData* data = V8PerIsolateData::from(m_isolate);
         m_previous = data->m_constructorMode;
@@ -68,6 +70,7 @@ public:
 private:
     v8::Isolate* m_isolate;
     bool m_previous;
+    V8RecursionScope::MicrotaskSuppression m_microtaskSuppression;
 };
 
 class V8ObjectConstructor {
