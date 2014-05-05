@@ -12206,6 +12206,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL" desc="The text to display below the 'Stop syncing this account' button on the options pane, explaining what the button does.">
           By disconnecting your Google Account from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>, your data will remain on this computer but changes will no longer be synced to your Google Account. Data already stored in your Google Account will remain there until you remove it using <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$2" target=&quot;_blank&quot;&gt;</ex></ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
         </message>
+        <message name="IDS_SYNC_STOP_DELETE_PROFILE_LABEL" desc="The text to display by the checkbox asking user whether to also delete profile when stopping sync.">
+          Also clear your history, bookmarks, settings, and other Chrome data stored on this device.
+        </message>        
         <message name="IDS_SYNC_ADVANCED_OPTIONS" desc="The text in the link that brings up the sync configure screen in the new tab page new data type notification.">
           Advanced settings
         </message>

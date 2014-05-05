@@ -98,6 +98,10 @@
   min-width: 87px;
 }
 
+#sync-setup-delete-profile {
+  margin: 10px 0;
+}
+
 #email-readonly {
   font-size: 15px;
   height: 29px;

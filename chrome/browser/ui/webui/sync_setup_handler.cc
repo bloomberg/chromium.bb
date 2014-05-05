@@ -228,6 +228,8 @@ void SyncSetupHandler::GetStaticLocalizedValues(
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
           base::ASCIIToUTF16(google_util::StringAppendGoogleLocaleParam(
               chrome::kSyncGoogleDashboardURL))));
+  localized_strings->SetString("deleteProfileLabel",
+      l10n_util::GetStringUTF16(IDS_SYNC_STOP_DELETE_PROFILE_LABEL));
   localized_strings->SetString("stopSyncingTitle",
       l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_DIALOG_TITLE));
   localized_strings->SetString("stopSyncingConfirm",
@@ -779,6 +781,12 @@ void SyncSetupHandler::HandleStopSyncing(const base::ListValue* args) {
   if (GetSyncService())
     ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
   SigninManagerFactory::GetForProfile(GetProfile())->SignOut();
+
+  bool delete_profile = false;
+  if (args->GetBoolean(0, &delete_profile) && delete_profile) {
+    web_ui()->CallJavascriptFunction(
+        "BrowserOptions.deleteCurrentProfile");
+  }
 }
 #endif
 

@@ -1288,6 +1288,15 @@ cr.define('options', function() {
              'There should always be a current profile, but none found.');
     },
 
+    /**
+     * Propmpts user to confirm deletion of the profile for this browser
+     * window.
+     * @private
+     */
+    deleteCurrentProfile_: function() {
+      ManageProfileOverlay.showDeleteDialog(this.getCurrentProfile_());
+    },
+
     setNativeThemeButtonEnabled_: function(enabled) {
       var button = $('themes-native-button');
       if (button)
@@ -1755,6 +1764,7 @@ cr.define('options', function() {
   //Forward public APIs to private implementations.
   [
     'addBluetoothDevice',
+    'deleteCurrentProfile',
     'enableCertificateButton',
     'enableFactoryResetSection',
     'getCurrentProfile',

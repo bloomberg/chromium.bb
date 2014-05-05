@@ -83,7 +83,9 @@ cr.define('options', function() {
         self.closeOverlay_();
       };
       $('stop-syncing-ok').onclick = function() {
-        chrome.send('SyncSetupStopSyncing');
+        var deleteProfile = $('delete-profile') != undefined &&
+            $('delete-profile').checked;
+        chrome.send('SyncSetupStopSyncing', [deleteProfile]);
         self.closeOverlay_();
       };
     },
