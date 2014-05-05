@@ -173,7 +173,7 @@ IntRect unionRect(const Vector<IntRect>& rects)
 
 #ifndef NDEBUG
     // Prints the rect to the screen.
-void IntRect::show()
+void IntRect::show() const
 {
     LayoutRect(*this).show();
 }

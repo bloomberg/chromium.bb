@@ -363,7 +363,7 @@ private:
 class LayoutStateDisabler {
     WTF_MAKE_NONCOPYABLE(LayoutStateDisabler);
 public:
-    LayoutStateDisabler(const RenderBox& root)
+    LayoutStateDisabler(const RenderObject& root)
         : m_view(*root.view())
     {
         m_view.disableLayoutState();

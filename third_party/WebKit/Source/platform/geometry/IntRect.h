@@ -162,7 +162,7 @@ public:
 
 #ifndef NDEBUG
     // Prints the rect to the screen.
-    void show();
+    void show() const;
 #endif
 
 private:

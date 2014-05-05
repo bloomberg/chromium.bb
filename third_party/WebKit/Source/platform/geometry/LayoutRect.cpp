@@ -120,7 +120,7 @@ void LayoutRect::scale(float xAxisScale, float yAxisScale)
 }
 
 #ifndef NDEBUG
-void LayoutRect::show(bool showRawValue)
+void LayoutRect::show(bool showRawValue) const
 {
     if (showRawValue)
         printf("Rect (in raw layout units): [x=%d y=%d maxX=%d maxY=%d]\n", x().rawValue(), y().rawValue(), maxX().rawValue(), maxY().rawValue());

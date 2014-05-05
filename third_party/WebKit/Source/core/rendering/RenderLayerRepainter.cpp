@@ -203,11 +203,19 @@ void RenderLayerRepainter::setBackingNeedsRepaintInRect(const LayoutRect& r)
     if (m_renderer.compositingState() == PaintsIntoGroupedBacking) {
         LayoutRect updatedRect(r);
 
+        RenderLayerModelObject* transformedAncestor = m_renderer.layer()->enclosingTransformedAncestor()->renderer();
+
+        // If the transformedAncestor is actually the RenderView, we might get
+        // confused and think that we can use LayoutState. Ideally, we'd made
+        // LayoutState work for all composited layers as well, but until then
+        // we need to disable LayoutState for squashed layers.
+        LayoutStateDisabler layoutStateDisabler(*transformedAncestor);
+
         // This code adjusts the repaint rectangle to be in the space of the transformed ancestor of the grouped (i.e. squashed)
         // layer. This is because all layers that squash together need to repaint w.r.t. a single container that is
         // an ancestor of all of them, in order to properly take into account any local transforms etc.
         // FIXME: remove this special-case code that works around the repainting code structure.
-        m_renderer.computeRectForRepaint(m_renderer.layer()->enclosingTransformedAncestor()->renderer(), updatedRect);
+        m_renderer.computeRectForRepaint(transformedAncestor, updatedRect);
         updatedRect.moveBy(-m_renderer.layer()->groupedMapping()->squashingOffsetFromTransformedAncestor());
 
         IntRect repaintRect = pixelSnappedIntRect(updatedRect);

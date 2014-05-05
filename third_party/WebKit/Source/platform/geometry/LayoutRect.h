@@ -171,7 +171,7 @@ public:
 
 #ifndef NDEBUG
     // Prints the rect to the screen.
-    void show(bool showRawValue = false);
+    void show(bool showRawValue = false) const;
 #endif
 
 private:
