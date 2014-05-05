@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BOOKMARKS_TEST_BOOKMARK_CLIENT_H_
-#define CHROME_BROWSER_BOOKMARKS_TEST_BOOKMARK_CLIENT_H_
+#ifndef COMPONENTS_BOOKMARKS_CORE_TEST_TEST_BOOKMARK_CLIENT_H_
+#define COMPONENTS_BOOKMARKS_CORE_TEST_TEST_BOOKMARK_CLIENT_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "components/bookmarks/core/browser/bookmark_client.h"
@@ -40,4 +40,4 @@ class TestBookmarkClient : public BookmarkClient {
 
 }  // namespace test
 
-#endif  // CHROME_BROWSER_BOOKMARKS_TEST_BOOKMARK_CLIENT_H_
+#endif  // COMPONENTS_BOOKMARKS_CORE_TEST_TEST_BOOKMARK_CLIENT_H_

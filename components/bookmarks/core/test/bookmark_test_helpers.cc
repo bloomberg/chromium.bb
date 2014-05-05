@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
+#include "components/bookmarks/core/test/bookmark_test_helpers.h"
 
 #include "base/basictypes.h"
 #include "base/callback.h"

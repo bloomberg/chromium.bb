@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_TEST_HELPERS_H_
-#define CHROME_BROWSER_BOOKMARKS_BOOKMARK_TEST_HELPERS_H_
+#ifndef COMPONENTS_BOOKMARKS_CORE_TEST_BOOKMARK_TEST_HELPERS_H_
+#define COMPONENTS_BOOKMARKS_CORE_TEST_BOOKMARK_TEST_HELPERS_H_
 
 #include <string>
 
@@ -42,4 +42,4 @@ void AddNodesFromModelString(BookmarkModel* model,
                              const std::string& model_string);
 }  // namespace test
 
-#endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_TEST_HELPERS_H_
+#endif  // COMPONENTS_BOOKMARKS_CORE_TEST_BOOKMARK_TEST_HELPERS_H_

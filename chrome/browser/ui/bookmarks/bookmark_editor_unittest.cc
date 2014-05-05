@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/test_bookmark_client.h"
+#include "components/bookmarks/core/test/test_bookmark_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;

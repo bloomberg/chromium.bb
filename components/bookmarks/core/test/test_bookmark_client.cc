@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/test_bookmark_client.h"
+#include "components/bookmarks/core/test/test_bookmark_client.h"
 
 #include "components/bookmarks/core/browser/bookmark_model.h"
 #include "components/bookmarks/core/browser/bookmark_storage.h"

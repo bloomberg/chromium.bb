@@ -7,7 +7,6 @@
 #include "base/run_loop.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/bookmarks/core/test/bookmark_test_helpers.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 
 CocoaProfileTest::CocoaProfileTest()

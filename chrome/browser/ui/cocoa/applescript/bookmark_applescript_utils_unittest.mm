@@ -5,9 +5,9 @@
 #import "chrome/browser/ui/cocoa/applescript/bookmark_applescript_utils_unittest.h"
 
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/core/browser/bookmark_model.h"
+#include "components/bookmarks/core/test/bookmark_test_helpers.h"
 
 @implementation FakeAppDelegate
 

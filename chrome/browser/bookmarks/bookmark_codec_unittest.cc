@@ -13,9 +13,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/bookmarks/test_bookmark_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/bookmarks/core/browser/bookmark_model.h"
+#include "components/bookmarks/core/test/test_bookmark_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
