@@ -47,7 +47,6 @@
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/public/common/result_codes.h"
-#include "extensions/common/constants.h"
 #include "rlz/lib/rlz_lib.h"
 
 using base::win::RegKey;
@@ -1048,7 +1047,7 @@ const wchar_t kChromeExtProgId[] = L"ChromiumExt";
     // Delete Software\Classes\.crx,
     base::string16 ext_association(ShellUtil::kRegClasses);
     ext_association.append(L"\\");
-    ext_association.append(extensions::kExtensionFileExtension);
+    ext_association.append(L".crx");
     InstallUtil::DeleteRegistryKey(roots[i], ext_association);
   }
 }
