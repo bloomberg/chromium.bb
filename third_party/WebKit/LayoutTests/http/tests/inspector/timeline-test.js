@@ -245,7 +245,7 @@ InspectorTest.printTimelineRecordProperties = function(record)
     var recordType = (typeof record.type === "string") ? record.type : record.type();
     InspectorTest.addResult(InspectorTest._timelineAgentTypeToString(recordType) + " Properties:");
     // Use this recursive routine to print the properties
-    if (record instanceof WebInspector.TimelineModel.Record)
+    if (record instanceof WebInspector.TimelineModel.RecordImpl)
         record = record._record;
     InspectorTest.addObject(record, InspectorTest.timelinePropertyFormatters);
 };
