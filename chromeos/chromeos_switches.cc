@@ -75,6 +75,9 @@ const char kEnableConsumerManagement[]      = "enable-consumer-management";
 // Enables MTP support in Files.app.
 const char kEnableFileManagerMTP[] = "enable-filemanager-mtp";
 
+// Enable explicit HID detection on OOBE.
+const char kEnableHIDDetectionOnOOBE[]     = "enable-hid-detection-on-oobe";
+
 // Enables notifications about captive portals in session.
 const char kEnableNetworkPortalNotification[] =
     "enable-network-portal-notification";

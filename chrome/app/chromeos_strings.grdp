@@ -1263,10 +1263,13 @@ Press any key to continue exploring.
     Bluetooth mouse paired
   </message>
   <message name="IDS_HID_DETECTION_PAIRED_BLUETOOTH_KEYBOARD" desc="Text shown on HID detection screen next to keyboard icon after Bluetooth keyboard is connected.">
-    "<ph name="DEVICE_NAME">%1<ex>Bluetooth Keyboard</ex></ph>" paired
+    "<ph name="DEVICE_NAME">$1<ex>Bluetooth Keyboard</ex></ph>" paired
   </message>
   <message name="IDS_HID_DETECTION_BLUETOOTH_REMOTE_PIN_CODE_REQUEST" desc="Bluetooth pairing message displayed on HID detection screen when pairing a Bluetooth keyboard.">
-    Type this code on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>" to pair:
+    Type this code on "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>" to pair:
+  </message>
+  <message name="IDS_HID_DETECTION_DEFAULT_KEYBOARD_NAME" desc="Default keyboard name used at HID-detection labels and messages at HID-detection OOBE screen.">
+    Unknown keyboard
   </message>
   <message name="IDS_HID_DETECTION_BLUETOOTH_ENTER_KEY" meaning="Label on the button representing Enter key at the HID detection screen.">
     enter

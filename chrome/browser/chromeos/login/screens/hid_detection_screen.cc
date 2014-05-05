@@ -23,8 +23,6 @@ HIDDetectionScreen::~HIDDetectionScreen() {
 }
 
 void HIDDetectionScreen::PrepareToShow() {
-  if (actor_)
-    actor_->PrepareToShow();
 }
 
 void HIDDetectionScreen::Show() {

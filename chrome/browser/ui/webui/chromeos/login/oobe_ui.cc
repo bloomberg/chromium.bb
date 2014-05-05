@@ -132,27 +132,28 @@ std::string GetDisplayType(const GURL& url) {
 }  // namespace
 
 // static
-const char OobeUI::kScreenOobeNetwork[]     = "connect";
-const char OobeUI::kScreenOobeEula[]        = "eula";
-const char OobeUI::kScreenOobeUpdate[]      = "update";
-const char OobeUI::kScreenOobeEnrollment[]  = "oauth-enrollment";
-const char OobeUI::kScreenOobeReset[]       = "reset";
-const char OobeUI::kScreenGaiaSignin[]      = "gaia-signin";
-const char OobeUI::kScreenAccountPicker[]   = "account-picker";
-const char OobeUI::kScreenKioskAutolaunch[] = "autolaunch";
-const char OobeUI::kScreenKioskEnable[]     = "kiosk-enable";
-const char OobeUI::kScreenErrorMessage[]    = "error-message";
-const char OobeUI::kScreenUserImagePicker[] = "user-image";
-const char OobeUI::kScreenTpmError[]        = "tpm-error-message";
-const char OobeUI::kScreenPasswordChanged[] = "password-changed";
+const char OobeUI::kScreenOobeHIDDetection[] = "hid-detection";
+const char OobeUI::kScreenOobeNetwork[]      = "connect";
+const char OobeUI::kScreenOobeEula[]         = "eula";
+const char OobeUI::kScreenOobeUpdate[]       = "update";
+const char OobeUI::kScreenOobeEnrollment[]   = "oauth-enrollment";
+const char OobeUI::kScreenOobeReset[]        = "reset";
+const char OobeUI::kScreenGaiaSignin[]       = "gaia-signin";
+const char OobeUI::kScreenAccountPicker[]    = "account-picker";
+const char OobeUI::kScreenKioskAutolaunch[]  = "autolaunch";
+const char OobeUI::kScreenKioskEnable[]      = "kiosk-enable";
+const char OobeUI::kScreenErrorMessage[]     = "error-message";
+const char OobeUI::kScreenUserImagePicker[]  = "user-image";
+const char OobeUI::kScreenTpmError[]         = "tpm-error-message";
+const char OobeUI::kScreenPasswordChanged[]  = "password-changed";
 const char OobeUI::kScreenManagedUserCreationFlow[]
-                                            = "managed-user-creation";
-const char OobeUI::kScreenTermsOfService[]  = "terms-of-service";
-const char OobeUI::kScreenWrongHWID[]       = "wrong-hwid";
-const char OobeUI::kScreenHIDDetection[]    = "hid-detection";
-const char OobeUI::kScreenAppLaunchSplash[] = "app-launch-splash";
-const char OobeUI::kScreenConfirmPassword[] = "confirm-password";
-const char OobeUI::kScreenFatalError[]      = "fatal-error";
+                                             = "managed-user-creation";
+const char OobeUI::kScreenTermsOfService[]   = "terms-of-service";
+const char OobeUI::kScreenWrongHWID[]        = "wrong-hwid";
+const char OobeUI::kScreenHIDDetection[]     = "hid-detection";
+const char OobeUI::kScreenAppLaunchSplash[]  = "app-launch-splash";
+const char OobeUI::kScreenConfirmPassword[]  = "confirm-password";
+const char OobeUI::kScreenFatalError[]       = "fatal-error";
 
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
     : WebUIController(web_ui),
@@ -399,6 +400,7 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
 
 void OobeUI::InitializeScreenMaps() {
   screen_names_.resize(SCREEN_UNKNOWN);
+  screen_names_[SCREEN_OOBE_HID_DETECTION] = kScreenOobeHIDDetection;
   screen_names_[SCREEN_OOBE_NETWORK] = kScreenOobeNetwork;
   screen_names_[SCREEN_OOBE_EULA] = kScreenOobeEula;
   screen_names_[SCREEN_OOBE_UPDATE] = kScreenOobeUpdate;

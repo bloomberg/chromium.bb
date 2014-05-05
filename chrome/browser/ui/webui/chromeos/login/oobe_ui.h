@@ -52,6 +52,7 @@ class OobeUI : public OobeDisplay,
   };
 
   // JS oobe/login screens names.
+  static const char kScreenOobeHIDDetection[];
   static const char kScreenOobeNetwork[];
   static const char kScreenOobeEula[];
   static const char kScreenOobeUpdate[];
