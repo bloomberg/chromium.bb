@@ -10,12 +10,10 @@ import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.MatrixCursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
@@ -1269,15 +1267,6 @@ public class ChromeBrowserProvider extends ContentProvider {
             nativeDestroy(mNativeChromeBrowserProvider);
             mNativeChromeBrowserProvider = 0;
         }
-    }
-
-    /**
-     * Call to get the intent to create a bookmark shortcut on homescreen.
-     */
-    public static Intent getShortcutToBookmark(String url, String title, Bitmap favicon, int rValue,
-            int gValue, int bValue, Context context) {
-        return BookmarkUtils.createAddToHomeIntent(
-                context, url, title, favicon, rValue, gValue, bValue);
     }
 
     @SuppressLint("NewApi")
