@@ -100,7 +100,7 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
   def testGetCrosTargetRank(self):
     cros_rank = mps._GetCrosTargetRank('virtual/target-os')
     crosdev_rank = mps._GetCrosTargetRank('virtual/target-os-dev')
-    crostest_rank = mps._GetCrosTargetRank('chromeos-test')
+    crostest_rank = mps._GetCrosTargetRank('virtual/target-os-test')
     other_rank = mps._GetCrosTargetRank('foobar')
 
     self.assertTrue(cros_rank)
@@ -114,14 +114,14 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
     test_in = [
         ['virtual/target-os', 'virtual/target-os-dev'],
         ['world', 'virtual/target-os', 'virtual/target-os-dev',
-         'chromeos-test'],
+         'virtual/target-os-test'],
         ['world', 'virtual/target-sdk', 'virtual/target-os-dev',
-         'chromeos-test'],
+         'virtual/target-os-test'],
         ]
     test_out = [
         ['virtual/target-os-dev'],
-        ['chromeos-test', 'world'],
-        ['chromeos-test', 'virtual/target-sdk', 'world'],
+        ['virtual/target-os-test', 'world'],
+        ['virtual/target-os-test', 'virtual/target-sdk', 'world'],
         ]
     test_rev_out = [
         ['virtual/target-os'],
@@ -152,7 +152,7 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
               mps.COL_SLOT: '0',
               mps.COL_OVERLAY: 'chromiumos-overlay',
               self.COL_VER_arm: '1.2.3-r1',
-              mps.COL_TARGET: 'chromeos-test'}
+              mps.COL_TARGET: 'virtual/target-os-test'}
     row2_2 = {mps.COL_PACKAGE: 'dev/newby',
               mps.COL_SLOT: '2',
               mps.COL_OVERLAY: 'chromiumos-overlay',

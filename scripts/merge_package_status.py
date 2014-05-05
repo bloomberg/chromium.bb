@@ -27,7 +27,7 @@ oper = operation.Operation('merge_package_status')
 CHROMEOS_TARGET_ORDER = [
     'virtual/target-os',
     'virtual/target-os-dev',
-    'chromeos-test',
+    'virtual/target-os-test',
 ]
 
 

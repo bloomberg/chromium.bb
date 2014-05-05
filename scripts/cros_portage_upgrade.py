@@ -1834,7 +1834,7 @@ def _CreateParser():
             '--to-csv=cros-aebl.csv virtual/target-os\n'
             '> cros_portage_upgrade --unstable-ok --board=x86-mario '
             '--to-csv=cros_test-mario virtual/target-os virtual/target-os-dev '
-            'chromeos-test\n'
+            'virtual/target-os-test\n'
             'Upgrade mode examples:\n'
             '> cros_portage_upgrade --board=arm-generic:x86-generic '
             '--upgrade sys-devel/gdb virtual/yacc\n'

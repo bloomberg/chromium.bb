@@ -85,7 +85,7 @@ def RefreshPackageStatus(board, csv_root, test,
   cros_build_lib.RunCommand(cpu_cmd_baseline +
                             ['--to-csv=%s' % crostest_csv,
                              'virtual/target-os', 'virtual/target-os-dev',
-                             'chromeos-test'])
+                             'virtual/target-os-test'])
 
   # Run all host targets for the sdk.
   oper.Info('Getting package status for all host (sdk) targets.')

@@ -105,7 +105,7 @@ class UploaderTest(cros_test_lib.MoxOutputTestCase):
           COL_VER: '1.2.3',
           COL_STABLE_UP: '1.2.3',
           COL_LATEST_UP: '1.2.4',
-          COL_TARGET: 'chromeos-test',
+          COL_TARGET: 'virtual/target-os-test',
           }
 
   SS_ROW0 = dict([(gdata_lib.PrepColNameForSS(c), v) for c, v in ROW0.items()])
