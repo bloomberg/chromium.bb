@@ -111,7 +111,7 @@ class Plugin : public pp::Instance {
   // Returns NULL or the NaClSubprocess of the new helper NaCl module.
   NaClSubprocess* LoadHelperNaClModule(const nacl::string& helper_url,
                                        nacl::DescWrapper* wrapper,
-                                       const Manifest* manifest,
+                                       int32_t manifest_id,
                                        ErrorInfo* error_info);
 
   enum LengthComputable {
@@ -164,8 +164,6 @@ class Plugin : public pp::Instance {
   // document to request the URL using CORS even if this function returns false.
   bool DocumentCanRequest(const std::string& url);
 
-  Manifest const* manifest() const { return manifest_.get(); }
-
   // set_exit_status may be called off the main thread.
   void set_exit_status(int exit_status);
 
@@ -206,7 +204,7 @@ class Plugin : public pp::Instance {
   // This will fully initialize the |subprocess| if the load was successful.
   bool LoadNaClModuleFromBackgroundThread(nacl::DescWrapper* wrapper,
                                           NaClSubprocess* subprocess,
-                                          const Manifest* manifest,
+                                          int32_t manifest_id,
                                           const SelLdrStartParams& params);
 
   // Start sel_ldr from the main thread, given the start params.
@@ -304,9 +302,6 @@ class Plugin : public pp::Instance {
 
   nacl::scoped_ptr<PnaclCoordinator> pnacl_coordinator_;
 
-  // The manifest dictionary.  Used for looking up resources to be loaded.
-  nacl::scoped_ptr<Manifest> manifest_;
-
   // Keep track of the FileDownloaders created to fetch urls.
   std::set<FileDownloader*> url_downloaders_;
   // Keep track of file descriptors opened by StreamAsFile().
@@ -334,6 +329,7 @@ class Plugin : public pp::Instance {
   int64_t nexe_open_time_;
 
   PP_Var manifest_data_var_;
+  int32_t manifest_id_;
 
   const PPB_NaCl_Private* nacl_interface_;
   pp::UMAPrivate uma_interface_;

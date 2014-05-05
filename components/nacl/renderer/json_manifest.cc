@@ -1,28 +1,19 @@
-/*
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-#include <algorithm>
+#include "components/nacl/renderer/json_manifest.h"
 
-#include "ppapi/native_client/src/trusted/plugin/json_manifest.h"
+#include <set>
 
-#include <stdlib.h>
-
-#include "native_client/src/include/nacl_base.h"
-#include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/include/nacl_string.h"
-#include "native_client/src/include/portability.h"
-#include "native_client/src/shared/platform/nacl_check.h"
-#include "ppapi/c/private/ppb_nacl_private.h"
-#include "ppapi/cpp/dev/url_util_dev.h"
-#include "ppapi/cpp/var.h"
-#include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
-#include "ppapi/native_client/src/trusted/plugin/utility.h"
+#include "base/logging.h"
+#include "base/macros.h"
+#include "components/nacl/renderer/nexe_load_manager.h"
 #include "third_party/jsoncpp/source/include/json/reader.h"
+#include "third_party/jsoncpp/source/include/json/value.h"
+#include "url/gurl.h"
 
-namespace plugin {
+namespace nacl {
 
 namespace {
 // Top-level section name keys
@@ -97,13 +88,13 @@ const char* const kOptLevelKey = "optlevel";
 // }
 
 // Returns the key for the architecture in non-SFI mode.
-nacl::string GetNonSFIKey(const nacl::string& sandbox_isa) {
+std::string GetNonSFIKey(const std::string& sandbox_isa) {
   return sandbox_isa + "-nonsfi";
 }
 
 // Looks up |property_name| in the vector |valid_names| with length
 // |valid_name_count|.  Returns true if |property_name| is found.
-bool FindMatchingProperty(const nacl::string& property_name,
+bool FindMatchingProperty(const std::string& property_name,
                           const char** valid_names,
                           size_t valid_name_count) {
   for (size_t i = 0; i < valid_name_count; ++i) {
@@ -120,15 +111,15 @@ bool FindMatchingProperty(const nacl::string& property_name,
 // was the property value of |container_key|.
 // E.g., "container_key" : dictionary
 bool IsValidDictionary(const Json::Value& dictionary,
-                       const nacl::string& container_key,
-                       const nacl::string& parent_key,
+                       const std::string& container_key,
+                       const std::string& parent_key,
                        const char** valid_keys,
                        size_t valid_key_count,
                        const char** required_keys,
                        size_t required_key_count,
-                       nacl::string* error_string) {
+                       std::string* error_string) {
   if (!dictionary.isObject()) {
-    nacl::stringstream error_stream;
+    std::stringstream error_stream;
     error_stream << parent_key << " property '" << container_key
                  << "' is non-dictionary value '"
                  << dictionary.toStyledString() << "'.";
@@ -138,21 +129,21 @@ bool IsValidDictionary(const Json::Value& dictionary,
   // Check for unknown dictionary members.
   Json::Value::Members members = dictionary.getMemberNames();
   for (size_t i = 0; i < members.size(); ++i) {
-    nacl::string property_name = members[i];
+    std::string property_name = members[i];
     if (!FindMatchingProperty(property_name,
                               valid_keys,
                               valid_key_count)) {
       // For forward compatibility, we do not prohibit other keys being in
       // the dictionary.
-      PLUGIN_PRINTF(("WARNING: '%s' property '%s' has unknown key '%s'.\n",
-                     parent_key.c_str(),
-                     container_key.c_str(), property_name.c_str()));
+      VLOG(1) << "WARNING: '" << parent_key << "' property '"
+              << container_key << "' has unknown key '"
+              << property_name << "'.";
     }
   }
   // Check for required members.
   for (size_t i = 0; i < required_key_count; ++i) {
     if (!dictionary.isMember(required_keys[i])) {
-      nacl::stringstream error_stream;
+      std::stringstream error_stream;
       error_stream << parent_key << " property '" << container_key
                    << "' does not have required key: '"
                    << required_keys[i] << "'.";
@@ -166,10 +157,10 @@ bool IsValidDictionary(const Json::Value& dictionary,
 // Validate a "url" dictionary assuming it was resolved from container_key.
 // E.g., "container_key" : { "url": "foo.txt" }
 bool IsValidUrlSpec(const Json::Value& url_spec,
-                    const nacl::string& container_key,
-                    const nacl::string& parent_key,
-                    const nacl::string& sandbox_isa,
-                    nacl::string* error_string) {
+                    const std::string& container_key,
+                    const std::string& parent_key,
+                    const std::string& sandbox_isa,
+                    std::string* error_string) {
   static const char* kManifestUrlSpecRequired[] = {
     kUrlKey
   };
@@ -181,32 +172,32 @@ bool IsValidUrlSpec(const Json::Value& url_spec,
       kOptLevelKey,
     };
     urlSpecPlusOptional = kPnaclUrlSpecPlusOptional;
-    urlSpecPlusOptionalLength = NACL_ARRAY_SIZE(kPnaclUrlSpecPlusOptional);
+    urlSpecPlusOptionalLength = arraysize(kPnaclUrlSpecPlusOptional);
   } else {
     // URL specifications must not contain "pnacl-translate" keys.
     // This prohibits NaCl clients from invoking PNaCl.
     if (url_spec.isMember(kPnaclTranslateKey)) {
-      nacl::stringstream error_stream;
+      std::stringstream error_stream;
       error_stream << "PNaCl-like NMF with application/x-nacl mimetype instead "
                    << "of x-pnacl mimetype (has " << kPnaclTranslateKey << ").";
       *error_string = error_stream.str();
       return false;
     }
     urlSpecPlusOptional = kManifestUrlSpecRequired;
-    urlSpecPlusOptionalLength = NACL_ARRAY_SIZE(kManifestUrlSpecRequired);
+    urlSpecPlusOptionalLength = arraysize(kManifestUrlSpecRequired);
   }
   if (!IsValidDictionary(url_spec, container_key, parent_key,
                          urlSpecPlusOptional,
                          urlSpecPlusOptionalLength,
                          kManifestUrlSpecRequired,
-                         NACL_ARRAY_SIZE(kManifestUrlSpecRequired),
+                         arraysize(kManifestUrlSpecRequired),
                          error_string)) {
     return false;
   }
   // Verify the correct types of the fields if they exist.
   Json::Value url = url_spec[kUrlKey];
   if (!url.isString()) {
-    nacl::stringstream error_stream;
+    std::stringstream error_stream;
     error_stream << parent_key << " property '" << container_key <<
         "' has non-string value '" << url.toStyledString() <<
         "' for key '" << kUrlKey << "'.";
@@ -215,7 +206,7 @@ bool IsValidUrlSpec(const Json::Value& url_spec,
   }
   Json::Value opt_level = url_spec[kOptLevelKey];
   if (!opt_level.empty() && !opt_level.isNumeric()) {
-    nacl::stringstream error_stream;
+    std::stringstream error_stream;
     error_stream << parent_key << " property '" << container_key <<
         "' has non-numeric value '" << opt_level.toStyledString() <<
         "' for key '" << kOptLevelKey << "'.";
@@ -229,53 +220,47 @@ bool IsValidUrlSpec(const Json::Value& url_spec,
 // it was resolved from container_key.
 // E.g., "container_key" : { "pnacl-translate" : URLSpec }
 bool IsValidPnaclTranslateSpec(const Json::Value& pnacl_spec,
-                               const nacl::string& container_key,
-                               const nacl::string& parent_key,
-                               const nacl::string& sandbox_isa,
-                               nacl::string* error_string) {
+                               const std::string& container_key,
+                               const std::string& parent_key,
+                               const std::string& sandbox_isa,
+                               std::string* error_string) {
   static const char* kManifestPnaclSpecValid[] = {
     kPnaclDebugKey,
     kPnaclTranslateKey
   };
-  static const char* kManifestPnaclSpecRequired[] = {
-    kPnaclTranslateKey
-  };
+  static const char* kManifestPnaclSpecRequired[] = { kPnaclTranslateKey };
   if (!IsValidDictionary(pnacl_spec, container_key, parent_key,
                          kManifestPnaclSpecValid,
-                         NACL_ARRAY_SIZE(kManifestPnaclSpecValid),
+                         arraysize(kManifestPnaclSpecValid),
                          kManifestPnaclSpecRequired,
-                         NACL_ARRAY_SIZE(kManifestPnaclSpecRequired),
+                         arraysize(kManifestPnaclSpecRequired),
                          error_string)) {
     return false;
   }
   Json::Value url_spec = pnacl_spec[kPnaclTranslateKey];
-  if (!IsValidUrlSpec(url_spec, kPnaclTranslateKey,
-                      container_key, sandbox_isa, error_string)) {
-    return false;
-  }
-  return true;
+  return IsValidUrlSpec(url_spec, kPnaclTranslateKey,
+                        container_key, sandbox_isa, error_string);
 }
 
 // Validates that |dictionary| is a valid ISA dictionary.  An ISA dictionary
 // is validated to have keys from within the set of recognized ISAs.  Unknown
-// ISAs are allowed, but ignored and warnings are produced. It is also validated
+// ISAs are allowed, but ignored and warnings are produced. It is also
+// validated
 // that it must have an entry to match the ISA specified in |sandbox_isa| or
 // have a fallback 'portable' entry if there is no match. Returns true if
 // |dictionary| is an ISA to URL map.  Sets |error_info| to something
 // descriptive if it fails.
 bool IsValidISADictionary(const Json::Value& dictionary,
-                          const nacl::string& parent_key,
-                          const nacl::string& sandbox_isa,
+                          const std::string& parent_key,
+                          const std::string& sandbox_isa,
                           bool must_find_matching_entry,
                           bool nonsfi_enabled,
-                          ErrorInfo* error_info) {
-  if (error_info == NULL) return false;
-
+                          JsonManifest::ErrorInfo* error_info) {
   // An ISA to URL dictionary has to be an object.
   if (!dictionary.isObject()) {
-    error_info->SetReport(PP_NACL_ERROR_MANIFEST_SCHEMA_VALIDATE,
-                          nacl::string("manifest: ") + parent_key +
-                          " property is not an ISA to URL dictionary");
+    error_info->error = PP_NACL_ERROR_MANIFEST_SCHEMA_VALIDATE;
+    error_info->string = std::string("manifest: ") + parent_key +
+                         " property is not an ISA to URL dictionary";
     return false;
   }
   // Build the set of reserved ISA dictionary keys.
@@ -287,7 +272,7 @@ bool IsValidISADictionary(const Json::Value& dictionary,
       kPortableKey
     };
     isaProperties = kPnaclManifestISAProperties;
-    isaPropertiesLength = NACL_ARRAY_SIZE(kPnaclManifestISAProperties);
+    isaPropertiesLength = arraysize(kPnaclManifestISAProperties);
   } else {
     // The known values for NaCl ISA dictionaries in the manifest.
     static const char* kNaClManifestISAProperties[] = {
@@ -303,14 +288,14 @@ bool IsValidISADictionary(const Json::Value& dictionary,
       kPortableKey
     };
     isaProperties = kNaClManifestISAProperties;
-    isaPropertiesLength = NACL_ARRAY_SIZE(kNaClManifestISAProperties);
+    isaPropertiesLength = arraysize(kNaClManifestISAProperties);
   }
   // Check that entries in the dictionary are structurally correct.
   Json::Value::Members members = dictionary.getMemberNames();
   for (size_t i = 0; i < members.size(); ++i) {
-    nacl::string property_name = members[i];
+    std::string property_name = members[i];
     Json::Value property_value = dictionary[property_name];
-    nacl::string error_string;
+    std::string error_string;
     if (FindMatchingProperty(property_name,
                              isaProperties,
                              isaPropertiesLength)) {
@@ -332,33 +317,30 @@ bool IsValidISADictionary(const Json::Value& dictionary,
            parent_key != kProgramKey &&
            !IsValidUrlSpec(property_value, property_name, parent_key,
                            sandbox_isa, &error_string))) {
-        error_info->SetReport(PP_NACL_ERROR_MANIFEST_SCHEMA_VALIDATE,
-                              nacl::string("manifest: ") + error_string);
+        error_info->error = PP_NACL_ERROR_MANIFEST_SCHEMA_VALIDATE;
+        error_info->string = "manifest: " + error_string;
         return false;
       }
     } else {
       // For forward compatibility, we do not prohibit other keys being in
       // the dictionary, as they may be architectures supported in later
       // versions.  However, the value of these entries must be an URLSpec.
-      PLUGIN_PRINTF(("IsValidISADictionary: unrecognized key '%s'.\n",
-                     property_name.c_str()));
+      VLOG(1) << "IsValidISADictionary: unrecognized key '"
+              << property_name << "'.";
       if (!IsValidUrlSpec(property_value, property_name, parent_key,
                           sandbox_isa, &error_string)) {
-        error_info->SetReport(PP_NACL_ERROR_MANIFEST_SCHEMA_VALIDATE,
-                              nacl::string("manifest: ") + error_string);
+        error_info->error = PP_NACL_ERROR_MANIFEST_SCHEMA_VALIDATE;
+        error_info->string = "manifest: " + error_string;
         return false;
       }
     }
   }
 
   if (sandbox_isa == kPortableKey) {
-    bool has_portable = dictionary.isMember(kPortableKey);
-
-    if (!has_portable) {
-      error_info->SetReport(
-          PP_NACL_ERROR_MANIFEST_PROGRAM_MISSING_ARCH,
-          nacl::string("manifest: no version of ") + parent_key +
-          " given for portable.");
+    if (!dictionary.isMember(kPortableKey)) {
+      error_info->error = PP_NACL_ERROR_MANIFEST_PROGRAM_MISSING_ARCH;
+      error_info->string = "manifest: no version of " + parent_key +
+                           " given for portable.";
       return false;
     }
   } else if (must_find_matching_entry) {
@@ -370,46 +352,50 @@ bool IsValidISADictionary(const Json::Value& dictionary,
     bool has_portable = dictionary.isMember(kPortableKey);
 
     if (!has_isa && !has_nonsfi_isa && !has_portable) {
-      error_info->SetReport(
-          PP_NACL_ERROR_MANIFEST_PROGRAM_MISSING_ARCH,
-          nacl::string("manifest: no version of ") + parent_key +
-          " given for current arch and no portable version found.");
+      error_info->error = PP_NACL_ERROR_MANIFEST_PROGRAM_MISSING_ARCH;
+      error_info->string = "manifest: no version of " + parent_key +
+          " given for current arch and no portable version found.";
       return false;
     }
   }
-
   return true;
 }
 
-void GrabUrlAndPNaClOptions(const Json::Value& url_spec,
-                            nacl::string* url,
+void GrabUrlAndPnaclOptions(const Json::Value& url_spec,
+                            std::string* url,
                             PP_PNaClOptions* pnacl_options) {
   *url = url_spec[kUrlKey].asString();
   pnacl_options->translate = PP_TRUE;
   if (url_spec.isMember(kOptLevelKey)) {
     int32_t opt_raw = url_spec[kOptLevelKey].asInt();
-    int32_t opt_level;
     // Currently only allow 0 or 2, since that is what we test.
     if (opt_raw <= 0)
-      opt_level = 0;
+      pnacl_options->opt_level = 0;
     else
-      opt_level = 2;
-    pnacl_options->opt_level = opt_level;
+      pnacl_options->opt_level = 2;
   }
 }
 
 }  // namespace
 
-bool JsonManifest::Init(const nacl::string& manifest_json,
+JsonManifest::JsonManifest(const std::string& manifest_base_url,
+                           const std::string& sandbox_isa,
+                           bool nonsfi_enabled,
+                           bool pnacl_debug)
+    : manifest_base_url_(manifest_base_url),
+      sandbox_isa_(sandbox_isa),
+      nonsfi_enabled_(nonsfi_enabled),
+      pnacl_debug_(pnacl_debug) { }
+
+bool JsonManifest::Init(const std::string& manifest_json,
                         ErrorInfo* error_info) {
-  if (error_info == NULL) {
-    return false;
-  }
+  CHECK(error_info);
+
   Json::Reader reader;
   if (!reader.parse(manifest_json, dictionary_)) {
-    std::string json_error = reader.getFormatedErrorMessages();
-    error_info->SetReport(PP_NACL_ERROR_MANIFEST_PARSING,
-                          "manifest JSON parsing failed: " + json_error);
+    std::string json_error = reader.getFormattedErrorMessages();
+    error_info->error = PP_NACL_ERROR_MANIFEST_PARSING;
+    error_info->string = "manifest JSON parsing failed: " + json_error;
     return false;
   }
   // Parse has ensured the string was valid JSON.  Check that it matches the
@@ -417,15 +403,86 @@ bool JsonManifest::Init(const nacl::string& manifest_json,
   return MatchesSchema(error_info);
 }
 
-bool JsonManifest::MatchesSchema(ErrorInfo* error_info) {
-  pp::Var exception;
-  if (error_info == NULL) {
+bool JsonManifest::GetProgramURL(std::string* full_url,
+                                 PP_PNaClOptions* pnacl_options,
+                                 bool* uses_nonsfi_mode,
+                                 ErrorInfo* error_info) const {
+  if (!full_url)
+    return false;
+  CHECK(pnacl_options);
+  CHECK(uses_nonsfi_mode);
+  CHECK(error_info);
+
+  const Json::Value& program = dictionary_[kProgramKey];
+  std::string nexe_url;
+  if (!GetURLFromISADictionary(program,
+                               kProgramKey,
+                               &nexe_url,
+                               pnacl_options,
+                               uses_nonsfi_mode,
+                               error_info)) {
     return false;
   }
+
+  // The contents of the manifest are resolved relative to the manifest URL.
+  GURL base_gurl(manifest_base_url_);
+  if (!base_gurl.is_valid())
+    return false;
+
+  GURL resolved_gurl = base_gurl.Resolve(nexe_url);
+  if (!resolved_gurl.is_valid()) {
+    error_info->error = PP_NACL_ERROR_MANIFEST_RESOLVE_URL;
+    error_info->string =
+        "could not resolve url '" + nexe_url +
+        "' relative to manifest base url '" + manifest_base_url_.c_str() +
+        "'.";
+    return false;
+  }
+  *full_url = resolved_gurl.possibly_invalid_spec();
+  return true;
+}
+
+bool JsonManifest::ResolveKey(const std::string& key,
+                              std::string* full_url,
+                              PP_PNaClOptions* pnacl_options) const {
+  // key must be one of kProgramKey or kFileKey '/' file-section-key
+  if (full_url == NULL || pnacl_options == NULL)
+    return false;
+
+  if (key == kProgramKey)
+    return GetKeyUrl(dictionary_, key, full_url, pnacl_options);
+
+  std::string::const_iterator p = find(key.begin(), key.end(), '/');
+  if (p == key.end()) {
+    VLOG(1) << "ResolveKey failed: invalid key, no slash: " << key;
+    return false;
+  }
+
+  // generalize to permit other sections?
+  std::string prefix(key.begin(), p);
+  if (prefix != kFilesKey) {
+    VLOG(1) << "ResolveKey failed: invalid key, no \"files\" prefix: " << key;
+    return false;
+  }
+
+  const Json::Value& files = dictionary_[kFilesKey];
+  if (!files.isObject()) {
+    VLOG(1) << "ResolveKey failed: no \"files\" dictionary";
+    return false;
+  }
+
+  std::string rest(p + 1, key.end());
+  if (!files.isMember(rest)) {
+    VLOG(1) << "ResolveKey failed: no such \"files\" entry: " << key;
+    return false;
+  }
+  return GetKeyUrl(files, rest, full_url, pnacl_options);
+}
+
+bool JsonManifest::MatchesSchema(ErrorInfo* error_info) {
   if (!dictionary_.isObject()) {
-    error_info->SetReport(
-        PP_NACL_ERROR_MANIFEST_SCHEMA_VALIDATE,
-        "manifest: is not a json dictionary.");
+    error_info->error = PP_NACL_ERROR_MANIFEST_SCHEMA_VALIDATE;
+    error_info->string = "manifest: is not a json dictionary.";
     return false;
   }
   Json::Value::Members members = dictionary_.getMemberNames();
@@ -434,20 +491,20 @@ bool JsonManifest::MatchesSchema(ErrorInfo* error_info) {
     static const char* kManifestTopLevelProperties[] = { kProgramKey,
                                                          kInterpreterKey,
                                                          kFilesKey };
-    nacl::string property_name = members[i];
+    std::string property_name = members[i];
     if (!FindMatchingProperty(property_name,
                               kManifestTopLevelProperties,
-                              NACL_ARRAY_SIZE(kManifestTopLevelProperties))) {
-      PLUGIN_PRINTF(("JsonManifest::MatchesSchema: WARNING: unknown top-level "
-                     "section '%s' in manifest.\n", property_name.c_str()));
+                              arraysize(kManifestTopLevelProperties))) {
+      VLOG(1) << "JsonManifest::MatchesSchema: WARNING: unknown top-level "
+              << "section '" << property_name << "' in manifest.";
     }
   }
 
   // A manifest file must have a program section.
   if (!dictionary_.isMember(kProgramKey)) {
-    error_info->SetReport(
-        PP_NACL_ERROR_MANIFEST_SCHEMA_VALIDATE,
-        nacl::string("manifest: missing '") + kProgramKey + "' section.");
+    error_info->error = PP_NACL_ERROR_MANIFEST_SCHEMA_VALIDATE;
+    error_info->string = std::string("manifest: missing '") + kProgramKey +
+                         "' section.";
     return false;
   }
 
@@ -479,18 +536,18 @@ bool JsonManifest::MatchesSchema(ErrorInfo* error_info) {
 
   // Validate the file dictionary (if given).
   // The "files" key does not require a matching (portable or sandbox_isa_)
-  // entry at schema validation time for NaCl.  This allows manifests to specify
-  // resources that are only loaded for a particular sandbox_isa.
+  // entry at schema validation time for NaCl.  This allows manifests to
+  // specify resources that are only loaded for a particular sandbox_isa.
   if (dictionary_.isMember(kFilesKey)) {
     const Json::Value& files = dictionary_[kFilesKey];
     if (!files.isObject()) {
-      error_info->SetReport(
-          PP_NACL_ERROR_MANIFEST_SCHEMA_VALIDATE,
-          nacl::string("manifest: '") + kFilesKey + "' is not a dictionary.");
+      error_info->error = PP_NACL_ERROR_MANIFEST_SCHEMA_VALIDATE;
+      error_info->string = std::string("manifest: '") + kFilesKey +
+                           "' is not a dictionary.";
     }
     Json::Value::Members members = files.getMemberNames();
     for (size_t i = 0; i < members.size(); ++i) {
-      nacl::string file_name = members[i];
+      std::string file_name = members[i];
       if (!IsValidISADictionary(files[file_name],
                                 file_name,
                                 sandbox_isa_,
@@ -501,26 +558,54 @@ bool JsonManifest::MatchesSchema(ErrorInfo* error_info) {
       }
     }
   }
+  return true;
+}
 
+bool JsonManifest::GetKeyUrl(const Json::Value& dictionary,
+                             const std::string& key,
+                             std::string* full_url,
+                             PP_PNaClOptions* pnacl_options) const {
+  DCHECK(full_url && pnacl_options);
+  if (!dictionary.isMember(key)) {
+    VLOG(1) << "GetKeyUrl failed: file " << key << " not found in manifest.";
+    return false;
+  }
+  const Json::Value& isa_dict = dictionary[key];
+  std::string relative_url;
+  bool uses_nonsfi_mode;
+  ErrorInfo ignored_error_info;
+  if (!GetURLFromISADictionary(isa_dict, key, &relative_url,
+                               pnacl_options, &uses_nonsfi_mode,
+                               &ignored_error_info))
+    return false;
+
+  // The contents of the manifest are resolved relative to the manifest URL.
+  GURL base_gurl(manifest_base_url_);
+  if (!base_gurl.is_valid())
+    return false;
+  GURL resolved_gurl = base_gurl.Resolve(relative_url);
+  if (!resolved_gurl.is_valid())
+    return false;
+  *full_url = resolved_gurl.possibly_invalid_spec();
   return true;
 }
 
 bool JsonManifest::GetURLFromISADictionary(const Json::Value& dictionary,
-                                           const nacl::string& parent_key,
-                                           nacl::string* url,
+                                           const std::string& parent_key,
+                                           std::string* url,
                                            PP_PNaClOptions* pnacl_options,
                                            bool* uses_nonsfi_mode,
                                            ErrorInfo* error_info) const {
-  DCHECK(url != NULL && pnacl_options != NULL && error_info != NULL);
+  DCHECK(url && pnacl_options && error_info);
 
   // When the application actually requests a resolved URL, we must have
   // a matching entry (sandbox_isa_ or portable) for NaCl.
   ErrorInfo ignored_error_info;
   if (!IsValidISADictionary(dictionary, parent_key, sandbox_isa_, true,
                             nonsfi_enabled_, &ignored_error_info)) {
-    error_info->SetReport(PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
-                          "architecture " + sandbox_isa_ +
-                          " is not found for file " + parent_key);
+    error_info->error = PP_NACL_ERROR_MANIFEST_RESOLVE_URL;
+    error_info->string = "architecture " + sandbox_isa_ +
+                         " is not found for file " + parent_key;
     return false;
   }
 
@@ -528,11 +613,11 @@ bool JsonManifest::GetURLFromISADictionary(const Json::Value& dictionary,
   // sandbox_isa_, its nonsfi mode, or kPortableKey is present in the
   // dictionary.
   *uses_nonsfi_mode = false;
-  nacl::string chosen_isa;
+  std::string chosen_isa;
   if (sandbox_isa_ == kPortableKey) {
     chosen_isa = kPortableKey;
   } else {
-    nacl::string nonsfi_isa = GetNonSFIKey(sandbox_isa_);
+    std::string nonsfi_isa = GetNonSFIKey(sandbox_isa_);
     if (nonsfi_enabled_ && dictionary.isMember(nonsfi_isa)) {
       chosen_isa = nonsfi_isa;
       *uses_nonsfi_mode = true;
@@ -544,6 +629,7 @@ bool JsonManifest::GetURLFromISADictionary(const Json::Value& dictionary,
       // Should not reach here, because the earlier IsValidISADictionary()
       // call checked that the manifest covers the current architecture.
       DCHECK(false);
+      return false;
     }
   }
 
@@ -552,10 +638,10 @@ bool JsonManifest::GetURLFromISADictionary(const Json::Value& dictionary,
   // If found, mark that it is a debug URL. Otherwise, fall back to
   // checking for pnacl-translate URLs, etc. and don't mark it as a debug URL.
   if (pnacl_debug_ && isa_spec.isMember(kPnaclDebugKey)) {
-    GrabUrlAndPNaClOptions(isa_spec[kPnaclDebugKey], url, pnacl_options);
+    GrabUrlAndPnaclOptions(isa_spec[kPnaclDebugKey], url, pnacl_options);
     pnacl_options->is_debug = PP_TRUE;
   } else if (isa_spec.isMember(kPnaclTranslateKey)) {
-    GrabUrlAndPNaClOptions(isa_spec[kPnaclTranslateKey], url, pnacl_options);
+    GrabUrlAndPnaclOptions(isa_spec[kPnaclTranslateKey], url, pnacl_options);
   } else {
     // NaCl
     *url = isa_spec[kUrlKey].asString();
@@ -565,110 +651,4 @@ bool JsonManifest::GetURLFromISADictionary(const Json::Value& dictionary,
   return true;
 }
 
-bool JsonManifest::GetKeyUrl(const Json::Value& dictionary,
-                             const nacl::string& key,
-                             nacl::string* full_url,
-                             PP_PNaClOptions* pnacl_options) const {
-  DCHECK(full_url != NULL && pnacl_options != NULL);
-  if (!dictionary.isMember(key)) {
-    PLUGIN_PRINTF(("file key not found in manifest"));
-    return false;
-  }
-  const Json::Value& isa_dict = dictionary[key];
-  nacl::string relative_url;
-  bool uses_nonsfi_mode;
-
-  // We ignore the error_info we receive here but it's needed for the calls
-  // below.
-  ErrorInfo error_info;
-
-  if (!GetURLFromISADictionary(isa_dict, key, &relative_url,
-                               pnacl_options, &uses_nonsfi_mode, &error_info)) {
-    return false;
-  }
-  return ResolveURL(relative_url, full_url, &error_info);
-}
-
-bool JsonManifest::GetProgramURL(nacl::string* full_url,
-                                 PP_PNaClOptions* pnacl_options,
-                                 bool* uses_nonsfi_mode,
-                                 ErrorInfo* error_info) const {
-  if (full_url == NULL || pnacl_options == NULL || error_info == NULL)
-    return false;
-
-  const Json::Value& program = dictionary_[kProgramKey];
-  nacl::string nexe_url;
-  if (!GetURLFromISADictionary(program,
-                               kProgramKey,
-                               &nexe_url,
-                               pnacl_options,
-                               uses_nonsfi_mode,
-                               error_info)) {
-    return false;
-  }
-  return ResolveURL(nexe_url, full_url, error_info);
-}
-
-bool JsonManifest::ResolveKey(const nacl::string& key,
-                              nacl::string* full_url,
-                              PP_PNaClOptions* pnacl_options) const {
-  NaClLog(3, "JsonManifest::ResolveKey(%s)\n", key.c_str());
-  // key must be one of kProgramKey or kFileKey '/' file-section-key
-
-  if (full_url == NULL || pnacl_options == NULL)
-    return false;
-
-  if (key == kProgramKey)
-    return GetKeyUrl(dictionary_, key, full_url, pnacl_options);
-  nacl::string::const_iterator p = find(key.begin(), key.end(), '/');
-  if (p == key.end()) {
-    std::string err = "ResolveKey: invalid key, no slash: " + key;
-    PLUGIN_PRINTF((err.c_str()));
-    return false;
-  }
-
-  // generalize to permit other sections?
-  nacl::string prefix(key.begin(), p);
-  if (prefix != kFilesKey) {
-    std::string err = "ResolveKey: invalid key: no \"files\" prefix: " + key;
-    PLUGIN_PRINTF((err.c_str()));
-    return false;
-  }
-
-  nacl::string rest(p + 1, key.end());
-
-  const Json::Value& files = dictionary_[kFilesKey];
-  if (!files.isObject()) {
-    std::string err = "ResolveKey: no \"files\" dictionary";
-    PLUGIN_PRINTF((err.c_str()));
-    return false;
-  }
-  if (!files.isMember(rest)) {
-    std::string err = "ResolveKey: no such \"files\" entry: " + key;
-    PLUGIN_PRINTF((err.c_str()));
-    return false;
-  }
-  return GetKeyUrl(files, rest, full_url, pnacl_options);
-}
-
-bool JsonManifest::ResolveURL(const nacl::string& relative_url,
-                              nacl::string* full_url,
-                              ErrorInfo* error_info) const {
-  // The contents of the manifest are resolved relative to the manifest URL.
-  CHECK(url_util_ != NULL);
-  pp::Var resolved_url =
-      url_util_->ResolveRelativeToURL(pp::Var(manifest_base_url_),
-                                      relative_url);
-  if (!resolved_url.is_string()) {
-    error_info->SetReport(
-        PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
-        "could not resolve url '" + relative_url +
-        "' relative to manifest base url '" + manifest_base_url_.c_str() +
-        "'.");
-    return false;
-  }
-  *full_url = resolved_url.AsString();
-  return true;
-}
-
-}  // namespace plugin
+}  // namespace nacl

@@ -27,7 +27,6 @@ struct PP_PNaClOptions;
 
 namespace plugin {
 
-class Manifest;
 class Plugin;
 class PnaclCoordinator;
 class PnaclTranslateThread;
@@ -204,7 +203,7 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
 
   // The manifest used by resource loading and ld + llc's reverse service
   // to look up objects and libraries.
-  nacl::scoped_ptr<const Manifest> manifest_;
+  int32_t manifest_id_;
   // An auxiliary class that manages downloaded resources (llc and ld nexes).
   nacl::scoped_ptr<PnaclResources> resources_;
 

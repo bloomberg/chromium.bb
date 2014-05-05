@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Sat May  3 04:07:13 2014. */
+/* From private/ppb_nacl_private.idl modified Mon May  5 10:57:38 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -407,6 +407,22 @@ struct PPB_NaCl_Private_1_0 {
   void (*DownloadManifestToBuffer)(PP_Instance instance,
                                    struct PP_Var* data,
                                    struct PP_CompletionCallback callback);
+  int32_t (*CreatePnaclManifest)(PP_Instance instance);
+  int32_t (*CreateJsonManifest)(PP_Instance instance,
+                                const char* manifest_base_url,
+                                const char* sandbox_isa,
+                                const char* manifest_data);
+  void (*DestroyManifest)(PP_Instance instance, int32_t manifest_id);
+  PP_Bool (*GetManifestProgramURL)(PP_Instance instance,
+                                   int32_t manifest_id,
+                                   struct PP_Var* full_url,
+                                   struct PP_PNaClOptions* pnacl_options,
+                                   PP_Bool* uses_nonsfi_mode);
+  PP_Bool (*ManifestResolveKey)(PP_Instance instance,
+                                int32_t manifest_id,
+                                const char* key,
+                                struct PP_Var* full_url,
+                                struct PP_PNaClOptions* pnacl_options);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;
