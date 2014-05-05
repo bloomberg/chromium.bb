@@ -37,8 +37,12 @@ TestInterfaces::TestInterfaces()
     , m_delegate(0)
 {
     blink::setLayoutTestMode(true);
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableFontSmoothing))
-        blink::setFontSmoothingEnabledForTest(true);
+
+    // FIXME(dro) crbug.com/367082: Remove the smoothing parameter once the rename is complete
+    // on the Blink side.
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableFontAntialiasing) ||
+        CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableFontSmoothing))
+        blink::setFontAntialiasingEnabledForTest(true);
 
     // NOTE: please don't put feature specific enable flags here,
     // instead add them to RuntimeEnabledFeatures.in

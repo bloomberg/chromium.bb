@@ -27,7 +27,10 @@ const char kDumpRenderTree[] = "dump-render-tree";
 // Enable accelerated 2D canvas.
 const char kEnableAccelerated2DCanvas[] = "enable-accelerated-2d-canvas";
 
-// Enable font smoothing for pixel tests.
+// Enable font antialiasing for pixel tests.
+const char kEnableFontAntialiasing[] = "enable-font-antialiasing";
+// FIXME(dro) crbug.com/367082: Remove this
+// once the rename is complete on the Blink side.
 const char kEnableFontSmoothing[] = "enable-font-smoothing";
 
 // Enables the leak detection of loading webpages. This allows us to check

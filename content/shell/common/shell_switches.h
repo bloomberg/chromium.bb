@@ -16,6 +16,9 @@ extern const char kContentShellDataPath[];
 extern const char kCrashDumpsDir[];
 extern const char kDumpRenderTree[];
 extern const char kEnableAccelerated2DCanvas[];
+extern const char kEnableFontAntialiasing[];
+// FIXME(dro) crbug.com/367082: Remove kEnableFontSmoothing
+// once the rename is complete on the Blink side.
 extern const char kEnableFontSmoothing[];
 extern const char kEnableLeakDetection[];
 extern const char kEncodeBinary[];
