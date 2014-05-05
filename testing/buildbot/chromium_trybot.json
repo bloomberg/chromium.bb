@@ -59,6 +59,10 @@
     "args": ["--test-launcher-print-test-stdio=always"]
   },
   {
+    "test": "sandbox_mac_unittests",
+    "platforms": ["mac"]
+  },
+  {
     "test": "views_unittests",
     "platforms": ["win"]
   },

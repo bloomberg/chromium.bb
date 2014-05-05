@@ -49,6 +49,7 @@
       "mojo_public_utility_unittests",
       "mojo_service_manager_unittests",
       "mojo_system_unittests",
+      "sandbox_mac_unittests",
       {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
     ]
   },
@@ -102,6 +103,7 @@
       "mojo_public_utility_unittests",
       "mojo_service_manager_unittests",
       "mojo_system_unittests",
+      "sandbox_mac_unittests",
       {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
     ]
   },
@@ -128,6 +130,7 @@
       "gfx_unittests",
       "media_unittests",
       "net_unittests",
+      "sandbox_mac_unittests",
       {"test": "browser_tests", "shard_index": 1, "total_shards": 4}
     ]
   },
@@ -185,6 +188,7 @@
       "gfx_unittests",
       "media_unittests",
       "net_unittests",
+      "sandbox_mac_unittests",
       {"test": "browser_tests", "shard_index": 1, "total_shards": 4}
     ]
   },
