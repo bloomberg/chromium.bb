@@ -293,7 +293,7 @@ skia::RefPtr<SkPicture> BrowserViewRenderer::CapturePicture(int width,
   // Reset scroll back to the origin, will go back to the old
   // value when scroll_reset is out of scope.
   AutoResetWithLock scroll_reset(
-      &scroll_offset_dip_, gfx::Vector2dF(), scroll_offset_dip_lock_);
+      &scroll_offset_dip_, gfx::Vector2dF(), render_thread_lock_);
 
   SkPictureRecorder recorder;
   SkCanvas* rec_canvas = recorder.beginRecording(width, height, NULL, 0);
@@ -419,24 +419,28 @@ void BrowserViewRenderer::DidDestroyCompositor(
 }
 
 void BrowserViewRenderer::SetContinuousInvalidate(bool invalidate) {
-  if (!ui_task_runner_->BelongsToCurrentThread()) {
-    ui_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&BrowserViewRenderer::SetContinuousInvalidate,
-                   ui_thread_weak_ptr_,
-                   invalidate));
+  {
+    base::AutoLock lock(render_thread_lock_);
+    if (compositor_needs_continuous_invalidate_ == invalidate)
+      return;
+
+    TRACE_EVENT_INSTANT1("android_webview",
+                         "BrowserViewRenderer::SetContinuousInvalidate",
+                         TRACE_EVENT_SCOPE_THREAD,
+                         "invalidate",
+                         invalidate);
+    compositor_needs_continuous_invalidate_ = invalidate;
+  }
+
+  if (ui_task_runner_->BelongsToCurrentThread()) {
+    EnsureContinuousInvalidation(false);
     return;
   }
-  if (compositor_needs_continuous_invalidate_ == invalidate)
-    return;
-
-  TRACE_EVENT_INSTANT1("android_webview",
-                       "BrowserViewRenderer::SetContinuousInvalidate",
-                       TRACE_EVENT_SCOPE_THREAD,
-                       "invalidate",
-                       invalidate);
-  compositor_needs_continuous_invalidate_ = invalidate;
-  EnsureContinuousInvalidation(false);
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&BrowserViewRenderer::EnsureContinuousInvalidation,
+                 ui_thread_weak_ptr_,
+                 false));
 }
 
 void BrowserViewRenderer::SetDipScale(float dip_scale) {
@@ -472,7 +476,7 @@ void BrowserViewRenderer::ScrollTo(gfx::Vector2d scroll_offset) {
   DCHECK_LE(scroll_offset_dip.y(), max_scroll_offset_dip_.y());
 
   {
-    base::AutoLock lock(scroll_offset_dip_lock_);
+    base::AutoLock lock(render_thread_lock_);
     if (scroll_offset_dip_ == scroll_offset_dip)
       return;
 
@@ -530,7 +534,7 @@ void BrowserViewRenderer::SetTotalRootLayerScrollOffset(
   }
 
   {
-    base::AutoLock lock(scroll_offset_dip_lock_);
+    base::AutoLock lock(render_thread_lock_);
     // TOOD(mkosiba): Add a DCHECK to say that this does _not_ get called during
     // DrawGl when http://crbug.com/249972 is fixed.
     if (scroll_offset_dip_ == scroll_offset_dip)
@@ -564,7 +568,7 @@ void BrowserViewRenderer::SetTotalRootLayerScrollOffset(
 }
 
 gfx::Vector2dF BrowserViewRenderer::GetTotalRootLayerScrollOffset() {
-  base::AutoLock lock(scroll_offset_dip_lock_);
+  base::AutoLock lock(render_thread_lock_);
   return scroll_offset_dip_;
 }
 

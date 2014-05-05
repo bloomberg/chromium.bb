@@ -207,9 +207,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   DrawGLInput draw_gl_input_;
 
-  // TODO(boliu): This is a short term solution to support
-  // SynchronousCompositorClient methods called on non-UI thread.
-  base::Lock scroll_offset_dip_lock_;
   // Current scroll offset in CSS pixels.
   gfx::Vector2dF scroll_offset_dip_;
 
@@ -227,6 +224,12 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   // policy on the shared_renderer_state_ atomically.
   size_t num_tiles_;
   size_t num_bytes_;
+
+  // TODO(boliu): This is a short term solution to support
+  // SynchronousCompositorClient methods called on RenderThread. This is only
+  // used on data that must be modified immediately instead of being posted
+  // back to UI.
+  base::Lock render_thread_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserViewRenderer);
 };
