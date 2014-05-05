@@ -543,6 +543,10 @@ tc-tests-all() {
     "${scons_flags} use_sandboxed_translator=1 translate_fast=1" \
     "run_hello_world_test"
 
+  # Test Non-SFI Mode.
+  scons-stage-irt "x86-32" "${scons_flags}" "${SCONS_NONSFI}"
+  scons-stage-irt "arm" "${scons_flags}" "${SCONS_NONSFI}"
+
   # Run the GCC torture tests just for x86-32.  Testing a single
   # architecture gives good coverage without taking too long.  We
   # don't test x86-64 here because some of the torture tests fail on
@@ -583,25 +587,6 @@ mode-buildbot-tc-x8664-linux() {
   HOST_ARCH=x86_64 tc-tests-all ${is_try}
 }
 
-test-nonsfi-mode() {
-  echo "@@@BUILD_STEP test translating for nonsfi mode@@@"
-  # Test that translation produces an executable without giving an
-  # error.  We can't run the resulting Non-SFI Mode nexe yet because
-  # there is no standalone loader for such nexes that is available in
-  # the NaCl build.
-  # TODO(mseaborn): Move some of Chromium's
-  # components/nacl/loader/nonsfi/ to the NaCl repo so that we can
-  # test this here.
-  local out_dir=scons-out/nacl_irt_test-x86-32-pnacl-pexe-clang
-  local pexe_path=${out_dir}/obj/tests/hello_world/hello_world.final.pexe
-  ./scons -j8 bitcode=1 --mode=nacl,nacl_irt_test ${pexe_path}
-  for arch in x86-32 arm; do
-    toolchain/linux_x86/pnacl_newlib/bin/pnacl-translate -arch ${arch}-nonsfi \
-        ${pexe_path} -o /tmp/hellow.nexe
-    rm /tmp/hellow.nexe
-  done
-}
-
 mode-buildbot-tc-x8632-linux() {
   setup-goma
   local is_try=$1
@@ -628,7 +613,8 @@ mode-buildbot-tc-x8632-linux() {
     run_syscall_test_irt \
     run_getpid_test_irt
 
-  test-nonsfi-mode
+  # Test Non-SFI Mode.
+  scons-stage-irt "x86-32" "-j8 -k" "${SCONS_NONSFI}"
 }
 
 mode-buildbot-tc-x8632-mac() {
