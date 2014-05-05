@@ -1161,7 +1161,7 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
       continue;
     }
 #if defined(FULL_SAFE_BROWSING)
-    if (!SkipLocalPredictorWhitelist() &&
+    if (!SkipLocalPredictorWhitelist() && sb_db_manager &&
         sb_db_manager->CheckSideEffectFreeWhitelistUrl(url_info->url)) {
       // If a page is on the side-effect free whitelist, we will just prerender
       // it without any additional checks.
