@@ -82,7 +82,7 @@ bool MetricsStateManager::IsMetricsReportingEnabled() {
   chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
                                             &enabled);
 #else
-  enabled = local_state->GetBoolean(prefs::kMetricsReportingEnabled);
+  enabled = local_state_->GetBoolean(prefs::kMetricsReportingEnabled);
 #endif  // #if defined(OS_CHROMEOS)
 #endif  // defined(GOOGLE_CHROME_BUILD)
   return enabled;
