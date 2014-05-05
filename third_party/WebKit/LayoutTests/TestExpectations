@@ -656,8 +656,8 @@ crbug.com/316349 inspector-protocol/page/enable-disable.html [ Failure Pass ]
 
 crbug.com/316730 canvas/synchronous-create-pattern.html [ ImageOnlyFailure Pass ]
 
-crbug.com/318632 webaudio/audiobuffersource-multi-channels.html [ NeedsManualRebaseline ]
-crbug.com/318632 webaudio/test-basic.html [ NeedsManualRebaseline ]
+crbug.com/318632 webaudio/audiobuffersource-multi-channels.html [ NeedsRebaseline ]
+crbug.com/318632 webaudio/test-basic.html [ NeedsRebaseline ]
 
 crbug.com/320099 webaudio/oscillator-sawtooth.html [ NeedsManualRebaseline ]
 crbug.com/320099 webaudio/oscillator-triangle.html [ NeedsManualRebaseline ]
@@ -833,7 +833,7 @@ crbug.com/353186 [ Win Debug ] http/tests/security/webgl-remote-read-remote-imag
 crbug.com/353208 fast/files/workers/worker-read-blob-async-crash.html [ Pass Crash Timeout ]
 crbug.com/353301 svg/custom/js-late-gradient-and-object-creation.svg [ Pass Failure ]
 
-crbug.com/351658 fast/events/window-onerror-03.html [ NeedsManualRebaseline ]
+crbug.com/351658 fast/events/window-onerror-03.html [ NeedsRebaseline ]
 crbug.com/356991 [ Linux Debug ] fast/canvas/canvas-createImageBitmap-drawImage-video.html [ Crash Pass ]
 crbug.com/356996 [ Debug ] html5lib/generated/run-tests1-data.html [ Pass Timeout ]
 crbug.com/356996 [ Mac Release ] html5lib/generated/run-tests1-data.html [ Pass Timeout ]
