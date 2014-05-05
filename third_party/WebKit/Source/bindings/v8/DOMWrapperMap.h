@@ -70,6 +70,7 @@ public:
     void set(KeyType* key, v8::Handle<v8::Object> wrapper, const WrapperConfiguration& configuration)
     {
         ASSERT(static_cast<KeyType*>(toNative(wrapper)) == key);
+        ASSERT(!containsKey(key));
         v8::UniquePersistent<v8::Object> unique(m_isolate, wrapper);
         configuration.configureWrapper(&unique);
         m_map.Set(key, unique.Pass());
@@ -82,6 +83,7 @@ public:
 
     void removeAndDispose(KeyType* key)
     {
+        ASSERT(containsKey(key));
         m_map.Remove(key);
     }
 
@@ -158,6 +160,7 @@ inline void DOMWrapperMap<void>::PersistentValueMapTraits::Dispose(
     v8::UniquePersistent<v8::Object> value,
     void* key)
 {
+    RELEASE_ASSERT(!value.IsEmpty()); // See crbug.com/368095.
     releaseObject(v8::Local<v8::Object>::New(isolate, value));
 }
 
