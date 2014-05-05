@@ -41,14 +41,33 @@ pre {
   background-color: #f7f7f7;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), 0 0 3px rgba(0, 0, 0, 0.15);
   margin: 1em 0 0 0;
-  overflow: auto;
   padding: .99em;
   position: relative;
+  overflow-x: auto; 
+  word-wrap: normal; 
+  white-space: pre;
+  font-size: 0.95em;
+  line-height: 1.8em;
   a {
     text-decoration: underline!important;
   }
   b {
     background: yellow;
+    font-weight: normal;
+  }
+  strike {
+    text-decoration: none;
+    background-image: -webkit-linear-gradient(transparent 7px,#cc1f1f 7px,#cc1f1f 9px,transparent 9px);
+    background-image:    -moz-linear-gradient(transparent 7px,#cc1f1f 7px,#cc1f1f 9px,transparent 9px);
+    background-image:     -ms-linear-gradient(transparent 7px,#cc1f1f 7px,#cc1f1f 9px,transparent 9px);
+    background-image:      -o-linear-gradient(transparent 7px,#cc1f1f 7px,#cc1f1f 9px,transparent 9px);
+    background-image:         linear-gradient(transparent 7px,#cc1f1f 7px,#cc1f1f 9px,transparent 9px);
+  }
+  &[data-filename]::after {
+    visibility: hidden;
+  }
+  &[data-filename]:hover::after {
+    visibility: visible;
   }
 }
 

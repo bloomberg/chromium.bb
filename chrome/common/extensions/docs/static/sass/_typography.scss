@@ -114,6 +114,10 @@ footer[role="contentinfo"] {
   }
 }
 
+em {
+  padding-right: 2px; /* "kerning" adjustment */
+}
+
 img {
   vertical-align: middle;
 }
@@ -146,6 +150,10 @@ pre {
   color: $monospace-font-color;
   font-family: $sourcecode;
   //font-size: $monospace-font-size;
+}
+
+a > code {
+  color: $link-color;
 }
 
 pre {
