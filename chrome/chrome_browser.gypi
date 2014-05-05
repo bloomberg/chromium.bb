@@ -1215,8 +1215,6 @@
         'browser/metrics/metrics_service_android.cc',
         'browser/metrics/metrics_service.cc',
         'browser/metrics/metrics_service.h',
-        'browser/metrics/metrics_state_manager.cc',
-        'browser/metrics/metrics_state_manager.h',
         'browser/metrics/perf_provider_chromeos.cc',
         'browser/metrics/perf_provider_chromeos.h',
         'browser/metrics/thread_watcher.cc',

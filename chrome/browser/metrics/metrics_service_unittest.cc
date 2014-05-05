@@ -4,6 +4,7 @@
 
 #include "chrome/browser/metrics/metrics_service.h"
 
+#include <ctype.h>
 #include <string>
 
 #include "base/command_line.h"
@@ -96,13 +97,6 @@ class MetricsServiceTest : public testing::Test {
     return testing_local_state_.Get();
   }
 
-  // Sets metrics reporting as enabled for testing.
-  void EnableMetricsReporting() {
-    // TODO(asvitkine): Refactor the code to not need this flag and delete it.
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableMetricsReportingForTesting);
-  }
-
   // Waits until base::TimeTicks::Now() no longer equals |value|. This should
   // take between 1-15ms per the documented resolution of base::TimeTicks.
   void WaitUntilTimeChanges(const base::TimeTicks& value) {
@@ -137,6 +131,20 @@ class MetricsServiceTest : public testing::Test {
 
 }  // namespace
 
+// Ensure the ClientId is formatted as expected.
+TEST_F(MetricsServiceTest, ClientIdCorrectlyFormatted) {
+  std::string clientid = MetricsService::GenerateClientID();
+  EXPECT_EQ(36U, clientid.length());
+
+  for (size_t i = 0; i < clientid.length(); ++i) {
+    char current = clientid[i];
+    if (i == 8 || i == 13 || i == 18 || i == 23)
+      EXPECT_EQ('-', current);
+    else
+      EXPECT_TRUE(isxdigit(current));
+  }
+}
+
 TEST_F(MetricsServiceTest, IsPluginProcess) {
   EXPECT_TRUE(
       MetricsService::IsPluginProcess(content::PROCESS_TYPE_PLUGIN));
@@ -146,19 +154,82 @@ TEST_F(MetricsServiceTest, IsPluginProcess) {
       MetricsService::IsPluginProcess(content::PROCESS_TYPE_GPU));
 }
 
+TEST_F(MetricsServiceTest, LowEntropySource0NotReset) {
+  MetricsService service;
+
+  // Get the low entropy source once, to initialize it.
+  service.GetLowEntropySource();
+
+  // Now, set it to 0 and ensure it doesn't get reset.
+  service.low_entropy_source_ = 0;
+  EXPECT_EQ(0, service.GetLowEntropySource());
+  // Call it another time, just to make sure.
+  EXPECT_EQ(0, service.GetLowEntropySource());
+}
+
+TEST_F(MetricsServiceTest, PermutedEntropyCacheClearedWhenLowEntropyReset) {
+  const PrefService::Preference* low_entropy_pref =
+      GetLocalState()->FindPreference(prefs::kMetricsLowEntropySource);
+  const char* kCachePrefName = prefs::kMetricsPermutedEntropyCache;
+  int low_entropy_value = -1;
+
+  // First, generate an initial low entropy source value.
+  {
+    EXPECT_TRUE(low_entropy_pref->IsDefaultValue());
+
+    MetricsService::SetExecutionPhase(MetricsService::UNINITIALIZED_PHASE);
+    MetricsService service;
+    service.GetLowEntropySource();
+
+    EXPECT_FALSE(low_entropy_pref->IsDefaultValue());
+    EXPECT_TRUE(low_entropy_pref->GetValue()->GetAsInteger(&low_entropy_value));
+  }
+
+  // Now, set a dummy value in the permuted entropy cache pref and verify that
+  // another call to GetLowEntropySource() doesn't clobber it when
+  // --reset-variation-state wasn't specified.
+  {
+    GetLocalState()->SetString(kCachePrefName, "test");
+
+    MetricsService::SetExecutionPhase(MetricsService::UNINITIALIZED_PHASE);
+    MetricsService service;
+    service.GetLowEntropySource();
+
+    EXPECT_EQ("test", GetLocalState()->GetString(kCachePrefName));
+    EXPECT_EQ(low_entropy_value,
+              GetLocalState()->GetInteger(prefs::kMetricsLowEntropySource));
+  }
+
+  // Verify that the cache does get reset if --reset-variations-state is passed.
+  {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kResetVariationState);
+
+    MetricsService::SetExecutionPhase(MetricsService::UNINITIALIZED_PHASE);
+    MetricsService service;
+    service.GetLowEntropySource();
+
+    EXPECT_TRUE(GetLocalState()->GetString(kCachePrefName).empty());
+  }
+}
+
 TEST_F(MetricsServiceTest, InitialStabilityLogAfterCleanShutDown) {
-  EnableMetricsReporting();
+  base::FieldTrialList field_trial_list(NULL);
+  base::FieldTrialList::CreateFieldTrial("UMAStability", "SeparateLog");
+
   GetLocalState()->SetBoolean(prefs::kStabilityExitedCleanly, true);
 
   TestMetricsService service;
-  service.InitializeMetricsRecordingState();
+  service.InitializeMetricsRecordingState(MetricsService::REPORTING_ENABLED);
   // No initial stability log should be generated.
   EXPECT_FALSE(service.log_manager()->has_unsent_logs());
   EXPECT_FALSE(service.log_manager()->has_staged_log());
 }
 
 TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
-  EnableMetricsReporting();
+  base::FieldTrialList field_trial_list(NULL);
+  base::FieldTrialList::CreateFieldTrial("UMAStability", "SeparateLog");
+
   GetLocalState()->ClearPref(prefs::kStabilityExitedCleanly);
 
   // Set up prefs to simulate restarting after a crash.
@@ -180,7 +251,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   GetLocalState()->SetBoolean(prefs::kStabilityExitedCleanly, false);
 
   TestMetricsService service;
-  service.InitializeMetricsRecordingState();
+  service.InitializeMetricsRecordingState(MetricsService::REPORTING_ENABLED);
 
   // The initial stability log should be generated and persisted in unsent logs.
   MetricsLogManager* log_manager = service.log_manager();
@@ -303,4 +374,43 @@ TEST_F(MetricsServiceTest, CrashReportingEnabled) {
   // Chromium branded browsers never have crash reporting enabled.
   EXPECT_FALSE(MetricsServiceHelper::IsCrashReportingEnabled());
 #endif  // defined(GOOGLE_CHROME_BUILD)
+}
+
+// Check that setting the kMetricsResetIds pref to true causes the client id to
+// be reset. We do not check that the low entropy source is reset because we
+// cannot ensure that metrics service won't generate the same id again.
+TEST_F(MetricsServiceTest, ResetMetricsIDs) {
+  // Set an initial client id in prefs. It should not be possible for the
+  // metrics service to generate this id randomly.
+  const std::string kInitialClientId = "initial client id";
+  GetLocalState()->SetString(prefs::kMetricsClientID, kInitialClientId);
+
+  // Make sure the initial client id isn't reset by the metrics service.
+  {
+    MetricsService service;
+    service.ForceClientIdCreation();
+    EXPECT_TRUE(service.metrics_ids_reset_check_performed_);
+    EXPECT_EQ(kInitialClientId, service.client_id_);
+  }
+
+
+  // Set the reset pref to cause the IDs to be reset.
+  GetLocalState()->SetBoolean(prefs::kMetricsResetIds, true);
+
+  // Cause the actual reset to happen.
+  {
+    MetricsService service;
+    service.ForceClientIdCreation();
+    EXPECT_TRUE(service.metrics_ids_reset_check_performed_);
+    EXPECT_NE(kInitialClientId, service.client_id_);
+
+    service.GetLowEntropySource();
+
+    EXPECT_FALSE(GetLocalState()->GetBoolean(prefs::kMetricsResetIds));
+  }
+
+  std::string new_client_id =
+      GetLocalState()->GetString(prefs::kMetricsClientID);
+
+  EXPECT_NE(kInitialClientId, new_client_id);
 }

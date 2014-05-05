@@ -562,8 +562,14 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   // Initialize FieldTrialList to support FieldTrials that use one-time
   // randomization.
   MetricsService* metrics = browser_process_->metrics_service();
+  MetricsService::ReportingState reporting_state =
+      IsMetricsReportingEnabled() ? MetricsService::REPORTING_ENABLED :
+                                    MetricsService::REPORTING_DISABLED;
+  if (reporting_state == MetricsService::REPORTING_ENABLED)
+    metrics->ForceClientIdCreation();  // Needed below.
   field_trial_list_.reset(
-      new base::FieldTrialList(metrics->CreateEntropyProvider().release()));
+      new base::FieldTrialList(
+          metrics->CreateEntropyProvider(reporting_state).release()));
 
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableBenchmarking))
@@ -611,7 +617,7 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   field_trial_synchronizer_ = new FieldTrialSynchronizer();
 
   // Now that field trials have been created, initializes metrics recording.
-  metrics->InitializeMetricsRecordingState();
+  metrics->InitializeMetricsRecordingState(reporting_state);
 }
 
 // ChromeBrowserMainParts: |SetupMetricsAndFieldTrials()| related --------------
@@ -631,14 +637,33 @@ void ChromeBrowserMainParts::StartMetricsRecording() {
   }
 
   metrics->CheckForClonedInstall();
-  const bool metrics_enabled = metrics->StartIfMetricsReportingEnabled();
-  if (metrics_enabled) {
-    // TODO(asvitkine): Since this function is not run on Android, RAPPOR is
-    // currently disabled there. http://crbug.com/370041
-    browser_process_->rappor_service()->Start(
-        browser_process_->local_state(),
-        browser_process_->system_request_context());
-  }
+
+  if (IsMetricsReportingEnabled())
+    metrics->Start();
+}
+
+bool ChromeBrowserMainParts::IsMetricsReportingEnabled() {
+  // If the user permits metrics reporting with the checkbox in the
+  // prefs, we turn on recording.  We disable metrics completely for
+  // non-official builds.  This can be forced with a flag.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableMetricsReportingForTesting))
+    return true;
+
+  bool enabled = false;
+  // The debug build doesn't send UMA logs when FieldTrials are forced.
+  if (command_line->HasSwitch(switches::kForceFieldTrials))
+    return false;
+
+#if defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS)
+  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
+                                            &enabled);
+#else
+  enabled = local_state_->GetBoolean(prefs::kMetricsReportingEnabled);
+#endif  // #if defined(OS_CHROMEOS)
+#endif  // defined(GOOGLE_CHROME_BUILD)
+  return enabled;
 }
 
 void ChromeBrowserMainParts::RecordBrowserStartupTime() {
@@ -1068,6 +1093,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Now that the file thread has been started, start recording.
   StartMetricsRecording();
 #endif
+
+  if (IsMetricsReportingEnabled()) {
+    browser_process_->rappor_service()->Start(
+        browser_process_->local_state(),
+        browser_process_->system_request_context());
+  }
 
   // Create watchdog thread after creating all other threads because it will
   // watch the other threads and they must be running.
