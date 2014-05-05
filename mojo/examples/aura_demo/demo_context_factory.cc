@@ -24,11 +24,16 @@ DemoContextFactory::~DemoContextFactory() {
 }
 
 bool DemoContextFactory::Initialize() {
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationNone) {
+    return true;
+  }
+
   if (!gfx::GLSurface::InitializeOneOff() ||
       gfx::GetGLImplementation() == gfx::kGLImplementationNone) {
     LOG(ERROR) << "Could not load the GL bindings";
     return false;
   }
+
   return true;
 }
 
@@ -70,4 +75,3 @@ bool DemoContextFactory::DoesCreateTestContexts() { return false; }
 
 }  // namespace examples
 }  // namespace mojo
-

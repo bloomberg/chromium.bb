@@ -249,6 +249,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
+            '../base/base.gyp:test_support_base',
             '../ui/aura/aura.gyp:aura',
             '../ui/aura/aura.gyp:aura_test_support',
             '../ui/base/ui_base.gyp:ui_base',
