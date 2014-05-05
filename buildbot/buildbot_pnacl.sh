@@ -665,66 +665,6 @@ mode-buildbot-tc-x8664-win() {
 
 
 
-mode-test-all() {
-  test-all-newlib "$@"
-  test-all-glibc "$@"
-}
-
-# NOTE: clobber and toolchain setup to be done manually, since this is for
-# testing a locally built toolchain.
-# This runs tests concurrently, so may be more difficult to parse logs.
-test-all-newlib() {
-  local concur=$1
-
-  # turn verbose mode off
-  set +o xtrace
-
-  llvm-regression
-  ${DRIVER_TESTS} --platform=x86-32
-  ${DRIVER_TESTS} --platform=x86-64
-  ${DRIVER_TESTS} --platform=arm
-
-  # At least clobber scons-out before building and running the tests though.
-  echo "@@@BUILD_STEP clobber@@@"
-  rm -rf scons-out
-
-  # First build everything.
-  echo "@@@BUILD_STEP scons build @@@"
-  local scons_flags="skip_trusted_tests=1 -j${concur}"
-  scons-stage-noirt "arm"    "${scons_flags}" "${SCONS_EVERYTHING}"
-  scons-stage-noirt "x86-32" "${scons_flags}" "${SCONS_EVERYTHING}"
-  scons-stage-noirt "x86-64" "${scons_flags}" "${SCONS_EVERYTHING}"
-  # Then run the tests. smoke_tests can be run in parallel but not large_tests
-  echo "@@@BUILD_STEP scons smoke_tests @@@"
-  scons-stage-noirt "arm"    "${scons_flags}" "smoke_tests"
-  scons-stage-noirt "arm"    "${scons_flags} -j1" "large_tests"
-  scons-stage-noirt "x86-32" "${scons_flags}" "smoke_tests"
-  scons-stage-noirt "x86-32"    "${scons_flags} -j1" "large_tests"
-  scons-stage-noirt "x86-64" "${scons_flags}" "smoke_tests"
-  scons-stage-noirt "x86-64"    "${scons_flags} -j1" "large_tests"
-  # Do some sandboxed translator tests as well.
-  scons-stage-irt "x86-32" "${scons_flags} use_sandboxed_translator=1" \
-    "toolchain_tests"
-  scons-stage-irt "x86-32" \
-    "${scons_flags} use_sandboxed_translator=1 translate_fast=1" \
-    "toolchain_tests"
-  scons-stage-irt "x86-64" "${scons_flags} use_sandboxed_translator=1" \
-    "toolchain_tests"
-  scons-stage-irt "x86-64" \
-    "${scons_flags} use_sandboxed_translator=1 translate_fast=1" \
-    "toolchain_tests"
-  # Smaller set of sbtc tests for ARM because qemu is flaky.
-  scons-stage-irt "arm" "${scons_flags} use_sandboxed_translator=1" \
-    "run_hello_world_test"
-  scons-stage-irt "arm" \
-    "${scons_flags} use_sandboxed_translator=1 translate_fast=1" \
-    "run_hello_world_test"
-}
-
-test-all-glibc() {
-  echo "TODO(pdox): Add GlibC tests"
-}
-
 ######################################################################
 # On Windows, this script is invoked from a batch file.
 # The inherited PWD environmental variable is a Windows-style path.

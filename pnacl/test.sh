@@ -50,9 +50,6 @@ SetLogDirectory "${NACL_ROOT}/toolchain/test-log"
 # For different levels of make parallelism change this in your env
 readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-8}
 
-readonly OTHER_TEST_SCRIPT="${NACL_ROOT}/buildbot/buildbot_pnacl.sh"
-readonly LLVM_TEST="${NACL_ROOT}/pnacl/scripts/llvm-test.py"
-
 # This needs to be kept in sync with the var of the same name in build.sh
 readonly TC_BUILD_LLVM="$(pwd)/pnacl/build/llvm_${HOST_ARCH}"
 
@@ -176,18 +173,6 @@ test-x86-64()     { test-driver x86-64 && scons-tests x86-64 native "$@" ; }
 test-arm-sbtc()    { scons-tests arm sbtc "$@" ; }
 test-x86-32-sbtc() { scons-tests x86-32 sbtc "$@" ; }
 test-x86-64-sbtc() { scons-tests x86-64 sbtc "$@" ; }
-
-#@
-#@ test-all  - Run arm, x86-32, and x86-64 tests. (all should pass)
-test-all() {
-  if [ $# -ne 0 ]; then
-    echo "test-all does not take any arguments"
-    exit -1
-  fi
-
-  ${LLVM_TEST} --llvm-regression --check-excludes
-  FAIL_FAST=true ${OTHER_TEST_SCRIPT} mode-test-all ${PNACL_CONCURRENCY}
-}
 
 #@
 #@ test-spec <official-spec-dir> <setup> [ref|train] [<benchmarks>]*
