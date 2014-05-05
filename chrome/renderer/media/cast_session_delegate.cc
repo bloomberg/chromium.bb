@@ -50,13 +50,6 @@ void CastSessionDelegate::StartAudio(
   }
 
   audio_frame_input_available_callback_ = callback;
-  media::cast::transport::CastTransportAudioConfig transport_config;
-  transport_config.base.ssrc = config.sender_ssrc;
-  transport_config.codec = config.codec;
-  transport_config.base.rtp_config = config.rtp_config;
-  transport_config.frequency = config.frequency;
-  transport_config.channels = config.channels;
-  cast_transport_->InitializeAudio(transport_config);
   cast_sender_->InitializeAudio(
       config,
       base::Bind(&CastSessionDelegate::InitializationResultCB,
@@ -79,11 +72,6 @@ void CastSessionDelegate::StartVideo(
 
   video_frame_input_available_callback_ = callback;
 
-  media::cast::transport::CastTransportVideoConfig transport_config;
-  transport_config.base.ssrc = config.sender_ssrc;
-  transport_config.codec = config.codec;
-  transport_config.base.rtp_config = config.rtp_config;
-  cast_transport_->InitializeVideo(transport_config);
   cast_sender_->InitializeVideo(
       config,
       base::Bind(&CastSessionDelegate::InitializationResultCB,

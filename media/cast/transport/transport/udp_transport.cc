@@ -52,6 +52,7 @@ UdpTransport::UdpTransport(
                                      net_log,
                                      net::NetLog::Source())),
       send_pending_(false),
+      receive_pending_(false),
       client_connected_(false),
       status_callback_(status_callback),
       weak_factory_(this) {
@@ -84,7 +85,18 @@ void UdpTransport::StartReceiving(
     NOTREACHED() << "Either local or remote address has to be defined.";
   }
 
-  ReceiveNextPacket(net::ERR_IO_PENDING);
+  ScheduleReceiveNextPacket();
+}
+
+void UdpTransport::ScheduleReceiveNextPacket() {
+  DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
+  if (!packet_receiver_.is_null() && !receive_pending_) {
+    receive_pending_ = true;
+    io_thread_proxy_->PostTask(FROM_HERE,
+                               base::Bind(&UdpTransport::ReceiveNextPacket,
+                                          weak_factory_.GetWeakPtr(),
+                                          net::ERR_IO_PENDING));
+  }
 }
 
 void UdpTransport::ReceiveNextPacket(int length_or_status) {
@@ -104,16 +116,18 @@ void UdpTransport::ReceiveNextPacket(int length_or_status) {
           &recv_addr_,
           base::Bind(&UdpTransport::ReceiveNextPacket,
                      weak_factory_.GetWeakPtr()));
-      if (length_or_status == net::ERR_IO_PENDING)
+      if (length_or_status == net::ERR_IO_PENDING) {
+        receive_pending_ = true;
         return;
+      }
     }
 
     // Note: At this point, either a packet is ready or an error has occurred.
-
     if (length_or_status < 0) {
       VLOG(1) << "Failed to receive packet: Status code is "
-              << length_or_status << ".  Stop receiving packets.";
+              << length_or_status;
       status_callback_.Run(TRANSPORT_SOCKET_ERROR);
+      receive_pending_ = false;
       return;
     }
 
@@ -181,6 +195,8 @@ bool UdpTransport::SendPacket(PacketRef packet, const base::Closure& cb) {
     status_callback_.Run(TRANSPORT_SOCKET_ERROR);
     return true;
   } else {
+    // Successful send, re-start reading if needed.
+    ScheduleReceiveNextPacket();
     return true;
   }
 }
@@ -195,6 +211,9 @@ void UdpTransport::OnSent(const scoped_refptr<net::IOBuffer>& buf,
   if (result < 0) {
     LOG(ERROR) << "Failed to send packet: " << result << ".";
     status_callback_.Run(TRANSPORT_SOCKET_ERROR);
+  } else {
+    // Successful send, re-start reading if needed.
+    ScheduleReceiveNextPacket();
   }
 
   if (!cb.is_null()) {

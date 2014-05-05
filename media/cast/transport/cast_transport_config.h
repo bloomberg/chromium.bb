@@ -36,27 +36,26 @@ enum AudioCodec {
 
 struct RtpConfig {
   RtpConfig();
-  int history_ms;  // The time RTP packets are stored for retransmissions.
+  ~RtpConfig();
+  uint32 ssrc;
   int max_delay_ms;
   int payload_type;
-};
-
-// TODO(mikhal): Consider combining this with the cast_sender config.
-struct CastTransportBaseConfig {
-  CastTransportBaseConfig();
-  ~CastTransportBaseConfig();
-
-  uint32 ssrc;
-  RtpConfig rtp_config;
   std::string aes_key;      // Binary string of size kAesKeySize.
   std::string aes_iv_mask;  // Binary string of size kAesBlockSize.
+};
+
+struct CastTransportRtpConfig {
+  CastTransportRtpConfig();
+  ~CastTransportRtpConfig();
+  RtpConfig config;
+  int max_outstanding_frames;
 };
 
 struct CastTransportAudioConfig {
   CastTransportAudioConfig();
   ~CastTransportAudioConfig();
 
-  CastTransportBaseConfig base;
+  CastTransportRtpConfig rtp;
   AudioCodec codec;
   int frequency;
   int channels;
@@ -66,7 +65,7 @@ struct CastTransportVideoConfig {
   CastTransportVideoConfig();
   ~CastTransportVideoConfig();
 
-  CastTransportBaseConfig base;
+  CastTransportRtpConfig rtp;
   VideoCodec codec;
 };
 

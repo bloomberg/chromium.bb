@@ -9,19 +9,20 @@ namespace cast {
 namespace transport {
 
 namespace {
-const int kDefaultRtpHistoryMs = 1000;
 const int kDefaultRtpMaxDelayMs = 100;
 }  // namespace
 
 RtpConfig::RtpConfig()
-    : history_ms(kDefaultRtpHistoryMs),
+    : ssrc(0),
       max_delay_ms(kDefaultRtpMaxDelayMs),
       payload_type(0) {}
 
-CastTransportBaseConfig::CastTransportBaseConfig()
-    : ssrc(0) {}
+RtpConfig::~RtpConfig() {}
 
-CastTransportBaseConfig::~CastTransportBaseConfig() {}
+CastTransportRtpConfig::CastTransportRtpConfig()
+    : max_outstanding_frames(-1) {}
+
+CastTransportRtpConfig::~CastTransportRtpConfig() {}
 
 CastTransportAudioConfig::CastTransportAudioConfig()
     : codec(kOpus), frequency(0), channels(0) {}

@@ -100,7 +100,7 @@ AudioSenderConfig GetAudioSenderConfig() {
   audio_config.channels = kAudioChannels;
   audio_config.bitrate = 64000;
   audio_config.codec = transport::kOpus;
-  audio_config.sender_ssrc = 1;
+  audio_config.rtp_config.ssrc = 1;
   audio_config.incoming_feedback_ssrc = 2;
   audio_config.rtp_config.payload_type = 127;
   audio_config.rtp_config.max_delay_ms = 300;
@@ -133,7 +133,7 @@ VideoSenderConfig GetVideoSenderConfig() {
   video_config.max_qp = 40;
 
   // SSRCs and payload type. Don't change them.
-  video_config.sender_ssrc = 11;
+  video_config.rtp_config.ssrc = 11;
   video_config.incoming_feedback_ssrc = 12;
   video_config.rtp_config.payload_type = 96;
   video_config.rtp_config.max_delay_ms = 300;
@@ -575,9 +575,7 @@ class SendProcess {
               frames_read,
               &avframe->data[0],
               // Note: Not all files have correct values for pkt_pts.
-              base::TimeDelta::FromMilliseconds(avframe->pkt_pts),
-              // TODO(hclam): Give accurate duration based on samples.
-              base::TimeDelta());
+              base::TimeDelta::FromMilliseconds(avframe->pkt_pts));
       audio_algo_.EnqueueBuffer(buffer);
     } while (packet_temp.size > 0);
     avcodec_free_frame(&avframe);
@@ -746,7 +744,9 @@ class SendProcess {
 
 namespace {
 void UpdateCastTransportStatus(
-    media::cast::transport::CastTransportStatus status) {}
+    media::cast::transport::CastTransportStatus status) {
+  VLOG(21) << "Transport status: " << status;
+}
 
 void LogRawEvents(
     const scoped_refptr<media::cast::CastEnvironment>& cast_environment,
@@ -906,14 +906,8 @@ int main(int argc, char** argv) {
 
   // Running transport on the main thread.
   // Setting up transport config.
-  media::cast::transport::CastTransportAudioConfig transport_audio_config;
-  media::cast::transport::CastTransportVideoConfig transport_video_config;
   net::IPEndPoint remote_endpoint =
       CreateUDPAddress(remote_ip_address, remote_port);
-  transport_audio_config.base.ssrc = audio_config.sender_ssrc;
-  transport_audio_config.base.rtp_config = audio_config.rtp_config;
-  transport_video_config.base.ssrc = video_config.sender_ssrc;
-  transport_video_config.base.rtp_config = video_config.rtp_config;
 
   // Enable raw event and stats logging.
   // Running transport on the main thread.
@@ -940,8 +934,6 @@ int main(int argc, char** argv) {
           base::Bind(&LogRawEvents, cast_environment),
           base::TimeDelta::FromSeconds(1),
           io_message_loop.message_loop_proxy());
-  transport_sender->InitializeAudio(transport_audio_config);
-  transport_sender->InitializeVideo(transport_video_config);
 
   // CastSender initialization.
   scoped_ptr<media::cast::CastSender> cast_sender =

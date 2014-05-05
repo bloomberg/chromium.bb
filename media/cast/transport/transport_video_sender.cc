@@ -4,8 +4,6 @@
 
 #include "media/cast/transport/transport_video_sender.h"
 
-#include <list>
-
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -21,13 +19,10 @@ TransportVideoSender::TransportVideoSender(
     base::TickClock* clock,
     const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
     PacedSender* const paced_packet_sender)
-    : rtp_max_delay_(base::TimeDelta::FromMilliseconds(
-          config.base.rtp_config.max_delay_ms)),
-      encryptor_(),
-      rtp_sender_(clock, transport_task_runner, paced_packet_sender) {
-  rtp_sender_.InitializeVideo(config);
-  initialized_ =
-      encryptor_.Initialize(config.base.aes_key, config.base.aes_iv_mask);
+    : rtp_sender_(clock, transport_task_runner, paced_packet_sender) {
+  initialized_ = rtp_sender_.InitializeVideo(config) &&
+      encryptor_.Initialize(config.rtp.config.aes_key,
+                            config.rtp.config.aes_iv_mask);
 }
 
 TransportVideoSender::~TransportVideoSender() {}
@@ -35,6 +30,9 @@ TransportVideoSender::~TransportVideoSender() {}
 void TransportVideoSender::InsertCodedVideoFrame(
     const EncodedVideoFrame* coded_frame,
     const base::TimeTicks& capture_time) {
+  if (!initialized_) {
+    return;
+  }
   if (encryptor_.initialized()) {
     EncodedVideoFrame encrypted_video_frame;
 
@@ -54,6 +52,9 @@ void TransportVideoSender::InsertCodedVideoFrame(
 bool TransportVideoSender::EncryptVideoFrame(
     const EncodedVideoFrame& video_frame,
     EncodedVideoFrame* encrypted_frame) {
+  if (!initialized_) {
+    return false;
+  }
   if (!encryptor_.Encrypt(
           video_frame.frame_id, video_frame.data, &(encrypted_frame->data)))
     return false;
@@ -68,6 +69,9 @@ bool TransportVideoSender::EncryptVideoFrame(
 
 void TransportVideoSender::ResendPackets(
     const MissingFramesAndPacketsMap& missing_frames_and_packets) {
+  if (!initialized_) {
+    return;
+  }
   rtp_sender_.ResendPackets(missing_frames_and_packets);
 }
 

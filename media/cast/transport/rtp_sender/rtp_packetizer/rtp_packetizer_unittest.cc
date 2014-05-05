@@ -102,7 +102,7 @@ class RtpPacketizerTest : public ::testing::Test {
   RtpPacketizerTest()
       : task_runner_(new test::FakeSingleThreadTaskRunner(&testing_clock_)),
         video_frame_(),
-        packet_storage_(&testing_clock_, kMaxPacketStorageTimeMs) {
+        packet_storage_(200) {
     config_.sequence_number = kSeqNum;
     config_.ssrc = kSsrc;
     config_.payload_type = kPayload;
