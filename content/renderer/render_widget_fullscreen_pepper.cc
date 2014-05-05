@@ -130,6 +130,8 @@ void FullscreenMouseLockDispatcher::SendUnlockMouseRequest() {
 }
 
 // WebWidget that simply wraps the pepper plugin.
+// TODO(piman): figure out IME and implement setComposition and friends if
+// necessary.
 class PepperWidget : public WebWidget {
  public:
   explicit PepperWidget(RenderWidgetFullscreenPepper* widget)
@@ -147,9 +149,6 @@ class PepperWidget : public WebWidget {
     return size_;
   }
 
-  virtual void willStartLiveResize() {
-  }
-
   virtual void resize(const WebSize& size) {
     if (!widget_->plugin())
       return;
@@ -159,21 +158,6 @@ class PepperWidget : public WebWidget {
     widget_->plugin()->ViewChanged(plugin_rect, plugin_rect,
                                    std::vector<gfx::Rect>());
     widget_->Invalidate();
-  }
-
-  virtual void willEndLiveResize() {
-  }
-
-  virtual void animate(double frameBeginTime) {
-  }
-
-  virtual void layout() {
-  }
-
-  virtual void setCompositorSurfaceReady() {
-  }
-
-  virtual void composite(bool finish) {
   }
 
   virtual void themeChanged() {
@@ -266,56 +250,6 @@ class PepperWidget : public WebWidget {
       }
     }
     return result;
-  }
-
-  virtual void mouseCaptureLost() {
-  }
-
-  virtual void setFocus(bool focus) {
-  }
-
-  // TODO(piman): figure out IME and implement these if necessary.
-  virtual bool setComposition(
-      const WebString& text,
-      const WebVector<WebCompositionUnderline>& underlines,
-      int selectionStart,
-      int selectionEnd) {
-    return false;
-  }
-
-  virtual bool confirmComposition() {
-    return false;
-  }
-
-  virtual bool compositionRange(size_t* location, size_t* length) {
-    return false;
-  }
-
-  virtual bool confirmComposition(const WebString& text) {
-    return false;
-  }
-
-  virtual WebTextInputType textInputType() {
-    return blink::WebTextInputTypeNone;
-  }
-
-  virtual WebRect caretOrSelectionBounds() {
-    return WebRect();
-  }
-
-  virtual bool selectionRange(WebPoint& start, WebPoint& end) const {
-    return false;
-  }
-
-  virtual bool caretOrSelectionRange(size_t* location, size_t* length) {
-    return false;
-  }
-
-  virtual void setTextDirection(WebTextDirection) {
-  }
-
-  virtual bool isAcceleratedCompositingActive() const {
-    return widget_->plugin() && widget_->is_compositing();
   }
 
  private:

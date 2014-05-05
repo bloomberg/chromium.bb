@@ -49,8 +49,6 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
     return mouse_lock_dispatcher_.get();
   }
 
-  bool is_compositing() const { return !!layer_; }
-
  protected:
   RenderWidgetFullscreenPepper(PepperPluginInstanceImpl* plugin,
                                const GURL& active_url,
