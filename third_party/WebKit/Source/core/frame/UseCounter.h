@@ -415,6 +415,14 @@ public:
         SelectionSetBaseAndExtent = 406,
         SelectionEmpty = 407,
         SVGFEMorphologyElementSetRadius = 408,
+        VTTCue = 409,
+        VTTCueRender = 410,
+        VTTCueRenderVertical = 411,
+        VTTCueRenderSnapToLinesFalse = 412,
+        VTTCueRenderLineNotAuto = 413,
+        VTTCueRenderPositionNot50 = 414,
+        VTTCueRenderSizeNot100 = 415,
+        VTTCueRenderAlignNotMiddle = 416,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         NumberOfFeatures, // This enum value must be last.

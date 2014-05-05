@@ -38,6 +38,7 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/events/Event.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/TextTrackCueList.h"
@@ -217,6 +218,7 @@ VTTCue::VTTCue(Document& document, double startTime, double endTime, const Strin
     , m_notifyRegion(true)
 {
     ScriptWrappable::init(this);
+    UseCounter::count(document, UseCounter::VTTCue);
 }
 
 VTTCue::~VTTCue()
@@ -760,6 +762,26 @@ void VTTCue::removeDisplayTree()
 
 void VTTCue::updateDisplay(const IntSize& videoSize, HTMLDivElement& container)
 {
+    UseCounter::count(document(), UseCounter::VTTCueRender);
+
+    if (m_writingDirection != Horizontal)
+        UseCounter::count(document(), UseCounter::VTTCueRenderVertical);
+
+    if (!m_snapToLines)
+        UseCounter::count(document(), UseCounter::VTTCueRenderSnapToLinesFalse);
+
+    if (m_linePosition != undefinedPosition)
+        UseCounter::count(document(), UseCounter::VTTCueRenderLineNotAuto);
+
+    if (m_textPosition != 50)
+        UseCounter::count(document(), UseCounter::VTTCueRenderPositionNot50);
+
+    if (m_cueSize != 100)
+        UseCounter::count(document(), UseCounter::VTTCueRenderSizeNot100);
+
+    if (m_cueAlignment != Middle)
+        UseCounter::count(document(), UseCounter::VTTCueRenderAlignNotMiddle);
+
     RefPtr<VTTCueBox> displayBox = getDisplayTree(videoSize);
     VTTRegion* region = 0;
     if (track()->regions())
