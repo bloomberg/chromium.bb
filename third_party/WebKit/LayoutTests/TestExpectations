@@ -983,7 +983,5 @@ crbug.com/361729 fast/multicol/pagination-h-horizontal-tb.html [ Pass Failure ]
 
 crbug.com/367903 web-animations-api/timeline-time.html [ Pass Failure ]
 
-crbug.com/367817 fast/frames/location-observe-callback-crash.html [ Pass Failure ]
-
 # Started failing with v8 roll in chromium r267851.
 crbug.com/369600 fast/events/onerror-no-constructor.html [ Failure ]
