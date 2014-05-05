@@ -302,6 +302,7 @@
     'common/input/gesture_event_stream_validator.h',
     'common/input/input_event.cc',
     'common/input/input_event.h',
+    'common/input/input_event_ack_state.h',
     'common/input/input_event_stream_validator.cc',
     'common/input/input_event_stream_validator.h',
     'common/input/input_param_traits.cc',
@@ -452,7 +453,6 @@
     'common/websocket_messages.h',
     'common/worker_messages.h',
     'common/zygote_commands_linux.h',
-    'port/common/input_event_ack_state.h',
   ],
   'target_conditions': [
     ['OS=="android" and <(use_seccomp_bpf)==1', {

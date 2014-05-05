@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/input/layer_scroll_offset_delegate.h"
 #include "content/browser/android/in_process/synchronous_compositor_output_surface.h"
-#include "content/port/common/input_event_ack_state.h"
+#include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/web_contents_user_data.h"
 

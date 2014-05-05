@@ -6,8 +6,8 @@
 #define CONTENT_BROWSER_RENDERER_HOST_UI_EVENTS_HELPER_H_
 
 #include "base/memory/scoped_vector.h"
+#include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
-#include "content/port/browser/event_with_latency_info.h"
 
 namespace blink {
 class WebGestureEvent;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PORT_BROWSER_EVENT_WITH_LATENCY_INFO_H_
-#define CONTENT_PORT_BROWSER_EVENT_WITH_LATENCY_INFO_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_EVENT_WITH_LATENCY_INFO_H_
+#define CONTENT_BROWSER_RENDERER_HOST_EVENT_WITH_LATENCY_INFO_H_
 
 #include "ui/events/latency_info.h"
 
@@ -56,4 +56,4 @@ typedef EventWithLatencyInfo<blink::WebTouchEvent>
 
 }  // namespace content
 
-#endif  // CONTENT_PORT_BROWSER_EVENT_WITH_LATENCY_INFO_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_EVENT_WITH_LATENCY_INFO_H_

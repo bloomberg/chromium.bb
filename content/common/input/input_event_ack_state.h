@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PORT_COMMON_INPUT_EVENT_ACK_STATE_H_
-#define CONTENT_PORT_COMMON_INPUT_EVENT_ACK_STATE_H_
+#ifndef CONTENT_COMMON_INPUT_INPUT_EVENT_ACK_STATE_H_
+#define CONTENT_COMMON_INPUT_INPUT_EVENT_ACK_STATE_H_
 
 namespace content {
 
@@ -19,4 +19,4 @@ enum InputEventAckState {
 
 }  // namespace content
 
-#endif  // CONTENT_PORT_COMMON_INPUT_EVENT_ACK_STATE_H_
+#endif  // CONTENT_COMMON_INPUT_INPUT_EVENT_ACK_STATE_H_

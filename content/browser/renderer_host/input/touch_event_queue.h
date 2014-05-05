@@ -10,9 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/time/time.h"
+#include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
-#include "content/port/browser/event_with_latency_info.h"
-#include "content/port/common/input_event_ack_state.h"
+#include "content/common/input/input_event_ack_state.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/geometry/point_f.h"
 

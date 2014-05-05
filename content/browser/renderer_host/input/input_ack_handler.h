@@ -6,8 +6,8 @@
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ACK_HANDLER_H_
 
 #include "base/basictypes.h"
-#include "content/port/browser/event_with_latency_info.h"
-#include "content/port/common/input_event_ack_state.h"
+#include "content/browser/renderer_host/event_with_latency_info.h"
+#include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
