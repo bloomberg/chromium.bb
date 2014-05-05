@@ -282,7 +282,6 @@
     'audio': ['rtoy@chromium.org'],
     'devtools': [ 'pfeldman+blink@chromium.org',
                   'aandrey+blink@chromium.org',
-                  'alph+blink@chromium.org',
                   'apavlov+blink@chromium.org',
                   'loislo+blink@chromium.org',
                   'lushnikov+blink@chromium.org',
