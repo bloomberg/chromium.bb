@@ -5,10 +5,8 @@
 <script>
 
 function pageFunction() {
-    console.profile("outer");
-    console.profile("inner");  // [Chromium] Make sure we capture the current callstack.
-    console.profileEnd("outer");
-    console.profileEnd("inner");
+    console.profile("profile");
+    console.profileEnd("profile");
 }
 
 function test()
@@ -20,10 +18,10 @@ function test()
             {
                 var tree = view.profileDataGridTree;
                 if (!tree)
-                     InspectorTest.addResult("no tree");
+                    InspectorTest.addResult("no tree");
                 var node = tree.children[0];
                 if (!node)
-                     InspectorTest.addResult("no node");
+                    InspectorTest.addResult("no node");
                 while (node) {
                     if (node.functionName.indexOf("pageFunction") !== -1) {
                         InspectorTest.addResult("found pageFunction");
@@ -33,8 +31,8 @@ function test()
                 }
                 next();
             }
-            InspectorTest.showProfileWhenAdded("inner");
-            InspectorTest.waitUntilProfileViewIsShown("inner", findPageFunctionInProfileView);
+            InspectorTest.showProfileWhenAdded("profile");
+            InspectorTest.waitUntilProfileViewIsShown("profile", findPageFunctionInProfileView);
             InspectorTest.evaluateInConsole("pageFunction()", function done() {});
         }
     ]);
