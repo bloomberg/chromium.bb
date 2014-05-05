@@ -16,6 +16,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/rect.h"
+#include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace app_list {
@@ -42,6 +43,7 @@ class AppListController : public ui::EventHandler,
                           public aura::WindowObserver,
                           public ui::ImplicitAnimationObserver,
                           public views::WidgetObserver,
+                          public keyboard::KeyboardControllerObserver,
                           public ShellObserver,
                           public ShelfIconObserver,
                           public app_list::PaginationModelObserver {
@@ -107,6 +109,9 @@ class AppListController : public ui::EventHandler,
 
   // views::WidgetObserver overrides:
   virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+
+  // KeyboardControllerObserver overrides:
+  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) OVERRIDE;
 
   // ShellObserver overrides:
   virtual void OnShelfAlignmentChanged(aura::Window* root_window) OVERRIDE;

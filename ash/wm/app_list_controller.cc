@@ -24,6 +24,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event.h"
 #include "ui/gfx/transform_util.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -113,9 +114,20 @@ gfx::Vector2d GetAnchorPositionOffsetToShelf(
   }
 }
 
-// Gets the point at the center of the screen.
+// Gets the point at the center of the screen, excluding the virtual keyboard.
 gfx::Point GetScreenCenter() {
-  return Shell::GetScreen()->GetPrimaryDisplay().bounds().CenterPoint();
+  gfx::Rect bounds = Shell::GetScreen()->GetPrimaryDisplay().bounds();
+
+  // If the virtual keyboard is active, subtract it from the display bounds, so
+  // that the app list is centered in the non-keyboard area of the display.
+  // (Note that work_area excludes the keyboard, but it doesn't get updated
+  // until after this function is called.)
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller && keyboard_controller->keyboard_visible())
+    bounds.Subtract(keyboard_controller->current_keyboard_bounds());
+
+  return bounds.CenterPoint();
 }
 
 }  // namespace
@@ -232,6 +244,10 @@ void AppListController::SetView(app_list::AppListView* view) {
   view_ = view;
   views::Widget* widget = view_->GetWidget();
   widget->AddObserver(this);
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller)
+    keyboard_controller->AddObserver(this);
   Shell::GetInstance()->AddPreTargetHandler(this);
   Shelf::ForWindow(widget->GetNativeWindow())->AddIconObserver(this);
   widget->GetNativeView()->GetRootWindow()->AddObserver(this);
@@ -247,6 +263,10 @@ void AppListController::ResetView() {
   views::Widget* widget = view_->GetWidget();
   widget->RemoveObserver(this);
   GetLayer(widget)->GetAnimator()->RemoveObserver(this);
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller)
+    keyboard_controller->RemoveObserver(this);
   Shell::GetInstance()->RemovePreTargetHandler(this);
   Shelf::ForWindow(widget->GetNativeWindow())->RemoveIconObserver(this);
   widget->GetNativeView()->GetRootWindow()->RemoveObserver(this);
@@ -373,6 +393,13 @@ void AppListController::OnWidgetDestroying(views::Widget* widget) {
   if (is_visible_)
     SetVisible(false, widget->GetNativeView());
   ResetView();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AppListController, keyboard::KeyboardControllerObserver implementation:
+
+void AppListController::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
+  UpdateBounds();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
