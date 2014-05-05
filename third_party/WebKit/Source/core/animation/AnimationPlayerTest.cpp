@@ -703,7 +703,6 @@ TEST_F(AnimationAnimationPlayerTest, AttachedAnimationPlayers)
     EXPECT_EQ(1, element->activeAnimations()->players().find(player.get())->value);
 
     player.release();
-    EXPECT_EQ(0, element->activeAnimations()->players().find(player.get())->value);
     EXPECT_TRUE(element->activeAnimations()->players().isEmpty());
 }
 
