@@ -72,7 +72,7 @@ class SyncedNotificationAppInfo : public notifier::ImageHolderDelegate {
   std::vector<std::string> added_app_ids() { return added_app_ids_; }
 
   // If an app info is updated removing app ids, keep track of the removed app
-  // ids so we can later remove any affected notfications.
+  // ids so we can later remove any affected notifications.
   void set_removed_app_ids(std::vector<std::string> removed_app_ids) {
     removed_app_ids_ = removed_app_ids;
   }

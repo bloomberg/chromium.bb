@@ -443,7 +443,7 @@ TEST(ObserverListTest, Existing) {
 
   EXPECT_TRUE(b.added);
   // B's adder should not have been notified because it was added during
-  // notificaiton.
+  // notification.
   EXPECT_EQ(0, b.adder.total);
 
   // Notify again to make sure b's adder is notified.
@@ -467,7 +467,7 @@ TEST(ObserverListThreadSafeTest, Existing) {
 
   EXPECT_TRUE(b.added);
   // B's adder should not have been notified because it was added during
-  // notificaiton.
+  // notification.
   EXPECT_EQ(0, b.adder.total);
 
   // Notify again to make sure b's adder is notified.

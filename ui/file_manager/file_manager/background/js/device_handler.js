@@ -17,7 +17,7 @@ function DeviceHandler() {
   this.mountStatus_ = {};
 
   /**
-   * List of ID of notificaitons that have a button.
+   * List of ID of notifications that have a button.
    * @type {Array.<string>}
    * @private
    */
@@ -176,7 +176,7 @@ DeviceHandler.Notification.prototype.show = function(devicePath, opt_message) {
 };
 
 /**
- * Shows the notificaiton after 5 seconds.
+ * Shows the notification after 5 seconds.
  * @param {string} devicePath Device path.
  */
 DeviceHandler.Notification.prototype.showLater = function(devicePath) {

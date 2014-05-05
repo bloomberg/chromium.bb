@@ -37974,7 +37974,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="NotificationActionType" type="int">
   <int value="0" label="Unknown"/>
   <int value="1" label="Notification added"/>
-  <int value="2" label="Notificaiton updated"/>
+  <int value="2" label="Notification updated"/>
   <int value="3" label="Notification clicked"/>
   <int value="4" label="Notification button clicked"/>
   <int value="5" label="Notification displayed"/>

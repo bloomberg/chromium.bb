@@ -226,7 +226,7 @@ TEST(SchemaRegistryTest, Combined) {
                               schema);
   Mock::VerifyAndClearExpectations(&observer);
 
-  // Untracking |registry1| doesn't trigger an update nofitication, because it
+  // Untracking |registry1| doesn't trigger an update notification, because it
   // doesn't contain any components.
   EXPECT_CALL(observer, OnSchemaRegistryUpdated(_)).Times(0);
   combined.Untrack(&registry1);
