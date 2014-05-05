@@ -18,6 +18,7 @@
 #include "ppapi/shared_impl/scoped_pp_var.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/web/WebDOMFileSystem.h"
 #include "third_party/WebKit/public/web/WebDOMMediaStreamTrack.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -142,6 +143,16 @@ bool ResourceHostToDOMFileSystem(
       blink::WebDOMFileSystem::SerializableTypeSerializable);
   *dom_file_system = web_dom_file_system.toV8Value();
   return true;
+}
+
+bool ResourceHostToDOMMediaStreamVideoTrack(
+    content::PepperMediaStreamVideoTrackHost* host,
+    v8::Handle<v8::Context> context,
+    v8::Handle<v8::Value>* dom_video_track) {
+  // TODO(ronghuawu): Implement this once crbug/352219 is resolved.
+  // blink::WebMediaStreamTrack track = host->track();
+  // *dom_video_track = track.toV8Value();
+  return false;
 }
 
 bool DOMMediaStreamTrackToResource(
@@ -297,6 +308,11 @@ bool ResourceConverterImpl::ToV8Value(const PP_Var& var,
   if (resource_host->IsFileSystemHost()) {
     return ResourceHostToDOMFileSystem(
         static_cast<content::PepperFileSystemHost*>(resource_host),
+        context,
+        result);
+  } else if (resource_host->IsMediaStreamVideoTrackHost()) {
+    return ResourceHostToDOMMediaStreamVideoTrack(
+        static_cast<content::PepperMediaStreamVideoTrackHost*>(resource_host),
         context,
         result);
   } else {

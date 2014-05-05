@@ -111,6 +111,8 @@ class ResourceCreationImpl : public ppapi::thunk::ResourceCreationAPI {
                                             PP_ImageDataFormat format,
                                             const PP_Size* size,
                                             PP_Bool init_to_zero) OVERRIDE;
+  virtual PP_Resource CreateMediaStreamVideoTrack(
+      PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateNetAddressFromIPv4Address(
       PP_Instance instance,
       const PP_NetAddress_IPv4* ipv4_addr) OVERRIDE;

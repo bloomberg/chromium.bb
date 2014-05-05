@@ -30,7 +30,8 @@ PepperMediaStreamTrackHostBase::PepperMediaStreamTrackHostBase(
 PepperMediaStreamTrackHostBase::~PepperMediaStreamTrackHostBase() {}
 
 bool PepperMediaStreamTrackHostBase::InitBuffers(int32_t number_of_buffers,
-                                                 int32_t buffer_size) {
+                                                 int32_t buffer_size,
+                                                 TrackType track_type) {
   DCHECK_GT(number_of_buffers, 0);
   DCHECK_GT(buffer_size,
             static_cast<int32_t>(sizeof(ppapi::MediaStreamBuffer::Header)));
@@ -62,10 +63,12 @@ bool PepperMediaStreamTrackHostBase::InitBuffers(int32_t number_of_buffers,
 #endif
   SerializedHandle handle(host_->ShareHandleWithRemote(platform_file, false),
                           size);
+  bool readonly = (track_type == kRead);
   host()->SendUnsolicitedReplyWithHandles(
       pp_resource(),
       PpapiPluginMsg_MediaStreamTrack_InitBuffers(number_of_buffers,
-                                                  buffer_size),
+                                                  buffer_size,
+                                                  readonly),
       std::vector<SerializedHandle>(1, handle));
   return true;
 }
@@ -76,6 +79,13 @@ void PepperMediaStreamTrackHostBase::SendEnqueueBufferMessageToPlugin(
   DCHECK_LT(index, buffer_manager_.number_of_buffers());
   host()->SendUnsolicitedReply(
       pp_resource(), PpapiPluginMsg_MediaStreamTrack_EnqueueBuffer(index));
+}
+
+void PepperMediaStreamTrackHostBase::SendEnqueueBuffersMessageToPlugin(
+    const std::vector<int32_t>& indices) {
+  DCHECK_GE(indices.size(), 0U);
+  host()->SendUnsolicitedReply(pp_resource(),
+      PpapiPluginMsg_MediaStreamTrack_EnqueueBuffers(indices));
 }
 
 int32_t PepperMediaStreamTrackHostBase::OnResourceMessageReceived(

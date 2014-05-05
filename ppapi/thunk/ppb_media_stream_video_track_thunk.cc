@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_media_stream_video_track.idl modified Tue Mar 25 18:18:10 2014.
+// From ppb_media_stream_video_track.idl modified Mon Mar 31 14:40:45 2014.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -16,6 +16,14 @@ namespace ppapi {
 namespace thunk {
 
 namespace {
+
+PP_Resource Create(PP_Instance instance) {
+  VLOG(4) << "PPB_MediaStreamVideoTrack::Create()";
+  EnterResourceCreation enter(instance);
+  if (enter.failed())
+    return 0;
+  return enter.functions()->CreateMediaStreamVideoTrack(instance);
+}
 
 PP_Bool IsMediaStreamVideoTrack(PP_Resource resource) {
   VLOG(4) << "PPB_MediaStreamVideoTrack::IsMediaStreamVideoTrack()";
@@ -90,6 +98,27 @@ void Close(PP_Resource video_track) {
   enter.object()->Close();
 }
 
+int32_t GetEmptyFrame(PP_Resource video_track,
+                      PP_Resource* frame,
+                      struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_MediaStreamVideoTrack::GetEmptyFrame()";
+  EnterResource<PPB_MediaStreamVideoTrack_API> enter(video_track,
+                                                     callback,
+                                                     true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.object()->GetEmptyFrame(frame,
+                                                       enter.callback()));
+}
+
+int32_t PutFrame(PP_Resource video_track, PP_Resource frame) {
+  VLOG(4) << "PPB_MediaStreamVideoTrack::PutFrame()";
+  EnterResource<PPB_MediaStreamVideoTrack_API> enter(video_track, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.object()->PutFrame(frame);
+}
+
 const PPB_MediaStreamVideoTrack_0_1 g_ppb_mediastreamvideotrack_thunk_0_1 = {
   &IsMediaStreamVideoTrack,
   &Configure,
@@ -101,11 +130,30 @@ const PPB_MediaStreamVideoTrack_0_1 g_ppb_mediastreamvideotrack_thunk_0_1 = {
   &Close
 };
 
+const PPB_MediaStreamVideoTrack_1_0 g_ppb_mediastreamvideotrack_thunk_1_0 = {
+  &Create,
+  &IsMediaStreamVideoTrack,
+  &Configure,
+  &GetAttrib,
+  &GetId,
+  &HasEnded,
+  &GetFrame,
+  &RecycleFrame,
+  &Close,
+  &GetEmptyFrame,
+  &PutFrame
+};
+
 }  // namespace
 
 PPAPI_THUNK_EXPORT const PPB_MediaStreamVideoTrack_0_1*
     GetPPB_MediaStreamVideoTrack_0_1_Thunk() {
   return &g_ppb_mediastreamvideotrack_thunk_0_1;
+}
+
+PPAPI_THUNK_EXPORT const PPB_MediaStreamVideoTrack_1_0*
+    GetPPB_MediaStreamVideoTrack_1_0_Thunk() {
+  return &g_ppb_mediastreamvideotrack_thunk_1_0;
 }
 
 }  // namespace thunk

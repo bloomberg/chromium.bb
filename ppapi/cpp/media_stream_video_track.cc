@@ -15,6 +15,10 @@ namespace pp {
 
 namespace {
 
+template <> const char* interface_name<PPB_MediaStreamVideoTrack_1_0>() {
+  return PPB_MEDIASTREAMVIDEOTRACK_INTERFACE_1_0;
+}
+
 template <> const char* interface_name<PPB_MediaStreamVideoTrack_0_1>() {
   return PPB_MEDIASTREAMVIDEOTRACK_INTERFACE_0_1;
 }
@@ -33,6 +37,16 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(const Resource& resource)
   PP_DCHECK(IsMediaStreamVideoTrack(resource));
 }
 
+MediaStreamVideoTrack::MediaStreamVideoTrack(const InstanceHandle& instance) {
+  if (has_interface<PPB_MediaStreamVideoTrack_1_0>()) {
+    PassRefFromConstructor(
+        get_interface<PPB_MediaStreamVideoTrack_1_0>()->Create(
+            instance.pp_instance()));
+    return;
+  }
+  PP_DCHECK(false);
+}
+
 MediaStreamVideoTrack::MediaStreamVideoTrack(PassRef, PP_Resource resource)
     : Resource(PASS_REF, resource) {
 }
@@ -43,7 +57,10 @@ MediaStreamVideoTrack::~MediaStreamVideoTrack() {
 int32_t MediaStreamVideoTrack::Configure(
     const int32_t attributes[],
     const CompletionCallback& callback) {
-  if (has_interface<PPB_MediaStreamVideoTrack_0_1>()) {
+  if (has_interface<PPB_MediaStreamVideoTrack_1_0>()) {
+    return get_interface<PPB_MediaStreamVideoTrack_1_0>()->Configure(
+        pp_resource(), attributes, callback.pp_completion_callback());
+  } else if (has_interface<PPB_MediaStreamVideoTrack_0_1>()) {
     return get_interface<PPB_MediaStreamVideoTrack_0_1>()->Configure(
         pp_resource(), attributes, callback.pp_completion_callback());
   }
@@ -52,7 +69,10 @@ int32_t MediaStreamVideoTrack::Configure(
 
 int32_t MediaStreamVideoTrack::GetAttrib(PP_MediaStreamVideoTrack_Attrib attrib,
                                          int32_t* value) {
-  if (has_interface<PPB_MediaStreamVideoTrack_0_1>()) {
+  if (has_interface<PPB_MediaStreamVideoTrack_1_0>()) {
+    return get_interface<PPB_MediaStreamVideoTrack_1_0>()->GetAttrib(
+        pp_resource(), attrib, value);
+  } else if (has_interface<PPB_MediaStreamVideoTrack_0_1>()) {
     return get_interface<PPB_MediaStreamVideoTrack_0_1>()->GetAttrib(
         pp_resource(), attrib, value);
   }
@@ -60,7 +80,12 @@ int32_t MediaStreamVideoTrack::GetAttrib(PP_MediaStreamVideoTrack_Attrib attrib,
 }
 
 std::string MediaStreamVideoTrack::GetId() const {
-  if (has_interface<PPB_MediaStreamVideoTrack_0_1>()) {
+  if (has_interface<PPB_MediaStreamVideoTrack_1_0>()) {
+    pp::Var id(PASS_REF, get_interface<PPB_MediaStreamVideoTrack_1_0>()->GetId(
+        pp_resource()));
+    if (id.is_string())
+      return id.AsString();
+  } else if (has_interface<PPB_MediaStreamVideoTrack_0_1>()) {
     pp::Var id(PASS_REF, get_interface<PPB_MediaStreamVideoTrack_0_1>()->GetId(
         pp_resource()));
     if (id.is_string())
@@ -70,7 +95,10 @@ std::string MediaStreamVideoTrack::GetId() const {
 }
 
 bool MediaStreamVideoTrack::HasEnded() const {
-  if (has_interface<PPB_MediaStreamVideoTrack_0_1>()) {
+  if (has_interface<PPB_MediaStreamVideoTrack_1_0>()) {
+    return PP_ToBool(get_interface<PPB_MediaStreamVideoTrack_1_0>()->HasEnded(
+        pp_resource()));
+  } else if (has_interface<PPB_MediaStreamVideoTrack_0_1>()) {
     return PP_ToBool(get_interface<PPB_MediaStreamVideoTrack_0_1>()->HasEnded(
         pp_resource()));
   }
@@ -79,7 +107,10 @@ bool MediaStreamVideoTrack::HasEnded() const {
 
 int32_t MediaStreamVideoTrack::GetFrame(
     const CompletionCallbackWithOutput<VideoFrame>& callback) {
-  if (has_interface<PPB_MediaStreamVideoTrack_0_1>()) {
+  if (has_interface<PPB_MediaStreamVideoTrack_1_0>()) {
+    return get_interface<PPB_MediaStreamVideoTrack_1_0>()->GetFrame(
+        pp_resource(), callback.output(), callback.pp_completion_callback());
+  } else if (has_interface<PPB_MediaStreamVideoTrack_0_1>()) {
     return get_interface<PPB_MediaStreamVideoTrack_0_1>()->GetFrame(
         pp_resource(), callback.output(), callback.pp_completion_callback());
   }
@@ -87,7 +118,10 @@ int32_t MediaStreamVideoTrack::GetFrame(
 }
 
 int32_t MediaStreamVideoTrack::RecycleFrame(const VideoFrame& frame) {
-  if (has_interface<PPB_MediaStreamVideoTrack_0_1>()) {
+  if (has_interface<PPB_MediaStreamVideoTrack_1_0>()) {
+    return get_interface<PPB_MediaStreamVideoTrack_1_0>()->RecycleFrame(
+        pp_resource(), frame.pp_resource());
+  } else if (has_interface<PPB_MediaStreamVideoTrack_0_1>()) {
     return get_interface<PPB_MediaStreamVideoTrack_0_1>()->RecycleFrame(
         pp_resource(), frame.pp_resource());
   }
@@ -95,12 +129,35 @@ int32_t MediaStreamVideoTrack::RecycleFrame(const VideoFrame& frame) {
 }
 
 void MediaStreamVideoTrack::Close() {
-  if (has_interface<PPB_MediaStreamVideoTrack_0_1>())
+  if (has_interface<PPB_MediaStreamVideoTrack_1_0>())
+    get_interface<PPB_MediaStreamVideoTrack_1_0>()->Close(pp_resource());
+  else if (has_interface<PPB_MediaStreamVideoTrack_0_1>())
     get_interface<PPB_MediaStreamVideoTrack_0_1>()->Close(pp_resource());
+
+}
+
+int32_t MediaStreamVideoTrack::GetEmptyFrame(
+    const CompletionCallbackWithOutput<VideoFrame>& callback) {
+  if (has_interface<PPB_MediaStreamVideoTrack_1_0>()) {
+    return get_interface<PPB_MediaStreamVideoTrack_1_0>()->GetEmptyFrame(
+        pp_resource(), callback.output(), callback.pp_completion_callback());
+  }
+  return callback.MayForce(PP_ERROR_NOINTERFACE);
+}
+
+int32_t MediaStreamVideoTrack::PutFrame(const VideoFrame& frame) {
+  if (has_interface<PPB_MediaStreamVideoTrack_1_0>()) {
+    return get_interface<PPB_MediaStreamVideoTrack_1_0>()->PutFrame(
+        pp_resource(), frame.pp_resource());
+  }
+  return PP_ERROR_NOINTERFACE;
 }
 
 bool MediaStreamVideoTrack::IsMediaStreamVideoTrack(const Resource& resource) {
-  if (has_interface<PPB_MediaStreamVideoTrack_0_1>()) {
+  if (has_interface<PPB_MediaStreamVideoTrack_1_0>()) {
+    return PP_ToBool(get_interface<PPB_MediaStreamVideoTrack_1_0>()->
+        IsMediaStreamVideoTrack(resource.pp_resource()));
+  } else if (has_interface<PPB_MediaStreamVideoTrack_0_1>()) {
     return PP_ToBool(get_interface<PPB_MediaStreamVideoTrack_0_1>()->
         IsMediaStreamVideoTrack(resource.pp_resource()));
   }

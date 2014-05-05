@@ -59,6 +59,12 @@ int32_t MediaStreamBufferManager::DequeueBuffer() {
   return buffer;
 }
 
+std::vector<int32_t> MediaStreamBufferManager::DequeueBuffers() {
+  std::vector<int32_t> buffers(buffer_queue_.begin(), buffer_queue_.end());
+  buffer_queue_.clear();
+  return buffers;
+}
+
 void MediaStreamBufferManager::EnqueueBuffer(int32_t index) {
   CHECK_GE(index, 0) << "Invalid buffer index";
   CHECK_LT(index, number_of_buffers_) << "Invalid buffer index";
@@ -66,10 +72,9 @@ void MediaStreamBufferManager::EnqueueBuffer(int32_t index) {
   delegate_->OnNewBufferEnqueued();
 }
 
-MediaStreamBuffer* MediaStreamBufferManager::GetBufferPointer(
-    int32_t index) {
-  CHECK_GE(index, 0) << "Invalid buffer index";
-  CHECK_LT(index, number_of_buffers_) << "Invalid buffer index";
+MediaStreamBuffer* MediaStreamBufferManager::GetBufferPointer(int32_t index) {
+  if (index < 0 || index >= number_of_buffers_)
+    return NULL;
   return buffers_[index];
 }
 

@@ -21,9 +21,13 @@ class PPAPI_PROXY_EXPORT MediaStreamTrackResourceBase
                                int pending_renderer_id,
                                const std::string& id);
 
+  MediaStreamTrackResourceBase(Connection connection, PP_Instance instance);
+
   virtual ~MediaStreamTrackResourceBase();
 
   std::string id() const { return id_; }
+
+  void set_id(const std::string& id) { id_ = id; }
 
   bool has_ended() const { return has_ended_; }
 
@@ -45,9 +49,12 @@ class PPAPI_PROXY_EXPORT MediaStreamTrackResourceBase
   // Message handlers:
   void OnPluginMsgInitBuffers(const ResourceMessageReplyParams& params,
                               int32_t number_of_buffers,
-                              int32_t buffer_size);
+                              int32_t buffer_size,
+                              bool readonly);
   void OnPluginMsgEnqueueBuffer(const ResourceMessageReplyParams& params,
                                 int32_t index);
+  void OnPluginMsgEnqueueBuffers(const ResourceMessageReplyParams& params,
+                                 const std::vector<int32_t>& indices);
 
   MediaStreamBufferManager buffer_manager_;
 

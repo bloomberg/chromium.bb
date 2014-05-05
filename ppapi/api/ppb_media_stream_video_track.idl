@@ -12,7 +12,8 @@
 
 label Chrome {
   [channel=dev] M34 = 0.1,
-  M35 = 0.1
+  M35 = 0.1,
+  [channel=dev] M36 = 1.0
 };
 
 /**
@@ -73,6 +74,19 @@ enum PP_MediaStreamVideoTrack_Attrib {
 
 [version=0.1]
 interface PPB_MediaStreamVideoTrack {
+  /**
+   * Creates a PPB_MediaStreamVideoTrack resource for video output. Call this
+   * when you will be creating frames and putting them to the track.
+   *
+   * @param[in] instance A <code>PP_Instance</code> identifying one instance of
+   * a module.
+   *
+   * @return A <code>PP_Resource</code> corresponding to a
+   * PPB_MediaStreamVideoTrack resource if successful, 0 if failed.
+   */
+  [version=1.0]
+  PP_Resource Create([in] PP_Instance instance);
+
   /**
    * Determines if a resource is a MediaStream video track resource.
    *
@@ -211,5 +225,23 @@ interface PPB_MediaStreamVideoTrack {
    * MediaStream video track resource.
    */
   void Close([in] PP_Resource video_track);
+
+  /**
+   * Gets a free frame for output. The frame is allocated by
+   * <code>Configure()</code>. The caller should fill it with frame data, and
+   * then use |PutFrame()| to send the frame back.
+   */
+  [version=1.0]
+  int32_t GetEmptyFrame([in] PP_Resource video_track,
+                        [out] PP_Resource frame,
+                        [in] PP_CompletionCallback callback);
+
+  /**
+   * Sends a frame returned by |GetEmptyFrame()| to the output track.
+   * After this function, the |frame| should not be used anymore and the
+   * caller should release the reference that it holds.
+   */
+  [version=1.0]
+  int32_t PutFrame([in] PP_Resource video_track, [in] PP_Resource frame);
 };
 

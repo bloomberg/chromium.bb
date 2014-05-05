@@ -4,14 +4,24 @@
 
 #include "content/renderer/pepper/pepper_media_stream_video_track_host.h"
 
+#include "base/base64.h"
 #include "base/logging.h"
+#include "base/rand_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "content/renderer/media/media_stream_video_track.h"
 #include "media/base/yuv_convert.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_media_stream_video_track.h"
 #include "ppapi/c/ppb_video_frame.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/media_stream_buffer.h"
+
+// IS_ALIGNED is also defined in
+// third_party/libjingle/overrides/talk/base/basictypes.h
+// TODO(ronghuawu): Avoid undef.
+#undef IS_ALIGNED
 #include "third_party/libyuv/include/libyuv.h"
 
 using media::VideoFrame;
@@ -24,6 +34,23 @@ const int32_t kDefaultNumberOfBuffers = 4;
 const int32_t kMaxNumberOfBuffers = 8;
 // Filter mode for scaling frames.
 const libyuv::FilterMode kFilterMode = libyuv::kFilterBox;
+
+const char kPepperVideoSourceName[] = "PepperVideoSourceName";
+
+// Default config for output mode.
+const int kDefaultOutputFrameRate = 30;
+
+media::VideoPixelFormat ToPixelFormat(PP_VideoFrame_Format format) {
+  switch (format) {
+    case PP_VIDEOFRAME_FORMAT_YV12:
+      return media::PIXEL_FORMAT_YV12;
+    case PP_VIDEOFRAME_FORMAT_I420:
+      return media::PIXEL_FORMAT_I420;
+    default:
+      DVLOG(1) << "Unsupported pixel format " << format;
+      return media::PIXEL_FORMAT_UNKNOWN;
+  }
+}
 
 PP_VideoFrame_Format ToPpapiFormat(VideoFrame::Format format) {
   switch (format) {
@@ -160,8 +187,30 @@ PepperMediaStreamVideoTrackHost::PepperMediaStreamVideoTrackHost(
       number_of_buffers_(kDefaultNumberOfBuffers),
       source_frame_format_(PP_VIDEOFRAME_FORMAT_UNKNOWN),
       plugin_frame_format_(PP_VIDEOFRAME_FORMAT_UNKNOWN),
-      frame_data_size_(0) {
+      frame_data_size_(0),
+      type_(kRead),
+      output_started_(false) {
   DCHECK(!track_.isNull());
+}
+
+PepperMediaStreamVideoTrackHost::PepperMediaStreamVideoTrackHost(
+    RendererPpapiHost* host,
+    PP_Instance instance,
+    PP_Resource resource)
+    : PepperMediaStreamTrackHostBase(host, instance, resource),
+      connected_(false),
+      number_of_buffers_(kDefaultNumberOfBuffers),
+      source_frame_format_(PP_VIDEOFRAME_FORMAT_UNKNOWN),
+      plugin_frame_format_(PP_VIDEOFRAME_FORMAT_UNKNOWN),
+      frame_data_size_(0),
+      type_(kWrite),
+      output_started_(false) {
+  InitBlinkTrack();
+  DCHECK(!track_.isNull());
+}
+
+bool PepperMediaStreamVideoTrackHost::IsMediaStreamVideoTrackHost() {
+  return true;
 }
 
 PepperMediaStreamVideoTrackHost::~PepperMediaStreamVideoTrackHost() {
@@ -187,8 +236,26 @@ void PepperMediaStreamVideoTrackHost::InitBuffers() {
   int32_t buffer_size =
       sizeof(ppapi::MediaStreamBuffer::Video) + frame_data_size_;
   bool result = PepperMediaStreamTrackHostBase::InitBuffers(number_of_buffers_,
-                                                            buffer_size);
+                                                            buffer_size,
+                                                            type_);
   CHECK(result);
+
+  if (type_ == kWrite) {
+    for (int32_t i = 0; i < buffer_manager()->number_of_buffers(); ++i) {
+      ppapi::MediaStreamBuffer::Video* buffer =
+          &(buffer_manager()->GetBufferPointer(i)->video);
+      buffer->header.size = buffer_manager()->buffer_size();
+      buffer->header.type = ppapi::MediaStreamBuffer::TYPE_VIDEO;
+      buffer->format = format;
+      buffer->size.width = size.width();
+      buffer->size.height = size.height();
+      buffer->data_size = frame_data_size_;
+    }
+
+    // Make all the frames avaiable to the plugin.
+    std::vector<int32_t> indices = buffer_manager()->DequeueBuffers();
+    SendEnqueueBuffersMessageToPlugin(indices);
+  }
 }
 
 void PepperMediaStreamVideoTrackHost::OnClose() {
@@ -196,6 +263,64 @@ void PepperMediaStreamVideoTrackHost::OnClose() {
     MediaStreamVideoSink::RemoveFromVideoTrack(this, track_);
     connected_ = false;
   }
+}
+
+int32_t PepperMediaStreamVideoTrackHost::OnHostMsgEnqueueBuffer(
+    ppapi::host::HostMessageContext* context, int32_t index) {
+  if (type_ == kRead) {
+    return PepperMediaStreamTrackHostBase::OnHostMsgEnqueueBuffer(context,
+                                                                  index);
+  } else {
+    return SendFrameToTrack(index);
+  }
+}
+
+int32_t PepperMediaStreamVideoTrackHost::SendFrameToTrack(int32_t index) {
+  DCHECK_EQ(type_, kWrite);
+
+  if (output_started_) {
+    // Sends the frame to blink video track.
+    ppapi::MediaStreamBuffer::Video* pp_frame =
+        &(buffer_manager()->GetBufferPointer(index)->video);
+
+    int32 y_stride = plugin_frame_size_.width();
+    int32 uv_stride = (plugin_frame_size_.width() + 1) / 2;
+    uint8* y_data = static_cast<uint8*>(pp_frame->data);
+    // Default to I420
+    uint8* u_data = y_data + plugin_frame_size_.GetArea();
+    uint8* v_data = y_data + (plugin_frame_size_.GetArea() * 5 / 4);
+    if (plugin_frame_format_ == PP_VIDEOFRAME_FORMAT_YV12) {
+      // Swap u and v for YV12.
+      uint8* tmp = u_data;
+      u_data = v_data;
+      v_data = tmp;
+    }
+
+    int64 ts_ms = static_cast<int64>(pp_frame->timestamp *
+                                     base::Time::kMillisecondsPerSecond);
+    scoped_refptr<VideoFrame> frame = media::VideoFrame::WrapExternalYuvData(
+        FromPpapiFormat(plugin_frame_format_),
+        plugin_frame_size_,
+        gfx::Rect(plugin_frame_size_),
+        plugin_frame_size_,
+        y_stride,
+        uv_stride,
+        uv_stride,
+        y_data,
+        u_data,
+        v_data,
+        base::TimeDelta::FromMilliseconds(ts_ms),
+        base::Closure());
+
+    DeliverVideoFrame(frame, media::VideoCaptureFormat(
+                                 plugin_frame_size_,
+                                 kDefaultOutputFrameRate,
+                                 ToPixelFormat(plugin_frame_format_)));
+  }
+
+  // Makes the frame available again for plugin.
+  SendEnqueueBufferMessageToPlugin(index);
+  return PP_OK;
 }
 
 void PepperMediaStreamVideoTrackHost::OnVideoFrame(
@@ -235,7 +360,32 @@ void PepperMediaStreamVideoTrackHost::OnVideoFrame(
   buffer->size.height = size.height();
   buffer->data_size = frame_data_size_;
   ConvertFromMediaVideoFrame(frame, format, size, buffer->data);
+
   SendEnqueueBufferMessageToPlugin(index);
+}
+
+void PepperMediaStreamVideoTrackHost::GetCurrentSupportedFormats(
+    int max_requested_width, int max_requested_height) {
+  if (type_ != kWrite) {
+    DVLOG(1) << "GetCurrentSupportedFormats is only supported in output mode.";
+    return;
+  }
+
+  media::VideoCaptureFormats formats;
+  formats.push_back(
+      media::VideoCaptureFormat(plugin_frame_size_,
+                                kDefaultOutputFrameRate,
+                                ToPixelFormat(plugin_frame_format_)));
+  OnSupportedFormats(formats);
+}
+
+void PepperMediaStreamVideoTrackHost::StartSourceImpl(
+    const media::VideoCaptureParams& params) {
+  output_started_ = true;
+}
+
+void PepperMediaStreamVideoTrackHost::StopSourceImpl() {
+  output_started_ = false;
 }
 
 void PepperMediaStreamVideoTrackHost::DidConnectPendingHostToResource() {
@@ -286,11 +436,39 @@ int32_t PepperMediaStreamVideoTrackHost::OnHostMsgConfigure(
   // new settings. Otherwise, we will initialize buffer when we receive
   // the first frame, because plugin can only provide part of attributes
   // which are not enough to initialize buffers.
-  if (changed && !source_frame_size_.IsEmpty())
+  if (changed && (type_ == kWrite || !source_frame_size_.IsEmpty()))
     InitBuffers();
 
-  context->reply_msg = PpapiPluginMsg_MediaStreamVideoTrack_ConfigureReply();
+  // TODO(ronghuawu): Ask the owner of DOMMediaStreamTrackToResource why
+  // source id instead of track id is used there.
+  const std::string id = track_.source().id().utf8();
+  context->reply_msg = PpapiPluginMsg_MediaStreamVideoTrack_ConfigureReply(id);
   return PP_OK;
+}
+
+void PepperMediaStreamVideoTrackHost::InitBlinkTrack() {
+  std::string source_id;
+  base::Base64Encode(base::RandBytesAsString(64), &source_id);
+  blink::WebMediaStreamSource webkit_source;
+  webkit_source.initialize(base::UTF8ToUTF16(source_id),
+                           blink::WebMediaStreamSource::TypeVideo,
+                           base::UTF8ToUTF16(kPepperVideoSourceName));
+  webkit_source.setExtraData(this);
+
+  const bool enabled = true;
+  blink::WebMediaConstraints constraints;
+  constraints.initialize();
+  track_ = MediaStreamVideoTrack::CreateVideoTrack(
+       this, constraints,
+       base::Bind(
+           &PepperMediaStreamVideoTrackHost::OnTrackStarted,
+           base::Unretained(this)),
+       enabled);
+}
+
+void PepperMediaStreamVideoTrackHost::OnTrackStarted(
+    MediaStreamSource* source, bool success) {
+  DVLOG(3) << "OnTrackStarted result: " << success;
 }
 
 }  // namespace content

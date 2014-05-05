@@ -23,7 +23,13 @@ class PepperMediaStreamTrackHostBase
                                  PP_Resource resource);
   virtual ~PepperMediaStreamTrackHostBase();
 
-  bool InitBuffers(int32_t number_of_buffers, int32_t buffer_size);
+  enum TrackType {
+    kRead,
+    kWrite
+  };
+  bool InitBuffers(int32_t number_of_buffers,
+                   int32_t buffer_size,
+                   TrackType track_type);
 
   ppapi::MediaStreamBufferManager* buffer_manager() { return &buffer_manager_; }
 
@@ -33,18 +39,26 @@ class PepperMediaStreamTrackHostBase
   // Also see |MediaStreamBufferManager|.
   void SendEnqueueBufferMessageToPlugin(int32_t index);
 
+  // Sends a set of buffer indices to the corresponding
+  // MediaStreamTrackResourceBase via an IPC message.
+  // The resource adds the buffer indices into its
+  // |frame_buffer_| for reading or writing. Also see |MediaStreamFrameBuffer|.
+  void SendEnqueueBuffersMessageToPlugin(const std::vector<int32_t>& indices);
+
   // ResourceMessageHandler overrides:
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) OVERRIDE;
+
+  // Message handlers:
+  virtual int32_t OnHostMsgEnqueueBuffer(
+      ppapi::host::HostMessageContext* context, int32_t index);
 
  private:
   // Subclasses must implement this method to clean up when the track is closed.
   virtual void OnClose() = 0;
 
   // Message handlers:
-  int32_t OnHostMsgEnqueueBuffer(ppapi::host::HostMessageContext* context,
-                                 int32_t index);
   int32_t OnHostMsgClose(ppapi::host::HostMessageContext* context);
 
   RendererPpapiHost* host_;

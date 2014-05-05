@@ -62,6 +62,9 @@ class PPAPI_SHARED_EXPORT MediaStreamBufferManager {
   // Dequeues a buffer from |buffer_queue_|.
   int32_t DequeueBuffer();
 
+  // Dequeues all the buffers from |buffer_queue_|.
+  std::vector<int32_t> DequeueBuffers();
+
   // Puts a buffer into |buffer_queue_|.
   void EnqueueBuffer(int32_t index);
 

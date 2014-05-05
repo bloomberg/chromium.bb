@@ -23,6 +23,10 @@ class PPAPI_THUNK_EXPORT PPB_MediaStreamVideoTrack_API {
                            scoped_refptr<ppapi::TrackedCallback> callback) = 0;
   virtual int32_t RecycleFrame(PP_Resource frame) = 0;
   virtual void Close() = 0;
+  virtual int32_t GetEmptyFrame(
+      PP_Resource* frame,
+      scoped_refptr<ppapi::TrackedCallback> callback) = 0;
+  virtual int32_t PutFrame(PP_Resource frame) = 0;
 };
 
 }  // namespace thunk

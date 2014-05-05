@@ -86,6 +86,8 @@ class ResourceCreationImpl : public ppapi::thunk::ResourceCreationAPI {
                                                    uint32_t key_code,
                                                    PP_Var character_text,
                                                    PP_Var code) OVERRIDE;
+  virtual PP_Resource CreateMediaStreamVideoTrack(
+      PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateMouseInputEvent(
       PP_Instance instance,
       PP_InputEvent_Type type,
@@ -104,10 +106,6 @@ class ResourceCreationImpl : public ppapi::thunk::ResourceCreationAPI {
   virtual PP_Resource CreateNetAddressFromNetAddressPrivate(
       PP_Instance instance,
       const PP_NetAddress_Private& private_addr) OVERRIDE;
-  virtual PP_Resource CreateTouchInputEvent(PP_Instance instance,
-                                            PP_InputEvent_Type type,
-                                            PP_TimeTicks time_stamp,
-                                            uint32_t modifiers) OVERRIDE;
   virtual PP_Resource CreateNetworkMonitor(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreatePlatformVerificationPrivate(PP_Instance instance)
       OVERRIDE;
@@ -121,6 +119,10 @@ class ResourceCreationImpl : public ppapi::thunk::ResourceCreationAPI {
   virtual PP_Resource CreateTCPSocket1_0(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateTCPSocket(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateTouchInputEvent(PP_Instance instance,
+                                            PP_InputEvent_Type type,
+                                            PP_TimeTicks time_stamp,
+                                            uint32_t modifiers) OVERRIDE;
   virtual PP_Resource CreateUDPSocket(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateVideoCapture(PP_Instance instance) OVERRIDE;

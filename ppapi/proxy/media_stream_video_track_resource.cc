@@ -24,6 +24,14 @@ MediaStreamVideoTrackResource::MediaStreamVideoTrackResource(
       get_frame_output_(NULL) {
 }
 
+MediaStreamVideoTrackResource::MediaStreamVideoTrackResource(
+    Connection connection,
+    PP_Instance instance)
+    : MediaStreamTrackResourceBase(connection, instance),
+      get_frame_output_(NULL) {
+  SendCreate(RENDERER, PpapiHostMsg_MediaStreamVideoTrack_Create());
+}
+
 MediaStreamVideoTrackResource::~MediaStreamVideoTrackResource() {
   Close();
 }
@@ -150,6 +158,17 @@ void MediaStreamVideoTrackResource::Close() {
   MediaStreamTrackResourceBase::CloseInternal();
 }
 
+int32_t MediaStreamVideoTrackResource::GetEmptyFrame(
+    PP_Resource* frame, scoped_refptr<TrackedCallback> callback) {
+  return GetFrame(frame, callback);
+}
+
+int32_t MediaStreamVideoTrackResource::PutFrame(PP_Resource frame) {
+  // TODO(ronghuawu): Consider to rename RecycleFrame to PutFrame and use
+  // one set of GetFrame and PutFrame for both input and output.
+  return RecycleFrame(frame);
+}
+
 void MediaStreamVideoTrackResource::OnNewBufferEnqueued() {
   if (!TrackedCallback::IsPending(get_frame_callback_))
     return;
@@ -189,7 +208,13 @@ void MediaStreamVideoTrackResource::ReleaseFrames() {
 }
 
 void MediaStreamVideoTrackResource::OnPluginMsgConfigureReply(
-    const ResourceMessageReplyParams& params) {
+    const ResourceMessageReplyParams& params,
+    const std::string& track_id) {
+  if (id().empty()) {
+    set_id(track_id);
+  } else {
+    DCHECK_EQ(id(), track_id);
+  }
   if (TrackedCallback::IsPending(configure_callback_)) {
     scoped_refptr<TrackedCallback> callback;
     callback.swap(configure_callback_);

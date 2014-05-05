@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "content/public/renderer/media_stream_video_sink.h"
+#include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/pepper/pepper_media_stream_track_host_base.h"
 #include "media/base/video_frame.h"
 #include "ppapi/c/ppb_video_frame.h"
@@ -17,24 +18,53 @@
 namespace content {
 
 class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
-                                        public MediaStreamVideoSink {
+                                        public MediaStreamVideoSink,
+                                        public MediaStreamVideoSource {
  public:
+  // Input mode constructor.
+  // In input mode, this class passes video frames from |track| to the
+  // associated pepper plugin.
   PepperMediaStreamVideoTrackHost(RendererPpapiHost* host,
                                   PP_Instance instance,
                                   PP_Resource resource,
                                   const blink::WebMediaStreamTrack& track);
 
+  // Output mode constructor.
+  // In output mode, this class passes video frames from the associated
+  // pepper plugin to a newly created blink::WebMediaStreamTrack.
+  PepperMediaStreamVideoTrackHost(RendererPpapiHost* host,
+                                  PP_Instance instance,
+                                  PP_Resource resource);
+
+  virtual bool IsMediaStreamVideoTrackHost() OVERRIDE;
+
+  blink::WebMediaStreamTrack track() { return track_; }
+
  private:
+
   virtual ~PepperMediaStreamVideoTrackHost();
 
   void InitBuffers();
 
   // PepperMediaStreamTrackHostBase overrides:
   virtual void OnClose() OVERRIDE;
+  virtual int32_t OnHostMsgEnqueueBuffer(
+      ppapi::host::HostMessageContext* context, int32_t index) OVERRIDE;
+
+  // Sends frame with |index| to |track_|.
+  int32_t SendFrameToTrack(int32_t index);
 
   // MediaStreamVideoSink overrides:
   virtual void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame)
       OVERRIDE;
+
+  // MediaStreamVideoSource overrides:
+  virtual void GetCurrentSupportedFormats(int max_requested_width,
+                                          int max_requested_height) OVERRIDE;
+  virtual void StartSourceImpl(
+      const media::VideoCaptureParams& params) OVERRIDE;
+
+  virtual void StopSourceImpl() OVERRIDE;
 
   // ResourceHost overrides:
   virtual void DidConnectPendingHostToResource() OVERRIDE;
@@ -48,6 +78,9 @@ class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
   int32_t OnHostMsgConfigure(
       ppapi::host::HostMessageContext* context,
       const ppapi::MediaStreamVideoTrackShared::Attributes& attributes);
+
+  void InitBlinkTrack();
+  void OnTrackStarted(MediaStreamSource* source, bool success);
 
   blink::WebMediaStreamTrack track_;
 
@@ -71,6 +104,11 @@ class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
 
   // The size of frame pixels in bytes.
   uint32_t frame_data_size_;
+
+  // TODO(ronghuawu): Remove |type_| and split PepperMediaStreamVideoTrackHost
+  // into 2 classes for read and write.
+  TrackType type_;
+  bool output_started_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperMediaStreamVideoTrackHost);
 };

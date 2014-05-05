@@ -75,7 +75,7 @@ void PepperMediaStreamAudioTrackHost::AudioSink::InitBuffersOnMainThread(
     int32_t number_of_buffers,
     int32_t buffer_size) {
   DCHECK_EQ(main_message_loop_proxy_, base::MessageLoopProxy::current());
-  bool result = host_->InitBuffers(number_of_buffers, buffer_size);
+  bool result = host_->InitBuffers(number_of_buffers, buffer_size, kRead);
   // TODO(penghuang): Send PP_ERROR_NOMEMORY to plugin.
   CHECK(result);
   base::AutoLock lock(lock_);

@@ -18,6 +18,7 @@
 #include "ppapi/proxy/graphics_2d_resource.h"
 #include "ppapi/proxy/host_resolver_private_resource.h"
 #include "ppapi/proxy/host_resolver_resource.h"
+#include "ppapi/proxy/media_stream_video_track_resource.h"
 #include "ppapi/proxy/net_address_resource.h"
 #include "ppapi/proxy/network_monitor_resource.h"
 #include "ppapi/proxy/output_protection_resource.h"
@@ -288,6 +289,12 @@ PP_Resource ResourceCreationProxy::CreateImageDataSimple(
       instance,
       PPB_ImageData_Shared::SIMPLE,
       format, *size, init_to_zero);
+}
+
+PP_Resource ResourceCreationProxy::CreateMediaStreamVideoTrack(
+    PP_Instance instance) {
+  return (new MediaStreamVideoTrackResource(GetConnection(),
+                                            instance))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateNetAddressFromIPv4Address(

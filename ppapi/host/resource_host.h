@@ -59,6 +59,7 @@ class PPAPI_HOST_EXPORT ResourceHost : public ResourceMessageHandler {
   virtual bool IsFileRefHost();
   virtual bool IsFileSystemHost();
   virtual bool IsGraphics2DHost();
+  virtual bool IsMediaStreamVideoTrackHost();
 
  protected:
   // Adds a ResourceMessageFilter to handle resource messages. Incoming

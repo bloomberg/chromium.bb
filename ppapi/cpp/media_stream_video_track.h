@@ -41,6 +41,10 @@ class MediaStreamVideoTrack : public Resource {
   /// @param[in] resource A <code>PPB_MediaStreamVideoTrack</code> resource.
   explicit MediaStreamVideoTrack(const Resource& resource);
 
+  /// Constructs a <code>MediaStreamVideoTrack</code> that outputs given frames
+  /// to a new video track, which will be consumed by Javascript.
+  explicit MediaStreamVideoTrack(const InstanceHandle& instance);
+
   /// A constructor used when you have received a <code>PP_Resource</code> as a
   /// return value that has had 1 ref added for you.
   ///
@@ -133,6 +137,17 @@ class MediaStreamVideoTrack : public Resource {
   /// Closes the MediaStream video track, and disconnects it from video source.
   /// After calling <code>Close()</code>, no new frames will be received.
   void Close();
+
+  // Gets a free frame for output. The frame is allocated by
+  // <code>Configure()</code>. The caller should fill it with frame data, and
+  // then use |PutFrame()| to send the frame back.
+  int32_t GetEmptyFrame(
+      const CompletionCallbackWithOutput<VideoFrame>& callback);
+
+  // Sends a frame returned by |GetEmptyFrame()| to the output track.
+  // After this function, the |frame| should not be used anymore and the
+  // caller should release the reference that it holds.
+  int32_t PutFrame(const VideoFrame& frame);
 
   /// Checks whether a <code>Resource</code> is a MediaStream video track,
   /// to test whether it is appropriate for use with the

@@ -211,6 +211,12 @@ PP_Resource ResourceCreationImpl::CreateImageDataSimple(
   return 0;
 }
 
+PP_Resource ResourceCreationImpl::CreateMediaStreamVideoTrack(
+    PP_Instance instance) {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 PP_Resource ResourceCreationImpl::CreateNetAddressFromIPv4Address(
     PP_Instance instance,
     const PP_NetAddress_IPv4* ipv4_addr) {

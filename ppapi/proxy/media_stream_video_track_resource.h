@@ -26,6 +26,8 @@ class PPAPI_PROXY_EXPORT MediaStreamVideoTrackResource
                                 int pending_renderer_id,
                                 const std::string& id);
 
+  MediaStreamVideoTrackResource(Connection connection, PP_Instance instance);
+
   virtual ~MediaStreamVideoTrackResource();
 
   // Resource overrides:
@@ -43,6 +45,9 @@ class PPAPI_PROXY_EXPORT MediaStreamVideoTrackResource
                            scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t RecycleFrame(PP_Resource frame) OVERRIDE;
   virtual void Close() OVERRIDE;
+  virtual int32_t GetEmptyFrame(
+      PP_Resource* frame, scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t PutFrame(PP_Resource frame) OVERRIDE;
 
   // MediaStreamBufferManager::Delegate overrides:
   virtual void OnNewBufferEnqueued() OVERRIDE;
@@ -53,7 +58,8 @@ class PPAPI_PROXY_EXPORT MediaStreamVideoTrackResource
   void ReleaseFrames();
 
   // IPC message handlers.
-  void OnPluginMsgConfigureReply(const ResourceMessageReplyParams& params);
+  void OnPluginMsgConfigureReply(const ResourceMessageReplyParams& params,
+                                 const std::string& track_id);
 
   // Allocated frame resources by |GetFrame()|.
   typedef std::map<PP_Resource, scoped_refptr<VideoFrameResource> > FrameMap;

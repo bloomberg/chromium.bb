@@ -79,11 +79,9 @@ TEST(MediaStreamBufferManager, General) {
     EXPECT_EQ(PP_ERROR_FAILED, manager.DequeueBuffer());
     EXPECT_EQ(PP_ERROR_FAILED, manager.DequeueBuffer());
 
-    // Test crash for passing invalid index to GetBufferPointer()
-    EXPECT_DEATH(manager.GetBufferPointer(-1),
-                 ".*Check failed: index >= 0.*");
-    EXPECT_DEATH(manager.GetBufferPointer(kNumberOfBuffers),
-                 ".*Check failed: index < number_of_buffers_.*");
+    // Returns NULL for invalid index to GetBufferPointer()
+    EXPECT_EQ(NULL, manager.GetBufferPointer(-1));
+    EXPECT_EQ(NULL, manager.GetBufferPointer(kNumberOfBuffers));
 
     // Test crash for passing invalid index to EnqueueBuffer().
     EXPECT_DEATH(manager.EnqueueBuffer(-1),

@@ -56,6 +56,10 @@ bool ResourceHost::IsFileSystemHost() {
   return false;
 }
 
+bool ResourceHost::IsMediaStreamVideoTrackHost() {
+  return false;
+}
+
 bool ResourceHost::IsGraphics2DHost() {
   return false;
 }

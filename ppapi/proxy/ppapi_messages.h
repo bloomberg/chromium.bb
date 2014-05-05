@@ -1438,20 +1438,25 @@ IPC_MESSAGE_CONTROL1(PpapiPluginMsg_MediaStreamAudioTrack_CreateFromPendingHost,
                      std::string /* track_id */)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_MediaStreamVideoTrack_CreateFromPendingHost,
                      std::string /* track_id */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_MediaStreamVideoTrack_Create)
 IPC_MESSAGE_CONTROL1(
     PpapiHostMsg_MediaStreamVideoTrack_Configure,
     ppapi::MediaStreamVideoTrackShared::Attributes /* attributes */)
-IPC_MESSAGE_CONTROL0(PpapiPluginMsg_MediaStreamVideoTrack_ConfigureReply)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_MediaStreamVideoTrack_ConfigureReply,
+                     std::string /* track_id */)
 
 // Message for init buffers. It also takes a shared memory handle which is put
 // in the outer ResourceReplyMessage.
-IPC_MESSAGE_CONTROL2(PpapiPluginMsg_MediaStreamTrack_InitBuffers,
+IPC_MESSAGE_CONTROL3(PpapiPluginMsg_MediaStreamTrack_InitBuffers,
                      int32_t /* number_of_buffers */,
-                     int32_t /* buffer_size */)
+                     int32_t /* buffer_size */,
+                     bool /* readonly */)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_MediaStreamTrack_EnqueueBuffer,
                      int32_t /* index */);
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_MediaStreamTrack_EnqueueBuffer,
                      int32_t /* index */);
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_MediaStreamTrack_EnqueueBuffers,
+                     std::vector<int32_t> /* indices */);
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_MediaStreamTrack_Close)
 
 // NetworkMonitor.
