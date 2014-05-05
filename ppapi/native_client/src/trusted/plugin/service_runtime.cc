@@ -47,6 +47,7 @@
 #include "ppapi/cpp/core.h"
 #include "ppapi/cpp/completion_callback.h"
 
+#include "ppapi/native_client/src/trusted/plugin/manifest.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
 #include "ppapi/native_client/src/trusted/plugin/pnacl_resources.h"
@@ -197,13 +198,13 @@ void OpenManifestEntryResource::MaybeRunCallback(int32_t pp_error) {
 PluginReverseInterface::PluginReverseInterface(
     nacl::WeakRefAnchor* anchor,
     Plugin* plugin,
-    int32_t manifest_id,
+    const Manifest* manifest,
     ServiceRuntime* service_runtime,
     pp::CompletionCallback init_done_cb,
     pp::CompletionCallback crash_cb)
       : anchor_(anchor),
         plugin_(plugin),
-        manifest_id_(manifest_id),
+        manifest_(manifest),
         service_runtime_(service_runtime),
         shutting_down_(false),
         init_done_cb_(init_done_cb),
@@ -346,13 +347,9 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
 
   NaClLog(4, "Entered OpenManifestEntry_MainThreadContinuation\n");
 
-  PP_Var pp_mapped_url;
+  std::string mapped_url;
   PP_PNaClOptions pnacl_options = {PP_FALSE, PP_FALSE, 2};
-  if (!GetNaClInterface()->ManifestResolveKey(plugin_->pp_instance(),
-                                              manifest_id_,
-                                              p->url.c_str(),
-                                              &pp_mapped_url,
-                                              &pnacl_options)) {
+  if (!manifest_->ResolveKey(p->url, &mapped_url, &pnacl_options)) {
     NaClLog(4, "OpenManifestEntry_MainThreadContinuation: ResolveKey failed\n");
     // Failed, and error_info has the details on what happened.  Wake
     // up requesting thread -- we are done.
@@ -365,7 +362,6 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
     p->MaybeRunCallback(PP_OK);
     return;
   }
-  nacl::string mapped_url = pp::Var(pp_mapped_url).AsString();
   NaClLog(4,
           "OpenManifestEntry_MainThreadContinuation: "
           "ResolveKey: %s -> %s (pnacl_translate(%d))\n",
@@ -564,7 +560,7 @@ void PluginReverseInterface::AddTempQuotaManagedFile(
 }
 
 ServiceRuntime::ServiceRuntime(Plugin* plugin,
-                               int32_t manifest_id,
+                               const Manifest* manifest,
                                bool main_service_runtime,
                                bool uses_nonsfi_mode,
                                pp::CompletionCallback init_done_cb,
@@ -575,7 +571,7 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
       reverse_service_(NULL),
       anchor_(new nacl::WeakRefAnchor()),
       rev_interface_(new PluginReverseInterface(anchor_, plugin,
-                                                manifest_id,
+                                                manifest,
                                                 this,
                                                 init_done_cb, crash_cb)),
       exit_status_(-1),

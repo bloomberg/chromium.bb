@@ -39,7 +39,7 @@ PnaclTranslateThread::PnaclTranslateThread() : llc_subprocess_active_(false),
                                                ld_subprocess_active_(false),
                                                done_(false),
                                                compile_time_(0),
-                                               manifest_id_(0),
+                                               manifest_(NULL),
                                                obj_files_(NULL),
                                                nexe_file_(NULL),
                                                coordinator_error_info_(NULL),
@@ -53,7 +53,7 @@ PnaclTranslateThread::PnaclTranslateThread() : llc_subprocess_active_(false),
 
 void PnaclTranslateThread::RunTranslate(
     const pp::CompletionCallback& finish_callback,
-    int32_t manifest_id,
+    const Manifest* manifest,
     const std::vector<TempFile*>* obj_files,
     TempFile* nexe_file,
     nacl::DescWrapper* invalid_desc_wrapper,
@@ -63,7 +63,7 @@ void PnaclTranslateThread::RunTranslate(
     PnaclCoordinator* coordinator,
     Plugin* plugin) {
   PLUGIN_PRINTF(("PnaclStreamingTranslateThread::RunTranslate)\n"));
-  manifest_id_ = manifest_id;
+  manifest_ = manifest;
   obj_files_ = obj_files;
   nexe_file_ = nexe_file;
   invalid_desc_wrapper_ = invalid_desc_wrapper;
@@ -129,7 +129,7 @@ void PnaclTranslateThread::PutBytes(std::vector<char>* bytes,
 
 NaClSubprocess* PnaclTranslateThread::StartSubprocess(
     const nacl::string& url_for_nexe,
-    int32_t manifest_id,
+    const Manifest* manifest,
     ErrorInfo* error_info) {
   PLUGIN_PRINTF(("PnaclTranslateThread::StartSubprocess (url_for_nexe=%s)\n",
                  url_for_nexe.c_str()));
@@ -140,8 +140,8 @@ NaClSubprocess* PnaclTranslateThread::StartSubprocess(
   // string gets silently dropped by GURL.
   nacl::string full_url = resources_->GetFullUrl(
       url_for_nexe, plugin_->nacl_interface()->GetSandboxArch());
-  nacl::scoped_ptr<NaClSubprocess> subprocess(plugin_->LoadHelperNaClModule(
-      full_url, wrapper, manifest_id, error_info));
+  nacl::scoped_ptr<NaClSubprocess> subprocess(
+      plugin_->LoadHelperNaClModule(full_url, wrapper, manifest, error_info));
   if (subprocess.get() == NULL) {
     PLUGIN_PRINTF((
         "PnaclTranslateThread::StartSubprocess: subprocess creation failed\n"));
@@ -173,7 +173,7 @@ void PnaclTranslateThread::DoTranslate() {
     nacl::MutexLocker ml(&subprocess_mu_);
     int64_t llc_start_time = NaClGetTimeOfDayMicroseconds();
     llc_subprocess_.reset(
-      StartSubprocess(resources_->GetLlcUrl(), manifest_id_, &error_info));
+      StartSubprocess(resources_->GetLlcUrl(), manifest_, &error_info));
     if (llc_subprocess_ == NULL) {
       TranslateFailed(PP_NACL_ERROR_PNACL_LLC_SETUP,
                       "Compile process could not be created: " +
@@ -350,7 +350,7 @@ bool PnaclTranslateThread::RunLdSubprocess() {
     nacl::MutexLocker ml(&subprocess_mu_);
     int64_t ld_start_time = NaClGetTimeOfDayMicroseconds();
     ld_subprocess_.reset(
-      StartSubprocess(resources_->GetLdUrl(), manifest_id_, &error_info));
+      StartSubprocess(resources_->GetLdUrl(), manifest_, &error_info));
     if (ld_subprocess_ == NULL) {
       TranslateFailed(PP_NACL_ERROR_PNACL_LD_SETUP,
                       "Link process could not be created: " +

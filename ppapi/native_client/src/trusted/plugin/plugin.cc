@@ -34,6 +34,7 @@
 #include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/module.h"
 
+#include "ppapi/native_client/src/trusted/plugin/json_manifest.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
@@ -135,11 +136,11 @@ void Plugin::HistogramHTTPStatusCode(const std::string& name, int status) {
 bool Plugin::LoadNaClModuleFromBackgroundThread(
     nacl::DescWrapper* wrapper,
     NaClSubprocess* subprocess,
-    int32_t manifest_id,
+    const Manifest* manifest,
     const SelLdrStartParams& params) {
   CHECK(!pp::Module::Get()->core()->IsMainThread());
   ServiceRuntime* service_runtime =
-      new ServiceRuntime(this, manifest_id, false, uses_nonsfi_mode_,
+      new ServiceRuntime(this, manifest, false, uses_nonsfi_mode_,
                          pp::BlockUntilComplete(), pp::BlockUntilComplete());
   subprocess->set_service_runtime(service_runtime);
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleFromBackgroundThread "
@@ -227,7 +228,7 @@ void Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
                            enable_crash_throttling);
   ErrorInfo error_info;
   ServiceRuntime* service_runtime =
-      new ServiceRuntime(this, manifest_id_, true, uses_nonsfi_mode,
+      new ServiceRuntime(this, manifest_.get(), true, uses_nonsfi_mode,
                          init_done_cb, crash_cb);
   main_subprocess_.set_service_runtime(service_runtime);
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime=%p)\n",
@@ -292,7 +293,7 @@ bool Plugin::LoadNaClModuleContinuationIntern() {
 
 NaClSubprocess* Plugin::LoadHelperNaClModule(const nacl::string& helper_url,
                                              nacl::DescWrapper* wrapper,
-                                             int32_t manifest_id,
+                                             const Manifest* manifest,
                                              ErrorInfo* error_info) {
   nacl::scoped_ptr<NaClSubprocess> nacl_subprocess(
       new NaClSubprocess("helper module", NULL, NULL));
@@ -319,7 +320,7 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(const nacl::string& helper_url,
                            false /* enable_exception_handling */,
                            true /* enable_crash_throttling */);
   if (!LoadNaClModuleFromBackgroundThread(wrapper, nacl_subprocess.get(),
-                                          manifest_id, params)) {
+                                          manifest, params)) {
     return NULL;
   }
   // We need not wait for the init_done callback.  We can block
@@ -369,7 +370,6 @@ Plugin::Plugin(PP_Instance pp_instance)
       wrapper_factory_(NULL),
       time_of_last_progress_event_(0),
       nexe_open_time_(-1),
-      manifest_id_(-1),
       nacl_interface_(NULL),
       uma_interface_(this) {
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p, pp_instance=%"
@@ -580,19 +580,20 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
   if (!SetManifestObject(manifest_json))
     return;
 
-  PP_Var pp_program_url;
+  nacl::string program_url;
   PP_PNaClOptions pnacl_options = {PP_FALSE, PP_FALSE, 2};
-  PP_Bool uses_nonsfi_mode;
-  if (nacl_interface_->GetManifestProgramURL(pp_instance(),
-          manifest_id_, &pp_program_url, &pnacl_options, &uses_nonsfi_mode)) {
-    std::string program_url = pp::Var(pp::PASS_REF, pp_program_url).AsString();
+  bool uses_nonsfi_mode;
+  ErrorInfo error_info;
+  if (manifest_->GetProgramURL(
+          &program_url, &pnacl_options, &uses_nonsfi_mode, &error_info)) {
     // TODO(teravest): Make ProcessNaClManifest take responsibility for more of
     // this function.
     nacl_interface_->ProcessNaClManifest(pp_instance(), program_url.c_str());
-    uses_nonsfi_mode_ = PP_ToBool(uses_nonsfi_mode);
+    uses_nonsfi_mode_ = uses_nonsfi_mode;
     if (pnacl_options.translate) {
       pp::CompletionCallback translate_callback =
           callback_factory_.NewCallback(&Plugin::BitcodeDidTranslate);
+      // Will always call the callback on success or failure.
       pnacl_coordinator_.reset(
           PnaclCoordinator::BitcodeToNative(this,
                                             program_url,
@@ -618,6 +619,8 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
       return;
     }
   }
+  // Failed to select the program and/or the translator.
+  ReportLoadError(error_info);
 }
 
 void Plugin::RequestNaClManifest(const nacl::string& url) {
@@ -660,22 +663,30 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
 bool Plugin::SetManifestObject(const nacl::string& manifest_json) {
   PLUGIN_PRINTF(("Plugin::SetManifestObject(): manifest_json='%s'.\n",
        manifest_json.c_str()));
+  ErrorInfo error_info;
+
   // Determine whether lookups should use portable (i.e., pnacl versions)
   // rather than platform-specific files.
   bool is_pnacl = nacl_interface_->IsPNaCl(pp_instance());
+  bool nonsfi_mode_enabled =
+      PP_ToBool(nacl_interface_->IsNonSFIModeEnabled());
   pp::Var manifest_base_url =
       pp::Var(pp::PASS_REF, nacl_interface_->GetManifestBaseURL(pp_instance()));
   std::string manifest_base_url_str = manifest_base_url.AsString();
+  bool pnacl_debug = GetNaClInterface()->NaClDebugEnabledForURL(
+      manifest_base_url_str.c_str());
   const char* sandbox_isa = nacl_interface_->GetSandboxArch();
-
-  int32_t manifest_id = nacl_interface_->CreateJsonManifest(
-      pp_instance(),
-      manifest_base_url_str.c_str(),
-      is_pnacl ? kPortableArch : sandbox_isa,
-      manifest_json.c_str());
-  if (manifest_id == -1)
+  nacl::scoped_ptr<JsonManifest> json_manifest(
+      new JsonManifest(pp::URLUtil_Dev::Get(),
+                       manifest_base_url_str,
+                       (is_pnacl ? kPortableArch : sandbox_isa),
+                       nonsfi_mode_enabled,
+                       pnacl_debug));
+  if (!json_manifest->Init(manifest_json, &error_info)) {
+    ReportLoadError(error_info);
     return false;
-  manifest_id_ = manifest_id;
+  }
+  manifest_.reset(json_manifest.release());
   return true;
 }
 
