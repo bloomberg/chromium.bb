@@ -393,7 +393,6 @@ ScriptProcessorNode
 Selection
 ShadowRoot
 SharedWorker
-SpeechInputEvent
 SpeechSynthesisEvent
 SpeechSynthesisUtterance
 Storage

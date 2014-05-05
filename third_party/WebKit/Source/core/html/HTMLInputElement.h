@@ -112,10 +112,6 @@ public:
     bool isTimeField() const;
     bool isWeekField() const;
 
-#if ENABLE(INPUT_SPEECH)
-    bool isSpeechEnabled() const;
-#endif
-
     HTMLElement* passwordGeneratorButtonElement() const;
 
     bool checked() const { return m_isChecked; }

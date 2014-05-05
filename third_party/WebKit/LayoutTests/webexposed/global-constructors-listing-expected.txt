@@ -408,7 +408,6 @@ ServiceWorker
 ServiceWorkerContainer
 ShadowRoot
 SharedWorker
-SpeechInputEvent
 SpeechSynthesisEvent
 SpeechSynthesisUtterance
 Storage

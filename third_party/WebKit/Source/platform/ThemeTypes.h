@@ -46,7 +46,7 @@ typedef unsigned ControlStates;
 // Must follow CSSValueKeywords.in order
 enum ControlPart {
     NoControlPart, CheckboxPart, RadioPart, PushButtonPart, SquareButtonPart, ButtonPart,
-    ButtonBevelPart, InnerSpinButtonPart, InputSpeechButtonPart, ListboxPart, ListItemPart,
+    ButtonBevelPart, InnerSpinButtonPart, ListboxPart, ListItemPart,
     MediaEnterFullscreenButtonPart, MediaExitFullscreenButtonPart, MediaFullScreenVolumeSliderPart, MediaFullScreenVolumeSliderThumbPart, MediaMuteButtonPart, MediaPlayButtonPart,
     MediaOverlayPlayButtonPart, MediaToggleClosedCaptionsButtonPart,
     MediaSliderPart, MediaSliderThumbPart, MediaVolumeSliderContainerPart, MediaVolumeSliderPart, MediaVolumeSliderThumbPart,

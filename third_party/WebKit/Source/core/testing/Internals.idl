@@ -277,7 +277,6 @@
     [CallWith=ExecutionContext] Promise createRejectedPromise(any reason);
     [CallWith=ExecutionContext] Promise addOneToPromise(Promise promise);
 
-    void startSpeechInput(Element element);
     void setValueForUser(Element element, DOMString value);
 
     DOMString textSurroundingNode(Node node, long x, long y, unsigned long maxLength);

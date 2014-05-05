@@ -54,7 +54,6 @@
 #include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
-#include "core/speech/SpeechInput.h"
 #include "core/storage/StorageNamespace.h"
 #include "platform/plugins/PluginData.h"
 #include "wtf/HashMap.h"

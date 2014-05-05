@@ -269,15 +269,6 @@ RenderObject* TextFieldInputType::createRenderer(RenderStyle*) const
     return new RenderTextControlSingleLine(&element());
 }
 
-bool TextFieldInputType::needsContainer() const
-{
-#if ENABLE(INPUT_SPEECH)
-    return element().isSpeechEnabled();
-#else
-    return false;
-#endif
-}
-
 bool TextFieldInputType::shouldHaveSpinButton() const
 {
     return RenderTheme::theme().shouldHaveSpinButton(&element());
@@ -307,11 +298,6 @@ void TextFieldInputType::createShadowSubtree()
     RefPtr<EditingViewPortElement> editingViewPort = EditingViewPortElement::create(document);
     editingViewPort->appendChild(innerEditor.release());
     container->appendChild(editingViewPort.release());
-
-#if ENABLE(INPUT_SPEECH)
-    if (element().isSpeechEnabled())
-        container->appendChild(InputFieldSpeechButtonElement::create(document));
-#endif
 
     if (shouldHaveDataListIndicator)
         container->appendChild(DataListIndicatorElement::create(document));

@@ -137,7 +137,6 @@
 #include "web/MIDIClientProxy.h"
 #include "web/PopupContainer.h"
 #include "web/PrerendererClientImpl.h"
-#include "web/SpeechInputClientImpl.h"
 #include "web/SpeechRecognitionClientProxy.h"
 #include "web/StorageQuotaClientImpl.h"
 #include "web/ValidationMessageClientImpl.h"
@@ -421,9 +420,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     m_page = adoptPtrWillBeNoop(new Page(pageClients));
     MediaKeysController::provideMediaKeysTo(*m_page, &m_mediaKeysClientImpl);
     provideMIDITo(*m_page, MIDIClientProxy::create(client ? client->webMIDIClient() : 0));
-#if ENABLE(INPUT_SPEECH)
-    provideSpeechInputTo(*m_page, SpeechInputClientImpl::create(client));
-#endif
     provideSpeechRecognitionTo(*m_page, SpeechRecognitionClientProxy::create(client ? client->speechRecognizer() : 0));
     provideNavigatorContentUtilsTo(*m_page, NavigatorContentUtilsClientImpl::create(this));
 

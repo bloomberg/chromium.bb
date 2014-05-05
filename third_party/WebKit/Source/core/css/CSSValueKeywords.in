@@ -655,7 +655,6 @@ square-button
 button
 button-bevel
 inner-spin-button
--webkit-input-speech-button
 listbox
 listitem
 media-enter-fullscreen-button

@@ -129,48 +129,6 @@ WebString WebInputElement::localizeValue(const WebString& proposedValue) const
     return constUnwrap<HTMLInputElement>()->localizeValue(proposedValue);
 }
 
-bool WebInputElement::isSpeechInputEnabled() const
-{
-#if ENABLE(INPUT_SPEECH)
-    return constUnwrap<HTMLInputElement>()->isSpeechEnabled();
-#else
-    return false;
-#endif
-}
-
-#if ENABLE(INPUT_SPEECH)
-static inline InputFieldSpeechButtonElement* speechButtonElement(const WebInputElement* webInput)
-{
-    return toInputFieldSpeechButtonElement(webInput->constUnwrap<HTMLInputElement>()->userAgentShadowRoot()->getElementById(ShadowElementNames::speechButton()));
-}
-#endif
-
-WebInputElement::SpeechInputState WebInputElement::getSpeechInputState() const
-{
-#if ENABLE(INPUT_SPEECH)
-    if (InputFieldSpeechButtonElement* speechButton = speechButtonElement(this))
-        return static_cast<WebInputElement::SpeechInputState>(speechButton->state());
-#endif
-
-    return Idle;
-}
-
-void WebInputElement::startSpeechInput()
-{
-#if ENABLE(INPUT_SPEECH)
-    if (InputFieldSpeechButtonElement* speechButton = speechButtonElement(this))
-        speechButton->startSpeechInput();
-#endif
-}
-
-void WebInputElement::stopSpeechInput()
-{
-#if ENABLE(INPUT_SPEECH)
-    if (InputFieldSpeechButtonElement* speechButton = speechButtonElement(this))
-        speechButton->stopSpeechInput();
-#endif
-}
-
 int WebInputElement::defaultMaxLength()
 {
     return HTMLInputElement::maximumLength;

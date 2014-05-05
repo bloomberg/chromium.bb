@@ -116,7 +116,6 @@ PictureSizes status=experimental
 // Once this ships to stable supporting code can be removed.crbug.com/345831
 ShowModalDialog status=stable
 
-SpeechInput status=test
 SpeechSynthesis status=stable
 Stream status=experimental
 StyleScoped status=experimental

@@ -243,11 +243,6 @@ protected:
 
     virtual bool paintProgressBar(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
 
-#if ENABLE(INPUT_SPEECH)
-    virtual void adjustInputFieldSpeechButtonStyle(RenderStyle*, Element*) const;
-    virtual bool paintInputFieldSpeechButton(RenderObject*, const PaintInfo&, const IntRect&);
-#endif
-
     virtual bool paintSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
 
     virtual void adjustSliderThumbStyle(RenderStyle*, Element*) const;

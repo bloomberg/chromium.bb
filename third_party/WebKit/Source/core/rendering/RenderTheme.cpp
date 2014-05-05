@@ -60,10 +60,6 @@
 #include "public/platform/WebRect.h"
 #include "wtf/text/StringBuilder.h"
 
-#if ENABLE(INPUT_SPEECH)
-#include "core/rendering/RenderInputSpeech.h"
-#endif
-
 // The methods in this file are shared by all themes on every platform.
 
 namespace WebCore {
@@ -226,10 +222,6 @@ void RenderTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyl
         return adjustSearchFieldDecorationStyle(style, e);
     case SearchFieldResultsDecorationPart:
         return adjustSearchFieldResultsDecorationStyle(style, e);
-#if ENABLE(INPUT_SPEECH)
-    case InputSpeechButtonPart:
-        return adjustInputFieldSpeechButtonStyle(style, e);
-#endif
     default:
         break;
     }
@@ -339,10 +331,6 @@ bool RenderTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRe
         return paintSearchFieldDecoration(o, paintInfo, r);
     case SearchFieldResultsDecorationPart:
         return paintSearchFieldResultsDecoration(o, paintInfo, r);
-#if ENABLE(INPUT_SPEECH)
-    case InputSpeechButtonPart:
-        return paintInputFieldSpeechButton(o, paintInfo, r);
-#endif
     default:
         break;
     }
@@ -381,9 +369,6 @@ bool RenderTheme::paintBorderOnly(RenderObject* o, const PaintInfo& paintInfo, c
     case SearchFieldCancelButtonPart:
     case SearchFieldDecorationPart:
     case SearchFieldResultsDecorationPart:
-#if ENABLE(INPUT_SPEECH)
-    case InputSpeechButtonPart:
-#endif
     default:
         break;
     }
@@ -420,9 +405,6 @@ bool RenderTheme::paintDecorations(RenderObject* o, const PaintInfo& paintInfo, 
     case SearchFieldCancelButtonPart:
     case SearchFieldDecorationPart:
     case SearchFieldResultsDecorationPart:
-#if ENABLE(INPUT_SPEECH)
-    case InputSpeechButtonPart:
-#endif
     default:
         break;
     }
@@ -824,18 +806,6 @@ void RenderTheme::adjustInnerSpinButtonStyle(RenderStyle*, Element*) const
 void RenderTheme::adjustMenuListStyle(RenderStyle*, Element*) const
 {
 }
-
-#if ENABLE(INPUT_SPEECH)
-void RenderTheme::adjustInputFieldSpeechButtonStyle(RenderStyle* style, Element* element) const
-{
-    RenderInputSpeech::adjustInputFieldSpeechButtonStyle(style, element);
-}
-
-bool RenderTheme::paintInputFieldSpeechButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return RenderInputSpeech::paintInputFieldSpeechButton(object, paintInfo, rect);
-}
-#endif
 
 IntSize RenderTheme::meterSizeForBounds(const RenderMeter*, const IntRect& bounds) const
 {

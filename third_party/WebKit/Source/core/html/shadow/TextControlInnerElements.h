@@ -28,12 +28,9 @@
 #define TextControlInnerElements_h
 
 #include "core/html/HTMLDivElement.h"
-#include "core/speech/SpeechInputListener.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {
-
-class SpeechInput;
 
 class TextControlInnerContainer FINAL : public HTMLDivElement {
 public:
@@ -95,54 +92,6 @@ private:
 
     bool m_capturing;
 };
-
-#if ENABLE(INPUT_SPEECH)
-
-class InputFieldSpeechButtonElement FINAL
-    : public HTMLDivElement,
-      public SpeechInputListener {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InputFieldSpeechButtonElement);
-public:
-    enum SpeechInputState {
-        Idle,
-        Recording,
-        Recognizing,
-    };
-
-    static PassRefPtr<InputFieldSpeechButtonElement> create(Document&);
-    virtual ~InputFieldSpeechButtonElement();
-
-    virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
-    virtual void defaultEventHandler(Event*) OVERRIDE;
-    virtual bool willRespondToMouseClickEvents() OVERRIDE;
-    virtual bool isInputFieldSpeechButtonElement() const OVERRIDE { return true; }
-    SpeechInputState state() const { return m_state; }
-    void startSpeechInput();
-    void stopSpeechInput();
-
-    // SpeechInputListener methods.
-    virtual void didCompleteRecording(int) OVERRIDE;
-    virtual void didCompleteRecognition(int) OVERRIDE;
-    virtual void setRecognitionResult(int, const SpeechInputResultArray&) OVERRIDE;
-
-    virtual void trace(Visitor*) OVERRIDE;
-
-private:
-    InputFieldSpeechButtonElement(Document&);
-    SpeechInput* speechInput();
-    void setState(SpeechInputState state);
-    virtual bool isMouseFocusable() const OVERRIDE { return false; }
-    virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
-
-    bool m_capturing;
-    SpeechInputState m_state;
-    int m_listenerId;
-    SpeechInputResultArray m_results;
-};
-
-DEFINE_TYPE_CASTS(InputFieldSpeechButtonElement, Element, element, element->isInputFieldSpeechButtonElement(), element.isInputFieldSpeechButtonElement());
-
-#endif // ENABLE(INPUT_SPEECH)
 
 } // namespace
 

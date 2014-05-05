@@ -317,7 +317,6 @@ public:
 
     void trace(Visitor*);
 
-    void startSpeechInput(Element*);
     void setValueForUser(Element*, const String&);
 
     String textSurroundingNode(Node*, int x, int y, unsigned long maxLength);

@@ -2344,19 +2344,6 @@ void Internals::trace(Visitor* visitor)
     visitor->trace(m_profilers);
 }
 
-void Internals::startSpeechInput(Element* element)
-{
-#if ENABLE(INPUT_SPEECH)
-    HTMLInputElement* input = toHTMLInputElement(element);
-    if (!input->isSpeechEnabled())
-        return;
-
-    InputFieldSpeechButtonElement* speechButton = toInputFieldSpeechButtonElement(input->userAgentShadowRoot()->getElementById(ShadowElementNames::speechButton()));
-    if (speechButton)
-        speechButton->startSpeechInput();
-#endif
-}
-
 void Internals::setValueForUser(Element* element, const String& value)
 {
     toHTMLInputElement(element)->setValueForUser(value);

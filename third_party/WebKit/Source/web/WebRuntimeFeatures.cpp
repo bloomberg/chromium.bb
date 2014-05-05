@@ -195,11 +195,6 @@ void WebRuntimeFeatures::enableSessionStorage(bool enable)
     RuntimeEnabledFeatures::setSessionStorageEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableSpeechInput(bool enable)
-{
-    RuntimeEnabledFeatures::setSpeechInputEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableSpeechSynthesis(bool enable)
 {
     RuntimeEnabledFeatures::setSpeechSynthesisEnabled(enable);

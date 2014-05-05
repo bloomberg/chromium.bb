@@ -49,7 +49,7 @@ protected:
     void handleKeydownEventForSpinButton(KeyboardEvent*);
 
 protected:
-    virtual bool needsContainer() const;
+    virtual bool needsContainer() const { return false; }
     bool shouldHaveSpinButton() const;
     virtual void createShadowSubtree() OVERRIDE;
     virtual void destroyShadowSubtree() OVERRIDE;

@@ -551,11 +551,6 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ControlPart e)
     case CapsLockIndicatorPart:
         m_value.valueID = CSSValueCapsLockIndicator;
         break;
-    case InputSpeechButtonPart:
-#if ENABLE(INPUT_SPEECH)
-        m_value.valueID = CSSValueWebkitInputSpeechButton;
-#endif
-        break;
     }
 }
 

@@ -712,24 +712,7 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
             listAttributeTargetChanged();
         }
         UseCounter::count(document(), UseCounter::ListAttribute);
-    }
-#if ENABLE(INPUT_SPEECH)
-    else if (name == webkitspeechAttr) {
-        if (RuntimeEnabledFeatures::speechInputEnabled() && m_inputType->shouldRespectSpeechAttribute()) {
-            // This renderer and its children have quite different layouts and
-            // styles depending on whether the speech button is visible or
-            // not. So we reset the whole thing and recreate to get the right
-            // styles and layout.
-            m_inputTypeView->destroyShadowSubtree();
-            lazyReattachIfAttached();
-            m_inputTypeView->createShadowSubtree();
-            m_needsToUpdateViewValue = true;
-        }
-        UseCounter::countDeprecation(document(), UseCounter::PrefixedSpeechAttribute);
-    } else if (name == onwebkitspeechchangeAttr)
-        setAttributeEventListener(EventTypeNames::webkitspeechchange, createAttributeEventListener(this, name, value));
-#endif
-    else if (name == webkitdirectoryAttr) {
+    } else if (name == webkitdirectoryAttr) {
         HTMLTextFormControlElement::parseAttribute(name, value);
         UseCounter::count(document(), UseCounter::PrefixedDirectoryAttribute);
     }
@@ -1533,16 +1516,6 @@ bool HTMLInputElement::isSteppable() const
 {
     return m_inputType->isSteppable();
 }
-
-#if ENABLE(INPUT_SPEECH)
-
-bool HTMLInputElement::isSpeechEnabled() const
-{
-    // FIXME: Add support for RANGE, EMAIL, URL, COLOR and DATE/TIME input types.
-    return m_inputType->shouldRespectSpeechAttribute() && RuntimeEnabledFeatures::speechInputEnabled() && hasAttribute(webkitspeechAttr);
-}
-
-#endif
 
 bool HTMLInputElement::isTextButton() const
 {
