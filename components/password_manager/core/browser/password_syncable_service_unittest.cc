@@ -86,7 +86,7 @@ SyncChange CreateSyncChange(const autofill::PasswordForm& password,
 // out all interaction with the password database.
 class MockPasswordSyncableService : public PasswordSyncableService {
  public:
-  explicit MockPasswordSyncableService(PasswordStore* password_store)
+  explicit MockPasswordSyncableService(PasswordStoreSync* password_store)
       : PasswordSyncableService(password_store) {}
   virtual ~MockPasswordSyncableService() {}
 
@@ -279,7 +279,8 @@ class PasswordSyncableServiceWrapper {
  public:
   PasswordSyncableServiceWrapper() {
     password_store_ = new MockPasswordStore;
-    service_.reset(new MockPasswordSyncableService(password_store_));
+    service_.reset(new MockPasswordSyncableService(
+        password_store_->GetSyncInterface()));
   }
 
   ~PasswordSyncableServiceWrapper() {

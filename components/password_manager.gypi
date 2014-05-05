@@ -49,6 +49,8 @@
         'password_manager/core/browser/password_store_consumer.h',
         'password_manager/core/browser/password_store_default.cc',
         'password_manager/core/browser/password_store_default.h',
+        'password_manager/core/browser/password_store_sync.cc',
+        'password_manager/core/browser/password_store_sync.h',
         'password_manager/core/browser/psl_matching_helper.cc',
         'password_manager/core/browser/psl_matching_helper.h',
       ],

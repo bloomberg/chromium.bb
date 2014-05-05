@@ -32,13 +32,13 @@ class SyncErrorFactory;
 
 namespace password_manager {
 
-class PasswordStore;
+class PasswordStoreSync;
 
 class PasswordSyncableService : public syncer::SyncableService,
                                 public base::NonThreadSafe {
  public:
   // |PasswordSyncableService| is owned by |PasswordStore|.
-  explicit PasswordSyncableService(PasswordStore* password_store);
+  explicit PasswordSyncableService(PasswordStoreSync* password_store);
   virtual ~PasswordSyncableService();
 
   // syncer::SyncableServiceImplementations
@@ -107,7 +107,7 @@ class PasswordSyncableService : public syncer::SyncableService,
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
 
   // The password store that adds/updates/deletes password entries.
-  PasswordStore* const password_store_;
+  PasswordStoreSync* const password_store_;
 
   // A signal to start sync as soon as possible.
   syncer::SyncableService::StartSyncFlare flare_;

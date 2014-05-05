@@ -33,6 +33,7 @@ void PasswordStoreDefault::ReportMetricsImpl() {
 
 PasswordStoreChangeList PasswordStoreDefault::AddLoginImpl(
     const PasswordForm& form) {
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   PasswordStoreChangeList changes;
   if (login_db_->AddLogin(form))
     changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
@@ -41,6 +42,7 @@ PasswordStoreChangeList PasswordStoreDefault::AddLoginImpl(
 
 PasswordStoreChangeList PasswordStoreDefault::UpdateLoginImpl(
     const PasswordForm& form) {
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   PasswordStoreChangeList changes;
   if (login_db_->UpdateLogin(form, NULL))
     changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
@@ -49,6 +51,7 @@ PasswordStoreChangeList PasswordStoreDefault::UpdateLoginImpl(
 
 PasswordStoreChangeList PasswordStoreDefault::RemoveLoginImpl(
     const PasswordForm& form) {
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   PasswordStoreChangeList changes;
   if (login_db_->RemoveLogin(form))
     changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
