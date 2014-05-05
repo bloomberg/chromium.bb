@@ -58,6 +58,9 @@ enum SharedMemorySupport {
 // Return the shared memory type of our X connection.
 UI_BASE_EXPORT SharedMemorySupport QuerySharedMemorySupport(XDisplay* dpy);
 
+// Return true iff the display supports Xrender
+UI_BASE_EXPORT bool QueryRenderSupport(XDisplay* dpy);
+
 // Returns an X11 Cursor, sharable across the process.
 // |cursor_shape| is an X font cursor shape, see XCreateFontCursor().
 UI_BASE_EXPORT ::Cursor GetXCursor(int cursor_shape);

@@ -28,7 +28,7 @@ namespace ui {
 // Get the XRENDER format id for ARGB32 (Skia's format).
 //
 // NOTE:Currently this don't support multiple screens/displays.
-XRenderPictFormat* GetRenderARGB32Format(Display* dpy);
+UI_BASE_EXPORT XRenderPictFormat* GetRenderARGB32Format(Display* dpy);
 
 // --------------------------------------------------------------------------
 // X11 error handling.
