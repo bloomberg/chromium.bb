@@ -213,12 +213,16 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   if (suspicious_install)
     should_do_verification_check_ = true;
 
+  bool corrupt_install =
+      (disable_reasons & Extension::DISABLE_CORRUPTED) != 0;
+  extension_data->SetBoolean("corruptInstall", corrupt_install);
+
   bool managed_install =
       !management_policy_->UserMayModifySettings(extension, NULL);
   extension_data->SetBoolean("managedInstall", managed_install);
 
   // We should not get into a state where both are true.
-  DCHECK(managed_install == false || suspicious_install == false);
+  DCHECK(!managed_install || !suspicious_install);
 
   GURL icon =
       ExtensionIconSource::GetIconURL(extension,
@@ -457,12 +461,18 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_POLICY_CONTROLLED));
   source->AddString("extensionSettingsManagedMode",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_MANAGED_USER));
+  source->AddString("extensionSettingsCorruptInstall",
+      l10n_util::GetStringUTF16(
+          IDS_EXTENSIONS_CORRUPTED_EXTENSION));
   source->AddString("extensionSettingsSuspiciousInstall",
       l10n_util::GetStringFUTF16(
           IDS_EXTENSIONS_ADDED_WITHOUT_KNOWLEDGE,
           l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE)));
-  source->AddString("extensionSettingsSuspiciousInstallLearnMore",
+  source->AddString("extensionSettingsLearnMore",
       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  source->AddString("extensionSettingsCorruptInstallHelpUrl",
+      base::ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
+          GURL(chrome::kCorruptExtensionURL)).spec()));
   source->AddString("extensionSettingsSuspiciousInstallHelpUrl",
       base::ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
           GURL(chrome::kRemoveNonCWSExtensionURL)).spec()));

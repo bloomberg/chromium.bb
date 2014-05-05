@@ -88,7 +88,7 @@ cr.define('options', function() {
       if (extension.managedInstall) {
         node.classList.add('may-not-modify');
         node.classList.add('may-not-remove');
-      } else if (extension.suspiciousInstall) {
+      } else if (extension.suspiciousInstall || extension.corruptInstall) {
         node.classList.add('may-not-modify');
       }
 
@@ -223,10 +223,12 @@ cr.define('options', function() {
         // The 'Enabled' checkbox.
         var enable = node.querySelector('.enable-checkbox');
         enable.hidden = false;
-        enable.querySelector('input').disabled = extension.managedInstall ||
-                                                 extension.suspiciousInstall;
+        var managedOrHosedExtension = extension.managedInstall ||
+                                      extension.suspiciousInstall ||
+                                      extension.corruptInstall;
+        enable.querySelector('input').disabled = managedOrHosedExtension;
 
-        if (!extension.managedInstall && !extension.suspiciousInstall) {
+        if (!managedOrHosedExtension) {
           enable.addEventListener('click', function(e) {
             // When e.target is the label instead of the checkbox, it doesn't
             // have the checked property and the state of the checkbox is
@@ -282,9 +284,15 @@ cr.define('options', function() {
       // Then the 'managed, cannot uninstall/disable' message.
       if (extension.managedInstall) {
         node.querySelector('.managed-message').hidden = false;
-      } else if (extension.suspiciousInstall) {
-        // Then the 'This isn't from the webstore, looks suspicious' message.
-        node.querySelector('.suspicious-install-message').hidden = false;
+      } else {
+        if (extension.suspiciousInstall) {
+          // Then the 'This isn't from the webstore, looks suspicious' message.
+          node.querySelector('.suspicious-install-message').hidden = false;
+        }
+        if (extension.corruptInstall) {
+          // Then the 'This is a corrupt extension' message.
+          node.querySelector('.corrupt-install-message').hidden = false;
+        }
       }
 
       // Then active views.
