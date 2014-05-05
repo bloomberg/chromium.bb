@@ -48,7 +48,6 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
   set_background(NULL);
   set_color(SkColorSetARGB(kShelfBackgroundAlpha, 0, 0, 0));
   set_margins(gfx::Insets(kPadding, kPadding, kPadding, kPadding));
-  set_move_with_anchor(true);
   // Overflow bubble should not get focus. If it get focus when it is shown,
   // active state item is changed to running state.
   set_use_focusless(true);

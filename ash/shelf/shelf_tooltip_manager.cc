@@ -73,8 +73,6 @@ ShelfTooltipManager::ShelfTooltipBubble::ShelfTooltipBubble(
     views::BubbleBorder::Arrow arrow,
     ShelfTooltipManager* host)
     : views::BubbleDelegateView(anchor, arrow), host_(host) {
-  // Make sure that the bubble follows the animation of the shelf.
-  set_move_with_anchor(true);
   gfx::Insets insets = gfx::Insets(kArrowOffsetTopBottom,
                                    kArrowOffsetLeftRight,
                                    kArrowOffsetTopBottom,

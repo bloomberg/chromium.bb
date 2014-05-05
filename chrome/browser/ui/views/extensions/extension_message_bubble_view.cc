@@ -69,7 +69,6 @@ ExtensionMessageBubbleView::ExtensionMessageBubbleView(
       action_taken_(false) {
   DCHECK(anchor_view->GetWidget());
   set_close_on_deactivate(controller_->CloseOnDeactivate());
-  set_move_with_anchor(true);
   set_close_on_esc(true);
 
   // Compensate for built-in vertical padding in the anchor view's image.

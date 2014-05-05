@@ -105,10 +105,8 @@ void BubbleExample::ButtonPressed(Button* sender, const ui::Event& event) {
   else if (sender == small_shadow_)
     bubble->set_shadow(BubbleBorder::SMALL_SHADOW);
 
-  if (sender == persistent_) {
+  if (sender == persistent_)
     bubble->set_close_on_deactivate(false);
-    bubble->set_move_with_anchor(true);
-  }
 
   BubbleDelegateView::CreateBubble(bubble);
   if (sender == align_to_edge_)

@@ -56,7 +56,6 @@ ConflictingModuleView::ConflictingModuleView(
       not_now_button_(NULL),
       help_center_url_(help_center_url) {
   set_close_on_deactivate(false);
-  set_move_with_anchor(true);
   set_close_on_esc(true);
 
   // Compensate for built-in vertical padding in the anchor view's image.

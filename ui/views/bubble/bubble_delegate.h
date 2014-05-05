@@ -94,9 +94,6 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   bool adjust_if_offscreen() const { return adjust_if_offscreen_; }
   void set_adjust_if_offscreen(bool adjust) { adjust_if_offscreen_ = adjust; }
 
-  bool move_with_anchor() const { return move_with_anchor_; }
-  void set_move_with_anchor(bool move) { move_with_anchor_ = move; }
-
   // Get the arrow's anchor rect in screen space.
   virtual gfx::Rect GetAnchorRect();
 
@@ -164,9 +161,6 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
 
   // The anchor rect used in the absence of an anchor view.
   gfx::Rect anchor_rect_;
-
-  // If true, the bubble will re-anchor (and may resize) with |anchor_widget_|.
-  bool move_with_anchor_;
 
   // The arrow's location on the bubble.
   BubbleBorder::Arrow arrow_;

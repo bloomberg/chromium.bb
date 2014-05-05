@@ -234,7 +234,7 @@ TEST_F(BubbleDelegateTest, NonClientHitTest) {
   }
 }
 
-TEST_F(BubbleDelegateTest, CloseWhenAnchorWidgetBoundsChanged) {
+TEST_F(BubbleDelegateTest, VisibleWhenAnchorWidgetBoundsChanged) {
   scoped_ptr<Widget> anchor_widget(CreateTestWidget());
   BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
       anchor_widget->GetContentsView(), BubbleBorder::NONE);
@@ -245,7 +245,7 @@ TEST_F(BubbleDelegateTest, CloseWhenAnchorWidgetBoundsChanged) {
   bubble_widget->Show();
   EXPECT_TRUE(bubble_widget->IsVisible());
   anchor_widget->SetBounds(gfx::Rect(10, 10, 100, 100));
-  EXPECT_FALSE(bubble_widget->IsVisible());
+  EXPECT_TRUE(bubble_widget->IsVisible());
 }
 
 }  // namespace views

@@ -297,7 +297,6 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
   OnProfilesChanged();
   set_color(kContentsBackgroundColor);
   set_margins(gfx::Insets());
-  set_move_with_anchor(true);
   set_parent_window(parent);
   set_close_on_deactivate(false);
   set_close_on_esc(false);

@@ -94,7 +94,6 @@ SessionCrashedBubbleView::SessionCrashedBubbleView(
       uma_option_(NULL),
       started_navigation_(false) {
   set_close_on_deactivate(false);
-  set_move_with_anchor(true);
   registrar_.Add(
       this,
       chrome::NOTIFICATION_TAB_CLOSING,
