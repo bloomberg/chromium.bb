@@ -6,10 +6,12 @@
 #define UI_EVENTS_TEST_EVENTS_TEST_UTILS_H_
 
 #include "ui/events/event.h"
-#include "ui/events/event_source.h"
+#include "ui/events/event_dispatcher.h"
 #include "ui/events/event_target.h"
 
 namespace ui {
+
+class EventSource;
 
 class EventTestApi {
  public:

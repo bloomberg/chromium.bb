@@ -219,6 +219,11 @@
         ['chromeos==1', {
           'dependencies': [
             '../chromeos/chromeos.gyp:chromeos',
+            'aura/aura.gyp:aura_test_support',
+            'chromeos/ui_chromeos.gyp:ui_chromeos',
+          ],
+          'sources': [
+            'chromeos/touch_exploration_controller_unittest.cc'
           ],
           'sources!': [
             'base/dragdrop/os_exchange_data_provider_aurax11_unittest.cc',

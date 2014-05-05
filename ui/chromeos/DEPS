@@ -1,5 +1,8 @@
 include_rules = [
   "+chromeos/dbus",
+  "+ui/aura",
   "+ui/events",
+  "+ui/gfx",
+  "+ui/gl",
   "+ui/wm",
 ]

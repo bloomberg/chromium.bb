@@ -12,6 +12,8 @@
       'type': '<(component)',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../skia/skia.gyp:skia',
+        '../aura/aura.gyp:aura',
         '../events/events.gyp:events',
         '../wm/wm.gyp:wm',
       ],
@@ -19,6 +21,8 @@
         'UI_CHROMEOS_IMPLEMENTATION',
       ],
       'sources': [
+        'touch_exploration_controller.cc',
+        'touch_exploration_controller.h',
         'user_activity_power_manager_notifier.cc',
         'user_activity_power_manager_notifier.h',
       ],

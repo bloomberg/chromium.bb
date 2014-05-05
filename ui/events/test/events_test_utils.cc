@@ -4,6 +4,8 @@
 
 #include "ui/events/test/events_test_utils.h"
 
+#include "ui/events/event_source.h"
+
 namespace ui {
 
 EventTestApi::EventTestApi(Event* event) : event_(event) {}
