@@ -43,7 +43,7 @@
 #include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_service_client.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_service_client_factory.h"
-#include "components/wifi/wifi_service.h"
+#include "components/wifi/fake_wifi_service.h"
 #endif  // defined(OS_CHROMEOS)
 
 using testing::Return;
@@ -317,8 +317,7 @@ class ExtensionNetworkingPrivateApiTest
   static KeyedService* CreateNetworkingPrivateServiceClient(
       content::BrowserContext* profile) {
     return new extensions::NetworkingPrivateServiceClient(
-        wifi::WiFiService::CreateForTest(),
-        new CryptoVerifyStub());
+        new wifi::FakeWiFiService(), new CryptoVerifyStub());
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {

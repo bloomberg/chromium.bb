@@ -41,8 +41,6 @@ class WIFI_EXPORT WiFiService {
 
   // Create instance of |WiFiService| for normal use.
   static WiFiService* Create();
-  // Create instance of |WiFiService| for unit test use.
-  static WiFiService* CreateForTest();
 
   // Get Properties of network identified by |network_guid|. Populates
   // |properties| on success, |error| on failure.
