@@ -99,7 +99,6 @@ public:
         PlaceholderAttribute = 45,
         PrecisionAttribute = 46,
         PrefixedDirectoryAttribute = 47,
-        PrefixedSpeechAttribute = 48,
         RequiredAttribute = 49,
         ResultsAttribute = 50,
         StepAttribute = 51,
