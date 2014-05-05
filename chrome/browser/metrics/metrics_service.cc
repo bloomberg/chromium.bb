@@ -168,14 +168,12 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/guid.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
-#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
@@ -187,12 +185,11 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/memory_details.h"
-#include "chrome/browser/metrics/cloned_install_detector.h"
 #include "chrome/browser/metrics/compression_utils.h"
-#include "chrome/browser/metrics/machine_id_provider.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_log_serializer.h"
 #include "chrome/browser/metrics/metrics_reporting_scheduler.h"
+#include "chrome/browser/metrics/metrics_state_manager.h"
 #include "chrome/browser/metrics/time_ticks_experiment_win.h"
 #include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/common/metrics/variations/variations_util.h"
@@ -206,7 +203,6 @@
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
-#include "chrome/common/metrics/caching_permuted_entropy_provider.h"
 #include "chrome/common/net/test_server_locations.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -313,21 +309,6 @@ ResponseStatus ResponseCodeToStatus(int response_code) {
   }
 }
 
-// The argument used to generate a non-identifying entropy source. We want no
-// more than 13 bits of entropy, so use this max to return a number in the range
-// [0, 7999] as the entropy source (12.97 bits of entropy).
-const int kMaxLowEntropySize = 8000;
-
-// Default prefs value for prefs::kMetricsLowEntropySource to indicate that the
-// value has not yet been set.
-const int kLowEntropySourceNotSet = -1;
-
-// Generates a new non-identifying entropy source used to seed persistent
-// activities.
-int GenerateLowEntropySource() {
-  return base::RandInt(0, kMaxLowEntropySize - 1);
-}
-
 // Converts an exit code into something that can be inserted into our
 // histograms (which expect non-negative numbers less than MAX_INT).
 int MapCrashExitCodeForHistogram(int exit_code) {
@@ -430,11 +411,8 @@ class MetricsMemoryDetails : public MemoryDetails {
 // static
 void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   DCHECK(IsSingleThreaded());
-  registry->RegisterBooleanPref(prefs::kMetricsResetIds, false);
-  registry->RegisterStringPref(prefs::kMetricsClientID, std::string());
-  registry->RegisterInt64Pref(prefs::kMetricsReportingEnabledTimestamp, 0);
-  registry->RegisterIntegerPref(prefs::kMetricsLowEntropySource,
-                                kLowEntropySourceNotSet);
+  metrics::MetricsStateManager::RegisterPrefs(registry);
+
   registry->RegisterInt64Pref(prefs::kStabilityLaunchTimeSec, 0);
   registry->RegisterInt64Pref(prefs::kStabilityLastTimestampSec, 0);
   registry->RegisterStringPref(prefs::kStabilityStatsVersion, std::string());
@@ -479,33 +457,28 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kUninstallLastLaunchTimeSec, 0);
   registry->RegisterInt64Pref(prefs::kUninstallLastObservedRunTimeSec, 0);
 
-  // TODO(asvitkine): Remove these once a couple of releases have passed.
-  // http://crbug.com/357704
-  registry->RegisterStringPref(prefs::kMetricsOldClientID, std::string());
-  registry->RegisterIntegerPref(prefs::kMetricsOldLowEntropySource, 0);
-
 #if defined(OS_ANDROID)
   RegisterPrefsAndroid(registry);
 #endif  // defined(OS_ANDROID)
 }
 
 MetricsService::MetricsService()
-    : metrics_ids_reset_check_performed_(false),
+    : state_manager_(metrics::MetricsStateManager::Create(
+        g_browser_process->local_state())),
       recording_active_(false),
       reporting_active_(false),
       test_mode_active_(false),
       state_(INITIALIZED),
       has_initial_stability_log_(false),
-      low_entropy_source_(kLowEntropySourceNotSet),
       idle_since_last_transmission_(false),
       session_id_(-1),
       next_window_id_(0),
       self_ptr_factory_(this),
       state_saver_factory_(this),
       waiting_for_asynchronous_reporting_step_(false),
-      num_async_histogram_fetches_in_progress_(0),
-      entropy_source_returned_(LAST_ENTROPY_NONE) {
+      num_async_histogram_fetches_in_progress_(0) {
   DCHECK(IsSingleThreaded());
+  DCHECK(state_manager_);
 
   log_manager_.set_log_serializer(new MetricsLogSerializer);
   log_manager_.set_max_ongoing_log_store_size(kUploadLogAvoidRetransmitSize);
@@ -519,9 +492,8 @@ MetricsService::~MetricsService() {
   BrowserChildProcessObserver::Remove(this);
 }
 
-void MetricsService::InitializeMetricsRecordingState(
-    ReportingState reporting_state) {
-  InitializeMetricsState(reporting_state);
+void MetricsService::InitializeMetricsRecordingState() {
+  InitializeMetricsState();
 
   base::Closure callback = base::Bind(&MetricsService::StartScheduledUpload,
                                       self_ptr_factory_.GetWeakPtr());
@@ -532,6 +504,13 @@ void MetricsService::Start() {
   HandleIdleSinceLastTransmission(false);
   EnableRecording();
   EnableReporting();
+}
+
+bool MetricsService::StartIfMetricsReportingEnabled() {
+  const bool enabled = state_manager_->IsMetricsReportingEnabled();
+  if (enabled)
+    Start();
+  return enabled;
 }
 
 void MetricsService::StartRecordingForTests() {
@@ -558,70 +537,14 @@ void MetricsService::DisableReporting() {
 }
 
 std::string MetricsService::GetClientId() {
-  return client_id_;
+  return state_manager_->client_id();
 }
 
 scoped_ptr<const base::FieldTrial::EntropyProvider>
-MetricsService::CreateEntropyProvider(ReportingState reporting_state) {
-  // For metrics reporting-enabled users, we combine the client ID and low
-  // entropy source to get the final entropy source. Otherwise, only use the low
-  // entropy source.
-  // This has two useful properties:
-  //  1) It makes the entropy source less identifiable for parties that do not
-  //     know the low entropy source.
-  //  2) It makes the final entropy source resettable.
-  const int low_entropy_source_value = GetLowEntropySource();
-  UMA_HISTOGRAM_SPARSE_SLOWLY("UMA.LowEntropySourceValue",
-                              low_entropy_source_value);
-  if (reporting_state == REPORTING_ENABLED) {
-    if (entropy_source_returned_ == LAST_ENTROPY_NONE)
-      entropy_source_returned_ = LAST_ENTROPY_HIGH;
-    DCHECK_EQ(LAST_ENTROPY_HIGH, entropy_source_returned_);
-    const std::string high_entropy_source =
-        client_id_ + base::IntToString(low_entropy_source_value);
-    return scoped_ptr<const base::FieldTrial::EntropyProvider>(
-        new metrics::SHA1EntropyProvider(high_entropy_source));
-  }
-
-  if (entropy_source_returned_ == LAST_ENTROPY_NONE)
-    entropy_source_returned_ = LAST_ENTROPY_LOW;
-  DCHECK_EQ(LAST_ENTROPY_LOW, entropy_source_returned_);
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  return scoped_ptr<const base::FieldTrial::EntropyProvider>(
-      new metrics::CachingPermutedEntropyProvider(
-          g_browser_process->local_state(),
-          low_entropy_source_value,
-          kMaxLowEntropySize));
-#else
-  return scoped_ptr<const base::FieldTrial::EntropyProvider>(
-      new metrics::PermutedEntropyProvider(low_entropy_source_value,
-                                           kMaxLowEntropySize));
-#endif
-}
-
-void MetricsService::ForceClientIdCreation() {
-  if (!client_id_.empty())
-    return;
-
-  ResetMetricsIDsIfNecessary();
-
-  PrefService* pref = g_browser_process->local_state();
-  client_id_ = pref->GetString(prefs::kMetricsClientID);
-  if (!client_id_.empty())
-    return;
-
-  client_id_ = GenerateClientID();
-  pref->SetString(prefs::kMetricsClientID, client_id_);
-
-  if (pref->GetString(prefs::kMetricsOldClientID).empty()) {
-    // Record the timestamp of when the user opted in to UMA.
-    pref->SetInt64(prefs::kMetricsReportingEnabledTimestamp,
-                   Time::Now().ToTimeT());
-  } else {
-    UMA_HISTOGRAM_BOOLEAN("UMA.ClientIdMigrated", true);
-  }
-  pref->ClearPref(prefs::kMetricsOldClientID);
+MetricsService::CreateEntropyProvider() {
+  // TODO(asvitkine): Refactor the code so that MetricsService does not expose
+  // this method.
+  return state_manager_->CreateEntropyProvider();
 }
 
 void MetricsService::EnableRecording() {
@@ -631,8 +554,8 @@ void MetricsService::EnableRecording() {
     return;
   recording_active_ = true;
 
-  ForceClientIdCreation();
-  crash_keys::SetClientID(client_id_);
+  state_manager_->ForceClientIdCreation();
+  crash_keys::SetClientID(state_manager_->client_id());
   if (!log_manager_.current_log())
     OpenNewLog();
 
@@ -918,7 +841,7 @@ void MetricsService::CountBrowserCrashDumpAttempts() {
 //------------------------------------------------------------------------------
 // Initialization methods
 
-void MetricsService::InitializeMetricsState(ReportingState reporting_state) {
+void MetricsService::InitializeMetricsState() {
 #if defined(OS_POSIX)
   network_stats_server_ = chrome_common_net::kEchoTestServerLocation;
   http_pipelining_test_server_ = chrome_common_net::kPipelineTestServerBaseUrl;
@@ -955,7 +878,7 @@ void MetricsService::InitializeMetricsState(ReportingState reporting_state) {
 
     // If the previous session didn't exit cleanly, then prepare an initial
     // stability log if UMA is enabled.
-    if (reporting_state == REPORTING_ENABLED)
+    if (state_manager_->IsMetricsReportingEnabled())
       PrepareInitialStabilityLog();
   }
 
@@ -1119,7 +1042,8 @@ void MetricsService::ReceivedProfilerData(
   // save the profiler data.
   if (!initial_metrics_log_.get()) {
     initial_metrics_log_.reset(
-        new MetricsLog(client_id_, session_id_, MetricsLog::ONGOING_LOG));
+        new MetricsLog(state_manager_->client_id(), session_id_,
+                       MetricsLog::ONGOING_LOG));
   }
 
   initial_metrics_log_->RecordProfilerData(process_data, process_type);
@@ -1151,64 +1075,6 @@ void MetricsService::GetUptimes(PrefService* pref,
     metrics_uptime += incremental_time_secs;
     pref->SetInt64(prefs::kUninstallMetricsUptimeSec, metrics_uptime);
   }
-}
-
-void MetricsService::ResetMetricsIDsIfNecessary() {
-  if (metrics_ids_reset_check_performed_)
-    return;
-
-  metrics_ids_reset_check_performed_ = true;
-
-  PrefService* local_state = g_browser_process->local_state();
-  if (!local_state->GetBoolean(prefs::kMetricsResetIds))
-    return;
-
-  UMA_HISTOGRAM_BOOLEAN("UMA.MetricsIDsReset", true);
-
-  DCHECK(client_id_.empty());
-  DCHECK_EQ(kLowEntropySourceNotSet, low_entropy_source_);
-
-  local_state->ClearPref(prefs::kMetricsClientID);
-  local_state->ClearPref(prefs::kMetricsLowEntropySource);
-  local_state->ClearPref(prefs::kMetricsResetIds);
-}
-
-int MetricsService::GetLowEntropySource() {
-  // Note that the default value for the low entropy source and the default pref
-  // value are both kLowEntropySourceNotSet, which is used to identify if the
-  // value has been set or not.
-  if (low_entropy_source_ != kLowEntropySourceNotSet)
-    return low_entropy_source_;
-
-  ResetMetricsIDsIfNecessary();
-
-  PrefService* local_state = g_browser_process->local_state();
-  const CommandLine* command_line(CommandLine::ForCurrentProcess());
-  // Only try to load the value from prefs if the user did not request a reset.
-  // Otherwise, skip to generating a new value.
-  if (!command_line->HasSwitch(switches::kResetVariationState)) {
-    int value = local_state->GetInteger(prefs::kMetricsLowEntropySource);
-    // If the value is outside the [0, kMaxLowEntropySize) range, re-generate
-    // it below.
-    if (value >= 0 && value < kMaxLowEntropySize) {
-      low_entropy_source_ = value;
-      UMA_HISTOGRAM_BOOLEAN("UMA.GeneratedLowEntropySource", false);
-      return low_entropy_source_;
-    }
-  }
-
-  UMA_HISTOGRAM_BOOLEAN("UMA.GeneratedLowEntropySource", true);
-  low_entropy_source_ = GenerateLowEntropySource();
-  local_state->SetInteger(prefs::kMetricsLowEntropySource, low_entropy_source_);
-  local_state->ClearPref(prefs::kMetricsOldLowEntropySource);
-  metrics::CachingPermutedEntropyProvider::ClearCache(local_state);
-
-  return low_entropy_source_;
-}
-
-// static
-std::string MetricsService::GenerateClientID() {
-  return base::GenerateGUID();
 }
 
 //------------------------------------------------------------------------------
@@ -1244,7 +1110,8 @@ void MetricsService::OpenNewLog() {
   DCHECK(!log_manager_.current_log());
 
   log_manager_.BeginLoggingWithLog(
-      new MetricsLog(client_id_, session_id_, MetricsLog::ONGOING_LOG));
+      new MetricsLog(state_manager_->client_id(), session_id_,
+                     MetricsLog::ONGOING_LOG));
   if (state_ == INITIALIZED) {
     // We only need to schedule that run once.
     state_ = INIT_TASK_SCHEDULED;
@@ -1540,7 +1407,7 @@ void MetricsService::PrepareInitialStabilityLog() {
   DCHECK_NE(0, pref->GetInteger(prefs::kStabilityCrashCount));
 
   scoped_ptr<MetricsLog> initial_stability_log(
-      new MetricsLog(client_id_, session_id_,
+      new MetricsLog(state_manager_->client_id(), session_id_,
                      MetricsLog::INITIAL_STABILITY_LOG));
   if (!initial_stability_log->LoadSavedEnvironmentFromPrefs())
     return;
@@ -1839,18 +1706,7 @@ void MetricsService::RegisterSyntheticFieldTrial(
 }
 
 void MetricsService::CheckForClonedInstall() {
-  DCHECK(!cloned_install_detector_);
-
-  metrics::MachineIdProvider* provider =
-      metrics::MachineIdProvider::CreateInstance();
-  if (!provider)
-    return;
-
-  cloned_install_detector_.reset(
-      new metrics::ClonedInstallDetector(provider));
-
-  PrefService* local_state = g_browser_process->local_state();
-  cloned_install_detector_->CheckForClonedInstall(local_state);
+  state_manager_->CheckForClonedInstall();
 }
 
 void MetricsService::GetCurrentSyntheticFieldTrials(
