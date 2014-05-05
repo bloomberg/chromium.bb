@@ -103,6 +103,7 @@ public:
 #if OS(WIN)
     bool useSubpixelPositioning() const { return s_useSubpixelPositioning; }
     SkFontMgr* fontManager() { return m_fontManager.get(); }
+    static bool useDirectWrite() { return s_useDirectWrite; }
     static void setUseDirectWrite(bool useDirectWrite) { s_useDirectWrite = useDirectWrite; }
     static void setDirectWriteFactory(IDWriteFactory* factory) { s_directWriteFactory = factory; }
     static void setUseSubpixelPositioning(bool useSubpixelPositioning) { s_useSubpixelPositioning = useSubpixelPositioning; }

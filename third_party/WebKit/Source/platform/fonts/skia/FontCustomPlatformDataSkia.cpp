@@ -57,26 +57,31 @@ FontPlatformData FontCustomPlatformData::fontPlatformData(float size, bool bold,
 {
     ASSERT(m_typeface);
 #if OS(WIN)
-    // FIXME: Skia currently renders synthetic bold and italics with hinting and without
-    // linear metrics on windows. Using CreateFromName and specifying the bold/italics
-    // style allows for proper rendering of synthetic style. Once Skia has been updated
-    // this workaround will no longer be needed. crbug.com/332958
-    bool syntheticBold = bold && !m_typeface->isBold();
-    bool syntheticItalic = italic && !m_typeface->isItalic();
-    if (syntheticBold || syntheticItalic) {
-        SkString name;
-        m_typeface->getFamilyName(&name);
+    if (!FontCache::useDirectWrite()) {
+        // FIXME: Skia currently renders synthetic bold and italics with
+        // hinting and without linear metrics on the windows GDI backend
+        // while the DirectWrite backend does the right thing. Using
+        // CreateFromName and specifying the bold/italics style allows
+        // for proper rendering of synthetic style. Once Skia has been
+        // updated this workaround will no longer be needed.
+        // http://crbug.com/332958
+        bool syntheticBold = bold && !m_typeface->isBold();
+        bool syntheticItalic = italic && !m_typeface->isItalic();
+        if (syntheticBold || syntheticItalic) {
+            SkString name;
+            m_typeface->getFamilyName(&name);
 
-        int style = SkTypeface::kNormal;
-        if (syntheticBold)
-            style |= SkTypeface::kBold;
-        if (syntheticItalic)
-            style |= SkTypeface::kItalic;
+            int style = SkTypeface::kNormal;
+            if (syntheticBold)
+                style |= SkTypeface::kBold;
+            if (syntheticItalic)
+                style |= SkTypeface::kItalic;
 
-        RefPtr<SkTypeface> typeface = adoptRef(FontCache::fontCache()->fontManager()->legacyCreateTypeface(name.c_str(), static_cast<SkTypeface::Style>(style)));
-        syntheticBold = false;
-        syntheticItalic = false;
-        return FontPlatformData(typeface.release(), "", size, syntheticBold, syntheticItalic, orientation);
+            RefPtr<SkTypeface> typeface = adoptRef(FontCache::fontCache()->fontManager()->legacyCreateTypeface(name.c_str(), static_cast<SkTypeface::Style>(style)));
+            syntheticBold = false;
+            syntheticItalic = false;
+            return FontPlatformData(typeface.release(), "", size, syntheticBold, syntheticItalic, orientation);
+        }
     }
 #endif
     return FontPlatformData(m_typeface.get(), "", size, bold && !m_typeface->isBold(), italic && !m_typeface->isItalic(), orientation);

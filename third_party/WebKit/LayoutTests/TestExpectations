@@ -934,6 +934,7 @@ crbug.com/363772 virtual/deferred/fast/images/repaint-subrect-grid.html [ NeedsM
 crbug.com/363772 virtual/deferred/fast/images/exif-orientation.html [ NeedsManualRebaseline ]
 crbug.com/363772 [ Linux Mac Win ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ NeedsManualRebaseline ]
 crbug.com/365400 [ Mac ] compositing/images/direct-pdf-image.html [ Pass ImageOnlyFailure ]
+crbug.com/333430 [ Win ] virtual/windows-directwrite/fast/text/webfont-synthetic-bold.html [ NeedsRebaseline ]
 
 crbug.com/362992 fast/canvas/canvas-createImageBitmap-invalid-args-in-workers.html [ Skip ]
 crbug.com/362992 fast/canvas/canvas-createImageBitmap-invalid-args.html [ Skip ]
