@@ -8,11 +8,14 @@ Starting worker: resources/global-context-constructors-listing.js
 [Worker] ArrayBuffer
 [Worker] Blob
 [Worker] Boolean
+[Worker] CustomEvent
 [Worker] DataView
 [Worker] Date
 [Worker] Error
 [Worker] EvalError
+[Worker] Event
 [Worker] EventSource
+[Worker] EventTarget
 [Worker] File
 [Worker] FileError
 [Worker] FileReader
