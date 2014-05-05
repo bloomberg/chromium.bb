@@ -6,6 +6,7 @@
   "version": "1",
   "description": "Chrome PDF Viewer",
   "offline_enabled": true,
+  "incognito": "split",
   "permissions": [
     "file://*/",
     "ftp://*/",
