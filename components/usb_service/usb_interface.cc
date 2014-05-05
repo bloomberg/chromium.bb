@@ -149,6 +149,12 @@ UsbConfigDescriptor::UsbConfigDescriptor(PlatformUsbConfigDescriptor config)
     : config_(config) {
 }
 
+// TODO(zvorygin): Used for tests only. Should be removed when
+// all interfaces are extracted properly.
+UsbConfigDescriptor::UsbConfigDescriptor() {
+  config_ = NULL;
+}
+
 UsbConfigDescriptor::~UsbConfigDescriptor() {
   if (config_ != NULL) {
     libusb_free_config_descriptor(config_);

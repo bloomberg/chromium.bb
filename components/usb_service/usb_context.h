@@ -27,7 +27,7 @@ class USB_SERVICE_EXPORT UsbContext
   PlatformUsbContext context() const { return context_; }
 
  protected:
-  friend class UsbService;
+  friend class UsbServiceImpl;
   friend class base::RefCountedThreadSafe<UsbContext>;
 
   explicit UsbContext(PlatformUsbContext context);

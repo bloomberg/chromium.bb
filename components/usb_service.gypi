@@ -28,8 +28,8 @@
       'usb_service/usb_device_handle.h',
       'usb_service/usb_interface.cc',
       'usb_service/usb_interface.h',
-      'usb_service/usb_service.cc',
       'usb_service/usb_service.h',
+      'usb_service/usb_service_impl.cc',
     ]
   }],
 }

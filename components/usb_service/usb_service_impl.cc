@@ -4,10 +4,11 @@
 
 #include "components/usb_service/usb_service.h"
 
+#include <map>
 #include <set>
-#include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "components/usb_service/usb_context.h"
 #include "components/usb_service/usb_device.h"
@@ -23,24 +24,41 @@ base::LazyInstance<scoped_ptr<UsbService> >::Leaky g_usb_service_instance =
 
 }  // namespace
 
-// static
-UsbService* UsbService::GetInstance() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-  UsbService* instance = g_usb_service_instance.Get().get();
-  if (!instance) {
-    PlatformUsbContext context = NULL;
-    if (libusb_init(&context) != LIBUSB_SUCCESS)
-      return NULL;
-    if (!context)
-      return NULL;
+typedef struct libusb_device* PlatformUsbDevice;
+typedef struct libusb_context* PlatformUsbContext;
 
-    instance = new UsbService(context);
-    g_usb_service_instance.Get().reset(instance);
-  }
-  return instance;
-}
+class UsbServiceImpl
+    : public UsbService,
+      private base::MessageLoop::DestructionObserver {
+ public:
+  explicit UsbServiceImpl(PlatformUsbContext context);
+  virtual ~UsbServiceImpl();
 
-scoped_refptr<UsbDevice> UsbService::GetDeviceById(uint32 unique_id) {
+ private:
+  // usb_service::UsbService implementation
+  virtual scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) OVERRIDE;
+  virtual void GetDevices(
+      std::vector<scoped_refptr<UsbDevice> >* devices) OVERRIDE;
+
+  // base::MessageLoop::DestructionObserver implementation.
+  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
+
+  // Enumerate USB devices from OS and Update devices_ map.
+  void RefreshDevices();
+
+  scoped_refptr<UsbContext> context_;
+
+  // TODO(ikarienator): Figure out a better solution.
+  uint32 next_unique_id_;
+
+  // The map from PlatformUsbDevices to UsbDevices.
+  typedef std::map<PlatformUsbDevice, scoped_refptr<UsbDevice> > DeviceMap;
+  DeviceMap devices_;
+
+  DISALLOW_COPY_AND_ASSIGN(UsbServiceImpl);
+};
+
+scoped_refptr<UsbDevice> UsbServiceImpl::GetDeviceById(uint32 unique_id) {
   DCHECK(CalledOnValidThread());
   RefreshDevices();
   for (DeviceMap::iterator it = devices_.begin(); it != devices_.end(); ++it) {
@@ -50,7 +68,8 @@ scoped_refptr<UsbDevice> UsbService::GetDeviceById(uint32 unique_id) {
   return NULL;
 }
 
-void UsbService::GetDevices(std::vector<scoped_refptr<UsbDevice> >* devices) {
+void UsbServiceImpl::GetDevices(
+    std::vector<scoped_refptr<UsbDevice> >* devices) {
   DCHECK(CalledOnValidThread());
   STLClearObject(devices);
   RefreshDevices();
@@ -60,24 +79,24 @@ void UsbService::GetDevices(std::vector<scoped_refptr<UsbDevice> >* devices) {
   }
 }
 
-void UsbService::WillDestroyCurrentMessageLoop() {
+void UsbServiceImpl::WillDestroyCurrentMessageLoop() {
   DCHECK(CalledOnValidThread());
   g_usb_service_instance.Get().reset(NULL);
 }
 
-UsbService::UsbService(PlatformUsbContext context)
+UsbServiceImpl::UsbServiceImpl(PlatformUsbContext context)
     : context_(new UsbContext(context)), next_unique_id_(0) {
   base::MessageLoop::current()->AddDestructionObserver(this);
 }
 
-UsbService::~UsbService() {
+UsbServiceImpl::~UsbServiceImpl() {
   base::MessageLoop::current()->RemoveDestructionObserver(this);
   for (DeviceMap::iterator it = devices_.begin(); it != devices_.end(); ++it) {
     it->second->OnDisconnect();
   }
 }
 
-void UsbService::RefreshDevices() {
+void UsbServiceImpl::RefreshDevices() {
   DCHECK(CalledOnValidThread());
 
   libusb_device** platform_devices = NULL;
@@ -121,6 +140,29 @@ void UsbService::RefreshDevices() {
   }
 
   libusb_free_device_list(platform_devices, true);
+}
+
+// static
+UsbService* UsbService::GetInstance() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  UsbService* instance = g_usb_service_instance.Get().get();
+  if (!instance) {
+    PlatformUsbContext context = NULL;
+    if (libusb_init(&context) != LIBUSB_SUCCESS)
+      return NULL;
+    if (!context)
+      return NULL;
+
+    instance = new UsbServiceImpl(context);
+    g_usb_service_instance.Get().reset(instance);
+  }
+  return instance;
+}
+
+// static
+void UsbService::SetInstanceForTest(UsbService* instance) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  g_usb_service_instance.Get().reset(instance);
 }
 
 }  // namespace usb_service

@@ -112,8 +112,6 @@ const size_t kMaxTransferLength = 100 * 1024 * 1024;
 const int kMaxPackets = 4 * 1024 * 1024;
 const int kMaxPacketLength = 64 * 1024;
 
-UsbDevice* g_device_for_test = NULL;
-
 bool ConvertDirectionToApi(const UsbEndpointDirection& input,
                            Direction* output) {
   switch (input) {
@@ -419,9 +417,6 @@ bool UsbAsyncApiFunction::Respond() {
 scoped_refptr<UsbDevice>
 UsbAsyncApiFunction::GetDeviceOrOrCompleteWithError(
     const Device& input_device) {
-  if (g_device_for_test)
-    return g_device_for_test;
-
   const uint16_t vendor_id = input_device.vendor_id;
   const uint16_t product_id = input_device.product_id;
   UsbDevicePermission::CheckParam param(
@@ -545,17 +540,6 @@ bool UsbFindDevicesFunction::Prepare() {
 void UsbFindDevicesFunction::AsyncWorkStart() {
   scoped_ptr<base::ListValue> result(new base::ListValue());
 
-  if (g_device_for_test) {
-    UsbDeviceResource* const resource = new UsbDeviceResource(
-        extension_->id(),
-        g_device_for_test->Open());
-
-    result->Append(PopulateConnectionHandle(manager_->Add(resource), 0, 0));
-    SetResult(result.release());
-    AsyncWorkCompleted();
-    return;
-  }
-
   const uint16_t vendor_id = parameters_->options.vendor_id;
   const uint16_t product_id = parameters_->options.product_id;
   int interface_id = parameters_->options.interface_id.get() ?
@@ -626,10 +610,6 @@ UsbGetDevicesFunction::UsbGetDevicesFunction() {
 UsbGetDevicesFunction::~UsbGetDevicesFunction() {
 }
 
-void UsbGetDevicesFunction::SetDeviceForTest(UsbDevice* device) {
-  g_device_for_test = device;
-}
-
 bool UsbGetDevicesFunction::Prepare() {
   parameters_ = GetDevices::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters_.get());
@@ -638,13 +618,6 @@ bool UsbGetDevicesFunction::Prepare() {
 
 void UsbGetDevicesFunction::AsyncWorkStart() {
   scoped_ptr<base::ListValue> result(new base::ListValue());
-
-  if (g_device_for_test) {
-    result->Append(PopulateDevice(g_device_for_test));
-    SetResult(result.release());
-    AsyncWorkCompleted();
-    return;
-  }
 
   const uint16_t vendor_id = parameters_->options.vendor_id;
   const uint16_t product_id = parameters_->options.product_id;

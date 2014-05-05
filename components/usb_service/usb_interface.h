@@ -126,15 +126,20 @@ class USB_SERVICE_EXPORT UsbInterfaceDescriptor
 class USB_SERVICE_EXPORT UsbConfigDescriptor
     : public base::RefCounted<UsbConfigDescriptor> {
  public:
-  size_t GetNumInterfaces() const;
-  scoped_refptr<const UsbInterfaceDescriptor> GetInterface(size_t index) const;
+  virtual size_t GetNumInterfaces() const;
+  virtual scoped_refptr<const UsbInterfaceDescriptor> GetInterface(
+      size_t index) const;
+
+ protected:
+  // Constructor called in test only
+  UsbConfigDescriptor();
+  virtual ~UsbConfigDescriptor();
 
  private:
   friend class base::RefCounted<UsbConfigDescriptor>;
   friend class UsbDevice;
 
   explicit UsbConfigDescriptor(PlatformUsbConfigDescriptor config);
-  ~UsbConfigDescriptor();
 
   PlatformUsbConfigDescriptor config_;
 

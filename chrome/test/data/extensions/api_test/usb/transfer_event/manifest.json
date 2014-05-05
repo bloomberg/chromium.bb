@@ -7,6 +7,14 @@
     }
   },
   "permissions": [
-    "usb"
+    "usb",
+    {
+      "usbDevices": [
+        {
+          "vendorId": 0,
+          "productId": 0
+        }
+      ]
+    }
   ]
 }

@@ -90,8 +90,6 @@ class UsbGetDevicesFunction : public UsbAsyncApiFunction {
 
   UsbGetDevicesFunction();
 
-  static void SetDeviceForTest(usb_service::UsbDevice* device);
-
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
 

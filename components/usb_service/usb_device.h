@@ -61,7 +61,7 @@ class USB_SERVICE_EXPORT UsbDevice
   virtual scoped_refptr<UsbConfigDescriptor> ListInterfaces();
 
  protected:
-  friend class UsbService;
+  friend class UsbServiceImpl;
   friend class base::RefCountedThreadSafe<UsbDevice>;
 
   // Called by UsbService only;
