@@ -1451,7 +1451,6 @@ void BrowserThemePack::CreateTabBackgroundImages(ImageCache* images) const {
 
 void BrowserThemePack::RepackImages(const ImageCache& images,
                                     RawImages* reencoded_images) const {
-  typedef std::vector<ui::ScaleFactor> ScaleFactors;
   for (ImageCache::const_iterator it = images.begin();
        it != images.end(); ++it) {
     gfx::ImageSkia image_skia = *it->second.ToImageSkia();

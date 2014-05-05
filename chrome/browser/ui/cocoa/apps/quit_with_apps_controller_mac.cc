@@ -84,8 +84,6 @@ void QuitWithAppsController::Click() {
 }
 
 void QuitWithAppsController::ButtonClick(int button_index) {
-  typedef apps::AppWindowRegistry::AppWindowList AppWindowList;
-
   g_browser_process->notification_ui_manager()->CancelById(id());
   if (button_index == kQuitAllAppsButtonIndex) {
     apps::AppWindowRegistry::CloseAllAppWindows();

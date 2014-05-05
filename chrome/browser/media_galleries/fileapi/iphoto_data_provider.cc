@@ -48,7 +48,6 @@ void IPhotoDataProvider::OnLibraryParsed(const ReadyCallback& ready_callback,
 
 void IPhotoDataProvider::BuildIndices(const parser::Library& library) {
   typedef base::hash_map<uint64, const base::FilePath*> IdIndex;
-  typedef base::hash_map<uint64, std::string> IdFileNameIndex;
 
   IdIndex photo_id_index;
   IdIndex originals_id_index;
