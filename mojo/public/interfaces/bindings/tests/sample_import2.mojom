@@ -4,6 +4,7 @@
 
 import "sample_import.mojom"
 
+[JavaPackage="org.chromium.mojo.bindings.test"]
 module imported {
 
 // This sample adds more types and constants to the "imported" namespace,

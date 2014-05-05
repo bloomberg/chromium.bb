@@ -37,6 +37,12 @@ def _MapKind(kind):
     return map_to_kind[kind]
   return 'x:' + kind
 
+def _MapAttributes(attributes):
+  if not attributes:
+    return {}
+  return dict([(attribute[1], attribute[2])
+               for attribute in attributes if attribute[0] == 'ATTRIBUTE'])
+
 def _GetAttribute(attributes, name):
   out = None
   if attributes:
@@ -74,8 +80,7 @@ def _MapEnumField(tree):
 def _MapStruct(tree):
   struct = {}
   struct['name'] = tree[1]
-  # TODO(darin): Add support for |attributes|
-  #struct['attributes'] = MapAttributes(tree[2])
+  struct['attributes'] = _MapAttributes(tree[2])
   struct['fields'] = _MapTree(_MapField, tree[3], 'FIELD')
   struct['enums'] = _MapTree(_MapEnum, tree[3], 'ENUM')
   return struct
@@ -98,9 +103,10 @@ def _MapModule(tree, name):
   mojom = {}
   mojom['name'] = name
   mojom['namespace'] = tree[1]
-  mojom['structs'] = _MapTree(_MapStruct, tree[2], 'STRUCT')
-  mojom['interfaces'] = _MapTree(_MapInterface, tree[2], 'INTERFACE')
-  mojom['enums'] = _MapTree(_MapEnum, tree[2], 'ENUM')
+  mojom['attributes'] = _MapAttributes(tree[2])
+  mojom['structs'] = _MapTree(_MapStruct, tree[3], 'STRUCT')
+  mojom['interfaces'] = _MapTree(_MapInterface, tree[3], 'INTERFACE')
+  mojom['enums'] = _MapTree(_MapEnum, tree[3], 'ENUM')
   return mojom
 
 def _MapImport(tree):

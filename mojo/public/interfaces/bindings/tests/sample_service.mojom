@@ -5,6 +5,7 @@
 import "sample_import.mojom"
 import "sample_import2.mojom"
 
+[JavaPackage="org.chromium.mojo.bindings.test"]
 module sample {
 
 struct Bar {

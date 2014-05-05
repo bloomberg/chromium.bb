@@ -79,7 +79,7 @@ class Parser(object):
       # Generator expects a module. If one wasn't specified insert one with an
       # empty name.
       if p[1][0] != 'MODULE':
-        p[0] = [('MODULE', '', p[1])]
+        p[0] = [('MODULE', '', [], p[1])]
       else:
         p[0] = [p[1]]
 
@@ -89,8 +89,8 @@ class Parser(object):
     p[0] = ('IMPORT', eval(p[2]))
 
   def p_module(self, p):
-    """module : MODULE identifier LBRACE definitions RBRACE"""
-    p[0] = ('MODULE', p[2], p[4])
+    """module : attribute_section MODULE identifier LBRACE definitions RBRACE"""
+    p[0] = ('MODULE', p[3], p[1], p[5])
 
   def p_definitions(self, p):
     """definitions : definition definitions

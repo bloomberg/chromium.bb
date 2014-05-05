@@ -132,6 +132,7 @@ def StructToData(struct):
 def StructFromData(module, data):
   struct = mojom.Struct(module=module)
   struct.name = data['name']
+  struct.attributes = data['attributes']
   struct.spec = 'x:' + module.namespace + '.' + struct.name
   module.kinds[struct.spec] = struct
   struct.enums = map(lambda enum:
@@ -284,6 +285,7 @@ def ModuleFromData(data):
 
   module.name = data['name']
   module.namespace = data['namespace']
+  module.attributes = data['attributes']
   # Imports must come first, because they add to module.kinds which is used
   # by by the others.
   module.imports = map(
