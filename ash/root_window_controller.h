@@ -68,6 +68,7 @@ class WorkspaceController;
 
 #if defined(OS_CHROMEOS)
 class BootSplashScreen;
+class AccessibilityObserver;
 #endif
 
 // This class maintains the per root window state for ash. This class
@@ -293,8 +294,12 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   PanelLayoutManager* panel_layout_manager_;
 
   scoped_ptr<SystemBackgroundController> system_background_;
+
 #if defined(OS_CHROMEOS)
   scoped_ptr<BootSplashScreen> boot_splash_screen_;
+  // Responsible for initializing TouchExplorationController when spoken
+  // feedback is on.
+  scoped_ptr<AccessibilityObserver> cros_accessibility_observer_;
 #endif
 
   scoped_ptr<ScreenDimmer> screen_dimmer_;

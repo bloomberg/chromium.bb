@@ -46,6 +46,11 @@ const char kAshDisableAlternateFrameCaptionButtonStyle[] =
 // Disable ability to dock windows at the desktop edge.
 const char kAshDisableDockedWindows[] = "ash-disable-docked-windows";
 
+// Enable the Touch Exploration Mode. Touch Exploration Mode will be turned on
+// automatically when spoken feedback is enabled when this flag is set.
+const char kAshEnableTouchExplorationMode[] =
+    "ash-enable-touch-exploration-mode";
+
 // Use alternate visual style for the caption buttons (minimize, maximize,
 // restore, close). The alternate style:
 // - Adds a dedicated button for minimize.
