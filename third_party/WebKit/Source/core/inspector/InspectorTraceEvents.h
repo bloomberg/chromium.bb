@@ -6,6 +6,7 @@
 #define InspectorTraceEvents_h
 
 #include "platform/EventTracer.h"
+#include "platform/TraceEvent.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {
@@ -22,6 +23,7 @@ class RenderObject;
 class ResourceRequest;
 class ResourceResponse;
 class ScriptSourceCode;
+class ScriptCallStack;
 class XMLHttpRequest;
 
 class InspectorLayoutEvent {
@@ -123,6 +125,11 @@ public:
 class InspectorUpdateCountersEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data();
+};
+
+class InspectorCallStackEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> currentCallStack();
 };
 
 } // namespace WebCore

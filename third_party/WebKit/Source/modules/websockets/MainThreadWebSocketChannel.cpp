@@ -108,6 +108,7 @@ bool MainThreadWebSocketChannel::connect(const KURL& url, const String& protocol
     m_handshake->addExtensionProcessor(m_deflateFramer.createExtensionProcessor());
     if (m_identifier) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "WebSocketCreate", "data", InspectorWebSocketCreateEvent::data(m_document, m_identifier, url, protocol));
+        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
         // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
         InspectorInstrumentation::didCreateWebSocket(m_document, m_identifier, url, protocol);
     }
@@ -246,6 +247,7 @@ void MainThreadWebSocketChannel::disconnect()
     WTF_LOG(Network, "MainThreadWebSocketChannel %p disconnect()", this);
     if (m_identifier && m_document) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "WebSocketDestroy", "data", InspectorWebSocketEvent::data(m_document, m_identifier));
+        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
         // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
         InspectorInstrumentation::didCloseWebSocket(m_document, m_identifier);
     }
@@ -284,6 +286,7 @@ void MainThreadWebSocketChannel::didOpenSocketStream(SocketStreamHandle* handle)
         return;
     if (m_identifier) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "WebSocketSendHandshakeRequest", "data", InspectorWebSocketEvent::data(m_document, m_identifier));
+        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
         // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
         InspectorInstrumentation::willSendWebSocketHandshakeRequest(m_document, m_identifier, m_handshake->clientHandshakeRequest().get());
     }
@@ -297,6 +300,7 @@ void MainThreadWebSocketChannel::didCloseSocketStream(SocketStreamHandle* handle
     WTF_LOG(Network, "MainThreadWebSocketChannel %p didCloseSocketStream()", this);
     if (m_identifier && m_document) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "WebSocketDestroy", "data", InspectorWebSocketEvent::data(m_document, m_identifier));
+        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
         // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
         InspectorInstrumentation::didCloseWebSocket(m_document, m_identifier);
     }
@@ -469,7 +473,7 @@ bool MainThreadWebSocketChannel::processOneItemFromBuffer()
             return false;
         if (m_handshake->mode() == WebSocketHandshake::Connected) {
             if (m_identifier) {
-                TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "WebSocketReceiveHandshakeResponseWebSocketSendHandshakeRequest", "data", InspectorWebSocketEvent::data(m_document, m_identifier));
+                TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "WebSocketReceiveHandshakeResponse", "data", InspectorWebSocketEvent::data(m_document, m_identifier));
                 // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
                 InspectorInstrumentation::didReceiveWebSocketHandshakeResponse(m_document, m_identifier, 0, &m_handshake->serverHandshakeResponse());
             }
