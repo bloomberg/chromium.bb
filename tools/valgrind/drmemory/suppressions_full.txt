@@ -2108,3 +2108,13 @@ name=bug_369141
 *!WebCore::RenderLayerClipper::updateClipRects
 *!WebCore::RenderLayerClipper::parentClipRects
 *!WebCore::RenderLayerClipper::backgroundClipRect
+
+HANDLE LEAK
+name=bug_370178
+system call NtCreateEvent
+KERNELBASE.dll!CreateEventExW
+KERNELBASE.dll!CreateEventW
+base.dll!base::WaitableEvent::WaitableEvent
+gpu.dll!gpu::InProcessCommandBuffer::Initialize
+gl_in_process_context.dll!gpu::`anonymous namespace'::GLInProcessContextImpl::Initialize
+gl_in_process_context.dll!gpu::GLInProcessContext::CreateContext
