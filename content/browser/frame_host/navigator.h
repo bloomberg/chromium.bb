@@ -37,6 +37,9 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // Returns the NavigationController associated with this Navigator.
   virtual NavigationController* GetController();
 
+
+  // Notifications coming from the RenderFrameHosts ----------------------------
+
   // The RenderFrameHostImpl started a provisional load.
   virtual void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
                                        int parent_routing_id,
@@ -87,6 +90,9 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   virtual bool NavigateToPendingEntry(
       RenderFrameHostImpl* render_frame_host,
       NavigationController::ReloadType reload_type);
+
+
+  // Navigation requests -------------------------------------------------------
 
   virtual base::TimeTicks GetCurrentLoadStart();
 
