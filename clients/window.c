@@ -3845,14 +3845,6 @@ handle_surface_configure(void *data, struct xdg_surface *xdg_surface,
 	struct window *window = data;
 	uint32_t *p;
 
-	if (width > 0 && height > 0) {
-		window_schedule_resize(window, width, height);
-	} else {
-		window_schedule_resize(window,
-				       window->saved_allocation.width,
-				       window->saved_allocation.height);
-	}
-
 	window->maximized = 0;
 	window->fullscreen = 0;
 	window->resizing = 0;
@@ -3891,6 +3883,14 @@ handle_surface_configure(void *data, struct xdg_surface *xdg_surface,
 		} else {
 			frame_unset_flag(window->frame->frame, FRAME_FLAG_ACTIVE);
 		}
+	}
+
+	if (width > 0 && height > 0) {
+		window_schedule_resize(window, width, height);
+	} else {
+		window_schedule_resize(window,
+				       window->saved_allocation.width,
+				       window->saved_allocation.height);
 	}
 
 	window->next_attach_serial = serial;
