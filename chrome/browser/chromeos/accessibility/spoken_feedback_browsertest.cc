@@ -134,7 +134,8 @@ class OobeSpokenFeedbackTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(OobeSpokenFeedbackTest);
 };
 
-IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, SpokenFeedbackInOobe) {
+// Test is flaky: http://crbug.com/346797
+IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, DISABLED_SpokenFeedbackInOobe) {
   ui_controls::EnableUIControls();
   EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
@@ -148,15 +149,11 @@ IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, SpokenFeedbackInOobe) {
       true, ash::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
 
-  // If we keep tabbing, we should eventually reach the Continue button.
-  do {
-    ui_controls::SendKeyPress(window, ui::VKEY_TAB, false, false, false, false);
-  } while (monitor.GetNextUtterance() != "Continue");
-
-  // If we keep tabbing, we should eventually reach the Shut Down button too.
-  do {
-    ui_controls::SendKeyPress(window, ui::VKEY_TAB, false, false, false, false);
-  } while (monitor.GetNextUtterance() != "Shut down");
+  EXPECT_EQ("Select your language:", monitor.GetNextUtterance());
+  EXPECT_EQ("English ( United States)", monitor.GetNextUtterance());
+  EXPECT_TRUE(MatchPattern(monitor.GetNextUtterance(), "Combo box * of *"));
+  ui_controls::SendKeyPress(window, ui::VKEY_TAB, false, false, false, false);
+  EXPECT_EQ("Select your keyboard:", monitor.GetNextUtterance());
 }
 
 }  // namespace chromeos
