@@ -4029,10 +4029,10 @@ bool RenderViewImpl::didTapMultipleTargets(
         canvas.translate(-zoom_rect.x() * device_scale_factor_,
                          -zoom_rect.y() * device_scale_factor_);
 
-        webwidget_->paint(
-            &canvas,
-            zoom_rect,
-            WebWidget::ForceSoftwareRenderingAndIgnoreGPUResidentContent);
+        DCHECK(webwidget_->isAcceleratedCompositingActive());
+        // TODO(aelias): The disambiguation popup should be composited so we
+        // don't have to call this method.
+        webwidget_->paintCompositedDeprecated(&canvas, zoom_rect);
       }
 
       gfx::Rect physical_window_zoom_rect = gfx::ToEnclosingRect(
