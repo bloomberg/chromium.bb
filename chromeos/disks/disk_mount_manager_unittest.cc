@@ -386,7 +386,7 @@ TEST_F(DiskMountManagerTest, Format_FormatFails) {
   // The observer should get notified that the device was unmounted and that
   // formatting has started.
   // After the formatting starts, the test will simulate failing
-  // FORMATTING_FINISHED signal, so the observer should also be notified the
+  // FORMAT_COMPLETED signal, so the observer should also be notified the
   // formatting has failed (FORMAT_COMPLETED event).
   {
     InSequence s;
@@ -429,14 +429,14 @@ TEST_F(DiskMountManagerTest, Format_FormatFails) {
   // The device should be unmounted by now.
   EXPECT_FALSE(HasMountPoint("/device/mount_path"));
 
-  // Send failing FORMATTING_FINISHED signal.
+  // Send failing FORMAT_COMPLETED signal.
   // The failure is marked by ! in fromt of the path (but this should change
   // soon).
-  fake_cros_disks_client_->SendMountEvent(
-      chromeos::CROS_DISKS_FORMATTING_FINISHED, "!/device/source_path");
+  fake_cros_disks_client_->SendFormatCompletedEvent(
+      chromeos::FORMAT_ERROR_UNKNOWN, "/device/source_path");
 }
 
-// Tests the same case as Format_FormatFails, but the FORMATTING_FINISHED event
+// Tests the same case as Format_FormatFails, but the FORMAT_COMPLETED event
 // is sent with file_path of the formatted device (instead of its device path).
 TEST_F(DiskMountManagerTest, Format_FormatFailsAndReturnFilePath) {
   // Set up expectations for observer mock.
@@ -481,9 +481,9 @@ TEST_F(DiskMountManagerTest, Format_FormatFailsAndReturnFilePath) {
   // The device should be unmounted by now.
   EXPECT_FALSE(HasMountPoint("/device/mount_path"));
 
-  // Send failing FORMATTING_FINISHED signal with the device's file path.
-  fake_cros_disks_client_->SendMountEvent(
-      chromeos::CROS_DISKS_FORMATTING_FINISHED, "!/device/file_path");
+  // Send failing FORMAT_COMPLETED signal with the device's file path.
+  fake_cros_disks_client_->SendFormatCompletedEvent(
+      chromeos::FORMAT_ERROR_UNKNOWN, "/device/file_path");
 }
 
 // Tests the case when formatting completes successfully.
@@ -536,8 +536,8 @@ TEST_F(DiskMountManagerTest, Format_FormatSuccess) {
   EXPECT_FALSE(HasMountPoint("/device/mount_path"));
 
   // Simulate cros_disks reporting success.
-  fake_cros_disks_client_->SendMountEvent(
-      chromeos::CROS_DISKS_FORMATTING_FINISHED, "/device/source_path");
+  fake_cros_disks_client_->SendFormatCompletedEvent(
+      chromeos::FORMAT_ERROR_NONE, "/device/source_path");
 }
 
 // Tests that it's possible to format the device twice in a row (this may not be
@@ -597,8 +597,8 @@ TEST_F(DiskMountManagerTest, Format_ConsecutiveFormatCalls) {
   EXPECT_FALSE(HasMountPoint("/device/mount_path"));
 
   // Simulate cros_disks reporting success.
-  fake_cros_disks_client_->SendMountEvent(
-      chromeos::CROS_DISKS_FORMATTING_FINISHED, "/device/source_path");
+  fake_cros_disks_client_->SendFormatCompletedEvent(
+      chromeos::FORMAT_ERROR_NONE, "/device/source_path");
 
   // Simulate the device remounting.
   fake_cros_disks_client_->SendMountCompletedEvent(
@@ -627,8 +627,8 @@ TEST_F(DiskMountManagerTest, Format_ConsecutiveFormatCalls) {
             fake_cros_disks_client_->last_format_device_filesystem());
 
   // Simulate cros_disks reporting success.
-  fake_cros_disks_client_->SendMountEvent(
-      chromeos::CROS_DISKS_FORMATTING_FINISHED, "/device/source_path");
+  fake_cros_disks_client_->SendFormatCompletedEvent(
+      chromeos::FORMAT_ERROR_NONE, "/device/source_path");
 }
 
 }  // namespace

@@ -75,11 +75,19 @@ void FakeCrosDisksClient::GetDeviceProperties(
     const base::Closure& error_callback) {
 }
 
-void FakeCrosDisksClient::SetUpConnections(
-    const MountEventHandler& mount_event_handler,
-    const MountCompletedHandler& mount_completed_handler) {
+void FakeCrosDisksClient::SetMountEventHandler(
+    const MountEventHandler& mount_event_handler) {
   mount_event_handler_ = mount_event_handler;
+}
+
+void FakeCrosDisksClient::SetMountCompletedHandler(
+    const MountCompletedHandler& mount_completed_handler) {
   mount_completed_handler_ = mount_completed_handler;
+}
+
+void FakeCrosDisksClient::SetFormatCompletedHandler(
+    const FormatCompletedHandler& format_completed_handler) {
+  format_completed_handler_ = format_completed_handler;
 }
 
 bool FakeCrosDisksClient::SendMountEvent(MountEventType event,
@@ -98,6 +106,15 @@ bool FakeCrosDisksClient::SendMountCompletedEvent(
   if (mount_completed_handler_.is_null())
     return false;
   mount_completed_handler_.Run(error_code, source_path, mount_type, mount_path);
+  return true;
+}
+
+bool FakeCrosDisksClient::SendFormatCompletedEvent(
+    FormatError error_code,
+    const std::string& device_path) {
+  if (format_completed_handler_.is_null())
+    return false;
+  format_completed_handler_.Run(error_code, device_path);
   return true;
 }
 

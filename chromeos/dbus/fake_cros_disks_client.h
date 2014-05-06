@@ -41,17 +41,23 @@ class FakeCrosDisksClient : public CrosDisksClient {
       const std::string& device_path,
       const GetDevicePropertiesCallback& callback,
       const base::Closure& error_callback) OVERRIDE;
-  virtual void SetUpConnections(
-      const MountEventHandler& mount_event_handler,
+  virtual void SetMountEventHandler(
+      const MountEventHandler& mount_event_handler) OVERRIDE;
+  virtual void SetMountCompletedHandler(
       const MountCompletedHandler& mount_completed_handler) OVERRIDE;
+  virtual void SetFormatCompletedHandler(
+      const FormatCompletedHandler& format_completed_handler) OVERRIDE;
 
   // Used in tests to simulate signals sent by cros disks layer.
-  // Invokes handlers set in |SetUpConnections|.
+  // Invokes handlers set in |SetMountEventHandler|, |SetMountCompletedHandler|,
+  // and |SetFormatCompletedHandler|.
   bool SendMountEvent(MountEventType event, const std::string& path);
   bool SendMountCompletedEvent(MountError error_code,
                                const std::string& source_path,
                                MountType mount_type,
                                const std::string& mount_path);
+  bool SendFormatCompletedEvent(FormatError error_code,
+                                const std::string& device_path);
 
   // Returns how many times Unmount() was called.
   int unmount_call_count() const {
@@ -105,6 +111,7 @@ class FakeCrosDisksClient : public CrosDisksClient {
  private:
   MountEventHandler mount_event_handler_;
   MountCompletedHandler mount_completed_handler_;
+  FormatCompletedHandler format_completed_handler_;
 
   int unmount_call_count_;
   std::string last_unmount_device_path_;
