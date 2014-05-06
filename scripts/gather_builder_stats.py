@@ -425,8 +425,37 @@ class SSUploader(object):
     ss_key = gdata_lib.PrepColNameForSS(key)
     return self._scomm.GetRowCacheByCol(ss_key)
 
-  def Upload(self, ws_name, data_table):
+  def _EnsureColumnsExist(self, data_columns):
+    """Ensures that |data_columns| exist in current spreadsheet worksheet.
+
+    Assumes spreadsheet worksheet is already connected.
+
+    Raises:
+      SpreadsheetError if any column in |data_columns| is missing from
+      the spreadsheet's current worksheet.
+    """
+    ss_cols = self._scomm.GetColumns()
+
+    # Make sure all columns in data_table are supported in spreadsheet.
+    missing_cols = [c for c in data_columns
+                    if gdata_lib.PrepColNameForSS(c) not in ss_cols]
+    if missing_cols:
+      raise SpreadsheetError('Spreadsheet missing column(s): %s' %
+                             ', '.join(missing_cols))
+
+  def UploadColumnToWorksheet(self, ws_name, colIx, data):
+    """Upload list |data| to column number |colIx| in worksheet |ws_name|.
+
+    This will overwrite any existing data in that column.
+    """
+    self._Connect(ws_name)
+    self._scomm.WriteColumnToWorksheet(colIx, data)
+
+  def UploadSequentialRows(self, ws_name, data_table):
     """Upload |data_table| to the |ws_name| worksheet of sheet at self.ss_key.
+
+    Data will be uploaded row-by-row in ascending ID_COL order. Missing
+    values of ID_COL will be filled in by filler rows.
 
     Args:
       ws_name: Worksheet name for identifying worksheet within spreadsheet.
@@ -440,14 +469,8 @@ class SSUploader(object):
     id_col = data_table.ID_COL
     ss_id_col = gdata_lib.PrepColNameForSS(id_col)
     ss_row_cache = self._scomm.GetRowCacheByCol(ss_id_col)
-    ss_cols = self._scomm.GetColumns()
 
-    # Make sure all columns in data_table are supported in spreadsheet.
-    missing_cols = [c for c in data_table.GetColumns()
-                    if gdata_lib.PrepColNameForSS(c) not in ss_cols]
-    if missing_cols:
-      raise SpreadsheetError('Spreadsheet missing column(s): %s' %
-                             ', '.join(missing_cols))
+    self._EnsureColumnsExist(data_table.GetColumns())
 
     # First see if a build_number is being skipped.  Allow the data_table to
     # add default (filler) rows if it wants to.  These rows may represent
@@ -507,6 +530,11 @@ class StatsManager(object):
   """
   # Subclasses can overwrite any of these.
   TABLE_CLASS = None
+  UPLOAD_ROW_PER_BUILD = False
+  # To be overridden by subclass. A dictionary mapping a |key| from
+  # self.summary to (ws_name, colIx) tuples from the spreadsheet which
+  # should be overwritten with the data from the self.summary[key]
+  SUMMARY_SPREADSHEET_COLUMNS = {}
   CARBON_FUNCS_BY_VERSION = None
   BOT_TYPE = None
 
@@ -521,10 +549,12 @@ class StatsManager(object):
     self.config_target = config_target
     self.ss_key = ss_key
     self.no_sheets_version_filter = no_sheets_version_filter
+    self.summary = {}
 
 
+  #pylint: disable-msg=W0613
   def Gather(self, start_date, sort_by_build_number=True,
-             starting_build_number=0):
+             starting_build_number=0, creds=None):
     """Fetches build data into self.builds.
 
     Args:
@@ -534,6 +564,7 @@ class StatsManager(object):
                             sorted by build number.
       starting_build_number: The lowest build number to include in
                              self.builds.
+      creds: Login credentials as returned by _PrepareCreds. (optional)
     """
     self.builds = self._FetchBuildData(start_date, self.config_target,
                                        self.gs_ctx)
@@ -649,12 +680,20 @@ class StatsManager(object):
     return -1
 
   def UploadToSheet(self, creds):
+    assert creds
+
+    if self.UPLOAD_ROW_PER_BUILD:
+      self._UploadBuildsToSheet(creds)
+
+    if self.SUMMARY_SPREADSHEET_COLUMNS:
+      self._UploadSummaryColumns(creds)
+
+  def _UploadBuildsToSheet(self, creds):
+    """Upload row-per-build data to adsheet."""
     if not self.TABLE_CLASS:
       cros_build_lib.Debug('No Spreadsheet uploading configured for %s.',
                            self.config_target)
       return
-
-    assert creds
 
     # Filter for builds that need to send data to Sheets (unless overridden
     # by command line flag.
@@ -681,7 +720,15 @@ class StatsManager(object):
 
       # Upload data table to sheet.
       uploader = SSUploader(creds, self.ss_key)
-      uploader.Upload(data_table.WORKSHEET_NAME, data_table)
+      uploader.UploadSequentialRows(data_table.WORKSHEET_NAME, data_table)
+
+  def _UploadSummaryColumns(self, creds):
+    """Overwrite summary columns in spreadsheet with appropriate data."""
+    # Upload data table to sheet.
+    uploader = SSUploader(creds, self.ss_key)
+    for key, (ws_name, colIx) in self.SUMMARY_SPREADSHEET_COLUMNS.iteritems():
+      uploader.UploadColumnToWorksheet(ws_name, colIx, self.summary[key])
+
 
   def SendToCarbon(self):
     if self.CARBON_FUNCS_BY_VERSION:
@@ -694,11 +741,16 @@ class StatsManager(object):
           func(self, builds)
 
   def MarkGathered(self):
-    """Mark each metadata.json in self.builds as processed."""
-    cbuildbot_metadata.BuildData.MarkBuildsGathered(self.builds,
-                                                    self.sheets_version,
-                                                    self.carbon_version,
-                                                    gs_ctx=self.gs_ctx)
+    """Mark each metadata.json in self.builds as processed.
+
+    Applies only to StatsManager subclasses that have UPLOAD_ROW_PER_BUILD
+    True, as these do not want data from a given build to be re-uploaded.
+    """
+    if self.UPLOAD_ROW_PER_BUILD:
+      cbuildbot_metadata.BuildData.MarkBuildsGathered(self.builds,
+                                                      self.sheets_version,
+                                                      self.carbon_version,
+                                                      gs_ctx=self.gs_ctx)
 
 
 # TODO(mtennant): This class is an untested placeholder.
@@ -729,6 +781,7 @@ class CQSlaveStats(StatsManager):
 class CQMasterStats(StatsManager):
   """Manager stats gathering for the Commit Queue Master."""
   TABLE_CLASS = CQMasterTable
+  UPLOAD_ROW_PER_BUILD = True
   BOT_TYPE = CQ
   GET_SHEETS_VERSION = True
 
@@ -759,6 +812,7 @@ class CQMasterStats(StatsManager):
 class PFQMasterStats(StatsManager):
   """Manager stats gathering for the PFQ Master."""
   TABLE_CLASS = PFQMasterTable
+  UPLOAD_ROW_PER_BUILD = True
   BOT_TYPE = PFQ
   GET_SHEETS_VERSION = True
 
@@ -782,7 +836,9 @@ class PreCQStats(StatsManager):
 
 class CLStats(StatsManager):
   """Manager for stats about CL actions taken by the Commit Queue."""
-  TABLE_CLASS = None
+  PATCH_HANDLING_TIME_SUMMARY_KEY = 'patch_handling_time'
+  SUMMARY_SPREADSHEET_COLUMNS = {
+      PATCH_HANDLING_TIME_SUMMARY_KEY : ('PatchHistogram', 1)}
   COL_FAILURE_CATEGORY = 'failure category'
   COL_FAILURE_BLAME = 'bug or bad CL'
   REASON_BAD_CL = 'Bad CL'
@@ -797,6 +853,7 @@ class CLStats(StatsManager):
     self.email = email
     self.reasons = {}
     self.blames = {}
+    self.summary = {}
     self.pre_cq_stats = PreCQStats()
 
   def GatherFailureReasons(self, creds):
@@ -872,7 +929,7 @@ class CLStats(StatsManager):
     return urls
 
   def Gather(self, start_date, sort_by_build_number=True,
-             starting_build_number=0):
+             starting_build_number=0, creds=None):
     """Fetches build data and failure reasons.
 
     Args:
@@ -882,8 +939,10 @@ class CLStats(StatsManager):
                             sorted by build number.
       starting_build_number: The lowest build number from the CQ to include in
                              the results.
+      creds: Login credentials as returned by _PrepareCreds. (optional)
     """
-    creds = _PrepareCreds(self.email)
+    if not creds:
+      creds = _PrepareCreds(self.email)
     super(CLStats, self).Gather(start_date,
                                 sort_by_build_number=sort_by_build_number,
                                 starting_build_number=starting_build_number)
@@ -997,6 +1056,8 @@ class CLStats(StatsManager):
   def Summarize(self):
     """Process, print, and return a summary of cl action statistics.
 
+    As a side effect, save summary to self.summary.
+
     Returns:
       A dictionary summarizing the statistics.
     """
@@ -1087,6 +1148,7 @@ class CLStats(StatsManager):
                'good_patch_rejection_breakdown' :
                    good_patch_rejection_breakdown,
                'median_handling_time' : numpy.median(patch_handle_times),
+               self.PATCH_HANDLING_TIME_SUMMARY_KEY : patch_handle_times,
                'bad_cl_candidates' : bad_cl_candidates,
                'correctly_rejected_by_stage' : correctly_rejected_by_stage,
                'incorrectly_rejected_by_stage' : incorrectly_rejected_by_stage,
@@ -1119,16 +1181,17 @@ class CLStats(StatsManager):
                      if k.internal else constants.EXTERNAL_CHANGE_PREFIX,
                      k.gerrit_number)
 
+    fmt_fai = '  %(cnt)d failures in %(reason)s'
+    fmt_rej = '  %(cnt)d rejections due to %(reason)s'
+
     logging.info('Reasons why good patches were rejected:')
-    fmt = '  %(cnt)d failures in %(reason)s'
-    self._PrintCounts(patch_reason_counts, fmt)
+    self._PrintCounts(patch_reason_counts, fmt_rej)
 
     logging.info('Bugs or CLs responsible for good patches rejections:')
-    fmt_rej = '  %(cnt)d rejections due to %(reason)s'
     self._PrintCounts(patch_blame_counts, fmt_rej)
 
     logging.info('Reasons why builds failed:')
-    self._PrintCounts(build_reason_counts, '  %(cnt)d failures in %(reason)s')
+    self._PrintCounts(build_reason_counts, fmt_fai)
 
     logging.info('Stages from the Pre-CQ that caught real failures:')
     fmt = '  %(cnt)d broken patches were caught by %(reason)s'
@@ -1139,6 +1202,7 @@ class CLStats(StatsManager):
     self._PrintCounts(incorrectly_rejected_by_stage.get(PRE_CQ, {}), fmt)
 
     super_summary.update(summary)
+    self.summary = super_summary
     return super_summary
 
 # TODO(mtennant): Add token file support.  See upload_package_status.py.
@@ -1291,9 +1355,12 @@ def main(argv):
       stats_managers.append(CQSlaveStats(target))
 
   # If options.save is set and any of the instructions include a table class,
-  # prepare spreadsheet creds object early.
+  # or specify summary columns for upload, prepare spreadsheet creds object
+  # early.
   creds = None
-  if options.save and any(stats.TABLE_CLASS for stats in stats_managers):
+  if options.save and any((stats.UPLOAD_ROW_PER_BUILD or
+                           stats.SUMMARY_SPREADSHEET_COLUMNS)
+                          for stats in stats_managers):
     # TODO(mtennant): See if this can work with two-factor authentication.
     # TODO(mtennant): Eventually, we probably want to use 90-day certs to
     # run this as a cronjob on a ganeti instance.
@@ -1301,7 +1368,8 @@ def main(argv):
 
   # Now run through all the stats gathering that is requested.
   for stats_mgr in stats_managers:
-    stats_mgr.Gather(start_date, starting_build_number=options.starting_build)
+    stats_mgr.Gather(start_date, starting_build_number=options.starting_build,
+                     creds=creds)
     stats_mgr.Summarize()
 
     if options.save:

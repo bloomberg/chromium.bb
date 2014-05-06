@@ -15,6 +15,7 @@ import xml.dom.minidom
 
 import gdata.projecthosting.client
 import gdata.service
+import gdata.spreadsheet
 import gdata.spreadsheet.service
 
 from chromite.lib import operation
@@ -627,6 +628,45 @@ class SpreadsheetComm(object):
   def ClearCellValue(self, rowIx, colIx):
     """Clear cell value at |rowIx| and |colIx|"""
     self.ReplaceCellValue(rowIx, colIx, None)
+
+  @ReadWriteDecorator
+  def ClearColumnWorksheet(self, colIx):
+    """Clear column with index |colIX| from current worksheet."""
+    query = gdata.spreadsheet.service.CellQuery()
+    query.min_col = str(colIx)
+    query.max_col = str(colIx)
+
+    cells = self.gd_client.GetCellsFeed(self.ss_key, wksht_id=self.ws_key,
+                                        query=query)
+    batchRequest = gdata.spreadsheet.SpreadsheetsCellsFeed()
+
+    for entry in cells.entry:
+      entry.cell.inputValue = None
+      batchRequest.AddUpdate(entry)
+
+    self.gd_client.ExecuteBatch(batchRequest, cells.GetBatchLink().href)
+
+  @ReadWriteDecorator
+  def WriteColumnToWorksheet(self, colIx, data):
+    """Clear column index |colIx| from worksheet and write |data| to it."""
+    self.ClearColumnWorksheet(colIx)
+
+    query = gdata.spreadsheet.service.CellQuery()
+    query.min_col = str(colIx)
+    query.max_col = str(colIx)
+    query.min_row = '1'
+    query.max_row = str(len(data))
+    query.return_empty = 'true'
+
+    cells = self.gd_client.GetCellsFeed(self.ss_key, wksht_id=self.ws_key,
+                                        query=query)
+    batchRequest = gdata.spreadsheet.SpreadsheetsCellsFeed()
+
+    for entry, value in zip(cells.entry, data):
+      entry.cell.inputValue = str(value)
+      batchRequest.AddUpdate(entry)
+
+    self.gd_client.ExecuteBatch(batchRequest, cells.GetBatchLink().href)
 
 
 class RetrySpreadsheetsService(gdata.spreadsheet.service.SpreadsheetsService):
