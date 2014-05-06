@@ -63,7 +63,11 @@ void SuspiciousExtensionBubbleDelegate::PerformAction(
 }
 
 base::string16 SuspiciousExtensionBubbleDelegate::GetTitle() const {
-  return l10n_util::GetStringUTF16(IDS_EXTENSIONS_SUSPICIOUS_DISABLED_TITLE);
+  // TODO(asargent/finnur) - we've temporarily borrowed an already translated
+  // string that has another purpose so we could change this on a release
+  // branch. crbug.com/370517
+  return l10n_util::GetStringUTF16(
+      IDS_PERFORMANCE_MONITOR_EXTENSION_DISABLE_EVENT_MOUSEOVER);
 }
 
 base::string16 SuspiciousExtensionBubbleDelegate::GetMessageBody() const {
