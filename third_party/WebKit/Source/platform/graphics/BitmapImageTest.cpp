@@ -158,6 +158,27 @@ TEST_F(BitmapImageTest, maybeAnimated)
     EXPECT_FALSE(m_image->maybeAnimated());
 }
 
+TEST_F(BitmapImageTest, isAllDataReceived)
+{
+    RefPtr<SharedBuffer> imageData = readFile("/LayoutTests/fast/images/resources/green.jpg");
+    ASSERT_TRUE(imageData.get());
+
+    RefPtr<BitmapImage> image = BitmapImage::create();
+    EXPECT_FALSE(image->isAllDataReceived());
+
+    image->setData(imageData, false);
+    EXPECT_FALSE(image->isAllDataReceived());
+
+    image->setData(imageData, true);
+    EXPECT_TRUE(image->isAllDataReceived());
+
+    image->setData(SharedBuffer::create("data", sizeof("data")), false);
+    EXPECT_FALSE(image->isAllDataReceived());
+
+    image->setData(imageData, true);
+    EXPECT_TRUE(image->isAllDataReceived());
+}
+
 #if USE(QCMSLIB)
 
 TEST_F(BitmapImageTest, jpegHasColorProfile)
