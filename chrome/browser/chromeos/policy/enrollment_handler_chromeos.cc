@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
@@ -40,24 +41,24 @@ const char kTestingRobotToken[] = "test-token";
 EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
     DeviceCloudPolicyStoreChromeOS* store,
     EnterpriseInstallAttributes* install_attributes,
+    ServerBackedStateKeysBroker* state_keys_broker,
     scoped_ptr<CloudPolicyClient> client,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     const std::string& auth_token,
     const std::string& client_id,
     bool is_auto_enrollment,
     const std::string& requisition,
-    const std::string& current_state_key,
     const AllowedDeviceModes& allowed_device_modes,
     const EnrollmentCallback& completion_callback)
     : store_(store),
       install_attributes_(install_attributes),
+      state_keys_broker_(state_keys_broker),
       client_(client.Pass()),
       background_task_runner_(background_task_runner),
       auth_token_(auth_token),
       client_id_(client_id),
       is_auto_enrollment_(is_auto_enrollment),
       requisition_(requisition),
-      current_state_key_(current_state_key),
       allowed_device_modes_(allowed_device_modes),
       completion_callback_(completion_callback),
       device_mode_(DEVICE_MODE_NOT_SET),
@@ -79,8 +80,10 @@ EnrollmentHandlerChromeOS::~EnrollmentHandlerChromeOS() {
 
 void EnrollmentHandlerChromeOS::StartEnrollment() {
   CHECK_EQ(STEP_PENDING, enrollment_step_);
-  enrollment_step_ = STEP_LOADING_STORE;
-  AttemptRegistration();
+  enrollment_step_ = STEP_STATE_KEYS;
+  state_keys_broker_->RequestStateKeys(
+      base::Bind(&EnrollmentHandlerChromeOS::CheckStateKeys,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 scoped_ptr<CloudPolicyClient> EnrollmentHandlerChromeOS::ReleaseClient() {
@@ -187,6 +190,26 @@ void EnrollmentHandlerChromeOS::OnStoreError(CloudPolicyStore* store) {
   DCHECK_EQ(store_, store);
   ReportResult(EnrollmentStatus::ForStoreError(store_->status(),
                                                store_->validation_status()));
+}
+
+void EnrollmentHandlerChromeOS::CheckStateKeys(
+    const std::vector<std::string>& state_keys) {
+  CHECK_EQ(STEP_STATE_KEYS, enrollment_step_);
+
+  // Make sure state keys are available if forced re-enrollment is on.
+  if (chromeos::AutoEnrollmentController::GetMode() ==
+      chromeos::AutoEnrollmentController::MODE_FORCED_RE_ENROLLMENT) {
+    if (state_keys.empty()) {
+      ReportResult(
+          EnrollmentStatus::ForStatus(EnrollmentStatus::STATUS_NO_STATE_KEYS));
+      return;
+    }
+    client_->SetStateKeysToUpload(state_keys);
+    current_state_key_ = state_keys_broker_->current_state_key();
+  }
+
+  enrollment_step_ = STEP_LOADING_STORE;
+  AttemptRegistration();
 }
 
 void EnrollmentHandlerChromeOS::AttemptRegistration() {

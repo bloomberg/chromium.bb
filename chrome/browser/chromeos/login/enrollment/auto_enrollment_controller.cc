@@ -10,9 +10,10 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chromeos/chromeos_switches.h"
-#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -81,7 +82,7 @@ AutoEnrollmentController::Mode AutoEnrollmentController::GetMode() {
 
 AutoEnrollmentController::AutoEnrollmentController()
     : state_(policy::AUTO_ENROLLMENT_STATE_IDLE),
-      weak_factory_(this) {}
+      client_start_weak_factory_(this) {}
 
 AutoEnrollmentController::~AutoEnrollmentController() {}
 
@@ -107,16 +108,15 @@ void AutoEnrollmentController::Start() {
     return;
   }
 
-  // If there already is a client, bail out.
-  if (client_)
+  // If a client is being created or already existing, bail out.
+  if (client_start_weak_factory_.HasWeakPtrs() || client_)
     return;
 
   // Start by checking if the device has already been owned.
   UpdateState(policy::AUTO_ENROLLMENT_STATE_PENDING);
-  weak_factory_.InvalidateWeakPtrs();
   DeviceSettingsService::Get()->GetOwnershipStatusAsync(
       base::Bind(&AutoEnrollmentController::OnOwnershipStatusCheckDone,
-                 weak_factory_.GetWeakPtr()));
+                 client_start_weak_factory_.GetWeakPtr()));
 }
 
 void AutoEnrollmentController::Cancel() {
@@ -125,6 +125,9 @@ void AutoEnrollmentController::Cancel() {
     // its protocol finished before login was complete.
     client_.release()->CancelAndDeleteSoon();
   }
+
+  // Make sure to nuke pending |client_| start sequences.
+  client_start_weak_factory_.InvalidateWeakPtrs();
 }
 
 void AutoEnrollmentController::Retry() {
@@ -152,8 +155,18 @@ void AutoEnrollmentController::OnOwnershipStatusCheckDone(
     return;
   }
 
-  policy::BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
+  // Make sure state keys are available.
+  g_browser_process->platform_part()
+      ->browser_policy_connector_chromeos()
+      ->GetStateKeysBroker()
+      ->RequestStateKeys(base::Bind(&AutoEnrollmentController::StartClient,
+                                    client_start_weak_factory_.GetWeakPtr()));
+}
+
+void AutoEnrollmentController::StartClient(
+    const std::vector<std::string>& state_keys) {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   policy::DeviceManagementService* service =
       connector->device_management_service();
   service->ScheduleInitialization(0);
@@ -172,8 +185,7 @@ void AutoEnrollmentController::OnOwnershipStatusCheckDone(
   std::string device_id;
   if (GetMode() == MODE_FORCED_RE_ENROLLMENT) {
     retrieve_device_state = true;
-    device_id =
-        policy::DeviceCloudPolicyManagerChromeOS::GetCurrentDeviceStateKey();
+    device_id = state_keys.empty() ? std::string() : state_keys.front();
   } else {
     device_id = policy::DeviceCloudPolicyManagerChromeOS::GetMachineID();
   }

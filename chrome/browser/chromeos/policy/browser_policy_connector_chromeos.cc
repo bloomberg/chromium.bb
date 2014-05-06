@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
+#include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/policy/device_management_service_configuration.h"
@@ -95,6 +96,10 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
   // (removing it now breaks tests). crbug.com/141016.
   if (chromeos::SystemSaltGetter::IsInitialized() &&
       chromeos::DBusThreadManager::IsInitialized()) {
+    state_keys_broker_.reset(new ServerBackedStateKeysBroker(
+        chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
+        base::MessageLoopProxy::current()));
+
     chromeos::CryptohomeClient* cryptohome_client =
         chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
     if (!install_attributes_) {
@@ -115,7 +120,8 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
         new DeviceCloudPolicyManagerChromeOS(device_cloud_policy_store.Pass(),
                                              base::MessageLoopProxy::current(),
                                              GetBackgroundTaskRunner(),
-                                             install_attributes_.get());
+                                             install_attributes_.get(),
+                                             state_keys_broker_.get());
     AddPolicyProvider(
         scoped_ptr<ConfigurationPolicyProvider>(device_cloud_policy_manager_));
   }

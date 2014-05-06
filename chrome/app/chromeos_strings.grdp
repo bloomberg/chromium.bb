@@ -5161,6 +5161,9 @@ All users must sign out to continue.
   <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_FAILED" desc="Error message shown on the enrollment screen upon failed device registration.">
     Error when registering the device with the server: <ph name="CLIENT_ERROR">$1<ex>Failed to connect to the server</ex></ph>.
   </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_NO_STATE_KEYS" desc="Error message shown on the enrollment screen when the system failed to determine server-backed state keys.">
+    Oops!  The system failed to determine device identifiers for this device.
+  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_BAD_MODE" desc="Error message shown on the enrollment screen upon receiving a bad mode on device registration.">
     The supplied enrollment mode is not supported by this version of the operating system.  Please make sure you are running the newest version and try again.
   </message>

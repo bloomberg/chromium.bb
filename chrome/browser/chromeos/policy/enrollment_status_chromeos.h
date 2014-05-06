@@ -18,6 +18,7 @@ class EnrollmentStatus {
   // Enrollment status codes.
   enum Status {
     STATUS_SUCCESS,                     // Enrollment succeeded.
+    STATUS_NO_STATE_KEYS,               // Server-backed state keys unavailable.
     STATUS_REGISTRATION_FAILED,         // DM registration failed.
     STATUS_REGISTRATION_BAD_MODE,       // Bad device mode.
     STATUS_ROBOT_AUTH_FETCH_FAILED,     // API OAuth2 auth code failure.

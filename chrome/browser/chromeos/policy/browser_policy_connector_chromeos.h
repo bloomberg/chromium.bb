@@ -30,6 +30,7 @@ class DeviceManagementService;
 class EnterpriseInstallAttributes;
 class NetworkConfigurationUpdater;
 class ProxyPolicyProvider;
+class ServerBackedStateKeysBroker;
 
 // Extends ChromeBrowserPolicyConnector with the setup specific to ChromeOS.
 class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
@@ -75,6 +76,10 @@ class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
     return install_attributes_.get();
   }
 
+  ServerBackedStateKeysBroker* GetStateKeysBroker() {
+    return state_keys_broker_.get();
+  }
+
   // The browser-global PolicyService is created before Profiles are ready, to
   // provide managed values for the local state PrefService. It includes a
   // policy provider that forwards policies from a delegate policy provider.
@@ -106,6 +111,7 @@ class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
   void SetTimezoneIfPolicyAvailable();
 
   // Components of the device cloud policy implementation.
+  scoped_ptr<ServerBackedStateKeysBroker> state_keys_broker_;
   scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
   DeviceCloudPolicyManagerChromeOS* device_cloud_policy_manager_;
   scoped_ptr<DeviceLocalAccountPolicyService>

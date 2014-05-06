@@ -28,6 +28,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
+#include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/system/mock_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -66,7 +67,10 @@ void CopyLockResult(base::RunLoop* loop,
 class DeviceCloudPolicyManagerChromeOSTest
     : public chromeos::DeviceSettingsTestBase {
  protected:
-  DeviceCloudPolicyManagerChromeOSTest() : store_(NULL) {
+  DeviceCloudPolicyManagerChromeOSTest()
+      : state_keys_broker_(&fake_session_manager_client_,
+                           loop_.message_loop_proxy()),
+        store_(NULL) {
     EXPECT_CALL(mock_statistics_provider_,
                 GetMachineStatistic(_, _))
         .WillRepeatedly(Return(false));
@@ -76,6 +80,11 @@ class DeviceCloudPolicyManagerChromeOSTest
                               Return(true)));
     chromeos::system::StatisticsProvider::SetTestProvider(
         &mock_statistics_provider_);
+    std::vector<std::string> state_keys;
+    state_keys.push_back("1");
+    state_keys.push_back("2");
+    state_keys.push_back("3");
+    fake_session_manager_client_.set_server_backed_state_keys(state_keys);
   }
 
   virtual ~DeviceCloudPolicyManagerChromeOSTest() {
@@ -95,7 +104,8 @@ class DeviceCloudPolicyManagerChromeOSTest
         make_scoped_ptr(store_),
         loop_.message_loop_proxy(),
         loop_.message_loop_proxy(),
-        install_attributes_.get()));
+        install_attributes_.get(),
+        &state_keys_broker_));
 
     chrome::RegisterLocalState(local_state_.registry());
     manager_->Init(&schema_registry_);
@@ -160,6 +170,8 @@ class DeviceCloudPolicyManagerChromeOSTest
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
   chromeos::system::MockStatisticsProvider mock_statistics_provider_;
+  chromeos::FakeSessionManagerClient fake_session_manager_client_;
+  ServerBackedStateKeysBroker state_keys_broker_;
 
   DeviceCloudPolicyStoreChromeOS* store_;
   SchemaRegistry schema_registry_;
@@ -215,10 +227,6 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, UnmanagedDevice) {
   PolicyBundle bundle;
   EXPECT_TRUE(manager_->policies().Equals(bundle));
 
-  manager_->Connect(&local_state_,
-                    &device_management_service_,
-                    scoped_ptr<CloudPolicyClient::StatusProvider>());
-
   // Trigger a policy refresh.
   MockDeviceManagementJob* policy_fetch_job = NULL;
   EXPECT_CALL(device_management_service_,
@@ -227,7 +235,10 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, UnmanagedDevice) {
       .WillOnce(device_management_service_.CreateAsyncJob(&policy_fetch_job));
   EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
       .Times(AtMost(1));
-  manager_->RefreshPolicies();
+  manager_->Connect(&local_state_,
+                    &device_management_service_,
+                    scoped_ptr<CloudPolicyClient::StatusProvider>());
+  base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&device_management_service_);
   ASSERT_TRUE(policy_fetch_job);
 
@@ -261,70 +272,6 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, ConsumerDevice) {
 
   manager_->Shutdown();
   EXPECT_TRUE(manager_->policies().Equals(bundle));
-}
-
-class DeviceCloudPolicyManagerChromeOSStateKeyTest : public testing::Test {
- protected:
-  DeviceCloudPolicyManagerChromeOSStateKeyTest() {}
-
-  virtual void SetUp() OVERRIDE {
-    chromeos::system::StatisticsProvider::SetTestProvider(
-        &statistics_provider_);
-    EXPECT_CALL(statistics_provider_, GetMachineStatistic(_, _))
-        .WillRepeatedly(Invoke(this,
-                               &DeviceCloudPolicyManagerChromeOSStateKeyTest::
-                                   GetMachineStatistic));
-  }
-
-  virtual void TearDown() OVERRIDE {
-    chromeos::system::StatisticsProvider::SetTestProvider(NULL);
-  }
-
-  bool GetMachineStatistic(const std::string& name, std::string* result) {
-    *result = "fake-" + name;
-    return true;
-  }
-
- private:
-  chromeos::system::MockStatisticsProvider statistics_provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyManagerChromeOSStateKeyTest);
-};
-
-TEST_F(DeviceCloudPolicyManagerChromeOSStateKeyTest, GetDeviceStateKeys) {
-  base::Time current = base::Time::UnixEpoch() + base::TimeDelta::FromDays(100);
-
-  // The correct number of state keys gets returned.
-  std::vector<std::string> state_keys;
-  EXPECT_TRUE(DeviceCloudPolicyManagerChromeOS::GetDeviceStateKeys(
-      current, &state_keys));
-  EXPECT_EQ(DeviceCloudPolicyManagerChromeOS::kDeviceStateKeyFutureQuanta,
-            static_cast<int>(state_keys.size()));
-
-  // All state keys are different.
-  std::set<std::string> state_key_set(state_keys.begin(), state_keys.end());
-  EXPECT_EQ(DeviceCloudPolicyManagerChromeOS::kDeviceStateKeyFutureQuanta,
-            static_cast<int>(state_key_set.size()));
-
-  // Moving forward just a little yields the same keys.
-  std::vector<std::string> new_state_keys;
-  current += base::TimeDelta::FromDays(1);
-  EXPECT_TRUE(DeviceCloudPolicyManagerChromeOS::GetDeviceStateKeys(
-      current, &new_state_keys));
-  EXPECT_EQ(state_keys, new_state_keys);
-
-  // Jumping to a future quantum results in the state keys rolling forward.
-  int64 step =
-      GG_INT64_C(1)
-      << DeviceCloudPolicyManagerChromeOS::kDeviceStateKeyTimeQuantumPower;
-  current += 2 * base::TimeDelta::FromSeconds(step);
-
-  EXPECT_TRUE(DeviceCloudPolicyManagerChromeOS::GetDeviceStateKeys(
-      current, &new_state_keys));
-  ASSERT_EQ(DeviceCloudPolicyManagerChromeOS::kDeviceStateKeyFutureQuanta,
-            static_cast<int>(new_state_keys.size()));
-  EXPECT_TRUE(std::equal(state_keys.begin() + 2, state_keys.end(),
-                         new_state_keys.begin()));
 }
 
 class DeviceCloudPolicyManagerChromeOSEnrollmentTest
@@ -411,6 +358,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
         "auth token", is_auto_enrollment_, modes,
         base::Bind(&DeviceCloudPolicyManagerChromeOSEnrollmentTest::Done,
                    base::Unretained(this)));
+    base::RunLoop().RunUntilIdle();
     Mock::VerifyAndClearExpectations(&device_management_service_);
 
     if (done_)

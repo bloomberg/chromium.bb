@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/policy/enrollment_handler_chromeos.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
+#include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_constants.h"
@@ -95,19 +96,20 @@ bool GetMachineFlag(const std::string& key, bool default_value) {
   return value;
 }
 
+// Checks whether forced re-enrollment is enabled.
+bool ForcedReEnrollmentEnabled() {
+  return chromeos::AutoEnrollmentController::GetMode() ==
+         chromeos::AutoEnrollmentController::MODE_FORCED_RE_ENROLLMENT;
+}
+
 }  // namespace
-
-const int
-DeviceCloudPolicyManagerChromeOS::kDeviceStateKeyTimeQuantumPower;
-
-const int
-DeviceCloudPolicyManagerChromeOS::kDeviceStateKeyFutureQuanta;
 
 DeviceCloudPolicyManagerChromeOS::DeviceCloudPolicyManagerChromeOS(
     scoped_ptr<DeviceCloudPolicyStoreChromeOS> store,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
-    EnterpriseInstallAttributes* install_attributes)
+    EnterpriseInstallAttributes* install_attributes,
+    ServerBackedStateKeysBroker* state_keys_broker)
     : CloudPolicyManager(
           PolicyNamespaceKey(dm_protocol::kChromeDevicePolicyType,
                              std::string()),
@@ -118,8 +120,10 @@ DeviceCloudPolicyManagerChromeOS::DeviceCloudPolicyManagerChromeOS(
       device_store_(store.Pass()),
       background_task_runner_(background_task_runner),
       install_attributes_(install_attributes),
+      state_keys_broker_(state_keys_broker),
       device_management_service_(NULL),
-      local_state_(NULL) {}
+      local_state_(NULL) {
+}
 
 DeviceCloudPolicyManagerChromeOS::~DeviceCloudPolicyManagerChromeOS() {}
 
@@ -135,7 +139,11 @@ void DeviceCloudPolicyManagerChromeOS::Connect(
   device_management_service_ = device_management_service;
   device_status_provider_ = device_status_provider.Pass();
 
-  InitalizeRequisition();
+  state_keys_update_subscription_ = state_keys_broker_->RegisterUpdateCallback(
+      base::Bind(&DeviceCloudPolicyManagerChromeOS::OnStateKeysUpdated,
+                 base::Unretained(this)));
+
+  InitializeRequisition();
   StartIfManaged();
 }
 
@@ -145,22 +153,28 @@ void DeviceCloudPolicyManagerChromeOS::StartEnrollment(
     const AllowedDeviceModes& allowed_device_modes,
     const EnrollmentCallback& callback) {
   CHECK(device_management_service_);
+  CHECK(!enrollment_handler_);
   core()->Disconnect();
 
-  enrollment_handler_.reset(
-      new EnrollmentHandlerChromeOS(
-          device_store_.get(), install_attributes_, CreateClient(),
-          background_task_runner_, auth_token,
-          install_attributes_->GetDeviceId(), is_auto_enrollment,
-          GetDeviceRequisition(), GetCurrentDeviceStateKey(),
-          allowed_device_modes,
-          base::Bind(&DeviceCloudPolicyManagerChromeOS::EnrollmentCompleted,
-                     base::Unretained(this), callback)));
+  enrollment_handler_.reset(new EnrollmentHandlerChromeOS(
+      device_store_.get(),
+      install_attributes_,
+      state_keys_broker_,
+      CreateClient(),
+      background_task_runner_,
+      auth_token,
+      install_attributes_->GetDeviceId(),
+      is_auto_enrollment,
+      GetDeviceRequisition(),
+      allowed_device_modes,
+      base::Bind(&DeviceCloudPolicyManagerChromeOS::EnrollmentCompleted,
+                 base::Unretained(this),
+                 callback)));
   enrollment_handler_->StartEnrollment();
 }
 
 void DeviceCloudPolicyManagerChromeOS::CancelEnrollment() {
-  if (enrollment_handler_.get()) {
+  if (enrollment_handler_) {
     enrollment_handler_.reset();
     StartIfManaged();
   }
@@ -234,15 +248,14 @@ DeviceCloudPolicyManagerChromeOS::GetForcedEnrollmentDomain() const {
 }
 
 void DeviceCloudPolicyManagerChromeOS::Shutdown() {
+  state_keys_update_subscription_.reset();
   CloudPolicyManager::Shutdown();
   device_status_provider_.reset();
 }
 
 void DeviceCloudPolicyManagerChromeOS::OnStoreLoaded(CloudPolicyStore* store) {
   CloudPolicyManager::OnStoreLoaded(store);
-
-  if (!enrollment_handler_.get())
-    StartIfManaged();
+  StartIfManaged();
 }
 
 // static
@@ -279,18 +292,6 @@ std::string DeviceCloudPolicyManagerChromeOS::GetMachineModel() {
   return GetMachineStatistic(chromeos::system::kHardwareClassKey);
 }
 
-// static
-std::string DeviceCloudPolicyManagerChromeOS::GetCurrentDeviceStateKey() {
-  std::vector<std::string> state_keys;
-  if (GetDeviceStateKeys(base::Time::Now(), &state_keys) &&
-      !state_keys.empty()) {
-    // The key for the current time is always the first one.
-    return state_keys[0];
-  }
-
-  return std::string();
-}
-
 scoped_ptr<CloudPolicyClient> DeviceCloudPolicyManagerChromeOS::CreateClient() {
   scoped_refptr<net::URLRequestContextGetter> request_context =
       new SystemPolicyRequestContext(
@@ -303,15 +304,6 @@ scoped_ptr<CloudPolicyClient> DeviceCloudPolicyManagerChromeOS::CreateClient() {
                             device_status_provider_.get(),
                             device_management_service_,
                             request_context));
-
-  // Set state keys to upload immediately after creation so the first policy
-  // fetch submits them to the server.
-  if (chromeos::AutoEnrollmentController::GetMode() ==
-      chromeos::AutoEnrollmentController::MODE_FORCED_RE_ENROLLMENT) {
-    std::vector<std::string> state_keys;
-    if (GetDeviceStateKeys(base::Time::Now(), &state_keys))
-      client->SetStateKeysToUpload(state_keys);
-  }
 
   return client.Pass();
 }
@@ -334,6 +326,8 @@ void DeviceCloudPolicyManagerChromeOS::StartIfManaged() {
       local_state_ &&
       store()->is_initialized() &&
       store()->has_policy() &&
+      !state_keys_broker_->pending() &&
+      !enrollment_handler_ &&
       !service()) {
     StartConnection(CreateClient());
   }
@@ -341,6 +335,10 @@ void DeviceCloudPolicyManagerChromeOS::StartIfManaged() {
 
 void DeviceCloudPolicyManagerChromeOS::StartConnection(
     scoped_ptr<CloudPolicyClient> client_to_connect) {
+  // Set state keys here so the first policy fetch submits them to the server.
+  if (ForcedReEnrollmentEnabled())
+    client_to_connect->SetStateKeysToUpload(state_keys_broker_->state_keys());
+
   core()->Connect(client_to_connect.Pass());
   core()->StartRefreshScheduler();
   core()->TrackRefreshDelayPref(local_state_,
@@ -349,7 +347,16 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
       new chromeos::attestation::AttestationPolicyObserver(client()));
 }
 
-void DeviceCloudPolicyManagerChromeOS::InitalizeRequisition() {
+void DeviceCloudPolicyManagerChromeOS::OnStateKeysUpdated() {
+  if (client()) {
+    if (ForcedReEnrollmentEnabled())
+      client()->SetStateKeysToUpload(state_keys_broker_->state_keys());
+  } else {
+    StartIfManaged();
+  }
+}
+
+void DeviceCloudPolicyManagerChromeOS::InitializeRequisition() {
   // OEM statistics are only loaded when OOBE is not completed.
   if (chromeos::StartupUtils::IsOobeCompleted())
     return;
@@ -386,43 +393,6 @@ std::string DeviceCloudPolicyManagerChromeOS::GetRestoreMode() const {
   std::string restore_mode;
   device_state_dict->GetString(kDeviceStateRestoreMode, &restore_mode);
   return restore_mode;
-}
-
-// static
-bool DeviceCloudPolicyManagerChromeOS::GetDeviceStateKeys(
-    const base::Time& timestamp,
-    std::vector<std::string>* state_keys) {
-  state_keys->clear();
-
-  std::string disk_serial_number =
-      GetMachineStatistic(chromeos::system::kDiskSerialNumber);
-  if (disk_serial_number.empty()) {
-    LOG(ERROR) << "Missing disk serial number";
-    return false;
-  }
-
-  std::string machine_id = GetMachineID();
-  if (machine_id.empty())
-    return false;
-
-  // Tolerate missing group code keys, some old devices may not have it.
-  std::string group_code_key =
-      GetMachineStatistic(chromeos::system::kOffersGroupCodeKey);
-
-  // Get the current time in quantized form.
-  int64 quantum_size = GG_INT64_C(1) << kDeviceStateKeyTimeQuantumPower;
-  int64 quantized_time =
-      (timestamp - base::Time::UnixEpoch()).InSeconds() & ~(quantum_size - 1);
-  for (int i = 0; i < kDeviceStateKeyFutureQuanta; ++i) {
-    state_keys->push_back(crypto::SHA256HashString(
-        crypto::SHA256HashString(group_code_key) +
-        crypto::SHA256HashString(disk_serial_number) +
-        crypto::SHA256HashString(machine_id) +
-        crypto::SHA256HashString(base::Int64ToString(quantized_time))));
-    quantized_time += quantum_size;
-  }
-
-  return true;
 }
 
 }  // namespace policy

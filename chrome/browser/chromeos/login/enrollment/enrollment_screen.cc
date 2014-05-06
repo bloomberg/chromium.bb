@@ -269,6 +269,7 @@ void EnrollmentScreen::ReportEnrollmentStatus(
     case policy::EnrollmentStatus::STATUS_LOCK_WRONG_USER:
       UMAFailure(policy::kMetricEnrollmentWrongUserError);
       return;
+    case policy::EnrollmentStatus::STATUS_NO_STATE_KEYS:
     case policy::EnrollmentStatus::STATUS_VALIDATION_FAILED:
     case policy::EnrollmentStatus::STATUS_STORE_ERROR:
     case policy::EnrollmentStatus::STATUS_LOCK_ERROR:

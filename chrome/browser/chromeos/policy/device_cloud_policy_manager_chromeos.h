@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
+#include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -46,22 +47,6 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   typedef std::bitset<32> AllowedDeviceModes;
   typedef base::Callback<void(EnrollmentStatus)> EnrollmentCallback;
 
-  // The power of two determining the size of the time quanta for device state
-  // keys, i.e. the quanta will be of size 2^kDeviceStateKeyTimeQuantumPower
-  // seconds. 2^23 seconds corresponds to 97.09 days.
-  static const int kDeviceStateKeyTimeQuantumPower = 23;
-
-  // The number of future time quanta to generate device state identifiers for.
-  // This determines the interval after which a device will no longer receive
-  // server-backed state information and thus corresponds to the delay until a
-  // device becomes anonymous to the server again.
-  //
-  // The goal here is to guarantee state key validity for 1 year into the
-  // future. 4 quanta are needed to cover a year, but the current quantum is
-  // clipped short in the general case. Hence, one buffer quantum is needed to
-  // make up for the clipping, yielding a total of 5 quanta.
-  static const int kDeviceStateKeyFutureQuanta = 5;
-
   // |task_runner| is the runner for policy refresh tasks.
   // |background_task_runner| is used to execute long-running background tasks
   // that may involve file I/O.
@@ -69,7 +54,8 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
       scoped_ptr<DeviceCloudPolicyStoreChromeOS> store,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
-      EnterpriseInstallAttributes* install_attributes);
+      EnterpriseInstallAttributes* install_attributes,
+      ServerBackedStateKeysBroker* state_keys_broker);
   virtual ~DeviceCloudPolicyManagerChromeOS();
 
   // Establishes the connection to the cloud, updating policy as necessary.
@@ -118,15 +104,6 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // Returns the machine model, or an empty string if not available.
   static std::string GetMachineModel();
 
-  // Gets the device state keys for |timestamp|. These will cover a time frame
-  // including |timestamp| and extending into the future as configured by the
-  // constants declared above.
-  static bool GetDeviceStateKeys(const base::Time& timestamp,
-                                 std::vector<std::string>* state_keys);
-
-  // Returns the currently valid device state key.
-  static std::string GetCurrentDeviceStateKey();
-
   // Returns the robot 'email address' associated with the device robot
   // account (sometimes called a service account) associated with this device
   // during enterprise enrollment.
@@ -147,8 +124,11 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // Starts the connection via |client_to_connect|.
   void StartConnection(scoped_ptr<CloudPolicyClient> client_to_connect);
 
+  // Saves the state keys received from |session_manager_client_|.
+  void OnStateKeysUpdated();
+
   // Initializes requisition settings at OOBE with values from VPD.
-  void InitalizeRequisition();
+  void InitializeRequisition();
 
   // Gets the device restore mode as stored in |local_state_|.
   std::string GetRestoreMode() const;
@@ -158,6 +138,9 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   scoped_ptr<DeviceCloudPolicyStoreChromeOS> device_store_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   EnterpriseInstallAttributes* install_attributes_;
+  ServerBackedStateKeysBroker* state_keys_broker_;
+
+  ServerBackedStateKeysBroker::Subscription state_keys_update_subscription_;
 
   DeviceManagementService* device_management_service_;
   scoped_ptr<CloudPolicyClient::StatusProvider> device_status_provider_;

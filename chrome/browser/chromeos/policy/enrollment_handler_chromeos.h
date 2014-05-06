@@ -29,6 +29,8 @@ class PolicyFetchResponse;
 
 namespace policy {
 
+class ServerBackedStateKeysBroker;
+
 // Implements the logic that establishes enterprise enrollment for Chromium OS
 // devices. The process is as follows:
 //   1. Given an auth token, register with the policy service.
@@ -57,13 +59,13 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   EnrollmentHandlerChromeOS(
       DeviceCloudPolicyStoreChromeOS* store,
       EnterpriseInstallAttributes* install_attributes,
+      ServerBackedStateKeysBroker* state_keys_broker,
       scoped_ptr<CloudPolicyClient> client,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const std::string& auth_token,
       const std::string& client_id,
       bool is_auto_enrollment,
       const std::string& requisition,
-      const std::string& current_state_key,
       const AllowedDeviceModes& allowed_device_modes,
       const EnrollmentCallback& completion_callback);
   virtual ~EnrollmentHandlerChromeOS();
@@ -99,6 +101,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   // to be listed in the order they are traversed in.
   enum EnrollmentStep {
     STEP_PENDING,             // Not started yet.
+    STEP_STATE_KEYS,          // Waiting for state keys to become available.
     STEP_LOADING_STORE,       // Waiting for |store_| to initialize.
     STEP_REGISTRATION,        // Currently registering the client.
     STEP_POLICY_FETCH,        // Fetching policy.
@@ -110,6 +113,9 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
     STEP_STORE_POLICY,        // Storing policy and API refresh token.
     STEP_FINISHED,            // Enrollment process finished, no further action.
   };
+
+  // Handles the response to a request for server-backed state keys.
+  void CheckStateKeys(const std::vector<std::string>& state_keys);
 
   // Starts registration if the store is initialized.
   void AttemptRegistration();
@@ -144,6 +150,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
 
   DeviceCloudPolicyStoreChromeOS* store_;
   EnterpriseInstallAttributes* install_attributes_;
+  ServerBackedStateKeysBroker* state_keys_broker_;
   scoped_ptr<CloudPolicyClient> client_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   scoped_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
@@ -172,7 +179,6 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   // initialization.
   int lockbox_init_duration_;
 
-  // Used for locking the device.
   base::WeakPtrFactory<EnrollmentHandlerChromeOS> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EnrollmentHandlerChromeOS);

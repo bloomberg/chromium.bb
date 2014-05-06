@@ -236,6 +236,9 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
     case policy::EnrollmentStatus::STATUS_SUCCESS:
       ShowStep(kEnrollmentStepSuccess);
       return;
+    case policy::EnrollmentStatus::STATUS_NO_STATE_KEYS:
+      ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_NO_STATE_KEYS, false);
+      return;
     case policy::EnrollmentStatus::STATUS_REGISTRATION_FAILED:
       // Some special cases for generating a nicer message that's more helpful.
       switch (status.client_status()) {
