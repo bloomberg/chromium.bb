@@ -974,6 +974,7 @@
           'dependencies': [
             '../cc/cc_tests.gyp:cc_unittests',
             '../chrome/chrome.gyp:browser_tests',
+            '../chrome/chrome.gyp:crash_service',
             '../chrome/chrome.gyp:gcapi_test',
             '../chrome/chrome.gyp:installer_util_unittests',
             '../chrome/chrome.gyp:interactive_ui_tests',
@@ -1012,6 +1013,13 @@
             '../ui/views/views.gyp:views_unittests',
             '../url/url.gyp:url_unittests',
             '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests',
+          ],
+          'conditions': [
+            ['target_arch=="ia32"', {
+              'dependencies': [
+                '../chrome/chrome.gyp:crash_service_win64',
+              ],
+            }],
           ],
         },
         {
