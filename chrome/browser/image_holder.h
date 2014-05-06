@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NOTIFICATIONS_SYNC_NOTIFIER_IMAGE_HOLDER_H_
-#define CHROME_BROWSER_NOTIFICATIONS_SYNC_NOTIFIER_IMAGE_HOLDER_H_
+#ifndef CHROME_BROWSER_IMAGE_HOLDER_H_
+#define CHROME_BROWSER_IMAGE_HOLDER_H_
 
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/bitmap_fetcher.h"
@@ -13,7 +13,7 @@
 
 class Profile;
 
-namespace notifier {
+namespace chrome {
 
 // This provides a callback so the ImageHolder can inform its parent when a
 // bitmap arrives.
@@ -67,6 +67,6 @@ class ImageHolder : public chrome::BitmapFetcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(ImageHolder);
 };
 
-}  // namespace notifier.
+}  // namespace chrome.
 
-#endif  // CHROME_BROWSER_NOTIFICATIONS_SYNC_NOTIFIER_IMAGE_HOLDER_H_
+#endif  // CHROME_BROWSER_IMAGE_HOLDER_H_

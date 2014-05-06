@@ -4,11 +4,13 @@
 
 #include "chrome/browser/notifications/sync_notifier/synced_notification_app_info.h"
 
-#include "chrome/browser/notifications/sync_notifier/image_holder.h"
 #include "chrome/browser/notifications/sync_notifier/synced_notification_app_info_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "sync/api/sync_data.h"
 #include "sync/protocol/synced_notification_app_info_specifics.pb.h"
+
+using chrome::ImageHolder;
+using chrome::ImageHolderDelegate;
 
 namespace notifier {
 

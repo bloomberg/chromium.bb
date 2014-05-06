@@ -4,14 +4,15 @@
 
 #include <string>
 
-#include "chrome/browser/notifications/sync_notifier/image_holder.h"
-#include "chrome/browser/notifications/sync_notifier/sync_notifier_test_utils.h"
-
+#include "chrome/browser/image_holder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class TestDelegate : public notifier::ImageHolderDelegate {
+const char kIconUrl1[] = "http://www.google.com/icon1.jpg";
+const char kIconUrl2[] = "http://www.google.com/icon2.jpg";
+
+class TestDelegate : public chrome::ImageHolderDelegate {
  public:
   TestDelegate() : on_fetch_complete_called_(false) {}
   virtual void OnFetchComplete() OVERRIDE {
@@ -22,7 +23,7 @@ class TestDelegate : public notifier::ImageHolderDelegate {
 
 }  // namespace.
 
-namespace notifier {
+namespace chrome {
 
 typedef testing::Test ImageHolderTest;
 
@@ -100,4 +101,4 @@ TEST_F(ImageHolderTest, IsFetchingDoneTest) {
   EXPECT_TRUE(image_holder4.IsFetchingDone());
 }
 
-}  // namespace notifier.
+}  // namespace chrome.

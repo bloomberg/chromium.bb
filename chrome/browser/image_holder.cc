@@ -5,11 +5,11 @@
 // This class holds the URL to an image and the bitmap for the fetched image,
 // and has code to fetch the bitmap from the URL.
 
-#include "chrome/browser/notifications/sync_notifier/image_holder.h"
+#include "chrome/browser/image_holder.h"
 
 #include "chrome/browser/profiles/profile.h"
 
-namespace notifier {
+namespace chrome {
 
 ImageHolder::ImageHolder(const GURL& low_dpi_url,
                          const GURL& high_dpi_url,
@@ -92,4 +92,4 @@ void ImageHolder::OnFetchComplete(const GURL url, const SkBitmap* bitmap) {
   delegate_->OnFetchComplete();
 }
 
-}  // namespace notifier.
+}  // namespace chrome.

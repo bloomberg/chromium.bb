@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/notifications/sync_notifier/image_holder.h"
+#include "chrome/browser/image_holder.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/notifier_settings.h"
 #include "url/gurl.h"
@@ -23,7 +23,7 @@ namespace notifier {
 
 class SyncedNotificationAppInfoService;
 
-class SyncedNotificationAppInfo : public notifier::ImageHolderDelegate {
+class SyncedNotificationAppInfo : public chrome::ImageHolderDelegate {
  public:
   SyncedNotificationAppInfo(
       Profile* const profile,
@@ -111,11 +111,11 @@ class SyncedNotificationAppInfo : public notifier::ImageHolderDelegate {
   GURL welcome_link_url_;
 
   // The 1x and 2x versions of the icon for settings, small.
-  scoped_ptr<ImageHolder> settings_holder_;
+  scoped_ptr<chrome::ImageHolder> settings_holder_;
   // Monochrome icons for app badging (1x and 2x), small.
-  scoped_ptr<ImageHolder> monochrome_holder_;
+  scoped_ptr<chrome::ImageHolder> monochrome_holder_;
   // Welcome dialog icon (1x and 2x), large.
-  scoped_ptr<ImageHolder> welcome_holder_;
+  scoped_ptr<chrome::ImageHolder> welcome_holder_;
   // A landing page link for settings/welcome toast.
   GURL welcome_landing_page_url_;
   std::vector<std::string> added_app_ids_;
