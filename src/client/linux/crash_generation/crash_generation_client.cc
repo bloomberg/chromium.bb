@@ -74,8 +74,10 @@ class CrashGenerationClientImpl : public CrashGenerationClient {
 
     ssize_t ret = HANDLE_EINTR(sys_sendmsg(server_fd_, &msg, 0));
     sys_close(fds[1]);
-    if (ret < 0)
+    if (ret < 0) {
+      sys_close(fds[0]);
       return false;
+    }
 
     // Wait for an ACK from the server.
     char b;

@@ -474,19 +474,25 @@ bool ExceptionHandler::GenerateDump(CrashContext *context) {
     logger::write(no_pipe_msg, sizeof(no_pipe_msg) - 1);
     logger::write(strerror(errno), strlen(strerror(errno)));
     logger::write("\n", 1);
+
+    // Ensure fdes[0] and fdes[1] are invalid file descriptors.
+    fdes[0] = fdes[1] = -1;
   }
 
   const pid_t child = sys_clone(
       ThreadEntry, stack, CLONE_FILES | CLONE_FS | CLONE_UNTRACED,
       &thread_arg, NULL, NULL, NULL);
+  if (child == -1) {
+    sys_close(fdes[0]);
+    sys_close(fdes[1]);
+    return false;
+  }
 
-  int r, status;
   // Allow the child to ptrace us
   sys_prctl(PR_SET_PTRACER, child, 0, 0, 0);
   SendContinueSignalToChild();
-  do {
-    r = sys_waitpid(child, &status, __WALL);
-  } while (r == -1 && errno == EINTR);
+  int status;
+  const int r = HANDLE_EINTR(sys_waitpid(child, &status, __WALL));
 
   sys_close(fdes[0]);
   sys_close(fdes[1]);
