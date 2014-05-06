@@ -24,7 +24,6 @@ config("feature_flags") {
   # TODO(brettw) most of these need to be parameterized.
   defines = [
       "CHROMIUM_BUILD",
-      "USE_LIBJPEG_TURBO=1",
       "ENABLE_ONE_CLICK_SIGNIN",
       "ENABLE_REMOTING=1",
       "ENABLE_WEBRTC=1",

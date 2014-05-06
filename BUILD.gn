@@ -49,6 +49,7 @@ group("root") {
     "//third_party/smhasher:pmurhash",
     "//third_party/WebKit/Source/wtf",
     "//third_party/zlib",
+    "//third_party:jpeg",
     "//tools/gn",
     "//ui/base:ui_base",
     "//ui/base/strings",

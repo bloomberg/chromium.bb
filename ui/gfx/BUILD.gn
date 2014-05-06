@@ -264,7 +264,7 @@ component("gfx") {
       "codec/jpeg_codec.h",
     ]
   } else {
-    deps += [ "//third_party/libjpeg" ]
+    deps += [ "//third_party:jpeg" ]
   }
 
   # Android.
