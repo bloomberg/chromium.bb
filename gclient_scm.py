@@ -358,6 +358,10 @@ class GitWrapper(SCMWrapper):
         self._DeleteOrMove(options.force)
         self._Clone(revision, url, options)
       self._UpdateBranchHeads(options, fetch=True)
+      if deps_revision and deps_revision.startswith('branch-heads/'):
+        deps_branch = deps_revision.replace('branch-heads/', '')
+        self._Capture(['branch', deps_branch, deps_revision])
+        self._Capture(['checkout', '--quiet', deps_branch])
       if file_list is not None:
         files = self._Capture(['ls-files']).splitlines()
         file_list.extend([os.path.join(self.checkout_path, f) for f in files])

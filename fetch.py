@@ -111,10 +111,12 @@ class GclientGitCheckout(GclientCheckout, GitCheckout):
   def init(self):
     # Configure and do the gclient checkout.
     self.run_gclient('config', '--spec', self.spec['gclient_spec'])
+    sync_cmd = ['sync']
     if self.options.nohooks:
-      self.run_gclient('sync', '--nohooks')
-    else:
-      self.run_gclient('sync')
+      sync_cmd.append('--nohooks')
+    if self.spec.get('with_branch_heads', False):
+      sync_cmd.append('--with_branch_heads')
+    self.run_gclient(*sync_cmd)
 
     # Configure git.
     wd = os.path.join(self.base, self.root)
@@ -159,10 +161,11 @@ class GclientGitSvnCheckout(GclientGitCheckout, SvnCheckout):
       wd = os.path.join(self.base, real_path)
       if self.options.dry_run:
         print 'cd %s' % wd
-      self.run_git('svn', 'init', '--prefix=origin/', '-T',
+      prefix = svn_spec.get('svn_prefix', 'origin/')
+      self.run_git('svn', 'init', '--prefix=' + prefix, '-T',
                    svn_spec['svn_branch'], svn_spec['svn_url'], cwd=wd)
       self.run_git('config', '--replace', 'svn-remote.svn.fetch',
-                   svn_spec['svn_branch'] + ':refs/remotes/origin/' +
+                   svn_spec['svn_branch'] + ':refs/remotes/' + prefix +
                    svn_spec['svn_ref'], cwd=wd)
       self.run_git('svn', 'fetch', cwd=wd)
 
