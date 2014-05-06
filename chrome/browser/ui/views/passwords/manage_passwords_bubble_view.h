@@ -136,15 +136,6 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   // Close the bubble.
   void Close();
 
-  // Close the bubble without triggering UMA logging. We need this for the
-  // moment, as the current implementation can close the bubble without user
-  // interaction; we want to ensure that doesn't show up as a user action in
-  // our counts.
-  //
-  // TODO(mkwst): Throw this away once the icon is no longer responsible for
-  // creating the bubble.
-  void CloseWithoutLogging();
-
   // views::BubbleDelegateView:
   virtual void Init() OVERRIDE;
   virtual void WindowClosing() OVERRIDE;

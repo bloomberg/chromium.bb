@@ -89,7 +89,6 @@ TEST_F(ManagePasswordsBubbleModelTest, DefaultValues) {
 
 TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutLogging) {
   base::StatisticsDeltaReader statistics_delta_reader;
-  model_->OnCloseWithoutLogging();
   model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::NOT_DISPLAYED);

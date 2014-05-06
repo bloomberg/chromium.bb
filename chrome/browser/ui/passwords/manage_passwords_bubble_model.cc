@@ -80,10 +80,6 @@ void ManagePasswordsBubbleModel::OnBubbleHidden() {
   password_manager::metrics_util::LogUIDismissalReason(dismissal_reason_);
 }
 
-void ManagePasswordsBubbleModel::OnCloseWithoutLogging() {
-  dismissal_reason_ = password_manager::metrics_util::NOT_DISPLAYED;
-}
-
 void ManagePasswordsBubbleModel::OnNopeClicked() {
   dismissal_reason_ = password_manager::metrics_util::CLICKED_NOPE;
   manage_passwords_bubble_state_ = PASSWORD_TO_BE_SAVED;

@@ -66,10 +66,6 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   void OnPasswordAction(const autofill::PasswordForm& password_form,
                         PasswordAction action);
 
-  // Called by the view code when the bubble is closed without ever displaying
-  // content to the user. We shouldn't log to UMA in this case.
-  void OnCloseWithoutLogging();
-
   ManagePasswordsBubbleState manage_passwords_bubble_state() const {
     return manage_passwords_bubble_state_;
   }

@@ -371,7 +371,7 @@ void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
 // static
 void ManagePasswordsBubbleView::CloseBubble() {
   if (manage_passwords_bubble_)
-    manage_passwords_bubble_->CloseWithoutLogging();
+    manage_passwords_bubble_->Close();
 }
 
 // static
@@ -411,11 +411,6 @@ void ManagePasswordsBubbleView::AdjustForFullscreen(
 }
 
 void ManagePasswordsBubbleView::Close() {
-  GetWidget()->Close();
-}
-
-void ManagePasswordsBubbleView::CloseWithoutLogging() {
-  model()->OnCloseWithoutLogging();
   GetWidget()->Close();
 }
 
