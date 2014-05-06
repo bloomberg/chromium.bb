@@ -1437,6 +1437,8 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
 
   SetAsFolderDroppingTarget(drop_target_, false);
   ClearDragState(cancel_reparent);
+  if (cancel_reparent)
+    CancelFolderItemReparent(cached_drag_view.get());
   AnimateToIdealBounds();
 
   StopPageFlipTimer();
