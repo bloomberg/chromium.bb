@@ -40,7 +40,6 @@ public:
     virtual void didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version) = 0;
     virtual void didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version) = 0;
 
-    virtual void didStartSession(bool success) = 0; // FIXME: Remove this obsolete API.
     virtual void didStartSession(bool success, const WebString& error, const WebString& message) = 0;
 
     // |timeStamp| is in milliseconds according to the Web MIDI API.

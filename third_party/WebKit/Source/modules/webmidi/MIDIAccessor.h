@@ -52,7 +52,6 @@ public:
     // blink::WebMIDIAccessorClient
     virtual void didAddInputPort(const blink::WebString& id, const blink::WebString& manufacturer, const blink::WebString& name, const blink::WebString& version) OVERRIDE;
     virtual void didAddOutputPort(const blink::WebString& id, const blink::WebString& manufacturer, const blink::WebString& name, const blink::WebString& version) OVERRIDE;
-    virtual void didStartSession(bool success) OVERRIDE; // FIXME: Remove this obsolete API.
     virtual void didStartSession(bool success, const blink::WebString& error, const blink::WebString& message) OVERRIDE;
     virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) OVERRIDE;
 

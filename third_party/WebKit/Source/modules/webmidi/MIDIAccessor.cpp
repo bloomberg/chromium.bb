@@ -75,11 +75,6 @@ void MIDIAccessor::didAddOutputPort(const WebString& id, const WebString& manufa
     m_client->didAddOutputPort(id, manufacturer, name, version);
 }
 
-void MIDIAccessor::didStartSession(bool success)
-{
-    m_client->didStartSession(success, "InvalidStateError", "");
-}
-
 void MIDIAccessor::didStartSession(bool success, const WebString& error, const WebString& message)
 {
     m_client->didStartSession(success, error, message);
