@@ -53,6 +53,11 @@ class UI_BASE_EXPORT SelectionOwner {
   // don't, but there were open todos in the previous implementation.
 
  private:
+  // Attempts to convert the selection to |target|. If the conversion is
+  // successful, true is returned and the result is stored in the |property|
+  // of |requestor|.
+  bool ProcessTarget(::Atom target, ::Window requestor, ::Atom property);
+
   // Our X11 state.
   Display* x_display_;
   ::Window x_window_;

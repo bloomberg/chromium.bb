@@ -2289,6 +2289,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Clipboard.X11StoreCopyPasteDuration" units="ms">
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>
+    The length of time that it takes to transfer ownership of Chrome's CLIPBOARD
+    selection to the clipboard manager when Chrome exits.
+  </summary>
+</histogram>
+
 <histogram name="CloudPrint.AuthEvent" enum="CloudPrintAuthEventType">
   <owner>vitalybuka@chromium.org</owner>
   <summary>Event counts in CloudPrintAuth.</summary>

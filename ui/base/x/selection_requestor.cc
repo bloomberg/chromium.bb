@@ -43,13 +43,16 @@ bool SelectionRequestor::PerformBlockingConvertSelection(
     size_t* out_data_bytes,
     size_t* out_data_items,
     Atom* out_type) {
-  // The name of the property we're asking to be set on |x_window_|.
-  Atom property_to_set = atom_cache_.GetAtom(kChromeSelection);
+  // The name of the property that we are either:
+  // - Passing as a parameter with the XConvertSelection() request.
+  // OR
+  // - Asking the selection owner to set on |x_window_|.
+  Atom property = atom_cache_.GetAtom(kChromeSelection);
 
   XConvertSelection(x_display_,
                     selection_name_,
                     target,
-                    property_to_set,
+                    property,
                     x_window_,
                     CurrentTime);
 
@@ -59,7 +62,7 @@ bool SelectionRequestor::PerformBlockingConvertSelection(
   BlockTillSelectionNotifyForRequest(&pending_request);
 
   bool success = false;
-  if (pending_request.returned_property == property_to_set) {
+  if (pending_request.returned_property == property) {
     success =  ui::GetRawBytesOfProperty(x_window_,
                                          pending_request.returned_property,
                                          out_data, out_data_bytes,
@@ -68,6 +71,13 @@ bool SelectionRequestor::PerformBlockingConvertSelection(
   if (pending_request.returned_property != None)
     XDeleteProperty(x_display_, x_window_, pending_request.returned_property);
   return success;
+}
+
+void SelectionRequestor::PerformBlockingConvertSelectionWithParameter(
+    Atom target,
+    const std::vector< ::Atom>& parameter) {
+  SetAtomArrayProperty(x_window_, kChromeSelection, "ATOM", parameter);
+  PerformBlockingConvertSelection(target, NULL, NULL, NULL, NULL);
 }
 
 SelectionData SelectionRequestor::RequestAndWaitForTypes(

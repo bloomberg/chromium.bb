@@ -50,6 +50,12 @@ class UI_BASE_EXPORT SelectionRequestor {
       size_t* out_data_items,
       ::Atom* out_type);
 
+  // Requests |target| from the selection that we handle, passing |parameter|
+  // as a parameter to XConvertSelection().
+  void PerformBlockingConvertSelectionWithParameter(
+      ::Atom target,
+      const std::vector< ::Atom>& parameter);
+
   // Returns the first of |types| offered by the current selection holder, or
   // returns NULL if none of those types are available.
   SelectionData RequestAndWaitForTypes(const std::vector< ::Atom>& types);
