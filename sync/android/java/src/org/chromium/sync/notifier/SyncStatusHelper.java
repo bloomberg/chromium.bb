@@ -103,7 +103,7 @@ public class SyncStatusHelper {
 
             mAccount = account;
 
-            StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
+            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
             mSyncAutomatically = mSyncContentResolverDelegate.getSyncAutomatically(
                     account, mContractAuthority);
             mIsSyncable = mSyncContentResolverDelegate.getIsSyncable(account, mContractAuthority);
@@ -116,7 +116,7 @@ public class SyncStatusHelper {
         @VisibleForTesting
         protected void setIsSyncableInternal(Account account) {
             mIsSyncable = 1;
-            StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
+            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
             mSyncContentResolverDelegate.setIsSyncable(account, mContractAuthority, 1);
             StrictMode.setThreadPolicy(oldPolicy);
             mDidUpdate = true;
@@ -125,7 +125,7 @@ public class SyncStatusHelper {
         @VisibleForTesting
         protected void setSyncAutomaticallyInternal(Account account, boolean value) {
             mSyncAutomatically = value;
-            StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
+            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
             mSyncContentResolverDelegate.setSyncAutomatically(account, mContractAuthority, value);
             StrictMode.setThreadPolicy(oldPolicy);
             mDidUpdate = true;
@@ -186,7 +186,7 @@ public class SyncStatusHelper {
     }
 
     private void updateMasterSyncAutomaticallySetting() {
-        StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         synchronized (mCachedSettings) {
             mCachedMasterSyncAutomatically = mSyncContentResolverDelegate
                     .getMasterSyncAutomatically();
@@ -371,7 +371,7 @@ public class SyncStatusHelper {
             mCachedSettings.setIsSyncable(account);
         }
 
-        StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         // Disable the syncability of Chrome for all other accounts. Don't use
         // our cache as we're touching many accounts that aren't signed in, so this saves
         // extra calls to Android sync configuration.
@@ -412,25 +412,6 @@ public class SyncStatusHelper {
                     notifyObservers();
             }
         }
-    }
-
-    /**
-     * Sets a new StrictMode.ThreadPolicy based on the current one, but allows disk reads
-     * and disk writes.
-     *
-     * The return value is the old policy, which must be applied after the disk access is finished,
-     * by using StrictMode.setThreadPolicy(oldPolicy).
-     *
-     * @return the policy before allowing reads and writes.
-     */
-    private static StrictMode.ThreadPolicy temporarilyAllowDiskWritesAndDiskReads() {
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.getThreadPolicy();
-        StrictMode.ThreadPolicy.Builder newPolicy =
-                new StrictMode.ThreadPolicy.Builder(oldPolicy);
-        newPolicy.permitDiskReads();
-        newPolicy.permitDiskWrites();
-        StrictMode.setThreadPolicy(newPolicy.build());
-        return oldPolicy;
     }
 
     private boolean getAndClearDidUpdateStatus() {
