@@ -4,15 +4,17 @@
 
 #include "sync/internal_api/public/base/attachment_id_proto.h"
 
-#include "base/rand_util.h"
+#include "base/guid.h"
+#include "base/logging.h"
 
 namespace syncer {
 
 sync_pb::AttachmentIdProto CreateAttachmentIdProto() {
   // Only requirement here is that this id must be globally unique.
-  // TODO(maniscalco): Consider making this base64 encoded.
   sync_pb::AttachmentIdProto proto;
-  proto.set_unique_id(base::RandBytesAsString(16));
+  std::string guid = base::GenerateGUID();
+  DCHECK(!guid.empty());
+  proto.set_unique_id(guid);
   return proto;
 }
 
