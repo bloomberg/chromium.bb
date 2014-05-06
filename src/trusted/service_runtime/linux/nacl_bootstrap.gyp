@@ -59,6 +59,19 @@
                   ['exclude', '^--sysroot=.*']],
       'ldflags/': [['exclude', '^-m.*'],
                    ['exclude', '^--sysroot=.*']],
+      'cflags!': [
+        # MemorySanitizer reports an error in this binary unless instrumented
+        # libelf is supplied. Because libelf source code uses gcc extensions,
+        # building it with MemorySanitizer (which implies clang) is challenging,
+        # and it's much simpler to just disable MSan for this target.
+        '-fsanitize=memory',
+        '-fsanitize-memory-track-origins',
+        # This causes an "unused argument" warning in C targets.
+        '-stdlib=libc++',
+      ],
+      'ldflags!': [
+        '-fsanitize=memory',
+      ],
     },
     {
       'target_name': 'nacl_bootstrap_lib',
@@ -100,6 +113,8 @@
         '-fprofile-generate',
         '-finstrument-functions',
         '-funwind-tables',
+        # This causes an "unused argument" warning in C targets.
+        '-stdlib=libc++',
       ],
       'conditions': [
         ['clang==1', {
