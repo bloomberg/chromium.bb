@@ -57,7 +57,7 @@ function runTest(algorithmName, extractable, keyUsages, keyData)
         shouldBeUndefined("importedKey.algorithm.hash");
         shouldEvaluateAs("importedKey.usages.join(',')", keyUsages.join(","));
 
-        shouldBeTrue("importedKey != clonedKey");
+        shouldNotBe("importedKey", "clonedKey");
 
         shouldBeUndefined("clonedKey.extraProperty");
         shouldEvaluateAs("clonedKey.type", "public");

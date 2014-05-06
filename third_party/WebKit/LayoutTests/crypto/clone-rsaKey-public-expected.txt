@@ -12,7 +12,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash is undefined.
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "public"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -34,7 +34,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash is undefined.
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "public"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -56,7 +56,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash is undefined.
 PASS importedKey.usages.join(',') is "encrypt"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "public"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -78,7 +78,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash is undefined.
 PASS importedKey.usages.join(',') is "encrypt"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "public"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -100,7 +100,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash is undefined.
 PASS importedKey.usages.join(',') is "decrypt,wrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "public"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -122,7 +122,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash is undefined.
 PASS importedKey.usages.join(',') is "decrypt,wrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "public"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -144,7 +144,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash is undefined.
 PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "public"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -166,7 +166,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash is undefined.
 PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "public"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -188,7 +188,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash is undefined.
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "public"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -209,7 +209,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash is undefined.
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "public"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -230,7 +230,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash is undefined.
 PASS importedKey.usages.join(',') is "encrypt"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "public"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -251,7 +251,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash is undefined.
 PASS importedKey.usages.join(',') is "encrypt"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "public"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -272,7 +272,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash is undefined.
 PASS importedKey.usages.join(',') is "decrypt,wrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "public"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -293,7 +293,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash is undefined.
 PASS importedKey.usages.join(',') is "decrypt,wrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "public"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -314,7 +314,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash is undefined.
 PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "public"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -335,7 +335,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash is undefined.
 PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "public"
 PASS typeof clonedKey.extractable is 'boolean'

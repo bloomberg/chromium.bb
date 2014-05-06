@@ -11,7 +11,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -31,7 +31,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -51,7 +51,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -71,7 +71,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -91,7 +91,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -111,7 +111,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -131,7 +131,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -151,7 +151,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -171,7 +171,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -190,7 +190,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -209,7 +209,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -228,7 +228,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -247,7 +247,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -266,7 +266,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -285,7 +285,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -304,7 +304,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -323,7 +323,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -343,7 +343,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -363,7 +363,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -383,7 +383,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -403,7 +403,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -423,7 +423,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -443,7 +443,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -463,7 +463,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -483,7 +483,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -502,7 +502,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -521,7 +521,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -540,7 +540,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -559,7 +559,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -578,7 +578,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -597,7 +597,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -616,7 +616,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -635,7 +635,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -655,7 +655,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -675,7 +675,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -695,7 +695,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -715,7 +715,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -735,7 +735,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -755,7 +755,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -775,7 +775,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -795,7 +795,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -814,7 +814,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -833,7 +833,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -852,7 +852,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -871,7 +871,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -890,7 +890,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -909,7 +909,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -928,7 +928,7 @@ PASS importedKey.algorithm.name is "HMAC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'

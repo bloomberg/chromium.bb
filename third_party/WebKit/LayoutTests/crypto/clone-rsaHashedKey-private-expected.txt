@@ -12,7 +12,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -34,7 +34,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -56,7 +56,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -78,7 +78,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -100,7 +100,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -122,7 +122,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -144,7 +144,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -166,7 +166,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -188,7 +188,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -210,7 +210,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -232,7 +232,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -254,7 +254,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -276,7 +276,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -298,7 +298,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -320,7 +320,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -342,7 +342,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -364,7 +364,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -386,7 +386,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -408,7 +408,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -430,7 +430,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -452,7 +452,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -474,7 +474,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -496,7 +496,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -518,7 +518,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -540,7 +540,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -561,7 +561,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -582,7 +582,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -603,7 +603,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -624,7 +624,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -645,7 +645,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -666,7 +666,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -687,7 +687,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -708,7 +708,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -729,7 +729,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -750,7 +750,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -771,7 +771,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "sign"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -792,7 +792,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -813,7 +813,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -834,7 +834,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -855,7 +855,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -876,7 +876,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -897,7 +897,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -918,7 +918,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -939,7 +939,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -960,7 +960,7 @@ PASS importedKey.algorithm.modulusLength is 1024
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -981,7 +981,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-1"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -1002,7 +1002,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-256"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -1023,7 +1023,7 @@ PASS importedKey.algorithm.modulusLength is 2048
 PASS: importedKey.algorithm.publicExponent should be [010001] and was
 PASS importedKey.algorithm.hash.name is "SHA-512"
 PASS importedKey.usages.join(',') is "sign,verify"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "private"
 PASS typeof clonedKey.extractable is 'boolean'

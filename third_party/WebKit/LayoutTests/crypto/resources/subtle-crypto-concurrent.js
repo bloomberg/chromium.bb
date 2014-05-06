@@ -33,7 +33,8 @@ function testGenerateRsaKey()
 {
     var extractable = false;
     var usages = ['encrypt', 'decrypt'];
-    // Note that the modulus length is unsually small, in order to speed up the test.
+    // Note that the modulus length is unusually small in order to speed up
+    // the test (1024 or 2048 would be more typical).
     var algorithm = {name: "RSAES-PKCS1-v1_5", modulusLength: 256, publicExponent: hexStringToUint8Array("010001")};
 
     return crypto.subtle.generateKey(algorithm, extractable, usages).then(function(result) {

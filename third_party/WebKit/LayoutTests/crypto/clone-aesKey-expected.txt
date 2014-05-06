@@ -10,7 +10,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -28,7 +28,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 192
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -46,7 +46,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -64,7 +64,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.usages.join(',') is "encrypt"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -82,7 +82,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 192
 PASS importedKey.usages.join(',') is "encrypt"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -100,7 +100,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is "encrypt"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -118,7 +118,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.usages.join(',') is "decrypt,wrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -136,7 +136,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 192
 PASS importedKey.usages.join(',') is "decrypt,wrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -154,7 +154,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is "decrypt,wrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -172,7 +172,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -190,7 +190,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 192
 PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -208,7 +208,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -226,7 +226,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -243,7 +243,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 192
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -260,7 +260,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -277,7 +277,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.usages.join(',') is "encrypt"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -294,7 +294,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 192
 PASS importedKey.usages.join(',') is "encrypt"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -311,7 +311,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is "encrypt"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -328,7 +328,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.usages.join(',') is "decrypt,wrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -345,7 +345,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 192
 PASS importedKey.usages.join(',') is "decrypt,wrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -362,7 +362,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is "decrypt,wrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -379,7 +379,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -396,7 +396,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 192
 PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -413,7 +413,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -430,7 +430,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -448,7 +448,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 192
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -466,7 +466,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -484,7 +484,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.usages.join(',') is "encrypt"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -502,7 +502,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 192
 PASS importedKey.usages.join(',') is "encrypt"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -520,7 +520,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is "encrypt"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -538,7 +538,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.usages.join(',') is "decrypt,wrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -556,7 +556,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 192
 PASS importedKey.usages.join(',') is "decrypt,wrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -574,7 +574,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is "decrypt,wrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -592,7 +592,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -610,7 +610,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 192
 PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -628,7 +628,7 @@ PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -646,7 +646,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -663,7 +663,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 192
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -680,7 +680,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is ""
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -697,7 +697,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.usages.join(',') is "encrypt"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -714,7 +714,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 192
 PASS importedKey.usages.join(',') is "encrypt"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -731,7 +731,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is "encrypt"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -748,7 +748,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.usages.join(',') is "decrypt,wrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -765,7 +765,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 192
 PASS importedKey.usages.join(',') is "decrypt,wrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -782,7 +782,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is "decrypt,wrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -799,7 +799,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 128
 PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -816,7 +816,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 192
 PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'
@@ -833,7 +833,7 @@ PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS importedKey != clonedKey is true
+PASS importedKey is not clonedKey
 PASS clonedKey.extraProperty is undefined.
 PASS clonedKey.type is "secret"
 PASS typeof clonedKey.extractable is 'boolean'

@@ -54,7 +54,7 @@ function runTest(algorithmName, extractable, keyUsages, keyData)
         shouldEvaluateAs("importedKey.algorithm.length", importData.length * 8);
         shouldEvaluateAs("importedKey.usages.join(',')", keyUsages.join(","));
 
-        shouldBeTrue("importedKey != clonedKey");
+        shouldNotBe("importedKey", "clonedKey");
 
         shouldBeUndefined("clonedKey.extraProperty");
         shouldEvaluateAs("clonedKey.type", "secret");
