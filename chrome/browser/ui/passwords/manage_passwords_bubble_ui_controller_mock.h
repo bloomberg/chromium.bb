@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
+#include "components/password_manager/core/common/password_manager_ui.h"
 
 namespace content {
 class WebContents;
@@ -44,10 +45,7 @@ class ManagePasswordsBubbleUIControllerMock
   void SetPasswordFormMap(const autofill::PasswordFormMap& map) {
     password_form_map_ = map;
   }
-  void SetState(ManagePasswordsBubbleUIController::State state) {
-    state_ = state;
-  }
-
+  void SetState(password_manager::ui::State state) { state_ = state; }
 
   // True if this controller is installed on |web_contents()|.
   bool IsInstalled() const;

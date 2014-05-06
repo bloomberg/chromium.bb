@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller_mock.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/common/password_manager_ui.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,14 +40,14 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
         ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED);
     model_->OnBubbleShown(ManagePasswordsBubble::AUTOMATIC);
     controller()->SetState(
-        ManagePasswordsBubbleUIController::PENDING_PASSWORD_AND_BUBBLE_STATE);
+        password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE);
   }
 
   void PretendManagingPasswords() {
     model_->set_manage_passwords_bubble_state(
         ManagePasswordsBubbleModel::MANAGE_PASSWORDS);
     model_->OnBubbleShown(ManagePasswordsBubble::USER_ACTION);
-    controller()->SetState(ManagePasswordsBubbleUIController::MANAGE_STATE);
+    controller()->SetState(password_manager::ui::MANAGE_STATE);
   }
 
   void PretendBlacklisted() {
@@ -58,7 +59,7 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
     autofill::PasswordFormMap map;
     map[kTestUsername] = &test_form_;
     controller()->SetPasswordFormMap(map);
-    controller()->SetState(ManagePasswordsBubbleUIController::BLACKLIST_STATE);
+    controller()->SetState(password_manager::ui::BLACKLIST_STATE);
   }
 
   ManagePasswordsBubbleUIControllerMock* controller() {

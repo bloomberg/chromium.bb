@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/common/password_manager_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -31,8 +32,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   if (controller->PasswordPendingUserDecision()) {
     manage_passwords_bubble_state_ = PASSWORD_TO_BE_SAVED;
     pending_credentials_ = controller->PendingCredentials();
-  } else if (controller->state() ==
-      ManagePasswordsBubbleUIController::BLACKLIST_STATE) {
+  } else if (controller->state() == password_manager::ui::BLACKLIST_STATE) {
     manage_passwords_bubble_state_ = NEVER_SAVE_PASSWORDS;
   } else {
     manage_passwords_bubble_state_ = MANAGE_PASSWORDS;

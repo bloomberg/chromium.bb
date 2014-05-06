@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_item_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
+#include "components/password_manager/core/common/password_manager_ui.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -126,9 +127,9 @@ void ShowManagePasswordsBubble(content::WebContents* web_contents) {
   ManagePasswordsBubbleView::ShowBubble(
       web_contents,
       controller->state() ==
-          ManagePasswordsBubbleUIController::PENDING_PASSWORD_AND_BUBBLE_STATE ?
-              ManagePasswordsBubbleView::AUTOMATIC :
-              ManagePasswordsBubbleView::USER_ACTION);
+              password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE
+          ? ManagePasswordsBubbleView::AUTOMATIC
+          : ManagePasswordsBubbleView::USER_ACTION);
 }
 
 }  // namespace chrome

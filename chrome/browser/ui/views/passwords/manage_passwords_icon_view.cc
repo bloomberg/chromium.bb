@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
+#include "components/password_manager/core/common/password_manager_ui.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -28,7 +29,7 @@ ManagePasswordsIconView::~ManagePasswordsIconView() {}
 void ManagePasswordsIconView::UpdateVisibleUI() {
   // If the icon is inactive: clear out it's image and tooltip, hide the icon,
   // close any active bubble, and exit early.
-  if (state() == ManagePasswordsIcon::INACTIVE_STATE) {
+  if (state() == password_manager::ui::INACTIVE_STATE) {
     icon_id_ = 0;
     tooltip_text_id_ = 0;
 
@@ -39,13 +40,16 @@ void ManagePasswordsIconView::UpdateVisibleUI() {
   }
 
   // Otherwise, start with the correct values for MANAGE_STATE, and adjust
-  // things accordingly if we're either in BLACKLISTED_STATE or PENDING_STATE.
+  // things accordingly if we're either in BLACKLIST_STATE or PENDING_STATE.
   icon_id_ = IDR_SAVE_PASSWORD;
   tooltip_text_id_ = IDS_PASSWORD_MANAGER_TOOLTIP_MANAGE;
-  if (state() == ManagePasswordsIcon::BLACKLISTED_STATE)
+  if (state() == password_manager::ui::BLACKLIST_STATE) {
     icon_id_ = IDR_SAVE_PASSWORD_BLACKLISTED;
-  else if (state() == ManagePasswordsIcon::PENDING_STATE)
+  } else if (state() == password_manager::ui::PENDING_PASSWORD_STATE ||
+             state() ==
+                 password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE) {
     tooltip_text_id_ = IDS_PASSWORD_MANAGER_TOOLTIP_SAVE;
+  }
 
   SetVisible(true);
   SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(icon_id_));
