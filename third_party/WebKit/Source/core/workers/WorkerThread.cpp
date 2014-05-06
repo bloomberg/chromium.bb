@@ -244,8 +244,4 @@ bool WorkerThread::isCurrentThread() const
     return m_threadID == currentThread();
 }
 
-class ReleaseFastMallocFreeMemoryTask : public ExecutionContextTask {
-    virtual void performTask(ExecutionContext*) OVERRIDE { WTF::releaseFastMallocFreeMemory(); }
-};
-
 } // namespace WebCore
