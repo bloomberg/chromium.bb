@@ -128,6 +128,10 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // Returns true on success. Otherwise deletes nothing and returns false.
   bool ClearPurgeableResourceIds(const std::set<int64>& ids);
 
+  // Delete all data for |origin|, namely, unique origin, registrations and
+  // resource records. Resources are moved to the purgeable list.
+  bool DeleteAllDataForOrigin(const GURL& origin);
+
   bool is_disabled() const { return is_disabled_; }
   bool was_corruption_detected() const { return was_corruption_detected_; }
 

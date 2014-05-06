@@ -499,6 +499,31 @@ bool ServiceWorkerDatabase::ClearPurgeableResourceIds(
   return DeleteResourceIds(kPurgeableResIdKeyPrefix, ids);
 }
 
+bool ServiceWorkerDatabase::DeleteAllDataForOrigin(const GURL& origin) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  if (!LazyOpen(true) || is_disabled_ || !origin.is_valid())
+    return false;
+
+  leveldb::WriteBatch batch;
+
+  // Delete from the unique origin list.
+  batch.Delete(CreateUniqueOriginKey(origin));
+
+  std::vector<RegistrationData> registrations;
+  if (!GetRegistrationsForOrigin(origin, &registrations))
+    return false;
+
+  // Delete registrations and resource records.
+  for (std::vector<RegistrationData>::const_iterator itr =
+           registrations.begin(); itr != registrations.end(); ++itr) {
+    batch.Delete(CreateRegistrationKey(itr->registration_id, origin));
+    if (!DeleteResourceRecords(itr->version_id, &batch))
+      return false;
+  }
+
+  return WriteBatch(&batch);
+}
+
 bool ServiceWorkerDatabase::LazyOpen(bool create_if_needed) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   if (IsOpen())

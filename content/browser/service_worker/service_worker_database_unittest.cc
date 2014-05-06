@@ -27,10 +27,27 @@ struct AvailableIds {
   ~AvailableIds() {}
 };
 
+// TODO(nhiroki): Refactor tests using this helper.
+GURL URL(const GURL& origin, const std::string& path) {
+  EXPECT_TRUE(origin.is_valid());
+  GURL out(origin.GetOrigin().spec() + path);
+  EXPECT_TRUE(out.is_valid());
+  return out;
+}
+
+// TODO(nhiroki): Remove this.
 Resource CreateResource(int64 resource_id, const std::string& url) {
   Resource resource;
   resource.resource_id = resource_id;
   resource.url = GURL(url);
+  EXPECT_TRUE(resource.url.is_valid());
+  return resource;
+}
+
+Resource CreateResource(int64 resource_id, const GURL& url) {
+  Resource resource;
+  resource.resource_id = resource_id;
+  resource.url = url;
   EXPECT_TRUE(resource.url.is_valid());
   return resource;
 }
@@ -556,6 +573,79 @@ TEST(ServiceWorkerDatabaseTest, PurgeableResourceIds) {
   EXPECT_EQ(2U, ids_out.size());
   EXPECT_TRUE(ContainsKey(ids_out, 1));
   EXPECT_TRUE(ContainsKey(ids_out, 4));
+}
+
+TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
+  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+
+  // Data associated with |origin1| will be removed.
+  GURL origin1("http://example.com");
+  GURL origin2("http://example.org");
+
+  // |origin1| has two registrations.
+  RegistrationData data1;
+  data1.registration_id = 10;
+  data1.scope = URL(origin1, "/foo");
+  data1.script = URL(origin1, "/script1.js");
+  data1.version_id = 100;
+
+  std::vector<Resource> resources1;
+  resources1.push_back(CreateResource(1, URL(origin1, "/resource1")));
+  resources1.push_back(CreateResource(2, URL(origin1, "/resource2")));
+  ASSERT_TRUE(database->WriteRegistration(data1, resources1));
+
+  RegistrationData data2;
+  data2.registration_id = 11;
+  data2.scope = URL(origin1, "/bar");
+  data2.script = URL(origin1, "/script2.js");
+  data2.version_id = 101;
+
+  std::vector<Resource> resources2;
+  resources2.push_back(CreateResource(3, URL(origin1, "/resource3")));
+  resources2.push_back(CreateResource(4, URL(origin1, "/resource4")));
+  ASSERT_TRUE(database->WriteRegistration(data2, resources2));
+
+  // |origin2| has one registration.
+  RegistrationData data3;
+  data3.registration_id = 12;
+  data3.scope = URL(origin2, "/hoge");
+  data3.script = URL(origin2, "/script3.js");
+  data3.version_id = 102;
+
+  std::vector<Resource> resources3;
+  resources3.push_back(CreateResource(5, URL(origin2, "/resource5")));
+  resources3.push_back(CreateResource(6, URL(origin2, "/resource6")));
+  ASSERT_TRUE(database->WriteRegistration(data3, resources3));
+
+  EXPECT_TRUE(database->DeleteAllDataForOrigin(origin1));
+
+  // |origin1| should be removed from the unique origin list.
+  std::set<GURL> unique_origins;
+  EXPECT_TRUE(database->GetOriginsWithRegistrations(&unique_origins));
+  EXPECT_EQ(1u, unique_origins.size());
+  EXPECT_TRUE(ContainsKey(unique_origins, origin2));
+
+  // The registrations for |origin1| should be removed.
+  std::vector<RegistrationData> registrations;
+  EXPECT_TRUE(database->GetRegistrationsForOrigin(origin1, &registrations));
+  EXPECT_TRUE(registrations.empty());
+
+  // The registration for |origin2| should not be removed.
+  RegistrationData data_out;
+  std::vector<Resource> resources_out;
+  EXPECT_TRUE(database->ReadRegistration(
+      data3.registration_id, origin2, &data_out, &resources_out));
+  VerifyRegistrationData(data3, data_out);
+  VerifyResourceRecords(resources3, resources_out);
+
+  // The resources associated with |origin1| should be purgeable.
+  std::set<int64> purgeable_ids_out;
+  EXPECT_TRUE(database->GetPurgeableResourceIds(&purgeable_ids_out));
+  EXPECT_EQ(4u, purgeable_ids_out.size());
+  EXPECT_TRUE(ContainsKey(purgeable_ids_out, 1));
+  EXPECT_TRUE(ContainsKey(purgeable_ids_out, 2));
+  EXPECT_TRUE(ContainsKey(purgeable_ids_out, 3));
+  EXPECT_TRUE(ContainsKey(purgeable_ids_out, 4));
 }
 
 }  // namespace content
