@@ -148,17 +148,21 @@ class CrosDisksClientImpl : public CrosDisksClient {
   }
 
   // CrosDisksClient override.
-  virtual void FormatDevice(const std::string& device_path,
-                            const std::string& filesystem,
-                            const FormatDeviceCallback& callback,
-                            const base::Closure& error_callback) OVERRIDE {
+  virtual void Format(const std::string& device_path,
+                      const std::string& filesystem,
+                      const base::Closure& callback,
+                      const base::Closure& error_callback) OVERRIDE {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
-                                 cros_disks::kFormatDevice);
+                                 cros_disks::kFormat);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(device_path);
     writer.AppendString(filesystem);
+    // No format option is currently specified, but we can later use this
+    // argument to specify options for the format operation.
+    std::vector<std::string> format_options;
+    writer.AppendArrayOfStrings(format_options);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&CrosDisksClientImpl::OnFormatDevice,
+                       base::Bind(&CrosDisksClientImpl::OnFormat,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback,
                                   error_callback));
@@ -308,23 +312,15 @@ class CrosDisksClientImpl : public CrosDisksClient {
     callback.Run(device_paths);
   }
 
-  // Handles the result of FormatDevice and calls |callback| or
-  // |error_callback|.
-  void OnFormatDevice(const FormatDeviceCallback& callback,
-                      const base::Closure& error_callback,
-                      dbus::Response* response) {
+  // Handles the result of Format and calls |callback| or |error_callback|.
+  void OnFormat(const base::Closure& callback,
+                const base::Closure& error_callback,
+                dbus::Response* response) {
     if (!response) {
       error_callback.Run();
       return;
     }
-    dbus::MessageReader reader(response);
-    bool success = false;
-    if (!reader.PopBool(&success)) {
-      LOG(ERROR) << "Invalid response: " << response->ToString();
-      error_callback.Run();
-      return;
-    }
-    callback.Run(success);
+    callback.Run();
   }
 
   // Handles the result of GetDeviceProperties and calls |callback| or
@@ -472,10 +468,10 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
         FROM_HERE, base::Bind(callback, device_paths));
   }
 
-  virtual void FormatDevice(const std::string& device_path,
-                            const std::string& filesystem,
-                            const FormatDeviceCallback& callback,
-                            const base::Closure& error_callback) OVERRIDE {
+  virtual void Format(const std::string& device_path,
+                      const std::string& filesystem,
+                      const base::Closure& callback,
+                      const base::Closure& error_callback) OVERRIDE {
     base::MessageLoopProxy::current()->PostTask(FROM_HERE, error_callback);
   }
 

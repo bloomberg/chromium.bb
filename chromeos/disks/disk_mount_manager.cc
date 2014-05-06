@@ -107,7 +107,7 @@ class DiskMountManagerImpl : public DiskMountManager {
     MountPointMap::const_iterator mount_point = mount_points_.find(mount_path);
     if (mount_point == mount_points_.end()) {
       LOG(ERROR) << "Mount point with path \"" << mount_path << "\" not found.";
-      OnFormatDevice(mount_path, false);
+      OnFormatCompleted(FORMAT_ERROR_UNKNOWN, mount_path);
       return;
     }
 
@@ -115,7 +115,7 @@ class DiskMountManagerImpl : public DiskMountManager {
     DiskMap::const_iterator disk = disks_.find(device_path);
     if (disk == disks_.end()) {
       LOG(ERROR) << "Device with path \"" << device_path << "\" not found.";
-      OnFormatDevice(device_path, false);
+      OnFormatCompleted(FORMAT_ERROR_UNKNOWN, device_path);
       return;
     }
 
@@ -382,7 +382,7 @@ class DiskMountManagerImpl : public DiskMountManager {
         disks_.find(device_path) != disks_.end()) {
       FormatUnmountedDevice(device_path);
     } else {
-      OnFormatDevice(device_path, false);
+      OnFormatCompleted(FORMAT_ERROR_UNKNOWN, device_path);
     }
   }
 
@@ -392,50 +392,27 @@ class DiskMountManagerImpl : public DiskMountManager {
     DCHECK(disk != disks_.end() && disk->second->mount_path().empty());
 
     const char kFormatVFAT[] = "vfat";
-    cros_disks_client_->FormatDevice(
+    cros_disks_client_->Format(
         device_path,
         kFormatVFAT,
-        base::Bind(&DiskMountManagerImpl::OnFormatDevice,
+        base::Bind(&DiskMountManagerImpl::OnFormatStarted,
                    weak_ptr_factory_.GetWeakPtr(),
                    device_path),
-        base::Bind(&DiskMountManagerImpl::OnFormatDevice,
+        base::Bind(&DiskMountManagerImpl::OnFormatCompleted,
                    weak_ptr_factory_.GetWeakPtr(),
-                   device_path,
-                   false));
+                   FORMAT_ERROR_UNKNOWN,
+                   device_path));
   }
 
-  // Callback for FormatDevice.
-  // TODO(tbarzic): Pass FormatError instead of bool.
-  void OnFormatDevice(const std::string& device_path, bool success) {
-    FormatError error_code = success ? FORMAT_ERROR_NONE : FORMAT_ERROR_UNKNOWN;
-    NotifyFormatStatusUpdate(FORMAT_STARTED, error_code, device_path);
+  // Callback for Format.
+  void OnFormatStarted(const std::string& device_path) {
+    NotifyFormatStatusUpdate(FORMAT_STARTED, FORMAT_ERROR_NONE, device_path);
   }
 
   // Callback to handle FormatCompleted signal and Format method call failure.
   void OnFormatCompleted(FormatError error_code,
-                        const std::string& device_path) {
-    std::string actual_device_path;
-    // Depending on cros-disks implementation the event may return either file
-    // path or device path. We want to use device path.
-    // TODO(benchan): This shouldn't be necessary. Find out the issue and ensure
-    // that cros-disks simply returns the path format that Chrome expects, then
-    // we should remove the following code.
-    for (DiskMountManager::DiskMap::const_iterator it = disks_.begin();
-         it != disks_.end(); ++it) {
-      if (it->second->file_path() == device_path ||
-          it->second->device_path() == device_path) {
-        actual_device_path = it->second->device_path();
-        break;
-      }
-    }
-
-    if (actual_device_path.empty()) {
-      LOG(ERROR) << "Error while handling disks metadata. Cannot find "
-                 << "device that is being formatted.";
-      return;
-    }
-
-    NotifyFormatStatusUpdate(FORMAT_COMPLETED, error_code, actual_device_path);
+                         const std::string& device_path) {
+    NotifyFormatStatusUpdate(FORMAT_COMPLETED, error_code, device_path);
   }
 
   // Callbcak for GetDeviceProperties.

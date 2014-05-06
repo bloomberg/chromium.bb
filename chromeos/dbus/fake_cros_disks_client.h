@@ -33,10 +33,10 @@ class FakeCrosDisksClient : public CrosDisksClient {
   virtual void EnumerateAutoMountableDevices(
       const EnumerateAutoMountableDevicesCallback& callback,
       const base::Closure& error_callback) OVERRIDE;
-  virtual void FormatDevice(const std::string& device_path,
-                            const std::string& filesystem,
-                            const FormatDeviceCallback& callback,
-                            const base::Closure& error_callback) OVERRIDE;
+  virtual void Format(const std::string& device_path,
+                      const std::string& filesystem,
+                      const base::Closure& callback,
+                      const base::Closure& error_callback) OVERRIDE;
   virtual void GetDeviceProperties(
       const std::string& device_path,
       const GetDevicePropertiesCallback& callback,
@@ -85,27 +85,24 @@ class FakeCrosDisksClient : public CrosDisksClient {
     unmount_listener_ = listener;
   }
 
-  // Returns how many times FormatDevice() was called.
-  int format_device_call_count() const {
-    return format_device_call_count_;
+  // Returns how many times Format() was called.
+  int format_call_count() const {
+    return format_call_count_;
   }
 
-  // Returns the |device_path| parameter from the last invocation of
-  // FormatDevice().
-  const std::string& last_format_device_device_path() const {
-    return last_format_device_device_path_;
+  // Returns the |device_path| parameter from the last invocation of Format().
+  const std::string& last_format_device_path() const {
+    return last_format_device_path_;
   }
 
-  // Returns the |filesystem| parameter from the last invocation of
-  // FormatDevice().
-  const std::string& last_format_device_filesystem() const {
-    return last_format_device_filesystem_;
+  // Returns the |filesystem| parameter from the last invocation of Format().
+  const std::string& last_format_filesystem() const {
+    return last_format_filesystem_;
   }
 
-  // Makes the subsequent FormatDevice() calls fail. FormatDevice() succeeds by
-  // default.
-  void MakeFormatDeviceFail() {
-    format_device_success_ = false;
+  // Makes the subsequent Format() calls fail. Format() succeeds by default.
+  void MakeFormatFail() {
+    format_success_ = false;
   }
 
  private:
@@ -118,10 +115,10 @@ class FakeCrosDisksClient : public CrosDisksClient {
   UnmountOptions last_unmount_options_;
   bool unmount_success_;
   base::Closure unmount_listener_;
-  int format_device_call_count_;
-  std::string last_format_device_device_path_;
-  std::string last_format_device_filesystem_;
-  bool format_device_success_;
+  int format_call_count_;
+  std::string last_format_device_path_;
+  std::string last_format_filesystem_;
+  bool format_success_;
 };
 
 }  // namespace chromeos

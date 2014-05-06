@@ -194,10 +194,6 @@ class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
   typedef base::Callback<void(const std::vector<std::string>& device_paths)>
       EnumerateAutoMountableDevicesCallback;
 
-  // A callback to handle the result of FormatDevice.
-  // The argument is true when formatting succeeded.
-  typedef base::Callback<void(bool format_succeeded)> FormatDeviceCallback;
-
   // A callback to handle the result of GetDeviceProperties.
   // The argument is the information about the specified device.
   typedef base::Callback<void(const DiskInfo& disk_info)>
@@ -258,12 +254,12 @@ class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
       const EnumerateAutoMountableDevicesCallback& callback,
       const base::Closure& error_callback) = 0;
 
-  // Calls FormatDevice method.  |callback| is called after the method call
-  // succeeds, otherwise, |error_callback| is called.
-  virtual void FormatDevice(const std::string& device_path,
-                            const std::string& filesystem,
-                            const FormatDeviceCallback& callback,
-                            const base::Closure& error_callback) = 0;
+  // Calls Format method.  |callback| is called after the method call succeeds,
+  // otherwise, |error_callback| is called.
+  virtual void Format(const std::string& device_path,
+                      const std::string& filesystem,
+                      const base::Closure& callback,
+                      const base::Closure& error_callback) = 0;
 
   // Calls GetDeviceProperties method.  |callback| is called after the method
   // call succeeds, otherwise, |error_callback| is called.
