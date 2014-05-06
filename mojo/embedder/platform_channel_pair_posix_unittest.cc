@@ -5,12 +5,18 @@
 #include "mojo/embedder/platform_channel_pair.h"
 
 #include <errno.h>
+#include <poll.h>
 #include <signal.h>
+#include <stdio.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
 
+#include <vector>
+
+#include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "mojo/embedder/platform_channel_utils_posix.h"
@@ -20,6 +26,23 @@
 namespace mojo {
 namespace embedder {
 namespace {
+
+ScopedPlatformHandle PlatformHandleFromFILE(FILE* fp) {
+  CHECK(fp);
+  return ScopedPlatformHandle(PlatformHandle(dup(fileno(fp))));
+}
+
+FILE* FILEFromPlatformHandle(ScopedPlatformHandle h, const char* mode) {
+  CHECK(h.is_valid());
+  return fdopen(h.release().fd, mode);
+}
+
+void WaitReadable(PlatformHandle h) {
+  struct pollfd pfds = {};
+  pfds.fd = h.fd;
+  pfds.events = POLLIN;
+  CHECK_EQ(poll(&pfds, 1, -1), 1);
+}
 
 class PlatformChannelPairPosixTest : public testing::Test {
  public:
@@ -46,7 +69,6 @@ class PlatformChannelPairPosixTest : public testing::Test {
 
 TEST_F(PlatformChannelPairPosixTest, NoSigPipe) {
   PlatformChannelPair channel_pair;
-
   ScopedPlatformHandle server_handle = channel_pair.PassServerHandle().Pass();
   ScopedPlatformHandle client_handle = channel_pair.PassClientHandle().Pass();
 
@@ -86,6 +108,78 @@ TEST_F(PlatformChannelPairPosixTest, NoSigPipe) {
   EXPECT_EQ(-1, result);
   if (errno != EPIPE)
     PLOG(WARNING) << "write (expected EPIPE)";
+}
+
+TEST_F(PlatformChannelPairPosixTest, SendReceiveData) {
+  PlatformChannelPair channel_pair;
+  ScopedPlatformHandle server_handle = channel_pair.PassServerHandle().Pass();
+  ScopedPlatformHandle client_handle = channel_pair.PassClientHandle().Pass();
+
+  for (size_t i = 0; i < 10; i++) {
+    std::string send_string(1 << i, 'A' + i);
+
+    EXPECT_EQ(static_cast<ssize_t>(send_string.size()),
+              PlatformChannelWrite(server_handle.get(), send_string.data(),
+                                   send_string.size()));
+
+    WaitReadable(client_handle.get());
+
+    char buf[10000] = {};
+    scoped_ptr<PlatformHandleVector> received_handles;
+    ssize_t result = PlatformChannelRecvmsg(client_handle.get(), buf,
+                                            sizeof(buf), &received_handles);
+    EXPECT_EQ(static_cast<ssize_t>(send_string.size()), result);
+    EXPECT_EQ(send_string, std::string(buf, static_cast<size_t>(result)));
+    EXPECT_FALSE(received_handles);
+  }
+}
+
+TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
+  PlatformChannelPair channel_pair;
+  ScopedPlatformHandle server_handle = channel_pair.PassServerHandle().Pass();
+  ScopedPlatformHandle client_handle = channel_pair.PassClientHandle().Pass();
+
+  for (size_t i = 1; i < kPlatformChannelMaxNumHandles; i++) {
+    // Make |i| files, with the j-th file consisting of j copies of the digit i.
+    PlatformHandleVector platform_handles;
+    for (size_t j = 1; j <= i; j++) {
+      base::FilePath ignored;
+      FILE* fp = base::CreateAndOpenTemporaryFile(&ignored);
+      ASSERT_TRUE(fp);
+      platform_handles.push_back(PlatformHandleFromFILE(fp).release());
+      ASSERT_TRUE(platform_handles.back().is_valid());
+      fwrite(std::string(j, '0' + i).data(), 1, j, fp);
+      fclose(fp);
+    }
+
+    // Send the FDs.
+    EXPECT_TRUE(PlatformChannelSendHandles(server_handle.get(),
+                                           &platform_handles[0],
+                                           platform_handles.size()));
+
+    WaitReadable(client_handle.get());
+
+    char buf[100] = { 'a', 'b', 'c' };
+    scoped_ptr<PlatformHandleVector> received_handles;
+    EXPECT_EQ(1, PlatformChannelRecvmsg(client_handle.get(), buf, sizeof(buf),
+                                        &received_handles));
+    EXPECT_EQ('\0', buf[0]);
+    ASSERT_TRUE(received_handles);
+    EXPECT_EQ(i, received_handles->size());
+
+    for (size_t j = 0; j < received_handles->size(); j++) {
+      FILE* fp = FILEFromPlatformHandle(
+          ScopedPlatformHandle((*received_handles)[j]), "rb");
+      rewind(fp);
+      (*received_handles)[j] = PlatformHandle();
+      ASSERT_TRUE(fp);
+      char read_buf[100];
+      size_t bytes_read = fread(read_buf, 1, sizeof(read_buf), fp);
+      fclose(fp);
+      EXPECT_EQ(j + 1, bytes_read);
+      EXPECT_EQ(std::string(j + 1, '0' + i), std::string(read_buf, bytes_read));
+    }
+  }
 }
 
 }  // namespace
