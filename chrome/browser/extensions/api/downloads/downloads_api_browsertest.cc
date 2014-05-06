@@ -2426,8 +2426,10 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                           result_id)));
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       DownloadExtensionTest_OnDeterminingFilename_Timeout) {
+// Disabled due to cross-platform flakes; http://crbug.com/370531.
+IN_PROC_BROWSER_TEST_F(
+    DownloadExtensionTest,
+    DISABLED_DownloadExtensionTest_OnDeterminingFilename_Timeout) {
   GoOnTheRecord();
   LoadExtension("downloads_split");
   AddFilenameDeterminer();
