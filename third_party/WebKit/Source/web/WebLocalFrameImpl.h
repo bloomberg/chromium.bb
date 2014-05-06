@@ -39,7 +39,6 @@
 #include "web/NotificationPresenterImpl.h"
 #include "web/UserMediaClientImpl.h"
 #include "wtf/Compiler.h"
-#include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -102,16 +101,9 @@ public:
     virtual bool hasHorizontalScrollbar() const OVERRIDE;
     virtual bool hasVerticalScrollbar() const OVERRIDE;
     virtual WebView* view() const OVERRIDE;
-    virtual WebFrame* opener() const OVERRIDE;
     virtual void setOpener(WebFrame*) OVERRIDE;
     virtual void appendChild(WebFrame*) OVERRIDE;
     virtual void removeChild(WebFrame*) OVERRIDE;
-    virtual WebFrame* parent() const OVERRIDE;
-    virtual WebFrame* top() const OVERRIDE;
-    virtual WebFrame* previousSibling() const OVERRIDE;
-    virtual WebFrame* nextSibling() const OVERRIDE;
-    virtual WebFrame* firstChild() const OVERRIDE;
-    virtual WebFrame* lastChild() const OVERRIDE;
     virtual WebFrame* traversePrevious(bool wrap) const OVERRIDE;
     virtual WebFrame* traverseNext(bool wrap) const OVERRIDE;
     virtual WebFrame* findChildByName(const WebString&) const OVERRIDE;
@@ -343,14 +335,6 @@ private:
     // reference is released when the frame is removed from the DOM or the entire page is closed.
     // FIXME: These will need to change to WebFrame when we introduce WebFrameProxy.
     RefPtr<WebCore::LocalFrame> m_frame;
-    WebLocalFrameImpl* m_parent;
-    WebLocalFrameImpl* m_previousSibling;
-    WebLocalFrameImpl* m_nextSibling;
-    WebLocalFrameImpl* m_firstChild;
-    WebLocalFrameImpl* m_lastChild;
-
-    WebLocalFrameImpl* m_opener;
-    WTF::HashSet<WebLocalFrameImpl*> m_openedFrames;
 
     // Indicate whether the current LocalFrame is local or remote. Remote frames are
     // rendered in a different process from their parent frames.

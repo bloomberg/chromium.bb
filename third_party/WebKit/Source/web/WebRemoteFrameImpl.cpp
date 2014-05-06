@@ -19,6 +19,10 @@ WebRemoteFrame* WebRemoteFrame::create(WebFrameClient*)
     return adoptRef(new WebRemoteFrameImpl()).leakRef();
 }
 
+WebRemoteFrameImpl::WebRemoteFrameImpl()
+{
+}
+
 WebRemoteFrameImpl::~WebRemoteFrameImpl()
 {
 }
@@ -151,63 +155,6 @@ bool WebRemoteFrameImpl::hasVerticalScrollbar() const
 }
 
 WebView* WebRemoteFrameImpl::view() const
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-WebFrame* WebRemoteFrameImpl::opener() const
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-void WebRemoteFrameImpl::setOpener(WebFrame*)
-{
-    ASSERT_NOT_REACHED();
-}
-
-void WebRemoteFrameImpl::appendChild(WebFrame*)
-{
-    ASSERT_NOT_REACHED();
-}
-
-void WebRemoteFrameImpl::removeChild(WebFrame*)
-{
-    ASSERT_NOT_REACHED();
-}
-
-WebFrame* WebRemoteFrameImpl::parent() const
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-WebFrame* WebRemoteFrameImpl::top() const
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-WebFrame* WebRemoteFrameImpl::previousSibling() const
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-WebFrame* WebRemoteFrameImpl::nextSibling() const
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-WebFrame* WebRemoteFrameImpl::firstChild() const
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-WebFrame* WebRemoteFrameImpl::lastChild() const
 {
     ASSERT_NOT_REACHED();
     return 0;
