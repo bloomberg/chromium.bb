@@ -19,8 +19,6 @@
 #include "google_apis/gcm/engine/checkin_request.h"
 #include "google_apis/gcm/engine/connection_factory_impl.h"
 #include "google_apis/gcm/engine/gcm_store_impl.h"
-#include "google_apis/gcm/engine/gservices_settings.h"
-#include "google_apis/gcm/engine/mcs_client.h"
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/http/http_network_session.h"
@@ -194,7 +192,6 @@ void GCMClientImpl::Initialize(
   account_ids_ = account_ids;
 
   gcm_store_.reset(new GCMStoreImpl(path, blocking_task_runner));
-  gservices_settings_.reset(new GServicesSettings(gcm_store_.get()));
 
   delegate_ = delegate;
 
@@ -222,7 +219,7 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
   device_checkin_info_.android_id = result->device_android_id;
   device_checkin_info_.secret = result->device_security_token;
   last_checkin_time_ = result->last_checkin_time;
-  gservices_settings_->UpdateFromLoadResult(*result);
+  gservices_settings_.UpdateFromLoadResult(*result);
   InitializeMCSClient(result.Pass());
 
   if (device_checkin_info_.IsValid()) {
@@ -303,11 +300,11 @@ void GCMClientImpl::StartCheckin() {
 
   CheckinRequest::RequestInfo request_info(device_checkin_info_.android_id,
                                            device_checkin_info_.secret,
-                                           gservices_settings_->digest(),
+                                           gservices_settings_.digest(),
                                            account_ids_,
                                            chrome_build_proto_);
   checkin_request_.reset(
-      new CheckinRequest(gservices_settings_->checkin_url(),
+      new CheckinRequest(gservices_settings_.checkin_url(),
                          request_info,
                          kDefaultBackoffPolicy,
                          base::Bind(&GCMClientImpl::OnCheckinCompleted,
@@ -344,7 +341,14 @@ void GCMClientImpl::OnCheckinCompleted(
 
   if (device_checkin_info_.IsValid()) {
     // First update G-services settings, as something might have changed.
-    gservices_settings_->UpdateFromCheckinResponse(checkin_response);
+    if (gservices_settings_.UpdateFromCheckinResponse(checkin_response)) {
+      gcm_store_->SetGServicesSettings(
+          gservices_settings_.GetSettingsMap(),
+          gservices_settings_.digest(),
+          base::Bind(&GCMClientImpl::SetGServicesSettingsCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
+    }
+
     last_checkin_time_ = clock_->Now();
     gcm_store_->SetLastCheckinTime(
         last_checkin_time_,
@@ -352,6 +356,10 @@ void GCMClientImpl::OnCheckinCompleted(
                    weak_ptr_factory_.GetWeakPtr()));
     SchedulePeriodicCheckin();
   }
+}
+
+void GCMClientImpl::SetGServicesSettingsCallback(bool success) {
+  DCHECK(success);
 }
 
 void GCMClientImpl::SchedulePeriodicCheckin() {
@@ -375,7 +383,7 @@ void GCMClientImpl::SchedulePeriodicCheckin() {
 }
 
 base::TimeDelta GCMClientImpl::GetTimeToNextCheckin() const {
-  return last_checkin_time_ + gservices_settings_->checkin_interval() -
+  return last_checkin_time_ + gservices_settings_.checkin_interval() -
          clock_->Now();
 }
 
@@ -433,7 +441,7 @@ void GCMClientImpl::Register(const std::string& app_id,
   DCHECK_EQ(0u, pending_registration_requests_.count(app_id));
 
   RegistrationRequest* registration_request =
-      new RegistrationRequest(gservices_settings_->registration_url(),
+      new RegistrationRequest(gservices_settings_.registration_url(),
                               request_info,
                               kDefaultBackoffPolicy,
                               base::Bind(&GCMClientImpl::OnRegisterCompleted,
@@ -509,7 +517,7 @@ void GCMClientImpl::Unregister(const std::string& app_id) {
 
   UnregistrationRequest* unregistration_request =
       new UnregistrationRequest(
-          gservices_settings_->registration_url(),
+          gservices_settings_.registration_url(),
           request_info,
           kDefaultBackoffPolicy,
           base::Bind(&GCMClientImpl::OnUnregisterCompleted,

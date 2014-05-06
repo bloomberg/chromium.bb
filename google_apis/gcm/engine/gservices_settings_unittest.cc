@@ -26,77 +26,6 @@ const int kDefaultMCSSecurePort = 5228;
 const char kDefaultRegistrationURL[] =
     "https://android.clients.google.com/c2dm/register3";
 
-class FakeGCMStore : public GCMStore {
- public:
-  FakeGCMStore();
-  virtual ~FakeGCMStore();
-
-  virtual void Load(const gcm::GCMStore::LoadCallback& callback) OVERRIDE {}
-  virtual void Close() OVERRIDE {}
-  virtual void Destroy(const gcm::GCMStore::UpdateCallback& callback) OVERRIDE {
-  }
-  virtual void SetDeviceCredentials(
-      uint64 device_android_id,
-      uint64 device_security_token,
-      const gcm::GCMStore::UpdateCallback& callback) OVERRIDE {}
-  virtual void AddRegistration(
-      const std::string& app_id,
-      const linked_ptr<gcm::RegistrationInfo>& registration,
-      const gcm::GCMStore::UpdateCallback& callback) OVERRIDE {}
-  virtual void RemoveRegistration(
-      const std::string& app_id,
-      const gcm::GCMStore::UpdateCallback& callback) OVERRIDE {}
-  virtual void AddIncomingMessage(
-      const std::string& persistent_id,
-      const gcm::GCMStore::UpdateCallback& callback) OVERRIDE {}
-  virtual void RemoveIncomingMessage(
-      const std::string& persistent_id,
-      const gcm::GCMStore::UpdateCallback& callback) OVERRIDE {}
-  virtual void RemoveIncomingMessages(
-      const PersistentIdList& persistent_ids,
-      const gcm::GCMStore::UpdateCallback& callback) OVERRIDE {}
-  virtual bool AddOutgoingMessage(
-      const std::string& persistent_id,
-      const gcm::MCSMessage& message,
-      const gcm::GCMStore::UpdateCallback& callback) OVERRIDE {
-    return true;
-  }
-  virtual void OverwriteOutgoingMessage(
-      const std::string& persistent_id,
-      const gcm::MCSMessage& message,
-      const gcm::GCMStore::UpdateCallback& callback) OVERRIDE {}
-  virtual void RemoveOutgoingMessage(
-      const std::string& persistent_id,
-      const gcm::GCMStore::UpdateCallback& callback) OVERRIDE {}
-  virtual void RemoveOutgoingMessages(
-      const PersistentIdList& persistent_ids,
-      const gcm::GCMStore::UpdateCallback& callback) OVERRIDE {}
-  virtual void SetLastCheckinTime(
-      const base::Time& last_checkin_time,
-      const gcm::GCMStore::UpdateCallback& callback) OVERRIDE {}
-
-  // G-service settings handling.
-  virtual void SetGServicesSettings(
-      const std::map<std::string, std::string>& settings,
-      const std::string& settings_digest,
-      const gcm::GCMStore::UpdateCallback& callback) OVERRIDE {
-    settings_saved_ = true;
-  }
-
-  void Reset() {
-    settings_saved_ = false;
-  }
-
-  bool settings_saved() const { return settings_saved_; }
-
- private:
-  bool settings_saved_;
-};
-
-FakeGCMStore::FakeGCMStore() : settings_saved_(false) {}
-
-FakeGCMStore::~FakeGCMStore() {}
-
 }  // namespace
 
 class GServicesSettingsTest : public testing::Test {
@@ -119,17 +48,14 @@ class GServicesSettingsTest : public testing::Test {
     return alternative_settings_;
   }
 
-  FakeGCMStore& gcm_store() { return gcm_store_; }
-
   std::map<std::string, std::string> alternative_settings_;
 
  private:
-  FakeGCMStore gcm_store_;
   GServicesSettings gserivces_settings_;
 };
 
 GServicesSettingsTest::GServicesSettingsTest()
-    : gserivces_settings_(&gcm_store_) {
+    : gserivces_settings_() {
 }
 
 GServicesSettingsTest::~GServicesSettingsTest() {}
@@ -220,10 +146,10 @@ TEST_F(GServicesSettingsTest, UpdateFromCheckinResponse) {
   checkin_response.set_digest("digest_value");
   SetWithAlternativeSettings(checkin_response);
 
-  settings().UpdateFromCheckinResponse(checkin_response);
-  EXPECT_TRUE(gcm_store().settings_saved());
+  EXPECT_TRUE(settings().UpdateFromCheckinResponse(checkin_response));
 
   CheckAllSetToAlternative();
+  EXPECT_EQ(alternative_settings_, settings().GetSettingsMap());
   EXPECT_EQ("digest_value", settings().digest());
 }
 
@@ -237,8 +163,7 @@ TEST_F(GServicesSettingsTest, UpdateFromCheckinResponseMinimumCheckinInterval) {
   alternative_settings_["checkin_interval"] = base::IntToString(3600);
   SetWithAlternativeSettings(checkin_response);
 
-  settings().UpdateFromCheckinResponse(checkin_response);
-  EXPECT_TRUE(gcm_store().settings_saved());
+  EXPECT_TRUE(settings().UpdateFromCheckinResponse(checkin_response));
 
   EXPECT_EQ(GServicesSettings::MinimumCheckinInterval(),
             settings().checkin_interval());
@@ -253,8 +178,7 @@ TEST_F(GServicesSettingsTest, UpdateFromCheckinResponseWithSettingMissing) {
   alternative_settings_.erase("gcm_hostname");
   SetWithAlternativeSettings(checkin_response);
 
-  settings().UpdateFromCheckinResponse(checkin_response);
-  EXPECT_FALSE(gcm_store().settings_saved());
+  EXPECT_FALSE(settings().UpdateFromCheckinResponse(checkin_response));
 
   CheckAllSetToDefault();
   EXPECT_EQ(std::string(), settings().digest());
@@ -265,8 +189,7 @@ TEST_F(GServicesSettingsTest, UpdateFromCheckinResponseNoDigest) {
   checkin_proto::AndroidCheckinResponse checkin_response;
 
   SetWithAlternativeSettings(checkin_response);
-  settings().UpdateFromCheckinResponse(checkin_response);
-  EXPECT_FALSE(gcm_store().settings_saved());
+  EXPECT_FALSE(settings().UpdateFromCheckinResponse(checkin_response));
 
   CheckAllSetToDefault();
   EXPECT_EQ(std::string(), settings().digest());
@@ -282,8 +205,7 @@ TEST_F(GServicesSettingsTest, UpdateFromCheckinResponseSameDigest) {
   checkin_proto::AndroidCheckinResponse checkin_response;
   checkin_response.set_digest("old_digest");
   SetWithAlternativeSettings(checkin_response);
-  settings().UpdateFromCheckinResponse(checkin_response);
-  EXPECT_FALSE(gcm_store().settings_saved());
+  EXPECT_FALSE(settings().UpdateFromCheckinResponse(checkin_response));
 
   CheckAllSetToAlternative();
   EXPECT_EQ("old_digest", settings().digest());

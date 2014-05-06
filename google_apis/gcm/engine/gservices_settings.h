@@ -24,17 +24,22 @@ class GCM_EXPORT GServicesSettings {
   // Minimum periodic checkin interval in seconds.
   static const base::TimeDelta MinimumCheckinInterval();
 
-  // Create an instance of GServicesSettings class. |gcm_store| is used to store
-  // the settings after they are extracted from checkin response.
-  explicit GServicesSettings(GCMStore* gcm_store);
+  // Default checkin URL.
+  static const GURL DefaultCheckinURL();
+
+  GServicesSettings();
   ~GServicesSettings();
 
-  // Udpates the settings based on |checkin_response|.
-  void UpdateFromCheckinResponse(
+  // Updates the settings based on |checkin_response|.
+  bool UpdateFromCheckinResponse(
       const checkin_proto::AndroidCheckinResponse& checkin_response);
 
-  // Updates the settings based on |load_result|.
+  // Updates the settings based on |load_result|. Returns true if update was
+  // successful, false otherwise.
   void UpdateFromLoadResult(const GCMStore::LoadResult& load_result);
+
+  // Gets the settings as a map of string to string for storing.
+  std::map<std::string, std::string> GetSettingsMap() const;
 
   std::string digest() const { return digest_; }
 
@@ -53,12 +58,6 @@ class GCM_EXPORT GServicesSettings {
   // Parses the |settings| to fill in specific fields.
   // TODO(fgorski): Change to a status variable that can be logged to UMA.
   bool UpdateSettings(const std::map<std::string, std::string>& settings);
-
-  // Callback passed to GCMStore::SetGServicesSettings.
-  void SetGServicesSettingsCallback(bool success);
-
-  // GCM store to persist the settings. Not owned.
-  GCMStore* gcm_store_;
 
   // Digest (hash) of the settings, used to check whether settings need update.
   // It is meant to be sent with checkin request, instead of sending the whole

@@ -36,9 +36,13 @@ const base::TimeDelta GServicesSettings::MinimumCheckinInterval() {
   return base::TimeDelta::FromSeconds(kMinimumCheckinInterval);
 }
 
-GServicesSettings::GServicesSettings(GCMStore* gcm_store)
-    : gcm_store_(gcm_store),
-      checkin_interval_(base::TimeDelta::FromSeconds(kDefaultCheckinInterval)),
+// static
+const GURL GServicesSettings::DefaultCheckinURL() {
+  return GURL(kDefaultCheckinURL);
+}
+
+GServicesSettings::GServicesSettings()
+    : checkin_interval_(base::TimeDelta::FromSeconds(kDefaultCheckinInterval)),
       checkin_url_(kDefaultCheckinURL),
       mcs_hostname_(kDefaultMCSHostname),
       mcs_secure_port_(kDefaultMCSSecurePort),
@@ -48,12 +52,12 @@ GServicesSettings::GServicesSettings(GCMStore* gcm_store)
 
 GServicesSettings::~GServicesSettings() {}
 
-void GServicesSettings::UpdateFromCheckinResponse(
+bool GServicesSettings::UpdateFromCheckinResponse(
   const checkin_proto::AndroidCheckinResponse& checkin_response) {
   if (!checkin_response.has_digest() ||
       checkin_response.digest() == digest_) {
     // There are no changes as digest is the same or no settings provided.
-    return;
+    return false;
   }
 
   std::map<std::string, std::string> settings;
@@ -67,18 +71,27 @@ void GServicesSettings::UpdateFromCheckinResponse(
   // passed the verificaiton in update settings.
   if (UpdateSettings(settings)) {
     digest_ = checkin_response.digest();
-    gcm_store_->SetGServicesSettings(
-        settings,
-        digest_,
-        base::Bind(&GServicesSettings::SetGServicesSettingsCallback,
-                   weak_ptr_factory_.GetWeakPtr()));
+    return true;
   }
+
+  return false;
 }
 
 void GServicesSettings::UpdateFromLoadResult(
     const GCMStore::LoadResult& load_result) {
   if (UpdateSettings(load_result.gservices_settings))
     digest_ = load_result.gservices_digest;
+}
+
+std::map<std::string, std::string> GServicesSettings::GetSettingsMap() const {
+  std::map<std::string, std::string> settings;
+  settings[kCheckinIntervalKey] =
+      base::Int64ToString(checkin_interval_.InSeconds());
+  settings[kCheckinURLKey] = checkin_url_.spec();
+  settings[kMCSHostnameKey] = mcs_hostname_;
+  settings[kMCSSecurePortKey] = base::IntToString(mcs_secure_port_);
+  settings[kRegistrationURLKey] = registration_url_.spec();
+  return settings;
 }
 
 bool GServicesSettings::UpdateSettings(
@@ -164,10 +177,6 @@ bool GServicesSettings::UpdateSettings(
   checkin_url_ = new_checkin_url;
   registration_url_ = new_registration_url;
   return true;
-}
-
-void GServicesSettings::SetGServicesSettingsCallback(bool success) {
-  DCHECK(success);
 }
 
 }  // namespace gcm

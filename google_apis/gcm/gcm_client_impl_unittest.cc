@@ -281,8 +281,8 @@ class GCMClientImplTest : public testing::Test,
     return last_error_details_;
   }
 
-  const GServicesSettings* gservices_settings() const {
-    return gcm_client_->gservices_settings_.get();
+  const GServicesSettings& gservices_settings() const {
+    return gcm_client_->gservices_settings_;
   }
 
   int64 CurrentTime();
@@ -724,7 +724,13 @@ TEST_F(GCMClientImplCheckinTest, GServicesSettingsAfterInitialCheckin) {
   CompleteCheckin(
       kDeviceAndroidId, kDeviceSecurityToken, kSettingsDefaultDigest, settings);
   EXPECT_EQ(base::TimeDelta::FromSeconds(kSettingsCheckinInterval),
-            gservices_settings()->checkin_interval());
+            gservices_settings().checkin_interval());
+  EXPECT_EQ(GURL("http://alternative.url/checkin"),
+            gservices_settings().checkin_url());
+  EXPECT_EQ(GURL("http://alternative.url/registration"),
+            gservices_settings().registration_url());
+  EXPECT_EQ("http://alternative.gcm.host", gservices_settings().mcs_hostname());
+  EXPECT_EQ(443, gservices_settings().mcs_secure_port());
 }
 
 // This test only checks that periodic checkin happens.
@@ -742,6 +748,29 @@ TEST_F(GCMClientImplCheckinTest, PeriodicCheckin) {
   PumpLoopUntilIdle();
   CompleteCheckin(
       kDeviceAndroidId, kDeviceSecurityToken, kSettingsDefaultDigest, settings);
+}
+
+TEST_F(GCMClientImplCheckinTest, LoadGSettingsFromStore) {
+  std::map<std::string, std::string> settings;
+  settings["checkin_interval"] = base::IntToString(kSettingsCheckinInterval);
+  settings["checkin_url"] = "http://alternative.url/checkin";
+  settings["gcm_hostname"] = "http://alternative.gcm.host";
+  settings["gcm_secure_port"] = "443";
+  settings["gcm_registration_url"] = "http://alternative.url/registration";
+  CompleteCheckin(
+      kDeviceAndroidId, kDeviceSecurityToken, kSettingsDefaultDigest, settings);
+
+  BuildGCMClient(base::TimeDelta());
+  InitializeGCMClient();
+
+  EXPECT_EQ(base::TimeDelta::FromSeconds(kSettingsCheckinInterval),
+            gservices_settings().checkin_interval());
+  EXPECT_EQ(GURL("http://alternative.url/checkin"),
+            gservices_settings().checkin_url());
+  EXPECT_EQ(GURL("http://alternative.url/registration"),
+            gservices_settings().registration_url());
+  EXPECT_EQ("http://alternative.gcm.host", gservices_settings().mcs_hostname());
+  EXPECT_EQ(443, gservices_settings().mcs_secure_port());
 }
 
 }  // namespace gcm

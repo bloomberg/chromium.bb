@@ -15,6 +15,7 @@
 #include "base/stl_util.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/engine/gcm_store.h"
+#include "google_apis/gcm/engine/gservices_settings.h"
 #include "google_apis/gcm/engine/mcs_client.h"
 #include "google_apis/gcm/engine/registration_request.h"
 #include "google_apis/gcm/engine/unregistration_request.h"
@@ -45,7 +46,6 @@ namespace gcm {
 class CheckinRequest;
 class ConnectionFactory;
 class GCMClientImplTest;
-class GServicesSettings;
 
 // Helper class for building GCM internals. Allows tests to inject fake versions
 // as necessary.
@@ -179,6 +179,10 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   // Function also cleans up the pending checkin.
   void OnCheckinCompleted(
       const checkin_proto::AndroidCheckinResponse& checkin_response);
+
+  // Callback passed to GCMStore::SetGServicesSettings.
+  void SetGServicesSettingsCallback(bool success);
+
   // Schedules next periodic device checkin and makes sure there is at most one
   // pending checkin at a time. This function is meant to be called after a
   // successful checkin.
@@ -275,7 +279,7 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
       pending_unregistration_requests_deleter_;
 
   // G-services settings that were provided by MCS.
-  scoped_ptr<GServicesSettings> gservices_settings_;
+  GServicesSettings gservices_settings_;
 
   // Time of the last successful checkin.
   base::Time last_checkin_time_;

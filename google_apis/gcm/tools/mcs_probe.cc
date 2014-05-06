@@ -434,7 +434,7 @@ void MCSProbe::CheckIn() {
       0, 0, std::string(), std::vector<std::string>(), chrome_build_proto);
 
   checkin_request_.reset(new CheckinRequest(
-      GServicesSettings(gcm_store_.get()).checkin_url(),
+      GServicesSettings::DefaultCheckinURL(),
       request_info,
       kDefaultBackoffPolicy,
       base::Bind(&MCSProbe::OnCheckInCompleted, base::Unretained(this)),
