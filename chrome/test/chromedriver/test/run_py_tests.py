@@ -768,11 +768,16 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTest):
     return base64.b64encode(open(ext_path, 'rb').read())
 
   def testExtensionsInstall(self):
-    """Checks that chromedriver can take the extensions."""
+    """Checks that chromedriver can take the extensions in crx format."""
     crx_1 = os.path.join(_TEST_DATA_DIR, 'ext_test_1.crx')
     crx_2 = os.path.join(_TEST_DATA_DIR, 'ext_test_2.crx')
     self.CreateDriver(chrome_extensions=[self._PackExtension(crx_1),
                                          self._PackExtension(crx_2)])
+
+  def testExtensionsInstallZip(self):
+    """Checks that chromedriver can take the extensions in zip format."""
+    zip_1 = os.path.join(_TEST_DATA_DIR, 'ext_test_1.zip')
+    self.CreateDriver(chrome_extensions=[self._PackExtension(zip_1)])
 
   def testWaitsForExtensionToLoad(self):
     did_load_event = threading.Event()

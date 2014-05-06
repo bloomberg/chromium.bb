@@ -40,6 +40,7 @@
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/net/port_server.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
+#include "crypto/rsa_private_key.h"
 #include "crypto/sha2.h"
 #include "third_party/zlib/google/zip.h"
 
@@ -496,15 +497,37 @@ Status ProcessExtension(const std::string& extension,
   if (!base::Base64Decode(extension_base64, &decoded_extension))
     return Status(kUnknownError, "cannot base64 decode");
 
-  // Get extension's ID from public key in crx file.
-  // Assumes crx v2. See http://developer.chrome.com/extensions/crx.html.
-  std::string key_len_str = decoded_extension.substr(8, 4);
-  if (key_len_str.size() != 4)
-    return Status(kUnknownError, "cannot extract public key length");
-  uint32 key_len = *reinterpret_cast<const uint32*>(key_len_str.c_str());
-  std::string public_key = decoded_extension.substr(16, key_len);
-  if (key_len != public_key.size())
-    return Status(kUnknownError, "invalid public key length");
+  // If the file is a crx file, extract the extension's ID from its public key.
+  // Otherwise generate a random public key and use its derived extension ID.
+  std::string public_key;
+  std::string magic_header = decoded_extension.substr(0, 4);
+  if (magic_header.size() != 4)
+    return Status(kUnknownError, "cannot extract magic number");
+
+  const bool is_crx_file = magic_header == "Cr24";
+
+  if (is_crx_file) {
+    // Assume a CRX v2 file - see https://developer.chrome.com/extensions/crx.
+    std::string key_len_str = decoded_extension.substr(8, 4);
+    if (key_len_str.size() != 4)
+      return Status(kUnknownError, "cannot extract public key length");
+    uint32 key_len = *reinterpret_cast<const uint32*>(key_len_str.c_str());
+    public_key = decoded_extension.substr(16, key_len);
+    if (key_len != public_key.size())
+      return Status(kUnknownError, "invalid public key length");
+  } else {
+    // Not a CRX file. Generate RSA keypair to get a valid extension id.
+    scoped_ptr<crypto::RSAPrivateKey> key_pair(
+        crypto::RSAPrivateKey::Create(2048));
+    if (!key_pair)
+      return Status(kUnknownError, "cannot generate RSA key pair");
+    std::vector<uint8> public_key_vector;
+    if (!key_pair->ExportPublicKey(&public_key_vector))
+      return Status(kUnknownError, "cannot extract public key");
+    public_key =
+        std::string(reinterpret_cast<char*>(&public_key_vector.front()),
+                    public_key_vector.size());
+  }
   std::string public_key_base64;
   base::Base64Encode(public_key, &public_key_base64);
   std::string id = GenerateExtensionId(public_key);
@@ -543,13 +566,15 @@ Status ProcessExtension(const std::string& extension,
       return Status(kUnknownError, "'key' in manifest is not base64 encoded");
     std::string manifest_id = GenerateExtensionId(manifest_key);
     if (id != manifest_id) {
-      LOG(WARNING)
-          << "Public key in crx header is different from key in manifest"
-          << std::endl << "key from header:   " << public_key_base64
-          << std::endl << "key from manifest: " << manifest_key_base64
-          << std::endl << "generated extension id from header key:   " << id
-          << std::endl << "generated extension id from manifest key: "
-          << manifest_id;
+      if (is_crx_file) {
+        LOG(WARNING)
+            << "Public key in crx header is different from key in manifest"
+            << std::endl << "key from header:   " << public_key_base64
+            << std::endl << "key from manifest: " << manifest_key_base64
+            << std::endl << "generated extension id from header key:   " << id
+            << std::endl << "generated extension id from manifest key: "
+            << manifest_id;
+      }
       id = manifest_id;
     }
   } else {
