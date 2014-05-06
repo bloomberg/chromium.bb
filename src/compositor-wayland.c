@@ -1149,7 +1149,7 @@ wayland_output_create_for_parent_output(struct wayland_compositor *c,
 	if (poutput->current_mode) {
 		mode = poutput->current_mode;
 	} else if (poutput->preferred_mode) {
-		mode = poutput->current_mode;
+		mode = poutput->preferred_mode;
 	} else if (!wl_list_empty(&poutput->mode_list)) {
 		mode = container_of(poutput->mode_list.next,
 				    struct weston_mode, link);
