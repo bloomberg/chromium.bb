@@ -1355,7 +1355,7 @@ private:
     {
         Key* key = V8Key::toNative(value.As<v8::Object>());
         if (!key)
-            return 0;
+            return false;
         return m_writer.writeCryptoKey(key->key());
     }
 
