@@ -48,6 +48,8 @@
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebURLLoaderOptions.h"
+#include "third_party/jsoncpp/source/include/json/reader.h"
+#include "third_party/jsoncpp/source/include/json/value.h"
 
 namespace nacl {
 namespace {
@@ -1110,6 +1112,71 @@ PP_Bool ManifestResolveKey(PP_Instance instance,
   return PP_FromBool(ok);
 }
 
+PP_Bool GetPNaClResourceInfo(PP_Instance instance,
+                             const char* filename,
+                             PP_Var* llc_tool_name,
+                             PP_Var* ld_tool_name) {
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+  if (!load_manager)
+    return PP_FALSE;
+
+  base::PlatformFile file = GetReadonlyPnaclFD(filename);
+  if (file == base::kInvalidPlatformFileValue) {
+    load_manager->ReportLoadError(
+        PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
+        "The Portable Native Client (pnacl) component is not "
+        "installed. Please consult chrome://components for more "
+        "information.");
+    return PP_FALSE;
+  }
+
+  const int kBufferSize = 1 << 20;
+  scoped_ptr<char[]> buffer(new char[kBufferSize]);
+  if (base::ReadPlatformFile(file, 0, buffer.get(), kBufferSize) < 0) {
+    load_manager->ReportLoadError(
+        PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
+        std::string("PnaclResources::ReadResourceInfo reading failed for: ") +
+            filename);
+    return PP_FALSE;
+  }
+
+  // Expect the JSON file to contain a top-level object (dictionary).
+  Json::Reader json_reader;
+  Json::Value json_data;
+  if (!json_reader.parse(buffer.get(), json_data)) {
+    load_manager->ReportLoadError(
+        PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
+        std::string("Parsing resource info failed: JSON parse error: ") +
+            json_reader.getFormattedErrorMessages());
+    return PP_FALSE;
+  }
+
+  if (!json_data.isObject()) {
+    load_manager->ReportLoadError(
+        PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
+        "Parsing resource info failed: Malformed JSON dictionary");
+    return PP_FALSE;
+  }
+
+  if (json_data.isMember("pnacl-llc-name")) {
+    Json::Value json_name = json_data["pnacl-llc-name"];
+    if (json_name.isString()) {
+      std::string llc_tool_name_str = json_name.asString();
+      *llc_tool_name = ppapi::StringVar::StringToPPVar(llc_tool_name_str);
+    }
+  }
+
+  if (json_data.isMember("pnacl-ld-name")) {
+    Json::Value json_name = json_data["pnacl-ld-name"];
+    if (json_name.isString()) {
+      std::string ld_tool_name_str = json_name.asString();
+      *ld_tool_name = ppapi::StringVar::StringToPPVar(ld_tool_name_str);
+    }
+  }
+  return PP_TRUE;
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -1154,7 +1221,8 @@ const PPB_NaCl_Private nacl_interface = {
   &CreateJsonManifest,
   &DestroyManifest,
   &ManifestGetProgramURL,
-  &ManifestResolveKey
+  &ManifestResolveKey,
+  &GetPNaClResourceInfo
 };
 
 }  // namespace

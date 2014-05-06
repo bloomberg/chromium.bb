@@ -86,10 +86,6 @@ class PnaclResources {
   // Tool names for llc and ld; read from the resource info file.
   nacl::string llc_tool_name_;
   nacl::string ld_tool_name_;
-
-  // Parses resource info json data in |buf|.  Returns true if successful.
-  // Otherwise returns false.
-  bool ParseResourceInfo(const nacl::string& buf);
 };
 
 }  // namespace plugin;

@@ -8,7 +8,6 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/native_client/src/trusted/plugin/file_utils.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin.h"
 #include "ppapi/native_client/src/trusted/plugin/pnacl_coordinator.h"
 #include "ppapi/native_client/src/trusted/plugin/utility.h"
@@ -106,71 +105,22 @@ void PnaclResources::ReadResourceInfo(
   PLUGIN_PRINTF(("Pnacl-converted resources info url: %s\n",
                  resource_info_filename.c_str()));
 
-  int32_t fd = GetPnaclFD(plugin_, resource_info_filename.c_str());
-  if (fd < 0) {
-    // File-open failed. Assume this means that the file is
-    // not actually installed.
-    coordinator_->ReportNonPpapiError(PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
-        nacl::string("The Portable Native Client (pnacl) component is not "
-                     "installed. Please consult chrome://components for more "
-                     "information."));
-    return;
+  PP_Var pp_llc_tool_name_var;
+  PP_Var pp_ld_tool_name_var;
+  if (!plugin_->nacl_interface()->GetPnaclResourceInfo(
+          plugin_->pp_instance(),
+          resource_info_filename.c_str(),
+          &pp_llc_tool_name_var,
+          &pp_ld_tool_name_var)) {
+    coordinator_->ExitWithError();
   }
 
-  nacl::string json_buffer;
-  file_utils::StatusCode status = file_utils::SlurpFile(fd, json_buffer);
-  if (status != file_utils::PLUGIN_FILE_SUCCESS) {
-    coordinator_->ReportNonPpapiError(PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
-        nacl::string("PnaclResources::ReadResourceInfo reading "
-                     "failed for: ") + resource_info_filename);
-    return;
-  }
-
-  // Finally, we have the resource info JSON data in json_buffer.
-  PLUGIN_PRINTF(("Resource info JSON data:\n%s\n", json_buffer.c_str()));
-  if (!ParseResourceInfo(json_buffer))
-    return;
-
-  // Done. Queue the completion callback.
+  pp::Var llc_tool_name(pp::PASS_REF, pp_llc_tool_name_var);
+  pp::Var ld_tool_name(pp::PASS_REF, pp_ld_tool_name_var);
+  llc_tool_name_ = llc_tool_name.AsString();
+  ld_tool_name_ = ld_tool_name.AsString();
   pp::Core* core = pp::Module::Get()->core();
   core->CallOnMainThread(0, resource_info_read_cb, PP_OK);
-}
-
-bool PnaclResources::ParseResourceInfo(const nacl::string& buf) {
-  // Expect the JSON file to contain a top-level object (dictionary).
-  Json::Reader json_reader;
-  Json::Value json_data;
-  if (!json_reader.parse(buf, json_data)) {
-    std::string errmsg = nacl::string("JSON parse error: ") +
-        json_reader.getFormatedErrorMessages();
-    coordinator_->ReportNonPpapiError(PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
-        nacl::string("Parsing resource info failed: ") + errmsg + "\n");
-    return false;
-  }
-
-  if (!json_data.isObject()) {
-    coordinator_->ReportNonPpapiError(PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
-        nacl::string("Parsing resource info failed: "
-                     "Malformed JSON dictionary\n"));
-    return false;
-  }
-
-  if (json_data.isMember("pnacl-llc-name")) {
-    Json::Value json_name = json_data["pnacl-llc-name"];
-    if (json_name.isString()) {
-      llc_tool_name_ = json_name.asString();
-      PLUGIN_PRINTF(("Set llc_tool_name=%s\n", llc_tool_name_.c_str()));
-    }
-  }
-
-  if (json_data.isMember("pnacl-ld-name")) {
-    Json::Value json_name = json_data["pnacl-ld-name"];
-    if (json_name.isString()) {
-      ld_tool_name_ = json_name.asString();
-      PLUGIN_PRINTF(("Set ld_tool_name=%s\n", ld_tool_name_.c_str()));
-    }
-  }
-  return true;
 }
 
 nacl::string PnaclResources::GetFullUrl(
@@ -183,8 +133,8 @@ void PnaclResources::StartLoad(
   PLUGIN_PRINTF(("PnaclResources::StartLoad\n"));
 
   std::vector<nacl::string> resource_urls;
-  resource_urls.push_back(GetLlcUrl());
-  resource_urls.push_back(GetLdUrl());
+  resource_urls.push_back(llc_tool_name_);
+  resource_urls.push_back(ld_tool_name_);
 
   PLUGIN_PRINTF(("PnaclResources::StartLoad -- local install of PNaCl.\n"));
   // Do a blocking load of each of the resources.

@@ -432,4 +432,12 @@ interface PPB_NaCl_Private {
                              [in] str_t key,
                              [out] PP_Var full_url,
                              [out] PP_PNaClOptions pnacl_options);
+
+  /* Returns the filenames for the llc and ld tools, parsing that information
+   * from the file given in |filename|.
+   */
+  PP_Bool GetPnaclResourceInfo([in] PP_Instance instance,
+                               [in] str_t filename,
+                               [out] PP_Var llc_tool_name,
+                               [out] PP_Var ld_tool_name);
 };
