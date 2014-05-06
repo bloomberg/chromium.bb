@@ -351,7 +351,11 @@ class BuildData(object):
 
       bd = BuildData(url, metadata_dict, sheets_version=sheets_version,
                      carbon_version=carbon_version)
-      if not (sheets_version is None and carbon_version is None):
+
+      if bd.build_number is None:
+        cros_build_lib.Warning('Metadata at %s was missing build number.',
+                               url)
+      elif not (sheets_version is None and carbon_version is None):
         cros_build_lib.Debug('Read %s:\n'
                              '  build_number=%d, sheets v%d, carbon v%d', url,
                              bd.build_number, sheets_version, carbon_version)
@@ -442,7 +446,10 @@ class BuildData(object):
 
   @property
   def build_number(self):
-    return int(self['build-number'])
+    try:
+      return int(self['build-number'])
+    except KeyError:
+      return None
 
   @property
   def stages(self):
