@@ -580,6 +580,12 @@ static void addContentAttrValuesToFeatures(const Vector<AtomicString>& contentAt
         features.addContentAttr(contentAttrValues[i]);
 }
 
+void StyleResolver::adjustRenderStyle(StyleResolverState& state, Element* element)
+{
+    StyleAdjuster adjuster(state.cachedUAStyle(), m_document.inQuirksMode());
+    adjuster.adjustRenderStyle(state.style(), state.parentStyle(), element);
+}
+
 // Start loading resources referenced by this style.
 void StyleResolver::loadPendingResources(StyleResolverState& state)
 {
@@ -665,15 +671,14 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
         addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
     }
-    {
-        StyleAdjuster adjuster(state.cachedUAStyle(), m_document.inQuirksMode());
-        adjuster.adjustRenderStyle(state.style(), state.parentStyle(), element);
-    }
+
+    adjustRenderStyle(state, element);
 
     // FIXME: The CSSWG wants to specify that the effects of animations are applied before
     // important rules, but this currently happens here as we require adjustment to have happened
     // before deciding which properties to transition.
-    applyAnimatedProperties(state, element);
+    if (applyAnimatedProperties(state, element))
+        adjustRenderStyle(state, element);
 
     // FIXME: Shouldn't this be on RenderBody::styleDidChange?
     if (isHTMLBodyElement(*element))
@@ -839,17 +844,16 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
 
         addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
     }
-    {
-        StyleAdjuster adjuster(state.cachedUAStyle(), m_document.inQuirksMode());
-        // FIXME: Passing 0 as the Element* introduces a lot of complexity
-        // in the adjustRenderStyle code.
-        adjuster.adjustRenderStyle(state.style(), state.parentStyle(), 0);
-    }
+
+    // FIXME: Passing 0 as the Element* introduces a lot of complexity
+    // in the adjustRenderStyle code.
+    adjustRenderStyle(state, 0);
 
     // FIXME: The CSSWG wants to specify that the effects of animations are applied before
     // important rules, but this currently happens here as we require adjustment to have happened
     // before deciding which properties to transition.
-    applyAnimatedProperties(state, element.pseudoElement(pseudoStyleRequest.pseudoId));
+    if (applyAnimatedProperties(state, element.pseudoElement(pseudoStyleRequest.pseudoId)))
+        adjustRenderStyle(state, 0);
 
     didAccess();
 
@@ -1009,7 +1013,7 @@ void StyleResolver::collectPseudoRulesForElement(Element* element, ElementRuleCo
 // -------------------------------------------------------------------------------------
 // this is mostly boring stuff on how to apply a certain rule to the renderstyle...
 
-void StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* animatingElement)
+bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* animatingElement)
 {
     const Element* element = state.element();
     ASSERT(element);
@@ -1022,11 +1026,11 @@ void StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* 
     if (!(animatingElement && animatingElement->hasActiveAnimations())
         && !(state.style()->transitions() && !state.style()->transitions()->isEmpty())
         && !(state.style()->animations() && !state.style()->animations()->isEmpty()))
-        return;
+        return false;
 
     state.setAnimationUpdate(CSSAnimations::calculateUpdate(animatingElement, *element, *state.style(), state.parentStyle(), this));
     if (!state.animationUpdate())
-        return;
+        return false;
 
     const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& activeInterpolationsForAnimations = state.animationUpdate()->activeInterpolationsForAnimations();
     const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& activeInterpolationsForTransitions = state.animationUpdate()->activeInterpolationsForTransitions();
@@ -1035,15 +1039,10 @@ void StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* 
     applyAnimatedProperties<LowPriorityProperties>(state, activeInterpolationsForAnimations);
     applyAnimatedProperties<LowPriorityProperties>(state, activeInterpolationsForTransitions);
 
-    // If the animations/transitions change opacity or transform, we need to update
-    // the style to impose the stacking rules. Note that this is also
-    // done in StyleResolver::adjustRenderStyle().
-    RenderStyle* style = state.style();
-    if (style->hasAutoZIndex() && (style->opacity() < 1.0f || style->hasTransformRelatedProperty()))
-        style->setZIndex(0);
-
     // Start loading resources used by animations.
     loadPendingResources(state);
+
+    return true;
 }
 
 template <StyleResolver::StyleApplicationPass pass>

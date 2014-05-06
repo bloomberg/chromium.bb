@@ -242,6 +242,7 @@ private:
     void updateFont(StyleResolverState&);
 
     void loadPendingResources(StyleResolverState&);
+    void adjustRenderStyle(StyleResolverState&, Element*);
 
     void appendCSSStyleSheet(CSSStyleSheet*);
 
@@ -259,7 +260,7 @@ private:
     bool fastRejectSelector(const RuleData&) const;
 
     void applyMatchedProperties(StyleResolverState&, const MatchResult&);
-    void applyAnimatedProperties(StyleResolverState&, Element* animatingElement);
+    bool applyAnimatedProperties(StyleResolverState&, Element* animatingElement);
 
     enum StyleApplicationPass {
         AnimationProperties,
