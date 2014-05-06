@@ -17,6 +17,10 @@ TEST COMPLETE
       (bounds 800.00 600.00)
       (contentsOpaque 1)
       (drawsContent 1)
+      (repaint rects
+        (rect 30.00 30.00 151.00 151.00)
+        (rect 30.00 30.00 151.00 151.00)
+      )
     )
   )
 )
