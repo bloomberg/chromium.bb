@@ -136,11 +136,6 @@ void RenderFlowThread::layout()
     m_pageLogicalSizeChanged = false;
 }
 
-void RenderFlowThread::updateLogicalWidth()
-{
-    setLogicalWidth(initialLogicalWidth());
-}
-
 void RenderFlowThread::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
 {
     computedValues.m_position = logicalTop;

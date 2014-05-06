@@ -72,7 +72,6 @@ public:
     virtual void removeRegionFromThread(RenderRegion*);
     const RenderRegionList& renderRegionList() const { return m_regionList; }
 
-    virtual void updateLogicalWidth() OVERRIDE FINAL;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
 
     bool hasRegions() const { return m_regionList.size(); }
@@ -120,10 +119,6 @@ public:
 
 protected:
     virtual const char* renderName() const = 0;
-
-    // Overridden by columns/pages to set up an initial logical width of the page width even when
-    // no regions have been generated yet.
-    virtual LayoutUnit initialLogicalWidth() const { return 0; };
 
     void updateRegionsFlowThreadPortionRect();
     bool shouldRepaint(const LayoutRect&) const;

@@ -264,9 +264,9 @@ void RenderMultiColumnFlowThread::computeLogicalHeight(LayoutUnit logicalHeight,
     computedValues.m_position = logicalTop;
 }
 
-LayoutUnit RenderMultiColumnFlowThread::initialLogicalWidth() const
+void RenderMultiColumnFlowThread::updateLogicalWidth()
 {
-    return columnWidth();
+    setLogicalWidth(columnWidth());
 }
 
 void RenderMultiColumnFlowThread::layout()

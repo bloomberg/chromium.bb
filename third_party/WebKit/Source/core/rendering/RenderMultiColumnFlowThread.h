@@ -93,7 +93,7 @@ private:
     virtual void addRegionToThread(RenderRegion*) OVERRIDE;
     virtual void willBeRemovedFromTree() OVERRIDE;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
-    virtual LayoutUnit initialLogicalWidth() const OVERRIDE;
+    virtual void updateLogicalWidth() OVERRIDE FINAL;
     virtual void layout() OVERRIDE FINAL;
     virtual void setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage) OVERRIDE;
     virtual void updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight) OVERRIDE;
