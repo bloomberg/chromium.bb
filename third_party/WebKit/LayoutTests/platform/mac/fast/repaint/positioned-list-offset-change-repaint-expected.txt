@@ -11,8 +11,6 @@ The image below should be completely invalidated.
       (repaint rects
         (rect 8.00 60.00 114.00 236.00)
         (rect 8.00 60.00 214.00 236.00)
-        (rect 8.00 60.00 114.00 236.00)
-        (rect 8.00 60.00 214.00 236.00)
       )
     )
   )

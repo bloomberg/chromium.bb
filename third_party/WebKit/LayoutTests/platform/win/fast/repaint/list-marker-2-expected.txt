@@ -14,8 +14,6 @@ There should be only one bullet, at the bottom left of the rectangle.
         (rect 8.00 155.00 784.00 50.00)
         (rect 30.00 155.00 762.00 50.00)
         (rect 30.00 100.00 762.00 104.00)
-        (rect 30.00 135.00 7.00 19.00)
-        (rect 30.00 185.00 7.00 19.00)
         (rect 48.00 100.00 100.00 54.00)
         (rect 48.00 100.00 100.00 104.00)
       )
