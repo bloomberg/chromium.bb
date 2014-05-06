@@ -197,6 +197,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities)
   IPC_STRUCT_TRAITS_MEMBER(texture_usage)
   IPC_STRUCT_TRAITS_MEMBER(texture_storage)
   IPC_STRUCT_TRAITS_MEMBER(discard_framebuffer)
+  IPC_STRUCT_TRAITS_MEMBER(sync_query)
   IPC_STRUCT_TRAITS_MEMBER(map_image)
 IPC_STRUCT_TRAITS_END()
 
