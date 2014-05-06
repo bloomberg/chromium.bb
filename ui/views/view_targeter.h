@@ -28,6 +28,12 @@ class VIEWS_EXPORT ViewTargeter : public ui::EventTargeter {
                                               ui::Event* event) OVERRIDE;
   virtual ui::EventTarget* FindNextBestTarget(ui::EventTarget* previous_target,
                                               ui::Event* event) OVERRIDE;
+  virtual bool SubtreeCanAcceptEvent(
+      ui::EventTarget* target,
+      const ui::LocatedEvent& event) const OVERRIDE;
+  virtual bool EventLocationInsideBounds(
+      ui::EventTarget* target,
+      const ui::LocatedEvent& event) const OVERRIDE;
 
  private:
   View* FindTargetForKeyEvent(View* view, const ui::KeyEvent& key);

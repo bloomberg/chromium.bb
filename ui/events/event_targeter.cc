@@ -52,12 +52,23 @@ EventTarget* EventTargeter::FindTargetForLocatedEvent(EventTarget* root,
 
 bool EventTargeter::SubtreeShouldBeExploredForEvent(EventTarget* target,
                                                     const LocatedEvent& event) {
-  return true;
+  return SubtreeCanAcceptEvent(target, event) &&
+         EventLocationInsideBounds(target, event);
 }
 
 EventTarget* EventTargeter::FindNextBestTarget(EventTarget* previous_target,
                                                Event* event) {
   return NULL;
+}
+
+bool EventTargeter::SubtreeCanAcceptEvent(EventTarget* target,
+                                          const LocatedEvent& event) const {
+  return true;
+}
+
+bool EventTargeter::EventLocationInsideBounds(EventTarget* target,
+                                              const LocatedEvent& event) const {
+  return true;
 }
 
 }  // namespace ui

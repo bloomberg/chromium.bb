@@ -18,32 +18,6 @@ namespace aura {
 WindowTargeter::WindowTargeter() {}
 WindowTargeter::~WindowTargeter() {}
 
-bool WindowTargeter::WindowCanAcceptEvent(aura::Window* window,
-                                          const ui::LocatedEvent& event) const {
-  if (!window->IsVisible())
-    return false;
-  if (window->ignore_events())
-    return false;
-  client::EventClient* client = client::GetEventClient(window->GetRootWindow());
-  if (client && !client->CanProcessEventsWithinSubtree(window))
-    return false;
-
-  Window* parent = window->parent();
-  if (parent && parent->delegate_ && !parent->delegate_->
-      ShouldDescendIntoChildForEventHandling(window, event.location())) {
-    return false;
-  }
-  return true;
-}
-
-bool WindowTargeter::EventLocationInsideBounds(
-    aura::Window* window, const ui::LocatedEvent& event) const {
-  gfx::Point point = event.location();
-  if (window->parent())
-    aura::Window::ConvertPointToTarget(window->parent(), window, &point);
-  return gfx::Rect(window->bounds().size()).Contains(point);
-}
-
 ui::EventTarget* WindowTargeter::FindTargetForEvent(ui::EventTarget* root,
                                                     ui::Event* event) {
   Window* window = static_cast<Window*>(root);
@@ -64,14 +38,34 @@ ui::EventTarget* WindowTargeter::FindTargetForEvent(ui::EventTarget* root,
   return target;
 }
 
-bool WindowTargeter::SubtreeShouldBeExploredForEvent(
-    ui::EventTarget* root,
-    const ui::LocatedEvent& event) {
-  Window* window = static_cast<Window*>(root);
-  if (!WindowCanAcceptEvent(window, event))
+bool WindowTargeter::SubtreeCanAcceptEvent(
+    ui::EventTarget* target,
+    const ui::LocatedEvent& event) const {
+  aura::Window* window = static_cast<aura::Window*>(target);
+  if (!window->IsVisible())
+    return false;
+  if (window->ignore_events())
+    return false;
+  client::EventClient* client = client::GetEventClient(window->GetRootWindow());
+  if (client && !client->CanProcessEventsWithinSubtree(window))
     return false;
 
-  return EventLocationInsideBounds(window, event);
+  Window* parent = window->parent();
+  if (parent && parent->delegate_ && !parent->delegate_->
+      ShouldDescendIntoChildForEventHandling(window, event.location())) {
+    return false;
+  }
+  return true;
+}
+
+bool WindowTargeter::EventLocationInsideBounds(
+    ui::EventTarget* target,
+    const ui::LocatedEvent& event) const {
+  aura::Window* window = static_cast<aura::Window*>(target);
+  gfx::Point point = event.location();
+  if (window->parent())
+    aura::Window::ConvertPointToTarget(window->parent(), window, &point);
+  return gfx::Rect(window->bounds().size()).Contains(point);
 }
 
 ui::EventTarget* WindowTargeter::FindTargetForLocatedEvent(

@@ -29,6 +29,24 @@ ui::EventTarget* ViewTargeter::FindNextBestTarget(
   return previous_target->GetParentTarget();
 }
 
+bool ViewTargeter::SubtreeCanAcceptEvent(
+    ui::EventTarget* target,
+    const ui::LocatedEvent& event) const {
+  // TODO(tdanderson): Complete implementation when support for
+  //                   scroll events are added.
+  NOTREACHED();
+  return true;
+}
+
+bool ViewTargeter::EventLocationInsideBounds(
+    ui::EventTarget* target,
+    const ui::LocatedEvent& event) const {
+  // TODO(tdanderson): Complete implementation when support for
+  //                   scroll events are added.
+  NOTREACHED();
+  return true;
+}
+
 View* ViewTargeter::FindTargetForKeyEvent(View* view, const ui::KeyEvent& key) {
   if (view->GetFocusManager())
     return view->GetFocusManager()->GetFocusedView();

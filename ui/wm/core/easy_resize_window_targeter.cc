@@ -24,8 +24,9 @@ EasyResizeWindowTargeter::~EasyResizeWindowTargeter() {
 }
 
 bool EasyResizeWindowTargeter::EventLocationInsideBounds(
-    aura::Window* window,
+    ui::EventTarget* target,
     const ui::LocatedEvent& event) const {
+  aura::Window* window = static_cast<aura::Window*>(target);
   if (ShouldUseExtendedBounds(window)) {
     // Note that |event|'s location is in |window|'s parent's coordinate system,
     // so convert it to |window|'s coordinate system first.

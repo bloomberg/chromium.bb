@@ -16,8 +16,9 @@ MaskedWindowTargeter::MaskedWindowTargeter(aura::Window* masked_window)
 MaskedWindowTargeter::~MaskedWindowTargeter() {}
 
 bool MaskedWindowTargeter::EventLocationInsideBounds(
-    aura::Window* window,
+    ui::EventTarget* target,
     const ui::LocatedEvent& event) const {
+  aura::Window* window = static_cast<aura::Window*>(target);
   if (window == masked_window_) {
     gfx::Path mask;
     if (!GetHitTestMask(window, &mask))

@@ -32,9 +32,13 @@ class EVENTS_EXPORT EventTargeter {
   virtual EventTarget* FindTargetForLocatedEvent(EventTarget* root,
                                                  LocatedEvent* event);
 
-  // Returns true of |target| or one of its descendants can be a target of
-  // |event|. Note that the location etc. of |event| is in |target|'s parent's
-  // coordinate system.
+  // Returns true if |target| or one of its descendants can be a target of
+  // |event|. This requires that |target| and its descendants are not
+  // prohibited from accepting the event, and that the event is within an
+  // actionable region of the target's bounds. Note that the location etc. of
+  // |event| is in |target|'s parent's coordinate system.
+  // TODO(tdanderson|sadrul): This function should be made non-virtual and
+  //                          non-public.
   virtual bool SubtreeShouldBeExploredForEvent(EventTarget* target,
                                                const LocatedEvent& event);
 
@@ -44,6 +48,21 @@ class EVENTS_EXPORT EventTargeter {
   // coordinate space).
   virtual EventTarget* FindNextBestTarget(EventTarget* previous_target,
                                           Event* event);
+
+ protected:
+  // Returns false if neither |target| nor any of its descendants are allowed
+  // to accept |event| for reasons unrelated to the event's location or the
+  // target's bounds. For example, overrides of this function may consider
+  // attributes such as the visibility or enabledness of |target|. Note that
+  // the location etc. of |event| is in |target|'s parent's coordinate system.
+  virtual bool SubtreeCanAcceptEvent(EventTarget* target,
+                                     const LocatedEvent& event) const;
+
+  // Returns whether the location of the event is in an actionable region of the
+  // target. Note that the location etc. of |event| is in the |target|'s
+  // parent's coordinate system.
+  virtual bool EventLocationInsideBounds(EventTarget* target,
+                                         const LocatedEvent& event) const;
 };
 
 }  // namespace ui

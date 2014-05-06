@@ -18,24 +18,18 @@ class AURA_EXPORT WindowTargeter : public ui::EventTargeter {
   virtual ~WindowTargeter();
 
  protected:
-  bool WindowCanAcceptEvent(aura::Window* window,
-                            const ui::LocatedEvent& event) const;
-
-  // Returns whether the location of the event is in an actionable region of the
-  // window. Note that the location etc. of |event| is in the |window|'s
-  // parent's coordinate system.
-  virtual bool EventLocationInsideBounds(aura::Window* window,
-                                         const ui::LocatedEvent& event) const;
-
   // ui::EventTargeter:
   virtual ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
                                               ui::Event* event) OVERRIDE;
   virtual ui::EventTarget* FindTargetForLocatedEvent(
       ui::EventTarget* root,
       ui::LocatedEvent* event) OVERRIDE;
-  virtual bool SubtreeShouldBeExploredForEvent(
+  virtual bool SubtreeCanAcceptEvent(
       ui::EventTarget* target,
-      const ui::LocatedEvent& event) OVERRIDE;
+      const ui::LocatedEvent& event) const OVERRIDE;
+  virtual bool EventLocationInsideBounds(
+      ui::EventTarget* target,
+      const ui::LocatedEvent& event) const OVERRIDE;
 
  private:
   Window* FindTargetForKeyEvent(Window* root_window,
