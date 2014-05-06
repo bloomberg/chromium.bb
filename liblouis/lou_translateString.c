@@ -274,7 +274,7 @@ trace_translate (const char *tableList, const widechar * inbufx,
   if (rulesLen != NULL)
     *rulesLen = appliedRulesCount;
   lou_log(LOG_INFO, "Translation complete: outlen=%d", *outlen);
-  logWidecharBuf(LOG_INFO, "Outbuf=", outbuf, *outlen);
+  logWidecharBuf(LOG_INFO, "Outbuf=", (const widechar *)outbuf, *outlen);
   return goodTrans;
 }
 

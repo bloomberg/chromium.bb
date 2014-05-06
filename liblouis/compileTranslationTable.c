@@ -5214,7 +5214,7 @@ void EXPORT_CALL lou_log(logLevels level, const char *format, ...)
     }
 }
 
-void logWidecharBuf(logLevels level, const char *msg, widechar *wbuf, int wlen)
+void logWidecharBuf(logLevels level, const char *msg, const widechar *wbuf, int wlen)
 {
   /* When calculating output size:
    * Each wdiechar is represented in hex, thus needing two bytes for each
