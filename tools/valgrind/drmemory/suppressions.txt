@@ -458,5 +458,5 @@ QuickTime.qts!*
 
 UNADDRESSABLE ACCESS
 name=IntentionalCrash
-*!content::PpapiThread::OnCrash
+*!content::*::*Crash*
 *!content::*::MaybeHandleDebugURL
