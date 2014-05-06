@@ -164,21 +164,6 @@ void HistoryItem::setStateObject(PassRefPtr<SerializedScriptValue> object)
     m_stateObject = object;
 }
 
-void HistoryItem::deprecatedAddChildItem(PassRefPtr<HistoryItem> child)
-{
-    m_children.append(child);
-}
-
-const HistoryItemVector& HistoryItem::deprecatedChildren() const
-{
-    return m_children;
-}
-
-void HistoryItem::deprecatedClearChildren()
-{
-    m_children.clear();
-}
-
 const AtomicString& HistoryItem::formContentType() const
 {
     return m_formContentType;

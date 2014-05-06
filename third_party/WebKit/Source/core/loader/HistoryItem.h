@@ -95,13 +95,6 @@ public:
     void setFormData(PassRefPtr<FormData>);
     void setFormContentType(const AtomicString&);
 
-    // HistoryItem's concept of children is deprecated and can be removed once chromium's
-    // HistoryItem serialization/deserialization code knows about HistoryController's
-    // representation of the histroy tree.
-    void deprecatedAddChildItem(PassRefPtr<HistoryItem>);
-    const HistoryItemVector& deprecatedChildren() const;
-    void deprecatedClearChildren();
-
     bool isCurrentDocument(Document*) const;
 
 private:
@@ -115,8 +108,6 @@ private:
     float m_pageScaleFactor;
     Vector<String> m_documentStateVector;
     RefPtr<DocumentState> m_documentState;
-
-    HistoryItemVector m_children;
 
     // If two HistoryItems have the same item sequence number, then they are
     // clones of one another. Traversing history from one such HistoryItem to

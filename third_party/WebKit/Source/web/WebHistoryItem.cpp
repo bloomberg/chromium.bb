@@ -45,29 +45,6 @@
 using namespace WebCore;
 
 namespace blink {
-namespace {
-
-void addReferencedFilePaths(HistoryItem* item, HashSet<String>& results)
-{
-    const FormData* formData = item->formData();
-    if (formData) {
-        for (size_t i = 0; i < formData->elements().size(); ++i) {
-            const FormDataElement& element = formData->elements()[i];
-            if (element.m_type == FormDataElement::encodedFile)
-                results.add(element.m_filename);
-        }
-    }
-
-    const Vector<String>& filePaths = item->getReferencedFilePaths();
-    for (size_t i = 0; i < filePaths.size(); ++i)
-        results.add(filePaths[i]);
-
-    const HistoryItemVector& children = item->deprecatedChildren();
-    for (size_t i = 0; i < children.size(); ++i)
-        addReferencedFilePaths(children[i].get(), results);
-}
-
-} // namespace
 
 void WebHistoryItem::initialize()
 {
@@ -203,27 +180,21 @@ void WebHistoryItem::setHTTPBody(const WebHTTPBody& httpBody)
     m_private->setFormData(httpBody);
 }
 
-WebVector<WebHistoryItem> WebHistoryItem::children() const
-{
-    return m_private->deprecatedChildren();
-}
-
-void WebHistoryItem::setChildren(const WebVector<WebHistoryItem>& items)
-{
-    m_private->deprecatedClearChildren();
-    for (size_t i = 0; i < items.size(); ++i)
-        m_private->deprecatedAddChildItem(items[i]);
-}
-
-void WebHistoryItem::appendToChildren(const WebHistoryItem& item)
-{
-    m_private->deprecatedAddChildItem(item);
-}
-
 WebVector<WebString> WebHistoryItem::getReferencedFilePaths() const
 {
     HashSet<String> filePaths;
-    addReferencedFilePaths(m_private.get(), filePaths);
+    const FormData* formData = m_private->formData();
+    if (formData) {
+        for (size_t i = 0; i < formData->elements().size(); ++i) {
+            const FormDataElement& element = formData->elements()[i];
+            if (element.m_type == FormDataElement::encodedFile)
+                filePaths.add(element.m_filename);
+        }
+    }
+
+    const Vector<String>& referencedFilePaths = m_private->getReferencedFilePaths();
+    for (size_t i = 0; i < referencedFilePaths.size(); ++i)
+        filePaths.add(referencedFilePaths[i]);
 
     Vector<String> results;
     copyToVector(filePaths, results);

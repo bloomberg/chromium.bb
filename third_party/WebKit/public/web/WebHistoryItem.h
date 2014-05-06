@@ -106,10 +106,6 @@ public:
     BLINK_EXPORT WebHTTPBody httpBody() const;
     BLINK_EXPORT void setHTTPBody(const WebHTTPBody&);
 
-    BLINK_EXPORT WebVector<WebHistoryItem> children() const;
-    BLINK_EXPORT void setChildren(const WebVector<WebHistoryItem>&);
-    BLINK_EXPORT void appendToChildren(const WebHistoryItem&);
-
     BLINK_EXPORT WebVector<WebString> getReferencedFilePaths() const;
 
 #if BLINK_IMPLEMENTATION
