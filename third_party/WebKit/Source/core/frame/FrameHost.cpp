@@ -38,15 +38,15 @@
 
 namespace WebCore {
 
-PassOwnPtr<FrameHost> FrameHost::create(Page& page)
+PassOwnPtrWillBeRawPtr<FrameHost> FrameHost::create(Page& page)
 {
-    return adoptPtr(new FrameHost(page));
+    return adoptPtrWillBeNoop(new FrameHost(page));
 }
 
 FrameHost::FrameHost(Page& page)
-    : m_page(page)
+    : m_page(&page)
     , m_pinchViewport(adoptPtr(new PinchViewport(*this)))
-    , m_eventHandlerRegistry(adoptPtr(new EventHandlerRegistry(*this)))
+    , m_eventHandlerRegistry(adoptPtrWillBeNoop(new EventHandlerRegistry(*this)))
 {
 }
 
@@ -57,22 +57,22 @@ FrameHost::~FrameHost()
 
 Settings& FrameHost::settings() const
 {
-    return m_page.settings();
+    return m_page->settings();
 }
 
 Chrome& FrameHost::chrome() const
 {
-    return m_page.chrome();
+    return m_page->chrome();
 }
 
 UseCounter& FrameHost::useCounter() const
 {
-    return m_page.useCounter();
+    return m_page->useCounter();
 }
 
 float FrameHost::deviceScaleFactor() const
 {
-    return m_page.deviceScaleFactor();
+    return m_page->deviceScaleFactor();
 }
 
 PinchViewport& FrameHost::pinchViewport() const
@@ -87,7 +87,8 @@ EventHandlerRegistry& FrameHost::eventHandlerRegistry() const
 
 void FrameHost::trace(Visitor* visitor)
 {
-    m_eventHandlerRegistry->trace(visitor);
+    visitor->trace(m_page);
+    visitor->trace(m_eventHandlerRegistry);
 }
 
 }

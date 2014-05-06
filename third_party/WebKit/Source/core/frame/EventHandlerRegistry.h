@@ -17,7 +17,6 @@ typedef HashCountedSet<EventTarget*> EventTargetSet;
 // documents that can be rendered or can receive input (i.e., are attached to a
 // FrameHost) are registered here.
 class EventHandlerRegistry FINAL : public NoBaseWillBeGarbageCollectedFinalized<EventHandlerRegistry> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(EventHandlerRegistry);
 public:
     explicit EventHandlerRegistry(FrameHost&);
     virtual ~EventHandlerRegistry();
