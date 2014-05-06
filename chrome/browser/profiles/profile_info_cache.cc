@@ -541,6 +541,8 @@ void ProfileInfoCache::SetIsOmittedProfileAtIndex(size_t index,
 
 void ProfileInfoCache::SetManagedUserIdOfProfileAtIndex(size_t index,
                                                         const std::string& id) {
+  if (GetManagedUserIdOfProfileAtIndex(index) == id)
+    return;
   scoped_ptr<base::DictionaryValue> info(
       GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetString(kManagedUserId, id);
