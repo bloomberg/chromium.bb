@@ -44,6 +44,7 @@ html:not(.focus-outline-visible)
 #apps-developer-tools-promo {
   -webkit-margin-before: 15px;
   -webkit-padding-before: 5px;
+  -webkit-padding-end: 3px;
   align-items: center;
   border-top: 1px solid #eee;
   display: flex;
