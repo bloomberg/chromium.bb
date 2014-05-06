@@ -3405,6 +3405,7 @@ void RenderObject::clearRepaintState()
 {
     setShouldDoFullRepaintAfterLayout(false);
     setShouldDoFullRepaintIfSelfPaintingLayer(false);
+    setOnlyNeededPositionedMovementLayout(false);
     setShouldRepaintOverflow(false);
     setLayoutDidGetCalled(false);
     setMayNeedInvalidation(false);
