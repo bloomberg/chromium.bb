@@ -5723,12 +5723,6 @@
    fun:_ZN7WebCore27WorkerGlobalScopeV8InternalL31createImageBitmapMethodCallbackERKN2v820FunctionCallbackInfoINS1_5ValueEEE
 }
 {
-   bug_290451
-   Memcheck:Uninitialized
-   fun:_ZN4base17MD5DigestToBase16ERKNS_9MD5DigestE
-   fun:_ZN7content16WebKitTestRunner11CaptureDumpEv
-}
-{
    bug_290559a
    Memcheck:Leak
    fun:_Znw*
@@ -6296,6 +6290,12 @@
    fun:event_base_loop
 }
 {
+   bug_364724b
+   Memcheck:Uninitialized
+   fun:_ZN4base17MD5DigestToBase16ERKNS_9MD5DigestE
+   fun:_ZN7content16WebKitTestRunner17CaptureDumpPixelsERK8SkBitmap
+}
+{
    bug_364821
    Memcheck:Leak
    fun:malloc
@@ -6385,4 +6385,22 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN7content27ServiceWorkerContextWrapper12InitInternalERKN4base8FilePathEPNS1_19SequencedTaskRunnerEPN5quota17QuotaManagerProxyE
+}
+{
+   bug_370206
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF16DefaultAllocator15backingAllocateEm
+   fun:_ZN3WTF16DefaultAllocator13backingMallocIPN7WebCore14InlineIteratorEvEET_m
+   ...
+   fun:_ZN3WTF17HashMapTranslatorINS_18HashMapValueTraitsINS_10HashTraitsIPN7WebCore7BidiRun*
+}
+{
+   bug_370210
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore20InternalsGeolocation24setGeolocationClientMockERNS_9InternalsEPNS_8DocumentE
+   fun:_ZN7WebCore19InternalsV8InternalL30setGeolocationClientMockMethodERKN2v820FunctionCallbackInfoINS1_5ValueEEE
+   fun:_ZN7WebCore19InternalsV8InternalL38setGeolocationClientMockMethodCallbackERKN2v820FunctionCallbackInfoINS1_5ValueEEE
+   fun:_ZN2v88internal25FunctionCallbackArguments4CallEPFvRKNS_20FunctionCallbackInfoINS_5ValueEEEE
 }

@@ -1677,15 +1677,9 @@ name=bug_290435
 *!WebCore::OfflineAudioDestinationNode::offlineRender
 
 UNINITIALIZED READ
-name=bug_290451
+name=bug_364724
 *!base::MD5DigestToBase16
-*!content::WebKitTestRunner::CaptureDump
-*!content::WebKitTestRunner::testFinished
-*!WebTestRunner::TestRunner::completeNotifyDone
-*!WebTestRunner::TestRunner::notifyDone
-*!WebTestRunner::CppBoundClass::MemberCallback<>::run
-*!WebTestRunner::CppBoundClass::invoke
-*!WebTestRunner::CppNPObject::invoke
+*!content::WebKitTestRunner::CaptureDumpPixels
 
 UNINITIALIZED READ
 name=bug_298143
