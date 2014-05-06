@@ -11,6 +11,10 @@
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 
+namespace base {
+class RunLoop;
+}
+
 namespace mojo {
 namespace services {
 namespace view_manager {
@@ -28,7 +32,7 @@ class ViewManagerSynchronizer : public IViewManagerClient {
 
   // API exposed to the node implementation that pushes local changes to the
   // service.
-  uint16_t CreateViewTreeNode();
+  TransportNodeId CreateViewTreeNode();
   void DestroyViewTreeNode(TransportNodeId node_id);
 
   // These methods take TransportIds. For views owned by the current connection,
@@ -87,6 +91,10 @@ class ViewManagerSynchronizer : public IViewManagerClient {
   uint32_t next_change_id_;
 
   Transactions pending_transactions_;
+
+  // Non-NULL while blocking on the connection to |service_| during
+  // construction.
+  base::RunLoop* init_loop_;
 
   RemotePtr<IViewManager> service_;
 

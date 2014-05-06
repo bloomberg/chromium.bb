@@ -27,6 +27,13 @@ class ViewTreeNode;
 // TODO: displays
 class ViewManager {
  public:
+  // This blocks on the connection being established.
+  // TODO(beng): blocking is currently achieved by running a nested runloop,
+  //             which will dispatch all messages on all pipes while blocking.
+  //             we should instead wait on the client pipe receiving a
+  //             connection established message.
+  // TODO(beng): this constructor should optionally not block if supplied a
+  //             callback.
   explicit ViewManager(Shell* shell);
   ~ViewManager();
 

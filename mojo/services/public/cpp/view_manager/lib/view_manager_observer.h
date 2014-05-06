@@ -11,9 +11,6 @@ namespace view_manager {
 
 class ViewManagerObserver {
  public:
-  // Called when the client establishes a connection with the service.
-  virtual void OnViewManagerConnected(ViewManager* manager) = 0;
-
   // Called when a commit is made to the service.
   virtual void OnCommit(ViewManager* manager) = 0;
 
