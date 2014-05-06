@@ -297,6 +297,8 @@ def ArchivePackageArchives(tar_dir, package_target, package_name, archives,
   local_package_file = package_locations.GetLocalPackageFile(tar_dir,
                                                              package_target,
                                                              package_name)
+
+  valid_archive_files = set()
   archive_list = []
 
   package_desc = package_info.PackageInfo()
@@ -333,6 +335,27 @@ def ArchivePackageArchives(tar_dir, package_target, package_name, archives,
       raise IOError('Invalid package: %s.' % archive)
     archive_list.append(archive)
 
+    archive_basename = os.path.basename(archive)
+    archive_json = archive_basename + '.json'
+    valid_archive_files.update([archive_basename, archive_json])
+
+  # Delete any stale archive files
+  local_archive_dir = package_locations.GetLocalPackageArchiveDir(
+      tar_dir,
+      package_target,
+      package_name)
+
+  if os.path.isdir(local_archive_dir):
+    for dir_item in os.listdir(local_archive_dir):
+      if dir_item in valid_archive_files:
+        continue
+
+      item_path = os.path.join(local_archive_dir, dir_item)
+      if os.path.isdir(item_path):
+        pynacl.file_tools.RemoveDir(item_path)
+      else:
+        pynacl.file_tools.RemoveFile(item_path)
+
   # We do not need to archive the package if it already matches. But if the
   # local package file is invalid or does not match, then we should recreate
   # the json file.
@@ -352,8 +375,7 @@ def ArchivePackageArchives(tar_dir, package_target, package_name, archives,
         tar_dir,
         package_target,
         package_name,
-        archive_name
-    )
+        archive_name)
 
     logging.info('Archiving file: %s', archive_file)
     pynacl.file_tools.MakeParentDirectoryIfAbsent(local_archive_file)
