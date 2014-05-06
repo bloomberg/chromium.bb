@@ -116,10 +116,7 @@ void DeviceSettingsTestHelper::EmitLoginPromptVisible() {}
 void DeviceSettingsTestHelper::RestartJob(int pid,
                                           const std::string& command_line) {}
 
-void DeviceSettingsTestHelper::StartSession(
-    const std::string& user_email,
-    const StartSessionCallback& callback) {
-}
+void DeviceSettingsTestHelper::StartSession(const std::string& user_email) {}
 
 void DeviceSettingsTestHelper::StopSession() {}
 

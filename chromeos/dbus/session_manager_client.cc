@@ -107,8 +107,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  virtual void StartSession(const std::string& user_email,
-                            const StartSessionCallback& callback) OVERRIDE {
+  virtual void StartSession(const std::string& user_email) OVERRIDE {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  login_manager::kSessionManagerStartSession);
     dbus::MessageWriter writer(&method_call);
@@ -118,8 +117,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&SessionManagerClientImpl::OnStartSession,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   virtual void StopSession() OVERRIDE {
@@ -383,18 +381,10 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   // Called when kSessionManagerStartSession method is complete.
-  void OnStartSession(const StartSessionCallback& callback,
-                      dbus::Response* response) {
-    bool success = false;
-    if (!response) {
-      LOG(ERROR) << "Failed to call "
-                 << login_manager::kSessionManagerStartSession;
-    } else {
-      dbus::MessageReader reader(response);
-      if (!reader.PopBool(&success))
-        LOG(ERROR) << "Invalid response: " << response->ToString();
-    }
-    callback.Run(success);
+  void OnStartSession(dbus::Response* response) {
+    LOG_IF(ERROR, !response)
+        << "Failed to call "
+        << login_manager::kSessionManagerStartSession;
   }
 
   // Called when kSessionManagerStopSession method is complete.
@@ -610,10 +600,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   }
   virtual void EmitLoginPromptVisible() OVERRIDE {}
   virtual void RestartJob(int pid, const std::string& command_line) OVERRIDE {}
-  virtual void StartSession(const std::string& user_email,
-                            const StartSessionCallback& callback) OVERRIDE {
-    callback.Run(true);
-  }
+  virtual void StartSession(const std::string& user_email) OVERRIDE {}
   virtual void StopSession() OVERRIDE {}
   virtual void StartDeviceWipe() OVERRIDE {}
   virtual void RequestLockScreen() OVERRIDE {
