@@ -33,14 +33,13 @@ function testEvents(description, button, expectedString) {
 
 if (!window.eventSender) {
     debug("This test requires DumpRenderTree.  Click on the gray rect with left mouse button to log.")
-    return;
+} else {
+    var button = 0;
+    eventSender.mouseMoveTo(10, 10);
+    eventSender.mouseDown(button);
+    eventSender.mouseUp(button);
+    eventSender.mouseDown(button);
+    eventSender.mouseUp(button);
+    shouldBeEqualToString("eventLog", "mousedown mouseup click mousedown mouseup click dblclick ");
+    clearEventLog();
 }
-
-var button = 0;
-eventSender.mouseMoveTo(10, 10);
-eventSender.mouseDown(button);
-eventSender.mouseUp(button);
-eventSender.mouseDown(button);
-eventSender.mouseUp(button);
-shouldBeEqualToString("eventLog", "mousedown mouseup click mousedown mouseup click dblclick ");
-clearEventLog();

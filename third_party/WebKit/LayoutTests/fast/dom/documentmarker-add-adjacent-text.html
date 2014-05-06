@@ -19,17 +19,14 @@ rangeRight.setEnd(elt, 4);
 
 if (!window.internals) {
     alert('This test requires window.interals to run!');
-    return;
+} else {
+    window.internals.addTextMatchMarker(rangeLeft, true);
+    window.internals.addTextMatchMarker(rangeRight, true);
+
+    shouldBe('window.internals.markerCountForNode(elt, "textmatch")', '2');
 }
-
-window.internals.addTextMatchMarker(rangeLeft, true);
-window.internals.addTextMatchMarker(rangeRight, true);
-
-shouldBe('window.internals.markerCountForNode(elt, "textmatch")', '2');
 
 var successfullyParsed = true;
 </script>
-
-
 </body>
 </html>

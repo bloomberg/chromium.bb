@@ -5,25 +5,24 @@
 <script>
 description("This tests that text is copied (rather than moved) when the copy key is down.");
 
-if (!window.testRunner)
-    return;
+if (window.testRunner) {
+    // Drag a word in the textarea
+    var textarea = document.getElementById("textarea");
+    textarea.setSelectionRange(0, 5);
+    x = textarea.offsetLeft + 10;
+    y = textarea.offsetTop + textarea.offsetHeight / 2;
+    eventSender.mouseMoveTo(x, y);
+    eventSender.mouseDown();
+    // and drop it off to the right
+    eventSender.leapForward(500);
+    eventSender.mouseMoveTo(textarea.offsetLeft +
+    textarea.offsetWidth - 10, y);
 
-// Drag a word in the textarea
-var textarea = document.getElementById("textarea");
-textarea.setSelectionRange(0, 5);
-x = textarea.offsetLeft + 10;
-y = textarea.offsetTop + textarea.offsetHeight / 2;
-eventSender.mouseMoveTo(x, y);
-eventSender.mouseDown();
-// and drop it off to the right
-eventSender.leapForward(500);
-eventSender.mouseMoveTo(textarea.offsetLeft +
-textarea.offsetWidth - 10, y);
+    // Simulate pressing the copy key. This will
+    // transform the drag into a copy, rather
+    // than a move.
+    eventSender.mouseUp(0, ["copyKey"]);
 
-// Simulate pressing the copy key. This will
-// transform the drag into a copy, rather
-// than a move.
-eventSender.mouseUp(0, ["copyKey"]);
-
-shouldBeEqualToString("textarea.value", "Hello WorldHello");
+    shouldBeEqualToString("textarea.value", "Hello WorldHello");
+}
 </script>

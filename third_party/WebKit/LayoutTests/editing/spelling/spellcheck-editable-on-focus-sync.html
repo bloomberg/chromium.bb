@@ -21,26 +21,23 @@ var testEditable = document.getElementById('test_editable');
 var testTextArea = document.getElementById('test_textarea');
 var testTextField = document.getElementById('test_textfield');
 
-if (!window.internals)
-{
+if (!window.internals) {
     log("Automatic testing impossible. Test manually.");
-    return;
+} else {
+    internals.settings.setUnifiedTextCheckerEnabled(true);
+    internals.settings.setAsynchronousSpellCheckingEnabled(false);
+    internals.setContinuousSpellCheckingEnabled(true);
+
+    shouldBe('internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")', '0');
+    testEditable.focus();
+    shouldBe('internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")', '3');
+    shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '0');
+    testTextArea.focus();
+    shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '3');
+    shouldBe('internals.markerCountForNode(findFirstTextNode(testTextField), "spelling")', '0');
+    testTextField.focus();
+    shouldBe('internals.markerCountForNode(findFirstTextNode(testTextField), "spelling")', '3');
 }
-
-internals.settings.setUnifiedTextCheckerEnabled(true);
-internals.settings.setAsynchronousSpellCheckingEnabled(false);
-internals.setContinuousSpellCheckingEnabled(true);
-
-shouldBe('internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")', '0');
-testEditable.focus();
-shouldBe('internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")', '3');
-shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '0');
-testTextArea.focus();
-shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '3');
-shouldBe('internals.markerCountForNode(findFirstTextNode(testTextField), "spelling")', '0');
-testTextField.focus();
-shouldBe('internals.markerCountForNode(findFirstTextNode(testTextField), "spelling")', '3');
-
 </script>
 </body>
 </html>

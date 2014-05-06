@@ -17,12 +17,11 @@ shouldThrow("formData.append('blob', new Blob(['']), badString)", "'Exception in
 xhr.send(formData);
 if (xhr.readyState !== 4 || xhr.status !== 200) {
     testFailed('xhr.readyState = ' + xhr.readyState + ', xhr.status = ' + xhr.status);
-    return;
+} else {
+    shouldBe("xhr.response.indexOf('test')", "-1");
+    shouldBe("xhr.response.indexOf('textarea')", "-1");
+    shouldBe("xhr.response.indexOf('blob')", "-1");
 }
-
-shouldBe("xhr.response.indexOf('test')", "-1");
-shouldBe("xhr.response.indexOf('textarea')", "-1");
-shouldBe("xhr.response.indexOf('blob')", "-1");
 </script>
 </body>
 </html>
