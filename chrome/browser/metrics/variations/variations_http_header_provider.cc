@@ -105,11 +105,17 @@ void VariationsHttpHeaderProvider::OnFieldTrialGroupFinalized(
     const std::string& group_name) {
   VariationID new_id =
       GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, trial_name, group_name);
-  if (new_id == EMPTY_ID)
+  VariationID new_trigger_id = GetGoogleVariationID(
+      GOOGLE_WEB_PROPERTIES_TRIGGER, trial_name, group_name);
+  if (new_id == EMPTY_ID && new_trigger_id == EMPTY_ID)
     return;
 
   base::AutoLock scoped_lock(lock_);
-  variation_ids_set_.insert(new_id);
+  if (new_id != EMPTY_ID)
+    variation_ids_set_.insert(new_id);
+  if (new_trigger_id != EMPTY_ID)
+    variation_trigger_ids_set_.insert(new_trigger_id);
+
   UpdateVariationIDsHeaderValue();
 }
 
@@ -135,6 +141,12 @@ void VariationsHttpHeaderProvider::InitVariationIDsCacheIfNeeded() {
                              it->group_name);
     if (id != EMPTY_ID)
       variation_ids_set_.insert(id);
+
+    const VariationID trigger_id =
+        GetGoogleVariationID(GOOGLE_WEB_PROPERTIES_TRIGGER, it->trial_name,
+                             it->group_name);
+    if (trigger_id != EMPTY_ID)
+      variation_trigger_ids_set_.insert(trigger_id);
   }
   UpdateVariationIDsHeaderValue();
 
@@ -156,15 +168,17 @@ void VariationsHttpHeaderProvider::UpdateVariationIDsHeaderValue() {
   variation_ids_header_.clear();
 
   if (variation_ids_set_.empty() && default_variation_ids_set_.empty() &&
-      default_trigger_id_set_.empty()) {
+      variation_trigger_ids_set_.empty() && default_trigger_id_set_.empty()) {
     return;
   }
 
   // This is the bottleneck for the creation of the header, so validate the size
   // here. Force a hard maximum on the ID count in case the Variations server
   // returns too many IDs and DOSs receiving servers with large requests.
-  DCHECK_LE(variation_ids_set_.size(), 10U);
-  if (variation_ids_set_.size() > 20)
+  const size_t total_id_count =
+      variation_ids_set_.size() + variation_trigger_ids_set_.size();
+  DCHECK_LE(total_id_count, 10U);
+  if (total_id_count > 20)
     return;
 
   // Merge the two sets of experiment ids.
@@ -179,9 +193,14 @@ void VariationsHttpHeaderProvider::UpdateVariationIDsHeaderValue() {
     proto.add_variation_id(*it);
   }
 
+  std::set<VariationID> all_trigger_ids_set = default_trigger_id_set_;
   for (std::set<VariationID>::const_iterator it =
-           default_trigger_id_set_.begin();
-       it != default_trigger_id_set_.end(); ++it) {
+           variation_trigger_ids_set_.begin();
+       it != variation_trigger_ids_set_.end(); ++it) {
+    all_trigger_ids_set.insert(*it);
+  }
+  for (std::set<VariationID>::const_iterator it = all_trigger_ids_set.begin();
+       it != all_trigger_ids_set.end(); ++it) {
     proto.add_trigger_variation_id(*it);
   }
 

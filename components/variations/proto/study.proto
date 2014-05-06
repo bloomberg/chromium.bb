@@ -43,7 +43,7 @@ message Study {
 
   // An experiment within the study.
   //
-  // Next tag: 8
+  // Next tag: 9
   message Experiment {
     // A named parameter value for this experiment.
     //
@@ -67,6 +67,10 @@ message Study {
     // Optional id used to uniquely identify this experiment for Google web
     // properties.
     optional uint64 google_web_experiment_id = 3;
+
+    // Optional id used to allow this experiment to trigger experimental
+    // behavior on Google web properties.
+    optional uint64 google_web_trigger_experiment_id = 8;
 
     // Optional id used to uniquely identify this experiment for Google Update.
     optional uint64 google_update_experiment_id = 4;

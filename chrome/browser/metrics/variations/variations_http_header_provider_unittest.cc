@@ -8,7 +8,11 @@
 
 #include "base/base64.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/field_trial.h"
+#include "base/run_loop.h"
 #include "chrome/common/metrics/proto/chrome_experiments.pb.h"
+#include "components/variations/entropy_provider.h"
+#include "components/variations/variations_associated_data.h"
 #include "net/http/http_request_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -34,9 +38,34 @@ bool ExtractVariationIds(const std::string& variations,
   return true;
 }
 
+scoped_refptr<base::FieldTrial> CreateTrialAndAssociateId(
+    const std::string& trial_name,
+    const std::string& default_group_name,
+    IDCollectionKey key,
+    VariationID id) {
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::CreateFieldTrial(trial_name, default_group_name));
+
+  chrome_variations::AssociateGoogleVariationID(key, trial->trial_name(),
+                                                trial->group_name(), id);
+
+  return trial;
+}
+
 }  // namespace
 
-TEST(VariationsHttpHeaderProviderTest, ShouldAppendHeaders) {
+class VariationsHttpHeaderProviderTest : public ::testing::Test {
+ public:
+  VariationsHttpHeaderProviderTest() {}
+
+  virtual ~VariationsHttpHeaderProviderTest() {}
+
+  virtual void TearDown() OVERRIDE {
+    testing::ClearAllVariationIDs();
+  }
+};
+
+TEST_F(VariationsHttpHeaderProviderTest, ShouldAppendHeaders) {
   struct {
     const char* url;
     bool should_append_headers;
@@ -90,7 +119,7 @@ TEST(VariationsHttpHeaderProviderTest, ShouldAppendHeaders) {
   }
 }
 
-TEST(VariationsHttpHeaderProviderTest, SetDefaultVariationIds_Valid) {
+TEST_F(VariationsHttpHeaderProviderTest, SetDefaultVariationIds_Valid) {
   base::MessageLoop loop;
   VariationsHttpHeaderProvider provider;
   GURL url("http://www.google.com");
@@ -112,7 +141,7 @@ TEST(VariationsHttpHeaderProviderTest, SetDefaultVariationIds_Valid) {
   EXPECT_FALSE(variation_ids.find(789) != variation_ids.end());
 }
 
-TEST(VariationsHttpHeaderProviderTest, SetDefaultVariationIds_Invalid) {
+TEST_F(VariationsHttpHeaderProviderTest, SetDefaultVariationIds_Invalid) {
   base::MessageLoop loop;
   VariationsHttpHeaderProvider provider;
   GURL url("http://www.google.com");
@@ -129,6 +158,41 @@ TEST(VariationsHttpHeaderProviderTest, SetDefaultVariationIds_Invalid) {
   provider.InitVariationIDsCacheIfNeeded();
   provider.AppendHeaders(url, false, false, &headers);
   EXPECT_FALSE(headers.HasHeader("X-Client-Data"));
+}
+
+TEST_F(VariationsHttpHeaderProviderTest, OnFieldTrialGroupFinalized) {
+  base::MessageLoop loop;
+  base::FieldTrialList field_trial_list(
+      new metrics::SHA1EntropyProvider("test"));
+  VariationsHttpHeaderProvider provider;
+  provider.InitVariationIDsCacheIfNeeded();
+
+  const std::string default_name = "default";
+  scoped_refptr<base::FieldTrial> trial_1(CreateTrialAndAssociateId(
+      "t1", default_name, GOOGLE_WEB_PROPERTIES, 123));
+
+  ASSERT_EQ(default_name, trial_1->group_name());
+
+  scoped_refptr<base::FieldTrial> trial_2(CreateTrialAndAssociateId(
+      "t2", default_name, GOOGLE_WEB_PROPERTIES_TRIGGER, 456));
+
+  ASSERT_EQ(default_name, trial_2->group_name());
+
+  // Run the message loop to make sure OnFieldTrialGroupFinalized is called for
+  // the two field trials.
+  base::RunLoop().RunUntilIdle();
+
+  GURL url("http://www.google.com");
+  net::HttpRequestHeaders headers;
+  provider.AppendHeaders(url, false, false, &headers);
+  std::string variations;
+  headers.GetHeader("X-Client-Data", &variations);
+
+  std::set<VariationID> variation_ids;
+  std::set<VariationID> trigger_ids;
+  ASSERT_TRUE(ExtractVariationIds(variations, &variation_ids, &trigger_ids));
+  EXPECT_TRUE(variation_ids.find(123) != variation_ids.end());
+  EXPECT_TRUE(trigger_ids.find(456) != trigger_ids.end());
 }
 
 }  // namespace chrome_variations

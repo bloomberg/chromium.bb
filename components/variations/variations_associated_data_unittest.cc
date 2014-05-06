@@ -177,6 +177,8 @@ TEST_F(VariationsAssociatedDataTest, CollectionsCoexist) {
   EXPECT_EQ(EMPTY_ID,
             GetIDForTrial(GOOGLE_WEB_PROPERTIES, trial_true.get()));
   EXPECT_EQ(EMPTY_ID,
+            GetIDForTrial(GOOGLE_WEB_PROPERTIES_TRIGGER, trial_true.get()));
+  EXPECT_EQ(EMPTY_ID,
             GetIDForTrial(GOOGLE_UPDATE_SERVICE, trial_true.get()));
 
   AssociateGoogleVariationID(GOOGLE_WEB_PROPERTIES, trial_true->trial_name(),
@@ -190,6 +192,25 @@ TEST_F(VariationsAssociatedDataTest, CollectionsCoexist) {
       default_name, TEST_VALUE_A);
   EXPECT_EQ(TEST_VALUE_A,
             GetIDForTrial(GOOGLE_WEB_PROPERTIES, trial_true.get()));
+  EXPECT_EQ(TEST_VALUE_A,
+            GetIDForTrial(GOOGLE_UPDATE_SERVICE, trial_true.get()));
+
+  trial_true = CreateFieldTrial("d2", 10, default_name, &default_group_number);
+  ASSERT_EQ(default_group_number, trial_true->group());
+  ASSERT_EQ(default_name, trial_true->group_name());
+
+  AssociateGoogleVariationID(GOOGLE_WEB_PROPERTIES_TRIGGER,
+                             trial_true->trial_name(), default_name,
+                             TEST_VALUE_A);
+  EXPECT_EQ(TEST_VALUE_A,
+            GetIDForTrial(GOOGLE_WEB_PROPERTIES_TRIGGER, trial_true.get()));
+  EXPECT_EQ(EMPTY_ID,
+            GetIDForTrial(GOOGLE_UPDATE_SERVICE, trial_true.get()));
+
+  AssociateGoogleVariationID(GOOGLE_UPDATE_SERVICE, trial_true->trial_name(),
+                             default_name, TEST_VALUE_A);
+  EXPECT_EQ(TEST_VALUE_A,
+            GetIDForTrial(GOOGLE_WEB_PROPERTIES_TRIGGER, trial_true.get()));
   EXPECT_EQ(TEST_VALUE_A,
             GetIDForTrial(GOOGLE_UPDATE_SERVICE, trial_true.get()));
 }

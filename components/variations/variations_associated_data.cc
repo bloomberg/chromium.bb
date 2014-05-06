@@ -33,14 +33,24 @@ class GroupMapAccessor {
                    const VariationID id,
                    const bool force) {
 #if !defined(NDEBUG)
+    DCHECK_EQ(3, ID_COLLECTION_COUNT);
+    // Ensure that at most one of the trigger/non-trigger web property IDs are
+    // set.
+    if (key == GOOGLE_WEB_PROPERTIES || key == GOOGLE_WEB_PROPERTIES_TRIGGER) {
+      IDCollectionKey other_key = key == GOOGLE_WEB_PROPERTIES ?
+          GOOGLE_WEB_PROPERTIES_TRIGGER : GOOGLE_WEB_PROPERTIES;
+      DCHECK_EQ(EMPTY_ID, GetID(other_key, group_identifier));
+    }
+
     // Validate that all collections with this |group_identifier| have the same
     // associated ID.
-    DCHECK_EQ(2, ID_COLLECTION_COUNT);
-    IDCollectionKey other_key = GOOGLE_WEB_PROPERTIES;
-    if (key == GOOGLE_WEB_PROPERTIES)
-      other_key = GOOGLE_UPDATE_SERVICE;
-    VariationID other_id = GetID(other_key, group_identifier);
-    DCHECK(other_id == EMPTY_ID || other_id == id);
+    for (int i = 0; i < ID_COLLECTION_COUNT; ++i) {
+      IDCollectionKey other_key = static_cast<IDCollectionKey>(i);
+      if (other_key == key)
+        continue;
+      VariationID other_id = GetID(other_key, group_identifier);
+      DCHECK(other_id == EMPTY_ID || other_id == id);
+    }
 #endif
 
     base::AutoLock scoped_lock(lock_);

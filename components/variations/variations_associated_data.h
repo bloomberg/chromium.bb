@@ -74,8 +74,12 @@ struct ActiveGroupIdCompare {
 // separate ID associations for separate parties interested in VariationIDs.
 enum IDCollectionKey {
   // This collection is used by Google web properties, transmitted through the
-  // X-Chrome-Variations header.
+  // X-Client-Data header.
   GOOGLE_WEB_PROPERTIES,
+  // This collection is used by Google web properties for IDs that trigger
+  // server side experimental behavior, transmitted through the
+  // X-Client-Data header.
+  GOOGLE_WEB_PROPERTIES_TRIGGER,
   // This collection is used by Google update services, transmitted through the
   // Google Update experiment labels.
   GOOGLE_UPDATE_SERVICE,

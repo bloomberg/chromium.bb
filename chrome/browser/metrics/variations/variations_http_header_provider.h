@@ -62,6 +62,8 @@ class VariationsHttpHeaderProvider : base::FieldTrialList::Observer {
                            SetDefaultVariationIds_Valid);
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
                            SetDefaultVariationIds_Invalid);
+  FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
+                           OnFieldTrialGroupFinalized);
 
   VariationsHttpHeaderProvider();
   virtual ~VariationsHttpHeaderProvider();
@@ -97,6 +99,7 @@ class VariationsHttpHeaderProvider : base::FieldTrialList::Observer {
   // Keep a cache of variation IDs that are transmitted in headers to Google.
   // This consists of a list of valid IDs, and the actual transmitted header.
   std::set<chrome_variations::VariationID> variation_ids_set_;
+  std::set<chrome_variations::VariationID> variation_trigger_ids_set_;
 
   // Provides the google experiment ids forced from command line.
   std::set<chrome_variations::VariationID> default_variation_ids_set_;
