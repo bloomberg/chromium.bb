@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_VIBRATION_VIBRATION_PROVIDER_ANDROID_H_
 
 #include "base/android/jni_android.h"
-#include "content/port/browser/vibration_provider.h"
+#include "content/public/browser/vibration_provider.h"
 
 namespace content {
 

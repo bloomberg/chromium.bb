@@ -8,8 +8,8 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "content/common/view_messages.h"
-#include "content/port/browser/vibration_provider.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/vibration_provider.h"
 #include "content/public/common/content_client.h"
 #include "third_party/WebKit/public/platform/WebVibration.h"
 

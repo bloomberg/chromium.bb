@@ -49,7 +49,6 @@ struct WebScreenInfo;
 
 namespace content {
 class BrowserAccessibilityManager;
-class RenderWidgetHostViewFrameSubscriber;
 class SyntheticGesture;
 class SyntheticGestureTarget;
 class WebCursor;
@@ -71,6 +70,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual bool IsMouseLocked() OVERRIDE;
   virtual gfx::Size GetVisibleViewportSize() const OVERRIDE;
   virtual void SetInsets(const gfx::Insets& insets) OVERRIDE;
+  virtual void BeginFrameSubscription(
+      scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) OVERRIDE;
+  virtual void EndFrameSubscription() OVERRIDE;
 
   // IPC::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -141,16 +143,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   // Return true if frame subscription is supported on this platform.
   virtual bool CanSubscribeFrame() const;
-
-  // Begin subscribing for presentation events and captured frames.
-  // |subscriber| is now owned by this object, it will be called only on the
-  // UI thread.
-  virtual void BeginFrameSubscription(
-      scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber);
-
-  // End subscribing for frame presentation events. FrameSubscriber will be
-  // deleted after this call.
-  virtual void EndFrameSubscription();
 
   // Create a BrowserAccessibilityManager for this view if it's possible to
   // create one and if one doesn't exist already. Some ports may not create

@@ -16,7 +16,7 @@
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/port/browser/render_widget_host_view_frame_subscriber.h"
+#include "content/public/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 
