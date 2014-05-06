@@ -189,12 +189,13 @@ void JavaArrayOfByteArrayToStringVector(
   jsize len = env->GetArrayLength(array);
   out->resize(len);
   for (jsize i = 0; i < len; ++i) {
-    jbyteArray bytes_array = static_cast<jbyteArray>(
-        env->GetObjectArrayElement(array, i));
-    jsize bytes_len = env->GetArrayLength(bytes_array);
-    jbyte* bytes = env->GetByteArrayElements(bytes_array, NULL);
+    ScopedJavaLocalRef<jbyteArray> bytes_array(
+        env, static_cast<jbyteArray>(
+            env->GetObjectArrayElement(array, i)));
+    jsize bytes_len = env->GetArrayLength(bytes_array.obj());
+    jbyte* bytes = env->GetByteArrayElements(bytes_array.obj(), NULL);
     (*out)[i].assign(reinterpret_cast<const char*>(bytes), bytes_len);
-    env->ReleaseByteArrayElements(bytes_array, bytes, JNI_ABORT);
+    env->ReleaseByteArrayElements(bytes_array.obj(), bytes, JNI_ABORT);
   }
 }
 
