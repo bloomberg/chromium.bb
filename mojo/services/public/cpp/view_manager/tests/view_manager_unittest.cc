@@ -34,7 +34,7 @@ void QuitRunLoop() {
 class ViewManagerTest : public testing::Test,
                         public ViewManagerObserver {
  public:
-  ViewManagerTest() : connection_count_(0), commit_count_(0) {}
+  ViewManagerTest() : commit_count_(0) {}
 
  protected:
   ViewManager* view_manager_1() { return view_manager_1_.get(); }
@@ -48,16 +48,9 @@ class ViewManagerTest : public testing::Test,
     view_manager_2_.reset(new ViewManager(test_helper_.shell()));
     ViewManagerPrivate(view_manager_1_.get()).AddObserver(this);
     ViewManagerPrivate(view_manager_2_.get()).AddObserver(this);
-
-    // Wait for service connection to be established.
-    DoRunLoop();
   }
 
   // Overridden from ViewManagerObserver:
-  virtual void OnViewManagerConnected(ViewManager* manager) OVERRIDE {
-    if (++connection_count_ == 2)
-      QuitRunLoop();
-  }
   virtual void OnCommit(ViewManager* manager) OVERRIDE {
     ++commit_count_;
   }
@@ -70,7 +63,6 @@ class ViewManagerTest : public testing::Test,
   shell::ShellTestHelper test_helper_;
   scoped_ptr<ViewManager> view_manager_1_;
   scoped_ptr<ViewManager> view_manager_2_;
-  int connection_count_;
   int commit_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerTest);
@@ -87,8 +79,7 @@ TEST_F(ViewManagerTest, BuildNodeTree) {
   view_manager_2()->BuildNodeTree(base::Bind(&QuitRunLoop));
   DoRunLoop();
 
-  EXPECT_EQ(LoWord(view_manager_2()->tree()->children().front()->id()),
-            LoWord(node1->id()));
+  EXPECT_EQ(view_manager_2()->tree()->children().front()->id(), node1->id());
 }
 
 // TODO(beng): node hierarchy changed
