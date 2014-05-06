@@ -254,6 +254,7 @@ SpeechRecognizerImpl::recognition_engine() const {
 }
 
 SpeechRecognizerImpl::~SpeechRecognizerImpl() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   endpointer_.EndSession();
   if (audio_controller_.get()) {
     audio_controller_->Close(

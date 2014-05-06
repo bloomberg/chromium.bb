@@ -224,7 +224,7 @@ class MEDIA_EXPORT AudioInputController
                       uint32 hardware_delay_bytes, double volume) OVERRIDE;
   virtual void OnError(AudioInputStream* stream) OVERRIDE;
 
-  bool LowLatencyMode() const { return sync_writer_ != NULL; }
+  bool SharedMemoryAndSyncSocketMode() const { return sync_writer_ != NULL; }
 
  protected:
   friend class base::RefCountedThreadSafe<AudioInputController>;
@@ -251,14 +251,14 @@ class MEDIA_EXPORT AudioInputController
   void DoReportError();
   void DoSetVolume(double volume);
   void DoSetAutomaticGainControl(bool enabled);
+  void DoOnData(scoped_ptr<uint8[]> data, uint32 size);
 
   // Method which ensures that OnError() is triggered when data recording
   // times out. Called on the audio thread.
   void DoCheckForNoData();
 
   // Helper method that stops, closes, and NULL:s |*stream_|.
-  // Signals event when done if the event is not NULL.
-  void DoStopCloseAndClearStream(base::WaitableEvent* done);
+  void DoStopCloseAndClearStream();
 
   void SetDataIsActive(bool enabled);
   bool GetDataIsActive();

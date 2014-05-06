@@ -65,6 +65,7 @@ AudioInputRendererHost::AudioInputRendererHost(
           media::AudioLogFactory::AUDIO_INPUT_CONTROLLER)) {}
 
 AudioInputRendererHost::~AudioInputRendererHost() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(audio_entries_.empty());
 }
 
@@ -131,8 +132,8 @@ void AudioInputRendererHost::DoCompleteCreation(
     return;
   }
 
-  if (!entry->controller->LowLatencyMode()) {
-    NOTREACHED() << "Only low-latency mode is supported.";
+  if (!entry->controller->SharedMemoryAndSyncSocketMode()) {
+    NOTREACHED() << "Only shared-memory/sync-socket mode is supported.";
     DeleteEntryOnError(entry, INVALID_LATENCY_MODE);
     return;
   }

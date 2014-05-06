@@ -189,14 +189,16 @@ void AudioInputController::DoCreateForStream(
   stream_ = stream_to_control;
 
   if (!stream_) {
-    handler_->OnError(this, STREAM_CREATE_ERROR);
+    if (handler_)
+      handler_->OnError(this, STREAM_CREATE_ERROR);
     return;
   }
 
   if (stream_ && !stream_->Open()) {
     stream_->Close();
     stream_ = NULL;
-    handler_->OnError(this, STREAM_OPEN_ERROR);
+    if (handler_)
+      handler_->OnError(this, STREAM_OPEN_ERROR);
     return;
   }
 
@@ -222,7 +224,8 @@ void AudioInputController::DoCreateForStream(
   }
 
   state_ = CREATED;
-  handler_->OnCreated(this);
+  if (handler_)
+    handler_->OnCreated(this);
 
   if (user_input_monitor_) {
     user_input_monitor_->EnableKeyPressMonitoring();
@@ -249,7 +252,8 @@ void AudioInputController::DoRecord() {
   }
 
   stream_->Start(this);
-  handler_->OnRecording(this);
+  if (handler_)
+    handler_->OnRecording(this);
 }
 
 void AudioInputController::DoClose() {
@@ -262,10 +266,10 @@ void AudioInputController::DoClose() {
   // Delete the timer on the same thread that created it.
   no_data_timer_.reset();
 
-  DoStopCloseAndClearStream(NULL);
+  DoStopCloseAndClearStream();
   SetDataIsActive(false);
 
-  if (LowLatencyMode())
+  if (SharedMemoryAndSyncSocketMode())
     sync_writer_->Close();
 
   if (user_input_monitor_)
@@ -276,7 +280,8 @@ void AudioInputController::DoClose() {
 
 void AudioInputController::DoReportError() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  handler_->OnError(this, STREAM_ERROR);
+  if (handler_)
+    handler_->OnError(this, STREAM_ERROR);
 }
 
 void AudioInputController::DoSetVolume(double volume) {
@@ -320,7 +325,8 @@ void AudioInputController::DoCheckForNoData() {
     // The data-is-active marker will be false only if it has been more than
     // one second since a data packet was recorded. This can happen if a
     // capture device has been removed or disabled.
-    handler_->OnError(this, NO_DATA_ERROR);
+    if (handler_)
+      handler_->OnError(this, NO_DATA_ERROR);
   }
 
   // Mark data as non-active. The flag will be re-enabled in OnData() each
@@ -359,14 +365,30 @@ void AudioInputController::OnData(AudioInputStream* stream,
   // DoCheckForNoData() does not report an error to the event handler.
   SetDataIsActive(true);
 
-  // Use SyncSocket if we are in a low-latency mode.
-  if (LowLatencyMode()) {
+  // Use SharedMemory and SyncSocket if the client has created a SyncWriter.
+  // Used by all low-latency clients except WebSpeech.
+  if (SharedMemoryAndSyncSocketMode()) {
     sync_writer_->Write(data, size, volume, key_pressed);
     sync_writer_->UpdateRecordedBytes(hardware_delay_bytes);
     return;
   }
 
-  handler_->OnData(this, data, size);
+  // TODO(henrika): Investigate if we can avoid the extra copy here.
+  // (see http://crbug.com/249316 for details). AFAIK, this scope is only
+  // active for WebSpeech clients.
+  scoped_ptr<uint8[]> audio_data(new uint8[size]);
+  memcpy(audio_data.get(), data, size);
+
+  // Ownership of the audio buffer will be with the callback until it is run,
+  // when ownership is passed to the callback function.
+  task_runner_->PostTask(FROM_HERE, base::Bind(
+      &AudioInputController::DoOnData, this, base::Passed(&audio_data), size));
+}
+
+void AudioInputController::DoOnData(scoped_ptr<uint8[]> data, uint32 size) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (handler_)
+    handler_->OnData(this, data.get(), size);
 }
 
 void AudioInputController::OnError(AudioInputStream* stream) {
@@ -375,8 +397,7 @@ void AudioInputController::OnError(AudioInputStream* stream) {
       &AudioInputController::DoReportError, this));
 }
 
-void AudioInputController::DoStopCloseAndClearStream(
-    base::WaitableEvent* done) {
+void AudioInputController::DoStopCloseAndClearStream() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Allow calling unconditionally and bail if we don't have a stream to close.
@@ -386,9 +407,8 @@ void AudioInputController::DoStopCloseAndClearStream(
     stream_ = NULL;
   }
 
-  // Should be last in the method, do not touch "this" from here on.
-  if (done != NULL)
-    done->Signal();
+  // The event handler should not be touched after the stream has been closed.
+  handler_ = NULL;
 }
 
 void AudioInputController::SetDataIsActive(bool enabled) {
