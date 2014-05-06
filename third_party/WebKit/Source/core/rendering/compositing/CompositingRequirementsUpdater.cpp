@@ -256,10 +256,9 @@ static CompositingReasons subtreeReasonsForCompositing(RenderObject* renderer, b
     return subtreeReasons;
 }
 
-CompositingRequirementsUpdater::CompositingRequirementsUpdater(RenderView& renderView, CompositingReasonFinder& compositingReasonFinder, bool* needsToRecomputeCompositingRequirements)
+CompositingRequirementsUpdater::CompositingRequirementsUpdater(RenderView& renderView, CompositingReasonFinder& compositingReasonFinder)
     : m_renderView(renderView)
     , m_compositingReasonFinder(compositingReasonFinder)
-    , m_needsToRecomputeCompositingRequirements(needsToRecomputeCompositingRequirements)
 {
 }
 
@@ -299,7 +298,7 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
     CompositingReasons reasonsToComposite = CompositingReasonNone;
 
     // First accumulate the straightforward compositing reasons.
-    CompositingReasons directReasons = m_compositingReasonFinder.directReasons(layer, m_needsToRecomputeCompositingRequirements);
+    CompositingReasons directReasons = m_compositingReasonFinder.directReasons(layer);
     layer->setSuppressingCompositedLayerCreation(currentRecursionData.m_suppressLayerCreation);
     if (layer->suppressingCompositedLayerCreation())
         directReasons = m_compositingReasonFinder.suppressWillChangeAndAnimationForGpuRasterization(layer, directReasons);

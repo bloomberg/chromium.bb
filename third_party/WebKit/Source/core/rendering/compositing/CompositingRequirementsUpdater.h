@@ -41,7 +41,7 @@ class RenderView;
 
 class CompositingRequirementsUpdater {
 public:
-    CompositingRequirementsUpdater(RenderView&, CompositingReasonFinder&, bool* needsToRecomputeCompositingRequirements);
+    CompositingRequirementsUpdater(RenderView&, CompositingReasonFinder&);
     ~CompositingRequirementsUpdater();
 
     //  Recurse through the layers in z-index and overflow order (which is equivalent to painting order)
@@ -64,9 +64,6 @@ private:
 
     RenderView& m_renderView;
     CompositingReasonFinder& m_compositingReasonFinder;
-
-    // FIXME: CompositingRequirementsUpdater should not effect this state.
-    bool* m_needsToRecomputeCompositingRequirements;
 };
 
 } // namespace WebCore

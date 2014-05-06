@@ -387,12 +387,12 @@ void RenderLayerCompositor::updateIfNeeded()
         {
             TRACE_EVENT0("blink_rendering", "CompositingPropertyUpdater::updateAncestorDependentProperties");
             CompositingPropertyUpdater(updateRoot).updateAncestorDependentProperties(updateRoot, compositingPropertyUpdateType, 0);
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
             CompositingPropertyUpdater::assertNeedsToUpdateAncestorDependantPropertiesBitsCleared(updateRoot);
 #endif
         }
 
-        CompositingRequirementsUpdater(m_renderView, m_compositingReasonFinder, &m_needsToRecomputeCompositingRequirements).update(updateRoot);
+        CompositingRequirementsUpdater(m_renderView, m_compositingReasonFinder).update(updateRoot);
 
         {
             TRACE_EVENT0("blink_rendering", "CompositingLayerAssigner::assign");

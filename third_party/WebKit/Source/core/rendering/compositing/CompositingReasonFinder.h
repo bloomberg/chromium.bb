@@ -21,7 +21,7 @@ public:
     explicit CompositingReasonFinder(RenderView&);
 
     CompositingReasons styleDeterminedReasons(RenderObject*) const;
-    CompositingReasons directReasons(const RenderLayer*, bool* needToRecomputeCompositingRequirements) const;
+    CompositingReasons directReasons(const RenderLayer*, bool* needToRecomputeCompositingRequirements = 0) const;
 
     CompositingReasons suppressWillChangeAndAnimationForGpuRasterization(const RenderLayer*, CompositingReasons styleReasons) const;
 
