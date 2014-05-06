@@ -1723,8 +1723,11 @@ wayland_compositor_register_output(struct wayland_compositor *c, uint32_t id)
 	output->id = id;
 	output->global = wl_registry_bind(c->parent.registry, id,
 					  &wl_output_interface, 1);
-	if (!output->global)
+	if (!output->global) {
+		free(output);
 		return;
+	}
+
 	wl_output_add_listener(output->global, &output_listener, output);
 
 	output->scale = 0;
