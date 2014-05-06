@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EXAMPLES_AURA_DEMO_DEMO_SCREEN_H_
-#define MOJO_EXAMPLES_AURA_DEMO_DEMO_SCREEN_H_
+#ifndef MOJO_AURA_SCREEN_MOJO_H_
+#define MOJO_AURA_SCREEN_MOJO_H_
 
 #include "base/compiler_specific.h"
 #include "ui/gfx/display.h"
@@ -15,13 +15,12 @@ class Transform;
 }
 
 namespace mojo {
-namespace examples {
 
-// A minimal, testing Aura implementation of gfx::Screen.
-class DemoScreen : public gfx::Screen {
+// A minimal implementation of gfx::Screen for mojo.
+class ScreenMojo : public gfx::Screen {
  public:
-  static DemoScreen* Create();
-  virtual ~DemoScreen();
+  static ScreenMojo* Create();
+  virtual ~ScreenMojo();
 
  protected:
   // gfx::Screen overrides:
@@ -43,14 +42,13 @@ class DemoScreen : public gfx::Screen {
   virtual void RemoveObserver(gfx::DisplayObserver* observer) OVERRIDE;
 
  private:
-  explicit DemoScreen(const gfx::Rect& screen_bounds);
+  explicit ScreenMojo(const gfx::Rect& screen_bounds);
 
   gfx::Display display_;
 
-  DISALLOW_COPY_AND_ASSIGN(DemoScreen);
+  DISALLOW_COPY_AND_ASSIGN(ScreenMojo);
 };
 
-}  // namespace examples
 }  // namespace mojo
 
-#endif  // MOJO_EXAMPLES_AURA_DEMO_DEMO_SCREEN_H_
+#endif  // MOJO_AURA_SCREEN_MOJO_H_

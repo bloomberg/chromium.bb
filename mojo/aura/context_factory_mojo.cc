@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/examples/aura_demo/demo_context_factory.h"
+#include "mojo/aura/context_factory_mojo.h"
 
 #include "cc/output/output_surface.h"
-#include "mojo/examples/aura_demo/window_tree_host_mojo.h"
-#include "mojo/examples/compositor_app/mojo_context_provider.h"
+#include "mojo/aura/window_tree_host_mojo.h"
+#include "mojo/cc/context_provider_mojo.h"
 #include "ui/compositor/reflector.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -15,46 +15,32 @@
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace mojo {
-namespace examples {
 
-DemoContextFactory::DemoContextFactory(WindowTreeHostMojo* rwhm) : rwhm_(rwhm) {
+ContextFactoryMojo::ContextFactoryMojo(ScopedMessagePipeHandle gles2_handle)
+    : gles2_handle_(gles2_handle.Pass()) {
 }
 
-DemoContextFactory::~DemoContextFactory() {
+ContextFactoryMojo::~ContextFactoryMojo() {
 }
 
-bool DemoContextFactory::Initialize() {
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationNone) {
-    return true;
-  }
-
-  if (!gfx::GLSurface::InitializeOneOff() ||
-      gfx::GetGLImplementation() == gfx::kGLImplementationNone) {
-    LOG(ERROR) << "Could not load the GL bindings";
-    return false;
-  }
-
-  return true;
-}
-
-scoped_ptr<cc::OutputSurface> DemoContextFactory::CreateOutputSurface(
+scoped_ptr<cc::OutputSurface> ContextFactoryMojo::CreateOutputSurface(
     ui::Compositor* compositor, bool software_fallback) {
   return make_scoped_ptr(new cc::OutputSurface(
-      new MojoContextProvider(rwhm_->TakeGLES2PipeHandle())));
+                             new ContextProviderMojo(gles2_handle_.Pass())));
 }
 
-scoped_refptr<ui::Reflector> DemoContextFactory::CreateReflector(
+scoped_refptr<ui::Reflector> ContextFactoryMojo::CreateReflector(
     ui::Compositor* mirroed_compositor,
     ui::Layer* mirroring_layer) {
   return NULL;
 }
 
-void DemoContextFactory::RemoveReflector(
+void ContextFactoryMojo::RemoveReflector(
     scoped_refptr<ui::Reflector> reflector) {
 }
 
 scoped_refptr<cc::ContextProvider>
-DemoContextFactory::SharedMainThreadContextProvider() {
+ContextFactoryMojo::SharedMainThreadContextProvider() {
   if (!shared_main_thread_contexts_ ||
       shared_main_thread_contexts_->DestroyedOnMainThread()) {
     bool lose_context_when_out_of_memory = false;
@@ -68,10 +54,9 @@ DemoContextFactory::SharedMainThreadContextProvider() {
   return shared_main_thread_contexts_;
 }
 
-void DemoContextFactory::RemoveCompositor(ui::Compositor* compositor) {
+void ContextFactoryMojo::RemoveCompositor(ui::Compositor* compositor) {
 }
 
-bool DemoContextFactory::DoesCreateTestContexts() { return false; }
+bool ContextFactoryMojo::DoesCreateTestContexts() { return false; }
 
-}  // namespace examples
 }  // namespace mojo

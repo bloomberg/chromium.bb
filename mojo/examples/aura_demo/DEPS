@@ -1,11 +1,5 @@
 include_rules = [
-  "+cc",
-  "+gpu/command_buffer/client",
   "+ui/aura",
   "+ui/base/hit_test.h",
-  "+ui/compositor",
-  "+ui/events",
   "+ui/gfx",
-  "+ui/gl",
-  "+webkit/common/gpu",
 ]

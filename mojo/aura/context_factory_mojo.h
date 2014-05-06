@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EXAMPLES_AURA_DEMO_DEMO_CONTEXT_FACTORY_H_
-#define MOJO_EXAMPLES_AURA_DEMO_DEMO_CONTEXT_FACTORY_H_
+#ifndef MOJO_AURA_CONTEXT_FACTORY_MOJO_H_
+#define MOJO_AURA_CONTEXT_FACTORY_MOJO_H_
 
+#include "mojo/public/cpp/system/core.h"
 #include "ui/compositor/compositor.h"
 
 namespace webkit {
@@ -14,15 +15,12 @@ class ContextProviderInProcess;
 }
 
 namespace mojo {
-namespace examples {
-
-class WindowTreeHostMojo;
 
 // The default factory that creates in-process contexts.
-class DemoContextFactory : public ui::ContextFactory {
+class ContextFactoryMojo : public ui::ContextFactory {
  public:
-  explicit DemoContextFactory(WindowTreeHostMojo* rwhm);
-  virtual ~DemoContextFactory();
+  explicit ContextFactoryMojo(ScopedMessagePipeHandle gles2_handle);
+  virtual ~ContextFactoryMojo();
 
   // ContextFactory implementation
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
@@ -38,18 +36,15 @@ class DemoContextFactory : public ui::ContextFactory {
   virtual void RemoveCompositor(ui::Compositor* compositor) OVERRIDE;
   virtual bool DoesCreateTestContexts() OVERRIDE;
 
-  bool Initialize();
-
  private:
   scoped_refptr<webkit::gpu::ContextProviderInProcess>
       shared_main_thread_contexts_;
 
-  WindowTreeHostMojo* rwhm_;
+  ScopedMessagePipeHandle gles2_handle_;
 
-  DISALLOW_COPY_AND_ASSIGN(DemoContextFactory);
+  DISALLOW_COPY_AND_ASSIGN(ContextFactoryMojo);
 };
 
-}  // namespace examples
 }  // namespace mojo
 
-#endif  // MOJO_EXAMPLES_AURA_DEMO_DEMO_CONTEXT_FACTORY_H_
+#endif  // MOJO_AURA_CONTEXT_FACTORY_MOJO_H_

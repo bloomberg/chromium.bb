@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef MOJO_CC_CONTEXT_PROVIDER_MOJO_H_
+#define MOJO_CC_CONTEXT_PROVIDER_MOJO_H_
+
 #include "cc/output/context_provider.h"
 #include "mojo/public/c/gles2/gles2.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
-namespace examples {
 
-class MojoContextProvider : public cc::ContextProvider {
+class ContextProviderMojo : public cc::ContextProvider {
  public:
-  explicit MojoContextProvider(ScopedMessagePipeHandle gl_pipe);
+  explicit ContextProviderMojo(ScopedMessagePipeHandle gl_pipe);
 
   // cc::ContextProvider implementation.
   virtual bool BindToCurrentThread() OVERRIDE;
@@ -30,12 +32,12 @@ class MojoContextProvider : public cc::ContextProvider {
       OVERRIDE {}
 
  protected:
-  friend class base::RefCountedThreadSafe<MojoContextProvider>;
-  virtual ~MojoContextProvider();
+  friend class base::RefCountedThreadSafe<ContextProviderMojo>;
+  virtual ~ContextProviderMojo();
 
  private:
   static void ContextLostThunk(void* closure) {
-    static_cast<MojoContextProvider*>(closure)->ContextLost();
+    static_cast<ContextProviderMojo*>(closure)->ContextLost();
   }
   void ContextLost();
 
@@ -44,5 +46,6 @@ class MojoContextProvider : public cc::ContextProvider {
   MojoGLES2Context context_;
 };
 
-}  // namespace examples
 }  // namespace mojo
+
+#endif  // MOJO_CC_CONTEXT_PROVIDER_MOJO_H_

@@ -1,9 +1,9 @@
 include_rules = [
-  "+mojo/aura",
-  "+mojo/services",
+  "+cc",
   "+ui/aura",
-  "+ui/base/hit_test.h",
+  "+ui/compositor",
   "+ui/events",
   "+ui/gfx",
   "+ui/gl",
+  "+webkit/common/gpu",
 ]

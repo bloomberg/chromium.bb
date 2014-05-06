@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "mojo/examples/aura_demo/demo_screen.h"
-#include "mojo/examples/aura_demo/window_tree_host_mojo.h"
+#include "mojo/aura/screen_mojo.h"
+#include "mojo/aura/window_tree_host_mojo.h"
 #include "mojo/examples/launcher/launcher.mojom.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/bindings/remote_ptr.h"
@@ -197,7 +197,7 @@ class LauncherImpl : public Application,
       : Application(shell_handle),
         launcher_controller_(this),
         pending_show_(false) {
-    screen_.reset(DemoScreen::Create());
+    screen_.reset(ScreenMojo::Create());
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
 
     InterfacePipe<NativeViewport, AnyInterface> pipe;
@@ -261,7 +261,7 @@ class LauncherImpl : public Application,
     }
   }
 
-  scoped_ptr<DemoScreen> screen_;
+  scoped_ptr<ScreenMojo> screen_;
   scoped_ptr<LauncherWindowTreeClient> window_tree_client_;
   scoped_ptr<aura::client::FocusClient> focus_client_;
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;

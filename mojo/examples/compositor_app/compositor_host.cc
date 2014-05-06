@@ -9,7 +9,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/trees/layer_tree_host.h"
-#include "mojo/examples/compositor_app/mojo_context_provider.h"
+#include "mojo/cc/context_provider_mojo.h"
 
 namespace mojo {
 namespace examples {
@@ -73,7 +73,7 @@ void CompositorHost::ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
 scoped_ptr<cc::OutputSurface> CompositorHost::CreateOutputSurface(
     bool fallback) {
   return make_scoped_ptr(
-      new cc::OutputSurface(new MojoContextProvider(gl_pipe_.Pass())));
+      new cc::OutputSurface(new ContextProviderMojo(gl_pipe_.Pass())));
 }
 
 void CompositorHost::DidInitializeOutputSurface() {

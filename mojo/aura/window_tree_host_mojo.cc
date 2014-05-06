@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/examples/aura_demo/window_tree_host_mojo.h"
+#include "mojo/aura/window_tree_host_mojo.h"
 
-#include "mojo/examples/aura_demo/demo_context_factory.h"
+#include "mojo/aura/context_factory_mojo.h"
 #include "mojo/public/c/gles2/gles2.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/services/native_viewport/geometry_conversions.h"
@@ -18,10 +18,9 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace mojo {
-namespace examples {
 
 // static
-ui::ContextFactory* WindowTreeHostMojo::context_factory_ = NULL;
+mojo::ContextFactoryMojo* WindowTreeHostMojo::context_factory_ = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMojo, public:
@@ -36,22 +35,26 @@ WindowTreeHostMojo::WindowTreeHostMojo(
   AllocationScope scope;
   native_viewport_->Create(bounds);
 
-  ScopedMessagePipeHandle gles2_client_handle;
-  CreateMessagePipe(&gles2_handle_, &gles2_client_handle);
+  ScopedMessagePipeHandle gles2_handle, gles2_client_handle;
+  CreateMessagePipe(&gles2_handle, &gles2_client_handle);
 
   // The ContextFactory must exist before any Compositors are created.
-  if (!context_factory_) {
-    scoped_ptr<DemoContextFactory> cf(new DemoContextFactory(this));
-    if (cf->Initialize())
-      context_factory_ = cf.release();
-    ui::ContextFactory::SetInstance(context_factory_);
+  if (context_factory_) {
+    ui::ContextFactory::SetInstance(NULL);
+    delete context_factory_;
+    context_factory_ = NULL;
   }
+  context_factory_ = new ContextFactoryMojo(gles2_handle.Pass());
+  ui::ContextFactory::SetInstance(context_factory_);
   CHECK(context_factory_) << "No GL bindings.";
 
   native_viewport_->CreateGLES2Context(gles2_client_handle.Pass());
 }
 
-WindowTreeHostMojo::~WindowTreeHostMojo() {}
+WindowTreeHostMojo::~WindowTreeHostMojo() {
+  DestroyCompositor();
+  DestroyDispatcher();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMojo, aura::WindowTreeHost implementation:
@@ -172,5 +175,4 @@ void WindowTreeHostMojo::OnEvent(const Event& event,
   callback.Run();
 };
 
-}  // namespace examples
 }  // namespace mojo

@@ -632,6 +632,21 @@
         'tools/message_generator.cc',
       ],
     },
+    {
+      'target_name': 'mojo_cc_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../cc/cc.gyp:cc',
+        '../skia/skia.gyp:skia',
+        '../gpu/gpu.gyp:gles2_implementation',
+        'mojo_gles2',
+      ],
+      'sources': [
+        'cc/context_provider_mojo.cc',
+        'cc/context_provider_mojo.h',
+      ],
+    },
   ],
   'conditions': [
     ['OS=="android"', {
@@ -816,6 +831,34 @@
           ],
           'sources': [
             'mojo_js_unittests.isolate',
+          ],
+        },
+      ],
+    }],
+    ['use_aura==1', {
+      'targets': [
+        {
+          'target_name': 'mojo_aura_support',
+          'type': 'static_library',
+          'dependencies': [
+            '../cc/cc.gyp:cc',
+            '../ui/aura/aura.gyp:aura',
+            '../ui/events/events.gyp:events',
+            '../ui/events/events.gyp:events_base',
+            '../ui/compositor/compositor.gyp:compositor',
+            '../ui/gl/gl.gyp:gl',
+            '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
+            'mojo_cc_support',
+            'mojo_gles2',
+            'mojo_native_viewport_bindings',
+          ],
+          'sources': [
+            'aura/context_factory_mojo.cc',
+            'aura/context_factory_mojo.h',
+            'aura/screen_mojo.cc',
+            'aura/screen_mojo.h',
+            'aura/window_tree_host_mojo.cc',
+            'aura/window_tree_host_mojo.h',
           ],
         },
       ],
