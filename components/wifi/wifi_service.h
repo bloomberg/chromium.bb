@@ -164,6 +164,16 @@ class WIFI_EXPORT WiFiService {
 
   typedef std::list<NetworkProperties> NetworkList;
 
+  // Error constants.
+  static const char kErrorAssociateToNetwork[];
+  static const char kErrorInvalidData[];
+  static const char kErrorNotConfigured[];
+  static const char kErrorNotConnected[];
+  static const char kErrorNotFound[];
+  static const char kErrorNotImplemented[];
+  static const char kErrorScanForNetworksWithName[];
+  static const char kErrorWiFiService[];
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WiFiService);
 };

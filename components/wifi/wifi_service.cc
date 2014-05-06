@@ -11,6 +11,16 @@
 
 namespace wifi {
 
+const char WiFiService::kErrorAssociateToNetwork[] = "Error.AssociateToNetwork";
+const char WiFiService::kErrorInvalidData[] = "Error.InvalidData";
+const char WiFiService::kErrorNotConfigured[] ="Error.NotConfigured";
+const char WiFiService::kErrorNotConnected[] = "Error.NotConnected";
+const char WiFiService::kErrorNotFound[] = "Error.NotFound";
+const char WiFiService::kErrorNotImplemented[] = "Error.NotImplemented";
+const char WiFiService::kErrorScanForNetworksWithName[] =
+    "Error.ScanForNetworksWithName";
+const char WiFiService::kErrorWiFiService[] = "Error.WiFiService";
+
 WiFiService::NetworkProperties::NetworkProperties()
     : connection_state(onc::connection_state::kNotConnected),
       security(onc::wifi::kNone),

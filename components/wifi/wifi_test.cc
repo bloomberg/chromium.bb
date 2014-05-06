@@ -195,7 +195,8 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
 
       wifi_service_->StartConnect(network_guid, &error);
       VLOG(0) << error;
-      base::MessageLoop::current()->Run();
+      if (error.empty())
+        base::MessageLoop::current()->Run();
       return true;
     }
   }

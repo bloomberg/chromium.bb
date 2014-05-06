@@ -47,13 +47,6 @@ enum CWChannelBand {
 
 namespace wifi {
 
-const char kErrorAssociateToNetwork[] = "Error.AssociateToNetwork";
-const char kErrorInvalidData[] = "Error.InvalidData";
-const char kErrorNotConnected[] = "Error.NotConnected";
-const char kErrorNotFound[] = "Error.NotFound";
-const char kErrorNotImplemented[] = "Error.NotImplemented";
-const char kErrorScanForNetworksWithName[] = "Error.ScanForNetworksWithName";
-
 // Implementation of WiFiService for Mac OS X.
 class WiFiServiceMac : public WiFiService {
  public:
