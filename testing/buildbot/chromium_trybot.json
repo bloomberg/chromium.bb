@@ -40,6 +40,10 @@
   "mojo_public_utility_unittests",
   "mojo_service_manager_unittests",
   "mojo_system_unittests",
+  {
+    "test": "nacl_loader_unittests",
+    "platforms": ["linux"]
+  },
   "net_unittests",
   "ppapi_unittests",
   "printing_unittests",
