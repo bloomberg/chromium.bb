@@ -13,7 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
-#include "content/common/gpu/media/exynos_video_encode_accelerator.h"
+#include "content/common/gpu/media/v4l2_video_encode_accelerator.h"
 #include "content/common/gpu/media/video_accelerator_unittest_helpers.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
@@ -472,7 +472,8 @@ void VEAClient::CreateEncoder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(!has_encoder());
 
-  encoder_.reset(new ExynosVideoEncodeAccelerator());
+  scoped_ptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kEncoder);
+  encoder_.reset(new V4L2VideoEncodeAccelerator(device.Pass()));
   SetState(CS_ENCODER_SET);
 
   DVLOG(1) << "Profile: " << test_stream_.requested_profile
@@ -602,6 +603,7 @@ void VEAClient::NotifyError(VideoEncodeAccelerator::Error error) {
 }
 
 void VEAClient::SetState(ClientState new_state) {
+  DVLOG(4) << "Changing state " << state_ << "->" << new_state;
   note_->Notify(new_state);
   state_ = new_state;
 }
@@ -631,6 +633,7 @@ scoped_refptr<media::VideoFrame> VEAClient::PrepareInputFrame(off_t position) {
   uint8* frame_data =
       const_cast<uint8*>(test_stream_.input_file.data() + position);
 
+  CHECK_GT(current_framerate_, 0);
   scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::WrapExternalYuvData(
           kInputFormat,
@@ -643,7 +646,9 @@ scoped_refptr<media::VideoFrame> VEAClient::PrepareInputFrame(off_t position) {
           frame_data,
           frame_data + input_coded_size_.GetArea(),
           frame_data + (input_coded_size_.GetArea() * 5 / 4),
-          base::TimeDelta(),
+          base::TimeDelta().FromMilliseconds(
+              next_input_id_ * base::Time::kMillisecondsPerSecond /
+              current_framerate_),
           media::BindToCurrentLoop(
               base::Bind(&VEAClient::InputNoLongerNeededCallback,
                          base::Unretained(this),

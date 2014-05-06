@@ -17,37 +17,39 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/posix/eintr_wrapper.h"
 #include "content/common/gpu/media/v4l2_video_decode_accelerator.h"
 #include "media/filters/h264_parser.h"
 #include "ui/gl/scoped_binders.h"
 
+#define NOTIFY_ERROR(x)                            \
+  do {                                             \
+    SetDecoderState(kError);                       \
+    DLOG(ERROR) << "calling NotifyError(): " << x; \
+    NotifyError(x);                                \
+  } while (0)
+
+#define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value)              \
+  do {                                                             \
+    if (device_->Ioctl(type, arg) != 0) {                          \
+      DPLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type; \
+      NOTIFY_ERROR(PLATFORM_FAILURE);                              \
+      return value;                                                \
+    }                                                              \
+  } while (0)
+
+#define IOCTL_OR_ERROR_RETURN(type, arg) \
+  IOCTL_OR_ERROR_RETURN_VALUE(type, arg, ((void)0))
+
+#define IOCTL_OR_ERROR_RETURN_FALSE(type, arg) \
+  IOCTL_OR_ERROR_RETURN_VALUE(type, arg, false)
+
+#define IOCTL_OR_LOG_ERROR(type, arg)                              \
+  do {                                                             \
+    if (device_->Ioctl(type, arg) != 0)                            \
+      DPLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type; \
+  } while (0)
+
 namespace content {
-
-#define NOTIFY_ERROR(x)                                               \
-  do {                                                                \
-    SetDecoderState(kError);                                          \
-    DLOG(ERROR) << "calling NotifyError(): " << x;                    \
-    NotifyError(x);                                                   \
-  } while (0)
-
-#define IOCTL_OR_ERROR_RETURN(type, arg)                           \
-  do {                                                             \
-    if (HANDLE_EINTR(device_->Ioctl(type, arg) != 0)) {            \
-      DPLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type; \
-      NOTIFY_ERROR(PLATFORM_FAILURE);                              \
-      return;                                                      \
-    }                                                              \
-  } while (0)
-
-#define IOCTL_OR_ERROR_RETURN_FALSE(type, arg)                     \
-  do {                                                             \
-    if (HANDLE_EINTR(device_->Ioctl(type, arg) != 0)) {            \
-      DPLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type; \
-      NOTIFY_ERROR(PLATFORM_FAILURE);                              \
-      return false;                                                \
-    }                                                              \
-  } while (0)
 
 namespace {
 
@@ -152,6 +154,7 @@ V4L2VideoDecodeAccelerator::PictureRecord::~PictureRecord() {}
 
 V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
     EGLDisplay egl_display,
+    EGLContext egl_context,
     const base::WeakPtr<Client>& io_client,
     const base::Callback<bool(void)>& make_context_current,
     scoped_ptr<V4L2Device> device,
@@ -174,7 +177,6 @@ V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
       input_buffer_queued_count_(0),
       output_streamon_(false),
       output_buffer_queued_count_(0),
-      output_buffer_pixelformat_(0),
       output_dpb_size_(0),
       output_planes_count_(0),
       picture_clearing_count_(0),
@@ -182,6 +184,7 @@ V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
       device_poll_thread_("V4L2DevicePollThread"),
       make_context_current_(make_context_current),
       egl_display_(egl_display),
+      egl_context_(egl_context),
       video_profile_(media::VIDEO_CODEC_PROFILE_UNKNOWN),
       weak_this_factory_(this) {
   weak_this_ = weak_this_factory_.GetWeakPtr();
@@ -268,7 +271,13 @@ bool V4L2VideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  format.fmt.pix_mp.pixelformat = device_->PreferredOutputFormat();
+  uint32 output_format_fourcc = device_->PreferredOutputFormat();
+  if (output_format_fourcc == 0) {
+    // TODO(posciak): We should enumerate available output formats, as well as
+    // take into account formats that the client is ready to accept.
+    return false;
+  }
+  format.fmt.pix_mp.pixelformat = output_format_fourcc;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
 
   // Subscribe to the resolution change event.
@@ -348,6 +357,7 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffers(
     DCHECK_EQ(output_record.cleared, false);
 
     EGLImageKHR egl_image = device_->CreateEGLImage(egl_display_,
+                                                    egl_context_,
                                                     buffers[i].texture_id(),
                                                     frame_buffer_size_,
                                                     i,
@@ -1605,7 +1615,7 @@ bool V4L2VideoDecodeAccelerator::GetFormatInfo(struct v4l2_format* format,
   *again = false;
   memset(format, 0, sizeof(*format));
   format->type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  if (HANDLE_EINTR(device_->Ioctl(VIDIOC_G_FMT, format)) != 0) {
+  if (device_->Ioctl(VIDIOC_G_FMT, format) != 0) {
     if (errno == EINVAL) {
       // EINVAL means we haven't seen sufficient stream to decode the format.
       *again = true;
@@ -1626,8 +1636,6 @@ bool V4L2VideoDecodeAccelerator::CreateBuffersForFormat(
   output_planes_count_ = format.fmt.pix_mp.num_planes;
   frame_buffer_size_.SetSize(
       format.fmt.pix_mp.width, format.fmt.pix_mp.height);
-  output_buffer_pixelformat_ = format.fmt.pix_mp.pixelformat;
-  DCHECK_EQ(output_buffer_pixelformat_, device_->PreferredOutputFormat());
   DVLOG(3) << "CreateBuffersForFormat(): new resolution: "
            << frame_buffer_size_.ToString();
 
@@ -1644,15 +1652,10 @@ bool V4L2VideoDecodeAccelerator::CreateInputBuffers() {
   DCHECK(!input_streamon_);
   DCHECK(input_buffer_map_.empty());
 
-  __u32 pixelformat = 0;
-  if (video_profile_ >= media::H264PROFILE_MIN &&
-      video_profile_ <= media::H264PROFILE_MAX) {
-    pixelformat = V4L2_PIX_FMT_H264;
-  } else if (video_profile_ >= media::VP8PROFILE_MIN &&
-             video_profile_ <= media::VP8PROFILE_MAX) {
-    pixelformat = V4L2_PIX_FMT_VP8;
-  } else {
+  __u32 pixelformat = V4L2Device::VideoCodecProfileToV4L2PixFmt(video_profile_);
+  if (!pixelformat) {
     NOTREACHED();
+    return false;
   }
 
   struct v4l2_format format;
@@ -1773,8 +1776,7 @@ void V4L2VideoDecodeAccelerator::DestroyInputBuffers() {
   reqbufs.count = 0;
   reqbufs.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
   reqbufs.memory = V4L2_MEMORY_MMAP;
-  if (device_->Ioctl(VIDIOC_REQBUFS, &reqbufs) != 0)
-    DPLOG(ERROR) << "DestroyInputBuffers(): ioctl() failed: VIDIOC_REQBUFS";
+  IOCTL_OR_LOG_ERROR(VIDIOC_REQBUFS, &reqbufs);
 
   input_buffer_map_.clear();
   free_input_buffers_.clear();

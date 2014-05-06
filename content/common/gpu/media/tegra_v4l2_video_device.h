@@ -18,7 +18,7 @@ namespace content {
 // V4L2 specification via the library API instead of system calls.
 class TegraV4L2Device : public V4L2Device {
  public:
-  explicit TegraV4L2Device(EGLContext egl_context);
+  explicit TegraV4L2Device(Type type);
   virtual ~TegraV4L2Device();
 
   virtual int Ioctl(int flags, void* arg) OVERRIDE;
@@ -33,6 +33,7 @@ class TegraV4L2Device : public V4L2Device {
   virtual void Munmap(void* addr, unsigned int len) OVERRIDE;
   virtual bool Initialize() OVERRIDE;
   virtual EGLImageKHR CreateEGLImage(EGLDisplay egl_display,
+                                     EGLContext egl_context,
                                      GLuint texture_id,
                                      gfx::Size frame_buffer_size,
                                      unsigned int buffer_index,
@@ -40,14 +41,14 @@ class TegraV4L2Device : public V4L2Device {
   virtual EGLBoolean DestroyEGLImage(EGLDisplay egl_display,
                                      EGLImageKHR egl_image) OVERRIDE;
   virtual GLenum GetTextureTarget() OVERRIDE;
+  virtual uint32 PreferredInputFormat() OVERRIDE;
   virtual uint32 PreferredOutputFormat() OVERRIDE;
 
  private:
+  const Type type_;
+
   // The actual device fd.
   int device_fd_;
-
-  // The EGLContext associated with this device.
-  EGLContext egl_context_;
 
   DISALLOW_COPY_AND_ASSIGN(TegraV4L2Device);
 };

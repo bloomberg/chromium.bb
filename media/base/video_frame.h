@@ -36,6 +36,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
     kYPlane = 0,
     kUPlane = 1,
+    kUVPlane = kUPlane,
     kVPlane = 2,
     kAPlane = 3,
   };
@@ -55,7 +56,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 #endif  // defined(VIDEO_HOLE)
     NATIVE_TEXTURE = 6,  // Native texture.  Pixel-format agnostic.
     YV12J = 7,  // JPEG color range version of YV12
-    FORMAT_MAX = YV12J,  // Must always be equal to largest entry logged.
+    NV12 = 8,  // 12bpp 1x1 Y plane followed by an interleaved 2x2 UV plane.
+    FORMAT_MAX = NV12,  // Must always be equal to largest entry logged.
   };
 
   // Returns the name of a Format as a string.
@@ -122,6 +124,27 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       base::TimeDelta timestamp,
       const base::Closure& no_longer_needed_cb);
 
+#if defined(OS_POSIX)
+  // Wraps provided dmabufs
+  // (https://www.kernel.org/doc/Documentation/dma-buf-sharing.txt) with a
+  // VideoFrame. The dmabuf fds are dup()ed on creation, so that the VideoFrame
+  // retains a reference to them, and are automatically close()d on destruction,
+  // dropping the reference. The caller may safely close() its reference after
+  // calling WrapExternalDmabufs().
+  // The image data is only accessible via dmabuf fds, which are usually passed
+  // directly to a hardware device and/or to another process, or can also be
+  // mapped via mmap() for CPU access.
+  // When the frame is destroyed, |no_longer_needed_cb.Run()| will be called.
+  static scoped_refptr<VideoFrame> WrapExternalDmabufs(
+      Format format,
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      const std::vector<int> dmabuf_fds,
+      base::TimeDelta timestamp,
+      const base::Closure& no_longer_needed_cb);
+#endif
+
   // Wraps external YUV data of the given parameters with a VideoFrame.
   // The returned VideoFrame does not own the data passed in. When the frame
   // is destroyed |no_longer_needed_cb.Run()| will be called.
@@ -185,6 +208,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
                                     size_t plane,
                                     const gfx::Size& coded_size);
 
+  // Returns horizontal bits per pixel for given |plane| and |format|.
+  static int PlaneHorizontalBitsPerPixel(Format format, size_t plane);
+
   Format format() const { return format_; }
 
   const gfx::Size& coded_size() const { return coded_size_; }
@@ -211,6 +237,11 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // Returns the shared-memory handle, if present
   base::SharedMemoryHandle shared_memory_handle() const;
+
+#if defined(OS_POSIX)
+  // Returns backing dmabuf file descriptor for given |plane|, if present.
+  int dmabuf_fd(size_t plane) const;
+#endif
 
   // Returns true if this VideoFrame represents the end of the stream.
   bool end_of_stream() const { return end_of_stream_; }
@@ -284,6 +315,12 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // Shared memory handle, if this frame was allocated from shared memory.
   base::SharedMemoryHandle shared_memory_handle_;
+
+#if defined(OS_POSIX)
+  // Dmabufs for each plane, if this frame is wrapping memory
+  // acquired via dmabuf.
+  base::ScopedFD dmabuf_fds_[kMaxPlanes];
+#endif
 
   base::Closure no_longer_needed_cb_;
 

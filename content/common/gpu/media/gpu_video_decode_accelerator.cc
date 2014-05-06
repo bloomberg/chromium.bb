@@ -252,18 +252,18 @@ void GpuVideoDecodeAccelerator::Initialize(
   video_decode_accelerator_.reset(
       new DXVAVideoDecodeAccelerator(make_context_current_));
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
-  scoped_ptr<V4L2Device> device =
-      V4L2Device::Create(stub_->decoder()->GetGLContext()->GetHandle());
+  scoped_ptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
   if (!device.get()) {
     SendCreateDecoderReply(init_done_msg, false);
     return;
   }
-  video_decode_accelerator_.reset(
-      new V4L2VideoDecodeAccelerator(gfx::GLSurfaceEGL::GetHardwareDisplay(),
-                                     weak_factory_for_io_.GetWeakPtr(),
-                                     make_context_current_,
-                                     device.Pass(),
-                                     io_message_loop_));
+  video_decode_accelerator_.reset(new V4L2VideoDecodeAccelerator(
+      gfx::GLSurfaceEGL::GetHardwareDisplay(),
+      stub_->decoder()->GetGLContext()->GetHandle(),
+      weak_factory_for_io_.GetWeakPtr(),
+      make_context_current_,
+      device.Pass(),
+      io_message_loop_));
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY) && defined(USE_X11)
   if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL) {
     VLOG(1) << "HW video decode acceleration not available without "

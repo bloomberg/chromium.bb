@@ -73,6 +73,7 @@ bool VideoResourceUpdater::VerifyFrame(
 
     // Unacceptable inputs. ¯\(°_o)/¯
     case media::VideoFrame::UNKNOWN:
+    case media::VideoFrame::NV12:
       break;
   }
   return false;

@@ -15,7 +15,8 @@
 namespace content {
 
 namespace {
-const char kDevice[] = "/dev/tegra_avpchannel";
+const char kDecoderDevice[] = "/dev/tegra_avpchannel";
+const char kEncoderDevice[] = "/dev/nvhost-msenc";
 }
 
 typedef int32 (*TegraV4L2Open)(const char* name, int32 flags);
@@ -89,8 +90,10 @@ class TegraFunctionSymbolFinder {
 base::LazyInstance<TegraFunctionSymbolFinder> g_tegra_function_symbol_finder_ =
     LAZY_INSTANCE_INITIALIZER;
 
-TegraV4L2Device::TegraV4L2Device(EGLContext egl_context)
-    : device_fd_(-1), egl_context_(egl_context) {}
+TegraV4L2Device::TegraV4L2Device(Type type)
+    : type_(type),
+      device_fd_(-1) {
+}
 
 TegraV4L2Device::~TegraV4L2Device() {
   if (device_fd_ != -1) {
@@ -100,7 +103,7 @@ TegraV4L2Device::~TegraV4L2Device() {
 }
 
 int TegraV4L2Device::Ioctl(int flags, void* arg) {
-  return TegraV4L2_Ioctl(device_fd_, flags, arg);
+  return HANDLE_EINTR(TegraV4L2_Ioctl(device_fd_, flags, arg));
 }
 
 bool TegraV4L2Device::Poll(bool poll_device, bool* event_pending) {
@@ -141,20 +144,34 @@ bool TegraV4L2Device::ClearDevicePollInterrupt() {
 }
 
 bool TegraV4L2Device::Initialize() {
+  const char* device_path = NULL;
+  switch (type_) {
+    case kDecoder:
+      device_path = kDecoderDevice;
+      break;
+    case kEncoder:
+      device_path = kEncoderDevice;
+      break;
+    case kImageProcessor:
+      DVLOG(1) << "Device type " << type_ << " not supported on this platform";
+      return false;
+  }
+
   if (!g_tegra_function_symbol_finder_.Get().initialized()) {
     DLOG(ERROR) << "Unable to initialize functions ";
     return false;
   }
-  device_fd_ =
-      HANDLE_EINTR(TegraV4L2_Open(kDevice, O_RDWR | O_NONBLOCK | O_CLOEXEC));
+  device_fd_ = HANDLE_EINTR(
+      TegraV4L2_Open(device_path, O_RDWR | O_NONBLOCK | O_CLOEXEC));
   if (device_fd_ == -1) {
-    DLOG(ERROR) << "Unable to open tegra_v4l2_open ";
+    DLOG(ERROR) << "Unable to open device " << device_path;
     return false;
   }
   return true;
 }
 
 EGLImageKHR TegraV4L2Device::CreateEGLImage(EGLDisplay egl_display,
+                                            EGLContext egl_context,
                                             GLuint texture_id,
                                             gfx::Size /* frame_buffer_size */,
                                             unsigned int buffer_index,
@@ -163,7 +180,7 @@ EGLImageKHR TegraV4L2Device::CreateEGLImage(EGLDisplay egl_display,
   EGLint attr = EGL_NONE;
   EGLImageKHR egl_image =
       eglCreateImageKHR(egl_display,
-                        egl_context_,
+                        egl_context,
                         EGL_GL_TEXTURE_2D_KHR,
                         reinterpret_cast<EGLClientBuffer>(texture_id),
                         &attr);
@@ -184,6 +201,18 @@ EGLBoolean TegraV4L2Device::DestroyEGLImage(EGLDisplay egl_display,
 
 GLenum TegraV4L2Device::GetTextureTarget() { return GL_TEXTURE_2D; }
 
-uint32 TegraV4L2Device::PreferredOutputFormat() { return V4L2_PIX_FMT_NV12M; }
+uint32 TegraV4L2Device::PreferredInputFormat() {
+  // TODO(posciak): We should support "dontcare" returns here once we
+  // implement proper handling (fallback, negotiation) for this in users.
+  CHECK_EQ(type_, kEncoder);
+  return V4L2_PIX_FMT_YUV420M;
+}
+
+uint32 TegraV4L2Device::PreferredOutputFormat() {
+  // TODO(posciak): We should support "dontcare" returns here once we
+  // implement proper handling (fallback, negotiation) for this in users.
+  CHECK_EQ(type_, kDecoder);
+  return V4L2_PIX_FMT_NV12M;
+}
 
 }  //  namespace content

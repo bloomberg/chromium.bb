@@ -83,6 +83,8 @@ std::string VideoFrame::FormatToString(VideoFrame::Format format) {
       return "YV12A";
     case VideoFrame::YV12J:
       return "YV12J";
+    case VideoFrame::NV12:
+      return "NV12";
   }
   NOTREACHED() << "Invalid videoframe format provided: " << format;
   return "";
@@ -114,6 +116,7 @@ bool VideoFrame::IsValidConfig(VideoFrame::Format format,
     case VideoFrame::YV12J:
     case VideoFrame::I420:
     case VideoFrame::YV12A:
+    case VideoFrame::NV12:
       // YUV formats have width/height requirements due to chroma subsampling.
       if (static_cast<size_t>(coded_size.height()) <
           RoundUp(visible_rect.bottom(), 2))
@@ -207,6 +210,53 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalPackedMemory(
       return NULL;
   }
 }
+
+#if defined(OS_POSIX)
+// static
+scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
+    Format format,
+    const gfx::Size& coded_size,
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size,
+    const std::vector<int> dmabuf_fds,
+    base::TimeDelta timestamp,
+    const base::Closure& no_longer_needed_cb) {
+  if (!IsValidConfig(format, coded_size, visible_rect, natural_size))
+    return NULL;
+
+  if (dmabuf_fds.size() != NumPlanes(format)) {
+    LOG(FATAL) << "Not enough dmabuf fds provided!";
+    return NULL;
+  }
+
+  scoped_refptr<VideoFrame> frame(
+      new VideoFrame(format,
+                     coded_size,
+                     visible_rect,
+                     natural_size,
+                     scoped_ptr<gpu::MailboxHolder>(),
+                     timestamp,
+                     false));
+
+  for (size_t i = 0; i < dmabuf_fds.size(); ++i) {
+    int duped_fd = HANDLE_EINTR(dup(dmabuf_fds[i]));
+    if (duped_fd == -1) {
+      // The already-duped in previous iterations fds will be closed when
+      // the partially-created frame drops out of scope here.
+      DLOG(ERROR) << "Failed duplicating a dmabuf fd";
+      return NULL;
+    }
+
+    frame->dmabuf_fds_[i].reset(duped_fd);
+    // Data is accessible only via fds.
+    frame->data_[i] = NULL;
+    frame->strides_[i] = 0;
+  }
+
+  frame->no_longer_needed_cb_ = no_longer_needed_cb;
+  return frame;
+}
+#endif
 
 // static
 scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
@@ -334,6 +384,8 @@ size_t VideoFrame::NumPlanes(Format format) {
     case VideoFrame::HOLE:
 #endif  // defined(VIDEO_HOLE)
       return 0;
+    case VideoFrame::NV12:
+      return 2;
     case VideoFrame::YV12:
     case VideoFrame::YV16:
     case VideoFrame::I420:
@@ -400,6 +452,16 @@ gfx::Size VideoFrame::PlaneSize(Format format,
           break;
       }
     }
+    case VideoFrame::NV12: {
+      switch (plane) {
+        case VideoFrame::kYPlane:
+          return gfx::Size(width, height);
+        case VideoFrame::kUVPlane:
+          return gfx::Size(width, height / 2);
+        default:
+          break;
+      }
+    }
     case VideoFrame::UNKNOWN:
     case VideoFrame::NATIVE_TEXTURE:
 #if defined(VIDEO_HOLE)
@@ -417,6 +479,46 @@ size_t VideoFrame::PlaneAllocationSize(Format format,
                                        const gfx::Size& coded_size) {
   // VideoFrame formats are (so far) all YUV and 1 byte per sample.
   return PlaneSize(format, plane, coded_size).GetArea();
+}
+
+// static
+int VideoFrame::PlaneHorizontalBitsPerPixel(Format format, size_t plane) {
+  switch (format) {
+    case VideoFrame::YV12A:
+      if (plane == kAPlane)
+        return 8;
+    // fallthrough
+    case VideoFrame::YV12:
+    case VideoFrame::YV16:
+    case VideoFrame::I420:
+    case VideoFrame::YV12J: {
+      switch (plane) {
+        case kYPlane:
+          return 8;
+        case kUPlane:
+        case kVPlane:
+          return 2;
+        default:
+          break;
+      }
+    }
+
+    case VideoFrame::NV12: {
+      switch (plane) {
+        case kYPlane:
+          return 8;
+        case kUVPlane:
+          return 4;
+        default:
+          break;
+      }
+    }
+    default:
+      break;
+  }
+
+  NOTREACHED() << "Unsupported video frame format: " << format;
+  return 0;
 }
 
 // Release data allocated by AllocateYUV().
@@ -537,7 +639,14 @@ int VideoFrame::row_bytes(size_t plane) const {
     case YV12J:
       if (plane == kYPlane)
         return width;
-      return RoundUp(width, 2) / 2;
+      else if (plane <= kVPlane)
+        return RoundUp(width, 2) / 2;
+      break;
+
+    case NV12:
+      if (plane <= kUVPlane)
+        return width;
+      break;
 
     default:
       break;
@@ -564,7 +673,16 @@ int VideoFrame::rows(size_t plane) const {
     case I420:
       if (plane == kYPlane)
         return height;
-      return RoundUp(height, 2) / 2;
+      else if (plane <= kVPlane)
+        return RoundUp(height, 2) / 2;
+      break;
+
+    case NV12:
+      if (plane == kYPlane)
+        return height;
+      else if (plane == kUVPlane)
+        return RoundUp(height, 2) / 2;
+      break;
 
     default:
       break;
@@ -596,6 +714,12 @@ void VideoFrame::AppendReleaseSyncPoint(uint32 sync_point) {
   base::AutoLock locker(release_sync_point_lock_);
   release_sync_points_.push_back(sync_point);
 }
+
+#if defined(OS_POSIX)
+int VideoFrame::dmabuf_fd(size_t plane) const {
+  return dmabuf_fds_[plane].get();
+}
+#endif
 
 void VideoFrame::HashFrameForTesting(base::MD5Context* context) {
   for (int plane = 0; plane < kMaxPlanes; ++plane) {

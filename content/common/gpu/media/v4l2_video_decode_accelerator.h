@@ -77,6 +77,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
  public:
   V4L2VideoDecodeAccelerator(
       EGLDisplay egl_display,
+      EGLContext egl_context,
       const base::WeakPtr<Client>& io_client_,
       const base::Callback<bool(void)>& make_context_current,
       scoped_ptr<V4L2Device> device,
@@ -394,8 +395,6 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   std::queue<int> free_output_buffers_;
   // Mapping of int index to output buffer record.
   std::vector<OutputRecord> output_buffer_map_;
-  // Output pixel format.
-  uint32 output_buffer_pixelformat_;
   // Required size of DPB for decoding.
   int output_dpb_size_;
   // Stores the number of planes (i.e. separate memory buffers) for output.
@@ -430,6 +429,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
 
   // EGL state
   EGLDisplay egl_display_;
+  EGLContext egl_context_;
 
   // The codec we'll be decoding for.
   media::VideoCodecProfile video_profile_;

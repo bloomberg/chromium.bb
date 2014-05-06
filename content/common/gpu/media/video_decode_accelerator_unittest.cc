@@ -553,14 +553,14 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
       new DXVAVideoDecodeAccelerator(base::Bind(&DoNothingReturnTrue)));
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
 
-  scoped_ptr<V4L2Device> device = V4L2Device::Create(
-      static_cast<EGLContext>(rendering_helper_->GetGLContext()));
+  scoped_ptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
   if (!device.get()) {
     NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;
   }
   decoder_.reset(new V4L2VideoDecodeAccelerator(
       static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
+      static_cast<EGLContext>(rendering_helper_->GetGLContext()),
       weak_client,
       base::Bind(&DoNothingReturnTrue),
       device.Pass(),

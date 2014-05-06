@@ -20,11 +20,15 @@
 namespace content {
 
 namespace {
-const char kDevice[] = "/dev/mfc-dec";
+const char kDecoderDevice[] = "/dev/mfc-dec";
+const char kEncoderDevice[] = "/dev/mfc-enc";
+const char kImageProcessorDevice[] = "/dev/gsc1";
 }
 
-ExynosV4L2Device::ExynosV4L2Device()
-    : device_fd_(-1), device_poll_interrupt_fd_(-1) {}
+ExynosV4L2Device::ExynosV4L2Device(Type type)
+    : type_(type),
+      device_fd_(-1),
+      device_poll_interrupt_fd_(-1) {}
 
 ExynosV4L2Device::~ExynosV4L2Device() {
   if (device_poll_interrupt_fd_ != -1) {
@@ -38,7 +42,7 @@ ExynosV4L2Device::~ExynosV4L2Device() {
 }
 
 int ExynosV4L2Device::Ioctl(int request, void* arg) {
-  return ioctl(device_fd_, request, arg);
+  return HANDLE_EINTR(ioctl(device_fd_, request, arg));
 }
 
 bool ExynosV4L2Device::Poll(bool poll_device, bool* event_pending) {
@@ -83,6 +87,7 @@ bool ExynosV4L2Device::SetDevicePollInterrupt() {
 
   const uint64 buf = 1;
   if (HANDLE_EINTR(write(device_poll_interrupt_fd_, &buf, sizeof(buf))) == -1) {
+    DPLOG(ERROR) << "SetDevicePollInterrupt(): write() failed";
     return false;
   }
   return true;
@@ -105,9 +110,22 @@ bool ExynosV4L2Device::ClearDevicePollInterrupt() {
 }
 
 bool ExynosV4L2Device::Initialize() {
-  DVLOG(2) << "Initialize(): opening device: " << kDevice;
+  const char* device_path = NULL;
+  switch (type_) {
+    case kDecoder:
+      device_path = kDecoderDevice;
+      break;
+    case kEncoder:
+      device_path = kEncoderDevice;
+      break;
+    case kImageProcessor:
+      device_path = kImageProcessorDevice;
+      break;
+  }
+
+  DVLOG(2) << "Initialize(): opening device: " << device_path;
   // Open the video device.
-  device_fd_ = HANDLE_EINTR(open(kDevice, O_RDWR | O_NONBLOCK | O_CLOEXEC));
+  device_fd_ = HANDLE_EINTR(open(device_path, O_RDWR | O_NONBLOCK | O_CLOEXEC));
   if (device_fd_ == -1) {
     return false;
   }
@@ -120,6 +138,7 @@ bool ExynosV4L2Device::Initialize() {
 }
 
 EGLImageKHR ExynosV4L2Device::CreateEGLImage(EGLDisplay egl_display,
+                                             EGLContext /* egl_context */,
                                              GLuint texture_id,
                                              gfx::Size frame_buffer_size,
                                              unsigned int buffer_index,
@@ -135,7 +154,7 @@ EGLImageKHR ExynosV4L2Device::CreateEGLImage(EGLDisplay egl_display,
     expbuf.index = buffer_index;
     expbuf.plane = i;
     expbuf.flags = O_CLOEXEC;
-    if (HANDLE_EINTR(Ioctl(VIDIOC_EXPBUF, &expbuf) != 0)) {
+    if (Ioctl(VIDIOC_EXPBUF, &expbuf) != 0) {
       return EGL_NO_IMAGE_KHR;
     }
     dmabuf_fds[i].reset(expbuf.fd);
@@ -175,6 +194,18 @@ EGLBoolean ExynosV4L2Device::DestroyEGLImage(EGLDisplay egl_display,
 
 GLenum ExynosV4L2Device::GetTextureTarget() { return GL_TEXTURE_EXTERNAL_OES; }
 
-uint32 ExynosV4L2Device::PreferredOutputFormat() { return V4L2_PIX_FMT_NV12M; }
+uint32 ExynosV4L2Device::PreferredInputFormat() {
+  // TODO(posciak): We should support "dontcare" returns here once we
+  // implement proper handling (fallback, negotiation) for this in users.
+  CHECK_EQ(type_, kEncoder);
+  return V4L2_PIX_FMT_NV12M;
+}
+
+uint32 ExynosV4L2Device::PreferredOutputFormat() {
+  // TODO(posciak): We should support "dontcare" returns here once we
+  // implement proper handling (fallback, negotiation) for this in users.
+  CHECK_EQ(type_, kDecoder);
+  return V4L2_PIX_FMT_NV12M;
+}
 
 }  //  namespace content

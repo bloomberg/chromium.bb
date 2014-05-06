@@ -16,7 +16,7 @@
 #include "media/base/video_frame.h"
 
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
-#include "content/common/gpu/media/exynos_video_encode_accelerator.h"
+#include "content/common/gpu/media/v4l2_video_encode_accelerator.h"
 #elif defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
 #include "content/common/gpu/media/android_video_encode_accelerator.h"
 #endif
@@ -162,7 +162,7 @@ GpuVideoEncodeAccelerator::GetSupportedProfiles() {
   std::vector<media::VideoEncodeAccelerator::SupportedProfile> profiles;
 
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
-  profiles = ExynosVideoEncodeAccelerator::GetSupportedProfiles();
+  profiles = V4L2VideoEncodeAccelerator::GetSupportedProfiles();
 #elif defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
   profiles = AndroidVideoEncodeAccelerator::GetSupportedProfiles();
 #endif
@@ -174,7 +174,11 @@ GpuVideoEncodeAccelerator::GetSupportedProfiles() {
 void GpuVideoEncodeAccelerator::CreateEncoder() {
   DCHECK(!encoder_);
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
-  encoder_.reset(new ExynosVideoEncodeAccelerator());
+  scoped_ptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kEncoder);
+  if (!device.get())
+    return;
+
+  encoder_.reset(new V4L2VideoEncodeAccelerator(device.Pass()));
 #elif defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
   encoder_.reset(new AndroidVideoEncodeAccelerator());
 #endif
