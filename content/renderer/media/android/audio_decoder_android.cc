@@ -165,6 +165,9 @@ class WAVEDecoder {
   // The number of bytes in the data portion of the chunk.
   size_t chunk_size_;
 
+  // The total number of bytes in the encoded data.
+  size_t data_size_;
+
   // The current position within the WAVE file.
   const uint8_t* buffer_;
 
@@ -183,7 +186,8 @@ class WAVEDecoder {
 };
 
 WAVEDecoder::WAVEDecoder(const uint8_t* encoded_data, size_t data_size)
-    : buffer_(encoded_data),
+    : data_size_(data_size),
+      buffer_(encoded_data),
       buffer_end_(encoded_data + 1),
       bytes_per_sample_(0),
       number_of_channels_(0),
@@ -246,6 +250,10 @@ bool WAVEDecoder::ReadChunkHeader() {
   // Adjust for padding
   if (chunk_size_ % 2)
     ++chunk_size_;
+
+  // Check for completely bogus chunk size.
+  if (chunk_size_ > data_size_)
+    return false;
 
   return true;
 }
