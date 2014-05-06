@@ -34,7 +34,7 @@ function checkPosition(dialog) {
     // Since dialog's 'width' is '50%', the expected width is half of the
     // viewport width, but viewport width may be odd. It seems Blink rounds up for
     // percentage lengths, so use Math.ceil here.
-    expectedWidth = Math.ceil(document.documentElement.clientWidth / 2);
+    expectedWidth = document.documentElement.clientWidth / 2;
     shouldBe('dialog.clientWidth', 'expectedWidth');
 }
 

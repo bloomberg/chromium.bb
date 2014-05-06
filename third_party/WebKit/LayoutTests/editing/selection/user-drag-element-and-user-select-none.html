@@ -76,14 +76,14 @@
             }
 
             function dragFromTopOfElement(element, dragOffset) {
-                var startX = element.offsetLeft + element.offsetWidth / 2;
-                var startY = element.offsetTop + 1.0;
+                var startX = Math.round(element.offsetLeft + element.offsetWidth / 2);
+                var startY = Math.round(element.offsetTop + 1.0);
                 eventSender.mouseMoveTo(startX, startY);
                 eventSender.mouseDown();
                 eventSender.mouseMoveTo(startX, startY);
 
-                var endX = startX + dragOffset.x;
-                var endY = startY + dragOffset.y;
+                var endX = Math.round(startX + dragOffset.x);
+                var endY = Math.round(startY + dragOffset.y);
                 eventSender.mouseMoveTo(endX, endY);
 
                 eventSender.mouseUp()

@@ -27,5 +27,5 @@
 
     var scrollWidth = target.scrollWidth;
 
-    result.innerText = scrollWidth === referenceWidth ? "PASS" : "FAIL";
+    result.innerText = Math.abs(scrollWidth - referenceWidth) < 1 ? "PASS" : "FAIL";
 </script>

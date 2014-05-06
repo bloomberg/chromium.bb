@@ -13,9 +13,9 @@ PASS document.getElementById("default_sizes").clientWidth is window.innerWidth
 PASS document.getElementById("default_sizes").currentSrc is "resources/image-set-4x.png"
 PASS document.getElementById("invalid_length").clientWidth is window.innerWidth
 PASS document.getElementById("invalid_length").currentSrc is "../../hidpi/resources/image-set-2x.png"
-PASS document.getElementById("src_and_w").clientWidth is 700
+PASS document.getElementById("src_and_w").clientWidth is within 0.015625 of 700
 PASS document.getElementById("src_and_w").currentSrc is "resources/image-set-4x.png"
-PASS document.getElementById("x_and_w").clientWidth is 700
+PASS document.getElementById("x_and_w").clientWidth is within 0.015625 of 700
 PASS document.getElementById("x_and_w").currentSrc is "resources/image-set-4x.png"
 PASS document.getElementById("x_and_w2").clientWidth is 400
 PASS document.getElementById("x_and_w2").currentSrc is "../../hidpi/resources/image-set-2x.png"

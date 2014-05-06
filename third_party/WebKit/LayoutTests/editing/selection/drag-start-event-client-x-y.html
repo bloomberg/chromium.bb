@@ -31,7 +31,7 @@
         
         function shouldBe(resultElement, name, expected, actual) {
             var msg = document.createElement('p');
-            if (expected == actual) {
+            if (Math.abs(expected - actual) < 1) {
                 msg.innerHTML = "<span class='success'>SUCCESS</span> Expected " + expected + " for " + name + " and got it.";
             } else {
                 msg.innerHTML = "<span class='fail'>FAIL</span> Expected " + expected + " for " + name + " but got " + actual + ".";
