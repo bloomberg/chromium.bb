@@ -99,6 +99,13 @@ void EmbeddedWorkerInstance::RecordProcessId(
   }
 }
 
+void EmbeddedWorkerInstance::OnScriptLoaded() {
+  // TODO(horo): Implement this.
+}
+
+void EmbeddedWorkerInstance::OnScriptLoadFailed() {
+}
+
 void EmbeddedWorkerInstance::OnStarted(int thread_id) {
   // Stop is requested before OnStarted is sent back from the worker.
   if (status_ == STOPPING)

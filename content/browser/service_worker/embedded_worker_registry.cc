@@ -84,6 +84,34 @@ void EmbeddedWorkerRegistry::Shutdown() {
   }
 }
 
+void EmbeddedWorkerRegistry::OnWorkerScriptLoaded(int process_id,
+                                                  int embedded_worker_id) {
+  WorkerInstanceMap::iterator found = worker_map_.find(embedded_worker_id);
+  if (found == worker_map_.end()) {
+    LOG(ERROR) << "Worker " << embedded_worker_id << " not registered";
+    return;
+  }
+  if (found->second->process_id() != process_id) {
+    LOG(ERROR) << "Incorrect embedded_worker_id";
+    return;
+  }
+  found->second->OnScriptLoaded();
+}
+
+void EmbeddedWorkerRegistry::OnWorkerScriptLoadFailed(int process_id,
+                                                      int embedded_worker_id) {
+  WorkerInstanceMap::iterator found = worker_map_.find(embedded_worker_id);
+  if (found == worker_map_.end()) {
+    LOG(ERROR) << "Worker " << embedded_worker_id << " not registered";
+    return;
+  }
+  if (found->second->process_id() != process_id) {
+    LOG(ERROR) << "Incorrect embedded_worker_id";
+    return;
+  }
+  found->second->OnScriptLoadFailed();
+}
+
 void EmbeddedWorkerRegistry::OnWorkerStarted(
     int process_id, int thread_id, int embedded_worker_id) {
   DCHECK(!ContainsKey(worker_process_map_, process_id) ||
@@ -93,8 +121,11 @@ void EmbeddedWorkerRegistry::OnWorkerStarted(
     LOG(ERROR) << "Worker " << embedded_worker_id << " not registered";
     return;
   }
+  if (found->second->process_id() != process_id) {
+    LOG(ERROR) << "Incorrect embedded_worker_id";
+    return;
+  }
   worker_process_map_[process_id].insert(embedded_worker_id);
-  DCHECK_EQ(found->second->process_id(), process_id);
   found->second->OnStarted(thread_id);
 }
 
@@ -105,7 +136,10 @@ void EmbeddedWorkerRegistry::OnWorkerStopped(
     LOG(ERROR) << "Worker " << embedded_worker_id << " not registered";
     return;
   }
-  DCHECK_EQ(found->second->process_id(), process_id);
+  if (found->second->process_id() != process_id) {
+    LOG(ERROR) << "Incorrect embedded_worker_id";
+    return;
+  }
   worker_process_map_[process_id].erase(embedded_worker_id);
   found->second->OnStopped();
 }

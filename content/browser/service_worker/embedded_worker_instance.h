@@ -121,7 +121,15 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
                        int worker_devtools_agent_route_id);
 
   // Called back from Registry when the worker instance has ack'ed that
-  // its WorkerGlobalScope is actually started on |thread_id| in the
+  // it finished loading the script.
+  void OnScriptLoaded();
+
+  // Called back from Registry when the worker instance has ack'ed that
+  // it failed to load the script.
+  void OnScriptLoadFailed();
+
+  // Called back from Registry when the worker instance has ack'ed that
+  // its WorkerGlobalScope is actually started and parsed on |thread_id| in the
   // child process.
   // This will change the internal status from STARTING to RUNNING.
   void OnStarted(int thread_id);

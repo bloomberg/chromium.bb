@@ -131,6 +131,8 @@ void EmbeddedWorkerContextClient::workerContextFailedToStart() {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   DCHECK(!script_context_);
 
+  Send(new EmbeddedWorkerHostMsg_WorkerScriptLoadFailed(embedded_worker_id_));
+
   RenderThreadImpl::current()->embedded_worker_dispatcher()->
       WorkerContextDestroyed(embedded_worker_id_);
 }
@@ -145,6 +147,8 @@ void EmbeddedWorkerContextClient::workerContextStarted(
   DCHECK(!script_context_);
   g_worker_client_tls.Pointer()->Set(this);
   script_context_.reset(new ServiceWorkerScriptContext(this, proxy));
+
+  Send(new EmbeddedWorkerHostMsg_WorkerScriptLoaded(embedded_worker_id_));
 
   // Schedule a task to send back WorkerStarted asynchronously,
   // so that at the time we send it we can be sure that the worker

@@ -106,6 +106,10 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnSetHostedVersionId)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessage,
                         OnPostMessage)
+    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerScriptLoaded,
+                        OnWorkerScriptLoaded)
+    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerScriptLoadFailed,
+                        OnWorkerScriptLoadFailed)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerStarted,
                         OnWorkerStarted)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerStopped,
@@ -328,6 +332,21 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
   Send(new ServiceWorkerMsg_ServiceWorkerRegistered(
       thread_id, request_id, handle->GetObjectInfo()));
   RegisterServiceWorkerHandle(handle.Pass());
+}
+
+void ServiceWorkerDispatcherHost::OnWorkerScriptLoaded(int embedded_worker_id) {
+  if (!context_)
+    return;
+  context_->embedded_worker_registry()->OnWorkerScriptLoaded(
+      render_process_id_, embedded_worker_id);
+}
+
+void ServiceWorkerDispatcherHost::OnWorkerScriptLoadFailed(
+    int embedded_worker_id) {
+  if (!context_)
+    return;
+  context_->embedded_worker_registry()->OnWorkerScriptLoadFailed(
+      render_process_id_, embedded_worker_id);
 }
 
 void ServiceWorkerDispatcherHost::OnWorkerStarted(
