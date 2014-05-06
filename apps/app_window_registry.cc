@@ -45,13 +45,11 @@ std::string GetWindowKeyForRenderViewHost(
 
 namespace apps {
 
-#if defined(OS_CHROMEOS)
 void AppWindowRegistry::Observer::OnAppWindowHidden(AppWindow* app_window) {
 }
 
 void AppWindowRegistry::Observer::OnAppWindowShown(AppWindow* app_window) {
 }
-#endif
 
 AppWindowRegistry::Observer::~Observer() {
 }
@@ -88,7 +86,6 @@ void AppWindowRegistry::AppWindowActivated(AppWindow* app_window) {
   BringToFront(app_window);
 }
 
-#if defined(OS_CHROMEOS)
 void AppWindowRegistry::AppWindowHidden(AppWindow* app_window) {
   FOR_EACH_OBSERVER(Observer, observers_, OnAppWindowHidden(app_window));
 }
@@ -96,7 +93,6 @@ void AppWindowRegistry::AppWindowHidden(AppWindow* app_window) {
 void AppWindowRegistry::AppWindowShown(AppWindow* app_window) {
   FOR_EACH_OBSERVER(Observer, observers_, OnAppWindowShown(app_window));
 }
-#endif
 
 void AppWindowRegistry::RemoveAppWindow(AppWindow* app_window) {
   const AppWindowList::iterator it =

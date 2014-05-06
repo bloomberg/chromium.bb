@@ -85,11 +85,6 @@ void AppWindowLauncherController::AdditionalUserAddedToSession(
 }
 
 void AppWindowLauncherController::OnAppWindowAdded(AppWindow* app_window) {
-#if !defined(OS_CHROMEOS)
-  if (!ControlsWindow(app_window->GetNativeWindow()))
-    return;
-  RegisterApp(app_window);
-#endif
 }
 
 void AppWindowLauncherController::OnAppWindowIconChanged(
@@ -112,7 +107,6 @@ void AppWindowLauncherController::OnAppWindowRemoved(AppWindow* app_window) {
   // OnWindowDestroying() has been called, doing the removal.
 }
 
-#if defined(OS_CHROMEOS)
 void AppWindowLauncherController::OnAppWindowShown(AppWindow* app_window) {
   aura::Window* window = app_window->GetNativeWindow();
   if (!ControlsWindow(window))
@@ -130,7 +124,6 @@ void AppWindowLauncherController::OnAppWindowHidden(AppWindow* app_window) {
   if (IsRegisteredApp(window))
     UnregisterApp(window);
 }
-#endif
 
 // Called from aura::Window::~Window(), before delegate_->OnWindowDestroyed()
 // which destroys AppWindow, so both |window| and the associated AppWindow
