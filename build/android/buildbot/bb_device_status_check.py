@@ -65,16 +65,13 @@ def DeviceInfo(serial, options):
 
   ac_power = _GetData('AC powered: (\w+)', battery)
   battery_level = _GetData('level: (\d+)', battery)
-  battery_temp = _GetData('temperature: (\d+)', battery,
-                          lambda x: float(x) / 10.0)
   imei_slice = _GetData('Device ID = (\d+)',
                         device_adb.old_interface.GetSubscriberInfo(),
                         lambda x: x[-6:])
   report = ['Device %s (%s)' % (serial, device_type),
             '  Build: %s (%s)' %
               (device_build, device_adb.old_interface.GetBuildFingerprint()),
-            '  Battery: %s%%' % battery_level,
-            '  Battery temp: %s' % battery_temp,
+            '  %s' % '\n  '.join(battery.split('\n')),
             '  IMEI slice: %s' % imei_slice,
             '  Wifi IP: %s' % device_adb.old_interface.GetWifiIP(),
             '']
