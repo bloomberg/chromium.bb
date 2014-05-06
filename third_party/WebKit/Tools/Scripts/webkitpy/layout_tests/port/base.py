@@ -1521,6 +1521,13 @@ class Port(object):
     def sample_process(self, name, pid):
         pass
 
+    def physical_test_suites(self):
+        return [
+            # For example, to turn on force-compositing-mode in the svg/ directory:
+            # PhysicalTestSuite('svg',
+            #                   ['--force-compositing-mode']),
+            ]
+
     def virtual_test_suites(self):
         return [
             VirtualTestSuite('gpu',
@@ -1654,6 +1661,12 @@ class Port(object):
                 return suite.args
         return []
 
+    def lookup_physical_test_args(self, test_name):
+        for suite in self.physical_test_suites():
+            if test_name.startswith(suite.name):
+                return suite.args
+        return []
+
     def should_run_as_pixel_test(self, test_input):
         if not self._options.pixel_tests:
             return False
@@ -1771,3 +1784,14 @@ class VirtualTestSuite(object):
 
     def __repr__(self):
         return "VirtualTestSuite('%s', '%s', %s)" % (self.name, self.base, self.args)
+
+
+class PhysicalTestSuite(object):
+    def __init__(self, base, args):
+        self.name = base
+        self.base = base
+        self.args = args
+        self.tests = set()
+
+    def __repr__(self):
+        return "PhysicalTestSuite('%s', '%s', %s)" % (self.name, self.base, self.args)
