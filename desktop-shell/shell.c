@@ -2009,16 +2009,14 @@ static void
 shell_surface_lose_keyboard_focus(struct shell_surface *shsurf)
 {
 	if (--shsurf->focus_count == 0)
-		if (shell_surface_is_xdg_surface(shsurf))
-			xdg_surface_send_deactivated(shsurf->resource);
+		shell_surface_state_changed(shsurf);
 }
 
 static void
 shell_surface_gain_keyboard_focus(struct shell_surface *shsurf)
 {
 	if (shsurf->focus_count++ == 0)
-		if (shell_surface_is_xdg_surface(shsurf))
-			xdg_surface_send_activated(shsurf->resource);
+		shell_surface_state_changed(shsurf);
 }
 
 static void
@@ -3556,6 +3554,10 @@ xdg_send_configure(struct weston_surface *surface,
 	if (shsurf->resize_edges != 0) {
 		s = wl_array_add(&states, sizeof *s);
 		*s = XDG_SURFACE_STATE_RESIZING;
+	}
+	if (shsurf->focus_count > 0) {
+		s = wl_array_add(&states, sizeof *s);
+		*s = XDG_SURFACE_STATE_ACTIVATED;
 	}
 
 	serial = wl_display_next_serial(shsurf->surface->compositor->wl_display);

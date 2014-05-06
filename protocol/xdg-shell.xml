@@ -276,6 +276,11 @@
         Clients that have aspect ratio or cell sizing configuration can use
         a smaller size, however.
       </entry>
+      <entry name="activated" value="4">
+        Client window decorations should be painted as if the window is
+        active. Do not assume this means that the window actually has
+        keyboard or pointer focus.
+      </entry>
     </enum>
 
     <event name="configure">
@@ -330,28 +335,6 @@
     <request name="unset_fullscreen" />
 
     <request name="set_minimized" />
-
-    <event name="activated">
-      <description summary="surface was activated">
-	The activated_set event is sent when this surface has been
-	activated, which means that the surface has user attention.
-        Window decorations should be updated accordingly. You should
-        not use this event for anything but the style of decorations
-        you display, use wl_keyboard.enter and wl_keyboard.leave for
-        determining keyboard focus.
-      </description>
-    </event>
-
-    <event name="deactivated">
-      <description summary="surface was deactivated">
-	The deactivate event is sent when this surface has been
-        deactivated, which means that the surface lost user attention.
-        Window decorations should be updated accordingly. You should
-        not use this event for anything but the style of decorations
-        you display, use wl_keyboard.enter and wl_keyboard.leave for
-        determining keyboard focus.
-      </description>
-    </event>
 
     <event name="close">
       <description summary="surface wants to be closed">

@@ -3868,6 +3868,7 @@ handle_surface_configure(void *data, struct xdg_surface *xdg_surface,
 	window->maximized = 0;
 	window->fullscreen = 0;
 	window->resizing = 0;
+	window->focused = 0;
 
 	wl_array_for_each(p, states) {
 		uint32_t state = *p;
@@ -3880,6 +3881,9 @@ handle_surface_configure(void *data, struct xdg_surface *xdg_surface,
 			break;
 		case XDG_SURFACE_STATE_RESIZING:
 			window->resizing = 1;
+			break;
+		case XDG_SURFACE_STATE_ACTIVATED:
+			window->focused = 1;
 			break;
 		default:
 			/* Unknown state */
@@ -3894,20 +3898,6 @@ handle_surface_configure(void *data, struct xdg_surface *xdg_surface,
 }
 
 static void
-handle_surface_activated(void *data, struct xdg_surface *xdg_surface)
-{
-	struct window *window = data;
-	window->focused = 1;
-}
-
-static void
-handle_surface_deactivated(void *data, struct xdg_surface *xdg_surface)
-{
-	struct window *window = data;
-	window->focused = 0;
-}
-
-static void
 handle_surface_delete(void *data, struct xdg_surface *xdg_surface)
 {
 	struct window *window = data;
@@ -3916,8 +3906,6 @@ handle_surface_delete(void *data, struct xdg_surface *xdg_surface)
 
 static const struct xdg_surface_listener xdg_surface_listener = {
 	handle_surface_configure,
-	handle_surface_activated,
-	handle_surface_deactivated,
 	handle_surface_delete,
 };
 

@@ -124,16 +124,6 @@ handle_configure(void *data, struct xdg_surface *surface,
 }
 
 static void
-handle_activated(void *data, struct xdg_surface *xdg_surface)
-{
-}
-
-static void
-handle_deactivated(void *data, struct xdg_surface *xdg_surface)
-{
-}
-
-static void
 handle_delete(void *data, struct xdg_surface *xdg_surface)
 {
 	running = 0;
@@ -141,8 +131,6 @@ handle_delete(void *data, struct xdg_surface *xdg_surface)
 
 static const struct xdg_surface_listener xdg_surface_listener = {
 	handle_configure,
-	handle_activated,
-	handle_deactivated,
 	handle_delete,
 };
 
