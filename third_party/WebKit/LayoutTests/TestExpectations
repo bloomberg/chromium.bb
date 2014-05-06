@@ -123,6 +123,8 @@ crbug.com/250514 virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrol
 crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign-0-seconds.html [ Failure Pass ]
 
 crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass Timeout ]
+crbug.com/361729 [ Linux Win ] compositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
+crbug.com/361729 virtual/softwarecompositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
 
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]
 
