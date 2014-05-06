@@ -197,7 +197,7 @@ double Animation::TrimTimeToCurrentIteration(double monotonic_time) const {
 
   // If we are past the active interval, return iteration duration.
   if (is_past_total_duration) {
-    iteration = iterations_;
+    iteration = iterations_ - 1;
     trimmed = curve_->Duration();
   } else {
     iteration = static_cast<int>(trimmed / curve_->Duration());
