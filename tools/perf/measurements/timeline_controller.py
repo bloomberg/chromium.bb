@@ -3,27 +3,19 @@
 # found in the LICENSE file.
 from measurements import smooth_gesture_util
 
+from telemetry.core.backends.chrome import tracing_backend
 from telemetry.core.timeline.model import TimelineModel
 from telemetry.page.actions import action_runner
 from telemetry.web_perf import timeline_interaction_record as tir_module
 
-# All tracing categories not disabled-by-default
-DEFAULT_TRACE_CATEGORIES = None
-
-# Categories for absolute minimum overhead tracing. This contains no
-# sub-traces of thread tasks, so it's only useful for capturing the
-# cpu-time spent on threads (as well as needed benchmark traces)
-MINIMAL_TRACE_CATEGORIES = ("toplevel,"
-                            "benchmark,"
-                            "webkit.console,"
-                            "trace_event_overhead")
 
 RUN_SMOOTH_ACTIONS = 'RunSmoothAllActions'
+
 
 class TimelineController(object):
   def __init__(self):
     super(TimelineController, self).__init__()
-    self.trace_categories = DEFAULT_TRACE_CATEGORIES
+    self.trace_categories = tracing_backend.DEFAULT_TRACE_CATEGORIES
     self._model = None
     self._renderer_process = None
     self._smooth_records = []

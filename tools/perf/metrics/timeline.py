@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 import collections
 
-from metrics import timeline_based_metric
+from telemetry.web_perf.metrics import timeline_based_metric
 
 
 class LoadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):

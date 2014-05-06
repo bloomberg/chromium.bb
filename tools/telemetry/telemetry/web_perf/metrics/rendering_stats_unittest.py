@@ -1,17 +1,20 @@
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import random
 import unittest
 
-from metrics.rendering_stats import UI_COMP_NAME, BEGIN_COMP_NAME, END_COMP_NAME
-from metrics.rendering_stats import GetScrollInputLatencyEvents
-from metrics.rendering_stats import ComputeMouseWheelScrollLatency
-from metrics.rendering_stats import ComputeTouchScrollLatency
-from metrics.rendering_stats import HasRenderingStats
-from metrics.rendering_stats import RenderingStats
-from metrics.rendering_stats import NotEnoughFramesError
+from telemetry.web_perf.metrics.rendering_stats import (
+  UI_COMP_NAME, BEGIN_COMP_NAME, END_COMP_NAME)
+from telemetry.web_perf.metrics.rendering_stats import (
+  GetScrollInputLatencyEvents)
+from telemetry.web_perf.metrics.rendering_stats import (
+  ComputeMouseWheelScrollLatency)
+from telemetry.web_perf.metrics.rendering_stats import ComputeTouchScrollLatency
+from telemetry.web_perf.metrics.rendering_stats import HasRenderingStats
+from telemetry.web_perf.metrics.rendering_stats import RenderingStats
+from telemetry.web_perf.metrics.rendering_stats import NotEnoughFramesError
 from telemetry.util.statistics import DivideIfPossibleOrZero
 import telemetry.core.timeline.bounds as timeline_bounds
 from telemetry.core.timeline import model

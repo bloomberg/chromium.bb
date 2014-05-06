@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 from measurements import timeline_controller
 from metrics import timeline
+from telemetry.core.backends.chrome import tracing_backend
 from telemetry.page import page_measurement
 
 class ThreadTimes(page_measurement.PageMeasurement):
@@ -26,10 +27,10 @@ class ThreadTimes(page_measurement.PageMeasurement):
     if self.options.report_silk_details:
       # We need the other traces in order to have any details to report.
       self.timeline_controller.trace_categories = \
-          timeline_controller.DEFAULT_TRACE_CATEGORIES
+          tracing_backend.DEFAULT_TRACE_CATEGORIES
     else:
       self._timeline_controller.trace_categories = \
-          timeline_controller.MINIMAL_TRACE_CATEGORIES
+          tracing_backend.MINIMAL_TRACE_CATEGORIES
     self._timeline_controller.Start(page, tab)
 
   def DidRunActions(self, page, tab):

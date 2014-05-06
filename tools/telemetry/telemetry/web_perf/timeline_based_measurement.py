@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from measurements import timeline_controller
+from telemetry.core.backends.chrome import tracing_backend
 from telemetry.web_perf import timeline_interaction_record as tir_module
-from metrics import smoothness
+from telemetry.web_perf.metrics import smoothness
 from telemetry.page import page_measurement
 from telemetry.core.timeline import model as model_module
 
@@ -106,7 +106,7 @@ class TimelineBasedMeasurement(page_measurement.PageMeasurement):
       raise Exception('Not supported')
     assert self.options.overhead_level in ALL_OVERHEAD_LEVELS
     if self.options.overhead_level == NO_OVERHEAD_LEVEL:
-      categories = timeline_controller.MINIMAL_TRACE_CATEGORIES
+      categories = tracing_backend.MINIMAL_TRACE_CATEGORIES
     elif self.options.overhead_level == \
         MINIMAL_OVERHEAD_LEVEL:
       categories = ''

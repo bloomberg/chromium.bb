@@ -1,9 +1,9 @@
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from metrics import timeline_based_metric
-from metrics import rendering_stats
+from telemetry.web_perf.metrics import timeline_based_metric
+from telemetry.web_perf.metrics import rendering_stats
 from telemetry.page.perf_tests_helper import FlattenList
 from telemetry.util import statistics
 

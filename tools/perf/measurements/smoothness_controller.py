@@ -4,11 +4,11 @@
 import sys
 
 from measurements import smooth_gesture_util
-from metrics import smoothness
 from telemetry.core.timeline.model import TimelineModel
 from telemetry.page import page_measurement
 from telemetry.page.actions import action_runner
 from telemetry.web_perf import timeline_interaction_record as tir_module
+from telemetry.web_perf.metrics import smoothness
 
 
 RUN_SMOOTH_ACTIONS = 'RunSmoothAllActions'
