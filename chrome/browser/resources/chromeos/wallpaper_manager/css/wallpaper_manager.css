@@ -22,9 +22,12 @@ body {
  */
 .dialog-topbar #navstrip,
 .dialog-topbar #window-close-button,
-.image-picker,
 .overlay-container .page,
 #author-website,
+/* TODO(bshe): Once http://crbug.com/369651 fixed, use .image-picker instead of
+ * #category-container.
+ */
+#category-container,
 #surprise-me {
   -webkit-app-region: no-drag;
 }
