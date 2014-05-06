@@ -57,6 +57,7 @@ void StaticCSSRuleList::deref()
 void StaticCSSRuleList::trace(Visitor* visitor)
 {
     visitor->trace(m_rules);
+    CSSRuleList::trace(visitor);
 }
 
 

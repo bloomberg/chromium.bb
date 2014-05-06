@@ -55,6 +55,7 @@ public:
     virtual void trace(Visitor* visitor) OVERRIDE
     {
         visitor->trace(m_styleSheet);
+        CSSRuleList::trace(visitor);
     }
 
 private:
@@ -462,6 +463,7 @@ void CSSStyleSheet::trace(Visitor* visitor)
     visitor->trace(m_mediaCSSOMWrapper);
     visitor->trace(m_childRuleCSSOMWrappers);
     visitor->trace(m_ruleListCSSOMWrapper);
+    StyleSheet::trace(visitor);
 }
 
 }

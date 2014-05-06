@@ -73,6 +73,7 @@ void SQLTransaction::trace(Visitor* visitor)
 {
     visitor->trace(m_database);
     visitor->trace(m_backend);
+    AbstractSQLTransaction::trace(visitor);
 }
 
 bool SQLTransaction::hasCallback() const

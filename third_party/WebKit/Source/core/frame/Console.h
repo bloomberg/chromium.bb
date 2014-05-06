@@ -54,7 +54,7 @@ public:
 
     PassRefPtrWillBeRawPtr<MemoryInfo> memory() const;
 
-    void trace(Visitor*) { }
+    virtual void trace(Visitor* visitor) OVERRIDE { ConsoleBase::trace(visitor); }
 
 protected:
     virtual ExecutionContext* context() OVERRIDE;

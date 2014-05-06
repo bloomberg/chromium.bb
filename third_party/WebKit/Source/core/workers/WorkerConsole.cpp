@@ -65,6 +65,7 @@ ExecutionContext* WorkerConsole::context()
 void WorkerConsole::trace(Visitor* visitor)
 {
     visitor->trace(m_scope);
+    ConsoleBase::trace(visitor);
 }
 
 // FIXME: add memory getter

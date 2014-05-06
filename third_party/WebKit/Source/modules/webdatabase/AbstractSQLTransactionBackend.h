@@ -41,7 +41,7 @@ namespace WebCore {
 class AbstractSQLTransactionBackend : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<AbstractSQLTransactionBackend> {
 public:
     virtual ~AbstractSQLTransactionBackend() { }
-    virtual void trace(Visitor*) = 0;
+    virtual void trace(Visitor*) { }
 
     virtual void requestTransitToState(SQLTransactionState) = 0;
 

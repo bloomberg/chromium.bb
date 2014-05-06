@@ -381,6 +381,7 @@ void SQLTransactionBackend::trace(Visitor* visitor)
     visitor->trace(m_database);
     visitor->trace(m_wrapper);
     visitor->trace(m_statementQueue);
+    AbstractSQLTransactionBackend::trace(visitor);
 }
 
 void SQLTransactionBackend::doCleanup()

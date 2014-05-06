@@ -51,7 +51,7 @@ class SQLValue;
 class SQLTransactionWrapper : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<SQLTransactionWrapper> {
 public:
     virtual ~SQLTransactionWrapper() { }
-    virtual void trace(Visitor*) = 0;
+    virtual void trace(Visitor*) { }
     virtual bool performPreflight(SQLTransactionBackend*) = 0;
     virtual bool performPostflight(SQLTransactionBackend*) = 0;
     virtual SQLErrorData* sqlError() const = 0;

@@ -245,7 +245,7 @@ private:
         // CSSFontSelectorClient implementation
         virtual void fontsNeedUpdate(CSSFontSelector*) OVERRIDE;
 
-        virtual void trace(Visitor*) OVERRIDE { }
+        virtual void trace(Visitor* visitor) OVERRIDE { CSSFontSelectorClient::trace(visitor); }
 
         unsigned m_unrealizedSaveCount;
 

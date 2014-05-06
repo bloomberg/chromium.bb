@@ -48,7 +48,7 @@ public:
 
     virtual CSSStyleSheet* styleSheet() const = 0;
 
-    virtual void trace(Visitor*) = 0;
+    virtual void trace(Visitor*) { }
 
 protected:
     CSSRuleList();
@@ -101,6 +101,7 @@ public:
     virtual void trace(Visitor* visitor) OVERRIDE
     {
         visitor->trace(m_rule);
+        CSSRuleList::trace(visitor);
     }
 
 private:

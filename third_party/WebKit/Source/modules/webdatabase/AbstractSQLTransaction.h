@@ -37,7 +37,7 @@ class AbstractSQLTransactionBackend;
 class AbstractSQLTransaction : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<AbstractSQLTransaction> {
 public:
     virtual ~AbstractSQLTransaction() { }
-    virtual void trace(Visitor*) = 0;
+    virtual void trace(Visitor*) { }
 
     virtual void requestTransitToState(SQLTransactionState) = 0;
 

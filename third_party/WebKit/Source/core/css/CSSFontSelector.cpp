@@ -234,6 +234,7 @@ void CSSFontSelector::trace(Visitor* visitor)
     visitor->trace(m_fontFaceCache);
     visitor->trace(m_clients);
     visitor->trace(m_fontLoader);
+    FontSelector::trace(visitor);
 }
 
 }

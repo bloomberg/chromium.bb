@@ -93,6 +93,7 @@ SQLStatementBackend::SQLStatementBackend(PassOwnPtr<AbstractSQLStatement> fronte
 void SQLStatementBackend::trace(Visitor* visitor)
 {
     visitor->trace(m_resultSet);
+    AbstractSQLStatementBackend::trace(visitor);
 }
 
 AbstractSQLStatement* SQLStatementBackend::frontend()

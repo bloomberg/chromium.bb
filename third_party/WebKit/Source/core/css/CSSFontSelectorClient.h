@@ -41,7 +41,7 @@ public:
 
     virtual void fontsNeedUpdate(CSSFontSelector*) = 0;
 
-    virtual void trace(Visitor*) = 0;
+    virtual void trace(Visitor*) { }
 };
 
 } // namespace WebCore

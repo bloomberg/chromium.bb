@@ -309,6 +309,7 @@ void XSLStyleSheet::trace(Visitor* visitor)
     visitor->trace(m_ownerNode);
     visitor->trace(m_children);
     visitor->trace(m_parentStyleSheet);
+    StyleSheet::trace(visitor);
 }
 
 } // namespace WebCore

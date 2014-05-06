@@ -53,7 +53,7 @@ public:
     virtual bool isLoading() const = 0;
     virtual bool isCSSStyleSheet() const { return false; }
 
-    virtual void trace(Visitor*) = 0;
+    virtual void trace(Visitor*) { }
 };
 
 } // namespace
