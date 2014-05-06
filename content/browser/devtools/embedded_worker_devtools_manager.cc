@@ -34,6 +34,41 @@ bool SendMessageToWorker(
 
 }  // namespace
 
+EmbeddedWorkerDevToolsManager::WorkerInfo::WorkerInfo(
+    const SharedWorkerInstance& instance)
+    : shared_worker_instance_(new SharedWorkerInstance(instance)),
+      state_(WORKER_UNINSPECTED),
+      agent_host_(NULL) {
+}
+
+EmbeddedWorkerDevToolsManager::WorkerInfo::WorkerInfo(
+    const base::FilePath& storage_partition_path,
+    const GURL& service_worker_scope)
+    : storage_partition_path_(new base::FilePath(storage_partition_path)),
+      service_worker_scope_(new GURL(service_worker_scope)),
+      state_(WORKER_UNINSPECTED),
+      agent_host_(NULL) {
+}
+
+bool EmbeddedWorkerDevToolsManager::WorkerInfo::Matches(
+    const SharedWorkerInstance& other) {
+  if (!shared_worker_instance_)
+    return false;
+  return shared_worker_instance_->Matches(other);
+}
+
+bool EmbeddedWorkerDevToolsManager::WorkerInfo::Matches(
+    const base::FilePath& other_storage_partition_path,
+    const GURL& other_service_worker_scope) {
+  if (!storage_partition_path_ || !service_worker_scope_)
+    return false;
+  return *storage_partition_path_ == other_storage_partition_path &&
+         *service_worker_scope_ == other_service_worker_scope;
+}
+
+EmbeddedWorkerDevToolsManager::WorkerInfo::~WorkerInfo() {
+}
+
 class EmbeddedWorkerDevToolsManager::EmbeddedWorkerDevToolsAgentHost
     : public IPCDevToolsAgentHost,
       public IPC::Listener {
@@ -153,10 +188,26 @@ bool EmbeddedWorkerDevToolsManager::SharedWorkerCreated(
     workers_.set(id, info.Pass());
     return false;
   }
-  DCHECK_EQ(WORKER_TERMINATED, it->second->state());
-  scoped_ptr<WorkerInfo> info = workers_.take_and_erase(it);
-  info->set_state(WORKER_PAUSED);
-  workers_.set(id, info.Pass());
+  MoveToPausedState(id, it);
+  return true;
+}
+
+bool EmbeddedWorkerDevToolsManager::ServiceWorkerCreated(
+    int worker_process_id,
+    int worker_route_id,
+    const base::FilePath& storage_partition_path,
+    const GURL& service_worker_scope) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  const WorkerId id(worker_process_id, worker_route_id);
+  WorkerInfoMap::iterator it = FindExistingServiceWorkerInfo(
+      storage_partition_path, service_worker_scope);
+  if (it == workers_.end()) {
+    scoped_ptr<WorkerInfo> info(
+        new WorkerInfo(storage_partition_path, service_worker_scope));
+    workers_.set(id, info.Pass());
+    return false;
+  }
+  MoveToPausedState(id, it);
   return true;
 }
 
@@ -243,10 +294,31 @@ EmbeddedWorkerDevToolsManager::FindExistingSharedWorkerInfo(
     const SharedWorkerInstance& instance) {
   WorkerInfoMap::iterator it = workers_.begin();
   for (; it != workers_.end(); ++it) {
-    if (it->second->instance().Matches(instance))
+    if (it->second->Matches(instance))
       break;
   }
   return it;
+}
+
+EmbeddedWorkerDevToolsManager::WorkerInfoMap::iterator
+EmbeddedWorkerDevToolsManager::FindExistingServiceWorkerInfo(
+    const base::FilePath& storage_partition_path,
+    const GURL& service_worker_scope) {
+  WorkerInfoMap::iterator it = workers_.begin();
+  for (; it != workers_.end(); ++it) {
+    if (it->second->Matches(storage_partition_path, service_worker_scope))
+      break;
+  }
+  return it;
+}
+
+void EmbeddedWorkerDevToolsManager::MoveToPausedState(
+    const WorkerId& id,
+    const WorkerInfoMap::iterator& it) {
+  DCHECK_EQ(WORKER_TERMINATED, it->second->state());
+  scoped_ptr<WorkerInfo> info = workers_.take_and_erase(it);
+  info->set_state(WORKER_PAUSED);
+  workers_.set(id, info.Pass());
 }
 
 void EmbeddedWorkerDevToolsManager::ResetForTesting() {

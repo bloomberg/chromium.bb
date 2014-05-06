@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
@@ -37,8 +38,16 @@ class CONTENT_EXPORT EmbeddedWorkerDevToolsManager {
   bool SharedWorkerCreated(int worker_process_id,
                            int worker_route_id,
                            const SharedWorkerInstance& instance);
-  void WorkerDestroyed(int worker_process_id, int worker_route_id);
+  // Returns true when the worker must be paused on start.
+  // TODO(horo): Currently we identify ServiceWorkers with the path of storage
+  // partition and the scope of ServiceWorker. Consider having a class like
+  // SharedWorkerInstance instead of the pair.
+  bool ServiceWorkerCreated(int worker_process_id,
+                            int worker_route_id,
+                            const base::FilePath& storage_partition_path,
+                            const GURL& service_worker_scope);
   void WorkerContextStarted(int worker_process_id, int worker_route_id);
+  void WorkerDestroyed(int worker_process_id, int worker_route_id);
 
  private:
   friend struct DefaultSingletonTraits<EmbeddedWorkerDevToolsManager>;
@@ -55,19 +64,27 @@ class CONTENT_EXPORT EmbeddedWorkerDevToolsManager {
 
   class WorkerInfo {
    public:
-    explicit WorkerInfo(const SharedWorkerInstance& instance)
-        : instance_(instance), state_(WORKER_UNINSPECTED), agent_host_(NULL) {}
+    // Creates WorkerInfo for SharedWorker.
+    explicit WorkerInfo(const SharedWorkerInstance& instance);
+    // Creates WorkerInfo for ServiceWorker.
+    WorkerInfo(const base::FilePath& storage_partition_path,
+               const GURL& service_worker_scope);
+    ~WorkerInfo();
 
-    const SharedWorkerInstance& instance() const { return instance_; }
     WorkerState state() { return state_; }
     void set_state(WorkerState new_state) { state_ = new_state; }
     EmbeddedWorkerDevToolsAgentHost* agent_host() { return agent_host_; }
     void set_agent_host(EmbeddedWorkerDevToolsAgentHost* agent_host) {
       agent_host_ = agent_host;
     }
+    bool Matches(const SharedWorkerInstance& other);
+    bool Matches(const base::FilePath& other_storage_partition_path,
+                 const GURL& other_service_worker_scope);
 
    private:
-    const SharedWorkerInstance instance_;
+    scoped_ptr<SharedWorkerInstance> shared_worker_instance_;
+    scoped_ptr<base::FilePath> storage_partition_path_;
+    scoped_ptr<GURL> service_worker_scope_;
     WorkerState state_;
     EmbeddedWorkerDevToolsAgentHost* agent_host_;
   };
@@ -81,6 +98,11 @@ class CONTENT_EXPORT EmbeddedWorkerDevToolsManager {
 
   WorkerInfoMap::iterator FindExistingSharedWorkerInfo(
       const SharedWorkerInstance& instance);
+  WorkerInfoMap::iterator FindExistingServiceWorkerInfo(
+      const base::FilePath& storage_partition_path,
+      const GURL& service_worker_scope);
+
+  void MoveToPausedState(const WorkerId& id, const WorkerInfoMap::iterator& it);
 
   // Resets to its initial state as if newly created.
   void ResetForTesting();
