@@ -852,10 +852,7 @@ void DOMWindow::postMessageTimerFired(PassOwnPtr<PostMessageTimer> t)
     if (m_frame->loader().client()->willCheckAndDispatchMessageEvent(timer->targetOrigin(), event.get()))
         return;
 
-    UserGestureToken* token = timer->userGestureToken();
-    if (token)
-        token->setForwarded();
-    UserGestureIndicator gestureIndicator(token);
+    UserGestureIndicator gestureIndicator(timer->userGestureToken());
 
     event->entangleMessagePorts(document());
     dispatchMessageEventWithOriginCheck(timer->targetOrigin(), event, timer->stackTrace());

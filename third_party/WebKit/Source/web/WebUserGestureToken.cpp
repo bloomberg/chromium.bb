@@ -50,16 +50,6 @@ void WebUserGestureToken::setJavascriptPrompt()
     m_token->setJavascriptPrompt();
 }
 
-bool WebUserGestureToken::wasForwarded() const
-{
-    return m_token->wasForwarded();
-}
-
-void WebUserGestureToken::setForwarded()
-{
-    m_token->setForwarded();
-}
-
 WebUserGestureToken::WebUserGestureToken(PassRefPtr<WebCore::UserGestureToken> token)
 {
     m_token = token;
