@@ -25,21 +25,21 @@ enum CastLoggingEvent {
   kPacketLoss,
   kJitterMs,
   kVideoAckReceived,  // Sender side frame event.
-  kRembBitrate,  // Generic event. No longer used.
+  kRembBitrate,       // Generic event. No longer used.
   // Receiver side frame events.
   kAudioAckSent,
   kVideoAckSent,
   // Audio sender.
-  kAudioFrameReceived,
-  kAudioFrameCaptured,
+  kAudioFrameCaptureBegin,
+  kAudioFrameCaptureEnd,
   kAudioFrameEncoded,
   // Audio receiver.
   kAudioFrameDecoded,
   kAudioPlayoutDelay,
   // Video sender.
-  kVideoFrameCaptured,
-  kVideoFrameReceived,
-  kVideoFrameSentToEncoder,
+  kVideoFrameCaptureBegin,
+  kVideoFrameCaptureEnd,
+  kVideoFrameSentToEncoder,  // Deprecated
   kVideoFrameEncoded,
   // Video receiver.
   kVideoFrameDecoded,

@@ -25,13 +25,13 @@ const char* CastLoggingToString(CastLoggingEvent event) {
     ENUM_TO_STRING(RembBitrate);
     ENUM_TO_STRING(AudioAckSent);
     ENUM_TO_STRING(VideoAckSent);
-    ENUM_TO_STRING(AudioFrameReceived);
-    ENUM_TO_STRING(AudioFrameCaptured);
+    ENUM_TO_STRING(AudioFrameCaptureBegin);
+    ENUM_TO_STRING(AudioFrameCaptureEnd);
     ENUM_TO_STRING(AudioFrameEncoded);
     ENUM_TO_STRING(AudioPlayoutDelay);
     ENUM_TO_STRING(AudioFrameDecoded);
-    ENUM_TO_STRING(VideoFrameCaptured);
-    ENUM_TO_STRING(VideoFrameReceived);
+    ENUM_TO_STRING(VideoFrameCaptureBegin);
+    ENUM_TO_STRING(VideoFrameCaptureEnd);
     ENUM_TO_STRING(VideoFrameSentToEncoder);
     ENUM_TO_STRING(VideoFrameEncoded);
     ENUM_TO_STRING(VideoFrameDecoded);
@@ -58,8 +58,8 @@ EventMediaType GetEventMediaType(CastLoggingEvent event) {
     case kRembBitrate:
       return OTHER_EVENT;
     case kAudioAckSent:
-    case kAudioFrameReceived:
-    case kAudioFrameCaptured:
+    case kAudioFrameCaptureBegin:
+    case kAudioFrameCaptureEnd:
     case kAudioFrameEncoded:
     case kAudioPlayoutDelay:
     case kAudioFrameDecoded:
@@ -70,8 +70,8 @@ EventMediaType GetEventMediaType(CastLoggingEvent event) {
       return AUDIO_EVENT;
     case kVideoAckReceived:
     case kVideoAckSent:
-    case kVideoFrameCaptured:
-    case kVideoFrameReceived:
+    case kVideoFrameCaptureBegin:
+    case kVideoFrameCaptureEnd:
     case kVideoFrameSentToEncoder:
     case kVideoFrameEncoded:
     case kVideoFrameDecoded:

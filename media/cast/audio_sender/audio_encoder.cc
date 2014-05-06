@@ -20,16 +20,6 @@
 
 namespace {
 
-void LogAudioFrameEvent(
-    const scoped_refptr<media::cast::CastEnvironment>& cast_environment,
-    base::TimeTicks event_time,
-    media::cast::CastLoggingEvent event_type,
-    media::cast::RtpTimestamp rtp_timestamp,
-    uint32 frame_id) {
-  cast_environment->Logging()->InsertFrameEvent(
-      event_time, event_type, rtp_timestamp, frame_id);
-}
-
 void LogAudioFrameEncodedEvent(
     const scoped_refptr<media::cast::CastEnvironment>& cast_environment,
     base::TimeTicks event_time,
@@ -105,17 +95,6 @@ class AudioEncoder::ImplBase
         audio_frame->frame_id = frame_id_++;
         rtp_timestamp_ += samples_per_10ms_;
         audio_frame->rtp_timestamp = rtp_timestamp_;
-
-        // Update logging.
-        cast_environment_->PostTask(
-            CastEnvironment::MAIN,
-            FROM_HERE,
-            base::Bind(&LogAudioFrameEvent,
-                       cast_environment_,
-                       cast_environment_->Clock()->NowTicks(),
-                       kAudioFrameReceived,
-                       audio_frame->rtp_timestamp,
-                       audio_frame->frame_id));
 
         if (EncodeFromFilledBuffer(&audio_frame->data)) {
           // Update logging.

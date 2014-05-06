@@ -1091,21 +1091,17 @@ TEST_F(End2EndTest, VideoLogging) {
 
     int expected_event_count_for_frame = 0;
 
-    EXPECT_EQ(1, map_it->second.counter[kVideoFrameCaptured]);
+    EXPECT_EQ(1, map_it->second.counter[kVideoFrameCaptureBegin]);
     expected_event_count_for_frame +=
-        map_it->second.counter[kVideoFrameCaptured];
-
-    EXPECT_EQ(1, map_it->second.counter[kVideoFrameSentToEncoder]);
-    expected_event_count_for_frame +=
-        map_it->second.counter[kVideoFrameSentToEncoder];
+        map_it->second.counter[kVideoFrameCaptureBegin];
 
     EXPECT_EQ(1, map_it->second.counter[kVideoFrameEncoded]);
     expected_event_count_for_frame +=
         map_it->second.counter[kVideoFrameEncoded];
 
-    EXPECT_EQ(1, map_it->second.counter[kVideoFrameReceived]);
+    EXPECT_EQ(1, map_it->second.counter[kVideoFrameCaptureEnd]);
     expected_event_count_for_frame +=
-        map_it->second.counter[kVideoFrameReceived];
+        map_it->second.counter[kVideoFrameCaptureEnd];
 
     EXPECT_EQ(1, map_it->second.counter[kVideoRenderDelay]);
     expected_event_count_for_frame += map_it->second.counter[kVideoRenderDelay];
@@ -1194,7 +1190,6 @@ TEST_F(End2EndTest, AudioLogging) {
   std::map<RtpTimestamp, LoggingEventCounts> event_counter_for_frame =
       GetEventCountForFrameEvents(frame_events_);
 
-  int received_count = 0;
   int encoded_count = 0;
 
   // Verify the right number of events were logged for each event type.
@@ -1202,11 +1197,9 @@ TEST_F(End2EndTest, AudioLogging) {
            event_counter_for_frame.begin();
        it != event_counter_for_frame.end();
        ++it) {
-    received_count += it->second.counter[kAudioFrameReceived];
     encoded_count += it->second.counter[kAudioFrameEncoded];
   }
 
-  EXPECT_EQ(num_audio_frames_requested, received_count);
   EXPECT_EQ(num_audio_frames_requested, encoded_count);
 
   // Verify that each frame have the expected types of events logged.
@@ -1218,10 +1211,6 @@ TEST_F(End2EndTest, AudioLogging) {
       total_event_count_for_frame += map_it->second.counter[j];
 
     int expected_event_count_for_frame = 0;
-
-    EXPECT_EQ(1, map_it->second.counter[kAudioFrameReceived]);
-    expected_event_count_for_frame +=
-        map_it->second.counter[kAudioFrameReceived];
 
     EXPECT_EQ(1, map_it->second.counter[kAudioFrameEncoded]);
     expected_event_count_for_frame +=

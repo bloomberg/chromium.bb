@@ -78,7 +78,7 @@ TEST_F(EncodingEventSubscriberTest, FrameEventTruncating) {
   // Entry with RTP timestamp 0 should get dropped.
   for (int i = 0; i < 11; i++) {
     cast_environment_->Logging()->InsertFrameEvent(now,
-                                                   kVideoFrameCaptured,
+                                                   kVideoFrameCaptureBegin,
                                                    i * 100,
                                                    /*frame_id*/ 0);
     cast_environment_->Logging()->InsertFrameEvent(now,
@@ -508,12 +508,12 @@ TEST_F(EncodingEventSubscriberTest, FirstRtpTimestamp) {
   base::TimeTicks now(testing_clock_->NowTicks());
 
   cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 kVideoFrameCaptured,
+                                                 kVideoFrameCaptureBegin,
                                                  rtp_timestamp,
                                                  /*frame_id*/ 0);
 
   cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 kVideoFrameReceived,
+                                                 kVideoFrameCaptureEnd,
                                                  rtp_timestamp + 30,
                                                  /*frame_id*/ 1);
 
@@ -531,7 +531,7 @@ TEST_F(EncodingEventSubscriberTest, FirstRtpTimestamp) {
   rtp_timestamp = 67890;
 
   cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 kVideoFrameCaptured,
+                                                 kVideoFrameCaptureBegin,
                                                  rtp_timestamp,
                                                  /*frame_id*/ 0);
   GetEventsAndReset();
@@ -545,13 +545,13 @@ TEST_F(EncodingEventSubscriberTest, RelativeRtpTimestampWrapAround) {
   base::TimeTicks now(testing_clock_->NowTicks());
 
   cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 kVideoFrameCaptured,
+                                                 kVideoFrameCaptureBegin,
                                                  rtp_timestamp,
                                                  /*frame_id*/ 0);
 
   // RtpTimestamp has now wrapped around.
   cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 kVideoFrameReceived,
+                                                 kVideoFrameCaptureEnd,
                                                  rtp_timestamp + 30,
                                                  /*frame_id*/ 1);
 

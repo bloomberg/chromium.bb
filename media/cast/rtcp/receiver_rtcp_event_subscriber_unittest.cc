@@ -75,12 +75,14 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
         /*max_packet_id*/ 10u, /*size*/ 128u);
 
     // Unrelated events
-    cast_environment_->Logging()->InsertFrameEvent(
-        testing_clock_->NowTicks(), kVideoFrameReceived, /*rtp_timestamp*/ 100u,
-        /*frame_id*/ 1u);
-    cast_environment_->Logging()->InsertFrameEvent(
-        testing_clock_->NowTicks(), kAudioFrameReceived, /*rtp_timestamp*/ 100u,
-        /*frame_id*/ 1u);
+    cast_environment_->Logging()->InsertFrameEvent(testing_clock_->NowTicks(),
+                                                   kVideoFrameCaptureEnd,
+                                                   /*rtp_timestamp*/ 100u,
+                                                   /*frame_id*/ 1u);
+    cast_environment_->Logging()->InsertFrameEvent(testing_clock_->NowTicks(),
+                                                   kAudioFrameCaptureEnd,
+                                                   /*rtp_timestamp*/ 100u,
+                                                   /*frame_id*/ 1u);
   }
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.

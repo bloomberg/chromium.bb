@@ -74,7 +74,7 @@ TEST_F(StatsEventSubscriberTest, Capture) {
   base::TimeTicks start_time = sender_clock_->NowTicks();
   for (int i = 0; i < num_frames; i++) {
     cast_environment_->Logging()->InsertFrameEvent(sender_clock_->NowTicks(),
-                                                   kVideoFrameCaptured,
+                                                   kVideoFrameCaptureBegin,
                                                    rtp_timestamp,
                                                    frame_id);
 
@@ -220,7 +220,7 @@ TEST_F(StatsEventSubscriberTest, E2ELatency) {
   base::TimeDelta total_latency;
   for (int i = 0; i < num_frames; i++) {
     cast_environment_->Logging()->InsertFrameEvent(sender_clock_->NowTicks(),
-                                                   kVideoFrameCaptured,
+                                                   kVideoFrameCaptureBegin,
                                                    rtp_timestamp,
                                                    frame_id);
 

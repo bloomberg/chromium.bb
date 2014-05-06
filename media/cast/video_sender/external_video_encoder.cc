@@ -401,12 +401,6 @@ bool ExternalVideoEncoder::EncodeVideoFrame(
     ++skip_count_;
     return false;
   }
-  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  cast_environment_->Logging()->InsertFrameEvent(
-      now,
-      kVideoFrameSentToEncoder,
-      GetVideoRtpTimestamp(capture_time),
-      kFrameIdUnknown);
 
   encoder_task_runner_->PostTask(
       FROM_HERE,

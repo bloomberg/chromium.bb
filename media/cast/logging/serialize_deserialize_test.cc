@@ -20,7 +20,7 @@ using media::cast::proto::LogMetadata;
 namespace {
 
 const media::cast::CastLoggingEvent kVideoFrameEvents[] = {
-    media::cast::kVideoFrameCaptured,      media::cast::kVideoFrameReceived,
+    media::cast::kVideoFrameCaptureBegin,  media::cast::kVideoFrameCaptureEnd,
     media::cast::kVideoFrameSentToEncoder, media::cast::kVideoFrameEncoded,
     media::cast::kVideoFrameDecoded,       media::cast::kVideoRenderDelay};
 

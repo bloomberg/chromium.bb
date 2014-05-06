@@ -19,22 +19,22 @@ enum EventType {
   PACKET_LOSS = 2;
   JITTER_MS = 3;
   VIDEO_ACK_RECEIVED = 4;  // Sender side frame event.
-  REMB_BITRATE = 5;  // Generic event. No longer used.
+  REMB_BITRATE = 5;        // Generic event. No longer used.
   // Audio receiver.
   AUDIO_ACK_SENT = 6;
   // Video receiver.
   VIDEO_ACK_SENT = 7;
   // Audio sender.
-  AUDIO_FRAME_RECEIVED = 8;
-  AUDIO_FRAME_CAPTURED = 9;
+  AUDIO_FRAME_CAPTURE_END = 8;
+  AUDIO_FRAME_CAPTURE_BEGIN = 9;
   AUDIO_FRAME_ENCODED = 10;
   // Audio receiver.
   AUDIO_PLAYOUT_DELAY = 11;
   AUDIO_FRAME_DECODED = 12;
   // Video sender.
-  VIDEO_FRAME_CAPTURED = 13;
-  VIDEO_FRAME_RECEIVED = 14;
-  VIDEO_FRAME_SENT_TO_ENCODER = 15;
+  VIDEO_FRAME_CAPTURE_BEGIN = 13;
+  VIDEO_FRAME_CAPTURE_END = 14;
+  VIDEO_FRAME_SENT_TO_ENCODER = 15;  // Deprecated
   VIDEO_FRAME_ENCODED = 16;
   // Video receiver.
   VIDEO_FRAME_DECODED = 17;

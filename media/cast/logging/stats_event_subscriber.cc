@@ -23,7 +23,8 @@ const size_t kMaxFrameEventTimeMapSize = 100;
 const size_t kMaxPacketEventTimeMapSize = 1000;
 
 CastLoggingEvent GetCapturedEvent(EventMediaType media_type) {
-  return media_type == AUDIO_EVENT ? kAudioFrameCaptured : kVideoFrameCaptured;
+  return media_type == AUDIO_EVENT ?
+      kAudioFrameCaptureBegin : kVideoFrameCaptureBegin;
 }
 
 CastLoggingEvent GetEncodedEvent(EventMediaType media_type) {

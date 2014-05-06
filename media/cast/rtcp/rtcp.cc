@@ -123,8 +123,8 @@ class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
       switch (it->frame_status) {
         case transport::kRtcpSenderFrameStatusDroppedByFlowControl:
           // A frame that have been dropped by the flow control would have
-          // kVideoFrameCaptured as its last event in the log.
-          log_event = kVideoFrameCaptured;
+          // kVideoFrameCaptureBegin as its last event in the log.
+          log_event = kVideoFrameCaptureBegin;
           break;
         case transport::kRtcpSenderFrameStatusDroppedByEncoder:
           // A frame that have been dropped by the encoder would have

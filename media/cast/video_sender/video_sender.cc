@@ -144,10 +144,10 @@ void VideoSender::InsertRawVideoFrame(
 
   RtpTimestamp rtp_timestamp = GetVideoRtpTimestamp(capture_time);
   cast_environment_->Logging()->InsertFrameEvent(
-      capture_time, kVideoFrameCaptured, rtp_timestamp, kFrameIdUnknown);
+      capture_time, kVideoFrameCaptureBegin, rtp_timestamp, kFrameIdUnknown);
   cast_environment_->Logging()->InsertFrameEvent(
       cast_environment_->Clock()->NowTicks(),
-      kVideoFrameReceived,
+      kVideoFrameCaptureEnd,
       rtp_timestamp,
       kFrameIdUnknown);
 
@@ -238,13 +238,13 @@ void VideoSender::SendRtcpReport() {
   for (RtcpEventMap::iterator it = rtcp_events.begin(); it != rtcp_events.end();
        ++it) {
     CastLoggingEvent event_type = it->second.type;
-    if (event_type == kVideoFrameCaptured ||
+    if (event_type == kVideoFrameCaptureBegin ||
         event_type == kVideoFrameSentToEncoder ||
         event_type == kVideoFrameEncoded) {
       transport::RtcpSenderFrameLogMessage frame_message;
       frame_message.rtp_timestamp = it->first;
       switch (event_type) {
-        case kVideoFrameCaptured:
+        case kVideoFrameCaptureBegin:
           frame_message.frame_status =
               transport::kRtcpSenderFrameStatusDroppedByFlowControl;
           break;

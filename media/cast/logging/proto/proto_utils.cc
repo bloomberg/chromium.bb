@@ -23,13 +23,13 @@ media::cast::proto::EventType ToProtoEventType(CastLoggingEvent event) {
     TO_PROTO_ENUM(kRembBitrate, REMB_BITRATE);
     TO_PROTO_ENUM(kAudioAckSent, AUDIO_ACK_SENT);
     TO_PROTO_ENUM(kVideoAckSent, VIDEO_ACK_SENT);
-    TO_PROTO_ENUM(kAudioFrameReceived, AUDIO_FRAME_RECEIVED);
-    TO_PROTO_ENUM(kAudioFrameCaptured, AUDIO_FRAME_CAPTURED);
+    TO_PROTO_ENUM(kAudioFrameCaptureEnd, AUDIO_FRAME_CAPTURE_END);
+    TO_PROTO_ENUM(kAudioFrameCaptureBegin, AUDIO_FRAME_CAPTURE_BEGIN);
     TO_PROTO_ENUM(kAudioFrameEncoded, AUDIO_FRAME_ENCODED);
     TO_PROTO_ENUM(kAudioPlayoutDelay, AUDIO_PLAYOUT_DELAY);
     TO_PROTO_ENUM(kAudioFrameDecoded, AUDIO_FRAME_DECODED);
-    TO_PROTO_ENUM(kVideoFrameCaptured, VIDEO_FRAME_CAPTURED);
-    TO_PROTO_ENUM(kVideoFrameReceived, VIDEO_FRAME_RECEIVED);
+    TO_PROTO_ENUM(kVideoFrameCaptureBegin, VIDEO_FRAME_CAPTURE_BEGIN);
+    TO_PROTO_ENUM(kVideoFrameCaptureEnd, VIDEO_FRAME_CAPTURE_END);
     TO_PROTO_ENUM(kVideoFrameSentToEncoder, VIDEO_FRAME_SENT_TO_ENCODER);
     TO_PROTO_ENUM(kVideoFrameEncoded, VIDEO_FRAME_ENCODED);
     TO_PROTO_ENUM(kVideoFrameDecoded, VIDEO_FRAME_DECODED);

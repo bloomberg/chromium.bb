@@ -114,12 +114,6 @@ bool VideoEncoderImpl::EncodeVideoFrame(
     return false;
   }
 
-  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  cast_environment_->Logging()->InsertFrameEvent(
-      now,
-      kVideoFrameSentToEncoder,
-      GetVideoRtpTimestamp(capture_time),
-      kFrameIdUnknown);
   cast_environment_->PostTask(CastEnvironment::VIDEO,
                               FROM_HERE,
                               base::Bind(&EncodeVideoFrameOnEncoderThread,

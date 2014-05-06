@@ -52,8 +52,8 @@ TEST_F(LoggingImplTest, BasicFrameLogging) {
   base::TimeTicks now;
   do {
     now = testing_clock_.NowTicks();
-    logging_.InsertFrameEvent(now, kAudioFrameCaptured, rtp_timestamp,
-                               frame_id);
+    logging_.InsertFrameEvent(
+        now, kAudioFrameCaptureBegin, rtp_timestamp, frame_id);
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kFrameIntervalMs));
     rtp_timestamp += kFrameIntervalMs * 90;
@@ -111,7 +111,10 @@ TEST_F(LoggingImplTest, FrameLoggingWithDelay) {
     int delay = kPlayoutDelayMs +
                 base::RandInt(-kRandomSizeInterval, kRandomSizeInterval);
     logging_.InsertFrameEventWithDelay(
-        testing_clock_.NowTicks(), kAudioFrameCaptured, rtp_timestamp, frame_id,
+        testing_clock_.NowTicks(),
+        kAudioFrameCaptureBegin,
+        rtp_timestamp,
+        frame_id,
         base::TimeDelta::FromMilliseconds(delay));
     testing_clock_.Advance(base::TimeDelta::FromMilliseconds(kFrameIntervalMs));
     rtp_timestamp += kFrameIntervalMs * 90;
@@ -132,8 +135,10 @@ TEST_F(LoggingImplTest, MultipleEventFrameLogging) {
   uint32 frame_id = 0u;
   uint32 num_events = 0u;
   do {
-    logging_.InsertFrameEvent(testing_clock_.NowTicks(), kAudioFrameCaptured,
-                               rtp_timestamp, frame_id);
+    logging_.InsertFrameEvent(testing_clock_.NowTicks(),
+                              kAudioFrameCaptureBegin,
+                              rtp_timestamp,
+                              frame_id);
     ++num_events;
     if (frame_id % 2) {
       logging_.InsertEncodedFrameEvent(testing_clock_.NowTicks(),
@@ -205,9 +210,10 @@ TEST_F(LoggingImplTest, MultipleRawEventSubscribers) {
   // Now logging_ has two subscribers.
   logging_.AddRawEventSubscriber(&event_subscriber_2);
 
-  logging_.InsertFrameEvent(testing_clock_.NowTicks(), kAudioFrameCaptured,
-                             /*rtp_timestamp*/ 0u,
-                             /*frame_id*/ 0u);
+  logging_.InsertFrameEvent(testing_clock_.NowTicks(),
+                            kAudioFrameCaptureBegin,
+                            /*rtp_timestamp*/ 0u,
+                            /*frame_id*/ 0u);
 
   std::vector<FrameEvent> frame_events;
   event_subscriber_.GetFrameEventsAndReset(&frame_events);
