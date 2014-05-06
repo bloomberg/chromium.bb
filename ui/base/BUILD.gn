@@ -313,7 +313,6 @@ component("ui_base") {
       "cursor/cursor_loader_x11.cc",
       "cursor/cursor_loader_x11.h",
       "cursor/cursor_mac.mm",
-      "cursor/cursor_win.cc",
       "cursor/cursor_x11.cc",
       "x/selection_owner.cc",
       "x/selection_owner.h",
@@ -380,6 +379,7 @@ component("ui_base") {
     ]
   }
 
+  libs = []
   if (is_win) {
     deps += [
       "//third_party/wtl",
@@ -397,7 +397,7 @@ component("ui_base") {
       "/DELAYLOAD:d3d10_1.dll",
       "/DELAYLOAD:dwmapi.dll",
     ]
-    libs = [
+    libs += [
       "d2d1.lib",
       "d3d10_1.lib",
       "dwmapi.lib",
@@ -474,7 +474,7 @@ component("ui_base") {
       #":ui_base_jni_headers",
     ]
 
-    libs = [
+    libs += [
       "jnigraphics",
     ]
   }
