@@ -784,6 +784,7 @@ class CLStats(StatsManager):
   """Manager for stats about CL actions taken by the Commit Queue."""
   TABLE_CLASS = None
   COL_FAILURE_CATEGORY = 'failure category'
+  COL_FAILURE_BLAME = 'bug or bad CL'
   REASON_BAD_CL = 'Bad CL'
   BOT_TYPE = CQ
   GET_SHEETS_VERSION = False
@@ -795,10 +796,11 @@ class CLStats(StatsManager):
     self.per_cl_actions = {}
     self.email = email
     self.reasons = {}
+    self.blames = {}
     self.pre_cq_stats = PreCQStats()
 
   def GatherFailureReasons(self, creds):
-    """Gather the reasons why our builds failed.
+    """Gather the reasons why our builds failed and the blamed bugs or CLs.
 
     Args:
       creds: A gdata_lib.Creds object.
@@ -806,6 +808,7 @@ class CLStats(StatsManager):
     data_table = CQMasterStats.TABLE_CLASS()
     uploader = SSUploader(creds, self.ss_key)
     ss_failure_category = gdata_lib.PrepColNameForSS(self.COL_FAILURE_CATEGORY)
+    ss_failure_blame = gdata_lib.PrepColNameForSS(self.COL_FAILURE_BLAME)
     rows = uploader.GetRowCacheByCol(data_table.WORKSHEET_NAME,
                                      data_table.COL_BUILD_NUMBER)
     for b in self.builds:
@@ -813,8 +816,11 @@ class CLStats(StatsManager):
         row = rows[str(b.build_number)]
       except KeyError:
         self.reasons[b.build_number] = 'None'
+        self.blames[b.build_number] = []
       else:
         self.reasons[b.build_number] = str(row[ss_failure_category])
+        self.blames[b.build_number] = self.ProcessBlameString(
+            str(row[ss_failure_blame]))
 
   @staticmethod
   def ProcessBlameString(blame_string):
@@ -1021,11 +1027,15 @@ class CLStats(StatsManager):
         rejected_then_submitted[k] = v
 
     patch_reason_counts = {}
+    patch_blame_counts = {}
     for k, v in rejected_then_submitted.iteritems():
       for a in v:
         if a.action == constants.CL_ACTION_KICKED_OUT and a.bot_type == CQ:
           reason = self.reasons[a.build.build_number]
+          blames = self.blames[a.build.build_number]
           patch_reason_counts[reason] = patch_reason_counts.get(reason, 0) + 1
+          for blame in blames:
+            patch_blame_counts[blame] = patch_blame_counts.get(blame, 0) + 1
 
     submitted_changes = {k : v for k, v, in self.per_cl_actions.iteritems()
                          if any(a.action==constants.CL_ACTION_SUBMITTED
@@ -1112,6 +1122,11 @@ class CLStats(StatsManager):
     logging.info('Reasons why good patches were rejected:')
     fmt = '  %(cnt)d failures in %(reason)s'
     self._PrintCounts(patch_reason_counts, fmt)
+
+    logging.info('Bugs or CLs responsible for good patches rejections:')
+    fmt_rej = '  %(cnt)d rejections due to %(reason)s'
+    self._PrintCounts(patch_blame_counts, fmt_rej)
+
     logging.info('Reasons why builds failed:')
     self._PrintCounts(build_reason_counts, '  %(cnt)d failures in %(reason)s')
 
