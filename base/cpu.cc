@@ -91,21 +91,28 @@ uint64 _xgetbv(uint32 xcr) {
 
 #if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
 
+// Returns the string found in /proc/cpuinfo under the key "model name" or
+// "Processor". "model name" is used in Linux 3.8 and later (3.7 and later for
+// arm64) and is shown once per CPU. "Processor" is used in earler versions and
+// is shown only once at the top of /proc/cpuinfo regardless of the number CPUs.
 std::string ParseCpuInfo() {
-  const char kProcessorPrefix[] = "Processor";
-  std::string contents, cpu_brand;
+  const char kModelNamePrefix[] = "model name\t: ";
+  const char kProcessorPrefix[] = "Processor\t: ";
+  std::string contents;
   ReadFileToString(FilePath("/proc/cpuinfo"), &contents);
   DCHECK(!contents.empty());
+  std::string cpu_brand;
   if (!contents.empty()) {
     std::istringstream iss(contents);
     std::string line;
     while (std::getline(iss, line)) {
+      if (line.compare(0, strlen(kModelNamePrefix), kModelNamePrefix) == 0) {
+        cpu_brand.assign(line.substr(strlen(kModelNamePrefix)));
+        break;
+      }
       if (line.compare(0, strlen(kProcessorPrefix), kProcessorPrefix) == 0) {
-        size_t pos = line.find(": ");
-        if (pos != std::string::npos) {
-          cpu_brand.assign(line.substr(pos + 2));
-          break;
-        }
+        cpu_brand.assign(line.substr(strlen(kProcessorPrefix)));
+        break;
       }
     }
   }
