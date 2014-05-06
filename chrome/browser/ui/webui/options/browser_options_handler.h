@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "content/public/browser/notification_observer.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -57,6 +58,7 @@ class BrowserOptionsHandler
       public chromeos::system::PointerDeviceObserver::Observer,
 #endif
       public TemplateURLServiceObserver,
+      public extensions::ExtensionRegistryObserver,
       public content::NotificationObserver {
  public:
   BrowserOptionsHandler();
@@ -85,6 +87,15 @@ class BrowserOptionsHandler
 
   // TemplateURLServiceObserver implementation.
   virtual void OnTemplateURLServiceChanged() OVERRIDE;
+
+  // extensions::ExtensionRegistryObserver:
+  virtual void OnExtensionLoaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
  private:
   // content::NotificationObserver implementation.
@@ -311,10 +322,8 @@ class BrowserOptionsHandler
   // Setup the UI for Easy Unlock.
   void SetupEasyUnlock();
 
-#if defined(OS_WIN)
   // Setup the UI for showing which settings are extension controlled.
   void SetupExtensionControlledIndicators(const base::ListValue* args);
-#endif
 
 #if defined(OS_CHROMEOS)
   // Setup the accessibility features for ChromeOS.
