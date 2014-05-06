@@ -2794,6 +2794,8 @@ class VMTestStage(BoardSpecificBuilderStage, ArchivingStageMixin):
   option_name = 'tests'
   config_name = 'vm_tests'
 
+  VM_TEST_TIMEOUT = 60 * 60
+
   def _PrintFailedTests(self, results_path, test_basename):
     """Print links to failed tests.
 
@@ -2894,7 +2896,8 @@ class VMTestStage(BoardSpecificBuilderStage, ArchivingStageMixin):
     try:
       for test_type in self._run.config.vm_tests:
         cros_build_lib.Info('Running VM test %s.', test_type)
-        self._RunTest(test_type, test_results_dir)
+        with timeout_util.Timeout(self.VM_TEST_TIMEOUT):
+          self._RunTest(test_type, test_results_dir)
 
     except Exception:
       cros_build_lib.Error(_VM_TEST_ERROR_MSG %
