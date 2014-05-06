@@ -19,6 +19,8 @@ TEST COMPLETE
       (drawsContent 1)
       (repaint rects
         (rect 58.00 108.00 200.00 200.00)
+        (rect 58.00 8.00 200.00 100.00)
+        (rect 58.00 8.00 200.00 300.00)
       )
     )
   )
