@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 #include <sys/sysctl.h>
 
+#include "apps/app_shim/app_shim_host_manager_mac.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/mac/bundle_locations.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/mac/install_from_dmg.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/breakpad/app/breakpad_mac.h"
@@ -241,6 +243,14 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
       // TODO: Remove this when we build with the 10.9 SDK.
       @"NSWindowHostsLayersInWindowServer": @(base::mac::IsOSMavericksOrLater())
   }];
+}
+
+void ChromeBrowserMainPartsMac::PreProfileInit() {
+  ChromeBrowserMainPartsPosix::PreProfileInit();
+  // This is called here so that the app shim socket is only created after
+  // taking the singleton lock.
+  g_browser_process->platform_part()->app_shim_host_manager()->Init();
+  AppListService::InitAll(NULL);
 }
 
 void ChromeBrowserMainPartsMac::PostProfileInit() {

@@ -56,6 +56,11 @@ class AppShimHostManager
   // Called on the IO thread to begin listening for connections from app shims.
   void ListenOnIOThread();
 
+  // The AppShimHostManager is only initialized if the Chrome process
+  // successfully took the singleton lock. This prevents subsequent processes
+  // from deleting existing app shim socket files.
+  bool did_init_;
+
   base::FilePath directory_in_tmp_;
 
   scoped_ptr<IPC::ChannelFactory> factory_;

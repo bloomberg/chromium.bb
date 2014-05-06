@@ -50,10 +50,13 @@ void DeleteSocketFiles(const base::FilePath& directory_in_tmp,
 
 }  // namespace
 
-AppShimHostManager::AppShimHostManager() {}
+AppShimHostManager::AppShimHostManager()
+    : did_init_(false) {}
 
 void AppShimHostManager::Init() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!did_init_);
+  did_init_ = true;
   apps::AppShimHandler::SetDefaultHandler(&extension_app_shim_handler_);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -61,8 +64,11 @@ void AppShimHostManager::Init() {
 }
 
 AppShimHostManager::~AppShimHostManager() {
-  apps::AppShimHandler::SetDefaultHandler(NULL);
   factory_.reset();
+  if (!did_init_)
+    return;
+
+  apps::AppShimHandler::SetDefaultHandler(NULL);
   base::FilePath symlink_path;
   if (PathService::Get(chrome::DIR_USER_DATA, &symlink_path))
     symlink_path = symlink_path.Append(app_mode::kAppShimSocketSymlinkName);
