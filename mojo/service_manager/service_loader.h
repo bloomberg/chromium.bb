@@ -17,7 +17,7 @@ class ServiceManager;
 // specific url.
 class MOJO_SERVICE_MANAGER_EXPORT ServiceLoader {
  public:
-  virtual ~ServiceLoader() {};
+  virtual ~ServiceLoader() {}
   virtual void LoadService(ServiceManager* manager,
                            const GURL& url,
                            ScopedShellHandle service_handle) = 0;

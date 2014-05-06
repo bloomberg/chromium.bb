@@ -11,6 +11,7 @@
 #include "mojo/embedder/embedder.h"
 #include "mojo/gles2/gles2_support_impl.h"
 #include "mojo/public/cpp/shell/application.h"
+#include "mojo/service_manager/background_service_loader.h"
 #include "mojo/service_manager/service_loader.h"
 #include "mojo/service_manager/service_manager.h"
 #include "mojo/services/native_viewport/native_viewport_service.h"
@@ -122,8 +123,14 @@ Context::Context()
   service_manager_.set_default_loader(
       scoped_ptr<ServiceLoader>(
           new DynamicServiceLoader(this, runner_factory.Pass())));
+  // The native viewport service synchronously waits for certain messages. If we
+  // don't run it on its own thread we can easily deadlock. Long term native
+  // viewport should run its own process so that this isn't an issue.
   service_manager_.SetLoaderForURL(
-      scoped_ptr<ServiceLoader>(new NativeViewportServiceLoader(this)),
+      scoped_ptr<ServiceLoader>(
+          new BackgroundServiceLoader(
+              scoped_ptr<ServiceLoader>(new NativeViewportServiceLoader(this)),
+              "native_viewport")),
       GURL("mojo:mojo_native_viewport_service"));
 #if defined(USE_AURA)
   // TODO(sky): need a better way to find this. It shouldn't be linked in.
@@ -145,6 +152,14 @@ Context::Context()
 }
 
 Context::~Context() {
+  // mojo_view_manager uses native_viewport. Destroy mojo_view_manager first so
+  // that there aren't shutdown ordering issues. Once native viewport service is
+  // moved into its own process this can likely be nuked.
+#if defined(USE_AURA)
+  service_manager_.SetLoaderForURL(
+      scoped_ptr<ServiceLoader>(),
+      GURL("mojo:mojo_view_manager"));
+#endif
   service_manager_.set_default_loader(scoped_ptr<ServiceLoader>());
 }
 

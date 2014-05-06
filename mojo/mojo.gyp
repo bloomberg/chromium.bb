@@ -411,6 +411,8 @@
         'mojo_system_impl',
       ],
       'sources': [
+        'service_manager/background_service_loader.cc',
+        'service_manager/background_service_loader.h',
         'service_manager/service_loader.h',
         'service_manager/service_manager.cc',
         'service_manager/service_manager.h',
