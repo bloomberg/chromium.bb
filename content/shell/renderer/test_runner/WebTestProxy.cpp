@@ -412,12 +412,16 @@ void WebTestProxyBase::moveValidationMessage(const WebRect&)
 
 string WebTestProxyBase::captureTree(bool debugRenderTree)
 {
+    bool shouldDumpCustomText = m_testInterfaces->testRunner()->shouldDumpAsCustomText();
     bool shouldDumpAsText = m_testInterfaces->testRunner()->shouldDumpAsText();
     bool shouldDumpAsMarkup = m_testInterfaces->testRunner()->shouldDumpAsMarkup();
     bool shouldDumpAsPrinted = m_testInterfaces->testRunner()->isPrinting();
     WebFrame* frame = webView()->mainFrame();
     string dataUtf8;
-    if (shouldDumpAsText) {
+    if (shouldDumpCustomText) {
+        // Append a newline for the test driver.
+        dataUtf8 = m_testInterfaces->testRunner()->customDumpText() + "\n";
+    } else if (shouldDumpAsText) {
         bool recursive = m_testInterfaces->testRunner()->shouldDumpChildFramesAsText();
         dataUtf8 = shouldDumpAsPrinted ? dumpFramesAsPrintedText(frame, recursive) : dumpFramesAsText(frame, recursive);
     } else if (shouldDumpAsMarkup) {

@@ -242,6 +242,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void RemoveWebPageOverlay();
   void DisplayAsync();
   void DisplayAsyncThen(v8::Handle<v8::Function> callback);
+  void SetCustomTextOutput(std::string output);
 
   bool GlobalFlag();
   void SetGlobalFlag(bool value);
@@ -290,8 +291,7 @@ TestRunnerBindings::~TestRunnerBindings() {}
 
 gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
-  return gin::Wrappable<TestRunnerBindings>::GetObjectTemplateBuilder(
-      isolate)
+  return gin::Wrappable<TestRunnerBindings>::GetObjectTemplateBuilder(isolate)
       // Methods controlling test execution.
       .SetMethod("notifyDone", &TestRunnerBindings::NotifyDone)
       .SetMethod("waitUntilDone", &TestRunnerBindings::WaitUntilDone)
@@ -323,9 +323,9 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::CallShouldCloseOnWebView)
       .SetMethod("setDomainRelaxationForbiddenForURLScheme",
                  &TestRunnerBindings::SetDomainRelaxationForbiddenForURLScheme)
-      .SetMethod("evaluateScriptInIsolatedWorldAndReturnValue",
-                 &TestRunnerBindings::
-                     EvaluateScriptInIsolatedWorldAndReturnValue)
+      .SetMethod(
+           "evaluateScriptInIsolatedWorldAndReturnValue",
+           &TestRunnerBindings::EvaluateScriptInIsolatedWorldAndReturnValue)
       .SetMethod("evaluateScriptInIsolatedWorld",
                  &TestRunnerBindings::EvaluateScriptInIsolatedWorld)
       .SetMethod("setIsolatedWorldSecurityOrigin",
@@ -426,9 +426,9 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::DumpBackForwardList)
       .SetMethod("dumpSelectionRect", &TestRunnerBindings::DumpSelectionRect)
       .SetMethod("setPrinting", &TestRunnerBindings::SetPrinting)
-      .SetMethod("setShouldStayOnPageAfterHandlingBeforeUnload",
-                 &TestRunnerBindings::
-                     SetShouldStayOnPageAfterHandlingBeforeUnload)
+      .SetMethod(
+           "setShouldStayOnPageAfterHandlingBeforeUnload",
+           &TestRunnerBindings::SetShouldStayOnPageAfterHandlingBeforeUnload)
       .SetMethod("setWillSendRequestClearHeader",
                  &TestRunnerBindings::SetWillSendRequestClearHeader)
       .SetMethod("dumpResourceRequestPriorities",
@@ -470,9 +470,12 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::RemoveWebPageOverlay)
       .SetMethod("displayAsync", &TestRunnerBindings::DisplayAsync)
       .SetMethod("displayAsyncThen", &TestRunnerBindings::DisplayAsyncThen)
+      .SetMethod("setCustomTextOutput",
+                 &TestRunnerBindings::SetCustomTextOutput)
 
       // Properties.
-      .SetProperty("globalFlag", &TestRunnerBindings::GlobalFlag,
+      .SetProperty("globalFlag",
+                   &TestRunnerBindings::GlobalFlag,
                    &TestRunnerBindings::SetGlobalFlag)
       .SetProperty("platformName", &TestRunnerBindings::PlatformName)
       .SetProperty("tooltipText", &TestRunnerBindings::TooltipText)
@@ -519,7 +522,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       // Used at fast/dom/assign-to-window-status.html
       .SetMethod("dumpStatusCallbacks",
                  &TestRunnerBindings::DumpWindowStatusChanges);
-
 }
 
 void TestRunnerBindings::NotifyDone() {
@@ -1214,6 +1216,10 @@ void TestRunnerBindings::DisplayAsyncThen(v8::Handle<v8::Function> callback) {
     runner_->DisplayAsyncThen(callback);
 }
 
+void TestRunnerBindings::SetCustomTextOutput(std::string output) {
+  runner_->setCustomTextOutput(output);
+}
+
 bool TestRunnerBindings::GlobalFlag() {
   if (runner_)
     return runner_->global_flag_;
@@ -1443,6 +1449,8 @@ void TestRunner::Reset() {
   midi_accessor_result_ = true;
   should_stay_on_page_after_handling_before_unload_ = false;
   should_dump_resource_priorities_ = false;
+  has_custom_text_output_ = false;
+  custom_text_output_.clear();
 
   http_headers_to_clear_.clear();
 
@@ -1496,6 +1504,19 @@ bool TestRunner::shouldDumpAsMarkup() {
 
 void TestRunner::setShouldDumpAsMarkup(bool value) {
   dump_as_markup_ = value;
+}
+
+bool TestRunner::shouldDumpAsCustomText() const {
+  return has_custom_text_output_;
+}
+
+std::string TestRunner::customDumpText() const {
+  return custom_text_output_;
+}
+
+void TestRunner::setCustomTextOutput(std::string text) {
+  custom_text_output_ = text;
+  has_custom_text_output_ = true;
 }
 
 bool TestRunner::shouldGeneratePixelResults() {

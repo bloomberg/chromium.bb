@@ -73,6 +73,8 @@ class TestRunner : public WebTestRunner,
   bool isPrinting() const;
   bool shouldDumpAsText();
   bool shouldDumpAsTextWithPixelResults();
+  bool shouldDumpAsCustomText() const;
+  std:: string customDumpText() const;
   bool shouldDumpAsMarkup();
   bool shouldDumpChildFrameScrollPositions() const;
   bool shouldDumpChildFramesAsText() const;
@@ -81,6 +83,7 @@ class TestRunner : public WebTestRunner,
   void clearDevToolsLocalStorage();
   void setShouldDumpAsText(bool);
   void setShouldDumpAsMarkup(bool);
+  void setCustomTextOutput(std::string text);
   void setShouldGeneratePixelResults(bool);
   void setShouldDumpFrameLoadCallbacks(bool);
   void setShouldDumpPingLoaderCallbacks(bool);
@@ -667,6 +670,9 @@ class TestRunner : public WebTestRunner,
   bool should_stay_on_page_after_handling_before_unload_;
 
   bool should_dump_resource_priorities_;
+
+  bool has_custom_text_output_;
+  std::string custom_text_output_;
 
   std::set<std::string> http_headers_to_clear_;
 
