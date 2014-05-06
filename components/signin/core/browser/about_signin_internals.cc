@@ -67,8 +67,8 @@ std::string SigninStatusFieldToLabel(TimedSigninStatusField field) {
   switch (field) {
     case SIGNIN_TYPE:
       return "Type";
-    case CLIENT_LOGIN_STATUS:
-      return "Last OnClientLogin Received";
+    case AUTHENTICATION_RESULT_RECEIVED:
+      return "Last Authentication Result Received";
     case REFRESH_TOKEN_RECEIVED:
       return "Last RefreshToken Received";
     case GET_USER_INFO_STATUS:
@@ -250,6 +250,10 @@ void AboutSigninInternals::OnTokenRemoved(
 
 void AboutSigninInternals::OnRefreshTokenReceived(std::string status) {
   NotifySigninValueChanged(REFRESH_TOKEN_RECEIVED, status);
+}
+
+void AboutSigninInternals::OnAuthenticationResultReceived(std::string status) {
+  NotifySigninValueChanged(AUTHENTICATION_RESULT_RECEIVED, status);
 }
 
 AboutSigninInternals::TokenInfo::TokenInfo(

@@ -330,6 +330,11 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
     return;
   }
 
+  AboutSigninInternals* about_signin_internals =
+      AboutSigninInternalsFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+  about_signin_internals->OnAuthenticationResultReceived(
+      "GAIA Auth Successful");
+
   content::StoragePartition* partition =
       content::BrowserContext::GetStoragePartitionForSite(
           contents->GetBrowserContext(),

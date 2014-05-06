@@ -34,7 +34,7 @@ std::string SigninStatusFieldToString(UntimedSigninStatusField field) {
 std::string SigninStatusFieldToString(TimedSigninStatusField field) {
   switch (field) {
     ENUM_CASE(SIGNIN_TYPE);
-    ENUM_CASE(CLIENT_LOGIN_STATUS);
+    ENUM_CASE(AUTHENTICATION_RESULT_RECEIVED);
     ENUM_CASE(REFRESH_TOKEN_RECEIVED);
     ENUM_CASE(GET_USER_INFO_STATUS);
     ENUM_CASE(UBER_TOKEN_STATUS);

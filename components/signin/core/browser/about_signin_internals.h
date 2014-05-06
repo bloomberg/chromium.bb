@@ -97,6 +97,7 @@ class AboutSigninInternals
       OVERRIDE;
 
     void OnRefreshTokenReceived(std::string status);
+    void OnAuthenticationResultReceived(std::string status);
 
  private:
   // Encapsulates diagnostic information about tokens for different services.
