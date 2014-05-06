@@ -5633,13 +5633,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_IGNORE_GPU_BLACKLIST_DESCRIPTION" desc="Description of the 'Ignore GPU blacklist' lab.">
         Overrides the built-in software rendering list and enables GPU-acceleration on unsupported system configurations.
       </message>
-      <message name="IDS_FLAGS_DISABLE_GPU_VSYNC_NAME" desc="Name of the 'Disable GPU VSync' lab.">
-        Disable GPU VSync
-      </message>
-      <message name="IDS_FLAGS_DISABLE_GPU_VSYNC_DESCRIPTION" desc="Description of the 'Disable GPU VSync' lab.">
-        Disables synchronization with the display's vertical refresh rate when GPU rendering. This allows frame rates to exceed
-        60 hertz. While useful for benchmarking purposes, this also results in visual tearing during rapid screen updates.
-      </message>
       <message name="IDS_FLAGS_THREADED_COMPOSITING_MODE_NAME" desc="Name of the 'Threaded compositing mode' lab.">
         Threaded compositing
       </message>
@@ -5664,12 +5657,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_LAYER_SQUASHING_DESCRIPTION" desc="Description of the 'Disable layer squashing' lab.">
         Prevents the automatic combining of composited layers.
       </message>
-      <message name="IDS_FLAGS_ENABLE_DIRECT_WRITE_NAME" desc="Name of the 'Enable DirectWrite' lab.">
-        Enable DirectWrite
-      </message>
-      <message name="IDS_FLAGS_ENABLE_DIRECT_WRITE_DESCRIPTION" desc="Description of the 'Enable DirectWrite' lab.">
-        Enables the use of experimental DirectWrite font rendering system.
-      </message>
+      <if expr="is_win">
+        <message name="IDS_FLAGS_ENABLE_DIRECT_WRITE_NAME" desc="Name of the 'Enable DirectWrite' lab.">
+          Enable DirectWrite
+        </message>
+        <message name="IDS_FLAGS_ENABLE_DIRECT_WRITE_DESCRIPTION" desc="Description of the 'Enable DirectWrite' lab.">
+          Enables the use of experimental DirectWrite font rendering system.
+        </message>
+      </if>
       <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_CANVAS_FEATURES_NAME" desc="Name of the 'Enable experimental canvas features' lab.">
         Enable experimental canvas features
       </message>
@@ -5681,12 +5676,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_DISABLE_ACCELERATED_2D_CANVAS_DESCRIPTION" desc="Description of the 'Disable accelerated 2D canvas' lab.">
         Disables the use of the GPU to perform 2d canvas rendering and instead uses software rendering.
-      </message>
-      <message name="IDS_FLAGS_DISABLE_DEFERRED_2D_CANVAS_NAME" desc="Name of the 'Disable deferred 2D canvas' lab.">
-        Disable deferred 2D canvas
-      </message>
-      <message name="IDS_FLAGS_DISABLE_DEFERRED_2D_CANVAS_DESCRIPTION" desc="Description of the 'Disable deferred 2D canvas' lab.">
-        Disables the deferral of 2d canvas rendering, causing draw operations to be completed immediately, before running the next javascript command.
       </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME" desc="Name of the 'Experimental Extension APIs' lab.">
         Experimental Extension APIs
@@ -5742,60 +5731,25 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_HYPERLINK_AUDITING_DESCRIPTION" desc="Description of the 'Disable hyperlink auditing' lab.">
         Disable sending hyperlink auditing pings.
       </message>
-      <message name="IDS_FLAGS_EXPERIMENTAL_LOCATION_FEATURES_NAME" desc="Name of the 'Enable experimental location features' lab.">
-        Experimental location features
-      </message>
-      <if expr="is_android">
-        <message name="IDS_FLAGS_EXPERIMENTAL_LOCATION_FEATURES_DESCRIPTION" desc="Mobile: Description of the 'Enable experimental location features' lab.">
-          Enables experimental extensions to the geolocation feature. Includes using operating system location APIs (where available), and sending additional local network configuration data to the Google location service to provide higher accuracy positioning.
-        </message>
-      </if>
-      <if expr="not is_android">
-        <message name="IDS_FLAGS_EXPERIMENTAL_LOCATION_FEATURES_DESCRIPTION" desc="Description of the 'Enable experimental location features' lab.">
-          Enables experimental extensions to the geolocation feature to use operating system location APIs (where available).
-        </message>
-      </if>
-      <message name="IDS_FLAGS_STATIC_IP_CONFIG_NAME" desc="Name of the static ip config lab.">
-        Experimental static ip configuration
-      </message>
-      <message name="IDS_FLAGS_STATIC_IP_CONFIG_DESCRIPTION" desc="Description of the static ip config lab.">
-        Enables static ip configuration. May not work.
-      </message>
       <message name="IDS_FLAGS_NTP_SUGGESTIONS_PAGE_NAME" desc="Name of the 'Enable suggestions page' lab.">
         NTP Suggestions page
       </message>
       <message name="IDS_FLAGS_NTP_SUGGESTIONS_PAGE_DESCRIPTION" desc="Description of the 'Enable suggestions page' lab.">
         Add 'Suggestions' card to the new tab page, which suggests the pages to be opened.
       </message>
-      <message name="IDS_FLAGS_DISABLE_IME_MODE_INDICATOR" desc="Title for the flag to disable the new indicator for the active keyboard input mode.">
-        Disable the new indicator for the active keyboard input method
-      </message>
-      <message name="IDS_FLAGS_DISABLE_IME_MODE_INDICATOR_DESCRIPTION" desc="Description for the flag to disable the new indicator for the active keyboard input method.">
-        Disable the input method indicator shown near the caret when switching between keyboard input methods.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_INSTANT_EXTENDED_API" desc="Title for the flag to enable the Instant extended API.">
-        Enable Instant Extended API
-      </message>
-      <message name="IDS_FLAGS_ENABLE_INSTANT_EXTENDED_API_DESCRIPTION" desc="Description for the flag to enable the Instant extended API.">
-        Enables the Instant Extended API which provides a deeper integration with your default search provider, including a renovated New Tab Page, extracting search query terms in the omnibox, a spruced-up omnibox dropdown and Instant previews of search results as you type in the omnibox.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_NEW_NTP" desc="Title for the flag to enable the new NTP.">
-        Enable the new NTP.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_NEW_NTP_DESCRIPTION" desc="Description for the flag to enable the new NTP.">
-        Whether or not the new style New Tab Page is enabled.
-      </message>
+      <if expr="is_android">
+        <message name="IDS_FLAGS_ENABLE_NEW_NTP" desc="Title for the flag to enable the new NTP.">
+          Enable the new NTP.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_NEW_NTP_DESCRIPTION" desc="Description for the flag to enable the new NTP.">
+          Whether or not the new style New Tab Page is enabled.
+        </message>
+      </if>
       <message name="IDS_FLAGS_ENABLE_CONTEXTUAL_SEARCH" desc="Title for the flag to enable Contextual Search.">
         Enable Contextual Search.
       </message>
       <message name="IDS_FLAGS_ENABLE_CONTEXTUAL_SEARCH_DESCRIPTION" desc="Description for the flag to enable Contextual Search.">
         Whether or not Contextual Search is enabled.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_NO_TOUCH_TO_RENDERER_WHILE_SCROLLING_NAME" desc="Name of the flag that enables not sending touch events to renderer while scrolling.">
-        Enable not sending touch events to renderer while scrolling
-      </message>
-      <message name="IDS_FLAGS_ENABLE_NO_TOUCH_TO_RENDERER_WHILE_SCROLLING_DESCRIPTION" desc="Description of the flag to enable not sending touch events to renderer while scrolling.">
-        Enable not sending touch events to renderer while scrolling.
       </message>
       <message name="IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_NAME" desc="Title for the flag to turn on gesture tap highlighting">
         Gesture Tap Highlighting
@@ -5824,12 +5778,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_DESCRIPTION" desc="Description for the flag to show Autofill field type predictions for all forms">
         Annotates web forms with Autofill field type predictions as placeholder text.
       </message>
-      <message name="IDS_FLAGS_DISABLE_NATIVE_AUTOFILL_UI_NAME" desc="Title for the flag to disable the native Autofill UI">
-        Disable native Autofill UI
-      </message>
-      <message name="IDS_FLAGS_DISABLE_NATIVE_AUTOFILL_UI_DESCRIPTION" desc="Description for the flag to disable the native Autofill UI">
-        The native Autofill popup UI is implemented in the browser process rather than in the renderer process.
-      </message>
       <message name="IDS_FLAGS_ENABLE_INTERACTIVE_AUTOCOMPLETE_NAME" desc="Name of the flag that enables an interactive autocomplete UI.">
         Enable interactive autocomplete
       </message>
@@ -5854,12 +5802,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_TOUCH_EDITING_DESCRIPTION" desc="Description of the flag to enable touch based text editing.">
         Touch editing can be initiated by tapping on a textfield or a selected text.
       </message>
-      <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_FORM_FILLING_NAME" desc="Title for the flag to enable experimental form filling">
-        Enable experimental form filling
-      </message>
-      <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_FORM_FILLING_DESCRIPTION" desc="Description for the flag to enable experimantal form filling feature">
-        Enable experimental form filling. Enables a collection of experimental features that make form filling easier.
-      </message>
       <message name="IDS_FLAGS_WALLET_SERVICE_USE_SANDBOX_NAME" desc="Title for the flag to use the Online Wallet sandbox servers (instead of production).">
         Use Wallet sandbox servers
       </message>
@@ -5881,75 +5823,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SCROLL_END_EFFECT_DESCRIPTION" desc="Description for the flag that controls scroll end effect from vertical overscroll.">
         Experimental scroll end effect in response to vertical overscroll.
       </message>
-      <message name="IDS_FLAGS_ENABLE_SYNC_FAVICONS_NAME" desc="Title for the flag to enable the favicon sync datatype">
-        Enable favicon sync.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_SYNC_FAVICONS_DESCRIPTION" desc="Description for the flag to enable the favicon sync datatype">
-        Enable syncing the set of recent favicons.
-      </message>
-      <message name="IDS_FLAGS_SYNC_KEYSTORE_ENCRYPTION_NAME" desc="Title for the flag to enable sync's keystore encryption options">
-        Enable sync keystore encryption.
-      </message>
-      <message name="IDS_FLAGS_SYNC_KEYSTORE_ENCRYPTION_DESCRIPTION" desc="Description for the flag to enable sync's keystore encryption options">
-        Switch to sync's new server supported encryption schema. Warning: this will modify your sync data, possibly making it unreadable to other clients.
-      </message>
-      <if expr="is_android">
-        <message name="IDS_FLAGS_SYNC_TYPED_URLS_NAME" desc="Mobile: Title for the flag to enable syncing the TypedUrl datatype">
-          Enable syncing typed URLs
-        </message>
-        <message name="IDS_FLAGS_SYNC_TYPED_URLS_DESCRIPTION" desc="Mobile: Description for the flag to enable syncing the TypedURL datatype">
-          Enable typed URLs in the sync settings. This allows syncing your typed URL history to other clients to assist in omnibox auto-completion.
-        </message>
-      </if>
-      <if expr="not is_android">
-        <message name="IDS_FLAGS_SYNC_TYPED_URLS_NAME" desc="Title for the flag to enable syncing the TypedUrl datatype">
-          Enable syncing History
-        </message>
-        <message name="IDS_FLAGS_SYNC_TYPED_URLS_DESCRIPTION" desc="Description for the flag to enable syncing the TypedURL datatype">
-          Enable History in the sync settings. This allows syncing your typed URL history and navigation history to other clients to assist in omnibox auto-completion and the history UI.
-        </message>
-      </if>
-      <message name="IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_REORDER_FOR_INLINING_NAME" desc="Title for the flag for omnibox to reorder suggestions in HistoryQuickProvider to make an inlineable appear first">
-        Reorder results for inlining in HistoryQuickProvider
-      </message>
-      <message name="IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_REORDER_FOR_INLINING_DESCRIPTION" desc="Description for the flag for omnibox to reorder suggestions in HistoryQuickProvider to make an inlineable appear first">
-        In omnibox autocomplete, reorder suggestions in HistoryQuickProvider to make an inlineable one appear first.
-      </message>
-      <message name="IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_REORDER_FOR_INLINING_AUTOMATIC" desc="Option name for automatic selection of whether to allow HistoryQuickProvider to reorder suggestions to make an inlineable one appear first">
-        Automatic
-      </message>
-      <message name="IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_REORDER_FOR_INLINING_ENABLED" desc="Option name to allow HistoryQuickProvider to reorder suggestions to make an inlineable one appear first">
-        Reorder
-      </message>
-      <message name="IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_REORDER_FOR_INLINING_DISABLED" desc="Option name to disallow HistoryQuickProvider to reorder suggestions to make an inlineable one appear first">
-        Don't Reorder
-      </message>
-      <message name="IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_NAME" desc="Title for the flag for omnibox to prohibit the HistoryQuickProvider from inlining suggestions">
-        Inline HistoryQuickProvider suggestions
-      </message>
-      <message name="IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_DESCRIPTION" desc="Description for the flag for omnibox to prohibit the HistoryQuickProvider from inlining suggestions">
-        In omnibox autocomplete, allow inlining of matches coming from the HistoryQuickProvider.
-      </message>
-      <message name="IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_AUTOMATIC" desc="Option name for automatic selection of whether omnibox HistoryQuickProvider can inline suggestions.">
-        Automatic
-      </message>
-      <message name="IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_ALLOWED" desc="Option name to allow the omnibox HistoryQuickProvider to inline suggestions if it wants to.">
-        Allowed
-      </message>
-      <message name="IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_PROHIBITED" desc="Option name to prohibit omnibox HistoryQuickProvider from inlining suggestions ever.">
-        Prohibited
-      </message>
       <message name="IDS_FLAGS_ENABLE_PANELS_NAME" desc="Name of the 'Enable Panels' lab.">
         Enable Panels
       </message>
       <message name="IDS_FLAGS_ENABLE_PANELS_DESCRIPTION" desc="Description for the flag to enable Panel windows.">
         Enable Panel windows that open outside of the browser frame. Attempts to open a Panel will open a popup instead if not enabled. Panels are always enabled on the dev and canary channels.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_WEBGL_NAME" desc="Name of the 'Enable WebGL' lab.">
-        Enable WebGL
-      </message>
-      <message name="IDS_FLAGS_ENABLE_WEBGL_DESCRIPTION" desc="Description for the flag to enable WebGL.">
-        Enabling this option allows web applications to access the WebGL API.
       </message>
       <message name="IDS_FLAGS_ENABLE_WEBGL_DRAFT_EXTENSIONS_NAME" desc="Name of the 'Enable WebGL Draft Extensions' flag.">
         Enable WebGL Draft Extensions
@@ -6078,12 +5956,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_PREFIXED_ENCRYPTED_MEDIA_DESCRIPTION" desc="Description for the flag to disable the prefixed Encrypted Media Extensions APIs (e.g. webkitGenerateKeyRequest()).">
         Disable the experimental version of Encrypted Media Extensions on video and audio elements.
       </message>
-      <message name="IDS_FLAGS_ENCRYPTED_MEDIA_CANPLAYTYPE_OVERRIDE_NAME" desc="Title for the flag to override suppressed affirmative responses to canPlayType().">
-        Enable suppressed canPlayType() responses.
-      </message>
-      <message name="IDS_FLAGS_ENCRYPTED_MEDIA_CANPLAYTYPE_OVERRIDE_DESCRIPTION" desc="Description for the flag to override suppressed affirmative responses to canPlayType().">
-        Enable appropriate responses to canPlayType() for key systems that return the empty string by default.
-      </message>
       <if expr="is_android">
         <message name="IDS_FLAGS_DISABLE_INFOBAR_FOR_PROTECTED_MEDIA_IDENTIFIER_NAME" desc="Title for the flag to disable infobar popup for protected media identifier.">
           Disable infobar popup for protected media.
@@ -6098,36 +5970,26 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable non-compositing decoding in MediaDrm by default for Encrypted Media Extensions.
         </message>
       </if>
-      <message name="IDS_FLAGS_ASH_AUTO_WINDOW_PLACEMENT_NAME" desc="Name for the option to enable/disable the auto window placement functionality.">
-        Automatic window placement.
-      </message>
-      <message name="IDS_FLAGS_ASH_AUTO_WINDOW_PLACEMENT_DESCRIPTION" desc="Description for the option to enable/disable the auto window placement functionality.">
-        Disable automatic window placement for one and two browser / app windows.
-      </message>
       <message name="IDS_FLAGS_DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_NAME" desc="Title for the flag to disable gesture requiment for media playback">
         Disable gesture requirement for media playback.
       </message>
       <message name="IDS_FLAGS_DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_DESCRIPTION" desc="Description for the flag to disable gesture requiment for media playback">
         Disable user gesture requirement for playing media elements. Activating this will allow autoplay to work.
       </message>
-      <message name="IDS_FLAGS_ASH_FRAME_CAPTION_BUTTON_STYLE_NAME" desc="Title for the flag for the alternate frame caption button style.">
-        Alternate frame caption button style
-      </message>
-      <message name="IDS_FLAGS_ASH_FRAME_CAPTION_BUTTON_STYLE_DESCRIPTION" desc="Description for the flag for the alternate frame caption button style.">
-        Enables an experimental visual style for the frame caption buttons (minimize, maximize, close).
-      </message>
-      <message name="IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TESTING_NAME" desc="Title for the flag which can be used to test the TouchView maximizing mode.">
-        Enable TouchView maximizing UI for testing
-      </message>
-      <message name="IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TESTING_DESCRIPTION" desc="Description for the flag to enable the TouchView testing mode.">
-        Enable Ctrl+Alt+Shift+8 to toggle the TouchView maximizing mode.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_FULL_MULTI_PROFILE_MODE" desc="Title for the full multi profile mode flag.">
-        Enable side-by-side multi profile mode
-      </message>
-      <message name="IDS_FLAGS_ENABLE_FULL_MULTI_PROFILE_MODE_DESCRIPTION" desc="Title for the full multi profile mode flag.">
-        Enable side-by-side multi profile mode in which all browser and app windows share the same workspace.
-      </message>
+      <if expr="use_ash">
+        <message name="IDS_FLAGS_ASH_FRAME_CAPTION_BUTTON_STYLE_NAME" desc="Title for the flag for the alternate frame caption button style.">
+          Alternate frame caption button style
+        </message>
+        <message name="IDS_FLAGS_ASH_FRAME_CAPTION_BUTTON_STYLE_DESCRIPTION" desc="Description for the flag for the alternate frame caption button style.">
+          Enables an experimental visual style for the frame caption buttons (minimize, maximize, close).
+        </message>
+        <message name="IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TESTING_NAME" desc="Title for the flag which can be used to test the TouchView maximizing mode.">
+          Enable TouchView maximizing UI for testing
+        </message>
+        <message name="IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TESTING_DESCRIPTION" desc="Description for the flag to enable the TouchView testing mode.">
+          Enable Ctrl+Alt+Shift+8 to toggle the TouchView maximizing mode.
+        </message>
+      </if>
       <message name="IDS_FLAGS_ENABLE_LOCALLY_MANAGED_USERS_NAME" desc="Title for the flag to enable supervised users.">
         Enable supervised users
       </message>
@@ -6228,18 +6090,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SPELLCHECK_AUTOCORRECT_DESCRIPTION" desc="Description for the flag to force synchronous spellchecking.">
         Turn on autocorrection of text while typing. Synchronous spellchecking is not compatible with this feature.
       </message>
-      <message name="IDS_FLAGS_DOCKED_WINDOWS_NAME" desc="Name for the flag to disable docked windows feature.">
-        Disable docking of windows near screen edges.
-      </message>
-      <message name="IDS_FLAGS_DOCKED_WINDOWS_DESCRIPTION" desc="Description for the flag to disable docked windows feature.">
-        Turns off docking of windows near screen edges, a feature that provides an easier way to interact with panel and other small windows.
-      </message>
-      <message name="IDS_FLAGS_DISABLE_MINIMIZE_ON_SECOND_LAUNCHER_ITEM_CLICK_NAME" desc="Name for the flag which allows to minimize a window upon launcher item click under certain conditions.">
-        Disallow shelf to minimize-on-click.
-      </message>
-      <message name="IDS_FLAGS_DISABLE_MINIMIZE_ON_SECOND_LAUNCHER_ITEM_CLICK_DESCRIPTION" desc="Description for the flag which allows to minimize a window upon launcher item click under certain conditions.">
-        Disallow the shelf to minimize a window if a shelf item gets clicked which has only a single, already active, window associated with it.
-      </message>
+      <if expr="chromeos">
+        <message name="IDS_FLAGS_DOCKED_WINDOWS_NAME" desc="Name for the flag to disable docked windows feature.">
+          Disable docking of windows near screen edges.
+        </message>
+        <message name="IDS_FLAGS_DOCKED_WINDOWS_DESCRIPTION" desc="Description for the flag to disable docked windows feature.">
+          Turns off docking of windows near screen edges, a feature that provides an easier way to interact with panel and other small windows.
+        </message>
+      </if>
+      <if expr="use_ash">
+        <message name="IDS_FLAGS_DISABLE_MINIMIZE_ON_SECOND_LAUNCHER_ITEM_CLICK_NAME" desc="Name for the flag which allows to minimize a window upon launcher item click under certain conditions.">
+          Disallow shelf to minimize-on-click.
+        </message>
+        <message name="IDS_FLAGS_DISABLE_MINIMIZE_ON_SECOND_LAUNCHER_ITEM_CLICK_DESCRIPTION" desc="Description for the flag which allows to minimize a window upon launcher item click under certain conditions.">
+          Disallow the shelf to minimize a window if a shelf item gets clicked which has only a single, already active, window associated with it.
+        </message>
+      </if>
 
       <message name="IDS_FLAGS_SHOW_TOUCH_HUD_NAME" desc="Name for the flag to show a heads-up display for tracking touch-points.">
         Show HUD for touch points
@@ -6334,12 +6200,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_AUTOMATIC_PASSWORD_SAVING_DESCRIPTION" desc="Description of the flag to automatically save password.">
         Skip the passwords prompt and save passwords automatically.
       </message>
-      <message name="IDS_FLAGS_PASSWORD_AUTOFILL_PUBLIC_SUFFIX_DOMAIN_MATCHING_NAME" desc="Name of the flag for public suffix domain matching for autofill of passwords.">
-        Public suffix domain matching for autofill of passwords.
-      </message>
-      <message name="IDS_FLAGS_PASSWORD_AUTOFILL_PUBLIC_SUFFIX_DOMAIN_MATCHING_DESCRIPTION" desc="Description of flag to enable or disable public suffix domain matching for autofill of passwords.">
-        Enable or disable a feature which allows the user to select username/password combinations for domains that match the same public suffix registry domain.
-      </message>
       <message name="IDS_FLAGS_PASSWORD_MANAGER_REAUTHENTICATION_NAME" desc="Name of the flag for the password manager reauthentication option.">
         Disable Password Manager Reauthentication
       </message>
@@ -6376,12 +6236,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_SCREEN_CAPTURE_DESCRIPTION" desc="Description of flag to enable screen capture.">
         Allow web pages to request access to the screen contents via the getUserMedia() API.
       </message>
-      <message name="IDS_FLAGS_ENABLE_AVFOUNDATION_NAME" desc="Name of the flag to enable Mac AVFoundation.">
-        Enable use of Mac OS X AVFoundation APIs, instead of QTKit.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_AVFOUNDATION_DESCRIPTION" desc="Description of flag to enable Mac AVFoundation.">
-        Enable AVFoundation use for video capture and video device monitoring on OS X >= 10.7. QTKit will be used otherwise.
-      </message>
+      <if expr="is_macosx">
+        <message name="IDS_FLAGS_ENABLE_AVFOUNDATION_NAME" desc="Name of the flag to enable Mac AVFoundation.">
+          Enable use of Mac OS X AVFoundation APIs, instead of QTKit.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_AVFOUNDATION_DESCRIPTION" desc="Description of flag to enable Mac AVFoundation.">
+          Enable AVFoundation use for video capture and video device monitoring on OS X >= 10.7. QTKit will be used otherwise.
+        </message>
+      </if>
       <message name="IDS_FLAGS_ENABLE_APPS_DEVTOOL_APP_NAME" desc="Name of the flag to enable apps-devtools app.">
         Enable apps-devtool app.
       </message>
@@ -6557,12 +6419,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enables a simplified and improved fullscreen experience on Mac.
         </message>
       </if>
-      <message name="IDS_FLAGS_ENABLE_TRANSLATE_SETTINGS_NAME" desc="Name of the flag to enable translate setting.">
-        Enable Translate settings.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_TRANSLATE_SETTINGS_DESCRIPTION" desc="Description of the flag to translate setting.">
-        Enable Translate settings in chrome://settings/languages where the user can configure which language should be translated.
-      </message>
       <message name="IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_NAME" desc="Name of the flag to reset the app launcher install state.">
         Reset the App Launcher install state on every restart.
       </message>
@@ -6615,18 +6471,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           If enabled, transitions during first-run tutorial are animated.
         </message>
       </if>
-      <message name="IDS_FLAGS_ENABLE_ACCELERATED_SCROLLABLE_FRAMES_NAME" desc="Name of the flag to enable accelerated scrollable frames.">
-        Enable accelerated scrollable frames.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_ACCELERATED_SCROLLABLE_FRAMES_DESCRIPTION" desc="Description for the flag to enable accelerated scrollable frames.">
-        Enables accelerated compositing for scrollable frames.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_COMPOSITED_SCROLLING_FOR_FRAMES_NAME" desc="Name of the flag to enable composited scrolling for frames.">
-        Enable composited scrolling for frames.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_COMPOSITED_SCROLLING_FOR_FRAMES_DESCRIPTION" desc="Description for the flag to enable composited scrolling for frames.">
-        Enable accelerated scrolling by the compositer for frames.
-      </message>
       <message name="IDS_FLAGS_ENABLE_STREAMLINED_HOSTED_APPS_NAME" desc="Name of the flag to enable streamlined hosted apps.">
         Enable experimental streamlined hosted apps.
       </message>
@@ -6665,18 +6509,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Always send click events immediate upon a tap, even when it's part of a double-tap gesture.  This speeds up navigation and other tap actions by 300ms on most pages, but means links and buttons must be avoided when double tapping to zoom.
         </message>
       </if>
-      <message name="IDS_FLAGS_ENABLE_TRANSLATE_NEW_UX_NAME" desc="Name of the flag to enable the new Translate UX.">
-        Enable the new Translate UX.
+      <if expr="is_macosx">
+        <message name="IDS_FLAGS_ENABLE_TRANSLATE_NEW_UX_NAME" desc="Name of the flag to enable the new Translate UX.">
+          Enable the new Translate UX.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_TRANSLATE_NEW_UX_DESCRIPTION" desc="Description for the flag to enable the new Translate UX.">
+          Enable the new Translate bubble UX is offered instead of the infobar.
+        </message>
+      </if>
+      <message name="IDS_FLAGS_DISABLE_VIEWS_RECT_BASED_TARGETING_NAME" desc="Name of about:flags option to disable rect-based targeting in views">
+        Disable rect-based targeting in views
       </message>
-      <message name="IDS_FLAGS_ENABLE_TRANSLATE_NEW_UX_DESCRIPTION" desc="Description for the flag to enable the new Translate UX.">
-        Enable the new Translate bubble UX is offered instead of the infobar.
+      <message name="IDS_FLAGS_DISABLE_VIEWS_RECT_BASED_TARGETING_DESCRIPTION" desc="Description of about:flags option to disable rect-based targeting in views">
+        Disables rect-based targeting in views. Rect-based targeting uses a heuristic to determine the most probable target of a gesture, where the touch region is represented by a rectangle.
       </message>
-    <message name="IDS_FLAGS_DISABLE_VIEWS_RECT_BASED_TARGETING_NAME" desc="Name of about:flags option to disable rect-based targeting in views">
-      Disable rect-based targeting in views
-    </message>
-    <message name="IDS_FLAGS_DISABLE_VIEWS_RECT_BASED_TARGETING_DESCRIPTION" desc="Description of about:flags option to disable rect-based targeting in views">
-      Disables rect-based targeting in views. Rect-based targeting uses a heuristic to determine the most probable target of a gesture, where the touch region is represented by a rectangle.
-    </message>
       <message name="IDS_FLAGS_ENABLE_APPS_SHOW_ON_FIRST_PAINT_NAME" desc="Name of the flag to enable show-on-first-paint for apps.">
         Enable show-on-first-paint for apps.
       </message>
@@ -6730,12 +6576,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_SEARCH_BUTTON_IN_OMNIBOX_ENABLED" desc="Option in a drop-down menu to enable the display of the search button at all times (on all pages).">
         Enabled on all pages
-      </message>
-      <message name="IDS_FLAGS_ENABLE_PASSWORD_BUBBLE_NAME" desc="Title for the flag to enable the manage passwords bubble feature.">
-        Enable Passwords Bubble
-      </message>
-      <message name="IDS_FLAGS_ENABLE_PASSWORD_BUBBLE_DESCRIPTION" desc="Description for the flag to enable the Manage Passwords Bubble feature.">
-        Enables the Passwords Bubble. The Passwords Bubble provides an easy way to store and manage passwords for a website. It replaced the infobad for saving passwords.
       </message>
       <message name="IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_NAME" desc="Title for the flag to enable showing permissions requests in bubbles.">
         Use Bubbles for Permission Requests
@@ -11023,7 +10863,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
                desc="Title of the new tab page, this is only shown while loading, then the title comes from the page">
         New Tab
       </message>
-      
+
       <!-- Strings used for non-Android builds -->
       <if expr="not is_android">
         <message name="IDS_NEW_TAB_SUGGESTIONS"
@@ -12208,7 +12048,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
         <message name="IDS_SYNC_STOP_DELETE_PROFILE_LABEL" desc="The text to display by the checkbox asking user whether to also delete profile when stopping sync.">
           Also clear your history, bookmarks, settings, and other Chrome data stored on this device.
-        </message>        
+        </message>
         <message name="IDS_SYNC_ADVANCED_OPTIONS" desc="The text in the link that brings up the sync configure screen in the new tab page new data type notification.">
           Advanced settings
         </message>
@@ -13943,19 +13783,21 @@ Do you accept?
       Enable virtual keyboard overscroll support.
     </message>
 
-    <message name="IDS_FLAGS_ENABLE_SWIPE_SELECTION_NAME" desc="Name of about:flags option to turn on swipe selection for the virtual keyboard">
-      Swipe Selection
-    </message>
-    <message name="IDS_FLAGS_ENABLE_SWIPE_SELECTION_DESCRIPTION" desc="Description of about:flags option to turn on swipe selection for the virtual keyboard">
-      Enable Swipe Selection support for the virtual keyboard. Unless the virtual keyboard is also enabled, this will do nothing.
-    </message>
+    <if expr="chromeos">
+      <message name="IDS_FLAGS_ENABLE_SWIPE_SELECTION_NAME" desc="Name of about:flags option to turn on swipe selection for the virtual keyboard">
+        Swipe Selection
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SWIPE_SELECTION_DESCRIPTION" desc="Description of about:flags option to turn on swipe selection for the virtual keyboard">
+        Enable Swipe Selection support for the virtual keyboard. Unless the virtual keyboard is also enabled, this will do nothing.
+      </message>
 
-    <message name="IDS_FLAGS_ENABLE_INPUT_VIEW_NAME" desc="Name of about::flags option to enable IME extensions to override the virtual keyboard view">
-      Enable input views.
-    </message>
-    <message name="IDS_FLAGS_ENABLE_INPUT_VIEW_DESCRIPTION" desc="Description of about::flags option to enable IME extensions to override the virtual keyboard view">
-      Enable IME extensions to supply custom views for user input such as  virtual keyboards.
-    </message>
+      <message name="IDS_FLAGS_ENABLE_INPUT_VIEW_NAME" desc="Name of about::flags option to enable IME extensions to override the virtual keyboard view">
+        Enable input views.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_INPUT_VIEW_DESCRIPTION" desc="Description of about::flags option to enable IME extensions to override the virtual keyboard view">
+        Enable IME extensions to supply custom views for user input such as  virtual keyboards.
+      </message>
+    </if>
 
     <!-- Simple Cache Backend experiment. -->
     <message name="IDS_FLAGS_ENABLE_SIMPLE_CACHE_BACKEND_NAME" desc="Name of about:flags option to turn on the Simple Cache Backend">
@@ -14521,24 +14363,26 @@ Do you accept?
     </message>
 
     <!-- Zero suggest experiment flags -->
-    <message name="IDS_FLAGS_ZERO_SUGGEST_EXPERIMENT_NAME" desc="An about:flags experiment for zero suggest">
-      Zero Suggest
-    </message>
-    <message name="IDS_FLAGS_ZERO_SUGGEST_EXPERIMENT_DESCRIPTION" desc="Describes about:flags experiment options for zero suggest">
-      NOTE: Only works dev and canary channels. Turns on suggestions in the omnibox that are shown on focus before typing.
-    </message>
-    <message name="IDS_FLAGS_ZERO_SUGGEST_MOST_VISITED" desc="A choice in dropdown dialog on about:flags page for the most visited sites option">
-      Most visited
-    </message>
-    <message name="IDS_FLAGS_ZERO_SUGGEST_ETHER_SERP" desc="A choice in dropdown dialog on about:flags page to show zero suggest on http pages and Google.com">
-      Related URLs and Google.com searches
-    </message>
-    <message name="IDS_FLAGS_ZERO_SUGGEST_ETHER_NO_SERP" desc="A choice in dropdown dialog on about:flags page to show zero suggest on http pages only">
-      Related URLs only
-    </message>
-    <message name="IDS_FLAGS_ZERO_SUGGEST_PERSONALIZED" desc="A choice in dropdown dialog on about:flags page to show personalized zero-prefix suggestions">
-      Personalized
-    </message>
+    <if expr="is_android">
+      <message name="IDS_FLAGS_ZERO_SUGGEST_EXPERIMENT_NAME" desc="An about:flags experiment for zero suggest">
+        Zero Suggest
+      </message>
+      <message name="IDS_FLAGS_ZERO_SUGGEST_EXPERIMENT_DESCRIPTION" desc="Describes about:flags experiment options for zero suggest">
+        NOTE: Only works dev and canary channels. Turns on suggestions in the omnibox that are shown on focus before typing.
+      </message>
+      <message name="IDS_FLAGS_ZERO_SUGGEST_MOST_VISITED" desc="A choice in dropdown dialog on about:flags page for the most visited sites option">
+        Most visited
+      </message>
+      <message name="IDS_FLAGS_ZERO_SUGGEST_ETHER_SERP" desc="A choice in dropdown dialog on about:flags page to show zero suggest on http pages and Google.com">
+        Related URLs and Google.com searches
+      </message>
+      <message name="IDS_FLAGS_ZERO_SUGGEST_ETHER_NO_SERP" desc="A choice in dropdown dialog on about:flags page to show zero suggest on http pages only">
+        Related URLs only
+      </message>
+      <message name="IDS_FLAGS_ZERO_SUGGEST_PERSONALIZED" desc="A choice in dropdown dialog on about:flags page to show personalized zero-prefix suggestions">
+        Personalized
+      </message>
+    </if>
     <message name="IDS_FLAGS_DISABLE_IGNORE_AUTOCOMPLETE_OFF_NAME" desc="Name of the disable ignore autocomplete='off' lab">
       Disable ignore autocomplete='off'
     </message>
@@ -14577,7 +14421,7 @@ Do you accept?
     <message name="IDS_FLAGS_ALLOW_INSECURE_WEBSOCKET_FROM_HTTPS_ORIGIN_DESCRIPTION" desc="Description to allow insecure WebSocket from https origin">
       This flag makes Chrome unsafe. Use this only if you understand what this does. Note that this flag may be removed without any notice. If enabled, frames with an https origin can use WebSockets with an insecure URL (ws://).
     </message>
-    
+
     <!-- Experiment flags to enable EmbeddedSearch API in the search results page -->
     <if expr="is_android">
     <message name="IDS_FLAGS_ENABLE_EMBEDDEDSEARCH_API_NAME" desc="An about::flags experiment title to enable EmbeddedSearch API in the search results page">
