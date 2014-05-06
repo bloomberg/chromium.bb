@@ -100,6 +100,7 @@ def GetCurrentPNaClRevision():
 
 def SetCurrentPNaClRevision(revision_num):
   ExecCommand([sys.executable, PKG_VER,
+               '--cloud-bucket', 'nativeclient-archive2/pnacl_buildsh',
                'setrevision',
                '--revision-package', PNACL_PKG,
                '--revision', str(revision_num)])
