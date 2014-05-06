@@ -105,7 +105,7 @@ int EXPORT_CALL lou_charToDots (const char *tableList, const widechar
 formtype *typeform, char *spacing, int
 			 *outputPos, int *inputPos, int *cursorPos, int
 			 mode);
-  void EXPORT_CALL lou_logPrint (char *format, ...);
+  void EXPORT_CALL lou_logPrint (const char *format, ...);
 /* prints error messages to a file */
 
   void EXPORT_CALL lou_logFile (const char *filename);

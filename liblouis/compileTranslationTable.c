@@ -184,7 +184,7 @@ lou_logFile (const char *fileName)
 }
 
 void EXPORT_CALL
-lou_logPrint (char *format, ...)
+lou_logPrint (const char *format, ...)
 {
 #ifndef __SYMBIAN32__
   va_list argp;
@@ -5165,13 +5165,7 @@ debugHook ()
 
 static void defaultLogCallback(int level, const char *message)
 {
-  char *tmpMsg = malloc(strlen(message)+1);
-  if (tmpMsg)
-    {
-      strcpy(tmpMsg, message);
-      lou_logPrint(tmpMsg);
-      free(tmpMsg);
-    }
+  lou_logPrint(message);
 }
 
 static logcallback logCallbackFunction = defaultLogCallback;
