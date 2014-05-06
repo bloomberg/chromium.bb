@@ -53,12 +53,11 @@ AppListPositioner::ScreenEdge AppListLinux::ShelfLocationInDisplay(
 gfx::Point AppListLinux::FindAnchorPoint(const gfx::Size& view_size,
                                          const gfx::Display& display,
                                          const gfx::Point& cursor,
-                                         AppListPositioner::ScreenEdge edge,
-                                         bool center_window) {
+                                         AppListPositioner::ScreenEdge edge) {
   AppListPositioner positioner(display, view_size, 0);
 
   // Special case for app list in the center of the screen.
-  if (center_window)
+  if (app_list::switches::IsCenteredAppListEnabled())
     return positioner.GetAnchorPointForScreenCenter();
 
   gfx::Point anchor;
@@ -102,9 +101,6 @@ void AppListLinux::MoveNearCursor(app_list::AppListView* view) {
     edge = AppListPositioner::SCREEN_EDGE_LEFT;
   else
     edge = ShelfLocationInDisplay(display);
-  view->SetAnchorPoint(FindAnchorPoint(view->GetPreferredSize(),
-                                       display,
-                                       cursor,
-                                       edge,
-                                       view->ShouldCenterWindow()));
+  view->SetAnchorPoint(
+      FindAnchorPoint(view->GetPreferredSize(), display, cursor, edge));
 }

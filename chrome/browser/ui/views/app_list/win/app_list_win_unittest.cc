@@ -54,7 +54,6 @@ class AppListWinUnitTest : public testing::Test {
     display_.set_work_area(gfx::Rect(0, 0, kScreenWidth, kScreenHeight));
     cursor_ = gfx::Point();
     taskbar_rect_ = gfx::Rect();
-    center_window_ = false;
   }
 
   // Set the display work area.
@@ -100,23 +99,17 @@ class AppListWinUnitTest : public testing::Test {
     cursor_ = gfx::Point(x, y);
   }
 
-  void EnableWindowCentering() {
-    center_window_ = true;
-  }
-
   gfx::Point DoFindAnchorPoint() const {
     return AppListWin::FindAnchorPoint(gfx::Size(kWindowWidth, kWindowHeight),
                                        display_,
                                        cursor_,
-                                       taskbar_rect_,
-                                       center_window_);
+                                       taskbar_rect_);
   }
 
  private:
   gfx::Display display_;
   gfx::Point cursor_;
   gfx::Rect taskbar_rect_;
-  bool center_window_;
 };
 
 TEST_F(AppListWinUnitTest, FindAnchorPointNoTaskbar) {
@@ -248,14 +241,4 @@ TEST_F(AppListWinUnitTest, FindAnchorPointWin8SplitScreen) {
                  kScreenHeight - kTaskbarSize - kWindowHeight / 2 -
                      kMinDistanceFromEdge),
       DoFindAnchorPoint());
-}
-
-TEST_F(AppListWinUnitTest, FindAnchorPointCentered) {
-  // Cursor on the top taskbar; enable centered app list mode.
-  PlaceTaskbar(AppListPositioner::SCREEN_EDGE_TOP);
-  PlaceCursor(0, 0);
-  EnableWindowCentering();
-  // Expect the app list to be in the center of the screen (ignore the cursor).
-  EXPECT_EQ(gfx::Point(kScreenWidth / 2, kScreenHeight / 2),
-            DoFindAnchorPoint());
 }

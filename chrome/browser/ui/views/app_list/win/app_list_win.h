@@ -28,8 +28,7 @@ class AppListWin {
   static gfx::Point FindAnchorPoint(const gfx::Size& view_size,
                                     const gfx::Display& display,
                                     const gfx::Point& cursor,
-                                    const gfx::Rect& taskbar_rect,
-                                    bool center_window);
+                                    const gfx::Rect& taskbar_rect);
 
   static void MoveNearCursor(app_list::AppListView* view);
 };

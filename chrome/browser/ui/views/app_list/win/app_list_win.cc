@@ -46,8 +46,7 @@ bool GetTaskbarRect(gfx::Rect* rect) {
 gfx::Point AppListWin::FindAnchorPoint(const gfx::Size& view_size,
                                        const gfx::Display& display,
                                        const gfx::Point& cursor,
-                                       const gfx::Rect& taskbar_rect,
-                                       bool center_window) {
+                                       const gfx::Rect& taskbar_rect) {
   AppListPositioner positioner(display, view_size, kMinDistanceFromEdge);
 
   // Subtract the taskbar area since the display's default work_area will not
@@ -56,7 +55,7 @@ gfx::Point AppListWin::FindAnchorPoint(const gfx::Size& view_size,
   positioner.WorkAreaSubtract(taskbar_rect);
 
   // Special case for app list in the center of the screen.
-  if (center_window)
+  if (app_list::switches::IsCenteredAppListEnabled())
     return positioner.GetAnchorPointForScreenCenter();
 
   // Find which edge of the screen the taskbar is attached to.
@@ -87,9 +86,6 @@ void AppListWin::MoveNearCursor(app_list::AppListView* view) {
   view->SetBubbleArrow(views::BubbleBorder::FLOAT);
   gfx::Rect taskbar_rect;
   GetTaskbarRect(&taskbar_rect);
-  view->SetAnchorPoint(FindAnchorPoint(view->GetPreferredSize(),
-                                       display,
-                                       cursor,
-                                       taskbar_rect,
-                                       view->ShouldCenterWindow()));
+  view->SetAnchorPoint(
+      FindAnchorPoint(view->GetPreferredSize(), display, cursor, taskbar_rect));
 }

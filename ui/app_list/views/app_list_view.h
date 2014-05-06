@@ -75,9 +75,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   void UpdateBounds();
 
-  // Returns true if the app list should be centered and in landscape mode.
-  bool ShouldCenterWindow() const;
-
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Paint(gfx::Canvas* canvas) OVERRIDE;

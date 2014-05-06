@@ -170,10 +170,6 @@ void AppListMainView::SetDragAndDropHostOfCurrentAppList(
   contents_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
 }
 
-bool AppListMainView::ShouldCenterWindow() const {
-  return delegate_->ShouldCenterWindow();
-}
-
 void AppListMainView::PreloadIcons(gfx::NativeView parent) {
   ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_100P;
   if (parent)

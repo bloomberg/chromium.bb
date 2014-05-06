@@ -35,8 +35,7 @@ class AppListLinux {
   static gfx::Point FindAnchorPoint(const gfx::Size& view_size,
                                     const gfx::Display& display,
                                     const gfx::Point& cursor,
-                                    AppListPositioner::ScreenEdge edge,
-                                    bool center_window);
+                                    AppListPositioner::ScreenEdge edge);
 
   static void MoveNearCursor(app_list::AppListView* view);
 };

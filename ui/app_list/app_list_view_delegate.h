@@ -149,9 +149,6 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // Returns the list of users (for AppListMenu).
   virtual const Users& GetUsers() const = 0;
 
-  // Returns true if the app list should be centered and in landscape mode.
-  virtual bool ShouldCenterWindow() const = 0;
-
   // Adds/removes an observer for profile changes.
   virtual void AddObserver(AppListViewDelegateObserver* observer) {}
   virtual void RemoveObserver(AppListViewDelegateObserver* observer) {}

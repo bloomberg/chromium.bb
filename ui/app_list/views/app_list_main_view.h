@@ -62,9 +62,6 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
 
   ContentsView* contents_view() const { return contents_view_; }
 
-  // Returns true if the app list should be centered and in landscape mode.
-  bool ShouldCenterWindow() const;
-
  private:
   class IconLoader;
 
