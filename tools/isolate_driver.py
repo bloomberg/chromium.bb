@@ -13,6 +13,10 @@ be used so the wrapping .isolate doesn't affect this value.
 
 This script loads build.ninja and processes it to determine all the executables
 referenced by the isolated target. It adds them in the wrapping .isolate file.
+
+WARNING: The target to use for build.ninja analysis is the base name of the
+.isolate file plus '_run'. For example, 'foo_test.isolate' would have the target
+'foo_test_run' analysed.
 """
 
 import StringIO
@@ -211,8 +215,9 @@ def create_wrapper(args, isolate_index, isolated_index):
       '.', temp_isolate_dir).replace(os.path.sep, '/')
 
   # It's a big assumption here that the name of the isolate file matches the
-  # primary target. Fix accordingly if this doesn't hold true.
-  target = isolate[:-len('.isolate')]
+  # primary target '_run'. Fix accordingly if this doesn't hold true, e.g.
+  # complain to maruel@.
+  target = isolate[:-len('.isolate')] + '_run'
   build_steps = load_ninja(build_dir)
   binary_deps = post_process_deps(build_dir, recurse(target, build_steps, None))
   logging.debug(
