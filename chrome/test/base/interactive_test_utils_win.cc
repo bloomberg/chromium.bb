@@ -9,43 +9,32 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "chrome/browser/ui/host_desktop.h"
+#include "chrome/test/base/interactive_test_utils_aura.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/base/win/foreground_helper.h"
 #include "ui/views/focus/focus_manager.h"
 
-#if defined(USE_AURA)
-#include "chrome/browser/ui/host_desktop.h"
-#include "chrome/test/base/interactive_test_utils_aura.h"
-#include "ui/aura/window_tree_host.h"
-#endif
-
 namespace ui_test_utils {
 
 void HideNativeWindow(gfx::NativeWindow window) {
-#if defined(USE_AURA)
   if (chrome::GetHostDesktopTypeForNativeWindow(window) ==
       chrome::HOST_DESKTOP_TYPE_ASH) {
     HideNativeWindowAura(window);
     return;
   }
   HWND hwnd = window->GetHost()->GetAcceleratedWidget();
-#else
-  HWND hwnd = window;
-#endif
   ::ShowWindow(hwnd, SW_HIDE);
 }
 
 bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
-#if defined(USE_AURA)
   if (chrome::GetHostDesktopTypeForNativeWindow(window) ==
       chrome::HOST_DESKTOP_TYPE_ASH)
     ShowAndFocusNativeWindowAura(window);
   window->Show();
   // Always make sure the window hosting ash is visible and focused.
   HWND hwnd = window->GetHost()->GetAcceleratedWidget();
-#else
-  HWND hwnd = window;
-#endif
 
   ::ShowWindow(hwnd, SW_SHOW);
 

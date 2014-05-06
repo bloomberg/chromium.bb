@@ -140,10 +140,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   virtual bool CanMaximize() const OVERRIDE;
   virtual bool CanActivate() const OVERRIDE;
   virtual bool WidgetSizeIsClientSize() const OVERRIDE;
-  virtual bool CanSaveFocus() const OVERRIDE;
-  virtual void SaveFocusOnDeactivate() OVERRIDE;
-  virtual void RestoreFocusOnActivate() OVERRIDE;
-  virtual void RestoreFocusOnEnable() OVERRIDE;
   virtual bool IsModal() const OVERRIDE;
   virtual int GetInitialShowState() const OVERRIDE;
   virtual bool WillProcessWorkAreaChange() const OVERRIDE;

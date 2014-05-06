@@ -340,7 +340,6 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       waiting_for_close_now_(false),
       remove_standard_frame_(false),
       use_system_default_icon_(false),
-      restore_focus_when_enabled_(false),
       restored_enabled_(false),
       current_cursor_(NULL),
       previous_cursor_(NULL),
@@ -919,17 +918,8 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
       delegate_->HandleDestroyed();
   }
 
-  // Only top level widget should store/restore focus.
-  if (message == WM_ACTIVATE && delegate_->CanSaveFocus())
+  if (message == WM_ACTIVATE && IsTopLevelWindow(window))
     PostProcessActivateMessage(LOWORD(w_param), !!HIWORD(w_param));
-
-  if (message == WM_ENABLE && restore_focus_when_enabled_) {
-    // This path should be executed only for top level as
-    // restore_focus_when_enabled_ is set in PostProcessActivateMessage.
-    DCHECK(delegate_->CanSaveFocus());
-    restore_focus_when_enabled_ = false;
-    delegate_->RestoreFocusOnEnable();
-  }
   return result;
 }
 
@@ -998,33 +988,10 @@ void HWNDMessageHandler::SetInitialFocus() {
 
 void HWNDMessageHandler::PostProcessActivateMessage(int activation_state,
                                                     bool minimized) {
-  DCHECK(delegate_->CanSaveFocus());
-
-  bool active = activation_state != WA_INACTIVE && !minimized;
+  DCHECK(IsTopLevelWindow(hwnd()));
+  const bool active = activation_state != WA_INACTIVE && !minimized;
   if (delegate_->CanActivate())
     delegate_->HandleActivationChanged(active);
-
-  if (!active) {
-    // We might get activated/inactivated without being enabled, so we need to
-    // clear restore_focus_when_enabled_.
-    restore_focus_when_enabled_ = false;
-    delegate_->SaveFocusOnDeactivate();
-  } else {
-    // We must restore the focus after the message has been DefProc'ed as it
-    // does set the focus to the last focused HWND.
-    // Note that if the window is not enabled, we cannot restore the focus as
-    // calling ::SetFocus on a child of the non-enabled top-window would fail.
-    // This is the case when showing a modal dialog (such as 'open file',
-    // 'print'...) from a different thread.
-    // In that case we delay the focus restoration to when the window is enabled
-    // again.
-    if (!IsWindowEnabled(hwnd())) {
-      DCHECK(!restore_focus_when_enabled_);
-      restore_focus_when_enabled_ = true;
-      return;
-    }
-    delegate_->RestoreFocusOnActivate();
-  }
 }
 
 void HWNDMessageHandler::RestoreEnabledIfNecessary() {

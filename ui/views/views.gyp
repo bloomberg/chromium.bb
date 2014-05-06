@@ -655,7 +655,6 @@
         'view_unittest.cc',
         'widget/desktop_aura/desktop_focus_rules_unittest.cc',
         'widget/desktop_aura/desktop_native_widget_aura_unittest.cc',
-        'widget/desktop_aura/desktop_window_tree_host_win_unittest.cc',
         'widget/desktop_aura/desktop_screen_x11_unittest.cc',
         'widget/desktop_aura/desktop_screen_position_client_unittest.cc',
         'widget/native_widget_aura_unittest.cc',

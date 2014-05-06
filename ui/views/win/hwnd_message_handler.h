@@ -484,10 +484,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   bool use_system_default_icon_;
 
-  // Whether the focus should be restored next time we get enabled.  Needed to
-  // restore focus correctly when Windows modal dialogs are displayed.
-  bool restore_focus_when_enabled_;
-
   // Whether all ancestors have been enabled. This is only used if is_modal_ is
   // true.
   bool restored_enabled_;

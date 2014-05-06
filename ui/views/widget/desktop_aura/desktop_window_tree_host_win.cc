@@ -606,22 +606,6 @@ bool DesktopWindowTreeHostWin::WidgetSizeIsClientSize() const {
   return IsMaximized() || (widget && widget->ShouldUseNativeFrame());
 }
 
-bool DesktopWindowTreeHostWin::CanSaveFocus() const {
-  return GetWidget()->is_top_level();
-}
-
-void DesktopWindowTreeHostWin::SaveFocusOnDeactivate() {
-  GetWidget()->GetFocusManager()->StoreFocusedView(true);
-}
-
-void DesktopWindowTreeHostWin::RestoreFocusOnActivate() {
-  RestoreFocusOnEnable();
-}
-
-void DesktopWindowTreeHostWin::RestoreFocusOnEnable() {
-  GetWidget()->GetFocusManager()->RestoreFocusedView();
-}
-
 bool DesktopWindowTreeHostWin::IsModal() const {
   return native_widget_delegate_->IsModal();
 }

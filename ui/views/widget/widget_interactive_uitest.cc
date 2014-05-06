@@ -6,6 +6,7 @@
 #include "base/bind.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -172,8 +173,7 @@ class WidgetTestInteractive : public WidgetTest {
 //    another top level widget is created and focused.
 // 3. On focusing the native platform window for widget 1, the active aura
 //    window for widget 1 should be set and that for widget 2 should reset.
-// TODO(ananta)
-// Discuss with erg on how to write this test for linux x11 aura.
+// TODO(ananta): Discuss with erg on how to write this test for linux x11 aura.
 TEST_F(WidgetTestInteractive, DesktopNativeWidgetAuraActivationAndFocusTest) {
   // Create widget 1 and expect the active window to be its window.
   View* contents_view1 = new View;
@@ -462,7 +462,91 @@ TEST_F(WidgetTestInteractive, CheckResizeControllerEvents) {
   toplevel->CloseNow();
 }
 
+// Test view focus restoration when a widget is deactivated and re-activated.
+TEST_F(WidgetTestInteractive, ViewFocusOnWidgetActivationChanges) {
+  Widget* widget1 = CreateTopLevelPlatformWidget();
+  View* view1 = new View;
+  view1->SetFocusable(true);
+  widget1->GetContentsView()->AddChildView(view1);
+
+  Widget* widget2 = CreateTopLevelPlatformWidget();
+  View* view2a = new View;
+  View* view2b = new View;
+  view2a->SetFocusable(true);
+  view2b->SetFocusable(true);
+  widget2->GetContentsView()->AddChildView(view2a);
+  widget2->GetContentsView()->AddChildView(view2b);
+
+  widget1->Show();
+  EXPECT_TRUE(widget1->IsActive());
+  view1->RequestFocus();
+  EXPECT_EQ(view1, widget1->GetFocusManager()->GetFocusedView());
+
+  widget2->Show();
+  EXPECT_TRUE(widget2->IsActive());
+  EXPECT_FALSE(widget1->IsActive());
+  EXPECT_EQ(NULL, widget1->GetFocusManager()->GetFocusedView());
+  view2a->RequestFocus();
+  EXPECT_EQ(view2a, widget2->GetFocusManager()->GetFocusedView());
+  view2b->RequestFocus();
+  EXPECT_EQ(view2b, widget2->GetFocusManager()->GetFocusedView());
+
+  widget1->Activate();
+  EXPECT_TRUE(widget1->IsActive());
+  EXPECT_EQ(view1, widget1->GetFocusManager()->GetFocusedView());
+  EXPECT_FALSE(widget2->IsActive());
+  EXPECT_EQ(NULL, widget2->GetFocusManager()->GetFocusedView());
+
+  widget2->Activate();
+  EXPECT_TRUE(widget2->IsActive());
+  EXPECT_EQ(view2b, widget2->GetFocusManager()->GetFocusedView());
+  EXPECT_FALSE(widget1->IsActive());
+  EXPECT_EQ(NULL, widget1->GetFocusManager()->GetFocusedView());
+
+  widget1->CloseNow();
+  widget2->CloseNow();
+}
+
 #if defined(OS_WIN)
+
+// Test view focus retention when a widget's HWND is disabled and re-enabled.
+TEST_F(WidgetTestInteractive, ViewFocusOnHWNDEnabledChanges) {
+  Widget* widget = CreateTopLevelFramelessPlatformWidget();
+  widget->SetContentsView(new View);
+  for (size_t i = 0; i < 2; ++i) {
+    widget->GetContentsView()->AddChildView(new View);
+    widget->GetContentsView()->child_at(i)->SetFocusable(true);
+  }
+
+  widget->Show();
+  const HWND hwnd = HWNDForWidget(widget);
+  EXPECT_TRUE(::IsWindow(hwnd));
+  EXPECT_TRUE(::IsWindowEnabled(hwnd));
+  EXPECT_EQ(hwnd, ::GetActiveWindow());
+
+  for (int i = 0; i < widget->GetContentsView()->child_count(); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Child view %d", i));
+    View* view = widget->GetContentsView()->child_at(i);
+
+    view->RequestFocus();
+    EXPECT_EQ(view, widget->GetFocusManager()->GetFocusedView());
+    EXPECT_FALSE(::EnableWindow(hwnd, FALSE));
+    EXPECT_FALSE(::IsWindowEnabled(hwnd));
+
+    // Oddly, disabling the HWND leaves it active with the focus unchanged.
+    EXPECT_EQ(hwnd, ::GetActiveWindow());
+    EXPECT_TRUE(widget->IsActive());
+    EXPECT_EQ(view, widget->GetFocusManager()->GetFocusedView());
+
+    EXPECT_TRUE(::EnableWindow(hwnd, TRUE));
+    EXPECT_TRUE(::IsWindowEnabled(hwnd));
+    EXPECT_EQ(hwnd, ::GetActiveWindow());
+    EXPECT_TRUE(widget->IsActive());
+    EXPECT_EQ(view, widget->GetFocusManager()->GetFocusedView());
+  }
+
+  widget->CloseNow();
+}
 
 // This class subclasses the Widget class to listen for activation change
 // notifications and provides accessors to return information as to whether
@@ -542,8 +626,7 @@ class ModalDialogDelegate : public DialogDelegateView {
 };
 
 // Tests whether the focused window is set correctly when a modal window is
-// created and destroyed. When it is destroyed it should focus the owner
-// window.
+// created and destroyed. When it is destroyed it should focus the owner window.
 TEST_F(WidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
   // Create a top level widget.
   Widget top_level_widget;

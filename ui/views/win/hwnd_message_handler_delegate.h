@@ -46,13 +46,6 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
 
   virtual bool WidgetSizeIsClientSize() const = 0;
 
-  // Returns true if the delegate has a focus saving mechanism that should be
-  // used when the window is activated and deactivated.
-  virtual bool CanSaveFocus() const = 0;
-  virtual void SaveFocusOnDeactivate() = 0;
-  virtual void RestoreFocusOnActivate() = 0;
-  virtual void RestoreFocusOnEnable() = 0;
-
   // Returns true if the delegate represents a modal window.
   virtual bool IsModal() const = 0;
 
