@@ -129,6 +129,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   virtual bool paused() const;
   virtual bool seeking() const;
   virtual double duration() const;
+  virtual double timelineOffset() const;
   virtual double currentTime() const;
 
   virtual bool didLoadingProgress() const;

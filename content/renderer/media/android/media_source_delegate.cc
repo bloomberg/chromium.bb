@@ -114,6 +114,14 @@ bool MediaSourceDelegate::IsVideoEncrypted() {
   return is_video_encrypted_;
 }
 
+base::Time MediaSourceDelegate::GetTimelineOffset() const {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+  if (!chunk_demuxer_)
+    return base::Time();
+
+  return chunk_demuxer_->GetTimelineOffset();
+}
+
 void MediaSourceDelegate::StopDemuxer() {
   DCHECK(media_loop_->BelongsToCurrentThread());
   DCHECK(chunk_demuxer_);

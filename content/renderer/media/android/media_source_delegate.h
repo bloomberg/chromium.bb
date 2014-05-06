@@ -106,6 +106,9 @@ class MediaSourceDelegate : public media::DemuxerHost {
   // Called on the main thread to check whether the video stream is encrypted.
   bool IsVideoEncrypted();
 
+  // Gets the ChunkDemuxer timeline offset.
+  base::Time GetTimelineOffset() const;
+
  private:
   // This is private to enforce use of the Destroyer.
   virtual ~MediaSourceDelegate();

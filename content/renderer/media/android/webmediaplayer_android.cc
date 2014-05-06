@@ -397,6 +397,17 @@ double WebMediaPlayerAndroid::duration() const {
   return duration_.InSecondsF();
 }
 
+double WebMediaPlayerAndroid::timelineOffset() const {
+  base::Time timeline_offset;
+  if (media_source_delegate_)
+    timeline_offset = media_source_delegate_->GetTimelineOffset();
+
+  if (timeline_offset.is_null())
+    return std::numeric_limits<double>::quiet_NaN();
+
+  return timeline_offset.ToJsTime();
+}
+
 double WebMediaPlayerAndroid::currentTime() const {
   // If the player is processing a seek, return the seek time.
   // Blink may still query us if updatePlaybackState() occurs while seeking.
