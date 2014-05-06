@@ -86,6 +86,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   virtual content::WebContents* GetStartPageContents() OVERRIDE;
   virtual content::WebContents* GetSpeechRecognitionContents() OVERRIDE;
   virtual const Users& GetUsers() const OVERRIDE;
+  virtual bool ShouldCenterWindow() const OVERRIDE;
   virtual void AddObserver(
       app_list::AppListViewDelegateObserver* observer) OVERRIDE;
   virtual void RemoveObserver(

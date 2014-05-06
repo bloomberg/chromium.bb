@@ -34,10 +34,15 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/theme_resources.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/speech_ui_model.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if defined(USE_AURA)
+#include "ui/keyboard/keyboard_util.h"
+#endif
 
 #if defined(USE_ASH)
 #include "chrome/browser/ui/ash/app_list/app_sync_ui_state_watcher.h"
@@ -410,6 +415,21 @@ content::WebContents* AppListViewDelegate::GetSpeechRecognitionContents() {
 const app_list::AppListViewDelegate::Users&
 AppListViewDelegate::GetUsers() const {
   return users_;
+}
+
+bool AppListViewDelegate::ShouldCenterWindow() const {
+  if (app_list::switches::IsCenteredAppListEnabled())
+    return true;
+
+  // keyboard depends upon Aura.
+#if defined(USE_AURA)
+  // If the virtual keyboard is enabled, use the new app list position. The old
+  // position is too tall, and doesn't fit in the left-over screen space.
+  if (keyboard::IsKeyboardEnabled())
+    return true;
+#endif
+
+  return false;
 }
 
 void AppListViewDelegate::AddObserver(
