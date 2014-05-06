@@ -16,13 +16,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/bookmarks/core/browser/bookmark_model.h"
+#include "components/bookmarks/core/browser/scoped_group_bookmark_actions.h"
 #include "components/bookmarks/core/common/bookmark_pref_names.h"
 #include "components/query_parser/query_parser.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "net/base/net_util.h"
 #include "ui/base/models/tree_node_iterator.h"
 #include "url/gurl.h"
-#include "components/bookmarks/core/browser/scoped_group_bookmark_actions.h"
 
 using base::Time;
 
