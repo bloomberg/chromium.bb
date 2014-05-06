@@ -2002,6 +2002,12 @@
         ],
       }],
 
+      ['OS=="win"', {
+        # The Clang plugins don't currently work on Windows.
+        # TODO(hans): One day, this will work. (crbug.com/82385)
+        'clang_use_chrome_plugins%': 0,
+      }],
+
       # On valgrind bots, override the optimizer settings so we don't inline too
       # much and make the stacks harder to figure out.
       #
