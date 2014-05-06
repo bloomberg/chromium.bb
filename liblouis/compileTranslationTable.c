@@ -5169,7 +5169,7 @@ static void defaultLogCallback(int level, const char *message)
   if (tmpMsg)
     {
       strcpy(tmpMsg, message);
-      lou_logPrint(message);
+      lou_logPrint(tmpMsg);
       free(tmpMsg);
     }
 }
