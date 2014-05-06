@@ -3732,6 +3732,23 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_ConfigChange) {
   CheckNoNextBuffer();
 }
 
+// Ensure splices are not created if there are not enough frames to crossfade.
+TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoTinySplices) {
+  SetAudioStream();
+  Seek(0);
+
+  // Overlap the range [0, 2) with [1, 3).  Since each frame has a duration of
+  // 2ms this results in an overlap of 1ms between the ranges.  A splice frame
+  // should not be generated since it requires at least 2 frames, or 2ms in this
+  // case, of data to crossfade.
+  NewSegmentAppend("0K");
+  CheckExpectedRangesByTimestamp("{ [0,2) }");
+  NewSegmentAppend("1K");
+  CheckExpectedRangesByTimestamp("{ [0,3) }");
+  CheckExpectedBuffers("0K 1K");
+  CheckNoNextBuffer();
+}
+
 // TODO(vrk): Add unit tests where keyframes are unaligned between streams.
 // (crbug.com/133557)
 

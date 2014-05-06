@@ -1646,8 +1646,26 @@ void SourceBufferStream::GenerateSpliceFrame(const BufferQueue& new_buffers) {
   for (size_t i = 0; i < pre_splice_buffers.size(); ++i) {
     const BufferQueue& original_splice_buffers =
         pre_splice_buffers[i]->get_splice_buffers();
-    if (!original_splice_buffers.empty())
+    if (!original_splice_buffers.empty()) {
+      DVLOG(1) << "Can't generate splice: overlapped buffers contain a "
+                  "pre-existing splice.";
       return;
+    }
+  }
+
+  // Don't generate splice frames which represent less than two frames, since we
+  // need at least that much to generate a crossfade.  Per the spec, make this
+  // check using the sample rate of the overlapping buffers.
+  const base::TimeDelta splice_duration =
+      pre_splice_buffers.back()->timestamp() +
+      pre_splice_buffers.back()->duration() - splice_timestamp;
+  const base::TimeDelta minimum_splice_duration = base::TimeDelta::FromSecondsD(
+      2.0 / audio_configs_[append_config_index_].samples_per_second());
+  if (splice_duration < minimum_splice_duration) {
+    DVLOG(1) << "Can't generate splice: not enough samples for crossfade; have "
+             << splice_duration.InMicroseconds() << " us, but need "
+             << minimum_splice_duration.InMicroseconds() << " us.";
+    return;
   }
 
   new_buffers.front()->ConvertToSpliceBuffer(pre_splice_buffers);
