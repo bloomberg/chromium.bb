@@ -60,6 +60,8 @@ File::File(RValue other)
 }
 
 File::~File() {
+  // Go through the AssertIOAllowed logic.
+  Close();
 }
 
 File& File::operator=(RValue other) {
