@@ -682,19 +682,19 @@ class GitCheckout(CheckoutBase):
             if verbose:
               cmd.append('--verbose')
             stdout.append(self._check_output_git(cmd, stdin=p.get(True)))
-          for name, value in p.svn_properties:
+          for key, value in p.svn_properties:
             # Ignore some known auto-props flags through .subversion/config,
             # bails out on the other ones.
             # TODO(maruel): Read ~/.subversion/config and detect the rules that
             # applies here to figure out if the property will be correctly
             # handled.
-            stdout.append('Property %s=%s' % (name, value))
-            if not name in (
+            stdout.append('Property %s=%s' % (key, value))
+            if not key in (
                 'svn:eol-style', 'svn:executable', 'svn:mime-type'):
               raise patch.UnsupportedPatchFormat(
                   p.filename,
                   'Cannot apply svn property %s to file %s.' % (
-                        name, p.filename))
+                        key, p.filename))
         for post in post_processors:
           post(self, p)
         if verbose:
