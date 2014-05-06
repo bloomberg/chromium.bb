@@ -67,7 +67,7 @@ struct WEBKIT_STORAGE_BROWSER_EXPORT HttpResponseInfoIOBuffer
   HttpResponseInfoIOBuffer();
   explicit HttpResponseInfoIOBuffer(net::HttpResponseInfo* info);
 
- private:
+ protected:
   friend class base::RefCountedThreadSafe<HttpResponseInfoIOBuffer>;
   virtual ~HttpResponseInfoIOBuffer();
 };
@@ -176,7 +176,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheResponseReader
   friend class AppCacheStorageImpl;
   friend class content::MockAppCacheStorage;
 
-  // Should only be constructed by the storage class.
+  // Should only be constructed by the storage class and derivatives.
   AppCacheResponseReader(int64 response_id,
                          int64 group_id,
                          AppCacheDiskCacheInterface* disk_cache);
@@ -230,6 +230,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheResponseWriter
   // Returns the amount written, info and data.
   int64 amount_written() { return info_size_ + write_position_; }
 
+ protected:
+  // Should only be constructed by the storage class and derivatives.
+  AppCacheResponseWriter(int64 response_id,
+                         int64 group_id,
+                         AppCacheDiskCacheInterface* disk_cache);
+
  private:
   friend class AppCacheStorageImpl;
   friend class content::MockAppCacheStorage;
@@ -240,11 +246,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheResponseWriter
     DOOM_EXISTING,
     SECOND_ATTEMPT
   };
-
-  // Should only be constructed by the storage class.
-  AppCacheResponseWriter(int64 response_id,
-                         int64 group_id,
-                         AppCacheDiskCacheInterface* disk_cache);
 
   virtual void OnIOComplete(int result) OVERRIDE;
   void ContinueWriteInfo();

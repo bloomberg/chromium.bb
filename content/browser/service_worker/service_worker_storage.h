@@ -29,8 +29,11 @@ class QuotaManagerProxy;
 namespace content {
 
 class ServiceWorkerContextCore;
+class ServiceWorkerDiskCache;
 class ServiceWorkerRegistration;
 class ServiceWorkerRegistrationInfo;
+class ServiceWorkerResponseReader;
+class ServiceWorkerResponseWriter;
 class ServiceWorkerVersion;
 
 // This class provides an interface to store and retrieve ServiceWorker
@@ -94,6 +97,11 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   void DeleteRegistration(int64 registration_id,
                           const StatusCallback& callback);
 
+  scoped_ptr<ServiceWorkerResponseReader> CreateResponseReader(
+      int64 response_id);
+  scoped_ptr<ServiceWorkerResponseWriter> CreateResponseWriter(
+      int64 response_id);
+
   // Returns new IDs which are guaranteed to be unique in the storage.
   int64 NewRegistrationId();
   int64 NewVersionId();
@@ -135,6 +143,9 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       RegistrationRefsById;
   RegistrationRefsById installing_registrations_;
 
+  // Lazy disk_cache getter.
+  ServiceWorkerDiskCache* disk_cache();
+
   int64 last_registration_id_;
   int64 last_version_id_;
   int64 last_resource_id_;
@@ -144,6 +155,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   base::WeakPtr<ServiceWorkerContextCore> context_;
   scoped_refptr<base::SequencedTaskRunner> database_task_runner_;
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
+  scoped_ptr<ServiceWorkerDiskCache> disk_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerStorage);
 };

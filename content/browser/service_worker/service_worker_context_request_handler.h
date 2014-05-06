@@ -9,6 +9,8 @@
 
 namespace content {
 
+class ServiceWorkerVersion;
+
 // A request handler derivative used to handle requests from
 // service workers.
 class CONTENT_EXPORT ServiceWorkerContextRequestHandler
@@ -26,6 +28,11 @@ class CONTENT_EXPORT ServiceWorkerContextRequestHandler
       net::NetworkDelegate* network_delegate) OVERRIDE;
 
  private:
+  bool ShouldAddToScriptCache(const GURL& url);
+  bool ShouldReadFromScriptCache(const GURL& url, int64* response_id_out);
+
+  scoped_refptr<ServiceWorkerVersion> version_;
+
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextRequestHandler);
 };
 

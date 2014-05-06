@@ -9,11 +9,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/net_errors.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
 
 namespace content {
@@ -42,6 +44,11 @@ void CompleteFindSoon(
 
 const base::FilePath::CharType kServiceWorkerDirectory[] =
     FILE_PATH_LITERAL("ServiceWorker");
+
+
+const int kMaxMemDiskCacheSize = 10 * 1024 * 1024;
+
+void EmptyCompletionCallback(int) {}
 
 }  // namespace
 
@@ -333,6 +340,18 @@ void ServiceWorkerStorage::DeleteRegistration(
   // thereafter.
 }
 
+scoped_ptr<ServiceWorkerResponseReader>
+ServiceWorkerStorage::CreateResponseReader(int64 response_id) {
+  return make_scoped_ptr(
+      new ServiceWorkerResponseReader(response_id, disk_cache()));
+}
+
+scoped_ptr<ServiceWorkerResponseWriter>
+ServiceWorkerStorage::CreateResponseWriter(int64 response_id) {
+  return make_scoped_ptr(
+      new ServiceWorkerResponseWriter(response_id, disk_cache()));
+}
+
 int64 ServiceWorkerStorage::NewRegistrationId() {
   DCHECK(simulated_lazy_initted_);
   return ++last_registration_id_;
@@ -422,6 +441,19 @@ ServiceWorkerStorage::FindInstallingRegistrationForId(
   if (found == installing_registrations_.end())
     return NULL;
   return found->second;
+}
+
+ServiceWorkerDiskCache* ServiceWorkerStorage::disk_cache() {
+  if (disk_cache_)
+    return disk_cache_.get();
+
+  // TODO(michaeln): Store data on disk and do error checking.
+  disk_cache_.reset(new ServiceWorkerDiskCache);
+  int rv = disk_cache_->InitWithMemBackend(
+      kMaxMemDiskCacheSize,
+      base::Bind(&EmptyCompletionCallback));
+  DCHECK_EQ(net::OK, rv);
+  return disk_cache_.get();
 }
 
 }  // namespace content

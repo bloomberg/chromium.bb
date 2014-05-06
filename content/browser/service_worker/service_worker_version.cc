@@ -547,4 +547,18 @@ void ServiceWorkerVersion::OnSyncEventFinished(
   sync_callbacks_.Remove(request_id);
 }
 
+void ServiceWorkerVersion::AddToScriptCache(
+    const GURL& url, int64 resource_id) {
+  DCHECK_EQ(kInvalidServiceWorkerResponseId, LookupInScriptCache(url));
+  DCHECK_EQ(NEW, status_);
+  script_cache_map_[url] = resource_id;
+}
+
+int64 ServiceWorkerVersion::LookupInScriptCache(const GURL& url) {
+  ResourceIDMap::const_iterator found = script_cache_map_.find(url);
+  if (found == script_cache_map_.end())
+    return kInvalidServiceWorkerResponseId;
+  return found->second;
+}
+
 }  // namespace content
