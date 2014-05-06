@@ -997,3 +997,6 @@ crbug.com/367903 web-animations-api/timeline-time.html [ Pass Failure ]
 crbug.com/369600 fast/events/onerror-no-constructor.html [ Failure ]
 
 crbug.com/370490 fast/html/imports/rel-import-to-style.html [ Pass Failure ]
+
+Bug(eae) fast/images/image-zoom-to-25.html [ NeedsRebaseline ]
+Bug(eae) virtual/deferred/fast/images/image-zoom-to-25.html [ NeedsRebaseline ]
