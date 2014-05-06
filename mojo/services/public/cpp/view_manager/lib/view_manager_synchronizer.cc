@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/interfaces/shell/shell.mojom.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_observer.h"
@@ -19,11 +18,6 @@ namespace services {
 namespace view_manager {
 
 const TransportNodeId kRootNodeId = 1;
-
-TransportNodeId MakeTransportNodeId(uint16_t connection_id,
-                                    uint16_t local_node_id) {
-  return (connection_id << 16) | local_node_id;
-}
 
 class ViewManagerTransaction {
  public:
@@ -73,6 +67,12 @@ class ViewManagerTransaction {
   virtual void DoActionCompleted(bool success) = 0;
 
   IViewManager* service() { return synchronizer_->service_.get(); }
+
+  TransportNodeId MakeTransportId(uint32_t id) {
+    if (id == kRootNodeId || HiWord(id) != 0)
+      return id;
+    return (synchronizer_->connection_id_ << 16) | LoWord(id);
+  }
 
  private:
   const TransactionType transaction_type_;
@@ -156,15 +156,15 @@ class HierarchyTransaction : public ViewManagerTransaction {
     switch (hierarchy_change_type_) {
       case TYPE_ADD:
         service()->AddNode(
-            parent_id_,
-            child_id_,
+            MakeTransportId(parent_id_),
+            MakeTransportId(child_id_),
             change_id(),
             base::Bind(&ViewManagerTransaction::OnActionCompleted,
                        base::Unretained(this)));
         break;
       case TYPE_REMOVE:
         service()->RemoveNodeFromParent(
-            child_id_,
+            MakeTransportId(child_id_),
             change_id(),
             base::Bind(&ViewManagerTransaction::OnActionCompleted,
                        base::Unretained(this)));
@@ -189,34 +189,26 @@ ViewManagerSynchronizer::ViewManagerSynchronizer(ViewManager* view_manager)
       connected_(false),
       connection_id_(0),
       next_id_(1),
-      next_change_id_(0),
-      init_loop_(NULL) {
+      next_change_id_(0) {
   InterfacePipe<services::view_manager::IViewManager, AnyInterface>
       view_manager_pipe;
   AllocationScope scope;
-  MessagePipeHandle client_handle = view_manager_pipe.handle_to_peer.get();
   ViewManagerPrivate(view_manager_).shell()->Connect(
       "mojo:mojo_view_manager", view_manager_pipe.handle_to_peer.Pass());
   service_.reset(view_manager_pipe.handle_to_self.Pass(), this);
-  base::RunLoop loop;
-  init_loop_ = &loop;
-  init_loop_->Run();
-  init_loop_ = NULL;
 }
 
 ViewManagerSynchronizer::~ViewManagerSynchronizer() {
 }
 
-TransportNodeId ViewManagerSynchronizer::CreateViewTreeNode() {
-  DCHECK(connected_);
+uint16_t ViewManagerSynchronizer::CreateViewTreeNode() {
   uint16_t id = ++next_id_;
   pending_transactions_.push_back(new CreateViewTreeNodeTransaction(id, this));
   ScheduleSync();
-  return MakeTransportNodeId(connection_id_, id);
+  return id;
 }
 
 void ViewManagerSynchronizer::DestroyViewTreeNode(TransportNodeId node_id) {
-  DCHECK(connected_);
   pending_transactions_.push_back(
       new DestroyViewTreeNodeTransaction(node_id, this));
   ScheduleSync();
@@ -224,7 +216,6 @@ void ViewManagerSynchronizer::DestroyViewTreeNode(TransportNodeId node_id) {
 
 void ViewManagerSynchronizer::AddChild(TransportNodeId child_id,
                                        TransportNodeId parent_id) {
-  DCHECK(connected_);
   pending_transactions_.push_back(
       new HierarchyTransaction(HierarchyTransaction::TYPE_ADD,
                                child_id,
@@ -235,7 +226,6 @@ void ViewManagerSynchronizer::AddChild(TransportNodeId child_id,
 
 void ViewManagerSynchronizer::RemoveChild(TransportNodeId child_id,
                                           TransportNodeId parent_id) {
-  DCHECK(connected_);
   pending_transactions_.push_back(
       new HierarchyTransaction(HierarchyTransaction::TYPE_REMOVE,
                                child_id,
@@ -246,7 +236,6 @@ void ViewManagerSynchronizer::RemoveChild(TransportNodeId child_id,
 
 void ViewManagerSynchronizer::BuildNodeTree(
     const Callback<void()>& callback) {
-  DCHECK(connected_);
   service_->GetNodeTree(
       1,
       base::Bind(&ViewManagerSynchronizer::OnTreeReceived,
@@ -261,8 +250,9 @@ void ViewManagerSynchronizer::OnConnectionEstablished(uint16 connection_id) {
   connected_ = true;
   connection_id_ = connection_id;
   ScheduleSync();
-  if (init_loop_)
-    init_loop_->Quit();
+  FOR_EACH_OBSERVER(ViewManagerObserver,
+                    *ViewManagerPrivate(view_manager_).observers(),
+                    OnViewManagerConnected(view_manager_));
 }
 
 void ViewManagerSynchronizer::OnNodeHierarchyChanged(uint32_t node,
