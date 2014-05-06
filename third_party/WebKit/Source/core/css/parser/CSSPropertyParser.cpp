@@ -423,7 +423,7 @@ void CSSPropertyParser::addExpandedPropertyForValue(CSSPropertyID propId, PassRe
     const StylePropertyShorthand& shorthand = shorthandForProperty(propId);
     unsigned shorthandLength = shorthand.length();
     if (!shorthandLength) {
-        addProperty(propId, prpValue, important);
+        addPropertyWithPrefixingVariant(propId, prpValue, important);
         return;
     }
 
@@ -431,7 +431,7 @@ void CSSPropertyParser::addExpandedPropertyForValue(CSSPropertyID propId, PassRe
     ShorthandScope scope(this, propId);
     const CSSPropertyID* longhands = shorthand.properties();
     for (unsigned i = 0; i < shorthandLength; ++i)
-        addProperty(longhands[i], value, important);
+        addPropertyWithPrefixingVariant(longhands[i], value, important);
 }
 
 bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
