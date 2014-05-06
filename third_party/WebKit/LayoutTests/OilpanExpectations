@@ -30,3 +30,11 @@ crbug.com/345655 virtual/softwarecompositing/iframes/scrolling-iframe.html [ Fai
 crbug.com/XYZ fast/dom/custom/registration-context-delete-during-attribute-changed-retrieval.html [ Failure ]
 crbug.com/XYZ fast/dom/custom/registration-context-delete-during-register-created-retrieval.html [ Failure ]
 crbug.com/XYZ fast/dom/custom/registration-context-delete-then-register.html [ Failure ]
+
+# These tests crashes due to an assertion in debug, but is consistently timing in mac oilpan debug instead.
+crbug.com/366387 [ Mac Debug ] svg/as-object/deep-nested-embedded-svg-size-changes-no-layout-triggers-1.html [ Timeout ]
+crbug.com/366387 [ Mac Debug ] svg/as-object/deep-nested-embedded-svg-size-changes-no-layout-triggers-2.html [ Timeout ]
+
+# These tests started failing (on mac only) with blink r173290
+crbug.com/370586 [ Mac ] media/encrypted-media/encrypted-media-lifetime-mediakeys.html [ Failure ]
+crbug.com/370586 [ Mac ] media/encrypted-media/encrypted-media-lifetime-mediakeysession-reference.html [ Failure ]
