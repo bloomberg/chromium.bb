@@ -7,14 +7,6 @@
 
 namespace ash {
 
-// These are the types of maximization we know.
-enum MaximizeBubbleFrameState {
-  FRAME_STATE_NONE = 0,
-  FRAME_STATE_FULL = 1,  // This is the full maximized state.
-  FRAME_STATE_SNAP_LEFT = 2,
-  FRAME_STATE_SNAP_RIGHT = 3
-};
-
 // These are the icon types that a caption button can have. The size button's
 // action (SnapType) can be different from its icon.
 enum CaptionButtonIcon {

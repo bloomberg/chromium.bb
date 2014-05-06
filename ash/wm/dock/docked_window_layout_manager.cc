@@ -590,8 +590,9 @@ DockedAlignment DockedWindowLayoutManager::CalculateAlignment() const {
   return DOCKED_ALIGNMENT_NONE;
 }
 
-bool DockedWindowLayoutManager::CanDockWindow(aura::Window* window,
-                                              SnapType edge) {
+bool DockedWindowLayoutManager::CanDockWindow(
+    aura::Window* window,
+    DockedAlignment desired_alignment) {
   if (!switches::UseDockedWindows())
     return false;
   // Don't allow interactive docking of windows with transient parents such as
@@ -622,16 +623,19 @@ bool DockedWindowLayoutManager::CanDockWindow(aura::Window* window,
     return false;
   // Cannot dock on the other size from an existing dock.
   const DockedAlignment alignment = CalculateAlignment();
-  if ((edge == SNAP_LEFT && alignment == DOCKED_ALIGNMENT_RIGHT) ||
-      (edge == SNAP_RIGHT && alignment == DOCKED_ALIGNMENT_LEFT)) {
+  if (desired_alignment != DOCKED_ALIGNMENT_NONE &&
+      alignment != DOCKED_ALIGNMENT_NONE &&
+      alignment != desired_alignment) {
     return false;
   }
   // Do not allow docking on the same side as shelf.
   ShelfAlignment shelf_alignment = SHELF_ALIGNMENT_BOTTOM;
   if (shelf_)
     shelf_alignment = shelf_->alignment();
-  if ((edge == SNAP_LEFT && shelf_alignment == SHELF_ALIGNMENT_LEFT) ||
-      (edge == SNAP_RIGHT && shelf_alignment == SHELF_ALIGNMENT_RIGHT)) {
+  if ((desired_alignment == DOCKED_ALIGNMENT_LEFT &&
+       shelf_alignment == SHELF_ALIGNMENT_LEFT) ||
+      (desired_alignment == DOCKED_ALIGNMENT_RIGHT &&
+       shelf_alignment == SHELF_ALIGNMENT_RIGHT)) {
     return false;
   }
   return true;
@@ -943,7 +947,7 @@ void DockedWindowLayoutManager::RestoreDockedWindow(
   const gfx::Rect work_area = display.work_area();
 
   // Evict the window if it can no longer be docked because of its height.
-  if (!CanDockWindow(window, SNAP_NONE)) {
+  if (!CanDockWindow(window, DOCKED_ALIGNMENT_NONE)) {
     UndockWindow(window);
     RecordUmaAction(DOCKED_ACTION_EVICT, DOCKED_ACTION_SOURCE_UNKNOWN);
     return;

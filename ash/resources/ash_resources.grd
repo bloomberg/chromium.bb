@@ -241,21 +241,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_OVERVIEW_CLOSE_H" file="common/window_overview_close_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_OVERVIEW_CLOSE_P" file="common/window_overview_close_pressed.png" />
 
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_LEFT" file="common/window_position_left_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_LEFT_H" file="common/window_position_left_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_LEFT_P" file="common/window_position_left_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_MIDDLE" file="common/window_position_middle_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_MIDDLE_H" file="common/window_position_middle_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_MIDDLE_P" file="common/window_position_middle_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_RIGHT" file="common/window_position_right_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_RIGHT_H" file="common/window_position_right_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_RIGHT_P" file="common/window_position_right_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_LEFT_RESTORE" file="common/window_position_left_normal_restore.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_LEFT_RESTORE_H" file="common/window_position_left_hover_restore.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_LEFT_RESTORE_P" file="common/window_position_left_pressed_restore.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_RIGHT_RESTORE" file="common/window_position_right_normal_restore.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_RIGHT_RESTORE_H" file="common/window_position_right_hover_restore.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_RIGHT_RESTORE_P" file="common/window_position_right_pressed_restore.png" />
       <structure type="chrome_scaled_image" name="IDR_AVATAR_HOLDER" file="cros/avatar_holder.png" />
       <structure type="chrome_scaled_image" name="IDR_AVATAR_HOLDER_MASK" file="cros/avatar_holder_mask.png" />
     </structures>

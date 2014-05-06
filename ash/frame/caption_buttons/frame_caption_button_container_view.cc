@@ -9,7 +9,6 @@
 #include "ash/ash_switches.h"
 #include "ash/frame/caption_buttons/alternate_frame_size_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
-#include "ash/frame/caption_buttons/frame_maximize_button.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "grit/ui_strings.h"  // Accessibility names
@@ -48,23 +47,14 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
       minimize_button_(NULL),
       size_button_(NULL),
       close_button_(NULL) {
-  bool alternate_style = switches::UseAlternateFrameCaptionButtonStyle();
-
   // Insert the buttons left to right.
   minimize_button_ = new FrameCaptionButton(this, CAPTION_BUTTON_ICON_MINIMIZE);
   minimize_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
-  // Hide |minimize_button_| when using the non-alternate button style because
-  // |size_button_| is capable of minimizing in this case.
-  minimize_button_->SetVisible(
-      minimize_allowed == MINIMIZE_ALLOWED &&
-      (alternate_style || !frame_->widget_delegate()->CanMaximize()));
+  minimize_button_->SetVisible(minimize_allowed == MINIMIZE_ALLOWED);
   AddChildView(minimize_button_);
 
-  if (alternate_style)
-    size_button_ = new AlternateFrameSizeButton(this, frame, this);
-  else
-    size_button_ = new FrameMaximizeButton(this, frame);
+  size_button_ = new AlternateFrameSizeButton(this, frame, this);
   size_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE));
   UpdateSizeButtonVisibility(false);
@@ -77,12 +67,6 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
 }
 
 FrameCaptionButtonContainerView::~FrameCaptionButtonContainerView() {
-}
-
-FrameMaximizeButton*
-FrameCaptionButtonContainerView::GetOldStyleSizeButton() {
-  return switches::UseAlternateFrameCaptionButtonStyle() ?
-      NULL : static_cast<FrameMaximizeButton*>(size_button_);
 }
 
 void FrameCaptionButtonContainerView::SetButtonImages(

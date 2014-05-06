@@ -911,7 +911,11 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
     }
   }
 
-  const bool can_dock = dock_layout_->CanDockWindow(GetTarget(), snap_type_) &&
+  DCHECK(snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT);
+  DockedAlignment desired_alignment = (snap_type_ == SNAP_LEFT) ?
+      DOCKED_ALIGNMENT_LEFT : DOCKED_ALIGNMENT_RIGHT;
+  const bool can_dock =
+      dock_layout_->CanDockWindow(GetTarget(), desired_alignment) &&
       dock_layout_->GetAlignmentOfWindow(GetTarget()) != DOCKED_ALIGNMENT_NONE;
   if (!can_dock) {
     // If the window cannot be docked, undock the window. This may change the
@@ -990,7 +994,7 @@ void WorkspaceWindowResizer::RestackWindows() {
   }
 }
 
-SnapType WorkspaceWindowResizer::GetSnapType(
+WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
     const gfx::Point& location) const {
   // TODO: this likely only wants total display area, not the area of a single
   // display.

@@ -542,21 +542,6 @@ Press Shift + Alt to switch.
       <message name="IDS_ASH_NOTIFICATION_UNREAD_COUNT_NINE_PLUS" desc="The text shown in the notification icon for the unread count when the count is more than 9.">
         9+
       </message>
-      <message name="IDS_ASH_MAXIMIZE_WINDOW" desc="A help text to show that when the button gets clicked the window get maximized.">
-        Maximize
-      </message>
-      <message name="IDS_ASH_SNAP_WINDOW_RIGHT" desc="A help text to show that when the button gets clicked the window get snapped to the right side.">
-        Right
-      </message>
-      <message name="IDS_ASH_SNAP_WINDOW_LEFT" desc="A help text to show that when the button gets clicked the window get snapped to the left side.">
-        Left
-      </message>
-      <message name="IDS_ASH_RESTORE_WINDOW" desc="A help text to show that when the button gets clicked the window gets restored to its normal - non maximized - state.">
-        Restore
-      </message>
-      <message name="IDS_ASH_MINIMIZE_WINDOW" desc="A help text to show that when the button gets clicked the window gets minimized.">
-        Minimize
-      </message>
       <message name="IDS_ASH_DISPLAY_FAILURE_ON_MIRRORING" desc="An error message to show that the system failed to enter the mirroring mode.">
         Could not mirror displays since no supported resolutions found. Entered extended desktop instead.
       </message>

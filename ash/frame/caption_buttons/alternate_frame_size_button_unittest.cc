@@ -4,13 +4,11 @@
 
 #include "ash/frame/caption_buttons/alternate_frame_size_button.h"
 
-#include "ash/ash_switches.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
-#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/test/event_generator.h"
@@ -126,10 +124,6 @@ class AlternateFrameSizeButtonTest : public AshTestBase {
   // AshTestBase overrides:
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
-
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    command_line->AppendSwitch(
-        switches::kAshEnableAlternateFrameCaptionButtonStyle);
 
     TestWidgetDelegate* delegate = new TestWidgetDelegate();
     window_state_ = ash::wm::GetWindowState(

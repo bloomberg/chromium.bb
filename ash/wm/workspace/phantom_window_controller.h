@@ -30,26 +30,11 @@ class ASH_EXPORT PhantomWindowController {
   // Hides the phantom window without any animation.
   virtual ~PhantomWindowController();
 
-  // Animates the phantom window towards |bounds_in_screen|. The animation used
-  // depends on whether the alternate caption button style is used.
+  // Shows the phantom window and animates shrinking it to |bounds_in_screen|.
   void Show(const gfx::Rect& bounds_in_screen);
-
-  // If set, the phantom window is stacked below this window, otherwise it
-  // is stacked above the window passed to the constructor.
-  void set_phantom_below_window(aura::Window* phantom_below_window) {
-    phantom_below_window_ = phantom_below_window;
-  }
 
  private:
   friend class PhantomWindowControllerTest;
-
-  // Animates the phantom window towards |bounds_in_screen| when the alternate
-  // caption button style is used.
-  void ShowAlternate(const gfx::Rect& bounds_in_screen);
-
-  // Animates the phantom window towards |bounds_in_screen| when the legacy
-  // caption button style is used.
-  void ShowLegacy(const gfx::Rect& bounds_in_screen);
 
   // Creates, shows and returns a phantom widget at |bounds|
   // with kShellWindowId_ShelfContainer in |root_window| as a parent.
@@ -57,25 +42,15 @@ class ASH_EXPORT PhantomWindowController {
       aura::Window* root_window,
       const gfx::Rect& bounds_in_screen);
 
-  // Window the phantom is placed beneath.
+  // Window that the phantom window is stacked above.
   aura::Window* window_;
-
-  // If set, the phantom window should get stacked below this window.
-  aura::Window* phantom_below_window_;
 
   // Target bounds (including the shadows if any) of the animation in screen
   // coordinates.
   gfx::Rect target_bounds_in_screen_;
 
-  // Phantom representation of the window which is in the root window matching
-  // |target_bounds_in_screen_|.
-  scoped_ptr<views::Widget> phantom_widget_in_target_root_;
-
-  // Phantom representation of the window which is in the root window matching
-  // the window's initial bounds. This allows animations to progress from one
-  // display to the other. NULL if the phantom window starts and ends in the
-  // same root window. Not used when using the alternate caption button style.
-  scoped_ptr<views::Widget> phantom_widget_in_start_root_;
+  // Phantom representation of the window.
+  scoped_ptr<views::Widget> phantom_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(PhantomWindowController);
 };

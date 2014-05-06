@@ -4,12 +4,9 @@
 
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 
-#include "ash/ash_switches.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/test/ash_test_base.h"
-#include "base/command_line.h"
 #include "grit/ash_resources.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -102,29 +99,10 @@ class FrameCaptionButtonContainerViewTest : public ash::test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(FrameCaptionButtonContainerViewTest);
 };
 
-class FrameCaptionButtonContainerViewTestOldStyle
-    : public FrameCaptionButtonContainerViewTest {
- public:
-  FrameCaptionButtonContainerViewTestOldStyle() {
-  }
-
-  virtual ~FrameCaptionButtonContainerViewTestOldStyle() {
-  }
-
-  virtual void SetUp() OVERRIDE {
-    FrameCaptionButtonContainerViewTest::SetUp();
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kAshDisableAlternateFrameCaptionButtonStyle);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FrameCaptionButtonContainerViewTestOldStyle);
-};
-
 // Test how the allowed actions affect which caption buttons are visible.
-TEST_F(FrameCaptionButtonContainerViewTestOldStyle, ButtonVisibility) {
-  // The minimize button should be hidden when both minimizing and maximizing
-  // are allowed because the size button can do both.
+TEST_F(FrameCaptionButtonContainerViewTest, ButtonVisibility) {
+  // All the buttons should be visible when minimizing and maximizing are
+  // allowed.
   scoped_ptr<views::Widget> widget_can_maximize(
       CreateTestWidget(MAXIMIZE_ALLOWED));
   FrameCaptionButtonContainerView container1(widget_can_maximize.get(),
@@ -132,11 +110,11 @@ TEST_F(FrameCaptionButtonContainerViewTestOldStyle, ButtonVisibility) {
   SetMockImages(&container1);
   container1.Layout();
   FrameCaptionButtonContainerView::TestApi t1(&container1);
-  EXPECT_FALSE(t1.minimize_button()->visible());
+  EXPECT_TRUE(t1.minimize_button()->visible());
   EXPECT_TRUE(t1.size_button()->visible());
   EXPECT_TRUE(t1.close_button()->visible());
   EXPECT_TRUE(CheckButtonsAtEdges(
-      &container1, *t1.size_button(), *t1.close_button()));
+      &container1, *t1.minimize_button(), *t1.close_button()));
 
   // The minimize button should be visible when minimizing is allowed but
   // maximizing is disallowed.
@@ -165,45 +143,6 @@ TEST_F(FrameCaptionButtonContainerViewTestOldStyle, ButtonVisibility) {
   EXPECT_TRUE(t3.close_button()->visible());
   EXPECT_TRUE(CheckButtonsAtEdges(
       &container3, *t3.close_button(), *t3.close_button()));
-}
-
-class FrameCaptionButtonContainerViewTestAlternateStyle
-    : public FrameCaptionButtonContainerViewTest {
- public:
-  FrameCaptionButtonContainerViewTestAlternateStyle() {
-  }
-
-  virtual ~FrameCaptionButtonContainerViewTestAlternateStyle() {
-  }
-
-  virtual void SetUp() OVERRIDE {
-    FrameCaptionButtonContainerViewTest::SetUp();
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kAshEnableAlternateFrameCaptionButtonStyle);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FrameCaptionButtonContainerViewTestAlternateStyle);
-};
-
-// Test how the alternate button style affects which buttons are visible in the
-// default case.
-TEST_F(FrameCaptionButtonContainerViewTestAlternateStyle, ButtonVisibility) {
-  // Both the minimize button and the maximize button should be visible when
-  // both minimizing and maximizing are allowed when using the alternate
-  // button style.
-  scoped_ptr<views::Widget> widget_can_maximize(
-      CreateTestWidget(MAXIMIZE_ALLOWED));
-  FrameCaptionButtonContainerView container(widget_can_maximize.get(),
-      FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
-  SetMockImages(&container);
-  container.Layout();
-  FrameCaptionButtonContainerView::TestApi t(&container);
-  EXPECT_TRUE(t.minimize_button()->visible());
-  EXPECT_TRUE(t.size_button()->visible());
-  EXPECT_TRUE(t.close_button()->visible());
-  EXPECT_TRUE(CheckButtonsAtEdges(
-      &container, *t.minimize_button(), *t.close_button()));
 }
 
 }  // namespace ash

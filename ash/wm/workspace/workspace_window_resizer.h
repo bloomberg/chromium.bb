@@ -9,7 +9,6 @@
 
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/workspace/magnetism_matcher.h"
-#include "ash/wm/workspace/snap_types.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -68,6 +67,13 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
  private:
   friend class WorkspaceWindowResizerTest;
+
+  // The edge to which the window should be snapped at the end of the drag.
+  enum SnapType {
+    SNAP_LEFT,
+    SNAP_RIGHT,
+    SNAP_NONE
+  };
 
   // Lays out the attached windows. |bounds| is the bounds of the main window.
   void LayoutAttachedWindows(gfx::Rect* bounds);
@@ -144,8 +150,9 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // top of the z-order, and the rest directly underneath it.
   void RestackWindows();
 
-  // Returns the SnapType for the specified point. SNAP_NONE is used if no
-  // snapping should be used.
+  // Returns the edge to which the window should be snapped to if the user does
+  // no more dragging. SNAP_NONE is returned if the window should not be
+  // snapped.
   SnapType GetSnapType(const gfx::Point& location) const;
 
   // Returns true if |bounds_in_parent| are valid bounds for snapped state type
@@ -186,7 +193,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // the user drags a window to the edge of the screen.
   scoped_ptr<TwoStepEdgeCycler> edge_cycler_;
 
-  // Last SnapType.
+  // The edge to which the window should be snapped to at the end of the drag.
   SnapType snap_type_;
 
   // Number of mouse moves since the last bounds change. Only used for phantom

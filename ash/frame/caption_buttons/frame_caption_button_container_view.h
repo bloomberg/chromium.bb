@@ -16,7 +16,6 @@ class Widget;
 
 namespace ash {
 class FrameCaptionButton;
-class FrameMaximizeButton;
 
 // Container view for the frame caption buttons. It performs the appropriate
 // action when a caption button is clicked.
@@ -65,10 +64,6 @@ class ASH_EXPORT FrameCaptionButtonContainerView
 
     DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
-
-  // Returns the size button if using the old caption button style, returns NULL
-  // otherwise.
-  FrameMaximizeButton* GetOldStyleSizeButton();
 
   // Sets the resource ids of the images to paint the button for |icon|. The
   // FrameCaptionButtonContainerView will keep track of the images to use for

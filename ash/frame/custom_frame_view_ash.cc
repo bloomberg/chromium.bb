@@ -6,8 +6,6 @@
 
 #include "ash/ash_switches.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/frame/caption_buttons/frame_maximize_button.h"
-#include "ash/frame/caption_buttons/frame_maximize_button_observer.h"
 #include "ash/frame/default_header_painter.h"
 #include "ash/frame/frame_border_hit_test_controller.h"
 #include "ash/frame/frame_util.h"
@@ -32,7 +30,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/views/widget/widget_deletion_observer.h"
 
 namespace {
 
@@ -127,7 +124,6 @@ namespace ash {
 class CustomFrameViewAsh::HeaderView
     : public views::View,
       public ImmersiveFullscreenController::Delegate,
-      public FrameMaximizeButtonObserver,
       public ShellObserver {
  public:
   // |frame| is the widget that the caption buttons act on.
@@ -175,9 +171,6 @@ class CustomFrameViewAsh::HeaderView
   virtual void SetVisibleFraction(double visible_fraction) OVERRIDE;
   virtual std::vector<gfx::Rect> GetVisibleBoundsInScreen() const OVERRIDE;
 
-  // FrameMaximizeButtonObserver:
-  virtual void OnMaximizeBubbleShown(views::Widget* bubble) OVERRIDE;
-
   // The widget that the caption buttons act on.
   views::Widget* frame_;
 
@@ -188,13 +181,6 @@ class CustomFrameViewAsh::HeaderView
 
   // View which contains the window caption buttons.
   FrameCaptionButtonContainerView* caption_button_container_;
-
-  // The maximize bubble widget. |maximize_bubble_| may be non-NULL but have
-  // been already destroyed.
-  views::Widget* maximize_bubble_;
-
-  // Keeps track of whether |maximize_bubble_| is still alive.
-  scoped_ptr<views::WidgetDeletionObserver> maximize_bubble_lifetime_observer_;
 
   // The fraction of the header's height which is visible while in fullscreen.
   // This value is meaningless when not in fullscreen.
@@ -208,7 +194,6 @@ CustomFrameViewAsh::HeaderView::HeaderView(views::Widget* frame)
       header_painter_(new ash::DefaultHeaderPainter),
       avatar_icon_(NULL),
       caption_button_container_(NULL),
-      maximize_bubble_(NULL),
       fullscreen_visible_fraction_(0) {
   // Unfortunately, there is no views::WidgetDelegate::CanMinimize(). Assume
   // that the window frame can be minimized if it can be maximized.
@@ -221,10 +206,6 @@ CustomFrameViewAsh::HeaderView::HeaderView(views::Widget* frame)
   caption_button_container_->UpdateSizeButtonVisibility(Shell::GetInstance()->
       IsMaximizeModeWindowManagerEnabled());
   AddChildView(caption_button_container_);
-  FrameMaximizeButton* frame_maximize_button =
-      caption_button_container_->GetOldStyleSizeButton();
-  if (frame_maximize_button)
-    frame_maximize_button->AddObserver(this);
 
   header_painter_->Init(frame_, this, NULL, caption_button_container_);
   UpdateAvatarIcon();
@@ -233,10 +214,6 @@ CustomFrameViewAsh::HeaderView::HeaderView(views::Widget* frame)
 }
 
 CustomFrameViewAsh::HeaderView::~HeaderView() {
-  FrameMaximizeButton* frame_maximize_button =
-      caption_button_container_->GetOldStyleSizeButton();
-  if (frame_maximize_button)
-    frame_maximize_button->RemoveObserver(this);
   Shell::GetInstance()->RemoveShellObserver(this);
 }
 
@@ -361,21 +338,7 @@ CustomFrameViewAsh::HeaderView::GetVisibleBoundsInScreen() const {
   std::vector<gfx::Rect> bounds_in_screen;
   bounds_in_screen.push_back(
       gfx::Rect(visible_origin_in_screen, visible_bounds.size()));
-  if (maximize_bubble_lifetime_observer_.get() &&
-      maximize_bubble_lifetime_observer_->IsWidgetAlive()) {
-    bounds_in_screen.push_back(maximize_bubble_->GetWindowBoundsInScreen());
-  }
   return bounds_in_screen;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CustomFrameViewAsh::HeaderView, FrameMaximizeButtonObserver overrides:
-
-void CustomFrameViewAsh::HeaderView::OnMaximizeBubbleShown(
-    views::Widget* bubble) {
-  maximize_bubble_ = bubble;
-  maximize_bubble_lifetime_observer_.reset(
-      new views::WidgetDeletionObserver(bubble));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

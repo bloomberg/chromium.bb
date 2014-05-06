@@ -38,11 +38,6 @@ const char kAshDefaultWallpaperIsOem[] = "ash-default-wallpaper-is-oem";
 const char kAshDefaultWallpaperLarge[] = "ash-default-wallpaper-large";
 const char kAshDefaultWallpaperSmall[] = "ash-default-wallpaper-small";
 
-// Use the normal visual style for the caption buttons (minimize, maximize,
-// restore, close).
-const char kAshDisableAlternateFrameCaptionButtonStyle[] =
-    "ash-disable-alternate-caption-button";
-
 // Disable ability to dock windows at the desktop edge.
 const char kAshDisableDockedWindows[] = "ash-disable-docked-windows";
 
@@ -50,13 +45,6 @@ const char kAshDisableDockedWindows[] = "ash-disable-docked-windows";
 // automatically when spoken feedback is enabled when this flag is set.
 const char kAshEnableTouchExplorationMode[] =
     "ash-enable-touch-exploration-mode";
-
-// Use alternate visual style for the caption buttons (minimize, maximize,
-// restore, close). The alternate style:
-// - Adds a dedicated button for minimize.
-// - Removes the maximize button's help bubble.
-const char kAshEnableAlternateFrameCaptionButtonStyle[] =
-    "ash-enable-alternate-caption-button";
 
 #if defined(OS_CHROMEOS)
 // Enables key bindings to scroll magnified screen.
@@ -121,11 +109,6 @@ const char kAuraLegacyPowerButton[] = "aura-legacy-power-button";
 const char kForceAshToDesktop[] = "ash-force-desktop";
 
 #endif
-
-bool UseAlternateFrameCaptionButtonStyle() {
-  return !CommandLine::ForCurrentProcess()->
-      HasSwitch(kAshDisableAlternateFrameCaptionButtonStyle);
-}
 
 bool UseDockedWindows() {
   return !CommandLine::ForCurrentProcess()->HasSwitch(kAshDisableDockedWindows);

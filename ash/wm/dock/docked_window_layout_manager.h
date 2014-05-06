@@ -11,7 +11,6 @@
 #include "ash/wm/dock/dock_types.h"
 #include "ash/wm/dock/docked_window_layout_manager_observer.h"
 #include "ash/wm/window_state_observer.h"
-#include "ash/wm/workspace/snap_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -119,7 +118,7 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // Returns true when a window can be docked. Windows cannot be docked at the
   // edge used by the shelf or the edge opposite from existing dock.
-  bool CanDockWindow(aura::Window* window, SnapType edge);
+  bool CanDockWindow(aura::Window* window, DockedAlignment desired_alignment);
 
   aura::Window* dock_container() const { return dock_container_; }
 

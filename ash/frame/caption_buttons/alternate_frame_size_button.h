@@ -8,7 +8,6 @@
 #include "ash/ash_export.h"
 #include "ash/frame/caption_buttons/alternate_frame_size_button_delegate.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
-#include "ash/wm/workspace/snap_types.h"
 #include "base/timer/timer.h"
 
 namespace views {
@@ -49,6 +48,12 @@ class ASH_EXPORT AlternateFrameSizeButton : public FrameCaptionButton {
   }
 
  private:
+  enum SnapType {
+    SNAP_LEFT,
+    SNAP_RIGHT,
+    SNAP_NONE
+  };
+
   // Starts |set_buttons_to_snap_mode_timer_|.
   void StartSetButtonsToSnapModeTimer(const ui::LocatedEvent& event);
 
