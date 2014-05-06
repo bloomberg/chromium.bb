@@ -736,34 +736,27 @@ ResourceProvider::ResourceId ResourceProvider::CreateBitmap(
   return id;
 }
 
-ResourceProvider::ResourceId
-ResourceProvider::CreateResourceFromExternalTexture(
-    GLuint texture_target,
-    GLuint texture_id) {
+ResourceProvider::ResourceId ResourceProvider::CreateResourceFromIOSurface(
+    const gfx::Size& size,
+    unsigned io_surface_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  DCHECK(texture_target);
-  DCHECK(texture_id);
-  GLES2Interface* gl = ContextGL();
-  DCHECK(gl);
-  GLC(gl, gl->BindTexture(texture_target, texture_id));
-  GLC(gl, gl->TexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-  GLC(gl, gl->TexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-  GLC(gl,
-      gl->TexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-  GLC(gl,
-      gl->TexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-
   ResourceId id = next_id_++;
-  Resource resource(texture_id,
+  Resource resource(0,
                     gfx::Size(),
-                    Resource::External,
-                    texture_target,
+                    Resource::Internal,
+                    GL_TEXTURE_RECTANGLE_ARB,
                     GL_LINEAR,
-                    0,
+                    GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
                     GL_CLAMP_TO_EDGE,
                     TextureUsageAny,
                     RGBA_8888);
+  LazyCreate(&resource);
+  GLES2Interface* gl = ContextGL();
+  DCHECK(gl);
+  gl->BindTexture(GL_TEXTURE_RECTANGLE_ARB, resource.gl_id);
+  gl->TexImageIOSurface2DCHROMIUM(
+      GL_TEXTURE_RECTANGLE_ARB, size.width(), size.height(), io_surface_id, 0);
   resource.allocated = true;
   resources_[id] = resource;
   return id;
@@ -869,7 +862,8 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
     DCHECK(gl);
     GLC(gl, gl->DeleteBuffers(1, &resource->gl_pixel_buffer_id));
   }
-  if (resource->mailbox.IsValid() && resource->origin == Resource::External) {
+  if (resource->origin == Resource::External) {
+    DCHECK(resource->mailbox.IsValid());
     GLuint sync_point = resource->mailbox.sync_point();
     if (resource->type == GLTexture) {
       DCHECK(resource->mailbox.IsTexture());
@@ -894,7 +888,7 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
     }
     resource->release_callback.Run(sync_point, lost_resource);
   }
-  if (resource->gl_id && resource->origin != Resource::External) {
+  if (resource->gl_id) {
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
     GLC(gl, gl->DeleteTextures(1, &resource->gl_id));
@@ -910,10 +904,6 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
     DCHECK(resource->origin == Resource::Internal);
     delete[] resource->pixels;
   }
-  // We should never delete the texture for a resource created by
-  // CreateResourceFromExternalTexture().
-  DCHECK(!resource->gl_id || resource->origin == Resource::External);
-
   resources_.erase(it);
 }
 
@@ -1558,8 +1548,6 @@ void ResourceProvider::ReceiveReturnsFromParent(
         DCHECK(resource->gl_id);
         GLC(gl, gl->WaitSyncPointCHROMIUM(returned.sync_point));
       } else {
-        // Because CreateResourceFromExternalTexture() never be called,
-        // when enabling delegated compositor.
         DCHECK(!resource->gl_id);
         resource->mailbox.set_sync_point(returned.sync_point);
       }
@@ -1606,11 +1594,7 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
   Resource* source = GetResource(id);
   DCHECK(!source->locked_for_write);
   DCHECK(!source->lock_for_read_count);
-  // Because CreateResourceFromExternalTexture() never be called,
-  // when enabling delegated compositor.
-  DCHECK(source->origin == Resource::Internal ||
-         source->origin == Resource::Delegated ||
-         (source->origin == Resource::External && source->mailbox.IsValid()));
+  DCHECK(source->origin != Resource::External || source->mailbox.IsValid());
   DCHECK(source->allocated);
   DCHECK_EQ(source->wrap_mode, GL_CLAMP_TO_EDGE);
   resource->id = id;

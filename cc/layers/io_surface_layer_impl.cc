@@ -21,31 +21,18 @@ IOSurfaceLayerImpl::IOSurfaceLayerImpl(LayerTreeImpl* tree_impl, int id)
     : LayerImpl(tree_impl, id),
       io_surface_id_(0),
       io_surface_changed_(false),
-      io_surface_texture_id_(0),
       io_surface_resource_id_(0) {}
 
 IOSurfaceLayerImpl::~IOSurfaceLayerImpl() {
-  if (!io_surface_texture_id_)
-    return;
-
-  DestroyTexture();
+  DestroyResource();
 }
 
-void IOSurfaceLayerImpl::DestroyTexture() {
+void IOSurfaceLayerImpl::DestroyResource() {
   if (io_surface_resource_id_) {
     ResourceProvider* resource_provider =
         layer_tree_impl()->resource_provider();
     resource_provider->DeleteResource(io_surface_resource_id_);
     io_surface_resource_id_ = 0;
-  }
-
-  if (io_surface_texture_id_) {
-    ContextProvider* context_provider =
-        layer_tree_impl()->output_surface()->context_provider().get();
-    // TODO(skaslev): Implement this path for software compositing.
-    if (context_provider)
-      context_provider->ContextGL()->DeleteTextures(1, &io_surface_texture_id_);
-    io_surface_texture_id_ = 0;
   }
 }
 
@@ -64,41 +51,13 @@ void IOSurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
 bool IOSurfaceLayerImpl::WillDraw(DrawMode draw_mode,
                                   ResourceProvider* resource_provider) {
-  if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
+  if (draw_mode != DRAW_MODE_HARDWARE)
     return false;
 
   if (io_surface_changed_) {
-    ContextProvider* context_provider =
-        layer_tree_impl()->output_surface()->context_provider().get();
-    if (!context_provider) {
-      // TODO(skaslev): Implement this path for software compositing.
-      return false;
-    }
-
-    gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
-
-    // TODO(ernstm): Do this in a way that we can track memory usage.
-    if (!io_surface_texture_id_) {
-      gl->GenTextures(1, &io_surface_texture_id_);
-      io_surface_resource_id_ =
-          resource_provider->CreateResourceFromExternalTexture(
-              GL_TEXTURE_RECTANGLE_ARB,
-              io_surface_texture_id_);
-    }
-
-    GLC(gl, gl->BindTexture(GL_TEXTURE_RECTANGLE_ARB, io_surface_texture_id_));
-    gl->TexImageIOSurface2DCHROMIUM(GL_TEXTURE_RECTANGLE_ARB,
-                                    io_surface_size_.width(),
-                                    io_surface_size_.height(),
-                                    io_surface_id_,
-                                    0);
-    // Do not check for error conditions. texImageIOSurface2DCHROMIUM() is
-    // supposed to hold on to the last good IOSurface if the new one is already
-    // closed. This is only a possibility during live resizing of plugins.
-    // However, it seems that this is not sufficient to completely guard against
-    // garbage being drawn. If this is found to be a significant issue, it may
-    // be necessary to explicitly tell the embedder when to free the surfaces it
-    // has allocated.
+    DestroyResource();
+    io_surface_resource_id_ = resource_provider->CreateResourceFromIOSurface(
+        io_surface_size_, io_surface_id_);
     io_surface_changed_ = false;
   }
 
@@ -130,9 +89,9 @@ void IOSurfaceLayerImpl::AppendQuads(QuadSink* quad_sink,
 }
 
 void IOSurfaceLayerImpl::ReleaseResources() {
-  // We don't have a valid texture ID in the new context; however,
+  // We don't have a valid resource ID in the new context; however,
   // the IOSurface is still valid.
-  DestroyTexture();
+  DestroyResource();
   io_surface_changed_ = true;
 }
 

@@ -23,6 +23,8 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/output/output_surface.h"
+#include "cc/quads/draw_quad.h"
+#include "cc/quads/io_surface_draw_quad.h"
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/resource_update_queue.h"
@@ -2844,6 +2846,8 @@ class MockIOSurfaceWebGraphicsContext3D : public TestWebGraphicsContext3D {
                                   GLenum type,
                                   GLintptr offset));
   MOCK_METHOD1(deleteTexture, void(GLenum texture));
+  MOCK_METHOD2(produceTextureCHROMIUM,
+               void(GLenum target, const GLbyte* mailbox));
 };
 
 class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
@@ -2854,8 +2858,13 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
         new MockIOSurfaceWebGraphicsContext3D);
     mock_context_ = mock_context_owned.get();
 
-    return FakeOutputSurface::Create3d(
-        mock_context_owned.PassAs<TestWebGraphicsContext3D>());
+    if (delegating_renderer()) {
+      return FakeOutputSurface::CreateDelegating3d(
+          mock_context_owned.PassAs<TestWebGraphicsContext3D>());
+    } else {
+      return FakeOutputSurface::Create3d(
+          mock_context_owned.PassAs<TestWebGraphicsContext3D>());
+    }
   }
 
   virtual void SetupTree() OVERRIDE {
@@ -2870,6 +2879,7 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
     io_surface_layer->SetBounds(gfx::Size(10, 10));
     io_surface_layer->SetAnchorPoint(gfx::PointF());
     io_surface_layer->SetIsDrawable(true);
+    io_surface_layer->SetContentsOpaque(true);
     io_surface_layer->SetIOSurfaceProperties(io_surface_id_, io_surface_size_);
     layer_tree_host()->root_layer()->AddChild(io_surface_layer);
   }
@@ -2877,6 +2887,7 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
   virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    EXPECT_EQ(0u, host_impl->resource_provider()->num_resources());
     // In WillDraw, the IOSurfaceLayer sets up the io surface texture.
 
     EXPECT_CALL(*mock_context_, activeTexture(_)).Times(0);
@@ -2890,6 +2901,10 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
                 texParameteri(
                     GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR))
         .Times(1);
+    EXPECT_CALL(*mock_context_,
+                texParameteri(GL_TEXTURE_RECTANGLE_ARB,
+                              GL_TEXTURE_POOL_CHROMIUM,
+                              GL_TEXTURE_POOL_UNMANAGED_CHROMIUM)).Times(1);
     EXPECT_CALL(*mock_context_,
                 texParameteri(GL_TEXTURE_RECTANGLE_ARB,
                               GL_TEXTURE_WRAP_S,
@@ -2914,13 +2929,32 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
       LayerTreeHostImpl::FrameData* frame,
       DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
     Mock::VerifyAndClearExpectations(&mock_context_);
+    ResourceProvider* resource_provider = host_impl->resource_provider();
+    EXPECT_EQ(1u, resource_provider->num_resources());
+    CHECK_EQ(1u, frame->render_passes.size());
+    CHECK_LE(1u, frame->render_passes[0]->quad_list.size());
+    const DrawQuad* quad = frame->render_passes[0]->quad_list[0];
+    CHECK_EQ(DrawQuad::IO_SURFACE_CONTENT, quad->material);
+    const IOSurfaceDrawQuad* io_surface_draw_quad =
+        IOSurfaceDrawQuad::MaterialCast(quad);
+    EXPECT_SIZE_EQ(io_surface_size_, io_surface_draw_quad->io_surface_size);
+    EXPECT_NE(0u, io_surface_draw_quad->io_surface_resource_id);
+    EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_RECTANGLE_ARB),
+              resource_provider->TargetForTesting(
+                  io_surface_draw_quad->io_surface_resource_id));
 
-    // The io surface layer's texture is drawn.
-    EXPECT_CALL(*mock_context_, activeTexture(GL_TEXTURE0)).Times(AtLeast(1));
     EXPECT_CALL(*mock_context_, bindTexture(GL_TEXTURE_RECTANGLE_ARB, 1))
         .Times(1);
-    EXPECT_CALL(*mock_context_, drawElements(GL_TRIANGLES, 6, _, _))
-        .Times(AtLeast(1));
+    if (delegating_renderer()) {
+      // The io surface layer's resource should be sent to the parent.
+      EXPECT_CALL(*mock_context_,
+                  produceTextureCHROMIUM(GL_TEXTURE_RECTANGLE_ARB, _)).Times(1);
+    } else {
+      // The io surface layer's texture is drawn.
+      EXPECT_CALL(*mock_context_, activeTexture(GL_TEXTURE0)).Times(AtLeast(1));
+      EXPECT_CALL(*mock_context_, drawElements(GL_TRIANGLES, 6, _, _))
+          .Times(AtLeast(1));
+    }
 
     return draw_result;
   }
@@ -2928,7 +2962,7 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     Mock::VerifyAndClearExpectations(&mock_context_);
 
-    EXPECT_CALL(*mock_context_, deleteTexture(1)).Times(1);
+    EXPECT_CALL(*mock_context_, deleteTexture(1)).Times(AtLeast(1));
     EndTest();
   }
 
@@ -2939,9 +2973,7 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
   gfx::Size io_surface_size_;
 };
 
-// TODO(danakj): IOSurface layer can not be transported. crbug.com/239335
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
-    LayerTreeHostTestIOSurfaceDrawing);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestIOSurfaceDrawing);
 
 class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
  public:

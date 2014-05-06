@@ -125,10 +125,9 @@ class CC_EXPORT ResourceProvider {
                              ResourceFormat format);
 
   ResourceId CreateBitmap(const gfx::Size& size, GLint wrap_mode);
-  // Wraps an external texture into a GL resource.
-  ResourceId CreateResourceFromExternalTexture(
-      unsigned texture_target,
-      unsigned texture_id);
+  // Wraps an IOSurface into a GL resource.
+  ResourceId CreateResourceFromIOSurface(const gfx::Size& size,
+                                         unsigned io_surface_id);
 
   // Wraps an external texture mailbox into a GL resource.
   ResourceId CreateResourceFromTextureMailbox(
