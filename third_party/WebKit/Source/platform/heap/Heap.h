@@ -1731,10 +1731,15 @@ template<typename ValueArg, size_t inlineCapacity, typename U>
 struct GCInfoTrait<ListHashSet<ValueArg, inlineCapacity, U, HeapListHashSetAllocator<ValueArg, inlineCapacity> > > {
     static const GCInfo* get()
     {
+        typedef WTF::ListHashSet<ValueArg, inlineCapacity, U, HeapListHashSetAllocator<ValueArg, inlineCapacity> > TargetType;
         static const GCInfo info = {
-            TraceTrait<ListHashSet<ValueArg, inlineCapacity, U, HeapListHashSetAllocator<ValueArg, inlineCapacity> > >::trace,
+            TraceTrait<TargetType>::trace,
             0,
-            false // ListHashSet needs no finalization though its backing might.
+            false, // ListHashSet needs no finalization though its backing might.
+            false, // no vtable.
+#if ENABLE(GC_TRACING)
+            TypenameStringTrait<TargetType>::get()
+#endif
         };
         return &info;
     }
@@ -1744,10 +1749,15 @@ template<typename T, typename Allocator>
 struct GCInfoTrait<WTF::ListHashSetNode<T, Allocator> > {
     static const GCInfo* get()
     {
+        typedef WTF::ListHashSetNode<T, Allocator> TargetType;
         static const GCInfo info = {
-            TraceTrait<WTF::ListHashSetNode<T, Allocator> >::trace,
-            WTF::ListHashSetNode<T, Allocator>::finalize,
-            WTF::HashTraits<T>::needsDestruction // The node needs destruction if its data does.
+            TraceTrait<TargetType>::trace,
+            TargetType::finalize,
+            WTF::HashTraits<T>::needsDestruction, // The node needs destruction if its data does.
+            false, // no vtable.
+#if ENABLE(GC_TRACING)
+            TypenameStringTrait<TargetType>::get()
+#endif
         };
         return &info;
     }
