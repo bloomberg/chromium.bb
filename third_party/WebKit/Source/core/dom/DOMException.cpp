@@ -76,6 +76,9 @@ static const struct CoreException {
 
     // SQL
     { "DatabaseError", "The operation failed for some reason related to the database.", 0 },
+
+    // Web Crypto
+    { "OperationError", "The operation failed for an operation-specific reason", 0 },
 };
 
 static const CoreException* getErrorEntry(ExceptionCode ec)

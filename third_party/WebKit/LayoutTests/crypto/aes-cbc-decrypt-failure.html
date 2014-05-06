@@ -33,6 +33,7 @@ function verifyDecryptionFails(newCipherTextLength)
     return crypto.subtle.decrypt(algorithm, key, newCipherText).then(function(result) {
         debug("FAIL: decrypting succeeded. " + description);
     }, function(result) {
+        logError(result);
         debug("PASS: decrypting failed. " + description);
     });
 }

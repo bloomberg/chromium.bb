@@ -78,6 +78,9 @@ namespace WebCore {
         // SQL
         SQLDatabaseError, // Naming conflict with DatabaseError class.
 
+        // Web Crypto
+        OperationError,
+
         // WebIDL exception types, handled by the binding layer.
         // FIXME: Add GeneralError, EvalError, etc. when implemented in the bindings.
         TypeError,

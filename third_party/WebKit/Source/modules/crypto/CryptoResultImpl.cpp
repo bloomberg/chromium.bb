@@ -65,9 +65,7 @@ ExceptionCode toExceptionCode(blink::WebCryptoErrorType errorType)
     case blink::WebCryptoErrorTypeData:
         return DataError;
     case blink::WebCryptoErrorTypeOperation:
-        // FIXME: This exception type is new to WebCrypto and not yet defined.
-        // Use a placeholder for now.
-        return InvalidStateError;
+        return OperationError;
     case blink::WebCryptoErrorTypeType:
         // FIXME: This should construct a TypeError instead. For now do
         //        something to facilitate refactor, but this will need to be
