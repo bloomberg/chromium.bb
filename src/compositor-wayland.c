@@ -1424,8 +1424,10 @@ input_handle_keymap(void *data, struct wl_keyboard *keyboard, uint32_t format,
 	struct xkb_keymap *keymap;
 	char *map_str;
 
-	if (!data)
-		goto error;
+	if (!data) {
+		close(fd);
+		return;
+	}
 
 	if (format == WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
 		map_str = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
