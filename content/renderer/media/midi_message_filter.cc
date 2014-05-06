@@ -100,26 +100,26 @@ void MidiMessageFilter::RemoveClient(blink::WebMIDIAccessorClient* client) {
 
 void MidiMessageFilter::OnSessionStarted(
     int client_id,
-    bool success,
+    media::MidiResult result,
     MidiPortInfoList inputs,
     MidiPortInfoList outputs) {
   // Handle on the main JS thread.
   main_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&MidiMessageFilter::HandleSessionStarted, this,
-                 client_id, success, inputs, outputs));
+                 client_id, result, inputs, outputs));
 }
 
 void MidiMessageFilter::HandleSessionStarted(
     int client_id,
-    bool success,
+    media::MidiResult result,
     MidiPortInfoList inputs,
     MidiPortInfoList outputs) {
   blink::WebMIDIAccessorClient* client = GetClientFromId(client_id);
   if (!client)
     return;
 
-  if (success) {
+  if (result == media::MIDI_OK) {
     // Add the client's input and output ports.
     for (size_t i = 0; i < inputs.size(); ++i) {
       client->didAddInputPort(
@@ -137,7 +137,26 @@ void MidiMessageFilter::HandleSessionStarted(
           base::UTF8ToUTF16(outputs[i].version));
     }
   }
-  client->didStartSession(success);
+  std::string error;
+  std::string message;
+  switch (result) {
+    case media::MIDI_OK:
+      break;
+    case media::MIDI_NOT_SUPPORTED:
+      error = "NotSupportedError";
+      break;
+    case media::MIDI_INITIALIZATION_ERROR:
+      error = "InvalidStateError";
+      message = "Platform dependent initialization failed.";
+      break;
+    default:
+      NOTREACHED();
+      error = "InvalidStateError";
+      message = "Unknown internal error occurred.";
+      break;
+  }
+  client->didStartSession(result == media::MIDI_OK, base::UTF8ToUTF16(error),
+                          base::UTF8ToUTF16(message));
 }
 
 blink::WebMIDIAccessorClient*

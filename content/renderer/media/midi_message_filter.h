@@ -12,6 +12,7 @@
 #include "content/common/content_export.h"
 #include "ipc/message_filter.h"
 #include "media/midi/midi_port_info.h"
+#include "media/midi/midi_result.h"
 #include "third_party/WebKit/public/platform/WebMIDIAccessorClient.h"
 
 namespace base {
@@ -61,7 +62,7 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
   // Called when the browser process has approved (or denied) access to
   // MIDI hardware.
   void OnSessionStarted(int client_id,
-                        bool success,
+                        media::MidiResult result,
                         media::MidiPortInfoList inputs,
                         media::MidiPortInfoList outputs);
 
@@ -77,7 +78,7 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
   void OnAcknowledgeSentData(size_t bytes_sent);
 
   void HandleSessionStarted(int client_id,
-                            bool success,
+                            media::MidiResult result,
                             media::MidiPortInfoList inputs,
                             media::MidiPortInfoList outputs);
 

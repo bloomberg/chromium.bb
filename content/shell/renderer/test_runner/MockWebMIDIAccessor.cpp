@@ -27,7 +27,7 @@ public:
 
     virtual void runIfValid() OVERRIDE
     {
-        m_client->didStartSession(m_result);
+        m_client->didStartSession(m_result, "InvalidStateError", "");
     }
 
 private:

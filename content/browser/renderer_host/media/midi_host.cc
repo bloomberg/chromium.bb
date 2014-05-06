@@ -122,9 +122,7 @@ void MidiHost::CompleteStartSession(int client_id, media::MidiResult result) {
   MidiPortInfoList input_ports;
   MidiPortInfoList output_ports;
 
-  // TODO(toyoshim): Report what error happens back to blink.
-  bool success = result == media::MIDI_OK;
-  if (success) {
+  if (result == media::MIDI_OK) {
     input_ports = midi_manager_->input_ports();
     output_ports = midi_manager_->output_ports();
     received_messages_queues_.clear();
@@ -136,7 +134,7 @@ void MidiHost::CompleteStartSession(int client_id, media::MidiResult result) {
   }
 
   Send(new MidiMsg_SessionStarted(client_id,
-                                  success,
+                                  result,
                                   input_ports,
                                   output_ports));
 }
