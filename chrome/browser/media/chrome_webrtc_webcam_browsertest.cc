@@ -59,9 +59,13 @@ class WebRtcWebcamBrowserTest : public WebRtcTestBase,
                                            const std::string& constraints) {
     // We will get a permission prompt for the first getUserMedia call.
     // Subsequent calls won't trigger a prompt.
-    get_user_media_call_count_ == 0 ?
-        GetUserMediaWithSpecificConstraintsAndAccept(tab, constraints) :
-        GetUserMedia(tab, constraints);
+    if (get_user_media_call_count_ == 0) {
+      GetUserMediaWithSpecificConstraintsAndAccept(tab, constraints);
+    } else {
+      GetUserMedia(tab, constraints);
+      EXPECT_TRUE(test::PollingWaitUntil(
+          "obtainGetUserMediaResult()", "ok-got-stream", tab));
+    }
 
     ++get_user_media_call_count_;
 
