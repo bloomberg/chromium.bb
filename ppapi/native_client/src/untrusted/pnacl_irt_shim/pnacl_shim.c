@@ -3341,6 +3341,31 @@ static void Pnacl_M25_PPB_NaCl_Private_DownloadManifestToBuffer(PP_Instance inst
   iface->DownloadManifestToBuffer(instance, data, *callback);
 }
 
+static int32_t Pnacl_M25_PPB_NaCl_Private_CreatePnaclManifest(PP_Instance instance) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  return iface->CreatePnaclManifest(instance);
+}
+
+static int32_t Pnacl_M25_PPB_NaCl_Private_CreateJsonManifest(PP_Instance instance, const char* manifest_base_url, const char* sandbox_isa, const char* manifest_data) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  return iface->CreateJsonManifest(instance, manifest_base_url, sandbox_isa, manifest_data);
+}
+
+static void Pnacl_M25_PPB_NaCl_Private_DestroyManifest(PP_Instance instance, int32_t manifest_id) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  iface->DestroyManifest(instance, manifest_id);
+}
+
+static PP_Bool Pnacl_M25_PPB_NaCl_Private_GetManifestProgramURL(PP_Instance instance, int32_t manifest_id, struct PP_Var* full_url, struct PP_PNaClOptions* pnacl_options, PP_Bool* uses_nonsfi_mode) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  return iface->GetManifestProgramURL(instance, manifest_id, full_url, pnacl_options, uses_nonsfi_mode);
+}
+
+static PP_Bool Pnacl_M25_PPB_NaCl_Private_ManifestResolveKey(PP_Instance instance, int32_t manifest_id, const char* key, struct PP_Var* full_url, struct PP_PNaClOptions* pnacl_options) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  return iface->ManifestResolveKey(instance, manifest_id, key, full_url, pnacl_options);
+}
+
 /* End wrapper methods for PPB_NaCl_Private_1_0 */
 
 /* Begin wrapper methods for PPB_NetAddress_Private_0_1 */
@@ -5086,7 +5111,12 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .GetManifestURLArgument = (struct PP_Var (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetManifestURLArgument,
     .IsPNaCl = (PP_Bool (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_IsPNaCl,
     .DevInterfacesEnabled = (PP_Bool (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_DevInterfacesEnabled,
-    .DownloadManifestToBuffer = (void (*)(PP_Instance instance, struct PP_Var* data, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_DownloadManifestToBuffer
+    .DownloadManifestToBuffer = (void (*)(PP_Instance instance, struct PP_Var* data, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_DownloadManifestToBuffer,
+    .CreatePnaclManifest = (int32_t (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_CreatePnaclManifest,
+    .CreateJsonManifest = (int32_t (*)(PP_Instance instance, const char* manifest_base_url, const char* sandbox_isa, const char* manifest_data))&Pnacl_M25_PPB_NaCl_Private_CreateJsonManifest,
+    .DestroyManifest = (void (*)(PP_Instance instance, int32_t manifest_id))&Pnacl_M25_PPB_NaCl_Private_DestroyManifest,
+    .GetManifestProgramURL = (PP_Bool (*)(PP_Instance instance, int32_t manifest_id, struct PP_Var* full_url, struct PP_PNaClOptions* pnacl_options, PP_Bool* uses_nonsfi_mode))&Pnacl_M25_PPB_NaCl_Private_GetManifestProgramURL,
+    .ManifestResolveKey = (PP_Bool (*)(PP_Instance instance, int32_t manifest_id, const char* key, struct PP_Var* full_url, struct PP_PNaClOptions* pnacl_options))&Pnacl_M25_PPB_NaCl_Private_ManifestResolveKey
 };
 
 static const struct PPB_NetAddress_Private_0_1 Pnacl_Wrappers_PPB_NetAddress_Private_0_1 = {
