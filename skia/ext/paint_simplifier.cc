@@ -26,7 +26,6 @@ bool PaintSimplifier::filter(SkPaint* paint, Type type) {
   paint->setSubpixelText(false);
   paint->setLCDRenderText(false);
 
-  paint->setFilterBitmap(false);
   paint->setMaskFilter(NULL);
 
   // Uncomment this line to shade simplified tiles pink during debugging.
