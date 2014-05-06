@@ -84,7 +84,9 @@ enum EventFlags {
   EF_LEFT_MOUSE_BUTTON   = 1 << 4,
   EF_MIDDLE_MOUSE_BUTTON = 1 << 5,
   EF_RIGHT_MOUSE_BUTTON  = 1 << 6,
-  EF_COMMAND_DOWN        = 1 << 7,  // Only useful on OSX
+  EF_COMMAND_DOWN        = 1 << 7,  // GUI Key (e.g. Command on OS X keyboards,
+                                    // Search on Chromebook keyboards,
+                                    // Windows on MS-oriented keyboards)
   EF_EXTENDED            = 1 << 8,  // Windows extended key (see WM_KEYDOWN doc)
   EF_IS_SYNTHESIZED      = 1 << 9,
   EF_ALTGR_DOWN          = 1 << 10,
