@@ -989,18 +989,15 @@ void SigninScreenHandler::Observe(int type,
     }
     case chrome::NOTIFICATION_AUTH_SUPPLIED:
       has_pending_auth_ui_ = false;
-      if (IsSigninScreenHiddenByError()) {
-        // Hide error screen and reload auth extension.
-        HideOfflineMessage(network_state_informer_->state(),
-                           ErrorScreenActor::ERROR_REASON_PROXY_AUTH_SUPPLIED);
-      } else if (ui_state_ == UI_STATE_GAIA_SIGNIN) {
-        // Reload auth extension as proxy credentials are supplied.
+      // Reload auth extension as proxy credentials are supplied.
+      if (!IsSigninScreenHiddenByError() && ui_state_ == UI_STATE_GAIA_SIGNIN)
         ReloadGaiaScreen();
-      }
+      update_state_closure_.Cancel();
       break;
     case chrome::NOTIFICATION_AUTH_CANCELLED: {
       // Don't reload auth extension if proxy auth dialog was cancelled.
       has_pending_auth_ui_ = false;
+      update_state_closure_.Cancel();
       break;
     }
     default:

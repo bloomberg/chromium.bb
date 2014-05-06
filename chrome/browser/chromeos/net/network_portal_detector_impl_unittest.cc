@@ -647,7 +647,18 @@ TEST_F(NetworkPortalDetectorImplTest, ProxyAuthRequired) {
   SetConnected(kStubWireless1);
   CompleteURLFetch(net::OK, 407, NULL);
   ASSERT_EQ(1, attempt_count());
+  ASSERT_TRUE(is_state_portal_detection_pending());
+
+  base::RunLoop().RunUntilIdle();
+  CompleteURLFetch(net::OK, 407, NULL);
+  ASSERT_EQ(2, attempt_count());
+  ASSERT_TRUE(is_state_portal_detection_pending());
+
+  base::RunLoop().RunUntilIdle();
+  CompleteURLFetch(net::OK, 407, NULL);
+  ASSERT_EQ(3, attempt_count());
   ASSERT_TRUE(is_state_idle());
+
   CheckPortalState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED,
       407,
