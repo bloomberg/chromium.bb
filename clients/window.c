@@ -2387,7 +2387,6 @@ frame_handle_status(struct window_frame *frame, struct input *input,
 	if ((status & FRAME_STATUS_RESIZE) && window->xdg_surface) {
 		input_ungrab(input);
 
-		window->resizing = 1;
 		xdg_surface_resize(window->xdg_surface,
 				   input_get_seat(input),
 				   window->display->serial,
@@ -2622,12 +2621,6 @@ pointer_handle_enter(void *data, struct wl_pointer *pointer,
 	input->display->serial = serial;
 	input->pointer_enter_serial = serial;
 	input->pointer_focus = window;
-
-	if (window->resizing) {
-		window->resizing = 0;
-		/* Schedule a redraw to free the pool */
-		window_schedule_redraw(window);
-	}
 
 	input->sx = sx;
 	input->sy = sy;
@@ -3873,6 +3866,7 @@ handle_surface_configure(void *data, struct xdg_surface *xdg_surface,
 
 	window->maximized = 0;
 	window->fullscreen = 0;
+	window->resizing = 0;
 
 	wl_array_for_each(p, states) {
 		uint32_t state = *p;
@@ -3882,6 +3876,9 @@ handle_surface_configure(void *data, struct xdg_surface *xdg_surface,
 			break;
 		case XDG_SURFACE_STATE_FULLSCREEN:
 			window->fullscreen = 1;
+			break;
+		case XDG_SURFACE_STATE_RESIZING:
+			window->resizing = 1;
 			break;
 		default:
 			/* Unknown state */

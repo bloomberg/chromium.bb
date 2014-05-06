@@ -352,12 +352,26 @@ shell_grab_start(struct shell_grab *grab,
 }
 
 static void
+shell_surface_state_changed(struct shell_surface *shsurf)
+{
+	if (shell_surface_is_xdg_surface(shsurf)) {
+		shsurf->client->send_configure(shsurf->surface,
+					       shsurf->surface->width,
+					       shsurf->surface->height);
+	}
+}
+
+static void
 shell_grab_end(struct shell_grab *grab)
 {
 	if (grab->shsurf) {
 		wl_list_remove(&grab->shsurf_destroy_listener.link);
 		grab->shsurf->grabbed = 0;
-		grab->shsurf->resize_edges = 0;
+
+		if (grab->shsurf->resize_edges) {
+			grab->shsurf->resize_edges = 0;
+			shell_surface_state_changed(grab->shsurf);
+		}
 	}
 
 	weston_pointer_end_grab(grab->grab.pointer);
@@ -1769,6 +1783,7 @@ surface_resize(struct shell_surface *shsurf,
 	                                &resize->width, &resize->height);
 
 	shsurf->resize_edges = edges;
+	shell_surface_state_changed(shsurf);
 	shell_grab_start(&resize->base, &resize_grab_interface, shsurf,
 			 seat->pointer, edges);
 
@@ -3537,6 +3552,10 @@ xdg_send_configure(struct weston_surface *surface,
 	} else if (shsurf->requested_state.maximized) {
 		s = wl_array_add(&states, sizeof *s);
 		*s = XDG_SURFACE_STATE_MAXIMIZED;
+	}
+	if (shsurf->resize_edges != 0) {
+		s = wl_array_add(&states, sizeof *s);
+		*s = XDG_SURFACE_STATE_RESIZING;
 	}
 
 	serial = wl_display_next_serial(shsurf->surface->compositor->wl_display);

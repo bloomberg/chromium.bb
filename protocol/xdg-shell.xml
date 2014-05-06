@@ -270,6 +270,12 @@
         The surface is fullscreen. The window geometry specified in the configure
         event must be obeyed by the client.
       </entry>
+      <entry name="resizing" value="3">
+        The surface is being resized. The window geometry specified in the
+        configure event is a maximum; the client cannot resize beyond it.
+        Clients that have aspect ratio or cell sizing configuration can use
+        a smaller size, however.
+      </entry>
     </enum>
 
     <event name="configure">
