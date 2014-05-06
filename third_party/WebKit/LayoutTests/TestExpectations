@@ -900,15 +900,6 @@ crbug.com/366387 svg/as-object/deep-nested-embedded-svg-size-changes-no-layout-t
 crbug.com/366387 svg/as-object/deep-nested-embedded-svg-size-changes-no-layout-triggers-2.html [ Crash ]
 crbug.com/366387 svg/as-object/nested-embedded-svg-size-changes.html [ Crash ]
 
-crbug.com/369486 svg/dynamic-updates/SVGRectElement-svgdom-requiredFeatures.html [ NeedsRebaseline ]
-crbug.com/369486 svg/dynamic-updates/SVGRectElement-svgdom-width-prop.html [ NeedsRebaseline ]
-crbug.com/369486 svg/dynamic-updates/SVGRectElement-svgdom-x-prop.html [ NeedsRebaseline ]
-crbug.com/369486 svg/dynamic-updates/SVGRectElement-svgdom-y-prop.html [ NeedsRebaseline ]
-crbug.com/369486 svg/dynamic-updates/SVGUseElement-dom-requiredFeatures.html [ NeedsRebaseline ]
-crbug.com/369486 svg/dynamic-updates/SVGUseElement-svgdom-requiredFeatures.html [ NeedsRebaseline ]
-crbug.com/369486 svg/repaint/add-outline-property-on-root.html [ NeedsRebaseline ]
-crbug.com/369486 svg/repaint/remove-outline-property-on-root.html [ NeedsRebaseline ]
-
 # Disabling this for now since Chromium CL changes output. Will re-enable once Chromium side lands.
 Bug(simonhatch) http/tests/loading/promote-img-in-viewport-priority.html [ Skip ]
 
