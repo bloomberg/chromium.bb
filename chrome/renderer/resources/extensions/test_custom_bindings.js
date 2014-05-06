@@ -250,7 +250,7 @@ binding.registerCustomHook(function(api) {
   function safeFunctionApply(func, args) {
     try {
       if (func)
-        $Function.apply(func, null, args);
+        return $Function.apply(func, undefined, args);
     } catch (e) {
       var msg = "uncaught exception " + e;
       chromeTest.fail(msg);
@@ -272,11 +272,13 @@ binding.registerCustomHook(function(api) {
         chromeTest.assertLastError(expectedError);
       }
 
+      var result;
       if (func) {
-        safeFunctionApply(func, arguments);
+        result = safeFunctionApply(func, arguments);
       }
 
       callbackCompleted();
+      return result;
     };
   });
 
