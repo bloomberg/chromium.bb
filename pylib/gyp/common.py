@@ -496,9 +496,9 @@ class OrderedSet(collections.MutableSet):
 
   def discard(self, key):
     if key in self.map:
-      key, prev, next = self.map.pop(key)
-      prev[2] = next
-      next[1] = prev
+      key, prev_item, next_item = self.map.pop(key)
+      prev_item[2] = next_item
+      next_item[1] = prev_item
 
   def __iter__(self):
     end = self.end
@@ -514,7 +514,8 @@ class OrderedSet(collections.MutableSet):
       yield curr[0]
       curr = curr[1]
 
-  def pop(self, last=True):
+  # The second argument is an addition that causes a pylint warning.
+  def pop(self, last=True):  # pylint: disable=W0221
     if not self:
       raise KeyError('set is empty')
     key = self.end[1][0] if last else self.end[2][0]
