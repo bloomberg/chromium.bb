@@ -42,6 +42,8 @@ class StyleBuilderConverter {
 public:
     static AtomicString convertFragmentIdentifier(StyleResolverState&, CSSValue*);
     template <typename T> static T convertComputedLength(StyleResolverState&, CSSValue*);
+    static GridPosition convertGridPosition(StyleResolverState&, CSSValue*);
+    static GridTrackSize convertGridTrackSize(StyleResolverState&, CSSValue*);
     template <typename T> static T convertLineWidth(StyleResolverState&, CSSValue*);
     static Length convertLength(StyleResolverState&, CSSValue*);
     static Length convertLengthOrAuto(StyleResolverState&, CSSValue*);
@@ -54,6 +56,8 @@ public:
     static float convertSpacing(StyleResolverState&, CSSValue*);
     template <CSSValueID IdForNone> static AtomicString convertString(StyleResolverState&, CSSValue*);
     static PassRefPtr<SVGLength> convertSVGLength(StyleResolverState&, CSSValue*);
+
+    static bool convertGridTrackList(CSSValue*, Vector<GridTrackSize>&, NamedGridLinesMap&, OrderedNamedGridLines&, StyleResolverState&);
 };
 
 template <typename T>

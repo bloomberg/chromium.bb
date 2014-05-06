@@ -46,9 +46,7 @@
 #include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSFontValue.h"
-#include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
-#include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSGridTemplateAreasValue.h"
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSImageSetValue.h"
@@ -293,6 +291,34 @@ void StyleBuilderFunctions::applyValueCSSPropertyFontWeight(StyleResolverState& 
     default:
         state.fontBuilder().setWeight(*primitiveValue);
     }
+}
+
+void StyleBuilderFunctions::applyInitialCSSPropertyGridTemplateAreas(StyleResolverState& state)
+{
+    state.style()->setNamedGridArea(RenderStyle::initialNamedGridArea());
+    state.style()->setNamedGridAreaRowCount(RenderStyle::initialNamedGridAreaCount());
+    state.style()->setNamedGridAreaColumnCount(RenderStyle::initialNamedGridAreaCount());
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyGridTemplateAreas(StyleResolverState& state)
+{
+    state.style()->setNamedGridArea(state.parentStyle()->namedGridArea());
+    state.style()->setNamedGridAreaRowCount(state.parentStyle()->namedGridAreaRowCount());
+    state.style()->setNamedGridAreaColumnCount(state.parentStyle()->namedGridAreaColumnCount());
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyGridTemplateAreas(StyleResolverState& state, CSSValue* value)
+{
+    if (value->isPrimitiveValue()) {
+        // FIXME: Shouldn't we clear the grid-area values
+        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
+        return;
+    }
+
+    CSSGridTemplateAreasValue* gridTemplateAreasValue = toCSSGridTemplateAreasValue(value);
+    state.style()->setNamedGridArea(gridTemplateAreasValue->gridAreaMap());
+    state.style()->setNamedGridAreaRowCount(gridTemplateAreasValue->rowCount());
+    state.style()->setNamedGridAreaColumnCount(gridTemplateAreasValue->columnCount());
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyLineHeight(StyleResolverState& state, CSSValue* value)
@@ -1049,124 +1075,6 @@ if (isInitial) { \
     return; \
 }
 
-static GridLength createGridTrackBreadth(CSSPrimitiveValue* primitiveValue, const StyleResolverState& state)
-{
-    if (primitiveValue->getValueID() == CSSValueMinContent)
-        return Length(MinContent);
-
-    if (primitiveValue->getValueID() == CSSValueMaxContent)
-        return Length(MaxContent);
-
-    // Fractional unit.
-    if (primitiveValue->isFlex())
-        return GridLength(primitiveValue->getDoubleValue());
-
-    return primitiveValue->convertToLength<FixedConversion | PercentConversion | AutoConversion>(state.cssToLengthConversionData());
-}
-
-static GridTrackSize createGridTrackSize(CSSValue* value, const StyleResolverState& state)
-{
-    if (value->isPrimitiveValue())
-        return GridTrackSize(createGridTrackBreadth(toCSSPrimitiveValue(value), state));
-
-    CSSFunctionValue* minmaxFunction = toCSSFunctionValue(value);
-    CSSValueList* arguments = minmaxFunction->arguments();
-    ASSERT_WITH_SECURITY_IMPLICATION(arguments->length() == 2);
-    GridLength minTrackBreadth(createGridTrackBreadth(toCSSPrimitiveValue(arguments->itemWithoutBoundsCheck(0)), state));
-    GridLength maxTrackBreadth(createGridTrackBreadth(toCSSPrimitiveValue(arguments->itemWithoutBoundsCheck(1)), state));
-    return GridTrackSize(minTrackBreadth, maxTrackBreadth);
-}
-
-static bool createGridTrackList(CSSValue* value, Vector<GridTrackSize>& trackSizes, NamedGridLinesMap& namedGridLines, OrderedNamedGridLines& orderedNamedGridLines, const StyleResolverState& state)
-{
-    // Handle 'none'.
-    if (value->isPrimitiveValue()) {
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-        return primitiveValue->getValueID() == CSSValueNone;
-    }
-
-    if (!value->isValueList())
-        return false;
-
-    size_t currentNamedGridLine = 0;
-    for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
-        CSSValue* currValue = i.value();
-        if (currValue->isGridLineNamesValue()) {
-            CSSGridLineNamesValue* lineNamesValue = toCSSGridLineNamesValue(currValue);
-            for (CSSValueListIterator j = lineNamesValue; j.hasMore(); j.advance()) {
-                String namedGridLine = toCSSPrimitiveValue(j.value())->getStringValue();
-                NamedGridLinesMap::AddResult result = namedGridLines.add(namedGridLine, Vector<size_t>());
-                result.storedValue->value.append(currentNamedGridLine);
-                OrderedNamedGridLines::AddResult orderedInsertionResult = orderedNamedGridLines.add(currentNamedGridLine, Vector<String>());
-                orderedInsertionResult.storedValue->value.append(namedGridLine);
-            }
-            continue;
-        }
-
-        ++currentNamedGridLine;
-        trackSizes.append(createGridTrackSize(currValue, state));
-    }
-
-    // The parser should have rejected any <track-list> without any <track-size> as
-    // this is not conformant to the syntax.
-    ASSERT(!trackSizes.isEmpty());
-    return true;
-}
-
-static bool createGridPosition(CSSValue* value, GridPosition& position)
-{
-    // We accept the specification's grammar:
-    // 'auto' | [ <integer> || <string> ] | [ span && [ <integer> || string ] ] | <ident>
-
-    if (value->isPrimitiveValue()) {
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-        // We translate <ident> to <string> during parsing as it
-        // makes handling it more simple.
-        if (primitiveValue->isString()) {
-            position.setNamedGridArea(primitiveValue->getStringValue());
-            return true;
-        }
-
-        ASSERT(primitiveValue->getValueID() == CSSValueAuto);
-        return true;
-    }
-
-    CSSValueList* values = toCSSValueList(value);
-    ASSERT(values->length());
-
-    bool isSpanPosition = false;
-    // The specification makes the <integer> optional, in which case it default to '1'.
-    int gridLineNumber = 1;
-    String gridLineName;
-
-    CSSValueListIterator it = values;
-    CSSPrimitiveValue* currentValue = toCSSPrimitiveValue(it.value());
-    if (currentValue->getValueID() == CSSValueSpan) {
-        isSpanPosition = true;
-        it.advance();
-        currentValue = it.hasMore() ? toCSSPrimitiveValue(it.value()) : 0;
-    }
-
-    if (currentValue && currentValue->isNumber()) {
-        gridLineNumber = currentValue->getIntValue();
-        it.advance();
-        currentValue = it.hasMore() ? toCSSPrimitiveValue(it.value()) : 0;
-    }
-
-    if (currentValue && currentValue->isString()) {
-        gridLineName = currentValue->getStringValue();
-        it.advance();
-    }
-
-    ASSERT(!it.hasMore());
-    if (isSpanPosition)
-        position.setSpanPosition(gridLineNumber, gridLineName);
-    else
-        position.setExplicitPosition(gridLineNumber, gridLineName);
-
-    return true;
-}
-
 static bool degreeToGlyphOrientation(CSSPrimitiveValue* primitiveValue, EGlyphOrientation& orientation)
 {
     if (!primitiveValue)
@@ -1709,124 +1617,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
             state.style()->setFilter(operations);
         return;
     }
-    case CSSPropertyGridAutoColumns: {
-        HANDLE_INHERIT_AND_INITIAL(gridAutoColumns, GridAutoColumns);
-        state.style()->setGridAutoColumns(createGridTrackSize(value, state));
-        return;
-    }
-    case CSSPropertyGridAutoRows: {
-        HANDLE_INHERIT_AND_INITIAL(gridAutoRows, GridAutoRows);
-        state.style()->setGridAutoRows(createGridTrackSize(value, state));
-        return;
-    }
-    case CSSPropertyGridTemplateColumns: {
-        if (isInherit) {
-            state.style()->setGridTemplateColumns(state.parentStyle()->gridTemplateColumns());
-            state.style()->setNamedGridColumnLines(state.parentStyle()->namedGridColumnLines());
-            state.style()->setOrderedNamedGridColumnLines(state.parentStyle()->orderedNamedGridColumnLines());
-            return;
-        }
-        if (isInitial) {
-            state.style()->setGridTemplateColumns(RenderStyle::initialGridTemplateColumns());
-            state.style()->setNamedGridColumnLines(RenderStyle::initialNamedGridColumnLines());
-            state.style()->setOrderedNamedGridColumnLines(RenderStyle::initialOrderedNamedGridColumnLines());
-            return;
-        }
-
-        Vector<GridTrackSize> trackSizes;
-        NamedGridLinesMap namedGridLines;
-        OrderedNamedGridLines orderedNamedGridLines;
-        if (!createGridTrackList(value, trackSizes, namedGridLines, orderedNamedGridLines, state))
-            return;
-        state.style()->setGridTemplateColumns(trackSizes);
-        state.style()->setNamedGridColumnLines(namedGridLines);
-        state.style()->setOrderedNamedGridColumnLines(orderedNamedGridLines);
-        return;
-    }
-    case CSSPropertyGridTemplateRows: {
-        if (isInherit) {
-            state.style()->setGridTemplateRows(state.parentStyle()->gridTemplateRows());
-            state.style()->setNamedGridRowLines(state.parentStyle()->namedGridRowLines());
-            state.style()->setOrderedNamedGridRowLines(state.parentStyle()->orderedNamedGridRowLines());
-            return;
-        }
-        if (isInitial) {
-            state.style()->setGridTemplateRows(RenderStyle::initialGridTemplateRows());
-            state.style()->setNamedGridRowLines(RenderStyle::initialNamedGridRowLines());
-            state.style()->setOrderedNamedGridRowLines(RenderStyle::initialOrderedNamedGridRowLines());
-            return;
-        }
-
-        Vector<GridTrackSize> trackSizes;
-        NamedGridLinesMap namedGridLines;
-        OrderedNamedGridLines orderedNamedGridLines;
-        if (!createGridTrackList(value, trackSizes, namedGridLines, orderedNamedGridLines, state))
-            return;
-        state.style()->setGridTemplateRows(trackSizes);
-        state.style()->setNamedGridRowLines(namedGridLines);
-        state.style()->setOrderedNamedGridRowLines(orderedNamedGridLines);
-        return;
-    }
-
-    case CSSPropertyGridColumnStart: {
-        HANDLE_INHERIT_AND_INITIAL(gridColumnStart, GridColumnStart);
-        GridPosition startPosition;
-        if (!createGridPosition(value, startPosition))
-            return;
-        state.style()->setGridColumnStart(startPosition);
-        return;
-    }
-    case CSSPropertyGridColumnEnd: {
-        HANDLE_INHERIT_AND_INITIAL(gridColumnEnd, GridColumnEnd);
-        GridPosition endPosition;
-        if (!createGridPosition(value, endPosition))
-            return;
-        state.style()->setGridColumnEnd(endPosition);
-        return;
-    }
-
-    case CSSPropertyGridRowStart: {
-        HANDLE_INHERIT_AND_INITIAL(gridRowStart, GridRowStart);
-        GridPosition beforePosition;
-        if (!createGridPosition(value, beforePosition))
-            return;
-        state.style()->setGridRowStart(beforePosition);
-        return;
-    }
-    case CSSPropertyGridRowEnd: {
-        HANDLE_INHERIT_AND_INITIAL(gridRowEnd, GridRowEnd);
-        GridPosition afterPosition;
-        if (!createGridPosition(value, afterPosition))
-            return;
-        state.style()->setGridRowEnd(afterPosition);
-        return;
-    }
-
-    case CSSPropertyGridTemplateAreas: {
-        if (isInherit) {
-            state.style()->setNamedGridArea(state.parentStyle()->namedGridArea());
-            state.style()->setNamedGridAreaRowCount(state.parentStyle()->namedGridAreaRowCount());
-            state.style()->setNamedGridAreaColumnCount(state.parentStyle()->namedGridAreaColumnCount());
-            return;
-        }
-        if (isInitial) {
-            state.style()->setNamedGridArea(RenderStyle::initialNamedGridArea());
-            state.style()->setNamedGridAreaRowCount(RenderStyle::initialNamedGridAreaCount());
-            state.style()->setNamedGridAreaColumnCount(RenderStyle::initialNamedGridAreaCount());
-            return;
-        }
-
-        if (value->isPrimitiveValue()) {
-            ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
-            return;
-        }
-
-        CSSGridTemplateAreasValue* gridTemplateAreasValue = toCSSGridTemplateAreasValue(value);
-        state.style()->setNamedGridArea(gridTemplateAreasValue->gridAreaMap());
-        state.style()->setNamedGridAreaRowCount(gridTemplateAreasValue->rowCount());
-        state.style()->setNamedGridAreaColumnCount(gridTemplateAreasValue->columnCount());
-        return;
-    }
 
     case CSSPropertyJustifySelf: {
         HANDLE_INHERIT_AND_INITIAL(justifySelf, JustifySelf);
@@ -1932,6 +1722,15 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyFontVariant:
     case CSSPropertyFontVariantLigatures:
     case CSSPropertyFontWeight:
+    case CSSPropertyGridAutoColumns:
+    case CSSPropertyGridAutoRows:
+    case CSSPropertyGridColumnStart:
+    case CSSPropertyGridColumnEnd:
+    case CSSPropertyGridRowStart:
+    case CSSPropertyGridRowEnd:
+    case CSSPropertyGridTemplateAreas:
+    case CSSPropertyGridTemplateColumns:
+    case CSSPropertyGridTemplateRows:
     case CSSPropertyHeight:
     case CSSPropertyImageRendering:
     case CSSPropertyIsolation:

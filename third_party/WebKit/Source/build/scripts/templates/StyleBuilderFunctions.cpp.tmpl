@@ -454,6 +454,36 @@ namespace WebCore {
 {{apply_fill_layer('CSSPropertyWebkitMaskRepeatY', 'RepeatY')}}
 {{apply_fill_layer('CSSPropertyWebkitMaskSize', 'Size')}}
 
+{% macro apply_grid_template(property_id, type) %}
+{{declare_initial_function(property_id)}}
+{
+    state.style()->setGridTemplate{{type}}s(RenderStyle::initialGridTemplate{{type}}s());
+    state.style()->setNamedGrid{{type}}Lines(RenderStyle::initialNamedGrid{{type}}Lines());
+    state.style()->setOrderedNamedGrid{{type}}Lines(RenderStyle::initialOrderedNamedGrid{{type}}Lines());
+}
+
+{{declare_inherit_function(property_id)}}
+{
+    state.style()->setGridTemplate{{type}}s(state.parentStyle()->gridTemplate{{type}}s());
+    state.style()->setNamedGrid{{type}}Lines(state.parentStyle()->namedGrid{{type}}Lines());
+    state.style()->setOrderedNamedGrid{{type}}Lines(state.parentStyle()->orderedNamedGrid{{type}}Lines());
+}
+
+{{declare_value_function(property_id)}}
+{
+    Vector<GridTrackSize> trackSizes;
+    NamedGridLinesMap namedGridLines;
+    OrderedNamedGridLines orderedNamedGridLines;
+    if (!StyleBuilderConverter::convertGridTrackList(value, trackSizes, namedGridLines, orderedNamedGridLines, state))
+        return;
+    state.style()->setGridTemplate{{type}}s(trackSizes);
+    state.style()->setNamedGrid{{type}}Lines(namedGridLines);
+    state.style()->setOrderedNamedGrid{{type}}Lines(orderedNamedGridLines);
+}
+{% endmacro %}
+{{apply_grid_template('CSSPropertyGridTemplateColumns', 'Column')}}
+{{apply_grid_template('CSSPropertyGridTemplateRows', 'Row')}}
+
 {% macro apply_value_number(property_id, id_for_minus_one) %}
 {{declare_value_function(property_id)}}
 {

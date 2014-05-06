@@ -1,5 +1,7 @@
 // FIXME: When we have all the properties using the new StyleBuilder, we
 //   should use this for make_css_property_names.py
+// Note that type_name is currently only used for non-custom value application
+// and when explicitly referred to in generated applicators.
 // Note: Mandatory blank line to skip parameter parsing phase
 
 align-content
@@ -63,6 +65,15 @@ font-variant font, type_name=FontVariant, name_for_methods=Variant
 font-variant-ligatures custom_all
 font-weight custom_all
 grid-auto-flow type_name=GridAutoFlow
+grid-auto-columns converter=convertGridTrackSize
+grid-auto-rows converter=convertGridTrackSize
+grid-column-start converter=convertGridPosition
+grid-column-end converter=convertGridPosition
+grid-row-start converter=convertGridPosition
+grid-row-end converter=convertGridPosition
+grid-template-columns custom_all
+grid-template-rows custom_all
+grid-template-areas custom_all
 height type_name=Length, initial=initialSize, converter=convertLengthSizing
 justify-content
 image-rendering
