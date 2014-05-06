@@ -138,7 +138,7 @@ void SVGElementInstance::detach()
         node->detach();
 
     // Deregister as instance for passed element, if we haven't already.
-    if (m_element->instancesForElement().contains(shadowTreeElement()))
+    if (shadowTreeElement() && m_element->instancesForElement().contains(shadowTreeElement()))
         m_element->removeInstanceMapping(this);
     // DO NOT clear ref to m_element because JavaScriptCore uses it for garbage collection
 
