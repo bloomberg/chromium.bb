@@ -244,12 +244,6 @@ public class ContentViewRenderView extends FrameLayout implements WindowAndroid.
     protected void render() {
         if (mPendingRenders > 0) mPendingRenders--;
 
-        // Waiting for the content view contents to be ready avoids compositing
-        // when the surface texture is still empty.
-        if (mContentViewCore == null || !mContentViewCore.isReady()) {
-            return;
-        }
-
         boolean didDraw = nativeComposite(mNativeContentViewRenderView);
         if (didDraw) {
             mPendingSwapBuffers++;

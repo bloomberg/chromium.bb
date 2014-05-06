@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/solid_color_layer.h"
 #include "cc/output/begin_frame_args.h"
 #include "content/browser/android/gesture_event_type.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
@@ -217,7 +218,7 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env,
     : WebContentsObserver(web_contents),
       java_ref_(env, obj),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
-      root_layer_(cc::Layer::Create()),
+      root_layer_(cc::SolidColorLayer::Create()),
       dpi_scale_(GetPrimaryDisplayDeviceScaleFactor()),
       view_android_(view_android),
       window_android_(window_android),
@@ -225,6 +226,13 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env,
       geolocation_needs_pause_(false) {
   CHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
+
+  root_layer_->SetBackgroundColor(GetBackgroundColor(env, obj));
+  gfx::Size physical_size(
+      Java_ContentViewCore_getPhysicalBackingWidthPix(env, obj),
+      Java_ContentViewCore_getPhysicalBackingHeightPix(env, obj));
+  root_layer_->SetBounds(physical_size);
+  root_layer_->SetIsDrawable(true);
 
   // Currently, the only use case we have for overriding a user agent involves
   // spoofing a desktop Linux user agent for "Request desktop site".
@@ -475,6 +483,8 @@ void ContentViewCoreImpl::SetTitle(const base::string16& title) {
 }
 
 void ContentViewCoreImpl::OnBackgroundColorChanged(SkColor color) {
+  root_layer_->SetBackgroundColor(color);
+
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
@@ -840,10 +850,14 @@ float ContentViewCoreImpl::GetOverdrawBottomHeightDip() const {
 
 void ContentViewCoreImpl::AttachLayer(scoped_refptr<cc::Layer> layer) {
   root_layer_->AddChild(layer);
+  root_layer_->SetIsDrawable(false);
 }
 
 void ContentViewCoreImpl::RemoveLayer(scoped_refptr<cc::Layer> layer) {
   layer->RemoveFromParent();
+
+  if (!root_layer_->children().size())
+    root_layer_->SetIsDrawable(true);
 }
 
 void ContentViewCoreImpl::LoadUrl(
@@ -1300,6 +1314,11 @@ void ContentViewCoreImpl::RemoveJavascriptInterface(JNIEnv* env,
 
 void ContentViewCoreImpl::WasResized(JNIEnv* env, jobject obj) {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
+  gfx::Size physical_size(
+      Java_ContentViewCore_getPhysicalBackingWidthPix(env, obj),
+      Java_ContentViewCore_getPhysicalBackingHeightPix(env, obj));
+  root_layer_->SetBounds(physical_size);
+
   if (view) {
     RenderWidgetHostImpl* host = RenderWidgetHostImpl::From(
         view->GetRenderWidgetHost());
