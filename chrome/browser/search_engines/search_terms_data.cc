@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search_engines/search_terms_data.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/protocol/sync.pb.h"
@@ -163,8 +165,15 @@ std::string UIThreadSearchTermsData::GetSuggestRequestIdentifier() const {
 #if defined(OS_ANDROID)
   sync_pb::SyncEnums::DeviceType device_type =
       browser_sync::DeviceInfo::GetLocalDeviceType();
-  return device_type == sync_pb::SyncEnums_DeviceType_TYPE_PHONE ?
-    "chrome-mobile-ext" : "chrome-ext";
+  if (device_type == sync_pb::SyncEnums_DeviceType_TYPE_PHONE) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableAnswersInSuggest)) {
+      return "chrome-mobile-ext-ansg";
+    } else {
+      return "chrome-mobile-ext";
+    }
+  }
+  return "chrome-ext";
 #else
   return "chrome-ext";
 #endif

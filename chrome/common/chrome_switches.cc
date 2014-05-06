@@ -1323,6 +1323,9 @@ const char kDisableZeroSuggest[] = "disable-zero-suggest";
 const char kEnableAccessibilityTabSwitcher[] =
     "enable-accessibility-tab-switcher";
 
+// Enable Answers in Suggest.
+const char kEnableAnswersInSuggest[] = "enable-answers-in-suggest";
+
 // Enables app install alerts.
 const char kEnableAppInstallAlerts[]        = "enable-app-install-alerts";
 
