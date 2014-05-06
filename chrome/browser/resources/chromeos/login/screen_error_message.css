@@ -13,6 +13,7 @@
 .show-with-ui-state-kiosk-mode,
 .show-with-ui-state-local-state-error,
 .show-with-ui-state-auto-enrollment-error,
+.show-with-ui-state-rollback-error,
 .show-with-error-state-portal,
 .show-with-error-state-offline,
 .show-with-error-state-proxy,
@@ -30,6 +31,7 @@
 .ui-state-kiosk-mode .show-with-ui-state-kiosk-mode,
 .ui-state-local-state-error .show-with-ui-state-local-state-error,
 .ui-state-auto-enrollment-error .show-with-ui-state-auto-enrollment-error,
+.ui-state-rollback-error .show-with-ui-state-rollback-error,
 .error-state-portal .show-with-error-state-portal,
 .error-state-offline .show-with-error-state-offline,
 .error-state-proxy .show-with-error-state-proxy,
@@ -57,6 +59,7 @@
 
 .error-icon {
   -webkit-margin-after: 40px;
+  height: 64px;
 }
 
 .error-title {

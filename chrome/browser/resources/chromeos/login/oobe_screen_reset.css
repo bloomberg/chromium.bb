@@ -5,11 +5,16 @@
 
 .norollback #rollback,
 .norestart #reset-warning-restart,
-#powerwash-help-link {
+.revert-promise #reset-info,
+.revert-promise #rollback,
+.revert-promise #reset-controls,
+#powerwash-help-link,
+#revert-promise {
   display: none;
 }
 
-.norollback #powerwash-help-link {
+.norollback #powerwash-help-link,
+.revert-promise #revert-promise {
   display: block;
 }
 
@@ -33,6 +38,10 @@
   margin: 0 10px;
 }
 
+#reset #reset-warning-icon {
+  height: 112px;
+}
+
 #reset #reset-warning-msg {
   color: #606060;
   font-size: 22px;
@@ -43,7 +52,8 @@
   color: #606060;
 }
 
-#reset #reset-warning-details {
+#reset #reset-warning-details,
+#reset #reset-revert-promise-msg {
   padding: 20px 40px 0;
 }
 
@@ -53,4 +63,9 @@
 
 #reset #rollback {
   padding: 30px 40px 10px;
+}
+
+#reset #reset-revert-spinner-message {
+  display: inline-block;
+  padding: 25px 0;
 }

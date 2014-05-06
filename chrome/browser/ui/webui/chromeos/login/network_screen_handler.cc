@@ -148,6 +148,13 @@ void NetworkScreenHandler::Show() {
     HandleOnLanguageChanged(startup_manifest->initial_locale_default());
   }
 
+  PrefService* prefs = g_browser_process->local_state();
+  if (prefs->GetBoolean(prefs::kFactoryResetRequested)) {
+    if (core_oobe_actor_)
+      core_oobe_actor_->ShowDeviceResetScreen();
+    return;
+  }
+
   // Make sure all our network technologies are turned on. On OOBE, the user
   // should be able to select any of the available networks on the device.
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();

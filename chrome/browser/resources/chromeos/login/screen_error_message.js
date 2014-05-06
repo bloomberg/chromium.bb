@@ -28,7 +28,8 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
     ERROR_SCREEN_UI_STATE.MANAGED_USER_CREATION_FLOW,
     ERROR_SCREEN_UI_STATE.KIOSK_MODE,
     ERROR_SCREEN_UI_STATE.LOCAL_STATE_ERROR,
-    ERROR_SCREEN_UI_STATE.AUTO_ENROLLMENT_ERROR
+    ERROR_SCREEN_UI_STATE.AUTO_ENROLLMENT_ERROR,
+    ERROR_SCREEN_UI_STATE.ROLLBACK_ERROR,
   ];
 
   // The help topic linked from the auto enrollment error message.
@@ -237,6 +238,16 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
         e.stopPropagation();
       });
       buttons.push(continueButton);
+
+      var okButton = this.ownerDocument.createElement('button');
+      okButton.id = 'ok-error-screen-btn';
+      okButton.textContent = loadTimeData.getString('okButton');
+      okButton.classList.add('show-with-ui-state-rollback-error');
+      okButton.addEventListener('click', function(e) {
+        chrome.send('cancelOnReset');
+        e.stopPropagation();
+      });
+      buttons.push(okButton);
 
       var spacer = this.ownerDocument.createElement('div');
       spacer.classList.add('button-spacer');

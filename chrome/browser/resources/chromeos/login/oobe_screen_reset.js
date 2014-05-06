@@ -8,6 +8,11 @@
 
 login.createScreen('ResetScreen', 'reset', function() {
   return {
+
+    EXTERNAL_API: [
+      'updateViewOnRollbackCall'
+    ],
+
     /** @override */
     decorate: function() {
       $('reset-powerwash-help-link-on-rollback').addEventListener(
@@ -80,6 +85,7 @@ login.createScreen('ResetScreen', 'reset', function() {
     onBeforeShow: function(data) {
       if (data === undefined)
         return;
+      this.classList.remove('revert-promise');
       if ('showRestartMsg' in data)
         this.setRestartMsg_(data['showRestartMsg']);
       if ('showRollbackOption' in data)
@@ -114,12 +120,13 @@ login.createScreen('ResetScreen', 'reset', function() {
             'resetWarningTextInitial');
         $('reset-warning-details').textContent = loadTimeData.getString(
             'resetWarningDetailsInitial');
-        if (this.needRestart)
+        if (this.needRestart) {
           $('reset-button').textContent = loadTimeData.getString(
               'resetButtonRelaunch');
-        else
+        } else {
           $('reset-button').textContent = loadTimeData.getString(
               'resetButtonPowerwash');
+        }
       }
     },
 
@@ -142,5 +149,9 @@ login.createScreen('ResetScreen', 'reset', function() {
       this.classList.toggle('norollback', !show_rollback);
       this.showRollback = show_rollback;
     },
+
+    updateViewOnRollbackCall: function() {
+      this.classList.add('revert-promise');
+    }
   };
 });

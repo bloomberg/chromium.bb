@@ -11,13 +11,15 @@
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chromeos/dbus/update_engine_client.h"
 #include "content/public/browser/web_ui.h"
 
 namespace chromeos {
 
 // WebUI implementation of ResetScreenActor.
 class ResetScreenHandler : public ResetScreenActor,
-                           public BaseScreenHandler {
+                           public BaseScreenHandler,
+                           public UpdateEngineClient::Observer {
  public:
   ResetScreenHandler();
   virtual ~ResetScreenHandler();
@@ -34,6 +36,10 @@ class ResetScreenHandler : public ResetScreenActor,
 
   // WebUIMessageHandler implementation:
   virtual void RegisterMessages() OVERRIDE;
+
+  // UpdateEngineClient::Observer implementation:
+  virtual void UpdateStatusChanged(
+      const UpdateEngineClient::Status& status) OVERRIDE;
 
   void OnRollbackCheck(bool can_rollback);
 
@@ -65,7 +71,7 @@ class ResetScreenHandler : public ResetScreenActor,
   // Keeps whether rollback option is available fo.
   bool rollback_available_;
 
-  base::WeakPtrFactory<ResetScreenHandler> weak_factory_;
+  base::WeakPtrFactory<ResetScreenHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResetScreenHandler);
 };
