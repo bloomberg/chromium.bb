@@ -1,0 +1,10 @@
+Tests bottom-up view self and total time calculation in CPU profiler.
+
+2: (idle) 300 300 {"function":"(idle)","self-percent":"30.00 %","self":"300.0 ms","total-percent":"30.00 %","total":"300.0 ms"}
+1001: A 250 370 {"function":"A","self-percent":"25.00 %","self":"250.0 ms","total-percent":"37.00 %","total":"370.0 ms"}
+2000: C 200 250 {"function":"C","self-percent":"20.00 %","self":"200.0 ms","total-percent":"25.00 %","total":"250.0 ms"}
+1002: B 150 280 {"function":"B","self-percent":"15.00 %","self":"150.0 ms","total-percent":"28.00 %","total":"280.0 ms"}
+3000: D 50 50 {"function":"D","self-percent":"5.00 %","self":"50.0 ms","total-percent":"5.00 %","total":"50.0 ms"}
+
+Profiler was disabled.
+
