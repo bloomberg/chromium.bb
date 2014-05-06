@@ -205,18 +205,23 @@ void ManageProfileHandler::OnStateChanged() {
 
 void ManageProfileHandler::GenerateSignedinUserSpecificStrings(
     base::DictionaryValue* dictionary) {
+  std::string username;
+  std::string domain_name;
+
 #if !defined(OS_CHROMEOS)
   Profile* profile = Profile::FromWebUI(web_ui());
   DCHECK(profile);
   SigninManagerBase* manager = SigninManagerFactory::GetForProfile(profile);
-  DCHECK(manager);
-  std::string username = manager->GetAuthenticatedUsername();
-  std::string domain_name;
-  // If there is no one logged in or if the profile name is empty then the
-  // domain name is empty. This happens in browser tests.
-  if (!username.empty())
-    domain_name = "<span id=disconnect-managed-profile-domain-name>" +
-                  gaia::ExtractDomainName(username) + "</span>";
+  if (manager) {
+    username = manager->GetAuthenticatedUsername();
+    // If there is no one logged in or if the profile name is empty then the
+    // domain name is empty. This happens in browser tests.
+    if (!username.empty()) {
+      domain_name = "<span id=disconnect-managed-profile-domain-name>" +
+                    gaia::ExtractDomainName(username) + "</span>";
+    }
+  }
+#endif
 
   dictionary->SetString(
       "disconnectManagedProfileDomainInformation",
@@ -230,12 +235,6 @@ void ManageProfileHandler::GenerateSignedinUserSpecificStrings(
           IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_TEXT,
           base::UTF8ToUTF16(username),
           base::UTF8ToUTF16(chrome::kSyncGoogleDashboardURL)));
-#else
-  dictionary->SetString("disconnectManagedProfileDomainInformation",
-                        base::string16());
-  dictionary->SetString("disconnectManagedProfileText",
-                        base::string16());
-#endif
 }
 
 void ManageProfileHandler::RequestDefaultProfileIcons(
