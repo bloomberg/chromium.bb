@@ -31,7 +31,7 @@ class RenderMeter;
 
 class HTMLMeterElement FINAL : public LabelableElement {
 public:
-    static PassRefPtr<HTMLMeterElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLMeterElement> create(Document&);
 
     enum GaugeRegion {
         GaugeRegionOptimum,
@@ -62,6 +62,8 @@ public:
 
     virtual bool canContainRangeEndPoint() const OVERRIDE { return false; }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     explicit HTMLMeterElement(Document&);
     virtual ~HTMLMeterElement();
@@ -77,7 +79,7 @@ private:
     void didElementStateChange();
     virtual void didAddUserAgentShadowRoot(ShadowRoot&) OVERRIDE;
 
-    RefPtr<MeterValueElement> m_value;
+    RefPtrWillBeMember<MeterValueElement> m_value;
 };
 
 } // namespace

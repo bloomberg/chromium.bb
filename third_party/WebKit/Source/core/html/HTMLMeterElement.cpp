@@ -47,9 +47,9 @@ HTMLMeterElement::~HTMLMeterElement()
 {
 }
 
-PassRefPtr<HTMLMeterElement> HTMLMeterElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLMeterElement> HTMLMeterElement::create(Document& document)
 {
-    RefPtr<HTMLMeterElement> meter = adoptRef(new HTMLMeterElement(document));
+    RefPtrWillBeRawPtr<HTMLMeterElement> meter = adoptRefWillBeRefCountedGarbageCollected(new HTMLMeterElement(document));
     meter->ensureUserAgentShadowRoot();
     return meter;
 }
@@ -209,6 +209,12 @@ void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root)
     bar->appendChild(m_value);
 
     inner->appendChild(bar);
+}
+
+void HTMLMeterElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_value);
+    LabelableElement::trace(visitor);
 }
 
 } // namespace

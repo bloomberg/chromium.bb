@@ -591,6 +591,11 @@ public:
 
     void clear() { m_raw = 0; }
 
+
+    // FIXME: Oilpan: Remove this ASAP. Only here to make Node transition easier.
+    template<typename U>
+    operator PassRefPtr<U>() { return PassRefPtr<U>(m_raw); }
+
 protected:
     void verifyTypeIsGarbageCollected() const
     {
