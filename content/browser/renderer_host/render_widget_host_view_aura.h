@@ -363,6 +363,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // space is required by the aura::Window.
   void InternalSetBounds(const gfx::Rect& rect);
 
+#if defined(OS_WIN)
+  bool UsesNativeWindowFrame() const;
+#endif
+
   ui::InputMethod* GetInputMethod() const;
 
   // Returns whether the widget needs an input grab to work properly.

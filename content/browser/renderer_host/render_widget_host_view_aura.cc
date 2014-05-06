@@ -1006,6 +1006,10 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
 }
 
 #if defined(OS_WIN)
+bool RenderWidgetHostViewAura::UsesNativeWindowFrame() const {
+  return (legacy_render_widget_host_HWND_ != NULL);
+}
+
 void RenderWidgetHostViewAura::UpdateConstrainedWindowRects(
     const std::vector<gfx::Rect>& rects) {
   // Check this before setting constrained_rects_, so that next time they're set
@@ -1108,13 +1112,41 @@ void RenderWidgetHostViewAura::GetScreenInfo(WebScreenInfo* results) {
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
-  gfx::Rect rect = window_->GetToplevelWindow()->GetBoundsInScreen();
+  aura::Window* top_level = window_->GetToplevelWindow();
+  gfx::Rect bounds(top_level->GetBoundsInScreen());
 
 #if defined(OS_WIN)
-  rect = gfx::win::ScreenToDIPRect(rect);
+  // TODO(zturner,iyengar): This will break when we remove support for NPAPI and
+  // remove the legacy hwnd, so a better fix will need to be decided when that
+  // happens.
+  if (UsesNativeWindowFrame()) {
+    // aura::Window doesn't take into account non-client area of native windows
+    // (e.g. HWNDs), so for that case ask Windows directly what the bounds are.
+    aura::WindowTreeHost* host = top_level->GetHost();
+    if (!host)
+      return top_level->GetBoundsInScreen();
+    RECT window_rect = {0};
+    HWND hwnd = host->GetAcceleratedWidget();
+    ::GetWindowRect(hwnd, &window_rect);
+    bounds = gfx::Rect(window_rect);
+
+    // Maximized windows are outdented from the work area by the frame thickness
+    // even though this "frame" is not painted.  This confuses code (and people)
+    // that think of a maximized window as corresponding exactly to the work
+    // area.  Correct for this by subtracting the frame thickness back off.
+    if (::IsZoomed(hwnd)) {
+      bounds.Inset(GetSystemMetrics(SM_CXSIZEFRAME),
+                   GetSystemMetrics(SM_CYSIZEFRAME));
+
+      bounds.Inset(GetSystemMetrics(SM_CXPADDEDBORDER),
+                   GetSystemMetrics(SM_CXPADDEDBORDER));
+    }
+  }
+
+  bounds = gfx::win::ScreenToDIPRect(bounds);
 #endif
 
-  return rect;
+  return bounds;
 }
 
 void RenderWidgetHostViewAura::GestureEventAck(
