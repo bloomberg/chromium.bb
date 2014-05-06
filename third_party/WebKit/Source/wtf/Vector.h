@@ -662,6 +662,11 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         void reserveCapacity(size_t newCapacity);
         void reserveInitialCapacity(size_t initialCapacity);
         void shrinkToFit() { shrinkCapacity(size()); }
+        void shrinkToReasonableCapacity()
+        {
+            if (size() * 2 < capacity())
+                shrinkCapacity(size() + size() / 4 + 1);
+        }
 
         void clear() { shrinkCapacity(0); }
 
