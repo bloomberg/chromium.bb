@@ -100,4 +100,11 @@ void BoxShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logicalHei
     result.append(LineSegment(x1, x2));
 }
 
+void BoxShape::buildDisplayPaths(DisplayPaths& paths) const
+{
+    paths.shape.addRoundedRect(m_bounds.rect(), m_bounds.radii().topLeft(), m_bounds.radii().topRight(), m_bounds.radii().bottomLeft(), m_bounds.radii().bottomRight());
+    if (shapeMargin())
+        paths.marginShape.addRoundedRect(shapeMarginBounds().rect(), shapeMarginBounds().radii().topLeft(), shapeMarginBounds().radii().topRight(), shapeMarginBounds().radii().bottomLeft(), shapeMarginBounds().radii().bottomRight());
+}
+
 } // namespace WebCore

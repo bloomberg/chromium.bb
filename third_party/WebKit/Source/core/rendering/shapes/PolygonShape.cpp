@@ -150,4 +150,14 @@ void PolygonShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logica
         result.append(LineSegment(excludedInterval.x1(), excludedInterval.x2()));
 }
 
+void PolygonShape::buildDisplayPaths(DisplayPaths& paths) const
+{
+    if (!m_polygon.numberOfVertices())
+        return;
+    paths.shape.moveTo(m_polygon.vertexAt(0));
+    for (size_t i = 1; i < m_polygon.numberOfVertices(); ++i)
+        paths.shape.addLineTo(m_polygon.vertexAt(i));
+    paths.shape.closeSubpath();
+}
+
 } // namespace WebCore

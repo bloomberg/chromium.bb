@@ -88,4 +88,11 @@ void RectangleShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logi
     result.append(LineSegment(x1, x2));
 }
 
+void RectangleShape::buildDisplayPaths(DisplayPaths& paths) const
+{
+    paths.shape.addRoundedRect(m_bounds, m_radii);
+    if (shapeMargin())
+        paths.marginShape.addRoundedRect(shapeMarginBounds(), FloatSize(m_radii.width() + shapeMargin(), m_radii.height() + shapeMargin()));
+}
+
 } // namespace WebCore

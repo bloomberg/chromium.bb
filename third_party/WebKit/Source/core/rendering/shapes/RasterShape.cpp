@@ -118,6 +118,24 @@ void RasterShapeIntervals::initializeBounds()
     }
 }
 
+void RasterShapeIntervals::buildBoundsPath(Path& path) const
+{
+    int maxY = bounds().maxY();
+    for (int y = bounds().y(); y < maxY; y++) {
+        if (intervalAt(y).isEmpty())
+            continue;
+
+        IntShapeInterval extent = intervalAt(y);
+        int endY = y + 1;
+        for (; endY < maxY; endY++) {
+            if (intervalAt(endY).isEmpty() || intervalAt(endY) != extent)
+                break;
+        }
+        path.addRect(FloatRect(extent.x1(), y, extent.width(), endY - y));
+        y = endY - 1;
+    }
+}
+
 const RasterShapeIntervals& RasterShape::marginIntervals() const
 {
     ASSERT(shapeMargin() >= 0);

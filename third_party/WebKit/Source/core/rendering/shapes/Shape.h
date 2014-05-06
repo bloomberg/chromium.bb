@@ -34,6 +34,7 @@
 #include "core/rendering/style/StyleImage.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/geometry/RoundedRect.h"
+#include "platform/graphics/Path.h"
 #include "platform/text/WritingMode.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -61,6 +62,10 @@ typedef Vector<LineSegment> SegmentList;
 
 class Shape {
 public:
+    struct DisplayPaths {
+        Path shape;
+        Path marginShape;
+    };
     static PassOwnPtr<Shape> createShape(const BasicShape*, const LayoutSize& logicalBoxSize, WritingMode, float margin);
     static PassOwnPtr<Shape> createRasterShape(Image*, float threshold, const LayoutRect& imageRect, const LayoutRect& marginRect, WritingMode, float margin);
     static PassOwnPtr<Shape> createLayoutBoxShape(const RoundedRect&, WritingMode, float margin);
@@ -72,6 +77,7 @@ public:
     virtual void getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logicalHeight, SegmentList&) const = 0;
 
     bool lineOverlapsShapeMarginBounds(LayoutUnit lineTop, LayoutUnit lineHeight) const { return lineOverlapsBoundingBox(lineTop, lineHeight, shapeMarginLogicalBoundingBox()); }
+    virtual void buildDisplayPaths(DisplayPaths&) const = 0;
 
 protected:
     float shapeMargin() const { return m_margin; }

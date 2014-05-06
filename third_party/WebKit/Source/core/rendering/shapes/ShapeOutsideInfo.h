@@ -89,14 +89,18 @@ public:
     bool isShapeDirty() { return !m_shape.get(); }
     LayoutSize shapeSize() const { return m_referenceBoxLogicalSize; }
 
-private:
+    LayoutRect computedShapePhysicalBoundingBox() const;
+    FloatPoint shapeToRendererPoint(FloatPoint) const;
+    FloatSize shapeToRendererSize(FloatSize) const;
+    const Shape& computedShape() const;
+
+protected:
     ShapeOutsideInfo(const RenderBox& renderer)
         : m_renderer(renderer)
         , m_lineOverlapsShape(false)
     { }
 
-    const Shape& computedShape() const;
-
+private:
     LayoutUnit logicalTopOffset() const;
     LayoutUnit logicalLeftOffset() const;
 

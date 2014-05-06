@@ -29,6 +29,7 @@
 #ifndef InspectorOverlay_h
 #define InspectorOverlay_h
 
+#include "InspectorTypeBuilder.h"
 #include "platform/Timer.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
@@ -47,6 +48,7 @@ class EmptyChromeClient;
 class GraphicsContext;
 class InspectorClient;
 class InspectorOverlayHost;
+class JSONObject;
 class JSONValue;
 class Node;
 class Page;
@@ -135,6 +137,7 @@ public:
 
     Node* highlightedNode() const;
     bool getBoxModel(Node*, Vector<FloatQuad>*);
+    PassRefPtr<TypeBuilder::DOM::ShapeOutsideInfo> buildObjectForShapeOutside(Node*);
 
     void freePage();
 

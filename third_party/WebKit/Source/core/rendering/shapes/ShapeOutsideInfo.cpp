@@ -317,4 +317,39 @@ void ShapeOutsideInfo::updateDeltasForContainingBlockLine(const RenderBlockFlow&
     }
 }
 
+LayoutRect ShapeOutsideInfo::computedShapePhysicalBoundingBox() const
+{
+    LayoutRect physicalBoundingBox = computedShape().shapeMarginLogicalBoundingBox();
+    physicalBoundingBox.setX(physicalBoundingBox.x() + logicalLeftOffset());
+
+    if (m_renderer.style()->isFlippedBlocksWritingMode())
+        physicalBoundingBox.setY(m_renderer.logicalHeight() - physicalBoundingBox.maxY());
+    else
+        physicalBoundingBox.setY(physicalBoundingBox.y() + logicalTopOffset());
+
+    if (!m_renderer.style()->isHorizontalWritingMode())
+        physicalBoundingBox = physicalBoundingBox.transposedRect();
+    else
+        physicalBoundingBox.setY(physicalBoundingBox.y() + logicalTopOffset());
+
+    return physicalBoundingBox;
+}
+
+FloatPoint ShapeOutsideInfo::shapeToRendererPoint(FloatPoint point) const
+{
+    FloatPoint result = FloatPoint(point.x() + logicalLeftOffset(), point.y() + logicalTopOffset());
+    if (m_renderer.style()->isFlippedBlocksWritingMode())
+        result.setY(m_renderer.logicalHeight() - result.y());
+    if (!m_renderer.style()->isHorizontalWritingMode())
+        result = result.transposedPoint();
+    return result;
+}
+
+FloatSize ShapeOutsideInfo::shapeToRendererSize(FloatSize size) const
+{
+    if (!m_renderer.style()->isHorizontalWritingMode())
+        return size.transposedSize();
+    return size;
+}
+
 }

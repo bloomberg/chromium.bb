@@ -1359,6 +1359,7 @@ void InspectorDOMAgent::getBoxModel(ErrorString* errorString, int nodeId, RefPtr
 
     IntRect boundingBox = pixelSnappedIntRect(view->contentsToRootView(renderer->absoluteBoundingBoxRect()));
     RenderBoxModelObject* modelObject = renderer->isBoxModelObject() ? toRenderBoxModelObject(renderer) : 0;
+    RefPtr<TypeBuilder::DOM::ShapeOutsideInfo> shapeOutsideInfo = m_overlay->buildObjectForShapeOutside(node);
 
     model = TypeBuilder::DOM::BoxModel::create()
         .setContent(buildArrayForQuad(quads.at(3)))
@@ -1367,6 +1368,8 @@ void InspectorDOMAgent::getBoxModel(ErrorString* errorString, int nodeId, RefPtr
         .setMargin(buildArrayForQuad(quads.at(0)))
         .setWidth(modelObject ? adjustForAbsoluteZoom(modelObject->pixelSnappedOffsetWidth(), modelObject) : boundingBox.width())
         .setHeight(modelObject ? adjustForAbsoluteZoom(modelObject->pixelSnappedOffsetHeight(), modelObject) : boundingBox.height());
+    if (shapeOutsideInfo)
+        model->setShapeOutside(shapeOutsideInfo);
 }
 
 void InspectorDOMAgent::getNodeForLocation(ErrorString* errorString, int x, int y, int* nodeId)

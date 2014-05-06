@@ -744,6 +744,14 @@ InspectorTest.dumpInspectorHighlight = function(node, callback)
             InspectorTest.addResult(rectNames[i] + " rect is " + (rect[4] - rect[0]) + " x " + (rect[5] - rect[1]) + " at (" + rect[0] + ", " + rect[1] + ")");
         }
         callback();
+   });
+}
+
+InspectorTest.dumpInspectorHighlightShape = function(node, callback)
+{
+    node.boxModel(function(shapes) {
+        InspectorTest.addResult(JSON.stringify(shapes.shapeOutside.shape));
+        callback();
     });
 }
 

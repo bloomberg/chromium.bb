@@ -51,6 +51,7 @@ public:
     virtual LayoutRect shapeMarginLogicalBoundingBox() const OVERRIDE { return static_cast<LayoutRect>(shapeMarginBounds()); }
     virtual bool isEmpty() const OVERRIDE { return m_bounds.isEmpty(); }
     virtual void getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logicalHeight, SegmentList&) const OVERRIDE;
+    virtual void buildDisplayPaths(DisplayPaths&) const OVERRIDE;
 
 private:
     FloatRect shapeMarginBounds() const;
