@@ -30,6 +30,7 @@ class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViews {
       const web_app::ShortcutInfo& shortcut_info);
 
   HWND GetNativeAppWindowHWND() const;
+  void EnsureCaptionStyleSet();
 
   // Overridden from ChromeNativeAppWindowViews:
   virtual void OnBeforeWidgetInit(views::Widget::InitParams* init_params,

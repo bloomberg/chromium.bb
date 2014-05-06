@@ -116,6 +116,15 @@ HWND ChromeNativeAppWindowViewsWin::GetNativeAppWindowHWND() const {
   return views::HWNDForWidget(widget()->GetTopLevelWidget());
 }
 
+void ChromeNativeAppWindowViewsWin::EnsureCaptionStyleSet() {
+  // Windows seems to have issues maximizing windows without WS_CAPTION.
+  // The default views / Aura implementation will remove this if we are using
+  // frameless or colored windows, so we put it back here.
+  HWND hwnd = GetNativeAppWindowHWND();
+  int current_style = ::GetWindowLong(hwnd, GWL_STYLE);
+  ::SetWindowLong(hwnd, GWL_STYLE, current_style | WS_CAPTION);
+}
+
 void ChromeNativeAppWindowViewsWin::OnBeforeWidgetInit(
     views::Widget::InitParams* init_params,
     views::Widget* widget) {
@@ -172,6 +181,7 @@ void ChromeNativeAppWindowViewsWin::InitializeDefaultWindow(
       base::Bind(&ChromeNativeAppWindowViewsWin::OnShortcutInfoLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
 
+  EnsureCaptionStyleSet();
   UpdateShelfMenu();
 }
 
