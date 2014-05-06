@@ -30,6 +30,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMTimer.h"
 #include "core/frame/DOMWindow.h"
+#include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -43,7 +44,6 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/DragController.h"
-#include "core/page/EventHandlerRegistry.h"
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
 #include "core/page/PageLifecycleNotifier.h"
@@ -205,7 +205,7 @@ void Page::documentDetached(Document* document)
     m_contextMenuController->documentDetached(document);
     if (m_validationMessageClient)
         m_validationMessageClient->documentDetached(*document);
-    EventHandlerRegistry::from(*this)->documentDetached(*document);
+    m_frameHost->eventHandlerRegistry().documentDetached(*document);
 }
 
 bool Page::openedByDOM() const
@@ -542,6 +542,7 @@ PassOwnPtr<LifecycleNotifier<Page> > Page::createLifecycleNotifier()
 void Page::trace(Visitor* visitor)
 {
     visitor->trace(m_multisamplingChangedObservers);
+    m_frameHost->trace(visitor);
     WillBeHeapSupplementable<Page>::trace(visitor);
 }
 

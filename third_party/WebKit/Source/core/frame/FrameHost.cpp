@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/frame/FrameHost.h"
 
+#include "core/frame/EventHandlerRegistry.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -45,6 +46,7 @@ PassOwnPtr<FrameHost> FrameHost::create(Page& page)
 FrameHost::FrameHost(Page& page)
     : m_page(page)
     , m_pinchViewport(adoptPtr(new PinchViewport(*this)))
+    , m_eventHandlerRegistry(adoptPtr(new EventHandlerRegistry(*this)))
 {
 }
 
@@ -76,6 +78,16 @@ float FrameHost::deviceScaleFactor() const
 PinchViewport& FrameHost::pinchViewport() const
 {
     return *m_pinchViewport;
+}
+
+EventHandlerRegistry& FrameHost::eventHandlerRegistry() const
+{
+    return *m_eventHandlerRegistry;
+}
+
+void FrameHost::trace(Visitor* visitor)
+{
+    m_eventHandlerRegistry->trace(visitor);
 }
 
 }

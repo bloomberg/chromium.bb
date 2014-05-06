@@ -79,6 +79,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMPoint.h"
 #include "core/frame/DOMWindow.h"
+#include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -104,7 +105,6 @@
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
-#include "core/page/EventHandlerRegistry.h"
 #include "core/page/Page.h"
 #include "core/page/PagePopupController.h"
 #include "core/page/PrintContext.h"
@@ -1248,9 +1248,9 @@ unsigned Internals::activeDOMObjectCount(Document* document, ExceptionState& exc
 
 static unsigned eventHandlerCount(Document& document, EventHandlerRegistry::EventHandlerClass handlerClass)
 {
-    if (!document.page())
+    if (!document.frameHost())
         return 0;
-    EventHandlerRegistry* registry = EventHandlerRegistry::from(*document.page());
+    EventHandlerRegistry* registry = &document.frameHost()->eventHandlerRegistry();
     unsigned count = 0;
     const EventTargetSet* targets = registry->eventHandlerTargets(handlerClass);
     if (targets) {

@@ -6,7 +6,7 @@
 #define EventHandlerRegistry_h
 
 #include "core/events/Event.h"
-#include "core/page/Page.h"
+#include "core/frame/FrameHost.h"
 #include "wtf/HashCountedSet.h"
 
 namespace WebCore {
@@ -15,11 +15,11 @@ typedef HashCountedSet<EventTarget*> EventTargetSet;
 
 // Registry for keeping track of event handlers. Note that only handlers on
 // documents that can be rendered or can receive input (i.e., are attached to a
-// Page) are registered here.
-// TODO(skyostil): This class should move to the FrameHost (crbug.com/369082).
-class EventHandlerRegistry FINAL : public NoBaseWillBeGarbageCollectedFinalized<EventHandlerRegistry>, public WillBeHeapSupplement<Page> {
+// FrameHost) are registered here.
+class EventHandlerRegistry FINAL : public NoBaseWillBeGarbageCollectedFinalized<EventHandlerRegistry> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(EventHandlerRegistry);
 public:
+    explicit EventHandlerRegistry(FrameHost&);
     virtual ~EventHandlerRegistry();
 
     // Supported event handler classes. Note that each one may correspond to
@@ -33,10 +33,7 @@ public:
         EventHandlerClassCount, // Must be the last entry.
     };
 
-    static const char* supplementName();
-    static EventHandlerRegistry* from(Page&);
-
-    // Returns true if the page has event handlers of the specified class.
+    // Returns true if the FrameHost has event handlers of the specified class.
     bool hasEventHandlers(EventHandlerClass) const;
 
     // Returns a set of EventTargets which have registered handlers of the given class.
@@ -48,21 +45,19 @@ public:
     void didRemoveEventHandler(EventTarget&, const AtomicString& eventType);
     void didRemoveEventHandler(EventTarget&, EventHandlerClass);
     void didRemoveAllEventHandlers(EventTarget&);
-    void didMoveIntoPage(EventTarget&);
-    void didMoveOutOfPage(EventTarget&);
+    void didMoveIntoFrameHost(EventTarget&);
+    void didMoveOutOfFrameHost(EventTarget&);
 
-    // Either |documentDetached| or |didMoveOutOfPage| must be called whenever
-    // the Page that is associated with a registered event target changes. This
-    // ensures the registry does not end up with stale references to handlers
-    // that are no longer related to it.
+    // Either |documentDetached| or |didMoveOutOfFrameHost| must be called
+    // whenever the FrameHost that is associated with a registered event target
+    // changes. This ensures the registry does not end up with stale references
+    // to handlers that are no longer related to it.
     void documentDetached(Document&);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    void trace(Visitor*);
     void clearWeakMembers(Visitor*);
 
 private:
-    explicit EventHandlerRegistry(Page&);
-
     enum ChangeOperation {
         Add, // Add a new event handler.
         Remove, // Remove an existing event handler.
@@ -92,7 +87,7 @@ private:
 
     void checkConsistency() const;
 
-    Page& m_page;
+    FrameHost& m_frameHost;
     EventTargetSet m_targets[EventHandlerClassCount];
 };
 

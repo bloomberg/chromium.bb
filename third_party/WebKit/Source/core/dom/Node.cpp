@@ -73,6 +73,7 @@
 #include "core/events/TouchEvent.h"
 #include "core/events/UIEvent.h"
 #include "core/events/WheelEvent.h"
+#include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLDialogElement.h"
@@ -80,7 +81,6 @@
 #include "core/html/HTMLStyleElement.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/EventHandler.h"
-#include "core/page/EventHandlerRegistry.h"
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
 #include "core/rendering/FlowThreadController.h"
@@ -304,8 +304,8 @@ void Node::willBeDeletedFromDocument()
     if (hasEventTargetData()) {
         clearEventTargetData();
         document.didClearTouchEventHandlers(this);
-        if (document.page())
-            EventHandlerRegistry::from(*document.page())->didRemoveAllEventHandlers(*this);
+        if (document.frameHost())
+            document.frameHost()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
     }
 
     if (AXObjectCache* cache = document.existingAXObjectCache())
@@ -1962,11 +1962,11 @@ void Node::didMoveToNewDocument(Document& oldDocument)
             document().didAddTouchEventHandler(this);
         }
     }
-    if (oldDocument.page() != document().page()) {
-        if (oldDocument.page())
-            EventHandlerRegistry::from(*oldDocument.page())->didMoveOutOfPage(*this);
-        if (document().page())
-            EventHandlerRegistry::from(*document().page())->didMoveIntoPage(*this);
+    if (oldDocument.frameHost() != document().frameHost()) {
+        if (oldDocument.frameHost())
+            oldDocument.frameHost()->eventHandlerRegistry().didMoveOutOfFrameHost(*this);
+        if (document().frameHost())
+            document().frameHost()->eventHandlerRegistry().didMoveIntoFrameHost(*this);
     }
 
     if (WillBeHeapVector<OwnPtrWillBeMember<MutationObserverRegistration> >* registry = mutationObserverRegistry()) {
@@ -1993,8 +1993,8 @@ static inline bool tryAddEventListener(Node* targetNode, const AtomicString& eve
         WheelController::from(document)->didAddWheelEventHandler(document);
     else if (isTouchEventType(eventType))
         document.didAddTouchEventHandler(targetNode);
-    if (document.page())
-        EventHandlerRegistry::from(*document.page())->didAddEventHandler(*targetNode, eventType);
+    if (document.frameHost())
+        document.frameHost()->eventHandlerRegistry().didAddEventHandler(*targetNode, eventType);
 
     return true;
 }
@@ -2016,8 +2016,8 @@ static inline bool tryRemoveEventListener(Node* targetNode, const AtomicString& 
         WheelController::from(document)->didRemoveWheelEventHandler(document);
     else if (isTouchEventType(eventType))
         document.didRemoveTouchEventHandler(targetNode);
-    if (document.page())
-        EventHandlerRegistry::from(*document.page())->didRemoveEventHandler(*targetNode, eventType);
+    if (document.frameHost())
+        document.frameHost()->eventHandlerRegistry().didRemoveEventHandler(*targetNode, eventType);
 
     return true;
 }
@@ -2029,8 +2029,8 @@ bool Node::removeEventListener(const AtomicString& eventType, EventListener* lis
 
 void Node::removeAllEventListeners()
 {
-    if (hasEventListeners() && document().page())
-        EventHandlerRegistry::from(*document().page())->didRemoveAllEventHandlers(*this);
+    if (hasEventListeners() && document().frameHost())
+        document().frameHost()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
     EventTarget::removeAllEventListeners();
     document().didClearTouchEventHandlers(this);
 }

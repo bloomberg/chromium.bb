@@ -40,10 +40,12 @@
 namespace WebCore {
 
 class Chrome;
+class EventHandlerRegistry;
 class Page;
 class PinchViewport;
 class Settings;
 class UseCounter;
+class Visitor;
 
 // FrameHost is the set of global data shared between multiple frames
 // and is provided by the embedder to each frame when created.
@@ -73,12 +75,16 @@ public:
     float deviceScaleFactor() const;
 
     PinchViewport& pinchViewport() const;
+    EventHandlerRegistry& eventHandlerRegistry() const;
+
+    void trace(Visitor*);
 
 private:
     explicit FrameHost(Page&);
 
     Page& m_page;
     const OwnPtr<PinchViewport> m_pinchViewport;
+    const OwnPtr<EventHandlerRegistry> m_eventHandlerRegistry;
 };
 
 }

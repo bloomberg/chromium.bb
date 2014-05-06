@@ -3,37 +3,23 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/page/EventHandlerRegistry.h"
+#include "core/frame/EventHandlerRegistry.h"
 
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
 namespace WebCore {
 
-EventHandlerRegistry::EventHandlerRegistry(Page& page)
-    : m_page(page)
+EventHandlerRegistry::EventHandlerRegistry(FrameHost& frameHost)
+    : m_frameHost(frameHost)
 {
 }
 
 EventHandlerRegistry::~EventHandlerRegistry()
 {
     checkConsistency();
-}
-
-const char* EventHandlerRegistry::supplementName()
-{
-    return "EventHandlerRegistry";
-}
-
-EventHandlerRegistry* EventHandlerRegistry::from(Page& page)
-{
-    EventHandlerRegistry* registry = static_cast<EventHandlerRegistry*>(WillBeHeapSupplement<Page>::from(page, supplementName()));
-    if (!registry) {
-        registry = new EventHandlerRegistry(page);
-        WillBeHeapSupplement<Page>::provideTo(page, supplementName(), adoptPtrWillBeNoop(registry));
-    }
-    return registry;
 }
 
 bool EventHandlerRegistry::eventTypeToClass(const AtomicString& eventType, EventHandlerClass* result)
@@ -127,12 +113,12 @@ void EventHandlerRegistry::didRemoveEventHandler(EventTarget& target, EventHandl
     updateEventHandlerInternal(Remove, handlerClass, &target);
 }
 
-void EventHandlerRegistry::didMoveIntoPage(EventTarget& target)
+void EventHandlerRegistry::didMoveIntoFrameHost(EventTarget& target)
 {
     updateAllEventHandlers(Add, target);
 }
 
-void EventHandlerRegistry::didMoveOutOfPage(EventTarget& target)
+void EventHandlerRegistry::didMoveOutOfFrameHost(EventTarget& target)
 {
     updateAllEventHandlers(RemoveAll, target);
 }
@@ -166,7 +152,7 @@ void EventHandlerRegistry::updateAllEventHandlers(ChangeOperation op, EventTarge
 
 void EventHandlerRegistry::notifyHasHandlersChanged(EventHandlerClass handlerClass, bool hasActiveHandlers)
 {
-    ScrollingCoordinator* scrollingCoordinator = m_page.scrollingCoordinator();
+    ScrollingCoordinator* scrollingCoordinator = m_frameHost.page().scrollingCoordinator();
 
     switch (handlerClass) {
     case ScrollEvent:
@@ -235,8 +221,8 @@ void EventHandlerRegistry::checkConsistency() const
         for (EventTargetSet::const_iterator iter = targets->begin(); iter != targets->end(); ++iter) {
             if (Node* node = iter->key->toNode()) {
                 // See the comment for |documentDetached| if either of these assertions fails.
-                ASSERT(node->document().page());
-                ASSERT(node->document().page() == &m_page);
+                ASSERT(node->document().frameHost());
+                ASSERT(node->document().frameHost() == &m_frameHost);
             }
         }
     }

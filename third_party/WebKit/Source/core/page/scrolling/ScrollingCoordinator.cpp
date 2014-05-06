@@ -32,11 +32,11 @@
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/Node.h"
 #include "core/dom/WheelController.h"
+#include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
-#include "core/page/EventHandlerRegistry.h"
 #include "core/page/Page.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderGeometryMap.h"
@@ -680,7 +680,7 @@ void ScrollingCoordinator::updateHaveScrollEventHandlers()
     // instead on a per-layer basis. We therefore only update this information for the root
     // scrolling layer.
     if (WebLayer* scrollLayer = toWebLayer(m_page->mainFrame()->view()->layerForScrolling())) {
-        bool haveHandlers = EventHandlerRegistry::from(*m_page)->hasEventHandlers(EventHandlerRegistry::ScrollEvent);
+        bool haveHandlers = m_page->frameHost().eventHandlerRegistry().hasEventHandlers(EventHandlerRegistry::ScrollEvent);
         scrollLayer->setHaveScrollEventHandlers(haveHandlers);
     }
 }
