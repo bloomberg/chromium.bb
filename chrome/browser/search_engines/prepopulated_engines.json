@@ -9,8 +9,9 @@
 // definitions.
 
 // The following unique IDs are available:
-//    11, 12, 14, 18, 19, 20, 22, 24, 26, 28, 29, 30, 32, 33, 34, 39, 37, 38,
-//    40, 41, 42, 46, 47, 48, 49, 51, 52, 59, 71, 72, 82, 84, 86, 88, 89, 91+
+//    11, 12, 13, 14, 18, 19, 20, 22, 24, 26, 28, 29, 30, 32, 33, 34, 39, 37,
+//    38, 40, 41, 42, 46, 47, 48, 49, 51, 52, 58, 59, 69, 71, 72, 82, 84, 86,
+//    88, 89, 91+
 //
 // IDs > 1000 are reserved for distribution custom engines.
 //
@@ -26,7 +27,7 @@
 
     // Increment this if you change the data in ways that mean users with
     // existing data should get a new version.
-    "kCurrentDataVersion": 71
+    "kCurrentDataVersion": 72
   },
 
   // The following engines are included in country lists and are added to the
@@ -36,7 +37,7 @@
       "name": "AOL",
       "keyword": "aol.com",
       "favicon_url": "http://search.aol.com/favicon.ico",
-      "search_url": "http://search.aol.com/aol/search?query={searchTerms}",
+      "search_url": "http://search.aol.com/aol/search?q={searchTerms}",
       "suggest_url": "http://autocomplete.search.aol.com/autocomplete/get?output=json&it=&q={searchTerms}",
       "type": "SEARCH_ENGINE_AOL",
       "id": 35
@@ -57,7 +58,6 @@
       "keyword": "br.ask.com",
       "favicon_url": "http://sp.br.ask.com/sh/i/a14/favicon/favicon.ico",
       "search_url": "http://br.ask.com/web?q={searchTerms}",
-      "suggest_url": "http://ss.ask.com/query?q={searchTerms}&li=ff",
       "type": "SEARCH_ENGINE_ASK",
       "id": 4
     },
@@ -76,7 +76,7 @@
       "name": "\u767e\u5ea6",
       "keyword": "baidu.com",
       "favicon_url": "http://www.baidu.com/favicon.ico",
-      "search_url": "http://www.baidu.com/s?ie={inputEncoding}&wd={searchTerms}",
+      "search_url": "http://www.baidu.com/#ie={inputEncoding}&wd={searchTerms}",
       "type": "SEARCH_ENGINE_BAIDU",
       "id": 21
     },
@@ -84,8 +84,8 @@
     "bing": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab",
       "type": "SEARCH_ENGINE_BING",
@@ -95,8 +95,8 @@
     "bing_ar_XA": {
       "name": "Bing (\u0627\u0644\u0639\u0631\u0628\u064a\u0629)",
       "keyword": "bing.com_",  // bing.com is taken by bing_en_XA.
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=ar-XA&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=ar-XA&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=ar-XA",
       "type": "SEARCH_ENGINE_BING",
@@ -107,8 +107,8 @@
     "bing_da_DK": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=da-DK&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=da-DK&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=da-DK",
       "type": "SEARCH_ENGINE_BING",
@@ -118,8 +118,8 @@
     "bing_de_AT": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=de-AT&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=de-AT&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=de-AT",
       "type": "SEARCH_ENGINE_BING",
@@ -129,8 +129,8 @@
     "bing_de_CH": {
       "name": "Bing (Deutsch)",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=de-CH&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=de-CH&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=de-CH",
       "type": "SEARCH_ENGINE_BING",
@@ -140,8 +140,8 @@
     "bing_de_DE": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=de-DE&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=de-DE&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=de-DE",
       "type": "SEARCH_ENGINE_BING",
@@ -151,8 +151,8 @@
     "bing_en_AU": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=en-AU&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=en-AU&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=en-AU",
       "type": "SEARCH_ENGINE_BING",
@@ -162,8 +162,8 @@
     "bing_en_CA": {
       "name": "Bing (English)",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=en-CA&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=en-CA&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=en-CA",
       "type": "SEARCH_ENGINE_BING",
@@ -173,8 +173,8 @@
     "bing_en_GB": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=en-GB&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=en-GB&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=en-GB",
       "type": "SEARCH_ENGINE_BING",
@@ -184,8 +184,8 @@
     "bing_en_IE": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=en-IE&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=en-IE&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=en-IE",
       "type": "SEARCH_ENGINE_BING",
@@ -195,8 +195,8 @@
     "bing_en_IN": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=en-IN&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=en-IN&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=en-IN",
       "type": "SEARCH_ENGINE_BING",
@@ -206,8 +206,8 @@
     "bing_en_NZ": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=en-NZ&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=en-NZ&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=en-NZ",
       "type": "SEARCH_ENGINE_BING",
@@ -217,8 +217,8 @@
     "bing_en_PH": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=en-PH&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=en-PH&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=en-PH",
       "type": "SEARCH_ENGINE_BING",
@@ -228,8 +228,8 @@
     "bing_en_SG": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=en-SG&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=en-SG&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=en-SG",
       "type": "SEARCH_ENGINE_BING",
@@ -239,8 +239,8 @@
     "bing_en_US": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=en-US&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=en-US&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=en-US",
       "type": "SEARCH_ENGINE_BING",
@@ -250,8 +250,8 @@
     "bing_en_XA": {
       "name": "Bing (English)",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=en-XA&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=en-XA&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=en-XA",
       "type": "SEARCH_ENGINE_BING",
@@ -261,8 +261,8 @@
     "bing_es_AR": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=es-AR&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=es-AR&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=es-AR",
       "type": "SEARCH_ENGINE_BING",
@@ -272,8 +272,8 @@
     "bing_es_CL": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=es-CL&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=es-CL&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=es-CL",
       "type": "SEARCH_ENGINE_BING",
@@ -283,8 +283,8 @@
     "bing_es_ES": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=es-ES&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=es-ES&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=es-ES",
       "type": "SEARCH_ENGINE_BING",
@@ -294,8 +294,8 @@
     "bing_es_MX": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=es-MX&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=es-MX&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=es-MX",
       "type": "SEARCH_ENGINE_BING",
@@ -305,8 +305,8 @@
     "bing_es_XL": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=es-XL&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=es-XL&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=es-XL",
       "type": "SEARCH_ENGINE_BING",
@@ -316,8 +316,8 @@
     "bing_fi_FI": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=fi-FI&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=fi-FI&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=fi-FI",
       "type": "SEARCH_ENGINE_BING",
@@ -327,8 +327,8 @@
     "bing_fr_BE": {
       "name": "Bing (Fran\u00e7ais)",
       "keyword": "bing.com_",  // bing.com is taken by bing_nl_BE.
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=fr-BE&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=fr-BE&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=fr-BE",
       "type": "SEARCH_ENGINE_BING",
@@ -338,8 +338,8 @@
     "bing_fr_CA": {
       "name": "Bing (Fran\u00e7ais)",
       "keyword": "bing.com_",  // bing.com is taken by bing_en_CA.
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=fr-CA&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=fr-CA&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=fr-CA",
       "type": "SEARCH_ENGINE_BING",
@@ -349,8 +349,8 @@
     "bing_fr_CH": {
       "name": "Bing (Fran\u00e7ais)",
       "keyword": "bing.com_",  // bing.com is taken by bing_de_CH.
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=fr-CH&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=fr-CH&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=fr-CH",
       "type": "SEARCH_ENGINE_BING",
@@ -360,8 +360,8 @@
     "bing_fr_FR": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=fr-FR&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=fr-FR&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=fr-FR",
       "type": "SEARCH_ENGINE_BING",
@@ -371,8 +371,8 @@
     "bing_it_IT": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=it-IT&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=it-IT&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=it-IT",
       "type": "SEARCH_ENGINE_BING",
@@ -382,8 +382,8 @@
     "bing_ja_JP": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=ja-JP&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=ja-JP&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=ja-JP",
       "type": "SEARCH_ENGINE_BING",
@@ -393,8 +393,8 @@
     "bing_lv_LV": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=lv-LV&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=lv-LV&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=lv-LV",
       "type": "SEARCH_ENGINE_BING",
@@ -404,8 +404,8 @@
     "bing_nb_NO": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=nb-NO&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=nb-NO&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=nb-NO",
       "type": "SEARCH_ENGINE_BING",
@@ -415,8 +415,8 @@
     "bing_nl_BE": {
       "name": "Bing (Nederlandstalige)",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=nl-BE&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=nl-BE&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=nl-BE",
       "type": "SEARCH_ENGINE_BING",
@@ -426,8 +426,8 @@
     "bing_pl_PL": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=pl-PL&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=pl-PL&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=pl-PL",
       "type": "SEARCH_ENGINE_BING",
@@ -437,8 +437,8 @@
     "bing_pt_BR": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=pt-BR&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=pt-BR&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=pt-BR",
       "type": "SEARCH_ENGINE_BING",
@@ -448,8 +448,8 @@
     "bing_pt_PT": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=pt-PT&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=pt-PT&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=pt-PT",
       "type": "SEARCH_ENGINE_BING",
@@ -459,8 +459,8 @@
     "bing_ru_RU": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=ru-RU&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=ru-RU&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=ru-RU",
       "type": "SEARCH_ENGINE_BING",
@@ -470,8 +470,8 @@
     "bing_sv_SE": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=sv-SE&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=sv-SE&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=sv-SE",
       "type": "SEARCH_ENGINE_BING",
@@ -481,8 +481,8 @@
     "bing_tr_TR": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=tr-TR&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=tr-TR&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=tr-TR",
       "type": "SEARCH_ENGINE_BING",
@@ -492,8 +492,8 @@
     "bing_zh_HK": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=zh-HK&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=zh-HK&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=zh-HK",
       "type": "SEARCH_ENGINE_BING",
@@ -503,8 +503,8 @@
     "bing_zh_TW": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=zh-TW&q={searchTerms}",
+      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "search_url": "https://www.bing.com/search?setmkt=zh-TW&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "new_tab_url": "https://www.bing.com/chrome/newtab?setmkt=zh-TW",
       "type": "SEARCH_ENGINE_BING",
@@ -544,8 +544,8 @@
     "kvasir": {
       "name": "Kvasir",
       "keyword": "kvasir.no",
-      "favicon_url": "http://www.kvasir.no/grafikk/favicon.ico",
-      "search_url": "http://www.kvasir.no/alle?q={searchTerms}",
+      "favicon_url": "http://kvasir.no/grafikk/favicon.ico",
+      "search_url": "http://kvasir.no/alle?q={searchTerms}",
       "type": "SEARCH_ENGINE_KVASIR",
       "id": 73
     },
@@ -553,7 +553,7 @@
     "mail_ru": {
       "name": "@MAIL.RU",
       "keyword": "mail.ru",
-      "favicon_url": "http://img.go.mail.ru/favicon.ico",
+      "favicon_url": "http://go.imgsmail.ru/favicon.ico",
       "search_url": "http://go.mail.ru/search?q={searchTerms}",
       "encoding": "windows-1251",
       "suggest_url": "http://suggests.go.mail.ru/chrome?q={searchTerms}",
@@ -564,28 +564,17 @@
     "najdi": {
       "name": "Najdi.si",
       "keyword": "najdi.si",
-      "favicon_url": "http://nsi2.sdn.si/master/v2/favicon.ico",
+      "favicon_url": "http://www.najdi.si/assets/PROD-1.4.10/ctx/images/favicon.ico",
       "search_url": "http://www.najdi.si/search.jsp?q={searchTerms}",
       "type": "SEARCH_ENGINE_NAJDI",
       "id": 87
     },
 
-    "nate": {
-      "name": "\ub124\uc774\ud2b8",
-      "keyword": "nate.com",
-      "favicon_url": "http://search.nate.com/favicon.ico",
-      "search_url": "http://search.nate.com/search/all.html?q={searchTerms}",
-      "encoding": "EUC-KR",
-      "type": "SEARCH_ENGINE_NATE",
-      "id": 69
-    },
-
     "naver": {
       "name": "\ub124\uc774\ubc84",
       "keyword": "naver.com",
-      "favicon_url": "http://static.naver.net/www/favicon.ico",
+      "favicon_url": "http://sstatic.naver.net/search/favicon/favicon_140327.ico",
       "search_url": "http://search.naver.com/search.naver?ie={inputEncoding}&query={searchTerms}",
-      "suggest_url": "http://ac.search.naver.com/autocompl?m=s&ie={inputEncoding}&oe={outputEncoding}&q={searchTerms}",
       "type": "SEARCH_ENGINE_NAVER",
       "id": 67
     },
@@ -602,9 +591,9 @@
     "seznam": {
       "name": "Seznam",
       "keyword": "seznam.cz",
-      "favicon_url": "http://1.im.cz/szn/img/favicon.ico",
+      "favicon_url": "http://search.seznam.cz/r/img/favicon.ico",
       "search_url": "http://search.seznam.cz/?q={searchTerms}",
-      "suggest_url": "http:///suggest.fulltext.seznam.cz/?dict=fulltext_ff&phrase={searchTerms}&encoding={inputEncoding}&response_encoding=utf-8",
+      "suggest_url": "http://suggest.fulltext.seznam.cz/fulltext_ff?phrase={searchTerms}",
       "type": "SEARCH_ENGINE_SEZNAM",
       "id": 25
     },
@@ -612,19 +601,10 @@
     "sogou": {
       "name": "\u641c\u72d7",
       "keyword": "sogou.com",
-      "favicon_url": "http://www.sogou.com/favicon.ico",
+      "favicon_url": "http://www.sogou.com/images/logo/old/favicon.ico",
       "search_url": "http://www.sogou.com/web?ie={inputEncoding}&query={searchTerms}",
       "type": "SEARCH_ENGINE_SOGOU",
       "id": 56
-    },
-
-    "soso": {
-      "name": "\u641c\u641c",
-      "keyword": "soso.com",
-      "favicon_url": "http://www.soso.com/favicon.ico",
-      "search_url": "http://www.soso.com/q?ie={inputEncoding}&w={searchTerms}",
-      "type": "SEARCH_ENGINE_SOSO",
-      "id": 58
     },
 
     "vinden": {
@@ -649,8 +629,8 @@
     "yahoo": {
       "name": "Yahoo!",
       "keyword": "yahoo.com",
-      "favicon_url": "http://search.yahoo.com/favicon.ico",
-      "search_url": "http://search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://search.yahoo.com/favicon.ico",
+      "search_url": "https://search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://ff.search.yahoo.com/gossip?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -659,8 +639,8 @@
     "yahoo_ar": {
       "name": "Yahoo! Argentina",
       "keyword": "ar.yahoo.com",
-      "favicon_url": "http://ar.search.yahoo.com/favicon.ico",
-      "search_url": "http://ar.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://ar.search.yahoo.com/favicon.ico",
+      "search_url": "https://ar.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://ar-sayt.ff.search.yahoo.com/gossip-ar-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -669,8 +649,8 @@
     "yahoo_at": {
       "name": "Yahoo! \u00d6sterreich",
       "keyword": "at.yahoo.com",
-      "favicon_url": "http://at.search.yahoo.com/favicon.ico",
-      "search_url": "http://at.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://at.search.yahoo.com/favicon.ico",
+      "search_url": "https://at.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://de-sayt.ff.search.yahoo.com/gossip-de-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -679,21 +659,9 @@
     "yahoo_au": {
       "name": "Yahoo!7",
       "keyword": "au.yahoo.com",
-      "favicon_url": "http://au.search.yahoo.com/favicon.ico",
-      "search_url": "http://au.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://au.search.yahoo.com/favicon.ico",
+      "search_url": "https://au.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://aue-sayt.ff.search.yahoo.com/gossip-au-sayt?output=fxjson&command={searchTerms}",
-      "type": "SEARCH_ENGINE_YAHOO",
-      "id": 2
-    },
-
-    // For regional Yahoo variants without a region-specific suggestion service,
-    // suggestion is disabled. For some of them, we might consider using one of
-    // the other language/country URLs as a fallback.
-    "yahoo_be": {
-      "name": "Yahoo! Belgi\u00eb",
-      "keyword": "be.yahoo.com",
-      "favicon_url": "http://be.search.yahoo.com/favicon.ico",
-      "search_url": "http://be.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
     },
@@ -701,8 +669,8 @@
     "yahoo_br": {
       "name": "Yahoo! Brasil",
       "keyword": "br.yahoo.com",
-      "favicon_url": "http://br.search.yahoo.com/favicon.ico",
-      "search_url": "http://br.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://br.search.yahoo.com/favicon.ico",
+      "search_url": "https://br.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://br-sayt.ff.search.yahoo.com/gossip-br-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -711,8 +679,8 @@
     "yahoo_ca": {
       "name": "Yahoo! Canada",
       "keyword": "ca.yahoo.com",
-      "favicon_url": "http://ca.search.yahoo.com/favicon.ico",
-      "search_url": "http://ca.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://ca.search.yahoo.com/favicon.ico",
+      "search_url": "https://ca.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://gossip.ca.yahoo.com/gossip-ca-sayt?output=fxjsonp&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -721,8 +689,8 @@
     "yahoo_ch": {
       "name": "Yahoo! Schweiz",
       "keyword": "ch.yahoo.com",
-      "favicon_url": "http://ch.search.yahoo.com/favicon.ico",
-      "search_url": "http://ch.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://ch.search.yahoo.com/favicon.ico",
+      "search_url": "https://ch.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://de-sayt.ff.search.yahoo.com/gossip-de-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -731,8 +699,8 @@
     "yahoo_cl": {
       "name": "Yahoo! Chile",
       "keyword": "cl.yahoo.com",
-      "favicon_url": "http://cl.search.yahoo.com/favicon.ico",
-      "search_url": "http://cl.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://cl.search.yahoo.com/favicon.ico",
+      "search_url": "https://cl.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://gossip.telemundo.yahoo.com/gossip-e1-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -741,8 +709,8 @@
     "yahoo_co": {
       "name": "Yahoo! Colombia",
       "keyword": "co.yahoo.com",
-      "favicon_url": "http://co.search.yahoo.com/favicon.ico",
-      "search_url": "http://co.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://co.search.yahoo.com/favicon.ico",
+      "search_url": "https://co.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://gossip.telemundo.yahoo.com/gossip-e1-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -758,6 +726,9 @@
       "id": 2
     },
 
+    // For regional Yahoo variants without a region-specific suggestion service,
+    // suggestion is disabled. For some of them, we might consider using one of
+    // the other language/country URLs as a fallback.
     "yahoo_dk": {
       "name": "Yahoo! Danmark",
       "keyword": "dk.yahoo.com",
@@ -770,8 +741,8 @@
     "yahoo_es": {
       "name": "Yahoo! Espa\u00f1a",
       "keyword": "es.yahoo.com",
-      "favicon_url": "http://es.search.yahoo.com/favicon.ico",
-      "search_url": "http://es.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://es.search.yahoo.com/favicon.ico",
+      "search_url": "https://es.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://es-sayt.ff.search.yahoo.com/gossip-es-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -780,8 +751,8 @@
     "yahoo_fi": {
       "name": "Yahoo! Suomi",
       "keyword": "fi.yahoo.com",
-      "favicon_url": "http://fi.search.yahoo.com/favicon.ico",
-      "search_url": "http://fi.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://fi.search.yahoo.com/favicon.ico",
+      "search_url": "https://fi.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
     },
@@ -789,29 +760,19 @@
     "yahoo_fr": {
       "name": "Yahoo! France",
       "keyword": "fr.yahoo.com",
-      "favicon_url": "http://fr.search.yahoo.com/favicon.ico",
-      "search_url": "http://fr.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
-      "suggest_url": "http://fr-sayt.ff.search.yahoo.com/gossip-fr-sayt?output=fxjson&command={searchTerms}",
-      "type": "SEARCH_ENGINE_YAHOO",
-      "id": 2
-    },
-
-    "yahoo_fr_be": {
-      "name": "Yahoo! Belgique",
-      "keyword": "fr-be.yahoo.com",
-      "favicon_url": "http://fr.search.yahoo.com/favicon.ico",
-      "search_url": "http://fr.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://fr.search.yahoo.com/favicon.ico",
+      "search_url": "https://fr.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://fr-sayt.ff.search.yahoo.com/gossip-fr-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 5  // Can't be 2 as this has to appear in the Belgium list alongside
-               // yahoo_be.
+               // yahoo.
     },
 
     "yahoo_gr": {
       "name": "Yahoo! \u0395\u03bb\u03bb\u03ac\u03b4\u03b1\u03c2",
       "keyword": "gr.yahoo.com",
-      "favicon_url": "http://gr.search.yahoo.com/favicon.ico",
-      "search_url": "http://gr.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://gr.search.yahoo.com/favicon.ico",
+      "search_url": "https://gr.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
     },
@@ -819,8 +780,8 @@
     "yahoo_hk": {
       "name": "Yahoo! Hong Kong",
       "keyword": "hk.yahoo.com",
-      "favicon_url": "http://hk.search.yahoo.com/favicon.ico",
-      "search_url": "http://hk.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://hk.search.yahoo.com/favicon.ico",
+      "search_url": "https://hk.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://hk-sayt.ff.search.yahoo.com/gossip-hk-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -829,8 +790,8 @@
     "yahoo_id": {
       "name": "Yahoo! Indonesia",
       "keyword": "id.yahoo.com",
-      "favicon_url": "http://id.search.yahoo.com/favicon.ico",
-      "search_url": "http://id.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://id.search.yahoo.com/favicon.ico",
+      "search_url": "https://id.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://id-sayt.ff.search.yahoo.com/gossip-id-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -839,8 +800,8 @@
     "yahoo_in": {
       "name": "Yahoo! India",
       "keyword": "in.yahoo.com",
-      "favicon_url": "http://in.search.yahoo.com/favicon.ico",
-      "search_url": "http://in.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://in.search.yahoo.com/favicon.ico",
+      "search_url": "https://in.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://in-sayt.ff.search.yahoo.com/gossip-in-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -859,17 +820,17 @@
     "yahoo_maktoob": {
       "name": "Yahoo!\u200e \u0645\u0643\u062a\u0648\u0628",
       "keyword": "maktoob.yahoo.com",
-      "favicon_url": "http://maktoob.yahoo.com/favicon.ico",
-      "search_url": "http://maktoob.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://maktoob.search.yahoo.com/favicon.ico",
+      "search_url": "https://maktoob.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
-      "id": 13  // Should be 2, but is 13 due to historical reasons.
+      "id": 2
     },
 
     "yahoo_mx": {
       "name": "Yahoo! M\u00e9xico",
       "keyword": "mx.yahoo.com",
-      "favicon_url": "http://mx.search.yahoo.com/favicon.ico",
-      "search_url": "http://mx.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://mx.search.yahoo.com/favicon.ico",
+      "search_url": "https://mx.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://gossip.mx.yahoo.com/gossip-mx-sayt?output=fxjsonp&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -878,8 +839,8 @@
     "yahoo_my": {
       "name": "Yahoo! Malaysia",
       "keyword": "malaysia.yahoo.com",
-      "favicon_url": "http://malaysia.search.yahoo.com/favicon.ico",
-      "search_url": "http://malaysia.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://malaysia.search.yahoo.com/favicon.ico",
+      "search_url": "https://malaysia.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://my-sayt.ff.search.yahoo.com/gossip-my-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -888,8 +849,8 @@
     "yahoo_nl": {
       "name": "Yahoo! Nederland",
       "keyword": "nl.yahoo.com",
-      "favicon_url": "http://nl.search.yahoo.com/favicon.ico",
-      "search_url": "http://nl.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://nl.search.yahoo.com/favicon.ico",
+      "search_url": "https://nl.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://ff.search.yahoo.com/gossip?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -898,8 +859,8 @@
     "yahoo_nz": {
       "name": "Yahoo! New Zealand",
       "keyword": "nz.yahoo.com",
-      "favicon_url": "http://nz.search.yahoo.com/favicon.ico",
-      "search_url": "http://nz.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://nz.search.yahoo.com/favicon.ico",
+      "search_url": "https://nz.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://aue-sayt.ff.search.yahoo.com/gossip-nz-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -908,8 +869,8 @@
     "yahoo_pe": {
       "name": "Yahoo! Per\u00fa",
       "keyword": "pe.yahoo.com",
-      "favicon_url": "http://pe.search.yahoo.com/favicon.ico",
-      "search_url": "http://pe.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://pe.search.yahoo.com/favicon.ico",
+      "search_url": "https://pe.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://gossip.telemundo.yahoo.com/gossip-e1-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -918,8 +879,8 @@
     "yahoo_ph": {
       "name": "Yahoo! Philippines",
       "keyword": "ph.yahoo.com",
-      "favicon_url": "http://ph.search.yahoo.com/favicon.ico",
-      "search_url": "http://ph.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://ph.search.yahoo.com/favicon.ico",
+      "search_url": "https://ph.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://ph-sayt.ff.search.yahoo.com/gossip-ph-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -928,8 +889,8 @@
     "yahoo_qc": {
       "name": "Yahoo! Qu\u00e9bec",
       "keyword": "qc.yahoo.com",
-      "favicon_url": "http://qc.search.yahoo.com/favicon.ico",
-      "search_url": "http://qc.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://qc.search.yahoo.com/favicon.ico",
+      "search_url": "https://qc.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://gossip.ca.yahoo.com/gossip-ca-sayt?output=fxjsonp&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 5  // Can't be 2 as this has to appear in the Canada list alongside
@@ -939,8 +900,8 @@
     "yahoo_ro": {
       "name": "Yahoo! Rom\u00e2nia",
       "keyword": "ro.yahoo.com",
-      "favicon_url": "http://ro.search.yahoo.com/favicon.ico",
-      "search_url": "http://ro.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://ro.search.yahoo.com/favicon.ico",
+      "search_url": "https://ro.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
     },
@@ -948,8 +909,8 @@
     "yahoo_ru": {
       "name": "Yahoo! \u043f\u043e-\u0440\u0443\u0441\u0441\u043a\u0438",
       "keyword": "ru.yahoo.com",
-      "favicon_url": "http://ru.search.yahoo.com/favicon.ico",
-      "search_url": "http://ru.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://ru.search.yahoo.com/favicon.ico",
+      "search_url": "https://ru.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
     },
@@ -957,8 +918,8 @@
     "yahoo_se": {
       "name": "Yahoo! Sverige",
       "keyword": "se.yahoo.com",
-      "favicon_url": "http://se.search.yahoo.com/favicon.ico",
-      "search_url": "http://se.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://se.search.yahoo.com/favicon.ico",
+      "search_url": "https://se.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
     },
@@ -966,8 +927,8 @@
     "yahoo_sg": {
       "name": "Yahoo! Singapore",
       "keyword": "sg.yahoo.com",
-      "favicon_url": "http://sg.search.yahoo.com/favicon.ico",
-      "search_url": "http://sg.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://sg.search.yahoo.com/favicon.ico",
+      "search_url": "https://sg.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://sg-sayt.ff.search.yahoo.com/gossip-sg-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -976,8 +937,8 @@
     "yahoo_th": {
       "name": "Yahoo! \u0e1b\u0e23\u0e30\u0e40\u0e17\u0e28\u0e44\u0e17\u0e22",
       "keyword": "th.yahoo.com",
-      "favicon_url": "http://th.search.yahoo.com/favicon.ico",
-      "search_url": "http://th.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://th.search.yahoo.com/favicon.ico",
+      "search_url": "https://th.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://th-sayt.ff.search.yahoo.com/gossip-th-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -986,8 +947,8 @@
     "yahoo_tr": {
       "name": "Yahoo! T\u00fcrkiye",
       "keyword": "tr.yahoo.com",
-      "favicon_url": "http://tr.search.yahoo.com/favicon.ico",
-      "search_url": "http://tr.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://tr.search.yahoo.com/favicon.ico",
+      "search_url": "https://tr.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
     },
@@ -995,8 +956,8 @@
     "yahoo_tw": {
       "name": "Yahoo!\u5947\u6469",
       "keyword": "tw.yahoo.com",
-      "favicon_url": "http://tw.search.yahoo.com/favicon.ico",
-      "search_url": "http://tw.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://tw.search.yahoo.com/favicon.ico",
+      "search_url": "https://tw.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://hk-sayt.ff.search.yahoo.com/gossip-hk-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -1005,8 +966,8 @@
     "yahoo_uk": {
       "name": "Yahoo! UK & Ireland",
       "keyword": "uk.yahoo.com",
-      "favicon_url": "http://uk.search.yahoo.com/favicon.ico",
-      "search_url": "http://uk.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://uk.search.yahoo.com/favicon.ico",
+      "search_url": "https://uk.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://uk-sayt.ff.search.yahoo.com/gossip-uk-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -1015,8 +976,8 @@
     "yahoo_ve": {
       "name": "Yahoo! Venezuela",
       "keyword": "ve.yahoo.com",
-      "favicon_url": "http://ve.search.yahoo.com/favicon.ico",
-      "search_url": "http://ve.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "favicon_url": "https://ve.search.yahoo.com/favicon.ico",
+      "search_url": "https://ve.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://gossip.telemundo.yahoo.com/gossip-e1-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
@@ -1032,19 +993,10 @@
       "id": 2
     },
 
-    "yahoo_za": {
-      "name": "Yahoo! South Africa",
-      "keyword": "za.yahoo.com",
-      "favicon_url": "http://za.search.yahoo.com/favicon.ico",
-      "search_url": "http://za.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
-      "type": "SEARCH_ENGINE_YAHOO",
-      "id": 2
-    },
-
     "yandex_ru": {
       "name": "\u042f\u043d\u0434\u0435\u043a\u0441",
       "keyword": "yandex.ru",
-      "favicon_url": "http://yandex.ru/favicon.ico",
+      "favicon_url": "http://yandex.st/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
       "search_url": "http://yandex.ru/yandsearch?text={searchTerms}",
       "suggest_url": "http://suggest.yandex.net/suggest-ff.cgi?part={searchTerms}",
       "type": "SEARCH_ENGINE_YANDEX",
@@ -1054,7 +1006,7 @@
     "yandex_tr": {
       "name": "Yandex",
       "keyword": "yandex.com.tr",
-      "favicon_url": "http://yandex.st/islands-icons/_/6jyHGXR8-HAc8oJ1bU8qMUQQz_g.ico",
+      "favicon_url": "http://yastatic.net/islands-icons/_/6jyHGXR8-HAc8oJ1bU8qMUQQz_g.ico",
       "search_url": "http://www.yandex.com.tr/yandsearch?text={searchTerms}",
       "suggest_url": "http://suggest.yandex.com.tr/suggest-ff.cgi?part={searchTerms}",
       "type": "SEARCH_ENGINE_YANDEX",
@@ -1064,9 +1016,9 @@
     "yandex_ua": {
       "name": "\u042f\u043d\u0434\u0435\u043a\u0441",
       "keyword": "yandex.ua",
-      "favicon_url": "http://yandex.ua/favicon.ico",
+      "favicon_url": "http://yastatic.net/islands-icons/_/aKnllxm-gQhidpzbZqub7qe641g.ico",
       "search_url": "http://yandex.ua/yandsearch?text={searchTerms}",
-      "suggest_url": "http://suggest.yandex.net/suggest-ff.cgi?part={searchTerms}",
+      "suggest_url": "http://suggest.yandex.ua/suggest-ff.cgi?part={searchTerms}",
       "type": "SEARCH_ENGINE_YANDEX",
       "id": 15
     },

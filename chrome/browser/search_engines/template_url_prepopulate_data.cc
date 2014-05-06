@@ -80,7 +80,7 @@ const PrepopulatedEngine* engines_BA[] =
 
 // Belgium
 const PrepopulatedEngine* engines_BE[] =
-    { &google, &bing_nl_BE, &bing_fr_BE, &yahoo_be, &yahoo_fr_be, };
+    { &google, &bing_nl_BE, &bing_fr_BE, &yahoo, &yahoo_fr, };
 
 // Bulgaria
 const PrepopulatedEngine* engines_BG[] =
@@ -128,7 +128,7 @@ const PrepopulatedEngine* engines_CL[] =
 
 // China
 const PrepopulatedEngine* engines_CN[] =
-    { &google, &baidu, &sogou, &soso, };
+    { &google, &baidu, &sogou, };
 
 // Colombia
 const PrepopulatedEngine* engines_CO[] =
@@ -268,7 +268,7 @@ const PrepopulatedEngine* engines_KW[] =
 
 // South Korea
 const PrepopulatedEngine* engines_KR[] =
-    { &google, &naver, &daum, &nate, };
+    { &google, &naver, &daum, };
 
 // Kazakhstan
 const PrepopulatedEngine* engines_KZ[] =
@@ -476,7 +476,7 @@ const PrepopulatedEngine* engines_YE[] =
 
 // South Africa
 const PrepopulatedEngine* engines_ZA[] =
-    { &google, &bing, &yahoo_za, };
+    { &google, &bing, &yahoo, };
 
 // Zimbabwe
 const PrepopulatedEngine* engines_ZW[] =
@@ -494,17 +494,16 @@ const PrepopulatedEngine* kAllEngines[] = {
   &bing_fr_FR,   &bing_it_IT,   &bing_ja_JP,   &bing_lv_LV,   &bing_nb_NO,
   &bing_nl_BE,   &bing_pl_PL,   &bing_pt_BR,   &bing_pt_PT,   &bing_ru_RU,
   &bing_sv_SE,   &bing_tr_TR,   &bing_zh_HK,   &bing_zh_TW,   &daum,
-  &google,       &kvasir,       &mail_ru,      &najdi,        &nate,
-  &naver,        &onet,         &seznam,       &sogou,        &soso,
-  &vinden,       &virgilio,     &yahoo,        &yahoo_ar,     &yahoo_at,
-  &yahoo_au,     &yahoo_be,     &yahoo_br,     &yahoo_ca,     &yahoo_ch,
-  &yahoo_cl,     &yahoo_co,     &yahoo_de,     &yahoo_dk,     &yahoo_es,
-  &yahoo_fi,     &yahoo_fr,     &yahoo_fr_be,  &yahoo_gr,     &yahoo_hk,
-  &yahoo_id,     &yahoo_in,     &yahoo_jp,     &yahoo_maktoob, &yahoo_mx,
-  &yahoo_my,     &yahoo_nl,     &yahoo_nz,     &yahoo_pe,     &yahoo_ph,
-  &yahoo_qc,     &yahoo_ro,     &yahoo_ru,     &yahoo_se,     &yahoo_sg,
-  &yahoo_th,     &yahoo_tr,     &yahoo_tw,     &yahoo_uk,     &yahoo_ve,
-  &yahoo_vn,     &yahoo_za,     &yandex_ru,    &yandex_tr,    &yandex_ua,
+  &google,       &kvasir,       &mail_ru,      &najdi,        &naver,
+  &onet,         &seznam,       &sogou,        &vinden,       &virgilio,
+  &yahoo,        &yahoo_ar,     &yahoo_at,     &yahoo_au,     &yahoo_br,
+  &yahoo_ca,     &yahoo_ch,     &yahoo_cl,     &yahoo_co,     &yahoo_de,
+  &yahoo_dk,     &yahoo_es,     &yahoo_fi,     &yahoo_fr,     &yahoo_gr,
+  &yahoo_hk,     &yahoo_id,     &yahoo_in,     &yahoo_jp,     &yahoo_maktoob,
+  &yahoo_mx,     &yahoo_my,     &yahoo_nl,     &yahoo_nz,     &yahoo_pe,
+  &yahoo_ph,     &yahoo_qc,     &yahoo_ro,     &yahoo_ru,     &yahoo_se,
+  &yahoo_sg,     &yahoo_th,     &yahoo_tr,     &yahoo_tw,     &yahoo_uk,
+  &yahoo_ve,     &yahoo_vn,     &yandex_ru,    &yandex_tr,    &yandex_ua,
 
   // UMA-only engines:
   &atlas_cz,     &atlas_sk,     &avg,          &babylon,      &conduit,
