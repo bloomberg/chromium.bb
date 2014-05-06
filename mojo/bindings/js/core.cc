@@ -73,7 +73,7 @@ MojoResult WriteMessage(
   // release them here.
   if (rv == MOJO_RESULT_OK) {
     for (size_t i = 0; i < handles.size(); ++i)
-      mojo::Handle _ MOJO_ALLOW_UNUSED = handles[i]->release();
+      ignore_result(handles[i]->release());
   }
   return rv;
 }
