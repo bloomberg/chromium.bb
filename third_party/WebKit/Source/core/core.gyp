@@ -33,7 +33,6 @@
     '../build/win/precompile.gypi',
     '../build/features.gypi',
     '../build/scripts/scripts.gypi',
-    '../modules/modules.gypi',
     '../bindings/bindings.gypi',
     'core.gypi',
   ],
@@ -250,7 +249,6 @@
         # These files include all the .cpp files generated from the .idl files
         # in webcore_files.
         '<@(bindings_core_generated_aggregate_files)',
-        '<@(bindings_modules_generated_aggregate_files)',
 
         # Additional .cpp files for HashTools.h
         '<(SHARED_INTERMEDIATE_DIR)/blink/CSSPropertyNames.cpp',

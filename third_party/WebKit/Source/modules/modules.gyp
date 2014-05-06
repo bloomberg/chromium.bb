@@ -30,6 +30,7 @@
 {
   'includes': [
     '../build/win/precompile.gypi',
+    '../bindings/bindings.gypi',
     'modules.gypi',
   ],
   'targets': [{
@@ -47,6 +48,7 @@
     ],
     'sources': [
       '<@(modules_files)',
+      '<@(bindings_modules_generated_aggregate_files)',
     ],
     # Disable c4267 warnings until we fix size_t to int truncations.
     'msvs_disabled_warnings': [ 4267, 4334, ]

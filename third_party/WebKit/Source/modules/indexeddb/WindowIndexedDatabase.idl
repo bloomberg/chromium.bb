@@ -30,4 +30,13 @@
     [ImplementedAs=indexedDB, MeasureAs=PrefixedIndexedDB] readonly attribute IDBFactory webkitIndexedDB;
 
     [MeasureAs=UnprefixedIndexedDB] readonly attribute IDBFactory indexedDB;
+
+    [MeasureAs=PrefixedIDBCursorConstructor] attribute IDBCursorConstructor webkitIDBCursor;
+    [MeasureAs=PrefixedIDBDatabaseConstructor] attribute IDBDatabaseConstructor webkitIDBDatabase;
+    [MeasureAs=PrefixedIDBFactoryConstructor] attribute IDBFactoryConstructor webkitIDBFactory;
+    [MeasureAs=PrefixedIDBIndexConstructor] attribute IDBIndexConstructor webkitIDBIndex;
+    [MeasureAs=PrefixedIDBKeyRangeConstructor] attribute IDBKeyRangeConstructor webkitIDBKeyRange;
+    [MeasureAs=PrefixedIDBObjectStoreConstructor] attribute IDBObjectStoreConstructor webkitIDBObjectStore;
+    [MeasureAs=PrefixedIDBRequestConstructor] attribute IDBRequestConstructor webkitIDBRequest;
+    [MeasureAs=PrefixedIDBTransactionConstructor] attribute IDBTransactionConstructor webkitIDBTransaction;
 };

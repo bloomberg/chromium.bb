@@ -204,29 +204,6 @@
     [RuntimeEnabled=CSSAnimationUnprefixed] attribute WebKitAnimationEventConstructor AnimationEvent;
     [MeasureAs=PrefixedWindowURL] attribute URLConstructor webkitURL; // FIXME: deprecate this.
     [MeasureAs=PrefixedMutationObserverConstructor] attribute MutationObserverConstructor WebKitMutationObserver;
-    [MeasureAs=PrefixedIDBCursorConstructor] attribute IDBCursorConstructor webkitIDBCursor;
-    [MeasureAs=PrefixedIDBDatabaseConstructor] attribute IDBDatabaseConstructor webkitIDBDatabase;
-    [MeasureAs=PrefixedIDBFactoryConstructor] attribute IDBFactoryConstructor webkitIDBFactory;
-    [MeasureAs=PrefixedIDBIndexConstructor] attribute IDBIndexConstructor webkitIDBIndex;
-    [MeasureAs=PrefixedIDBKeyRangeConstructor] attribute IDBKeyRangeConstructor webkitIDBKeyRange;
-    [MeasureAs=PrefixedIDBObjectStoreConstructor] attribute IDBObjectStoreConstructor webkitIDBObjectStore;
-    [MeasureAs=PrefixedIDBRequestConstructor] attribute IDBRequestConstructor webkitIDBRequest;
-    [MeasureAs=PrefixedIDBTransactionConstructor] attribute IDBTransactionConstructor webkitIDBTransaction;
-
-    // Constructors whose name does not match the interface name.
-    // FIXME: Remove these once [ImplementedAs] is used and once constructor names match interface names.
-    [RuntimeEnabled=MediaStream] attribute MediaStreamConstructor webkitMediaStream;
-    // Support both prefixed and unprefixed WebAudio
-    [Conditional=WEB_AUDIO, RuntimeEnabled=WebAudio] attribute AudioContextConstructor AudioContext;
-    [Conditional=WEB_AUDIO, RuntimeEnabled=WebAudio] attribute OfflineAudioContextConstructor OfflineAudioContext;
-    [Conditional=WEB_AUDIO, RuntimeEnabled=WebAudio] attribute AudioContextConstructor webkitAudioContext;
-    [Conditional=WEB_AUDIO, RuntimeEnabled=WebAudio] attribute OfflineAudioContextConstructor webkitOfflineAudioContext;
-    [RuntimeEnabled=PeerConnection] attribute RTCPeerConnectionConstructor webkitRTCPeerConnection;
-    [RuntimeEnabled=ScriptedSpeech] attribute SpeechGrammarConstructor webkitSpeechGrammar;
-    [RuntimeEnabled=ScriptedSpeech] attribute SpeechGrammarListConstructor webkitSpeechGrammarList;
-    [RuntimeEnabled=ScriptedSpeech] attribute SpeechRecognitionConstructor webkitSpeechRecognition;
-    [RuntimeEnabled=ScriptedSpeech] attribute SpeechRecognitionErrorConstructor webkitSpeechRecognitionError;
-    [RuntimeEnabled=ScriptedSpeech] attribute SpeechRecognitionEventConstructor webkitSpeechRecognitionEvent;
 
     // window.toString() requires special handling in V8
     [DoNotCheckSignature, DoNotCheckSecurity, Custom, NotEnumerable] DOMString toString();
