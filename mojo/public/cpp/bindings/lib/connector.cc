@@ -22,7 +22,8 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
       incoming_receiver_(NULL),
       async_wait_id_(0),
       error_(false),
-      drop_writes_(false) {
+      drop_writes_(false),
+      enforce_errors_from_incoming_receiver_(true) {
   // Even though we don't have an incoming receiver, we still want to monitor
   // the message pipe to know if is closed or encounters an error.
   WaitToReadMore();
@@ -112,16 +113,15 @@ void Connector::WaitToReadMore() {
 
 void Connector::ReadMore() {
   while (true) {
-    MojoResult rv;
-
-    bool receiver_result;
-    rv = ReadAndDispatchMessage(message_pipe_.get(), incoming_receiver_,
-                                &receiver_result);
+    bool receiver_result = false;
+    MojoResult rv =  ReadAndDispatchMessage(
+        message_pipe_.get(), incoming_receiver_, &receiver_result);
     if (rv == MOJO_RESULT_SHOULD_WAIT) {
       WaitToReadMore();
       break;
     }
-    if (rv != MOJO_RESULT_OK || !receiver_result) {
+    if (rv != MOJO_RESULT_OK ||
+        (enforce_errors_from_incoming_receiver_ && !receiver_result)) {
       error_ = true;
       break;
     }

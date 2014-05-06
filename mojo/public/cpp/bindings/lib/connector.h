@@ -36,6 +36,13 @@ class Connector : public MessageReceiver {
     incoming_receiver_ = receiver;
   }
 
+  // Errors from incoming receivers will force the connector into an error
+  // state, where no more messages will be processed. This method is used
+  // during testing to prevent that from happening.
+  void set_enforce_errors_from_incoming_receiver(bool enforce) {
+    enforce_errors_from_incoming_receiver_ = enforce;
+  }
+
   // Sets the error handler to receive notifications when an error is
   // encountered while reading from the pipe or waiting to read from the pipe.
   void set_error_handler(ErrorHandler* error_handler) {
@@ -70,6 +77,7 @@ class Connector : public MessageReceiver {
   MojoAsyncWaitID async_wait_id_;
   bool error_;
   bool drop_writes_;
+  bool enforce_errors_from_incoming_receiver_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(Connector);
 };

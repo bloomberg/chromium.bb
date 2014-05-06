@@ -32,6 +32,13 @@ class Router : public MessageReceiver {
     connector_.set_error_handler(error_handler);
   }
 
+  // Errors from incoming receivers will force the router's connector into an
+  // error state, where no more messages will be processed. This method is used
+  // during testing to prevent that from happening.
+  void set_enforce_errors_from_incoming_receiver(bool enforce) {
+    connector_.set_enforce_errors_from_incoming_receiver(enforce);
+  }
+
   // Returns true if an error was encountered while reading from the pipe or
   // waiting to read from the pipe.
   bool encountered_error() const { return connector_.encountered_error(); }

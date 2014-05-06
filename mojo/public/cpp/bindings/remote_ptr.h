@@ -127,6 +127,10 @@ class RemotePtr {
     return state_->router.encountered_error();
   }
 
+  internal::Router* router_for_testing() {
+    return &state_->router;
+  }
+
  private:
   struct State {
     State(ScopedMessagePipeHandle message_pipe, typename S::_Peer* peer,

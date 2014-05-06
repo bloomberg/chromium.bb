@@ -263,6 +263,8 @@ class JsToCppTest : public testing::Test {
     InterfacePipe<js_to_cpp::CppSide, js_to_cpp::JsSide> pipe;
     RemotePtr<js_to_cpp::JsSide> js_side;
     js_side.reset(pipe.handle_to_peer.Pass(), cpp_side);
+    js_side.router_for_testing()->
+        set_enforce_errors_from_incoming_receiver(false);
     cpp_side->set_client(js_side.get());
 
     gin::IsolateHolder instance(gin::IsolateHolder::kStrictMode);
