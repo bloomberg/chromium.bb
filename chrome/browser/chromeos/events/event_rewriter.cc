@@ -22,6 +22,7 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/wm/core/window_util.h"
 
@@ -34,6 +35,7 @@
 
 #include "chrome/browser/chromeos/events/xinput_hierarchy_changed_event_listener.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #endif
 
 namespace chromeos {
@@ -124,6 +126,31 @@ EventRewriter::DeviceType GetDeviceType(const std::string& device_name) {
   return EventRewriter::kDeviceUnknown;
 }
 
+#if defined(USE_X11)
+void UpdateX11EventMask(int ui_flags, unsigned int* x_flags) {
+  static struct {
+    int ui;
+    int x;
+  } flags[] = {
+    {ui::EF_CONTROL_DOWN, ControlMask},
+    {ui::EF_SHIFT_DOWN, ShiftMask},
+    {ui::EF_ALT_DOWN, Mod1Mask},
+    {ui::EF_CAPS_LOCK_DOWN, LockMask},
+    {ui::EF_ALTGR_DOWN, Mod5Mask},
+    {ui::EF_MOD3_DOWN, Mod3Mask},
+    {ui::EF_LEFT_MOUSE_BUTTON, Button1Mask},
+    {ui::EF_MIDDLE_MOUSE_BUTTON, Button2Mask},
+    {ui::EF_RIGHT_MOUSE_BUTTON, Button3Mask},
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(flags); ++i) {
+    if (ui_flags & flags[i].ui)
+      *x_flags |= flags[i].x;
+    else
+      *x_flags &= ~flags[i].x;
+  }
+}
+#endif
+
 }  // namespace
 
 EventRewriter::EventRewriter()
@@ -185,6 +212,20 @@ ui::EventRewriteStatus EventRewriter::RewriteEvent(
         rewritten_event->reset(rewritten_key_event);
         rewritten_key_event->set_flags(state.flags);
         rewritten_key_event->set_key_code(state.key_code);
+        rewritten_key_event->set_character(
+            ui::GetCharacterFromKeyCode(state.key_code, state.flags));
+        rewritten_key_event->NormalizeFlags();
+#if defined(USE_X11)
+        xev = rewritten_key_event->native_event();
+        if (xev) {
+          XKeyEvent* xkey = &(xev->xkey);
+          UpdateX11EventMask(state.flags, &xkey->state);
+          xkey->keycode = XKeysymToKeycode(
+              gfx::GetXDisplay(),
+              ui::XKeysymForWindowsKeyCode(state.key_code,
+                                           state.flags & ui::EF_SHIFT_DOWN));
+        }
+#endif
         return ui::EVENT_REWRITE_REWRITTEN;
       }
       return ui::EVENT_REWRITE_CONTINUE;
