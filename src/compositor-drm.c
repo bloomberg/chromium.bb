@@ -2611,6 +2611,12 @@ recorder_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 			      struct drm_output, base.link);
 
 	if (!output->recorder) {
+		if (output->format != GBM_FORMAT_XRGB8888) {
+			weston_log("failed to start vaapi recorder: "
+				   "output format not supported\n");
+			return;
+		}
+
 		width = output->base.current_mode->width;
 		height = output->base.current_mode->height;
 
