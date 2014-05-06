@@ -388,7 +388,11 @@ remoting.ClientSession.prototype.pluginLostFocus_ = function() {
     this.plugin_.releaseAllKeys();
     if (this.plugin_.element()) {
       // Focus should stay on the element, not (for example) the toolbar.
-      this.plugin_.element().focus();
+      // Due to crbug.com/246335, we can't restore the focus immediately,
+      // otherwise the plugin gets confused about whether or not it has focus.
+      window.setTimeout(
+          this.plugin_.element().focus.bind(this.plugin_.element()),
+          0);
     }
   }
 };

@@ -75,6 +75,9 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
 
     case PP_INPUTEVENT_TYPE_MOUSEDOWN:
     case PP_INPUTEVENT_TYPE_MOUSEUP: {
+      if (!has_focus_)
+        return false;
+
       pp::MouseInputEvent pp_mouse_event(event);
       protocol::MouseEvent mouse_event;
       switch (pp_mouse_event.GetButton()) {
@@ -111,6 +114,9 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
     case PP_INPUTEVENT_TYPE_MOUSEMOVE:
     case PP_INPUTEVENT_TYPE_MOUSEENTER:
     case PP_INPUTEVENT_TYPE_MOUSELEAVE: {
+      if (!has_focus_)
+        return false;
+
       pp::MouseInputEvent pp_mouse_event(event);
       protocol::MouseEvent mouse_event;
       mouse_event.set_x(pp_mouse_event.GetPosition().x());
@@ -128,6 +134,9 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
     }
 
     case PP_INPUTEVENT_TYPE_WHEEL: {
+      if (!has_focus_)
+        return false;
+
       pp::WheelInputEvent pp_wheel_event(event);
 
       // Don't handle scroll-by-page events, for now.
