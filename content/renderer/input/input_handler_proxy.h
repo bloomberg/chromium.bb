@@ -27,10 +27,9 @@ class CONTENT_EXPORT InputHandlerProxy
     : public cc::InputHandlerClient,
       public NON_EXPORTED_BASE(blink::WebGestureCurveTarget) {
  public:
-  explicit InputHandlerProxy(cc::InputHandler* input_handler);
+  InputHandlerProxy(cc::InputHandler* input_handler,
+                    InputHandlerProxyClient* client);
   virtual ~InputHandlerProxy();
-
-  void SetClient(InputHandlerProxyClient* client);
 
   enum EventDisposition {
     DID_HANDLE,
@@ -61,6 +60,17 @@ class CONTENT_EXPORT InputHandlerProxy
  private:
   EventDisposition HandleGestureFling(const blink::WebGestureEvent& event);
 
+  // Returns true if the event should be suppressed due to to an active,
+  // boost-enabled fling, in which case further processing should cease.
+  bool FilterInputEventForFlingBoosting(const blink::WebInputEvent& event);
+
+  // Schedule a time in the future after which a boost-enabled fling will
+  // terminate without further momentum from the user (see |Animate()|).
+  void FlingBoostExtend(const blink::WebGestureEvent& event);
+
+  // Cancel the current fling and insert a GestureScrollBegin if necessary.
+  void FlingBoostCancelAndResumeScrollingIfNecessary();
+
   // Returns true if we scrolled by the increment.
   bool TouchpadFlingScroll(const blink::WebFloatSize& increment);
 
@@ -74,6 +84,15 @@ class CONTENT_EXPORT InputHandlerProxy
 
   InputHandlerProxyClient* client_;
   cc::InputHandler* input_handler_;
+
+  // Time at which an active fling should expire due to a deferred cancellation
+  // event. A call to |Animate()| after this time will end the fling.
+  double deferred_fling_cancel_time_seconds_;
+
+  // The last event that extended the lifetime of the boosted fling. If the
+  // event was a scroll gesture, a GestureScrollBegin will be inserted if the
+  // fling terminates (via |FlingBoostCancelAndResumeScrollingIfNecessary()|).
+  blink::WebGestureEvent last_fling_boost_event_;
 
 #ifndef NDEBUG
   bool expect_scroll_update_end_;

@@ -19,15 +19,13 @@ InputHandlerWrapper::InputHandlerWrapper(
     const base::WeakPtr<RenderViewImpl>& render_view_impl)
     : input_handler_manager_(input_handler_manager),
       routing_id_(routing_id),
-      input_handler_proxy_(input_handler.get()),
+      input_handler_proxy_(input_handler.get(), this),
       main_loop_(main_loop),
       render_view_impl_(render_view_impl) {
   DCHECK(input_handler);
-  input_handler_proxy_.SetClient(this);
 }
 
 InputHandlerWrapper::~InputHandlerWrapper() {
-  input_handler_proxy_.SetClient(NULL);
 }
 
 void InputHandlerWrapper::TransferActiveWheelFlingAnimation(

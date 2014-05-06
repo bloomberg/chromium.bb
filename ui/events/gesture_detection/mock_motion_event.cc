@@ -72,10 +72,6 @@ int MockMotionEvent::GetId() const {
   return id;
 }
 
-void MockMotionEvent::SetId(int new_id) {
-  id = new_id;
-}
-
 int MockMotionEvent::GetPointerId(size_t pointer_index) const {
   DCHECK(pointer_index < pointer_count);
   return static_cast<int>(pointer_index);
@@ -129,6 +125,14 @@ scoped_ptr<MotionEvent> MockMotionEvent::Cancel() const {
   scoped_ptr<MockMotionEvent> cancel_event(new MockMotionEvent(*this));
   cancel_event->action = MotionEvent::ACTION_CANCEL;
   return cancel_event.PassAs<MotionEvent>();
+}
+
+void MockMotionEvent::SetId(int new_id) {
+  id = new_id;
+}
+
+void MockMotionEvent::SetTime(base::TimeTicks new_time) {
+  time = new_time;
 }
 
 void MockMotionEvent::PressPoint(float x, float y) {

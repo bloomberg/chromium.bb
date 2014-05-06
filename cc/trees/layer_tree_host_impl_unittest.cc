@@ -509,8 +509,14 @@ TEST_F(LayerTreeHostImplTest, ScrollRootCallsCommitAndRedraw) {
 
   EXPECT_EQ(InputHandler::ScrollStarted,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel));
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(),
+                                                      InputHandler::Wheel));
   host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 10));
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(0, 10),
+                                                      InputHandler::Wheel));
   host_impl_->ScrollEnd();
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(),
+                                                       InputHandler::Wheel));
   EXPECT_TRUE(did_request_redraw_);
   EXPECT_TRUE(did_request_commit_);
 }
@@ -675,21 +681,35 @@ TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionBasic) {
   EXPECT_EQ(InputHandler::ScrollOnMainThread,
             host_impl_->ScrollBegin(gfx::Point(25, 25),
                                     InputHandler::Wheel));
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(25, 25),
+                                                       InputHandler::Wheel));
   EXPECT_EQ(InputHandler::ScrollOnMainThread,
             host_impl_->ScrollBegin(gfx::Point(25, 25),
                                     InputHandler::Gesture));
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(25, 25),
+                                                       InputHandler::Gesture));
 
   // All scroll types outside this region should succeed.
   EXPECT_EQ(InputHandler::ScrollStarted,
             host_impl_->ScrollBegin(gfx::Point(75, 75),
                                     InputHandler::Wheel));
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(75, 75),
+                                                      InputHandler::Gesture));
   host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 10));
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(25, 25),
+                                                       InputHandler::Gesture));
   host_impl_->ScrollEnd();
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(75, 75),
+                                                       InputHandler::Gesture));
   EXPECT_EQ(InputHandler::ScrollStarted,
             host_impl_->ScrollBegin(gfx::Point(75, 75),
                                     InputHandler::Gesture));
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(75, 75),
+                                                      InputHandler::Gesture));
   host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 10));
   host_impl_->ScrollEnd();
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(75, 75),
+                                                       InputHandler::Gesture));
 }
 
 TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionWithOffset) {
@@ -708,6 +728,8 @@ TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionWithOffset) {
   EXPECT_EQ(InputHandler::ScrollStarted,
             host_impl_->ScrollBegin(gfx::Point(40, 10),
                                     InputHandler::Wheel));
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(40, 10),
+                                                      InputHandler::Wheel));
   host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 1));
   host_impl_->ScrollEnd();
 

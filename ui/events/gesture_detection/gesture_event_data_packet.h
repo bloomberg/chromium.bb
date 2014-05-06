@@ -40,14 +40,16 @@ class GESTURE_DETECTION_EXPORT GestureEventDataPacket {
 
   void Push(const GestureEventData& gesture);
 
+  const base::TimeTicks& timestamp() const { return timestamp_; }
   const GestureEventData& gesture(size_t i) const { return gestures_[i]; }
   size_t gesture_count() const { return gesture_count_; }
   GestureSource gesture_source() const { return gesture_source_; }
 
  private:
-  explicit GestureEventDataPacket(GestureSource source);
+  GestureEventDataPacket(base::TimeTicks timestamp, GestureSource source);
 
   enum { kMaxGesturesPerTouch = 5 };
+  base::TimeTicks timestamp_;
   GestureEventData gestures_[kMaxGesturesPerTouch];
   size_t gesture_count_;
   GestureSource gesture_source_;

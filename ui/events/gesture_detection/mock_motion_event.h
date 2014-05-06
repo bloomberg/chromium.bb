@@ -64,6 +64,7 @@ struct MockMotionEvent : public MotionEvent {
 
   // Utility methods.
   void SetId(int new_id);
+  void SetTime(base::TimeTicks new_time);
   void PressPoint(float x, float y);
   void MovePoint(size_t index, float x, float y);
   void ReleasePoint();

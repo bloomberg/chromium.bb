@@ -145,8 +145,11 @@ class CC_EXPORT LayerTreeHostImpl
                                        float page_scale,
                                        base::TimeDelta duration) OVERRIDE;
   virtual void SetNeedsAnimate() OVERRIDE;
-  virtual bool HaveTouchEventHandlersAt(const gfx::Point& viewport_port)
-      OVERRIDE;
+  virtual bool IsCurrentlyScrollingLayerAt(
+      const gfx::Point& viewport_point,
+      InputHandler::ScrollInputType type) OVERRIDE;
+  virtual bool HaveTouchEventHandlersAt(
+      const gfx::Point& viewport_port) OVERRIDE;
   virtual scoped_ptr<SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency) OVERRIDE;
 
@@ -523,7 +526,7 @@ class CC_EXPORT LayerTreeHostImpl
       InputHandler::ScrollInputType type,
       LayerImpl* layer_hit_by_point,
       bool* scroll_on_main_thread,
-      bool* has_ancestor_scroll_handler) const;
+      bool* optional_has_ancestor_scroll_handler) const;
   float DeviceSpaceDistanceToLayer(const gfx::PointF& device_viewport_point,
                                    LayerImpl* layer_impl);
   void StartScrollbarFadeRecursive(LayerImpl* layer);

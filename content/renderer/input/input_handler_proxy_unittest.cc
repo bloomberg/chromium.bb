@@ -33,6 +33,43 @@ using blink::WebTouchPoint;
 namespace content {
 namespace {
 
+double InSecondsF(const base::TimeTicks& time) {
+  return (time - base::TimeTicks()).InSecondsF();
+}
+
+WebGestureEvent CreateFling(base::TimeTicks timestamp,
+                            WebGestureEvent::SourceDevice source_device,
+                            WebFloatPoint velocity,
+                            WebPoint point,
+                            WebPoint global_point,
+                            int modifiers) {
+  WebGestureEvent fling;
+  fling.type = WebInputEvent::GestureFlingStart;
+  fling.sourceDevice = source_device;
+  fling.timeStampSeconds = (timestamp - base::TimeTicks()).InSecondsF();
+  fling.data.flingStart.velocityX = velocity.x;
+  fling.data.flingStart.velocityY = velocity.y;
+  fling.x = point.x;
+  fling.y = point.y;
+  fling.globalX = global_point.x;
+  fling.globalY = global_point.y;
+  fling.modifiers = modifiers;
+  return fling;
+}
+
+WebGestureEvent CreateFling(WebGestureEvent::SourceDevice source_device,
+                            WebFloatPoint velocity,
+                            WebPoint point,
+                            WebPoint global_point,
+                            int modifiers) {
+  return CreateFling(base::TimeTicks(),
+                     source_device,
+                     velocity,
+                     point,
+                     global_point,
+                     modifiers);
+}
+
 class MockInputHandler : public cc::InputHandler {
  public:
   MockInputHandler() {}
@@ -70,6 +107,10 @@ class MockInputHandler : public cc::InputHandler {
                                        base::TimeDelta duration) OVERRIDE {}
 
   virtual void MouseMoveAt(const gfx::Point& mouse_position) OVERRIDE {}
+
+  MOCK_METHOD2(IsCurrentlyScrollingLayerAt,
+               bool(const gfx::Point& point,
+                    cc::InputHandler::ScrollInputType type));
 
   MOCK_METHOD1(HaveTouchEventHandlersAt, bool(const gfx::Point& point));
 
@@ -153,8 +194,7 @@ class InputHandlerProxyTest : public testing::Test {
   InputHandlerProxyTest()
       : expected_disposition_(InputHandlerProxy::DID_HANDLE) {
     input_handler_.reset(
-        new content::InputHandlerProxy(&mock_input_handler_));
-    input_handler_->SetClient(&mock_client_);
+        new content::InputHandlerProxy(&mock_input_handler_, &mock_client_));
   }
 
   ~InputHandlerProxyTest() {
@@ -169,6 +209,43 @@ class InputHandlerProxyTest : public testing::Test {
     testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);          \
     testing::Mock::VerifyAndClearExpectations(&mock_client_);                 \
   } while (false)
+
+  void StartFling(base::TimeTicks timestamp,
+                  WebGestureEvent::SourceDevice source_device,
+                  WebFloatPoint velocity,
+                  WebPoint position) {
+    expected_disposition_ = InputHandlerProxy::DID_HANDLE;
+    VERIFY_AND_RESET_MOCKS();
+
+    EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+        .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
+    gesture_.type = WebInputEvent::GestureScrollBegin;
+    gesture_.sourceDevice = source_device;
+    EXPECT_EQ(expected_disposition_,
+              input_handler_->HandleInputEvent(gesture_));
+
+    VERIFY_AND_RESET_MOCKS();
+
+    EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
+        .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
+    EXPECT_CALL(mock_input_handler_, SetNeedsAnimate());
+
+    gesture_ =
+        CreateFling(timestamp, source_device, velocity, position, position, 0);
+    EXPECT_EQ(expected_disposition_,
+              input_handler_->HandleInputEvent(gesture_));
+
+    VERIFY_AND_RESET_MOCKS();
+  }
+
+  void CancelFling(base::TimeTicks timestamp) {
+    gesture_.timeStampSeconds = InSecondsF(timestamp);
+    gesture_.type = WebInputEvent::GestureFlingCancel;
+    EXPECT_EQ(expected_disposition_,
+              input_handler_->HandleInputEvent(gesture_));
+
+    VERIFY_AND_RESET_MOCKS();
+  }
 
  protected:
   testing::StrictMock<MockInputHandler> mock_input_handler_;
@@ -480,14 +557,11 @@ TEST_F(InputHandlerProxyTest, GestureFlingAnimatesTouchpad) {
   // Note that for trackpad, wheel events with the Control modifier are
   // special (reserved for zoom), so don't set that here.
   int modifiers = WebInputEvent::ShiftKey | WebInputEvent::AltKey;
-  gesture_.data.flingStart.velocityX = fling_delta.x;
-  gesture_.data.flingStart.velocityY = fling_delta.y;
-  gesture_.sourceDevice = WebGestureEvent::Touchpad;
-  gesture_.x = fling_point.x;
-  gesture_.y = fling_point.y;
-  gesture_.globalX = fling_global_point.x;
-  gesture_.globalY = fling_global_point.y;
-  gesture_.modifiers = modifiers;
+  gesture_ = CreateFling(WebGestureEvent::Touchpad,
+                         fling_delta,
+                         fling_point,
+                         fling_global_point,
+                         modifiers);
   EXPECT_CALL(mock_input_handler_, SetNeedsAnimate());
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
       .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
@@ -582,21 +656,17 @@ TEST_F(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
   VERIFY_AND_RESET_MOCKS();
 
   // Start a gesture fling in the -X direction with zero Y movement.
-  gesture_.type = WebInputEvent::GestureFlingStart;
   WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
   WebPoint fling_point = WebPoint(7, 13);
   WebPoint fling_global_point = WebPoint(17, 23);
   // Note that for trackpad, wheel events with the Control modifier are
   // special (reserved for zoom), so don't set that here.
   int modifiers = WebInputEvent::ShiftKey | WebInputEvent::AltKey;
-  gesture_.data.flingStart.velocityX = fling_delta.x;
-  gesture_.data.flingStart.velocityY = fling_delta.y;
-  gesture_.sourceDevice = WebGestureEvent::Touchpad;
-  gesture_.x = fling_point.x;
-  gesture_.y = fling_point.y;
-  gesture_.globalX = fling_global_point.x;
-  gesture_.globalY = fling_global_point.y;
-  gesture_.modifiers = modifiers;
+  gesture_ = CreateFling(WebGestureEvent::Touchpad,
+                         fling_delta,
+                         fling_point,
+                         fling_global_point,
+                         modifiers);
   EXPECT_CALL(mock_input_handler_, SetNeedsAnimate());
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
       .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
@@ -689,19 +759,15 @@ TEST_F(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
   input_handler_->MainThreadHasStoppedFlinging();
 
   // Start a second gesture fling, this time in the +Y direction with no X.
-  gesture_.type = WebInputEvent::GestureFlingStart;
   fling_delta = WebFloatPoint(0, -1000);
   fling_point = WebPoint(95, 87);
   fling_global_point = WebPoint(32, 71);
   modifiers = WebInputEvent::AltKey;
-  gesture_.data.flingStart.velocityX = fling_delta.x;
-  gesture_.data.flingStart.velocityY = fling_delta.y;
-  gesture_.sourceDevice = WebGestureEvent::Touchpad;
-  gesture_.x = fling_point.x;
-  gesture_.y = fling_point.y;
-  gesture_.globalX = fling_global_point.x;
-  gesture_.globalY = fling_global_point.y;
-  gesture_.modifiers = modifiers;
+  gesture_ = CreateFling(WebGestureEvent::Touchpad,
+                         fling_delta,
+                         fling_point,
+                         fling_global_point,
+                         modifiers);
   EXPECT_CALL(mock_input_handler_, SetNeedsAnimate());
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
       .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
@@ -867,20 +933,16 @@ TEST_F(InputHandlerProxyTest, GestureFlingAnimatesTouchscreen) {
 
   // On the fling start, we should schedule an animation but not actually start
   // scrolling.
-  gesture_.type = WebInputEvent::GestureFlingStart;
-  WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
+  WebFloatPoint fling_delta = WebFloatPoint(100, 0);
   WebPoint fling_point = WebPoint(7, 13);
   WebPoint fling_global_point = WebPoint(17, 23);
   // Note that for touchscreen the control modifier is not special.
   int modifiers = WebInputEvent::ControlKey;
-  gesture_.data.flingStart.velocityX = fling_delta.x;
-  gesture_.data.flingStart.velocityY = fling_delta.y;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
-  gesture_.x = fling_point.x;
-  gesture_.y = fling_point.y;
-  gesture_.globalX = fling_global_point.x;
-  gesture_.globalY = fling_global_point.y;
-  gesture_.modifiers = modifiers;
+  gesture_ = CreateFling(WebGestureEvent::Touchscreen,
+                         fling_delta,
+                         fling_point,
+                         fling_global_point,
+                         modifiers);
   EXPECT_CALL(mock_input_handler_, SetNeedsAnimate());
   EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
       .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
@@ -930,21 +992,18 @@ TEST_F(InputHandlerProxyTest, GestureFlingWithValidTimestamp) {
 
   // On the fling start, we should schedule an animation but not actually start
   // scrolling.
-  base::TimeDelta startTimeOffset = base::TimeDelta::FromMilliseconds(10);
-  gesture_.type = WebInputEvent::GestureFlingStart;
-  WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
+  base::TimeDelta dt = base::TimeDelta::FromMilliseconds(10);
+  base::TimeTicks time = base::TimeTicks() + dt;
+  WebFloatPoint fling_delta = WebFloatPoint(100, 0);
   WebPoint fling_point = WebPoint(7, 13);
   WebPoint fling_global_point = WebPoint(17, 23);
   int modifiers = WebInputEvent::ControlKey;
-  gesture_.timeStampSeconds = startTimeOffset.InSecondsF();
-  gesture_.data.flingStart.velocityX = fling_delta.x;
-  gesture_.data.flingStart.velocityY = fling_delta.y;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
-  gesture_.x = fling_point.x;
-  gesture_.y = fling_point.y;
-  gesture_.globalX = fling_global_point.x;
-  gesture_.globalY = fling_global_point.y;
-  gesture_.modifiers = modifiers;
+  gesture_ = CreateFling(time,
+                         WebGestureEvent::Touchscreen,
+                         fling_delta,
+                         fling_point,
+                         fling_global_point,
+                         modifiers);
   EXPECT_CALL(mock_input_handler_, SetNeedsAnimate());
   EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
       .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
@@ -961,7 +1020,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingWithValidTimestamp) {
               ScrollBy(testing::_,
                        testing::Property(&gfx::Vector2dF::x, testing::Lt(0))))
       .WillOnce(testing::Return(true));
-  base::TimeTicks time = base::TimeTicks() + 2 * startTimeOffset;
+  time += dt;
   input_handler_->Animate(time);
 
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
@@ -989,7 +1048,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingWithInvalidTimestamp) {
   // scrolling.
   base::TimeDelta start_time_offset = base::TimeDelta::FromMilliseconds(10);
   gesture_.type = WebInputEvent::GestureFlingStart;
-  WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
+  WebFloatPoint fling_delta = WebFloatPoint(100, 0);
   WebPoint fling_point = WebPoint(7, 13);
   WebPoint fling_global_point = WebPoint(17, 23);
   int modifiers = WebInputEvent::ControlKey;
@@ -1055,19 +1114,15 @@ TEST_F(InputHandlerProxyTest,
 
   // On the fling start, we should schedule an animation but not actually start
   // scrolling.
-  gesture_.type = WebInputEvent::GestureFlingStart;
-  WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
+  WebFloatPoint fling_delta = WebFloatPoint(100, 0);
   WebPoint fling_point = WebPoint(7, 13);
   WebPoint fling_global_point = WebPoint(17, 23);
   int modifiers = WebInputEvent::ControlKey | WebInputEvent::AltKey;
-  gesture_.data.flingStart.velocityX = fling_delta.x;
-  gesture_.data.flingStart.velocityY = fling_delta.y;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
-  gesture_.x = fling_point.x;
-  gesture_.y = fling_point.y;
-  gesture_.globalX = fling_global_point.x;
-  gesture_.globalY = fling_global_point.y;
-  gesture_.modifiers = modifiers;
+  gesture_ = CreateFling(WebGestureEvent::Touchscreen,
+                         fling_delta,
+                         fling_point,
+                         fling_global_point,
+                         modifiers);
   EXPECT_CALL(mock_input_handler_, SetNeedsAnimate());
   EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
       .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
@@ -1117,7 +1172,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingStopsAtContentEdge) {
   // On the fling start, we should schedule an animation but not actually start
   // scrolling.
   gesture_.type = WebInputEvent::GestureFlingStart;
-  WebFloatPoint fling_delta = WebFloatPoint(1000, 1000);
+  WebFloatPoint fling_delta = WebFloatPoint(100, 100);
   gesture_.data.flingStart.velocityX = fling_delta.x;
   gesture_.data.flingStart.velocityY = fling_delta.y;
   EXPECT_CALL(mock_input_handler_, SetNeedsAnimate());
@@ -1191,22 +1246,18 @@ TEST_F(InputHandlerProxyTest, GestureFlingNotCancelledBySmallTimeDelta) {
 
   // On the fling start, we should schedule an animation but not actually start
   // scrolling.
-  base::TimeDelta time_offset = base::TimeDelta::FromMilliseconds(10);
-  base::TimeTicks time = base::TimeTicks() + time_offset;
-  gesture_.type = WebInputEvent::GestureFlingStart;
-  WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
+  base::TimeDelta dt = base::TimeDelta::FromMilliseconds(10);
+  base::TimeTicks time = base::TimeTicks() + dt;
+  WebFloatPoint fling_delta = WebFloatPoint(100, 0);
   WebPoint fling_point = WebPoint(7, 13);
   WebPoint fling_global_point = WebPoint(17, 23);
   int modifiers = WebInputEvent::ControlKey;
-  gesture_.timeStampSeconds = time_offset.InSecondsF();
-  gesture_.data.flingStart.velocityX = fling_delta.x;
-  gesture_.data.flingStart.velocityY = fling_delta.y;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
-  gesture_.x = fling_point.x;
-  gesture_.y = fling_point.y;
-  gesture_.globalX = fling_global_point.x;
-  gesture_.globalY = fling_global_point.y;
-  gesture_.modifiers = modifiers;
+  gesture_ = CreateFling(time,
+                         WebGestureEvent::Touchscreen,
+                         fling_delta,
+                         fling_point,
+                         fling_global_point,
+                         modifiers);
   EXPECT_CALL(mock_input_handler_, SetNeedsAnimate());
   EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
       .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
@@ -1271,7 +1322,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingCancelledAfterBothAxesStopScrolling) {
   // On the fling start, we should schedule an animation but not actually start
   // scrolling.
   gesture_.type = WebInputEvent::GestureFlingStart;
-  WebFloatPoint fling_delta = WebFloatPoint(1000, 1000);
+  WebFloatPoint fling_delta = WebFloatPoint(100, 100);
   gesture_.data.flingStart.velocityX = fling_delta.x;
   gesture_.data.flingStart.velocityY = fling_delta.y;
   EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
@@ -1421,7 +1472,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingCancelledByKeyboardEvent) {
 
   // On the fling start, animation should be scheduled, but no scrolling occurs.
   gesture_.type = WebInputEvent::GestureFlingStart;
-  WebFloatPoint fling_delta = WebFloatPoint(1000, 1000);
+  WebFloatPoint fling_delta = WebFloatPoint(100, 100);
   gesture_.data.flingStart.velocityX = fling_delta.x;
   gesture_.data.flingStart.velocityY = fling_delta.y;
   EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
@@ -1466,21 +1517,18 @@ TEST_F(InputHandlerProxyTest, GestureFlingWithNegativeTimeDelta) {
 
   // On the fling start, we should schedule an animation but not actually start
   // scrolling.
-  base::TimeDelta startTimeOffset = base::TimeDelta::FromMilliseconds(10);
-  gesture_.type = WebInputEvent::GestureFlingStart;
-  WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
+  base::TimeDelta dt = base::TimeDelta::FromMilliseconds(10);
+  base::TimeTicks time = base::TimeTicks() + dt;
+  WebFloatPoint fling_delta = WebFloatPoint(100, 0);
   WebPoint fling_point = WebPoint(7, 13);
   WebPoint fling_global_point = WebPoint(17, 23);
   int modifiers = WebInputEvent::ControlKey;
-  gesture_.timeStampSeconds = startTimeOffset.InSecondsF();
-  gesture_.data.flingStart.velocityX = fling_delta.x;
-  gesture_.data.flingStart.velocityY = fling_delta.y;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
-  gesture_.x = fling_point.x;
-  gesture_.y = fling_point.y;
-  gesture_.globalX = fling_global_point.x;
-  gesture_.globalY = fling_global_point.y;
-  gesture_.modifiers = modifiers;
+  gesture_ = CreateFling(time,
+                         WebGestureEvent::Touchscreen,
+                         fling_delta,
+                         fling_point,
+                         fling_global_point,
+                         modifiers);
   EXPECT_CALL(mock_input_handler_, SetNeedsAnimate());
   EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
       .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
@@ -1495,8 +1543,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingWithNegativeTimeDelta) {
   EXPECT_CALL(mock_input_handler_,
               ScrollBy(testing::_,
                        testing::_)).Times(0);
-  base::TimeTicks time =
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(8);
+  time -= base::TimeDelta::FromMilliseconds(5);
   input_handler_->Animate(time);
 
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
@@ -1516,6 +1563,288 @@ TEST_F(InputHandlerProxyTest, GestureFlingWithNegativeTimeDelta) {
   EXPECT_CALL(mock_input_handler_, ScrollEnd());
   gesture_.type = WebInputEvent::GestureFlingCancel;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+}
+
+TEST_F(InputHandlerProxyTest, FlingBoost) {
+  base::TimeDelta dt = base::TimeDelta::FromMilliseconds(10);
+  base::TimeTicks time = base::TimeTicks() + dt;
+  base::TimeTicks last_animate_time = time;
+  WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
+  WebPoint fling_point = WebPoint(7, 13);
+  StartFling(time, WebGestureEvent::Touchscreen, fling_delta, fling_point);
+
+  // Now cancel the fling.  The fling cancellation should be deferred to allow
+  // fling boosting events to arrive.
+  time += dt;
+  CancelFling(time);
+
+  // The GestureScrollBegin should be swallowed by the fling if it hits the same
+  // scrolling layer.
+  EXPECT_CALL(mock_input_handler_,
+              IsCurrentlyScrollingLayerAt(testing::_, testing::_))
+      .WillOnce(testing::Return(true));
+
+  time += dt;
+  gesture_.timeStampSeconds = InSecondsF(time);
+  gesture_.type = WebInputEvent::GestureScrollBegin;
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+
+  VERIFY_AND_RESET_MOCKS();
+
+  // Animate calls within the deferred cancellation window should continue.
+  time += dt;
+  float expected_delta =
+      (time - last_animate_time).InSecondsF() * -fling_delta.x;
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimate());
+  EXPECT_CALL(mock_input_handler_,
+              ScrollBy(testing::_,
+                       testing::Property(&gfx::Vector2dF::x,
+                                         testing::Eq(expected_delta))))
+      .WillOnce(testing::Return(true));
+  input_handler_->Animate(time);
+  last_animate_time = time;
+
+  VERIFY_AND_RESET_MOCKS();
+
+  // GestureScrollUpdates in the same direction and at sufficient speed should
+  // be swallowed by the fling.
+  time += dt;
+  gesture_.timeStampSeconds = InSecondsF(time);
+  gesture_.type = WebInputEvent::GestureScrollUpdate;
+  gesture_.data.scrollUpdate.deltaX = fling_delta.x;
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+
+  VERIFY_AND_RESET_MOCKS();
+
+  // Animate calls within the deferred cancellation window should continue.
+  time += dt;
+  expected_delta = (time - last_animate_time).InSecondsF() * -fling_delta.x;
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimate());
+  EXPECT_CALL(mock_input_handler_,
+              ScrollBy(testing::_,
+                       testing::Property(&gfx::Vector2dF::x,
+                                         testing::Eq(expected_delta))))
+      .WillOnce(testing::Return(true));
+  input_handler_->Animate(time);
+  last_animate_time = time;
+
+  VERIFY_AND_RESET_MOCKS();
+
+  // GestureFlingStart in the same direction and at sufficient speed should
+  // boost the active fling.
+
+  gesture_ = CreateFling(time,
+                         WebGestureEvent::Touchscreen,
+                         fling_delta,
+                         fling_point,
+                         fling_point,
+                         0);
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+  VERIFY_AND_RESET_MOCKS();
+
+  time += dt;
+  // Note we get *2x* as much delta because 2 flings have combined.
+  expected_delta = 2 * (time - last_animate_time).InSecondsF() * -fling_delta.x;
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimate());
+  EXPECT_CALL(mock_input_handler_,
+              ScrollBy(testing::_,
+                       testing::Property(&gfx::Vector2dF::x,
+                                         testing::Eq(expected_delta))))
+      .WillOnce(testing::Return(true));
+  input_handler_->Animate(time);
+  last_animate_time = time;
+
+  VERIFY_AND_RESET_MOCKS();
+
+  // Repeated GestureFlingStarts should accumulate.
+
+  CancelFling(time);
+  gesture_ = CreateFling(time,
+                         WebGestureEvent::Touchscreen,
+                         fling_delta,
+                         fling_point,
+                         fling_point,
+                         0);
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+  VERIFY_AND_RESET_MOCKS();
+
+  time += dt;
+  // Note we get *3x* as much delta because 3 flings have combined.
+  expected_delta = 3 * (time - last_animate_time).InSecondsF() * -fling_delta.x;
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimate());
+  EXPECT_CALL(mock_input_handler_,
+              ScrollBy(testing::_,
+                       testing::Property(&gfx::Vector2dF::x,
+                                         testing::Eq(expected_delta))))
+      .WillOnce(testing::Return(true));
+  input_handler_->Animate(time);
+  last_animate_time = time;
+
+  VERIFY_AND_RESET_MOCKS();
+
+  // GestureFlingCancel should terminate the fling if no boosting gestures are
+  // received within the timeout window.
+
+  time += dt;
+  gesture_.timeStampSeconds = InSecondsF(time);
+  gesture_.type = WebInputEvent::GestureFlingCancel;
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+
+  VERIFY_AND_RESET_MOCKS();
+
+  time += base::TimeDelta::FromMilliseconds(100);
+  EXPECT_CALL(mock_input_handler_, ScrollEnd());
+  input_handler_->Animate(time);
+
+  VERIFY_AND_RESET_MOCKS();
+}
+
+TEST_F(InputHandlerProxyTest, NoFlingBoostIfScrollTargetsDifferentLayer) {
+  base::TimeDelta dt = base::TimeDelta::FromMilliseconds(10);
+  base::TimeTicks time = base::TimeTicks() + dt;
+  WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
+  WebPoint fling_point = WebPoint(7, 13);
+  StartFling(time, WebGestureEvent::Touchscreen, fling_delta, fling_point);
+
+  // Cancel the fling.  The fling cancellation should be deferred to allow
+  // fling boosting events to arrive.
+  time += dt;
+  CancelFling(time);
+
+  // If the GestureScrollBegin targets a different layer, the fling should be
+  // cancelled and the scroll should be handled as usual.
+  EXPECT_CALL(mock_input_handler_,
+              IsCurrentlyScrollingLayerAt(testing::_, testing::_))
+      .WillOnce(testing::Return(false));
+  EXPECT_CALL(mock_input_handler_, ScrollEnd());
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+      .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
+
+  time += dt;
+  gesture_.timeStampSeconds = InSecondsF(time);
+  gesture_.type = WebInputEvent::GestureScrollBegin;
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+
+  VERIFY_AND_RESET_MOCKS();
+}
+
+TEST_F(InputHandlerProxyTest, NoFlingBoostIfScrollDelayed) {
+  base::TimeDelta dt = base::TimeDelta::FromMilliseconds(10);
+  base::TimeTicks time = base::TimeTicks() + dt;
+  WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
+  WebPoint fling_point = WebPoint(7, 13);
+  StartFling(time, WebGestureEvent::Touchscreen, fling_delta, fling_point);
+
+  // Cancel the fling.  The fling cancellation should be deferred to allow
+  // fling boosting events to arrive.
+  time += dt;
+  CancelFling(time);
+
+  // The GestureScrollBegin should be swallowed by the fling if it hits the same
+  // scrolling layer.
+  EXPECT_CALL(mock_input_handler_,
+              IsCurrentlyScrollingLayerAt(testing::_, testing::_))
+      .WillOnce(testing::Return(true));
+
+  time += dt;
+  gesture_.timeStampSeconds = InSecondsF(time);
+  gesture_.type = WebInputEvent::GestureScrollBegin;
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+
+  VERIFY_AND_RESET_MOCKS();
+
+  // If no GestureScrollUpdate or GestureFlingStart is received within the
+  // timeout window, the fling should be cancelled and scrolling should resume.
+  time += base::TimeDelta::FromMilliseconds(100);
+  EXPECT_CALL(mock_input_handler_, ScrollEnd());
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+      .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
+  input_handler_->Animate(time);
+
+  VERIFY_AND_RESET_MOCKS();
+}
+
+TEST_F(InputHandlerProxyTest, NoFlingBoostIfScrollInDifferentDirection) {
+  base::TimeDelta dt = base::TimeDelta::FromMilliseconds(10);
+  base::TimeTicks time = base::TimeTicks() + dt;
+  WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
+  WebPoint fling_point = WebPoint(7, 13);
+  StartFling(time, WebGestureEvent::Touchscreen, fling_delta, fling_point);
+
+  // Cancel the fling.  The fling cancellation should be deferred to allow
+  // fling boosting events to arrive.
+  time += dt;
+  CancelFling(time);
+
+  // The GestureScrollBegin should be swallowed by the fling if it hits the same
+  // scrolling layer.
+  EXPECT_CALL(mock_input_handler_,
+              IsCurrentlyScrollingLayerAt(testing::_, testing::_))
+      .WillOnce(testing::Return(true));
+
+  time += dt;
+  gesture_.timeStampSeconds = InSecondsF(time);
+  gesture_.type = WebInputEvent::GestureScrollBegin;
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+
+  VERIFY_AND_RESET_MOCKS();
+
+  // If the GestureScrollUpdate is in a different direction than the fling,
+  // the fling should be cancelled and scrolling should resume.
+  time += dt;
+  gesture_.timeStampSeconds = InSecondsF(time);
+  gesture_.type = WebInputEvent::GestureScrollUpdate;
+  gesture_.data.scrollUpdate.deltaX = -fling_delta.x;
+  EXPECT_CALL(mock_input_handler_, ScrollEnd());
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+      .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
+  EXPECT_CALL(mock_input_handler_,
+              ScrollBy(testing::_,
+                       testing::Property(&gfx::Vector2dF::x,
+                                         testing::Eq(fling_delta.x))))
+      .WillOnce(testing::Return(true));
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+
+  VERIFY_AND_RESET_MOCKS();
+}
+
+TEST_F(InputHandlerProxyTest, NoFlingBoostIfFlingTooSlow) {
+  base::TimeDelta dt = base::TimeDelta::FromMilliseconds(10);
+  base::TimeTicks time = base::TimeTicks() + dt;
+  WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
+  WebPoint fling_point = WebPoint(7, 13);
+  StartFling(time, WebGestureEvent::Touchscreen, fling_delta, fling_point);
+
+  // Cancel the fling.  The fling cancellation should be deferred to allow
+  // fling boosting events to arrive.
+  time += dt;
+  CancelFling(time);
+
+  // If the new fling is too slow, no boosting should take place, with the new
+  // fling replacing the old.
+  WebFloatPoint small_fling_delta = WebFloatPoint(100, 0);
+  gesture_ = CreateFling(time,
+                         WebGestureEvent::Touchscreen,
+                         small_fling_delta,
+                         fling_point,
+                         fling_point,
+                         0);
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+
+  VERIFY_AND_RESET_MOCKS();
+
+  // Note that the new fling delta uses the *slow*, unboosted fling velocity.
+  time += dt;
+  float expected_delta = dt.InSecondsF() * -small_fling_delta.x;
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimate());
+  EXPECT_CALL(mock_input_handler_,
+              ScrollBy(testing::_,
+                       testing::Property(&gfx::Vector2dF::x,
+                                         testing::Eq(expected_delta))))
+      .WillOnce(testing::Return(true));
+  input_handler_->Animate(time);
+
+  VERIFY_AND_RESET_MOCKS();
 }
 
 } // namespace

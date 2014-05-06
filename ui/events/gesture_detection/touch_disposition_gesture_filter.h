@@ -78,9 +78,9 @@ class GESTURE_DETECTION_EXPORT TouchDispositionGestureFilter {
 
   void FilterAndSendPacket(const GestureEventDataPacket& packet);
   void SendGesture(const GestureEventData& gesture);
-  void CancelTapIfNecessary();
-  void CancelFlingIfNecessary();
-  void EndScrollIfNecessary();
+  void CancelTapIfNecessary(const base::TimeTicks& timestamp);
+  void CancelFlingIfNecessary(const base::TimeTicks& timestamp);
+  void EndScrollIfNecessary(const base::TimeTicks& timestamp);
   void PopGestureSequence();
   GestureSequence& Head();
   GestureSequence& Tail();

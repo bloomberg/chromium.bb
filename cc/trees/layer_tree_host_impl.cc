@@ -478,6 +478,27 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
   client_->RenewTreePriority();
 }
 
+bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
+    const gfx::Point& viewport_point,
+    InputHandler::ScrollInputType type) {
+  if (!CurrentlyScrollingLayer())
+    return false;
+
+  if (!EnsureRenderSurfaceLayerList())
+    return false;
+
+  gfx::PointF device_viewport_point =
+      gfx::ScalePoint(viewport_point, device_scale_factor_);
+
+  LayerImpl* layer_impl = LayerTreeHostCommon::FindLayerThatIsHitByPoint(
+      device_viewport_point, active_tree_->RenderSurfaceLayerList());
+
+  bool scroll_on_main_thread = false;
+  LayerImpl* scrolling_layer_impl = FindScrollLayerForDeviceViewportPoint(
+      device_viewport_point, type, layer_impl, &scroll_on_main_thread, NULL);
+  return CurrentlyScrollingLayer() == scrolling_layer_impl;
+}
+
 bool LayerTreeHostImpl::HaveTouchEventHandlersAt(
     const gfx::Point& viewport_point) {
   if (!settings_.touch_hit_testing)
@@ -2134,7 +2155,7 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
     InputHandler::ScrollInputType type,
     LayerImpl* layer_impl,
     bool* scroll_on_main_thread,
-    bool* has_ancestor_scroll_handler) const {
+    bool* optional_has_ancestor_scroll_handler) const {
   DCHECK(scroll_on_main_thread);
 
   // Walk up the hierarchy and look for a scrollable layer.
@@ -2159,18 +2180,26 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
       return NULL;
     }
 
-    if (has_ancestor_scroll_handler &&
+    if (optional_has_ancestor_scroll_handler &&
         scroll_layer_impl->have_scroll_event_handlers())
-      *has_ancestor_scroll_handler = true;
+      *optional_has_ancestor_scroll_handler = true;
 
     if (status == ScrollStarted && !potentially_scrolling_layer_impl)
       potentially_scrolling_layer_impl = scroll_layer_impl;
   }
 
+  // Falling back to the root scroll layer ensures generation of root overscroll
+  // notifications while preventing scroll updates from being unintentionally
+  // forwarded to the main thread.
+  if (!potentially_scrolling_layer_impl)
+    potentially_scrolling_layer_impl = OuterViewportScrollLayer()
+                                           ? OuterViewportScrollLayer()
+                                           : InnerViewportScrollLayer();
+
   return potentially_scrolling_layer_impl;
 }
 
-// Similar to LayerImpl::HasAncestor, but takes into account scroll parents.
+// Similar to LayerImpl::HasAncestor, but walks up the scroll parents.
 static bool HasScrollAncestor(LayerImpl* child, LayerImpl* scroll_ancestor) {
   DCHECK(scroll_ancestor);
   for (LayerImpl* ancestor = child; ancestor;
@@ -2210,7 +2239,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
   }
 
   bool scroll_on_main_thread = false;
-  LayerImpl* potentially_scrolling_layer_impl =
+  LayerImpl* scrolling_layer_impl =
       FindScrollLayerForDeviceViewportPoint(device_viewport_point,
                                             type,
                                             layer_impl,
@@ -2222,15 +2251,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     return ScrollOnMainThread;
   }
 
-  // If we want to send a DidOverscroll for this scroll it can't be ignored.
-  if (!potentially_scrolling_layer_impl)
-    potentially_scrolling_layer_impl = OuterViewportScrollLayer()
-                                           ? OuterViewportScrollLayer()
-                                           : InnerViewportScrollLayer();
-
-  if (potentially_scrolling_layer_impl) {
-    active_tree_->SetCurrentlyScrollingLayer(
-        potentially_scrolling_layer_impl);
+  if (scrolling_layer_impl) {
+    active_tree_->SetCurrentlyScrollingLayer(scrolling_layer_impl);
     should_bubble_scrolls_ = (type != NonBubblingGesture);
     wheel_scrolling_ = (type == Wheel);
     client_->RenewTreePriority();

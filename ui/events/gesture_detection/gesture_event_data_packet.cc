@@ -35,14 +35,16 @@ GestureEventDataPacket::GestureSource ToGestureSource(
 GestureEventDataPacket::GestureEventDataPacket()
     : gesture_count_(0), gesture_source_(UNDEFINED) {}
 
-GestureEventDataPacket::GestureEventDataPacket(GestureSource source)
-    : gesture_count_(0), gesture_source_(source) {
+GestureEventDataPacket::GestureEventDataPacket(base::TimeTicks timestamp,
+                                               GestureSource source)
+    : timestamp_(timestamp), gesture_count_(0), gesture_source_(source) {
   DCHECK_NE(gesture_source_, UNDEFINED);
 }
 
 GestureEventDataPacket::GestureEventDataPacket(
     const GestureEventDataPacket& other)
-    : gesture_count_(other.gesture_count_),
+    : timestamp_(other.timestamp_),
+      gesture_count_(other.gesture_count_),
       gesture_source_(other.gesture_source_) {
   std::copy(other.gestures_, other.gestures_ + other.gesture_count_, gestures_);
 }
@@ -51,6 +53,7 @@ GestureEventDataPacket::~GestureEventDataPacket() {}
 
 GestureEventDataPacket& GestureEventDataPacket::operator=(
     const GestureEventDataPacket& other) {
+  timestamp_ = other.timestamp_;
   gesture_count_ = other.gesture_count_;
   gesture_source_ = other.gesture_source_;
   std::copy(other.gestures_, other.gestures_ + other.gesture_count_, gestures_);
@@ -65,12 +68,12 @@ void GestureEventDataPacket::Push(const GestureEventData& gesture) {
 
 GestureEventDataPacket GestureEventDataPacket::FromTouch(
     const ui::MotionEvent& touch) {
-  return GestureEventDataPacket(ToGestureSource(touch));
+  return GestureEventDataPacket(touch.GetEventTime(), ToGestureSource(touch));
 }
 
 GestureEventDataPacket GestureEventDataPacket::FromTouchTimeout(
     const GestureEventData& gesture) {
-  GestureEventDataPacket packet(TOUCH_TIMEOUT);
+  GestureEventDataPacket packet(gesture.time, TOUCH_TIMEOUT);
   packet.Push(gesture);
   return packet;
 }
