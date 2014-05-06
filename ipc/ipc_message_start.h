@@ -102,6 +102,7 @@ enum IPCMessageStart {
   MojoMsgStart,
   TranslateMsgStart,
   PushMessagingMsgStart,
+  GinJavaBridgeMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 
