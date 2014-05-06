@@ -23,6 +23,7 @@
 
 #include "core/rendering/svg/RenderSVGBlock.h"
 
+#include "core/rendering/RenderView.h"
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
@@ -109,6 +110,12 @@ bool RenderSVGBlock::nodeAtPoint(const HitTestRequest&, HitTestResult&, const Hi
 {
     ASSERT_NOT_REACHED();
     return false;
+}
+
+void RenderSVGBlock::repaintTreeAfterLayout()
+{
+    LayoutStateDisabler layoutStateDisabler(*this);
+    RenderBlockFlow::repaintTreeAfterLayout();
 }
 
 }

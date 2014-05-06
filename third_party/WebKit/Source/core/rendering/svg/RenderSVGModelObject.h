@@ -68,6 +68,8 @@ public:
 
     virtual bool isSVG() const OVERRIDE FINAL { return true; }
 
+    virtual void repaintTreeAfterLayout() OVERRIDE;
+
 protected:
     virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const OVERRIDE FINAL;
     virtual void willBeDestroyed() OVERRIDE;

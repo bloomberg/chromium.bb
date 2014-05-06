@@ -345,6 +345,8 @@ protected:
 
     virtual bool isInlineBlockOrInlineTable() const OVERRIDE FINAL { return isInline() && isReplaced(); }
 
+    virtual void repaintTreeAfterLayout() OVERRIDE;
+
 private:
     virtual RenderObjectChildList* virtualChildren() OVERRIDE FINAL { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const OVERRIDE FINAL { return children(); }
@@ -352,8 +354,6 @@ private:
     virtual const char* renderName() const OVERRIDE;
 
     virtual bool isRenderBlock() const OVERRIDE FINAL { return true; }
-
-    virtual void repaintTreeAfterLayout() OVERRIDE;
 
     void makeChildrenNonInline(RenderObject* insertionPoint = 0);
     virtual void removeLeftoverAnonymousBlock(RenderBlock* child);
