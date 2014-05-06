@@ -58,13 +58,13 @@ static void RequestPlatformPathFromBlobURL(
 
 static void RequestPlaformPathFromFileSystemURL(
     const GURL& url,
-    int renderer_id,
+    int render_process_id,
     scoped_refptr<fileapi::FileSystemContext> file_system_context,
     const base::Callback<void(const std::string&)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::FilePath platform_path;
   SyncGetPlatformPath(file_system_context.get(),
-                      renderer_id,
+                      render_process_id,
                       url,
                       &platform_path);
   base::FilePath data_storage_path;
@@ -111,7 +111,7 @@ class CookieGetterTask
      : public base::RefCountedThreadSafe<CookieGetterTask> {
  public:
   CookieGetterTask(BrowserContext* browser_context,
-                   int renderer_id, int routing_id);
+                   int render_process_id, int render_frame_id);
 
   // Called by CookieGetterImpl to start getting cookies for a URL.
   void RequestCookies(
@@ -134,20 +134,20 @@ class CookieGetterTask
   ResourceContext* resource_context_;
 
   // Render process id, used to check whether the process can access cookies.
-  int renderer_id_;
+  int render_process_id_;
 
-  // Routing id for the render view, used to check tab specific cookie policy.
-  int routing_id_;
+  // Render frame id, used to check tab specific cookie policy.
+  int render_frame_id_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieGetterTask);
 };
 
 CookieGetterTask::CookieGetterTask(
-    BrowserContext* browser_context, int renderer_id, int routing_id)
+    BrowserContext* browser_context, int render_process_id, int render_frame_id)
     : context_getter_(browser_context->GetRequestContext()),
       resource_context_(browser_context->GetResourceContext()),
-      renderer_id_(renderer_id),
-      routing_id_(routing_id) {
+      render_process_id_(render_process_id),
+      render_frame_id_(render_frame_id) {
 }
 
 CookieGetterTask::~CookieGetterTask() {}
@@ -158,7 +158,7 @@ void CookieGetterTask::RequestCookies(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanAccessCookiesForOrigin(renderer_id_, url)) {
+  if (!policy->CanAccessCookiesForOrigin(render_process_id_, url)) {
     callback.Run(std::string());
     return;
   }
@@ -187,7 +187,7 @@ void CookieGetterTask::CheckPolicyForCookies(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (GetContentClient()->browser()->AllowGetCookie(
       url, first_party_for_cookies, cookie_list,
-      resource_context_, renderer_id_, routing_id_)) {
+      resource_context_, render_process_id_, render_frame_id_)) {
     net::CookieStore* cookie_store =
         context_getter_->GetURLRequestContext()->cookie_store();
     cookie_store->GetCookiesWithOptionsAsync(
@@ -200,12 +200,12 @@ void CookieGetterTask::CheckPolicyForCookies(
 MediaResourceGetterImpl::MediaResourceGetterImpl(
     BrowserContext* browser_context,
     fileapi::FileSystemContext* file_system_context,
-    int renderer_id,
-    int routing_id)
+    int render_process_id,
+    int render_frame_id)
     : browser_context_(browser_context),
       file_system_context_(file_system_context),
-      renderer_id_(renderer_id),
-      routing_id_(routing_id),
+      render_process_id_(render_process_id),
+      render_frame_id_(render_frame_id),
       weak_factory_(this) {}
 
 MediaResourceGetterImpl::~MediaResourceGetterImpl() {}
@@ -215,7 +215,7 @@ void MediaResourceGetterImpl::GetCookies(
     const GetCookieCB& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_refptr<CookieGetterTask> task = new CookieGetterTask(
-      browser_context_, renderer_id_, routing_id_);
+      browser_context_, render_process_id_, render_frame_id_);
 
   GetCookieCB cb = base::Bind(&MediaResourceGetterImpl::GetCookiesCallback,
                               weak_factory_.GetWeakPtr(),
@@ -256,7 +256,7 @@ void MediaResourceGetterImpl::GetPlatformPathFromURL(
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&RequestPlaformPathFromFileSystemURL, url, renderer_id_,
+      base::Bind(&RequestPlaformPathFromFileSystemURL, url, render_process_id_,
                  context, cb));
 }
 

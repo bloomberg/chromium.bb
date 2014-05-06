@@ -32,11 +32,11 @@ class ResourceContext;
 class MediaResourceGetterImpl : public media::MediaResourceGetter {
  public:
   // Construct a MediaResourceGetterImpl object. |browser_context| and
-  // |renderer_id| are passed to retrieve the CookieStore.
+  // |render_process_id| are passed to retrieve the CookieStore.
   // |file_system_context| are used to get the platform path.
   MediaResourceGetterImpl(BrowserContext* browser_context,
                           fileapi::FileSystemContext* file_system_context,
-                          int renderer_id, int routing_id);
+                          int render_process_id, int render_frame_id);
   virtual ~MediaResourceGetterImpl();
 
   // media::MediaResourceGetter implementation.
@@ -70,10 +70,10 @@ class MediaResourceGetterImpl : public media::MediaResourceGetter {
   fileapi::FileSystemContext* file_system_context_;
 
   // Render process id, used to check whether the process can access cookies.
-  int renderer_id_;
+  int render_process_id_;
 
-  // Routing id for the render view, used to check tab specific cookie policy.
-  int routing_id_;
+  // Render frame id, used to check tab specific cookie policy.
+  int render_frame_id_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaResourceGetterImpl> weak_factory_;

@@ -318,8 +318,13 @@ BrowserMediaPlayerManager::GetMediaResourceGetter() {
     StoragePartition* partition = host->GetStoragePartition();
     fileapi::FileSystemContext* file_system_context =
         partition ? partition->GetFileSystemContext() : NULL;
+    // Eventually this needs to be fixed to pass the correct frame rather
+    // than just using the main frame.
     media_resource_getter_.reset(new MediaResourceGetterImpl(
-        context, file_system_context, host->GetID(), routing_id()));
+        context,
+        file_system_context,
+        host->GetID(),
+        web_contents()->GetMainFrame()->GetRoutingID()));
   }
   return media_resource_getter_.get();
 }
