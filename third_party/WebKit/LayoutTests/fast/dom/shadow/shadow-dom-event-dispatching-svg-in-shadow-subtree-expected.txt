@@ -1,6 +1,5 @@
 
 
-
 Composed Shadow Tree will be:
 DIV	 id=sandbox
 	DIV	 id=top
@@ -13,10 +12,10 @@ Moving mouse from shadow-host/svg-in-shadow-tree to top
   mouseout
      @svg-in-shadow-tree (target: svg-in-shadow-tree) (related: top)
      @shadow-root (target: svg-in-shadow-tree) (related: top)
-     @top (target: svg-in-shadow-tree) (related: top)
+     @top (target: shadow-host) (related: top)
 
   mouseover
-     @top (target: top) (related: svg-in-shadow-tree)
+     @top (target: top) (related: shadow-host)
 PASS successfullyParsed is true
 
 TEST COMPLETE

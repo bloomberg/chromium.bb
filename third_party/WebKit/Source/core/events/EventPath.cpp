@@ -44,6 +44,14 @@
 
 namespace WebCore {
 
+// SVG1.1 specified that the <use> instance tree would expose the target
+// element for events. This has been deprecated and will be removed.
+// See: crbug.com/313438
+static bool usesDeprecatedSVGUseTreeEventRules(Node* node)
+{
+    return node->isSVGElement() && toSVGElement(node)->inUseShadowTree();
+}
+
 EventTarget* EventPath::eventTargetRespectingTargetRules(Node* referenceNode)
 {
     ASSERT(referenceNode);
@@ -51,7 +59,7 @@ EventTarget* EventPath::eventTargetRespectingTargetRules(Node* referenceNode)
     if (referenceNode->isPseudoElement())
         return referenceNode->parentNode();
 
-    if (!referenceNode->isSVGElement() || !referenceNode->isInShadowTree())
+    if (!usesDeprecatedSVGUseTreeEventRules(referenceNode))
         return referenceNode;
 
     // Spec: The event handling for the non-exposed tree works as if the referenced element had been textually included
@@ -115,7 +123,7 @@ void EventPath::resetWith(Node* node)
     m_treeScopeEventContexts.clear();
     calculatePath();
     calculateAdjustedTargets();
-    if (!node->isSVGElement())
+    if (!usesDeprecatedSVGUseTreeEventRules(node))
         calculateTreeScopePrePostOrderNumbers();
 }
 
@@ -218,7 +226,7 @@ TreeScopeEventContext* EventPath::ensureTreeScopeEventContext(Node* currentTarge
 void EventPath::calculateAdjustedTargets()
 {
     const TreeScope* lastTreeScope = 0;
-    bool isSVGElement = at(0).node()->isSVGElement();
+    bool useDeprecatedSVGUseTreeEventRules = usesDeprecatedSVGUseTreeEventRules(at(0).node());
 
     TreeScopeEventContextMap treeScopeEventContextMap;
     TreeScopeEventContext* lastTreeScopeEventContext = 0;
@@ -227,7 +235,7 @@ void EventPath::calculateAdjustedTargets()
         Node* currentNode = at(i).node();
         TreeScope& currentTreeScope = currentNode->treeScope();
         if (lastTreeScope != &currentTreeScope) {
-            if (!isSVGElement) {
+            if (!useDeprecatedSVGUseTreeEventRules) {
                 lastTreeScopeEventContext = ensureTreeScopeEventContext(currentNode, &currentTreeScope, treeScopeEventContextMap);
             } else {
                 TreeScopeEventContextMap::AddResult addResult = treeScopeEventContextMap.add(&currentTreeScope, TreeScopeEventContext::create(currentTreeScope));

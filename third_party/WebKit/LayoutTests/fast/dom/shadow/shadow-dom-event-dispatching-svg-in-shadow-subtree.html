@@ -12,7 +12,6 @@
     <script>
         var sandbox = document.getElementById('sandbox');
 
-        debug("<svg> in shadow DOM subtree is not supported currently: this test passes if it doesn't crash.");
         sandbox.appendChild(
             createDOM('div', {'id': 'top'},
                       createDOM('div', {'id': 'shadow-host'},
