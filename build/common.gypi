@@ -3377,9 +3377,6 @@
                 'conditions': [
                   # Use gold linker for Android ia32 target.
                   ['OS=="android"', {
-                    'cflags': [
-                      '-fuse-ld=gold',
-                    ],
                     'ldflags': [
                       '-fuse-ld=gold',
                     ],
@@ -3405,9 +3402,6 @@
                 'conditions': [
                   # Use gold linker for Android x64 target.
                   ['OS=="android"', {
-                    'cflags': [
-                      '-fuse-ld=gold',
-                    ],
                     'ldflags': [
                       '-fuse-ld=gold',
                     ],
@@ -3471,7 +3465,6 @@
                       # compiler (r5-r7). This can be verified using
                       # webkit_unit_tests' WTF.Checked_int8_t test.
                       '-fno-tree-sra',
-                      '-fuse-ld=gold',
                       '-Wno-psabi',
                     ],
                     # Android now supports .relro sections properly.
@@ -3499,7 +3492,6 @@
                           '-mthumb-interwork',
                           '-finline-limit=64',
                           '-fno-tree-sra',
-                          '-fuse-ld=gold',
                           '-Wno-psabi',
                         ],
                         'cflags': [
@@ -3893,9 +3885,6 @@
               ['gcc_version>=48', {
                 'target_conditions': [
                   ['_toolset=="target"', {
-                    'cflags': [
-                      '-fuse-ld=gold',
-                    ],
                     'ldflags': [
                       '-fuse-ld=gold',
                     ],
@@ -3905,9 +3894,6 @@
               ['host_gcc_version>=48', {
                 'target_conditions': [
                   ['_toolset=="host"', {
-                    'cflags': [
-                      '-fuse-ld=gold',
-                    ],
                     'ldflags': [
                       '-fuse-ld=gold',
                     ],
