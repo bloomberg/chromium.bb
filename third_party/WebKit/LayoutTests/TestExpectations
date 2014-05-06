@@ -1061,6 +1061,8 @@ crbug.com/308992 svg/as-object/sizing/svg-in-object-placeholder-height-auto.html
 crbug.com/308992 svg/as-object/sizing/svg-in-object-placeholder-height-fixed.html [ Pass Timeout ]
 crbug.com/308992 svg/as-object/sizing/svg-in-object-placeholder-height-percentage.html [ Pass Timeout ]
 
+crbug.com/370525 tables/mozilla_expected_failures/marvin/table_overflow_dirty_reflow_row.html [ NeedsRebaseline ]
+
 crbug.com/368008 virtual/gpu/fast/canvas/canvas-bg.html [ Skip ]
 crbug.com/368531 virtual/gpu/fast/canvas/canvas-path-addpath.html [ Failure Pass ]
 

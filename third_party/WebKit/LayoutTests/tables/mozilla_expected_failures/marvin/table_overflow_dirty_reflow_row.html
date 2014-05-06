@@ -67,17 +67,22 @@ height:200px}
 </style>
 <script type="text/javascript">
 if (window.internals)
-    window.internals.settings.setForceCompositingMode(true);
+  window.internals.settings.setForceCompositingMode(true);
+if (window.testRunner)
+  testRunner.waitUntilDone();
+
 function domfunc(){
 var row= document.getElementById("row_par");
 var cell= document.getElementById("spacer");
- row.removeChild(cell);
+row.removeChild(cell);
+if (window.testRunner)
+  testRunner.notifyDone();
 }
 </script>
 
 </head>
 
-<body  onload="window.setTimeout('domfunc()',100)">
+<body  onload="domfunc()">
 <table border="1" id="t1">
 <caption id="c1">
 cap
