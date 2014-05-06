@@ -35,7 +35,7 @@ RenderMultiColumnFlowThread::RenderMultiColumnFlowThread()
     , m_columnWidth(0)
     , m_columnHeightAvailable(0)
     , m_inBalancingPass(false)
-    , m_needsRebalancing(false)
+    , m_needsColumnHeightsRecalculation(false)
 {
     setFlowThreadState(InsideInFlowThread);
 }
@@ -166,7 +166,7 @@ void RenderMultiColumnFlowThread::layoutColumns(bool relayoutChildren, SubtreeLa
         // are actually required to guarantee this. The calculation of implicit breaks needs to be
         // preceded by a proper layout pass, since it's layout that sets up content runs, and the
         // runs get deleted right after every pass.
-        m_needsRebalancing = shouldInvalidateRegions || needsLayout();
+        m_needsColumnHeightsRecalculation = shouldInvalidateRegions || needsLayout();
     }
 
     layoutIfNeeded();
@@ -205,7 +205,7 @@ bool RenderMultiColumnFlowThread::computeColumnCountAndWidth()
 
 bool RenderMultiColumnFlowThread::recalculateColumnHeights()
 {
-    if (!m_needsRebalancing)
+    if (!m_needsColumnHeightsRecalculation)
         return false;
 
     // Column heights may change here because of balancing. We may have to do multiple layout
@@ -215,7 +215,7 @@ bool RenderMultiColumnFlowThread::recalculateColumnHeights()
     // columns, unless we have a bug.
     bool needsRelayout = false;
     for (RenderMultiColumnSet* multicolSet = firstMultiColumnSet(); multicolSet; multicolSet = multicolSet->nextSiblingMultiColumnSet()) {
-        if (multicolSet->recalculateBalancedHeight(!m_inBalancingPass)) {
+        if (multicolSet->recalculateColumnHeight(!m_inBalancingPass)) {
             multicolSet->setChildNeedsLayout(MarkOnlyThis);
             needsRelayout = true;
         }

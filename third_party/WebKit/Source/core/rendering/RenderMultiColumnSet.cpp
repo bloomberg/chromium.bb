@@ -143,7 +143,7 @@ void RenderMultiColumnSet::distributeImplicitBreaks()
     }
 }
 
-LayoutUnit RenderMultiColumnSet::calculateBalancedHeight(bool initial) const
+LayoutUnit RenderMultiColumnSet::calculateColumnHeight(bool initial) const
 {
     if (initial) {
         // Start with the lowest imaginable column height.
@@ -191,14 +191,14 @@ void RenderMultiColumnSet::addForcedBreak(LayoutUnit offsetFromFirstPage)
         m_contentRuns.append(ContentRun(offsetFromFirstPage));
 }
 
-bool RenderMultiColumnSet::recalculateBalancedHeight(bool initial)
+bool RenderMultiColumnSet::recalculateColumnHeight(bool initial)
 {
     ASSERT(multiColumnFlowThread()->requiresBalancing());
 
     LayoutUnit oldColumnHeight = m_computedColumnHeight;
     if (initial)
         distributeImplicitBreaks();
-    LayoutUnit newColumnHeight = calculateBalancedHeight(initial);
+    LayoutUnit newColumnHeight = calculateColumnHeight(initial);
     setAndConstrainColumnHeight(newColumnHeight);
 
     // After having calculated an initial column height, the multicol container typically needs at

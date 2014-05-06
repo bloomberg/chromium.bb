@@ -88,10 +88,10 @@ public:
     void clearForcedBreaks();
     void addForcedBreak(LayoutUnit offsetFromFirstPage);
 
-    // (Re-)calculate the column height when contents are supposed to be balanced. If 'initial' is
-    // set, guess an initial column height; otherwise, stretch the column height a tad. Return true
-    // if column height changed and another layout pass is required.
-    bool recalculateBalancedHeight(bool initial);
+    // (Re-)calculate the column height if it's auto. If 'initial' is set, guess an initial column
+    // height; otherwise, stretch the column height a tad. Return true if column height changed and
+    // another layout pass is required.
+    bool recalculateColumnHeight(bool initial);
 
     // Record space shortage (the amount of space that would have been enough to prevent some
     // element from being moved to the next column) at a column break. The smallest amount of space
@@ -150,7 +150,7 @@ private:
     // and store the results. This is needed in order to balance the columns.
     void distributeImplicitBreaks();
 
-    LayoutUnit calculateBalancedHeight(bool initial) const;
+    LayoutUnit calculateColumnHeight(bool initial) const;
 
     unsigned m_computedColumnCount; // Used column count (the resulting 'N' from the pseudo-algorithm in the multicol spec)
     LayoutUnit m_computedColumnWidth; // Used column width (the resulting 'W' from the pseudo-algorithm in the multicol spec)

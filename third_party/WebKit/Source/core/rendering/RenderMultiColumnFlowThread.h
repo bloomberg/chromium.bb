@@ -104,7 +104,7 @@ private:
     LayoutUnit m_columnWidth; // The used value of column-width
     LayoutUnit m_columnHeightAvailable; // Total height available to columns, or 0 if auto.
     bool m_inBalancingPass; // Set when relayouting for column balancing.
-    bool m_needsRebalancing;
+    bool m_needsColumnHeightsRecalculation; // Set when we need to recalculate the column set heights after layout.
 };
 
 } // namespace WebCore
