@@ -217,7 +217,7 @@ void OriginChipView::Update(content::WebContents* web_contents) {
         host);
   }
   host_label_->SetText(host);
-  host_label_->SetTooltipText(host);
+  host_label_->SetTooltipText(base::UTF8ToUTF16(url.spec()));
   host_label_->SetElideBehavior(views::Label::NO_ELIDE);
 
   int icon = location_bar_view_->GetToolbarModel()->GetIconForSecurityLevel(
