@@ -5165,7 +5165,13 @@ debugHook ()
 
 static void defaultLogCallback(int level, const char *message)
 {
-  lou_logPrint(message);
+  char *tmpMsg = malloc(strlen(message)+1);
+  if (tmpMsg)
+    {
+      strcpy(tmpMsg, message);
+      lou_logPrint(message);
+      free(tmpMsg);
+    }
 }
 
 static logcallback logCallbackFunction = defaultLogCallback;
@@ -5208,7 +5214,7 @@ void EXPORT_CALL lou_log(logLevels level, const char *format, ...)
     }
 }
 
-void logWidecharBuf(int level, const char *msg, widechar *wbuf, int wlen)
+void logWidecharBuf(logLevels level, const char *msg, widechar *wbuf, int wlen)
 {
   /* When calculating output size:
    * Each wdiechar is represented in hex, thus needing two bytes for each
