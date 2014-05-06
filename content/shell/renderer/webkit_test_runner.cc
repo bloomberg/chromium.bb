@@ -666,7 +666,7 @@ void WebKitTestRunner::CaptureDumpPixels(const SkBitmap& compositor_snapshot) {
     // If the readback fails because we're not in compositing mode, do a
     // synchronous software readback here. This can go away when we have FCM
     // always.
-    if (!snapshot.info().fWidth || snapshot.info().fHeight)
+    if (!snapshot.info().fWidth || !snapshot.info().fHeight)
       CopyCanvasToBitmap(proxy()->capturePixels(), &snapshot);
   }
 
