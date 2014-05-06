@@ -149,18 +149,19 @@ DeltaUpdateOp* CreateDeltaUpdateOp(const base::DictionaryValue& command) {
   return CreateDeltaUpdateOp(operation);
 }
 
-DeltaUpdateOp::DeltaUpdateOp() : in_process_(false) {}
+DeltaUpdateOp::DeltaUpdateOp() : in_process_(false) {
+}
 
-DeltaUpdateOp::~DeltaUpdateOp() {}
+DeltaUpdateOp::~DeltaUpdateOp() {
+}
 
-void DeltaUpdateOp::Run(
-    const base::DictionaryValue* command_args,
-    const base::FilePath& input_dir,
-    const base::FilePath& unpack_dir,
-    ComponentInstaller* installer,
-    bool in_process,
-    const ComponentUnpacker::Callback& callback,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+void DeltaUpdateOp::Run(const base::DictionaryValue* command_args,
+                        const base::FilePath& input_dir,
+                        const base::FilePath& unpack_dir,
+                        ComponentInstaller* installer,
+                        bool in_process,
+                        const ComponentUnpacker::Callback& callback,
+                        scoped_refptr<base::SequencedTaskRunner> task_runner) {
   callback_ = callback;
   in_process_ = in_process;
   task_runner_ = task_runner;
@@ -171,10 +172,10 @@ void DeltaUpdateOp::Run(
     return;
   }
 
-  output_abs_path_ = unpack_dir.Append(
-      base::FilePath::FromUTF8Unsafe(output_rel_path));
-  ComponentUnpacker::Error parse_result = DoParseArguments(
-      command_args, input_dir, installer);
+  output_abs_path_ =
+      unpack_dir.Append(base::FilePath::FromUTF8Unsafe(output_rel_path));
+  ComponentUnpacker::Error parse_result =
+      DoParseArguments(command_args, input_dir, installer);
   if (parse_result != ComponentUnpacker::kNone) {
     DoneRunning(parse_result, 0);
     return;
@@ -231,9 +232,11 @@ scoped_refptr<base::SequencedTaskRunner> DeltaUpdateOp::GetTaskRunner() {
   return task_runner_;
 }
 
-DeltaUpdateOpCopy::DeltaUpdateOpCopy() {}
+DeltaUpdateOpCopy::DeltaUpdateOpCopy() {
+}
 
-DeltaUpdateOpCopy::~DeltaUpdateOpCopy() {}
+DeltaUpdateOpCopy::~DeltaUpdateOpCopy() {
+}
 
 ComponentUnpacker::Error DeltaUpdateOpCopy::DoParseArguments(
     const base::DictionaryValue* command_args,
@@ -256,9 +259,11 @@ void DeltaUpdateOpCopy::DoRun(const ComponentUnpacker::Callback& callback) {
     callback.Run(ComponentUnpacker::kNone, 0);
 }
 
-DeltaUpdateOpCreate::DeltaUpdateOpCreate() {}
+DeltaUpdateOpCreate::DeltaUpdateOpCreate() {
+}
 
-DeltaUpdateOpCreate::~DeltaUpdateOpCreate() {}
+DeltaUpdateOpCreate::~DeltaUpdateOpCreate() {
+}
 
 ComponentUnpacker::Error DeltaUpdateOpCreate::DoParseArguments(
     const base::DictionaryValue* command_args,
@@ -268,8 +273,8 @@ ComponentUnpacker::Error DeltaUpdateOpCreate::DoParseArguments(
   if (!command_args->GetString(kPatch, &patch_rel_path))
     return ComponentUnpacker::kDeltaBadCommands;
 
-  patch_abs_path_ = input_dir.Append(
-      base::FilePath::FromUTF8Unsafe(patch_rel_path));
+  patch_abs_path_ =
+      input_dir.Append(base::FilePath::FromUTF8Unsafe(patch_rel_path));
 
   return ComponentUnpacker::kNone;
 }
@@ -363,8 +368,8 @@ ComponentUnpacker::Error DeltaUpdateOpPatch::DoParseArguments(
   if (!installer->GetInstalledFile(input_rel_path, &input_abs_path_))
     return ComponentUnpacker::kDeltaMissingExistingFile;
 
-  patch_abs_path_ = input_dir.Append(
-      base::FilePath::FromUTF8Unsafe(patch_rel_path));
+  patch_abs_path_ =
+      input_dir.Append(base::FilePath::FromUTF8Unsafe(patch_rel_path));
 
   return ComponentUnpacker::kNone;
 }

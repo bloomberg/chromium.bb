@@ -68,8 +68,8 @@ static std::string GetAttribute(xmlNode* node, const char* attribute_name) {
   for (xmlAttr* attr = node->properties; attr != NULL; attr = attr->next) {
     if (!xmlStrcmp(attr->name, name) && attr->children &&
         attr->children->content) {
-      return std::string(reinterpret_cast<const char*>(
-          attr->children->content));
+      return std::string(
+          reinterpret_cast<const char*>(attr->children->content));
     }
   }
   return std::string();
@@ -77,7 +77,7 @@ static std::string GetAttribute(xmlNode* node, const char* attribute_name) {
 
 // This is used for the xml parser to report errors. This assumes the context
 // is a pointer to a std::string where the error message should be appended.
-static void XmlErrorFunc(void *context, const char *message, ...) {
+static void XmlErrorFunc(void* context, const char* message, ...) {
   va_list args;
   va_start(args, message);
   std::string* error = static_cast<std::string*>(context);
@@ -94,9 +94,7 @@ class ScopedXmlDocument {
       xmlFreeDoc(document_);
   }
 
-  xmlDocPtr get() {
-    return document_;
-  }
+  xmlDocPtr get() { return document_; }
 
  private:
   xmlDocPtr document_;
@@ -283,8 +281,8 @@ bool UpdateResponse::Parse(const std::string& response_xml) {
   ScopedXmlErrorFunc error_func(&xml_errors, &XmlErrorFunc);
 
   // Start up the xml parser with the manifest_xml contents.
-  ScopedXmlDocument document(xmlParseDoc(
-      reinterpret_cast<const xmlChar*>(response_xml.c_str())));
+  ScopedXmlDocument document(
+      xmlParseDoc(reinterpret_cast<const xmlChar*>(response_xml.c_str())));
   if (!document.get()) {
     ParseError("%s", xml_errors.c_str());
     return false;
@@ -303,8 +301,10 @@ bool UpdateResponse::Parse(const std::string& response_xml) {
 
   // Check for the response "protocol" attribute.
   if (GetAttribute(root, "protocol") != kExpectedResponseProtocol) {
-    ParseError("Missing/incorrect protocol on response tag "
-        "(expected '%s')", kExpectedResponseProtocol);
+    ParseError(
+        "Missing/incorrect protocol on response tag "
+        "(expected '%s')",
+        kExpectedResponseProtocol);
     return false;
   }
 
@@ -335,4 +335,3 @@ bool UpdateResponse::Parse(const std::string& response_xml) {
 }
 
 }  // namespace component_updater
-

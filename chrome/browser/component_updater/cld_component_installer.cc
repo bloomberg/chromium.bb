@@ -40,10 +40,10 @@ namespace component_updater {
 // The SHA256 of the SubjectPublicKeyInfo used to sign the extension.
 // The extension id is: dpedmmgabcgnikllifiidmijgoiihfgf
 const uint8 kPublicKeySHA256[32] = {
-  0x3f, 0x43, 0xcc, 0x60, 0x12, 0x6d, 0x8a, 0xbb,
-  0x85, 0x88, 0x3c, 0x89, 0x6e, 0x88, 0x75, 0x65,
-  0xb9, 0x46, 0x09, 0xe8, 0xca, 0x92, 0xdd, 0x82,
-  0x4e, 0x6d, 0x0e, 0xe6, 0x79, 0x8a, 0x87, 0xf5
+    0x3f, 0x43, 0xcc, 0x60, 0x12, 0x6d, 0x8a, 0xbb,
+    0x85, 0x88, 0x3c, 0x89, 0x6e, 0x88, 0x75, 0x65,
+    0xb9, 0x46, 0x09, 0xe8, 0xca, 0x92, 0xdd, 0x82,
+    0x4e, 0x6d, 0x0e, 0xe6, 0x79, 0x8a, 0x87, 0xf5
 };
 
 const char kCldManifestName[] = "CLD2 Data";
@@ -100,8 +100,8 @@ void CldComponentInstallerTraits::ComponentReady(
     const base::Version& version,
     const base::FilePath& path,
     scoped_ptr<base::DictionaryValue> manifest) {
-  VLOG(1) << "Component ready, version " << version.GetString()
-          << " in " << path.value();
+  VLOG(1) << "Component ready, version " << version.GetString() << " in "
+          << path.value();
   SetLatestCldDataFile(GetInstalledPath(path));
 }
 
@@ -136,8 +136,8 @@ void RegisterCldComponent(ComponentUpdateService* cus) {
   scoped_ptr<ComponentInstallerTraits> traits(
       new CldComponentInstallerTraits());
   // |cus| will take ownership of |installer| during installer->Register(cus).
-  DefaultComponentInstaller* installer
-      = new DefaultComponentInstaller(traits.Pass());
+  DefaultComponentInstaller* installer =
+      new DefaultComponentInstaller(traits.Pass());
   installer->Register(cus);
 }
 
@@ -152,7 +152,8 @@ void CldComponentInstallerTraits::SetLatestCldDataFile(
 bool GetLatestCldDataFile(base::FilePath* path) {
   base::AutoLock lock(cld_file_lock.Get());
   const base::FilePath cached = cld_file.Get();
-  if (cached.empty()) return false;
+  if (cached.empty())
+    return false;
   *path = cached;
   return true;
 }

@@ -25,8 +25,10 @@ struct CrxUpdateItem;
 
 class UpdateChecker {
  public:
-  typedef base::Callback<void (int error, const std::string& error_message,
-      const UpdateResponse::Results& results)> UpdateCheckCallback;
+  typedef base::Callback<void(int error,
+                              const std::string& error_message,
+                              const UpdateResponse::Results& results)>
+      UpdateCheckCallback;
 
   virtual ~UpdateChecker() {}
 
@@ -52,4 +54,3 @@ class UpdateChecker {
 }  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_UPDATE_CHECKER_H_
-

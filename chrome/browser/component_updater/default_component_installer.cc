@@ -89,7 +89,8 @@ bool DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
   scoped_ptr<base::DictionaryValue> manifest_copy(
       current_manifest_->DeepCopy());
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+      content::BrowserThread::UI,
+      FROM_HERE,
       base::Bind(&ComponentInstallerTraits::ComponentReady,
                  base::Unretained(installer_traits_.get()),
                  current_version_,
@@ -104,17 +105,15 @@ bool DefaultComponentInstaller::GetInstalledFile(
   if (current_version_.Equals(base::Version(kNullVersion)))
     return false;  // No component has been installed yet.
 
-  *installed_file =
-      installer_traits_->GetBaseDirectory()
-          .AppendASCII(current_version_.GetString()).AppendASCII(file);
+  *installed_file = installer_traits_->GetBaseDirectory()
+                        .AppendASCII(current_version_.GetString())
+                        .AppendASCII(file);
   return true;
 }
 
-void DefaultComponentInstaller::StartRegistration(
-    ComponentUpdateService* cus) {
+void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
   base::FilePath base_dir = installer_traits_->GetBaseDirectory();
-  if (!base::PathExists(base_dir) &&
-      !base::CreateDirectory(base_dir)) {
+  if (!base::PathExists(base_dir) && !base::CreateDirectory(base_dir)) {
     NOTREACHED() << "Could not create the base directory for "
                  << installer_traits_->GetName() << " ("
                  << base_dir.MaybeAsASCII() << ").";
@@ -160,7 +159,7 @@ void DefaultComponentInstaller::StartRegistration(
     // FinishRegistration().
     base::ReadFileToString(latest_dir.AppendASCII("manifest.fingerprint"),
                            &current_fingerprint_);
-    current_manifest_= ReadManifest(latest_dir);
+    current_manifest_ = ReadManifest(latest_dir);
     if (!current_manifest_) {
       DLOG(ERROR) << "Failed to read manifest for "
                   << installer_traits_->GetName() << " ("
@@ -172,12 +171,14 @@ void DefaultComponentInstaller::StartRegistration(
   // Remove older versions of the component. None should be in use during
   // browser startup.
   for (std::vector<base::FilePath>::iterator iter = older_dirs.begin();
-       iter != older_dirs.end(); ++iter) {
+       iter != older_dirs.end();
+       ++iter) {
     base::DeleteFile(*iter, true);
   }
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+      content::BrowserThread::UI,
+      FROM_HERE,
       base::Bind(&DefaultComponentInstaller::FinishRegistration,
                  base::Unretained(this),
                  cus));
@@ -211,9 +212,7 @@ void DefaultComponentInstaller::FinishRegistration(
     scoped_ptr<base::DictionaryValue> manifest_copy(
         current_manifest_->DeepCopy());
     installer_traits_->ComponentReady(
-        current_version_,
-        GetInstallDirectory(),
-        manifest_copy.Pass());
+        current_version_, GetInstallDirectory(), manifest_copy.Pass());
   }
 }
 

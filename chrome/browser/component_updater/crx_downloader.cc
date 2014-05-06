@@ -36,7 +36,7 @@ CrxDownloader* CrxDownloader::Create(
       new UrlFetcherDownloader(scoped_ptr<CrxDownloader>().Pass(),
                                context_getter,
                                task_runner));
-#if defined (OS_WIN)
+#if defined(OS_WIN)
   if (is_background_download) {
     return new BackgroundDownloader(url_fetcher_downloader.Pass(),
                                     context_getter,
@@ -70,9 +70,8 @@ CrxDownloader::download_metrics() const {
     return download_metrics_;
 
   std::vector<DownloadMetrics> retval(successor_->download_metrics());
-  retval.insert(retval.begin(),
-                download_metrics_.begin(),
-                download_metrics_.end());
+  retval.insert(
+      retval.begin(), download_metrics_.begin(), download_metrics_.end());
   return retval;
 }
 

@@ -41,6 +41,7 @@ class PingSender : public net::URLFetcherDelegate {
   void SendPing(const GURL& ping_url,
                 net::URLRequestContextGetter* url_request_context_getter,
                 const CrxUpdateItem* item);
+
  private:
   virtual ~PingSender();
 
@@ -57,9 +58,11 @@ class PingSender : public net::URLFetcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(PingSender);
 };
 
-PingSender::PingSender() {}
+PingSender::PingSender() {
+}
 
-PingSender::~PingSender() {}
+PingSender::~PingSender() {
+}
 
 void PingSender::OnURLFetchComplete(const net::URLFetcher* source) {
   delete this;
@@ -74,10 +77,8 @@ void PingSender::SendPing(
   if (!ping_url.is_valid())
     return;
 
-  url_fetcher_.reset(SendProtocolRequest(ping_url,
-                                         BuildPing(item),
-                                         this,
-                                         url_request_context_getter));
+  url_fetcher_.reset(SendProtocolRequest(
+      ping_url, BuildPing(item), this, url_request_context_getter));
 }
 
 // Builds a ping message for the specified update item.
@@ -89,11 +90,11 @@ std::string PingSender::BuildPing(const CrxUpdateItem* item) {
       "</app>";
   const std::string app_element(base::StringPrintf(
       app_element_format,
-      item->id.c_str(),                                     // "appid"
-      item->previous_version.GetString().c_str(),           // "version"
-      item->next_version.GetString().c_str(),               // "nextversion"
-      BuildUpdateCompleteEventElement(item).c_str(),        // update event
-      BuildDownloadCompleteEventElements(item).c_str()));   // download events
+      item->id.c_str(),                                    // "appid"
+      item->previous_version.GetString().c_str(),          // "version"
+      item->next_version.GetString().c_str(),              // "nextversion"
+      BuildUpdateCompleteEventElement(item).c_str(),       // update event
+      BuildDownloadCompleteEventElements(item).c_str()));  // download events
 
   return BuildProtocolRequest(app_element, "");
 }
@@ -109,23 +110,28 @@ std::string PingSender::BuildDownloadCompleteEventElements(
     std::string event("<event eventtype=\"14\"");
     StringAppendF(&event, " eventresult=\"%d\"", metrics.error == 0);
     StringAppendF(&event,
-                  " downloader=\"%s\"", DownloaderToString(metrics.downloader));
-    if (metrics.error)
+                  " downloader=\"%s\"",
+                  DownloaderToString(metrics.downloader));
+    if (metrics.error) {
       StringAppendF(&event, " errorcode=\"%d\"", metrics.error);
+    }
     StringAppendF(&event, " url=\"%s\"", metrics.url.spec().c_str());
 
     // -1 means that the  byte counts are not known.
     if (metrics.downloaded_bytes != -1) {
-      StringAppendF(&event, " downloaded=\"%s\"",
+      StringAppendF(&event,
+                    " downloaded=\"%s\"",
                     base::Int64ToString(metrics.downloaded_bytes).c_str());
     }
     if (metrics.total_bytes != -1) {
-      StringAppendF(&event, " total=\"%s\"",
+      StringAppendF(&event,
+                    " total=\"%s\"",
                     base::Int64ToString(metrics.total_bytes).c_str());
     }
 
     if (metrics.download_time_ms) {
-      StringAppendF(&event, " download_time_ms=\"%s\"",
+      StringAppendF(&event,
+                    " download_time_ms=\"%s\"",
                     base::Uint64ToString(metrics.download_time_ms).c_str());
     }
     StringAppendF(&event, "/>");
@@ -154,16 +160,15 @@ std::string PingSender::BuildUpdateCompleteEventElement(
     StringAppendF(&ping_event, " extracode1=\"%d\"", item->extra_code1);
   if (HasDiffUpdate(item))
     StringAppendF(&ping_event, " diffresult=\"%d\"", !item->diff_update_failed);
-  if (item->diff_error_category)
-    StringAppendF(&ping_event,
-                  " differrorcat=\"%d\"",
-                  item->diff_error_category);
+  if (item->diff_error_category) {
+    StringAppendF(
+        &ping_event, " differrorcat=\"%d\"", item->diff_error_category);
+  }
   if (item->diff_error_code)
     StringAppendF(&ping_event, " differrorcode=\"%d\"", item->diff_error_code);
   if (item->diff_extra_code1) {
-    StringAppendF(&ping_event,
-                  " diffextracode1=\"%d\"",
-                  item->diff_extra_code1);
+    StringAppendF(
+        &ping_event, " diffextracode1=\"%d\"", item->diff_extra_code1);
   }
   if (!item->previous_fp.empty())
     StringAppendF(&ping_event, " previousfp=\"%s\"", item->previous_fp.c_str());

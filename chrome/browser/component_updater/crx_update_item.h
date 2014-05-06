@@ -120,9 +120,8 @@ struct CrxUpdateItem {
    public:
     explicit FindById(const std::string& id) : id_(id) {}
 
-    bool operator() (CrxUpdateItem* item) const {
-      return (item->id == id_);
-    }
+    bool operator()(CrxUpdateItem* item) const { return item->id == id_; }
+
    private:
     const std::string& id_;
   };

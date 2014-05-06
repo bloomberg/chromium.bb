@@ -32,8 +32,9 @@ base::ListValue* ReadCommands(const base::FilePath& unpack_path) {
   JSONFileValueSerializer serializer(commands);
   scoped_ptr<base::Value> root(serializer.Deserialize(NULL, NULL));
 
-  return (root.get() && root->IsType(base::Value::TYPE_LIST)) ?
-      static_cast<base::ListValue*>(root.release()) : NULL;
+  return (root.get() && root->IsType(base::Value::TYPE_LIST))
+             ? static_cast<base::ListValue*>(root.release())
+             : NULL;
 }
 
 }  // namespace
@@ -87,15 +88,14 @@ void ComponentPatcher::PatchNextFile() {
     DonePatching(ComponentUnpacker::kDeltaUnsupportedCommand, 0);
     return;
   }
-  current_operation_->Run(
-      command_args,
-      input_dir_,
-      unpack_dir_,
-      installer_,
-      in_process_,
-      base::Bind(&ComponentPatcher::DonePatchingFile,
-                 scoped_refptr<ComponentPatcher>(this)),
-      task_runner_);
+  current_operation_->Run(command_args,
+                          input_dir_,
+                          unpack_dir_,
+                          installer_,
+                          in_process_,
+                          base::Bind(&ComponentPatcher::DonePatchingFile,
+                                     scoped_refptr<ComponentPatcher>(this)),
+                          task_runner_);
 }
 
 void ComponentPatcher::DonePatchingFile(ComponentUnpacker::Error error,
@@ -111,9 +111,8 @@ void ComponentPatcher::DonePatchingFile(ComponentUnpacker::Error error,
 void ComponentPatcher::DonePatching(ComponentUnpacker::Error error,
                                     int extended_error) {
   current_operation_ = NULL;
-  task_runner_->PostTask(FROM_HERE, base::Bind(callback_,
-                                               error,
-                                               extended_error));
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(callback_, error, extended_error));
   callback_.Reset();
 }
 

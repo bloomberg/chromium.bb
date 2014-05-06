@@ -61,8 +61,10 @@ class CRXValidator {
     crypto::SignatureVerifier verifier;
     if (!verifier.VerifyInit(extension_misc::kSignatureAlgorithm,
                              sizeof(extension_misc::kSignatureAlgorithm),
-                             &signature[0], signature.size(),
-                             &key[0], key.size())) {
+                             &signature[0],
+                             signature.size(),
+                             &key[0],
+                             key.size())) {
       // Signature verification initialization failed. This is most likely
       // caused by a public key in the wrong format (should encode algorithm).
       return;
@@ -129,7 +131,7 @@ scoped_ptr<base::DictionaryValue> ReadManifest(
   if (!root->IsType(base::Value::TYPE_DICTIONARY))
     return scoped_ptr<base::DictionaryValue>();
   return scoped_ptr<base::DictionaryValue>(
-      static_cast<base::DictionaryValue*>(root.release())).Pass();
+             static_cast<base::DictionaryValue*>(root.release())).Pass();
 }
 
 bool ComponentUnpacker::UnpackInternal() {
@@ -197,7 +199,6 @@ bool ComponentUnpacker::Unzip() {
   VLOG(1) << "Unpacked successfully";
   return true;
 }
-
 
 bool ComponentUnpacker::BeginPatching() {
   if (is_delta_) {  // Package is a diff package.

@@ -25,6 +25,7 @@ class PingManager {
   ~PingManager();
 
   void OnUpdateComplete(const CrxUpdateItem* item);
+
  private:
   const GURL ping_url_;
 
@@ -37,4 +38,3 @@ class PingManager {
 }  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_UPDATER_PING_MANAGER_H_
-

@@ -58,7 +58,7 @@ class ReadOnlyTestInstaller : public TestInstaller {
 // A VersionedTestInstaller is an installer that installs files into versioned
 // directories (e.g. somedir/25.23.89.141/<files>).
 class VersionedTestInstaller : public TestInstaller {
- public :
+ public:
   explicit VersionedTestInstaller();
 
   virtual ~VersionedTestInstaller();

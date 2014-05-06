@@ -48,9 +48,7 @@ class UpdateCheckerTest : public testing::Test {
                            const std::string& error_message,
                            const UpdateResponse::Results& results);
 
-  net::URLRequestContextGetter* context() {
-    return context_.get();
-  }
+  net::URLRequestContextGetter* context() { return context_.get(); }
 
  protected:
   void Quit();
@@ -62,7 +60,7 @@ class UpdateCheckerTest : public testing::Test {
   scoped_ptr<UpdateChecker> update_checker_;
 
   scoped_ptr<InterceptorFactory> interceptor_factory_;
-  URLRequestPostInterceptor* post_interceptor_;   // Owned by the factory.
+  URLRequestPostInterceptor* post_interceptor_;  // Owned by the factory.
 
   int error_;
   std::string error_message_;
@@ -161,14 +159,14 @@ CrxUpdateItem UpdateCheckerTest::BuildCrxUpdateItem() {
 }
 
 TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
-  EXPECT_TRUE(post_interceptor_->ExpectRequest(new PartialMatch(
-      "updatecheck"), test_file("updatecheck_reply_1.xml")));
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
 
-  update_checker_ = UpdateChecker::Create(
-      GURL("https://localhost2/update2"),
-      context(),
-      base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
-                 base::Unretained(this))).Pass();
+  update_checker_ =
+      UpdateChecker::Create(GURL("https://localhost2/update2"),
+                            context(),
+                            base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                                       base::Unretained(this))).Pass();
 
   CrxUpdateItem item(BuildCrxUpdateItem());
   std::vector<CrxUpdateItem*> items_to_check;
@@ -184,11 +182,15 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
       << post_interceptor_->GetRequestsAsString();
 
   // Sanity check the request.
-  EXPECT_NE(string::npos, post_interceptor_->GetRequests()[0].find(
-      "request protocol=\"3.0\" extra=\"params\""));
-  EXPECT_NE(string::npos, post_interceptor_->GetRequests()[0].find(
-      "app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
-      "<updatecheck /><packages><package fp=\"fp1\"/></packages></app>"));
+  EXPECT_NE(
+      string::npos,
+      post_interceptor_->GetRequests()[0].find(
+          "request protocol=\"3.0\" extra=\"params\""));
+  EXPECT_NE(
+      string::npos,
+      post_interceptor_->GetRequests()[0].find(
+          "app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
+          "<updatecheck /><packages><package fp=\"fp1\"/></packages></app>"));
 
   // Sanity check the arguments of the callback after parsing.
   EXPECT_EQ(0, error_);
@@ -207,11 +209,11 @@ TEST_F(UpdateCheckerTest, UpdateNetworkError) {
   EXPECT_FALSE(post_interceptor_->ExpectRequest(request_matcher.get(),
                                                 test_file("no such file")));
 
-  update_checker_ = UpdateChecker::Create(
-      GURL("https://localhost2/update2"),
-      context(),
-      base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
-                 base::Unretained(this))).Pass();
+  update_checker_ =
+      UpdateChecker::Create(GURL("https://localhost2/update2"),
+                            context(),
+                            base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                                       base::Unretained(this))).Pass();
 
   CrxUpdateItem item(BuildCrxUpdateItem());
   std::vector<CrxUpdateItem*> items_to_check;

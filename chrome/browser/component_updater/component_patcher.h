@@ -24,7 +24,6 @@
 // fingerprint of the installed files, to later identify the existing files to
 // the server so that a proper differential update can be provided next cycle.
 
-
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_PATCHER_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_PATCHER_H_
 

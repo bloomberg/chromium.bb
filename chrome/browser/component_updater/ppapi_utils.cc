@@ -112,26 +112,26 @@
 #endif
 
 bool IsSupportedPepperInterface(const char* name) {
-  // TODO(brettw) put these in a hash map for better performance.
-  #define PROXIED_IFACE(iface_str, iface_struct) \
-      if (strcmp(name, iface_str) == 0) \
-        return true;
+// TODO(brettw) put these in a hash map for better performance.
+#define PROXIED_IFACE(iface_str, iface_struct) \
+  if (strcmp(name, iface_str) == 0)            \
+    return true;
 
-  #include "ppapi/thunk/interfaces_ppb_private.h"
-  #include "ppapi/thunk/interfaces_ppb_private_flash.h"
-  #include "ppapi/thunk/interfaces_ppb_private_no_permissions.h"
-  #include "ppapi/thunk/interfaces_ppb_public_dev.h"
-  #include "ppapi/thunk/interfaces_ppb_public_dev_channel.h"
-  #include "ppapi/thunk/interfaces_ppb_public_stable.h"
+#include "ppapi/thunk/interfaces_ppb_private.h"
+#include "ppapi/thunk/interfaces_ppb_private_flash.h"
+#include "ppapi/thunk/interfaces_ppb_private_no_permissions.h"
+#include "ppapi/thunk/interfaces_ppb_public_dev.h"
+#include "ppapi/thunk/interfaces_ppb_public_dev_channel.h"
+#include "ppapi/thunk/interfaces_ppb_public_stable.h"
 
-  #undef PROXIED_IFACE
+#undef PROXIED_IFACE
 
-  #define LEGACY_IFACE(iface_str, dummy) \
-      if (strcmp(name, iface_str) == 0) \
-        return true;
+#define LEGACY_IFACE(iface_str, dummy) \
+  if (strcmp(name, iface_str) == 0)    \
+    return true;
 
-  #include "ppapi/thunk/interfaces_legacy.h"
+#include "ppapi/thunk/interfaces_legacy.h"
 
-  #undef LEGACY_IFACE
+#undef LEGACY_IFACE
   return false;
 }

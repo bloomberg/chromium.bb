@@ -110,8 +110,8 @@ bool GetPepperFlashDirectory(base::FilePath* latest_dir,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::FilePath base_dir = GetPepperFlashBaseDirectory();
   bool found = false;
-  base::FileEnumerator
-      file_enumerator(base_dir, false, base::FileEnumerator::DIRECTORIES);
+  base::FileEnumerator file_enumerator(
+      base_dir, false, base::FileEnumerator::DIRECTORIES);
   for (base::FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
     Version version(path.BaseName().MaybeAsASCII());
@@ -227,7 +227,10 @@ bool MakePepperFlashPluginInfo(const base::FilePath& flash_path,
 
   // The description is like "Shockwave Flash 10.2 r154".
   plugin_info->description = base::StringPrintf("%s %d.%d r%d",
-      content::kFlashPluginName, ver_nums[0], ver_nums[1], ver_nums[2]);
+                                                content::kFlashPluginName,
+                                                ver_nums[0],
+                                                ver_nums[1],
+                                                ver_nums[2]);
   if (is_debugger) {
     plugin_info->description += " Debug";
   }
@@ -349,7 +352,8 @@ class PepperFlashComponentInstaller : public ComponentInstaller {
 };
 
 PepperFlashComponentInstaller::PepperFlashComponentInstaller(
-    const Version& version) : current_version_(version) {
+    const Version& version)
+    : current_version_(version) {
   DCHECK(version.IsValid());
 }
 
@@ -365,8 +369,7 @@ bool PepperFlashComponentInstaller::Install(
     return false;
   if (current_version_.CompareTo(version) > 0)
     return false;
-  if (!base::PathExists(unpack_path.Append(
-          chrome::kPepperFlashPluginFilename)))
+  if (!base::PathExists(unpack_path.Append(chrome::kPepperFlashPluginFilename)))
     return false;
   // Passed the basic tests. Time to install it.
   base::FilePath path =
@@ -388,7 +391,8 @@ bool PepperFlashComponentInstaller::Install(
 }
 
 bool PepperFlashComponentInstaller::GetInstalledFile(
-    const std::string& file, base::FilePath* installed_file) {
+    const std::string& file,
+    base::FilePath* installed_file) {
   return false;
 }
 
@@ -472,12 +476,14 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
   }
 
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+      BrowserThread::UI,
+      FROM_HERE,
       base::Bind(&FinishPepperFlashUpdateRegistration, cus, version));
 
   // Remove older versions of Pepper Flash.
   for (std::vector<base::FilePath>::iterator iter = older_dirs.begin();
-       iter != older_dirs.end(); ++iter) {
+       iter != older_dirs.end();
+       ++iter) {
     base::DeleteFile(*iter, true);
   }
 
@@ -498,15 +504,16 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
 }  // namespace
 
 void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
-  #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_LINUX)
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_LINUX)
   // Component updated flash supersedes bundled flash therefore if that one
   // is disabled then this one should never install.
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kDisableBundledPpapiFlash))
     return;
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::FILE,
+                          FROM_HERE,
                           base::Bind(&StartPepperFlashUpdateRegistration, cus));
-  #endif
+#endif
 }
 
 }  // namespace component_updater

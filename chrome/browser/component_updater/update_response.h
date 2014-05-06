@@ -132,4 +132,3 @@ class UpdateResponse {
 }  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_UPDATE_RESPONSE_H_
-

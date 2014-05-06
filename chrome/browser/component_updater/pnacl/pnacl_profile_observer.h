@@ -20,10 +20,9 @@ class PnaclProfileObserver : public content::NotificationObserver {
   explicit PnaclProfileObserver(PnaclComponentInstaller* installer);
   virtual ~PnaclProfileObserver();
 
-  virtual void Observe(
-      int type,
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) OVERRIDE;
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NotificationRegistrar registrar_;

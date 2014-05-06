@@ -37,7 +37,7 @@ std::string BuildProtocolRequest(const std::string& request_body,
       "<request protocol=\"3.0\" ");
 
   if (!additional_attributes.empty())
-     base::StringAppendF(&request, "%s ", additional_attributes.c_str());
+    base::StringAppendF(&request, "%s ", additional_attributes.c_str());
 
   // Chrome version and platform information.
   base::StringAppendF(
@@ -56,13 +56,12 @@ std::string BuildProtocolRequest(const std::string& request_body,
       chrome::OmahaQueryParams::GetArch(),           // "arch"
       chrome::OmahaQueryParams::GetNaclArch());      // "nacl_arch"
 #if defined(OS_WIN)
-    const bool is_wow64(
-        base::win::OSInfo::GetInstance()->wow64_status() ==
-        base::win::OSInfo::WOW64_ENABLED);
-    if (is_wow64)
-      base::StringAppendF(&request, " wow64=\"1\"");
+  const bool is_wow64(base::win::OSInfo::GetInstance()->wow64_status() ==
+                      base::win::OSInfo::WOW64_ENABLED);
+  if (is_wow64)
+    base::StringAppendF(&request, " wow64=\"1\"");
 #endif
-    base::StringAppendF(&request, ">");
+  base::StringAppendF(&request, ">");
 
   // OS version and platform information.
   base::StringAppendF(
@@ -83,11 +82,8 @@ net::URLFetcher* SendProtocolRequest(
     const std::string& protocol_request,
     net::URLFetcherDelegate* url_fetcher_delegate,
     net::URLRequestContextGetter* url_request_context_getter) {
-  net::URLFetcher* url_fetcher(
-      net::URLFetcher::Create(0,
-                              url,
-                              net::URLFetcher::POST,
-                              url_fetcher_delegate));
+  net::URLFetcher* url_fetcher(net::URLFetcher::Create(
+      0, url, net::URLFetcher::POST, url_fetcher_delegate));
 
   url_fetcher->SetUploadData("application/xml", protocol_request);
   url_fetcher->SetRequestContext(url_request_context_getter);
@@ -156,9 +152,9 @@ std::string HexStringToID(const std::string& hexstr) {
   std::string id;
   for (size_t i = 0; i < hexstr.size(); ++i) {
     int val = 0;
-    if (base::HexStringToInt(base::StringPiece(hexstr.begin() + i,
-                                               hexstr.begin() + i + 1),
-                             &val)) {
+    if (base::HexStringToInt(
+            base::StringPiece(hexstr.begin() + i, hexstr.begin() + i + 1),
+            &val)) {
       id.append(1, val + 'a');
     } else {
       id.append(1, 'a');
@@ -169,8 +165,8 @@ std::string HexStringToID(const std::string& hexstr) {
 }
 
 std::string GetCrxComponentID(const CrxComponent& component) {
-  return HexStringToID(StringToLowerASCII(base::HexEncode(&component.pk_hash[0],
-                       component.pk_hash.size()/2)));
+  return HexStringToID(StringToLowerASCII(
+      base::HexEncode(&component.pk_hash[0], component.pk_hash.size() / 2)));
 }
 
 }  // namespace component_updater

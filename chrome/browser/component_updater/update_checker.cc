@@ -61,9 +61,7 @@ std::string BuildUpdateCheckRequest(const std::vector<CrxUpdateItem*>& items,
   return BuildProtocolRequest(app_elements, additional_attributes);
 }
 
-class UpdateCheckerImpl
-    : public UpdateChecker,
-      public net::URLFetcherDelegate {
+class UpdateCheckerImpl : public UpdateChecker, public net::URLFetcherDelegate {
  public:
   UpdateCheckerImpl(const GURL& url,
                     net::URLRequestContextGetter* url_request_context_getter,
@@ -117,13 +115,13 @@ bool UpdateCheckerImpl::CheckForUpdates(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (url_fetcher_)
-    return false;     // Another fetch is in progress.
+    return false;  // Another fetch is in progress.
 
   url_fetcher_.reset(SendProtocolRequest(
-    url_,
-    BuildUpdateCheckRequest(items_to_check, additional_attributes),
-    this,
-    url_request_context_getter_));
+      url_,
+      BuildUpdateCheckRequest(items_to_check, additional_attributes),
+      this,
+      url_request_context_getter_));
 
   return true;
 }
@@ -155,4 +153,3 @@ void UpdateCheckerImpl::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 }  // namespace component_updater
-

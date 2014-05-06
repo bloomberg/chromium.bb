@@ -11,10 +11,10 @@
 
 namespace component_updater {
 
-PnaclProfileObserver::PnaclProfileObserver(
-    PnaclComponentInstaller* installer) : pnacl_installer_(installer) {
-  // We only need to observe NOTIFICATION_LOGIN_USER_CHANGED for ChromeOS
-  // (and it's only defined for ChromeOS).
+PnaclProfileObserver::PnaclProfileObserver(PnaclComponentInstaller* installer)
+    : pnacl_installer_(installer) {
+// We only need to observe NOTIFICATION_LOGIN_USER_CHANGED for ChromeOS
+// (and it's only defined for ChromeOS).
 #if defined(OS_CHROMEOS)
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_USER_CHANGED,
@@ -22,7 +22,8 @@ PnaclProfileObserver::PnaclProfileObserver(
 #endif
 }
 
-PnaclProfileObserver::~PnaclProfileObserver() { }
+PnaclProfileObserver::~PnaclProfileObserver() {
+}
 
 void PnaclProfileObserver::Observe(
     int type,

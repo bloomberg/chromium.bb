@@ -112,7 +112,7 @@ void CrxDownloaderTest::SetUp() {
   num_progress_calls_ = 0;
   download_progress_result_ = CrxDownloader::Result();
   crx_downloader_.reset(CrxDownloader::Create(
-      false,    // Do not use the background downloader in these tests.
+      false,  // Do not use the background downloader in these tests.
       context_.get(),
       blocking_task_runner_));
   crx_downloader_->set_progress_callback(progress_callback_);
@@ -175,7 +175,7 @@ TEST_F(CrxDownloaderTest, NoUrl) {
 // Tests that downloading from one url is successful.
 TEST_F(CrxDownloaderTest, OneUrl) {
   const GURL expected_crx_url =
-    GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
+      GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
 
   const base::FilePath test_file(MakeTestFilePath(kTestFileName));
   GetInterceptor interceptor;
@@ -210,7 +210,7 @@ TEST_F(CrxDownloaderTest, OneUrl) {
 #endif
 TEST_F(CrxDownloaderTest, MAYBE_TwoUrls) {
   const GURL expected_crx_url =
-    GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
+      GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
 
   const base::FilePath test_file(MakeTestFilePath(kTestFileName));
   GetInterceptor interceptor;
@@ -242,7 +242,7 @@ TEST_F(CrxDownloaderTest, MAYBE_TwoUrls) {
 // Tests that an invalid host results in a download error.
 TEST_F(CrxDownloaderTest, OneUrl_InvalidHost) {
   const GURL expected_crx_url =
-    GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
+      GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
 
   const base::FilePath test_file(MakeTestFilePath(kTestFileName));
   GetInterceptor interceptor;
@@ -265,15 +265,14 @@ TEST_F(CrxDownloaderTest, OneUrl_InvalidHost) {
 // Tests that an invalid path results in a download error.
 TEST_F(CrxDownloaderTest, OneUrl_InvalidPath) {
   const GURL expected_crx_url =
-    GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
+      GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
 
   const base::FilePath test_file(MakeTestFilePath(kTestFileName));
   GetInterceptor interceptor;
   interceptor.SetResponse(expected_crx_url, test_file);
 
-  crx_downloader_->StartDownloadFromUrl(
-      GURL("http://localhost/no/such/file"),
-      callback_);
+  crx_downloader_->StartDownloadFromUrl(GURL("http://localhost/no/such/file"),
+                                        callback_);
   RunThreads();
 
   EXPECT_EQ(0, interceptor.GetHitCount());
@@ -293,7 +292,7 @@ TEST_F(CrxDownloaderTest, OneUrl_InvalidPath) {
 #endif
 TEST_F(CrxDownloaderTest, MAYBE_TwoUrls_FirstInvalid) {
   const GURL expected_crx_url =
-    GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
+      GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
 
   const base::FilePath test_file(MakeTestFilePath(kTestFileName));
   GetInterceptor interceptor;
@@ -326,7 +325,7 @@ TEST_F(CrxDownloaderTest, MAYBE_TwoUrls_FirstInvalid) {
 // second bad url does not have a side-effect.
 TEST_F(CrxDownloaderTest, TwoUrls_SecondInvalid) {
   const GURL expected_crx_url =
-    GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
+      GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
 
   const base::FilePath test_file(MakeTestFilePath(kTestFileName));
   GetInterceptor interceptor;
@@ -358,7 +357,7 @@ TEST_F(CrxDownloaderTest, TwoUrls_SecondInvalid) {
 // Tests that the download fails if both urls are bad.
 TEST_F(CrxDownloaderTest, TwoUrls_BothInvalid) {
   const GURL expected_crx_url =
-    GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
+      GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
 
   const base::FilePath test_file(MakeTestFilePath(kTestFileName));
   GetInterceptor interceptor;

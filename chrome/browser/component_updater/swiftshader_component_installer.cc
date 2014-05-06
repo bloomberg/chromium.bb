@@ -69,8 +69,8 @@ bool GetLatestSwiftShaderDirectory(base::FilePath* result,
                                    std::vector<base::FilePath>* older_dirs) {
   base::FilePath base_dir = GetSwiftShaderBaseDirectory();
   bool found = false;
-  base::FileEnumerator
-      file_enumerator(base_dir, false, base::FileEnumerator::DIRECTORIES);
+  base::FileEnumerator file_enumerator(
+      base_dir, false, base::FileEnumerator::DIRECTORIES);
   for (base::FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
     Version version(path.BaseName().MaybeAsASCII());
@@ -80,7 +80,7 @@ bool GetLatestSwiftShaderDirectory(base::FilePath* result,
         base::PathExists(path.Append(kSwiftShaderEglName)) &&
         base::PathExists(path.Append(kSwiftShaderGlesName))) {
       if (found && older_dirs)
-          older_dirs->push_back(*result);
+        older_dirs->push_back(*result);
       *latest = version;
       *result = path;
       found = true;
@@ -116,7 +116,8 @@ class SwiftShaderComponentInstaller : public ComponentInstaller {
 };
 
 SwiftShaderComponentInstaller::SwiftShaderComponentInstaller(
-    const Version& version) : current_version_(version) {
+    const Version& version)
+    : current_version_(version) {
   DCHECK(version.IsValid());
 }
 
@@ -150,13 +151,15 @@ bool SwiftShaderComponentInstaller::Install(
     return false;
   // Installation is done. Now tell the rest of chrome.
   current_version_ = version;
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&RegisterSwiftShaderWithChrome, path));
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&RegisterSwiftShaderWithChrome, path));
   return true;
 }
 
 bool SwiftShaderComponentInstaller::GetInstalledFile(
-    const std::string& file, base::FilePath* installed_file) {
+    const std::string& file,
+    base::FilePath* installed_file) {
   return false;
 }
 
@@ -184,8 +187,7 @@ class UpdateChecker : public content::GpuDataManagerObserver {
   ComponentUpdateService* cus_;
 };
 
-UpdateChecker::UpdateChecker(ComponentUpdateService* cus)
-  : cus_(cus) {
+UpdateChecker::UpdateChecker(ComponentUpdateService* cus) : cus_(cus) {
 }
 
 void UpdateChecker::OnGpuInfoUpdate() {
@@ -201,7 +203,9 @@ void UpdateChecker::OnGpuInfoUpdate() {
     Version version(kNullVersion);
     GetLatestSwiftShaderDirectory(&path, &version, NULL);
 
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
         base::Bind(&FinishSwiftShaderUpdateRegistration, cus_, version));
   }
 }
@@ -223,8 +227,9 @@ void RegisterSwiftShaderPath(ComponentUpdateService* cus) {
   Version version(kNullVersion);
   std::vector<base::FilePath> older_dirs;
   if (GetLatestSwiftShaderDirectory(&path, &version, &older_dirs))
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&RegisterSwiftShaderWithChrome, path));
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(&RegisterSwiftShaderWithChrome, path));
 
   UpdateChecker* update_checker = new UpdateChecker(cus);
   GpuDataManager::GetInstance()->AddObserver(update_checker);
@@ -234,7 +239,8 @@ void RegisterSwiftShaderPath(ComponentUpdateService* cus) {
 
   // Remove older versions of SwiftShader.
   for (std::vector<base::FilePath>::iterator iter = older_dirs.begin();
-       iter != older_dirs.end(); ++iter) {
+       iter != older_dirs.end();
+       ++iter) {
     base::DeleteFile(*iter, true);
   }
 }
@@ -249,8 +255,9 @@ void RegisterSwiftShaderComponent(ComponentUpdateService* cus) {
 
   if (!cpu.has_sse2())
     return;
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&RegisterSwiftShaderPath, cus));
+  BrowserThread::PostTask(BrowserThread::FILE,
+                          FROM_HERE,
+                          base::Bind(&RegisterSwiftShaderPath, cus));
 #endif
 }
 

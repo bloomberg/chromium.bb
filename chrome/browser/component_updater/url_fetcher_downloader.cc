@@ -27,15 +27,14 @@ UrlFetcherDownloader::UrlFetcherDownloader(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-UrlFetcherDownloader::~UrlFetcherDownloader() {}
+UrlFetcherDownloader::~UrlFetcherDownloader() {
+}
 
 void UrlFetcherDownloader::DoStartDownload(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  url_fetcher_.reset(net::URLFetcher::Create(0,
-                                             url,
-                                             net::URLFetcher::GET,
-                                             this));
+  url_fetcher_.reset(
+      net::URLFetcher::Create(0, url, net::URLFetcher::GET, this));
   url_fetcher_->SetRequestContext(context_getter_);
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                              net::LOAD_DO_NOT_SAVE_COOKIES |
@@ -57,8 +56,9 @@ void UrlFetcherDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
 
   const base::Time download_end_time(base::Time::Now());
   const base::TimeDelta download_time =
-    download_end_time >= download_start_time_ ?
-    download_end_time - download_start_time_ : base::TimeDelta();
+      download_end_time >= download_start_time_
+          ? download_end_time - download_start_time_
+          : base::TimeDelta();
 
   // Consider a 5xx response from the server as an indication to terminate
   // the request and avoid overloading the server in this case.
@@ -86,8 +86,7 @@ void UrlFetcherDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
   source->GetResponseAsFilePath(false, &local_path_);
   VLOG(1) << "Downloaded " << downloaded_bytes_ << " bytes in "
           << download_time.InMilliseconds() << "ms from "
-          << source->GetURL().spec()
-          << " to " << local_path_.value();
+          << source->GetURL().spec() << " to " << local_path_.value();
   CrxDownloader::OnDownloadComplete(is_handled, result, download_metrics);
 }
 

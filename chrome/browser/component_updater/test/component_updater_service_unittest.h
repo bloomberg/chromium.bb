@@ -47,6 +47,7 @@ class PartialMatch : public URLRequestPostInterceptor::RequestMatcher {
  public:
   explicit PartialMatch(const std::string& expected) : expected_(expected) {}
   virtual bool Match(const std::string& actual) const OVERRIDE;
+
  private:
   const std::string expected_;
 
@@ -145,7 +146,7 @@ class ComponentUpdaterTest : public testing::Test {
   void RunThreadsUntilIdle();
 
   scoped_ptr<InterceptorFactory> interceptor_factory_;
-  URLRequestPostInterceptor* post_interceptor_;   // Owned by the factory.
+  URLRequestPostInterceptor* post_interceptor_;  // Owned by the factory.
 
   scoped_ptr<GetInterceptor> get_interceptor_;
 
@@ -169,7 +170,8 @@ class MockServiceObserver : public ServiceObserver {
 class OnDemandTester {
  public:
   static ComponentUpdateService::Status OnDemand(
-      ComponentUpdateService* cus, const std::string& component_id);
+      ComponentUpdateService* cus,
+      const std::string& component_id);
 };
 
 }  // namespace component_updater

@@ -38,8 +38,7 @@ class TestCallback {
   DISALLOW_COPY_AND_ASSIGN(TestCallback);
 };
 
-TestCallback::TestCallback()
-    : error_(-1), extra_code_(-1), called_(false) {
+TestCallback::TestCallback() : error_(-1), extra_code_(-1), called_(false) {
 }
 
 void TestCallback::Set(component_updater::ComponentUnpacker::Error error,
@@ -142,10 +141,9 @@ TEST_F(ComponentPatcherOperationTest, CheckCourgetteOperation) {
   EXPECT_TRUE(base::CopyFile(
       test_file("binary_input.bin"),
       installed_dir_.path().Append(FILE_PATH_LITERAL("binary_input.bin"))));
-  EXPECT_TRUE(base::CopyFile(
-      test_file("binary_courgette_patch.bin"),
-      input_dir_.path().Append(
-          FILE_PATH_LITERAL("binary_courgette_patch.bin"))));
+  EXPECT_TRUE(base::CopyFile(test_file("binary_courgette_patch.bin"),
+                             input_dir_.path().Append(FILE_PATH_LITERAL(
+                                 "binary_courgette_patch.bin"))));
 
   scoped_ptr<base::DictionaryValue> command_args(new base::DictionaryValue());
   command_args->SetString("output", "output.bin");

@@ -34,11 +34,7 @@ namespace component_updater {
 class CrxDownloader {
  public:
   struct DownloadMetrics {
-    enum Downloader {
-      kNone = 0,
-      kUrlFetcher,
-      kBits
-    };
+    enum Downloader { kNone = 0, kUrlFetcher, kBits };
 
     DownloadMetrics();
 
@@ -77,7 +73,7 @@ class CrxDownloader {
   // download. The callback interface can be extended if needed to provide
   // more visibility into how the download has been handled, including
   // specific error codes and download metrics.
-  typedef base::Callback<void (const Result& result)> DownloadCallback;
+  typedef base::Callback<void(const Result& result)> DownloadCallback;
 
   // The callback may fire 0 or many times during a download. Since this
   // class implements a chain of responsibility, the callback can fire for

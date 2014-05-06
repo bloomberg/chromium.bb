@@ -56,10 +56,9 @@ class ComponentInstallerTraits {
   // |version| is the version of the component.
   // |install_dir| is the path to the install directory for this version.
   // |manifest| is the manifest for this version of the component.
-  virtual void ComponentReady(
-      const base::Version& version,
-      const base::FilePath& install_dir,
-      scoped_ptr<base::DictionaryValue> manifest) = 0;
+  virtual void ComponentReady(const base::Version& version,
+                              const base::FilePath& install_dir,
+                              scoped_ptr<base::DictionaryValue> manifest) = 0;
 
   // Returns the directory that the installer will place versioned installs of
   // the component into.

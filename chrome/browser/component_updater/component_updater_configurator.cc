@@ -40,7 +40,7 @@ extern const char kSwitchDisablePings[] = "disable-pings";
 const char kSwitchUrlSource[] = "url-source";
 
 #define COMPONENT_UPDATER_SERVICE_ENDPOINT \
-    "//clients2.google.com/service/update2"
+  "//clients2.google.com/service/update2"
 
 // The default url for the v3 protocol service endpoint. Can be
 // overridden with --component-updater=url-source=someurl.
@@ -73,8 +73,8 @@ std::string GetSwitchArgument(const std::vector<std::string>& vec,
   if (vec.empty())
     return std::string();
   for (std::vector<std::string>::const_iterator it = vec.begin();
-      it != vec.end();
-      ++it) {
+       it != vec.end();
+       ++it) {
     const std::size_t found = it->find("=");
     if (found != std::string::npos) {
       if (it->substr(0, found) == test) {
@@ -119,17 +119,19 @@ class ChromeConfigurator : public ComponentUpdateService::Configurator {
   bool background_downloads_enabled_;
 };
 
-ChromeConfigurator::ChromeConfigurator(const CommandLine* cmdline,
+ChromeConfigurator::ChromeConfigurator(
+    const CommandLine* cmdline,
     net::URLRequestContextGetter* url_request_getter)
-      : url_request_getter_(url_request_getter),
-        fast_update_(false),
-        pings_enabled_(false),
-        deltas_enabled_(false),
-        background_downloads_enabled_(false) {
+    : url_request_getter_(url_request_getter),
+      fast_update_(false),
+      pings_enabled_(false),
+      deltas_enabled_(false),
+      background_downloads_enabled_(false) {
   // Parse comma-delimited debug flags.
   std::vector<std::string> switch_values;
   Tokenize(cmdline->GetSwitchValueASCII(switches::kComponentUpdater),
-      ",", &switch_values);
+           ",",
+           &switch_values);
   fast_update_ = HasSwitchValue(switch_values, kSwitchFastUpdate);
   pings_enabled_ = !HasSwitchValue(switch_values, kSwitchDisablePings);
   deltas_enabled_ = !HasSwitchValue(switch_values, kSwitchDisableDeltaUpdates);
@@ -207,7 +209,8 @@ bool ChromeConfigurator::UseBackgroundDownloader() const {
 }
 
 ComponentUpdateService::Configurator* MakeChromeComponentUpdaterConfigurator(
-    const CommandLine* cmdline, net::URLRequestContextGetter* context_getter) {
+    const CommandLine* cmdline,
+    net::URLRequestContextGetter* context_getter) {
   return new ChromeConfigurator(cmdline, context_getter);
 }
 

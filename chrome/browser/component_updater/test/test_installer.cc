@@ -12,8 +12,7 @@
 
 namespace component_updater {
 
-TestInstaller::TestInstaller()
-    : error_(0), install_count_(0) {
+TestInstaller::TestInstaller() : error_(0), install_count_(0) {
 }
 
 void TestInstaller::OnUpdateError(int error) {
@@ -31,10 +30,13 @@ bool TestInstaller::GetInstalledFile(const std::string& file,
   return false;
 }
 
-int TestInstaller::error() const { return error_; }
+int TestInstaller::error() const {
+  return error_;
+}
 
-int TestInstaller::install_count() const { return install_count_; }
-
+int TestInstaller::install_count() const {
+  return install_count_;
+}
 
 ReadOnlyTestInstaller::ReadOnlyTestInstaller(const base::FilePath& install_dir)
     : install_directory_(install_dir) {
@@ -49,7 +51,6 @@ bool ReadOnlyTestInstaller::GetInstalledFile(const std::string& file,
   return true;
 }
 
-
 VersionedTestInstaller::VersionedTestInstaller() {
   base::CreateNewTempDirectory(FILE_PATH_LITERAL("TEST_"), &install_directory_);
 }
@@ -57,7 +58,6 @@ VersionedTestInstaller::VersionedTestInstaller() {
 VersionedTestInstaller::~VersionedTestInstaller() {
   base::DeleteFile(install_directory_, true);
 }
-
 
 bool VersionedTestInstaller::Install(const base::DictionaryValue& manifest,
                                      const base::FilePath& unpack_path) {

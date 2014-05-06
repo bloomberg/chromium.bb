@@ -51,7 +51,6 @@ class DeltaUpdateOp : public base::RefCountedThreadSafe<DeltaUpdateOp> {
  private:
   friend class base::RefCountedThreadSafe<DeltaUpdateOp>;
 
-
   ComponentUnpacker::Error CheckHash();
 
   // Subclasses must override DoParseArguments to parse operation-specific
