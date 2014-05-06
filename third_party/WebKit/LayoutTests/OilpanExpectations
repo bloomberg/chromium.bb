@@ -38,3 +38,6 @@ crbug.com/366387 [ Mac Debug ] svg/as-object/deep-nested-embedded-svg-size-chang
 # These tests started failing (on mac only) with blink r173290
 crbug.com/370586 [ Mac ] media/encrypted-media/encrypted-media-lifetime-mediakeys.html [ Failure ]
 crbug.com/370586 [ Mac ] media/encrypted-media/encrypted-media-lifetime-mediakeysession-reference.html [ Failure ]
+
+# This test is flaky in debug without oilpan, but fails much more with oilpan.
+crbug.com/354785 svg/as-background-image/animated-svg-animation-control.html [ ImageOnlyFailure Pass ]
