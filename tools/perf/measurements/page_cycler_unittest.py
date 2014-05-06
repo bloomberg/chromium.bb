@@ -53,6 +53,22 @@ class FakeTab(object):
     pass
 
 
+class FakeBrowser(object):
+  _iteration = 0
+
+  @property
+  def cpu_stats(self):
+    FakeBrowser._iteration += 1
+    return {
+        'Browser': {'CpuProcessTime': FakeBrowser._iteration,
+                    'TotalTime': FakeBrowser._iteration * 2},
+        'Renderer': {'CpuProcessTime': FakeBrowser._iteration,
+                    'TotalTime': FakeBrowser._iteration * 3},
+        'Gpu': {'CpuProcessTime': FakeBrowser._iteration,
+                 'TotalTime': FakeBrowser._iteration * 4}
+    }
+
+
 class PageCyclerUnitTest(unittest.TestCase):
 
   def SetUpCycler(self, args, setup_memory_module=False):
@@ -79,7 +95,7 @@ class PageCyclerUnitTest(unittest.TestCase):
       real_memory_module = page_cycler.memory
       try:
         page_cycler.memory = mock_memory_module
-        cycler.DidStartBrowser(None)
+        cycler.DidStartBrowser(FakeBrowser())
       finally:
         page_cycler.memory = real_memory_module
 
@@ -122,8 +138,15 @@ class PageCyclerUnitTest(unittest.TestCase):
       values = results.page_specific_values_for_current_page
       results.DidMeasurePage()
 
-      self.assertEqual(1, len(values))
+      self.assertEqual(4, len(values))
       self.assertEqual(values[0].page, page)
+      self.assertEqual(values[1].name,
+          'cpu_utilization.cpu_utilization_gpu')
+      self.assertEqual(values[2].name,
+          'cpu_utilization.cpu_utilization_renderer')
+      self.assertEqual(values[3].name,
+          'cpu_utilization.cpu_utilization_browser')
+
 
       chart_name = 'cold_times' if i == 0 or i > 2 else 'warm_times'
       self.assertEqual(values[0].name, '%s.page_load_time' % chart_name)
@@ -145,10 +168,16 @@ class PageCyclerUnitTest(unittest.TestCase):
         values = results.page_specific_values_for_current_page
         results.DidMeasurePage()
 
-        self.assertEqual(1, len(values))
+        self.assertEqual(4, len(values))
         self.assertEqual(values[0].page, page)
 
         chart_name = 'cold_times' if i == 0 or i > 1 else 'warm_times'
         self.assertEqual(values[0].name, '%s.page_load_time' % chart_name)
+        self.assertEqual(values[1].name,
+            'cpu_utilization.cpu_utilization_gpu')
+        self.assertEqual(values[2].name,
+            'cpu_utilization.cpu_utilization_renderer')
+        self.assertEqual(values[3].name,
+            'cpu_utilization.cpu_utilization_browser')
 
         cycler.DidNavigateToPage(page, tab)

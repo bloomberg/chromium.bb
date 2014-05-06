@@ -81,15 +81,11 @@ class PageCycler(page_measurement.PageMeasurement):
       tab.ClearCache(force=True)
     if self._report_speed_index:
       self._speedindex_metric.Start(page, tab)
+    self._cpu_metric.Start(page, tab)
 
   def DidNavigateToPage(self, page, tab):
     self._memory_metric.Start(page, tab)
     self._power_metric.Start(page, tab)
-    # TODO(qyearsley): Uncomment the following line and move it to
-    # WillNavigateToPage once the cpu metric has been changed.
-    # This is being temporarily commented out to let the page cycler
-    # results return to how they were before the cpu metric was added.
-    # self._cpu_metric.Start(page, tab) See crbug.com/301714.
     if self._record_v8_object_stats:
       self._v8_object_stats_metric.Start(page, tab)
 
@@ -142,10 +138,8 @@ class PageCycler(page_measurement.PageMeasurement):
     self._memory_metric.AddResults(tab, results)
     self._power_metric.AddResults(tab, results)
 
-    # TODO(qyearsley): Uncomment the following line when CPU metric is
-    # changed. See crbug.com/301714.
-    # self._cpu_metric.Stop(page, tab)
-    # self._cpu_metric.AddResults(tab, results)
+    self._cpu_metric.Stop(page, tab)
+    self._cpu_metric.AddResults(tab, results)
     if self._record_v8_object_stats:
       self._v8_object_stats_metric.Stop(page, tab)
       self._v8_object_stats_metric.AddResults(tab, results)
