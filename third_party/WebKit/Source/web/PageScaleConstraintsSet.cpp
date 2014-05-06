@@ -135,6 +135,23 @@ static float computeHeightByAspectRatio(float width, const FloatSize& deviceSize
     return width * (deviceSize.height() / deviceSize.width());
 }
 
+IntSize PageScaleConstraintsSet::mainFrameSize(const IntSize& viewportSize, const IntSize& contentsSize) const
+{
+    // If there's no explicit minimum scale factor set, size the frame so that its width == content width
+    // so there's no horizontal scrolling at the minimum scale.
+    if (m_pageDefinedConstraints.minimumScale < finalConstraints().minimumScale
+        && m_userAgentConstraints.minimumScale < finalConstraints().minimumScale
+        && contentsSize.width()
+        && viewportSize.width())
+        return IntSize(contentsSize.width(), computeHeightByAspectRatio(contentsSize.width(), viewportSize));
+
+    // If there is a minimum scale (or there's no content size yet), the frame size should match the viewport
+    // size at minimum scale, since the viewport must always be contained by the frame.
+    IntSize frameSize(viewportSize);
+    frameSize.scale(1 / finalConstraints().minimumScale);
+    return frameSize;
+}
+
 void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescription& description, IntSize viewSize, int layoutFallbackWidth, float deviceScaleFactor, bool supportTargetDensityDPI, bool wideViewportQuirkEnabled, bool useWideViewport, bool loadWithOverviewMode, bool nonUserScalableQuirkEnabled)
 {
     if (!supportTargetDensityDPI && !wideViewportQuirkEnabled && loadWithOverviewMode && !nonUserScalableQuirkEnabled)
