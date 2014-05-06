@@ -225,7 +225,7 @@ void CommandBufferHelper::WaitForToken(int32 token) {
   if (token < 0)
     return;
   if (token > token_) return;  // we wrapped
-  if (last_token_read() > token)
+  if (last_token_read() >= token)
     return;
   Flush();
   command_buffer_->WaitForTokenInRange(token, token_);

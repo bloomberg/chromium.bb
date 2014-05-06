@@ -44,10 +44,12 @@ class CommandBufferServiceLocked : public CommandBufferService {
       TransferBufferManagerInterface* transfer_buffer_manager)
       : CommandBufferService(transfer_buffer_manager),
         flush_locked_(false),
-        last_flush_(-1) {}
+        last_flush_(-1),
+        flush_count_(0) {}
   virtual ~CommandBufferServiceLocked() {}
 
   virtual void Flush(int32 put_offset) OVERRIDE {
+    flush_count_++;
     if (!flush_locked_) {
       last_flush_ = -1;
       CommandBufferService::Flush(put_offset);
@@ -60,6 +62,8 @@ class CommandBufferServiceLocked : public CommandBufferService {
 
   void UnlockFlush() { flush_locked_ = false; }
 
+  int FlushCount() { return flush_count_; }
+
   virtual void WaitForGetOffsetInRange(int32 start, int32 end) OVERRIDE {
     if (last_flush_ != -1) {
       CommandBufferService::Flush(last_flush_);
@@ -71,6 +75,7 @@ class CommandBufferServiceLocked : public CommandBufferService {
  private:
   bool flush_locked_;
   int last_flush_;
+  int flush_count_;
   DISALLOW_COPY_AND_ASSIGN(CommandBufferServiceLocked);
 };
 
@@ -577,6 +582,46 @@ TEST_F(CommandBufferHelperTest, TestToken) {
   helper_->WaitForToken(token);
   // check that the get pointer is beyond the first command.
   EXPECT_LE(command1_put, GetGetOffset());
+  helper_->Finish();
+
+  // Check that the commands did happen.
+  Mock::VerifyAndClearExpectations(api_mock_.get());
+
+  // Check the error status.
+  EXPECT_EQ(error::kNoError, GetError());
+}
+
+// Checks WaitForToken doesn't Flush if token is already read.
+TEST_F(CommandBufferHelperTest, TestWaitForTokenFlush) {
+  CommandBufferEntry args[2];
+  args[0].value_uint32 = 3;
+  args[1].value_float = 4.f;
+
+  // Add a first command.
+  AddCommandWithExpect(error::kNoError, kUnusedCommandId + 3, 2, args);
+  int32 token = helper_->InsertToken();
+
+  EXPECT_CALL(*api_mock_.get(), DoCommand(cmd::kSetToken, 1, _))
+      .WillOnce(DoAll(Invoke(api_mock_.get(), &AsyncAPIMock::SetToken),
+                      Return(error::kNoError)));
+
+  int flush_count = command_buffer_->FlushCount();
+
+  // Test that waiting for pending token causes a Flush.
+  helper_->WaitForToken(token);
+  EXPECT_EQ(command_buffer_->FlushCount(), flush_count + 1);
+
+  // Test that we don't Flush repeatedly.
+  helper_->WaitForToken(token);
+  EXPECT_EQ(command_buffer_->FlushCount(), flush_count + 1);
+
+  // Add another command.
+  AddCommandWithExpect(error::kNoError, kUnusedCommandId + 4, 2, args);
+
+  // Test that we don't Flush repeatedly even if commands are pending.
+  helper_->WaitForToken(token);
+  EXPECT_EQ(command_buffer_->FlushCount(), flush_count + 1);
+
   helper_->Finish();
 
   // Check that the commands did happen.
