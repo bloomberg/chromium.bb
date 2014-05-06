@@ -53,23 +53,6 @@ TEST(ScratchBufferTest, Basic) {
   EXPECT_TRUE(!overflow);
 }
 
-TEST(ScratchBufferTest, Alignment) {
-  Environment env;
-
-  internal::ScratchBuffer buf;
-  // Test that small allocations on the stack are aligned properly.
-  void* small = buf.Allocate(1);
-  EXPECT_EQ(0, reinterpret_cast<ptrdiff_t>(small) % 8);
-  small = buf.Allocate(2);
-  EXPECT_EQ(0, reinterpret_cast<ptrdiff_t>(small) % 8);
-
-  // Test that large allocations on the heap are aligned properly.
-  void* large = buf.Allocate(10*1024);
-  EXPECT_EQ(0, reinterpret_cast<ptrdiff_t>(large) % 8);
-  large = buf.Allocate(100*1024);
-  EXPECT_EQ(0, reinterpret_cast<ptrdiff_t>(large) % 8);
-}
-
 // Tests that Buffer::current() returns the correct value.
 TEST(ScratchBufferTest, Stacked) {
   Environment env;

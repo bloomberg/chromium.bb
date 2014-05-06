@@ -80,12 +80,11 @@ bool ScratchBuffer::AddOverflowSegment(size_t delta) {
     return false;
 
   // Ensure segment buffer is aligned.
-  size_t padded_segment_size = internal::Align(sizeof(Segment));
-  Segment* segment = static_cast<Segment*>(
-      malloc(padded_segment_size + delta));
+  size_t segment_size = internal::Align(sizeof(Segment)) + delta;
+  Segment* segment = static_cast<Segment*>(malloc(segment_size));
   if (segment) {
     segment->next = overflow_;
-    segment->cursor = reinterpret_cast<char*>(segment) + padded_segment_size;
+    segment->cursor = reinterpret_cast<char*>(segment + 1);
     segment->end = segment->cursor + delta;
     overflow_ = segment;
     return true;
