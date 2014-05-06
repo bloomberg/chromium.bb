@@ -53,6 +53,13 @@ void NullPointerCrash(int line_number) {
 #endif
 }
 
+#if !defined(OS_ANDROID) || !defined(NDEBUG)
+// TODO(rtenneti): Enabled crashing, after getting data.
+NOINLINE void StartupCrash() {
+  NullPointerCrash(__LINE__);
+}
+#endif  // OS_ANDROID
+
 NOINLINE void ShutdownCrash() {
   NullPointerCrash(__LINE__);
 }
@@ -882,19 +889,47 @@ class StartupWatchDogThread : public base::Watchdog {
   // alarming.
   explicit StartupWatchDogThread(const base::TimeDelta& duration)
       : base::Watchdog(duration, "Startup watchdog thread", true) {
+#if defined(OS_ANDROID)
+    // TODO(rtenneti): Delete this code, after getting data.
+    start_time_clock_= base::Time::Now();
+    start_time_monotonic_ = base::TimeTicks::Now();
+    start_time_thread_now_ = base::TimeTicks::IsThreadNowSupported()
+        ? base::TimeTicks::ThreadNow() : base::TimeTicks::Now();
+#endif  // OS_ANDROID
   }
 
   // Alarm is called if the time expires after an Arm() without someone calling
   // Disarm(). When Alarm goes off, in release mode we get the crash dump
   // without crashing and in debug mode we break into the debugger.
   virtual void Alarm() OVERRIDE {
-#ifndef NDEBUG
-    DCHECK(false);
-#else
-    WatchDogThread::PostTask(FROM_HERE,
-                             base::Bind(&base::debug::DumpWithoutCrashing));
-#endif
+#if !defined(NDEBUG)
+    StartupCrash();
+    return;
+#elif !defined(OS_ANDROID)
+    WatchDogThread::PostTask(FROM_HERE, base::Bind(&StartupCrash));
+    return;
+#else  // Android release: gather stats to figure out when to crash.
+    // TODO(rtenneti): Delete this code, after getting data.
+    UMA_HISTOGRAM_TIMES("StartupTimebomm.Alarm.TimeDuration",
+                        base::Time::Now() - start_time_clock_);
+    UMA_HISTOGRAM_TIMES("StartupTimebomm.Alarm.TimeTicksDuration",
+                        base::TimeTicks::Now() - start_time_monotonic_);
+    if (base::TimeTicks::IsThreadNowSupported()) {
+      UMA_HISTOGRAM_TIMES(
+          "StartupTimebomm.Alarm.ThreadNowDuration",
+          base::TimeTicks::ThreadNow() - start_time_thread_now_);
+    }
+    return;
+#endif  // OS_ANDROID
   }
+
+ private:
+#if defined(OS_ANDROID)
+  // TODO(rtenneti): Delete this code, after getting data.
+  base::Time start_time_clock_;
+  base::TimeTicks start_time_monotonic_;
+  base::TimeTicks start_time_thread_now_;
+#endif  // OS_ANDROID
 
   DISALLOW_COPY_AND_ASSIGN(StartupWatchDogThread);
 };
@@ -916,6 +951,7 @@ class ShutdownWatchDogThread : public base::Watchdog {
     ShutdownCrash();
   }
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ShutdownWatchDogThread);
 };
 }  // namespace
