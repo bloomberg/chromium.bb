@@ -137,7 +137,13 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUninstall) {
                                            ExtensionRegistry::EVERYTHING));
 }
 
-TEST_F(SharedModuleServiceUnitTest, WhitelistedImports) {
+#if defined(OS_WIN)
+// TODO(elijahtaylor) Temporary disable until crbug.com/369914 is fixed.
+#define MAYBE_WhitelistedImports DISABLED_WhitelistedImports
+#else
+#define MAYBE_WhitelistedImports WhitelistedImports
+#endif
+TEST_F(SharedModuleServiceUnitTest, MAYBE_WhitelistedImports) {
   std::string whitelisted_id = id_util::GenerateId("whitelisted");
   std::string nonwhitelisted_id = id_util::GenerateId("nonwhitelisted");
   // Create a module which exports to a restricted whitelist.
