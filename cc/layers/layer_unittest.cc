@@ -835,6 +835,38 @@ TEST_F(LayerTest, CheckTranformIsInvertible) {
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 }
 
+TEST_F(LayerTest, TranformIsInvertibleAnimation) {
+  scoped_refptr<Layer> layer = Layer::Create();
+  scoped_ptr<LayerImpl> impl_layer =
+      LayerImpl::Create(host_impl_.active_tree(), 1);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(1);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
+  layer_tree_host_->SetRootLayer(layer);
+
+  EXPECT_TRUE(layer->transform_is_invertible());
+
+  gfx::Transform singular_transform;
+  singular_transform.Scale3d(
+      SkDoubleToMScalar(1.0), SkDoubleToMScalar(1.0), SkDoubleToMScalar(0.0));
+
+  layer->SetTransform(singular_transform);
+  layer->PushPropertiesTo(impl_layer.get());
+
+  EXPECT_FALSE(layer->transform_is_invertible());
+  EXPECT_FALSE(impl_layer->transform_is_invertible());
+
+  gfx::Transform identity_transform;
+
+  layer->SetTransform(identity_transform);
+  static_cast<LayerAnimationValueObserver*>(layer)
+      ->OnTransformAnimated(singular_transform);
+  layer->PushPropertiesTo(impl_layer.get());
+  EXPECT_FALSE(layer->transform_is_invertible());
+  EXPECT_FALSE(impl_layer->transform_is_invertible());
+
+  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+}
+
 class LayerTreeHostFactory {
  public:
   LayerTreeHostFactory()
