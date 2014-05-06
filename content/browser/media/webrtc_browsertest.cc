@@ -185,29 +185,13 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
 
 // This test will modify the SDP offer to an unsupported codec, which should
 // cause SetLocalDescription to fail.
-#if defined(USE_OZONE)
-// Disabled for Ozone, see http://crbug.com/315392#c15
-#define MAYBE_NegotiateUnsupportedVideoCodec\
-    DISABLED_NegotiateUnsupportedVideoCodec
-#else
-#define MAYBE_NegotiateUnsupportedVideoCodec NegotiateUnsupportedVideoCodec
-#endif
-
-IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
-                       MAYBE_NegotiateUnsupportedVideoCodec) {
+IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, NegotiateUnsupportedVideoCodec) {
   MakeTypicalPeerConnectionCall("negotiateUnsupportedVideoCodec();");
 }
 
 // This test will modify the SDP offer to use no encryption, which should
 // cause SetLocalDescription to fail.
-#if defined(USE_OZONE)
-// Disabled for Ozone, see http://crbug.com/315392#c15
-#define MAYBE_NegotiateNonCryptoCall DISABLED_NegotiateNonCryptoCall
-#else
-#define MAYBE_NegotiateNonCryptoCall NegotiateNonCryptoCall
-#endif
-
-IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MAYBE_NegotiateNonCryptoCall) {
+IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, NegotiateNonCryptoCall) {
   MakeTypicalPeerConnectionCall("negotiateNonCryptoCall();");
 }
 
