@@ -10,6 +10,6 @@
       "run_at": "document_end"
     }
   ],
-
-  "permissions": ["automation", "tabs", "http://a.com/"]
+  "permissions": ["tabs", "http://a.com/"],
+  "automation": true
 }

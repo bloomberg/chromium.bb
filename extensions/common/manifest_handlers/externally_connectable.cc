@@ -64,8 +64,9 @@ bool ExternallyConnectableHandler::Parse(Extension* extension,
                                    &externally_connectable));
   std::vector<InstallWarning> install_warnings;
   scoped_ptr<ExternallyConnectableInfo> info =
-      ExternallyConnectableInfo::FromValue(
-          *externally_connectable, &install_warnings, error);
+      ExternallyConnectableInfo::FromValue(*externally_connectable,
+                                           &install_warnings,
+                                           error);
   if (!info)
     return false;
   if (!info->matches.is_empty()) {

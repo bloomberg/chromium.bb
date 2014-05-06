@@ -29,6 +29,10 @@
     "channel": "stable",
     "extension_types": "all"
   },
+  "automation": {
+    "channel": "trunk",
+    "extension_types": ["extension", "legacy_packaged_app"]
+  },
   "bluetooth": {
     // Note: The "bluetooth" manifest permission is used by the
     // chrome.bluetooth, chrome.bluetoothSocket and chrome.bluetoothLowEnergy

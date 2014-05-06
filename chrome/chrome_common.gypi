@@ -179,6 +179,8 @@
         'common/extensions/manifest_handlers/app_isolation_info.h',
         'common/extensions/manifest_handlers/app_launch_info.cc',
         'common/extensions/manifest_handlers/app_launch_info.h',
+        'common/extensions/manifest_handlers/automation.h',
+        'common/extensions/manifest_handlers/automation.cc',
         'common/extensions/manifest_handlers/content_scripts_handler.cc',
         'common/extensions/manifest_handlers/content_scripts_handler.h',
         'common/extensions/manifest_handlers/mime_types_handler.cc',

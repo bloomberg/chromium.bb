@@ -93,11 +93,11 @@
   },
   "automationInternal": {
     "internal": true,
-    "dependencies": ["permission:automation"],
+    "dependencies": ["manifest:automation"],
     "contexts": ["blessed_extension"]
   },
   "automation": {
-    "dependencies": ["permission:automation"],
+    "dependencies": ["manifest:automation"],
     "contexts": ["blessed_extension"]
   },
   "autotestPrivate": {
