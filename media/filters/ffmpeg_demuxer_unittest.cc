@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/threading/thread.h"
 #include "media/base/decrypt_config.h"
@@ -17,6 +18,7 @@
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/file_data_source.h"
+#include "media/formats/mp4/avc.h"
 #include "media/formats/webm/webm_crypto_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -725,6 +727,60 @@ TEST_F(FFmpegDemuxerTest, MP4_ZeroStszEntry) {
   InitializeDemuxer();
   ReadUntilEndOfStream(demuxer_->GetStream(DemuxerStream::AUDIO));
 }
+
+
+static void ValidateAnnexB(DemuxerStream* stream,
+                           DemuxerStream::Status status,
+                           const scoped_refptr<DecoderBuffer>& buffer) {
+  EXPECT_EQ(status, DemuxerStream::kOk);
+
+  if (buffer->end_of_stream()) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+    return;
+  }
+
+  bool is_valid =
+      mp4::AVC::IsValidAnnexB(buffer->data(), buffer->data_size());
+  EXPECT_TRUE(is_valid);
+
+  if (!is_valid) {
+    LOG(ERROR) << "Buffer contains invalid Annex B data.";
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+    return;
+  }
+
+  stream->Read(base::Bind(&ValidateAnnexB, stream));
+};
+
+TEST_F(FFmpegDemuxerTest, IsValidAnnexB) {
+  const char* files[] = {
+    "bear-1280x720-av_frag.mp4",
+    "bear-1280x720-av_with-aud-nalus_frag.mp4"
+  };
+
+  for (size_t i = 0; i < arraysize(files); ++i) {
+    DVLOG(1) << "Testing " << files[i];
+    CreateDemuxer(files[i]);
+    InitializeDemuxer();
+
+    // Ensure the expected streams are present.
+    DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
+    ASSERT_TRUE(stream);
+    stream->EnableBitstreamConverter();
+
+    stream->Read(base::Bind(&ValidateAnnexB, stream));
+    message_loop_.Run();
+
+    WaitableMessageLoopEvent event;
+    demuxer_->Stop(event.GetClosure());
+    event.RunAndWait();
+    demuxer_.reset();
+    data_source_.reset();
+  }
+}
+
 #endif
 
 }  // namespace media

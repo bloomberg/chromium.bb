@@ -39,8 +39,11 @@ class MEDIA_EXPORT AVC {
 
   // Verifies that the contents of |buffer| conform to
   // Section 7.4.1.2.3 of ISO/IEC 14496-10.
-  // Returns true if |buffer| contains conformant AnnexB data.
+  // Returns true if |buffer| contains conformant Annex B data
+  // TODO(acolwell): Remove the std::vector version when we can use,
+  // C++11's std::vector<T>::data() method.
   static bool IsValidAnnexB(const std::vector<uint8>& buffer);
+  static bool IsValidAnnexB(const uint8* buffer, size_t size);
 };
 
 }  // namespace mp4

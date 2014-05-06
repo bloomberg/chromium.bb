@@ -20,9 +20,6 @@ FFmpegH264ToAnnexBBitstreamConverter::FFmpegH264ToAnnexBBitstreamConverter(
 FFmpegH264ToAnnexBBitstreamConverter::~FFmpegH264ToAnnexBBitstreamConverter() {}
 
 bool FFmpegH264ToAnnexBBitstreamConverter::ConvertPacket(AVPacket* packet) {
-  uint32 output_packet_size = 0;
-  uint32 configuration_size = 0;
-  uint32 io_size = 0;
   scoped_ptr<mp4::AVCDecoderConfigurationRecord> avc_config;
 
   if (packet == NULL || !packet->data)
@@ -35,20 +32,19 @@ bool FFmpegH264ToAnnexBBitstreamConverter::ConvertPacket(AVPacket* packet) {
 
     avc_config.reset(new mp4::AVCDecoderConfigurationRecord());
 
-    configuration_size = converter_.ParseConfigurationAndCalculateSize(
-        stream_context_->extradata,
-        stream_context_->extradata_size,
-        avc_config.get());
-    if (configuration_size == 0)
-      return false;  // Not possible to parse the configuration.
+    if (!converter_.ParseConfiguration(
+            stream_context_->extradata,
+            stream_context_->extradata_size,
+            avc_config.get())) {
+      return false;
+    }
   }
 
-  uint32 output_nal_size =
-      converter_.CalculateNeededOutputBufferSize(packet->data, packet->size);
-  if (output_nal_size == 0)
-    return false;  // Invalid input packet.
+  uint32 output_packet_size = converter_.CalculateNeededOutputBufferSize(
+      packet->data, packet->size, avc_config.get());
 
-  output_packet_size = configuration_size + output_nal_size;
+  if (output_packet_size == 0)
+    return false;  // Invalid input packet.
 
   // Allocate new packet for the output.
   AVPacket dest_packet;
@@ -66,24 +62,18 @@ bool FFmpegH264ToAnnexBBitstreamConverter::ConvertPacket(AVPacket* packet) {
   dest_packet.flags = packet->flags;
   dest_packet.stream_index = packet->stream_index;
 
-  // Process the configuration if not done earlier.
-  if (!configuration_processed_) {
-    if (!converter_.ConvertAVCDecoderConfigToByteStream(
-            *avc_config,
-            dest_packet.data, &configuration_size)) {
-      return false;  // Failed to convert the buffer.
-    }
-    configuration_processed_ = true;
-  }
-
   // Proceed with the conversion of the actual in-band NAL units, leave room
   // for configuration in the beginning.
-  io_size = dest_packet.size - configuration_size;
+  uint32 io_size = dest_packet.size;
   if (!converter_.ConvertNalUnitStreamToByteStream(
           packet->data, packet->size,
-          dest_packet.data + configuration_size, &io_size)) {
+          avc_config.get(),
+          dest_packet.data, &io_size)) {
     return false;
   }
+
+  if (avc_config)
+    configuration_processed_ = true;
 
   // At the end we must destroy the old packet.
   av_free_packet(packet);

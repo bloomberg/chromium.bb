@@ -5,6 +5,7 @@
 #include "media/filters/h264_to_annex_b_bitstream_converter.h"
 
 #include "base/logging.h"
+#include "media/filters/h264_parser.h"
 #include "media/formats/mp4/box_definitions.h"
 
 namespace media {
@@ -35,7 +36,7 @@ H264ToAnnexBBitstreamConverter::H264ToAnnexBBitstreamConverter()
 
 H264ToAnnexBBitstreamConverter::~H264ToAnnexBBitstreamConverter() {}
 
-uint32 H264ToAnnexBBitstreamConverter::ParseConfigurationAndCalculateSize(
+bool H264ToAnnexBBitstreamConverter::ParseConfiguration(
     const uint8* configuration_record,
     int configuration_record_size,
     mp4::AVCDecoderConfigurationRecord* avc_config) {
@@ -44,13 +45,13 @@ uint32 H264ToAnnexBBitstreamConverter::ParseConfigurationAndCalculateSize(
   DCHECK(avc_config);
 
   if (!avc_config->Parse(configuration_record, configuration_record_size))
-    return 0;  // Error: invalid input
+    return false;  // Error: invalid input
 
   // We're done processing the AVCDecoderConfigurationRecord,
   // store the needed information for parsing actual payload
   nal_unit_length_field_width_ = avc_config->length_size;
   configuration_processed_ = true;
-  return GetConfigSize(*avc_config);
+  return true;
 }
 
 uint32 H264ToAnnexBBitstreamConverter::GetConfigSize(
@@ -68,7 +69,8 @@ uint32 H264ToAnnexBBitstreamConverter::GetConfigSize(
 
 uint32 H264ToAnnexBBitstreamConverter::CalculateNeededOutputBufferSize(
     const uint8* input,
-    uint32 input_size) const {
+    uint32 input_size,
+    const mp4::AVCDecoderConfigurationRecord* avc_config) const {
   uint32 output_size = 0;
   uint32 data_left = input_size;
   bool first_nal_in_this_access_unit = first_nal_unit_in_access_unit_;
@@ -79,6 +81,10 @@ uint32 H264ToAnnexBBitstreamConverter::CalculateNeededOutputBufferSize(
   if (!configuration_processed_) {
     return 0;  // Error: configuration not handled, we don't know nal unit width
   }
+
+  if (avc_config)
+    output_size += GetConfigSize(*avc_config);
+
   CHECK(nal_unit_length_field_width_ == 1 ||
         nal_unit_length_field_width_ == 2 ||
         nal_unit_length_field_width_ == 4);
@@ -148,6 +154,7 @@ bool H264ToAnnexBBitstreamConverter::ConvertAVCDecoderConfigToByteStream(
 
 bool H264ToAnnexBBitstreamConverter::ConvertNalUnitStreamToByteStream(
     const uint8* input, uint32 input_size,
+    const mp4::AVCDecoderConfigurationRecord* avc_config,
     uint8* output, uint32* output_size) {
   const uint8* inscan = input;  // We read the input from here progressively
   uint8* outscan = output;  // We write the output to here progressively
@@ -164,6 +171,7 @@ bool H264ToAnnexBBitstreamConverter::ConvertNalUnitStreamToByteStream(
         nal_unit_length_field_width_ == 4);
 
   // Do the actual conversion for the actual input packet
+  int nal_unit_count = 0;
   while (data_left > 0) {
     uint8 i;
     uint32 nal_unit_length;
@@ -184,6 +192,30 @@ bool H264ToAnnexBBitstreamConverter::ConvertNalUnitStreamToByteStream(
       return false;  // Error: not enough data for correct conversion
     }
 
+    // Five least significant bits of first NAL unit byte signify
+    // nal_unit_type.
+    int nal_unit_type = *inscan & 0x1F;
+    nal_unit_count++;
+
+    // Insert the config after the AUD if an AUD is the first NAL unit or
+    // before all NAL units if the first one isn't an AUD.
+    if (avc_config &&
+        (nal_unit_type != H264NALU::kAUD ||  nal_unit_count > 1)) {
+      uint32 output_bytes_used = outscan - output;
+
+      DCHECK_GE(*output_size, output_bytes_used);
+
+      uint32 config_size = *output_size - output_bytes_used;
+      if (!ConvertAVCDecoderConfigToByteStream(*avc_config,
+                                               outscan,
+                                               &config_size)) {
+        DVLOG(1) << "Failed to insert parameter sets.";
+        *output_size = 0;
+        return false;  // Failed to convert the buffer.
+      }
+      outscan += config_size;
+      avc_config = NULL;
+    }
     uint32 start_code_len;
     first_nal_unit_in_access_unit_ ?
         start_code_len = sizeof(kStartCodePrefix) + 1 :
@@ -193,10 +225,6 @@ bool H264ToAnnexBBitstreamConverter::ConvertNalUnitStreamToByteStream(
       *output_size = 0;
       return false;  // Error: too small output buffer
     }
-
-    // Five least significant bits of first NAL unit byte signify
-    // nal_unit_type.
-    int nal_unit_type = *inscan & 0x1F;
 
     // Check if this packet marks access unit boundary by checking the
     // packet type.

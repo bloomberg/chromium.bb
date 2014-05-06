@@ -172,13 +172,18 @@ bool AVC::ConvertConfigToAnnexB(
 
 // Verifies AnnexB NALU order according to ISO/IEC 14496-10 Section 7.4.1.2.3
 bool AVC::IsValidAnnexB(const std::vector<uint8>& buffer) {
-  DVLOG(1) << __FUNCTION__;
+  return IsValidAnnexB(&buffer[0], buffer.size());
+}
 
-  if (buffer.empty())
+bool AVC::IsValidAnnexB(const uint8* buffer, size_t size) {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(buffer);
+
+  if (size == 0)
     return true;
 
   H264Parser parser;
-  parser.SetStream(&buffer[0], buffer.size());
+  parser.SetStream(buffer, size);
 
   typedef enum {
     kAUDAllowed,

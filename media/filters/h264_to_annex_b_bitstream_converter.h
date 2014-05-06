@@ -37,11 +37,10 @@ class MEDIA_EXPORT H264ToAnnexBBitstreamConverter {
   //     Pointer to place the parsed AVCDecoderConfigurationRecord data into.
   //
   // Returns
-  //   Required buffer size for AVCDecoderConfigurationRecord when converted
-  //   to bytestream format, or 0 if could not determine the configuration
-  //   from the input buffer. |avc_config| only contains valid data when
-  //   a value > 0 is returned from this function.
-  uint32 ParseConfigurationAndCalculateSize(
+  //   Returns true if |configuration_record| was successfully parsed. False
+  //   is returned if a parsing error occurred.
+  //   |avc_config| only contains valid data when true is returned.
+  bool ParseConfiguration(
       const uint8* configuration_record,
       int configuration_record_size,
       mp4::AVCDecoderConfigurationRecord* avc_config);
@@ -55,17 +54,23 @@ class MEDIA_EXPORT H264ToAnnexBBitstreamConverter {
   // Lightweight implementation that does not do the actual conversion.
   //
   // Parameters
-  //   configuration_record
-  //     Pointer to buffer containing AVCDecoderConfigurationRecord.
-  //   configuration_record_size
+  //   input
+  //     Pointer to buffer containing NAL units in MP4 format.
+  //   input_size
   //     Size of the buffer in bytes.
+  //   avc_config
+  //     The AVCDecoderConfigurationRecord that contains the parameter sets that
+  //     will be inserted into the output. NULL if no parameter sets need to be
+  //     inserted.
   //
   // Returns
-  //   Required buffer size for the input NAL unit buffer when converted
-  //   to bytestream format, or 0 if could not determine the configuration
-  //   from the input buffer.
-  uint32 CalculateNeededOutputBufferSize(const uint8* input,
-                                         uint32 input_size) const;
+  //   Required buffer size for the output NAL unit buffer when converted
+  //   to bytestream format, or 0 if could not determine the size of
+  //   the output buffer from the data in |input| and |avc_config|.
+  uint32 CalculateNeededOutputBufferSize(
+      const uint8* input,
+      uint32 input_size,
+      const mp4::AVCDecoderConfigurationRecord* avc_config) const;
 
   // ConvertAVCDecoderConfigToByteStream converts the
   // AVCDecoderConfigurationRecord from the MP4 headers to bytestream format.
@@ -97,15 +102,14 @@ class MEDIA_EXPORT H264ToAnnexBBitstreamConverter {
   // buffer is large enough to hold the output data. Client can precalculate the
   // needed output buffer size by using CalculateNeededOutputBufferSize.
   //
-  // In case of failed conversion object H264BitstreamConverter may have written
-  // some bytes to buffer pointed by pinput but user should ignore those bytes.
-  // None of the outputs should be considered valid.
-  //
   // Parameters
   //   input
-  //     Pointer to buffer containing AVCDecoderConfigurationRecord.
+  //     Pointer to buffer containing NAL units in MP4 format.
   //   input_size
   //     Size of the buffer in bytes.
+  //   avc_config
+  //     The AVCDecoderConfigurationRecord that contains the parameter sets to
+  //     insert into the output. NULL if no parameter sets need to be inserted.
   //   output
   //     Pointer to buffer where the output should be written to.
   //   output_size (i/o)
@@ -116,8 +120,12 @@ class MEDIA_EXPORT H264ToAnnexBBitstreamConverter {
   //    true  if successful conversion
   //    false if conversion not successful (output_size will hold the amount
   //          of converted data)
-  bool ConvertNalUnitStreamToByteStream(const uint8* input, uint32 input_size,
-                                        uint8* output, uint32* output_size);
+  bool ConvertNalUnitStreamToByteStream(
+      const uint8* input,
+      uint32 input_size,
+      const mp4::AVCDecoderConfigurationRecord* avc_config,
+      uint8* output,
+      uint32* output_size);
 
  private:
   // Writes Annex B start code and |param_set| to |*out|.
