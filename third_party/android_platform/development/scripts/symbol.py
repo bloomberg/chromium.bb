@@ -52,13 +52,29 @@ def ToolPath(tool, toolchain_info=None):
   if ARCH == "arm":
     toolchain_source = "arm-linux-androideabi-4.6"
     toolchain_prefix = "arm-linux-androideabi"
-  else:
+    ndk = "ndk"
+  elif ARCH == "arm64":
+    toolchain_source = "aarch64-linux-android-4.8"
+    toolchain_prefix = "aarch64-linux-android"
+    ndk = "ndk_experimental"
+  elif ARCH == "x86":
     toolchain_source = "x86-4.6"
     toolchain_prefix = "i686-android-linux"
+    ndk = "ndk"
+  elif ARCH == "x86_64":
+    toolchain_source = "x86_64-4.8"
+    toolchain_prefix = "x86_64-linux-android"
+    ndk = "ndk_experimental"
+  elif ARCH == "mips":
+    toolchain_source = "mipsel-linux-android-4.6"
+    toolchain_prefix = "mipsel-linux-android"
+    ndk = "ndk"
+  else:
+    raise Exception("Could not find tool chain")
 
   toolchain_subdir = (
-      "third_party/android_tools/ndk/toolchains/%s/prebuilt/linux-x86_64/bin" %
-       toolchain_source)
+      "third_party/android_tools/%s/toolchains/%s/prebuilt/linux-x86_64/bin" %
+       (ndk, toolchain_source))
 
   return os.path.join(CHROME_SRC,
                       toolchain_subdir,
@@ -78,13 +94,28 @@ def FindToolchain():
     return TOOLCHAIN_INFO
 
   ## Known toolchains, newer ones in the front.
-  if ARCH == "arm":
+  if ARCH == "arm64":
+    gcc_version = "4.8"
     known_toolchains = [
-      ("arm-linux-androideabi-4.6", "arm", "arm-linux-androideabi"),
+      ("aarch64-linux-android-" + gcc_version, "aarch64", "aarch64-linux-android")
+    ]
+  elif ARCH == "arm":
+    gcc_version = "4.6"
+    known_toolchains = [
+      ("arm-linux-androideabi-" + gcc_version, "arm", "arm-linux-androideabi"),
     ]
   elif ARCH =="x86":
     known_toolchains = [
       ("i686-android-linux-4.4.3", "x86", "i686-android-linux")
+    ]
+  elif ARCH =="x86_64":
+    known_toolchains = [
+      ("x86_64-linux-android-4.8", "x86_64", "x86_64-linux-android")
+    ]
+  elif ARCH == "mips":
+    gcc_version = "4.6"
+    known_toolchains = [
+      ("mipsel-linux-android-" + gcc_version, "mips", "mipsel-linux-android")
     ]
   else:
     known_toolchains = []
@@ -94,6 +125,7 @@ def FindToolchain():
     toolchain_info = (label, platform, target);
     if os.path.exists(ToolPath("addr2line", toolchain_info)):
       TOOLCHAIN_INFO = toolchain_info
+      print "Using toolchain from :" + ToolPath("", TOOLCHAIN_INFO)
       return toolchain_info
 
   raise Exception("Could not find tool chain")

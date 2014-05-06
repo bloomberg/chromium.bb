@@ -72,9 +72,15 @@ def ConvertTrace(lines, more_info):
   thread_line = re.compile("(.*)(\-\-\- ){15}\-\-\-")
   dalvik_jni_thread_line = re.compile("(\".*\" prio=[0-9]+ tid=[0-9]+ NATIVE.*)")
   dalvik_native_thread_line = re.compile("(\".*\" sysTid=[0-9]+ nice=[0-9]+.*)")
+
+  width = "{8}"
+  if symbol.ARCH == "arm64" or symbol.ARCH == "x86_64":
+    width = "{16}"
+
   # Matches LOG(FATAL) lines, like the following example:
   #   [FATAL:source_file.cc(33)] Check failed: !instances_.empty()
   log_fatal_line = re.compile("(\[FATAL\:.*\].*)$")
+
   # Note that both trace and value line matching allow for variable amounts of
   # whitespace (e.g. \t). This is because the we want to allow for the stack
   # tool to operate on AndroidFeedback provided system logs. AndroidFeedback
@@ -86,20 +92,23 @@ def ConvertTrace(lines, more_info):
   # Or lines from AndroidFeedback crash report system logs like:
   #   03-25 00:51:05.520 I/DEBUG ( 65): #00 pc 001cf42e /data/data/com.my.project/lib/libmyproject.so
   # Please note the spacing differences.
-  trace_line = re.compile("(.*)\#(?P<frame>[0-9]+)[ \t]+(..)[ \t]+(0x)?(?P<address>[0-9a-f]{0,8})[ \t]+(?P<lib>[^\r\n \t]*)(?P<symbol_present> \((?P<symbol_name>.*)\))?")  # pylint: disable-msg=C6310
+  trace_line = re.compile("(.*)\#(?P<frame>[0-9]+)[ \t]+(..)[ \t]+(0x)?(?P<address>[0-9a-f]{0,16})[ \t]+(?P<lib>[^\r\n \t]*)(?P<symbol_present> \((?P<symbol_name>.*)\))?")  # pylint: disable-msg=C6310
+
   # Matches lines emitted by src/base/debug/stack_trace_android.cc, like:
   #   #00 0x7324d92d /data/app-lib/org.chromium.native_test-1/libbase.cr.so+0x0006992d
   # This pattern includes the unused named capture groups <symbol_present> and
   # <symbol_name> so that it can interoperate with the |trace_line| regex.
-  debug_trace_line = re.compile('(.*)(?P<frame>\#[0-9]+ 0x[0-9a-f]{8,8}) '
-                                '(?P<lib>[^+]+)\+0x(?P<address>[0-9a-f]{8,8})'
-                                '(?P<symbol_present>)(?P<symbol_name>)')
+  debug_trace_line = re.compile(
+      '(.*)(?P<frame>\#[0-9]+ 0x[0-9a-f]' + width + ') '
+      '(?P<lib>[^+]+)\+0x(?P<address>[0-9a-f]' + width + ')'
+      '(?P<symbol_present>)(?P<symbol_name>)')
+
   # Examples of matched value lines include:
   #   bea4170c  8018e4e9  /data/data/com.my.project/lib/libmyproject.so
   #   bea4170c  8018e4e9  /data/data/com.my.project/lib/libmyproject.so (symbol)
   #   03-25 00:51:05.530 I/DEBUG ( 65): bea4170c 8018e4e9 /data/data/com.my.project/lib/libmyproject.so
   # Again, note the spacing differences.
-  value_line = re.compile("(.*)([0-9a-f]{8})[ \t]+([0-9a-f]{8})[ \t]+([^\r\n \t]*)( \((.*)\))?")
+  value_line = re.compile("(.*)([0-9a-f]" + width + ")[ \t]+([0-9a-f]" + width + ")[ \t]+([^\r\n \t]*)( \((.*)\))?")
   # Lines from 'code around' sections of the output will be matched before
   # value lines because otheriwse the 'code around' sections will be confused as
   # value lines.
@@ -107,7 +116,12 @@ def ConvertTrace(lines, more_info):
   # Examples include:
   #   801cf40c ffffc4cc 00b2f2c5 00b2f1c7 00c1e1a8
   #   03-25 00:51:05.530 I/DEBUG ( 65): 801cf40c ffffc4cc 00b2f2c5 00b2f1c7 00c1e1a8
-  code_line = re.compile("(.*)[ \t]*[a-f0-9]{8}[ \t]*[a-f0-9]{8}[ \t]*[a-f0-9]{8}[ \t]*[a-f0-9]{8}[ \t]*[a-f0-9]{8}[ \t]*[ \r\n]")  # pylint: disable-msg=C6310
+  code_line = re.compile("(.*)[ \t]*[a-f0-9]" + width +
+                         "[ \t]*[a-f0-9]" + width +
+                         "[ \t]*[a-f0-9]" + width +
+                         "[ \t]*[a-f0-9]" + width +
+                         "[ \t]*[a-f0-9]" + width +
+                         "[ \t]*[ \r\n]")  # pylint: disable-msg=C6310
 
   trace_lines = []
   value_lines = []
