@@ -60,7 +60,7 @@ class PreferencesTest : public LoginManagerTest {
   }
 
   // Sets set of preferences in given |prefs|. Value of prefernece depends of
-  // |variant| value. For opposite |variant| values all preferences recieve
+  // |variant| value. For opposite |variant| values all preferences receive
   // different values.
   void SetPrefs(PrefService* prefs, bool variant) {
     prefs->SetBoolean(prefs::kTapToClickEnabled, variant);

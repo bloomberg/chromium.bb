@@ -286,7 +286,7 @@ syncer::SyncError AutocompleteSyncableService::ProcessSyncChanges(
 
 void AutocompleteSyncableService::AutofillEntriesChanged(
     const AutofillChangeList& changes) {
-  // Check if sync is on. If we recieve this notification prior to sync being
+  // Check if sync is on. If we receive this notification prior to sync being
   // started, we'll notify sync to start as soon as it can and later process
   // all entries when MergeData..() is called. If we receive this notification
   // sync has exited, it will be synced next time Chrome starts.

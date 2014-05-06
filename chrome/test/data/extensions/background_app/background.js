@@ -33,7 +33,7 @@ function setupPush() {
   console.log('registered listener for push messages ' + listeners);
 }
 
-// This callback recieves the pushed message from the push server.
+// This callback receives the pushed message from the push server.
 function messageCallback(message) {
   console.log("push messaging callback seen");
 }

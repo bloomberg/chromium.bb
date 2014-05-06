@@ -19,7 +19,7 @@ namespace diagnostics {
   };
 
   dictionary SendPacketResult {
-    // The IP of the host which we recieves the ICMP reply from.
+    // The IP of the host which we receives the ICMP reply from.
     // The IP may differs from our target IP if the packet's ttl is used up.
     DOMString ip;
 

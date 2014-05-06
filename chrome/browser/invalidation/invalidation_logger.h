@@ -36,7 +36,7 @@ class InvalidationLoggerObserver;
 //
 // Observers can be registered and will be called to be notified of any
 // status change immediatly. They can log there the history of what messages
-// they recieve.
+// they receive.
 
 class InvalidationLogger {
 

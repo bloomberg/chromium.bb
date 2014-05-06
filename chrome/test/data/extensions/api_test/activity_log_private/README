@@ -4,7 +4,7 @@ The tests use two chrome extensions:
   -test  : sends messages to the friend extension and listens for activity
            logged by the friend extension. Checks the activity has been logged
            correctly.
-  -friend: recieves messages from the extension and runs a function based on
+  -friend: receives messages from the extension and runs a function based on
            the contents of the message.
 
 

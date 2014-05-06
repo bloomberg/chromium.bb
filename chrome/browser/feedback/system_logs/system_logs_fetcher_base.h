@@ -57,7 +57,7 @@ class SystemLogsFetcherBase
   void Fetch(const SysLogsFetcherCallback& callback);
 
  protected:
-  // Callback passed to all the data sources. It merges the |data| it recieves
+  // Callback passed to all the data sources. It merges the |data| it receives
   // into response_. When all the data sources have responded, it deletes their
   // objects and returns the response to the callback_. After this it
   // deletes this instance of the object.

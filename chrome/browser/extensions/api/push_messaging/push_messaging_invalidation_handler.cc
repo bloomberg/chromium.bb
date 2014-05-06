@@ -158,7 +158,7 @@ void PushMessagingInvalidationHandler::OnIncomingInvalidation(
 
       // We always forward unknown version invalidation when we receive one.
       if (invalidation_list.StartsWithUnknownVersion()) {
-        DVLOG(2) << "Sending push message to reciever, extension is "
+        DVLOG(2) << "Sending push message to receiver, extension is "
             << extension_id << ", subchannel is " << subchannel
             << "and payload was lost";
         delegate_->OnMessage(extension_id, subchannel, std::string());
@@ -169,7 +169,7 @@ void PushMessagingInvalidationHandler::OnIncomingInvalidation(
       if (!max_invalidation.is_unknown_version() &&
           max_invalidation.version() > max_object_version_map_[*it]) {
         max_object_version_map_[*it] = max_invalidation.version();
-        DVLOG(2) << "Sending push message to reciever, extension is "
+        DVLOG(2) << "Sending push message to receiver, extension is "
             << extension_id << ", subchannel is " << subchannel
             << ", and payload is " << max_invalidation.payload();
         delegate_->OnMessage(extension_id,

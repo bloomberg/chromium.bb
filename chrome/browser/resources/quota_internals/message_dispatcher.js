@@ -9,7 +9,7 @@
 /**
  * Bridge between the browser and the page.
  * In this file:
- *   * define EventTargets to recieve message from the browser,
+ *   * define EventTargets to receive message from the browser,
  *   * dispatch browser messages to EventTarget,
  *   * define interface to request data to the browser.
  */

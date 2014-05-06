@@ -87,7 +87,7 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   typedef std::map<std::string, DeviceDescription> DeviceDescriptionMap;
 
   // Message handlers:
-  // For when the page is ready to recieve device notifications.
+  // For when the page is ready to receive device notifications.
   void HandleStart(const base::ListValue* args);
 
   // For when a visibility change occurs.

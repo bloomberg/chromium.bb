@@ -55,7 +55,7 @@ struct GoogleUpdateMetrics {
     bool is_system_install;
     // The time at which Google Update last started an automatic update check.
     base::Time last_started_au;
-    // The time at which Google Update last successfully recieved update
+    // The time at which Google Update last successfully received update
     // information from Google servers.
     base::Time last_checked;
     // Details about Google Update's attempts to update itself.
