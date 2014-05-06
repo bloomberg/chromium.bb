@@ -94,10 +94,19 @@ gfx::Rect ComputeYV12LetterboxRegion(const gfx::Size& frame_size,
 
   result.set_x(MakeEven(result.x()));
   result.set_y(MakeEven(result.y()));
-  result.set_width(std::max(2, MakeEven(result.width())));
-  result.set_height(std::max(2, MakeEven(result.height())));
+  result.set_width(std::max(kMinFrameWidth, MakeEven(result.width())));
+  result.set_height(std::max(kMinFrameHeight, MakeEven(result.height())));
 
   return result;
+}
+
+// Wrapper function to invoke ThreadSafeCaptureOracle::CaptureFrameCallback, is
+// compatible with RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback.
+void InvokeCaptureFrameCallback(
+    const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
+    base::TimeTicks timestamp,
+    bool frame_captured) {
+  capture_frame_cb.Run(timestamp, frame_captured);
 }
 
 void DeleteOnWorkerThread(scoped_ptr<base::Thread> render_thread,
@@ -229,8 +238,8 @@ class WebContentsCaptureMachine
   virtual ~WebContentsCaptureMachine();
 
   // VideoCaptureMachine overrides.
-  virtual bool Start(const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy,
-                     const media::VideoCaptureParams& params) OVERRIDE;
+  virtual bool Start(
+      const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy) OVERRIDE;
   virtual void Stop(const base::Closure& callback) OVERRIDE;
 
   // Starts a copy from the backing store or the composited surface. Must be run
@@ -310,9 +319,6 @@ class WebContentsCaptureMachine
   // Makes all the decisions about which frames to copy, and how.
   scoped_refptr<ThreadSafeCaptureOracle> oracle_proxy_;
 
-  // Video capture parameters that this machine is started with.
-  media::VideoCaptureParams capture_params_;
-
   // Routing ID of any active fullscreen render widget or MSG_ROUTING_NONE
   // otherwise.
   int fullscreen_widget_id_;
@@ -342,8 +348,7 @@ bool FrameSubscriber::ShouldCaptureFrame(
   bool oracle_decision = oracle_proxy_->ObserveEventAndDecideCapture(
       event_type_, present_time, storage, &capture_frame_cb);
 
-  if (!capture_frame_cb.is_null())
-    *deliver_frame_cb = base::Bind(capture_frame_cb, *storage);
+  *deliver_frame_cb = base::Bind(&InvokeCaptureFrameCallback, capture_frame_cb);
   if (oracle_decision)
     delivery_log_->ChronicleFrameDelivery(present_time);
   return oracle_decision;
@@ -573,14 +578,12 @@ WebContentsCaptureMachine::~WebContentsCaptureMachine() {
 }
 
 bool WebContentsCaptureMachine::Start(
-    const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy,
-    const media::VideoCaptureParams& params) {
+    const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!started_);
 
   DCHECK(oracle_proxy.get());
   oracle_proxy_ = oracle_proxy;
-  capture_params_ = params;
 
   render_thread_.reset(new base::Thread("WebContentsVideo_RenderThread"));
   if (!render_thread_->Start()) {
