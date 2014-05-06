@@ -175,7 +175,13 @@ TEST_F(MidiManagerTest, CreateMidiManager) {
 
   scoped_ptr<MidiManager> manager(MidiManager::Create());
   manager->StartSession(client.get(), client->get_client_id());
+  // This #ifdef needs to be identical to the one in media/midi/midi_manager.cc
+#if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(USE_ALSA) && \
+    !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  EXPECT_EQ(MIDI_NOT_SUPPORTED, client->WaitForResult());
+#else
   EXPECT_EQ(MIDI_OK, client->WaitForResult());
+#endif
 }
 
 }  // namespace
