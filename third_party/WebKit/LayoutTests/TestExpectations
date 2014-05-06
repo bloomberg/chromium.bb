@@ -1257,3 +1257,5 @@ crbug.com/367903 web-animations-api/timeline-time.html [ Pass Failure ]
 
 # Started failing with v8 roll in chromium r267851.
 crbug.com/369600 fast/events/onerror-no-constructor.html [ Failure ]
+
+crbug.com/370490 fast/html/imports/rel-import-to-style.html [ Pass Failure ]
