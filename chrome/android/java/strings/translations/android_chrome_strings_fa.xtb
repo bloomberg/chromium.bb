@@ -2,9 +2,11 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
 <translation id="8588878054171169263">ذخیره تصویر</translation>
+<translation id="4996978546172906250">اشتراک‌گذاری از طریق</translation>
 <translation id="5578795271662203820">جستجوی <ph name="SEARCH_ENGINE"/> برای این تصویر</translation>
 <translation id="6831043979455480757">ترجمه</translation>
 <translation id="7644305409888602715">در حال ترجمه صفحه به <ph name="SOURCE_LANGUAGE"/>…</translation>
+<translation id="7015922086425404465">‏دریافت برنامه از فروشگاه Google Play:‏ <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">بارگیری مجدد این صفحه</translation>
 <translation id="641643625718530986">چاپ...</translation>
 <translation id="7658239707568436148">لغو</translation>
@@ -14,12 +16,15 @@
 <translation id="3358663646935160692">‏این حساب توسط <ph name="DOMAIN_NAME"/> مدیریت می‌شود. شما با یک حساب مدیریت شده وارد سیستم شده‌اید و به سرپرست این حساب اجازه کنترل نمایه Chrome خود را می‌دهید. اطلاعات Chrome شما به صورت دائم با این حساب مرتبط می‌شود. با قطع ارتباط از این حساب، کلیه اطلاعات Chrome شما در دستگاه حذف می‌شود.</translation>
 <translation id="1966710179511230534">لطفاً جزئیات ورود به سیستمتان را به‌روز کنید.</translation>
 <translation id="1623104350909869708">جلوگیری از ایجاد پنجره‌های اضافی توسط این صفحه</translation>
+<translation id="1426410128494586442">بله</translation>
 <translation id="8218346974737627104">تأیید ورود به سیستم</translation>
 <translation id="624558823898732418">زبان ترجمه: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">انتخاب گواهی برای احراز هویت</translation>
 <translation id="3896036286668839683">نظاره‌گر گواهی</translation>
 <translation id="8583805026567836021">پاکسازی اطلاعات حساب</translation>
+<translation id="4250680216510889253">خیر</translation>
 <translation id="8073388330009372546">باز کردن تصویر در برگه جدید</translation>
+<translation id="552553974213252141">آیا نوشتار به درستی استخراج شده است؟</translation>
 <translation id="8730621377337864115">انجام شد</translation>
 <translation id="4170011742729630528">این سرویس در دسترس نیست؛ بعداً دوباره امتحان کنید.</translation>
 <translation id="8627706565932943526">خطای همگام‌سازی</translation>
@@ -31,11 +36,14 @@
 <translation id="907015151729920253">کارت هوشمند</translation>
 <translation id="3063601790762993062">ذخیره ویدیو</translation>
 <translation id="6042308850641462728">بیشتر</translation>
+<translation id="7267430310003164111">‏سؤال برای دریافت برنامه از فروشگاه Google Play. نام برنامه: <ph name="APP_NAME"/>. رتبه متوسط برنامه: <ph name="APP_RATING"/>.</translation>
+<translation id="4148957013307229264">در حال نصب...</translation>
 <translation id="3992315671621218278">ذخیره پیوند</translation>
 <translation id="8034522405403831421">این صفحه به زبان <ph name="SOURCE_LANGUAGE"/> است. مایلید آن را به <ph name="TARGET_LANGUAGE"/> ترجمه کنید؟</translation>
 <translation id="4195643157523330669">باز کردن در برگهٔ جدید</translation>
 <translation id="3089395242580810162">باز کردن در برگه ناشناس</translation>
 <translation id="8725066075913043281">سعی مجدد</translation>
+<translation id="8909135823018751308">اشتراک‌گذاری‌...</translation>
 <translation id="4269820728363426813">کپی آدرس پیوند</translation>
 <translation id="4510973599275542560">تازه‌سازی نشود</translation>
 <translation id="1206892813135768548">کپی نوشتار پیوند</translation>
@@ -48,8 +56,10 @@
 <translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
 <translation id="5164482624172255778">‏آیا مایلید دفعه بعد Google Chrome ترجمه صفحاتی به زبان <ph name="LANGUAGE"/> در این سایت را پیشنهاد دهد؟</translation>
 <translation id="8528538445849828817">زبان صفحه: <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="4881695831933465202">باز کردن</translation>
 <translation id="6512448926095770873">ترک کردن این صفحه</translation>
 <translation id="7947953824732555851">پذیرش و ورود به سیستم</translation>
+<translation id="6333140779060797560">اشتراک‌گذاری از طریق <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">بستن</translation>
 <translation id="969096075394517431">تغییر زبان‌ها</translation>
 <translation id="5032574515228824816">فرمان</translation>

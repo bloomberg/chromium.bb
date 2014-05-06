@@ -2,9 +2,11 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
 <translation id="8588878054171169263">บันทึกภาพ</translation>
+<translation id="4996978546172906250">แชร์ผ่าน</translation>
 <translation id="5578795271662203820">ค้นหาภาพนี้ใน <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">แปล</translation>
 <translation id="7644305409888602715">กำลังแปลหน้านี้เป็น <ph name="SOURCE_LANGUAGE"/>...</translation>
+<translation id="7015922086425404465">รับแอปจาก Google Play สโตร์: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">โหลดหน้าเว็บนี้ซ้ำ</translation>
 <translation id="641643625718530986">พิมพ์…</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
@@ -16,12 +18,15 @@
 คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่มีผู้อื่นเป็นผู้จัดการ และคุณอนุญาตให้ผู้ดูแลระบบควบคุมโปรไฟล์ Chrome ของคุณได้ ข้อมูล Chrome ของคุณจะเชื่อมโยงกับบัญชีนี้อย่างถาวร การยกเลิกการเชื่อมต่อกับบัญชีนี้จะเป็นการลบข้อมูล Chrome ในเครื่อง</translation>
 <translation id="1966710179511230534">โปรดอัปเดตรายละเอียดการลงชื่อเข้าใช้ของคุณ</translation>
 <translation id="1623104350909869708">ป้องกันหน้าเว็บนี้จากการสร้างการโต้ตอบเพิ่มเติม</translation>
+<translation id="1426410128494586442">ใช่</translation>
 <translation id="8218346974737627104">ยืนยันการลงชื่อเข้าใช้</translation>
 <translation id="624558823898732418">ภาษาที่แปล: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">เลือกใบรับรองสำหรับการตรวจสอบสิทธิ์</translation>
 <translation id="3896036286668839683">เครื่องมือดูใบรับรอง</translation>
 <translation id="8583805026567836021">กำลังล้างข้อมูลบัญชี</translation>
+<translation id="4250680216510889253">ไม่มี</translation>
 <translation id="8073388330009372546">เปิดภาพในแท็บใหม่</translation>
+<translation id="552553974213252141">ดึงข้อความออกมาถูกต้องไหม</translation>
 <translation id="8730621377337864115">เสร็จสิ้น</translation>
 <translation id="4170011742729630528">บริการนี้ยังไม่สามารถใช้ได้ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="8627706565932943526">ข้อผิดพลาดในการซิงค์</translation>
@@ -33,11 +38,14 @@
 <translation id="907015151729920253">สมาร์ทการ์ด</translation>
 <translation id="3063601790762993062">บันทึกวิดีโอ</translation>
 <translation id="6042308850641462728">เพิ่มเติม</translation>
+<translation id="7267430310003164111">ข้อความเตือนให้รับแอปจาก Google Play สโตร์  ชื่อแอป: <ph name="APP_NAME"/>  คะแนนเฉลี่ยของแอป: <ph name="APP_RATING"/></translation>
+<translation id="4148957013307229264">กำลังติดตั้ง...</translation>
 <translation id="3992315671621218278">บันทึกลิงก์</translation>
 <translation id="8034522405403831421">หน้าเว็บนี้อยู่ในภาษา<ph name="SOURCE_LANGUAGE"/> ต้องการแปลเป็นภาษา<ph name="TARGET_LANGUAGE"/>ไหม</translation>
 <translation id="4195643157523330669">เปิดในแท็บใหม่</translation>
 <translation id="3089395242580810162">เปิดในแท็บไม่ระบุตัวตน</translation>
 <translation id="8725066075913043281">ลองอีกครั้ง</translation>
+<translation id="8909135823018751308">แชร์…</translation>
 <translation id="4269820728363426813">คัดลอกที่อยู่ลิงก์</translation>
 <translation id="4510973599275542560">อย่าโหลดซ้ำ</translation>
 <translation id="1206892813135768548">คัดลอกข้อความลิงก์</translation>
@@ -50,8 +58,10 @@
 <translation id="1285320974508926690">ไม่ต้องแปลไซต์นี้</translation>
 <translation id="5164482624172255778">คุณต้องการให้ Google Chrome เสนอการแปลหน้าเว็บภาษา<ph name="LANGUAGE"/>จากไซต์นี้ในครั้งต่อไปไหม</translation>
 <translation id="8528538445849828817">ภาษาหน้าเว็บ: <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="4881695831933465202">เปิด</translation>
 <translation id="6512448926095770873">ออกจากหน้านี้</translation>
 <translation id="7947953824732555851">ยอมรับและลงชื่อเข้าใช้</translation>
+<translation id="6333140779060797560">แชร์ผ่าน <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">ปิด</translation>
 <translation id="969096075394517431">เปลี่ยนภาษา</translation>
 <translation id="5032574515228824816">หน้าต่างแจ้งเตือน</translation>

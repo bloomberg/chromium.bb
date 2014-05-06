@@ -2,9 +2,11 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="8588878054171169263">Bild speichern</translation>
+<translation id="4996978546172906250">Teilen über</translation>
 <translation id="5578795271662203820">In <ph name="SEARCH_ENGINE"/> nach dem Bild suchen</translation>
 <translation id="6831043979455480757">Übersetzen</translation>
 <translation id="7644305409888602715">Seite wird in folgende Sprache übersetzt: <ph name="SOURCE_LANGUAGE"/>...</translation>
+<translation id="7015922086425404465">App aus dem Google Play Store herunterladen: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Diese Seite aktualisieren</translation>
 <translation id="641643625718530986">Drucken...</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
@@ -16,12 +18,15 @@
 Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrator des Kontos Kontrolle über Ihr Chrome-Profil. Ihre Chrome-Daten werden dauerhaft mit diesem Konto verknüpft. Wenn Sie sich aus diesem Konto abmelden, werden alle lokalen Chrome-Daten gelöscht.</translation>
 <translation id="1966710179511230534">Bitte aktualisieren Sie Ihre Anmeldeinformationen.</translation>
 <translation id="1623104350909869708">Keine weiteren Dialogfelder auf dieser Seite zulassen</translation>
+<translation id="1426410128494586442">Ja</translation>
 <translation id="8218346974737627104">Anmeldung bestätigen</translation>
 <translation id="624558823898732418">Zielsprache: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Zertifikat für Authentifizierung auswählen</translation>
 <translation id="3896036286668839683">Zertifikats-Viewer</translation>
 <translation id="8583805026567836021">Kontodaten werden gelöscht</translation>
+<translation id="4250680216510889253">Nein</translation>
 <translation id="8073388330009372546">Bild in neuem Tab öffnen</translation>
+<translation id="552553974213252141">Wurde der Text korrekt extrahiert?</translation>
 <translation id="8730621377337864115">Fertig</translation>
 <translation id="4170011742729630528">Der Dienst ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
 <translation id="8627706565932943526">Synchronisierungsfehler</translation>
@@ -33,11 +38,14 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="907015151729920253">Smartcard</translation>
 <translation id="3063601790762993062">Video speichern</translation>
 <translation id="6042308850641462728">Mehr</translation>
+<translation id="7267430310003164111">Aufforderung zum Herunterladen der App aus dem Google Play Store. Name der App: <ph name="APP_NAME"/>. Durchschnittliche Bewertung der App: <ph name="APP_RATING"/>.</translation>
+<translation id="4148957013307229264">Installation wird ausgeführt...</translation>
 <translation id="3992315671621218278">Link speichern</translation>
 <translation id="8034522405403831421">Diese Seite ist auf <ph name="SOURCE_LANGUAGE"/>. In folgende Sprache übersetzen: <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="4195643157523330669">In neuem Tab öffnen</translation>
 <translation id="3089395242580810162">In Inkognito-Tab öffnen</translation>
 <translation id="8725066075913043281">Erneut versuchen</translation>
+<translation id="8909135823018751308">Teilen...</translation>
 <translation id="4269820728363426813">URL kopieren</translation>
 <translation id="4510973599275542560">Nicht aktualisieren</translation>
 <translation id="1206892813135768548">Linktext kopieren</translation>
@@ -50,8 +58,10 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="1285320974508926690">Diese Website nie übersetzen</translation>
 <translation id="5164482624172255778">Soll Google Chrome ab dem nächsten Aufruf eine Übersetzung von Seiten dieser Website anbieten, die auf <ph name="LANGUAGE"/> sind?</translation>
 <translation id="8528538445849828817">Sprache der Seite: <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="4881695831933465202">Öffnen</translation>
 <translation id="6512448926095770873">Diese Seite verlassen</translation>
 <translation id="7947953824732555851">Akzeptieren und anmelden</translation>
+<translation id="6333140779060797560">Über <ph name="APPLICATION"/> teilen</translation>
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="969096075394517431">Sprachen ändern</translation>
 <translation id="5032574515228824816">Eingabeaufforderung</translation>

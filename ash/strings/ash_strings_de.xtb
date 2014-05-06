@@ -10,6 +10,7 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> wurde zu <ph name="ROTATION"/> gedreht.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth deaktiviert</translation>
+<translation id="6713285437468012787">Das Pairing für das Bluetooth-Gerät &quot;<ph name="DEVICE_NAME"/>&quot; wurde durchgeführt und das Gerät ist nun für alle Nutzer verfügbar. Sie können das Pairing unter &quot;Einstellungen&quot; entfernen.</translation>
 <translation id="7165320105431587207">Fehler beim Konfigurieren des Netzwerks</translation>
 <translation id="3775358506042162758">Bei der Mehrfachanmeldung sind maximal drei Konten zulässig.</translation>
 <translation id="370649949373421643">WLAN aktivieren</translation>
@@ -19,6 +20,7 @@
 <translation id="595202126637698455">Leistungsnachverfolgung aktiviert</translation>
 <translation id="8054466585765276473">Akku-Laufzeit wird berechnet.</translation>
 <translation id="7982789257301363584">Netzwerk</translation>
+<translation id="2303600792989757991">Fensterübersicht umschalten</translation>
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="938582441709398163">Tastatur-Overlay</translation>
 <translation id="4387004326333427325">Remoteablehnung des Authentifizierungszertifikats</translation>
@@ -79,7 +81,9 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="3892641579809465218">Interne Anzeige</translation>
 <translation id="7823564328645135659">Nach der Synchronisierung Ihrer Einstellungen wurde die Sprache von &quot;<ph name="FROM_LOCALE"/>&quot; in &quot;<ph name="TO_LOCALE"/>&quot; geändert.</translation>
 <translation id="3368922792935385530">Verbunden</translation>
+<translation id="3606978283550408104">Verbindung zur Braillezeile hergestellt</translation>
 <translation id="8654520615680304441">WLAN aktivieren...</translation>
+<translation id="6650933572246256093">Das Bluetooth-Gerät &quot;<ph name="DEVICE_NAME"/>&quot; bittet um Erlaubnis für das Pairing. Geben Sie auf dem Gerät folgenden Passkey ein: <ph name="PASSKEY"/>.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Ihre Eingabemethode hat sich in <ph name="INPUT_METHOD_ID"/> geändert.
 Drücken Sie zum Wechseln Shift+Alt.</translation>
@@ -132,6 +136,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> wird aktiviert</translation>
+<translation id="4527045527269911712">Das Bluetooth-Gerät &quot;<ph name="DEVICE_NAME"/>&quot; bittet um Erlaubnis für das Pairing.</translation>
 <translation id="8814190375133053267">WLAN</translation>
 <translation id="1923539912171292317">Automatische Klicks</translation>
 <translation id="1398853756734560583">Vergrößern</translation>
@@ -182,11 +187,15 @@ Servernachricht: <ph name="SERVER_MSG"/></translation>
 <translation id="479989351350248267">Suchbegriff eingeben</translation>
 <translation id="8454013096329229812">WLAN ist aktiviert.</translation>
 <translation id="4872237917498892622">Alt+Suchen oder Shift</translation>
+<translation id="2429753432712299108">Das Bluetooth-Gerät &quot;<ph name="DEVICE_NAME"/>&quot; bittet um Erlaubnis für das Pairing. Bevor Sie akzeptieren, überprüfen Sie, ob folgender Passkey auf dem Gerät angezeigt wird: <ph name="PASSKEY"/>.</translation>
 <translation id="9201131092683066720">Akku ist zu <ph name="PERCENTAGE"/> % geladen.</translation>
 <translation id="2983818520079887040">Einstellungen...</translation>
 <translation id="3871838685472846647">Mobiler Datendienst aktiviert</translation>
+<translation id="6452181791372256707">Ablehnen</translation>
 <translation id="1195412055398077112">Overscan</translation>
+<translation id="607652042414456612">Ihr Computer kann von Bluetooth-Geräten in der näheren Umgebung erkannt werden. Er erscheint als &quot;<ph name="NAME"/>&quot; mit der Adresse <ph name="ADDRESS"/>.</translation>
 <translation id="112308213915226829">Ablage automatisch ausblenden</translation>
+<translation id="6732801395666424405">Zertifikate nicht geladen</translation>
 <translation id="7573962313813535744">Docking-Modus</translation>
 <translation id="8927026611342028580">Verbindung angefordert</translation>
 <translation id="8300849813060516376">OTASP fehlgeschlagen</translation>
@@ -199,6 +208,7 @@ Servernachricht: <ph name="SERVER_MSG"/></translation>
 <translation id="6785414152754474415">Akku ist zu <ph name="PERCENTAGE"/> % geladen und wird geladen.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Wird aktiviert...</translation>
 <translation id="4895488851634969361">Akku ist vollständig geladen.</translation>
+<translation id="615957422585914272">Bildschirmtastatur anzeigen</translation>
 <translation id="5947494881799873997">Rückgängig machen</translation>
 <translation id="7593891976182323525">Suchen oder Shift</translation>
 <translation id="7649070708921625228">Hilfe</translation>
@@ -206,6 +216,7 @@ Servernachricht: <ph name="SERVER_MSG"/></translation>
 Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="397105322502079400">Wird berechnet...</translation>
 <translation id="158849752021629804">Heimnetzwerk erforderlich</translation>
+<translation id="1013923882670373915">Das Bluetooth-Gerät &quot;<ph name="DEVICE_NAME"/>&quot; bittet um Erlaubnis für das Pairing. Geben Sie folgenden PIN-Code auf dem Gerät ein: <ph name="PINCODE"/>.</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/> aktivieren</translation>
 <translation id="5864471791310927901">DHCP-Suche fehlgeschlagen</translation>
 <translation id="2819276065543622893">Sie werden jetzt abgemeldet.</translation>
@@ -215,6 +226,7 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="973896785707726617">Die Sitzung wird in <ph name="SESSION_TIME_REMAINING"/> beendet. Sie werden dann automatisch abgemeldet.</translation>
 <translation id="8372369524088641025">Ungültiger WEP-Schlüssel</translation>
 <translation id="6636709850131805001">Unbekannter Status</translation>
+<translation id="6406704438230478924">alt gr</translation>
 <translation id="3573179567135747900">Zurücksetzen auf &quot;<ph name="FROM_LOCALE"/>&quot; (Neustart erforderlich)</translation>
 <translation id="8103386449138765447">SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (gesprochenes Feedback) ist aktiviert.

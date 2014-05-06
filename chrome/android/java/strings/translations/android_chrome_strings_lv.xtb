@@ -2,9 +2,11 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
 <translation id="8588878054171169263">Saglabāt attēlu</translation>
+<translation id="4996978546172906250">Kopīgošanas veids:</translation>
 <translation id="5578795271662203820">Meklēt šo attēlu ar <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Tulkot</translation>
 <translation id="7644305409888602715">Notiek lapas tulkošana <ph name="SOURCE_LANGUAGE"/> valodā...</translation>
+<translation id="7015922086425404465">Iegūstiet lietotni Google Play veikalā: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Atkārtoti ielādēt šo lapu</translation>
 <translation id="641643625718530986">Drukāt...</translation>
 <translation id="7658239707568436148">Atcelt</translation>
@@ -16,12 +18,15 @@
 Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta administratoram pārvaldīt jūsu Chrome profilu. Jūsu Chrome dati tiks neatgriezeniski saistīti ar šo kontu. Noņemot saiti no šī konta, tiks dzēsti lokālie Chrome dati.</translation>
 <translation id="1966710179511230534">Lūdzu, atjauniniet pierakstīšanās informāciju.</translation>
 <translation id="1623104350909869708">Neļaut šai lapai veidot papildu dialoglodziņus</translation>
+<translation id="1426410128494586442">Jā</translation>
 <translation id="8218346974737627104">Pierakstīšanās apstiprinājums</translation>
 <translation id="624558823898732418">Tulkojuma valoda: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Autentifikācijas sertifikāta izvēlēšanās</translation>
 <translation id="3896036286668839683">Sertifikāta skatītājs</translation>
 <translation id="8583805026567836021">Konta datu dzēšana</translation>
+<translation id="4250680216510889253">Nē</translation>
 <translation id="8073388330009372546">Atvērt attēlu jaunā cilnē</translation>
+<translation id="552553974213252141">Vai iegūtais teksts bija pareizs?</translation>
 <translation id="8730621377337864115">Pabeigts</translation>
 <translation id="4170011742729630528">Pakalpojums nav pieejams. Vēlāk mēģiniet vēlreiz.</translation>
 <translation id="8627706565932943526">Sinhronizācijas kļūda.</translation>
@@ -33,11 +38,14 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="907015151729920253">Viedkarte</translation>
 <translation id="3063601790762993062">Saglabāt videoklipu</translation>
 <translation id="6042308850641462728">Vairāk</translation>
+<translation id="7267430310003164111">Aicinājums iegūt lietotni Google Play veikalā. Lietotnes nosaukums: <ph name="APP_NAME"/>. Lietotnes vidējais vērtējums: <ph name="APP_RATING"/>.</translation>
+<translation id="4148957013307229264">Notiek instalēšana...</translation>
 <translation id="3992315671621218278">Saglabāt saiti</translation>
 <translation id="8034522405403831421">Šī lapas saturs ir šādā valodā: <ph name="SOURCE_LANGUAGE"/>. Vai tulkot šādā valodā: <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="4195643157523330669">Atvērt jaunā cilnē</translation>
 <translation id="3089395242580810162">Atvērt inkognito režīma cilnē</translation>
 <translation id="8725066075913043281">Mēģināt vēlreiz</translation>
+<translation id="8909135823018751308">Kopīgot...</translation>
 <translation id="4269820728363426813">Kopēt saites adresi</translation>
 <translation id="4510973599275542560">Neielādēt atkārtoti</translation>
 <translation id="1206892813135768548">Kopēt saites tekstu</translation>
@@ -50,8 +58,10 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="1285320974508926690">Nekad netulkot šo vietni</translation>
 <translation id="5164482624172255778">Vai vēlaties, lai Google Chrome nākamreiz piedāvātu tulkot šīs vietnes lapas, kuru saturs ir šādā valodā: <ph name="LANGUAGE"/>?</translation>
 <translation id="8528538445849828817">Lapas valoda: <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="4881695831933465202">Atvērt</translation>
 <translation id="6512448926095770873">Pamest šo lapu</translation>
 <translation id="7947953824732555851">Pieņemt un pierakst.</translation>
+<translation id="6333140779060797560">Kopīgot, izmantojot <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Aizvērt</translation>
 <translation id="969096075394517431">Mainīt valodas</translation>
 <translation id="5032574515228824816">Uzvedne</translation>

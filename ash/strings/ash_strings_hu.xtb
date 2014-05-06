@@ -10,6 +10,7 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> elfordult erre: <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth letiltva</translation>
+<translation id="6713285437468012787">A(z) „<ph name="DEVICE_NAME"/>” Bluetooth-eszköz párosítva lett, és elérhető az összes felhasználó számára. A párosítást a Beállításokban szüntetheti meg.</translation>
 <translation id="7165320105431587207">Nem sikerült konfigurálni a hálózatot</translation>
 <translation id="3775358506042162758">Legfeljebb három fiókot használhat a többfiókos bejelentkezés során.</translation>
 <translation id="370649949373421643">Wi-Fi engedélyezése</translation>
@@ -19,6 +20,7 @@
 <translation id="595202126637698455">Teljesítménykövetés engedélyezve</translation>
 <translation id="8054466585765276473">Akkumulátor-időtartam kiszámítása.</translation>
 <translation id="7982789257301363584">Hálózat</translation>
+<translation id="2303600792989757991">Ablakáttekintési mód váltása</translation>
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="938582441709398163">Billentyűzetkiosztás</translation>
 <translation id="4387004326333427325">A hitelesítési tanúsítvány távolról elutasítva</translation>
@@ -79,7 +81,9 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="3892641579809465218">Belső kijelző</translation>
 <translation id="7823564328645135659">A beállítások szinkronizálását követően &quot;<ph name="FROM_LOCALE"/>&quot; nyelvről &quot;<ph name="TO_LOCALE"/>&quot; nyelvre változott a nyelvi beállítás.</translation>
 <translation id="3368922792935385530">Kapcsolódva</translation>
+<translation id="3606978283550408104">Braille-kijelző csatlakoztatva.</translation>
 <translation id="8654520615680304441">Wi-Fi bekapcsolása...</translation>
+<translation id="6650933572246256093">A(z) „<ph name="DEVICE_NAME"/>” Bluetooth-eszköz engedélyt kér a párosításra. Kérjük, adja meg ezt a biztonsági kódot azon az eszközön: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">A beviteli mód a következőre változott: <ph name="INPUT_METHOD_ID"/>.
 A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
@@ -132,6 +136,7 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> aktiválása</translation>
+<translation id="4527045527269911712">A(z) „<ph name="DEVICE_NAME"/>” Bluetooth-eszköz engedélyt kér a párosításra.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Automatikus kattintások</translation>
 <translation id="1398853756734560583">Teljes méret</translation>
@@ -182,11 +187,15 @@ Szerverüzenet: <ph name="SERVER_MSG"/></translation>
 <translation id="479989351350248267">keresés</translation>
 <translation id="8454013096329229812">Wi-Fi bekapcsolva.</translation>
 <translation id="4872237917498892622">Alt + Keresés vagy Shift</translation>
+<translation id="2429753432712299108">A(z) „<ph name="DEVICE_NAME"/>” Bluetooth-eszköz engedélyt kér a párosításra. Mielőtt elfogadná, ellenőrizze, hogy ez a biztonsági kód látható-e azon az eszközön is: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Az akkumulátor töltöttsége: <ph name="PERCENTAGE"/>%.</translation>
 <translation id="2983818520079887040">Beállítások...</translation>
 <translation id="3871838685472846647">Mobil aktiválva</translation>
+<translation id="6452181791372256707">Elutasítás</translation>
 <translation id="1195412055398077112">túlpásztázás</translation>
+<translation id="607652042414456612">Számítógépét felfedezhetik a közeli Bluetooth-eszközök. Számítógépe „<ph name="NAME"/>” néven, <ph name="ADDRESS"/> címmel lesz látható</translation>
 <translation id="112308213915226829">Polc automatikus elrejtése</translation>
+<translation id="6732801395666424405">A tanúsítványok betöltése nem történt meg</translation>
 <translation id="7573962313813535744">Dokkolt mód</translation>
 <translation id="8927026611342028580">Csatlakozás kérelmezve</translation>
 <translation id="8300849813060516376">OTASP sikertelen</translation>
@@ -199,6 +208,7 @@ Szerverüzenet: <ph name="SERVER_MSG"/></translation>
 <translation id="6785414152754474415">Az akkumulátor töltöttsége <ph name="PERCENTAGE"/>%, és töltődik.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: aktiválás...</translation>
 <translation id="4895488851634969361">Az akkumulátor feltöltve.</translation>
+<translation id="615957422585914272">A képernyő-billentyűzet megjelenítése</translation>
 <translation id="5947494881799873997">Visszavonás</translation>
 <translation id="7593891976182323525">Keresés vagy Shift</translation>
 <translation id="7649070708921625228">Súgó</translation>
@@ -206,6 +216,7 @@ Szerverüzenet: <ph name="SERVER_MSG"/></translation>
 Kikapcsolásához nyomja meg a Keresés vagy a Shift billentyűt.</translation>
 <translation id="397105322502079400">Számítás…</translation>
 <translation id="158849752021629804">Otthoni hálózat szükséges</translation>
+<translation id="1013923882670373915">A(z) „<ph name="DEVICE_NAME"/>” Bluetooth-eszköz engedélyt kér a párosításra. Kérjük, adja meg ezt a PIN kódot azon az eszközön: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/> aktiválása</translation>
 <translation id="5864471791310927901">DHCP-keresés sikertelen</translation>
 <translation id="2819276065543622893">A rendszer most kijelentkezteti Önt.</translation>
@@ -215,6 +226,7 @@ Kikapcsolásához nyomja meg a Keresés vagy a Shift billentyűt.</translation>
 <translation id="973896785707726617">A munkamenet <ph name="SESSION_TIME_REMAINING"/> múlva véget ér. Ekkor a rendszer automatikusan kijelentkezteti.</translation>
 <translation id="8372369524088641025">Hibás WEP kulcs</translation>
 <translation id="6636709850131805001">Azonosítatlan állam</translation>
+<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Visszatérés ehhez: &quot;<ph name="FROM_LOCALE"/>&quot; (újraindítás szükséges)</translation>
 <translation id="8103386449138765447">SMS-üzenetek: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">A ChromeVox (hangos visszajelzés) engedélyezett. A

@@ -10,6 +10,7 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> er roteret til <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth er deaktiveret</translation>
+<translation id="6713285437468012787">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; er blevet parret og er nu tilgængelig for alle brugere, Du kan fjerne denne parring i Indstillinger.</translation>
 <translation id="7165320105431587207">Netværket kunne ikke konfigureres</translation>
 <translation id="3775358506042162758">Du kan kun have op til tre konti i samlet login fra flere konti.</translation>
 <translation id="370649949373421643">Aktivér Wi-Fi</translation>
@@ -19,6 +20,7 @@
 <translation id="595202126637698455">Sporing af ydelsen er aktiveret</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
 <translation id="7982789257301363584">Netværk</translation>
+<translation id="2303600792989757991">Skift vinduesoversigt</translation>
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="938582441709398163">Tastaturoverlejring</translation>
 <translation id="4387004326333427325">Godkendelsescertifikatet blev afvist eksternt</translation>
@@ -79,7 +81,9 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="3892641579809465218">Internt display</translation>
 <translation id="7823564328645135659">Sproget er blevet ændret fra &quot;<ph name="FROM_LOCALE"/>&quot; til &quot;<ph name="TO_LOCALE"/>&quot;, efter at du har synkroniseret dine indstillinger.</translation>
 <translation id="3368922792935385530">Tilsluttet</translation>
+<translation id="3606978283550408104">Der er tilsluttet en brailleskærm.</translation>
 <translation id="8654520615680304441">Slå Wi-Fi til...</translation>
+<translation id="6650933572246256093">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse. Indtast din adgangsnøgle på enheden: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>.
 Tryk på Shift+Alt for at ændre den.</translation>
@@ -132,6 +136,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="5543001071567407895">sms</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Aktiverer <ph name="NAME"/></translation>
+<translation id="4527045527269911712">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Automatiske klik</translation>
 <translation id="1398853756734560583">Maksimer</translation>
@@ -182,11 +187,15 @@ Servermeddelelse: <ph name="SERVER_MSG"/></translation>
 <translation id="479989351350248267">søg</translation>
 <translation id="8454013096329229812">Wi-Fi er slået til.</translation>
 <translation id="4872237917498892622">Alt+Søg eller Skift</translation>
+<translation id="2429753432712299108">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse. Inden du accepterer, skal du bekræfte, at denne adgangsnøgle er vist på den pågældende enhed: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Batteriet er <ph name="PERCENTAGE"/> % opladet.</translation>
 <translation id="2983818520079887040">Indstillinger...</translation>
 <translation id="3871838685472846647">Aktiveret for mobil</translation>
+<translation id="6452181791372256707">Afvis</translation>
 <translation id="1195412055398077112">overscan</translation>
+<translation id="607652042414456612">Din computer kan registreres af Bluetooth-enheder i nærheden, og den vil blive vist som &quot;<ph name="NAME"/>&quot; med adressen <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Skjul hylde automatisk</translation>
+<translation id="6732801395666424405">Certifikaterne blev ikke indlæst</translation>
 <translation id="7573962313813535744">Tilstanden Tilsluttet dockingstation</translation>
 <translation id="8927026611342028580">Der er anmodet om forbindelse</translation>
 <translation id="8300849813060516376">OTASP mislykkedes</translation>
@@ -199,6 +208,7 @@ Servermeddelelse: <ph name="SERVER_MSG"/></translation>
 <translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE"/> % opladet og oplades nu.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Aktiverer...</translation>
 <translation id="4895488851634969361">Batteriet er helt opladet.</translation>
+<translation id="615957422585914272">Vis skærmtastatur</translation>
 <translation id="5947494881799873997">Fortryd</translation>
 <translation id="7593891976182323525">Søg eller skift</translation>
 <translation id="7649070708921625228">Hjælp</translation>
@@ -206,6 +216,7 @@ Servermeddelelse: <ph name="SERVER_MSG"/></translation>
 Tryk på Søg eller Skift for at annullere.</translation>
 <translation id="397105322502079400">Beregner...</translation>
 <translation id="158849752021629804">Hjemmenetværk mangler</translation>
+<translation id="1013923882670373915">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse. Indtast denne pinkode på den pågældende enhed: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">Aktiver <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP-opslag mislykkedes</translation>
 <translation id="2819276065543622893">Du bliver logget ud nu.</translation>
@@ -215,6 +226,7 @@ Tryk på Søg eller Skift for at annullere.</translation>
 <translation id="973896785707726617">Denne session afsluttes om <ph name="SESSION_TIME_REMAINING"/>. Du logges automatisk ud.</translation>
 <translation id="8372369524088641025">Ugyldig WEP-nøgle</translation>
 <translation id="6636709850131805001">Tilstanden genkendes ikke</translation>
+<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Skift tilbage til &quot;<ph name="FROM_LOCALE"/>&quot; (kræver genstart)</translation>
 <translation id="8103386449138765447">sms-beskeder: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (talefeedback) er aktiveret.

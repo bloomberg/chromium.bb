@@ -10,6 +10,7 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> is gedraaid naar <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth uitgeschakeld</translation>
+<translation id="6713285437468012787">Bluetooth-apparaat '<ph name="DEVICE_NAME"/>' is gekoppeld en is nu beschikbaar voor alle gebruikers. Je kunt deze koppeling verwijderen via 'Instellingen'.</translation>
 <translation id="7165320105431587207">Kan netwerk niet configureren</translation>
 <translation id="3775358506042162758">Je kunt maximaal drie accounts hebben in Toegang tot meerdere accounts</translation>
 <translation id="370649949373421643">Wifi inschakelen</translation>
@@ -19,6 +20,7 @@
 <translation id="595202126637698455">Bijhouden van prestaties ingeschakeld</translation>
 <translation id="8054466585765276473">Accuduur berekenen.</translation>
 <translation id="7982789257301363584">Netwerk</translation>
+<translation id="2303600792989757991">Overzicht venster in-/uitschakelen</translation>
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="938582441709398163">Overlay voor toetsenbord</translation>
 <translation id="4387004326333427325">Verificatiecertificaat afgewezen op afstand</translation>
@@ -79,7 +81,9 @@ Druk op Shift + Alt om te schakelen.j</translation>
 <translation id="3892641579809465218">Interne display</translation>
 <translation id="7823564328645135659">Na het synchroniseren met je instellingen, is de taal gewijzigd van '<ph name="FROM_LOCALE"/>' in '<ph name="TO_LOCALE"/>'.</translation>
 <translation id="3368922792935385530">Verbonden</translation>
+<translation id="3606978283550408104">Braillescherm gekoppeld.</translation>
 <translation id="8654520615680304441">Wifi inschakelen...</translation>
+<translation id="6650933572246256093">Bluetooth-apparaat '<ph name="DEVICE_NAME"/>' wil toestemming om te koppelen. Voer de volgende toegangscode in op dat apparaat: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Je invoermethode is gewijzigd in <ph name="INPUT_METHOD_ID"/>.
 Druk op Shift + Alt om te schakelen.</translation>
@@ -132,6 +136,7 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> activeren</translation>
+<translation id="4527045527269911712">Bluetooth-apparaat '<ph name="DEVICE_NAME"/>' wil toestemming om te koppelen.</translation>
 <translation id="8814190375133053267">Wifi</translation>
 <translation id="1923539912171292317">Automatische klikken</translation>
 <translation id="1398853756734560583">Maximaliseren</translation>
@@ -182,11 +187,15 @@ Melding van de server: <ph name="SERVER_MSG"/></translation>
 <translation id="479989351350248267">zoeken</translation>
 <translation id="8454013096329229812">Wifi is ingeschakeld.</translation>
 <translation id="4872237917498892622">Alt+Zoeken of Shift</translation>
+<translation id="2429753432712299108">Bluetooth-apparaat '<ph name="DEVICE_NAME"/>' wil toestemming om te koppelen. Bevestig vóór het accepteren dat de volgende toegangscode op dat apparaat wordt weergegeven: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">De accu is <ph name="PERCENTAGE"/>% vol.</translation>
 <translation id="2983818520079887040">Instellingen...</translation>
 <translation id="3871838685472846647">Mobiel geactiveerd</translation>
+<translation id="6452181791372256707">Weigeren</translation>
 <translation id="1195412055398077112">overscan</translation>
+<translation id="607652042414456612">Je computer is vindbaar voor Bluetooth-apparaten in de buurt en wordt weergegeven als '<ph name="NAME"/>' met adres <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Plank automatisch verbergen</translation>
+<translation id="6732801395666424405">Certificaten niet geladen</translation>
 <translation id="7573962313813535744">Gedockte modus</translation>
 <translation id="8927026611342028580">Verbinding aangevraagd</translation>
 <translation id="8300849813060516376">OTASP mislukt</translation>
@@ -199,6 +208,7 @@ Melding van de server: <ph name="SERVER_MSG"/></translation>
 <translation id="6785414152754474415">De accu is <ph name="PERCENTAGE"/>% vol en wordt opgeladen.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: activeren...</translation>
 <translation id="4895488851634969361">De accu is vol.</translation>
+<translation id="615957422585914272">Schermtoetsenbord weergeven</translation>
 <translation id="5947494881799873997">Terugzetten</translation>
 <translation id="7593891976182323525">Zoeken of Shift</translation>
 <translation id="7649070708921625228">Help</translation>
@@ -206,6 +216,7 @@ Melding van de server: <ph name="SERVER_MSG"/></translation>
 Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="397105322502079400">Berekenen...</translation>
 <translation id="158849752021629804">Thuisnetwerk vereist</translation>
+<translation id="1013923882670373915">Bluetooth-apparaat '<ph name="DEVICE_NAME"/>' wil toestemming om te koppelen. Voer de volgende pincode in op dat apparaat: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/> activeren</translation>
 <translation id="5864471791310927901">Opzoeken van DHCP mislukt</translation>
 <translation id="2819276065543622893">Je wordt nu uitgelogd.</translation>
@@ -215,6 +226,7 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="973896785707726617">Deze sessie loopt af over <ph name="SESSION_TIME_REMAINING"/>. Je wordt automatisch uitgelogd.</translation>
 <translation id="8372369524088641025">Slechte WEP-sleutel</translation>
 <translation id="6636709850131805001">Niet-herkende staat</translation>
+<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Teruggaan naar '<ph name="FROM_LOCALE"/>' (opnieuw starten vereist)</translation>
 <translation id="8103386449138765447">SMS-berichten: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (gesproken feedback) is ingeschakeld.

@@ -25,6 +25,7 @@
       de webbadresser som har angetts i AudioCaptureAllowedUrls kan spela in ljud.
 
       Den här principen gäller alla typer av ljudingångar, inte bara den inbyggda mikrofonen.</translation>
+<translation id="7267809745244694722">Standard för medieknappar ändras till funktionstangenter</translation>
 <translation id="9150416707757015439">Policyn är föråldrad. Använd IncognitoModeAvailability istället.
       Inkognitoläge i <ph name="PRODUCT_NAME"/> aktiveras.
 
@@ -644,7 +645,6 @@
 <translation id="6417861582779909667">Policyn gör att du kan ställa in en lista med webbadressmönster som inte får spara cookies.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser, antingen från policyn DefaultCookiesSetting om den används eller användarens personliga konfiguration.</translation>
-<translation id="5457296720557564923">Innebär att sidor kommer åt minnesstatistik för JavaScript. Med den här inställningen visas minnesstatistik från profilpanelen i verktygen för utvecklare på själva webbsidan.</translation>
 <translation id="5776485039795852974">Fråga varje gång en webbplats försöker visa aviseringar på skrivbordet</translation>
 <translation id="5047604665028708335">Tillåt åtkomst till webbplatser utanför innehållspaket</translation>
 <translation id="5052081091120171147">Om den här policyn är aktiverad gör den att webbhistoriken måste importeras från den nuvarande standardwebbläsaren. Den påverkar då även importfönstret.
@@ -656,6 +656,12 @@
 <translation id="7132877481099023201">Webbadresser som ska beviljas åtkomst till videoinspelningsenheter utan meddelande</translation>
 <translation id="8947415621777543415">Rapportera enhetsplats</translation>
 <translation id="1655229863189977773">Ange enhetens cachestorlek i byte</translation>
+<translation id="3358275192586364144">Aktiverar WPAD-optimering i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
+
+      Om principen är aktiverad väntar Chrome kortare tid på DNS-baserade WPAD-servrar.
+
+      Om principen inte anges är detta aktiverat och kan inte
+      ändras av användaren.</translation>
 <translation id="6376842084200599664">Gör att du kan ange en lista med tillägg som installeras utan att det märks och utan att användaren behöver göra något.
 
           Varje objekt i listan är en sträng som innehåller ett tilläggs-ID och en uppdateringsadress, avgränsade med semikolon (<ph name="SEMICOLON"/>). Tilläggs-ID:t är en sträng med 32 bokstäver, till exempel den som finns på <ph name="CHROME_EXTENSIONS_LINK"/> i utvecklarläge. Uppdateringsadressen ska peka på ett XML-manifestdokument för uppdatering enligt beskrivningen på <ph name="LINK_TO_EXTENSION_DOC1"/>. Observera att uppdateringsadressen som anges i den här policyn bara används för den ursprungliga installationen. För senare uppdateringar av tillägget används den uppdateringsadress som anges i tilläggets manifest.
@@ -773,6 +779,7 @@
 <translation id="1679420586049708690">Offentlig session för automatisk inloggning</translation>
 <translation id="7625444193696794922">Policyn anger vilken versionskanal som enheten ska låsas till.</translation>
 <translation id="2552966063069741410">Tidszon</translation>
+<translation id="3788662722837364290">Energisparinställningar när användaren är inaktiv</translation>
 <translation id="2240879329269430151">Gör att du kan ange om webbplatser får visa popup-fönster. Du kan tillåta popup-fönster för alla webbplatser eller blockera popup-fönster för alla webbplatser.
 
           Om du inte anger policyn används BlockPopups och inställningen kan ändras av användaren.</translation>
@@ -855,7 +862,6 @@
 <translation id="8102913158860568230">Standardinställning för medieuppspelning</translation>
 <translation id="6641981670621198190">Inaktivera stöd för programmeringsgränssnitt för 3D-grafik</translation>
 <translation id="1265053460044691532">Begränsa tiden som en användare som verifierats via SAML kan logga in offline</translation>
-<translation id="7929480864713075819">Aktivera minnesrapportering (heap-storlek för JavaScript) på sidan</translation>
 <translation id="5703863730741917647">Ange vilken åtgärd som ska vidtas när fördröjningen på grund av inaktivitet har uppnåtts.
 
           Tänk på att den här policyn är på väg att fasas ut och kommer att tas bort i framtiden.
@@ -972,6 +978,7 @@
 <translation id="4057110413331612451">Tillåt att företagsanvändare endast är en primär multiprofilanvändare</translation>
 <translation id="5365946944967967336">Visa knappen Startsida i verktygsfältet</translation>
 <translation id="3709266154059827597">Konfigurera svartlista för tilläggsinstallation</translation>
+<translation id="1933378685401357864">Bakgrundsbild</translation>
 <translation id="8451988835943702790">Använd sidan Ny flik som startsida</translation>
 <translation id="4617338332148204752">Hoppa över kontroll av metataggar i <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="8469342921412620373">Policyn gör att en standardsökleverantör kan användas.
@@ -995,6 +1002,11 @@
 
           Om den här principen inte anges är den stora markören inaktiverad från start, men kan aktiveras när som helst av användaren.</translation>
 <translation id="2633084400146331575">Aktivera talad feedback.</translation>
+<translation id="687046793986382807">Denna princip används inte från och med <ph name="PRODUCT_NAME"/> version 35. 
+
+      Minnesinfo rapporteras ändå till sidan, oavsett värdealternativ, men de storlekar som
+      rapporterats kvantiseras och uppdateringsintervallet är begränsat av säkerhetsskäl.
+      Om du vill få exakta data i realtid kan du använda ett verktyg som Telemetry.</translation>
 <translation id="8731693562790917685">Med innehållsinställningarna kan du ange hur innehåll av en viss typ (till exempel cookies, bilder eller JavaScript) ska hanteras.</translation>
 <translation id="2411919772666155530">Blockera meddelanden på dessa webbplatser</translation>
 <translation id="6923366716660828830">Policyn anger namnet på standardsökleverantören. Om värdet lämnas tomt eller inte anges används det värdnamn som angavs av sökadressen.
@@ -1006,6 +1018,7 @@
 
           Om policyn har inställningen falskt kommer skärmaktiveringslåset att ignoreras.</translation>
 <translation id="467236746355332046">Funktioner som stöds:</translation>
+<translation id="5447306928176905178">Aktivera minnesrapportering (heap-storlek för JavaScript) på sidan (föråldrad)</translation>
 <translation id="7632724434767231364">GSSAPI-biblioteksnamn</translation>
 <translation id="3038323923255997294">Fortsätt köra bakgrundsappar när <ph name="PRODUCT_NAME"/> avslutas</translation>
 <translation id="8909280293285028130">Anger efter hur lång tid utan åtgärd från användaren som skärmen ska låsas när enheten är ansluten till elnätet.
@@ -1054,6 +1067,17 @@
           Den här policyn är valfri. Om den inte anges kommer begäran om sökningar på Instant att använda GET-metoden.
 
           Den här policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
+<translation id="6095999036251797924">Anger efter hur lång tid skärmen släcks när användaren är inaktiv och enheten drivs med batteri eller ström.
+
+          När tidslängden är inställd på ett tal som är högre än noll anges hur lång tid användaren måste vara inaktiv innan <ph name="PRODUCT_OS_NAME"/> låser skärmen.
+
+          När tidslängden är inställd på noll låser inte <ph name="PRODUCT_OS_NAME"/> skärmen när användaren är inaktiv.
+
+          När tidslängden inte har ställts in används en standardtidslängd.
+
+          Det rekommenderade sättet att låsa skärmen vid inaktivitet är att aktivera skärmlåsning när appen skickas till bakgrunden och sätta <ph name="PRODUCT_OS_NAME"/> i viloläge efter en viss tids inaktivitet. Den här policyn bör endast användas när du vill att skärmen ska låsas mycket tidigare än viloläget startas eller när du inte vill att appen ska skickas till bakgrunden vid inaktivitet.
+
+          Policyvärdet ska anges i millisekunder. Värdena har skurits ned så att de är mindre än fördröjningen innan viloläget.</translation>
 <translation id="1454846751303307294">Policyn gör att du kan ställa in en lista med webbadressmönster som anger webbplatser som inte får köra JavaScript.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultJavaScriptSetting om den har ställts in. Annars används användarens personliga konfiguration.</translation>
@@ -1086,6 +1110,32 @@
       När policyn är inställd på sant eller inte har konfigurerats visas ikonerna.</translation>
 <translation id="5085647276663819155">Inaktivera förhandsgranskning av utskrift</translation>
 <translation id="8672321184841719703">Målversion för automatisk uppdatering</translation>
+<translation id="553658564206262718">Konfigurera energisparinställningarna när användaren är inaktiv.
+
+          Den här policyn styr flera energisparinställningar när användaren är inaktiv.
+
+          Det finns fyra typer av åtgärder:
+          * Skärmen tonas ned om användaren är inaktiv under så lång tid som anges av |ScreenDim|.
+          * Skärmen stängs av om användaren är inaktiv under så lång tid som anges av |ScreenOff|.
+          * En varning om att angiven åtgärd vid inaktivitet kommer att vidtas visas i en dialogruta om användaren är inaktiv under så lång tid som anges av |IdleWarning|.
+          * Åtgärden som anges av |IdleAction| genomförs om användaren är inaktiv under så lång tid som anges av |Idle|.
+
+          För var och en av ovanstående åtgärder ska fördröjningen anges i millisekunder och den måste ha ett värde högre än noll för att motsvarande åtgärd ska vidtas. Om fördröjningen har ställts in på noll vidtas inte motsvarande åtgärd av <ph name="PRODUCT_OS_NAME"/>.
+
+          För var och en av ovanstående fördröjningar används ett standardvärde när tidslängden inte har angetts.
+
+          Observera att |ScreenDim|-värdena kommer att skäras ned för att vara mindre än eller lika med |ScreenOff|, |ScreenOff| och |IdleWarning| skäras ned för att vara mindre än eller lika med |Idle|.
+
+          |IdleAction| kan vara en av fyra möjliga åtgärder:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          När |IdleAction| inte har angetts vidtas standardåtgärden, dvs. viloläget startas.
+
+          Det finns även separata ström- och batteriinställningar.
+          </translation>
 <translation id="1689963000958717134">Tillåter att en pushad nätverkskonfiguration används för alla användare på en <ph name="PRODUCT_OS_NAME"/>-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL"/></translation>
 <translation id="6699880231565102694">Aktivera tvåstegsverifiering för fjärråtkomstvärdar</translation>
 <translation id="2030905906517501646">Sökord för standardsökleverantör</translation>
@@ -1302,6 +1352,32 @@
 
       Om policyn inte anges använder <ph name="PRODUCT_NAME"/> standardvärdet 5 000 millisekunder.</translation>
 <translation id="8099880303030573137">Inaktivitetstid när enheten drivs av batteriet</translation>
+<translation id="1709037111685927635">Konfigurera bakgrundsbild.
+
+      Med den här principen kan du konfigurera bakgrundsbilden som visas på skrivbordet och på bakgrunden på användarens inloggningsskärm. Principen ställs in genom att ange webbadressen där <ph name="PRODUCT_OS_NAME"/> kan hämta bakgrundsbilden och en kryptografisk hash som används för att kontrollera hämtningens integritet. Bilden måste vara i JPEG-format och den får inte vara större än 16 MB. Webbadressen måste vara tillgänglig utan verifiering.
+
+      Bakgrundsbilden hämtas och cachas. Det hämtas igen om webbadressen eller hash ändras.
+
+      Principen ska anges som en sträng med webbadress och hash i JSON-format och enligt följande schema:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;Webbadressen där bakgrundsbilden kan hämtas.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;SHA-256-hash för bakgrundsbilden.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Om principen ställs in kan <ph name="PRODUCT_OS_NAME"/> hämta och använda bakgrundsbilden.
+
+      Om du ställer in principen kan användarna inte ändra eller åsidosätta den.
+
+      Om du inte ställer in principen kan användarna välja en bild som ska visas på skrivbordet och som bakgrundsbild på inloggningsskärmen.</translation>
 <translation id="2761483219396643566">Inaktivitetstid när enheten drivs av batteriet</translation>
 <translation id="6281043242780654992">Konfigurerar principer för Native Messaging. Om en värd för Native Messaging står på svarta listan är den förbjuden såvida den inte står på vitlistan.</translation>
 <translation id="1468307069016535757">Välj standardtillståndet för hjälpmedelsfunktionen högkontrastläge på inloggningsskärmen.
@@ -1440,93 +1516,9 @@
       Om du aktiverar eller inaktiverar inställningen kan användare inte ändra eller åsidosätta inställningen.
 
       Om policyn inte anges kommer proxyfunktionen för datakomprimering kommer användaren att kunna välja om han eller hon vill använda den.</translation>
+<translation id="2170233653554726857">Aktivera WPAD-optimering</translation>
 <translation id="7424751532654212117">Lista med undantag till listan med inaktiverade plugin-program</translation>
 <translation id="6233173491898450179">Ange hämtningskatalog</translation>
-<translation id="78524144210416006">Konfigurera energibesparing på inloggningssidan i <ph name="PRODUCT_OS_NAME"/>.
-
-      Med den här policyn kan du konfigurera hur <ph name="PRODUCT_OS_NAME"/> fungerar när det inte förekommer någon användaraktivitet under en viss tid medan inloggningssidan visas. Policyn styr flera inställningar. Information om deras enskilda betydelse och värdeintervall finns i motsvarande policyer som styr energibesparingen under en session. De enda avvikelserna från dessa policyer är att:
-      * åtgärderna som ska vidtas vid inaktivitet eller när locket stängs inte kan vara att avsluta sessionen
-      * standardåtgärden som ska vidtas vid inaktivitet när enheten är ansluten till ett elnät är avstängning.
-
-      Policyn ska anges som en sträng som uttrycker de enskilda inställningarna i JSON-formatet, enligt följande schema:
-      {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;AC&quot;: {
-            &quot;description&quot;: &quot;Inställningar för energibesparing gäller endast vid anslutning till ett elnät&quot;,
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-              &quot;Delays&quot;: {
-                &quot;type&quot;: &quot;object&quot;,
-                &quot;properties&quot;: {
-                  &quot;ScreenDim&quot;: {
-                    &quot;description&quot;: &quot;Tiden utan aktivitet från användaren efter vilken skärmen blir mörk, i millisekunder&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;ScreenOff&quot;: {
-                    &quot;description&quot;: &quot;Tiden utan aktivitet från användaren efter vilken skärmen stängs av, i millisekunder&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;Idle&quot;: {
-                    &quot;description&quot;: &quot;Tiden utan aktivitet från användaren efter vilken åtgärden vid inaktivitet vidtas, i millisekunder&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  }
-                }
-              },
-              &quot;IdleAction&quot;: {
-                &quot;description&quot;: &quot;Åtgärden som vidtas när fördröjning på grund av inaktivitet har uppnåtts&quot;,
-                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-              }
-            }
-          },
-          &quot;Battery&quot;: {
-            &quot;description&quot;: &quot;Inställningar för energibesparing gäller endast vid batteridrift&quot;,
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-              &quot;Delays&quot;: {
-                &quot;type&quot;: &quot;object&quot;,
-                &quot;properties&quot;: {
-                  &quot;ScreenDim&quot;: {
-                    &quot;description&quot;: &quot;Tiden utan aktivitet från användaren efter vilken skärmen blir mörk, i millisekunder&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;ScreenOff&quot;: {
-                    &quot;description&quot;: &quot;Tiden utan aktivitet från användaren efter vilken skärmen stängs av, i millisekunder&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;Idle&quot;: {
-                    &quot;description&quot;: &quot;Tiden utan aktivitet från användaren efter vilken åtgärden vid inaktivitet vidtas, i millisekunder&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  }
-                }
-              },
-              &quot;IdleAction&quot;: {
-                &quot;description&quot;: &quot;Åtgärden som vidtas när fördröjning på grund av inaktivitet har uppnåtts&quot;,
-                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-              }
-            }
-          },
-          &quot;LidCloseAction&quot;: {
-            &quot;description&quot;: &quot;Åtgärden som vidtas när locket är stängt&quot;,
-            &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-          },
-          &quot;UserActivityScreenDimDelayScale&quot;: {
-            &quot;description&quot;: &quot;Procentandelen som mörkläggningen av skärmen anpassas efter när användaraktiviteten observeras medan skärmen mörkläggs eller så snart skärmen har stängts av&quot;,
-            &quot;type&quot;: &quot;integer&quot;,
-            &quot;minimum&quot;: 100
-          }
-        }
-      }
-
-      Om en inställning inte anges används standardvärdet.
-
-      Om policyn inte anges används standardvärdena för alla inställningar.</translation>
 <translation id="8908294717014659003">Gör att du kan ange om webbplatser ska kunna komma åt medieenheter. Åtkomst till medieenheter kan tillåtas som standard eller så kan användaren få en fråga varje gång en webbplats vill komma åt dem.
 
          Om du inte anger någon policy kommer PromptOnAccess att användas och användaren kommer att kunna ändra den.</translation>
@@ -1561,6 +1553,9 @@
       Om inget värde har angetts används standardstorleken och användaren kan åsidosätta den med flaggan --media-cache-size.</translation>
 <translation id="5142301680741828703">Rendera alltid följande webbadressmönster i <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Konfigurera vitlista för tilläggsinstallation</translation>
+<translation id="5893553533827140852">Om inställningen är aktiverad kommer gnubby-autentiseringsbegäranden att skickas via proxy via en fjärranslutning.
+
+          Om inställningen är inaktiverad eller inte konfigurerad kommer gnubby-autentiseringsbegäranden inte att skickas via proxy.</translation>
 <translation id="187819629719252111">Policyn tillåter åtkomst till lokala filer på datorn genom att tillåta att <ph name="PRODUCT_NAME"/> visar dialogrutor för filval.
 
       Om du aktiverar den här inställningen kan användarna öppna dialogrutor för filval som vanligt.
@@ -1649,6 +1644,11 @@
 
           Om policyn RestoreOnStartup är inställd på att återställa webbadresser från tidigare sessioner fungerar inte den här policyn och cookies sparas inte permanent för dessa webbplatser.</translation>
 <translation id="2098658257603918882">Aktivera rapportering av användning och kraschrelaterade data</translation>
+<translation id="4633786464238689684">Ändrar standardbeteendet för tangenter på den översta raden till funktionstangenter.
+
+          Om principen anges som true fungerar tangentbordets översta tangentrad som tangenter med funktionskommandon som standard. Tryck på söktangenten för att ändra tillbaka funktionen till medieknappar.
+
+          Om principen anges som false, eller inte ställs in, används tangentbordet för mediekommandon som standard och funktionskommandon när söktangenten hålls ned.</translation>
 <translation id="2324547593752594014">Tillåter inloggning i Chrome</translation>
 <translation id="172374442286684480">Tillåt alla webbplatser att ange lokala data</translation>
 <translation id="1151353063931113432">Tillåt bilder på dessa webbplatser</translation>
@@ -1704,6 +1704,7 @@
 
           ExtensionInstallBlacklist har företräde framför den här policyn. Det innebär att ett tillägg på den svarta listan inte kommer att installeras även om det sker från en webbplats på den här listan.</translation>
 <translation id="2113068765175018713">Begränsa enhetens upptid genom att starta om automatiskt</translation>
+<translation id="4224610387358583899">Skärmlåsfördröjningar</translation>
 <translation id="7848840259379156480">Innebär att du kan konfigurera standardrenderare för HTML när <ph name="PRODUCT_FRAME_NAME"/> är installerat.
       Standardinställningen är att låta värdwebbläsaren utföra renderingen, men du
       kan välja att åsidosätta detta och låta <ph name="PRODUCT_FRAME_NAME"/> rendera HTML-sidor som standard.</translation>
@@ -1815,6 +1816,15 @@
       Den här policyn ska ställas in på en webbadress som <ph name="PRODUCT_OS_NAME"/> kan hämta användarvillkoren från. Användarvillkoren måste vara oformaterad text av MIME-typ. Ingen kod får användas.</translation>
 <translation id="2623014935069176671">Vänta på inledande användaraktivitet</translation>
 <translation id="2660846099862559570">Använd aldrig en proxy</translation>
+<translation id="1956493342242507974">Konfigurera  energihanteringen på inloggningsskärmen i <ph name="PRODUCT_OS_NAME"/>.
+
+      Med den här principen kan du konfigurera hur <ph name="PRODUCT_OS_NAME"/> ska fungera om inte användaren gör något under en viss tid när inloggningsskärmen visas. Den här principen styr flera inställningar. Deras enskilda semantik och värdeintervaller finns i motsvarande principer som styr energihanteringen under en session. Det här är enda avvikelserna från dessa principer:
+      * De åtgärder som ska vidtas vid inaktivitet eller när locket stängs får inte vara att avsluta sessionen.
+      * Standardåtgärden vid inaktivitet när nätspänning är ansluten är att stänga av.
+
+      Ett standardvärde används om en inställning inte specificeras.
+
+      Om principen inte ställs in används standardvärden för alla inställningar.</translation>
 <translation id="1435659902881071157">Nätverkskonfiguration på enhetsnivå</translation>
 <translation id="2131902621292742709">Skärmdämpningstid när enheten drivs av batteriet</translation>
 <translation id="5781806558783210276">Anger efter hur lång tid utan åtgärd från användaren som inaktivitietsåtgärden vidtas när enheten drivs av batteriet.
@@ -1936,5 +1946,6 @@
       Policyn påverkar alla typer av ljudutgångar och inte bara de inbyggda högtalarna. Åtkomst till ljudfunktioner nekas också av den här policyn. Aktivera inte den här policyn om en skärmläsare krävs för användaren.
 
       Om inställningen är inställd på sant eller inte är konfigurerad kan användare använda alla ljudutgångar som stöds på enheten.</translation>
+<translation id="6517678361166251908">Tillåt gnubby-autentisering</translation>
 <translation id="4858735034935305895">Tillåt helskärmsläge</translation>
 </translationbundle>

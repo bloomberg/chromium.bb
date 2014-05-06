@@ -22,6 +22,7 @@
       Si se inhabilita esta política, nunca se pedirá permiso al usuario, y la captura de audio solo estará disponible para las URL configuradas en AudioCaptureAllowedUrls.
 
       Esta política afecta a todos los tipos de entradas de audio y no solo al micrófono integrado.</translation>
+<translation id="7267809745244694722">Teclas multimedia predeterminadas para teclas de funciones</translation>
 <translation id="9150416707757015439">Esta política está obsoleta. Te recomendamos que uses IncognitoModeAvailability en su lugar.
       Permite habilitar el modo de incógnito en <ph name="PRODUCT_NAME"/>.
 
@@ -642,9 +643,6 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 <translation id="6417861582779909667">Permite definir una lista de patrones de URL para especificar los sitios que no pueden establecer cookies.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultCookiesSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
-<translation id="5457296720557564923">Permite que las páginas puedan acceder a las estadísticas de uso de memoria de JavaScript.
-
-      Esta opción permite que las estadísticas de memoria del panel de perfiles de las Herramientas para desarrolladores estén disponibles para la propia página web.</translation>
 <translation id="5776485039795852974">Preguntar siempre que un sitio quiera mostrar notificaciones de escritorio</translation>
 <translation id="5047604665028708335">Permitir acceso a sitios no incluidos en paquetes de contenido</translation>
 <translation id="5052081091120171147">Si se habilita, esta política fuerza la importación del historial de navegación desde el navegador predeterminado actual. Si está habilitada, la política también afecta al cuadro de diálogo de importación.
@@ -656,6 +654,11 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 <translation id="7132877481099023201">URLs a las que se concederá acceso a dispositivos de captura de vídeo sin confirmación</translation>
 <translation id="8947415621777543415">Informar de ubicación del dispositivo</translation>
 <translation id="1655229863189977773">Establecer tamaño de caché de disco en bytes</translation>
+<translation id="3358275192586364144">Permite habilitar la optimización de WPAD en <ph name="PRODUCT_NAME"/> y evitar que los usuarios modifiquen esta opción.
+
+      Si se habilita esta política, Chrome tendrá que esperar durante un intervalo de tiempo más corto la respuesta de los servidores WPAD basados en DNS.
+
+      Si no se define la política, se habilitará esta opción y el usuario no podrá modificarla.</translation>
 <translation id="6376842084200599664">Permite al usuario especificar una lista de extensiones que se instalarán de forma automática, sin la interacción del usuario.
 
           Cada elemento de la lista es una cadena que incluye un ID de extensión y una URL de actualización separados por un punto y coma (<ph name="SEMICOLON"/>). El ID de extensión es la cadena de 32 letras que aparece, por ejemplo, en <ph name="CHROME_EXTENSIONS_LINK"/> en el modo de desarrollador. La URL de actualización debe dirigir a un documento XML de manifiesto de actualización, como se describe en <ph name="LINK_TO_EXTENSION_DOC1"/>. Ten en cuenta que la URL de actualización definida en esta política solo se utiliza para la instalación inicial. Las actualizaciones posteriores de la extensión utilizarán la URL de actualización indicada en el manifiesto de la extensión.
@@ -777,6 +780,7 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME"/> intentará 
 <translation id="1679420586049708690">Sesión pública para inicio de sesión automático</translation>
 <translation id="7625444193696794922">Permite especificar el canal de versiones al que se vinculará este dispositivo.</translation>
 <translation id="2552966063069741410">Zona horaria</translation>
+<translation id="3788662722837364290">Configuración de la administración de energía cuando el usuario está inactivo</translation>
 <translation id="2240879329269430151">Permite establecer si los sitios web pueden mostrar o no pop-ups. La ejecución de pop-ups se permite o se deniega a todos los sitios web.
 
           Si no se establece esta política, se usará la política BlockPopups y el usuario podrá modificarla.</translation>
@@ -859,7 +863,6 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME"/> intentará 
 <translation id="8102913158860568230">Opción predeterminada de MediaStream</translation>
 <translation id="6641981670621198190">Inhabilitar compatibilidad con API de gráficos 3D</translation>
 <translation id="1265053460044691532">Limitar el tiempo durante el que un usuario autenticado a través de SAML puede iniciar sesión sin conexión</translation>
-<translation id="7929480864713075819">Habilitar notificación de información sobre memoria (tamaño de conjunto de archivos JavaScript) a la página</translation>
 <translation id="5703863730741917647">Permite especificar la acción a emprender si se alcanza el retraso de inactividad.
 
           Ten en cuenta que esta política se ha dejado de utilizar y se eliminará en el futuro.
@@ -974,6 +977,7 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME"/> intentará 
 <translation id="4057110413331612451">Permitir que el usuario de empresa solo sea usuario principal de la función de varios perfiles</translation>
 <translation id="5365946944967967336">Mostrar botón de página principal en la barra de herramientas</translation>
 <translation id="3709266154059827597">Configurar lista negra de instalación de extensiones</translation>
+<translation id="1933378685401357864">Imagen de fondo de pantalla</translation>
 <translation id="8451988835943702790">Utilizar página Nueva pestaña como página principal</translation>
 <translation id="4617338332148204752">Omitir la comprobación de metaetiquetas en <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="8469342921412620373">Permite habilitar el uso de un proveedor de búsquedas predeterminado.
@@ -997,6 +1001,9 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME"/> intentará 
 
           Si no se establece esta política, el cursor grande se inhabilitará de forma inicial, pero el usuario podrá habilitarlo en cualquier momento.</translation>
 <translation id="2633084400146331575">Habilitar mensajes de voz</translation>
+<translation id="687046793986382807">Esta política no está disponible a partir de la versión 35 de <ph name="PRODUCT_NAME"/>.
+
+      La información sobre memoria se notifica a la página, independientemente del valor de la opción, pero los tamaños notificados están restringidos y la frecuencia de actualizaciones está limitada por razones de seguridad. Para obtener información precisa en tiempo real, debes utilizar herramientas como la telemetría.</translation>
 <translation id="8731693562790917685">La configuración de contenido permite especificar la gestión de un tipo específico de contenido (por ejemplo, cookies, imágenes o JavaScript).</translation>
 <translation id="2411919772666155530">Bloquear notificaciones en estos sitios</translation>
 <translation id="6923366716660828830">Permite especificar el nombre del proveedor de búsquedas predeterminado. Si se deja en blanco, se utilizará el nombre del host especificado por la URL de búsqueda.
@@ -1008,6 +1015,7 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME"/> intentará 
 
           Si se utiliza el valor False, se ignorarán las solicitudes de bloqueo de activación de pantalla.</translation>
 <translation id="467236746355332046">Funciones admitidas:</translation>
+<translation id="5447306928176905178">Habilitar notificación de información sobre memoria (tamaño de conjunto de archivos JavaScript) a la página (obsoleto)</translation>
 <translation id="7632724434767231364">Nombre de biblioteca GSSAPI</translation>
 <translation id="3038323923255997294">Continuar ejecutando aplicaciones en segundo plano cuando <ph name="PRODUCT_NAME"/> esté cerrado</translation>
 <translation id="8909280293285028130">Permite especificar el tiempo transcurrido hasta el bloqueo de la pantalla (sin que el usuario realice ninguna acción) está conectado a la red
@@ -1056,6 +1064,17 @@ Si no se establece la política o se establece en False, Chrome no realizará co
           Esta política es opcional. Si no se establece, la solicitud de búsqueda instantánea se enviará mediante el método GET.
 
           Esta política solo se respeta si se habilita la política &quot;DefaultSearchProviderEnabled&quot;.</translation>
+<translation id="6095999036251797924">Permite especificar el tiempo transcurrido hasta el bloqueo de la pantalla (sin que el usuario realice ninguna acción) cuando el usuario está conectado a la red o utiliza la batería.
+
+          Cuando el tiempo transcurrido se establece en un valor superior a cero, especifica el tiempo en que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME"/> bloquee la pantalla.
+
+          Cuando el tiempo transcurrido se establece en cero, <ph name="PRODUCT_OS_NAME"/> no bloquea la pantalla cuando el usuario está inactivo.
+
+          Cuando no se establece el tiempo transcurrido, se utilizará un valor de tiempo predeterminado.
+
+          El modo recomendado para bloquear la pantalla en modo de inactividad es habilitar el bloqueo de pantalla en modo de suspensión y hacer que <ph name="PRODUCT_OS_NAME"/> entre en modo de suspensión después del retraso de inactividad. Esta política solo debe utilizarse cuando el bloqueo se produce en un período de tiempo anterior a la suspensión o cuando no se quiere que se produzca la suspensión en modo de inactividad.
+
+          El valor de la política se debe especificar en milisegundos. Los valores están establecidos para ser inferiores al retraso de inactividad.</translation>
 <translation id="1454846751303307294">Permite definir una lista de patrones de URL para especificar los sitios que no pueden ejecutar JavaScript.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultJavaScriptSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
@@ -1090,6 +1109,32 @@ Si no se establece la política o se establece en False, Chrome no realizará co
       Cuando se establece el valor False o no se configura la política, aparecen los iconos.</translation>
 <translation id="5085647276663819155">Inhabilitar vista previa de impresión</translation>
 <translation id="8672321184841719703">Versión de destino de actualizaciones automáticas</translation>
+<translation id="553658564206262718">Modifica la configuración de la administración de energía cuando el usuario está inactivo.
+
+          Esta política controla diferentes opciones de configuración de la estrategia de administración de energía cuando el usuario está inactivo.
+
+          Hay cuatro tipo de acciones:
+          * La pantalla se atenuará si el usuario permanece inactivo durante el tiempo especificado por |ScreenDim|.
+          * La pantalla se desactivará si el usuario permanece inactivo durante el tiempo especificado por |ScreenOff|.
+          * Se mostrará un cuadro de diálogo de advertencia si el usuario permanece inactivo durante el tiempo especificado por |IdleWarning| para informar al usuario de que se va a realizar la acción de inactividad.
+          * Se llevará a cabo la acción especificada por |IdleAction| si el usuario permanece inactivo durante el tiempo especificado por |Idle|.
+
+          En cada una de las acciones anteriores, el retraso se debe especificar en milisegundos y se debe establecer en un valor superior a cero para activar la acción correspondiente. Si el retraso se establece en cero, <ph name="PRODUCT_OS_NAME"/> no realizará la acción correspondiente.
+
+          En cada uno de los retrasos anteriores, se utilizará un valor predeterminado si no se establece el tiempo transcurrido.
+
+          Ten en cuenta que los valores de |ScreenDim| deberán ser inferiores o igual a |ScreenOff|, mientras que los valores de |ScreenOff| y |IdleWarning| tendrán que ser inferiores o iguales a |Idle|.
+
+          |IdleAction| puede ser una de estas cuatro posibles acciones:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Si no se establece el valor |IdleAction|, se realizará la acción predeterminada (suspender la pantalla).
+
+          Asimismo, existen opciones independientes para la batería y la conexión a la red eléctrica.
+          </translation>
 <translation id="1689963000958717134">Permite aplicar la configuración de red para todos los usuarios de un dispositivo <ph name="PRODUCT_OS_NAME"/>. La configuración de red es una cadena en formato JSON, tal y como se define en la página sobre el formato Open Network Configuration (<ph name="ONC_SPEC_URL"/>).</translation>
 <translation id="6699880231565102694">Habilitar la autenticación de dos factores para hosts de acceso remoto</translation>
 <translation id="2030905906517501646">Palabra clave de proveedor de búsquedas predeterminadas</translation>
@@ -1306,6 +1351,32 @@ Si no se establece esta política, el teclado en pantalla se inhabilitará la pr
 
       Si no se establece esta política, <ph name="PRODUCT_NAME"/> utilizará el valor predeterminado de 5.000 milisegundos.</translation>
 <translation id="8099880303030573137">Retraso de inactividad cuando el dispositivo funciona con la batería</translation>
+<translation id="1709037111685927635">Permite configurar la imagen del fondo de pantalla.
+
+      Esta política te permite configurar la imagen del fondo de pantalla que se muestra al usuario en el escritorio y en el fondo de la pantalla de inicio de sesión. La política se define especificando la URL desde la que <ph name="PRODUCT_OS_NAME"/> puede descargar la imagen del fondo de pantalla y un hash criptográfico que se utiliza para verificar la integridad de la descarga. La imagen debe tener formato y un tamaño no superior a 16 MB. Se debe poder acceder a la URL sin autenticación.
+
+      La imagen del fondo de pantalla se descarga y se almacena en la memoria caché, y se vuelve a descargar cada vez que se produce un cambio en la URL o en el algoritmo hash.
+
+      La política se debe especificar como una cadena que represente la URL y el algoritmo hash en formato JSON de acuerdo con el siguiente esquema:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;URL desde la que se puede descargar la imagen del fondo de pantalla.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;Algoritmo hash SHA-256 de la imagen del fondo de pantalla.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Si se define esta política, <ph name="PRODUCT_OS_NAME"/> descargará y utilizará la imagen del fondo de pantalla.
+
+      Si defines esta política, los usuarios no podrán cambiarla ni anularla.
+
+      Si no se define la política, el usuario podrá elegir la imagen que se mostrará en el escritorio y en el fondo de la pantalla de inicio de sesión.</translation>
 <translation id="2761483219396643566">Tiempo de espera de advertencia de inactividad cuando el dispositivo funciona con batería</translation>
 <translation id="6281043242780654992">Configura las políticas relativas a los mensajes nativos. Los hosts de mensajes nativos de la lista negra se inhabilitarán a menos que se incluyan en la lista blanca.</translation>
 <translation id="1468307069016535757">Establece el estado predeterminado de la función de accesibilidad del modo de contraste alto en la pantalla de inicio de sesión.
@@ -1444,93 +1515,9 @@ Si no se establece esta política, el teclado en pantalla se inhabilitará la pr
       Si habilitas o inhabilitas esta opción, los usuarios no podrán cambiar o anular esta opción.
 
       Si no se establece esta política, la función del proxy de compresión de datos estará disponible para que el usuario decida si quiere o no utilizarla.</translation>
+<translation id="2170233653554726857">Habilitar optimización de WPAD</translation>
 <translation id="7424751532654212117">Lista de excepciones de la lista de complementos inhabilitados</translation>
 <translation id="6233173491898450179">Establecer directorio de descargas</translation>
-<translation id="78524144210416006">Permite configurar la administración de energía en la pantalla de inicio de sesión de <ph name="PRODUCT_OS_NAME"/>.
-
-      Esta política te permite configurar el comportamiento de <ph name="PRODUCT_OS_NAME"/> cuando no hay actividad del usuario durante cierto tiempo mientras se muestra la pantalla de inicio de sesión. La política controla varias opciones. Para obtener información sobre los intervalos de valores y la semántica de estas opciones concretas, consulta las políticas correspondientes que controlan la administración de energía en una sesión. Las únicas desviaciones de estas políticas son:
-      * Las acciones a emprender en caso de inactividad o cierre de la tapa no pueden consistir en la finalización de la sesión.
-      * La acción predeterminada a llevar a cabo en caso de inactividad cuando el dispositivo está conectado a la red eléctrica es apagar el dispositivo.
-
-      La política se debe especificar como una cadena que expresa las opciones concretas en formato JSON de acuerdo con el siguiente esquema:
-      {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;AC&quot;: {
-            &quot;description&quot;: &quot;La configuración de la administración de energía solo se aplica cuando el dispositivo está conectado a la red eléctrica&quot;,
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-              &quot;Delays&quot;: {
-                &quot;type&quot;: &quot;object&quot;,
-                &quot;properties&quot;: {
-                  &quot;ScreenDim&quot;: {
-                    &quot;description&quot;: &quot;Tiempo durante el que el usuario se mantiene inactivo después del que la pantalla se atenúa, en milisegundos&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;ScreenOff&quot;: {
-                    &quot;description&quot;: &quot;Tiempo durante el que el usuario se mantiene inactivo después del que la pantalla se desactiva, en milisegundos&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;Idle&quot;: {
-                    &quot;description&quot;: &quot;Tiempo durante el que el usuario se mantiene inactivo después del que se lleva a cabo la acción relativa a la inactividad, en milisegundos&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  }
-                }
-              },
-              &quot;IdleAction&quot;: {
-                &quot;description&quot;: &quot;Acción a emprender si se alcanza el retraso de inactividad&quot;,
-                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-              }
-            }
-          },
-          &quot;Battery&quot;: {
-            &quot;description&quot;: &quot;La configuración de la administración de energía solo se aplica cuando el dispositivo está usando la batería&quot;,
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-              &quot;Delays&quot;: {
-                &quot;type&quot;: &quot;object&quot;,
-                &quot;properties&quot;: {
-                  &quot;ScreenDim&quot;: {
-                    &quot;description&quot;: &quot;Tiempo durante el que el usuario se mantiene inactivo después del que la pantalla se atenúa, en milisegundos&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;ScreenOff&quot;: {
-                    &quot;description&quot;: &quot;Tiempo durante el que el usuario se mantiene inactivo después del que la pantalla se desactiva, en milisegundos&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;Idle&quot;: {
-                    &quot;description&quot;: &quot;Tiempo durante el que el usuario se mantiene inactivo después del que se lleva a cabo la acción relativa a la inactividad, en milisegundos&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  }
-                }
-              },
-              &quot;IdleAction&quot;: {
-                &quot;description&quot;: &quot;Acción a emprender si se alcanza el retraso de inactividad&quot;,
-                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-              }
-            }
-          },
-          &quot;LidCloseAction&quot;: {
-            &quot;description&quot;: &quot;Acción a emprender cuando se cierra la tapa&quot;,
-            &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-          },
-          &quot;UserActivityScreenDimDelayScale&quot;: {
-            &quot;description&quot;: &quot;Porcentaje de ajuste del tiempo de espera de inactividad de la pantalla cuando se observe la actividad del usuario con la pantalla oscurecida o poco después de que esta se haya desactivado&quot;,
-            &quot;type&quot;: &quot;integer&quot;,
-            &quot;minimum&quot;: 100
-          }
-        }
-      }
-
-      Si no se especifica una opción, se utiliza un valor predeterminado.
-
-      Si no se establece esta política, se utilizan valores predeterminados para todas las opciones.</translation>
 <translation id="8908294717014659003">Te permite establecer si los sitios web pueden acceder a los dispositivos de captura multimedia. El acceso a los dispositivos de captura multimedia se puede establecer de forma predeterminada o se puede configurar para que el usuario reciba un mensaje cada vez que un sitio web quiera acceder a estos dispositivos.
 
           Si no se establece esta política, se utilizará PromptOnAccess y el usuario podrá modificarla.</translation>
@@ -1565,6 +1552,9 @@ Si no se establece esta política, el teclado en pantalla se inhabilitará la pr
       Si no se define esta política, se utilizará el tamaño predeterminado y el usuario podrá modificarlo mediante el indicador &quot;--media-cache-size&quot;.</translation>
 <translation id="5142301680741828703">Mostrar siempre los patrones de URL indicados a continuación en <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Configurar lista de admisión de instalación de extensiones</translation>
+<translation id="5893553533827140852">Si esta opción está habilitada, las solicitudes de autenticación gnubby se representarán a través de una conexión de host remota.
+
+          Si esta opción está inhabilitada o no está configurada, no se representarán solicitudes de autenticación gnubby.</translation>
 <translation id="187819629719252111">Permite que <ph name="PRODUCT_NAME"/> muestre cuadros de diálogo de selección de archivos para acceder a los archivos locales del ordenador.
 
       Si habilitas esta opción, los usuarios podrán abrir cuadros de diálogo de selección de archivos de la forma habitual.
@@ -1653,6 +1643,11 @@ Si no se establece esta política, el valor predeterminado global se utilizará 
 
 Si la política RestoreOnStartup se establece para restaurar las URL de sesiones anteriores, esta política no se respetará y las cookies se almacenarán de forma permanente para estos sitios.</translation>
 <translation id="2098658257603918882">Habilitar informes de uso y de datos sobre fallos</translation>
+<translation id="4633786464238689684">Permite modificar el comportamiento predeterminado de las teclas de la fila superior para convertirlas en teclas de funciones.
+
+          Si esta política se establece en True, las teclas de la fila superior del teclado realizarán comandos de teclas de funciones de forma predeterminada. debes pulsar la tecla de búsqueda para que las teclas multimedia vuelvan a su comportamiento original.
+
+          Si esta política se establece en False o no se establece, el teclado realizará comandos de teclas multimedia de forma predeterminada y comandos de teclas de funciones al pulsar la tecla de búsqueda.</translation>
 <translation id="2324547593752594014">Permitir inicio de sesión en Chrome</translation>
 <translation id="172374442286684480">Permitir que todos los sitios establezcan datos locales</translation>
 <translation id="1151353063931113432">Permitir imágenes en estos sitios</translation>
@@ -1708,6 +1703,7 @@ Si la política RestoreOnStartup se establece para restaurar las URL de sesiones
 
           ExtensionInstallBlacklist prevalece sobre esta política, lo que significa que las extensiones incluidas en la lista negra no se instalarán aunque procedan de un sitio incluido en esta lista.</translation>
 <translation id="2113068765175018713">Limitar tiempo de actividad de dispositivo mediante reinicio automático</translation>
+<translation id="4224610387358583899">Retrasos de bloqueo de pantalla</translation>
 <translation id="7848840259379156480">Permite configurar el procesador de HTML predeterminado si se ha instalado <ph name="PRODUCT_FRAME_NAME"/>.
       De forma predeterminada, se permite que el navegador del host muestre las páginas HTML,
       pero puedes anular esta opción para que <ph name="PRODUCT_FRAME_NAME"/> muestre las páginas HTML de forma predeterminada.</translation>
@@ -1822,6 +1818,15 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
       La política se debe establecer en una URL desde la que <ph name="PRODUCT_OS_NAME"/> podrá descargar las Condiciones de servicio. Las Condiciones de servicio deben ser texto sin formato, que actúe como texto/sin formato del tipo MIME. No se permite ningún tipo de marcado.</translation>
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="2660846099862559570">No utilizar nunca un proxy</translation>
+<translation id="1956493342242507974">Permite configurar la administración de energía en la pantalla de inicio de sesión de <ph name="PRODUCT_OS_NAME"/>.
+
+      Esta política te permite configurar el comportamiento de <ph name="PRODUCT_OS_NAME"/> cuando no hay actividad del usuario durante cierto tiempo mientras se muestra la pantalla de inicio de sesión. La política controla varias opciones. Para obtener información sobre los intervalos de valores y la semántica de estas opciones, consulta las políticas correspondientes que controlan la administración de energía en una sesión. Las únicas desviaciones de estas políticas son:
+      * Las acciones que se deben llevar a cabo en caso de inactividad o cierre de la tapa no pueden consistir en la finalización de la sesión.
+      * La acción predeterminada que se lleva a cabo en caso de inactividad cuando el dispositivo está conectado a la red eléctrica es apagar el dispositivo.
+
+      Si no se configura una opción, se utilizará el valor predeterminado.
+
+      Si no se define esta política, se utilizarán todos los valores predeterminados.</translation>
 <translation id="1435659902881071157">Configuración de red de dispositivos</translation>
 <translation id="2131902621292742709">Retraso de atenuado de pantalla cuando el dispositivo funciona con la batería</translation>
 <translation id="5781806558783210276">Permite especificar el tiempo transcurrido hasta que se entra en modo de inactividad (sin que el usuario realice ninguna acción) cuando el dispositivo funciona con la batería.
@@ -1943,5 +1948,6 @@ Si esta política se establece en False, la salida de audio no estará disponibl
 Esta política afecta a todos los tipos de salidas de audio, no solo a los altavoces integrados, y también bloquea las funciones de accesibilidad de audio. No debes habilitar esta política si el usuario necesita un lector de pantalla.
 
 Si esta política se establece en True o no se configura, los usuarios podrán utilizar todas las salidas de audio admitidas en su dispositivo.</translation>
+<translation id="6517678361166251908">Permitir autenticación gnubby</translation>
 <translation id="4858735034935305895">Permitir modo de pantalla completa</translation>
 </translationbundle>

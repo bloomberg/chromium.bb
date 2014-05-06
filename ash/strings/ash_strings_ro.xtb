@@ -10,6 +10,7 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> a fost rotit la <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth dezactivat</translation>
+<translation id="6713285437468012787">Dispozitivul Bluetooth „<ph name="DEVICE_NAME"/>” a fost conectat și este disponibil acum pentru toți utilizatorii. Puteți elimina această conexiune din Setări.</translation>
 <translation id="7165320105431587207">Rețeaua nu a putut fi configurată</translation>
 <translation id="3775358506042162758">Conectarea multiplă acceptă maximum trei conturi.</translation>
 <translation id="370649949373421643">Activați Wi-Fi</translation>
@@ -19,6 +20,7 @@
 <translation id="595202126637698455">Urmărirea performanței este activată</translation>
 <translation id="8054466585765276473">Se calculează durata bateriei.</translation>
 <translation id="7982789257301363584">Rețea</translation>
+<translation id="2303600792989757991">Activați/Dezactivați prezentarea ferestrei</translation>
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="938582441709398163">Suprapunere a tastaturii</translation>
 <translation id="4387004326333427325">Certificatul de autentificare a fost respins de la distanță</translation>
@@ -79,7 +81,9 @@
 <translation id="3892641579809465218">Afișaj intern</translation>
 <translation id="7823564328645135659">După sincronizarea setărilor, limba a fost modificată de la „<ph name="FROM_LOCALE"/>” la „<ph name="TO_LOCALE"/>”.</translation>
 <translation id="3368922792935385530">Conectat</translation>
+<translation id="3606978283550408104">Afișajul Braille este conectat.</translation>
 <translation id="8654520615680304441">Activați Wi-Fi...</translation>
+<translation id="6650933572246256093">Dispozitivul Bluetooth „<ph name="DEVICE_NAME"/>” solicită permisiunea de a se conecta. Introduceți această parolă pe dispozitivul respectiv: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Metoda de introducere s-a schimbat la <ph name="INPUT_METHOD_ID"/>.
         Apăsați pe Shift + Alt pentru a comuta.</translation>
@@ -132,6 +136,7 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Se activează <ph name="NAME"/></translation>
+<translation id="4527045527269911712">Dispozitivul Bluetooth „<ph name="DEVICE_NAME"/>” solicită permisiunea de a se conecta.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Clicuri automate</translation>
 <translation id="1398853756734560583">Maximizați</translation>
@@ -182,11 +187,15 @@ Mesaj server: <ph name="SERVER_MSG"/></translation>
 <translation id="479989351350248267">căutați</translation>
 <translation id="8454013096329229812">Conexiunea Wi-Fi este activată.</translation>
 <translation id="4872237917498892622">Alt+Căutare sau Shift</translation>
+<translation id="2429753432712299108">Dispozitivul Bluetooth „<ph name="DEVICE_NAME"/>” solicită permisiunea de a se conecta. Înainte de a continua, verificați dacă această parolă apare pe dispozitivul respectiv: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Nivelul bateriei este de <ph name="PERCENTAGE"/>%.</translation>
 <translation id="2983818520079887040">Setări...</translation>
 <translation id="3871838685472846647">Mobil activat</translation>
+<translation id="6452181791372256707">Respingeți</translation>
 <translation id="1195412055398077112">suprascanare</translation>
+<translation id="607652042414456612">Computerul poate fi detectat de dispozitivele Bluetooth din apropiere și va apărea ca „<ph name="NAME"/>” cu adresa <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Ascundeți automat raftul</translation>
+<translation id="6732801395666424405">Certificatele nu s-au încărcat</translation>
 <translation id="7573962313813535744">Modul andocat</translation>
 <translation id="8927026611342028580">Conectare solicitată</translation>
 <translation id="8300849813060516376">OTASP a eșuat</translation>
@@ -199,6 +208,7 @@ Mesaj server: <ph name="SERVER_MSG"/></translation>
 <translation id="6785414152754474415">Nivelul bateriei este de <ph name="PERCENTAGE"/>% și se încarcă.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: se activează...</translation>
 <translation id="4895488851634969361">Bateria este încărcată complet.</translation>
+<translation id="615957422585914272">Afișați tastatura pe ecran</translation>
 <translation id="5947494881799873997">Reveniți</translation>
 <translation id="7593891976182323525">Căutare sau Shift</translation>
 <translation id="7649070708921625228">Ajutor</translation>
@@ -206,6 +216,7 @@ Mesaj server: <ph name="SERVER_MSG"/></translation>
 Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="397105322502079400">Se calculează...</translation>
 <translation id="158849752021629804">Este necesară rețeaua de domiciliu</translation>
+<translation id="1013923882670373915">Dispozitivul Bluetooth „<ph name="DEVICE_NAME"/>” solicită permisiunea de a se conecta. Introduceți acest cod PIN pe dispozitivul respectiv: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">Activați <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Căutarea DHCP a eșuat</translation>
 <translation id="2819276065543622893">Veți fi deconectat(ă) acum.</translation>
@@ -215,6 +226,7 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="973896785707726617">Această sesiune se va încheia în <ph name="SESSION_TIME_REMAINING"/>. Veți fi deconectat(ă) automat.</translation>
 <translation id="8372369524088641025">Cheie WEP greșită</translation>
 <translation id="6636709850131805001">Stare nerecunoscută</translation>
+<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Modificați înapoi la „<ph name="FROM_LOCALE"/>” (este necesară repornirea)</translation>
 <translation id="8103386449138765447">Mesaje SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (feedbackul rostit) este activat.

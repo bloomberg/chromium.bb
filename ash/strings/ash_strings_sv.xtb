@@ -10,6 +10,7 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> byttes till <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth inaktiverad</translation>
+<translation id="6713285437468012787">Bluetooth-enheten <ph name="DEVICE_NAME"/> har kopplats och är nu tillgänglig för alla användare. Du kan ta bort kopplingen i Inställningar.</translation>
 <translation id="7165320105431587207">Det gick inte att konfigurera nätverket</translation>
 <translation id="3775358506042162758">Du kan högst använda tre konton för multiinloggning.</translation>
 <translation id="370649949373421643">Aktivera Wi-Fi</translation>
@@ -19,6 +20,7 @@
 <translation id="595202126637698455">Resultatspårning aktiverat</translation>
 <translation id="8054466585765276473">Batteritiden beräknas.</translation>
 <translation id="7982789257301363584">Nätverk</translation>
+<translation id="2303600792989757991">Växla fönsteröversikt</translation>
 <translation id="5565793151875479467">Proxy ...</translation>
 <translation id="938582441709398163">Tangentbordsöverlägg</translation>
 <translation id="4387004326333427325">Autentiseringscertifikatet godkändes inte av fjärrvärden</translation>
@@ -79,7 +81,9 @@
 <translation id="3892641579809465218">Intern bildskärm</translation>
 <translation id="7823564328645135659">Chromes språk har ändrats från <ph name="FROM_LOCALE"/> till <ph name="TO_LOCALE"/> efter synkronisering av dina inställningar.</translation>
 <translation id="3368922792935385530">Ansluten</translation>
+<translation id="3606978283550408104">Punktskriftsskärm ansluten.</translation>
 <translation id="8654520615680304441">Aktivera Wi-Fi ...</translation>
+<translation id="6650933572246256093">Bluetooth-enheten <ph name="DEVICE_NAME"/> har begärt tillstånd för koppling. Ange denna lösenordsnyckel på den enheten: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Inmatningsmetoden har ändrats till <ph name="INPUT_METHOD_ID"/>.
         Tryck på Skift + Alt om du vill byta.</translation>
@@ -132,6 +136,7 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Aktiverar <ph name="NAME"/></translation>
+<translation id="4527045527269911712">Bluetooth-enheten <ph name="DEVICE_NAME"/> har begärt tillstånd för koppling.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Automatiska klick</translation>
 <translation id="1398853756734560583">Maximera</translation>
@@ -182,11 +187,15 @@ Meddelande från servern: <ph name="SERVER_MSG"/></translation>
 <translation id="479989351350248267">sök</translation>
 <translation id="8454013096329229812">Wi-Fi är aktiverat.</translation>
 <translation id="4872237917498892622">Alt + Sök eller Skift</translation>
+<translation id="2429753432712299108">Bluetooth-enheten <ph name="DEVICE_NAME"/> har begärt tillstånd för koppling. Innan du godkänner bekräftar du att den här lösenordsnyckeln visas på den enheten: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Batteriet är fullt till <ph name="PERCENTAGE"/> %.</translation>
 <translation id="2983818520079887040">Inställningar...</translation>
 <translation id="3871838685472846647">Mobil aktiverad</translation>
+<translation id="6452181791372256707">Avvisa</translation>
 <translation id="1195412055398077112">överskanning</translation>
+<translation id="607652042414456612">Din dator kan upptäckas av Bluetooth-enheter som finns i närheten och den visas som <ph name="NAME"/> med adressen <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Dölj hyllan automatiskt</translation>
+<translation id="6732801395666424405">Certifikaten har inte lästs in</translation>
 <translation id="7573962313813535744">Dockat läge</translation>
 <translation id="8927026611342028580">Anslutning begärd</translation>
 <translation id="8300849813060516376">Det gick inte att etablera tjänsten over-the-air.</translation>
@@ -199,12 +208,14 @@ Meddelande från servern: <ph name="SERVER_MSG"/></translation>
 <translation id="6785414152754474415">Batteriet är fullt till <ph name="PERCENTAGE"/> % och laddas.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Aktiverar ...</translation>
 <translation id="4895488851634969361">Batteriet är fullt.</translation>
+<translation id="615957422585914272">Visa skärmtangentbordet</translation>
 <translation id="5947494881799873997">Återgå</translation>
 <translation id="7593891976182323525">Sök eller Skift</translation>
 <translation id="7649070708921625228">Hjälp</translation>
 <translation id="3050422059534974565">CAPS LOCK är på. Avbryt genom att trycka på Sök eller Shift.</translation>
 <translation id="397105322502079400">Beräknar ...</translation>
 <translation id="158849752021629804">Behöver hemnätverk</translation>
+<translation id="1013923882670373915">Bluetooth-enheten <ph name="DEVICE_NAME"/> har begärt tillstånd för koppling. Ange den här pinkoden på den enheten: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">Aktivera <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP-förfrågan misslyckades</translation>
 <translation id="2819276065543622893">Du loggas nu ut.</translation>
@@ -214,6 +225,7 @@ Meddelande från servern: <ph name="SERVER_MSG"/></translation>
 <translation id="973896785707726617">Sessionen avslutas om <ph name="SESSION_TIME_REMAINING"/>. Du kommer att loggas ut automatiskt.</translation>
 <translation id="8372369524088641025">Felaktig WEP-nyckel</translation>
 <translation id="6636709850131805001">Okänt tillstånd</translation>
+<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Byt tillbaka till &quot;<ph name="FROM_LOCALE"/>&quot; (kräver omstart)</translation>
 <translation id="8103386449138765447">SMS-meddelanden: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (talad feedback) har aktiverats.

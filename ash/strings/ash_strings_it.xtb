@@ -10,6 +10,7 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> è stato ruotato a <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth disattivo</translation>
+<translation id="6713285437468012787">Il dispositivo Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; è stato accoppiato ed è ora disponibile per tutti gli utenti. Puoi rimuovere tale accoppiamento utilizzando il menu Impostazioni.</translation>
 <translation id="7165320105431587207">Impossibile configurare la rete</translation>
 <translation id="3775358506042162758">Puoi avere massimo tre account per l'accesso simultaneo.</translation>
 <translation id="370649949373421643">Attiva Wi-Fi</translation>
@@ -19,6 +20,7 @@
 <translation id="595202126637698455">Rilevamento del rendimento attivo</translation>
 <translation id="8054466585765276473">Calcolo della durata della batteria.</translation>
 <translation id="7982789257301363584">Rete</translation>
+<translation id="2303600792989757991">Attiva/disattiva panoramica finestra</translation>
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="938582441709398163">Overlay tastiera</translation>
 <translation id="4387004326333427325">Certificato di autenticazione rifiutato da remoto</translation>
@@ -79,7 +81,9 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="3892641579809465218">Display interno</translation>
 <translation id="7823564328645135659">La lingua è stata modificata da &quot;<ph name="FROM_LOCALE"/>&quot; a &quot;<ph name="TO_LOCALE"/>&quot; dopo la sincronizzazione delle impostazioni.</translation>
 <translation id="3368922792935385530">Connessa</translation>
+<translation id="3606978283550408104">Display Braille collegato.</translation>
 <translation id="8654520615680304441">Attiva Wi-Fi...</translation>
+<translation id="6650933572246256093">Il dispositivo Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; chiede l'autorizzazione per essere accoppiato. Inserisci questa passkey sul dispositivo: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Il metodo di immissione è stato cambiato in <ph name="INPUT_METHOD_ID"/>.
 Premi Maiusc+Alt per cambiare metodo.</translation>
@@ -132,6 +136,7 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Attivazione di <ph name="NAME"/></translation>
+<translation id="4527045527269911712">Il dispositivo Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; chiede l'autorizzazione per essere accoppiato.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Clic automatici</translation>
 <translation id="1398853756734560583">Ingrandisci</translation>
@@ -182,11 +187,15 @@ Messaggio del server: <ph name="SERVER_MSG"/></translation>
 <translation id="479989351350248267">ricerca</translation>
 <translation id="8454013096329229812">Wi-Fi attivo.</translation>
 <translation id="4872237917498892622">Alt+tasto per la ricerca o Maiusc</translation>
+<translation id="2429753432712299108">Il dispositivo Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; chiede l'autorizzazione per essere accoppiato. Prima di accettare, conferma che questa passkey viene visualizzata sul dispositivo: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Percentuale di caricamento della batteria: <ph name="PERCENTAGE"/>%.</translation>
 <translation id="2983818520079887040">Impostazioni...</translation>
 <translation id="3871838685472846647">Attivata tramite rete cellulare</translation>
+<translation id="6452181791372256707">Rifiuto</translation>
 <translation id="1195412055398077112">overscan</translation>
+<translation id="607652042414456612">Il tuo computer è rilevabile per i dispositivi Bluetooth nelle vicinanze e verrà visualizzato come &quot;<ph name="NAME"/>&quot; con l'indirizzo <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Nascondi automaticamente shelf</translation>
+<translation id="6732801395666424405">Certificati non caricati</translation>
 <translation id="7573962313813535744">Modalità dock</translation>
 <translation id="8927026611342028580">Connessione richiesta</translation>
 <translation id="8300849813060516376">OTASP non riuscito</translation>
@@ -199,6 +208,7 @@ Messaggio del server: <ph name="SERVER_MSG"/></translation>
 <translation id="6785414152754474415">Percentuale di caricamento batteria: <ph name="PERCENTAGE"/>%. La batteria è in carica.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: attivazione in corso...</translation>
 <translation id="4895488851634969361">La batteria è carica.</translation>
+<translation id="615957422585914272">Mostra tastiera sullo schermo</translation>
 <translation id="5947494881799873997">Ripristina</translation>
 <translation id="7593891976182323525">Tasto per la ricerca o Maiusc</translation>
 <translation id="7649070708921625228">Guida</translation>
@@ -206,6 +216,7 @@ Messaggio del server: <ph name="SERVER_MSG"/></translation>
 Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="397105322502079400">Calcolo in corso...</translation>
 <translation id="158849752021629804">Occorre una rete domestica</translation>
+<translation id="1013923882670373915">Il dispositivo Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; chiede l'autorizzazione per essere accoppiato. Inserisci questo codice PIN sul dispositivo: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">Attiva <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Ricerca DHCP non riuscita</translation>
 <translation id="2819276065543622893">Verrai disconnesso ora.</translation>
@@ -215,6 +226,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="973896785707726617">Questa sessione terminerà fra <ph name="SESSION_TIME_REMAINING"/>. Verrà eseguita automaticamente la disconnessione.</translation>
 <translation id="8372369524088641025">Chiave WEP non valida</translation>
 <translation id="6636709850131805001">Stato non riconosciuto</translation>
+<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Torna a &quot;<ph name="FROM_LOCALE"/>&quot; (è necessario riavviare)</translation>
 <translation id="8103386449138765447">Messaggi SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (feedback vocale) attivo.

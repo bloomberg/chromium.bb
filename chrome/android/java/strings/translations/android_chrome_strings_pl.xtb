@@ -2,9 +2,11 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
 <translation id="8588878054171169263">Zapisz grafikę</translation>
+<translation id="4996978546172906250">Udostępnij przez</translation>
 <translation id="5578795271662203820">Szukaj tej grafiki w <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Tłumacz</translation>
 <translation id="7644305409888602715">Tłumaczę stronę na <ph name="SOURCE_LANGUAGE"/>...</translation>
+<translation id="7015922086425404465">Pobierz aplikację ze Sklepu Google Play: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Załaduj tę stronę ponownie</translation>
 <translation id="641643625718530986">Drukuj…</translation>
 <translation id="7658239707568436148">Anuluj</translation>
@@ -16,12 +18,15 @@
 Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad swoim profilem Chrome. Twoje dane Chrome zostaną na stałe powiązane z tym kontem. Odłączenie od tego konta spowoduje usunięcie lokalnych danych Chrome.</translation>
 <translation id="1966710179511230534">Zaktualizuj swoje dane logowania.</translation>
 <translation id="1623104350909869708">Zapobiegaj wyświetlaniu dodatkowych okien dialogowych na tej stronie</translation>
+<translation id="1426410128494586442">Tak</translation>
 <translation id="8218346974737627104">Potwierdź, że chcesz się zalogować</translation>
 <translation id="624558823898732418">Język tłumaczenia: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Wybierz certyfikat do uwierzytelniania</translation>
 <translation id="3896036286668839683">Przeglądarka certyfikatów</translation>
 <translation id="8583805026567836021">Usuwam dane konta</translation>
+<translation id="4250680216510889253">Nie</translation>
 <translation id="8073388330009372546">Otwórz grafikę w nowej karcie</translation>
+<translation id="552553974213252141">Czy tekst został prawidłowo wyodrębniony?</translation>
 <translation id="8730621377337864115">Gotowe</translation>
 <translation id="4170011742729630528">Usługa jest niedostępna. Spróbuj ponownie później.</translation>
 <translation id="8627706565932943526">Błąd synchronizacji</translation>
@@ -33,11 +38,14 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="907015151729920253">Karta inteligentna</translation>
 <translation id="3063601790762993062">Zapisz film</translation>
 <translation id="6042308850641462728">Więcej</translation>
+<translation id="7267430310003164111">Monit o pobranie aplikacji ze Sklepu Google Play. Nazwa aplikacji: <ph name="APP_NAME"/>. Średnia ocena aplikacji: <ph name="APP_RATING"/>.</translation>
+<translation id="4148957013307229264">Trwa instalowanie...</translation>
 <translation id="3992315671621218278">Zapisz link</translation>
 <translation id="8034522405403831421">Język tej strony to <ph name="SOURCE_LANGUAGE"/>. Przetłumaczyć ją na <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="4195643157523330669">Otwórz w nowej karcie</translation>
 <translation id="3089395242580810162">Otwórz w karcie incognito</translation>
 <translation id="8725066075913043281">Spróbuj ponownie</translation>
+<translation id="8909135823018751308">Udostępnij…</translation>
 <translation id="4269820728363426813">Kopiuj adres linku</translation>
 <translation id="4510973599275542560">Nie ładuj ponownie</translation>
 <translation id="1206892813135768548">Kopiuj tekst linku</translation>
@@ -50,8 +58,10 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="1285320974508926690">Nigdy nie tłumacz tej witryny</translation>
 <translation id="5164482624172255778">Czy chcesz, aby następnym razem przeglądarka Google Chrome zaoferowała tłumaczenie stron z tej witryny, których język to <ph name="LANGUAGE"/>?</translation>
 <translation id="8528538445849828817">Język strony: <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="4881695831933465202">Otwórz</translation>
 <translation id="6512448926095770873">Opuść tę stronę</translation>
 <translation id="7947953824732555851">Zaakceptuj i zaloguj się</translation>
+<translation id="6333140779060797560">Udostępnij przez: <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Zamknij</translation>
 <translation id="969096075394517431">Zmień języki</translation>
 <translation id="5032574515228824816">Monit</translation>

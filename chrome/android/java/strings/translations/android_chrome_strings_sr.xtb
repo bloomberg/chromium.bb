@@ -2,9 +2,11 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
 <translation id="8588878054171169263">Сачувај слику</translation>
+<translation id="4996978546172906250">Дељење преко</translation>
 <translation id="5578795271662203820">Потражи ову слику на <ph name="SEARCH_ENGINE"/>-у</translation>
 <translation id="6831043979455480757">Преведи</translation>
 <translation id="7644305409888602715">Превођење странице на <ph name="SOURCE_LANGUAGE"/>...</translation>
+<translation id="7015922086425404465">Преузмите апликацију из Google Play продавнице: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Поново учитај ову страницу</translation>
 <translation id="641643625718530986">Штампај...</translation>
 <translation id="7658239707568436148">Откажи</translation>
@@ -16,12 +18,15 @@
 Пријављујете се помоћу управљаног налога и дајете администратору контролу над Chrome профилом. Chrome подаци ће постати трајно повезани са овим налогом. Ако прекинете везу са овим налогом, избрисаћете локалне Chrome податке.</translation>
 <translation id="1966710179511230534">Ажурирајте податке за пријављивање.</translation>
 <translation id="1623104350909869708">Спречи ову страницу да прави додатне дијалоге</translation>
+<translation id="1426410128494586442">Да</translation>
 <translation id="8218346974737627104">Потврдите пријављивање</translation>
 <translation id="624558823898732418">Језик са ког се преводи: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Изаберите сертификат за потврду аутентичности</translation>
 <translation id="3896036286668839683">Приказивач сертификата</translation>
 <translation id="8583805026567836021">Брисање података о налогу</translation>
+<translation id="4250680216510889253">Не</translation>
 <translation id="8073388330009372546">Отвори слику у новој картици</translation>
+<translation id="552553974213252141">Да ли је текст правилно издвојен?</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="4170011742729630528">Услуга није доступна. Покушајте поново касније.</translation>
 <translation id="8627706565932943526">Грешка при синхронизацији</translation>
@@ -33,11 +38,14 @@
 <translation id="907015151729920253">Паметна картица</translation>
 <translation id="3063601790762993062">Сачувај видео</translation>
 <translation id="6042308850641462728">Више</translation>
+<translation id="7267430310003164111">Упит за преузимање апликације из Google Play продавнице. Назив апликације: <ph name="APP_NAME"/>. Просечна оцена апликације: <ph name="APP_RATING"/>.</translation>
+<translation id="4148957013307229264">Инсталирање...</translation>
 <translation id="3992315671621218278">Сачувај линк</translation>
 <translation id="8034522405403831421">Језик ове странице је <ph name="SOURCE_LANGUAGE"/>. Желите ли да је преведете на <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="4195643157523330669">Отвори у новој &amp;картици</translation>
 <translation id="3089395242580810162">Отварање на картици без архивирања</translation>
 <translation id="8725066075913043281">Покушајте поново</translation>
+<translation id="8909135823018751308">Дели...</translation>
 <translation id="4269820728363426813">Копирај адресу линка</translation>
 <translation id="4510973599275542560">Не учитавај поново</translation>
 <translation id="1206892813135768548">Копирај текст линка</translation>
@@ -50,8 +58,10 @@
 <translation id="1285320974508926690">Никад не преводи овај сајт</translation>
 <translation id="5164482624172255778">Желите ли да Google Chrome следећи пут понуди да преведе странице са овог сајта чији је језик <ph name="LANGUAGE"/>?</translation>
 <translation id="8528538445849828817">Језик странице: <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="4881695831933465202">Отвори</translation>
 <translation id="6512448926095770873">Напусти ову страницу</translation>
 <translation id="7947953824732555851">Прихвати и пријави ме</translation>
+<translation id="6333140779060797560">Дељење преко <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Затвори</translation>
 <translation id="969096075394517431">Промени језике</translation>
 <translation id="5032574515228824816">Упит</translation>

@@ -10,6 +10,7 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> ilizungushwa hadi <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth imelemazwa</translation>
+<translation id="6713285437468012787">Kifaa cha Bluetooth cha &quot;<ph name="DEVICE_NAME"/>&quot; kimeoanishwa na sasa kinapatikana kwa watumiaji wote. Unaweza kuondoa uoanishaji huu kwa kutumia Mipangilio.</translation>
 <translation id="7165320105431587207">Ilishindwa kusanidi mtandao</translation>
 <translation id="3775358506042162758">Unaweza tu kuwa na hadi akaunti tatu zilizoingiwa kwa wakati mmoja</translation>
 <translation id="370649949373421643">Wezesha Wi-Fi</translation>
@@ -19,6 +20,7 @@
 <translation id="595202126637698455">Ufuatiliaji wa utendaji umewashwa</translation>
 <translation id="8054466585765276473">Inakokotoa muda wa betri.</translation>
 <translation id="7982789257301363584">Mtandao</translation>
+<translation id="2303600792989757991">Geuza muhtasari wa dirisha</translation>
 <translation id="5565793151875479467">Proksi...</translation>
 <translation id="938582441709398163">Mtandazo wa Kibodi</translation>
 <translation id="4387004326333427325">Cheti cha uthibitishaji kimekataliwa kwa mbali</translation>
@@ -79,7 +81,9 @@ Bonyeza Shift + Alt ili kubadilisha.</translation>
 <translation id="3892641579809465218">Onyesho la Ndani</translation>
 <translation id="7823564328645135659">Lugha imebadilika kutoka &quot;<ph name="FROM_LOCALE"/> &quot;na kuwa&quot; <ph name="TO_LOCALE"/>&quot; baada ya kulinganisha mipangilio yako.</translation>
 <translation id="3368922792935385530">Umeunganishwa</translation>
+<translation id="3606978283550408104">Onyesho la breli limeunganishwa.</translation>
 <translation id="8654520615680304441">Washa Wi-Fi...</translation>
+<translation id="6650933572246256093">Kifaa cha Bluetooth cha &quot;<ph name="DEVICE_NAME"/>&quot; kinaomba idhini ya kuoanisha. Tafadhali weka nenosiri hili kwenye kifaa hicho: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Mbinu ingizo yako imebadilika hadi <ph name="INPUT_METHOD_ID"/>.
 Bonyeza Shift + Alt ili kubadili.</translation>
@@ -132,6 +136,7 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Inaanza kutumia <ph name="NAME"/></translation>
+<translation id="4527045527269911712">Kifaa cha Bluetooth cha &quot;<ph name="DEVICE_NAME"/>&quot; kinaomba idhini ya kuoanisha.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Mibofyo ya kiotomatiki</translation>
 <translation id="1398853756734560583">Tanua</translation>
@@ -182,11 +187,15 @@ Ujumbe wa seza: <ph name="SERVER_MSG"/></translation>
 <translation id="479989351350248267">tafuta</translation>
 <translation id="8454013096329229812">Wi-Fi imewashwa.</translation>
 <translation id="4872237917498892622">Alt + Utafutaji au Hama</translation>
+<translation id="2429753432712299108">Kifaa cha Bluetooth cha &quot;<ph name="DEVICE_NAME"/>&quot; kinaomba idhini ya kuoanisha. Kabla hujakubali, tafadhali thibitisha kwamba nenosiri hili linaonyeshwa kwenye kifaa hicho: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Betri imejaa <ph name="PERCENTAGE"/>%.</translation>
 <translation id="2983818520079887040">Mipangilio...</translation>
 <translation id="3871838685472846647">Simu ya Mkononi Imewashwa</translation>
+<translation id="6452181791372256707">Kataa</translation>
 <translation id="1195412055398077112">angalia kwa ujumla:</translation>
+<translation id="607652042414456612">Kompyuta yako inaweza kutambuliwa na vifaa vyenye Bluetooth vilivyo karibu na itaonekana kama  &quot;<ph name="NAME"/>&quot; ikiwa na anwani ya <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Ficha rafu kiotomatiki</translation>
+<translation id="6732801395666424405">Vyeti havijapakiwa</translation>
 <translation id="7573962313813535744">Hali ya kituo</translation>
 <translation id="8927026611342028580">Muunganisho Umeombwa</translation>
 <translation id="8300849813060516376">OTASP imeshindikana</translation>
@@ -199,6 +208,7 @@ Ujumbe wa seza: <ph name="SERVER_MSG"/></translation>
 <translation id="6785414152754474415">Betri imejaa <ph name="PERCENTAGE"/>% na inachaji.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Inaanza kutumia...</translation>
 <translation id="4895488851634969361">Betri imejaa.</translation>
+<translation id="615957422585914272">Onyesha kibodi ya skrini</translation>
 <translation id="5947494881799873997">Rejesha</translation>
 <translation id="7593891976182323525">Utafutaji au Hama</translation>
 <translation id="7649070708921625228">Usaidizi</translation>
@@ -206,6 +216,7 @@ Ujumbe wa seza: <ph name="SERVER_MSG"/></translation>
 Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="397105322502079400">Inakokotoa...</translation>
 <translation id="158849752021629804">Inahitaji mtandao wa nyumbani</translation>
+<translation id="1013923882670373915">Kifaa cha Bluetooth cha &quot;<ph name="DEVICE_NAME"/>&quot; kinaomba idhini ya kuoanisha. Tafadhali weka msimbo huu wa PIN kwenye kifaa hicho: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">Amilisha <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Mwonekano wa DHCP umeshindikana</translation>
 <translation id="2819276065543622893">Utaondolewa kwenye akaunti sasa hivi.</translation>
@@ -215,6 +226,7 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="973896785707726617">Kipindi hiki kitaisha katika <ph name="SESSION_TIME_REMAINING"/>. Utaondolewa kiotomatiki.</translation>
 <translation id="8372369524088641025">Kitufe kibovu cha WEP</translation>
 <translation id="6636709850131805001">Hali isiyotambulika</translation>
+<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Badilisha hadi &quot;<ph name="FROM_LOCALE"/>&quot; (inahitaji uzime na uwashe)</translation>
 <translation id="8103386449138765447">Ujumbe wa SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (maoni yaliyotamkwa) yamewashwa. Bonyeza Ctrl+Alt+Z ili uzime.</translation>

@@ -10,6 +10,7 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> എന്നതിനെ <ph name="ROTATION"/> എന്നതിലേയ്‌ക്ക് തിരിച്ചു</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth അപ്രാപ്‌തമാക്കി</translation>
+<translation id="6713285437468012787">&quot;<ph name="DEVICE_NAME"/>&quot; എന്ന Bluetooth ഉപകരണം ജോടിയാക്കി, അത് ഇപ്പോൾ എല്ലാ ഉപയോക്താക്കൾക്കും ലഭ്യമാണ്. ക്രമീകരണങ്ങൾ ഉപയോഗിച്ച് നിങ്ങൾക്ക് ഈ ജോടിയാക്കൽ നീക്കംചെയ്യാം.</translation>
 <translation id="7165320105431587207">നെറ്റ്‌വർക്ക് കോൺഫിഗർ ചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു</translation>
 <translation id="3775358506042162758">ഒന്നിലധികം സൈൻ ഇന്നുകളിൽ നിങ്ങൾക്ക് മൂന്ന് അക്കൗണ്ടുകൾ വരെ മാത്രമേ ഉണ്ടായിരിക്കാൻ പാടുള്ളൂ.</translation>
 <translation id="370649949373421643">Wi-fi പ്രാപ്‌തമാക്കുക</translation>
@@ -19,6 +20,7 @@
 <translation id="595202126637698455">പ്രകടനം പിന്തുടരൽ പ്രവർത്തനക്ഷമമാക്കി</translation>
 <translation id="8054466585765276473">ബാറ്ററി സമയം കണക്കാക്കുന്നു.</translation>
 <translation id="7982789257301363584">നെറ്റ്വര്‍ക്ക്</translation>
+<translation id="2303600792989757991">വിൻഡോ ചുരുക്കവിവരണം ടോഗിൾ ചെയ്യുക</translation>
 <translation id="5565793151875479467">പ്രോക്‌സി...</translation>
 <translation id="938582441709398163">കീബോര്‍ഡ് ഓവര്‍ലേ</translation>
 <translation id="4387004326333427325">പ്രാമാണീകരണ സർട്ടിഫിക്കറ്റ് വിദൂരമായി നിരസിച്ചു</translation>
@@ -79,7 +81,9 @@
 <translation id="3892641579809465218">ആന്തരിക പ്രദർശനം</translation>
 <translation id="7823564328645135659">നിങ്ങളുടെ ക്രമീകരണങ്ങള്‍ സമന്വയിപ്പിച്ചതിന് ശേഷം ഭാഷ &quot;<ph name="FROM_LOCALE"/>&quot; എന്നതില്‍ നിന്ന് &quot;<ph name="TO_LOCALE"/>&quot; എന്നതിലേക്ക് മാറി.</translation>
 <translation id="3368922792935385530">ബന്ധിപ്പിച്ചു</translation>
+<translation id="3606978283550408104">ബ്രെയ്‌ലി ഡിസ്‌പ്ലേ കണക്‌റ്റുചെയ്‌തു.</translation>
 <translation id="8654520615680304441">Wi-Fi ഓണാക്കുക...</translation>
+<translation id="6650933572246256093">&quot;<ph name="DEVICE_NAME"/>&quot; എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. ആ ഉപകരണത്തിൽ ഈ പാസ്‌കീ നൽകുക: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">നിങ്ങളുടെ ഇൻപുട്ട് രീതി <ph name="INPUT_METHOD_ID"/> എന്നതിലേയ്‌ക്ക് മാറ്റി. സ്വിച്ചുചെയ്യുന്നതിന് Shift + Alt അമർത്തുക.</translation>
 <translation id="2562916301614567480">സ്വകാര്യ നെറ്റ്‌വർക്ക്</translation>
@@ -131,6 +135,7 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> സജീവമാക്കുന്നു</translation>
+<translation id="4527045527269911712">&quot;<ph name="DEVICE_NAME"/>&quot; എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">യാന്ത്രിക ക്ലിക്കുകൾ</translation>
 <translation id="1398853756734560583">വലുതാക്കുക</translation>
@@ -181,11 +186,15 @@
 <translation id="479989351350248267">തിരയൽ</translation>
 <translation id="8454013096329229812">Wi-Fi ഓൺ ചെയ്‌തു.</translation>
 <translation id="4872237917498892622">Alt+തിരയൽ അല്ലെങ്കിൽ Shift</translation>
+<translation id="2429753432712299108">&quot;<ph name="DEVICE_NAME"/>&quot; എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. അനുമതി നൽകുന്നതിനുമുമ്പ്, ആ ഉപകരണത്തിൽ ഈ പാസ്‌കീ കാണിച്ചിരിക്കുന്നുവെന്ന് സ്ഥിരീകരിക്കുക: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">ബാറ്ററി <ph name="PERCENTAGE"/>% നിറഞ്ഞു.</translation>
 <translation id="2983818520079887040">ക്രമീകരണങ്ങള്‍...</translation>
 <translation id="3871838685472846647">സെല്ലുലാർ സജീവമാക്കി</translation>
+<translation id="6452181791372256707">നിരസിക്കുക</translation>
 <translation id="1195412055398077112">ഓവർസ്‌കാൻ</translation>
+<translation id="607652042414456612">നിങ്ങളുടെ കമ്പ്യൂട്ടർ സമീപത്തുള്ള Bluetooth ഉപകരണങ്ങൾക്ക് കണ്ടെത്താനാകുന്നതാണ് ഒപ്പം അത് <ph name="ADDRESS"/> എന്ന വിലാസത്തിൽ &quot;<ph name="NAME"/>&quot; എന്നതായി ദൃശ്യമാകും.</translation>
 <translation id="112308213915226829">ഷെൽഫ് യാന്ത്രികമായി മറയ്‌ക്കുക</translation>
+<translation id="6732801395666424405">സർട്ടിഫിക്കറ്റുകൾ ലോഡുചെയ്‌തില്ല</translation>
 <translation id="7573962313813535744">ഡോക്കുചെയ്‌ത മോഡ്</translation>
 <translation id="8927026611342028580">കണക്റ്റുചെയ്യാൻ അഭ്യർത്ഥിച്ചു</translation>
 <translation id="8300849813060516376">OTASP പരാജയപ്പെട്ടു</translation>
@@ -198,6 +207,7 @@
 <translation id="6785414152754474415">ബാറ്ററി <ph name="PERCENTAGE"/>% നിറഞ്ഞിരിക്കുന്നു, ചാർജുചെയ്യൽ തുടരുന്നു.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: സജീവമാക്കുന്നു...</translation>
 <translation id="4895488851634969361">ബാറ്ററി ചാർജുചെയ്യൽ പൂർണ്ണമായി.</translation>
+<translation id="615957422585914272">ഓൺ-സ്‌ക്രീൻ കീബോർഡ് ദൃശ്യമാക്കുക</translation>
 <translation id="5947494881799873997">പഴയപടിയാക്കുക</translation>
 <translation id="7593891976182323525">തിരയൽ അല്ലെങ്കിൽ Shift</translation>
 <translation id="7649070708921625228">സഹായം</translation>
@@ -205,6 +215,7 @@
 റദ്ദാക്കുന്നതിന് തിരയൽ അല്ലെങ്കിൽ Shift അമർത്തുക.</translation>
 <translation id="397105322502079400">കണക്കാക്കുന്നു...</translation>
 <translation id="158849752021629804">ഹോം നെറ്റ്‍വര്‍ക്ക് ആവശ്യമുണ്ട്</translation>
+<translation id="1013923882670373915">&quot;<ph name="DEVICE_NAME"/>&quot; എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. ആ ഉപകരണത്തിൽ ഈ പിൻ കോഡ് നൽകുക: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/> സജീവമാക്കുക</translation>
 <translation id="5864471791310927901">DHCP തിരയല്‍ പരാജയപ്പെട്ടു</translation>
 <translation id="2819276065543622893">നിങ്ങൾ ഇപ്പോൾ സൈൻ ഔട്ട് ചെയ്യും.</translation>
@@ -214,6 +225,7 @@
 <translation id="973896785707726617"><ph name="SESSION_TIME_REMAINING"/> ആകുമ്പോൾ ഈ സെഷൻ അവസാനിക്കും. നിങ്ങൾ യാന്ത്രികമായി സൈൻ ഔട്ടാകും.</translation>
 <translation id="8372369524088641025">മോശം WEP കീ</translation>
 <translation id="6636709850131805001">തിരിച്ചറിയാത്ത അവസ്ഥ</translation>
+<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">&quot;<ph name="FROM_LOCALE"/>&quot; എന്നതിലേക്ക് തിരികെ മാറുക (റീസ്റ്റാര്‍ട്ട് ആവശ്യമാണ്)</translation>
 <translation id="8103386449138765447">SMS സന്ദേശങ്ങൾ: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (സ്‌പോക്കൺ ഫീഡ്‌ബാക്ക്) പ്രവർത്തനക്ഷമമാണ്. പ്രവർത്തനരഹിതമാക്കാൻ Ctrl+Alt+Z അമർത്തുക.</translation>

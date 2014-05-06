@@ -25,6 +25,7 @@
       jäädvustamine on saadaval ainult loendis AudioCaptureAllowedUrls seadistatud URL-ide puhul.
 
       Reegel mõjutab igat tüüpi helisisendeid, mitte ainult sisseehitatud mikrofone.</translation>
+<translation id="7267809745244694722">Meediaklahvid on vaikimisi funktsiooniklahvid</translation>
 <translation id="9150416707757015439">Reegel on aegunud. Kasutage selle asemel reeglit IncognitoModeAvailability.
       Lubab inkognito režiimi rakenduses <ph name="PRODUCT_NAME"/>.
 
@@ -629,9 +630,6 @@
 <translation id="6417861582779909667">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel ei ole lubatud küpsiseid määrata.
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultCookiesSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
-<translation id="5457296720557564923">Võimaldab lehtedel hankida juurdepääsu JavaScripti mälu kasutusstatistikale.
-
-      See seade muudab arendaja tööriistade profiilide paneeli mälustatistika veebilehele kättesaadavaks.</translation>
 <translation id="5776485039795852974">Küsi iga kord, kui sait tahab näidata töölauateatisi</translation>
 <translation id="5047604665028708335">Sisupakettidest väljaspool olevatele saitidele juurdepääsu lubamine</translation>
 <translation id="5052081091120171147">Selle reegli lubamisel imporditakse sirvimisajalugu praegusest vaikebrauserist. Lubamisel mõjutab reegel ka importimisdialoogi.
@@ -643,6 +641,12 @@
 <translation id="7132877481099023201">URL-id, millele antakse ilma küsimata juurdepääs videojäädvustusseadmetele</translation>
 <translation id="8947415621777543415">Esita seadme asukoht</translation>
 <translation id="1655229863189977773">Määrake ketta vahemälu suurus baitides</translation>
+<translation id="3358275192586364144">Lubab tootes <ph name="PRODUCT_NAME"/> WPAD-optimeerimise ega lase kasutajatel seda seadet muuta.
+
+      Kui see reegel on lubatud, siis ootab Chrome DNS-põhiste WPAD-serverite puhul lühemat intervalli.
+
+      Kui seda reeglit ei määrata, siis on see lubatud ja kasutaja
+      ei saa seda muuta.</translation>
 <translation id="6376842084200599664">Võimaldab teil määrata erandite loendi, mis installitakse taustal kasutajalt luba küsimata.
 
           Iga üksus selles loendis on string, mis sisaldab laienduse ID-d ja värskenduse URL-i, mis on eraldatud semikooloniga (<ph name="SEMICOLON"/>). Laienduse ID on 32-täheline string, mille leiab nt lehelt <ph name="CHROME_EXTENSIONS_LINK"/>, kui olete arendaja režiimis. Värskenduse URL peaks osutama värskenduse manifesti XML-dokumendile, mida kirjeldatakse dokumendis <ph name="LINK_TO_EXTENSION_DOC1"/>. Pidage meeles, et selles reeglis määratud värskenduse URL-i kasutatakse ainult esialgsel installimisel; laienduse järgmised värskendused kasutavad värskenduse URL-i, mis on antud laienduse manifestis.
@@ -759,6 +763,7 @@ Seade lubamisel saadavad registreeritud seadmed regulaarselt teavet operatsiooni
 <translation id="1679420586049708690">Avalik seanss automaatseks sisselogimiseks</translation>
 <translation id="7625444193696794922">Määrab väljalaskekanali, millele seade tuleks lukustada.</translation>
 <translation id="2552966063069741410">Ajavöönd</translation>
+<translation id="3788662722837364290">Toitehalduse seaded, kui kasutaja on tegevusetu</translation>
 <translation id="2240879329269430151">Võimaldab määrata, kas veebisaitidel on lubatud kuvada hüpikaknaid. Hüpikaknad võib kõikide veebisaitide puhul lubada või keelata.
 
           Kui jätate reegli määramata, siis kasutatakse reeglit „BlockPopups” ja kasutaja saab seda muuta.</translation>
@@ -842,7 +847,6 @@ Seade lubamisel saadavad registreeritud seadmed teavet ajaperioodide kohta, mil 
 <translation id="8102913158860568230">Meediavoo vaikeseade</translation>
 <translation id="6641981670621198190">Keela 3D-graafika API-liideste tugi</translation>
 <translation id="1265053460044691532">Piirake aega, mille jooksul SAML-i kaudu autenditud kasutaja saab võrguühenduseta sisse logida</translation>
-<translation id="7929480864713075819">Mäluandmete (JS kuhja maht) aruandluse lubamine lehele</translation>
 <translation id="5703863730741917647">Määrab toimingu, mis rakendub tegevusetuse viivitusaja täitumisel.
 
           Pange tähele, et seda reeglit enam ei toetata ja see eemaldatakse tulevikus.
@@ -955,6 +959,7 @@ Seade lubamisel saadavad registreeritud seadmed teavet ajaperioodide kohta, mil 
 <translation id="4057110413331612451">Lubage ettevõtte kasutajal olla ainult esmane multiprofiili kasutaja</translation>
 <translation id="5365946944967967336">Kuva tööriistaribal nuppu Avaleht</translation>
 <translation id="3709266154059827597">Laienduste installimise musta nimekirja seadistamine</translation>
+<translation id="1933378685401357864">Taustapildi kujutis</translation>
 <translation id="8451988835943702790">Kasuta avalehena Uut vahelehte</translation>
 <translation id="4617338332148204752">Metasildi kontrollimise vahelejätmine teenuses <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="8469342921412620373">Lubab vaikeotsingupakkuja kasutamise.
@@ -978,6 +983,11 @@ Seade lubamisel saadavad registreeritud seadmed teavet ajaperioodide kohta, mil 
 
           Kui jätate reegli määramata, on suur kursor algselt keelatud, kuid kasutaja võib selle igal ajal lubada.</translation>
 <translation id="2633084400146331575">Luba suuline tagasiside</translation>
+<translation id="687046793986382807">Selle reegli pakkumine lõpetati toote <ph name="PRODUCT_NAME"/> versiooniga 35.
+
+      Valiku väärtustest olenemata edastatakse mäluteabe aruandlus alati lehele, kuid                 edastatud suurused
+      on kvantifitseeritud ja värskenduste määra piiratakse turvakaalutlustel.
+      Reaalajas täpsete andmete hankimiseks kasutage sellist tööriista nagu            telemeetria.</translation>
 <translation id="8731693562790917685">Sisu seaded võimaldavad teil määrata, kuidas kindlat tüüpi sisu (näiteks küpsiseid, kujutisi või JavaScripti) käsitletakse.</translation>
 <translation id="2411919772666155530">Blokeerige märguanded nendel saitidel</translation>
 <translation id="6923366716660828830">Määrab vaikeotsingupakkuja nime. Kui see jäetakse tühjaks või määramata, siis kasutatakse otsingu URL-i määratud hosti nime.
@@ -989,6 +999,7 @@ Seade lubamisel saadavad registreeritud seadmed teavet ajaperioodide kohta, mil 
 
           Kui reegli väärtuseks on seatud Väär, siis ekraani aktiveerimise lukustamise taotlust eiratakse.</translation>
 <translation id="467236746355332046">Toetatud funktsioonid:</translation>
+<translation id="5447306928176905178">Mäluteabe (JS kuhja maht) aruandluse lubamine lehele (iganenud)</translation>
 <translation id="7632724434767231364">GSSAPI-teegi nimi</translation>
 <translation id="3038323923255997294">Jätka taustarakenduste käitamist pärast rakenduse <ph name="PRODUCT_NAME"/> sulgemist</translation>
 <translation id="8909280293285028130">Määrab aja, pärast mida lukustatakse võrgutoitega töötamisel ekraan, kui kasutaja pole midagi sisestanud.
@@ -1037,6 +1048,17 @@ Seade lubamisel saadavad registreeritud seadmed teavet ajaperioodide kohta, mil 
           See reegel on valikuline. Kui see pole määratud, siis saadetakse soovituse otsingu taotlus GET-meetodiga.
 
           Reeglit järgitakse ainult siis, kui lubatud on reegel „DefaultSearchProviderEnabled”.</translation>
+<translation id="6095999036251797924">Määrab, kui palju aega võib mööduda kasutaja viimasest toimingust, enne kui ekraan lukustatakse, kui seade töötab vahelduvvoolu- või akutoitel.
+
+          Kui aja väärtus on suurem kui null, siis tähistab see aega, mille jooksul kasutaja peab olema tegevusetu enne, kui operatsioonisüsteem <ph name="PRODUCT_OS_NAME"/> lukustab ekraani.
+
+          Kui aja väärtus on null, siis ei lukusta <ph name="PRODUCT_OS_NAME"/> kasutaja tegevusetuse korral ekraani.
+
+          Kui aega pole määratud, siis kasutatakse vaikeaega.
+
+          Soovitatud viis tegevusetuse korral ekraani lukustamiseks on lubada ekraanilukk peatamise korral ja lasta operatsioonisüsteemil <ph name="PRODUCT_OS_NAME"/> peatada seade pärast tegevusetuse aega. Seda reeglit tuleks kasutada ainult siis, kui ekraani lukustamine peaks toimuma oluliselt varem kui peatamine või kui te ei soovi, et tegevusetuse korral toimuks peatamine.
+
+          Reegli väärtus tuleb määrata millisekundites. Väärtusi piiratakse nii, et need oleks väiksemad kui tegevusetuse aeg.</translation>
 <translation id="1454846751303307294">Võimaldab teil määrata URL-i mustrite loendi, mis määrab saidid, millel on keelatud JavaScripti käitada.
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultJavaScriptSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
@@ -1067,6 +1089,32 @@ Seade lubamisel saadavad registreeritud seadmed teavet ajaperioodide kohta, mil 
       Kui see reegel määratakse valeks või jäetakse seadistamata, on ikoonid nähtaval.</translation>
 <translation id="5085647276663819155">Printimise eelvaate keelamine</translation>
 <translation id="8672321184841719703">Automaatse värskendamise sihtversioon</translation>
+<translation id="553658564206262718">Seadistage toitehalduse seaded kasutaja tegevusetuse korral.
+
+          See reegel juhib mitut seadet, mis reguleerivad toitehalduse strateegiat kasutaja tegevusetuse ajal.
+
+          Võimalik on rakendada nelja tüüpi toiminguid.
+          * Ekraan muutub tumedaks, kui kasutaja on tegevusetu aja jooksul, mis on määratud üksusega |ScreenDim|.
+          * Ekraan lülitatakse välja, kui kasutaja on tegevusetu aja jooksul, mis on määratud üksusega |ScreenOff|.
+          * Kui kasutaja on tegevusetu aja jooksul, mis on määratud üksusega |IdleWarning|, siis kuvatakse hoiatusdialoog, mis ütleb kasutajale, et peagi rakendub tegevusetu oleku toiming.
+          * Kui kasutaja on tegevusetu üksusega |Idle| määratud aja jooksul, rakendub toiming |IdleAction|.
+
+          Iga ülalnimetatud toimingu puhul tuleb viivitus määrata millisekunditega ja vastava toimingu rakendamiseks peab aja väärtus peab olema suurem kui null. Kui viivituse väärtus on null, siis <ph name="PRODUCT_OS_NAME"/> vastavat toimingut ei rakenda.
+
+          Kui mõne ülaltoodud viivituse puhul pole aega määratud, siis kasutatakse vaikeväärtust.
+
+          Pange tähele, et üksuse |ScreenDim| väärtusi piiratakse nii, et need oleksid väiksemad või võrdväärsed üksusega |ScreenOff|, üksuseid |ScreenOff| ja |IdleWarning| piiratakse nii, et need oleksid väiksemad või võrdväärsed üksusega |Idle|.
+
+          |IdleAction| võib olla üks neljast võimalikust toimingust.
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Kui üksust |IdleAction| pole määratud, rakendub vaiketoiming, milleks on peatamine.
+
+          Vahelduvvoolu- ja akutoite jaoks on saadaval ka eraldi seaded.
+          </translation>
 <translation id="1689963000958717134">Võimaldab jõustada võrgu konfigureerimise kõigile <ph name="PRODUCT_OS_NAME"/> seadme kasutajatele. Võrgu konfigureerimine on JSON-i vormingus string, mille määrab aadressil <ph name="ONC_SPEC_URL"/> kirjeldatud vorming Open Network Configuration</translation>
 <translation id="6699880231565102694">Kahetasandilise autentimise lubamine kaugjuurdepääsu hostidele</translation>
 <translation id="2030905906517501646">Vaikeotsingupakkuja märksõna</translation>
@@ -1277,6 +1325,32 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
 
       Kui jätate reegli määramata, siis kasutab toode <ph name="PRODUCT_NAME"/> vaikeväärtust 5000 millisekundit.</translation>
 <translation id="8099880303030573137">Jõudeoleku viiteaeg akutoite kasutamisel</translation>
+<translation id="1709037111685927635">Taustapildi kujutise seadistamine.
+
+      Selle reegliga saate seadistada, milline taustapildi kujutis kuvatakse kasutaja töölaual ja sisselogimisekraani taustal. Reegli määramiseks tuleb täpsustada URL-i, kust <ph name="PRODUCT_OS_NAME"/> saab taustapildi kujutise alla laadida, ja krüptograafilist räsi, mida kasutatakse allalaadimise terviklikkuse kinnitamiseks. Kujutis peab olema JPEG-vormingus ja selle suurus ei tohi ületada 16 MB. URL-ile peab olema juurdepääs ilma autentimata.
+
+      Taustapildi kujutis laaditakse alla ja salvestatakse vahemällu. See laaditakse uuesti alla iga kord, kui URL või räsi muutub.
+
+      Reegel tuleb määrata stringina, mis väljendab URL-i ja räsi JSON-vormingus ning järgib järgmist skeemi:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;URL, kust saab taustapildi kujutise alla laadida.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;Taustapildi kujutise SHA-256 räsi.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Kui see reegel on määratud, laadib <ph name="PRODUCT_OS_NAME"/> taustapildi kujutise alla ja kasutab seda.
+
+      Kui määrate selle reegli, siis ei saa kasutajad seda muuta ega alistada.
+
+      Kui reeglit ei määrata, saab kasutaja ise valida, milline kujutis töölaual ja sisselogimisekraani taustal kuvatakse.</translation>
 <translation id="2761483219396643566">Tegevusetuse hoiatuse viivitus akutoite kasutamisel</translation>
 <translation id="6281043242780654992">Omasõnumside reeglite seadistamine. Musta nimekirja lisatud omasõnumside hostid on keelatud seni, kuni need lisatakse lubatud üksuste nimekirja.</translation>
 <translation id="1468307069016535757">Sisselogimisekraanil suure kontrastsusega režiimi hõlbustusfunktsiooni vaikeoleku määramine.
@@ -1415,93 +1489,9 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
       Selle seade lubamisel või keelamisel ei saa kasutajad seadet muuta ega üle kirjutada.
 
       Kui reegel pole määratud, on andmete tihendamise puhverserver kasutajatele saadaval ja nad saavad valida, kas kasutavad seda või mitte.</translation>
+<translation id="2170233653554726857">WPAD-optimeerimise lubamine</translation>
 <translation id="7424751532654212117">Keelatud pistikprogrammide loendi erandite loend</translation>
 <translation id="6233173491898450179">Määra allalaadimiskataloog</translation>
-<translation id="78524144210416006">Operatsioonisüsteemi <ph name="PRODUCT_OS_NAME"/> toitehalduse ja sisselogimiskuva seadistamine.
-
-      Selle reegliga saate seadistada, kuidas operatsioonisüsteem <ph name="PRODUCT_OS_NAME"/> käitub juhul, kui kuvatakse sisselogimiskuva ja kasutaja pole teatud perioodi jooksul midagi teinud. Reegel juhib mitut seadet. Teavet individuaalse semantika ja väärtusevahemike kohta vaadake vastava seansi toitehaldust juhtivatest reeglitest. Ainsad kõrvalekalded nendest reeglitest on järgmised.
-      * Tegevusetuse või kaane sulgemise korral ei saa toiminguks olla seansi lõpetamine.
-      * Vahelduvvoolu toite kasutamisel on tegevusetuse korral vaiketoiminguks välja lülitamine.
-
-      Reegel tuleb määrata stringina, mis väljendab konkreetseid seadeid JSON-vormingus järgmise skeemi järgi:
-      {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;AC&quot;: {
-            &quot;description&quot;: &quot;Power management settings applicable only when running on AC power&quot;,
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-              &quot;Delays&quot;: {
-                &quot;type&quot;: &quot;object&quot;,
-                &quot;properties&quot;: {
-                  &quot;ScreenDim&quot;: {
-                    &quot;description&quot;: &quot;The length of time without user input after which the screen is dimmed, in milliseconds&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;ScreenOff&quot;: {
-                    &quot;description&quot;: &quot;The length of time without user input after which the screen is turned off, in milliseconds&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;Idle&quot;: {
-                    &quot;description&quot;: &quot;The length of time without user input after which the idle action is taken, in milliseconds&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  }
-                }
-              },
-              &quot;IdleAction&quot;: {
-                &quot;description&quot;: &quot;Action to take when the idle delay is reached&quot;,
-                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-              }
-            }
-          },
-          &quot;Battery&quot;: {
-            &quot;description&quot;: &quot;Power management settings applicable only when running on battery power&quot;,
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-              &quot;Delays&quot;: {
-                &quot;type&quot;: &quot;object&quot;,
-                &quot;properties&quot;: {
-                  &quot;ScreenDim&quot;: {
-                    &quot;description&quot;: &quot;The length of time without user input after which the screen is dimmed, in milliseconds&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;ScreenOff&quot;: {
-                    &quot;description&quot;: &quot;The length of time without user input after which the screen is turned off, in milliseconds&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;Idle&quot;: {
-                    &quot;description&quot;: &quot;The length of time without user input after which the idle action is taken, in milliseconds&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  }
-                }
-              },
-              &quot;IdleAction&quot;: {
-                &quot;description&quot;: &quot;Action to take when the idle delay is reached&quot;,
-                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-              }
-            }
-          },
-          &quot;LidCloseAction&quot;: {
-            &quot;description&quot;: &quot;Action to take when the lid is closed&quot;,
-            &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-          },
-          &quot;UserActivityScreenDimDelayScale&quot;: {
-            &quot;description&quot;: &quot;Percentage by which the screen dim delay is scaled when user activity is observed while the screen is dimmed or soon after the screen has been turned off&quot;,
-            &quot;type&quot;: &quot;integer&quot;,
-            &quot;minimum&quot;: 100
-          }
-        }
-      }
-
-      Kui seade on määramata, siis kasutatakse vaikeväärtust.
-
-      Kui reegel on määramata, kasutatakse kõikide seadete puhul vaikeväärtusi.</translation>
 <translation id="8908294717014659003">Võimaldab määrata veebisaitidele juurdepääsu meediahõiveseadmetele. Juurdepääsu meediahõiveseadmetele saab lubada vaikimisi või lasta iga kord kasutajalt küsida, kui mõni veebisait neile juurdepääsu soovib.
 
           Kui reegel pole määratud, siis kasutatakse reeglit „PromptOnAccess” ja kasutaja saab seda muuta.</translation>
@@ -1536,6 +1526,9 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
       Kui reeglit pole määratud, siis kasutatakse vaikemahtu ja kasutaja saab selle alistada märgendiga --meedia-vahemälu-maht.</translation>
 <translation id="5142301680741828703">Renderda alati rakenduses <ph name="PRODUCT_FRAME_NAME"/> järgmiste URL-ide mustrid</translation>
 <translation id="4625915093043961294">Installimiseks lubatud laienduste loendi seadistamine</translation>
+<translation id="5893553533827140852">Kui see seade on lubatud, siis edastatakse gnubby autentimistaotlused puhverserverisse kaughosti ühenduse abil.
+
+          Kui see seade on keelatud või seadistamata, siis ei edastata gnubby autentimistaotlusi puhverserveri abil.</translation>
 <translation id="187819629719252111">Lubab juurdepääsu seadmes olevatele kohalikele failidele, võimaldades rakendusel <ph name="PRODUCT_NAME"/> kuvada failide valimise dialoogiaknaid.
 
       Seade lubamisel saavad kasutajad avada failide valimise dialoogiaknad tavapärasel moel.
@@ -1624,6 +1617,11 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
 
           Kui eelmise seansi URL-ide taastamiseks on määratud reegel „RestoreOnStartup”, ei rakendu see reegel ja nende saitide küpsised talletatakse jäädavalt.</translation>
 <translation id="2098658257603918882">Luba kasutus- ja krahhiandmete aruandlus</translation>
+<translation id="4633786464238689684">Asendab klaviatuuri ülemise rea klahvide vaiketoimingud funktsiooniklahvide toimingutega.
+
+          Kui reegel on määratud valikule Tõene, toimivad klaviatuuri ülemise rea klahvid vaikimisi funktsiooniklahvidena. Nende meediaklahvidena kasutamiseks tuleb vajutada otsinguklahvi.
+
+          Kui see reegel on määratud valikule Väär või pole see määratud, siis toimivad klahvid vaikimisi meediaklahvidena. Funktsiooniklahvidena toimivad need siis, kui samal ajal vajutatakse otsinguklahvi.</translation>
 <translation id="2324547593752594014">Lubab Chrome'i sisselogimise</translation>
 <translation id="172374442286684480">Luba kõikidel saitidel kohalike andmete määramine</translation>
 <translation id="1151353063931113432">Luba kujutised nendel saitidel</translation>
@@ -1679,6 +1677,7 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
 
           Selle reegli alistab reegel ExtensionInstallBlacklist. See tähendab, et mustas nimekirjas olevat laiendust ei installita isegi siis, kui see toimub loendis olevalt saidilt.</translation>
 <translation id="2113068765175018713">Seadme tööaja piiramine automaatse taaskäivitamisega</translation>
+<translation id="4224610387358583899">Ekraaniluku viivitused</translation>
 <translation id="7848840259379156480">Võimaldab seadistada HTML-i vaikerenderdusmootori, kui <ph name="PRODUCT_FRAME_NAME"/> on installitud. Vaikeseadena on hostbrauseril lubatud renderdada, kuid võite selle soovi korral alistada ja lasta rakendusel <ph name="PRODUCT_FRAME_NAME"/> HTML-lehti vaikimisi renderdada.</translation>
 <translation id="186719019195685253">Toiming, mis rakendub siis, kui tegevusetuse viivitusaeg saab täis vahelduvvoolu kasutamise ajal</translation>
 <translation id="7890264460280019664">Serverile edastatakse loend võrgu liideste ning nende tüüpide ja riistvara aadresside kohta.
@@ -1777,6 +1776,15 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
       Reegel tuleb määrata URL-ile, kust <ph name="PRODUCT_OS_NAME"/> saab teenusetingimused alla laadida. Teenusetingimused peavad olema lihtteksti vormingus, esitatud MIME-tüüpi tekstina/lihttekstina. Märgistused pole lubatud.</translation>
 <translation id="2623014935069176671">Kasutaja esmase tegevuse ootamine</translation>
 <translation id="2660846099862559570">Ära kunagi kasuta puhverserverit</translation>
+<translation id="1956493342242507974">Toitehalduse seadistamine sisselogimisekraanil operatsioonisüsteemis <ph name="PRODUCT_OS_NAME"/>.
+
+      Selle reegliga saate seadistada, kuidas <ph name="PRODUCT_OS_NAME"/> käitub, kui kuvatakse sisselogimisekraan ja kasutaja ei tee teatud aja jooksul ühtegi toimingut. See reegel juhib mitut seadet. Individuaalset semantikat ja väärtusevahemikke vaadake vastavatest seansi toitehaldust juhtivatest reeglitest. Ainsad kõrvalekalded nendest reeglitest on järgmised.
+      * Tegevusetuse või kaane sulgemise korral ei tohi toiminguks olla seansi lõpetamine.
+      * Kui seade töötab vahelduvvoolutoitel, siis on tegevusetuse korral vaiketoiminguks väljalülitamine.
+
+      Kui seadet ei määrata, siis kasutatakse vaikeväärtust.
+
+      Kui seda reeglit ei määrata, siis kasutatakse kõikide seadete jaoks vaikevalikuid.</translation>
 <translation id="1435659902881071157">Seadme tasemel võrgukonfigureerimine</translation>
 <translation id="2131902621292742709">Ekraani hämardamise viiteaeg akutoite kasutamisel</translation>
 <translation id="5781806558783210276">Määrab aja, pärast mida lülitatakse akutoitega töötamisel sisse jõudeolek, kui kasutaja pole midagi sisestanud.
@@ -1898,5 +1906,6 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
       See reegel mõjutab iga tüüpi heli väljastamist, mitte ainult sisseehitatud kõlareid. See reegel keelab ka heli juurdepääsetavuse funktsioonid. Ärge lubage seda reeglit, kui kasutajal on tarvis ekraanilugejat.
 
       Kui seade seatakse väärtusele Tõene või jäetakse seadistamata, saavad kasutajad kasutada kõiki oma seadmes toetatud heliväljundeid.</translation>
+<translation id="6517678361166251908">Gnubby autentimise lubamine</translation>
 <translation id="4858735034935305895">Täisekraanrežiimi lubamine</translation>
 </translationbundle>

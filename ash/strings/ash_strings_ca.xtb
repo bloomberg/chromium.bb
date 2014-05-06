@@ -10,6 +10,7 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> s'ha canviat a <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">S'ha desactivat el Bluetooth</translation>
+<translation id="6713285437468012787">El dispositiu Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; s'ha emparellat i ja està disponible per a tots els usuaris. Podeu eliminar l'emparellament a la Configuració.</translation>
 <translation id="7165320105431587207">No s'ha pogut configurar la xarxa</translation>
 <translation id="3775358506042162758">Només podeu tenir tres comptes com a màxim en un inici de sessió múltiple.</translation>
 <translation id="370649949373421643">Activa la Wi-Fi</translation>
@@ -19,6 +20,7 @@
 <translation id="595202126637698455">Seguiment del rendiment activat</translation>
 <translation id="8054466585765276473">S'està calculant el temps de la bateria.</translation>
 <translation id="7982789257301363584">Xarxa</translation>
+<translation id="2303600792989757991">Commuta la visió general de la finestra</translation>
 <translation id="5565793151875479467">Servidor intermediari...</translation>
 <translation id="938582441709398163">Superposició de teclat</translation>
 <translation id="4387004326333427325">S'ha rebutjat el certificat d'autenticació de manera remota</translation>
@@ -79,7 +81,9 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="3892641579809465218">Pantalla interna</translation>
 <translation id="7823564328645135659">L'idioma ha canviat de &quot;<ph name="FROM_LOCALE"/>&quot; a &quot;<ph name="TO_LOCALE"/>&quot; després de sincronitzar la vostra configuració.</translation>
 <translation id="3368922792935385530">Connectat</translation>
+<translation id="3606978283550408104">S'ha connectat la pantalla Braille.</translation>
 <translation id="8654520615680304441">Activa la Wi-Fi...</translation>
+<translation id="6650933572246256093">El dispositiu Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; sol·licita permís per emparellar-se. Introduïu-hi aquesta contrasenya: <ph name="PASSKEY"/>.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">El mètode d'entrada ha canviat a <ph name="INPUT_METHOD_ID"/>.
 Premeu Maj+Alt per canviar-lo.</translation>
@@ -132,6 +136,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">S'està activant <ph name="NAME"/></translation>
+<translation id="4527045527269911712">El dispositiu Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; sol·licita permís per emparellar-se.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Clics automàtics</translation>
 <translation id="1398853756734560583">Maximitza</translation>
@@ -182,11 +187,15 @@ Missatge del servidor: <ph name="SERVER_MSG"/></translation>
 <translation id="479989351350248267">cerca</translation>
 <translation id="8454013096329229812">La Wi-Fi està activada.</translation>
 <translation id="4872237917498892622">Alt+Cerca o Maj</translation>
+<translation id="2429753432712299108">El dispositiu Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; sol·licita permís per emparellar-se. Abans d'acceptar, comproveu que aquesta contrasenya es mostri al dispositiu: <ph name="PASSKEY"/>.</translation>
 <translation id="9201131092683066720">La bateria està carregada fins al <ph name="PERCENTAGE"/>%.</translation>
 <translation id="2983818520079887040">Configuració...</translation>
 <translation id="3871838685472846647">Xarxa mòbil activada</translation>
+<translation id="6452181791372256707">Rebutja</translation>
 <translation id="1195412055398077112">sobreescaneig</translation>
+<translation id="607652042414456612">El vostre ordinador està visible als dispositius Bluetooth propers i apareixerà com a &quot;<ph name="NAME"/>&quot; amb l'adreça <ph name="ADDRESS"/>.</translation>
 <translation id="112308213915226829">Amaga el prestatge automàticament</translation>
+<translation id="6732801395666424405">Els certificats no s'han carregat.</translation>
 <translation id="7573962313813535744">Mode acoblat</translation>
 <translation id="8927026611342028580">S'ha sol·licitat la connexió</translation>
 <translation id="8300849813060516376">Error d'OTASP</translation>
@@ -199,6 +208,7 @@ Missatge del servidor: <ph name="SERVER_MSG"/></translation>
 <translation id="6785414152754474415">La bateria està carregada fins al <ph name="PERCENTAGE"/>% i s'està carregant.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: s'està activant...</translation>
 <translation id="4895488851634969361">La bateria està carregada.</translation>
+<translation id="615957422585914272">Mostra el teclat en pantalla</translation>
 <translation id="5947494881799873997">Reverteix</translation>
 <translation id="7593891976182323525">Cerca o Maj</translation>
 <translation id="7649070708921625228">Ajuda</translation>
@@ -206,6 +216,7 @@ Missatge del servidor: <ph name="SERVER_MSG"/></translation>
 Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="397105322502079400">S’està calculant...</translation>
 <translation id="158849752021629804">Es necessita una xarxa domèstica</translation>
+<translation id="1013923882670373915">El dispositiu Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; sol·licita permís per emparellar-se. Introduïu aquest codi PIN al dispositiu: <ph name="PINCODE"/>.</translation>
 <translation id="6857811139397017780">Activa <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Error en la cerca de DHCP</translation>
 <translation id="2819276065543622893">Ara se us tancarà la sessió.</translation>
@@ -215,6 +226,7 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="973896785707726617">La sessió finalitzarà d'aquí a <ph name="SESSION_TIME_REMAINING"/>. Es tancarà la sessió automàticament.</translation>
 <translation id="8372369524088641025">Clau WEP no vàlida</translation>
 <translation id="6636709850131805001">Estat no reconegut</translation>
+<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Torna a canviar a &quot;<ph name="FROM_LOCALE"/>&quot; (requereix reiniciar)</translation>
 <translation id="8103386449138765447">Missatges SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (comentaris de veu) està activat.

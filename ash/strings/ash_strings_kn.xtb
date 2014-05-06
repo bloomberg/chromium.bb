@@ -10,6 +10,7 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> ಅನ್ನು <ph name="ROTATION"/> ಗೆ ತಿರುಗಿಸಲಾಗಿದೆ</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
+<translation id="6713285437468012787">Bluetooth ಸಾಧನವನ್ನು &quot;<ph name="DEVICE_NAME"/>&quot; ಜೋಡಿಸಲಾಗಿದೆ ಮತ್ತು ಇದೀಗ ಎಲ್ಲಾ ಬಳಕೆದಾರರಿಗೂ ಲಭ್ಯವಿದೆ. ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬಳಸಿಕೊಂಡು ನೀವು ಈ ಜೋಡಣೆಯನ್ನು ತೆಗೆದುಹಾಕಬಹುದು.</translation>
 <translation id="7165320105431587207">ನೆಟ್‌ವರ್ಕ್ ಕಾನ್ಫಿಗರ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="3775358506042162758">ಬಹು ಸೈನ್-ಇನ್‌ನಲ್ಲಿ ನೀವು ಮೂರರಷ್ಟು ಖಾತೆಗಳನ್ನು ಮಾತ್ರ ಹೊಂದಬಹುದು.</translation>
 <translation id="370649949373421643">Wi-Fi ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
@@ -19,6 +20,7 @@
 <translation id="595202126637698455">ಕಾರ್ಯಕ್ಷಮತೆ ಟ್ರೇಸಿಂಗ್ ಸಕ್ರಿಯಗೊಂಡಿದೆ</translation>
 <translation id="8054466585765276473">ಬ್ಯಾಟರಿ ಸಮಯವನ್ನು ಲೆಕ್ಕಾಚಾರ ಮಾಡಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="7982789257301363584">ನೆಟ್‌ವರ್ಕ್</translation>
+<translation id="2303600792989757991">ಟಾಗಲ್ ವಿಂಡೋ ಅವಲೋಕನ</translation>
 <translation id="5565793151875479467">ಪ್ರಾಕ್ಸಿ...</translation>
 <translation id="938582441709398163">ಕೀಬೋರ್ಡ್ ಒವರ್‌ಲೇ</translation>
 <translation id="4387004326333427325">ದೃಢೀಕರಣ ಪ್ರಮಾಣಪತ್ರವನ್ನು ರಿಮೋಟ್ ಆಗಿ ತಿರಸ್ಕರಿಸಲಾಗಿದೆ</translation>
@@ -79,7 +81,9 @@
 <translation id="3892641579809465218">ಆಂತರಿಕ ಪ್ರದರ್ಶನ</translation>
 <translation id="7823564328645135659">ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಿದ ನಂತರ ಭಾಷೆಯನ್ನು &quot;<ph name="FROM_LOCALE"/>&quot; ನಿಂದ &quot;<ph name="TO_LOCALE"/>&quot; ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ.</translation>
 <translation id="3368922792935385530">ಸಂಪರ್ಕಿಸಲಾಗಿದೆ</translation>
+<translation id="3606978283550408104">ಬ್ರೇಲ್ ಪ್ರದರ್ಶನವನ್ನು ಸಂಪರ್ಕಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="8654520615680304441">Wi-Fi ಆನ್ ಮಾಡಿ...</translation>
+<translation id="6650933572246256093">ಬ್ಲೂಟೂತ್‌ ಸಾಧನವು &quot;<ph name="DEVICE_NAME"/>&quot; ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತದೆ. ಆ ಸಾಧನದಲ್ಲಿ ಈ ಪಾಸ್‌ಕೀಲಿಯನ್ನು ನಮೂದಿಸಿ: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519"><ph name="INPUT_METHOD_ID"/> ಗೆ ನಿಮ್ಮ ಇನ್‌ಪುಟ್ ವಿಧಾನವನ್ನು ಬದಲಾಯಿಸಲಾಗಿದೆ.
         ಬದಲಿಸಲು Shift + Alt ಕೀಲಿಯನ್ನು ಒತ್ತಿರಿ.</translation>
@@ -132,6 +136,7 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತಿದೆ</translation>
+<translation id="4527045527269911712">ಬ್ಲೂಟೂತ್‌‌ ಸಾಧನವು &quot;<ph name="DEVICE_NAME"/>&quot; ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತದೆ.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">ಸ್ವಯಂಚಾಲಿತ ಕ್ಲಿಕ್‌ಗಳು</translation>
 <translation id="1398853756734560583">ಗರಿಷ್ಠಗೊಳಿಸು</translation>
@@ -182,11 +187,15 @@
 <translation id="479989351350248267">ಹುಡುಕಿ</translation>
 <translation id="8454013096329229812">Wi-Fi ಆನ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="4872237917498892622">Alt+ಹುಡುಕಾಟ ಅಥವಾ Shift</translation>
+<translation id="2429753432712299108">ಬ್ಲೂಟೂತ್‌‌ ಸಾಧನವು &quot;<ph name="DEVICE_NAME"/>&quot; ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತದೆ. ಸಮ್ಮತಿಸುವುದಕ್ಕೂ ಮೊದಲು, ದಯವಿಟ್ಟು ಆ ಸಾಧನದಲ್ಲಿ ಈ ಪಾಸ್‌ಕೀಲಿಯನ್ನು ತೋರಿಸಲಾಗಿದೆಯೇ ಎಂಬುದನ್ನು ಖಾತರಿಪಡಿಸಿಕೊಳ್ಳಿ: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">ಬ್ಯಾಟರಿ <ph name="PERCENTAGE"/>% ಪೂರ್ಣವಾಗಿದೆ.</translation>
 <translation id="2983818520079887040">ಸೆಟ್ಟಿಂಗ್‌ಗಳು...</translation>
 <translation id="3871838685472846647">ಸೆಲ್ಯುಲಾರ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
+<translation id="6452181791372256707">ತಿರಸ್ಕರಿಸಿ</translation>
 <translation id="1195412055398077112">ಓವರ್‌ಸ್ಕ್ಯಾನ್</translation>
+<translation id="607652042414456612">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಅನ್ನು ಬ್ಲೂಟೂತ್‌‌ ಸಾಧನಗಳ ಸಮೀಪದಲ್ಲಿ ಅನ್ವೇಷಿಸಬಹುದಾಗಿದೆ ಮತ್ತು <ph name="ADDRESS"/> ವಿಳಾಸದೊಂದಿಗೆ &quot;<ph name="NAME"/>&quot; ರೂಪದಲ್ಲಿ ಗೋಚರಿಸುತ್ತದೆ</translation>
 <translation id="112308213915226829">ಶೆಲ್ಫ್ ಅನ್ನು ಸ್ವಯಂಮರೆಮಾಡು</translation>
+<translation id="6732801395666424405">ಪ್ರಮಾಣಪತ್ರಗಳನ್ನು ಲೋಡ್‌ ಮಾಡಲಾಗಲಿಲ್ಲ</translation>
 <translation id="7573962313813535744">ಪರಸ್ಪರ ಸಂಧಿಸುವ ಮೋಡ್</translation>
 <translation id="8927026611342028580">ಸಂಪರ್ಕವನ್ನು ವಿನಂತಿಸಲಾಗಿದೆ</translation>
 <translation id="8300849813060516376">OTASP ವಿಫಲವಾಗಿದೆ</translation>
@@ -199,6 +208,7 @@
 <translation id="6785414152754474415">ಬ್ಯಾಟರಿ <ph name="PERCENTAGE"/>% ಪೂರ್ಣಗೊಂಡಿದೆ ಮತ್ತು ಚಾರ್ಜ್ ಆಗುತ್ತಿದೆ.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: ಸಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="4895488851634969361">ಬ್ಯಾಟರಿ ತುಂಬಿದೆ.</translation>
+<translation id="615957422585914272">ಆನ್-ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್ ತೋರಿಸು</translation>
 <translation id="5947494881799873997">ಹಿಂತಿರುಗಿಸು</translation>
 <translation id="7593891976182323525">ಹುಡುಕಾಟ ಅಥವಾ Shift</translation>
 <translation id="7649070708921625228">ಸಹಾಯ</translation>
@@ -206,6 +216,7 @@
 ರದ್ದುಗೊಳಿಸಲು ಹುಡುಕಾಟ ಅಥವಾ Shift ಕೀಲಿಯನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="397105322502079400">ಎಣಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="158849752021629804">ಹೋಮ್ ನೆಟ್‌ವರ್ಕ್ ಅಗತ್ಯವಿದೆ</translation>
+<translation id="1013923882670373915">ಬ್ಲೂಟೂತ್‌ ಸಾಧನವು &quot;<ph name="DEVICE_NAME"/>&quot; ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತದೆ. ದಯವಿಟ್ಟು ಆ ಸಾಧನದಲ್ಲಿ ಈ PIN ಕೋಡ್ ನಮೂದಿಸಿ: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">ಸಕ್ರಿಯಗೊಳಿಸಿ<ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP ಲುಕಪ್ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="2819276065543622893">ಈಗ ನಿಮ್ಮನ್ನು ಸೈನ್ ಔಟ್ ಮಾಡಲಾಗುತ್ತದೆ.</translation>
@@ -215,6 +226,7 @@
 <translation id="973896785707726617">ಈ ಸೆಷನ್ <ph name="SESSION_TIME_REMAINING"/> ರಲ್ಲಿ ಮುಕ್ತಾಯಗೊಳ್ಳುತ್ತದೆ. ನಿಮ್ಮನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸೈನ್ ಔಟ್ ಮಾಡಲಾಗುತ್ತದೆ.</translation>
 <translation id="8372369524088641025">ಕೆಟ್ಟ WEP ಕೀ</translation>
 <translation id="6636709850131805001">ಅಂಗೀಕಾರವಲ್ಲದ ರಾಜ್ಯ</translation>
+<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">&quot;<ph name="FROM_LOCALE"/>&quot; ಗೆ ಮರುಬದಲಾಯಿಸಿ (ಮರುಪ್ರಾರಂಭಿಸುವ ಅಗತ್ಯವಿದೆ)</translation>
 <translation id="8103386449138765447">SMS ಸಂದೇಶಗಳು: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (ಮಾತನಾಡುವ ಪ್ರತಿಕ್ರಿಯೆ) ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ. ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು Ctrl+Alt+Z ಒತ್ತಿರಿ.</translation>

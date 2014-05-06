@@ -2,9 +2,11 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
 <translation id="8588878054171169263">Lưu ảnh</translation>
+<translation id="4996978546172906250">Chia sẻ qua</translation>
 <translation id="5578795271662203820">Tìm ảnh này trên <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Dịch</translation>
 <translation id="7644305409888602715">Đang dịch trang từ <ph name="SOURCE_LANGUAGE"/>...</translation>
+<translation id="7015922086425404465">Tải ứng dụng từ Cửa hàng Google Play: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Tải lại trang này</translation>
 <translation id="641643625718530986">In…</translation>
 <translation id="7658239707568436148">Hủy</translation>
@@ -16,12 +18,15 @@
 Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp cho quản trị viên quyền kiểm soát đối với tiểu sử trên Chrome của bạn. Dữ liệu Chrome của bạn sẽ vĩnh viễn gắn với tài khoản này. Ngắt kết nối khỏi tài khoản này sẽ xóa các dữ liệu Chrome cục bộ.</translation>
 <translation id="1966710179511230534">Vui lòng cập nhật chi tiết đăng nhập của bạn.</translation>
 <translation id="1623104350909869708">Ngăn trang này tạo hộp thoại bổ sung</translation>
+<translation id="1426410128494586442">Có</translation>
 <translation id="8218346974737627104">Xác nhận đăng nhập</translation>
 <translation id="624558823898732418">Ngôn ngữ bản dịch: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Chọn chứng chỉ để xác thực</translation>
 <translation id="3896036286668839683">Trình xem chứng chỉ</translation>
 <translation id="8583805026567836021">Xóa dữ liệu tài khoản</translation>
+<translation id="4250680216510889253">Không</translation>
 <translation id="8073388330009372546">Mở ảnh trong tab mới</translation>
+<translation id="552553974213252141">Văn bản đã được trích xuất chính xác chưa?</translation>
 <translation id="8730621377337864115">Hoàn tất</translation>
 <translation id="4170011742729630528">Dịch vụ không khả dụng; thử lại sau.</translation>
 <translation id="8627706565932943526">Lỗi đồng bộ hóa</translation>
@@ -33,11 +38,14 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="907015151729920253">Thẻ thông minh</translation>
 <translation id="3063601790762993062">Lưu video</translation>
 <translation id="6042308850641462728">Thêm</translation>
+<translation id="7267430310003164111">Nhắc tải ứng dụng từ Cửa hàng Google Play. Tên ứng dụng: <ph name="APP_NAME"/>. Xếp hạng trung bình của ứng dụng: <ph name="APP_RATING"/>.</translation>
+<translation id="4148957013307229264">Đang cài đặt...</translation>
 <translation id="3992315671621218278">Lưu liên kết</translation>
 <translation id="8034522405403831421">Trang này có ngôn ngữ là <ph name="SOURCE_LANGUAGE"/>. Dịch trang này sang <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="4195643157523330669">Mở bằng tab mới</translation>
 <translation id="3089395242580810162">Mở bằng tab ẩn danh</translation>
 <translation id="8725066075913043281">Thử lại</translation>
+<translation id="8909135823018751308">Chia sẻ...</translation>
 <translation id="4269820728363426813">Sao chép địa chỉ liên kết</translation>
 <translation id="4510973599275542560">Không tải lại</translation>
 <translation id="1206892813135768548">Sao chép văn bản liên kết</translation>
@@ -50,8 +58,10 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="1285320974508926690">Không bao giờ dịch trang web này</translation>
 <translation id="5164482624172255778">Bạn có muốn Google Chrome đề xuất dịch các trang <ph name="LANGUAGE"/> từ trang web này vào lần tiếp theo không?</translation>
 <translation id="8528538445849828817">Ngôn ngữ trang: <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="4881695831933465202">Mở</translation>
 <translation id="6512448926095770873">Rời khỏi Trang này</translation>
 <translation id="7947953824732555851">Chấp nhận &amp; đăng nhập</translation>
+<translation id="6333140779060797560">Chia sẻ qua <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Đóng</translation>
 <translation id="969096075394517431">Thay đổi ngôn ngữ</translation>
 <translation id="5032574515228824816">Lời nhắc</translation>

@@ -21,6 +21,7 @@
       penangkapan audio hanya tersedia untuk URL yang dikonfigurasi dalam AudioCaptureAllowedUrls.
 
       Kebijakan ini mempengaruhi semua jenis masukan audio dan tidak hanya mikrofon yang ada di dalam.</translation>
+<translation id="7267809745244694722">Default tombol media ke tombol fungsi</translation>
 <translation id="9150416707757015439">Kebijakan ini sudah tidak digunakan lagi. Gunakan IncognitoModeAvailability sebagai gantinya. Aktifkan mode Penyamaran di <ph name="PRODUCT_NAME"/>. Jika setelan ini diaktifkan atau tidak dikonfigurasi, pengguna dapat membuka laman web dalam mode penyamaran. Jika setelan ini dinonaktifkan, pengguna tidak dapat membuka laman web dalam mode penyamaran. Jika kebijakan ini dibiarkan tanpa disetel, kebijakan ini akan diaktifkan dan pengguna akan dapat menggunakan mode penyamaran.</translation>
 <translation id="4203389617541558220">Membatasi waktu operasi perangkat dengan menjadwalkan mulai ulang otomatis.
 
@@ -536,7 +537,6 @@
 
           Jika setelan ini dinonaktifkan atau tidak disetel, hosting dapat dibagikan menggunakan akun apa pun.</translation>
 <translation id="6417861582779909667">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menyetel cookie. Jika kebijakan ini dibiarkan tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultCookiesSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
-<translation id="5457296720557564923">Memungkinkan laman mengakses statistik penggunaan memori JavaScript. Setelan ini menjadikan statistik memori dari panel Profil Alat Pengembang tersedia bagi laman web itu sendiri.</translation>
 <translation id="5776485039795852974">Tanyakan setiap kali situs ingin menampilkan pemberitahuan desktop</translation>
 <translation id="5047604665028708335">Memungkinkan akses ke situs di luar paket konten</translation>
 <translation id="5052081091120171147">Kebijakan ini memaksa riwayat browseran diimpor dari browser default saat ini, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, tidak ada riwayat browseran yang diimpor. Jika tidak disetel, pengguna mungkin ditanya apakah akan mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
@@ -544,6 +544,12 @@
 <translation id="7132877481099023201">URL yang akan diberi akses ke perangkat perekam video tanpa peringatan</translation>
 <translation id="8947415621777543415">Laporkan lokasi perangkat</translation>
 <translation id="1655229863189977773">Setel ukuran cache disk dalam byte</translation>
+<translation id="3358275192586364144">Mengaktifkan pengoptimalan WPAD pada <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubah setelan ini.
+
+      Menyetel kebijakan ini menjadi aktif akan menyebabkan Chrome menunggu dalam interval yang lebih pendek bagi server WPAD berbasis DNS.
+
+      Jika tidak disetel, kebijakan ini akan diaktifkan dan pengguna tidak
+      akan dapat mengubahnya.</translation>
 <translation id="6376842084200599664">Memungkinkan Anda untuk menentukan daftar ekstensi yang akan dipasang secara diam-diam, tanpa interaksi pengguna.
 
           Setiap item dari daftar merupakan string yang berisi ID ekstensi dan URL pembaruan yang dibatasi dengan titik koma (<ph name="SEMICOLON"/>). ID ekstensi merupakan string 32 huruf yang ditemukan misalnya, di <ph name="CHROME_EXTENSIONS_LINK"/> saat dalam mode pengembang. URL pembaruan harus mengarah ke dokumen XML Manifes Pembaruan seperti yang dideskripsikan di <ph name="LINK_TO_EXTENSION_DOC1"/>. Perhatikan bahwa URL pembaruan yang disetel dalam kebijakan ini hanya digunakan untuk pemasangan awal; pembaruan ekstensi berikutnya akan menggunakan URL pembaruan yang ditunjukkan dalam manifes ekstensi.
@@ -641,6 +647,7 @@
 <translation id="1679420586049708690">Sesi publik untuk masuk otomatis</translation>
 <translation id="7625444193696794922">Menentukan saluran rilis yang harus dikunci oleh perangkat ini.</translation>
 <translation id="2552966063069741410">Zona Waktu</translation>
+<translation id="3788662722837364290">Setelan pengelolaan daya saat pengguna sedang menganggur</translation>
 <translation id="2240879329269430151">Memungkinkan Anda menyetel apakah situs web diizinkan untuk menampilkan munculan. Menampilkan munculan dapat diizinkan untuk semua situs web atau ditolak untuk semua situs web. Jika kebijakan ini dibiarkan tidak disetel, 'BlockPopups' akan digunakan dan pengguna dapat mengubahnya.</translation>
 <translation id="2529700525201305165">Membatasi pengguna yang diizinkan untuk masuk ke <ph name="PRODUCT_NAME"/></translation>
 <translation id="8971221018777092728">Pewaktu masuk otomatis sesi publik</translation>
@@ -719,7 +726,6 @@
 <translation id="8102913158860568230">Setelan streaming media default</translation>
 <translation id="6641981670621198190">Nonaktifkan dukungan untuk API grafis 3D</translation>
 <translation id="1265053460044691532">Batasi waktu bagi pengguna yang diautentikasi melalui SAML untuk dapat masuk saat offline.</translation>
-<translation id="7929480864713075819">Mengaktifkan pelaporan info memori (JS heap size) ke laman</translation>
 <translation id="5703863730741917647">Tentukan tindakan yang akan diambil saat penundaan nganggur dicapai.
 
           Perlu dicatat bahwa kebijakan ini tidak digunakan lagi dan akan dihapus di masa mendatang.
@@ -802,6 +808,7 @@
 <translation id="4057110413331612451">Izinkan pengguna perusahaan untuk menjadi multiprofil utama saja</translation>
 <translation id="5365946944967967336">Tampilkan tombol Beranda di bilah alat</translation>
 <translation id="3709266154059827597">Konfigurasikan daftar hitam pemasangan ekstensi</translation>
+<translation id="1933378685401357864">Gambar wallpaper</translation>
 <translation id="8451988835943702790">Gunakan Laman Tab Baru sebagai beranda</translation>
 <translation id="4617338332148204752">Lewati pemeriksaan tag meta pada <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="8469342921412620373">Mengaktifkan penggunaan penyedia penelusuran default. Jika Anda mengaktifkan setelan ini, penelusuran default dilakukan ketika pengguna mengetikkan teks bukan URL di omnibox. Anda dapat menentukan penyedia penelusuran default yang akan digunakan dengan menyetel seluruh sisa kebijakan penelusuran default. Jika ini dibiarkan kosong, pengguna dapat memilih penyedia default. Jika Anda menonaktifkan setelan ini, tidak ada penelusuran yang dilakukan ketika pengguna memasukkan teks non-URL di omnibox. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau menimpa setelan ini di <ph name="PRODUCT_NAME"/>. Jika kebijakan ini dibiarkan tidak disetel, penyedia penelusuran default diaktifkan, dan pengguna dapat menyetel daftar penyedia penelusuran.</translation>
@@ -815,6 +822,11 @@
 
           Jika kebijakan ini tidak disetel, kursor besar pertama-tama akan dinonaktifkan, namun dapat diaktifkan oleh pengguna kapan saja.</translation>
 <translation id="2633084400146331575">Aktifkan masukan lisan</translation>
+<translation id="687046793986382807">Kebijakan ini telah dihentikan pada <ph name="PRODUCT_NAME"/> versi 35.
+
+      Bagaimanapun juga info memori dilaporkan ke laman, terlepas dari nilai opsinya, namun ukuran yang dilaporkan
+      dikuantisasi dan tingkat pembaruan dibatasi karena alasan keamanan. Untuk memperoleh data akurat dalam waktu nyata,
+      silakan gunakan alat seperti Telemetri.</translation>
 <translation id="8731693562790917685">Setelan Konten memungkinkan Anda menentukan bagaimana konten jenis tertentu (misalnya Kuki, Gambar, atau JavaScript) ditangani.</translation>
 <translation id="2411919772666155530">Mencekal pemberitahuan di situs ini</translation>
 <translation id="6923366716660828830">Menentukan nama penyedia penelusuran default. Jika dibiarkan kosong atau tidak disetel, nama host yang ditentukan oleh URL penelusuran akan digunakan. Kebijakan ini hanya dipertimbangkan jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
@@ -824,6 +836,7 @@
 
           Jika kebijakan ini disetel ke false, permintaan penguncian layar saat bangun akan diabaikan.</translation>
 <translation id="467236746355332046">Fitur yang didukung:</translation>
+<translation id="5447306928176905178">Aktifkan pelaporan info memori (JS heap size) ke laman (dipensiunkan)</translation>
 <translation id="7632724434767231364">Nama pustaka GSSAPI</translation>
 <translation id="3038323923255997294">Terus jalankan aplikasi latar belakang saat <ph name="PRODUCT_NAME"/> ditutup</translation>
 <translation id="8909280293285028130">Menentukan panjang waktu tanpa masukan pengguna sebelum layar terkunci ketika menggunakan daya AC.
@@ -868,6 +881,17 @@
           Kebijakan ini bersifat opsional. Jika tidak disetel, permintaan penelusuran instan akan dikirim menggunakan metode GET.
 
           Kebijakan ini hanya dipatuhi jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
+<translation id="6095999036251797924">Menentukan lamanya waktu tanpa masukan pengguna sebelum layar dikunci saat berjalan menggunakan daya AC atau baterai.
+
+          Jika lamanya waktu disetel ke nilai yang lebih besar dari nol, nilai tersebut mewakili lamanya waktu pengguna tetap menganggur sebelum <ph name="PRODUCT_OS_NAME"/> mengunci layar.
+
+          Jika lamanya waktu disetel ke nol, <ph name="PRODUCT_OS_NAME"/> tidak mengunci layar ketika pengguna menganggur.
+
+          Jika lamanya waktu tidak disetel, lama waktu default akan digunakan.
+
+          Cara yang disarankan untuk mengunci layar saat menganggur adalah dengan mengaktifkan penangguhan penguncian layar dan meminta <ph name="PRODUCT_OS_NAME"/> menangguhkan setelah penundaan waktu menganggur. Sebaiknya hanya gunakan kebijakan ini saat penguncian layar perlu terjadi jauh lebih awal dibandingkan penangguhan atau saat penangguhan ketika menganggur tidak diinginkan sama sekali.
+
+          Nilai kebijakan harus ditetapkan dalam milidetik. Nilai dijepit agar kurang dari penundaan waktu menganggur.</translation>
 <translation id="1454846751303307294">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menjalankan JavaScript. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultJavaScriptSetting', jika disetel, ataupun dari konfigurasi pribadi pengguna.</translation>
 <translation id="538108065117008131">Izinkan <ph name="PRODUCT_FRAME_NAME"/> menangani jenis konten berikut.</translation>
 <translation id="2312134445771258233">Memungkinkan Anda mengonfigurasi laman yang dimuat saat permulaan. Isi daftar 'URL yang dibuka saat permulaan' diabaikan kecuali jika Anda memilih 'Buka daftar URL' dalam 'Tindakan saat permulaan'.</translation>
@@ -890,6 +914,32 @@
       Jika kebijakan ini disetel ke false atau tidak dikonfigurasikan, ikon akan terlihat.</translation>
 <translation id="5085647276663819155">Nonaktifkan Pratinjau Cetak</translation>
 <translation id="8672321184841719703">Versi Pembaruan Otomatis Target</translation>
+<translation id="553658564206262718">Mengonfigurasi setelan pengelolaan daya saat pengguna menganggur.
+
+          Kebijakan ini mengontrol beberapa setelan untuk strategi pengelolaan daya saat pengguna menganggur.
+
+          Ada empat macam tindakan:
+          * Layar akan diredupkan apabila pengguna tetap menganggur selama waktu yang ditentukan oleh |ScreenDim|.
+          * Layar akan dinonaktifkan apabila pengguna tetap menganggur selama waktu yang ditentukan oleh |ScreenOff|.
+          * Dialog peringatan akan ditampilkan apabila pengguna tetap menganggur selama waktu yang ditentukan oleh |IdleWarning|, yang memberitahukan kepada pengguna bahwa tindakan menganggur akan dilakukan.
+          * Tindakan yang ditentukan oleh |IdleAction| akan dilakukan apabila pengguna tetap menganggur selama waktu yang ditentukan oleh |Idle|.
+
+          Untuk setiap tindakan di atas, penundaan harus ditetapkan dalam milidetik, dan perlu disetel dalam nilai yang lebih besar dari nol agar memicu tindakan yang sesuai. Apabila penundaan disetel ke nol, <ph name="PRODUCT_OS_NAME"/> tidak akan melakukan tindakan yang sesuai.
+
+          Untuk setiap penundaan di atas, jika lamanya waktu tidak disetel, nilai default akan digunakan.
+
+          Perhatikan bahwa nilai |ScreenDim| akan dijepit kurang dari atau sama dengan |ScreenOff|, |ScreenOff| dan |IdleWarning| akan dijepit kurang dari atau sama dengan |Idle|.
+
+          |IdleAction| dapat merupakan salah satu dari empat tindakan berikut:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Jika |IdleAction| tidak disetel, tindakan default (penangguhan) akan dilakukan.
+
+          Juga ada setelan terpisah untuk daya AC dan baterai.
+          </translation>
 <translation id="1689963000958717134">Memungkinkan konfigurasi jaringan dorong untuk diterapkan pada semua pengguna perangkat <ph name="PRODUCT_OS_NAME"/>. Konfigurasi jaringan adalah string berformat JSON seperti yang didefinisikan oleh format Konfigurasi Jaringan Terbuka yang dideskripsikan di <ph name="ONC_SPEC_URL"/></translation>
 <translation id="6699880231565102694">Mengaktifkan autentikasi dua faktor untuk hosting akses jarak jauh</translation>
 <translation id="2030905906517501646">Kata kunci penyedia penelusuran default</translation>
@@ -1060,6 +1110,32 @@
 
       Membiarkan kebijakan ini tidak disetel akan membuat penggunaan <ph name="PRODUCT_NAME"/> menggunakan nilai default 5000 milidetik.</translation>
 <translation id="8099880303030573137">Menunda waktu menganggur saat menggunakan daya baterai</translation>
+<translation id="1709037111685927635">Mengonfigurasi gambar wallpaper.
+
+      Kebijakan ini memungkinkan Anda mengonfigurasi gambar wallpaper yang ditampilkan di desktop dan pada latar belakang layar masuk bagi pengguna. Kebijakan ini disetel dengan menentukan URL tempat <ph name="PRODUCT_OS_NAME"/> dapat mengunduh gambar wallpaper dan hash kriptografi yang digunakan untuk memverifikasi integritas unduhan. Gambar harus dalam format JPEG, dan ukurannya tidak boleh melebihi 16 MB. URL harus dapat diakses tanpa autentikasi apa pun.
+
+      Gambar wallpaper diunduh dan disimpan dalam cache. Gambar akan diunduh kembali saat URL atau hash berubah.
+
+      Kebijakan harus ditentukan sebagai string yang mengekspresikan URL dan hash dalam format JSON, sesuai dengan skema berikut:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;URL tempat gambar wallpaper dapat diunduh.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;Hash SHA-256 gambar wallpaper.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Jika kebijakan ini disetel, <ph name="PRODUCT_OS_NAME"/> akan mengunduh dan menggunakan gambar wallpaper.
+
+      Jika Anda menyetel kebijakan ini, pengguna tidak dapat mengubah atau menggantinya.
+
+      Jika kebijakan ini dibiarkan tidak disetel, pengguna dapat memilih gambar untuk ditampilkan di desktop dan di latar belakang layar masuk.</translation>
 <translation id="2761483219396643566">Menunda peringatan waktu menganggur saat menggunakan daya baterai</translation>
 <translation id="6281043242780654992">Mengonfigurasikan kebijakan untuk Perpesanan Asli. Hosting perpesanan asli yang dimasukkan dalam daftar hitam tidak akan diizinkan kecuali telah dimasukkan dalam daftar putih.</translation>
 <translation id="1468307069016535757">Menyetel status default fitur aksesibilitas mode kontras tinggi di layar masuk.
@@ -1176,93 +1252,9 @@
       Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengganti setelan ini.
 
       Jika kebijakan ini dibiarkan tidak disetel, pengguna dapat memilih untuk menggunakan atau tidak menggunakan fitur proxy kompresi data.</translation>
+<translation id="2170233653554726857">Aktifkan pengoptimalan WPAD</translation>
 <translation id="7424751532654212117">Daftar pengecualian untuk daftar plugin yang dinonaktifkan</translation>
 <translation id="6233173491898450179">Setel direktori unduhan</translation>
-<translation id="78524144210416006">Mengonfigurasi pengelolaan daya di layar masuk pada <ph name="PRODUCT_OS_NAME"/>.
-
-      Kebijakan ini memungkinkan Anda mengonfigurasi cara <ph name="PRODUCT_OS_NAME"/> bertindak saat tidak ada aktivitas pengguna untuk beberapa waktu selagi layar masuk ditampilkan. Kebijakan mengontrol beberapa setelan. Untuk semantik individu dan rentang nilai, lihat kebijakan terkait yang mengontrol pengelolaan daya dalam sebuah sesi: Penyimpangan satu-satunya dari kebijakan ini adalah:
-      * Tindakan yang diambil pada tidak dapat nganggur atau penutup ditutup tidak dapat mengakhiri sesi.
-      * Tindakan yang diambil saat nganggur ketika menggunakan daya AC adalah mematikan.
-
-      Kebijakan harus ditentukan sebagai string yang menyatakan setelan individu dalam format JSON, mengikuti skema berikut:
-      {
-        &quot;type&quot;: &quot;objek&quot;,
-        &quot;properties&quot;: {
-          &quot;AC&quot;: {
-            &quot;description&quot;: &quot;Setelan pengelolaan daya hanya berlaku saat menggunakan daya AC&quot;,
-            &quot;type&quot;: &quot;objek&quot;,
-            &quot;properties&quot;: {
-              &quot;Delays&quot;: {
-                &quot;type&quot;: &quot;object&quot;,
-                &quot;properties&quot;: {
-                  &quot;ScreenDim&quot;: {
-                    &quot;description&quot;: &quot;Lama waktu tanpa adanya masukan pengguna setelah layar diredupkan, dalam milidetik&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;ScreenOff&quot;: {
-                    &quot;description&quot;: &quot;Lama waktu tanpa adanya masukan pengguna setelah layar dimatikan, dalam milidetik&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;Idle&quot;: {
-                    &quot;description&quot;: &quot;Lama waktu tanpa adanya masukan pengguna setelah tindakan nganggur diambil, dalam milidetik&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  }
-                }
-              },
-              &quot;IdleAction&quot;: {
-                &quot;description&quot;: &quot;Tindakan yang diambil saat penundaan nganggur tercapai&quot;,
-                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-              }
-            }
-          },
-          &quot;Battery&quot;: {
-            &quot;description&quot;: &quot;Setelan pengelolaan daya hanya berlaku saat menggunakan daya baterai&quot;,
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-              &quot;Delays&quot;: {
-                &quot;type&quot;: &quot;object&quot;,
-                &quot;properties&quot;: {
-                  &quot;ScreenDim&quot;: {
-                    &quot;description&quot;: &quot;Lama waktu tanpa adanya masukan pengguna setelah layar diredupkan, dalam milidetik&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;ScreenOff&quot;: {
-                    &quot;description&quot;: &quot;Lama waktu tanpa adanya masukan pengguna setelah layar dimatikan, dalam milidetik&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;Idle&quot;: {
-                    &quot;description&quot;: &quot;Lama waktu tanpa adanya masukan pengguna setelah tindakan nganggur diambil, dalam milidetik&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  }
-                }
-              },
-              &quot;IdleAction&quot;: {
-                &quot;description&quot;: &quot;Tindakan yang diambil saat penundaan nganggur tercapai&quot;,
-                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-              }
-            }
-          },
-          &quot;LidCloseAction&quot;: {
-            &quot;description&quot;: &quot;Tindakan diambil saat penutup ditutup&quot;,
-            &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-          },
-          &quot;UserActivityScreenDimDelayScale&quot;: {
-            &quot;description&quot;: &quot;Persentase penundaan layar redup diskalakan saat aktivitas pengguna diamati sementara layar diredupkan atau segera setelah layar dinonaktifkan&quot;,
-            &quot;type&quot;: &quot;integer&quot;,
-            &quot;minimum&quot;: 100
-          }
-        }
-      }
-
-      Jika setelan dibiarkan tidak spesifik, nilai default digunakan.
-
-      Jika kebijakan tidak disetel, semua setelan menggunakan default.</translation>
 <translation id="8908294717014659003">Memungkinkan Anda menyetel apakah situs web diizinkan untuk mengakses perangkat tangkap media. Akses ke perangkat tangkap media dapat diizinkan secara default, atau dapat ditanyakan pada pengguna setiap saat situs web ingin mendapatkan akses ke perangkat tangkap media.
 
           Jika kebijakan ini tidak disetel, 'PromptOnAccess' akan digunakan dan pengguna dapat mengubahnya.</translation>
@@ -1297,6 +1289,9 @@
       Jika kebijakan ini tidak disetel, ukuran default akan digunakan dan pengguna dapat menimpanya dengan tanda --media-cache-size.</translation>
 <translation id="5142301680741828703">Selalu mengurai pola URL berikut di <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Mengonfigurasi daftar putih pemasangan ekstensi</translation>
+<translation id="5893553533827140852">Jika setelan ini diaktifkan, permintaan autentikasi gnubby akan dilakukan melalui proxy lewat sambungan hosting jarak jauh.
+
+          Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, permintaan autentikasi gnubby tidak akan dilakukan melalui proxy.</translation>
 <translation id="187819629719252111">Memungkinkan akses ke file lokal pada mesin dengan mengizinkan <ph name="PRODUCT_NAME"/> menampilkan dialog pemilihan file. Jika Anda mengaktifkan setelan ini, pengguna dapat membuka dialog pemilihan file seperti biasa. Jika Anda menonaktifkan setelan ini, setiap kali pengguna melakukan tindakan yang akan memicu dialog pemilihan file (seperti mengimpor bookmark, mengunggah file, menyimpan tautan, dll.), yang akan ditampilkan adalah pesan, dan pengguna dianggap telah mengeklik Batal pada dialog pemilihan file. Jika setelan ini tidak disetel, pengguna dapat membuka dialog pemilihan file seperti biasa.</translation>
 <translation id="4507081891926866240">Mengubahsuai daftar pola URL yang harus selalu dirender oleh <ph name="PRODUCT_FRAME_NAME"/>. Jika kebijakan ini tidak disetel, perender default akan digunakan untuk semua situs yang ditentukan oleh kebijakan 'ChromeFrameRendererSettings'. Untuk contoh pola, lihat http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Pilih cara menentukan setelan server proxy</translation>
@@ -1363,6 +1358,11 @@
 
           Jika kebijakan &quot;RestoreOnStartup&quot; disetel untuk memulihkan URL dari sesi sebelumnya, kebijakan ini tidak akan dipatuhi dan cookie akan disimpan secara permanen untuk situs tersebut.</translation>
 <translation id="2098658257603918882">Aktifkan laporan data penggunaan dan yang terkait kerusakan</translation>
+<translation id="4633786464238689684">Mengubah perilaku default tombol baris teratas ke tombol fungsi.
+
+          Jika kebijakan ini disetel ke true, tombol baris teratas keyboard akan membuat perintah tombol fungsi per default. Tombol penelusuran harus ditekan untuk mengembalikan perilakunya ke tombol media.
+
+          Jika kebijakan ini disetel ke false atau dibiarkan tidak disetel, keyboard akan membuat perintah tombol media per default dan perintah tombol fungsi saat tombol penelusuran ditahan.</translation>
 <translation id="2324547593752594014">Mengizinkan masuk ke Chrome</translation>
 <translation id="172374442286684480">Izinkan semua situs menyetel data lokal</translation>
 <translation id="1151353063931113432">Izinkan gambar di situs ini</translation>
@@ -1413,6 +1413,7 @@
 
           ExtensionInstallBlacklist lebih diutamakan dibandingkan dengan kebijakan ini. Artinya, ekstensi dalam daftar hitam tidak akan dipasang, meskipun berasal dari situs dalam daftar ini.</translation>
 <translation id="2113068765175018713">Membatasi waktu operasi perangkat dengan melakukan booting ulang secara otomatis</translation>
+<translation id="4224610387358583899">Penundaan kunci layar</translation>
 <translation id="7848840259379156480">Memungkinkan Anda mengonfigurasi pengurai HTML default ketika <ph name="PRODUCT_FRAME_NAME"/> terpasang. Setelan defaultnya adalah mengizinkan browser host melakukan penguraian, tetapi Anda dapat mengganti ini secara opsional dan memerintahkan <ph name="PRODUCT_FRAME_NAME"/> agar mengurai laman HTML jika tidak diubah.</translation>
 <translation id="186719019195685253">Kebijakan yang diambil saat penundaan nganggur tercapai ketika dijalankan pada daya AC</translation>
 <translation id="7890264460280019664">Melaporkan daftar antarmuka jaringan dengan tipe dan perangkat lunak yang ditujukan ke server.
@@ -1471,6 +1472,15 @@
       Kebijakan ini harus disetel ke URL di tempat <ph name="PRODUCT_OS_NAME"/> dapat mengunduh Persyaratan Layanan tersebut. Persyaratan Layanan ini harus dalam teks biasa, yang disajikan sebagai teks/biasa jenis MIME. Tidak ada markup yang diizinkan.</translation>
 <translation id="2623014935069176671">Tunggu aktivitas pengguna awal</translation>
 <translation id="2660846099862559570">Jangan pernah gunakan proxy</translation>
+<translation id="1956493342242507974">Mengonfigurasi pengelolaan daya di layar masuk pada <ph name="PRODUCT_OS_NAME"/>.
+
+      Kebijakan ini memungkinkan Anda mengonfigurasi bagaimana <ph name="PRODUCT_OS_NAME"/> berperilaku saat tidak ada aktivitas pengguna untuk jangka waktu tertentu saat layar masuk ditampilkan. Kebijakan mengontrol beberapa setelan. Untuk rentang nilai dan semantik individunya, lihat kebijakan terkait yang mengontrol pengelolaan daya dalam satu sesi. Penyimpangan dari kebijakan ini hanya:
+      * Tindakan untuk menganggur atau menutup penutup tidak dapat digunakan untuk mengakhiri sesi.
+      * Tindakan default yang dilakukan saat menganggur saat menjalankan daya AC adalah mematikan perangkat.
+
+      Jika setelan tidak ditetapkan, nilai default akan digunakan.
+
+      Jika kebijakan ini tidak disetel, setelan default digunakan untuk semua setelan.</translation>
 <translation id="1435659902881071157">Konfigurasi jaringan tingkat perangkat</translation>
 <translation id="2131902621292742709">Penundaan peredupan layar saat menggunakan daya baterai</translation>
 <translation id="5781806558783210276">Menentukan panjang waktu tanpa masukan pengguna sebelum tindakan menganggur diambil saat menggunakan daya baterai.
@@ -1577,5 +1587,6 @@
       Kebijakan ini memengaruhi semua jenis keluaran audio dan bukan hanya pengeras suara yang ada di dalamnya. Fitur aksesibilitas audio juga dilarang oleh kebijakan ini. Jangan aktifkan kebijakan ini jika pengguna membutuhkan pembaca layar.
 
       Jika kebijakan ini disetel ke true atau tidak dikonfigurasi, pengguna dapat menggunakan semua keluaran audio yang didukung pada perangkatnya.</translation>
+<translation id="6517678361166251908">Izinkan autentikasi gnubby</translation>
 <translation id="4858735034935305895">Izinkan mode layar penuh</translation>
 </translationbundle>

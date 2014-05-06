@@ -2,9 +2,11 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="8588878054171169263">Lagre bildet</translation>
+<translation id="4996978546172906250">Del via</translation>
 <translation id="5578795271662203820">Søk etter dette bildet i <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Oversett</translation>
 <translation id="7644305409888602715">Oversetter siden til <ph name="SOURCE_LANGUAGE"/> …</translation>
+<translation id="7015922086425404465">Få appen fra Google Play-butikken: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Last inn denne siden på nytt</translation>
 <translation id="641643625718530986">Skriv ut</translation>
 <translation id="7658239707568436148">Avbryt</translation>
@@ -16,12 +18,15 @@
 Du logger på med en administrert konto, og gir administratoren kontroll over Chrome-profilen din. Chrome-dataene dine blir permanent knyttet til denne kontoen. Hvis du kobler fra denne kontoen, slettes de lokale Chrome-dataene.</translation>
 <translation id="1966710179511230534">Oppdater påloggingsinformasjonen din.</translation>
 <translation id="1623104350909869708">Hindre denne siden i å opprette flere dialogruter</translation>
+<translation id="1426410128494586442">Ja</translation>
 <translation id="8218346974737627104">Bekreft påloggingen</translation>
 <translation id="624558823898732418">Målspråk: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Velg autentiseringssertifikat</translation>
 <translation id="3896036286668839683">Sertifikatfremviser</translation>
 <translation id="8583805026567836021">Fjerner kontodata …</translation>
+<translation id="4250680216510889253">Nei</translation>
 <translation id="8073388330009372546">Åpne bildet i en ny fane</translation>
+<translation id="552553974213252141">Ble tekstutdraget riktig?</translation>
 <translation id="8730621377337864115">Ferdig</translation>
 <translation id="4170011742729630528">Tjenesten er ikke tilgjengelig. Prøv på nytt senere.</translation>
 <translation id="8627706565932943526">Synkroniseringsfeil</translation>
@@ -33,11 +38,14 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="907015151729920253">Smartkort</translation>
 <translation id="3063601790762993062">Lagre videoen</translation>
 <translation id="6042308850641462728">Mer</translation>
+<translation id="7267430310003164111">Forespørsel om nedlasting av en app fra Google Play-butikken. Appnavn: <ph name="APP_NAME"/>. Appens gjennomsnittlige vurdering: <ph name="APP_RATING"/>.</translation>
+<translation id="4148957013307229264">Installerer …</translation>
 <translation id="3992315671621218278">Lagre linken</translation>
 <translation id="8034522405403831421">Denne siden er på <ph name="SOURCE_LANGUAGE"/>. Vil du oversette den til <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="4195643157523330669">Åpne i ny fane</translation>
 <translation id="3089395242580810162">Åpne i inkognitofane</translation>
 <translation id="8725066075913043281">Prøv igjen</translation>
+<translation id="8909135823018751308">Del</translation>
 <translation id="4269820728363426813">Kopiér linkadressen</translation>
 <translation id="4510973599275542560">Ikke last inn på nytt</translation>
 <translation id="1206892813135768548">Kopiér linkteksten</translation>
@@ -50,8 +58,10 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
 <translation id="5164482624172255778">Vil du at Google Chrome skal tilby seg å oversette sider på <ph name="LANGUAGE"/> fra dette nettstedet neste gang?</translation>
 <translation id="8528538445849828817">Sidespråk: <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="4881695831933465202">Åpne</translation>
 <translation id="6512448926095770873">Forlat siden</translation>
 <translation id="7947953824732555851">Godta og logg på</translation>
+<translation id="6333140779060797560">Del via <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Lukk</translation>
 <translation id="969096075394517431">Endre språk</translation>
 <translation id="5032574515228824816">Ledetekst</translation>

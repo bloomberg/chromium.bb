@@ -26,6 +26,7 @@
 
       Dasar ini memberi kesan kepada semua jenis input audio dan bukan sahaja
       mikrofon terbina dalam.</translation>
+<translation id="7267809745244694722">Kekunci media lalai kepada kekunci fungsi</translation>
 <translation id="9150416707757015439">Dasar ini tidak diterima. Sebaliknya, sila gunakan IncognitoModeAvailability.
       Dayakan mod Inkognito dalam <ph name="PRODUCT_NAME"/>.
 
@@ -640,9 +641,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="6417861582779909667">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang tidak dibenarkan untuk menetapkan kuki.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak, sama ada dari dasar 'DefaultCookiesSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
-<translation id="5457296720557564923">Membolehkan halaman mengakses statistik penggunaan memori JavaScript.
-
-      Tetapan ini menjadikan statistik memori dari panel Profil Alat Pembangun tersedia pada halaman web itu sendiri.</translation>
 <translation id="5776485039795852974">Tanya setiap kali tapak mahu menunjukkan pemberitahuan desktop</translation>
 <translation id="5047604665028708335">Benarkan akses ke tapak di luar pek kandungan</translation>
 <translation id="5052081091120171147">Jika didayakan, dasar ini memaksa sejarah penyemakan imbas diimport dari penyemak imbas lalai semasa. Jika didayakan, dasar ini juga memberikan kesan terhadap dialog import.
@@ -654,6 +652,11 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="7132877481099023201">URL yang akan diberikan akses kepada peranti tangkapan video tanpa gesaan</translation>
 <translation id="8947415621777543415">Laporkan lokasi peranti</translation>
 <translation id="1655229863189977773">Tetapkan saiz cache cakera dalam bait</translation>
+<translation id="3358275192586364144">Mendayakan pengoptimuman WPAD dalam <ph name="PRODUCT_NAME"/> dan menghalang pengguna daripada menukar tetapan ini.
+
+      Sekiranya tetapan ini didayakan, Chrome akan menunggu pelayan WPAD berdasarkan DNS untuk tempoh yang lebih pendek.
+
+      Jika dasar ini dibiarkan tanpa ditetapkan, ini akan didayakan dan pengguna tidak dapat menukarnya.</translation>
 <translation id="6376842084200599664">Membolehkan anda menetapkan senarai pelanjutan yang akan dipasang secara senyap, tanpa interaksi pengguna.
 
           Setiap item dalam senarai ini ialah rentetan yang mengandungi ID pelanjutan dan URL kemas kini yang dibatasi oleh koma bertitik (<ph name="SEMICOLON"/>). ID pelanjutan ialah rentetan 32 huruf yang terdapat, contohnya, pada <ph name="CHROME_EXTENSIONS_LINK"/> apabila berada dalam mod pembangun. URL kemas kini harus menunjuk kepada dokumen XML Manifes Kemas Kini seperti yang dihuraikan di <ph name="LINK_TO_EXTENSION_DOC1"/>. Ambil perhatian bahawa URL kemas kini yang ditetapkan dalam dasar ini, hanya digunakan untuk pemasangan awal; kemas kini pelanjutan yang berikutnya akan menggunakan URL kemas kini yang dinyatakan dalam manifes pelanjutan.
@@ -775,6 +778,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="1679420586049708690">Sesi terbuka untuk log masuk automatik</translation>
 <translation id="7625444193696794922">Menetapkan saluran pelepasan yang harus mengunci peranti ini.</translation>
 <translation id="2552966063069741410">Zon waktu</translation>
+<translation id="3788662722837364290">Tetapan pengurusan kuasa apabila pengguna melahu</translation>
 <translation id="2240879329269430151">Membolehkan anda menetapkan sama ada tapak web dibenarkan untuk memaparkan pop timbul. Memaparkan pop  timbul boleh dibenarkan untuk semua tapak web atau dinafikan untuk semua tapak web.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, 'BlockPopups' akan digunakan dan pengguna akan boleh mengubahnya.</translation>
@@ -856,7 +860,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="8102913158860568230">Tetapan mediastream lalai</translation>
 <translation id="6641981670621198190">Lumpuhkan sokongan untuk API grafik 3D</translation>
 <translation id="1265053460044691532">Hadkan masa untuk pengguna yang membuat pengesahan melalui SAML boleh melog masuk dalam talian.</translation>
-<translation id="7929480864713075819">Dayakan maklumat memori laporan (size timbunan JS) pada halaman</translation>
 <translation id="5703863730741917647">Menentukan tindakan yang perlu diambil apabila kelewatan melahu dicapai.
 
           Harap maklum bahawa dasar ini telah lapuk dan akan dialih keluar pada masa hadapan.
@@ -974,6 +977,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="4057110413331612451">Membenarkan pengguna perusahaan menjadi pengguna berbilang profil utama sahaja</translation>
 <translation id="5365946944967967336">Paparkan butang Halaman Utama pada bar alat</translation>
 <translation id="3709266154059827597">Konfigurasi senarai hitam pemasangan sambungan</translation>
+<translation id="1933378685401357864">Imej hias latar</translation>
 <translation id="8451988835943702790">Gunakan Halaman Tab Baharu sebagai halaman utama</translation>
 <translation id="4617338332148204752">Langkau semakan teg meta dalam <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="8469342921412620373">Mendayakan penggunaan penyedia carian lalai.
@@ -997,6 +1001,9 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Jika dasar ini dibiarkan tanpa ditetapkan, kursor besar dilumpuhkan pada mulanya tetapi boleh didayakan oleh pengguna pada bila-bila masa.</translation>
 <translation id="2633084400146331575">Dayakan maklum balas yang dituturkan</translation>
+<translation id="687046793986382807">Dasar ini telah ditamatkan bermula <ph name="PRODUCT_NAME"/> versi 35.
+
+      Walau bagaimanapun, maklumat memori tetap dilaporkan pada halaman, tanpa mengira nilai pilihan tetapi saiz yang dilaporkan adalah anggaran dan kadar kemas kini dihadkan atas tujuan keselamatan. Untuk mendapatkan data masa nyata yang tepat, sila gunakan alatan seperti Telemetri.</translation>
 <translation id="8731693562790917685">Tetapan Kandungan membenarkan anda untuk menentukan cara kandungan bagi jenis tertentu (contohnya Kuki, Imej atau JavaScript) dikendalikan.</translation>
 <translation id="2411919772666155530">Sekat pemberitahuan pada tapak ini</translation>
 <translation id="6923366716660828830">Menentukan nama penyedia carian lalai. Jika dibiarkan kosong atau tidak ditetapkan, nama hos yang ditentukan oleh URL carian akan digunakan.
@@ -1008,6 +1015,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Jika dasar ini ditetapkan kepada palsu, permintaan kunci bangkit skrin akan diabaikan.</translation>
 <translation id="467236746355332046">Ciri yang disokong:</translation>
+<translation id="5447306928176905178">Dayakan maklumat pelaporan memori (saiz timbunan JS) pada halaman (lapuk)</translation>
 <translation id="7632724434767231364">Nama perpustakaan GSSAPI</translation>
 <translation id="3038323923255997294">Terus jalankan apl latar belakang apabila <ph name="PRODUCT_NAME"/> ditutup</translation>
 <translation id="8909280293285028130">Menyatakan panjang masa tanpa input pengguna dan skrin akan dikunci selepas masa ini tamat apabila dijalankan dengan kuasa AC.
@@ -1056,6 +1064,17 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Dasar ini tidak wajib. Jika tidak ditetapkan, permintaan carian semerta akan dihantar menggunakan kaedah GET.
 
           Dasar ini hanya dipatuhi jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
+<translation id="6095999036251797924">Menyatakan tempoh masa tanpa input pengguna yang selepas itu skrin dikunci semasa berfungsi dengan kuasa AC atau bateri.
+
+          Apabila tempoh masa ditetapkan kepada nilai yang lebih besar daripada sifar, nilai tersebut menunjukkan tempoh masa pengguna harus kekal melahu sebelum <ph name="PRODUCT_OS_NAME"/> mengunci skrin.
+
+          Apabila tempoh masa ditetapkan kepada sifar, <ph name="PRODUCT_OS_NAME"/> tidak mengunci skrin apabila pengguna melahu.
+
+          Apabila tempoh masa tidak ditetapkan, tempoh masa lalai digunakan.
+
+          Cara yang disyorkan untuk mengunci skrin semasa melahu adalah dengan mendayakan penguncian skrin semasa tergantung dan membuatkan <ph name="PRODUCT_OS_NAME"/> tergantung selepas kelewatan melahu. Dasar ini harus digunakan hanya apabila penguncian skrin berlaku jauh lebih awal daripada masa tergantung atau apabila tergantung yang berlaku semasa melahu tidak diingini sama sekali.
+
+          Nilai dasar mesti dinyatakan dalam milisaat. Nilai diketatkan menjadi kurang daripada kelewatan melahu.</translation>
 <translation id="1454846751303307294">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang tidak dibenarkan untuk menjalankan JavaScript.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultJavaScriptSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
@@ -1088,6 +1107,32 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Apabila dasar ini ditetapkan kepada palsu atau tidak dikonfigurasi, ikon akan kelihatan.</translation>
 <translation id="5085647276663819155">Lumpuhkan Pratonton Cetakan</translation>
 <translation id="8672321184841719703">Versi Kemas Kini Auto Sasaran</translation>
+<translation id="553658564206262718">Konfigurasikan tetapan pengurusan kuasa apabila pengguna melahu.
+
+          Dasar ini mengawal berbilang tetapan untuk strategi pengurusan kuasa apabila pengguna melahu.
+
+          Terdapat empat jenis tindakan:
+          * Skrin akan dimalapkan jika pengguna kekal melahu untuk masa yang dinyatakan oleh |ScreenDim|.
+          * Skrin akan dimatikan jika pengguna kekal melahu untuk masa yang dinyatakan oleh |ScreenOff|.
+          * Dialog amaran akan ditunjukkan jika pengguna kekal melahu untuk masa yang dinyatakan oleh |IdleWarning|, memberitahu pengguna bahawa tindakan melahu akan diambil.
+          * Tindakan yang dinyatakan oleh |IdleAction| akan diambil jika pengguna kekal melahu untuk masa yang dinyatakan oleh |Idle|.
+
+          Untuk setiap tindakan di atas, kelewatan mesti dinyatakan dalam milisaat dan perlu ditetapkan kepada nilai yang lebih besar daripada sifar untuk mencetus tindakan sepadan. Sekiranya kelewatan ditetapkan kepada sifar, <ph name="PRODUCT_OS_NAME"/> tidak akan mengambil tindakan sepadan.
+
+          Untuk setiap kelewatan di atas, apabila tempoh masa tidak ditetapkan, nilai lalai akan digunakan.
+
+          Sila ambil perhatian bahawa nilai |ScreenDim| akan diketatkan kepada kurang daripada atau sama dengan |ScreenOff|, |ScreenOff| dan |IdleWarning| juga akan diketatkan kepada kurang daripada atau sama dengan |Idle|.
+
+          |IdleAction| boleh merupakan salah satu daripada empat kemungkinan tindakan:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Apabila |IdleAction| tidak ditetapkan, tindakan lalai diambil, iaitu digantung.
+
+          Terdapat juga tetapan berasingan untuk kuasa AC dan bateri.
+          </translation>
 <translation id="1689963000958717134">Membenarkan penolakan konfigurasi rangkaian digunakan untuk semua pengguna peranti <ph name="PRODUCT_OS_NAME"/>. Konfigurasi rangkaian ialah rentetan berformat JSON seperti yang ditakrifkan oleh format Konfigurasi Rangkaian Terbuka yang dihuraikan di <ph name="ONC_SPEC_URL"/></translation>
 <translation id="6699880231565102694">Dayakan pengesahan dua faktor untuk hos akses jauh</translation>
 <translation id="2030905906517501646">Kata kunci pembekal carian lalai</translation>
@@ -1301,6 +1346,32 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Membiarkan dasar ini tanpa ditetapkan akan membuat <ph name="PRODUCT_NAME"/> menggunakan nilai lalai 5,000 milisaat.</translation>
 <translation id="8099880303030573137">Kelewatan melahu apabila dijalankan dengan kuasa bateri</translation>
+<translation id="1709037111685927635">Konfigurasi imej hias latar.
+
+      Dasar ini membenarkan anda mengkonfigurasi imej hias latar yang ditunjukkan pada desktop dan pada latar belakang skrin log masuk untuk pengguna. Dasar ditetapkan dengan menentukan URL tempat <ph name="PRODUCT_OS_NAME"/> boleh memuat turun imej hias latar dan cincangan kriptografi yang digunakan untuk mengesahkan integriti muat turun tersebut. Imej mestilah dalam format JPEG, saiznya tidak boleh melebihi 16MB. URL mesti boleh diakses tanpa sebarang pengesahan.
+
+      Imej hias latar dimuat turun dan dicache. Imej ini akan dimuat turun semula bila-bila masa URL atau cincangan berubah.
+
+      Dasar hendaklah ditentukan sebagai rentetan yang menjelaskan URL dan cincangan dalam format JSON dengan mematuhi skema berikut:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;URL tempat imej hias latar boleh dimuat turun.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;Cincangan SHA-256 imej hias latar.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Jika dasar ini ditetapkan, <ph name="PRODUCT_OS_NAME"/> akan memuat turun dan menggunakan imej hias latar.
+
+      Jika anda menetapkan dasar ini, pengguna tidak boleh menukar atau membatalkannya.
+
+      Jika dasar dibiarkan tanpa ditetapkan, pengguna boleh memilih imej yang hendak ditunjukkan pada desktop dan pada latar belakang skrin log masuk.</translation>
 <translation id="2761483219396643566">Kelewatan amaran melahu apabila dijalankan dengan kuasa bateri</translation>
 <translation id="6281043242780654992">Konfigurasi dasar untuk Pemesejan Natif. Hos pemesejan natif yang disenaraihitamkan tidak akan dibenarkan melainkan hos ini disenaraiputihkan.</translation>
 <translation id="1468307069016535757">Tetapkan keadaan lalai ciri kebolehcapaian mod kontras tinggi pada skrin log masuk.
@@ -1439,95 +1510,9 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika anda mendayakan atau melumpuhkan tetapan ini, pengguna tidak boleh mengubah atau mengatasi tetapan ini.
 
       Jika dasar ini dibiarkan tanpa ditetapkan, ciri proksi pemampatan data akan disediakan supaya pengguna boleh memilih sama ada untuk menggunakannya atau tidak.</translation>
+<translation id="2170233653554726857">Dayakan pengoptimuman WPAD</translation>
 <translation id="7424751532654212117">Senarai pengecualian kepada senarai pemalam dilumpuhkan</translation>
 <translation id="6233173491898450179">Tetapkan direktori muat turun</translation>
-<translation id="78524144210416006">Konfigurasikan pengurusan kuaasa pada skrin log masuk dalam <ph name="PRODUCT_OS_NAME"/>.
-
-      Dasar ini membolehkan anda mengkonfigurasi cara <ph name="PRODUCT_OS_NAME"/> berfungsi apabila tiada aktiviti pengguna untuk sejumlah masa semasa skrin log masuk dipaparkan. Dasar ini mengawal beberapa tetapan. Untuk semantik individu dan julat nilai, lihat dasar sepadan yang mengawal pengurusan kuasa dalam suatu sesi. Satu-satunya penyimpangan daripada dasar ini ialah:
-      * Tindakan untuk mengakhiri sesi tidak boleh diambil semasa melahu atau penutup ditutup.
-
-      * Tindakan lalai yang boleh diambil semasa melahu apabila dijalankan pada kuasa AC ialah untuk mematikan.
-
-      Dasar ini harus dinyatakan sebagai rentetan yang menyatakan tetapan individu dalam format JSON, mematuhi skema berikut:
-
-      {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;AC&quot;: {
-            &quot;description&quot;: &quot;Tetapan pengurusan kuasa dikenakan hanya apabila dijalankan pada kuasa AC&quot;,
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-              &quot;Delays&quot;: {
-                &quot;type&quot;: &quot;object&quot;,
-                &quot;properties&quot;: {
-                  &quot;ScreenDim&quot;: {
-                    &quot;description&quot;: &quot;Tempoh masa tanpa input pengguna dan apabila tempoh ini tamat, skrin akan dimalapkan, dalam milisaat&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;ScreenOff&quot;: {
-                    &quot;description&quot;: &quot;Tempoh masa tanpa input pengguna dan apabila tempoh ini tamat, skrin akan dimatikan, dalam milisaat&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;Idle&quot;: {
-                    &quot;description&quot;: &quot;Tempoh masa tanpa input pengguna dan apabila tempoh ini tamat, tindakan melahu akan diambil, dalam milisaat&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  }
-                }
-              },
-              &quot;IdleAction&quot;: {
-                &quot;description&quot;: &quot;Tindakan yang perlu diambil apabila kelewatan melahu dicapai&quot;,
-                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-              }
-            }
-          },
-          &quot;Battery&quot;: {
-            &quot;description&quot;: &quot;Tetapan pengurusan kuasa dikenakan hanya pabila menjalankan menggunakan kuasa bateri&quot;,
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-              &quot;Delays&quot;: {
-                &quot;type&quot;: &quot;object&quot;,
-                &quot;properties&quot;: {
-                  &quot;ScreenDim&quot;: {
-                    &quot;description&quot;: &quot;Tempoh masa tanpa input pengguna dan apabila tempoh ini tamat, skrin dimalapkan, dalam milisaat&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;ScreenOff&quot;: {
-                    &quot;description&quot;: &quot;Tempoh masa tanpa input pengguna dan apabila tempoh ini tamat, skrin akan dimatikan , dalam milisaat&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;Idle&quot;: {
-                    &quot;description&quot;: &quot;Tempoh masa tanpa input pengguna dan apabila tempoh ini tamat, tindakan melahu akan diambil, dalam milisaat&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  }
-                }
-              },
-              &quot;IdleAction&quot;: {
-                &quot;description&quot;: &quot;Tindakan yang perlu diambil apabila kelewatan melahu dicapai&quot;,
-                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-              }
-            }
-          },
-          &quot;LidCloseAction&quot;: {
-            &quot;description&quot;: &quot;Tindakan yang perlu diambil apabila penutup ditutup&quot;,
-            &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-          },
-          &quot;UserActivityScreenDimDelayScale&quot;: {
-            &quot;description&quot;: &quot;Peratusan yang digunakan untuk skala kelewatan pemalapan skrin apabila aktiviti pengguna diperhatikan semasa skrin dimalapkan atau tidak lama selepas skrin dimatikan&quot;,
-            &quot;type&quot;: &quot;integer&quot;,
-            &quot;minimum&quot;: 100
-          }
-        }
-      }
-
-      Jika tetapan dibiarkan tanpa ditentukan, nilai lalai akan digunakan.
-
-      Jika dasar ini tidak ditetapkan, lalai akan digunakan untuk semua tetapan.</translation>
 <translation id="8908294717014659003">Membenarkan anda menetapkan sama ada laman web dibenarkan untuk mendapatkan akses kepada peranti tangkapan media. Akses kepada peranti tangkapan media boleh dibenarkan secara lalai atau pengguna boleh ditanya setiap kali laman web ingin mendapatkan akses kepada peranti tangkapan media.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, 'PromptOnAccess' akan digunakan dan pengguna akan dapat mengubahnya.</translation>
@@ -1562,6 +1547,9 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini tidak ditetapkan saiz lalai akan digunakan dan pengguna akan dapat mengatasi saiz itu dengan bendera --saiz-cache-media.</translation>
 <translation id="5142301680741828703">Sentiasa paparkan corak URL berikut dalam <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Konfigurasi senarai putih pemasangan sambungan</translation>
+<translation id="5893553533827140852">Jika tetapan ini didayakan, maka permintaan pengesahan gnubby akan diproksikan merentas sambungan hos jauh.
+
+          Jika tetapan ini dilumpuhkan atau tidak dikonfigurasikan, permintaan pengesahan gnubby tidak akan diproksikan.</translation>
 <translation id="187819629719252111">Membenarkan akses ke fail setempat pada mesin dengan membenarkan <ph name="PRODUCT_NAME"/> untuk memaparkan dialog pemilihan fail.
 
       Jika anda mendayakan tetapan ini, pengguna boleh membuka dialog pemilihan fail seperti biasa.
@@ -1650,6 +1638,11 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Jika dasar &quot;RestoreOnStartup&quot; ditetapkan untuk memulihkan URL dari sesi sebelumnya, dasar ini tidak akan dilaksanakan dan kuki akan disimpan secara kekal untuk tapak tersebut.</translation>
 <translation id="2098658257603918882">Dayakan laporan penggunaan dan data berkaitan nahas</translation>
+<translation id="4633786464238689684">Menukar tingkah laku lalai kekunci baris atas kepada kekunci fungsi.
+
+          Jika dasar ini ditetapkan kepada benar, kekunci baris atas papan kekunci akan menghasilkan perintah kekunci fungsi secara lalai. Kekunci carian perlu ditekan untuk menukar kembali tingkah lakunya kepada kekunci media.
+
+          Jika dasar ini ditetapkan kepada palsu atau dibiarkan tidak ditetapkan, papan kekunci akan menghasilkan perintah kekunci media secara lalai dan perintah kekunci fungsi semasa kekunci carian ditekan.</translation>
 <translation id="2324547593752594014">Membenarkan log masuk ke Chrome</translation>
 <translation id="172374442286684480">Benarkan semua tapak menetapkan data setempat</translation>
 <translation id="1151353063931113432">Benarkan imej pada tapak ini</translation>
@@ -1705,6 +1698,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           ExtensionInstallBlacklist diberikan keutamaan melebihi dasar ini. Bermakna, pelanjutan pada senarai hitam tidak akan dipasang walaupun pelanjutan tersebut berasal dari tapak pada senarai ini.</translation>
 <translation id="2113068765175018713">Hadkan masa hidup peranti melalui but semula automatik.</translation>
+<translation id="4224610387358583899">Kelewatan kunci skrin</translation>
 <translation id="7848840259379156480">Membenarkan anda untuk mengkonfigurasi pemapar HTML lalai apabila <ph name="PRODUCT_FRAME_NAME"/> dipasang.
       Tetapan lalai adalah untuk membenarkan hos penyemak imbas melakukan paparan, tetapi anda
       boleh memilih untuk membatalkan ini dan mengaturkan supaya <ph name="PRODUCT_FRAME_NAME"/> memaparkan halaman HTML secara lalai.</translation>
@@ -1813,6 +1807,15 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Dasar ini harus ditetapkan kepada URL yang <ph name="PRODUCT_OS_NAME"/> boleh gunakan untuk memuat turun Syarat Perkhidmatan. Syarat Perkhidmatan mestilah dalam teks biasa, bertindak sebagai teks jenis MIME/biasa. Penanda tidak dibenarkan.</translation>
 <translation id="2623014935069176671">Tunggu aktiviti pengguna awal</translation>
 <translation id="2660846099862559570">Jangan sekali-kali menggunakan proksi</translation>
+<translation id="1956493342242507974">Konfigurasikan pengurusan kuasa pada skrin log masuk dalam <ph name="PRODUCT_OS_NAME"/>.
+
+      Dasar ini membolehkan anda mengkonfigurasikan cara <ph name="PRODUCT_OS_NAME"/> bertingkah laku apabila tiada aktiviti pengguna untuk suatu tempoh masa semasa skrin log masuk ditunjukkan. Dasar ini mengawal berbilang tetapan. Untuk setiap semantik dan julat nilai, lihat dasar sepadan yang mengawal pengurusan kuasa dalam sesi. Satu-satunya penyimpangan daripada dasar ini ialah:
+      * Tindakan yang diambil semasa melahu atau penutup ditutup tidak boleh menamatkan sesi.
+      * Tindakan lalai yang diambil apabila melahu semasa dijalankan pada kuasa AC ialah menutup.
+
+      Jika tetapan dibiarkan tanpa ditentukan, nilai lalai akan digunakan.
+
+      Jika dasar ini tidak ditetapkan, nilai lalai akan digunakan untuk semua tetapan.</translation>
 <translation id="1435659902881071157">Konfigurasi rangkaian tahap peranti</translation>
 <translation id="2131902621292742709">Kelewatan pemalapan skrin apabila dijalankan dengan kuasa bateri</translation>
 <translation id="5781806558783210276">Menyatakan panjang masa tanpa input pengguna dan tindakan melahu akan dilaksanakan selepas tamat masa tersebut apabila dijalankan dengan kuasa bateri.
@@ -1932,5 +1935,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Dasar ini mempengaruhi semua jenis audio dan bukan sahaja pembesar suara yang terbina dalam. Ciri kebolehcapaian audio juga disekat oleh dasar ini. Jangan dayakan dasar ini jika pengguna memerlukan alat pembaca skrin.
 
       Jika tetapan ini ditetapkan kepada benar atau tidak dikonfigurasi, maka pengguna boleh menggunakan semua keluaran audio yang disokong pada peranti mereka.</translation>
+<translation id="6517678361166251908">Benarkan pengesahan gnubby</translation>
 <translation id="4858735034935305895">Benarkan mod skrin penuh</translation>
 </translationbundle>

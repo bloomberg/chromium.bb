@@ -2,9 +2,11 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
 <translation id="8588878054171169263">Зберегти зображення</translation>
+<translation id="4996978546172906250">Надіслати через</translation>
 <translation id="5578795271662203820">Шукати зображення в <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Перекласти</translation>
 <translation id="7644305409888602715">Виконується переклад сторінки такою мовою: <ph name="SOURCE_LANGUAGE"/>…</translation>
+<translation id="7015922086425404465">Завантажити додаток із Google Play Маркету: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Перезавантажити цю сторінку</translation>
 <translation id="641643625718530986">Друк…</translation>
 <translation id="7658239707568436148">Скасувати</translation>
@@ -16,12 +18,15 @@
 Ви входите в керований обліковий запис і дозволяєте його адміністратору керувати вашим профілем Chrome. Ваші дані Chrome буде назавжди пов’язано з цим обліковим записом. Відключення від цього облікового запису видалить усі локальні дані Chrome.</translation>
 <translation id="1966710179511230534">Оновіть свої дані для входу.</translation>
 <translation id="1623104350909869708">Заборонити цій сторінці створювати додаткові діалогові вікна</translation>
+<translation id="1426410128494586442">так</translation>
 <translation id="8218346974737627104">Підтвердити вхід</translation>
 <translation id="624558823898732418">Мова перекладу: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Виберіть сертифікат для автентифікації</translation>
 <translation id="3896036286668839683">Перегляд сертифікатів</translation>
 <translation id="8583805026567836021">Очищення даних облікового запису</translation>
+<translation id="4250680216510889253">ні</translation>
 <translation id="8073388330009372546">Відкрити в новій вкладці</translation>
+<translation id="552553974213252141">Текст отримано правильно?</translation>
 <translation id="8730621377337864115">Виконано</translation>
 <translation id="4170011742729630528">Служба не доступна. Повторіть спробу пізніше.</translation>
 <translation id="8627706565932943526">Помилка синхронізації</translation>
@@ -33,11 +38,14 @@
 <translation id="907015151729920253">Смарт-карта</translation>
 <translation id="3063601790762993062">Зберегти відео</translation>
 <translation id="6042308850641462728">Більше</translation>
+<translation id="7267430310003164111">Підказка щодо завантаження додатка з Google Play Маркету. Назва додатка: <ph name="APP_NAME"/>. Середній рейтинг додатка: <ph name="APP_RATING"/>.</translation>
+<translation id="4148957013307229264">Встановлення...</translation>
 <translation id="3992315671621218278">Зберегти посилання</translation>
 <translation id="8034522405403831421">Мова цієї сторінки: <ph name="SOURCE_LANGUAGE"/>. Перекласти її такою мовою: <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="4195643157523330669">Відкрити в новій вкладці</translation>
 <translation id="3089395242580810162">Відкрити в анонімній вкладці</translation>
 <translation id="8725066075913043281">Повторити спробу</translation>
+<translation id="8909135823018751308">Надіслати…</translation>
 <translation id="4269820728363426813">Копіювати адресу посилання</translation>
 <translation id="4510973599275542560">Не оновлювати</translation>
 <translation id="1206892813135768548">Копіювати текст посилання</translation>
@@ -50,8 +58,10 @@
 <translation id="1285320974508926690">Ніколи не перекладати цей сайт</translation>
 <translation id="5164482624172255778">Хочете, щоб Google Chrome наступного разу пропонував перекласти сторінки цього сайту, написані такою мовою: <ph name="LANGUAGE"/>?</translation>
 <translation id="8528538445849828817">Мова сторінки: <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="4881695831933465202">Відкрити</translation>
 <translation id="6512448926095770873">Залишити цю сторінку</translation>
 <translation id="7947953824732555851">Прийняти й увійти</translation>
+<translation id="6333140779060797560">Надіслати через <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Закрити</translation>
 <translation id="969096075394517431">Змінити мови</translation>
 <translation id="5032574515228824816">Підказка</translation>

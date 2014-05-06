@@ -10,6 +10,7 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> ને <ph name="ROTATION"/> પર ફેરવવામાં આવ્યું હતું</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth અક્ષમ છે</translation>
+<translation id="6713285437468012787">Bluetooth ઉપકરણ &quot;<ph name="DEVICE_NAME"/>&quot; ની જોડી બનાવવામાં આવી અને હવે તે બધા વપરાશકર્તાઓને ઉપલબ્ધ છે. તમે સેટિંગ્સનો ઉપયોગ કરીને આ જોડીને દૂર કરી શકો છો.</translation>
 <translation id="7165320105431587207">નેટવર્ક ગોઠવવામાં નિષ્ફળ</translation>
 <translation id="3775358506042162758">તમે બહુવિધ સાઇન-ઇનમાં માત્ર ત્રણ એકાઉન્ટ્સ સુધી રાખી શકો છો.</translation>
 <translation id="370649949373421643">Wi-Fi સક્ષમ કરો</translation>
@@ -19,6 +20,7 @@
 <translation id="595202126637698455">ભજવણી ટ્રેસિંગ સક્ષમ</translation>
 <translation id="8054466585765276473">બેટરી સમયની ગણના કરે છે.</translation>
 <translation id="7982789257301363584">નેટવર્ક</translation>
+<translation id="2303600792989757991">ટોગલ વિન્ડો વિહંગાવલોકન</translation>
 <translation id="5565793151875479467">પ્રોક્સી...</translation>
 <translation id="938582441709398163">કીબોર્ડ ઓવરલે</translation>
 <translation id="4387004326333427325">પ્રમાણીકરણ પ્રમાણપત્ર રિમોટલી નકારવામાં આવ્યું છે</translation>
@@ -79,7 +81,9 @@
 <translation id="3892641579809465218">આંતરિક પ્રદર્શન</translation>
 <translation id="7823564328645135659">તમારી સેટિંગ્સ સમન્વયિત કર્યા પછી ભાષા &quot;<ph name="FROM_LOCALE"/>&quot; થી &quot;<ph name="TO_LOCALE"/>&quot; માં બદલાઈ ગઈ છે.</translation>
 <translation id="3368922792935385530">કનેક્ટેડ</translation>
+<translation id="3606978283550408104">બ્રેઇલ પ્રદર્શન કનેક્ટ થયું.</translation>
 <translation id="8654520615680304441">Wi-Fi ચાલુ કરો...</translation>
+<translation id="6650933572246256093">Bluetooth ઉપકરણ &quot;<ph name="DEVICE_NAME"/>&quot; ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. કૃપા કરીને તે ઉપકરણ પર આ પાસકીને દાખલ કરો: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">તમારી ઇનપુટ પદ્ધતિ <ph name="INPUT_METHOD_ID"/> માં બદલાઇ ગયેલ છે.
 સ્વિચ કરવા માટે Shift + Alt દબાવો.</translation>
@@ -132,6 +136,7 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> ને સક્રિય કરી રહ્યું છે</translation>
+<translation id="4527045527269911712">Bluetooth ઉપકરણ &quot;<ph name="DEVICE_NAME"/>&quot; ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">આપમેળે ક્લિક્સ</translation>
 <translation id="1398853756734560583">મોટું કરો</translation>
@@ -182,11 +187,15 @@
 <translation id="479989351350248267">શોધ</translation>
 <translation id="8454013096329229812">Wi-Fi ચાલુ છે.</translation>
 <translation id="4872237917498892622">Alt+Search અથવા Shift</translation>
+<translation id="2429753432712299108">Bluetooth ઉપકરણ &quot;<ph name="DEVICE_NAME"/>&quot; ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. સ્વીકારતાં પહેલાં, કૃપા કરીને તે ઉપકરણ પર બતાવેલ આ પાસકીની પુષ્ટિ કરો: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">બેટરી <ph name="PERCENTAGE"/> % પૂર્ણ છે.</translation>
 <translation id="2983818520079887040">સેટિંગ્સ...</translation>
 <translation id="3871838685472846647">સેલ્યુલર સક્રિય કર્ય્રુ</translation>
+<translation id="6452181791372256707">નકારો</translation>
 <translation id="1195412055398077112">ઓવરસ્કૅન</translation>
+<translation id="607652042414456612">નજીકનાં Bluetooth ઉપકરણો માટે તમારું કમ્પ્યુટર શોધવાયોગ્ય છે અને તે સરનામાં <ph name="ADDRESS"/> સાથે &quot;<ph name="NAME"/>&quot; તરીકે દેખાશે</translation>
 <translation id="112308213915226829">સ્વતઃછુપાવો શેલ્ફ</translation>
+<translation id="6732801395666424405">પ્રમાણપત્રો લોડ કર્યાં નથી</translation>
 <translation id="7573962313813535744">ડોક કરેલ મોડ</translation>
 <translation id="8927026611342028580">કનેક્ટ કરવાની વિનંતી કરી છે</translation>
 <translation id="8300849813060516376">OTASP નિષ્ફળ</translation>
@@ -199,6 +208,7 @@
 <translation id="6785414152754474415">બેટરી <ph name="PERCENTAGE"/> % પૂર્ણ અને ચાર્જ થઈ રહી છે.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: સક્રિય કરી રહ્યું છે...</translation>
 <translation id="4895488851634969361">બેટરી સંપૂર્ણ છે.</translation>
+<translation id="615957422585914272">ઑન-સ્ક્રીન કીબોર્ડ બતાવો</translation>
 <translation id="5947494881799873997">પાછા ફરો</translation>
 <translation id="7593891976182323525">Search અથવા Shift</translation>
 <translation id="7649070708921625228">સહાય</translation>
@@ -206,6 +216,7 @@
 રદ કરવા માટે Search અથવા Shift દબાવો.</translation>
 <translation id="397105322502079400">ગણના કરી રહ્યું છે...</translation>
 <translation id="158849752021629804">હોમ નેટવર્કની આવશ્યકતા છે</translation>
+<translation id="1013923882670373915">Bluetooth ઉપકરણ &quot;<ph name="DEVICE_NAME"/>&quot; ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. કૃપા કરીને તે ઉપકરણ પર આ PIN કોડ દાખલ કરો: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">સક્રિય કરો <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP લુકઅપ નિષ્ફળ</translation>
 <translation id="2819276065543622893">તમે હવે સાઇન આઉટ થશો.</translation>
@@ -215,6 +226,7 @@
 <translation id="973896785707726617">આ સત્ર <ph name="SESSION_TIME_REMAINING"/> માં સમાપ્ત થશે. તમને આપમેળે સાઇન આઉટ કરવામાં આવશે.</translation>
 <translation id="8372369524088641025">ખરાબ WEP કી</translation>
 <translation id="6636709850131805001">અપરિચિત સ્થિતિ</translation>
+<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">&quot;<ph name="FROM_LOCALE"/>&quot; પર પાછાં જાઓ (પુનર્પ્રારંભની જરૂર છે)</translation>
 <translation id="8103386449138765447">SMS સંદેશા: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">ChromeVox (બોલાયેલ પ્રતિસાદ) સક્ષમ છે. અક્ષમ કરવા માટે Ctrl+Alt+Z દબાવો.</translation>

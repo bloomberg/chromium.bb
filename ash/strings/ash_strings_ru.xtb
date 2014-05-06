@@ -10,6 +10,7 @@
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/>: положение изменено на <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth отключен</translation>
+<translation id="6713285437468012787">Устройство <ph name="DEVICE_NAME"/> подключено через Bluetooth и доступно всем пользователям. Вы можете отключить его на странице настроек.</translation>
 <translation id="7165320105431587207">Не удалось настроить сеть</translation>
 <translation id="3775358506042162758">Множественный вход поддерживает не более трех аккаунтов.</translation>
 <translation id="370649949373421643">Включить Wi-Fi</translation>
@@ -19,6 +20,7 @@
 <translation id="595202126637698455">Включено отслеживание эффективности</translation>
 <translation id="8054466585765276473">Подсчет оставшегося времени работы от батареи…</translation>
 <translation id="7982789257301363584">Сеть</translation>
+<translation id="2303600792989757991">Переключить режим обзора</translation>
 <translation id="5565793151875479467">Прокси-сервер…</translation>
 <translation id="938582441709398163">Накладка на клавиатуру</translation>
 <translation id="4387004326333427325">Сертификат аутентификации отклонен удаленно</translation>
@@ -79,7 +81,9 @@
 <translation id="3892641579809465218">Встроенный дисплей</translation>
 <translation id="7823564328645135659">В результате синхронизации настроек язык изменен. Теперь используется <ph name="TO_LOCALE"/>, а не <ph name="FROM_LOCALE"/>.</translation>
 <translation id="3368922792935385530">Подключено</translation>
+<translation id="3606978283550408104">Брайлевский дисплей подключен</translation>
 <translation id="8654520615680304441">Включение Wi-Fi...</translation>
+<translation id="6650933572246256093">Устройству <ph name="DEVICE_NAME"/> требуется разрешение на подключение через Bluetooth. Введите на нем код: <ph name="PASSKEY"/>.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Способ ввода изменен на <ph name="INPUT_METHOD_ID"/>.
 Для переключения нажмите Shift + Alt.</translation>
@@ -132,6 +136,7 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Активация <ph name="NAME"/></translation>
+<translation id="4527045527269911712">Устройству <ph name="DEVICE_NAME"/> требуется разрешение на подключение через Bluetooth.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Автоматическое нажатие</translation>
 <translation id="1398853756734560583">Развернуть</translation>
@@ -182,11 +187,15 @@
 <translation id="479989351350248267">поиск</translation>
 <translation id="8454013096329229812">Wi-Fi включен</translation>
 <translation id="4872237917498892622">Alt + Search или Shift</translation>
+<translation id="2429753432712299108">Устройству <ph name="DEVICE_NAME"/> требуется разрешение на подключение через Bluetooth. Проверьте, отображается ли на нем код: <ph name="PASSKEY"/>.</translation>
 <translation id="9201131092683066720">Батарея заряжена на <ph name="PERCENTAGE"/>%.</translation>
 <translation id="2983818520079887040">Настройки...</translation>
 <translation id="3871838685472846647">Включена сотовая связь</translation>
+<translation id="6452181791372256707">Отклонить</translation>
 <translation id="1195412055398077112">Каемка экрана</translation>
+<translation id="607652042414456612">Расположенные поблизости устройства Bluetooth видят ваш компьютер под именем <ph name="NAME"/> с адресом <ph name="ADDRESS"/>.</translation>
 <translation id="112308213915226829">Автоматически скрывать полку</translation>
+<translation id="6732801395666424405">Сертификаты не загружены</translation>
 <translation id="7573962313813535744">Закрепленный режим</translation>
 <translation id="8927026611342028580">Запрос на подключение отправлен</translation>
 <translation id="8300849813060516376">Сбой OTASP</translation>
@@ -199,6 +208,7 @@
 <translation id="6785414152754474415">Батарея заряжена на <ph name="PERCENTAGE"/>% и подключена к источнику питания.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: выполняется активация...</translation>
 <translation id="4895488851634969361">Батарея полностью заряжена.</translation>
+<translation id="615957422585914272">Показывать экранную клавиатуру</translation>
 <translation id="5947494881799873997">Отменить</translation>
 <translation id="7593891976182323525">Search или Shift</translation>
 <translation id="7649070708921625228">Справка</translation>
@@ -206,6 +216,7 @@
 Чтобы отключить его, нажмите Search или Shift.</translation>
 <translation id="397105322502079400">Вычисление…</translation>
 <translation id="158849752021629804">Необходима домашняя сеть</translation>
+<translation id="1013923882670373915">Устройству <ph name="DEVICE_NAME"/> требуется разрешение на подключение через Bluetooth. Введите на нем PIN-код: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">Активировать <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Поиск DHCP завершен со сбоем</translation>
 <translation id="2819276065543622893">Сеанс завершен.</translation>
@@ -215,6 +226,7 @@
 <translation id="973896785707726617">Сеанс будет завершен через <ph name="SESSION_TIME_REMAINING"/>. Произойдет автоматический выход из системы.</translation>
 <translation id="8372369524088641025">Недопустимый ключ WEP</translation>
 <translation id="6636709850131805001">Нераспознанное состояние</translation>
+<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Вернуться к языку: &quot;<ph name="FROM_LOCALE"/>&quot; (потребуется перезагрузка)</translation>
 <translation id="8103386449138765447">SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">Голосовое сопровождение ChromeVox включено. Чтобы отключить его, нажмите CTRL+ALT+Z.</translation>

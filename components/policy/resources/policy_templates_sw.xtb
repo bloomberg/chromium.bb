@@ -19,6 +19,7 @@
 Ikiwashwa au ikiwa hijasanidiwa (chaguo-msingi), mtumiaji ataombwa ufikiaji wa kuchukua sauti isipokuwa za URL zilizosanidiwa katika orodha ya AudioCaptureAllowedUrls ambayo itapewa ufikiaji bila kuomba. 
 Sera hii ikiwa imezimwa, mtumiaji kamwe hataombwa na uchukuaji wa sauti upatikana kwa URL zilizosanidiwa katika AudioCaptureAllowedUrls pekee. 
 Sera hii huathiri aina zote za vifaa vya kuingiza sauti na si tu maikrofoni iliyojengewa ndani.</translation>
+<translation id="7267809745244694722">Vitufe vya media huelekeza kwenye vitufe vya vitendo kwa chaguo-msingi</translation>
 <translation id="9150416707757015439">Sera hii imepitwa na wakati. Tafadhali, tumia IncognitoModeAvailability badala yake.
       Huwasha hali fiche katika <ph name="PRODUCT_NAME"/>.
 
@@ -626,9 +627,6 @@ Mpangilio huu umeondolewa kutoka Chrome 29 na matoleo mapya.</translation>
 <translation id="6417861582779909667">Inakuruhusu kuweka orodha ya ruwaza za url zinazobainisha tovuti zisizoruhusiwa kuweka vidakuzi.
 
           Ikiwa sera hii itaachwa bila thamani chaguo-msingi yote itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultCookiesSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.</translation>
-<translation id="5457296720557564923">Inaruhusu kurasa kufikia takwimu za matumizi ya kumbukumbu za JavaScript.
-
-      Mipangilio hii inafanya takwimu za kumbukumbu kutoka kwenye kidirisha cha Wasifi wa Zana za Msanidi Programu kupatikana kwenye ukurasa wenyewe wa wavuti.</translation>
 <translation id="5776485039795852974">Uliza kila mara tovuti inapotaka kuonyesha arifa za eneo-kazi</translation>
 <translation id="5047604665028708335">Ruhusu ufikiaji wa tovuti zilizo nje ya vifurushi vya maudhui</translation>
 <translation id="5052081091120171147">Sera hii inalazimisha historia ya kuvinjari kuletwa kutoka kwenye kivinjari chaguo-msingi cha sasa ikiwa imewezeshwa. Ikiwa imewezeshwa, sera hii pia inaathiri kidadisi cha kuleta.
@@ -640,6 +638,11 @@ Mpangilio huu umeondolewa kutoka Chrome 29 na matoleo mapya.</translation>
 <translation id="7132877481099023201">URL ambazo zitapewa ufikiaji wa vifaa vya kunasa video bila ushawishi</translation>
 <translation id="8947415621777543415">Ripoti eneo la kifaa</translation>
 <translation id="1655229863189977773">Weka ukubwa wa kache ya diski katika baiti</translation>
+<translation id="3358275192586364144">Huwasha uboreshaji wa WPAD katika <ph name="PRODUCT_NAME"/> na huzuia watumiaji wasibadilishe mpangilio huu.
+
+ Kuweka hii ikiwa imewashwa husababisha Chrome kusubiri muda mfupi zaidi kwa seva za WPAD zinazotegemea DNS. 
+
+Sera hii isipoweka, mpangilio huu utawashwa na mtumiaji hataweza kuibadilisha.</translation>
 <translation id="6376842084200599664">Inakuruhusu kubainisha orodha ya viendelezi ambavyo vitasakinishwa kimya kimya, bila uchachawizaji wa mtumiaji.
 
           Kila kipengee cha orodha ni mtungo ambao una Utambulisho endelezi na URL ya usasishaji iliyotenganishwa kwa  nukta mkato (<ph name="SEMICOLON"/>). Utambulisho endelezi ni mtungo wa herufi 32 inayopatikana k.m. kwenye <ph name="CHROME_EXTENSIONS_LINK"/> wakati uko kwenye modi ya msanidi programu. URL ya usasishaji inafaa kuonyesha hati ya Dhihirisho ya Usasishaji wa XML kama ilivyofafanuliwa katika <ph name="LINK_TO_EXTENSION_DOC1"/>. Kumbuka kuwa URL sasishi iliyowekwa kwenye sera hii inatumika tu kwa usakinishaji wa kwanza; sasisho zinazofuata za kiendelezi zitatumia URL ya usasishaji iliyoonyeshwa kwenye dhihirisho la kiendelezi.
@@ -761,6 +764,7 @@ Mpangilio huu umeondolewa kutoka Chrome 29 na matoleo mapya.</translation>
 <translation id="1679420586049708690">Kipindi cha umma cha uingiaji otomatiki</translation>
 <translation id="7625444193696794922">Hubainisha kituo cha kutoa ambacho kifaa hiki kinastahili kufungiwa kwacho.</translation>
 <translation id="2552966063069741410">Saa za eneo:</translation>
+<translation id="3788662722837364290">Mipangilio ya kusimamia nishati mtumiaji anapokuwa hafanyi kitu</translation>
 <translation id="2240879329269430151">Inakuruhusu kuweka ikiwa tovuti zinaruhusiwa kuonyesha ibukizi. Kuonyesha ibukizi kunaweza kuruhusiwa kwa tovuti zote au kukataliwa kwa tovuti zote.
 
           Ikiwa sera hii itaachwa bila kuwekwa, 'BlockPopups' itatumiwa na mtumiaji ataweza kuibadilisha.</translation>
@@ -839,7 +843,6 @@ Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini 
 <translation id="8102913158860568230">Mpangilio chaguo-msingi wa mkondomedia</translation>
 <translation id="6641981670621198190">Lemaza uhimili wa API za michoro ya 3D</translation>
 <translation id="1265053460044691532">Weka kikomo cha muda ambao mtumiaji aliyethibitishwa kupitia SAML anaweza kuingia katika akunti nje ya mtandaoni</translation>
-<translation id="7929480864713075819">Wezesha kuripoti kwa maelezo ya kumbukumbu (ukubwa wa kumbukumbu ya JS ) kwenye ukurasa</translation>
 <translation id="5703863730741917647">Bainisha kitendo cha kuchukua wakati ucheleweshaji wa kutokufanya kitu unapofikiwa.
 
           Kumbuka kwamba sera hii haitumiki tena na itaondolewa katika siku za usoni.
@@ -954,6 +957,7 @@ Sera hii huathiri aina zote za vifaa vya kuingiza video na si tu kamera iliyojen
 <translation id="4057110413331612451">Ruhusu mtumiaji wa biashara kuwa mtumiaji wa wasifu nyingi pekee</translation>
 <translation id="5365946944967967336">Onyesha kitufe cha Mwazo kwenye upauzana</translation>
 <translation id="3709266154059827597">Sanidi orodha inayotiliwa shaka ya usakinishaji wa kiendelezi</translation>
+<translation id="1933378685401357864">Picha ya mandhari</translation>
 <translation id="8451988835943702790">Tumia Ukurasa Mpya wa Kichupo kama ukurasa wa kwanza</translation>
 <translation id="4617338332148204752">Ruka kuingia kwa metatagi katika <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="8469342921412620373">Inawezesha matumizi ya kitoaji chaguo-msingi cha utafutaji.
@@ -973,6 +977,13 @@ Iwapo sera hii imewekwa kuwa haitumiki, kishale kikubwa kitawashwa kila wakati.
 Iwapo utaweka sera hii, watumiaji hawezi kuibadilisha au kuipuuza. 
 Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa na mtumiaji wakati wowote.</translation>
 <translation id="2633084400146331575">Wezesha maoni yaliyozungumzwa</translation>
+<translation id="687046793986382807">Sera hii imeondolewa kuanzia toleo la 35 la <ph name="PRODUCT_NAME"/>. 
+
+Hata hivyo, maelezo ya kumbukumbu huripotiwa kwa ukurasa, bila kujali nambari ya chaguo, lakini ukubwa wa maelezo ya kumbukumbu yanayoripotiwa 
+
+hupunguzwa na kiasi cha sasisho huwekewa vikwazo kwa sababu za kiusalama. Ili kupata data halisi na kamili, 
+
+tafadhali tumia zana kama Telemetry.</translation>
 <translation id="8731693562790917685">Mipangilio ya Maudhui inakuruhusu kubainisha namna maudhui ya aina maalum (kwa mfano Vidakuzi, Picha au JavaScript) yanavyoshughulikiwa.</translation>
 <translation id="2411919772666155530">Zuia arifa katika tovuti hizi</translation>
 <translation id="6923366716660828830">Inabainisha jina la mtoaji wa utafutaji chaguo -msingi. Likiachwa tupu au bila kuwekwa, jina la mpangishaji lililobainishwa na URL ya utafutaji litatumiwa.
@@ -984,6 +995,7 @@ Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa 
 
           Iwapo sera hii itawekwa kwenye usiruhusu, kufuli la kuwasha skrini litapuuzwa.</translation>
 <translation id="467236746355332046">Vipengele vinavyohimiliwa:</translation>
+<translation id="5447306928176905178">Washa kuripoti maelezo ya kumbukumbu (ukubwa wa kumbukumbu ya JS) kwenye ukurasa (haitumiki tena)</translation>
 <translation id="7632724434767231364">Jina la maktaba ya GSSAPI</translation>
 <translation id="3038323923255997294">Endelea kuendesha programu za mandharinyuma wakati <ph name="PRODUCT_NAME"/> imefungwa</translation>
 <translation id="8909280293285028130">Hubainisha urefu wa muda bila mchango wa mtumiaji ambapo baadaye skrini hufungwa inapoendeshwa kwa nishati ya AC.
@@ -1033,6 +1045,17 @@ itabadilishwa na data ya hoja za utafutaji za kweli.
           Sera hii ni ya hiari. Isipowekwa, ombi la utafutaji wa papo hapo litatumwa kwa kutumia mbinu ya GET.
 
           Sera hii inatumika tu endapo sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
+<translation id="6095999036251797924">Hubainisha urefu wa muda bila ingizo la mtumiaji ambapo baada ya hapo skrini hufungwa inapoendeshwa kwa nishati ya AC au betri.
+
+        Urefu wa muda unapowekwa thamani kubwa kuliko sifuri, inawakilisha urefu wa muda ambao mtumiaji lazima abaki akiwa hafanyi kitu kabla <ph name="PRODUCT_OS_NAME"/> skrini kufunga.
+
+        Urefu wa muda unapowekwa kuwa sifuri, <ph name="PRODUCT_OS_NAME"/> haifungi skrini mtumiaji anapokuwa hafanyi kitu.
+
+        Urefu wa muda unapoondolewa, urefu wa muda chaguo-msingi hutumika.
+
+        Njia iliyopendekezwa ya kufunga skrini ambayo haifanyi kazi ni kuwasha kufunga skrini kwenye kusimamisha na <ph name="PRODUCT_OS_NAME"/> kusimamisha baada ya ucheleweshaji wa kutofanya kitu. Sera hii lazima itumike wakati kufunga skrini kunatokea muda kiasi kikubwa kuliko kusimamisha au wakati kusimamisha wakati haifanyi kitu hakutakikani kabisa.
+
+Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja kuwa chini ya ucheleweshaji wa kutofanya kitu.</translation>
 <translation id="1454846751303307294">Inakuruhusu kuweka orodha ya ruwaza za url ambazo zinabainisha tovuti ambazo haziruhusiwi kuendesha JavaScript.
 
           Ikiwa sera hii itasalia kama haijawekwa thamani chaguo-msingi ya ulimwenguni itatumiwa aidha kutoka kwenye sera ya 'DefaultJavaScriptSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.</translation>
@@ -1067,6 +1090,32 @@ itabadilishwa na data ya hoja za utafutaji za kweli.
       Sera hii inapowekwa kwente sivyo au isiposanidiwa, ikoni huonekana.</translation>
 <translation id="5085647276663819155">Lemaza Uhakiki wa Uchapishaji</translation>
 <translation id="8672321184841719703">Toleo Lengwa la Kusasisha Otomatiki</translation>
+<translation id="553658564206262718">Sanidi mipangilio ya kusimamia nishati mtumiaji anapokuwa hafanyi kitu.
+
+         Sera hii hudhibiti mipangilio mingi ya mkakati wa kusimamia nishati mtumiaji anapokuwa hafanyi kitu.
+
+         Kuna hatua za aina nne:
+        * Mwanga wa skrini utapunguzwa iwapo mtumiaji atakuwa hafanyi kitu kwa muda uliyobainishwa na |Skrini Kupunguzwa Mwanga|.
+        * Skrini itazimwa iwapo mtumiaji atasalia bila kufanya kitu kwa muda uliobainishwa na |Zima Skrini|.
+        * Kisanduku kidadisi cha ilani kitaonyeshwa iwapo mtumiaji atasalia bila kufanya kitu kwa muda uliobainishwa na |Ilani ya Kutofanya Kitu|, kumwambia mtumiaji kuwa hatua ya kutofanya kitu imekaribia kuchukuliwa.
+         * Hatua iliyobainishwa na |Hatua ya Kutofanya Kitu| itachukuliwa iwapo mtumiaji atasalia bila kufanya kitu kwa muda uliobainishwa na |Hafanyi Kitu|.
+
+           Kwa kila moja ya vitendo vya hapo juu, lazima ucheleweshaji ubainishwe katika milisekunde, na unahitaji kuwekwa kwa thamani kubwa kuliko sifuri ili kusababisha kitendo sambamba. Iwapo ucheleweshaji umewekwa kuwa sifuri, <ph name="PRODUCT_OS_NAME"/> haitachukua kitendo sambamba.
+
+             Kwa kila moja ya ucheleweshaji wa hapo juu, urefu wa muda unapoondolewa, thamani chaguo-msingi itatumika.
+
+             Kumbuka kwamba thamani za |Skrini Kupunguzwa Mwanga| zitawekwa kuwa chini ya ama sawa na |Skrini Kuzima|, |Skrini Kuzima| na |Ilani ya Kutofanya Kitu| itawekwa kuwa chini ya au sawa na |Hafanyi Kitu|.
+
+            |Kitendo cha Kutofanya Kitu| kinaweza kuwa moja ya vitendo vinne:
+            * |Simamisha|
+            * |Ondoka|
+            * |Zima|
+            * |Usifanye Chochote|
+           
+           Wakati |Kitendo cha Kutofanya Kitu| kinapoondolewa, hatua chaguo-msingi huchukuliwa, ambayo ni kusimamisha.
+
+            Pia kuna mipangilio tofauti ya nishati ya AC na betri.
+          </translation>
 <translation id="1689963000958717134">Inaruhusu kusukuma usanidi wa mtandao ili kutumika kwa watumiaji wote wa kifaa cha <ph name="PRODUCT_OS_NAME"/>. Usanidi wa mtandao ni mtungo wa JSON ulioumbizwa kama ilivyofafanuliwa na umbizo la Usanidi Huru wa Mtandao ulioelezwa kwenye <ph name="ONC_SPEC_URL"/></translation>
 <translation id="6699880231565102694">Wezesha uthibitishaji wa vipengee viwili kwa wapangishaji wa ufikivu wa mbali</translation>
 <translation id="2030905906517501646">Nenomsingi la mtoa huduma chaguo-msingi wa utafutaji</translation>
@@ -1284,6 +1333,33 @@ itabadilishwa na data ya hoja za utafutaji za kweli.
 
       Kuacha sera hii bila kuiweka kutafanya <ph name="PRODUCT_NAME"/> itumie thamani chaguo-msingi ya milisekunde 5000.</translation>
 <translation id="8099880303030573137">Kutokuwa na shughuli kunachelewesha wakati wa kuendesha kwa nishati ya betri</translation>
+<translation id="1709037111685927635">Sanidi picha ya mandhari. 
+
+     Sera hii hukuruhusu kusakinisha picha ya mandhari ambayo inaonyeshwa kwenye eneo-kazi na kwenye mandharinyuma ya skrini ya mtumiaji. Sera huwekwa kwa kubainisha URL ambayo <ph name="PRODUCT_OS_NAME"/> inaweza kupakua picha ya mandhari kutoka na picha ya msimbo wa alama ya reli inayotumika kuthibitisha uhalali wa kipakuliwa. Picha lazima iwe ya muundo wa JPEG, ukubwa wake usizidi MB 16. URL lazima ipatikane bila uthibitisho wowote. 
+
+     Picha ya mandhari hupakuliwa na kuwekwa kwenye akiba. Itapakuliwa tena kila wakati URL au alama ya reli inapobadilika.
+
+     Sera hii inapaswa kubainishwa kama mfuatano unaoonyesha URL na alama ya reli katika mfumo wa JSON, ikifuata mpangilio ufuatao:
+
+     {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;URL ambayo picha ya mandhari inaweza kupakuliwa kutoka.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;Alama ya reli ya SHA-256 ya picha ya mandhari.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+ 
+      Sera hii ikiwekwa, <ph name="PRODUCT_OS_NAME"/> itapakua na kutumia picha ya mandhari. 
+
+      Ukiweka sera hii, watumiaji hawawezi kuibadilisha au kuipuuza.
+
+      Sera hii isipowekwa, mtumiaji anaweza kuchagua picha ambayo itaonyeshwa kwenye eneo-kazi na kwenye mandharinyuma ya skrini ya kuingia katika akaunti.</translation>
 <translation id="2761483219396643566">Onyo ya kuchelewa wakati wa kutokuwa na shughuli  wakati wa kuendesha kwa nishati ya betri</translation>
 <translation id="6281043242780654992">Sanidi sera za Ujumbe Asili. Wapangishi wa ujumbe asili ambao hawajaidhinishwa hawataruhusiwa isipokuwa kama wamepewa idhini.</translation>
 <translation id="1468307069016535757">Weka hali chaguo msingi ya kipengee cha ufikiaji cha utofautishaji wa juu kwenye skrini ya kuingia katika akaunti. 
@@ -1418,93 +1494,9 @@ Iwapo sera hii haijawekwa, maoni yanayotamkwaa yatazimwa mwanzoni lakini yanawez
        Ukiwasha au kuzima mpangilio huu, watumiaji hawawezi kubadilisha ama kupuuza mpangilio huu. 
  
        Kama sera hii imeachwa bila kuwekwa, kipengee cha proksi ya kupunguza data kitapatikana ili mtumiaji achague kama atakitumia au la.</translation>
+<translation id="2170233653554726857">Washa uboreshaji wa WPAD</translation>
 <translation id="7424751532654212117">Orodha ya vighairi katika orodha ya programu jalizi zilizolemazwa</translation>
 <translation id="6233173491898450179">Weka saraka ya kupakua</translation>
-<translation id="78524144210416006">Sanidi usimamizi wa nishati kwenye skrini ya kuingia katika akaunti ya <ph name="PRODUCT_OS_NAME"/>.
-
-      Sera hii inakuruhusu kusanidi jinsi <ph name="PRODUCT_OS_NAME"/> hufanya kazi kunapokuwa hakuna shughuli ya mtumiaji kwa muda wakati skrini ya kuingia katika akaunti ikiwa inaonyeshwa. Sera hii husimamia mipangilio mingi. Kwa vigezo maalum na mfululizo wa thamani, tazama sera zinazoendana ambazo hudhibiti usimamizi wa nishati wakati wa kipindi. Tofauti pekee zilizoko kutoka kwenye sera hizi ni:
-      * Vitendo vya kuchukua wakati haifanyi kitu au kifuniko kimefunikwa haviwezi kuwa kumaliza kipindi
-      * Kitendo changuo-msingi cha kuchukua wakati haifanyi kitu inapoendeshwa kutumia nishati ya AC ni kuzima.
-
-      Sera hii inapaswa kubainishwa kama mfuatano unaoelezea mipangilio maalum katika mfumo wa JSON, ikizingatia muundo ufuatao:
-      {
-        &quot;aina&quot;: &quot;kipengele&quot;,
-        &quot;sifa&quot;: {
-          &quot;AC&quot;: {
-            &quot;maelezo&quot;: &quot;Mipangilio ya usimamizi wa nishati inayotumika wakati inaendeshwa kutumia nishati ya AC pekee&quot;,
-            &quot;aina&quot;: &quot;kipengele&quot;,
-            &quot;sifa&quot;: {
-              &quot;Ucheleweshaji&quot;: {
-                &quot;aina&quot;: &quot;kipengele&quot;,
-                &quot;sifa&quot;: {
-                  &quot;KufifishaSkirini&quot;: {
-                    &quot;maelezo&quot;: &quot;Urefu wa muda bila ingizo la mtumiaji ambapo kisha skrini inapungua mwanga, katika millisekunde&quot;,
-                    &quot;aina&quot;: &quot;nambari kamili&quot;,
-                    &quot;muda mdogo kabisa&quot;: 0
-                  },
-                  &quot;KuzimaSkrini&quot;: {
-                    &quot;maelezo&quot;: &quot;Urefu wa muda bila ingizo la mtumiaji ambapo kisha skrini inazimwa, katika milisekunde&quot;,
-                    &quot;aina&quot;: &quot;nambari kamili&quot;,
-                    &quot;muda mdogo kabisa&quot;: 0
-                  },
-                  &quot;Haifanyi kitu&quot;: {
-                    &quot;maelezo&quot;: &quot;Urefu wa muda bila ingizo la mtumiaji ambapo kisha kitendo cha kutofanya kitu kinachukuliwa, katika milisekunde&quot;,
-                    &quot;aina&quot;: &quot;nambari kamili&quot;,
-                    &quot;muda mdogo kabisa&quot;: 0
-                  }
-                }
-              },
-              &quot;HaliTuli&quot;: {
-                &quot;maelezo&quot;: &quot;Kitendo cha kuchukua wakati ucheleweshaji wa kutofanya kitu umefikiwa&quot;,
-                &quot;enum&quot;: [ &quot;Simamisha&quot;, &quot;Funga&quot;, &quot;UsifanyeKitu&quot; ]
-              }
-            }
-          },
-          &quot;Betri&quot;: {
-            &quot;maelezo&quot;: &quot;Mipangilio ya usimamizi wa nishati inayotumika wakati inaendeshwa kutumia nishati ya betri&quot;,
-            &quot;aina&quot;: &quot;kipengele&quot;,
-            &quot;sifa&quot;: {
-              &quot;Ucheleweshaji&quot;: {
-                &quot;aina&quot;: &quot;kipengele&quot;,
-                &quot;sifa&quot;: {
-                  &quot;KufifishaSkrini&quot;: {
-                    &quot;maelezo&quot;: &quot;Urefu wa muda bila ingizo la mtumiaji ambapo kisha skrini inapungua mwanga, katika millisekunde&quot;,
-                    &quot;aina&quot;: &quot;nambari kamili&quot;,
-                    &quot;muda mdogo kabisa&quot;: 0
-                  },
-                  &quot;KuzimaSkini&quot;: {
-                    &quot;maelezo&quot;: &quot;Urefu wa muda bila ingizo la mtumiaji ambapo kisha skrini inazima, katika millisekunde&quot;,
-                    &quot;aina&quot;: &quot;nambari kamili&quot;,
-                    &quot;muda mdogo kabisa&quot;: 0
-                  },
-                  &quot;Haifanyi kitu&quot;: {
-                    &quot;maelezo&quot;: &quot;Urefu wa muda bila ingizo la mtumiaji ambapo kisha kitendo cha kutofanya kitu kinachukuliwa, katika milisekunde&quot;,
-                    &quot;aina&quot;: &quot;nambari kamili&quot;,
-                    &quot;muda mdogo kabisa&quot;: 0
-                  }
-                }
-              },
-              &quot;HaliTuli&quot;: {
-                &quot;maelezo&quot;: &quot;Kitendo cha kuchukua wakati ucheleweshaji wa kutofanya kitu umefikiwa&quot;,
-                &quot;enum&quot;: [ &quot;Simamisha&quot;, &quot;Funga&quot;, &quot;UsifanyeKitu&quot; ]
-              }
-            }
-          },
-          &quot;KitendoChaFungaKifuniko&quot;: {
-            &quot;maelezo&quot;: &quot;Kitendo cha kuchukua wakati kifuniko kimefungwa&quot;,
-            &quot;enum&quot;: [ &quot;Simamisha&quot;, &quot;Funga&quot;, &quot;UsifanyeKitu&quot; ]
-          },
-          &quot;UserActivityScreenDimDelayScale&quot;: {
-            &quot;maelezo&quot;: &quot;Asilimia ya upimaji wa ucheleweshaji wa kupunguza mwanga shughuli ya mtumiaji inapoonekana skrini ikiwa imepungua mwanga au punde baada ya skrini kuzimwa&quot;,
-            &quot;aina&quot;: &quot;nambari kamili&quot;,
-            &quot;muda mdogo kabisa&quot;: 100
-          }
-        }
-      }
-
-      Kama mpangilio usipobainishwa, thamani chaguo-msingi inatumika.
-
-      Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation>
 <translation id="8908294717014659003">Inakuruhusu kuweka ikiwa tovuti zinaruhusiwa kufikia vifaa vya media vya kunasa. Ufikivu wa vifaa vya media vya kunasa unaweza kuruhusiwa kwa chaguo-msingi, au mtumiaji anaweza kuulizwa kila wakati  tovuti inapotaka kufikia vifaa vya media vya kunasa.
 
           Ikiwa sera hii itaachwa bila kuwekwa, 'PromptOnAccess' itatumiwa na mtumiaji ataweza kuibadilisha.</translation>
@@ -1539,6 +1531,9 @@ Iwapo sera hii haijawekwa, maoni yanayotamkwaa yatazimwa mwanzoni lakini yanawez
      Iwapo sera hii haijawekwa ukubwa chaguo-msingi utatumika na mtumiaji ataweza kubatilisha na alama ya- ukubwa wa-diski ya-akiba.</translation>
 <translation id="5142301680741828703">Onyesha ruwaza zifuatazo za URL mara kwa mara katika <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Sanidi orodha iliyoidhinishwa ya usakinishaji kiendelezi</translation>
+<translation id="5893553533827140852">Mpangilio huu ukiwashwa, basi maombi ya uthibitisho ya gnubby yatawekwa kama proksi kupitia muunganisho wa mpangishi wa mbali. 
+
+       Mpangilio huu ukizimwa au usisanidiwe, maombi ya uthibitisho ya gnubby hayatawekwa kama proksi.</translation>
 <translation id="187819629719252111">Huruhusu faili zilizo kwenye mashine kufikiwa kwa kuruhusu <ph name="PRODUCT_NAME"/> kuonyesha vidadisi vya uteuzi vya faili.
 
       Ukiwasha mpangilio huu, watumiaji wanaweza kufungua vidadisi vya uteuzi vya faili kama kawaida.
@@ -1625,6 +1620,11 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 
           Ikiwa sera ya &quot;RestoreOnStartup&quot; itawekwa ili kuhifadhi URL kwenye vipindi vya awali sera hii haitaheshimiwa na vidakuzi vitahifadhiwa kwa muda mrefu kwenye tovuti hizo.</translation>
 <translation id="2098658257603918882">Wezesha kuripoti kwa matumizi na data zinazohusu mvurugiko</translation>
+<translation id="4633786464238689684">Hubadilisha tabia chaguo-msingi ya vitufe vya safumlalo ya juu kwenda vitufe vya kukokotoa. 
+
+Sera hii ikiwekwa kuwa ndivyo, vitufe vya safumlalo ya juu ya kibodi vitatoa amri za vitufe vya kukokotoa kwa chaguo-msingi. Kitufe cha kutafuta lazima kibonyezwe ili kurejesha tabia yake kuwa vitufe vya media.
+
+Sera hii ikiwekwa kuwa sivyo au isiwekwe, kibodi itatoa amri za vitufe vya media kwa chaguo-msingi na amri za vitufe vya kukokotoa wakati kitufe cha kutafuta kimeshikiliwa.</translation>
 <translation id="2324547593752594014">Ruhusu kuingia katika Chrome</translation>
 <translation id="172374442286684480">Ruhusu tovuti zote kuweka data za karibu nawe</translation>
 <translation id="1151353063931113432">Ruhusu picha katika tovuti hizi</translation>
@@ -1680,6 +1680,7 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 
           ExtensionInstallBlacklist vinazidi sera hiri. Yaani, kiendelezi kwenye orodha ya kuondoa idhini hakitasakinishwa, hata kama utatendeka kutoka tovuti ya orodha hii.</translation>
 <translation id="2113068765175018713">Wekea kifaa vizuizi vya muda wa kuwaka kwa kuzima na kuwasha kiotomatiki</translation>
+<translation id="4224610387358583899">Ucheleweshaji wa kufunga sjrini</translation>
 <translation id="7848840259379156480">Inakuruhusu kusanidi kionyeshi cha HTML chaguo-msingi wakati <ph name="PRODUCT_FRAME_NAME"/> imesakinishwa.
       Mpangilio chaguo-msingi ni wa kuruhusu kivinjari kipangishi kufanya uonyeshaji, lakini unaweza kufuta kwa hiari hii na kuruhusu <ph name="PRODUCT_FRAME_NAME"/> kuonyesha kurasa za HTML kwa chaguo-msingi.</translation>
 <translation id="186719019195685253">Kitendo cha kuchukua ucheleweshwaji wa kutulia unapofikiwa wakati inaendeshwa kutumia nishati ya AC</translation>
@@ -1793,6 +1794,15 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
       Sera itawekwa kwenye URL ambapo <ph name="PRODUCT_OS_NAME"/> inaweza kupakua Sheria na masharti. Lazima Sheria na Masharti yawe maandishi matupu, yawe kama maandishi ya kuandika/matupu ya MIME. Markup hairuhusiwi.</translation>
 <translation id="2623014935069176671">Subiri shughuli ya kwanza ya mtumiaji</translation>
 <translation id="2660846099862559570">Usitumie proksi kamwe</translation>
+<translation id="1956493342242507974">Sanidi usimamizi wa nishati kwenye skrini ya kuingia katika akaunti ya <ph name="PRODUCT_OS_NAME"/>. 
+
+Sera hii hukuruhusu kusanidi jinsi <ph name="PRODUCT_OS_NAME"/> hufanya kazi kunapokuwa hakuna shughuli ya mtumiaji kwa muda huku skrini ya kuingia katika akaunti ikiwa inaonyeshwa. Sera hii hudhibiti mipangilio mingi. Kwa vigezo maalum na mfululizo wa thamani, tazama sera zinazolingana ambazo hudhibiti usimamizi wa nishati wakati wa kipindi. Tofauti za pekee zilizoko kwenye sera hizi ni:
+* Vitendo vya kuchukua wakati haifanyi kitu au kifuniko kimefunikwa haviwezi kuwa kumaliza kipindi  
+* Kitendo chaguo-msingi cha kuchukua wakati kifaa hakifanyi kitu kinapoendeshwa kutumia nishati ya AC ni kuzima.
+
+Kama mpangilio usipobainishwa, thamani chaguo-msingi inatumika.
+
+Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation>
 <translation id="1435659902881071157">Usanidi wa mtandao wa kiwango cha kifaa</translation>
 <translation id="2131902621292742709">Ufifili wa skrini unachelewa wakati wa kuendesha kwa nishati ya betri</translation>
 <translation id="5781806558783210276">Hubainisha urefu wa muda bila mchango wa mtumiaji ambapo baadaye skrini hufifilizwa inapoendeshwa kwenye nishati ya betri.
@@ -1909,5 +1919,6 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
       Sera hii inaathiri aina zote za utoaji wa sauti na siyo tu spika za ndani. Vipengele vya ufikiaji kwa wasio na uwezo wa kusikia pia vinazuiwa na sera hii. Usiwashe sera hii iwapo kisomaji cha skrini kinahitajika kwa mtumiaji.
 
       Ikiwa mpangilio huu utawekwa kuwa ndivyo au hautasanidiwa basi watumiaji wanaweza kutumia vipengee vyote vya utoaji sauti vinavyoweza kutumika kwenye vifaa vyao.</translation>
+<translation id="6517678361166251908">Ruhusu uthibitisho wa gnubby</translation>
 <translation id="4858735034935305895">Ruhusu hali ya skrini nzima</translation>
 </translationbundle>

@@ -2,9 +2,11 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
 <translation id="8588878054171169263">Kép mentése</translation>
+<translation id="4996978546172906250">Megosztás itt:</translation>
 <translation id="5578795271662203820">A kép keresése a(z) <ph name="SEARCH_ENGINE"/> keresővel</translation>
 <translation id="6831043979455480757">Fordítás</translation>
 <translation id="7644305409888602715">Oldal fordítása <ph name="SOURCE_LANGUAGE"/> nyelvre...</translation>
+<translation id="7015922086425404465">Alkalmazás beszerzése a Google Play Áruházból: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Az oldal újratöltése</translation>
 <translation id="641643625718530986">Nyomtatás…</translation>
 <translation id="7658239707568436148">Mégse</translation>
@@ -16,12 +18,15 @@
 Ön jelenleg kezelt fiókkal jelentkezik be, és engedélyezi a rendszergazdának az Ön Chrome-profiljához való hozzáférést. Chrome-adatai ezután véglegesen ehhez a fiókhoz társulnak. A fiók leválasztásával törölheti a helyi Chrome-adatokat.</translation>
 <translation id="1966710179511230534">Kérjük, frissítse bejelentkezési adatait.</translation>
 <translation id="1623104350909869708">Akadályozza meg, hogy ez az oldal további párbeszédablakokat hozzon létre.</translation>
+<translation id="1426410128494586442">Igen</translation>
 <translation id="8218346974737627104">Bejelentkezés megerősítése</translation>
 <translation id="624558823898732418">A fordítás nyelve: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Tanúsítvány kiválasztása a hitelesítéshez</translation>
 <translation id="3896036286668839683">Tanúsítványmegtekintő</translation>
 <translation id="8583805026567836021">Fiókadatok törlése</translation>
+<translation id="4250680216510889253">Nem</translation>
 <translation id="8073388330009372546">Kép megnyitása új lapon</translation>
+<translation id="552553974213252141">Megfelelően kinyerte a szöveget?</translation>
 <translation id="8730621377337864115">Kész</translation>
 <translation id="4170011742729630528">A szolgáltatás nem érhető el, próbálja újra később.</translation>
 <translation id="8627706565932943526">Szinkronizálási hiba</translation>
@@ -33,11 +38,14 @@
 <translation id="907015151729920253">Intelligens kártya</translation>
 <translation id="3063601790762993062">Videó mentése</translation>
 <translation id="6042308850641462728">Hosszabban</translation>
+<translation id="7267430310003164111">Felszólítás az alkalmazás beszerzésére a Google Play Áruházból. Alkalmazás neve: <ph name="APP_NAME"/>. Alkalmazás átlagos értékelése: <ph name="APP_RATING"/>.</translation>
+<translation id="4148957013307229264">Telepítés...</translation>
 <translation id="3992315671621218278">Link mentése</translation>
 <translation id="8034522405403831421">Ez az oldal <ph name="SOURCE_LANGUAGE"/> nyelven van. Lefordítja <ph name="TARGET_LANGUAGE"/> nyelvre?</translation>
 <translation id="4195643157523330669">Megnyitás új lapon</translation>
 <translation id="3089395242580810162">Megnyitás inkognitólapon</translation>
 <translation id="8725066075913043281">Újrapróbálás</translation>
+<translation id="8909135823018751308">Megosztás...</translation>
 <translation id="4269820728363426813">Link másolása</translation>
 <translation id="4510973599275542560">Ne töltse újra</translation>
 <translation id="1206892813135768548">Link szövegének másolása</translation>
@@ -50,8 +58,10 @@
 <translation id="1285320974508926690">Ezt a webhelyet soha ne fordítsa</translation>
 <translation id="5164482624172255778">Szeretné, hogy a Google Chrome a jövőben felajánlja e webhely <ph name="LANGUAGE"/> nyelvű oldalainak fordítását?</translation>
 <translation id="8528538445849828817">Az oldal nyelve: <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="4881695831933465202">Megnyitás</translation>
 <translation id="6512448926095770873">Az oldal elhagyása</translation>
 <translation id="7947953824732555851">Elfogadás és bejelentkezés</translation>
+<translation id="6333140779060797560">Megosztás a következőn keresztül: <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Bezárás</translation>
 <translation id="969096075394517431">Nyelvek módosítása</translation>
 <translation id="5032574515228824816">Parancssor</translation>

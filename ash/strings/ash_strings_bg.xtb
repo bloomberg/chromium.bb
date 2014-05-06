@@ -10,6 +10,7 @@
 <translation id="6310121235600822547">Завъртяхте „<ph name="DISPLAY_NAME"/>“ на <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth е деактивиран</translation>
+<translation id="6713285437468012787">Устройството с Bluetooth „<ph name="DEVICE_NAME"/>“ е сдвоено и сега е налице за всички потребители. Може да премахнете това сдвояване посредством „Настройки“.</translation>
 <translation id="7165320105431587207">Конфигурирането на мрежата не бе успешно</translation>
 <translation id="3775358506042162758">В централизирания вход можете да имате най-много три профила.</translation>
 <translation id="370649949373421643">Активиране на Wi-Fi</translation>
@@ -19,6 +20,7 @@
 <translation id="595202126637698455">Проследяването на ефективността е активирано</translation>
 <translation id="8054466585765276473">Издръжливостта на батерията се изчислява.</translation>
 <translation id="7982789257301363584">Мрежа</translation>
+<translation id="2303600792989757991">Превключване на общия преглед на прозорците</translation>
 <translation id="5565793151875479467">Прокси сървър...</translation>
 <translation id="938582441709398163">Наслагване върху клавиатурата</translation>
 <translation id="4387004326333427325">Сертификатът за удостоверяване бе отхвърлен отдалечено</translation>
@@ -79,7 +81,9 @@
 <translation id="3892641579809465218">Показване на вътрешна информация</translation>
 <translation id="7823564328645135659">Езикът се промени от „<ph name="FROM_LOCALE"/>“ на „<ph name="TO_LOCALE"/>“ след синхронизирането на настройките ви.</translation>
 <translation id="3368922792935385530">Установена е връзка</translation>
+<translation id="3606978283550408104">Брайловият дисплей е свързан.</translation>
 <translation id="8654520615680304441">Включване на Wi-Fi...</translation>
+<translation id="6650933572246256093">Устройството с Bluetooth „<ph name="DEVICE_NAME"/>“ иска разрешение за сдвояване. Моля, въведете на него следния ключ за достъп: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Методът ви на въвеждане се промени на <ph name="INPUT_METHOD_ID"/>.
 Натиснете „Shift + Alt“, за да превключите.</translation>
@@ -132,6 +136,7 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">„<ph name="NAME"/>“ се активира</translation>
+<translation id="4527045527269911712">Устройството с Bluetooth „<ph name="DEVICE_NAME"/>“ иска разрешение за сдвояване.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Автоматични кликвания</translation>
 <translation id="1398853756734560583">Увеличаване</translation>
@@ -182,11 +187,15 @@
 <translation id="479989351350248267">търсете</translation>
 <translation id="8454013096329229812">Wi-Fi е включен.</translation>
 <translation id="4872237917498892622">„Alt + търсене“ или „Shift“</translation>
+<translation id="2429753432712299108">Устройството с Bluetooth „<ph name="DEVICE_NAME"/>“ иска разрешение за сдвояване. Преди да приемете, моля, уверете се, че на него се показва следният ключ за достъп: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Батерията е <ph name="PERCENTAGE"/>% пълна.</translation>
 <translation id="2983818520079887040">Настройки...</translation>
 <translation id="3871838685472846647">Мобилната мрежа е активирана</translation>
+<translation id="6452181791372256707">Отхвърляне</translation>
 <translation id="1195412055398077112">допълнителна област</translation>
+<translation id="607652042414456612">Компютърът ви е откриваем за устройства с Bluetooth наблизо и ще се показва като „<ph name="NAME"/>“ с адрес <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Автоматично скриване на лавицата</translation>
+<translation id="6732801395666424405">Сертификатите не са заредени</translation>
 <translation id="7573962313813535744">Режим с докинг станция</translation>
 <translation id="8927026611342028580">Заявено е свързване</translation>
 <translation id="8300849813060516376">Безжичното осигуряване на услуга не бе успешно</translation>
@@ -199,6 +208,7 @@
 <translation id="6785414152754474415">Батерията е <ph name="PERCENTAGE"/>% пълна и се зарежда.</translation>
 <translation id="6267036997247669271">„<ph name="NAME"/>“: Активира се...</translation>
 <translation id="4895488851634969361">Батерията е пълна.</translation>
+<translation id="615957422585914272">Показване на екранната клавиатура</translation>
 <translation id="5947494881799873997">Възстановяване</translation>
 <translation id="7593891976182323525">„търсене“ или „Shift“</translation>
 <translation id="7649070708921625228">Помощ</translation>
@@ -206,6 +216,7 @@
 Натиснете „търсене“ или „Shift“, за да анулирате.</translation>
 <translation id="397105322502079400">Изчислява се...</translation>
 <translation id="158849752021629804">Необходима е собствена мрежа</translation>
+<translation id="1013923882670373915">Устройството с Bluetooth „<ph name="DEVICE_NAME"/>“ иска разрешение за сдвояване. Моля, въведете на него следния ПИН код: <ph name="PINCODE"/></translation>
 <translation id="6857811139397017780">Активиране на <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Търсенето на DHCP сървър не бе успешно</translation>
 <translation id="2819276065543622893">Ще излезете сега.</translation>
@@ -215,6 +226,7 @@
 <translation id="973896785707726617">Тази сесия ще приключи след <ph name="SESSION_TIME_REMAINING"/>. Ще излезете автоматично от нея.</translation>
 <translation id="8372369524088641025">Ключът за WEP е неправилен</translation>
 <translation id="6636709850131805001">Неразпознато състояние</translation>
+<translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Връщане към „<ph name="FROM_LOCALE"/>“ (изисква рестартиране)</translation>
 <translation id="8103386449138765447">SMS съобщения: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="7097613348211027502">Функцията ChromeVox (обратна връзка с говор) е активирана.

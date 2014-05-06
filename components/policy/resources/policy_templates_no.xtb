@@ -22,6 +22,7 @@ Denne regelen brukes internt av Chrome.</translation>
       Når denne innstillingen er deaktivert, mottar aldri brukeren forespørsler, og lydopptak blir bare tilgjengelig for nettadresser som konfigureres i AudioCaptureAllowedUrls.
 
       Denne innstillingen påvirker alle typer lydinndata, og ikke bare den innebygde mikrofonen.</translation>
+<translation id="7267809745244694722">Medietaster har standardfunksjon som funksjonstaster</translation>
 <translation id="9150416707757015439">Denne retningslinjen er foreldet. Bruk IncognitoModeAvailability i stedet.
       Aktiverer inkognitomodus i <ph name="PRODUCT_NAME"/>.
 
@@ -606,7 +607,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="6417861582779909667">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer nettsteder som ikke tillates å stille inn informasjonskapsler.
 
          Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra  retningslinjen DefaultCookiesSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke er angitt.</translation>
-<translation id="5457296720557564923">Lar sider få tilgang til minnebrukstatistikk for JavaScript. Denne innstillingen gjør statistikk fra profilpanelet i utviklerverktøyene tilgjengelig for nettsiden selv.</translation>
 <translation id="5776485039795852974">Spør hver gang et nettsted ønsker å vise skrivebordsvarslinger</translation>
 <translation id="5047604665028708335">Gi tilgang til nettsteder som ikke inngår i innholdspakker</translation>
 <translation id="5052081091120171147">Denne retningslinjen tvinger import av nettleserloggen fra den aktuelle standardnettleseren hvis den er aktivert. Hvis den er aktivert, påvirker denne retningslinjen også importdialogen. Hvis den er deaktivert, importeres ingen nettleserlogg. Hvis den ikke er angitt, er det mulig at brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
@@ -614,6 +614,11 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="7132877481099023201">Nettadresser som uten forespørsel blir gitt tilgang til enheter med videoopptak</translation>
 <translation id="8947415621777543415">Rapportering av enhetsposisjonen</translation>
 <translation id="1655229863189977773">Angi størrelse på diskbuffer i byte</translation>
+<translation id="3358275192586364144">Aktiverer WPAD-optimalisering i <ph name="PRODUCT_NAME"/> og forhindrer brukere fra å endre denne innstillingen.
+
+      Hvis du aktiverer denne innstillingen, medfører dette at Chromes ventetid for DNS-baserte WPAD-tjenere reduseres.
+
+      Hvis denne innstillingen ikke angis, aktiveres innstillingen, og brukerne kan da ikke endre den.</translation>
 <translation id="6376842084200599664">Gjør at du kan angi en liste over utvidelser som installeres av seg selv uten samhandling med brukeren.
 
           Hvert element i listen er en streng som inneholder en utvidelses-ID og en nettadresse for oppdatering, adskilt med et semikolon (<ph name="SEMICOLON"/>). Utvidelsen er strengen på 32 bokstaver som du finner på <ph name="CHROME_EXTENSIONS_LINK"/> ved bruk av utviklermodus. Oppdateringsnettadressen skal lede til et Update Manifest XML-dokument beskrevet på <ph name="LINK_TO_EXTENSION_DOC1"/>. Vær oppmerksom på at oppdateringsnettadressen angitt i disse retningslinjene bare brukes for den første installasjonen – senere oppdateringer av utvidelsen bruker oppdateringsnettadressen angitt i utvidelsesmanifestet.
@@ -727,6 +732,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="1679420586049708690">Offentlig økt for automatisk pålogging</translation>
 <translation id="7625444193696794922">Angir den frigivende kanalen som denne enheten skal låses til.</translation>
 <translation id="2552966063069741410">Tidssone</translation>
+<translation id="3788662722837364290">Innstillinger for strømstyring når brukeren er inaktiv</translation>
 <translation id="2240879329269430151">Gjør at du kan angi om nettsteder tillates å vise forgrunnsvinduer. Visning av forgrunnsvinduer kan enten tillates for alle nettsteder, eller nektes for alle nettsteder. Hvis denne retningslinjen ikke angis, brukes BlockPopups, og brukeren har mulighet til å endre på dette.</translation>
 <translation id="2529700525201305165">Begrens hvilke brukere som kan logge seg på <ph name="PRODUCT_NAME"/></translation>
 <translation id="8971221018777092728">Tidtaker for automatisk påloggging til offentlig økt</translation>
@@ -804,7 +810,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="8102913158860568230">Standard innstilling for direkteavspilling av medieinnhold</translation>
 <translation id="6641981670621198190">Deaktiver støtte for programmeringsgrensesnitt for 3D-grafikk</translation>
 <translation id="1265053460044691532">Begrens hvor lenge en bruker som er autentisert via SAML kan logge på uten nett</translation>
-<translation id="7929480864713075819">Aktiver rapportering av minneinformasjon (heap-størrelse for JS) til nettside</translation>
 <translation id="5703863730741917647">Angi handlingen som skal utføres når inaktivitetsforsinkelsen blir overgått.
 
           Vær oppmerksom på at denne innstillingen er avviklet og skal fjernes i fremtiden.
@@ -899,6 +904,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="4057110413331612451">Tillat bedriftsbrukeren å bare være primær flerprofilbruker</translation>
 <translation id="5365946944967967336">Vis startsideknappen på verktøylinjen</translation>
 <translation id="3709266154059827597">Konfigurer installasjonssperrelisten for utvidelser</translation>
+<translation id="1933378685401357864">Bakgrunnsbilde</translation>
 <translation id="8451988835943702790">Bruk siden Ny fane som startside</translation>
 <translation id="4617338332148204752">Hopp over sjekk av metatag i <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="8469342921412620373">Aktiverer bruk av standard søkeleverandør.
@@ -922,6 +928,9 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 
           Hvis denne innstillingen ikke angis, deaktiveres den store musepekeren til å å begynne med, men brukere kan aktivere den når som helst.</translation>
 <translation id="2633084400146331575">Aktiverer talerespons</translation>
+<translation id="687046793986382807">Disse retningslinjene ble avviklet fra og med versjon 35 av <ph name="PRODUCT_NAME"/>.
+
+Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alternativet, men de rapporterte størrelsene blir kvantisert, og oppdateringsfrekvensen er av sikkerhetsgrunner begrenset. Hvis du vil ha data med sanntidspresisjon, må du bruke verktøy som telemetri (fjernmåling).</translation>
 <translation id="8731693562790917685">Innholdsinnstillinger lar deg angi hvordan innholdet for spesifikke elementer (f.eks. informasjonskapsler, bilder eller JavaScript) skal håndteres.</translation>
 <translation id="2411919772666155530">Blokkér varsler på disse nettstedene</translation>
 <translation id="6923366716660828830">Angir navnet på standard søkeleverandør. Hvis dette ikke angis, brukes vertsnavnet angitt av søkenettadressen.
@@ -933,6 +942,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 
           Hvis denne regelen har verdien «false», ignoreres forespørsler om låsing av skjermaktivering.</translation>
 <translation id="467236746355332046">Støttede funksjoner:</translation>
+<translation id="5447306928176905178">Slå på rapportering av minneinformasjon (heap-størrelse for JavaScript) til siden (avviklet)</translation>
 <translation id="7632724434767231364">Navn på GSSAPI-bibliotek</translation>
 <translation id="3038323923255997294">Fortsett å kjøre bakgrunnsprogrammer når <ph name="PRODUCT_NAME"/> er lukket</translation>
 <translation id="8909280293285028130">Angir hvor lenge brukeren må være inaktiv før skjermen låses når enheten kjører på vekselstrøm.
@@ -981,6 +991,17 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
           Denne innstillingen er valgfri. Hvis den ikke er angitt, blir forespørsler om søkeforslag sendt via GET-metoden.
 
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er aktivert.</translation>
+<translation id="6095999036251797924">Angir hvor mye tid som kan gå uten brukeraktivitet før skjermen låses når nettstrøm eller batteri brukes.
+
+          Hvis tidslengden er satt til en verdi større enn null, avgjør den hvor lenge brukeren kan være borte før skjermen på <ph name="PRODUCT_OS_NAME"/> låses.
+
+          Hvis tidslengden er null, låses ikke skjermen på <ph name="PRODUCT_OS_NAME"/> når brukeren er inaktiv.
+
+          Hvis ingen tidslengde spesifiseres, brukes en standardtid.
+
+          Den anbefalte måten å låse skjermen på når den er inaktiv, er å aktivere skjermlåsing ved hvilemodus, slik at <ph name="PRODUCT_OS_NAME"/> aktiverer skjermlåsen etter det innstilte inaktive perioden. Tidsinnstillingen for skjermlåsen bør bare brukes når skjermlåsen skal aktiveres lenge før hvilemodus, eller når bruk av hvilemodus ved inaktivitet ikke er ønskelig i det hele tatt.
+
+          Innstillingsverdien bør angis i millisekunder. Verdien må være mindre enn inaktivitetsforsinkelsen.</translation>
 <translation id="1454846751303307294">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer nettsteder som ikke tillates å kjøre JavaScript.
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultJavaScriptSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke er angitt.</translation>
@@ -1011,6 +1032,32 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
     Hvis denne innstillingen deaktiveres eller ikke angis, er ikonene synlige.</translation>
 <translation id="5085647276663819155">Deaktiver forhåndsvisning av utskrift</translation>
 <translation id="8672321184841719703">Målversjon for automatiske oppdateringer</translation>
+<translation id="553658564206262718">Konfigurer innstillinger for strømstyring når brukeren er inaktiv.
+
+          Disse retningslinjene kontrollerer flere innstillinger for strømstyring når brukeren er inaktiv.
+
+          Det finnes fire forskjellige typer handlinger:
+          * Skjermen dempes hvis brukeren er inaktiv lenger enn det som er angitt av |ScreenDim|.
+          * Skjermen slås av hvis brukeren er inaktiv lenger enn det som er angitt av |ScreenOff|.
+          * En advarsel vises hvis brukeren er inaktiv lenger enn det som er angitt av |IdleWarning|. Advarselen forteller brukeren om at handlingen |IdleAction| er i ferd med å begynne.
+          * Handlingen som angis av |IdleAction| iverksettes hvis brukeren har vært inaktiv lenger enn det som er angitt av |Idle|.
+
+          Alle forsinkelsene ovenfor skal angis i millisekunder. Verdien må være større enn null for å utløse den aktuelle handlingen. Hvis forsinkelsen er satt til null, utfører ikke <ph name="PRODUCT_OS_NAME"/> den korresponderende handlingen.
+
+          Hvis ingen verdi angis for forsinkelsene ovenfor, brukes en standardverdi.
+
+          Vær oppmerksom på at verdien for |ScreenDim| må være mindre enn eller lik |ScreenOff|, og verdiene for |ScreenOff| og |IdleWarning| må være mindre enn eller lik |Idle|.
+
+          |IdleAction| kan være én av følgende handlinger:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Hvis |IdleAction| ikke er spesifisert, brukes standardhandlingen, som er dvalemodus (|Suspend|).
+
+          Det er brukes separate innstillinger for nettstrøm og batteri.
+          </translation>
 <translation id="1689963000958717134">Tillater skyving av nettverkskonfigurasjon for alle brukere av en <ph name="PRODUCT_OS_NAME"/>-enhet. Nettverkskonfigurasjonen er en JSON-formatert streng, som definert av Open Network Configuration-formatet beskrevet på <ph name="ONC_SPEC_URL"/></translation>
 <translation id="6699880231565102694">Aktiver to-delt autentisering for verter med ekstern adgang</translation>
 <translation id="2030905906517501646">Søkeord for standard søkeleverandør</translation>
@@ -1217,6 +1264,32 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 
       Hvis du ikke angir denne innstillingen, bruker <ph name="PRODUCT_NAME"/> standardverdien på 5 000 millisekunder.</translation>
 <translation id="8099880303030573137">Inaktivitetsforsinkelse når enheten kjører på batteristrøm</translation>
+<translation id="1709037111685927635">Konfigurer bakgrunnsbilde.
+
+      Gjennom denne innstillingen kan du konfigurere bakgrunnsbildet som vises på skrivebordet og i bakgrunnen av brukerens påloggingsside. Du angir denne innstillingen ved å spesifisere nettadressen <ph name="PRODUCT_OS_NAME"/> kan laste ned bakgrunnsbildet fra, og en kryptografisk hash-funksjon som skal bekrefte nedlastingens integritet. Bildet må være i JPEG-format og ikke større enn 16 MB. Nettadressen må være tilgjengelig uten krav om autentisering.
+
+      Bakgrunnsbildet blir lastet ned og bufret. Det blir så lastet ned på nytt hver gang nettadressen eller hash-elementet endres.
+
+      Du må spesifisere denne innstillingen som en streng som angir nettadressen og hash-elementet i JSON-format, i overensstemmelse med denne malen:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;Nettadressen bakgrunnsbildet kan lastes ned fra.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;SHA-256-hashen for bakgrunnsbildet.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Hvis du har angitt denne innstillingen, laster <ph name="PRODUCT_OS_NAME"/> ned og bruker bakgrunnsbildet.
+
+      Hvis du angir denne innstillingen, kan du ikke endre eller overstyre den.
+
+      Hvis du ikke angir denne innstillingen, kan brukeren selv velge hvilket bilde som skal vises på skrivebordet og i bakgrunnen av påloggingssiden.</translation>
 <translation id="2761483219396643566">Forsinkelse for advarsel om inaktivitet når enheten kjører på batteristrøm</translation>
 <translation id="6281043242780654992">Konfigurer innstillinger for innebygde meldinger. Innebygde meldingsverter som er svartelistet tillates ikke med mindre de godkjennes.</translation>
 <translation id="1468307069016535757">Angi standard tilstand for tilgjengelighetsfunksjonen for høykontrastmodus på påloggingsskjermen.
@@ -1353,93 +1426,9 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
       Hvis du aktiverer eller deaktiverer denne innstillingen, kan ikke brukere endre eller overkjøre denne innstillingen.
 
       Hvis innstillingen ikke angis, blir proxy-tjenerfunksjonen for datakomprimering tilgjengelig for brukere som velger om de vil bruke den eller ikke.</translation>
+<translation id="2170233653554726857">Slå på WPAD-optimalisering</translation>
 <translation id="7424751532654212117">Liste over unntak fra listen over deaktiverte programtillegg</translation>
 <translation id="6233173491898450179">Angi nedlastingskatalog</translation>
-<translation id="78524144210416006">Konfigurer administrasjon av strømforbruk på påloggingsskjermen for <ph name="PRODUCT_OS_NAME"/>.
-
-      Med denne innstillingen kan du konfigurere atferden for <ph name="PRODUCT_OS_NAME"/> når det ikke er brukeraktivitet på en stund mens pålogginsskjermen vises. Innstillingen kontrollerer flere alternativer. Du finner informasjon om semantikken og verdiområdene for de individuelle innstillingene i de tilhørende innstillingene som kontrollerer strømforbruk under en økt. De eneste unntakene for disse innstillingene er:
-      * Handlingene som utføres ved inaktivitet eller lukking av lokket kan ikke være avslutning av økten.
-      * Standardhandlingen for inaktivitet når maskinen kjører på vekselstrøm er å slå den av.
-
-      Innstillingen skal spesifiseres som en streng som angir de individuelle innstillingene i JSON-format, og må følge dette skjemaet:
-      {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;AC&quot;: {
-            &quot;description&quot;: &quot;Innstillinger for strømforbruk som bare gjelder når enheten kjører på vekselstrøm&quot;,
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-              &quot;Delays&quot;: {
-                &quot;type&quot;: &quot;object&quot;,
-                &quot;properties&quot;: {
-                  &quot;ScreenDim&quot;: {
-                    &quot;description&quot;: &quot;Tidsrommet uten brukeraktivitet før skjermen blir mørk, i millisekunder&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;ScreenOff&quot;: {
-                    &quot;description&quot;: &quot;Tidsrommet uten brukeaktivitet før skjermen slås av, i millisekunder&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;Idle&quot;: {
-                    &quot;description&quot;: &quot;Tidsrommet uten brukeaktivitet før handling utføres, i millisekunder&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  }
-                }
-              },
-              &quot;IdleAction&quot;: {
-                &quot;description&quot;: &quot;Handling som skal tas når inaktivitetsforsinkelsen overskrides&quot;,
-                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-              }
-            }
-          },
-          &quot;Battery&quot;: {
-            &quot;description&quot;: &quot;Innstillinger for strømforbruk som bare gjelder når enheten kjører på batteristrøm&quot;,
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-              &quot;Delays&quot;: {
-                &quot;type&quot;: &quot;object&quot;,
-                &quot;properties&quot;: {
-                  &quot;ScreenDim&quot;: {
-                    &quot;description&quot;: &quot;Tidsrommet uten brukeraktivitet før skjermen dimmes, i millisekunder&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;ScreenOff&quot;: {
-                    &quot;description&quot;: &quot;Tidsrommet uten brukeaktivitet før skjermen slås av, i millisekunder&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;Idle&quot;: {
-                    &quot;description&quot;: &quot;Handling som skal utføres når inaktivitetsforsinkelsen overskrides&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  }
-                }
-              },
-              &quot;IdleAction&quot;: {
-                &quot;description&quot;: &quot;Handling som skal utføres når inaktivitetsforsinkelsen overskrides&quot;,
-                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-              }
-            }
-          },
-          &quot;LidCloseAction&quot;: {
-            &quot;description&quot;: &quot;Handling som skal utføres når Action to take when the lid is closed&quot;,
-            &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-          },
-          &quot;UserActivityScreenDimDelayScale&quot;: {
-            &quot;description&quot;: &quot;Prosentandelen for skalering av skjermdimmngsforsinkelsen når brukeraktivitet oppdages mens skjermen er dimmet eller rett etter skjermen er slått av&quot;,
-            &quot;type&quot;: &quot;integer&quot;,
-            &quot;minimum&quot;: 100
-          }
-        }
-      }
-
-      Hvis en innstilling ikke angis, brukes en standardverdi.
-
-      Hvis innstillingen ikke er angitt, brukes standardverdier for alle tilfellene.</translation>
 <translation id="8908294717014659003">Lar deg angi om nettsteder skal gis tillatelse til å bruke digitaliseringsenhetene dine. Bruk av digitaliseringsenheter kan tillates som standard, eller angis slik at brukeren blir spurt om tillatelse hver gang et nettsted ønsker å bruke slike enheter.
 
           Hvis denne retningslinjen ikke er angitt, brukes PromptOnAccess, og brukeren kan ikke endre denne innstillingen.</translation>
@@ -1474,6 +1463,9 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
       Hvis innstillingen ikke er angitt, brukes standard bufferstørrelse, og brukeren kan overstyre den med «--media-cache-size»-flagget.</translation>
 <translation id="5142301680741828703">Alltid gjengi følgende nettadressemønstre i <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Konfigurer godkjenningslisten for installasjon av utvidelser</translation>
+<translation id="5893553533827140852">Hvis denne innstillingen er aktivert sendes gnubby-godkjenningsforespørsler via en proxy-tjener på en ekstern tjenertilkobling.
+
+          Hvis denne innstillingen ikke er aktivert sendes ikke gnubby-godkjenningsforespørsler via en proxy-tjener.</translation>
 <translation id="187819629719252111">Gir tilgang til lokale filer på maskinen ved å tillate <ph name="PRODUCT_NAME"/> å vise dialoger om filutvalg.
       Hvis du aktiverer denne innstillingen, kan brukerne åpne filutvalgdialogene som normalt.
       Hvis du deaktiverer denne innstillingen, vil det hver gang brukeren utfører en handling som kan utløse en filutvalgsdialog (som import av bokmerker, opplasting av filer, lagring av linker osv.), vises det en melding i stedet, og det antas at brukeren har klikket Avbryt i filutvalgdialogen.
@@ -1554,6 +1546,11 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 
           Hvis RestoreOnStartup-innstillingen er angitt til å gjenopprette nettadresser fra tidligere økter, blir ikke denne innstillingen overholdt og informasjonskapsler lagres permanent for de aktuelle nettstedene.</translation>
 <translation id="2098658257603918882">Aktiver rapportering av bruk og programstopprelaterte data</translation>
+<translation id="4633786464238689684">Endrer standardatferden til tastene på den øverste raden til funksjonstaster.
+
+          Hvis denne innstillingen er angitt som sann (true), kan du bruke den øverste raden med taster på tastaturet som funksjonstaster. Da må du holde inne søketasten for å bruke dem som medietaster igjen.
+
+          Hvis denne innstillingen er angitt som usann (false) eller ikke er angitt, har disse tastene standardfunksjon som medietaster, og fungerer som funksjonstaster når du holder søketasten inne.</translation>
 <translation id="2324547593752594014">Tillat pålogginger til Chrome</translation>
 <translation id="172374442286684480">Lar alle nettsteder angi lokale data</translation>
 <translation id="1151353063931113432">Tillat bilder på disse nettstedene</translation>
@@ -1605,6 +1602,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 
           ExtensionInstallBlacklist har forrang for denne retningslinjen. I klartekst betyr dette at en utvidelse oppført på sperrelisten, ikke blir installert, selv om nedlastingen skal skje fra et nettsted på denne listen.</translation>
 <translation id="2113068765175018713">Begrens enhetens driftstid ved å bruke automatisk omstart</translation>
+<translation id="4224610387358583899">Forsinkelser for skjermlås</translation>
 <translation id="7848840259379156480">Lar deg konfigurere standard HTML-gjengivelse når <ph name="PRODUCT_FRAME_NAME"/> er installert. Standardinnstillingen er å tillate vertsnettleseren å foreta gjengivelsen. Du kan eventuelt overstyre dette og la <ph name="PRODUCT_FRAME_NAME"/> gjengi HTML-sider som standard.</translation>
 <translation id="186719019195685253">Handling som skal utføres når inaktivitetsforsinkelsen overgås og maskinen kjører på vekselstrøm</translation>
 <translation id="7890264460280019664">Rapportér en liste over nettverksgrensesnitt med typene og maskinvareadressene til tjeneren.
@@ -1703,6 +1701,15 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
       Denne innnstillingen må konfigureres med en nettadresse der <ph name="PRODUCT_OS_NAME"/> kan laste ned vilkårene. Vilkårene må være i ren tekst, levert som MIME-typen tekst/ren. Det er ikke tillatt med koding.</translation>
 <translation id="2623014935069176671">Vent på første brukeraktivitet</translation>
 <translation id="2660846099862559570">Aldri bruk mellomtjener</translation>
+<translation id="1956493342242507974">Konfigurer strømstrømstyring på påloggingssiden i <ph name="PRODUCT_OS_NAME"/>.
+
+      Med denne planen kan du konfigurere hvordan <ph name="PRODUCT_OS_NAME"/> skal oppføre seg når det ikke har vært noen brukeraktivitet på en stund mens påloggingsskjermen vises. Planen styrer flere innstillinger. For verdiområder og semantikk for enkeltinnstillinger kan du se tilsvarende planer som kontrollerer strømstyring innad i økten. De eneste avvikene fra disse planene er:
+      * Handlingen for inaktiv tilstand eller lukking av lokket, kan ikke være å avslutte økten.
+      * Standardhandlingen for inaktiv tilstand når nettstrøm brukes, er å slå av.
+
+      Hvis en innstilling ikke angis, brukes en standardverdi.
+
+      Hvis denne planen ikke angis, brukes standardverdiene for alle innstillingene.</translation>
 <translation id="1435659902881071157">Nettverkskonfigurasjon på enhetsnivå</translation>
 <translation id="2131902621292742709">Forsinkelse for nedtonet skjerm når enheten kjører på batteristrøm</translation>
 <translation id="5781806558783210276">Angir hvor lenge brukeren kan være inaktiv før inaktivitetshandlingen blir utført når enheten kjører på batteristrøm.
@@ -1821,5 +1828,6 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
       Denne innstillingen påvirker alle typer lydutganger og ikke bare de innebygde høyttalerne. Lydtilgjengelighetsfunksjoner hemmes også av denne innstillingen. Ikke aktiver denne innstillingen dersom en skjermleser er nødvendig for brukeren.
 
       Hvis denne innstillingen angis som sann eller ikke konfigurert, kan brukerne bruke alle støttede lydutganger på enhet sin.</translation>
+<translation id="6517678361166251908">Tillat gnubby-godkjenning</translation>
 <translation id="4858735034935305895">Tillat fullskjermmodus</translation>
 </translationbundle>
