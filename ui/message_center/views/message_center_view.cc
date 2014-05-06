@@ -123,7 +123,8 @@ class MessageListView : public views::View,
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual int GetHeightForWidth(int width) OVERRIDE;
-  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
+  virtual void PaintChildren(gfx::Canvas* canvas,
+                             const views::CullSet& cull_set) OVERRIDE;
   virtual void ReorderChildLayers(ui::Layer* parent_layer) OVERRIDE;
 
   // Overridden from views::BoundsAnimatorObserver.
@@ -311,12 +312,13 @@ int MessageListView::GetHeightForWidth(int width) {
   return height + GetInsets().height();
 }
 
-void MessageListView::PaintChildren(gfx::Canvas* canvas) {
+void MessageListView::PaintChildren(gfx::Canvas* canvas,
+                                    const views::CullSet& cull_set) {
   // Paint in the inversed order. Otherwise upper notification may be
   // hidden by the lower one.
   for (int i = child_count() - 1; i >= 0; --i) {
     if (!child_at(i)->layer())
-      child_at(i)->Paint(canvas);
+      child_at(i)->Paint(canvas, cull_set);
   }
 }
 

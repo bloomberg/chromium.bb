@@ -261,7 +261,8 @@ class AutofillDialogViews : public AutofillDialogView,
     // views::View implementation.
     virtual gfx::Size GetPreferredSize() OVERRIDE;
     virtual const char* GetClassName() const OVERRIDE;
-    virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
+    virtual void PaintChildren(gfx::Canvas* canvas,
+                               const views::CullSet& cull_set) OVERRIDE;
     virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
     void set_arrow_centering_anchor(
@@ -341,7 +342,8 @@ class AutofillDialogViews : public AutofillDialogView,
     // views::MenuButton implementation.
     virtual gfx::Size GetPreferredSize() OVERRIDE;
     virtual const char* GetClassName() const OVERRIDE;
-    virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
+    virtual void PaintChildren(gfx::Canvas* canvas,
+                               const views::CullSet& cull_set) OVERRIDE;
     virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
    private:

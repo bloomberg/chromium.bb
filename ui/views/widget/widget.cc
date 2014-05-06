@@ -1146,7 +1146,7 @@ void Widget::OnNativeWidgetPaint(gfx::Canvas* canvas) {
   // On Linux Aura, we can get here during Init() because of the
   // SetInitialBounds call.
   if (native_widget_initialized_)
-    GetRootView()->Paint(canvas);
+    GetRootView()->Paint(canvas, CullSet());
 }
 
 int Widget::GetNonClientComponent(const gfx::Point& point) {

@@ -80,7 +80,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void Paint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void Paint(gfx::Canvas* canvas,
+                     const views::CullSet& cull_set) OVERRIDE;
   virtual void OnThemeChanged() OVERRIDE;
 
   // WidgetDelegate overrides:
