@@ -22,6 +22,8 @@ static const char kMainWebrtcTestHtmlPage[] =
 // The webcam on the system must support up to 1080p, or the test will fail.
 class WebRtcWebcamBrowserTest : public WebRtcTestBase {
  public:
+  WebRtcWebcamBrowserTest() : get_user_media_call_count_(0) {}
+
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     EXPECT_FALSE(command_line->HasSwitch(
         switches::kUseFakeDeviceForMediaStream));
@@ -36,13 +38,22 @@ class WebRtcWebcamBrowserTest : public WebRtcTestBase {
  protected:
   std::string GetUserMediaAndGetStreamSize(content::WebContents* tab,
                                            const std::string& constraints) {
-    GetUserMediaWithSpecificConstraintsAndAccept(tab, constraints);
+    // We will get a permission prompt for the first getUserMedia call.
+    // Subsequent calls won't trigger a prompt.
+    get_user_media_call_count_ == 0 ?
+        GetUserMediaWithSpecificConstraintsAndAccept(tab, constraints) :
+        GetUserMedia(tab, constraints);
+
+    ++get_user_media_call_count_;
+
     StartDetectingVideo(tab, "local-view");
     WaitForVideoToPlay(tab);
     std::string actual_stream_size = GetStreamSize(tab, "local-view");
     CloseLastLocalStream(tab);
     return actual_stream_size;
   }
+
+  int get_user_media_call_count_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebRtcWebcamBrowserTest,
