@@ -74,7 +74,7 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDep) {
         writer.WriteInputDepsStampAndGetDep(std::vector<const Target*>());
 
     EXPECT_EQ(" | obj/foo/target.inputdeps.stamp", dep);
-    EXPECT_EQ("obj/foo/target.inputdeps.stamp: stamp "
+    EXPECT_EQ("build obj/foo/target.inputdeps.stamp: stamp "
                   "../../foo/input.txt obj/foo/base.stamp\n",
               stream.str());
   }
@@ -88,7 +88,7 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDep) {
         writer.WriteInputDepsStampAndGetDep(std::vector<const Target*>());
 
     EXPECT_EQ(" | obj/foo/action.inputdeps.stamp", dep);
-    EXPECT_EQ("obj/foo/action.inputdeps.stamp: stamp "
+    EXPECT_EQ("build obj/foo/action.inputdeps.stamp: stamp "
                   "../../foo/action_source.txt obj/foo/base.stamp\n",
               stream.str());
   }

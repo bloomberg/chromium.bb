@@ -111,7 +111,7 @@ std::string NinjaTargetWriter::WriteInputDepsStampAndGetDep(
   path_output_.WriteFile(stamp_file_stream, input_stamp_file);
   std::string stamp_file_string = stamp_file_stream.str();
 
-  out_ << stamp_file_string << ": stamp";
+  out_ << "build " << stamp_file_string << ": stamp";
 
   // Input files are order-only deps.
   const Target::FileList& prereqs = target_->source_prereqs();
