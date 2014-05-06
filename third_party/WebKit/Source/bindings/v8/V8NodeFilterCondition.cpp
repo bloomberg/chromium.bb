@@ -42,10 +42,15 @@ namespace WebCore {
 
 V8NodeFilterCondition::V8NodeFilterCondition(v8::Handle<v8::Value> filter, v8::Handle<v8::Object> owner, v8::Isolate* isolate)
     : m_scriptState(ScriptState::current(isolate))
-    , m_filter(isolate, filter)
 {
-    V8HiddenValue::setHiddenValue(isolate, owner, V8HiddenValue::condition(isolate), filter);
-    m_filter.setWeak(this, &setWeakCallback);
+    // ..acceptNode(..) will only dispatch m_filter if m_filter->IsObject().
+    // We'll make sure m_filter is either usable by acceptNode or empty.
+    // (See the fast/dom/node-filter-gc test for a case where 'empty' happens.)
+    if (!filter.IsEmpty() && filter->IsObject()) {
+        V8HiddenValue::setHiddenValue(isolate, owner, V8HiddenValue::condition(isolate), filter);
+        m_filter.set(isolate, filter);
+        m_filter.setWeak(this, &setWeakCallback);
+    }
 }
 
 V8NodeFilterCondition::~V8NodeFilterCondition()
@@ -58,10 +63,9 @@ short V8NodeFilterCondition::acceptNode(Node* node, ExceptionState& exceptionSta
     ASSERT(!m_scriptState->context().IsEmpty());
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> filter = m_filter.newLocal(isolate);
-    ASSERT(!filter.IsEmpty());
-    // FIXME: Remove the filter.IsEmpty() check because |filter| must not be empty.
-    // See crbug.com/358858 for more details.
-    if (filter.IsEmpty() || !filter->IsObject())
+
+    ASSERT(filter.IsEmpty() || filter->IsObject());
+    if (filter.IsEmpty())
         return NodeFilter::FILTER_ACCEPT;
 
     v8::TryCatch exceptionCatcher;
