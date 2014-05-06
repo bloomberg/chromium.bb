@@ -20,12 +20,13 @@ class GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
   virtual ~GpuMemoryBufferImplIOSurface();
 
   static bool IsFormatSupported(unsigned internalformat);
+  static bool IsUsageSupported(unsigned usage);
   static uint32 PixelFormat(unsigned internalformat);
 
   bool Initialize(gfx::GpuMemoryBufferHandle handle);
 
   // Overridden from gfx::GpuMemoryBuffer:
-  virtual void* Map(AccessMode mode) OVERRIDE;
+  virtual void* Map() OVERRIDE;
   virtual void Unmap() OVERRIDE;
   virtual uint32 GetStride() const OVERRIDE;
   virtual gfx::GpuMemoryBufferHandle GetHandle() const OVERRIDE;

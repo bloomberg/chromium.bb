@@ -24,7 +24,10 @@ class GLES2_IMPL_EXPORT GpuMemoryBufferTracker {
   explicit GpuMemoryBufferTracker(GpuControl* gpu_control);
   virtual ~GpuMemoryBufferTracker();
 
-  int32 CreateBuffer(size_t width, size_t height, int32 internalformat);
+  int32 CreateBuffer(size_t width,
+                     size_t height,
+                     int32 internalformat,
+                     int32 usage);
   gfx::GpuMemoryBuffer* GetBuffer(int32 image_id);
   void RemoveBuffer(int32 image_id);
 

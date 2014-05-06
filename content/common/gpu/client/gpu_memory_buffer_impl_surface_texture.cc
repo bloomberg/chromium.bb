@@ -23,6 +23,16 @@ bool GpuMemoryBufferImplSurfaceTexture::IsFormatSupported(
 }
 
 // static
+bool GpuMemoryBufferImplSurfaceTexture::IsUsageSupported(unsigned usage) {
+  switch (usage) {
+    case GL_IMAGE_MAP_CHROMIUM:
+      return true;
+    default:
+      return false;
+  }
+}
+
+// static
 int GpuMemoryBufferImplSurfaceTexture::WindowFormat(unsigned internalformat) {
   switch (internalformat) {
     case GL_RGBA8_OES:
@@ -65,7 +75,7 @@ bool GpuMemoryBufferImplSurfaceTexture::Initialize(
   return true;
 }
 
-void* GpuMemoryBufferImplSurfaceTexture::Map(AccessMode mode) {
+void* GpuMemoryBufferImplSurfaceTexture::Map() {
   TRACE_EVENT0("gpu", "GpuMemoryBufferImplSurfaceTexture::Map");
 
   DCHECK(!mapped_);

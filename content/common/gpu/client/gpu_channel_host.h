@@ -80,7 +80,8 @@ class CONTENT_EXPORT GpuChannelHostFactory {
   virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       size_t width,
       size_t height,
-      unsigned internalformat) = 0;
+      unsigned internalformat,
+      unsigned usage) = 0;
 };
 
 // Encapsulates an IPC channel between the client and one GPU process.

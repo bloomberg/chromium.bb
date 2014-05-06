@@ -275,16 +275,18 @@ void TestGLES2Interface::WaitAsyncTexImage2DCHROMIUM(GLenum target) {
 
 GLuint TestGLES2Interface::CreateImageCHROMIUM(GLsizei width,
                                                GLsizei height,
-                                               GLenum internalformat) {
-  return test_context_->createImageCHROMIUM(width, height, internalformat);
+                                               GLenum internalformat,
+                                               GLenum usage) {
+  return test_context_->createImageCHROMIUM(
+      width, height, internalformat, usage);
 }
 
 void TestGLES2Interface::DestroyImageCHROMIUM(GLuint image_id) {
   test_context_->destroyImageCHROMIUM(image_id);
 }
 
-void* TestGLES2Interface::MapImageCHROMIUM(GLuint image_id, GLenum access) {
-  return test_context_->mapImageCHROMIUM(image_id, access);
+void* TestGLES2Interface::MapImageCHROMIUM(GLuint image_id) {
+  return test_context_->mapImageCHROMIUM(image_id);
 }
 
 void TestGLES2Interface::GetImageParameterivCHROMIUM(GLuint image_id,

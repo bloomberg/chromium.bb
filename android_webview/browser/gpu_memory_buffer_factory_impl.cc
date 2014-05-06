@@ -31,23 +31,9 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   }
 
   // Overridden from gfx::GpuMemoryBuffer:
-  virtual void* Map(gfx::GpuMemoryBuffer::AccessMode mode) OVERRIDE {
-    AwMapMode map_mode = MAP_READ_ONLY;
-    switch (mode) {
-      case GpuMemoryBuffer::READ_ONLY:
-        map_mode = MAP_READ_ONLY;
-        break;
-      case GpuMemoryBuffer::WRITE_ONLY:
-        map_mode = MAP_WRITE_ONLY;
-        break;
-      case GpuMemoryBuffer::READ_WRITE:
-        map_mode = MAP_READ_WRITE;
-        break;
-      default:
-        LOG(DFATAL) << "Unknown map mode: " << mode;
-    }
+  virtual void* Map() OVERRIDE {
     void* vaddr = NULL;
-    int err = g_gl_draw_functions->map(buffer_id_, map_mode, &vaddr);
+    int err = g_gl_draw_functions->map(buffer_id_, MAP_READ_WRITE, &vaddr);
     DCHECK(!err);
     mapped_ = true;
     return vaddr;
@@ -87,7 +73,8 @@ GpuMemoryBufferFactoryImpl::~GpuMemoryBufferFactoryImpl() {
 gfx::GpuMemoryBuffer* GpuMemoryBufferFactoryImpl::CreateGpuMemoryBuffer(
     size_t width,
     size_t height,
-    unsigned internalformat) {
+    unsigned internalformat,
+    unsigned usage) {
   // For Android WebView we assume the |internalformat| will always be
   // GL_RGBA8_OES.
   CHECK_EQ(static_cast<GLenum>(GL_RGBA8_OES), internalformat);

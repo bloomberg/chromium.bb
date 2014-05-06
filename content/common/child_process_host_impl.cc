@@ -308,6 +308,7 @@ void ChildProcessHostImpl::OnAllocateGpuMemoryBuffer(
     uint32 width,
     uint32 height,
     uint32 internalformat,
+    uint32 usage,
     gfx::GpuMemoryBufferHandle* handle) {
   handle->type = gfx::SHARED_MEMORY_BUFFER;
   AllocateSharedMemory(

@@ -15,10 +15,10 @@ namespace gpu {
 
 class GPU_EXPORT GpuMemoryBufferFactory {
  public:
-  virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(
-      size_t width,
-      size_t height,
-      unsigned internalformat) = 0;
+  virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(size_t width,
+                                                      size_t height,
+                                                      unsigned internalformat,
+                                                      unsigned usage) = 0;
 
  protected:
   virtual ~GpuMemoryBufferFactory() {}

@@ -1405,7 +1405,8 @@ _FUNCTION_INFO = {
   },
   'CreateImageCHROMIUM': {
     'type': 'Manual',
-    'cmd_args': 'GLsizei width, GLsizei height, GLenum internalformat',
+    'cmd_args':
+        'GLsizei width, GLsizei height, GLenum internalformat, GLenum usage',
     'result': ['GLuint'],
     'client_test': False,
     'gen_cmd': False,

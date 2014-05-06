@@ -65,17 +65,14 @@ struct GpuMemoryBufferHandle {
 // regular CPU code, but can also be read by the GPU.
 class GFX_EXPORT GpuMemoryBuffer {
  public:
-  enum AccessMode { READ_ONLY, WRITE_ONLY, READ_WRITE };
-
   GpuMemoryBuffer();
   virtual ~GpuMemoryBuffer();
 
   // Maps the buffer into the client's address space so it can be written to by
   // the CPU. This call may block, for instance if the GPU needs to finish
-  // accessing the buffer or if CPU caches need to be synchronized. |mode|
-  // indicate how the client intends to use the mapped buffer. Returns NULL on
-  // failure.
-  virtual void* Map(AccessMode mode) = 0;
+  // accessing the buffer or if CPU caches need to be synchronized. Returns NULL
+  // on failure.
+  virtual void* Map() = 0;
 
   // Unmaps the buffer. It's illegal to use the pointer returned by Map() after
   // this has been called.

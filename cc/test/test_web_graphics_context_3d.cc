@@ -539,9 +539,10 @@ GLboolean TestWebGraphicsContext3D::unmapBufferCHROMIUM(
   return true;
 }
 
-GLuint TestWebGraphicsContext3D::createImageCHROMIUM(
-      GLsizei width, GLsizei height,
-      GLenum internalformat) {
+GLuint TestWebGraphicsContext3D::createImageCHROMIUM(GLsizei width,
+                                                     GLsizei height,
+                                                     GLenum internalformat,
+                                                     GLenum usage) {
   DCHECK_EQ(GL_RGBA8_OES, static_cast<int>(internalformat));
   GLuint image_id = NextImageId();
   base::AutoLock lock(namespace_->lock);
@@ -566,8 +567,7 @@ void TestWebGraphicsContext3D::getImageParameterivCHROMIUM(
   *params = 0;
 }
 
-void* TestWebGraphicsContext3D::mapImageCHROMIUM(GLuint image_id,
-                                                 GLenum access) {
+void* TestWebGraphicsContext3D::mapImageCHROMIUM(GLuint image_id) {
   base::AutoLock lock(namespace_->lock);
   base::ScopedPtrHashMap<unsigned, Image>& images = namespace_->images;
   DCHECK_GT(images.count(image_id), 0u);

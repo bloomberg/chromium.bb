@@ -181,6 +181,7 @@ gfx::GpuMemoryBuffer* PpapiCommandBufferProxy::CreateGpuMemoryBuffer(
     size_t width,
     size_t height,
     unsigned internalformat,
+    unsigned usage,
     int32* id) {
   NOTREACHED();
   return NULL;

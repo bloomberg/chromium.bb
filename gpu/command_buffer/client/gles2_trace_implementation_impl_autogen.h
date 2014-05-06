@@ -1178,10 +1178,9 @@ GLboolean GLES2TraceImplementation::UnmapBufferCHROMIUM(GLuint target) {
   return gl_->UnmapBufferCHROMIUM(target);
 }
 
-void* GLES2TraceImplementation::MapImageCHROMIUM(GLuint image_id,
-                                                 GLenum access) {
+void* GLES2TraceImplementation::MapImageCHROMIUM(GLuint image_id) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::MapImageCHROMIUM");
-  return gl_->MapImageCHROMIUM(image_id, access);
+  return gl_->MapImageCHROMIUM(image_id);
 }
 
 void GLES2TraceImplementation::UnmapImageCHROMIUM(GLuint image_id) {
@@ -1272,9 +1271,10 @@ GLuint GLES2TraceImplementation::CreateStreamTextureCHROMIUM(GLuint texture) {
 
 GLuint GLES2TraceImplementation::CreateImageCHROMIUM(GLsizei width,
                                                      GLsizei height,
-                                                     GLenum internalformat) {
+                                                     GLenum internalformat,
+                                                     GLenum usage) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::CreateImageCHROMIUM");
-  return gl_->CreateImageCHROMIUM(width, height, internalformat);
+  return gl_->CreateImageCHROMIUM(width, height, internalformat, usage);
 }
 
 void GLES2TraceImplementation::DestroyImageCHROMIUM(GLuint image_id) {

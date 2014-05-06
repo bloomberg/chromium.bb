@@ -31,6 +31,16 @@ bool GpuMemoryBufferImplIOSurface::IsFormatSupported(unsigned internalformat) {
 }
 
 // static
+bool GpuMemoryBufferImplIOSurface::IsUsageSupported(unsigned usage) {
+  switch (usage) {
+    case GL_IMAGE_MAP_CHROMIUM:
+      return true;
+    default:
+      return false;
+  }
+}
+
+// static
 uint32 GpuMemoryBufferImplIOSurface::PixelFormat(unsigned internalformat) {
   switch (internalformat) {
     case GL_BGRA8_EXT:
@@ -52,7 +62,7 @@ bool GpuMemoryBufferImplIOSurface::Initialize(
   return true;
 }
 
-void* GpuMemoryBufferImplIOSurface::Map(AccessMode mode) {
+void* GpuMemoryBufferImplIOSurface::Map() {
   DCHECK(!mapped_);
   io_surface_support_->IOSurfaceLock(io_surface_, 0, NULL);
   mapped_ = true;

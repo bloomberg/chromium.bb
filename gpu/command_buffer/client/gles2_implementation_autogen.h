@@ -572,7 +572,7 @@ virtual void* MapBufferCHROMIUM(GLuint target, GLenum access) OVERRIDE;
 
 virtual GLboolean UnmapBufferCHROMIUM(GLuint target) OVERRIDE;
 
-virtual void* MapImageCHROMIUM(GLuint image_id, GLenum access) OVERRIDE;
+virtual void* MapImageCHROMIUM(GLuint image_id) OVERRIDE;
 
 virtual void UnmapImageCHROMIUM(GLuint image_id) OVERRIDE;
 
@@ -619,7 +619,8 @@ virtual GLuint CreateStreamTextureCHROMIUM(GLuint texture) OVERRIDE;
 
 virtual GLuint CreateImageCHROMIUM(GLsizei width,
                                    GLsizei height,
-                                   GLenum internalformat) OVERRIDE;
+                                   GLenum internalformat,
+                                   GLenum usage) OVERRIDE;
 
 virtual void DestroyImageCHROMIUM(GLuint image_id) OVERRIDE;
 

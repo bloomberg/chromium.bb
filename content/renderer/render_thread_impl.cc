@@ -1135,7 +1135,8 @@ void RenderThreadImpl::DeleteImage(int32 image_id, int32 sync_point) {
 scoped_ptr<gfx::GpuMemoryBuffer> RenderThreadImpl::AllocateGpuMemoryBuffer(
     size_t width,
     size_t height,
-    unsigned internalformat) {
+    unsigned internalformat,
+    unsigned usage) {
   DCHECK(allocate_gpu_memory_buffer_thread_checker_.CalledOnValidThread());
 
   if (!GpuMemoryBufferImpl::IsFormatValid(internalformat))
@@ -1143,11 +1144,8 @@ scoped_ptr<gfx::GpuMemoryBuffer> RenderThreadImpl::AllocateGpuMemoryBuffer(
 
   gfx::GpuMemoryBufferHandle handle;
   bool success;
-  IPC::Message* message =
-      new ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer(width,
-                                                          height,
-                                                          internalformat,
-                                                          &handle);
+  IPC::Message* message = new ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer(
+      width, height, internalformat, usage, &handle);
 
   // Allow calling this from the compositor thread.
   if (base::MessageLoop::current() == message_loop())
@@ -1159,9 +1157,8 @@ scoped_ptr<gfx::GpuMemoryBuffer> RenderThreadImpl::AllocateGpuMemoryBuffer(
     return scoped_ptr<gfx::GpuMemoryBuffer>();
 
   return GpuMemoryBufferImpl::Create(
-      handle,
-      gfx::Size(width, height),
-      internalformat).PassAs<gfx::GpuMemoryBuffer>();
+             handle, gfx::Size(width, height), internalformat)
+      .PassAs<gfx::GpuMemoryBuffer>();
 }
 
 void RenderThreadImpl::AcceptConnection(

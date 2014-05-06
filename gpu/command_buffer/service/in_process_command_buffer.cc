@@ -607,13 +607,14 @@ gfx::GpuMemoryBuffer* InProcessCommandBuffer::CreateGpuMemoryBuffer(
     size_t width,
     size_t height,
     unsigned internalformat,
+    unsigned usage,
     int32* id) {
   CheckSequencedThread();
 
   *id = -1;
   linked_ptr<gfx::GpuMemoryBuffer> buffer =
       make_linked_ptr(g_gpu_memory_buffer_factory->CreateGpuMemoryBuffer(
-          width, height, internalformat));
+          width, height, internalformat, usage));
   if (!buffer.get())
     return NULL;
 

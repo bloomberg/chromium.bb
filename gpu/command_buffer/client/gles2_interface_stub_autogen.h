@@ -412,7 +412,7 @@ virtual void RegisterSharedIdsCHROMIUM(GLuint namespace_id,
 virtual GLboolean EnableFeatureCHROMIUM(const char* feature) OVERRIDE;
 virtual void* MapBufferCHROMIUM(GLuint target, GLenum access) OVERRIDE;
 virtual GLboolean UnmapBufferCHROMIUM(GLuint target) OVERRIDE;
-virtual void* MapImageCHROMIUM(GLuint image_id, GLenum access) OVERRIDE;
+virtual void* MapImageCHROMIUM(GLuint image_id) OVERRIDE;
 virtual void UnmapImageCHROMIUM(GLuint image_id) OVERRIDE;
 virtual void* MapBufferSubDataCHROMIUM(GLuint target,
                                        GLintptr offset,
@@ -446,7 +446,8 @@ virtual void GetProgramInfoCHROMIUM(GLuint program,
 virtual GLuint CreateStreamTextureCHROMIUM(GLuint texture) OVERRIDE;
 virtual GLuint CreateImageCHROMIUM(GLsizei width,
                                    GLsizei height,
-                                   GLenum internalformat) OVERRIDE;
+                                   GLenum internalformat,
+                                   GLenum usage) OVERRIDE;
 virtual void DestroyImageCHROMIUM(GLuint image_id) OVERRIDE;
 virtual void GetImageParameterivCHROMIUM(GLuint image_id,
                                          GLenum pname,

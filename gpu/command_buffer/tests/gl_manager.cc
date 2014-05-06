@@ -276,11 +276,12 @@ gfx::GpuMemoryBuffer* GLManager::CreateGpuMemoryBuffer(
     size_t width,
     size_t height,
     unsigned internalformat,
+    unsigned usage,
     int32* id) {
   *id = -1;
   scoped_ptr<gfx::GpuMemoryBuffer> buffer(
       gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(
-          width, height, internalformat));
+          width, height, internalformat, usage));
   if (!buffer.get())
     return NULL;
 

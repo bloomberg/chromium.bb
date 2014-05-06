@@ -5,6 +5,7 @@
 #include "content/common/gpu/client/gpu_memory_buffer_impl_shm.h"
 
 #include "base/logging.h"
+#include "ui/gl/gl_bindings.h"
 
 namespace content {
 
@@ -13,6 +14,16 @@ GpuMemoryBufferImplShm::GpuMemoryBufferImplShm(gfx::Size size,
     : GpuMemoryBufferImpl(size, internalformat) {}
 
 GpuMemoryBufferImplShm::~GpuMemoryBufferImplShm() {}
+
+// static
+bool GpuMemoryBufferImplShm::IsUsageSupported(unsigned usage) {
+  switch (usage) {
+    case GL_IMAGE_MAP_CHROMIUM:
+      return true;
+    default:
+      return false;
+  }
+}
 
 bool GpuMemoryBufferImplShm::Initialize(gfx::GpuMemoryBufferHandle handle) {
   if (!base::SharedMemory::IsHandleValid(handle.handle))
@@ -29,7 +40,7 @@ bool GpuMemoryBufferImplShm::InitializeFromSharedMemory(
   return true;
 }
 
-void* GpuMemoryBufferImplShm::Map(AccessMode mode) {
+void* GpuMemoryBufferImplShm::Map() {
   DCHECK(!mapped_);
   if (!shared_memory_->Map(size_.GetArea() * BytesPerPixel(internalformat_)))
     return NULL;

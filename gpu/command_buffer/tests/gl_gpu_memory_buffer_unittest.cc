@@ -42,7 +42,7 @@ class MockGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
     Die();
   }
 
-  MOCK_METHOD1(Map, void*(gfx::GpuMemoryBuffer::AccessMode));
+  MOCK_METHOD0(Map, void*());
   MOCK_METHOD0(Unmap, void());
   MOCK_CONST_METHOD0(IsMapped, bool());
   MOCK_CONST_METHOD0(GetStride, uint32());
@@ -58,8 +58,8 @@ class MockGpuMemoryBufferFactory : public GpuMemoryBufferFactory {
   MockGpuMemoryBufferFactory() {}
   virtual ~MockGpuMemoryBufferFactory() {}
 
-  MOCK_METHOD3(CreateGpuMemoryBuffer,
-               gfx::GpuMemoryBuffer*(size_t, size_t, unsigned));
+  MOCK_METHOD4(CreateGpuMemoryBuffer,
+               gfx::GpuMemoryBuffer*(size_t, size_t, unsigned, unsigned));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockGpuMemoryBufferFactory);
@@ -126,8 +126,10 @@ TEST_F(MockGpuMemoryBufferTest, Lifecycle) {
   handle.type = gfx::SHARED_MEMORY_BUFFER;
   handle.handle = duped_shared_memory_handle;
 
-  EXPECT_CALL(*gpu_memory_buffer_factory_.get(), CreateGpuMemoryBuffer(
-      kImageWidth, kImageHeight, GL_RGBA8_OES))
+  EXPECT_CALL(
+      *gpu_memory_buffer_factory_.get(),
+      CreateGpuMemoryBuffer(
+          kImageWidth, kImageHeight, GL_RGBA8_OES, GL_IMAGE_MAP_CHROMIUM))
       .Times(1)
       .WillOnce(Return(gpu_memory_buffer))
       .RetiresOnSaturation();
@@ -138,7 +140,7 @@ TEST_F(MockGpuMemoryBufferTest, Lifecycle) {
 
   // Create the image. This should add the image ID to the ImageManager.
   GLuint image_id = glCreateImageCHROMIUM(
-      kImageWidth, kImageHeight, GL_RGBA8_OES);
+      kImageWidth, kImageHeight, GL_RGBA8_OES, GL_IMAGE_MAP_CHROMIUM);
   EXPECT_NE(0u, image_id);
   EXPECT_TRUE(image_manager_->LookupImage(image_id) != NULL);
 
@@ -149,12 +151,11 @@ TEST_F(MockGpuMemoryBufferTest, Lifecycle) {
   shared_memory.Map(bytes);
   EXPECT_TRUE(shared_memory.memory());
 
-  EXPECT_CALL(*gpu_memory_buffer, Map(gfx::GpuMemoryBuffer::READ_WRITE))
+  EXPECT_CALL(*gpu_memory_buffer, Map())
       .Times(1)
       .WillOnce(Return(shared_memory.memory()))
       .RetiresOnSaturation();
-  uint8* mapped_buffer = static_cast<uint8*>(
-      glMapImageCHROMIUM(image_id, GL_READ_WRITE));
+  uint8* mapped_buffer = static_cast<uint8*>(glMapImageCHROMIUM(image_id));
   ASSERT_TRUE(mapped_buffer != NULL);
 
   // Assign a value to each pixel.

@@ -21,12 +21,14 @@ GpuMemoryBufferTracker::~GpuMemoryBufferTracker() {
   }
 }
 
-int32 GpuMemoryBufferTracker::CreateBuffer(
-    size_t width, size_t height, int32 internalformat) {
+int32 GpuMemoryBufferTracker::CreateBuffer(size_t width,
+                                           size_t height,
+                                           int32 internalformat,
+                                           int32 usage) {
   int32 image_id = 0;
   DCHECK(gpu_control_);
   gfx::GpuMemoryBuffer* buffer = gpu_control_->CreateGpuMemoryBuffer(
-      width, height, internalformat, &image_id);
+      width, height, internalformat, usage, &image_id);
   if (!buffer)
     return 0;
 

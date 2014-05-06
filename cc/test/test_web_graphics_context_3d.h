@@ -234,12 +234,13 @@ class TestWebGraphicsContext3D {
 
   virtual GLuint createImageCHROMIUM(GLsizei width,
                                      GLsizei height,
-                                     GLenum internalformat);
+                                     GLenum internalformat,
+                                     GLenum usage);
   virtual void destroyImageCHROMIUM(GLuint image_id);
   virtual void getImageParameterivCHROMIUM(GLuint image_id,
                                            GLenum pname,
                                            GLint* params);
-  virtual void* mapImageCHROMIUM(GLuint image_id, GLenum access);
+  virtual void* mapImageCHROMIUM(GLuint image_id);
   virtual void unmapImageCHROMIUM(GLuint image_id);
   virtual void texImageIOSurface2DCHROMIUM(GLenum target,
                                            GLsizei width,

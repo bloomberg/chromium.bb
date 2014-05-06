@@ -277,6 +277,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnAllocateGpuMemoryBuffer(uint32 width,
                                  uint32 height,
                                  uint32 internalformat,
+                                 uint32 usage,
                                  gfx::GpuMemoryBufferHandle* handle);
 
   // Cached resource request dispatcher host and plugin service, guaranteed to

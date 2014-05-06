@@ -400,7 +400,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       size_t width,
       size_t height,
-      unsigned internalformat) OVERRIDE;
+      unsigned internalformat,
+      unsigned usage) OVERRIDE;
 
   // mojo::ShellClient implementation:
   virtual void AcceptConnection(

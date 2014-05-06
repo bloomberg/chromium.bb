@@ -181,8 +181,9 @@ IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TcmallocStats,
 #endif
 
 // Asks the browser to create a gpu memory buffer.
-IPC_SYNC_MESSAGE_CONTROL3_1(ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
+IPC_SYNC_MESSAGE_CONTROL4_1(ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
                             uint32 /* width */,
                             uint32 /* height */,
                             uint32 /* internalformat */,
+                            uint32 /* usage */,
                             gfx::GpuMemoryBufferHandle)

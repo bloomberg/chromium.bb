@@ -675,8 +675,7 @@ void* GLES2InterfaceStub::MapBufferCHROMIUM(GLuint /* target */,
 GLboolean GLES2InterfaceStub::UnmapBufferCHROMIUM(GLuint /* target */) {
   return 0;
 }
-void* GLES2InterfaceStub::MapImageCHROMIUM(GLuint /* image_id */,
-                                           GLenum /* access */) {
+void* GLES2InterfaceStub::MapImageCHROMIUM(GLuint /* image_id */) {
   return 0;
 }
 void GLES2InterfaceStub::UnmapImageCHROMIUM(GLuint /* image_id */) {
@@ -728,7 +727,8 @@ GLuint GLES2InterfaceStub::CreateStreamTextureCHROMIUM(GLuint /* texture */) {
 }
 GLuint GLES2InterfaceStub::CreateImageCHROMIUM(GLsizei /* width */,
                                                GLsizei /* height */,
-                                               GLenum /* internalformat */) {
+                                               GLenum /* internalformat */,
+                                               GLenum /* usage */) {
   return 0;
 }
 void GLES2InterfaceStub::DestroyImageCHROMIUM(GLuint /* image_id */) {

@@ -28,6 +28,17 @@ bool GpuMemoryBufferImpl::IsFormatValid(unsigned internalformat) {
 }
 
 // static
+bool GpuMemoryBufferImpl::IsUsageValid(unsigned usage) {
+  switch (usage) {
+    case GL_IMAGE_MAP_CHROMIUM:
+    case GL_IMAGE_SCANOUT_CHROMIUM:
+      return true;
+    default:
+      return false;
+  }
+}
+
+// static
 size_t GpuMemoryBufferImpl::BytesPerPixel(unsigned internalformat) {
   switch (internalformat) {
     case GL_BGRA8_EXT:

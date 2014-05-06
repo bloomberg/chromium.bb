@@ -84,6 +84,7 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   void OnAllocateGpuMemoryBuffer(uint32 width,
                                  uint32 height,
                                  uint32 internalformat,
+                                 uint32 usage,
                                  gfx::GpuMemoryBufferHandle* handle);
 
   ChildProcessHostDelegate* delegate_;

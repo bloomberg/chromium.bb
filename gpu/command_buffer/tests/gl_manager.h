@@ -101,6 +101,7 @@ class GLManager : private GpuControl {
   virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(size_t width,
                                                       size_t height,
                                                       unsigned internalformat,
+                                                      unsigned usage,
                                                       int32* id) OVERRIDE;
   virtual void DestroyGpuMemoryBuffer(int32 id) OVERRIDE;
   virtual uint32 InsertSyncPoint() OVERRIDE;

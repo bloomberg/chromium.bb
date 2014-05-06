@@ -2157,7 +2157,8 @@ void ResourceProvider::AcquireImage(Resource* resource) {
   resource->image_id =
       gl->CreateImageCHROMIUM(resource->size.width(),
                               resource->size.height(),
-                              TextureToStorageFormat(resource->format));
+                              TextureToStorageFormat(resource->format),
+                              GL_IMAGE_MAP_CHROMIUM);
   DCHECK(resource->image_id);
 }
 
@@ -2187,8 +2188,8 @@ uint8_t* ResourceProvider::MapImage(const Resource* resource, int* stride) {
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
     // MapImageCHROMIUM should be called prior to GetImageParameterivCHROMIUM.
-    uint8_t* pixels = static_cast<uint8_t*>(
-        gl->MapImageCHROMIUM(resource->image_id, GL_READ_WRITE));
+    uint8_t* pixels =
+        static_cast<uint8_t*>(gl->MapImageCHROMIUM(resource->image_id));
     gl->GetImageParameterivCHROMIUM(
         resource->image_id, GL_IMAGE_ROWBYTES_CHROMIUM, stride);
     return pixels;

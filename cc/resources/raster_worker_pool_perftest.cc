@@ -31,7 +31,8 @@ class PerfGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   // Overridden from gpu::gles2::GLES2Interface:
   virtual GLuint CreateImageCHROMIUM(GLsizei width,
                                      GLsizei height,
-                                     GLenum internalformat) OVERRIDE {
+                                     GLenum internalformat,
+                                     GLenum usage) OVERRIDE {
     return 1u;
   }
   virtual void GenBuffers(GLsizei n, GLuint* buffers) OVERRIDE {

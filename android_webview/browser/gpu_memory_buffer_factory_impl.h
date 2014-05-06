@@ -24,7 +24,8 @@ class GpuMemoryBufferFactoryImpl : public gpu::GpuMemoryBufferFactory {
   virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(
       size_t width,
       size_t height,
-      unsigned internalformat) OVERRIDE;
+      unsigned internalformat,
+      unsigned usage) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferFactoryImpl);

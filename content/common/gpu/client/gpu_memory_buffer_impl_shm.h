@@ -16,11 +16,13 @@ class GpuMemoryBufferImplShm : public GpuMemoryBufferImpl {
   GpuMemoryBufferImplShm(gfx::Size size, unsigned internalformat);
   virtual ~GpuMemoryBufferImplShm();
 
+  static bool IsUsageSupported(unsigned usage);
+
   bool Initialize(gfx::GpuMemoryBufferHandle handle);
   bool InitializeFromSharedMemory(scoped_ptr<base::SharedMemory> shared_memory);
 
   // Overridden from gfx::GpuMemoryBuffer:
-  virtual void* Map(AccessMode mode) OVERRIDE;
+  virtual void* Map() OVERRIDE;
   virtual void Unmap() OVERRIDE;
   virtual gfx::GpuMemoryBufferHandle GetHandle() const OVERRIDE;
 

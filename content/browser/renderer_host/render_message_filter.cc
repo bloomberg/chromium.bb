@@ -35,6 +35,7 @@
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
+#include "content/common/gpu/client/gpu_memory_buffer_impl_shm.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/media/media_param_traits.h"
 #include "content/common/view_messages.h"
@@ -1254,14 +1255,17 @@ void RenderMessageFilter::OnAllocateGpuMemoryBuffer(
     uint32 width,
     uint32 height,
     uint32 internalformat,
+    uint32 usage,
     gfx::GpuMemoryBufferHandle* handle) {
-  if (!GpuMemoryBufferImpl::IsFormatValid(internalformat)) {
+  if (!GpuMemoryBufferImpl::IsFormatValid(internalformat) ||
+      !GpuMemoryBufferImpl::IsUsageValid(usage)) {
     handle->type = gfx::EMPTY_BUFFER;
     return;
   }
 
 #if defined(OS_MACOSX)
-  if (GpuMemoryBufferImplIOSurface::IsFormatSupported(internalformat)) {
+  if (GpuMemoryBufferImplIOSurface::IsFormatSupported(internalformat) &&
+      GpuMemoryBufferImplIOSurface::IsUsageSupported(usage)) {
     IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
     if (io_surface_support) {
       base::ScopedCFTypeRef<CFMutableDictionaryRef> properties;
@@ -1306,7 +1310,8 @@ void RenderMessageFilter::OnAllocateGpuMemoryBuffer(
 #endif
 
 #if defined(OS_ANDROID)
-  if (GpuMemoryBufferImplSurfaceTexture::IsFormatSupported(internalformat)) {
+  if (GpuMemoryBufferImplSurfaceTexture::IsFormatSupported(internalformat) &&
+      GpuMemoryBufferImplSurfaceTexture::IsUsageSupported(usage)) {
     // Each surface texture is associated with a render process id. This allows
     // the GPU service and Java Binder IPC to verify that a renderer is not
     // trying to use a surface texture it doesn't own.
@@ -1330,6 +1335,11 @@ void RenderMessageFilter::OnAllocateGpuMemoryBuffer(
 
   uint64 buffer_size = stride * static_cast<uint64>(height);
   if (buffer_size > std::numeric_limits<size_t>::max()) {
+    handle->type = gfx::EMPTY_BUFFER;
+    return;
+  }
+
+  if (!GpuMemoryBufferImplShm::IsUsageSupported(usage)) {
     handle->type = gfx::EMPTY_BUFFER;
     return;
   }

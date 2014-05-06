@@ -164,6 +164,7 @@ gfx::GpuMemoryBuffer* CommandBufferClientImpl::CreateGpuMemoryBuffer(
     size_t width,
     size_t height,
     unsigned internalformat,
+    unsigned usage,
     int32* id) {
   // TODO(piman)
   NOTIMPLEMENTED();

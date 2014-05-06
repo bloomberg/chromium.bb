@@ -376,11 +376,12 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
 }
 
 scoped_ptr<gfx::GpuMemoryBuffer>
-    BrowserGpuChannelHostFactory::AllocateGpuMemoryBuffer(
-        size_t width,
-        size_t height,
-        unsigned internalformat) {
-  if (!GpuMemoryBufferImpl::IsFormatValid(internalformat))
+BrowserGpuChannelHostFactory::AllocateGpuMemoryBuffer(size_t width,
+                                                      size_t height,
+                                                      unsigned internalformat,
+                                                      unsigned usage) {
+  if (!GpuMemoryBufferImpl::IsFormatValid(internalformat) ||
+      !GpuMemoryBufferImpl::IsUsageValid(usage))
     return scoped_ptr<gfx::GpuMemoryBuffer>();
 
   size_t size = width * height *

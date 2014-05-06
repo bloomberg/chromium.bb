@@ -299,6 +299,7 @@ gfx::GpuMemoryBuffer* CommandBufferProxyImpl::CreateGpuMemoryBuffer(
     size_t width,
     size_t height,
     unsigned internalformat,
+    unsigned usage,
     int32* id) {
   *id = -1;
 
@@ -309,9 +310,8 @@ gfx::GpuMemoryBuffer* CommandBufferProxyImpl::CreateGpuMemoryBuffer(
   DCHECK(gpu_memory_buffers_.find(new_id) == gpu_memory_buffers_.end());
 
   scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer(
-      channel_->factory()->AllocateGpuMemoryBuffer(width,
-                                                   height,
-                                                   internalformat));
+      channel_->factory()->AllocateGpuMemoryBuffer(
+          width, height, internalformat, usage));
   if (!gpu_memory_buffer)
     return NULL;
 

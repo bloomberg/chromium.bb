@@ -543,10 +543,12 @@ class GLES2_IMPL_EXPORT GLES2Implementation
       GLenum target, GLintptr offset, GLsizeiptr size, const void* data,
       ScopedTransferBufferPtr* buffer);
 
-  GLuint CreateImageCHROMIUMHelper(
-      GLsizei width, GLsizei height, GLenum internalformat);
+  GLuint CreateImageCHROMIUMHelper(GLsizei width,
+                                   GLsizei height,
+                                   GLenum internalformat,
+                                   GLenum usage);
   void DestroyImageCHROMIUMHelper(GLuint image_id);
-  void* MapImageCHROMIUMHelper(GLuint image_id, GLenum access);
+  void* MapImageCHROMIUMHelper(GLuint image_id);
   void UnmapImageCHROMIUMHelper(GLuint image_id);
   void GetImageParameterivCHROMIUMHelper(
       GLuint image_id, GLenum pname, GLint* params);

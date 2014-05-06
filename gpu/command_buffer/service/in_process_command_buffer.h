@@ -98,11 +98,11 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
 
   // GpuControl implementation:
   virtual gpu::Capabilities GetCapabilities() OVERRIDE;
-  virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(
-      size_t width,
-      size_t height,
-      unsigned internalformat,
-      int32* id) OVERRIDE;
+  virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(size_t width,
+                                                      size_t height,
+                                                      unsigned internalformat,
+                                                      unsigned usage,
+                                                      int32* id) OVERRIDE;
   virtual void DestroyGpuMemoryBuffer(int32 id) OVERRIDE;
   virtual uint32 InsertSyncPoint() OVERRIDE;
   virtual void SignalSyncPoint(uint32 sync_point,

@@ -36,6 +36,7 @@ class GPU_EXPORT GpuControl {
       size_t width,
       size_t height,
       unsigned internalformat,
+      unsigned usage,
       int32_t* id) = 0;
 
   // Destroy a gpu memory buffer. The ID must be positive.

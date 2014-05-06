@@ -2609,9 +2609,9 @@ class AllocationTrackingContext3D : public TestWebGraphicsContext3D {
                     GLsizei image_size,
                     const void* data));
   MOCK_METHOD1(waitAsyncTexImage2DCHROMIUM, void(GLenum));
-  MOCK_METHOD3(createImageCHROMIUM, GLuint(GLsizei, GLsizei, GLenum));
+  MOCK_METHOD4(createImageCHROMIUM, GLuint(GLsizei, GLsizei, GLenum, GLenum));
   MOCK_METHOD1(destroyImageCHROMIUM, void(GLuint));
-  MOCK_METHOD2(mapImageCHROMIUM, void*(GLuint, GLenum));
+  MOCK_METHOD1(mapImageCHROMIUM, void*(GLuint));
   MOCK_METHOD3(getImageParameterivCHROMIUM, void(GLuint, GLenum, GLint*));
   MOCK_METHOD1(unmapImageCHROMIUM, void(GLuint));
   MOCK_METHOD2(bindTexImage2DCHROMIUM, void(GLenum, GLint));
@@ -2918,7 +2918,9 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
 
   const int kStride = 4;
   void* dummy_mapped_buffer_address = NULL;
-  EXPECT_CALL(*context, createImageCHROMIUM(kWidth, kHeight, GL_RGBA8_OES))
+  EXPECT_CALL(
+      *context,
+      createImageCHROMIUM(kWidth, kHeight, GL_RGBA8_OES, GL_IMAGE_MAP_CHROMIUM))
       .WillOnce(Return(kImageId))
       .RetiresOnSaturation();
   EXPECT_CALL(*context, getImageParameterivCHROMIUM(kImageId,
@@ -2926,7 +2928,7 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
                                                     _))
       .WillOnce(SetArgPointee<2>(kStride))
       .RetiresOnSaturation();
-  EXPECT_CALL(*context, mapImageCHROMIUM(kImageId, GL_READ_WRITE))
+  EXPECT_CALL(*context, mapImageCHROMIUM(kImageId))
       .WillOnce(Return(dummy_mapped_buffer_address))
       .RetiresOnSaturation();
   resource_provider->MapImageRasterBuffer(id);
@@ -2956,7 +2958,7 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
       getImageParameterivCHROMIUM(kImageId, GL_IMAGE_ROWBYTES_CHROMIUM, _))
       .WillOnce(SetArgPointee<2>(kStride))
       .RetiresOnSaturation();
-  EXPECT_CALL(*context, mapImageCHROMIUM(kImageId, GL_READ_WRITE))
+  EXPECT_CALL(*context, mapImageCHROMIUM(kImageId))
       .WillOnce(Return(dummy_mapped_buffer_address))
       .RetiresOnSaturation();
   resource_provider->MapImageRasterBuffer(id);
@@ -3058,7 +3060,9 @@ TEST_P(ResourceProviderTest, CopyResource_GLTexture) {
 
   const int kStride = 4;
   void* dummy_mapped_buffer_address = NULL;
-  EXPECT_CALL(*context, createImageCHROMIUM(kWidth, kHeight, GL_RGBA8_OES))
+  EXPECT_CALL(
+      *context,
+      createImageCHROMIUM(kWidth, kHeight, GL_RGBA8_OES, GL_IMAGE_MAP_CHROMIUM))
       .WillOnce(Return(kImageId))
       .RetiresOnSaturation();
   EXPECT_CALL(
@@ -3066,7 +3070,7 @@ TEST_P(ResourceProviderTest, CopyResource_GLTexture) {
       getImageParameterivCHROMIUM(kImageId, GL_IMAGE_ROWBYTES_CHROMIUM, _))
       .WillOnce(SetArgPointee<2>(kStride))
       .RetiresOnSaturation();
-  EXPECT_CALL(*context, mapImageCHROMIUM(kImageId, GL_READ_WRITE))
+  EXPECT_CALL(*context, mapImageCHROMIUM(kImageId))
       .WillOnce(Return(dummy_mapped_buffer_address))
       .RetiresOnSaturation();
   resource_provider->MapImageRasterBuffer(source_id);

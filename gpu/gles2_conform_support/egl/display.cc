@@ -277,6 +277,7 @@ gfx::GpuMemoryBuffer* Display::CreateGpuMemoryBuffer(
     size_t width,
     size_t height,
     unsigned internalformat,
+    unsigned usage,
     int32* id) {
   NOTIMPLEMENTED();
   return NULL;

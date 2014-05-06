@@ -477,12 +477,19 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   virtual void texStorage2DEXT(
       WGC3Denum target, WGC3Dint levels, WGC3Duint internalformat,
       WGC3Dint width, WGC3Dint height);
+  // TODO(alexst): remove this old function after blink cleanup.
   virtual WGC3Duint createImageCHROMIUM(
       WGC3Dsizei width, WGC3Dsizei height, WGC3Denum internalformat);
+  virtual WGC3Duint createImageCHROMIUM(WGC3Dsizei width,
+                                        WGC3Dsizei height,
+                                        WGC3Denum internalformat,
+                                        WGC3Denum usage);
   virtual void destroyImageCHROMIUM(WGC3Duint image_id);
   virtual void getImageParameterivCHROMIUM(
       WGC3Duint image_id, WGC3Denum pname, WGC3Dint* params);
+  // TODO(alexst): remove this old function after blink cleanup.
   virtual void* mapImageCHROMIUM(WGC3Duint image_id, WGC3Denum access);
+  virtual void* mapImageCHROMIUM(WGC3Duint image_id);
   virtual void unmapImageCHROMIUM(WGC3Duint image_id);
   virtual WebGLId createQueryEXT();
   virtual void deleteQueryEXT(WebGLId query);

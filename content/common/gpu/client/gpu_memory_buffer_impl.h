@@ -22,6 +22,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   virtual ~GpuMemoryBufferImpl();
 
   static bool IsFormatValid(unsigned internalformat);
+  static bool IsUsageValid(unsigned usage);
   static size_t BytesPerPixel(unsigned internalformat);
 
   // Overridden from gfx::GpuMemoryBuffer:
