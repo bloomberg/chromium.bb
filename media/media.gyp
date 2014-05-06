@@ -1181,6 +1181,11 @@
             'formats/mpeg/mp3_stream_parser_unittest.cc',
           ],
         }],
+        ['enable_mpeg2ts_stream_parser==1', {
+          'defines': [
+            'ENABLE_MPEG2TS_STREAM_PARSER',
+          ],
+        }],
         # TODO(wolenetz): Fix size_t to int truncations in win64. See
         # http://crbug.com/171009
         ['OS=="win" and target_arch=="x64"', {

@@ -88,7 +88,13 @@ void WebSourceBufferImpl::append(
 }
 
 void WebSourceBufferImpl::abort() {
-  demuxer_->Abort(id_);
+  demuxer_->Abort(id_,
+                  append_window_start_, append_window_end_,
+                  &timestamp_offset_);
+
+  // TODO(wolenetz): abort should be able to modify the caller timestamp offset
+  // (just like WebSourceBufferImpl::append).
+  // See http://crbug.com/370229 for further details.
 }
 
 void WebSourceBufferImpl::remove(double start, double end) {

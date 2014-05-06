@@ -322,7 +322,11 @@ class MockMediaSource {
   void Seek(base::TimeDelta seek_time, int new_position, int seek_append_size) {
     chunk_demuxer_->StartWaitingForSeek(seek_time);
 
-    chunk_demuxer_->Abort(kSourceId);
+    // TODO(wolenetz): Test timestamp offset updating once "sequence" append
+    // mode processing is implemented. See http://crbug.com/249422.
+    chunk_demuxer_->Abort(
+        kSourceId,
+        base::TimeDelta(), kInfiniteDuration(), &last_timestamp_offset_);
 
     DCHECK_GE(new_position, 0);
     DCHECK_LT(new_position, file_data_->data_size());
@@ -338,12 +342,10 @@ class MockMediaSource {
 
     // TODO(wolenetz): Test timestamp offset updating once "sequence" append
     // mode processing is implemented. See http://crbug.com/249422.
-    base::TimeDelta timestamp_offset;
     chunk_demuxer_->AppendData(
         kSourceId, file_data_->data() + current_position_, size,
-        base::TimeDelta(), kInfiniteDuration(), &timestamp_offset);
+        base::TimeDelta(), kInfiniteDuration(), &last_timestamp_offset_);
     current_position_ += size;
-    last_timestamp_offset_ = timestamp_offset;
   }
 
   void AppendAtTime(base::TimeDelta timestamp_offset,

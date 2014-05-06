@@ -113,12 +113,14 @@ class SourceState {
   // spec's similarly named source buffer attributes that are used in coded
   // frame processing.
   bool Append(const uint8* data, size_t length,
-              TimeDelta append_window_start_,
-              TimeDelta append_window_end_,
+              TimeDelta append_window_start,
+              TimeDelta append_window_end,
               TimeDelta* timestamp_offset);
 
   // Aborts the current append sequence and resets the parser.
-  void Abort();
+  void Abort(TimeDelta append_window_start,
+             TimeDelta append_window_end,
+             TimeDelta* timestamp_offset);
 
   // Calls Remove(|start|, |end|, |duration|) on all
   // ChunkDemuxerStreams managed by this object.
@@ -301,8 +303,18 @@ bool SourceState::Append(const uint8* data, size_t length,
   return err;
 }
 
-void SourceState::Abort() {
+void SourceState::Abort(TimeDelta append_window_start,
+                        TimeDelta append_window_end,
+                        base::TimeDelta* timestamp_offset) {
+  DCHECK(timestamp_offset);
+  DCHECK(!timestamp_offset_during_append_);
+  timestamp_offset_during_append_ = timestamp_offset;
+  append_window_start_during_append_ = append_window_start;
+  append_window_end_during_append_ = append_window_end;
+
   stream_parser_->Flush();
+  timestamp_offset_during_append_ = NULL;
+
   frame_processor_->Reset();
   parsing_media_segment_ = false;
 }
@@ -648,6 +660,7 @@ bool SourceState::OnNewBuffers(
     const StreamParser::TextBufferQueueMap& text_map) {
   DVLOG(2) << "OnNewBuffers()";
   DCHECK(timestamp_offset_during_append_);
+  DCHECK(parsing_media_segment_);
 
   const TimeDelta timestamp_offset_before_processing =
       *timestamp_offset_during_append_;
@@ -1278,12 +1291,17 @@ void ChunkDemuxer::AppendData(const std::string& id,
     host_->AddBufferedTimeRange(ranges.start(i), ranges.end(i));
 }
 
-void ChunkDemuxer::Abort(const std::string& id) {
+void ChunkDemuxer::Abort(const std::string& id,
+                         TimeDelta append_window_start,
+                         TimeDelta append_window_end,
+                         TimeDelta* timestamp_offset) {
   DVLOG(1) << "Abort(" << id << ")";
   base::AutoLock auto_lock(lock_);
   DCHECK(!id.empty());
   CHECK(IsValidId(id));
-  source_state_map_[id]->Abort();
+  source_state_map_[id]->Abort(append_window_start,
+                               append_window_end,
+                               timestamp_offset);
 }
 
 void ChunkDemuxer::Remove(const std::string& id, TimeDelta start,
