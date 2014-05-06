@@ -32,9 +32,9 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Fail('conformance/glsl/bugs/nested-structs-with-same-name.html',
         bug=368910)
 
-    # Flaky on Win / Mac
+    # Flaky on Win
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        ['win', 'mac'], bug=369349)
+        ['win'], bug=369349)
 
     # Win7 / Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
@@ -106,6 +106,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['lion', 'intel'], bug=323736)
     self.Skip('conformance/ogles/GL/tan/tan_001_to_006.html',
         ['lion', 'intel'], bug=323736)
+    self.Fail('conformance/extensions/webgl-draw-buffers.html',
+        ['lion', 'intel'], bug=369349)
 
     # Android failures
     # The following test is very slow and therefore times out on Android bot.
