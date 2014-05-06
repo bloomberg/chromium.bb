@@ -210,11 +210,6 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     CommandLine* command_line, int child_process_id) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     command_line->AppendSwitch(switches::kDumpRenderTree);
-  // FIXME(dro) crbug.com/367082: Remove the smoothing parameter
-  // once the command line switch rename is complete on the Blink side.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableFontSmoothing))
-    command_line->AppendSwitch(switches::kEnableFontSmoothing);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableFontAntialiasing))
     command_line->AppendSwitch(switches::kEnableFontAntialiasing);
