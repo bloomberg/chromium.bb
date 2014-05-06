@@ -7,8 +7,8 @@
 <script>
     description("Basic API existence test for Pointer Lock.")
 
-    shouldBeDefined("document.onwebkitpointerlockchange");
-    shouldBeDefined("document.onwebkitpointerlockerror");
+    shouldBeDefined("document.onpointerlockchange");
+    shouldBeDefined("document.onpointerlockerror");
     shouldBeDefined("document.webkitExitPointerLock");
     shouldEvaluateTo("document.webkitPointerLockElement", null);
     element = document.createElement('x');

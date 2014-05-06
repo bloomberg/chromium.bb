@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="../http/tests/resources/pointer-lock/pointer-lock-test-harness-prefixed.js"></script>
+</head>
+<body>
+<div>
+  <div id="target1"></div>
+</div>
+<script>
+    description("Test that webkitpointerlockchange event is dispatched when lock is lost.")
+    window.jsTestIsAsync = true;
+    shouldBeDefined("window.testRunner");
+
+    targetDiv1 = document.getElementById("target1");
+
+    todo = [
+        function () {
+            expectOnlyChangeEvent("Lock targetDiv1.");
+            targetDiv1.webkitRequestPointerLock();
+            // doNextStep called by event handler.
+        },
+        function () {
+            shouldBe("document.webkitPointerLockElement", "targetDiv1");
+            expectOnlyChangeEvent("Host initiated unlock.");
+            testRunner.didLosePointerLock();
+            // doNextStep called by event handler.
+        },
+        function () {
+            shouldBe("document.webkitPointerLockElement", "null");
+            doNextStep();
+        },
+    ];
+    doNextStepWithUserGesture();
+</script>
+</body>
+</html>
+

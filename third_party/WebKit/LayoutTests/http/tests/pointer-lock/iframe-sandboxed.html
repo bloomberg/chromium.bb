@@ -21,7 +21,7 @@
           iframe.contentWindow.postMessage(["eval", 'document.body.webkitRequestPointerLock()'], "*");
           window.onmessage = function (messageEvent) {
               message = messageEvent.data;
-              shouldBeEqualToString("message", "inner-iframe.html onwebkitpointerlockerror");
+              shouldBeEqualToString("message", "inner-iframe.html onpointerlockerror");
               window.onmessage = null;
               doNextStep();
           }

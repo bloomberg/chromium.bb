@@ -18,14 +18,14 @@
 
     // Expect change event only for all transitions below.
     expectedTargetToBeLockedString = "";
-    document.onwebkitpointerlockchange = function ()
+    document.onpointerlockchange = function ()
         {
-            testPassed("document.onwebkitpointerlockchange event received.");
+            testPassed("document.onpointerlockchange event received.");
             shouldBe("document.webkitPointerLockElement", expectedTargetToBeLockedString);
             doNextStep();
         };
-    document.onwebkitpointerlockerror =
-        function () { testFailed("document.onwebkitpointerlockerror event received."); finishJSTest(); };
+    document.onpointerlockerror =
+        function () { testFailed("document.onpointerlockerror event received."); finishJSTest(); };
 
     function eventNotExpected(e) {
         testFailed("Unexpected event " + e.type + " on " + e.currentTarget.id);
@@ -39,7 +39,7 @@
         function () {
             targetdiv1.webkitRequestPointerLock();
             expectedTargetToBeLockedString = "targetdiv1";
-            // doNextStep() called by onwebkitpointerlockchange handler.
+            // doNextStep() called by onpointerlockchange handler.
         },
         function () {
             debug("     With a lock in place send a click.")
@@ -56,7 +56,7 @@
         function () {
             targetdiv2.webkitRequestPointerLock();
             expectedTargetToBeLockedString = "targetdiv2";
-            // doNextStep() called by onwebkitpointerlockchange handler.
+            // doNextStep() called by onpointerlockchange handler.
         },
         function () {
             debug("     With a lock in place send a click.")

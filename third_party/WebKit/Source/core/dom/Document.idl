@@ -172,6 +172,8 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
     attribute EventHandler oncopy;
     attribute EventHandler oncut;
     attribute EventHandler onpaste;
+    attribute EventHandler onpointerlockchange;
+    attribute EventHandler onpointerlockerror;
     attribute EventHandler onreadystatechange;
     attribute EventHandler onsearch;
     [RuntimeEnabled=ExperimentalContentSecurityPolicyFeatures] attribute EventHandler onsecuritypolicyviolation;

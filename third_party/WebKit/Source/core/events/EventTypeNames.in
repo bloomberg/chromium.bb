@@ -139,6 +139,8 @@ paste
 pause
 play
 playing
+pointerlockchange
+pointerlockerror
 popstate
 progress
 ratechange
