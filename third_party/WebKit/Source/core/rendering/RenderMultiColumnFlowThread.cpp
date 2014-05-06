@@ -269,6 +269,13 @@ LayoutUnit RenderMultiColumnFlowThread::initialLogicalWidth() const
     return columnWidth();
 }
 
+void RenderMultiColumnFlowThread::layout()
+{
+    RenderFlowThread::layout();
+    if (RenderMultiColumnSet* lastSet = lastMultiColumnSet())
+        lastSet->expandToEncompassFlowThreadContentsIfNeeded();
+}
+
 void RenderMultiColumnFlowThread::setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage)
 {
     if (RenderMultiColumnSet* multicolSet = toRenderMultiColumnSet(regionAtBlockOffset(offset)))

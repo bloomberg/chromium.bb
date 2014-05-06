@@ -1571,8 +1571,6 @@
             'rendering/RenderQuote.h',
             'rendering/RenderRegion.cpp',
             'rendering/RenderRegion.h',
-            'rendering/RenderRegionSet.cpp',
-            'rendering/RenderRegionSet.h',
             'rendering/RenderReplaced.cpp',
             'rendering/RenderReplica.cpp',
             'rendering/RenderReplica.h',

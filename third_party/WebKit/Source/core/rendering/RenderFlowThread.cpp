@@ -134,9 +134,6 @@ void RenderFlowThread::layout()
     RenderBlockFlow::layout();
 
     m_pageLogicalSizeChanged = false;
-
-    if (lastRegion())
-        lastRegion()->expandToEncompassFlowThreadContentsIfNeeded();
 }
 
 void RenderFlowThread::updateLogicalWidth()

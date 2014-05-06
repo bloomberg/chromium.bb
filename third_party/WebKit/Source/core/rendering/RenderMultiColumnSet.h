@@ -28,7 +28,7 @@
 #define RenderMultiColumnSet_h
 
 #include "core/rendering/RenderMultiColumnFlowThread.h"
-#include "core/rendering/RenderRegionSet.h"
+#include "core/rendering/RenderRegion.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -50,7 +50,7 @@ namespace WebCore {
 //
 // Column spans result in the creation of new column sets, since a spanning renderer has to be
 // placed in between the column sets that come before and after the span.
-class RenderMultiColumnSet FINAL : public RenderRegionSet {
+class RenderMultiColumnSet FINAL : public RenderRegion {
 public:
     static RenderMultiColumnSet* createAnonymous(RenderFlowThread*, RenderStyle* parentStyle);
 
@@ -102,6 +102,10 @@ public:
     virtual void updateLogicalWidth() OVERRIDE;
 
     void prepareForLayout();
+
+    // Expand this set's flow thread portion rectangle to contain all trailing flow thread
+    // overflow. Only to be called on the last set.
+    void expandToEncompassFlowThreadContentsIfNeeded();
 
 private:
     RenderMultiColumnSet(RenderFlowThread*);

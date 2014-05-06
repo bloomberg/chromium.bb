@@ -35,7 +35,7 @@ using namespace std;
 namespace WebCore {
 
 RenderMultiColumnSet::RenderMultiColumnSet(RenderFlowThread* flowThread)
-    : RenderRegionSet(0, flowThread)
+    : RenderRegion(0, flowThread)
     , m_computedColumnCount(1)
     , m_computedColumnWidth(0)
     , m_computedColumnHeight(0)
@@ -284,6 +284,23 @@ void RenderMultiColumnSet::prepareForLayout()
 
     // Nuke previously stored minimum column height. Contents may have changed for all we know.
     m_minimumColumnHeight = 0;
+}
+
+void RenderMultiColumnSet::expandToEncompassFlowThreadContentsIfNeeded()
+{
+    ASSERT(multiColumnFlowThread()->lastMultiColumnSet() == this);
+    LayoutRect rect(flowThreadPortionRect());
+
+    // Get the offset within the flow thread in its block progression direction. Then get the
+    // flow thread's remaining logical height including its overflow and expand our rect
+    // to encompass that remaining height and overflow. The idea is that we will generate
+    // additional columns and pages to hold that overflow, since people do write bad
+    // content like <body style="height:0px"> in multi-column layouts.
+    bool isHorizontal = flowThread()->isHorizontalWritingMode();
+    LayoutUnit logicalTopOffset = isHorizontal ? rect.y() : rect.x();
+    LayoutRect layoutRect = flowThread()->layoutOverflowRect();
+    LayoutUnit logicalHeightWithOverflow = (isHorizontal ? layoutRect.maxY() : layoutRect.maxX()) - logicalTopOffset;
+    setFlowThreadPortionRect(LayoutRect(rect.x(), rect.y(), isHorizontal ? rect.width() : logicalHeightWithOverflow, isHorizontal ? logicalHeightWithOverflow : rect.height()));
 }
 
 void RenderMultiColumnSet::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const

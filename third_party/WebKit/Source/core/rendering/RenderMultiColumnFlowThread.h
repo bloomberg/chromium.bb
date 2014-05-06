@@ -94,6 +94,7 @@ private:
     virtual void willBeRemovedFromTree() OVERRIDE;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
     virtual LayoutUnit initialLogicalWidth() const OVERRIDE;
+    virtual void layout() OVERRIDE FINAL;
     virtual void setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage) OVERRIDE;
     virtual void updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight) OVERRIDE;
     virtual RenderRegion* regionAtBlockOffset(LayoutUnit) const OVERRIDE;

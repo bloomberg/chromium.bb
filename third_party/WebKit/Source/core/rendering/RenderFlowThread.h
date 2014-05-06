@@ -60,7 +60,7 @@ public:
     virtual bool isRenderFlowThread() const OVERRIDE FINAL { return true; }
     virtual bool isRenderMultiColumnFlowThread() const { return false; }
 
-    virtual void layout() OVERRIDE FINAL;
+    virtual void layout() OVERRIDE;
 
     // Always create a RenderLayer for the RenderFlowThread so that we
     // can easily avoid drawing the children directly.

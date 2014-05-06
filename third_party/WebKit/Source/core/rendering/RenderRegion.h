@@ -62,9 +62,9 @@ public:
     bool isFirstRegion() const;
     bool isLastRegion() const;
 
-    // These methods represent the width and height of a "page" and for a RenderRegion they are just the
-    // content width and content height of a region. For RenderRegionSets, however, they will be the width and
-    // height of a single column or page in the set.
+    // These methods represent the width and height of a "page" and for a RenderRegion they are just
+    // the content width and content height of a region. For RenderMultiColumnSets, however, they
+    // will be the width and height of a single column or page in the set.
     virtual LayoutUnit pageLogicalWidth() const;
     virtual LayoutUnit pageLogicalHeight() const;
 
@@ -82,8 +82,6 @@ public:
     // flow thread portion we contain. For sets, we have to figure out the top of the nearest column or
     // page.
     virtual LayoutUnit pageLogicalTopForOffset(LayoutUnit offset) const;
-
-    virtual void expandToEncompassFlowThreadContentsIfNeeded() { };
 
     virtual void repaintFlowThreadContent(const LayoutRect& repaintRect) const;
 
