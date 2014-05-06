@@ -1096,6 +1096,15 @@ void ExistingUserController::ShowError(int error_id,
       break;
   }
 
+  if (error_id == IDS_LOGIN_ERROR_AUTHENTICATING) {
+    if (num_login_attempts_ > 1) {
+      const User* user =
+          UserManager::Get()->FindUser(last_login_attempt_username_);
+      if (user && (user->GetType() == User::USER_TYPE_LOCALLY_MANAGED))
+        error_id = IDS_LOGIN_ERROR_AUTHENTICATING_2ND_TIME_SUPERVISED;
+    }
+  }
+
   login_display_->ShowError(error_id, num_login_attempts_, help_topic_id);
 }
 
