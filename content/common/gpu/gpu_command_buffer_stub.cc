@@ -186,6 +186,7 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   devtools_gpu_instrumentation::ScopedGpuTask task(channel());
   FastSetActiveURL(active_url_, active_url_hash_);
 
+  bool have_context = false;
   // Ensure the appropriate GL context is current before handling any IPC
   // messages directed at the command buffer. This ensures that the message
   // handler can assume that the context is current (not necessary for
@@ -197,6 +198,7 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
       message.type() != GpuCommandBufferMsg_SetLatencyInfo::ID) {
     if (!MakeCurrent())
       return false;
+    have_context = true;
   }
 
   // Always use IPC_MESSAGE_HANDLER_DELAY_REPLY for synchronous message handlers
@@ -249,8 +251,10 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
 
   CheckCompleteWaits();
 
-  // Ensure that any delayed work that was created will be handled.
-  ScheduleDelayedWork(kHandleMoreWorkPeriodMs);
+  if (have_context) {
+    // Ensure that any delayed work that was created will be handled.
+    ScheduleDelayedWork(kHandleMoreWorkPeriodMs);
+  }
 
   DCHECK(handled);
   return handled;
