@@ -58,6 +58,11 @@ OptInManager.CommandFromPage = {
  */
 OptInManager.prototype.injectTab_ = function(
     tab, sendResponse, hotwordStatus) {
+  if (tab.incognito) {
+    sendResponse({'doNotShowOptinMessage': true});
+    return;
+  }
+
   if (!hotwordStatus.available)
     return;
   if (hotwordStatus.enabled)
