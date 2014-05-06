@@ -82,6 +82,25 @@ void ValidateBrowserWindowProperties(
                 browser->profile()->GetPath()).value(),
             prop_var.get().pwszVal);
   prop_var.Reset();
+  base::MessageLoop::current()->Quit();
+}
+
+void PostValidationTaskToUIThread(const base::Closure& validation_task) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE, validation_task);
+}
+
+// Posts a validation task to the FILE thread which bounces back to the UI
+// thread and then does validation. This is necessary because the icon profile
+// pref only gets set at the end of icon creation (which happens on the FILE
+// thread) and is set on the UI thread.
+void WaitAndValidateBrowserWindowProperties(
+    const base::Closure& validation_task) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&PostValidationTaskToUIThread, validation_task));
+  content::RunMessageLoop();
 }
 
 }  // namespace
@@ -100,10 +119,9 @@ class BrowserTestWithProfileShortcutManager : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(BrowserTestWithProfileShortcutManager);
 };
 
-// Test is flaky on Win7 bots. See crbug.com/332628.
 // Check that the window properties on Windows are properly set.
 IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
-                       DISABLED_WindowProperties) {
+                       WindowProperties) {
 #if defined(USE_ASH)
   // Disable this test in Metro+Ash where Windows window properties aren't used.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
@@ -115,7 +133,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
     return;
 
   // Single profile case. The profile name should not be shown.
-  ValidateBrowserWindowProperties(browser(), base::string16());
+  WaitAndValidateBrowserWindowProperties(base::Bind(
+      &ValidateBrowserWindowProperties, browser(), base::string16()));
 
   // If multiprofile mode is not enabled, we can't test the behavior when there
   // are multiple profiles.
@@ -138,13 +157,17 @@ IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
   content::RunMessageLoop();
 
   // The default profile's name should be part of the relaunch name.
-  ValidateBrowserWindowProperties(
-      browser(), base::UTF8ToUTF16(browser()->profile()->GetProfileName()));
+  WaitAndValidateBrowserWindowProperties(
+      base::Bind(&ValidateBrowserWindowProperties,
+                 browser(),
+                 base::UTF8ToUTF16(browser()->profile()->GetProfileName())));
 
   // The second profile's name should be part of the relaunch name.
   Browser* profile2_browser =
       CreateBrowser(profile_manager->GetProfileByPath(path_profile2));
   size_t profile2_index = cache.GetIndexOfProfileWithPath(path_profile2);
-  ValidateBrowserWindowProperties(
-      profile2_browser, cache.GetNameOfProfileAtIndex(profile2_index));
+  WaitAndValidateBrowserWindowProperties(
+      base::Bind(&ValidateBrowserWindowProperties,
+                 profile2_browser,
+                 cache.GetNameOfProfileAtIndex(profile2_index)));
 }
