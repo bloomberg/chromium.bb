@@ -56,6 +56,7 @@ public:
     virtual void trace(Visitor* visitor) OVERRIDE
     {
         visitor->trace(m_value);
+        AnimatableValue::trace(visitor);
     }
 
 protected:

@@ -22,7 +22,7 @@ public:
 
     virtual PassOwnPtrWillBeRawPtr<InterpolableValue> clone() const = 0;
 
-    virtual void trace(Visitor*) = 0;
+    virtual void trace(Visitor*) { }
 
 private:
     virtual PassOwnPtrWillBeRawPtr<InterpolableValue> interpolate(const InterpolableValue &to, const double progress) const = 0;
@@ -47,7 +47,7 @@ public:
     double value() const { return m_value; }
     virtual PassOwnPtrWillBeRawPtr<InterpolableValue> clone() const OVERRIDE FINAL { return create(m_value); }
 
-    virtual void trace(Visitor*) OVERRIDE { }
+    virtual void trace(Visitor* visitor) OVERRIDE { InterpolableValue::trace(visitor); }
 
 private:
     virtual PassOwnPtrWillBeRawPtr<InterpolableValue> interpolate(const InterpolableValue &to, const double progress) const OVERRIDE FINAL;
@@ -71,7 +71,7 @@ public:
     bool value() const { return m_value; }
     virtual PassOwnPtrWillBeRawPtr<InterpolableValue> clone() const OVERRIDE FINAL { return create(m_value); }
 
-    virtual void trace(Visitor*) OVERRIDE { }
+    virtual void trace(Visitor* visitor) OVERRIDE { InterpolableValue::trace(visitor); }
 
 private:
     virtual PassOwnPtrWillBeRawPtr<InterpolableValue> interpolate(const InterpolableValue &to, const double progress) const OVERRIDE FINAL;

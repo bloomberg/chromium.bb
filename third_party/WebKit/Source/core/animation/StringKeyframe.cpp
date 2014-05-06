@@ -109,6 +109,7 @@ void StringKeyframe::PropertySpecificKeyframe::trace(Visitor* visitor)
 {
     visitor->trace(m_value);
     visitor->trace(m_animatableValueCache);
+    Keyframe::PropertySpecificKeyframe::trace(visitor);
 }
 
 }

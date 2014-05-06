@@ -201,6 +201,7 @@ void KeyframeEffectModelBase::trace(Visitor* visitor)
 #if ENABLE_OILPAN
     visitor->trace(m_keyframeGroups);
 #endif
+    AnimationEffect::trace(visitor);
 }
 
 Keyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, AnimationEffect::CompositeOperation composite)

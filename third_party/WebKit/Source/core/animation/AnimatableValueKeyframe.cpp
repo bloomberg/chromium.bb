@@ -74,6 +74,7 @@ PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> AnimatableValueKeyfra
 void AnimatableValueKeyframe::PropertySpecificKeyframe::trace(Visitor* visitor)
 {
     visitor->trace(m_value);
+    Keyframe::PropertySpecificKeyframe::trace(visitor);
 }
 
 }

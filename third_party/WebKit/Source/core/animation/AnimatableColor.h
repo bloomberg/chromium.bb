@@ -62,7 +62,7 @@ public:
     Color color() const { return m_color.toColor(); }
     Color visitedLinkColor() const { return m_visitedLinkColor.toColor(); }
 
-    virtual void trace(Visitor*) OVERRIDE { }
+    virtual void trace(Visitor* visitor) OVERRIDE { AnimatableValue::trace(visitor); }
 
 protected:
     virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;

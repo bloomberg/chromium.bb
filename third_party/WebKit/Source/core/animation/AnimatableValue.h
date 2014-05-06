@@ -87,7 +87,7 @@ public:
         return value->type() == type();
     }
 
-    virtual void trace(Visitor*) = 0;
+    virtual void trace(Visitor*) { }
 
 protected:
     enum AnimatableType {

@@ -61,6 +61,7 @@ bool AnimatableLengthBoxAndBool::equalTo(const AnimatableValue* value) const
 void AnimatableLengthBoxAndBool::trace(Visitor* visitor)
 {
     visitor->trace(m_box);
+    AnimatableValue::trace(visitor);
 }
 
 }

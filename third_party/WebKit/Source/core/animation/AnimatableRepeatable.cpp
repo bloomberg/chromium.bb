@@ -105,6 +105,7 @@ bool AnimatableRepeatable::equalTo(const AnimatableValue* value) const
 void AnimatableRepeatable::trace(Visitor* visitor)
 {
     visitor->trace(m_values);
+    AnimatableValue::trace(visitor);
 }
 
 } // namespace WebCore

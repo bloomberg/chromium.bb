@@ -54,7 +54,7 @@ public:
     virtual bool affects(CSSPropertyID) { return false; };
     virtual bool isKeyframeEffectModel() const { return false; }
 
-    virtual void trace(Visitor*) = 0;
+    virtual void trace(Visitor*) { }
 };
 
 } // namespace WebCore

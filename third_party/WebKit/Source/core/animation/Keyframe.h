@@ -66,7 +66,7 @@ public:
         virtual PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const = 0;
         virtual PassRefPtrWillBeRawPtr<Interpolation> createInterpolation(CSSPropertyID, WebCore::Keyframe::PropertySpecificKeyframe* end, Element*) const = 0;
 
-        virtual void trace(Visitor*) = 0;
+        virtual void trace(Visitor*) { }
 
     protected:
         PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, AnimationEffect::CompositeOperation);

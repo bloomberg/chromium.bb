@@ -51,6 +51,7 @@ void AnimatableLengthSize::trace(Visitor* visitor)
 {
     visitor->trace(m_width);
     visitor->trace(m_height);
+    AnimatableValue::trace(visitor);
 }
 
 }

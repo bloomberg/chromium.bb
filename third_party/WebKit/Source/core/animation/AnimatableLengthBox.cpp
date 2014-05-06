@@ -58,6 +58,7 @@ void AnimatableLengthBox::trace(Visitor* visitor)
     visitor->trace(m_right);
     visitor->trace(m_top);
     visitor->trace(m_bottom);
+    AnimatableValue::trace(visitor);
 }
 
 }

@@ -39,7 +39,7 @@ class AnimatableNeutral FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableNeutral() { }
 
-    virtual void trace(Visitor* visitor) OVERRIDE { }
+    virtual void trace(Visitor* visitor) OVERRIDE { AnimatableValue::trace(visitor); }
 
 protected:
     static PassRefPtrWillBeRawPtr<AnimatableNeutral> create() { return adoptRefWillBeNoop(new AnimatableNeutral()); }

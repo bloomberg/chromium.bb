@@ -53,6 +53,7 @@ void InterpolableList::trace(Visitor* visitor)
 #if ENABLE_OILPAN
     visitor->trace(m_values);
 #endif
+    InterpolableValue::trace(visitor);
 }
 
 PassOwnPtrWillBeRawPtr<InterpolableValue> InterpolableAnimatableValue::interpolate(const InterpolableValue &other, const double percentage) const
@@ -68,6 +69,7 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> InterpolableAnimatableValue::interpola
 void InterpolableAnimatableValue::trace(Visitor* visitor)
 {
     visitor->trace(m_value);
+    InterpolableValue::trace(visitor);
 }
 
 }

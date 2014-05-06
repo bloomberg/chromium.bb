@@ -51,6 +51,7 @@ void AnimatableLengthPoint::trace(Visitor* visitor)
 {
     visitor->trace(m_x);
     visitor->trace(m_y);
+    AnimatableValue::trace(visitor);
 }
 
 }
