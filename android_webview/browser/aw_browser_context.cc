@@ -269,6 +269,11 @@ AwBrowserContext::GetGeolocationPermissionContext() {
   return geolocation_permission_context_.get();
 }
 
+content::BrowserPluginGuestManagerDelegate*
+AwBrowserContext::GetGuestManagerDelegate() {
+  return NULL;
+}
+
 quota::SpecialStoragePolicy* AwBrowserContext::GetSpecialStoragePolicy() {
   // Intentionally returning NULL as 'Extensions' and 'Apps' not supported.
   return NULL;

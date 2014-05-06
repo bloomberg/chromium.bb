@@ -21,6 +21,7 @@ namespace content {
 class JavaScriptDialogManager;
 struct ContextMenuParams;
 struct NativeWebKeyboardEvent;
+class WebContents;
 
 // Objects implement this interface to get notified about changes in the guest
 // WebContents and to provide necessary functionality.
@@ -40,6 +41,11 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
 
   // Notification that the embedder has completed attachment.
   virtual void DidAttach() {}
+
+  // Returns the opener for this guest.
+  // TODO(fsamuel): Remove this once the New Window API is migrated outside of
+  // the content layer.
+  virtual WebContents* GetOpener() const;
 
   // Informs the delegate that the guest render process is gone. |status|
   // indicates whether the guest was killed, crashed, or was terminated
@@ -98,6 +104,12 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
 
   // Requests resolution of a potentially relative URL.
   virtual GURL ResolveURL(const std::string& src);
+
+  // Informs the delegate of the WebContents that created delegate's associated
+  // WebContents.
+  // TODO(fsamuel): Remove this once the New Window API is migrated outside of
+  // the content layer.
+  virtual void SetOpener(WebContents* opener) {}
 
   // Notifies that the content size of the guest has changed in autosize mode.
   virtual void SizeChanged(const gfx::Size& old_size,

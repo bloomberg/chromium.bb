@@ -94,6 +94,11 @@ FakeProfile::GetGeolocationPermissionContext() {
   return NULL;
 }
 
+content::BrowserPluginGuestManagerDelegate*
+FakeProfile::GetGuestManagerDelegate() {
+  return NULL;
+}
+
 quota::SpecialStoragePolicy* FakeProfile::GetSpecialStoragePolicy() {
   return NULL;
 }

@@ -9,7 +9,10 @@
 
 namespace content {
 
-TestBrowserPluginGuestManager::TestBrowserPluginGuestManager() {
+TestBrowserPluginGuestManager::TestBrowserPluginGuestManager(
+    BrowserContext* context)
+    : BrowserPluginGuestManager(context),
+      last_guest_added_(NULL) {
 }
 
 TestBrowserPluginGuestManager::~TestBrowserPluginGuestManager() {
@@ -17,19 +20,26 @@ TestBrowserPluginGuestManager::~TestBrowserPluginGuestManager() {
 
 void TestBrowserPluginGuestManager::AddGuest(
     int instance_id,
-    WebContentsImpl* guest_web_contents) {
+    WebContents* guest_web_contents) {
   BrowserPluginGuestManager::AddGuest(instance_id, guest_web_contents);
-  if (message_loop_runner_)
+  last_guest_added_ = guest_web_contents;
+  if (message_loop_runner_.get())
     message_loop_runner_->Quit();
 }
 
-void TestBrowserPluginGuestManager::WaitForGuestAdded() {
+WebContents* TestBrowserPluginGuestManager::WaitForGuestAdded() {
   // Check if guests were already created.
-  if (guest_web_contents_by_instance_id_.size() > 0)
-    return;
+  if (last_guest_added_) {
+    WebContents* last_guest_added = last_guest_added_;
+    last_guest_added_ = NULL;
+    return last_guest_added;
+  }
   // Wait otherwise.
   message_loop_runner_ = new MessageLoopRunner();
   message_loop_runner_->Run();
+  WebContents* last_guest_added = last_guest_added_;
+  last_guest_added_ = NULL;
+  return last_guest_added;
 }
 
 }  // namespace content

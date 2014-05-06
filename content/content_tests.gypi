@@ -1066,6 +1066,8 @@
             'browser/browser_plugin/test_browser_plugin_guest_delegate.h',
             'browser/browser_plugin/test_browser_plugin_guest_manager.cc',
             'browser/browser_plugin/test_browser_plugin_guest_manager.h',
+            'browser/browser_plugin/test_guest_manager_delegate.cc',
+            'browser/browser_plugin/test_guest_manager_delegate.h',
             'browser/child_process_security_policy_browsertest.cc',
             'browser/cross_site_transfer_browsertest.cc',
             'browser/database_browsertest.cc',

@@ -14,7 +14,9 @@ using content::WebContents;
 
 AdViewGuest::AdViewGuest(WebContents* guest_web_contents,
                          const std::string& extension_id)
-    : GuestView<AdViewGuest>(guest_web_contents, extension_id),
+    : GuestView<AdViewGuest>(guest_web_contents,
+                             extension_id,
+                             base::WeakPtr<GuestViewBase>()),
       WebContentsObserver(guest_web_contents) {
 }
 

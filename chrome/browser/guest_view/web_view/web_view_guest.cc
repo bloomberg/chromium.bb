@@ -132,8 +132,11 @@ void AttachWebViewHelpers(WebContents* contents) {
 }  // namespace
 
 WebViewGuest::WebViewGuest(WebContents* guest_web_contents,
-                           const std::string& extension_id)
-    : GuestView<WebViewGuest>(guest_web_contents, extension_id),
+                           const std::string& embedder_extension_id,
+                           const base::WeakPtr<GuestViewBase>& opener)
+   :  GuestView<WebViewGuest>(guest_web_contents,
+                              embedder_extension_id,
+                              opener),
       WebContentsObserver(guest_web_contents),
       script_executor_(new extensions::ScriptExecutor(guest_web_contents,
                                                       &script_observers_)),
@@ -313,7 +316,8 @@ bool WebViewGuest::HandleContextMenu(
   scoped_ptr<base::ListValue> items = MenuModelToValue(menu->menu_model());
   args->Set(webview::kContextMenuItems, items.release());
   args->SetInteger(webview::kRequestId, request_id);
-  DispatchEvent(new GuestView::Event(webview::kEventContextMenu, args.Pass()));
+  DispatchEvent(new GuestViewBase::Event(webview::kEventContextMenu,
+                                         args.Pass()));
 
   menu_delegate->ShowMenu(menu.Pass());
   return true;

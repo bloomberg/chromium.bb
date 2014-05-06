@@ -41,7 +41,8 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                      public content::WebContentsObserver {
  public:
   WebViewGuest(content::WebContents* guest_web_contents,
-               const std::string& embedder_extension_id);
+               const std::string& embedder_extension_id,
+               const base::WeakPtr<GuestViewBase>& opener);
 
   // Returns guestview::kInstanceIDNone if |contents| does not correspond to a
   // WebViewGuest.

@@ -98,9 +98,8 @@ class BrowserPluginGuest::NewWindowRequest : public PermissionRequest {
                            const std::string& user_input) OVERRIDE {
     int embedder_render_process_id =
         guest_->embedder_web_contents()->GetRenderProcessHost()->GetID();
-    BrowserPluginGuest* guest =
-        guest_->GetWebContents()->GetBrowserPluginGuestManager()->
-            GetGuestByInstanceID(instance_id_, embedder_render_process_id);
+    BrowserPluginGuest* guest = guest_->GetBrowserPluginGuestManager()->
+        GetGuestByInstanceID(instance_id_, embedder_render_process_id);
     if (!guest) {
       VLOG(0) << "Guest not found. Instance ID: " << instance_id_;
       return;
@@ -189,8 +188,7 @@ class BrowserPluginGuest::EmbedderWebContentsObserver
 BrowserPluginGuest::BrowserPluginGuest(
     int instance_id,
     bool has_render_view,
-    WebContentsImpl* web_contents,
-    BrowserPluginGuest* opener)
+    WebContentsImpl* web_contents)
     : WebContentsObserver(web_contents),
       embedder_web_contents_(NULL),
       instance_id_(instance_id),
@@ -213,10 +211,7 @@ BrowserPluginGuest::BrowserPluginGuest(
       weak_ptr_factory_(this) {
   DCHECK(web_contents);
   web_contents->SetDelegate(this);
-  if (opener)
-    opener_ = opener->AsWeakPtr();
-  GetWebContents()->GetBrowserPluginGuestManager()->AddGuest(instance_id_,
-                                                             GetWebContents());
+  GetBrowserPluginGuestManager()->AddGuest(instance_id_, GetWebContents());
 }
 
 bool BrowserPluginGuest::AddMessageToConsole(WebContents* source,
@@ -302,11 +297,10 @@ void BrowserPluginGuest::RequestPermission(
 
 BrowserPluginGuest* BrowserPluginGuest::CreateNewGuestWindow(
     const OpenURLParams& params) {
-  BrowserPluginGuestManager* guest_manager =
-      GetWebContents()->GetBrowserPluginGuestManager();
+  BrowserPluginGuestManager* guest_manager = GetBrowserPluginGuestManager();
 
   // Allocate a new instance ID for the new guest.
-  int instance_id = guest_manager->get_next_instance_id();
+  int instance_id = guest_manager->GetNextInstanceID();
 
   // Set the attach params to use the same partition as the opener.
   // We pull the partition information from the site's URL, which is of the form
@@ -322,10 +316,12 @@ BrowserPluginGuest* BrowserPluginGuest::CreateNewGuestWindow(
   scoped_ptr<base::DictionaryValue> extra_params(
       extra_attach_params_->DeepCopy());
   BrowserPluginGuest* new_guest =
-      GetWebContents()->GetBrowserPluginGuestManager()->CreateGuest(
-          GetWebContents()->GetSiteInstance(), instance_id,
-          attach_params, extra_params.Pass());
-  new_guest->opener_ = AsWeakPtr();
+      guest_manager->CreateGuest(GetWebContents()->GetSiteInstance(),
+                                 instance_id,
+                                 attach_params,
+                                 extra_params.Pass());
+  if (new_guest->delegate_)
+    new_guest->delegate_->SetOpener(GetWebContents());
 
   // Take ownership of |new_guest|.
   pending_new_windows_.insert(
@@ -351,10 +347,10 @@ void BrowserPluginGuest::EmbedderDestroyed() {
 
 void BrowserPluginGuest::Destroy() {
   is_in_destruction_ = true;
-  if (!attached() && opener())
-    opener()->pending_new_windows_.erase(this);
+  if (!attached() && GetOpener())
+    GetOpener()->pending_new_windows_.erase(this);
   DestroyUnattachedWindows();
-  GetWebContents()->GetBrowserPluginGuestManager()->RemoveGuest(instance_id_);
+  GetBrowserPluginGuestManager()->RemoveGuest(instance_id_);
   delete GetWebContents();
 }
 
@@ -509,7 +505,7 @@ BrowserPluginGuest* BrowserPluginGuest::Create(
   if (factory_) {
     guest = factory_->CreateBrowserPluginGuest(instance_id, web_contents);
   } else {
-    guest = new BrowserPluginGuest(instance_id, false, web_contents, NULL);
+    guest = new BrowserPluginGuest(instance_id, false, web_contents);
   }
   guest->extra_attach_params_.reset(extra_params->DeepCopy());
   web_contents->SetBrowserPluginGuest(guest);
@@ -528,7 +524,7 @@ BrowserPluginGuest* BrowserPluginGuest::CreateWithOpener(
     BrowserPluginGuest* opener) {
   BrowserPluginGuest* guest =
       new BrowserPluginGuest(
-          instance_id, has_render_view, web_contents, opener);
+          instance_id, has_render_view, web_contents);
   web_contents->SetBrowserPluginGuest(guest);
   BrowserPluginGuestDelegate* delegate = NULL;
   GetContentClient()->browser()->GuestWebContentsCreated(
@@ -545,6 +541,17 @@ RenderWidgetHostView* BrowserPluginGuest::GetEmbedderRenderWidgetHostView() {
   return embedder_web_contents_->GetRenderWidgetHostView();
 }
 
+BrowserPluginGuest* BrowserPluginGuest::GetOpener() const {
+  if (!delegate_)
+    return NULL;
+
+  WebContents* opener = delegate_->GetOpener();
+  if (!opener)
+    return NULL;
+
+  return static_cast<WebContentsImpl*>(opener)->GetBrowserPluginGuest();
+}
+
 void BrowserPluginGuest::UpdateVisibility() {
   OnSetVisibility(instance_id_, visible());
 }
@@ -557,6 +564,12 @@ void BrowserPluginGuest::CopyFromCompositingSurface(
   SendMessageToEmbedder(
       new BrowserPluginMsg_CopyFromCompositingSurface(instance_id(),
           copy_request_id_, src_subrect, dst_size));
+}
+
+BrowserPluginGuestManager*
+BrowserPluginGuest::GetBrowserPluginGuestManager() const {
+  return BrowserPluginGuestManager::FromBrowserContext(
+      GetWebContents()->GetBrowserContext());
 }
 
 // screen.
@@ -704,8 +717,9 @@ WebContents* BrowserPluginGuest::OpenURLFromTab(WebContents* source,
   // Navigation also resumes resource loading which we don't want to allow
   // until attachment.
   if (!attached()) {
-    PendingWindowMap::iterator it = opener()->pending_new_windows_.find(this);
-    if (it == opener()->pending_new_windows_.end())
+    PendingWindowMap::iterator it =
+        GetOpener()->pending_new_windows_.find(this);
+    if (it == GetOpener()->pending_new_windows_.end())
       return NULL;
     const NewWindowInfo& old_target_url = it->second;
     NewWindowInfo new_window_info(params.url, old_target_url.name);
@@ -730,7 +744,8 @@ void BrowserPluginGuest::WebContentsCreated(WebContents* source_contents,
   WebContentsImpl* new_contents_impl =
       static_cast<WebContentsImpl*>(new_contents);
   BrowserPluginGuest* guest = new_contents_impl->GetBrowserPluginGuest();
-  guest->opener_ = AsWeakPtr();
+  if (guest->delegate_)
+    guest->delegate_->SetOpener(GetWebContents());
   std::string guest_name = base::UTF16ToUTF8(frame_name);
   guest->name_ = guest_name;
   // Take ownership of the new guest until it is attached to the embedder's DOM
@@ -771,7 +786,7 @@ bool BrowserPluginGuest::ShouldFocusPageAfterCrash() {
   return false;
 }
 
-WebContentsImpl* BrowserPluginGuest::GetWebContents() {
+WebContentsImpl* BrowserPluginGuest::GetWebContents() const {
   return static_cast<WebContentsImpl*>(web_contents());
 }
 
@@ -1027,8 +1042,8 @@ void BrowserPluginGuest::Attach(
   // the time the WebContents was created and the time it was attached.
   // We also need to do an initial navigation if a RenderView was never
   // created for the new window in cases where there is no referrer.
-  PendingWindowMap::iterator it = opener()->pending_new_windows_.find(this);
-  if (it != opener()->pending_new_windows_.end()) {
+  PendingWindowMap::iterator it = GetOpener()->pending_new_windows_.find(this);
+  if (it != GetOpener()->pending_new_windows_.end()) {
     const NewWindowInfo& new_window_info = it->second;
     if (new_window_info.changed || !has_render_view_)
       params.src = it->second.url.spec();
@@ -1038,7 +1053,7 @@ void BrowserPluginGuest::Attach(
 
   // Once a new guest is attached to the DOM of the embedder page, then the
   // lifetime of the new guest is no longer managed by the opener guest.
-  opener()->pending_new_windows_.erase(this);
+  GetOpener()->pending_new_windows_.erase(this);
 
   // The guest's frame name takes precedence over the BrowserPlugin's name.
   // The guest's frame name is assigned in

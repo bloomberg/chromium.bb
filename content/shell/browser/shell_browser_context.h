@@ -29,6 +29,11 @@ class ShellBrowserContext : public BrowserContext {
   ShellBrowserContext(bool off_the_record, net::NetLog* net_log);
   virtual ~ShellBrowserContext();
 
+  void set_guest_manager_delegate_for_testing(
+      BrowserPluginGuestManagerDelegate* guest_manager_delegate) {
+    guest_manager_delegate_ = guest_manager_delegate;
+  }
+
   // BrowserContext implementation.
   virtual base::FilePath GetPath() const OVERRIDE;
   virtual bool IsOffTheRecord() const OVERRIDE;
@@ -67,6 +72,8 @@ class ShellBrowserContext : public BrowserContext {
   virtual ResourceContext* GetResourceContext() OVERRIDE;
   virtual GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;
+  virtual content::BrowserPluginGuestManagerDelegate*
+      GetGuestManagerDelegate() OVERRIDE;
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
 
   net::URLRequestContextGetter* CreateRequestContext(
@@ -89,6 +96,7 @@ class ShellBrowserContext : public BrowserContext {
   net::NetLog* net_log_;
   bool ignore_certificate_errors_;
   base::FilePath path_;
+  BrowserPluginGuestManagerDelegate* guest_manager_delegate_;
   scoped_ptr<ShellResourceContext> resource_context_;
   scoped_ptr<ShellDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<ShellURLRequestContextGetter> url_request_getter_;

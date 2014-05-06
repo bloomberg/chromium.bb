@@ -17,6 +17,7 @@ const char kParameterApi[] = "api";
 const char kParameterInstanceId[] = "instanceId";
 
 // Other.
+const char kGuestViewManagerKeyName[] = "guest_view_manager";
 const int kInstanceIDNone = 0;
 
 }  // namespace guestview

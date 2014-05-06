@@ -65,6 +65,7 @@ ShellBrowserContext::ShellBrowserContext(bool off_the_record,
     : off_the_record_(off_the_record),
       net_log_(net_log),
       ignore_certificate_errors_(false),
+      guest_manager_delegate_(NULL),
       resource_context_(new ShellResourceContext) {
   InitWhileIOAllowed();
 }
@@ -232,6 +233,11 @@ ResourceContext* ShellBrowserContext::GetResourceContext()  {
 GeolocationPermissionContext*
     ShellBrowserContext::GetGeolocationPermissionContext()  {
   return NULL;
+}
+
+BrowserPluginGuestManagerDelegate*
+    ShellBrowserContext::GetGuestManagerDelegate() {
+  return guest_manager_delegate_;
 }
 
 quota::SpecialStoragePolicy* ShellBrowserContext::GetSpecialStoragePolicy() {

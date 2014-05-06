@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "chrome/browser/guest_view/ad_view/ad_view_guest.h"
 #include "chrome/browser/guest_view/guest_view_constants.h"
+#include "chrome/browser/guest_view/guest_view_manager.h"
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/content_settings.h"
@@ -19,11 +20,6 @@
 using content::WebContents;
 
 namespace {
-
-// <embedder_process_id, guest_instance_id> => GuestViewBase*
-typedef std::map<std::pair<int, int>, GuestViewBase*> EmbedderGuestViewMap;
-static base::LazyInstance<EmbedderGuestViewMap> embedder_guestview_map =
-    LAZY_INSTANCE_INITIALIZER;
 
 typedef std::map<WebContents*, GuestViewBase*> WebContentsGuestViewMap;
 static base::LazyInstance<WebContentsGuestViewMap> webcontents_guestview_map =
@@ -44,7 +40,8 @@ scoped_ptr<base::DictionaryValue> GuestViewBase::Event::GetArguments() {
 }
 
 GuestViewBase::GuestViewBase(WebContents* guest_web_contents,
-                             const std::string& embedder_extension_id)
+                             const std::string& embedder_extension_id,
+                             const base::WeakPtr<GuestViewBase>& opener)
     : guest_web_contents_(guest_web_contents),
       embedder_web_contents_(NULL),
       embedder_extension_id_(embedder_extension_id),
@@ -52,17 +49,20 @@ GuestViewBase::GuestViewBase(WebContents* guest_web_contents,
       browser_context_(guest_web_contents->GetBrowserContext()),
       guest_instance_id_(guest_web_contents->GetEmbeddedInstanceID()),
       view_instance_id_(guestview::kInstanceIDNone),
+      opener_(opener),
       weak_ptr_factory_(this) {
   webcontents_guestview_map.Get().insert(
       std::make_pair(guest_web_contents, this));
 }
 
 // static
-GuestViewBase* GuestViewBase::Create(WebContents* guest_web_contents,
-                                     const std::string& embedder_extension_id,
-                                     const std::string& view_type) {
+GuestViewBase* GuestViewBase::Create(
+    WebContents* guest_web_contents,
+    const std::string& embedder_extension_id,
+    const std::string& view_type,
+    const base::WeakPtr<GuestViewBase>& opener) {
   if (view_type == "webview") {
-    return new WebViewGuest(guest_web_contents, embedder_extension_id);
+    return new WebViewGuest(guest_web_contents, embedder_extension_id, opener);
   } else if (view_type == "adview") {
     return new AdViewGuest(guest_web_contents, embedder_extension_id);
   }
@@ -80,10 +80,18 @@ GuestViewBase* GuestViewBase::FromWebContents(WebContents* web_contents) {
 // static
 GuestViewBase* GuestViewBase::From(int embedder_process_id,
                                    int guest_instance_id) {
-  EmbedderGuestViewMap* guest_map = embedder_guestview_map.Pointer();
-  EmbedderGuestViewMap::iterator it =
-      guest_map->find(std::make_pair(embedder_process_id, guest_instance_id));
-  return it == guest_map->end() ? NULL : it->second;
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(embedder_process_id);
+  if (!host)
+    return NULL;
+
+  content::WebContents* guest_web_contents =
+      GuestViewManager::FromBrowserContext(host->GetBrowserContext())->
+          GetGuestByInstanceID(guest_instance_id, embedder_process_id);
+  if (!guest_web_contents)
+    return NULL;
+
+  return GuestViewBase::FromWebContents(guest_web_contents);
 }
 
 // static
@@ -128,6 +136,10 @@ void GuestViewBase::GetDefaultContentSettingRules(
                                   incognito));
 }
 
+base::WeakPtr<GuestViewBase> GuestViewBase::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 void GuestViewBase::Attach(content::WebContents* embedder_web_contents,
                            const base::DictionaryValue& args) {
   embedder_web_contents_ = embedder_web_contents;
@@ -136,7 +148,6 @@ void GuestViewBase::Attach(content::WebContents* embedder_web_contents,
   args.GetInteger(guestview::kParameterInstanceId, &view_instance_id_);
 
   std::pair<int, int> key(embedder_render_process_id_, guest_instance_id_);
-  embedder_guestview_map.Get().insert(std::make_pair(key, this));
 
   // GuestViewBase::Attach is called prior to initialization (and initial
   // navigation) of the guest in the content layer in order to permit mapping
@@ -154,9 +165,23 @@ void GuestViewBase::Attach(content::WebContents* embedder_web_contents,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+WebContents* GuestViewBase::GetOpener() const {
+  if (!opener_)
+    return NULL;
+  return opener_->guest_web_contents();
+}
+
+void GuestViewBase::SetOpener(WebContents* web_contents) {
+  GuestViewBase* guest = FromWebContents(web_contents);
+  if (guest && guest->IsViewType(GetViewType())) {
+    opener_ = guest->AsWeakPtr();
+    return;
+  }
+  opener_ = base::WeakPtr<GuestViewBase>();
+}
+
 GuestViewBase::~GuestViewBase() {
   std::pair<int, int> key(embedder_render_process_id_, guest_instance_id_);
-  embedder_guestview_map.Get().erase(key);
 
   webcontents_guestview_map.Get().erase(guest_web_contents());
 

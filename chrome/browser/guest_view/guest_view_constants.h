@@ -20,6 +20,7 @@ extern const char kParameterApi[];
 extern const char kParameterInstanceId[];
 
 // Other.
+extern const char kGuestViewManagerKeyName[];
 extern const int kInstanceIDNone;
 
 }  // namespace guestview

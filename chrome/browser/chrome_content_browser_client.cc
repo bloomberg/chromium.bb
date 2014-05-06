@@ -44,6 +44,7 @@
 #include "chrome/browser/guest_view/ad_view/ad_view_guest.h"
 #include "chrome/browser/guest_view/guest_view_base.h"
 #include "chrome/browser/guest_view/guest_view_constants.h"
+#include "chrome/browser/guest_view/guest_view_manager.h"
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/media/cast_transport_host_filter.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
@@ -848,7 +849,10 @@ void ChromeContentBrowserClient::GuestWebContentsCreated(
 
     // Create a new GuestViewBase of the same type as the opener.
     *guest_delegate = GuestViewBase::Create(
-        guest_web_contents, extension_id, guest->GetViewType());
+        guest_web_contents,
+        extension_id,
+        guest->GetViewType(),
+        guest->AsWeakPtr());
     return;
   }
 
@@ -863,7 +867,10 @@ void ChromeContentBrowserClient::GuestWebContentsCreated(
     return;
 
   *guest_delegate =
-      GuestViewBase::Create(guest_web_contents, extension_id, api_type);
+      GuestViewBase::Create(guest_web_contents,
+                            extension_id,
+                            api_type,
+                            base::WeakPtr<GuestViewBase>());
 }
 
 void ChromeContentBrowserClient::GuestWebContentsAttached(

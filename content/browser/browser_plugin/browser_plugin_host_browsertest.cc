@@ -15,6 +15,7 @@
 #include "content/browser/browser_plugin/test_browser_plugin_guest.h"
 #include "content/browser/browser_plugin/test_browser_plugin_guest_delegate.h"
 #include "content/browser/browser_plugin/test_browser_plugin_guest_manager.h"
+#include "content/browser/browser_plugin/test_guest_manager_delegate.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
@@ -35,6 +36,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_browser_context.h"
 #include "net/base/net_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -102,11 +104,11 @@ class TestBrowserPluginEmbedder : public BrowserPluginEmbedder {
 class TestBrowserPluginHostFactory : public BrowserPluginHostFactory {
  public:
   virtual BrowserPluginGuestManager*
-      CreateBrowserPluginGuestManager() OVERRIDE {
+      CreateBrowserPluginGuestManager(BrowserContext* context) OVERRIDE {
     guest_manager_instance_count_++;
     if (message_loop_runner_)
       message_loop_runner_->Quit();
-    return new TestBrowserPluginGuestManager();
+    return new TestBrowserPluginGuestManager(context);
   }
 
   virtual BrowserPluginGuest* CreateBrowserPluginGuest(
@@ -230,17 +232,17 @@ class BrowserPluginHostTest : public ContentBrowserTest {
 
   virtual void SetUp() OVERRIDE {
     // Override factory to create tests instances of BrowserPlugin*.
-    content::BrowserPluginEmbedder::set_factory_for_testing(
+    BrowserPluginEmbedder::set_factory_for_testing(
         TestBrowserPluginHostFactory::GetInstance());
-    content::BrowserPluginGuest::set_factory_for_testing(
+    BrowserPluginGuest::set_factory_for_testing(
         TestBrowserPluginHostFactory::GetInstance());
-    content::BrowserPluginGuestManager::set_factory_for_testing(
+    BrowserPluginGuestManager::set_factory_for_testing(
         TestBrowserPluginHostFactory::GetInstance());
     ContentBrowserTest::SetUp();
   }
   virtual void TearDown() OVERRIDE {
-    content::BrowserPluginEmbedder::set_factory_for_testing(NULL);
-    content::BrowserPluginGuest::set_factory_for_testing(NULL);
+    BrowserPluginEmbedder::set_factory_for_testing(NULL);
+    BrowserPluginGuest::set_factory_for_testing(NULL);
 
     ContentBrowserTest::TearDown();
   }
@@ -285,6 +287,10 @@ class BrowserPluginHostTest : public ContentBrowserTest {
 
     WebContentsImpl* embedder_web_contents = static_cast<WebContentsImpl*>(
         shell()->web_contents());
+    static_cast<ShellBrowserContext*>(
+        embedder_web_contents->GetBrowserContext())->
+            set_guest_manager_delegate_for_testing(
+                TestGuestManagerDelegate::GetInstance());
     RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
         embedder_web_contents->GetRenderViewHost());
     RenderFrameHost* rfh = embedder_web_contents->GetMainFrame();
@@ -315,18 +321,13 @@ class BrowserPluginHostTest : public ContentBrowserTest {
     ASSERT_TRUE(test_embedder_);
 
     test_guest_manager_ = static_cast<TestBrowserPluginGuestManager*>(
-        embedder_web_contents->GetBrowserPluginGuestManager());
+        BrowserPluginGuestManager::FromBrowserContext(
+            test_embedder_->GetWebContents()->GetBrowserContext()));
     ASSERT_TRUE(test_guest_manager_);
 
-    test_guest_manager_->WaitForGuestAdded();
-
-    // Verify that we have exactly one guest.
-    const TestBrowserPluginGuestManager::GuestInstanceMap& instance_map =
-        test_guest_manager_->guest_web_contents_for_testing();
-    EXPECT_EQ(1u, instance_map.size());
-
     WebContentsImpl* test_guest_web_contents = static_cast<WebContentsImpl*>(
-        instance_map.begin()->second);
+        test_guest_manager_->WaitForGuestAdded());
+
     test_guest_ = static_cast<TestBrowserPluginGuest*>(
         test_guest_web_contents->GetBrowserPluginGuest());
     test_guest_->WaitForLoadStop();
@@ -541,12 +542,9 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_ReloadEmbedder) {
     ExecuteSyncJSFunction(
         test_embedder()->web_contents()->GetMainFrame(),
         base::StringPrintf("SetSrc('%s');", kHTMLForGuest));
-    test_guest_manager()->WaitForGuestAdded();
 
-    const TestBrowserPluginGuestManager::GuestInstanceMap& instance_map =
-        test_guest_manager()->guest_web_contents_for_testing();
     WebContentsImpl* test_guest_web_contents = static_cast<WebContentsImpl*>(
-        instance_map.begin()->second);
+        test_guest_manager()->WaitForGuestAdded());
     TestBrowserPluginGuest* new_test_guest =
         static_cast<TestBrowserPluginGuest*>(
           test_guest_web_contents->GetBrowserPluginGuest());

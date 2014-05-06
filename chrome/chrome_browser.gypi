@@ -725,6 +725,8 @@
         'browser/guest_view/guest_view_constants.h',
         'browser/guest_view/guest_view_base.cc',
         'browser/guest_view/guest_view_base.h',
+        'browser/guest_view/guest_view_manager.cc',
+        'browser/guest_view/guest_view_manager.h',
         'browser/guest_view/guest_view.h',
         'browser/guest_view/web_view/context_menu_content_type_web_view.cc',
         'browser/guest_view/web_view/context_menu_content_type_web_view.h',

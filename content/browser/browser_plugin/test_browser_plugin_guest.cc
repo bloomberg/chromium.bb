@@ -16,7 +16,7 @@ class BrowserPluginGuest;
 TestBrowserPluginGuest::TestBrowserPluginGuest(
     int instance_id,
     WebContentsImpl* web_contents)
-    : BrowserPluginGuest(instance_id, false, web_contents, NULL),
+    : BrowserPluginGuest(instance_id, false, web_contents),
       update_rect_count_(0),
       exit_observed_(false),
       focus_observed_(false),

@@ -149,10 +149,6 @@ class CONTENT_EXPORT WebContentsImpl
   // an embedder.
   BrowserPluginEmbedder* GetBrowserPluginEmbedder() const;
 
-  // Returns the BrowserPluginGuestManager object, or NULL if this web contents
-  // does not have a BrowserPluginGuestManager.
-  BrowserPluginGuestManager* GetBrowserPluginGuestManager() const;
-
   // Gets the current fullscreen render widget's routing ID. Returns
   // MSG_ROUTING_NONE when there is no fullscreen render widget.
   int GetFullscreenWidgetRoutingID() const;

@@ -39,15 +39,16 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate {
   // Returns a *ViewGuest if this GuestView is of the given view type.
   template <typename T>
   T* As() {
-    if (!strcmp(GetViewType(), T::Type)) {
+    if (IsViewType(T::Type))
       return static_cast<T*>(this);
-    }
+
     return NULL;
   }
 
   static GuestViewBase* Create(content::WebContents* guest_web_contents,
                                const std::string& embedder_extension_id,
-                               const std::string& view_type);
+                               const std::string& view_type,
+                               const base::WeakPtr<GuestViewBase>& opener);
 
   static GuestViewBase* FromWebContents(content::WebContents* web_contents);
 
@@ -70,6 +71,12 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate {
                                             bool incognito);
 
   virtual const char* GetViewType() const = 0;
+
+  bool IsViewType(const char* const view_type) const {
+    return !strcmp(GetViewType(), view_type);
+  }
+
+  base::WeakPtr<GuestViewBase> AsWeakPtr();
 
   virtual void Attach(content::WebContents* embedder_web_contents,
                       const base::DictionaryValue& args);
@@ -106,9 +113,14 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate {
   // Returns the embedder's process ID.
   int embedder_render_process_id() const { return embedder_render_process_id_; }
 
+  // BrowserPluginGuestDelegate implementation.
+  virtual content::WebContents* GetOpener() const OVERRIDE;
+  virtual void SetOpener(content::WebContents* opener) OVERRIDE;
+
  protected:
   GuestViewBase(content::WebContents* guest_web_contents,
-                const std::string& embedder_extension_id);
+                const std::string& embedder_extension_id,
+                const base::WeakPtr<GuestViewBase>& opener);
   virtual ~GuestViewBase();
 
   // Dispatches an event |event_name| to the embedder with the |event| fields.
@@ -132,6 +144,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate {
   // This is a queue of Events that are destined to be sent to the embedder once
   // the guest is attached to a particular embedder.
   std::deque<linked_ptr<Event> > pending_events_;
+
+  // The opener guest view.
+  base::WeakPtr<GuestViewBase> opener_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.

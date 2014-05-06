@@ -30,8 +30,9 @@ class GuestView : public GuestViewBase {
 
  protected:
   GuestView(content::WebContents* guest_web_contents,
-            const std::string& embedder_extension_id)
-      : GuestViewBase(guest_web_contents, embedder_extension_id) {}
+            const std::string& embedder_extension_id,
+            const base::WeakPtr<GuestViewBase>& opener)
+      : GuestViewBase(guest_web_contents, embedder_extension_id, opener) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GuestView);

@@ -1426,7 +1426,9 @@ void WebContentsImpl::CreateNewWindow(
   } else {
     // This makes |new_contents| act as a guest.
     // For more info, see comment above class BrowserPluginGuest.
-    int instance_id = GetBrowserPluginGuestManager()->get_next_instance_id();
+    int instance_id =
+        BrowserPluginGuestManager::FromBrowserContext(GetBrowserContext())->
+            GetNextInstanceID();
     WebContentsImpl* new_contents_impl =
         static_cast<WebContentsImpl*>(new_contents);
     BrowserPluginGuest::CreateWithOpener(instance_id,
@@ -3945,13 +3947,6 @@ void WebContentsImpl::SetBrowserPluginGuest(BrowserPluginGuest* guest) {
 
 BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() const {
   return browser_plugin_embedder_.get();
-}
-
-BrowserPluginGuestManager*
-    WebContentsImpl::GetBrowserPluginGuestManager() const {
-  return static_cast<BrowserPluginGuestManager*>(
-      GetBrowserContext()->GetUserData(
-          browser_plugin::kBrowserPluginGuestManagerKeyName));
 }
 
 void WebContentsImpl::ClearPowerSaveBlockers(

@@ -22,17 +22,11 @@ class WebContentsImpl;
 // BrowserPluginGuestManager to be used in tests.
 class TestBrowserPluginGuestManager : public BrowserPluginGuestManager {
  public:
-  typedef BrowserPluginGuestManager::GuestInstanceMap GuestInstanceMap;
-
-  TestBrowserPluginGuestManager();
+  explicit TestBrowserPluginGuestManager(BrowserContext* context);
   virtual ~TestBrowserPluginGuestManager();
 
-  const GuestInstanceMap& guest_web_contents_for_testing() const {
-    return guest_web_contents_by_instance_id_;
-  }
-
   // Waits until at least one guest is added to the guest manager.
-  void WaitForGuestAdded();
+  WebContents* WaitForGuestAdded();
 
  private:
   // BrowserPluginHostTest.ReloadEmbedder needs access to the GuestInstanceMap.
@@ -40,8 +34,9 @@ class TestBrowserPluginGuestManager : public BrowserPluginGuestManager {
 
   // Overriden to intercept in test.
   virtual void AddGuest(int instance_id,
-                        WebContentsImpl* guest_web_contents) OVERRIDE;
+                        WebContents* guest_web_contents) OVERRIDE;
 
+  WebContents* last_guest_added_;
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
   DISALLOW_COPY_AND_ASSIGN(TestBrowserPluginGuestManager);
 };

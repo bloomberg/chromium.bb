@@ -59,6 +59,7 @@ class Range;
 
 namespace content {
 
+class BrowserPluginGuestManager;
 class BrowserPluginHostFactory;
 class RenderWidgetHostView;
 class SiteInstance;
@@ -136,7 +137,8 @@ class CONTENT_EXPORT BrowserPluginGuest
   bool visible() const { return guest_visible_; }
   bool is_in_destruction() { return is_in_destruction_; }
 
-  BrowserPluginGuest* opener() const { return opener_.get(); }
+  // Returns the BrowserPluginGuest that created this guest, if any.
+  BrowserPluginGuest* GetOpener() const;
 
   // Returns whether the mouse pointer was unlocked.
   bool UnlockMouseIfNecessary(const NativeWebKeyboardEvent& event);
@@ -147,6 +149,8 @@ class CONTENT_EXPORT BrowserPluginGuest
       gfx::Rect src_subrect,
       gfx::Size dst_size,
       const base::Callback<void(bool, const SkBitmap&)>& callback);
+
+  BrowserPluginGuestManager* GetBrowserPluginGuestManager() const;
 
   // WebContentsObserver implementation.
   virtual void DidCommitProvisionalLoadForFrame(
@@ -220,7 +224,7 @@ class CONTENT_EXPORT BrowserPluginGuest
       const blink::WebGestureEvent& event) OVERRIDE;
 
   // Exposes the protected web_contents() from WebContentsObserver.
-  WebContentsImpl* GetWebContents();
+  WebContentsImpl* GetWebContents() const;
 
   gfx::Point GetScreenCoordinates(const gfx::Point& relative_position) const;
 
@@ -297,8 +301,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   // |web_contents| has to stay valid for the lifetime of BrowserPluginGuest.
   BrowserPluginGuest(int instance_id,
                      bool has_render_view,
-                     WebContentsImpl* web_contents,
-                     BrowserPluginGuest* opener);
+                     WebContentsImpl* web_contents);
 
   // Destroy unattached new windows that have been opened by this
   // BrowserPluginGuest.
@@ -488,7 +491,6 @@ class CONTENT_EXPORT BrowserPluginGuest
 
   typedef std::map<BrowserPluginGuest*, NewWindowInfo> PendingWindowMap;
   PendingWindowMap pending_new_windows_;
-  base::WeakPtr<BrowserPluginGuest> opener_;
   // A counter to generate a unique request id for a permission request.
   // We only need the ids to be unique for a given BrowserPluginGuest.
   int next_permission_request_id_;

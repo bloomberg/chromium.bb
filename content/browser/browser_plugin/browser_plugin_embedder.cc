@@ -31,7 +31,8 @@ namespace content {
 BrowserPluginHostFactory* BrowserPluginEmbedder::factory_ = NULL;
 
 BrowserPluginEmbedder::BrowserPluginEmbedder(WebContentsImpl* web_contents)
-    : WebContentsObserver(web_contents) {
+    : WebContentsObserver(web_contents),
+      weak_ptr_factory_(this) {
 }
 
 BrowserPluginEmbedder::~BrowserPluginEmbedder() {
@@ -61,8 +62,14 @@ void BrowserPluginEmbedder::StartDrag(BrowserPluginGuest* guest) {
   guest_started_drag_ = guest->AsWeakPtr();
 }
 
-WebContentsImpl* BrowserPluginEmbedder::GetWebContents() {
+WebContentsImpl* BrowserPluginEmbedder::GetWebContents() const {
   return static_cast<WebContentsImpl*>(web_contents());
+}
+
+BrowserPluginGuestManager*
+BrowserPluginEmbedder::GetBrowserPluginGuestManager() const {
+  return BrowserPluginGuestManager::FromBrowserContext(
+      GetWebContents()->GetBrowserContext());
 }
 
 bool BrowserPluginEmbedder::DidSendScreenRectsCallback(
@@ -93,7 +100,8 @@ bool BrowserPluginEmbedder::HandleKeyboardEvent(
     return false;
   }
 
-  return GetBrowserPluginGuestManager()->ForEachGuest(GetWebContents(),
+  return GetBrowserPluginGuestManager()->ForEachGuest(
+      GetWebContents(),
       base::Bind(&BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback,
                  base::Unretained(this),
                  event));
@@ -108,10 +116,11 @@ bool BrowserPluginEmbedder::SetZoomLevelCallback(
 }
 
 void BrowserPluginEmbedder::SetZoomLevel(double level) {
-  GetBrowserPluginGuestManager()->ForEachGuest(GetWebContents(), base::Bind(
-      &BrowserPluginEmbedder::SetZoomLevelCallback,
-      base::Unretained(this),
-      level));
+  GetBrowserPluginGuestManager()->ForEachGuest(
+      GetWebContents(), base::Bind(
+          &BrowserPluginEmbedder::SetZoomLevelCallback,
+          base::Unretained(this),
+          level));
 }
 
 bool BrowserPluginEmbedder::OnMessageReceived(const IPC::Message& message) {
@@ -151,20 +160,8 @@ void BrowserPluginEmbedder::OnUpdateDragCursor(bool* handled) {
   *handled = (guest_dragging_over_.get() != NULL);
 }
 
-BrowserPluginGuestManager*
-    BrowserPluginEmbedder::GetBrowserPluginGuestManager() {
-  BrowserPluginGuestManager* guest_manager =
-      GetWebContents()->GetBrowserPluginGuestManager();
-  if (!guest_manager) {
-    guest_manager = BrowserPluginGuestManager::Create();
-    GetWebContents()->GetBrowserContext()->SetUserData(
-        browser_plugin::kBrowserPluginGuestManagerKeyName, guest_manager);
-  }
-  return guest_manager;
-}
-
 void BrowserPluginEmbedder::OnAllocateInstanceID(int request_id) {
-  int instance_id = GetBrowserPluginGuestManager()->get_next_instance_id();
+  int instance_id = GetBrowserPluginGuestManager()->GetNextInstanceID();
   Send(new BrowserPluginMsg_AllocateInstanceID_ACK(
       routing_id(), request_id, instance_id));
 }
@@ -173,12 +170,13 @@ void BrowserPluginEmbedder::OnAttach(
     int instance_id,
     const BrowserPluginHostMsg_Attach_Params& params,
     const base::DictionaryValue& extra_params) {
-  if (!GetBrowserPluginGuestManager()->CanEmbedderAccessInstanceIDMaybeKill(
+  BrowserPluginGuestManager* guest_manager = GetBrowserPluginGuestManager();
+  if (!guest_manager->CanEmbedderAccessInstanceIDMaybeKill(
           GetWebContents()->GetRenderProcessHost()->GetID(), instance_id))
     return;
 
   BrowserPluginGuest* guest =
-      GetBrowserPluginGuestManager()->GetGuestByInstanceID(
+      guest_manager->GetGuestByInstanceID(
           instance_id, GetWebContents()->GetRenderProcessHost()->GetID());
 
   if (guest) {
@@ -196,7 +194,7 @@ void BrowserPluginEmbedder::OnAttach(
   }
 
   scoped_ptr<base::DictionaryValue> copy_extra_params(extra_params.DeepCopy());
-  guest = GetBrowserPluginGuestManager()->CreateGuest(
+  guest = guest_manager->CreateGuest(
       GetWebContents()->GetSiteInstance(),
       instance_id, params,
       copy_extra_params.Pass());

@@ -8,6 +8,10 @@
 
 namespace content {
 
+WebContents* BrowserPluginGuestDelegate::GetOpener() const {
+  return NULL;
+}
+
 bool BrowserPluginGuestDelegate::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   return false;
