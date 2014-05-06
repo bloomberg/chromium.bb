@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/observer_list.h"
@@ -171,6 +172,18 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // is restarted inside an already started session for a particular user.
   virtual void SetFlagsForUser(const std::string& username,
                                const std::vector<std::string>& flags) = 0;
+
+  typedef base::Callback<void(const std::vector<std::string>& state_keys)>
+      StateKeysCallback;
+
+  // Get the currently valid server-backed state keys for the device.
+  // Server-backed state keys are opaque, device-unique, time-dependent,
+  // client-determined identifiers that are used for keying state in the cloud
+  // for the device to retrieve after a device factory reset.
+  //
+  // The state keys are returned asynchronously via |callback|. The callback
+  // will be invoked with an empty state key vector in case of errors.
+  virtual void GetServerBackedStateKeys(const StateKeysCallback& callback) = 0;
 
   // Creates the instance.
   static SessionManagerClient* Create(DBusClientImplementationType type);

@@ -10,12 +10,14 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/blocking_method_caller.h"
 #include "chromeos/dbus/cryptohome_client.h"
+#include "crypto/sha2.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -269,6 +271,20 @@ class SessionManagerClientImpl : public SessionManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
+  virtual void GetServerBackedStateKeys(const StateKeysCallback& callback)
+      OVERRIDE {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerGetServerBackedStateKeys);
+
+    session_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&SessionManagerClientImpl::OnGetServerBackedStateKeys,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  }
+
  protected:
   virtual void Init(dbus::Bus* bus) OVERRIDE {
     session_manager_proxy_ = bus->GetObjectProxy(
@@ -515,6 +531,39 @@ class SessionManagerClientImpl : public SessionManagerClient {
     LOG_IF(ERROR, !success) << "Failed to connect to " << signal_name;
   }
 
+  // Called when kSessionManagerGetServerBackedStateKeys method is complete.
+  void OnGetServerBackedStateKeys(const StateKeysCallback& callback,
+                                  dbus::Response* response) {
+    std::vector<std::string> state_keys;
+    if (!response) {
+      LOG(ERROR) << "Failed to call "
+                 << login_manager::kSessionManagerStartSession;
+    } else {
+      dbus::MessageReader reader(response);
+      dbus::MessageReader array_reader(NULL);
+
+      if (!reader.PopArray(&array_reader)) {
+        LOG(ERROR) << "Bad response: " << response->ToString();
+      } else {
+        while (array_reader.HasMoreData()) {
+          const uint8* data = NULL;
+          size_t size = 0;
+          if (!array_reader.PopArrayOfBytes(&data, &size)) {
+            LOG(ERROR) << "Bad response: " << response->ToString();
+            state_keys.clear();
+            break;
+          }
+          state_keys.push_back(
+              std::string(reinterpret_cast<const char*>(data), size));
+        }
+      }
+    }
+
+    if (!callback.is_null())
+      callback.Run(state_keys);
+  }
+
+
   dbus::ObjectProxy* session_manager_proxy_;
   scoped_ptr<BlockingMethodCaller> blocking_method_caller_;
   ObserverList<Observer> observers_;
@@ -681,6 +730,17 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   virtual void SetFlagsForUser(const std::string& username,
                                const std::vector<std::string>& flags) OVERRIDE {
   }
+
+  virtual void GetServerBackedStateKeys(const StateKeysCallback& callback)
+      OVERRIDE {
+    std::vector<std::string> state_keys;
+    for (int i = 0; i < 5; ++i)
+      state_keys.push_back(crypto::SHA256HashString(base::IntToString(i)));
+
+    if (!callback.is_null())
+      callback.Run(state_keys);
+  }
+
  private:
   StubDelegate* delegate_;  // Weak pointer; may be NULL.
   ObserverList<Observer> observers_;

@@ -54,6 +54,7 @@ class MockSessionManagerClient : public SessionManagerClient {
   MOCK_METHOD2(SetFlagsForUser,
                void(const std::string&,
                     const std::vector<std::string>&));
+  MOCK_METHOD1(GetServerBackedStateKeys, void(const StateKeysCallback&));
 };
 
 }  // namespace chromeos

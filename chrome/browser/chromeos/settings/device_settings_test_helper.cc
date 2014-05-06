@@ -181,6 +181,9 @@ void DeviceSettingsTestHelper::SetFlagsForUser(
     const std::string& account_id,
     const std::vector<std::string>& flags) {}
 
+void DeviceSettingsTestHelper::GetServerBackedStateKeys(
+    const StateKeysCallback& callback) {}
+
 DeviceSettingsTestHelper::PolicyState::PolicyState()
     : store_result_(true) {}
 

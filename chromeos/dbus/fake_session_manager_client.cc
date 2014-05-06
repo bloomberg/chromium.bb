@@ -135,6 +135,12 @@ void FakeSessionManagerClient::SetFlagsForUser(
     const std::vector<std::string>& flags) {
 }
 
+void FakeSessionManagerClient::GetServerBackedStateKeys(
+    const StateKeysCallback& callback) {
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(callback, server_backed_state_keys_));
+}
+
 const std::string& FakeSessionManagerClient::device_policy() const {
   return device_policy_;
 }

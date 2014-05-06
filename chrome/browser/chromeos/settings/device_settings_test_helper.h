@@ -119,6 +119,8 @@ class DeviceSettingsTestHelper : public SessionManagerClient {
   virtual void SetFlagsForUser(
       const std::string& account_id,
       const std::vector<std::string>& flags) OVERRIDE;
+  virtual void GetServerBackedStateKeys(
+      const StateKeysCallback& callback) OVERRIDE;
 
  private:
   struct PolicyState {
