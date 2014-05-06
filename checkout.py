@@ -726,7 +726,9 @@ class GitCheckout(CheckoutBase):
         ['diff', base_ref, '--ignore-submodules',
          '--name-only']).splitlines(False)
     assert sorted(patches.filenames) == sorted(found_files), (
-        sorted(patches.filenames), sorted(found_files))
+        'Found extra %s locally, %s not patched' % (
+            sorted(set(found_files) - set(patches.filenames)),
+            sorted(set(patches.filenames) - set(found_files))))
 
   def commit(self, commit_message, user):
     """Commits, updates the commit message and pushes."""

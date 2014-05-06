@@ -87,9 +87,16 @@ def main():
                          'is detected.')
   parser.add_option('-b', '--base_ref', help='Base git ref to patch on top of, '
                     'used for verification.')
+  parser.add_option('--whitelist', action='append', default=[],
+                    help='Patch only specified file(s).')
+  parser.add_option('--blacklist', action='append', default=[],
+                    help='Don\'t patch specified file(s).')
   parser.add_option('-d', '--ignore_deps', action='store_true',
                     help='Don\'t run gclient sync on DEPS changes.')
   options, args = parser.parse_args()
+
+  if options.whitelist and options.blacklist:
+    parser.error('Cannot specify both --whitelist and --blacklist')
 
   if options.password and options.private_key_file:
     parser.error('-k and -w options are incompatible')
@@ -185,6 +192,12 @@ def main():
             options.issue, options.patchset,
             options.server, options.issue)
     return 1
+  if options.whitelist:
+    patchset.patches = [patch for patch in patchset.patches
+                        if patch.filename in options.whitelist]
+  if options.blacklist:
+    patchset.patches = [patch for patch in patchset.patches
+                        if patch.filename not in options.blacklist]
   for patch in patchset.patches:
     print(patch)
   full_dir = os.path.abspath(options.root_dir)
