@@ -79,6 +79,8 @@ function PDFViewer() {
   }
 
   this.plugin_.setAttribute('src', streamDetails.streamUrl);
+  if (window.top == window)
+    this.plugin_.setAttribute('full-frame', '');
   document.body.appendChild(this.plugin_);
 
   this.messagingHost_ = new PDFMessagingHost(window, this);
