@@ -13,6 +13,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -72,6 +73,16 @@ void RenderWidgetTest::TestOnResize() {
   // Resetting the rect to empty should not send the ack.
   resize_params.new_size = gfx::Size();
   resize_params.physical_backing_size = gfx::Size();
+  widget->OnResize(resize_params);
+  EXPECT_FALSE(widget->next_paint_is_resize_ack());
+
+  // Changing the screen info should not send the ack.
+  resize_params.screen_info.orientationAngle = 90;
+  widget->OnResize(resize_params);
+  EXPECT_FALSE(widget->next_paint_is_resize_ack());
+
+  resize_params.screen_info.orientationType =
+      blink::WebScreenOrientationPortraitPrimary;
   widget->OnResize(resize_params);
   EXPECT_FALSE(widget->next_paint_is_resize_ack());
 }

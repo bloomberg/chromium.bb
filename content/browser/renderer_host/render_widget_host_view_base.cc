@@ -372,6 +372,7 @@ RenderWidgetHostViewBase::RenderWidgetHostViewBase()
       selection_text_offset_(0),
       selection_range_(gfx::Range::InvalidRange()),
       current_device_scale_factor_(0),
+      current_display_rotation_(gfx::Display::ROTATE_0),
       pinch_zoom_enabled_(content::IsPinchToZoomEnabled()),
       renderer_frame_number_(0) {
 }
@@ -513,11 +514,14 @@ bool RenderWidgetHostViewBase::HasDisplayPropertyChanged(gfx::NativeView view) {
   gfx::Display display =
       gfx::Screen::GetScreenFor(view)->GetDisplayNearestWindow(view);
   if (current_display_area_ == display.work_area() &&
-      current_device_scale_factor_ == display.device_scale_factor()) {
+      current_device_scale_factor_ == display.device_scale_factor() &&
+      current_display_rotation_ == display.rotation()) {
     return false;
   }
+
   current_display_area_ = display.work_area();
   current_device_scale_factor_ = display.device_scale_factor();
+  current_display_rotation_ = display.rotation();
   return true;
 }
 

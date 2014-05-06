@@ -26,6 +26,7 @@
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/rect.h"
@@ -404,6 +405,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 protected:
   // The scale factor of the display the renderer is currently on.
   float current_device_scale_factor_;
+
+  // The orientation of the display the renderer is currently on.
+  gfx::Display::Rotation current_display_rotation_;
 
   // Whether pinch-to-zoom should be enabled and pinch events forwarded to the
   // renderer.
