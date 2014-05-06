@@ -283,7 +283,7 @@ void InterstitialPageImpl::Hide() {
   if (render_view_host_->GetView() &&
       render_view_host_->GetView()->HasFocus() &&
       controller_->delegate()->GetRenderViewHost()->GetView()) {
-    controller_->delegate()->GetRenderViewHost()->Focus();
+    controller_->delegate()->GetRenderViewHost()->GetView()->Focus();
   }
 
   // Delete this and call Shutdown on the RVH asynchronously, as we may have
@@ -702,7 +702,7 @@ void InterstitialPageImpl::Focus() {
   // Focus the native window.
   if (!enabled())
     return;
-  render_view_host_->Focus();
+  render_view_host_->GetView()->Focus();
 }
 
 void InterstitialPageImpl::FocusThroughTabTraversal(bool reverse) {
