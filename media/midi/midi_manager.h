@@ -10,11 +10,16 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/midi/midi_port_info.h"
 #include "media/midi/midi_result.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace media {
 
@@ -50,6 +55,8 @@ class MEDIA_EXPORT MidiManagerClient {
 // Manages access to all MIDI hardware.
 class MEDIA_EXPORT MidiManager {
  public:
+  // The constructor and the destructor will be called on the CrBrowserMain
+  // thread.
   static MidiManager* Create();
 
   MidiManager();
@@ -60,6 +67,8 @@ class MEDIA_EXPORT MidiManager {
   // and the client is registered to receive MIDI data.
   // CompleteStartSession() is called with MIDI_OK if the session is started.
   // Otherwise CompleteStartSession() is called with proper MidiResult code.
+  // StartSession() and EndSession() can be called on the Chrome_IOThread.
+  // CompleteStartSession() will be invoked on the same Chrome_IOThread.
   void StartSession(MidiManagerClient* client, int client_id);
 
   // A client calls EndSession() to stop receiving MIDI data.
@@ -92,15 +101,20 @@ class MEDIA_EXPORT MidiManager {
  protected:
   friend class MidiManagerUsb;
 
-  // Initializes the platform dependent MIDI system. It will call
-  // CompleteInitialization() asynchronously when initialization is finished.
-  // |result| of CompleteInitialization() will be MIDI_OK on success.
-  // MidiManager has a default implementation that calls
-  // CompleteInitialization() with MIDI_NOT_SUPPORTED.
+  // Initializes the platform dependent MIDI system. MidiManager class has a
+  // default implementation that synchronously calls CompleteInitialization()
+  // with MIDI_NOT_SUPPORTED on the caller thread. A derived class for a
+  // specific platform should override this method correctly.
+  // This method is called on Chrome_IOThread thread inside StartSession().
+  // Platform dependent initialization can be processed synchronously or
+  // asynchronously. When the initialization is completed,
+  // CompleteInitialization() should be called with |result|.
+  // |result| should be MIDI_OK on success, otherwise a proper MidiResult.
   virtual void StartInitialization();
 
   // Called from a platform dependent implementation of StartInitialization().
-  // It will distribute |result| to MIDIManagerClient objects in
+  // It invokes CompleteInitializationInternal() on the thread that calls
+  // StartSession() and distributes |result| to MIDIManagerClient objects in
   // |pending_clients_|.
   void CompleteInitialization(MidiResult result);
 
@@ -123,8 +137,17 @@ class MEDIA_EXPORT MidiManager {
                     (time - base::TimeTicks()).InSecondsF());
   }
 
-  bool initialized_;
-  MidiResult result_;
+  size_t get_clients_size_for_testing() const { return clients_.size(); }
+  size_t get_pending_clients_size_for_testing() const {
+    return pending_clients_.size();
+  }
+
+  // TODO(toyoshim): Make |input_ports_| and |output_ports_| private members.
+  MidiPortInfoList input_ports_;
+  MidiPortInfoList output_ports_;
+
+ private:
+  void CompleteInitializationInternal(MidiResult result);
 
   // Keeps track of all clients who wish to receive MIDI data.
   typedef std::set<MidiManagerClient*> ClientList;
@@ -134,13 +157,21 @@ class MEDIA_EXPORT MidiManager {
   typedef std::map<int, MidiManagerClient*> PendingClientMap;
   PendingClientMap pending_clients_;
 
-  // Protects access to our clients, |clients_| and |pending_clients_|.
-  base::Lock clients_lock_;
+  // Keeps a SingleThreadTaskRunner of the thread that calls StartSession in
+  // order to invoke CompleteStartSession() on the thread.
+  scoped_refptr<base::SingleThreadTaskRunner> session_thread_runner_;
 
-  MidiPortInfoList input_ports_;
-  MidiPortInfoList output_ports_;
+  // Keeps true if platform dependent initialization is already completed.
+  bool initialized_;
 
- private:
+  // Keeps the platform dependent initialization result if initialization is
+  // completed. Otherwise keeps MIDI_NOT_SUPPORTED.
+  MidiResult result_;
+
+  // Protects access to |clients_|, |pending_clients_|, |initialized_|, and
+  // |result_|.
+  base::Lock lock_;
+
   DISALLOW_COPY_AND_ASSIGN(MidiManager);
 };
 

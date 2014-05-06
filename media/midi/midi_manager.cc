@@ -4,7 +4,10 @@
 
 #include "media/midi/midi_manager.h"
 
+#include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 
 namespace media {
 
@@ -28,7 +31,7 @@ void MidiManager::StartSession(MidiManagerClient* client, int client_id) {
   bool session_needs_initialization = false;
 
   {
-    base::AutoLock auto_lock(clients_lock_);
+    base::AutoLock auto_lock(lock_);
     session_is_ready = initialized_;
     if (!session_is_ready) {
       // Call StartInitialization() only for the first request.
@@ -42,6 +45,8 @@ void MidiManager::StartSession(MidiManagerClient* client, int client_id) {
   if (!session_is_ready) {
     if (session_needs_initialization) {
       TRACE_EVENT0("midi", "MidiManager::StartInitialization");
+      session_thread_runner_ =
+          base::MessageLoop::current()->message_loop_proxy();
       StartInitialization();
     }
     // CompleteInitialization() will be called asynchronously when platform
@@ -53,7 +58,7 @@ void MidiManager::StartSession(MidiManagerClient* client, int client_id) {
   // initialized clients.
   MidiResult result;
   {
-    base::AutoLock auto_lock(clients_lock_);
+    base::AutoLock auto_lock(lock_);
     if (result_ == MIDI_OK)
       clients_.insert(client);
     result = result_;
@@ -62,7 +67,7 @@ void MidiManager::StartSession(MidiManagerClient* client, int client_id) {
 }
 
 void MidiManager::EndSession(MidiManagerClient* client) {
-  base::AutoLock auto_lock(clients_lock_);
+  base::AutoLock auto_lock(lock_);
   ClientList::iterator i = clients_.find(client);
   if (i != clients_.end())
     clients_.erase(i);
@@ -80,23 +85,14 @@ void MidiManager::StartInitialization() {
 }
 
 void MidiManager::CompleteInitialization(MidiResult result) {
-  TRACE_EVENT0("midi", "MidiManager::CompleteInitialization");
-
-  base::AutoLock auto_lock(clients_lock_);
-  DCHECK(clients_.empty());
-  DCHECK(!pending_clients_.empty());
-  DCHECK(!initialized_);
-  initialized_ = true;
-  result_ = result;
-
-  for (PendingClientMap::iterator it = pending_clients_.begin();
-       it != pending_clients_.end();
-       ++it) {
-    if (result_ == MIDI_OK)
-      clients_.insert(it->second);
-    it->second->CompleteStartSession(it->first, result_);
-  }
-  pending_clients_.clear();
+  DCHECK(session_thread_runner_.get());
+  // It is safe to post a task to the IO thread from here because the IO thread
+  // should have stopped if the MidiManager is going to be destructed.
+  session_thread_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&MidiManager::CompleteInitializationInternal,
+                 base::Unretained(this),
+                 result));
 }
 
 void MidiManager::AddInputPort(const MidiPortInfo& info) {
@@ -112,10 +108,30 @@ void MidiManager::ReceiveMidiData(
     const uint8* data,
     size_t length,
     double timestamp) {
-  base::AutoLock auto_lock(clients_lock_);
+  base::AutoLock auto_lock(lock_);
 
   for (ClientList::iterator i = clients_.begin(); i != clients_.end(); ++i)
     (*i)->ReceiveMidiData(port_index, data, length, timestamp);
+}
+
+void MidiManager::CompleteInitializationInternal(MidiResult result) {
+  TRACE_EVENT0("midi", "MidiManager::CompleteInitialization");
+
+  base::AutoLock auto_lock(lock_);
+  DCHECK(clients_.empty());
+  DCHECK(!pending_clients_.empty());
+  DCHECK(!initialized_);
+  initialized_ = true;
+  result_ = result;
+
+  for (PendingClientMap::iterator it = pending_clients_.begin();
+       it != pending_clients_.end();
+       ++it) {
+    if (result_ == MIDI_OK)
+      clients_.insert(it->second);
+    it->second->CompleteStartSession(it->first, result_);
+  }
+  pending_clients_.clear();
 }
 
 }  // namespace media
