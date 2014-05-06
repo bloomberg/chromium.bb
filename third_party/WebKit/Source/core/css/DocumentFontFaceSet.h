@@ -26,6 +26,7 @@
 #ifndef DocumentFontFaceSet_h
 #define DocumentFontFaceSet_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {
@@ -35,7 +36,7 @@ class FontFaceSet;
 
 class DocumentFontFaceSet {
 public:
-    static PassRefPtr<FontFaceSet> fonts(Document&);
+    static PassRefPtrWillBeRawPtr<FontFaceSet> fonts(Document&);
 };
 
 } // namespace WebCore

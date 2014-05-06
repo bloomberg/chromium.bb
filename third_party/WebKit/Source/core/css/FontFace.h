@@ -93,13 +93,14 @@ public:
 
     bool hadBlankText() const;
 
-    class LoadFontCallback : public RefCounted<LoadFontCallback> {
+    class LoadFontCallback : public RefCountedWillBeGarbageCollectedFinalized<LoadFontCallback> {
     public:
         virtual ~LoadFontCallback() { }
         virtual void notifyLoaded(FontFace*) = 0;
         virtual void notifyError(FontFace*) = 0;
+        virtual void trace(Visitor*) { }
     };
-    void loadWithCallback(PassRefPtr<LoadFontCallback>, ExecutionContext*);
+    void loadWithCallback(PassRefPtrWillBeRawPtr<LoadFontCallback>, ExecutionContext*);
 
 private:
     FontFace();
@@ -126,7 +127,7 @@ private:
 
     Vector<OwnPtr<FontFaceReadyPromiseResolver> > m_readyResolvers;
     OwnPtrWillBeMember<CSSFontFace> m_cssFontFace;
-    Vector<RefPtr<LoadFontCallback> > m_callbacks;
+    WillBeHeapVector<RefPtrWillBeMember<LoadFontCallback> > m_callbacks;
 };
 
 typedef WillBeHeapVector<RefPtrWillBeMember<FontFace> > FontFaceArray;

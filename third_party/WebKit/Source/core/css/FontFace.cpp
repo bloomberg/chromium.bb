@@ -379,7 +379,7 @@ void FontFace::setLoadStatus(LoadStatus status)
     if (m_status == Loaded || m_status == Error) {
         resolveReadyPromises();
 
-        Vector<RefPtr<LoadFontCallback> > callbacks;
+        WillBeHeapVector<RefPtrWillBeMember<LoadFontCallback> > callbacks;
         m_callbacks.swap(callbacks);
         for (size_t i = 0; i < callbacks.size(); ++i) {
             if (m_status == Loaded)
@@ -403,7 +403,7 @@ ScriptPromise FontFace::load(ExecutionContext* context)
     return promise;
 }
 
-void FontFace::loadWithCallback(PassRefPtr<LoadFontCallback> callback, ExecutionContext* context)
+void FontFace::loadWithCallback(PassRefPtrWillBeRawPtr<LoadFontCallback> callback, ExecutionContext* context)
 {
     loadInternal(context);
     if (m_status == Loaded)
@@ -627,6 +627,7 @@ void FontFace::trace(Visitor* visitor)
     visitor->trace(m_featureSettings);
     visitor->trace(m_error);
     visitor->trace(m_cssFontFace);
+    visitor->trace(m_callbacks);
 }
 
 bool FontFace::hadBlankText() const
