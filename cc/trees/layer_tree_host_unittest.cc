@@ -3116,7 +3116,7 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
   int last_source_frame_number_drawn_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestDeferredInitialize);
+MULTI_THREAD_DIRECT_RENDERER_TEST_F(LayerTreeHostTestDeferredInitialize);
 
 // Test for UI Resource management.
 class LayerTreeHostTestUIResource : public LayerTreeHostTest {
@@ -4487,7 +4487,10 @@ class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
     scoped_refptr<TestContextProvider> context_provider =
         TestContextProvider::Create();
     context_provider->SetMaxTransferBufferUsageBytes(1024 * 1024);
-    return FakeOutputSurface::Create3d(context_provider);
+    if (delegating_renderer())
+      return FakeOutputSurface::CreateDelegating3d(context_provider);
+    else
+      return FakeOutputSurface::Create3d(context_provider);
   }
 
   virtual void SetupTree() OVERRIDE {
@@ -4667,9 +4670,14 @@ class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
       second_context_provider_ = TestContextProvider::Create();
     }
 
-    scoped_ptr<FakeOutputSurface> output_surface(FakeOutputSurface::Create3d(
-        second_context_provider_ ? second_context_provider_
-                                 : first_context_provider_));
+    scoped_refptr<TestContextProvider> provider(second_context_provider_
+                                                    ? second_context_provider_
+                                                    : first_context_provider_);
+    scoped_ptr<FakeOutputSurface> output_surface;
+    if (delegating_renderer())
+      output_surface = FakeOutputSurface::CreateDelegating3d(provider);
+    else
+      output_surface = FakeOutputSurface::Create3d(provider);
     output_surface->SetMemoryPolicyToSetAtBind(
         make_scoped_ptr(new ManagedMemoryPolicy(
             second_context_provider_ ? second_output_surface_memory_limit_
