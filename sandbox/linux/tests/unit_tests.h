@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
+#include "sandbox/linux/tests/sandbox_test_runner_function_pointer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {
@@ -62,12 +63,13 @@ bool IsRunningOnValgrind();
 // that the test actually dies. The death test only passes if the death occurs
 // in the expected fashion, as specified by "death" and "death_aux". These two
 // parameters are typically set to one of the DEATH_XXX() macros.
-#define SANDBOX_DEATH_TEST(test_case_name, test_name, death)             \
-  void TEST_##test_name(void*);                                          \
-  TEST(test_case_name, test_name) {                                      \
-    sandbox::UnitTests::RunTestInProcess(TEST_##test_name, NULL, death); \
-  }                                                                      \
-  void TEST_##test_name(void*)
+#define SANDBOX_DEATH_TEST(test_case_name, test_name, death)                \
+  void TEST_##test_name(void);                                              \
+  TEST(test_case_name, test_name) {                                         \
+    SandboxTestRunnerFunctionPointer sandbox_test_runner(TEST_##test_name); \
+    sandbox::UnitTests::RunTestInProcess(&sandbox_test_runner, death);      \
+  }                                                                         \
+  void TEST_##test_name(void)
 
 // Define a new test case that runs inside of a GTest death test. This is
 // necessary, as most of our tests by definition make global and irreversible
@@ -88,9 +90,10 @@ bool IsRunningOnValgrind();
   ((expr) ? static_cast<void>(0) : sandbox::UnitTests::AssertionFailure( \
                                        SANDBOX_STR(expr), __FILE__, __LINE__))
 
+// This class allows to run unittests in their own process. The main method is
+// RunTestInProcess().
 class UnitTests {
  public:
-  typedef void (*Test)(void*);
   typedef void (*DeathCheck)(int status,
                              const std::string& msg,
                              const void* aux);
@@ -99,8 +102,12 @@ class UnitTests {
   // directly. It is automatically invoked by SANDBOX_TEST(). Most sandboxing
   // functions make global irreversible changes to the execution environment
   // and must therefore execute in their own isolated process.
-  static void RunTestInProcess(Test test,
-                               void* arg,
+  // |test_runner| must implement the SandboxTestRunner interface and will run
+  // in a subprocess.
+  // Note: since the child process (created with fork()) will never return from
+  // RunTestInProcess(), |test_runner| is guaranteed to exist for the lifetime
+  // of the child process.
+  static void RunTestInProcess(SandboxTestRunner* test_runner,
                                DeathCheck death,
                                const void* death_aux);
 

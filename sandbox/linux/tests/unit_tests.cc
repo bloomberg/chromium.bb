@@ -105,10 +105,10 @@ static void SetProcessTimeout(int time_in_seconds) {
 // in the BPF sandbox, as it potentially makes global state changes and as
 // it also tends to raise fatal errors, if the code has been used in an
 // insecure manner.
-void UnitTests::RunTestInProcess(UnitTests::Test test,
-                                 void* arg,
+void UnitTests::RunTestInProcess(SandboxTestRunner* test_runner,
                                  DeathCheck death,
                                  const void* death_aux) {
+  CHECK(test_runner);
   // We need to fork(), so we can't be multi-threaded, as threads could hold
   // locks.
   int num_threads = CountThreads();
@@ -174,7 +174,7 @@ void UnitTests::RunTestInProcess(UnitTests::Test test,
     struct rlimit no_core = {0};
     setrlimit(RLIMIT_CORE, &no_core);
 
-    test(arg);
+    test_runner->Run();
     _exit(kExpectedValue);
   }
 

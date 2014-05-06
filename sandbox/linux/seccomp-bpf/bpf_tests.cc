@@ -8,13 +8,13 @@ namespace sandbox {
 
 // static
 template <>
-void* BPFTests<void>::NewAux() {
+void* BPFTesterSimpleDelegate<void>::NewAux() {
   return NULL;
 }
 
 // static
 template <>
-void BPFTests<void>::DeleteAux(void* aux) {
+void BPFTesterSimpleDelegate<void>::DeleteAux(void* aux) {
   CHECK(!aux);
 }
 

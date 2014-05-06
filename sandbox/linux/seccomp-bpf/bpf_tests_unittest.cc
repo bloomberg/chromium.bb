@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <errno.h>
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/services/linux_syscalls.h"
@@ -65,6 +66,24 @@ BPF_TEST(BPFTest,
   // BPF_AUX should point to an instance of FourtyTwo.
   BPF_ASSERT(BPF_AUX);
   BPF_ASSERT(FourtyTwo::kMagicValue == BPF_AUX->value());
+}
+
+void DummyTestFunction(FourtyTwo *fourty_two) {
+}
+
+TEST(BPFTest, BPFTesterSimpleDelegateLeakTest) {
+  // Don't do anything, simply gives dynamic tools an opportunity to detect
+  // leaks.
+  {
+    BPFTesterSimpleDelegate<FourtyTwo> simple_delegate(DummyTestFunction,
+                                                       EmptyPolicyTakesClass);
+  }
+  {
+    // Test polymorphism.
+    scoped_ptr<BPFTesterDelegate> simple_delegate(
+        new BPFTesterSimpleDelegate<FourtyTwo>(DummyTestFunction,
+                                               EmptyPolicyTakesClass));
+  }
 }
 
 }  // namespace

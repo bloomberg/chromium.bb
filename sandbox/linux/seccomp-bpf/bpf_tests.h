@@ -14,6 +14,8 @@
 #include "build/build_config.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_compatibility_policy.h"
+#include "sandbox/linux/seccomp-bpf/sandbox_bpf_test_runner.h"
+#include "sandbox/linux/tests/sandbox_test_runner.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
 namespace sandbox {
@@ -24,13 +26,16 @@ namespace sandbox {
 // A BPF_DEATH_TEST is always disabled under ThreadSanitizer, see
 // crbug.com/243968.
 #define BPF_DEATH_TEST(test_case_name, test_name, death, policy, aux...) \
-  void BPF_TEST_##test_name(sandbox::BPFTests<aux>::AuxType* BPF_AUX);   \
+  void BPF_TEST_##test_name(                                             \
+      sandbox::BPFTesterSimpleDelegate<aux>::AuxType* BPF_AUX);          \
   TEST(test_case_name, DISABLE_ON_TSAN(test_name)) {                     \
-    sandbox::BPFTests<aux>::TestArgs arg(BPF_TEST_##test_name, policy);  \
-    sandbox::BPFTests<aux>::RunTestInProcess(                            \
-        sandbox::BPFTests<aux>::TestWrapper, &arg, death);               \
+    sandbox::SandboxBPFTestRunner bpf_test_runner(                       \
+        new sandbox::BPFTesterSimpleDelegate<aux>(BPF_TEST_##test_name,  \
+                                                  policy));              \
+    sandbox::UnitTests::RunTestInProcess(&bpf_test_runner, death);       \
   }                                                                      \
-  void BPF_TEST_##test_name(sandbox::BPFTests<aux>::AuxType* BPF_AUX)
+  void BPF_TEST_##test_name(                                             \
+      sandbox::BPFTesterSimpleDelegate<aux>::AuxType* BPF_AUX)
 
 // BPF_TEST() is a special version of SANDBOX_TEST(). It turns into a no-op,
 // if the host does not have kernel support for running BPF filters.
@@ -59,80 +64,36 @@ namespace sandbox {
 #define BPF_ASSERT_LE(x, y) BPF_ASSERT((x) <= (y))
 #define BPF_ASSERT_GE(x, y) BPF_ASSERT((x) >= (y))
 
-// The "Aux" type is optional. void is used by default and all pointers
-// provided to the tests will be NULL.
 template <class Aux = void>
-class BPFTests : public UnitTests {
+class BPFTesterSimpleDelegate : public BPFTesterDelegate {
  public:
   typedef Aux AuxType;
-
-  class TestArgs {
-   public:
-    TestArgs(void (*t)(AuxType*),
-             typename CompatibilityPolicy<AuxType>::SyscallEvaluator p)
-        : test_(t), policy_function_(p) {}
-
-    void (*test() const)(AuxType*) { return test_; }
-
-   private:
-    friend class BPFTests;
-
-    void (*test_)(AuxType*);
-    typename CompatibilityPolicy<AuxType>::SyscallEvaluator policy_function_;
-  };
-
-  static void TestWrapper(void* void_arg) {
-    TestArgs* arg = reinterpret_cast<TestArgs*>(void_arg);
-    sandbox::Die::EnableSimpleExit();
-
+  BPFTesterSimpleDelegate(
+      void (*test_function)(AuxType*),
+      typename CompatibilityPolicy<AuxType>::SyscallEvaluator policy_function)
+      : aux_pointer_for_policy_(NULL),
+        test_function_(test_function),
+        policy_function_(policy_function) {
     // This will be NULL iff AuxType is void.
-    AuxType* aux_pointer_for_policy = NewAux();
+    aux_pointer_for_policy_ = NewAux();
+  }
 
-    scoped_ptr<CompatibilityPolicy<AuxType> > policy(
-        new CompatibilityPolicy<AuxType>(arg->policy_function_,
-                                         aux_pointer_for_policy));
+  virtual ~BPFTesterSimpleDelegate() { DeleteAux(aux_pointer_for_policy_); }
 
-    if (sandbox::SandboxBPF::SupportsSeccompSandbox(-1) ==
-        sandbox::SandboxBPF::STATUS_AVAILABLE) {
-      // Ensure the the sandbox is actually available at this time
-      int proc_fd;
-      BPF_ASSERT((proc_fd = open("/proc", O_RDONLY | O_DIRECTORY)) >= 0);
-      BPF_ASSERT(sandbox::SandboxBPF::SupportsSeccompSandbox(proc_fd) ==
-                 sandbox::SandboxBPF::STATUS_AVAILABLE);
+  virtual scoped_ptr<SandboxBPFPolicy> GetSandboxBPFPolicy() OVERRIDE {
+    // The current method is guaranteed to only run in the child process
+    // running the test. In this process, the current object is guaranteed
+    // to live forever. So it's ok to pass aux_pointer_for_policy_ to
+    // the policy, which could in turn pass it to the kernel via Trap().
+    return scoped_ptr<SandboxBPFPolicy>(new CompatibilityPolicy<AuxType>(
+        policy_function_, aux_pointer_for_policy_));
+  }
 
-      // Initialize and then start the sandbox with our custom policy
-      sandbox::SandboxBPF sandbox;
-      sandbox.set_proc_fd(proc_fd);
-      sandbox.SetSandboxPolicy(policy.release());
-      BPF_ASSERT(
-          sandbox.StartSandbox(sandbox::SandboxBPF::PROCESS_SINGLE_THREADED));
-
-      // Run the actual test.
-      arg->test()(aux_pointer_for_policy);
-
-      // Once a BPF policy is engaged, there is no going back. A SIGSYS handler
-      // can make use of aux, this can happen even in _exit(). This object's
-      // ownership has been passed to the kernel by engaging the sandbox and it
-      // will be destroyed with the process.
-      ANNOTATE_LEAKING_OBJECT_PTR(aux_pointer_for_policy);
-    } else {
-      printf("This BPF test is not fully running in this configuration!\n");
-      // Android and Valgrind are the only configurations where we accept not
-      // having kernel BPF support.
-      if (!IsAndroid() && !IsRunningOnValgrind()) {
-        const bool seccomp_bpf_is_supported = false;
-        BPF_ASSERT(seccomp_bpf_is_supported);
-      }
-      // Call the compiler and verify the policy. That's the least we can do,
-      // if we don't have kernel support.
-      sandbox::SandboxBPF sandbox;
-      sandbox.SetSandboxPolicy(policy.release());
-      sandbox::SandboxBPF::Program* program =
-          sandbox.AssembleFilter(true /* force_verification */);
-      delete program;
-      DeleteAux(aux_pointer_for_policy);
-      sandbox::UnitTests::IgnoreThisTest();
-    }
+  virtual void RunTestFunction() OVERRIDE {
+    // Run the actual test.
+    // The current object is guaranteed to live forever in the child process
+    // where this will run.
+    test_function_(aux_pointer_for_policy_);
   }
 
  private:
@@ -141,14 +102,17 @@ class BPFTests : public UnitTests {
   static Aux* NewAux() { return new Aux(); }
   static void DeleteAux(Aux* aux) { delete aux; }
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(BPFTests);
+  AuxType* aux_pointer_for_policy_;
+  void (*test_function_)(AuxType*);
+  typename CompatibilityPolicy<AuxType>::SyscallEvaluator policy_function_;
+  DISALLOW_COPY_AND_ASSIGN(BPFTesterSimpleDelegate);
 };
 
 // Specialization of NewAux that returns NULL;
 template <>
-void* BPFTests<void>::NewAux();
+void* BPFTesterSimpleDelegate<void>::NewAux();
 template <>
-void BPFTests<void>::DeleteAux(void* aux);
+void BPFTesterSimpleDelegate<void>::DeleteAux(void* aux);
 
 }  // namespace sandbox
 

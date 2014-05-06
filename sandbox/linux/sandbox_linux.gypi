@@ -66,6 +66,9 @@
         '../..',
       ],
       'sources': [
+        'tests/sandbox_test_runner.h',
+        'tests/sandbox_test_runner_function_pointer.cc',
+        'tests/sandbox_test_runner_function_pointer.h',
         'tests/test_utils.cc',
         'tests/test_utils.h',
         'tests/unit_tests.cc',
@@ -76,6 +79,8 @@
           'sources': [
             'seccomp-bpf/bpf_tests.cc',
             'seccomp-bpf/bpf_tests.h',
+            'seccomp-bpf/sandbox_bpf_test_runner.cc',
+            'seccomp-bpf/sandbox_bpf_test_runner.h',
           ],
           'dependencies': [
             'seccomp_bpf',
