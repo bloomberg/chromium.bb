@@ -264,7 +264,12 @@ void MaximizeModeWindowState::UpdateBounds(wm::WindowState* window_state,
         !animated) {
       window_state->SetBoundsDirect(bounds_in_parent);
     } else {
-      window_state->SetBoundsDirectAnimated(bounds_in_parent);
+      // If we animate (to) maximized mode, we want to use the cross fade to
+      // avoid flashing.
+      if (window_state->IsMaximized())
+        window_state->SetBoundsDirectCrossFade(bounds_in_parent);
+      else
+        window_state->SetBoundsDirectAnimated(bounds_in_parent);
     }
   }
 }
