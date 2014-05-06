@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -194,9 +196,15 @@ void ManagePasswordsBubbleUIController::UpdateIconAndBubbleState(
 
   if (manage_passwords_bubble_needs_showing_) {
     DCHECK(state == ManagePasswordsIcon::PENDING_STATE);
-    // TODO(mkwst): Replace this with execution of a browser command once we
-    // can pipe a CommandUpdater down here.
-    icon->ShowBubbleWithoutUserInteraction();
+#if !defined(OS_ANDROID)
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+    if (!browser || browser->toolbar_model()->input_in_progress()) {
+      manage_passwords_bubble_needs_showing_ = false;
+      return;
+    }
+    CommandUpdater* updater = browser->command_controller()->command_updater();
+    updater->ExecuteCommand(IDC_MANAGE_PASSWORDS_FOR_PAGE);
+#endif
     manage_passwords_bubble_needs_showing_ = false;
   }
 }

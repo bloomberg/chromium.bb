@@ -14,12 +14,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-ManagePasswordsIconView::ManagePasswordsIconView(
-    LocationBarView::Delegate* location_bar_delegate,
-    CommandUpdater* command_updater)
-    : BubbleIconView(command_updater, IDC_MANAGE_PASSWORDS_FOR_PAGE),
-      location_bar_delegate_(location_bar_delegate),
-      command_updater_(command_updater),
+ManagePasswordsIconView::ManagePasswordsIconView(CommandUpdater* updater)
+    : BubbleIconView(updater, IDC_MANAGE_PASSWORDS_FOR_PAGE),
       icon_id_(0),
       tooltip_text_id_(0) {
   set_id(VIEW_ID_MANAGE_PASSWORDS_ICON_BUTTON);
@@ -54,14 +50,6 @@ void ManagePasswordsIconView::UpdateVisibleUI() {
   SetVisible(true);
   SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(icon_id_));
   SetTooltipText(l10n_util::GetStringUTF16(tooltip_text_id_));
-}
-
-void ManagePasswordsIconView::ShowBubbleWithoutUserInteraction() {
-  // Suppress the bubble if the user is working in the omnibox.
-  if (location_bar_delegate_->GetToolbarModel()->input_in_progress())
-    return;
-
-  command_updater_->ExecuteCommand(IDC_MANAGE_PASSWORDS_FOR_PAGE);
 }
 
 bool ManagePasswordsIconView::IsBubbleShowing() const {

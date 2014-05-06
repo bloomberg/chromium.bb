@@ -18,20 +18,8 @@ class ManagePasswordsBubbleUIController;
 class ManagePasswordsIconView : public ManagePasswordsIcon,
                                 public BubbleIconView {
  public:
-  // Clicking on the ManagePasswordsIconView shows a ManagePasswordsBubbleView,
-  // which requires the current WebContents. Because the current WebContents
-  // changes as the user switches tabs, it cannot be provided in the
-  // constructor. Instead, a LocationBarView::Delegate is passed here so that it
-  // can be queried for the current WebContents as needed.
-  ManagePasswordsIconView(LocationBarView::Delegate* location_bar_delegate,
-                          CommandUpdater* command_updater);
+  explicit ManagePasswordsIconView(CommandUpdater* updater);
   virtual ~ManagePasswordsIconView();
-
-  // ManagePasswordsIcon:
-  //
-  // TODO(mkwst): Remove this once we get rid of the single call to
-  // ShowBubbleWithoutUserInteraction in ManagePasswordsBubbleUIController.
-  virtual void ShowBubbleWithoutUserInteraction() OVERRIDE;
 
   // BubbleIconView:
   virtual bool IsBubbleShowing() const OVERRIDE;
@@ -47,16 +35,6 @@ class ManagePasswordsIconView : public ManagePasswordsIcon,
   virtual void UpdateVisibleUI() OVERRIDE;
 
  private:
-  // The delegate used to get the currently visible WebContents.
-  LocationBarView::Delegate* location_bar_delegate_;
-
-  // The updater used to deliver commands to the browser; we'll use this to
-  // pop open the bubble when necessary.
-  //
-  // TODO(mkwst): Remove this once we get rid of the single call to
-  // ShowBubbleWithoutUserInteraction in ManagePasswordsBubbleUIController.
-  CommandUpdater* command_updater_;
-
   // The ID of the icon and text resources that are currently displayed.
   int icon_id_;
   int tooltip_text_id_;

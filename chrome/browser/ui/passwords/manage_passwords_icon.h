@@ -31,13 +31,6 @@ class ManagePasswordsIcon {
   void SetState(State state);
   State state() const { return state_; }
 
-  // Shows the bubble without user interaction; should only be called from
-  // ManagePasswordsUIController.
-  //
-  // TODO(mkwst): This shouldn't be the IconView's responsiblity. Move it
-  // somewhere else as part of the refactoring in http://crbug.com/365678.
-  virtual void ShowBubbleWithoutUserInteraction() = 0;
-
  protected:
   ManagePasswordsIcon();
   ~ManagePasswordsIcon();

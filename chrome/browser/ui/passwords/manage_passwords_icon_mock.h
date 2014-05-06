@@ -11,19 +11,13 @@
 class ManagePasswordsIconMock : public ManagePasswordsIcon {
  public:
   ManagePasswordsIconMock();
-  ~ManagePasswordsIconMock();
-
-  // ManagePasswordsIcon:
-  virtual void ShowBubbleWithoutUserInteraction() OVERRIDE;
-  int bubble_shown_count() const { return bubble_shown_count_; }
+  virtual ~ManagePasswordsIconMock();
 
  protected:
   // ManagePasswordsIcon:
   virtual void UpdateVisibleUI() OVERRIDE;
 
  private:
-  int bubble_shown_count_;
-
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsIconMock);
 };
 

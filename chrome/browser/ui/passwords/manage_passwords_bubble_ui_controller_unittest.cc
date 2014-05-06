@@ -67,7 +67,6 @@ TEST_F(ManagePasswordsBubbleUIControllerTest, DefaultState) {
   ManagePasswordsIconMock mock;
   controller()->UpdateIconAndBubbleState(&mock);
   EXPECT_EQ(ManagePasswordsIcon::INACTIVE_STATE, mock.state());
-  EXPECT_EQ(0, mock.bubble_shown_count());
 }
 
 TEST_F(ManagePasswordsBubbleUIControllerTest, PasswordAutofilled) {
@@ -89,7 +88,6 @@ TEST_F(ManagePasswordsBubbleUIControllerTest, PasswordAutofilled) {
   ManagePasswordsIconMock mock;
   controller()->UpdateIconAndBubbleState(&mock);
   EXPECT_EQ(ManagePasswordsIcon::MANAGE_STATE, mock.state());
-  EXPECT_EQ(0, mock.bubble_shown_count());
 }
 
 TEST_F(ManagePasswordsBubbleUIControllerTest, PasswordSubmitted) {
@@ -116,7 +114,7 @@ TEST_F(ManagePasswordsBubbleUIControllerTest, PasswordSubmitted) {
   ManagePasswordsIconMock mock;
   controller()->UpdateIconAndBubbleState(&mock);
   EXPECT_EQ(ManagePasswordsIcon::PENDING_STATE, mock.state());
-  EXPECT_EQ(1, mock.bubble_shown_count());
+  EXPECT_FALSE(controller()->manage_passwords_bubble_needs_showing());
 }
 
 TEST_F(ManagePasswordsBubbleUIControllerTest, BlacklistBlockedAutofill) {
@@ -138,7 +136,6 @@ TEST_F(ManagePasswordsBubbleUIControllerTest, BlacklistBlockedAutofill) {
   ManagePasswordsIconMock mock;
   controller()->UpdateIconAndBubbleState(&mock);
   EXPECT_EQ(ManagePasswordsIcon::BLACKLISTED_STATE, mock.state());
-  EXPECT_EQ(0, mock.bubble_shown_count());
 }
 
 TEST_F(ManagePasswordsBubbleUIControllerTest, ClickedUnblacklist) {
@@ -160,5 +157,4 @@ TEST_F(ManagePasswordsBubbleUIControllerTest, ClickedUnblacklist) {
   ManagePasswordsIconMock mock;
   controller()->UpdateIconAndBubbleState(&mock);
   EXPECT_EQ(ManagePasswordsIcon::MANAGE_STATE, mock.state());
-  EXPECT_EQ(0, mock.bubble_shown_count());
 }

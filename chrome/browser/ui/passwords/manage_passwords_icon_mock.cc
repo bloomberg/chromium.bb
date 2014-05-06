@@ -4,14 +4,10 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_icon_mock.h"
 
-ManagePasswordsIconMock::ManagePasswordsIconMock() : bubble_shown_count_(0) {
+ManagePasswordsIconMock::ManagePasswordsIconMock() {
 }
 
 ManagePasswordsIconMock::~ManagePasswordsIconMock() {
-}
-
-void ManagePasswordsIconMock::ShowBubbleWithoutUserInteraction() {
-  ++bubble_shown_count_;
 }
 
 void ManagePasswordsIconMock::UpdateVisibleUI() {
