@@ -4,3 +4,5 @@ RuleTest.CanonicalizeSubKeyTest
 AddressValidatorTest.*
 CountryRulesAggregatorTest.ValidRulesets
 ExampleAddressValidatorTest.examples
+RetrieverTest.*
+FakeDownloaderTest.*
