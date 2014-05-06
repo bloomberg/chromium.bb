@@ -128,10 +128,13 @@ void RenderSVGModelObject::repaintTreeAfterLayout()
 {
     // Note: This is a reduced version of RenderBox::repaintTreeAfterLayout().
     // FIXME: Should share code with RenderBox::repaintTreeAfterLayout().
-    LayoutStateDisabler layoutStateDisabler(*this);
-
     ASSERT(RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
     ASSERT(!needsLayout());
+
+    if (!shouldCheckForInvalidationAfterLayout())
+        return;
+
+    LayoutStateDisabler layoutStateDisabler(*this);
 
     const LayoutRect oldRepaintRect = previousRepaintRect();
     const LayoutPoint oldPositionFromRepaintContainer = previousPositionFromRepaintContainer();

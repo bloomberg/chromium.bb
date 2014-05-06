@@ -114,6 +114,9 @@ bool RenderSVGBlock::nodeAtPoint(const HitTestRequest&, HitTestResult&, const Hi
 
 void RenderSVGBlock::repaintTreeAfterLayout()
 {
+    if (!shouldCheckForInvalidationAfterLayout())
+        return;
+
     LayoutStateDisabler layoutStateDisabler(*this);
     RenderBlockFlow::repaintTreeAfterLayout();
 }
