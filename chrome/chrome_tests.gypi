@@ -1262,6 +1262,7 @@
         'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',
         'browser/printing/print_preview_dialog_controller_browsertest.cc',
         'browser/process_singleton_browsertest.cc',
+        'browser/profiles/host_zoom_map_browsertest.cc',
         'browser/profiles/profile_browsertest.cc',
         'browser/profiles/profile_list_desktop_browsertest.cc',
         'browser/profiles/profile_manager_browsertest.cc',
