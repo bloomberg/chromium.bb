@@ -51,10 +51,6 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
 
     for (size_t i = 0; i < documents.size(); ++i)
         documents[i]->serviceScriptedAnimations(monotonicAnimationStartTime);
-
-    // Frame callbacks might have started new players or caused existing players to become outdated.
-    for (size_t i = 0; i < documents.size(); ++i)
-        DocumentAnimations::updateOutdatedAnimationPlayersAfterFrameCallbacks(*documents[i]);
 }
 
 void PageAnimator::scheduleVisualUpdate()

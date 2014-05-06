@@ -64,7 +64,7 @@ AnimationPlayer::AnimationPlayer(DocumentTimeline& timeline, TimedItem* content)
     , m_paused(false)
     , m_held(false)
     , m_isPausedForTesting(false)
-    , m_outdated(false)
+    , m_outdated(true)
     , m_finished(false)
 {
     if (m_content) {

@@ -599,6 +599,7 @@ TEST_F(AnimationAnimationPlayerTest, SetSourceUnlimitsAnimationPlayer)
 TEST_F(AnimationAnimationPlayerTest, EmptyAnimationPlayersDontUpdateEffects)
 {
     player = timeline->createAnimationPlayer(0);
+    player->update(AnimationPlayer::UpdateOnDemand);
     EXPECT_EQ(std::numeric_limits<double>::infinity(), player->timeToEffectChange());
 
     updateTimeline(1234);

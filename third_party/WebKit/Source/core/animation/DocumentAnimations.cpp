@@ -60,11 +60,10 @@ void DocumentAnimations::updateAnimationTimingForAnimationFrame(Document& docume
     updateAnimationTiming(document, AnimationPlayer::UpdateForAnimationFrame);
 }
 
-void DocumentAnimations::updateOutdatedAnimationPlayersAfterFrameCallbacks(Document& document)
+void DocumentAnimations::updateOutdatedAnimationPlayersIfNeeded(Document& document)
 {
-    if (document.timeline().hasOutdatedAnimationPlayer()) {
+    if (needsOutdatedAnimationPlayerUpdate(document))
         updateAnimationTiming(document, AnimationPlayer::UpdateOnDemand);
-    }
 }
 
 void DocumentAnimations::updateAnimationTimingForGetComputedStyle(Node& node, CSSPropertyID property)
@@ -72,10 +71,6 @@ void DocumentAnimations::updateAnimationTimingForGetComputedStyle(Node& node, CS
     if (!node.isElementNode())
         return;
     const Element& element = toElement(node);
-    if (element.document().timeline().hasOutdatedAnimationPlayer()) {
-        updateAnimationTiming(element.document(), AnimationPlayer::UpdateOnDemand);
-        return;
-    }
     if (RenderStyle* style = element.renderStyle()) {
         if ((property == CSSPropertyOpacity && style->isRunningOpacityAnimationOnCompositor())
             || ((property == CSSPropertyTransform || property == CSSPropertyWebkitTransform) && style->isRunningTransformAnimationOnCompositor())
@@ -83,6 +78,11 @@ void DocumentAnimations::updateAnimationTimingForGetComputedStyle(Node& node, CS
             updateAnimationTiming(element.document(), AnimationPlayer::UpdateOnDemand);
         }
     }
+}
+
+bool DocumentAnimations::needsOutdatedAnimationPlayerUpdate(const Document& document)
+{
+    return document.timeline().hasOutdatedAnimationPlayer() || document.transitionTimeline().hasOutdatedAnimationPlayer();
 }
 
 void DocumentAnimations::startPendingAnimations(Document& document)

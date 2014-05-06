@@ -97,7 +97,6 @@ void DocumentTimeline::serviceAnimations(AnimationPlayer::UpdateReason reason)
     TRACE_EVENT0("webkit", "DocumentTimeline::serviceAnimations");
 
     m_timing->cancelWake();
-    m_hasOutdatedAnimationPlayer = false;
 
     double timeToNextEffect = std::numeric_limits<double>::infinity();
     Vector<AnimationPlayer*> players;
@@ -119,7 +118,7 @@ void DocumentTimeline::serviceAnimations(AnimationPlayer::UpdateReason reason)
     else if (timeToNextEffect != std::numeric_limits<double>::infinity())
         m_timing->wakeAfter(timeToNextEffect - s_minimumDelay);
 
-    ASSERT(!m_hasOutdatedAnimationPlayer);
+    ASSERT(!hasOutdatedAnimationPlayer());
 }
 
 void DocumentTimeline::setZeroTime(double zeroTime)
@@ -186,10 +185,19 @@ void DocumentTimeline::pauseAnimationsForTesting(double pauseTime)
     serviceAnimations(AnimationPlayer::UpdateOnDemand);
 }
 
+bool DocumentTimeline::hasOutdatedAnimationPlayer() const
+{
+    for (HashSet<RefPtr<AnimationPlayer> >::iterator it = m_playersNeedingUpdate.begin(); it != m_playersNeedingUpdate.end(); ++it) {
+        if ((*it)->outdated())
+            return true;
+    }
+    return false;
+}
+
 void DocumentTimeline::setOutdatedAnimationPlayer(AnimationPlayer* player)
 {
+    ASSERT(player->outdated());
     m_playersNeedingUpdate.add(player);
-    m_hasOutdatedAnimationPlayer = true;
     if (m_document && m_document->page() && !m_document->page()->animator().isServicingAnimations())
         m_timing->serviceOnNextFrame();
 }

@@ -378,7 +378,9 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
     DisableCompositingQueryAsserts disabler;
 
     for (Vector<AtomicString>::const_iterator iter = update->cancelledAnimationNames().begin(); iter != update->cancelledAnimationNames().end(); ++iter) {
-        m_animations.take(*iter)->cancel();
+        RefPtr<AnimationPlayer> player = m_animations.take(*iter);
+        player->cancel();
+        player->update(AnimationPlayer::UpdateOnDemand);
     }
 
     for (Vector<AtomicString>::const_iterator iter = update->animationsWithPauseToggled().begin(); iter != update->animationsWithPauseToggled().end(); ++iter) {
@@ -387,6 +389,8 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             player->unpause();
         else
             player->pause();
+        if (player->outdated())
+            player->update(AnimationPlayer::UpdateOnDemand);
     }
 
     for (Vector<CSSAnimationUpdate::NewAnimation>::const_iterator iter = update->newAnimations().begin(); iter != update->newAnimations().end(); ++iter) {
@@ -416,6 +420,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         if (animation->hasActiveAnimationsOnCompositor(id) && update->newTransitions().find(id) != update->newTransitions().end())
             retargetedCompositorTransitions.add(id, std::pair<RefPtr<Animation>, double>(animation, player->startTimeInternal()));
         player->cancel();
+        player->update(AnimationPlayer::UpdateOnDemand);
     }
 
     for (CSSAnimationUpdate::NewTransitionMap::const_iterator iter = update->newTransitions().begin(); iter != update->newTransitions().end(); ++iter) {
@@ -590,11 +595,15 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
 
 void CSSAnimations::cancel()
 {
-    for (AnimationMap::iterator iter = m_animations.begin(); iter != m_animations.end(); ++iter)
+    for (AnimationMap::iterator iter = m_animations.begin(); iter != m_animations.end(); ++iter) {
         iter->value->cancel();
+        iter->value->update(AnimationPlayer::UpdateOnDemand);
+    }
 
-    for (TransitionMap::iterator iter = m_transitions.begin(); iter != m_transitions.end(); ++iter)
+    for (TransitionMap::iterator iter = m_transitions.begin(); iter != m_transitions.end(); ++iter) {
         iter->value.player->cancel();
+        iter->value.player->update(AnimationPlayer::UpdateOnDemand);
+    }
 
     m_animations.clear();
     m_transitions.clear();

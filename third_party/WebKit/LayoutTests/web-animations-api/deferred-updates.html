@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<div id="target">Test target</div>
+<script>
+var target = document.getElementById('target');
+test(function() {
+  var player = target.animate([{background: 'green'}, {background: 'green'}], 10000);
+  assert_equals(getComputedStyle(target).backgroundColor, 'rgb(0, 128, 0)');
+  player.cancel();
+}, 'Animation effects should be visible to getComputedStyle');
+
+var layoutTest = async_test('Animation effects should be visible to offsetHeight, etc.');
+addEventListener('load', function() {
+  layoutTest.step(function() {
+    var player = target.animate([{height: '732px'}, {height: '732px'}], 10000);
+    assert_equals(target.offsetHeight, 732);
+    player.cancel();
+  });
+  layoutTest.done();
+  target.remove();
+});
+</script>

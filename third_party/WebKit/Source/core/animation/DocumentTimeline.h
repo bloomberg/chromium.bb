@@ -89,7 +89,7 @@ public:
     size_t numberOfActiveAnimationsForTesting() const;
 
     void setOutdatedAnimationPlayer(AnimationPlayer*);
-    bool hasOutdatedAnimationPlayer() const { return m_hasOutdatedAnimationPlayer; }
+    bool hasOutdatedAnimationPlayer() const;
 
     Document* document() { return m_document; }
     void detachFromDocument();
@@ -104,7 +104,6 @@ private:
     // i.e. current, in effect, or had timing changed
     HashSet<RefPtr<AnimationPlayer> > m_playersNeedingUpdate;
     HashSet<AnimationPlayer*> m_players;
-    bool m_hasOutdatedAnimationPlayer;
 
     void wake();
 

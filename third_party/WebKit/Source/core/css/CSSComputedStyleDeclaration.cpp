@@ -1562,8 +1562,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
     if (updateLayout) {
         Document& document = styledNode->document();
 
-        // A timing update may be required if a compositor animation is running or animations
-        // have been updated via the api.
+        // A timing update may be required if a compositor animation is running.
         DocumentAnimations::updateAnimationTimingForGetComputedStyle(*styledNode, propertyID);
 
         document.updateRenderTreeForNodeIfNeeded(styledNode);

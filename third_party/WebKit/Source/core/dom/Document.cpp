@@ -1608,6 +1608,8 @@ bool Document::needsFullRenderTreeUpdate() const
     // FIXME: The childNeedsDistributionRecalc bit means either self or children, we should fix that.
     if (childNeedsDistributionRecalc())
         return true;
+    if (DocumentAnimations::needsOutdatedAnimationPlayerUpdate(*this))
+        return true;
     return false;
 }
 
@@ -1813,6 +1815,7 @@ void Document::updateRenderTree(StyleRecalcChange change)
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRecalculateStyle(this);
 
+    DocumentAnimations::updateOutdatedAnimationPlayersIfNeeded(*this);
     updateDistributionIfNeeded();
     updateUseShadowTreesIfNeeded();
     updateStyleInvalidationIfNeeded();
@@ -1846,6 +1849,10 @@ void Document::updateRenderTree(StyleRecalcChange change)
     if (svgExtensions())
         accessSVGExtensions().removePendingSVGFontFaceElementsForRemoval();
 #endif
+
+    ASSERT(!m_timeline->hasOutdatedAnimationPlayer());
+    ASSERT(!m_transitionTimeline->hasOutdatedAnimationPlayer());
+
     TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "RecalculateStyles", "elementCount", m_styleRecalcElementCounter);
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didRecalculateStyle(cookie, m_styleRecalcElementCounter);
