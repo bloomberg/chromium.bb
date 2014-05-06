@@ -31,10 +31,9 @@ class GlobalTileManager {
 
   // Requests the |num_of_tiles| from the available global pool. Calls
   // GlobalTileManagerClient.SetNumTiles after the manager determines how many
-  // tiles are available for the client. The tile policy on the clients are not
-  // immediately enforced, unless |effective_immediately| is true. If the
-  // number of tiles left are not enough to satisfy the request, the manager
-  // will evict tiles allocated to other clients.
+  // tiles are available for the client. If the number of tiles left is not
+  // enough to satisfy the request, the manager will evict tiles allocated to
+  // other clients.
   void RequestTiles(size_t new_num_of_tiles, Key key);
 
   Key PushBack(GlobalTileManagerClient* client);
