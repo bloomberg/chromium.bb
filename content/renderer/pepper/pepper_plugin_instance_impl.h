@@ -36,7 +36,6 @@
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppp_graphics_3d.h"
 #include "ppapi/c/ppp_input_event.h"
-#include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
 #include "ppapi/c/private/ppp_find_private.h"
@@ -566,7 +565,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   bool LoadFindInterface();
   bool LoadInputEventInterface();
-  bool LoadMessagingInterface();
   bool LoadMouseLockInterface();
   bool LoadPdfInterface();
   bool LoadPrintInterface();
@@ -713,7 +711,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // When adding PPP interfaces, make sure to reset them in ResetAsProxied.
   const PPP_Find_Private* plugin_find_interface_;
   const PPP_InputEvent* plugin_input_event_interface_;
-  const PPP_Messaging* plugin_messaging_interface_;
   const PPP_MouseLock* plugin_mouse_lock_interface_;
   const PPP_Pdf* plugin_pdf_interface_;
   const PPP_Instance_Private* plugin_private_interface_;
@@ -725,7 +722,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // corresponding interfaces, so that we can ask only once.
   // When adding flags, make sure to reset them in ResetAsProxied.
   bool checked_for_plugin_input_event_interface_;
-  bool checked_for_plugin_messaging_interface_;
   bool checked_for_plugin_pdf_interface_;
 
   // This is only valid between a successful PrintBegin call and a PrintEnd

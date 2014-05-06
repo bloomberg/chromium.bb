@@ -291,7 +291,6 @@ InterfaceList::InterfaceList() {
          PPP_Instance_Private_Proxy::GetProxyInterface());
 #endif
   AddProxy(API_ID_PPP_MESSAGING, &ProxyFactory<PPP_Messaging_Proxy>);
-  AddPPP(PPP_MESSAGING_INTERFACE, PPP_Messaging_Proxy::GetProxyInterface());
   AddProxy(API_ID_PPP_MOUSE_LOCK, &ProxyFactory<PPP_MouseLock_Proxy>);
   AddPPP(PPP_MOUSELOCK_INTERFACE, PPP_MouseLock_Proxy::GetProxyInterface());
   AddProxy(API_ID_PPP_PRINTING, &ProxyFactory<PPP_Printing_Proxy>);

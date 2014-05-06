@@ -20,8 +20,6 @@ class PPP_Messaging_Proxy : public InterfaceProxy {
   PPP_Messaging_Proxy(Dispatcher* dispatcher);
   virtual ~PPP_Messaging_Proxy();
 
-  static const PPP_Messaging* GetProxyInterface();
-
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 

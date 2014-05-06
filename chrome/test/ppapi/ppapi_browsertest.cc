@@ -204,7 +204,6 @@ TEST_PPAPI_IN_PROCESS(TraceEvent)
 TEST_PPAPI_OUT_OF_PROCESS(TraceEvent)
 TEST_PPAPI_NACL(TraceEvent)
 
-TEST_PPAPI_IN_PROCESS(InputEvent)
 TEST_PPAPI_OUT_OF_PROCESS(InputEvent)
 TEST_PPAPI_NACL(InputEvent)
 
@@ -215,7 +214,6 @@ TEST_PPAPI_NACL(InputEvent)
 #define MAYBE_ImeInputEvent ImeInputEvent
 #endif
 
-TEST_PPAPI_IN_PROCESS(MAYBE_ImeInputEvent)
 TEST_PPAPI_OUT_OF_PROCESS(MAYBE_ImeInputEvent)
 TEST_PPAPI_NACL(MAYBE_ImeInputEvent)
 
@@ -684,22 +682,6 @@ TEST_PPAPI_OUT_OF_PROCESS(MAYBE_VarDeprecated)
 #ifdef PostMessage
 #undef PostMessage
 #endif
-
-IN_PROC_BROWSER_TEST_F(PPAPITest, PostMessage) {
-  RunTestViaHTTP(
-      LIST_TEST(PostMessage_SendInInit)
-      LIST_TEST(PostMessage_SendingData)
-      LIST_TEST(PostMessage_SendingString)
-      LIST_TEST(PostMessage_SendingArrayBuffer)
-      LIST_TEST(DISABLED_PostMessage_SendingArray)
-      LIST_TEST(DISABLED_PostMessage_SendingDictionary)
-      LIST_TEST(DISABLED_PostMessage_SendingResource)
-      LIST_TEST(DISABLED_PostMessage_SendingComplexVar)
-      LIST_TEST(PostMessage_MessageEvent)
-      LIST_TEST(PostMessage_NoHandler)
-      LIST_TEST(PostMessage_ExtraParam)
-  );
-}
 
 // Flaky: crbug.com/269530
 #if defined(OS_WIN)

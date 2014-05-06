@@ -19,34 +19,6 @@
 namespace ppapi {
 namespace proxy {
 
-namespace {
-
-#if !defined(OS_NACL)
-void HandleMessage(PP_Instance instance, PP_Var message_data) {
-  HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
-  if (!dispatcher || (message_data.type == PP_VARTYPE_OBJECT)) {
-    // The dispatcher should always be valid, and the browser should never send
-    // an 'object' var over PPP_Messaging.
-    NOTREACHED();
-    return;
-  }
-
-  dispatcher->Send(new PpapiMsg_PPPMessaging_HandleMessage(
-      API_ID_PPP_MESSAGING,
-      instance,
-      SerializedVarSendInputShmem(dispatcher, message_data, instance)));
-}
-
-static const PPP_Messaging messaging_interface = {
-  &HandleMessage
-};
-#else
-// The NaCl plugin doesn't need the host side interface - stub it out.
-static const PPP_Messaging messaging_interface = {};
-#endif  // !defined(OS_NACL)
-
-}  // namespace
-
 PPP_Messaging_Proxy::PPP_Messaging_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher),
       ppp_messaging_impl_(NULL) {
@@ -57,11 +29,6 @@ PPP_Messaging_Proxy::PPP_Messaging_Proxy(Dispatcher* dispatcher)
 }
 
 PPP_Messaging_Proxy::~PPP_Messaging_Proxy() {
-}
-
-// static
-const PPP_Messaging* PPP_Messaging_Proxy::GetProxyInterface() {
-  return &messaging_interface;
 }
 
 bool PPP_Messaging_Proxy::OnMessageReceived(const IPC::Message& msg) {

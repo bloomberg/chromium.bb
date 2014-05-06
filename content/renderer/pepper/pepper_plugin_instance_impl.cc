@@ -68,6 +68,7 @@
 #include "ppapi/c/private/ppp_pdf.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/serialized_var.h"
 #include "ppapi/proxy/uma_private_resource.h"
 #include "ppapi/proxy/url_loader_resource.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
@@ -504,7 +505,6 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       find_identifier_(-1),
       plugin_find_interface_(NULL),
       plugin_input_event_interface_(NULL),
-      plugin_messaging_interface_(NULL),
       plugin_mouse_lock_interface_(NULL),
       plugin_pdf_interface_(NULL),
       plugin_private_interface_(NULL),
@@ -512,7 +512,6 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       plugin_textinput_interface_(NULL),
       plugin_zoom_interface_(NULL),
       checked_for_plugin_input_event_interface_(false),
-      checked_for_plugin_messaging_interface_(false),
       checked_for_plugin_pdf_interface_(false),
       gamepad_impl_(new GamepadImpl()),
       uma_private_impl_(NULL),
@@ -1115,11 +1114,19 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
 
 void PepperPluginInstanceImpl::HandleMessage(PP_Var message) {
   TRACE_EVENT0("ppapi", "PepperPluginInstanceImpl::HandleMessage");
-  // Keep a reference on the stack. See NOTE above.
-  scoped_refptr<PepperPluginInstanceImpl> ref(this);
-  if (!LoadMessagingInterface())
+  ppapi::proxy::HostDispatcher* dispatcher =
+      ppapi::proxy::HostDispatcher::GetForInstance(pp_instance());
+  if (!dispatcher || (message.type == PP_VARTYPE_OBJECT)) {
+    // The dispatcher should always be valid, and the browser should never send
+    // an 'object' var over PPP_Messaging.
+    NOTREACHED();
     return;
-  plugin_messaging_interface_->HandleMessage(pp_instance(), message);
+  }
+  dispatcher->Send(new PpapiMsg_PPPMessaging_HandleMessage(
+      ppapi::API_ID_PPP_MESSAGING,
+      pp_instance(),
+      ppapi::proxy::SerializedVarSendInputShmem(dispatcher, message,
+                                                pp_instance())));
 }
 
 PP_Var PepperPluginInstanceImpl::GetInstanceObject() {
@@ -1363,15 +1370,6 @@ bool PepperPluginInstanceImpl::LoadInputEventInterface() {
         module_->GetPluginInterface(PPP_INPUT_EVENT_INTERFACE));
   }
   return !!plugin_input_event_interface_;
-}
-
-bool PepperPluginInstanceImpl::LoadMessagingInterface() {
-  if (!checked_for_plugin_messaging_interface_) {
-    checked_for_plugin_messaging_interface_ = true;
-    plugin_messaging_interface_ = static_cast<const PPP_Messaging*>(
-        module_->GetPluginInterface(PPP_MESSAGING_INTERFACE));
-  }
-  return !!plugin_messaging_interface_;
 }
 
 bool PepperPluginInstanceImpl::LoadMouseLockInterface() {
@@ -2758,8 +2756,6 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::ResetAsProxied(
   plugin_find_interface_ = NULL;
   plugin_input_event_interface_ = NULL;
   checked_for_plugin_input_event_interface_ = false;
-  plugin_messaging_interface_ = NULL;
-  checked_for_plugin_messaging_interface_ = false;
   plugin_mouse_lock_interface_ = NULL;
   plugin_pdf_interface_ = NULL;
   checked_for_plugin_pdf_interface_ = false;

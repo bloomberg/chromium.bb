@@ -8,7 +8,10 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppp_messaging.h"
+#include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
+#include "ppapi/proxy/serialized_var.h"
+#include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/var.h"
 
@@ -42,6 +45,17 @@ PPP_Messaging ppp_messaging_mock = {
   &HandleMessage
 };
 
+// CallHandleMessage does the host-side work to cause HandleMessage to be called
+// in the plugin side.
+void CallHandleMessage(Dispatcher* dispatcher,
+                       PP_Instance instance,
+                       PP_Var message) {
+  dispatcher->Send(new PpapiMsg_PPPMessaging_HandleMessage(
+      API_ID_PPP_MESSAGING,
+      instance,
+      SerializedVarSendInputShmem(dispatcher, message, instance)));
+}
+
 class PPP_Messaging_ProxyTest : public TwoWayTest {
  public:
   PPP_Messaging_ProxyTest()
@@ -68,29 +82,25 @@ void CompareAndReleaseStringVar(PluginProxyTestHarness* plugin_harness,
 }  // namespace
 
 TEST_F(PPP_Messaging_ProxyTest, SendMessages) {
-  // Grab the host-side proxy of ppp_messaging.
-  const PPP_Messaging* ppp_messaging = static_cast<const PPP_Messaging*>(
-      host().host_dispatcher()->GetProxiedInterface(
-          PPP_MESSAGING_INTERFACE));
-
   PP_Instance expected_instance = pp_instance();
   PP_Var expected_var = PP_MakeUndefined();
   ResetReceived();
-  ppp_messaging->HandleMessage(expected_instance, expected_var);
+  Dispatcher* host_dispatcher = host().GetDispatcher();
+  CallHandleMessage(host_dispatcher, expected_instance, expected_var);
   handle_message_called.Wait();
   EXPECT_EQ(expected_instance, received_instance);
   EXPECT_EQ(expected_var.type, received_var.type);
 
   expected_var = PP_MakeNull();
   ResetReceived();
-  ppp_messaging->HandleMessage(expected_instance, expected_var);
+  CallHandleMessage(host_dispatcher, expected_instance, expected_var);
   handle_message_called.Wait();
   EXPECT_EQ(expected_instance, received_instance);
   EXPECT_EQ(expected_var.type, received_var.type);
 
   expected_var = PP_MakeBool(PP_TRUE);
   ResetReceived();
-  ppp_messaging->HandleMessage(expected_instance, expected_var);
+  CallHandleMessage(host_dispatcher, expected_instance, expected_var);
   handle_message_called.Wait();
   EXPECT_EQ(expected_instance, received_instance);
   EXPECT_EQ(expected_var.type, received_var.type);
@@ -98,7 +108,7 @@ TEST_F(PPP_Messaging_ProxyTest, SendMessages) {
 
   expected_var = PP_MakeInt32(12345);
   ResetReceived();
-  ppp_messaging->HandleMessage(expected_instance, expected_var);
+  CallHandleMessage(host_dispatcher, expected_instance, expected_var);
   handle_message_called.Wait();
   EXPECT_EQ(expected_instance, received_instance);
   EXPECT_EQ(expected_var.type, received_var.type);
@@ -106,7 +116,7 @@ TEST_F(PPP_Messaging_ProxyTest, SendMessages) {
 
   expected_var = PP_MakeDouble(3.1415);
   ResetReceived();
-  ppp_messaging->HandleMessage(expected_instance, expected_var);
+  CallHandleMessage(host_dispatcher, expected_instance, expected_var);
   handle_message_called.Wait();
   EXPECT_EQ(expected_instance, received_instance);
   EXPECT_EQ(expected_var.type, received_var.type);
@@ -115,7 +125,7 @@ TEST_F(PPP_Messaging_ProxyTest, SendMessages) {
   const std::string kTestString("Hello world!");
   expected_var = StringVar::StringToPPVar(kTestString);
   ResetReceived();
-  ppp_messaging->HandleMessage(expected_instance, expected_var);
+  CallHandleMessage(host_dispatcher, expected_instance, expected_var);
   // Now release the var, and the string should go away (because the ref
   // count should be one).
   host().var_tracker().ReleaseVar(expected_var);
