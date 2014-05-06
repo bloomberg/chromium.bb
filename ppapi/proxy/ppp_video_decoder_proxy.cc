@@ -10,10 +10,8 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
 #include "ppapi/thunk/enter.h"
-#include "ppapi/thunk/ppb_video_decoder_api.h"
+#include "ppapi/thunk/ppb_video_decoder_dev_api.h"
 #include "ppapi/thunk/thunk.h"
-
-using ppapi::thunk::PPB_VideoDecoder_API;
 
 namespace ppapi {
 namespace proxy {

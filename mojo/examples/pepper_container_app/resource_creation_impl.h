@@ -160,7 +160,7 @@ class ResourceCreationImpl : public ppapi::thunk::ResourceCreationAPI {
                                       PP_Bool vertical) OVERRIDE;
   virtual PP_Resource CreateTalk(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateVideoCapture(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateVideoDecoder(
+  virtual PP_Resource CreateVideoDecoderDev(
       PP_Instance instance,
       PP_Resource context3d_id,
       PP_VideoDecoder_Profile profile) OVERRIDE;

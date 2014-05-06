@@ -298,7 +298,7 @@ PP_Resource ResourceCreationImpl::CreateVideoCapture(PP_Instance instance) {
   return 0;  // VideoCapture is not supported in process now.
 }
 
-PP_Resource ResourceCreationImpl::CreateVideoDecoder(
+PP_Resource ResourceCreationImpl::CreateVideoDecoderDev(
     PP_Instance instance,
     PP_Resource graphics3d_id,
     PP_VideoDecoder_Profile profile) {

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_THUNK_VIDEO_DECODER_API_H_
-#define PPAPI_THUNK_VIDEO_DECODER_API_H_
+#ifndef PPAPI_THUNK_VIDEO_DECODER_DEV_API_H_
+#define PPAPI_THUNK_VIDEO_DECODER_DEV_API_H_
 
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
@@ -14,9 +14,9 @@ class TrackedCallback;
 
 namespace thunk {
 
-class PPB_VideoDecoder_API {
+class PPB_VideoDecoder_Dev_API {
  public:
-  virtual ~PPB_VideoDecoder_API() {}
+  virtual ~PPB_VideoDecoder_Dev_API() {}
 
   virtual int32_t Decode(const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
                          scoped_refptr<TrackedCallback> callback) = 0;
@@ -31,4 +31,4 @@ class PPB_VideoDecoder_API {
 }  // namespace thunk
 }  // namespace ppapi
 
-#endif  // PPAPI_THUNK_VIDEO_DECODER_API_H_
+#endif  // PPAPI_THUNK_VIDEO_DECODER_DEV_API_H_

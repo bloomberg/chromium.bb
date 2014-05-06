@@ -9,7 +9,7 @@
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_completion_callback_factory.h"
 #include "ppapi/shared_impl/ppb_video_decoder_shared.h"
-#include "ppapi/thunk/ppb_video_decoder_api.h"
+#include "ppapi/thunk/ppb_video_decoder_dev_api.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 namespace ppapi {

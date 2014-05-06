@@ -29,7 +29,8 @@ PPB_VideoDecoder_Shared::~PPB_VideoDecoder_Shared() {
   DCHECK(graphics_context_ == 0);
 }
 
-thunk::PPB_VideoDecoder_API* PPB_VideoDecoder_Shared::AsPPB_VideoDecoder_API() {
+thunk::PPB_VideoDecoder_Dev_API*
+PPB_VideoDecoder_Shared::AsPPB_VideoDecoder_Dev_API() {
   return this;
 }
 

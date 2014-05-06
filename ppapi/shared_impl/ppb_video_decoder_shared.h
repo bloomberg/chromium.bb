@@ -13,7 +13,7 @@
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/tracked_callback.h"
-#include "ppapi/thunk/ppb_video_decoder_api.h"
+#include "ppapi/thunk/ppb_video_decoder_dev_api.h"
 
 namespace gpu {
 namespace gles2 {
@@ -27,16 +27,17 @@ namespace ppapi {
 // events. Both the proxy and the renderer implementation share this code.
 class PPAPI_SHARED_EXPORT PPB_VideoDecoder_Shared
     : public Resource,
-      NON_EXPORTED_BASE(public thunk::PPB_VideoDecoder_API) {
+      NON_EXPORTED_BASE(public thunk::PPB_VideoDecoder_Dev_API) {
  public:
   explicit PPB_VideoDecoder_Shared(PP_Instance instance);
   explicit PPB_VideoDecoder_Shared(const HostResource& host_resource);
   virtual ~PPB_VideoDecoder_Shared();
 
   // Resource overrides.
-  virtual thunk::PPB_VideoDecoder_API* AsPPB_VideoDecoder_API() OVERRIDE;
+  virtual thunk::PPB_VideoDecoder_Dev_API* AsPPB_VideoDecoder_Dev_API()
+      OVERRIDE;
 
-  // PPB_VideoDecoder_API implementation.
+  // PPB_VideoDecoder_Dev_API implementation.
   virtual void Destroy() OVERRIDE;
 
  protected:

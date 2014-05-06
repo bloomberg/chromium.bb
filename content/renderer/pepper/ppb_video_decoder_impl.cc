@@ -32,7 +32,6 @@ using ppapi::TrackedCallback;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
 using ppapi::thunk::PPB_Graphics3D_API;
-using ppapi::thunk::PPB_VideoDecoder_API;
 
 namespace {
 

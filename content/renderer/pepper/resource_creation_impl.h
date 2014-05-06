@@ -126,9 +126,9 @@ class ResourceCreationImpl : public ppapi::thunk::ResourceCreationAPI {
   virtual PP_Resource CreateUDPSocket(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateVideoCapture(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateVideoDecoder(PP_Instance instance,
-                                         PP_Resource graphics3d_id,
-                                         PP_VideoDecoder_Profile profile)
+  virtual PP_Resource CreateVideoDecoderDev(PP_Instance instance,
+                                            PP_Resource graphics3d_id,
+                                            PP_VideoDecoder_Profile profile)
       OVERRIDE;
   virtual PP_Resource CreateVideoDestination(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateVideoSource(PP_Instance instance) OVERRIDE;

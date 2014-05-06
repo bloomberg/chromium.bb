@@ -465,7 +465,7 @@ PP_Resource ResourceCreationProxy::CreateVideoCapture(PP_Instance instance) {
       ->GetReference();
 }
 
-PP_Resource ResourceCreationProxy::CreateVideoDecoder(
+PP_Resource ResourceCreationProxy::CreateVideoDecoderDev(
     PP_Instance instance,
     PP_Resource context3d_id,
     PP_VideoDecoder_Profile profile) {
