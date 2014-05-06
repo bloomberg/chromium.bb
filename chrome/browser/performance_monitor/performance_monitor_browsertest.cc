@@ -43,6 +43,8 @@
 #include "extensions/common/extension.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/chromeos_switches.h"
 #endif
 
@@ -57,6 +59,13 @@ namespace performance_monitor {
 namespace {
 
 const base::TimeDelta kMaxStartupTime = base::TimeDelta::FromMinutes(3);
+
+#if defined(OS_CHROMEOS)
+// User account email and directory hash for secondary account for multi-profile
+// sensitive test cases.
+const char kSecondProfileAccount[] = "profile2@test.com";
+const char kSecondProfileHash[] = "profile2";
+#endif
 
 // Helper struct to store the information of an extension; this is needed if the
 // pointer to the extension ever becomes invalid (e.g., if we uninstall the
@@ -276,8 +285,15 @@ class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
 };
 
 class PerformanceMonitorUncleanExitBrowserTest
-    : public PerformanceMonitorBrowserTest {
+    : public PerformanceMonitorBrowserTest,
+      public testing::WithParamInterface<bool> {
  public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    PerformanceMonitorBrowserTest::SetUpCommandLine(command_line);
+    if (GetParam())
+      command_line->AppendSwitch(::switches::kMultiProfiles);
+  }
+
   virtual bool SetUpUserDataDirectory() OVERRIDE {
     base::FilePath user_data_directory;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
@@ -316,6 +332,12 @@ class PerformanceMonitorUncleanExitBrowserTest
     second_profile_name_ =
         std::string(chrome::kMultiProfileDirPrefix)
         .append(base::IntToString(1));
+#if defined(OS_CHROMEOS)
+    if (GetParam()) {
+      second_profile_name_ = chromeos::ProfileHelper::GetUserProfileDir(
+          kSecondProfileHash).BaseName().value();
+    }
+#endif
 
     base::FilePath second_profile =
         user_data_directory.AppendASCII(second_profile_name_);
@@ -328,6 +350,17 @@ class PerformanceMonitorUncleanExitBrowserTest
 
     return true;
   }
+
+#if defined(OS_CHROMEOS)
+  virtual void AddSecondUserAccount() {
+    // Add second user account for multi-profile test.
+    if (GetParam()) {
+      chromeos::UserManager::Get()->UserLoggedIn(kSecondProfileAccount,
+                                                 kSecondProfileHash,
+                                                 false);
+    }
+  }
+#endif
 
  protected:
   std::string first_profile_name_;
@@ -643,7 +676,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, RendererCrashEvent) {
 }
 #endif
 
-IN_PROC_BROWSER_TEST_F(PerformanceMonitorUncleanExitBrowserTest,
+IN_PROC_BROWSER_TEST_P(PerformanceMonitorUncleanExitBrowserTest,
                        OneProfileUncleanExit) {
   // Initialize the database value (if there's no value in the database, it
   // can't determine the last active time of the profile, and doesn't insert
@@ -666,8 +699,12 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorUncleanExitBrowserTest,
   ASSERT_EQ(first_profile_name_, event_profile);
 }
 
-IN_PROC_BROWSER_TEST_F(PerformanceMonitorUncleanExitBrowserTest,
+IN_PROC_BROWSER_TEST_P(PerformanceMonitorUncleanExitBrowserTest,
                        TwoProfileUncleanExit) {
+#if defined(OS_CHROMEOS)
+  AddSecondUserAccount();
+#endif
+
   base::FilePath second_profile_path;
   PathService::Get(chrome::DIR_USER_DATA, &second_profile_path);
   second_profile_path = second_profile_path.AppendASCII(second_profile_name_);
@@ -793,5 +830,9 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, NetworkBytesRead) {
   ASSERT_EQ(2u, metrics.size());
   EXPECT_GE(metrics[1].value, page1_size + page2_size);
 }
+
+INSTANTIATE_TEST_CASE_P(PerformanceMonitorUncleanExitBrowserTestInstantiation,
+                        PerformanceMonitorUncleanExitBrowserTest,
+                        testing::Bool());
 
 }  // namespace performance_monitor
