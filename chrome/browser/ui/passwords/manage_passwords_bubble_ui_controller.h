@@ -24,6 +24,27 @@ class ManagePasswordsBubbleUIController
       public content::WebContentsUserData<ManagePasswordsBubbleUIController>,
       public password_manager::PasswordStore::Observer {
  public:
+  enum State {
+    // The password manager has nothing to do with the current site.
+    INACTIVE_STATE,
+
+    // A password has been typed in and submitted successfully. Now we need to
+    // display an Omnibox icon, and pop up a bubble asking the user whether
+    // they'd like to save the password.
+    PENDING_PASSWORD_AND_BUBBLE_STATE,
+
+    // A password is pending, but we don't need to pop up a bubble.
+    PENDING_PASSWORD_STATE,
+
+    // A password has been autofilled, or has just been saved. The icon needs
+    // to be visible, in the management state.
+    MANAGE_STATE,
+
+    // The user has blacklisted the site rendered in the current WebContents.
+    // The icon needs to be visible, in the blacklisted state.
+    BLACKLIST_STATE,
+  };
+
   virtual ~ManagePasswordsBubbleUIController();
 
   // Called when the user submits a form containing login information, so we
@@ -49,14 +70,18 @@ class ManagePasswordsBubbleUIController
       const password_manager::PasswordStoreChangeList& changes) OVERRIDE;
 
   // Called from the model when the user chooses to save a password; passes the
-  // action off to the FormManager.
+  // action off to the FormManager. The controller MUST be in a pending state,
+  // and WILL be in MANAGE_STATE after this method executes.
   virtual void SavePassword();
 
   // Called from the model when the user chooses to never save passwords; passes
-  // the action off to the FormManager.
+  // the action off to the FormManager. The controller MUST be in a pending
+  // state, and WILL be in BLACKLIST_STATE after this method executes.
   virtual void NeverSavePassword();
 
-  // Called from the model when the user chooses to unblacklist the site.
+  // Called from the model when the user chooses to unblacklist the site. The
+  // controller MUST be in BLACKLIST_STATE, and WILL be in MANAGE_STATE after
+  // this method executes.
   virtual void UnblacklistSite();
 
   // Open a new tab, pointing to the password manager settings page.
@@ -68,29 +93,14 @@ class ManagePasswordsBubbleUIController
   // without user interaction.
   virtual void UpdateIconAndBubbleState(ManagePasswordsIcon* icon);
 
-  bool manage_passwords_icon_to_be_shown() const {
-    return manage_passwords_icon_to_be_shown_;
-  }
+  State state() const { return state_; }
 
-  bool password_to_be_saved() const {
-    return password_to_be_saved_;
-  }
-
-  bool manage_passwords_bubble_needs_showing() const {
-    return manage_passwords_bubble_needs_showing_;
-  }
-
-  void unset_password_to_be_saved() {
-    password_to_be_saved_ = false;
-  }
+  // True if a password is sitting around, waiting for a user to decide whether
+  // or not to save it.
+  bool PasswordPendingUserDecision() const;
 
   const autofill::PasswordFormMap best_matches() const {
     return password_form_map_;
-  }
-
-  bool autofill_blocked() const { return autofill_blocked_; }
-  void set_autofill_blocked(bool autofill_blocked) {
-    autofill_blocked_ = autofill_blocked;
   }
 
   const GURL& origin() const { return origin_; }
@@ -105,8 +115,16 @@ class ManagePasswordsBubbleUIController
   // the value in ManagePasswordsBubbleUIControllerMock.
   autofill::PasswordFormMap password_form_map_;
 
+  // The current state of the password manager. Protected so we can manipulate
+  // the value in tests.
+  State state_;
+
  private:
   friend class content::WebContentsUserData<ManagePasswordsBubbleUIController>;
+
+  // Shows the password bubble without user interaction. The controller MUST
+  // be in PENDING_PASSWORD_AND_BUBBLE_STATE.
+  void ShowBubbleWithoutUserInteraction();
 
   // Called when a passwordform is autofilled, when a new passwordform is
   // submitted, or when a navigation occurs to update the visibility of the
@@ -125,10 +143,6 @@ class ManagePasswordsBubbleUIController
   // this password?" prompt, we ask this object to save or blacklist the
   // associated login information in Chrome's password store.
   scoped_ptr<password_manager::PasswordFormManager> form_manager_;
-
-  bool manage_passwords_icon_to_be_shown_;
-  bool password_to_be_saved_;
-  bool manage_passwords_bubble_needs_showing_;
 
   // Stores whether autofill was blocked due to a user's decision to blacklist
   // the current site ("Never save passwords for this site").

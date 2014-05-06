@@ -22,14 +22,17 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
       display_disposition_(
           password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING),
       dismissal_reason_(password_manager::metrics_util::NOT_DISPLAYED) {
-  ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
+  ManagePasswordsBubbleUIController* controller =
       ManagePasswordsBubbleUIController::FromWebContents(web_contents_);
 
-  if (manage_passwords_bubble_ui_controller->password_to_be_saved()) {
+  // TODO(mkwst): Reverse this logic. The controller should populate the model
+  // directly rather than the model pulling from the controller. Perhaps like
+  // `controller->PopulateModel(this)`.
+  if (controller->PasswordPendingUserDecision()) {
     manage_passwords_bubble_state_ = PASSWORD_TO_BE_SAVED;
-    pending_credentials_ =
-        manage_passwords_bubble_ui_controller->PendingCredentials();
-  } else if (manage_passwords_bubble_ui_controller->autofill_blocked()) {
+    pending_credentials_ = controller->PendingCredentials();
+  } else if (controller->state() ==
+      ManagePasswordsBubbleUIController::BLACKLIST_STATE) {
     manage_passwords_bubble_state_ = NEVER_SAVE_PASSWORDS;
   } else {
     manage_passwords_bubble_state_ = MANAGE_PASSWORDS;
@@ -38,7 +41,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   title_ = l10n_util::GetStringUTF16(
       (manage_passwords_bubble_state_ == PASSWORD_TO_BE_SAVED) ?
           IDS_SAVE_PASSWORD : IDS_MANAGE_PASSWORDS);
-  best_matches_ = manage_passwords_bubble_ui_controller->best_matches();
+  best_matches_ = controller->best_matches();
   manage_link_ =
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS_LINK);
 }
@@ -91,7 +94,6 @@ void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
   ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
       ManagePasswordsBubbleUIController::FromWebContents(web_contents_);
   manage_passwords_bubble_ui_controller->NeverSavePassword();
-  manage_passwords_bubble_ui_controller->unset_password_to_be_saved();
   manage_passwords_bubble_state_ = NEVER_SAVE_PASSWORDS;
 }
 
@@ -108,7 +110,6 @@ void ManagePasswordsBubbleModel::OnSaveClicked() {
   ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
       ManagePasswordsBubbleUIController::FromWebContents(web_contents_);
   manage_passwords_bubble_ui_controller->SavePassword();
-  manage_passwords_bubble_ui_controller->unset_password_to_be_saved();
   manage_passwords_bubble_state_ = MANAGE_PASSWORDS;
 }
 

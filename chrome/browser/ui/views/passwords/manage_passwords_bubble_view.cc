@@ -125,9 +125,10 @@ void ShowManagePasswordsBubble(content::WebContents* web_contents) {
       ManagePasswordsBubbleUIController::FromWebContents(web_contents);
   ManagePasswordsBubbleView::ShowBubble(
       web_contents,
-      controller->manage_passwords_bubble_needs_showing() ?
-          ManagePasswordsBubbleView::AUTOMATIC :
-          ManagePasswordsBubbleView::USER_ACTION);
+      controller->state() ==
+          ManagePasswordsBubbleUIController::PENDING_PASSWORD_AND_BUBBLE_STATE ?
+              ManagePasswordsBubbleView::AUTOMATIC :
+              ManagePasswordsBubbleView::USER_ACTION);
 }
 
 }  // namespace chrome

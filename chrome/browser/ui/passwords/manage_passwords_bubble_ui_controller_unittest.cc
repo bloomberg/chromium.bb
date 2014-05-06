@@ -55,13 +55,9 @@ class ManagePasswordsBubbleUIControllerTest : public testing::Test {
 };
 
 TEST_F(ManagePasswordsBubbleUIControllerTest, DefaultState) {
-  EXPECT_FALSE(controller()->autofill_blocked());
-  EXPECT_FALSE(controller()->manage_passwords_bubble_needs_showing());
-  EXPECT_FALSE(controller()->manage_passwords_icon_to_be_shown());
-  EXPECT_FALSE(controller()->never_saved_password());
-  EXPECT_FALSE(controller()->password_to_be_saved());
-  EXPECT_FALSE(controller()->saved_password());
-
+  EXPECT_EQ(ManagePasswordsBubbleUIController::INACTIVE_STATE,
+            controller()->state());
+  EXPECT_FALSE(controller()->PasswordPendingUserDecision());
   EXPECT_EQ(GURL::EmptyGURL(), controller()->origin());
 
   ManagePasswordsIconMock mock;
@@ -75,14 +71,9 @@ TEST_F(ManagePasswordsBubbleUIControllerTest, PasswordAutofilled) {
   map[kTestUsername] = &test_form();
   controller()->OnPasswordAutofilled(map);
 
-  EXPECT_TRUE(controller()->manage_passwords_icon_to_be_shown());
-
-  EXPECT_FALSE(controller()->autofill_blocked());
-  EXPECT_FALSE(controller()->manage_passwords_bubble_needs_showing());
-  EXPECT_FALSE(controller()->never_saved_password());
-  EXPECT_FALSE(controller()->password_to_be_saved());
-  EXPECT_FALSE(controller()->saved_password());
-
+  EXPECT_EQ(ManagePasswordsBubbleUIController::MANAGE_STATE,
+            controller()->state());
+  EXPECT_FALSE(controller()->PasswordPendingUserDecision());
   EXPECT_EQ(test_form().origin, controller()->origin());
 
   ManagePasswordsIconMock mock;
@@ -97,14 +88,10 @@ TEST_F(ManagePasswordsBubbleUIControllerTest, PasswordSubmitted) {
       new password_manager::PasswordFormManager(
           NULL, &client, &driver, test_form(), false);
   controller()->OnPasswordSubmitted(test_form_manager);
-
-  EXPECT_TRUE(controller()->manage_passwords_bubble_needs_showing());
-  EXPECT_TRUE(controller()->manage_passwords_icon_to_be_shown());
-  EXPECT_TRUE(controller()->password_to_be_saved());
-
-  EXPECT_FALSE(controller()->autofill_blocked());
-  EXPECT_FALSE(controller()->never_saved_password());
-  EXPECT_FALSE(controller()->saved_password());
+  EXPECT_EQ(
+      ManagePasswordsBubbleUIController::PENDING_PASSWORD_AND_BUBBLE_STATE,
+      controller()->state());
+  EXPECT_TRUE(controller()->PasswordPendingUserDecision());
 
   // TODO(mkwst): This should be the value of test_form().origin, but
   // it's being masked by the stub implementation of
@@ -114,7 +101,9 @@ TEST_F(ManagePasswordsBubbleUIControllerTest, PasswordSubmitted) {
   ManagePasswordsIconMock mock;
   controller()->UpdateIconAndBubbleState(&mock);
   EXPECT_EQ(ManagePasswordsIcon::PENDING_STATE, mock.state());
-  EXPECT_FALSE(controller()->manage_passwords_bubble_needs_showing());
+  EXPECT_EQ(
+      ManagePasswordsBubbleUIController::PENDING_PASSWORD_STATE,
+      controller()->state());
 }
 
 TEST_F(ManagePasswordsBubbleUIControllerTest, BlacklistBlockedAutofill) {
@@ -123,14 +112,9 @@ TEST_F(ManagePasswordsBubbleUIControllerTest, BlacklistBlockedAutofill) {
   map[kTestUsername] = &test_form();
   controller()->OnBlacklistBlockedAutofill(map);
 
-  EXPECT_TRUE(controller()->autofill_blocked());
-  EXPECT_TRUE(controller()->manage_passwords_icon_to_be_shown());
-
-  EXPECT_FALSE(controller()->manage_passwords_bubble_needs_showing());
-  EXPECT_FALSE(controller()->never_saved_password());
-  EXPECT_FALSE(controller()->password_to_be_saved());
-  EXPECT_FALSE(controller()->saved_password());
-
+  EXPECT_EQ(ManagePasswordsBubbleUIController::BLACKLIST_STATE,
+            controller()->state());
+  EXPECT_FALSE(controller()->PasswordPendingUserDecision());
   EXPECT_EQ(test_form().origin, controller()->origin());
 
   ManagePasswordsIconMock mock;
@@ -144,14 +128,10 @@ TEST_F(ManagePasswordsBubbleUIControllerTest, ClickedUnblacklist) {
   map[kTestUsername] = &test_form();
   controller()->OnBlacklistBlockedAutofill(map);
   controller()->UnblacklistSite();
-  EXPECT_FALSE(controller()->autofill_blocked());
-  EXPECT_TRUE(controller()->manage_passwords_icon_to_be_shown());
 
-  EXPECT_FALSE(controller()->manage_passwords_bubble_needs_showing());
-  EXPECT_FALSE(controller()->never_saved_password());
-  EXPECT_FALSE(controller()->password_to_be_saved());
-  EXPECT_FALSE(controller()->saved_password());
-
+  EXPECT_EQ(ManagePasswordsBubbleUIController::MANAGE_STATE,
+            controller()->state());
+  EXPECT_FALSE(controller()->PasswordPendingUserDecision());
   EXPECT_EQ(test_form().origin, controller()->origin());
 
   ManagePasswordsIconMock mock;

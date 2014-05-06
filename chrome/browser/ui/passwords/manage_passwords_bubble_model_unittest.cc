@@ -38,12 +38,15 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
     model_->set_manage_passwords_bubble_state(
         ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED);
     model_->OnBubbleShown(ManagePasswordsBubble::AUTOMATIC);
+    controller()->SetState(
+        ManagePasswordsBubbleUIController::PENDING_PASSWORD_AND_BUBBLE_STATE);
   }
 
   void PretendManagingPasswords() {
     model_->set_manage_passwords_bubble_state(
         ManagePasswordsBubbleModel::MANAGE_PASSWORDS);
     model_->OnBubbleShown(ManagePasswordsBubble::USER_ACTION);
+    controller()->SetState(ManagePasswordsBubbleUIController::MANAGE_STATE);
   }
 
   void PretendBlacklisted() {
@@ -55,6 +58,7 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
     autofill::PasswordFormMap map;
     map[kTestUsername] = &test_form_;
     controller()->SetPasswordFormMap(map);
+    controller()->SetState(ManagePasswordsBubbleUIController::BLACKLIST_STATE);
   }
 
   ManagePasswordsBubbleUIControllerMock* controller() {
