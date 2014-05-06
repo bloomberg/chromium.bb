@@ -880,16 +880,6 @@ crbug.com/344238 virtual/deferred/inspector/timeline/timeline-auto-record.html [
 crbug.com/344238 [ Mac Win Debug ] virtual/deferred/inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 crbug.com/344238 virtual/implsidepainting/inspector/timeline/timeline-auto-record.html [ Pass Failure ]
 
-crbug.com/359194 css3/viewport-percentage-lengths/viewport-percentage-lengths-page-zoom.html [ NeedsRebaseline ]
-crbug.com/359194 editing/pasteboard/drag-drop-copy-text.html [ NeedsRebaseline ]
-crbug.com/359194 editing/spelling/spellcheck-editable-on-focus-sync.html [ NeedsRebaseline ]
-crbug.com/359194 fast/dom/documentmarker-add-adjacent-text.html [ NeedsRebaseline ]
-crbug.com/359194 fast/dom/documentmarker-set-active.html [ NeedsRebaseline ]
-crbug.com/359194 fast/events/mouse-click-events-pseudo-element.html [ NeedsRebaseline ]
-crbug.com/359194 fast/events/touch/touch-target-removed-crash.html [ NeedsRebaseline ]
-crbug.com/359194 http/tests/local/formdata/send-form-data-with-bad-string.html [ NeedsRebaseline ]
-crbug.com/359194 http/tests/xmlhttprequest/xhr-to-blob-in-isolated-world.html [ NeedsRebaseline ]
-
 crbug.com/308992 css2.1/20110323/replaced-intrinsic-001.htm [ Failure ]
 crbug.com/308992 css2.1/20110323/replaced-intrinsic-002.htm [ Failure ]
 
