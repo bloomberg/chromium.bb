@@ -3590,7 +3590,7 @@ void HTMLMediaElement::mediaPlayerSetWebLayer(blink::WebLayer* webLayer)
 
     // If either of the layers is null we need to enable or disable compositing. This is done by triggering a style recalc.
     if (!m_webLayer || !webLayer)
-        scheduleLayerUpdate();
+        setNeedsCompositingUpdate();
 
     if (m_webLayer)
         GraphicsLayer::unregisterContentsLayer(m_webLayer);

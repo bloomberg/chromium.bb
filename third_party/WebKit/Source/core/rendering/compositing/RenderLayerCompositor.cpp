@@ -360,7 +360,7 @@ void RenderLayerCompositor::updateIfNeeded()
     }
 
     CompositingUpdateType updateType = m_pendingUpdateType;
-    bool needCompositingRequirementsUpdate = m_needsToRecomputeCompositingRequirements || updateType >= CompositingUpdateAfterCanvasContextChange;
+    bool needCompositingRequirementsUpdate = m_needsToRecomputeCompositingRequirements || updateType >= CompositingUpdateAfterCompositingInputChange;
     bool needHierarchyAndGeometryUpdate = compositingLayersNeedRebuild();
 
     m_pendingUpdateType = CompositingUpdateNone;

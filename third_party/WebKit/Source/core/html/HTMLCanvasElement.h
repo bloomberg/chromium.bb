@@ -154,8 +154,6 @@ protected:
 private:
     explicit HTMLCanvasElement(Document&);
 
-    void setNeedsCompositingUpdate();
-
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }

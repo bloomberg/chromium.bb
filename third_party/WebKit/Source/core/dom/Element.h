@@ -325,6 +325,8 @@ public:
     void setAnimationStyleChange(bool);
     void setNeedsAnimationStyleRecalc();
 
+    void setNeedsCompositingUpdate();
+
     bool supportsStyleSharing() const;
 
     ElementShadow* shadow() const;

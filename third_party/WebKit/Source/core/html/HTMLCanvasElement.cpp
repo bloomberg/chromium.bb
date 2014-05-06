@@ -44,9 +44,6 @@
 #include "core/html/canvas/WebGLContextEvent.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/rendering/RenderHTMLCanvas.h"
-#include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderView.h"
-#include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/graphics/Canvas2DImageBufferSurface.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -512,23 +509,8 @@ void HTMLCanvasElement::createImageBufferInternal()
     m_imageBuffer->context()->setStrokeThickness(1);
     m_contextStateSaver = adoptPtr(new GraphicsContextStateSaver(*m_imageBuffer->context()));
 
-    setNeedsCompositingUpdate();
-}
-
-void HTMLCanvasElement::setNeedsCompositingUpdate()
-{
-    if (!document().isActive())
-        return;
-    if (!m_context)
-        return;
-    RenderBox* box = renderBox();
-    if (!box)
-        return;
-    if (!box->isCanvas())
-        return;
-    ASSERT(box->layer());
-    box->layer()->setNeedsToUpdateAncestorDependentProperties();
-    document().renderView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCanvasContextChange);
+    if (m_context)
+        setNeedsCompositingUpdate();
 }
 
 void HTMLCanvasElement::notifySurfaceInvalid()

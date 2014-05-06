@@ -1016,6 +1016,11 @@ crbug.com/363025 virtual/serviceworker/http/tests/serviceworker/state.html [ Fai
 
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash Timeout ]
 
+# Needs rebaselines now that <audio> always has a layer.
+Bug(esprehn) media/audio-repaint.html [ NeedsRebaseline ]
+Bug(esprehn) media/audio-controls-rendering.html [ NeedsRebaseline ]
+Bug(esprehn) media/media-controls-clone.html [ NeedsRebaseline ]
+
 # Need rebaseline once all tests are in ForceCompositingMode.
 crbug.com/361729 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-svg-canvas.html [ ImageOnlyFailure ]
 crbug.com/361729 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-svg.html [ ImageOnlyFailure ]

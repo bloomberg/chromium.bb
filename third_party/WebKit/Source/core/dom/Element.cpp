@@ -97,6 +97,7 @@
 #include "core/page/PointerLockController.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
 #include "platform/scroll/ScrollableArea.h"
@@ -1708,6 +1709,19 @@ void Element::setNeedsAnimationStyleRecalc()
 
     setNeedsStyleRecalc(LocalStyleChange);
     setAnimationStyleChange(true);
+}
+
+void Element::setNeedsCompositingUpdate()
+{
+    if (!document().isActive())
+        return;
+    RenderBoxModelObject* renderer = renderBoxModelObject();
+    if (!renderer)
+        return;
+    if (!renderer->hasLayer())
+        return;
+    renderer->layer()->setNeedsToUpdateAncestorDependentProperties();
+    document().renderView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
 }
 
 void Element::setCustomElementDefinition(PassRefPtr<CustomElementDefinition> definition)

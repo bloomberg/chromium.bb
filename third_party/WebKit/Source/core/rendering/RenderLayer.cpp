@@ -213,7 +213,7 @@ void RenderLayer::contentChanged(ContentChangeType changeType)
         compositor()->updateLayerCompositingState(this);
 
     if (changeType == CanvasContextChanged) {
-        compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCanvasContextChange);
+        compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
 
         // Although we're missing test coverage, we need to call
         // GraphicsLayer::setContentsToPlatformLayer with the new platform

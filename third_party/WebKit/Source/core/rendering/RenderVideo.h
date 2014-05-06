@@ -58,7 +58,6 @@ private:
 
     virtual const char* renderName() const OVERRIDE { return "RenderVideo"; }
 
-    virtual LayerType layerTypeRequired() const OVERRIDE { return NormalLayer; }
     virtual bool isVideo() const OVERRIDE { return true; }
 
     virtual void paintReplaced(PaintInfo&, const LayoutPoint&) OVERRIDE;
