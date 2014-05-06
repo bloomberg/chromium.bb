@@ -2265,6 +2265,9 @@
           ],
         }],
         ['chromeos==1', {
+          'dependencies': [
+            '../ash/ash.gyp:ash_resources',
+          ],
           'sources!': [
             'browser/extensions/api/messaging/native_message_process_host_unittest.cc',
             'browser/extensions/api/messaging/native_messaging_host_manifest_unittest.cc',

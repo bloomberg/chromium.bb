@@ -257,6 +257,7 @@
         }],
         ['chromeos==1', {
           'dependencies': [
+            '../ash/ash.gyp:ash_resources',
             '../chromeos/chromeos.gyp:chromeos',
           ],
           'conditions': [

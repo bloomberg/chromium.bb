@@ -8,7 +8,7 @@
       'target_name': 'ash_resources',
       'type': 'none',
       'variables': {
-        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ash/ash_resources',
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ash/resources',
       },
       'actions': [
         {
@@ -19,11 +19,7 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
       ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(SHARED_INTERMEDIATE_DIR)/ash/ash_resources',
-        ],
-      },
+      'includes': [ '../build/grit_target.gypi' ],
     },
   ],
 }
