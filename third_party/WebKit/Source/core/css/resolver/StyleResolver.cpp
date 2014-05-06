@@ -1114,6 +1114,7 @@ static inline bool isValidFirstLetterStyleProperty(CSSPropertyID id)
     // Valid ::first-letter properties listed in spec:
     // http://www.w3.org/TR/css3-selectors/#application-in-css
     case CSSPropertyBackgroundAttachment:
+    case CSSPropertyBackgroundBlendMode:
     case CSSPropertyBackgroundClip:
     case CSSPropertyBackgroundColor:
     case CSSPropertyBackgroundImage:
@@ -1150,9 +1151,12 @@ static inline bool isValidFirstLetterStyleProperty(CSSPropertyID id)
     case CSSPropertyFloat:
     case CSSPropertyFont:
     case CSSPropertyFontFamily:
+    case CSSPropertyFontKerning:
     case CSSPropertyFontSize:
+    case CSSPropertyFontStretch:
     case CSSPropertyFontStyle:
     case CSSPropertyFontVariant:
+    case CSSPropertyFontVariantLigatures:
     case CSSPropertyFontWeight:
     case CSSPropertyLetterSpacing:
     case CSSPropertyLineHeight:
@@ -1166,6 +1170,41 @@ static inline bool isValidFirstLetterStyleProperty(CSSPropertyID id)
     case CSSPropertyPaddingTop:
     case CSSPropertyTextTransform:
     case CSSPropertyVerticalAlign:
+    case CSSPropertyWebkitBackgroundClip:
+    case CSSPropertyWebkitBackgroundComposite:
+    case CSSPropertyWebkitBackgroundOrigin:
+    case CSSPropertyWebkitBackgroundSize:
+    case CSSPropertyWebkitBorderAfter:
+    case CSSPropertyWebkitBorderAfterColor:
+    case CSSPropertyWebkitBorderAfterStyle:
+    case CSSPropertyWebkitBorderAfterWidth:
+    case CSSPropertyWebkitBorderBefore:
+    case CSSPropertyWebkitBorderBeforeColor:
+    case CSSPropertyWebkitBorderBeforeStyle:
+    case CSSPropertyWebkitBorderBeforeWidth:
+    case CSSPropertyWebkitBorderEnd:
+    case CSSPropertyWebkitBorderEndColor:
+    case CSSPropertyWebkitBorderEndStyle:
+    case CSSPropertyWebkitBorderEndWidth:
+    case CSSPropertyWebkitBorderFit:
+    case CSSPropertyWebkitBorderHorizontalSpacing:
+    case CSSPropertyWebkitBorderImage:
+    case CSSPropertyWebkitBorderRadius:
+    case CSSPropertyWebkitBorderStart:
+    case CSSPropertyWebkitBorderStartColor:
+    case CSSPropertyWebkitBorderStartStyle:
+    case CSSPropertyWebkitBorderStartWidth:
+    case CSSPropertyWebkitBorderVerticalSpacing:
+    case CSSPropertyWebkitFontSmoothing:
+    case CSSPropertyWebkitMarginAfter:
+    case CSSPropertyWebkitMarginAfterCollapse:
+    case CSSPropertyWebkitMarginBefore:
+    case CSSPropertyWebkitMarginBeforeCollapse:
+    case CSSPropertyWebkitMarginBottomCollapse:
+    case CSSPropertyWebkitMarginCollapse:
+    case CSSPropertyWebkitMarginEnd:
+    case CSSPropertyWebkitMarginStart:
+    case CSSPropertyWebkitMarginTopCollapse:
     case CSSPropertyWordSpacing:
         return true;
     case CSSPropertyTextDecorationColor:
@@ -1176,8 +1215,10 @@ static inline bool isValidFirstLetterStyleProperty(CSSPropertyID id)
     // text-shadow added in text decoration spec:
     // http://www.w3.org/TR/css-text-decor-3/#text-shadow-property
     case CSSPropertyTextShadow:
-        return true;
-
+    // box-shadox added in CSS3 backgrounds spec:
+    // http://www.w3.org/TR/css3-background/#placement
+    case CSSPropertyBoxShadow:
+    case CSSPropertyWebkitBoxShadow:
     // Properties that we currently support outside of spec.
     case CSSPropertyWebkitLineBoxContain:
     case CSSPropertyVisibility:

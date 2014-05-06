@@ -20,6 +20,7 @@ test(function() {
 async_test(function(testHandle) {
   var testCases = {
     backgroundAttachment: 'fixed',
+    backgroundBlendMode: 'hue',
     backgroundClip: 'padding-box',
     backgroundColor: 'rgb(10, 20, 30)',
     backgroundImage: 'linear-gradient(black, white)',
@@ -28,19 +29,28 @@ async_test(function(testHandle) {
     backgroundRepeat: 'no-repeat',
     backgroundSize: '10px 20px',
     border: '40px dotted rgb(10, 20, 30)',
-    borderRadius: '10px 20px',
     borderImage: 'linear-gradient(black, white) 10% / 20 / 30px repeat',
+    borderRadius: '10px 20px',
+    boxShadow: 'rgb(10, 20, 30) 10px 20px 30px 40px inset',
     color: 'rgba(10, 20, 30, 0.4)',
     float: 'right',
     font: 'italic small-caps 900 10px/20px sans-serif',
+    fontKerning: 'none',
     letterSpacing: '12px',
     margin: '10px 20px 30px 40px',
     padding: '10px 20px 30px 40px',
+    textDecoration: 'overline wavy rgb(10, 20, 30)',
     textShadow: 'rgb(10, 20, 30) 10px 20px 30px',
     textTransform: 'capitalize',
     verticalAlign: '12%',
+    webkitBackgroundComposite: 'xor',
+    webkitBorderFit: 'lines',
+    webkitBorderHorizontalSpacing: '12px',
+    webkitBorderVerticalSpacing: '12px',
+    webkitFontSmoothing: 'none',
+    webkitLineBoxContain: 'glyphs',
     wordSpacing: '12px',
-    textDecoration: 'overline wavy rgb(10, 20, 30)',
+    visibility: 'collapse',
   };
 
   for (var property in testCases) {
