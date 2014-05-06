@@ -11,15 +11,15 @@ namespace media {
 
 static const int kSampleRate = 48000;
 
-
 static void VerifyBusWithOffset(AudioBus* bus,
                                 int offset,
                                 int frames,
                                 float start,
+                                float start_offset,
                                 float increment) {
   for (int ch = 0; ch < bus->channels(); ++ch) {
-    const float v = start + ch * bus->frames() * increment;
-    for (int i = offset; i < frames; ++i) {
+    const float v = start_offset + start + ch * bus->frames() * increment;
+    for (int i = offset; i < offset + frames; ++i) {
       ASSERT_FLOAT_EQ(v + i * increment, bus->channel(ch)[i]) << "i=" << i
                                                               << ", ch=" << ch;
     }
@@ -27,7 +27,7 @@ static void VerifyBusWithOffset(AudioBus* bus,
 }
 
 static void VerifyBus(AudioBus* bus, int frames, float start, float increment) {
-  VerifyBusWithOffset(bus, 0, frames, start, increment);
+  VerifyBusWithOffset(bus, 0, frames, start, 0, increment);
 }
 
 static void TrimRangeTest(SampleFormat sample_format) {
@@ -65,8 +65,12 @@ static void TrimRangeTest(SampleFormat sample_format) {
   bus->Zero();
   buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
   VerifyBus(bus.get(), trim_start, 0, 1);
-  VerifyBusWithOffset(
-      bus.get(), trim_start, buffer->frame_count() - trim_start, 0, 1);
+  VerifyBusWithOffset(bus.get(),
+                      trim_start,
+                      buffer->frame_count() - trim_start,
+                      0,
+                      trim_length,
+                      1);
 
   // Trim 10ms of frames from the start, which just adjusts the buffer's
   // internal start offset.
@@ -78,8 +82,12 @@ static void TrimRangeTest(SampleFormat sample_format) {
   bus->Zero();
   buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
   VerifyBus(bus.get(), trim_start, trim_length, 1);
-  VerifyBusWithOffset(
-      bus.get(), trim_start, buffer->frame_count() - trim_start, 0, 1);
+  VerifyBusWithOffset(bus.get(),
+                      trim_start,
+                      buffer->frame_count() - trim_start,
+                      trim_length,
+                      trim_length,
+                      1);
 
   // Trim 10ms of frames from the end, which just adjusts the buffer's frame
   // count.
@@ -90,8 +98,12 @@ static void TrimRangeTest(SampleFormat sample_format) {
   bus->Zero();
   buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
   VerifyBus(bus.get(), trim_start, trim_length, 1);
-  VerifyBusWithOffset(
-      bus.get(), trim_start, buffer->frame_count() - trim_start, 0, 1);
+  VerifyBusWithOffset(bus.get(),
+                      trim_start,
+                      buffer->frame_count() - trim_start,
+                      trim_length,
+                      trim_length,
+                      1);
 
   // Trim another 10ms from the inner portion of the buffer.
   buffer->TrimRange(trim_start, trim_start + trim_length);
@@ -101,8 +113,12 @@ static void TrimRangeTest(SampleFormat sample_format) {
   bus->Zero();
   buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
   VerifyBus(bus.get(), trim_start, trim_length, 1);
-  VerifyBusWithOffset(
-      bus.get(), trim_start, buffer->frame_count() - trim_start, 0, 1);
+  VerifyBusWithOffset(bus.get(),
+                      trim_start,
+                      buffer->frame_count() - trim_start,
+                      trim_length,
+                      trim_length * 2,
+                      1);
 
   // Trim off the end using TrimRange() to ensure end index is exclusive.
   buffer->TrimRange(buffer->frame_count() - trim_length, buffer->frame_count());
@@ -112,8 +128,12 @@ static void TrimRangeTest(SampleFormat sample_format) {
   bus->Zero();
   buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
   VerifyBus(bus.get(), trim_start, trim_length, 1);
-  VerifyBusWithOffset(
-      bus.get(), trim_start, buffer->frame_count() - trim_start, 0, 1);
+  VerifyBusWithOffset(bus.get(),
+                      trim_start,
+                      buffer->frame_count() - trim_start,
+                      trim_length,
+                      trim_length * 2,
+                      1);
 
   // Trim off the start using TrimRange() to ensure start index is inclusive.
   buffer->TrimRange(0, trim_length);
@@ -124,8 +144,12 @@ static void TrimRangeTest(SampleFormat sample_format) {
   bus->Zero();
   buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
   VerifyBus(bus.get(), trim_start, 2 * trim_length, 1);
-  VerifyBusWithOffset(
-      bus.get(), trim_start, buffer->frame_count() - trim_start, 0, 1);
+  VerifyBusWithOffset(bus.get(),
+                      trim_start,
+                      buffer->frame_count() - trim_start,
+                      trim_length * 2,
+                      trim_length * 2,
+                      1);
 }
 
 TEST(AudioBufferTest, CopyFrom) {

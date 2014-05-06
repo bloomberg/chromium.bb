@@ -25,7 +25,7 @@ static void VerifyBus(AudioBus* bus,
                       float increment) {
   for (int ch = 0; ch < bus->channels(); ++ch) {
     const float v = start + ch * buffer_size * increment;
-    for (int i = offset; i < frames; ++i) {
+    for (int i = offset; i < offset + frames; ++i) {
       ASSERT_FLOAT_EQ(v + (i - offset) * increment, bus->channel(ch)[i])
           << "i=" << i << ", ch=" << ch;
     }
@@ -274,8 +274,8 @@ TEST(AudioBufferQueueTest, ReadS16Planar) {
   // Add 24 frames of data.
   buffer.Append(
       MakeTestBuffer<int16>(kSampleFormatPlanarS16, channel_layout, 1, 1, 4));
-  buffer.Append(MakeTestBuffer<int16>(
-      kSampleFormatPlanarS16, channel_layout, 100, 5, 20));
+  buffer.Append(
+      MakeTestBuffer<int16>(kSampleFormatPlanarS16, channel_layout, 5, 1, 20));
   EXPECT_EQ(24, buffer.frames());
 
   // Read 6 frames from the buffer.
