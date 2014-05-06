@@ -2117,6 +2117,98 @@ TEST_P(GLES2DecoderTest, DiscardFramebufferEXTUnsupported) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
+TEST_P(GLES2DecoderManualInitTest,
+       DiscardedAttachmentsEXTMarksFramebufferIncomplete) {
+  InitState init;
+  init.extensions = "GL_EXT_discard_framebuffer";
+  init.gl_version = "opengl es 2.0";
+  init.has_alpha = true;
+  init.bind_generates_resource = true;
+  InitDecoder(init);
+
+  const GLuint kFBOClientTextureId = 4100;
+  const GLuint kFBOServiceTextureId = 4101;
+
+  // Register a texture id.
+  EXPECT_CALL(*gl_, GenTextures(_, _))
+      .WillOnce(SetArgumentPointee<1>(kFBOServiceTextureId))
+      .RetiresOnSaturation();
+  GenHelper<GenTexturesImmediate>(kFBOClientTextureId);
+
+  // Setup "render to" texture.
+  DoBindTexture(GL_TEXTURE_2D, kFBOClientTextureId, kFBOServiceTextureId);
+  DoTexImage2D(
+      GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0, 0);
+  DoBindFramebuffer(
+      GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
+  DoFramebufferTexture2D(GL_FRAMEBUFFER,
+                         GL_COLOR_ATTACHMENT0,
+                         GL_TEXTURE_2D,
+                         kFBOClientTextureId,
+                         kFBOServiceTextureId,
+                         0,
+                         GL_NO_ERROR);
+
+  // Setup "render from" texture.
+  SetupTexture();
+
+  SetupExpectationsForFramebufferClearing(GL_FRAMEBUFFER,       // target
+                                          GL_COLOR_BUFFER_BIT,  // clear bits
+                                          0,
+                                          0,
+                                          0,
+                                          0,       // color
+                                          0,       // stencil
+                                          1.0f,    // depth
+                                          false);  // scissor test
+  SetupExpectationsForApplyingDirtyState(false,    // Framebuffer is RGB
+                                         false,    // Framebuffer has depth
+                                         false,    // Framebuffer has stencil
+                                         0x1111,   // color bits
+                                         false,    // depth mask
+                                         false,    // depth enabled
+                                         0,        // front stencil mask
+                                         0,        // back stencil mask
+                                         false);   // stencil enabled
+
+  EXPECT_CALL(*gl_, Clear(GL_COLOR_BUFFER_BIT)).Times(1).RetiresOnSaturation();
+
+  Clear clear_cmd;
+  clear_cmd.Init(GL_COLOR_BUFFER_BIT);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(clear_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // Check that framebuffer is cleared and complete.
+  FramebufferManager* framebuffer_manager = group().framebuffer_manager();
+  Framebuffer* framebuffer =
+      framebuffer_manager->GetFramebuffer(client_framebuffer_id_);
+  EXPECT_TRUE(framebuffer->IsCleared());
+  EXPECT_TRUE(framebuffer_manager->IsComplete(framebuffer));
+
+  // Check that Discard GL_COLOR_ATTACHMENT0, sets the attachment as uncleared
+  // and the framebuffer as incomplete.
+  EXPECT_TRUE(
+      gfx::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT") ==
+      gfx::g_driver_gl.fn.glDiscardFramebufferEXTFn);
+
+  const GLenum target = GL_FRAMEBUFFER;
+  const GLsizei count = 1;
+  const GLenum attachments[] = {GL_COLOR_ATTACHMENT0};
+
+  DiscardFramebufferEXTImmediate& discard_cmd =
+      *GetImmediateAs<DiscardFramebufferEXTImmediate>();
+  discard_cmd.Init(target, count, attachments);
+
+  EXPECT_CALL(*gl_, DiscardFramebufferEXT(target, count, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError,
+            ExecuteImmediateCmd(discard_cmd, sizeof(attachments)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_FALSE(framebuffer->IsCleared());
+  EXPECT_FALSE(framebuffer_manager->IsComplete(framebuffer));
+}
+
 TEST_P(GLES2DecoderManualInitTest, ReadFormatExtension) {
   InitState init;
   init.extensions = "GL_OES_read_format";

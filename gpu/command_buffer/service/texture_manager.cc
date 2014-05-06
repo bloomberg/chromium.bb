@@ -399,6 +399,13 @@ void Texture::UpdateCleared() {
       }
     }
   }
+
+  // If texture is uncleared and is attached to a framebuffer,
+  // that framebuffer must be marked possibly incomplete.
+  if (!cleared && IsAttachedToFramebuffer()) {
+    IncAllFramebufferStateChangeCount();
+  }
+
   UpdateSafeToRenderFrom(cleared);
 }
 
