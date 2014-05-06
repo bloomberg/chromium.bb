@@ -11,9 +11,22 @@
 namespace mojo {
 namespace internal {
 
-size_t Align(size_t size) {
+namespace {
+
+template<typename T>
+T AlignImpl(T t) {
   const size_t kAlignment = 8;
-  return size + (kAlignment - (size % kAlignment)) % kAlignment;
+  return t + (kAlignment - (t % kAlignment)) % kAlignment;
+}
+
+}  // namespace
+
+size_t Align(size_t size) {
+  return AlignImpl(size);
+}
+
+char* AlignPointer(char* ptr) {
+  return reinterpret_cast<char*>(AlignImpl(reinterpret_cast<uintptr_t>(ptr)));
 }
 
 void EncodePointer(const void* ptr, uint64_t* offset) {

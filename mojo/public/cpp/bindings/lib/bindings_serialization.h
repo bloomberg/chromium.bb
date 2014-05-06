@@ -14,6 +14,7 @@ namespace mojo {
 namespace internal {
 
 size_t Align(size_t size);
+char* AlignPointer(char* ptr);
 
 // Pointers are encoded as relative offsets. The offsets are relative to the
 // address of where the offset value is stored, such that the pointer may be
