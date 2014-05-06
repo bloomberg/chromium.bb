@@ -29469,6 +29469,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Viewport.MetaTagType" enum="MetaTagTypeEnum">
+  <owner>bokan@chromium.org</owner>
+  <summary>
+    The viewport meta tag type seen on each page load. Only recorded on Android.
+  </summary>
+</histogram>
+
+<histogram name="Viewport.OverviewZoom" units="Percent">
+  <owner>bokan@chromium.org</owner>
+  <summary>
+    The screen width as a percentage of viewport width (i.e. zoom at which we
+    can see the whole page). Only recorded on Android and for viewport meta tags
+    with constant width.
+  </summary>
+</histogram>
+
 <histogram name="VirtualKeyboard.KeyboardControlEvent"
     enum="KeyboardControlEvent">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
@@ -37201,6 +37217,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="Queried"/>
   <int value="1" label="No external link"/>
   <int value="2" label="All external links protected"/>
+</enum>
+
+<enum name="MetaTagTypeEnum" type="int">
+  <int value="0" label="No viewport tag"/>
+  <int value="1" label="Viewport meta with device width"/>
+  <int value="2" label="Viewport meta with constant width"/>
+  <int value="4" label="Viewport meta other"/>
+  <int value="5" label="HandheldFriendly meta"/>
+  <int value="6" label="MobileOptimized meta"/>
+  <int value="7" label="XHTML-MP document type"/>
 </enum>
 
 <enum name="MigrationNssToPemNetworkTypes" type="int">
