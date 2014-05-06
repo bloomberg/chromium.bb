@@ -53,6 +53,7 @@ class AppListLinuxUnitTest : public testing::Test {
     display_.set_work_area(
         gfx::Rect(0, kMenuBarSize, kScreenWidth, kScreenHeight - kMenuBarSize));
     cursor_ = gfx::Point();
+    center_window_ = false;
   }
 
   // Set the display work area.
@@ -101,6 +102,10 @@ class AppListLinuxUnitTest : public testing::Test {
     cursor_ = gfx::Point(x, y);
   }
 
+  void EnableWindowCentering() {
+    center_window_ = true;
+  }
+
   AppListPositioner::ScreenEdge ShelfEdge() const {
     return AppListLinux::ShelfLocationInDisplay(display_);
   }
@@ -109,12 +114,14 @@ class AppListLinuxUnitTest : public testing::Test {
     return AppListLinux::FindAnchorPoint(gfx::Size(kWindowWidth, kWindowHeight),
                                          display_,
                                          cursor_,
-                                         ShelfEdge());
+                                         ShelfEdge(),
+                                         center_window_);
   }
 
  private:
   gfx::Display display_;
   gfx::Point cursor_;
+  bool center_window_;
 };
 
 TEST_F(AppListLinuxUnitTest, ShelfLocationInDisplay) {
@@ -238,5 +245,15 @@ TEST_F(AppListLinuxUnitTest, FindAnchorPointMouseOnShelf) {
   PlaceCursor(kScreenWidth - kWindowNearEdge, kScreenHeight - kCursorOnShelf);
   EXPECT_EQ(gfx::Point(kScreenWidth - kWindowWidth / 2,
                        kScreenHeight - kShelfSize - kWindowHeight / 2),
+            DoFindAnchorPoint());
+}
+
+TEST_F(AppListLinuxUnitTest, FindAnchorPointCentered) {
+  // Cursor on the top shelf; enable centered app list mode.
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_TOP);
+  PlaceCursor(0, 0);
+  EnableWindowCentering();
+  // Expect the app list to be in the center of the screen (ignore the cursor).
+  EXPECT_EQ(gfx::Point(kScreenWidth / 2, kScreenHeight / 2),
             DoFindAnchorPoint());
 }

@@ -29,6 +29,10 @@ bool APP_LIST_EXPORT IsAppInfoEnabled();
 
 bool APP_LIST_EXPORT IsExperimentalAppListEnabled();
 
+// Determines whether either command-line switch was given for enabling the
+// centered app list position. Do not use this when positioning the app list;
+// instead use AppListViewDelegate::ShouldCenterWindow. It checks a superset of
+// the conditions that trigger the position.
 bool APP_LIST_EXPORT IsCenteredAppListEnabled();
 
 }  // namespace switches

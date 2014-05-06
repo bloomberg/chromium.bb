@@ -196,6 +196,10 @@ void AppListView::UpdateBounds() {
   SizeToContents();
 }
 
+bool AppListView::ShouldCenterWindow() const {
+  return delegate_->ShouldCenterWindow();
+}
+
 gfx::Size AppListView::GetPreferredSize() {
   return app_list_main_view_->GetPreferredSize();
 }

@@ -248,6 +248,10 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     return users_;
   }
 
+  virtual bool ShouldCenterWindow() const OVERRIDE {
+    return false;
+  }
+
   virtual app_list::AppListModel* GetModel() OVERRIDE { return model_.get(); }
 
   virtual app_list::SigninDelegate* GetSigninDelegate() OVERRIDE {
