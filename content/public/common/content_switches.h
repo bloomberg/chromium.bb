@@ -140,7 +140,7 @@ CONTENT_EXPORT extern const char kEnableOverlayFullscreenVideo[];
 CONTENT_EXPORT extern const char kDisableOverlayFullscreenVideoSubtitle[];
 CONTENT_EXPORT extern const char kEnableOverscrollNotifications[];
 CONTENT_EXPORT extern const char kEnablePinch[];
-extern const char kEnablePreciseMemoryInfo[];
+CONTENT_EXPORT extern const char kEnablePreciseMemoryInfo[];
 extern const char kEnablePreparsedJsCaching[];
 CONTENT_EXPORT extern const char kEnablePrivilegedWebGLExtensions[];
 CONTENT_EXPORT extern const char kEnableRegionBasedColumns[];

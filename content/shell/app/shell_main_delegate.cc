@@ -170,6 +170,8 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 
     command_line.AppendSwitch(switches::kEnableFileCookies);
 
+    command_line.AppendSwitch(switches::kEnablePreciseMemoryInfo);
+
     // Unless/until WebM files are added to the media layout tests, we need to
     // avoid removing MP4/H264/AAC so that layout tests can run on Android.
 #if !defined(OS_ANDROID)
