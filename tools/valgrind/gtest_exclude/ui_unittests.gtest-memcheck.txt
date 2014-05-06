@@ -2,4 +2,4 @@
 RenderTextTest.DisplayRectShowsCursorLTR
 
 # http://crbug.com/370168
-TouchExplorationTest.TwoFingerTouch
+TouchExplorationTest.*
