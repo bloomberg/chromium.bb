@@ -196,6 +196,7 @@ column-fill type_name=ColumnFill
 -webkit-column-rule-width type_name=unsigned short, converter=convertLineWidth<unsigned short>
 -webkit-column-span type_name=ColumnSpan
 -webkit-column-width type_name=float, custom_all
+-webkit-filter custom_value
 -webkit-font-smoothing font, type_name=FontSmoothingMode
 -webkit-highlight type_name=AtomicString, converter=convertString<CSSValueNone>
 -webkit-hyphenate-character type_name=AtomicString, name_for_methods=HyphenationString, converter=convertString<CSSValueAuto>
@@ -239,6 +240,8 @@ perspective-origin custom_all
 -webkit-text-security
 -webkit-text-stroke-color custom_all
 text-underline-position custom_value
+transform custom_value
+-webkit-transform use_handlers_for=CSSPropertyTransform
 transform-origin custom_all
 -webkit-transform-origin-x type_name=Length, converter=convertLength
 -webkit-transform-origin-y type_name=Length, converter=convertLength

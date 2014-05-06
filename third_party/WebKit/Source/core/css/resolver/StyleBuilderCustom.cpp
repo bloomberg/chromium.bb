@@ -613,6 +613,13 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextIndent(StyleResolverState& 
     state.style()->setTextIndentType(textIndentTypeValue);
 }
 
+void StyleBuilderFunctions::applyValueCSSPropertyTransform(StyleResolverState& state, CSSValue* value)
+{
+    TransformOperations operations;
+    TransformBuilder::createTransformOperations(value, state.cssToLengthConversionData(), operations);
+    state.style()->setTransform(operations);
+}
+
 void StyleBuilderFunctions::applyInitialCSSPropertyTransformOrigin(StyleResolverState& state)
 {
     applyInitialCSSPropertyWebkitTransformOriginX(state);
@@ -844,6 +851,13 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitClipPath(StyleResolverSta
             state.style()->setClipPath(ReferenceClipPathOperation::create(cssURLValue, AtomicString(url.fragmentIdentifier())));
         }
     }
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyWebkitFilter(StyleResolverState& state, CSSValue* value)
+{
+    FilterOperations operations;
+    if (FilterOperationResolver::createFilterOperations(value, state.cssToLengthConversionData(), operations, state))
+        state.style()->setFilter(operations);
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyFontVariantLigatures(StyleResolverState& state)
@@ -1452,14 +1466,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         state.style()->setTextStrokeWidth(width);
         return;
     }
-    case CSSPropertyTransform:
-    case CSSPropertyWebkitTransform: {
-        HANDLE_INHERIT_AND_INITIAL(transform, Transform);
-        TransformOperations operations;
-        TransformBuilder::createTransformOperations(value, state.cssToLengthConversionData(), operations);
-        state.style()->setTransform(operations);
-        return;
-    }
     case CSSPropertyPerspective:
     case CSSPropertyWebkitPerspective: {
         HANDLE_INHERIT_AND_INITIAL(perspective, Perspective)
@@ -1607,14 +1613,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
             return;
 
         state.fontBuilder().setFeatureSettingsValue(value);
-        return;
-    }
-
-    case CSSPropertyWebkitFilter: {
-        HANDLE_INHERIT_AND_INITIAL(filter, Filter);
-        FilterOperations operations;
-        if (FilterOperationResolver::createFilterOperations(value, state.cssToLengthConversionData(), operations, state))
-            state.style()->setFilter(operations);
         return;
     }
 
@@ -1842,6 +1840,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyFlexWrap:
     case CSSPropertyJustifyContent:
     case CSSPropertyOrder:
+    case CSSPropertyWebkitFilter:
     case CSSPropertyWebkitFontSmoothing:
     case CSSPropertyWebkitHighlight:
     case CSSPropertyWebkitHyphenateCharacter:
@@ -1882,6 +1881,8 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyWebkitTextFillColor:
     case CSSPropertyWebkitTextSecurity:
     case CSSPropertyWebkitTextStrokeColor:
+    case CSSPropertyTransform:
+    case CSSPropertyWebkitTransform:
     case CSSPropertyWebkitTransformOriginX:
     case CSSPropertyWebkitTransformOriginY:
     case CSSPropertyWebkitTransformOriginZ:
