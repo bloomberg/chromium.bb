@@ -6,16 +6,7 @@ include_rules = [
   # components/ are not allowed.
   "-components",
 
-  # Components should only depend on the public Content API, and on
-  # layers below the Content Module. They must not depend on the
-  # implementation of the Content Module.
-  #
-  # Subdirectories of e.g. src/components/component_name should add
-  # the additional parts of the Content API that they need,
-  # e.g. components/component_name/browser/DEPS would add a
-  # "+content/public/browser" rule.
-  "+content/public/common",
-
-  # Dependencies of variations component.
-  "+third_party/mt19937ar",
+  # Components that wish to use the content API or IPC must explicitly declare 
+  # these dependencies; see ./README.
+  "-ipc",
 ]

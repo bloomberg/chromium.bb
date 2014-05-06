@@ -2,5 +2,4 @@ include_rules = [
   # KeyedService is a layered component; subdirectories must introduce
   # allowances of //content dependencies as appropriate.
   "-components/keyed_service/content",
-  "-content",
 ]

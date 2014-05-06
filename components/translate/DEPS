@@ -8,6 +8,5 @@ include_rules = [
 
   # Translate is a layered component; subdirectories must explicitly introduce
   # the ability to use the content layer as appropriate.
-  "-content",
   "-components/translate/content",
 ]

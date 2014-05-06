@@ -2,6 +2,4 @@ include_rules = [
   "+components/user_prefs",
   "+crypto",
   "+net",
-  # Data reduction proxy is used by iOS, which does not use content.
-  "-content",
 ]

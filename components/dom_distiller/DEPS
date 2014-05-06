@@ -15,5 +15,4 @@ include_rules = [
   # http://www.chromium.org/developers/design-documents/layered-components-design
   "-components/dom_distiller",
   "+components/dom_distiller/core",
-  "-content/public",
 ]

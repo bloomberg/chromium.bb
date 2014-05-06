@@ -1,19 +1,19 @@
 This directory is for features that are intended for reuse across multiple
 embedders (e.g., Android WebView and Chrome).
 
-By default, subdirectories have the Content Module as the uppermost layer they
-depend on, i.e., they may depend only on the Content API (content/public) and
-on lower layers (e.g. base/, net/, ipc/ etc.). Individual subdirectories may
-further restrict their dependencies, e.g., a component that is used by Chrome
-for iOS (which does not use the content API) will either disallow usage of
-content/public or be in the form of a layered component
+By default, components can depend only on the lower layers of the Chromium
+codebase(e.g. base/, net/, etc.). Individual components may additionally allow
+dependencies on the content API and IPC; however, if such a component is used
+by Chrome for iOS (which does not use the content API or IPC), the component
+will have to be in the form of a layered component
 (http://www.chromium.org/developers/design-documents/layered-components-design).
 
 Components that have bits of code that need to live in different
 processes (e.g. some code in the browser process, some in the renderer
 process, etc.) should separate the code into different subdirectories.
 Hence for a component named 'foo' you might end up with a structure
-like the following:
+like the following (assuming that foo is not used by iOS and thus does not
+need to be a layered component):
 
 components/foo          - DEPS, OWNERS, foo.gypi
 components/foo/browser  - code that needs the browser process
@@ -36,6 +36,4 @@ components/foo/android/javatests/src/org/chromium/components/foo/browser/
 Code in a component should be placed in a namespace corresponding to
 the name of the component; e.g. for a component living in
 //components/foo, code in that component should be in the foo::
-namespace. Note that it used to be the rule that all code under
-//components should be in the components:: namespace; this is being
-phased out.
+namespace.

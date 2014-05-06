@@ -9,6 +9,5 @@ include_rules = [
   "+ui",
   # PasswordManager is a layered component; subdirectories must explicitly
   # introduce the ability to use the content layer as appropriate.
-  "-content/public/common",
-  "-ipc",
+  "-components/password_manager/content",
 ]

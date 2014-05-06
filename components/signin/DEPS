@@ -7,9 +7,4 @@ include_rules = [
   "+grit",  # For generated headers
   "+net",
   "+sql",
-  # Signin is a layered component; subdirectories must explicitly introduce
-  # the ability to use the content layer as appropriate.
-  "-components/signin/content",
-  "-content/public/common",
-  "-ipc",
 ]

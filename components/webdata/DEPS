@@ -1,6 +1,4 @@
 include_rules = [
-  # WebData is used by iOS, which does not use content.
-  "-content",
   "+sql",
   "+ui",
 ]
