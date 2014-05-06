@@ -16,11 +16,9 @@ public:
 
     {% for property_id, property in properties.items()
            if not property.use_handlers_for %}
-    {% filter enable_conditional(property.condition) %}
     static void applyInitial{{property_id}}(StyleResolverState&);
     static void applyInherit{{property_id}}(StyleResolverState&);
     static void applyValue{{property_id}}(StyleResolverState&, CSSValue*);
-    {% endfilter %}
 
     {% endfor %}
 };

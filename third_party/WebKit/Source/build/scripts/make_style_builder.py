@@ -39,7 +39,6 @@ import template_expander
 class StyleBuilderWriter(in_generator.Writer):
     class_name = 'StyleBuilder'
     filters = {
-        'enable_conditional': name_utilities.enable_conditional_if_endif,
         'lower_first': lower_first,
     }
 
