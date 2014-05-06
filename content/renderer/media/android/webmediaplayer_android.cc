@@ -128,9 +128,11 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   player_id_ = manager_->RegisterMediaPlayer(this);
 
 #if defined(VIDEO_HOLE)
-  // Defer stream texture creation until we are sure it's necessary.
-  needs_establish_peer_ = false;
-  current_frame_ = VideoFrame::CreateBlackFrame(gfx::Size(1, 1));
+  if (manager_->ShouldUseVideoOverlayForEmbeddedEncryptedVideo()) {
+    // Defer stream texture creation until we are sure it's necessary.
+    needs_establish_peer_ = false;
+    current_frame_ = VideoFrame::CreateBlackFrame(gfx::Size(1, 1));
+  }
   force_use_overlay_embedded_video_ = CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kForceUseOverlayEmbeddedVideo);
 #endif  // defined(VIDEO_HOLE)
@@ -701,13 +703,9 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
   } else if (stream_texture_proxy_ && !stream_id_) {
     // Do deferred stream texture creation finally.
     DoCreateStreamTexture();
-    if (paused()) {
-      SetNeedsEstablishPeer(true);
-    } else {
-      EstablishSurfaceTexturePeer();
-    }
+    SetNeedsEstablishPeer(true);
   }
-#else
+#endif  // defined(VIDEO_HOLE)
   // When play() gets called, |natural_size_| may still be empty and
   // EstablishSurfaceTexturePeer() will not get called. As a result, the video
   // may play without a surface texture. When we finally get the valid video
@@ -715,7 +713,6 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
   // previously called.
   if (!paused() && needs_establish_peer_)
     EstablishSurfaceTexturePeer();
-#endif  // defined(VIDEO_HOLE)
 
   natural_size_.width = width;
   natural_size_.height = height;
