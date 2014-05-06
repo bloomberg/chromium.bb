@@ -53,7 +53,13 @@ CommandBufferImpl::CommandBufferImpl(ScopedCommandBufferClientHandle client,
                                      const gfx::Size& size)
     : client_(client.Pass(), this), widget_(widget), size_(size) {}
 
-CommandBufferImpl::~CommandBufferImpl() { client_->DidDestroy(); }
+CommandBufferImpl::~CommandBufferImpl() {
+  client_->DidDestroy();
+  if (decoder_.get()) {
+    bool have_context = decoder_->MakeCurrent();
+    decoder_->Destroy(have_context);
+  }
+}
 
 void CommandBufferImpl::Initialize(
     ScopedCommandBufferSyncClientHandle sync_client,
