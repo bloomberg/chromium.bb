@@ -10,9 +10,6 @@
   <release seq="1">
     <structures fallback_to_low_resolution="true">
       <structure type="chrome_scaled_image" name="IDR_BROKENIMAGE" file="broken_image.png" />
-      <structure type="chrome_scaled_image" name="IDR_INPUT_SPEECH" file="input_speech.png" />
-      <structure type="chrome_scaled_image" name="IDR_INPUT_SPEECH_RECORDING" file="input_speech_recording.png" />
-      <structure type="chrome_scaled_image" name="IDR_INPUT_SPEECH_WAITING" file="input_speech_waiting.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_PAUSE_BUTTON" file="mediaplayer_pause.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_PAUSE_BUTTON_HOVER" file="mediaplayer_pause_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_PAUSE_BUTTON_DOWN" file="mediaplayer_pause_down.png" />
