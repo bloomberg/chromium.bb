@@ -701,3 +701,21 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
     EXPECT_TRUE(password_store->IsEmpty());
   }
 }
+
+// Test fix for crbug.com/368690.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptWhenReloading) {
+  NavigateToFile("/password/password_form.html");
+
+  std::string fill =
+      "document.getElementById('username_redirect').value = 'temp';"
+      "document.getElementById('password_redirect').value = 'random';";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill));
+
+  NavigationObserver observer(WebContents());
+  GURL url = embedded_test_server()->GetURL("/password/password_form.html");
+  chrome::NavigateParams params(browser(), url,
+                                content::PAGE_TRANSITION_RELOAD);
+  ui_test_utils::NavigateToURL(&params);
+  observer.Wait();
+  EXPECT_FALSE(observer.infobar_shown());
+}

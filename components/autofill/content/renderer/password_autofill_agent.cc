@@ -17,6 +17,9 @@
 #include "components/autofill/core/common/password_autofill_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "content/public/common/page_transition_types.h"
+#include "content/public/renderer/document_state.h"
+#include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
@@ -643,7 +646,17 @@ void PasswordAutofillAgent::DidStartProvisionalLoad(
       logger->LogBoolean(Logger::STRING_FORM_FRAME_EQ_FRAME,
                          form_frame == frame);
     }
-    if (!blink::WebUserGestureIndicator::isProcessingUserGesture()) {
+    // Bug fix for crbug.com/368690. isProcessingUserGesture() is false when
+    // the user is performing actions outside the page (e.g. typed url,
+    // history navigation). We don't want to trigger saving in these cases.
+    content::DocumentState* document_state =
+        content::DocumentState::FromDataSource(
+            frame->provisionalDataSource());
+    content::NavigationState* navigation_state =
+        document_state->navigation_state();
+    if (content::PageTransitionIsWebTriggerable(
+            navigation_state->transition_type()) &&
+        !blink::WebUserGestureIndicator::isProcessingUserGesture()) {
       // If onsubmit has been called, try and save that form.
       if (provisionally_saved_forms_[form_frame].get()) {
         if (logger) {
