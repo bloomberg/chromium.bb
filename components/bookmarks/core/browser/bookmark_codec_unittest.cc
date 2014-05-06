@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/chrome_paths.h"
 #include "components/bookmarks/core/browser/bookmark_model.h"
 #include "components/bookmarks/core/test/test_bookmark_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,6 +31,17 @@ const char kUrl4Title[] = "url4";
 const char kUrl4Url[] = "http://www.url4.com";
 const char kFolder1Title[] = "folder1";
 const char kFolder2Title[] = "folder2";
+
+const base::FilePath& GetTestDataDir() {
+  CR_DEFINE_STATIC_LOCAL(base::FilePath, dir, ());
+  if (dir.empty()) {
+    PathService::Get(base::DIR_SOURCE_ROOT, &dir);
+    dir = dir.AppendASCII("components");
+    dir = dir.AppendASCII("test");
+    dir = dir.AppendASCII("data");
+  }
+  return dir;
+}
 
 // Helper to get a mutable bookmark node.
 BookmarkNode* AsMutable(const BookmarkNode* node) {
@@ -90,8 +100,8 @@ class BookmarkCodecTest : public testing::Test {
     scoped_ptr<BookmarkModel> model(client_.CreateModel(false));
     const BookmarkNode* bookmark_bar = model->bookmark_bar_node();
     model->AddURL(bookmark_bar, 0, ASCIIToUTF16(kUrl1Title), GURL(kUrl1Url));
-    const BookmarkNode* folder1 = model->AddFolder(bookmark_bar, 1,
-                                                   ASCIIToUTF16(kFolder1Title));
+    const BookmarkNode* folder1 =
+        model->AddFolder(bookmark_bar, 1, ASCIIToUTF16(kFolder1Title));
     model->AddURL(folder1, 0, ASCIIToUTF16(kUrl2Title), GURL(kUrl2Url));
     return model.release();
   }
@@ -109,15 +119,15 @@ class BookmarkCodecTest : public testing::Test {
     base::DictionaryValue* roots_d_value =
         static_cast<base::DictionaryValue*>(roots);
     base::Value* bb_value;
-    ASSERT_TRUE(roots_d_value->Get(BookmarkCodec::kRootFolderNameKey,
-                                   &bb_value));
+    ASSERT_TRUE(
+        roots_d_value->Get(BookmarkCodec::kRootFolderNameKey, &bb_value));
     ASSERT_EQ(base::Value::TYPE_DICTIONARY, bb_value->GetType());
 
     base::DictionaryValue* bb_d_value =
         static_cast<base::DictionaryValue*>(bb_value);
     base::Value* bb_children_value;
-    ASSERT_TRUE(bb_d_value->Get(BookmarkCodec::kChildrenKey,
-                                &bb_children_value));
+    ASSERT_TRUE(
+        bb_d_value->Get(BookmarkCodec::kChildrenKey, &bb_children_value));
     ASSERT_EQ(base::Value::TYPE_LIST, bb_children_value->GetType());
 
     base::ListValue* bb_children_l_value =
@@ -155,12 +165,12 @@ class BookmarkCodecTest : public testing::Test {
     bool result = codec->Decode(AsMutable(model->bookmark_bar_node()),
                                 AsMutable(model->other_node()),
                                 AsMutable(model->mobile_node()),
-                                &max_id, value);
+                                &max_id,
+                                value);
     model->set_next_node_id(max_id);
-    AsMutable(model->root_node())->
-        SetMetaInfoMap(codec->model_meta_info_map());
-    AsMutable(model->root_node())->
-        set_sync_transaction_version(codec->model_sync_transaction_version());
+    AsMutable(model->root_node())->SetMetaInfoMap(codec->model_meta_info_map());
+    AsMutable(model->root_node())
+        ->set_sync_transaction_version(codec->model_sync_transaction_version());
 
     return result;
   }
@@ -225,8 +235,8 @@ TEST_F(BookmarkCodecTest, ChecksumEncodeDecodeTest) {
   EXPECT_TRUE(value.get() != NULL);
 
   std::string dec_checksum;
-  scoped_ptr<BookmarkModel> decoded_model(DecodeHelper(
-      *value.get(), enc_checksum, &dec_checksum, false));
+  scoped_ptr<BookmarkModel> decoded_model(
+      DecodeHelper(*value.get(), enc_checksum, &dec_checksum, false));
 }
 
 TEST_F(BookmarkCodecTest, ChecksumEncodeIdenticalModelsTest) {
@@ -261,13 +271,13 @@ TEST_F(BookmarkCodecTest, ChecksumManualEditTest) {
   child1_value->SetString(BookmarkCodec::kNameKey, title + "1");
 
   std::string dec_checksum;
-  scoped_ptr<BookmarkModel> decoded_model1(DecodeHelper(
-      *value.get(), enc_checksum, &dec_checksum, true));
+  scoped_ptr<BookmarkModel> decoded_model1(
+      DecodeHelper(*value.get(), enc_checksum, &dec_checksum, true));
 
   // Undo the change and make sure the checksum is same as original.
   child1_value->SetString(BookmarkCodec::kNameKey, title);
-  scoped_ptr<BookmarkModel> decoded_model2(DecodeHelper(
-      *value.get(), enc_checksum, &dec_checksum, false));
+  scoped_ptr<BookmarkModel> decoded_model2(
+      DecodeHelper(*value.get(), enc_checksum, &dec_checksum, false));
 }
 
 TEST_F(BookmarkCodecTest, ChecksumManualEditIDsTest) {
@@ -294,17 +304,17 @@ TEST_F(BookmarkCodecTest, ChecksumManualEditIDsTest) {
   }
 
   std::string dec_checksum;
-  scoped_ptr<BookmarkModel> decoded_model(DecodeHelper(
-      *value.get(), enc_checksum, &dec_checksum, true));
+  scoped_ptr<BookmarkModel> decoded_model(
+      DecodeHelper(*value.get(), enc_checksum, &dec_checksum, true));
 
   ExpectIDsUnique(decoded_model.get());
 
   // add a few extra nodes to bookmark model and make sure IDs are still uniuqe.
   const BookmarkNode* bb_node = decoded_model->bookmark_bar_node();
-  decoded_model->AddURL(bb_node, 0, ASCIIToUTF16("new url1"),
-                        GURL("http://newurl1.com"));
-  decoded_model->AddURL(bb_node, 0, ASCIIToUTF16("new url2"),
-                        GURL("http://newurl2.com"));
+  decoded_model->AddURL(
+      bb_node, 0, ASCIIToUTF16("new url1"), GURL("http://newurl1.com"));
+  decoded_model->AddURL(
+      bb_node, 0, ASCIIToUTF16("new url2"), GURL("http://newurl2.com"));
 
   ExpectIDsUnique(decoded_model.get());
 }
@@ -344,9 +354,8 @@ TEST_F(BookmarkCodecTest, PersistIDsTest) {
 
 TEST_F(BookmarkCodecTest, CanDecodeModelWithoutMobileBookmarks) {
   base::FilePath test_data_directory;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory));
-  base::FilePath test_file = test_data_directory.AppendASCII(
-      "bookmarks/model_without_sync.json");
+  base::FilePath test_file =
+      GetTestDataDir().AppendASCII("bookmarks/model_without_sync.json");
   ASSERT_TRUE(base::PathExists(test_file));
 
   JSONFileValueSerializer serializer(test_file);
@@ -388,8 +397,8 @@ TEST_F(BookmarkCodecTest, EncodeAndDecodeMetaInfo) {
   // Add meta info and encode.
   scoped_ptr<BookmarkModel> model(CreateTestModel1());
   model->SetNodeMetaInfo(model->root_node(), "model_info", "value1");
-  model->SetNodeMetaInfo(model->bookmark_bar_node()->GetChild(0),
-                         "node_info", "value2");
+  model->SetNodeMetaInfo(
+      model->bookmark_bar_node()->GetChild(0), "node_info", "value2");
   std::string checksum;
   scoped_ptr<base::Value> value(EncodeHelper(model.get(), &checksum));
   ASSERT_TRUE(value.get() != NULL);
@@ -432,9 +441,8 @@ TEST_F(BookmarkCodecTest, EncodeAndDecodeSyncTransactionVersion) {
 // way meta info is stored.
 TEST_F(BookmarkCodecTest, CanDecodeMetaInfoAsString) {
   base::FilePath test_data_directory;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory));
-  base::FilePath test_file = test_data_directory.AppendASCII(
-      "bookmarks/meta_info_as_string.json");
+  base::FilePath test_file =
+      GetTestDataDir().AppendASCII("bookmarks/meta_info_as_string.json");
   ASSERT_TRUE(base::PathExists(test_file));
 
   JSONFileValueSerializer serializer(test_file);
@@ -456,8 +464,8 @@ TEST_F(BookmarkCodecTest, CanDecodeMetaInfoAsString) {
   std::string meta_value;
   EXPECT_FALSE(
       model->root_node()->GetMetaInfo(kSyncTransactionVersionKey, &meta_value));
-  EXPECT_FALSE(bbn->GetChild(1)->GetMetaInfo(kSyncTransactionVersionKey,
-                                             &meta_value));
+  EXPECT_FALSE(
+      bbn->GetChild(1)->GetMetaInfo(kSyncTransactionVersionKey, &meta_value));
   EXPECT_TRUE(bbn->GetChild(0)->GetMetaInfo(kNormalKey, &meta_value));
   EXPECT_EQ("value", meta_value);
   EXPECT_TRUE(bbn->GetChild(1)->GetMetaInfo(kNormalKey, &meta_value));

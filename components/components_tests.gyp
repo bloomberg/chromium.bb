@@ -63,6 +63,7 @@
             'autofill/core/common/form_field_data_unittest.cc',
             'autofill/core/common/password_form_fill_data_unittest.cc',
             'autofill/core/common/save_password_progress_logger_unittest.cc',
+            'bookmarks/core/browser/bookmark_codec_unittest.cc',
             'captive_portal/captive_portal_detector_unittest.cc',
             'cloud_devices/common/cloud_devices_urls_unittest.cc',
             'cloud_devices/common/printer_description_unittest.cc',
@@ -198,6 +199,10 @@
             'components_strings.gyp:components_strings',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
 
+            # Dependencies of bookmarks
+            'components.gyp:bookmarks_core_browser',
+            'components.gyp:bookmarks_core_test_support',
+            
             # Dependencies of captive_portal
             'components.gyp:captive_portal_test_support',
             '../net/net.gyp:net_test_support',
@@ -323,6 +328,7 @@
                 ['include', '^test/run_all_unittests\\.cc$'],
                 ['include', '^auto_login_parser/'],
                 ['include', '^autofill/core/'],
+                ['include', '^bookmarks/'],
                 ['include', '^data_reduction_proxy/'],
                 ['include', '^dom_distiller/'],
                 ['include', '^json_schema/'],

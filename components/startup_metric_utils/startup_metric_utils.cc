@@ -149,7 +149,8 @@ void OnBrowserStartupComplete(bool is_first_run) {
 
 // CurrentProcessInfo::CreationTime() is currently only implemented on some
 // platforms.
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
+#if (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN) || \
+    defined(OS_LINUX)
   // Record timings between process creation, the main() in the executable being
   // reached and the main() in the shared library being reached.
   scoped_ptr<base::Environment> env(base::Environment::Create());
