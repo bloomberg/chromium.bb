@@ -47,6 +47,13 @@ GFX_EXPORT skia::RefPtr<SkShader> CreateImageRepShader(
     SkShader::TileMode tile_mode,
     const SkMatrix& local_matrix);
 
+// Creates a bitmap shader for the image rep with the passed in scale factor.
+GFX_EXPORT skia::RefPtr<SkShader> CreateImageRepShaderForScale(
+    const gfx::ImageSkiaRep& image_rep,
+    SkShader::TileMode tile_mode,
+    const SkMatrix& local_matrix,
+    SkScalar scale);
+
 // Creates a vertical gradient shader. The caller owns the shader.
 // Example usage to avoid leaks:
 GFX_EXPORT skia::RefPtr<SkShader> CreateGradientShader(int start_point,

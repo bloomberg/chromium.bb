@@ -377,63 +377,63 @@ void Canvas::DrawImageInt(const ImageSkia& image,
                           int dest_h,
                           bool filter,
                           const SkPaint& paint) {
-  DLOG_ASSERT(src_x + src_w < std::numeric_limits<int16_t>::max() &&
-              src_y + src_h < std::numeric_limits<int16_t>::max());
-  if (src_w <= 0 || src_h <= 0) {
-    NOTREACHED() << "Attempting to draw bitmap from an empty rect!";
-    return;
-  }
+  DrawImageIntHelper(image, src_x, src_y, src_w, src_h, dest_x, dest_y, dest_w,
+                     dest_h, filter, paint, image_scale_, false);
+}
 
-  if (!IntersectsClipRectInt(dest_x, dest_y, dest_w, dest_h))
-    return;
+void Canvas::DrawImageIntInPixel(const ImageSkia& image,
+                                 int src_x,
+                                 int src_y,
+                                 int src_w,
+                                 int src_h,
+                                 int dest_x,
+                                 int dest_y,
+                                 int dest_w,
+                                 int dest_h,
+                                 bool filter,
+                                 const SkPaint& paint) {
+  // Logic as below:-
+  // 1. Translate the destination rectangle using the current translation
+  //    values from the SkCanvas matrix stack.
+  // 2. Save the current state of the canvas.
+  // 3. Reset the scales and the translation values in the SkCanvas matrix
+  //    stack top.
+  // 4. Set the scale in gfx::Canvas instance to 1.0, 1.0.
+  // 5. Draw the image.
+  // 6. Restore the state of the canvas and the SkCanvas matrix stack.
+  SkMatrix matrix = canvas_->getTotalMatrix();
 
-  float user_scale_x = static_cast<float>(dest_w) / src_w;
-  float user_scale_y = static_cast<float>(dest_h) / src_h;
-
-  const ImageSkiaRep& image_rep = GetImageRepToPaint(image,
-      user_scale_x, user_scale_y);
-  if (image_rep.is_null())
-    return;
-
-  SkRect dest_rect = { SkIntToScalar(dest_x),
+  SkRect destination_rect;
+  destination_rect.set(SkIntToScalar(dest_x),
                        SkIntToScalar(dest_y),
                        SkIntToScalar(dest_x + dest_w),
-                       SkIntToScalar(dest_y + dest_h) };
+                       SkIntToScalar(dest_y + dest_h));
+  matrix.setScaleX(1.0f);
+  matrix.setScaleY(1.0f);
+  matrix.mapRect(&destination_rect, destination_rect);
 
-  if (src_w == dest_w && src_h == dest_h &&
-      user_scale_x == 1.0f && user_scale_y == 1.0f &&
-      image_rep.scale() == 1.0f) {
-    // Workaround for apparent bug in Skia that causes image to occasionally
-    // shift.
-    SkIRect src_rect = { src_x, src_y, src_x + src_w, src_y + src_h };
-    const SkBitmap& bitmap = image_rep.sk_bitmap();
-    canvas_->drawBitmapRect(bitmap, &src_rect, dest_rect, &paint);
-    return;
-  }
+  Save();
 
-  // Make a bitmap shader that contains the bitmap we want to draw. This is
-  // basically what SkCanvas.drawBitmap does internally, but it gives us
-  // more control over quality and will use the mipmap in the source image if
-  // it has one, whereas drawBitmap won't.
-  SkMatrix shader_scale;
-  shader_scale.setScale(SkFloatToScalar(user_scale_x),
-                        SkFloatToScalar(user_scale_y));
-  shader_scale.preTranslate(SkIntToScalar(-src_x), SkIntToScalar(-src_y));
-  shader_scale.postTranslate(SkIntToScalar(dest_x), SkIntToScalar(dest_y));
+  // The destination is now in pixel values. No need for further translation.
+  matrix.setTranslate(0, 0);
+  canvas_->setMatrix(matrix);
 
-  skia::RefPtr<SkShader> shader = CreateImageRepShader(
-      image_rep,
-      SkShader::kRepeat_TileMode,
-      shader_scale);
+  DrawImageIntHelper(image,
+                     src_x,
+                     src_y,
+                     src_w,
+                     src_h,
+                     SkScalarRoundToInt(destination_rect.x()),
+                     SkScalarRoundToInt(destination_rect.y()),
+                     SkScalarRoundToInt(destination_rect.width()),
+                     SkScalarRoundToInt(destination_rect.height()),
+                     filter,
+                     paint,
+                     image_scale_,
+                     true);
 
-  // Set up our paint to use the shader & release our reference (now just owned
-  // by the paint).
-  SkPaint p(paint);
-  p.setFilterBitmap(filter);
-  p.setShader(shader.get());
-
-  // The rect will be filled by the bitmap.
-  canvas_->drawRect(dest_rect, p);
+  // Restore the state of the canvas.
+  Restore();
 }
 
 void Canvas::DrawImageInPath(const ImageSkia& image,
@@ -505,7 +505,7 @@ void Canvas::TileImageInt(const ImageSkia& image,
     return;
 
   const ImageSkiaRep& image_rep = GetImageRepToPaint(
-      image, tile_scale_x, tile_scale_y);
+      image, image_scale_, tile_scale_x, tile_scale_y);
   if (image_rep.is_null())
     return;
 
@@ -563,14 +563,15 @@ bool Canvas::IntersectsClipRect(const Rect& rect) {
 }
 
 const ImageSkiaRep& Canvas::GetImageRepToPaint(const ImageSkia& image) const {
-  return GetImageRepToPaint(image, 1.0f, 1.0f);
+  return GetImageRepToPaint(image, image_scale_, 1.0f, 1.0f);
 }
 
 const ImageSkiaRep& Canvas::GetImageRepToPaint(
     const ImageSkia& image,
+    float image_scale,
     float user_additional_scale_x,
     float user_additional_scale_y) const {
-  const ImageSkiaRep& image_rep = image.GetRepresentation(image_scale_);
+  const ImageSkiaRep& image_rep = image.GetRepresentation(image_scale);
 
   if (!image_rep.is_null()) {
     SkMatrix m = canvas_->getTotalMatrix();
@@ -585,6 +586,79 @@ const ImageSkiaRep& Canvas::GetImageRepToPaint(
   }
 
   return image_rep;
+}
+
+void Canvas::DrawImageIntHelper(const ImageSkia& image,
+                                int src_x,
+                                int src_y,
+                                int src_w,
+                                int src_h,
+                                int dest_x,
+                                int dest_y,
+                                int dest_w,
+                                int dest_h,
+                                bool filter,
+                                const SkPaint& paint,
+                                float image_scale,
+                                bool pixel) {
+  DLOG_ASSERT(src_x + src_w < std::numeric_limits<int16_t>::max() &&
+              src_y + src_h < std::numeric_limits<int16_t>::max());
+  if (src_w <= 0 || src_h <= 0) {
+    NOTREACHED() << "Attempting to draw bitmap from an empty rect!";
+    return;
+  }
+
+  if (!IntersectsClipRectInt(dest_x, dest_y, dest_w, dest_h))
+    return;
+
+  float user_scale_x = static_cast<float>(dest_w) / src_w;
+  float user_scale_y = static_cast<float>(dest_h) / src_h;
+
+  const ImageSkiaRep& image_rep = GetImageRepToPaint(image,
+      image_scale, user_scale_x, user_scale_y);
+  if (image_rep.is_null())
+    return;
+
+  SkRect dest_rect = { SkIntToScalar(dest_x),
+                       SkIntToScalar(dest_y),
+                       SkIntToScalar(dest_x + dest_w),
+                       SkIntToScalar(dest_y + dest_h) };
+
+  if (src_w == dest_w && src_h == dest_h &&
+      user_scale_x == 1.0f && user_scale_y == 1.0f &&
+      image_rep.scale() == 1.0f && !pixel) {
+    // Workaround for apparent bug in Skia that causes image to occasionally
+    // shift.
+    SkIRect src_rect = { src_x, src_y, src_x + src_w, src_y + src_h };
+    const SkBitmap& bitmap = image_rep.sk_bitmap();
+    canvas_->drawBitmapRect(bitmap, &src_rect, dest_rect, &paint);
+    return;
+  }
+
+  // Make a bitmap shader that contains the bitmap we want to draw. This is
+  // basically what SkCanvas.drawBitmap does internally, but it gives us
+  // more control over quality and will use the mipmap in the source image if
+  // it has one, whereas drawBitmap won't.
+  SkMatrix shader_scale;
+  shader_scale.setScale(SkFloatToScalar(user_scale_x),
+                        SkFloatToScalar(user_scale_y));
+  shader_scale.preTranslate(SkIntToScalar(-src_x), SkIntToScalar(-src_y));
+  shader_scale.postTranslate(SkIntToScalar(dest_x), SkIntToScalar(dest_y));
+
+  skia::RefPtr<SkShader> shader = CreateImageRepShaderForScale(
+      image_rep,
+      SkShader::kRepeat_TileMode,
+      shader_scale,
+      pixel ? 1.0f : image_scale);
+
+  // Set up our paint to use the shader & release our reference (now just owned
+  // by the paint).
+  SkPaint p(paint);
+  p.setFilterBitmap(filter);
+  p.setShader(shader.get());
+
+  // The rect will be filled by the bitmap.
+  canvas_->drawRect(dest_rect, p);
 }
 
 }  // namespace gfx

@@ -64,13 +64,21 @@ void TransformToFlattenedSkMatrix(const gfx::Transform& transform,
 skia::RefPtr<SkShader> CreateImageRepShader(const gfx::ImageSkiaRep& image_rep,
                                             SkShader::TileMode tile_mode,
                                             const SkMatrix& local_matrix) {
+  return CreateImageRepShaderForScale(image_rep, tile_mode, local_matrix,
+                                      image_rep.scale());
+}
+
+skia::RefPtr<SkShader> CreateImageRepShaderForScale(
+    const gfx::ImageSkiaRep& image_rep,
+    SkShader::TileMode tile_mode,
+    const SkMatrix& local_matrix,
+    SkScalar scale) {
   skia::RefPtr<SkShader> shader = skia::AdoptRef(SkShader::CreateBitmapShader(
       image_rep.sk_bitmap(), tile_mode, tile_mode));
   SkScalar scale_x = local_matrix.getScaleX();
   SkScalar scale_y = local_matrix.getScaleY();
-  SkScalar bitmap_scale = SkFloatToScalar(image_rep.scale());
 
-  // Unscale matrix by |bitmap_scale| such that the bitmap is drawn at the
+  // Unscale matrix by |scale| such that the bitmap is drawn at the
   // correct density.
   // Convert skew and translation to pixel coordinates.
   // Thus, for |bitmap_scale| = 2:
@@ -78,9 +86,9 @@ skia::RefPtr<SkShader> CreateImageRepShader(const gfx::ImageSkiaRep& image_rep,
   // should be converted to
   //   x scale = 1, x translation = 2 pixels.
   SkMatrix shader_scale = local_matrix;
-  shader_scale.preScale(bitmap_scale, bitmap_scale);
-  shader_scale.setScaleX(SkScalarDiv(scale_x, bitmap_scale));
-  shader_scale.setScaleY(SkScalarDiv(scale_y, bitmap_scale));
+  shader_scale.preScale(scale, scale);
+  shader_scale.setScaleX(SkScalarDiv(scale_x, scale));
+  shader_scale.setScaleY(SkScalarDiv(scale_y, scale));
 
   shader->setLocalMatrix(shader_scale);
   return shader;
