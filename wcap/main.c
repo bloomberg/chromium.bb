@@ -251,6 +251,10 @@ int main(int argc, char *argv[])
 	}
 
 	decoder = wcap_decoder_create(argv[1]);
+	if (decoder == NULL) {
+		fprintf(stderr, "Creating wcap decoder failed\n");
+		exit(EXIT_FAILURE);
+	}
 
 	if (yuv4mpeg2 && isatty(1)) {
 		fprintf(stderr, "Not dumping yuv4mpeg2 data to terminal.  Pipe output to a file or a process.\n");

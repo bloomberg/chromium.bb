@@ -126,6 +126,11 @@ wcap_decoder_create(const char *filename)
 	decoder->size = buf.st_size;
 	decoder->map = mmap(NULL, decoder->size,
 			    PROT_READ, MAP_PRIVATE, decoder->fd, 0);
+	if (decoder->map == MAP_FAILED) {
+		fprintf(stderr, "mmap failed\n");
+		free(decoder);
+		return NULL;
+	}
 		
 	header = decoder->map;
 	decoder->format = header->format;
@@ -137,6 +142,10 @@ wcap_decoder_create(const char *filename)
 
 	frame_size = header->width * header->height * 4;
 	decoder->frame = malloc(frame_size);
+	if (decoder->frame == NULL) {
+		free(decoder);
+		return NULL;
+	}
 	memset(decoder->frame, 0, frame_size);
 
 	return decoder;
