@@ -9,6 +9,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/server/web_socket.h"
+#include "net/socket/stream_socket.h"
 
 using content::BrowserThread;
 using net::WebSocket;

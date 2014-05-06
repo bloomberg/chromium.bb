@@ -30,10 +30,6 @@ namespace content {
 class BrowserContext;
 }
 
-namespace crypto {
-class RSAPrivateKey;
-}
-
 class DevToolsTargetImpl;
 class Profile;
 

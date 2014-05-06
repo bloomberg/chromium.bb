@@ -21,7 +21,9 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/browser/devtools/browser_list_tabcontents_provider.h"
-#include "chrome/browser/devtools/device/usb/android_usb_device.h"
+#include "chrome/browser/devtools/device/adb/adb_device_provider.h"
+#include "chrome/browser/devtools/device/self_device_provider.h"
+#include "chrome/browser/devtools/device/usb/usb_device_provider.h"
 #include "chrome/browser/devtools/devtools_protocol.h"
 #include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -1302,7 +1304,7 @@ void DevToolsAndroidBridge::RequestDeviceCount() {
   if (device_count_listeners_.empty())
     return;
 
-  AndroidUsbDevice::CountDevices(
+  UsbDeviceProvider::CountDevices(
       base::Bind(&DevToolsAndroidBridge::ReceivedDeviceCount, this));
 }
 
@@ -1330,10 +1332,9 @@ void DevToolsAndroidBridge::CreateDeviceProviders() {
   // We cannot rely on command line switch here as we might want to connect
   // to another instance of Chrome. Using hard-coded port number instead.
   const int kDefaultDebuggingPort = 9222;
-  device_providers_.push_back(
-      AndroidDeviceManager::GetSelfAsDeviceProvider(kDefaultDebuggingPort));
+  device_providers_.push_back(new SelfAsDeviceProvider(kDefaultDebuggingPort));
 #endif
-  device_providers_.push_back(AndroidDeviceManager::GetAdbDeviceProvider());
+  device_providers_.push_back(new AdbDeviceProvider());
 
   PrefService* service = profile_->GetPrefs();
   const PrefService::Preference* pref =
@@ -1342,7 +1343,6 @@ void DevToolsAndroidBridge::CreateDeviceProviders() {
 
   bool enabled;
   if (pref_value->GetAsBoolean(&enabled) && enabled) {
-    device_providers_.push_back(
-        AndroidDeviceManager::GetUsbDeviceProvider(profile_));
+    device_providers_.push_back(new UsbDeviceProvider(profile_));
   }
 }

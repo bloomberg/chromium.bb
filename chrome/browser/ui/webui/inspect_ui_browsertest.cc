@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/devtools/device/adb/adb_device_provider.h"
 #include "chrome/browser/devtools/device/adb/mock_adb_server.h"
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
 #include "chrome/browser/ui/browser.h"
@@ -72,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(InspectUITest, AndroidTargets) {
   scoped_refptr<DevToolsAndroidBridge> android_bridge =
       DevToolsAndroidBridge::Factory::GetForProfile(browser()->profile());
   AndroidDeviceManager::DeviceProviders providers;
-  providers.push_back(AndroidDeviceManager::GetAdbDeviceProvider());
+  providers.push_back(new AdbDeviceProvider());
   android_bridge->set_device_providers_for_test(providers);
 
   StartMockAdbServer();

@@ -8,6 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/devtools/browser_list_tabcontents_provider.h"
 #include "chrome/browser/devtools/device/port_forwarding_controller.h"
+#include "chrome/browser/devtools/device/self_device_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -64,8 +65,7 @@ IN_PROC_BROWSER_TEST_F(PortForwardingTest,
   Profile* profile = browser()->profile();
 
   AndroidDeviceManager::DeviceProviders device_providers;
-  device_providers.push_back(
-      AndroidDeviceManager::GetSelfAsDeviceProvider(kDefaultDebuggingPort));
+  device_providers.push_back(new SelfAsDeviceProvider(kDefaultDebuggingPort));
   DevToolsAndroidBridge::Factory::GetForProfile(profile)->
       set_device_providers_for_test(device_providers);
 

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/devtools/device/adb/adb_device_provider.h"
 #include "chrome/browser/devtools/device/adb/mock_adb_server.h"
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
 #include "chrome/browser/devtools/devtools_target_impl.h"
@@ -30,7 +31,7 @@ class AdbClientSocketTest : public InProcessBrowserTest,
     Profile* profile = browser()->profile();
     android_bridge_ = DevToolsAndroidBridge::Factory::GetForProfile(profile);
     AndroidDeviceManager::DeviceProviders device_providers;
-    device_providers.push_back(AndroidDeviceManager::GetAdbDeviceProvider());
+    device_providers.push_back(new AdbDeviceProvider());
     android_bridge_->set_device_providers_for_test(device_providers);
     android_bridge_->AddDeviceListListener(this);
   }

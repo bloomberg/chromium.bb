@@ -11,8 +11,10 @@
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
-#include "crypto/rsa_private_key.h"
-#include "net/socket/stream_socket.h"
+
+namespace net {
+class StreamSocket;
+}
 
 class AndroidDeviceManager
     : public base::RefCountedThreadSafe<AndroidDeviceManager>,
@@ -72,11 +74,6 @@ class AndroidDeviceManager
   };
 
  public:
-  static scoped_refptr<DeviceProvider> GetAdbDeviceProvider();
-  static scoped_refptr<DeviceProvider> GetUsbDeviceProvider(Profile* profile);
-  // Use only in a test and/or when DEBUG_DEVTOOLS is defined.
-  static scoped_refptr<DeviceProvider> GetSelfAsDeviceProvider(int port);
-
   static scoped_refptr<AndroidDeviceManager> Create();
 
   typedef std::vector<scoped_refptr<DeviceProvider> > DeviceProviders;
