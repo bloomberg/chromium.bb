@@ -1288,7 +1288,6 @@ void WebLocalFrameImpl::selectWordAroundPosition(LocalFrame* frame, VisiblePosit
 bool WebLocalFrameImpl::selectWordAroundCaret()
 {
     FrameSelection& selection = frame()->selection();
-    ASSERT(!selection.isNone());
     if (selection.isNone() || selection.isRange())
         return false;
     selectWordAroundPosition(frame(), selection.selection().visibleStart());
