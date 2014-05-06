@@ -270,8 +270,9 @@ void SVGSVGElement::collectStyleForPresentationAttribute(const QualifiedName& na
 {
     if (isOutermostSVGSVGElement() && (name == SVGNames::widthAttr || name == SVGNames::heightAttr)) {
         RefPtr<SVGLength> length = SVGLength::create(LengthModeOther);
-        length->setValueAsString(value, IGNORE_EXCEPTION);
-        if (length->unitType() != LengthTypeUnknown) {
+        TrackExceptionState exceptionState;
+        length->setValueAsString(value, exceptionState);
+        if (!exceptionState.hadException()) {
             if (name == SVGNames::widthAttr)
                 addPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, value);
             else if (name == SVGNames::heightAttr)

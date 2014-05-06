@@ -96,12 +96,13 @@ void SVGForeignObjectElement::collectStyleForPresentationAttribute(const Qualifi
 {
     if (name == SVGNames::widthAttr || name == SVGNames::heightAttr) {
         RefPtr<SVGLength> length = SVGLength::create(LengthModeOther);
-        length->setValueAsString(value, IGNORE_EXCEPTION);
-        if (length->unitType() != LengthTypeUnknown) {
+        TrackExceptionState exceptionState;
+        length->setValueAsString(value, exceptionState);
+        if (!exceptionState.hadException()) {
             if (name == SVGNames::widthAttr)
-                addPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, length->valueAsString());
+                addPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, value);
             else if (name == SVGNames::heightAttr)
-                addPropertyToPresentationAttributeStyle(style, CSSPropertyHeight, length->valueAsString());
+                addPropertyToPresentationAttributeStyle(style, CSSPropertyHeight, value);
         }
     } else {
         SVGGraphicsElement::collectStyleForPresentationAttribute(name, value, style);
