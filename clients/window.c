@@ -2129,12 +2129,6 @@ frame_resize_handler(struct widget *widget,
 		interior.width = width;
 		interior.height = height;
 	} else {
-		if (widget->window->maximized) {
-			frame_set_flag(frame->frame, FRAME_FLAG_MAXIMIZED);
-		} else {
-			frame_unset_flag(frame->frame, FRAME_FLAG_MAXIMIZED);
-		}
-
 		frame_resize(frame->frame, width, height);
 		frame_interior(frame->frame, &interior.x, &interior.y,
 			       &interior.width, &interior.height);
@@ -2201,12 +2195,6 @@ frame_redraw_handler(struct widget *widget, void *data)
 
 	if (window->fullscreen)
 		return;
-
-	if (window->focused) {
-		frame_set_flag(frame->frame, FRAME_FLAG_ACTIVE);
-	} else {
-		frame_unset_flag(frame->frame, FRAME_FLAG_ACTIVE);
-	}
 
 	cr = widget_cairo_create(widget);
 
@@ -3888,6 +3876,20 @@ handle_surface_configure(void *data, struct xdg_surface *xdg_surface,
 		default:
 			/* Unknown state */
 			break;
+		}
+	}
+
+	if (window->frame) {
+		if (window->maximized) {
+			frame_set_flag(window->frame->frame, FRAME_FLAG_MAXIMIZED);
+		} else {
+			frame_unset_flag(window->frame->frame, FRAME_FLAG_MAXIMIZED);
+		}
+
+		if (window->focused) {
+			frame_set_flag(window->frame->frame, FRAME_FLAG_ACTIVE);
+		} else {
+			frame_unset_flag(window->frame->frame, FRAME_FLAG_ACTIVE);
 		}
 	}
 
