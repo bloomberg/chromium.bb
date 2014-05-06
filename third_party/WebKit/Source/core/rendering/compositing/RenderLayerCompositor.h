@@ -47,8 +47,8 @@ class StickyPositionViewportConstraints;
 
 enum CompositingUpdateType {
     CompositingUpdateNone,
-    CompositingUpdateAfterCanvasContextChange,
     CompositingUpdateOnCompositedScroll,
+    CompositingUpdateAfterCanvasContextChange,
     CompositingUpdateAfterStyleChange,
     CompositingUpdateAfterLayout,
     CompositingUpdateOnScroll,

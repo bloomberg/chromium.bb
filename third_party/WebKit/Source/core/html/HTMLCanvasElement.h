@@ -154,6 +154,8 @@ protected:
 private:
     explicit HTMLCanvasElement(Document&);
 
+    void setNeedsCompositingUpdate();
+
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
@@ -176,8 +178,6 @@ private:
     IntSize m_size;
 
     OwnPtrWillBeMember<CanvasRenderingContext> m_context;
-
-    bool m_rendererIsCanvas;
 
     bool m_ignoreReset;
     bool m_accelerationDisabled;
