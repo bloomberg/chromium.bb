@@ -87,7 +87,8 @@ with buildbot_lib.Step('checkdeps', status):
 # Test the pinned toolchain. Since we don't yet have main waterfall
 # Windows or mac bots, we need to test the full assembled toolchain here.
 if host_os == 'win' or host_os == 'mac' or not pynacl.platform.IsArch64Bit():
-  with buildbot_lib.Step('Test NaCl-pinned toolchain', status):
+  with buildbot_lib.Step('Test NaCl-pinned toolchain', status,
+                         halt_on_fail=False):
     buildbot_lib.SCons(context, args=['smoke_tests'], parallel=True)
     buildbot_lib.SCons(context, args=['large_tests'], parallel=False)
     buildbot_lib.SCons(context, args=['pnacl_generate_pexe=0',
@@ -107,9 +108,11 @@ try:
   logging.info('Running: ' + ' '.join(cmd))
   subprocess.check_call(cmd)
 
-  # Temporarily disable the uploading of pnacl built from toolchain_build.
   if args.buildbot or args.trybot:
-    packages.UploadPackages(TEMP_PACKAGES_FILE, args.trybot)
+    # Don't upload packages from the 32-bit linux bot to avoid racing on
+    # uploading the same packages as the 64-bit linux bot
+    if host_os != 'linux' or pynacl.platform.IsArch64Bit():
+      packages.UploadPackages(TEMP_PACKAGES_FILE, args.trybot)
 
 except subprocess.CalledProcessError:
   # Ignore any failures and keep going (but make the bot stage red).
@@ -120,7 +123,8 @@ sys.stdout.flush()
 # Run a basic sanity check that tests the host components (LLVM, binutils,
 # gold plugin)
 if host_os == 'win' or host_os == 'mac':
-  with buildbot_lib.Step('Test host binaries and gold plugin', status):
+  with buildbot_lib.Step('Test host binaries and gold plugin', status,
+                         halt_on_fail=False):
     buildbot_lib.Command(
         context,
         [sys.executable,
