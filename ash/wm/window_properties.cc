@@ -8,18 +8,8 @@
 #include "ui/aura/window_property.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(ash::wm::WindowState*);
-DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(ASH_EXPORT, gfx::Rect*)
-DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(ASH_EXPORT, ui::WindowShowState)
 
 namespace ash {
-
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect,
-                                 kRestoreBoundsOverrideKey,
-                                 NULL);
-
-DEFINE_WINDOW_PROPERTY_KEY(ui::WindowShowState,
-                           kRestoreShowStateOverrideKey,
-                           ui::SHOW_STATE_DEFAULT);
 
 DEFINE_WINDOW_PROPERTY_KEY(bool, kStayInSameRootWindowKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kUsesScreenCoordinatesKey, false);

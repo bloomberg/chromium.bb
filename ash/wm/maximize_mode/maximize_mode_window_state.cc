@@ -11,7 +11,7 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/wm/window_animations.h"
-#include "ash/wm/window_properties.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/window_util.h"
@@ -22,8 +22,6 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
-#include "ui/views/view_constants_aura.h"
-#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace {
@@ -188,20 +186,6 @@ void MaximizeModeWindowState::AttachState(
     wm::WindowState::State* previous_state) {
   current_state_type_ = previous_state->GetType();
 
-  views::Widget* widget =
-      views::Widget::GetWidgetForNativeWindow(window_state->window());
-  if (widget) {
-    gfx::Rect bounds = widget->GetRestoredBounds();
-    if (!bounds.IsEmpty()) {
-      // We do not want to do a session restore to our window states. Therefore
-      // we tell the window to use the current default states instead.
-      window_state->window()->SetProperty(ash::kRestoreShowStateOverrideKey,
-                                          window_state->GetShowState());
-      window_state->window()->SetProperty(ash::kRestoreBoundsOverrideKey,
-          new gfx::Rect(widget->GetRestoredBounds()));
-    }
-  }
-
   // Initialize the state to a good preset.
   if (current_state_type_ != wm::WINDOW_STATE_TYPE_MAXIMIZED &&
       current_state_type_ != wm::WINDOW_STATE_TYPE_MINIMIZED &&
@@ -215,8 +199,6 @@ void MaximizeModeWindowState::AttachState(
 }
 
 void MaximizeModeWindowState::DetachState(wm::WindowState* window_state) {
-  // From now on, we can use the default session restore mechanism again.
-  window_state->window()->ClearProperty(ash::kRestoreBoundsOverrideKey);
   window_state->set_can_be_dragged(true);
 }
 

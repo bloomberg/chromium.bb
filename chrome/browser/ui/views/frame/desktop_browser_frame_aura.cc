@@ -92,20 +92,3 @@ bool DesktopBrowserFrameAura::UsesNativeSystemMenu() const {
 int DesktopBrowserFrameAura::GetMinimizeButtonOffset() const {
   return browser_desktop_window_tree_host_->GetMinimizeButtonOffset();
 }
-
-bool DesktopBrowserFrameAura::ShouldSaveWindowPlacement() const {
-  // The placement can always be stored.
-  return true;
-}
-
-void DesktopBrowserFrameAura::GetWindowPlacement(
-    gfx::Rect* bounds,
-    ui::WindowShowState* show_state) const {
-  *bounds = GetWidget()->GetRestoredBounds();
-  if (IsMaximized())
-    *show_state = ui::SHOW_STATE_MAXIMIZED;
-  else if (IsMinimized())
-    *show_state = ui::SHOW_STATE_MINIMIZED;
-  else
-    *show_state = ui::SHOW_STATE_NORMAL;
-}
