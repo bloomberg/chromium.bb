@@ -20,23 +20,15 @@ class AdbClientSocket {
                        const CommandCallback& callback);
 
 
-  static void HttpQuery(net::StreamSocket* socket,
-                        const std::string& request,
-                        const CommandCallback& callback);
-
-  static void HttpQuery(net::StreamSocket* socket,
-                        const std::string& request,
-                        const SocketCallback& callback);
-
   static void TransportQuery(int port,
                              const std::string& serial,
                              const std::string& socket_name,
                              const SocketCallback& callback);
 
+ protected:
   explicit AdbClientSocket(int port);
   ~AdbClientSocket();
 
- protected:
   void Connect(const net::CompletionCallback& callback);
 
   void SendCommand(const std::string& command,
