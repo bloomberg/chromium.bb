@@ -63,6 +63,13 @@ void DrawLooperBuilder::addUnmodifiedContent()
     m_skDrawLooperBuilder.addLayerOnTop(info);
 }
 
+// This replicates the old skia behavior when it used to take radius for blur. Now it takes sigma.
+static SkScalar RadiusToSigma(SkScalar radius)
+{
+    SkASSERT(radius > 0);
+    return 0.57735f * radius + 0.5f;
+}
+
 void DrawLooperBuilder::addShadow(const FloatSize& offset, float blur, const Color& color,
     ShadowTransformMode shadowTransformMode, ShadowAlphaMode shadowAlphaMode)
 {
@@ -94,11 +101,11 @@ void DrawLooperBuilder::addShadow(const FloatSize& offset, float blur, const Col
     SkPaint* paint = m_skDrawLooperBuilder.addLayerOnTop(info);
 
     if (blur) {
+        const SkScalar sigma = RadiusToSigma(blur / 2);
         uint32_t mfFlags = SkBlurMaskFilter::kHighQuality_BlurFlag;
         if (shadowTransformMode == ShadowIgnoresTransforms)
             mfFlags |= SkBlurMaskFilter::kIgnoreTransform_BlurFlag;
-        RefPtr<SkMaskFilter> mf = adoptRef(SkBlurMaskFilter::Create(
-            (double)blur / 2.0, SkBlurMaskFilter::kNormal_BlurStyle, mfFlags));
+        RefPtr<SkMaskFilter> mf = adoptRef(SkBlurMaskFilter::Create(kNormal_SkBlurStyle, sigma, mfFlags));
         paint->setMaskFilter(mf.get());
     }
 
