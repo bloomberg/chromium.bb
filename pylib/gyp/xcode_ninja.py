@@ -112,6 +112,32 @@ def _TargetFromSpec(old_spec, params):
       ninja_target['actions'][0]['action'].extend(('-j', jobs))
   return ninja_target
 
+def IsValidTargetForWrapper(target_extras, executable_target_pattern, spec):
+  """Limit targets for Xcode wrapper.
+
+  Xcode sometimes performs poorly with too many targets, so only include
+  proper executable targets, with filters to customize.
+  Arguments:
+    target_extras: Regular expression to always add, matching any target.
+    executable_target_pattern: Regular expression limiting executable targets.
+    spec: Specifications for target.
+  """
+  target_name = spec.get('target_name')
+  # Always include targets matching target_extras.
+  if target_extras is not None and re.search(target_extras, target_name):
+    return True
+
+  # Otherwise just show executable targets.
+  if spec.get('type', '') == 'executable' and \
+     spec.get('product_extension', '') != 'bundle':
+
+    # If there is a filter and the target does not match, exclude the target.
+    if executable_target_pattern is not None:
+      if not re.search(executable_target_pattern, target_name):
+        return False
+    return True
+  return False
+
 def CreateWrapper(target_list, target_dicts, data, params):
   """Initialize targets for the ninja wrapper.
 
@@ -148,20 +174,21 @@ def CreateWrapper(target_list, target_dicts, data, params):
   new_data[main_gyp]['xcode_settings'] = \
       data[orig_gyp].get('xcode_settings', {})
 
+  # Normally the xcode-ninja generator includes only valid executable targets.
+  # If |xcode_ninja_executable_target_pattern| is set, that list is reduced to
+  # executable targets that match the pattern. (Default all)
+  executable_target_pattern = \
+      generator_flags.get('xcode_ninja_executable_target_pattern', None)
+
+  # For including other non-executable targets, add the matching target name
+  # to the |xcode_ninja_target_pattern| regular expression. (Default none)
+  target_extras = generator_flags.get('xcode_ninja_target_pattern', None)
+
   for old_qualified_target in target_list:
     spec = target_dicts[old_qualified_target]
-    if spec.get('type', '') == 'executable' and \
-        spec.get('product_extension', '') != 'bundle':
-
+    if IsValidTargetForWrapper(target_extras, executable_target_pattern, spec):
       # Add to new_target_list.
       target_name = spec.get('target_name')
-
-      # Filter target names if requested.
-      target_filter = generator_flags.get('xcode_ninja_target_filter', None)
-      if target_filter is not None:
-        if not re.search(target_filter, target_name):
-          continue;
-
       new_target_name = '%s:%s#target' % (main_gyp, target_name)
       new_target_list.append(new_target_name)
 
