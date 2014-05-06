@@ -60,6 +60,7 @@ void LogSandboxStarted(const std::string& sandbox_name) {
 #endif
 }
 
+#if !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER)
 bool AddResourceLimit(int resource, rlim_t limit) {
   struct rlimit old_rlimit;
   if (getrlimit(resource, &old_rlimit))
@@ -72,6 +73,7 @@ bool AddResourceLimit(int resource, rlim_t limit) {
   int rc = setrlimit(resource, &new_rlimit);
   return rc == 0;
 }
+#endif
 
 bool IsRunningTSAN() {
 #if defined(THREAD_SANITIZER)
@@ -328,7 +330,7 @@ bool LinuxSandbox::seccomp_bpf_supported() const {
 
 bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
   (void) process_type;
-#if !defined(ADDRESS_SANITIZER)
+#if !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kNoSandbox)) {
     return false;
@@ -368,7 +370,7 @@ bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
 #else
   base::SysInfo::AmountOfVirtualMemory();
   return false;
-#endif  // !defined(ADDRESS_SANITIZER)
+#endif  // !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER)
 }
 
 bool LinuxSandbox::HasOpenDirectories() const {
