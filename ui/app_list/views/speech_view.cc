@@ -7,12 +7,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/speech_ui_model.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/path.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
@@ -75,7 +77,9 @@ class MicButton : public views::ImageButton {
 
  private:
   // Overridden from views::View:
-  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
+  virtual bool HasHitTestMask() const OVERRIDE;
+  virtual void GetHitTestMask(views::View::HitTestSource source,
+                              gfx::Path* mask) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(MicButton);
 };
@@ -85,14 +89,20 @@ MicButton::MicButton(views::ButtonListener* listener)
 
 MicButton::~MicButton() {}
 
-bool MicButton::HitTestRect(const gfx::Rect& rect) const {
-  if (!views::ImageButton::HitTestRect(rect))
-    return false;
+bool MicButton::HasHitTestMask() const {
+  return true;
+}
 
+void MicButton::GetHitTestMask(views::View::HitTestSource source,
+                               gfx::Path* mask) const {
+  // The mic button icon is a circle. |source| doesn't matter.
   gfx::Rect local_bounds = GetLocalBounds();
-  int radius = local_bounds.width() / 2;
-  return (rect.origin() - local_bounds.CenterPoint()).LengthSquared() <
-      radius * radius;
+  int radius = local_bounds.width() / 2 + kIndicatorRadiusMinOffset;
+  gfx::Point center = local_bounds.CenterPoint();
+  center.set_y(center.y() + kIndicatorCenterOffsetY);
+  mask->addCircle(SkIntToScalar(center.x()),
+                  SkIntToScalar(center.y()),
+                  SkIntToScalar(radius));
 }
 
 }  // namespace
