@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/types.h>
+#include <sys/un.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -77,9 +78,15 @@ class ProcessSingletonPosixTest : public testing::Test {
     // Put the lock in a temporary directory.  Doesn't need to be a
     // full profile to test this code.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    lock_path_ = temp_dir_.path().Append(chrome::kSingletonLockFilename);
-    socket_path_ = temp_dir_.path().Append(chrome::kSingletonSocketFilename);
-    cookie_path_ = temp_dir_.path().Append(chrome::kSingletonCookieFilename);
+    // Use a long directory name to ensure that the socket isn't opened through
+    // the symlink.
+    user_data_path_ = temp_dir_.path().Append(
+        std::string(sizeof(sockaddr_un::sun_path), 'a'));
+    ASSERT_TRUE(CreateDirectory(user_data_path_));
+
+    lock_path_ = user_data_path_.Append(chrome::kSingletonLockFilename);
+    socket_path_ = user_data_path_.Append(chrome::kSingletonSocketFilename);
+    cookie_path_ = user_data_path_.Append(chrome::kSingletonCookieFilename);
   }
 
   virtual void TearDown() {
@@ -121,7 +128,7 @@ class ProcessSingletonPosixTest : public testing::Test {
   }
 
   TestableProcessSingleton* CreateProcessSingleton() {
-    return new TestableProcessSingleton(temp_dir_.path());
+    return new TestableProcessSingleton(user_data_path_);
   }
 
   void VerifyFiles() {
@@ -218,6 +225,7 @@ class ProcessSingletonPosixTest : public testing::Test {
     signal_event_.Signal();
   }
 
+  base::FilePath user_data_path_;
   base::FilePath lock_path_;
   base::FilePath socket_path_;
   base::FilePath cookie_path_;

@@ -374,7 +374,7 @@ bool ConnectSocket(ScopedSocket* socket,
     // Now we know the directory was (at that point) created by the profile
     // owner. Try to connect.
     sockaddr_un addr;
-    SetupSockAddr(socket_path.value(), &addr);
+    SetupSockAddr(socket_target.value(), &addr);
     int ret = HANDLE_EINTR(connect(socket->fd(),
                                    reinterpret_cast<sockaddr*>(&addr),
                                    sizeof(addr)));
