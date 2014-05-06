@@ -36,10 +36,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
         ['win', 'mac'], bug=369349)
 
-    # Windows failures
-    self.Fail('conformance/extensions/oes-texture-float.html',
-        ['win'], bug=368919)
-
     # Win7 / Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
         ['win7', 'intel'], bug=314997)
