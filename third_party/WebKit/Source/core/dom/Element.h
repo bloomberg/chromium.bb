@@ -508,6 +508,8 @@ public:
     void setTabIndex(int);
     virtual short tabIndex() const OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 protected:
     Element(const QualifiedName& tagName, Document* document, ConstructionType type)
         : ContainerNode(document, type)

@@ -217,7 +217,6 @@ public:
     PassOwnPtr<LifecycleNotifier<Page> > createLifecycleNotifier();
 
     void trace(Visitor*);
-    void clearWeakMembers(Visitor*);
     void willBeDestroyed();
 
 protected:

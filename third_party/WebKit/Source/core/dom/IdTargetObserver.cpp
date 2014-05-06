@@ -39,7 +39,16 @@ IdTargetObserver::IdTargetObserver(IdTargetObserverRegistry& registry, const Ato
 
 IdTargetObserver::~IdTargetObserver()
 {
+#if !ENABLE(OILPAN)
     m_registry.removeObserver(m_id, this);
+#endif
+}
+
+void IdTargetObserver::unregister()
+{
+#if ENABLE(OILPAN)
+    m_registry.removeObserver(m_id, this);
+#endif
 }
 
 } // namespace WebCore

@@ -109,12 +109,12 @@ private:
     RenderObject* m_renderer;
 };
 
-class Node : public TreeShared<Node>, public EventTarget, public ScriptWrappable {
+class Node : public TreeSharedWillBeRefCountedGarbageCollected<Node>, public EventTarget, public ScriptWrappable {
     friend class Document;
     friend class TreeScope;
     friend class TreeScopeAdopter;
 
-    DEFINE_EVENT_TARGET_REFCOUNTING(TreeShared<Node>);
+    DEFINE_EVENT_TARGET_REFCOUNTING(TreeSharedWillBeRefCountedGarbageCollected<Node>);
 public:
     enum NodeType {
         ELEMENT_NODE = 1,
@@ -755,10 +755,10 @@ protected:
 
     Node(TreeScope* treeScope, ConstructionType type)
         : m_nodeFlags(type)
-        , m_parentOrShadowHostNode(0)
+        , m_parentOrShadowHostNode(nullptr)
         , m_treeScope(treeScope)
-        , m_previous(0)
-        , m_next(0)
+        , m_previous(nullptr)
+        , m_next(nullptr)
     {
         ASSERT(m_treeScope || type == CreateDocument || type == CreateShadowRoot);
         ScriptWrappable::init(this);
@@ -814,7 +814,9 @@ private:
         return NOPSEUDO;
     }
 
+#if !ENABLE(OILPAN)
     void removedLastRef();
+#endif
     bool hasTreeSharedParent() const { return !!parentOrShadowHostNode(); }
 
     enum EditableLevel { Editable, RichlyEditable };
@@ -840,10 +842,10 @@ private:
     WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> >* transientMutationObserverRegistry();
 
     mutable uint32_t m_nodeFlags;
-    ContainerNode* m_parentOrShadowHostNode;
+    RawPtrWillBeMember<ContainerNode> m_parentOrShadowHostNode;
     RawPtrWillBeMember<TreeScope> m_treeScope;
-    Node* m_previous;
-    Node* m_next;
+    RawPtrWillBeMember<Node> m_previous;
+    RawPtrWillBeMember<Node> m_next;
     // When a node has rare data we move the renderer into the rare data.
     union DataUnion {
         DataUnion() : m_renderer(0) { }

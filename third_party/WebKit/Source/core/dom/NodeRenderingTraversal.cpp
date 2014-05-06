@@ -245,7 +245,7 @@ RenderObject* nextInTopLayer(const Element* element)
 {
     if (!element->isInTopLayer())
         return 0;
-    const Vector<RefPtr<Element> >& topLayerElements = element->document().topLayerElements();
+    const WillBeHeapVector<RefPtrWillBeMember<Element> >& topLayerElements = element->document().topLayerElements();
     size_t position = topLayerElements.find(element);
     ASSERT(position != kNotFound);
     for (size_t i = position + 1; i < topLayerElements.size(); ++i) {

@@ -486,7 +486,12 @@ DOMWindow::~DOMWindow()
 
     removeAllEventListeners();
 
+#if ENABLE(OILPAN)
+    ASSERT(m_document->isDisposed());
+#else
     ASSERT(m_document->isStopped());
+#endif
+
     clearDocument();
 }
 

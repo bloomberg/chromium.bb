@@ -143,8 +143,8 @@ private:
     // FIXME: This shouldn't happen. https://bugs.webkit.org/show_bug.cgi?id=88834
     bool isOrphan() const { return !host(); }
 
-    ShadowRoot* m_prev;
-    ShadowRoot* m_next;
+    RawPtrWillBeMember<ShadowRoot> m_prev;
+    RawPtrWillBeMember<ShadowRoot> m_next;
     OwnPtrWillBeMember<ShadowRootRareData> m_shadowRootRareData;
     unsigned m_numberOfStyles : 27;
     unsigned m_type : 1;

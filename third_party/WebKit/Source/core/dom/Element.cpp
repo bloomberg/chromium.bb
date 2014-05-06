@@ -3295,4 +3295,13 @@ bool Element::supportsStyleSharing() const
     return true;
 }
 
+void Element::trace(Visitor* visitor)
+{
+    // FIXME: Oilpan: Perform this tracing directly on the element
+    // rare data once that is in the heap.
+    if (hasRareData())
+        elementRareData()->trace(visitor);
+    ContainerNode::trace(visitor);
+}
+
 } // namespace WebCore

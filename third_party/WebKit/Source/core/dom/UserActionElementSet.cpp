@@ -46,10 +46,12 @@ void UserActionElementSet::didDetach(Node* node)
     clearFlags(toElement(node), IsActiveFlag | InActiveChainFlag | IsHoveredFlag);
 }
 
+#if !ENABLE(OILPAN)
 void UserActionElementSet::documentDidRemoveLastRef()
 {
     m_elements.clear();
 }
+#endif
 
 bool UserActionElementSet::hasFlags(const Node* node, unsigned flags) const
 {
@@ -114,6 +116,11 @@ inline void UserActionElementSet::setFlags(Element* element, unsigned flags)
 
     element->setUserActionElement(true);
     m_elements.add(element, flags);
+}
+
+void UserActionElementSet::trace(Visitor* visitor)
+{
+    visitor->trace(m_elements);
 }
 
 }

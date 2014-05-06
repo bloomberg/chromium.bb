@@ -36,7 +36,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-class FormAttributeTargetObserver : IdTargetObserver {
+class FormAttributeTargetObserver : public IdTargetObserver {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<FormAttributeTargetObserver> create(const AtomicString& id, FormAssociatedElement*);
@@ -70,7 +70,7 @@ void FormAssociatedElement::didMoveToNewDocument(Document& oldDocument)
 {
     HTMLElement* element = toHTMLElement(this);
     if (element->fastHasAttribute(formAttr))
-        m_formAttributeTargetObserver = nullptr;
+        setFormAttributeTargetObserver(nullptr);
 }
 
 void FormAssociatedElement::insertedInto(ContainerNode* insertionPoint)
@@ -90,7 +90,7 @@ void FormAssociatedElement::removedFrom(ContainerNode* insertionPoint)
 {
     HTMLElement* element = toHTMLElement(this);
     if (insertionPoint->inDocument() && element->fastHasAttribute(formAttr))
-        m_formAttributeTargetObserver = nullptr;
+        setFormAttributeTargetObserver(nullptr);
     // If the form and element are both in the same tree, preserve the connection to the form.
     // Otherwise, null out our form and remove ourselves from the form's list of elements.
     if (m_form && element->highestAncestorOrSelf() != m_form->highestAncestorOrSelf())
@@ -253,14 +253,21 @@ void FormAssociatedElement::setCustomValidity(const String& error)
     m_customValidationMessage = error;
 }
 
+void FormAssociatedElement::setFormAttributeTargetObserver(PassOwnPtr<FormAttributeTargetObserver> newObserver)
+{
+    if (m_formAttributeTargetObserver)
+        m_formAttributeTargetObserver->unregister();
+    m_formAttributeTargetObserver = newObserver;
+}
+
 void FormAssociatedElement::resetFormAttributeTargetObserver()
 {
     HTMLElement* element = toHTMLElement(this);
     const AtomicString& formId(element->fastGetAttribute(formAttr));
     if (!formId.isNull() && element->inDocument())
-        m_formAttributeTargetObserver = FormAttributeTargetObserver::create(formId, this);
+        setFormAttributeTargetObserver(FormAttributeTargetObserver::create(formId, this));
     else
-        m_formAttributeTargetObserver = nullptr;
+        setFormAttributeTargetObserver(nullptr);
 }
 
 void FormAssociatedElement::formAttributeTargetChanged()

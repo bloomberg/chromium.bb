@@ -112,6 +112,7 @@ private:
     virtual void refFormAssociatedElement() = 0;
     virtual void derefFormAssociatedElement() = 0;
 
+    void setFormAttributeTargetObserver(PassOwnPtr<FormAttributeTargetObserver>);
     void resetFormAttributeTargetObserver();
 
     OwnPtr<FormAttributeTargetObserver> m_formAttributeTargetObserver;

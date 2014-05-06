@@ -56,7 +56,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 TreeScope::TreeScope(ContainerNode& rootNode, Document& document)
-    : m_rootNode(rootNode)
+    : m_rootNode(&rootNode)
     , m_document(&document)
     , m_parentTreeScope(&document)
 #if !ENABLE(OILPAN)
@@ -68,7 +68,7 @@ TreeScope::TreeScope(ContainerNode& rootNode, Document& document)
 #if !ENABLE(OILPAN)
     m_parentTreeScope->guardRef();
 #endif
-    m_rootNode.setTreeScope(this);
+    m_rootNode->setTreeScope(this);
 }
 
 TreeScope::TreeScope(Document& document)
@@ -80,17 +80,15 @@ TreeScope::TreeScope(Document& document)
 #endif
     , m_idTargetObserverRegistry(IdTargetObserverRegistry::create())
 {
-    m_rootNode.setTreeScope(this);
+    m_rootNode->setTreeScope(this);
 }
 
 TreeScope::~TreeScope()
 {
 #if !ENABLE(OILPAN)
     ASSERT(!m_guardRefCount);
-#endif
-    m_rootNode.setTreeScope(0);
+    m_rootNode->setTreeScope(0);
 
-#if !ENABLE(OILPAN)
     if (m_selection) {
         m_selection->clearTreeScope();
         m_selection = nullptr;
@@ -338,7 +336,9 @@ void TreeScope::adoptIfNeeded(Node& node)
 {
     ASSERT(this);
     ASSERT(!node.isDocumentNode());
+#if !ENABLE(OILPAN)
     ASSERT_WITH_SECURITY_IMPLICATION(!node.m_deletionHasBegun);
+#endif
     TreeScopeAdopter adopter(node, *this);
     if (adopter.needsScopeChange())
         adopter.execute();
@@ -479,7 +479,7 @@ TreeScope* commonTreeScope(Node* nodeA, Node* nodeB)
     return treeScopesA[indexA] == treeScopesB[indexB] ? treeScopesA[indexA] : 0;
 }
 
-#if SECURITY_ASSERT_ENABLED
+#if SECURITY_ASSERT_ENABLED && !ENABLE(OILPAN)
 bool TreeScope::deletionHasBegun()
 {
     return rootNode().m_deletionHasBegun;
@@ -491,10 +491,12 @@ void TreeScope::beginDeletion()
 }
 #endif
 
+#if !ENABLE(OILPAN)
 int TreeScope::refCount() const
 {
     return rootNode().refCount();
 }
+#endif
 
 bool TreeScope::isInclusiveAncestorOf(const TreeScope& scope) const
 {
@@ -535,6 +537,8 @@ void TreeScope::setNeedsStyleRecalcForViewportUnits()
 
 void TreeScope::trace(Visitor* visitor)
 {
+    visitor->trace(m_rootNode);
+    visitor->trace(m_document);
     visitor->trace(m_parentTreeScope);
     visitor->trace(m_selection);
 }

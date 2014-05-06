@@ -11,19 +11,18 @@ var countersBefore;
 var iframe = document.getElementById("target");
 
 function onAboutBlankLoad() {
-    setTimeout(function() {
-        countersBefore = getCounterValues();
+    getCounterValues(function (counters) {
+        countersBefore = counters;
         iframe.onload = null;
         iframe.src = "resources/link.html";
-    }, 0);
+    });
 }
 
 function onDone() {
-    setTimeout(function() {
-        var countersAfter = getCounterValues();
+    getCounterValues(function (countersAfter) {
         compareValues(countersBefore, countersAfter, {'numberOfLiveDocuments': 0});
         finishJSTest();
-    }, 0); 
+    });
 }
 
 iframe.onload = onAboutBlankLoad;

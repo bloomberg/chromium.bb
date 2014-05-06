@@ -360,6 +360,7 @@ private:
 
     virtual void subtreeHasChanged() OVERRIDE FINAL;
 
+    void setListAttributeTargetObserver(PassOwnPtr<ListAttributeTargetObserver>);
     void resetListAttributeTargetObserver();
     void parseMaxLengthAttribute(const AtomicString&);
     void updateValueIfNeeded();

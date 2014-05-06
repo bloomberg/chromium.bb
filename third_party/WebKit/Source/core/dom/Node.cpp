@@ -274,14 +274,12 @@ Node::~Node()
 #if !ENABLE(OILPAN)
     if (!isContainerNode())
         willBeDeletedFromDocument();
-#endif
 
     if (m_previous)
         m_previous->setNextSibling(0);
     if (m_next)
         m_next->setPreviousSibling(0);
 
-#if !ENABLE(OILPAN)
     if (m_treeScope)
         m_treeScope->guardDeref();
 #endif
@@ -2375,13 +2373,8 @@ bool Node::willRespondToTouchEvents()
     return hasEventListeners(EventTypeNames::touchstart) || hasEventListeners(EventTypeNames::touchmove) || hasEventListeners(EventTypeNames::touchcancel) || hasEventListeners(EventTypeNames::touchend);
 }
 
+#if !ENABLE(OILPAN)
 // This is here for inlining
-#if ENABLE(OILPAN)
-inline void TreeScope::removedLastRefToScope()
-{
-    dispose();
-}
-#else
 inline void TreeScope::removedLastRefToScope()
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!deletionHasBegun());
@@ -2407,7 +2400,6 @@ inline void TreeScope::removedLastRefToScope()
         delete this;
     }
 }
-#endif
 
 // It's important not to inline removedLastRef, because we don't want to inline the code to
 // delete a Node at each deref call site.
@@ -2421,13 +2413,12 @@ void Node::removedLastRef()
         return;
     }
 
-#if !ENABLE(OILPAN)
 #if SECURITY_ASSERT_ENABLED
     m_deletionHasBegun = true;
 #endif
     delete this;
-#endif
 }
+#endif
 
 unsigned Node::connectedSubframeCount() const
 {
@@ -2571,6 +2562,9 @@ void Node::setCustomElementState(CustomElementState newState)
 
 void Node::trace(Visitor* visitor)
 {
+    visitor->trace(m_parentOrShadowHostNode);
+    visitor->trace(m_previous);
+    visitor->trace(m_next);
     visitor->trace(m_treeScope);
 }
 

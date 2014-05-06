@@ -190,6 +190,8 @@ public:
 
     void disconnectDescendantFrames();
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 protected:
     ContainerNode(TreeScope*, ConstructionType = CreateContainer);
 
@@ -199,7 +201,10 @@ protected:
     template<class GenericNode, class GenericNodeContainer>
     friend void Private::addChildNodesToDeletionQueue(GenericNode*& head, GenericNode*& tail, GenericNodeContainer&);
 
+#if !ENABLE(OILPAN)
     void removeDetachedChildren();
+#endif
+
     void setFirstChild(Node* child) { m_firstChild = child; }
     void setLastChild(Node* child) { m_lastChild = child; }
 
@@ -227,8 +232,8 @@ private:
     bool getUpperLeftCorner(FloatPoint&) const;
     bool getLowerRightCorner(FloatPoint&) const;
 
-    Node* m_firstChild;
-    Node* m_lastChild;
+    RawPtrWillBeMember<Node> m_firstChild;
+    RawPtrWillBeMember<Node> m_lastChild;
 };
 
 #ifndef NDEBUG
@@ -249,8 +254,8 @@ inline bool ContainerNode::hasChildCount(unsigned count) const
 
 inline ContainerNode::ContainerNode(TreeScope* treeScope, ConstructionType type)
     : Node(treeScope, type)
-    , m_firstChild(0)
-    , m_lastChild(0)
+    , m_firstChild(nullptr)
+    , m_lastChild(nullptr)
 {
 }
 

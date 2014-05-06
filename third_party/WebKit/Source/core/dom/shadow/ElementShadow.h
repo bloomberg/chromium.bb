@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-class ElementShadow {
+class ElementShadow FINAL {
     WTF_MAKE_NONCOPYABLE(ElementShadow); WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<ElementShadow> create();
@@ -68,6 +68,8 @@ public:
     const DestinationInsertionPoints* destinationInsertionPointsFor(const Node*) const;
 
     void didDistributeNode(const Node*, InsertionPoint*);
+
+    void trace(Visitor*);
 
 private:
     ElementShadow();

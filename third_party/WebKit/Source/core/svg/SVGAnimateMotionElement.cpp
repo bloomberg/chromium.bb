@@ -50,8 +50,10 @@ inline SVGAnimateMotionElement::SVGAnimateMotionElement(Document& document)
 
 SVGAnimateMotionElement::~SVGAnimateMotionElement()
 {
+#if !ENABLE(OILPAN)
     if (targetElement())
         clearAnimatedType(targetElement());
+#endif
 }
 
 PassRefPtr<SVGAnimateMotionElement> SVGAnimateMotionElement::create(Document& document)

@@ -99,7 +99,7 @@ public:
     virtual void documentWasDetached() OVERRIDE;
     virtual void documentWasDisposed() OVERRIDE;
 
-    virtual void trace(Visitor*) OVERRIDE { }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     static FullscreenElementStack* fromIfExistsSlow(Document&);
@@ -110,12 +110,12 @@ private:
     void fullScreenChangeDelayTimerFired(Timer<FullscreenElementStack>*);
 
     bool m_areKeysEnabledInFullScreen;
-    RefPtr<Element> m_fullScreenElement;
-    Vector<RefPtr<Element> > m_fullScreenElementStack;
+    RefPtrWillBeMember<Element> m_fullScreenElement;
+    WillBeHeapVector<RefPtrWillBeMember<Element> > m_fullScreenElementStack;
     RenderFullScreen* m_fullScreenRenderer;
     Timer<FullscreenElementStack> m_fullScreenChangeDelayTimer;
-    Deque<RefPtr<Node> > m_fullScreenChangeEventTargetQueue;
-    Deque<RefPtr<Node> > m_fullScreenErrorEventTargetQueue;
+    WillBeHeapDeque<RefPtrWillBeMember<Node> > m_fullScreenChangeEventTargetQueue;
+    WillBeHeapDeque<RefPtrWillBeMember<Node> > m_fullScreenErrorEventTargetQueue;
     LayoutRect m_savedPlaceholderFrameRect;
     RefPtr<RenderStyle> m_savedPlaceholderRenderStyle;
 };

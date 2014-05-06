@@ -72,6 +72,7 @@ static void collectChildrenAndRemoveFromOldParent(Node& node, NodeVector& nodes,
     toContainerNode(node).removeChildren();
 }
 
+#if !ENABLE(OILPAN)
 void ContainerNode::removeDetachedChildren()
 {
     if (connectedSubframeCount()) {
@@ -81,6 +82,7 @@ void ContainerNode::removeDetachedChildren()
     ASSERT(needsAttach());
     removeDetachedChildrenInContainer<Node, ContainerNode>(*this);
 }
+#endif
 
 void ContainerNode::parserTakeAllChildrenFrom(ContainerNode& oldParent)
 {
@@ -93,10 +95,12 @@ void ContainerNode::parserTakeAllChildrenFrom(ContainerNode& oldParent)
 
 ContainerNode::~ContainerNode()
 {
-#if !ENABLE(OILPAN)
+#if ENABLE(OILPAN)
+    ASSERT(needsAttach());
+#else
     willBeDeletedFromDocument();
-#endif
     removeDetachedChildren();
+#endif
 }
 
 bool ContainerNode::isChildTypeAllowed(const Node& child) const
@@ -254,11 +258,11 @@ void ContainerNode::insertBeforeCommon(Node& nextChild, Node& newChild)
     ASSERT(m_lastChild != prev);
     nextChild.setPreviousSibling(&newChild);
     if (prev) {
-        ASSERT(m_firstChild != nextChild);
+        ASSERT(firstChild() != nextChild);
         ASSERT(prev->nextSibling() == nextChild);
         prev->setNextSibling(&newChild);
     } else {
-        ASSERT(m_firstChild == nextChild);
+        ASSERT(firstChild() == nextChild);
         m_firstChild = &newChild;
     }
     newChild.setParentOrShadowHostNode(this);
@@ -409,6 +413,13 @@ void ContainerNode::disconnectDescendantFrames()
     ChildFrameDisconnector(*this).disconnect();
 }
 
+void ContainerNode::trace(Visitor* visitor)
+{
+    visitor->trace(m_firstChild);
+    visitor->trace(m_lastChild);
+    Node::trace(visitor);
+}
+
 void ContainerNode::removeChild(Node* oldChild, ExceptionState& exceptionState)
 {
 #if !ENABLE(OILPAN)
@@ -475,9 +486,9 @@ void ContainerNode::removeBetween(Node* previousChild, Node* nextChild, Node& ol
         nextChild->setPreviousSibling(previousChild);
     if (previousChild)
         previousChild->setNextSibling(nextChild);
-    if (m_firstChild == oldChild)
+    if (m_firstChild == &oldChild)
         m_firstChild = nextChild;
-    if (m_lastChild == oldChild)
+    if (m_lastChild == &oldChild)
         m_lastChild = previousChild;
 
     oldChild.setPreviousSibling(0);
@@ -564,9 +575,11 @@ void ContainerNode::appendChild(PassRefPtr<Node> newChild, ExceptionState& excep
 {
     RefPtr<ContainerNode> protect(this);
 
+#if !ENABLE(OILPAN)
     // Check that this node is not "floating".
     // If it is, it can be deleted as a side effect of sending mutation events.
     ASSERT(refCount() || parentOrShadowHostNode());
+#endif
 
     // Make sure adding the new child is ok
     if (!checkAcceptChild(newChild.get(), 0, exceptionState))
@@ -995,8 +1008,10 @@ static void dispatchChildRemovalEvents(Node& child)
 
 void ContainerNode::updateTreeAfterInsertion(Node& child)
 {
+#if !ENABLE(OILPAN)
     ASSERT(refCount());
     ASSERT(child.refCount());
+#endif
 
     ChildListMutationScope(*this).childAdded(child);
 

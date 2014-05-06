@@ -522,6 +522,14 @@ public:
     template<typename U>
     Member(const Member<U>& other) : m_raw(other) { }
 
+    // FIXME: Oilpan: Get rid of these ASAP; this is only here to make
+    // Node hierarchy transition easier.
+    template<typename U>
+    Member(const PassRefPtr<U>& other) : m_raw(other.get()) { }
+
+    template<typename U>
+    Member(const RefPtr<U>& other) : m_raw(other.get()) { }
+
     T* release()
     {
         T* result = m_raw;
@@ -730,6 +738,16 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 template<typename T, typename U> inline bool operator==(const Persistent<T>& a, const Persistent<U>& b) { return a.get() == b.get(); }
 template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, const Persistent<U>& b) { return a.get() != b.get(); }
 
+// FIXME: Oilpan: Get rid of these ASAP; only here to make Node transition easier.
+template<typename T, typename U> inline bool operator==(const Member<T>& a, const RefPtr<U>& b) { return a.get() == b.get(); }
+template<typename T, typename U> inline bool operator!=(const Member<T>& a, const RefPtr<U>& b) { return a.get() != b.get(); }
+template<typename T, typename U> inline bool operator==(const RefPtr<T>& a, const Member<U>& b) { return a.get() == b.get(); }
+template<typename T, typename U> inline bool operator!=(const RefPtr<T>& a, const Member<U>& b) { return a.get() != b.get(); }
+template<typename T, typename U> inline bool operator==(const Member<T>& a, const PassRefPtr<U>& b) { return a.get() == b.get(); }
+template<typename T, typename U> inline bool operator!=(const Member<T>& a, const PassRefPtr<U>& b) { return a.get() != b.get(); }
+template<typename T, typename U> inline bool operator==(const PassRefPtr<T>& a, const Member<U>& b) { return a.get() == b.get(); }
+template<typename T, typename U> inline bool operator!=(const PassRefPtr<T>& a, const Member<U>& b) { return a.get() != b.get(); }
+
 // CPP-defined type names for the transition period where we want to
 // support both reference counting and garbage collection based on a
 // compile-time flag.
@@ -754,6 +772,7 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define RefCountedWillBeRefCountedGarbageCollected WebCore::RefCountedGarbageCollected
 #define ThreadSafeRefCountedWillBeGarbageCollected WebCore::GarbageCollected
 #define ThreadSafeRefCountedWillBeGarbageCollectedFinalized WebCore::GarbageCollectedFinalized
+#define TreeSharedWillBeRefCountedGarbageCollected WebCore::RefCountedGarbageCollected
 #define PersistentWillBeMember WebCore::Member
 #define RefPtrWillBePersistent WebCore::Persistent
 #define RefPtrWillBeRawPtr WTF::RawPtr
@@ -838,6 +857,7 @@ public:
 #define RefCountedWillBeRefCountedGarbageCollected WTF::RefCounted
 #define ThreadSafeRefCountedWillBeGarbageCollected WTF::ThreadSafeRefCounted
 #define ThreadSafeRefCountedWillBeGarbageCollectedFinalized WTF::ThreadSafeRefCounted
+#define TreeSharedWillBeRefCountedGarbageCollected WebCore::TreeShared
 #define PersistentWillBeMember WebCore::Persistent
 #define RefPtrWillBePersistent WTF::RefPtr
 #define RefPtrWillBeRawPtr WTF::RefPtr

@@ -86,14 +86,14 @@ PassRefPtr<SVGElementInstance> SVGElementInstance::create(SVGUseElement* corresp
 }
 
 SVGElementInstance::SVGElementInstance(SVGUseElement* correspondingUseElement, SVGUseElement* directUseElement, PassRefPtr<SVGElement> originalElement)
-    : m_parentInstance(0)
+    : m_parentInstance(nullptr)
     , m_correspondingUseElement(correspondingUseElement)
     , m_directUseElement(directUseElement)
     , m_element(originalElement)
-    , m_previousSibling(0)
-    , m_nextSibling(0)
-    , m_firstChild(0)
-    , m_lastChild(0)
+    , m_previousSibling(nullptr)
+    , m_nextSibling(nullptr)
+    , m_firstChild(nullptr)
+    , m_lastChild(nullptr)
 {
     ASSERT(m_correspondingUseElement);
     ASSERT(m_element);
@@ -106,14 +106,15 @@ SVGElementInstance::SVGElementInstance(SVGUseElement* correspondingUseElement, S
 
 SVGElementInstance::~SVGElementInstance()
 {
-    // Call detach because we may be deleted directly if we are a child of a detached instance.
-    detach();
-
 #ifndef NDEBUG
     instanceCounter.decrement();
 #endif
 
+#if !ENABLE(OILPAN)
+    // Call detach because we may be deleted directly if we are a child of a detached instance.
+    detach();
     m_element = nullptr;
+#endif
 }
 
 // It's important not to inline removedLastRef, because we don't want to inline the code to
@@ -146,7 +147,9 @@ void SVGElementInstance::detach()
     m_directUseElement = 0;
     m_correspondingUseElement = 0;
 
+#if !ENABLE(OILPAN)
     removeDetachedChildrenInContainer<SVGElementInstance, SVGElementInstance>(*this);
+#endif
 }
 
 void SVGElementInstance::setShadowTreeElement(SVGElement* element)
@@ -219,6 +222,17 @@ EventTargetData& SVGElementInstance::ensureEventTargetData()
     // As we're forwarding those calls to the correspondingElement(), no one should ever call this function.
     ASSERT_NOT_REACHED();
     return *eventTargetData();
+}
+
+void SVGElementInstance::trace(Visitor* visitor)
+{
+    visitor->trace(m_parentInstance);
+    visitor->trace(m_element);
+    visitor->trace(m_shadowTreeElement);
+    visitor->trace(m_previousSibling);
+    visitor->trace(m_nextSibling);
+    visitor->trace(m_firstChild);
+    visitor->trace(m_lastChild);
 }
 
 }

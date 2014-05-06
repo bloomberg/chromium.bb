@@ -2351,10 +2351,8 @@ bool EventHandler::handleGestureScrollEnd(const PlatformGestureEvent& gestureEve
     RefPtr<Node> node = m_scrollGestureHandlingNode;
     clearGestureScrollNodes();
 
-    if (node) {
-        ASSERT(node->refCount() > 0);
+    if (node)
         passGestureEventToWidgetIfPossible(gestureEvent, node->renderer());
-    }
 
     return false;
 }

@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-DocumentStyleSheetCollector::DocumentStyleSheetCollector(WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& sheetsForList, WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& activeList, HashSet<Document*>& visitedDocuments)
+DocumentStyleSheetCollector::DocumentStyleSheetCollector(WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& sheetsForList, WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& activeList, WillBeHeapHashSet<RawPtrWillBeMember<Document> >& visitedDocuments)
     : m_styleSheetsForStyleSheetList(sheetsForList)
     , m_activeAuthorStyleSheets(activeList)
     , m_visitedDocuments(visitedDocuments)

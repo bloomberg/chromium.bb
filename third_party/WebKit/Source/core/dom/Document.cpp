@@ -479,7 +479,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_animationClock(AnimationClock::create())
     , m_timeline(DocumentTimeline::create(this))
     , m_transitionTimeline(TransitionTimeline::create(this))
-    , m_templateDocumentHost(0)
+    , m_templateDocumentHost(nullptr)
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
     , m_hasViewportUnits(false)
     , m_styleRecalcElementCounter(0)
@@ -534,14 +534,20 @@ Document::~Document()
     // When they die in the same GC round, the list of visibility observers
     // will not be empty on Document destruction.
     ASSERT(m_visibilityObservers.isEmpty());
-#endif
 
     if (m_templateDocument)
-        m_templateDocument->m_templateDocumentHost = 0; // balanced in ensureTemplateDocument().
+        m_templateDocument->m_templateDocumentHost = nullptr; // balanced in ensureTemplateDocument().
+#endif
 
     m_scriptRunner.clear();
 
+    // FIXME: Oilpan: Not removing event listeners here also means that we do
+    // not notify the inspector instrumentation that the event listeners are
+    // gone. The Document and all the nodes in the document are gone, so maybe
+    // that is OK?
+#if !ENABLE(OILPAN)
     removeAllEventListenersRecursively();
+#endif
 
     // Currently we believe that Document can never outlive the parser.
     // Although the Document may be replaced synchronously, DocumentParsers
@@ -568,11 +574,11 @@ Document::~Document()
     m_timeline->detachFromDocument();
     m_transitionTimeline->detachFromDocument();
 
+#if !ENABLE(OILPAN)
     // We need to destroy CSSFontSelector before destroying m_fetcher.
     if (m_styleEngine)
         m_styleEngine->detachFromDocument();
 
-#if !ENABLE(OILPAN)
     if (m_elemSheet)
         m_elemSheet->clearOwnerNode();
 #endif
@@ -600,7 +606,9 @@ Document::~Document()
 
 void Document::dispose()
 {
+#if !ENABLE(OILPAN)
     ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
+
     // We must make sure not to be retaining any of our children through
     // these extra pointers or we will create a reference cycle.
     m_docType = nullptr;
@@ -612,6 +620,7 @@ void Document::dispose()
     m_contextFeatures = ContextFeatures::defaultSwitch();
     m_userActionElements.documentDidRemoveLastRef();
     m_associatedFormControls.clear();
+#endif
 
     detachParser();
 
@@ -622,16 +631,22 @@ void Document::dispose()
         m_importsController = 0;
     }
 
+#if !ENABLE(OILPAN)
     // removeDetachedChildren() doesn't always unregister IDs,
     // so tear down scope information upfront to avoid having stale references in the map.
     destroyTreeScopeData();
+
     removeDetachedChildren();
+#endif
+
     // removeDetachedChildren() can access FormController.
     m_formController.clear();
 
+#if !ENABLE(OILPAN)
     m_markers->clear();
 
     m_cssCanvasElements.clear();
+#endif
 
     // FIXME: consider using ActiveDOMObject.
     if (m_scriptedAnimationController)
@@ -1362,7 +1377,7 @@ void Document::setTitle(const String& title)
     else if (!m_titleElement) {
         if (HTMLElement* headElement = head()) {
             m_titleElement = HTMLTitleElement::create(*this);
-            headElement->appendChild(m_titleElement);
+            headElement->appendChild(m_titleElement.get());
         }
     }
 
@@ -2232,6 +2247,9 @@ void Document::detach(const AttachContext& context)
 
     lifecycleNotifier().notifyDocumentWasDetached();
     m_lifecycle.advanceTo(DocumentLifecycle::Stopped);
+#if ENABLE(OILPAN)
+    dispose();
+#endif
 }
 
 void Document::prepareForDestruction()
@@ -3534,7 +3552,7 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
         return true;
 
     bool focusChangeBlocked = false;
-    RefPtr<Element> oldFocusedElement = m_focusedElement;
+    RefPtrWillBeRawPtr<Element> oldFocusedElement = m_focusedElement;
     m_focusedElement = nullptr;
 
     // Remove focus from the existing focus node (if any)
@@ -4875,7 +4893,7 @@ void Document::getCSSCanvasContext(const String& type, const String& name, int w
 
 HTMLCanvasElement& Document::getCSSCanvasElement(const String& name)
 {
-    RefPtr<HTMLCanvasElement>& element = m_cssCanvasElements.add(name, nullptr).storedValue->value;
+    RefPtrWillBeMember<HTMLCanvasElement>& element = m_cssCanvasElements.add(name, nullptr).storedValue->value;
     if (!element) {
         element = HTMLCanvasElement::create(*this);
         element->setAccelerationDisabled(true);
@@ -5660,10 +5678,27 @@ void Document::clearWeakMembers(Visitor* visitor)
 
 void Document::trace(Visitor* visitor)
 {
+    visitor->trace(m_docType);
+    visitor->trace(m_autofocusElement);
+    visitor->trace(m_focusedElement);
+    visitor->trace(m_hoverNode);
+    visitor->trace(m_activeHoverElement);
+    visitor->trace(m_documentElement);
+    visitor->trace(m_titleElement);
+    visitor->trace(m_currentScriptStack);
+    visitor->trace(m_transformSourceDocument);
+    visitor->trace(m_cssCanvasElements);
+    visitor->trace(m_topLayerElements);
+    visitor->trace(m_elemSheet);
+    visitor->trace(m_styleEngine);
     visitor->trace(m_styleSheetList);
     visitor->trace(m_mediaQueryMatcher);
+    visitor->trace(m_associatedFormControls);
+    visitor->trace(m_templateDocument);
+    visitor->trace(m_templateDocumentHost);
     visitor->trace(m_visibilityObservers);
     visitor->trace(m_contextFeatures);
+    visitor->trace(m_userActionElements);
     visitor->registerWeakMembers<Document, &Document::clearWeakMembers>(this);
     DocumentSupplementable::trace(visitor);
     TreeScope::trace(visitor);

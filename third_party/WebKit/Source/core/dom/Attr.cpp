@@ -75,7 +75,9 @@ Attr::~Attr()
 
 void Attr::createTextChild()
 {
+#if !ENABLE(OILPAN)
     ASSERT(refCount());
+#endif
     if (!value().isEmpty()) {
         RefPtr<Text> textNode = document().createTextNode(value().string());
 

@@ -98,7 +98,7 @@ public:
     // Used by the basic DOM mutation methods (e.g., appendChild()).
     void adoptIfNeeded(Node&);
 
-    Node& rootNode() const { return m_rootNode; }
+    Node& rootNode() const { return *m_rootNode; }
 
     IdTargetObserverRegistry& idTargetObserverRegistry() const { return *m_idTargetObserverRegistry.get(); }
 
@@ -157,8 +157,11 @@ protected:
 private:
     virtual void dispose() { }
 
+#if !ENABLE(OILPAN)
     int refCount() const;
-#if SECURITY_ASSERT_ENABLED
+#endif
+
+#if SECURITY_ASSERT_ENABLED && !ENABLE(OILPAN)
     bool deletionHasBegun();
     void beginDeletion();
 #else
@@ -168,8 +171,8 @@ private:
 
     bool rootNodeHasTreeSharedParent() const;
 
-    Node& m_rootNode;
-    Document* m_document;
+    RawPtrWillBeMember<Node> m_rootNode;
+    RawPtrWillBeMember<Document> m_document;
     RawPtrWillBeMember<TreeScope> m_parentTreeScope;
 
 #if !ENABLE(OILPAN)

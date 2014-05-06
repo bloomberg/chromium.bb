@@ -169,7 +169,7 @@ SVGSMILElement::Condition::Condition(Type type, BeginOrEnd beginOrEnd, const Str
 SVGSMILElement::SVGSMILElement(const QualifiedName& tagName, Document& doc)
     : SVGElement(tagName, doc)
     , m_attributeName(anyQName())
-    , m_targetElement(0)
+    , m_targetElement(nullptr)
     , m_syncBaseConditionsConnected(false)
     , m_hasEndEventConditions(false)
     , m_isWaitingForFirstInterval(true)
@@ -199,9 +199,11 @@ SVGSMILElement::~SVGSMILElement()
     smilBeginEventSender().cancelEvent(this);
     smilRepeatEventSender().cancelEvent(this);
     smilRepeatNEventSender().cancelEvent(this);
+#if !ENABLE(OILPAN)
     clearConditions();
     if (m_timeContainer && m_targetElement && hasValidAttributeName())
         m_timeContainer->unschedule(this, m_targetElement, m_attributeName);
+#endif
 }
 
 void SVGSMILElement::clearResourceAndEventBaseReferences()
@@ -1328,6 +1330,12 @@ void SVGSMILElement::dispatchPendingEvent(SMILEventSender* eventSender)
     } else {
         dispatchEvent(Event::create(eventType));
     }
+}
+
+void SVGSMILElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_targetElement);
+    SVGElement::trace(visitor);
 }
 
 }

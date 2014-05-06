@@ -82,7 +82,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-class ListAttributeTargetObserver : IdTargetObserver {
+class ListAttributeTargetObserver : public IdTargetObserver {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<ListAttributeTargetObserver> create(const AtomicString& id, HTMLInputElement*);
@@ -1499,12 +1499,19 @@ bool HTMLInputElement::hasValidDataListOptions() const
     return false;
 }
 
+void HTMLInputElement::setListAttributeTargetObserver(PassOwnPtr<ListAttributeTargetObserver> newObserver)
+{
+    if (m_listAttributeTargetObserver)
+        m_listAttributeTargetObserver->unregister();
+    m_listAttributeTargetObserver = newObserver;
+}
+
 void HTMLInputElement::resetListAttributeTargetObserver()
 {
     if (inDocument())
-        m_listAttributeTargetObserver = ListAttributeTargetObserver::create(fastGetAttribute(listAttr), this);
+        setListAttributeTargetObserver(ListAttributeTargetObserver::create(fastGetAttribute(listAttr), this));
     else
-        m_listAttributeTargetObserver = nullptr;
+        setListAttributeTargetObserver(nullptr);
 }
 
 void HTMLInputElement::listAttributeTargetChanged()

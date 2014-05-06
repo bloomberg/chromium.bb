@@ -78,7 +78,6 @@ public:
 
     void recalcTimerFired(Timer<HTMLImportsController>*);
 
-
     virtual void trace(Visitor*) OVERRIDE { }
     HTMLImportLoader* createLoader();
 

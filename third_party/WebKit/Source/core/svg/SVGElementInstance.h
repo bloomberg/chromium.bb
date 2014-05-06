@@ -37,8 +37,8 @@ class SVGElement;
 class SVGUseElement;
 
 // SVGElementInstance mimics Node, but without providing all its functionality
-class SVGElementInstance FINAL : public TreeShared<SVGElementInstance>, public EventTarget, public ScriptWrappable {
-    DEFINE_EVENT_TARGET_REFCOUNTING(TreeShared<SVGElementInstance>);
+class SVGElementInstance FINAL : public TreeSharedWillBeRefCountedGarbageCollected<SVGElementInstance>, public EventTarget, public ScriptWrappable {
+    DEFINE_EVENT_TARGET_REFCOUNTING(TreeSharedWillBeRefCountedGarbageCollected<SVGElementInstance>);
 public:
     static PassRefPtr<SVGElementInstance> create(SVGUseElement* correspondingUseElement, SVGUseElement* directUseElement, PassRefPtr<SVGElement> originalElement);
 
@@ -73,7 +73,7 @@ public:
 
     inline Document* ownerDocument() const;
 
-    virtual void trace(Visitor*) { }
+    virtual void trace(Visitor*);
 
     // EventTarget API
     DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), abort);
@@ -154,18 +154,18 @@ private:
     virtual EventTargetData* eventTargetData() OVERRIDE;
     virtual EventTargetData& ensureEventTargetData() OVERRIDE;
 
-    SVGElementInstance* m_parentInstance;
+    RawPtrWillBeMember<SVGElementInstance> m_parentInstance;
 
     SVGUseElement* m_correspondingUseElement;
     SVGUseElement* m_directUseElement;
-    RefPtr<SVGElement> m_element;
-    RefPtr<SVGElement> m_shadowTreeElement;
+    RefPtrWillBeMember<SVGElement> m_element;
+    RefPtrWillBeMember<SVGElement> m_shadowTreeElement;
 
-    SVGElementInstance* m_previousSibling;
-    SVGElementInstance* m_nextSibling;
+    RawPtrWillBeMember<SVGElementInstance> m_previousSibling;
+    RawPtrWillBeMember<SVGElementInstance> m_nextSibling;
 
-    SVGElementInstance* m_firstChild;
-    SVGElementInstance* m_lastChild;
+    RawPtrWillBeMember<SVGElementInstance> m_firstChild;
+    RawPtrWillBeMember<SVGElementInstance> m_lastChild;
 };
 
 } // namespace WebCore

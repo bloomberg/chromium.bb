@@ -1,16 +1,17 @@
 // include resources/js-test.js before this file.
 
-function getCounterValues() {
+function getCounterValues(callback) {
     testRunner.resetTestHelperControllers();
-    gc();
+    asyncGC(function() {
+        var ret = {'numberOfLiveDocuments': window.internals.numberOfLiveDocuments()};
 
-    var ret = {'numberOfLiveDocuments': window.internals.numberOfLiveDocuments()};
+        var refCountedInstances = JSON.parse(window.internals.dumpRefCountedInstanceCounts());
+        for (typename in refCountedInstances)
+            ret['numberOfInstances-'+typename] = refCountedInstances[typename];
 
-    var refCountedInstances = JSON.parse(window.internals.dumpRefCountedInstanceCounts());
-    for (typename in refCountedInstances)
-        ret['numberOfInstances-'+typename] = refCountedInstances[typename];
+        callback(ret);
+    });
 
-    return ret;
 }
 
 function compareValues(countersBefore, countersAfter, tolerance) {
@@ -49,22 +50,23 @@ function doLeakTest(src, tolerance) {
 
     loadSourceIntoIframe('about:blank', function() {
         // blank document loaded...
-        var countersBefore = getCounterValues();
+        getCounterValues(function(countersBefore) {
+            loadSourceIntoIframe(src, function() {
+                // target document loaded...
 
-        loadSourceIntoIframe(src, function() {
-            // target document loaded...
+                loadSourceIntoIframe('about:blank', function() {
+                    // target document unloaded...
 
-            loadSourceIntoIframe('about:blank', function() {
-                // target document unloaded...
-
-                // Measure counter values on next timer event. This is needed
-                // to correctly handle deref cycles for some ActiveDOMObjects
-                // such as XMLHttpRequest.
-                setTimeout(function() {
-                    var countersAfter = getCounterValues();
-                    compareValues(countersBefore, countersAfter, tolerance);
-                    finishJSTest();
-                }, 0);
+                    // Measure counter values on next timer event. This is needed
+                    // to correctly handle deref cycles for some ActiveDOMObjects
+                    // such as XMLHttpRequest.
+                    setTimeout(function() {
+                        getCounterValues(function(countersAfter) {
+                            compareValues(countersBefore, countersAfter, tolerance);
+                            finishJSTest();
+                        });
+                    }, 0);
+                });
             });
         });
     });

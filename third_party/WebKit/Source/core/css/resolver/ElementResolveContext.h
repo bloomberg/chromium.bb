@@ -37,8 +37,8 @@ class ElementResolveContext {
     STACK_ALLOCATED();
 public:
     ElementResolveContext()
-        : m_element(0)
-        , m_parentNode(0)
+        : m_element(nullptr)
+        , m_parentNode(nullptr)
         , m_rootElementStyle(0)
         , m_elementLinkState(NotInsideLink)
         , m_distributedToInsertionPoint(false)
@@ -54,8 +54,8 @@ public:
     bool distributedToInsertionPoint() const { return m_distributedToInsertionPoint; }
 
 private:
-    Element* m_element;
-    ContainerNode* m_parentNode;
+    RawPtrWillBeMember<Element> m_element;
+    RawPtrWillBeMember<ContainerNode> m_parentNode;
     RenderStyle* m_rootElementStyle;
     EInsideLink m_elementLinkState;
     bool m_distributedToInsertionPoint;

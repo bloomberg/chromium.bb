@@ -46,8 +46,6 @@ ALWAYS_INLINE ValidationMessage::ValidationMessage(HTMLFormControlElement* eleme
 
 ValidationMessage::~ValidationMessage()
 {
-    if (ValidationMessageClient* client = validationMessageClient())
-        client->hideValidationMessage(*m_element);
 }
 
 PassOwnPtr<ValidationMessage> ValidationMessage::create(HTMLFormControlElement* element)

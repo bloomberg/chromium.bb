@@ -58,6 +58,7 @@ public:
 
     void trace(Visitor* visitor)
     {
+        visitor->trace(m_layerAssociatedNode);
         visitor->trace(m_rect);
     }
 
@@ -71,7 +72,7 @@ private:
     {
     }
 
-    RefPtr<Node> m_layerAssociatedNode;
+    RefPtrWillBeMember<Node> m_layerAssociatedNode;
     String m_layerType;
     int m_associatedNodeOffsetX;
     int m_associatedNodeOffsetY;

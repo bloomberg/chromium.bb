@@ -38,9 +38,6 @@ template<typename NodeType> class TreeShared : public NoBaseWillBeGarbageCollect
 protected:
     TreeShared()
         : m_refCount(1)
-#if ENABLE(OILPAN)
-        , m_keepAlive(adoptPtr(new Persistent<NodeType>(static_cast<NodeType*>(this))))
-#endif
 #if SECURITY_ASSERT_ENABLED
         , m_deletionHasBegun(false)
 #if ASSERT_ENABLED
@@ -56,11 +53,7 @@ protected:
     {
         ASSERT(isMainThread());
         ASSERT(!m_refCount);
-#if !ENABLE(OILPAN)
         ASSERT_WITH_SECURITY_IMPLICATION(m_deletionHasBegun);
-#else
-        ASSERT(!m_keepAlive);
-#endif
         ASSERT(!m_adoptionIsRequired);
     }
 
@@ -68,34 +61,23 @@ public:
     void ref()
     {
         ASSERT(isMainThread());
-#if !ENABLE(OILPAN)
         ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
         ASSERT(!m_inRemovedLastRefFunction);
-#endif
         ASSERT(!m_adoptionIsRequired);
         ++m_refCount;
-#if ENABLE(OILPAN)
-        if (!m_keepAlive)
-            m_keepAlive = adoptPtr(new Persistent<NodeType>(static_cast<NodeType*>(this)));
-#endif
     }
 
     void deref()
     {
         ASSERT(isMainThread());
         ASSERT(m_refCount > 0);
-#if !ENABLE(OILPAN)
         ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
         ASSERT(!m_inRemovedLastRefFunction);
-#endif
         ASSERT(!m_adoptionIsRequired);
         NodeType* thisNode = static_cast<NodeType*>(this);
         if (!--m_refCount && !thisNode->hasTreeSharedParent()) {
 #if !ASSERT_DISABLED
             m_inRemovedLastRefFunction = true;
-#endif
-#if ENABLE(OILPAN)
-            clearKeepAlive();
 #endif
             thisNode->removedLastRef();
         }
@@ -103,28 +85,8 @@ public:
 
     int refCount() const { return m_refCount; }
 
-#if ENABLE(OILPAN)
-    void clearKeepAlive()
-    {
-        ASSERT(m_keepAlive);
-        m_keepAlive = nullptr;
-    }
-#endif
-
 private:
     int m_refCount;
-
-#if ENABLE(OILPAN)
-    // With Oilpan, a non-zero reference count will keep the TreeShared object alive
-    // with a self-persistent handle. Whenever the ref count goes above zero
-    // we register the TreeShared as a root for garbage collection by allocating a
-    // persistent handle to the object itself. When the ref count goes to zero
-    // we deallocate the persistent handle again so the object can die if there
-    // are no other things keeping it alive.
-    //
-    // FIXME: Oilpan: Remove m_keepAlive and ref counting and use tracing instead.
-    OwnPtr<Persistent<NodeType> > m_keepAlive;
-#endif
 
 #if SECURITY_ASSERT_ENABLED
 public:

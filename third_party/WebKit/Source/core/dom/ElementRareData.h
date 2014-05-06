@@ -119,6 +119,16 @@ public:
     void setCustomElementDefinition(PassRefPtr<CustomElementDefinition> definition) { m_customElementDefinition = definition; }
     CustomElementDefinition* customElementDefinition() const { return m_customElementDefinition.get(); }
 
+    void trace(Visitor* visitor)
+    {
+        // FIXME: Oilpan: Implement real tracing of the
+        // ElementRareData when it has been moved to the
+        // oilpan heap and move the ElementShadow tracing
+        // to the ElementShadow when that has been moved
+        // to the oilpan heap.
+        visitor->trace(m_shadow);
+    }
+
 private:
     short m_tabindex;
 

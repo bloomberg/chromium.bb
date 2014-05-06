@@ -48,7 +48,7 @@ public:
 
     RawPtrWillBeMember<const RuleSet> ruleSet;
     const bool includeEmptyRules;
-    const ContainerNode* scope;
+    RawPtrWillBeMember<const ContainerNode> scope;
     RawPtrWillBeMember<const CSSStyleSheet> styleSheet;
     const bool elementApplyAuthorStyles;
     const unsigned styleSheetIndex;

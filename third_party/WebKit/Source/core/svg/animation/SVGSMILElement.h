@@ -117,6 +117,8 @@ public:
 
     virtual bool isSVGDiscardElement() const { return false; }
 
+    void trace(Visitor*) OVERRIDE;
+
 protected:
     void addBeginTime(SMILTime eventTime, SMILTime endTime, SMILTimeWithOrigin::Origin = SMILTimeWithOrigin::ParserOrigin);
     void addEndTime(SMILTime eventTime, SMILTime endTime, SMILTimeWithOrigin::Origin = SMILTimeWithOrigin::ParserOrigin);
@@ -205,7 +207,7 @@ private:
     float calculateAnimationPercentAndRepeat(SMILTime elapsed, unsigned& repeat) const;
     SMILTime calculateNextProgressTime(SMILTime elapsed) const;
 
-    SVGElement* m_targetElement;
+    RawPtrWillBeMember<SVGElement> m_targetElement;
 
     Vector<Condition> m_conditions;
     bool m_syncBaseConditionsConnected;

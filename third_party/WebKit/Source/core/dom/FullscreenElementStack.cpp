@@ -268,7 +268,7 @@ void FullscreenElementStack::webkitCancelFullScreen()
 
     // To achieve that aim, remove all the elements from the top document's stack except for the first before
     // calling webkitExitFullscreen():
-    Vector<RefPtr<Element> > replacementFullscreenElementStack;
+    WillBeHeapVector<RefPtrWillBeMember<Element> > replacementFullscreenElementStack;
     replacementFullscreenElementStack.append(fullscreenElementFrom(document()->topDocument()));
     FullscreenElementStack& topFullscreenElementStack = from(document()->topDocument());
     topFullscreenElementStack.m_fullScreenElementStack.swap(replacementFullscreenElementStack);
@@ -477,14 +477,14 @@ void FullscreenElementStack::fullScreenChangeDelayTimerFired(Timer<FullscreenEle
     // Since we dispatch events in this function, it's possible that the
     // document will be detached and GC'd. We protect it here to make sure we
     // can finish the function successfully.
-    RefPtr<Document> protectDocument(document());
-    Deque<RefPtr<Node> > changeQueue;
+    RefPtrWillBeRawPtr<Document> protectDocument(document());
+    WillBeHeapDeque<RefPtrWillBeMember<Node> > changeQueue;
     m_fullScreenChangeEventTargetQueue.swap(changeQueue);
-    Deque<RefPtr<Node> > errorQueue;
+    WillBeHeapDeque<RefPtrWillBeMember<Node> > errorQueue;
     m_fullScreenErrorEventTargetQueue.swap(errorQueue);
 
     while (!changeQueue.isEmpty()) {
-        RefPtr<Node> node = changeQueue.takeFirst();
+        RefPtrWillBeRawPtr<Node> node = changeQueue.takeFirst();
         if (!node)
             node = document()->documentElement();
         // The dispatchEvent below may have blown away our documentElement.
@@ -500,7 +500,7 @@ void FullscreenElementStack::fullScreenChangeDelayTimerFired(Timer<FullscreenEle
     }
 
     while (!errorQueue.isEmpty()) {
-        RefPtr<Node> node = errorQueue.takeFirst();
+        RefPtrWillBeRawPtr<Node> node = errorQueue.takeFirst();
         if (!node)
             node = document()->documentElement();
         // The dispatchEvent below may have blown away our documentElement.
@@ -573,6 +573,14 @@ void FullscreenElementStack::addDocumentToFullScreenChangeEventQueue(Document* d
     if (!target)
         target = doc;
     m_fullScreenChangeEventTargetQueue.append(target);
+}
+
+void FullscreenElementStack::trace(Visitor* visitor)
+{
+    visitor->trace(m_fullScreenElement);
+    visitor->trace(m_fullScreenElementStack);
+    visitor->trace(m_fullScreenChangeEventTargetQueue);
+    visitor->trace(m_fullScreenErrorEventTargetQueue);
 }
 
 } // namespace WebCore

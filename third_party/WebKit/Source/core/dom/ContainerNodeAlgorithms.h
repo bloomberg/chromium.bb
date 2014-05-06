@@ -73,6 +73,7 @@ namespace Private {
 
 }
 
+#if !ENABLE(OILPAN)
 // Helper functions for TreeShared-derived classes, which have a 'Node' style interface
 // This applies to 'ContainerNode' and 'SVGElementInstance'
 template<class GenericNode, class GenericNodeContainer>
@@ -87,9 +88,7 @@ inline void removeDetachedChildrenInContainer(GenericNodeContainer& container)
     GenericNode* n;
     GenericNode* next;
     while ((n = head) != 0) {
-#if !ENABLE(OILPAN)
         ASSERT_WITH_SECURITY_IMPLICATION(n->m_deletionHasBegun);
-#endif
 
         next = n->nextSibling();
         n->setNextSibling(0);
@@ -101,11 +100,10 @@ inline void removeDetachedChildrenInContainer(GenericNodeContainer& container)
         if (n->hasChildren())
             Private::addChildNodesToDeletionQueue<GenericNode, GenericNodeContainer>(head, tail, static_cast<GenericNodeContainer&>(*n));
 
-#if !ENABLE(OILPAN)
         delete n;
-#endif
     }
 }
+#endif
 
 template<class GenericNode, class GenericNodeContainer>
 inline void appendChildToContainer(GenericNode& child, GenericNodeContainer& container)
@@ -171,28 +169,6 @@ namespace Private {
             if (next)
                 next->setPreviousSibling(0);
 
-#if ENABLE(OILPAN)
-            {
-                // Always notify nodes of removal from the document even if they
-                // are going to die. Nodes do not immediately die when their
-                // refcounts reach zero with Oilpan. They die at the next garbage
-                // collection. The notifications when removed from document
-                // allows us to perform cleanup on the nodes when they are removed
-                // instead of when their destructors are called.
-                RefPtr<GenericNode> protect(n); // removedFromDocument may remove all references to this node.
-                NodeRemovalDispatcher<GenericNode, GenericNodeContainer, ShouldDispatchRemovalNotification<GenericNode>::value>::dispatch(*n, container);
-            }
-            if (!n->refCount()) {
-                // Add the node to the list of nodes to be deleted.
-                // Reuse the nextSibling pointer for this purpose.
-                if (tail)
-                    tail->setNextSibling(n);
-                else
-                    head = n;
-
-                tail = n;
-            }
-#else
             if (!n->refCount()) {
 #if SECURITY_ASSERT_ENABLED
                 n->m_deletionHasBegun = true;
@@ -209,7 +185,6 @@ namespace Private {
                 RefPtr<GenericNode> protect(n); // removedFromDocument may remove all references to this node.
                 NodeRemovalDispatcher<GenericNode, GenericNodeContainer, ShouldDispatchRemovalNotification<GenericNode>::value>::dispatch(*n, container);
             }
-#endif // ENABLE(OILPAN)
         }
 
         container.setLastChild(0);

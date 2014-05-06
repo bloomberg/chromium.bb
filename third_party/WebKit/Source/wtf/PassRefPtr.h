@@ -138,6 +138,16 @@ namespace WTF {
         return a == b.get();
     }
 
+    template<typename T, typename U> inline bool operator==(const PassRefPtr<T>& a, const RawPtr<U>& b)
+    {
+        return a.get() == b.get();
+    }
+
+    template<typename T, typename U> inline bool operator==(const RawPtr<T>& a, const PassRefPtr<U>& b)
+    {
+        return a.get() == b.get();
+    }
+
     template<typename T, typename U> inline bool operator!=(const PassRefPtr<T>& a, const PassRefPtr<U>& b)
     {
         return a.get() != b.get();
@@ -161,6 +171,16 @@ namespace WTF {
     template<typename T, typename U> inline bool operator!=(T* a, const PassRefPtr<U>& b)
     {
         return a != b.get();
+    }
+
+    template<typename T, typename U> inline bool operator!=(const PassRefPtr<T>& a, const RawPtr<U>& b)
+    {
+        return a.get() != b.get();
+    }
+
+    template<typename T, typename U> inline bool operator!=(const RawPtr<T>& a, const PassRefPtr<U>& b)
+    {
+        return a.get() != b.get();
     }
 
     template<typename T> inline PassRefPtr<T> adoptRef(T* p)

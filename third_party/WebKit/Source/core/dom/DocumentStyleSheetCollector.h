@@ -47,7 +47,7 @@ class DocumentStyleSheetCollector {
 public:
     friend class ImportedDocumentStyleSheetCollector;
 
-    DocumentStyleSheetCollector(WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& sheetsForList, WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& activeList, HashSet<Document*>&);
+    DocumentStyleSheetCollector(WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& sheetsForList, WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& activeList, WillBeHeapHashSet<RawPtrWillBeMember<Document> >&);
     ~DocumentStyleSheetCollector();
 
     void appendActiveStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >&);
@@ -60,14 +60,14 @@ public:
 private:
     WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& m_styleSheetsForStyleSheetList;
     WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& m_activeAuthorStyleSheets;
-    HashSet<Document*>& m_visitedDocuments;
+    WillBeHeapHashSet<RawPtrWillBeMember<Document> >& m_visitedDocuments;
 };
 
 class ActiveDocumentStyleSheetCollector FINAL : public DocumentStyleSheetCollector {
 public:
     ActiveDocumentStyleSheetCollector(StyleSheetCollection&);
 private:
-    HashSet<Document*> m_visitedDocuments;
+    WillBeHeapHashSet<RawPtrWillBeMember<Document> > m_visitedDocuments;
 };
 
 class ImportedDocumentStyleSheetCollector FINAL : public DocumentStyleSheetCollector {

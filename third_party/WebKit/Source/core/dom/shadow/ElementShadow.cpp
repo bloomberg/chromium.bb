@@ -135,7 +135,9 @@ ElementShadow::ElementShadow()
 
 ElementShadow::~ElementShadow()
 {
+#if !ENABLE(OILPAN)
     removeDetachedShadowRoots();
+#endif
 }
 
 ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::ShadowRootType type)
@@ -348,6 +350,14 @@ void ElementShadow::clearDistribution()
 
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())
         root->setShadowInsertionPointOfYoungerShadowRoot(nullptr);
+}
+
+void ElementShadow::trace(Visitor* visitor)
+{
+    // Shadow roots are linked with previous and next pointers which are traced.
+    // It is therefore enough to trace one of the shadow roots here and the
+    // rest will be traced from there.
+    visitor->trace(m_shadowRoots.head());
 }
 
 } // namespace

@@ -51,7 +51,9 @@ SVGAnimatedPropertyBase::SVGAnimatedPropertyBase(AnimatedPropertyType type, SVGE
 
 SVGAnimatedPropertyBase::~SVGAnimatedPropertyBase()
 {
+#if !ENABLE(OILPAN)
     ASSERT(!isAnimating());
+#endif
 }
 
 void SVGAnimatedPropertyBase::animationStarted()

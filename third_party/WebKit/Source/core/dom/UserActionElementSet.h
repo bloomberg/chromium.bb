@@ -27,6 +27,7 @@
 #ifndef UserActionElementSet_h
 #define UserActionElementSet_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -36,10 +37,9 @@ namespace WebCore {
 class Node;
 class Element;
 
-class UserActionElementSet {
+class UserActionElementSet FINAL {
+    DISALLOW_ALLOCATION();
 public:
-    static PassOwnPtr<UserActionElementSet> create() { return adoptPtr(new UserActionElementSet()); }
-
     bool isFocused(const Node* node) { return hasFlags(node, IsFocusedFlag); }
     bool isActive(const Node* node) { return hasFlags(node, IsActiveFlag); }
     bool isInActiveChain(const Node* node) { return hasFlags(node, InActiveChainFlag); }
@@ -53,7 +53,12 @@ public:
     ~UserActionElementSet();
 
     void didDetach(Node*);
+
+#if !ENABLE(OILPAN)
     void documentDidRemoveLastRef();
+#endif
+
+    void trace(Visitor*);
 
 private:
     enum ElementFlags {
@@ -72,7 +77,7 @@ private:
     void clearFlags(Element*, unsigned);
     bool hasFlags(const Element*, unsigned flags) const;
 
-    typedef HashMap<RefPtr<Element>, unsigned> ElementFlagMap;
+    typedef WillBeHeapHashMap<RefPtrWillBeMember<Element>, unsigned> ElementFlagMap;
     ElementFlagMap m_elements;
 };
 

@@ -65,6 +65,7 @@ HTMLFormControlElement::~HTMLFormControlElement()
 {
 #if !ENABLE(OILPAN)
     setForm(0);
+    hideVisibleValidationMessage();
 #endif
 }
 
@@ -247,6 +248,7 @@ Node::InsertionNotificationRequest HTMLFormControlElement::insertedInto(Containe
 
 void HTMLFormControlElement::removedFrom(ContainerNode* insertionPoint)
 {
+    hideVisibleValidationMessage();
     m_validationMessage = nullptr;
     m_ancestorDisabledState = AncestorDisabledStateUnknown;
     m_dataListAncestorState = Unknown;

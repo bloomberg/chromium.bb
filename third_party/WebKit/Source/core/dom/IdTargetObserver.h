@@ -36,6 +36,7 @@ class IdTargetObserver {
 public:
     virtual ~IdTargetObserver();
     virtual void idTargetChanged() = 0;
+    virtual void unregister();
 
 protected:
     IdTargetObserver(IdTargetObserverRegistry&, const AtomicString& id);
