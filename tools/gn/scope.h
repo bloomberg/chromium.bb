@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "tools/gn/err.h"
@@ -137,7 +138,7 @@ class Scope {
   // AddTemplate will fail and return false if a rule with that name already
   // exists. GetTemplate returns NULL if the rule doesn't exist, and it will
   // check all containing scoped rescursively.
-  bool AddTemplate(const std::string& name, scoped_ptr<Template> templ);
+  bool AddTemplate(const std::string& name, const Template* templ);
   const Template* GetTemplate(const std::string& name) const;
 
   // Marks the given identifier as (un)used in the current scope.
@@ -305,7 +306,7 @@ class Scope {
   scoped_ptr<PatternList> sources_assignment_filter_;
 
   // Owning pointers, must be deleted.
-  typedef std::map<std::string, const Template*> TemplateMap;
+  typedef std::map<std::string, scoped_refptr<const Template> > TemplateMap;
   TemplateMap templates_;
 
   ItemVector* item_collector_;

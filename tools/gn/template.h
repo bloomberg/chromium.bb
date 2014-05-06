@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 
 class BlockNode;
@@ -17,18 +18,20 @@ class LocationRange;
 class Scope;
 class Value;
 
-class Template {
+// Represents the information associated with a template() call in GN, which
+// includes a closure and the code to run when the template is invoked.
+//
+// This class is immutable so we can reference it from multiple threads without
+// locking. Normally, this will be assocated with a .gni file and then a
+// reference will be taken by each .gn file that imports it. These files might
+// execute the template in parallel.
+class Template : public base::RefCountedThreadSafe<Template> {
  public:
   // Makes a new closure based on the given scope.
   Template(const Scope* scope, const FunctionCallNode* def);
 
   // Takes ownership of a previously-constructed closure.
   Template(scoped_ptr<Scope> closure, const FunctionCallNode* def);
-
-  ~Template();
-
-  // Makes a copy of this template.
-  scoped_ptr<Template> Clone() const;
 
   // Invoke the template. The values correspond to the state of the code
   // invoking the template.
@@ -42,12 +45,13 @@ class Template {
   LocationRange GetDefinitionRange() const;
 
  private:
+  friend class base::RefCountedThreadSafe<Template>;
+
   Template();
+  ~Template();
 
   scoped_ptr<Scope> closure_;
   const FunctionCallNode* definition_;
-
-  DISALLOW_COPY_AND_ASSIGN(Template);
 };
 
 #endif  // TOOLS_GN_TEMPLATE_H_

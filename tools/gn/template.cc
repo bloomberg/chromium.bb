@@ -24,12 +24,6 @@ Template::Template(scoped_ptr<Scope> scope, const FunctionCallNode* def)
 Template::~Template() {
 }
 
-scoped_ptr<Template> Template::Clone() const {
-  // We can make a new closure from our closure to copy it.
-  return scoped_ptr<Template>(
-      new Template(closure_->MakeClosure(), definition_));
-}
-
 Value Template::Invoke(Scope* scope,
                        const FunctionCallNode* invocation,
                        const std::vector<Value>& args,

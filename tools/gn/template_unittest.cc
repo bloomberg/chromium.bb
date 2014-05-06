@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/test_with_scope.h"
 
@@ -72,4 +73,21 @@ TEST(Template, UnusedVarInInvokerShouldThrowError) {
   Err err;
   input.parsed()->Execute(setup.scope(), &err);
   EXPECT_TRUE(err.has_error());
+}
+
+// Previous versions of the template implementation would copy templates by
+// value when it makes a closure. Doing a sequence of them means that every new
+// one copies all previous ones, which gives a significant blow-up in memory.
+// If this test doesn't crash with out-of-memory, it passed.
+TEST(Template, MemoryBlowUp) {
+  TestWithScope setup;
+  std::string code;
+  for (int i = 0; i < 100; i++)
+    code += "template(\"test" + base::IntToString(i) + "\") {}\n";
+
+  TestParseInput input(code);
+
+  Err err;
+  input.parsed()->Execute(setup.scope(), &err);
+  ASSERT_FALSE(input.has_error());
 }
