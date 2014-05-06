@@ -1,0 +1,10 @@
+Canvas log: 
+{
+    0 : {
+        name : "drawRect"
+    }
+    1 : {
+        name : "drawRect"
+    }
+}
+

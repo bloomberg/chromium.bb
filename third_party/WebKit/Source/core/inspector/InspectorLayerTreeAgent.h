@@ -78,6 +78,7 @@ public:
     virtual void releaseSnapshot(ErrorString*, const String& snapshotId) OVERRIDE;
     virtual void replaySnapshot(ErrorString*, const String& snapshotId, const int* fromStep, const int* toStep, String* dataURL) OVERRIDE;
     virtual void profileSnapshot(ErrorString*, const String& snapshotId, const int* minRepeatCount, const double* minDuration, RefPtr<TypeBuilder::Array<TypeBuilder::Array<double> > >&) OVERRIDE;
+    virtual void snapshotCommandLog(ErrorString*, const String& snapshotId, RefPtr<TypeBuilder::Array<JSONObject> >&) OVERRIDE;
 
     // Called by other agents.
     PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > buildLayerTree();

@@ -31,6 +31,7 @@
 #ifndef GraphicsContextRecorder_h
 #define GraphicsContextRecorder_h
 
+#include "platform/JSONValues.h"
 #include "platform/PlatformExport.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -48,6 +49,7 @@ public:
 
     PassOwnPtr<ImageBuffer> replay(unsigned fromStep = 0, unsigned toStep = 0) const;
     PassOwnPtr<Timings> profile(unsigned minIterations, double minDuration) const;
+    PassRefPtr<JSONArray> snapshotCommandLog() const;
 
 private:
     friend class GraphicsContextRecorder;

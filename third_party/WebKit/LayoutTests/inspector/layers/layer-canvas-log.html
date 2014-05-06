@@ -1,0 +1,37 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/layers-test.js"></script>
+<script>
+function test()
+{
+    function onSnapshotDone(snapshot)
+    {
+        var wrappedCallback = InspectorBackend.wrapClientCallback(onHistoryReceived, "LayerTreeAgent.snapshotCommandLog(): ");
+        LayerTreeAgent.snapshotCommandLog(snapshot._id, wrappedCallback);
+    }
+
+    function onHistoryReceived(history)
+    {
+        InspectorTest.addResult("Canvas log: ");
+        InspectorTest.addObject(history);
+        InspectorTest.completeTest();
+    }
+
+    function onGotLayers()
+    {
+        var layer = InspectorTest.findLayerByNodeIdAttribute("a");
+        layer.requestSnapshot(onSnapshotDone);
+    }
+
+    WebInspector.inspectorView.showPanel("layers");
+    InspectorTest.requestLayers(onGotLayers);
+}
+</script>
+</head>
+<body onload="runTest()">
+<div id="a" style="-webkit-transform: translateZ(0px); background-color:blue;">
+    <div style="width:50px; height:50px; background-color:red;"></div>
+</div>
+</body>
+</html>

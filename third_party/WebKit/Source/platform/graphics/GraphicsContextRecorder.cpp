@@ -160,6 +160,118 @@ private:
     Vector<double>* m_currentTimings;
 };
 
+class LoggingSnapshotPlayer : public SnapshotPlayer {
+public:
+    LoggingSnapshotPlayer(PassRefPtr<SkPicture> picture, SkCanvas* canvas)
+        : SnapshotPlayer(picture, canvas)
+    {
+    }
+
+    virtual bool abortDrawing() OVERRIDE
+    {
+        return false;
+    }
+};
+
+class LoggingCanvas : public SkCanvas {
+public:
+    LoggingCanvas()
+    {
+        m_log = JSONArray::create();
+    }
+
+    void clear(SkColor) OVERRIDE
+    {
+        addItem("clear");
+    }
+
+    void drawPaint(const SkPaint& paint) OVERRIDE
+    {
+        addItem("drawPaint");
+    }
+
+    void drawPoints(PointMode mode, size_t count, const SkPoint pts[], const SkPaint&) OVERRIDE
+    {
+        addItem("drawPoints");
+    }
+
+    void drawPicture(SkPicture&) OVERRIDE
+    {
+        addItem("drawPicture");
+    }
+
+    void drawRect(const SkRect& rect, const SkPaint& paint) OVERRIDE
+    {
+        addItem("drawRect");
+    }
+
+    void drawOval(const SkRect&, const SkPaint&) OVERRIDE
+    {
+        addItem("drawOval");
+    }
+
+    void drawRRect(const SkRRect&, const SkPaint&) OVERRIDE
+    {
+        addItem("drawRRect");
+    }
+
+    void drawPath(const SkPath& path, const SkPaint&) OVERRIDE
+    {
+        addItem("drawPath");
+    }
+
+    void drawBitmap(const SkBitmap& bitmap, SkScalar left, SkScalar top, const SkPaint*) OVERRIDE
+    {
+        addItem("drawBitmap");
+    }
+
+    void drawBitmapRectToRect(const SkBitmap& bitmap, const SkRect* src, const SkRect& dst, const SkPaint* paint, DrawBitmapRectFlags flags) OVERRIDE
+    {
+        addItem("drawBitmapRectToRect");
+    }
+
+    void drawBitmapMatrix(const SkBitmap& bitmap, const SkMatrix& m, const SkPaint*) OVERRIDE
+    {
+        addItem("drawBitmapMatrix");
+    }
+
+    void drawBitmapNine(const SkBitmap& bitmap, const SkIRect& center, const SkRect& dst, const SkPaint* paint = 0) OVERRIDE
+    {
+        addItem("drawBitmapNine");
+    }
+
+    void drawSprite(const SkBitmap& bitmap, int left, int top, const SkPaint*) OVERRIDE
+    {
+        addItem("drawSprite");
+    }
+
+    void drawVertices(VertexMode vmode, int vertexCount, const SkPoint vertices[], const SkPoint texs[], const SkColor colors[], SkXfermode* xmode,
+        const uint16_t indices[], int indexCount, const SkPaint&) OVERRIDE
+    {
+        addItem("drawVertices");
+    }
+
+    void drawData(const void* data, size_t length) OVERRIDE
+    {
+        addItem("drawData");
+    }
+
+    PassRefPtr<JSONArray> log()
+    {
+        return m_log;
+    }
+
+private:
+    RefPtr<JSONArray> m_log;
+
+    void addItem(const String& name)
+    {
+        RefPtr<JSONObject> item = JSONObject::create();
+        item->setString("name", name);
+        m_log->pushObject(item.release());
+    }
+};
+
 static bool decodeBitmap(const void* data, size_t length, SkBitmap* result)
 {
     RefPtr<SharedBuffer> buffer = SharedBuffer::create(static_cast<const char*>(data), length);
@@ -185,7 +297,6 @@ PassRefPtr<GraphicsContextSnapshot> GraphicsContextSnapshot::load(const char* da
 
 PassOwnPtr<ImageBuffer> GraphicsContextSnapshot::replay(unsigned fromStep, unsigned toStep) const
 {
-
     OwnPtr<ImageBuffer> imageBuffer = createImageBuffer();
     FragmentSnapshotPlayer player(m_picture, imageBuffer->context()->canvas());
     player.play(fromStep, toStep);
@@ -204,6 +315,14 @@ PassOwnPtr<GraphicsContextSnapshot::Timings> GraphicsContextSnapshot::profile(un
 PassOwnPtr<ImageBuffer> GraphicsContextSnapshot::createImageBuffer() const
 {
     return ImageBuffer::create(IntSize(m_picture->width(), m_picture->height()), m_isCertainlyOpaque ? Opaque : NonOpaque);
+}
+
+PassRefPtr<JSONArray> GraphicsContextSnapshot::snapshotCommandLog() const
+{
+    LoggingCanvas canvas;
+    FragmentSnapshotPlayer player(m_picture, &canvas);
+    player.play(0, 0);
+    return canvas.log();
 }
 
 }

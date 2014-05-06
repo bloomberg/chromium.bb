@@ -382,6 +382,14 @@ void InspectorLayerTreeAgent::profileSnapshot(ErrorString* errorString, const St
     }
 }
 
+void InspectorLayerTreeAgent::snapshotCommandLog(ErrorString* errorString, const String& snapshotId, RefPtr<TypeBuilder::Array<JSONObject> >& commandLog)
+{
+    const GraphicsContextSnapshot* snapshot = snapshotById(errorString, snapshotId);
+    if (!snapshot)
+        return;
+    commandLog = TypeBuilder::Array<JSONObject>::runtimeCast(snapshot->snapshotCommandLog());
+}
+
 void InspectorLayerTreeAgent::willAddPageOverlay(const GraphicsLayer* layer)
 {
     m_pageOverlayLayerIds.append(layer->platformLayer()->id());
