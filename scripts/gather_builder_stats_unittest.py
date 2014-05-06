@@ -133,5 +133,27 @@ class TestCLActionLogic(unittest.TestCase):
       self.maxDiff = None
       self.assertEqual(summary, expected)
 
+  def testProcessBlameString(self):
+    """Tests that bug and CL links are correctly parsed."""
+    blame = ('some words then crbug.com/1234, then other junk and '
+             'https://code.google.com/p/chromium/issues/detail?id=4321 '
+             'then some stuff and other stuff and b/2345 and also '
+             'https://b.corp.google.com/issue?id=5432&query=5432 '
+             'and then some crosreview.com/3456 or some '
+             'https://chromium-review.googlesource.com/#/c/6543/ and '
+             'then crosreview.com/i/9876 followed by '
+             'https://chrome-internal-review.googlesource.com/#/c/6789/')
+    expected = ['crbug.com/1234',
+                'crbug.com/4321',
+                'b/2345',
+                'b/5432',
+                'crosreview.com/3456',
+                'crosreview.com/6543',
+                'crosreview.com/i/9876',
+                'crosreview.com/i/6789']
+    self.assertEqual(gather_builder_stats.CLStats.ProcessBlameString(blame),
+                     expected)
+
+
 if __name__ == '__main__':
   cros_test_lib.main()

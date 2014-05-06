@@ -816,6 +816,55 @@ class CLStats(StatsManager):
       else:
         self.reasons[b.build_number] = str(row[ss_failure_category])
 
+  @staticmethod
+  def ProcessBlameString(blame_string):
+    """Parse a human-created |blame_string| from the spreadsheet.
+
+    Returns:
+      A list of canonicalized URLs for bugs or CLs that appear in the blame
+      string. Canonicalized form will be 'crbug.com/1234',
+      'crosreview.com/1234', 'b/1234', or 'crosreview.com/i/1234' as
+      applicable.
+    """
+    urls = []
+    tokens = blame_string.split()
+
+    # Format to generate the regex patterns. Matches one of provided domain
+    # names, followed by lazy wildcard, followed by greedy digit wildcard,
+    # followed by optional slash and optional comma.
+    general_regex = r'^.*(%s).*?([0-9]+)/?,?$'
+
+    crbug = general_regex % 'crbug.com|code.google.com'
+    internal_review = (general_regex %
+        'chrome-internal-review.googlesource.com|crosreview.com/i')
+    external_review = (general_regex %
+        'crosreview.com|chromium-review.googlesource.com')
+
+    # Buganizer regex is different, as buganizer urls do not end with the bug
+    # number.
+    buganizer = r'^.*(b/|b.corp.google.com/issue\?id=)([0-9]+).*$'
+
+    # Patterns need to be tried in a specific order -- internal review needs
+    # to be tried before external review, otherwise urls like crosreview.com/i
+    # will be incorrectly parsed as external.
+    patterns = [crbug,
+                internal_review,
+                external_review,
+                buganizer]
+    url_patterns = ['crbug.com/',
+                    'crosreview.com/i/',
+                    'crosreview.com/',
+                    'b/']
+
+    for t in tokens:
+      for p, u in zip(patterns, url_patterns):
+        m = re.match(p, t)
+        if m:
+          urls.append(u + m.group(2))
+          break
+
+    return urls
+
   def Gather(self, start_date, sort_by_build_number=True,
              starting_build_number=0):
     """Fetches build data and failure reasons.
