@@ -41,6 +41,7 @@
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/ViewportDescription.h"
 #include "core/editing/Editor.h"
 #include "core/editing/UndoStack.h"
 #include "core/events/Event.h"
@@ -964,10 +965,15 @@ bool FrameLoader::checkLoadCompleteForThisFrame()
     m_frame->domWindow()->finishedLoading();
 
     const ResourceError& error = m_documentLoader->mainDocumentError();
-    if (!error.isNull())
+    if (!error.isNull()) {
         m_client->dispatchDidFailLoad(error);
-    else
+    } else {
+        // Report mobile vs. desktop page statistics. This will only report on Android.
+        if (m_frame->isMainFrame())
+            m_frame->document()->viewportDescription().reportMobilePageStats(m_frame);
+
         m_client->dispatchDidFinishLoad();
+    }
     m_loadType = FrameLoadTypeStandard;
     return true;
 }

@@ -28,6 +28,14 @@
 #include "config.h"
 #include "core/dom/ViewportDescription.h"
 
+#include "core/dom/Document.h"
+#include "core/frame/FrameHost.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
+#include "platform/weborigin/KURL.h"
+#include "public/platform/Platform.h"
+
 using namespace std;
 
 namespace WebCore {
@@ -192,6 +200,65 @@ PageScaleConstraints ViewportDescription::resolve(const FloatSize& initialViewpo
     result.layoutSize.setWidth(resultWidth);
     result.layoutSize.setHeight(resultHeight);
     return result;
+}
+
+void ViewportDescription::reportMobilePageStats(const LocalFrame* mainFrame) const
+{
+#if OS(ANDROID)
+    enum ViewportUMAType {
+        NoViewportTag,
+        DeviceWidth,
+        ConstantWidth,
+        MetaWidthOther,
+        MetaHandheldFriendly,
+        MetaMobileOptimized,
+        XhtmlMobileProfile,
+        TypeCount
+    };
+
+    if (!mainFrame || !mainFrame->host() || !mainFrame->view() || !mainFrame->document())
+        return;
+
+    // Avoid chrome:// pages like the new-tab page (on Android new tab is non-http).
+    if (!mainFrame->document()->url().protocolIsInHTTPFamily())
+        return;
+
+    if (!isSpecifiedByAuthor()) {
+        if (mainFrame->document()->isMobileDocument())
+            blink::Platform::current()->histogramEnumeration("Viewport.MetaTagType", XhtmlMobileProfile, TypeCount);
+        else
+            blink::Platform::current()->histogramEnumeration("Viewport.MetaTagType", NoViewportTag, TypeCount);
+
+        return;
+    }
+
+    if (isMetaViewportType()) {
+        if (maxWidth.type() == WebCore::Fixed) {
+            blink::Platform::current()->histogramEnumeration("Viewport.MetaTagType", ConstantWidth, TypeCount);
+
+            if (mainFrame->view()) {
+                // To get an idea of how "far" the viewport is from the device's ideal width, we
+                // report the zoom level that we'd need to be at for the entire page to be visible.
+                int viewportWidth = maxWidth.intValue();
+                int windowWidth = mainFrame->document()->settings()->pinchVirtualViewportEnabled()
+                    ? mainFrame->host()->pinchViewport().size().width()
+                    : mainFrame->view()->frameRect().width();
+                int overviewZoomPercent = 100 * windowWidth / static_cast<float>(viewportWidth);
+                blink::Platform::current()->histogramSparse("Viewport.OverviewZoom", overviewZoomPercent);
+            }
+
+        } else if (maxWidth.type() == WebCore::DeviceWidth || maxWidth.type() == WebCore::ExtendToZoom) {
+            blink::Platform::current()->histogramEnumeration("Viewport.MetaTagType", DeviceWidth, TypeCount);
+        } else {
+            // Overflow bucket for cases we may be unaware of.
+            blink::Platform::current()->histogramEnumeration("Viewport.MetaTagType", MetaWidthOther, TypeCount);
+        }
+    } else if (type == ViewportDescription::HandheldFriendlyMeta) {
+        blink::Platform::current()->histogramEnumeration("Viewport.MetaTagType", MetaHandheldFriendly, TypeCount);
+    } else if (type == ViewportDescription::MobileOptimizedMeta) {
+        blink::Platform::current()->histogramEnumeration("Viewport.MetaTagType", MobileOptimizedMeta, TypeCount);
+    }
+#endif
 }
 
 } // namespace WebCore
