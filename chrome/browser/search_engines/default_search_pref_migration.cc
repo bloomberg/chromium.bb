@@ -17,11 +17,13 @@
 namespace {
 
 void MigrateDefaultSearchPref(PrefService* pref_service) {
-  DefaultSearchManager default_search_manager(pref_service);
+  DefaultSearchManager default_search_manager(
+      pref_service, DefaultSearchManager::ObserverCallback());
 
-  TemplateURLData modern_user_dse;
-  if (default_search_manager.GetDefaultSearchEngine(&modern_user_dse))
+  if (default_search_manager.GetDefaultSearchEngineSource() ==
+      DefaultSearchManager::FROM_USER) {
     return;
+  }
 
   scoped_ptr<TemplateURLData> legacy_dse_from_prefs;
   bool legacy_is_managed = false;

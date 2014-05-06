@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_SEARCH_ENGINES_DEFAULT_SEARCH_MANAGER_H_
 #define CHROME_BROWSER_SEARCH_ENGINES_DEFAULT_SEARCH_MANAGER_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/prefs/pref_change_registrar.h"
 
 namespace base {
 class DictionaryValue;
@@ -21,9 +24,10 @@ struct TemplateURLData;
 
 // DefaultSearchManager handles the loading and writing of the user's default
 // search engine selection to and from prefs.
-
 class DefaultSearchManager {
  public:
+  static const char kDefaultSearchProviderDataPrefName[];
+
   static const char kID[];
   static const char kShortName[];
   static const char kKeyword[];
@@ -55,7 +59,18 @@ class DefaultSearchManager {
   static const char kCreatedByPolicy[];
   static const char kDisabledByPolicy[];
 
-  explicit DefaultSearchManager(PrefService* pref_service);
+  enum Source {
+    FROM_FALLBACK = 0,
+    FROM_USER,
+    FROM_EXTENSION,
+    FROM_POLICY,
+  };
+
+  typedef base::Callback<void(const TemplateURLData*, Source)> ObserverCallback;
+
+  DefaultSearchManager(PrefService* pref_service,
+                       const ObserverCallback& change_observer);
+
   ~DefaultSearchManager();
 
   // Register prefs needed for tracking the default search provider.
@@ -65,17 +80,78 @@ class DefaultSearchManager {
   static void AddPrefValueToMap(base::DictionaryValue* value,
                                 PrefValueMap* pref_value_map);
 
-  // Read default search provider data from |pref_service_|.
-  bool GetDefaultSearchEngine(TemplateURLData* url);
+  // Gets a pointer to the current Default Search Engine. If NULL, indicates
+  // that Default Search is explicitly disabled. |source|, if not NULL, will be
+  // filled in with the source of the result.
+  TemplateURLData* GetDefaultSearchEngine(Source* source) const;
+
+  // Gets the source of the current Default Search Engine value.
+  Source GetDefaultSearchEngineSource() const;
 
   // Write default search provider data to |pref_service_|.
   void SetUserSelectedDefaultSearchEngine(const TemplateURLData& data);
 
-  // Clear the user's default search provider choice from |pref_service_|.
+  // Override the default search provider with an extension.
+  void SetExtensionControlledDefaultSearchEngine(const TemplateURLData& data);
+
+  // Clear the extension-provided default search engine. Does not explicitly
+  // disable Default Search. The new current default search engine will be
+  // defined by policy, extensions, or pre-populated data.
+  void ClearExtensionControlledDefaultSearchEngine();
+
+  // Clear the user's default search provider choice from |pref_service_|. Does
+  // not explicitly disable Default Search. The new default search
+  // engine will be defined by policy, extensions, or pre-populated data.
   void ClearUserSelectedDefaultSearchEngine();
 
  private:
+  // Handles changes to kDefaultSearchProviderData pref. This includes sync and
+  // policy changes. Calls LoadDefaultSearchEngineFromPrefs() and
+  // NotifyObserver() if the effective DSE might have changed.
+  void OnDefaultSearchPrefChanged();
+
+  // Handles changes to kSearchProviderOverrides pref. Calls
+  // LoadPrepopulatedDefaultSearch() and NotifyObserver() if the effective DSE
+  // might have changed.
+  void OnOverridesPrefChanged();
+
+  // Updates |prefs_default_search_| with values from its corresponding
+  // pre-populated search provider record, if any.
+  void MergePrefsDataWithPrepopulated();
+
+  // Reads default search provider data from |pref_service_|, updating
+  // |prefs_default_search_| and |default_search_controlled_by_policy_|.
+  // Invokes MergePrefsDataWithPrepopulated().
+  void LoadDefaultSearchEngineFromPrefs();
+
+  // Reads pre-populated search providers, which will be built-in or overridden
+  // by kSearchProviderOverrides. Updates |fallback_default_search_|. Invoke
+  // MergePrefsDataWithPrepopulated().
+  void LoadPrepopulatedDefaultSearch();
+
+  // Invokes |change_observer_| if it is not NULL.
+  void NotifyObserver();
+
   PrefService* pref_service_;
+  const ObserverCallback change_observer_;
+  PrefChangeRegistrar pref_change_registrar_;
+
+  // Default search engine provided by pre-populated data or by the
+  // |kSearchProviderOverrides| pref. This will be used when no other default
+  // search engine has been selected.
+  scoped_ptr<TemplateURLData> fallback_default_search_;
+
+  // Default search engine provided by prefs (either user prefs or policy
+  // prefs). This will be null if no value was set in the pref store.
+  scoped_ptr<TemplateURLData> extension_default_search_;
+
+  // Default search engine provided by extension (usings Settings Override API).
+  // This will be null if there are no extensions installed which provide
+  // default search engines.
+  scoped_ptr<TemplateURLData> prefs_default_search_;
+
+  // True if the default search is currently enforced by policy.
+  bool default_search_controlled_by_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultSearchManager);
 };

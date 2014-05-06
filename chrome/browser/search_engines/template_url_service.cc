@@ -290,7 +290,9 @@ TemplateURLService::TemplateURLService(Profile* profile)
       processing_syncer_changes_(false),
       pending_synced_default_search_(false),
       dsp_change_origin_(DSP_CHANGE_OTHER),
-      default_search_manager_(new DefaultSearchManager(GetPrefs())) {
+      default_search_manager_(
+          new DefaultSearchManager(GetPrefs(),
+                                   DefaultSearchManager::ObserverCallback())) {
   DCHECK(profile_);
   Init(NULL, 0);
 }

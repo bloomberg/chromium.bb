@@ -72,12 +72,13 @@ TEST_F(DefaultSearchPrefMigrationTest, MigrateUserSelectedValue) {
       test_util()->profile()->GetPrefs());
 
   // Test that it was migrated.
-  TemplateURLData modern_default;
-  ASSERT_TRUE(DefaultSearchManager(test_util()->profile()->GetPrefs())
-                  .GetDefaultSearchEngine(&modern_default));
-  EXPECT_EQ(t_url->short_name(), modern_default.short_name);
-  EXPECT_EQ(t_url->keyword(), modern_default.keyword());
-  EXPECT_EQ(t_url->url(), modern_default.url());
+  DefaultSearchManager manager(test_util()->profile()->GetPrefs(),
+                               DefaultSearchManager::ObserverCallback());
+  TemplateURLData* modern_default = manager.GetDefaultSearchEngine(NULL);
+  ASSERT_TRUE(modern_default);
+  EXPECT_EQ(t_url->short_name(), modern_default->short_name);
+  EXPECT_EQ(t_url->keyword(), modern_default->keyword());
+  EXPECT_EQ(t_url->url(), modern_default->url());
 }
 
 TEST_F(DefaultSearchPrefMigrationTest, ModernValuePresent) {
@@ -90,7 +91,8 @@ TEST_F(DefaultSearchPrefMigrationTest, ModernValuePresent) {
       t_url.get(), test_util()->profile()->GetPrefs());
 
   // Store another value in the modern location.
-  DefaultSearchManager(test_util()->profile()->GetPrefs())
+  DefaultSearchManager(test_util()->profile()->GetPrefs(),
+                       DefaultSearchManager::ObserverCallback())
       .SetUserSelectedDefaultSearchEngine(t_url2->data());
 
   // Run the migration.
@@ -98,12 +100,13 @@ TEST_F(DefaultSearchPrefMigrationTest, ModernValuePresent) {
       test_util()->profile()->GetPrefs());
 
   // Test that no migration occurred. The modern value is left intact.
-  TemplateURLData modern_default;
-  ASSERT_TRUE(DefaultSearchManager(test_util()->profile()->GetPrefs())
-                  .GetDefaultSearchEngine(&modern_default));
-  EXPECT_EQ(t_url2->short_name(), modern_default.short_name);
-  EXPECT_EQ(t_url2->keyword(), modern_default.keyword());
-  EXPECT_EQ(t_url2->url(), modern_default.url());
+  DefaultSearchManager manager(test_util()->profile()->GetPrefs(),
+                               DefaultSearchManager::ObserverCallback());
+  TemplateURLData* modern_default = manager.GetDefaultSearchEngine(NULL);
+  ASSERT_TRUE(modern_default);
+  EXPECT_EQ(t_url2->short_name(), modern_default->short_name);
+  EXPECT_EQ(t_url2->keyword(), modern_default->keyword());
+  EXPECT_EQ(t_url2->url(), modern_default->url());
 }
 
 TEST_F(DefaultSearchPrefMigrationTest,
@@ -124,9 +127,10 @@ TEST_F(DefaultSearchPrefMigrationTest,
       test_util()->profile()->GetPrefs());
 
   // Test that the legacy value is not migrated, as it is not user-selected.
-  TemplateURLData modern_default;
-  ASSERT_FALSE(DefaultSearchManager(test_util()->profile()->GetPrefs())
-                   .GetDefaultSearchEngine(&modern_default));
+  ASSERT_EQ(DefaultSearchManager::FROM_FALLBACK,
+            DefaultSearchManager(test_util()->profile()->GetPrefs(),
+                                 DefaultSearchManager::ObserverCallback())
+                .GetDefaultSearchEngineSource());
 }
 
 TEST_F(DefaultSearchPrefMigrationTest, ManagedValueIsNotMigrated) {
@@ -164,8 +168,13 @@ TEST_F(DefaultSearchPrefMigrationTest, ManagedValueIsNotMigrated) {
   ConfigureDefaultSearchPrefMigrationToDictionaryValue(
       test_util()->profile()->GetPrefs());
 
+  // TODO(caitkp/erikwright): Look into loading policy values in tests. In
+  // practice, the DefaultSearchEngineSource() would be FROM_POLICY in this
+  // case, but since we are not loading the policy here, it will be
+  // FROM_FALLBACK instead.
   // Test that the policy-defined value is not migrated.
-  TemplateURLData modern_default;
-  ASSERT_FALSE(DefaultSearchManager(test_util()->profile()->GetPrefs())
-                   .GetDefaultSearchEngine(&modern_default));
+  ASSERT_EQ(DefaultSearchManager::FROM_FALLBACK,
+            DefaultSearchManager(test_util()->profile()->GetPrefs(),
+                                 DefaultSearchManager::ObserverCallback())
+                .GetDefaultSearchEngineSource());
 }
