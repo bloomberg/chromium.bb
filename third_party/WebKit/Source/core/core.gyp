@@ -570,6 +570,11 @@
       'sources': [
         '<@(webcore_svg_files)',
       ],
+      'conditions': [
+        ['OS=="win" and buildtype=="Official"', {
+          'msvs_shard': 5,
+        }],
+      ],
     },
     {
       'target_name': 'webcore_rendering',
