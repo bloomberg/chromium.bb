@@ -95,11 +95,10 @@ class LogoutButton : public TrayPopupLabelButton {
   virtual ~LogoutButton() {}
 
  private:
-  virtual void Paint(gfx::Canvas* canvas,
-                     const views::CullSet& cull_set) OVERRIDE {
+  virtual void Paint(gfx::Canvas* canvas) OVERRIDE {
     // Just skip paint if this button used as a placeholder.
     if (!placeholder_)
-      TrayPopupLabelButton::Paint(canvas, cull_set);
+      TrayPopupLabelButton::Paint(canvas);
   }
 
   bool placeholder_;

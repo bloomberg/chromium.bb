@@ -38,7 +38,7 @@ void Separator::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_SPLITTER;
 }
 
-void Separator::Paint(gfx::Canvas* canvas, const views::CullSet& cull_set) {
+void Separator::Paint(gfx::Canvas* canvas) {
   canvas->FillRect(bounds(), kDefaultColor);
 }
 

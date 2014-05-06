@@ -656,7 +656,7 @@ void DesktopWindowTreeHostWin::ResetWindowControls() {
 }
 
 void DesktopWindowTreeHostWin::PaintLayeredWindow(gfx::Canvas* canvas) {
-  GetWidget()->GetRootView()->Paint(canvas, views::CullSet());
+  GetWidget()->GetRootView()->Paint(canvas);
 }
 
 gfx::NativeViewAccessible DesktopWindowTreeHostWin::GetNativeViewAccessible() {

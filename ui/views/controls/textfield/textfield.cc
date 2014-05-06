@@ -955,7 +955,7 @@ void Textfield::WriteDragDataForView(View* sender,
   // Desktop Linux Aura does not yet support transparency in drag images.
   canvas->DrawColor(background);
 #endif
-  label.Paint(canvas.get(), views::CullSet());
+  label.Paint(canvas.get());
   const gfx::Vector2d kOffset(-15, 0);
   drag_utils::SetDragImageOnDataObject(*canvas, label.size(), kOffset, data);
   if (controller_)

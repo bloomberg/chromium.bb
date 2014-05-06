@@ -96,8 +96,7 @@ class OmniboxPopupContentsView : public views::View,
   // in an un-conventional way inside OnPaint. We use a separate canvas to
   // paint the children. Hence we override this method to a no-op so that
   // the view hierarchy does not "accidentally" trigger this.
-  virtual void PaintChildren(gfx::Canvas* canvas,
-                             const views::CullSet& cull_set) OVERRIDE;
+  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
 
   scoped_ptr<OmniboxPopupModel> model_;
 

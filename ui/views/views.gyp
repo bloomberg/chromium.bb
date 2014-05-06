@@ -244,8 +244,6 @@
         'corewm/tooltip_controller.h',
         'corewm/tooltip_win.cc',
         'corewm/tooltip_win.h',
-        'cull_set.cc',
-        'cull_set.h',
         'debug_utils.cc',
         'debug_utils.h',
         'drag_controller.h',

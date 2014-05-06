@@ -738,9 +738,8 @@ void BookmarkBarView::ViewHierarchyChanged(
   }
 }
 
-void BookmarkBarView::PaintChildren(gfx::Canvas* canvas,
-                                    const views::CullSet& cull_set) {
-  View::PaintChildren(canvas, cull_set);
+void BookmarkBarView::PaintChildren(gfx::Canvas* canvas) {
+  View::PaintChildren(canvas);
 
   if (drop_info_.get() && drop_info_->valid &&
       drop_info_->location.operation != 0 && drop_info_->location.index != -1 &&

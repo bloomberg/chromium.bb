@@ -692,7 +692,7 @@ void AutofillDialogViews::OverlayView::OnPaint(gfx::Canvas* canvas) {
     canvas->DrawPath(arrow, paint);
   }
 
-  PaintChildren(canvas, views::CullSet());
+  PaintChildren(canvas);
 }
 
 void AutofillDialogViews::OverlayView::OnNativeThemeChanged(
@@ -767,13 +767,11 @@ const char* AutofillDialogViews::NotificationArea::GetClassName() const {
 }
 
 void AutofillDialogViews::NotificationArea::PaintChildren(
-    gfx::Canvas* canvas,
-    const views::CullSet& cull_set) {
-}
+    gfx::Canvas* canvas) {}
 
 void AutofillDialogViews::NotificationArea::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
-  views::View::PaintChildren(canvas, views::CullSet());
+  views::View::PaintChildren(canvas);
 
   if (HasArrow()) {
     DrawArrow(
@@ -1005,10 +1003,7 @@ const char* AutofillDialogViews::SuggestedButton::GetClassName() const {
   return kSuggestedButtonClassName;
 }
 
-void AutofillDialogViews::SuggestedButton::PaintChildren(
-    gfx::Canvas* canvas,
-    const views::CullSet& cull_set) {
-}
+void AutofillDialogViews::SuggestedButton::PaintChildren(gfx::Canvas* canvas) {}
 
 void AutofillDialogViews::SuggestedButton::OnPaint(gfx::Canvas* canvas) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

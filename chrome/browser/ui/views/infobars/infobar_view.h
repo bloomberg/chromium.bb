@@ -122,8 +122,7 @@ class InfoBarView : public infobars::InfoBar,
   // views::View:
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void PaintChildren(gfx::Canvas* canvas,
-                             const views::CullSet& cull_set) OVERRIDE;
+  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
 
   // views::ExternalFocusTracker:
   virtual void OnWillChangeFocus(View* focused_before,

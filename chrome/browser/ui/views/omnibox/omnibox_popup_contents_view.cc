@@ -370,7 +370,7 @@ void OmniboxPopupContentsView::OnGestureEvent(ui::GestureEvent* event) {
 void OmniboxPopupContentsView::PaintResultViews(gfx::Canvas* canvas) {
   canvas->DrawColor(result_view_at(0)->GetColor(
       OmniboxResultView::NORMAL, OmniboxResultView::BACKGROUND));
-  View::PaintChildren(canvas, views::CullSet());
+  View::PaintChildren(canvas);
 }
 
 int OmniboxPopupContentsView::CalculatePopupHeight() {
@@ -433,8 +433,7 @@ void OmniboxPopupContentsView::OnPaint(gfx::Canvas* canvas) {
                        width(), bottom_shadow_->height());
 }
 
-void OmniboxPopupContentsView::PaintChildren(gfx::Canvas* canvas,
-                                             const views::CullSet& cull_set) {
+void OmniboxPopupContentsView::PaintChildren(gfx::Canvas* canvas) {
   // We paint our children inside OnPaint().
 }
 

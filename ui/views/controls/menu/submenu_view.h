@@ -62,8 +62,7 @@ class VIEWS_EXPORT SubmenuView : public PrefixDelegate,
   virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
 
   // Painting.
-  virtual void PaintChildren(gfx::Canvas* canvas,
-                             const views::CullSet& cull_view) OVERRIDE;
+  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
 
   // Drag and drop methods. These are forwarded to the MenuController.
   virtual bool GetDropFormats(
