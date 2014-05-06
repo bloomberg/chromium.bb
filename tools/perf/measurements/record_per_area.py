@@ -4,7 +4,7 @@
 
 import time
 
-from metrics import smoothness
+from measurements import smoothness
 from telemetry.page import page_measurement
 
 class RecordPerArea(page_measurement.PageMeasurement):
@@ -18,7 +18,7 @@ class RecordPerArea(page_measurement.PageMeasurement):
                       '(must be long enought to load all content)')
 
   def CustomizeBrowserOptions(self, options):
-    smoothness.SmoothnessMetrics.CustomizeBrowserOptions(options)
+    smoothness.Smoothness.CustomizeBrowserOptions(options)
     options.AppendExtraBrowserArgs([
         '--enable-impl-side-painting',
         '--force-compositing-mode',
