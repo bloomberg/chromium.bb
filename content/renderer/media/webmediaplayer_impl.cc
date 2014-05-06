@@ -171,12 +171,14 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       supports_save_(true),
       starting_(false),
       chunk_demuxer_(NULL),
-      compositor_(  // Threaded compositing isn't enabled universally yet.
-          (RenderThreadImpl::current()->compositor_message_loop_proxy()
-               ? RenderThreadImpl::current()->compositor_message_loop_proxy()
-               : base::MessageLoopProxy::current()),
+      // Threaded compositing isn't enabled universally yet.
+      compositor_task_runner_(
+          RenderThreadImpl::current()->compositor_message_loop_proxy()
+              ? RenderThreadImpl::current()->compositor_message_loop_proxy()
+              : base::MessageLoopProxy::current()),
+      compositor_(new VideoFrameCompositor(
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNaturalSizeChanged),
-          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnOpacityChanged)),
+          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnOpacityChanged))),
       text_track_index_(0),
       web_cdm_(NULL) {
   media_log_->AddEvent(
@@ -231,6 +233,8 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   pipeline_.Stop(
       base::Bind(&base::WaitableEvent::Signal, base::Unretained(&waiter)));
   waiter.Wait();
+
+  compositor_task_runner_->DeleteSoon(FROM_HERE, compositor_);
 
   // Let V8 know we are not using extra resources anymore.
   if (incremented_externally_allocated_memory_) {
@@ -544,6 +548,7 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
                                const WebRect& rect,
                                unsigned char alpha) {
   DCHECK(main_loop_->BelongsToCurrentThread());
+  TRACE_EVENT0("media", "WebMediaPlayerImpl:paint");
 
   if (!accelerated_compositing_reported_) {
     accelerated_compositing_reported_ = true;
@@ -560,9 +565,9 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
   //   - We haven't reached HAVE_CURRENT_DATA and need to paint black
   //   - We're painting to a canvas
   // See http://crbug.com/341225 http://crbug.com/342621 for details.
-  scoped_refptr<media::VideoFrame> video_frame = compositor_.GetCurrentFrame();
+  scoped_refptr<media::VideoFrame> video_frame =
+      GetCurrentFrameFromCompositor();
 
-  TRACE_EVENT0("media", "WebMediaPlayerImpl:paint");
   gfx::Rect gfx_rect(rect);
   skcanvas_video_renderer_.Paint(video_frame.get(), canvas, gfx_rect, alpha);
 }
@@ -594,14 +599,7 @@ unsigned WebMediaPlayerImpl::droppedFrameCount() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   media::PipelineStatistics stats = pipeline_.GetStatistics();
-
-  unsigned frames_dropped = stats.video_frames_dropped;
-
-  frames_dropped += const_cast<VideoFrameCompositor&>(compositor_)
-                        .GetFramesDroppedBeforeCompositorWasNotified();
-
-  DCHECK_LE(frames_dropped, stats.video_frames_decoded);
-  return frames_dropped;
+  return stats.video_frames_dropped;
 }
 
 unsigned WebMediaPlayerImpl::audioDecodedByteCount() const {
@@ -626,9 +624,10 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
     unsigned int type,
     bool premultiply_alpha,
     bool flip_y) {
-  scoped_refptr<media::VideoFrame> video_frame = compositor_.GetCurrentFrame();
-
   TRACE_EVENT0("media", "WebMediaPlayerImpl:copyVideoTextureToPlatformTexture");
+
+  scoped_refptr<media::VideoFrame> video_frame =
+      GetCurrentFrameFromCompositor();
 
   if (!video_frame)
     return false;
@@ -992,8 +991,8 @@ void WebMediaPlayerImpl::OnPipelineMetadata(
 
   if (hasVideo()) {
     DCHECK(!video_weblayer_);
-    video_weblayer_.reset(new webkit::WebLayerImpl(
-        cc::VideoLayer::Create(compositor_.GetVideoFrameProvider())));
+    video_weblayer_.reset(
+        new webkit::WebLayerImpl(cc::VideoLayer::Create(compositor_)));
     video_weblayer_->setOpaque(opaque_);
     client_->setWebLayer(video_weblayer_.get());
   }
@@ -1310,7 +1309,11 @@ void WebMediaPlayerImpl::OnOpacityChanged(bool opaque) {
 
 void WebMediaPlayerImpl::FrameReady(
     const scoped_refptr<media::VideoFrame>& frame) {
-  compositor_.UpdateCurrentFrame(frame);
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&VideoFrameCompositor::UpdateCurrentFrame,
+                 base::Unretained(compositor_),
+                 frame));
 }
 
 void WebMediaPlayerImpl::SetDecryptorReadyCB(
@@ -1345,6 +1348,34 @@ void WebMediaPlayerImpl::SetDecryptorReadyCB(
   }
 
   decryptor_ready_cb_ = decryptor_ready_cb;
+}
+
+static void GetCurrentFrameAndSignal(
+    VideoFrameCompositor* compositor,
+    scoped_refptr<media::VideoFrame>* video_frame_out,
+    base::WaitableEvent* event) {
+  TRACE_EVENT0("media", "GetCurrentFrameAndSignal");
+  *video_frame_out = compositor->GetCurrentFrame();
+  event->Signal();
+}
+
+scoped_refptr<media::VideoFrame>
+WebMediaPlayerImpl::GetCurrentFrameFromCompositor() {
+  TRACE_EVENT0("media", "WebMediaPlayerImpl::GetCurrentFrameFromCompositor");
+  if (compositor_task_runner_->BelongsToCurrentThread())
+    return compositor_->GetCurrentFrame();
+
+  // Use a posted task and waitable event instead of a lock otherwise
+  // WebGL/Canvas can see different content than what the compositor is seeing.
+  scoped_refptr<media::VideoFrame> video_frame;
+  base::WaitableEvent event(false, false);
+  compositor_task_runner_->PostTask(FROM_HERE,
+                                    base::Bind(&GetCurrentFrameAndSignal,
+                                               base::Unretained(compositor_),
+                                               &video_frame,
+                                               &event));
+  event.Wait();
+  return video_frame;
 }
 
 }  // namespace content

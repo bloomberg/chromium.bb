@@ -7,17 +7,9 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/synchronization/lock.h"
+#include "cc/layers/video_frame_provider.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/size.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
-
-namespace cc {
-class VideoFrameProvider;
-}
 
 namespace media {
 class VideoFrame;
@@ -25,18 +17,17 @@ class VideoFrame;
 
 namespace content {
 
-// VideoFrameCompositor handles incoming frames by notifying the compositor in a
-// thread-safe manner.
+// VideoFrameCompositor handles incoming frames by notifying the compositor and
+// dispatching callbacks when detecting changes in video frames.
 //
-// Typical usage is to deliver the output of VideoRendererImpl to
+// Typical usage is to deliver ready-to-be-displayed video frames to
 // UpdateCurrentFrame() so that VideoFrameCompositor can take care of tracking
-// dropped frames and firing callbacks as needed.
+// changes in video frames and firing callbacks as needed.
 //
-// All APIs are callable from any thread.
-class CONTENT_EXPORT VideoFrameCompositor {
+// VideoFrameCompositor must live on the same thread as the compositor.
+class CONTENT_EXPORT VideoFrameCompositor
+    : NON_EXPORTED_BASE(public cc::VideoFrameProvider) {
  public:
-  // |compositor_task_runner| is the task runner of the compositor.
-  //
   // |natural_size_changed_cb| is run with the new natural size of the video
   // frame whenever a change in natural size is detected. It is not called the
   // first time UpdateCurrentFrame() is called. Run on the same thread as the
@@ -50,33 +41,27 @@ class CONTENT_EXPORT VideoFrameCompositor {
   // respect to why we don't call |natural_size_changed_cb| on the first frame.
   // I suspect it was for historical reasons that no longer make sense.
   VideoFrameCompositor(
-      const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
       const base::Callback<void(gfx::Size)>& natural_size_changed_cb,
       const base::Callback<void(bool)>& opacity_changed_cb);
-  ~VideoFrameCompositor();
+  virtual ~VideoFrameCompositor();
 
-  cc::VideoFrameProvider* GetVideoFrameProvider();
+  // cc::VideoFrameProvider implementation.
+  virtual void SetVideoFrameProviderClient(
+      cc::VideoFrameProvider::Client* client) OVERRIDE;
+  virtual scoped_refptr<media::VideoFrame> GetCurrentFrame() OVERRIDE;
+  virtual void PutCurrentFrame(
+      const scoped_refptr<media::VideoFrame>& frame) OVERRIDE;
 
   // Updates the current frame and notifies the compositor.
   void UpdateCurrentFrame(const scoped_refptr<media::VideoFrame>& frame);
 
-  // Retrieves the last frame set via UpdateCurrentFrame() for non-compositing
-  // purposes (e.g., painting to a canvas).
-  //
-  // Note that the compositor retrieves frames via the cc::VideoFrameProvider
-  // interface instead of using this method.
-  scoped_refptr<media::VideoFrame> GetCurrentFrame();
-
-  // Returns the number of frames dropped before the compositor was notified
-  // of a new frame.
-  uint32 GetFramesDroppedBeforeCompositorWasNotified();
-
-  void SetFramesDroppedBeforeCompositorWasNotifiedForTesting(
-      uint32 dropped_frames);
-
  private:
-  class Internal;
-  Internal* internal_;
+  base::Callback<void(gfx::Size)> natural_size_changed_cb_;
+  base::Callback<void(bool)> opacity_changed_cb_;
+
+  cc::VideoFrameProvider::Client* client_;
+
+  scoped_refptr<media::VideoFrame> current_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameCompositor);
 };
