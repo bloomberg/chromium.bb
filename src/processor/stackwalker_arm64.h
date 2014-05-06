@@ -63,7 +63,9 @@ class StackwalkerARM64 : public Stackwalker {
   // Change the context validity mask of the frame returned by
   // GetContextFrame to VALID. This is only for use by unit tests; the
   // default behavior is correct for all application code.
-  void SetContextFrameValidity(int valid) { context_frame_validity_ = valid; }
+  void SetContextFrameValidity(uint64_t valid) {
+    context_frame_validity_ = valid;
+  }
 
  private:
   // Implementation of Stackwalker, using arm64 context and stack conventions.

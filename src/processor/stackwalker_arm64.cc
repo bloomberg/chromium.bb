@@ -78,8 +78,77 @@ StackFrame* StackwalkerARM64::GetContextFrame() {
 StackFrameARM64* StackwalkerARM64::GetCallerByCFIFrameInfo(
     const vector<StackFrame*> &frames,
     CFIFrameInfo* cfi_frame_info) {
-  // Obtaining the stack frame from CFI info is not yet supported for ARM64.
-  return NULL;
+  StackFrameARM64* last_frame = static_cast<StackFrameARM64*>(frames.back());
+
+  static const char* register_names[] = {
+    "x0",  "x1",  "x2",  "x3",  "x4",  "x5",  "x6",  "x7",
+    "x8",  "x9",  "x10", "x11", "x12", "x13", "x14", "x15",
+    "x16", "x17", "x18", "x19", "x20", "x21", "x22", "x23",
+    "x24", "x25", "x26", "x27", "x28", "x29", "x30", "sp",
+    "pc",  NULL
+  };
+
+  // Populate a dictionary with the valid register values in last_frame.
+  CFIFrameInfo::RegisterValueMap<uint64_t> callee_registers;
+  for (int i = 0; register_names[i]; i++) {
+    if (last_frame->context_validity & StackFrameARM64::RegisterValidFlag(i))
+      callee_registers[register_names[i]] = last_frame->context.iregs[i];
+  }
+
+  // Use the STACK CFI data to recover the caller's register values.
+  CFIFrameInfo::RegisterValueMap<uint64_t> caller_registers;
+  if (!cfi_frame_info->FindCallerRegs(callee_registers, *memory_,
+                                      &caller_registers)) {
+    return NULL;
+  }
+  // Construct a new stack frame given the values the CFI recovered.
+  scoped_ptr<StackFrameARM64> frame(new StackFrameARM64());
+  for (int i = 0; register_names[i]; i++) {
+    CFIFrameInfo::RegisterValueMap<uint64_t>::iterator entry =
+      caller_registers.find(register_names[i]);
+    if (entry != caller_registers.end()) {
+      // We recovered the value of this register; fill the context with the
+      // value from caller_registers.
+      frame->context_validity |= StackFrameARM64::RegisterValidFlag(i);
+      frame->context.iregs[i] = entry->second;
+    } else if (19 <= i && i <= 29 && (last_frame->context_validity &
+                                      StackFrameARM64::RegisterValidFlag(i))) {
+      // If the STACK CFI data doesn't mention some callee-saves register, and
+      // it is valid in the callee, assume the callee has not yet changed it.
+      // Registers r19 through r29 are callee-saves, according to the Procedure
+      // Call Standard for the ARM AARCH64 Architecture, which the Linux ABI
+      // follows.
+      frame->context_validity |= StackFrameARM64::RegisterValidFlag(i);
+      frame->context.iregs[i] = last_frame->context.iregs[i];
+    }
+  }
+  // If the CFI doesn't recover the PC explicitly, then use .ra.
+  if (!(frame->context_validity & StackFrameARM64::CONTEXT_VALID_PC)) {
+    CFIFrameInfo::RegisterValueMap<uint64_t>::iterator entry =
+      caller_registers.find(".ra");
+    if (entry != caller_registers.end()) {
+      frame->context_validity |= StackFrameARM64::CONTEXT_VALID_PC;
+      frame->context.iregs[MD_CONTEXT_ARM64_REG_PC] = entry->second;
+    }
+  }
+  // If the CFI doesn't recover the SP explicitly, then use .cfa.
+  if (!(frame->context_validity & StackFrameARM64::CONTEXT_VALID_SP)) {
+    CFIFrameInfo::RegisterValueMap<uint64_t>::iterator entry =
+      caller_registers.find(".cfa");
+    if (entry != caller_registers.end()) {
+      frame->context_validity |= StackFrameARM64::CONTEXT_VALID_SP;
+      frame->context.iregs[MD_CONTEXT_ARM64_REG_SP] = entry->second;
+    }
+  }
+
+  // If we didn't recover the PC and the SP, then the frame isn't very useful.
+  static const uint64_t essentials = (StackFrameARM64::CONTEXT_VALID_SP
+                                     | StackFrameARM64::CONTEXT_VALID_PC);
+  if ((frame->context_validity & essentials) != essentials)
+    return NULL;
+
+  frame->trust = StackFrame::FRAME_TRUST_CFI;
+  return frame.release();
 }
 
 StackFrameARM64* StackwalkerARM64::GetCallerByStackScan(
