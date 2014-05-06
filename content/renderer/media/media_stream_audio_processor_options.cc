@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/media/media_stream_options.h"
@@ -94,13 +95,18 @@ bool GetPropertyFromConstraints(const MediaConstraintsInterface* constraints,
 }
 
 void EnableEchoCancellation(AudioProcessing* audio_processing) {
-#if defined(OS_ANDROID)
-  // Mobile devices are using AECM.
-  int err = audio_processing->echo_control_mobile()->set_routing_mode(
-      webrtc::EchoControlMobile::kSpeakerphone);
-  err |= audio_processing->echo_control_mobile()->Enable(true);
-  CHECK_EQ(err, 0);
-#else
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("ReplaceAECMWithAEC");
+  if (group_name.empty() || (group_name != "Enabled")) {
+    // Mobile devices are using AECM.
+    int err = audio_processing->echo_control_mobile()->set_routing_mode(
+        webrtc::EchoControlMobile::kSpeakerphone);
+    err |= audio_processing->echo_control_mobile()->Enable(true);
+    CHECK_EQ(err, 0);
+    return;
+  }
+#endif
   int err = audio_processing->echo_cancellation()->set_suppression_level(
       webrtc::EchoCancellation::kHighSuppression);
 
@@ -109,7 +115,6 @@ void EnableEchoCancellation(AudioProcessing* audio_processing) {
   err |= audio_processing->echo_cancellation()->enable_delay_logging(true);
   err |= audio_processing->echo_cancellation()->Enable(true);
   CHECK_EQ(err, 0);
-#endif
 }
 
 void EnableNoiseSuppression(AudioProcessing* audio_processing) {
