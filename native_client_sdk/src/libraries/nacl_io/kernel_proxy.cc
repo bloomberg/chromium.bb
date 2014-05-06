@@ -63,8 +63,6 @@ KernelProxy::~KernelProxy() {
        ++i) {
     delete i->second;
   }
-
-  delete ppapi_;
 }
 
 Error KernelProxy::Init(PepperInterface* ppapi) {

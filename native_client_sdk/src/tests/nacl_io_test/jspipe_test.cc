@@ -27,6 +27,8 @@ namespace {
 
 class JSPipeTest : public ::testing::Test {
  public:
+  JSPipeTest() : fs_(&pepper_) {}
+
   void SetUp() {
     ASSERT_EQ(0, ki_push_state_for_testing());
     ASSERT_EQ(0, ki_init(&kp_));
@@ -40,6 +42,7 @@ class JSPipeTest : public ::testing::Test {
 
  protected:
   KernelProxy kp_;
+  FakePepperInterface pepper_;
   DevFsForTesting fs_;
   ScopedNode pipe_dev_;
 };

@@ -35,19 +35,18 @@ class HostResolverTest : public ::testing::Test {
 
 class FakeHostResolverTest : public ::testing::Test {
  public:
-  FakeHostResolverTest() : pepper_(NULL), fake_resolver_(NULL) {}
+  FakeHostResolverTest() : fake_resolver_(NULL) {}
 
   void SetUp() {
-    pepper_ = new FakePepperInterface();
     fake_resolver_ = static_cast<FakeHostResolverInterface*>(
-        pepper_->GetHostResolverInterface());
+        pepper_.GetHostResolverInterface());
 
     // Seed the fake resolver with some data
     fake_resolver_->fake_hostname = FAKE_HOSTNAME;
     AddFakeAddress(AF_INET);
 
     ASSERT_EQ(0, ki_push_state_for_testing());
-    ASSERT_EQ(0, ki_init_interface(NULL, pepper_));
+    ASSERT_EQ(0, ki_init_interface(NULL, &pepper_));
   }
 
   void AddFakeAddress(int family) {
@@ -72,11 +71,10 @@ class FakeHostResolverTest : public ::testing::Test {
 
   void TearDown() {
     ki_uninit();
-    pepper_ = NULL;
   }
 
  protected:
-  FakePepperInterface* pepper_;
+  FakePepperInterface pepper_;
   FakeHostResolverInterface* fake_resolver_;
 };
 

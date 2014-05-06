@@ -14,15 +14,13 @@
 
 class DevFsForTesting : public nacl_io::DevFs {
  public:
-  DevFsForTesting() {
+  explicit DevFsForTesting(nacl_io::PepperInterface* ppapi) {
     nacl_io::FsInitArgs args(1);
-    args.ppapi = &pepper_;
+    args.ppapi = ppapi;
     Init(args);
   }
 
   int num_nodes() { return (int)inode_pool_.size(); }
- private:
-  FakePepperInterface pepper_;
 };
 
 #endif  // TESTS_NACL_IO_TEST_DEV_FS_FOR_TESTING_H_

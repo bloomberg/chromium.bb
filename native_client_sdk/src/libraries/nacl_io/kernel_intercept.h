@@ -55,8 +55,7 @@ int ki_init_ppapi(void* kernel_proxy,
 
 /*
  * ki_init_interface() is a variant of ki_init() that can be called with
- * a PepperInterface object.  The ownership of this object then passes
- * to nacl_io and it will be deleted on ki_uninit().
+ * a PepperInterface object.
  */
 int ki_init_interface(void* kernel_proxy, void* pepper_interface);
 

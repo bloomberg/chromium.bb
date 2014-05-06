@@ -46,7 +46,6 @@ class KernelProxy : protected KernelObject {
   KernelProxy();
   virtual ~KernelProxy();
 
-  // Takes ownership of |ppapi|.
   // |ppapi| may be NULL. If so, no filesystem that uses pepper calls can be
   // mounted.
   virtual Error Init(PepperInterface* ppapi);

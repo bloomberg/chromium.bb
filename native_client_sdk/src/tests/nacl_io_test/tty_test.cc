@@ -24,31 +24,44 @@ using namespace nacl_io;
 
 namespace {
 
-class TtyTest : public ::testing::Test {
+class TtyNodeTest : public ::testing::Test {
  public:
+  TtyNodeTest() : fs_(&pepper_) {}
+
   void SetUp() {
-    ASSERT_EQ(0, ki_push_state_for_testing());
-    ASSERT_EQ(0, ki_init(&kp_));
     ASSERT_EQ(0, fs_.Access(Path("/tty"), R_OK | W_OK));
     ASSERT_EQ(EACCES, fs_.Access(Path("/tty"), X_OK));
     ASSERT_EQ(0, fs_.Open(Path("/tty"), O_RDWR, &dev_tty_));
     ASSERT_NE(NULL_NODE, dev_tty_.get());
   }
 
-  void TearDown() { ki_uninit(); }
-
  protected:
-  KernelProxy kp_;
+  FakePepperInterface pepper_;
   DevFsForTesting fs_;
   ScopedNode dev_tty_;
 };
 
-TEST_F(TtyTest, InvalidIoctl) {
+class TtyTest : public ::testing::Test {
+ public:
+  void SetUp() {
+    ASSERT_EQ(0, ki_push_state_for_testing());
+    ASSERT_EQ(0, ki_init(&kp_));
+  }
+
+  void TearDown() {
+    ki_uninit();
+  }
+
+ protected:
+  KernelProxy kp_;
+};
+
+TEST_F(TtyNodeTest, InvalidIoctl) {
   // 123 is not a valid ioctl request.
   EXPECT_EQ(EINVAL, dev_tty_->Ioctl(123));
 }
 
-TEST_F(TtyTest, TtyInput) {
+TEST_F(TtyNodeTest, TtyInput) {
   // Now let's try sending some data over.
   // First we create the message.
   std::string message("hello, how are you?\n");
@@ -99,7 +112,7 @@ static ssize_t output_handler(const char* buf, size_t count, void* data) {
   return count;
 }
 
-TEST_F(TtyTest, TtyOutput) {
+TEST_F(TtyNodeTest, TtyOutput) {
   // When no handler is registered then all writes should return EIO
   int bytes_written = 10;
   const char* message = "hello\n";
@@ -245,7 +258,8 @@ static void sighandler(int sig) { g_received_signal = sig; }
 TEST_F(TtyTest, WindowSize) {
   // Get current window size
   struct winsize old_winsize = {0};
-  ASSERT_EQ(0, dev_tty_->Ioctl(TIOCGWINSZ, &old_winsize));
+  int tty_fd = ki_open("/dev/tty", O_RDONLY);
+  ASSERT_EQ(0, ki_ioctl_wrapper(tty_fd, TIOCGWINSZ, &old_winsize));
 
   // Install signal handler
   sighandler_t new_handler = sighandler;
@@ -258,7 +272,7 @@ TEST_F(TtyTest, WindowSize) {
   struct winsize winsize;
   winsize.ws_col = 100;
   winsize.ws_row = 200;
-  EXPECT_EQ(0, dev_tty_->Ioctl(TIOCSWINSZ, &winsize));
+  EXPECT_EQ(0, ki_ioctl_wrapper(tty_fd, TIOCSWINSZ, &winsize));
   EXPECT_EQ(SIGWINCH, g_received_signal);
 
   // Restore old signal handler
@@ -267,12 +281,12 @@ TEST_F(TtyTest, WindowSize) {
   // Verify new window size can be queried correctly.
   winsize.ws_col = 0;
   winsize.ws_row = 0;
-  EXPECT_EQ(0, dev_tty_->Ioctl(TIOCGWINSZ, &winsize));
+  EXPECT_EQ(0, ki_ioctl_wrapper(tty_fd, TIOCGWINSZ, &winsize));
   EXPECT_EQ(100, winsize.ws_col);
   EXPECT_EQ(200, winsize.ws_row);
 
   // Restore original windows size.
-  EXPECT_EQ(0, dev_tty_->Ioctl(TIOCSWINSZ, &old_winsize));
+  EXPECT_EQ(0, ki_ioctl_wrapper(tty_fd, TIOCSWINSZ, &old_winsize));
 }
 
 /*
@@ -343,7 +357,7 @@ TEST_F(TtyTest, InputDuringSelect) {
   FD_SET(tty_fd, &errorfds);
 
   pthread_t resize_thread;
-  pthread_create(&resize_thread, NULL, input_thread_main, &dev_tty_);
+  pthread_create(&resize_thread, NULL, input_thread_main, NULL);
 
   struct timeval timeout;
   timeout.tv_sec = 20;

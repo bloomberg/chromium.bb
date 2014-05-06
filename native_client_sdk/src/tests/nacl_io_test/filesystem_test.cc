@@ -270,7 +270,8 @@ TEST(FilesystemTest, MemFsRenameDir) {
 
 TEST(FilesystemTest, DevAccess) {
   // Should not be able to open non-existent file.
-  DevFsForTesting fs;
+  FakePepperInterface pepper;
+  DevFsForTesting fs(&pepper);
   ScopedNode invalid_node, valid_node;
   ASSERT_EQ(ENOENT, fs.Access(Path("/foo"), F_OK));
   // Creating non-existent file should return EACCES
@@ -290,7 +291,8 @@ TEST(FilesystemTest, DevAccess) {
 }
 
 TEST(FilesystemTest, DevNull) {
-  DevFsForTesting fs;
+  FakePepperInterface pepper;
+  DevFsForTesting fs(&pepper);
   ScopedNode dev_null;
   int result_bytes = 0;
 
@@ -313,7 +315,8 @@ TEST(FilesystemTest, DevNull) {
 }
 
 TEST(FilesystemTest, DevZero) {
-  DevFsForTesting fs;
+  FakePepperInterface pepper;
+  DevFsForTesting fs(&pepper);
   ScopedNode dev_zero;
   int result_bytes = 0;
 
@@ -343,7 +346,8 @@ TEST(FilesystemTest, DevZero) {
 
 // Disabled due to intermittent failures on linux: http://crbug.com/257257
 TEST(FilesystemTest, DISABLED_DevUrandom) {
-  DevFsForTesting fs;
+  FakePepperInterface pepper;
+  DevFsForTesting fs(&pepper);
   ScopedNode dev_urandom;
   int result_bytes = 0;
 
