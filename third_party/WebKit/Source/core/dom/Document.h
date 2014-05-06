@@ -1190,7 +1190,7 @@ private:
     DOMWindow* m_domWindow;
     HTMLImportsController* m_importsController;
 
-    RefPtr<ResourceFetcher> m_fetcher;
+    RefPtrWillBeMember<ResourceFetcher> m_fetcher;
     RefPtr<DocumentParser> m_parser;
     unsigned m_activeParserCount;
     RefPtrWillBeMember<ContextFeatures> m_contextFeatures;

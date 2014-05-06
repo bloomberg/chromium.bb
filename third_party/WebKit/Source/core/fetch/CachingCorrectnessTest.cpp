@@ -175,7 +175,7 @@ private:
     RefPtr<DocumentLoader> m_documentLoader;
 
     RefPtr<HTMLDocument> m_document;
-    RefPtr<ResourceFetcher> m_fetcher;
+    RefPtrWillBePersistent<ResourceFetcher> m_fetcher;
 };
 
 TEST_F(CachingCorrectnessTest, FreshFromLastModified)

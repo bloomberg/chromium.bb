@@ -52,17 +52,28 @@ FontLoader::FontLoader(ResourceFetcher* resourceFetcher)
 {
 }
 
+FontLoader::~FontLoader()
+{
+#if ENABLE(OILPAN)
+    if (!m_resourceFetcher) {
+        ASSERT(m_fontsToBeginLoading.isEmpty());
+        return;
+    }
+    m_beginLoadingTimer.stop();
+
+    // When the m_fontsToBeginLoading vector is destroyed it will decrement the
+    // request counts on the ResourceFetcher for all the fonts that were pending
+    // at the time the FontLoader dies.
+#endif
+}
+
 void FontLoader::addFontToBeginLoading(FontResource* fontResource)
 {
     if (!m_resourceFetcher || !fontResource->stillNeedsLoad())
         return;
 
-    m_fontsToBeginLoading.append(fontResource);
-    // FIXME: Use RequestCountTracker??!!
-    // Increment the request count now, in order to prevent didFinishLoad from being dispatched
-    // after this font has been requested but before it began loading. Balanced by
-    // decrementRequestCount() in beginLoadTimerFired() and in clearDocument().
-    m_resourceFetcher->incrementRequestCount(fontResource);
+    m_fontsToBeginLoading.append(
+        std::make_pair(fontResource, ResourceLoader::RequestCountTracker(m_resourceFetcher, fontResource)));
     m_beginLoadingTimer.startOneShot(0, FROM_HERE);
 }
 
@@ -75,16 +86,19 @@ void FontLoader::loadPendingFonts()
 {
     ASSERT(m_resourceFetcher);
 
-    Vector<ResourcePtr<FontResource> > fontsToBeginLoading;
+    FontsToLoadVector fontsToBeginLoading;
     fontsToBeginLoading.swap(m_fontsToBeginLoading);
-
-    for (size_t i = 0; i < fontsToBeginLoading.size(); ++i) {
-        fontsToBeginLoading[i]->beginLoadIfNeeded(m_resourceFetcher);
-        // Balances incrementRequestCount() in beginLoadingFontSoon().
-        m_resourceFetcher->decrementRequestCount(fontsToBeginLoading[i].get());
+    for (FontsToLoadVector::iterator it = fontsToBeginLoading.begin(); it != fontsToBeginLoading.end(); ++it) {
+        FontResource* fontResource = it->first.get();
+        fontResource->beginLoadIfNeeded(m_resourceFetcher);
     }
+
+    // When the local fontsToBeginLoading vector goes out of scope it will
+    // decrement the request counts on the ResourceFetcher for all the fonts
+    // that were just loaded.
 }
 
+#if !ENABLE(OILPAN)
 void FontLoader::clearResourceFetcher()
 {
     if (!m_resourceFetcher) {
@@ -93,14 +107,14 @@ void FontLoader::clearResourceFetcher()
     }
 
     m_beginLoadingTimer.stop();
-
-    for (size_t i = 0; i < m_fontsToBeginLoading.size(); ++i) {
-        // Balances incrementRequestCount() in beginLoadingFontSoon().
-        m_resourceFetcher->decrementRequestCount(m_fontsToBeginLoading[i].get());
-    }
-
     m_fontsToBeginLoading.clear();
-    m_resourceFetcher = 0;
+    m_resourceFetcher = nullptr;
+}
+#endif
+
+void FontLoader::trace(Visitor* visitor)
+{
+    visitor->trace(m_resourceFetcher);
 }
 
 CSSFontSelector::CSSFontSelector(Document* document)
@@ -120,8 +134,8 @@ CSSFontSelector::CSSFontSelector(Document* document)
 
 CSSFontSelector::~CSSFontSelector()
 {
-    clearDocument();
 #if !ENABLE(OILPAN)
+    clearDocument();
     FontCache::fontCache()->removeClient(this);
 #endif
 }
@@ -207,11 +221,13 @@ void CSSFontSelector::willUseFontData(const FontDescription& fontDescription, co
         face->willUseFontData(fontDescription);
 }
 
+#if !ENABLE(OILPAN)
 void CSSFontSelector::clearDocument()
 {
     m_fontLoader.clearResourceFetcher();
-    m_document = 0;
+    m_document = nullptr;
 }
+#endif
 
 void CSSFontSelector::beginLoadingFontSoon(FontResource* font)
 {
@@ -231,6 +247,7 @@ void CSSFontSelector::updateGenericFontFamilySettings(Document& document)
 
 void CSSFontSelector::trace(Visitor* visitor)
 {
+    visitor->trace(m_document);
     visitor->trace(m_fontFaceCache);
     visitor->trace(m_clients);
     visitor->trace(m_fontLoader);

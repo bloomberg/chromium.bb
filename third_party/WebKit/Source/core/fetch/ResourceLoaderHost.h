@@ -45,11 +45,8 @@ class ResourceResponse;
 
 struct FetchInitiatorInfo;
 
-class ResourceLoaderHost {
+class ResourceLoaderHost : public WillBeGarbageCollectedMixin {
 public:
-    void ref() { refResourceLoaderHost(); }
-    void deref() { derefResourceLoaderHost(); }
-
     virtual void incrementRequestCount(const Resource*) = 0;
     virtual void decrementRequestCount(const Resource*) = 0;
     virtual void didLoadResource(Resource*) = 0;
@@ -74,8 +71,15 @@ public:
     virtual bool defersLoading() const = 0;
     virtual bool isLoadedBy(ResourceLoaderHost*) const = 0;
 
+    virtual void trace(Visitor*) { }
+
+#if !ENABLE(OILPAN)
     virtual void refResourceLoaderHost() = 0;
     virtual void derefResourceLoaderHost() = 0;
+
+    void ref() { refResourceLoaderHost(); }
+    void deref() { derefResourceLoaderHost(); }
+#endif
 };
 
 }

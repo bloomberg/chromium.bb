@@ -89,6 +89,16 @@ public:
     bool reachedTerminalState() const { return m_state == Terminated; }
     const ResourceRequest& request() const { return m_request; }
 
+    class RequestCountTracker {
+    public:
+        RequestCountTracker(ResourceLoaderHost*, Resource*);
+        RequestCountTracker(const RequestCountTracker&);
+        ~RequestCountTracker();
+    private:
+        ResourceLoaderHost* m_host;
+        Resource* m_resource;
+    };
+
 private:
     ResourceLoader(ResourceLoaderHost*, Resource*, const ResourceLoaderOptions&);
 
@@ -102,7 +112,7 @@ private:
     ResourceRequest& applyOptions(ResourceRequest&) const;
 
     OwnPtr<blink::WebURLLoader> m_loader;
-    RefPtr<ResourceLoaderHost> m_host;
+    RefPtrWillBePersistent<ResourceLoaderHost> m_host;
 
     ResourceRequest m_request;
     ResourceRequest m_originalRequest; // Before redirects.
@@ -127,15 +137,6 @@ private:
         ConnectionStateFinishedLoading,
         ConnectionStateCanceled,
         ConnectionStateFailed,
-    };
-
-    class RequestCountTracker {
-    public:
-        RequestCountTracker(ResourceLoaderHost*, Resource*);
-        ~RequestCountTracker();
-    private:
-        ResourceLoaderHost* m_host;
-        Resource* m_resource;
     };
 
     Resource* m_resource;

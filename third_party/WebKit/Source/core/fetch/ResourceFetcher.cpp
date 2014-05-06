@@ -227,7 +227,7 @@ static ResourceRequest::TargetType requestTargetType(const ResourceFetcher* fetc
 }
 
 ResourceFetcher::ResourceFetcher(DocumentLoader* documentLoader)
-    : m_document(0)
+    : m_document(nullptr)
     , m_documentLoader(documentLoader)
     , m_requestCount(0)
     , m_garbageCollectDocumentResourcesTimer(this, &ResourceFetcher::garbageCollectDocumentResourcesTimerFired)
@@ -241,7 +241,7 @@ ResourceFetcher::ResourceFetcher(DocumentLoader* documentLoader)
 ResourceFetcher::~ResourceFetcher()
 {
     m_documentLoader = 0;
-    m_document = 0;
+    m_document = nullptr;
 
     clearPreloads();
 
@@ -1078,7 +1078,7 @@ void ResourceFetcher::redirectReceived(Resource* resource, const ResourceRespons
 void ResourceFetcher::didLoadResource(Resource* resource)
 {
     RefPtr<DocumentLoader> protectDocumentLoader(m_documentLoader);
-    RefPtr<Document> protectDocument(m_document);
+    RefPtrWillBeRawPtr<Document> protectDocument(m_document.get());
 
     if (resource && resource->response().isHTTP() && ((!resource->errorOccurred() && !resource->wasCanceled()) || resource->response().httpStatusCode() == 304) && document()) {
         ResourceTimingInfoMap::iterator it = m_resourceTimingInfoMap.find(resource);
@@ -1350,6 +1350,7 @@ bool ResourceFetcher::canAccessRedirect(Resource* resource, ResourceRequest& req
     return true;
 }
 
+#if !ENABLE(OILPAN)
 void ResourceFetcher::refResourceLoaderHost()
 {
     ref();
@@ -1359,6 +1360,7 @@ void ResourceFetcher::derefResourceLoaderHost()
 {
     deref();
 }
+#endif
 
 #if PRELOAD_DEBUG
 void ResourceFetcher::printPreloadStats()
@@ -1449,6 +1451,12 @@ void ResourceFetcher::DeadResourceStatsRecorder::update(RevalidationPolicy polic
         ++m_useCount;
         return;
     }
+}
+
+void ResourceFetcher::trace(Visitor* visitor)
+{
+    visitor->trace(m_document);
+    ResourceLoaderHost::trace(visitor);
 }
 
 }

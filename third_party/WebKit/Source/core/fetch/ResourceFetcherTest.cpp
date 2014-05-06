@@ -53,7 +53,7 @@ TEST(ResourceFetcherTest, StartLoadAfterFrameDetach)
     // any attach occurs), but ResourceFetcher can't tell the difference.
     RefPtr<DocumentLoader> documentLoader = DocumentLoader::create(0, ResourceRequest(testURL), SubstituteData());
     RefPtr<HTMLDocument> document = HTMLDocument::create();
-    RefPtr<ResourceFetcher> fetcher(documentLoader->fetcher());
+    RefPtrWillBeRawPtr<ResourceFetcher> fetcher(documentLoader->fetcher());
     fetcher->setDocument(document.get());
     EXPECT_EQ(fetcher->frame(), static_cast<LocalFrame*>(0));
 

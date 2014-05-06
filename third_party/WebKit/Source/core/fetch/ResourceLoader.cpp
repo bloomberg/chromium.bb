@@ -61,6 +61,13 @@ ResourceLoader::RequestCountTracker::~RequestCountTracker()
     m_host->decrementRequestCount(m_resource);
 }
 
+ResourceLoader::RequestCountTracker::RequestCountTracker(const RequestCountTracker& other)
+{
+    m_host = other.m_host;
+    m_resource = other.m_resource;
+    m_host->incrementRequestCount(m_resource);
+}
+
 PassRefPtr<ResourceLoader> ResourceLoader::create(ResourceLoaderHost* host, Resource* resource, const ResourceRequest& request, const ResourceLoaderOptions& options)
 {
     RefPtr<ResourceLoader> loader(adoptRef(new ResourceLoader(host, resource, options)));
@@ -433,7 +440,7 @@ void ResourceLoader::didFail(blink::WebURLLoader*, const blink::WebURLError& err
     WTF_LOG(ResourceLoading, "Failed to load '%s'.\n", m_resource->url().string().latin1().data());
 
     RefPtr<ResourceLoader> protect(this);
-    RefPtr<ResourceLoaderHost> protectHost(m_host);
+    RefPtrWillBeRawPtr<ResourceLoaderHost> protectHost(m_host.get());
     ResourcePtr<Resource> protectResource(m_resource);
     m_state = Finishing;
     m_resource->setResourceError(error);
@@ -465,7 +472,7 @@ void ResourceLoader::requestSynchronously()
     ASSERT(!m_request.downloadToFile());
 
     RefPtr<ResourceLoader> protect(this);
-    RefPtr<ResourceLoaderHost> protectHost(m_host);
+    RefPtrWillBeRawPtr<ResourceLoaderHost> protectHost(m_host.get());
     ResourcePtr<Resource> protectResource(m_resource);
 
     RELEASE_ASSERT(m_connectionState == ConnectionStateNew);

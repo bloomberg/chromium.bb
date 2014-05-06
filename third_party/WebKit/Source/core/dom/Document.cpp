@@ -581,13 +581,13 @@ Document::~Document()
 
     if (m_elemSheet)
         m_elemSheet->clearOwnerNode();
-#endif
 
     // It's possible for multiple Documents to end up referencing the same ResourceFetcher (e.g., SVGImages
     // load the initial empty document and the SVGDocument with the same DocumentLoader).
     if (m_fetcher->document() == this)
-        m_fetcher->setDocument(0);
+        m_fetcher->setDocument(nullptr);
     m_fetcher.clear();
+#endif
 
     // We must call clearRareData() here since a Document class inherits TreeScope
     // as well as Node. See a comment on TreeScope.h for the reason.
@@ -620,9 +620,9 @@ void Document::dispose()
     m_contextFeatures = ContextFeatures::defaultSwitch();
     m_userActionElements.documentDidRemoveLastRef();
     m_associatedFormControls.clear();
-#endif
 
     detachParser();
+#endif
 
     m_registrationContext.clear();
 
@@ -5691,6 +5691,8 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_topLayerElements);
     visitor->trace(m_elemSheet);
     visitor->trace(m_styleEngine);
+    visitor->trace(m_fetcher);
+    visitor->trace(m_contextFeatures);
     visitor->trace(m_styleSheetList);
     visitor->trace(m_mediaQueryMatcher);
     visitor->trace(m_associatedFormControls);
