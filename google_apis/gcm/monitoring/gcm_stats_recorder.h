@@ -176,7 +176,7 @@ class GCM_EXPORT GCMStatsRecorder {
   // sent to a registered app, to_registered_app shoudl be false. If it
   // indicates that a message has been dropped on the server, is_message_dropped
   // should be true.
-  void RecordDataMessageRecieved(const std::string& app_id,
+  void RecordDataMessageReceived(const std::string& app_id,
                                  const std::string& from,
                                  int message_byte_size,
                                  bool to_registered_app,

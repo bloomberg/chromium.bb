@@ -702,7 +702,7 @@ void GCMClientImpl::HandleIncomingMessage(const gcm::MCSMessage& message) {
       HandleIncomingDataMessage(data_message_stanza, message_data);
       break;
     case DELETED_MESSAGES:
-      recorder_.RecordDataMessageRecieved(data_message_stanza.category(),
+      recorder_.RecordDataMessageReceived(data_message_stanza.category(),
                                           data_message_stanza.from(),
                                           data_message_stanza.ByteSize(),
                                           true,
@@ -733,7 +733,7 @@ void GCMClientImpl::HandleIncomingDataMessage(
       std::find(iter->second->sender_ids.begin(),
                 iter->second->sender_ids.end(),
                 data_message_stanza.from()) == iter->second->sender_ids.end();
-  recorder_.RecordDataMessageRecieved(app_id, data_message_stanza.from(),
+  recorder_.RecordDataMessageReceived(app_id, data_message_stanza.from(),
       data_message_stanza.ByteSize(), !not_registered,
       GCMStatsRecorder::DATA_MESSAGE);
   if (not_registered) {

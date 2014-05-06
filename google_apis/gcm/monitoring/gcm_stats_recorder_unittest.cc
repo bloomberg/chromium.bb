@@ -235,7 +235,7 @@ class GCMStatsRecorderTest : public testing::Test {
                        remark);
   }
 
-  void VerifyDataMessageRecieved(const std::string& remark) {
+  void VerifyDataMessageReceived(const std::string& remark) {
     VerifyReceivingData(recorder_.receiving_activities(),
                         kDataReceivedEvent,
                         kDataReceivedDetails,
@@ -249,7 +249,7 @@ class GCMStatsRecorderTest : public testing::Test {
                         remark);
   }
 
-  void VerifyDataMessageRecievedNotRegistered(const std::string& remark) {
+  void VerifyDataMessageReceivedNotRegistered(const std::string& remark) {
     VerifyReceivingData(recorder_.receiving_activities(),
                         kDataReceivedNotRegisteredEvent,
                         kDataReceivedNotRegisteredDetails,
@@ -441,20 +441,20 @@ TEST_F(GCMStatsRecorderTest, RegistrationTest) {
 }
 
 TEST_F(GCMStatsRecorderTest, RecordReceivingTest) {
-  recorder_.RecordDataMessageRecieved(kAppId, kFrom, kByteSize, true,
+  recorder_.RecordDataMessageReceived(kAppId, kFrom, kByteSize, true,
                                       GCMStatsRecorder::DATA_MESSAGE);
   VerifyRecordedReceivingCount(1);
-  VerifyDataMessageRecieved("1st call");
+  VerifyDataMessageReceived("1st call");
 
-  recorder_.RecordDataMessageRecieved(kAppId, kFrom, kByteSize, true,
+  recorder_.RecordDataMessageReceived(kAppId, kFrom, kByteSize, true,
                                       GCMStatsRecorder::DELETED_MESSAGES);
   VerifyRecordedReceivingCount(2);
   VerifyDataDeletedMessage("2nd call");
 
-  recorder_.RecordDataMessageRecieved(kAppId, kFrom, kByteSize, false,
+  recorder_.RecordDataMessageReceived(kAppId, kFrom, kByteSize, false,
                                       GCMStatsRecorder::DATA_MESSAGE);
   VerifyRecordedReceivingCount(3);
-  VerifyDataMessageRecievedNotRegistered("3rd call");
+  VerifyDataMessageReceivedNotRegistered("3rd call");
 }
 
 TEST_F(GCMStatsRecorderTest, RecordSendingTest) {

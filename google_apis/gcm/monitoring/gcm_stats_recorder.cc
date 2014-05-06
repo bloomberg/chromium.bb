@@ -380,7 +380,7 @@ void GCMStatsRecorder::RecordReceiving(
   inserted_data->details = details;
 }
 
-void GCMStatsRecorder::RecordDataMessageRecieved(
+void GCMStatsRecorder::RecordDataMessageReceived(
     const std::string& app_id,
     const std::string& from,
     int message_byte_size,
