@@ -24,7 +24,7 @@ class HelperSetterUpper {
     settings.set_target_os(Settings::WIN);
 
     // Output going to "out/Debug".
-    build_settings.SetBuildDir(SourceDir("/out/Debug/"));
+    build_settings.SetBuildDir(SourceDir("//out/Debug/"));
 
     // Our source target is in "tools/gn".
     target.set_output_type(Target::EXECUTABLE);
@@ -56,6 +56,32 @@ TEST(NinjaHelper, GetOutputFileForSource) {
             helper.GetOutputFileForSource(&setup.target,
                                           SourceFile("//tools/gn/foo.cc"),
                                           SOURCE_CC).value());
+}
+
+TEST(NinjaHelper, GetOutputFileForObject) {
+  HelperSetterUpper setup;
+  NinjaHelper helper(&setup.build_settings);
+
+  EXPECT_EQ(OutputFile("../../tools/gn/foo.o").value(),
+            helper.GetOutputFileForSource(&setup.target,
+                                          SourceFile("//tools/gn/foo.o"),
+                                          SOURCE_O).value());
+
+  EXPECT_EQ(OutputFile("../../tools/gn/foo.obj").value(),
+            helper.GetOutputFileForSource(&setup.target,
+                                          SourceFile("//tools/gn/foo.obj"),
+                                          SOURCE_O).value());
+
+  EXPECT_EQ(OutputFile("nested/foo.o").value(),
+            helper.GetOutputFileForSource(
+                &setup.target,
+                SourceFile("//out/Debug/nested/foo.o"),
+                SOURCE_O).value());
+
+  EXPECT_EQ(OutputFile("/abs/rooted/foo.o").value(),
+            helper.GetOutputFileForSource(&setup.target,
+                                          SourceFile("/abs/rooted/foo.o"),
+                                          SOURCE_O).value());
 }
 
 TEST(NinjaHelper, GetTargetOutputFile) {

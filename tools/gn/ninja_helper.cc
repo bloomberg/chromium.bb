@@ -5,6 +5,7 @@
 #include "tools/gn/ninja_helper.h"
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/string_utils.h"
 #include "tools/gn/target.h"
@@ -92,6 +93,20 @@ OutputFile NinjaHelper::GetOutputFileForSource(
       // rebased relative to the build dir).
       if (source.is_system_absolute())
         return OutputFile(source.value());
+
+      // Files that are already inside the build dir should not be made
+      // relative to the source tree. Doing so will insert an unnecessary
+      // "../.." into the path which won't match the corresponding target
+      // name in ninja.
+      CHECK(build_settings_->build_dir().is_source_absolute());
+      CHECK(source.is_source_absolute());
+      if (StartsWithASCII(source.value(),
+                          build_settings_->build_dir().value(),
+                          true)) {
+        return OutputFile(
+            source.value().substr(
+                build_settings_->build_dir().value().size()));
+      }
 
       // Construct the relative location of the file from the build dir.
       OutputFile ret(build_to_src_no_last_slash());
