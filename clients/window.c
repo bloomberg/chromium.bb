@@ -2605,10 +2605,15 @@ pointer_handle_enter(void *data, struct wl_pointer *pointer,
 		return;
 	}
 
+	window = wl_surface_get_user_data(surface);
+	if (surface != window->main_surface->surface) {
+		DBG("Ignoring input event from subsurface %p\n", surface);
+		return;
+	}
+
 	input->display->serial = serial;
 	input->pointer_enter_serial = serial;
-	input->pointer_focus = wl_surface_get_user_data(surface);
-	window = input->pointer_focus;
+	input->pointer_focus = window;
 
 	if (window->resizing) {
 		window->resizing = 0;
@@ -2644,11 +2649,11 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
 	float sx = wl_fixed_to_double(sx_w);
 	float sy = wl_fixed_to_double(sy_w);
 
-	input->sx = sx;
-	input->sy = sy;
-
 	if (!window)
 		return;
+
+	input->sx = sx;
+	input->sy = sy;
 
 	/* when making the window smaller - e.g. after a unmaximise we might
 	 * still have a pending motion event that the compositor has picked
@@ -2976,6 +2981,12 @@ touch_handle_down(void *data, struct wl_touch *wl_touch,
 	input->touch_focus = wl_surface_get_user_data(surface);
 	if (!input->touch_focus) {
 		DBG("Failed to find to touch focus for surface %p\n", surface);
+		return;
+	}
+
+	if (surface != input->touch_focus->main_surface->surface) {
+		DBG("Ignoring input event from subsurface %p\n", surface);
+		input->touch_focus = NULL;
 		return;
 	}
 
