@@ -336,7 +336,7 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void TextZoomOut();
   void ZoomPageIn();
   void ZoomPageOut();
-  void SetPageZoomFactor(gin::Arguments* args);
+  void SetPageZoomFactor(double factor);
   void SetPageScaleFactor(gin::Arguments* args);
   void ClearTouchPoints();
   void ReleaseTouchPoint(unsigned index);
@@ -586,14 +586,9 @@ void EventSenderBindings::ZoomPageOut() {
     sender_->ZoomPageOut();
 }
 
-void EventSenderBindings::SetPageZoomFactor(gin::Arguments* args) {
-  if (!sender_)
-    return;
-  double zoom_factor;
-  if (args->PeekNext().IsEmpty())
-    return;
-  args->GetNext(&zoom_factor);
-  sender_->SetPageZoomFactor(zoom_factor);
+void EventSenderBindings::SetPageZoomFactor(double factor) {
+  if (sender_)
+    sender_->SetPageZoomFactor(factor);
 }
 
 void EventSenderBindings::SetPageScaleFactor(gin::Arguments* args) {
