@@ -383,8 +383,7 @@ bool PasswordAutofillAgent::AcceptSuggestion(
   base::string16 current_username = username_element.value();
   username_element.setValue(username, true);
   username_element.setAutofilled(true);
-  username_element.setSelectionRange(current_username.length(),
-                                     username.length());
+  username_element.setSelectionRange(username.length(), username.length());
 
   password_info.password_field.setValue(password, true);
   password_info.password_field.setAutofilled(true);

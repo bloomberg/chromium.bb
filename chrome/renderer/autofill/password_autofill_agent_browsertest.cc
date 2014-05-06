@@ -1044,12 +1044,16 @@ TEST_F(PasswordAutofillAgentTest, AcceptSuggestion) {
   EXPECT_TRUE(password_autofill_->AcceptSuggestion(
       username_element_, kAliceUsername, kAlicePassword));
   CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
+  int username_length = strlen(kAliceUsername);
+  CheckUsernameSelection(username_length, username_length);
 
   // Try accepting a suggestion with a password different from the one that was
   // initially sent to the renderer.
   EXPECT_TRUE(password_autofill_->AcceptSuggestion(
       username_element_, kBobUsername, kCarolPassword));
   CheckTextFieldsDOMState(kBobUsername, true, kCarolPassword, true);
+  username_length = strlen(kBobUsername);
+  CheckUsernameSelection(username_length, username_length);
 }
 
 // Tests that logging is off by default.
