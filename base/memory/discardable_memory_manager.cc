@@ -14,11 +14,10 @@ namespace base {
 namespace internal {
 namespace {
 
-// This is admittedly pretty magical. It's approximately enough memory for four
+// This is admittedly pretty magical. It's approximately enough memory for eight
 // 2560x1600 images.
-static const size_t kDefaultMemoryLimit = 64 * 1024 * 1024;
-static const size_t kDefaultBytesToKeepUnderModeratePressure =
-    kDefaultMemoryLimit / 4;
+static const size_t kDefaultMemoryLimit = 128 * 1024 * 1024;
+static const size_t kDefaultBytesToKeepUnderModeratePressure = 12 * 1024 * 1024;
 
 }  // namespace
 
