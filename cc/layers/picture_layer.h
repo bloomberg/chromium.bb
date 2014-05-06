@@ -41,6 +41,8 @@ class CC_EXPORT PictureLayer : public Layer {
 
   ContentLayerClient* client() { return client_; }
 
+  Picture::RecordingMode RecordingMode() const;
+
   PicturePile* GetPicturePileForTesting() const { return pile_.get(); }
 
  protected:

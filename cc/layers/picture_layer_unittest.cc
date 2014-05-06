@@ -84,5 +84,20 @@ TEST(PictureLayerTest, SuitableForGpuRasterization) {
   EXPECT_FALSE(layer->IsSuitableForGpuRasterization());
 }
 
+TEST(PictureLayerTest, RecordingModes) {
+  MockContentLayerClient client;
+  scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
+
+  LayerTreeSettings settings;
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(settings);
+  host->SetRootLayer(layer);
+  EXPECT_EQ(Picture::RECORD_NORMALLY, layer->RecordingMode());
+
+  settings.recording_mode = LayerTreeSettings::RecordWithSkRecord;
+  host = FakeLayerTreeHost::Create(settings);
+  host->SetRootLayer(layer);
+  EXPECT_EQ(Picture::RECORD_WITH_SKRECORD, layer->RecordingMode());
+}
+
 }  // namespace
 }  // namespace cc

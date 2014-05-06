@@ -27,6 +27,7 @@ class CC_EXPORT PicturePile : public PicturePileBase {
               const Region& invalidation,
               const gfx::Rect& visible_layer_rect,
               int frame_number,
+              Picture::RecordingMode recording_mode,
               RenderingStatsInstrumentation* stats_instrumentation);
 
   void set_slow_down_raster_scale_factor(int factor) {

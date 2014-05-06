@@ -28,6 +28,7 @@ LayerTreeSettings::LayerTreeSettings()
       should_clear_root_render_pass(true),
       gpu_rasterization_enabled(false),
       gpu_rasterization_forced(false),
+      recording_mode(RecordNormally),
       create_low_res_tiling(true),
       scrollbar_animator(NoAnimator),
       scrollbar_fade_delay_ms(0),

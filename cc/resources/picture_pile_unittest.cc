@@ -60,6 +60,7 @@ class PicturePileTest : public testing::Test {
                          invalidation,
                          visible_layer_rect,
                          frame_number_,
+                         Picture::RECORD_NORMALLY,
                          &stats_instrumentation_);
   }
 

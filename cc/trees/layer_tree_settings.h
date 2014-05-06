@@ -33,6 +33,11 @@ class CC_EXPORT LayerTreeSettings {
   bool should_clear_root_render_pass;
   bool gpu_rasterization_enabled;
   bool gpu_rasterization_forced;
+  enum RecordingMode {
+    RecordNormally,
+    RecordWithSkRecord,
+  };
+  RecordingMode recording_mode;
   bool create_low_res_tiling;
 
   enum ScrollbarAnimator {

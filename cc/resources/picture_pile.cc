@@ -153,6 +153,7 @@ bool PicturePile::Update(ContentLayerClient* painter,
                          const Region& invalidation,
                          const gfx::Rect& visible_layer_rect,
                          int frame_number,
+                         Picture::RecordingMode recording_mode,
                          RenderingStatsInstrumentation* stats_instrumentation) {
   background_color_ = background_color;
   contents_opaque_ = contents_opaque;
@@ -243,7 +244,7 @@ bool PicturePile::Update(ContentLayerClient* painter,
                                   tile_grid_info_,
                                   gather_pixel_refs,
                                   num_raster_threads,
-                                  Picture::RECORD_NORMALLY);
+                                  recording_mode);
         // Note the '&&' with previous is-suitable state.
         // This means that once a picture-pile becomes unsuitable for gpu
         // rasterization due to some content, it will continue to be unsuitable

@@ -391,7 +391,8 @@ int Picture::Raster(
     SkDrawPictureCallback* callback,
     const Region& negated_content_region,
     float contents_scale) {
-  DCHECK(raster_thread_checker_.CalledOnValidThread());
+  if (!playback_)
+    DCHECK(raster_thread_checker_.CalledOnValidThread());
   TRACE_EVENT_BEGIN1(
       "cc",
       "Picture::Raster",
@@ -422,7 +423,8 @@ int Picture::Raster(
 }
 
 void Picture::Replay(SkCanvas* canvas) {
-  DCHECK(raster_thread_checker_.CalledOnValidThread());
+  if (!playback_)
+    DCHECK(raster_thread_checker_.CalledOnValidThread());
   TRACE_EVENT_BEGIN0("cc", "Picture::Replay");
   DCHECK(picture_);
 
@@ -440,8 +442,21 @@ void Picture::Replay(SkCanvas* canvas) {
 scoped_ptr<base::Value> Picture::AsValue() const {
   SkDynamicMemoryWStream stream;
 
-  // Serialize the picture.
-  picture_->serialize(&stream, &EncodeBitmap);
+  if (playback_) {
+    // SkPlayback can't serialize itself, so re-record into an SkPicture.
+    SkPictureRecorder recorder;
+    skia::RefPtr<SkCanvas> canvas(skia::SharePtr(recorder.beginRecording(
+        layer_rect_.width(),
+        layer_rect_.height(),
+        NULL,  // Default (no) bounding-box hierarchy is fastest.
+        SkPicture::kUsePathBoundsForClip_RecordingFlag)));
+    playback_->draw(canvas.get());
+    skia::RefPtr<SkPicture> picture(skia::AdoptRef(recorder.endRecording()));
+    picture->serialize(&stream, &EncodeBitmap);
+  } else {
+    // Serialize the picture.
+    picture_->serialize(&stream, &EncodeBitmap);
+  }
 
   // Encode the picture as base64.
   scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());

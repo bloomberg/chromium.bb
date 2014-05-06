@@ -21,7 +21,9 @@ void DrawPicture(unsigned char* buffer,
   bitmap.installPixels(info, buffer, info.minRowBytes());
   SkCanvas canvas(bitmap);
   canvas.clipRect(gfx::RectToSkRect(layer_rect));
-  picture->Raster(&canvas, NULL, layer_rect, 1.0f);
+  // We're drawing the entire canvas, so the negated content region is empty.
+  gfx::Rect negated_content_region;
+  picture->Raster(&canvas, NULL, negated_content_region, 1.0f);
 }
 
 void CreateBitmap(const gfx::Size& size, const char* uri, SkBitmap* bitmap) {
