@@ -14,7 +14,7 @@ const int kMaxPathSize = 5;
 struct BookmarkInfo {
   const bool in_toolbar;
   const size_t path_size;
-  const wchar_t* path[kMaxPathSize];
+  const char* path[kMaxPathSize];
   const wchar_t* title;
   const char* url;
 };

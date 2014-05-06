@@ -38,10 +38,10 @@ struct PasswordInfo {
   const char* origin;
   const char* action;
   const char* realm;
-  const wchar_t* username_element;
-  const wchar_t* username;
-  const wchar_t* password_element;
-  const wchar_t* password;
+  const char* username_element;
+  const char* username;
+  const char* password_element;
+  const char* password;
   bool blacklisted;
 };
 
@@ -51,7 +51,7 @@ struct KeywordInfo {
 };
 
 const BookmarkInfo kFirefoxBookmarks[] = {
-  {true, 1, {L"Bookmarks Toolbar"},
+  {true, 1, {"Bookmarks Toolbar"},
     L"Toolbar",
     "http://site/"},
   {false, 0, {},
@@ -61,9 +61,9 @@ const BookmarkInfo kFirefoxBookmarks[] = {
 
 const PasswordInfo kFirefoxPasswords[] = {
   {"http://localhost:8080/", "http://localhost:8080/", "http://localhost:8080/",
-    L"loginuser", L"abc", L"loginpass", L"123", false},
+    "loginuser", "abc", "loginpass", "123", false},
   {"http://localhost:8080/", "", "http://localhost:8080/localhost",
-    L"", L"http", L"", L"Http1+1abcdefg", false},
+    "", "http", "", "Http1+1abcdefg", false},
 };
 
 const KeywordInfo kFirefoxKeywords[] = {
@@ -135,10 +135,10 @@ class FirefoxObserver : public ProfileWriter,
     EXPECT_EQ(p.origin, form.origin.spec());
     EXPECT_EQ(p.realm, form.signon_realm);
     EXPECT_EQ(p.action, form.action.spec());
-    EXPECT_EQ(base::WideToUTF16(p.username_element), form.username_element);
-    EXPECT_EQ(base::WideToUTF16(p.username), form.username_value);
-    EXPECT_EQ(base::WideToUTF16(p.password_element), form.password_element);
-    EXPECT_EQ(base::WideToUTF16(p.password), form.password_value);
+    EXPECT_EQ(base::ASCIIToUTF16(p.username_element), form.username_element);
+    EXPECT_EQ(base::ASCIIToUTF16(p.username), form.username_value);
+    EXPECT_EQ(base::ASCIIToUTF16(p.password_element), form.password_element);
+    EXPECT_EQ(base::ASCIIToUTF16(p.password), form.password_value);
     EXPECT_EQ(p.blacklisted, form.blacklisted_by_user);
     ++password_count_;
   }
@@ -177,10 +177,9 @@ class FirefoxObserver : public ProfileWriter,
       // The order might not be deterministic, look in the expected list for
       // that template URL.
       bool found = false;
-      base::string16 keyword = template_urls[i]->keyword();
+      const base::string16& keyword = template_urls[i]->keyword();
       for (size_t j = 0; j < arraysize(kFirefoxKeywords); ++j) {
-        if (template_urls[i]->keyword() ==
-                base::WideToUTF16Hack(kFirefoxKeywords[j].keyword)) {
+        if (keyword == base::WideToUTF16(kFirefoxKeywords[j].keyword)) {
           EXPECT_EQ(kFirefoxKeywords[j].url, template_urls[i]->url());
           found = true;
           break;
@@ -247,7 +246,7 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
       data_path = data_path.AppendASCII("firefox3_searchplugins");
       if (!base::PathExists(data_path)) {
         // TODO(maruel):  Create search test data that we can open source!
-        LOG(ERROR) << L"Missing internal test data";
+        LOG(ERROR) << "Missing internal test data";
         return;
       }
       ASSERT_TRUE(base::CopyDirectory(data_path, search_engine_path, false));
