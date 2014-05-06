@@ -227,7 +227,8 @@ Vector types can be used through the ``vector_size`` attribute:
 
 .. naclcode::
 
-  typedef int v4s __attribute__((vector_size(16)));
+  #define VECTOR_BYTES 16
+  typedef int v4s __attribute__((vector_size(VECTOR_BYTES)));
   v4s a = {1,2,3,4};
   v4s b = {5,6,7,8};
   v4s c, d, e;
@@ -313,7 +314,41 @@ individual elements using ``[]``.
     std::cout << std::endl;
   }
 
-Vector shuffles are currently unsupported but will be added soon.
+Vector shuffles (often called permutation or swizzle) operations are
+supported through ``__builtin_shufflevector``. The builtin has two
+vector arguments of the same element type, followed by a list of
+constant integers that specify the element indices of the first two
+vectors that should be extracted and returned in a new vector. These
+element indices are numbered sequentially starting with the first
+vector, continuing into the second vector. Thus, if ``vec1`` is a
+4-element vector, index ``5`` would refer to the second element of
+``vec2``. An index of ``-1`` can be used to indicate that the
+corresponding element in the returned vector is a don’t care and can be
+optimized by the backend.
+
+The result of ``__builtin_shufflevector`` is a vector with the same
+element type as ``vec1`` / ``vec2`` but that has an element count equal
+to the number of indices specified.
+
+.. naclcode::
+
+  // identity operation - return 4-element vector v1.
+  __builtin_shufflevector(v1, v1, 0, 1, 2, 3)
+
+  // "Splat" element 0 of V1 into a 4-element result.
+  __builtin_shufflevector(V1, V1, 0, 0, 0, 0)
+
+  // Reverse 4-element vector V1.
+  __builtin_shufflevector(V1, V1, 3, 2, 1, 0)
+
+  // Concatenate every other element of 4-element vectors V1 and V2.
+  __builtin_shufflevector(V1, V2, 0, 2, 4, 6)
+
+  // Concatenate every other element of 8-element vectors V1 and V2.
+  __builtin_shufflevector(V1, V2, 0, 2, 4, 6, 8, 10, 12, 14)
+
+  // Shuffle v1 with some elements being undefined
+  __builtin_shufflevector(v1, v1, 3, -1, 1, -1)
 
 Auto-Vectorization
 ------------------

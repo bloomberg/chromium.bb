@@ -198,6 +198,17 @@ Scalar types
   * The only integer sizes allowed for function arguments and function return
     values are i32 and i64.
 
+Vector types
+------------
+
+The only vector types allowed are:
+
+* 128-bit vectors integers of elements size i8, i16, i32.
+* 128-bit vectors of float elements.
+* Vectors of i1 type with element counts corresponding to the allowed
+  element counts listed previously (their width is therefore not
+  128-bits).
+
 Array and struct types
 ----------------------
 
@@ -369,6 +380,8 @@ Only the LLVM instructions listed here are supported by PNaCl bitcode.
 * ``select``
 * ``call``
 * ``unreachable``
+* ``insertelement``
+* ``extractelement``
 
 .. _bitcode_allocainst:
 

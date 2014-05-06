@@ -24,31 +24,32 @@
 <li><p class="first"><a class="reference internal" href="#type-system" id="id15">Type System</a></p>
 <ul class="small-gap">
 <li><a class="reference internal" href="#scalar-types" id="id16">Scalar types</a></li>
-<li><a class="reference internal" href="#array-and-struct-types" id="id17">Array and struct types</a></li>
-<li><a class="reference internal" href="#pointer-types" id="id18">Pointer types</a></li>
-<li><a class="reference internal" href="#undefined-values" id="id19">Undefined Values</a></li>
-<li><a class="reference internal" href="#constant-expressions" id="id20">Constant Expressions</a></li>
+<li><a class="reference internal" href="#vector-types" id="id17">Vector types</a></li>
+<li><a class="reference internal" href="#array-and-struct-types" id="id18">Array and struct types</a></li>
+<li><a class="reference internal" href="#pointer-types" id="id19">Pointer types</a></li>
+<li><a class="reference internal" href="#undefined-values" id="id20">Undefined Values</a></li>
+<li><a class="reference internal" href="#constant-expressions" id="id21">Constant Expressions</a></li>
 </ul>
 </li>
-<li><p class="first"><a class="reference internal" href="#other-values" id="id21">Other Values</a></p>
+<li><p class="first"><a class="reference internal" href="#other-values" id="id22">Other Values</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#metadata-nodes-and-metadata-strings" id="id22">Metadata Nodes and Metadata Strings</a></li>
+<li><a class="reference internal" href="#metadata-nodes-and-metadata-strings" id="id23">Metadata Nodes and Metadata Strings</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#intrinsic-global-variables" id="id23">Intrinsic Global Variables</a></li>
-<li><a class="reference internal" href="#errno-and-errors-in-arithmetic-instructions" id="id24">Errno and errors in arithmetic instructions</a></li>
-<li><p class="first"><a class="reference internal" href="#instruction-reference" id="id25">Instruction Reference</a></p>
+<li><a class="reference internal" href="#intrinsic-global-variables" id="id24">Intrinsic Global Variables</a></li>
+<li><a class="reference internal" href="#errno-and-errors-in-arithmetic-instructions" id="id25">Errno and errors in arithmetic instructions</a></li>
+<li><p class="first"><a class="reference internal" href="#instruction-reference" id="id26">Instruction Reference</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#list-of-allowed-instructions" id="id26">List of allowed instructions</a></li>
-<li><a class="reference internal" href="#alloca" id="id27"><code>alloca</code></a></li>
+<li><a class="reference internal" href="#list-of-allowed-instructions" id="id27">List of allowed instructions</a></li>
+<li><a class="reference internal" href="#alloca" id="id28"><code>alloca</code></a></li>
 </ul>
 </li>
-<li><p class="first"><a class="reference internal" href="#intrinsic-functions" id="id28">Intrinsic Functions</a></p>
+<li><p class="first"><a class="reference internal" href="#intrinsic-functions" id="id29">Intrinsic Functions</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#list-of-allowed-intrinsics" id="id29">List of allowed intrinsics</a></li>
-<li><a class="reference internal" href="#thread-pointer-related-intrinsics" id="id30">Thread pointer related intrinsics</a></li>
-<li><a class="reference internal" href="#setjmp-and-longjmp" id="id31">Setjmp and Longjmp</a></li>
-<li><a class="reference internal" href="#atomic-intrinsics" id="id32">Atomic intrinsics</a></li>
+<li><a class="reference internal" href="#list-of-allowed-intrinsics" id="id30">List of allowed intrinsics</a></li>
+<li><a class="reference internal" href="#thread-pointer-related-intrinsics" id="id31">Thread pointer related intrinsics</a></li>
+<li><a class="reference internal" href="#setjmp-and-longjmp" id="id32">Setjmp and Longjmp</a></li>
+<li><a class="reference internal" href="#atomic-intrinsics" id="id33">Atomic intrinsics</a></li>
 </ul>
 </li>
 </ul>
@@ -182,6 +183,16 @@ values are i32 and i64.</li>
 </ul>
 </li>
 </ul>
+</section><section id="vector-types">
+<h3 id="vector-types">Vector types</h3>
+<p>The only vector types allowed are:</p>
+<ul class="small-gap">
+<li>128-bit vectors integers of elements size i8, i16, i32.</li>
+<li>128-bit vectors of float elements.</li>
+<li>Vectors of i1 type with element counts corresponding to the allowed
+element counts listed previously (their width is therefore not
+128-bits).</li>
+</ul>
 </section><section id="array-and-struct-types">
 <h3 id="array-and-struct-types">Array and struct types</h3>
 <p>Array and struct types are only allowed in
@@ -308,6 +319,8 @@ argument must be an i32.</p>
 <li><code>select</code></li>
 <li><code>call</code></li>
 <li><code>unreachable</code></li>
+<li><code>insertelement</code></li>
+<li><code>extractelement</code></li>
 </ul>
 </section><section id="alloca">
 <span id="bitcode-allocainst"></span><h3 id="alloca"><span id="bitcode-allocainst"></span><code>alloca</code></h3>
