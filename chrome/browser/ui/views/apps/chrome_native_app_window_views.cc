@@ -40,6 +40,7 @@
 #include "ash/shell.h"
 #include "ash/wm/immersive_fullscreen_controller.h"
 #include "ash/wm/panels/panel_frame_view.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
@@ -387,25 +388,46 @@ ChromeNativeAppWindowViews::CreateNonStandardAppFrame() {
 
 // ui::BaseWindow implementation.
 
+gfx::Rect ChromeNativeAppWindowViews::GetRestoredBounds() const {
+#if defined(USE_ASH)
+  gfx::Rect* bounds = widget()->GetNativeWindow()->GetProperty(
+      ash::kRestoreBoundsOverrideKey);
+  if (bounds && !bounds->IsEmpty())
+    return *bounds;
+#endif
+  return widget()->GetRestoredBounds();
+}
+
 ui::WindowShowState ChromeNativeAppWindowViews::GetRestoredState() const {
+#if !defined(USE_ASH)
   if (IsMaximized())
     return ui::SHOW_STATE_MAXIMIZED;
-  if (IsFullscreen()) {
-#if defined(USE_ASH)
-    if (immersive_fullscreen_controller_.get() &&
-        immersive_fullscreen_controller_->IsEnabled()) {
-      // Restore windows which were previously in immersive fullscreen to
-      // maximized. Restoring the window to a different fullscreen type
-      // makes for a bad experience.
-      return ui::SHOW_STATE_MAXIMIZED;
-    }
-#endif
+  if (IsFullscreen())
     return ui::SHOW_STATE_FULLSCREEN;
-  }
-#if defined(USE_ASH)
+#else
   // Use kRestoreShowStateKey in case a window is minimized/hidden.
   ui::WindowShowState restore_state = widget()->GetNativeWindow()->GetProperty(
       aura::client::kRestoreShowStateKey);
+  if (widget()->GetNativeWindow()->GetProperty(
+          ash::kRestoreBoundsOverrideKey)) {
+    // If an override is given, we use that restore state (after filtering).
+    restore_state = widget()->GetNativeWindow()->GetProperty(
+                        ash::kRestoreShowStateOverrideKey);
+  } else {
+    // Otherwise first normal states are checked.
+    if (IsMaximized())
+      return ui::SHOW_STATE_MAXIMIZED;
+    if (IsFullscreen()) {
+      if (immersive_fullscreen_controller_.get() &&
+          immersive_fullscreen_controller_->IsEnabled()) {
+        // Restore windows which were previously in immersive fullscreen to
+        // maximized. Restoring the window to a different fullscreen type
+        // makes for a bad experience.
+        return ui::SHOW_STATE_MAXIMIZED;
+      }
+      return ui::SHOW_STATE_FULLSCREEN;
+    }
+  }
   // Whitelist states to return so that invalid and transient states
   // are not saved and used to restore windows when they are recreated.
   switch (restore_state) {
@@ -421,7 +443,7 @@ ui::WindowShowState ChromeNativeAppWindowViews::GetRestoredState() const {
     case ui::SHOW_STATE_END:
       return ui::SHOW_STATE_NORMAL;
   }
-#endif
+#endif  // !defined(USE_ASH)
   return ui::SHOW_STATE_NORMAL;
 }
 

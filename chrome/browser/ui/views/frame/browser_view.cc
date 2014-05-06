@@ -140,14 +140,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
-#if defined(USE_ASH)
-#include "ash/ash_switches.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_model.h"
-#include "ash/shell.h"
-#include "chrome/browser/ui/ash/ash_util.h"
-#endif
-
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "chrome/browser/jumplist_win.h"
@@ -844,15 +836,17 @@ void BrowserView::ZoomChangedForActiveTab(bool can_show_bubble) {
 }
 
 gfx::Rect BrowserView::GetRestoredBounds() const {
-  return frame_->GetRestoredBounds();
+  gfx::Rect bounds;
+  ui::WindowShowState state;
+  frame_->GetWindowPlacement(&bounds, &state);
+  return bounds;
 }
 
 ui::WindowShowState BrowserView::GetRestoredState() const {
-  if (IsMaximized())
-    return ui::SHOW_STATE_MAXIMIZED;
-  if (IsMinimized())
-    return ui::SHOW_STATE_MINIMIZED;
-  return ui::SHOW_STATE_NORMAL;
+  gfx::Rect bounds;
+  ui::WindowShowState state;
+  frame_->GetWindowPlacement(&bounds, &state);
+  return state;
 }
 
 gfx::Rect BrowserView::GetBounds() const {
@@ -1608,7 +1602,8 @@ void BrowserView::SaveWindowPlacement(const gfx::Rect& bounds,
   // If IsFullscreen() is true, we've just changed into fullscreen mode, and
   // we're catching the going-into-fullscreen sizing and positioning calls,
   // which we want to ignore.
-  if (!IsFullscreen() && chrome::ShouldSaveWindowPlacement(browser_.get())) {
+  if (!IsFullscreen() && frame_->ShouldSaveWindowPlacement() &&
+      chrome::ShouldSaveWindowPlacement(browser_.get())) {
     WidgetDelegate::SaveWindowPlacement(bounds, show_state);
     chrome::SaveWindowPlacement(browser_.get(), bounds, show_state);
   }
