@@ -83,23 +83,24 @@ void CustomElementMicrotaskQueue::enqueue(PassOwnPtr<CustomElementMicrotaskStep>
 CustomElementMicrotaskStep::Result CustomElementMicrotaskQueue::dispatch()
 {
     MicrotaskQueueInvocationScope scope(this);
-    Result result = CustomElementMicrotaskStep::Continue;
+    Vector<OwnPtr<CustomElementMicrotaskStep> > remaining;
+    Result accumulatedResult = CustomElementMicrotaskStep::ContinueWithRemoving;
 
     unsigned i;
     for (i = 0; i < m_queue.size(); ++i) {
-        result = Result(result | m_queue[i]->process());
-
+        Result result = m_queue[i]->process();
+        accumulatedResult = CustomElementMicrotaskStep::Result(result | accumulatedResult);
+        if (result & CustomElementMicrotaskStep::ShouldRemain)
+            remaining.append(m_queue[i].release());
         if (result & CustomElementMicrotaskStep::ShouldStop)
             break;
     }
 
-    bool wasStopped = i < m_queue.size();
-    if (wasStopped)
-        m_queue.remove(0, i);
-    else
-        m_queue.resize(0);
+    for (++i; i < m_queue.size(); ++i)
+        remaining.append(m_queue[i].release());
+    m_queue.swap(remaining);
 
-    return result;
+    return accumulatedResult;
 }
 
 #if !defined(NDEBUG)
@@ -109,7 +110,7 @@ void CustomElementMicrotaskQueue::show(unsigned indent)
         if (m_queue[q])
             m_queue[q]->show(indent);
         else
-            fprintf(stderr, "%*s\n", indent, "");
+            fprintf(stderr, "%*snull\n", indent, "");
     }
 }
 #endif

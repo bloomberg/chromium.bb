@@ -1,0 +1,5 @@
+ This is a testharness.js-based test.
+PASS Custom elements in an indirect import and the master are both upgraded. 
+PASS Custom elements in an indirect import and the master are both resolved. 
+Harness: the test ran to completion.
+

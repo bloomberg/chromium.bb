@@ -98,7 +98,8 @@ void CustomElementMicrotaskDispatcher::doDispatch()
 #if !defined(NDEBUG)
 void CustomElementMicrotaskDispatcher::show()
 {
-    m_resolutionAndImports->show(0);
+    fprintf(stderr, "Dispatcher:\n");
+    m_resolutionAndImports->show(1);
 }
 #endif
 

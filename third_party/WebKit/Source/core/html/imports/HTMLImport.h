@@ -109,6 +109,7 @@ public:
     bool precedes(HTMLImport*);
     bool isRoot() const { return !isChild(); }
     bool isSync() const { return SyncMode(m_sync) == Sync; }
+    bool formsCycle() const;
     const HTMLImportState& state() const { return m_state; }
 
     void appendImport(HTMLImport*);

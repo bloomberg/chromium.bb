@@ -54,6 +54,17 @@ bool HTMLImport::precedes(HTMLImport* import)
     return false;
 }
 
+bool HTMLImport::formsCycle() const
+{
+    for (const HTMLImport* i = this->parent(); i; i = i->parent()) {
+        if (i->document() == this->document())
+            return true;
+    }
+
+    return false;
+
+}
+
 void HTMLImport::appendImport(HTMLImport* child)
 {
     appendChild(child);

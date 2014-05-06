@@ -95,30 +95,12 @@ void HTMLImportChild::didFinish()
         m_client->didFinish();
 }
 
-static bool hasAsyncImportAncestor(HTMLImport* import)
-{
-    for (HTMLImport* i = import; i; i = i->parent()) {
-        if (!i->isSync())
-            return true;
-    }
-
-    return false;
-}
-
 void HTMLImportChild::didFinishLoading()
 {
     clearResource();
     stateWillChange();
     if (m_customElementMicrotaskStep)
         CustomElementMicrotaskDispatcher::instance().importDidFinish(m_customElementMicrotaskStep.get());
-    // FIXME(crbug.com/365956):
-    // This is needed because async import currently never consumes the queue and
-    // it prevents the children of such an async import from finishing.
-    // Their steps are never processed.
-    // Although this is clearly not the right fix,
-    // https://codereview.chromium.org/249563003/ should get rid of this part.
-    if (hasAsyncImportAncestor(this))
-        didFinishUpgradingCustomElements();
 }
 
 void HTMLImportChild::didFinishUpgradingCustomElements()
@@ -178,7 +160,7 @@ void HTMLImportChild::ensureLoader()
     else
         createLoader();
 
-    if (isSync() && !isDone()) {
+    if (!isDone() && !formsCycle()) {
         ASSERT(!m_customElementMicrotaskStep);
         m_customElementMicrotaskStep = CustomElement::didCreateImport(this)->weakPtr();
     }

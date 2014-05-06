@@ -3,9 +3,8 @@ use strict;
 use Time::HiRes qw(sleep);
 
 print "Content-Type: text/html\n\n";
-sleep 0.2;
+sleep 1.0;
 print <<EOF
-<script>
-window.childLoaded = true;
-</script>
+<x-hello id="hello-slow"></x-hello>
+<x-bye id="bye-slow"></x-bye>
 EOF

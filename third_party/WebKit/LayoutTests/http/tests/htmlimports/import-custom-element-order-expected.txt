@@ -1,0 +1,4 @@
+ 
+PASS Custom elements in async imports wait preceeding sync import before upgraded. 
+PASS Custom elements in async imports wait preceeding sync import before resolved. 
+

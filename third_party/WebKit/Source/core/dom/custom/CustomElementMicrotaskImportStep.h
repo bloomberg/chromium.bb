@@ -64,6 +64,7 @@ private:
 
     void didUpgradeAllCustomElements();
     bool shouldWaitForImport() const;
+    bool shouldStopProcessing() const;
 
     // CustomElementMicrotaskStep
     virtual Result process() OVERRIDE FINAL;
@@ -71,8 +72,6 @@ private:
 #if !defined(NDEBUG)
     virtual void show(unsigned indent) OVERRIDE;
 #endif
-
-    bool m_importFinished;
     WeakPtr<HTMLImportChild> m_import;
     RefPtr<CustomElementMicrotaskQueue> m_queue;
     WeakPtrFactory<CustomElementMicrotaskImportStep> m_weakFactory;
