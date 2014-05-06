@@ -111,50 +111,6 @@ zoom_area_center_from_pointer(struct weston_output *output,
 }
 
 static void
-weston_zoom_apply_output_transform(struct weston_output *output,
-						float *x, float *y)
-{
-	float tx, ty;
-
-	switch(output->transform) {
-	case WL_OUTPUT_TRANSFORM_NORMAL:
-	default:
-		return;
-	case WL_OUTPUT_TRANSFORM_90:
-		tx = -*y;
-		ty = *x;
-		break;
-	case WL_OUTPUT_TRANSFORM_180:
-		tx = -*x;
-		ty = -*y;
-		break;
-	case WL_OUTPUT_TRANSFORM_270:
-		tx = *y;
-		ty = -*x;
-		break;
-	case WL_OUTPUT_TRANSFORM_FLIPPED:
-		tx = -*x;
-		ty = *y;
-		break;
-	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-		tx = -*y;
-		ty = -*x;
-		break;
-	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
-		tx = *x;
-		ty = -*y;
-		break;
-	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		tx = *y;
-		ty = *x;
-		break;
-	}
-
-	*x = tx;
-	*y = ty;
-}
-
-static void
 weston_output_update_zoom_transform(struct weston_output *output)
 {
 	float global_x, global_y;
@@ -182,9 +138,6 @@ weston_output_update_zoom_transform(struct weston_output *output)
 	output->zoom.trans_y =
 		((((global_y - output->y) / output->height) *
 		(level * 2)) - level) * ratio;
-
-	weston_zoom_apply_output_transform(output, &output->zoom.trans_x,
-						   &output->zoom.trans_y);
 
 	trans_max = level * 2 - level;
 	trans_min = -trans_max;

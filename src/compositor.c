@@ -3198,8 +3198,6 @@ weston_output_update_matrix(struct weston_output *output)
 			    2.0 / output->width,
 			    -2.0 / output->height, 1);
 
-	weston_output_compute_transform(output);
-
 	if (output->zoom.active) {
 		magnification = 1 / (1 - output->zoom.spring_z.current);
 		weston_output_update_zoom(output);
@@ -3208,6 +3206,8 @@ weston_output_update_matrix(struct weston_output *output)
 		weston_matrix_scale(&output->matrix, magnification,
 				    magnification, 1.0);
 	}
+
+	weston_output_compute_transform(output);
 
 	output->dirty = 0;
 }
