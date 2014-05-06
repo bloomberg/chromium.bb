@@ -30,15 +30,15 @@ public class DOMUtils {
         sb.append("(function() {");
         sb.append("  var node = document.getElementById('" + nodeId + "');");
         sb.append("  if (!node) return null;");
-        sb.append("  var width = node.offsetWidth;");
-        sb.append("  var height = node.offsetHeight;");
+        sb.append("  var width = Math.round(node.offsetWidth);");
+        sb.append("  var height = Math.round(node.offsetHeight);");
         sb.append("  var x = -window.scrollX;");
         sb.append("  var y = -window.scrollY;");
         sb.append("  do {");
         sb.append("    x += node.offsetLeft;");
         sb.append("    y += node.offsetTop;");
         sb.append("  } while (node = node.offsetParent);");
-        sb.append("  return [ x, y, width, height ];");
+        sb.append("  return [ Math.round(x), Math.round(y), width, height ];");
         sb.append("})();");
 
         String jsonText = JavaScriptUtils.executeJavaScriptAndWaitForResult(
