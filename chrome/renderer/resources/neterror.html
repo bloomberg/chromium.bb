@@ -21,8 +21,10 @@
         </h1>
         <div id="buttons">
           <button id="reload-button" class="blue-button text-button"
-              onclick="reloadButtonClick(this.url);"
-              jsselect="reloadButton" jsvalues=".url:reloadUrl"
+              onclick="trackClick(this.trackingId);
+                       reloadButtonClick(this.url);"
+              jsselect="reloadButton"
+              jsvalues=".url:reloadUrl; .trackingId:reloadTrackingId"
               jscontent="msg"></button>
           <button id="stale-load-button" class="blue-button text-button"
               onclick="loadStaleButtonClick()"
@@ -49,7 +51,8 @@
               jsdisplay="diagnose"></button>
           <div id="diagnose-frame" class="hidden"></div>
           <form class="suggestions" jsdisplay="searchUrl"
-              jsvalues=".url:searchUrl" onsubmit="return search(this.url)">
+              jsvalues=".url:searchUrl; .trackingId:searchTrackingId"
+              onsubmit="trackClick(this.trackingId); return search(this.url);">
             <div class="suggestion-header" jscontent="searchHeader"></div>
             <div id="search-container">
               <input type="text" name="q" id="search-box"

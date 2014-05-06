@@ -34,6 +34,7 @@ class LocalizedError {
 
     // Overrides whether reloading is suggested.
     bool suggest_reload;
+    int reload_tracking_id;
 
     // Overrides default suggestions.  Each entry must contain a header and may
     // optionally contain a body as well.  Must not be NULL.
@@ -45,6 +46,7 @@ class LocalizedError {
     GURL search_url;
     // Default search terms.  Ignored if |search_url| is invalid.
     std::string search_terms;
+    int search_tracking_id;
   };
 
   // Fills |error_strings| with values to be used to build an error page used

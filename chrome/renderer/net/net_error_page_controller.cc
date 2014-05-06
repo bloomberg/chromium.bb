@@ -72,6 +72,20 @@ bool NetErrorPageController::MoreButtonClick() {
   return true;
 }
 
+bool NetErrorPageController::TrackClick(const gin::Arguments& args) {
+  if (!render_frame())
+    return false;
+
+  if (!args.PeekNext()->IsInt32())
+    return false;
+
+  NetErrorHelper* net_error_helper =
+      content::RenderFrameObserverTracker<NetErrorHelper>::Get(render_frame());
+  DCHECK(net_error_helper);
+  net_error_helper->TrackClick(args.PeekNext()->Int32Value());
+  return true;
+}
+
 NetErrorPageController::NetErrorPageController(
     content::RenderFrame* render_frame) : RenderFrameObserver(render_frame) {}
 
@@ -85,7 +99,9 @@ gin::ObjectTemplateBuilder NetErrorPageController::GetObjectTemplateBuilder(
                  &NetErrorPageController::LoadStaleButtonClick)
       .SetMethod("reloadButtonClick",
                  &NetErrorPageController::ReloadButtonClick)
-      .SetMethod("moreButtonClick", &NetErrorPageController::MoreButtonClick);
+      .SetMethod("moreButtonClick", &NetErrorPageController::MoreButtonClick)
+      .SetMethod("trackClick",
+                 &NetErrorPageController::TrackClick);
 }
 
 void NetErrorPageController::OnDestruct() {}

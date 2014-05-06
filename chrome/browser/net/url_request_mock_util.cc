@@ -8,7 +8,6 @@
 
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/test/net/url_request_failed_job.h"
@@ -39,9 +38,6 @@ void SetUrlRequestMocksEnabled(bool enabled) {
     base::FilePath root_http;
     PathService::Get(chrome::DIR_TEST_DATA, &root_http);
     content::URLRequestMockHTTPJob::AddUrlHandler(root_http);
-    content::URLRequestMockHTTPJob::AddHostnameToFileHandler(
-        google_util::LinkDoctorBaseURL().host(),
-        root_http.AppendASCII("mock-link-doctor.json"));
   } else {
     // Revert to the default handlers.
     net::URLRequestFilter::GetInstance()->ClearHandlers();

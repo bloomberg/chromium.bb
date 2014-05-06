@@ -490,7 +490,10 @@ const char* GetIconClassForError(const std::string& error_domain,
 
 const char LocalizedError::kHttpErrorDomain[] = "http";
 
-LocalizedError::ErrorPageParams::ErrorPageParams() : suggest_reload(false) {
+LocalizedError::ErrorPageParams::ErrorPageParams()
+    : suggest_reload(false),
+      reload_tracking_id(-1),
+      search_tracking_id(-1) {
 }
 
 LocalizedError::ErrorPageParams::~ErrorPageParams() {
@@ -642,6 +645,7 @@ void LocalizedError::GetStrings(int error_code,
         l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_GOOGLE_SEARCH));
     error_strings->SetString("searchUrl", params->search_url.spec());
     error_strings->SetString("searchTerms", params->search_terms);
+    error_strings->SetInteger("searchTrackingId", params->search_tracking_id);
   }
 
   // Add the reload suggestion, if needed.
@@ -652,6 +656,7 @@ void LocalizedError::GetStrings(int error_code,
           "msg", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_RELOAD));
       reload_button->SetString("reloadUrl", failed_url.spec());
       error_strings->Set("reloadButton", reload_button);
+      reload_button->SetInteger("reloadTrackingId", params->reload_tracking_id);
     } else {
       // If the page was created by a post, it can't be reloaded in the same
       // way, so just add a suggestion instead.

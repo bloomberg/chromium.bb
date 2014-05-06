@@ -18,14 +18,14 @@
 
 class GURL;
 
-namespace content {
-class ResourceFetcher;
-}
-
 namespace blink {
 class WebFrame;
 class WebURLResponse;
 struct WebURLError;
+}
+
+namespace content {
+class ResourceFetcher;
 }
 
 // Listens for NetErrorInfo messages from the NetErrorTabHelper on the
@@ -74,6 +74,9 @@ class NetErrorHelper
   // suppressed.
   bool ShouldSuppressErrorPage(blink::WebFrame* frame, const GURL& url);
 
+  // Called when a link with the given tracking ID is pressed.
+  void TrackClick(int tracking_id);
+
  private:
   // NetErrorHelperCore::Delegate implementation:
   virtual void GenerateLocalizedErrorPage(
@@ -92,6 +95,9 @@ class NetErrorHelper
       const GURL& navigation_correction_url,
       const std::string& navigation_correction_request_body) OVERRIDE;
   virtual void CancelFetchNavigationCorrections() OVERRIDE;
+  virtual void SendTrackingRequest(
+      const GURL& tracking_url,
+      const std::string& tracking_request_body) OVERRIDE;
   virtual void ReloadPage() OVERRIDE;
   virtual void LoadPageFromCache(const GURL& page_url) OVERRIDE;
 
@@ -105,7 +111,11 @@ class NetErrorHelper
   void OnNavigationCorrectionsFetched(const blink::WebURLResponse& response,
                                       const std::string& data);
 
+  void OnTrackingRequestComplete(const blink::WebURLResponse& response,
+                                 const std::string& data);
+
   scoped_ptr<content::ResourceFetcher> correction_fetcher_;
+  scoped_ptr<content::ResourceFetcher> tracking_fetcher_;
 
   NetErrorHelperCore core_;
 

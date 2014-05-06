@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "gin/arguments.h"
 #include "gin/wrappable.h"
 
 
@@ -37,6 +38,10 @@ class NetErrorPageController
 
   // Execute a "More" button click.
   bool MoreButtonClick();
+
+  // Track a click when the page has suggestions from the navigation correction
+  // service.
+  bool TrackClick(const gin::Arguments& args);
 
   // gin::WrappableBase
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(

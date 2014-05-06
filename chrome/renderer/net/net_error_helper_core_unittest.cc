@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/net/net_error_helper_core.h"
 
+#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -21,13 +22,22 @@ using chrome_common_net::DnsProbeStatusToString;
 
 const char kFailedUrl[] = "http://failed/";
 const char kFailedHttpsUrl[] = "https://failed/";
+
 const char kNavigationCorrectionUrl[] = "http://navigation.corrections/";
+const char kLanguage[] = "en";
+const char kCountry[] = "us";
+const char kApiKey[] = "api_key";
 const char kSearchUrl[] = "http://www.google.com/search";
+
 const char kSuggestedSearchTerms[] = "Happy Goats";
+const char kNavigationCorrectionEventId[] = "#007";
+const char kNavigationCorrectionFingerprint[] = "RandumStuff";
 
 struct NavigationCorrection {
   const char* correction_type;
   const char* url_correction;
+  const char* click_type;
+  const char* click_data;
   bool is_porn;
   bool is_soft_porn;
 
@@ -35,6 +45,8 @@ struct NavigationCorrection {
     base::DictionaryValue* dict = new base::DictionaryValue();
     dict->SetString("correctionType", correction_type);
     dict->SetString("urlCorrection", url_correction);
+    dict->SetString("clickType", click_type);
+    dict->SetString("clickData", click_data);
     dict->SetBoolean("isPorn", is_porn);
     dict->SetBoolean("isSoftPorn", is_soft_porn);
     return dict;
@@ -42,15 +54,15 @@ struct NavigationCorrection {
 };
 
 const NavigationCorrection kDefaultCorrections[] = {
-  {"reloadPage", kFailedUrl, false, false},
-  {"urlCorrection", "http://somewhere_else/", false, false},
-  {"contentOverlap", "http://somewhere_else_entirely/", false, false},
+  {"reloadPage", kFailedUrl, "rld", "data1", false, false},
+  {"urlCorrection", "http://somewhere_else/", "btn", "data2", false, false},
+  {"contentOverlap", "http://pony_island/", "btn", "data3", false, false},
 
   // Porn should be ignored.
-  {"emphasizedUrlCorrection", "http://porn/", true, false},
-  {"sitemap", "http://more_porn/", false, true},
+  {"emphasizedUrlCorrection", "http://porn/", "btn", "data4", true, false},
+  {"sitemap", "http://more_porn/", "btn", "data5", false, true},
 
-  {"webSearchQuery", kSuggestedSearchTerms, false, false},
+  {"webSearchQuery", kSuggestedSearchTerms, "frm", "data6", false, false},
 };
 
 std::string SuggestionsToResponse(const NavigationCorrection* corrections,
@@ -61,10 +73,26 @@ std::string SuggestionsToResponse(const NavigationCorrection* corrections,
 
   scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue());
   response->Set("result.UrlCorrections", url_corrections);
+  response->SetString("result.eventId", kNavigationCorrectionEventId);
+  response->SetString("result.fingerprint", kNavigationCorrectionFingerprint);
 
   std::string json;
   base::JSONWriter::Write(response.get(), &json);
   return json;
+}
+
+testing::AssertionResult StringValueEquals(
+    const base::DictionaryValue& dict,
+    const std::string& key,
+    const std::string& expected_value) {
+  std::string actual_value;
+  if (!dict.GetString(key, &actual_value))
+    return testing::AssertionFailure() << key << " not found.";
+  if (actual_value != expected_value) {
+    return testing::AssertionFailure()
+        << "actual: " << actual_value << "\n expected: " << expected_value;
+  }
+  return testing::AssertionSuccess();
 }
 
 // Creates a string from an error that is used as a mock locally generated
@@ -121,7 +149,8 @@ class NetErrorHelperCoreTest : public testing::Test,
         error_html_update_count_(0),
         reload_count_(0),
         load_stale_count_(0),
-        enable_page_helper_functions_count_(0) {
+        enable_page_helper_functions_count_(0),
+        tracking_request_count_(0) {
     core_.set_auto_reload_enabled(false);
     core_.set_timer_for_testing(scoped_ptr<base::Timer>(timer_));
   }
@@ -161,6 +190,12 @@ class NetErrorHelperCoreTest : public testing::Test,
   const LocalizedError::ErrorPageParams* last_error_page_params() const {
     return last_error_page_params_.get();
   }
+
+  const GURL& last_tracking_url() const { return last_tracking_url_; }
+  const std::string& last_tracking_request_body() const {
+    return last_tracking_request_body_;
+  }
+  int tracking_request_count() const { return tracking_request_count_; }
 
   base::MockTimer* timer() { return timer_; }
 
@@ -226,7 +261,7 @@ class NetErrorHelperCoreTest : public testing::Test,
  private:
   void SetNavigationCorrectionURL(const GURL& navigation_correction_url) {
     core().OnSetNavigationCorrectionInfo(navigation_correction_url,
-                                         "en", "us", "api_key",
+                                         kLanguage, kCountry, kApiKey,
                                          GURL(kSearchUrl));
   }
 
@@ -270,6 +305,20 @@ class NetErrorHelperCoreTest : public testing::Test,
 
     url_being_fetched_ = navigation_correction_url;
     request_body_ = navigation_correction_request_body;
+
+    // Check the body of the request.
+
+    base::JSONReader reader;
+    scoped_ptr<base::Value> parsed_body(reader.Read(
+        navigation_correction_request_body));
+    ASSERT_TRUE(parsed_body);
+    base::DictionaryValue* dict = NULL;
+    ASSERT_TRUE(parsed_body->GetAsDictionary(&dict));
+
+    EXPECT_TRUE(StringValueEquals(*dict, "params.urlQuery", kFailedUrl));
+    EXPECT_TRUE(StringValueEquals(*dict, "params.language", kLanguage));
+    EXPECT_TRUE(StringValueEquals(*dict, "params.originCountry", kCountry));
+    EXPECT_TRUE(StringValueEquals(*dict, "params.key", kApiKey));
   }
 
   virtual void CancelFetchNavigationCorrections() OVERRIDE {
@@ -284,6 +333,28 @@ class NetErrorHelperCoreTest : public testing::Test,
   virtual void LoadPageFromCache(const GURL& error_url) OVERRIDE {
     load_stale_count_++;
     load_stale_url_ = error_url;
+  }
+
+  virtual void SendTrackingRequest(
+      const GURL& tracking_url,
+      const std::string& tracking_request_body) OVERRIDE {
+    last_tracking_url_ = tracking_url;
+    last_tracking_request_body_ = tracking_request_body;
+    tracking_request_count_++;
+
+    // Check the body of the request.
+
+    base::JSONReader reader;
+    scoped_ptr<base::Value> parsed_body(reader.Read(tracking_request_body));
+    ASSERT_TRUE(parsed_body);
+    base::DictionaryValue* dict = NULL;
+    ASSERT_TRUE(parsed_body->GetAsDictionary(&dict));
+
+    EXPECT_TRUE(StringValueEquals(*dict, "params.originalUrlQuery",
+                                  kFailedUrl));
+    EXPECT_TRUE(StringValueEquals(*dict, "params.language", kLanguage));
+    EXPECT_TRUE(StringValueEquals(*dict, "params.originCountry", kCountry));
+    EXPECT_TRUE(StringValueEquals(*dict, "params.key", kApiKey));
   }
 
   base::MockTimer* timer_;
@@ -312,6 +383,10 @@ class NetErrorHelperCoreTest : public testing::Test,
   GURL load_stale_url_;
 
   int enable_page_helper_functions_count_;
+
+  GURL last_tracking_url_;
+  std::string last_tracking_request_body_;
+  int tracking_request_count_;
 };
 
 //------------------------------------------------------------------------------
@@ -1573,7 +1648,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsDisabledDuringFetch) {
 // Checks corrections are is used when there are no search suggestions.
 TEST_F(NetErrorHelperCoreTest, CorrectionsWithoutSearch) {
   const NavigationCorrection kCorrections[] = {
-    {"urlCorrection", "http://somewhere_else/", false, false},
+    {"urlCorrection", "http://somewhere_else/", "btn", "data", false, false},
   };
 
   // Original page starts loading.
@@ -1621,7 +1696,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsWithoutSearch) {
 // Checks corrections are used when there are only search suggestions.
 TEST_F(NetErrorHelperCoreTest, CorrectionsOnlySearchSuggestion) {
   const NavigationCorrection kCorrections[] = {
-    {"webSearchQuery", kSuggestedSearchTerms, false, false},
+    {"webSearchQuery", kSuggestedSearchTerms, "frm", "data", false, false},
   };
 
   // Original page starts loading.
@@ -1737,6 +1812,94 @@ TEST_F(NetErrorHelperCoreTest, CorrectionServiceReturnsInvalidJsonResult) {
                      NetErrorHelperCore::ERROR_PAGE);
   core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME);
   core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+}
+
+TEST_F(NetErrorHelperCoreTest, CorrectionClickTracking) {
+  // Go through the standard navigation correction steps.
+
+  // Original page starts loading.
+  EnableNavigationCorrections();
+  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+                     NetErrorHelperCore::NON_ERROR_PAGE);
+
+  // It fails.
+  std::string html;
+  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+                      NetError(net::ERR_NAME_NOT_RESOLVED),
+                      false, &html);
+  EXPECT_TRUE(html.empty());
+  EXPECT_FALSE(is_url_being_fetched());
+  EXPECT_FALSE(last_error_page_params());
+
+  // The blank page loads.
+  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+                      NetErrorHelperCore::ERROR_PAGE);
+  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME);
+
+  // Corrections retrieval starts when the error page finishes loading.
+  EXPECT_FALSE(is_url_being_fetched());
+  EXPECT_FALSE(last_error_page_params());
+  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  EXPECT_TRUE(is_url_being_fetched());
+  EXPECT_FALSE(last_error_page_params());
+
+  // Corrections are retrieved.
+  NavigationCorrectionsLoadSuccess(kDefaultCorrections,
+                                   arraysize(kDefaultCorrections));
+  EXPECT_EQ(1, error_html_update_count());
+  EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
+  ExpectDefaultNavigationCorrections();
+  EXPECT_FALSE(is_url_being_fetched());
+
+  // Corrections load.
+  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+                      NetErrorHelperCore::ERROR_PAGE);
+  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME);
+  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+
+  EXPECT_EQ(0, tracking_request_count());
+
+  // Invalid clicks should be ignored.
+  core().TrackClick(-1);
+  core().TrackClick(arraysize(kDefaultCorrections));
+  EXPECT_EQ(0, tracking_request_count());
+
+  for (size_t i = 0; i < arraysize(kDefaultCorrections); ++i) {
+    // Skip links that do not appear in the page.
+    if (kDefaultCorrections[i].is_porn || kDefaultCorrections[i].is_soft_porn)
+      continue;
+
+    int old_tracking_request_count = tracking_request_count();
+    core().TrackClick(i);
+    EXPECT_EQ(old_tracking_request_count + 1, tracking_request_count());
+    EXPECT_EQ(GURL(kNavigationCorrectionUrl), last_tracking_url());
+
+    // Make sure all expected strings appear in output.
+    EXPECT_TRUE(last_tracking_request_body().find(
+                    kDefaultCorrections[i].url_correction));
+    EXPECT_TRUE(last_tracking_request_body().find(
+                    kDefaultCorrections[i].click_data));
+    EXPECT_TRUE(last_tracking_request_body().find(
+                    kDefaultCorrections[i].click_type));
+    EXPECT_TRUE(last_tracking_request_body().find(
+                    kNavigationCorrectionEventId));
+    EXPECT_TRUE(last_tracking_request_body().find(
+                    kNavigationCorrectionFingerprint));
+  }
+
+  // Make sure duplicate tracking requests are ignored.
+  for (size_t i = 0; i < arraysize(kDefaultCorrections); ++i) {
+    // Skip links that do not appear in the page.
+    if (kDefaultCorrections[i].is_porn || kDefaultCorrections[i].is_soft_porn)
+      continue;
+
+    int old_tracking_request_count = tracking_request_count();
+    core().TrackClick(i);
+    EXPECT_EQ(old_tracking_request_count, tracking_request_count());
+  }
+
+  EXPECT_EQ(0, update_count());
+  EXPECT_EQ(1, error_html_update_count());
 }
 
 TEST_F(NetErrorHelperCoreTest, AutoReloadDisabled) {
@@ -2023,5 +2186,3 @@ TEST_F(NetErrorHelperCoreTest, ExplicitLoadStaleSucceeds) {
   EXPECT_EQ(1, load_stale_count());
   EXPECT_EQ(GURL(kFailedUrl), load_stale_url());
 }
-
-
