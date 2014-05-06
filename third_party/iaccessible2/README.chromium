@@ -1,8 +1,9 @@
 Name: IAccessible2 COM interfaces for accessibility
 Short Name: IAccessible2
 URL: http://www.linuxfoundation.org/collaborate/workgroups/accessibility/iaccessible2
-Version: unknown
+Version: 1.3
 License: BSD
+Security Critical: yes
 
 Description:
   This directory contains the IAccessible2 API, a set of COM interfaces
