@@ -49,7 +49,7 @@ class ShellTestHelper::TestShellClient : public ShellClient {
 };
 
 ShellTestHelper::ShellTestHelper()
-    : shell_thread_("Test Shell Thread"),
+    : shell_thread_("shell_test_helper"),
       state_(NULL) {
   CommandLine::Init(0, NULL);
   mojo::shell::InitializeLogging();
