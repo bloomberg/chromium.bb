@@ -92,6 +92,12 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
       scoped_refptr<StreamParserBuffer> stream_parser_buffer);
   bool EmitRemainingBuffers();
 
+  // At the beginning of a new segment, some video frames might be discarded.
+  // This function fills the hole by duplicating the first valid key frame
+  // given by |stream_parser_buffer|.
+  void FillVideoGap(
+      const scoped_refptr<StreamParserBuffer>& stream_parser_buffer);
+
   // List of callbacks.
   InitCB init_cb_;
   NewConfigCB config_cb_;
@@ -114,6 +120,11 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
   // Selected audio and video PIDs.
   int selected_audio_pid_;
   int selected_video_pid_;
+
+  // DTS of discarded buffers.
+  // Min PTS of discarded buffers.
+  std::list<base::TimeDelta> discarded_frames_dts_;
+  base::TimeDelta discarded_frames_min_pts_;
 
   // Pending audio & video buffers.
   std::list<BufferQueueWithConfig> buffer_queue_chain_;
