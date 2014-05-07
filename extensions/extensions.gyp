@@ -15,9 +15,6 @@
         # api resources compiled into the chrome resource bundle.
         # http://crbug.com/162530
         '../chrome/chrome_resources.gyp:chrome_resources',
-        # TODO(tfarina): This dep here is for extensions/common/constants.*
-        # We should find a way to compile this module within extensions_common.
-        '../chrome/common_constants.gyp:common_constants',
         '../components/components.gyp:url_matcher',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',
@@ -46,6 +43,8 @@
         'common/api/sockets/sockets_manifest_permission.h',
         'common/common_manifest_handlers.cc',
         'common/common_manifest_handlers.h',
+        'common/constants.cc',
+        'common/constants.h',
         'common/crx_file.cc',
         'common/crx_file.h',
         'common/csp_validator.cc',
