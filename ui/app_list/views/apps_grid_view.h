@@ -115,7 +115,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void UpdateDrag(Pointer pointer, const gfx::Point& point);
   void EndDrag(bool cancel);
   bool IsDraggedView(const views::View* view) const;
-  void ClearDragState(bool cancel_reparent);
+  void ClearDragState();
   void SetDragViewVisible(bool visible);
 
   // Set the drag and drop host for application links.
@@ -175,8 +175,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // root level grid view to end reparenting a folder item.
   // |events_forwarded_to_drag_drop_host|: True if the dragged item is dropped
   // to the drag_drop_host, eg. dropped on shelf.
+  // |cancel_drag|: True if the drag is ending because it has been canceled.
   void EndDragFromReparentItemInRootLevel(
-      bool events_forwarded_to_drag_drop_host);
+      bool events_forwarded_to_drag_drop_host,
+      bool cancel_drag);
 
   // Handles EndDrag event in the hidden folder grid view to end reparenting
   // a folder item.
