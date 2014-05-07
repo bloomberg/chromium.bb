@@ -714,11 +714,20 @@
     "channel": "dev",
     "extension_types": ["extension"]
   }, {
+    "channel": "beta",
+    "extension_types": ["extension"],
+    "whitelist": [
+      "7D7A4B147FE39908A5AF13F85E38989C54BBE41C",  // http://crbug.com/370700
+      "0EEDFC0EED87871237213F34EBC7B4982A195C95"   // http://crbug.com/370700
+    ]
+  }, {
     "channel": "stable",
     "extension_types": ["extension"],
     "whitelist": [
       "DF84F03F9B960409CCDE0D895B9650EBE81C0A8E",  // Hangout Services
-      "80B9DC58E5210749F052F5B4DB239C50CF72AEB6"   // Hangouts test extension
+      "80B9DC58E5210749F052F5B4DB239C50CF72AEB6",  // Hangouts test extension
+      "7D7A4B147FE39908A5AF13F85E38989C54BBE41C",  // http://crbug.com/370700
+      "0EEDFC0EED87871237213F34EBC7B4982A195C95"   // http://crbug.com/370700
     ]
   }],
   "proxy": {
