@@ -36,14 +36,18 @@
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
+struct seat {
+	struct touch *touch;
+	struct wl_seat *seat;
+	struct wl_touch *wl_touch;
+};
+
 struct touch {
 	struct wl_display *display;
 	struct wl_registry *registry;
 	struct wl_compositor *compositor;
 	struct wl_shell *shell;
 	struct wl_shm *shm;
-	struct wl_seat *seat;
-	struct wl_touch *wl_touch;
 	struct wl_pointer *pointer;
 	struct wl_keyboard *keyboard;
 	struct wl_surface *surface;
@@ -199,24 +203,40 @@ static const struct wl_touch_listener touch_listener = {
 };
 
 static void
-seat_handle_capabilities(void *data, struct wl_seat *seat,
+seat_handle_capabilities(void *data, struct wl_seat *wl_seat,
 			 enum wl_seat_capability caps)
 {
-	struct touch *touch = data;
+	struct seat *seat = data;
+	struct touch *touch = seat->touch;
 
-	if ((caps & WL_SEAT_CAPABILITY_TOUCH) && !touch->wl_touch) {
-		touch->wl_touch = wl_seat_get_touch(seat);
-		wl_touch_set_user_data(touch->wl_touch, touch);
-		wl_touch_add_listener(touch->wl_touch, &touch_listener, touch);
-	} else if (!(caps & WL_SEAT_CAPABILITY_TOUCH) && touch->wl_touch) {
-		wl_touch_destroy(touch->wl_touch);
-		touch->wl_touch = NULL;
+	if ((caps & WL_SEAT_CAPABILITY_TOUCH) && !seat->wl_touch) {
+		seat->wl_touch = wl_seat_get_touch(wl_seat);
+		wl_touch_set_user_data(seat->wl_touch, touch);
+		wl_touch_add_listener(seat->wl_touch, &touch_listener, touch);
+	} else if (!(caps & WL_SEAT_CAPABILITY_TOUCH) && seat->wl_touch) {
+		wl_touch_destroy(seat->wl_touch);
+		seat->wl_touch = NULL;
 	}
 }
 
 static const struct wl_seat_listener seat_listener = {
 	seat_handle_capabilities,
 };
+
+static void
+add_seat(struct touch *touch, uint32_t name, uint32_t version)
+{
+	struct seat *seat;
+
+	seat = malloc(sizeof *seat);
+	assert(seat);
+
+	seat->touch = touch;
+	seat->wl_touch = NULL;
+	seat->seat = wl_registry_bind(touch->registry, name,
+				      &wl_seat_interface, 1);
+	wl_seat_add_listener(seat->seat, &seat_listener, seat);
+}
 
 static void
 handle_ping(void *data, struct wl_shell_surface *shell_surface,
@@ -261,9 +281,7 @@ handle_global(void *data, struct wl_registry *registry,
 					      &wl_shm_interface, 1);
 		wl_shm_add_listener(touch->shm, &shm_listener, touch);
 	} else if (strcmp(interface, "wl_seat") == 0) {
-		touch->seat = wl_registry_bind(registry, name,
-					       &wl_seat_interface, 1);
-		wl_seat_add_listener(touch->seat, &seat_listener, touch);
+		add_seat(touch, name, version);
 	}
 }
 
