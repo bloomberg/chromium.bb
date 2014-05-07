@@ -18,11 +18,17 @@
 class FakeURLLoaderEntity {
  public:
   explicit FakeURLLoaderEntity(const std::string& body);
+  FakeURLLoaderEntity(const std::string& to_repeat, off_t size);
 
   const std::string& body() const { return body_; }
+  off_t size() { return size_; }
+
+  size_t Read(void* buffer, size_t count, off_t offset);
 
  private:
   std::string body_;
+  off_t size_;
+  bool repeat_;
 };
 
 class FakeURLLoaderServer {
@@ -32,6 +38,10 @@ class FakeURLLoaderServer {
   void Clear();
   bool AddEntity(const std::string& url,
                  const std::string& body,
+                 FakeURLLoaderEntity** out_entity);
+  bool AddEntity(const std::string& url,
+                 const std::string& body,
+                 off_t size,
                  FakeURLLoaderEntity** out_entity);
   bool AddError(const std::string& url,
                 int http_status_code);

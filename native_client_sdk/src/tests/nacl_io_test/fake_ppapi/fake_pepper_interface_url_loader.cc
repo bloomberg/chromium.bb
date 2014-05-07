@@ -12,9 +12,12 @@
 
 #include "gtest/gtest.h"
 
+#include "nacl_io/osinttypes.h"
+
 namespace {
 
-bool GetHeaderValue(const std::string& headers, const std::string& key,
+bool GetHeaderValue(const std::string& headers,
+                    const std::string& key,
                     std::string* out_value) {
   out_value->clear();
 
@@ -71,11 +74,11 @@ class FakeURLLoaderResource : public FakeResource {
   static const char* classname() { return "FakeURLLoaderResource"; }
 
   FakeResourceManager* manager;  // Weak reference.
-  FakeURLLoaderServer* server;  // Weak reference.
-  FakeURLLoaderEntity* entity;  // Weak reference.
+  FakeURLLoaderServer* server;   // Weak reference.
+  FakeURLLoaderEntity* entity;   // Weak reference.
   PP_Resource response;
-  size_t read_offset;
-  size_t read_end;
+  off_t read_offset;
+  off_t read_end;
 };
 
 class FakeURLRequestInfoResource : public FakeResource {
@@ -119,7 +122,7 @@ int32_t RunCompletionCallback(PP_CompletionCallback* callback, int32_t result) {
 void HandleContentLength(FakeURLLoaderResource* loader,
                          FakeURLResponseInfoResource* response,
                          FakeURLLoaderEntity* entity) {
-  size_t content_length = entity->body().size();
+  off_t content_length = entity->size();
   if (!loader->server->send_content_length())
     return;
 
@@ -142,14 +145,14 @@ void HandlePartial(FakeURLLoaderResource* loader,
     return;
 
   // We don't support all range requests, just bytes=<num>-<num>
-  unsigned lo;
-  unsigned hi;
-  if (sscanf(range.c_str(), "bytes=%u-%u", &lo, &hi) != 2) {
+  off_t lo;
+  off_t hi;
+  if (sscanf(range.c_str(), "bytes=%" SCNi64 "-%" SCNi64, &lo, &hi) != 2) {
     // Couldn't parse the range value.
     return;
   }
 
-  size_t content_length = entity->body().size();
+  off_t content_length = entity->size();
   if (lo > content_length) {
     // Trying to start reading past the end of the entity is
     // unsatisfiable.
@@ -174,7 +177,8 @@ void HandlePartial(FakeURLLoaderResource* loader,
 
   // Also add a "Content-Range" response header.
   std::ostringstream ss;
-  ss << "Content-Range: " << lo << "-" << hi << "/" << content_length << "\n";
+  ss << "Content-Range: bytes " << lo << "-" << hi << "/" << content_length
+     << "\n";
   response->headers += ss.str();
 
   response->status_code = 206;  // Partial content
@@ -183,10 +187,59 @@ void HandlePartial(FakeURLLoaderResource* loader,
 }  // namespace
 
 FakeURLLoaderEntity::FakeURLLoaderEntity(const std::string& body)
-    : body_(body) {}
+    : body_(body), size_(body_.size()), repeat_(false) {
+}
+
+// Rather than specifying the entire file, specify a string to repeat, and the
+// full length. This lets us test extremely large files without having to store
+// them in memory.
+FakeURLLoaderEntity::FakeURLLoaderEntity(const std::string& to_repeat,
+                                         off_t size)
+    : body_(to_repeat), size_(size), repeat_(true) {
+}
+
+size_t FakeURLLoaderEntity::Read(void* buffer, size_t count, off_t offset) {
+  off_t max_read_count =
+      std::max<off_t>(std::min<off_t>(size_ - offset, 0xffffffff), 0);
+  size_t bytes_to_read = std::min(count, static_cast<size_t>(max_read_count));
+
+  if (repeat_) {
+    size_t src_size = body_.size();
+    char* dst = static_cast<char*>(buffer);
+    const char* src = body_.data();
+    size_t bytes_left = bytes_to_read;
+
+    size_t src_offset = static_cast<size_t>(offset % src_size);
+    if (src_offset != 0) {
+      // Copy enough to align.
+      size_t bytes_to_copy = std::min(bytes_left, src_size - src_offset);
+      memcpy(dst, src + src_offset, bytes_to_copy);
+      dst += bytes_to_copy;
+      bytes_left -= bytes_to_copy;
+    }
+
+    // Copy the body N times.
+    for (size_t i = bytes_left / src_size; i > 0; --i) {
+      memcpy(dst, src, src_size);
+      dst += src_size;
+      bytes_left -= src_size;
+    }
+
+    // Copy the rest of the bytes, < src_size.
+    if (bytes_left > 0) {
+      assert(bytes_left < src_size);
+      memcpy(dst, src, bytes_left);
+    }
+  } else {
+    memcpy(buffer, &body_.data()[offset], bytes_to_read);
+  }
+
+  return bytes_to_read;
+}
 
 FakeURLLoaderServer::FakeURLLoaderServer()
-    : max_read_size_(0), send_content_length_(false), allow_partial_(false) {}
+    : max_read_size_(0), send_content_length_(false), allow_partial_(false) {
+}
 
 void FakeURLLoaderServer::Clear() {
   entity_map_.clear();
@@ -203,6 +256,27 @@ bool FakeURLLoaderServer::AddEntity(const std::string& url,
   }
 
   FakeURLLoaderEntity entity(body);
+  std::pair<EntityMap::iterator, bool> result =
+      entity_map_.insert(EntityMap::value_type(url, entity));
+
+  EXPECT_EQ(true, result.second);
+  if (out_entity)
+    *out_entity = &result.first->second;
+  return true;
+}
+
+bool FakeURLLoaderServer::AddEntity(const std::string& url,
+                                    const std::string& body,
+                                    off_t size,
+                                    FakeURLLoaderEntity** out_entity) {
+  EntityMap::iterator iter = entity_map_.find(url);
+  if (iter != entity_map_.end()) {
+    if (out_entity)
+      *out_entity = NULL;
+    return false;
+  }
+
+  FakeURLLoaderEntity entity(body, size);
   std::pair<EntityMap::iterator, bool> result =
       entity_map_.insert(EntityMap::value_type(url, entity));
 
@@ -238,7 +312,8 @@ int FakeURLLoaderServer::GetError(const std::string& url) {
 
 FakeURLLoaderInterface::FakeURLLoaderInterface(
     FakeCoreInterface* core_interface)
-    : core_interface_(core_interface) {}
+    : core_interface_(core_interface) {
+}
 
 PP_Resource FakeURLLoaderInterface::Create(PP_Instance instance) {
   FakeInstanceResource* instance_resource =
@@ -311,7 +386,7 @@ int32_t FakeURLLoaderInterface::Open(PP_Resource loader,
   }
 
   if (entity != NULL) {
-    size_t content_length = entity->body().size();
+    off_t content_length = entity->size();
     loader_resource->read_end = content_length;
     HandleContentLength(loader_resource, response_resource, entity);
     HandlePartial(loader_resource, request_resource, response_resource, entity);
@@ -346,22 +421,18 @@ int32_t FakeURLLoaderInterface::ReadResponseBody(
     // TODO(binji): figure out the correct error here.
     return PP_ERROR_FAILED;
 
-  const std::string& body = loader_resource->entity->body();
-  size_t offset = loader_resource->read_offset;
-  // Never read more than is available.
-  size_t max_readable = std::max<size_t>(0, body.length() - offset);
-  size_t server_max_read_size = loader_resource->server->max_read_size();
   // Allow the test to specify how much the "server" should send in each call
   // to ReadResponseBody. A max_read_size of 0 means read as much as the
   // buffer will allow.
+  size_t server_max_read_size = loader_resource->server->max_read_size();
   if (server_max_read_size != 0)
-    max_readable = std::min(max_readable, server_max_read_size);
+    bytes_to_read = std::min<int32_t>(bytes_to_read, server_max_read_size);
 
-  bytes_to_read = std::min(static_cast<size_t>(bytes_to_read), max_readable);
-  memcpy(buffer, &body.data()[offset], bytes_to_read);
-  loader_resource->read_offset += bytes_to_read;
+  size_t bytes_read = loader_resource->entity->Read(
+      buffer, bytes_to_read, loader_resource->read_offset);
+  loader_resource->read_offset += bytes_read;
 
-  return RunCompletionCallback(&callback, bytes_to_read);
+  return RunCompletionCallback(&callback, bytes_read);
 }
 
 void FakeURLLoaderInterface::Close(PP_Resource loader) {
@@ -381,7 +452,8 @@ void FakeURLLoaderInterface::Close(PP_Resource loader) {
 FakeURLRequestInfoInterface::FakeURLRequestInfoInterface(
     FakeCoreInterface* core_interface,
     FakeVarInterface* var_interface)
-    : core_interface_(core_interface), var_interface_(var_interface) {}
+    : core_interface_(core_interface), var_interface_(var_interface) {
+}
 
 PP_Resource FakeURLRequestInfoInterface::Create(PP_Instance instance) {
   FakeInstanceResource* instance_resource =
@@ -466,7 +538,8 @@ PP_Bool FakeURLRequestInfoInterface::SetProperty(PP_Resource request,
 FakeURLResponseInfoInterface::FakeURLResponseInfoInterface(
     FakeCoreInterface* core_interface,
     FakeVarInterface* var_interface)
-    : core_interface_(core_interface), var_interface_(var_interface) {}
+    : core_interface_(core_interface), var_interface_(var_interface) {
+}
 
 PP_Var FakeURLResponseInfoInterface::GetProperty(
     PP_Resource response,

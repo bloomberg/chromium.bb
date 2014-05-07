@@ -71,6 +71,11 @@ class HttpFsTest : public ::testing::TestWithParam<StringMapParam> {
 
 HttpFsTest::HttpFsTest() : fs_(MakeStringMap(GetParam()), &ppapi_) {}
 
+class HttpFsLargeFileTest : public HttpFsTest {
+ public:
+  HttpFsLargeFileTest() {}
+};
+
 }  // namespace
 
 TEST_P(HttpFsTest, Access) {
@@ -199,6 +204,71 @@ INSTANTIATE_TEST_CASE_P(
                       (uint32_t)kStringMapParamCacheContent,
                       (uint32_t)kStringMapParamCacheStat,
                       (uint32_t)kStringMapParamCacheContentStat));
+
+TEST_P(HttpFsLargeFileTest, ReadPartial) {
+  const char contents[] = "0123456789abcdefg";
+  off_t size = 0x110000000ll;
+  ASSERT_TRUE(
+      ppapi_.server_template()->AddEntity("file", contents, size, NULL));
+  ppapi_.server_template()->set_send_content_length(true);
+  ppapi_.server_template()->set_allow_partial(true);
+
+  int result_bytes = 0;
+
+  char buf[10];
+  memset(&buf[0], 0, sizeof(buf));
+
+  ScopedNode node;
+  ASSERT_EQ(0, fs_.Open(Path("/file"), O_RDONLY, &node));
+  HandleAttr attr;
+  EXPECT_EQ(0, node->Read(attr, buf, sizeof(buf) - 1, &result_bytes));
+  EXPECT_EQ(sizeof(buf) - 1, result_bytes);
+  EXPECT_STREQ("012345678", &buf[0]);
+
+  // Read is clamped when reading past the end of the file.
+  attr.offs = size - 7;
+  ASSERT_EQ(0, node->Read(attr, buf, sizeof(buf) - 1, &result_bytes));
+  ASSERT_EQ(strlen("abcdefg"), result_bytes);
+  buf[result_bytes] = 0;
+  EXPECT_STREQ("abcdefg", &buf[0]);
+
+  // Read nothing when starting past the end of the file.
+  attr.offs = size + 100;
+  EXPECT_EQ(0, node->Read(attr, &buf[0], sizeof(buf), &result_bytes));
+  EXPECT_EQ(0, result_bytes);
+}
+
+TEST_P(HttpFsLargeFileTest, GetStat) {
+  const char contents[] = "contents";
+  off_t size = 0x110000000ll;
+  ASSERT_TRUE(
+      ppapi_.server_template()->AddEntity("file", contents, size, NULL));
+  // TODO(binji): If the server doesn't send the content length, this operation
+  // will be incredibly slow; it will attempt to read all of the data from the
+  // server to find the file length. Can we do anything smarter?
+  ppapi_.server_template()->set_send_content_length(true);
+
+  ScopedNode node;
+  ASSERT_EQ(0, fs_.Open(Path("/file"), O_RDONLY, &node));
+
+  struct stat statbuf;
+  EXPECT_EQ(0, node->GetStat(&statbuf));
+  EXPECT_EQ(S_IFREG | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH,
+            statbuf.st_mode);
+  EXPECT_EQ(size, statbuf.st_size);
+  // These are not currently set.
+  EXPECT_EQ(0, statbuf.st_atime);
+  EXPECT_EQ(0, statbuf.st_ctime);
+  EXPECT_EQ(0, statbuf.st_mtime);
+}
+
+// Instantiate the large file tests, only when cache content is off.
+// TODO(binji): make cache content smarter, so it doesn't try to cache enormous
+// files. See http://crbug.com/369279.
+INSTANTIATE_TEST_CASE_P(Default,
+                        HttpFsLargeFileTest,
+                        ::testing::Values((uint32_t)kStringMapParamCacheNone,
+                                          (uint32_t)kStringMapParamCacheStat));
 
 TEST(HttpFsDirTest, Mkdir) {
   StringMap_t args;
