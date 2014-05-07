@@ -337,6 +337,10 @@ AtomicString HTMLAnchorElement::target() const
     return getAttribute(targetAttr);
 }
 
+void HTMLAnchorElement::setText(const String& text)
+{
+    setTextContent(text);
+}
 
 String HTMLAnchorElement::text()
 {
