@@ -755,7 +755,7 @@ void RenderBlockFlow::rebuildFloatsFromIntruding()
     }
 
     // Inline blocks are covered by the isReplaced() check in the avoidFloats method.
-    if (avoidsFloats() || isDocumentElement() || isRenderView() || isFloatingOrOutOfFlowPositioned() || isTableCell()) {
+    if (avoidsOrIgnoresFloats() || isRenderView()) {
         if (m_floatingObjects) {
             m_floatingObjects->clear();
         }
@@ -785,7 +785,7 @@ void RenderBlockFlow::rebuildFloatsFromIntruding()
     RenderBlockFlow* parentBlockFlow = toRenderBlockFlow(parent());
     bool parentHasFloats = false;
     RenderObject* prev = previousSibling();
-    while (prev && (!prev->isBox() || !prev->isRenderBlock() || toRenderBlock(prev)->avoidsFloats() || toRenderBlock(prev)->createsBlockFormattingContext())) {
+    while (prev && (!prev->isBox() || !prev->isRenderBlock() || toRenderBlock(prev)->avoidsOrIgnoresFloats())) {
         if (prev->isFloating())
             parentHasFloats = true;
         prev = prev->previousSibling();
@@ -1718,7 +1718,7 @@ void RenderBlockFlow::markSiblingsWithFloatsForLayout(RenderBox* floatToRemove)
     FloatingObjectSetIterator end = floatingObjectSet.end();
 
     for (RenderObject* next = nextSibling(); next; next = next->nextSibling()) {
-        if (!next->isRenderBlockFlow() || next->isFloatingOrOutOfFlowPositioned() || toRenderBlock(next)->avoidsFloats())
+        if (!next->isRenderBlockFlow() || avoidsOrIgnoresFloats())
             continue;
 
         RenderBlockFlow* nextBlock = toRenderBlockFlow(next);
@@ -1810,7 +1810,7 @@ void RenderBlockFlow::createFloatingObjects()
 void RenderBlockFlow::styleWillChange(StyleDifference diff, const RenderStyle& newStyle)
 {
     RenderStyle* oldStyle = style();
-    s_canPropagateFloatIntoSibling = oldStyle ? !isFloatingOrOutOfFlowPositioned() && !avoidsFloats() : false;
+    s_canPropagateFloatIntoSibling = oldStyle ? !createsBlockFormattingContext() : false;
     if (oldStyle && parent() && diff.needsFullLayout() && oldStyle->position() != newStyle.position()
         && containsFloats() && !isFloating() && !isOutOfFlowPositioned() && newStyle.hasOutOfFlowPosition())
             markAllDescendantsWithFloatsForLayout();
@@ -1826,7 +1826,7 @@ void RenderBlockFlow::styleDidChange(StyleDifference diff, const RenderStyle* ol
     // blocks, then we need to find the top most parent containing that overhanging float and
     // then mark its descendants with floats for layout and clear all floats from its next
     // sibling blocks that exist in our floating objects list. See bug 56299 and 62875.
-    bool canPropagateFloatIntoSibling = !isFloatingOrOutOfFlowPositioned() && !avoidsFloats();
+    bool canPropagateFloatIntoSibling = !createsBlockFormattingContext();
     if (diff.needsFullLayout() && s_canPropagateFloatIntoSibling && !canPropagateFloatIntoSibling && hasOverhangingFloats()) {
         RenderBlockFlow* parentBlockFlow = this;
         const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
