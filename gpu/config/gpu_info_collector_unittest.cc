@@ -28,10 +28,9 @@ class GPUInfoCollectorTest : public testing::Test {
     const char* driver_vendor = "";  // not implemented
     const char* driver_version = "";
     const char* shader_version = "1.40";
-    const char* gl_version = "3.1";
     const char* gl_renderer = "Quadro FX 380/PCI/SSE2";
     const char* gl_vendor = "NVIDIA Corporation";
-    const char* gl_version_string = "3.1.0";
+    const char* gl_version = "3.1.0";
     const char* gl_shading_language_version = "1.40 NVIDIA via Cg compiler";
     const char* gl_extensions =
         "GL_OES_packed_depth_stencil GL_EXT_texture_format_BGRA8888 "
@@ -42,10 +41,9 @@ class GPUInfoCollectorTest : public testing::Test {
     const char* driver_vendor = "";  // not implemented
     const char* driver_version = "1.6.18";
     const char* shader_version = "1.20";
-    const char* gl_version = "2.1";
     const char* gl_renderer = "NVIDIA GeForce GT 120 OpenGL Engine";
     const char* gl_vendor = "NVIDIA Corporation";
-    const char* gl_version_string = "2.1 NVIDIA-1.6.18";
+    const char* gl_version = "2.1 NVIDIA-1.6.18";
     const char* gl_shading_language_version = "1.20 ";
     const char* gl_extensions =
         "GL_OES_packed_depth_stencil GL_EXT_texture_format_BGRA8888 "
@@ -56,10 +54,9 @@ class GPUInfoCollectorTest : public testing::Test {
     const char* driver_vendor = "NVIDIA";
     const char* driver_version = "195.36.24";
     const char* shader_version = "1.50";
-    const char* gl_version = "3.2";
     const char* gl_renderer = "Quadro FX 380/PCI/SSE2";
     const char* gl_vendor = "NVIDIA Corporation";
-    const char* gl_version_string = "3.2.0 NVIDIA 195.36.24";
+    const char* gl_version = "3.2.0 NVIDIA 195.36.24";
     const char* gl_shading_language_version = "1.50 NVIDIA via Cg compiler";
     const char* gl_extensions =
         "GL_OES_packed_depth_stencil GL_EXT_texture_format_BGRA8888 "
@@ -71,10 +68,9 @@ class GPUInfoCollectorTest : public testing::Test {
     test_values_.driver_version =driver_version;
     test_values_.pixel_shader_version = shader_version;
     test_values_.vertex_shader_version = shader_version;
-    test_values_.gl_version = gl_version;
     test_values_.gl_renderer = gl_renderer;
     test_values_.gl_vendor = gl_vendor;
-    test_values_.gl_version_string = gl_version_string;
+    test_values_.gl_version = gl_version;
     test_values_.gl_extensions = gl_extensions;
     test_values_.can_lose_context = false;
 
@@ -86,7 +82,7 @@ class GPUInfoCollectorTest : public testing::Test {
             gl_shading_language_version)));
     EXPECT_CALL(*gl_, GetString(GL_VERSION))
         .WillRepeatedly(Return(reinterpret_cast<const GLubyte*>(
-            gl_version_string)));
+            gl_version)));
     EXPECT_CALL(*gl_, GetString(GL_VENDOR))
         .WillRepeatedly(Return(reinterpret_cast<const GLubyte*>(
             gl_vendor)));
@@ -145,36 +141,25 @@ TEST_F(GPUInfoCollectorTest, DISABLED_VertexShaderVersionGL) {
 TEST_F(GPUInfoCollectorTest, DISABLED_GLVersionGL) {
   GPUInfo gpu_info;
   CollectGraphicsInfoGL(&gpu_info);
-  EXPECT_EQ(test_values_.gl_version,
-            gpu_info.gl_version);
-}
-
-TEST_F(GPUInfoCollectorTest, DISABLED_GLVersionStringGL) {
-  GPUInfo gpu_info;
-  CollectGraphicsInfoGL(&gpu_info);
-  EXPECT_EQ(test_values_.gl_version_string,
-            gpu_info.gl_version_string);
+  EXPECT_EQ(test_values_.gl_version, gpu_info.gl_version);
 }
 
 TEST_F(GPUInfoCollectorTest, DISABLED_GLRendererGL) {
   GPUInfo gpu_info;
   CollectGraphicsInfoGL(&gpu_info);
-  EXPECT_EQ(test_values_.gl_renderer,
-            gpu_info.gl_renderer);
+  EXPECT_EQ(test_values_.gl_renderer, gpu_info.gl_renderer);
 }
 
 TEST_F(GPUInfoCollectorTest, DISABLED_GLVendorGL) {
   GPUInfo gpu_info;
   CollectGraphicsInfoGL(&gpu_info);
-  EXPECT_EQ(test_values_.gl_vendor,
-            gpu_info.gl_vendor);
+  EXPECT_EQ(test_values_.gl_vendor, gpu_info.gl_vendor);
 }
 
 TEST_F(GPUInfoCollectorTest, DISABLED_GLExtensionsGL) {
   GPUInfo gpu_info;
   CollectGraphicsInfoGL(&gpu_info);
-  EXPECT_EQ(test_values_.gl_extensions,
-            gpu_info.gl_extensions);
+  EXPECT_EQ(test_values_.gl_extensions, gpu_info.gl_extensions);
 }
 
 }  // namespace gpu

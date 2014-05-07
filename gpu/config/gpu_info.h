@@ -112,20 +112,16 @@ struct GPU_EXPORT GPUInfo {
   // See machine_model_name's comment.
   std::string machine_model_version;
 
-  // The version of OpenGL we are using.
-  // TODO(zmo): should be able to tell if it's GL or GLES.
+  // The GL_VERSION string.
   std::string gl_version;
 
-  // The GL_VERSION string.  "" if we are not using OpenGL.
-  std::string gl_version_string;
-
-  // The GL_VENDOR string.  "" if we are not using OpenGL.
+  // The GL_VENDOR string.
   std::string gl_vendor;
 
-  // The GL_RENDERER string.  "" if we are not using OpenGL.
+  // The GL_RENDERER string.
   std::string gl_renderer;
 
-  // The GL_EXTENSIONS string.  "" if we are not using OpenGL.
+  // The GL_EXTENSIONS string.
   std::string gl_extensions;
 
   // GL window system binding vendor.  "" if not available.

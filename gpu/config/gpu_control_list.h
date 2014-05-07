@@ -339,6 +339,13 @@ class GPU_EXPORT GpuControlList {
       kMultiGpuCategoryNone
     };
 
+    enum GLType {
+      kGLTypeGL,  // This is default on MacOSX, Linux, ChromeOS
+      kGLTypeGLES,  // This is default on Android
+      kGLTypeANGLE,  // This is default on Windows
+      kGLTypeNone
+    };
+
     GpuControlListEntry();
     ~GpuControlListEntry();
 
@@ -359,6 +366,8 @@ class GPU_EXPORT GpuControlList {
 
     bool SetMultiGpuCategory(const std::string& multi_gpu_category_string);
 
+    bool SetGLType(const std::string& gl_type_string);
+
     bool SetDriverVendorInfo(const std::string& vendor_op,
                              const std::string& vendor_value);
 
@@ -370,6 +379,10 @@ class GPU_EXPORT GpuControlList {
     bool SetDriverDateInfo(const std::string& date_op,
                            const std::string& date_string,
                            const std::string& date_string2);
+
+    bool SetGLVersionInfo(const std::string& version_op,
+                          const std::string& version_string,
+                          const std::string& version_string2);
 
     bool SetGLVendorInfo(const std::string& vendor_op,
                          const std::string& vendor_value);
@@ -417,16 +430,26 @@ class GPU_EXPORT GpuControlList {
 
     void AddException(ScopedGpuControlListEntry exception);
 
+    // Return true if GL_VERSION string does not fit the entry info
+    // on GL type and GL version.
+    bool GLVersionInfoMismatch(const std::string& gl_version) const;
+
     static MultiGpuStyle StringToMultiGpuStyle(const std::string& style);
 
     static MultiGpuCategory StringToMultiGpuCategory(
         const std::string& category);
+
+    static GLType StringToGLType(const std::string& gl_type);
 
     // map a feature_name to feature_id. If the string is not a registered
     // feature name, return false.
     static bool StringToFeature(const std::string& feature_name,
                                 int* feature_id,
                                 const FeatureMap& feature_map);
+
+    // Return the default GL type, depending on the OS.
+    // See GLType declaration.
+    static GLType GetDefaultGLType();
 
     uint32 id_;
     bool disabled_;
@@ -438,9 +461,11 @@ class GPU_EXPORT GpuControlList {
     std::vector<uint32> device_id_list_;
     MultiGpuStyle multi_gpu_style_;
     MultiGpuCategory multi_gpu_category_;
+    GLType gl_type_;
     scoped_ptr<StringInfo> driver_vendor_info_;
     scoped_ptr<VersionInfo> driver_version_info_;
     scoped_ptr<VersionInfo> driver_date_info_;
+    scoped_ptr<VersionInfo> gl_version_info_;
     scoped_ptr<StringInfo> gl_vendor_info_;
     scoped_ptr<StringInfo> gl_renderer_info_;
     scoped_ptr<StringInfo> gl_extensions_info_;

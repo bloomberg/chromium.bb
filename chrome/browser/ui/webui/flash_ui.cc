@@ -366,10 +366,9 @@ void FlashDOMHandler::MaybeRespondToPage() {
   AddPair(list,
           ASCIIToUTF16("Vertex shader version"),
           gpu_info.vertex_shader_version);
-  AddPair(list, ASCIIToUTF16("GL version"), gpu_info.gl_version);
   AddPair(list, ASCIIToUTF16("GL_VENDOR"), gpu_info.gl_vendor);
   AddPair(list, ASCIIToUTF16("GL_RENDERER"), gpu_info.gl_renderer);
-  AddPair(list, ASCIIToUTF16("GL_VERSION"), gpu_info.gl_version_string);
+  AddPair(list, ASCIIToUTF16("GL_VERSION"), gpu_info.gl_version);
   AddPair(list, ASCIIToUTF16("GL_EXTENSIONS"), gpu_info.gl_extensions);
 
   base::DictionaryValue flashInfo;

@@ -32,27 +32,32 @@
 // 8. "driver_version" is a VERSION structure (defined below).
 // 9. "driver_date" is a VERSION structure (defined below).
 //    The version is interpreted as "year.month.day".
-// 10. "gl_vendor" is a STRING structure (defined below).
-// 11. "gl_renderer" is a STRING structure (defined below).
-// 12. "gl_extensions" is a STRING structure (defined below).
-// 13. "perf_graphics" is a FLOAT structure (defined below).
-// 14. "perf_gaming" is a FLOAT structure (defined below).
-// 15. "perf_overall" is a FLOAT structure (defined below).
-// 16. "machine_model_name" is an array of strings.  The strings can contain
+// 10. "gl_type" is a string, valid values include "gl", "gles", and "angle".
+//    If "gl_version" is specified and "gl_type" is not, use the default value.
+//    The default value on Android is "gles", on Windows is "angle", on other
+//    platforms is "gl".
+// 11. "gl_version" is a VERSION structure (defined below).
+// 12. "gl_vendor" is a STRING structure (defined below).
+// 13. "gl_renderer" is a STRING structure (defined below).
+// 14. "gl_extensions" is a STRING structure (defined below).
+// 15. "perf_graphics" is a FLOAT structure (defined below).
+// 16. "perf_gaming" is a FLOAT structure (defined below).
+// 17. "perf_overall" is a FLOAT structure (defined below).
+// 18. "machine_model_name" is an array of strings.  The strings can contain
 //     any characters.
-// 17. "machine_model_version" is a VERSION structure (defined below).
-// 18. "gpu_count" is a INT structure (defined below).
-// 19  "cpu_info" is a STRING structure (defined below).
-// 20. "exceptions" is a list of entries.
-// 21. "features" is a list of gpu control list options, which can be
+// 19. "machine_model_version" is a VERSION structure (defined below).
+// 20. "gpu_count" is a INT structure (defined below).
+// 21  "cpu_info" is a STRING structure (defined below).
+// 22. "exceptions" is a list of entries.
+// 23. "features" is a list of gpu control list options, which can be
 //     configured by a specific list. See its *_json.cc file for a list of
 //     supported features. This field is mandatory.
-// 22. "description" has the description of the entry.
-// 23. "webkit_bugs" is an array of associated webkit bug numbers.
-// 24. "cr_bugs" is an array of associated webkit bug numbers.
-// 25. "disabled" is a boolean. If it is present, the entry will be skipped.
+// 24. "description" has the description of the entry.
+// 25. "webkit_bugs" is an array of associated webkit bug numbers.
+// 26. "cr_bugs" is an array of associated webkit bug numbers.
+// 27. "disabled" is a boolean. If it is present, the entry will be skipped.
 //     This can not be used in exceptions.
-// 26. "direct_rendering" is a boolean. If present, this will filter on whether
+// 28. "direct_rendering" is a boolean. If present, this will filter on whether
 // the GL contexts are direct or indirect based on the value.
 //
 // VERSION includes "op", "style", "value", and "value2".  "op" can be any of

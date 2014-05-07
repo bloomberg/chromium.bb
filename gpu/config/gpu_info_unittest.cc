@@ -21,7 +21,6 @@ TEST(GPUInfoBasicTest, EmptyGPUInfo) {
   EXPECT_EQ(gpu_info.pixel_shader_version, "");
   EXPECT_EQ(gpu_info.vertex_shader_version, "");
   EXPECT_EQ(gpu_info.gl_version, "");
-  EXPECT_EQ(gpu_info.gl_version_string, "");
   EXPECT_EQ(gpu_info.gl_vendor, "");
   EXPECT_EQ(gpu_info.gl_renderer, "");
   EXPECT_EQ(gpu_info.gl_extensions, "");

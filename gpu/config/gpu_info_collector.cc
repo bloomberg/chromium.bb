@@ -99,7 +99,7 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   gpu_info->gl_renderer = GetGLString(GL_RENDERER);
   gpu_info->gl_vendor = GetGLString(GL_VENDOR);
   gpu_info->gl_extensions = GetGLString(GL_EXTENSIONS);
-  gpu_info->gl_version_string = GetGLString(GL_VERSION);
+  gpu_info->gl_version = GetGLString(GL_VERSION);
   std::string glsl_version_string = GetGLString(GL_SHADING_LANGUAGE_VERSION);
 
   gfx::GLWindowSystemBindingInfo window_system_binding_info;
@@ -122,7 +122,6 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   // clears the current context.
   context->ReleaseCurrent(surface.get());
 
-  gpu_info->gl_version = GetVersionFromString(gpu_info->gl_version_string);
   std::string glsl_version = GetVersionFromString(glsl_version_string);
   gpu_info->pixel_shader_version = glsl_version;
   gpu_info->vertex_shader_version = glsl_version;
@@ -135,9 +134,8 @@ void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
   DCHECK(basic_gpu_info);
   basic_gpu_info->gl_renderer = context_gpu_info.gl_renderer;
   basic_gpu_info->gl_vendor = context_gpu_info.gl_vendor;
-  basic_gpu_info->gl_version_string = context_gpu_info.gl_version_string;
-  basic_gpu_info->gl_extensions = context_gpu_info.gl_extensions;
   basic_gpu_info->gl_version = context_gpu_info.gl_version;
+  basic_gpu_info->gl_extensions = context_gpu_info.gl_extensions;
   basic_gpu_info->pixel_shader_version =
       context_gpu_info.pixel_shader_version;
   basic_gpu_info->vertex_shader_version =

@@ -254,11 +254,11 @@ CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
 CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
-  std::string gl_version_string = gpu_info->gl_version_string;
-  if (StartsWithASCII(gl_version_string, "OpenGL ES", true))
-    gl_version_string = gl_version_string.substr(10);
+  std::string gl_version = gpu_info->gl_version;
+  if (StartsWithASCII(gl_version, "OpenGL ES", true))
+    gl_version = gl_version.substr(10);
   std::vector<std::string> pieces;
-  base::SplitStringAlongWhitespace(gl_version_string, &pieces);
+  base::SplitStringAlongWhitespace(gl_version, &pieces);
   // In linux, the gl version string might be in the format of
   //   GLVersion DriverVendor DriverVersion
   if (pieces.size() < 3)

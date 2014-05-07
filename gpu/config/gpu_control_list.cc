@@ -94,6 +94,10 @@ const char kMultiGpuCategoryStringSecondary[] = "secondary";
 const char kMultiGpuCategoryStringActive[] = "active";
 const char kMultiGpuCategoryStringAny[] = "any";
 
+const char kGLTypeStringGL[] = "gl";
+const char kGLTypeStringGLES[] = "gles";
+const char kGLTypeStringANGLE[] = "angle";
+
 const char kVersionStyleStringNumerical[] = "numerical";
 const char kVersionStyleStringLexical[] = "lexical";
 
@@ -551,6 +555,31 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
     dictionary_entry_count++;
   }
 
+  std::string gl_type;
+  if (value->GetString("gl_type", &gl_type)) {
+    if (!entry->SetGLType(gl_type)) {
+      LOG(WARNING) << "Malformed gl_type entry " << entry->id();
+      return NULL;
+    }
+    dictionary_entry_count++;
+  }
+
+  const base::DictionaryValue* gl_version_value = NULL;
+  if (value->GetDictionary("gl_version", &gl_version_value)) {
+    std::string version_op = "any";
+    std::string version_string;
+    std::string version_string2;
+    gl_version_value->GetString(kOp, &version_op);
+    gl_version_value->GetString("value", &version_string);
+    gl_version_value->GetString("value2", &version_string2);
+    if (!entry->SetGLVersionInfo(
+            version_op, version_string, version_string2)) {
+      LOG(WARNING) << "Malformed gl_version entry " << entry->id();
+      return NULL;
+    }
+    dictionary_entry_count++;
+  }
+
   const base::DictionaryValue* gl_vendor_value = NULL;
   if (value->GetDictionary("gl_vendor", &gl_vendor_value)) {
     std::string vendor_op;
@@ -768,6 +797,12 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
     LOG(WARNING) << "Entry with unknown fields " << entry->id();
     return NULL;
   }
+
+  // If GL_VERSION is specified, but no info about whether it's GL or GLES,
+  // we use the default for the platform.  See GLType enum declaration.
+  if (entry->gl_version_info_.get() != NULL && entry->gl_type_ == kGLTypeNone)
+    entry->gl_type_ = GetDefaultGLType();
+
   return entry;
 }
 
@@ -776,7 +811,8 @@ GpuControlList::GpuControlListEntry::GpuControlListEntry()
       disabled_(false),
       vendor_id_(0),
       multi_gpu_style_(kMultiGpuStyleNone),
-      multi_gpu_category_(kMultiGpuCategoryPrimary) {
+      multi_gpu_category_(kMultiGpuCategoryPrimary),
+      gl_type_(kGLTypeNone) {
 }
 
 GpuControlList::GpuControlListEntry::~GpuControlListEntry() { }
@@ -838,6 +874,15 @@ bool GpuControlList::GpuControlListEntry::SetMultiGpuCategory(
   return true;
 }
 
+bool GpuControlList::GpuControlListEntry::SetGLType(
+    const std::string& gl_type_string) {
+  GLType gl_type = StringToGLType(gl_type_string);
+  if (gl_type == kGLTypeNone)
+    return false;
+  gl_type_ = gl_type;
+  return true;
+}
+
 bool GpuControlList::GpuControlListEntry::SetDriverVendorInfo(
     const std::string& vendor_op,
     const std::string& vendor_value) {
@@ -862,6 +907,15 @@ bool GpuControlList::GpuControlListEntry::SetDriverDateInfo(
   driver_date_info_.reset(
       new VersionInfo(date_op, std::string(), date_string, date_string2));
   return driver_date_info_->IsValid();
+}
+
+bool GpuControlList::GpuControlListEntry::SetGLVersionInfo(
+    const std::string& version_op,
+    const std::string& version_string,
+    const std::string& version_string2) {
+  gl_version_info_.reset(new VersionInfo(
+      version_op, std::string(), version_string, version_string2));
+  return gl_version_info_->IsValid();
 }
 
 bool GpuControlList::GpuControlListEntry::SetGLVendorInfo(
@@ -984,6 +1038,38 @@ void GpuControlList::GpuControlListEntry::AddException(
   exceptions_.push_back(exception);
 }
 
+bool GpuControlList::GpuControlListEntry::GLVersionInfoMismatch(
+    const std::string& gl_version) const {
+  if (gl_version.empty())
+    return false;
+
+  if (gl_version_info_.get() == NULL && gl_type_ == kGLTypeNone)
+    return false;
+
+  std::vector<std::string> segments;
+  base::SplitString(gl_version, ' ', &segments);
+  std::string number;
+  GLType gl_type = kGLTypeNone;
+  if (segments.size() > 2 &&
+      segments[0] == "OpenGL" && segments[1] == "ES") {
+    number = segments[2];
+    gl_type = kGLTypeGLES;
+    if (segments.size() > 3 &&
+        StartsWithASCII(segments[3], "(ANGLE", false)) {
+      gl_type = kGLTypeANGLE;
+    }
+  } else {
+    number = segments[0];
+    gl_type = kGLTypeGL;
+  }
+
+  if (gl_type_ != kGLTypeNone && gl_type_ != gl_type)
+    return true;
+  if (gl_version_info_.get() != NULL && !gl_version_info_->Contains(number))
+    return true;
+  return false;
+}
+
 // static
 GpuControlList::GpuControlListEntry::MultiGpuStyle
 GpuControlList::GpuControlListEntry::StringToMultiGpuStyle(
@@ -1008,6 +1094,37 @@ GpuControlList::GpuControlListEntry::StringToMultiGpuCategory(
   if (category == kMultiGpuCategoryStringAny)
     return kMultiGpuCategoryAny;
   return kMultiGpuCategoryNone;
+}
+
+// static
+GpuControlList::GpuControlListEntry::GLType
+GpuControlList::GpuControlListEntry::StringToGLType(
+    const std::string& gl_type) {
+  if (gl_type == kGLTypeStringGL)
+    return kGLTypeGL;
+  if (gl_type == kGLTypeStringGLES)
+    return kGLTypeGLES;
+  if (gl_type == kGLTypeStringANGLE)
+    return kGLTypeANGLE;
+  return kGLTypeNone;
+}
+
+// static
+GpuControlList::GpuControlListEntry::GLType
+GpuControlList::GpuControlListEntry::GetDefaultGLType() {
+#if defined(OS_CHROMEOS)
+  return kGLTypeGL;
+#elif defined(OS_LINUX) || defined(OS_OPENBSD)
+  return kGLTypeGL;
+#elif defined(OS_MACOSX)
+  return kGLTypeGL;
+#elif defined(OS_WIN)
+  return kGLTypeANGLE;
+#elif defined(OS_ANDROID)
+  return kGLTypeGLES;
+#else
+  return kGLTypeNone;
+#endif
 }
 
 void GpuControlList::GpuControlListEntry::LogControlListMatch(
@@ -1096,6 +1213,8 @@ bool GpuControlList::GpuControlListEntry::Contains(
     if (!driver_date_info_->Contains(gpu_info.driver_date, '-'))
       return false;
   }
+  if (GLVersionInfoMismatch(gpu_info.gl_version))
+    return false;
   if (gl_vendor_info_.get() != NULL && !gpu_info.gl_vendor.empty() &&
       !gl_vendor_info_->Contains(gpu_info.gl_vendor))
     return false;

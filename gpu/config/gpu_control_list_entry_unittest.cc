@@ -56,6 +56,7 @@ class GpuControlListEntryTest : public testing::Test {
     gpu_info_.driver_vendor = "NVIDIA";
     gpu_info_.driver_version = "1.6.18";
     gpu_info_.driver_date = "7-14-2009";
+    gpu_info_.gl_version = "2.1 NVIDIA-8.24.11 310.90.9b01";
     gpu_info_.gl_vendor = "NVIDIA Corporation";
     gpu_info_.gl_renderer = "NVIDIA GeForce GT 120 OpenGL Engine";
     gpu_info_.performance_stats.graphics = 5.0;
@@ -374,6 +375,99 @@ TEST_F(GpuControlListEntryTest, UnknownFeatureEntry) {
   );
   ScopedEntry entry(GetEntryFromString(json));
   EXPECT_TRUE(entry.get() == NULL);
+}
+
+TEST_F(GpuControlListEntryTest, GlVersionGLESEntry) {
+  const std::string json = LONG_STRING_CONST(
+      {
+        "id": 1,
+        "gl_type": "gles",
+        "gl_version": {
+          "op": "=",
+          "value": "3.0"
+        },
+        "features": [
+          "test_feature_0"
+        ]
+      }
+  );
+  ScopedEntry entry(GetEntryFromString(json));
+  EXPECT_TRUE(entry.get() != NULL);
+
+  GPUInfo gpu_info;
+  gpu_info.gl_version = "OpenGL ES 3.0 V@66.0 AU@ (CL@)";
+  EXPECT_TRUE(entry->Contains(GpuControlList::kOsAndroid, "4.4.2", gpu_info));
+
+  gpu_info.gl_version = "OpenGL ES 3.1 V@66.0 AU@ (CL@)";
+  EXPECT_FALSE(entry->Contains(GpuControlList::kOsAndroid, "4.4.2", gpu_info));
+
+  gpu_info.gl_version = "3.0 NVIDIA-8.24.11 310.90.9b01";
+  EXPECT_FALSE(entry->Contains(GpuControlList::kOsMacosx, "10.9", gpu_info));
+
+  gpu_info.gl_version = "OpenGL ES 3.0 (ANGLE 1.2.0.2450)";
+  EXPECT_FALSE(entry->Contains(GpuControlList::kOsWin, "6.1", gpu_info));
+}
+
+TEST_F(GpuControlListEntryTest, GlVersionANGLEEntry) {
+  const std::string json = LONG_STRING_CONST(
+      {
+        "id": 1,
+        "gl_type": "angle",
+        "gl_version": {
+          "op": ">",
+          "value": "2.0"
+        },
+        "features": [
+          "test_feature_0"
+        ]
+      }
+  );
+  ScopedEntry entry(GetEntryFromString(json));
+  EXPECT_TRUE(entry.get() != NULL);
+
+  GPUInfo gpu_info;
+  gpu_info.gl_version = "OpenGL ES 3.0 V@66.0 AU@ (CL@)";
+  EXPECT_FALSE(entry->Contains(GpuControlList::kOsAndroid, "4.4.2", gpu_info));
+
+  gpu_info.gl_version = "3.0 NVIDIA-8.24.11 310.90.9b01";
+  EXPECT_FALSE(entry->Contains(GpuControlList::kOsMacosx, "10.9", gpu_info));
+
+  gpu_info.gl_version = "OpenGL ES 3.0 (ANGLE 1.2.0.2450)";
+  EXPECT_TRUE(entry->Contains(GpuControlList::kOsWin, "6.1", gpu_info));
+
+  gpu_info.gl_version = "OpenGL ES 2.0 (ANGLE 1.2.0.2450)";
+  EXPECT_FALSE(entry->Contains(GpuControlList::kOsWin, "6.1", gpu_info));
+}
+
+TEST_F(GpuControlListEntryTest, GlVersionGLEntry) {
+  const std::string json = LONG_STRING_CONST(
+      {
+        "id": 1,
+        "gl_type": "gl",
+        "gl_version": {
+          "op": "<",
+          "value": "4.0"
+        },
+        "features": [
+          "test_feature_0"
+        ]
+      }
+  );
+  ScopedEntry entry(GetEntryFromString(json));
+  EXPECT_TRUE(entry.get() != NULL);
+
+  GPUInfo gpu_info;
+  gpu_info.gl_version = "OpenGL ES 3.0 V@66.0 AU@ (CL@)";
+  EXPECT_FALSE(entry->Contains(GpuControlList::kOsAndroid, "4.4.2", gpu_info));
+
+  gpu_info.gl_version = "3.0 NVIDIA-8.24.11 310.90.9b01";
+  EXPECT_TRUE(entry->Contains(GpuControlList::kOsMacosx, "10.9", gpu_info));
+
+  gpu_info.gl_version = "4.0 NVIDIA-8.24.11 310.90.9b01";
+  EXPECT_FALSE(entry->Contains(GpuControlList::kOsMacosx, "10.9", gpu_info));
+
+  gpu_info.gl_version = "OpenGL ES 3.0 (ANGLE 1.2.0.2450)";
+  EXPECT_FALSE(entry->Contains(GpuControlList::kOsWin, "6.1", gpu_info));
 }
 
 TEST_F(GpuControlListEntryTest, GlVendorEntry) {

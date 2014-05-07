@@ -143,14 +143,12 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
                                              gpu_info.machine_model_name));
   basic_info->Append(NewDescriptionValuePair("Machine model version",
                                              gpu_info.machine_model_version));
-  basic_info->Append(NewDescriptionValuePair("GL version",
-                                             gpu_info.gl_version));
   basic_info->Append(NewDescriptionValuePair("GL_VENDOR",
                                              gpu_info.gl_vendor));
   basic_info->Append(NewDescriptionValuePair("GL_RENDERER",
                                              gpu_info.gl_renderer));
   basic_info->Append(NewDescriptionValuePair("GL_VERSION",
-                                             gpu_info.gl_version_string));
+                                             gpu_info.gl_version));
   basic_info->Append(NewDescriptionValuePair("GL_EXTENSIONS",
                                              gpu_info.gl_extensions));
   basic_info->Append(NewDescriptionValuePair("Window system binding vendor",

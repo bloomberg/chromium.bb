@@ -49,11 +49,11 @@ CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
   // Extract driver vendor, version from a string like:
   // "OpenGL ES 3.0 V@6.0 AU@ (CL@2946718)"
-  size_t begin = gpu_info->gl_version_string.find_first_of("0123456789");
+  size_t begin = gpu_info->gl_version.find_first_of("0123456789");
   if (begin == std::string::npos)
     return kCollectInfoNonFatalFailure;
 
-  std::string sub_string = gpu_info->gl_version_string.substr(begin);
+  std::string sub_string = gpu_info->gl_version.substr(begin);
   std::vector<std::string> pieces;
   base::SplitStringAlongWhitespace(sub_string, &pieces);
   if (pieces.size() < 3)
