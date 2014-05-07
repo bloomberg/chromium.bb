@@ -2059,9 +2059,11 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
 def directory_to_metadata(root, algo, blacklist):
   """Returns the FileItem list and .isolated metadata for a directory."""
   root = file_path.get_native_path_case(root)
+  paths = expand_directory_and_symlink(
+      root, '.' + os.path.sep, blacklist, sys.platform != 'win32')
   metadata = dict(
       (relpath, process_input(os.path.join(root, relpath), {}, False, algo))
-      for relpath in expand_directory_and_symlink(root, './', blacklist, True)
+      for relpath in paths
   )
   for v in metadata.itervalues():
     v.pop('t')
