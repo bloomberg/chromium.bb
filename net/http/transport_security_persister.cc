@@ -146,16 +146,18 @@ bool TransportSecurityPersister::SerializeData(std::string* output) {
 
     base::DictionaryValue* serialized = new base::DictionaryValue;
     serialized->SetBoolean(kStsIncludeSubdomains,
-                           domain_state.sts_include_subdomains);
+                           domain_state.sts.include_subdomains);
     serialized->SetBoolean(kPkpIncludeSubdomains,
-                           domain_state.pkp_include_subdomains);
-    serialized->SetDouble(kStsObserved, domain_state.sts_observed.ToDoubleT());
-    serialized->SetDouble(kPkpObserved, domain_state.pkp_observed.ToDoubleT());
-    serialized->SetDouble(kExpiry, domain_state.upgrade_expiry.ToDoubleT());
+                           domain_state.pkp.include_subdomains);
+    serialized->SetDouble(kStsObserved,
+                          domain_state.sts.last_observed.ToDoubleT());
+    serialized->SetDouble(kPkpObserved,
+                          domain_state.pkp.last_observed.ToDoubleT());
+    serialized->SetDouble(kExpiry, domain_state.sts.expiry.ToDoubleT());
     serialized->SetDouble(kDynamicSPKIHashesExpiry,
-                          domain_state.dynamic_spki_hashes_expiry.ToDoubleT());
+                          domain_state.pkp.expiry.ToDoubleT());
 
-    switch (domain_state.upgrade_mode) {
+    switch (domain_state.sts.upgrade_mode) {
       case TransportSecurityState::DomainState::MODE_FORCE_HTTPS:
         serialized->SetString(kMode, kForceHTTPS);
         break;
@@ -168,9 +170,9 @@ bool TransportSecurityPersister::SerializeData(std::string* output) {
         continue;
     }
 
-    if (now < domain_state.dynamic_spki_hashes_expiry) {
+    if (now < domain_state.pkp.expiry) {
       serialized->Set(kDynamicSPKIHashes,
-                      SPKIHashesToListValue(domain_state.dynamic_spki_hashes));
+                      SPKIHashesToListValue(domain_state.pkp.spki_hashes));
     }
 
     toplevel.Set(HashedDomainToExternalString(hostname), serialized);
@@ -221,14 +223,14 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
     bool include_subdomains = false;
     bool parsed_include_subdomains = parsed->GetBoolean(kIncludeSubdomains,
                                                         &include_subdomains);
-    domain_state.sts_include_subdomains = include_subdomains;
-    domain_state.pkp_include_subdomains = include_subdomains;
+    domain_state.sts.include_subdomains = include_subdomains;
+    domain_state.pkp.include_subdomains = include_subdomains;
     if (parsed->GetBoolean(kStsIncludeSubdomains, &include_subdomains)) {
-      domain_state.sts_include_subdomains = include_subdomains;
+      domain_state.sts.include_subdomains = include_subdomains;
       parsed_include_subdomains = true;
     }
     if (parsed->GetBoolean(kPkpIncludeSubdomains, &include_subdomains)) {
-      domain_state.pkp_include_subdomains = include_subdomains;
+      domain_state.pkp.include_subdomains = include_subdomains;
       parsed_include_subdomains = true;
     }
 
@@ -245,14 +247,15 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
                       &dynamic_spki_hashes_expiry);
 
     const base::ListValue* pins_list = NULL;
-    if (parsed->GetList(kDynamicSPKIHashes, &pins_list))
-      SPKIHashesFromListValue(*pins_list, &domain_state.dynamic_spki_hashes);
+    if (parsed->GetList(kDynamicSPKIHashes, &pins_list)) {
+      SPKIHashesFromListValue(*pins_list, &domain_state.pkp.spki_hashes);
+    }
 
     if (mode_string == kForceHTTPS || mode_string == kStrict) {
-      domain_state.upgrade_mode =
+      domain_state.sts.upgrade_mode =
           TransportSecurityState::DomainState::MODE_FORCE_HTTPS;
     } else if (mode_string == kDefault || mode_string == kPinningOnly) {
-      domain_state.upgrade_mode =
+      domain_state.sts.upgrade_mode =
           TransportSecurityState::DomainState::MODE_DEFAULT;
     } else {
       LOG(WARNING) << "Unknown TransportSecurityState mode string "
@@ -261,34 +264,34 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
       continue;
     }
 
-    domain_state.upgrade_expiry = base::Time::FromDoubleT(expiry);
-    domain_state.dynamic_spki_hashes_expiry =
+    domain_state.sts.expiry = base::Time::FromDoubleT(expiry);
+    domain_state.pkp.expiry =
         base::Time::FromDoubleT(dynamic_spki_hashes_expiry);
 
     double sts_observed;
     double pkp_observed;
     if (parsed->GetDouble(kStsObserved, &sts_observed)) {
-      domain_state.sts_observed = base::Time::FromDoubleT(sts_observed);
+      domain_state.sts.last_observed = base::Time::FromDoubleT(sts_observed);
     } else if (parsed->GetDouble(kCreated, &sts_observed)) {
       // kCreated is a legacy synonym for both kStsObserved and kPkpObserved.
-      domain_state.sts_observed = base::Time::FromDoubleT(sts_observed);
+      domain_state.sts.last_observed = base::Time::FromDoubleT(sts_observed);
     } else {
       // We're migrating an old entry with no observation date. Make sure we
       // write the new date back in a reasonable time frame.
       dirtied = true;
-      domain_state.sts_observed = base::Time::Now();
+      domain_state.sts.last_observed = base::Time::Now();
     }
     if (parsed->GetDouble(kPkpObserved, &pkp_observed)) {
-      domain_state.pkp_observed = base::Time::FromDoubleT(pkp_observed);
+      domain_state.pkp.last_observed = base::Time::FromDoubleT(pkp_observed);
     } else if (parsed->GetDouble(kCreated, &pkp_observed)) {
-      domain_state.pkp_observed = base::Time::FromDoubleT(pkp_observed);
+      domain_state.pkp.last_observed = base::Time::FromDoubleT(pkp_observed);
     } else {
       dirtied = true;
-      domain_state.pkp_observed = base::Time::Now();
+      domain_state.pkp.last_observed = base::Time::Now();
     }
 
-    if (domain_state.upgrade_expiry <= current_time &&
-        domain_state.dynamic_spki_hashes_expiry <= current_time) {
+    if (domain_state.sts.expiry <= current_time &&
+        domain_state.pkp.expiry <= current_time) {
       // Make sure we dirty the state if we drop an entry.
       dirtied = true;
       continue;

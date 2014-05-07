@@ -61,6 +61,44 @@ class NET_EXPORT TransportSecurityState
     DomainState();
     ~DomainState();
 
+    struct STSState {
+      // The absolute time (UTC) when the |upgrade_mode| (and other state) was
+      // observed.
+      base::Time last_observed;
+
+      // The absolute time (UTC) when the |upgrade_mode|, if set to
+      // MODE_FORCE_HTTPS, downgrades to MODE_DEFAULT.
+      base::Time expiry;
+
+      UpgradeMode upgrade_mode;
+
+      // Are subdomains subject to this policy state?
+      bool include_subdomains;
+    };
+
+    struct PKPState {
+      PKPState();
+      ~PKPState();
+
+      // The absolute time (UTC) when the |spki_hashes| (and other state) were
+      // observed.
+      base::Time last_observed;
+
+      // The absolute time (UTC) when the |spki_hashes| expire.
+      base::Time expiry;
+
+      // Optional; hashes of pinned SubjectPublicKeyInfos.
+      HashValueVector spki_hashes;
+
+      // Optional; hashes of static known-bad SubjectPublicKeyInfos which MUST
+      // NOT intersect with the set of SPKIs in the TLS server's certificate
+      // chain.
+      HashValueVector bad_spki_hashes;
+
+      // Are subdomains subject to this policy state?
+      bool include_subdomains;
+    };
+
     // Takes a set of SubjectPublicKeyInfo |hashes| and returns true if:
     //   1) |bad_static_spki_hashes| does not intersect |hashes|; AND
     //   2) Both |static_spki_hashes| and |dynamic_spki_hashes| are empty
@@ -85,66 +123,21 @@ class NET_EXPORT TransportSecurityState
     // items.
     bool HasPublicKeyPins() const;
 
-    // ShouldUpgradeToSSL returns true iff, given the |mode| of this
-    // DomainState, HTTP requests should be internally redirected to HTTPS
-    // (also if the "ws" WebSocket request should be upgraded to "wss")
+    // ShouldUpgradeToSSL returns true iff HTTP requests should be internally
+    // redirected to HTTPS (also if WS should be upgraded to WSS).
     bool ShouldUpgradeToSSL() const;
 
     // ShouldSSLErrorsBeFatal returns true iff HTTPS errors should cause
-    // hard-fail behavior (e.g. if HSTS is set for the domain)
+    // hard-fail behavior (e.g. if HSTS is set for the domain).
     bool ShouldSSLErrorsBeFatal() const;
 
-    UpgradeMode upgrade_mode;
-
-    // The absolute time (UTC) when the |upgrade_mode| was observed.
-    //
-    // TODO(palmer): Perhaps static entries should have an "observed" time.
-    base::Time sts_observed;
-
-    // The absolute time (UTC) when the |dynamic_spki_hashes| (and other
-    // |dynamic_*| state) were observed.
-    //
-    // TODO(palmer): Perhaps static entries should have an "observed" time.
-    base::Time pkp_observed;
-
-    // The absolute time (UTC) when the |upgrade_mode|, if set to
-    // UPGRADE_ALWAYS, downgrades to UPGRADE_NEVER.
-    base::Time upgrade_expiry;
-
-    // Are subdomains subject to this DomainState, for the purposes of
-    // upgrading to HTTPS?
-    bool sts_include_subdomains;
-
-    // Are subdomains subject to this DomainState, for the purposes of
-    // Pin Validation?
-    bool pkp_include_subdomains;
-
-    // Optional; hashes of static pinned SubjectPublicKeyInfos. Unless both
-    // are empty, at least one of |static_spki_hashes| and
-    // |dynamic_spki_hashes| MUST intersect with the set of SPKIs in the TLS
-    // server's certificate chain.
-    //
-    // |dynamic_spki_hashes| take precedence over |static_spki_hashes|.
-    // That is, |IsChainOfPublicKeysPermitted| first checks dynamic pins and
-    // then checks static pins.
-    HashValueVector static_spki_hashes;
-
-    // Optional; hashes of dynamically pinned SubjectPublicKeyInfos.
-    HashValueVector dynamic_spki_hashes;
-
-    // The absolute time (UTC) when the |dynamic_spki_hashes| expire.
-    base::Time dynamic_spki_hashes_expiry;
-
-    // Optional; hashes of static known-bad SubjectPublicKeyInfos which
-    // MUST NOT intersect with the set of SPKIs in the TLS server's
-    // certificate chain.
-    HashValueVector bad_static_spki_hashes;
+    STSState sts;
+    PKPState pkp;
 
     // The following members are not valid when stored in |enabled_hosts_|:
 
     // The domain which matched during a search for this DomainState entry.
-    // Updated by |GetDomainState|, |GetDynamicDomainState|, and
-    // |GetStaticDomainState|.
+    // Updated by |GetDynamicDomainState| and |GetStaticDomainState|.
     std::string domain;
   };
 
@@ -162,6 +155,17 @@ class NET_EXPORT TransportSecurityState
     std::map<std::string, DomainState>::const_iterator iterator_;
     std::map<std::string, DomainState>::const_iterator end_;
   };
+
+  // These functions search for static and dynamic DomainStates, and invoke the
+  // functions of the same name on them. These functions are the primary public
+  // interface; direct access to DomainStates is best left to tests.
+  bool ShouldSSLErrorsBeFatal(const std::string& host, bool sni_enabled);
+  bool ShouldUpgradeToSSL(const std::string& host, bool sni_enabled);
+  bool CheckPublicKeyPins(const std::string& host,
+                          bool sni_enabled,
+                          const HashValueVector& hashes,
+                          std::string* failure_log);
+  bool HasPublicKeyPins(const std::string& host, bool sni_enabled);
 
   // Assign a |Delegate| for persisting the transport security state. If
   // |NULL|, state will not be persisted. The caller retains
@@ -202,20 +206,31 @@ class NET_EXPORT TransportSecurityState
   // the Delegate (if any).
   bool DeleteDynamicDataForHost(const std::string& host);
 
-  // Returns true and updates |*result| iff there is a DomainState for
-  // |host|.
+  // Returns true and updates |*result| iff there is a static (built-in)
+  // DomainState for |host|.
   //
-  // If |sni_enabled| is true, searches the static pins defined for
-  // SNI-using hosts as well as the rest of the pins.
+  // If |sni_enabled| is true, searches the static pins defined for SNI-using
+  // hosts as well as the rest of the pins.
   //
-  // If |host| matches both an exact entry and is a subdomain of another
-  // entry, the exact match determines the return value.
+  // If |host| matches both an exact entry and is a subdomain of another entry,
+  // the exact match determines the return value.
   //
   // Note that this method is not const because it opportunistically removes
   // entries that have expired.
-  bool GetDomainState(const std::string& host,
-                      bool sni_enabled,
-                      DomainState* result);
+  bool GetStaticDomainState(const std::string& host,
+                            bool sni_enabled,
+                            DomainState* result) const;
+
+  // Returns true and updates |*result| iff there is a dynamic DomainState
+  // (learned from HSTS or HPKP headers, or set by the user, or other means) for
+  // |host|.
+  //
+  // If |host| matches both an exact entry and is a subdomain of another entry,
+  // the exact match determines the return value.
+  //
+  // Note that this method is not const because it opportunistically removes
+  // entries that have expired.
+  bool GetDynamicDomainState(const std::string& host, DomainState* result);
 
   // Processes an HSTS header value from the host, adding entries to
   // dynamic state if necessary.
@@ -288,39 +303,6 @@ class NET_EXPORT TransportSecurityState
   // used in DNS: "\x03www\x06google\x03com", lowercases that, and returns
   // the result.
   static std::string CanonicalizeHost(const std::string& hostname);
-
-  // Returns true and updates |*result| iff there is a static DomainState for
-  // |host|.
-  //
-  // |GetStaticDomainState| is identical to |GetDomainState| except that it
-  // searches only the statically-defined transport security state, ignoring
-  // all dynamically-added DomainStates.
-  //
-  // If |sni_enabled| is true, searches the static pins defined for
-  // SNI-using hosts as well as the rest of the pins.
-  //
-  // If |host| matches both an exact entry and is a subdomain of another
-  // entry, the exact match determines the return value.
-  //
-  // Note that this method is not const because it opportunistically removes
-  // entries that have expired.
-  bool GetStaticDomainState(const std::string& host,
-                            bool sni_enabled,
-                            DomainState* result);
-
-  // Returns true and updates |*result| iff there is a dynamic DomainState for
-  // |host|.
-  //
-  // |GetDynamicDomainState| is identical to |GetDomainState| except that it
-  // searches only the dynamically-added transport security state, ignoring
-  // all statically-defined DomainStates.
-  //
-  // If |host| matches both an exact entry and is a subdomain of another
-  // entry, the exact match determines the return value.
-  //
-  // Note that this method is not const because it opportunistically removes
-  // entries that have expired.
-  bool GetDynamicDomainState(const std::string& host, DomainState* result);
 
   // The set of hosts that have enabled TransportSecurity.
   DomainStateMap enabled_hosts_;

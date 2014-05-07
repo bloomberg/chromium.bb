@@ -3497,11 +3497,10 @@ int SSLClientSocketNSS::DoVerifyCertComplete(int result) {
         ssl_config_.version_fallback;
     const std::string& host = host_and_port_.host();
 
-    TransportSecurityState::DomainState domain_state;
-    if (transport_security_state_->GetDomainState(host, sni_available,
-                                                  &domain_state) &&
-        domain_state.HasPublicKeyPins()) {
-      if (!domain_state.CheckPublicKeyPins(
+    if (transport_security_state_->HasPublicKeyPins(host, sni_available)) {
+      if (!transport_security_state_->CheckPublicKeyPins(
+              host,
+              sni_available,
               server_cert_verify_result_.public_key_hashes,
               &pinning_failure_log_)) {
         LOG(ERROR) << pinning_failure_log_;

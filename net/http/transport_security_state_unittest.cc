@@ -46,10 +46,6 @@ class TransportSecurityStateTest : public testing::Test {
   }
 
  protected:
-  std::string CanonicalizeHost(const std::string& host) {
-    return TransportSecurityState::CanonicalizeHost(host);
-  }
-
   bool GetStaticDomainState(TransportSecurityState* state,
                             const std::string& host,
                             bool sni_enabled,
@@ -70,10 +66,10 @@ TEST_F(TransportSecurityStateTest, SimpleMatches) {
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
 
-  EXPECT_FALSE(state.GetDomainState("yahoo.com", true, &domain_state));
+  EXPECT_FALSE(state.GetDynamicDomainState("yahoo.com", &domain_state));
   bool include_subdomains = false;
   state.AddHSTS("yahoo.com", expiry, include_subdomains);
-  EXPECT_TRUE(state.GetDomainState("yahoo.com", true, &domain_state));
+  EXPECT_TRUE(state.GetDynamicDomainState("yahoo.com", &domain_state));
 }
 
 TEST_F(TransportSecurityStateTest, MatchesCase1) {
@@ -82,10 +78,10 @@ TEST_F(TransportSecurityStateTest, MatchesCase1) {
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
 
-  EXPECT_FALSE(state.GetDomainState("yahoo.com", true, &domain_state));
+  EXPECT_FALSE(state.GetDynamicDomainState("yahoo.com", &domain_state));
   bool include_subdomains = false;
   state.AddHSTS("YAhoo.coM", expiry, include_subdomains);
-  EXPECT_TRUE(state.GetDomainState("yahoo.com", true, &domain_state));
+  EXPECT_TRUE(state.GetDynamicDomainState("yahoo.com", &domain_state));
 }
 
 TEST_F(TransportSecurityStateTest, MatchesCase2) {
@@ -94,10 +90,10 @@ TEST_F(TransportSecurityStateTest, MatchesCase2) {
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
 
-  EXPECT_FALSE(state.GetDomainState("YAhoo.coM", true, &domain_state));
+  EXPECT_FALSE(state.GetDynamicDomainState("YAhoo.coM", &domain_state));
   bool include_subdomains = false;
   state.AddHSTS("yahoo.com", expiry, include_subdomains);
-  EXPECT_TRUE(state.GetDomainState("YAhoo.coM", true, &domain_state));
+  EXPECT_TRUE(state.GetDynamicDomainState("YAhoo.coM", &domain_state));
 }
 
 TEST_F(TransportSecurityStateTest, SubdomainMatches) {
@@ -106,15 +102,15 @@ TEST_F(TransportSecurityStateTest, SubdomainMatches) {
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
 
-  EXPECT_FALSE(state.GetDomainState("yahoo.com", true, &domain_state));
+  EXPECT_FALSE(state.GetDynamicDomainState("yahoo.com", &domain_state));
   bool include_subdomains = true;
   state.AddHSTS("yahoo.com", expiry, include_subdomains);
-  EXPECT_TRUE(state.GetDomainState("yahoo.com", true, &domain_state));
-  EXPECT_TRUE(state.GetDomainState("foo.yahoo.com", true, &domain_state));
-  EXPECT_TRUE(state.GetDomainState("foo.bar.yahoo.com", true, &domain_state));
-  EXPECT_TRUE(state.GetDomainState("foo.bar.baz.yahoo.com", true,
-                                   &domain_state));
-  EXPECT_FALSE(state.GetDomainState("com", true, &domain_state));
+  EXPECT_TRUE(state.GetDynamicDomainState("yahoo.com", &domain_state));
+  EXPECT_TRUE(state.GetDynamicDomainState("foo.yahoo.com", &domain_state));
+  EXPECT_TRUE(state.GetDynamicDomainState("foo.bar.yahoo.com", &domain_state));
+  EXPECT_TRUE(
+      state.GetDynamicDomainState("foo.bar.baz.yahoo.com", &domain_state));
+  EXPECT_FALSE(state.GetDynamicDomainState("com", &domain_state));
 }
 
 TEST_F(TransportSecurityStateTest, InvalidDomains) {
@@ -123,11 +119,12 @@ TEST_F(TransportSecurityStateTest, InvalidDomains) {
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
 
-  EXPECT_FALSE(state.GetDomainState("yahoo.com", true, &domain_state));
+  EXPECT_FALSE(state.GetDynamicDomainState("yahoo.com", &domain_state));
   bool include_subdomains = true;
   state.AddHSTS("yahoo.com", expiry, include_subdomains);
-  EXPECT_TRUE(state.GetDomainState("www-.foo.yahoo.com", true, &domain_state));
-  EXPECT_TRUE(state.GetDomainState("2\x01.foo.yahoo.com", true, &domain_state));
+  EXPECT_TRUE(state.GetDynamicDomainState("www-.foo.yahoo.com", &domain_state));
+  EXPECT_TRUE(
+      state.GetDynamicDomainState("2\x01.foo.yahoo.com", &domain_state));
 }
 
 TEST_F(TransportSecurityStateTest, DeleteAllDynamicDataSince) {
@@ -137,14 +134,18 @@ TEST_F(TransportSecurityStateTest, DeleteAllDynamicDataSince) {
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
   const base::Time older = current_time - base::TimeDelta::FromSeconds(1000);
 
-  EXPECT_FALSE(state.GetDomainState("yahoo.com", true, &domain_state));
+  EXPECT_FALSE(state.GetDynamicDomainState("yahoo.com", &domain_state));
   bool include_subdomains = false;
   state.AddHSTS("yahoo.com", expiry, include_subdomains);
 
   state.DeleteAllDynamicDataSince(expiry);
-  EXPECT_TRUE(state.GetDomainState("yahoo.com", true, &domain_state));
+  EXPECT_TRUE(state.GetDynamicDomainState("yahoo.com", &domain_state));
+  EXPECT_EQ(TransportSecurityState::DomainState::MODE_FORCE_HTTPS,
+            domain_state.sts.upgrade_mode);
   state.DeleteAllDynamicDataSince(older);
-  EXPECT_FALSE(state.GetDomainState("yahoo.com", true, &domain_state));
+  EXPECT_TRUE(state.GetDynamicDomainState("yahoo.com", &domain_state));
+  EXPECT_EQ(TransportSecurityState::DomainState::MODE_DEFAULT,
+            domain_state.sts.upgrade_mode);
 }
 
 TEST_F(TransportSecurityStateTest, DeleteDynamicDataForHost) {
@@ -155,28 +156,28 @@ TEST_F(TransportSecurityStateTest, DeleteDynamicDataForHost) {
   bool include_subdomains = false;
   state.AddHSTS("yahoo.com", expiry, include_subdomains);
 
-  EXPECT_TRUE(state.GetDomainState("yahoo.com", true, &domain_state));
-  EXPECT_FALSE(state.GetDomainState("example.com", true, &domain_state));
+  EXPECT_TRUE(state.GetDynamicDomainState("yahoo.com", &domain_state));
+  EXPECT_FALSE(state.GetDynamicDomainState("example.com", &domain_state));
   EXPECT_TRUE(state.DeleteDynamicDataForHost("yahoo.com"));
-  EXPECT_FALSE(state.GetDomainState("yahoo.com", true, &domain_state));
+  EXPECT_FALSE(state.GetDynamicDomainState("yahoo.com", &domain_state));
 }
 
 TEST_F(TransportSecurityStateTest, IsPreloaded) {
-  const std::string paypal = CanonicalizeHost("paypal.com");
-  const std::string www_paypal = CanonicalizeHost("www.paypal.com");
-  const std::string foo_paypal = CanonicalizeHost("foo.paypal.com");
-  const std::string a_www_paypal = CanonicalizeHost("a.www.paypal.com");
-  const std::string abc_paypal = CanonicalizeHost("a.b.c.paypal.com");
-  const std::string example = CanonicalizeHost("example.com");
-  const std::string aypal = CanonicalizeHost("aypal.com");
+  const std::string paypal = "paypal.com";
+  const std::string www_paypal = "www.paypal.com";
+  const std::string foo_paypal = "foo.paypal.com";
+  const std::string a_www_paypal = "a.www.paypal.com";
+  const std::string abc_paypal = "a.b.c.paypal.com";
+  const std::string example = "example.com";
+  const std::string aypal = "aypal.com";
 
   TransportSecurityState state;
   TransportSecurityState::DomainState domain_state;
 
   EXPECT_TRUE(GetStaticDomainState(&state, paypal, true, &domain_state));
   EXPECT_TRUE(GetStaticDomainState(&state, www_paypal, true, &domain_state));
-  EXPECT_FALSE(domain_state.sts_include_subdomains);
-  EXPECT_FALSE(domain_state.pkp_include_subdomains);
+  EXPECT_FALSE(domain_state.sts.include_subdomains);
+  EXPECT_FALSE(domain_state.pkp.include_subdomains);
   EXPECT_FALSE(GetStaticDomainState(&state, a_www_paypal, true, &domain_state));
   EXPECT_FALSE(GetStaticDomainState(&state, abc_paypal, true, &domain_state));
   EXPECT_FALSE(GetStaticDomainState(&state, example, true, &domain_state));
@@ -189,48 +190,49 @@ TEST_F(TransportSecurityStateTest, PreloadedDomainSet) {
 
   // The domain wasn't being set, leading to a blank string in the
   // chrome://net-internals/#hsts UI. So test that.
-  EXPECT_TRUE(state.GetDomainState("market.android.com", true, &domain_state));
+  EXPECT_TRUE(
+      state.GetStaticDomainState("market.android.com", true, &domain_state));
   EXPECT_EQ(domain_state.domain, "market.android.com");
-  EXPECT_TRUE(state.GetDomainState("sub.market.android.com", true,
-                                   &domain_state));
+  EXPECT_TRUE(state.GetStaticDomainState(
+      "sub.market.android.com", true, &domain_state));
   EXPECT_EQ(domain_state.domain, "market.android.com");
 }
 
-static bool ShouldRedirect(const char* hostname) {
+static bool StaticShouldRedirect(const char* hostname) {
   TransportSecurityState state;
   TransportSecurityState::DomainState domain_state;
-  return state.GetDomainState(hostname, true /* SNI ok */, &domain_state) &&
+  return state.GetStaticDomainState(
+             hostname, true /* SNI ok */, &domain_state) &&
          domain_state.ShouldUpgradeToSSL();
 }
 
-static bool HasState(const char* hostname) {
+static bool HasStaticState(const char* hostname) {
   TransportSecurityState state;
   TransportSecurityState::DomainState domain_state;
-  return state.GetDomainState(hostname, true /* SNI ok */, &domain_state);
+  return state.GetStaticDomainState(hostname, true /* SNI ok */, &domain_state);
 }
 
-static bool HasPublicKeyPins(const char* hostname, bool sni_enabled) {
+static bool HasStaticPublicKeyPins(const char* hostname, bool sni_enabled) {
   TransportSecurityState state;
   TransportSecurityState::DomainState domain_state;
-  if (!state.GetDomainState(hostname, sni_enabled, &domain_state))
+  if (!state.GetStaticDomainState(hostname, sni_enabled, &domain_state))
     return false;
 
   return domain_state.HasPublicKeyPins();
 }
 
-static bool HasPublicKeyPins(const char* hostname) {
-  return HasPublicKeyPins(hostname, true);
+static bool HasStaticPublicKeyPins(const char* hostname) {
+  return HasStaticPublicKeyPins(hostname, true);
 }
 
-static bool OnlyPinning(const char *hostname) {
+static bool OnlyPinningInStaticState(const char* hostname) {
   TransportSecurityState state;
   TransportSecurityState::DomainState domain_state;
-  if (!state.GetDomainState(hostname, true /* SNI ok */, &domain_state))
+  if (!state.GetStaticDomainState(hostname, true /* SNI ok */, &domain_state))
     return false;
 
-  return (domain_state.static_spki_hashes.size() > 0 ||
-          domain_state.bad_static_spki_hashes.size() > 0 ||
-          domain_state.dynamic_spki_hashes.size() > 0) &&
+  return (domain_state.pkp.spki_hashes.size() > 0 ||
+          domain_state.pkp.bad_spki_hashes.size() > 0) &&
          !domain_state.ShouldUpgradeToSSL();
 }
 
@@ -239,240 +241,245 @@ TEST_F(TransportSecurityStateTest, Preloaded) {
   TransportSecurityState::DomainState domain_state;
 
   // We do more extensive checks for the first domain.
-  EXPECT_TRUE(state.GetDomainState("www.paypal.com", true, &domain_state));
-  EXPECT_EQ(domain_state.upgrade_mode,
+  EXPECT_TRUE(
+      state.GetStaticDomainState("www.paypal.com", true, &domain_state));
+  EXPECT_EQ(domain_state.sts.upgrade_mode,
             TransportSecurityState::DomainState::MODE_FORCE_HTTPS);
-  EXPECT_FALSE(domain_state.sts_include_subdomains);
-  EXPECT_FALSE(domain_state.pkp_include_subdomains);
+  EXPECT_FALSE(domain_state.sts.include_subdomains);
+  EXPECT_FALSE(domain_state.pkp.include_subdomains);
 
-  EXPECT_TRUE(HasState("paypal.com"));
-  EXPECT_FALSE(HasState("www2.paypal.com"));
-  EXPECT_FALSE(HasState("www2.paypal.com"));
+  EXPECT_TRUE(HasStaticState("paypal.com"));
+  EXPECT_FALSE(HasStaticState("www2.paypal.com"));
+  EXPECT_FALSE(HasStaticState("www2.paypal.com"));
 
   // Google hosts:
 
-  EXPECT_TRUE(ShouldRedirect("chrome.google.com"));
-  EXPECT_TRUE(ShouldRedirect("checkout.google.com"));
-  EXPECT_TRUE(ShouldRedirect("wallet.google.com"));
-  EXPECT_TRUE(ShouldRedirect("docs.google.com"));
-  EXPECT_TRUE(ShouldRedirect("sites.google.com"));
-  EXPECT_TRUE(ShouldRedirect("drive.google.com"));
-  EXPECT_TRUE(ShouldRedirect("spreadsheets.google.com"));
-  EXPECT_TRUE(ShouldRedirect("appengine.google.com"));
-  EXPECT_TRUE(ShouldRedirect("market.android.com"));
-  EXPECT_TRUE(ShouldRedirect("encrypted.google.com"));
-  EXPECT_TRUE(ShouldRedirect("accounts.google.com"));
-  EXPECT_TRUE(ShouldRedirect("profiles.google.com"));
-  EXPECT_TRUE(ShouldRedirect("mail.google.com"));
-  EXPECT_TRUE(ShouldRedirect("chatenabled.mail.google.com"));
-  EXPECT_TRUE(ShouldRedirect("talkgadget.google.com"));
-  EXPECT_TRUE(ShouldRedirect("hostedtalkgadget.google.com"));
-  EXPECT_TRUE(ShouldRedirect("talk.google.com"));
-  EXPECT_TRUE(ShouldRedirect("plus.google.com"));
-  EXPECT_TRUE(ShouldRedirect("groups.google.com"));
-  EXPECT_TRUE(ShouldRedirect("apis.google.com"));
-  EXPECT_FALSE(ShouldRedirect("chart.apis.google.com"));
-  EXPECT_TRUE(ShouldRedirect("ssl.google-analytics.com"));
-  EXPECT_TRUE(ShouldRedirect("gmail.com"));
-  EXPECT_TRUE(ShouldRedirect("www.gmail.com"));
-  EXPECT_TRUE(ShouldRedirect("googlemail.com"));
-  EXPECT_TRUE(ShouldRedirect("www.googlemail.com"));
-  EXPECT_TRUE(ShouldRedirect("googleplex.com"));
-  EXPECT_TRUE(ShouldRedirect("www.googleplex.com"));
-  EXPECT_FALSE(HasState("m.gmail.com"));
-  EXPECT_FALSE(HasState("m.googlemail.com"));
+  EXPECT_TRUE(StaticShouldRedirect("chrome.google.com"));
+  EXPECT_TRUE(StaticShouldRedirect("checkout.google.com"));
+  EXPECT_TRUE(StaticShouldRedirect("wallet.google.com"));
+  EXPECT_TRUE(StaticShouldRedirect("docs.google.com"));
+  EXPECT_TRUE(StaticShouldRedirect("sites.google.com"));
+  EXPECT_TRUE(StaticShouldRedirect("drive.google.com"));
+  EXPECT_TRUE(StaticShouldRedirect("spreadsheets.google.com"));
+  EXPECT_TRUE(StaticShouldRedirect("appengine.google.com"));
+  EXPECT_TRUE(StaticShouldRedirect("market.android.com"));
+  EXPECT_TRUE(StaticShouldRedirect("encrypted.google.com"));
+  EXPECT_TRUE(StaticShouldRedirect("accounts.google.com"));
+  EXPECT_TRUE(StaticShouldRedirect("profiles.google.com"));
+  EXPECT_TRUE(StaticShouldRedirect("mail.google.com"));
+  EXPECT_TRUE(StaticShouldRedirect("chatenabled.mail.google.com"));
+  EXPECT_TRUE(StaticShouldRedirect("talkgadget.google.com"));
+  EXPECT_TRUE(StaticShouldRedirect("hostedtalkgadget.google.com"));
+  EXPECT_TRUE(StaticShouldRedirect("talk.google.com"));
+  EXPECT_TRUE(StaticShouldRedirect("plus.google.com"));
+  EXPECT_TRUE(StaticShouldRedirect("groups.google.com"));
+  EXPECT_TRUE(StaticShouldRedirect("apis.google.com"));
+  EXPECT_FALSE(StaticShouldRedirect("chart.apis.google.com"));
+  EXPECT_TRUE(StaticShouldRedirect("ssl.google-analytics.com"));
+  EXPECT_TRUE(StaticShouldRedirect("gmail.com"));
+  EXPECT_TRUE(StaticShouldRedirect("www.gmail.com"));
+  EXPECT_TRUE(StaticShouldRedirect("googlemail.com"));
+  EXPECT_TRUE(StaticShouldRedirect("www.googlemail.com"));
+  EXPECT_TRUE(StaticShouldRedirect("googleplex.com"));
+  EXPECT_TRUE(StaticShouldRedirect("www.googleplex.com"));
+  EXPECT_FALSE(HasStaticState("m.gmail.com"));
+  EXPECT_FALSE(HasStaticState("m.googlemail.com"));
 
-  EXPECT_TRUE(OnlyPinning("www.google.com"));
-  EXPECT_TRUE(OnlyPinning("foo.google.com"));
-  EXPECT_TRUE(OnlyPinning("google.com"));
-  EXPECT_TRUE(OnlyPinning("www.youtube.com"));
-  EXPECT_TRUE(OnlyPinning("youtube.com"));
-  EXPECT_TRUE(OnlyPinning("i.ytimg.com"));
-  EXPECT_TRUE(OnlyPinning("ytimg.com"));
-  EXPECT_TRUE(OnlyPinning("googleusercontent.com"));
-  EXPECT_TRUE(OnlyPinning("www.googleusercontent.com"));
-  EXPECT_TRUE(OnlyPinning("www.google-analytics.com"));
-  EXPECT_TRUE(OnlyPinning("googleapis.com"));
-  EXPECT_TRUE(OnlyPinning("googleadservices.com"));
-  EXPECT_TRUE(OnlyPinning("googlecode.com"));
-  EXPECT_TRUE(OnlyPinning("appspot.com"));
-  EXPECT_TRUE(OnlyPinning("googlesyndication.com"));
-  EXPECT_TRUE(OnlyPinning("doubleclick.net"));
-  EXPECT_TRUE(OnlyPinning("googlegroups.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("www.google.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("foo.google.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("google.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("www.youtube.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("youtube.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("i.ytimg.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("ytimg.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("googleusercontent.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("www.googleusercontent.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("www.google-analytics.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("googleapis.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("googleadservices.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("googlecode.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("appspot.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("googlesyndication.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("doubleclick.net"));
+  EXPECT_TRUE(OnlyPinningInStaticState("googlegroups.com"));
 
   // Tests for domains that don't work without SNI.
-  EXPECT_FALSE(state.GetDomainState("gmail.com", false, &domain_state));
-  EXPECT_FALSE(state.GetDomainState("www.gmail.com", false, &domain_state));
-  EXPECT_FALSE(state.GetDomainState("m.gmail.com", false, &domain_state));
-  EXPECT_FALSE(state.GetDomainState("googlemail.com", false, &domain_state));
-  EXPECT_FALSE(state.GetDomainState("www.googlemail.com", false,
-                                    &domain_state));
-  EXPECT_FALSE(state.GetDomainState("m.googlemail.com", false, &domain_state));
+  EXPECT_FALSE(state.GetStaticDomainState("gmail.com", false, &domain_state));
+  EXPECT_FALSE(
+      state.GetStaticDomainState("www.gmail.com", false, &domain_state));
+  EXPECT_FALSE(state.GetStaticDomainState("m.gmail.com", false, &domain_state));
+  EXPECT_FALSE(
+      state.GetStaticDomainState("googlemail.com", false, &domain_state));
+  EXPECT_FALSE(
+      state.GetStaticDomainState("www.googlemail.com", false, &domain_state));
+  EXPECT_FALSE(
+      state.GetStaticDomainState("m.googlemail.com", false, &domain_state));
 
   // Other hosts:
 
-  EXPECT_TRUE(ShouldRedirect("aladdinschools.appspot.com"));
+  EXPECT_TRUE(StaticShouldRedirect("aladdinschools.appspot.com"));
 
-  EXPECT_TRUE(ShouldRedirect("ottospora.nl"));
-  EXPECT_TRUE(ShouldRedirect("www.ottospora.nl"));
+  EXPECT_TRUE(StaticShouldRedirect("ottospora.nl"));
+  EXPECT_TRUE(StaticShouldRedirect("www.ottospora.nl"));
 
-  EXPECT_TRUE(ShouldRedirect("www.paycheckrecords.com"));
+  EXPECT_TRUE(StaticShouldRedirect("www.paycheckrecords.com"));
 
-  EXPECT_TRUE(ShouldRedirect("lastpass.com"));
-  EXPECT_TRUE(ShouldRedirect("www.lastpass.com"));
-  EXPECT_FALSE(HasState("blog.lastpass.com"));
+  EXPECT_TRUE(StaticShouldRedirect("lastpass.com"));
+  EXPECT_TRUE(StaticShouldRedirect("www.lastpass.com"));
+  EXPECT_FALSE(HasStaticState("blog.lastpass.com"));
 
-  EXPECT_TRUE(ShouldRedirect("keyerror.com"));
-  EXPECT_TRUE(ShouldRedirect("www.keyerror.com"));
+  EXPECT_TRUE(StaticShouldRedirect("keyerror.com"));
+  EXPECT_TRUE(StaticShouldRedirect("www.keyerror.com"));
 
-  EXPECT_TRUE(ShouldRedirect("entropia.de"));
-  EXPECT_TRUE(ShouldRedirect("www.entropia.de"));
-  EXPECT_FALSE(HasState("foo.entropia.de"));
+  EXPECT_TRUE(StaticShouldRedirect("entropia.de"));
+  EXPECT_TRUE(StaticShouldRedirect("www.entropia.de"));
+  EXPECT_FALSE(HasStaticState("foo.entropia.de"));
 
-  EXPECT_TRUE(ShouldRedirect("www.elanex.biz"));
-  EXPECT_FALSE(HasState("elanex.biz"));
-  EXPECT_FALSE(HasState("foo.elanex.biz"));
+  EXPECT_TRUE(StaticShouldRedirect("www.elanex.biz"));
+  EXPECT_FALSE(HasStaticState("elanex.biz"));
+  EXPECT_FALSE(HasStaticState("foo.elanex.biz"));
 
-  EXPECT_TRUE(ShouldRedirect("sunshinepress.org"));
-  EXPECT_TRUE(ShouldRedirect("www.sunshinepress.org"));
-  EXPECT_TRUE(ShouldRedirect("a.b.sunshinepress.org"));
+  EXPECT_TRUE(StaticShouldRedirect("sunshinepress.org"));
+  EXPECT_TRUE(StaticShouldRedirect("www.sunshinepress.org"));
+  EXPECT_TRUE(StaticShouldRedirect("a.b.sunshinepress.org"));
 
-  EXPECT_TRUE(ShouldRedirect("www.noisebridge.net"));
-  EXPECT_FALSE(HasState("noisebridge.net"));
-  EXPECT_FALSE(HasState("foo.noisebridge.net"));
+  EXPECT_TRUE(StaticShouldRedirect("www.noisebridge.net"));
+  EXPECT_FALSE(HasStaticState("noisebridge.net"));
+  EXPECT_FALSE(HasStaticState("foo.noisebridge.net"));
 
-  EXPECT_TRUE(ShouldRedirect("neg9.org"));
-  EXPECT_FALSE(HasState("www.neg9.org"));
+  EXPECT_TRUE(StaticShouldRedirect("neg9.org"));
+  EXPECT_FALSE(HasStaticState("www.neg9.org"));
 
-  EXPECT_TRUE(ShouldRedirect("riseup.net"));
-  EXPECT_TRUE(ShouldRedirect("foo.riseup.net"));
+  EXPECT_TRUE(StaticShouldRedirect("riseup.net"));
+  EXPECT_TRUE(StaticShouldRedirect("foo.riseup.net"));
 
-  EXPECT_TRUE(ShouldRedirect("factor.cc"));
-  EXPECT_FALSE(HasState("www.factor.cc"));
+  EXPECT_TRUE(StaticShouldRedirect("factor.cc"));
+  EXPECT_FALSE(HasStaticState("www.factor.cc"));
 
-  EXPECT_TRUE(ShouldRedirect("members.mayfirst.org"));
-  EXPECT_TRUE(ShouldRedirect("support.mayfirst.org"));
-  EXPECT_TRUE(ShouldRedirect("id.mayfirst.org"));
-  EXPECT_TRUE(ShouldRedirect("lists.mayfirst.org"));
-  EXPECT_FALSE(HasState("www.mayfirst.org"));
+  EXPECT_TRUE(StaticShouldRedirect("members.mayfirst.org"));
+  EXPECT_TRUE(StaticShouldRedirect("support.mayfirst.org"));
+  EXPECT_TRUE(StaticShouldRedirect("id.mayfirst.org"));
+  EXPECT_TRUE(StaticShouldRedirect("lists.mayfirst.org"));
+  EXPECT_FALSE(HasStaticState("www.mayfirst.org"));
 
-  EXPECT_TRUE(ShouldRedirect("romab.com"));
-  EXPECT_TRUE(ShouldRedirect("www.romab.com"));
-  EXPECT_TRUE(ShouldRedirect("foo.romab.com"));
+  EXPECT_TRUE(StaticShouldRedirect("romab.com"));
+  EXPECT_TRUE(StaticShouldRedirect("www.romab.com"));
+  EXPECT_TRUE(StaticShouldRedirect("foo.romab.com"));
 
-  EXPECT_TRUE(ShouldRedirect("logentries.com"));
-  EXPECT_TRUE(ShouldRedirect("www.logentries.com"));
-  EXPECT_FALSE(HasState("foo.logentries.com"));
+  EXPECT_TRUE(StaticShouldRedirect("logentries.com"));
+  EXPECT_TRUE(StaticShouldRedirect("www.logentries.com"));
+  EXPECT_FALSE(HasStaticState("foo.logentries.com"));
 
-  EXPECT_TRUE(ShouldRedirect("stripe.com"));
-  EXPECT_TRUE(ShouldRedirect("foo.stripe.com"));
+  EXPECT_TRUE(StaticShouldRedirect("stripe.com"));
+  EXPECT_TRUE(StaticShouldRedirect("foo.stripe.com"));
 
-  EXPECT_TRUE(ShouldRedirect("cloudsecurityalliance.org"));
-  EXPECT_TRUE(ShouldRedirect("foo.cloudsecurityalliance.org"));
+  EXPECT_TRUE(StaticShouldRedirect("cloudsecurityalliance.org"));
+  EXPECT_TRUE(StaticShouldRedirect("foo.cloudsecurityalliance.org"));
 
-  EXPECT_TRUE(ShouldRedirect("login.sapo.pt"));
-  EXPECT_TRUE(ShouldRedirect("foo.login.sapo.pt"));
+  EXPECT_TRUE(StaticShouldRedirect("login.sapo.pt"));
+  EXPECT_TRUE(StaticShouldRedirect("foo.login.sapo.pt"));
 
-  EXPECT_TRUE(ShouldRedirect("mattmccutchen.net"));
-  EXPECT_TRUE(ShouldRedirect("foo.mattmccutchen.net"));
+  EXPECT_TRUE(StaticShouldRedirect("mattmccutchen.net"));
+  EXPECT_TRUE(StaticShouldRedirect("foo.mattmccutchen.net"));
 
-  EXPECT_TRUE(ShouldRedirect("betnet.fr"));
-  EXPECT_TRUE(ShouldRedirect("foo.betnet.fr"));
+  EXPECT_TRUE(StaticShouldRedirect("betnet.fr"));
+  EXPECT_TRUE(StaticShouldRedirect("foo.betnet.fr"));
 
-  EXPECT_TRUE(ShouldRedirect("uprotect.it"));
-  EXPECT_TRUE(ShouldRedirect("foo.uprotect.it"));
+  EXPECT_TRUE(StaticShouldRedirect("uprotect.it"));
+  EXPECT_TRUE(StaticShouldRedirect("foo.uprotect.it"));
 
-  EXPECT_TRUE(ShouldRedirect("squareup.com"));
-  EXPECT_FALSE(HasState("foo.squareup.com"));
+  EXPECT_TRUE(StaticShouldRedirect("squareup.com"));
+  EXPECT_FALSE(HasStaticState("foo.squareup.com"));
 
-  EXPECT_TRUE(ShouldRedirect("cert.se"));
-  EXPECT_TRUE(ShouldRedirect("foo.cert.se"));
+  EXPECT_TRUE(StaticShouldRedirect("cert.se"));
+  EXPECT_TRUE(StaticShouldRedirect("foo.cert.se"));
 
-  EXPECT_TRUE(ShouldRedirect("crypto.is"));
-  EXPECT_TRUE(ShouldRedirect("foo.crypto.is"));
+  EXPECT_TRUE(StaticShouldRedirect("crypto.is"));
+  EXPECT_TRUE(StaticShouldRedirect("foo.crypto.is"));
 
-  EXPECT_TRUE(ShouldRedirect("simon.butcher.name"));
-  EXPECT_TRUE(ShouldRedirect("foo.simon.butcher.name"));
+  EXPECT_TRUE(StaticShouldRedirect("simon.butcher.name"));
+  EXPECT_TRUE(StaticShouldRedirect("foo.simon.butcher.name"));
 
-  EXPECT_TRUE(ShouldRedirect("linx.net"));
-  EXPECT_TRUE(ShouldRedirect("foo.linx.net"));
+  EXPECT_TRUE(StaticShouldRedirect("linx.net"));
+  EXPECT_TRUE(StaticShouldRedirect("foo.linx.net"));
 
-  EXPECT_TRUE(ShouldRedirect("dropcam.com"));
-  EXPECT_TRUE(ShouldRedirect("www.dropcam.com"));
-  EXPECT_FALSE(HasState("foo.dropcam.com"));
+  EXPECT_TRUE(StaticShouldRedirect("dropcam.com"));
+  EXPECT_TRUE(StaticShouldRedirect("www.dropcam.com"));
+  EXPECT_FALSE(HasStaticState("foo.dropcam.com"));
 
-  EXPECT_TRUE(state.GetDomainState("torproject.org", false, &domain_state));
-  EXPECT_FALSE(domain_state.static_spki_hashes.empty());
-  EXPECT_TRUE(state.GetDomainState("www.torproject.org", false,
-                                   &domain_state));
-  EXPECT_FALSE(domain_state.static_spki_hashes.empty());
-  EXPECT_TRUE(state.GetDomainState("check.torproject.org", false,
-                                   &domain_state));
-  EXPECT_FALSE(domain_state.static_spki_hashes.empty());
-  EXPECT_TRUE(state.GetDomainState("blog.torproject.org", false,
-                                   &domain_state));
-  EXPECT_FALSE(domain_state.static_spki_hashes.empty());
-  EXPECT_TRUE(ShouldRedirect("ebanking.indovinabank.com.vn"));
-  EXPECT_TRUE(ShouldRedirect("foo.ebanking.indovinabank.com.vn"));
+  EXPECT_TRUE(
+      state.GetStaticDomainState("torproject.org", false, &domain_state));
+  EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
+  EXPECT_TRUE(
+      state.GetStaticDomainState("www.torproject.org", false, &domain_state));
+  EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
+  EXPECT_TRUE(
+      state.GetStaticDomainState("check.torproject.org", false, &domain_state));
+  EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
+  EXPECT_TRUE(
+      state.GetStaticDomainState("blog.torproject.org", false, &domain_state));
+  EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
+  EXPECT_TRUE(StaticShouldRedirect("ebanking.indovinabank.com.vn"));
+  EXPECT_TRUE(StaticShouldRedirect("foo.ebanking.indovinabank.com.vn"));
 
-  EXPECT_TRUE(ShouldRedirect("epoxate.com"));
-  EXPECT_FALSE(HasState("foo.epoxate.com"));
+  EXPECT_TRUE(StaticShouldRedirect("epoxate.com"));
+  EXPECT_FALSE(HasStaticState("foo.epoxate.com"));
 
-  EXPECT_TRUE(HasPublicKeyPins("torproject.org"));
-  EXPECT_TRUE(HasPublicKeyPins("www.torproject.org"));
-  EXPECT_TRUE(HasPublicKeyPins("check.torproject.org"));
-  EXPECT_TRUE(HasPublicKeyPins("blog.torproject.org"));
-  EXPECT_FALSE(HasState("foo.torproject.org"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("torproject.org"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("www.torproject.org"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("check.torproject.org"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("blog.torproject.org"));
+  EXPECT_FALSE(HasStaticState("foo.torproject.org"));
 
-  EXPECT_TRUE(ShouldRedirect("www.moneybookers.com"));
-  EXPECT_FALSE(HasState("moneybookers.com"));
+  EXPECT_TRUE(StaticShouldRedirect("www.moneybookers.com"));
+  EXPECT_FALSE(HasStaticState("moneybookers.com"));
 
-  EXPECT_TRUE(ShouldRedirect("ledgerscope.net"));
-  EXPECT_TRUE(ShouldRedirect("www.ledgerscope.net"));
-  EXPECT_FALSE(HasState("status.ledgerscope.net"));
+  EXPECT_TRUE(StaticShouldRedirect("ledgerscope.net"));
+  EXPECT_TRUE(StaticShouldRedirect("www.ledgerscope.net"));
+  EXPECT_FALSE(HasStaticState("status.ledgerscope.net"));
 
-  EXPECT_TRUE(ShouldRedirect("foo.app.recurly.com"));
-  EXPECT_TRUE(ShouldRedirect("foo.api.recurly.com"));
+  EXPECT_TRUE(StaticShouldRedirect("foo.app.recurly.com"));
+  EXPECT_TRUE(StaticShouldRedirect("foo.api.recurly.com"));
 
-  EXPECT_TRUE(ShouldRedirect("greplin.com"));
-  EXPECT_TRUE(ShouldRedirect("www.greplin.com"));
-  EXPECT_FALSE(HasState("foo.greplin.com"));
+  EXPECT_TRUE(StaticShouldRedirect("greplin.com"));
+  EXPECT_TRUE(StaticShouldRedirect("www.greplin.com"));
+  EXPECT_FALSE(HasStaticState("foo.greplin.com"));
 
-  EXPECT_TRUE(ShouldRedirect("luneta.nearbuysystems.com"));
-  EXPECT_TRUE(ShouldRedirect("foo.luneta.nearbuysystems.com"));
+  EXPECT_TRUE(StaticShouldRedirect("luneta.nearbuysystems.com"));
+  EXPECT_TRUE(StaticShouldRedirect("foo.luneta.nearbuysystems.com"));
 
-  EXPECT_TRUE(ShouldRedirect("ubertt.org"));
-  EXPECT_TRUE(ShouldRedirect("foo.ubertt.org"));
+  EXPECT_TRUE(StaticShouldRedirect("ubertt.org"));
+  EXPECT_TRUE(StaticShouldRedirect("foo.ubertt.org"));
 
-  EXPECT_TRUE(ShouldRedirect("pixi.me"));
-  EXPECT_TRUE(ShouldRedirect("www.pixi.me"));
+  EXPECT_TRUE(StaticShouldRedirect("pixi.me"));
+  EXPECT_TRUE(StaticShouldRedirect("www.pixi.me"));
 
-  EXPECT_TRUE(ShouldRedirect("grepular.com"));
-  EXPECT_TRUE(ShouldRedirect("www.grepular.com"));
+  EXPECT_TRUE(StaticShouldRedirect("grepular.com"));
+  EXPECT_TRUE(StaticShouldRedirect("www.grepular.com"));
 
-  EXPECT_TRUE(ShouldRedirect("mydigipass.com"));
-  EXPECT_FALSE(ShouldRedirect("foo.mydigipass.com"));
-  EXPECT_TRUE(ShouldRedirect("www.mydigipass.com"));
-  EXPECT_FALSE(ShouldRedirect("foo.www.mydigipass.com"));
-  EXPECT_TRUE(ShouldRedirect("developer.mydigipass.com"));
-  EXPECT_FALSE(ShouldRedirect("foo.developer.mydigipass.com"));
-  EXPECT_TRUE(ShouldRedirect("www.developer.mydigipass.com"));
-  EXPECT_FALSE(ShouldRedirect("foo.www.developer.mydigipass.com"));
-  EXPECT_TRUE(ShouldRedirect("sandbox.mydigipass.com"));
-  EXPECT_FALSE(ShouldRedirect("foo.sandbox.mydigipass.com"));
-  EXPECT_TRUE(ShouldRedirect("www.sandbox.mydigipass.com"));
-  EXPECT_FALSE(ShouldRedirect("foo.www.sandbox.mydigipass.com"));
+  EXPECT_TRUE(StaticShouldRedirect("mydigipass.com"));
+  EXPECT_FALSE(StaticShouldRedirect("foo.mydigipass.com"));
+  EXPECT_TRUE(StaticShouldRedirect("www.mydigipass.com"));
+  EXPECT_FALSE(StaticShouldRedirect("foo.www.mydigipass.com"));
+  EXPECT_TRUE(StaticShouldRedirect("developer.mydigipass.com"));
+  EXPECT_FALSE(StaticShouldRedirect("foo.developer.mydigipass.com"));
+  EXPECT_TRUE(StaticShouldRedirect("www.developer.mydigipass.com"));
+  EXPECT_FALSE(StaticShouldRedirect("foo.www.developer.mydigipass.com"));
+  EXPECT_TRUE(StaticShouldRedirect("sandbox.mydigipass.com"));
+  EXPECT_FALSE(StaticShouldRedirect("foo.sandbox.mydigipass.com"));
+  EXPECT_TRUE(StaticShouldRedirect("www.sandbox.mydigipass.com"));
+  EXPECT_FALSE(StaticShouldRedirect("foo.www.sandbox.mydigipass.com"));
 
-  EXPECT_TRUE(ShouldRedirect("crypto.cat"));
-  EXPECT_FALSE(ShouldRedirect("foo.crypto.cat"));
+  EXPECT_TRUE(StaticShouldRedirect("crypto.cat"));
+  EXPECT_FALSE(StaticShouldRedirect("foo.crypto.cat"));
 
-  EXPECT_TRUE(ShouldRedirect("bigshinylock.minazo.net"));
-  EXPECT_TRUE(ShouldRedirect("foo.bigshinylock.minazo.net"));
+  EXPECT_TRUE(StaticShouldRedirect("bigshinylock.minazo.net"));
+  EXPECT_TRUE(StaticShouldRedirect("foo.bigshinylock.minazo.net"));
 
-  EXPECT_TRUE(ShouldRedirect("crate.io"));
-  EXPECT_TRUE(ShouldRedirect("foo.crate.io"));
+  EXPECT_TRUE(StaticShouldRedirect("crate.io"));
+  EXPECT_TRUE(StaticShouldRedirect("foo.crate.io"));
 
-  EXPECT_TRUE(HasPublicKeyPins("www.twitter.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("www.twitter.com"));
 }
 
 TEST_F(TransportSecurityStateTest, LongNames) {
@@ -482,60 +489,62 @@ TEST_F(TransportSecurityStateTest, LongNames) {
       "WaveletIdDomainAndBlipBlipid";
   TransportSecurityState::DomainState domain_state;
   // Just checks that we don't hit a NOTREACHED.
-  EXPECT_FALSE(state.GetDomainState(kLongName, true, &domain_state));
+  EXPECT_FALSE(state.GetStaticDomainState(kLongName, true, &domain_state));
+  EXPECT_FALSE(state.GetDynamicDomainState(kLongName, &domain_state));
 }
 
 TEST_F(TransportSecurityStateTest, BuiltinCertPins) {
   TransportSecurityState state;
   TransportSecurityState::DomainState domain_state;
 
-  EXPECT_TRUE(state.GetDomainState("chrome.google.com", true, &domain_state));
-  EXPECT_TRUE(HasPublicKeyPins("chrome.google.com"));
+  EXPECT_TRUE(
+      state.GetStaticDomainState("chrome.google.com", true, &domain_state));
+  EXPECT_TRUE(HasStaticPublicKeyPins("chrome.google.com"));
 
   HashValueVector hashes;
   std::string failure_log;
   // Checks that a built-in list does exist.
   EXPECT_FALSE(domain_state.CheckPublicKeyPins(hashes, &failure_log));
-  EXPECT_FALSE(HasPublicKeyPins("www.paypal.com"));
+  EXPECT_FALSE(HasStaticPublicKeyPins("www.paypal.com"));
 
-  EXPECT_TRUE(HasPublicKeyPins("docs.google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("1.docs.google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("sites.google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("drive.google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("spreadsheets.google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("wallet.google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("checkout.google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("appengine.google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("market.android.com"));
-  EXPECT_TRUE(HasPublicKeyPins("encrypted.google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("accounts.google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("profiles.google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("mail.google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("chatenabled.mail.google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("talkgadget.google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("hostedtalkgadget.google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("talk.google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("plus.google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("groups.google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("apis.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("docs.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("1.docs.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("sites.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("drive.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("spreadsheets.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("wallet.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("checkout.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("appengine.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("market.android.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("encrypted.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("accounts.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("profiles.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("mail.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("chatenabled.mail.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("talkgadget.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("hostedtalkgadget.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("talk.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("plus.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("groups.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("apis.google.com"));
 
-  EXPECT_TRUE(HasPublicKeyPins("ssl.gstatic.com"));
-  EXPECT_TRUE(HasPublicKeyPins("gstatic.com"));
-  EXPECT_TRUE(HasPublicKeyPins("www.gstatic.com"));
-  EXPECT_TRUE(HasPublicKeyPins("ssl.google-analytics.com"));
-  EXPECT_TRUE(HasPublicKeyPins("www.googleplex.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("ssl.gstatic.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("gstatic.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("www.gstatic.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("ssl.google-analytics.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("www.googleplex.com"));
 
   // Disabled in order to help track down pinning failures --agl
-  EXPECT_TRUE(HasPublicKeyPins("twitter.com"));
-  EXPECT_FALSE(HasPublicKeyPins("foo.twitter.com"));
-  EXPECT_TRUE(HasPublicKeyPins("www.twitter.com"));
-  EXPECT_TRUE(HasPublicKeyPins("api.twitter.com"));
-  EXPECT_TRUE(HasPublicKeyPins("oauth.twitter.com"));
-  EXPECT_TRUE(HasPublicKeyPins("mobile.twitter.com"));
-  EXPECT_TRUE(HasPublicKeyPins("dev.twitter.com"));
-  EXPECT_TRUE(HasPublicKeyPins("business.twitter.com"));
-  EXPECT_TRUE(HasPublicKeyPins("platform.twitter.com"));
-  EXPECT_TRUE(HasPublicKeyPins("si0.twimg.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("twitter.com"));
+  EXPECT_FALSE(HasStaticPublicKeyPins("foo.twitter.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("www.twitter.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("api.twitter.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("oauth.twitter.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("mobile.twitter.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("dev.twitter.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("business.twitter.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("platform.twitter.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("si0.twimg.com"));
 }
 
 static bool AddHash(const std::string& type_and_base64,
@@ -577,7 +586,8 @@ TEST_F(TransportSecurityStateTest, PinValidationWithoutRejectedCerts) {
 
   TransportSecurityState state;
   TransportSecurityState::DomainState domain_state;
-  EXPECT_TRUE(state.GetDomainState("blog.torproject.org", true, &domain_state));
+  EXPECT_TRUE(
+      state.GetStaticDomainState("blog.torproject.org", true, &domain_state));
   EXPECT_TRUE(domain_state.HasPublicKeyPins());
 
   std::string failure_log;
@@ -589,43 +599,43 @@ TEST_F(TransportSecurityStateTest, OptionalHSTSCertPins) {
   TransportSecurityState state;
   TransportSecurityState::DomainState domain_state;
 
-  EXPECT_FALSE(ShouldRedirect("www.google-analytics.com"));
+  EXPECT_FALSE(StaticShouldRedirect("www.google-analytics.com"));
 
-  EXPECT_FALSE(HasPublicKeyPins("www.google-analytics.com", false));
-  EXPECT_TRUE(HasPublicKeyPins("www.google-analytics.com"));
-  EXPECT_TRUE(HasPublicKeyPins("google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("www.google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("mail-attachment.googleusercontent.com"));
-  EXPECT_TRUE(HasPublicKeyPins("www.youtube.com"));
-  EXPECT_TRUE(HasPublicKeyPins("i.ytimg.com"));
-  EXPECT_TRUE(HasPublicKeyPins("googleapis.com"));
-  EXPECT_TRUE(HasPublicKeyPins("ajax.googleapis.com"));
-  EXPECT_TRUE(HasPublicKeyPins("googleadservices.com"));
-  EXPECT_TRUE(HasPublicKeyPins("pagead2.googleadservices.com"));
-  EXPECT_TRUE(HasPublicKeyPins("googlecode.com"));
-  EXPECT_TRUE(HasPublicKeyPins("kibbles.googlecode.com"));
-  EXPECT_TRUE(HasPublicKeyPins("appspot.com"));
-  EXPECT_TRUE(HasPublicKeyPins("googlesyndication.com"));
-  EXPECT_TRUE(HasPublicKeyPins("doubleclick.net"));
-  EXPECT_TRUE(HasPublicKeyPins("ad.doubleclick.net"));
-  EXPECT_FALSE(HasPublicKeyPins("learn.doubleclick.net"));
-  EXPECT_TRUE(HasPublicKeyPins("a.googlegroups.com"));
-  EXPECT_FALSE(HasPublicKeyPins("a.googlegroups.com", false));
+  EXPECT_FALSE(HasStaticPublicKeyPins("www.google-analytics.com", false));
+  EXPECT_TRUE(HasStaticPublicKeyPins("www.google-analytics.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("www.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("mail-attachment.googleusercontent.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("www.youtube.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("i.ytimg.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("googleapis.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("ajax.googleapis.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("googleadservices.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("pagead2.googleadservices.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("googlecode.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("kibbles.googlecode.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("appspot.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("googlesyndication.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("doubleclick.net"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("ad.doubleclick.net"));
+  EXPECT_FALSE(HasStaticPublicKeyPins("learn.doubleclick.net"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("a.googlegroups.com"));
+  EXPECT_FALSE(HasStaticPublicKeyPins("a.googlegroups.com", false));
 }
 
 TEST_F(TransportSecurityStateTest, OverrideBuiltins) {
-  EXPECT_TRUE(HasPublicKeyPins("google.com"));
-  EXPECT_FALSE(ShouldRedirect("google.com"));
-  EXPECT_FALSE(ShouldRedirect("www.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("google.com"));
+  EXPECT_FALSE(StaticShouldRedirect("google.com"));
+  EXPECT_FALSE(StaticShouldRedirect("www.google.com"));
 
   TransportSecurityState state;
   TransportSecurityState::DomainState domain_state;
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
-  domain_state.upgrade_expiry = expiry;
+  domain_state.sts.expiry = expiry;
   EnableHost(&state, "www.google.com", domain_state);
 
-  EXPECT_TRUE(state.GetDomainState("www.google.com", true, &domain_state));
+  EXPECT_TRUE(state.GetDynamicDomainState("www.google.com", &domain_state));
 }
 
 TEST_F(TransportSecurityStateTest, GooglePinnedProperties) {

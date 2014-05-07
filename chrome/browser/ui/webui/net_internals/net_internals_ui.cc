@@ -1209,26 +1209,62 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
     if (!transport_security_state) {
       result->SetString("error", "no TransportSecurityState active");
     } else {
-      net::TransportSecurityState::DomainState state;
-      const bool found = transport_security_state->GetDomainState(
-          domain, true, &state);
-
-      result->SetBoolean("result", found);
-      if (found) {
-        result->SetInteger("mode", static_cast<int>(state.upgrade_mode));
-        result->SetBoolean("sts_subdomains", state.sts_include_subdomains);
-        result->SetBoolean("pkp_subdomains", state.pkp_include_subdomains);
-        result->SetDouble("sts_observed", state.sts_observed.ToDoubleT());
-        result->SetDouble("pkp_observed", state.pkp_observed.ToDoubleT());
-        result->SetString("domain", state.domain);
-        result->SetDouble("expiry", state.upgrade_expiry.ToDoubleT());
-        result->SetDouble("dynamic_spki_hashes_expiry",
-                          state.dynamic_spki_hashes_expiry.ToDoubleT());
-
+      net::TransportSecurityState::DomainState static_state;
+      const bool found_static = transport_security_state->GetStaticDomainState(
+          domain, true, &static_state);
+      if (found_static) {
+        result->SetBoolean("has_static_sts",
+                           found_static && static_state.ShouldUpgradeToSSL());
+        result->SetInteger("static_upgrade_mode",
+                           static_cast<int>(static_state.sts.upgrade_mode));
+        result->SetBoolean("static_sts_include_subdomains",
+                           static_state.sts.include_subdomains);
+        result->SetDouble("static_sts_observed",
+                          static_state.sts.last_observed.ToDoubleT());
+        result->SetDouble("static_sts_expiry",
+                          static_state.sts.expiry.ToDoubleT());
+        result->SetBoolean("has_static_pkp",
+                           found_static && static_state.HasPublicKeyPins());
+        result->SetBoolean("static_pkp_include_subdomains",
+                           static_state.pkp.include_subdomains);
+        result->SetDouble("static_pkp_observed",
+                          static_state.pkp.last_observed.ToDoubleT());
+        result->SetDouble("static_pkp_expiry",
+                          static_state.pkp.expiry.ToDoubleT());
         result->SetString("static_spki_hashes",
-                          HashesToBase64String(state.static_spki_hashes));
+                          HashesToBase64String(static_state.pkp.spki_hashes));
+      }
+
+      net::TransportSecurityState::DomainState dynamic_state;
+      const bool found_dynamic =
+          transport_security_state->GetDynamicDomainState(domain,
+                                                          &dynamic_state);
+      if (found_dynamic) {
+        result->SetInteger("dynamic_upgrade_mode",
+                           static_cast<int>(dynamic_state.sts.upgrade_mode));
+        result->SetBoolean("dynamic_sts_include_subdomains",
+                           dynamic_state.sts.include_subdomains);
+        result->SetBoolean("dynamic_pkp_include_subdomains",
+                           dynamic_state.pkp.include_subdomains);
+        result->SetDouble("dynamic_sts_observed",
+                          dynamic_state.sts.last_observed.ToDoubleT());
+        result->SetDouble("dynamic_pkp_observed",
+                          dynamic_state.pkp.last_observed.ToDoubleT());
+        result->SetDouble("dynamic_sts_expiry",
+                          dynamic_state.sts.expiry.ToDoubleT());
+        result->SetDouble("dynamic_pkp_expiry",
+                          dynamic_state.pkp.expiry.ToDoubleT());
         result->SetString("dynamic_spki_hashes",
-                          HashesToBase64String(state.dynamic_spki_hashes));
+                          HashesToBase64String(dynamic_state.pkp.spki_hashes));
+      }
+
+      result->SetBoolean("result", found_static || found_dynamic);
+      if (found_static) {
+        result->SetString("domain", static_state.domain);
+      } else if (found_dynamic) {
+        result->SetString("domain", dynamic_state.domain);
+      } else {
+        result->SetString("domain", domain);
       }
     }
   }

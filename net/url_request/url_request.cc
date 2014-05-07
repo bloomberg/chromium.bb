@@ -1065,13 +1065,11 @@ bool URLRequest::GetHSTSRedirect(GURL* redirect_url) const {
   const GURL& url = this->url();
   if (!url.SchemeIs("http"))
     return false;
-  TransportSecurityState::DomainState domain_state;
-  if (context()->transport_security_state() &&
-      context()->transport_security_state()->GetDomainState(
+  TransportSecurityState* state = context()->transport_security_state();
+  if (state &&
+      state->ShouldUpgradeToSSL(
           url.host(),
-          SSLConfigService::IsSNIAvailable(context()->ssl_config_service()),
-          &domain_state) &&
-      domain_state.ShouldUpgradeToSSL()) {
+          SSLConfigService::IsSNIAvailable(context()->ssl_config_service()))) {
     url::Replacements<char> replacements;
     const char kNewScheme[] = "https";
     replacements.SetScheme(kNewScheme, url::Component(0, strlen(kNewScheme)));

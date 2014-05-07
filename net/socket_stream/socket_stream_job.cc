@@ -28,10 +28,9 @@ SocketStreamJob* SocketStreamJob::CreateSocketStreamJob(
     URLRequestContext* context,
     CookieStore* cookie_store) {
   GURL socket_url(url);
-  TransportSecurityState::DomainState domain_state;
-  if (url.scheme() == "ws" && sts && sts->GetDomainState(
-          url.host(), SSLConfigService::IsSNIAvailable(ssl), &domain_state) &&
-      domain_state.ShouldUpgradeToSSL()) {
+  if (url.scheme() == "ws" && sts &&
+      sts->ShouldUpgradeToSSL(url.host(),
+                              SSLConfigService::IsSNIAvailable(ssl))) {
     url::Replacements<char> replacements;
     static const char kNewScheme[] = "wss";
     replacements.SetScheme(kNewScheme, url::Component(0, strlen(kNewScheme)));

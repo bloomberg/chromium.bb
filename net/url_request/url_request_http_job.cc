@@ -841,14 +841,13 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
       NotifySSLCertificateError(info, true);
     } else {
       // Maybe overridable, maybe not. Ask the delegate to decide.
-      TransportSecurityState::DomainState domain_state;
       const URLRequestContext* context = request_->context();
-      const bool fatal = context->transport_security_state() &&
-          context->transport_security_state()->GetDomainState(
+      TransportSecurityState* state = context->transport_security_state();
+      const bool fatal =
+          state &&
+          state->ShouldSSLErrorsBeFatal(
               request_info_.url.host(),
-              SSLConfigService::IsSNIAvailable(context->ssl_config_service()),
-              &domain_state) &&
-          domain_state.ShouldSSLErrorsBeFatal();
+              SSLConfigService::IsSNIAvailable(context->ssl_config_service()));
       NotifySSLCertificateError(
           transaction_->GetResponseInfo()->ssl_info, fatal);
     }

@@ -116,54 +116,51 @@ var HSTSView = (function() {
       this.queryOutputDiv_.innerHTML = '';
 
       var s = addNode(this.queryOutputDiv_, 'span');
-      s.innerHTML = '<b>Found</b>: mode: ';
+      s.innerHTML = '<b>Found:</b><br/>';
+      var t;
+      var b;
 
-      // TODO(palmer): Combine these 2-line pairs into 1:
-      // addNodeWithText(this.queryOutputDiv_, 'tt', results.sts_observed);
-      var t = addNode(this.queryOutputDiv_, 'tt');
-      t.textContent = modeToString(result.mode);
+      addTextNode(this.queryOutputDiv_, ' domain: ');
+      t = addNodeWithText(this.queryOutputDiv_, 'tt', result.domain);
+      b = addNode(this.queryOutputDiv_, 'br');
 
-      addTextNode(this.queryOutputDiv_, ' sts_include_subdomains:');
+      addTextNode(this.queryOutputDiv_, ' static_upgrade_mode: ');
+      t = addNodeWithText(this.queryOutputDiv_, 'tt',
+                          modeToString(result.static_upgrade_mode));
+      b = addNode(this.queryOutputDiv_, 'br');
 
-      t = addNode(this.queryOutputDiv_, 'tt');
-      t.textContent = result.sts_subdomains;
+      addTextNode(this.queryOutputDiv_, ' static_sts_include_subdomains: ');
+      t = addNodeWithText(this.queryOutputDiv_, 'tt',
+                          result.static_sts_include_subdomains);
+      b = addNode(this.queryOutputDiv_, 'br');
 
-      addTextNode(this.queryOutputDiv_, ' pkp_include_subdomains:');
+      addTextNode(this.queryOutputDiv_, ' static_pkp_include_subdomains: ');
+      t = addNodeWithText(this.queryOutputDiv_, 'tt',
+                          result.static_pkp_include_subdomains);
+      b = addNode(this.queryOutputDiv_, 'br');
 
-      t = addNode(this.queryOutputDiv_, 'tt');
-      t.textContent = result.pkp_subdomains;
+      addTextNode(this.queryOutputDiv_, ' static_sts_observed: ');
+      t = addNodeWithText(this.queryOutputDiv_, 'tt',
+                          result.static_sts_observed);
+      b = addNode(this.queryOutputDiv_, 'br');
 
-      addTextNode(this.queryOutputDiv_, ' sts_observed:');
+      addTextNode(this.queryOutputDiv_, ' static_pkp_observed: ');
+      t = addNodeWithText(this.queryOutputDiv_, 'tt',
+                          result.static_pkp_observed);
+      b = addNode(this.queryOutputDiv_, 'br');
 
-      t = addNode(this.queryOutputDiv_, 'tt');
-      t.textContent = result.sts_observed;
-
-      addTextNode(this.queryOutputDiv_, ' pkp_observed:');
-
-      t = addNode(this.queryOutputDiv_, 'tt');
-      t.textContent = result.pkp_observed;
-
-      addTextNode(this.queryOutputDiv_, ' domain:');
-
-      t = addNode(this.queryOutputDiv_, 'tt');
-      t.textContent = result.domain;
-
-      addTextNode(this.queryOutputDiv_, ' pubkey_hashes:');
-
+      addTextNode(this.queryOutputDiv_, ' static_spki_hashes: ');
       t = addNode(this.queryOutputDiv_, 'tt');
 
       // |public_key_hashes| is an old synonym for what is now
       // |preloaded_spki_hashes|, which in turn is a legacy synonym for
-      // |static_spki_hashes|. Look for all three, and also for
-      // |dynamic_spki_hashes|.
+      // |static_spki_hashes|.
       if (typeof result.public_key_hashes === 'undefined')
         result.public_key_hashes = '';
       if (typeof result.preloaded_spki_hashes === 'undefined')
         result.preloaded_spki_hashes = '';
       if (typeof result.static_spki_hashes === 'undefined')
         result.static_spki_hashes = '';
-      if (typeof result.dynamic_spki_hashes === 'undefined')
-        result.dynamic_spki_hashes = '';
 
       var hashes = [];
       if (result.public_key_hashes)
@@ -172,10 +169,39 @@ var HSTSView = (function() {
         hashes.push(result.preloaded_spki_hashes);
       if (result.static_spki_hashes)
         hashes.push(result.static_spki_hashes);
-      if (result.dynamic_spki_hashes)
-        hashes.push(result.dynamic_spki_hashes);
 
       t.textContent = hashes.join(',');
+      b = addNode(this.queryOutputDiv_, 'br');
+
+      addTextNode(this.queryOutputDiv_, ' dynamic_upgrade_mode: ');
+      t = addNodeWithText(this.queryOutputDiv_, 'tt',
+                          modeToString(result.dynamic_upgrade_mode));
+      b = addNode(this.queryOutputDiv_, 'br');
+
+      addTextNode(this.queryOutputDiv_, ' dynamic_sts_include_subdomains: ');
+      t = addNodeWithText(this.queryOutputDiv_, 'tt',
+                          result.dynamic_sts_include_subdomains || '');
+      b = addNode(this.queryOutputDiv_, 'br');
+
+      addTextNode(this.queryOutputDiv_, ' dynamic_pkp_include_subdomains: ');
+      t = addNodeWithText(this.queryOutputDiv_, 'tt',
+                          result.dynamic_pkp_include_subdomains || '');
+      b = addNode(this.queryOutputDiv_, 'br');
+
+      addTextNode(this.queryOutputDiv_, ' dynamic_sts_observed: ');
+      t = addNodeWithText(this.queryOutputDiv_, 'tt',
+                          result.dynamic_sts_observed || '');
+      b = addNode(this.queryOutputDiv_, 'br');
+
+      addTextNode(this.queryOutputDiv_, ' dynamic_pkp_observed: ');
+      t = addNodeWithText(this.queryOutputDiv_, 'tt',
+                          result.dynamic_pkp_observed || '');
+      b = addNode(this.queryOutputDiv_, 'br');
+
+      addTextNode(this.queryOutputDiv_, ' dynamic_spki_hashes: ');
+      t = addNodeWithText(this.queryOutputDiv_, 'tt',
+                          result.dynamic_spki_hashes || '');
+
       yellowFade(this.queryOutputDiv_);
     }
   };

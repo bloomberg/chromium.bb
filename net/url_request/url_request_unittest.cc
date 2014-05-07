@@ -4968,14 +4968,13 @@ TEST_F(URLRequestTestHTTP, ProcessSTS) {
 
   TransportSecurityState* security_state =
       default_context_.transport_security_state();
-  bool sni_available = true;
   TransportSecurityState::DomainState domain_state;
-  EXPECT_TRUE(security_state->GetDomainState(
-      SpawnedTestServer::kLocalhost, sni_available, &domain_state));
+  EXPECT_TRUE(security_state->GetDynamicDomainState(
+      SpawnedTestServer::kLocalhost, &domain_state));
   EXPECT_EQ(TransportSecurityState::DomainState::MODE_FORCE_HTTPS,
-            domain_state.upgrade_mode);
-  EXPECT_TRUE(domain_state.sts_include_subdomains);
-  EXPECT_FALSE(domain_state.pkp_include_subdomains);
+            domain_state.sts.upgrade_mode);
+  EXPECT_TRUE(domain_state.sts.include_subdomains);
+  EXPECT_FALSE(domain_state.pkp.include_subdomains);
 #if defined(OS_ANDROID)
   // Android's CertVerifyProc does not (yet) handle pins.
 #else
@@ -5012,17 +5011,15 @@ TEST_F(URLRequestTestHTTP, MAYBE_ProcessPKP) {
 
   TransportSecurityState* security_state =
       default_context_.transport_security_state();
-  bool sni_available = true;
   TransportSecurityState::DomainState domain_state;
-  EXPECT_TRUE(security_state->GetDomainState(
-      SpawnedTestServer::kLocalhost, sni_available, &domain_state));
+  EXPECT_TRUE(security_state->GetDynamicDomainState(
+      SpawnedTestServer::kLocalhost, &domain_state));
   EXPECT_EQ(TransportSecurityState::DomainState::MODE_DEFAULT,
-            domain_state.upgrade_mode);
-  EXPECT_FALSE(domain_state.sts_include_subdomains);
-  EXPECT_FALSE(domain_state.pkp_include_subdomains);
+            domain_state.sts.upgrade_mode);
+  EXPECT_FALSE(domain_state.sts.include_subdomains);
+  EXPECT_FALSE(domain_state.pkp.include_subdomains);
   EXPECT_TRUE(domain_state.HasPublicKeyPins());
-  EXPECT_NE(domain_state.upgrade_expiry,
-            domain_state.dynamic_spki_hashes_expiry);
+  EXPECT_NE(domain_state.sts.expiry, domain_state.pkp.expiry);
 }
 
 TEST_F(URLRequestTestHTTP, ProcessSTSOnce) {
@@ -5045,14 +5042,13 @@ TEST_F(URLRequestTestHTTP, ProcessSTSOnce) {
   // We should have set parameters from the first header, not the second.
   TransportSecurityState* security_state =
       default_context_.transport_security_state();
-  bool sni_available = true;
   TransportSecurityState::DomainState domain_state;
-  EXPECT_TRUE(security_state->GetDomainState(
-      SpawnedTestServer::kLocalhost, sni_available, &domain_state));
+  EXPECT_TRUE(security_state->GetDynamicDomainState(
+      SpawnedTestServer::kLocalhost, &domain_state));
   EXPECT_EQ(TransportSecurityState::DomainState::MODE_FORCE_HTTPS,
-            domain_state.upgrade_mode);
-  EXPECT_FALSE(domain_state.sts_include_subdomains);
-  EXPECT_FALSE(domain_state.pkp_include_subdomains);
+            domain_state.sts.upgrade_mode);
+  EXPECT_FALSE(domain_state.sts.include_subdomains);
+  EXPECT_FALSE(domain_state.pkp.include_subdomains);
 }
 
 TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP) {
@@ -5075,25 +5071,23 @@ TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP) {
   // We should have set parameters from the first header, not the second.
   TransportSecurityState* security_state =
       default_context_.transport_security_state();
-  bool sni_available = true;
   TransportSecurityState::DomainState domain_state;
-  EXPECT_TRUE(security_state->GetDomainState(
-      SpawnedTestServer::kLocalhost, sni_available, &domain_state));
+  EXPECT_TRUE(security_state->GetDynamicDomainState(
+      SpawnedTestServer::kLocalhost, &domain_state));
   EXPECT_EQ(TransportSecurityState::DomainState::MODE_FORCE_HTTPS,
-            domain_state.upgrade_mode);
+            domain_state.sts.upgrade_mode);
 #if defined(OS_ANDROID)
   // Android's CertVerifyProc does not (yet) handle pins.
 #else
   EXPECT_TRUE(domain_state.HasPublicKeyPins());
 #endif
-  EXPECT_NE(domain_state.upgrade_expiry,
-            domain_state.dynamic_spki_hashes_expiry);
+  EXPECT_NE(domain_state.sts.expiry, domain_state.pkp.expiry);
 
   // Even though there is an HSTS header asserting includeSubdomains, it is
   // the *second* such header, and we MUST process only the first.
-  EXPECT_FALSE(domain_state.sts_include_subdomains);
+  EXPECT_FALSE(domain_state.sts.include_subdomains);
   // includeSubdomains does not occur in the test HPKP header.
-  EXPECT_FALSE(domain_state.pkp_include_subdomains);
+  EXPECT_FALSE(domain_state.pkp.include_subdomains);
 }
 
 // Tests that when multiple HPKP headers are present, asserting different
@@ -5117,22 +5111,20 @@ TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP2) {
 
   TransportSecurityState* security_state =
       default_context_.transport_security_state();
-  bool sni_available = true;
   TransportSecurityState::DomainState domain_state;
-  EXPECT_TRUE(security_state->GetDomainState(
-      SpawnedTestServer::kLocalhost, sni_available, &domain_state));
+  EXPECT_TRUE(security_state->GetDynamicDomainState(
+      SpawnedTestServer::kLocalhost, &domain_state));
   EXPECT_EQ(TransportSecurityState::DomainState::MODE_FORCE_HTTPS,
-            domain_state.upgrade_mode);
+            domain_state.sts.upgrade_mode);
 #if defined(OS_ANDROID)
   // Android's CertVerifyProc does not (yet) handle pins.
 #else
   EXPECT_TRUE(domain_state.HasPublicKeyPins());
 #endif
-  EXPECT_NE(domain_state.upgrade_expiry,
-            domain_state.dynamic_spki_hashes_expiry);
+  EXPECT_NE(domain_state.sts.expiry, domain_state.pkp.expiry);
 
-  EXPECT_TRUE(domain_state.sts_include_subdomains);
-  EXPECT_FALSE(domain_state.pkp_include_subdomains);
+  EXPECT_TRUE(domain_state.sts.include_subdomains);
+  EXPECT_FALSE(domain_state.pkp.include_subdomains);
 }
 
 TEST_F(URLRequestTestHTTP, ContentTypeNormalizationTest) {
@@ -6678,11 +6670,10 @@ TEST_F(HTTPSRequestTest, HTTPSErrorsNoClobberTSSTest) {
       base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
-  // We require that the URL be www.google.com in order to pick up the
-  // preloaded and dynamic HSTS and public key pin entries in the
-  // TransportSecurityState. This means that we have to use a
-  // MockHostResolver in order to direct www.google.com to the testserver.
-  // By default, MockHostResolver maps all hosts to 127.0.0.1.
+  // We require that the URL be www.google.com in order to pick up the static
+  // and dynamic STS and PKP entries in the TransportSecurityState. This means
+  // that we have to use a MockHostResolver in order to direct www.google.com to
+  // the testserver. By default, MockHostResolver maps all hosts to 127.0.0.1.
 
   MockHostResolver host_resolver;
   TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
@@ -6690,11 +6681,16 @@ TEST_F(HTTPSRequestTest, HTTPSErrorsNoClobberTSSTest) {
   context.set_network_delegate(&network_delegate);
   context.set_host_resolver(&host_resolver);
   TransportSecurityState transport_security_state;
-  TransportSecurityState::DomainState domain_state;
-  EXPECT_TRUE(transport_security_state.GetDomainState("www.google.com", true,
-                                                      &domain_state));
+
+  TransportSecurityState::DomainState static_domain_state;
+  EXPECT_TRUE(transport_security_state.GetStaticDomainState(
+      "www.google.com", true, &static_domain_state));
   context.set_transport_security_state(&transport_security_state);
   context.Init();
+
+  TransportSecurityState::DomainState dynamic_domain_state;
+  EXPECT_FALSE(transport_security_state.GetDynamicDomainState(
+      "www.google.com", &dynamic_domain_state));
 
   TestDelegate d;
   URLRequest r(GURL(base::StringPrintf("https://www.google.com:%d",
@@ -6713,21 +6709,24 @@ TEST_F(HTTPSRequestTest, HTTPSErrorsNoClobberTSSTest) {
   EXPECT_TRUE(d.have_certificate_errors());
   EXPECT_TRUE(d.certificate_errors_are_fatal());
 
-  // Get a fresh copy of the state, and check that it hasn't been updated.
-  TransportSecurityState::DomainState new_domain_state;
-  EXPECT_TRUE(transport_security_state.GetDomainState("www.google.com", true,
-                                                      &new_domain_state));
-  EXPECT_EQ(new_domain_state.upgrade_mode, domain_state.upgrade_mode);
-  EXPECT_EQ(new_domain_state.sts_include_subdomains,
-            domain_state.sts_include_subdomains);
-  EXPECT_EQ(new_domain_state.pkp_include_subdomains,
-            domain_state.pkp_include_subdomains);
-  EXPECT_TRUE(FingerprintsEqual(new_domain_state.static_spki_hashes,
-                                domain_state.static_spki_hashes));
-  EXPECT_TRUE(FingerprintsEqual(new_domain_state.dynamic_spki_hashes,
-                                domain_state.dynamic_spki_hashes));
-  EXPECT_TRUE(FingerprintsEqual(new_domain_state.bad_static_spki_hashes,
-                                domain_state.bad_static_spki_hashes));
+  // Get a fresh copy of the states, and check that they haven't changed.
+  TransportSecurityState::DomainState new_static_domain_state;
+  EXPECT_TRUE(transport_security_state.GetStaticDomainState(
+      "www.google.com", true, &new_static_domain_state));
+  TransportSecurityState::DomainState new_dynamic_domain_state;
+  EXPECT_FALSE(transport_security_state.GetDynamicDomainState(
+      "www.google.com", &new_dynamic_domain_state));
+
+  EXPECT_EQ(new_static_domain_state.sts.upgrade_mode,
+            static_domain_state.sts.upgrade_mode);
+  EXPECT_EQ(new_static_domain_state.sts.include_subdomains,
+            static_domain_state.sts.include_subdomains);
+  EXPECT_EQ(new_static_domain_state.pkp.include_subdomains,
+            static_domain_state.pkp.include_subdomains);
+  EXPECT_TRUE(FingerprintsEqual(new_static_domain_state.pkp.spki_hashes,
+                                static_domain_state.pkp.spki_hashes));
+  EXPECT_TRUE(FingerprintsEqual(new_static_domain_state.pkp.bad_spki_hashes,
+                                static_domain_state.pkp.bad_spki_hashes));
 }
 
 // Make sure HSTS preserves a POST request's method and body.
