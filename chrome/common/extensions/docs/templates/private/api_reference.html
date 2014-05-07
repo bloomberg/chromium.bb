@@ -38,14 +38,14 @@
     {{/api.domEvents}}
   {{/api.domEvents}}
 </div>
-{{?samples_list}}
+{{?samplesForApi}}
   <h2 id="samples">Sample {{platformTitle}}</h2>
   <ul>
-  {{#sample:samples_list}}
+  {{#sample:samplesForApi}}
     <li><strong><a href="samples.html#{{sample.id}}">{{sample.name}}</a></strong>
     {{?sample.description}}
     &ndash; {{sample.description}}
     {{/sample.description}}</li>
-  {{/samples_list}}
+  {{/samplesForApi}}
   </ul>
-{{/samples_list}}
+{{/samplesForApi}}
