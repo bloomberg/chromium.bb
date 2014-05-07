@@ -6,14 +6,11 @@
     @media not all and (orientation: block) {
       #t1 { color: red; }
     }
-    @media not all and (view-mode: portrait) {
+    @media not all and (pointer: landscape) {
       #t2 { color: red; }
     }
-    @media not all and (pointer: landscape) {
-      #t3 { color: red; }
-    }
     @media not all and (scan: none) {
-      #t4 { color: red; }
+      #t3 { color: red; }
     }
   </style>
 </head>
@@ -21,6 +18,5 @@
   <div id="t1">Should not be red</div>
   <div id="t2">Should not be red</div>
   <div id="t3">Should not be red</div>
-  <div id="t4">Should not be red</div>
 </body>
 </html>

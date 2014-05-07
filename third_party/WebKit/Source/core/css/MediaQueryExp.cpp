@@ -48,7 +48,6 @@ static inline bool featureWithCSSValueID(const String& mediaFeature, const CSSPa
         return false;
 
     return mediaFeature == orientationMediaFeature
-        || mediaFeature == viewModeMediaFeature
         || mediaFeature == pointerMediaFeature
         || mediaFeature == scanMediaFeature;
 }
@@ -57,19 +56,6 @@ static inline bool featureWithValidIdent(const String& mediaFeature, CSSValueID 
 {
     if (mediaFeature == orientationMediaFeature)
         return ident == CSSValuePortrait || ident == CSSValueLandscape;
-
-    if (mediaFeature == viewModeMediaFeature) {
-        switch (ident) {
-        case CSSValueWindowed:
-        case CSSValueFloating:
-        case CSSValueFullscreen:
-        case CSSValueMaximized:
-        case CSSValueMinimized:
-            return true;
-        default:
-            return false;
-        }
-    }
 
     if (mediaFeature == pointerMediaFeature)
         return ident == CSSValueNone || ident == CSSValueCoarse || ident == CSSValueFine;
@@ -132,9 +118,7 @@ static inline bool featureWithPositiveNumber(const String& mediaFeature, const C
     if (value->unit != CSSPrimitiveValue::CSS_NUMBER || value->fValue < 0)
         return false;
 
-    return mediaFeature == transform2dMediaFeature
-        || mediaFeature == transform3dMediaFeature
-        || mediaFeature == animationMediaFeature
+    return mediaFeature == transform3dMediaFeature
         || mediaFeature == devicePixelRatioMediaFeature
         || mediaFeature == maxDevicePixelRatioMediaFeature
         || mediaFeature == minDevicePixelRatioMediaFeature;
@@ -174,10 +158,7 @@ static inline bool featureWithoutValue(const String& mediaFeature)
         || mediaFeature == aspectRatioMediaFeature
         || mediaFeature == deviceAspectRatioMediaFeature
         || mediaFeature == hoverMediaFeature
-        || mediaFeature == transform2dMediaFeature
         || mediaFeature == transform3dMediaFeature
-        || mediaFeature == animationMediaFeature
-        || mediaFeature == viewModeMediaFeature
         || mediaFeature == pointerMediaFeature
         || mediaFeature == devicePixelRatioMediaFeature
         || mediaFeature == resolutionMediaFeature

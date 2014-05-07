@@ -503,28 +503,6 @@ static bool maxResolutionMediaFeatureEval(const MediaQueryExpValue& value, Media
     return resolutionMediaFeatureEval(value, MaxPrefix, mediaValues);
 }
 
-static bool animationMediaFeatureEval(const MediaQueryExpValue& value, MediaFeaturePrefix op, const MediaValues& mediaValues)
-{
-    UseCounter::count(mediaValues.document(), UseCounter::PrefixedAnimationMediaFeature);
-
-    if (value.isValid()) {
-        float number;
-        return numberValue(value, number) && compareValue(1, static_cast<int>(number), op);
-    }
-    return true;
-}
-
-static bool transform2dMediaFeatureEval(const MediaQueryExpValue& value, MediaFeaturePrefix op, const MediaValues& mediaValues)
-{
-    UseCounter::count(mediaValues.document(), UseCounter::PrefixedTransform2dMediaFeature);
-
-    if (value.isValid()) {
-        float number;
-        return numberValue(value, number) && compareValue(1, static_cast<int>(number), op);
-    }
-    return true;
-}
-
 static bool transform3dMediaFeatureEval(const MediaQueryExpValue& value, MediaFeaturePrefix op, const MediaValues& mediaValues)
 {
     UseCounter::count(mediaValues.document(), UseCounter::PrefixedTransform3dMediaFeature);
@@ -542,18 +520,6 @@ static bool transform3dMediaFeatureEval(const MediaQueryExpValue& value, MediaFe
         return numberValue(value, number) && compareValue(have3dRendering, static_cast<int>(number), op);
     }
     return returnValueIfNoParameter;
-}
-
-static bool viewModeMediaFeatureEval(const MediaQueryExpValue& value, MediaFeaturePrefix, const MediaValues& mediaValues)
-{
-    UseCounter::count(mediaValues.document(), UseCounter::PrefixedViewModeMediaFeature);
-
-    if (!value.isValid())
-        return true;
-
-    ASSERT(value.isID);
-
-    return value.id == CSSValueWindowed;
 }
 
 static bool hoverMediaFeatureEval(const MediaQueryExpValue& value, MediaFeaturePrefix, const MediaValues& mediaValues)

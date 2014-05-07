@@ -38,8 +38,5 @@ min-width
 min-resolution
 pointer
 resolution
--webkit-transform-2d
 -webkit-transform-3d
 scan
--webkit-animation
--webkit-view-mode
