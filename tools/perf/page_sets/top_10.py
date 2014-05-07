@@ -111,7 +111,7 @@ class Top10PageSet(page_set_module.PageSet):
 
     # #6 (Alexa) most visited worldwide,Picked an interesting page
     self.AddPage(SimpleScrollPage('http://en.wikipedia.org/wiki/Wikipedia',
-                                  self, 'Wikipedia'))
+                                  self, name='Wikipedia'))
 
     # #1 world commerce website by visits; #3 commerce in the US by time spent
     self.AddPage(SimpleScrollPage('http://www.amazon.com', self))
