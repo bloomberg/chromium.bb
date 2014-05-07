@@ -13,8 +13,10 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
+#include "base/android/jni_registrar.h"
 #include "base/test/test_file_util.h"
 #include "net/android/net_jni_registrar.h"
+#include "url/android/url_jni_registrar.h"
 #endif
 
 #if !defined(OS_IOS)
@@ -29,10 +31,18 @@ int main(int argc, char** argv) {
   base::StatisticsRecorder::Initialize();
 
 #if defined(OS_ANDROID)
+  const base::android::RegistrationMethod kNetTestRegisteredMethods[] = {
+    {"NetAndroid", net::android::RegisterJni},
+    {"TestFileUtil", file_util::RegisterContentUriTestUtils},
+    {"UrlAndroid", url::android::RegisterJni},
+  };
+
   // Register JNI bindings for android. Doing it early as the test suite setup
   // may initiate a call to Java.
-  net::android::RegisterJni(base::android::AttachCurrentThread());
-  file_util::RegisterContentUriTestUtils(base::android::AttachCurrentThread());
+  base::android::RegisterNativeMethods(
+      base::android::AttachCurrentThread(),
+      kNetTestRegisteredMethods,
+      arraysize(kNetTestRegisteredMethods));
 #endif
 
   NetTestSuite test_suite(argc, argv);

@@ -485,6 +485,10 @@
       # Enable FTP support by default.
       'disable_ftp_support%': 0,
 
+      # Use native android functions in place of ICU.  Not supported by most
+      # components.
+      'use_icu_alternatives_on_android%': 0,
+
       # XInput2 multitouch support is enabled by default (use_xi2_mt=2).
       # Setting to zero value disables XI2 MT. When XI2 MT is enabled,
       # the input value also defines the required XI2 minor minimum version.
@@ -1041,6 +1045,7 @@
     'cld2_is_component%': '<(cld2_is_component)',
     'enable_captive_portal_detection%': '<(enable_captive_portal_detection)',
     'disable_ftp_support%': '<(disable_ftp_support)',
+    'use_icu_alternatives_on_android%': '<(use_icu_alternatives_on_android)',
     'enable_task_manager%': '<(enable_task_manager)',
     'sas_dll_path%': '<(sas_dll_path)',
     'wix_path%': '<(wix_path)',
@@ -2620,6 +2625,9 @@
       }],
       ['disable_ftp_support==1', {
         'defines': ['DISABLE_FTP_SUPPORT=1'],
+      }],
+      ['use_icu_alternatives_on_android==1', {
+        'defines': ['USE_ICU_ALTERNATIVES_ON_ANDROID=1'],
       }],
       ['enable_managed_users==1', {
         'defines': ['ENABLE_MANAGED_USERS=1'],

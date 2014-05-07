@@ -2,12 +2,26 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+declare_args() {
+  # Switches to using platform functions instead of ICU on Android.
+  use_icu_alternatives_on_android = false
+}
+
+# Sets the USE_ICU_ALTERNATIVES_ON_ANDROID define based on the build flag.
+config("url_icu_config") {
+  if (use_icu_alternatives_on_android) {
+    defines = [ "USE_ICU_ALTERNATIVES_ON_ANDROID=1" ]
+  }
+}
+
 component("url") {
   if (is_win) {
     # Don't conflict with Windows' "url.dll".
     output_name = "url_lib"
   }
   sources = [
+    "android/url_jni_registrar.cc",
+    "android/url_jni_registrar.h",
     "gurl.cc",
     "gurl.h",
     "third_party/mozilla/url_parse.cc",
@@ -42,6 +56,8 @@ component("url") {
 
   defines = [ "URL_IMPLEMENTATION" ]
 
+  configs += [ ":url_icu_config" ]
+
   # if (is_win) {
   #   TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   #   'msvs_disabled_warnings': [ 4267, ]
@@ -52,6 +68,22 @@ component("url") {
     "//third_party/icu:icudata",
     "//third_party/icu",
   ]
+
+  if (use_icu_alternatives_on_android) {
+    sources -= [
+      "url_canon_icu.cc",
+      "url_canon_icu.h",
+    ]
+    deps -= [
+      "//third_party/icu:icudata",
+      "//third_party/icu",
+    ]
+
+    sources += [
+      "url_canon_icu_alternatives_android.cc",
+      "url_canon_icu_alternatives_android.h",
+    ]
+  }
 }
 
 # TODO(dpranke): crbug.com/360936. Get this to build and run on Android.
@@ -59,6 +91,7 @@ if (!is_android) {
   test("url_unittests") {
     sources = [
       "gurl_unittest.cc",
+      "url_canon_icu_unittest.cc",
       "url_canon_unittest.cc",
       "url_parse_unittest.cc",
       "url_test_utils.h",
@@ -79,10 +112,18 @@ if (!is_android) {
 
     deps = [
       ":url",
-      "//base:i18n",
       "//base/test:run_all_unittests",
       "//testing/gtest",
       "//third_party/icu:icuuc",
     ]
+
+    if (use_icu_alternatives_on_android) {
+      sources -= [
+        "url_canon_icu_unittest.cc",
+      ]
+      deps -= [
+        "//third_party/icu:icuuc",
+      ]
+    }
   }
 }
