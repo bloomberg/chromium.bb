@@ -7,8 +7,8 @@
 #include <cmath>
 
 #include "ash/ash_switches.h"
-#include "ash/frame/caption_buttons/alternate_frame_size_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
+#include "ash/frame/caption_buttons/frame_size_button.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "grit/ui_strings.h"  // Accessibility names
@@ -54,7 +54,7 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
   minimize_button_->SetVisible(minimize_allowed == MINIMIZE_ALLOWED);
   AddChildView(minimize_button_);
 
-  size_button_ = new AlternateFrameSizeButton(this, frame, this);
+  size_button_ = new FrameSizeButton(this, frame, this);
   size_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE));
   UpdateSizeButtonVisibility(false);

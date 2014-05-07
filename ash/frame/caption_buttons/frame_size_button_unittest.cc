@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/frame/caption_buttons/alternate_frame_size_button.h"
+#include "ash/frame/caption_buttons/frame_size_button.h"
 
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
@@ -85,10 +85,10 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
 
 }  // namespace
 
-class AlternateFrameSizeButtonTest : public AshTestBase {
+class FrameSizeButtonTest : public AshTestBase {
  public:
-  AlternateFrameSizeButtonTest() {}
-  virtual ~AlternateFrameSizeButtonTest() {}
+  FrameSizeButtonTest() {}
+  virtual ~FrameSizeButtonTest() {}
 
   // Returns the center point of |view| in screen coordinates.
   gfx::Point CenterPointInScreen(views::View* view) {
@@ -134,7 +134,7 @@ class AlternateFrameSizeButtonTest : public AshTestBase {
 
     minimize_button_ = test.minimize_button();
     size_button_ = test.size_button();
-    static_cast<AlternateFrameSizeButton*>(
+    static_cast<FrameSizeButton*>(
         size_button_)->set_delay_to_set_buttons_to_snap_mode(0);
     close_button_ = test.close_button();
   }
@@ -153,12 +153,12 @@ class AlternateFrameSizeButtonTest : public AshTestBase {
   FrameCaptionButton* size_button_;
   FrameCaptionButton* close_button_;
 
-  DISALLOW_COPY_AND_ASSIGN(AlternateFrameSizeButtonTest);
+  DISALLOW_COPY_AND_ASSIGN(FrameSizeButtonTest);
 };
 
 // Tests that pressing the left mouse button or tapping down on the size button
 // puts the button into the pressed state.
-TEST_F(AlternateFrameSizeButtonTest, PressedState) {
+TEST_F(FrameSizeButtonTest, PressedState) {
   aura::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(CenterPointInScreen(size_button()));
   generator.PressLeftButton();
@@ -177,7 +177,7 @@ TEST_F(AlternateFrameSizeButtonTest, PressedState) {
 
 // Tests that clicking on the size button toggles between the maximized and
 // normal state.
-TEST_F(AlternateFrameSizeButtonTest, ClickSizeButtonTogglesMaximize) {
+TEST_F(FrameSizeButtonTest, ClickSizeButtonTogglesMaximize) {
   EXPECT_FALSE(window_state()->IsMaximized());
 
   aura::test::EventGenerator& generator = GetEventGenerator();
@@ -202,7 +202,7 @@ TEST_F(AlternateFrameSizeButtonTest, ClickSizeButtonTogglesMaximize) {
 
 // Test that clicking + dragging to a button adjacent to the size button snaps
 // the window left or right.
-TEST_F(AlternateFrameSizeButtonTest, ButtonDrag) {
+TEST_F(FrameSizeButtonTest, ButtonDrag) {
   EXPECT_TRUE(window_state()->IsNormalStateType());
 
   // 1) Test by dragging the mouse.
@@ -261,7 +261,7 @@ TEST_F(AlternateFrameSizeButtonTest, ButtonDrag) {
 
 // Test that clicking, dragging, and overshooting the minimize button a bit
 // horizontally still snaps the window left.
-TEST_F(AlternateFrameSizeButtonTest, SnapLeftOvershootMinimize) {
+TEST_F(FrameSizeButtonTest, SnapLeftOvershootMinimize) {
   EXPECT_TRUE(window_state()->IsNormalStateType());
 
   aura::test::EventGenerator& generator = GetEventGenerator();
@@ -278,7 +278,7 @@ TEST_F(AlternateFrameSizeButtonTest, SnapLeftOvershootMinimize) {
 }
 
 // Test that right clicking the size button has no effect.
-TEST_F(AlternateFrameSizeButtonTest, RightMouseButton) {
+TEST_F(FrameSizeButtonTest, RightMouseButton) {
   EXPECT_TRUE(window_state()->IsNormalStateType());
 
   aura::test::EventGenerator& generator = GetEventGenerator();
@@ -293,7 +293,7 @@ TEST_F(AlternateFrameSizeButtonTest, RightMouseButton) {
 // button
 // - The state of all the caption buttons is reset.
 // - The icon displayed by all of the caption buttons is reset.
-TEST_F(AlternateFrameSizeButtonTest, ResetButtonsAfterClick) {
+TEST_F(FrameSizeButtonTest, ResetButtonsAfterClick) {
   EXPECT_EQ(CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
   EXPECT_EQ(CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
   EXPECT_TRUE(AllButtonsInNormalState());
@@ -364,7 +364,7 @@ TEST_F(AlternateFrameSizeButtonTest, ResetButtonsAfterClick) {
 
 // Test that the size button is pressed whenever the snap left/right buttons
 // are hovered.
-TEST_F(AlternateFrameSizeButtonTest, SizeButtonPressedWhenSnapButtonHovered) {
+TEST_F(FrameSizeButtonTest, SizeButtonPressedWhenSnapButtonHovered) {
   EXPECT_EQ(CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
   EXPECT_EQ(CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
   EXPECT_TRUE(AllButtonsInNormalState());
@@ -400,32 +400,32 @@ TEST_F(AlternateFrameSizeButtonTest, SizeButtonPressedWhenSnapButtonHovered) {
   EXPECT_EQ(views::Button::STATE_HOVERED, close_button()->state());
 }
 
-class AlternateFrameSizeButtonTestRTL : public AlternateFrameSizeButtonTest {
+class FrameSizeButtonTestRTL : public FrameSizeButtonTest {
  public:
-  AlternateFrameSizeButtonTestRTL() {}
-  virtual ~AlternateFrameSizeButtonTestRTL() {}
+  FrameSizeButtonTestRTL() {}
+  virtual ~FrameSizeButtonTestRTL() {}
 
   virtual void SetUp() OVERRIDE {
     original_locale_ = l10n_util::GetApplicationLocale(std::string());
     base::i18n::SetICUDefaultLocale("he");
 
-    AlternateFrameSizeButtonTest::SetUp();
+    FrameSizeButtonTest::SetUp();
   }
 
   virtual void TearDown() OVERRIDE {
-    AlternateFrameSizeButtonTest::TearDown();
+    FrameSizeButtonTest::TearDown();
     base::i18n::SetICUDefaultLocale(original_locale_);
   }
 
  private:
   std::string original_locale_;
 
-  DISALLOW_COPY_AND_ASSIGN(AlternateFrameSizeButtonTestRTL);
+  DISALLOW_COPY_AND_ASSIGN(FrameSizeButtonTestRTL);
 };
 
 // Test that clicking + dragging to a button adjacent to the size button presses
 // the correct button and snaps the window to the correct side.
-TEST_F(AlternateFrameSizeButtonTestRTL, ButtonDrag) {
+TEST_F(FrameSizeButtonTestRTL, ButtonDrag) {
   // In RTL the close button should be left of the size button and the minimize
   // button should be right of the size button.
   ASSERT_LT(close_button()->GetBoundsInScreen().x(),

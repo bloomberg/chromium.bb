@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_FRAME_CAPTION_BUTTONS_ALTERNATE_FRAME_SIZE_BUTTON_DELEGATE_H_
-#define ASH_FRAME_CAPTION_BUTTONS_ALTERNATE_FRAME_SIZE_BUTTON_DELEGATE_H_
+#ifndef ASH_FRAME_CAPTION_BUTTONS_FRAME_SIZE_BUTTON_DELEGATE_H_
+#define ASH_FRAME_CAPTION_BUTTONS_FRAME_SIZE_BUTTON_DELEGATE_H_
 
 #include "ash/ash_export.h"
 #include "ash/frame/caption_buttons/caption_button_types.h"
@@ -17,8 +17,8 @@ class Vector2d;
 namespace ash {
 class FrameCaptionButton;
 
-// Delegate interface for AlternateFrameSizeButton.
-class ASH_EXPORT AlternateFrameSizeButtonDelegate {
+// Delegate interface for FrameSizeButton.
+class ASH_EXPORT FrameSizeButtonDelegate {
  public:
   enum Animate {
     ANIMATE_YES,
@@ -50,9 +50,9 @@ class ASH_EXPORT AlternateFrameSizeButtonDelegate {
       const FrameCaptionButton* to_press) = 0;
 
  protected:
-  virtual ~AlternateFrameSizeButtonDelegate() {}
+  virtual ~FrameSizeButtonDelegate() {}
 };
 
 }  // namespace ash
 
-#endif  // ASH_FRAME_CAPTION_BUTTONS_ALTERNATE_FRAME_SIZE_BUTTON_DELEGATE_H_
+#endif  // ASH_FRAME_CAPTION_BUTTONS_FRAME_SIZE_BUTTON_DELEGATE_H_

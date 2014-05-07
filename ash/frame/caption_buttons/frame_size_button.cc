@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/frame/caption_buttons/alternate_frame_size_button.h"
+#include "ash/frame/caption_buttons/frame_size_button.h"
 
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/screen_util.h"
@@ -44,10 +44,10 @@ bool HitTestButton(const ash::FrameCaptionButton* button,
 
 namespace ash {
 
-AlternateFrameSizeButton::AlternateFrameSizeButton(
+FrameSizeButton::FrameSizeButton(
     views::ButtonListener* listener,
     views::Widget* frame,
-    AlternateFrameSizeButtonDelegate* delegate)
+    FrameSizeButtonDelegate* delegate)
     : FrameCaptionButton(listener, CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE),
       frame_(frame),
       delegate_(delegate),
@@ -56,10 +56,10 @@ AlternateFrameSizeButton::AlternateFrameSizeButton(
       snap_type_(SNAP_NONE) {
 }
 
-AlternateFrameSizeButton::~AlternateFrameSizeButton() {
+FrameSizeButton::~FrameSizeButton() {
 }
 
-bool AlternateFrameSizeButton::OnMousePressed(const ui::MouseEvent& event) {
+bool FrameSizeButton::OnMousePressed(const ui::MouseEvent& event) {
   // The minimize and close buttons are set to snap left and right when snapping
   // is enabled. Do not enable snapping if the minimize button is not visible.
   // The close button is always visible.
@@ -72,7 +72,7 @@ bool AlternateFrameSizeButton::OnMousePressed(const ui::MouseEvent& event) {
   return true;
 }
 
-bool AlternateFrameSizeButton::OnMouseDragged(const ui::MouseEvent& event) {
+bool FrameSizeButton::OnMouseDragged(const ui::MouseEvent& event) {
   UpdateSnapType(event);
   // By default a FrameCaptionButton reverts to STATE_NORMAL once the mouse
   // leaves its bounds. Skip FrameCaptionButton's handling when
@@ -82,25 +82,25 @@ bool AlternateFrameSizeButton::OnMouseDragged(const ui::MouseEvent& event) {
   return true;
 }
 
-void AlternateFrameSizeButton::OnMouseReleased(const ui::MouseEvent& event) {
+void FrameSizeButton::OnMouseReleased(const ui::MouseEvent& event) {
   if (!IsTriggerableEvent(event) || !CommitSnap(event))
     FrameCaptionButton::OnMouseReleased(event);
 }
 
-void AlternateFrameSizeButton::OnMouseCaptureLost() {
-  SetButtonsToNormalMode(AlternateFrameSizeButtonDelegate::ANIMATE_YES);
+void FrameSizeButton::OnMouseCaptureLost() {
+  SetButtonsToNormalMode(FrameSizeButtonDelegate::ANIMATE_YES);
   FrameCaptionButton::OnMouseCaptureLost();
 }
 
-void AlternateFrameSizeButton::OnMouseMoved(const ui::MouseEvent& event) {
+void FrameSizeButton::OnMouseMoved(const ui::MouseEvent& event) {
   // Ignore any synthetic mouse moves during a drag.
   if (!in_snap_mode_)
     FrameCaptionButton::OnMouseMoved(event);
 }
 
-void AlternateFrameSizeButton::OnGestureEvent(ui::GestureEvent* event) {
+void FrameSizeButton::OnGestureEvent(ui::GestureEvent* event) {
   if (event->details().touch_points() > 1) {
-    SetButtonsToNormalMode(AlternateFrameSizeButtonDelegate::ANIMATE_YES);
+    SetButtonsToNormalMode(FrameSizeButtonDelegate::ANIMATE_YES);
     return;
   }
 
@@ -135,7 +135,7 @@ void AlternateFrameSizeButton::OnGestureEvent(ui::GestureEvent* event) {
   FrameCaptionButton::OnGestureEvent(event);
 }
 
-void AlternateFrameSizeButton::StartSetButtonsToSnapModeTimer(
+void FrameSizeButton::StartSetButtonsToSnapModeTimer(
     const ui::LocatedEvent& event) {
   set_buttons_to_snap_mode_timer_event_location_ = event.location();
   if (set_buttons_to_snap_mode_delay_ms_ == 0) {
@@ -145,16 +145,16 @@ void AlternateFrameSizeButton::StartSetButtonsToSnapModeTimer(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(set_buttons_to_snap_mode_delay_ms_),
         this,
-        &AlternateFrameSizeButton::AnimateButtonsToSnapMode);
+        &FrameSizeButton::AnimateButtonsToSnapMode);
   }
 }
 
-void AlternateFrameSizeButton::AnimateButtonsToSnapMode() {
-  SetButtonsToSnapMode(AlternateFrameSizeButtonDelegate::ANIMATE_YES);
+void FrameSizeButton::AnimateButtonsToSnapMode() {
+  SetButtonsToSnapMode(FrameSizeButtonDelegate::ANIMATE_YES);
 }
 
-void AlternateFrameSizeButton::SetButtonsToSnapMode(
-    AlternateFrameSizeButtonDelegate::Animate animate) {
+void FrameSizeButton::SetButtonsToSnapMode(
+    FrameSizeButtonDelegate::Animate animate) {
   in_snap_mode_ = true;
 
   // When using a right-to-left layout the close button is left of the size
@@ -170,7 +170,7 @@ void AlternateFrameSizeButton::SetButtonsToSnapMode(
   }
 }
 
-void AlternateFrameSizeButton::UpdateSnapType(const ui::LocatedEvent& event) {
+void FrameSizeButton::UpdateSnapType(const ui::LocatedEvent& event) {
   if (!in_snap_mode_) {
     // Set the buttons adjacent to the size button to snap left and right early
     // if the user drags past the drag threshold.
@@ -196,7 +196,7 @@ void AlternateFrameSizeButton::UpdateSnapType(const ui::LocatedEvent& event) {
   if (to_hover) {
     // Progress the minimize and close icon morph animations to the end if they
     // are in progress.
-    SetButtonsToSnapMode(AlternateFrameSizeButtonDelegate::ANIMATE_NO);
+    SetButtonsToSnapMode(FrameSizeButtonDelegate::ANIMATE_NO);
   }
 
   delegate_->SetHoveredAndPressedButtons(
@@ -235,7 +235,7 @@ void AlternateFrameSizeButton::UpdateSnapType(const ui::LocatedEvent& event) {
   }
 }
 
-const FrameCaptionButton* AlternateFrameSizeButton::GetButtonToHover(
+const FrameCaptionButton* FrameSizeButton::GetButtonToHover(
     const gfx::Point& event_location_in_screen) const {
   const FrameCaptionButton* closest_button = delegate_->GetButtonClosestTo(
       event_location_in_screen);
@@ -247,7 +247,7 @@ const FrameCaptionButton* AlternateFrameSizeButton::GetButtonToHover(
   return NULL;
 }
 
-bool AlternateFrameSizeButton::CommitSnap(const ui::LocatedEvent& event) {
+bool FrameSizeButton::CommitSnap(const ui::LocatedEvent& event) {
   // The position of |event| may be different than the position of the previous
   // event.
   UpdateSnapType(event);
@@ -265,15 +265,15 @@ bool AlternateFrameSizeButton::CommitSnap(const ui::LocatedEvent& event) {
         snap_type_ == SNAP_LEFT ?
         UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT :
         UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT);
-    SetButtonsToNormalMode(AlternateFrameSizeButtonDelegate::ANIMATE_NO);
+    SetButtonsToNormalMode(FrameSizeButtonDelegate::ANIMATE_NO);
     return true;
   }
-  SetButtonsToNormalMode(AlternateFrameSizeButtonDelegate::ANIMATE_YES);
+  SetButtonsToNormalMode(FrameSizeButtonDelegate::ANIMATE_YES);
   return false;
 }
 
-void AlternateFrameSizeButton::SetButtonsToNormalMode(
-    AlternateFrameSizeButtonDelegate::Animate animate) {
+void FrameSizeButton::SetButtonsToNormalMode(
+    FrameSizeButtonDelegate::Animate animate) {
   in_snap_mode_ = false;
   snap_type_ = SNAP_NONE;
   set_buttons_to_snap_mode_timer_.Stop();
