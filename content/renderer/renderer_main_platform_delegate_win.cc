@@ -19,6 +19,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "sandbox/win/src/sandbox.h"
 #include "skia/ext/vector_platform_device_emf_win.h"
+#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
@@ -103,7 +104,9 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
     }
   }
   blink::WebFontRendering::setUseDirectWrite(use_direct_write);
-  blink::WebFontRendering::setUseSubpixelPositioning(use_direct_write);
+  if (use_direct_write) {
+    blink::WebRuntimeFeatures::enableSubpixelFontScaling(true);
+  }
 }
 
 void RendererMainPlatformDelegate::PlatformUninitialize() {
