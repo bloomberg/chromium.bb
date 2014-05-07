@@ -133,9 +133,11 @@
           ],
           'copies': [
             {
-              'destination': '<(package_dir)',
+              'destination': '<(package_dir)/libs',
               'files': [
                 '<(PRODUCT_DIR)/lib.java/<(java_lib)',
+                '<(PRODUCT_DIR)/lib.java/base_java.jar',
+                '<(PRODUCT_DIR)/lib.java/net_java.jar',
               ],
             },
           ],
