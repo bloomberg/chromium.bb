@@ -546,8 +546,6 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
                 }
             }
 
-            removeViewportConstrainedLayer(layer);
-
             layer->clearCompositedLayerMapping();
             compositedLayerMappingChanged = true;
 
@@ -658,8 +656,6 @@ void RenderLayerCompositor::layerWillBeRemoved(RenderLayer* parent, RenderLayer*
 {
     if (!child->hasCompositedLayerMapping() || parent->renderer()->documentBeingDestroyed())
         return;
-
-    removeViewportConstrainedLayer(child);
 
     {
         // FIXME: This is called from within RenderLayer::removeChild, which is called from RenderObject::RemoveChild.
@@ -1401,24 +1397,6 @@ void RenderLayerCompositor::notifyIFramesOfCompositingChange()
         DeprecatedScheduleStyleRecalcDuringCompositingUpdate marker(ownerElement->document().lifecycle());
         ownerElement->scheduleLayerUpdate();
     }
-}
-
-void RenderLayerCompositor::updateViewportConstraintStatus(RenderLayer* layer)
-{
-    if (CompositingReasonFinder::isViewportConstrainedFixedOrStickyLayer(layer))
-        addViewportConstrainedLayer(layer);
-    else
-        removeViewportConstrainedLayer(layer);
-}
-
-void RenderLayerCompositor::addViewportConstrainedLayer(RenderLayer* layer)
-{
-    m_viewportConstrainedLayers.add(layer);
-}
-
-void RenderLayerCompositor::removeViewportConstrainedLayer(RenderLayer* layer)
-{
-    m_viewportConstrainedLayers.remove(layer);
 }
 
 ScrollingCoordinator* RenderLayerCompositor::scrollingCoordinator() const

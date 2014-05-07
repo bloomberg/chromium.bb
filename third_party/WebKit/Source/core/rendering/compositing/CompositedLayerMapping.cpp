@@ -858,8 +858,6 @@ void CompositedLayerMapping::registerScrollingLayers()
     if (!scrollingCoordinator)
         return;
 
-    compositor()->updateViewportConstraintStatus(&m_owningLayer);
-
     scrollingCoordinator->updateLayerPositionConstraint(&m_owningLayer);
 
     // Page scale is applied as a transform on the root render view layer. Because the scroll

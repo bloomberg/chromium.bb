@@ -184,9 +184,6 @@ public:
     GraphicsLayer* layerForVerticalScrollbar() const { return m_layerForVerticalScrollbar.get(); }
     GraphicsLayer* layerForScrollCorner() const { return m_layerForScrollCorner.get(); }
 
-    void updateViewportConstraintStatus(RenderLayer*);
-    void removeViewportConstrainedLayer(RenderLayer*);
-
     void addOutOfFlowPositionedLayer(RenderLayer*);
     void removeOutOfFlowPositionedLayer(RenderLayer*);
 
@@ -254,8 +251,6 @@ private:
     GraphicsLayerFactory* graphicsLayerFactory() const;
     ScrollingCoordinator* scrollingCoordinator() const;
 
-    void addViewportConstrainedLayer(RenderLayer*);
-
     bool compositingLayersNeedRebuild();
 
     void enableCompositingModeIfNeeded();
@@ -301,9 +296,6 @@ private:
     // Enclosing container layer, which clips for iframe content
     OwnPtr<GraphicsLayer> m_containerLayer;
     OwnPtr<GraphicsLayer> m_scrollLayer;
-
-    HashSet<RenderLayer*> m_viewportConstrainedLayers;
-    HashSet<RenderLayer*> m_viewportConstrainedLayersNeedingUpdate;
 
     // This is used in updateCompositingRequirementsState to avoid full tree
     // walks while determining if layers have unclipped descendants.

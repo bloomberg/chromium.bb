@@ -31,8 +31,6 @@ public:
     bool requiresCompositingForScrollableFrame() const;
     bool requiresCompositingForPosition(RenderObject*, const RenderLayer*, RenderLayer::ViewportConstrainedNotCompositedReason*, bool* needToRecomputeCompositingRequirements) const;
 
-    static bool isViewportConstrainedFixedOrStickyLayer(const RenderLayer*);
-
 private:
     bool isMainFrame() const;
 

@@ -202,30 +202,6 @@ bool CompositingReasonFinder::requiresCompositingForOverflowScrolling(const Rend
     return layer->needsCompositedScrolling();
 }
 
-static bool isViewportConstrainedStickyLayer(const RenderLayer* layer)
-{
-    ASSERT(layer->renderer()->isStickyPositioned());
-    return !layer->enclosingOverflowClipLayer(ExcludeSelf);
-}
-
-bool CompositingReasonFinder::isViewportConstrainedFixedOrStickyLayer(const RenderLayer* layer)
-{
-    if (layer->renderer()->isStickyPositioned())
-        return isViewportConstrainedStickyLayer(layer);
-
-    if (layer->renderer()->style()->position() != FixedPosition)
-        return false;
-
-    for (const RenderLayerStackingNode* stackingContainer = layer->stackingNode(); stackingContainer;
-        stackingContainer = stackingContainer->ancestorStackingContainerNode()) {
-        if (stackingContainer->layer()->compositingState() != NotComposited
-            && stackingContainer->layer()->renderer()->style()->position() == FixedPosition)
-            return false;
-    }
-
-    return true;
-}
-
 bool CompositingReasonFinder::requiresCompositingForPosition(RenderObject* renderer, const RenderLayer* layer, RenderLayer::ViewportConstrainedNotCompositedReason* viewportConstrainedNotCompositedReason, bool* needToRecomputeCompositingRequirements) const
 {
     return requiresCompositingForPositionSticky(renderer, layer) || requiresCompositingForPositionFixed(renderer, layer, viewportConstrainedNotCompositedReason, needToRecomputeCompositingRequirements);
@@ -239,7 +215,7 @@ bool CompositingReasonFinder::requiresCompositingForPositionSticky(RenderObject*
         return false;
     // FIXME: This probably isn't correct for accelerated overflow scrolling. crbug.com/361723
     // Instead it should return false only if the layer is not inside a scrollable region.
-    return isViewportConstrainedStickyLayer(layer);
+    return !layer->enclosingOverflowClipLayer(ExcludeSelf);
 }
 
 bool CompositingReasonFinder::requiresCompositingForPositionFixed(RenderObject* renderer, const RenderLayer* layer, RenderLayer::ViewportConstrainedNotCompositedReason* viewportConstrainedNotCompositedReason, bool* needToRecomputeCompositingRequirements) const
