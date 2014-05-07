@@ -84,11 +84,14 @@ bool DeferredImageDecoder::isLazyDecoded(const SkBitmap& bitmap)
 void DeferredImageDecoder::setEnabled(bool enabled)
 {
     s_enabled = enabled;
-    // FIXME: Remove all non-discardable memory related code now that this is
-    // used on all platforms.
+#if !OS(ANDROID)
+    // FIXME: This code is temporary to enable discardable memory for
+    // non-Android platforms. In the future all platforms will be
+    // the same and we can remove this code.
     s_skiaDiscardableMemoryEnabled = enabled;
     if (enabled)
         ImageDecodingStore::setImageCachingEnabled(false);
+#endif
 }
 
 bool DeferredImageDecoder::enabled()
