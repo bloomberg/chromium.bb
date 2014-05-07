@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/password_manager_internals/password_manager_internals_ui.h"
 
+#include <algorithm>
 #include <set>
 
 #include "base/strings/string16.h"
@@ -67,7 +68,9 @@ PasswordManagerInternalsUI::~PasswordManagerInternalsUI() {
 
 void PasswordManagerInternalsUI::LogSavePasswordProgress(
     const std::string& text) {
-  base::StringValue text_string_value(net::EscapeForHTML(text));
+  std::string no_quotes(text);
+  std::replace(no_quotes.begin(), no_quotes.end(), '"', ' ');
+  base::StringValue text_string_value(net::EscapeForHTML(no_quotes));
   web_ui()->CallJavascriptFunction("addSavePasswordProgressLog",
                                    text_string_value);
 }
