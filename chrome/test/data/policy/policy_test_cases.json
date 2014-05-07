@@ -1,6 +1,6 @@
 {
   "-- Template --": {
-    "intro": "Top-level entries map a policy name to its test parameters, described below.",
+    "intro": "Top-level entries map a policy name to its test parameters, described below. The name of the top level entry should be of the form <policy name>[.suffix]. The optional suffix is used for defining multiple test cases for a single policy.",
 
     "os": ["List of operating systems that support this policy. Valid values:", "win", "linux", "mac", "chromeos", "Defaults to empty if not specified."],
     "official_only": "Whether this policy exists in official builds only. Defaults to |false| if not specified.",
@@ -13,10 +13,10 @@
         "check_for_mandatory": "Should the preference be tested when a mandatory value is set for the policy? Defaults to |true| if not specified.",
         "check_for_recommended": "Should the preference be tested when a recommended value is set for the policy? Defaults to |true| if not specified.",
         "note": "When |can_be_recommended| is |false|, the policy is never set to a recommended value so |check_for_recommended| has no effect.",
-        "note 1": "The following entries should be specified if controlled setting indicators exist for |pref| in the settings UI.",
+        "note": "The following entries should be specified if controlled setting indicators exist for |pref| in the settings UI.",
         "indicator_test_setup_js": "Any JavaScript that should be executed before testing the indicators. This should be specified only if an explicit user action must be simulated (e.g. clicking a button).",
         "indicator_selector": "A CSS selector that locates all controlled setting indicators for |pref|. This is appended to the selector 'span.controlled-setting-indicator' and if not specified, defaults to '[pref=(the value of |pref|)', e.g. '[pref=homepage]'.",
-        "note 2": "Any number of test cases may be specified in the following array.",
+        "note": "Any number of test cases may be specified in the following array.",
         "indicator_tests": [
           { "policy": "A policy dictionary that should affect |pref| when set as mandatory or recommended policy.",
             "value": "The value that |pref| should take on. This must only be specified if |pref| has multiple controlled setting indicators, each corresponding to a specific value (e.g. indicators next to radio buttons).",
@@ -25,7 +25,7 @@
         ]
       }
     ],
-    "note 2": "The following entry should be specified if there is a controlled setting indicator that reacts to the policy directly, without a preference serving as an intermediary.",
+    "note": "The following entry should be specified if there is a controlled setting indicator that reacts to the policy directly, without a preference serving as an intermediary.",
     "indicator_selector": "A CSS selector that locates the controlled setting indicator directly affected by the policy. This is appended to the selector 'span.controlled-setting-indicator'."
   },
 
@@ -431,7 +431,7 @@
     ]
   },
 
-  "DownloadDirectory": {
+  "DownloadDirectory.0": {
     "os": ["win", "mac", "linux", "chromeos"],
     "can_be_recommended": true,
     "test_policy": { "DownloadDirectory": "${user_home}/test-downloads" },
@@ -445,6 +445,18 @@
         "check_for_recommended" : false,
         "indicator_tests": [
           { "policy": { "DownloadDirectory": "${user_home}/test-downloads" } }
+        ]
+      }
+    ]
+  },
+
+  "DownloadDirectory.1": {
+    "os": ["chromeos"],
+    "test_policy": { "DownloadDirectory": "${google_drive}/downloads" },
+    "pref_mappings": [
+      { "pref": "gdata.disabled",
+        "indicator_tests": [
+          { "policy": { "DownloadDirectory": "${google_drive}/downloads" } }
         ]
       }
     ]

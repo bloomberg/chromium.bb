@@ -55,6 +55,13 @@ const char kMainSettingsPage[] = "chrome://settings-frame";
 
 const char kCrosSettingsPrefix[] = "cros.";
 
+std::string GetPolicyName(const std::string& policy_name_decorated) {
+  const size_t offset = policy_name_decorated.find('.');
+  if (offset != std::string::npos)
+    return policy_name_decorated.substr(0, offset);
+  return policy_name_decorated;
+}
+
 // Contains the details of a single test case verifying that the controlled
 // setting indicators for a pref affected by a policy work correctly. This is
 // part of the data loaded from chrome/test/data/policy/policy_test_cases.json.
@@ -208,7 +215,8 @@ class PolicyTestCase {
 // Parses all policy test cases and makes then available in a map.
 class PolicyTestCases {
  public:
-  typedef std::map<std::string, PolicyTestCase*> PolicyTestCaseMap;
+  typedef std::vector<PolicyTestCase*> PolicyTestCaseVector;
+  typedef std::map<std::string, PolicyTestCaseVector> PolicyTestCaseMap;
   typedef PolicyTestCaseMap::const_iterator iterator;
 
   PolicyTestCases() {
@@ -234,21 +242,33 @@ class PolicyTestCases {
       ADD_FAILURE();
       return;
     }
-    for (Schema::Iterator it = chrome_schema.GetPropertiesIterator();
-         !it.IsAtEnd(); it.Advance()) {
+    for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
+         it.Advance()) {
+      const std::string policy_name = GetPolicyName(it.key());
+      if (!chrome_schema.GetKnownProperty(policy_name).valid())
+        continue;
       PolicyTestCase* policy_test_case = GetPolicyTestCase(dict, it.key());
       if (policy_test_case)
-        policy_test_cases_[it.key()] = policy_test_case;
+        policy_test_cases_[policy_name].push_back(policy_test_case);
     }
   }
 
   ~PolicyTestCases() {
-    STLDeleteValues(&policy_test_cases_);
+    for (iterator policy = policy_test_cases_.begin();
+         policy != policy_test_cases_.end();
+         ++policy) {
+      for (PolicyTestCaseVector::const_iterator test_case =
+               policy->second.begin();
+           test_case != policy->second.end();
+           ++test_case) {
+        delete *test_case;
+      }
+    }
   }
 
-  const PolicyTestCase* Get(const std::string& name) const {
+  const PolicyTestCaseVector* Get(const std::string& name) const {
     const iterator it = policy_test_cases_.find(name);
-    return it == end() ? NULL : it->second;
+    return it == end() ? NULL : &it->second;
   }
 
   const PolicyTestCaseMap& map() const { return policy_test_cases_; }
@@ -259,7 +279,7 @@ class PolicyTestCases {
   PolicyTestCase* GetPolicyTestCase(const base::DictionaryValue* tests,
                                     const std::string& name) {
     const base::DictionaryValue* policy_test_dict = NULL;
-    if (!tests->GetDictionary(name, &policy_test_dict))
+    if (!tests->GetDictionaryWithoutPathExpansion(name, &policy_test_dict))
       return NULL;
     bool is_official_only = false;
     policy_test_dict->GetBoolean("official_only", &is_official_only);
@@ -521,49 +541,55 @@ IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, PolicyToPrefsMapping) {
   PrefService* user_prefs = browser()->profile()->GetPrefs();
 
   const PolicyTestCases test_cases;
-  for (PolicyTestCases::iterator it = test_cases.begin();
-       it != test_cases.end(); ++it) {
-    const ScopedVector<PrefMapping>& pref_mappings =
-        it->second->pref_mappings();
-    if (!it->second->IsSupported() || pref_mappings.empty())
-      continue;
-
-    LOG(INFO) << "Testing policy: " << it->first;
-
-    for (ScopedVector<PrefMapping>::const_iterator
-             pref_mapping = pref_mappings.begin();
-         pref_mapping != pref_mappings.end();
-         ++pref_mapping) {
-      // Skip Chrome OS preferences that use a different backend and cannot be
-      // retrieved through the prefs mechanism.
-      if (StartsWithASCII((*pref_mapping)->pref(), kCrosSettingsPrefix, true))
+  for (PolicyTestCases::iterator policy = test_cases.begin();
+       policy != test_cases.end();
+       ++policy) {
+    for (PolicyTestCases::PolicyTestCaseVector::const_iterator test_case =
+             policy->second.begin();
+         test_case != policy->second.end();
+         ++test_case) {
+      const ScopedVector<PrefMapping>& pref_mappings =
+          (*test_case)->pref_mappings();
+      if (!(*test_case)->IsSupported() || pref_mappings.empty())
         continue;
 
-      // Skip preferences that should not be checked when the policy is set to
-      // a mandatory value.
-      if (!(*pref_mapping)->check_for_mandatory())
-        continue;
+      LOG(INFO) << "Testing policy: " << policy->first;
 
-      PrefService* prefs = (*pref_mapping)->is_local_state() ?
-          local_state : user_prefs;
-      // The preference must have been registered.
-      const PrefService::Preference* pref =
-          prefs->FindPreference((*pref_mapping)->pref().c_str());
-      ASSERT_TRUE(pref);
+      for (ScopedVector<PrefMapping>::const_iterator pref_mapping =
+               pref_mappings.begin();
+           pref_mapping != pref_mappings.end();
+           ++pref_mapping) {
+        // Skip Chrome OS preferences that use a different backend and cannot be
+        // retrieved through the prefs mechanism.
+        if (StartsWithASCII((*pref_mapping)->pref(), kCrosSettingsPrefix, true))
+          continue;
 
-      // Verify that setting the policy overrides the pref.
-      ClearProviderPolicy();
-      prefs->ClearPref((*pref_mapping)->pref().c_str());
-      EXPECT_TRUE(pref->IsDefaultValue());
-      EXPECT_TRUE(pref->IsUserModifiable());
-      EXPECT_FALSE(pref->IsUserControlled());
-      EXPECT_FALSE(pref->IsManaged());
+        // Skip preferences that should not be checked when the policy is set to
+        // a mandatory value.
+        if (!(*pref_mapping)->check_for_mandatory())
+          continue;
 
-      SetProviderPolicy(it->second->test_policy(), POLICY_LEVEL_MANDATORY);
-      EXPECT_FALSE(pref->IsDefaultValue());
-      EXPECT_FALSE(pref->IsUserModifiable());
-      EXPECT_FALSE(pref->IsUserControlled());
-      EXPECT_TRUE(pref->IsManaged());
+        PrefService* prefs =
+            (*pref_mapping)->is_local_state() ? local_state : user_prefs;
+        // The preference must have been registered.
+        const PrefService::Preference* pref =
+            prefs->FindPreference((*pref_mapping)->pref().c_str());
+        ASSERT_TRUE(pref);
+
+        // Verify that setting the policy overrides the pref.
+        ClearProviderPolicy();
+        prefs->ClearPref((*pref_mapping)->pref().c_str());
+        EXPECT_TRUE(pref->IsDefaultValue());
+        EXPECT_TRUE(pref->IsUserModifiable());
+        EXPECT_FALSE(pref->IsUserControlled());
+        EXPECT_FALSE(pref->IsManaged());
+
+        SetProviderPolicy((*test_case)->test_policy(), POLICY_LEVEL_MANDATORY);
+        EXPECT_FALSE(pref->IsDefaultValue());
+        EXPECT_FALSE(pref->IsUserModifiable());
+        EXPECT_FALSE(pref->IsUserControlled());
+        EXPECT_TRUE(pref->IsManaged());
+      }
     }
   }
 }
@@ -582,122 +608,139 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
 
   ui_test_utils::NavigateToURL(browser(), GURL(kMainSettingsPage));
 
-  for (std::vector<std::string>::const_iterator it = GetParam().begin();
-       it != GetParam().end(); ++it) {
-    const PolicyTestCase* policy_test_case = test_cases.Get(*it);
-    ASSERT_TRUE(policy_test_case) << "PolicyTestCase not found for " << *it;
-    if (!policy_test_case->IsSupported())
-      continue;
-    const ScopedVector<PrefMapping>& pref_mappings =
-        policy_test_case->pref_mappings();
-    if (policy_test_case->indicator_selector().empty()) {
-      bool has_pref_indicator_tests = false;
-      for (ScopedVector<PrefMapping>::const_iterator
-               pref_mapping = pref_mappings.begin();
-           pref_mapping != pref_mappings.end();
-           ++pref_mapping) {
-        if (!(*pref_mapping)->indicator_test_cases().empty()) {
-          has_pref_indicator_tests = true;
-          break;
+  for (std::vector<std::string>::const_iterator policy = GetParam().begin();
+       policy != GetParam().end();
+       ++policy) {
+    const std::vector<PolicyTestCase*>* policy_test_cases =
+        test_cases.Get(*policy);
+    ASSERT_TRUE(policy_test_cases) << "PolicyTestCase not found for "
+                                   << *policy;
+    for (std::vector<PolicyTestCase*>::const_iterator test_case =
+             policy_test_cases->begin();
+         test_case != policy_test_cases->end();
+         ++test_case) {
+      PolicyTestCase* policy_test_case = *test_case;
+      if (!policy_test_case->IsSupported())
+        continue;
+      const ScopedVector<PrefMapping>& pref_mappings =
+          policy_test_case->pref_mappings();
+      if (policy_test_case->indicator_selector().empty()) {
+        bool has_pref_indicator_tests = false;
+        for (ScopedVector<PrefMapping>::const_iterator pref_mapping =
+                 pref_mappings.begin();
+             pref_mapping != pref_mappings.end();
+             ++pref_mapping) {
+          if (!(*pref_mapping)->indicator_test_cases().empty()) {
+            has_pref_indicator_tests = true;
+            break;
+          }
         }
-      }
-      if (!has_pref_indicator_tests)
-        continue;
-    }
-
-    LOG(INFO) << "Testing policy: " << *it;
-
-    if (!policy_test_case->indicator_selector().empty()) {
-      // Check that no controlled setting indicator is visible when no value is
-      // set by policy.
-      ClearProviderPolicy();
-      VerifyControlledSettingIndicators(browser(),
-                                        policy_test_case->indicator_selector(),
-                                        std::string(),
-                                        std::string(),
-                                        false);
-      // Check that the appropriate controlled setting indicator is shown when a
-      // value is enforced by policy.
-      SetProviderPolicy(policy_test_case->test_policy(),
-                        POLICY_LEVEL_MANDATORY);
-      VerifyControlledSettingIndicators(browser(),
-                                        policy_test_case->indicator_selector(),
-                                        std::string(),
-                                        "policy",
-                                        false);
-    }
-
-    for (ScopedVector<PrefMapping>::const_iterator
-             pref_mapping = pref_mappings.begin();
-         pref_mapping != pref_mappings.end();
-         ++pref_mapping) {
-      const ScopedVector<IndicatorTestCase>&
-          indicator_test_cases = (*pref_mapping)->indicator_test_cases();
-      if (indicator_test_cases.empty())
-        continue;
-
-      if (!(*pref_mapping)->indicator_test_setup_js().empty()) {
-        ASSERT_TRUE(content::ExecuteScript(
-            browser()->tab_strip_model()->GetActiveWebContents(),
-            (*pref_mapping)->indicator_test_setup_js()));
+        if (!has_pref_indicator_tests)
+          continue;
       }
 
-      std::string indicator_selector = (*pref_mapping)->indicator_selector();
-      if (indicator_selector.empty())
-        indicator_selector = "[pref=\"" + (*pref_mapping)->pref() + "\"]";
-      for (ScopedVector<IndicatorTestCase>::const_iterator
-               indicator_test_case = indicator_test_cases.begin();
-           indicator_test_case != indicator_test_cases.end();
-           ++indicator_test_case) {
+      LOG(INFO) << "Testing policy: " << *policy;
+
+      if (!policy_test_case->indicator_selector().empty()) {
         // Check that no controlled setting indicator is visible when no value
         // is set by policy.
         ClearProviderPolicy();
         VerifyControlledSettingIndicators(
-            browser(), indicator_selector, std::string(), std::string(), false);
+            browser(),
+            policy_test_case->indicator_selector(),
+            std::string(),
+            std::string(),
+            false);
+        // Check that the appropriate controlled setting indicator is shown when
+        // a value is enforced by policy.
+        SetProviderPolicy(policy_test_case->test_policy(),
+                          POLICY_LEVEL_MANDATORY);
+        VerifyControlledSettingIndicators(
+            browser(),
+            policy_test_case->indicator_selector(),
+            std::string(),
+            "policy",
+            false);
+      }
 
-        if ((*pref_mapping)->check_for_mandatory()) {
+      for (ScopedVector<PrefMapping>::const_iterator
+               pref_mapping = pref_mappings.begin();
+           pref_mapping != pref_mappings.end();
+           ++pref_mapping) {
+        const ScopedVector<IndicatorTestCase>& indicator_test_cases =
+            (*pref_mapping)->indicator_test_cases();
+        if (indicator_test_cases.empty())
+          continue;
+
+        if (!(*pref_mapping)->indicator_test_setup_js().empty()) {
+          ASSERT_TRUE(content::ExecuteScript(
+              browser()->tab_strip_model()->GetActiveWebContents(),
+              (*pref_mapping)->indicator_test_setup_js()));
+        }
+
+        std::string indicator_selector = (*pref_mapping)->indicator_selector();
+        if (indicator_selector.empty())
+          indicator_selector = "[pref=\"" + (*pref_mapping)->pref() + "\"]";
+        for (ScopedVector<IndicatorTestCase>::const_iterator
+                 indicator_test_case = indicator_test_cases.begin();
+             indicator_test_case != indicator_test_cases.end();
+             ++indicator_test_case) {
+          // Check that no controlled setting indicator is visible when no value
+          // is set by policy.
+          ClearProviderPolicy();
+          VerifyControlledSettingIndicators(browser(),
+                                            indicator_selector,
+                                            std::string(),
+                                            std::string(),
+                                            false);
+
+          if ((*pref_mapping)->check_for_mandatory()) {
+            // Check that the appropriate controlled setting indicator is shown
+            // when a value is enforced by policy.
+            SetProviderPolicy((*indicator_test_case)->policy(),
+                              POLICY_LEVEL_MANDATORY);
+
+            VerifyControlledSettingIndicators(
+                browser(),
+                indicator_selector,
+                (*indicator_test_case)->value(),
+                "policy",
+                (*indicator_test_case)->readonly());
+          }
+
+          if (!policy_test_case->can_be_recommended() ||
+              !(*pref_mapping)->check_for_recommended()) {
+            continue;
+          }
+
+          PrefService* prefs =
+              (*pref_mapping)->is_local_state() ? local_state : user_prefs;
+          // The preference must have been registered.
+          const PrefService::Preference* pref =
+              prefs->FindPreference((*pref_mapping)->pref().c_str());
+          ASSERT_TRUE(pref);
+
           // Check that the appropriate controlled setting indicator is shown
-          // when a value is enforced by policy.
+          // when a value is recommended by policy and the user has not
+          // overridden the recommendation.
           SetProviderPolicy((*indicator_test_case)->policy(),
-                            POLICY_LEVEL_MANDATORY);
-
+                            POLICY_LEVEL_RECOMMENDED);
           VerifyControlledSettingIndicators(browser(),
                                             indicator_selector,
                                             (*indicator_test_case)->value(),
-                                            "policy",
+                                            "recommended",
                                             (*indicator_test_case)->readonly());
+          // Check that the appropriate controlled setting indicator is shown
+          // when a value is recommended by policy and the user has overridden
+          // the recommendation.
+          prefs->Set((*pref_mapping)->pref().c_str(), *pref->GetValue());
+          VerifyControlledSettingIndicators(browser(),
+                                            indicator_selector,
+                                            (*indicator_test_case)->value(),
+                                            "hasRecommendation",
+                                            (*indicator_test_case)->readonly());
+          prefs->ClearPref((*pref_mapping)->pref().c_str());
         }
-
-        if (!policy_test_case->can_be_recommended() ||
-            !(*pref_mapping)->check_for_recommended()) {
-          continue;
-        }
-
-        PrefService* prefs = (*pref_mapping)->is_local_state() ?
-            local_state : user_prefs;
-        // The preference must have been registered.
-        const PrefService::Preference* pref =
-            prefs->FindPreference((*pref_mapping)->pref().c_str());
-        ASSERT_TRUE(pref);
-
-        // Check that the appropriate controlled setting indicator is shown when
-        // a value is recommended by policy and the user has not overridden the
-        // recommendation.
-        SetProviderPolicy((*indicator_test_case)->policy(),
-                          POLICY_LEVEL_RECOMMENDED);
-        VerifyControlledSettingIndicators(browser(), indicator_selector,
-                                          (*indicator_test_case)->value(),
-                                          "recommended",
-                                          (*indicator_test_case)->readonly());
-        // Check that the appropriate controlled setting indicator is shown when
-        // a value is recommended by policy and the user has overridden the
-        // recommendation.
-        prefs->Set((*pref_mapping)->pref().c_str(), *pref->GetValue());
-        VerifyControlledSettingIndicators(browser(), indicator_selector,
-                                          (*indicator_test_case)->value(),
-                                          "hasRecommendation",
-                                          (*indicator_test_case)->readonly());
-        prefs->ClearPref((*pref_mapping)->pref().c_str());
       }
     }
   }
