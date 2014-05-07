@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_TESTS_TEST_VIDEO_DECODER_H_
-#define PPAPI_TESTS_TEST_VIDEO_DECODER_H_
+#ifndef PPAPI_TESTS_TEST_VIDEO_DECODER_DEV_H_
+#define PPAPI_TESTS_TEST_VIDEO_DECODER_DEV_H_
 
 #include <string>
 
@@ -11,9 +11,10 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/tests/test_case.h"
 
-class TestVideoDecoder : public TestCase {
+class TestVideoDecoderDev : public TestCase {
  public:
-  explicit TestVideoDecoder(TestingInstance* instance) : TestCase(instance) {}
+  explicit TestVideoDecoderDev(TestingInstance* instance)
+      : TestCase(instance) {}
 
   // TestCase implementation.
   virtual bool Init();
@@ -28,4 +29,4 @@ class TestVideoDecoder : public TestCase {
   const PPB_VideoDecoder_Dev* video_decoder_interface_;
 };
 
-#endif  // PPAPI_TESTS_TEST_VIDEO_DECODER_H_
+#endif  // PPAPI_TESTS_TEST_VIDEO_DECODER_DEV_H_

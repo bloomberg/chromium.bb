@@ -443,7 +443,7 @@
       ],
     },
     {
-      'target_name': 'ppapi_example_video_decode',
+      'target_name': 'ppapi_example_video_decode_dev',
       'dependencies': [
         'ppapi_example_skeleton',
         'ppapi.gyp:ppapi_cpp',
@@ -453,7 +453,7 @@
         'lib/gl/include',
       ],
       'sources': [
-        'examples/video_decode/video_decode.cc',
+        'examples/video_decode/video_decode_dev.cc',
         'examples/video_decode/testdata.h',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

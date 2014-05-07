@@ -569,8 +569,8 @@
       'tests/test_url_util.h',
       'tests/test_utils.cc',
       'tests/test_utils.h',
-      'tests/test_video_decoder.cc',
-      'tests/test_video_decoder.h',
+      'tests/test_video_decoder_dev.cc',
+      'tests/test_video_decoder_dev.h',
       'tests/test_x509_certificate_private.cc',
       'tests/test_x509_certificate_private.h',
 
