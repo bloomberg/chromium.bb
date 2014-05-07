@@ -138,6 +138,7 @@ void UpdateX11EventMask(int ui_flags, unsigned int* x_flags) {
     {ui::EF_CAPS_LOCK_DOWN, LockMask},
     {ui::EF_ALTGR_DOWN, Mod5Mask},
     {ui::EF_MOD3_DOWN, Mod3Mask},
+    {ui::EF_NUMPAD_KEY, Mod2Mask},
     {ui::EF_LEFT_MOUSE_BUTTON, Button1Mask},
     {ui::EF_MIDDLE_MOUSE_BUTTON, Button2Mask},
     {ui::EF_RIGHT_MOUSE_BUTTON, Button3Mask},
