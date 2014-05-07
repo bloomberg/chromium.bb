@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<div id='e'></div>
+
+<script>
+var player;
+
+function expectValue(time, property, expectation) {
+  player.currentTime = time;
+  assert_equals(getComputedStyle(e)[property], expectation);
+}
+
+test(function() {
+  player = e.animate(
+      [{float: 'left'}, {float: 'right'}],
+      {duration: 1, fill: 'both'});
+  player.pause();
+
+  expectValue(0, 'float', 'left');
+  expectValue(0.25, 'float', 'left');
+  expectValue(0.49, 'float', 'left');
+  expectValue(0.5, 'float', 'right');
+  expectValue(0.75, 'float', 'right');
+  expectValue(1, 'float', 'right');
+}, 'Non-animatable property float should 50% flip between keyframe values via the element.animate() API.');
+
+test(function() {
+  player = e.animate([
+      {animationName: 'a', animationDuration: '1s', transitionProperty: 'left', transitionDuration: '1s', display: 'table'},
+      {animationName: 'b', animationDuration: '10s', transitionProperty: 'right', transitionDuration: '10s', display: 'none'},
+    ], {duration: 1, fill: 'both'});
+  player.pause();
+
+  expectValue(0, 'animationName', 'none');
+  expectValue(0.25, 'animationName', 'none');
+  expectValue(0.5, 'animationName', 'none');
+  expectValue(0.75, 'animationName', 'none');
+  expectValue(1, 'animationName', 'none');
+
+  expectValue(0, 'animationDuration', '0s');
+  expectValue(0.25, 'animationDuration', '0s');
+  expectValue(0.5, 'animationDuration', '0s');
+  expectValue(0.75, 'animationDuration', '0s');
+  expectValue(1, 'animationDuration', '0s');
+
+  expectValue(0, 'transitionProperty', 'all');
+  expectValue(0.25, 'transitionProperty', 'all');
+  expectValue(0.5, 'transitionProperty', 'all');
+  expectValue(0.75, 'transitionProperty', 'all');
+  expectValue(1, 'transitionProperty', 'all');
+
+  expectValue(0, 'transitionDuration', '0s');
+  expectValue(0.25, 'transitionDuration', '0s');
+  expectValue(0.5, 'transitionDuration', '0s');
+  expectValue(0.75, 'transitionDuration', '0s');
+  expectValue(1, 'transitionDuration', '0s');
+
+  expectValue(0, 'display', 'block');
+  expectValue(0.25, 'display', 'block');
+  expectValue(0.5, 'display', 'block');
+  expectValue(0.75, 'display', 'block');
+  expectValue(1, 'display', 'block');
+}, 'Animation related properties should not be animatable via element.animate().');
+</script>

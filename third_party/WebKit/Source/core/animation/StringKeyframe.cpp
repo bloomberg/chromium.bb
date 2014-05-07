@@ -21,7 +21,8 @@ StringKeyframe::StringKeyframe(const StringKeyframe& copyFrom)
 void StringKeyframe::setPropertyValue(CSSPropertyID property, const String& value, StyleSheetContents* styleSheetContents)
 {
     ASSERT(property != CSSPropertyInvalid);
-    m_propertySet->setProperty(property, value, false, styleSheetContents);
+    if (CSSAnimations::isAllowedAnimation(property))
+        m_propertySet->setProperty(property, value, false, styleSheetContents);
 }
 
 PropertySet StringKeyframe::properties() const
@@ -29,12 +30,8 @@ PropertySet StringKeyframe::properties() const
     // This is not used in time-critical code, so we probably don't need to
     // worry about caching this result.
     PropertySet properties;
-    for (unsigned i = 0; i < m_propertySet->propertyCount(); ++i) {
-        // FIXME: Allow for non-animatable properties.
-        CSSPropertyID property = m_propertySet->propertyAt(i).id();
-        if (CSSAnimations::isAnimatableProperty(property))
-            properties.add(property);
-    }
+    for (unsigned i = 0; i < m_propertySet->propertyCount(); ++i)
+        properties.add(m_propertySet->propertyAt(i).id());
     return properties;
 }
 
@@ -69,6 +66,9 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
 {
     CSSValue* fromCSSValue = m_value.get();
     CSSValue* toCSSValue = toStringPropertySpecificKeyframe(end)->value();
+
+    if (!CSSAnimations::isAnimatableProperty(property))
+        return DefaultStyleInterpolation::create(fromCSSValue, toCSSValue, property);
 
     switch (property) {
     case CSSPropertyLeft:
