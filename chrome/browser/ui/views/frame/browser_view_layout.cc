@@ -39,8 +39,6 @@ namespace {
 // The visible height of the shadow above the tabs. Clicks in this area are
 // treated as clicks to the frame, rather than clicks to the tab.
 const int kTabShadowSize = 2;
-// The number of pixels the metro switcher is offset from the right edge.
-const int kWindowSwitcherOffsetX = 7;
 // The number of pixels the constrained window should overlap the bottom
 // of the omnibox.
 const int kConstrainedWindowOverlap = 3;
@@ -296,27 +294,16 @@ int BrowserViewLayout::NonClientHitTest(const gfx::Point& point) {
   if (bv_bounds.Contains(point))
     return HTCLIENT;
 
-  // If the point is within the bounds of the window switcher button, the point
-  // is considered to be within the client area.
-  views::View* window_switcher_button = delegate_->GetWindowSwitcherButton();
-  if (window_switcher_button && window_switcher_button->visible()) {
-    gfx::Point window_switcher_point(point_in_browser_view_coords);
-    views::View::ConvertPointToTarget(browser_view_, window_switcher_button,
-                                      &window_switcher_point);
-    if (window_switcher_button->HitTestPoint(window_switcher_point))
-      return HTCLIENT;
-  }
-
-  // If the point's y coordinate is above the top of the toolbar, but neither
-  // over the tabstrip nor over the window switcher button (per previous
-  // checking in this function), then we consider it in the window caption
-  // (e.g. the area to the right of the tabstrip underneath the window
-  // controls). However, note that we DO NOT return HTCAPTION here, because
-  // when the window is maximized the window controls will fall into this
-  // space (since the BrowserView is sized to entire size of the window at that
-  // point), and the HTCAPTION value will cause the window controls not to work.
-  // So we return HTNOWHERE so that the caller will hit-test the window controls
-  // before finally falling back to HTCAPTION.
+  // If the point's y coordinate is above the top of the toolbar, but not
+  // over the tabstrip (per previous checking in this function), then we
+  // consider it in the window caption (e.g. the area to the right of the
+  // tabstrip underneath the window controls). However, note that we DO NOT
+  // return HTCAPTION here, because when the window is maximized the window
+  // controls will fall into this space (since the BrowserView is sized to
+  // entire size of the window at that point), and the HTCAPTION value will
+  // cause the window controls not to work. So we return HTNOWHERE so that the
+  // caller will hit-test the window controls before finally falling back to
+  // HTCAPTION.
   bv_bounds = browser_view_->bounds();
   bv_bounds.set_height(toolbar_->y());
   if (bv_bounds.Contains(point))
@@ -402,39 +389,8 @@ int BrowserViewLayout::LayoutTabStripRegion(int top) {
 
   tab_strip_->SetVisible(true);
   tab_strip_->SetBoundsRect(tabstrip_bounds);
-  int bottom = tabstrip_bounds.bottom();
 
-  // The metro window switcher sits at the far right edge of the tabstrip
-  // a |kWindowSwitcherOffsetX| pixels from the right edge.
-  // Only visible if there is more than one type of window to switch between.
-  // TODO(mad): update this code when more window types than just incognito
-  // and regular are available.
-  views::View* switcher_button = delegate_->GetWindowSwitcherButton();
-  if (switcher_button) {
-    if (browser()->profile()->HasOffTheRecordProfile() &&
-        chrome::FindBrowserWithProfile(
-            browser()->profile()->GetOriginalProfile(),
-            browser()->host_desktop_type()) != NULL) {
-      switcher_button->SetVisible(true);
-      int width = browser_view_->width();
-      gfx::Size ps = switcher_button->GetPreferredSize();
-      if (width > ps.width()) {
-        switcher_button->SetBounds(width - ps.width() - kWindowSwitcherOffsetX,
-                                   0,
-                                   ps.width(),
-                                   ps.height());
-      }
-    } else {
-      // We hide the button if the incognito profile is not alive.
-      // Note that Layout() is not called to all browser windows automatically
-      // when a profile goes away but we rely in the metro_driver.dll to call
-      // ::SetWindowPos( , .. SWP_SHOWWINDOW) which causes this function to
-      // be called again. This works both in showing or hidding the button.
-      switcher_button->SetVisible(false);
-    }
-  }
-
-  return bottom;
+  return tabstrip_bounds.bottom();
 }
 
 int BrowserViewLayout::LayoutToolbar(int top) {

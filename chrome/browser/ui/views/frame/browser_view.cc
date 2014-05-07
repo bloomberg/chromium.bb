@@ -248,10 +248,6 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
     return browser_view_->contents_web_view_;
   }
 
-  virtual views::View* GetWindowSwitcherButton() const OVERRIDE {
-    return browser_view_->window_switcher_button();
-  }
-
   virtual bool DownloadShelfNeedsLayout() const OVERRIDE {
     DownloadShelfView* download_shelf = browser_view_->download_shelf_.get();
     // Re-layout the shelf either if it is visible or if its close animation
@@ -394,7 +390,6 @@ BrowserView::BrowserView()
       top_container_(NULL),
       tabstrip_(NULL),
       toolbar_(NULL),
-      window_switcher_button_(NULL),
       find_bar_host_view_(NULL),
       infobar_container_(NULL),
       contents_web_view_(NULL),
@@ -936,12 +931,6 @@ void BrowserView::RestoreFocus() {
   WebContents* selected_web_contents = GetActiveWebContents();
   if (selected_web_contents)
     selected_web_contents->RestoreFocus();
-}
-
-void BrowserView::SetWindowSwitcherButton(views::Button* button) {
-  if (window_switcher_button_)
-    RemoveChildView(window_switcher_button_);
-  window_switcher_button_ = button;
 }
 
 void BrowserView::FullscreenStateChanged() {
@@ -1961,9 +1950,6 @@ void BrowserView::InitViews() {
   // bar widget.
   find_bar_host_view_ = new View();
   AddChildView(find_bar_host_view_);
-
-  if (window_switcher_button_)
-    AddChildView(window_switcher_button_);
 
   immersive_mode_controller_->Init(this);
 

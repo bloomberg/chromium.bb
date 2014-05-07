@@ -325,25 +325,9 @@ bool OpaqueBrowserFrameView::HitTestRect(const gfx::Rect& rect) const {
     return tabstrip->IsRectInWindowCaption(rect_in_tabstrip_coords);
   }
 
-  // The window switcher button is to the right of the tabstrip but is
-  // part of the client view.
-  views::View* window_switcher_button =
-      browser_view()->window_switcher_button();
-  if (window_switcher_button && window_switcher_button->visible()) {
-    gfx::RectF rect_in_window_switcher_coords_f(rect);
-    View::ConvertRectToTarget(this, window_switcher_button,
-        &rect_in_window_switcher_coords_f);
-    gfx::Rect rect_in_window_switcher_coords = gfx::ToEnclosingRect(
-        rect_in_window_switcher_coords_f);
-
-    if (window_switcher_button->HitTestRect(rect_in_window_switcher_coords))
-      return false;
-  }
-
   // We claim |rect| because it is above the bottom of the tabstrip, but
-  // neither in the tabstrip nor in the window switcher button. In particular,
-  // the avatar label/button is left of the tabstrip and the window controls
-  // are right of the tabstrip.
+  // not in the tabstrip itself. In particular, the avatar label/button is left
+  // of the tabstrip and the window controls are right of the tabstrip.
   return true;
 }
 
@@ -501,15 +485,6 @@ bool OpaqueBrowserFrameView::IsTabStripVisible() const {
 
 int OpaqueBrowserFrameView::GetTabStripHeight() const {
   return browser_view()->GetTabStripHeight();
-}
-
-int OpaqueBrowserFrameView::GetAdditionalReservedSpaceInTabStrip() const {
-  // We don't have the sysmenu buttons in Windows 8 metro mode. However there
-  // are buttons like the window switcher which are drawn in the non client
-  // are in the BrowserView. We need to ensure that the tab strip does not
-  // draw on the window switcher button.
-  views::View* button = browser_view()->window_switcher_button();
-  return button ? button->width() : 0;
 }
 
 gfx::Size OpaqueBrowserFrameView::GetTabstripPreferredSize() const {

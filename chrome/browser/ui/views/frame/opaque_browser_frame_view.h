@@ -95,7 +95,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual bool IsFullscreen() const OVERRIDE;
   virtual bool IsTabStripVisible() const OVERRIDE;
   virtual int GetTabStripHeight() const OVERRIDE;
-  virtual int GetAdditionalReservedSpaceInTabStrip() const OVERRIDE;
   virtual gfx::Size GetTabstripPreferredSize() const OVERRIDE;
 
  protected:

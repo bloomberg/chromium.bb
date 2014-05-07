@@ -137,9 +137,6 @@ gfx::Rect OpaqueBrowserFrameViewLayout::GetBoundsForTabStrip(
   available_width -= trailing_button_start_;
   available_width -= leading_button_start_;
 
-  if (delegate_->GetAdditionalReservedSpaceInTabStrip())
-    available_width -= delegate_->GetAdditionalReservedSpaceInTabStrip();
-
   const int caption_spacing = NewTabCaptionSpacing();
   const int tabstrip_width = available_width - caption_spacing;
   gfx::Rect bounds(leading_button_start_, GetTabStripInsetsTop(false),

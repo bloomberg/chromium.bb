@@ -54,11 +54,6 @@ class OpaqueBrowserFrameViewLayoutDelegate {
   virtual bool IsTabStripVisible() const = 0;
   virtual int GetTabStripHeight() const = 0;
 
-  // Various platforms need to be able to add more space to the
-  // tabstrip. Windows 8 metro mode uses this to account for the window
-  // switcher button.
-  virtual int GetAdditionalReservedSpaceInTabStrip() const = 0;
-
   // Returns the tabstrips preferred size so the frame layout can work around
   // it.
   virtual gfx::Size GetTabstripPreferredSize() const = 0;
