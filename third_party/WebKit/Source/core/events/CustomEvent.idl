@@ -25,7 +25,6 @@
 
 [
     EventConstructor,
-    Exposed=Window&Worker
 ] interface CustomEvent : Event {
     [Custom=Getter, InitializedByEventConstructor] readonly attribute any detail;
 
