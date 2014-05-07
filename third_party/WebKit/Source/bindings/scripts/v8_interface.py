@@ -32,6 +32,8 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
 from collections import defaultdict
+import itertools
+from operator import itemgetter
 
 import idl_types
 from idl_types import IdlType, inherits_interface
@@ -317,50 +319,35 @@ def generate_overloads_by_type(methods):
     Doesn't change the |methods| list itself (only the values, i.e. individual
     methods), so ok to treat these separately.
     """
-
-    # Once using Python 2.7, using collections.Counter
-    # method_counts = Counter(method['name'] for method in methods)
-    method_counts = defaultdict(lambda: 0)
-    for method in methods:
-        name = method['name']
-        method_counts[name] += 1
-
     # Filter to only methods that are actually overloaded
-    overloaded_method_counts = dict((name, count)
-                                    for name, count in method_counts.iteritems()
-                                    if count > 1)
-    overloaded_name_methods = [(method['name'], method) for method in methods
-                               if method['name'] in overloaded_method_counts]
+    method_counts = Counter(method['name'] for method in methods)
+    overloaded_method_names = set(name
+                                  for name, count in method_counts.iteritems()
+                                  if count > 1)
+    overloaded_methods = [method for method in methods
+                          if method['name'] in overloaded_method_names]
+
+    # Group by name (generally will be defined together, but not necessarily)
+    overloaded_methods.sort(key=itemgetter('name'))
+    method_overloads = dict(
+        (name, list(methods_iterator)) for name, methods_iterator in
+        itertools.groupby(overloaded_methods, itemgetter('name')))
 
     # Add overload information only to overloaded methods, so template code can
     # easily verify if a function is overloaded
-    method_overloads = defaultdict(list)
-    for name, method in overloaded_name_methods:
-        # Overload index includes self, so first append, then compute index
-        method_overloads[name].append(method)
-        method.update({
-            'overload_index': len(method_overloads[name]),
-            'overload_resolution_expression': overload_resolution_expression(method),
-        })
+    for name, overloads in method_overloads.iteritems():
+        for index, method in enumerate(overloads, 1):
+            method.update({
+                'overload_index': index,
+                'overload_resolution_expression':
+                    overload_resolution_expression(method),
+            })
 
-    def common_value(dicts, key):
-        values = (d[key] for d in dicts)
-        first_value = next(values)
-        if all(value == first_value for value in values):
-            return first_value
-        return None
-
-    # Resolution function is generated after last overloaded function;
-    # package necessary information into |method.overloads| for that method.
-    last_overloaded_name_methods = [
-        (name, method) for name, method in overloaded_name_methods
-        if method['overload_index'] == overloaded_method_counts[name]]
-    for name, method in last_overloaded_name_methods:
-        overloads = method_overloads[name]
+        # Resolution function is generated after last overloaded function;
+        # package necessary information into |method.overloads| for that method.
         minimum_number_of_required_arguments = min(
-            overload['number_of_required_arguments']
-            for overload in overloads)
-        method['overloads'] = {
+            method['number_of_required_arguments'] for method in overloads)
+        overloads[-1]['overloads'] = {
             'has_exception_state': bool(minimum_number_of_required_arguments),
             'methods': overloads,
             'minimum_number_of_required_arguments': minimum_number_of_required_arguments,
@@ -458,6 +445,27 @@ def overload_check_argument(index, argument):
     return None
 
 
+def common_value(dicts, key):
+    """Returns common value of a key across an iterable of dicts, or None.
+
+    Auxiliary function for overloads, so can consolidate an extended attribute
+    that appears with the same value on all items in an overload set.
+    """
+    values = (d[key] for d in dicts)
+    first_value = next(values)
+    if all(value == first_value for value in values):
+        return first_value
+    return None
+
+
+def Counter(iterable):
+    # Once using Python 2.7, using collections.Counter
+    counter = defaultdict(lambda: 0)
+    for item in iterable:
+        counter[item] += 1
+    return counter
+
+
 ################################################################################
 # Constructors
 ################################################################################
@@ -506,9 +514,9 @@ def constructor_argument_list(interface, constructor):
 def generate_constructor_overloads(constructors):
     if len(constructors) <= 1:
         return
-    for overload_index, constructor in enumerate(constructors):
+    for overload_index, constructor in enumerate(constructors, 1):
         constructor.update({
-            'overload_index': overload_index + 1,
+            'overload_index': overload_index,
             'overload_resolution_expression':
                 overload_resolution_expression(constructor),
         })
