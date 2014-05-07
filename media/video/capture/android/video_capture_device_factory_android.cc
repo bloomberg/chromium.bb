@@ -22,7 +22,8 @@ void VideoCaptureDeviceFactoryAndroid::GetDeviceNames(
 
   JNIEnv* env = AttachCurrentThread();
 
-  int num_cameras = Java_ChromiumCameraInfo_getNumberOfCameras(env);
+  int num_cameras = Java_ChromiumCameraInfo_getNumberOfCameras(
+      env, base::android::GetApplicationContext());
   DVLOG(1) << "VideoCaptureDevice::GetDeviceNames: num_cameras=" << num_cameras;
   if (num_cameras <= 0)
     return;

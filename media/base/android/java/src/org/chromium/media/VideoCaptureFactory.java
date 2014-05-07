@@ -5,6 +5,7 @@
 package org.chromium.media;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.util.Log;
 
@@ -27,7 +28,7 @@ import org.chromium.media.VideoCapture;
 @JNINamespace("media")
 class VideoCaptureFactory {
 
-    protected static class CamParams {
+    static class CamParams {
         final int mId;
         final String mName;
         final int mWidth;
@@ -41,7 +42,7 @@ class VideoCaptureFactory {
         }
     }
 
-    protected static class ChromiumCameraInfo {
+    static class ChromiumCameraInfo {
         private final int mId;
         private final Camera.CameraInfo mCameraInfo;
         // Special devices have more cameras than usual. Those devices are
@@ -51,6 +52,8 @@ class VideoCaptureFactory {
             {"Peanut", "peanut"},
         };
         private static final String TAG = "ChromiumCameraInfo";
+
+        private static int sNumberOfSystemCameras = -1;
 
         private static boolean isSpecialDevice() {
             for (String[] device : s_SPECIAL_DEVICE_LIST) {
@@ -62,19 +65,44 @@ class VideoCaptureFactory {
             return false;
         }
 
+        private static boolean isSpecialCamera(int id) {
+            return id >= sNumberOfSystemCameras;
+        }
+
+        private static int toSpecialCameraId(int id) {
+            assert isSpecialCamera(id);
+            return id - sNumberOfSystemCameras;
+        }
+
         private ChromiumCameraInfo(int index) {
             mId = index;
             mCameraInfo = isSpecialCamera(index) ? null : getCameraInfo(mId);
         }
 
         @CalledByNative("ChromiumCameraInfo")
-        private static int getNumberOfCameras() {
+        private static int getNumberOfCameras(Context appContext) {
+            // Camera.getNumberOfCammeras() will not fail without permission, but the
+            // following operation on camera will do. Without permission isn't fatal
+            // error in WebView, specially for those application which has no purpose
+            // to use camera, but happens to load page required it.
+            // So, we output a warning log and pretend system have no camera at all.
+            if (sNumberOfSystemCameras == -1) {
+                if (PackageManager.PERMISSION_GRANTED ==
+                        appContext.getPackageManager().checkPermission(
+                                "android.permission.CAMERA", appContext.getPackageName())) {
+                    sNumberOfSystemCameras = Camera.getNumberOfCameras();
+                } else {
+                    sNumberOfSystemCameras = 0;
+                    Log.w(TAG, "Missing android.permission.CAMERA permission, "
+                            + "no system camera available.");
+                }
+            }
             if (isSpecialDevice()) {
                 Log.d(TAG, "Special device: " + android.os.Build.MODEL);
-                return Camera.getNumberOfCameras() +
+                return sNumberOfSystemCameras +
                        VideoCaptureTango.numberOfCameras();
             } else {
-                return Camera.getNumberOfCameras();
+                return sNumberOfSystemCameras;
             }
         }
 
@@ -91,8 +119,7 @@ class VideoCaptureFactory {
         @CalledByNative("ChromiumCameraInfo")
         private String getDeviceName() {
             if (isSpecialCamera(mId)) {
-                return VideoCaptureTango.getCamParams(
-                        mId - Camera.getNumberOfCameras()).mName;
+                return VideoCaptureTango.getCamParams(toSpecialCameraId(mId)).mName;
             } else {
                 if (mCameraInfo == null) {
                     return "";
@@ -127,17 +154,12 @@ class VideoCaptureFactory {
         }
     }
 
-    protected static boolean isSpecialCamera(int id) {
-        return id >= Camera.getNumberOfCameras();
-    }
-
     // Factory methods.
     @CalledByNative
     static VideoCapture createVideoCapture(
             Context context, int id, long nativeVideoCaptureDeviceAndroid) {
-      if (isSpecialCamera(id)) {
-          return new VideoCaptureTango(context,
-                  id - Camera.getNumberOfCameras(),
+      if (ChromiumCameraInfo.isSpecialCamera(id)) {
+          return new VideoCaptureTango(context, ChromiumCameraInfo.toSpecialCameraId(id),
                   nativeVideoCaptureDeviceAndroid);
       } else {
           return new VideoCaptureAndroid(context, id,
@@ -147,9 +169,9 @@ class VideoCaptureFactory {
 
     @CalledByNative
     static VideoCapture.CaptureFormat[] getDeviceSupportedFormats(int id) {
-        return isSpecialCamera(id) ?
+        return ChromiumCameraInfo.isSpecialCamera(id) ?
                 VideoCaptureTango.getDeviceSupportedFormats(
-                        id - Camera.getNumberOfCameras()) :
+                        ChromiumCameraInfo.toSpecialCameraId(id)) :
                 VideoCaptureAndroid.getDeviceSupportedFormats(id);
     }
 
