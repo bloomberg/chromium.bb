@@ -744,9 +744,16 @@ void AccessibilityManager::UpdateVirtualKeyboardFromPref() {
 
 #if defined(USE_ASH)
   keyboard::SetAccessibilityKeyboardEnabled(enabled);
-  if (enabled)
+  // Note that there are two versions of the on-screen keyboard. A full layout
+  // is provided for accessibility, which includes sticky modifier keys to
+  // enable typing of hotkeys. A compact version is used in touchview mode
+  // to provide a layout with larger keys to facilitate touch typing. In the
+  // event that the a11y keyboard is being disabled, an on-screen keyboard might
+  // still be enabled and a forced reset is required to pick up the layout
+  // change.
+  if (keyboard::IsKeyboardEnabled())
     ash::Shell::GetInstance()->CreateKeyboard();
-  else if (!keyboard::IsKeyboardEnabled())
+  else
     ash::Shell::GetInstance()->DeactivateKeyboard();
 #endif
 }
