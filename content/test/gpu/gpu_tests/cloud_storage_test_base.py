@@ -46,8 +46,8 @@ def _CompareScreenshotSamples(screenshot, expectations, device_pixel_ratio):
           str(actual_color.b) + "]")
 
 class ValidatorBase(page_test.PageTest):
-  def __init__(self, test_method_name):
-    super(ValidatorBase, self).__init__(test_method_name)
+  def __init__(self):
+    super(ValidatorBase, self).__init__()
     # Parameters for cloud storage reference images.
     self.vendor_id = None
     self.device_id = None

@@ -26,9 +26,6 @@ def _DidTestSucceed(tab):
   return tab.EvaluateJavaScript('domAutomationController._succeeded')
 
 class _GpuRasterizationValidator(cloud_storage_test_base.ValidatorBase):
-  def __init__(self):
-    super(_GpuRasterizationValidator, self).__init__('ValidatePage')
-
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--force-compositing-mode',
                                     '--enable-threaded-compositing',

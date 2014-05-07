@@ -26,9 +26,6 @@ test_harness_script = r"""
 """;
 
 class _HardwareAcceleratedFeatureValidator(page_test.PageTest):
-  def __init__(self):
-    super(_HardwareAcceleratedFeatureValidator, self).__init__('ValidatePage')
-
   def ValidatePage(self, page, tab, results):
     feature = page.feature
     if not tab.EvaluateJavaScript('VerifyHardwareAccelerated("%s")' % feature):

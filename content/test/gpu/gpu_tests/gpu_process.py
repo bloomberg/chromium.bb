@@ -20,7 +20,7 @@ test_harness_script = r"""
 
 class _GpuProcessValidator(page_test.PageTest):
   def __init__(self):
-    super(_GpuProcessValidator, self).__init__('ValidatePage',
+    super(_GpuProcessValidator, self).__init__(
         needs_browser_restart_after_each_page=True)
 
   def CustomizeBrowserOptions(self, options):

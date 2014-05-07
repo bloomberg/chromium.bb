@@ -17,9 +17,6 @@ data_path = os.path.join(
     util.GetChromiumSrcDir(), 'content', 'test', 'data', 'gpu')
 
 class _ScreenshotSyncValidator(page_test.PageTest):
-  def __init__(self):
-    super(_ScreenshotSyncValidator, self).__init__('ValidatePage')
-
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
 

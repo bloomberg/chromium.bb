@@ -23,9 +23,6 @@ from telemetry.page import page_test
 from telemetry.page.actions.all_page_actions import *
 
 class _MapsValidator(cloud_storage_test_base.ValidatorBase):
-  def __init__(self):
-    super(_MapsValidator, self).__init__('ValidatePage')
-
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
 
