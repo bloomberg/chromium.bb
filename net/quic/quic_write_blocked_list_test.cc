@@ -83,6 +83,30 @@ TEST(QuicWriteBlockedListTest, VerifyHeadersStream) {
   EXPECT_FALSE(write_blocked_list.HasWriteBlockedStreams());
 }
 
+TEST(QuicWriteBlockedListTest, NoDuplicateEntries) {
+  // Test that QuicWriteBlockedList doesn't allow duplicate entries.
+  QuicWriteBlockedList write_blocked_list;
+
+  // Try to add a stream to the write blocked list multiple times at the same
+  // priority.
+  const QuicStreamId kBlockedId = 5;
+  write_blocked_list.PushBack(kBlockedId,
+                              QuicWriteBlockedList::kHighestPriority);
+  write_blocked_list.PushBack(kBlockedId,
+                              QuicWriteBlockedList::kHighestPriority);
+  write_blocked_list.PushBack(kBlockedId,
+                              QuicWriteBlockedList::kHighestPriority);
+
+  // This should only result in one blocked stream being added.
+  EXPECT_EQ(1u, write_blocked_list.NumBlockedStreams());
+  EXPECT_TRUE(write_blocked_list.HasWriteBlockedStreams());
+
+  // There should only be one stream to pop off the front.
+  EXPECT_EQ(kBlockedId, write_blocked_list.PopFront());
+  EXPECT_EQ(0u, write_blocked_list.NumBlockedStreams());
+  EXPECT_FALSE(write_blocked_list.HasWriteBlockedStreams());
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

@@ -162,6 +162,8 @@ QuicTag QuicVersionToQuicTag(const QuicVersion version) {
       return MakeQuicTag('Q', '0', '1', '7');
     case QUIC_VERSION_18:
       return MakeQuicTag('Q', '0', '1', '8');
+    case QUIC_VERSION_19:
+      return MakeQuicTag('Q', '0', '1', '9');
     default:
       // This shold be an ERROR because we should never attempt to convert an
       // invalid QuicVersion to be written to the wire.
@@ -192,6 +194,7 @@ string QuicVersionToString(const QuicVersion version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_16);
     RETURN_STRING_LITERAL(QUIC_VERSION_17);
     RETURN_STRING_LITERAL(QUIC_VERSION_18);
+    RETURN_STRING_LITERAL(QUIC_VERSION_19);
     default:
       return "QUIC_VERSION_UNSUPPORTED";
   }
@@ -731,6 +734,44 @@ QuicEncryptedPacket* QuicEncryptedPacket::Clone() const {
 ostream& operator<<(ostream& os, const QuicEncryptedPacket& s) {
   os << s.length() << "-byte data";
   return os;
+}
+
+TransmissionInfo::TransmissionInfo()
+    : retransmittable_frames(NULL),
+      sequence_number_length(PACKET_1BYTE_SEQUENCE_NUMBER),
+      sent_time(QuicTime::Zero()),
+      bytes_sent(0),
+      nack_count(0),
+      all_transmissions(NULL),
+      pending(false) { }
+
+TransmissionInfo::TransmissionInfo(
+    RetransmittableFrames* retransmittable_frames,
+    QuicPacketSequenceNumber sequence_number,
+    QuicSequenceNumberLength sequence_number_length)
+    : retransmittable_frames(retransmittable_frames),
+      sequence_number_length(sequence_number_length),
+      sent_time(QuicTime::Zero()),
+      bytes_sent(0),
+      nack_count(0),
+      all_transmissions(new SequenceNumberSet),
+      pending(false) {
+  all_transmissions->insert(sequence_number);
+}
+
+TransmissionInfo::TransmissionInfo(
+    RetransmittableFrames* retransmittable_frames,
+    QuicPacketSequenceNumber sequence_number,
+    QuicSequenceNumberLength sequence_number_length,
+    SequenceNumberSet* all_transmissions)
+    : retransmittable_frames(retransmittable_frames),
+      sequence_number_length(sequence_number_length),
+      sent_time(QuicTime::Zero()),
+      bytes_sent(0),
+      nack_count(0),
+      all_transmissions(all_transmissions),
+      pending(false) {
+  all_transmissions->insert(sequence_number);
 }
 
 QuicConsumedData::QuicConsumedData(size_t bytes_consumed,

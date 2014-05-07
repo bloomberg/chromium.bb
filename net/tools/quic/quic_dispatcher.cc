@@ -170,6 +170,7 @@ QuicDispatcher::QuicDispatcher(const QuicConfig& config,
       helper_(new QuicEpollConnectionHelper(epoll_server_)),
       supported_versions_(supported_versions),
       supported_versions_no_flow_control_(supported_versions),
+      supported_versions_no_connection_flow_control_(supported_versions),
       current_packet_(NULL),
       framer_(supported_versions, /*unused*/ QuicTime::Zero(), true),
       framer_visitor_(new QuicFramerVisitor(this)),
@@ -197,6 +198,18 @@ void QuicDispatcher::Initialize(int fd) {
         supported_versions_no_flow_control_.begin(), it + 1);
   }
   CHECK(!supported_versions_no_flow_control_.empty());
+
+  // Remove all versions > QUIC_VERSION_18 from the
+  // supported_versions_no_connection_flow_control_ vector.
+  QuicVersionVector::iterator connection_it = find(
+      supported_versions_no_connection_flow_control_.begin(),
+      supported_versions_no_connection_flow_control_.end(), QUIC_VERSION_19);
+  if (connection_it != supported_versions_no_connection_flow_control_.end()) {
+    supported_versions_no_connection_flow_control_.erase(
+        supported_versions_no_connection_flow_control_.begin(),
+        connection_it + 1);
+  }
+  CHECK(!supported_versions_no_connection_flow_control_.empty());
 }
 
 void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
@@ -381,20 +394,29 @@ QuicConnection* QuicDispatcher::CreateQuicConnection(
     const IPEndPoint& server_address,
     const IPEndPoint& client_address,
     uint32 initial_flow_control_window) {
-  // If we have disabled per-stream flow control, then don't allow new
-  // connections to talk QUIC_VERSION_17 or higher.
-  if (FLAGS_enable_quic_stream_flow_control_2) {
+  if (FLAGS_enable_quic_stream_flow_control_2 &&
+      FLAGS_enable_quic_connection_flow_control) {
+    DLOG(INFO) << "Creating QuicDispatcher with all versions.";
     return new QuicConnection(connection_id, client_address, helper_.get(),
                               writer_.get(), true, supported_versions_,
                               initial_flow_control_window_bytes_);
-  } else {
-    DVLOG(1)
-        << "Flow control disabled, creating QuicDispatcher WITHOUT version 17";
+  }
+
+  if (FLAGS_enable_quic_stream_flow_control_2 &&
+      !FLAGS_enable_quic_connection_flow_control) {
+    DLOG(INFO) << "Connection flow control disabled, creating QuicDispatcher "
+               << "WITHOUT version 19 or higher.";
     return new QuicConnection(connection_id, client_address, helper_.get(),
                               writer_.get(), true,
-                              supported_versions_no_flow_control_,
+                              supported_versions_no_connection_flow_control_,
                               initial_flow_control_window_bytes_);
   }
+
+  DLOG(INFO) << "Flow control disabled, creating QuicDispatcher WITHOUT "
+             << "version 17 or higher.";
+  return new QuicConnection(
+      connection_id, client_address, helper_.get(), writer_.get(), true,
+      supported_versions_no_flow_control_, initial_flow_control_window_bytes_);
 }
 
 QuicTimeWaitListManager* QuicDispatcher::CreateQuicTimeWaitListManager() {

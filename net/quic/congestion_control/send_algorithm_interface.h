@@ -25,6 +25,8 @@ class RttStats;
 
 class NET_EXPORT_PRIVATE SendAlgorithmInterface {
  public:
+  typedef std::map<QuicPacketSequenceNumber, TransmissionInfo> CongestionMap;
+
   static SendAlgorithmInterface* Create(const QuicClock* clock,
                                         const RttStats* rtt_stats,
                                         CongestionFeedbackType type,
@@ -39,14 +41,15 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
       const QuicCongestionFeedbackFrame& feedback,
       QuicTime feedback_receive_time) = 0;
 
-  // Called for each received ACK, with sequence number from remote peer.
-  virtual void OnPacketAcked(QuicPacketSequenceNumber acked_sequence_number,
-                             QuicByteCount acked_bytes) = 0;
-
-  // Indicates a loss event of one packet. |sequence_number| is the
-  // sequence number of the lost packet.
-  virtual void OnPacketLost(QuicPacketSequenceNumber sequence_number,
-                            QuicTime ack_receive_time) = 0;
+  // Indicates an update to the congestion state, caused either by an incoming
+  // ack or loss event timeout.  |rtt_updated| indicates whether a new
+  // latest_rtt sample has been taken, |byte_in_flight| the bytes in flight
+  // prior to the congestion event.  |acked_packets| and |lost_packets| are
+  // any packets considered acked or lost as a result of the congestion event.
+  virtual void OnCongestionEvent(bool rtt_updated,
+                                 QuicByteCount bytes_in_flight,
+                                 const CongestionMap& acked_packets,
+                                 const CongestionMap& lost_packets) = 0;
 
   // Inform that we sent x bytes to the wire, and if that was a retransmission.
   // Returns true if the packet should be tracked by the congestion manager,
@@ -62,23 +65,15 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   // nor OnPacketLost will be called for these packets.
   virtual void OnRetransmissionTimeout(bool packets_retransmitted) = 0;
 
-  // Called when a packet is timed out.
-  virtual void OnPacketAbandoned(QuicPacketSequenceNumber sequence_number,
-                                 QuicByteCount abandoned_bytes) = 0;
-
   // Calculate the time until we can send the next packet.
   virtual QuicTime::Delta TimeUntilSend(
       QuicTime now,
+      QuicByteCount bytes_in_flight,
       HasRetransmittableData has_retransmittable_data) = 0;
 
   // What's the current estimated bandwidth in bytes per second.
   // Returns 0 when it does not have an estimate.
   virtual QuicBandwidth BandwidthEstimate() const = 0;
-
-  // Notifies the send algorithm of a new rtt sample and |largest_observed|.
-  // TODO(ianswett): Now that the RTT is managed by RTTStats, it may be
-  // possible to remove this method.
-  virtual void OnRttUpdated(QuicPacketSequenceNumber largest_observed) = 0;
 
   // Get the send algorithm specific retransmission delay, called RTO in TCP,
   // Note 1: the caller is responsible for sanity checking this value.

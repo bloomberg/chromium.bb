@@ -1273,11 +1273,10 @@ void QuicCryptoServerConfig::AcquirePrimaryConfigChangedCb(
   primary_config_changed_cb_.reset(cb);
 }
 
-string QuicCryptoServerConfig::NewSourceAddressToken(
-    const Config& config,
-    const IPEndPoint& ip,
-    QuicRandom* rand,
-    QuicWallTime now) const {
+string QuicCryptoServerConfig::NewSourceAddressToken(const Config& config,
+                                                     const IPEndPoint& ip,
+                                                     QuicRandom* rand,
+                                                     QuicWallTime now) const {
   SourceAddressToken source_address_token;
   source_address_token.set_ip(IPAddressToPackedString(ip.address()));
   source_address_token.set_timestamp(now.ToUNIXSeconds());

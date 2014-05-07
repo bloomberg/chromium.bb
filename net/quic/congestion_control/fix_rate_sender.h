@@ -31,23 +31,21 @@ class NET_EXPORT_PRIVATE FixRateSender : public SendAlgorithmInterface {
   virtual void OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& feedback,
       QuicTime feedback_receive_time) OVERRIDE;
-  virtual void OnPacketAcked(QuicPacketSequenceNumber acked_sequence_number,
-                             QuicByteCount acked_bytes) OVERRIDE;
-  virtual void OnPacketLost(QuicPacketSequenceNumber sequence_number,
-                            QuicTime ack_receive_time) OVERRIDE;
+  virtual void OnCongestionEvent(bool rtt_updated,
+                                 QuicByteCount bytes_in_flight,
+                                 const CongestionMap& acked_packets,
+                                 const CongestionMap& lost_packets) OVERRIDE;
   virtual bool OnPacketSent(
       QuicTime sent_time,
       QuicPacketSequenceNumber sequence_number,
       QuicByteCount bytes,
       HasRetransmittableData has_retransmittable_data) OVERRIDE;
   virtual void OnRetransmissionTimeout(bool packets_retransmitted) OVERRIDE;
-  virtual void OnPacketAbandoned(QuicPacketSequenceNumber sequence_number,
-                                 QuicByteCount bytes_abandoned) OVERRIDE;
   virtual QuicTime::Delta TimeUntilSend(
       QuicTime now,
+      QuicByteCount bytes_in_flight,
       HasRetransmittableData has_retransmittable_data) OVERRIDE;
   virtual QuicBandwidth BandwidthEstimate() const OVERRIDE;
-  virtual void OnRttUpdated(QuicPacketSequenceNumber largest_observed) OVERRIDE;
   virtual QuicTime::Delta RetransmissionDelay() const OVERRIDE;
   virtual QuicByteCount GetCongestionWindow() const OVERRIDE;
   // End implementation of SendAlgorithmInterface.
@@ -60,7 +58,6 @@ class NET_EXPORT_PRIVATE FixRateSender : public SendAlgorithmInterface {
   QuicByteCount max_segment_size_;
   LeakyBucket fix_rate_leaky_bucket_;
   PacedSender paced_sender_;
-  QuicByteCount data_in_flight_;
   QuicTime::Delta latest_rtt_;
 
   DISALLOW_COPY_AND_ASSIGN(FixRateSender);

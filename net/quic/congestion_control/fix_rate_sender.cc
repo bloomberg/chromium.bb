@@ -27,7 +27,6 @@ FixRateSender::FixRateSender(const RttStats* rtt_stats)
       max_segment_size_(kDefaultMaxPacketSize),
       fix_rate_leaky_bucket_(bitrate_),
       paced_sender_(bitrate_, max_segment_size_),
-      data_in_flight_(0),
       latest_rtt_(QuicTime::Delta::Zero()) {
   DVLOG(1) << "FixRateSender";
 }
@@ -51,16 +50,10 @@ void FixRateSender::OnIncomingQuicCongestionFeedbackFrame(
   // Silently ignore invalid messages in release mode.
 }
 
-void FixRateSender::OnPacketAcked(
-    QuicPacketSequenceNumber /*acked_sequence_number*/,
-    QuicByteCount bytes_acked) {
-  DCHECK_GE(data_in_flight_, bytes_acked);
-  data_in_flight_ -= bytes_acked;
-}
-
-void FixRateSender::OnPacketLost(QuicPacketSequenceNumber /*sequence_number*/,
-                                 QuicTime /*ack_receive_time*/) {
-  // Ignore losses for fix rate sender.
+void FixRateSender::OnCongestionEvent(bool rtt_updated,
+                                      QuicByteCount bytes_in_flight,
+                                      const CongestionMap& acked_packets,
+                                      const CongestionMap& lost_packets) {
 }
 
 bool FixRateSender::OnPacketSent(
@@ -70,25 +63,18 @@ bool FixRateSender::OnPacketSent(
     HasRetransmittableData /*has_retransmittable_data*/) {
   fix_rate_leaky_bucket_.Add(sent_time, bytes);
   paced_sender_.OnPacketSent(sent_time, bytes);
-  data_in_flight_ += bytes;
 
   return true;
 }
 
 void FixRateSender::OnRetransmissionTimeout(bool packets_retransmitted) { }
 
-void FixRateSender::OnPacketAbandoned(
-    QuicPacketSequenceNumber /*sequence_number*/,
-    QuicByteCount bytes_abandoned) {
-  DCHECK_GE(data_in_flight_, bytes_abandoned);
-  data_in_flight_ -= bytes_abandoned;
-}
-
 QuicTime::Delta FixRateSender::TimeUntilSend(
     QuicTime now,
+    QuicByteCount bytes_in_flight,
     HasRetransmittableData /*has_retransmittable_data*/) {
   if (CongestionWindow() > fix_rate_leaky_bucket_.BytesPending(now)) {
-    if (CongestionWindow() <= data_in_flight_) {
+    if (CongestionWindow() <= bytes_in_flight) {
       // We need an ack before we send more.
       return QuicTime::Delta::Infinite();
     }
@@ -113,8 +99,6 @@ QuicBandwidth FixRateSender::BandwidthEstimate() const {
   return bitrate_;
 }
 
-void FixRateSender::OnRttUpdated(QuicPacketSequenceNumber largest_observed) {
-}
 
 QuicTime::Delta FixRateSender::RetransmissionDelay() const {
   // TODO(pwestin): Calculate and return retransmission delay.

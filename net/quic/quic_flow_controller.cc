@@ -82,9 +82,9 @@ void QuicFlowController::AddBytesSent(uint64 bytes_sent) {
   }
 
   if (bytes_sent_ + bytes_sent > send_window_offset_) {
-    LOG(DFATAL) << "Trying to send an extra " << bytes_sent
-                << " bytes, when bytes_sent = " << bytes_sent_
-                << ", and send_window = " << send_window_offset_;
+    LOG(DFATAL) << ENDPOINT << "Stream " << id_ << " Trying to send an extra "
+                << bytes_sent << " bytes, when bytes_sent = " << bytes_sent_
+                << ", and send_window_offset_ = " << send_window_offset_;
     bytes_sent_ = send_window_offset_;
     return;
   }
@@ -180,7 +180,14 @@ void QuicFlowController::Disable() {
 }
 
 bool QuicFlowController::IsEnabled() const {
-  return FLAGS_enable_quic_stream_flow_control_2 && is_enabled_;
+  bool connection_flow_control_enabled =
+      (id_ == kConnectionLevelId &&
+       FLAGS_enable_quic_connection_flow_control);
+  bool stream_flow_control_enabled =
+      (id_ != kConnectionLevelId &&
+       FLAGS_enable_quic_stream_flow_control_2);
+  return (connection_flow_control_enabled || stream_flow_control_enabled) &&
+         is_enabled_;
 }
 
 bool QuicFlowController::IsBlocked() const {

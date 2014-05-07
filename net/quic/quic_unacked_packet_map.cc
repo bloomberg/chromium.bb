@@ -13,44 +13,6 @@ using std::max;
 
 namespace net {
 
-QuicUnackedPacketMap::TransmissionInfo::TransmissionInfo()
-    : retransmittable_frames(NULL),
-      sequence_number_length(PACKET_1BYTE_SEQUENCE_NUMBER),
-      sent_time(QuicTime::Zero()),
-      bytes_sent(0),
-      nack_count(0),
-      all_transmissions(NULL),
-      pending(false) { }
-
-QuicUnackedPacketMap::TransmissionInfo::TransmissionInfo(
-    RetransmittableFrames* retransmittable_frames,
-    QuicPacketSequenceNumber sequence_number,
-    QuicSequenceNumberLength sequence_number_length)
-    : retransmittable_frames(retransmittable_frames),
-      sequence_number_length(sequence_number_length),
-      sent_time(QuicTime::Zero()),
-      bytes_sent(0),
-      nack_count(0),
-      all_transmissions(new SequenceNumberSet),
-      pending(false) {
-  all_transmissions->insert(sequence_number);
-}
-
-QuicUnackedPacketMap::TransmissionInfo::TransmissionInfo(
-    RetransmittableFrames* retransmittable_frames,
-    QuicPacketSequenceNumber sequence_number,
-    QuicSequenceNumberLength sequence_number_length,
-    SequenceNumberSet* all_transmissions)
-    : retransmittable_frames(retransmittable_frames),
-      sequence_number_length(sequence_number_length),
-      sent_time(QuicTime::Zero()),
-      bytes_sent(0),
-      nack_count(0),
-      all_transmissions(all_transmissions),
-      pending(false) {
-  all_transmissions->insert(sequence_number);
-}
-
 QuicUnackedPacketMap::QuicUnackedPacketMap()
     : largest_sent_packet_(0),
       bytes_in_flight_(0),
@@ -176,6 +138,7 @@ void QuicUnackedPacketMap::RemovePacket(
     }
     delete transmission_info.retransmittable_frames;
   }
+  DCHECK(!transmission_info.pending);
   unacked_packets_.erase(it);
 }
 
@@ -251,9 +214,8 @@ bool QuicUnackedPacketMap::HasPendingPackets() const {
   return false;
 }
 
-const QuicUnackedPacketMap::TransmissionInfo&
-    QuicUnackedPacketMap::GetTransmissionInfo(
-        QuicPacketSequenceNumber sequence_number) const {
+const TransmissionInfo& QuicUnackedPacketMap::GetTransmissionInfo(
+    QuicPacketSequenceNumber sequence_number) const {
   return unacked_packets_.find(sequence_number)->second;
 }
 

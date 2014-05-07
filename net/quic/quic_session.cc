@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/quic_connection.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_headers_stream.h"
 #include "net/ssl/ssl_info.h"
 
@@ -216,6 +217,7 @@ void QuicSession::OnConnectionClosed(QuicErrorCode error, bool from_peer) {
 
 void QuicSession::OnWindowUpdateFrames(
     const vector<QuicWindowUpdateFrame>& frames) {
+  bool connection_window_updated = false;
   for (size_t i = 0; i < frames.size(); ++i) {
     // Stream may be closed by the time we receive a WINDOW_UPDATE, so we can't
     // assume that it still exists.
@@ -223,10 +225,14 @@ void QuicSession::OnWindowUpdateFrames(
     if (stream_id == 0) {
       // This is a window update that applies to the connection, rather than an
       // individual stream.
-      // TODO(rjshade): Adjust connection level flow control window.
       DVLOG(1) << ENDPOINT
                << "Received connection level flow control window update with "
                   "byte offset: " << frames[i].byte_offset;
+      if (FLAGS_enable_quic_connection_flow_control &&
+          connection()->flow_controller()->UpdateSendWindowOffset(
+              frames[i].byte_offset)) {
+        connection_window_updated = true;
+      }
       continue;
     }
 
@@ -234,6 +240,12 @@ void QuicSession::OnWindowUpdateFrames(
     if (stream) {
       stream->OnWindowUpdateFrame(frames[i]);
     }
+  }
+
+  // Connection level flow control window has increased, so blocked streams can
+  // write again.
+  if (connection_window_updated) {
+    OnCanWrite();
   }
 }
 
@@ -260,7 +272,7 @@ void QuicSession::OnCanWrite() {
       connection_.get(), QuicConnection::NO_ACK);
   for (size_t i = 0; i < num_writes; ++i) {
     if (!write_blocked_streams_.HasWriteBlockedStreams()) {
-      // Writing one stream removed another?! Something's broken.
+      // Writing one stream removed another!? Something's broken.
       LOG(DFATAL) << "WriteBlockedStream is missing";
       connection_->CloseConnection(QUIC_INTERNAL_ERROR, false);
       return;
@@ -385,6 +397,10 @@ void QuicSession::OnConfigNegotiated() {
           new_flow_control_send_window);
       it++;
     }
+
+    // Update connection level window.
+    connection()->flow_controller()->UpdateSendWindowOffset(
+        new_flow_control_send_window);
   }
 }
 
@@ -554,10 +570,6 @@ void QuicSession::MarkWriteBlocked(QuicStreamId id, QuicPriority priority) {
 #ifndef NDEBUG
   ReliableQuicStream* stream = GetStream(id);
   if (stream != NULL) {
-    if (stream->flow_controller()->IsBlocked()) {
-      LOG(DFATAL) << ENDPOINT << "Stream " << id
-                  << " is flow control blocked and write blocked!";
-    }
     LOG_IF(DFATAL, priority != stream->EffectivePriority())
         << ENDPOINT << "Stream " << id
         << "Priorities do not match.  Got: " << priority

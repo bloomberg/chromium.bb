@@ -400,16 +400,16 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_METHOD2(OnIncomingQuicCongestionFeedbackFrame,
                void(const QuicCongestionFeedbackFrame&,
                     QuicTime feedback_receive_time));
-  MOCK_METHOD2(OnPacketAcked,
-               void(QuicPacketSequenceNumber, QuicByteCount));
-  MOCK_METHOD2(OnPacketLost, void(QuicPacketSequenceNumber, QuicTime));
+  MOCK_METHOD4(OnCongestionEvent, void(bool rtt_updated,
+                                       QuicByteCount bytes_in_flight,
+                                       const CongestionMap& acked_packets,
+                                       const CongestionMap& lost_packets));
   MOCK_METHOD4(OnPacketSent,
                bool(QuicTime sent_time, QuicPacketSequenceNumber, QuicByteCount,
                     HasRetransmittableData));
   MOCK_METHOD1(OnRetransmissionTimeout, void(bool));
-  MOCK_METHOD2(OnPacketAbandoned, void(QuicPacketSequenceNumber sequence_number,
-                                      QuicByteCount abandoned_bytes));
-  MOCK_METHOD2(TimeUntilSend, QuicTime::Delta(QuicTime now,
+  MOCK_METHOD3(TimeUntilSend, QuicTime::Delta(QuicTime now,
+                                              QuicByteCount bytes_in_flight,
                                               HasRetransmittableData));
   MOCK_CONST_METHOD0(BandwidthEstimate, QuicBandwidth(void));
   MOCK_METHOD1(OnRttUpdated, void(QuicPacketSequenceNumber));

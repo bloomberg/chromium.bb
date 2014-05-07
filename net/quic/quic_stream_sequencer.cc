@@ -67,7 +67,7 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
           data.iovec()[i].iov_len);
     }
     num_bytes_consumed_ += bytes_consumed;
-    stream_->flow_controller()->AddBytesConsumed(bytes_consumed);
+    stream_->AddBytesConsumed(bytes_consumed);
     stream_->MaybeSendWindowUpdate();
 
     if (MaybeCloseStream()) {
@@ -95,7 +95,7 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
         byte_offset, string(static_cast<char*>(iov.iov_base), iov.iov_len)));
     byte_offset += iov.iov_len;
     num_bytes_buffered_ += iov.iov_len;
-    stream_->flow_controller()->AddBytesBuffered(iov.iov_len);
+    stream_->AddBytesBuffered(iov.iov_len);
   }
   return true;
 }
@@ -247,8 +247,8 @@ void QuicStreamSequencer::RecordBytesConsumed(size_t bytes_consumed) {
   num_bytes_consumed_ += bytes_consumed;
   num_bytes_buffered_ -= bytes_consumed;
 
-  stream_->flow_controller()->AddBytesConsumed(bytes_consumed);
-  stream_->flow_controller()->RemoveBytesBuffered(bytes_consumed);
+  stream_->AddBytesConsumed(bytes_consumed);
+  stream_->RemoveBytesBuffered(bytes_consumed);
   stream_->MaybeSendWindowUpdate();
 }
 

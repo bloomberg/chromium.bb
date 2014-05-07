@@ -264,7 +264,8 @@ enum QuicVersion {
   QUIC_VERSION_15 = 15,
   QUIC_VERSION_16 = 16,
   QUIC_VERSION_17 = 17,
-  QUIC_VERSION_18 = 18,  // Current version.
+  QUIC_VERSION_18 = 18,
+  QUIC_VERSION_19 = 19,  // Current version.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -1003,6 +1004,37 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
 
   // If set, these will be called when this packet is ACKed by the peer.
   std::set<QuicAckNotifier*> notifiers;
+};
+
+struct NET_EXPORT_PRIVATE TransmissionInfo {
+  // Used by STL when assigning into a map.
+  TransmissionInfo();
+
+  // Constructs a Transmission with a new all_tranmissions set
+  // containing |sequence_number|.
+  TransmissionInfo(RetransmittableFrames* retransmittable_frames,
+                   QuicPacketSequenceNumber sequence_number,
+                   QuicSequenceNumberLength sequence_number_length);
+
+  // Constructs a Transmission with the specified |all_tranmissions| set
+  // and inserts |sequence_number| into it.
+  TransmissionInfo(RetransmittableFrames* retransmittable_frames,
+                   QuicPacketSequenceNumber sequence_number,
+                   QuicSequenceNumberLength sequence_number_length,
+                   SequenceNumberSet* all_transmissions);
+
+  RetransmittableFrames* retransmittable_frames;
+  QuicSequenceNumberLength sequence_number_length;
+  // Zero when the packet is serialized, non-zero once it's sent.
+  QuicTime sent_time;
+  // Zero when the packet is serialized, non-zero once it's sent.
+  QuicByteCount bytes_sent;
+  size_t nack_count;
+  // Stores the sequence numbers of all transmissions of this packet.
+  // Can never be null.
+  SequenceNumberSet* all_transmissions;
+  // Pending packets have not been abandoned or lost.
+  bool pending;
 };
 
 // A struct for functions which consume data payloads and fins.

@@ -103,6 +103,19 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
 
   QuicFlowController* flow_controller() { return &flow_controller_; }
 
+  // Called by the stream sequeuncer as bytes are added to the buffer.
+  void AddBytesBuffered(uint64 bytes);
+  // Called by the stream sequeuncer as bytes are removed from the buffer.
+  void RemoveBytesBuffered(uint64 bytes);
+  // Called when bytese are sent to the peer.
+  void AddBytesSent(uint64 bytes);
+  // Called by the stream sequeuncer as bytes are consumed from the buffer.
+  void AddBytesConsumed(uint64 bytes);
+
+  // Returns true if the stream is flow control blocked, by the stream flow
+  // control window or the connection flow control window.
+  bool IsFlowControlBlocked();
+
  protected:
   // Sends as much of 'data' to the connection as the connection will consume,
   // and then buffers any remaining data in queued_data_.
@@ -164,6 +177,11 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // Calculates and returns total number of bytes this stream has received.
   uint64 TotalReceivedBytes() const;
 
+  // Calls MaybeSendBlocked on our flow controller, and connection level flow
+  // controller. If we are flow control blocked, marks this stream as write
+  // blocked.
+  void MaybeSendBlocked();
+
   std::list<PendingData> queued_data_;
 
   QuicStreamSequencer sequencer_;
@@ -198,6 +216,9 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   bool is_server_;
 
   QuicFlowController flow_controller_;
+
+  // The connection level flow controller. Not owned.
+  QuicFlowController* connection_flow_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ReliableQuicStream);
 };

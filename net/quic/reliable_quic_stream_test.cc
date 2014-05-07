@@ -394,6 +394,9 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithQuicAckNotifier) {
 
   // Set a large flow control send window so this doesn't interfere with test.
   stream_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
+  if (FLAGS_enable_quic_connection_flow_control) {
+    connection_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
+  }
 
   scoped_refptr<QuicAckNotifier::DelegateInterface> proxy_delegate;
 
@@ -446,6 +449,9 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataAckNotificationBeforeFlush) {
 
   // Set a large flow control send window so this doesn't interfere with test.
   stream_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
+  if (FLAGS_enable_quic_connection_flow_control) {
+    connection_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
+  }
 
   scoped_refptr<QuicAckNotifier::DelegateInterface> proxy_delegate;
 

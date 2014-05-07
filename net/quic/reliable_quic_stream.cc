@@ -131,7 +131,8 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
               session_->config()->ReceivedInitialFlowControlWindowBytes() :
               kDefaultFlowControlSendWindow,
           session_->connection()->max_flow_control_receive_window_bytes(),
-          session_->connection()->max_flow_control_receive_window_bytes()) {
+          session_->connection()->max_flow_control_receive_window_bytes()),
+      connection_flow_controller_(session_->connection()->flow_controller()) {
 }
 
 ReliableQuicStream::~ReliableQuicStream() {
@@ -154,7 +155,8 @@ bool ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
 
   bool accepted = sequencer_.OnStreamFrame(frame);
 
-  if (flow_controller_.FlowControlViolation()) {
+  if (flow_controller_.FlowControlViolation() ||
+      connection_flow_controller_->FlowControlViolation()) {
     session_->connection()->SendConnectionClose(QUIC_FLOW_CONTROL_ERROR);
     return false;
   }
@@ -165,6 +167,7 @@ bool ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
 
 void ReliableQuicStream::MaybeSendWindowUpdate() {
   flow_controller_.MaybeSendWindowUpdate(session()->connection());
+  connection_flow_controller_->MaybeSendWindowUpdate(session()->connection());
 }
 
 int ReliableQuicStream::num_frames_received() const {
@@ -294,6 +297,18 @@ void ReliableQuicStream::OnCanWrite() {
   }
 }
 
+void ReliableQuicStream::MaybeSendBlocked() {
+  flow_controller_.MaybeSendBlocked(session()->connection());
+  connection_flow_controller_->MaybeSendBlocked(session()->connection());
+  // If we are connection level flow control blocked, then add the stream
+  // to the write blocked list. It will be given a chance to write when a
+  // connection level WINDOW_UPDATE arrives.
+  if (connection_flow_controller_->IsBlocked() &&
+      !flow_controller_.IsBlocked()) {
+    session_->MarkWriteBlocked(id(), EffectivePriority());
+  }
+}
+
 QuicConsumedData ReliableQuicStream::WritevData(
     const struct iovec* iov,
     int iov_count,
@@ -312,11 +327,15 @@ QuicConsumedData ReliableQuicStream::WritevData(
 
   if (flow_controller_.IsEnabled()) {
     // How much data we are allowed to write from flow control.
-    size_t send_window = flow_controller_.SendWindowSize();
+    uint64 send_window = flow_controller_.SendWindowSize();
+    if (connection_flow_controller_->IsEnabled()) {
+      send_window =
+          min(send_window, connection_flow_controller_->SendWindowSize());
+    }
 
     if (send_window == 0 && !fin_with_zero_data) {
       // Quick return if we can't send anything.
-      flow_controller_.MaybeSendBlocked(session()->connection());
+      MaybeSendBlocked();
       return QuicConsumedData(0, false);
     }
 
@@ -337,11 +356,11 @@ QuicConsumedData ReliableQuicStream::WritevData(
       id(), data, stream_bytes_written_, fin, ack_notifier_delegate);
   stream_bytes_written_ += consumed_data.bytes_consumed;
 
-  flow_controller_.AddBytesSent(consumed_data.bytes_consumed);
+  AddBytesSent(consumed_data.bytes_consumed);
 
   if (consumed_data.bytes_consumed == write_length) {
     if (!fin_with_zero_data) {
-      flow_controller_.MaybeSendBlocked(session()->connection());
+      MaybeSendBlocked();
     }
     if (fin && consumed_data.fin_consumed) {
       fin_sent_ = true;
@@ -412,8 +431,42 @@ void ReliableQuicStream::OnWindowUpdateFrame(
     // TODO(rjshade): This does not respect priorities (e.g. multiple
     //                outstanding POSTs are unblocked on arrival of
     //                SHLO with initial window).
+    // As long as the connection is not flow control blocked, we can write!
     OnCanWrite();
   }
+}
+
+void ReliableQuicStream::AddBytesBuffered(uint64 bytes) {
+  if (flow_controller_.IsEnabled()) {
+    flow_controller_.AddBytesBuffered(bytes);
+    connection_flow_controller_->AddBytesBuffered(bytes);
+  }
+}
+
+void ReliableQuicStream::RemoveBytesBuffered(uint64 bytes) {
+  if (flow_controller_.IsEnabled()) {
+    flow_controller_.RemoveBytesBuffered(bytes);
+    connection_flow_controller_->RemoveBytesBuffered(bytes);
+  }
+}
+
+void ReliableQuicStream::AddBytesSent(uint64 bytes) {
+  if (flow_controller_.IsEnabled()) {
+    flow_controller_.AddBytesSent(bytes);
+    connection_flow_controller_->AddBytesSent(bytes);
+  }
+}
+
+void ReliableQuicStream::AddBytesConsumed(uint64 bytes) {
+  if (flow_controller_.IsEnabled()) {
+    flow_controller_.AddBytesConsumed(bytes);
+    connection_flow_controller_->AddBytesConsumed(bytes);
+  }
+}
+
+bool ReliableQuicStream::IsFlowControlBlocked() {
+  return flow_controller_.IsBlocked() ||
+         connection_flow_controller_->IsBlocked();
 }
 
 }  // namespace net

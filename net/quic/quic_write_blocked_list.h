@@ -5,6 +5,8 @@
 #ifndef NET_QUIC_QUIC_WRITE_BLOCKED_LIST_H_
 #define NET_QUIC_QUIC_WRITE_BLOCKED_LIST_H_
 
+#include <set>
+
 #include "net/base/net_export.h"
 #include "net/quic/quic_protocol.h"
 #include "net/spdy/write_blocked_list.h"
@@ -47,14 +49,18 @@ class NET_EXPORT_PRIVATE QuicWriteBlockedList {
     if (crypto_stream_blocked_) {
       crypto_stream_blocked_ = false;
       return kCryptoStreamId;
-    } else if (headers_stream_blocked_) {
+    }
+
+    if (headers_stream_blocked_) {
       headers_stream_blocked_ = false;
       return kHeadersStreamId;
-    } else {
-      SpdyPriority priority =
-          base_write_blocked_list_.GetHighestPriorityWriteBlockedList();
-      return base_write_blocked_list_.PopFront(priority);
     }
+
+    SpdyPriority priority =
+        base_write_blocked_list_.GetHighestPriorityWriteBlockedList();
+    QuicStreamId id = base_write_blocked_list_.PopFront(priority);
+    blocked_streams_.erase(id);
+    return id;
   }
 
   void PushBack(QuicStreamId stream_id, QuicPriority priority) {
@@ -62,20 +68,36 @@ class NET_EXPORT_PRIVATE QuicWriteBlockedList {
       DCHECK_EQ(kHighestPriority, priority);
       // TODO(avd) Add DCHECK(!crypto_stream_blocked_)
       crypto_stream_blocked_ = true;
-    } else if (stream_id == kHeadersStreamId) {
+      return;
+    }
+
+    if (stream_id == kHeadersStreamId) {
       DCHECK_EQ(kHighestPriority, priority);
       // TODO(avd) Add DCHECK(!headers_stream_blocked_);
       headers_stream_blocked_ = true;
-    } else {
-      base_write_blocked_list_.PushBack(
-          stream_id, static_cast<SpdyPriority>(priority));
+      return;
     }
+
+    if (blocked_streams_.find(stream_id) != blocked_streams_.end()) {
+      DVLOG(1) << "Stream " << stream_id << " already in write blocked list.";
+      return;
+    }
+
+    base_write_blocked_list_.PushBack(
+        stream_id, static_cast<SpdyPriority>(priority));
+    blocked_streams_.insert(stream_id);
+    return;
   }
 
  private:
   QuicWriteBlockedListBase base_write_blocked_list_;
   bool crypto_stream_blocked_;
   bool headers_stream_blocked_;
+
+  // Keep track of write blocked streams in a set for faster membership checking
+  // than iterating over the base_write_blocked_list_. The contents of this set
+  // should mirror the contents of base_write_blocked_list_.
+  std::set<QuicStreamId> blocked_streams_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicWriteBlockedList);
 };

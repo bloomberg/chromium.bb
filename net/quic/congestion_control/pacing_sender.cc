@@ -12,7 +12,7 @@ PacingSender::PacingSender(SendAlgorithmInterface* sender,
       alarm_granularity_(alarm_granularity),
       next_packet_send_time_(QuicTime::Zero()),
       was_last_send_delayed_(false),
-      updated_rtt_(false) {
+      has_valid_rtt_(false) {
 }
 
 PacingSender::~PacingSender() {}
@@ -28,15 +28,15 @@ void PacingSender::OnIncomingQuicCongestionFeedbackFrame(
       feedback, feedback_receive_time);
 }
 
-void PacingSender::OnPacketAcked(
-    QuicPacketSequenceNumber acked_sequence_number,
-    QuicByteCount acked_bytes) {
-  sender_->OnPacketAcked(acked_sequence_number, acked_bytes);
-}
-
-void PacingSender::OnPacketLost(QuicPacketSequenceNumber sequence_number,
-                                QuicTime ack_receive_time) {
-  sender_->OnPacketLost(sequence_number, ack_receive_time);
+void PacingSender::OnCongestionEvent(bool rtt_updated,
+                                     QuicByteCount bytes_in_flight,
+                                     const CongestionMap& acked_packets,
+                                     const CongestionMap& lost_packets) {
+  if (rtt_updated) {
+    has_valid_rtt_ = true;
+  }
+  sender_->OnCongestionEvent(
+      rtt_updated, bytes_in_flight, acked_packets, lost_packets);
 }
 
 bool PacingSender::OnPacketSent(
@@ -45,7 +45,7 @@ bool PacingSender::OnPacketSent(
     QuicByteCount bytes,
     HasRetransmittableData has_retransmittable_data) {
   // Only pace data packets once we have an updated RTT.
-  if (has_retransmittable_data == HAS_RETRANSMITTABLE_DATA && updated_rtt_) {
+  if (has_retransmittable_data == HAS_RETRANSMITTABLE_DATA && has_valid_rtt_) {
     // The next packet should be sent as soon as the current packets has
     // been transferred.  We pace at twice the rate of the underlying
     // sender's bandwidth estimate to help ensure that pacing doesn't become
@@ -63,17 +63,13 @@ void PacingSender::OnRetransmissionTimeout(bool packets_retransmitted) {
   sender_->OnRetransmissionTimeout(packets_retransmitted);
 }
 
-void PacingSender::OnPacketAbandoned(QuicPacketSequenceNumber sequence_number,
-                                     QuicByteCount abandoned_bytes) {
-  sender_->OnPacketAbandoned(sequence_number, abandoned_bytes);
-}
-
 QuicTime::Delta PacingSender::TimeUntilSend(
       QuicTime now,
+      QuicByteCount bytes_in_flight,
       HasRetransmittableData has_retransmittable_data) {
   QuicTime::Delta time_until_send =
-      sender_->TimeUntilSend(now, has_retransmittable_data);
-  if (!updated_rtt_) {
+      sender_->TimeUntilSend(now, bytes_in_flight, has_retransmittable_data);
+  if (!has_valid_rtt_) {
     // Don't pace if we don't have an updated RTT estimate.
     return time_until_send;
   }
@@ -115,11 +111,6 @@ QuicTime::Delta PacingSender::TimeUntilSend(
 
 QuicBandwidth PacingSender::BandwidthEstimate() const {
   return sender_->BandwidthEstimate();
-}
-
-void PacingSender::OnRttUpdated(QuicPacketSequenceNumber largest_observed) {
-  updated_rtt_= true;
-  sender_->OnRttUpdated(largest_observed);
 }
 
 QuicTime::Delta PacingSender::RetransmissionDelay() const {

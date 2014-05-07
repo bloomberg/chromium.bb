@@ -381,20 +381,18 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
 
   // NewSourceAddressToken returns a fresh source address token for the given
   // IP address.
-  std::string NewSourceAddressToken(
-      const Config& config,
-      const IPEndPoint& ip,
-      QuicRandom* rand,
-      QuicWallTime now) const;
+  std::string NewSourceAddressToken(const Config& config,
+                                    const IPEndPoint& ip,
+                                    QuicRandom* rand,
+                                    QuicWallTime now) const;
 
   // ValidateSourceAddressToken returns true if the source address token in
   // |token| is a valid and timely token for the IP address |ip| given that the
   // current time is |now|.
-  bool ValidateSourceAddressToken(
-      const Config& config,
-      base::StringPiece token,
-      const IPEndPoint& ip,
-      QuicWallTime now) const;
+  bool ValidateSourceAddressToken(const Config& config,
+                                  base::StringPiece token,
+                                  const IPEndPoint& ip,
+                                  QuicWallTime now) const;
 
   // NewServerNonce generates and encrypts a random nonce.
   std::string NewServerNonce(QuicRandom* rand, QuicWallTime now) const;

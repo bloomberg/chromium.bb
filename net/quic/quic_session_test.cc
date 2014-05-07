@@ -366,7 +366,7 @@ TEST_P(QuicSessionTest, OnCanWriteBundlesStreams) {
   session_.MarkWriteBlocked(stream4->id(), kSomeMiddlePriority);
 
 
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _)).WillRepeatedly(
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _)).WillRepeatedly(
       Return(QuicTime::Delta::Zero()));
   EXPECT_CALL(*send_algorithm, GetCongestionWindow()).WillOnce(
       Return(kMaxPacketSize * 10));
@@ -402,13 +402,13 @@ TEST_P(QuicSessionTest, OnCanWriteCongestionControlBlocks) {
   session_.MarkWriteBlocked(stream4->id(), kSomeMiddlePriority);
 
   StreamBlocker stream2_blocker(&session_, stream2->id());
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _)).WillOnce(Return(
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _)).WillOnce(Return(
       QuicTime::Delta::Zero()));
   EXPECT_CALL(*stream2, OnCanWrite());
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _)).WillOnce(Return(
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _)).WillOnce(Return(
       QuicTime::Delta::Zero()));
   EXPECT_CALL(*stream6, OnCanWrite());
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _)).WillOnce(Return(
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _)).WillOnce(Return(
       QuicTime::Delta::Infinite()));
   // stream4->OnCanWrite is not called.
 
@@ -416,14 +416,14 @@ TEST_P(QuicSessionTest, OnCanWriteCongestionControlBlocks) {
   EXPECT_TRUE(session_.HasPendingWrites());
 
   // Still congestion-control blocked.
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _)).WillOnce(Return(
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _)).WillOnce(Return(
       QuicTime::Delta::Infinite()));
   session_.OnCanWrite();
   EXPECT_TRUE(session_.HasPendingWrites());
 
   // stream4->OnCanWrite is called once the connection stops being
   // congestion-control blocked.
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _)).WillOnce(Return(
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _)).WillOnce(Return(
       QuicTime::Delta::Zero()));
   EXPECT_CALL(*stream4, OnCanWrite());
   session_.OnCanWrite();

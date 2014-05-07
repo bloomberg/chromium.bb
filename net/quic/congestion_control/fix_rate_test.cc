@@ -60,26 +60,30 @@ TEST_F(FixRateTest, SenderAPI) {
   sender_->OnIncomingQuicCongestionFeedbackFrame(feedback,  clock_.Now());
   EXPECT_EQ(300000, sender_->BandwidthEstimate().ToBytesPerSecond());
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
+                                     0,
                                      HAS_RETRANSMITTABLE_DATA).IsZero());
 
   sender_->OnPacketSent(clock_.Now(), 1, kDefaultMaxPacketSize,
                         HAS_RETRANSMITTABLE_DATA);
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
+                                     kDefaultMaxPacketSize,
                                      HAS_RETRANSMITTABLE_DATA).IsZero());
   sender_->OnPacketSent(clock_.Now(), 2, kDefaultMaxPacketSize,
                         HAS_RETRANSMITTABLE_DATA);
   sender_->OnPacketSent(clock_.Now(), 3, 600,
                         HAS_RETRANSMITTABLE_DATA);
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(10),
-      sender_->TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+            sender_->TimeUntilSend(clock_.Now(),
+                                   kDefaultMaxPacketSize * 2 + 600,
+                                   HAS_RETRANSMITTABLE_DATA));
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(2));
   EXPECT_EQ(QuicTime::Delta::Infinite(),
-            sender_->TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+            sender_->TimeUntilSend(clock_.Now(),
+                                   kDefaultMaxPacketSize * 2 + 600,
+                                   HAS_RETRANSMITTABLE_DATA));
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(8));
-  sender_->OnPacketAcked(1, kDefaultMaxPacketSize);
-  sender_->OnPacketAcked(2, kDefaultMaxPacketSize);
-  sender_->OnPacketAcked(3, 600);
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
+                                     0,
                                      HAS_RETRANSMITTABLE_DATA).IsZero());
 }
 
@@ -95,18 +99,20 @@ TEST_F(FixRateTest, FixRatePacing) {
   QuicPacketSequenceNumber sequence_number = 0;
   for (int i = 0; i < num_packets; i += 2) {
     EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
+                                       0,
                                        HAS_RETRANSMITTABLE_DATA).IsZero());
     sender_->OnPacketSent(clock_.Now(), sequence_number++, packet_size,
                           HAS_RETRANSMITTABLE_DATA);
     EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
+                                       kDefaultMaxPacketSize,
                                        HAS_RETRANSMITTABLE_DATA).IsZero());
     sender_->OnPacketSent(clock_.Now(), sequence_number++, packet_size,
                           HAS_RETRANSMITTABLE_DATA);
     QuicTime::Delta advance_time =
-        sender_->TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA);
+        sender_->TimeUntilSend(clock_.Now(),
+                               2 * kDefaultMaxPacketSize,
+                               HAS_RETRANSMITTABLE_DATA);
     clock_.AdvanceTime(advance_time);
-    sender_->OnPacketAcked(sequence_number - 1, packet_size);
-    sender_->OnPacketAcked(sequence_number - 2, packet_size);
     acc_advance_time = acc_advance_time.Add(advance_time);
   }
   EXPECT_EQ(num_packets * packet_size * 1000000 / bitrate.ToBytesPerSecond(),

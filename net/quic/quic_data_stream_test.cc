@@ -413,6 +413,62 @@ TEST_P(QuicDataStreamTest, StreamFlowControlWindowUpdate) {
                          stream_->flow_controller()));
 }
 
+TEST_P(QuicDataStreamTest, ConnectionFlowControlWindowUpdate) {
+  // Tests that on receipt of data, the connection updates its receive window
+  // offset appropriately, and sends WINDOW_UPDATE frames when its receive
+  // window drops too low.
+  if (GetParam() < QUIC_VERSION_19) {
+    return;
+  }
+  ValueRestore<bool> old_flag2(&FLAGS_enable_quic_stream_flow_control_2, true);
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control, true);
+
+  Initialize(kShouldProcessData);
+
+  // Set a small flow control limit for streams and connection.
+  const uint64 kWindow = 36;
+  QuicFlowControllerPeer::SetReceiveWindowOffset(stream_->flow_controller(),
+                                                 kWindow);
+  QuicFlowControllerPeer::SetMaxReceiveWindow(stream_->flow_controller(),
+                                              kWindow);
+  QuicFlowControllerPeer::SetReceiveWindowOffset(stream2_->flow_controller(),
+                                                 kWindow);
+  QuicFlowControllerPeer::SetMaxReceiveWindow(stream2_->flow_controller(),
+                                              kWindow);
+  QuicFlowControllerPeer::SetReceiveWindowOffset(connection_->flow_controller(),
+                                                 kWindow);
+  QuicFlowControllerPeer::SetMaxReceiveWindow(connection_->flow_controller(),
+                                              kWindow);
+
+  // Supply headers to both streams so that they are happy to receive data.
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
+  stream_->OnStreamHeaders(headers);
+  stream_->OnStreamHeadersComplete(false, headers.size());
+  stream2_->OnStreamHeaders(headers);
+  stream2_->OnStreamHeadersComplete(false, headers.size());
+
+  // Each stream gets a quarter window of data. This should not trigger a
+  // WINDOW_UPDATE for either stream, nor for the connection.
+  string body;
+  GenerateBody(&body, kWindow / 4);
+  QuicStreamFrame frame1(kStreamId, false, 0, MakeIOVector(body));
+  stream_->OnStreamFrame(frame1);
+  QuicStreamFrame frame2(kStreamId + 2, false, 0, MakeIOVector(body));
+  stream2_->OnStreamFrame(frame2);
+
+  // Now receive a further single byte on one stream - again this does not
+  // trigger a stream WINDOW_UPDATE, but now the connection flow control window
+  // is over half full and thus a connection WINDOW_UPDATE is sent.
+  EXPECT_CALL(*connection_, SendWindowUpdate(kStreamId, _)).Times(0);
+  EXPECT_CALL(*connection_, SendWindowUpdate(kStreamId + 2, _)).Times(0);
+  EXPECT_CALL(*connection_,
+              SendWindowUpdate(0, QuicFlowControllerPeer::ReceiveWindowOffset(
+                                      connection_->flow_controller()) +
+                                      1 + kWindow / 2));
+  QuicStreamFrame frame3(kStreamId, false, (kWindow / 4), MakeIOVector("a"));
+  stream_->OnStreamFrame(frame3);
+}
+
 TEST_P(QuicDataStreamTest, StreamFlowControlViolation) {
   // Tests that on if the peer sends too much data (i.e. violates the flow
   // control protocol), then we terminate the connection.
@@ -439,6 +495,43 @@ TEST_P(QuicDataStreamTest, StreamFlowControlViolation) {
   string body;
   GenerateBody(&body, kWindow + 1);
   QuicStreamFrame frame(kStreamId, false, 0, MakeIOVector(body));
+  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_FLOW_CONTROL_ERROR));
+  stream_->OnStreamFrame(frame);
+}
+
+TEST_P(QuicDataStreamTest, ConnectionFlowControlViolation) {
+  // Tests that on if the peer sends too much data (i.e. violates the flow
+  // control protocol), at the connection level (rather than the stream level)
+  // then we terminate the connection.
+  if (GetParam() < QUIC_VERSION_19) {
+    return;
+  }
+  ValueRestore<bool> old_flag2(&FLAGS_enable_quic_stream_flow_control_2, true);
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control, true);
+
+  // Stream should not process data, so that data gets buffered in the
+  // sequencer, triggering flow control limits.
+  Initialize(!kShouldProcessData);
+
+  // Set a small flow control window on streams, and connection.
+  const uint64 kStreamWindow = 50;
+  const uint64 kConnectionWindow = 10;
+  QuicFlowControllerPeer::SetReceiveWindowOffset(stream_->flow_controller(),
+                                                 kStreamWindow);
+  QuicFlowControllerPeer::SetReceiveWindowOffset(connection_->flow_controller(),
+                                                 kConnectionWindow);
+
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
+  stream_->OnStreamHeaders(headers);
+  EXPECT_EQ(headers, stream_->data());
+  stream_->OnStreamHeadersComplete(false, headers.size());
+
+  // Send enough data to overflow the connection level flow control window.
+  string body;
+  GenerateBody(&body, kConnectionWindow + 1);
+  EXPECT_LT(body.size(),  kStreamWindow);
+  QuicStreamFrame frame(kStreamId, false, 0, MakeIOVector(body));
+
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_FLOW_CONTROL_ERROR));
   stream_->OnStreamFrame(frame);
 }

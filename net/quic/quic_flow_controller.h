@@ -17,6 +17,8 @@ class QuicFlowControllerPeer;
 
 class QuicConnection;
 
+const QuicStreamId kConnectionLevelId = 0;
+
 // QuicFlowController allows a QUIC stream or connection to perform flow
 // control. The stream/connection owns a QuicFlowController which keeps track of
 // bytes sent/received, can tell the owner if it is flow control blocked, and
