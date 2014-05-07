@@ -58,6 +58,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # Radar 13499677
     self.Fail('conformance/glsl/functions/glsl-function-smoothstep-gentype.html',
         ['mac', ('intel', 0x116)], bug=225642)
+    self.Fail('conformance/extensions/webgl-draw-buffers.html',
+        ['mac', ('intel', 0x116)], bug=369349)
 
     # Mac 10.8 / Intel HD 3000 failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
@@ -106,8 +108,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['lion', 'intel'], bug=323736)
     self.Skip('conformance/ogles/GL/tan/tan_001_to_006.html',
         ['lion', 'intel'], bug=323736)
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        ['lion', 'intel'], bug=369349)
 
     # Android failures
     # The following test is very slow and therefore times out on Android bot.
