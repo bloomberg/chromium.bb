@@ -1,7 +1,7 @@
 <div id="scrolltarget">
 <script src="../../resources/js-test.js"></script>
 <script>
-description("This test checks that we correctly update the scroll event handler count as event handlers are added and removed");
+description('This test checks that we correctly update the scroll event handler count as event handlers are added and removed');
 (function() {
     // Test addEventListener/removeEventListener on the document.
     var listener = function() { }
@@ -22,9 +22,8 @@ description("This test checks that we correctly update the scroll event handler 
     shouldBe('window.internals.scrollEventHandlerCount(document)', '0');
 })();
 
+debug('Test setting onscroll on the document.');
 (function() {
-    // Test setting onscroll on the document.
-
     shouldBe('window.internals.scrollEventHandlerCount(document)', '0');
     document.onscroll = function() { }
     shouldBe('window.internals.scrollEventHandlerCount(document)', '1');
@@ -33,7 +32,8 @@ description("This test checks that we correctly update the scroll event handler 
     document.onscroll = null;
     shouldBe('window.internals.scrollEventHandlerCount(document)', '0');
 })();
-debug("Test that nested Documents' scroll handlers are properly tracked in their parent Document.");
+
+debug('Test that nested Documents\' scroll handlers are properly tracked in their parent Document.');
 (function() {
     var iframe = document.createElement('iframe');
     var scrolltarget = document.getElementById('scrolltarget');
@@ -59,7 +59,8 @@ debug("Test that nested Documents' scroll handlers are properly tracked in their
     shouldBe('window.internals.scrollEventHandlerCount(document)', '1');
     scrolltarget.onscroll = undefined;
 })();
-debug("Test that detaching a nested Document with handlers works properly.");
+
+debug('Test that detaching a nested Document with handlers works properly.');
 (function() {
     var iframe = document.createElement('iframe');
     var scrolltarget = document.getElementById('scrolltarget');
@@ -68,14 +69,16 @@ debug("Test that detaching a nested Document with handlers works properly.");
 
     nestedDocument = iframe.contentWindow.document;
     nestedDocument.open('text/html', 'replace');
-    nestedDocument.write('<!DOCTYPE html>\n<script>\ndocument.onscroll=function(){};\n</' + 'script>\n');
-    shouldBe('window.internals.scrollEventHandlerCount(nestedDocument)', '1');
-    shouldBe('window.internals.scrollEventHandlerCount(document)', '1');
+    nestedDocument.write('<!DOCTYPE html>\n<script>\ndocument.onscroll=function(){};\n' +
+                         'window.onscroll=function(){};</' + 'script>\n');
+    shouldBe('window.internals.scrollEventHandlerCount(nestedDocument)', '2');
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '2');
 
     nestedDocument.close();
     scrolltarget.removeChild(iframe);
     shouldBe('window.internals.scrollEventHandlerCount(document)', '0');
 })();
+
 debug('Test moving event listeners from an unattached document to an attached one');
 (function() {
     doc = document.implementation.createHTMLDocument('');
@@ -107,6 +110,7 @@ debug('Test moving event listeners from an unattached document to an attached on
     gc();
     shouldBe('window.internals.scrollEventHandlerCount(document)', '0');
 })();
+
 debug('Test moving event listeners from an attached document to an unattached one');
 (function() {
     var div = document.createElement('div');
@@ -117,14 +121,16 @@ debug('Test moving event listeners from an attached document to an unattached on
     div.appendChild(iframe);
     var nestedDocument = iframe.contentWindow.document;
     nestedDocument.open('text/html', 'replace');
-    nestedDocument.write('<!DOCTYPE html>\n<script>\ndocument.onscroll=function(){};\n</' + 'script>\n');
+    nestedDocument.write('<!DOCTYPE html>\n<script>\ndocument.onscroll=function(){};\n' +
+                         'window.onscroll=function(){};</' + 'script>\n');
 
-    shouldBe('window.internals.scrollEventHandlerCount(document)', '2');
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '3');
 
     var unattachedDoc = document.implementation.createHTMLDocument('');
     unattachedDoc.body.appendChild(div);
     shouldBe('window.internals.scrollEventHandlerCount(document)', '0');
 })();
+
 debug('Test moving a scroll event listener between documents belonging to the same page');
 (function() {
     var iframe = document.createElement('iframe');
@@ -136,12 +142,45 @@ debug('Test moving a scroll event listener between documents belonging to the sa
     var element = frames[0].document.getElementById('foo');
     var listener = function() { }
     element.addEventListener('scroll', listener, false);
-    shouldBe('window.internals.scrollEventHandlerCount(document)', '1');
+    frames[0].window.addEventListener('scroll', listener, false);
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '2');
 
     document.body.appendChild(element);
-    shouldBe('window.internals.scrollEventHandlerCount(document)', '1');
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '2');
 
     element.removeEventListener('scroll', listener, false);
+    frames[0].window.removeEventListener('scroll', listener, false);
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '0');
+})();
+
+debug('Test addEventListener/removeEventListener on the window.');
+(function() {
+    var listener = function() { }
+
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '0');
+    window.addEventListener('scroll', listener, true);
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '1');
+    window.addEventListener('scroll', listener, false);
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '2');
+    window.removeEventListener('scroll', listener, true);
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '1');
+
+    // Try removing the capturing listener again.
+    window.removeEventListener('scroll', listener, true);
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '1');
+
+    window.removeEventListener('scroll', listener, false);
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '0');
+})();
+
+debug('Test setting onscroll on the window.');
+(function() {
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '0');
+    window.onscroll = function() { }
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '1');
+    window.onscroll = function() { }
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '1');
+    window.onscroll = null;
     shouldBe('window.internals.scrollEventHandlerCount(document)', '0');
 })();
 </script>

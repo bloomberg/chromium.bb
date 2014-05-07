@@ -59,6 +59,7 @@
 #include "core/frame/Console.h"
 #include "core/frame/DOMPoint.h"
 #include "core/frame/DOMWindowLifecycleNotifier.h"
+#include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -528,6 +529,7 @@ void DOMWindow::frameDestroyed()
 
 void DOMWindow::willDetachFrameHost()
 {
+    m_frame->host()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
     InspectorInstrumentation::frameWindowDiscarded(m_frame, this);
 }
 
@@ -1502,6 +1504,9 @@ bool DOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<Event
     if (!EventTarget::addEventListener(eventType, listener, useCapture))
         return false;
 
+    if (m_frame && m_frame->host())
+        m_frame->host()->eventHandlerRegistry().didAddEventHandler(*this, eventType);
+
     if (Document* document = this->document()) {
         document->addListenerTypeIfNeeded(eventType);
         if (isTouchEventType(eventType))
@@ -1535,6 +1540,9 @@ bool DOMWindow::removeEventListener(const AtomicString& eventType, EventListener
 {
     if (!EventTarget::removeEventListener(eventType, listener, useCapture))
         return false;
+
+    if (m_frame && m_frame->host())
+        m_frame->host()->eventHandlerRegistry().didRemoveEventHandler(*this, eventType);
 
     if (Document* document = this->document()) {
         if (isTouchEventType(eventType))
@@ -1605,6 +1613,9 @@ void DOMWindow::removeAllEventListeners()
     EventTarget::removeAllEventListeners();
 
     lifecycleNotifier().notifyRemoveAllEventListeners(this);
+
+    if (m_frame && m_frame->host())
+        m_frame->host()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
 
     if (Document* document = this->document())
         document->didClearTouchEventHandlers(document);
