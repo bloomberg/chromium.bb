@@ -34,7 +34,7 @@ function runTest() {
     editDiv.addEventListener('dragover', handleDrag, false);
   
     // Select the text to drag.
-    selection.setPosition(editDiv, 0);
+    selection.collapse(editDiv, 0);
     extendSelectionForwardByWordCommand(); 
 
     if (!window.testRunner)

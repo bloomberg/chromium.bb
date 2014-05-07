@@ -8,7 +8,7 @@
 Markup.description('This test ensures WebKit does not crash when pasting content immediately after an inline style element.\n'
 + 'This test exhibits a bug. The inserted content should be on a separate line but it is not.');
 
-window.getSelection().setPosition(document.getElementById('test').firstChild, 1);
+window.getSelection().collapse(document.getElementById('test').firstChild, 1);
 document.execCommand('InsertHTML', false, '<blockquote type="cite">line 2</blockquote>');
 
 Markup.dump('test');

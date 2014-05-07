@@ -22,7 +22,7 @@ The test case checks if caret is drawn properly(especially scrolls properly) ins
     if (window.internals)
         startCaretRect = internals.absoluteCaretBounds();
 
-    window.getSelection().setPosition(editableContainer,0);
+    window.getSelection().collapse(editableContainer,0);
     if (window.testRunner)
         testRunner.execCommand('MoveToEndOfLine');
 

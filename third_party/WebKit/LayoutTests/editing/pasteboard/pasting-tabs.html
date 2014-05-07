@@ -13,6 +13,6 @@ textarea.setSelectionRange(0, 0);
 document.execCommand("SelectAll");
 document.execCommand("Copy");
 var div = document.getElementById("div");
-window.getSelection().setPosition(div, 0);
+window.getSelection().collapse(div, 0);
 document.execCommand("PasteAndMatchStyle");
 </script>

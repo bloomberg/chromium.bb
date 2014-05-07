@@ -30,20 +30,20 @@ function selectTest(container) {
 }
 
 function selectFirstWord(container) {
-    window.getSelection().setPosition(container, 0);
+    window.getSelection().collapse(container, 0);
     window.getSelection().modify('extend', 'forward', 'word');
     return 'first word';
 }
 
 function selectSecondWord(container) {
-    window.getSelection().setPosition(container, 0);
+    window.getSelection().collapse(container, 0);
     window.getSelection().modify('move', 'forward', 'word');
     window.getSelection().modify('extend', 'forward', 'word');
     return 'second word';
 }
 
 function selectLastTwoWords(container) {
-    window.getSelection().setPosition(container, container.childNodes.length);
+    window.getSelection().collapse(container, container.childNodes.length);
     window.getSelection().modify('extend', 'backward', 'word');
     window.getSelection().modify('extend', 'backward', 'word');
     return 'last two words';

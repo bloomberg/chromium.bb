@@ -19,7 +19,7 @@ if (window.testRunner)
 blockquote = document.getElementById("blockquote");
 text = blockquote.firstChild;
 
-window.getSelection().setPosition(text, 1);
+window.getSelection().collapse(text, 1);
 document.execCommand("InsertHTML", false, "ello worl");
 if (window.testRunner)
     document.body.innerText = document.getElementById("description").innerText + "\n" + document.getElementById("edit").innerHTML;

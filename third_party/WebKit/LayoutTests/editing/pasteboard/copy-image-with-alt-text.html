@@ -20,7 +20,7 @@ function runTest()
     Markup.dump("textarea-result");
 
     document.getElementById("content-editable-result").innerHTML = "";
-    selection.setPosition(document.getElementById("content-editable-result"), 0);
+    selection.collapse(document.getElementById("content-editable-result"), 0);
     execPasteAndMatchStyleCommand();
     Markup.dump("content-editable-result");
 }

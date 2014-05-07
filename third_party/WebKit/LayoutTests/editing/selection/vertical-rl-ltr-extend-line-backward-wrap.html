@@ -21,7 +21,7 @@ var test = document.getElementById('test');
 test.style.height = (desiredHeight.offsetHeight + 2) + 'px';
 desiredHeight.style.display = 'none';
 
-window.getSelection().setPosition(test.getElementsByTagName('p')[0].firstChild, 13);
+window.getSelection().collapse(test.getElementsByTagName('p')[0].firstChild, 13);
 window.getSelection().modify('Extend', 'Backward', 'Line');
 
 </script>

@@ -12,7 +12,7 @@
     var target = document.getElementById("target");
     var selection = getSelection();
 
-    selection.setPosition(target.firstChild, 13);
+    selection.collapse(target.firstChild, 13);
     selection.modify("move", "backward", "line");
 
     var pass = (selection.anchorNode === target.firstChild && selection.anchorOffset === 0);

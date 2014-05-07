@@ -7,7 +7,7 @@ function runTest() {
         return;
     testRunner.dumpAsText();
     var element = document.getElementById("test");
-    window.getSelection().setPosition(element.firstChild, 0);
+    window.getSelection().collapse(element.firstChild, 0);
     window.getSelection().modify('extend', 'forward', 'word');
     window.getSelection().modify('extend', 'forward', 'word');
     window.getSelection().modify('extend', 'forward', 'word');

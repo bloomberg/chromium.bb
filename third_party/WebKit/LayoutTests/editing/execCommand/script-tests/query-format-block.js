@@ -19,12 +19,12 @@ function queryFormatBlock(selector, content, expected)
 function selectFirstPosition(container) {
     while (container.firstChild)
         container = container.firstChild;
-    window.getSelection().setPosition(container, 0);
+    window.getSelection().collapse(container, 0);
     return 'first position'
 }
 
 function selectMiddleOfHelloWorld(container) {
-    window.getSelection().setPosition(container, 0);
+    window.getSelection().collapse(container, 0);
     window.getSelection().modify('move', 'forward', 'character');
     window.getSelection().modify('move', 'forward', 'character');
     window.getSelection().modify('extend', 'forward', 'word');

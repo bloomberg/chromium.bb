@@ -60,7 +60,7 @@ else if (window.testRunner) {
     expect('Moving to the right again', 1, 'range');
 
     eventSender.mouseUp();
-    window.getSelection().setPosition(span, 0);
+    window.getSelection().collapse(span, 0);
     eventSender.leapForward(1000);
 
     eventSender.mouseMoveTo(span.offsetLeft + span.offsetWidth - 5, y);

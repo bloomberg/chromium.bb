@@ -16,7 +16,7 @@
 
                 var qt = document.getElementById('qt');
                 var sel = window.getSelection();
-                sel.setPosition(qt, 0);
+                sel.collapse(qt, 0);
                 sel.modify("extend", "forward", "line");
                 document.execCommand("InsertNewlineInQuotedContent");
                 

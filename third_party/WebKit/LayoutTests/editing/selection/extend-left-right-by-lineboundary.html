@@ -41,25 +41,25 @@ function runTestForContainer(container)
     var rightmostOffset = container.dir === "rtl" ? 0 : textNode.length;
     var leftmostOffset = container.dir === "rtl" ? textNode.length : 0;
 
-    getSelection().setPosition(textNode, leftmostOffset);
+    getSelection().collapse(textNode, leftmostOffset);
     getSelection().modify("extend", "left", "lineboundary");
     assertSelectionEquals(textNode, leftmostOffset, leftmostOffset, "extend left from left");
     getSelection().modify("extend", "left", "lineboundary");
     assertSelectionEquals(textNode, leftmostOffset, leftmostOffset, "extend left from left again");
 
-    getSelection().setPosition(textNode, leftmostOffset);
+    getSelection().collapse(textNode, leftmostOffset);
     getSelection().modify("extend", "right", "lineboundary");
     assertSelectionEquals(textNode, leftmostOffset, rightmostOffset, "extend right from left");
     getSelection().modify("extend", "right", "lineboundary");
     assertSelectionEquals(textNode, leftmostOffset, rightmostOffset, "extend right from left again");
 
-    getSelection().setPosition(textNode, rightmostOffset);
+    getSelection().collapse(textNode, rightmostOffset);
     getSelection().modify("extend", "right", "lineboundary");
     assertSelectionEquals(textNode, rightmostOffset, rightmostOffset, "extend right from right");
     getSelection().modify("extend", "right", "lineboundary");
     assertSelectionEquals(textNode, rightmostOffset, rightmostOffset, "extend right from right again");
 
-    getSelection().setPosition(textNode, rightmostOffset);
+    getSelection().collapse(textNode, rightmostOffset);
     getSelection().modify("extend", "left", "lineboundary");
     assertSelectionEquals(textNode, rightmostOffset, leftmostOffset, "extend left from right");
     getSelection().modify("extend", "left", "lineboundary");

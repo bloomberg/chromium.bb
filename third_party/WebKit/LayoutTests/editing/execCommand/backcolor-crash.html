@@ -7,7 +7,7 @@ This is a crash test when executing backColor on a node where all of its ancesto
 if (window.testRunner)
     window.testRunner.dumpAsText();
 
-window.getSelection().setPosition(test, 0);
+window.getSelection().collapse(test, 0);
 var color = document.queryCommandValue('backColor', false, null);
 
 document.write('backColor: ' + color + '<br>');

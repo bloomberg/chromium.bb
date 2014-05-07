@@ -5,7 +5,7 @@
 var sel = window.getSelection();
 var div = document.getElementById("div");
 
-sel.setPosition(div, 0);
+sel.collapse(div, 0);
 sel.modify("move", "forward", "documentBoundary");
 document.execCommand("InsertText", false, "bar");
 </script>

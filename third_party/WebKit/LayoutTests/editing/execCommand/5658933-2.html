@@ -9,7 +9,7 @@ if (window.testRunner)
     
 td = document.getElementById("td");
 text = td.firstChild;
-window.getSelection().setPosition(text, 1);
+window.getSelection().collapse(text, 1);
 document.execCommand("Indent");
 
 document.body.innerText = document.getElementById("description").innerText + "\n" + document.getElementById("edit").innerHTML;

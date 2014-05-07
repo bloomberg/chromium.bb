@@ -23,7 +23,7 @@ Markup.dump(test, 'Formatting all paragraphs by h3 yields');
 
 document.execCommand('undo', false, null);
 Markup.dump(test, 'Undo yields');
-window.getSelection().setPosition(test, 0);
+window.getSelection().collapse(test, 0);
 window.getSelection().modify('extend', 'forward', 'line');
 window.getSelection().modify('extend', 'forward', 'line');
 window.getSelection().modify('extend', 'forward', 'line');
@@ -33,7 +33,7 @@ Markup.dump(test, 'Formatting all but the last paragraph by h3 yields');
 
 document.execCommand('undo', false, null);
 Markup.dump(test, 'Undo yields');
-window.getSelection().setPosition(test, 0);
+window.getSelection().collapse(test, 0);
 window.getSelection().modify('move', 'forward', 'line');
 window.getSelection().modify('extend', 'forward', 'line');
 window.getSelection().modify('extend', 'forward', 'line');

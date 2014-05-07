@@ -13,7 +13,7 @@ blockquote {
 if (window.testRunner)
     window.testRunner.dumpAsText();
 test = document.getElementById("test");
-window.getSelection().setPosition(test, 1);
+window.getSelection().collapse(test, 1);
 document.execCommand("InsertNewlineInQuotedContent");
 if (window.testRunner) {
     div = document.getElementById("div");

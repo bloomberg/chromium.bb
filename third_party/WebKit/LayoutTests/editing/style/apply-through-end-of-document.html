@@ -13,7 +13,7 @@
             var source = document.getElementById("source");
             var selection = getSelection();
 
-            selection.setPosition(source.firstChild, 5);
+            selection.collapse(source.firstChild, 5);
             selection.modify("extend", "forward", "word");
 
             document.execCommand("Copy");

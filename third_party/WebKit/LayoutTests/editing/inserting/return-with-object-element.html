@@ -10,7 +10,7 @@
 
             var obj = document.getElementById("objectInQuestion");
             var s = window.getSelection();
-            s.setPosition(obj, 0);
+            s.collapse(obj, 0);
 
             document.execCommand("InsertParagraph");
         }

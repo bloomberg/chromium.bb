@@ -5,7 +5,7 @@
 Markup.description('This test ensures pasting words copied from TextEdit in Mail does not add extra newline. See rdar://problem/5483567.');
 
 text = document.getElementById("div").firstChild;
-window.getSelection().setPosition(text, 1);
+window.getSelection().collapse(text, 1);
 document.execCommand("InsertHTML", false, " <div>foo</div> ");
 
 Markup.dump('div')

@@ -17,7 +17,7 @@ function log(message) {
 }
 
 div = document.getElementById("div");
-window.getSelection().setPosition(div, 0);
+window.getSelection().collapse(div, 0);
 document.execCommand("FormatBlock", false, "h1");
 
 log(document.getElementById('outerdiv').innerHTML);

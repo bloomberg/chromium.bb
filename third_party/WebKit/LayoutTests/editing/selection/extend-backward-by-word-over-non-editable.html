@@ -15,7 +15,7 @@ function placeCursorAfterFirstNoneditableChild(container) {
   for (var i = 0; i < container.childNodes.length; i++) {
     var node = container.childNodes[i];
     if (node.isContentEditable !== undefined && !node.isContentEditable) {
-      getSelection().setPosition(node.nextSibling, 0);
+      getSelection().collapse(node.nextSibling, 0);
       return node;
     }
   }

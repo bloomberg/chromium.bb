@@ -6,7 +6,7 @@ if (window.testRunner)
     window.testRunner.dumpAsText();
 h2 = document.getElementById("h2");
 text = h2.firstChild;
-window.getSelection().setPosition(text, text.length - 1);
+window.getSelection().collapse(text, text.length - 1);
 document.execCommand("InsertParagraph");
 if (window.testRunner)
     document.body.innerText = document.getElementById("description").innerText + "\n\n" + document.getElementById("edit").innerHTML;

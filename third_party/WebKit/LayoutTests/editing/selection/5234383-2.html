@@ -6,7 +6,7 @@
 var sel = window.getSelection();
 var div = document.getElementById("div");
 var text = div.firstChild;
-sel.setPosition(text, text.length - 5);
+sel.collapse(text, text.length - 5);
 sel.modify("move", "backward", "sentenceBoundary");
 sel.modify("move", "backward", "sentenceBoundary");
 </script>

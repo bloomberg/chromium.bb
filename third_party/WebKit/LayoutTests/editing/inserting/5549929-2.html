@@ -8,7 +8,7 @@
 div = document.getElementById("div");
 div.focus();
 sel = window.getSelection();
-sel.setPosition(div, 0);
+sel.collapse(div, 0);
 sel.modify("extend", "forward", "paragraph");
 document.execCommand("InsertLineBreak");
 </script>

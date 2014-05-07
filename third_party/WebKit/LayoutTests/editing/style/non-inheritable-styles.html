@@ -27,14 +27,14 @@ var sel = window.getSelection();
 var copy = document.getElementById("copy");
 var paste = document.getElementById("paste");
 
-sel.setPosition(copy, 0);
+sel.collapse(copy, 0);
 document.execCommand("SelectAll");
 document.execCommand("Copy");
 var len = document.styleSheets[0].cssRules.length;
 for (var i = 0; i < len; i++)
     document.styleSheets[0].deleteRule(0);
 
-sel.setPosition(paste, 0);
+sel.collapse(paste, 0);
 document.execCommand("Paste");
 Markup.description("This tests copy.  Non-inheritable styles should be brought down from stylesheets.");
 Markup.dump(document.getElementById("paste"));

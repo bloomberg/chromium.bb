@@ -23,7 +23,7 @@ white-space: pre-wrap;
 
         // Test crash
         var sel = getSelection();
-        sel.setPosition(div.firstChild, 0);
+        sel.collapse(div.firstChild, 0);
     
         var range = sel.getRangeAt(0);
         var span = document.createElement('SPAN');

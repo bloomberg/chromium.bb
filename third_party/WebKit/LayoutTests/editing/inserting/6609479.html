@@ -13,7 +13,7 @@
                 var td = document.getElementById("td");
                 var text = td.firstChild;
                 var s = window.getSelection();
-                s.setPosition(text, 3);
+                s.collapse(text, 3);
                 document.execCommand("InsertNewlineInQuotedContent");
                 var tables = document.getElementsByTagName("table"); 
                 if (tables.length == 1)

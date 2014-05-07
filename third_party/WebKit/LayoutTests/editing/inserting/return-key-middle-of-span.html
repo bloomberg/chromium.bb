@@ -8,7 +8,7 @@ Markup.description("This sets the selection to the middle of the first line, and
     + "Expected behavior: the text node is split at the cursor. The span is cloned, and everything "
     + "that was split out is placed inside the clone in a new div which is a child of the root. See bug 61594.");
 var sel = window.getSelection();
-sel.setPosition(document.getElementById("wrapper").firstChild, 5);
+sel.collapse(document.getElementById("wrapper").firstChild, 5);
 document.execCommand("InsertParagraph", false, null);
 Markup.dump(root);
 </script>

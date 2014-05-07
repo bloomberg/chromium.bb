@@ -11,7 +11,7 @@ if (window.testRunner) {
 function editingTest() {        
     var s = window.getSelection();
     d = document.getElementById("test1");
-    s.setPosition(d, 0);
+    s.collapse(d, 0);
     extendSelectionForwardByLineCommand();
 
     test1.innerHTML = "PASS. WebKit didn't crash.";

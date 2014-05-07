@@ -23,7 +23,7 @@ function runTest() {
     frame = frames[0];
     frame.focus();
     s = frame.getSelection();
-    s.setPosition(frame.document.body, 0);
+    s.collapse(frame.document.body, 0);
     frame.document.execCommand("InsertText", false, textToSelect);
     frame.document.execCommand("SelectAll");
 

@@ -9,7 +9,7 @@ if (window.testRunner)
 var sel = window.getSelection();
 var e = document.getElementById("test");
 
-sel.setPosition(e, 0);
+sel.collapse(e, 0);
 sel.modify("move", "forward", "word");
 sel.modify("move", "forward", "word");
 sel.modify("extend", "backward", "word");

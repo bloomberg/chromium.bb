@@ -10,10 +10,10 @@ if (window.testRunner)
 </div>
 <script>
 var s = window.getSelection();
-s.setPosition(document.getElementById("item1"), 0);
+s.collapse(document.getElementById("item1"), 0);
 document.execCommand("InsertOrderedList", false, "");
-s.setPosition(document.getElementById("item2"), 0);
+s.collapse(document.getElementById("item2"), 0);
 document.execCommand("InsertOrderedList", false, "");
-s.setPosition(document.getElementById("item3"), 0);
+s.collapse(document.getElementById("item3"), 0);
 document.execCommand("InsertOrderedList", false, "");
 </script>

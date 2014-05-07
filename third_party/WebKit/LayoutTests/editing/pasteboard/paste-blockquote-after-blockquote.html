@@ -14,6 +14,6 @@ blockquote {
 var sel = window.getSelection();
 var div = document.getElementById("div");
 
-sel.setPosition(div, 1);
+sel.collapse(div, 1);
 document.execCommand("InsertHTML", false, "<blockquote type='cite'>Line 2</blockquote>");
 </script>

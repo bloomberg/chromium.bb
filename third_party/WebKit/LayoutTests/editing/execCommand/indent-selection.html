@@ -26,7 +26,7 @@ Sum!<br>
 var s = window.getSelection();
 var p1 = document.getElementById("item1");
 var p2 = document.getElementById("item2");
-s.setPosition(p1, 0);
+s.collapse(p1, 0);
 s.setBaseAndExtent(p1, 0, p2, 2);
 document.execCommand("Indent", false, "");
 </script>

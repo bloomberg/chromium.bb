@@ -19,7 +19,7 @@ Markup.description("This tests pasting a blockquote at the start of a paragraph.
 var sel = window.getSelection();
 var div = document.getElementById("div");
 
-sel.setPosition(div, 0);
+sel.collapse(div, 0);
 document.execCommand("InsertHTML", false, "<blockquote type='cite'>This should not be blockquoted.</blockquote>");
 
 Markup.dump('div');

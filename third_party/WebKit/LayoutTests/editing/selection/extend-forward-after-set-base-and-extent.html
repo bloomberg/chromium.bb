@@ -12,7 +12,7 @@ if (window.testRunner) {
     var text = document.getElementById("div").firstChild;
     var selection = window.getSelection();
 
-    selection.setPosition(text, 0);
+    selection.collapse(text, 0);
     selection.modify("move", "forward", "character");
     
     selection.setBaseAndExtent(text, 5 + 7, text, 5);

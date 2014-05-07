@@ -15,7 +15,7 @@ function runTest() {
     var s = window.getSelection();
     var e = document.getElementById("test");
 
-    s.setPosition(e, 0);
+    s.collapse(e, 0);
     document.execCommand("InsertHTML", false, "foo<div>bar</div><br class='Apple-interchange-newline'>");
 
     Markup.dump(document.body);

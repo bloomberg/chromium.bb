@@ -19,7 +19,7 @@ body { overflow: hidden; }
 function editingTest() {
     var elem = document.getElementById("test-1");
     var selection = window.getSelection();
-    selection.setPosition(elem.firstChild, 0);
+    selection.collapse(elem.firstChild, 0);
     for (var i = 0; i < 4; i++)
         moveSelectionForwardByCharacterCommand();
     deleteCommand();    

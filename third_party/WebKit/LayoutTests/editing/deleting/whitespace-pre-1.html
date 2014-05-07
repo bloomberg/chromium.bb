@@ -13,7 +13,7 @@ function runTestsOn(platform) {
     if (window.internals)
         internals.settings.setEditingBehavior(platform);
 
-    s.setPosition(e, 0);
+    s.collapse(e, 0);
     s.modify("extend", "forward", "lineBoundary");
     document.execCommand("Delete");
     Markup.dump("test", "on " + platform);

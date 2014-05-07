@@ -15,7 +15,7 @@ Markup.description("The last paragraph of the incoming fragment should be in the
 var s = window.getSelection();
 var e = document.getElementById("test");
 
-s.setPosition(e, 0);
+s.collapse(e, 0);
 s.modify("move", "forward", "word");
 s.modify("move", "forward", "character");
 

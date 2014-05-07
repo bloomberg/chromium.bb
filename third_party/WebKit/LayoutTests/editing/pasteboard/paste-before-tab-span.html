@@ -17,7 +17,7 @@ var testSpan = document.getElementById("test");
 sel.setBaseAndExtent(testSpan.firstChild, 0, testSpan.firstChild, 5);
 
 document.execCommand("copy");
-sel.setPosition(testSpan.firstChild, 5);
+sel.collapse(testSpan.firstChild, 5);
 document.execCommand("paste");
 if (window.eventSender)
     eventSender.keyDown("a");

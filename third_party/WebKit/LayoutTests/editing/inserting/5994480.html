@@ -6,7 +6,7 @@ if (window.testRunner)
     window.testRunner.dumpAsText();
 paragraphOne = document.getElementById("paragraphOne");
 // Place the caret at the end of the block that contains the first paragraph.
-window.getSelection().setPosition(paragraphOne, paragraphOne.childNodes.length);
+window.getSelection().collapse(paragraphOne, paragraphOne.childNodes.length);
 
 document.execCommand("InsertHTML", false, ".");
 if (window.testRunner)

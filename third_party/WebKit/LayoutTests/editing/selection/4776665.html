@@ -9,7 +9,7 @@ function runTest() {
     var doc = frame.document;
     var body = doc.body;
     var sel = frame.getSelection();
-    sel.setPosition(body, 0);
+    sel.collapse(body, 0);
     if (window.testRunner)
         window.testRunner.notifyDone();
 }

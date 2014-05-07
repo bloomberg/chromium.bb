@@ -2,7 +2,7 @@
 <script type="text/javascript">
 function repaintTest() {
     var div = document.getElementById("div");
-    window.getSelection().setPosition(div, 1);
+    window.getSelection().collapse(div, 1);
 }
 </script>
 <html>
@@ -11,7 +11,7 @@ function repaintTest() {
 <div id="div">This test verifies caret repaint is correctly transformed.</div>
 </div>
 <script>
-window.getSelection().setPosition(div, 0);
+window.getSelection().collapse(div, 0);
 </script>
 </body>
 </html>

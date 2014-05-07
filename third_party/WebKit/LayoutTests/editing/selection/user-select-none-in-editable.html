@@ -28,7 +28,7 @@ description('Test caret movement into user-select:none content.');
 var sample1 = $('sample1');
 var sample2 = $('sample2');
 var selection = window.getSelection();
-selection.setPosition(sample1, 1);
+selection.collapse(sample1, 1);
 selection.modify('move', 'forward', 'character');
 selection.modify('move', 'forward', 'character');
 shouldBe('selection.focusNode', 'sample2.firstChild');

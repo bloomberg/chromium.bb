@@ -14,9 +14,9 @@ function runTest() {
     var sel = frame.getSelection();
     var doc = frame.document;
 
-    sel.setPosition(doc.body, 0);
+    sel.collapse(doc.body, 0);
     doc.execCommand("InsertText", false, "A B A");
-    sel.setPosition(doc.body, 0);
+    sel.collapse(doc.body, 0);
     doc.execCommand("FindString", false, "A B");
     doc.execCommand("Copy");
     doc.execCommand("FindString", false, "A");

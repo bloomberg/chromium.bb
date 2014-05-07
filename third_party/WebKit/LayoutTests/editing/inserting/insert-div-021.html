@@ -13,7 +13,7 @@ if (window.testRunner)
 
 var root = document.getElementById('root');
 root.focus();
-window.getSelection().setPosition(document.getElementById('test'), 0);
+window.getSelection().collapse(document.getElementById('test'), 0);
 
 for (i = 0; i < 4; i++)
     window.getSelection().modify('move', 'forward', 'character');

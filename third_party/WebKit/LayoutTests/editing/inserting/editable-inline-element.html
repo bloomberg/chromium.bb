@@ -5,6 +5,6 @@
 var sel = window.getSelection();
 var span = document.getElementById("span");
 
-sel.setPosition(span, 0);
+sel.collapse(span, 0);
 document.execCommand("InsertParagraph");
 </script>

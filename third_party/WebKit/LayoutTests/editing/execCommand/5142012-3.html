@@ -14,7 +14,7 @@ function log(message) {
 
 var sel = window.getSelection();
 var div = document.getElementById("div");
-sel.setPosition(div, div.childNodes.length);
+sel.collapse(div, div.childNodes.length);
 
 document.execCommand("InsertText", false, " ");
 document.execCommand("InsertText", false, "This sentence should not.");

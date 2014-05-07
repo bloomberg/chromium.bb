@@ -9,6 +9,6 @@ if (window.testRunner)
     window.testRunner.dumpAsText();
 document.getElementById("div").focus();
 span = document.getElementById("span");
-window.getSelection().setPosition(span, 0);
+window.getSelection().collapse(span, 0);
 document.execCommand("InsertText", false, "\t");
 </script>

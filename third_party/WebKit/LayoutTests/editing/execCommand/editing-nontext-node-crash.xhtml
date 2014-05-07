@@ -7,7 +7,7 @@
             var selection = window.getSelection();
             function runEditingTest() {
                 var elem = document.getElementById("test2");
-                selection.setPosition(elem, 0);
+                selection.collapse(elem, 0);
                 for (i = 0; i < 21; i++)
                     selection.modify("move", "forward", "character");
                 document.execCommand("Delete");

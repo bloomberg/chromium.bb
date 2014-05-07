@@ -8,7 +8,7 @@ if (window.testRunner)
     testRunner.dumpAsText();
 
 var edit = document.getElementById("edit");
-window.getSelection().setPosition(edit.childNodes.item(1).childNodes.item(0), 2);
+window.getSelection().collapse(edit.childNodes.item(1).childNodes.item(0), 2);
 window.getSelection().modify("move", "backward", "line");
 window.getSelection().modify("move", "backward", "line");
 

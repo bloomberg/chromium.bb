@@ -17,7 +17,7 @@ blockquote {
 var s = window.getSelection();
 var e = document.getElementById("test");
 
-s.setPosition(e, 0);
+s.collapse(e, 0);
 
 document.execCommand("InsertHTML", false , "<blockquote type='cite'>bar</blockquote>");
 </script>

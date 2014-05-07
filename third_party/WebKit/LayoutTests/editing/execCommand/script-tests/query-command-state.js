@@ -25,7 +25,7 @@ function selectAll(container) {
 }
 
 function selectSecondWord(container) {
-    window.getSelection().setPosition(container, 0);
+    window.getSelection().collapse(container, 0);
     window.getSelection().modify('move', 'forward', 'word');
     window.getSelection().modify('move', 'forward', 'word');
     window.getSelection().modify('move', 'backward', 'word');
@@ -34,7 +34,7 @@ function selectSecondWord(container) {
 }
 
 function selectFirstTwoWords(container) {
-    window.getSelection().setPosition(container, 0);
+    window.getSelection().collapse(container, 0);
     window.getSelection().modify('move', 'forward', 'word');
     window.getSelection().modify('extend', 'forward', 'word');
     window.getSelection().modify('extend', 'forward', 'word');

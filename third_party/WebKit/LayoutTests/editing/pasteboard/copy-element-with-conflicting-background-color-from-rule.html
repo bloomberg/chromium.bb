@@ -25,7 +25,7 @@ function finish() {
 
 document.body.focus();
 var target = document.getElementById('target');
-getSelection().setPosition(target, 0);
+getSelection().collapse(target, 0);
 getSelection().modify('move', 'forward', 'line');
 getSelection().modify('move', 'backward', 'lineboundary');
 getSelection().modify('extend', 'backward', 'line');

@@ -81,7 +81,7 @@ runEditingTest();
         
             log("Actual HTML:");
             log("<pre>" + document.getElementById("wrapper").innerHTML + "</pre>");
-            window.getSelection().setPosition(document.body, 0);
+            window.getSelection().collapse(document.body, 0);
 
             log("(0, 0): " + textInputController.attributedSubstringFromRange(0, 0));
             log("(0, 0) length: " + textInputController.attributedSubstringFromRange(0, 0).length());

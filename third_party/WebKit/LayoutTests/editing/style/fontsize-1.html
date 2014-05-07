@@ -16,7 +16,7 @@ function log(str) {
 var div = document.getElementById("div");
 var sel = window.getSelection();
 
-sel.setPosition(div, 0);
+sel.collapse(div, 0);
 Markup.dump(div, 'initial');
 
 if (document.execCommand("FontSize", false, "pasd"))

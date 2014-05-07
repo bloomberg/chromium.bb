@@ -11,7 +11,7 @@ function log(str) {
 
 var div = document.getElementById("div");
 var sel = window.getSelection();
-sel.setPosition(div, 0);
+sel.collapse(div, 0);
 document.execCommand("InsertText", false, " ");
 document.execCommand("InsertText", false, "Hello");
 document.execCommand("InsertText", false, " ");

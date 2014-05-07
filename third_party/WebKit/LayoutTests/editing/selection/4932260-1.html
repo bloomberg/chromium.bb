@@ -6,8 +6,8 @@ if (window.testRunner)
     window.testRunner.dumpEditingCallbacks();
 var sel = window.getSelection();
 var div = document.getElementById("div");
-sel.setPosition(div, 0);
+sel.collapse(div, 0);
 sel.modify("move", "forward", "sentence");
-sel.setPosition(div, div.childNodes.length);
+sel.collapse(div, div.childNodes.length);
 sel.modify("move", "backward", "sentence");
 </script>

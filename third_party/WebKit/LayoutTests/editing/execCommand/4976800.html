@@ -8,6 +8,6 @@ if (window.testRunner)
 var blockquote = document.getElementById("blockquote");
 var sel = window.getSelection();
 
-sel.setPosition(blockquote, 0);
+sel.collapse(blockquote, 0);
 document.execCommand("Outdent");
 </script>

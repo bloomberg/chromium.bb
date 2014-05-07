@@ -24,7 +24,7 @@
 <script>
 
 function moveToMiddleOfWord(node, word) {
-    window.getSelection().setPosition(node, 0);
+    window.getSelection().collapse(node, 0);
     if (!window.find(word))
         return false;
     window.getSelection().modify('move', 'backward', 'character');

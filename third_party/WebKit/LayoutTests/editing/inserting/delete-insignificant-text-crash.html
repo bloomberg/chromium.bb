@@ -13,7 +13,7 @@ test.appendChild(document.createTextNode('a  '));
 test.appendChild(document.createTextNode('  '));
 test.appendChild(document.createTextNode('b'));
 test.appendChild(document.createTextNode('  '));
-getSelection().setPosition(test.firstChild.nextSibling, 0);
+getSelection().collapse(test.firstChild.nextSibling, 0);
 document.body.addEventListener('DOMCharacterDataModified', function () {
     test.removeChild(test.firstChild.nextSibling);
     if (window.GCController)

@@ -8,7 +8,7 @@ xxx<br>
 
 <script>
 var sel = window.getSelection();
-sel.setPosition(div, 0);
+sel.collapse(div, 0);
 sel.modify("move", "forward", "character");
 sel.modify("move", "forward", "character");
 sel.modify("extend", "forward", "line");

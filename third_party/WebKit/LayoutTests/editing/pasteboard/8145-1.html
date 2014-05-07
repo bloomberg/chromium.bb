@@ -9,7 +9,7 @@ if (window.testRunner)
 var s = window.getSelection();
 var p = document.getElementById("test");
 p.innerHTML = "";
-s.setPosition(p, 0);
+s.collapse(p, 0);
 var html = "<p style='margin: 0; font: 12px Helvetica'>foo <b>bar</b> baz</p>" + '\n';
 document.execCommand("InsertHTML", false, html);
 </script>

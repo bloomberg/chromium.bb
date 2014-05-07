@@ -7,7 +7,7 @@ if (window.testRunner)
 test = document.getElementById("test");
 edit = document.getElementById("edit");
 
-window.getSelection().setPosition(edit, 0);
+window.getSelection().collapse(edit, 0);
 document.execCommand("JustifyCenter");
 
 expected = '<div id="edit" contenteditable="true"><div style="text-align: center;">centered text</div></div>';

@@ -23,7 +23,7 @@ function foo() {
     var bar = 1;
     var divs = document.getElementsByTagName("div");
     for (var i = 0; divs[i]; i++) {
-        selection.setPosition(divs[i], 0);
+        selection.collapse(divs[i], 0);
         document.execCommand("InsertText", false, 'c');   
     }
 }

@@ -8,7 +8,7 @@ function runTest() {
     input.setSelectionRange(0, 3);
     var frame = frames[0];
     frame.focus();
-    frame.getSelection().setPosition(frame.document.body, 0);
+    frame.getSelection().collapse(frame.document.body, 0);
     
     if (!window.testRunner)
         return;

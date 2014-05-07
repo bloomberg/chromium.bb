@@ -13,7 +13,7 @@
 <script>
 
 var test = document.getElementById('test');
-window.getSelection().setPosition(test.getElementsByTagName('p')[0].firstChild, 2);
+window.getSelection().collapse(test.getElementsByTagName('p')[0].firstChild, 2);
 window.getSelection().modify('Extend', 'Forward', 'Line');
 
 </script>

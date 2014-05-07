@@ -16,7 +16,7 @@
         shouldThrow('getSelection().setBaseAndExtent(document.documentElement, -1, document.documentElement, 0)', '"IndexSizeError: Failed to execute \'setBaseAndExtent\' on \'Selection\': -1 is not a valid base offset."');
         shouldThrow('getSelection().setBaseAndExtent(document.documentElement, 0, document.documentElement, -1)', '"IndexSizeError: Failed to execute \'setBaseAndExtent\' on \'Selection\': -1 is not a valid extent offset."');
 
-        shouldThrow('getSelection().setPosition(document.documentElement, -1)', '"IndexSizeError: Failed to execute \'setPosition\' on \'Selection\': -1 is not a valid offset."');
+        shouldThrow('getSelection().collapse(document.documentElement, -1)', '"IndexSizeError: Failed to execute \'collapse\' on \'Selection\': -1 is not a valid offset."');
 
         shouldThrow('getSelection().getRangeAt(-1)', '"IndexSizeError: Failed to execute \'getRangeAt\' on \'Selection\': -1 is not a valid index."');
 

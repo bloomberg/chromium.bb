@@ -8,7 +8,7 @@ function hasSimpleCaretMovement(charCode) {
     var testString = "aaaaa" + String.fromCharCode(charCode) + "bbbb";
     element.textContent = testString;
     var selection = window.getSelection();
-    selection.setPosition(element, 0);
+    selection.collapse(element, 0);
     for (var i = 0; i < testString.length; ++i) {
         selection.modify("move", "forward", "character");
         if (selection.baseOffset != i + 1)

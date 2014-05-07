@@ -15,7 +15,7 @@ Markup.waitUntilDone();
 
 function test() {
     Markup.description("This tests pressing delete key to remove empty quoted line places cursor at the right location. rdar://problem/4813973");
-    window.getSelection().setPosition(document.getElementById('test'), 0);
+    window.getSelection().collapse(document.getElementById('test'), 0);
     deleteCommand();
     Markup.dump(document.body);
     Markup.notifyDone();

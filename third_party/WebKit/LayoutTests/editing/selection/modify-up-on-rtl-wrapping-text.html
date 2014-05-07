@@ -37,7 +37,7 @@ function runTest(container, test) {
     container.style.width = (width + 1) + 'px';
 
     var lines = ['st', 'nd', 'rd', 'th'];
-    window.getSelection().setPosition(container.lastChild, container.lastChild.length);
+    window.getSelection().collapse(container.lastChild, container.lastChild.length);
 
     for (var i = 0; i < test.expected.length; i++) {
         if (!window.getSelection().isCollapsed)

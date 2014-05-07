@@ -5,7 +5,7 @@ function runTest() {
         window.testRunner.dumpAsText();
     img = document.getElementById("img");
     s = window.getSelection();
-    s.setPosition(img, 0);
+    s.collapse(img, 0);
     document.execCommand("Delete");
     if (window.testRunner)
         document.body.innerText = document.getElementById("div").innerHTML + "\n\nSelection: [" + s.anchorNode + ", " + s.anchorOffset + "]";

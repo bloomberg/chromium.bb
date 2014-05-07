@@ -19,7 +19,7 @@ var e = document.getElementById("test1");
 var s = window.getSelection();
 
 Markup.dump('test1', 'first test - before');
-s.setPosition(e, 0);
+s.collapse(e, 0);
 document.execCommand("SelectAll");
 document.execCommand("Cut");
 document.execCommand("Paste");
@@ -27,7 +27,7 @@ Markup.dump('test1', 'first test - after');
 
 Markup.dump('test2', 'second test - before');
 e = document.getElementById("test2");
-s.setPosition(e, 0);
+s.collapse(e, 0);
 document.execCommand("SelectAll");
 document.execCommand("Cut");
 document.execCommand("Paste");

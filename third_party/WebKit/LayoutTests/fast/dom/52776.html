@@ -110,7 +110,7 @@
             
     var test = document.getElementById('test');
     var sel = getSelection();
-    sel.setPosition(test,0);
+    sel.collapse(test,0);
     sel.modify("move", "right", "lineBoundary");
     sel.modify("move", "left", "character");
     sel.modify("extend", "left", "character");

@@ -8,7 +8,7 @@
 <script>
 s = window.getSelection();
 table = document.getElementById("table");
-s.setPosition(table, table.childNodes.length);
+s.collapse(table, table.childNodes.length);
 s.modify("move", "backward", "character");
 document.execCommand("Delete");
 document.execCommand("Delete");

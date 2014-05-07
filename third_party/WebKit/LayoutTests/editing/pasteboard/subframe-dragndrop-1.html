@@ -6,7 +6,7 @@ function runTest() {
     var frame = frames[0];
     var doc = frame.document;
     var sel = frame.getSelection();
-    sel.setPosition(doc.body, 0);
+    sel.collapse(doc.body, 0);
     doc.execCommand("InsertText", false, "foo bar baz");
     
     if (window.testRunner) {

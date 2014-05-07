@@ -24,14 +24,14 @@ function selectAll(container) {
 }
 
 function selectFirstTwoWords(container) {
-    window.getSelection().setPosition(container, 0);
+    window.getSelection().collapse(container, 0);
     window.getSelection().modify('extend', 'forward', 'word');
     window.getSelection().modify('extend', 'forward', 'word');
     return 'first two words';
 }
 
 function selectLastWord(container) {
-    window.getSelection().setPosition(container, container.childNodes.length);
+    window.getSelection().collapse(container, container.childNodes.length);
     window.getSelection().modify('extend', 'backward', 'word');
     return 'last word';
 }

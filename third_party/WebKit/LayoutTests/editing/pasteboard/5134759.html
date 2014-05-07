@@ -5,6 +5,6 @@
 <script>
 var sel = window.getSelection();
 var div = document.getElementById("div");
-sel.setPosition(div, div.childNodes.length);
+sel.collapse(div, div.childNodes.length);
 document.execCommand("InsertHTML", false, "<span style='text-decoration: underline;'><div>World!</div></span>");
 </script>

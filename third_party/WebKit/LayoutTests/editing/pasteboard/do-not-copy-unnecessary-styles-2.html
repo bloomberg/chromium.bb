@@ -15,7 +15,7 @@ if (window.testRunner) {
     window.getSelection().setBaseAndExtent(document.getElementById('source'), 0, document.getElementById('source'), 1);
     document.execCommand("Copy");
 
-    window.getSelection().setPosition(document.getElementById('destination'), 0);
+    window.getSelection().collapse(document.getElementById('destination'), 0);
     document.execCommand("Paste");
 
     Markup.description(document.getElementsByTagName('p')[0].textContent);

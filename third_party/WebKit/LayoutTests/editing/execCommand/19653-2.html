@@ -10,7 +10,7 @@ if (window.testRunner)
 edit1 = document.getElementById("edit1");
 edit1.focus();
 text = edit1.firstChild;
-window.getSelection().setPosition(text, 1);
+window.getSelection().collapse(text, 1);
 document.execCommand("Bold");
 document.execCommand("InsertParagraph");
 document.execCommand("InsertText", false, "Bold");
@@ -18,7 +18,7 @@ document.execCommand("InsertText", false, "Bold");
 edit2 = document.getElementById("edit2");
 edit2.focus();
 text = edit2.firstChild;
-window.getSelection().setPosition(text, 1);
+window.getSelection().collapse(text, 1);
 document.execCommand("Bold");
 document.execCommand("InsertLineBreak");
 document.execCommand("InsertText", false, "Bold");

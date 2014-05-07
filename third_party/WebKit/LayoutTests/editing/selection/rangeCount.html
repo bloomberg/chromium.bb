@@ -27,7 +27,7 @@ function runTest() {
         if (sel.rangeCount != 0)
             log("Failure.  Expected: rangeCount == 0, Found: " + sel.rangeCount);
         
-        sel.setPosition(text, 0);
+        sel.collapse(text, 0);
         if (sel.rangeCount != 1)
             log("Failure.  Expected: rangeCount == 1, Found: " + sel.rangeCount);
         

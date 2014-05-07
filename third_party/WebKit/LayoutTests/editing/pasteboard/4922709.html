@@ -24,7 +24,7 @@ sel = window.getSelection();
 sel.setBaseAndExtent(text, 0, text, text.length);
 document.execCommand("Copy");
 edit = document.getElementById("edit");
-sel.setPosition(edit, 0);
+sel.collapse(edit, 0);
 document.execCommand("Paste");
 if (window.testRunner)
     document.body.innerText = document.getElementById("description").innerText + "\n\n" + document.getElementById("edit").innerHTML;

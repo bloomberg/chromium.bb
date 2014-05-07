@@ -8,7 +8,7 @@ if (window.testRunner)
 
 function runTest() {
     document.open();
-    getSelection().setPosition(document, 0);
+    getSelection().collapse(document, 0);
     getSelection().modify("move", "forward", "line");
     document.writeln('This test ensures WebKit does not crash when extending selection forward by line in an empty document.<br><br>');
     document.writeln('PASS.');

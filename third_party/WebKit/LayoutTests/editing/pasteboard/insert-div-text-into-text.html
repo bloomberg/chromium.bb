@@ -15,7 +15,7 @@ Markup.description('This tests inserting a text wrapped in a div inside a text n
 var sel = window.getSelection();
 var e = document.getElementById("test").firstChild;
 
-sel.setPosition(e, 0);
+sel.collapse(e, 0);
 sel.modify("move", "forward", "word");
 sel.modify("move", "forward", "character");
 document.execCommand("InsertHTML", false, "<div>should</div>");

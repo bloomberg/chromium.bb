@@ -13,7 +13,7 @@ function runTest() {
     var textToSelect = "This text should be selected, but this frame shouldn't be focused.";
     var frame = document.getElementById("frame");
     var s = frame.contentDocument.getSelection();
-    s.setPosition(frame.contentDocument.body, 0);
+    s.collapse(frame.contentDocument.body, 0);
     frame.contentDocument.execCommand("InsertText", false, textToSelect);
     frame.parentNode.removeChild(frame);
     window.setTimeout(function() {

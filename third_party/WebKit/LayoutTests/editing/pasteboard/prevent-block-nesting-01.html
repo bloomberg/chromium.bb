@@ -15,7 +15,7 @@ if (window.testRunner)
 var s = window.getSelection();
 var e = document.getElementById("test");
 
-s.setPosition(e, 0);
+s.collapse(e, 0);
 document.execCommand("InsertHTML", false, "There should be an empty line between these two paragraphs.<span><div><br></div></span><div>This paragraph and the empty line should have be in their own divs with a red border.</div>");
 
 Markup.description(document.getElementById('description').textContent);

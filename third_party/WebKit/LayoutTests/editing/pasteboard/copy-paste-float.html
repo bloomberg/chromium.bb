@@ -12,7 +12,7 @@
             selection.selectAllChildren(copySection);
             document.execCommand("Copy");
 
-            selection.setPosition(pasteSection, 0);
+            selection.collapse(pasteSection, 0);
             document.execCommand("Paste");
 
             console.log((pasteSection.firstChild.style.getPropertyValue("float") != "left")

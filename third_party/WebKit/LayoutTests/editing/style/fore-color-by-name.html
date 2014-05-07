@@ -8,7 +8,7 @@
 if (window.internals)
     internals.settings.setEditingBehavior('mac');
 
-window.getSelection().setPosition(test, 0);
+window.getSelection().collapse(test, 0);
 window.getSelection().modify('move', 'forward', 'word');
 window.getSelection().modify('move', 'forward', 'character');
 window.getSelection().modify('extend', 'forward', 'word');

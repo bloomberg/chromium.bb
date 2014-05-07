@@ -6,7 +6,7 @@ if (window.testRunner)
 while (script = document.querySelector('script'))
     script.parentNode.removeChild(script);
 
-getSelection().setPosition(document.body, 2);
+getSelection().collapse(document.body, 2);
 document.execCommand('indent');
 
 Markup.description('This test indents insides a document with exactly two image elements.');

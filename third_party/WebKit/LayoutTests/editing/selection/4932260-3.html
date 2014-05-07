@@ -6,7 +6,7 @@ if (window.testRunner)
     window.testRunner.dumpEditingCallbacks();
 var sel = window.getSelection();
 var div = document.getElementById("div");
-sel.setPosition(div, div.childNodes.length);
+sel.collapse(div, div.childNodes.length);
 sel.modify("move", "backward", "word");
 sel.modify("move", "backward", "word");
 </script>

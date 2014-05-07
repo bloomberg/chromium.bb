@@ -17,7 +17,7 @@
             function test()
             {
                 var s = window.getSelection();
-                s.setPosition(document.getElementById('qt'), 0);
+                s.collapse(document.getElementById('qt'), 0);
                 s.modify("extend", "forward", "line");
                 document.execCommand("InsertNewlineInQuotedContent");
                 document.execCommand("InsertText", "true", "unquoted");

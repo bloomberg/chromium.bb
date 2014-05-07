@@ -4,7 +4,7 @@
 <script>
 span = document.getElementById("span");
 selection = window.getSelection();
-selection.setPosition(span, 0);
+selection.collapse(span, 0);
 document.execCommand("SelectAll");
 document.execCommand("Delete");
 document.execCommand("InsertText", false, "x");

@@ -17,7 +17,7 @@ document.designMode = 'on';
 
 var selection = window.getSelection();
 var result = document.getElementById('result');
-selection.setPosition(result, 0);
+selection.collapse(result, 0);
 selection.modify('move', 'forward', 'line');
 
 Markup.dump('result');

@@ -57,7 +57,7 @@ function selectAll(container) {
 
 function selectorForLines(first, last) {
     return function (container) {
-        window.getSelection().setPosition(container, 0);
+        window.getSelection().collapse(container, 0);
         for (var i = 0; i < first - 1; i++)
             window.getSelection().modify('move', 'forward', 'line');
         for (var i = 0; i < Math.abs(last - first, 0) + 1; i++)

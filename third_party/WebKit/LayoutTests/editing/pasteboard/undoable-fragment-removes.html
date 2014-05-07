@@ -12,10 +12,10 @@ if (window.testRunner)
 var c = document.getElementById("copy");
 var p = document.getElementById("paste");
 var s = window.getSelection();
-s.setPosition(c, 0);
+s.collapse(c, 0);
 document.execCommand("SelectAll");
 document.execCommand("Copy");
-s.setPosition(p, 0);
+s.collapse(p, 0);
 document.execCommand("Paste");
 document.execCommand("Undo");
 </script>

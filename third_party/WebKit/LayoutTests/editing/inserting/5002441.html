@@ -3,6 +3,6 @@
 <script>
 var div = document.getElementById("div");
 var selection = window.getSelection();
-selection.setPosition(div, 0);
+selection.collapse(div, 0);
 document.execCommand("InsertText", false, " ");
 </script>

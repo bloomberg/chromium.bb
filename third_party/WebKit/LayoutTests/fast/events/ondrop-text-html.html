@@ -39,7 +39,7 @@ var endX = dropTarget.offsetLeft + 10;
 var endY = dropTarget.offsetTop + dropTarget.offsetHeight / 2;
 
 var selection = window.getSelection();
-selection.setPosition(dragMe, 0);
+selection.collapse(dragMe, 0);
 selection.modify("extend", "forward", "sentence");
 
 eventSender.mouseMoveTo(startX, startY);

@@ -16,7 +16,7 @@ editable.focus();
 
 // Edit it with execCommand
 var sel = window.getSelection();
-sel.setPosition(document.getElementById('anchor'), 1);
+sel.collapse(document.getElementById('anchor'), 1);
 document.execCommand("InsertParagraph");
 document.execCommand("InsertText", false, "2");
 

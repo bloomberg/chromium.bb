@@ -22,7 +22,7 @@ blockquote = document.getElementById("blockquote");
 sel = window.getSelection();
 sel.setBaseAndExtent(blockquote, 0, div, 2);
 document.execCommand("Copy");
-sel.setPosition(div, 0);
+sel.collapse(div, 0);
 
 Markup.description(document.getElementById('description').textContent);
 

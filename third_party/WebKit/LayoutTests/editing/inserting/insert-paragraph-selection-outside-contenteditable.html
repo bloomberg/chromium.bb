@@ -9,7 +9,7 @@
 
     var originalContent = root.outerHTML;
     var sel = window.getSelection();
-    sel.setPosition(document.getElementById("wrapper"), 1);
+    sel.collapse(document.getElementById("wrapper"), 1);
     document.execCommand("InsertParagraph", false, null);
     var editedContent = root.outerHTML;
     root.style.display = 'none'; // Remove from output.

@@ -4,7 +4,7 @@
             function test()
             {
                 var sel = window.getSelection();
-                sel.setPosition(document.getElementById('dv'), 0);
+                sel.collapse(document.getElementById('dv'), 0);
                 document.execCommand("Delete");
             }
         </script>

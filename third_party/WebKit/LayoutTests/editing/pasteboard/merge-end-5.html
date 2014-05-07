@@ -15,7 +15,7 @@ Markup.description('Pasting a paragraph or less into a selection that spans mult
 var s = window.getSelection();
 var e = document.getElementById("test");
 
-s.setPosition(e, 0);
+s.collapse(e, 0);
 
 s.modify("move", "forward", "word");
 s.modify("move", "forward", "character");

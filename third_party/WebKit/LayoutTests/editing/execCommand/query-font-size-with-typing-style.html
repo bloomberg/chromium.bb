@@ -7,7 +7,7 @@
 if (window.testRunner)
     testRunner.dumpAsText();
 
-window.getSelection().setPosition(document.getElementById('test').firstChild, 0);
+window.getSelection().collapse(document.getElementById('test').firstChild, 0);
 document.execCommand('bold', false, null);
 document.queryCommandValue('fontSize');
 document.getElementById('test').innerHTML = 'PASS';

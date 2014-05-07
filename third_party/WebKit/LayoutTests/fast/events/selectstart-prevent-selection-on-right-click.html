@@ -18,7 +18,7 @@ var test = document.getElementById('test');
 if (window.testRunner && !window.eventSender)
     test.textContent = 'This test requires eventSender';
 else {
-    window.getSelection().setPosition(document.body, 0);
+    window.getSelection().collapse(document.body, 0);
     var baseNode = getSelection().baseNode;
     var baseOffset = getSelection().baseOffset;
 

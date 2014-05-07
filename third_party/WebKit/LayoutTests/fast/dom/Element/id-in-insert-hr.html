@@ -11,7 +11,7 @@ description("Test using id in execCommand(InsertHorizontalRule)");
 
 var s = window.getSelection();
 var e = document.getElementById("test1");
-s.setPosition(e, 0);
+s.collapse(e, 0);
 
 var id = "hr";
 document.execCommand("InsertHorizontalRule", false, id);

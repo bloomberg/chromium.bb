@@ -2,7 +2,7 @@
 
 <script>
 var sel = window.getSelection();
-sel.setPosition(document.body, 0);
+sel.collapse(document.body, 0);
 document.execCommand("InsertText", false, "This tests for a bug where selecting a word would select the line break and word before it.  Only the word in the  paragraph below should be selected:");
 document.execCommand("InsertParagraph");
 document.execCommand("InsertText", false, "foo");

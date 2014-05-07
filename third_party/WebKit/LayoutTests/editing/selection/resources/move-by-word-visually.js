@@ -136,13 +136,13 @@ function collectWordBreaks(test, searchDirection)
     }
 }
 
-function setPosition(sel, node, wordBreak)
+function collapse(sel, node, wordBreak)
 {
     if (wordBreak.search(',') == -1)
-        sel.setPosition(node, wordBreak);
+        sel.collapse(node, wordBreak);
     else {
         var nodeAndOffset = wordBreak.split(',');
-        sel.setPosition(nodeOfWordBreak(nodeAndOffset), nodeAndOffset[1]);
+        sel.collapse(nodeOfWordBreak(nodeAndOffset), nodeAndOffset[1]);
     }
 }
 
@@ -203,7 +203,7 @@ function moveByWordOnEveryChar(sel, test, searchDirection, dir)
         }
 
         // Restore position and move by 1 character.
-        sel.setPosition(prevNode, prevOffset);
+        sel.collapse(prevNode, prevOffset);
         sel.modify("move", searchDirection, "character");
         if (prevNode == sel.anchorNode && prevOffset == sel.anchorOffset)
             break;
@@ -227,12 +227,12 @@ function moveByWordOnEveryChar(sel, test, searchDirection, dir)
 function moveByWordForEveryPosition(sel, test, dir)
 {
     // Check ctrl-right-arrow works for every position.
-    sel.setPosition(test, 0);
+    sel.collapse(test, 0);
     var direction = "right";
     if (dir == "rtl")
         direction = "left";    
     moveByWord(sel, test, direction, dir);    
-    sel.setPosition(test, 0);
+    sel.collapse(test, 0);
     moveByWordOnEveryChar(sel, test, direction, dir);
 
     sel.modify("move", "forward", "lineBoundary");
@@ -245,7 +245,7 @@ function moveByWordForEveryPosition(sel, test, dir)
         direction = "right";    
     moveByWord(sel, test, direction, dir);    
 
-    sel.setPosition(position.node, position.offset);
+    sel.collapse(position.node, position.offset);
     moveByWordOnEveryChar(sel, test, direction, dir);
 }
 

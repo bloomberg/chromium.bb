@@ -10,7 +10,7 @@ function editingTest() {
     frames['imageframe'].document.execCommand('Copy');
     var s = window.getSelection();
     var e = document.getElementById('dest');
-    s.setPosition(e, 0);
+    s.collapse(e, 0);
     document.execCommand('Paste');
     if (e.firstChild.src.indexOf('#\x22\x3epreserve-fragment') !== -1)
         alert('PASS');

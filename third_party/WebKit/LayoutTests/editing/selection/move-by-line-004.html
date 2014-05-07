@@ -28,7 +28,7 @@
     var juice = document.getElementById("juice");
 
     var sel = getSelection();
-    sel.setPosition(pie.firstChild, 3);
+    sel.collapse(pie.firstChild, 3);
     sel.modify("move", "forward", "line");
 
     if (sel.anchorNode !== juice.firstChild || sel.anchorOffset != 3) {
@@ -36,7 +36,7 @@
         fail = true;
     }
 
-    sel.setPosition(juice.firstChild, 3);
+    sel.collapse(juice.firstChild, 3);
     sel.modify("move", "backward", "line");
 
     if (sel.anchorNode !== pie.firstChild || sel.anchorOffset != 3) {

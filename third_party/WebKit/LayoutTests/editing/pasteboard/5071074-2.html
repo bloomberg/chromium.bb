@@ -5,6 +5,6 @@
 var div = document.getElementById("div");
 var sel = window.getSelection();
 
-sel.setPosition(div, div.childNodes.length);
+sel.collapse(div, div.childNodes.length);
 document.execCommand("InsertHTML", false, "<a href='http://www.google.com/'>This should be a link.</a>")
 </script>

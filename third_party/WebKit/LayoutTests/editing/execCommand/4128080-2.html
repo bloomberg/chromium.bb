@@ -13,7 +13,7 @@ window.getSelection().setBaseAndExtent(copy, 0, copy, copy.childNodes.length);
 document.execCommand("Copy");
 
 paste = document.getElementById("paste");
-window.getSelection().setPosition(paste, 0);
+window.getSelection().collapse(paste, 0);
 document.execCommand("Paste");
 
 expected = "<h1>foo</h1>";

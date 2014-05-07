@@ -22,7 +22,7 @@ function test()
 
     document.execCommand("Copy");
     var pasteHere = document.getElementById("pastehere");
-    s.setPosition(pasteHere, 0);
+    s.collapse(pasteHere, 0);
     document.execCommand("Paste");
 }
 

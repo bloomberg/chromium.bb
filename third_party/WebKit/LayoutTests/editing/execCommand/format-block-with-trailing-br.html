@@ -9,7 +9,7 @@ if (window.testRunner)
 <script>
 var s = window.getSelection();
 var p1 = document.getElementById("item1");
-s.setPosition(p1, 0);
+s.collapse(p1, 0);
 document.execCommand("FormatBlock", false, "pre");
 
 </script>

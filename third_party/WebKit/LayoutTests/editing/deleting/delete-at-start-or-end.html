@@ -3,7 +3,7 @@
 function editingTest() {
     var selection = window.getSelection();
     var s = document.getElementById("test");
-    selection.setPosition(s, 0);
+    selection.collapse(s, 0);
     execDeleteCommand();
     execForwardDeleteCommand();
 }

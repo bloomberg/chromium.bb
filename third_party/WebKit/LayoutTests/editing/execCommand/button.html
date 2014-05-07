@@ -9,7 +9,7 @@ Markup.description('This tests ensures contents inside a button element is prope
 + 'You should see "hello, world WebKit" inside the button and "world" should be bolded.');
 
 var button = document.getElementsByTagName('button')[0];
-window.getSelection().setPosition(button, 1);
+window.getSelection().collapse(button, 1);
 document.execCommand('InsertText', false, ', world WebKit');
 window.getSelection().modify('move', 'backward', 'word');
 window.getSelection().modify('move', 'backward', 'word');

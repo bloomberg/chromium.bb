@@ -9,7 +9,7 @@ var div = document.getElementById("div");
 var text = div.firstChild;
 var sel = window.getSelection();
 
-sel.setPosition(text, 4);
+sel.collapse(text, 4);
 var range = sel.getRangeAt(0);
 var html = "quick brown fox";
 var frag = range.createContextualFragment(html);

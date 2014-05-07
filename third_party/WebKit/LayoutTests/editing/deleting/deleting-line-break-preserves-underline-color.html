@@ -11,7 +11,7 @@ var sel = window.getSelection();
 
 Markup.dump('div', 'Before');
 
-sel.setPosition(div, 0);
+sel.collapse(div, 0);
 sel.modify("move", "forward", "paragraphBoundary");
 sel.modify("move", "forward", "character");
 document.execCommand("Delete");

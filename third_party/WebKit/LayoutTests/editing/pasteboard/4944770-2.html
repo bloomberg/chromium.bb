@@ -11,7 +11,7 @@ document.execCommand("Copy");
 
 var paste = document.getElementById("paste");
 var sel = window.getSelection();
-sel.setPosition(paste, 0);
+sel.collapse(paste, 0);
 sel.modify("move", "forward", "character");
 document.execCommand("Paste");
 </script>

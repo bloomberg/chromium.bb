@@ -26,7 +26,7 @@ selection.addRange(range);
 document.execCommand("Copy");
 
 var pasteNode = document.getElementById("pasteDiv");
-selection.setPosition(pasteNode, 0);
+selection.collapse(pasteNode, 0);
 document.execCommand("Paste");
 Markup.description("This test ensures the copied the newline is NOT inside the blockquote -- a '<div><div><br></div></div>' should be appended as the next sibling of the blockquote. \n");
 Markup.dump('pasteDiv');

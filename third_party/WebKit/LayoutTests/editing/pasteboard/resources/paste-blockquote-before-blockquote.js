@@ -12,7 +12,7 @@ function copyAndPasteNode(nodeName) {
     document.execCommand("Copy");
 
     var pasteDiv = document.getElementById("pasteDiv");
-    sel.setPosition(pasteDiv, 0);
+    sel.collapse(pasteDiv, 0);
     document.execCommand("Paste");
 
     console.log(pasteDiv.children[1] == undefined

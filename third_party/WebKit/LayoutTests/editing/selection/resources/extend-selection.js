@@ -158,14 +158,14 @@ function runSelectionTestsWithGranularity(testNodes, granularity)
         testNode.style.direction = "ltr";
 
         log("  Extending right:    ");
-        getSelection().setPosition(testNode);
+        getSelection().collapse(testNode);
         var ltrRightPos = extendAndLogSelectionToEnd("right", granularity);
 
         log("  Extending left:     ");
         var ltrLeftPos = extendAndLogSelectionToEnd("left", granularity);
 
         log("  Extending forward:  ");
-        getSelection().setPosition(testNode);
+        getSelection().collapse(testNode);
         var ltrForwardPos = extendAndLogSelectionToEnd("forward", granularity);
 
         log("  Extending backward: ");
@@ -175,14 +175,14 @@ function runSelectionTestsWithGranularity(testNodes, granularity)
         testNode.style.direction = "rtl";
 
         log("  Extending left:     ");
-        getSelection().setPosition(testNode);
+        getSelection().collapse(testNode);
         var rtlLeftPos = extendAndLogSelectionToEnd("left", granularity);
 
         log("  Extending right:    ");
         var rtlRightPos = extendAndLogSelectionToEnd("right", granularity);
 
         log("  Extending forward:  ");
-        getSelection().setPosition(testNode);
+        getSelection().collapse(testNode);
         var rtlForwardPos = extendAndLogSelectionToEnd("forward", granularity);
 
         log("  Extending backward: ");

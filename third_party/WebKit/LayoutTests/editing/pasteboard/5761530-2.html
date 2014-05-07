@@ -4,7 +4,7 @@
 if (window.testRunner)
     window.testRunner.dumpAsText();
 edit = document.getElementById("edit");
-window.getSelection().setPosition(edit, 0);
+window.getSelection().collapse(edit, 0);
 document.execCommand("InsertHTML", false, "	");
 if (window.testRunner)
     document.body.innerText = document.getElementById("description").innerText;

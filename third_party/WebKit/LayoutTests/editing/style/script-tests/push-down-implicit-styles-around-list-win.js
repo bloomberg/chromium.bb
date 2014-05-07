@@ -20,13 +20,13 @@ function testSingleToggle(toggleCommand, selector, initialContents, expectedCont
 }
 
 function selectFirstWord(container) {
-    window.getSelection().setPosition(container, 0);
+    window.getSelection().collapse(container, 0);
     window.getSelection().modify('extend', 'forward', 'word');
     return 'first word';
 }
 
 function selectLastWord(container) {
-    window.getSelection().setPosition(container, container.childNodes.length);
+    window.getSelection().collapse(container, container.childNodes.length);
     window.getSelection().modify('extend', 'backward', 'word');
     return 'last word';
 }

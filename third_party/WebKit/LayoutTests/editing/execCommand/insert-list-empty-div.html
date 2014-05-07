@@ -5,7 +5,7 @@
 <script>
 var sel = window.getSelection();
 var div = document.getElementById("div");
-sel.setPosition(div, 0);
+sel.collapse(div, 0);
 
 document.execCommand("InsertUnorderedList");
 Markup.dump("div");

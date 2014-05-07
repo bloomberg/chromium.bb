@@ -14,7 +14,7 @@ function foo() {
 
     var p1 = document.getElementById("pastehere");
     var s = window.getSelection();
-    s.setPosition(p1, 0);
+    s.collapse(p1, 0);
     document.execCommand("Paste");
     log(document.getElementById("pastehere").innerHTML);
 

@@ -31,7 +31,7 @@ for (var i = 0; i < test.childNodes.length; i++) {
 
 Markup.dump(test, '"world" and only "world" should be bolded in each element below');
 
-window.getSelection().setPosition(test, 0);
+window.getSelection().collapse(test, 0);
 
 for (var i = 0; i < (text.length + 1) * test.childNodes.length - 1; i++)
     window.getSelection().modify('extend', 'forward', 'character');

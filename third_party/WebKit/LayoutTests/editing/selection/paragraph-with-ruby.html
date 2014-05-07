@@ -29,7 +29,7 @@
     {
         var selection = getSelection();
 
-        selection.setPosition(node, offset);
+        selection.collapse(node, offset);
         selection.modify("move", "forward", "paragraphBoundary");
         if (selection.baseNode === paragraph.lastChild && selection.baseOffset === 6)
             log("PASS: Reached the end of the paragraph starting from " + positionAsString(node, offset) + ".");
@@ -42,7 +42,7 @@
     {
         var selection = getSelection();
 
-        selection.setPosition(node, offset);
+        selection.collapse(node, offset);
         selection.modify("move", "backward", "paragraphBoundary");
         if (selection.baseNode === paragraph.firstChild && selection.baseOffset === 5)
             log("PASS: Reached the start of the paragraph starting from " + positionAsString(node, offset) + ".");

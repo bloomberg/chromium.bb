@@ -8,6 +8,6 @@ if (window.testRunner)
 <div contenteditable="true"><a id="anchor" href="http://www.apple.com">applesite</a></div>
 <script>
 var sel = window.getSelection();
-sel.setPosition(document.getElementById("anchor"), 0);
+sel.collapse(document.getElementById("anchor"), 0);
 document.execCommand("InsertParagraph");
 </script>

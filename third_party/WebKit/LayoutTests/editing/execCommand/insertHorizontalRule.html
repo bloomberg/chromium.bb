@@ -16,14 +16,14 @@ var s = window.getSelection();
 var e;
 
 e = document.getElementById("test1");
-s.setPosition(e, 0);
+s.collapse(e, 0);
 moveSelectionForwardByCharacterCommand();
 moveSelectionForwardByCharacterCommand();
 moveSelectionForwardByCharacterCommand();
 document.execCommand("InsertHorizontalRule", false, "");
 
 e = document.getElementById("test2");
-s.setPosition(e, 0);
+s.collapse(e, 0);
 moveSelectionForwardByCharacterCommand();
 moveSelectionForwardByCharacterCommand();
 moveSelectionForwardByCharacterCommand();

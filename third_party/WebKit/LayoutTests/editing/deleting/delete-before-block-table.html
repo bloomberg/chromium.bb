@@ -5,7 +5,7 @@ function runTest() {
         window.testRunner.dumpAsText();
     table = document.getElementById("table");
     s = window.getSelection();
-    s.setPosition(table, 0);
+    s.collapse(table, 0);
     document.execCommand("Delete");
     if (window.testRunner)
         document.body.innerText = document.getElementById("div").innerHTML + "\n\nSelection: [" + s.anchorNode + ", " + s.anchorOffset + "]";

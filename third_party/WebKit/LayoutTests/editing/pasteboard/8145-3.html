@@ -9,7 +9,7 @@ if (window.testRunner)
 var s = window.getSelection();
 var p = document.getElementById("test");
 p.innerHTML = "<div>foo</div>";
-s.setPosition(p, 0);
+s.collapse(p, 0);
 s.modify("move", "forward", "character");
 var html = "<div>bar</div>baz<br class='Apple-interchange-newline'>";
 document.execCommand("InsertHTML", false, html);

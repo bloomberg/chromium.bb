@@ -8,7 +8,7 @@
 <script>
 var span = document.getElementById("start");
 var sel = window.getSelection();
-sel.setPosition(span, 0);
+sel.collapse(span, 0);
 
 document.execCommand("SelectAll");
 </script>

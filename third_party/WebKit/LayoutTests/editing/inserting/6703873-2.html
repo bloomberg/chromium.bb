@@ -20,7 +20,7 @@
     <div id="div" contentEditable="true"><blockquote type="cite"><div>Lorem<br>ipsum<blockquote id="test" type="cite">dolor</blockquote></blockquote></div>
     <script>
         test = document.getElementById("test");
-        window.getSelection().setPosition(test, 0);
+        window.getSelection().collapse(test, 0);
         document.execCommand("InsertNewlineInQuotedContent");
     
         if (window.testRunner) {

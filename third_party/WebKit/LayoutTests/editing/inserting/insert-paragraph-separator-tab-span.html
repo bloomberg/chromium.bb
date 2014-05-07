@@ -13,7 +13,7 @@ Markup.description('This test ensures WebKit avoids cloning Apple tab span when 
 
 function runTest(div) {
     var offset = div.title.substr(0, div.title.indexOf(':'));
-    window.getSelection().setPosition(div, offset);
+    window.getSelection().collapse(div, offset);
     document.execCommand("InsertParagraph");
     document.execCommand("InsertText", false, "hello world WebKit ");
     Markup.dump(div, div.title.substr(div.title.indexOf(': ') + 2));

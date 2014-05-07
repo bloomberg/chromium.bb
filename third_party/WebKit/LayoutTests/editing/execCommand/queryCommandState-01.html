@@ -29,7 +29,7 @@ if (window.testRunner)
     window.testRunner.dumpAsText();
 var sel = window.getSelection();
 var div = document.getElementById("div");
-sel.setPosition(div, 0);
+sel.collapse(div, 0);
 
 assert(!document.queryCommandState("InsertUnorderedList"));
 assert(!document.queryCommandState("InsertOrderedList"));

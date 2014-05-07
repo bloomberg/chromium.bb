@@ -12,7 +12,7 @@
 
 // This test ensures WebKit can extend selection vertically inside transform.
 
-window.getSelection().setPosition(document.getElementsByTagName('p')[0].firstChild, 2);
+window.getSelection().collapse(document.getElementsByTagName('p')[0].firstChild, 2);
 window.getSelection().modify('extend', 'forward', 'line');
 
 </script>

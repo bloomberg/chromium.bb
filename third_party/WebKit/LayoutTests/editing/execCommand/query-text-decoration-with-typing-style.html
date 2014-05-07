@@ -43,7 +43,7 @@ function runTextDecorationTest(command) {
     printState(command);
 }
 
-window.getSelection().setPosition(test, 0);
+window.getSelection().collapse(test, 0);
 runTextDecorationTest('underline');
 runTextDecorationTest('strikeThrough');
 

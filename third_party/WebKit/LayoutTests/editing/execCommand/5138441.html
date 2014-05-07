@@ -19,7 +19,7 @@ blockquote {
 var selection = window.getSelection();
 var div = document.getElementById("div");
 
-selection.setPosition(div, 0);
+selection.collapse(div, 0);
 document.execCommand("Indent");
 </script>
 </body>

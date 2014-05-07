@@ -16,7 +16,7 @@ Markup.description('This is a test case for the fix for http://bugzilla.opendarw
 
 var test = document.getElementById('test');
 test.focus();
-window.getSelection().setPosition(test, 0);
+window.getSelection().collapse(test, 0);
 
 Markup.dump(test, 'before');
 

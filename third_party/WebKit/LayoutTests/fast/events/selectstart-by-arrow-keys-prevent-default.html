@@ -12,7 +12,7 @@ var selectStartCount = 0;
 var div = document.getElementsByTagName('div')[0];
 div.addEventListener('selectstart', function (event) { event.preventDefault(); selectStartCount++; });
 div.focus();
-window.getSelection().setPosition(div.firstChild, 1);
+window.getSelection().collapse(div.firstChild, 1);
 
 if (window.testRunner) {
     testRunner.dumpAsText();

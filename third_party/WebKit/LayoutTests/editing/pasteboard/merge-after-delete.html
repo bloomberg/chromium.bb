@@ -15,7 +15,7 @@ div {
 var s = window.getSelection();
 var e = document.getElementById("test");
 
-s.setPosition(e, 0);
+s.collapse(e, 0);
 
 s.modify("move", "forward", "character");
 s.modify("extend", "forward", "line");

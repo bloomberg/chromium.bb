@@ -10,7 +10,7 @@
     {
         var target = document.getElementById('target');
         var doc = target.contentDocument;
-        target.contentWindow.getSelection().setPosition(doc.body, 0);
+        target.contentWindow.getSelection().collapse(doc.body, 0);
         target.focus();
         test();
     }

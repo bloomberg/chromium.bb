@@ -5,7 +5,7 @@ if (window.testRunner)
 	window.testRunner.dumpAsText();
 edit = document.getElementById("edit");
 
-window.getSelection().setPosition(edit, 0);
+window.getSelection().collapse(edit, 0);
 window.getSelection().modify("extend", "forward", "character");
 document.execCommand("Copy");
 window.getSelection().modify("move", "backward", "character");

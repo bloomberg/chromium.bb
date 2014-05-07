@@ -14,10 +14,10 @@ function step2() {
     var body = doc.body;
     var sel = frame.getSelection();
     frame.focus();
-    sel.setPosition(body, 0);
+    sel.collapse(body, 0);
     doc.execCommand("InsertText", false, "You should not see a caret in this text.");
     var text = body.firstChild;
-    sel.setPosition(text, text.length);
+    sel.collapse(text, text.length);
     // Wait for the caret to paint.
     runAfterDisplay(repaintTest);
 }

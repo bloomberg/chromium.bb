@@ -11,7 +11,7 @@
         
             var blankLine = document.getElementById('blankLine');
             var s = window.getSelection();
-            s.setPosition(blankLine, 0);
+            s.collapse(blankLine, 0);
             document.execCommand("InsertNewlineInQuotedContent");
             
             if (blankLine.nextSibling.nodeName == "BR")

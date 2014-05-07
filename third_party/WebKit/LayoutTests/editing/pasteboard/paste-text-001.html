@@ -10,7 +10,7 @@
 
 var test = document.getElementById('test');
 test.focus();
-window.getSelection().setPosition(root, 0);
+window.getSelection().collapse(root, 0);
 
 if (window.testRunner)
     testRunner.dumpEditingCallbacks();

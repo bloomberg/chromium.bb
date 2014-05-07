@@ -17,7 +17,7 @@ var e = document.getElementById('e');
 document.getElementById('c1').appendChild(document.createTextNode(e.innerHTML));
 
 var s = window.getSelection();
-s.setPosition(document.getElementById('e'), 1);
+s.collapse(document.getElementById('e'), 1);
 document.execCommand("formatblock", false, "h1");
 
 document.getElementById('c2').appendChild(document.createTextNode(e.innerHTML));

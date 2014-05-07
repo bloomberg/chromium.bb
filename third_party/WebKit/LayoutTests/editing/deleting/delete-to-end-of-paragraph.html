@@ -19,7 +19,7 @@ if (!window.testRunner)
 else {
     testRunner.dumpEditingCallbacks();
 
-    getSelection().setPosition(document.getElementById('test'), 0);
+    getSelection().collapse(document.getElementById('test'), 0);
     // test for 4570218 by using double deleteToEndOfParagraph
     testRunner.execCommand("DeleteToEndOfParagraph");
     testRunner.execCommand("DeleteToEndOfParagraph");

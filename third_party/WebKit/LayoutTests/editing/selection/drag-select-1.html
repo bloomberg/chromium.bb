@@ -20,7 +20,7 @@ if (window.testRunner) {
     
     var div = document.getElementById("div");
     var sel = window.getSelection();
-    sel.setPosition(div, 0);
+    sel.collapse(div, 0);
     
     var start = document.getElementById("start");
     var startx = -8 + start.offsetLeft + start.offsetWidth / 2;

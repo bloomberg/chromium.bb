@@ -8,7 +8,7 @@ PASS getSelection().collapseToStart() threw exception InvalidStateError: Failed 
 PASS getSelection().collapseToEnd() threw exception InvalidStateError: Failed to execute 'collapseToEnd' on 'Selection': there is no selection..
 PASS getSelection().setBaseAndExtent(document.documentElement, -1, document.documentElement, 0) threw exception IndexSizeError: Failed to execute 'setBaseAndExtent' on 'Selection': -1 is not a valid base offset..
 PASS getSelection().setBaseAndExtent(document.documentElement, 0, document.documentElement, -1) threw exception IndexSizeError: Failed to execute 'setBaseAndExtent' on 'Selection': -1 is not a valid extent offset..
-PASS getSelection().setPosition(document.documentElement, -1) threw exception IndexSizeError: Failed to execute 'setPosition' on 'Selection': -1 is not a valid offset..
+PASS getSelection().collapse(document.documentElement, -1) threw exception IndexSizeError: Failed to execute 'collapse' on 'Selection': -1 is not a valid offset..
 PASS getSelection().getRangeAt(-1) threw exception IndexSizeError: Failed to execute 'getRangeAt' on 'Selection': -1 is not a valid index..
 PASS getSelection().extend(0, -1) threw exception TypeMismatchError: Failed to execute 'extend' on 'Selection': The 1st argument provided is either null, or an invalid Node object..
 PASS getSelection().extend(document.documentElement, -1) threw exception IndexSizeError: Failed to execute 'extend' on 'Selection': -1 is not a valid offset..

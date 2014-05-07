@@ -10,7 +10,7 @@
     li = document.getElementById("two");
     text = li.firstChild;
     selection = window.getSelection();
-    selection.setPosition(text, 3);
+    selection.collapse(text, 3);
     document.execCommand("InsertNewlineInQuotedContent");
     var div = document.getElementById("container");
     div.parentNode.removeChild(div);

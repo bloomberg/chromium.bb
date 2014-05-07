@@ -17,6 +17,6 @@ blockquote {
 dv = document.getElementById("dv");
 text = dv.firstChild;
 s = window.getSelection();
-s.setPosition(text, 3);
+s.collapse(text, 3);
 document.execCommand("InsertNewlineInQuotedContent");
 </script>

@@ -41,7 +41,7 @@ var commands = [
     {name: 'Strikethrough', value: null},
     {name: 'Subscript', value: null},
     {name: 'Superscript', value: null},
-    {name: 'Transpose', value: null, selector: function (test) { window.getSelection().setPosition(test.firstChild, 1); }},
+    {name: 'Transpose', value: null, selector: function (test) { window.getSelection().collapse(test.firstChild, 1); }},
     {name: 'Underline', value: null},
     {name: 'Unlink', value: null},
 ];

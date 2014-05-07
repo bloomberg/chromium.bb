@@ -18,7 +18,7 @@ editDiv.addEventListener('paste', handlePaste, false);
     
 // Select foo and copy it.    
 var selection = window.getSelection();
-selection.setPosition(editDiv, 0);
+selection.collapse(editDiv, 0);
 selection.modify("extend", "forward", "word"); 
 document.execCommand("Copy");
 

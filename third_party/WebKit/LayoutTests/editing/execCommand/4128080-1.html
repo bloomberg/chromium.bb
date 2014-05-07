@@ -8,7 +8,7 @@ function insertHeaderForTest(testContent, expected)
     document.body.innerHTML = "<div id='testDiv' contentEditable='true'>foofoo</div>";
     var targetDiv = document.getElementById("testDiv");
     var targetText = targetDiv.firstChild;
-    window.getSelection().setPosition(targetText, 3);
+    window.getSelection().collapse(targetText, 3);
     document.execCommand("InsertHTML", false, testContent);
     var actual = targetDiv.innerHTML;
     if (actual == expected)

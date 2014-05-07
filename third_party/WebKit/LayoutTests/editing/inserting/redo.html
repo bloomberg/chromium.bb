@@ -5,7 +5,7 @@ if (window.testRunner)
 <div id="test" contenteditable="true"></div>
 
 <script>
-window.getSelection().setPosition(document.getElementById("test"), 0);
+window.getSelection().collapse(document.getElementById("test"), 0);
 document.execCommand("InsertText", false, "The caret should be at the end of this sentence.");
 document.execCommand("Undo");
 document.execCommand("Redo");

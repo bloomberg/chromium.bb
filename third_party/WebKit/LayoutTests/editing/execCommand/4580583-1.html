@@ -24,7 +24,7 @@
     <script>
     li = document.getElementById("two");
     selection = window.getSelection();
-    selection.setPosition(li, li.childNodes.length);
+    selection.collapse(li, li.childNodes.length);
     document.execCommand("InsertNewlineInQuotedContent");
     </script>
 </body>

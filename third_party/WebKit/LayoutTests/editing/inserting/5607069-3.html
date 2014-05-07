@@ -8,7 +8,7 @@ Markup.description("This tests for a bug in InsertParagraph where it would split
 div = document.getElementById("div");
 form = div.childNodes[0];
 text = form.childNodes[1];
-window.getSelection().setPosition(text, 1);
+window.getSelection().collapse(text, 1);
 document.execCommand("InsertParagraph");
 Markup.dump(div);
 </script>

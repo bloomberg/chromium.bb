@@ -12,7 +12,7 @@ Markup.description(document.querySelector('p').textContent);
 document.designMode = 'on';
 
 var firstCell = document.getElementById('firstCell');
-window.getSelection().setPosition(firstCell, 1);
+window.getSelection().collapse(firstCell, 1);
 document.execCommand("insertHTML", false, "<div>&nbsp;2</div>");
 
 Markup.dump('result')

@@ -29,7 +29,7 @@
 function editingTest() {
     var selection = window.getSelection();
     var s = document.getElementById("start");
-    selection.setPosition(s, 0);
+    selection.collapse(s, 0);
     execMoveSelectionForwardByCharacterCommand();
     for (i = 0; i < 3; i++) {
         deleteCommand();

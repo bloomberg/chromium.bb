@@ -12,7 +12,7 @@ Markup.description('This test moves up caret into a wrapped line. \n'
 
 var div = document.getElementsByTagName('div')[0];
 div.focus();
-getSelection().setPosition(div, div.childNodes.length);
+getSelection().collapse(div, div.childNodes.length);
 getSelection().modify('move', 'backward', 'line');
 
 Markup.dump(div);

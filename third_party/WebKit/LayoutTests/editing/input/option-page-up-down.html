@@ -24,7 +24,7 @@ function runFrameCursorMoveTest() {
     var body = doc.body;
     body.innerHTML = generateContent();
     frame.focus();
-    frame.getSelection().setPosition(body.firstChild, 0);
+    frame.getSelection().collapse(body.firstChild, 0);
     runCursorMoveTest("iframe", frame, frame);
 }
 
@@ -32,7 +32,7 @@ function runDivCursorMoveTest() {
     var editable = document.getElementById('editable');
     editable.innerHTML = generateContent();
     editable.focus();
-    window.getSelection().setPosition(editable, 0);
+    window.getSelection().collapse(editable, 0);
     runCursorMoveTest("div", editable, window);
 }
 

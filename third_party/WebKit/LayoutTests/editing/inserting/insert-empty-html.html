@@ -18,7 +18,7 @@ if (window.testRunner) {
     var div = document.getElementById("content");
     var text = div.firstChild;
 
-    selection.setPosition(text, 5);
+    selection.collapse(text, 5);
     document.execCommand('InsertHTML', false, "");
 
     shouldBe("window.getSelection().baseOffset", "5");

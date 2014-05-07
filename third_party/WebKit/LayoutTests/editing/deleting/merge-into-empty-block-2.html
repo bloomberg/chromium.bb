@@ -6,7 +6,7 @@ if (window.testRunner)
      testRunner.dumpEditingCallbacks();
 
 var e = document.getElementById("test");
-window.getSelection().setPosition(e, 0);
+window.getSelection().collapse(e, 0);
 
 document.execCommand("Delete");
 

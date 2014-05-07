@@ -6,7 +6,7 @@ var sel = window.getSelection();
 var div = document.getElementById("div");
 var text = div.firstChild;
 
-sel.setPosition(text, 30);
+sel.collapse(text, 30);
 
 document.execCommand("InsertHTML", false, "<img src='../resources/abe.png' align='right'>");
 </script>

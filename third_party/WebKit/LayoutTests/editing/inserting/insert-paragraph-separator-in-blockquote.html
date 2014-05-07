@@ -42,7 +42,7 @@ var blockquoteElement = document.getElementById("testBQ");
 var nodesOfBlockquote = blockquoteElement.childNodes.length;
 var insertionDiv = document.getElementById("testDiv").firstChild;
 var selection = window.getSelection();
-selection.setPosition(insertionDiv, insertionDiv.textContent.length);
+selection.collapse(insertionDiv, insertionDiv.textContent.length);
 
 document.execCommand('InsertParagraph', false, null);
 

@@ -6,7 +6,7 @@
                 if (window.testRunner)
                     testRunner.dumpAsText();
 
-                window.getSelection().setPosition(document.getElementById('dv'), 1);
+                window.getSelection().collapse(document.getElementById('dv'), 1);
                 document.execCommand("InsertParagraph");
                 document.execCommand("InsertText", false, "this should also be blue over lightgrey");
 

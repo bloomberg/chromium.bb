@@ -10,7 +10,7 @@ if (window.testRunner)
 
 var test = document.getElementById('test');
 test.focus();
-window.getSelection().setPosition(test, test.childNodes.length);
+window.getSelection().collapse(test, test.childNodes.length);
 document.execCommand('backColor', false, '#ff0000');
 document.execCommand('fontSize', false, 5);
 var backColor = document.queryCommandValue('backColor');

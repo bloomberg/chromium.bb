@@ -31,13 +31,13 @@ function log(message) {
 }
 
 var s = window.getSelection();
-s.setPosition(document.getElementById("item1"), 0);
+s.collapse(document.getElementById("item1"), 0);
 document.execCommand("InsertUnorderedList", false, "Moo");
-s.setPosition(document.getElementById("item2"), 0);
+s.collapse(document.getElementById("item2"), 0);
 document.execCommand("InsertUnorderedList", false, "Goo");
-s.setPosition(document.getElementById("item3"), 0);
+s.collapse(document.getElementById("item3"), 0);
 document.execCommand("InsertUnorderedList", false, "Gai");
-s.setPosition(document.getElementById("item4"), 0);
+s.collapse(document.getElementById("item4"), 0);
 document.execCommand("InsertOrderedList", false, "Noodles");
 
 log(div.innerHTML);

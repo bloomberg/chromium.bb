@@ -38,7 +38,7 @@ var e1 = document.getElementById("e1");
 var e2 = document.getElementById("e2");
 var e3 = document.getElementById("e3");
 
-s.setPosition(e1.firstChild, e1.firstChild.length);
+s.collapse(e1.firstChild, e1.firstChild.length);
 s.modify("move", "forward", "character");
 assert(s.anchorNode == e3.firstChild && s.anchorOffset == 0);
 

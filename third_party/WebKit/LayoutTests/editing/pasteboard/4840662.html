@@ -5,7 +5,7 @@
 var sel = window.getSelection();
 var anchor = document.getElementById("anchor");
 var text = anchor.firstChild;
-sel.setPosition(text, 3);
+sel.collapse(text, 3);
 
 document.execCommand("InsertHTML", false, "bar");
 if (window.testRunner) {

@@ -5,6 +5,6 @@ There should be an empty paragraph before this one, and the caret should be at t
 var sel = window.getSelection();
 var div = document.getElementById("div");
 var text = div.firstChild;
-sel.setPosition(text, 4);
+sel.collapse(text, 4);
 document.execCommand("InsertParagraph");
 </script>

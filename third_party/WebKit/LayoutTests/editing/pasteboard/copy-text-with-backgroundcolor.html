@@ -29,7 +29,7 @@ if (window.testRunner)
 function performCopyPaste(elementName)
 {
     var element = document.getElementById(elementName);
-    window.getSelection().setPosition(element.firstChild, 0);
+    window.getSelection().collapse(element.firstChild, 0);
     window.getSelection().modify('extend', 'forward', 'word');
     window.getSelection().modify('extend', 'forward', 'word');
     copyCommand();

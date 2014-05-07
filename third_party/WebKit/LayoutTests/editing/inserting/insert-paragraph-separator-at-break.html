@@ -10,7 +10,7 @@ Markup.description('This test ensures WebKit inserts only a break element when i
     'Only one BR should be inserted in this test.');
 
 var elem = document.getElementById('test');
-window.getSelection().setPosition(elem.firstChild, 2);
+window.getSelection().collapse(elem.firstChild, 2);
 document.execCommand("InsertParagraph");
 Markup.dump(elem, "After");
 

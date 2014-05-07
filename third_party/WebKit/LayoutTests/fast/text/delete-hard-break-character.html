@@ -13,7 +13,7 @@
     <script>
         var div = document.getElementById("you");
         var selection = window.getSelection();
-        selection.setPosition(div, 2);
+        selection.collapse(div, 2);
         document.execCommand("Delete");
     </script>
 </body>

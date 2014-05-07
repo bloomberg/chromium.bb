@@ -9,7 +9,7 @@ if (window.testRunner)
 var edit = document.getElementById("edit");
 var sel = window.getSelection();
 
-sel.setPosition(edit, 0);
+sel.collapse(edit, 0);
 
 document.execCommand("InsertText", false, "this text should not be in a link");
 sel.modify("move", "forward", "word");

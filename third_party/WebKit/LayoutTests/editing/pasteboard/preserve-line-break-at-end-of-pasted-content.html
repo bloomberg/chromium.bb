@@ -17,7 +17,7 @@ Markup.dump(root, 'Before copy and paste');
 
 selection = window.getSelection();
 div = document.getElementById("div");
-selection.setPosition(div, 0);
+selection.collapse(div, 0);
 document.execCommand("Paste");
 
 Markup.dump(root, 'After copy and paste');

@@ -4,6 +4,6 @@
 <script>
 div = document.getElementById("div");
 sel = window.getSelection();
-sel.setPosition(div, div.childNodes.length);
+sel.collapse(div, div.childNodes.length);
 document.execCommand("InsertLineBreak");
 </script>

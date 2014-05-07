@@ -11,7 +11,7 @@ if (window.internals)
 var s = window.getSelection();
 var p = document.getElementById("test");
 p.innerHTML = "foo<br>bar<br>baz";
-s.setPosition(p, 0);
+s.collapse(p, 0);
 s.modify("move", "forward", "word");
 s.modify("move", "forward", "character");
 var html = "<div>foo</div>bar";

@@ -8,7 +8,7 @@ if (window.testRunner)
 edit = document.getElementById("edit");
 text = edit.childNodes[1];
 s = window.getSelection();
-s.setPosition(text, 0);
+s.collapse(text, 0);
 s.modify("move", "left", "character");
 if (window.testRunner) {
     var caretRect = textInputController.firstRectForCharacterRange(textInputController.selectedRange()[0], 0);

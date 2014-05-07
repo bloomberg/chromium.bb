@@ -21,11 +21,11 @@ var r = document.createRange();
 var p1 = document.getElementById("item1");
 var p2 = document.getElementById("item2");
 var p3 = document.getElementById("item3");
-s.setPosition(p1, 0);
+s.collapse(p1, 0);
 document.execCommand("FormatBlock", false, "pre");
-s.setPosition(p2, 0);
+s.collapse(p2, 0);
 document.execCommand("FormatBlock", false, "h1");
-s.setPosition(p3, 0);
+s.collapse(p3, 0);
 document.execCommand("FormatBlock", false, "address");
 
 Markup.dump("test", "After FormatBlock");

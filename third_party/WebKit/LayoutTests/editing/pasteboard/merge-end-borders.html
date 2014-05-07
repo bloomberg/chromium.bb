@@ -13,7 +13,7 @@ if (window.internals)
 var s = window.getSelection();
 var e = document.getElementById("test");
 
-s.setPosition(e, 0);
+s.collapse(e, 0);
 // Move to the last word in the first paragraph
 moveSelectionForwardByWordCommand();
 moveSelectionForwardByCharacterCommand();

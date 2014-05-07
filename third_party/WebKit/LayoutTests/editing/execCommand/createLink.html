@@ -20,7 +20,7 @@ function editingTest() {
     
     // Fully select the line in the first div.
     d = document.getElementById("test1");
-    s.setPosition(d, 0);
+    s.collapse(d, 0);
     extendSelectionForwardByLineCommand();
     createLinkCommand("http://www.google.com/");
     
@@ -28,7 +28,7 @@ function editingTest() {
 
     // Partially select the line in the second div.    
     d = document.getElementById("test2");
-    s.setPosition(d, 0);
+    s.collapse(d, 0);
     moveSelectionForwardByWordCommand();
     extendSelectionForwardByWordCommand();
     createLinkCommand("http://www.google.com/");
@@ -37,7 +37,7 @@ function editingTest() {
     
     // Partially select the link in the third div
     var e = document.getElementById("starthere");
-    s.setPosition(e, 0);
+    s.collapse(e, 0);
     extendSelectionForwardByLineCommand();
     createLinkCommand("http://www.google.com/");
 
@@ -45,7 +45,7 @@ function editingTest() {
     
     // Select all the content in the fourth div
     d = document.getElementById("test4");
-    s.setPosition(d, 0);
+    s.collapse(d, 0);
     selectAllCommand();
     createLinkCommand("http://www.google.com/");
     

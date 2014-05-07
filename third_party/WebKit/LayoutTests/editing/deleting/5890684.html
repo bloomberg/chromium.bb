@@ -5,7 +5,7 @@
 if (window.testRunner)
     window.testRunner.dumpAsText();
 div = document.getElementById("world");
-window.getSelection().setPosition(div, 0);
+window.getSelection().collapse(div, 0);
 document.execCommand("Delete");
 if (window.testRunner)
     document.body.innerText = document.getElementById("description").innerText + "\n" + document.getElementById("edit").innerHTML;

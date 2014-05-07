@@ -27,7 +27,7 @@ function runFrameScrollTest() {
     var body = doc.body;
     body.innerHTML = generateContent();
     frame.focus();
-    frame.getSelection().setPosition(body.firstChild, 0);
+    frame.getSelection().collapse(body.firstChild, 0);
     if (onMacPlatform)
         offsets = [ 55, 175 ];
     else 
@@ -39,7 +39,7 @@ function runDivScrollTest() {
     var editable = document.getElementById('editable');
     editable.innerHTML = generateContent();
     editable.focus();
-    window.getSelection().setPosition(editable, 0);
+    window.getSelection().collapse(editable, 0);
     if (onMacPlatform)
         offsets = [ 75, 195 ];
     else 

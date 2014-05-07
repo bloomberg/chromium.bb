@@ -9,6 +9,6 @@ div = document.getElementById("div");
 text = div.firstChild;
 sel = window.getSelection();
 
-sel.setPosition(text, 11);
+sel.collapse(text, 11);
 document.execCommand("InsertHTML", false, "<div>i</div>")
 </script>

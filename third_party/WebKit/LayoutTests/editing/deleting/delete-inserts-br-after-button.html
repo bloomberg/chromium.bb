@@ -7,7 +7,7 @@
 </body>
 <script>
 var target = document.getElementById("container");
-window.getSelection().setPosition(target, 1);
+window.getSelection().collapse(target, 1);
 window.getSelection().modify("move", "right", "character");
 document.execCommand("delete");
 if (target.childNodes.length == 2)

@@ -16,11 +16,11 @@ function log(message) {
 
 var s = window.getSelection();
 var p = document.getElementById("test1");
-s.setPosition(p, 0);
+s.collapse(p, 0);
 document.execCommand("Outdent", false, 0);
 log("Test1 passed: no crash ");
 var p = document.getElementById("test2");
-s.setPosition(p, 0);
+s.collapse(p, 0);
 document.execCommand("Outdent", false, 0);
 log("Test2 passed: no crash");
 

@@ -17,10 +17,10 @@
             function test()
             {
                 var s = window.getSelection();
-                s.setPosition(document.getElementById('qt'), 0);
+                s.collapse(document.getElementById('qt'), 0);
                 document.execCommand("InsertNewlineInQuotedContent");
                 document.execCommand("InsertText", true, "unquoted");
-                s.setPosition(document.getElementById('qt2'), 0);
+                s.collapse(document.getElementById('qt2'), 0);
                 document.execCommand("InsertNewlineInQuotedContent");
                 document.execCommand("InsertText", true, "unquoted");
             }

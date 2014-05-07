@@ -13,6 +13,6 @@
 td = document.getElementById("td");
 text = td.firstChild;
 sel = window.getSelection();
-sel.setPosition(text, 7);
+sel.collapse(text, 7);
 document.execCommand("InsertHTML", false, "orld");
 </script>

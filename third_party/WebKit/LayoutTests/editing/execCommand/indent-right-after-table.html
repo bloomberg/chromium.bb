@@ -8,7 +8,7 @@ if (window.testRunner)
 
 var e = document.getElementById("test");
 var s = window.getSelection();
-s.setPosition(e, 1);
+s.collapse(e, 1);
 document.execCommand("Indent", false, null);
 
 </script>

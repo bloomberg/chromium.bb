@@ -5,7 +5,7 @@
 
 div = document.getElementById("div");
 sel = window.getSelection();
-sel.setPosition(div, 0);
+sel.collapse(div, 0);
 if (window.testRunner) {
     // Test to see if deleteWordBackward: hangs.
     testRunner.execCommand("DeleteWordBackward");

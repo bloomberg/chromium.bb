@@ -23,7 +23,7 @@ var s = window.getSelection();
 
 if (document.queryCommandEnabled("RemoveFormat"))
     log("Failure: RemoveFormat enabled with no selection.");
-s.setPosition(e, 0);
+s.collapse(e, 0);
 if (document.queryCommandEnabled("RemoveFormat"))
     log("Failure: RemoveFormat enabled with a caret selection.");
 document.execCommand("SelectAll");

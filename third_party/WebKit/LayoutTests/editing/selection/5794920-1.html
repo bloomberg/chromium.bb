@@ -4,7 +4,7 @@
 <script>
 edit = document.getElementById("edit");
 text = edit.childNodes[edit.childNodes.length - 1];
-window.getSelection().setPosition(text, 2);
+window.getSelection().collapse(text, 2);
 window.getSelection().modify("move", "backward", "character");
 if (window.testRunner) {
     window.testRunner.dumpAsText();

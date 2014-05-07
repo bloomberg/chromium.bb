@@ -31,7 +31,7 @@ shouldBeNull("foreignSel.anchorNode");
 shouldBeNull("mainSel.anchorNode");
 
 clear();
-mainSel.setPosition(foreignElement, 0);
+mainSel.collapse(foreignElement, 0);
 shouldBeNull("foreignSel.anchorNode");
 shouldBeNull("mainSel.anchorNode");
 

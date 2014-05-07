@@ -18,7 +18,7 @@ function verifyChildSpellingMarker(element)
     root.appendChild(testElement);
 
     var childText = testElement.firstChild.childNodes[1].firstChild;
-    document.getSelection().setPosition(childText, 1);
+    document.getSelection().collapse(childText, 1);
     document.execCommand("InsertText", false, 'z');
     document.execCommand("InsertText", false, 'z');
     document.execCommand("InsertText", false, ' ');

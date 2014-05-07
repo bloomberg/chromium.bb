@@ -18,7 +18,7 @@ function runTest() {
     
     document.execCommand("Copy");
     
-    s.setPosition(document.getElementById("paste"), 0);
+    s.collapse(document.getElementById("paste"), 0);
     document.execCommand("Paste");
     
     if (window.testRunner)

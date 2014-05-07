@@ -32,7 +32,7 @@ function editingTest()
     copyCommand();
 
     var elem = document.getElementById("target");
-    selection.setPosition(elem, 0);
+    selection.collapse(elem, 0);
     selection.modify("move", "forward", "sentence");
     pasteCommand();
 }

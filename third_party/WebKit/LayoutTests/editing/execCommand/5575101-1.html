@@ -10,7 +10,7 @@
 if (window.testRunner)
     window.testRunner.dumpAsText();
 outdent = document.getElementById("outdent");
-window.getSelection().setPosition(outdent, 0);
+window.getSelection().collapse(outdent, 0);
 document.execCommand("Outdent");
 document.execCommand("Outdent");
 </script>

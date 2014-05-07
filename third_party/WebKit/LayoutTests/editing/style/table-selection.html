@@ -14,7 +14,7 @@
 
 function editingTest() {
     var selection = window.getSelection();
-    selection.setPosition(document.getElementById("selStart"), 0);
+    selection.collapse(document.getElementById("selStart"), 0);
     extendSelectionForwardByLineCommand();
     extendSelectionForwardByLineCommand();
     justifyCenterCommand();

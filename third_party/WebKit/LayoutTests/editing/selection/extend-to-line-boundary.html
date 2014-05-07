@@ -28,7 +28,7 @@ function createEditableMultilineDiv(text, numLines) {
 }
 
 function selectSecondLine(element) {
-    getSelection().setPosition(element.childNodes[0], 0);
+    getSelection().collapse(element.childNodes[0], 0);
     getSelection().modify("move", "forward", "line");
     getSelection().modify("extend", "forward", "lineboundary");
 }

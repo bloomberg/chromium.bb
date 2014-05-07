@@ -20,7 +20,7 @@ var destination = document.getElementById("destination");
 var selection = window.getSelection();
 selection.setBaseAndExtent(source, 0, source, 5);
 document.execCommand("Copy");
-selection.setPosition(destination, 0);
+selection.collapse(destination, 0);
 document.execCommand("Paste");
 Markup.description("This test copies embed and object elements, pastes them into an editable area, and verifies that unsafe tags are not pasted when the setting prohibits this.");
 Markup.dump("source", "Original contents");

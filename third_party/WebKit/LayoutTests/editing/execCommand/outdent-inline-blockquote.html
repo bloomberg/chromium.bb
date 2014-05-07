@@ -15,7 +15,7 @@ function log(message) {
 
 var s = window.getSelection();
 var p1 = document.getElementById("test");
-s.setPosition(p1, 0);
+s.collapse(p1, 0);
 document.execCommand("Outdent", false, 0);
 log("Test passed: no crash");
 

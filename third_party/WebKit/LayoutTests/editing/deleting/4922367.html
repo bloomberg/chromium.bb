@@ -26,7 +26,7 @@ var table = document.getElementById("table");
 var parent = table.parentNode;
 if (parent.childNodes[3] != table)
     log("Error: the table is not at index 3 of its parent.");
-sel.setPosition(parent, 3);
+sel.collapse(parent, 3);
 sel.modify("extend", "backward", "paragraph");
 document.execCommand("Delete");
 </script>

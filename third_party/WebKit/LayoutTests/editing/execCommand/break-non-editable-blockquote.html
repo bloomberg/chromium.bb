@@ -8,7 +8,7 @@
 <script>
 
 var test = document.getElementById('test');
-window.getSelection().setPosition(test.firstChild.firstChild, 5);
+window.getSelection().collapse(test.firstChild.firstChild, 5);
 document.execCommand('InsertNewlineInQuotedContent', false, null);
 
 Markup.description('This test ensures WebKit properly inserts newline in quoted contents, which is enclosed by a non-editable blockquote.');

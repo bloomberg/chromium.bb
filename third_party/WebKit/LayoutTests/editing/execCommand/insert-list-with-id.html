@@ -7,7 +7,7 @@ if (window.testRunner)
 var s = window.getSelection();
 var div = document.getElementById("test");
 var id = "foo";
-s.setPosition(div, 0);
+s.collapse(div, 0);
 document.execCommand("InsertOrderedList", false, id);
 
 expected = "<ol><li>list item</li></ol>";

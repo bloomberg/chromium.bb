@@ -8,7 +8,7 @@ Markup.description("This sets the selection to the end of the first line, and hi
     + "Expected behavior: a div is created around the second line, and the cursor is placed at the "
     + "start of the second line. See bug 61594.");
 var sel = window.getSelection();
-sel.setPosition(document.getElementById("wrapper"), 1);
+sel.collapse(document.getElementById("wrapper"), 1);
 document.execCommand("InsertParagraph", false, null);
 Markup.dump(root);
 </script>

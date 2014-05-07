@@ -9,7 +9,7 @@ if (window.testRunner)
 var s = window.getSelection();
 var e = document.getElementById("start");
 
-s.setPosition(e, 0);
+s.collapse(e, 0);
 document.execCommand("Delete");
 document.execCommand("InsertText", false, "foo");
 </script>

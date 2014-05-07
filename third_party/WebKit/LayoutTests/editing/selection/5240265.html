@@ -5,7 +5,7 @@
 <script>
 div = document.getElementById("div");
 sel = window.getSelection();
-sel.setPosition(div, 0);
+sel.collapse(div, 0);
 document.execCommand("SelectAll");
 if (window.testRunner) {
     button = document.getElementById("button");

@@ -25,11 +25,11 @@ in an editable area and verifies that no script, handlers or javascript urls are
 <script>
 var s = window.getSelection();
 var p1 = document.getElementById("test");
-s.setPosition(p1, 0);
+s.collapse(p1, 0);
 s.setBaseAndExtent(p1, 0, p1, 14);
 document.execCommand("Copy");
 p1 = document.getElementById("pastehere");
-s.setPosition(p1, 0);
+s.collapse(p1, 0);
 document.execCommand("Paste");
 
 log(document.getElementById("button1").outerHTML);

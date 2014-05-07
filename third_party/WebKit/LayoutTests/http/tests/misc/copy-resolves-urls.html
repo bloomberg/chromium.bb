@@ -29,7 +29,7 @@ function test()
 function doPaste()
 {
     var pasteHere = document.getElementById("pastehere");
-    window.getSelection().setPosition(pasteHere, 0);
+    window.getSelection().collapse(pasteHere, 0);
     document.execCommand("Paste");
 }
 

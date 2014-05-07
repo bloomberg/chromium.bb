@@ -4,7 +4,7 @@
 function partTwo() {
     sel.setBaseAndExtent(body, 0, body, body.childNodes.length);
     document.execCommand("Copy");
-    sel.setPosition(body, body.childNodes.length);
+    sel.collapse(body, body.childNodes.length);
     document.execCommand("Paste");
     document.execCommand("Paste");
     document.execCommand("InsertLineBreak");

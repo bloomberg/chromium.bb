@@ -33,7 +33,7 @@ function dump() {
 }
 
 if (document.queryCommandEnabled('paste')) {
-    getSelection().setPosition(document.querySelector('td').firstChild, 1);
+    getSelection().collapse(document.querySelector('td').firstChild, 1);
     document.execCommand('paste', false, null);
 }
 

@@ -15,7 +15,7 @@
 <div class="editing" id="test">There is a tide in the affairs of men.</div>
 <script>
 
-window.getSelection().setPosition(document.getElementById('test'), 0);
+window.getSelection().collapse(document.getElementById('test'), 0);
 
 for (i = 0; i < 31; i++)
     moveSelectionForwardByCharacterCommand();

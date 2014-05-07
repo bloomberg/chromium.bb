@@ -19,7 +19,7 @@ function editingTest()
 
     var elem = document.getElementById("target");
     var selection = window.getSelection();
-    selection.setPosition(elem, 0);
+    selection.collapse(elem, 0);
     execMoveSelectionForwardByWordCommand();
     execPasteCommand();
 
@@ -29,14 +29,14 @@ function editingTest()
     // Make sure relative font sizes are not adjusted.
     var elem = document.getElementById("test2");
     var selection = window.getSelection();
-    selection.setPosition(elem, 0);
+    selection.collapse(elem, 0);
     for (var i = 0; i < 4; ++i)
         execExtendSelectionForwardByWordCommand();
     execCopyCommand();
 
     var elem = document.getElementById("target2");
     var selection = window.getSelection();
-    selection.setPosition(elem, 0);
+    selection.collapse(elem, 0);
     execMoveSelectionForwardByWordCommand();
     execPasteCommand();
 

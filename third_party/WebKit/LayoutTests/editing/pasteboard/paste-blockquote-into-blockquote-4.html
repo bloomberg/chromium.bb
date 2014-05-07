@@ -18,7 +18,7 @@ blockquote {
 var sel = window.getSelection();
 var block = document.getElementById("block");
 
-sel.setPosition(block, 3);
+sel.collapse(block, 3);
 document.execCommand("InsertHTML", false, "<blockquote type='cite'>One</blockquote>Two<blockquote type='cite'>Three</blockquote>Four");
 </script>
 </body>

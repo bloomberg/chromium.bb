@@ -13,7 +13,7 @@ function runTest()
     //    https://code.google.com/p/chromium/codesearch#chromium/src/content/shell/tools/plugin/main.cpp&q=cleardocumentduringnew&type=cs&sq=package:chromium&l=247 
     // It causes a timing issue that |obj| exists on Linux but not on Windows.
     if (obj)
-        s.setPosition(obj, 0);
+        s.collapse(obj, 0);
     else
         s.removeAllRanges();
     document.body.innerHTML = "PASS";

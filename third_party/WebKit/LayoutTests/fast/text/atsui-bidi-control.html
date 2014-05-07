@@ -50,7 +50,7 @@ onload = function()
     assertEqual("arabic string", string, "\u0641\u0642 \u202A\u0643 \u0644 abc \u202C \u0645");
 
     var sel = getSelection();
-    sel.setPosition(div, 0);
+    sel.collapse(div, 0);
     
     var positions = [];
     while (true) {

@@ -8,7 +8,7 @@
 var link = document.getElementById("link");
 var text = link.firstChild;
 var sel = window.getSelection();
-sel.setPosition(text, 1);
+sel.collapse(text, 1);
 document.execCommand("InsertHTML", false, "his should be a link");
 </script>
 </body>

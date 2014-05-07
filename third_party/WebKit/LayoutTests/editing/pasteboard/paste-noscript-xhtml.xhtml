@@ -17,13 +17,13 @@ function runTest() {
     Markup.description(document.getElementById('description').textContent);
 
     var doc = frames[0].document;
-    getSelection().setPosition(doc.body, 0);
+    getSelection().collapse(doc.body, 0);
     doc.execCommand("SelectAll");
     doc.execCommand("Copy");
 
     Markup.dump(doc.body, 'Copied content');
 
-    getSelection().setPosition(document.getElementById("pastehere"), 0);
+    getSelection().collapse(document.getElementById("pastehere"), 0);
     document.execCommand("Paste");
     Markup.dump('pastehere', 'Pasted content');
 

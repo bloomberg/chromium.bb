@@ -7,11 +7,11 @@ var copy = document.getElementById("copy");
 var paste = document.getElementById("paste");
 var sel = window.getSelection();
 
-sel.setPosition(copy, 0);
+sel.collapse(copy, 0);
 sel.modify("extend", "forward", "word");
 sel.modify("extend", "forward", "word");
 document.execCommand("Copy");
 
-sel.setPosition(paste, 0);
+sel.collapse(paste, 0);
 document.execCommand("Paste");
 </script>

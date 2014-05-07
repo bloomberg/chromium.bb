@@ -81,7 +81,7 @@ The visual order should be TextRun3 TextRun1 TextRun2, not TextRun3 TextRun2 Tex
     var tests = document.getElementsByTagName('div');
     var sel = getSelection();
     for (var i = 0; i < tests.length; ++i) {
-        sel.setPosition(tests[i],0);
+        sel.collapse(tests[i],0);
         sel.modify("move", "backward", "lineboundary");
         sel.modify("extend", "forward", "word");
         assertEqual("Test " + i + ": ", sel.toString(), "This");

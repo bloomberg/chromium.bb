@@ -16,7 +16,7 @@ function log(message) {
 var div = document.getElementById("div");
 var text = div.firstChild;
 var selection = window.getSelection();
-selection.setPosition(text, text.length - 1);
+selection.collapse(text, text.length - 1);
 
 document.execCommand("CreateLink", false, "http://www.apple.com/");
 

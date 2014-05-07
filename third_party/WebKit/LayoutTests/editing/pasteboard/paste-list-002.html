@@ -48,12 +48,12 @@ if (window.testRunner)
 
 var elem = document.getElementById("test");
 var selection = window.getSelection();
-selection.setPosition(elem, 0);
+selection.collapse(elem, 0);
 editingTest();
 
 // Rerun the test but have the source list be indented.
 document.getElementById("test").innerHTML = "<li>alpha</li><ul><li>beta</li><li>gamma</li></ul><li id='delta'>delta</li>";
-selection.setPosition(elem, 0);
+selection.collapse(elem, 0);
 editingTest();
 
 document.getElementById("results").innerText = "PASS: " + document.getElementById("test").innerHTML;

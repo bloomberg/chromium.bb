@@ -24,7 +24,7 @@ function runTest(command, inlineStyle) {
     document.writeln('Test to set ' + command + ' by typing command and add ' + inlineStyle + ' as inline style:');
     var test = document.getElementById('test');
     test.style.textDecoration = null;
-    window.getSelection().setPosition(test, 0);
+    window.getSelection().collapse(test, 0);
     document.execCommand(command, false, null);
     test.style.textDecoration = inlineStyle;
     if (queryTextDecorations() != 'underline strikeThrough')
@@ -35,7 +35,7 @@ function runTest(command, inlineStyle) {
 }
 
 runTest('strikeThrough', 'underline');
-window.getSelection().setPosition(test, 1);
+window.getSelection().collapse(test, 1);
 runTest('underline', 'line-through');
 
 </script></pre>

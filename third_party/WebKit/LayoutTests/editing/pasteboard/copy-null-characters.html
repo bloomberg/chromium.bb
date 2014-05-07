@@ -23,12 +23,12 @@ function runTest()
         return;
     }
 
-    sel.setPosition(source, 0);
+    sel.collapse(source, 0);
     document.execCommand("SelectAll");
     document.execCommand("Copy");
 
     var destinationRichText = document.getElementById("destination-rich-text");
-    sel.setPosition(destinationRichText, 0);
+    sel.collapse(destinationRichText, 0);
     document.execCommand("Paste");
 
     var destinationPlainText = document.getElementById("destination-plain-text");
@@ -54,7 +54,7 @@ function runTest()
     // expected output file.
     source.parentNode.removeChild(source);
 
-    sel.setPosition(destinationRichText, 0);
+    sel.collapse(destinationRichText, 0);
     document.execCommand("Paste");
 
     destinationPlainText.focus();

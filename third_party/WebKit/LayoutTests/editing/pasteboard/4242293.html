@@ -9,9 +9,9 @@ if (window.testRunner)
 <div id="paste" contenteditable="true"></div>
 
 <script>
-window.getSelection().setPosition(document.getElementById("copy"));
+window.getSelection().collapse(document.getElementById("copy"));
 document.execCommand("SelectAll");
 document.execCommand("Copy");
-window.getSelection().setPosition(document.getElementById("paste"));
+window.getSelection().collapse(document.getElementById("paste"));
 document.execCommand("Paste");
 </script>

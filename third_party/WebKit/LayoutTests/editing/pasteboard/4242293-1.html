@@ -9,14 +9,14 @@ if (window.internals)
 
 var sel = window.getSelection();
 var e = document.getElementById("copy");
-sel.setPosition(e, 0);
+sel.collapse(e, 0);
 sel.modify("move", "forward", "word");
 sel.modify("extend", "forward", "line");
 sel.modify("extend", "forward", "line");
 document.execCommand("Copy");
 
 e = document.getElementById("paste");
-sel.setPosition(e, 0);
+sel.collapse(e, 0);
 sel.modify("move", "forward", "word");
 document.execCommand("Paste");
 

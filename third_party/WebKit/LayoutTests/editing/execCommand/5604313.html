@@ -7,7 +7,7 @@ if (window.testRunner)
     
 p = document.getElementById("p");
 s = window.getSelection();
-s.setPosition(p, 0);
+s.collapse(p, 0);
 
 document.execCommand("FormatBlock", false, "h2");
 if (window.testRunner)

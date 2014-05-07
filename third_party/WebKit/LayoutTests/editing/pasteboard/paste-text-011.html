@@ -9,7 +9,7 @@ Markup.waitUntilDone();
 
 function editingTest() {
     document.body.focus();
-    window.getSelection().setPosition(document.body, 0);
+    window.getSelection().collapse(document.body, 0);
 
     if (window.testRunner)
         testRunner.dumpEditingCallbacks();

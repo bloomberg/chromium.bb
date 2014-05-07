@@ -17,7 +17,7 @@ blockquote {
 var sel = window.getSelection();
 var div = document.getElementById("div");
 
-sel.setPosition(div, 0);
+sel.collapse(div, 0);
 document.execCommand("InsertHTML", false, "<blockquote type='cite'>This should be blockquoted.</blockquote>");
 
 Markup.description('This tests pasting a blockquote into an empty paragraph.');

@@ -5,6 +5,6 @@
 if (window.testRunner)
     window.testRunner.dumpAsText();
 div = document.getElementById("div");
-window.getSelection().setPosition(div, 1);
+window.getSelection().collapse(div, 1);
 document.execCommand("InsertParagraph");
 </script>

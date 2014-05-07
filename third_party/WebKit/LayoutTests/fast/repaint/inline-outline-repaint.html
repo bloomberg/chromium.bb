@@ -9,7 +9,7 @@
     {
         var elem = document.getElementById("test");
         var selection = window.getSelection();
-        selection.setPosition(elem, 1);
+        selection.collapse(elem, 1);
         for (i = 0; i < 9; i++)
             document.execCommand("Delete");
     }

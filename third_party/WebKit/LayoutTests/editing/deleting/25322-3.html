@@ -10,7 +10,7 @@
         
         function afterDelay() {
             forCaret = document.getElementById("forCaret");
-            window.getSelection().setPosition(forCaret, 0);
+            window.getSelection().collapse(forCaret, 0);
             document.execCommand("Delete");            
             if (window.testRunner) {
                 document.body.innerText = document.getElementById("description").innerText + "\n\n" + document.getElementById("edit").innerHTML;

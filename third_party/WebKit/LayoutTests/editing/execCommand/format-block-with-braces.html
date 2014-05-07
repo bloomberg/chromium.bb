@@ -17,7 +17,7 @@ Markup.dump("item1", "Before FormatBlock with <h1>");
 var s = window.getSelection();
 var r = document.createRange();
 var p1 = document.getElementById("item1");
-s.setPosition(p1, 0);
+s.collapse(p1, 0);
 document.execCommand("FormatBlock", false, "<h1>");
 
 Markup.dump("item1", "After FormatBlock with <h1>");

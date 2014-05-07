@@ -20,7 +20,7 @@ function editingTest() {
     
     // Fully select the line in the first div.
     d = document.getElementById("test1");
-    s.setPosition(d, 0);
+    s.collapse(d, 0);
     extendSelectionForwardByLineCommand();
     unlinkCommand();
     
@@ -28,7 +28,7 @@ function editingTest() {
 
     // Select the second word in the second div  
     d = document.getElementById("test2");
-    s.setPosition(d, 0);
+    s.collapse(d, 0);
     moveSelectionForwardByWordCommand();
     extendSelectionForwardByWordCommand();
     unlinkCommand();
@@ -38,7 +38,7 @@ function editingTest() {
     // Select part of a link (and a bit of trailing non-linked text)
     d = document.getElementById("test3");
     var e = document.getElementById("test3start");
-    s.setPosition(e, 0);
+    s.collapse(e, 0);
     extendSelectionForwardByLineCommand();
     unlinkCommand();
     
@@ -46,7 +46,7 @@ function editingTest() {
     
     // Link an editable region containing lists, tables, images, etc.
     d = document.getElementById("test4");
-    s.setPosition(d, 0);
+    s.collapse(d, 0);
     selectAllCommand();
     createLinkCommand("http://www.google.com/");
     // Now unlink a portion of it

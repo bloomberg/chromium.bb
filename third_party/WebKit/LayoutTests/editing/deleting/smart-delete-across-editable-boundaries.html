@@ -8,7 +8,7 @@ if (window.internals)
     internals.settings.setEditingBehavior('mac');
 var div = document.getElementById("div");
 var sel = window.getSelection();
-sel.setPosition(div, 0);
+sel.collapse(div, 0);
 sel.modify("extend", "forward", "word");
 document.execCommand("Delete");
 Markup.description("This tests for a bug where expansion for smart delete would not consider editable boundaries. Only 'foo' should be deleted. You should see ' bar'. <radr://problem/5390681>");

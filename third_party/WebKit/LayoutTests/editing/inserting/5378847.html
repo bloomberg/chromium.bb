@@ -11,6 +11,6 @@ br = children[1];
 text = document.createTextNode('\n');
 div.insertBefore(text, br);
 sel = window.getSelection();
-sel.setPosition(div, 1);
+sel.collapse(div, 1);
 document.execCommand("InsertText", false, "World");
 </script>
