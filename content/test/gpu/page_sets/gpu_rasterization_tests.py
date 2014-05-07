@@ -12,10 +12,10 @@ class GpuRasterizationTestsPage(page_module.Page):
   def __init__(self, page_set):
     super(GpuRasterizationTestsPage, self).__init__(
       url='file://../../data/gpu/pixel_css3d.html',
-      page_set=page_set)
+      page_set=page_set,
+      name='GpuRasterization.CSS3DBlueBox')
 
     self.user_agent_type = 'desktop'
-    self.name = 'GpuRasterization.CSS3DBlueBox'
     self.expectations = [
       {'comment': 'body-t',
        'color': [255, 255, 255],

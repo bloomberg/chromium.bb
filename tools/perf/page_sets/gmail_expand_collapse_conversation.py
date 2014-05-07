@@ -16,12 +16,12 @@ class GmailExpandCollapseConversationPage(
   def __init__(self, page_set):
     super(GmailExpandCollapseConversationPage, self).__init__(
       url='https://mail.google.com/mail/u/0/#inbox/13c6a141fa95ffe0',
-      page_set=page_set)
+      page_set=page_set,
+      name='gmail_expand_collapse_conversation')
     self.credentials_path = 'data/credentials.json'
     self.credentials = 'google'
     self.user_agent_type = 'desktop'
     self.archive_data_file = 'data/gmail_expand_collapse_conversation.json'
-    self.name = 'gmail_expand_collapse_conversation'
 
   def RunNavigateSteps(self, action_runner):
     action_runner.RunAction(NavigateAction())

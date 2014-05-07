@@ -35,8 +35,8 @@ class ScreenshotSyncPage(page.Page):
     super(ScreenshotSyncPage, self).__init__(
       url='file://screenshot_sync.html',
       page_set=page_set,
-      base_dir=base_dir)
-    self.name = 'ScreenshotSync'
+      base_dir=base_dir,
+      name='ScreenshotSync')
     self.user_agent_type = 'desktop'
 
   def RunNavigateSteps(self, action_runner):

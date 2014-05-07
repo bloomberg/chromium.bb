@@ -10,9 +10,8 @@ from telemetry.page import page_set as page_set_module
 class Top20Page(page_module.Page):
 
   def __init__(self, url, page_set, name=''):
-    super(Top20Page, self).__init__(url=url, page_set=page_set)
+    super(Top20Page, self).__init__(url=url, page_set=page_set, name=name)
     self.archive_data_file = '../data/chrome_proxy_top_20.json'
-    self.name = name
 
 class Top20PageSet(page_set_module.PageSet):
 

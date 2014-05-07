@@ -9,8 +9,9 @@ from telemetry.page import page_set as page_set_module
 
 class ToughPinchZoomCasesPage(page_module.Page):
 
-  def __init__(self, url, page_set):
-    super(ToughPinchZoomCasesPage, self).__init__(url=url, page_set=page_set)
+  def __init__(self, url, page_set, name=''):
+    super(ToughPinchZoomCasesPage, self).__init__(url=url, page_set=page_set,
+                                                  name=name)
     self.credentials_path = 'data/credentials.json'
     self.user_agent_type = 'desktop'
     self.archive_data_file = 'data/tough_pinch_zoom_cases.json'
@@ -147,9 +148,7 @@ class BlogSpotPage(ToughPinchZoomCasesPage):
   def __init__(self, page_set):
     super(BlogSpotPage, self).__init__(
       url='http://googlewebmastercentral.blogspot.com/',
-      page_set=page_set)
-
-    self.name = 'Blogger'
+      page_set=page_set, name='Blogger')
 
   def RunNavigateSteps(self, action_runner):
     action_runner.RunAction(NavigateAction())
@@ -167,9 +166,7 @@ class FacebookPage(ToughPinchZoomCasesPage):
   def __init__(self, page_set):
     super(FacebookPage, self).__init__(
       url='http://www.facebook.com/barackobama',
-      page_set=page_set)
-
-    self.name = 'Facebook'
+      page_set=page_set, name='Facebook')
     self.credentials = 'facebook'
 
   def RunNavigateSteps(self, action_runner):
@@ -188,9 +185,7 @@ class LinkedinPage(ToughPinchZoomCasesPage):
   def __init__(self, page_set):
     super(LinkedinPage, self).__init__(
       url='http://www.linkedin.com/in/linustorvalds',
-      page_set=page_set)
-
-    self.name = 'LinkedIn'
+      page_set=page_set, name='LinkedIn')
 
 
 class WikipediaPage(ToughPinchZoomCasesPage):
@@ -200,9 +195,7 @@ class WikipediaPage(ToughPinchZoomCasesPage):
   def __init__(self, page_set):
     super(WikipediaPage, self).__init__(
       url='http://en.wikipedia.org/wiki/Wikipedia',
-      page_set=page_set)
-
-    self.name = 'Wikipedia (1 tab)'
+      page_set=page_set, name='Wikipedia (1 tab)')
 
 
 class TwitterPage(ToughPinchZoomCasesPage):
@@ -212,9 +205,7 @@ class TwitterPage(ToughPinchZoomCasesPage):
   def __init__(self, page_set):
     super(TwitterPage, self).__init__(
       url='https://twitter.com/katyperry',
-      page_set=page_set)
-
-    self.name = 'Twitter'
+      page_set=page_set, name='Twitter')
 
   def RunNavigateSteps(self, action_runner):
     action_runner.RunAction(NavigateAction())
@@ -227,9 +218,7 @@ class ESPNPage(ToughPinchZoomCasesPage):
   def __init__(self, page_set):
     super(ESPNPage, self).__init__(
       url='http://espn.go.com/nba',
-      page_set=page_set)
-
-    self.name = 'ESPN'
+      page_set=page_set, name='ESPN')
 
 
 class WeatherDotComPage(ToughPinchZoomCasesPage):
@@ -240,9 +229,7 @@ class WeatherDotComPage(ToughPinchZoomCasesPage):
     super(WeatherDotComPage, self).__init__(
       # pylint: disable=C0301
       url='http://www.weather.com/weather/right-now/Mountain+View+CA+94043',
-      page_set=page_set)
-
-    self.name = 'Weather.com'
+      page_set=page_set, name='Weather.com')
 
 
 class YahooGamePage(ToughPinchZoomCasesPage):

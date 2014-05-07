@@ -8,8 +8,8 @@ from telemetry.page import page_set as page_set_module
 
 
 class SimpleScrollPage(page_module.Page):
-  def __init__(self, url, page_set, credentials=''):
-    super(SimpleScrollPage, self).__init__(url, page_set=page_set)
+  def __init__(self, url, page_set, credentials='', name=''):
+    super(SimpleScrollPage, self).__init__(url, page_set=page_set, name=name)
     self.credentials = credentials
 
   def RunSmoothness(self, action_runner):
@@ -77,8 +77,8 @@ class Facebook(SimpleScrollPage):
     super(Facebook, self).__init__(
       url='http://www.facebook.com/barackobama',
       page_set=page_set,
-      credentials='facebook')
-    self.name = "Facebook"
+      credentials='facebook',
+      name='Facebook')
 
   def RunNavigateSteps(self, action_runner):
     super(Facebook, self).RunNavigateSteps(action_runner)
@@ -110,10 +110,8 @@ class Top10PageSet(page_set_module.PageSet):
     self.AddPage(Facebook(self))
 
     # #6 (Alexa) most visited worldwide,Picked an interesting page
-    wikipedia_page = SimpleScrollPage('http://en.wikipedia.org/wiki/Wikipedia',
-                                      self)
-    wikipedia_page.name = "Wikipedia"
-    self.AddPage(wikipedia_page)
+    self.AddPage(SimpleScrollPage('http://en.wikipedia.org/wiki/Wikipedia',
+                                  self, 'Wikipedia'))
 
     # #1 world commerce website by visits; #3 commerce in the US by time spent
     self.AddPage(SimpleScrollPage('http://www.amazon.com', self))

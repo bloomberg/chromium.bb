@@ -10,9 +10,9 @@ from telemetry.page import page_set as page_set_module
 class GpuProcessTestsPage(page_module.Page):
 
   def __init__(self, url, name, page_set):
-    super(GpuProcessTestsPage, self).__init__(url=url, page_set=page_set)
+    super(GpuProcessTestsPage, self).__init__(url=url, page_set=page_set,
+                                              name=name)
     self.user_agent_type = 'desktop'
-    self.name = name
 
   def RunNavigateSteps(self, action_runner):
     action_runner.RunAction(NavigateAction())

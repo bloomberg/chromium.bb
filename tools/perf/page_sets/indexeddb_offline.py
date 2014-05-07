@@ -14,9 +14,9 @@ class IndexeddbOfflinePage(page_module.Page):
   def __init__(self, page_set):
     super(IndexeddbOfflinePage, self).__init__(
       url='file://endure/indexeddb_app.html',
-      page_set=page_set)
+      page_set=page_set,
+      name='indexeddb_offline')
     self.user_agent_type = 'desktop'
-    self.name = 'indexeddb_offline'
 
   def RunNavigateSteps(self, action_runner):
     action_runner.RunAction(NavigateAction())

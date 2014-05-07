@@ -13,9 +13,9 @@ class BrowserControlPage(page_module.Page):
   def __init__(self, page_set):
     super(BrowserControlPage, self).__init__(
       url='file://endure/browser_control.html',
-      page_set=page_set)
+      page_set=page_set,
+      name='browser_control')
     self.user_agent_type = 'desktop'
-    self.name = 'browser_control'
 
   def RunEndure(self, action_runner):
     action_runner.RunAction(WaitAction({'seconds': 2}))

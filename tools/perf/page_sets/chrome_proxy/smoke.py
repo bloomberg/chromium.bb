@@ -9,8 +9,8 @@ from telemetry.page import page_set as page_set_module
 
 class SmokePage(page_module.Page):
 
-  def __init__(self, url, page_set):
-    super(SmokePage, self).__init__(url=url, page_set=page_set)
+  def __init__(self, url, page_set, name=''):
+    super(SmokePage, self).__init__(url=url, page_set=page_set, name=name)
     self.archive_data_file = '../data/chrome_proxy_smoke.json'
 
 
@@ -23,9 +23,8 @@ class Page1(SmokePage):
   def __init__(self, page_set):
     super(Page1, self).__init__(
       url='http://aws1.mdw.la/fw/',
-      page_set=page_set)
-
-    self.name = 'header validation'
+      page_set=page_set,
+      name='header validation')
 
 
 class Page2(SmokePage):
@@ -37,9 +36,8 @@ class Page2(SmokePage):
   def __init__(self, page_set):
     super(Page2, self).__init__(
       url='http://aws1.mdw.la/static/',
-      page_set=page_set)
-
-    self.name = 'compression: image'
+      page_set=page_set,
+      name='compression: image')
 
 
 class Page3(SmokePage):
@@ -51,9 +49,8 @@ class Page3(SmokePage):
   def __init__(self, page_set):
     super(Page3, self).__init__(
       url='http://aws1.mdw.la/bypass/',
-      page_set=page_set)
-
-    self.name = 'bypass'
+      page_set=page_set,
+      name='bypass')
     self.restart_after = True
 
 
@@ -66,9 +63,8 @@ class Page4(SmokePage):
   def __init__(self, page_set):
     super(Page4, self).__init__(
       url='http://aws1.mdw.la/static/',
-      page_set=page_set)
-
-    self.name = 'compression: javascript'
+      page_set=page_set,
+      name='compression: javascript')
 
 
 class Page5(SmokePage):
@@ -80,9 +76,8 @@ class Page5(SmokePage):
   def __init__(self, page_set):
     super(Page5, self).__init__(
       url='http://aws1.mdw.la/static/',
-      page_set=page_set)
-
-    self.name = 'compression: css'
+      page_set=page_set,
+      name='compression: css')
 
 
 class Page6(SmokePage):
@@ -95,9 +90,8 @@ class Page6(SmokePage):
   def __init__(self, page_set):
     super(Page6, self).__init__(
       url='http://www.ianfette.org/',
-      page_set=page_set)
-
-    self.name = 'safebrowsing'
+      page_set=page_set,
+      name='safebrowsing')
 
   def RunNavigateSteps(self, action_runner):
     action_runner.RunAction(NavigateAction({'timeout_seconds': 5}))

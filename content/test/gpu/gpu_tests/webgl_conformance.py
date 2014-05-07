@@ -83,10 +83,10 @@ class WebglConformanceValidator(page_test.PageTest):
 class WebglConformancePage(page_module.Page):
   def __init__(self, page_set, test):
     super(WebglConformancePage, self).__init__(
-      url='file://' + test, page_set=page_set, base_dir=page_set.base_dir)
-    self.name = ('WebglConformance.%s' %
-                 test.replace('/', '_').replace('-', '_').
-                 replace('\\', '_').rpartition('.')[0].replace('.', '_'))
+      url='file://' + test, page_set=page_set, base_dir=page_set.base_dir,
+      name=('WebglConformance.%s' %
+              test.replace('/', '_').replace('-', '_').
+                 replace('\\', '_').rpartition('.')[0].replace('.', '_')))
     self.script_to_evaluate_on_commit = conformance_harness_script
 
   def RunNavigateSteps(self, action_runner):

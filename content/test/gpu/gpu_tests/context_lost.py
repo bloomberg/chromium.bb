@@ -129,8 +129,8 @@ class WebGLContextLostFromGPUProcessExitPage(page.Page):
     super(WebGLContextLostFromGPUProcessExitPage, self).__init__(
       url='file://webgl.html?query=kill_after_notification',
       page_set=page_set,
-      base_dir=base_dir)
-    self.name = 'ContextLost.WebGLContextLostFromGPUProcessExit'
+      base_dir=base_dir,
+      name='ContextLost.WebGLContextLostFromGPUProcessExit')
     self.script_to_evaluate_on_commit = harness_script
     self.kill_gpu_process = True
     self.number_of_gpu_process_kills = 1
@@ -147,8 +147,8 @@ class WebGLContextLostFromLoseContextExtensionPage(page.Page):
     super(WebGLContextLostFromLoseContextExtensionPage, self).__init__(
       url='file://webgl.html?query=WEBGL_lose_context',
       page_set=page_set,
-      base_dir=base_dir)
-    self.name = 'ContextLost.WebGLContextLostFromLoseContextExtension'
+      base_dir=base_dir,
+      name='ContextLost.WebGLContextLostFromLoseContextExtension')
     self.script_to_evaluate_on_commit = harness_script
     self.kill_gpu_process = False
     self.force_garbage_collection = False
@@ -163,8 +163,8 @@ class WebGLContextLostFromQuantityPage(page.Page):
     super(WebGLContextLostFromQuantityPage, self).__init__(
       url='file://webgl.html?query=forced_quantity_loss',
       page_set=page_set,
-      base_dir=base_dir)
-    self.name = 'ContextLost.WebGLContextLostFromQuantity'
+      base_dir=base_dir,
+      name='ContextLost.WebGLContextLostFromQuantity')
     self.script_to_evaluate_on_commit = harness_script
     self.kill_gpu_process = False
     self.force_garbage_collection = True

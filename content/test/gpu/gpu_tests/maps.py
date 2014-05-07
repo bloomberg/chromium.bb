@@ -81,8 +81,8 @@ class MapsPage(page.Page):
     super(MapsPage, self).__init__(
       url='http://localhost:10020/tracker.html',
       page_set=page_set,
-      base_dir=base_dir)
-    self.name = 'Maps.maps_001'
+      base_dir=base_dir,
+      name='Maps.maps_001')
     self.script_to_evaluate_on_commit = 'window.screen = null;'
     self.pixel_expectations = 'data/maps_001_expectations.json'
 
