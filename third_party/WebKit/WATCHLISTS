@@ -269,8 +269,7 @@
   'WATCHLISTS': {
     'accessibility':['dmazzoni@chromium.org',
                      'aboxhall@chromium.org'],
-    'animations': ['alancutter@chromium.org',
-                   'alexis.menard@intel.com',
+    'animations': ['alexis.menard@intel.com',
                    'dstockwell@chromium.org',
                    'ericwilligers@chromium.org',
                    'mikelawther@chromium.org',
