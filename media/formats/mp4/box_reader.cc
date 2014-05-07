@@ -183,6 +183,12 @@ bool BoxReader::ScanChildren() {
   return !err && pos() == size();
 }
 
+bool BoxReader::HasChild(Box* child) {
+  DCHECK(scanned_);
+  DCHECK(child);
+  return children_.count(child->BoxType()) > 0;
+}
+
 bool BoxReader::ReadChild(Box* child) {
   DCHECK(scanned_);
   FourCC child_type = child->BoxType();
