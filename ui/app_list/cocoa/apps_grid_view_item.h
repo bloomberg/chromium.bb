@@ -36,15 +36,6 @@ APP_LIST_EXPORT
 // Set the represented model, updating views. Clears if |itemModel| is NULL.
 - (void)setModel:(app_list::AppListItem*)itemModel;
 
-// Set the frame that will be used the first time the NSCollectionView performs
-// layout on the item.
-// This is required because the first time an NSCollectionView becomes visible,
-// it performs a layout, and it can attempt to set a frame that differs from the
-// -[NSCollectionView frameForItemAtIndex:] reported when the cell was created.
-// Worse, this frame can have a non-integral origin, leading to graphical
-// glitches because the content is no longer pixel-aligned.
-- (void)setInitialFrameRect:(NSRect)frameRect;
-
 // Model accessor, via the |observerBridge_|.
 - (app_list::AppListItem*)model;
 

@@ -73,7 +73,8 @@ NSTimeInterval g_scroll_duration = 0.18;
 // Create any new pages after updating |items_|.
 - (void)updatePages:(size_t)startItemIndex;
 
-- (void)updatePageContent:(size_t)pageIndex;
+- (void)updatePageContent:(size_t)pageIndex
+               resetModel:(BOOL)resetModel;
 
 // Bridged methods for AppListItemListObserver.
 - (void)listItemAdded:(size_t)index
@@ -86,11 +87,6 @@ NSTimeInterval g_scroll_duration = 0.18;
 
 // Moves the selection by |indexDelta| items.
 - (BOOL)moveSelectionByDelta:(int)indexDelta;
-
-// -[NSCollectionView frameForItemAtIndex:] misreports the frame origin of an
-// item when the method is called during a scroll animation provided by the
-// NSScrollView. This returns the correct value.
-- (NSRect)trueFrameForItemAtIndex:(size_t)itemIndex;
 
 @end
 
@@ -458,18 +454,23 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
 
   const size_t startPage = startItemIndex / kItemsPerPage;
   // All pages on or after |startPage| may need items added or removed.
-  for (size_t pageIndex = startPage; pageIndex < targetPages; ++pageIndex)
-    [self updatePageContent:pageIndex];
+  for (size_t pageIndex = startPage; pageIndex < targetPages; ++pageIndex) {
+    [self updatePageContent:pageIndex
+                 resetModel:YES];
+  }
 }
 
-- (void)updatePageContent:(size_t)pageIndex {
+- (void)updatePageContent:(size_t)pageIndex
+               resetModel:(BOOL)resetModel {
   NSCollectionView* pageView = [self collectionViewAtPageIndex:pageIndex];
-  // Clear the models first, otherwise removed items could be autoreleased at
-  // an unknown point in the future, when the model owner may have gone away.
-  for (size_t i = 0; i < [[pageView content] count]; ++i) {
-    AppsGridViewItem* gridItem =
-        base::mac::ObjCCastStrict<AppsGridViewItem>([pageView itemAtIndex:i]);
-    [gridItem setModel:NULL];
+  if (resetModel) {
+    // Clear the models first, otherwise removed items could be autoreleased at
+    // an unknown point in the future, when the model owner may have gone away.
+    for (size_t i = 0; i < [[pageView content] count]; ++i) {
+      AppsGridViewItem* gridItem = base::mac::ObjCCastStrict<AppsGridViewItem>(
+          [pageView itemAtIndex:i]);
+      [gridItem setModel:NULL];
+    }
   }
 
   NSRange inPageRange = NSIntersectionRange(
@@ -477,13 +478,14 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
       NSMakeRange(0, [items_ count]));
   NSArray* pageContent = [items_ subarrayWithRange:inPageRange];
   [pageView setContent:pageContent];
+  if (!resetModel)
+    return;
 
   for (size_t i = 0; i < [pageContent count]; ++i) {
     AppsGridViewItem* gridItem = base::mac::ObjCCastStrict<AppsGridViewItem>(
         [pageView itemAtIndex:i]);
     [gridItem setModel:static_cast<app_list::AppListItem*>(
         [[pageContent objectAtIndex:i] pointerValue])];
-    [gridItem setInitialFrameRect:[self trueFrameForItemAtIndex:i]];
   }
 }
 
@@ -498,7 +500,8 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
   size_t fromPageIndex = fromIndex / kItemsPerPage;
   size_t toPageIndex = toIndex / kItemsPerPage;
   if (fromPageIndex == toPageIndex) {
-    [self updatePageContent:fromPageIndex];
+    [self updatePageContent:fromPageIndex
+                 resetModel:NO];  // Just reorder items.
     return;
   }
 
@@ -506,7 +509,8 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
     std::swap(fromPageIndex, toPageIndex);
 
   for (size_t i = fromPageIndex; i <= toPageIndex; ++i) {
-    [self updatePageContent:i];
+    [self updatePageContent:i
+                 resetModel:YES];
   }
 }
 
@@ -609,15 +613,6 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
 
   [self selectItemAtIndex:oldIndex + indexDelta];
   return YES;
-}
-
-- (NSRect)trueFrameForItemAtIndex:(size_t)itemIndex {
-  size_t column = itemIndex % kFixedColumns;
-  size_t row = itemIndex % kItemsPerPage / kFixedColumns;
-  return NSMakeRect(column * kPreferredTileWidth,
-                    row * kPreferredTileHeight,
-                    kPreferredTileWidth,
-                    kPreferredTileHeight);
 }
 
 - (void)selectItemAtIndex:(NSUInteger)index {

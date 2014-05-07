@@ -137,21 +137,12 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
 // grid, and to draw with a highlight when selected.
 @interface AppsGridItemBackgroundView : NSView {
  @private
-  // Whether the item is selected, and draws a background.
   BOOL selected_;
-
-  // Whether to intercept the next call to -[NSView setFrame:] and override it.
-  BOOL overrideNextSetFrame_;
-
-  // The frame given to -[super setFrame:], when |overrideNextSetFrame_| is set.
-  NSRect overrideFrame_;
 }
 
 - (NSButton*)button;
 
 - (void)setSelected:(BOOL)flag;
-
-- (void)setOneshotFrameRect:(NSRect)frameRect;
 
 @end
 
@@ -180,20 +171,6 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
   DCHECK(selected_ != flag);
   selected_ = flag;
   [self setNeedsDisplay:YES];
-}
-
-- (void)setOneshotFrameRect:(NSRect)frameRect {
-  [super setFrame:frameRect];
-  overrideNextSetFrame_ = YES;
-  overrideFrame_ = frameRect;
-}
-
-- (void)setFrame:(NSRect)frameRect {
-  if (overrideNextSetFrame_) {
-    frameRect = overrideFrame_;
-    overrideNextSetFrame_ = NO;
-  }
-  [super setFrame:frameRect];
 }
 
 // Ignore all hit tests. The grid controller needs to be the owner of any drags.
@@ -332,10 +309,6 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
                                      owner:self
                                   userInfo:nil]);
   [[self view] addTrackingArea:trackingArea_.get()];
-}
-
-- (void)setInitialFrameRect:(NSRect)frameRect {
-  [[self itemBackgroundView] setOneshotFrameRect:frameRect];
 }
 
 - (app_list::AppListItem*)model {
