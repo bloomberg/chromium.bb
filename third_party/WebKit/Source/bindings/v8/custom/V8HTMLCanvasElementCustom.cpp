@@ -55,7 +55,7 @@ void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<
     TOSTRING_VOID(V8StringResource<>, contextIdResource, info[0]);
     String contextId = contextIdResource;
     RefPtr<CanvasContextAttributes> attributes;
-    if (contextId == "webgl" || contextId == "experimental-webgl" || contextId == "webkit-3d") {
+    if (contextId == "webgl" || contextId == "experimental-webgl") {
         RefPtr<WebGLContextAttributes> webGLAttributes = WebGLContextAttributes::create();
         if (info.Length() > 1 && info[1]->IsObject()) {
             v8::Handle<v8::Object> jsAttributes = info[1]->ToObject();
