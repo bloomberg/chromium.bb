@@ -32,6 +32,7 @@
 #define WebServiceWorkerContextClient_h
 
 #include "WebWorkerPermissionClientProxy.h"
+#include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebServiceWorkerClientsInfo.h"
 #include "public/platform/WebServiceWorkerEventResult.h"
 #include "public/platform/WebURL.h"
@@ -120,6 +121,10 @@ public:
     // WebServiceWorkerClientsInfo and WebServiceWorkerError ownerships are
     // passed to the WebServiceWorkerClientsCallbacks implementation.
     virtual void getClients(WebServiceWorkerClientsCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+
+    // Callee receives ownership of the passed vector.
+    // FIXME: Blob refs should be passed to maintain ref counts. crbug.com/351753
+    virtual void postMessageToClient(int clientID, const WebString&, WebMessagePortChannelArray*) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
 } // namespace blink

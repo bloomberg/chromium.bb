@@ -31,6 +31,8 @@
 #ifndef WebServiceWorkerProviderClient_h
 #define WebServiceWorkerProviderClient_h
 
+#include "public/platform/WebMessagePortChannel.h"
+
 namespace blink {
 class WebServiceWorker;
 class WebString;
@@ -43,6 +45,8 @@ public:
 
     // The callee will take ownership of the given WebServiceWorker object.
     virtual void setCurrentServiceWorker(WebServiceWorker*) = 0;
+
+    virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) = 0;
 };
 
 };

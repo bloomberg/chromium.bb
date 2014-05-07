@@ -5,6 +5,7 @@
 #include "config.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 
+#include "core/dom/Document.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
@@ -21,12 +22,22 @@ NavigatorServiceWorker::~NavigatorServiceWorker()
 {
 }
 
+NavigatorServiceWorker* NavigatorServiceWorker::from(Document& document)
+{
+    if (!document.frame() || !document.frame()->domWindow())
+        return 0;
+    Navigator& navigator = document.frame()->domWindow()->navigator();
+    return &from(navigator);
+}
+
 NavigatorServiceWorker& NavigatorServiceWorker::from(Navigator& navigator)
 {
     NavigatorServiceWorker* supplement = toNavigatorServiceWorker(navigator);
     if (!supplement) {
         supplement = new NavigatorServiceWorker(navigator);
         provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
+        // Initialize ServiceWorkerContainer too.
+        supplement->serviceWorker();
     }
     return *supplement;
 }
