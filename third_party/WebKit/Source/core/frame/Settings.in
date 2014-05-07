@@ -119,7 +119,6 @@ accelerated2dCanvasMSAASampleCount type=int, initial=0
 webAudioEnabled initial=false
 
 asynchronousSpellCheckingEnabled initial=false
-preciseMemoryInfoEnabled initial=false
 
 hyperlinkAuditingEnabled initial=false
 allowDisplayOfInsecureContent initial=true

@@ -78,6 +78,7 @@ MediaQueryParser status=test
 MediaSource status=stable
 MediaSourceExperimental depends_on=MediaSource, status=experimental
 MediaStream status=stable
+MemoryInfoInWorkers status=experimental
 NavigatorContentUtils
 Notifications status=stable
 ObjectFitPosition status=stable

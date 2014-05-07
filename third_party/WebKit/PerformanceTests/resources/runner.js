@@ -1,9 +1,5 @@
 // There are tests for computeStatistics() located in LayoutTests/fast/harness/perftests
 
-// Require non-quantized real-time JS heap size information.
-if (window.internals)
-    internals.settings.setPreciseMemoryInfoEnabled(true);
-
 if (window.testRunner) {
     testRunner.waitUntilDone();
     testRunner.dumpAsText();

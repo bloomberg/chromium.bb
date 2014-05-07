@@ -39,13 +39,11 @@
 
 namespace WebCore {
 
-class LocalFrame;
-
 class MemoryInfo : public RefCountedWillBeGarbageCollectedFinalized<MemoryInfo>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<MemoryInfo> create(LocalFrame* frame)
+    static PassRefPtrWillBeRawPtr<MemoryInfo> create()
     {
-        return adoptRefWillBeNoop(new MemoryInfo(frame));
+        return adoptRefWillBeNoop(new MemoryInfo());
     }
 
     size_t totalJSHeapSize() const { return m_info.totalJSHeapSize; }
@@ -55,7 +53,7 @@ public:
     void trace(Visitor*) { }
 
 private:
-    explicit MemoryInfo(LocalFrame*);
+    MemoryInfo();
 
     HeapInfo m_info;
 };

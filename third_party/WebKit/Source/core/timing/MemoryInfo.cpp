@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/timing/MemoryInfo.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include <limits>
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -90,7 +91,6 @@ size_t quantizeMemorySize(size_t size)
     const int numberOfBuckets = 100;
     DEFINE_STATIC_LOCAL(Vector<size_t>, bucketSizeList, ());
 
-    ASSERT(isMainThread());
     if (bucketSizeList.isEmpty()) {
         bucketSizeList.resize(numberOfBuckets);
 
@@ -130,14 +130,11 @@ size_t quantizeMemorySize(size_t size)
     return bucketSizeList[numberOfBuckets - 1];
 }
 
-
-MemoryInfo::MemoryInfo(LocalFrame* frame)
+MemoryInfo::MemoryInfo()
 {
     ScriptWrappable::init(this);
-    if (!frame || !frame->settings())
-        return;
 
-    if (frame->settings()->preciseMemoryInfoEnabled()) {
+    if (RuntimeEnabledFeatures::preciseMemoryInfoEnabled()) {
         ScriptGCEvent::getHeapSize(m_info);
     } else {
         DEFINE_STATIC_LOCAL(HeapSizeCache, heapSizeCache, ());

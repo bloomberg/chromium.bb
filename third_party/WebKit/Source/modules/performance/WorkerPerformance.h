@@ -41,6 +41,7 @@
 namespace WebCore {
 
 class ExecutionContext;
+class MemoryInfo;
 
 class WorkerPerformance : public GarbageCollectedFinalized<WorkerPerformance>, public ScriptWrappable {
 public:
@@ -51,6 +52,7 @@ public:
     ~WorkerPerformance();
 
     double now(ExecutionContext*) const;
+    PassRefPtrWillBeRawPtr<MemoryInfo> memory() const;
 
     void trace(Visitor*) { }
 

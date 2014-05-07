@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/performance/WorkerPerformance.h"
 
+#include "core/timing/MemoryInfo.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "wtf/CurrentTime.h"
@@ -52,6 +53,12 @@ double WorkerPerformance::now(ExecutionContext* context) const
     ASSERT(context->isWorkerGlobalScope());
     WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
     return 1000.0 * (monotonicallyIncreasingTime() - workerGlobalScope->timeOrigin());
+}
+
+PassRefPtrWillBeRawPtr<MemoryInfo> WorkerPerformance::memory() const
+{
+    // FIXME: We shall not create a new object every time.
+    return MemoryInfo::create();
 }
 
 } // namespace WebCore

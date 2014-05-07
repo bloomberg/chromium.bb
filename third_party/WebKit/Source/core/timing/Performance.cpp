@@ -72,7 +72,7 @@ ExecutionContext* Performance::executionContext() const
 
 PassRefPtrWillBeRawPtr<MemoryInfo> Performance::memory() const
 {
-    return MemoryInfo::create(m_frame);
+    return MemoryInfo::create();
 }
 
 PerformanceNavigation* Performance::navigation() const

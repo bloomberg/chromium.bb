@@ -80,7 +80,7 @@ PassRefPtrWillBeRawPtr<MemoryInfo> Console::memory() const
 {
     // FIXME: Because we create a new object here each time,
     // console.memory !== console.memory, which seems wrong.
-    return MemoryInfo::create(m_frame);
+    return MemoryInfo::create();
 }
 
 } // namespace WebCore

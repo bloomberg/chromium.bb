@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/frame/Settings.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
 namespace WebCore {
