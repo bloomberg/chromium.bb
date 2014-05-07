@@ -114,8 +114,7 @@ if (!is_android) {
 
     # TODO(brettw) hook up tcmalloc to this target.
     #if (is_posix && !is_mac && !is_android) {
-    #  # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
-    #  if ((use_allocator!="none" && use_allocator!="see_use_tcmalloc") || (use_allocator=="see_use_tcmalloc" && linux_use_tcmalloc)) {
+    #  if (use_allocator!="none") {
     #    deps += "/base/allocator"
     #  }
     #}
@@ -145,8 +144,7 @@ if (!is_android) {
 
     # TODO(brettw) hook up tcmalloc to this target.
     #if (is_posix && !is_mac && !is_android) {
-    #  # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
-    #  if ((use_allocator!="none" && use_allocator!="see_use_tcmalloc") || (use_allocator=="see_use_tcmalloc" && linux_use_tcmalloc)) {
+    #  if (use_allocator!="none") {
     #    deps += "//base/allocator"
     #  }
     #}

@@ -235,8 +235,7 @@
           ],
         }],
         # See http://crbug.com/162998#c4 for why this is needed.
-        # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
-        ['OS=="linux" and ((use_allocator!="none" and use_allocator!="see_use_tcmalloc") or (use_allocator=="see_use_tcmalloc" and linux_use_tcmalloc==1))', {
+        ['OS=="linux" and use_allocator!="none"', {
           'dependencies': [
             '../../base/allocator/allocator.gyp:allocator',
           ],

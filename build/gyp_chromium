@@ -277,6 +277,17 @@ if __name__ == '__main__':
   supplemental_includes = GetSupplementalFiles()
   gyp_vars_dict = GetGypVars(supplemental_includes)
 
+  # TODO(dmikurube): Remove these checks and messages after a while.
+  if ('linux_use_tcmalloc' in gyp_vars_dict or
+      'android_use_tcmalloc' in gyp_vars_dict):
+    print '*****************************************************************'
+    print '"linux_use_tcmalloc" and "android_use_tcmalloc" are deprecated!'
+    print '-----------------------------------------------------------------'
+    print 'You specify "linux_use_tcmalloc" or "android_use_tcmalloc" in'
+    print 'your GYP_DEFINES. Please switch them into "use_allocator" now.'
+    print 'See http://crbug.com/345554 for the details.'
+    print '*****************************************************************'
+
   # Automatically turn on crosscompile support for platforms that need it.
   # (The Chrome OS build sets CC_host / CC_target which implicitly enables
   # this mode.)

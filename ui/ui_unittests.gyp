@@ -154,8 +154,7 @@
             'gfx/platform_font_pango_unittest.cc',
           ],
           'conditions': [
-            # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
-            ['(use_allocator!="none" and use_allocator!="see_use_tcmalloc") or (use_allocator=="see_use_tcmalloc" and linux_use_tcmalloc==1)', {
+            ['use_allocator!="none"', {
                'dependencies': [
                  '../base/allocator/allocator.gyp:allocator',
                ],
