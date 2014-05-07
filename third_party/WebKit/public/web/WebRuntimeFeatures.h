@@ -94,9 +94,6 @@ public:
 
     BLINK_EXPORT static void enableSessionStorage(bool);
 
-    // FIXME: Remove once Chromium side is updated.
-    BLINK_EXPORT static void enableSpeechInput(bool) { }
-
     BLINK_EXPORT static void enableSpeechSynthesis(bool);
 
     BLINK_EXPORT static void enableTouch(bool);
