@@ -66,6 +66,7 @@ class SmoothnessFastPathKeySilkCases(test.Test):
     silk_flags.CustomizeBrowserOptionsForFastPath(options)
 
 
+@test.Disabled('android')  # crbug.com/363783
 class SmoothnessGpuRasterizationTop25(test.Test):
   """Measures rendering statistics for the top 25 with GPU rasterization
   """
@@ -76,6 +77,7 @@ class SmoothnessGpuRasterizationTop25(test.Test):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
 
+@test.Disabled('android')  # crbug.com/363783
 class SmoothnessGpuRasterizationKeyMobileSites(test.Test):
   """Measures rendering statistics for the key mobile sites with GPU
   rasterization
