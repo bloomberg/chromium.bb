@@ -244,11 +244,7 @@ void BubbleDelegateView::SetAnchorView(View* anchor_view) {
   if (anchor_view)
     view_storage->StoreView(anchor_view_storage_id_, anchor_view);
 
-  // Do not update anchoring for NULL views; this could indicate that our
-  // NativeWindow is being destroyed, so it would be dangerous for us to update
-  // our anchor bounds at that point. (It's safe to skip this, since if we were
-  // to update the bounds when |anchor_view| is NULL, the bubble won't move.)
-  if (anchor_view && GetWidget())
+  if (GetWidget())
     OnAnchorBoundsChanged();
 }
 
