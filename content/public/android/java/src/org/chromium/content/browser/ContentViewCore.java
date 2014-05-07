@@ -609,7 +609,8 @@ public class ContentViewCore
         };
 
         mNativeContentViewCore = nativeInit(
-                nativeWebContents, viewAndroidNativePointer, windowNativePointer);
+                nativeWebContents, viewAndroidNativePointer, windowNativePointer,
+                mRetainedJavaScriptObjects);
         mWebContents = nativeGetWebContentsAndroid(mNativeContentViewCore);
         mContentSettings = new ContentSettings(this, mNativeContentViewCore);
         initializeContainerView(internalDispatcher);
@@ -2702,8 +2703,7 @@ public class ContentViewCore
             Class<? extends Annotation> requiredAnnotation) {
         if (mNativeContentViewCore != 0 && object != null) {
             mJavaScriptInterfaces.put(name, object);
-            nativeAddJavascriptInterface(mNativeContentViewCore, object, name, requiredAnnotation,
-                    mRetainedJavaScriptObjects);
+            nativeAddJavascriptInterface(mNativeContentViewCore, object, name, requiredAnnotation);
         }
     }
 
@@ -3082,7 +3082,7 @@ public class ContentViewCore
     }
 
     private native long nativeInit(long webContentsPtr,
-            long viewAndroidPtr, long windowAndroidPtr);
+            long viewAndroidPtr, long windowAndroidPtr, HashSet<Object> retainedObjectSet);
 
     @CalledByNative
     private ContentVideoViewClient getContentVideoViewClient() {
@@ -3236,7 +3236,7 @@ public class ContentViewCore
             long nativeContentViewCoreImpl, boolean allow);
 
     private native void nativeAddJavascriptInterface(long nativeContentViewCoreImpl, Object object,
-            String name, Class requiredAnnotation, HashSet<Object> retainedObjectSet);
+            String name, Class requiredAnnotation);
 
     private native void nativeRemoveJavascriptInterface(long nativeContentViewCoreImpl,
             String name);

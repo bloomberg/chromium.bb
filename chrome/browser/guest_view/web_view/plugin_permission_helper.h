@@ -20,6 +20,9 @@ class PluginPermissionHelper
   friend class content::WebContentsUserData<PluginPermissionHelper>;
 
   // content::WebContentsObserver implementation.
+  virtual bool OnMessageReceived(
+      const IPC::Message& message,
+      content::RenderFrameHost* render_frame_host) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Message handlers:
