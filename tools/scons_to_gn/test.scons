@@ -17,14 +17,22 @@ if env.Bit('target_x86_64'):
 if True:
   sources += ['FOOBAR.c']
 
-
-env.ComponentLibrary('all.dll', sources, CFLAGS=['-D' + x for x in defines])
+env.ComponentLibrary('all', sources, CFLAGS=['-D' + x for x in defines])
 
 nacl_env = env.Clone()
 nacl_env.Append(CFLAGS=['-DNACL'])
 
 if nacl_env.Bit('win'):
-  nacl_env.ComponentLibrary('win.dll', sources)
+  nacl_env.ComponentLibrary('win', sources)
 
 if env.Bit('linux'):
-  env.ComponentLibrary('linux.so', sources)
+  env.ComponentLibrary('linux', sources)
+
+if env.Bit('linux'):
+  cpu_test = nacl_env.ComponentProgram('my_test', ['testing/test.c'],
+      EXTRA_LIBS=['cpu_features','platform'])
+
+  node = nacl_env.CommandTest(
+      'cpu_x86_test.out',
+      [cpu_test])
+  nacl_env.AddNodeToTestSuite(node, ['small_tests'], 'run_cpu_x86_test')

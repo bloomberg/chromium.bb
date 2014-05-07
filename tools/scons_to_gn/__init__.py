@@ -9,6 +9,7 @@ import pprint
 import sys
 
 from conditions import *
+from properties import ConvertIfSingle, ParsePropertyTable
 from nodes import *
 
 """The workhorse of scons to gn.
@@ -22,13 +23,14 @@ The object tracket is responsible for building the Node tree.
 def HashCPUData(cpus, hits):
   m = hashlib.md5()
   for hit in hits:
-    m.update(hit)
+    if hit:
+      m.update(str(hit))
   m.update(str(cpus))
   return m.hexdigest()
 
 
 def CPUSubset(configs, os):
-  cpus = [x[4:] for x in config if x[:3] == os]
+  cpus = [x[4:] for x in configs if x[:3] == os]
   return CPUsToBits(cpus)
 
 
@@ -73,7 +75,7 @@ def MergeToDataCPU(original, os_avail, cpu_avail):
 
   # Merge all subsets
   keys = merge_os.keys()
-  for i, i_key in keys:
+  for i, i_key in enumerate(keys):
     # For each key, get the PLATFORMS, CPUS, and NODES
     i_oses = merge_os[i_key]
     i_cpus = merge_cpus[i_key]
@@ -121,29 +123,6 @@ def MergeToDataCPU(original, os_avail, cpu_avail):
   return sorted(out_list, cmp=SortByEffect)
 
 
-def ParseProperties(propname, items):
-  props = defaultdict(list)
-  remap_prop = {
-    'CFLAGS': 'cflags',
-    'CCFLAGS': 'cflags_c',
-    'CXXFLAGS': 'cflags_cc',
-    'LDFLAGS': 'ldflags'
-  }
-
-  for item in items:
-    if propname in ['CFLAGS', 'CCFLAGS', 'CXXFLAGS']:
-      if item[:2] == '-D':
-        props['defines'].append(item[2:])
-        continue
-      if item[:2] == '-I':
-        prop['include_dirs'].append(item[2:])
-        continue
-      props[remap_prop[propname]].append(item)
-      continue
-    props[propname].append(item)
-    continue
-  return props
-
 
 class Environment(object):
   def __init__(self, tracker, condition):
@@ -181,41 +160,27 @@ class Environment(object):
     return env
 
   def Append(self, **kwargs):
-    if kwargs:
-      # For each argument
-      for key, value in kwargs.iteritems():
-        # Remapped
-        for k,v in ParseProperties(key, value).iteritems():
-          # Add to the list
-          print 'ADDING %s(%s)' % (k, v)
-          self.add_attributes[k] = self.add_attributes.get(k,[]) + v
+    table = ParsePropertyTable(kwargs)
+    for k,v in table.iteritems():
+      self.add_attributes[k] = self.add_attributes.get(k,[]) + v
 
   def FilterOut(self, **kwargs):
-    if kwargs:
-      # For each argument
-      for key, value in kwargs.iteritems():
-        # Remapped
-        for k,v in ParseProperties(key, value).iteritems():
-          # Add to the list
-          self.del_attributes[k] = self.del_attributes.get(k,[]).extend(v)
+    table = ParsePropertyTable(kwargs)
+    for k,v in table.iteritems():
+      self.del_attributes[k] = self.del_attributes.get(k,[]) + v
 
   def AddObject(self, name, sources, objtype, **kwargs):
     add_props = { 'sources': sources }
-    del_props = {}
 
-    # Add for all scons property:value pairs
-    for key, value in kwargs.iteritems():
-      # Convert to GN property:value pairs
-      for k,v in ParseProperties(key, value).iteritems():
-        add_props[k] = add_props.get(k, []) + v
+    table = ParsePropertyTable(kwargs)
+    for k,v in table.iteritems():
+      add_props[k] = add_props.get(k, []) + v
 
     # For all GN property:value pairs in the environment
-    for key, value in self.add_attributes.iteritems():
-      # Add to this object
-      add_props[key] = add_props.get(key, []) + value
+    for k,v in self.add_attributes.iteritems():
+      add_props[k] = add_props.get(k, []) + v
 
-    del_props.update(self.del_attributes)
-    self.tracker.AddObject(name, objtype, add_props, del_props)
+    self.tracker.AddObject(name, objtype, add_props, self.del_attributes)
 
   def ComponentLibrary(self, name, sources, **kwargs):
     self.AddObject(name, sources, 'library', **kwargs)
@@ -229,8 +194,20 @@ class Environment(object):
     self.AddObject(name, sources, 'executable', **kwargs)
     return name
 
-  def CommandTest(self, name, **kwargs):
-    self.AddObject(name, [], 'test', **kwargs)
+  def CommandTest(self, name, command, size='small', direct_emulation=True,
+                extra_deps=[], posix_path=False, capture_output=True,
+                capture_stderr=True, wrapper_program_prefix=None,
+                scale_timeout=None, **kwargs):
+
+    ARGS = kwargs
+    ARGS['direct_emulation']=direct_emulation
+    ARGS['extra_deps']=extra_deps
+    ARGS['posix_path']=posix_path
+    ARGS['capture_output']=capture_output
+    ARGS['capture_stderr']=capture_stderr
+    ARGS['wrapper_program_prefix']=wrapper_program_prefix
+    ARGS['scale_timeout'] = scale_timeout
+    self.AddObject(name, [], 'test', **ARGS)
     return name
 
   def AddNodeToTestSuite(self, node, suites, name, **kwargs):
@@ -328,3 +305,7 @@ class ObjectTracker(object):
 def Import(name):
   if name != 'env':
     print 'Warning: Tried to IMPORT: ' + name
+
+
+def ParseSource(name):
+  tracker = ObjectTracker(name);
