@@ -30,7 +30,6 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/link.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -138,16 +137,6 @@ void SessionCrashedBubbleView::Init() {
   text_label->SetEnabledColor(SK_ColorDKGRAY);
   text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-  // Learn more link
-  views::Link* learn_more_link = NULL;
-  if (ShouldOfferMetricsReporting()) {
-    learn_more_link = new views::Link(
-        l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-    learn_more_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    learn_more_link->set_listener(this);
-    learn_more_link->SetUnderline(false);
-  }
-
   // Restore button.
   restore_button_ = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON));
@@ -175,14 +164,10 @@ void SessionCrashedBubbleView::Init() {
   cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
                 GridLayout::FIXED, kWidthOfDescriptionText, 0);
 
-  // Learn more link and restore button row
-  const int kLinkAndButtonColumnSetId = 2;
-  cs = layout->AddColumnSet(kLinkAndButtonColumnSetId);
+  // Restore button row
+  const int kButtonColumnSetId = 2;
+  cs = layout->AddColumnSet(kButtonColumnSetId);
   cs->AddPaddingColumn(0, kMarginWidth);
-  if (learn_more_link) {
-    cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                  GridLayout::USE_PREF, 0, 0);
-  }
   cs->AddPaddingColumn(1, views::kRelatedControlHorizontalSpacing);
   cs->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 0);
@@ -198,14 +183,12 @@ void SessionCrashedBubbleView::Init() {
   layout->AddView(text_label);
   layout->AddPaddingRow(0, kMarginHeight);
 
-  layout->StartRow(0, kLinkAndButtonColumnSetId);
-  if (learn_more_link)
-    layout->AddView(learn_more_link);
+  layout->StartRow(0, kButtonColumnSetId);
   layout->AddView(restore_button_);
   layout->AddPaddingRow(0, kMarginHeight);
 
   // Metrics reporting option.
-  if (learn_more_link)
+  if (ShouldOfferMetricsReporting())
     CreateUmaOptinView(layout);
 
   set_color(kWhiteBackgroundColor);
@@ -255,16 +238,6 @@ void SessionCrashedBubbleView::ButtonPressed(views::Button* sender,
     RestorePreviousSession(sender);
   else if (sender == close_)
     CloseBubble();
-}
-
-void SessionCrashedBubbleView::LinkClicked(views::Link* source,
-                                           int event_flags) {
-  browser_->OpenURL(content::OpenURLParams(
-      GURL("https://support.google.com/chrome/answer/96817"),
-      content::Referrer(),
-      NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK,
-      false));
 }
 
 void SessionCrashedBubbleView::DidStartNavigationToPendingEntry(

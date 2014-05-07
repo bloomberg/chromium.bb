@@ -11,7 +11,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/link_listener.h"
 
 namespace views {
 class Checkbox;
@@ -33,7 +32,6 @@ class Browser;
 class SessionCrashedBubbleView
     : public views::BubbleDelegateView,
       public views::ButtonListener,
-      public views::LinkListener,
       public content::WebContentsObserver,
       public content::NotificationObserver,
       public TabStripModelObserver {
@@ -55,9 +53,6 @@ class SessionCrashedBubbleView
   // views::ButtonListener methods.
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
-
-  // views::LinkListener methods.
-  virtual void LinkClicked(views::Link* source, int event_floags) OVERRIDE;
 
   // content::WebContentsObserver methods.
   virtual void DidStartNavigationToPendingEntry(
