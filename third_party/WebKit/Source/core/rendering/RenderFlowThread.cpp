@@ -357,13 +357,6 @@ void RenderFlowThread::getRegionRangeForBox(const RenderBox* box, RenderRegion*&
     ASSERT(m_regionList.contains(startRegion) && m_regionList.contains(endRegion));
 }
 
-void RenderFlowThread::applyBreakAfterContent(LayoutUnit clientHeight)
-{
-    // Simulate a region break at height. If it points inside an auto logical height region,
-    // then it may determine the region computed autoheight.
-    addForcedRegionBreak(clientHeight, this, false);
-}
-
 void RenderFlowThread::updateRegionsFlowThreadPortionRect()
 {
     LayoutUnit logicalHeight = 0;

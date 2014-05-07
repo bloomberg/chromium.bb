@@ -420,9 +420,6 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     LayoutUnit oldHeight = logicalHeight();
     LayoutUnit oldClientAfterEdge = clientLogicalBottom();
 
-    if (isRenderFlowThread())
-        toRenderFlowThread(this)->applyBreakAfterContent(oldClientAfterEdge);
-
     updateLogicalHeight();
     LayoutUnit newHeight = logicalHeight();
     if (oldHeight > newHeight && !childrenInline()) {

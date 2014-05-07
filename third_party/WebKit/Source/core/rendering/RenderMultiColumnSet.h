@@ -65,6 +65,8 @@ public:
 
     RenderMultiColumnSet* nextSiblingMultiColumnSet() const;
 
+    LayoutUnit logicalBottomInFlowThread() const { return isHorizontalWritingMode() ? flowThreadPortionRect().maxY() : flowThreadPortionRect().maxX(); }
+
     unsigned computedColumnCount() const { return m_computedColumnCount; }
     LayoutUnit computedColumnWidth() const { return m_computedColumnWidth; }
     LayoutUnit computedColumnHeight() const { return m_computedColumnHeight; }

@@ -102,7 +102,6 @@ public:
     void getRegionRangeForBox(const RenderBox*, RenderRegion*& startRegion, RenderRegion*& endRegion) const;
 
     virtual bool addForcedRegionBreak(LayoutUnit, RenderObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) { return false; }
-    void applyBreakAfterContent(LayoutUnit);
 
     virtual bool isPageLogicalHeightKnown() const { return true; }
     bool pageLogicalSizeChanged() const { return m_pageLogicalSizeChanged; }
