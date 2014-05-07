@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,24 +7,49 @@
 #include <string>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/history/history_service.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/history/url_database.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/core/browser/bookmark_match.h"
 #include "components/bookmarks/core/browser/bookmark_model.h"
 #include "components/bookmarks/core/test/bookmark_test_helpers.h"
 #include "components/bookmarks/core/test/test_bookmark_client.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
+
+namespace {
+
+class BookmarkClientMock : public test::TestBookmarkClient {
+ public:
+  BookmarkClientMock(const std::map<GURL, int>& typed_count_map)
+      : typed_count_map_(typed_count_map) {}
+
+  virtual bool SupportsTypedCountForNodes() OVERRIDE { return true; }
+
+  virtual void GetTypedCountForNodes(
+      const NodeSet& nodes,
+      NodeTypedCountPairs* node_typed_count_pairs) OVERRIDE {
+    for (NodeSet::const_iterator it = nodes.begin(); it != nodes.end(); ++it) {
+      const BookmarkNode* node = *it;
+      std::map<GURL, int>::const_iterator found =
+          typed_count_map_.find(node->url());
+      if (found == typed_count_map_.end())
+        continue;
+
+      node_typed_count_pairs->push_back(std::make_pair(node, found->second));
+    }
+  }
+
+ private:
+  const std::map<GURL, int> typed_count_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(BookmarkClientMock);
+};
+
+}
 
 class BookmarkIndexTest : public testing::Test {
  public:
@@ -390,23 +415,6 @@ TEST_F(BookmarkIndexTest, EmptyMatchOnMultiwideLowercaseString) {
 }
 
 TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
-  // This ensures MessageLoop::current() will exist, which is needed by
-  // TestingProfile::BlockUntilHistoryProcessesPendingRequests().
-  content::TestBrowserThreadBundle thread_bundle;
-
-  TestingProfile profile;
-  ASSERT_TRUE(profile.CreateHistoryService(true, false));
-  profile.BlockUntilHistoryProcessesPendingRequests();
-  profile.CreateBookmarkModel(true);
-
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
-  test::WaitForBookmarkModelToLoad(model);
-
-  HistoryService* const history_service =
-      HistoryServiceFactory::GetForProfile(&profile, Profile::EXPLICIT_ACCESS);
-
-  history::URLDatabase* url_db = history_service->InMemoryDatabase();
-
   struct TestData {
     const GURL url;
     const char* title;
@@ -418,33 +426,17 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
     { GURL("http://reader.google.com/"),   "Google Reader",     80 },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
-    history::URLRow info(data[i].url);
-    info.set_title(base::UTF8ToUTF16(data[i].title));
-    info.set_typed_count(data[i].typed_count);
-    // Populate the InMemoryDatabase....
-    url_db->AddURL(info);
+  std::map<GURL, int> typed_count_map;
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i)
+    typed_count_map.insert(std::make_pair(data[i].url, data[i].typed_count));
+
+  BookmarkClientMock client(typed_count_map);
+  scoped_ptr<BookmarkModel> model = client.CreateModel(false);
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i)
     // Populate the BookmarkIndex.
-    model->AddURL(model->other_node(), i, base::UTF8ToUTF16(data[i].title),
-                  data[i].url);
-  }
-
-  // Check that the InMemoryDatabase stored the URLs properly.
-  history::URLRow result1;
-  url_db->GetRowForURL(data[0].url, &result1);
-  EXPECT_EQ(data[0].title, base::UTF16ToUTF8(result1.title()));
-
-  history::URLRow result2;
-  url_db->GetRowForURL(data[1].url, &result2);
-  EXPECT_EQ(data[1].title, base::UTF16ToUTF8(result2.title()));
-
-  history::URLRow result3;
-  url_db->GetRowForURL(data[2].url, &result3);
-  EXPECT_EQ(data[2].title, base::UTF16ToUTF8(result3.title()));
-
-  history::URLRow result4;
-  url_db->GetRowForURL(data[3].url, &result4);
-  EXPECT_EQ(data[3].title, base::UTF16ToUTF8(result4.title()));
+    model->AddURL(
+        model->other_node(), i, base::UTF8ToUTF16(data[i].title), data[i].url);
 
   // Populate match nodes.
   std::vector<BookmarkMatch> matches;

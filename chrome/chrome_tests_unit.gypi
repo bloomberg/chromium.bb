@@ -603,7 +603,6 @@
         'browser/background/background_mode_manager_unittest.cc',
         'browser/bookmarks/bookmark_expanded_state_tracker_unittest.cc',
         'browser/bookmarks/bookmark_html_writer_unittest.cc',
-        'browser/bookmarks/bookmark_index_unittest.cc',
         'browser/bookmarks/bookmark_model_unittest.cc',
         'browser/bookmarks/bookmark_node_data_unittest.cc',
         'browser/bookmarks/bookmark_utils_unittest.cc',
