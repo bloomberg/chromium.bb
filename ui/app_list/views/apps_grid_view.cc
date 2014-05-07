@@ -1171,8 +1171,10 @@ void AppsGridView::AnimateToIdealBounds() {
                            current,
                            target_visible,
                            target);
-    } else {
+    } else if (visible || bounds_animator_.IsAnimating(view)) {
       bounds_animator_.AnimateViewTo(view, target);
+    } else {
+      view->SetBoundsRect(target);
     }
   }
 }
