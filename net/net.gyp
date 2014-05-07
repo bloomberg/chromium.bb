@@ -226,7 +226,6 @@
           {  # else !use_openssl: remove the unneeded files
             'sources!': [
               'base/crypto_module_openssl.cc',
-              'base/keygen_handler_openssl.cc',
               'cert/ct_log_verifier_openssl.cc',
               'cert/ct_objects_extractor_openssl.cc',
               'cert/jwk_serializer_openssl.cc',
@@ -252,6 +251,7 @@
         ],
         [ 'use_openssl_certs == 0', {
             'sources!': [
+              'base/keygen_handler_openssl.cc',
               'base/openssl_private_key_store.h',
               'base/openssl_private_key_store_android.cc',
               'base/openssl_private_key_store_memory.cc',
