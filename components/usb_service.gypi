@@ -22,7 +22,8 @@
     'sources': [
       'usb_service/usb_context.cc',
       'usb_service/usb_context.h',
-      'usb_service/usb_device.cc',
+      'usb_service/usb_device_impl.cc',
+      'usb_service/usb_device_impl.h',
       'usb_service/usb_device.h',
       'usb_service/usb_device_handle.cc',
       'usb_service/usb_device_handle.h',

@@ -101,7 +101,7 @@ class MockUsbConfigDescriptor : public UsbConfigDescriptor {
 class MockUsbDevice : public UsbDevice {
  public:
   explicit MockUsbDevice(MockUsbDeviceHandle* mock_handle)
-      : UsbDevice(), mock_handle_(mock_handle) {
+      : UsbDevice(0, 0, 0), mock_handle_(mock_handle) {
     mock_handle->set_device(this);
   }
 

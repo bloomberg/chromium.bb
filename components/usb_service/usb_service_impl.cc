@@ -11,7 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "components/usb_service/usb_context.h"
-#include "components/usb_service/usb_device.h"
+#include "components/usb_service/usb_device_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
@@ -52,7 +52,7 @@ class UsbServiceImpl
   uint32 next_unique_id_;
 
   // The map from PlatformUsbDevices to UsbDevices.
-  typedef std::map<PlatformUsbDevice, scoped_refptr<UsbDevice> > DeviceMap;
+  typedef std::map<PlatformUsbDevice, scoped_refptr<UsbDeviceImpl> > DeviceMap;
   DeviceMap devices_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbServiceImpl);
@@ -113,11 +113,11 @@ void UsbServiceImpl::RefreshDevices() {
       // This test is needed. A valid vendor/produce pair is required.
       if (0 != libusb_get_device_descriptor(platform_devices[i], &descriptor))
         continue;
-      UsbDevice* new_device = new UsbDevice(context_,
-                                            platform_devices[i],
-                                            descriptor.idVendor,
-                                            descriptor.idProduct,
-                                            ++next_unique_id_);
+      UsbDeviceImpl* new_device = new UsbDeviceImpl(context_,
+                                                    platform_devices[i],
+                                                    descriptor.idVendor,
+                                                    descriptor.idProduct,
+                                                    ++next_unique_id_);
       devices_[platform_devices[i]] = new_device;
       connected_devices.insert(new_device);
     } else {

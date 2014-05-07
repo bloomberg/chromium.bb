@@ -22,6 +22,8 @@ using content::BrowserThread;
 
 namespace usb_service {
 
+typedef libusb_device* PlatformUsbDevice;
+
 void HandleTransferCompletion(usb_service::PlatformUsbTransferHandle transfer);
 
 namespace {

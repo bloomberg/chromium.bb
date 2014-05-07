@@ -137,7 +137,7 @@ class USB_SERVICE_EXPORT UsbConfigDescriptor
 
  private:
   friend class base::RefCounted<UsbConfigDescriptor>;
-  friend class UsbDevice;
+  friend class UsbDeviceImpl;
 
   explicit UsbConfigDescriptor(PlatformUsbConfigDescriptor config);
 

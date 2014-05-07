@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/usb_service/usb_device.h"
+#include "components/usb_service/usb_device_impl.h"
 
 #include <algorithm>
 
@@ -35,29 +35,19 @@ void OnRequestUsbAccessReplied(
 
 namespace usb_service {
 
-UsbDevice::UsbDevice(scoped_refptr<UsbContext> context,
-                     PlatformUsbDevice platform_device,
-                     uint16 vendor_id,
-                     uint16 product_id,
-                     uint32 unique_id)
-    : platform_device_(platform_device),
-      vendor_id_(vendor_id),
-      product_id_(product_id),
-      unique_id_(unique_id),
+UsbDeviceImpl::UsbDeviceImpl(scoped_refptr<UsbContext> context,
+                             PlatformUsbDevice platform_device,
+                             uint16 vendor_id,
+                             uint16 product_id,
+                             uint32 unique_id)
+    : UsbDevice(vendor_id, product_id, unique_id),
+      platform_device_(platform_device),
       context_(context) {
   CHECK(platform_device) << "platform_device cannot be NULL";
   libusb_ref_device(platform_device);
 }
 
-UsbDevice::UsbDevice()
-    : platform_device_(NULL),
-      vendor_id_(0),
-      product_id_(0),
-      unique_id_(0),
-      context_(NULL) {
-}
-
-UsbDevice::~UsbDevice() {
+UsbDeviceImpl::~UsbDeviceImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
   for (HandlesVector::iterator it = handles_.begin(); it != handles_.end();
        ++it) {
@@ -69,7 +59,7 @@ UsbDevice::~UsbDevice() {
 
 #if defined(OS_CHROMEOS)
 
-void UsbDevice::RequestUsbAcess(
+void UsbDeviceImpl::RequestUsbAcess(
     int interface_id,
     const base::Callback<void(bool success)>& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -90,8 +80,8 @@ void UsbDevice::RequestUsbAcess(
         FROM_HERE,
         base::Bind(&chromeos::PermissionBrokerClient::RequestUsbAccess,
                    base::Unretained(client),
-                   this->vendor_id_,
-                   this->product_id_,
+                   vendor_id(),
+                   product_id(),
                    interface_id,
                    base::Bind(&OnRequestUsbAccessReplied, callback)));
   }
@@ -99,7 +89,7 @@ void UsbDevice::RequestUsbAcess(
 
 #endif
 
-scoped_refptr<UsbDeviceHandle> UsbDevice::Open() {
+scoped_refptr<UsbDeviceHandle> UsbDeviceImpl::Open() {
   DCHECK(thread_checker_.CalledOnValidThread());
   PlatformUsbDeviceHandle handle;
   int rv = libusb_open(platform_device_, &handle);
@@ -115,7 +105,7 @@ scoped_refptr<UsbDeviceHandle> UsbDevice::Open() {
   return NULL;
 }
 
-bool UsbDevice::Close(scoped_refptr<UsbDeviceHandle> handle) {
+bool UsbDeviceImpl::Close(scoped_refptr<UsbDeviceHandle> handle) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   for (HandlesVector::iterator it = handles_.begin(); it != handles_.end();
@@ -129,7 +119,7 @@ bool UsbDevice::Close(scoped_refptr<UsbDeviceHandle> handle) {
   return false;
 }
 
-scoped_refptr<UsbConfigDescriptor> UsbDevice::ListInterfaces() {
+scoped_refptr<UsbConfigDescriptor> UsbDeviceImpl::ListInterfaces() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   PlatformUsbConfigDescriptor platform_config;
@@ -141,7 +131,7 @@ scoped_refptr<UsbConfigDescriptor> UsbDevice::ListInterfaces() {
   return NULL;
 }
 
-void UsbDevice::OnDisconnect() {
+void UsbDeviceImpl::OnDisconnect() {
   DCHECK(thread_checker_.CalledOnValidThread());
   HandlesVector handles;
   swap(handles, handles_);

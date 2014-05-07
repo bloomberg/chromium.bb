@@ -112,7 +112,7 @@ class USB_SERVICE_EXPORT UsbDeviceHandle
 
  protected:
   friend class base::RefCountedThreadSafe<UsbDeviceHandle>;
-  friend class UsbDevice;
+  friend class UsbDeviceImpl;
 
   // This constructor is called by UsbDevice.
   UsbDeviceHandle(scoped_refptr<UsbContext> context,

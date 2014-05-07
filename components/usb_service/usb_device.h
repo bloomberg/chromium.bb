@@ -5,23 +5,15 @@
 #ifndef COMPONENTS_USB_SERVICE_USB_DEVICE_H_
 #define COMPONENTS_USB_SERVICE_USB_DEVICE_H_
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/thread_checker.h"
-#include "components/usb_service/usb_interface.h"
 #include "components/usb_service/usb_service_export.h"
-
-struct libusb_device;
 
 namespace usb_service {
 
 class UsbDeviceHandle;
-class UsbContext;
-
-typedef libusb_device* PlatformUsbDevice;
+class UsbConfigDescriptor;
 
 // A UsbDevice object represents a detected USB device, providing basic
 // information about it. For further manipulation of the device, a
@@ -30,7 +22,6 @@ class USB_SERVICE_EXPORT UsbDevice
     : public base::RefCountedThreadSafe<UsbDevice> {
  public:
   // Accessors to basic information.
-  PlatformUsbDevice platform_device() const { return platform_device_; }
   uint16 vendor_id() const { return vendor_id_; }
   uint16 product_id() const { return product_id_; }
   uint32 unique_id() const { return unique_id_; }
@@ -42,56 +33,36 @@ class USB_SERVICE_EXPORT UsbDevice
   // not be used and this method fails if the device is claimed.
   virtual void RequestUsbAcess(
       int interface_id,
-      const base::Callback<void(bool success)>& callback);
+      const base::Callback<void(bool success)>& callback) = 0;
 #endif  // OS_CHROMEOS
 
   // Creates a UsbDeviceHandle for further manipulation.
   // Blocking method. Must be called on FILE thread.
-  virtual scoped_refptr<UsbDeviceHandle> Open();
+  virtual scoped_refptr<UsbDeviceHandle> Open() = 0;
 
   // Explicitly closes a device handle. This method will be automatically called
   // by the destructor of a UsbDeviceHandle as well.
   // Closing a closed handle is a safe
   // Blocking method. Must be called on FILE thread.
-  virtual bool Close(scoped_refptr<UsbDeviceHandle> handle);
+  virtual bool Close(scoped_refptr<UsbDeviceHandle> handle) = 0;
 
   // Lists the interfaces provided by the device and fills the given
   // UsbConfigDescriptor.
   // Blocking method. Must be called on FILE thread.
-  virtual scoped_refptr<UsbConfigDescriptor> ListInterfaces();
+  virtual scoped_refptr<UsbConfigDescriptor> ListInterfaces() = 0;
 
  protected:
-  friend class UsbServiceImpl;
-  friend class base::RefCountedThreadSafe<UsbDevice>;
+  UsbDevice(uint16 vendor_id, uint16 product_id, uint32 unique_id)
+      : vendor_id_(vendor_id), product_id_(product_id), unique_id_(unique_id) {}
 
-  // Called by UsbService only;
-  UsbDevice(scoped_refptr<UsbContext> context,
-            PlatformUsbDevice platform_device,
-            uint16 vendor_id,
-            uint16 product_id,
-            uint32 unique_id);
-
-  // Constructor called in test only.
-  UsbDevice();
-  virtual ~UsbDevice();
-
-  // Called only be UsbService.
-  virtual void OnDisconnect();
+  virtual ~UsbDevice() {}
 
  private:
-  PlatformUsbDevice platform_device_;
-  uint16 vendor_id_;
-  uint16 product_id_;
-  uint32 unique_id_;
+  friend class base::RefCountedThreadSafe<UsbDevice>;
 
-  // Retain the context so that it will not be released before UsbDevice.
-  scoped_refptr<UsbContext> context_;
-
-  // Opened handles.
-  typedef std::vector<scoped_refptr<UsbDeviceHandle> > HandlesVector;
-  HandlesVector handles_;
-
-  base::ThreadChecker thread_checker_;
+  const uint16 vendor_id_;
+  const uint16 product_id_;
+  const uint32 unique_id_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDevice);
 };
