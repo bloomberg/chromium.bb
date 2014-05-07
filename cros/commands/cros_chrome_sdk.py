@@ -125,9 +125,18 @@ class SDKFetcher(object):
       if ref.Exists(lock=True):
         raw_json = osutils.ReadFile(ref.path)
       else:
-        raw_json = self.gs_ctx.Cat(
-            os.path.join(version_base, constants.METADATA_JSON),
-                         debug_level=logging.DEBUG).output
+        metadata_path = os.path.join(version_base, constants.METADATA_JSON)
+        partial_metadata_path = os.path.join(version_base,
+                                             constants.PARTIAL_METADATA_JSON)
+        try:
+          raw_json = self.gs_ctx.Cat(metadata_path,
+                                     debug_level=logging.DEBUG).output
+        except cros_build_lib.RunCommandError:
+          logging.info('Could not read %s, falling back to %s',
+                       metadata_path, partial_metadata_path)
+          raw_json = self.gs_ctx.Cat(partial_metadata_path,
+                                     debug_level=logging.DEBUG).output
+
         ref.AssignText(raw_json)
 
     return json.loads(raw_json)
