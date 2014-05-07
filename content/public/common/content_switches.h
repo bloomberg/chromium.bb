@@ -134,7 +134,6 @@ CONTENT_EXPORT extern const char kEnableInbandTextTracks[];
 CONTENT_EXPORT extern const char kEnableLCDText[];
 CONTENT_EXPORT extern const char kEnableLogging[];
 extern const char kEnableMemoryBenchmarking[];
-extern const char kEnableMonitorProfile[];
 CONTENT_EXPORT extern const char kEnableOfflineCacheAccess[];
 CONTENT_EXPORT extern const char kEnableOneCopy[];
 CONTENT_EXPORT extern const char kEnableOverlayFullscreenVideo[];

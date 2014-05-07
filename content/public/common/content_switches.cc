@@ -448,11 +448,6 @@ const char kEnableLogging[]                 = "enable-logging";
 // Enables the memory benchmarking extension
 const char kEnableMemoryBenchmarking[]      = "enable-memory-benchmarking";
 
-// On Windows, converts the page to the currently-installed monitor profile.
-// This does NOT enable color management for images. The source is still
-// assumed to be sRGB.
-const char kEnableMonitorProfile[]          = "enable-monitor-profile";
-
 // Enables use of cache if offline, even if it's stale
 const char kEnableOfflineCacheAccess[]      = "enable-offline-cache-access";
 
