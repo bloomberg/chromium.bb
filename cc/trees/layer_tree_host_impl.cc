@@ -1952,7 +1952,8 @@ bool LayerTreeHostImpl::InitializeRenderer(
                                shared_bitmap_manager_,
                                settings_.highp_threshold_min,
                                settings_.use_rgba_4444_textures,
-                               settings_.texture_id_allocation_chunk_size);
+                               settings_.texture_id_allocation_chunk_size,
+                               settings_.use_distance_field_text);
 
   if (output_surface->capabilities().deferred_gl_initialization)
     EnforceZeroBudget(true);

@@ -47,7 +47,8 @@ class TileManagerPerfTest : public testing::Test {
 
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ = ResourceProvider::Create(
-        output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1);
+        output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1,
+        false);
     resource_pool_ = ResourcePool::Create(
         resource_provider_.get(), GL_TEXTURE_2D, RGBA_8888);
     size_t raster_task_limit_bytes = 32 * 1024 * 1024;  // 16-64MB in practice.

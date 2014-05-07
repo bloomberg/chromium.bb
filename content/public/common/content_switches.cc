@@ -224,6 +224,9 @@ const char kDisablePrefixedEncryptedMedia[] =
 // Disables LCD text.
 const char kDisableLCDText[]                = "disable-lcd-text";
 
+// Disables distance field text.
+const char kDisableDistanceFieldText[]      = "disable-distance-field-text";
+
 // Disable LocalStorage.
 const char kDisableLocalStorage[]           = "disable-local-storage";
 
@@ -330,6 +333,10 @@ const char kEnableAcceleratedOverflowScroll[] =
 
 // Enables LCD text.
 const char kEnableLCDText[]                 = "enable-lcd-text";
+
+// Enables using signed distance fields when rendering text.
+// Only valid if GPU rasterization is enabled as well.
+const char kEnableDistanceFieldText[]       = "enable-distance-field-text";
 
 // Enables experimental feature that maps multiple RenderLayers to
 // one composited layer to avoid pathological layer counts.

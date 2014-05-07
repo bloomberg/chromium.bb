@@ -679,7 +679,8 @@ class LayerTreeHostContextTestDontUseLostResources
     child_output_surface_->BindToClient(&output_surface_client_);
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     child_resource_provider_ = ResourceProvider::Create(
-        child_output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1);
+        child_output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1,
+        false);
   }
 
   static void EmptyReleaseCallback(unsigned sync_point, bool lost) {}

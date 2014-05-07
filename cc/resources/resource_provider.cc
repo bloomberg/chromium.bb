@@ -431,8 +431,11 @@ bool ResourceProvider::RasterBuffer::UnlockForWrite() {
 
 ResourceProvider::DirectRasterBuffer::DirectRasterBuffer(
     const Resource* resource,
-    ResourceProvider* resource_provider)
-    : RasterBuffer(resource, resource_provider), surface_generation_id_(0u) {}
+    ResourceProvider* resource_provider,
+    bool use_distance_field_text )
+    : RasterBuffer(resource, resource_provider),
+      surface_generation_id_(0u),
+      use_distance_field_text_(use_distance_field_text) {}
 
 ResourceProvider::DirectRasterBuffer::~DirectRasterBuffer() {}
 
@@ -466,8 +469,11 @@ skia::RefPtr<SkSurface> ResourceProvider::DirectRasterBuffer::CreateSurface() {
         desc.fTextureHandle = resource()->gl_id;
         skia::RefPtr<GrTexture> gr_texture =
             skia::AdoptRef(gr_context->wrapBackendTexture(desc));
-        surface = skia::AdoptRef(
-            SkSurface::NewRenderTargetDirect(gr_texture->asRenderTarget()));
+        SkSurface::TextRenderMode text_render_mode =
+            use_distance_field_text_ ? SkSurface::kDistanceField_TextRenderMode
+                                     : SkSurface::kStandard_TextRenderMode;
+        surface = skia::AdoptRef(SkSurface::NewRenderTargetDirect(
+            gr_texture->asRenderTarget(), text_render_mode));
       }
       break;
     }
@@ -592,13 +598,15 @@ scoped_ptr<ResourceProvider> ResourceProvider::Create(
     SharedBitmapManager* shared_bitmap_manager,
     int highp_threshold_min,
     bool use_rgba_4444_texture_format,
-    size_t id_allocation_chunk_size) {
+    size_t id_allocation_chunk_size,
+    bool use_distance_field_text) {
   scoped_ptr<ResourceProvider> resource_provider(
       new ResourceProvider(output_surface,
                            shared_bitmap_manager,
                            highp_threshold_min,
                            use_rgba_4444_texture_format,
-                           id_allocation_chunk_size));
+                           id_allocation_chunk_size,
+                           use_distance_field_text));
 
   if (resource_provider->ContextGL())
     resource_provider->InitializeGL();
@@ -1237,7 +1245,8 @@ ResourceProvider::ResourceProvider(OutputSurface* output_surface,
                                    SharedBitmapManager* shared_bitmap_manager,
                                    int highp_threshold_min,
                                    bool use_rgba_4444_texture_format,
-                                   size_t id_allocation_chunk_size)
+                                   size_t id_allocation_chunk_size,
+                                   bool use_distance_field_text)
     : output_surface_(output_surface),
       shared_bitmap_manager_(shared_bitmap_manager),
       lost_output_surface_(false),
@@ -1252,7 +1261,8 @@ ResourceProvider::ResourceProvider(OutputSurface* output_surface,
       best_texture_format_(RGBA_8888),
       use_rgba_4444_texture_format_(use_rgba_4444_texture_format),
       id_allocation_chunk_size_(id_allocation_chunk_size),
-      use_sync_query_(false) {
+      use_sync_query_(false),
+      use_distance_field_text_(use_distance_field_text) {
   DCHECK(output_surface_->HasClient());
   DCHECK(id_allocation_chunk_size_);
 }
@@ -1741,7 +1751,7 @@ SkCanvas* ResourceProvider::MapDirectRasterBuffer(ResourceId id) {
   Resource* resource = GetResource(id);
   if (!resource->direct_raster_buffer.get()) {
     resource->direct_raster_buffer.reset(
-        new DirectRasterBuffer(resource, this));
+        new DirectRasterBuffer(resource, this, use_distance_field_text_));
   }
   return resource->direct_raster_buffer->LockForWrite();
 }

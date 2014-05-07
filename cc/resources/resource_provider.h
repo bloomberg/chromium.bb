@@ -75,7 +75,8 @@ class CC_EXPORT ResourceProvider {
       SharedBitmapManager* shared_bitmap_manager,
       int highp_threshold_min,
       bool use_rgba_4444_texture_format,
-      size_t id_allocation_chunk_size);
+      size_t id_allocation_chunk_size,
+      bool use_distance_field_text);
   virtual ~ResourceProvider();
 
   void InitializeSoftware();
@@ -476,7 +477,8 @@ class CC_EXPORT ResourceProvider {
   class DirectRasterBuffer : public RasterBuffer {
    public:
     DirectRasterBuffer(const Resource* resource,
-                       ResourceProvider* resource_provider);
+                       ResourceProvider* resource_provider,
+                       bool use_distance_field_text);
     virtual ~DirectRasterBuffer();
 
    protected:
@@ -487,6 +489,7 @@ class CC_EXPORT ResourceProvider {
    private:
     skia::RefPtr<SkSurface> surface_;
     uint32_t surface_generation_id_;
+    const bool use_distance_field_text_;
 
     DISALLOW_COPY_AND_ASSIGN(DirectRasterBuffer);
   };
@@ -565,7 +568,8 @@ class CC_EXPORT ResourceProvider {
                    SharedBitmapManager* shared_bitmap_manager,
                    int highp_threshold_min,
                    bool use_rgba_4444_texture_format,
-                   size_t id_allocation_chunk_size);
+                   size_t id_allocation_chunk_size,
+                   bool use_distance_field_text);
 
   void CleanUpGLIfNeeded();
 
@@ -650,6 +654,8 @@ class CC_EXPORT ResourceProvider {
   scoped_ptr<IdAllocator> buffer_id_allocator_;
 
   bool use_sync_query_;
+
+  bool use_distance_field_text_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceProvider);
 };

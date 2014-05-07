@@ -30,6 +30,7 @@ class CC_EXPORT LayerTreeSettings {
   bool partial_swap_enabled;
   bool accelerated_animation_enabled;
   bool can_use_lcd_text;
+  bool use_distance_field_text;
   bool should_clear_root_render_pass;
   bool gpu_rasterization_enabled;
   bool gpu_rasterization_forced;

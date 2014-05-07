@@ -6222,6 +6222,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_LCD_TEXT_DESCRIPTION" desc="Description of about:flags option for LCD text.">
         If disabled, text is rendered with grayscale antialiasing instead of LCD (subpixel) when doing accelerated compositing.
       </message>
+      <message name="IDS_FLAGS_DISTANCE_FIELD_TEXT_NAME" desc="Name of about:flags option for distance field text.">
+        Enable distance field text
+      </message>
+      <message name="IDS_FLAGS_DISTANCE_FIELD_TEXT_DESCRIPTION" desc="Description of about:flags option for distance field text.">
+        If enabled, text is rendered with signed distance fields rather than bitmap alpha masks.
+      </message>
       <message name="IDS_FLAGS_DELEGATED_RENDERER_NAME" desc="Name of about:flags option for delegated renderer.">
         Delegated Renderer (AKA Übercompositor).
       </message>

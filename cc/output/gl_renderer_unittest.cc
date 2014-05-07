@@ -158,8 +158,8 @@ class GLRendererWithDefaultHarnessTest : public GLRendererTest {
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ =
         ResourceProvider::Create(
-            output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1)
-            .Pass();
+            output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1,
+            false).Pass();
     renderer_ = make_scoped_ptr(new FakeRendererGL(&renderer_client_,
                                                    &settings_,
                                                    output_surface_.get(),
@@ -191,8 +191,8 @@ class GLRendererShaderTest : public GLRendererTest {
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ =
         ResourceProvider::Create(
-            output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1)
-            .Pass();
+            output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1,
+            false).Pass();
     renderer_.reset(new FakeRendererGL(&renderer_client_,
                                        &settings_,
                                        output_surface_.get(),
@@ -504,7 +504,7 @@ TEST_F(GLRendererTest, InitializationDoesNotMakeSynchronousCalls) {
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1));
+      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1, false));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -540,7 +540,7 @@ TEST_F(GLRendererTest, InitializationWithQuicklyLostContextDoesNotAssert) {
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1));
+      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1, false));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -573,7 +573,7 @@ TEST_F(GLRendererTest, OpaqueBackground) {
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1));
+      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1, false));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -619,7 +619,7 @@ TEST_F(GLRendererTest, TransparentBackground) {
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1));
+      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1, false));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -658,7 +658,7 @@ TEST_F(GLRendererTest, OffscreenOutputSurface) {
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1));
+      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1, false));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -739,7 +739,7 @@ TEST_F(GLRendererTest, VisibilityChangeIsLastCall) {
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1));
+      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1, false));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -803,7 +803,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1));
+      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1, false));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -882,7 +882,7 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1));
+      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1, false));
 
   LayerTreeSettings settings;
   settings.should_clear_root_render_pass = false;
@@ -974,7 +974,7 @@ TEST_F(GLRendererTest, ScissorTestWhenClearing) {
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1));
+      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1, false));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -1067,7 +1067,7 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1));
+      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1, false));
 
   LayerTreeSettings settings;
   settings.partial_swap_enabled = true;
@@ -1252,7 +1252,7 @@ TEST_F(GLRendererTest, ScissorAndViewportWithinNonreshapableSurface) {
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1));
+      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1, false));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -1627,7 +1627,8 @@ class MockOutputSurfaceTest : public GLRendererTest {
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ =
         ResourceProvider::Create(
-            &output_surface_, shared_bitmap_manager_.get(), 0, false, 1).Pass();
+            &output_surface_, shared_bitmap_manager_.get(), 0, false, 1, false)
+            .Pass();
 
     renderer_.reset(new FakeRendererGL(&renderer_client_,
                                        &settings_,

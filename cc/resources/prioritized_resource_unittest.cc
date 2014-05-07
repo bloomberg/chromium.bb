@@ -29,7 +29,8 @@ class PrioritizedResourceTest : public testing::Test {
     CHECK(output_surface_->BindToClient(&output_surface_client_));
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ = ResourceProvider::Create(
-        output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1);
+        output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1,
+        false);
   }
 
   virtual ~PrioritizedResourceTest() {

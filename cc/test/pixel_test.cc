@@ -110,7 +110,7 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend) {
 
   shared_bitmap_manager_.reset(new TestSharedBitmapManager());
   resource_provider_ = ResourceProvider::Create(
-      output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1);
+      output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1, false);
 
   texture_mailbox_deleter_ = make_scoped_ptr(
       new TextureMailboxDeleter(base::MessageLoopProxy::current()));
@@ -152,7 +152,7 @@ void PixelTest::SetUpSoftwareRenderer() {
   output_surface_->BindToClient(output_surface_client_.get());
   shared_bitmap_manager_.reset(new TestSharedBitmapManager());
   resource_provider_ = ResourceProvider::Create(
-      output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1);
+      output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1, false);
   renderer_ =
       SoftwareRenderer::Create(
           this, &settings_, output_surface_.get(), resource_provider_.get())

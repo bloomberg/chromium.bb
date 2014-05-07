@@ -22,7 +22,7 @@ TEST(ScopedResourceTest, NewScopedResource) {
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1));
+      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1, false));
   scoped_ptr<ScopedResource> texture =
       ScopedResource::Create(resource_provider.get());
 
@@ -42,7 +42,7 @@ TEST(ScopedResourceTest, CreateScopedResource) {
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1));
+      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1, false));
   scoped_ptr<ScopedResource> texture =
       ScopedResource::Create(resource_provider.get());
   texture->Allocate(gfx::Size(30, 30),
@@ -66,7 +66,7 @@ TEST(ScopedResourceTest, ScopedResourceIsDeleted) {
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1));
+      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1, false));
   {
     scoped_ptr<ScopedResource> texture =
         ScopedResource::Create(resource_provider.get());
@@ -102,7 +102,7 @@ TEST(ScopedResourceTest, LeakScopedResource) {
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1));
+      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1, false));
   {
     scoped_ptr<ScopedResource> texture =
         ScopedResource::Create(resource_provider.get());

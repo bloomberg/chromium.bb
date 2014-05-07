@@ -28,7 +28,8 @@ class VideoResourceUpdaterTest : public testing::Test {
     CHECK(output_surface3d_->BindToClient(&client_));
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider3d_ = ResourceProvider::Create(
-        output_surface3d_.get(), shared_bitmap_manager_.get(), 0, false, 1);
+        output_surface3d_.get(), shared_bitmap_manager_.get(), 0, false, 1,
+        false);
   }
 
   scoped_refptr<media::VideoFrame> CreateTestYUVVideoFrame() {

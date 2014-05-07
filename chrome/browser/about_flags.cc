@@ -203,6 +203,14 @@ const Experiment::Choice kLCDTextChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, switches::kDisableLCDText, ""}
 };
 
+const Experiment::Choice kDistanceFieldTextChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kEnableDistanceFieldText, "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kDisableDistanceFieldText, "" }
+};
+
 #ifndef USE_AURA
 const Experiment::Choice kDelegatedRendererChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
@@ -1843,6 +1851,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableAppInstallAlerts)
   },
 #endif
+  {
+    "distance-field-text",
+    IDS_FLAGS_DISTANCE_FIELD_TEXT_NAME,
+    IDS_FLAGS_DISTANCE_FIELD_TEXT_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kDistanceFieldTextChoices)
+  },
 };
 
 const Experiment* experiments = kExperiments;

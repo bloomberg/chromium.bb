@@ -216,6 +216,10 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   bool is_lcd_text_enabled() const { return is_lcd_text_enabled_; }
 
+  bool is_distance_field_text_enabled() const {
+    return is_distance_field_text_enabled_;
+  }
+
   bool is_zero_copy_enabled() const { return is_zero_copy_enabled_; }
 
   bool is_one_copy_enabled() const { return is_one_copy_enabled_; }
@@ -546,6 +550,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   bool is_impl_side_painting_enabled_;
   bool is_low_res_tiling_enabled_;
   bool is_lcd_text_enabled_;
+  bool is_distance_field_text_enabled_;
   bool is_zero_copy_enabled_;
   bool is_one_copy_enabled_;
 
