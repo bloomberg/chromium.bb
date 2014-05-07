@@ -7,6 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/url_fetcher.h"
 
 namespace {
@@ -102,10 +103,21 @@ void LogUploader::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(current_fetch_.get(), source);
   scoped_ptr<net::URLFetcher> fetch(current_fetch_.Pass());
 
+  const net::URLRequestStatus& request_status = source->GetStatus();
+
   const int response_code = source->GetResponseCode();
 
-  // Log a histogram to track response success vs. failure rates.
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Rappor.UploadResponseCode", response_code);
+  if (request_status.status() != net::URLRequestStatus::SUCCESS) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Rappor.FailedUploadErrorCode",
+                                -request_status.error());
+    DVLOG(1) << "Rappor server upload failed with error: "
+             << request_status.error() << ": "
+             << net::ErrorToString(request_status.error());
+    DCHECK_EQ(-1, response_code);
+  } else {
+    // Log a histogram to track response success vs. failure rates.
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Rappor.UploadResponseCode", response_code);
+  }
 
   const bool upload_succeeded = response_code == 200;
 
