@@ -273,9 +273,10 @@ class TestPatchSeries(MoxBase):
     failed_tot = _GetIds(failed_tot)
     failed_inflight = _GetIds(failed_inflight)
 
-    self.assertEqual(
-        [applied, failed_tot, failed_inflight],
-        [applied_result, failed_tot_result, failed_inflight_result])
+    self.maxDiff = None
+    self.assertEqual(applied, applied_result)
+    self.assertItemsEqual(failed_inflight, failed_inflight_result)
+    self.assertItemsEqual(failed_tot, failed_tot_result)
     return result
 
   def testApplyWithDeps(self):
@@ -391,7 +392,10 @@ class TestPatchSeries(MoxBase):
     patch2 = self.MockPatch(remote=constants.INTERNAL_REMOTE)
     patch3 = self.MockPatch(remote=constants.EXTERNAL_REMOTE)
     patches = [patch1, patch2, patch3]
-    applied_patches = patches[::-1] if cros_internal else [patch3, patch1]
+    if cros_internal:
+      applied_patches = [patch3, patch1, patch2]
+    else:
+      applied_patches = [patch3, patch1]
 
     self.SetPatchDeps(patch1, [patch3.id])
     self.SetPatchDeps(patch2)
@@ -463,16 +467,63 @@ class TestPatchSeries(MoxBase):
     """Verify that the machinery handles cycles correctly."""
     series = self.GetPatchSeries()
 
-    patch1, patch2 = patches = self.GetPatches(2)
+    patch1, patch2, patch3 = patches = self.GetPatches(3)
 
-    self.SetPatchDeps(patch1, [patch1.id])
-    self.SetPatchDeps(patch2, cq=[patch1.id])
+    self.SetPatchDeps(patch1, [patch2.id])
+    self.SetPatchDeps(patch2, cq=[patch3.id])
+    self.SetPatchDeps(patch3, [patch1.id])
 
-    self.SetPatchApply(patch2)
     self.SetPatchApply(patch1)
+    self.SetPatchApply(patch2)
+    self.SetPatchApply(patch3)
 
     self.mox.ReplayAll()
-    self.assertResults(series, patches, patches[::-1])
+    self.assertResults(series, patches, [patch2, patch1, patch3])
+    self.mox.VerifyAll()
+
+  def testComplexCyclicalDeps(self, fail=False):
+    """Verify handling of two interdependent cycles."""
+    series = self.GetPatchSeries()
+
+    # Create two cyclically interdependent patch chains.
+    # Example: Two patch series A1<-A2<-A3<-A4 and B1<-B2<-B3<-B4. A1 has a
+    # CQ-DEPEND on B4 and B1 has a CQ-DEPEND on A4, so all of the patches must
+    # be committed together.
+    chain1, chain2 = chains = self.GetPatches(4), self.GetPatches(4)
+    for chain in chains:
+      (other_chain,) = [x for x in chains if x != chain]
+      self.SetPatchDeps(chain[0], [], cq=[other_chain[-1].id])
+      for i in range(1, len(chain)):
+        self.SetPatchDeps(chain[i], [chain[i-1].id])
+
+    # Apply the second-last patch first, so that the last patch in the series
+    # will be pulled in via the CQ-DEPEND on the other patch chain.
+    to_apply = [chain1[-2]] + [x for x in (chain1 + chain2) if x != chain1[-2]]
+
+    # All of the patches but chain[-1] were applied successfully.
+    for patch in chain1[:-1] + chain2:
+      self.SetPatchApply(patch)
+
+    if fail:
+      # Pretend that chain[-1] failed to apply.
+      res = self.SetPatchApply(chain1[-1])
+      res.AndRaise(cros_patch.ApplyPatchException(chain1[-1]))
+      applied = []
+      failed_tot = to_apply
+    else:
+      # We apply the patches in this order since the last patch in chain1
+      # is pulled in via CQ-DEPEND.
+      self.SetPatchApply(chain1[-1])
+      applied = chain1[:-1] + chain2 + [chain1[-1]]
+      failed_tot = []
+
+    self.mox.ReplayAll()
+    self.assertResults(series, to_apply, applied=applied, failed_tot=failed_tot)
+    self.mox.VerifyAll()
+
+  def testFailingComplexCyclicalDeps(self):
+    """Verify handling of failing interlocked cycles."""
+    self.testComplexCyclicalDeps(fail=True)
 
   def testApplyPartialFailures(self):
     """Test that can apply changes correctly when one change fails to apply.

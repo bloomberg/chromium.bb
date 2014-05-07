@@ -577,8 +577,11 @@ class PatchSeries(object):
       A sequence of the necessary cros_patch.GitRepoPatch objects for
       this transaction.
     """
-    plan, seen = [], cros_patch.PatchCache()
-    self._AddChangeToPlanWithDeps(change, plan, seen, limit_to=limit_to)
+    plan = []
+    gerrit_deps_seen = cros_patch.PatchCache()
+    cq_deps_seen = cros_patch.PatchCache()
+    self._AddChangeToPlanWithDeps(change, plan, gerrit_deps_seen,
+                                  cq_deps_seen, limit_to=limit_to)
     return plan
 
   def CreateTransactions(self, changes, limit_to=None):
@@ -664,68 +667,78 @@ class PatchSeries(object):
     return ordered_plans, failed
 
   @_PatchWrapException
-  def _AddChangeToPlanWithDeps(self, change, plan, seen, limit_to=None):
+  def _AddChangeToPlanWithDeps(self, change, plan, gerrit_deps_seen,
+                               cq_deps_seen, limit_to=None,
+                               include_cq_deps=True):
     """Add a change and its dependencies into a |plan|.
 
     Args:
       change: The change to add to the plan.
       plan: The list of changes to apply, in order. This function will append
         |change| and any necessary dependencies to |plan|.
-      seen: The changes whose Gerrit dependencies have already been processed.
+      gerrit_deps_seen: The changes whose Gerrit dependencies have already been
+        processed.
+      cq_deps_seen: The changes whose CQ-DEPEND and Gerrit dependencies have
+        already been processed.
       limit_to: If non-None, limit the allowed uncommitted patches to
         what's in that container/mapping.
+      include_cq_deps: If True, include CQ dependencies in the list
+        of dependencies. Defaults to True.
 
     Raises:
       DependencyError: If we could not resolve a dependency.
       GerritException or GOBError: If there is a failure in querying gerrit.
     """
-    if change in self._committed_cache or change in plan:
-      # If the requested change is already in the plan, then we have already
-      # processed its dependencies.
+    if change in self._committed_cache:
       return
 
     # Get a list of the changes that haven't been committed.
     # These are returned as cros_patch.PatchQuery objects.
-    gerrit_deps, paladin_deps = self.GetDepsForChange(change)
+    gerrit_deps, cq_deps = self.GetDepsForChange(change)
 
-    # Only process the dependencies for each change once. We prioritize Gerrit
-    # dependencies over CQ dependencies, since Gerrit dependencies might be
-    # required in order for the change to apply.
-    if change not in seen:
+    # Only process the Gerrit dependencies for each change once. We prioritize
+    # Gerrit dependencies over CQ dependencies, since Gerrit dependencies might
+    # be required in order for the change to apply.
+    old_plan_len = len(plan)
+    if change not in gerrit_deps_seen:
       gerrit_deps = self._LookupUncommittedChanges(
           gerrit_deps, limit_to=limit_to)
-      seen.Inject(change)
+      gerrit_deps_seen.Inject(change)
       for dep in gerrit_deps:
-        self._AddChangeToPlanWithDeps(dep, plan, seen, limit_to=limit_to)
+        self._AddChangeToPlanWithDeps(dep, plan, gerrit_deps_seen, cq_deps_seen,
+                                      limit_to=limit_to, include_cq_deps=False)
 
     # If there are cyclic dependencies, we might have already applied this
     # patch as part of dependency resolution. If not, apply this patch.
     if change not in plan:
       plan.append(change)
 
-      # Process paladin deps last, so as to avoid circular dependencies between
-      # gerrit dependencies and paladin dependencies.
-      paladin_deps = self._LookupUncommittedChanges(
-          paladin_deps, limit_to=limit_to)
-      for dep in paladin_deps:
+    # Process CQ deps last, so as to avoid circular dependencies between
+    # Gerrit dependencies and CQ dependencies.
+    if include_cq_deps and change not in cq_deps_seen:
+      cq_deps = self._LookupUncommittedChanges(
+          cq_deps, limit_to=limit_to)
+      cq_deps_seen.Inject(change)
+      for dep in plan[old_plan_len:] + cq_deps:
         # Add the requested change (plus deps) to our plan, if it we aren't
         # already in the process of doing that.
-        if dep not in seen:
-          self._AddChangeToPlanWithDeps(dep, plan, seen, limit_to=limit_to)
+        if dep not in cq_deps_seen:
+          self._AddChangeToPlanWithDeps(dep, plan, gerrit_deps_seen,
+                                        cq_deps_seen, limit_to=limit_to)
 
   @_PatchWrapException
   def GetDepChangesForChange(self, change):
-    """Look up the gerrit/paladin dependency changes for |change|.
+    """Look up the Gerrit/CQ dependency changes for |change|.
 
     Returns:
       A tuple of GerritPatch objects which are change's Gerrit
-      dependencies, and Paladin dependencies.
+      dependencies, and CQ dependencies.
 
     Raises:
       DependencyError: If we could not resolve a dependency.
       GerritException or GOBError: If there is a failure in querying gerrit.
     """
-    gerrit_deps, paladin_deps = self.GetDepsForChange(change)
+    gerrit_deps, cq_deps = self.GetDepsForChange(change)
 
     def _DepsToChanges(deps):
       dep_changes = []
@@ -742,15 +755,15 @@ class PatchSeries(object):
 
       return dep_changes
 
-    return _DepsToChanges(gerrit_deps), _DepsToChanges(paladin_deps)
+    return _DepsToChanges(gerrit_deps), _DepsToChanges(cq_deps)
 
   @_PatchWrapException
   def GetDepsForChange(self, change):
-    """Look up the gerrit/paladin deps for |change|.
+    """Look up the Gerrit/CQ deps for |change|.
 
     Returns:
       A tuple of PatchQuery objects representing change's Gerrit
-      dependencies, and Paladin dependencies.
+      dependencies, and CQ dependencies.
 
     Raises:
       DependencyError: If we could not resolve a dependency.
