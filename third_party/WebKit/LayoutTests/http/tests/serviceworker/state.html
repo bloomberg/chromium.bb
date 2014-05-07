@@ -7,9 +7,7 @@
     var t = async_test('Service Worker state property and "statechange" event');
     var currentState = 'test-is-starting';
 
-    // FIXME: Unregister old Service Workers when unregister does not DCHECK.
-    //navigator.serviceWorker.unregister('/state/*').then(register, register);
-    register();
+    navigator.serviceWorker.unregister('/state/*').then(register, register);
 
     function register() {
         navigator.serviceWorker.register(
@@ -28,14 +26,6 @@
                         'the service worker should be in a state up to ' +
                         '"installing".');
         checkStateTransition(sw.state);
-
-        // FIXME: registration.html causes this test to get stuck in
-        // state "parsed." When unregister works, remove this
-        // premature exit to stop test timeouts.
-        if (sw.state == 'parsed') {
-            assert_unreached('wedged in state "parsed".');
-            t.done();
-        }
     }
 
     function checkStateTransition(newState) {
@@ -49,9 +39,7 @@
             assert_in_array(newState, ['installed', 'deactivated']);
             break;
         case 'installed':
-            // FIXME: Remove "active" from this set when activation flow is
-            // implemented.
-            assert_in_array(newState, ['active', 'activating', 'deactivated']);
+            assert_in_array(newState, ['activating', 'deactivated']);
             break;
         case 'activating':
             assert_in_array(newState, ['active', 'deactivated']);
@@ -81,8 +69,12 @@
         checkStateTransition(event.target.state);
 
         if (event.target.state == 'active') {
-            t.done();
+            navigator.serviceWorker.unregister('/state/*').then(done, done);
         }
+    }
+
+    function done() {
+        t.done();
     }
 }());
 </script>

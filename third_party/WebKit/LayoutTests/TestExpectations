@@ -1249,8 +1249,6 @@ crbug.com/362501 [ Mac ] svg/text/obb-paintserver.html [ ImageOnlyFailure Crash 
 
 crbug.com/362503 http/tests/xmlhttprequest/xmlhttprequest-responseXML-exception.html [ Pass Timeout ]
 
-crbug.com/363025 virtual/serviceworker/http/tests/serviceworker/state.html [ Failure Pass ]
-
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash Timeout ]
 
 # Need rebaseline once all tests are in ForceCompositingMode.
