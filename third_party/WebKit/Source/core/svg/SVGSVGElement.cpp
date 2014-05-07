@@ -771,4 +771,17 @@ void SVGSVGElement::inheritViewAttributes(SVGViewElement* viewElement)
         view->setZoomAndPan(zoomAndPan());
 }
 
+void SVGSVGElement::finishParsingChildren()
+{
+    SVGGraphicsElement::finishParsingChildren();
+
+    // The outermost SVGSVGElement SVGLoad event is fired through Document::dispatchWindowLoadEvent.
+    if (isOutermostSVGSVGElement())
+        return;
+
+    // finishParsingChildren() is called when the close tag is reached for an element (e.g. </svg>)
+    // we send SVGLoad events here if we can, otherwise they'll be sent when any required loads finish
+    sendSVGLoadEventIfPossible();
+}
+
 }

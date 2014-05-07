@@ -921,20 +921,6 @@ Timer<SVGElement>* SVGElement::svgLoadEventTimer()
     return 0;
 }
 
-void SVGElement::finishParsingChildren()
-{
-    Element::finishParsingChildren();
-
-    // The outermost SVGSVGElement SVGLoad event is fired through Document::dispatchWindowLoadEvent.
-    if (isOutermostSVGSVGElement())
-        return;
-
-    // finishParsingChildren() is called when the close tag is reached for an element (e.g. </svg>)
-    // we send SVGLoad events here if we can, otherwise they'll be sent when any required loads finish
-    if (isSVGSVGElement(*this))
-        sendSVGLoadEventIfPossible();
-}
-
 void SVGElement::attributeChanged(const QualifiedName& name, const AtomicString& newValue, AttributeModificationReason)
 {
     Element::attributeChanged(name, newValue);

@@ -136,6 +136,8 @@ private:
 
     void updateCurrentTranslate();
 
+    virtual void finishParsingChildren() OVERRIDE;
+
     enum CheckIntersectionOrEnclosure {
         CheckIntersection,
         CheckEnclosure
