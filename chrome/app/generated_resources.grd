@@ -13208,9 +13208,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_PDF_BUBBLE_INSTALL_READER_LINK" desc="Title of the link to open a PDF with an unsupported feature in Adobe Reader">
         Install Adobe Reader
       </message>
-      <message name="IDS_PDF_BUBBLE_METRO_MODE_LINK" desc="Title of the link to restart Chrome on Windows 8 in metro mode when viewing a PDF with an unsupported feature.">
-        Relaunch Chrome on the desktop
-      </message>
+      <if expr="is_win">
+        <message name="IDS_PDF_BUBBLE_METRO_MODE_LINK" desc="Title of the link to restart Chrome on Windows 8 in metro mode when viewing a PDF with an unsupported feature.">
+          Relaunch Chrome on the desktop
+        </message>
+      </if>
       <message name="IDS_PDF_INFOBAR_QUESTION_ALWAYS_USE_READER" desc="Question asked on the info bar when a user opens a PDF with Reader and we want to ask them if they always want to use it for viewing PDF files.">
         Use Adobe Reader as your default PDF viewer?
       </message>

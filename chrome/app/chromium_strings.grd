@@ -404,12 +404,11 @@ name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presente
         </message>
       </if>
       <!-- Strings used to warn that an OS is not supported -->
-      <message name="IDS_UNSUPPORTED_OS_PRE_WIN_XP" desc="The text used to warn the user that Windows pre-XP is not supported">
-        Chromium requires Windows XP or later. Some features may not work.
-      </message>
-      <message name="IDS_UNSUPPORTED_OS" desc="The text used to warn the user that current OS is not supported">
-        Chromium does not support <ph name="OS_NAME">$1<ex>Windows 2000</ex></ph>.
-      </message>
+      <if expr="is_win">
+        <message name="IDS_UNSUPPORTED_OS_PRE_WIN_XP" desc="The text used to warn the user that Windows pre-XP is not supported">
+          Chromium requires Windows XP or later. Some features may not work.
+        </message>
+      </if>
       <if expr="not chromeos">
         <message name="IDS_OPTIONS_RELAUNCH_REQUIRED" desc="The message displayed for an option that requires a relaunch to take effect. This appears in a message box if an option is changed that requires a relaunch.">
           Please close all Chromium windows and relaunch Chromium for this change to take effect.
