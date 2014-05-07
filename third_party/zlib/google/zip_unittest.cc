@@ -13,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/zlib/google/zip.h"
@@ -301,5 +302,33 @@ TEST_F(ZipTest, ZipFiles) {
   }
 }
 #endif  // defined(OS_POSIX)
+
+TEST_F(ZipTest, UnzipFilesWithIncorrectSize) {
+  base::FilePath test_data_folder;
+  ASSERT_TRUE(GetTestDataDirectory(&test_data_folder));
+
+  // test_mismatch_size.zip contains files with names from 0.txt to 7.txt with
+  // sizes from 0 to 7 bytes respectively, but the metadata in the zip file says
+  // the uncompressed size is 3 bytes. The ZipReader and minizip code needs to
+  // be clever enough to get all the data out.
+  base::FilePath test_zip_file =
+      test_data_folder.AppendASCII("test_mismatch_size.zip");
+
+  base::ScopedTempDir scoped_temp_dir;
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+  const base::FilePath& temp_dir = scoped_temp_dir.path();
+
+  ASSERT_TRUE(zip::Unzip(test_zip_file, temp_dir));
+  EXPECT_TRUE(base::DirectoryExists(temp_dir.AppendASCII("d")));
+
+  for (int i = 0; i < 8; i++) {
+    SCOPED_TRACE(base::StringPrintf("Processing %d.txt", i));
+    base::FilePath file_path = temp_dir.AppendASCII(
+        base::StringPrintf("%d.txt", i));
+    int64 file_size = -1;
+    EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
+    EXPECT_EQ(static_cast<int64>(i), file_size);
+  }
+}
 
 }  // namespace

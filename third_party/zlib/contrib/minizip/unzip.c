@@ -1705,11 +1705,6 @@ extern int ZEXPORT unzReadCurrentFile  (unzFile file, voidp buf, unsigned len)
 
     pfile_in_zip_read_info->stream.avail_out = (uInt)len;
 
-    if ((len>pfile_in_zip_read_info->rest_read_uncompressed) &&
-        (!(pfile_in_zip_read_info->raw)))
-        pfile_in_zip_read_info->stream.avail_out =
-            (uInt)pfile_in_zip_read_info->rest_read_uncompressed;
-
     if ((len>pfile_in_zip_read_info->rest_read_compressed+
            pfile_in_zip_read_info->stream.avail_in) &&
          (pfile_in_zip_read_info->raw))

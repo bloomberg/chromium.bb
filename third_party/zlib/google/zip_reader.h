@@ -64,6 +64,8 @@ class ZipReader {
 
     // Returns the size of the original file (i.e. after uncompressed).
     // Returns 0 if the entry is a directory.
+    // Note: this value should not be trusted, because it is stored as metadata
+    // in the zip archive and can be different from the real uncompressed size.
     int64 original_size() const { return original_size_; }
 
     // Returns the last modified time. If the time stored in the zip file was
