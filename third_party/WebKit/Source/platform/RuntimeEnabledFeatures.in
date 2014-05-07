@@ -69,7 +69,7 @@ ImageDataConstructor status=experimental
 IndexedDBExperimental status=experimental
 InputModeAttribute status=experimental
 LangAttributeAwareFormControlUI
-LayerSquashing status=stable
+LayerSquashing status=test
 PrefixedEncryptedMedia status=stable
 LocalStorage status=stable
 Media status=stable
