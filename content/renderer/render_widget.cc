@@ -500,7 +500,6 @@ void RenderWidget::CompleteInit() {
   }
   if (compositor_)
     StartCompositor();
-  DoDeferredUpdate();
 
   Send(new ViewHostMsg_RenderViewReady(routing_id_));
 }
@@ -1142,28 +1141,19 @@ void RenderWidget::AnimationCallback() {
     TRACE_EVENT0("renderer", "EarlyOut_NoAnimationUpdatePending");
     return;
   }
-  DoDeferredUpdateAndSendInputAck();
+  FlushPendingInputEventAck();
 }
 
 void RenderWidget::InvalidationCallback() {
   TRACE_EVENT0("renderer", "RenderWidget::InvalidationCallback");
   invalidation_task_posted_ = false;
-  DoDeferredUpdateAndSendInputAck();
+  FlushPendingInputEventAck();
 }
 
 void RenderWidget::FlushPendingInputEventAck() {
   if (pending_input_event_ack_)
     Send(pending_input_event_ack_.release());
   total_input_handling_time_this_frame_ = base::TimeDelta();
-}
-
-void RenderWidget::DoDeferredUpdateAndSendInputAck() {
-  DoDeferredUpdate();
-  FlushPendingInputEventAck();
-}
-
-// TODO(danakj): Remove this when everything is ForceCompositingMode.
-void RenderWidget::DoDeferredUpdate() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////

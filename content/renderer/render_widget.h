@@ -306,8 +306,6 @@ class CONTENT_EXPORT RenderWidget
   void AnimationCallback();
   void InvalidationCallback();
   void FlushPendingInputEventAck();
-  void DoDeferredUpdateAndSendInputAck();
-  void DoDeferredUpdate();
   void DoDeferredClose();
   void DoDeferredSetWindowRect(const blink::WebRect& pos);
 
