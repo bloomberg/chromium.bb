@@ -153,6 +153,7 @@ HTMLOptionsCollection
 HTMLOutputElement
 HTMLParagraphElement
 HTMLParamElement
+HTMLPictureElement
 HTMLPreElement
 HTMLProgressElement
 HTMLQuoteElement

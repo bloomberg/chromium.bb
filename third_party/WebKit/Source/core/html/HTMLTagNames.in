@@ -97,6 +97,7 @@ output constructorNeedsFormElement
 shadow interfaceName=HTMLShadowElement
 p interfaceName=HTMLParagraphElement
 param
+picture interfaceName=HTMLPictureElement, runtimeEnabled=picture
 plaintext interfaceName=HTMLElement
 pre
 progress interfaceName=HTMLProgressElement
