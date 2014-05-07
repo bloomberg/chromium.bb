@@ -28,7 +28,6 @@ config("feature_flags") {
       "ENABLE_REMOTING=1",
       "ENABLE_WEBRTC=1",
       "ENABLE_CONFIGURATION_POLICY",
-      "ENABLE_INPUT_SPEECH",
       "ENABLE_NOTIFICATIONS",
       "ENABLE_EGLIMAGE=1",
       "ENABLE_TASK_MANAGER=1",

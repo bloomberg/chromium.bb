@@ -332,6 +332,8 @@
       'safe_browsing%': 1,
 
       # Speech input is compiled in by default. Set to 0 to disable.
+      # TODO(tommyw): Speech Input doesn't exist anymore. Clarify the scope
+      # of this flag (and probably rename it).
       'input_speech%': 1,
 
       # Notifications are compiled in by default. Set to 0 to disable.
@@ -2396,9 +2398,6 @@
       }],
       ['configuration_policy==1', {
         'defines': ['ENABLE_CONFIGURATION_POLICY'],
-      }],
-      ['input_speech==1', {
-        'defines': ['ENABLE_INPUT_SPEECH'],
       }],
       ['notifications==1', {
         'defines': ['ENABLE_NOTIFICATIONS'],
