@@ -6490,5 +6490,58 @@ TEST_F(LayerTreeHostImplWithImplicitLimitsTest, ImplicitMemoryLimits) {
             150u * 1024u * 1024u);
 }
 
+TEST_F(LayerTreeHostImplTest, UpdateTilesForMasksWithNoVisibleContent) {
+  gfx::Size bounds(100000, 100);
+
+  host_impl_->CreatePendingTree();
+
+  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl_->pending_tree(), 1);
+
+  scoped_ptr<FakePictureLayerImpl> layer_with_mask =
+      FakePictureLayerImpl::Create(host_impl_->pending_tree(), 2);
+
+  layer_with_mask->SetBounds(bounds);
+
+  scoped_ptr<FakePictureLayerImpl> mask =
+      FakePictureLayerImpl::Create(host_impl_->pending_tree(), 3);
+
+  mask->SetIsMask(true);
+  mask->SetBounds(bounds);
+
+  FakePictureLayerImpl* pending_mask_content = mask.get();
+  layer_with_mask->SetMaskLayer(mask.PassAs<LayerImpl>());
+
+  scoped_ptr<FakePictureLayerImpl> child_of_layer_with_mask =
+      FakePictureLayerImpl::Create(host_impl_->pending_tree(), 4);
+
+  child_of_layer_with_mask->SetBounds(bounds);
+  child_of_layer_with_mask->SetDrawsContent(true);
+
+  layer_with_mask->AddChild(child_of_layer_with_mask.PassAs<LayerImpl>());
+
+  root->AddChild(layer_with_mask.PassAs<LayerImpl>());
+
+  host_impl_->pending_tree()->SetRootLayer(root.Pass());
+
+  gfx::Rect r1 = pending_mask_content->visible_rect_for_tile_priority();
+  ASSERT_EQ(0, r1.x());
+  ASSERT_EQ(0, r1.y());
+  ASSERT_EQ(0, r1.width());
+  ASSERT_EQ(0, r1.height());
+
+  host_impl_->ActivatePendingTree();
+
+  host_impl_->active_tree()->UpdateDrawProperties();
+
+  ASSERT_EQ(2u, host_impl_->active_tree()->RenderSurfaceLayerList().size());
+
+  FakePictureLayerImpl* active_mask_content =
+      static_cast<FakePictureLayerImpl*>(
+          host_impl_->active_tree()->root_layer()->children()[0]->mask_layer());
+  gfx::Rect r2 = active_mask_content->visible_rect_for_tile_priority();
+
+  ASSERT_TRUE(!r2.IsEmpty());
+}
+
 }  // namespace
 }  // namespace cc

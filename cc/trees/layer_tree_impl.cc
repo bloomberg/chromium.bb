@@ -488,11 +488,13 @@ void LayerTreeImpl::UpdateDrawProperties() {
              LayerIteratorType::Begin(&render_surface_layer_list_);
          it != end;
          ++it) {
-      if (!it.represents_itself())
-        continue;
       LayerImpl* layer = *it;
+      if (it.represents_itself())
+        layer->UpdateTilePriorities();
 
-      layer->UpdateTilePriorities();
+      if (!it.represents_contributing_render_surface())
+        continue;
+
       if (layer->mask_layer())
         layer->mask_layer()->UpdateTilePriorities();
       if (layer->replica_layer() && layer->replica_layer()->mask_layer())
