@@ -75,8 +75,6 @@ AwBrowserContext* AwBrowserContext::FromWebContents(
 
 void AwBrowserContext::PreMainMessageLoopRun() {
   cookie_store_ = CreateCookieStore(this);
-  // TODO(sgurun): A valid key will need to be supplied here.
-  DataReductionProxySettings::SetKey("test_key");
   DataReductionProxySettings::SetAllowed(true);
   DataReductionProxySettings::SetPromoAllowed(false);
   data_reduction_proxy_settings_.reset(

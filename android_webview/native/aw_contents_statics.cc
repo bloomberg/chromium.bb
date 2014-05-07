@@ -4,15 +4,19 @@
 
 #include "android_webview/native/aw_contents_statics.h"
 
+#include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/AwContentsStatics_jni.h"
 #include "net/cert/cert_database.h"
 
 using base::android::AttachCurrentThread;
+using base::android::ConvertJavaStringToUTF8;
 using base::android::ScopedJavaGlobalRef;
 using content::BrowserThread;
+using data_reduction_proxy::DataReductionProxySettings;
 
 namespace android_webview {
 
@@ -41,6 +45,11 @@ void ClearClientCertPreferences(JNIEnv* env, jclass, jobject callback) {
       FROM_HERE,
       base::Bind(&NotifyClientCertificatesChanged),
       base::Bind(&ClientCertificatesCleared, base::Owned(j_callback)));
+}
+
+// static
+void SetDataReductionProxyKey(JNIEnv* env, jclass, jstring key) {
+    DataReductionProxySettings::SetKey(ConvertJavaStringToUTF8(env, key));
 }
 
 bool RegisterAwContentsStatics(JNIEnv* env) {

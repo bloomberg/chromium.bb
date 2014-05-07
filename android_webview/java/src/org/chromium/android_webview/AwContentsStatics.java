@@ -45,9 +45,16 @@ public class AwContentsStatics {
         callback.run();
     }
 
+    /**
+     * Set Data Reduction Proxy key for authentication.
+     */
+    public static void setDataReductionProxyKey(String key) {
+        nativeSetDataReductionProxyKey(key);
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------
     private static native void nativeClearClientCertPreferences(Runnable callback);
-
+    private static native void nativeSetDataReductionProxyKey(String key);
 }
