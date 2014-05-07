@@ -1187,7 +1187,10 @@ chromium_info = chromium_pfq.derive(
   chrome_sdk=False,
 )
 
-telemetry_info = telemetry.derive(chrome_try)
+telemetry_info = telemetry.derive(
+  chrome_try,
+  disk_vm_layout='2gb-rootfs-updatable',
+)
 
 chrome_info = chromium_info.derive(
   internal, official,
