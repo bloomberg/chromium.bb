@@ -278,7 +278,6 @@
                    'shans@chromium.org',
                    'steveblock@chromium.org',
                    'timloh@chromium.org',
-                   'dino@apple.com',
                    'blink-reviews-animation@chromium.org'],
     'audio': ['rtoy@chromium.org'],
     'devtools': [ 'pfeldman+blink@chromium.org',
