@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/bluetooth_low_energy/utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
@@ -449,7 +450,30 @@ void BluetoothLowEnergyEventRouter::GattCharacteristicValueChanged(
     BluetoothGattService* service,
     BluetoothGattCharacteristic* characteristic,
     const std::vector<uint8>& value) {
-  // TODO(armansito): Implement.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  VLOG(2) << "GATT characteristic value changed: " << service->GetIdentifier();
+
+  DCHECK(observed_gatt_services_.find(service->GetIdentifier()) !=
+         observed_gatt_services_.end());
+  DCHECK(service_id_to_device_address_.find(service->GetIdentifier()) !=
+         service_id_to_device_address_.end());
+  DCHECK(chrc_id_to_service_id_.find(characteristic->GetIdentifier()) !=
+         chrc_id_to_service_id_.end());
+  DCHECK(chrc_id_to_service_id_[characteristic->GetIdentifier()] ==
+         service->GetIdentifier());
+
+  // Signal API event.
+  apibtle::Characteristic api_characteristic;
+  PopulateCharacteristic(characteristic, &api_characteristic);
+
+  // Manually construct the arguments, instead of using
+  // apibtle::OnCharacteristicValueChanged::Create, as it doesn't convert lists
+  // of enums correctly.
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  args->Append(apibtle::CharacteristicToValue(&api_characteristic).release());
+  scoped_ptr<Event> event(new Event(
+      apibtle::OnCharacteristicValueChanged::kEventName, args.Pass()));
+  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
 void BluetoothLowEnergyEventRouter::OnGetAdapter(

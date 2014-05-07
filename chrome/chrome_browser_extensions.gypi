@@ -163,6 +163,8 @@
         'browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_api.h',
         'browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_event_router.cc',
         'browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_event_router.h',
+        'browser/extensions/api/bluetooth_low_energy/utils.cc',
+        'browser/extensions/api/bluetooth_low_energy/utils.h',
         'browser/extensions/api/bluetooth_socket/bluetooth_socket_api.cc',
         'browser/extensions/api/bluetooth_socket/bluetooth_socket_api.h',
         'browser/extensions/api/bluetooth_socket/bluetooth_socket_event_dispatcher.cc',

@@ -465,4 +465,37 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, CharacteristicProperties) {
   event_router()->DeviceRemoved(mock_adapter_, device_.get());
 }
 
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, CharacteristicValueChanged) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  // Load the extension and let it set up.
+  ExtensionTestMessageListener listener("ready", true);
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
+      "bluetooth_low_energy/characteristic_value_changed")));
+
+  // Cause events to be sent to the extension.
+  event_router()->DeviceAdded(mock_adapter_, device_.get());
+  event_router()->GattServiceAdded(device_.get(), service0_.get());
+  event_router()->GattServiceAdded(device_.get(), service1_.get());
+  event_router()->GattCharacteristicAdded(service0_.get(), chrc0_.get());
+  event_router()->GattCharacteristicAdded(service1_.get(), chrc2_.get());
+
+  std::vector<uint8> value;
+  event_router()->GattCharacteristicValueChanged(
+      service0_.get(), chrc0_.get(), value);
+  event_router()->GattCharacteristicValueChanged(
+      service1_.get(), chrc2_.get(), value);
+
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+  listener.Reply("go");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  event_router()->GattCharacteristicRemoved(service1_.get(), chrc2_.get());
+  event_router()->GattCharacteristicRemoved(service0_.get(), chrc0_.get());
+  event_router()->GattServiceRemoved(device_.get(), service1_.get());
+  event_router()->GattServiceRemoved(device_.get(), service0_.get());
+  event_router()->DeviceRemoved(mock_adapter_, device_.get());
+}
+
 }  // namespace

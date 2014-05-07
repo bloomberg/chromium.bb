@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_event_router.h"
+#include "chrome/browser/extensions/api/bluetooth_low_energy/utils.h"
 #include "chrome/common/extensions/api/bluetooth_low_energy.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
@@ -38,35 +39,6 @@ extensions::BluetoothLowEnergyEventRouter* GetEventRouter(
 void DoWorkCallback(const base::Callback<bool()>& callback) {
   DCHECK(!callback.is_null());
   callback.Run();
-}
-
-// TODO(armansito): Remove this function once the described bug is fixed.
-// (See crbug.com/368368).
-//
-// Converts an apibtle::Characteristic to a base::Value. This function is
-// necessary, as json_schema_compiler::util::AddItemToList has no template
-// specialization for user defined enums, which get treated as integers. This is
-// because Characteristic contains a list of enum CharacteristicProperty.
-scoped_ptr<base::DictionaryValue> CharacteristicToValue(
-    apibtle::Characteristic* from) {
-  // Copy the properties. Use Characteristic::ToValue to generate the result
-  // dictionary without the properties, to prevent json_schema_compiler from
-  // failing.
-  std::vector<apibtle::CharacteristicProperty> properties = from->properties;
-  from->properties.clear();
-  scoped_ptr<base::DictionaryValue> to = from->ToValue();
-
-  // Manually set each property.
-  scoped_ptr<base::ListValue> property_list(new base::ListValue());
-  for (std::vector<apibtle::CharacteristicProperty>::iterator iter =
-           properties.begin();
-       iter != properties.end();
-       ++iter)
-    property_list->Append(new base::StringValue(apibtle::ToString(*iter)));
-
-  to->Set("properties", property_list.release());
-
-  return to.Pass();
 }
 
 }  // namespace
@@ -229,7 +201,7 @@ bool BluetoothLowEnergyGetCharacteristicFunction::DoWork() {
   // Manually construct the result instead of using
   // apibtle::GetCharacteristic::Result::Create as it doesn't convert lists of
   // enums correctly.
-  SetResult(CharacteristicToValue(&characteristic).release());
+  SetResult(apibtle::CharacteristicToValue(&characteristic).release());
   SendResponse(true);
 
   return true;
@@ -272,7 +244,7 @@ bool BluetoothLowEnergyGetCharacteristicsFunction::DoWork() {
            characteristic_list.begin();
        iter != characteristic_list.end();
        ++iter)
-    result->Append(CharacteristicToValue(iter->get()).release());
+    result->Append(apibtle::CharacteristicToValue(iter->get()).release());
 
   SetResult(result.release());
   SendResponse(true);
