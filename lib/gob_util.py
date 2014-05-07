@@ -321,21 +321,21 @@ def GetChangeReviewers(host, change):
 def AbandonChange(host, change, msg=''):
   """Abandon a gerrit change."""
   path = '%s/abandon' % _GetChangePath(change)
-  body = {'message': msg} if msg else None
+  body = {'message': msg}
   return FetchUrlJson(host, path, reqtype='POST', body=body, ignore_404=False)
 
 
 def RestoreChange(host, change, msg=''):
   """Restore a previously abandoned change."""
   path = '%s/restore' % _GetChangePath(change)
-  body = {'message': msg} if msg else None
+  body = {'message': msg}
   return FetchUrlJson(host, path, reqtype='POST', body=body, ignore_404=False)
 
 
 def DeleteDraft(host, change, msg=''):
   """Delete a gerrit draft patch set."""
   path = _GetChangePath(change)
-  body = {'message': msg} if msg else None
+  body = {'message': msg}
   try:
     FetchUrl(host, path, reqtype='DELETE', body=body, ignore_404=False)
   except GOBError as e:
