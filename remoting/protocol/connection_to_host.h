@@ -141,8 +141,6 @@ class ConnectionToHost : public SignalStrategy::Listener,
   // Stops writing in the channels.
   void CloseChannels();
 
-  void OnChannelReconnectionTimeout();
-
   void SetState(State state, ErrorCode error);
 
   bool allow_nat_traversal_;

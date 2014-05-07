@@ -223,11 +223,6 @@ void ConnectionToHost::OnVideoChannelStatus(bool active) {
   event_callback_->OnConnectionReady(active);
 }
 
-void ConnectionToHost::OnChannelReconnectionTimeout() {
-  LOG(ERROR) << "Failed to connect video channel";
-  CloseOnError(CHANNEL_CONNECTION_ERROR);
-}
-
 ConnectionToHost::State ConnectionToHost::state() const {
   return state_;
 }
