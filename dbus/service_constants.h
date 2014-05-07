@@ -399,14 +399,6 @@ const char kEapUseSystemCasProperty[] = "EAP.UseSystemCAs";
 const char kEapPinProperty[] = "EAP.PIN";
 const char kEapPasswordProperty[] = "EAP.Password";
 const char kEapKeyMgmtProperty[] = "EAP.KeyMgmt";
-// Deprecated (duplicates)
-const char kEAPEAPProperty[] = "EAP.EAP";
-const char kEAPClientCertProperty[] = "EAP.ClientCert";
-const char kEAPCertIDProperty[] = "EAP.CertID";
-const char kEAPKeyIDProperty[] = "EAP.KeyID";
-const char kEapCaCertIDProperty[] = "EAP.CACertID";
-const char kEapUseSystemCAsProperty[] = "EAP.UseSystemCAs";
-const char kEAPPINProperty[] = "EAP.PIN";
 
 // Flimflam Cellular Service property names.
 const char kTechnologyFamilyProperty[] = "Cellular.Family";
@@ -610,8 +602,6 @@ const char kL2tpIpsecPskProperty[] = "L2TPIPsec.PSK";
 const char kL2tpIpsecPskRequiredProperty[] = "L2TPIPsec.PSKRequired";
 const char kL2tpIpsecUserProperty[] = "L2TPIPsec.User";
 const char kL2tpIpsecPasswordProperty[] = "L2TPIPsec.Password";
-// deprecated:
-const char kL2tpIpsecClientCertSlotProp[] = "L2TPIPsec.ClientCertSlot";
 
 // Flimflam OpenVPN property names.
 const char kOpenVPNAuthNoCacheProperty[] = "OpenVPN.AuthNoCache";
