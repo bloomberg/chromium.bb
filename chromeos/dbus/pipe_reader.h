@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -27,10 +28,6 @@ namespace chromeos {
 // string.  To use:
 //   - Instantiate the appropriate subclass of PipeReader
 //   - Call StartIO() which will create the appropriate FDs.
-//   - Call GetWriteFD() which will return a file descriptor that can
-//     be sent to a separate process which will write data there.
-//   - After handing off the FD, call CloseWriteFD() so there is
-//     only one copy of the FD open.
 //   - As data is received, the PipeReader will collect this data
 //     as appropriate to the subclass.
 //   - When the there is no more data to read, the PipeReader calls
@@ -43,14 +40,12 @@ class PipeReader {
              const IOCompleteCallback& callback);
   virtual ~PipeReader();
 
-  // Closes writeable descriptor; normally used in parent process after fork.
-  void CloseWriteFD();
-
-  // Starts data collection.  Returns true if stream was setup correctly.
+  // Starts data collection.
+  // Returns the write end of the pipe if stream was setup correctly.
   // On success data will automatically be accumulated into a string that
   // can be retrieved with PipeReader::data().  To shutdown collection delete
   // the instance and/or use PipeReader::OnDataReady(-1).
-  bool StartIO();
+  base::File StartIO();
 
   // Called when pipe data are available.  Can also be used to shutdown
   // data collection by passing -1 for |byte_count|.
@@ -60,11 +55,7 @@ class PipeReader {
   // with incoming data.
   virtual void AcceptData(const char *data, int length) = 0;
 
-  // Getter for |write_fd_|.
-  int write_fd() const { return write_fd_; }
-
  private:
-  int write_fd_;
   scoped_ptr<net::FileStream> data_stream_;
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
   scoped_refptr<base::TaskRunner> task_runner_;
@@ -94,6 +85,6 @@ class PipeReaderForString : public PipeReader {
   DISALLOW_COPY_AND_ASSIGN(PipeReaderForString);
 };
 
-}
+}  // namespace chromeos
 
 #endif  // CHROMEOS_DBUS_PIPE_READER_H_

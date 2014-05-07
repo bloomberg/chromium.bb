@@ -13,12 +13,6 @@ FileStream::FileStream(const scoped_refptr<base::TaskRunner>& task_runner)
     : context_(new Context(task_runner)) {
 }
 
-FileStream::FileStream(base::PlatformFile file,
-                       int flags,
-                       const scoped_refptr<base::TaskRunner>& task_runner)
-    : context_(new Context(base::File(file), task_runner)) {
-}
-
 FileStream::FileStream(base::File file,
                        const scoped_refptr<base::TaskRunner>& task_runner)
     : context_(new Context(file.Pass(), task_runner)) {

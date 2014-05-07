@@ -18,6 +18,7 @@
 #include "base/platform_file.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_util.h"
+#include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
 #include "chromeos/dbus/pipe_reader.h"
 #include "dbus/bus.h"
@@ -53,8 +54,8 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     // issue the D-Bus request to stop tracing and collect results.
     base::WorkerPool::PostTaskAndReply(
         FROM_HERE,
-        base::Bind(&DebugDaemonClientImpl::CheckValidity,
-                   file_descriptor),
+        base::Bind(&dbus::FileDescriptor::CheckValidity,
+                   base::Unretained(file_descriptor)),
         base::Bind(&DebugDaemonClientImpl::OnCheckValidityGetDebugLogs,
                    weak_ptr_factory_.GetWeakPtr(),
                    base::Owned(file_descriptor),
@@ -221,33 +222,27 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       return false;
     }
 
+    scoped_refptr<base::TaskRunner> task_runner =
+        base::WorkerPool::GetTaskRunner(true /* task_is_slow */);
+
     pipe_reader_.reset(new PipeReaderForString(
-        base::WorkerPool::GetTaskRunner(true /* task_is_slow */),
+        task_runner,
         base::Bind(&DebugDaemonClientImpl::OnIOComplete,
                    weak_ptr_factory_.GetWeakPtr())));
-    int write_fd = -1;
-    if (!pipe_reader_->StartIO()) {
-      LOG(ERROR) << "Cannot create pipe reader";
-      // NB: continue anyway to shutdown tracing; toss trace data
-      write_fd = HANDLE_EINTR(open("/dev/null", O_WRONLY));
-      // TODO(sleffler) if this fails AppendFileDescriptor will abort
-    } else {
-      write_fd = pipe_reader_->write_fd();
-    }
 
-    dbus::FileDescriptor* file_descriptor = new dbus::FileDescriptor(write_fd);
-    // Punt descriptor validity check to a worker thread; on return we'll
+    base::File pipe_write_end = pipe_reader_->StartIO();
+    // Create dbus::FileDescriptor on the worker thread; on return we'll
     // issue the D-Bus request to stop tracing and collect results.
-    base::WorkerPool::PostTaskAndReply(
+    base::PostTaskAndReplyWithResult(
+        task_runner,
         FROM_HERE,
-        base::Bind(&DebugDaemonClientImpl::CheckValidity,
-                   file_descriptor),
-        base::Bind(&DebugDaemonClientImpl::OnCheckValidityRequestStopSystem,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Owned(file_descriptor),
-                   callback),
-        false);
-
+        base::Bind(
+            &DebugDaemonClientImpl::CreateFileDescriptorToStopSystemTracing,
+            base::Passed(&pipe_write_end)),
+        base::Bind(
+            &DebugDaemonClientImpl::OnCreateFileDescriptorRequestStopSystem,
+            weak_ptr_factory_.GetWeakPtr(),
+            callback));
     return true;
   }
 
@@ -316,11 +311,6 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
  private:
-  // Called to check descriptor validity on a thread where i/o is permitted.
-  static void CheckValidity(dbus::FileDescriptor* file_descriptor) {
-    file_descriptor->CheckValidity();
-  }
-
   // Called when a CheckValidity response is received.
   void OnCheckValidityGetDebugLogs(dbus::FileDescriptor* file_descriptor,
                                    const GetDebugLogsCallback& callback) {
@@ -469,10 +459,28 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     }
   }
 
+  // Creates dbus::FileDescriptor from base::File.
+  static scoped_ptr<dbus::FileDescriptor>
+  CreateFileDescriptorToStopSystemTracing(base::File pipe_write_end) {
+    if (!pipe_write_end.IsValid()) {
+      LOG(ERROR) << "Cannot create pipe reader";
+      // NB: continue anyway to shutdown tracing; toss trace data
+      pipe_write_end.Initialize(base::FilePath(FILE_PATH_LITERAL("/dev/null")),
+                                base::File::FLAG_OPEN | base::File::FLAG_WRITE);
+      // TODO(sleffler) if this fails AppendFileDescriptor will abort
+    }
+    scoped_ptr<dbus::FileDescriptor> file_descriptor(new dbus::FileDescriptor);
+    file_descriptor->PutValue(pipe_write_end.TakePlatformFile());
+    file_descriptor->CheckValidity();
+    return file_descriptor.Pass();
+  }
+
   // Called when a CheckValidity response is received.
-  void OnCheckValidityRequestStopSystem(
-      dbus::FileDescriptor* file_descriptor,
-      const StopSystemTracingCallback& callback) {
+  void OnCreateFileDescriptorRequestStopSystem(
+      const StopSystemTracingCallback& callback,
+      scoped_ptr<dbus::FileDescriptor> file_descriptor) {
+    DCHECK(file_descriptor);
+
     // Issue the dbus request to stop system tracing
     dbus::MethodCall method_call(
         debugd::kDebugdInterface,
@@ -488,8 +496,6 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&DebugDaemonClientImpl::OnRequestStopSystemTracing,
                    weak_ptr_factory_.GetWeakPtr()));
-
-    pipe_reader_->CloseWriteFD();  // close our copy of fd after send
   }
 
   // Called when a response for RequestStopSystemTracing() is received.

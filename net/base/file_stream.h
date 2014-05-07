@@ -11,14 +11,13 @@
 #define NET_BASE_FILE_STREAM_H_
 
 #include "base/files/file.h"
-#include "base/platform_file.h"
-#include "base/task_runner.h"
 #include "net/base/completion_callback.h"
 #include "net/base/file_stream_whence.h"
 #include "net/base/net_export.h"
 
 namespace base {
 class FilePath;
+class TaskRunner;
 }
 
 namespace net {
@@ -31,20 +30,8 @@ class NET_EXPORT FileStream {
   // Uses |task_runner| for asynchronous operations.
   explicit FileStream(const scoped_refptr<base::TaskRunner>& task_runner);
 
-  // Construct a FileStream with an existing file handle and opening flags.
-  // |file| is valid file handle.
-  // |flags| is a bitfield of base::PlatformFileFlags when the file handle was
-  // opened.
+  // Construct a FileStream with an existing valid |file|.
   // Uses |task_runner| for asynchronous operations.
-  // Note: the new FileStream object takes ownership of the PlatformFile and
-  // will close it on destruction.
-  // This constructor is deprecated.
-  // TODO(rvargas): remove all references to PlatformFile.
-  FileStream(base::PlatformFile file,
-             int flags,
-             const scoped_refptr<base::TaskRunner>& task_runner);
-
-  // Non-deprecated version of the previous constructor.
   FileStream(base::File file,
              const scoped_refptr<base::TaskRunner>& task_runner);
 
@@ -58,7 +45,7 @@ class NET_EXPORT FileStream {
   //
   // Once the operation is done, |callback| will be run on the thread where
   // Open() was called, with the result code. open_flags is a bitfield of
-  // base::PlatformFileFlags.
+  // base::File::Flags.
   //
   // If the file stream is not closed manually, the underlying file will be
   // automatically closed when FileStream is destructed in an asynchronous
@@ -91,7 +78,7 @@ class NET_EXPORT FileStream {
   // copied, 0 if at end-of-file, or an error code if the operation could
   // not be performed.
   //
-  // The file must be opened with PLATFORM_FILE_ASYNC, and a non-null
+  // The file must be opened with FLAG_ASYNC, and a non-null
   // callback must be passed to this method. If the read could not
   // complete synchronously, then ERR_IO_PENDING is returned, and the
   // callback will be run on the thread where Read() was called, when the
@@ -114,7 +101,7 @@ class NET_EXPORT FileStream {
   // bytes written, or an error code if the operation could not be
   // performed.
   //
-  // The file must be opened with PLATFORM_FILE_ASYNC, and a non-null
+  // The file must be opened with FLAG_ASYNC, and a non-null
   // callback must be passed to this method. If the write could not
   // complete synchronously, then ERR_IO_PENDING is returned, and the
   // callback will be run on the thread where Write() was called when
@@ -138,7 +125,7 @@ class NET_EXPORT FileStream {
   // not have to be called, it just forces one to happen at the time of
   // calling.
   //
-  // The file must be opened with PLATFORM_FILE_ASYNC, and a non-null
+  // The file must be opened with FLAG_ASYNC, and a non-null
   // callback must be passed to this method. If the write could not
   // complete synchronously, then ERR_IO_PENDING is returned, and the
   // callback will be run on the thread where Flush() was called when
@@ -154,7 +141,7 @@ class NET_EXPORT FileStream {
   // This method should not be called if the stream was opened READ_ONLY.
   virtual int Flush(const CompletionCallback& callback);
 
-  // Returns the underlying platform file for testing.
+  // Returns the underlying file for testing.
   const base::File& GetFileForTesting() const;
 
  private:

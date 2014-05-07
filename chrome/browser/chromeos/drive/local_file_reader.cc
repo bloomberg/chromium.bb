@@ -28,7 +28,7 @@ void LocalFileReader::Open(const base::FilePath& file_path,
                            const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
-              base::PLATFORM_FILE_ASYNC;
+              base::File::FLAG_ASYNC;
 
   int rv = file_stream_.Open(file_path, flags,
                              Bind(&LocalFileReader::DidOpen,

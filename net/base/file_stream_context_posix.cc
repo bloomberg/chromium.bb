@@ -22,6 +22,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"

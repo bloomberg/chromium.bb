@@ -198,14 +198,8 @@ void NativeMessageProcessHost::OnHostProcessLaunched(
           GetTaskRunnerWithShutdownBehavior(
               base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 
-  read_stream_.reset(new net::FileStream(
-      read_file.TakePlatformFile(),
-      base::PLATFORM_FILE_READ | base::PLATFORM_FILE_ASYNC,
-      task_runner));
-  write_stream_.reset(new net::FileStream(
-      write_file.TakePlatformFile(),
-      base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_ASYNC,
-      task_runner));
+  read_stream_.reset(new net::FileStream(read_file.Pass(), task_runner));
+  write_stream_.reset(new net::FileStream(write_file.Pass(), task_runner));
 
   WaitRead();
   DoWrite();
