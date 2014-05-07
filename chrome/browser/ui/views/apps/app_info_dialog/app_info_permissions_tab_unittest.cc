@@ -206,10 +206,10 @@ TEST_F(AppInfoPermissionsTabTest, RetainedFilePermissionsObtainedCorrectly) {
   const std::vector<base::string16> retained_file_messages =
       tab.GetRetainedFilePermissionMessages();
   ASSERT_EQ(3U, retained_file_messages.size());
-  EXPECT_STREQ("file_1.ext",
-               base::UTF16ToUTF8(retained_file_messages[0]).c_str());
-  EXPECT_STREQ("file_2.ext",
-               base::UTF16ToUTF8(retained_file_messages[1]).c_str());
-  EXPECT_STREQ("file_3.ext",
-               base::UTF16ToUTF8(retained_file_messages[2]).c_str());
+  EXPECT_THAT(retained_file_messages,
+              Contains(Eq(base::UTF8ToUTF16("file_1.ext"))));
+  EXPECT_THAT(retained_file_messages,
+              Contains(Eq(base::UTF8ToUTF16("file_2.ext"))));
+  EXPECT_THAT(retained_file_messages,
+              Contains(Eq(base::UTF8ToUTF16("file_3.ext"))));
 }
