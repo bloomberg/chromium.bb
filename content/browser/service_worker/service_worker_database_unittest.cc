@@ -139,12 +139,9 @@ TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
       CreateDatabase(database_dir.path()));
   AvailableIds ids;
 
-  // The database has never been used, so returns initial values.
-  EXPECT_TRUE(database->GetNextAvailableIds(
+  // Should be false because the database hasn't been opened.
+  EXPECT_FALSE(database->GetNextAvailableIds(
       &ids.reg_id, &ids.ver_id, &ids.res_id));
-  EXPECT_EQ(0, ids.reg_id);
-  EXPECT_EQ(0, ids.ver_id);
-  EXPECT_EQ(0, ids.res_id);
 
   ASSERT_TRUE(database->LazyOpen(true));
   EXPECT_TRUE(database->GetNextAvailableIds(
@@ -191,7 +188,7 @@ TEST(ServiceWorkerDatabaseTest, GetOriginsWithRegistrations) {
   scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
   std::set<GURL> origins;
-  EXPECT_TRUE(database->GetOriginsWithRegistrations(&origins));
+  EXPECT_FALSE(database->GetOriginsWithRegistrations(&origins));
   EXPECT_TRUE(origins.empty());
 
   std::vector<Resource> resources;

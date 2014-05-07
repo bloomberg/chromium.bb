@@ -79,6 +79,7 @@ class ServiceWorkerStorageTest : public testing::Test {
         NULL,
         scoped_ptr<ServiceWorkerProcessManager>()));
     context_ptr_ = context_->AsWeakPtr();
+    storage()->simulated_lazy_initted_ = true;
   }
 
   virtual void TearDown() OVERRIDE {
@@ -97,8 +98,8 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   const GURL kScope("http://www.test.com/scope/*");
   const GURL kScript("http://www.test.com/script.js");
   const GURL kDocumentUrl("http://www.test.com/scope/document.html");
-  const int64 kRegistrationId = 0;
-  const int64 kVersionId = 0;
+  const int64 kRegistrationId = storage()->NewRegistrationId();
+  const int64 kVersionId = storage()->NewVersionId();
 
   bool was_called = false;
   ServiceWorkerStatusCode result = SERVICE_WORKER_OK;
@@ -306,8 +307,8 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
   const GURL kScope("http://www.test.com/scope/*");
   const GURL kScript("http://www.test.com/script.js");
   const GURL kDocumentUrl("http://www.test.com/scope/document.html");
-  const int64 kRegistrationId = 0;
-  const int64 kVersionId = 0;
+  const int64 kRegistrationId = storage()->NewRegistrationId();
+  const int64 kVersionId = storage()->NewVersionId();
 
   bool was_called = false;
   ServiceWorkerStatusCode result = SERVICE_WORKER_OK;

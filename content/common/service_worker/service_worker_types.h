@@ -28,7 +28,6 @@ const static int kInvalidServiceWorkerHandleId = -1;
 const static int kInvalidServiceWorkerProviderId = -1;
 const static int64 kInvalidServiceWorkerRegistrationId = -1;
 const static int64 kInvalidServiceWorkerVersionId = -1;
-const static int64 kInvalidServiceWorkerResourceId = -1;
 const static int64 kInvalidServiceWorkerResponseId = -1;
 
 // To dispatch fetch request from browser to child process.
