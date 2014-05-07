@@ -223,13 +223,15 @@ void BookmarkManagerPrivateEventRouter::BookmarkMetaInfoChanged(
   }
 
   // Identify added fields:
-  for (BookmarkNode::MetaInfoMap::const_iterator it = new_meta_info->begin();
-       it != new_meta_info->end();
-       ++it) {
-    BookmarkNode::MetaInfoMap::const_iterator prev_meta_field =
-        prev_meta_info_.find(it->first);
-    if (prev_meta_field == prev_meta_info_.end())
-      changes.additional_properties[it->first] = it->second;
+  if (new_meta_info) {
+    for (BookmarkNode::MetaInfoMap::const_iterator it = new_meta_info->begin();
+         it != new_meta_info->end();
+         ++it) {
+      BookmarkNode::MetaInfoMap::const_iterator prev_meta_field =
+          prev_meta_info_.find(it->first);
+      if (prev_meta_field == prev_meta_info_.end())
+        changes.additional_properties[it->first] = it->second;
+    }
   }
 
   prev_meta_info_.clear();
