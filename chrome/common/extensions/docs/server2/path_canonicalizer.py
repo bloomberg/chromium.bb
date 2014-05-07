@@ -16,6 +16,10 @@ def _Normalize(file_name, splittext=False):
   normalized = normalized.replace('.', '').replace('-', '').replace('_', '')
   return normalized.lower()
 
+def _CommonNormalizedPrefix(first_file, second_file):
+  return posixpath.commonprefix((_Normalize(first_file),
+                                 _Normalize(second_file)))
+
 
 class PathCanonicalizer(object):
   '''Transforms paths into their canonical forms. Since the docserver has had
@@ -105,10 +109,9 @@ class PathCanonicalizer(object):
     # compared without symbols, not the simplified form of |path|,
     # which may matter.
     max_prefix = potential_paths[0]
-    max_prefix_length = len(posixpath.commonprefix((max_prefix, path)))
+    max_prefix_length = len(_CommonNormalizedPrefix(max_prefix, path))
     for path_for_file in potential_paths[1:]:
-      prefix_length = len(posixpath.commonprefix((path_for_file,
-          _Normalize(path))))
+      prefix_length = len(_CommonNormalizedPrefix(path_for_file, path))
       if prefix_length > max_prefix_length:
         max_prefix, max_prefix_length = path_for_file, prefix_length
 
