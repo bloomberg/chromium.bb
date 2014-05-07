@@ -53,12 +53,12 @@ GIT_REVISIONS = {
         'upstream-base': 'c3fc84e062cacc2b3e13c1f6b9151d0cc85392ba',
         },
     'gdb': {
-        'rev': '41afdf9d511d95073c4403c838d8ccba582d8eed',
+        'rev': '5deb4793a5e3f2f48d7899f424bb4484686020f8',
         'repo': 'binutils',
         'upstream-branch': 'upstream/gdb-7.7-branch',
-        'upstream-name': 'gdb-7.7',
+        'upstream-name': 'gdb-7.7.1',
         # Upstream tag gdb-7.7-release:
-        'upstream-base': 'fe284cd86ba9761655a9281fef470d364e27eb85',
+        'upstream-base': '4bd8fc3a1362970d9800a263987af8093798338b',
         },
     }
 
