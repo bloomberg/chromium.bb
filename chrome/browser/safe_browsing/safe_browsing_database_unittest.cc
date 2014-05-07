@@ -41,6 +41,19 @@ std::string HashedIpPrefix(const std::string& ip_prefix, size_t prefix_size) {
   return hash;
 }
 
+// Add a host-level entry.
+void InsertAddChunkHostPrefix(SBChunk* chunk,
+                              int chunk_number,
+                              const std::string& host_name) {
+  chunk->chunk_number = chunk_number;
+  chunk->is_add = true;
+  SBChunkHost host;
+  host.host = SBPrefixForString(host_name);
+  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 0);
+  host.entry->set_chunk_id(chunk->chunk_number);
+  chunk->hosts.push_back(host);
+}
+
 // Same as InsertAddChunkHostPrefixUrl, but with pre-computed
 // prefix values.
 void InsertAddChunkHostPrefixValue(SBChunk* chunk,
@@ -1859,4 +1872,86 @@ TEST_F(SafeBrowsingDatabaseTest, MalwareIpBlacklist) {
   EXPECT_TRUE(database_->ContainsMalwareIP("192.1.255.0"));
   EXPECT_TRUE(database_->ContainsMalwareIP("192.1.255.255"));
   EXPECT_FALSE(database_->ContainsMalwareIP("192.2.0.0"));
+}
+
+TEST_F(SafeBrowsingDatabaseTest, ContainsBrowseURL) {
+  std::vector<SBListChunkRanges> lists;
+  EXPECT_TRUE(database_->UpdateStarted(&lists));
+
+  // Add a host-level hit.
+  {
+    SBChunkList chunks;
+    SBChunk chunk;
+    InsertAddChunkHostPrefix(&chunk, 1, "www.evil.com/");
+    chunks.push_back(chunk);
+    database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
+  }
+
+  // Add a specific fullhash.
+  static const char kWhateverMalware[] = "www.whatever.com/malware.html";
+  {
+    SBChunkList chunks;
+    SBChunk chunk;
+    InsertAddChunkHostFullHashes(&chunk, 2, "www.whatever.com/",
+                                 kWhateverMalware);
+    chunks.push_back(chunk);
+    database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
+  }
+
+  // Add a fullhash which has a prefix collision for a known url.
+  static const char kExampleFine[] = "www.example.com/fine.html";
+  static const char kExampleCollision[] =
+      "www.example.com/3123364814/malware.htm";
+  ASSERT_EQ(SBPrefixForString(kExampleFine),
+            SBPrefixForString(kExampleCollision));
+  {
+    SBChunkList chunks;
+    SBChunk chunk;
+    InsertAddChunkHostFullHashes(&chunk, 3, "www.example.com/",
+                                 kExampleCollision);
+    chunks.push_back(chunk);
+    database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
+  }
+
+  database_->UpdateFinished(true);
+
+  const Time now = Time::Now();
+  std::vector<SBFullHashResult> cached_hashes;
+  std::vector<SBPrefix> prefix_hits;
+
+  // Anything will hit the host prefix.
+  EXPECT_TRUE(database_->ContainsBrowseUrl(
+      GURL("http://www.evil.com/malware.html"),
+      &prefix_hits, &cached_hashes, now));
+  ASSERT_EQ(1U, prefix_hits.size());
+  EXPECT_EQ(SBPrefixForString("www.evil.com/"), prefix_hits[0]);
+  EXPECT_TRUE(cached_hashes.empty());
+
+  // Hit the specific URL prefix.
+  EXPECT_TRUE(database_->ContainsBrowseUrl(
+      GURL(std::string("http://") + kWhateverMalware),
+      &prefix_hits, &cached_hashes, now));
+  ASSERT_EQ(1U, prefix_hits.size());
+  EXPECT_EQ(SBPrefixForString(kWhateverMalware), prefix_hits[0]);
+  EXPECT_TRUE(cached_hashes.empty());
+
+  // Other URLs at that host are fine.
+  EXPECT_FALSE(database_->ContainsBrowseUrl(
+      GURL("http://www.whatever.com/fine.html"),
+      &prefix_hits, &cached_hashes, now));
+  EXPECT_TRUE(prefix_hits.empty());
+  EXPECT_TRUE(cached_hashes.empty());
+
+  // Hit the specific URL full hash.
+  EXPECT_TRUE(database_->ContainsBrowseUrl(
+      GURL(std::string("http://") + kExampleCollision),
+      &prefix_hits, &cached_hashes, now));
+  ASSERT_EQ(1U, prefix_hits.size());
+  EXPECT_EQ(SBPrefixForString(kExampleCollision), prefix_hits[0]);
+  EXPECT_TRUE(cached_hashes.empty());
+
+  // This prefix collides, but no full hash match.
+  EXPECT_FALSE(database_->ContainsBrowseUrl(
+      GURL(std::string("http://") + kExampleFine),
+      &prefix_hits, &cached_hashes, now));
 }

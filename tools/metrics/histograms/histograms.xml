@@ -22443,6 +22443,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The number of chunk URLs in an update response.</summary>
 </histogram>
 
+<histogram name="SB2.VolunteerPrefixesRemoved">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Older versions of the safe-browsing code incorrectly added additional
+    SBPrefix items when receiving full hashes.  This caused errors when
+    calculating when to send gethash requests to the server.  An additional pass
+    over the data has been added to remove the excess prefixes.  This histogram
+    tracks progress of that code for purposes of informing a decision on when to
+    remove the additional pass.  See http://crbug.com/361248 .
+  </summary>
+</histogram>
+
 <histogram name="SBClientDownload.CheckDownloadStats"
     enum="SBClientDownloadCheckDownloadStats">
   <owner>mattm@chromium.org</owner>

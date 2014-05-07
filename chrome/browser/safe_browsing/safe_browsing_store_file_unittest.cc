@@ -896,4 +896,77 @@ TEST_F(SafeBrowsingStoreFileTest, Version8) {
 }
 #endif
 
+// Test that when the v8 golden file is updated, the add prefix injected from
+// the full hash is removed.  All platforms generating v8 files are
+// little-endian, so there is no point to testing this transition if/when a
+// big-endian port is added.
+#if defined(ARCH_CPU_LITTLE_ENDIAN)
+TEST_F(SafeBrowsingStoreFileTest, KnockoutPrefixVolunteers) {
+  store_.reset();
+
+  // Copy the golden file into temporary storage.  The golden file contains:
+  // - Add chunk kAddChunk1 containing kHash1.prefix and kHash2.
+  // - Sub chunk kSubChunk1 containing kHash3.
+  const char kBasename[] = "FileStoreVersion8";
+  base::FilePath golden_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &golden_path));
+  golden_path = golden_path.AppendASCII("SafeBrowsing");
+  golden_path = golden_path.AppendASCII(kBasename);
+  ASSERT_TRUE(base::CopyFile(golden_path, filename_));
+
+  // Reset the store to make sure it re-reads the file.
+  store_.reset(new SafeBrowsingStoreFile());
+  store_->Init(filename_,
+               base::Bind(&SafeBrowsingStoreFileTest::OnCorruptionDetected,
+                          base::Unretained(this)));
+
+  // Check that the expected prefixes and hashes are in place.
+  {
+    SBAddPrefixes add_prefixes;
+    EXPECT_TRUE(store_->GetAddPrefixes(&add_prefixes));
+    ASSERT_EQ(2U, add_prefixes.size());
+    EXPECT_EQ(kAddChunk1, add_prefixes[0].chunk_id);
+    EXPECT_EQ(kHash1.prefix, add_prefixes[0].prefix);
+    EXPECT_EQ(kAddChunk1, add_prefixes[1].chunk_id);
+    EXPECT_EQ(kHash2.prefix, add_prefixes[1].prefix);
+
+    std::vector<SBAddFullHash> add_hashes;
+    EXPECT_TRUE(store_->GetAddFullHashes(&add_hashes));
+    ASSERT_EQ(1U, add_hashes.size());
+    EXPECT_EQ(kAddChunk1, add_hashes[0].chunk_id);
+    EXPECT_TRUE(SBFullHashEqual(kHash2, add_hashes[0].full_hash));
+  }
+
+  // Update the store.
+  {
+    EXPECT_TRUE(store_->BeginUpdate());
+
+    safe_browsing::PrefixSetBuilder builder;
+    std::vector<SBAddFullHash> add_full_hashes_result;
+    ASSERT_TRUE(store_->FinishUpdate(&builder, &add_full_hashes_result));
+  }
+
+  // Reset the store to make sure it re-reads the file.
+  store_.reset(new SafeBrowsingStoreFile());
+  store_->Init(filename_,
+               base::Bind(&SafeBrowsingStoreFileTest::OnCorruptionDetected,
+                          base::Unretained(this)));
+
+  // |kHash2.prefix| should have dropped.
+  {
+    SBAddPrefixes add_prefixes;
+    EXPECT_TRUE(store_->GetAddPrefixes(&add_prefixes));
+    ASSERT_EQ(1U, add_prefixes.size());
+    EXPECT_EQ(kAddChunk1, add_prefixes[0].chunk_id);
+    EXPECT_EQ(kHash1.prefix, add_prefixes[0].prefix);
+
+    std::vector<SBAddFullHash> add_hashes;
+    EXPECT_TRUE(store_->GetAddFullHashes(&add_hashes));
+    ASSERT_EQ(1U, add_hashes.size());
+    EXPECT_EQ(kAddChunk1, add_hashes[0].chunk_id);
+    EXPECT_TRUE(SBFullHashEqual(kHash2, add_hashes[0].full_hash));
+  }
+}
+#endif
+
 }  // namespace safe_browsing

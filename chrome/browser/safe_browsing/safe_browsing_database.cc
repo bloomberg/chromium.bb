@@ -855,14 +855,10 @@ void SafeBrowsingDatabaseNew::InsertAdd(int chunk_id, SBPrefix host,
       store->WriteAddPrefix(encoded_chunk_id, prefix);
     }
   } else {
-    // Prefixes and hashes.
+    // Full hashes only.
     const base::Time receive_time = base::Time::Now();
     for (int i = 0; i < count; ++i) {
       const SBFullHash full_hash = entry->FullHashAt(i);
-      const SBPrefix prefix = full_hash.prefix;
-
-      STATS_COUNTER("SB.PrefixAdd", 1);
-      store->WriteAddPrefix(encoded_chunk_id, prefix);
 
       STATS_COUNTER("SB.PrefixAddFull", 1);
       store->WriteAddHash(encoded_chunk_id, receive_time, full_hash);
@@ -930,14 +926,11 @@ void SafeBrowsingDatabaseNew::InsertSub(int chunk_id, SBPrefix host,
       store->WriteSubPrefix(encoded_chunk_id, add_chunk_id, prefix);
     }
   } else {
-    // Prefixes and hashes.
+    // Full hashes only.
     for (int i = 0; i < count; ++i) {
       const SBFullHash full_hash = entry->FullHashAt(i);
       const int add_chunk_id =
           EncodeChunkId(entry->ChunkIdAtPrefix(i), list_id);
-
-      STATS_COUNTER("SB.PrefixSub", 1);
-      store->WriteSubPrefix(encoded_chunk_id, add_chunk_id, full_hash.prefix);
 
       STATS_COUNTER("SB.PrefixSubFull", 1);
       store->WriteSubHash(encoded_chunk_id, add_chunk_id, full_hash);
