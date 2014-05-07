@@ -495,9 +495,6 @@ public:
     bool shouldIsolateCompositedDescendants() const { ASSERT(isAllowedToQueryCompositingState()); return m_shouldIsolateCompositedDescendants; }
     void setShouldIsolateCompositedDescendants(bool b)  { m_shouldIsolateCompositedDescendants = b; }
 
-    bool suppressingCompositedLayerCreation() const { ASSERT(isAllowedToQueryCompositingState()); return m_suppressingCompositedLayerCreation; }
-    void setSuppressingCompositedLayerCreation(bool b) { m_suppressingCompositedLayerCreation = b; }
-
     void updateDescendantDependentFlags();
 
     void updateOrRemoveFilterEffectRenderer();
@@ -700,9 +697,6 @@ private:
     // True if this render layer just lost its grouped mapping due to the CompositedLayerMapping being destroyed,
     // and we don't yet know to what graphics layer this RenderLayer will be assigned.
     unsigned m_lostGroupedMapping : 1;
-
-    // Whether this render layer is trying to avoid becoming composited, if possible.
-    unsigned m_suppressingCompositedLayerCreation : 1;
 
     // The reason, if any exists, that a fixed-position layer is chosen not to be composited.
     unsigned m_viewportConstrainedNotCompositedReason : ViewportConstrainedNotCompositedReasonBits;

@@ -51,8 +51,6 @@ void CompositingReasonFinder::updateTriggers()
         m_compositingTriggers |= ScrollableInnerFrameTrigger;
     if (settings.acceleratedCompositingForFiltersEnabled())
         m_compositingTriggers |= FilterTrigger;
-    if (settings.acceleratedCompositingForGpuRasterizationHintEnabled())
-        m_compositingTriggers |= GPURasterizationTrigger;
 
     // We map both these settings to universal overlow scrolling.
     // FIXME: Replace these settings with a generic compositing setting for HighDPI.
@@ -82,19 +80,6 @@ bool CompositingReasonFinder::isMainFrame() const
 {
     // FIXME: LocalFrame::isMainFrame() is probably better.
     return !m_renderView.document().ownerElement();
-}
-
-CompositingReasons CompositingReasonFinder::suppressWillChangeAndAnimationForGpuRasterization(const RenderLayer* layer, CompositingReasons styleReasons) const
-{
-    CompositingReasons adjustedReasons = styleReasons;
-    adjustedReasons &= ~(CompositingReasonWillChangeCompositingHint | CompositingReasonWillChangeGpuRasterizationHint);
-
-    // We can suppress layer creation for animations before animations start, but not
-    // once they're already running on the compositor.
-    if (!layer->renderer()->style()->isRunningAnimationOnCompositor())
-        adjustedReasons &= ~CompositingReasonActiveAnimation;
-
-    return adjustedReasons;
 }
 
 CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* layer, bool* needToRecomputeCompositingRequirements) const
@@ -138,9 +123,6 @@ CompositingReasons CompositingReasonFinder::styleDeterminedReasons(RenderObject*
     if (requiresCompositingForWillChangeCompositingHint(renderer))
         directReasons |= CompositingReasonWillChangeCompositingHint;
 
-    if (requiresCompositingForWillChangeGpuRasterizationHint(renderer))
-        directReasons |= CompositingReasonWillChangeGpuRasterizationHint;
-
     ASSERT(!(directReasons & ~CompositingReasonComboAllStyleDeterminedReasons));
     return directReasons;
 }
@@ -168,14 +150,6 @@ bool CompositingReasonFinder::requiresCompositingForFilters(RenderObject* render
 bool CompositingReasonFinder::requiresCompositingForWillChangeCompositingHint(const RenderObject* renderer) const
 {
     return renderer->style()->hasWillChangeCompositingHint();
-}
-
-bool CompositingReasonFinder::requiresCompositingForWillChangeGpuRasterizationHint(const RenderObject* renderer) const
-{
-    if (!(m_compositingTriggers & GPURasterizationTrigger))
-        return false;
-
-    return renderer->style()->hasWillChangeGpuRasterizationHint();
 }
 
 CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(const RenderLayer* layer, bool* needToRecomputeCompositingRequirements) const

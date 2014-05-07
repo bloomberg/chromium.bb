@@ -470,11 +470,6 @@ void WebSettingsImpl::setAcceleratedCompositingForFixedRootBackgroundEnabled(boo
     m_settings->setAcceleratedCompositingForFixedRootBackgroundEnabled(enabled);
 }
 
-void WebSettingsImpl::setAcceleratedCompositingForGpuRasterizationHintEnabled(bool enabled)
-{
-    m_settings->setAcceleratedCompositingForGpuRasterizationHintEnabled(enabled);
-}
-
 void WebSettingsImpl::setAcceleratedCompositingForCanvasEnabled(bool enabled)
 {
     m_settings->setAcceleratedCompositingForCanvasEnabled(enabled);

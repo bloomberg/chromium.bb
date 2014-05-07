@@ -944,8 +944,6 @@ void RenderLayerCompositor::updateStyleDeterminedCompositingReasons(RenderLayer*
 void RenderLayerCompositor::updateDirectCompositingReasons(RenderLayer* layer)
 {
     CompositingReasons reasons = m_compositingReasonFinder.directReasons(layer, &m_needsToRecomputeCompositingRequirements);
-    if (layer->suppressingCompositedLayerCreation())
-        reasons = m_compositingReasonFinder.suppressWillChangeAndAnimationForGpuRasterization(layer, reasons);
     layer->setCompositingReasons(reasons, CompositingReasonComboAllDirectReasons);
 }
 

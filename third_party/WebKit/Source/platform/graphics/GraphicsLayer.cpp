@@ -89,7 +89,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_drawsContent(false)
     , m_contentsVisible(true)
     , m_isRootForIsolatedGroup(false)
-    , m_hasGpuRasterizationHint(false)
     , m_hasScrollParent(false)
     , m_hasClipParent(false)
     , m_paintingPhase(GraphicsLayerPaintAllWithOverflowClip)
@@ -608,11 +607,6 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags fl
         ts << "(contentsVisible " << m_contentsVisible << ")\n";
     }
 
-    if (m_hasGpuRasterizationHint) {
-        writeIndent(ts, indent + 1);
-        ts << "(hasGpuRasterizationHint " << m_hasGpuRasterizationHint << ")\n";
-    }
-
     if (!m_backfaceVisibility) {
         writeIndent(ts, indent + 1);
         ts << "(backfaceVisibility " << (m_backfaceVisibility ? "visible" : "hidden") << ")\n";
@@ -950,12 +944,6 @@ void GraphicsLayer::setIsRootForIsolatedGroup(bool isolated)
         return;
     m_isRootForIsolatedGroup = isolated;
     platformLayer()->setIsRootForIsolatedGroup(isolated);
-}
-
-void GraphicsLayer::setHasGpuRasterizationHint(bool hasHint)
-{
-    m_hasGpuRasterizationHint = hasHint;
-    m_layer->setHasGpuRasterizationHint(hasHint);
 }
 
 void GraphicsLayer::setContentsNeedsDisplay()

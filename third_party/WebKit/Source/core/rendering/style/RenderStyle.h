@@ -967,7 +967,6 @@ public:
     bool willChangeContents() const { return rareNonInheritedData->m_willChange->m_contents; }
     bool willChangeScrollPosition() const { return rareNonInheritedData->m_willChange->m_scrollPosition; }
     bool hasWillChangeCompositingHint() const;
-    bool hasWillChangeGpuRasterizationHint() const;
 
 // attribute setter methods
 

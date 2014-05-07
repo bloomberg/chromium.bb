@@ -23,8 +23,6 @@ public:
     CompositingReasons styleDeterminedReasons(RenderObject*) const;
     CompositingReasons directReasons(const RenderLayer*, bool* needToRecomputeCompositingRequirements = 0) const;
 
-    CompositingReasons suppressWillChangeAndAnimationForGpuRasterization(const RenderLayer*, CompositingReasons styleReasons) const;
-
     void updateTriggers();
 
     bool hasOverflowScrollTrigger() const;
@@ -50,7 +48,6 @@ private:
     bool requiresCompositingForPositionSticky(RenderObject*, const RenderLayer*) const;
     bool requiresCompositingForPositionFixed(RenderObject*, const RenderLayer*, RenderLayer::ViewportConstrainedNotCompositedReason*, bool* needToRecomputeCompositingRequirements) const;
     bool requiresCompositingForWillChangeCompositingHint(const RenderObject*) const;
-    bool requiresCompositingForWillChangeGpuRasterizationHint(const RenderObject*) const;
 
     RenderView& m_renderView;
     CompositingTriggerFlags m_compositingTriggers;

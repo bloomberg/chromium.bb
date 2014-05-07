@@ -30,7 +30,7 @@ const uint64_t CompositingReasonOverflowScrollingParent                = UINT64_
 const uint64_t CompositingReasonOutOfFlowClipping                      = UINT64_C(1) << 13;
 const uint64_t CompositingReasonVideoOverlay                           = UINT64_C(1) << 14;
 const uint64_t CompositingReasonWillChangeCompositingHint              = UINT64_C(1) << 15;
-const uint64_t CompositingReasonWillChangeGpuRasterizationHint         = UINT64_C(1) << 16;
+// Bit 16 is available.
 
 // Overlap reasons that require knowing what's behind you in paint-order before knowing the answer
 const uint64_t CompositingReasonAssumedOverlap                         = UINT64_C(1) << 17;
@@ -88,8 +88,7 @@ const uint64_t CompositingReasonComboAllDirectReasons =
     | CompositingReasonOverflowScrollingParent
     | CompositingReasonOutOfFlowClipping
     | CompositingReasonVideoOverlay
-    | CompositingReasonWillChangeCompositingHint
-    | CompositingReasonWillChangeGpuRasterizationHint;
+    | CompositingReasonWillChangeCompositingHint;
 
 const uint64_t CompositingReasonComboAllStyleDeterminedReasons =
     CompositingReason3DTransform
@@ -97,8 +96,7 @@ const uint64_t CompositingReasonComboAllStyleDeterminedReasons =
     | CompositingReasonActiveAnimation
     | CompositingReasonTransitionProperty
     | CompositingReasonFilters
-    | CompositingReasonWillChangeCompositingHint
-    | CompositingReasonWillChangeGpuRasterizationHint;
+    | CompositingReasonWillChangeCompositingHint;
 
 const uint64_t CompositingReasonComboReasonsThatRequireOwnBacking =
     CompositingReasonComboAllDirectReasons
@@ -193,9 +191,7 @@ static const CompositingReasonStringMap compositingReasonStringMap[] = {
     { CompositingReasonWillChangeCompositingHint,
         "willChange",
         "Has a will-change compositing hint" },
-    { CompositingReasonWillChangeGpuRasterizationHint,
-        "willChange",
-        "Has a will-change GPU-rasterization hint" },
+    { 0, 0, 0 }, // Available.
     { CompositingReasonAssumedOverlap,
         "assumedOverlap",
         "Might overlap other composited content" },
