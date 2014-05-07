@@ -34261,7 +34261,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="FeatureObserver" type="int">
-<!-- Generated from ../../../third_party/WebKit/Source/core/frame/UseCounter.h -->
+<!-- Generated from ..\..\..\third_party\WebKit\Source\core\frame\UseCounter.h -->
 
   <int value="0" label="PageDestruction"/>
   <int value="1" label="LegacyNotifications"/>
@@ -34604,6 +34604,82 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="338" label="CanvasRenderingContext2DSetFillColor"/>
   <int value="339" label="CanvasRenderingContext2DDrawImageFromRect"/>
   <int value="340" label="CanvasRenderingContext2DSetShadow"/>
+  <int value="341" label="PrefixedPerformanceClearResourceTimings"/>
+  <int value="342" label="PrefixedPerformanceSetResourceTimingBufferSize"/>
+  <int value="343" label="EventSrcElement"/>
+  <int value="344" label="EventCancelBubble"/>
+  <int value="345" label="EventPath"/>
+  <int value="346" label="EventClipboardData"/>
+  <int value="347" label="NodeIteratorDetach"/>
+  <int value="348" label="AttrNodeValue"/>
+  <int value="349" label="AttrTextContent"/>
+  <int value="350" label="EventGetReturnValueTrue"/>
+  <int value="351" label="EventGetReturnValueFalse"/>
+  <int value="352" label="EventSetReturnValueTrue"/>
+  <int value="353" label="EventSetReturnValueFalse"/>
+  <int value="354" label="NodeIteratorExpandEntityReferences"/>
+  <int value="355" label="TreeWalkerExpandEntityReferences"/>
+  <int value="356" label="WindowOffscreenBuffering"/>
+  <int value="357" label="WindowDefaultStatus"/>
+  <int value="358" label="WindowDefaultstatus"/>
+  <int value="359" label="PrefixedConvertPointFromPageToNode"/>
+  <int value="360" label="PrefixedConvertPointFromNodeToPage"/>
+  <int value="361" label="PrefixedTransitionEventConstructor"/>
+  <int value="362" label="PrefixedMutationObserverConstructor"/>
+  <int value="363" label="PrefixedIDBCursorConstructor"/>
+  <int value="364" label="PrefixedIDBDatabaseConstructor"/>
+  <int value="365" label="PrefixedIDBFactoryConstructor"/>
+  <int value="366" label="PrefixedIDBIndexConstructor"/>
+  <int value="367" label="PrefixedIDBKeyRangeConstructor"/>
+  <int value="368" label="PrefixedIDBObjectStoreConstructor"/>
+  <int value="369" label="PrefixedIDBRequestConstructor"/>
+  <int value="370" label="PrefixedIDBTransactionConstructor"/>
+  <int value="371" label="NotificationPermission"/>
+  <int value="372" label="RangeDetach"/>
+  <int value="373" label="DocumentImportNodeOptionalArgument"/>
+  <int value="374" label="HTMLTableElementVspace"/>
+  <int value="375" label="HTMLTableElementHspace"/>
+  <int value="376" label="PrefixedDocumentExitPointerLock"/>
+  <int value="377" label="PrefixedDocumentPointerLockElement"/>
+  <int value="378" label="PrefixedTouchRadiusX"/>
+  <int value="379" label="PrefixedTouchRadiusY"/>
+  <int value="380" label="PrefixedTouchRotationAngle"/>
+  <int value="381" label="PrefixedTouchForce"/>
+  <int value="382" label="PrefixedMouseEventMovementX"/>
+  <int value="383" label="PrefixedMouseEventMovementY"/>
+  <int value="384" label="PrefixedWheelEventDirectionInvertedFromDevice"/>
+  <int value="385" label="PrefixedWheelEventInit"/>
+  <int value="386" label="PrefixedFileRelativePath"/>
+  <int value="387" label="DocumentCaretRangeFromPoint"/>
+  <int value="388" label="DocumentGetCSSCanvasContext"/>
+  <int value="389" label="ElementScrollIntoViewIfNeeded"/>
+  <int value="390" label="ElementScrollByLines"/>
+  <int value="391" label="ElementScrollByPages"/>
+  <int value="392" label="RangeCompareNode"/>
+  <int value="393" label="RangeExpand"/>
+  <int value="394" label="HTMLFrameElementWidth"/>
+  <int value="395" label="HTMLFrameElementHeight"/>
+  <int value="396" label="HTMLImageElementX"/>
+  <int value="397" label="HTMLImageElementY"/>
+  <int value="398" label="HTMLOptionsCollectionRemoveElement"/>
+  <int value="399" label="HTMLPreElementWrap"/>
+  <int value="400" label="SelectionBaseNode"/>
+  <int value="401" label="SelectionBaseOffset"/>
+  <int value="402" label="SelectionExtentNode"/>
+  <int value="403" label="SelectionExtentOffset"/>
+  <int value="404" label="SelectionType"/>
+  <int value="405" label="SelectionModify"/>
+  <int value="406" label="SelectionSetBaseAndExtent"/>
+  <int value="407" label="SelectionEmpty"/>
+  <int value="408" label="SVGFEMorphologyElementSetRadius"/>
+  <int value="409" label="VTTCue"/>
+  <int value="410" label="VTTCueRender"/>
+  <int value="411" label="VTTCueRenderVertical"/>
+  <int value="412" label="VTTCueRenderSnapToLinesFalse"/>
+  <int value="413" label="VTTCueRenderLineNotAuto"/>
+  <int value="414" label="VTTCueRenderPositionNot50"/>
+  <int value="415" label="VTTCueRenderSizeNot100"/>
+  <int value="416" label="VTTCueRenderAlignNotMiddle"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
