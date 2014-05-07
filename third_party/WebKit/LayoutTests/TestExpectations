@@ -785,8 +785,6 @@ crbug.com/369609 virtual/softwarecompositing/repaint/scroll-fixed-layer-no-conte
 crbug.com/369609 virtual/softwarecompositing/repaint/scroll-fixed-layer-out-of-view.html [ NeedsRebaseline ]
 
 crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass Timeout ]
-crbug.com/361729 [ Linux Win ] compositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
-crbug.com/361729 virtual/softwarecompositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
 
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]
 
