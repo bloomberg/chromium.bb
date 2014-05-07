@@ -1316,6 +1316,7 @@ def GetDefaultTryConfigs(bots=None):
       # TODO(maruel): An option would be to run 'sizes' but not count a failure
       # of this step as a try job failure.
       'android_aosp': ['compile'],
+      'android_chromium_gn_compile_rel': ['compile'],
       'android_clang_dbg': ['slave_steps'],
       'android_dbg': ['slave_steps'],
       'cros_x86': ['defaulttests'],
@@ -1338,6 +1339,7 @@ def GetDefaultTryConfigs(bots=None):
       'linux_chromium_chromeos_clang_dbg': ['defaulttests'],
       'linux_chromium_chromeos_rel': ['defaulttests'],
       'linux_chromium_compile_dbg': ['defaulttests'],
+      'linux_chromium_gn_rel': ['defaulttests'],
       'linux_chromium_rel': ['defaulttests'],
       'linux_chromium_clang_dbg': ['defaulttests'],
       'linux_gpu': ['defaulttests'],
@@ -1464,12 +1466,14 @@ def GetPreferredTryMasters(project, change):
     return GetDefaultTryConfigs(['ios_rel_device', 'ios_dbg_simulator'])
 
   builders = [
+      'android_chromium_gn_compile_rel',
       'android_clang_dbg',
       'android_dbg',
       'ios_dbg_simulator',
       'ios_rel_device',
       'linux_chromium_chromeos_rel',
       'linux_chromium_clang_dbg',
+      'linux_chromium_gn_rel',
       'linux_chromium_rel',
       'linux_gpu',
       'mac_chromium_compile_dbg',
