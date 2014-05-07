@@ -88,7 +88,10 @@ typedef InProcessBrowserTest ProfileBrowserTest;
 
 // Test OnProfileCreate is called with is_new_profile set to true when
 // creating a new profile synchronously.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNewProfileSynchronous) {
+//
+// Flaky (sometimes timeout): http://crbug.com/141141
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
+                       DISABLED_CreateNewProfileSynchronous) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -106,7 +109,9 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNewProfileSynchronous) {
 
 // Test OnProfileCreate is called with is_new_profile set to false when
 // creating a profile synchronously with an existing prefs file.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateOldProfileSynchronous) {
+// Flaky: http://crbug.com/141517
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
+                       DISABLED_CreateOldProfileSynchronous) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   CreatePrefsFileInDirectory(temp_dir.path());
@@ -125,7 +130,9 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateOldProfileSynchronous) {
 
 // Test OnProfileCreate is called with is_new_profile set to true when
 // creating a new profile asynchronously.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNewProfileAsynchronous) {
+// This test is flaky on Linux, Win and Mac.  See crbug.com/142787
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
+                       DISABLED_CreateNewProfileAsynchronous) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -150,7 +157,9 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNewProfileAsynchronous) {
 
 // Test OnProfileCreate is called with is_new_profile set to false when
 // creating a profile asynchronously with an existing prefs file.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateOldProfileAsynchronous) {
+// Flaky: http://crbug.com/141517
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
+                       DISABLED_CreateOldProfileAsynchronous) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   CreatePrefsFileInDirectory(temp_dir.path());
@@ -175,7 +184,8 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateOldProfileAsynchronous) {
 }
 
 // Test that a README file is created for profiles that didn't have it.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ProfileReadmeCreated) {
+// Flaky: http://crbug.com/140882
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DISABLED_ProfileReadmeCreated) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -243,7 +253,13 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ProfileDeletedBeforeReadmeCreated) {
 }
 
 // Test that repeated setting of exit type is handled correctly.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ExitType) {
+#if defined(OS_WIN)
+// Flaky on Windows: http://crbug.com/163713
+#define MAYBE_ExitType DISABLED_ExitType
+#else
+#define MAYBE_ExitType ExitType
+#endif
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, MAYBE_ExitType) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
