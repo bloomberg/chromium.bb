@@ -122,6 +122,9 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Show virtual keyboard immediately with animation.
   void ShowKeyboardInternal();
 
+  // Clears any insets on web content windows.
+  void ResetWindowInsets();
+
   // Returns true if keyboard is scheduled to hide.
   bool WillHideKeyboard() const;
 

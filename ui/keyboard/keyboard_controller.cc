@@ -201,6 +201,7 @@ KeyboardController::~KeyboardController() {
     container_->RemoveObserver(this);
   if (input_method_)
     input_method_->RemoveObserver(this);
+  ResetWindowInsets();
 }
 
 // static
@@ -435,6 +436,17 @@ void KeyboardController::ShowKeyboardInternal() {
         base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
     container_->SetTransform(gfx::Transform());
     container_->layer()->SetOpacity(1.0);
+  }
+}
+
+void KeyboardController::ResetWindowInsets() {
+  const gfx::Insets insets;
+  scoped_ptr<content::RenderWidgetHostIterator> widgets(
+      content::RenderWidgetHost::GetRenderWidgetHosts());
+  while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
+    content::RenderWidgetHostView* view = widget->GetView();
+    if (view)
+      view->SetInsets(insets);
   }
 }
 
