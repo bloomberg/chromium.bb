@@ -151,7 +151,7 @@ public:
     virtual int selectNearestFindMatch(const WebFloatPoint&, WebRect* selectionRect) OVERRIDE;
     virtual void setTickmarks(const WebVector<WebRect>&) OVERRIDE;
 
-    virtual void sendOrientationChangeEvent(int orientation) OVERRIDE;
+    virtual void sendOrientationChangeEvent() OVERRIDE;
 
     virtual void dispatchMessageEventWithOriginCheck(
         const WebSecurityOrigin& intendedTargetOrigin,

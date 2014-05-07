@@ -88,6 +88,14 @@ FloatRect screenAvailableRect(Widget* widget)
     return IntRect(hostWindow->screenInfo().availableRect);
 }
 
+uint16_t screenOrientationAngle(Widget* widget)
+{
+    HostWindow* hostWindow = toHostWindow(widget);
+    if (!hostWindow)
+        return 0;
+    return hostWindow->screenInfo().orientationAngle;
+}
+
 void screenColorProfile(ColorProfile& toProfile)
 {
     blink::WebVector<char> profile;

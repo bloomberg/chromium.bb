@@ -101,7 +101,6 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, HTMLFr
     , m_inputMethodController(InputMethodController::create(*this))
     , m_pageZoomFactor(parentPageZoomFactor(this))
     , m_textZoomFactor(parentTextZoomFactor(this))
-    , m_orientation(0)
     , m_inViewSourceMode(false)
 {
 }
@@ -162,12 +161,11 @@ void LocalFrame::setView(PassRefPtr<FrameView> view)
     }
 }
 
-void LocalFrame::sendOrientationChangeEvent(int orientation)
+void LocalFrame::sendOrientationChangeEvent()
 {
     if (!RuntimeEnabledFeatures::orientationEventEnabled())
         return;
 
-    m_orientation = orientation;
     if (DOMWindow* window = domWindow())
         window->dispatchEvent(Event::create(EventTypeNames::orientationchange));
 }

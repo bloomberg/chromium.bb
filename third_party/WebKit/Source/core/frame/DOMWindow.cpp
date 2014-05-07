@@ -604,7 +604,13 @@ int DOMWindow::orientation() const
     if (!m_frame)
         return 0;
 
-    return m_frame->orientation();
+    int orientation = screenOrientationAngle(m_frame->view());
+    // For backward compatibility, we want to return a value in the range of
+    // [-90; 180] instead of [0; 360[ because window.orientation used to behave
+    // like that in WebKit (this is a WebKit proprietary API).
+    if (orientation == 270)
+        return -90;
+    return orientation;
 }
 
 Screen& DOMWindow::screen() const

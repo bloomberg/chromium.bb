@@ -605,11 +605,18 @@ public:
 
     // OrientationChange event ---------------------------------------------
 
+    // Notify the frame that the screen orientation has changed.
+    virtual void sendOrientationChangeEvent() = 0;
+
+    // FIXME: this is only there for backward compatibility, it will be removed.
     // Orientation is the interface orientation in degrees.
     // Some examples are:
     //  0 is straight up; -90 is when the device is rotated 90 clockwise;
     //  90 is when rotated counter clockwise.
-    virtual void sendOrientationChangeEvent(int orientation) = 0;
+    void sendOrientationChangeEvent(int orientation)
+    {
+        sendOrientationChangeEvent();
+    }
 
     // Events --------------------------------------------------------------
 

@@ -661,7 +661,7 @@ void WebRemoteFrameImpl::setTickmarks(const WebVector<WebRect>&)
     ASSERT_NOT_REACHED();
 }
 
-void WebRemoteFrameImpl::sendOrientationChangeEvent(int orientation)
+void WebRemoteFrameImpl::sendOrientationChangeEvent()
 {
     ASSERT_NOT_REACHED();
 }

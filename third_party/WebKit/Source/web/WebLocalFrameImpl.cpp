@@ -1437,10 +1437,10 @@ void WebLocalFrameImpl::resetMatchCount()
     m_textFinder->resetMatchCount();
 }
 
-void WebLocalFrameImpl::sendOrientationChangeEvent(int orientation)
+void WebLocalFrameImpl::sendOrientationChangeEvent()
 {
     if (frame())
-        frame()->sendOrientationChangeEvent(orientation);
+        frame()->sendOrientationChangeEvent();
 }
 
 void WebLocalFrameImpl::dispatchMessageEventWithOriginCheck(const WebSecurityOrigin& intendedTargetOrigin, const WebDOMEvent& event)
