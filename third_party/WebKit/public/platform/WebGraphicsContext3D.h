@@ -455,10 +455,10 @@ public:
     virtual GrGLInterface* createGrGLInterface() { return 0; }
 
     // GL_CHROMIUM_map_image
-    virtual WGC3Duint createImageCHROMIUM(WGC3Dsizei width, WGC3Dsizei height, WGC3Denum internalformat) { return 0; }
+    virtual WGC3Duint createImageCHROMIUM(WGC3Dsizei width, WGC3Dsizei height, WGC3Denum internalformat, WGC3Denum usage) { return 0; }
     virtual void destroyImageCHROMIUM(WGC3Duint imageId) { }
     virtual void getImageParameterivCHROMIUM(WGC3Duint imageId, WGC3Denum pname, WGC3Dint* params) { }
-    virtual void* mapImageCHROMIUM(WGC3Duint imageId, WGC3Denum access) { return 0; }
+    virtual void* mapImageCHROMIUM(WGC3Duint imageId) { return 0; }
     virtual void unmapImageCHROMIUM(WGC3Duint imageId) { }
 
     // GL_ANGLE_instanced_arrays
