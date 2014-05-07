@@ -7,6 +7,7 @@
 
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
+#include "media/cast/logging/logging_defines.h"
 #include "media/cast/rtcp/rtcp_defines.h"
 
 namespace media {
@@ -342,6 +343,14 @@ class RtcpParser {
 
   DISALLOW_COPY_AND_ASSIGN(RtcpParser);
 };
+
+// Converts a log event type to an integer value.
+// NOTE: We have only allocated 4 bits to represent the type of event over the
+// wire. Therefore, this function can only return values from 0 to 15.
+uint8 ConvertEventTypeToWireFormat(CastLoggingEvent event);
+
+// The inverse of |ConvertEventTypeToWireFormat()|.
+CastLoggingEvent TranslateToLogEventFromWireFormat(uint8 event);
 
 }  // namespace cast
 }  // namespace media

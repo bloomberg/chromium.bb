@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "media/cast/rtcp/test_rtcp_packet_builder.h"
+
 #include "base/logging.h"
+#include "media/cast/rtcp/rtcp_utility.h"
 
 namespace media {
 namespace cast {
@@ -246,9 +248,10 @@ void TestRtcpPacketBuilder::AddReceiverFrameLog(uint32 rtp_timestamp,
 }
 
 void TestRtcpPacketBuilder::AddReceiverEventLog(uint16 event_data,
-                                                uint8 event_id,
+                                                CastLoggingEvent event,
                                                 uint16 event_timesamp_delta) {
   big_endian_writer_.WriteU16(event_data);
+  uint8 event_id = ConvertEventTypeToWireFormat(event);
   uint16 type_and_delta = static_cast<uint16>(event_id) << 12;
   type_and_delta += event_timesamp_delta & 0x0fff;
   big_endian_writer_.WriteU16(type_and_delta);

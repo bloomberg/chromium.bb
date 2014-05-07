@@ -87,7 +87,7 @@ class TestRtcpPacketBuilder {
                            int num_events,
                            uint32 event_timesamp_base);
   void AddReceiverEventLog(uint16 event_data,
-                           uint8 event_id,
+                           CastLoggingEvent event,
                            uint16 event_timesamp_delta);
 
   scoped_ptr<Packet> GetPacket();

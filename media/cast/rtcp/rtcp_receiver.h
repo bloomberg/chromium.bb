@@ -123,8 +123,9 @@ class RtcpReceiver {
 
   // Maintains a history of receiver events.
   size_t receiver_event_history_size_;
-  base::hash_set<size_t> receiver_event_hash_set_;
-  std::queue<size_t> receiver_event_hash_queue_;
+  typedef std::pair<uint64, uint64> ReceiverEventKey;
+  base::hash_set<ReceiverEventKey> receiver_event_key_set_;
+  std::queue<ReceiverEventKey> receiver_event_key_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(RtcpReceiver);
 };

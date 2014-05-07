@@ -25,36 +25,6 @@ namespace {
 // 12 bits.
 const int64 kMaxWireFormatTimeDeltaMs = INT64_C(0xfff);
 
-// Converts a log event type to an integer value.
-// NOTE: We have only allocated 4 bits to represent the type of event over the
-// wire. Therefore, this function can only return values from 0 to 15.
-int ConvertEventTypeToWireFormat(const CastLoggingEvent& event) {
-  switch (event) {
-    case kAudioAckSent:
-      return 1;
-    case kAudioPlayoutDelay:
-      return 2;
-    case kAudioFrameDecoded:
-      return 3;
-    case kAudioPacketReceived:
-      return 4;
-    case kVideoAckSent:
-      return 5;
-    case kVideoFrameDecoded:
-      return 6;
-    case kVideoRenderDelay:
-      return 7;
-    case kVideoPacketReceived:
-      return 8;
-    case kDuplicateAudioPacketReceived:
-      return 9;
-    case kDuplicateVideoPacketReceived:
-      return 10;
-    default:
-      return 0;  // Not an interesting event.
-  }
-}
-
 uint16 MergeEventTypeAndTimestampForWireFormat(
     const CastLoggingEvent& event,
     const base::TimeDelta& time_delta) {

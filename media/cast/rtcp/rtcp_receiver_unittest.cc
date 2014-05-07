@@ -511,6 +511,12 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportWithReceiverLogVerificationBase) {
   event_log.event_timestamp = testing_clock.NowTicks();
   event_log.packet_id = kLostPacketId1;
   frame_log.event_log_messages_.push_back(event_log);
+
+  event_log.type = kVideoPacketReceived;
+  event_log.event_timestamp = testing_clock.NowTicks();
+  event_log.packet_id = kLostPacketId2;
+  frame_log.event_log_messages_.push_back(event_log);
+
   receiver_log.push_back(frame_log);
 
   cast_log_verification.SetExpectedReceiverLog(receiver_log);
@@ -519,14 +525,16 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportWithReceiverLogVerificationBase) {
   p.AddRr(kSenderSsrc, 1);
   p.AddRb(kSourceSsrc);
   p.AddReceiverLog(kSenderSsrc);
-  p.AddReceiverFrameLog(kRtpTimestamp, 2, kTimeBaseMs);
-  p.AddReceiverEventLog(kDelayDeltaMs, 5, 0);
-  p.AddReceiverEventLog(kLostPacketId1, 8, kTimeDelayMs);
+  p.AddReceiverFrameLog(kRtpTimestamp, 3, kTimeBaseMs);
+  p.AddReceiverEventLog(kDelayDeltaMs, kVideoAckSent, 0);
+  p.AddReceiverEventLog(kLostPacketId1, kVideoPacketReceived, kTimeDelayMs);
+  p.AddReceiverEventLog(kLostPacketId2, kVideoPacketReceived, kTimeDelayMs);
 
   // Adds duplicated receiver event.
-  p.AddReceiverFrameLog(kRtpTimestamp, 2, kTimeBaseMs);
-  p.AddReceiverEventLog(kDelayDeltaMs, 5, 0);
-  p.AddReceiverEventLog(kLostPacketId1, 8, kTimeDelayMs);
+  p.AddReceiverFrameLog(kRtpTimestamp, 3, kTimeBaseMs);
+  p.AddReceiverEventLog(kDelayDeltaMs, kVideoAckSent, 0);
+  p.AddReceiverEventLog(kLostPacketId1, kVideoPacketReceived, kTimeDelayMs);
+  p.AddReceiverEventLog(kLostPacketId2, kVideoPacketReceived, kTimeDelayMs);
 
   EXPECT_CALL(mock_rtt_feedback_,
               OnReceivedDelaySinceLastReport(
@@ -574,7 +582,7 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportWithReceiverLogVerificationMulti) {
   p.AddReceiverLog(kSenderSsrc);
   for (int i = 0; i < 100; ++i) {
     p.AddReceiverFrameLog(kRtpTimestamp, 1, kTimeBaseMs + i * kTimeDelayMs);
-    p.AddReceiverEventLog(kDelayDeltaMs, 5, 0);
+    p.AddReceiverEventLog(kDelayDeltaMs, kVideoAckSent, 0);
   }
 
   EXPECT_CALL(mock_rtt_feedback_,

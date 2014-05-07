@@ -273,8 +273,8 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
 
   p.AddReceiverLog(kSendingSsrc);
   p.AddReceiverFrameLog(kRtpTimestamp, 2, kTimeBaseMs);
-  p.AddReceiverEventLog(0, 5, 0);
-  p.AddReceiverEventLog(kLostPacketId1, 8, kTimeDelayMs);
+  p.AddReceiverEventLog(0, kVideoAckSent, 0);
+  p.AddReceiverEventLog(kLostPacketId1, kVideoPacketReceived, kTimeDelayMs);
 
   test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
@@ -335,7 +335,8 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithOversizedFrameLog) {
       kTimeBaseMs + (kRtcpMaxReceiverLogMessages - num_events) * kTimeDelayMs);
   for (int i = 0; i < num_events; i++) {
     p.AddReceiverEventLog(
-        kLostPacketId1, 8, static_cast<uint16>(kTimeDelayMs * i));
+        kLostPacketId1, kVideoPacketReceived,
+        static_cast<uint16>(kTimeDelayMs * i));
   }
 
   test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
@@ -399,7 +400,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithTooManyLogFrames) {
        i < kRtcpMaxReceiverLogMessages;
        ++i) {
     p.AddReceiverFrameLog(kRtpTimestamp + i, 1, kTimeBaseMs + i * kTimeDelayMs);
-    p.AddReceiverEventLog(0, 5, 0);
+    p.AddReceiverEventLog(0, kVideoAckSent, 0);
   }
   test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
@@ -450,7 +451,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithOldLogFrames) {
   const int kTimeBetweenEventsMs = 410;
   p.AddReceiverFrameLog(kRtpTimestamp, 10, kTimeBaseMs + kTimeBetweenEventsMs);
   for (int i = 0; i < 10; ++i) {
-    p.AddReceiverEventLog(0, 5, i * kTimeBetweenEventsMs);
+    p.AddReceiverEventLog(0, kVideoAckSent, i * kTimeBetweenEventsMs);
   }
   test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
@@ -505,17 +506,17 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportRedundancy) {
           kRtpTimestamp,
           1,
           time_base_ms - kSecondRedundancyOffset * kTimeBetweenEventsMs);
-      p.AddReceiverEventLog(0, 5, 0);
+      p.AddReceiverEventLog(0, kVideoAckSent, 0);
     }
     if (i >= kFirstRedundancyOffset) {
       p.AddReceiverFrameLog(
           kRtpTimestamp,
           1,
           time_base_ms - kFirstRedundancyOffset * kTimeBetweenEventsMs);
-      p.AddReceiverEventLog(0, 5, 0);
+      p.AddReceiverEventLog(0, kVideoAckSent, 0);
     }
     p.AddReceiverFrameLog(kRtpTimestamp, 1, time_base_ms);
-    p.AddReceiverEventLog(0, 5, 0);
+    p.AddReceiverEventLog(0, kVideoAckSent, 0);
 
     test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
