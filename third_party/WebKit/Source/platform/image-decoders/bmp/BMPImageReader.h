@@ -68,7 +68,7 @@ public:
     // |startOffset| points to the start of the BMP within the file.
     // |buffer| points at an empty ImageFrame that we'll initialize and
     // fill with decoded data.
-    BMPImageReader(ImageDecoder* parent, size_t decodedAndHeaderOffset, size_t imgDataOffset, bool m_isInICO);
+    BMPImageReader(ImageDecoder* parent, size_t decodedAndHeaderOffset, size_t imgDataOffset, bool isInICO);
 
     void setBuffer(ImageFrame* buffer) { m_buffer = buffer; }
     void setData(SharedBuffer* data) { m_data = data; }
