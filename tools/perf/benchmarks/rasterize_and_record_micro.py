@@ -27,7 +27,7 @@ class RasterizeAndRecordMicroKeyMobileSites(test.Test):
   page_set = 'page_sets/key_mobile_sites.py'
 
 
-@test.Disabled('mac', 'win')
+@test.Disabled('android', 'mac', 'win')
 class RasterizeAndRecordMicroKeySilkCases(test.Test):
   """Measures rasterize and record performance on the silk sites.
 
@@ -36,7 +36,7 @@ class RasterizeAndRecordMicroKeySilkCases(test.Test):
   page_set = 'page_sets/key_silk_cases.py'
 
 
-@test.Disabled('mac', 'win')
+@test.Disabled('android', 'mac', 'win')
 class RasterizeAndRecordMicroFastPathKeySilkCases(test.Test):
   """Measures rasterize and record performance on the silk sites.
 
@@ -50,7 +50,7 @@ class RasterizeAndRecordMicroFastPathKeySilkCases(test.Test):
     silk_flags.CustomizeBrowserOptionsForFastPath(options)
 
 
-@test.Disabled('mac', 'win')
+@test.Disabled('android', 'mac', 'win')
 class RasterizeAndRecordMicroFastPathGpuRasterizationKeySilkCases(test.Test):
   """Measures rasterize and record performance on the silk sites.
 
