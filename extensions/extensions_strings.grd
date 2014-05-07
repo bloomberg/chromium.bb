@@ -265,9 +265,6 @@
         NA
       </message>
       </if>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_HOST_LIST" desc="Permission string (heading) for a list of websites.">
-        Access your data on the following websites:
-      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_HOST_LIST_ENTRY" desc="Single entry in a list of websites.">
         - <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>
       </message>

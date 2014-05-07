@@ -4519,18 +4519,19 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_WEBGL_NOT_SUPPORTED" desc="Error message when an extension has a requirement for WebGL that the system does not support.">
         WebGL is not supported.
       </message>
-      <message name="IDS_EXTENSION_CSS3D_NOT_SUPPORTED" desc="Error message when an extension has a requirement for CSS3d that the system does not support.">
-        CSS3d is not supported.
-      </message>
       <message name="IDS_EXTENSION_NPAPI_NOT_SUPPORTED" desc="Error message when an extension has a requirement for plugins that the system does not support.">
         NPAPI plugins are not supported.
       </message>
-      <message name="IDS_EXTENSION_WINDOW_SHAPE_NOT_SUPPORTED" desc="Error message when an extension has a requirement for shaped windows that the system does not support.">
-        Shaped windows are not supported.
-      </message>
-      <message name="IDS_EXTENSION_CANT_INSTALL_IN_DEVICE_LOCAL_ACCOUNT" desc="Error message when a user tries to install or the administrator tries to force-install through policy an extension that is not allowed in a device-local account.">
-        <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph> (extension ID "<ph name="EXTENSION_ID">$2<ex>nckgahadagoaajjgafhacjanaoiihapd</ex></ph>") is not allowed in this type of session.
-      </message>
+      <if expr="not use_aura">
+        <message name="IDS_EXTENSION_WINDOW_SHAPE_NOT_SUPPORTED" desc="Error message when an extension has a requirement for shaped windows that the system does not support.">
+          Shaped windows are not supported.
+        </message>
+      </if>
+      <if expr="chromeos">
+        <message name="IDS_EXTENSION_CANT_INSTALL_IN_DEVICE_LOCAL_ACCOUNT" desc="Error message when a user tries to install or the administrator tries to force-install through policy an extension that is not allowed in a device-local account.">
+          <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph> (extension ID "<ph name="EXTENSION_ID">$2<ex>nckgahadagoaajjgafhacjanaoiihapd</ex></ph>") is not allowed in this type of session.
+        </message>
+      </if>
       <message name="IDS_EXTENSION_MOVE_DIRECTORY_TO_PROFILE_FAILED" desc="">
         Could not move extension directory into profile.
       </message>
@@ -4551,9 +4552,6 @@ Make sure you do not expose any sensitive information.
       </message>
       <message name="IDS_EXTENSION_INSTALL_UNEXPECTED_VERSION" desc="Error displayed during installation of a side-loaded app, extension, or theme when the version of the referenced extension does not match the version the developer declared during registration.">
         Expected version "<ph name="EXPECTED_VERSION">$1<ex>2.0</ex></ph>", but version was "<ph name="NEW_ID">$2<ex>1.0</ex></ph>".
-      </message>
-      <message name="IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_FOUND" desc="Error displayed during installation of an extension when an import dependency is not found.">
-        Required extension with ID "<ph name="IMPORT_ID">$1<ex>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</ex></ph>" and minimum version "<ph name="IMPORT_VERSION">$2<ex>1.0</ex></ph>" not found.
       </message>
       <message name="IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_SHARED_MODULE" desc="Error displayed during installation of an extension which tries to imports resources from an extension which is not a shared module.">
         Unable to import extension with ID "<ph name="IMPORT_ID">$1<ex>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</ex></ph>" because it is not a shared module.
@@ -4590,9 +4588,6 @@ Make sure you do not expose any sensitive information.
       </message>
       <message name="IDS_EXTENSION_LOAD_OPTIONS_PAGE_FAILED" desc="">
         Could not load options page '<ph name="OPTIONS_PAGE">$1<ex>page.html</ex></ph>'.
-      </message>
-      <message name="IDS_EXTENSION_LOAD_INPUT_VIEW_FAILED" desc="">
-        Could not load input view '<ph name="INPUT_VIEW">$1<ex>page.html</ex></ph>'.
       </message>
       <if expr="is_win">
         <message name="IDS_EXTENSION_UNPACK_FAILED" desc="On windows, it is possible to mount a disk without the root of that disk having a drive letter.  The sandbox does not support this. See crbug/49530 .">
@@ -4643,9 +4638,11 @@ Make sure you do not expose any sensitive information.
         We were unable to install:
       </message>
       <if expr="enable_extensions">
-        <message name="IDS_EXTENSION_INSTALLED_APP_INFO" desc="Text displayed inside a link when an app is installed. Clicking this link opens up the New Tab Page to show the app's icon.">
-          Show me
-        </message>
+        <if expr="is_macosx">
+          <message name="IDS_EXTENSION_INSTALLED_APP_INFO" desc="Text displayed inside a link when an app is installed. Clicking this link opens up the New Tab Page to show the app's icon.">
+            Show me
+          </message>
+        </if>
         <message name="IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO" desc="Text displayed in the InfoBubble which explains that the UI of this extension is a Page Action icon which may appear for some pages.">
           This icon will be visible when the extension can act on the current page.
         </message>
@@ -4662,15 +4659,21 @@ Make sure you do not expose any sensitive information.
           To use this extension, type "<ph name="EXTENSION_KEYWORD">$1<ex>search</ex></ph>", then TAB, then your command or search.
         </message>
 
-        <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page">
-          Manage your extensions by clicking Extensions in the Tools menu.
-        </message>
-        <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO_CHROMEOS" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page on ChromeOS">
-          Manage your extensions by clicking Extensions in the "More tools" menu.
-        </message>
-        <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO_MAC" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page on MAC OS X">
-          Manage your extensions by clicking Extensions in the Window menu.
-        </message>
+        <if expr="not chromeos and not is_macosx">
+          <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page">
+            Manage your extensions by clicking Extensions in the Tools menu.
+          </message>
+        </if>
+        <if expr="chromeos">
+          <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO_CHROMEOS" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page on ChromeOS">
+            Manage your extensions by clicking Extensions in the "More tools" menu.
+          </message>
+        </if>
+        <if expr="is_macosx">
+          <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO_MAC" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page on MAC OS X">
+            Manage your extensions by clicking Extensions in the Window menu.
+          </message>
+        </if>
         <message name="IDS_EXTENSION_INSTALLED_MANAGE_SHORTCUTS" desc="Text for the link in the InfoBubble that opens the chrome://extensions page with the Configure Commands UI visible.">
           Manage shortcuts
         </message>
@@ -4709,12 +4712,6 @@ Make sure you do not expose any sensitive information.
         </message>
         <message name="IDS_EXTENSIONS_NONE_INSTALLED" desc="Text that lets the user know that no extensions are installed.">
           Boo... You have no extensions :-(
-        </message>
-        <message name="IDS_EXTENSIONS_PERMISSIONS_HEADING" desc="Heading for permissions dialog in apps_devtools">
-          It can:
-        </message>
-        <message name="IDS_EXTENSIONS_PERMISSIONS_CLOSE" desc="Close button for permissions dialog in apps_devtools">
-          Close
         </message>
         <message name="IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY" desc="Text on next line after IDS_EXTENSIONS_NONE_INSTALLED that suggests the user look in the gallery for extensions to install.">
           Want to <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>browse the gallery<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> instead?
@@ -4922,23 +4919,11 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PACK_DIALOG_TITLE" desc="Title of pack extension dialog">
         Pack Extension
       </message>
-      <message name="IDS_EXTENSION_PACK_APP_DIALOG_TITLE" desc="Title of pack application dialog">
-        Pack Application
-      </message>
       <message name="IDS_EXTENSION_PACK_BUTTON" desc="Text of the pack extension button">
         Pack Extension
       </message>
-      <message name="IDS_EXTENSION_ADT_PACK_BUTTON" desc="Text of the pack button in apps developer tool.">
-        Pack
-      </message>
       <message name="IDS_EXTENSION_PACK_DIALOG_HEADING" desc="The heading of the pack extension dialog.">
         Select the root directory of the extension to pack. To update an extension, also select the private key file to reuse.
-      </message>
-      <message name="IDS_EXTENSION_ADT_PACK_DIALOG_HEADING" desc="The heading of the pack extension dialog in the Apps Developer Tool.">
-        The packed extension and the private key will be written in the parent directory of the root directory of the extension to pack. To update an extension, select the private key file to reuse.
-      </message>
-      <message name="IDS_EXTENSION_ADT_PACK_APP_DIALOG_HEADING" desc="The heading of the pack application dialog in the Apps Developer Tool.">
-        The packed application and the private key will be written in the parent directory of the root directory of the application to pack. To update an application, select the private key file to reuse.
       </message>
       <message name="IDS_EXTENSION_PACK_DIALOG_ROOT_DIRECTORY_LABEL" desc="Label in the pack extension dialog for the control that lets the user select the extension to pack.">
         Extension root directory:
@@ -5139,27 +5124,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ABORT_BUTTON" desc="Button on the external install prompt to remove an extension installed by a third party.">
         Remove from Chrome
       </message>
-      <message name="IDS_EXTENSIONS_DISABLED" desc="(Disabled) label next to the application name when the application is disabled.">
-        (Disabled)
-      </message>
-      <message name="IDS_EXTENSIONS_SHOW_LOGS" desc="Text for the link to show logs.">
-        Show Logs
-      </message>
-      <message name="IDS_EXTENSIONS_MORE_DETAILS" desc="Text for the link to show more details about the extension / app.">
-        More Details
-      </message>
-      <message name="IDS_EXTENSIONS_VERSION" desc="The Version label in front of the version number of the extension / app.">
-        Version
-      </message>
-      <message name="IDS_EXTENSIONS_DELETE" desc="Text for the link to delete the extension / app.">
-        Delete
-      </message>
-      <message name="IDS_EXTENSIONS_ADT_DELETE" desc="Text for the link to uninstall the extension / app.">
-        Uninstall
-      </message>
-      <message name="IDS_EXTENSIONS_PACK" desc="Text for the link to pack the extension / app.">
-        Pack
-      </message>
 
       <if expr="use_titlecase">
         <message name="IDS_EXTENSIONS_SUSPICIOUS_DISABLED_TITLE" desc="In Title Case: Title of the dialog shown when suspicious extensions have been disabled">
@@ -5198,9 +5162,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Settings API bubble -->
-      <message name="IDS_EXTENSIONS_DISABLE_EXTENSIONS" desc="Text for the Disable Extensions (note: plural) button">
-        Disable Extensions
-      </message>
       <if expr="use_titlecase">
         <message name="IDS_EXTENSIONS_SETTINGS_API_TITLE_HOME_PAGE_BUBBLE" desc="In Title Case: Title of a bubble warning users that an extension has overridden their home page setting">
          Is This the Home Page You Were Expecting?
