@@ -303,10 +303,11 @@ void AutocompleteProviderTest::
   ASSERT_NE(0, default_provider_id);
 
   // Create another TemplateURL for KeywordProvider.
-  data.short_name = base::ASCIIToUTF16("k");
-  data.SetKeyword(base::ASCIIToUTF16("k"));
-  data.SetURL("http://keyword/{searchTerms}");
-  TemplateURL* keyword_t_url = new TemplateURL(&profile_, data);
+  TemplateURLData data2;
+  data2.short_name = base::ASCIIToUTF16("k");
+  data2.SetKeyword(base::ASCIIToUTF16("k"));
+  data2.SetURL("http://keyword/{searchTerms}");
+  TemplateURL* keyword_t_url = new TemplateURL(&profile_, data2);
   turl_model->Add(keyword_t_url);
   ASSERT_NE(0, keyword_t_url->id());
 

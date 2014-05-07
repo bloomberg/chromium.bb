@@ -241,13 +241,6 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ui_test_utils::WaitForTemplateURLServiceToLoad(model);
 
     ASSERT_TRUE(model->loaded());
-    // Remove built-in template urls, like google.com, bing.com etc., as they
-    // may appear as autocomplete suggests and interfere with our tests.
-    model->SetUserSelectedDefaultSearchProvider(NULL);
-    TemplateURLService::TemplateURLVector builtins = model->GetTemplateURLs();
-    for (TemplateURLService::TemplateURLVector::const_iterator
-         i = builtins.begin(); i != builtins.end(); ++i)
-      model->Remove(*i);
 
     TemplateURLData data;
     data.short_name = ASCIIToUTF16(kSearchShortName);
@@ -259,6 +252,16 @@ class OmniboxViewTest : public InProcessBrowserTest,
 
     data.SetKeyword(ASCIIToUTF16(kSearchKeyword2));
     model->Add(new TemplateURL(profile, data));
+
+    // Remove built-in template urls, like google.com, bing.com etc., as they
+    // may appear as autocomplete suggests and interfere with our tests.
+    TemplateURLService::TemplateURLVector urls = model->GetTemplateURLs();
+    for (TemplateURLService::TemplateURLVector::const_iterator i = urls.begin();
+         i != urls.end();
+         ++i) {
+      if ((*i)->prepopulate_id() != 0)
+        model->Remove(*i);
+    }
   }
 
   void AddHistoryEntry(const TestHistoryEntry& entry, const Time& time) {

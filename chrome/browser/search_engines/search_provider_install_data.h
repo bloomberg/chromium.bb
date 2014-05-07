@@ -13,11 +13,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/webdata/web_data_service.h"
 
 class GURL;
+class Profile;
 class SearchHostToURLsMap;
 class TemplateURL;
+class TemplateURLService;
 
 namespace content {
 class RenderProcessHost;
@@ -27,7 +28,7 @@ class RenderProcessHost;
 // loading the data on demand (when CallWhenLoaded is called) and then throwing
 // away the results after the callbacks are done, so the results are always up
 // to date with what is in the database.
-class SearchProviderInstallData : public WebDataServiceConsumer {
+class SearchProviderInstallData {
  public:
   enum State {
     // The search provider is not installed.
@@ -61,13 +62,9 @@ class SearchProviderInstallData : public WebDataServiceConsumer {
   void OnGoogleURLChange(const std::string& google_base_url);
 
  private:
-  // WebDataServiceConsumer
-  // Notification that the keywords have been loaded.
-  // This is invoked from WebDataService, and should not be directly
-  // invoked.
-  virtual void OnWebDataServiceRequestDone(
-      WebDataService::Handle h,
-      const WDTypedResult* result) OVERRIDE;
+  // Receives a copy of the TemplateURLService's keywords on the IO thread.
+  void OnTemplateURLsLoaded(ScopedVector<TemplateURL> template_urls,
+                            TemplateURL* default_provider);
 
   // Stores information about the default search provider.
   void SetDefault(const TemplateURL* template_url);
@@ -80,14 +77,12 @@ class SearchProviderInstallData : public WebDataServiceConsumer {
   // install state has been loaded.
   void NotifyLoaded();
 
-  // The list of closures to call after the load has finished.
+  // The original data source. Only accessed on the UI thread.
+  TemplateURLService* template_url_service_;
+
+  // The list of closures to call after the load has finished. If empty, there
+  // is no pending load.
   std::vector<base::Closure> closure_queue_;
-
-  // Service used to store entries.
-  scoped_refptr<WebDataService> web_service_;
-
-  // If non-zero, we're waiting on a load.
-  WebDataService::Handle load_handle_;
 
   // Holds results of a load that was done using this class.
   scoped_ptr<SearchHostToURLsMap> provider_map_;

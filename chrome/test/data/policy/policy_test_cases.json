@@ -751,7 +751,7 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderEnabled": false },
     "pref_mappings": [
-      { "pref": "default_search_provider.enabled",
+      { "pref": "default_search_provider_data.template_url_data",
         "indicator_tests": [
           { "policy": { "DefaultSearchProviderEnabled": false } },
           { "policy": { "DefaultSearchProviderEnabled": true, "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google" } }
@@ -764,7 +764,7 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderName": "google.com" },
     "pref_mappings": [
-      { "pref": "default_search_provider.name" }
+      { "pref": "default_search_provider_data.template_url_data" }
     ]
   },
 
@@ -772,7 +772,7 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google" },
     "pref_mappings": [
-      { "pref": "default_search_provider.keyword" }
+      { "pref": "default_search_provider_data.template_url_data" }
     ]
   },
 
@@ -780,7 +780,7 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google" },
     "pref_mappings": [
-      { "pref": "default_search_provider.search_url",
+      { "pref": "default_search_provider_data.template_url_data",
         "indicator_selector": "[setting=search-engine]",
         "indicator_tests": [
           { "policy": { "DefaultSearchProviderEnabled": true, "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}" } }
@@ -793,7 +793,7 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderSuggestURL": "http://www.google.com/suggest?q={searchTerms}" },
     "pref_mappings": [
-      { "pref": "default_search_provider.suggest_url" }
+      { "pref": "default_search_provider_data.template_url_data" }
     ]
   },
 
@@ -801,7 +801,7 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderInstantURL": "http://www.google.com/instant?q={searchTerms}" },
     "pref_mappings": [
-      { "pref": "default_search_provider.instant_url" }
+      { "pref": "default_search_provider_data.template_url_data" }
     ]
   },
 
@@ -809,7 +809,7 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderNewTabURL": "http://www.google.com/newtab" },
     "pref_mappings": [
-      { "pref": "default_search_provider.new_tab_url" }
+      { "pref": "default_search_provider_data.template_url_data" }
     ]
   },
 
@@ -817,7 +817,7 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderIconURL": "http://www.google.com/favicon.ico" },
     "pref_mappings": [
-      { "pref": "default_search_provider.icon_url" }
+      { "pref": "default_search_provider_data.template_url_data" }
     ]
   },
 
@@ -825,7 +825,7 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderEncodings": ["UTF-8"] },
     "pref_mappings": [
-      { "pref": "default_search_provider.encodings" }
+      { "pref": "default_search_provider_data.template_url_data" }
     ]
   },
 
@@ -833,7 +833,7 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderAlternateURLs": ["http://www.google.com/#q={searchTerms}", "http://www.google.com/search#q={searchTerms}"] },
     "pref_mappings": [
-      { "pref": "default_search_provider.alternate_urls" }
+      { "pref": "default_search_provider_data.template_url_data" }
     ]
   },
 
@@ -841,7 +841,7 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderSearchTermsReplacementKey": "espv" },
     "pref_mappings": [
-      { "pref": "default_search_provider.search_terms_replacement_key" }
+      { "pref": "default_search_provider_data.template_url_data" }
     ]
   },
 
@@ -849,7 +849,7 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderImageURL": "http://www.google.com/searchbyimage/upload" },
     "pref_mappings": [
-      { "pref": "default_search_provider.image_url" }
+      { "pref": "default_search_provider_data.template_url_data" }
     ]
   },
 
@@ -857,7 +857,7 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderSearchURLPostParams": "" },
     "pref_mappings": [
-      { "pref": "default_search_provider.search_url_post_params" }
+      { "pref": "default_search_provider_data.template_url_data" }
     ]
   },
 
@@ -865,7 +865,7 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderSuggestURLPostParams": "" },
     "pref_mappings": [
-      { "pref": "default_search_provider.suggest_url_post_params" }
+      { "pref": "default_search_provider_data.template_url_data" }
     ]
   },
 
@@ -873,7 +873,7 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderInstantURLPostParams": "" },
     "pref_mappings": [
-      { "pref": "default_search_provider.instant_url_post_params" }
+      { "pref": "default_search_provider_data.template_url_data" }
     ]
   },
 
@@ -881,7 +881,7 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderImageURLPostParams": "image_content={imageThumbnail},image_url={imageURL},sbisrc={imageSearchSource}" },
     "pref_mappings": [
-      { "pref": "default_search_provider.image_url_post_params" }
+      { "pref": "default_search_provider_data.template_url_data" }
     ]
   },
 
