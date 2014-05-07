@@ -1292,13 +1292,6 @@ void RenderWidget::didDeactivateCompositor() {
   is_accelerated_compositing_active_ = false;
   Send(new ViewHostMsg_DidActivateAcceleratedCompositing(
       routing_id_, is_accelerated_compositing_active_));
-
-  // In single-threaded mode, we exit force compositing mode and re-enter in
-  // DoDeferredUpdate() if appropriate. In threaded compositing mode,
-  // DoDeferredUpdate() is bypassed and WebKit is responsible for exiting and
-  // entering force compositing mode at the appropriate times.
-  if (!is_threaded_compositing_enabled_ && !ForceCompositingModeEnabled())
-    webwidget_->enterForceCompositingMode(false);
 }
 
 void RenderWidget::initializeLayerTreeView() {
