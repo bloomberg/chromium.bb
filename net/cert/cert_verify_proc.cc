@@ -4,6 +4,7 @@
 
 #include "net/cert/cert_verify_proc.h"
 
+#include "base/basictypes.h"
 #include "base/metrics/histogram.h"
 #include "base/sha1.h"
 #include "base/strings/stringprintf.h"
@@ -339,6 +340,25 @@ bool CertVerifyProc::IsBlacklisted(X509Certificate* cert) {
         return true;
       }
     }
+  }
+
+  // CloudFlare revoked all certificates issued prior to April 2nd, 2014. Thus
+  // all certificates where the CN ends with ".cloudflare.com" with a prior
+  // issuance date are rejected.
+  //
+  // The old certs had a lifetime of five years, so this can be removed April
+  // 2nd, 2019.
+  const std::string& cn = cert->subject().common_name;
+  static const char kCloudFlareCNSuffix[] = ".cloudflare.com";
+  // kCloudFlareEpoch is the base::Time internal value for midnight at the
+  // beginning of April 2nd, 2014, UTC.
+  static const int64 kCloudFlareEpoch = INT64_C(13040870400000000);
+  if (cn.size() > arraysize(kCloudFlareCNSuffix) - 1 &&
+      cn.compare(cn.size() - (arraysize(kCloudFlareCNSuffix) - 1),
+                 arraysize(kCloudFlareCNSuffix) - 1,
+                 kCloudFlareCNSuffix) == 0 &&
+      cert->valid_start() < base::Time::FromInternalValue(kCloudFlareEpoch)) {
+    return true;
   }
 
   return false;
