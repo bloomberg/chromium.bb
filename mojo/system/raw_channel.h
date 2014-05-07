@@ -134,9 +134,11 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
     WriteBuffer();
     ~WriteBuffer();
 
+    // Gets buffers to be written. These buffers will always come from the front
+    // of |message_queue_|. Once they are completely written, the front
+    // |MessageInTransit| should be popped (and destroyed); this is done in
+    // |OnWriteCompletedNoLock()|.
     void GetBuffers(std::vector<Buffer>* buffers) const;
-    // Returns the total size of all buffers returned by |GetBuffers()|.
-    size_t GetTotalBytesToWrite() const;
 
    private:
     friend class RawChannel;

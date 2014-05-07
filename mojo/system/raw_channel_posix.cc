@@ -18,7 +18,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/posix/eintr_wrapper.h"
 #include "base/synchronization/lock.h"
 #include "mojo/embedder/platform_channel_utils_posix.h"
 #include "mojo/embedder/platform_handle.h"
@@ -102,16 +101,33 @@ RawChannel::IOResult RawChannelPosix::Read(size_t* bytes_read) {
   size_t bytes_to_read = 0;
   read_buffer()->GetBuffer(&buffer, &bytes_to_read);
 
-  ssize_t read_result = HANDLE_EINTR(read(fd_.get().fd, buffer, bytes_to_read));
-
+  scoped_ptr<embedder::PlatformHandleVector> handles;
+  ssize_t read_result = embedder::PlatformChannelRecvmsg(fd_.get(),
+                                                         buffer,
+                                                         bytes_to_read,
+                                                         &handles);
   if (read_result > 0) {
     *bytes_read = static_cast<size_t>(read_result);
     return IO_SUCCEEDED;
   }
 
+  if (handles) {
+    if (read_result != 1) {
+      LOG(WARNING) << "Invalid control message with handles";
+      return IO_FAILED;
+    }
+
+    // TODO(vtl): Implement this ("buffer" received handles). For now, just drop
+    // them on the floor. (Discard this message entirely.)
+    NOTIMPLEMENTED();
+    for (size_t i = 0; i < handles->size(); i++)
+      (*handles)[i].CloseIfNecessary();
+    return ScheduleRead();
+  }
+
   // |read_result == 0| means "end of file".
   if (read_result == 0 || (errno != EAGAIN && errno != EWOULDBLOCK)) {
-    PLOG_IF(ERROR, read_result != 0) << "read";
+    PLOG_IF(ERROR, read_result != 0) << "recvmsg";
 
     // Make sure that |OnFileCanReadWithoutBlocking()| won't be called again.
     read_watcher_.reset();

@@ -41,11 +41,13 @@ RawChannel::WriteBuffer::~WriteBuffer() {
 void RawChannel::WriteBuffer::GetBuffers(std::vector<Buffer>* buffers) const {
   buffers->clear();
 
-  size_t bytes_to_write = GetTotalBytesToWrite();
-  if (bytes_to_write == 0)
+  if (message_queue_.empty())
     return;
 
   MessageInTransit* message = message_queue_.front();
+  DCHECK_LT(offset_, message->total_size());
+  size_t bytes_to_write = message->total_size() - offset_;
+
   size_t transport_data_buffer_size = message->transport_data() ?
       message->transport_data()->buffer_size() : 0;
 
@@ -86,15 +88,6 @@ void RawChannel::WriteBuffer::GetBuffers(std::vector<Buffer>* buffers) const {
     transport_data_buffer_size
   };
   buffers->push_back(buffer2);
-}
-
-size_t RawChannel::WriteBuffer::GetTotalBytesToWrite() const {
-  if (message_queue_.empty())
-    return 0;
-
-  MessageInTransit* message = message_queue_.front();
-  DCHECK_LT(offset_, message->total_size());
-  return message->total_size() - offset_;
 }
 
 RawChannel::RawChannel()
@@ -353,23 +346,25 @@ bool RawChannel::OnWriteCompletedNoLock(bool result, size_t bytes_written) {
   DCHECK(!write_buffer_->message_queue_.empty());
 
   if (result) {
-    if (bytes_written < write_buffer_->GetTotalBytesToWrite()) {
-      // Partial (or no) write.
-      write_buffer_->offset_ += bytes_written;
-    } else {
+    write_buffer_->offset_ += bytes_written;
+
+    MessageInTransit* message = write_buffer_->message_queue_.front();
+    if (write_buffer_->offset_ >= message->total_size()) {
       // Complete write.
-      DCHECK_EQ(bytes_written, write_buffer_->GetTotalBytesToWrite());
-      delete write_buffer_->message_queue_.front();
+      DCHECK_EQ(write_buffer_->offset_, message->total_size());
       write_buffer_->message_queue_.pop_front();
+      delete message;
       write_buffer_->offset_ = 0;
+
+      if (write_buffer_->message_queue_.empty())
+        return true;
     }
 
-    if (write_buffer_->message_queue_.empty())
-      return true;
-
     // Schedule the next write.
-    if (ScheduleWriteNoLock() == IO_PENDING)
+    IOResult io_result = ScheduleWriteNoLock();
+    if (io_result == IO_PENDING)
       return true;
+    DCHECK_EQ(io_result, IO_FAILED);
   }
 
   write_stopped_ = true;
