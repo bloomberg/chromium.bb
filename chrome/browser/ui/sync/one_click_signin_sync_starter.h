@@ -78,6 +78,9 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // signin before signin completes.
   // |web_contents| is used to show the sync UI if it's showing a blank page
   // and not about to be closed. It can be NULL.
+  // If |web_contents| is non-NULL and the |continue_url| is non-empty, the
+  // |web_contents| will be navigated to the |continue_url| once both signin and
+  // Sync setup are complete.
   // |callback| is always executed before OneClickSigninSyncStarter is deleted.
   // It can be empty.
   OneClickSigninSyncStarter(Profile* profile,
@@ -88,6 +91,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
                             StartSyncMode start_mode,
                             content::WebContents* web_contents,
                             ConfirmationRequired display_confirmation,
+                            const GURL& continue_url,
                             Callback callback);
 
   // chrome::BrowserListObserver override.
@@ -102,12 +106,9 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
 
  private:
   friend class OneClickSigninSyncStarterTest;
-  FRIEND_TEST_ALL_PREFIXES(OneClickSigninSyncStarterTest,
-                           CallbackSigninFailed);
-  FRIEND_TEST_ALL_PREFIXES(OneClickSigninSyncStarterTest,
-                           CallbackSigninSucceeded);
-  FRIEND_TEST_ALL_PREFIXES(OneClickSigninSyncStarterTest,
-                           CallbackNull);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninSyncStarterTest, CallbackSigninFailed);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninSyncStarterTest, CallbackNull);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninSyncStarterTest, LoadContinueUrl);
 
   virtual ~OneClickSigninSyncStarter();
 
@@ -202,6 +203,9 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // the default "You are signed in" message is displayed.
   void DisplayFinalConfirmationBubble(const base::string16& custom_message);
 
+  // Loads the |continue_url_| in the current tab.
+  void LoadContinueUrl();
+
   Profile* profile_;
   Browser* browser_;
   scoped_ptr<SigninTracker> signin_tracker_;
@@ -209,6 +213,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   chrome::HostDesktopType desktop_type_;
   bool force_same_tab_navigation_;
   ConfirmationRequired confirmation_required_;
+  GURL continue_url_;
 
   // Callback executed when sync setup succeeds or fails.
   Callback sync_setup_completed_callback_;

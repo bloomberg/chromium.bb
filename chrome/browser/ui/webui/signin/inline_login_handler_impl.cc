@@ -162,6 +162,7 @@ void InlineSigninHelper::OnSigninOAuthInformationAvailable(
           start_mode,
           contents,
           confirmation_required,
+          signin::GetNextPageURLForPromoURL(current_url_),
           base::Bind(&InlineLoginHandlerImpl::SyncStarterCallback, handler_));
     }
   }

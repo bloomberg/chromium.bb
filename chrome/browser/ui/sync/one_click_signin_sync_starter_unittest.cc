@@ -11,7 +11,10 @@
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,29 +22,22 @@ namespace {
 const char* kTestingUsername = "fake_username";
 }  // namespace
 
-class OneClickSigninSyncStarterTest : public testing::Test {
+class OneClickSigninSyncStarterTest : public ChromeRenderViewHostTestHarness {
  public:
   OneClickSigninSyncStarterTest()
       : sync_starter_(NULL),
         failed_count_(0),
         succeeded_count_(0) {}
 
-  // testing::Test:
+  // ChromeRenderViewHostTestHarness:
   virtual void SetUp() OVERRIDE {
-    testing::Test::SetUp();
-
-    // Create the sign in manager required by OneClickSigninSyncStarter.
-    TestingProfile::Builder builder;
-    builder.AddTestingFactory(
-        SigninManagerFactory::GetInstance(),
-        &OneClickSigninSyncStarterTest::BuildSigninManager);
-    profile_ = builder.Build();
-
-    SigninManagerBase* signin_manager = static_cast<FakeSigninManager*>(
-        SigninManagerFactory::GetForProfile(profile_.get()));
+    ChromeRenderViewHostTestHarness::SetUp();
 
     // Disable sync to simplify the creation of a OneClickSigninSyncStarter.
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
+
+    SigninManagerBase* signin_manager = static_cast<FakeSigninManager*>(
+        SigninManagerFactory::GetForProfile(profile()));
 
     signin_manager->Initialize(NULL);
     signin_manager->SetAuthenticatedUsername(kTestingUsername);
@@ -54,23 +50,31 @@ class OneClickSigninSyncStarterTest : public testing::Test {
       ++failed_count_;
   }
 
+  // ChromeRenderViewHostTestHarness:
+  virtual content::BrowserContext* CreateBrowserContext() OVERRIDE {
+    // Create the sign in manager required by OneClickSigninSyncStarter.
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(
+        SigninManagerFactory::GetInstance(),
+        &OneClickSigninSyncStarterTest::BuildSigninManager);
+    return builder.Build().release();
+  }
+
  protected:
-  void CreateSyncStarter(OneClickSigninSyncStarter::Callback callback) {
+  void CreateSyncStarter(OneClickSigninSyncStarter::Callback callback,
+                         const GURL& continue_url) {
     sync_starter_ = new OneClickSigninSyncStarter(
-        profile_.get(),
+        profile(),
         NULL,
         kTestingUsername,
         std::string(),
         "refresh_token",
         OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS,
-        NULL,
+        web_contents(),
         OneClickSigninSyncStarter::NO_CONFIRMATION,
+        continue_url,
         callback);
   }
-
-  content::TestBrowserThreadBundle thread_bundle_;
-
-  scoped_ptr<TestingProfile> profile_;
 
   // Deletes itself when SigninFailed() or SigninSuccess() is called.
   OneClickSigninSyncStarter* sync_starter_;
@@ -92,7 +96,8 @@ class OneClickSigninSyncStarterTest : public testing::Test {
 // Verifies that the callback is invoked when sync setup fails.
 TEST_F(OneClickSigninSyncStarterTest, CallbackSigninFailed) {
   CreateSyncStarter(base::Bind(&OneClickSigninSyncStarterTest::Callback,
-                               base::Unretained(this)));
+                               base::Unretained(this)),
+                    GURL());
   sync_starter_->SigninFailed(GoogleServiceAuthError(
       GoogleServiceAuthError::REQUEST_CANCELED));
   EXPECT_EQ(1, failed_count_);
@@ -101,9 +106,24 @@ TEST_F(OneClickSigninSyncStarterTest, CallbackSigninFailed) {
 
 // Verifies that there is no crash when the callback is NULL.
 TEST_F(OneClickSigninSyncStarterTest, CallbackNull) {
-  CreateSyncStarter(OneClickSigninSyncStarter::Callback());
+  CreateSyncStarter(OneClickSigninSyncStarter::Callback(), GURL());
   sync_starter_->SigninFailed(GoogleServiceAuthError(
       GoogleServiceAuthError::REQUEST_CANCELED));
   EXPECT_EQ(0, failed_count_);
   EXPECT_EQ(0, succeeded_count_);
+}
+
+// Verifies that the continue URL is loaded once signin completes.
+TEST_F(OneClickSigninSyncStarterTest, LoadContinueUrl) {
+  content::NavigationController& controller = web_contents()->GetController();
+  EXPECT_FALSE(controller.GetPendingEntry());
+
+  const GURL kTestURL = GURL("http://www.example.com");
+  CreateSyncStarter(base::Bind(&OneClickSigninSyncStarterTest::Callback,
+                               base::Unretained(this)),
+                    kTestURL);
+  sync_starter_->MergeSessionComplete(
+      GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+  EXPECT_EQ(1, succeeded_count_);
+  EXPECT_EQ(kTestURL, controller.GetPendingEntry()->GetURL());
 }

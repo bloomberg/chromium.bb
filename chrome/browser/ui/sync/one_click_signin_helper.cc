@@ -663,6 +663,7 @@ OneClickSigninHelper::SyncStarterWrapper::StartOneClickSigninSyncStarter(
                                 refresh_token, start_mode_,
                                 args_.web_contents,
                                 args_.confirmation_required,
+                                GURL(),
                                 args_.callback);
 }
 
