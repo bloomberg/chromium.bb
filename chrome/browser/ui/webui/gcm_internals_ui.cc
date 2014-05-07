@@ -26,6 +26,72 @@
 
 namespace {
 
+void SetCheckinInfo(
+    const std::vector<gcm::GCMStatsRecorder::CheckinActivity>& checkins,
+    base::ListValue* checkin_info) {
+  std::vector<gcm::GCMStatsRecorder::CheckinActivity>::const_iterator it =
+      checkins.begin();
+  for (; it < checkins.end(); ++it) {
+    base::ListValue* row = new base::ListValue();
+    checkin_info->Append(row);
+
+    row->AppendDouble(it->time.ToJsTime());
+    row->AppendString(it->event);
+    row->AppendString(it->details);
+  }
+}
+
+void SetConnectionInfo(
+    const std::vector<gcm::GCMStatsRecorder::ConnectionActivity>& connections,
+    base::ListValue* connection_info) {
+  std::vector<gcm::GCMStatsRecorder::ConnectionActivity>::const_iterator it =
+      connections.begin();
+  for (; it < connections.end(); ++it) {
+    base::ListValue* row = new base::ListValue();
+    connection_info->Append(row);
+
+    row->AppendDouble(it->time.ToJsTime());
+    row->AppendString(it->event);
+    row->AppendString(it->details);
+  }
+}
+
+void SetRegistrationInfo(
+    const std::vector<gcm::GCMStatsRecorder::RegistrationActivity>&
+        registrations,
+    base::ListValue* registration_info) {
+  std::vector<gcm::GCMStatsRecorder::RegistrationActivity>::const_iterator it =
+      registrations.begin();
+  for (; it < registrations.end(); ++it) {
+    base::ListValue* row = new base::ListValue();
+    registration_info->Append(row);
+
+    row->AppendDouble(it->time.ToJsTime());
+    row->AppendString(it->app_id);
+    row->AppendString(it->sender_ids);
+    row->AppendString(it->event);
+    row->AppendString(it->details);
+  }
+}
+
+void SetReceivingInfo(
+    const std::vector<gcm::GCMStatsRecorder::ReceivingActivity>& receives,
+    base::ListValue* receive_info) {
+  std::vector<gcm::GCMStatsRecorder::ReceivingActivity>::const_iterator it =
+      receives.begin();
+  for (; it < receives.end(); ++it) {
+    base::ListValue* row = new base::ListValue();
+    receive_info->Append(row);
+
+    row->AppendDouble(it->time.ToJsTime());
+    row->AppendString(it->app_id);
+    row->AppendString(it->from);
+    row->AppendString(base::StringPrintf("%d", it->message_byte_size));
+    row->AppendString(it->event);
+    row->AppendString(it->details);
+  }
+}
+
 void SetSendingInfo(
     const std::vector<gcm::GCMStatsRecorder::SendingActivity>& sends,
     base::ListValue* send_info) {
@@ -116,6 +182,30 @@ void GcmInternalsUIMessageHandler::ReturnResults(
     device_info->SetInteger("sendQueueSize", stats->send_queue_size);
     device_info->SetInteger("resendQueueSize", stats->resend_queue_size);
 
+    if (stats->recorded_activities.checkin_activities.size() > 0) {
+      base::ListValue* checkin_info = new base::ListValue();
+      results.Set("checkinInfo", checkin_info);
+      SetCheckinInfo(stats->recorded_activities.checkin_activities,
+                     checkin_info);
+    }
+    if (stats->recorded_activities.connection_activities.size() > 0) {
+      base::ListValue* connection_info = new base::ListValue();
+      results.Set("connectionInfo", connection_info);
+      SetConnectionInfo(stats->recorded_activities.connection_activities,
+                        connection_info);
+    }
+    if (stats->recorded_activities.registration_activities.size() > 0) {
+      base::ListValue* registration_info = new base::ListValue();
+      results.Set("registrationInfo", registration_info);
+      SetRegistrationInfo(stats->recorded_activities.registration_activities,
+                          registration_info);
+    }
+    if (stats->recorded_activities.receiving_activities.size() > 0) {
+      base::ListValue* receive_info = new base::ListValue();
+      results.Set("receiveInfo", receive_info);
+      SetReceivingInfo(stats->recorded_activities.receiving_activities,
+                       receive_info);
+    }
     if (stats->recorded_activities.sending_activities.size() > 0) {
       base::ListValue* send_info = new base::ListValue();
       results.Set("sendInfo", send_info);
