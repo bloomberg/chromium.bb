@@ -80,8 +80,8 @@ WM_EXPORT void SetWindowVisibilityAnimationVerticalPosition(
     aura::Window* window,
     float position);
 
-class HidingWindowAnimationObserver;
-// A wrapper of ui::ScopedLayerAnimationSettings for hiding animations.
+class ImplicitHidingWindowAnimationObserver;
+// A wrapper of ui::ScopedLayerAnimationSettings for implicit hiding animations.
 // Use this to ensure that the hiding animation is visible even after
 // the window is deleted or deactivated, instead of using
 // ui::ScopedLayerAnimationSettings directly.
@@ -97,7 +97,7 @@ class WM_EXPORT ScopedHidingAnimationSettings {
 
  private:
   ui::ScopedLayerAnimationSettings layer_animation_settings_;
-  HidingWindowAnimationObserver* observer_;
+  ImplicitHidingWindowAnimationObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedHidingAnimationSettings);
 };
