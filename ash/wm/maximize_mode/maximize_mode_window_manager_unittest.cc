@@ -798,7 +798,8 @@ TEST_F(MaximizeModeWindowManagerTest, KeepFullScreenModeOn) {
   EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
 }
 
-// Check that full screen mode can be turned on in maximized mode.
+// Check that full screen mode can be turned on in maximized mode and remains
+// upon coming back.
 TEST_F(MaximizeModeWindowManagerTest, AllowFullScreenMode) {
   gfx::Rect rect(20, 140, 100, 100);
   scoped_ptr<aura::Window> w1(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
@@ -828,11 +829,76 @@ TEST_F(MaximizeModeWindowManagerTest, AllowFullScreenMode) {
   EXPECT_FALSE(window_state->IsMaximized());
   EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
 
-  // With the destruction of the manager we should fall back to the old state.
+  // With the destruction of the manager we should remain in full screen.
   DestroyMaximizeModeWindowManager();
-  EXPECT_FALSE(window_state->IsFullscreen());
+  EXPECT_TRUE(window_state->IsFullscreen());
   EXPECT_FALSE(window_state->IsMaximized());
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
+}
+
+// Check that the full screen mode will stay active when the maximize mode is
+// ended.
+TEST_F(MaximizeModeWindowManagerTest,
+       FullScreenModeRemainsWhenCreatedInMaximizedMode) {
+  CreateMaximizeModeWindowManager();
+
+  gfx::Rect rect(20, 140, 100, 100);
+  scoped_ptr<aura::Window> w1(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+  wm::WindowState* window_state = wm::GetWindowState(w1.get());
+  wm::WMEvent event_full_screen(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  window_state->OnWMEvent(&event_full_screen);
+  EXPECT_TRUE(window_state->IsFullscreen());
+
+  // After the maximize mode manager is ended, full screen will remain.
+  DestroyMaximizeModeWindowManager();
+  EXPECT_TRUE(window_state->IsFullscreen());
+}
+
+// Check that the full screen mode will stay active throughout a maximzied mode
+// session.
+TEST_F(MaximizeModeWindowManagerTest,
+       FullScreenModeRemainsThroughMaximizeModeSwitch) {
+  gfx::Rect rect(20, 140, 100, 100);
+  scoped_ptr<aura::Window> w1(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+  wm::WindowState* window_state = wm::GetWindowState(w1.get());
+  wm::WMEvent event_full_screen(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  window_state->OnWMEvent(&event_full_screen);
+  EXPECT_TRUE(window_state->IsFullscreen());
+
+  CreateMaximizeModeWindowManager();
+  EXPECT_TRUE(window_state->IsFullscreen());
+  DestroyMaximizeModeWindowManager();
+  EXPECT_TRUE(window_state->IsFullscreen());
+}
+
+// Check that an empty window does not get restored to a tiny size.
+TEST_F(MaximizeModeWindowManagerTest,
+       CreateAndMaximizeInMaximizeModeShouldRetoreToGoodSizeGoingToDefault) {
+  CreateMaximizeModeWindowManager();
+  gfx::Rect rect;
+  scoped_ptr<aura::Window> w1(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+  w1->Show();
+  wm::WindowState* window_state = wm::GetWindowState(w1.get());
+  EXPECT_TRUE(window_state->IsMaximized());
+
+  // There is a calling order in which the restore bounds can get set to an
+  // empty rectangle. We simulate this here.
+  window_state->SetRestoreBoundsInScreen(rect);
+  EXPECT_TRUE(window_state->GetRestoreBoundsInScreen().IsEmpty());
+
+  // Setting the window to a new size will physically not change the window,
+  // but the restore size should get updated so that a restore later on will
+  // return to this size.
+  gfx::Rect requested_bounds(10, 20, 50, 70);
+  w1->SetBounds(requested_bounds);
+  EXPECT_TRUE(window_state->IsMaximized());
+  EXPECT_EQ(requested_bounds.ToString(),
+            window_state->GetRestoreBoundsInScreen().ToString());
+
+  DestroyMaximizeModeWindowManager();
+
+  EXPECT_FALSE(window_state->IsMaximized());
+  EXPECT_EQ(w1->bounds().ToString(), requested_bounds.ToString());
 }
 
 // Check that snapping operations get ignored.

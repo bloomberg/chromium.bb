@@ -459,6 +459,12 @@ void DefaultState::ReenterToCurrentState(
     WindowState* window_state,
     WindowState::State* state_in_previous_mode) {
   WindowStateType previous_state_type = state_in_previous_mode->GetType();
+  if (previous_state_type == wm::WINDOW_STATE_TYPE_FULLSCREEN) {
+    // A state change should not move a window out of full screen since full
+    // screen is a "special mode" the user wanted to be in and should be
+    // respected as such.
+    state_type_ = wm::WINDOW_STATE_TYPE_FULLSCREEN;
+  }
   window_state->UpdateWindowShowStateFromStateType();
   window_state->NotifyPreStateTypeChange(previous_state_type);
 

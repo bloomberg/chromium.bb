@@ -142,13 +142,17 @@ void MaximizeModeWindowState::OnWMEvent(wm::WindowState* window_state,
     case wm::WM_EVENT_SHOW_INACTIVE:
       return;
     case wm::WM_EVENT_SET_BOUNDS:
-      if (window_state->CanResize()) {
-        // In case the window is resizable and / or maximized we ignore the
-        // requested bounds change and resize to the biggest possible size.
-        UpdateBounds(window_state, true);
-      } else
-      if (current_state_type_ != wm::WINDOW_STATE_TYPE_MINIMIZED &&
-          current_state_type_ != wm::WINDOW_STATE_TYPE_MAXIMIZED) {
+      if (current_state_type_ == wm::WINDOW_STATE_TYPE_MAXIMIZED) {
+        // Having a maximized window, it could have been created with an empty
+        // size and the caller should get his size upon leaving the maximized
+        // mode. As such we set the restore bounds to the requested bounds.
+        gfx::Rect bounds_in_parent =
+            (static_cast<const wm::SetBoundsEvent*>(event))->requested_bounds();
+        if (!bounds_in_parent.IsEmpty())
+          window_state->SetRestoreBoundsInParent(bounds_in_parent);
+      } else if (current_state_type_ != wm::WINDOW_STATE_TYPE_MINIMIZED &&
+                 current_state_type_ != wm::WINDOW_STATE_TYPE_MAXIMIZED &&
+                 current_state_type_ != wm::WINDOW_STATE_TYPE_FULLSCREEN) {
         // In all other cases (except for minimized windows) we respect the
         // requested bounds and center it to a fully visible area on the screen.
         gfx::Rect bounds_in_parent =
