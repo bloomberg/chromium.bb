@@ -14,7 +14,7 @@ import sys
 LOG_FH = None
 VERBOSE = False
 
-def SetupLogging(verbose, file_handle=None):
+def SetupLogging(verbose, file_handle=None, quiet=False):
   """Set up python logging.
 
   Args:
@@ -24,6 +24,8 @@ def SetupLogging(verbose, file_handle=None):
     file_handle: If not None, must be a file-like object. All log output will
                  be written at DEBUG level, and all subprocess output will be
                  written, regardless of whether there are errors.
+    quiet: If True, log to stderr at WARNING level only. Only valid if verbose
+           is False.
   """
   # Since one of our handlers always wants debug, set the global level to debug.
   logging.getLogger().setLevel(logging.DEBUG)
@@ -34,6 +36,8 @@ def SetupLogging(verbose, file_handle=None):
     global VERBOSE
     VERBOSE = True
     stderr_handler.setLevel(logging.DEBUG)
+  elif quiet:
+    stderr_handler.setLevel(logging.WARN)
   else:
     stderr_handler.setLevel(logging.INFO)
   logging.getLogger().addHandler(stderr_handler)

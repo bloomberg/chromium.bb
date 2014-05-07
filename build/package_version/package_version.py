@@ -485,7 +485,7 @@ def UploadPackage(storage, revision, tar_dir, package_target, package_name,
 
 
 def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
-                          downloader=None, skip_missing=False):
+                          downloader=None, skip_missing=False, quiet=False):
   """Extracts package targets from the tar directory to the destination.
 
   Each package archive within a package will be verified before being
@@ -576,7 +576,8 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
       temp_dir = os.path.join(destination_dir, '.tmp')
       pynacl.file_tools.RemoveDir(temp_dir)
       os.makedirs(temp_dir)
-      tar = cygtar.CygTar(archive_file, 'r:*', verbose=True)
+      tar_output = not quiet
+      tar = cygtar.CygTar(archive_file, 'r:*', verbose=tar_output)
       curdir = os.getcwd()
       os.chdir(temp_dir)
       try:
@@ -660,7 +661,8 @@ def _DoArchiveCmd(arguments):
       ExtractPackageTargets([(package_target, package_name)],
                             arguments.tar_dir,
                             arguments.dest_dir,
-                            skip_missing=True)
+                            skip_missing=True,
+                            quiet=arguments.quiet)
 
 
 def _ExtractCmdArgParser(subparser):
@@ -671,8 +673,8 @@ def _DoExtractCmd(arguments):
   ExtractPackageTargets(
       arguments.package_target_packages,
       arguments.tar_dir,
-      arguments.dest_dir
-  )
+      arguments.dest_dir,
+      quiet=arguments.quiet)
 
 
 def _UploadCmdArgParser(subparser):
@@ -780,7 +782,8 @@ def _DoSyncCmd(arguments):
     ExtractPackageTargets(
         arguments.package_target_packages,
         arguments.tar_dir,
-        arguments.dest_dir)
+        arguments.dest_dir,
+        quiet=arguments.quiet)
 
 
 def _SetRevisionCmdArgParser(subparser):
@@ -956,9 +959,13 @@ def ParseArgs(args):
 
   # List out global options for all commands.
   parser.add_argument(
-     '-v', '--verbose', dest='verbose',
-     action='store_true', default=False,
-     help='Verbose output')
+    '-v', '--verbose', dest='verbose',
+    action='store_true', default=False,
+    help='Verbose output')
+  parser.add_argument(
+    '-q', '--quiet', dest='quiet',
+    action='store_true', default=False,
+    help='Quiet output')
   parser.add_argument(
     '--platform', dest='host_platform',
     default=host_platform,
@@ -1022,7 +1029,7 @@ def ParseArgs(args):
     cmd_funcs.parse_func(sub_parser)
 
   arguments = parser.parse_args(args)
-  pynacl.log_tools.SetupLogging(arguments.verbose)
+  pynacl.log_tools.SetupLogging(arguments.verbose, quiet=arguments.quiet)
   if arguments.tar_dir is None:
     arguments.tar_dir = os.path.join(arguments.dest_dir, '.tars')
 

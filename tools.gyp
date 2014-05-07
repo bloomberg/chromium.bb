@@ -72,6 +72,7 @@
               'action': [
                 'python',
                 '<(DEPTH)/native_client/build/package_version/package_version.py',
+                '--quiet',
                 '--packages', 'nacl_x86_newlib',
                 '--tar-dir', '<(DEPTH)/native_client/toolchain/.tars',
                 '--dest-dir', '<(SHARED_INTERMEDIATE_DIR)/sdk',
@@ -94,6 +95,7 @@
               'action': [
                 'python',
                 '<(DEPTH)/native_client/build/package_version/package_version.py',
+                '--quiet',
                 '--packages', 'nacl_x86_glibc',
                 '--tar-dir', '<(DEPTH)/native_client/toolchain/.tars',
                 '--dest-dir', '<(SHARED_INTERMEDIATE_DIR)/sdk',
@@ -116,6 +118,7 @@
               'action': [
                 'python',
                 '<(DEPTH)/native_client/build/package_version/package_version.py',
+                '--quiet',
                 '--packages', 'pnacl_newlib',
                 '--tar-dir', '<(DEPTH)/native_client/toolchain/.tars',
                 '--dest-dir', '<(SHARED_INTERMEDIATE_DIR)/sdk',
@@ -138,6 +141,7 @@
               'action': [
                 'python',
                 '<(DEPTH)/native_client/build/package_version/package_version.py',
+                '--quiet',
                 '--packages', 'nacl_arm_newlib',
                 '--tar-dir', '<(DEPTH)/native_client/toolchain/.tars',
                 '--dest-dir', '<(SHARED_INTERMEDIATE_DIR)/sdk',
