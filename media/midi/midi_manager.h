@@ -55,12 +55,14 @@ class MEDIA_EXPORT MidiManagerClient {
 // Manages access to all MIDI hardware.
 class MEDIA_EXPORT MidiManager {
  public:
-  // The constructor and the destructor will be called on the CrBrowserMain
-  // thread.
-  static MidiManager* Create();
+  static const size_t kMaxPendingClientCount = 128;
 
   MidiManager();
   virtual ~MidiManager();
+
+  // The constructor and the destructor will be called on the CrBrowserMain
+  // thread.
+  static MidiManager* Create();
 
   // A client calls StartSession() to receive and send MIDI data.
   // If the session is ready to start, the MIDI system is lazily initialized

@@ -11,13 +11,6 @@
 
 namespace media {
 
-#if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(USE_ALSA) && \
-    !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-MidiManager* MidiManager::Create() {
-  return new MidiManager;
-}
-#endif
-
 MidiManager::MidiManager()
     : initialized_(false),
       result_(MIDI_NOT_SUPPORTED) {
@@ -26,18 +19,33 @@ MidiManager::MidiManager()
 MidiManager::~MidiManager() {
 }
 
+#if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(USE_ALSA) && \
+    !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+MidiManager* MidiManager::Create() {
+  return new MidiManager;
+}
+#endif
+
 void MidiManager::StartSession(MidiManagerClient* client, int client_id) {
   bool session_is_ready;
   bool session_needs_initialization = false;
+  bool too_many_pending_clients_exist = false;
 
   {
     base::AutoLock auto_lock(lock_);
     session_is_ready = initialized_;
     if (!session_is_ready) {
-      // Call StartInitialization() only for the first request.
-      session_needs_initialization = pending_clients_.empty();
-      pending_clients_.insert(
-          std::pair<int, MidiManagerClient*>(client_id, client));
+      // Do not accept a new request if the pending client list contains too
+      // many clients.
+      too_many_pending_clients_exist =
+          pending_clients_.size() >= kMaxPendingClientCount;
+
+      if (!too_many_pending_clients_exist) {
+        // Call StartInitialization() only for the first request.
+        session_needs_initialization = pending_clients_.empty();
+        pending_clients_.insert(
+            std::pair<int, MidiManagerClient*>(client_id, client));
+      }
     }
   }
 
@@ -48,6 +56,11 @@ void MidiManager::StartSession(MidiManagerClient* client, int client_id) {
       session_thread_runner_ =
           base::MessageLoop::current()->message_loop_proxy();
       StartInitialization();
+    }
+    if (too_many_pending_clients_exist) {
+      // Return an error immediately if there are too many requests.
+      client->CompleteStartSession(client_id, MIDI_INITIALIZATION_ERROR);
+      return;
     }
     // CompleteInitialization() will be called asynchronously when platform
     // dependent initialization is finished.
