@@ -42,6 +42,7 @@ class StyleBuilderConverter {
 public:
     static AtomicString convertFragmentIdentifier(StyleResolverState&, CSSValue*);
     template <typename T> static T convertComputedLength(StyleResolverState&, CSSValue*);
+    static EGlyphOrientation convertGlyphOrientation(StyleResolverState&, CSSValue*);
     static GridPosition convertGridPosition(StyleResolverState&, CSSValue*);
     static GridTrackSize convertGridTrackSize(StyleResolverState&, CSSValue*);
     template <typename T> static T convertLineWidth(StyleResolverState&, CSSValue*);
@@ -52,9 +53,11 @@ public:
     static LengthPoint convertLengthPoint(StyleResolverState&, CSSValue*);
     static float convertNumberOrPercentage(StyleResolverState&, CSSValue*);
     static LengthSize convertRadius(StyleResolverState&, CSSValue*);
+    static EPaintOrder convertPaintOrder(StyleResolverState&, CSSValue*);
     static PassRefPtr<ShadowList> convertShadow(StyleResolverState&, CSSValue*);
     static float convertSpacing(StyleResolverState&, CSSValue*);
     template <CSSValueID IdForNone> static AtomicString convertString(StyleResolverState&, CSSValue*);
+    static PassRefPtr<SVGLengthList> convertStrokeDasharray(StyleResolverState&, CSSValue*);
     static Color convertSVGColor(StyleResolverState&, CSSValue*);
     static PassRefPtr<SVGLength> convertSVGLength(StyleResolverState&, CSSValue*);
 

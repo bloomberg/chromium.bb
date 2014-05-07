@@ -293,6 +293,14 @@ void StyleBuilderFunctions::applyValueCSSPropertyFontWeight(StyleResolverState& 
     }
 }
 
+void StyleBuilderFunctions::applyValueCSSPropertyGlyphOrientationVertical(StyleResolverState& state, CSSValue* value)
+{
+    if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueAuto)
+        state.style()->accessSVGStyle()->setGlyphOrientationVertical(GO_AUTO);
+    else
+        state.style()->accessSVGStyle()->setGlyphOrientationVertical(StyleBuilderConverter::convertGlyphOrientation(state, value));
+}
+
 void StyleBuilderFunctions::applyInitialCSSPropertyGridTemplateAreas(StyleResolverState& state)
 {
     state.style()->setNamedGridArea(RenderStyle::initialNamedGridArea());
@@ -1097,32 +1105,6 @@ if (isInitial) { \
     return; \
 }
 
-static bool degreeToGlyphOrientation(CSSPrimitiveValue* primitiveValue, EGlyphOrientation& orientation)
-{
-    if (!primitiveValue)
-        return false;
-
-    if (primitiveValue->primitiveType() != CSSPrimitiveValue::CSS_DEG)
-        return false;
-
-    float angle = fabsf(fmodf(primitiveValue->getFloatValue(), 360.0f));
-
-    if (angle <= 45.0f || angle > 315.0f) {
-        orientation = GO_0DEG;
-        return true;
-    }
-    if (angle > 45.0f && angle <= 135.0f) {
-        orientation = GO_90DEG;
-        return true;
-    }
-    if (angle > 135.0f && angle <= 225.0f) {
-        orientation = GO_180DEG;
-        return true;
-    }
-    orientation = GO_270DEG;
-    return true;
-}
-
 static Color colorFromSVGPaintCSSValue(SVGPaint* svgPaint, const Color& fgColor)
 {
     Color color;
@@ -1132,38 +1114,6 @@ static Color colorFromSVGPaintCSSValue(SVGPaint* svgPaint, const Color& fgColor)
     else
         color = svgPaint->color();
     return color;
-}
-
-static EPaintOrder paintOrderFlattened(CSSValue* cssPaintOrder)
-{
-    if (cssPaintOrder->isValueList()) {
-        int paintOrder = 0;
-        CSSValueListInspector iter(cssPaintOrder);
-        for (size_t i = 0; i < iter.length(); i++) {
-            CSSPrimitiveValue* value = toCSSPrimitiveValue(iter.item(i));
-
-            EPaintOrderType paintOrderType = PT_NONE;
-            switch (value->getValueID()) {
-            case CSSValueFill:
-                paintOrderType = PT_FILL;
-                break;
-            case CSSValueStroke:
-                paintOrderType = PT_STROKE;
-                break;
-            case CSSValueMarkers:
-                paintOrderType = PT_MARKERS;
-                break;
-            default:
-                ASSERT_NOT_REACHED();
-                break;
-            }
-
-            paintOrder |= (paintOrderType << kPaintOrderBitwidth*i);
-        }
-        return (EPaintOrder)paintOrder;
-    }
-
-    return PO_NORMAL;
 }
 
 static inline bool isValidVisitedLinkProperty(CSSPropertyID id)
@@ -1946,6 +1896,10 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyLightingColor:
     case CSSPropertyFloodColor:
     case CSSPropertyWebkitTapHighlightColor:
+    case CSSPropertyPaintOrder:
+    case CSSPropertyStrokeDasharray:
+    case CSSPropertyGlyphOrientationHorizontal:
+    case CSSPropertyGlyphOrientationVertical:
         ASSERT_NOT_REACHED();
         return;
     // Only used in @viewport rules
@@ -2018,56 +1972,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
             SVGPaint* svgPaint = toSVGPaint(value);
             svgStyle->setStrokePaint(svgPaint->paintType(), colorFromSVGPaintCSSValue(svgPaint, state.style()->color()), svgPaint->uri(), state.applyPropertyToRegularStyle(), state.applyPropertyToVisitedLinkStyle());
         }
-        break;
-    }
-    case CSSPropertyStrokeDasharray:
-    {
-        HANDLE_SVG_INHERIT_AND_INITIAL(strokeDashArray, StrokeDashArray)
-        if (!value->isValueList()) {
-            state.style()->accessSVGStyle()->setStrokeDashArray(SVGRenderStyle::initialStrokeDashArray());
-            break;
-        }
-
-        CSSValueList* dashes = toCSSValueList(value);
-
-        RefPtr<SVGLengthList> array = SVGLengthList::create();
-        size_t length = dashes->length();
-        for (size_t i = 0; i < length; ++i) {
-            CSSValue* currValue = dashes->itemWithoutBoundsCheck(i);
-            if (!currValue->isPrimitiveValue())
-                continue;
-
-            CSSPrimitiveValue* dash = toCSSPrimitiveValue(dashes->itemWithoutBoundsCheck(i));
-            array->append(SVGLength::fromCSSPrimitiveValue(dash));
-        }
-
-        state.style()->accessSVGStyle()->setStrokeDashArray(array.release());
-        break;
-    }
-    case CSSPropertyGlyphOrientationHorizontal:
-    {
-        HANDLE_SVG_INHERIT_AND_INITIAL(glyphOrientationHorizontal, GlyphOrientationHorizontal)
-        EGlyphOrientation orientation;
-        if (degreeToGlyphOrientation(primitiveValue, orientation))
-            state.style()->accessSVGStyle()->setGlyphOrientationHorizontal(orientation);
-        break;
-    }
-    case CSSPropertyPaintOrder: {
-        HANDLE_SVG_INHERIT_AND_INITIAL(paintOrder, PaintOrder)
-        if (value->isValueList())
-            state.style()->accessSVGStyle()->setPaintOrder(paintOrderFlattened(value));
-        break;
-    }
-    case CSSPropertyGlyphOrientationVertical:
-    {
-        HANDLE_SVG_INHERIT_AND_INITIAL(glyphOrientationVertical, GlyphOrientationVertical)
-        if (primitiveValue->getValueID() == CSSValueAuto) {
-            state.style()->accessSVGStyle()->setGlyphOrientationVertical(GO_AUTO);
-            break;
-        }
-        EGlyphOrientation orientation;
-        if (degreeToGlyphOrientation(primitiveValue, orientation))
-            state.style()->accessSVGStyle()->setGlyphOrientationVertical(orientation);
         break;
     }
     case CSSPropertyEnableBackground:

@@ -63,6 +63,27 @@ AtomicString StyleBuilderConverter::convertFragmentIdentifier(StyleResolverState
     return nullAtom;
 }
 
+EGlyphOrientation StyleBuilderConverter::convertGlyphOrientation(StyleResolverState&, CSSValue* value)
+{
+    if (!value->isPrimitiveValue())
+        return GO_0DEG;
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue->primitiveType() != CSSPrimitiveValue::CSS_DEG)
+        return GO_0DEG;
+
+    float angle = fabsf(fmodf(primitiveValue->getFloatValue(), 360.0f));
+
+    if (angle <= 45.0f || angle > 315.0f)
+        return GO_0DEG;
+    if (angle > 45.0f && angle <= 135.0f)
+        return GO_90DEG;
+    if (angle > 135.0f && angle <= 225.0f)
+        return GO_180DEG;
+    return GO_270DEG;
+}
+
+
 GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&, CSSValue* value)
 {
     // We accept the specification's grammar:
@@ -236,6 +257,38 @@ float StyleBuilderConverter::convertNumberOrPercentage(StyleResolverState& state
     return primitiveValue->getFloatValue() / 100.0f;
 }
 
+EPaintOrder StyleBuilderConverter::convertPaintOrder(StyleResolverState&, CSSValue* cssPaintOrder)
+{
+    if (cssPaintOrder->isValueList()) {
+        int paintOrder = 0;
+        CSSValueListInspector iter(cssPaintOrder);
+        for (size_t i = 0; i < iter.length(); i++) {
+            CSSPrimitiveValue* value = toCSSPrimitiveValue(iter.item(i));
+
+            EPaintOrderType paintOrderType = PT_NONE;
+            switch (value->getValueID()) {
+            case CSSValueFill:
+                paintOrderType = PT_FILL;
+                break;
+            case CSSValueStroke:
+                paintOrderType = PT_STROKE;
+                break;
+            case CSSValueMarkers:
+                paintOrderType = PT_MARKERS;
+                break;
+            default:
+                ASSERT_NOT_REACHED();
+                break;
+            }
+
+            paintOrder |= (paintOrderType << kPaintOrderBitwidth*i);
+        }
+        return (EPaintOrder)paintOrder;
+    }
+
+    return PO_NORMAL;
+}
+
 LengthSize StyleBuilderConverter::convertRadius(StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
@@ -285,6 +338,28 @@ float StyleBuilderConverter::convertSpacing(StyleResolverState& state, CSSValue*
     if (state.useSVGZoomRules())
         return primitiveValue->computeLength<float>(state.cssToLengthConversionData().copyWithAdjustedZoom(1));
     return primitiveValue->computeLength<float>(state.cssToLengthConversionData());
+}
+
+PassRefPtr<SVGLengthList> StyleBuilderConverter::convertStrokeDasharray(StyleResolverState&, CSSValue* value)
+{
+    if (!value->isValueList()) {
+        return SVGRenderStyle::initialStrokeDashArray();
+    }
+
+    CSSValueList* dashes = toCSSValueList(value);
+
+    RefPtr<SVGLengthList> array = SVGLengthList::create();
+    size_t length = dashes->length();
+    for (size_t i = 0; i < length; ++i) {
+        CSSValue* currValue = dashes->itemWithoutBoundsCheck(i);
+        if (!currValue->isPrimitiveValue())
+            continue;
+
+        CSSPrimitiveValue* dash = toCSSPrimitiveValue(dashes->itemWithoutBoundsCheck(i));
+        array->append(SVGLength::fromCSSPrimitiveValue(dash));
+    }
+
+    return array.release();
 }
 
 Color StyleBuilderConverter::convertSVGColor(StyleResolverState& state, CSSValue* value)
