@@ -57,7 +57,6 @@
 #include "modules/device_orientation/DeviceOrientationController.h"
 #include "modules/gamepad/NavigatorGamepad.h"
 #include "modules/screen_orientation/ScreenOrientationController.h"
-#include "modules/serviceworkers/NavigatorServiceWorker.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/exported/WrappedResourceRequest.h"
@@ -128,8 +127,6 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld&
                 ScreenOrientationController::from(*document);
             if (RuntimeEnabledFeatures::gamepadEnabled())
                 NavigatorGamepad::from(*document);
-            if (RuntimeEnabledFeatures::serviceWorkerEnabled())
-                NavigatorServiceWorker::from(*document);
         }
     }
 }

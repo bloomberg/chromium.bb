@@ -34,13 +34,9 @@
 #include "bindings/v8/CallbackPromiseAdapter.h"
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "bindings/v8/ScriptState.h"
-#include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/MessagePort.h"
-#include "core/events/MessageEvent.h"
 #include "modules/serviceworkers/RegistrationOptionList.h"
 #include "modules/serviceworkers/ServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
@@ -144,19 +140,8 @@ void ServiceWorkerContainer::setCurrentServiceWorker(blink::WebServiceWorker* se
     m_current = ServiceWorker::create(executionContext(), adoptPtr(serviceWorker));
 }
 
-void ServiceWorkerContainer::dispatchMessageEvent(const blink::WebString& message, const blink::WebMessagePortChannelArray& webChannels)
-{
-    if (!executionContext() || !window())
-        return;
-
-    OwnPtr<MessagePortArray> ports = MessagePort::toMessagePortArray(executionContext(), webChannels);
-    RefPtr<SerializedScriptValue> value = SerializedScriptValue::createFromWire(message);
-    window()->dispatchEvent(MessageEvent::create(ports.release(), value));
-}
-
 ServiceWorkerContainer::ServiceWorkerContainer(ExecutionContext* executionContext)
     : ContextLifecycleObserver(executionContext)
-    , DOMWindowLifecycleObserver(executionContext->isDocument() ? toDocument(executionContext)->domWindow() : 0)
     , m_provider(0)
 {
     ScriptWrappable::init(this);

@@ -5,13 +5,13 @@
 #ifndef NavigatorServiceWorker_h
 #define NavigatorServiceWorker_h
 
+#include "bindings/v8/ScriptPromise.h"
 #include "core/frame/Navigator.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
 namespace WebCore {
 
-class Document;
 class Navigator;
 class ServiceWorkerContainer;
 
@@ -19,7 +19,6 @@ class NavigatorServiceWorker FINAL : public NoBaseWillBeGarbageCollectedFinalize
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorServiceWorker);
 public:
     virtual ~NavigatorServiceWorker();
-    static NavigatorServiceWorker* from(Document&);
     static NavigatorServiceWorker& from(Navigator&);
     static NavigatorServiceWorker* toNavigatorServiceWorker(Navigator&);
     static const char* supplementName();
