@@ -230,7 +230,8 @@ def cpp_value(interface, method, number_of_arguments):
 def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False):
     idl_type = method.idl_type
     extended_attributes = method.extended_attributes
-    if idl_type.name == 'void':
+    if not idl_type or idl_type.name == 'void':
+        # Constructors and void methods don't have a return type
         return None
 
     release = False

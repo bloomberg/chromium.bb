@@ -466,7 +466,7 @@ def overload_check_argument(index, argument):
 def generate_constructor(interface, constructor):
     return {
         'argument_list': constructor_argument_list(interface, constructor),
-        'arguments': [constructor_argument(interface, constructor, argument, index)
+        'arguments': [v8_methods.generate_argument(interface, constructor, argument, index)
                       for index, argument in enumerate(constructor.arguments)],
         'cpp_type': cpp_template_type(
             cpp_ptr_type('RefPtr', 'RawPtr', gc_type(interface)),
@@ -501,24 +501,6 @@ def constructor_argument_list(interface, constructor):
         arguments.append('exceptionState')
 
     return arguments
-
-
-def constructor_argument(interface, constructor, argument, index):
-    idl_type = argument.idl_type
-    return {
-        'cpp_value':
-            v8_methods.cpp_value(interface, constructor, index),
-        'has_default': 'Default' in argument.extended_attributes,
-        'has_legacy_overload_string': False,  # Required for overload resolution
-        # Dictionary is special-cased, but arrays and sequences shouldn't be
-        'idl_type': not idl_type.array_or_sequence_type and idl_type.base_type,
-        'idl_type_object': idl_type,
-        'index': index,
-        'is_optional': argument.is_optional,
-        'name': argument.name,
-        'v8_value_to_local_cpp_value':
-            v8_methods.v8_value_to_local_cpp_value(argument, index),
-    }
 
 
 def generate_constructor_overloads(constructors):
