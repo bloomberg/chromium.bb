@@ -42,9 +42,7 @@ HTMLMediaElementEncryptedMedia::HTMLMediaElementEncryptedMedia()
 {
 }
 
-HTMLMediaElementEncryptedMedia::~HTMLMediaElementEncryptedMedia()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(HTMLMediaElementEncryptedMedia)
 
 const char* HTMLMediaElementEncryptedMedia::supplementName()
 {
@@ -53,10 +51,10 @@ const char* HTMLMediaElementEncryptedMedia::supplementName()
 
 HTMLMediaElementEncryptedMedia& HTMLMediaElementEncryptedMedia::from(HTMLMediaElement& element)
 {
-    HTMLMediaElementEncryptedMedia* supplement = static_cast<HTMLMediaElementEncryptedMedia*>(Supplement<HTMLMediaElement>::from(element, supplementName()));
+    HTMLMediaElementEncryptedMedia* supplement = static_cast<HTMLMediaElementEncryptedMedia*>(WillBeHeapSupplement<HTMLMediaElement>::from(element, supplementName()));
     if (!supplement) {
         supplement = new HTMLMediaElementEncryptedMedia();
-        provideTo(element, supplementName(), adoptPtr(supplement));
+        provideTo(element, supplementName(), adoptPtrWillBeNoop(supplement));
     }
     return *supplement;
 }
@@ -348,6 +346,12 @@ blink::WebContentDecryptionModule* HTMLMediaElementEncryptedMedia::contentDecryp
 {
     HTMLMediaElementEncryptedMedia& thisElement = HTMLMediaElementEncryptedMedia::from(element);
     return thisElement.contentDecryptionModule();
+}
+
+void HTMLMediaElementEncryptedMedia::trace(Visitor* visitor)
+{
+    visitor->trace(m_mediaKeys);
+    WillBeHeapSupplement<HTMLMediaElement>::trace(visitor);
 }
 
 } // namespace WebCore

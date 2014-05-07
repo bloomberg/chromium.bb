@@ -18,7 +18,9 @@ class ExceptionState;
 class HTMLMediaElement;
 class MediaKeys;
 
-class HTMLMediaElementEncryptedMedia : public Supplement<HTMLMediaElement> {
+class HTMLMediaElementEncryptedMedia FINAL : public NoBaseWillBeGarbageCollected<HTMLMediaElementEncryptedMedia>, public WillBeHeapSupplement<HTMLMediaElement> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementEncryptedMedia);
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(HTMLMediaElementEncryptedMedia);
 public:
     // encrypted media extensions (v0.1b)
     static void webkitGenerateKeyRequest(HTMLMediaElement&, const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionState&);
@@ -44,11 +46,10 @@ public:
     static void playerDestroyed(HTMLMediaElement&);
     static blink::WebContentDecryptionModule* contentDecryptionModule(HTMLMediaElement&);
 
-    virtual ~HTMLMediaElementEncryptedMedia();
     static HTMLMediaElementEncryptedMedia& from(HTMLMediaElement&);
     static const char* supplementName();
 
-    virtual void trace(Visitor* visitor) OVERRIDE { Supplement<HTMLMediaElement>::trace(visitor); }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     HTMLMediaElementEncryptedMedia();
@@ -75,7 +76,7 @@ private:
 
     EmeMode m_emeMode;
 
-    RefPtrWillBePersistent<MediaKeys> m_mediaKeys;
+    RefPtrWillBeMember<MediaKeys> m_mediaKeys;
 };
 
 }

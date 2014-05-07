@@ -3614,7 +3614,7 @@ void HTMLMediaElement::trace(Visitor* visitor)
 {
     visitor->trace(m_textTracks);
     visitor->trace(m_textTracksWhenResourceSelectionBegan);
-    Supplementable<HTMLMediaElement>::trace(visitor);
+    WillBeHeapSupplementable<HTMLMediaElement>::trace(visitor);
     HTMLElement::trace(visitor);
 }
 
