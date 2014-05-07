@@ -173,17 +173,22 @@ void AnimationPlayer::setStartTimeInternal(double newStartTime, bool isUpdateFro
     if (newStartTime == m_startTime)
         return;
     updateCurrentTimingState(); // Update the value of held
+    bool hadStartTime = hasStartTime();
+    double previousCurrentTime = currentTimeInternal();
     m_startTime = newStartTime;
     m_sortInfo.m_startTime = newStartTime;
-    if (!isUpdateFromCompositor)
-        cancelAnimationOnCompositor();
-    if (isUpdateFromCompositor || !m_held)
-        setOutdated();
-    if (m_held)
-        return;
     updateCurrentTimingState();
-    if (!isUpdateFromCompositor)
+    if (previousCurrentTime != currentTimeInternal()) {
+        setOutdated();
+    } else if (!hadStartTime && m_timeline) {
+        // Even though this player is not outdated, time to effect change is
+        // infinity until start time is set.
+        m_timeline->wake();
+    }
+    if (!isUpdateFromCompositor) {
+        cancelAnimationOnCompositor();
         schedulePendingAnimationOnCompositor();
+    }
 }
 
 void AnimationPlayer::setSource(TimedItem* newSource)

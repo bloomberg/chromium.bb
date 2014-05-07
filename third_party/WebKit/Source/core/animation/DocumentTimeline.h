@@ -93,6 +93,7 @@ public:
 
     Document* document() { return m_document; }
     void detachFromDocument();
+    void wake();
 
 protected:
     DocumentTimeline(Document*, PassOwnPtr<PlatformTiming>);
@@ -104,8 +105,6 @@ private:
     // i.e. current, in effect, or had timing changed
     HashSet<RefPtr<AnimationPlayer> > m_playersNeedingUpdate;
     HashSet<AnimationPlayer*> m_players;
-
-    void wake();
 
     friend class SMILTimeContainer;
     static const double s_minimumDelay;
