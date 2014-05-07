@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_USER_MANAGER_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PROFILES_USER_MANAGER_VIEW_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -32,13 +33,19 @@ class UserManagerView : public views::DialogDelegateView {
   static bool IsShowing();
 
  private:
-  explicit UserManagerView(Profile* profile);
+  friend struct base::DefaultDeleter<UserManagerView>;
+
+  UserManagerView();
   virtual ~UserManagerView();
 
   // Creates a new UserManagerView instance for the |guest_profile| and
   // shows the |url|.
-  static void OnGuestProfileCreated(Profile* guest_profile,
+  static void OnGuestProfileCreated(scoped_ptr<UserManagerView> instance,
+                                    Profile* guest_profile,
                                     const std::string& url);
+
+  // Creates dialog and initializes UI.
+  void Init(Profile* guest_profile, const GURL& url);
 
   // views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;

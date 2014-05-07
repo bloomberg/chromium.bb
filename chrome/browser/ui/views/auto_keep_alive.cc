@@ -5,23 +5,24 @@
 #include "chrome/browser/ui/views/auto_keep_alive.h"
 
 #include "chrome/browser/lifetime/application_lifetime.h"
-
-#if defined(USE_AURA)
+#include "chrome/browser/ui/host_desktop.h"
 #include "ui/aura/window.h"
 #include "ui/views/view_constants_aura.h"
-#endif
 
 AutoKeepAlive::AutoKeepAlive(gfx::NativeWindow window)
-    : keep_alive_available_(true) {
-#if defined(USE_AURA)
-  // In case of aura we want default to be keep alive not available.
-  keep_alive_available_ = false;
+    : keep_alive_available_(false) {
+  // In case of aura we want default to be keep alive not available for ash
+  // because ash has keep alive set and we don't want additional keep alive
+  // count. If there is a |window|, use its root window's kDesktopRootWindow
+  // to test whether we are on desktop. Otherwise, use GetActiveDesktop().
   if (window) {
     gfx::NativeWindow native_window = window->GetRootWindow();
     if (native_window->GetProperty(views::kDesktopRootWindow))
       keep_alive_available_ = true;
+  } else if (chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH) {
+    keep_alive_available_ = true;
   }
-#endif
+
   if (keep_alive_available_)
     chrome::IncrementKeepAliveCount();
 }

@@ -60,10 +60,9 @@ void HideUserManager() {
 // static
 UserManagerView* UserManagerView::instance_ = NULL;
 
-UserManagerView::UserManagerView(Profile* profile)
-    : web_view_(new views::WebView(profile)) {
-  SetLayoutManager(new views::FillLayout);
-  AddChildView(web_view_);
+UserManagerView::UserManagerView()
+    : web_view_(NULL),
+      keep_alive_(new AutoKeepAlive(NULL)) {
 }
 
 UserManagerView::~UserManagerView() {
@@ -84,7 +83,8 @@ void UserManagerView::Show(const base::FilePath& profile_path_to_focus,
   profiles::CreateGuestProfileForUserManager(
       profile_path_to_focus,
       tutorial_mode,
-      base::Bind(&UserManagerView::OnGuestProfileCreated));
+      base::Bind(&UserManagerView::OnGuestProfileCreated,
+                 base::Passed(make_scoped_ptr(new UserManagerView))));
 }
 
 // static
@@ -99,25 +99,32 @@ bool UserManagerView::IsShowing() {
 }
 
 // static
-void UserManagerView::OnGuestProfileCreated(Profile* guest_profile,
-                                            const std::string& url) {
-  instance_ = new UserManagerView(guest_profile);
-  DialogDelegate::CreateDialogWidget(instance_, NULL, NULL);
+void UserManagerView::OnGuestProfileCreated(
+    scoped_ptr<UserManagerView> instance,
+    Profile* guest_profile,
+    const std::string& url) {
+  instance_ = instance.release();  // |instance_| takes over ownership.
+  instance_->Init(guest_profile, GURL(url));
+}
 
-  gfx::NativeWindow window = instance_->GetWidget()->GetNativeWindow();
-  instance_->keep_alive_.reset(new AutoKeepAlive(window));
+void UserManagerView::Init(Profile* guest_profile, const GURL& url) {
+  web_view_ = new views::WebView(guest_profile);
+  SetLayoutManager(new views::FillLayout);
+  AddChildView(web_view_);
+
+  DialogDelegate::CreateDialogWidget(this, NULL, NULL);
 
 #if defined(OS_WIN)
   // Set the app id for the task manager to the app id of its parent
   ui::win::SetAppIdForWindow(
       ShellIntegration::GetChromiumModelIdForProfile(
           guest_profile->GetPath()),
-      views::HWNDForWidget(instance_->GetWidget()));
+      views::HWNDForWidget(GetWidget()));
 #endif
-  instance_->GetWidget()->Show();
+  GetWidget()->Show();
 
-  instance_->web_view_->LoadInitialURL(GURL(url));
-  instance_->web_view_->RequestFocus();
+  web_view_->LoadInitialURL(url);
+  web_view_->RequestFocus();
 }
 
 gfx::Size UserManagerView::GetPreferredSize() {
