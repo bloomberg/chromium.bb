@@ -6,10 +6,13 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension_file_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -84,6 +87,11 @@ struct WhitelistedComponentExtensionIME {
     "/usr/share/chromeos-assets/input_methods/nacl_mozc",
   },
 #endif
+  {
+    // Braille hardware keyboard IME that works together with ChromeVox.
+    extension_misc::kBrailleImeExtensionId,
+    extension_misc::kBrailleImeExtensionPath,
+  },
 };
 
 extensions::ComponentLoader* GetComponentLoader() {
@@ -284,6 +292,12 @@ void ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo(
     component_ime.path = base::FilePath(
         whitelisted_component_extension[i].path);
 
+    if (!component_ime.path.IsAbsolute()) {
+      base::FilePath resources_path;
+      if (!PathService::Get(chrome::DIR_RESOURCES, &resources_path))
+        NOTREACHED();
+      component_ime.path = resources_path.Append(component_ime.path);
+    }
     const base::FilePath manifest_path =
         component_ime.path.Append("manifest.json");
 

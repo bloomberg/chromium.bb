@@ -26,6 +26,11 @@
     <includes>
       <include name="IDR_NETWORK_SPEECH_SYNTHESIS_JS" file="network_speech_synthesis/tts_extension.js" type="BINDATA" />
 
+      <if expr="chromeos">
+        <include name="IDR_BRAILLE_IME_JS" file="chromeos/braille_ime/braille_ime.js" type="BINDATA" />
+        <include name="IDR_BRAILLE_IME_MAIN_JS" file="chromeos/braille_ime/main.js" type="BINDATA" />
+      </if>
+
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_MANAGER_SEARCH" file="bookmark_manager/images/bookmark_manager_search.png" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_MANAGER_SEARCH_RTL" file="bookmark_manager/images/bookmark_manager_search_rtl.png" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_MAIN_JS" file="bookmark_manager/js/main.js" type="BINDATA" />

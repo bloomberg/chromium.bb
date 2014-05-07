@@ -15,19 +15,30 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager_impl.h"
+#include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/api/braille_display_private/mock_braille_controller.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/ime/component_extension_ime_manager.h"
+#include "chromeos/ime/input_method_manager.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using chromeos::input_method::InputMethodManager;
+using chromeos::input_method::InputMethodUtil;
+using chromeos::input_method::InputMethodDescriptors;
+using content::BrowserThread;
 using extensions::api::braille_display_private::BrailleObserver;
 using extensions::api::braille_display_private::DisplayState;
+using extensions::api::braille_display_private::KeyEvent;
 using extensions::api::braille_display_private::MockBrailleController;
 
 namespace chromeos {
@@ -189,7 +200,25 @@ int GetAutoclickDelayFromPref() {
   return GetPrefs()->GetInteger(prefs::kAutoclickDelayMs);
 }
 
-}  // anonymouse namespace
+bool IsBrailleImeActive() {
+  InputMethodManager* imm = InputMethodManager::Get();
+  scoped_ptr<InputMethodDescriptors> descriptors =
+      imm->GetActiveInputMethods();
+  for (InputMethodDescriptors::const_iterator i = descriptors->begin();
+       i != descriptors->end();
+       ++i) {
+    if (i->id() == extension_misc::kBrailleImeEngineId)
+      return true;
+  }
+  return false;
+}
+
+bool IsBrailleImeCurrent() {
+  InputMethodManager* imm = InputMethodManager::Get();
+  return imm->GetCurrentInputMethod().id() ==
+         extension_misc::kBrailleImeEngineId;
+}
+}  // anonymous namespace
 
 class AccessibilityManagerTest : public InProcessBrowserTest {
  protected:
@@ -215,6 +244,12 @@ class AccessibilityManagerTest : public InProcessBrowserTest {
 
   virtual void CleanUpOnMainThread() OVERRIDE {
     AccessibilityManager::SetBrailleControllerForTest(NULL);
+  }
+
+  void SetBrailleDisplayAvailability(bool available) {
+    braille_controller_.SetAvailable(available);
+    braille_controller_.GetObserver()->OnBrailleDisplayStateChanged(
+        *braille_controller_.GetDisplayState());
   }
 
   int default_autoclick_delay() const { return default_autoclick_delay_; }
@@ -291,10 +326,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, BrailleOnLoginScreen) {
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
 
   // Signal the accessibility manager that a braille display was connected.
-  braille_controller_.SetAvailable(true);
-  braille_controller_.GetObserver()->OnDisplayStateChanged(
-      *braille_controller_.GetDisplayState());
-
+  SetBrailleDisplayAvailability(true);
   // Confirms that the spoken feedback is enabled.
   EXPECT_TRUE(IsSpokenFeedbackEnabled());
 }
@@ -580,6 +612,56 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
   EXPECT_TRUE(GetHighContrastEnabledFromPref());
   EXPECT_TRUE(GetAutoclickEnabledFromPref());
   EXPECT_EQ(kTestAutoclickDelayMs, GetAutoclickDelayFromPref());
+}
+
+IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest, BrailleWhenLoggedIn) {
+  // Logs in.
+  const char* user_name = GetParam();
+  UserManager::Get()->UserLoggedIn(user_name, user_name, true);
+  UserManager::Get()->SessionStarted();
+  // The |ComponentExtensionIMEManager| defers some initialization to the
+  // |FILE| thread.  We need to wait for that to finish before continuing.
+  InputMethodManager* imm = InputMethodManager::Get();
+  while (!imm->GetComponentExtensionIMEManager()->IsInitialized()) {
+    content::RunAllPendingInMessageLoop(BrowserThread::FILE);
+  }
+  // This object watches for IME preference changes and reflects those in
+  // the IME framework state.
+  chromeos::Preferences prefs;
+  prefs.InitUserPrefsForTesting(PrefServiceSyncable::FromProfile(GetProfile()),
+                                UserManager::Get()->GetActiveUser());
+
+  // Make sure we start in the expected state.
+  EXPECT_FALSE(IsBrailleImeActive());
+  EXPECT_FALSE(IsSpokenFeedbackEnabled());
+
+  // Signal the accessibility manager that a braille display was connected.
+  SetBrailleDisplayAvailability(true);
+
+  // Now, both spoken feedback and the Braille IME should be enabled.
+  EXPECT_TRUE(IsSpokenFeedbackEnabled());
+  EXPECT_TRUE(IsBrailleImeActive());
+
+  // Send a braille dots key event and make sure that the braille IME is
+  // enabled.
+  KeyEvent event;
+  event.command = extensions::api::braille_display_private::KEY_COMMAND_DOTS;
+  event.braille_dots.reset(new int(0));
+  braille_controller_.GetObserver()->OnBrailleKeyEvent(event);
+  EXPECT_TRUE(IsBrailleImeCurrent());
+
+  // Unplug the display.  Spolken feedback remains on, but the Braille IME
+  // should get deactivated.
+  SetBrailleDisplayAvailability(false);
+  EXPECT_TRUE(IsSpokenFeedbackEnabled());
+  EXPECT_FALSE(IsBrailleImeActive());
+  EXPECT_FALSE(IsBrailleImeCurrent());
+
+  // Plugging in a display while spoken feedback is enabled should activate
+  // the Braille IME.
+  SetBrailleDisplayAvailability(true);
+  EXPECT_TRUE(IsSpokenFeedbackEnabled());
+  EXPECT_TRUE(IsBrailleImeActive());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, AcessibilityMenuVisibility) {

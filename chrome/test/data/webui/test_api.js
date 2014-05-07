@@ -445,7 +445,9 @@ var testing = {};
       try {
         this.setUp();
       } catch(e) {
-        console.error(e.stack);
+        // Mock4JSException doesn't inherit from Error, so fall back on
+        // toString().
+        console.error(e.stack || e.toString());
       }
 
       if (!this.deferred_)

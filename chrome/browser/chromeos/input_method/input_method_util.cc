@@ -15,6 +15,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
 // For SetHardwareKeyboardLayoutForTesting.
@@ -70,6 +71,10 @@ const struct {
   { "_comp_ime_bdgdidmhaijohebebipajioienkglgfohangul_3setnoshift",
     "\xed\x95\x9c" },
   { "_comp_ime_bdgdidmhaijohebebipajioienkglgfohangul_romaja", "\xed\x95\x9c" },
+  { extension_misc::kBrailleImeEngineId,
+    // U+2803 U+2817 U+2807 (Unicode braille patterns for the letters 'brl' in
+    // English (and many other) braille codes.
+    "\xe2\xa0\x83\xe2\xa0\x97\xe2\xa0\x87" },
 };
 
 const size_t kMappingFromIdToIndicatorTextLen =
@@ -104,6 +109,8 @@ const struct {
     IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
   { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-hant-t-i0-cangjie-1987",
     IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
+  { extension_misc::kBrailleImeEngineId,
+    IDS_LANGUAGES_MEDIUM_LEN_NAME_BRAILLE },
 };
 const size_t kMappingImeIdToMediumLenNameResourceIdLen =
     ARRAYSIZE_UNSAFE(kMappingImeIdToMediumLenNameResourceId);

@@ -121,7 +121,10 @@ BrlapiConnection::ConnectResult BrlapiConnectionImpl::Connect(
   }
 
   const brlapi_keyCode_t extraKeys[] = {
-    BRLAPI_KEY_TYPE_CMD | BRLAPI_KEY_CMD_OFFLINE,
+      BRLAPI_KEY_TYPE_CMD | BRLAPI_KEY_CMD_OFFLINE,
+      // brltty 5.1 converts dot input to Unicode characters unless we
+      // explicitly accept this command.
+      BRLAPI_KEY_TYPE_CMD | BRLAPI_KEY_CMD_PASSDOTS,
   };
   if (libbrlapi_loader_->brlapi__acceptKeys(
           handle_.get(), brlapi_rangeType_command, extraKeys,

@@ -251,7 +251,7 @@ class TrayAccessibilityTest
 
   void SetBrailleConnected(bool connected) {
     braille_controller_.SetAvailable(connected);
-    braille_controller_.GetObserver()->OnDisplayStateChanged(
+    braille_controller_.GetObserver()->OnBrailleDisplayStateChanged(
         *braille_controller_.GetDisplayState());
   }
 

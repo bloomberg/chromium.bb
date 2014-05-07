@@ -213,6 +213,7 @@ class AccessibilityManager
   void CheckBrailleState();
   void ReceiveBrailleDisplayState(
       scoped_ptr<extensions::api::braille_display_private::DisplayState> state);
+  void UpdateBrailleImeState();
 
   void SetProfile(Profile* profile);
 
@@ -225,9 +226,11 @@ class AccessibilityManager
 
   // extensions::api::braille_display_private::BrailleObserver implementation.
   // Enables spoken feedback if a braille display becomes available.
-  virtual void OnDisplayStateChanged(
+  virtual void OnBrailleDisplayStateChanged(
       const extensions::api::braille_display_private::DisplayState&
           display_state) OVERRIDE;
+  virtual void OnBrailleKeyEvent(
+      const extensions::api::braille_display_private::KeyEvent& event) OVERRIDE;
 
   // InputMethodManager::Observer
   virtual void InputMethodChanged(input_method::InputMethodManager* manager,
@@ -275,6 +278,8 @@ class AccessibilityManager
   bool braille_display_connected_;
   ScopedObserver<extensions::api::braille_display_private::BrailleController,
                  AccessibilityManager> scoped_braille_observer_;
+
+  bool braille_ime_current_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityManager);
 };

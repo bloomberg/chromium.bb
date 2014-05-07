@@ -114,6 +114,14 @@
           ],
         }],
         ['chromeos==1 and disable_nacl==0 and disable_nacl_untrusted==0', {
+          'copies' : [
+            {
+              'destination': '<(PRODUCT_DIR)/resources/chromeos/braille_ime',
+              'files': [
+                'browser/resources/chromeos/braille_ime/manifest.json',
+              ],
+            },
+          ],
           'dependencies': [
             '../chrome/third_party/chromevox/chromevox.gyp:chromevox_resources',
             'chromevox_strings',

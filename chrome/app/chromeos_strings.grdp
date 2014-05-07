@@ -1238,6 +1238,9 @@ Press any key to continue exploring.
   <message name="IDS_LANGUAGES_MEDIUM_LEN_NAME_KOREAN" desc="Medium length name for the input method for Korean which is show following the text: Your input method has changed to...">
     Korean
   </message>
+  <message name="IDS_LANGUAGES_MEDIUM_LEN_NAME_BRAILLE" desc="Medium length name for the input method for the hardware keyboard on a braille display. Shown after the text: Your input method has changed to...">
+    Braille
+  </message>
   <message name="IDS_KEYBOARD_SELECTION_SELECT" desc="Label for keyboard selection dropdown">
     Select your keyboard:
   </message>
