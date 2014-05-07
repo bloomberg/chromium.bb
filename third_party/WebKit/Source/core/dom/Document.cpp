@@ -5699,7 +5699,6 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_templateDocument);
     visitor->trace(m_templateDocumentHost);
     visitor->trace(m_visibilityObservers);
-    visitor->trace(m_contextFeatures);
     visitor->trace(m_userActionElements);
     visitor->registerWeakMembers<Document, &Document::clearWeakMembers>(this);
     DocumentSupplementable::trace(visitor);
