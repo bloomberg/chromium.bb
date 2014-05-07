@@ -39,14 +39,14 @@ using blink::WebIDBDatabase;
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<IDBOpenDBRequest> IDBOpenDBRequest::create(ExecutionContext* context, PassRefPtr<IDBDatabaseCallbacks> callbacks, int64_t transactionId, int64_t version)
+PassRefPtrWillBeRawPtr<IDBOpenDBRequest> IDBOpenDBRequest::create(ExecutionContext* context, PassRefPtrWillBeRawPtr<IDBDatabaseCallbacks> callbacks, int64_t transactionId, int64_t version)
 {
     RefPtrWillBeRawPtr<IDBOpenDBRequest> request(adoptRefWillBeRefCountedGarbageCollected(new IDBOpenDBRequest(context, callbacks, transactionId, version)));
     request->suspendIfNeeded();
     return request.release();
 }
 
-IDBOpenDBRequest::IDBOpenDBRequest(ExecutionContext* context, PassRefPtr<IDBDatabaseCallbacks> callbacks, int64_t transactionId, int64_t version)
+IDBOpenDBRequest::IDBOpenDBRequest(ExecutionContext* context, PassRefPtrWillBeRawPtr<IDBDatabaseCallbacks> callbacks, int64_t transactionId, int64_t version)
     : IDBRequest(context, IDBAny::createNull(), 0)
     , m_databaseCallbacks(callbacks)
     , m_transactionId(transactionId)
@@ -58,6 +58,12 @@ IDBOpenDBRequest::IDBOpenDBRequest(ExecutionContext* context, PassRefPtr<IDBData
 
 IDBOpenDBRequest::~IDBOpenDBRequest()
 {
+}
+
+void IDBOpenDBRequest::trace(Visitor* visitor)
+{
+    visitor->trace(m_databaseCallbacks);
+    IDBRequest::trace(visitor);
 }
 
 const AtomicString& IDBOpenDBRequest::interfaceName() const

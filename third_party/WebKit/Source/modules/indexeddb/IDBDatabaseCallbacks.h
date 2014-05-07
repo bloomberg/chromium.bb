@@ -35,10 +35,11 @@ namespace WebCore {
 class DOMError;
 class IDBDatabase;
 
-class IDBDatabaseCallbacks : public RefCounted<IDBDatabaseCallbacks> {
+class IDBDatabaseCallbacks : public RefCountedWillBeGarbageCollectedFinalized<IDBDatabaseCallbacks> {
 public:
-    static PassRefPtr<IDBDatabaseCallbacks> create();
+    static PassRefPtrWillBeRawPtr<IDBDatabaseCallbacks> create();
     virtual ~IDBDatabaseCallbacks();
+    void trace(Visitor*);
 
     // IDBDatabaseCallbacks
     virtual void onForcedClose();
@@ -54,8 +55,14 @@ protected:
     IDBDatabaseCallbacks();
 
 private:
-    // The initial IDBOpenDBRequest or final IDBDatabase maintains a RefPtr to this
-    IDBDatabase* m_database;
+    // The initial IDBOpenDBRequest, final IDBDatabase, and/or
+    // WebIDBDatabaseCallbacks have strong references to an IDBDatabaseCallbacks
+    // object.
+    // Oilpan: We'd like to delete an IDBDatabase object by a
+    // GC. WebIDBDatabaseCallbacks can survive the GC, and IDBDatabaseCallbacks
+    // can survive too. m_database should be a weak reference to avoid that an
+    // IDBDatabase survives the GC with the IDBDatabaseCallbacks.
+    RawPtrWillBeWeakMember<IDBDatabase> m_database;
 };
 
 } // namespace WebCore

@@ -59,7 +59,7 @@ class IDBDatabase FINAL
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<IDBDatabase>);
 
 public:
-    static PassRefPtrWillBeRawPtr<IDBDatabase> create(ExecutionContext*, PassOwnPtr<blink::WebIDBDatabase>, PassRefPtr<IDBDatabaseCallbacks>);
+    static PassRefPtrWillBeRawPtr<IDBDatabase> create(ExecutionContext*, PassOwnPtr<blink::WebIDBDatabase>, PassRefPtrWillBeRawPtr<IDBDatabaseCallbacks>);
     virtual ~IDBDatabase();
     void trace(Visitor*);
 
@@ -138,7 +138,7 @@ public:
     static const char databaseClosedErrorMessage[];
 
 private:
-    IDBDatabase(ExecutionContext*, PassOwnPtr<blink::WebIDBDatabase>, PassRefPtr<IDBDatabaseCallbacks>);
+    IDBDatabase(ExecutionContext*, PassOwnPtr<blink::WebIDBDatabase>, PassRefPtrWillBeRawPtr<IDBDatabaseCallbacks>);
 
     void closeConnection();
 
@@ -155,7 +155,7 @@ private:
     // database so that we can cancel them if the database closes.
     WillBeHeapVector<RefPtrWillBeMember<Event> > m_enqueuedEvents;
 
-    RefPtr<IDBDatabaseCallbacks> m_databaseCallbacks;
+    RefPtrWillBeMember<IDBDatabaseCallbacks> m_databaseCallbacks;
 };
 
 } // namespace WebCore

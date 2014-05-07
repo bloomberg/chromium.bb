@@ -67,14 +67,14 @@ const char IDBDatabase::transactionFinishedErrorMessage[] = "The transaction has
 const char IDBDatabase::transactionReadOnlyErrorMessage[] = "The transaction is read-only.";
 const char IDBDatabase::databaseClosedErrorMessage[] = "The database connection is closed.";
 
-PassRefPtrWillBeRawPtr<IDBDatabase> IDBDatabase::create(ExecutionContext* context, PassOwnPtr<WebIDBDatabase> database, PassRefPtr<IDBDatabaseCallbacks> callbacks)
+PassRefPtrWillBeRawPtr<IDBDatabase> IDBDatabase::create(ExecutionContext* context, PassOwnPtr<WebIDBDatabase> database, PassRefPtrWillBeRawPtr<IDBDatabaseCallbacks> callbacks)
 {
     RefPtrWillBeRawPtr<IDBDatabase> idbDatabase(adoptRefWillBeRefCountedGarbageCollected(new IDBDatabase(context, database, callbacks)));
     idbDatabase->suspendIfNeeded();
     return idbDatabase.release();
 }
 
-IDBDatabase::IDBDatabase(ExecutionContext* context, PassOwnPtr<WebIDBDatabase> backend, PassRefPtr<IDBDatabaseCallbacks> callbacks)
+IDBDatabase::IDBDatabase(ExecutionContext* context, PassOwnPtr<WebIDBDatabase> backend, PassRefPtrWillBeRawPtr<IDBDatabaseCallbacks> callbacks)
     : ActiveDOMObject(context)
     , m_backend(backend)
     , m_closePending(false)
@@ -104,6 +104,7 @@ void IDBDatabase::trace(Visitor* visitor)
     visitor->trace(m_versionChangeTransaction);
     visitor->trace(m_transactions);
     visitor->trace(m_enqueuedEvents);
+    visitor->trace(m_databaseCallbacks);
 }
 
 int64_t IDBDatabase::nextTransactionId()

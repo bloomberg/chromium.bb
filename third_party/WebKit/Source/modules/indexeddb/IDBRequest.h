@@ -71,7 +71,7 @@ class IDBRequest : public IDBRequestBase, public ScriptWrappable, public EventTa
 public:
     static PassRefPtrWillBeRawPtr<IDBRequest> create(ExecutionContext*, PassRefPtrWillBeRawPtr<IDBAny> source, IDBTransaction*);
     virtual ~IDBRequest();
-    void trace(Visitor*);
+    virtual void trace(Visitor*);
 
     ScriptValue result(ExceptionState&);
     PassRefPtrWillBeRawPtr<DOMError> error(ExceptionState&) const;

@@ -38,7 +38,7 @@ namespace WebCore {
 
 class WebIDBDatabaseCallbacksImpl FINAL : public blink::WebIDBDatabaseCallbacks {
 public:
-    static PassOwnPtr<WebIDBDatabaseCallbacksImpl> create(PassRefPtr<IDBDatabaseCallbacks>);
+    static PassOwnPtr<WebIDBDatabaseCallbacksImpl> create(PassRefPtrWillBeRawPtr<IDBDatabaseCallbacks>);
 
     virtual ~WebIDBDatabaseCallbacksImpl();
 
@@ -48,9 +48,9 @@ public:
     virtual void onComplete(long long transactionId) OVERRIDE;
 
 private:
-    explicit WebIDBDatabaseCallbacksImpl(PassRefPtr<IDBDatabaseCallbacks>);
+    explicit WebIDBDatabaseCallbacksImpl(PassRefPtrWillBeRawPtr<IDBDatabaseCallbacks>);
 
-    RefPtr<IDBDatabaseCallbacks> m_callbacks;
+    RefPtrWillBePersistent<IDBDatabaseCallbacks> m_callbacks;
 };
 
 } // namespace WebCore

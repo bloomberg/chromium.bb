@@ -154,7 +154,7 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping)
     const int64_t version = 1;
     const int64_t oldVersion = 0;
     const IDBDatabaseMetadata metadata;
-    RefPtr<IDBDatabaseCallbacks> callbacks = IDBDatabaseCallbacks::create();
+    RefPtrWillBePersistent<IDBDatabaseCallbacks> callbacks = IDBDatabaseCallbacks::create();
 
     {
         OwnPtr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();

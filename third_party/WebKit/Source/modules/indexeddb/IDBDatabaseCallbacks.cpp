@@ -30,18 +30,23 @@
 
 namespace WebCore {
 
-PassRefPtr<IDBDatabaseCallbacks> IDBDatabaseCallbacks::create()
+PassRefPtrWillBeRawPtr<IDBDatabaseCallbacks> IDBDatabaseCallbacks::create()
 {
-    return adoptRef(new IDBDatabaseCallbacks());
+    return adoptRefWillBeNoop(new IDBDatabaseCallbacks());
 }
 
 IDBDatabaseCallbacks::IDBDatabaseCallbacks()
-    : m_database(0)
+    : m_database(nullptr)
 {
 }
 
 IDBDatabaseCallbacks::~IDBDatabaseCallbacks()
 {
+}
+
+void IDBDatabaseCallbacks::trace(Visitor* visitor)
+{
+    visitor->trace(m_database);
 }
 
 void IDBDatabaseCallbacks::onForcedClose()

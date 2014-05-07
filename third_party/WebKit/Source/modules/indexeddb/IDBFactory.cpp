@@ -125,7 +125,7 @@ PassRefPtrWillBeRawPtr<IDBOpenDBRequest> IDBFactory::openInternal(ExecutionConte
         return nullptr;
     }
 
-    RefPtr<IDBDatabaseCallbacks> databaseCallbacks = IDBDatabaseCallbacks::create();
+    RefPtrWillBeRawPtr<IDBDatabaseCallbacks> databaseCallbacks = IDBDatabaseCallbacks::create();
     int64_t transactionId = IDBDatabase::nextTransactionId();
     RefPtrWillBeRawPtr<IDBOpenDBRequest> request = IDBOpenDBRequest::create(context, databaseCallbacks, transactionId, version);
 

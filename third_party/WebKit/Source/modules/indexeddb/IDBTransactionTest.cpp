@@ -79,7 +79,7 @@ private:
 
 class FakeIDBDatabaseCallbacks FINAL : public IDBDatabaseCallbacks {
 public:
-    static PassRefPtr<FakeIDBDatabaseCallbacks> create() { return adoptRef(new FakeIDBDatabaseCallbacks()); }
+    static PassRefPtrWillBeRawPtr<FakeIDBDatabaseCallbacks> create() { return adoptRefWillBeNoop(new FakeIDBDatabaseCallbacks()); }
     virtual void onVersionChange(int64_t oldVersion, int64_t newVersion) OVERRIDE { }
     virtual void onForcedClose() OVERRIDE { }
     virtual void onAbort(int64_t transactionId, PassRefPtrWillBeRawPtr<DOMError> error) OVERRIDE { }
@@ -91,8 +91,7 @@ private:
 TEST_F(IDBTransactionTest, EnsureLifetime)
 {
     OwnPtr<FakeWebIDBDatabase> backend = FakeWebIDBDatabase::create();
-    RefPtr<FakeIDBDatabaseCallbacks> connection = FakeIDBDatabaseCallbacks::create();
-    RefPtrWillBePersistent<IDBDatabase> db = IDBDatabase::create(executionContext(), backend.release(), connection);
+    RefPtrWillBePersistent<IDBDatabase> db = IDBDatabase::create(executionContext(), backend.release(), FakeIDBDatabaseCallbacks::create());
 
     const int64_t transactionId = 1234;
     const Vector<String> transactionScope;
@@ -136,8 +135,7 @@ TEST_F(IDBTransactionTest, EnsureLifetime)
 TEST_F(IDBTransactionTest, TransactionFinish)
 {
     OwnPtr<FakeWebIDBDatabase> backend = FakeWebIDBDatabase::create();
-    RefPtr<FakeIDBDatabaseCallbacks> connection = FakeIDBDatabaseCallbacks::create();
-    RefPtrWillBePersistent<IDBDatabase> db = IDBDatabase::create(executionContext(), backend.release(), connection);
+    RefPtrWillBePersistent<IDBDatabase> db = IDBDatabase::create(executionContext(), backend.release(), FakeIDBDatabaseCallbacks::create());
 
     const int64_t transactionId = 1234;
     const Vector<String> transactionScope;

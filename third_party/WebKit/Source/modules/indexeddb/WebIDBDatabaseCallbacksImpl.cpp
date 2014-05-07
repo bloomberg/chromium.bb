@@ -31,12 +31,12 @@
 namespace WebCore {
 
 // static
-PassOwnPtr<WebIDBDatabaseCallbacksImpl> WebIDBDatabaseCallbacksImpl::create(PassRefPtr<IDBDatabaseCallbacks> callbacks)
+PassOwnPtr<WebIDBDatabaseCallbacksImpl> WebIDBDatabaseCallbacksImpl::create(PassRefPtrWillBeRawPtr<IDBDatabaseCallbacks> callbacks)
 {
     return adoptPtr(new WebIDBDatabaseCallbacksImpl(callbacks));
 }
 
-WebIDBDatabaseCallbacksImpl::WebIDBDatabaseCallbacksImpl(PassRefPtr<IDBDatabaseCallbacks> callbacks)
+WebIDBDatabaseCallbacksImpl::WebIDBDatabaseCallbacksImpl(PassRefPtrWillBeRawPtr<IDBDatabaseCallbacks> callbacks)
     : m_callbacks(callbacks)
 {
 }
