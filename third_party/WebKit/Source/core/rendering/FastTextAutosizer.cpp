@@ -964,12 +964,12 @@ void FastTextAutosizer::applyMultiplier(RenderObject* renderer, float multiplier
     style->setTextAutosizingMultiplier(multiplier);
     style->setUnique();
 
-    // Don't free currentStyle until the end of the layout pass. This allows other parts of the system
-    // to safely hold raw RenderStyle* pointers during layout, e.g. BreakingContext::m_currentStyle.
-    m_stylesRetainedDuringLayout.append(currentStyle);
-
     switch (relayoutBehavior) {
     case AlreadyInLayout:
+        // Don't free currentStyle until the end of the layout pass. This allows other parts of the system
+        // to safely hold raw RenderStyle* pointers during layout, e.g. BreakingContext::m_currentStyle.
+        m_stylesRetainedDuringLayout.append(currentStyle);
+
         renderer->setStyleInternal(style.release());
         renderer->setNeedsLayout();
         if (renderer->isRenderBlock())
