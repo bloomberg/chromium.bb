@@ -46,6 +46,14 @@ ChromeBookmarkClient::~ChromeBookmarkClient() {
   registrar_.RemoveAll();
 }
 
+bool ChromeBookmarkClient::PreferTouchIcon() {
+#if !defined(OS_IOS)
+  return false;
+#else
+  return true;
+#endif
+}
+
 base::CancelableTaskTracker::TaskId ChromeBookmarkClient::GetFaviconImageForURL(
     const GURL& page_url,
     int icon_types,

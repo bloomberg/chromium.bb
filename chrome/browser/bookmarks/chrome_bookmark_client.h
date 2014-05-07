@@ -29,6 +29,7 @@ class ChromeBookmarkClient : public BookmarkClient,
   BookmarkModel* model() { return model_.get(); }
 
   // BookmarkClient:
+  virtual bool PreferTouchIcon() OVERRIDE;
   virtual base::CancelableTaskTracker::TaskId GetFaviconImageForURL(
       const GURL& page_url,
       int icon_types,

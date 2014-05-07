@@ -15,6 +15,10 @@ scoped_ptr<BookmarkModel> TestBookmarkClient::CreateModel(bool index_urls) {
   return bookmark_model.Pass();
 }
 
+bool TestBookmarkClient::PreferTouchIcon() {
+  return false;
+}
+
 base::CancelableTaskTracker::TaskId TestBookmarkClient::GetFaviconImageForURL(
     const GURL& page_url,
     int icon_types,

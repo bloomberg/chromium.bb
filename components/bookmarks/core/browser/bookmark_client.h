@@ -37,6 +37,9 @@ class BookmarkClient {
   typedef std::pair<const BookmarkNode*, int> NodeTypedCountPair;
   typedef std::vector<NodeTypedCountPair> NodeTypedCountPairs;
 
+  // Returns true if the embedder favors touch icons over favicons.
+  virtual bool PreferTouchIcon() = 0;
+
   // Requests the favicon of any of |icon_types| whose pixel sizes most
   // closely match |desired_size_in_dip| (if value is 0, the largest favicon
   // is returned) and desired scale factor for |page_url|. |callback| is run

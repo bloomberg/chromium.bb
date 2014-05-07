@@ -266,10 +266,18 @@ const gfx::Image& BookmarkModel::GetFavicon(const BookmarkNode* node) {
   DCHECK(node);
   if (node->favicon_state() == BookmarkNode::INVALID_FAVICON) {
     BookmarkNode* mutable_node = AsMutable(node);
-    mutable_node->set_favicon_state(BookmarkNode::LOADING_FAVICON);
-    LoadFavicon(mutable_node);
+    LoadFavicon(
+        mutable_node,
+        client_->PreferTouchIcon() ?
+            favicon_base::TOUCH_ICON :
+            favicon_base::FAVICON);
   }
   return node->favicon();
+}
+
+favicon_base::IconType BookmarkModel::GetFaviconType(const BookmarkNode* node) {
+  DCHECK(node);
+  return node->favicon_type();
 }
 
 void BookmarkModel::SetTitle(const BookmarkNode* node,
@@ -860,28 +868,40 @@ BookmarkPermanentNode* BookmarkModel::CreatePermanentNode(
 
 void BookmarkModel::OnFaviconDataAvailable(
     BookmarkNode* node,
+    favicon_base::IconType icon_type,
     const favicon_base::FaviconImageResult& image_result) {
   DCHECK(node);
   node->set_favicon_load_task_id(base::CancelableTaskTracker::kBadTaskId);
   node->set_favicon_state(BookmarkNode::LOADED_FAVICON);
   if (!image_result.image.IsEmpty()) {
+    node->set_favicon_type(icon_type);
     node->set_favicon(image_result.image);
     node->set_icon_url(image_result.icon_url);
     FaviconLoaded(node);
+  } else if (icon_type == favicon_base::TOUCH_ICON) {
+    // Couldn't load the touch icon, fallback to the regular favicon.
+    DCHECK(client_->PreferTouchIcon());
+    LoadFavicon(node, favicon_base::FAVICON);
   }
 }
 
-void BookmarkModel::LoadFavicon(BookmarkNode* node) {
+void BookmarkModel::LoadFavicon(
+    BookmarkNode* node,
+    favicon_base::IconType icon_type) {
   if (node->is_folder())
     return;
 
   DCHECK(node->url().is_valid());
+  node->set_favicon_state(BookmarkNode::LOADING_FAVICON);
   base::CancelableTaskTracker::TaskId taskId = client_->GetFaviconImageForURL(
       node->url(),
-      favicon_base::FAVICON,
-      gfx::kFaviconSize,
+      icon_type,
+      icon_type == favicon_base::FAVICON ? gfx::kFaviconSize : 0,
       base::Bind(
-          &BookmarkModel::OnFaviconDataAvailable, base::Unretained(this), node),
+          &BookmarkModel::OnFaviconDataAvailable,
+          base::Unretained(this),
+          node,
+          icon_type),
       &cancelable_task_tracker_);
   if (taskId != base::CancelableTaskTracker::kBadTaskId)
     node->set_favicon_load_task_id(taskId);

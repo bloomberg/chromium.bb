@@ -22,6 +22,7 @@ class TestBookmarkClient : public BookmarkClient {
   scoped_ptr<BookmarkModel> CreateModel(bool index_urls);
 
   // BookmarkClient:
+  virtual bool PreferTouchIcon() OVERRIDE;
   virtual base::CancelableTaskTracker::TaskId GetFaviconImageForURL(
       const GURL& page_url,
       int icon_types,

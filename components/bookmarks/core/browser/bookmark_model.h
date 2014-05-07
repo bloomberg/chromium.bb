@@ -144,6 +144,10 @@ class BookmarkModel : public BookmarkService {
   // loaded it is loaded and the observer of the model notified when done.
   const gfx::Image& GetFavicon(const BookmarkNode* node);
 
+  // Returns the type of the favicon for |node|. If the favicon has not yet
+  // been loaded, it returns |favicon_base::INVALID_ICON|.
+  favicon_base::IconType GetFaviconType(const BookmarkNode* node);
+
   // Sets the title of |node|.
   void SetTitle(const BookmarkNode* node, const base::string16& title);
 
@@ -332,11 +336,12 @@ class BookmarkModel : public BookmarkService {
   // favicon, FaviconLoaded is invoked.
   void OnFaviconDataAvailable(
       BookmarkNode* node,
+      favicon_base::IconType icon_type,
       const favicon_base::FaviconImageResult& image_result);
 
   // Invoked from the node to load the favicon. Requests the favicon from the
   // favicon service.
-  void LoadFavicon(BookmarkNode* node);
+  void LoadFavicon(BookmarkNode* node, favicon_base::IconType icon_type);
 
   // Called to notify the observers that the favicon has been loaded.
   void FaviconLoaded(const BookmarkNode* node);

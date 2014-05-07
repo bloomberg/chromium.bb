@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
+#include "components/favicon_base/favicon_types.h"
 #include "ui/base/models/tree_node_model.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -127,8 +128,14 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
     icon_url_ = icon_url;
   }
 
+  // Returns the favicon. In nearly all cases you should use the method
+  // BookmarkModel::GetFavicon rather than this one as it takes care of
+  // loading the favicon if it isn't already loaded.
   const gfx::Image& favicon() const { return favicon_; }
   void set_favicon(const gfx::Image& icon) { favicon_ = icon; }
+
+  favicon_base::IconType favicon_type() const { return favicon_type_; }
+  void set_favicon_type(favicon_base::IconType type) { favicon_type_ = type; }
 
   FaviconState favicon_state() const { return favicon_state_; }
   void set_favicon_state(FaviconState state) { favicon_state_ = state; }
@@ -158,6 +165,9 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
 
   // The favicon of this node.
   gfx::Image favicon_;
+
+  // The type of favicon currently loaded.
+  favicon_base::IconType favicon_type_;
 
   // The URL of the node's favicon.
   GURL icon_url_;
