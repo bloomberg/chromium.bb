@@ -22,6 +22,7 @@ if test -z "$BACKEND"; then
 fi
 
 BACKEND=$abs_builddir/.libs/$BACKEND
+SHELL_PLUGIN=$abs_builddir/.libs/desktop-shell.so
 TEST_PLUGIN=$abs_builddir/.libs/weston-test.so
 XWAYLAND_PLUGIN=$abs_builddir/.libs/xwayland.so
 
@@ -29,6 +30,7 @@ case $TESTNAME in
 	*.la|*.so)
 		$WESTON --backend=$BACKEND \
 			--no-config \
+			--shell=$SHELL_PLUGIN \
 			--socket=test-$(basename $TESTNAME) \
 			--modules=$abs_builddir/.libs/${TESTNAME/.la/.so},$XWAYLAND_PLUGIN \
 			--log="$SERVERLOG" \
@@ -39,6 +41,7 @@ case $TESTNAME in
 			--socket=test-$(basename $TESTNAME) \
 			--backend=$BACKEND \
 			--no-config \
+			--shell=$SHELL_PLUGIN \
 			--log="$SERVERLOG" \
 			--modules=$TEST_PLUGIN,$XWAYLAND_PLUGIN \
 			&> "$OUTLOG"
