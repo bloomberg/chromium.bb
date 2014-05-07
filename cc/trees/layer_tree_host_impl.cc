@@ -255,6 +255,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       overhang_ui_resource_id_(0),
       overdraw_bottom_height_(0.f),
       device_viewport_valid_for_tile_management_(true),
+      begin_impl_frame_interval_(BeginFrameArgs::DefaultInterval()),
       animation_registrar_(AnimationRegistrar::Create()),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       micro_benchmark_controller_(this),
@@ -1555,6 +1556,8 @@ void LayerTreeHostImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
   // Sample the frame time now. This time will be used for updating animations
   // when we draw.
   UpdateCurrentFrameTime();
+  // Cache the begin impl frame interval
+  begin_impl_frame_interval_ = args.interval;
 }
 
 gfx::SizeF LayerTreeHostImpl::ComputeInnerViewportContainerSize() const {
@@ -1775,14 +1778,15 @@ void LayerTreeHostImpl::SetNeedsRedraw() {
 
 ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {
   ManagedMemoryPolicy actual = cached_managed_memory_policy_;
-  // TODO(ernstm): The second condition disables pre-painting for all layers
-  // when GPU rasterization is enabled. Once we selectively enable GPU
-  // rasterization per layer, we also need to disable pre-painting selectively:
-  // crbug.com/335387
-  if (debug_state_.rasterize_only_visible_content ||
-      settings_.gpu_rasterization_forced) {
+  // TODO(ernstm): NICE_TO_HAVE is currently triggered for forced GPU
+  // rasterization only. Change the trigger to LTHI::UseGpuRasterization, once
+  // that is implemented.
+  if (debug_state_.rasterize_only_visible_content) {
     actual.priority_cutoff_when_visible =
         gpu::MemoryAllocation::CUTOFF_ALLOW_REQUIRED_ONLY;
+  } else if (settings_.gpu_rasterization_forced) {
+    actual.priority_cutoff_when_visible =
+        gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
   }
 
   if (zero_budget_) {

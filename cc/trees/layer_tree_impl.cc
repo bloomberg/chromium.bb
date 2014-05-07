@@ -690,6 +690,10 @@ base::TimeTicks LayerTreeImpl::CurrentFrameTimeTicks() const {
   return layer_tree_host_impl_->CurrentFrameTimeTicks();
 }
 
+base::TimeDelta LayerTreeImpl::begin_impl_frame_interval() const {
+  return layer_tree_host_impl_->begin_impl_frame_interval();
+}
+
 void LayerTreeImpl::SetNeedsCommit() {
   layer_tree_host_impl_->SetNeedsCommit();
 }

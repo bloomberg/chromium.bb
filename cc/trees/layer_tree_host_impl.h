@@ -408,6 +408,11 @@ class CC_EXPORT LayerTreeHostImpl
   void ResetCurrentFrameTimeForNextFrame();
   virtual base::TimeTicks CurrentFrameTimeTicks();
 
+  // Expected time between two begin impl frame calls.
+  base::TimeDelta begin_impl_frame_interval() const {
+    return begin_impl_frame_interval_;
+  }
+
   scoped_ptr<base::Value> AsValue() const { return AsValueWithFrame(NULL); }
   scoped_ptr<base::Value> AsValueWithFrame(FrameData* frame) const;
   scoped_ptr<base::Value> ActivationStateAsValue() const;
@@ -653,6 +658,9 @@ class CC_EXPORT LayerTreeHostImpl
   gfx::Rect viewport_damage_rect_;
 
   base::TimeTicks current_frame_timeticks_;
+
+  // Expected time between two begin impl frame calls.
+  base::TimeDelta begin_impl_frame_interval_;
 
   scoped_ptr<AnimationRegistrar> animation_registrar_;
 

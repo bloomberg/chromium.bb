@@ -32,7 +32,14 @@ const float kMaxScaleRatioDuringPinch = 2.0f;
 // When creating a new tiling during pinch, snap to an existing
 // tiling's scale if the desired scale is within this ratio.
 const float kSnapToExistingTilingRatio = 0.2f;
-}
+
+// Estimate skewport 60 frames ahead for pre-rasterization on the CPU.
+const float kCpuSkewportTargetTimeInFrames = 60.0f;
+
+// Don't pre-rasterize on the GPU (except for kBackflingGuardDistancePixels in
+// TileManager::BinFromTilePriority).
+const float kGpuSkewportTargetTimeInFrames = 0.0f;
+}  // namespace
 
 namespace cc {
 
@@ -571,7 +578,12 @@ size_t PictureLayerImpl::GetMaxTilesForInterestArea() const {
 }
 
 float PictureLayerImpl::GetSkewportTargetTimeInSeconds() const {
-  return layer_tree_impl()->settings().skewport_target_time_in_seconds;
+  float skewport_target_time_in_frames = ShouldUseGpuRasterization()
+                                             ? kGpuSkewportTargetTimeInFrames
+                                             : kCpuSkewportTargetTimeInFrames;
+  return skewport_target_time_in_frames *
+         layer_tree_impl()->begin_impl_frame_interval().InSecondsF() *
+         layer_tree_impl()->settings().skewport_target_time_multiplier;
 }
 
 int PictureLayerImpl::GetSkewportExtrapolationLimitInContentPixels() const {

@@ -81,6 +81,7 @@ class CC_EXPORT LayerTreeImpl {
   int MaxTextureSize() const;
   bool PinchGestureActive() const;
   base::TimeTicks CurrentFrameTimeTicks() const;
+  base::TimeDelta begin_impl_frame_interval() const;
   void SetNeedsCommit();
   gfx::Size DrawViewportSize() const;
   scoped_ptr<ScrollbarAnimationController> CreateScrollbarAnimationController(

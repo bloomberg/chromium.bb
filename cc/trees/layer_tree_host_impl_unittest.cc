@@ -5760,8 +5760,9 @@ TEST_F(LayerTreeHostImplTest, MemoryPolicy) {
       456, gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING, 1000);
   int everything_cutoff_value = ManagedMemoryPolicy::PriorityCutoffToValue(
       gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING);
-  int required_only_cutoff_value = ManagedMemoryPolicy::PriorityCutoffToValue(
-      gpu::MemoryAllocation::CUTOFF_ALLOW_REQUIRED_ONLY);
+  int allow_nice_to_have_cutoff_value =
+      ManagedMemoryPolicy::PriorityCutoffToValue(
+          gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE);
   int nothing_cutoff_value = ManagedMemoryPolicy::PriorityCutoffToValue(
       gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING);
 
@@ -5792,7 +5793,7 @@ TEST_F(LayerTreeHostImplTest, MemoryPolicy) {
   host_impl_->SetVisible(true);
   host_impl_->SetMemoryPolicy(policy1);
   EXPECT_EQ(policy1.bytes_limit_when_visible, current_limit_bytes_);
-  EXPECT_EQ(required_only_cutoff_value, current_priority_cutoff_value_);
+  EXPECT_EQ(allow_nice_to_have_cutoff_value, current_priority_cutoff_value_);
 
   host_impl_->SetVisible(false);
   EXPECT_EQ(0u, current_limit_bytes_);
