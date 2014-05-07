@@ -775,8 +775,9 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE,
                                     "renameFileDrive")));
 
+// Disabled due to frequent timeouts; http://crbug.com/370980.
 INSTANTIATE_TEST_CASE_P(
-    DriveSpecific,
+    DISABLED_DriveSpecific,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "openSidebarRecent"),
                       TestParameter(NOT_IN_GUEST_MODE, "openSidebarOffline"),
