@@ -53,6 +53,7 @@ class SimpleFeature : public Feature {
     max_manifest_version_ = max_manifest_version;
   }
 
+  std::set<std::string>* blacklist() { return &blacklist_; }
   std::set<std::string>* whitelist() { return &whitelist_; }
   std::set<Manifest::Type>* extension_types() { return &extension_types_; }
 
@@ -104,9 +105,10 @@ class SimpleFeature : public Feature {
   virtual bool IsInternal() const OVERRIDE;
   virtual bool IsBlockedInServiceWorker() const OVERRIDE;
 
+  virtual bool IsIdInBlacklist(const std::string& extension_id) const OVERRIDE;
   virtual bool IsIdInWhitelist(const std::string& extension_id) const OVERRIDE;
-  static bool IsIdInWhitelist(const std::string& extension_id,
-                              const std::set<std::string>& whitelist);
+  static bool IsIdInList(const std::string& extension_id,
+                         const std::set<std::string>& list);
 
  protected:
   Availability CreateAvailability(AvailabilityResult result) const;
@@ -124,6 +126,7 @@ class SimpleFeature : public Feature {
   // members the same way: it matches everything. It is up to the higher level
   // code that reads Features out of static data to validate that data and set
   // sensible defaults.
+  std::set<std::string> blacklist_;
   std::set<std::string> whitelist_;
   std::set<Manifest::Type> extension_types_;
   std::set<Context> contexts_;
@@ -133,6 +136,7 @@ class SimpleFeature : public Feature {
   int min_manifest_version_;
   int max_manifest_version_;
   bool has_parent_;
+  bool component_extensions_auto_granted_;
 
   typedef std::vector<linked_ptr<SimpleFeatureFilter> > FilterList;
   FilterList filters_;

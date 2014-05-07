@@ -116,8 +116,6 @@ bool FileHandlersParser::Parse(Extension* extension, base::string16* error) {
     return false;
   }
 
-  DCHECK(extension->is_platform_app());
-
   for (base::DictionaryValue::Iterator iter(*all_handlers); !iter.IsAtEnd();
        iter.Advance()) {
     // A file handler entry is a title and a list of MIME types to handle.

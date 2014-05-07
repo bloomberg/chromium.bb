@@ -493,7 +493,7 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
       *out_app_contents = tab_in_app_window;
 
     // Platform apps fire off a launch event which may or may not open a window.
-    return (tab_in_app_window != NULL || extension->is_platform_app());
+    return (tab_in_app_window != NULL || CanLaunchViaEvent(extension));
   }
 
   if (url_string.empty())

@@ -227,7 +227,8 @@ SimpleFeature::SimpleFeature()
     : location_(UNSPECIFIED_LOCATION),
       min_manifest_version_(0),
       max_manifest_version_(0),
-      has_parent_(false) {}
+      has_parent_(false),
+      component_extensions_auto_granted_(true) {}
 
 SimpleFeature::~SimpleFeature() {}
 
@@ -237,6 +238,7 @@ void SimpleFeature::AddFilter(scoped_ptr<SimpleFeatureFilter> filter) {
 
 std::string SimpleFeature::Parse(const base::DictionaryValue* value) {
   ParseURLPatterns(value, "matches", &matches_);
+  ParseSet(value, "blacklist", &blacklist_);
   ParseSet(value, "whitelist", &whitelist_);
   ParseSet(value, "dependencies", &dependencies_);
   ParseEnumSet<Manifest::Type>(value, "extension_types", &extension_types_,
@@ -252,6 +254,10 @@ std::string SimpleFeature::Parse(const base::DictionaryValue* value) {
 
   no_parent_ = false;
   value->GetBoolean("noparent", &no_parent_);
+
+  component_extensions_auto_granted_ = true;
+  value->GetBoolean("component_extensions_auto_granted",
+                    &component_extensions_auto_granted_);
 
   if (matches_.is_empty() && contexts_.count(WEB_PAGE_CONTEXT) != 0) {
     return name() + ": Allowing web_page contexts requires supplying a value " +
@@ -287,9 +293,14 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
     return CreateAvailability(INVALID_TYPE, type);
   }
 
+  if (IsIdInBlacklist(extension_id))
+    return CreateAvailability(FOUND_IN_BLACKLIST, type);
+
+  // TODO(benwells): don't grant all component extensions.
+  // See http://crbug.com/370375 for more details.
   // Component extensions can access any feature.
-  // TODO(kalman/asargent): Should this match EXTERNAL_COMPONENT too?
-  if (location == Manifest::COMPONENT)
+  // NOTE: Deliberately does not match EXTERNAL_COMPONENT.
+  if (component_extensions_auto_granted_ && location == Manifest::COMPONENT)
     return CreateAvailability(IS_AVAILABLE, type);
 
   if (!whitelist_.empty()) {
@@ -375,6 +386,7 @@ std::string SimpleFeature::GetAvailabilityMessage(
     case IS_AVAILABLE:
       return std::string();
     case NOT_FOUND_IN_WHITELIST:
+    case FOUND_IN_BLACKLIST:
       return base::StringPrintf(
           "'%s' is not allowed for specified extension ID.",
           name().c_str());
@@ -466,13 +478,17 @@ bool SimpleFeature::IsInternal() const {
 
 bool SimpleFeature::IsBlockedInServiceWorker() const { return false; }
 
+bool SimpleFeature::IsIdInBlacklist(const std::string& extension_id) const {
+  return IsIdInList(extension_id, blacklist_);
+}
+
 bool SimpleFeature::IsIdInWhitelist(const std::string& extension_id) const {
-  return IsIdInWhitelist(extension_id, whitelist_);
+  return IsIdInList(extension_id, whitelist_);
 }
 
 // static
-bool SimpleFeature::IsIdInWhitelist(const std::string& extension_id,
-                                    const std::set<std::string>& whitelist) {
+bool SimpleFeature::IsIdInList(const std::string& extension_id,
+                               const std::set<std::string>& list) {
   // Belt-and-suspenders philosophy here. We should be pretty confident by this
   // point that we've validated the extension ID format, but in case something
   // slips through, we avoid a class of attack where creative ID manipulation
@@ -480,8 +496,8 @@ bool SimpleFeature::IsIdInWhitelist(const std::string& extension_id,
   if (extension_id.length() != 32)  // 128 bits / 4 = 32 mpdecimal characters
     return false;
 
-  if (whitelist.find(extension_id) != whitelist.end() ||
-      whitelist.find(HashExtensionId(extension_id)) != whitelist.end()) {
+  if (list.find(extension_id) != list.end() ||
+      list.find(HashExtensionId(extension_id)) != list.end()) {
     return true;
   }
 

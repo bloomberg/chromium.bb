@@ -9,6 +9,15 @@
 // Note that specifying "web_page", "blessed_web_page", or "all" as a context
 // type will require manually updating chrome/renderer/resources/dispatcher.cc.
 
+// To add a new whitelisted ID, SHA-1 it and force it to uppercase. In Bash:
+//
+// $ echo -n "aaaabbbbccccddddeeeeffffgggghhhh" | \
+// sha1sum | tr '[:lower:]' '[:upper:]'
+// 9A0417016F345C934A1A88F55CA17C05014EEEBA  -
+//
+// Google employees: please update http://go/chrome-api-whitelist to map
+// hashes back to ids.
+
 {
   "dns": {
     "dependencies": ["permission:dns"],

@@ -172,6 +172,84 @@ TEST_F(ExtensionSimpleFeatureTest, HashedIdWhitelist) {
                                     Feature::UNSPECIFIED_PLATFORM).result());
 }
 
+TEST_F(ExtensionSimpleFeatureTest, Blacklist) {
+  const std::string kIdFoo("fooabbbbccccddddeeeeffffgggghhhh");
+  const std::string kIdBar("barabbbbccccddddeeeeffffgggghhhh");
+  const std::string kIdBaz("bazabbbbccccddddeeeeffffgggghhhh");
+  SimpleFeature feature;
+  feature.blacklist()->insert(kIdFoo);
+  feature.blacklist()->insert(kIdBar);
+
+  EXPECT_EQ(
+      Feature::FOUND_IN_BLACKLIST,
+      feature.IsAvailableToManifest(kIdFoo,
+                                    Manifest::TYPE_UNKNOWN,
+                                    Manifest::INVALID_LOCATION,
+                                    -1,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_EQ(
+      Feature::FOUND_IN_BLACKLIST,
+      feature.IsAvailableToManifest(kIdBar,
+                                    Manifest::TYPE_UNKNOWN,
+                                    Manifest::INVALID_LOCATION,
+                                    -1,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
+
+  EXPECT_EQ(
+      Feature::IS_AVAILABLE,
+      feature.IsAvailableToManifest(kIdBaz,
+                                    Manifest::TYPE_UNKNOWN,
+                                    Manifest::INVALID_LOCATION,
+                                    -1,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_EQ(
+      Feature::IS_AVAILABLE,
+      feature.IsAvailableToManifest(std::string(),
+                                    Manifest::TYPE_UNKNOWN,
+                                    Manifest::INVALID_LOCATION,
+                                    -1,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
+}
+
+TEST_F(ExtensionSimpleFeatureTest, HashedIdBlacklist) {
+  // echo -n "fooabbbbccccddddeeeeffffgggghhhh" |
+  //   sha1sum | tr '[:lower:]' '[:upper:]'
+  const std::string kIdFoo("fooabbbbccccddddeeeeffffgggghhhh");
+  const std::string kIdFooHashed("55BC7228A0D502A2A48C9BB16B07062A01E62897");
+  SimpleFeature feature;
+
+  feature.blacklist()->insert(kIdFooHashed);
+
+  EXPECT_EQ(
+      Feature::FOUND_IN_BLACKLIST,
+      feature.IsAvailableToManifest(kIdFoo,
+                                    Manifest::TYPE_UNKNOWN,
+                                    Manifest::INVALID_LOCATION,
+                                    -1,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_NE(
+      Feature::FOUND_IN_BLACKLIST,
+      feature.IsAvailableToManifest(kIdFooHashed,
+                                    Manifest::TYPE_UNKNOWN,
+                                    Manifest::INVALID_LOCATION,
+                                    -1,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_EQ(
+      Feature::IS_AVAILABLE,
+      feature.IsAvailableToManifest("slightlytoooolongforanextensionid",
+                                    Manifest::TYPE_UNKNOWN,
+                                    Manifest::INVALID_LOCATION,
+                                    -1,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_EQ(
+      Feature::IS_AVAILABLE,
+      feature.IsAvailableToManifest("tooshortforanextensionid",
+                                    Manifest::TYPE_UNKNOWN,
+                                    Manifest::INVALID_LOCATION,
+                                    -1,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
+}
+
 TEST_F(ExtensionSimpleFeatureTest, PackageType) {
   SimpleFeature feature;
   feature.extension_types()->insert(Manifest::TYPE_EXTENSION);

@@ -9,6 +9,7 @@ namespace extensions {
 ComplexFeature::ComplexFeature(scoped_ptr<FeatureList> features) {
   DCHECK_GT(features->size(), 0UL);
   features_.swap(*features);
+  no_parent_ = features_[0]->no_parent();
 
 #if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
   // Verify GetContexts, IsInternal, & IsBlockedInServiceWorker are consistent
@@ -29,6 +30,9 @@ ComplexFeature::ComplexFeature(scoped_ptr<FeatureList> features) {
     DCHECK(first_blocked_in_service_worker == (*it)->IsBlockedInServiceWorker())
         << "Complex feature must have consistent values of "
            "blocked_in_service_worker across all sub features.";
+    DCHECK(no_parent_ == (*it)->no_parent())
+        << "Complex feature must have consistent values of "
+           "no_parent across all sub features.";
   }
 #endif
 }
@@ -80,6 +84,16 @@ Feature::Availability ComplexFeature::IsAvailableToContext(
   // If none of the SimpleFeatures are available, we return the availability
   // info of the first SimpleFeature that was not available.
   return first_availability;
+}
+
+bool ComplexFeature::IsIdInBlacklist(const std::string& extension_id) const {
+  for (FeatureList::const_iterator it = features_.begin();
+       it != features_.end();
+       ++it) {
+    if ((*it)->IsIdInBlacklist(extension_id))
+      return true;
+  }
+  return false;
 }
 
 bool ComplexFeature::IsIdInWhitelist(const std::string& extension_id) const {

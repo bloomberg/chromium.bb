@@ -93,7 +93,7 @@ bool TabCaptureCaptureFunction::RunSync() {
           extension, tab_id, APIPermission::kTabCaptureForTab) &&
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kWhitelistedExtensionID) != extension_id &&
-      !SimpleFeature::IsIdInWhitelist(
+      !SimpleFeature::IsIdInList(
           extension_id,
           std::set<std::string>(
               whitelisted_extensions,

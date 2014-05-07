@@ -69,6 +69,7 @@ class Feature {
     INVALID_MAX_MANIFEST_VERSION,
     NOT_PRESENT,
     UNSUPPORTED_CHANNEL,
+    FOUND_IN_BLACKLIST,
   };
 
   // Container for AvailabiltyResult that also exposes a user-visible error
@@ -151,6 +152,7 @@ class Feature {
                                              const GURL& url,
                                              Context context) const = 0;
 
+  virtual bool IsIdInBlacklist(const std::string& extension_id) const = 0;
   virtual bool IsIdInWhitelist(const std::string& extension_id) const = 0;
 
  protected:

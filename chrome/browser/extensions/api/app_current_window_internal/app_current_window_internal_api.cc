@@ -385,7 +385,7 @@ bool AppCurrentWindowInternalSetShapeFunction::RunWithWindow(
     "E06AFCB1EB0EFD237824CC4AC8FDD3D43E8BC868"
   };
   if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV &&
-      !SimpleFeature::IsIdInWhitelist(
+      !SimpleFeature::IsIdInList(
           GetExtension()->id(),
           std::set<std::string>(whitelist,
                                 whitelist + arraysize(whitelist)))) {

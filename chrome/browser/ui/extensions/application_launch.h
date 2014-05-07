@@ -96,4 +96,8 @@ content::WebContents* OpenApplication(const AppLaunchParams& params);
 content::WebContents* OpenAppShortcutWindow(Profile* profile,
                                             const GURL& url);
 
+// Whether the extension can be launched by sending a
+// chrome.app.runtime.onLaunched event.
+bool CanLaunchViaEvent(const extensions::Extension* extension);
+
 #endif  // CHROME_BROWSER_UI_EXTENSIONS_APPLICATION_LAUNCH_H_

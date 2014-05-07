@@ -39,6 +39,8 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/features/feature.h"
+#include "extensions/common/features/feature_provider.h"
 #include "grit/generated_resources.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
@@ -322,7 +324,7 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
   UMA_HISTOGRAM_ENUMERATION(
       "Extensions.AppLaunchContainer", params.container, 100);
 
-  if (extension->is_platform_app()) {
+  if (CanLaunchViaEvent(extension)) {
     // Remember what desktop the launch happened on so that when the app opens a
     // window we can open them on the right desktop.
     PerAppSettingsServiceFactory::GetForBrowserContext(profile)->
@@ -465,4 +467,11 @@ WebContents* OpenAppShortcutWindow(Profile* profile,
       extensions::TabHelper::UPDATE_SHORTCUT);
 
   return tab;
+}
+
+bool CanLaunchViaEvent(const extensions::Extension* extension) {
+  extensions::FeatureProvider* feature_provider =
+      extensions::FeatureProvider::GetAPIFeatures();
+  extensions::Feature* feature = feature_provider->GetFeature("app.runtime");
+  return feature->IsAvailableToExtension(extension).is_available();
 }

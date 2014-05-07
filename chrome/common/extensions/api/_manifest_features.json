@@ -6,6 +6,15 @@
 // See extensions/common/features/* to understand this file, in particular
 // feature.h, simple_feature.h, and base_feature_provider.h.
 
+// To add a new whitelisted ID, SHA-1 it and force it to uppercase. In Bash:
+//
+// $ echo -n "aaaabbbbccccddddeeeeffffgggghhhh" | \
+// sha1sum | tr '[:lower:]' '[:upper:]'
+// 9A0417016F345C934A1A88F55CA17C05014EEEBA  -
+//
+// Google employees: please update http://go/chrome-api-whitelist to map
+// hashes back to ids.
+
 {
   "app": {
     "channel": "stable",
@@ -173,10 +182,19 @@
       "location": "component"
     }
   ],
-  "file_handlers": {
+  "file_handlers": [
+  {
     "channel": "stable",
     "extension_types": ["platform_app"]
-  },
+  }, {
+    "channel": "stable",
+    "extension_types": [ "extension"],
+    "whitelist": [
+      "2FC374607C2DF285634B67C64A2E356C607091C3",  // Quickoffice
+      "3727DD3E564B6055387425027AD74C58784ACC15",  // Quickoffice internal
+      "12E618C3C6E97495AAECF2AC12DEB082353241C6"   // QO component extension
+    ]
+  }],
   "homepage_url": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]

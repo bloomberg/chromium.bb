@@ -546,6 +546,16 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithFileExtension) {
       << message_;
 }
 
+// Tests that launch data is sent through to a whitelisted extension if the file
+// extension matches.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       LaunchWhiteListedExtensionWithFile) {
+  SetCommandLineArg(kTestFilePath);
+  ASSERT_TRUE(RunPlatformAppTest(
+      "platform_apps/launch_whitelisted_ext_with_file"))
+          << message_;
+}
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
 // TODO(erg): linux_aura bringup: http://crbug.com/163931
 #define MAYBE_LaunchWithFileExtensionAndMimeType DISABLED_LaunchWithFileExtensionAndMimeType
