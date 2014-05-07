@@ -132,6 +132,10 @@ class CC_EXPORT LayerAnimationController
   // animations. Returns false if the maximum scale cannot be computed.
   bool MaximumScale(float* max_scale) const;
 
+  bool needs_to_start_animations_for_testing() {
+    return needs_to_start_animations_;
+  }
+
  protected:
   friend class base::RefCounted<LayerAnimationController>;
 
@@ -197,6 +201,10 @@ class CC_EXPORT LayerAnimationController
   LayerAnimationValueProvider* value_provider_;
 
   AnimationDelegate* layer_animation_delegate_;
+
+  // Only try to start animations when new animations are added or when the
+  // previous attempt at starting animations failed to start all animations.
+  bool needs_to_start_animations_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerAnimationController);
 };

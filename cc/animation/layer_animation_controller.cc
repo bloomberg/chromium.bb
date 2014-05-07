@@ -26,7 +26,9 @@ LayerAnimationController::LayerAnimationController(int id)
       is_active_(false),
       last_tick_time_(0),
       value_provider_(NULL),
-      layer_animation_delegate_(NULL) {}
+      layer_animation_delegate_(NULL),
+      needs_to_start_animations_(false) {
+}
 
 LayerAnimationController::~LayerAnimationController() {
   if (registrar_)
@@ -126,7 +128,8 @@ void LayerAnimationController::Animate(double monotonic_time) {
   if (!HasValueObserver())
     return;
 
-  StartAnimations(monotonic_time);
+  if (needs_to_start_animations_)
+    StartAnimations(monotonic_time);
   TickAnimations(monotonic_time);
   last_tick_time_ = monotonic_time;
 }
@@ -210,7 +213,7 @@ void LayerAnimationController::UpdateState(bool start_ready_animations,
   MarkFinishedAnimations(last_tick_time_);
   MarkAnimationsForDeletion(last_tick_time_, events);
 
-  if (start_ready_animations) {
+  if (needs_to_start_animations_ && start_ready_animations) {
     StartAnimations(last_tick_time_);
     PromoteStartedAnimations(last_tick_time_, events);
   }
@@ -242,6 +245,7 @@ void LayerAnimationController::ActivateAnimations() {
 
 void LayerAnimationController::AddAnimation(scoped_ptr<Animation> animation) {
   animations_.push_back(animation.Pass());
+  needs_to_start_animations_ = true;
   UpdateActivation(NormalActivation);
 }
 
@@ -599,6 +603,8 @@ void LayerAnimationController::PushPropertiesToImplThread(
 }
 
 void LayerAnimationController::StartAnimations(double monotonic_time) {
+  DCHECK(needs_to_start_animations_);
+  needs_to_start_animations_ = false;
   // First collect running properties affecting each type of observer.
   TargetProperties blocked_properties_for_active_observers;
   TargetProperties blocked_properties_for_pending_observers;
@@ -663,6 +669,8 @@ void LayerAnimationController::StartAnimations(double monotonic_time) {
             animations_[j]->SetRunState(Animation::Starting, monotonic_time);
           }
         }
+      } else {
+        needs_to_start_animations_ = true;
       }
     }
   }

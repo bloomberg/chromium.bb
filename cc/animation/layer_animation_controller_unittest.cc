@@ -43,10 +43,15 @@ TEST(LayerAnimationControllerTest, SyncNewAnimation) {
 
   EXPECT_FALSE(controller_impl->GetAnimation(Animation::Opacity));
 
+  EXPECT_FALSE(controller->needs_to_start_animations_for_testing());
+  EXPECT_FALSE(controller_impl->needs_to_start_animations_for_testing());
+
   AddOpacityTransitionToController(controller.get(), 1, 0, 1, false);
+  EXPECT_TRUE(controller->needs_to_start_animations_for_testing());
   int group_id = controller->GetAnimation(Animation::Opacity)->group();
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
+  EXPECT_TRUE(controller_impl->needs_to_start_animations_for_testing());
   controller_impl->ActivateAnimations();
 
   EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity));
@@ -421,8 +426,11 @@ TEST(LayerAnimationControllerTest, TrivialTransition) {
       1,
       Animation::Opacity));
 
+  EXPECT_FALSE(controller->needs_to_start_animations_for_testing());
   controller->AddAnimation(to_add.Pass());
+  EXPECT_TRUE(controller->needs_to_start_animations_for_testing());
   controller->Animate(kInitialTickTime);
+  EXPECT_FALSE(controller->needs_to_start_animations_for_testing());
   controller->UpdateState(true, events.get());
   EXPECT_TRUE(controller->HasActiveAnimation());
   EXPECT_EQ(0.f, dummy.opacity());
@@ -962,6 +970,8 @@ TEST(LayerAnimationControllerTest, TrivialQueuing) {
       LayerAnimationController::Create(0));
   controller->AddValueObserver(&dummy);
 
+  EXPECT_FALSE(controller->needs_to_start_animations_for_testing());
+
   controller->AddAnimation(CreateAnimation(
       scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)).Pass(),
       1,
@@ -972,12 +982,22 @@ TEST(LayerAnimationControllerTest, TrivialQueuing) {
       2,
       Animation::Opacity));
 
+  EXPECT_TRUE(controller->needs_to_start_animations_for_testing());
+
   controller->Animate(kInitialTickTime);
+
+  // The second animation still needs to be started.
+  EXPECT_TRUE(controller->needs_to_start_animations_for_testing());
+
   controller->UpdateState(true, events.get());
   EXPECT_TRUE(controller->HasActiveAnimation());
   EXPECT_EQ(0.f, dummy.opacity());
   controller->Animate(kInitialTickTime + 1.0);
+
+  EXPECT_TRUE(controller->needs_to_start_animations_for_testing());
   controller->UpdateState(true, events.get());
+  EXPECT_FALSE(controller->needs_to_start_animations_for_testing());
+
   EXPECT_TRUE(controller->HasActiveAnimation());
   EXPECT_EQ(1.f, dummy.opacity());
   controller->Animate(kInitialTickTime + 2.0);
@@ -1942,10 +1962,14 @@ TEST(LayerAnimationControllerTest, NewlyPushedAnimationWaitsForActivation) {
       LayerAnimationController::Create(0));
   controller->AddValueObserver(&dummy);
 
+  EXPECT_FALSE(controller->needs_to_start_animations_for_testing());
   AddOpacityTransitionToController(controller.get(), 1, 0.5f, 1.f, false);
   int group_id = controller->GetAnimation(Animation::Opacity)->group();
+  EXPECT_TRUE(controller->needs_to_start_animations_for_testing());
 
+  EXPECT_FALSE(controller_impl->needs_to_start_animations_for_testing());
   controller->PushAnimationUpdatesTo(controller_impl.get());
+  EXPECT_TRUE(controller_impl->needs_to_start_animations_for_testing());
 
   EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity));
   EXPECT_EQ(
@@ -1957,6 +1981,7 @@ TEST(LayerAnimationControllerTest, NewlyPushedAnimationWaitsForActivation) {
                    ->affects_active_observers());
 
   controller_impl->Animate(kInitialTickTime);
+  EXPECT_FALSE(controller_impl->needs_to_start_animations_for_testing());
   controller_impl->UpdateState(true, events.get());
 
   // Since the animation hasn't been activated, it should still be Starting
