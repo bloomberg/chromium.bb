@@ -11,6 +11,7 @@
 #include "grit/generated_resources.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"
@@ -195,21 +196,26 @@ MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
                                     MessageBoxType type,
                                     const base::string16& yes_text,
                                     const base::string16& no_text) {
-  // Views dialogs cannot be shown outside the UI thread message loop.
+  // Views dialogs cannot be shown outside the UI thread message loop or if the
+  // ResourceBundle is not initialized yet.
   // Fallback to logging with a default response or a Windows MessageBox.
-  if (!base::MessageLoopForUI::IsCurrent() ||
-      !base::MessageLoopForUI::current()->is_running()) {
 #if defined(OS_WIN)
+  if (!base::MessageLoopForUI::IsCurrent() ||
+      !base::MessageLoopForUI::current()->is_running() ||
+      !ResourceBundle::HasSharedInstance()) {
     int result = ui::MessageBox(views::HWNDForNativeWindow(parent), message,
                                 title, GetMessageBoxFlagsFromType(type));
     return (result == IDYES || result == IDOK) ?
         MESSAGE_BOX_RESULT_YES : MESSAGE_BOX_RESULT_NO;
+  }
 #else
+  if (!base::MessageLoopForUI::IsCurrent() ||
+      !ResourceBundle::HasSharedInstance()) {
     LOG(ERROR) << "Unable to show a dialog outside the UI thread message loop: "
                << title << " - " << message;
     return MESSAGE_BOX_RESULT_NO;
-#endif
   }
+#endif
 
   MessageBoxResult result = MESSAGE_BOX_RESULT_NO;
   SimpleMessageBoxViews* dialog = new SimpleMessageBoxViews(
