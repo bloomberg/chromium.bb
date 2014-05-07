@@ -38,8 +38,4 @@ void AppWindowWaiter::OnAppWindowAdded(apps::AppWindow* app_window) {
   }
 }
 
-void AppWindowWaiter::OnAppWindowIconChanged(apps::AppWindow* app_window) {}
-
-void AppWindowWaiter::OnAppWindowRemoved(apps::AppWindow* app_window) {}
-
 }  // namespace chromeos

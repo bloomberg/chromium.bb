@@ -32,11 +32,11 @@ class AppWindowRegistry : public KeyedService {
   class Observer {
    public:
     // Called just after a app window was added.
-    virtual void OnAppWindowAdded(apps::AppWindow* app_window) = 0;
+    virtual void OnAppWindowAdded(apps::AppWindow* app_window);
     // Called when the window icon changes.
-    virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) = 0;
+    virtual void OnAppWindowIconChanged(apps::AppWindow* app_window);
     // Called just after a app window was removed.
-    virtual void OnAppWindowRemoved(apps::AppWindow* app_window) = 0;
+    virtual void OnAppWindowRemoved(apps::AppWindow* app_window);
     // Called just after a app window was hidden. This is different from
     // window visibility as a minimize does not hide a window, but does make
     // it not visible.

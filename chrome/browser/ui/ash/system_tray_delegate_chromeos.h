@@ -254,8 +254,6 @@ class SystemTrayDelegateChromeOS
   virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
 
   // Overridden from apps::AppWindowRegistry::Observer:
-  virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE;
-  virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) OVERRIDE;
   virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE;
 
   void OnAccessibilityStatusChanged(

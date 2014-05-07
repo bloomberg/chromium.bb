@@ -540,8 +540,6 @@ class TestAddAppWindowObserver : public apps::AppWindowRegistry::Observer {
 
   // apps::AppWindowRegistry::Observer:
   virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE;
-  virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) OVERRIDE;
-  virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE;
 
   apps::AppWindow* WaitForAppWindow();
 
@@ -566,12 +564,6 @@ TestAddAppWindowObserver::~TestAddAppWindowObserver() {
 void TestAddAppWindowObserver::OnAppWindowAdded(apps::AppWindow* app_window) {
   window_ = app_window;
   run_loop_.Quit();
-}
-
-void TestAddAppWindowObserver::OnAppWindowIconChanged(
-    apps::AppWindow* app_window) {}
-
-void TestAddAppWindowObserver::OnAppWindowRemoved(apps::AppWindow* app_window) {
 }
 
 apps::AppWindow* TestAddAppWindowObserver::WaitForAppWindow() {

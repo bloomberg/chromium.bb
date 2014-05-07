@@ -121,8 +121,6 @@ void WebAuthFlow::OnAppWindowAdded(AppWindow* app_window) {
   }
 }
 
-void WebAuthFlow::OnAppWindowIconChanged(AppWindow* app_window) {}
-
 void WebAuthFlow::OnAppWindowRemoved(AppWindow* app_window) {
   if (app_window->window_key() == app_window_key_ &&
       app_window->extension_id() == extension_misc::kIdentityApiUiAppId) {

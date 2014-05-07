@@ -88,8 +88,6 @@ void AppLifetimeMonitor::OnAppWindowAdded(AppWindow* app_window) {
     NotifyAppActivated(app_window->extension_id());
 }
 
-void AppLifetimeMonitor::OnAppWindowIconChanged(AppWindow* app_window) {}
-
 void AppLifetimeMonitor::OnAppWindowRemoved(AppWindow* app_window) {
   AppWindowRegistry::AppWindowList windows =
       AppWindowRegistry::Get(app_window->browser_context())

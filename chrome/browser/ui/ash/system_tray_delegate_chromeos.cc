@@ -1399,12 +1399,6 @@ void SystemTrayDelegateChromeOS::OnBrowserRemoved(Browser* browser) {
 }
 
 // Overridden from apps::AppWindowRegistry::Observer.
-void SystemTrayDelegateChromeOS::OnAppWindowAdded(apps::AppWindow* app_window) {
-}
-
-void SystemTrayDelegateChromeOS::OnAppWindowIconChanged(
-    apps::AppWindow* app_window) {}
-
 void SystemTrayDelegateChromeOS::OnAppWindowRemoved(
     apps::AppWindow* app_window) {
   NotifyIfLastWindowClosed();

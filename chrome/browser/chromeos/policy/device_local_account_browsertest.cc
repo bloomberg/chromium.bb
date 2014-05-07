@@ -375,8 +375,6 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
       run_loop_->Quit();
   }
 
-  virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) OVERRIDE {}
-
   virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE {
     if (run_loop_)
       run_loop_->Quit();

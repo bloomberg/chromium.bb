@@ -84,9 +84,6 @@ void AppWindowLauncherController::AdditionalUserAddedToSession(
   registry_.insert(registry);
 }
 
-void AppWindowLauncherController::OnAppWindowAdded(AppWindow* app_window) {
-}
-
 void AppWindowLauncherController::OnAppWindowIconChanged(
     AppWindow* app_window) {
   if (!ControlsWindow(app_window->GetNativeWindow()))
@@ -100,11 +97,6 @@ void AppWindowLauncherController::OnAppWindowIconChanged(
   controller->set_image_set_by_controller(true);
   owner_->SetLauncherItemImage(controller->shelf_id(),
                                app_window->app_icon().AsImageSkia());
-}
-
-void AppWindowLauncherController::OnAppWindowRemoved(AppWindow* app_window) {
-  // Do nothing here; app_window->window() has already been deleted and
-  // OnWindowDestroying() has been called, doing the removal.
 }
 
 void AppWindowLauncherController::OnAppWindowShown(AppWindow* app_window) {

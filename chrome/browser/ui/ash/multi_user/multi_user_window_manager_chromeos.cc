@@ -198,8 +198,6 @@ class AppObserver : public apps::AppWindowRegistry::Observer {
     MultiUserWindowManagerChromeOS::GetInstance()->SetWindowOwner(window,
                                                                   user_id_);
   }
-  virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) OVERRIDE {}
-  virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE {}
 
  private:
   std::string user_id_;

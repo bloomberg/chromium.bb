@@ -86,8 +86,6 @@ class AppLaunchController::AppWindowWatcher
       NotifyAppWindowCreated();
     }
   }
-  virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) OVERRIDE {}
-  virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE {}
 
   void NotifyAppWindowCreated() {
     controller_->OnAppWindowCreated();

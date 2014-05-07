@@ -93,7 +93,6 @@ class WebAuthFlow : public content::NotificationObserver,
 
   // ::AppWindowRegistry::Observer implementation.
   virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE;
-  virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) OVERRIDE;
   virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE;
 
   // NotificationObserver implementation.

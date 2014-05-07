@@ -52,8 +52,6 @@ class AppWindowHandler : public AppWindowRegistry::Observer {
 
  private:
   // apps::AppWindowRegistry::Observer overrides:
-  virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE {}
-  virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) OVERRIDE {}
   virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE {
     if (window_registry_->app_windows().empty()) {
       if (DemoAppLauncher::IsDemoAppSession(

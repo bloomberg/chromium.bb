@@ -30,8 +30,6 @@ class AppWindowWaiter : public apps::AppWindowRegistry::Observer {
 
   // AppWindowRegistry::Observer:
   virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE;
-  virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) OVERRIDE;
-  virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE;
 
  private:
   apps::AppWindowRegistry* registry_;

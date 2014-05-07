@@ -30,11 +30,9 @@ class TestAppWindowRegistryObserver : public apps::AppWindowRegistry::Observer {
   }
 
   // Overridden from AppWindowRegistry::Observer:
-  virtual void OnAppWindowAdded(AppWindow* app_window) OVERRIDE {}
   virtual void OnAppWindowIconChanged(AppWindow* app_window) OVERRIDE {
     ++icon_updates_;
   }
-  virtual void OnAppWindowRemoved(AppWindow* app_window) OVERRIDE {}
 
   int icon_updates() { return icon_updates_; }
 

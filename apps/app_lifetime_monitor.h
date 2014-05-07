@@ -63,7 +63,6 @@ class AppLifetimeMonitor : public KeyedService,
 
   // AppWindowRegistry::Observer overrides:
   virtual void OnAppWindowAdded(AppWindow* app_window) OVERRIDE;
-  virtual void OnAppWindowIconChanged(AppWindow* app_window) OVERRIDE;
   virtual void OnAppWindowRemoved(AppWindow* app_window) OVERRIDE;
 
   // KeyedService overrides:

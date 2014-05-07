@@ -45,6 +45,16 @@ std::string GetWindowKeyForRenderViewHost(
 
 namespace apps {
 
+void AppWindowRegistry::Observer::OnAppWindowAdded(AppWindow* app_window) {
+}
+
+void AppWindowRegistry::Observer::OnAppWindowIconChanged(
+    AppWindow* app_window) {
+}
+
+void AppWindowRegistry::Observer::OnAppWindowRemoved(AppWindow* app_window) {
+}
+
 void AppWindowRegistry::Observer::OnAppWindowHidden(AppWindow* app_window) {
 }
 

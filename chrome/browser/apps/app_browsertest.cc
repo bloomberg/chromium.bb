@@ -1195,8 +1195,6 @@ class PlatformAppIncognitoBrowserTest : public PlatformAppBrowserTest,
   virtual void OnAppWindowAdded(AppWindow* app_window) OVERRIDE {
     opener_app_ids_.insert(app_window->extension_id());
   }
-  virtual void OnAppWindowIconChanged(AppWindow* app_window) OVERRIDE {}
-  virtual void OnAppWindowRemoved(AppWindow* app_window) OVERRIDE {}
 
  protected:
   // A set of ids of apps we've seen open a app window.
