@@ -184,6 +184,7 @@ void WebRtcLoggingHandlerHost::UploadLog(const UploadDoneCallback& callback) {
     return;
   }
   upload_callback_ = callback;
+  logging_state_ = UPLOADING;
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::FILE,
       FROM_HERE,
@@ -228,7 +229,7 @@ void WebRtcLoggingHandlerHost::OnChannelClosing() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (logging_state_ == STARTED || logging_state_ == STOPPED) {
     if (upload_log_on_render_close_) {
-      logging_state_ = STOPPED;
+      logging_state_ = UPLOADING;
       logging_started_time_ = base::Time();
       content::BrowserThread::PostTaskAndReplyWithResult(
           content::BrowserThread::FILE,
@@ -436,11 +437,9 @@ base::FilePath WebRtcLoggingHandlerHost::GetLogDirectoryAndEnsureExists() {
 void WebRtcLoggingHandlerHost::TriggerUploadLog(
     const base::FilePath& log_directory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(logging_state_ == STOPPED);
+  DCHECK_EQ(logging_state_, UPLOADING);
 
-  logging_state_ = UPLOADING;
   WebRtcLogUploadDoneData upload_done_data;
-
   upload_done_data.log_path = log_directory;
   upload_done_data.callback = upload_callback_;
   upload_done_data.host = this;
