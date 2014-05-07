@@ -66,6 +66,14 @@ var WEB_VIEW_EVENTS = {
     evt: CreateEvent('webview.onContentLoad'),
     fields: []
   },
+  'contextmenu': {
+    evt: CreateEvent('webview.contextmenu'),
+    cancelable: true,
+    customHandler: function(webViewInternal, event, webViewEvent) {
+      webViewInternal.maybeHandleContextMenu(event, webViewEvent);
+    },
+    fields: ['items']
+  },
   'dialog': {
     cancelable: true,
     customHandler: function(webViewInternal, event, webViewEvent) {
@@ -1183,6 +1191,21 @@ WebViewInternal.prototype.maybeAttachWebRequestEventToObject = function() {};
  */
 WebViewInternal.prototype.maybeGetExperimentalPermissions = function() {
   return [];
+};
+
+/**
+ * Calls to show contextmenu right away instead of dispatching a 'contextmenu'
+ * event.
+ * This will be overridden in web_view_experimental.js to implement contextmenu
+ * API.
+ * @private
+ */
+WebViewInternal.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
+  var requestId = e.requestId;
+  // Setting |params| = undefined will show the context menu unmodified, hence
+  // the 'contextmenu' API is disabled for stable channel.
+  var params = undefined;
+  WebView.showContextMenu(this.instanceId, requestId, params);
 };
 
 /**

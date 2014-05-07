@@ -317,6 +317,23 @@ class WebviewSetPermissionFunction : public WebviewExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(WebviewSetPermissionFunction);
 };
 
+class WebviewShowContextMenuFunction : public WebviewExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webview.showContextMenu",
+                             WEBVIEW_SHOWCONTEXTMENU);
+
+  WebviewShowContextMenuFunction();
+
+ protected:
+  virtual ~WebviewShowContextMenuFunction();
+
+ private:
+  // WebviewExtensionFunction implementation.
+  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(WebviewShowContextMenuFunction);
+};
+
 class WebviewOverrideUserAgentFunction: public WebviewExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webview.overrideUserAgent",

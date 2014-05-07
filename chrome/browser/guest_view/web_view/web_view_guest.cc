@@ -140,7 +140,7 @@ WebViewGuest::WebViewGuest(WebContents* guest_web_contents,
       WebContentsObserver(guest_web_contents),
       script_executor_(new extensions::ScriptExecutor(guest_web_contents,
                                                       &script_observers_)),
-      current_context_menu_request_id_(0),
+      pending_context_menu_request_id_(0),
       next_permission_request_id_(0),
       is_overriding_user_agent_(false),
       pending_reload_on_attachment_(false),
@@ -307,19 +307,17 @@ bool WebViewGuest::HandleContextMenu(
       ContextMenuDelegate::FromWebContents(guest_web_contents());
   DCHECK(menu_delegate);
 
-  scoped_ptr<RenderViewContextMenu> menu =
-      menu_delegate->BuildMenu(guest_web_contents(), params);
+  pending_menu_ = menu_delegate->BuildMenu(guest_web_contents(), params);
 
   // Pass it to embedder.
-  int request_id = ++current_context_menu_request_id_;
+  int request_id = ++pending_context_menu_request_id_;
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  scoped_ptr<base::ListValue> items = MenuModelToValue(menu->menu_model());
+  scoped_ptr<base::ListValue> items =
+      MenuModelToValue(pending_menu_->menu_model());
   args->Set(webview::kContextMenuItems, items.release());
   args->SetInteger(webview::kRequestId, request_id);
   DispatchEvent(new GuestViewBase::Event(webview::kEventContextMenu,
                                          args.Pass()));
-
-  menu_delegate->ShowMenu(menu.Pass());
   return true;
 }
 
@@ -1065,4 +1063,21 @@ WebViewGuest::PermissionResponseInfo::PermissionResponseInfo(
 }
 
 WebViewGuest::PermissionResponseInfo::~PermissionResponseInfo() {
+}
+
+void WebViewGuest::ShowContextMenu(int request_id,
+                                   const MenuItemVector* items) {
+  if (!pending_menu_.get())
+    return;
+
+  // Make sure this was the correct request.
+  if (request_id != pending_context_menu_request_id_)
+    return;
+
+  // TODO(lazyboy): Implement.
+  DCHECK(!items);
+
+  ContextMenuDelegate* menu_delegate =
+      ContextMenuDelegate::FromWebContents(guest_web_contents());
+  menu_delegate->ShowMenu(pending_menu_.Pass());
 }

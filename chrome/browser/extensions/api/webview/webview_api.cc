@@ -508,6 +508,25 @@ bool WebviewSetPermissionFunction::RunAsyncSafe(WebViewGuest* guest) {
   return true;
 }
 
+WebviewShowContextMenuFunction::WebviewShowContextMenuFunction() {
+}
+
+WebviewShowContextMenuFunction::~WebviewShowContextMenuFunction() {
+}
+
+bool WebviewShowContextMenuFunction::RunAsyncSafe(WebViewGuest* guest) {
+  scoped_ptr<webview::ShowContextMenu::Params> params(
+      webview::ShowContextMenu::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  // TODO(lazyboy): Actually implement filtering menu items, we pass NULL for
+  // now.
+  guest->ShowContextMenu(params->request_id, NULL);
+
+  SendResponse(true);
+  return true;
+}
+
 WebviewOverrideUserAgentFunction::WebviewOverrideUserAgentFunction() {
 }
 

@@ -34,14 +34,6 @@ var utils = require('utils');
 //     is prevented, then its dispatch function will return false in its event
 //     handler. The event must have a custom handler for this to be meaningful.
 var WEB_VIEW_EXPERIMENTAL_EVENTS = {
-  'contextmenu': {
-    evt: CreateEvent('webview.contextmenu'),
-    cancelable: true,
-    customHandler: function(webViewInternal, event, webViewEvent) {
-      webViewInternal.handleContextMenu(event, webViewEvent);
-    },
-    fields: ['items']
-  },
   'findupdate': {
     evt: CreateEvent('webview.onFindReply'),
     fields: [
@@ -146,19 +138,42 @@ WebViewInternal.prototype.maybeAttachWebRequestEventToObject =
 };
 
 /** @private */
-WebViewInternal.prototype.handleContextMenu = function(e, webViewEvent) {
+WebViewInternal.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
   var requestId = e.requestId;
   var self = this;
   // Construct the event.menu object.
+  var actionTaken = false;
+  var validateCall = function() {
+    var ERROR_MSG_CONTEXT_MENU_ACTION_ALREADY_TAKEN = '<webview>: ' +
+        'An action has already been taken for this "contextmenu" event.';
+
+    if (actionTaken) {
+      throw new Error(ERROR_MSG_CONTEXT_MENU_ACTION_ALREADY_TAKEN);
+    }
+    actionTaken = true;
+  };
   var menu = {
     show: function(items) {
-      // TODO(lazyboy): Implement.
-      window.console.log('menu.show() Not implemented yet');
+      validateCall();
+      // TODO(lazyboy): WebViewShowContextFunction doesn't do anything useful
+      // with |items|, implement.
+      WebView.showContextMenu(self.instanceId, requestId, items);
     }
   };
   webViewEvent.menu = menu;
   var webviewNode = this.webviewNode;
-  webviewNode.dispatchEvent(webViewEvent);
+  var defaultPrevented = !webviewNode.dispatchEvent(webViewEvent);
+  if (actionTaken) {
+    return;
+  }
+  if (!defaultPrevented) {
+    actionTaken = true;
+    // The default action is equivalent to just showing the context menu as is.
+    WebView.showContextMenu(self.instanceId, requestId, undefined);
+
+    // TODO(lazyboy): Figure out a way to show warning message only when
+    // listeners are registered for this event.
+  } //  else we will ignore showing the context menu completely.
 };
 
 /**

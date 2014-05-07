@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_H_
 #define CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_H_
 
+#include <vector>
+
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/guest_view/guest_view.h"
@@ -19,6 +21,10 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #endif
+
+namespace webview_api = extensions::api::webview;
+
+class RenderViewContextMenu;
 
 namespace extensions {
 class ScriptExecutor;
@@ -48,6 +54,13 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   // WebViewGuest.
   static int GetViewInstanceId(content::WebContents* contents);
   static const char Type[];
+
+  typedef std::vector<linked_ptr<webview_api::ContextMenuItem> > MenuItemVector;
+  // Shows the context menu for the guest.
+  // |items| acts as a filter. This restricts the current context's default
+  // menu items to contain only the items from |items|.
+  // |items| == NULL means no filtering will be applied.
+  void ShowContextMenu(int request_id, const MenuItemVector* items);
 
   // GuestViewBase implementation.
   virtual void Attach(content::WebContents* embedder_web_contents,
@@ -294,7 +307,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   // A counter to generate a unique request id for a context menu request.
   // We only need the ids to be unique for a given WebViewGuest.
-  int current_context_menu_request_id_;
+  int pending_context_menu_request_id_;
 
   // A counter to generate a unique request id for a permission request.
   // We only need the ids to be unique for a given WebViewGuest.
@@ -327,6 +340,10 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   friend void WebviewFindHelper::DispatchFindUpdateEvent(bool canceled,
                                                          bool final_update);
+
+  // Holds the RenderViewContextMenu that has been built but yet to be
+  // shown. This is .Reset() after ShowContextMenu().
+  scoped_ptr<RenderViewContextMenu> pending_menu_;
 
 #if defined(OS_CHROMEOS)
   // Subscription to receive notifications on changes to a11y settings.
