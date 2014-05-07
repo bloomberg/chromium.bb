@@ -14,7 +14,8 @@
     attribute DOMString method;
 
     // FIXME: Implement HeaderMap which uses the MapClass WebIDL attribute (crbug.com/347435).
-    getter Dictionary headers();
+    // FIXME: Can't return Dictionaries yet (crbug.com/364025).
+    // getter Dictionary headers();
     setter void headers(Dictionary items);
 
     // FIXME: Implement the following:
