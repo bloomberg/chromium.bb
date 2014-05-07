@@ -54,6 +54,13 @@ void ManagePasswordsIconView::UpdateVisibleUI() {
   SetVisible(true);
   SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(icon_id_));
   SetTooltipText(l10n_util::GetStringUTF16(tooltip_text_id_));
+
+  if (password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE) {
+    // We're about the automatically pop up a ManagePasswordsBubbleView.
+    // Force layout of the icon's parent now; the bubble will be incorrectly
+    // positioned otherwise, as the icon won't have been drawn into position.
+    parent()->Layout();
+  }
 }
 
 bool ManagePasswordsIconView::IsBubbleShowing() const {

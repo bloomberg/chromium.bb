@@ -171,10 +171,18 @@ const autofill::PasswordForm& ManagePasswordsUIController::
 void ManagePasswordsUIController::UpdateIconAndBubbleState(
     ManagePasswordsIcon* icon) {
   if (state_ == password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE) {
+    // We must display the icon before showing the bubble, as the bubble would
+    // be otherwise unanchored. However, we can't change the controller's state
+    // until _after_ the bubble is shown, as our metrics depend on the
+    // distinction between PENDING_PASSWORD_AND_BUBBLE_STATE and
+    // PENDING_PASSWORD_STATE to determine if the bubble opened automagically
+    // or via user action.
+    icon->SetState(password_manager::ui::PENDING_PASSWORD_STATE);
     ShowBubbleWithoutUserInteraction();
     state_ = password_manager::ui::PENDING_PASSWORD_STATE;
+  } else  {
+    icon->SetState(state_);
   }
-  icon->SetState(state_);
 }
 
 void ManagePasswordsUIController::ShowBubbleWithoutUserInteraction() {
