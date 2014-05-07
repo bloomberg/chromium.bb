@@ -1,5 +1,3 @@
-Repaint test for http://bugs.webkit.org/show_bug.cgi?id=11359 Incomplete repaint of table cell's collapsed border when changing only the cell.
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

@@ -1,9 +1,3 @@
-BUG ID: Bugzilla bug 6769 REGRESSION: Incomplete repaint when a cell's extra bottom margin grows
-
-TEST PASS: There should be only a green square below, and no red.
-
-TEST FAIL: The lower-right quarter of the square will be red.
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

@@ -1,58 +1,12 @@
-Viewport percentage
 (GraphicsLayer
-  (bounds 660.00 356.00)
+  (bounds 549.00 296.00)
   (children 1
     (GraphicsLayer
-      (bounds 660.00 356.00)
+      (bounds 549.00 296.00)
       (contentsOpaque 1)
       (drawsContent 1)
       (repaint rects
-        (rect 0.00 0.00 439.00 238.00)
-        (rect 0.00 0.00 200.00 200.00)
-        (rect 0.00 0.00 200.00 238.00)
-      )
-    )
-  )
-)
-(GraphicsLayer
-  (bounds 660.00 361.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 660.00 361.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (repaint rects
-        (rect 0.00 0.00 660.00 361.00)
-        (rect 0.00 0.00 200.00 300.00)
-        (rect 0.00 0.00 300.00 300.00)
-      )
-    )
-  )
-)
-(GraphicsLayer
-  (bounds 549.00 489.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 549.00 489.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (repaint rects
-        (rect 0.00 0.00 660.00 489.00)
-        (rect 0.00 0.00 300.00 300.00)
-        (rect 0.00 0.00 300.00 250.00)
-      )
-    )
-  )
-)
-(GraphicsLayer
-  (bounds 549.00 727.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 549.00 727.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (repaint rects
-        (rect 0.00 0.00 549.00 727.00)
+        (rect 0.00 0.00 549.00 296.00)
         (rect 0.00 0.00 300.00 250.00)
         (rect 0.00 0.00 250.00 250.00)
       )

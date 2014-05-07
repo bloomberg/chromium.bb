@@ -1,9 +1,3 @@
-BUG ID: Bugzilla bug 8449 REGRESSION: Incomplete repaint of table cell that moved
-
-TEST PASS: There should be only a green square below the line, and no red.
-
-TEST FAIL: There will be a red square and a green rectangle.
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1
