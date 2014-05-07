@@ -24,26 +24,19 @@ SigninManagerBase* ManagedUserSigninManagerWrapper::GetOriginal() {
 }
 
 std::string ManagedUserSigninManagerWrapper::GetEffectiveUsername() const {
-  if (profile_->IsManaged()) {
+  const std::string& auth_username = original_->GetAuthenticatedUsername();
 #if defined(ENABLE_MANAGED_USERS)
-    DCHECK_EQ(std::string(), original_->GetAuthenticatedUsername());
+  if (auth_username.empty() && profile_->IsManaged())
     return managed_users::kManagedUserPseudoEmail;
-#else
-    NOTREACHED();
 #endif
-  }
-
-  return original_->GetAuthenticatedUsername();
+  return auth_username;
 }
 
 std::string ManagedUserSigninManagerWrapper::GetAccountIdToUse() const {
-  if (profile_->IsManaged()) {
+  const std::string& auth_account = original_->GetAuthenticatedAccountId();
 #if defined(ENABLE_MANAGED_USERS)
+  if (auth_account.empty() && profile_->IsManaged())
     return managed_users::kManagedUserPseudoEmail;
-#else
-    NOTREACHED();
 #endif
-  }
-
-  return original_->GetAuthenticatedAccountId();
+  return auth_account;
 }
