@@ -74,6 +74,7 @@ class DromaeoDomCoreAttr(_DromaeoBenchmark):
   query_param = 'dom-attr'
 
 
+@test.Disabled('xp')  # crbug.com/323782
 class DromaeoDomCoreModify(_DromaeoBenchmark):
   """Dromaeo DOMCore modify JavaScript benchmark."""
   tag = 'domcoremodify'
