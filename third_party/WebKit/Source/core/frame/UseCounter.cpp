@@ -528,7 +528,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 451; }
+static int maximumCSSSampleId() { return 453; }
 
 void UseCounter::muteForInspector()
 {
