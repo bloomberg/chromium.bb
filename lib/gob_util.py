@@ -156,7 +156,10 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
     else:
       LOGGER.warn('%s\n%s', err_prefix, msg)
 
-    LOGGER.warn('conn.sock.getpeername(): %s', conn.sock.getpeername())
+    try:
+      LOGGER.warn('conn.sock.getpeername(): %s', conn.sock.getpeername())
+    except AttributeError:
+      LOGGER.warn('peer name unavailable')
     raise GOBError(response.status, response.reason)
 
   return retry_util.RetryException((socket.error, InternalGOBError), TRY_LIMIT,
