@@ -323,6 +323,7 @@ FLAKY_FFMPEG_TEST_CASE(BIG_MEM_4, "security/looping4.mov");
 FLAKY_FFMPEG_TEST_CASE(Cr99652, "security/99652.webm");
 FLAKY_FFMPEG_TEST_CASE(Cr100464, "security/100464.webm");
 FLAKY_FFMPEG_TEST_CASE(Cr111342, "security/111342.ogm");
+FLAKY_FFMPEG_TEST_CASE(Cr368980, "security/368980.mp4");
 FLAKY_FFMPEG_TEST_CASE(OGV_0, "security/big_dims.ogv");
 FLAKY_FFMPEG_TEST_CASE(OGV_3, "security/smclock_1_0.ogv");
 FLAKY_FFMPEG_TEST_CASE(OGV_4, "security/smclock.ogv.1.0.ogv");
