@@ -5,15 +5,15 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "5696c6a6c747d827cfe24507ef7cdec6769574d8",
+          "hash": "8121426d2b8c787b88312705152476f68b7881d3",
           "name": "naclsdk_linux_arm_bionic.tgz",
           "tar_src_dir": "linux_arm_bionic",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13127/naclsdk_linux_arm_bionic.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13148/naclsdk_linux_arm_bionic.tgz"
         }
       ],
       "version": 1
     }
   },
-  "revision": 13127,
-  "revision_hash": "b8d51bf83350073034f29b6a1ae402b1fc2de6f4"
+  "revision": 13148,
+  "revision_hash": "62310a94b2dc4959e6fb17f14167160d3e1f00d7"
 }
