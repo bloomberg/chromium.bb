@@ -16,6 +16,7 @@ instead of "initial value".
 |   this.value=""
 |   <shadow:root>
 |     <div>
+|       datetimeformat="MMMM, yyyy"
 |       id="date-time-edit"
 |       pseudo="-webkit-datetime-edit"
 |       shadow:pseudoId="-webkit-datetime-edit"
