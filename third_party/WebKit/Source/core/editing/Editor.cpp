@@ -1136,75 +1136,76 @@ PassRefPtrWillBeRawPtr<Range> Editor::findStringAndScrollToVisible(const String&
     return nextMatch.release();
 }
 
+static PassRefPtrWillBeRawPtr<Range> findStringBetweenPositions(const String& target, const Position& start, const Position& end, FindOptions options)
+{
+    Position searchStart(start);
+    Position searchEnd(end);
+
+    bool forward = !(options & Backwards);
+
+    while (true) {
+        Position resultStart;
+        Position resultEnd;
+        findPlainText(searchStart, searchEnd, target, options, resultStart, resultEnd);
+        if (resultStart == resultEnd)
+            return nullptr;
+
+        RefPtrWillBeRawPtr<Range> resultRange = Range::create(*resultStart.document(), resultStart, resultEnd);
+        if (!resultRange->collapsed())
+            return resultRange.release();
+
+        // Found text spans over multiple TreeScopes. Since it's impossible to return such section as a Range,
+        // we skip this match and seek for the next occurrence.
+        // FIXME: Handle this case.
+        if (forward)
+            searchStart = resultStart.next();
+        else
+            searchEnd = resultEnd.previous();
+    }
+
+    ASSERT_NOT_REACHED();
+    return nullptr;
+}
+
 PassRefPtrWillBeRawPtr<Range> Editor::rangeOfString(const String& target, Range* referenceRange, FindOptions options)
 {
     if (target.isEmpty())
         return nullptr;
 
-    // Start from an edge of the reference range, if there's a reference range that's not in shadow content. Which edge
-    // is used depends on whether we're searching forward or backward, and whether startInSelection is set.
-    RefPtrWillBeRawPtr<Range> searchRange(rangeOfContents(m_frame.document()));
+    // Start from an edge of the reference range. Which edge is used depends on whether we're searching forward or
+    // backward, and whether startInSelection is set.
+    Position searchStart = firstPositionInNode(m_frame.document());
+    Position searchEnd = lastPositionInNode(m_frame.document());
 
     bool forward = !(options & Backwards);
     bool startInReferenceRange = referenceRange && (options & StartInSelection);
     if (referenceRange) {
         if (forward)
-            searchRange->setStart(startInReferenceRange ? referenceRange->startPosition() : referenceRange->endPosition());
+            searchStart = startInReferenceRange ? referenceRange->startPosition() : referenceRange->endPosition();
         else
-            searchRange->setEnd(startInReferenceRange ? referenceRange->endPosition() : referenceRange->startPosition());
+            searchEnd = startInReferenceRange ? referenceRange->endPosition() : referenceRange->startPosition();
     }
 
-    RefPtr<Node> shadowTreeRoot = referenceRange && referenceRange->startContainer() ? referenceRange->startContainer()->nonBoundaryShadowTreeRootNode() : 0;
-    if (shadowTreeRoot) {
-        if (forward)
-            searchRange->setEnd(shadowTreeRoot.get(), shadowTreeRoot->countChildren());
-        else
-            searchRange->setStart(shadowTreeRoot.get(), 0);
-    }
+    RefPtrWillBeRawPtr<Range> resultRange = findStringBetweenPositions(target, searchStart, searchEnd, options);
 
-    RefPtrWillBeRawPtr<Range> resultRange(findPlainText(searchRange.get(), target, options));
     // If we started in the reference range and the found range exactly matches the reference range, find again.
     // Build a selection with the found range to remove collapsed whitespace.
     // Compare ranges instead of selection objects to ignore the way that the current selection was made.
-    if (startInReferenceRange && areRangesEqual(VisibleSelection(resultRange.get()).toNormalizedRange().get(), referenceRange)) {
-        searchRange = rangeOfContents(m_frame.document());
+    if (resultRange && startInReferenceRange && areRangesEqual(VisibleSelection(resultRange.get()).toNormalizedRange().get(), referenceRange)) {
         if (forward)
-            searchRange->setStart(referenceRange->endPosition());
+            searchStart = resultRange->endPosition();
         else
-            searchRange->setEnd(referenceRange->startPosition());
-
-        if (shadowTreeRoot) {
-            if (forward)
-                searchRange->setEnd(shadowTreeRoot.get(), shadowTreeRoot->countChildren());
-            else
-                searchRange->setStart(shadowTreeRoot.get(), 0);
-        }
-
-        resultRange = findPlainText(searchRange.get(), target, options);
+            searchEnd = resultRange->startPosition();
+        resultRange = findStringBetweenPositions(target, searchStart, searchEnd, options);
     }
 
-    // If nothing was found in the shadow tree, search in main content following the shadow tree.
-    if (resultRange->collapsed() && shadowTreeRoot) {
-        searchRange = rangeOfContents(m_frame.document());
-        if (forward)
-            searchRange->setStartAfter(shadowTreeRoot->shadowHost());
-        else
-            searchRange->setEndBefore(shadowTreeRoot->shadowHost());
-
-        resultRange = findPlainText(searchRange.get(), target, options);
+    if (!resultRange && options & WrapAround) {
+        searchStart = firstPositionInNode(m_frame.document());
+        searchEnd = lastPositionInNode(m_frame.document());
+        resultRange = findStringBetweenPositions(target, searchStart, searchEnd, options);
     }
 
-    // If we didn't find anything and we're wrapping, search again in the entire document (this will
-    // redundantly re-search the area already searched in some cases).
-    if (resultRange->collapsed() && options & WrapAround) {
-        searchRange = rangeOfContents(m_frame.document());
-        resultRange = findPlainText(searchRange.get(), target, options);
-        // We used to return false here if we ended up with the same range that we started with
-        // (e.g., the reference range was already the only instance of this text). But we decided that
-        // this should be a success case instead, so we'll just fall through in that case.
-    }
-
-    return resultRange->collapsed() ? nullptr : resultRange.release();
+    return resultRange.release();
 }
 
 void Editor::setMarkedTextMatchesAreHighlighted(bool flag)
