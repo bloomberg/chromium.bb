@@ -367,10 +367,19 @@ class EBuild(object):
     )
     env = {
         'CROS_WORKON_LOCALNAME': pkg_name,
-        'CROS_WORKON_PROJECT': pkg_name,
         'CROS_WORKON_SUBDIR': '',
     }
     settings = osutils.SourceEnvironment(ebuild_path, workon_vars, env=env)
+    # Try to detect problems extracting the variables by checking whether
+    # CROS_WORKON_PROJECT is set. If it isn't, something went wrong, possibly
+    # because we're simplistically sourcing the ebuild without most of portage
+    # being available. That still breaks this script and needs to be flagged
+    # as an error. We won't catch problems setting CROS_WORKON_LOCALNAME or
+    # CROS_WORKON_SUBDIR or if CROS_WORKON_PROJECT is set to the wrong thing,
+    # but at least this covers some types of failures.
+    if 'CROS_WORKON_PROJECT' not in settings:
+      raise EbuildFormatIncorrectException(ebuild_path,
+          'Unable to determine CROS_WORKON_PROJECT value.')
     localnames = settings['CROS_WORKON_LOCALNAME'].split(',')
     projects = settings['CROS_WORKON_PROJECT'].split(',')
     subdirs = settings['CROS_WORKON_SUBDIR'].split(',')
