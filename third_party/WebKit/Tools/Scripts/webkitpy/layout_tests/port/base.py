@@ -1611,6 +1611,10 @@ class Port(object):
             VirtualTestSuite('windows-directwrite',
                              'fast/text',
                              ['--enable-direct-write', '--enable-font-antialiasing']),
+            VirtualTestSuite('mac-antialiasedtext',
+                             'fast/text',
+                             ['--enable-font-antialiasing']),
+
         ]
 
     @memoized

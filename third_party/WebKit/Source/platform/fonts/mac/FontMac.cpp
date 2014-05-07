@@ -105,7 +105,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
 
     if (isRunningLayoutTest()) {
         shouldSmoothFonts = false;
-        shouldAntialias = false;
+        shouldAntialias = shouldAntialias && isFontAntialiasingEnabledForTest();
     }
 
     const GlyphBufferGlyph* glyphs = glyphBuffer.glyphs(from);
