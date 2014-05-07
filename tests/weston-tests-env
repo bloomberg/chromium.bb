@@ -26,6 +26,7 @@ BACKEND=$abs_builddir/.libs/$BACKEND
 case $TESTNAME in
 	*.la|*.so)
 		$WESTON --backend=$BACKEND \
+			--no-config \
 			--socket=test-$(basename $TESTNAME) \
 			--modules=$abs_builddir/.libs/${TESTNAME/.la/.so},xwayland.so \
 			--log="$SERVERLOG" \
@@ -35,6 +36,7 @@ case $TESTNAME in
 		WESTON_TEST_CLIENT_PATH=$abs_builddir/$TESTNAME $WESTON \
 			--socket=test-$(basename $TESTNAME) \
 			--backend=$BACKEND \
+			--no-config \
 			--log="$SERVERLOG" \
 			--modules=$abs_builddir/.libs/weston-test.so,xwayland.so \
 			&> "$OUTLOG"
