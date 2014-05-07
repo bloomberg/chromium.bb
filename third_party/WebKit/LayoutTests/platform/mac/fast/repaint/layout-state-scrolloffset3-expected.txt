@@ -1,6 +1,4 @@
-You should see the text 'after' in the inner box with no mangled pixels.
-after
- (GraphicsLayer
+(GraphicsLayer
   (bounds 800.00 600.00)
   (children 1
     (GraphicsLayer

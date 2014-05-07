@@ -1,7 +1,3 @@
-This tests that clicking on a non-content editable element does not cause a repaint of it in whole or in part.
-
-This element is not content editable.
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

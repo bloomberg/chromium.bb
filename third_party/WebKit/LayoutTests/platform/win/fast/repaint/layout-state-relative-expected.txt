@@ -1,6 +1,3 @@
-Repaint test for rdar://problem/6048566 Repaint original element's position, not its offset position.
-
-PASS
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

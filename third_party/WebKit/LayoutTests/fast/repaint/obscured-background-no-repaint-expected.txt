@@ -1,6 +1,4 @@
-
- 
- (GraphicsLayer
+(GraphicsLayer
   (bounds 785.00 672.00)
   (children 1
     (GraphicsLayer

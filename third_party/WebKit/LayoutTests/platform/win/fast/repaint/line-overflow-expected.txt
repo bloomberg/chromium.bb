@@ -1,6 +1,3 @@
-This is a test for http://bugzilla.opendarwin.org/show_bug.cgi?id=9669 Incomplete repaint when changing an inline's border.
-
-Cras faucibus. Nunc adipiscing, enim in scelerisque convallis, augue purus eleifend lacus, at sagittis eros leo pulvinar velit. Integer sollicitudin nisi ut urna blandit convallis.
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

@@ -1,7 +1,3 @@
-This is a test for http://bugzilla.opendarwin.org/show_bug.cgi?id=9388 REGRESSION: outlines don't get erased when removed in some cases.
-
-There should be a green square and no trace of red.
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1
