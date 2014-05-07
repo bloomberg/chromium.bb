@@ -253,6 +253,13 @@ void AnalysisCanvas::onDrawTextOnPath(const void* text,
   has_text_ = true;
 }
 
+void AnalysisCanvas::onDrawDRRect(const SkRRect& outer,
+                                  const SkRRect& inner,
+                                  const SkPaint& paint) {
+  is_solid_color_ = false;
+  is_transparent_ = false;
+}
+
 void AnalysisCanvas::drawVertices(SkCanvas::VertexMode,
                                   int vertex_count,
                                   const SkPoint verts[],

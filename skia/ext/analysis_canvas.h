@@ -105,6 +105,9 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkDrawPictureCallback {
                                 const SkPath& path,
                                 const SkMatrix* matrix,
                                 const SkPaint&) OVERRIDE;
+  virtual void onDrawDRRect(const SkRRect& outer,
+                            const SkRRect& inner,
+                            const SkPaint&) OVERRIDE;
 
 private:
   typedef SkCanvas INHERITED;
