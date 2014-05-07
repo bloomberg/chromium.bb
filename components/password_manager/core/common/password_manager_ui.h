@@ -33,6 +33,9 @@ enum State {
   BLACKLIST_STATE,
 };
 
+// Returns true if |state| represents a pending password.
+bool IsPendingState(State state);
+
 }  // namespace ui
 
 }  // namespace password_manager

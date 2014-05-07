@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/passwords/manage_password_item_view.h"
 
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
+#include "components/password_manager/core/common/password_manager_ui.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -134,7 +135,7 @@ ManagePasswordItemView::ManagePasswordItemView(
     ManagePasswordsBubbleModel* manage_passwords_bubble_model,
     autofill::PasswordForm password_form,
     Position position)
-    : manage_passwords_bubble_model_(manage_passwords_bubble_model),
+    : model_(manage_passwords_bubble_model),
       password_form_(password_form),
       delete_password_(false) {
   views::FillLayout* layout = new views::FillLayout();
@@ -151,10 +152,11 @@ ManagePasswordItemView::ManagePasswordItemView(
       GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor)));
 
-  if (manage_passwords_bubble_model_->WaitingToSavePassword())
+  if (password_manager::ui::IsPendingState(model_->state())) {
     AddChildView(new PendingView(this));
-  else
+  } else {
     AddChildView(new ManageView(this));
+  }
   GetLayoutManager()->Layout(this);
 }
 
@@ -213,7 +215,7 @@ views::Label* ManagePasswordItemView::GeneratePasswordLabel() const {
 }
 
 void ManagePasswordItemView::Refresh() {
-  DCHECK(!manage_passwords_bubble_model_->WaitingToSavePassword());
+  DCHECK(!password_manager::ui::IsPendingState(model_->state()));
 
   RemoveAllChildViews(true);
   if (delete_password_)
@@ -224,10 +226,10 @@ void ManagePasswordItemView::Refresh() {
 
   // After the view is consistent, notify the model that the password needs to
   // be updated (either removed or put back into the store, as appropriate.
-  manage_passwords_bubble_model_->OnPasswordAction(
-      password_form_,
-      delete_password_ ? ManagePasswordsBubbleModel::REMOVE_PASSWORD
-                       : ManagePasswordsBubbleModel::ADD_PASSWORD);
+  model_->OnPasswordAction(password_form_,
+                           delete_password_
+                               ? ManagePasswordsBubbleModel::REMOVE_PASSWORD
+                               : ManagePasswordsBubbleModel::ADD_PASSWORD);
 }
 
 void ManagePasswordItemView::NotifyClickedDelete() {

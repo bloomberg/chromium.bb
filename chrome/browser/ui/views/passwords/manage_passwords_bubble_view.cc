@@ -419,9 +419,9 @@ void ManagePasswordsBubbleView::Init() {
   SetLayoutManager(layout);
   SetFocusable(true);
 
-  if (model()->WaitingToSavePassword())
+  if (password_manager::ui::IsPendingState(model()->state()))
     AddChildView(new PendingView(this));
-  else if (model()->NeverSavingPasswords())
+  else if (model()->state() == password_manager::ui::BLACKLIST_STATE)
     AddChildView(new BlacklistedView(this));
   else
     AddChildView(new ManageView(this));

@@ -33,9 +33,8 @@ class GridLayout;
 //
 // 1. PendingView: Offers the user the possibility of saving credentials.
 // 2. ManageView: Displays the current page's saved credentials.
+// 3. BlacklistedView: Informs the user that the current page is blacklisted.
 //
-// TODO(mkwst): Add a third state: "Informing the user that the current page
-// is blacklisted."
 class ManagePasswordsBubbleView : public ManagePasswordsBubble,
                                   public views::BubbleDelegateView {
  public:

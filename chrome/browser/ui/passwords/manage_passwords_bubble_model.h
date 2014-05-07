@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_bubble.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/common/password_manager_ui.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class ManagePasswordsIconController;
@@ -20,12 +21,6 @@ class WebContents;
 // password management actions.
 class ManagePasswordsBubbleModel : public content::WebContentsObserver {
  public:
-  enum ManagePasswordsBubbleState {
-    PASSWORD_TO_BE_SAVED,
-    MANAGE_PASSWORDS,
-    NEVER_SAVE_PASSWORDS,
-  };
-
   enum PasswordAction { REMOVE_PASSWORD, ADD_PASSWORD };
 
   // Creates a ManagePasswordsBubbleModel, which holds a raw pointer to the
@@ -66,17 +61,7 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   void OnPasswordAction(const autofill::PasswordForm& password_form,
                         PasswordAction action);
 
-  ManagePasswordsBubbleState manage_passwords_bubble_state() const {
-    return manage_passwords_bubble_state_;
-  }
-
-  bool WaitingToSavePassword() const {
-    return manage_passwords_bubble_state_ == PASSWORD_TO_BE_SAVED;
-  }
-
-  bool NeverSavingPasswords() const {
-    return manage_passwords_bubble_state_ == NEVER_SAVE_PASSWORDS;
-  }
+  password_manager::ui::State state() const { return state_; }
 
   const base::string16& title() const { return title_; }
   const autofill::PasswordForm& pending_credentials() const {
@@ -87,21 +72,21 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   }
   const base::string16& manage_link() const { return manage_link_; }
 
-  // Gets and sets the reason the bubble was displayed; exposed for testing.
+#if defined(UNIT_TEST)
+  // Gets and sets the reason the bubble was displayed.
   password_manager::metrics_util::UIDisplayDisposition display_disposition()
       const {
     return display_disposition_;
   }
 
-  // Gets the reason the bubble was dismissed; exposed for testing.
+  // Gets the reason the bubble was dismissed.
   password_manager::metrics_util::UIDismissalReason dismissal_reason() const {
     return dismissal_reason_;
   }
 
-  // State setter; exposed for testing.
-  void set_manage_passwords_bubble_state(ManagePasswordsBubbleState state) {
-    manage_passwords_bubble_state_ = state;
-  }
+  // State setter.
+  void set_state(password_manager::ui::State state) { state_ = state; }
+#endif
 
  private:
   // content::WebContentsObserver
@@ -109,7 +94,7 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
       content::WebContents* web_contents) OVERRIDE;
 
   content::WebContents* web_contents_;
-  ManagePasswordsBubbleState manage_passwords_bubble_state_;
+  password_manager::ui::State state_;
   base::string16 title_;
   autofill::PasswordForm pending_credentials_;
   autofill::PasswordFormMap best_matches_;

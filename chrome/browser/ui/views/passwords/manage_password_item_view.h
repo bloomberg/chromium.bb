@@ -93,7 +93,7 @@ class ManagePasswordItemView : public views::View {
   // Changes the views according to the state of |delete_password_|.
   void Refresh();
 
-  ManagePasswordsBubbleModel* manage_passwords_bubble_model_;
+  ManagePasswordsBubbleModel* model_;
   autofill::PasswordForm password_form_;
   bool delete_password_;
 

@@ -13,8 +13,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using content::WebContents;
 using autofill::PasswordFormMap;
+using content::WebContents;
 
 ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     content::WebContents* web_contents)
@@ -29,19 +29,14 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   // TODO(mkwst): Reverse this logic. The controller should populate the model
   // directly rather than the model pulling from the controller. Perhaps like
   // `controller->PopulateModel(this)`.
-  if (controller->PasswordPendingUserDecision()) {
-    manage_passwords_bubble_state_ = PASSWORD_TO_BE_SAVED;
+  state_ = controller->state();
+  if (password_manager::ui::IsPendingState(state_))
     pending_credentials_ = controller->PendingCredentials();
-  } else if (controller->state() == password_manager::ui::BLACKLIST_STATE) {
-    manage_passwords_bubble_state_ = NEVER_SAVE_PASSWORDS;
-  } else {
-    manage_passwords_bubble_state_ = MANAGE_PASSWORDS;
-  }
+  best_matches_ = controller->best_matches();
 
   title_ = l10n_util::GetStringUTF16(
-      (manage_passwords_bubble_state_ == PASSWORD_TO_BE_SAVED) ?
-          IDS_SAVE_PASSWORD : IDS_MANAGE_PASSWORDS);
-  best_matches_ = controller->best_matches();
+      password_manager::ui::IsPendingState(state_) ? IDS_SAVE_PASSWORD
+                                                   : IDS_MANAGE_PASSWORDS);
   manage_link_ =
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS_LINK);
 }
@@ -51,17 +46,17 @@ ManagePasswordsBubbleModel::~ManagePasswordsBubbleModel() {}
 void ManagePasswordsBubbleModel::OnBubbleShown(
     ManagePasswordsBubble::DisplayReason reason) {
   if (reason == ManagePasswordsBubble::USER_ACTION) {
-    if (WaitingToSavePassword()) {
+    if (password_manager::ui::IsPendingState(state_)) {
       display_disposition_ =
           password_manager::metrics_util::MANUAL_WITH_PASSWORD_PENDING;
-    } else if (NeverSavingPasswords()) {
+    } else if (state_ == password_manager::ui::BLACKLIST_STATE) {
       display_disposition_ = password_manager::metrics_util::MANUAL_BLACKLISTED;
     } else {
       display_disposition_ =
           password_manager::metrics_util::MANUAL_MANAGE_PASSWORDS;
     }
   } else {
-    DCHECK(WaitingToSavePassword());
+    DCHECK(password_manager::ui::IsPendingState(state_));
     display_disposition_ =
         password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING;
   }
@@ -82,7 +77,7 @@ void ManagePasswordsBubbleModel::OnBubbleHidden() {
 
 void ManagePasswordsBubbleModel::OnNopeClicked() {
   dismissal_reason_ = password_manager::metrics_util::CLICKED_NOPE;
-  manage_passwords_bubble_state_ = PASSWORD_TO_BE_SAVED;
+  state_ = password_manager::ui::PENDING_PASSWORD_STATE;
 }
 
 void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
@@ -90,7 +85,7 @@ void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
   ManagePasswordsUIController* manage_passwords_ui_controller =
       ManagePasswordsUIController::FromWebContents(web_contents_);
   manage_passwords_ui_controller->NeverSavePassword();
-  manage_passwords_bubble_state_ = NEVER_SAVE_PASSWORDS;
+  state_ = password_manager::ui::BLACKLIST_STATE;
 }
 
 void ManagePasswordsBubbleModel::OnUnblacklistClicked() {
@@ -98,7 +93,7 @@ void ManagePasswordsBubbleModel::OnUnblacklistClicked() {
   ManagePasswordsUIController* manage_passwords_ui_controller =
       ManagePasswordsUIController::FromWebContents(web_contents_);
   manage_passwords_ui_controller->UnblacklistSite();
-  manage_passwords_bubble_state_ = MANAGE_PASSWORDS;
+  state_ = password_manager::ui::MANAGE_STATE;
 }
 
 void ManagePasswordsBubbleModel::OnSaveClicked() {
@@ -106,7 +101,7 @@ void ManagePasswordsBubbleModel::OnSaveClicked() {
   ManagePasswordsUIController* manage_passwords_ui_controller =
       ManagePasswordsUIController::FromWebContents(web_contents_);
   manage_passwords_ui_controller->SavePassword();
-  manage_passwords_bubble_state_ = MANAGE_PASSWORDS;
+  state_ = password_manager::ui::MANAGE_STATE;
 }
 
 void ManagePasswordsBubbleModel::OnDoneClicked() {

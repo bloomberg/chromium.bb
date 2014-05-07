@@ -43,13 +43,10 @@ void ManagePasswordsIconView::UpdateVisibleUI() {
   // things accordingly if we're either in BLACKLIST_STATE or PENDING_STATE.
   icon_id_ = IDR_SAVE_PASSWORD;
   tooltip_text_id_ = IDS_PASSWORD_MANAGER_TOOLTIP_MANAGE;
-  if (state() == password_manager::ui::BLACKLIST_STATE) {
+  if (state() == password_manager::ui::BLACKLIST_STATE)
     icon_id_ = IDR_SAVE_PASSWORD_BLACKLISTED;
-  } else if (state() == password_manager::ui::PENDING_PASSWORD_STATE ||
-             state() ==
-                 password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE) {
+  else if (password_manager::ui::IsPendingState(state()))
     tooltip_text_id_ = IDS_PASSWORD_MANAGER_TOOLTIP_SAVE;
-  }
 
   SetVisible(true);
   SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(icon_id_));

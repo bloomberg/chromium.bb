@@ -36,23 +36,20 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
   virtual void TearDown() OVERRIDE { model_.reset(); }
 
   void PretendPasswordWaiting() {
-    model_->set_manage_passwords_bubble_state(
-        ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED);
+    model_->set_state(password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE);
     model_->OnBubbleShown(ManagePasswordsBubble::AUTOMATIC);
     controller()->SetState(
         password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE);
   }
 
   void PretendManagingPasswords() {
-    model_->set_manage_passwords_bubble_state(
-        ManagePasswordsBubbleModel::MANAGE_PASSWORDS);
+    model_->set_state(password_manager::ui::MANAGE_STATE);
     model_->OnBubbleShown(ManagePasswordsBubble::USER_ACTION);
     controller()->SetState(password_manager::ui::MANAGE_STATE);
   }
 
   void PretendBlacklisted() {
-    model_->set_manage_passwords_bubble_state(
-        ManagePasswordsBubbleModel::NEVER_SAVE_PASSWORDS);
+    model_->set_state(password_manager::ui::BLACKLIST_STATE);
     model_->OnBubbleShown(ManagePasswordsBubble::USER_ACTION);
 
     base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
@@ -107,7 +104,8 @@ TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutInteraction) {
   model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::NO_DIRECT_INTERACTION);
-  EXPECT_TRUE(model_->WaitingToSavePassword());
+  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE,
+            model_->state());
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
 
@@ -136,8 +134,7 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickSave) {
   model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::CLICKED_SAVE);
-  EXPECT_FALSE(model_->WaitingToSavePassword());
-  EXPECT_FALSE(model_->NeverSavingPasswords());
+  EXPECT_EQ(password_manager::ui::MANAGE_STATE, model_->state());
   EXPECT_TRUE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
 
@@ -166,8 +163,7 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickNope) {
   model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::CLICKED_NOPE);
-  EXPECT_TRUE(model_->WaitingToSavePassword());
-  EXPECT_FALSE(model_->NeverSavingPasswords());
+  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, model_->state());
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
 
@@ -196,8 +192,7 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickNever) {
   model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::CLICKED_NEVER);
-  EXPECT_FALSE(model_->WaitingToSavePassword());
-  EXPECT_TRUE(model_->NeverSavingPasswords());
+  EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, model_->state());
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_TRUE(controller()->never_saved_password());
 
@@ -226,8 +221,7 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickManage) {
   model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::CLICKED_MANAGE);
-  EXPECT_FALSE(model_->WaitingToSavePassword());
-  EXPECT_FALSE(model_->NeverSavingPasswords());
+  EXPECT_EQ(password_manager::ui::MANAGE_STATE, model_->state());
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
 
@@ -256,8 +250,7 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickDone) {
   model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::CLICKED_DONE);
-  EXPECT_FALSE(model_->WaitingToSavePassword());
-  EXPECT_FALSE(model_->NeverSavingPasswords());
+  EXPECT_EQ(password_manager::ui::MANAGE_STATE, model_->state());
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
 
@@ -286,8 +279,7 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickUnblacklist) {
   model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::CLICKED_UNBLACKLIST);
-  EXPECT_FALSE(model_->WaitingToSavePassword());
-  EXPECT_FALSE(model_->NeverSavingPasswords());
+  EXPECT_EQ(password_manager::ui::MANAGE_STATE, model_->state());
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
 
@@ -309,16 +301,18 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickUnblacklist) {
       samples->GetCount(password_manager::metrics_util::CLICKED_UNBLACKLIST));
 }
 
-TEST_F(ManagePasswordsBubbleModelTest, WaitingToSavePassword) {
-  EXPECT_FALSE(model_->WaitingToSavePassword());
-  model_->set_manage_passwords_bubble_state(
-      ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED);
-  EXPECT_TRUE(model_->WaitingToSavePassword());
-}
+TEST_F(ManagePasswordsBubbleModelTest, PasswordPendingUserDecision) {
+  EXPECT_FALSE(password_manager::ui::IsPendingState(model_->state()));
 
-TEST_F(ManagePasswordsBubbleModelTest, NeverSavingPasswords) {
-  EXPECT_FALSE(model_->NeverSavingPasswords());
-  model_->set_manage_passwords_bubble_state(
-      ManagePasswordsBubbleModel::NEVER_SAVE_PASSWORDS);
-  EXPECT_TRUE(model_->NeverSavingPasswords());
+  model_->set_state(password_manager::ui::INACTIVE_STATE);
+  EXPECT_FALSE(password_manager::ui::IsPendingState(model_->state()));
+  model_->set_state(password_manager::ui::MANAGE_STATE);
+  EXPECT_FALSE(password_manager::ui::IsPendingState(model_->state()));
+  model_->set_state(password_manager::ui::BLACKLIST_STATE);
+  EXPECT_FALSE(password_manager::ui::IsPendingState(model_->state()));
+
+  model_->set_state(password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE);
+  EXPECT_TRUE(password_manager::ui::IsPendingState(model_->state()));
+  model_->set_state(password_manager::ui::PENDING_PASSWORD_STATE);
+  EXPECT_TRUE(password_manager::ui::IsPendingState(model_->state()));
 }
