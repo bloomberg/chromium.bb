@@ -144,8 +144,11 @@ class PrefHashBrowserTest : public InProcessBrowserTest,
     return true;
 #endif  // defined(OS_WIN)
 #endif  // defined(OFFICIAL_BUILD)
-    return GetParam() ==
-        chrome_prefs::internals::kSettingsEnforcementGroupNoEnforcement;
+    return GetParam() != chrome_prefs::internals::
+                             kSettingsEnforcementGroupEnforceAlways &&
+           GetParam() !=
+               chrome_prefs::internals::
+                   kSettingsEnforcementGroupEnforceAlwaysWithExtensions;
   }
 };
 
@@ -322,6 +325,4 @@ INSTANTIATE_TEST_CASE_P(
         chrome_prefs::internals::kSettingsEnforcementGroupEnforceOnload,
         chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways,
         chrome_prefs::internals::
-            kSettingsEnforcementGroupEnforceAlwaysWithExtensions,
-        chrome_prefs::internals::
-            kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE));
+            kSettingsEnforcementGroupEnforceAlwaysWithExtensions));

@@ -41,7 +41,6 @@ extern const char kSettingsEnforcementGroupNoEnforcement[];
 extern const char kSettingsEnforcementGroupEnforceOnload[];
 extern const char kSettingsEnforcementGroupEnforceAlways[];
 extern const char kSettingsEnforcementGroupEnforceAlwaysWithExtensions[];
-extern const char kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE[];
 
 }  // namespace internals
 
