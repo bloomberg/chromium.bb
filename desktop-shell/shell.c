@@ -1027,7 +1027,16 @@ finish_workspace_change_animation(struct desktop_shell *shell,
 				  struct workspace *from,
 				  struct workspace *to)
 {
+	struct weston_view *view;
+
 	weston_compositor_schedule_repaint(shell->compositor);
+
+	/* Views that extend past the bottom of the output are still
+	 * visible after the workspace animation ends but before its layer
+	 * is hidden. In that case, we need to damage below those views so
+	 * that the screen is properly repainted. */
+	wl_list_for_each(view, &from->layer.view_list, layer_link)
+		weston_view_damage_below(view);
 
 	wl_list_remove(&shell->workspaces.animation.link);
 	workspace_deactivate_transforms(from);
