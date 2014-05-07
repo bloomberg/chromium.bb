@@ -15,16 +15,21 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 TOOLS_DIR = os.path.dirname(SCRIPT_DIR)
 DATA_DIR = os.path.join(TOOLS_DIR, 'lib', 'tests', 'data')
 CHROME_SRC = os.path.dirname(os.path.dirname(os.path.dirname(TOOLS_DIR)))
-MOCK_DIR = os.path.join(CHROME_SRC, "third_party", "pymock")
+MOCK_DIR = os.path.join(CHROME_SRC, 'third_party', 'pymock')
 
 # For the mock library
 sys.path.append(MOCK_DIR)
 sys.path.append(TOOLS_DIR)
 
+import build_paths
 import create_nmf
 import getos
 import mock
 
+TOOLCHAIN_OUT = os.path.join(build_paths.OUT_DIR, 'sdk_tests', 'toolchain')
+NACL_X86_GLIBC_TOOLCHAIN = os.path.join(TOOLCHAIN_OUT,
+                                        '%s_x86' % getos.GetPlatform(),
+                                        'nacl_x86_glibc')
 
 PosixRelPath = create_nmf.PosixRelPath
 
@@ -83,9 +88,7 @@ class TestNmfUtils(unittest.TestCase):
 
   def setUp(self):
     self.tempdir = None
-    toolchain = os.path.join(CHROME_SRC, 'native_client', 'toolchain')
-    self.toolchain = os.path.join(toolchain, '%s_x86' % getos.GetPlatform(),
-                                  'nacl_x86_glibc')
+    self.toolchain = NACL_X86_GLIBC_TOOLCHAIN
     self.objdump = os.path.join(self.toolchain, 'bin', 'i686-nacl-objdump')
     if os.name == 'nt':
       self.objdump += '.exe'

@@ -4,14 +4,30 @@
 # found in the LICENSE file.
 
 import os
+import subprocess
 import sys
 import unittest
 
 # add tools folder to sys.path
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(SCRIPT_DIR, 'tools', 'tests'))
-sys.path.append(os.path.join(SCRIPT_DIR, 'tools', 'lib', 'tests'))
-sys.path.append(os.path.join(SCRIPT_DIR, 'build_tools', 'tests'))
+TOOLS_DIR = os.path.join(SCRIPT_DIR, 'tools')
+BUILD_TOOLS_DIR = os.path.join(SCRIPT_DIR, 'build_tools')
+
+sys.path.append(TOOLS_DIR)
+sys.path.append(os.path.join(TOOLS_DIR, 'tests'))
+sys.path.append(os.path.join(TOOLS_DIR, 'lib', 'tests'))
+sys.path.append(BUILD_TOOLS_DIR)
+sys.path.append(os.path.join(BUILD_TOOLS_DIR, 'tests'))
+
+import build_paths
+
+PKG_VER_DIR = os.path.join(build_paths.NACL_DIR, 'build', 'package_version')
+TAR_DIR = os.path.join(build_paths.NACL_DIR, 'toolchain', '.tars')
+
+PKG_VER = os.path.join(PKG_VER_DIR, 'package_version.py')
+
+EXTRACT_PACKAGES = ['nacl_x86_glibc']
+TOOLCHAIN_OUT = os.path.join(build_paths.OUT_DIR, 'sdk_tests', 'toolchain')
 
 TEST_MODULES = [
     'create_html_test',
@@ -35,7 +51,17 @@ TEST_MODULES = [
     'verify_ppapi_test',
 ]
 
+def ExtractToolchains():
+  subprocess.check_output([sys.executable, PKG_VER,
+                           '--packages', ','.join(EXTRACT_PACKAGES),
+                           '--tar-dir', TAR_DIR,
+                           '--dest-dir', TOOLCHAIN_OUT,
+                           'extract'])
+
 def main():
+  # Some of the unit tests use parts of toolchains. Extract to TOOLCHAIN_OUT.
+  ExtractToolchains()
+
   suite = unittest.TestSuite()
   for module_name in TEST_MODULES:
     module = __import__(module_name)
