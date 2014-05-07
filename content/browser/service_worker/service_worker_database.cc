@@ -231,6 +231,7 @@ ServiceWorkerDatabase::ServiceWorkerDatabase(const base::FilePath& path)
       is_disabled_(false),
       was_corruption_detected_(false),
       is_initialized_(false) {
+  sequence_checker_.DetachFromSequence();
 }
 
 ServiceWorkerDatabase::~ServiceWorkerDatabase() {
@@ -247,8 +248,15 @@ bool ServiceWorkerDatabase::GetNextAvailableIds(
   DCHECK(next_avail_version_id);
   DCHECK(next_avail_resource_id);
 
-  if (!LazyOpen(false) || is_disabled_)
-    return false;
+  if (!LazyOpen(false)) {
+    if (is_disabled_)
+      return false;
+    // Database has never been used.
+    *next_avail_registration_id = 0;
+    *next_avail_version_id = 0;
+    *next_avail_resource_id = 0;
+    return true;
+  }
 
   if (!ReadNextAvailableId(kNextRegIdKey, &next_avail_registration_id_) ||
       !ReadNextAvailableId(kNextVerIdKey, &next_avail_version_id_) ||
@@ -267,8 +275,13 @@ bool ServiceWorkerDatabase::GetOriginsWithRegistrations(
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(origins);
 
-  if (!LazyOpen(false) || is_disabled_)
-    return false;
+  if (!LazyOpen(false)) {
+    if (is_disabled_)
+      return false;
+    // Database has never been used.
+    origins->clear();
+    return true;
+  }
 
   scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
   for (itr->Seek(kUniqueOriginKey); itr->Valid(); itr->Next()) {

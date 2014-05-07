@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_STORAGE_H_
 
 #include <map>
+#include <set>
 #include <vector>
 
 #include "base/bind.h"
@@ -50,6 +51,16 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   typedef base::Callback<
       void(ServiceWorkerStatusCode status, int result)>
           CompareCallback;
+
+  struct InitialData {
+    int64 next_registration_id;
+    int64 next_version_id;
+    int64 next_resource_id;
+    std::set<GURL> origins;
+
+    InitialData();
+    ~InitialData();
+  };
 
   ServiceWorkerStorage(const base::FilePath& path,
                        base::WeakPtr<ServiceWorkerContextCore> context,
@@ -116,6 +127,12 @@ class CONTENT_EXPORT ServiceWorkerStorage {
  private:
   friend class ServiceWorkerStorageTest;
 
+  bool LazyInitialize(
+      const base::Closure& callback);
+  void DidInitialize(
+      InitialData* data,
+      bool success);
+
   scoped_refptr<ServiceWorkerRegistration> CreateRegistration(
       const ServiceWorkerDatabase::RegistrationData* data);
   ServiceWorkerRegistration* FindInstallingRegistrationForDocument(
@@ -146,16 +163,35 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   // Lazy disk_cache getter.
   ServiceWorkerDiskCache* disk_cache();
 
-  int64 last_registration_id_;
-  int64 last_version_id_;
-  int64 last_resource_id_;
-  bool simulated_lazy_initted_;
+  // Origins having registations.
+  std::set<GURL> registered_origins_;
+
+  // Pending database tasks waiting for initialization.
+  std::vector<base::Closure> pending_tasks_;
+
+  int64 next_registration_id_;
+  int64 next_version_id_;
+  int64 next_resource_id_;
+
+  enum State {
+    UNINITIALIZED,
+    INITIALIZING,
+    INITIALIZED,
+    DISABLED,
+  };
+  State state_;
 
   base::FilePath path_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
+
+  // Only accessed on |database_task_runner_|.
+  scoped_ptr<ServiceWorkerDatabase> database_;
+
   scoped_refptr<base::SequencedTaskRunner> database_task_runner_;
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
   scoped_ptr<ServiceWorkerDiskCache> disk_cache_;
+
+  base::WeakPtrFactory<ServiceWorkerStorage> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerStorage);
 };
