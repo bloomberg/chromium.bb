@@ -211,13 +211,17 @@ private:
         AnimationEventDelegate(Element* target, const AtomicString& name)
             : m_target(target)
             , m_name(name)
+            , m_previousPhase(TimedItem::PhaseNone)
+            , m_previousIteration(nullValue())
         {
         }
-        virtual void onEventCondition(const TimedItem*, bool isFirstSample, TimedItem::Phase previousPhase, double previousIteration) OVERRIDE;
+        virtual void onEventCondition(const TimedItem*) OVERRIDE;
     private:
         void maybeDispatch(Document::ListenerType, const AtomicString& eventName, double elapsedTime);
         Element* m_target;
         const AtomicString m_name;
+        TimedItem::Phase m_previousPhase;
+        double m_previousIteration;
     };
 
     class TransitionEventDelegate FINAL : public TimedItem::EventDelegate {
@@ -225,12 +229,14 @@ private:
         TransitionEventDelegate(Element* target, CSSPropertyID property)
             : m_target(target)
             , m_property(property)
+            , m_previousPhase(TimedItem::PhaseNone)
         {
         }
-        virtual void onEventCondition(const TimedItem*, bool isFirstSample, TimedItem::Phase previousPhase, double previousIteration) OVERRIDE;
+        virtual void onEventCondition(const TimedItem*) OVERRIDE;
     private:
         Element* m_target;
         const CSSPropertyID m_property;
+        TimedItem::Phase m_previousPhase;
     };
 };
 

@@ -42,6 +42,11 @@ class AnimationPlayer;
 class TimedItem;
 class TimedItemTiming;
 
+enum TimingUpdateReason {
+    TimingUpdateOnDemand,
+    TimingUpdateForAnimationFrame
+};
+
 static inline bool isNull(double value)
 {
     return std::isnan(value);
@@ -66,7 +71,7 @@ public:
     class EventDelegate {
     public:
         virtual ~EventDelegate() { };
-        virtual void onEventCondition(const TimedItem*, bool isFirstSample, Phase previousPhase, double previousIteration) = 0;
+        virtual void onEventCondition(const TimedItem*) = 0;
     };
 
     virtual ~TimedItem() { }
@@ -111,7 +116,7 @@ protected:
     // When TimedItem receives a new inherited time via updateInheritedTime
     // it will (if necessary) recalculate timings and (if necessary) call
     // updateChildrenAndEffects.
-    void updateInheritedTime(double inheritedTime) const;
+    void updateInheritedTime(double inheritedTime, TimingUpdateReason) const;
     void invalidate() const { m_needsUpdate = true; };
     bool hasEvents() const { return m_eventDelegate; }
     void clearEventDelegate() { m_eventDelegate = nullptr; }
@@ -158,7 +163,6 @@ private:
         double timeToForwardsEffectChange;
         double timeToReverseEffectChange;
     } m_calculated;
-    mutable bool m_isFirstSample;
     mutable bool m_needsUpdate;
     mutable double m_lastUpdateTime;
 

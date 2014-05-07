@@ -29,14 +29,14 @@ protected:
     {
         AnimationPlayer* player = timeline->createAnimationPlayer(animation);
         player->setStartTimeInternal(startTime);
-        player->update(AnimationPlayer::UpdateOnDemand);
+        player->update(TimingUpdateOnDemand);
         return player;
     }
 
     void updateTimeline(double time)
     {
         document->animationClock().updateTime(time);
-        timeline->serviceAnimations(AnimationPlayer::UpdateOnDemand);
+        timeline->serviceAnimations(TimingUpdateForAnimationFrame);
     }
 
     const Vector<OwnPtr<SampledEffect> >& effects()

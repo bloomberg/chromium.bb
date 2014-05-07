@@ -80,7 +80,7 @@ protected:
     {
         document->animationClock().updateTime(time);
         // The timeline does not know about our player, so we have to explicitly call update().
-        return player->update(AnimationPlayer::UpdateOnDemand);
+        return player->update(TimingUpdateOnDemand);
     }
 
     RefPtr<Document> document;
@@ -599,7 +599,7 @@ TEST_F(AnimationAnimationPlayerTest, SetSourceUnlimitsAnimationPlayer)
 TEST_F(AnimationAnimationPlayerTest, EmptyAnimationPlayersDontUpdateEffects)
 {
     player = timeline->createAnimationPlayer(0);
-    player->update(AnimationPlayer::UpdateOnDemand);
+    player->update(TimingUpdateOnDemand);
     EXPECT_EQ(std::numeric_limits<double>::infinity(), player->timeToEffectChange());
 
     updateTimeline(1234);
@@ -644,24 +644,24 @@ TEST_F(AnimationAnimationPlayerTest, AnimationPlayersReturnTimeToNextEffect)
     EXPECT_EQ(std::numeric_limits<double>::infinity(), player->timeToEffectChange());
 
     player->setCurrentTimeInternal(0);
-    player->update(AnimationPlayer::UpdateOnDemand);
+    player->update(TimingUpdateOnDemand);
     EXPECT_EQ(1, player->timeToEffectChange());
 
     player->setPlaybackRate(2);
-    player->update(AnimationPlayer::UpdateOnDemand);
+    player->update(TimingUpdateOnDemand);
     EXPECT_EQ(0.5, player->timeToEffectChange());
 
     player->setPlaybackRate(0);
-    player->update(AnimationPlayer::UpdateOnDemand);
+    player->update(TimingUpdateOnDemand);
     EXPECT_EQ(std::numeric_limits<double>::infinity(), player->timeToEffectChange());
 
     player->setCurrentTimeInternal(3);
     player->setPlaybackRate(-1);
-    player->update(AnimationPlayer::UpdateOnDemand);
+    player->update(TimingUpdateOnDemand);
     EXPECT_EQ(1, player->timeToEffectChange());
 
     player->setPlaybackRate(-2);
-    player->update(AnimationPlayer::UpdateOnDemand);
+    player->update(TimingUpdateOnDemand);
     EXPECT_EQ(0.5, player->timeToEffectChange());
 }
 
@@ -669,7 +669,7 @@ TEST_F(AnimationAnimationPlayerTest, TimeToNextEffectWhenPaused)
 {
     EXPECT_EQ(0, player->timeToEffectChange());
     player->pause();
-    player->update(AnimationPlayer::UpdateOnDemand);
+    player->update(TimingUpdateOnDemand);
     EXPECT_EQ(std::numeric_limits<double>::infinity(), player->timeToEffectChange());
 }
 
@@ -679,7 +679,7 @@ TEST_F(AnimationAnimationPlayerTest, TimeToNextEffectWhenCancelledBeforeStart)
     player->setCurrentTimeInternal(-8);
     player->setPlaybackRate(2);
     player->cancel();
-    player->update(AnimationPlayer::UpdateOnDemand);
+    player->update(TimingUpdateOnDemand);
     EXPECT_EQ(4, player->timeToEffectChange());
 }
 
@@ -689,7 +689,7 @@ TEST_F(AnimationAnimationPlayerTest, TimeToNextEffectWhenCancelledBeforeStartRev
     player->setCurrentTimeInternal(9);
     player->setPlaybackRate(-3);
     player->cancel();
-    player->update(AnimationPlayer::UpdateOnDemand);
+    player->update(TimingUpdateOnDemand);
     EXPECT_EQ(3, player->timeToEffectChange());
 }
 
@@ -700,7 +700,8 @@ TEST_F(AnimationAnimationPlayerTest, AttachedAnimationPlayers)
     Timing timing;
     RefPtr<Animation> animation = Animation::create(element.get(), nullptr, timing);
     RefPtr<AnimationPlayer> player = timeline->createAnimationPlayer(animation.get());
-    timeline->serviceAnimations(AnimationPlayer::UpdateForAnimationFrame);
+    player->setStartTime(0);
+    timeline->serviceAnimations(TimingUpdateForAnimationFrame);
     EXPECT_EQ(1, element->activeAnimations()->players().find(player.get())->value);
 
     player.release();

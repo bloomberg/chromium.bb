@@ -46,7 +46,7 @@ namespace WebCore {
 
 namespace {
 
-void updateAnimationTiming(Document& document, AnimationPlayer::UpdateReason reason)
+void updateAnimationTiming(Document& document, TimingUpdateReason reason)
 {
     document.timeline().serviceAnimations(reason);
     document.transitionTimeline().serviceAnimations(reason);
@@ -57,13 +57,13 @@ void updateAnimationTiming(Document& document, AnimationPlayer::UpdateReason rea
 void DocumentAnimations::updateAnimationTimingForAnimationFrame(Document& document, double monotonicAnimationStartTime)
 {
     document.animationClock().updateTime(monotonicAnimationStartTime);
-    updateAnimationTiming(document, AnimationPlayer::UpdateForAnimationFrame);
+    updateAnimationTiming(document, TimingUpdateForAnimationFrame);
 }
 
 void DocumentAnimations::updateOutdatedAnimationPlayersIfNeeded(Document& document)
 {
     if (needsOutdatedAnimationPlayerUpdate(document))
-        updateAnimationTiming(document, AnimationPlayer::UpdateOnDemand);
+        updateAnimationTiming(document, TimingUpdateOnDemand);
 }
 
 void DocumentAnimations::updateAnimationTimingForGetComputedStyle(Node& node, CSSPropertyID property)
@@ -75,7 +75,7 @@ void DocumentAnimations::updateAnimationTimingForGetComputedStyle(Node& node, CS
         if ((property == CSSPropertyOpacity && style->isRunningOpacityAnimationOnCompositor())
             || ((property == CSSPropertyTransform || property == CSSPropertyWebkitTransform) && style->isRunningTransformAnimationOnCompositor())
             || (property == CSSPropertyWebkitFilter && style->isRunningFilterAnimationOnCompositor())) {
-            updateAnimationTiming(element.document(), AnimationPlayer::UpdateOnDemand);
+            updateAnimationTiming(element.document(), TimingUpdateOnDemand);
         }
     }
 }

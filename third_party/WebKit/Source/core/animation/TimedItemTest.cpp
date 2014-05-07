@@ -39,27 +39,19 @@ namespace {
 
 class TestTimedItemEventDelegate : public TimedItem::EventDelegate {
 public:
-    virtual void onEventCondition(const TimedItem* timedItem, bool isFirstSample, TimedItem::Phase previousPhase, double previousIteration) OVERRIDE
+    virtual void onEventCondition(const TimedItem* timedItem) OVERRIDE
     {
         m_eventTriggered = true;
-        m_phaseChanged = previousPhase != timedItem->phase();
-        m_iterationChanged = previousIteration != timedItem->currentIteration();
 
     }
     void reset()
     {
         m_eventTriggered = false;
-        m_phaseChanged = false;
-        m_iterationChanged = false;
     }
     bool eventTriggered() { return m_eventTriggered; }
-    bool phaseChanged() { return m_phaseChanged; }
-    bool iterationChanged() { return m_iterationChanged; }
 
 private:
     bool m_eventTriggered;
-    bool m_phaseChanged;
-    bool m_iterationChanged;
 };
 
 class TestTimedItem : public TimedItem {
@@ -71,8 +63,13 @@ public:
 
     void updateInheritedTime(double time)
     {
+        updateInheritedTime(time, TimingUpdateForAnimationFrame);
+    }
+
+    void updateInheritedTime(double time, TimingUpdateReason reason)
+    {
         m_eventDelegate->reset();
-        TimedItem::updateInheritedTime(time);
+        TimedItem::updateInheritedTime(time, reason);
     }
 
     virtual void updateChildrenAndEffects() const OVERRIDE { }
@@ -723,40 +720,18 @@ TEST(AnimationTimedItemTest, Events)
     timing.startDelay = 1;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
 
-    // First sample
-    timedItem->updateInheritedTime(0.0);
-    EXPECT_TRUE(timedItem->eventDelegate()->eventTriggered());
-
-    // Before start
-    timedItem->updateInheritedTime(0.5);
+    timedItem->updateInheritedTime(0.0, TimingUpdateOnDemand);
     EXPECT_FALSE(timedItem->eventDelegate()->eventTriggered());
 
-    // First iteration
-    timedItem->updateInheritedTime(1.5);
+    timedItem->updateInheritedTime(0.0, TimingUpdateForAnimationFrame);
     EXPECT_TRUE(timedItem->eventDelegate()->eventTriggered());
-    EXPECT_TRUE(timedItem->eventDelegate()->phaseChanged());
-    EXPECT_TRUE(timedItem->eventDelegate()->iterationChanged());
 
-    timedItem->updateInheritedTime(1.6);
+    timedItem->updateInheritedTime(1.5, TimingUpdateOnDemand);
     EXPECT_FALSE(timedItem->eventDelegate()->eventTriggered());
 
-    // Second iteration
-    timedItem->updateInheritedTime(2.5);
+    timedItem->updateInheritedTime(1.5, TimingUpdateForAnimationFrame);
     EXPECT_TRUE(timedItem->eventDelegate()->eventTriggered());
-    EXPECT_FALSE(timedItem->eventDelegate()->phaseChanged());
-    EXPECT_TRUE(timedItem->eventDelegate()->iterationChanged());
 
-    timedItem->updateInheritedTime(2.6);
-    EXPECT_FALSE(timedItem->eventDelegate()->eventTriggered());
-
-    // After end
-    timedItem->updateInheritedTime(3.5);
-    EXPECT_TRUE(timedItem->eventDelegate()->eventTriggered());
-    EXPECT_TRUE(timedItem->eventDelegate()->phaseChanged());
-    EXPECT_FALSE(timedItem->eventDelegate()->iterationChanged());
-
-    timedItem->updateInheritedTime(3.6);
-    EXPECT_FALSE(timedItem->eventDelegate()->eventTriggered());
 }
 
 TEST(AnimationTimedItemTest, TimeToEffectChange)

@@ -92,7 +92,7 @@ void DocumentTimeline::wake()
     m_timing->serviceOnNextFrame();
 }
 
-void DocumentTimeline::serviceAnimations(AnimationPlayer::UpdateReason reason)
+void DocumentTimeline::serviceAnimations(TimingUpdateReason reason)
 {
     TRACE_EVENT0("webkit", "DocumentTimeline::serviceAnimations");
 
@@ -126,7 +126,7 @@ void DocumentTimeline::setZeroTime(double zeroTime)
     ASSERT(isNull(m_zeroTime));
     m_zeroTime = zeroTime;
     ASSERT(!isNull(m_zeroTime));
-    serviceAnimations(AnimationPlayer::UpdateOnDemand);
+    serviceAnimations(TimingUpdateOnDemand);
 }
 
 void DocumentTimeline::DocumentTimelineTiming::wakeAfter(double duration)
@@ -182,7 +182,7 @@ void DocumentTimeline::pauseAnimationsForTesting(double pauseTime)
 {
     for (HashSet<RefPtr<AnimationPlayer> >::iterator it = m_playersNeedingUpdate.begin(); it != m_playersNeedingUpdate.end(); ++it)
         (*it)->pauseForTesting(pauseTime);
-    serviceAnimations(AnimationPlayer::UpdateOnDemand);
+    serviceAnimations(TimingUpdateOnDemand);
 }
 
 bool DocumentTimeline::hasOutdatedAnimationPlayer() const

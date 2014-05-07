@@ -102,7 +102,7 @@ protected:
     void updateClockAndService(double time)
     {
         document->animationClock().updateTime(time);
-        timeline->serviceAnimations(AnimationPlayer::UpdateForAnimationFrame);
+        timeline->serviceAnimations(TimingUpdateForAnimationFrame);
     }
 
     RefPtr<Document> document;

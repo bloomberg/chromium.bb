@@ -58,20 +58,6 @@ namespace WebCore {
 
 namespace {
 
-bool isEarlierPhase(TimedItem::Phase target, TimedItem::Phase reference)
-{
-    ASSERT(target != TimedItem::PhaseNone);
-    ASSERT(reference != TimedItem::PhaseNone);
-    return target < reference;
-}
-
-bool isLaterPhase(TimedItem::Phase target, TimedItem::Phase reference)
-{
-    ASSERT(target != TimedItem::PhaseNone);
-    ASSERT(reference != TimedItem::PhaseNone);
-    return target > reference;
-}
-
 CSSPropertyID propertyForAnimation(CSSPropertyID property)
 {
     switch (property) {
@@ -380,7 +366,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
     for (Vector<AtomicString>::const_iterator iter = update->cancelledAnimationNames().begin(); iter != update->cancelledAnimationNames().end(); ++iter) {
         RefPtr<AnimationPlayer> player = m_animations.take(*iter);
         player->cancel();
-        player->update(AnimationPlayer::UpdateOnDemand);
+        player->update(TimingUpdateOnDemand);
     }
 
     for (Vector<AtomicString>::const_iterator iter = update->animationsWithPauseToggled().begin(); iter != update->animationsWithPauseToggled().end(); ++iter) {
@@ -390,7 +376,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         else
             player->pause();
         if (player->outdated())
-            player->update(AnimationPlayer::UpdateOnDemand);
+            player->update(TimingUpdateOnDemand);
     }
 
     for (Vector<CSSAnimationUpdate::NewAnimation>::const_iterator iter = update->newAnimations().begin(); iter != update->newAnimations().end(); ++iter) {
@@ -401,7 +387,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         element->document().compositorPendingAnimations().add(player.get());
         if (inertAnimation->paused())
             player->pause();
-        player->update(AnimationPlayer::UpdateOnDemand);
+        player->update(TimingUpdateOnDemand);
         m_animations.set(iter->name, player.get());
     }
 
@@ -420,7 +406,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         if (animation->hasActiveAnimationsOnCompositor(id) && update->newTransitions().find(id) != update->newTransitions().end())
             retargetedCompositorTransitions.add(id, std::pair<RefPtr<Animation>, double>(animation, player->startTimeInternal()));
         player->cancel();
-        player->update(AnimationPlayer::UpdateOnDemand);
+        player->update(TimingUpdateOnDemand);
     }
 
     for (CSSAnimationUpdate::NewTransitionMap::const_iterator iter = update->newTransitions().begin(); iter != update->newTransitions().end(); ++iter) {
@@ -461,7 +447,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         RefPtr<Animation> transition = Animation::create(element, effect, inertAnimation->specifiedTiming(), Animation::TransitionPriority, eventDelegate.release());
         RefPtr<AnimationPlayer> player = element->document().transitionTimeline().createAnimationPlayer(transition.get());
         element->document().compositorPendingAnimations().add(player.get());
-        player->update(AnimationPlayer::UpdateOnDemand);
+        player->update(TimingUpdateOnDemand);
         runningTransition.player = player;
         m_transitions.set(id, runningTransition);
         ASSERT(id != CSSPropertyInvalid);
@@ -582,11 +568,11 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
 
     if (activeTransitions) {
         for (TransitionMap::const_iterator iter = activeTransitions->begin(); iter != activeTransitions->end(); ++iter) {
-            const TimedItem* timedItem = iter->value.player->source();
+            const AnimationPlayer& player = *iter->value.player;
             CSSPropertyID id = iter->key;
-            if (timedItem->phase() == TimedItem::PhaseAfter || (!anyTransitionHadAnimateAll && !animationStyleRecalc && !listedProperties.get(id))) {
+            if (player.finishedInternal() || (!anyTransitionHadAnimateAll && !animationStyleRecalc && !listedProperties.get(id))) {
                 // TODO: Figure out why this fails on Chrome OS login page. crbug.com/365507
-                // ASSERT(timedItem->phase() == TimedItem::PhaseAfter || !(activeAnimations && activeAnimations->isAnimationStyleChange()));
+                // ASSERT(player.finishedInternal() || !(activeAnimations && activeAnimations->isAnimationStyleChange()));
                 update->cancelTransition(id);
             }
         }
@@ -597,12 +583,12 @@ void CSSAnimations::cancel()
 {
     for (AnimationMap::iterator iter = m_animations.begin(); iter != m_animations.end(); ++iter) {
         iter->value->cancel();
-        iter->value->update(AnimationPlayer::UpdateOnDemand);
+        iter->value->update(TimingUpdateOnDemand);
     }
 
     for (TransitionMap::iterator iter = m_transitions.begin(); iter != m_transitions.end(); ++iter) {
         iter->value.player->cancel();
-        iter->value.player->update(AnimationPlayer::UpdateOnDemand);
+        iter->value.player->update(TimingUpdateOnDemand);
     }
 
     m_animations.clear();
@@ -672,39 +658,41 @@ void CSSAnimations::AnimationEventDelegate::maybeDispatch(Document::ListenerType
     }
 }
 
-void CSSAnimations::AnimationEventDelegate::onEventCondition(const TimedItem* timedItem, bool isFirstSample, TimedItem::Phase previousPhase, double previousIteration)
+void CSSAnimations::AnimationEventDelegate::onEventCondition(const TimedItem* timedItem)
 {
     const TimedItem::Phase currentPhase = timedItem->phase();
     const double currentIteration = timedItem->currentIteration();
 
-    // Note that the elapsedTime is measured from when the animation starts playing.
-    if (!isFirstSample && previousPhase == TimedItem::PhaseActive && currentPhase == TimedItem::PhaseActive && previousIteration != currentIteration) {
-        ASSERT(!isNull(previousIteration));
-        ASSERT(!isNull(currentIteration));
-        // We fire only a single event for all iterations thast terminate
-        // between a single pair of samples. See http://crbug.com/275263. For
-        // compatibility with the existing implementation, this event uses
-        // the elapsedTime for the first iteration in question.
-        ASSERT(!std::isnan(timedItem->specifiedTiming().iterationDuration));
-        const double elapsedTime = timedItem->specifiedTiming().iterationDuration * (previousIteration + 1);
-        maybeDispatch(Document::ANIMATIONITERATION_LISTENER, EventTypeNames::animationiteration, elapsedTime);
-        return;
-    }
-    if ((isFirstSample || previousPhase == TimedItem::PhaseBefore) && isLaterPhase(currentPhase, TimedItem::PhaseBefore)) {
-        ASSERT(timedItem->specifiedTiming().startDelay > 0 || isFirstSample);
+    if (m_previousPhase != currentPhase
+        && (currentPhase == TimedItem::PhaseActive || currentPhase == TimedItem::PhaseAfter)
+        && (m_previousPhase == TimedItem::PhaseNone || m_previousPhase == TimedItem::PhaseBefore)) {
         // The spec states that the elapsed time should be
         // 'delay < 0 ? -delay : 0', but we always use 0 to match the existing
         // implementation. See crbug.com/279611
         maybeDispatch(Document::ANIMATIONSTART_LISTENER, EventTypeNames::animationstart, 0);
     }
-    if ((isFirstSample || isEarlierPhase(previousPhase, TimedItem::PhaseAfter)) && currentPhase == TimedItem::PhaseAfter)
+
+    if (currentPhase == TimedItem::PhaseActive && m_previousPhase == currentPhase && m_previousIteration != currentIteration) {
+        // We fire only a single event for all iterations thast terminate
+        // between a single pair of samples. See http://crbug.com/275263. For
+        // compatibility with the existing implementation, this event uses
+        // the elapsedTime for the first iteration in question.
+        ASSERT(!std::isnan(timedItem->specifiedTiming().iterationDuration));
+        const double elapsedTime = timedItem->specifiedTiming().iterationDuration * (m_previousIteration + 1);
+        maybeDispatch(Document::ANIMATIONITERATION_LISTENER, EventTypeNames::animationiteration, elapsedTime);
+    }
+
+    if (currentPhase == TimedItem::PhaseAfter && m_previousPhase != TimedItem::PhaseAfter)
         maybeDispatch(Document::ANIMATIONEND_LISTENER, EventTypeNames::animationend, timedItem->activeDurationInternal());
+
+    m_previousPhase = currentPhase;
+    m_previousIteration = currentIteration;
 }
 
-void CSSAnimations::TransitionEventDelegate::onEventCondition(const TimedItem* timedItem, bool isFirstSample, TimedItem::Phase previousPhase, double previousIteration)
+void CSSAnimations::TransitionEventDelegate::onEventCondition(const TimedItem* timedItem)
 {
     const TimedItem::Phase currentPhase = timedItem->phase();
-    if (currentPhase == TimedItem::PhaseAfter && (isFirstSample || previousPhase != currentPhase) && m_target->document().hasListenerType(Document::TRANSITIONEND_LISTENER)) {
+    if (currentPhase == TimedItem::PhaseAfter && currentPhase != m_previousPhase && m_target->document().hasListenerType(Document::TRANSITIONEND_LISTENER)) {
         String propertyName = getPropertyNameString(m_property);
         const Timing& timing = timedItem->specifiedTiming();
         double elapsedTime = timing.iterationDuration;
@@ -714,6 +702,8 @@ void CSSAnimations::TransitionEventDelegate::onEventCondition(const TimedItem* t
         event->setTarget(m_target);
         m_target->document().enqueueAnimationFrameEvent(event);
     }
+
+    m_previousPhase = currentPhase;
 }
 
 bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)

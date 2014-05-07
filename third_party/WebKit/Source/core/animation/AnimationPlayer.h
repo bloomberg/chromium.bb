@@ -43,16 +43,12 @@ class ExceptionState;
 class AnimationPlayer FINAL : public RefCounted<AnimationPlayer>, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(AnimationPlayer);
 public:
-    enum UpdateReason {
-        UpdateOnDemand,
-        UpdateForAnimationFrame
-    };
 
     ~AnimationPlayer();
     static PassRefPtr<AnimationPlayer> create(DocumentTimeline&, TimedItem*);
 
     // Returns whether the player is finished.
-    bool update(UpdateReason);
+    bool update(TimingUpdateReason);
 
     // timeToEffectChange returns:
     //  infinity  - if this player is no longer in effect
@@ -74,6 +70,9 @@ public:
     void reverse();
     void finish(ExceptionState&);
     bool finished() { return limited(currentTimeInternal()); }
+    // FIXME: Resolve whether finished() should just return the flag, and
+    // remove this method.
+    bool finishedInternal() const { return m_finished; }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(finish);
 

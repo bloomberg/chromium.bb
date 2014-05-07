@@ -48,7 +48,7 @@ InertAnimation::InertAnimation(PassRefPtrWillBeRawPtr<AnimationEffect> effect, c
 
 PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > InertAnimation::sample(double inheritedTime)
 {
-    updateInheritedTime(inheritedTime);
+    updateInheritedTime(inheritedTime, TimingUpdateOnDemand);
     if (!isInEffect())
         return nullptr;
 

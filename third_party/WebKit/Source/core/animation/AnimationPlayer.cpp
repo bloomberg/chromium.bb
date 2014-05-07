@@ -344,7 +344,7 @@ void AnimationPlayer::cancelAnimationOnCompositor()
         toAnimation(m_content.get())->cancelAnimationOnCompositor();
 }
 
-bool AnimationPlayer::update(UpdateReason reason)
+bool AnimationPlayer::update(TimingUpdateReason reason)
 {
     m_outdated = false;
 
@@ -353,20 +353,18 @@ bool AnimationPlayer::update(UpdateReason reason)
 
     if (m_content) {
         double inheritedTime = isNull(m_timeline->currentTimeInternal()) ? nullValue() : currentTimeInternal();
-        m_content->updateInheritedTime(inheritedTime);
+        m_content->updateInheritedTime(inheritedTime, reason);
     }
 
     if (finished() && !m_finished) {
-        const AtomicString& eventType = EventTypeNames::finish;
-        if (executionContext() && hasEventListeners(eventType)) {
-            if (reason == UpdateForAnimationFrame) {
+        if (reason == TimingUpdateForAnimationFrame && hasStartTime()) {
+            const AtomicString& eventType = EventTypeNames::finish;
+            if (executionContext() && hasEventListeners(eventType)) {
                 RefPtrWillBeRawPtr<AnimationPlayerEvent> event = AnimationPlayerEvent::create(eventType, currentTime(), timeline()->currentTime());
                 event->setTarget(this);
                 event->setCurrentTarget(this);
                 m_timeline->document()->enqueueAnimationFrameEvent(event.release());
-                m_finished = true;
             }
-        } else {
             m_finished = true;
         }
     }
