@@ -17,6 +17,7 @@
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/load_flags.h"
 #include "skia/ext/image_operations.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/synced_notification_specifics.pb.h"
@@ -283,7 +284,11 @@ void SyncedNotification::StartBitmapFetch() {
   // Now that we have queued and counted them all, start the fetching.
   ScopedVector<chrome::BitmapFetcher>::iterator iter;
   for (iter = fetchers_.begin(); iter != fetchers_.end(); ++iter) {
-    (*iter)->Start(profile_->GetRequestContext());
+    (*iter)->Start(
+        profile_->GetRequestContext(),
+        std::string(),
+        net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+        net::LOAD_NORMAL);
   }
 }
 

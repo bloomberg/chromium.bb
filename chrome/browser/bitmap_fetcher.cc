@@ -19,12 +19,18 @@ BitmapFetcher::BitmapFetcher(const GURL& url,
 
 BitmapFetcher::~BitmapFetcher() {}
 
-void BitmapFetcher::Start(net::URLRequestContextGetter* request_context) {
+void BitmapFetcher::Start(net::URLRequestContextGetter* request_context,
+                          const std::string& referrer,
+                          net::URLRequest::ReferrerPolicy referrer_policy,
+                          int load_flags) {
   if (url_fetcher_ != NULL)
     return;
 
   url_fetcher_.reset(net::URLFetcher::Create(url_, net::URLFetcher::GET, this));
   url_fetcher_->SetRequestContext(request_context);
+  url_fetcher_->SetReferrer(referrer);
+  url_fetcher_->SetReferrerPolicy(referrer_policy);
+  url_fetcher_->SetLoadFlags(load_flags);
   url_fetcher_->Start();
 }
 

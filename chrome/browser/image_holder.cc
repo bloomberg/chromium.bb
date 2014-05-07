@@ -8,6 +8,7 @@
 #include "chrome/browser/image_holder.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "net/base/load_flags.h"
 
 namespace chrome {
 
@@ -67,7 +68,11 @@ void ImageHolder::StartFetch() {
   // Now that we have queued them all, start the fetching.
   ScopedVector<chrome::BitmapFetcher>::iterator iter;
   for (iter = fetchers_.begin(); iter != fetchers_.end(); ++iter) {
-    (*iter)->Start(profile_->GetRequestContext());
+    (*iter)->Start(
+        profile_->GetRequestContext(),
+        std::string(),
+        net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+        net::LOAD_NORMAL);
   }
 }
 

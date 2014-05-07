@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "jni/AppBannerManager_jni.h"
+#include "net/base/load_flags.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -134,7 +135,11 @@ bool AppBannerManager::FetchIcon(JNIEnv* env,
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   fetcher_.reset(new chrome::BitmapFetcher(GURL(image_url), this));
-  fetcher_.get()->Start(profile->GetRequestContext());
+  fetcher_.get()->Start(
+      profile->GetRequestContext(),
+      std::string(),
+      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      net::LOAD_NORMAL);
   return true;
 }
 

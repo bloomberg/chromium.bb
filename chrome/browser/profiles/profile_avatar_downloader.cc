@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "net/base/load_flags.h"
 
 namespace {
 const char kHighResAvatarDownloadUrlPrefix[] =
@@ -33,7 +34,11 @@ void ProfileAvatarDownloader::Start() {
   net::URLRequestContextGetter* request_context =
       g_browser_process->system_request_context();
   if (request_context)
-    fetcher_->Start(request_context);
+    fetcher_->Start(
+        request_context,
+        std::string(),
+        net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+        net::LOAD_NORMAL);
 }
 
 // BitmapFetcherDelegate overrides.

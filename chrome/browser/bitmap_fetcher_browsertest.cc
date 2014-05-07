@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
@@ -113,7 +114,11 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, MAYBE_StartTest) {
 
   // We expect that the image decoder will get called and return
   // an image in a callback to OnImageDecoded().
-  fetcher.Start(browser()->profile()->GetRequestContext());
+  fetcher.Start(
+      browser()->profile()->GetRequestContext(),
+      std::string(),
+      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      net::LOAD_NORMAL);
 
   // Blocks until test delegate is notified via a callback.
   content::RunMessageLoop();
@@ -162,7 +167,11 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, OnURLFetchFailureTest) {
                                         net::HTTP_INTERNAL_SERVER_ERROR,
                                         net::URLRequestStatus::FAILED);
 
-  fetcher.Start(browser()->profile()->GetRequestContext());
+  fetcher.Start(
+      browser()->profile()->GetRequestContext(),
+      std::string(),
+      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      net::LOAD_NORMAL);
 
   // Blocks until test delegate is notified via a callback.
   content::RunMessageLoop();
@@ -186,7 +195,11 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, MAYBE_HandleImageFailedTest) {
                                         net::HTTP_OK,
                                         net::URLRequestStatus::SUCCESS);
 
-  fetcher.Start(browser()->profile()->GetRequestContext());
+  fetcher.Start(
+      browser()->profile()->GetRequestContext(),
+      std::string(),
+      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      net::LOAD_NORMAL);
 
   // Blocks until test delegate is notified via a callback.
   content::RunMessageLoop();
