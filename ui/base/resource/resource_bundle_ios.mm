@@ -151,14 +151,6 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
       CGContextSetBlendMode(context, kCGBlendModeCopy);
       CGContextDrawImage(context, target_rect, [ui_image CGImage]);
 
-      if (ShouldHighlightMissingScaledResources()) {
-        CGContextSetFillColorSpace(context, color_space);
-        CGFloat components[4] = { 1.0, 0.0, 0.0, 0.3 };  // Translucent red.
-        CGContextSetFillColor(context, components);
-        CGContextSetBlendMode(context, kCGBlendModeNormal);
-        CGContextFillRect(context, target_rect);
-      }
-
       base::ScopedCFTypeRef<CGImageRef> cg_image(
           CGBitmapContextCreateImage(context));
       ui_image.reset([[UIImage alloc] initWithCGImage:cg_image

@@ -29,14 +29,6 @@ const char kEnableTouchDragDrop[] = "enable-touch-drag-drop";
 // Enables controls that support touch base text editing.
 const char kEnableTouchEditing[] = "enable-touch-editing";
 
-// If a resource is requested at a scale factor at which it is not available
-// or the resource is the incorrect size (based on the size of the 1x resource),
-// generates the missing resource and applies a red mask to the generated
-// resource. Resources for which hidpi is not supported because of software
-// reasons will show up pixelated.
-const char kHighlightMissingScaledResources[] =
-    "highlight-missing-scaled-resources";
-
 // The language file that we want to try to open. Of the form
 // language[-country] where language is the 2 letter code from ISO-639.
 const char kLang[] = "lang";

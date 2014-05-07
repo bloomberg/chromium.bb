@@ -34,7 +34,6 @@
 #include "ui/gfx/safe_integer_conversions.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
-#include "ui/gfx/skbitmap_operations.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/base/l10n/l10n_util.h"
@@ -116,19 +115,6 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
           skia::ImageOperations::RESIZE_LANCZOS3,
           gfx::ToCeiledInt(image.width() * scale),
           gfx::ToCeiledInt(image.height() * scale));
-      // If --highlight-missing-scaled-resources is specified, log the resource
-      // id and blend the created resource with red.
-      if (ShouldHighlightMissingScaledResources()) {
-        LOG(ERROR) << "Missing " << scale << "x scaled resource. id="
-                   << resource_id_;
-
-        SkBitmap mask;
-        mask.setConfig(SkBitmap::kARGB_8888_Config,
-                       image.width(), image.height());
-        mask.allocPixels();
-        mask.eraseColor(SK_ColorRED);
-        image = SkBitmapOperations::CreateBlendedBitmap(image, mask, 0.2);
-      }
     } else {
       image = PlatformScaleImage(image,
                                  ui::GetScaleForScaleFactor(scale_factor),
@@ -771,12 +757,6 @@ gfx::Image& ResourceBundle::GetEmptyImage() {
     empty_image_ = gfx::Image::CreateFrom1xBitmap(bitmap);
   }
   return empty_image_;
-}
-
-// static
-bool ResourceBundle::ShouldHighlightMissingScaledResources() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kHighlightMissingScaledResources);
 }
 
 // static
