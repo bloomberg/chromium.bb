@@ -73,12 +73,10 @@ PassRefPtr<HTMLElement> HTMLTableSectionElement::insertRow(int index, ExceptionS
     }
 
     RefPtr<HTMLTableRowElement> row = HTMLTableRowElement::create(document());
-    if (numRows == index || index == -1) {
+    if (numRows == index || index == -1)
         appendChild(row, exceptionState);
-    } else {
-        Node* n = index ? children->item(index) : firstChild();
-        insertBefore(row, n, exceptionState);
-    }
+    else
+        insertBefore(row, children->item(index), exceptionState);
     return row.release();
 }
 
