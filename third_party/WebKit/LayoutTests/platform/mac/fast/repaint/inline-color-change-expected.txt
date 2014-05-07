@@ -1,7 +1,3 @@
-Repaint test for rdar://problem/6518850 Make sure that an inline repaints using its line boxes and not using RenderBox width()/height().
-
-PASS
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

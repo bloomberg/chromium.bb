@@ -1,10 +1,3 @@
-BUG ID: Bugzilla bug 6278 REGRESSION: Incomplete repaint when table cell width changes during layout
-
-TEST PASS: The purple and green rects will resize, and there will remain separated by a blue horizontal line.
-
-TEST FAIL: The purple and green rects will resize, but the blue separator will disappear.
-
-Curabitur pretium, quam quis semper malesuada, est libero feugiat libero, vel fringilla orci nibh sed neque. Quisque eu nulla non nisi molestie accumsan. Etiam tellus urna, laoreet ac, laoreet non, suscipit sed, sapien. Phasellus vehicula, sem at posuere vehicula, augue nibh molestie nisl, nec ullamcorper lacus ante vulputate pede.
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

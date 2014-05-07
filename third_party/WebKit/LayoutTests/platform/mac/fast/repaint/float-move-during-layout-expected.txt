@@ -1,7 +1,3 @@
-This is a repaint test for http://bugzilla.opendarwin.org/show_bug.cgi?id=7204 float inserted in fixed height block via DOM not repainted.
-
-There should be a green square below.
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

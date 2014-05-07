@@ -1,5 +1,3 @@
-This is a repaint test for http://bugzilla.opendarwin.org/show_bug.cgi?id=9121 REGRESSION: [Incremental Repaint] DHTML movement test failures.
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

@@ -1,5 +1,3 @@
-An orange rect should be painted.
-In DumpRenderTree, there should be repaint logs of 100x100 rect. We don't care how many times is the log dumpped.
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

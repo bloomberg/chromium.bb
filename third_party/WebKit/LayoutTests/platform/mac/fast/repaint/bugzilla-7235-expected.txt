@@ -1,10 +1,3 @@
-BUG ID: Bugzilla bug 7235 Pure CSS Tooltips method renders wrong and creates artifacts
-
-TEST PASS: The square should change to solid green.
-
-TEST FAIL: The square will remain red and will only change to green when the window is resized, scrolled or otherwise repainted.
-
- 
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

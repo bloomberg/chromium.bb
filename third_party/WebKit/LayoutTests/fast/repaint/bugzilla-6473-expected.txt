@@ -1,11 +1,3 @@
-BUG ID: Bugzilla bug 6473 REGRESSION: Serious painting problems on new iLife and iWorks pages
-
-TEST PASS: A green rectangle containing the word SUCCESS will show below.
-
-TEST FAIL: A green rectangle will not show below.
-
-SUCCESS
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

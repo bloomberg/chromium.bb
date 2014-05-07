@@ -1,5 +1,3 @@
-Repaint test for Bugzilla bug 23524 Make sure that a table section doesn't stop painting when vertical alignment of cells dynamically changes.
-
 (GraphicsLayer
   (bounds 808.00 585.00)
   (children 1
