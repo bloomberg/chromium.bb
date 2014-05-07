@@ -34,6 +34,7 @@
 #include "platform/TraceEvent.h"
 #include "platform/heap/ThreadState.h"
 #include "wtf/Assertions.h"
+#include "wtf/LeakAnnotations.h"
 #include "wtf/PassOwnPtr.h"
 #if ENABLE(GC_TRACING)
 #include "wtf/HashMap.h"
@@ -276,6 +277,10 @@ private:
         : m_reserved(reserved)
         , m_writable(writable)
     {
+        // Leak Sanitizer runs before the shutdown sequence runs, and thus PageMemory objects
+        // are reported as leaking. So we annotate to let the Leak Sanitizer ignore PageMemory objects.
+        WTF_ANNOTATE_LEAKING_OBJECT_PTR(this);
+
         ASSERT(reserved.contains(writable));
     }
 
