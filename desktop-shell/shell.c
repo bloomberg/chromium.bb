@@ -1453,7 +1453,7 @@ surface_touch_move(struct shell_surface *shsurf, struct weston_seat *seat)
 	if (!shsurf)
 		return -1;
 
-	if (shsurf->state.fullscreen)
+	if (shsurf->state.fullscreen || shsurf->state.maximized)
 		return 0;
 
 	move = malloc(sizeof *move);
