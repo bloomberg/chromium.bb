@@ -44,7 +44,7 @@ def print_results(results, columns, buckets):
   average = 0
   if delays:
     average = sum(delays)/ len(delays)
-  print('Average delay: %s' % graph.to_units(average))
+  print('Average delay: %.2fs' % average)
   #print('Average overhead: %s' % graph.to_units(total_size / len(sizes)))
   print('')
   if failures:
@@ -68,6 +68,7 @@ def trigger_task(swarming_url, dimensions, progress, unique, timeout, index):
     namespace='dummy-isolate',
     isolated_hash=1,
     task_name=name,
+    extra_args=[],
     shards=1,
     env={},
     dimensions=dimensions,
@@ -120,12 +121,14 @@ def trigger_task(swarming_url, dimensions, progress, unique, timeout, index):
       return 'no_result'
     out[0].pop('machine_tag')
     out[0].pop('machine_id')
+    # TODO(maruel): Assert output even when run on a real bot.
+    _out_actual = out[0].pop('output')
+    # assert out_actual == swarming_load_test_bot.TASK_OUTPUT, out_actual
     expected = [
       {
         u'config_instance_index': 0,
         u'exit_codes': u'0',
         u'num_config_instances': 1,
-        u'output': swarming_load_test_bot.TASK_OUTPUT,
       },
     ]
     assert out == expected, '\n%s\n%s' % (out, expected)
@@ -185,7 +188,7 @@ def main():
     parser.error('Needs --duration > 0. 0.01 is a valid value.')
   swarming.process_filter_options(parser, options)
 
-  total = options.send_rate * options.duration
+  total = int(round(options.send_rate * options.duration))
   print(
       'Sending %.1f i/s for %ds with max %d parallel requests; timeout %.1fs; '
       'total %d' %
@@ -206,7 +209,7 @@ def main():
         duration = time.time() - start
         if duration > options.duration:
           break
-        should_have_triggered_so_far = int(duration * options.send_rate)
+        should_have_triggered_so_far = int(round(duration * options.send_rate))
         while index < should_have_triggered_so_far:
           pool.add_task(
               0,
