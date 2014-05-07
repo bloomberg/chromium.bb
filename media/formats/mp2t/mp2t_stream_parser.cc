@@ -582,6 +582,12 @@ bool Mp2tStreamParser::EmitRemainingBuffers() {
   VideoDecoderConfig last_video_config =
       buffer_queue_chain_.back().video_config;
 
+  // Do not have all the configs, need more data.
+  if (selected_audio_pid_ >= 0 && !last_audio_config.IsValidConfig())
+    return true;
+  if (selected_video_pid_ >= 0 && !last_video_config.IsValidConfig())
+    return true;
+
   // Buffer emission.
   while (!buffer_queue_chain_.empty()) {
     // Start a segment if needed.
