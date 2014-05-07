@@ -3,15 +3,14 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/extensions',
-  },
   'targets': [
     {
       'target_name': 'extensions_resources',
       'type': 'none',
+      'variables': {
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/extensions',
+      },
       'actions': [
-        # Data resources.
         {
           'action_name': 'extensions_resources',
           'variables': {
@@ -20,11 +19,7 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
       ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(SHARED_INTERMEDIATE_DIR)/extensions',
-        ],
-      },
+      'includes': [ '../build/grit_target.gypi' ],
       'hard_dependency': 1,
     }
   ]
