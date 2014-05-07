@@ -122,7 +122,7 @@ ${NATIVE_PYTHON} ../build/package_version/package_version.py fillemptytars \
 cd ..
 if [[ ${PLATFORM} == win ]]; then
   ${NATIVE_PYTHON} buildbot/buildbot_standard.py --scons-args='no_gdb_tests=1' \
-    --step-suffix=' (32)' opt 32 glibopt 64 newlib
+    opt 64 newlib
 elif [[ ${PLATFORM} == mac ]]; then
   ${NATIVE_PYTHON} buildbot/buildbot_standard.py --scons-args='no_gdb_tests=1' \
     opt 32 newlib

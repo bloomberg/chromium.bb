@@ -119,6 +119,11 @@ ${NATIVE_PYTHON} build/package_version/package_version.py \
   upload --skip-missing \
   --upload-package=nacl_x86_glibc --revision=${UPLOAD_REV}
 
+# Before we start testing, put in dummy mock archives so gyp can still untar
+# the entire package.
+python build/package_version/package_version.py fillemptytars \
+  --fill-package nacl_x86_glibc
+
 # sync_backports is obsolete and should probably be removed.
 # if [[ "${BUILD_COMPATIBLE_TOOLCHAINS:-yes}" != "no" ]]; then
 #   echo @@@BUILD_STEP sync backports@@@

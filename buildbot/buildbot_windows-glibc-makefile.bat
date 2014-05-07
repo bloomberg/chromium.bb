@@ -23,5 +23,5 @@ endlocal
 :: Run tests
 
 set INSIDE_TOOLCHAIN=1
-python buildbot\buildbot_standard.py opt 64 glibc
+python buildbot\buildbot_standard.py --scons-args=no_gdb_tests=1 opt 64 glibc
 
