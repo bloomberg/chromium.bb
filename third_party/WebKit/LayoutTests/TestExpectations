@@ -479,17 +479,6 @@ crbug.com/367078 [ Mac ] virtual/mac-antialiasedtext/fast/text/international/tex
 crbug.com/367078 [ Mac ] virtual/mac-antialiasedtext/fast/text/international/inline-block-with-mixed-direction-words.html  [ ImageOnlyFailure ]
 crbug.com/290411 [ Mac ] virtual/mac-antialiasedtext/fast/text/sub-pixel/text-scaling-pixel.html [ Skip ]
 
-# Mac antialiased fonts needs a large rebaseline after activating the test suite.
-crbug.com/367088 [ Mac ] virtual/mac-antialiasedtext/fast/text/whitespace/select-new-line-with-line-break-normal.html [ NeedsRebaseline ]
-crbug.com/367088 [ Mac ] virtual/mac-antialiasedtext/fast/text/whitespace/span-in-word-space-causes-overflow.html [ NeedsRebaseline ]
-crbug.com/367088 [ Mac ] virtual/mac-antialiasedtext/fast/text/whitespace/tab-character-basics.html [ NeedsRebaseline ]
-crbug.com/367088 [ Mac ] virtual/mac-antialiasedtext/fast/text/wide-zero-width-space.html [ NeedsRebaseline ]
-crbug.com/367088 [ Mac ] virtual/mac-antialiasedtext/fast/text/word-break-run-rounding.html [ NeedsRebaseline ]
-crbug.com/367088 [ Mac ] virtual/mac-antialiasedtext/fast/text/word-break-soft-hyphen.html [ NeedsRebaseline ]
-crbug.com/367088 [ Mac ] virtual/mac-antialiasedtext/fast/text/word-break.html [ NeedsRebaseline ]
-crbug.com/367088 [ Mac ] virtual/mac-antialiasedtext/fast/text/word-space.html [ NeedsRebaseline ]
-crbug.com/367088 [ Mac ] virtual/mac-antialiasedtext/fast/text/zero-font-size.html [ NeedsRebaseline ]
-
 crbug.com/334269 [ Mac ] fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] fast/text/font-variant-ligatures.html [ ImageOnlyFailure ]
 
