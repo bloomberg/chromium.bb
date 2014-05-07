@@ -259,8 +259,7 @@ public:
         return reinterpret_cast<ThreadState*>(s_mainThreadStateStorage);
     }
 
-    static bool isMainThread() { return current() == mainThreadState(); }
-
+    bool isMainThread() const { return this == mainThreadState(); }
     inline bool checkThread() const
     {
         ASSERT(m_thread == currentThread());
@@ -591,7 +590,7 @@ public:
     static ThreadState* state()
     {
         // This specialization must only be used from the main thread.
-        ASSERT(ThreadState::isMainThread());
+        ASSERT(ThreadState::current()->isMainThread());
         return ThreadState::mainThreadState();
     }
 };

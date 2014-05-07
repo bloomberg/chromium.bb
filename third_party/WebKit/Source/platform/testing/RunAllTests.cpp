@@ -30,6 +30,7 @@
 
 #include "config.h"
 
+#include "platform/EventTracer.h"
 #include "platform/Partitions.h"
 #include "platform/TestingPlatformSupport.h"
 #include "platform/heap/Heap.h"
@@ -61,6 +62,7 @@ int main(int argc, char** argv)
     WebCore::Heap::init();
     WebCore::ThreadState::attachMainThread();
     WebCore::Partitions::init();
+    WebCore::EventTracer::initialize();
     int result = base::RunUnitTestsUsingBaseTestSuite(argc, argv);
     WebCore::Partitions::shutdown();
     WebCore::ThreadState::detachMainThread();

@@ -31,8 +31,8 @@
 #include "config.h"
 #include "platform/heap/Heap.h"
 
+#include "platform/TraceEvent.h"
 #include "platform/heap/ThreadState.h"
-
 #include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
 #if ENABLE(GC_TRACING)
@@ -289,6 +289,11 @@ public:
         : m_state(ThreadState::current())
         , m_safePointScope(stackState)
     {
+        TRACE_EVENT0("Blink", "Heap::GCScope");
+        const char* samplingState = TRACE_EVENT_GET_SAMPLING_STATE();
+        if (m_state->isMainThread())
+            TRACE_EVENT_SET_SAMPLING_STATE("Blink", "BlinkGCWaiting");
+
         m_state->checkThread();
 
         // FIXME: in an unlikely coincidence that two threads decide
@@ -298,6 +303,9 @@ public:
         RELEASE_ASSERT(!m_state->isSweepInProgress());
         ThreadState::stopThreads();
         m_state->enterGC();
+
+        if (m_state->isMainThread())
+            TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(samplingState);
     }
 
     ~GCScope()
@@ -465,7 +473,7 @@ template<typename Header>
 ThreadHeap<Header>::~ThreadHeap()
 {
     clearFreeLists();
-    if (!ThreadState::isMainThread())
+    if (!ThreadState::current()->isMainThread())
         assertEmpty();
     deletePages();
 }
@@ -1575,9 +1583,13 @@ void Heap::prepareForGC()
 
 void Heap::collectGarbage(ThreadState::StackState stackState)
 {
-    ThreadState::current()->clearGCRequested();
+    ThreadState* state = ThreadState::current();
+    state->clearGCRequested();
 
     GCScope gcScope(stackState);
+
+    TRACE_EVENT0("Blink", "Heap::collectGarbage");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BlinkGC");
 
 #if ENABLE(GC_TRACING)
     static_cast<MarkingVisitor*>(s_markingVisitor)->objectGraph().clear();

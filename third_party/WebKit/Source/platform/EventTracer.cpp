@@ -47,6 +47,10 @@ long* traceSamplingState[3] = {&dummyTraceSamplingState, &dummyTraceSamplingStat
 
 void EventTracer::initialize()
 {
+    // current() might not exist in unit tests.
+    if (!blink::Platform::current())
+        return;
+
     traceSamplingState[0] = blink::Platform::current()->getTraceSamplingState(0);
     // FIXME: traceSamplingState[0] can be 0 in split-dll build. http://crbug.com/256965
     if (!traceSamplingState[0])
@@ -61,6 +65,11 @@ void EventTracer::initialize()
 
 const unsigned char* EventTracer::getTraceCategoryEnabledFlag(const char* categoryName)
 {
+    static const char* dummyCategoryEnabledFlag = "*";
+    // current() might not exist in unit tests.
+    if (!blink::Platform::current())
+        return reinterpret_cast<const unsigned char*>(dummyCategoryEnabledFlag);
+
     return blink::Platform::current()->getTraceCategoryEnabledFlag(categoryName);
 }
 

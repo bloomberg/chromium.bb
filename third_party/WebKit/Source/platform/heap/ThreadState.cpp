@@ -31,6 +31,7 @@
 #include "config.h"
 #include "platform/heap/ThreadState.h"
 
+#include "platform/TraceEvent.h"
 #include "platform/heap/AddressSanitizer.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
@@ -793,6 +794,11 @@ void ThreadState::copyStackUntilSafePointScope()
 
 void ThreadState::performPendingSweep()
 {
+    TRACE_EVENT0("Blink", "ThreadState::performPendingSweep");
+    const char* samplingState = TRACE_EVENT_GET_SAMPLING_STATE();
+    if (isMainThread())
+        TRACE_EVENT_SET_SAMPLING_STATE("Blink", "BlinkGCSweeping");
+
     if (sweepRequested()) {
         m_sweepInProgress = true;
         // Disallow allocation during weak processing.
@@ -809,6 +815,9 @@ void ThreadState::performPendingSweep()
         clearGCRequested();
         clearSweepRequested();
     }
+
+    if (isMainThread())
+        TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(samplingState);
 }
 
 void ThreadState::addInterruptor(Interruptor* interruptor)
