@@ -20,9 +20,12 @@ When updating src/net/base/registry_controlled_domains/effective_tld_names.dat:
    src/build/Debug. It will re-generate
    src/net/base/registry_controlled_domains/effective_tld_names.gperf.
 
-6. Check in the updated effective_tld_names.dat, effective_tld_names.gperf
+6. Run gperf on the new effective_tld_names.gperf:
+     pushd src/net/base/registry_controlled_domains;
+     gperf -a -L "C++" -C -c -o -t -k '*' -NFindDomain -P -K name_offset -D -m 10 \
+         effective_tld_names.gperf > effective_tld_names.cc;
+     popd;
+   It will produce a new effective_tld_names.cc.
 
-Note that gperf is no longer used for effective_tld_names, but when building
-chromium the file effective_tld_names.gperf will be parsed by make_dafsa.py
-to generate the file effective_tld_names-inc.cc, which is included in
-registry_controlled_domain.cc
+7. Check in the updated effective_tld_names.dat, effective_tld_names.gperf,
+   and effective_tld_names.cc together.

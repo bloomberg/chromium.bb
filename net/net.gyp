@@ -45,37 +45,6 @@
   ],
   'targets': [
     {
-      'target_name': 'net_derived_sources',
-      'type': 'none',
-      'sources': [
-        'base/registry_controlled_domains/effective_tld_names.gperf',
-        'base/registry_controlled_domains/effective_tld_names_unittest1.gperf',
-        'base/registry_controlled_domains/effective_tld_names_unittest2.gperf',
-        'base/registry_controlled_domains/effective_tld_names_unittest3.gperf',
-        'base/registry_controlled_domains/effective_tld_names_unittest4.gperf',
-        'base/registry_controlled_domains/effective_tld_names_unittest5.gperf',
-        'base/registry_controlled_domains/effective_tld_names_unittest6.gperf',
-      ],
-      'rules': [
-        {
-          'rule_name': 'dafsa',
-          'extension': 'gperf',
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/net/<(RULE_INPUT_ROOT)-inc.cc',
-          ],
-          'inputs': [
-            'tools/tld_cleanup/make_dafsa.py',
-          ],
-          'action': [
-            'python',
-            'tools/tld_cleanup/make_dafsa.py',
-            '<(RULE_INPUT_PATH)',
-            '<(SHARED_INTERMEDIATE_DIR)/net/<(RULE_INPUT_ROOT)-inc.cc',
-          ],
-        },
-      ],
-    },
-    {
       'target_name': 'net',
       'type': '<(component)',
       'variables': { 'enable_wexit_time_destructors': 1, },
@@ -90,10 +59,6 @@
         '../third_party/zlib/zlib.gyp:zlib',
         '../url/url.gyp:url_lib',
         'net_resources',
-        'net_derived_sources',
-      ],
-      'include_dirs': [
-        '<(SHARED_INTERMEDIATE_DIR)/net',
       ],
       'sources': [
         '<@(net_nacl_common_sources)',
@@ -507,9 +472,6 @@
         'http_server',
         'net',
         'net_test_support'
-      ],
-      'include_dirs': [
-        '<(SHARED_INTERMEDIATE_DIR)/net',
       ],
       'sources': [
         '<@(net_test_sources)',

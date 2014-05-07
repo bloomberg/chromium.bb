@@ -6,26 +6,15 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace {
-namespace test1 {
-#include "effective_tld_names_unittest1-inc.cc"
-}
-namespace test2 {
-#include "effective_tld_names_unittest2-inc.cc"
-}
-namespace test3 {
-#include "effective_tld_names_unittest3-inc.cc"
-}
-namespace test4 {
-#include "effective_tld_names_unittest4-inc.cc"
-}
-namespace test5 {
-#include "effective_tld_names_unittest5-inc.cc"
-}
-namespace test6 {
-#include "effective_tld_names_unittest6-inc.cc"
-}
-}  // namespace
+#include "effective_tld_names_unittest1.cc"
+static const char* const Perfect_Hash_Test1_stringpool = stringpool1;
+#undef TOTAL_KEYWORDS
+#undef MIN_WORD_LENGTH
+#undef MAX_WORD_LENGTH
+#undef MIN_HASH_VALUE
+#undef MAX_HASH_VALUE
+#include "effective_tld_names_unittest2.cc"
+static const char* const Perfect_Hash_Test2_stringpool = stringpool2;
 
 namespace net {
 namespace registry_controlled_domains {
@@ -61,12 +50,6 @@ size_t GetRegistryLengthFromHost(
   return GetRegistryLength(host, unknown_filter, EXCLUDE_PRIVATE_REGISTRIES);
 }
 
-size_t GetRegistryLengthFromHostIncludingPrivate(
-    const std::string& host,
-    UnknownRegistryFilter unknown_filter) {
-  return GetRegistryLength(host, unknown_filter, INCLUDE_PRIVATE_REGISTRIES);
-}
-
 bool CompareDomains(const std::string& url1, const std::string& url2) {
   GURL g1 = GURL(url1);
   GURL g2 = GURL(url2);
@@ -77,16 +60,17 @@ bool CompareDomains(const std::string& url1, const std::string& url2) {
 
 class RegistryControlledDomainTest : public testing::Test {
  protected:
-  template <typename Graph>
-  void UseDomainData(const Graph& graph) {
-    SetFindDomainGraph(graph, sizeof(Graph));
+  void UseDomainData(FindDomainPtr function, const char* const stringpool) {
+    SetFindDomainFunctionAndStringPoolForTesting(function, stringpool);
   }
 
-  virtual void TearDown() { SetFindDomainGraph(); }
+  virtual void TearDown() {
+    SetFindDomainFunctionAndStringPoolForTesting(NULL, NULL);
+  }
 };
 
 TEST_F(RegistryControlledDomainTest, TestGetDomainAndRegistry) {
-  UseDomainData(test1::kDafsa);
+  UseDomainData(Perfect_Hash_Test1::FindDomain, Perfect_Hash_Test1_stringpool);
 
   // Test GURL version of GetDomainAndRegistry().
   EXPECT_EQ("baz.jp", GetDomainFromURL("http://a.baz.jp/file.html"));    // 1
@@ -145,7 +129,7 @@ TEST_F(RegistryControlledDomainTest, TestGetDomainAndRegistry) {
 }
 
 TEST_F(RegistryControlledDomainTest, TestGetRegistryLength) {
-  UseDomainData(test1::kDafsa);
+  UseDomainData(Perfect_Hash_Test1::FindDomain, Perfect_Hash_Test1_stringpool);
 
   // Test GURL version of GetRegistryLength().
   EXPECT_EQ(2U, GetRegistryLengthFromURL("http://a.baz.jp/file.html",
@@ -264,7 +248,7 @@ TEST_F(RegistryControlledDomainTest, TestGetRegistryLength) {
 }
 
 TEST_F(RegistryControlledDomainTest, TestSameDomainOrHost) {
-  UseDomainData(test2::kDafsa);
+  UseDomainData(Perfect_Hash_Test2::FindDomain, Perfect_Hash_Test2_stringpool);
 
   EXPECT_TRUE(CompareDomains("http://a.b.bar.jp/file.html",
                              "http://a.b.bar.jp/file.html"));  // b.bar.jp
@@ -311,7 +295,7 @@ TEST_F(RegistryControlledDomainTest, TestDefaultData) {
 }
 
 TEST_F(RegistryControlledDomainTest, TestPrivateRegistryHandling) {
-  UseDomainData(test1::kDafsa);
+  UseDomainData(Perfect_Hash_Test1::FindDomain, Perfect_Hash_Test1_stringpool);
 
   // Testing the same dataset for INCLUDE_PRIVATE_REGISTRIES and
   // EXCLUDE_PRIVATE_REGISTRIES arguments.
@@ -363,138 +347,6 @@ TEST_F(RegistryControlledDomainTest, TestPrivateRegistryHandling) {
                                                INCLUDE_UNKNOWN_REGISTRIES));
 }
 
-TEST_F(RegistryControlledDomainTest, TestDafsaTwoByteOffsets) {
-  UseDomainData(test3::kDafsa);
 
-  // Testing to lookup keys in a DAFSA with two byte offsets.
-  // This DAFSA is constructed so that labels begin and end with unique
-  // characters, which makes it impossible to merge labels. Each inner node
-  // is about 100 bytes and a one byte offset can at most add 64 bytes to
-  // previous offset. Thus the paths must go over two byte offsets.
-
-  const char* key0 =
-      "a.b.6____________________________________________________"
-      "________________________________________________6";
-  const char* key1 =
-      "a.b.7____________________________________________________"
-      "________________________________________________7";
-  const char* key2 =
-      "a.b.a____________________________________________________"
-      "________________________________________________8";
-
-  EXPECT_EQ(102U, GetRegistryLengthFromHost(key0, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(0U, GetRegistryLengthFromHost(key1, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(102U,
-            GetRegistryLengthFromHostIncludingPrivate(
-                key1, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(0U, GetRegistryLengthFromHost(key2, EXCLUDE_UNKNOWN_REGISTRIES));
-}
-
-TEST_F(RegistryControlledDomainTest, TestDafsaThreeByteOffsets) {
-  UseDomainData(test4::kDafsa);
-
-  // Testing to lookup keys in a DAFSA with three byte offsets.
-  // This DAFSA is constructed so that labels begin and end with unique
-  // characters, which makes it impossible to merge labels. The byte array
-  // has a size of ~54k. A two byte offset can add at most add 8k to the
-  // previous offset. Since we can skip only forward in memory, the nodes
-  // representing the return values must be located near the end of the byte
-  // array. The probability that we can reach from an arbitrary inner node to
-  // a return value without using a three byte offset is small (but not zero).
-  // The test is repeated with some different keys and with a reasonable
-  // probability at least one of the tested paths has go over a three byte
-  // offset.
-
-  const char* key0 =
-      "a.b.Z6___________________________________________________"
-      "_________________________________________________Z6";
-  const char* key1 =
-      "a.b.Z7___________________________________________________"
-      "_________________________________________________Z7";
-  const char* key2 =
-      "a.b.Za___________________________________________________"
-      "_________________________________________________Z8";
-
-  EXPECT_EQ(104U, GetRegistryLengthFromHost(key0, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(0U, GetRegistryLengthFromHost(key1, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(104U,
-            GetRegistryLengthFromHostIncludingPrivate(
-                key1, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(0U, GetRegistryLengthFromHost(key2, EXCLUDE_UNKNOWN_REGISTRIES));
-}
-
-TEST_F(RegistryControlledDomainTest, TestDafsaJoinedPrefixes) {
-  UseDomainData(test5::kDafsa);
-
-  // Testing to lookup keys in a DAFSA with compressed prefixes.
-  // This DAFSA is constructed from words with similar prefixes but distinct
-  // suffixes. The DAFSA will then form a trie with the implicit source node
-  // as root.
-
-  const char* key0 = "a.b.ai";
-  const char* key1 = "a.b.bj";
-  const char* key2 = "a.b.aak";
-  const char* key3 = "a.b.bbl";
-  const char* key4 = "a.b.aaa";
-  const char* key5 = "a.b.bbb";
-  const char* key6 = "a.b.aaaam";
-  const char* key7 = "a.b.bbbbn";
-
-  EXPECT_EQ(2U, GetRegistryLengthFromHost(key0, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(0U, GetRegistryLengthFromHost(key1, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(2U,
-            GetRegistryLengthFromHostIncludingPrivate(
-                key1, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(3U, GetRegistryLengthFromHost(key2, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(0U, GetRegistryLengthFromHost(key3, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(3U,
-            GetRegistryLengthFromHostIncludingPrivate(
-                key3, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(0U,
-            GetRegistryLengthFromHostIncludingPrivate(
-                key4, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(0U,
-            GetRegistryLengthFromHostIncludingPrivate(
-                key5, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(5U, GetRegistryLengthFromHost(key6, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(5U, GetRegistryLengthFromHost(key7, EXCLUDE_UNKNOWN_REGISTRIES));
-}
-
-TEST_F(RegistryControlledDomainTest, TestDafsaJoinedSuffixes) {
-  UseDomainData(test6::kDafsa);
-
-  // Testing to lookup keys in a DAFSA with compressed suffixes.
-  // This DAFSA is constructed from words with similar suffixes but distinct
-  // prefixes. The DAFSA will then form a trie with the implicit sink node as
-  // root.
-
-  const char* key0 = "a.b.ia";
-  const char* key1 = "a.b.jb";
-  const char* key2 = "a.b.kaa";
-  const char* key3 = "a.b.lbb";
-  const char* key4 = "a.b.aaa";
-  const char* key5 = "a.b.bbb";
-  const char* key6 = "a.b.maaaa";
-  const char* key7 = "a.b.nbbbb";
-
-  EXPECT_EQ(2U, GetRegistryLengthFromHost(key0, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(0U, GetRegistryLengthFromHost(key1, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(2U,
-            GetRegistryLengthFromHostIncludingPrivate(
-                key1, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(3U, GetRegistryLengthFromHost(key2, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(0U, GetRegistryLengthFromHost(key3, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(3U,
-            GetRegistryLengthFromHostIncludingPrivate(
-                key3, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(0U,
-            GetRegistryLengthFromHostIncludingPrivate(
-                key4, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(0U,
-            GetRegistryLengthFromHostIncludingPrivate(
-                key5, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(5U, GetRegistryLengthFromHost(key6, EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(5U, GetRegistryLengthFromHost(key7, EXCLUDE_UNKNOWN_REGISTRIES));
-}
 }  // namespace registry_controlled_domains
 }  // namespace net
