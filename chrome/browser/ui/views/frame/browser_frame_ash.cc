@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame_ash.h"
 
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_util.h"
@@ -95,6 +96,27 @@ void BrowserFrameAsh::OnWindowTargetVisibilityChanged(bool visible) {
     SetWindowAutoManaged();
   }
   views::NativeWidgetAura::OnWindowTargetVisibilityChanged(visible);
+}
+
+bool BrowserFrameAsh::ShouldSaveWindowPlacement() const {
+  return NULL == GetWidget()->GetNativeWindow()->GetProperty(
+                     ash::kRestoreBoundsOverrideKey);
+}
+
+void BrowserFrameAsh::GetWindowPlacement(
+    gfx::Rect* bounds,
+    ui::WindowShowState* show_state) const {
+  gfx::Rect* override_bounds = GetWidget()->GetNativeWindow()->GetProperty(
+                                   ash::kRestoreBoundsOverrideKey);
+  if (override_bounds && !override_bounds->IsEmpty()) {
+    *bounds = *override_bounds;
+    *show_state = GetWidget()->GetNativeWindow()->GetProperty(
+                      ash::kRestoreShowStateOverrideKey);
+  } else {
+    *bounds = GetWidget()->GetRestoredBounds();
+    *show_state = GetWidget()->GetNativeWindow()->GetProperty(
+                      aura::client::kShowStateKey);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

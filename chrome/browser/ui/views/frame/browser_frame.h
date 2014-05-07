@@ -79,6 +79,13 @@ class BrowserFrame
   // Returns |true| if we should use the custom frame.
   bool UseCustomFrame() const;
 
+  // Returns true when the window placement should be saved.
+  bool ShouldSaveWindowPlacement() const;
+
+  // Retrieves the window placement (show state and bounds) for restoring.
+  void GetWindowPlacement(gfx::Rect* bounds,
+                          ui::WindowShowState* show_state) const;
+
   // Overridden from views::Widget:
   virtual views::internal::RootView* CreateRootView() OVERRIDE;
   virtual views::NonClientFrameView* CreateNonClientFrameView() OVERRIDE;

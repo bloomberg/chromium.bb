@@ -48,6 +48,7 @@ class ChromeNativeAppWindowViews : public apps::NativeAppWindowViews,
   apps::AppWindowFrameView* CreateNonStandardAppFrame();
 
   // ui::BaseWindow implementation.
+  virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
   virtual ui::WindowShowState GetRestoredState() const OVERRIDE;
   virtual bool IsAlwaysOnTop() const OVERRIDE;
 
