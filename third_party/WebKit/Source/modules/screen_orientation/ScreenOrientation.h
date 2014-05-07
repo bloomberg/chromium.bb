@@ -28,7 +28,7 @@ public:
     static bool lockOrientation(Screen&, const AtomicString& orientation);
     static void unlockOrientation(Screen&);
 
-    virtual void trace(Visitor*) { }
+    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<Screen>::trace(visitor); }
 
 private:
     explicit ScreenOrientation(Screen&);

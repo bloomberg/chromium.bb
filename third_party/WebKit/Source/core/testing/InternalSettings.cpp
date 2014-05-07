@@ -121,8 +121,6 @@ public:
 #endif
     InternalSettings* internalSettings() const { return m_internalSettings.get(); }
 
-    virtual void trace(Visitor*) OVERRIDE { }
-
 private:
     RefPtr<InternalSettings> m_internalSettings;
 };
@@ -359,6 +357,9 @@ void InternalSettings::trace(Visitor* visitor)
 {
     visitor->trace(m_page);
     InternalSettingsGenerated::trace(visitor);
+#if ENABLE(OILPAN)
+    HeapSupplement<Page>::trace(visitor);
+#endif
 }
 
 }

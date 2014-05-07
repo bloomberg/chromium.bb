@@ -71,6 +71,7 @@ WorkerPerformance* WorkerGlobalScopePerformance::performance()
 void WorkerGlobalScopePerformance::trace(Visitor* visitor)
 {
     visitor->trace(m_performance);
+    WillBeHeapSupplement<WorkerGlobalScope>::trace(visitor);
 }
 
 } // namespace WebCore

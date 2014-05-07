@@ -48,6 +48,7 @@ NavigatorBattery& NavigatorBattery::from(Navigator& navigator)
 void NavigatorBattery::trace(Visitor* visitor)
 {
     visitor->trace(m_batteryManager);
+    WillBeHeapSupplement<Navigator>::trace(visitor);
 }
 
 } // namespace WebCore

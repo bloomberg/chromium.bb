@@ -78,6 +78,7 @@ SpeechSynthesis* DOMWindowSpeechSynthesis::speechSynthesis()
 void DOMWindowSpeechSynthesis::trace(Visitor* visitor)
 {
     visitor->trace(m_speechSynthesis);
+    WillBeHeapSupplement<DOMWindow>::trace(visitor);
 }
 
 } // namespace WebCore

@@ -75,6 +75,7 @@ Crypto* DOMWindowCrypto::crypto() const
 void DOMWindowCrypto::trace(Visitor* visitor)
 {
     visitor->trace(m_crypto);
+    WillBeHeapSupplement<DOMWindow>::trace(visitor);
 }
 
 } // namespace WebCore

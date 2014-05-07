@@ -48,7 +48,7 @@ public:
     static HTMLMediaElementEncryptedMedia& from(HTMLMediaElement&);
     static const char* supplementName();
 
-    virtual void trace(Visitor*) OVERRIDE { }
+    virtual void trace(Visitor* visitor) OVERRIDE { Supplement<HTMLMediaElement>::trace(visitor); }
 
 private:
     HTMLMediaElementEncryptedMedia();

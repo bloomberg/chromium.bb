@@ -69,6 +69,7 @@ Geolocation* NavigatorGeolocation::geolocation() const
 void NavigatorGeolocation::trace(Visitor* visitor)
 {
     visitor->trace(m_geolocation);
+    WillBeHeapSupplement<Navigator>::trace(visitor);
 }
 
 } // namespace WebCore

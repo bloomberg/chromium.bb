@@ -46,6 +46,7 @@ DOMWindowIndexedDatabase::~DOMWindowIndexedDatabase()
 void DOMWindowIndexedDatabase::trace(Visitor* visitor)
 {
     visitor->trace(m_idbFactory);
+    WillBeHeapSupplement<DOMWindow>::trace(visitor);
 }
 
 const char* DOMWindowIndexedDatabase::supplementName()

@@ -52,7 +52,7 @@ public:
 
     void willAddPrerender(WebCore::Prerender*) OVERRIDE;
 
-    virtual void trace(WebCore::Visitor*) OVERRIDE { }
+    virtual void trace(WebCore::Visitor* visitor) OVERRIDE { WebCore::PrerendererClient::trace(visitor); }
 
 private:
     WebPrerendererClient* m_client;

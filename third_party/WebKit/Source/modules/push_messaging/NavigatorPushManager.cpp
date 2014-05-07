@@ -49,6 +49,7 @@ PushManager* NavigatorPushManager::pushManager()
 void NavigatorPushManager::trace(Visitor* visitor)
 {
     visitor->trace(m_pushManager);
+    WillBeHeapSupplement<Navigator>::trace(visitor);
 }
 
 } // namespace WebCore

@@ -49,7 +49,7 @@ public:
     virtual ~IDBPendingTransactionMonitor();
     // The trace functino doesn't work until ExecutionContext is moved to Oilpan
     // heap.
-    virtual void trace(Visitor*) OVERRIDE { }
+    virtual void trace(Visitor* visitor) OVERRIDE { Supplement<ExecutionContext>::trace(visitor); }
     void addNewTransaction(IDBTransaction&);
     void deactivateNewTransactions();
 

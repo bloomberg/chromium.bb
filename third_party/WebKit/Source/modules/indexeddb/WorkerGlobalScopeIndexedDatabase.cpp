@@ -73,6 +73,7 @@ IDBFactory* WorkerGlobalScopeIndexedDatabase::indexedDB()
 void WorkerGlobalScopeIndexedDatabase::trace(Visitor* visitor)
 {
     visitor->trace(m_idbFactory);
+    WillBeHeapSupplement<WorkerGlobalScope>::trace(visitor);
 }
 
 } // namespace WebCore

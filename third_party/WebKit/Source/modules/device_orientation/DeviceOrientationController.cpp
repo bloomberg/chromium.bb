@@ -152,6 +152,7 @@ void DeviceOrientationController::clearOverride()
 void DeviceOrientationController::trace(Visitor* visitor)
 {
     visitor->trace(m_overrideOrientationData);
+    DocumentSupplement::trace(visitor);
 }
 
 } // namespace WebCore

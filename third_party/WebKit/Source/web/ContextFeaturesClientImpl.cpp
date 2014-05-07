@@ -91,7 +91,7 @@ public:
 
     void validateAgainst(Document*);
 
-    virtual void trace(Visitor*) OVERRIDE { }
+    virtual void trace(Visitor* visitor) OVERRIDE { DocumentSupplement::trace(visitor); }
 
 private:
     String m_domain;

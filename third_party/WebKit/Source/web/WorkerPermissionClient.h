@@ -60,7 +60,7 @@ public:
     static const char* supplementName();
     static WorkerPermissionClient* from(WebCore::ExecutionContext&);
 
-    virtual void trace(WebCore::Visitor*) OVERRIDE { }
+    virtual void trace(WebCore::Visitor* visitor) OVERRIDE { WillBeHeapSupplement<WebCore::WorkerClients>::trace(visitor); }
 
 private:
     explicit WorkerPermissionClient(PassOwnPtr<WebWorkerPermissionClientProxy>);

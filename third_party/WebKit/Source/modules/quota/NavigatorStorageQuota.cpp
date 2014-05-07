@@ -102,6 +102,7 @@ void NavigatorStorageQuota::trace(Visitor* visitor)
     visitor->trace(m_storageQuota);
     visitor->trace(m_temporaryStorage);
     visitor->trace(m_persistentStorage);
+    WillBeHeapSupplement<Navigator>::trace(visitor);
 }
 
 } // namespace WebCore

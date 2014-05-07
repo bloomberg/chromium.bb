@@ -54,7 +54,7 @@ public:
 
     static PassOwnPtrWillBeRawPtr<NavigatorContentUtils> create(PassOwnPtr<NavigatorContentUtilsClient>);
 
-    virtual void trace(Visitor*) OVERRIDE { }
+    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<Page>::trace(visitor); }
 
 private:
     explicit NavigatorContentUtils(PassOwnPtr<NavigatorContentUtilsClient> client)

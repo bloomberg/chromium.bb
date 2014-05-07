@@ -34,7 +34,11 @@ public:
     static const char* supplementName();
     static ServiceWorkerContainerClient* from(ExecutionContext*);
 
-    virtual void trace(Visitor*) OVERRIDE { }
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        DocumentSupplement::trace(visitor);
+        WillBeHeapSupplement<WorkerClients>::trace(visitor);
+    }
 
 protected:
     explicit ServiceWorkerContainerClient(PassOwnPtr<blink::WebServiceWorkerProvider>);

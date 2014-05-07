@@ -143,7 +143,7 @@ public:
         return host ? host->requireSupplement(key) : 0;
     }
 
-    virtual void trace(Visitor*) = 0;
+    virtual void trace(Visitor*) { }
     virtual void willBeDestroyed() { }
 };
 

@@ -581,6 +581,7 @@ void FullscreenElementStack::trace(Visitor* visitor)
     visitor->trace(m_fullScreenElementStack);
     visitor->trace(m_fullScreenChangeEventTargetQueue);
     visitor->trace(m_fullScreenErrorEventTargetQueue);
+    DocumentSupplement::trace(visitor);
 }
 
 } // namespace WebCore

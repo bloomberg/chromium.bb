@@ -167,6 +167,7 @@ void CSSSelectorWatch::watchCSSSelectors(const Vector<String>& selectors)
 void CSSSelectorWatch::trace(Visitor* visitor)
 {
     visitor->trace(m_watchedCallbackSelectors);
+    DocumentSupplement::trace(visitor);
 }
 
 } // namespace WebCore

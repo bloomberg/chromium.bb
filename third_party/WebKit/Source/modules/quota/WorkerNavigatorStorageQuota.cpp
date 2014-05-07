@@ -82,6 +82,7 @@ void WorkerNavigatorStorageQuota::trace(Visitor* visitor)
 {
     visitor->trace(m_temporaryStorage);
     visitor->trace(m_persistentStorage);
+    WillBeHeapSupplement<WorkerNavigator>::trace(visitor);
 }
 
 } // namespace WebCore

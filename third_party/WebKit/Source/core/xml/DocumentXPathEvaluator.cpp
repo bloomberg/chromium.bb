@@ -77,6 +77,7 @@ PassRefPtrWillBeRawPtr<XPathResult> DocumentXPathEvaluator::evaluate(DocumentSup
 void DocumentXPathEvaluator::trace(Visitor* visitor)
 {
     visitor->trace(m_xpathEvaluator);
+    DocumentSupplement::trace(visitor);
 }
 
 } // namespace WebCore

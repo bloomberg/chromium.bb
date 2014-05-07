@@ -126,6 +126,7 @@ void NavigatorGamepad::trace(Visitor* visitor)
 {
     visitor->trace(m_gamepads);
     visitor->trace(m_webkitGamepads);
+    WillBeHeapSupplement<Navigator>::trace(visitor);
 }
 
 void NavigatorGamepad::didConnectOrDisconnectGamepad(unsigned index, const blink::WebGamepad& webGamepad, bool connected)

@@ -71,6 +71,7 @@ void DOMWindowPagePopup::uninstall(DOMWindow& window)
 void DOMWindowPagePopup::trace(Visitor* visitor)
 {
     visitor->trace(m_controller);
+    WillBeHeapSupplement<DOMWindow>::trace(visitor);
 }
 
 }

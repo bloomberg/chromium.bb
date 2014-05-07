@@ -288,6 +288,8 @@ void ImageBitmapFactories::ImageBitmapLoader::loadBlobAsync(ExecutionContext* co
 void ImageBitmapFactories::trace(Visitor* visitor)
 {
     visitor->trace(m_pendingLoaders);
+    WillBeHeapSupplement<DOMWindow>::trace(visitor);
+    WillBeHeapSupplement<WorkerGlobalScope>::trace(visitor);
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::rejectPromise()

@@ -46,7 +46,7 @@ public:
     static double workerStart(ExecutionContext*, SharedWorker&);
     double getWorkerStart(ExecutionContext*, SharedWorker&) const;
 
-    void trace(Visitor*) { }
+    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<SharedWorker>::trace(visitor); }
 
 private:
     explicit SharedWorkerPerformance();

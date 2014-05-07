@@ -46,7 +46,7 @@ public:
 
     NotificationClient* client() { return m_client.get(); }
 
-    virtual void trace(Visitor*) OVERRIDE { }
+    virtual void trace(Visitor* visitor) OVERRIDE { Supplement<LocalFrame>::trace(visitor); }
 
 private:
     explicit NotificationController(PassOwnPtr<NotificationClient>);

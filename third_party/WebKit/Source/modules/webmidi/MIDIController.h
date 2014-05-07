@@ -51,7 +51,7 @@ public:
     static const char* supplementName();
     static MIDIController* from(Page* page) { return static_cast<MIDIController*>(WillBeHeapSupplement<Page>::from(page, supplementName())); }
 
-    virtual void trace(Visitor*) OVERRIDE { }
+    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<Page>::trace(visitor); }
 
 protected:
     explicit MIDIController(PassOwnPtr<MIDIClient>);

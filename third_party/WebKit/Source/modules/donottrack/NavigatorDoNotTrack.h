@@ -51,7 +51,7 @@ public:
 
     String doNotTrack();
 
-    void trace(Visitor*) { }
+    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<Navigator>::trace(visitor); }
 
 private:
     explicit NavigatorDoNotTrack(LocalFrame*);

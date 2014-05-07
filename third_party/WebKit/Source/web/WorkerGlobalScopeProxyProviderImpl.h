@@ -54,7 +54,7 @@ public:
     virtual ~WorkerGlobalScopeProxyProviderImpl() { }
     virtual WebCore::WorkerGlobalScopeProxy* createWorkerGlobalScopeProxy(WebCore::Worker*) OVERRIDE;
 
-    virtual void trace(WebCore::Visitor*) OVERRIDE { }
+    virtual void trace(WebCore::Visitor* visitor) OVERRIDE { WebCore::WorkerGlobalScopeProxyProvider::trace(visitor); }
 
 private:
     WorkerGlobalScopeProxyProviderImpl() { }

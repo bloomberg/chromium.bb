@@ -54,7 +54,7 @@ public:
     virtual void didHandleFetchEvent(int fetchEventID, PassRefPtr<WebCore::Response>) OVERRIDE;
     virtual void didHandleSyncEvent(int syncEventID) OVERRIDE;
 
-    virtual void trace(WebCore::Visitor*) OVERRIDE { }
+    virtual void trace(WebCore::Visitor* visitor) OVERRIDE { WebCore::ServiceWorkerGlobalScopeClient::trace(visitor); }
 
 private:
     ServiceWorkerGlobalScopeClientImpl(WebServiceWorkerContextClient&);

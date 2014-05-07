@@ -80,6 +80,7 @@ DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo() const
 void DOMWindowQuota::trace(Visitor* visitor)
 {
     visitor->trace(m_storageInfo);
+    WillBeHeapSupplement<DOMWindow>::trace(visitor);
 }
 
 } // namespace WebCore

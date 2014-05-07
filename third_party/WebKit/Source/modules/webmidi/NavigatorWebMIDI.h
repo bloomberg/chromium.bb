@@ -50,7 +50,7 @@ public:
     static ScriptPromise requestMIDIAccess(Navigator&, const Dictionary&);
     ScriptPromise requestMIDIAccess(const Dictionary&);
 
-    void trace(Visitor*) { }
+    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<Navigator>::trace(visitor); }
 
 private:
     NavigatorWebMIDI(LocalFrame*);

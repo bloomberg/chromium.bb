@@ -29,7 +29,7 @@ public:
 
     blink::WebPushClient* client() const { return m_client; }
 
-    virtual void trace(Visitor*) OVERRIDE { }
+    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<Page>::trace(visitor); }
 
 private:
     explicit PushController(blink::WebPushClient*);

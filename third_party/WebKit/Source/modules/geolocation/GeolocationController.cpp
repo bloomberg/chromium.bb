@@ -184,6 +184,7 @@ void GeolocationController::trace(Visitor* visitor)
     visitor->trace(m_lastPosition);
     visitor->trace(m_observers);
     visitor->trace(m_highAccuracyObservers);
+    WillBeHeapSupplement<Page>::trace(visitor);
 }
 
 void provideGeolocationTo(Page& page, GeolocationClient* client)

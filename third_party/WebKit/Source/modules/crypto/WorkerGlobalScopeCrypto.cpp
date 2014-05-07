@@ -70,6 +70,7 @@ Crypto* WorkerGlobalScopeCrypto::crypto() const
 void WorkerGlobalScopeCrypto::trace(Visitor* visitor)
 {
     visitor->trace(m_crypto);
+    WillBeHeapSupplement<WorkerGlobalScope>::trace(visitor);
 }
 
 } // namespace WebCore

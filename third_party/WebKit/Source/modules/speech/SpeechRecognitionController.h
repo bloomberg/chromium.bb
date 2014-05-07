@@ -49,7 +49,7 @@ public:
     static const char* supplementName();
     static SpeechRecognitionController* from(Page* page) { return static_cast<SpeechRecognitionController*>(WillBeHeapSupplement<Page>::from(page, supplementName())); }
 
-    virtual void trace(Visitor*) OVERRIDE { }
+    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<Page>::trace(visitor); }
 
 private:
     explicit SpeechRecognitionController(PassOwnPtr<SpeechRecognitionClient>);

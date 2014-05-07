@@ -50,7 +50,7 @@ public:
     static const char* supplementName();
     static UserMediaController* from(LocalFrame* frame) { return static_cast<UserMediaController*>(Supplement<LocalFrame>::from(frame, supplementName())); }
 
-    virtual void trace(Visitor*) OVERRIDE { }
+    virtual void trace(Visitor* visitor) OVERRIDE { Supplement<LocalFrame>::trace(visitor); }
 
 protected:
     explicit UserMediaController(UserMediaClient*);

@@ -73,6 +73,7 @@ DraggedIsolatedFileSystem::DraggedIsolatedFileSystem(DataObject& host, const Str
 void DraggedIsolatedFileSystem::trace(Visitor* visitor)
 {
     visitor->trace(m_filesystem);
+    WillBeHeapSupplement<DataObject>::trace(visitor);
 }
 
 } // namespace WebCore

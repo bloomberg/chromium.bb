@@ -58,7 +58,11 @@ public:
     static const char* supplementName();
     static LocalFileSystem* from(ExecutionContext&);
 
-    virtual void trace(Visitor*) OVERRIDE { }
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        WillBeHeapSupplement<Page>::trace(visitor);
+        WillBeHeapSupplement<WorkerClients>::trace(visitor);
+    }
 
 protected:
     explicit LocalFileSystem(PassOwnPtr<FileSystemClient>);
