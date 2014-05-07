@@ -89,10 +89,12 @@ class NET_EXPORT URLRequestContextBuilder {
     data_enabled_ = enable;
   }
 
+#if !defined(DISABLE_FILE_SUPPORT)
   // Control support for file:// requests. By default it's disabled.
   void set_file_enabled(bool enable) {
     file_enabled_ = enable;
   }
+#endif
 
 #if !defined(DISABLE_FTP_SUPPORT)
   // Control support for ftp:// requests. By default it's disabled.
@@ -157,8 +159,10 @@ class NET_EXPORT URLRequestContextBuilder {
   std::string user_agent_;
   // Include support for data:// requests.
   bool data_enabled_;
+#if !defined(DISABLE_FILE_SUPPORT)
   // Include support for file:// requests.
   bool file_enabled_;
+#endif
 #if !defined(DISABLE_FTP_SUPPORT)
   // Include support for ftp:// requests.
   bool ftp_enabled_;

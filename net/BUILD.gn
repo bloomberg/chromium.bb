@@ -37,12 +37,20 @@ enable_websockets = !is_ios
 use_v8_in_net = false  # TODO(brettw)!is_ios
 enable_built_in_dns = !is_ios
 
+declare_args() {
+  # Disables support for file URLs.  File URL support requires use of icu.
+  disable_file_support = false
+}
+
 enable_ftp_support = !is_ios
 
 config("net_config") {
   defines = []
   if (posix_avoid_mmap) {
     defines += [ "POSIX_AVOID_MMAP" ]
+  }
+  if (disable_file_support) {
+    defines += [ "DISABLE_FILE_SUPPORT" ]
   }
 }
 
@@ -106,6 +114,19 @@ component("net") {
     } else {
       sources -= [ "disk_cache/blockfile/mapped_file_avoid_mmap_posix.cc" ]
     }
+  }
+
+  if (disable_file_support) {
+    sources -= [
+      "base/directory_lister.cc",
+      "base/directory_lister.h",
+      "url_request/url_request_file_dir_job.cc",
+      "url_request/url_request_file_dir_job.h",
+      "url_request/url_request_file_job.cc",
+      "url_request/url_request_file_job.h",
+      "url_request/file_protocol_handler.cc",
+      "url_request/file_protocol_handler.h",
+    ]
   }
 
   if (!enable_ftp_support) {

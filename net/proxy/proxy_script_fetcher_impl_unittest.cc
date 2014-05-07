@@ -22,13 +22,16 @@
 #include "net/http/transport_security_state.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
-#include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+#if !defined(DISABLE_FILE_SUPPORT)
+#include "net/url_request/file_protocol_handler.h"
+#endif
 
 using base::ASCIIToUTF16;
 
@@ -48,7 +51,8 @@ struct FetchResult {
   base::string16 text;
 };
 
-// A non-mock URL request which can access http:// and file:// urls.
+// A non-mock URL request which can access http:// and file:// urls, in the case
+// the tests were built with file support.
 class RequestContext : public URLRequestContext {
  public:
   RequestContext() : storage_(this) {
@@ -73,8 +77,10 @@ class RequestContext : public URLRequestContext {
     storage_.set_http_transaction_factory(new HttpCache(
         network_session.get(), HttpCache::DefaultBackend::InMemory(0)));
     URLRequestJobFactoryImpl* job_factory = new URLRequestJobFactoryImpl();
+#if !defined(DISABLE_FILE_SUPPORT)
     job_factory->SetProtocolHandler(
         "file", new FileProtocolHandler(base::MessageLoopProxy::current()));
+#endif
     storage_.set_job_factory(job_factory);
   }
 
@@ -199,6 +205,7 @@ class ProxyScriptFetcherImplTest : public PlatformTest {
   RequestContext context_;
 };
 
+#if !defined(DISABLE_FILE_SUPPORT)
 TEST_F(ProxyScriptFetcherImplTest, FileUrl) {
   ProxyScriptFetcherImpl pac_fetcher(&context_);
 
@@ -221,6 +228,7 @@ TEST_F(ProxyScriptFetcherImplTest, FileUrl) {
     EXPECT_EQ(ASCIIToUTF16("-pac.txt-\n"), text);
   }
 }
+#endif  // !defined(DISABLE_FILE_SUPPORT)
 
 // Note that all mime types are allowed for PAC file, to be consistent
 // with other browsers.

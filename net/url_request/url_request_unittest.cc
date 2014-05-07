@@ -66,11 +66,8 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/data_protocol_handler.h"
-#include "net/url_request/file_protocol_handler.h"
-#include "net/url_request/ftp_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_file_dir_job.h"
 #include "net/url_request/url_request_http_job.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_redirect_job.h"
@@ -78,6 +75,15 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+#if !defined(DISABLE_FILE_SUPPORT)
+#include "net/url_request/file_protocol_handler.h"
+#include "net/url_request/url_request_file_dir_job.h"
+#endif
+
+#if !defined(DISABLE_FTP_SUPPORT)
+#include "net/url_request/ftp_protocol_handler.h"
+#endif
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
@@ -598,8 +604,10 @@ class URLRequestTest : public PlatformTest {
     default_context_.set_network_delegate(&default_network_delegate_);
     default_context_.set_net_log(&net_log_);
     job_factory_.SetProtocolHandler("data", new DataProtocolHandler);
+#if !defined(DISABLE_FILE_SUPPORT)
     job_factory_.SetProtocolHandler(
         "file", new FileProtocolHandler(base::MessageLoopProxy::current()));
+#endif
     default_context_.set_job_factory(&job_factory_);
     default_context_.Init();
   }
@@ -5148,18 +5156,25 @@ TEST_F(URLRequestTestHTTP, ContentTypeNormalizationTest) {
   req.Cancel();
 }
 
-TEST_F(URLRequestTestHTTP, ProtocolHandlerAndFactoryRestrictRedirects) {
+TEST_F(URLRequestTestHTTP, ProtocolHandlerAndFactoryRestrictDataRedirects) {
   // Test URLRequestJobFactory::ProtocolHandler::IsSafeRedirectTarget().
-  GURL file_url("file:///foo.txt");
   GURL data_url("data:,foo");
-  FileProtocolHandler file_protocol_handler(base::MessageLoopProxy::current());
-  EXPECT_FALSE(file_protocol_handler.IsSafeRedirectTarget(file_url));
   DataProtocolHandler data_protocol_handler;
   EXPECT_FALSE(data_protocol_handler.IsSafeRedirectTarget(data_url));
 
   // Test URLRequestJobFactoryImpl::IsSafeRedirectTarget().
-  EXPECT_FALSE(job_factory_.IsSafeRedirectTarget(file_url));
   EXPECT_FALSE(job_factory_.IsSafeRedirectTarget(data_url));
+}
+
+#if !defined(DISABLE_FILE_SUPPORT)
+TEST_F(URLRequestTestHTTP, ProtocolHandlerAndFactoryRestrictFileRedirects) {
+  // Test URLRequestJobFactory::ProtocolHandler::IsSafeRedirectTarget().
+  GURL file_url("file:///foo.txt");
+  FileProtocolHandler file_protocol_handler(base::MessageLoopProxy::current());
+  EXPECT_FALSE(file_protocol_handler.IsSafeRedirectTarget(file_url));
+
+  // Test URLRequestJobFactoryImpl::IsSafeRedirectTarget().
+  EXPECT_FALSE(job_factory_.IsSafeRedirectTarget(file_url));
 }
 
 TEST_F(URLRequestTestHTTP, RestrictFileRedirects) {
@@ -5176,6 +5191,7 @@ TEST_F(URLRequestTestHTTP, RestrictFileRedirects) {
   EXPECT_EQ(URLRequestStatus::FAILED, req.status().status());
   EXPECT_EQ(ERR_UNSAFE_REDIRECT, req.status().error());
 }
+#endif  // !defined(DISABLE_FILE_SUPPORT)
 
 TEST_F(URLRequestTestHTTP, RestrictDataRedirects) {
   ASSERT_TRUE(test_server_.Start());

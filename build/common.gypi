@@ -482,6 +482,9 @@
       # Enables used resource whitelist generation; disabled by default.
       'enable_resource_whitelist_generation%': 0,
 
+      # Enable FILE support by default.
+      'disable_file_support%': 0,
+
       # Enable FTP support by default.
       'disable_ftp_support%': 0,
 
@@ -1044,6 +1047,7 @@
     'cld2_dynamic%': '<(cld2_dynamic)',
     'cld2_is_component%': '<(cld2_is_component)',
     'enable_captive_portal_detection%': '<(enable_captive_portal_detection)',
+    'disable_file_support%': '<(disable_file_support)',
     'disable_ftp_support%': '<(disable_ftp_support)',
     'use_icu_alternatives_on_android%': '<(use_icu_alternatives_on_android)',
     'enable_task_manager%': '<(enable_task_manager)',
@@ -2622,6 +2626,9 @@
       }],
       ['enable_settings_app==1', {
         'defines': ['ENABLE_SETTINGS_APP=1'],
+      }],
+      ['disable_file_support==1', {
+        'defines': ['DISABLE_FILE_SUPPORT=1'],
       }],
       ['disable_ftp_support==1', {
         'defines': ['DISABLE_FTP_SUPPORT=1'],

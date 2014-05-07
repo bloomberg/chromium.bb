@@ -128,6 +128,24 @@
             'disk_cache/blockfile/mapped_file_avoid_mmap_posix.cc',
           ],
         }],
+        ['disable_file_support==1', {
+          # TODO(mmenke):  Should probably get rid of the dependency on
+          # net_resources in this case (It's used in net_util, to format
+          # directory listings.  Also used outside of net/).
+          'dependencies!': [
+            'net_resources',
+          ],
+          'sources!': [
+            'base/directory_lister.cc',
+            'base/directory_lister.h',
+            'url_request/url_request_file_dir_job.cc',
+            'url_request/url_request_file_dir_job.h',
+            'url_request/url_request_file_job.cc',
+            'url_request/url_request_file_job.h',
+            'url_request/file_protocol_handler.cc',
+            'url_request/file_protocol_handler.h',
+          ],
+        }],
         ['disable_ftp_support==1', {
           'sources/': [
             ['exclude', '^ftp/'],
@@ -594,6 +612,12 @@
               ['exclude', '^websockets/'],
               ['exclude', '^spdy/spdy_websocket_stream_unittest\\.cc$'],
             ],
+        }],
+        ['disable_file_support==1', {
+          'sources!': [
+            'base/directory_lister_unittest.cc',
+            'url_request/url_request_file_job_unittest.cc',
+          ],
         }],
         [ 'disable_ftp_support==1', {
             'sources/': [

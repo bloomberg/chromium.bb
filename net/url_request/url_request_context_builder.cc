@@ -28,12 +28,18 @@
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/data_protocol_handler.h"
-#include "net/url_request/file_protocol_handler.h"
-#include "net/url_request/ftp_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+
+#if !defined(DISABLE_FILE_SUPPORT)
+#include "net/url_request/file_protocol_handler.h"
+#endif
+
+#if !defined(DISABLE_FTP_SUPPORT)
+#include "net/url_request/ftp_protocol_handler.h"
+#endif
 
 namespace net {
 
@@ -187,7 +193,9 @@ URLRequestContextBuilder::SchemeFactory::~SchemeFactory() {
 
 URLRequestContextBuilder::URLRequestContextBuilder()
     : data_enabled_(false),
+#if !defined(DISABLE_FILE_SUPPORT)
       file_enabled_(false),
+#endif
 #if !defined(DISABLE_FTP_SUPPORT)
       ftp_enabled_(false),
 #endif
@@ -313,11 +321,15 @@ URLRequestContext* URLRequestContextBuilder::Build() {
   URLRequestJobFactoryImpl* job_factory = new URLRequestJobFactoryImpl;
   if (data_enabled_)
     job_factory->SetProtocolHandler("data", new DataProtocolHandler);
+
+#if !defined(DISABLE_FILE_SUPPORT)
   if (file_enabled_) {
     job_factory->SetProtocolHandler(
     "file",
     new FileProtocolHandler(context->GetFileThread()->message_loop_proxy()));
   }
+#endif  // !defined(DISABLE_FILE_SUPPORT)
+
 #if !defined(DISABLE_FTP_SUPPORT)
   if (ftp_enabled_) {
     ftp_transaction_factory_.reset(
@@ -325,7 +337,8 @@ URLRequestContext* URLRequestContextBuilder::Build() {
     job_factory->SetProtocolHandler("ftp",
         new FtpProtocolHandler(ftp_transaction_factory_.get()));
   }
-#endif
+#endif  // !defined(DISABLE_FTP_SUPPORT)
+
   storage->set_job_factory(job_factory);
 
   // TODO(willchan): Support sdch.
