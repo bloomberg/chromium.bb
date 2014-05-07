@@ -89,4 +89,28 @@ TEST_F(AppListControllerTest, TapOutsideBubbleClosesBubble) {
   EXPECT_FALSE(shell->GetAppListTargetVisibility());
 }
 
+// Tests opening the app launcher on a non-primary display, then deleting the
+// display.
+TEST_F(AppListControllerTest, NonPrimaryDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  // Set up a screen with two displays (horizontally adjacent).
+  UpdateDisplay("800x600,800x600");
+
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, root_windows.size());
+  aura::Window* secondary_window = root_windows[1];
+  EXPECT_EQ("800,0 800x600", secondary_window->GetBoundsInScreen().ToString());
+
+  Shell::GetInstance()->ToggleAppList(secondary_window);
+  EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
+
+  // Remove the secondary display. Shouldn't crash (http://crbug.com/368990).
+  UpdateDisplay("800x600");
+
+  // Updating the displays should close the app list.
+  EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
+}
+
 }  // namespace ash
