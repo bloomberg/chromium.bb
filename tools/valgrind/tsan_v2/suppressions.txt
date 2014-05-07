@@ -256,3 +256,9 @@ race:v8::internal::FLAG_track_double_fields
 
 # http://crbug.com/370244
 race:cc::RenderingStatsInstrumentation::AccumulateAndClearImplThreadStats
+
+# https://crbug.com/369257
+# TODO(mtklein): annotate properly and remove suppressions.
+race:SandboxIPCHandler::HandleFontMatchRequest
+race:SkFontConfigInterfaceDirect::matchFamilyName
+race:SkFontConfigInterface::GetSingletonDirectInterface
