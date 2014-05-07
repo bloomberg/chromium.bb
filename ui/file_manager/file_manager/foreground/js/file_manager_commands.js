@@ -367,10 +367,10 @@ CommandHandler.COMMANDS_['unmount'] = {
     var rootType =
         locationInfo && locationInfo.isRootEntry && locationInfo.rootType;
 
-    event.canExecute = (rootType == RootType.ARCHIVE ||
-                        rootType == RootType.REMOVABLE);
+    event.canExecute = (rootType == VolumeManagerCommon.RootType.ARCHIVE ||
+                        rootType == VolumeManagerCommon.RootType.REMOVABLE);
     event.command.setHidden(!event.canExecute);
-    event.command.label = rootType == RootType.ARCHIVE ?
+    event.command.label = rootType == VolumeManagerCommon.RootType.ARCHIVE ?
         str('CLOSE_ARCHIVE_BUTTON_LABEL') :
         str('UNMOUNT_DEVICE_BUTTON_LABEL');
   }
@@ -413,7 +413,8 @@ CommandHandler.COMMANDS_['format'] = {
     if (!root)
       root = directoryModel.getCurrentDirEntry();
     var location = root && fileManager.volumeManager.getLocationInfo(root);
-    var removable = location && location.rootType === RootType.REMOVABLE;
+    var removable = location && location.rootType ===
+        VolumeManagerCommon.RootType.REMOVABLE;
     // Don't check if the volume is read-only. Unformatted volume is considered
     // read-only per VolumeInfo.isReadOnly, but can be formatted. An error will
     // be raised if formatting failed anyway.
@@ -785,7 +786,7 @@ CommandHandler.COMMANDS_['share'] = {
     var selection = fileManager.getSelection();
     var isDriveOffline =
         fileManager.volumeManager.getDriveConnectionState().type ===
-            util.DriveConnectionType.OFFLINE;
+            VolumeManagerCommon.DriveConnectionType.OFFLINE;
     event.canExecute = fileManager.isOnDrive() &&
         !isDriveOffline &&
         selection && selection.totalCount == 1;

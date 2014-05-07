@@ -1284,68 +1284,56 @@ util.testSendMessage = function(message) {
 };
 
 /**
- * Error type of VolumeManager.
- * @enum {string}
- * @const
- */
-util.VolumeError = Object.freeze({
-  /* Internal errors */
-  NOT_MOUNTED: 'not_mounted',
-  TIMEOUT: 'timeout',
-
-  /* System events */
-  UNKNOWN: 'error_unknown',
-  INTERNAL: 'error_internal',
-  UNKNOWN_FILESYSTEM: 'error_unknown_filesystem',
-  UNSUPPORTED_FILESYSTEM: 'error_unsupported_filesystem',
-  INVALID_ARCHIVE: 'error_invalid_archive',
-  AUTHENTICATION: 'error_authentication',
-  PATH_UNMOUNTED: 'error_path_unmounted'
-});
-
-/**
- * List of connection types of drive.
+ * Returns the localized name for the root type. If not available, then returns
+ * null.
  *
- * Keep this in sync with the kDriveConnectionType* constants in
- * private_api_dirve.cc.
- *
- * @enum {string}
- * @const
+ * @param {VolumeManagerCommon.RootType} rootType The root type.
+ * @return {?string} The localized name, or null if not available.
  */
-util.DriveConnectionType = Object.freeze({
-  OFFLINE: 'offline',  // Connection is offline or drive is unavailable.
-  METERED: 'metered',  // Connection is metered. Should limit traffic.
-  ONLINE: 'online'     // Connection is online.
-});
+util.getRootTypeLabel = function(rootType) {
+  var str = function(id) {
+    return loadTimeData.getString(id);
+  };
+
+  switch (rootType) {
+    case VolumeManagerCommon.RootType.DOWNLOADS:
+      return str('DOWNLOADS_DIRECTORY_LABEL');
+    case VolumeManagerCommon.RootType.DRIVE:
+      return str('DRIVE_MY_DRIVE_LABEL');
+    case VolumeManagerCommon.RootType.DRIVE_OFFLINE:
+      return str('DRIVE_OFFLINE_COLLECTION_LABEL');
+    case VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME:
+      return str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL');
+    case VolumeManagerCommon.RootType.DRIVE_RECENT:
+      return str('DRIVE_RECENT_COLLECTION_LABEL');
+  }
+
+  // Translation not found.
+  return null;
+};
 
 /**
- * List of reasons of DriveConnectionType.
+ * Extracts the extension of the path.
  *
- * Keep this in sync with the kDriveConnectionReason constants in
- * private_api_drive.cc.
+ * Examples:
+ * util.splitExtension('abc.ext') -> ['abc', '.ext']
+ * util.splitExtension('a/b/abc.ext') -> ['a/b/abc', '.ext']
+ * util.splitExtension('a/b') -> ['a/b', '']
+ * util.splitExtension('.cshrc') -> ['', '.cshrc']
+ * util.splitExtension('a/b.backup/hoge') -> ['a/b.backup/hoge', '']
  *
- * @enum {string}
- * @const
+ * @param {string} path Path to be extracted.
+ * @return {Array.<string>} Filename and extension of the given path.
  */
-util.DriveConnectionReason = Object.freeze({
-  NOT_READY: 'not_ready',    // Drive is not ready or authentication is failed.
-  NO_NETWORK: 'no_network',  // Network connection is unavailable.
-  NO_SERVICE: 'no_service'   // Drive service is unavailable.
-});
+util.splitExtension = function(path) {
+  var dotPosition = path.lastIndexOf('.');
+  if (dotPosition <= path.lastIndexOf('/'))
+    dotPosition = -1;
 
-/**
- * The type of each volume.
- * @enum {string}
- * @const
- */
-util.VolumeType = Object.freeze({
-  DRIVE: 'drive',
-  DOWNLOADS: 'downloads',
-  REMOVABLE: 'removable',
-  ARCHIVE: 'archive',
-  CLOUD_DEVICE: 'cloud_device',
-  MTP: 'mtp'
-});
+  var filename = dotPosition != -1 ? path.substr(0, dotPosition) : path;
+  var extension = dotPosition != -1 ? path.substr(dotPosition) : '';
+  return [filename, extension];
+};
 
 /**
  * Returns the localized name of the entry.
@@ -1359,18 +1347,20 @@ util.getEntryLabel = function(volumeManager, entry) {
 
   if (locationInfo && locationInfo.isRootEntry) {
     switch (locationInfo.rootType) {
-      case RootType.DRIVE:
+      case VolumeManagerCommon.RootType.DOWNLOADS:
+        return str('DOWNLOADS_DIRECTORY_LABEL');
+      case VolumeManagerCommon.RootType.DRIVE:
         return str('DRIVE_MY_DRIVE_LABEL');
-      case RootType.DRIVE_OFFLINE:
+      case VolumeManagerCommon.RootType.DRIVE_OFFLINE:
         return str('DRIVE_OFFLINE_COLLECTION_LABEL');
-      case RootType.DRIVE_SHARED_WITH_ME:
+      case VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME:
         return str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL');
-      case RootType.DRIVE_RECENT:
+      case VolumeManagerCommon.RootType.DRIVE_RECENT:
         return str('DRIVE_RECENT_COLLECTION_LABEL');
-      case RootType.DOWNLOADS:
-      case RootType.ARCHIVE:
-      case RootType.REMOVABLE:
-      case RootType.MTP:
+      case VolumeManagerCommon.RootType.DOWNLOADS:
+      case VolumeManagerCommon.RootType.ARCHIVE:
+      case VolumeManagerCommon.RootType.REMOVABLE:
+      case VolumeManagerCommon.RootType.MTP:
         return locationInfo.volumeInfo.label;
       default:
         console.error('Unsupported root type: ' + locationInfo.rootType);

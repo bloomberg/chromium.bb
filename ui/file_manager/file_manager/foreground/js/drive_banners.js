@@ -300,7 +300,7 @@ FileListBannerController.prototype.checkSpaceAndMaybeShowWelcomeBanner_ =
   }
 
   var driveVolume = this.volumeManager_.getCurrentProfileVolumeInfo(
-      util.VolumeType.DRIVE);
+      VolumeManagerCommon.VolumeType.DRIVE);
   if (this.welcomeHeaderCounter_ >= WELCOME_HEADER_COUNTER_LIMIT ||
       !driveVolume || driveVolume.error) {
     // The banner is already shown enough times or the drive FS is not mounted.
@@ -399,7 +399,7 @@ FileListBannerController.prototype.isOnCurrentProfileDrive = function() {
     return false;
   var locationInfo = this.volumeManager_.getLocationInfo(entry);
   return locationInfo &&
-      locationInfo.rootType === RootType.DRIVE &&
+      locationInfo.rootType === VolumeManagerCommon.RootType.DRIVE &&
       locationInfo.volumeInfo.profile.isCurrentProfile;
 };
 
@@ -465,8 +465,8 @@ FileListBannerController.prototype.isLowSpaceWarningTarget_ =
     function(volumeInfo) {
   return volumeInfo &&
       volumeInfo.profile.isCurrentProfile &&
-      (volumeInfo.volumeType === util.VolumeType.DOWNLOADS ||
-       volumeInfo.volumeType === util.VolumeType.DRIVE);
+      (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS ||
+       volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE);
 };
 
 /**
@@ -500,11 +500,11 @@ FileListBannerController.prototype.maybeShowLowSpaceWarning_ = function(
   // TODO(kaznacheev): Unify the two low space warning.
   var threshold = 0;
   switch (volume.volumeType) {
-    case util.VolumeType.DOWNLOADS:
+    case VolumeManagerCommon.VolumeType.DOWNLOADS:
       this.showLowDriveSpaceWarning_(false);
       threshold = 0.2;
       break;
-    case util.VolumeType.DRIVE:
+    case VolumeManagerCommon.VolumeType.DRIVE:
       this.showLowDownloadsSpaceWarning_(false);
       threshold = 0.1;
       break;
@@ -536,7 +536,7 @@ FileListBannerController.prototype.maybeShowLowSpaceWarning_ = function(
 
         var remainingRatio = sizeStats.remainingSize / sizeStats.totalSize;
         var isLowDiskSpace = remainingRatio < threshold;
-        if (volume.volumeType === util.VolumeType.DOWNLOADS)
+        if (volume.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS)
           this.showLowDownloadsSpaceWarning_(isLowDiskSpace);
         else
           this.showLowDriveSpaceWarning_(isLowDiskSpace, sizeStats);
@@ -625,7 +625,7 @@ FileListBannerController.prototype.ensureDriveUnmountedPanelInitialized_ =
  */
 FileListBannerController.prototype.onVolumeInfoListSplice_ = function(event) {
   var isDriveVolume = function(volumeInfo) {
-    return volumeInfo.volumeType === util.VolumeType.DRIVE;
+    return volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE;
   };
   if (event.removed.some(isDriveVolume) || event.added.some(isDriveVolume))
     this.updateDriveUnmountedPanel_();
@@ -641,7 +641,7 @@ FileListBannerController.prototype.updateDriveUnmountedPanel_ = function() {
   var node = this.document_.body;
   if (this.isOnCurrentProfileDrive()) {
     var driveVolume = this.volumeManager_.getCurrentProfileVolumeInfo(
-        util.VolumeType.DRIVE);
+        VolumeManagerCommon.VolumeType.DRIVE);
     if (driveVolume && driveVolume.error) {
       this.ensureDriveUnmountedPanelInitialized_();
       this.unmountedPanel_.classList.add('retry-enabled');
@@ -663,7 +663,7 @@ FileListBannerController.prototype.maybeShowAuthFailBanner_ = function() {
   var connection = this.volumeManager_.getDriveConnectionState();
   var showDriveNotReachedMessage =
       this.isOnCurrentProfileDrive() &&
-      connection.type == util.DriveConnectionType.OFFLINE &&
-      connection.reason == util.DriveConnectionReason.NOT_READY;
+      connection.type == VolumeManagerCommon.DriveConnectionType.OFFLINE &&
+      connection.reason == VolumeManagerCommon.DriveConnectionReason.NOT_READY;
   this.authFailedBanner_.hidden = !showDriveNotReachedMessage;
 };

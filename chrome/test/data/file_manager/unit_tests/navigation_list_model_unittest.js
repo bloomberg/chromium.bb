@@ -67,7 +67,7 @@ function testAddAndRemoveVolumes() {
 
   // Removable volume 'hoge' is mounted.
   volumeManager.volumeInfoList.push(MockVolumeManager.createMockVolumeInfo(
-      util.VolumeType.REMOVABLE, 'removable:hoge'));
+      VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:hoge'));
   assertEquals(4, model.length);
   assertEquals('drive', model.item(0).volumeInfo.volumeId);
   assertEquals('downloads', model.item(1).volumeInfo.volumeId);
@@ -76,7 +76,7 @@ function testAddAndRemoveVolumes() {
 
   // Removable volume 'fuga' is mounted.
   volumeManager.volumeInfoList.push(MockVolumeManager.createMockVolumeInfo(
-      util.VolumeType.REMOVABLE, 'removable:fuga'));
+      VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:fuga'));
   assertEquals(5, model.length);
   assertEquals('drive', model.item(0).volumeInfo.volumeId);
   assertEquals('downloads', model.item(1).volumeInfo.volumeId);

@@ -81,7 +81,8 @@ DirectoryModel.prototype.getFileListSelection = function() {
 };
 
 /**
- * @return {?RootType} Root type of current root, or null if not found.
+ * @return {?VolumeManagerCommon.RootType} Root type of current root, or null if
+ *     not found.
  */
 DirectoryModel.prototype.getCurrentRootType = function() {
   var entry = this.currentDirContents_.getDirectoryEntry();
@@ -405,7 +406,8 @@ DirectoryModel.prototype.scan_ = function(
     if (!dirContents.isSearch()) {
       var locationInfo =
           this.volumeManager_.getLocationInfo(dirContents.getDirectoryEntry());
-      if (locationInfo.volumeInfo.volumeType === util.VolumeType.DOWNLOADS &&
+      if (locationInfo.volumeInfo.volumeType ===
+          VolumeManagerCommon.VolumeType.DOWNLOADS &&
           locationInfo.isRootEntry) {
         metrics.recordMediumCount('DownloadsCount',
                                   dirContents.fileList_.length);
@@ -485,10 +487,10 @@ DirectoryModel.prototype.onEntryChanged = function(kind, entry) {
   // TODO(hidehiko): We should update directory model even the search result
   // is shown.
   var rootType = this.getCurrentRootType();
-  if ((rootType === RootType.DRIVE ||
-       rootType === RootType.DRIVE_SHARED_WITH_ME ||
-       rootType === RootType.DRIVE_RECENT ||
-       rootType === RootType.DRIVE_OFFLINE) &&
+  if ((rootType === VolumeManagerCommon.RootType.DRIVE ||
+       rootType === VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME ||
+       rootType === VolumeManagerCommon.RootType.DRIVE_RECENT ||
+       rootType === VolumeManagerCommon.RootType.DRIVE_OFFLINE) &&
       this.isSearching())
     return;
 
@@ -801,7 +803,7 @@ DirectoryModel.prototype.createDirectoryContents_ =
   if (!locationInfo)
     return null;
   var canUseDriveSearch = this.volumeManager_.getDriveConnectionState().type !==
-      util.DriveConnectionType.OFFLINE &&
+      VolumeManagerCommon.DriveConnectionType.OFFLINE &&
       locationInfo.isDriveBased;
 
   if (query && canUseDriveSearch) {
@@ -814,15 +816,15 @@ DirectoryModel.prototype.createDirectoryContents_ =
     // Drive special search.
     var searchType;
     switch (locationInfo.rootType) {
-      case RootType.DRIVE_OFFLINE:
+      case VolumeManagerCommon.RootType.DRIVE_OFFLINE:
         searchType =
             DriveMetadataSearchContentScanner.SearchType.SEARCH_OFFLINE;
         break;
-      case RootType.DRIVE_SHARED_WITH_ME:
+      case VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME:
         searchType =
             DriveMetadataSearchContentScanner.SearchType.SEARCH_SHARED_WITH_ME;
         break;
-      case RootType.DRIVE_RECENT:
+      case VolumeManagerCommon.RootType.DRIVE_RECENT:
         searchType =
             DriveMetadataSearchContentScanner.SearchType.SEARCH_RECENT_FILES;
         break;

@@ -55,7 +55,7 @@ NavigationListItem.prototype.setModelItem = function(modelItem) {
     typeIcon = modelItem.volumeInfo.volumeType;
   } else if (modelItem.isShortcut) {
     // Shortcuts are available for Drive only.
-    typeIcon = util.VolumeType.DRIVE;
+    typeIcon = VolumeManagerCommon.VolumeType.DRIVE;
   }
   this.iconDiv_.setAttribute('volume-type-icon', typeIcon);
 
@@ -67,8 +67,10 @@ NavigationListItem.prototype.setModelItem = function(modelItem) {
   this.label_.textContent = modelItem.label;
 
   if (modelItem.isVolume &&
-      (modelItem.volumeInfo.volumeType === util.VolumeType.ARCHIVE ||
-       modelItem.volumeInfo.volumeType === util.VolumeType.REMOVABLE)) {
+      (modelItem.volumeInfo.volumeType ===
+           VolumeManagerCommon.VolumeType.ARCHIVE ||
+       modelItem.volumeInfo.volumeType ===
+           VolumeManagerCommon.VolumeType.REMOVABLE)) {
     this.eject_ = cr.doc.createElement('div');
     // Block other mouse handlers.
     this.eject_.addEventListener(
@@ -100,9 +102,10 @@ NavigationListItem.prototype.maybeSetContextMenu = function(menu) {
   // The context menu is shown on the following items:
   // - Removable and Archive volumes
   // - Folder shortcuts
-  if (this.modelItem_.isVolume &&
-      (this.modelItem_.volumeInfo.volumeType === util.VolumeType.REMOVABLE ||
-       this.modelItem_.volumeInfo.volumeType === util.VolumeType.ARCHIVE) ||
+  if (this.modelItem_.isVolume && (this.modelItem_.volumeInfo.volumeType ===
+          VolumeManagerCommon.VolumeType.REMOVABLE ||
+      this.modelItem_.volumeInfo.volumeType ===
+          VolumeManagerCommon.VolumeType.ARCHIVE) ||
       this.modelItem_.isShortcut) {
     cr.ui.contextMenuHandler.setContextMenu(this, menu);
   }

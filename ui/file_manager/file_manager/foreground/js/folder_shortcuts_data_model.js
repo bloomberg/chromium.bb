@@ -74,7 +74,7 @@ FolderShortcutsDataModel.prototype = {
     if (this.lastDriveRootURL_)
       return;
     var volumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
-        util.VolumeType.DRIVE);
+        VolumeManagerCommon.VolumeType.DRIVE);
     if (volumeInfo)
       this.lastDriveRootURL_ = volumeInfo.fileSystem.root.toURL();
   },
@@ -96,7 +96,7 @@ FolderShortcutsDataModel.prototype = {
 
     this.queue_.run(function(queueCallback) {
       var volumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
-          util.VolumeType.DRIVE);
+          VolumeManagerCommon.VolumeType.DRIVE);
       var changed = false;
       var resolvedURLs = {};
       this.rememberLastDriveURL_();  // Required for conversions.
@@ -128,7 +128,7 @@ FolderShortcutsDataModel.prototype = {
         // does not exist anymore.
         if (!volumeInfo ||
             this.volumeManager_.getDriveConnectionState().type !==
-                util.DriveConnectionType.ONLINE) {
+                VolumeManagerCommon.DriveConnectionType.ONLINE) {
           if (!this.unresolvablePaths_[path]) {
             changed = true;
             this.unresolvablePaths_[path] = true;
@@ -479,7 +479,7 @@ FolderShortcutsDataModel.prototype = {
     // If Drive is online, then delete the shortcut permanently. Otherwise,
     // delete from model and add to |unresolvablePaths_|.
     if (this.volumeManager_.getDriveConnectionState().type !==
-        util.DriveConnectionType.ONLINE) {
+        VolumeManagerCommon.DriveConnectionType.ONLINE) {
       var path = this.convertUrlToStoredPath_(entry.toURL());
       // TODO(mtomasz): Add support for multi-profile.
       this.unresolvablePaths_[path] = true;

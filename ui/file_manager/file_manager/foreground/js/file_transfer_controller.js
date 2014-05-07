@@ -763,10 +763,8 @@ FileTransferController.prototype = {
     if (!volumeInfo)
       return false;
     var isDriveOffline = this.volumeManager_.getDriveConnectionState().type ===
-        util.DriveConnectionType.OFFLINE;
-    if (this.isOnDrive &&
-        isDriveOffline &&
-        !this.allDriveFilesAvailable)
+        VolumeManagerCommon.DriveConnectionType.OFFLINE;
+    if (this.isOnDrive && isDriveOffline && !this.allDriveFilesAvailable)
       return false;
     return true;
   },

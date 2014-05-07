@@ -8,7 +8,7 @@
  * Represents each volume, such as "drive", "download directory", each "USB
  * flush storage", or "mounted zip archive" etc.
  *
- * @param {util.VolumeType} volumeType The type of the volume.
+ * @param {VolumeManagerCommon.VolumeType} volumeType The type of the volume.
  * @param {string} volumeId ID of the volume.
  * @param {DOMFileSystem} fileSystem The file system object for this volume.
  * @param {string} error The error if an error is found.
@@ -39,21 +39,21 @@ function VolumeInfo(
   this.displayRoot_ = null;
   this.displayRootPromise_ = null;
 
-  if (volumeType === util.VolumeType.DRIVE) {
+  if (volumeType === VolumeManagerCommon.VolumeType.DRIVE) {
     // TODO(mtomasz): Convert fake entries to DirectoryProvider.
-    this.fakeEntries_[RootType.DRIVE_OFFLINE] = {
+    this.fakeEntries_[VolumeManagerCommon.RootType.DRIVE_OFFLINE] = {
       isDirectory: true,
-      rootType: RootType.DRIVE_OFFLINE,
+      rootType: VolumeManagerCommon.RootType.DRIVE_OFFLINE,
       toURL: function() { return 'fake-entry://drive_offline' }
     };
-    this.fakeEntries_[RootType.DRIVE_SHARED_WITH_ME] = {
+    this.fakeEntries_[VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME] = {
       isDirectory: true,
-      rootType: RootType.DRIVE_SHARED_WITH_ME,
+      rootType: VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME,
       toURL: function() { return 'fake-entry://drive_shared_with_me'; }
     };
-    this.fakeEntries_[RootType.DRIVE_RECENT] = {
+    this.fakeEntries_[VolumeManagerCommon.RootType.DRIVE_RECENT] = {
       isDirectory: true,
-      rootType: RootType.DRIVE_RECENT,
+      rootType: VolumeManagerCommon.RootType.DRIVE_RECENT,
       toURL: function() { return 'fake-entry://drive_recent'; }
     };
   }
@@ -71,7 +71,7 @@ function VolumeInfo(
 
 VolumeInfo.prototype = {
   /**
-   * @return {util.VolumeType} Volume type.
+   * @return {VolumeManagerCommon.VolumeType} Volume type.
    */
   get volumeType() {
     return this.volumeType_;
@@ -145,7 +145,7 @@ VolumeInfo.prototype.resolveDisplayRoot = function(onSuccess, onFailure) {
   if (!this.displayRootPromise_) {
     // TODO(mtomasz): Do not add VolumeInfo which failed to resolve root, and
     // remove this if logic. Call onSuccess() always, instead.
-    if (this.volumeType !== util.VolumeType.DRIVE) {
+    if (this.volumeType !== VolumeManagerCommon.VolumeType.DRIVE) {
       if (this.fileSystem_)
         this.displayRootPromise_ = Promise.resolve(this.fileSystem_.root);
       else
@@ -171,12 +171,15 @@ VolumeInfo.prototype.resolveDisplayRoot = function(onSuccess, onFailure) {
 var volumeManagerUtil = {};
 
 /**
- * Throws an Error when the given error is not in util.VolumeError.
- * @param {util.VolumeError} error Status string usually received from APIs.
+ * Throws an Error when the given error is not in
+ * VolumeManagerCommon.VolumeError.
+ *
+ * @param {VolumeManagerCommon.VolumeError} error Status string usually received
+ *     from APIs.
  */
 volumeManagerUtil.validateError = function(error) {
-  for (var key in util.VolumeError) {
-    if (error === util.VolumeError[key])
+  for (var key in VolumeManagerCommon.VolumeError) {
+    if (error === VolumeManagerCommon.VolumeError[key])
       return;
   }
 
@@ -191,10 +194,10 @@ volumeManagerUtil.validateError = function(error) {
 volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
   var localizedLabel;
   switch (volumeMetadata.volumeType) {
-    case util.VolumeType.DOWNLOADS:
+    case VolumeManagerCommon.VolumeType.DOWNLOADS:
       localizedLabel = str('DOWNLOADS_DIRECTORY_LABEL');
       break;
-    case util.VolumeType.DRIVE:
+    case VolumeManagerCommon.VolumeType.DRIVE:
       localizedLabel = str('DRIVE_DIRECTORY_LABEL');
       break;
     default:
@@ -219,7 +222,8 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
               localizedLabel));
           return;
         }
-        if (volumeMetadata.volumeType === util.VolumeType.DRIVE) {
+        if (volumeMetadata.volumeType ==
+            VolumeManagerCommon.VolumeType.DRIVE) {
           // After file system is mounted, we "read" drive grand root
           // entry at first. This triggers full feed fetch on background.
           // Note: we don't need to handle errors here, because even if
@@ -246,17 +250,17 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
 
 /**
  * The order of the volume list based on root type.
- * @type {Array.<util.VolumeType>}
+ * @type {Array.<VolumeManagerCommon.VolumeType>}
  * @const
  * @private
  */
 volumeManagerUtil.volumeListOrder_ = [
-  util.VolumeType.DRIVE,
-  util.VolumeType.DOWNLOADS,
-  util.VolumeType.ARCHIVE,
-  util.VolumeType.REMOVABLE,
-  util.VolumeType.MTP,
-  util.VolumeType.CLOUD_DEVICE
+  VolumeManagerCommon.VolumeType.DRIVE,
+  VolumeManagerCommon.VolumeType.DOWNLOADS,
+  VolumeManagerCommon.VolumeType.ARCHIVE,
+  VolumeManagerCommon.VolumeType.REMOVABLE,
+  VolumeManagerCommon.VolumeType.MTP,
+  VolumeManagerCommon.VolumeType.CLOUD_DEVICE
 ];
 
 /**
@@ -421,8 +425,8 @@ function VolumeManager() {
   // The status should be merged into VolumeManager.
   // TODO(hidehiko): Remove them after the migration.
   this.driveConnectionState_ = {
-    type: util.DriveConnectionType.OFFLINE,
-    reason: util.DriveConnectionReason.NO_SERVICE
+    type: VolumeManagerCommon.DriveConnectionType.OFFLINE,
+    reason: VolumeManagerCommon.DriveConnectionReason.NO_SERVICE
   };
 
   chrome.fileBrowserPrivate.onDriveConnectionStatusChanged.addListener(
@@ -443,7 +447,7 @@ VolumeManager.prototype.onDriveConnectionStatusChanged_ = function() {
 
 /**
  * Returns the drive connection state.
- * @return {util.DriveConnectionType} Connection type.
+ * @return {VolumeManagerCommon.DriveConnectionType} Connection type.
  */
 VolumeManager.prototype.getDriveConnectionState = function() {
   return this.driveConnectionState_;
@@ -518,7 +522,8 @@ VolumeManager.prototype.initialize_ = function(callback) {
               volumeMetadata,
               function(volumeInfo) {
                 this.volumeInfoList.add(volumeInfo);
-                if (volumeMetadata.volumeType === util.VolumeType.DRIVE)
+                if (volumeMetadata.volumeType ===
+                    VolumeManagerCommon.VolumeType.DRIVE)
                   this.onDriveConnectionStatusChanged_();
                 continueCallback();
               }.bind(this));
@@ -559,7 +564,8 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
                 this.volumeInfoList.add(volumeInfo);
                 this.finishRequest_(requestKey, event.status, volumeInfo);
 
-                if (volumeInfo.volumeType === util.VolumeType.DRIVE) {
+                if (volumeInfo.volumeType ===
+                    VolumeManagerCommon.VolumeType.DRIVE) {
                   // Update the network connection status, because until the
                   // drive is initialized, the status is set to not ready.
                   // TODO(mtomasz): The connection status should be migrated
@@ -578,7 +584,7 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
       case 'unmount':
         var volumeId = event.volumeMetadata.volumeId;
         var status = event.status;
-        if (status === util.VolumeError.PATH_UNMOUNTED) {
+        if (status === VolumeManagerCommon.VolumeError.PATH_UNMOUNTED) {
           console.warn('Volume already unmounted: ', volumeId);
           status = 'success';
         }
@@ -620,7 +626,8 @@ VolumeManager.prototype.makeRequestKey_ = function(requestType, argument) {
 /**
  * @param {string} fileUrl File url to the archive file.
  * @param {function(VolumeInfo)} successCallback Success callback.
- * @param {function(util.VolumeError)} errorCallback Error callback.
+ * @param {function(VolumeManagerCommon.VolumeError)} errorCallback Error
+ *     callback.
  */
 VolumeManager.prototype.mountArchive = function(
     fileUrl, successCallback, errorCallback) {
@@ -636,7 +643,8 @@ VolumeManager.prototype.mountArchive = function(
  * Unmounts volume.
  * @param {!VolumeInfo} volumeInfo Volume to be unmounted.
  * @param {function()} successCallback Success callback.
- * @param {function(util.VolumeError)} errorCallback Error callback.
+ * @param {function(VolumeManagerCommon.VolumeError)} errorCallback Error
+ *     callback.
  */
 VolumeManager.prototype.unmount = function(volumeInfo,
                                            successCallback,
@@ -658,7 +666,7 @@ VolumeManager.prototype.getVolumeInfo = function(entry) {
 /**
  * Obtains volume information of the current profile.
  *
- * @param {util.VolumeType} volumeType Volume type.
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
  * @return {VolumeInfo} Volume info.
  */
 VolumeManager.prototype.getCurrentProfileVolumeInfo = function(volumeType) {
@@ -693,16 +701,16 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
   var rootType;
   var isReadOnly;
   var isRootEntry;
-  if (volumeInfo.volumeType === util.VolumeType.DRIVE) {
+  if (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE) {
     // For Drive, the roots are /root and /other, instead of /. Root URLs
     // contain trailing slashes.
     if (entry.fullPath == '/root' || entry.fullPath.indexOf('/root/') === 0) {
-      rootType = RootType.DRIVE;
+      rootType = VolumeManagerCommon.RootType.DRIVE;
       isReadOnly = volumeInfo.isReadOnly;
       isRootEntry = entry.fullPath === '/root';
     } else if (entry.fullPath == '/other' ||
                entry.fullPath.indexOf('/other/') === 0) {
-      rootType = RootType.DRIVE_OTHER;
+      rootType = VolumeManagerCommon.RootType.DRIVE_OTHER;
       isReadOnly = true;
       isRootEntry = entry.fullPath === '/other';
     } else {
@@ -712,20 +720,20 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
     }
   } else {
     switch (volumeInfo.volumeType) {
-      case util.VolumeType.DOWNLOADS:
-        rootType = RootType.DOWNLOADS;
+      case VolumeManagerCommon.VolumeType.DOWNLOADS:
+        rootType = VolumeManagerCommon.RootType.DOWNLOADS;
         break;
-      case util.VolumeType.REMOVABLE:
-        rootType = RootType.REMOVABLE;
+      case VolumeManagerCommon.VolumeType.REMOVABLE:
+        rootType = VolumeManagerCommon.RootType.REMOVABLE;
         break;
-      case util.VolumeType.ARCHIVE:
-        rootType = RootType.ARCHIVE;
+      case VolumeManagerCommon.VolumeType.ARCHIVE:
+        rootType = VolumeManagerCommon.RootType.ARCHIVE;
         break;
-      case util.VolumeType.CLOUD_DEVICE:
-        rootType = RootType.CLOUD_DEVICE;
+      case VolumeManagerCommon.VolumeType.CLOUD_DEVICE:
+        rootType = VolumeManagerCommon.RootType.CLOUD_DEVICE;
         break;
-      case util.VolumeType.MTP:
-        rootType = RootType.MTP;
+      case VolumeManagerCommon.VolumeType.MTP:
+        rootType = VolumeManagerCommon.RootType.MTP;
         break;
       default:
         // Programming error, throw an exception.
@@ -740,10 +748,10 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
 
 /**
  * @param {string} key Key produced by |makeRequestKey_|.
- * @param {function(VolumeInfo)} successCallback To be called when request
+ * @param {function(VolumeInfo)} successCallback To be called when the request
  *     finishes successfully.
- * @param {function(util.VolumeError)} errorCallback To be called when
- *     request fails.
+ * @param {function(VolumeManagerCommon.VolumeError)} errorCallback To be called
+ *     when the request fails.
  * @private
  */
 VolumeManager.prototype.startRequest_ = function(key,
@@ -770,13 +778,14 @@ VolumeManager.prototype.startRequest_ = function(key,
  */
 VolumeManager.prototype.onTimeout_ = function(key) {
   this.invokeRequestCallbacks_(this.requests_[key],
-                               util.VolumeError.TIMEOUT);
+                               VolumeManagerCommon.VolumeError.TIMEOUT);
   delete this.requests_[key];
 };
 
 /**
  * @param {string} key Key produced by |makeRequestKey_|.
- * @param {util.VolumeError|'success'} status Status received from the API.
+ * @param {VolumeManagerCommon.VolumeError|'success'} status Status received
+ *     from the API.
  * @param {VolumeInfo=} opt_volumeInfo Volume info of the mounted volume.
  * @private
  */
@@ -792,8 +801,8 @@ VolumeManager.prototype.finishRequest_ = function(key, status, opt_volumeInfo) {
 
 /**
  * @param {Object} request Structure created in |startRequest_|.
- * @param {util.VolumeError|string} status If status === 'success'
- *     success callbacks are called.
+ * @param {VolumeManagerCommon.VolumeError|string} status If status ===
+ *     'success' success callbacks are called.
  * @param {VolumeInfo=} opt_volumeInfo Volume info of the mounted volume.
  * @private
  */
@@ -817,7 +826,7 @@ VolumeManager.prototype.invokeRequestCallbacks_ = function(
  * file system.
  *
  * @param {!VolumeInfo} volumeInfo Volume information.
- * @param {RootType} rootType Root type.
+ * @param {VolumeManagerCommon.RootType} rootType Root type.
  * @param {boolean} isRootEntry Whether the entry is root entry or not.
  * @param {boolean} isReadOnly Whether the entry is read only or not.
  * @constructor
@@ -831,7 +840,7 @@ function EntryLocation(volumeInfo, rootType, isRootEntry, isReadOnly) {
 
   /**
    * Root type.
-   * @type {RootType}
+   * @type {VolumeManagerCommon.RootType}
    */
   this.rootType = rootType;
 
@@ -847,9 +856,9 @@ function EntryLocation(volumeInfo, rootType, isRootEntry, isReadOnly) {
    * @type {boolean}
    */
   this.isSpecialSearchRoot =
-      this.rootType === RootType.DRIVE_OFFLINE ||
-      this.rootType === RootType.DRIVE_SHARED_WITH_ME ||
-      this.rootType === RootType.DRIVE_RECENT;
+      this.rootType === VolumeManagerCommon.RootType.DRIVE_OFFLINE ||
+      this.rootType === VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME ||
+      this.rootType === VolumeManagerCommon.RootType.DRIVE_RECENT;
 
   /**
    * Whether the location is under Google Drive or a special search root which
@@ -857,11 +866,11 @@ function EntryLocation(volumeInfo, rootType, isRootEntry, isReadOnly) {
    * @type {boolean}
    */
   this.isDriveBased =
-      this.rootType === RootType.DRIVE ||
-      this.rootType === RootType.DRIVE_OTHER ||
-      this.rootType === RootType.DRIVE_SHARED_WITH_ME ||
-      this.rootType === RootType.DRIVE_RECENT ||
-      this.rootType === RootType.DRIVE_OFFLINE;
+      this.rootType === VolumeManagerCommon.RootType.DRIVE ||
+      this.rootType === VolumeManagerCommon.RootType.DRIVE_OTHER ||
+      this.rootType === VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME ||
+      this.rootType === VolumeManagerCommon.RootType.DRIVE_RECENT ||
+      this.rootType === VolumeManagerCommon.RootType.DRIVE_OFFLINE;
 
   /**
    * Whether the given path can be a target path of folder shortcut.

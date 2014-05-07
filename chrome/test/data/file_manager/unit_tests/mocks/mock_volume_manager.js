@@ -10,9 +10,9 @@ function MockVolumeManager() {
   this.volumeInfoList = new cr.ui.ArrayDataModel([]);
 
   this.volumeInfoList.push(MockVolumeManager.createMockVolumeInfo(
-      util.VolumeType.DRIVE, 'drive'));
+      VolumeManagerCommon.VolumeType.DRIVE, 'drive'));
   this.volumeInfoList.push(MockVolumeManager.createMockVolumeInfo(
-      util.VolumeType.DOWNLOADS, 'downloads'));
+      VolumeManagerCommon.VolumeType.DOWNLOADS, 'downloads'));
 }
 
 /**

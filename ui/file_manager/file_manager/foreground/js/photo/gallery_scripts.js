@@ -33,7 +33,7 @@
 
 //<include src="../../../common/js/async_util.js">
 //<include src="../../../common/js/util.js">
-//<include src="../../../common/js/path_util.js">
+//<include src="../../../common/js/volume_manager_common.js">
 //<include src="../file_type.js">
 //<include src="../volume_manager_wrapper.js">
 

@@ -329,7 +329,7 @@ FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
     return;
 
   var filename = entries[0].name;
-  var extension = PathUtil.splitExtension(filename)[1];
+  var extension = util.splitExtension(filename)[1];
   var mimeType = this.mimeTypes_[0];
 
   var showAlert = function() {
@@ -471,7 +471,7 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
   var entries = this.entries_;
 
   var isDriveOffline = fm.volumeManager.getDriveConnectionState().type ===
-      util.DriveConnectionType.OFFLINE;
+      VolumeManagerCommon.DriveConnectionType.OFFLINE;
 
   if (fm.isOnDrive() && isDriveOffline) {
     fm.metadataCache_.get(entries, 'drive', function(props) {
@@ -497,7 +497,7 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
   }
 
   var isOnMetered = fm.volumeManager.getDriveConnectionState().type ===
-      util.DriveConnectionType.METERED;
+      VolumeManagerCommon.DriveConnectionType.METERED;
 
   if (fm.isOnDrive() && isOnMetered) {
     fm.metadataCache_.get(entries, 'drive', function(driveProps) {
@@ -687,8 +687,8 @@ FileTasks.prototype.openGalleryInternal_ = function(entries) {
     // is writable or not.
     var readonly = fm.isOnReadonlyDirectory();
     var currentDir = fm.getCurrentDirectoryEntry();
-    var downloadsVolume =
-        fm.volumeManager.getCurrentProfileVolumeInfo(RootType.DOWNLOADS);
+    var downloadsVolume = fm.volumeManager.getCurrentProfileVolumeInfo(
+            VolumeManagerCommon.RootType.DOWNLOADS);
     var downloadsDir = downloadsVolume && downloadsVolume.fileSystem.root;
 
     // TODO(mtomasz): Pass Entry instead of localized name. Conversion to a

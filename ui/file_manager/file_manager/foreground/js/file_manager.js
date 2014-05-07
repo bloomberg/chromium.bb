@@ -1068,7 +1068,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     var driveVolume = this.volumeManager_.getVolumeInfo(entry);
     var visible = driveVolume && !driveVolume.error &&
-        driveVolume.volumeType === util.VolumeType.DRIVE;
+        driveVolume.volumeType === VolumeManagerCommon.VolumeType.DRIVE;
     this.dialogDom_.
         querySelector('.dialog-middlebar-contents').hidden = !visible;
     this.dialogDom_.querySelector('#middlebar-splitter').hidden = !visible;
@@ -1727,10 +1727,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.isOnDrive = function() {
     var rootType = this.directoryModel_.getCurrentRootType();
-    return rootType === RootType.DRIVE ||
-           rootType === RootType.DRIVE_SHARED_WITH_ME ||
-           rootType === RootType.DRIVE_RECENT ||
-           rootType === RootType.DRIVE_OFFLINE;
+    return rootType === VolumeManagerCommon.RootType.DRIVE ||
+           rootType === VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME ||
+           rootType === VolumeManagerCommon.RootType.DRIVE_RECENT ||
+           rootType === VolumeManagerCommon.RootType.DRIVE_OFFLINE;
   };
 
   /**
@@ -2147,7 +2147,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }
 
       var basename = entry.name;
-      var splitted = PathUtil.splitExtension(basename);
+      var splitted = util.splitExtension(basename);
       var filename = splitted[0];
       var extension = splitted[1];
       var mime = props[0].contentMimeType;
@@ -2372,7 +2372,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.dialogDom_.setAttribute('unformatted', '');
 
       var errorNode = this.dialogDom_.querySelector('#format-panel > .error');
-      if (volumeInfo.error == util.VolumeError.UNSUPPORTED_FILESYSTEM) {
+      if (volumeInfo.error ===
+          VolumeManagerCommon.VolumeError.UNSUPPORTED_FILESYSTEM) {
         errorNode.textContent = str('UNSUPPORTED_FILESYSTEM_WARNING');
       } else {
         errorNode.textContent = str('UNKNOWN_FILESYSTEM_WARNING');

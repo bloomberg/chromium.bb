@@ -315,7 +315,7 @@ FileSelectionHandler.prototype.updateOkButton = function() {
 FileSelectionHandler.prototype.isFileSelectionAvailable = function() {
   var isDriveOffline =
       this.fileManager_.volumeManager.getDriveConnectionState().type ===
-          util.DriveConnectionType.OFFLINE;
+          VolumeManagerCommon.DriveConnectionType.OFFLINE;
   return !this.fileManager_.isOnDrive() || !isDriveOffline ||
       this.selection.allDriveFilesPresent;
 };

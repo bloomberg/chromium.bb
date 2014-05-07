@@ -15,7 +15,6 @@ if (!('allowsEval' in document.securityPolicy))
 
 // Force Polymer into dirty-checking mode, see http://crbug.com/351967
 Object['observe'] = undefined;
-Object['unobserve'] = undefined;
 
 <include src="../../../../../third_party/polymer/platform/platform.js">
 <include src="../../../../../third_party/polymer/polymer/polymer.js">
@@ -27,7 +26,7 @@ Object['unobserve'] = undefined;
 
 <include src="../../common/js/async_util.js"/>
 <include src="../../common/js/util.js"/>
-<include src="../../common/js/path_util.js"/>
+<include src="../../common/js/volume_manager_common.js"/>
 <include src="../../foreground/js/file_type.js"/>
 <include src="../../foreground/js/volume_manager_wrapper.js">
 <include src="../../foreground/js/metadata/metadata_cache.js"/>

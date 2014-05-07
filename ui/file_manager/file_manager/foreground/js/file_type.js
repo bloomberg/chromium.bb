@@ -146,7 +146,7 @@ FileType.getTypeForName = function(name) {
   }
 
   // Unknown file type.
-  var extension = PathUtil.splitExtension(name)[1];
+  var extension = util.splitExtension(name)[1];
   if (extension === '') {
     return { name: 'NO_EXTENSION_FILE_TYPE', type: 'UNKNOWN', icon: '' };
   }

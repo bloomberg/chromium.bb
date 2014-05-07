@@ -51,6 +51,7 @@
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/util.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/async_util.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/path_util.js",
+        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/volume_manager_common.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/volume_manager.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/test_util.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/error_util.js",

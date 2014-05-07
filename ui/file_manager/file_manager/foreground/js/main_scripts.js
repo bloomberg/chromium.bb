@@ -70,7 +70,7 @@
 //<include src="../../common/js/error_util.js"/>
 //
 //<include src="../../common/js/async_util.js"/>
-//<include src="../../common/js/path_util.js"/>
+//<include src="../../common/js/volume_manager_common.js"/>
 //<include src="../../common/js/util.js"/>
 //<include src="../../common/js/progress_center_common.js">
 //
