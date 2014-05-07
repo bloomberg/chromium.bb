@@ -54,20 +54,8 @@ function finishRepaintTest()
 
     internals.stopTrackingRepaints(document);
 
-    if (window.outputRepaintRects) {
-        if (document.body) {
-            var root = document.body;
-        } else if (document.documentElement) {
-            var root = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
-            document.documentElement.appendChild(root);
-        }
-        var pre = document.createElementNS('http://www.w3.org/1999/xhtml', 'pre');
-        // Make this element appear in text dumps, but try to avoid affecting
-        // output pixels (being visible, creating overflow, &c).
-        pre.style.opacity = 0;
-        pre.textContent += repaintRects;
-        root.appendChild(pre);
-    }
+    if (window.outputRepaintRects)
+        testRunner.setCustomTextOutput(repaintRects);
 
     if (window.afterTest)
         window.afterTest();
