@@ -21,9 +21,11 @@ void FakeUpdateEngineClient::Init(dbus::Bus* bus) {
 }
 
 void FakeUpdateEngineClient::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
 }
 
 void FakeUpdateEngineClient::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 bool FakeUpdateEngineClient::HasObserver(Observer* observer) {
@@ -56,6 +58,11 @@ UpdateEngineClient::Status FakeUpdateEngineClient::GetLastStatus() {
   UpdateEngineClient::Status last_status = status_queue_.front();
   status_queue_.pop();
   return last_status;
+}
+
+void FakeUpdateEngineClient::NotifyObserversThatStatusChanged(
+    const UpdateEngineClient::Status& status) {
+  FOR_EACH_OBSERVER(Observer, observers_, UpdateStatusChanged(status));
 }
 
 void FakeUpdateEngineClient::SetChannel(const std::string& target_channel,

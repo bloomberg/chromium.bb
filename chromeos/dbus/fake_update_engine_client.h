@@ -44,6 +44,10 @@ class FakeUpdateEngineClient : public UpdateEngineClient {
     status_queue_.push(status);
   }
 
+  // Sends status change notification.
+  void NotifyObserversThatStatusChanged(
+      const UpdateEngineClient::Status& status);
+
   // Sets the default UpdateEngineClient::Status. GetLastStatus() returns the
   // value set here if |status_queue_| is empty.
   void set_default_status(const UpdateEngineClient::Status& status);
@@ -68,6 +72,7 @@ class FakeUpdateEngineClient : public UpdateEngineClient {
   int can_rollback_call_count() const { return can_rollback_call_count_; }
 
  private:
+  ObserverList<Observer> observers_;
   std::queue<UpdateEngineClient::Status> status_queue_;
   UpdateEngineClient::Status default_status_;
   UpdateEngineClient::UpdateCheckResult update_check_result_;

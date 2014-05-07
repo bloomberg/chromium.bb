@@ -206,22 +206,51 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PowerwashRequested) {
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
 }
 
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_RollbackRequested) {
+IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_ErrorOnRollbackRequested) {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kRollbackRequested, true);
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
   RegisterSomeUser();
 }
 
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, RollbackRequested) {
+IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ErrorOnRollbackRequested) {
   OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_RESET).Wait();
   EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
   EXPECT_EQ(0, session_manager_client_->start_device_wipe_call_count());
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
+  JSExpect("!$('reset').classList.contains('revert-promise')");
   ClickResetButton();
   EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
   EXPECT_EQ(0, session_manager_client_->start_device_wipe_call_count());
   EXPECT_EQ(1, update_engine_client_->rollback_call_count());
+  JSExpect("$('reset').classList.contains('revert-promise')");
+  UpdateEngineClient::Status error_update_status;
+  error_update_status.status = UpdateEngineClient::UPDATE_STATUS_ERROR;
+  update_engine_client_->NotifyObserversThatStatusChanged(error_update_status);
+  OobeScreenWaiter(OobeDisplay::SCREEN_ERROR_MESSAGE).Wait();
 }
+
+IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest,
+                       PRE_SuccessOnRollbackRequested) {
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetBoolean(prefs::kRollbackRequested, true);
+  prefs->SetBoolean(prefs::kFactoryResetRequested, true);
+  RegisterSomeUser();
+}
+
+IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, SuccessOnRollbackRequested) {
+  OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_RESET).Wait();
+  ClickResetButton();
+  EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
+  EXPECT_EQ(0, session_manager_client_->start_device_wipe_call_count());
+  EXPECT_EQ(1, update_engine_client_->rollback_call_count());
+  UpdateEngineClient::Status ready_for_reboot_status;
+  ready_for_reboot_status.status =
+      UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
+  update_engine_client_->NotifyObserversThatStatusChanged(
+      ready_for_reboot_status);
+  EXPECT_EQ(1, power_manager_client_->num_request_restart_calls());
+}
+
 
 }  // namespace chromeos
