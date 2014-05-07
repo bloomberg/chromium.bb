@@ -50,6 +50,8 @@ MOJO_SYSTEM_IMPL_EXPORT bool PlatformChannelSendHandles(PlatformHandle h,
 
 // Wrapper around |recvmsg()|, which will extract any attached file descriptors
 // (in the control message) to |PlatformHandle|s. (This also handles |EINTR|.)
+// If |*handles| is null and handles are received, a vector will be allocated;
+// otherwise, any handles received will be appended to the existing vector.
 MOJO_SYSTEM_IMPL_EXPORT ssize_t PlatformChannelRecvmsg(
     PlatformHandle h,
     void* buf,

@@ -109,7 +109,6 @@ ssize_t PlatformChannelRecvmsg(PlatformHandle h,
   DCHECK(buf);
   DCHECK_GT(num_bytes, 0u);
   DCHECK(handles);
-  DCHECK(!*handles);
 
   struct iovec iov = { buf, num_bytes };
   char cmsg_buf[CMSG_SPACE(kPlatformChannelMaxNumHandles * sizeof(int))];
@@ -129,7 +128,6 @@ ssize_t PlatformChannelRecvmsg(PlatformHandle h,
 
   DCHECK(!(msg.msg_flags & MSG_CTRUNC));
 
-  scoped_ptr<PlatformHandleVector> received_handles(new PlatformHandleVector());
   for (cmsghdr* cmsg = CMSG_FIRSTHDR(&msg);
        cmsg;
        cmsg = CMSG_NXTHDR(&msg, cmsg)) {
@@ -139,14 +137,13 @@ ssize_t PlatformChannelRecvmsg(PlatformHandle h,
       size_t num_fds = payload_length / sizeof(int);
       const int* fds = reinterpret_cast<int*>(CMSG_DATA(cmsg));
       for (size_t i = 0; i < num_fds; i++) {
-        received_handles->push_back(PlatformHandle(fds[i]));
-        DCHECK(received_handles->back().is_valid());
+        if (!*handles)
+          (*handles).reset(new PlatformHandleVector());
+        (*handles)->push_back(PlatformHandle(fds[i]));
+        DCHECK((*handles)->back().is_valid());
       }
     }
   }
-
-  if (!received_handles->empty())
-    *handles = received_handles.Pass();
 
   return result;
 }

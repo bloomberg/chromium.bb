@@ -159,7 +159,7 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
 
     WaitReadable(client_handle.get());
 
-    char buf[100] = { 'a', 'b', 'c' };
+    char buf[100] = { 'a' };
     scoped_ptr<PlatformHandleVector> received_handles;
     EXPECT_EQ(1, PlatformChannelRecvmsg(client_handle.get(), buf, sizeof(buf),
                                         &received_handles));
@@ -170,15 +170,67 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
     for (size_t j = 0; j < received_handles->size(); j++) {
       FILE* fp = FILEFromPlatformHandle(
           ScopedPlatformHandle((*received_handles)[j]), "rb");
-      rewind(fp);
       (*received_handles)[j] = PlatformHandle();
       ASSERT_TRUE(fp);
+      rewind(fp);
       char read_buf[100];
       size_t bytes_read = fread(read_buf, 1, sizeof(read_buf), fp);
       fclose(fp);
       EXPECT_EQ(j + 1, bytes_read);
       EXPECT_EQ(std::string(j + 1, '0' + i), std::string(read_buf, bytes_read));
     }
+  }
+}
+
+TEST_F(PlatformChannelPairPosixTest, AppendReceivedFDs) {
+  PlatformChannelPair channel_pair;
+  ScopedPlatformHandle server_handle = channel_pair.PassServerHandle().Pass();
+  ScopedPlatformHandle client_handle = channel_pair.PassClientHandle().Pass();
+
+  const std::string file_contents("hello world");
+
+  {
+    base::FilePath ignored;
+    FILE* fp = base::CreateAndOpenTemporaryFile(&ignored);
+    ASSERT_TRUE(fp);
+    PlatformHandleVector platform_handles;
+    platform_handles.push_back(PlatformHandleFromFILE(fp).release());
+    ASSERT_TRUE(platform_handles.back().is_valid());
+    fwrite(file_contents.data(), 1, file_contents.size(), fp);
+    fclose(fp);
+
+    // Send the FD.
+    EXPECT_TRUE(PlatformChannelSendHandles(server_handle.get(),
+                                           &platform_handles[0],
+                                           platform_handles.size()));
+  }
+
+  WaitReadable(client_handle.get());
+
+  // Start with an invalid handle in the vector.
+  scoped_ptr<PlatformHandleVector> handles(new PlatformHandleVector());
+  handles->push_back(PlatformHandle());
+
+  char buf[100] = { 'a' };
+  EXPECT_EQ(1, PlatformChannelRecvmsg(client_handle.get(), buf, sizeof(buf),
+                                      &handles));
+  EXPECT_EQ('\0', buf[0]);
+  ASSERT_TRUE(handles);
+  ASSERT_EQ(2u, handles->size());
+  EXPECT_FALSE((*handles)[0].is_valid());
+  EXPECT_TRUE((*handles)[1].is_valid());
+
+  {
+    FILE* fp = FILEFromPlatformHandle(ScopedPlatformHandle((*handles)[1]),
+                                      "rb");
+    (*handles)[1] = PlatformHandle();
+    ASSERT_TRUE(fp);
+    rewind(fp);
+    char read_buf[100];
+    size_t bytes_read = fread(read_buf, 1, sizeof(read_buf), fp);
+    fclose(fp);
+    EXPECT_EQ(file_contents.size(), bytes_read);
+    EXPECT_EQ(file_contents, std::string(read_buf, bytes_read));
   }
 }
 
