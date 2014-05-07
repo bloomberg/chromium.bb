@@ -73,8 +73,6 @@
         'base/webui/web_ui_util_unittest.cc',
         'gfx/canvas_unittest.cc',
         'gfx/canvas_unittest_mac.mm',
-        'gfx/codec/jpeg_codec_unittest.cc',
-        'gfx/color_analysis_unittest.cc',
         'gfx/font_list_unittest.cc',
         'gfx/platform_font_mac_unittest.mm',
         'gfx/render_text_unittest.cc',
