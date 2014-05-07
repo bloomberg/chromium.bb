@@ -2507,6 +2507,12 @@
           'ENABLE_EGLIMAGE=1',
         ],
       }],
+      ['asan==1', {
+        'defines': [
+          'ADDRESS_SANITIZER',
+          'MEMORY_TOOL_REPLACES_ALLOCATOR',
+        ],
+      }],
       ['syzyasan==1', {
         # SyzyAsan needs /PROFILE turned on to produce appropriate pdbs.
         'msvs_settings': {
@@ -3712,9 +3718,6 @@
                 'ldflags': [
                   '-fsanitize=address',
                 ],
-                'defines': [
-                  'ADDRESS_SANITIZER',
-                ],
               }],
             ],
             'conditions': [
@@ -4441,10 +4444,6 @@
                 '-w',  # http://crbug.com/162783
               ],
             },
-            'defines': [
-              'ADDRESS_SANITIZER',
-              'MEMORY_TOOL_REPLACES_ALLOCATOR',
-            ],
           }],
           ['asan_coverage!=0', {
             'target_conditions': [

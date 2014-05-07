@@ -78,9 +78,10 @@ bool CallocDiesOnOOM() {
 // The sanitizers' calloc dies on OOM instead of returning NULL.
 // The wrapper function in base/process_util_linux.cc that is used when we
 // compile without TCMalloc will just die on OOM instead of returning NULL.
-#if !defined(OS_WIN) && (defined(ADDRESS_SANITIZER) || \
-    defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) || \
-    (defined(OS_LINUX) && defined(NO_TCMALLOC)))
+#if defined(ADDRESS_SANITIZER) || \
+    defined(MEMORY_SANITIZER) || \
+    defined(THREAD_SANITIZER) || \
+    (defined(OS_LINUX) && defined(NO_TCMALLOC))
   return true;
 #else
   return false;
