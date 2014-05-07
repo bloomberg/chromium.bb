@@ -150,11 +150,14 @@ ManagePasswordsBubbleView::PendingView::PendingView(
                                  ManagePasswordItemView::FIRST_ITEM);
   save_button_ = new views::BlueButton(
       this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
+  save_button_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::SmallFont));
 
   combobox_model_.reset(new SavePasswordRefusalComboboxModel());
   refuse_combobox_.reset(new views::Combobox(combobox_model_.get()));
   refuse_combobox_->set_listener(this);
   refuse_combobox_->SetStyle(views::Combobox::STYLE_ACTION);
+  // TODO(mkwst): Need a mechanism to pipe a font list down into a combobox.
 
   // Title row.
   BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
@@ -242,12 +245,16 @@ ManagePasswordsBubbleView::ManageView::ManageView(
   // Then add the "manage passwords" link and "Done" button.
   manage_link_ = new views::Link(parent_->model()->manage_link());
   manage_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  manage_link_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::SmallFont));
   manage_link_->SetUnderline(false);
   manage_link_->set_listener(this);
 
   done_button_ =
       new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_DONE));
   done_button_->SetStyle(views::Button::STYLE_BUTTON);
+  done_button_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::SmallFont));
 
   BuildColumnSet(layout, LINK_BUTTON_COLUMN_SET);
   layout->StartRowWithPadding(
@@ -294,6 +301,8 @@ ManagePasswordsBubbleView::BlacklistedView::BlacklistedView(
   views::Label* blacklisted = new views::Label(
       l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_BLACKLISTED));
   blacklisted->SetMultiLine(true);
+  blacklisted->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::SmallFont));
   layout->AddView(blacklisted);
 
   // Then add the "enable password manager" and "Done" buttons.
@@ -302,6 +311,8 @@ ManagePasswordsBubbleView::BlacklistedView::BlacklistedView(
   done_button_ =
       new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_DONE));
   done_button_->SetStyle(views::Button::STYLE_BUTTON);
+  done_button_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::SmallFont));
 
   BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
   layout->StartRowWithPadding(
