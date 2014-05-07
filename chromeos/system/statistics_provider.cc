@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/sys_info.h"
@@ -272,8 +273,13 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
 
   if (!base::SysInfo::IsRunningOnChromeOS() &&
       machine_info_.find(kSerialNumber) == machine_info_.end()) {
-    // Set stub value for testing.
-    machine_info_[kSerialNumber] = "stub_serial_number";
+    // Set stub value for testing. A time value is appended to avoid clashes of
+    // the same serial for the same domain, which would invalidate earlier
+    // enrollments. A fake /tmp/machine-info file should be used instead if
+    // a stable serial is needed, e.g. to test re-enrollment.
+    base::TimeDelta time = base::Time::Now() - base::Time::UnixEpoch();
+    machine_info_[kSerialNumber] =
+        "stub_serial_number_" + base::Int64ToString(time.InSeconds());
   }
 
   // Finished loading the statistics.
