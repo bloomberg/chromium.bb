@@ -28,6 +28,7 @@ class WebSocketImpl : public DevToolsAndroidBridge::AndroidWebSocket {
                    const std::string& url,
                    Delegate* delegate);
 
+  virtual void Connect() OVERRIDE;
   virtual void Disconnect() OVERRIDE;
 
   virtual void SendFrame(const std::string& message) OVERRIDE;
@@ -76,6 +77,9 @@ WebSocketImpl::WebSocketImpl(
       socket_name_(socket_name),
       url_(url),
       delegate_(delegate) {
+}
+
+void WebSocketImpl::Connect() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   device_message_loop_->PostTask(
       FROM_HERE, base::Bind(&WebSocketImpl::ConnectOnHandlerThread, this));

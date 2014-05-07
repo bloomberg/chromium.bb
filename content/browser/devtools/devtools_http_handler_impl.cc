@@ -259,7 +259,7 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
     DevToolsTarget* target = GetTarget(target_id);
     GURL page_url;
     if (target)
-      page_url = target->GetUrl();
+      page_url = target->GetURL();
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -753,10 +753,10 @@ base::DictionaryValue* DevToolsHttpHandlerImpl::SerializeTarget(
                         net::EscapeForHTML(target.GetTitle()));
   dictionary->SetString(kTargetDescriptionField, target.GetDescription());
 
-  GURL url = target.GetUrl();
+  GURL url = target.GetURL();
   dictionary->SetString(kTargetUrlField, url.spec());
 
-  GURL favicon_url = target.GetFaviconUrl();
+  GURL favicon_url = target.GetFaviconURL();
   if (favicon_url.is_valid())
     dictionary->SetString(kTargetFaviconUrlField, favicon_url.spec());
 

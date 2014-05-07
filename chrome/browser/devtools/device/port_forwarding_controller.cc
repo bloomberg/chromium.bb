@@ -322,6 +322,7 @@ PortForwardingController::Connection::Connection(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   (*registry_)[device_->serial()] = this;
   web_socket_ = browser->CreateWebSocket(kDevToolsRemoteBrowserTarget, this);
+  web_socket_->Connect();
   AddRef();  // Balanced in OnSocketClosed();
 }
 

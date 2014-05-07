@@ -89,8 +89,8 @@ class DevToolsAndroidBridge
 
     AndroidWebSocket() {}
 
+    virtual void Connect() = 0;
     virtual void Disconnect() = 0;
-
     virtual void SendFrame(const std::string& message) = 0;
 
    protected:

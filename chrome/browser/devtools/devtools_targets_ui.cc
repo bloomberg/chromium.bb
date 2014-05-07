@@ -529,9 +529,9 @@ base::DictionaryValue* DevToolsTargetsUIHandler::Serialize(
   target_data->SetString(kTargetIdField, target.GetId());
   target_data->SetString(kTargetTypeField, target.GetType());
   target_data->SetBoolean(kAttachedField, target.IsAttached());
-  target_data->SetString(kUrlField, target.GetUrl().spec());
+  target_data->SetString(kUrlField, target.GetURL().spec());
   target_data->SetString(kNameField, net::EscapeForHTML(target.GetTitle()));
-  target_data->SetString(kFaviconUrlField, target.GetFaviconUrl().spec());
+  target_data->SetString(kFaviconUrlField, target.GetFaviconURL().spec());
   target_data->SetString(kDescriptionField, target.GetDescription());
   return target_data;
 }

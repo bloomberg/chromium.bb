@@ -20,8 +20,7 @@ class RenderViewHost;
 
 class DevToolsTargetImpl : public content::DevToolsTarget {
  public:
-
-  DevToolsTargetImpl();
+  explicit DevToolsTargetImpl(content::DevToolsAgentHost* agent_host);
   virtual ~DevToolsTargetImpl();
 
   // content::DevToolsTarget overrides:
@@ -29,12 +28,12 @@ class DevToolsTargetImpl : public content::DevToolsTarget {
   virtual std::string GetType() const OVERRIDE;
   virtual std::string GetTitle() const OVERRIDE;
   virtual std::string GetDescription() const OVERRIDE;
-  virtual GURL GetUrl() const OVERRIDE;
-  virtual GURL GetFaviconUrl() const OVERRIDE;
+  virtual GURL GetURL() const OVERRIDE;
+  virtual GURL GetFaviconURL() const OVERRIDE;
   virtual base::TimeTicks GetLastActivityTime() const OVERRIDE;
+  virtual scoped_refptr<content::DevToolsAgentHost>
+      GetAgentHost() const OVERRIDE;
   virtual bool IsAttached() const OVERRIDE;
-  virtual scoped_refptr<content::DevToolsAgentHost> GetAgentHost() const
-    OVERRIDE;
   virtual bool Activate() const OVERRIDE;
   virtual bool Close() const OVERRIDE;
 
@@ -59,6 +58,15 @@ class DevToolsTargetImpl : public content::DevToolsTarget {
   static scoped_ptr<DevToolsTargetImpl> CreateForRenderViewHost(
       content::RenderViewHost*, bool is_tab);
 
+  void set_type(const std::string& type) { type_ = type; }
+  void set_title(const std::string& title) { title_ = title; }
+  void set_description(const std::string& desc) { description_ = desc; }
+  void set_url(const GURL& url) { url_ = url; }
+  void set_favicon_url(const GURL& url) { favicon_url_ = url; }
+  void set_last_activity_time(const base::TimeTicks& time) {
+     last_activity_time_ = time;
+  }
+
   typedef std::vector<DevToolsTargetImpl*> List;
   typedef base::Callback<void(const List&)> Callback;
 
@@ -66,7 +74,7 @@ class DevToolsTargetImpl : public content::DevToolsTarget {
   static void EnumerateWorkerTargets(Callback callback);
   static void EnumerateAllTargets(Callback callback);
 
- protected:
+ private:
   scoped_refptr<content::DevToolsAgentHost> agent_host_;
   std::string id_;
   std::string type_;

@@ -36,15 +36,15 @@ const char kTargetTypePage[] = "page";
 const char kTargetTypeWorker[] = "worker";
 const char kTargetTypeOther[] = "other";
 
+// RenderViewHostTarget --------------------------------------------------------
+
 class RenderViewHostTarget : public DevToolsTargetImpl {
  public:
   explicit RenderViewHostTarget(RenderViewHost* rvh, bool is_tab);
 
-  // content::DevToolsTarget overrides:
+  // DevToolsTargetImpl overrides:
   virtual bool Activate() const OVERRIDE;
   virtual bool Close() const OVERRIDE;
-
-  // DevToolsTargetImpl overrides:
   virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;
   virtual int GetTabId() const OVERRIDE;
   virtual std::string GetExtensionId() const OVERRIDE;
@@ -55,35 +55,33 @@ class RenderViewHostTarget : public DevToolsTargetImpl {
   std::string extension_id_;
 };
 
-RenderViewHostTarget::RenderViewHostTarget(RenderViewHost* rvh, bool is_tab) {
-  agent_host_ = DevToolsAgentHost::GetOrCreateFor(rvh);
-  id_ = agent_host_->GetId();
-  type_ = kTargetTypeOther;
-  tab_id_ = -1;
-
+RenderViewHostTarget::RenderViewHostTarget(RenderViewHost* rvh, bool is_tab)
+    : DevToolsTargetImpl(DevToolsAgentHost::GetOrCreateFor(rvh)),
+      tab_id_(-1) {
+  set_type(kTargetTypeOther);
   WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
   if (!web_contents)
     return;  // Orphan RVH will show up with no title/url/icon in clients.
 
   content::RenderFrameHost* rfh = rvh->GetMainFrame();
   if (rfh->IsCrossProcessSubframe()) {
-    url_ = rfh->GetLastCommittedURL();
-    type_ = kTargetTypeOther;
+    set_url(rfh->GetLastCommittedURL());
+    set_type(kTargetTypeOther);
     // TODO(kaznacheev) Try setting the title when the frame navigation
     // refactoring is done.
     return;
   }
 
-  title_ = base::UTF16ToUTF8(web_contents->GetTitle());
-  url_ = web_contents->GetURL();
+  set_title(base::UTF16ToUTF8(web_contents->GetTitle()));
+  set_url(web_contents->GetURL());
   content::NavigationController& controller = web_contents->GetController();
   content::NavigationEntry* entry = controller.GetActiveEntry();
   if (entry != NULL && entry->GetURL().is_valid())
-    favicon_url_ = entry->GetFavicon().url;
-  last_activity_time_ = web_contents->GetLastActiveTime();
+    set_favicon_url(entry->GetFavicon().url);
+  set_last_activity_time(web_contents->GetLastActiveTime());
 
   if (is_tab) {
-    type_ = kTargetTypePage;
+    set_type(kTargetTypePage);
     tab_id_ = extensions::ExtensionTabUtil::GetTabId(web_contents);
   } else {
     Profile* profile =
@@ -91,24 +89,24 @@ RenderViewHostTarget::RenderViewHostTarget(RenderViewHost* rvh, bool is_tab) {
     if (profile) {
       ExtensionService* extension_service = profile->GetExtensionService();
       const extensions::Extension* extension = extension_service->
-          extensions()->GetByID(url_.host());
+          extensions()->GetByID(GetURL().host());
       if (extension) {
-        title_ = extension->name();
+        set_title(extension->name());
         extensions::ExtensionHost* extension_host =
             extensions::ExtensionSystem::Get(profile)->process_manager()->
                 GetBackgroundHostForExtension(extension->id());
         if (extension_host &&
             extension_host->host_contents() == web_contents) {
-          type_ = kTargetTypeBackgroundPage;
+          set_type(kTargetTypeBackgroundPage);
           extension_id_ = extension->id();
         } else if (extension->is_hosted_app()
             || extension->is_legacy_packaged_app()
             || extension->is_platform_app()) {
-          type_ = kTargetTypeApp;
+          set_type(kTargetTypeApp);
         }
-        favicon_url_ = extensions::ExtensionIconSource::GetIconURL(
+        set_favicon_url(extensions::ExtensionIconSource::GetIconURL(
             extension, extension_misc::EXTENSION_ICON_SMALLISH,
-            ExtensionIconSet::MATCH_BIGGER, false, NULL);
+            ExtensionIconSet::MATCH_BIGGER, false, NULL));
       }
     }
   }
@@ -134,7 +132,7 @@ bool RenderViewHostTarget::Close() const {
 }
 
 RenderViewHost* RenderViewHostTarget::GetRenderViewHost() const {
-  return agent_host_->GetRenderViewHost();
+  return GetAgentHost()->GetRenderViewHost();
 }
 
 int RenderViewHostTarget::GetTabId() const {
@@ -152,7 +150,7 @@ void RenderViewHostTarget::Inspect(Profile* profile) const {
   DevToolsWindow::OpenDevToolsWindow(rvh);
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// WorkerTarget ----------------------------------------------------------------
 
 class WorkerTarget : public DevToolsTargetImpl {
  public:
@@ -169,15 +167,14 @@ class WorkerTarget : public DevToolsTargetImpl {
   int route_id_;
 };
 
-WorkerTarget::WorkerTarget(const WorkerService::WorkerInfo& worker) {
-  agent_host_ =
-      DevToolsAgentHost::GetForWorker(worker.process_id, worker.route_id);
-  id_ = agent_host_->GetId();
-  type_ = kTargetTypeWorker;
-  title_ = base::UTF16ToUTF8(worker.name);
-  description_ =
-      base::StringPrintf("Worker pid:%d", base::GetProcId(worker.handle));
-  url_ = worker.url;
+WorkerTarget::WorkerTarget(const WorkerService::WorkerInfo& worker)
+    : DevToolsTargetImpl(DevToolsAgentHost::GetForWorker(worker.process_id,
+                                                         worker.route_id)) {
+  set_type(kTargetTypeWorker);
+  set_title(base::UTF16ToUTF8(worker.name));
+  set_description(base::StringPrintf("Worker pid:%d",
+                      base::GetProcId(worker.handle)));
+  set_url(worker.url);
 
   process_id_ = worker.process_id;
   route_id_ = worker.route_id;
@@ -194,19 +191,22 @@ bool WorkerTarget::Close() const {
 }
 
 void WorkerTarget::Inspect(Profile* profile) const {
-  DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host_.get());
+  DevToolsWindow::OpenDevToolsWindowForWorker(profile, GetAgentHost());
 }
 
 }  // namespace
 
+// DevToolsTargetImpl ----------------------------------------------------------
+
 DevToolsTargetImpl::~DevToolsTargetImpl() {
 }
 
-DevToolsTargetImpl::DevToolsTargetImpl() {
+DevToolsTargetImpl::DevToolsTargetImpl(DevToolsAgentHost* agent_host)
+    : agent_host_(agent_host) {
 }
 
 std::string DevToolsTargetImpl::GetId() const {
-  return id_;
+  return agent_host_->GetId();
 }
 
 std::string DevToolsTargetImpl::GetType() const {
@@ -221,11 +221,11 @@ std::string DevToolsTargetImpl::GetDescription() const {
   return description_;
 }
 
-GURL DevToolsTargetImpl::GetUrl() const {
+GURL DevToolsTargetImpl::GetURL() const {
   return url_;
 }
 
-GURL DevToolsTargetImpl::GetFaviconUrl() const {
+GURL DevToolsTargetImpl::GetFaviconURL() const {
   return favicon_url_;
 }
 

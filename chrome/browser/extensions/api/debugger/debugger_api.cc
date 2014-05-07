@@ -677,7 +677,7 @@ base::Value* SerializeTarget(const DevToolsTargetImpl& target) {
   dictionary->SetString(kTargetIdField, target.GetId());
   dictionary->SetString(kTargetTitleField, target.GetTitle());
   dictionary->SetBoolean(kTargetAttachedField, target.IsAttached());
-  dictionary->SetString(kTargetUrlField, target.GetUrl().spec());
+  dictionary->SetString(kTargetUrlField, target.GetURL().spec());
 
   std::string type = target.GetType();
   if (type == kTargetTypePage) {
@@ -690,7 +690,7 @@ base::Value* SerializeTarget(const DevToolsTargetImpl& target) {
   }
   dictionary->SetString(kTargetTypeField, type);
 
-  GURL favicon_url = target.GetFaviconUrl();
+  GURL favicon_url = target.GetFaviconURL();
   if (favicon_url.is_valid())
     dictionary->SetString(kTargetFaviconUrlField, favicon_url.spec());
 

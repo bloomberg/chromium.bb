@@ -108,7 +108,7 @@ class AdbClientSocketTest : public InProcessBrowserTest,
     ASSERT_NE(0U, webview_pages[0]->GetDescription().size());
     ASSERT_NE(0U, webview_pages[1]->GetDescription().size());
 
-    ASSERT_EQ(GURL("http://www.chromium.org/"), chrome_pages[0]->GetUrl());
+    ASSERT_EQ(GURL("http://www.chromium.org/"), chrome_pages[0]->GetURL());
     ASSERT_EQ("The Chromium Projects", chrome_pages[0]->GetTitle());
 
     STLDeleteElements(&chrome_pages);

@@ -58,7 +58,7 @@ const char kTetheringSocketName[] = "chrome_devtools_tethering_%d_%d";
 const char kTargetTypePage[] = "page";
 const char kTargetTypeOther[] = "other";
 
-static GURL GetFaviconURL(WebContents* web_contents) {
+static GURL GetFaviconURLForContents(WebContents* web_contents) {
   content::NavigationController& controller = web_contents->GetController();
   content::NavigationEntry* entry = controller.GetActiveEntry();
   if (entry != NULL && entry->GetURL().is_valid())
@@ -73,9 +73,9 @@ class TargetBase : public content::DevToolsTarget {
 
   virtual std::string GetDescription() const OVERRIDE { return std::string(); }
 
-  virtual GURL GetUrl() const OVERRIDE { return url_; }
+  virtual GURL GetURL() const OVERRIDE { return url_; }
 
-  virtual GURL GetFaviconUrl() const OVERRIDE { return favicon_url_; }
+  virtual GURL GetFaviconURL() const OVERRIDE { return favicon_url_; }
 
   virtual base::TimeTicks GetLastActivityTime() const OVERRIDE {
     return last_activity_time_;
@@ -85,7 +85,7 @@ class TargetBase : public content::DevToolsTarget {
   explicit TargetBase(WebContents* web_contents)
       : title_(base::UTF16ToUTF8(web_contents->GetTitle())),
         url_(web_contents->GetURL()),
-        favicon_url_(GetFaviconURL(web_contents)),
+        favicon_url_(GetFaviconURLForContents(web_contents)),
         last_activity_time_(web_contents->GetLastActiveTime()) {
   }
 
