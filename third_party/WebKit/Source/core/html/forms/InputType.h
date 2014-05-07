@@ -220,6 +220,8 @@ public:
     virtual bool shouldSubmitImplicitly(Event*) OVERRIDE;
     virtual bool hasCustomFocusLogic() const OVERRIDE;
 
+    virtual bool shouldDispatchFormControlChangeEvent(String&, String&);
+
 protected:
     InputType(HTMLInputElement& element) : InputTypeView(element) { }
     Chrome* chrome() const;

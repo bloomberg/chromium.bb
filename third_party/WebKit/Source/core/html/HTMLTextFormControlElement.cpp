@@ -182,11 +182,17 @@ void HTMLTextFormControlElement::select()
     setSelectionRange(0, numeric_limits<int>::max(), SelectionHasNoDirection);
 }
 
+bool HTMLTextFormControlElement::shouldDispatchFormControlChangeEvent(String& oldValue, String& newValue)
+{
+    return !equalIgnoringNullity(oldValue, newValue);
+}
+
 void HTMLTextFormControlElement::dispatchFormControlChangeEvent()
 {
-    if (!equalIgnoringNullity(m_textAsOfLastFormControlChangeEvent, value())) {
+    String newValue = value();
+    if (shouldDispatchFormControlChangeEvent(m_textAsOfLastFormControlChangeEvent, newValue)) {
         dispatchChangeEvent();
-        setTextAsOfLastFormControlChangeEvent(value());
+        setTextAsOfLastFormControlChangeEvent(newValue);
     }
     setChangedSinceLastFormControlChangeEvent(false);
 }

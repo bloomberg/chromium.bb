@@ -547,6 +547,11 @@ bool InputType::storesValueSeparateFromAttribute()
     return true;
 }
 
+bool InputType::shouldDispatchFormControlChangeEvent(String& oldValue, String& newValue)
+{
+    return !equalIgnoringNullity(oldValue, newValue);
+}
+
 void InputType::setValue(const String& sanitizedValue, bool valueChanged, TextFieldEventBehavior eventBehavior)
 {
     element().setValueInternal(sanitizedValue, eventBehavior);

@@ -1873,4 +1873,9 @@ PassRefPtr<RenderStyle> HTMLInputElement::customStyleForRenderer()
 }
 #endif
 
+bool HTMLInputElement::shouldDispatchFormControlChangeEvent(String& oldValue, String& newValue)
+{
+    return m_inputType->shouldDispatchFormControlChangeEvent(oldValue, newValue);
+}
+
 } // namespace

@@ -110,6 +110,8 @@ protected:
 
     String valueWithHardLineBreaks() const;
 
+    virtual bool shouldDispatchFormControlChangeEvent(String&, String&);
+
 private:
     int computeSelectionStart() const;
     int computeSelectionEnd() const;

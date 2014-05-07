@@ -52,6 +52,7 @@ private:
     virtual bool storesValueSeparateFromAttribute() OVERRIDE FINAL;
     virtual void setValue(const String&, bool, TextFieldEventBehavior) OVERRIDE FINAL;
     virtual bool isCheckable() OVERRIDE FINAL;
+    virtual bool shouldDispatchFormControlChangeEvent(String&, String&) OVERRIDE;
 };
 
 } // namespace WebCore

@@ -374,6 +374,8 @@ private:
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
 #endif
 
+    virtual bool shouldDispatchFormControlChangeEvent(String&, String&) OVERRIDE;
+
     AtomicString m_name;
     String m_valueIfDirty;
     String m_suggestedValue;

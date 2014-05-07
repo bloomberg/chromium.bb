@@ -6,6 +6,7 @@
 <body>
 <input type="radio" name="test" id="rd">
 <input type="radio" name="test" id="rd2" onchange="handleChange()">
+<input type="radio" name="test" id="rd3" value="" onchange="handleChange()">
 <script>
 description("This is to test onchange of radio buttons");
 
@@ -14,6 +15,7 @@ function handleChange() {
 }
 
 document.getElementById('rd2').click();
+document.getElementById('rd3').click();
 </script>
 </body>
 </html>
