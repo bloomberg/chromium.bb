@@ -84,6 +84,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/wm/core/window_animations.h"
 
 #if defined(OS_CHROMEOS)
@@ -1102,6 +1103,9 @@ void ChromeLauncherController::ActiveUserChanged(
   RestoreUnpinnedRunningApplicationOrder(user_email);
   // Inform the system tray of the change.
   ash::Shell::GetInstance()->system_tray_delegate()->ActiveUserWasChanged();
+  // Force on-screen keyboard to reset.
+  if (keyboard::IsKeyboardEnabled())
+    ash::Shell::GetInstance()->CreateKeyboard();
 }
 
 void ChromeLauncherController::AdditionalUserAddedToSession(Profile* profile) {
