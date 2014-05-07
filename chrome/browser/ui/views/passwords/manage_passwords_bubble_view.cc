@@ -32,6 +32,9 @@
 // Helpers --------------------------------------------------------------------
 
 namespace {
+
+const int kDesiredBubbleWidth = 370;
+
 enum ColumnSetType {
   // | | (FILL, FILL) | |
   // Used for the bubble's header, the credentials list, and for simple
@@ -141,6 +144,7 @@ ManagePasswordsBubbleView::PendingView::PendingView(
     ManagePasswordsBubbleView* parent)
     : parent_(parent) {
   views::GridLayout* layout = new views::GridLayout(this);
+  layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
   SetLayoutManager(layout);
 
   // Create the pending credential item, save button and refusal combobox.
@@ -209,6 +213,7 @@ ManagePasswordsBubbleView::ManageView::ManageView(
     ManagePasswordsBubbleView* parent)
     : parent_(parent) {
   views::GridLayout* layout = new views::GridLayout(this);
+  layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
   SetLayoutManager(layout);
 
   // Add the title.
@@ -237,9 +242,14 @@ ManagePasswordsBubbleView::ManageView::ManageView(
     views::Label* empty_label = new views::Label(
         l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_NO_PASSWORDS));
     empty_label->SetMultiLine(true);
+    empty_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    empty_label->SetFontList(
+        ui::ResourceBundle::GetSharedInstance().GetFontList(
+            ui::ResourceBundle::SmallFont));
 
     layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
     layout->AddView(empty_label);
+    layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   }
 
   // Then add the "manage passwords" link and "Done" button.
@@ -290,6 +300,7 @@ ManagePasswordsBubbleView::BlacklistedView::BlacklistedView(
     ManagePasswordsBubbleView* parent)
     : parent_(parent) {
   views::GridLayout* layout = new views::GridLayout(this);
+  layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
   SetLayoutManager(layout);
 
   // Add the title.
