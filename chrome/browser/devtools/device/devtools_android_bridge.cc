@@ -62,6 +62,9 @@ const char kUrlParam[] = "url";
 const char kPageReloadCommand[] = "Page.reload";
 const char kPageNavigateCommand[] = "Page.navigate";
 
+// The format used for constructing DevTools server socket names.
+const char kDevToolsChannelNameFormat[] = "%s_devtools_remote";
+
 const char kChromeDefaultName[] = "Chrome";
 const char kChromeDefaultSocket[] = "chrome_devtools_remote";
 const int kMinVersionNewWithURL = 32;
@@ -657,8 +660,6 @@ void ProtocolCommand::OnSocketClosed(bool closed_by_device) {
 }
 
 }  // namespace
-
-const char kDevToolsChannelNameFormat[] = "%s_devtools_remote";
 
 class AgentHostDelegate;
 

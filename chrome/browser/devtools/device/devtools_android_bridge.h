@@ -33,9 +33,6 @@ class BrowserContext;
 class DevToolsTargetImpl;
 class Profile;
 
-// The format used for constructing DevTools server socket names.
-extern const char kDevToolsChannelNameFormat[];
-
 class DevToolsAndroidBridge
     : public base::RefCountedThreadSafe<
           DevToolsAndroidBridge,

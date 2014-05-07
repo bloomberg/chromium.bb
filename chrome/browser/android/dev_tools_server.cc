@@ -19,7 +19,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/devtools/device/devtools_android_bridge.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
@@ -49,6 +48,17 @@ using content::RenderViewHost;
 using content::WebContents;
 
 namespace {
+
+// TL;DR: Do not change this string.
+//
+// Desktop Chrome relies on this format to identify debuggable apps on Android
+// (see the code under chrome/browser/devtools/device).
+// If this string ever changes it would not be sufficient to change the
+// corresponding string on the client side. Since debugging an older version of
+// Chrome for Android from a newer version of desktop Chrome is a very common
+// scenario, the client code will have to be modified to recognize both the old
+// and the new format.
+const char kDevToolsChannelNameFormat[] = "%s_devtools_remote";
 
 const char kFrontEndURL[] =
     "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/devtools.html";
