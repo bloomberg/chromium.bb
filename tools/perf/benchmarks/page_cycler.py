@@ -95,6 +95,7 @@ class PageCyclerKeyMobileSites(test.Test):
   options = {'pageset_repeat': 10}
 
 
+@test.Disabled('android')  # crbug.com/357326
 class PageCyclerToughLayoutCases(test.Test):
   test = page_cycler.PageCycler
   page_set = 'page_sets/tough_layout_cases.py'
