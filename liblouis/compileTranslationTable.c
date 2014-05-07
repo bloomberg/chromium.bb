@@ -5191,6 +5191,9 @@ void EXPORT_CALL lou_log(logLevels level, const char *format, ...)
       return;
   if (logCallbackFunction != NULL)
     {
+#ifdef _WIN32
+      float f = 2.3; // Needed to force VC++ runtime floating point support
+#endif
       char *s;
       size_t len;
       va_list argp;
