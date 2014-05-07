@@ -68,6 +68,7 @@ void AppListServiceLinux::OnViewCreated() {
 
 void AppListServiceLinux::OnViewBeingDestroyed() {
   shower().app_list()->RemoveObserver(this);
+  AppListServiceViews::OnViewBeingDestroyed();
 }
 
 void AppListServiceLinux::OnViewDismissed() {
