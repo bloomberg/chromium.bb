@@ -372,13 +372,13 @@ String HTMLCanvasElement::toEncodingMimeType(const String& mimeType)
     return lowercaseMimeType;
 }
 
-String HTMLCanvasElement::toDataURL(const String& mimeType, const double* quality, ExceptionState& exceptionState)
+const AtomicString HTMLCanvasElement::imageSourceURL() const
 {
-    if (!m_originClean) {
-        exceptionState.throwSecurityError("Tainted canvases may not be exported.");
-        return String();
-    }
+    return AtomicString(toDataURLInternal("image/png", 0));
+}
 
+String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double* quality) const
+{
     if (m_size.isEmpty() || !buffer())
         return String("data:,");
 
@@ -396,7 +396,17 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, const double* qualit
     return buffer()->toDataURL(encodingMimeType, quality);
 }
 
-PassRefPtrWillBeRawPtr<ImageData> HTMLCanvasElement::getImageData()
+String HTMLCanvasElement::toDataURL(const String& mimeType, const double* quality, ExceptionState& exceptionState) const
+{
+    if (!m_originClean) {
+        exceptionState.throwSecurityError("Tainted canvases may not be exported.");
+        return String();
+    }
+
+    return toDataURLInternal(mimeType, quality);
+}
+
+PassRefPtrWillBeRawPtr<ImageData> HTMLCanvasElement::getImageData() const
 {
     if (!m_context || !m_context->is3d())
         return nullptr;

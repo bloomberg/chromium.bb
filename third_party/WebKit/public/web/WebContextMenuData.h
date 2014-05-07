@@ -55,6 +55,8 @@ struct WebContextMenuData {
         MediaTypeVideo,
         // An audio node is selected.
         MediaTypeAudio,
+        // A canvas node is selected.
+        MediaTypeCanvas,
         // A file node is selected.
         MediaTypeFile,
         // A plugin node is selected.

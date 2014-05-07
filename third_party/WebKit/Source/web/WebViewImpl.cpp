@@ -3184,6 +3184,21 @@ void WebViewImpl::copyImageAt(const WebPoint& point)
     m_page->mainFrame()->editor().copyImage(result);
 }
 
+void WebViewImpl::saveImageAt(const WebPoint& point)
+{
+    if (!m_page)
+        return;
+
+    KURL url = hitTestResultForWindowPos(point).absoluteImageURL();
+
+    if (url.isEmpty())
+        return;
+
+    ResourceRequest request(url);
+    m_page->mainFrame()->loader().client()->loadURLExternally(
+        request, NavigationPolicyDownloadTo, WebString());
+}
+
 void WebViewImpl::dragSourceEndedAt(
     const WebPoint& clientPoint,
     const WebPoint& screenPoint,

@@ -212,6 +212,7 @@ public:
         const WebPoint&) OVERRIDE;
     virtual WebHitTestResult hitTestResultAt(const WebPoint&) OVERRIDE;
     virtual void copyImageAt(const WebPoint&) OVERRIDE;
+    virtual void saveImageAt(const WebPoint&) OVERRIDE;
     virtual void dragSourceEndedAt(
         const WebPoint& clientPoint,
         const WebPoint& screenPoint,

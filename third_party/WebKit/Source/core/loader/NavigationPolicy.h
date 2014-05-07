@@ -36,6 +36,7 @@ namespace WebCore {
 enum NavigationPolicy {
     NavigationPolicyIgnore,
     NavigationPolicyDownload,
+    NavigationPolicyDownloadTo,
     NavigationPolicyCurrentTab,
     NavigationPolicyNewBackgroundTab,
     NavigationPolicyNewForegroundTab,

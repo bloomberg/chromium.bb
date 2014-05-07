@@ -279,11 +279,13 @@ KURL HitTestResult::absoluteImageURL() const
     if (!m_innerNonSharedNode)
         return KURL();
 
-    if (!(m_innerNonSharedNode->renderer() && m_innerNonSharedNode->renderer()->isImage()))
+    RenderObject* renderer = m_innerNonSharedNode->renderer();
+    if (!(renderer && (renderer->isImage() || renderer->isCanvas())))
         return KURL();
 
     AtomicString urlString;
-    if (isHTMLEmbedElement(*m_innerNonSharedNode)
+    if (isHTMLCanvasElement(*m_innerNonSharedNode)
+        || isHTMLEmbedElement(*m_innerNonSharedNode)
         || isHTMLImageElement(*m_innerNonSharedNode)
         || isHTMLInputElement(*m_innerNonSharedNode)
         || isHTMLObjectElement(*m_innerNonSharedNode)

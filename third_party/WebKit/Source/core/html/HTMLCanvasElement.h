@@ -97,8 +97,8 @@ public:
     CanvasRenderingContext* getContext(const String&, CanvasContextAttributes* attributes = 0);
 
     static String toEncodingMimeType(const String& mimeType);
-    String toDataURL(const String& mimeType, const double* quality, ExceptionState&);
-    String toDataURL(const String& mimeType, ExceptionState& exceptionState) { return toDataURL(mimeType, 0, exceptionState); }
+    String toDataURL(const String& mimeType, const double* quality, ExceptionState&) const;
+    String toDataURL(const String& mimeType, ExceptionState& exceptionState) const { return toDataURL(mimeType, 0, exceptionState); }
 
     // Used for rendering
     void didDraw(const FloatRect&);
@@ -115,7 +115,7 @@ public:
     ImageBuffer* buffer() const;
     Image* copiedImage() const;
     void clearCopiedImage();
-    PassRefPtrWillBeRawPtr<ImageData> getImageData();
+    PassRefPtrWillBeRawPtr<ImageData> getImageData() const;
     void makePresentationCopy();
     void clearPresentationCopy();
 
@@ -132,6 +132,8 @@ public:
     void discardImageBuffer();
 
     bool shouldAccelerate(const IntSize&) const;
+
+    virtual const AtomicString imageSourceURL() const OVERRIDE;
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
 
@@ -170,6 +172,8 @@ private:
     bool paintsIntoCanvasBuffer() const;
 
     void updateExternallyAllocatedMemory() const;
+
+    String toDataURLInternal(const String& mimeType, const double* quality) const;
 
     HashSet<CanvasObserver*> m_observers;
 

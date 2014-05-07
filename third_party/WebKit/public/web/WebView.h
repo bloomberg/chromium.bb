@@ -338,6 +338,10 @@ public:
     // WebView (if there is such an image)
     virtual void copyImageAt(const WebPoint&) = 0;
 
+    // Save as the image located at a particular point in the
+    // WebView (if there is such an image)
+    virtual void saveImageAt(const WebPoint&) = 0;
+
     // Notifies the WebView that a drag has terminated.
     virtual void dragSourceEndedAt(
         const WebPoint& clientPoint, const WebPoint& screenPoint,

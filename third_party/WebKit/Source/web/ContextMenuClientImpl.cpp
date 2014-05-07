@@ -215,7 +215,9 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
     // all else.
     data.linkURL = r.absoluteLinkURL();
 
-    if (!r.absoluteImageURL().isEmpty()) {
+    if (isHTMLCanvasElement(r.innerNonSharedNode())) {
+        data.mediaType = WebContextMenuData::MediaTypeCanvas;
+    } else if (!r.absoluteImageURL().isEmpty()) {
         data.srcURL = r.absoluteImageURL();
         data.mediaType = WebContextMenuData::MediaTypeImage;
         data.mediaFlags |= WebContextMenuData::MediaCanPrint;
