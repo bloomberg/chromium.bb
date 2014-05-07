@@ -521,7 +521,7 @@ FilePath FilePath::Append(const FilePath& component) const {
 }
 
 FilePath FilePath::AppendASCII(const StringPiece& component) const {
-  DCHECK(IsStringASCII(component));
+  DCHECK(base::IsStringASCII(component));
 #if defined(OS_WIN)
   return Append(ASCIIToUTF16(component.as_string()));
 #elif defined(OS_POSIX)
@@ -587,7 +587,7 @@ string16 FilePath::LossyDisplayName() const {
 }
 
 std::string FilePath::MaybeAsASCII() const {
-  if (IsStringASCII(path_))
+  if (base::IsStringASCII(path_))
     return path_;
   return std::string();
 }
@@ -632,7 +632,7 @@ string16 FilePath::LossyDisplayName() const {
 }
 
 std::string FilePath::MaybeAsASCII() const {
-  if (IsStringASCII(path_))
+  if (base::IsStringASCII(path_))
     return UTF16ToASCII(path_);
   return std::string();
 }

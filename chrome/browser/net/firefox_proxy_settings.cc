@@ -118,7 +118,7 @@ bool ParsePrefFile(const base::FilePath& pref_file,
       value = value.substr(1, value.size() - 2);
       // ValueString only accept valid UTF-8.  Simply ignore that entry if it is
       // not UTF-8.
-      if (IsStringUTF8(value))
+      if (base::IsStringUTF8(value))
         prefs->SetString(key, value);
       else
         VLOG(1) << "Non UTF8 value for key " << key << ", ignored.";

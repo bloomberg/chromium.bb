@@ -234,16 +234,6 @@ BASE_EXPORT bool ContainsOnlyChars(const StringPiece& input,
 BASE_EXPORT bool ContainsOnlyChars(const StringPiece16& input,
                                    const StringPiece16& characters);
 
-}  // namespace base
-
-#if defined(OS_WIN)
-#include "base/strings/string_util_win.h"
-#elif defined(OS_POSIX)
-#include "base/strings/string_util_posix.h"
-#else
-#error Define string operations appropriately for your platform
-#endif
-
 // Returns true if the specified string matches the criteria. How can a wide
 // string be 8-bit or UTF8? It contains only characters that are < 256 (in the
 // first case) or characters that use only 8-bits and whose 8-bit
@@ -256,8 +246,18 @@ BASE_EXPORT bool ContainsOnlyChars(const StringPiece16& input,
 // there's a use case for just checking the structural validity, we have to
 // add a new function for that.
 BASE_EXPORT bool IsStringUTF8(const std::string& str);
-BASE_EXPORT bool IsStringASCII(const base::StringPiece& str);
-BASE_EXPORT bool IsStringASCII(const base::string16& str);
+BASE_EXPORT bool IsStringASCII(const StringPiece& str);
+BASE_EXPORT bool IsStringASCII(const string16& str);
+
+}  // namespace base
+
+#if defined(OS_WIN)
+#include "base/strings/string_util_win.h"
+#elif defined(OS_POSIX)
+#include "base/strings/string_util_posix.h"
+#else
+#error Define string operations appropriately for your platform
+#endif
 
 // Converts the elements of the given string.  This version uses a pointer to
 // clearly differentiate it from the non-pointer variant.

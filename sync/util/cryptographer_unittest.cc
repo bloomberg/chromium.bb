@@ -189,7 +189,7 @@ TEST_F(CryptographerTest, Bootstrap) {
 
   std::string token;
   EXPECT_TRUE(cryptographer_.GetBootstrapToken(&token));
-  EXPECT_TRUE(IsStringUTF8(token));
+  EXPECT_TRUE(base::IsStringUTF8(token));
 
   Cryptographer other_cryptographer(&encryptor_);
   other_cryptographer.Bootstrap(token);

@@ -56,7 +56,7 @@ DatabaseIdentifier DatabaseIdentifier::CreateFromOrigin(const GURL& origin) {
 
 // static
 DatabaseIdentifier DatabaseIdentifier::Parse(const std::string& identifier) {
-  if (!IsStringASCII(identifier))
+  if (!base::IsStringASCII(identifier))
     return DatabaseIdentifier();
 
   size_t first_underscore = identifier.find_first_of('_');

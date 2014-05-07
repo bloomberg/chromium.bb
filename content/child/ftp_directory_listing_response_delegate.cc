@@ -34,7 +34,7 @@ namespace {
 base::string16 ConvertPathToUTF16(const std::string& path) {
   // Per RFC 2640, FTP servers should use UTF-8 or its proper subset ASCII,
   // but many old FTP servers use legacy encodings. Try UTF-8 first.
-  if (IsStringUTF8(path))
+  if (base::IsStringUTF8(path))
     return base::UTF8ToUTF16(path);
 
   // Try detecting the encoding. The sample is rather small though, so it may

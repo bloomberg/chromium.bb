@@ -182,7 +182,7 @@ bool IsSSN(const base::string16& text) {
   //   http://www.socialsecurity.gov/employer/stateweb.htm
   //   http://www.socialsecurity.gov/employer/ssnvhighgroup.htm
 
-  if (number_string.length() != 9 || !IsStringASCII(number_string))
+  if (number_string.length() != 9 || !base::IsStringASCII(number_string))
     return false;
 
   int area;

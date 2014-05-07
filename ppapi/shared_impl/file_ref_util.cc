@@ -36,7 +36,7 @@ bool IsValidInternalPath(const std::string& path) {
   //   The path starts with '/'
   //   The path must contain valid UTF-8 characters.
   //   It must not FilePath::ReferencesParent().
-  if (path.empty() || !IsStringUTF8(path) || path[0] != '/')
+  if (path.empty() || !base::IsStringUTF8(path) || path[0] != '/')
     return false;
   base::FilePath file_path = base::FilePath::FromUTF8Unsafe(path);
   if (file_path.ReferencesParent())

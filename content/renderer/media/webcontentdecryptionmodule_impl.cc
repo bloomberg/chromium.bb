@@ -40,7 +40,7 @@ WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
 
   // TODO(ddorwin): Guard against this in supported types check and remove this.
   // Chromium only supports ASCII key systems.
-  if (!IsStringASCII(key_system)) {
+  if (!base::IsStringASCII(key_system)) {
     NOTREACHED();
     return NULL;
   }

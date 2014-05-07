@@ -112,7 +112,7 @@ bool GetPacUrlFromExtensionPref(const base::DictionaryValue* proxy_config,
     *bad_message = true;
     return false;
   }
-  if (!IsStringASCII(pac_url16)) {
+  if (!base::IsStringASCII(pac_url16)) {
     *error = "'pacScript.url' supports only ASCII URLs "
              "(encode URLs in Punycode format).";
     return false;
@@ -137,7 +137,7 @@ bool GetPacDataFromExtensionPref(const base::DictionaryValue* proxy_config,
     *bad_message = true;
     return false;
   }
-  if (!IsStringASCII(pac_data16)) {
+  if (!base::IsStringASCII(pac_data16)) {
     *error = "'pacScript.data' supports only ASCII code"
              "(encode URLs in Punycode format).";
     return false;
@@ -169,7 +169,7 @@ bool GetProxyServer(const base::DictionaryValue* proxy_server,
     *bad_message = true;
     return false;
   }
-  if (!IsStringASCII(host16)) {
+  if (!base::IsStringASCII(host16)) {
     *error = ErrorUtils::FormatErrorMessage(
         "Invalid 'rules.???.host' entry '*'. 'host' field supports only ASCII "
         "URLs (encode URLs in Punycode format).",
@@ -272,7 +272,7 @@ bool JoinUrlList(const base::ListValue* list,
       *bad_message = true;
       return false;
     }
-    if (!IsStringASCII(entry)) {
+    if (!base::IsStringASCII(entry)) {
       *error = "'rules.bypassList' supports only ASCII URLs "
                "(encode URLs in Punycode format).";
       return false;

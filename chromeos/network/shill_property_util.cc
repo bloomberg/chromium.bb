@@ -88,7 +88,7 @@ std::string GetSSIDFromProperties(const base::DictionaryValue& properties,
     return std::string();
   }
 
-  if (IsStringUTF8(ssid))
+  if (base::IsStringUTF8(ssid))
     return ssid;
 
   // Detect encoding and convert to UTF-8.
