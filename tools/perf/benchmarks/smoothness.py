@@ -40,7 +40,7 @@ class SmoothnessKeyMobileSites(test.Test):
   page_set = 'page_sets/key_mobile_sites.py'
 
 
-@test.Disabled('android')  # crbug.com/350692
+@test.Disabled('android', 'mac')  # crbug.com/350692, crbug.com/368767
 class SmoothnessToughAnimationCases(test.Test):
   test = smoothness.Smoothness
   page_set = 'page_sets/tough_animation_cases.py'
