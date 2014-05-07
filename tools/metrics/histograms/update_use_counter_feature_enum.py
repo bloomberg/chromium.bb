@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
   if options.dashboard:
     enum_dict = ReadHistogramValues(source_path, START_MARKER, END_MARKER)
-    print_enum_for_dashboard(enum_items)
+    print_enum_for_dashboard(enum_dict)
   else:
     UpdateHistogramEnum(
         histogram_enum_name='FeatureObserver',
