@@ -125,8 +125,6 @@ public:
     void styleChanged(StyleDifference, const RenderStyle* oldStyle);
 
     bool isSelfPaintingLayer() const { return m_isSelfPaintingLayer; }
-    bool isOverflowOnlyLayer() const { return m_layerType == OverflowClipLayer; }
-    bool isForcedLayer() const { return m_layerType == ForcedLayer; }
 
     void setLayerType(LayerType layerType) { m_layerType = layerType; }
 
