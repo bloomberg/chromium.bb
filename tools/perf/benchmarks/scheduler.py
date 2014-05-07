@@ -6,6 +6,7 @@ from telemetry import test
 from measurements import smoothness
 
 
+@test.Disabled('linux')  # crbug.com/368767
 class SchedulerToughSchedulingCases(test.Test):
   """Measures rendering statistics while interacting with pages that have
   challenging scheduling properties.

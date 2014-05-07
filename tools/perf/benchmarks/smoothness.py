@@ -7,6 +7,7 @@ from measurements import smoothness
 from telemetry import test
 
 
+@test.Disabled  # crbug.com/368767
 class SmoothnessTop25(test.Test):
   """Measures rendering statistics while scrolling down the top 25 web pages.
 
