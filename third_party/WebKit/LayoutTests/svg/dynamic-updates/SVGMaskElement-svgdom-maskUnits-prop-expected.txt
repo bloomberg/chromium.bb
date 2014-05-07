@@ -1,15 +1,3 @@
-SVG 1.1 dynamic update tests
-
-Tests dynamic updates of the 'maskUnits' property of the SVGMaskElement object
-
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
-PASS maskElement.maskUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_OBJECTBOUNDINGBOX
-PASS maskElement.maskUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_USERSPACEONUSE
-PASS successfullyParsed is true
-
-TEST COMPLETE
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

@@ -1,15 +1,3 @@
-SVG 1.1 dynamic update tests
-
-Tests dynamic updates of the 'width' attribute of the SVGMaskElement object
-
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
-PASS maskElement.getAttribute('width') is "10%"
-PASS maskElement.getAttribute('width') is "100%"
-PASS successfullyParsed is true
-
-TEST COMPLETE
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

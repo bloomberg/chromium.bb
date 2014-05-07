@@ -1,23 +1,3 @@
-SVG 1.1 dynamic update tests
-
-Check that SVGPathElement is initially displayed
-PASS pathElement.getBBox().width is 200
-PASS pathElement.getBBox().height is 200
-Check that setting requiredFeatures to something invalid makes it not render
-PASS pathElement.getBBox().width is 0
-PASS pathElement.getBBox().height is 0
-Check that setting requiredFeatures to something valid makes it render again
-PASS pathElement.getBBox().width is 200
-PASS pathElement.getBBox().height is 200
-Check that adding something valid to requiredFeatures keeps rendering the element
-PASS pathElement.getBBox().width is 200
-PASS pathElement.getBBox().height is 200
-Check that adding something invalid to requiredFeatures makes it not render
-PASS pathElement.getBBox().width is 0
-PASS pathElement.getBBox().height is 0
-PASS successfullyParsed is true
-
-TEST COMPLETE
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1
