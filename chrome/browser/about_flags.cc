@@ -1676,7 +1676,7 @@ const Experiment kExperiments[] = {
     "search-button-in-omnibox",
     IDS_FLAGS_SEARCH_BUTTON_IN_OMNIBOX_NAME,
     IDS_FLAGS_SEARCH_BUTTON_IN_OMNIBOX_DESCRIPTION,
-    kOsCrOS | kOsMac | kOsWin,
+    kOsCrOS | kOsMac | kOsWin | kOsLinux,
     MULTI_VALUE_TYPE(kSearchButtonInOmniboxChoices)
   },
   {
