@@ -19,9 +19,12 @@ class DataReductionProxyConfigurator {
   DataReductionProxyConfigurator() {}
   virtual ~DataReductionProxyConfigurator() {}
 
-  // Enable the data reduction proxy. If |restricted|, only the fallback_origin
-  // will be used.
-  virtual void Enable(bool restricted,
+  // Enable the data reduction proxy. If |primary_restricted|, the
+  // |primary_origin| may not be used. If |fallback_restricted|, the
+  // |fallback_origin| may not be used. If both are restricted, then the
+  // proxy configuration will be the same as when |Disable()| is called.
+  virtual void Enable(bool primary_restricted,
+                      bool fallback_restricted,
                       const std::string& primary_origin,
                       const std::string& fallback_origin) = 0;
 

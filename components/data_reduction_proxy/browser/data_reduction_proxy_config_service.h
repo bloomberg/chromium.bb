@@ -95,7 +95,8 @@ class DataReductionProxyConfigTracker : public DataReductionProxyConfigurator {
       base::TaskRunner* task_runner);
   virtual ~DataReductionProxyConfigTracker();
 
-  virtual void Enable(bool restricted,
+  virtual void Enable(bool primary_restricted,
+                      bool fallback_restricted,
                       const std::string& primary_origin,
                       const std::string& fallback_origin) OVERRIDE;
   virtual void Disable() OVERRIDE;

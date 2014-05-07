@@ -182,6 +182,16 @@ class DataReductionProxySettings
   // probe succeeds.
   void SetDataReductionProxyEnabled(bool enabled);
 
+  // If |allowed|, the fallback proxy will be included in the proxy
+  // configuration.
+  void set_fallback_allowed(bool allowed) {
+    fallback_allowed_ = allowed;
+  }
+
+  bool fallback_allowed() const {
+    return fallback_allowed_;
+  }
+
   // Returns the time in microseconds that the last update was made to the
   // daily original and received content lengths.
   int64 GetDataReductionLastUpdateTime();
@@ -313,6 +323,8 @@ class DataReductionProxySettings
   scoped_ptr<DataReductionProxyConfigurator> config_;
 
   base::ThreadChecker thread_checker_;
+
+  bool fallback_allowed_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxySettings);
 };

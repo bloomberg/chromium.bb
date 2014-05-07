@@ -112,7 +112,8 @@ DataReductionProxySettings::DataReductionProxySettings()
       enabled_by_user_(false),
       prefs_(NULL),
       local_state_prefs_(NULL),
-      url_request_context_getter_(NULL) {
+      url_request_context_getter_(NULL),
+      fallback_allowed_(true) {
 }
 
 DataReductionProxySettings::~DataReductionProxySettings() {
@@ -424,7 +425,6 @@ void DataReductionProxySettings::OnURLFetchComplete(
   }
   DVLOG(1) << "The data reduction proxy is restricted to the configured "
            << "fallback proxy.";
-
   if (enabled_by_user_) {
     if (!restricted_by_carrier_) {
       // Restrict the proxy.
@@ -545,7 +545,10 @@ void DataReductionProxySettings::SetProxyConfigs(
 
   LogProxyState(enabled, restricted, at_startup);
   if (enabled) {
-    config_->Enable(restricted, GetDataReductionProxyOrigin(), fallback);
+    config_->Enable(restricted,
+                    !fallback_allowed_,
+                    GetDataReductionProxyOrigin(),
+                    fallback);
   } else {
     config_->Disable();
   }

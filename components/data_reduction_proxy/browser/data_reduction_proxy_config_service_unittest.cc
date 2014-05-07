@@ -205,10 +205,10 @@ TEST_F(DataReductionProxyConfigServiceTest, TrackerEnable) {
                   ProxyConfigMatches(expected_config),
                   net::ProxyConfigService::CONFIG_VALID)).Times(1);
   tracker.Enable(false,
+                 false,
                  "https://foo.com:443",
                  "http://bar.com:80");
   task_runner_->RunUntilIdle();
-  //loop.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer);
 
   config_service_->RemoveObserver(&observer);
@@ -229,10 +229,10 @@ TEST_F(DataReductionProxyConfigServiceTest, TrackerEnableRestricted) {
                   ProxyConfigMatches(expected_config),
                   net::ProxyConfigService::CONFIG_VALID)).Times(1);
   tracker.Enable(true,
+                 false,
                  "https://foo.com:443",
                  "http://bar.com:80");
   task_runner_->RunUntilIdle();
-  //loop.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer);
 
   config_service_->RemoveObserver(&observer);

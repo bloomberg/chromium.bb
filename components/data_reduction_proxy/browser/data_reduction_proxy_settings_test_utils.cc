@@ -49,16 +49,20 @@ ProbeURLFetchResult FetchResult(bool enabled, bool success) {
   return FAILED_PROXY_ALREADY_DISABLED;
 }
 
-void TestDataReductionProxyConfig::Enable(bool restricted,
-                                   const std::string& primary_origin,
-                                   const std::string& fallback_origin) {
+void TestDataReductionProxyConfig::Enable(
+    bool restricted,
+    bool fallback_restricted,
+    const std::string& primary_origin,
+    const std::string& fallback_origin) {
   enabled_ = true;
   restricted_ = restricted;
+  fallback_restricted_ = fallback_restricted;
 }
 
 void TestDataReductionProxyConfig::Disable() {
   enabled_ = false;
   restricted_ = false;
+  fallback_restricted_ = false;
 }
 
 DataReductionProxySettingsTestBase::DataReductionProxySettingsTestBase()
@@ -162,10 +166,13 @@ DataReductionProxySettingsTestBase::SetProbeResult<DataReductionProxySettings>(
     int expected_calls);
 
 void DataReductionProxySettingsTestBase::CheckProxyConfigs(
-    bool expected_enabled, bool expected_restricted) {
+    bool expected_enabled,
+    bool expected_restricted,
+    bool expected_fallback_restricted) {
   TestDataReductionProxyConfig* config =
       static_cast<TestDataReductionProxyConfig*>(settings_->config_.get());
   ASSERT_EQ(expected_restricted, config->restricted_);
+  ASSERT_EQ(expected_fallback_restricted, config->fallback_restricted_);
   ASSERT_EQ(expected_enabled, config->enabled_);
 }
 
@@ -175,7 +182,8 @@ void DataReductionProxySettingsTestBase::CheckProbe(
     const std::string& response,
     bool request_succeeded,
     bool expected_enabled,
-    bool expected_restricted) {
+    bool expected_restricted,
+    bool expected_fallback_restricted) {
   pref_service_.SetBoolean(prefs::kDataReductionProxyEnabled,
                            initially_enabled);
   if (initially_enabled)
@@ -189,14 +197,17 @@ void DataReductionProxySettingsTestBase::CheckProbe(
                  initially_enabled ? 1 : 0);
   settings_->MaybeActivateDataReductionProxy(false);
   base::MessageLoop::current()->RunUntilIdle();
-  CheckProxyConfigs(expected_enabled, expected_restricted);
+  CheckProxyConfigs(expected_enabled,
+                    expected_restricted,
+                    expected_fallback_restricted);
 }
 
 void DataReductionProxySettingsTestBase::CheckProbeOnIPChange(
     const std::string& probe_url,
     const std::string& response,
     bool request_succeeded,
-    bool expected_restricted) {
+    bool expected_restricted,
+    bool expected_fallback_restricted) {
   SetProbeResult(probe_url,
                  response,
                  FetchResult(!settings_->restricted_by_carrier_,
@@ -205,7 +216,7 @@ void DataReductionProxySettingsTestBase::CheckProbeOnIPChange(
                  1);
   settings_->OnIPAddressChanged();
   base::MessageLoop::current()->RunUntilIdle();
-  CheckProxyConfigs(true, expected_restricted);
+  CheckProxyConfigs(true, expected_restricted, expected_fallback_restricted);
 }
 
 void DataReductionProxySettingsTestBase::CheckOnPrefChange(
@@ -226,7 +237,7 @@ void DataReductionProxySettingsTestBase::CheckOnPrefChange(
   }
   base::MessageLoop::current()->RunUntilIdle();
   // Never expect the proxy to be restricted for pref change tests.
-  CheckProxyConfigs(expected_enabled, false);
+  CheckProxyConfigs(expected_enabled, false, false);
 }
 
 void DataReductionProxySettingsTestBase::CheckInitDataReductionProxy(
@@ -248,7 +259,7 @@ void DataReductionProxySettingsTestBase::CheckInitDataReductionProxy(
                                             request_context.get());
 
   base::MessageLoop::current()->RunUntilIdle();
-  CheckProxyConfigs(enabled_at_startup, false);
+  CheckProxyConfigs(enabled_at_startup, false, false);
 }
 
 }  // namespace data_reduction_proxy

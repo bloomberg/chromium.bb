@@ -22,9 +22,10 @@ namespace data_reduction_proxy {
 class TestDataReductionProxyConfig : public DataReductionProxyConfigurator {
  public:
   TestDataReductionProxyConfig()
-      : enabled_(false), restricted_(false) {}
+      : enabled_(false), restricted_(false), fallback_restricted_(false) {}
   virtual ~TestDataReductionProxyConfig() {}
   virtual void Enable(bool restricted,
+                      bool fallback_restricted,
                       const std::string& primary_origin,
                       const std::string& fallback_origin) OVERRIDE;
   virtual void Disable() OVERRIDE;
@@ -38,6 +39,11 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfigurator {
   // Describes whether the proxy has been put in a restricted mode. True if
   // |Enable| is called with |restricted| set to true. Defaults to false.
   bool restricted_;
+
+  // Describes whether the proxy has been put in a mode where the fallback
+  // configuration has been disallowed. True if |Enable| is called with
+  // |fallback_restricted| set to true. Defaults to false.
+  bool fallback_restricted_;
 };
 
 template <class C>
@@ -85,17 +91,21 @@ class DataReductionProxySettingsTestBase : public testing::Test {
                               bool success,
                               int expected_calls) = 0;
 
-  void CheckProxyConfigs(bool expected_enabled, bool expected_restricted);
+  void CheckProxyConfigs(bool expected_enabled,
+                         bool expected_restricted,
+                         bool expected_fallback_restricted);
   void CheckProbe(bool initially_enabled,
                   const std::string& probe_url,
                   const std::string& response,
                   bool request_success,
                   bool expected_enabled,
-                  bool expected_restricted);
+                  bool expected_restricted,
+                  bool expected_fallback_restricted);
   void CheckProbeOnIPChange(const std::string& probe_url,
                             const std::string& response,
                             bool request_success,
-                            bool expected_enabled);
+                            bool expected_enabled,
+                            bool expected_fallback_restricted);
   void CheckOnPrefChange(bool enabled, bool expected_enabled, bool managed);
   void CheckInitDataReductionProxy(bool enabled_at_startup);
 

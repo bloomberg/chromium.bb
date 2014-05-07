@@ -292,14 +292,14 @@ TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
   base::MessageLoopForUI loop;
   // The proxy is enabled and unrestructed initially.
   // Request succeeded but with bad response, expect proxy to be restricted.
-  CheckProbe(true, kProbeURLWithBadResponse, "Bad", true, true, true);
+  CheckProbe(true, kProbeURLWithBadResponse, "Bad", true, true, true, false);
   // Request succeeded with valid response, expect proxy to be unrestricted.
-  CheckProbe(true, kProbeURLWithOKResponse, "OK", true, true, false);
+  CheckProbe(true, kProbeURLWithOKResponse, "OK", true, true, false, false);
   // Request failed, expect proxy to be enabled but restricted.
-  CheckProbe(true, kProbeURLWithNoResponse, "", false, true, true);
+  CheckProbe(true, kProbeURLWithNoResponse, "", false, true, true, false);
   // The proxy is disabled initially. Probes should not be emitted to change
   // state.
-  CheckProbe(false, kProbeURLWithOKResponse, "OK", true, false, false);
+  CheckProbe(false, kProbeURLWithOKResponse, "OK", true, false, false, false);
 }
 
 TEST_F(DataReductionProxySettingsTest, TestOnIPAddressChanged) {
@@ -315,13 +315,13 @@ TEST_F(DataReductionProxySettingsTest, TestOnIPAddressChanged) {
   settings_->SetProxyConfigs(true, false, true);
   // IP address change triggers a probe that succeeds. Proxy remains
   // unrestricted.
-  CheckProbeOnIPChange(kProbeURLWithOKResponse, "OK", true, false);
+  CheckProbeOnIPChange(kProbeURLWithOKResponse, "OK", true, false, false);
   // IP address change triggers a probe that fails. Proxy is restricted.
-  CheckProbeOnIPChange(kProbeURLWithBadResponse, "Bad", true, true);
+  CheckProbeOnIPChange(kProbeURLWithBadResponse, "Bad", true, true, false);
   // IP address change triggers a probe that fails. Proxy remains restricted.
-  CheckProbeOnIPChange(kProbeURLWithBadResponse, "Bad", true, true);
+  CheckProbeOnIPChange(kProbeURLWithBadResponse, "Bad", true, true, false);
   // IP address change triggers a probe that succeed. Proxy is unrestricted.
-  CheckProbeOnIPChange(kProbeURLWithBadResponse, "OK", true, false);
+  CheckProbeOnIPChange(kProbeURLWithBadResponse, "OK", true, false, false);
 }
 
 TEST_F(DataReductionProxySettingsTest, TestOnProxyEnabledPrefChange) {

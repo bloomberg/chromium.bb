@@ -81,6 +81,7 @@ void AwBrowserContext::PreMainMessageLoopRun() {
   DataReductionProxySettings::SetPromoAllowed(false);
   data_reduction_proxy_settings_.reset(
       new DataReductionProxySettings());
+  data_reduction_proxy_settings_->set_fallback_allowed(false);
 
   url_request_context_getter_ =
       new AwURLRequestContextGetter(GetPath(), cookie_store_.get());

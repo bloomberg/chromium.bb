@@ -126,24 +126,34 @@ DataReductionProxyConfigTracker::DataReductionProxyConfigTracker(
 DataReductionProxyConfigTracker::~DataReductionProxyConfigTracker() {
 }
 
-void DataReductionProxyConfigTracker::Enable(bool restricted,
-                    const std::string& primary_origin,
-                    const std::string& fallback_origin) {
-  net::ProxyConfig config;
-  std::string proxy_list;
-  std::string trimmed_fallback_origin;
-  base::TrimString(fallback_origin, "/", &trimmed_fallback_origin);
-  if (restricted) {
-    DCHECK(!fallback_origin.empty());
-    proxy_list = trimmed_fallback_origin;
-  } else {
-    std::string trimmed_primary_origin;
-    base::TrimString(primary_origin, "/", &trimmed_primary_origin);
-    proxy_list = trimmed_primary_origin +
-        (fallback_origin.empty() ? "" : "," + trimmed_fallback_origin);
+void DataReductionProxyConfigTracker::Enable(
+    bool primary_restricted,
+    bool fallback_restricted,
+    const std::string& primary_origin,
+    const std::string& fallback_origin) {
+
+  std::vector<std::string> proxies;
+  if (!primary_restricted) {
+    std::string trimmed_primary;
+    base::TrimString(primary_origin, "/", &trimmed_primary);
+    if (!trimmed_primary.empty())
+      proxies.push_back(trimmed_primary);
+  }
+  if (!fallback_restricted) {
+    std::string trimmed_fallback;
+    base::TrimString(fallback_origin, "/", &trimmed_fallback);
+    if (!trimmed_fallback.empty())
+      proxies.push_back(trimmed_fallback);
+  }
+  if (proxies.empty()) {
+    std::string mode;
+    Disable();
+    return;
   }
 
-  config.proxy_rules().ParseFromString("http=" + proxy_list + ",direct://;");
+  net::ProxyConfig config;
+  config.proxy_rules().ParseFromString(
+      "http=" + JoinString(proxies, ",") + ",direct://;");
   config.proxy_rules().bypass_rules.ParseFromString(
       JoinString(bypass_rules_, ", "));
   UpdateProxyConfigOnIOThread(true, config);

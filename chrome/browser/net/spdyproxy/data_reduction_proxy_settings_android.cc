@@ -225,6 +225,7 @@ void DataReductionProxySettingsAndroid::SetProxyConfigs(bool enabled,
 
   if (enabled) {
     config()->Enable(restricted,
+                     !fallback_allowed(),
                      DataReductionProxySettings::GetDataReductionProxyOrigin(),
                      GetDataReductionProxyFallback());
   } else {
