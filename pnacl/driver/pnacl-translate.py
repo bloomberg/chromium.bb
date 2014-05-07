@@ -220,12 +220,7 @@ def SetUpArch():
     triple_map = {
         'nacl':
             {'X8632': 'i686-linux-gnu',
-             # TODO(mseaborn): This triple uses soft-float, which is
-             # not correct for arm-nonsfi.  To get hard-float, we'd
-             # have to specify "-gnueabi(hf)", but that makes llc use
-             # "__aeabi_*" functions which our libgcc build currently
-             # doesn't define.
-             'ARM': 'armv7a-linux-none'}}
+             'ARM': 'armv7a-linux-gnueabihf'}}
   else:
     triple_map = {
         'nacl':
@@ -254,9 +249,12 @@ def SetUpArch():
       'ARM': ['-arm-reserve-r9', '-sfi-disable-cp', '-sfi-load', '-sfi-store',
               '-sfi-stack', '-sfi-branch', '-sfi-data',
               '-no-inline-jumptables', '-float-abi=hard', '-mattr=+neon'],
+      # Once PNaCl's build of compiler-rt (libgcc.a) defines __aeabi_*
+      # functions, we can drop the following ad-hoc option.
+      'ARM_NONSFI': ['-arm-enable-aeabi-functions=0'],
       'MIPS32': ['-sfi-load', '-sfi-store', '-sfi-stack',
                  '-sfi-branch', '-sfi-data']}
-  env.set('LLC_FLAGS_ARCH', *llc_flags_map.get(base_arch, []))
+  env.set('LLC_FLAGS_ARCH', *llc_flags_map.get(env.getone('ARCH'), []))
   # When linking against a host OS's libc (such as Linux glibc), don't
   # use %gs:0 to read the thread pointer because that won't be
   # compatible with the libc's use of %gs:0.  Similarly, Non-SFI Mode
