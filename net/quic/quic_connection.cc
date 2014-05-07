@@ -504,7 +504,7 @@ void QuicConnection::OnFecProtectedPayload(StringPiece payload) {
   DCHECK_NE(0u, last_header_.fec_group);
   QuicFecGroup* group = GetFecGroup();
   if (group != NULL) {
-    group->Update(last_header_, payload);
+    group->Update(last_decrypted_packet_level_, last_header_, payload);
   }
 }
 
@@ -714,7 +714,8 @@ void QuicConnection::OnFecData(const QuicFecData& fec) {
   DCHECK_NE(0u, last_header_.fec_group);
   QuicFecGroup* group = GetFecGroup();
   if (group != NULL) {
-    group->UpdateFec(last_header_.packet_sequence_number, fec);
+    group->UpdateFec(last_decrypted_packet_level_,
+                     last_header_.packet_sequence_number, fec);
   }
 }
 
@@ -1625,6 +1626,7 @@ const QuicEncrypter* QuicConnection::encrypter(EncryptionLevel level) const {
 
 void QuicConnection::SetDefaultEncryptionLevel(EncryptionLevel level) {
   encryption_level_ = level;
+  packet_creator_.set_encryption_level(level);
 }
 
 void QuicConnection::SetDecrypter(QuicDecrypter* decrypter,
@@ -1698,6 +1700,8 @@ void QuicConnection::MaybeProcessRevivedPacket() {
   revived_header.is_in_fec_group = NOT_IN_FEC_GROUP;
   revived_header.fec_group = 0;
   group_map_.erase(last_header_.fec_group);
+  last_decrypted_packet_level_ = group->effective_encryption_level();
+  DCHECK_LT(last_decrypted_packet_level_, NUM_ENCRYPTION_LEVELS);
   delete group;
 
   last_packet_revived_ = true;

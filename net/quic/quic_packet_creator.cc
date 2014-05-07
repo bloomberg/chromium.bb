@@ -60,6 +60,7 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
                                      QuicRandom* random_generator,
                                      bool is_server)
     : connection_id_(connection_id),
+      encryption_level_(ENCRYPTION_NONE),
       framer_(framer),
       random_bool_source_(new QuicRandomBoolSource(random_generator)),
       sequence_number_(0),
@@ -78,7 +79,7 @@ void QuicPacketCreator::OnBuiltFecProtectedPayload(
     const QuicPacketHeader& header, StringPiece payload) {
   if (fec_group_.get()) {
     DCHECK_NE(0u, header.fec_group);
-    fec_group_->Update(header, payload);
+    fec_group_->Update(encryption_level_, header, payload);
   }
 }
 

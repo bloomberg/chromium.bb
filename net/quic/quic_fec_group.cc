@@ -22,12 +22,14 @@ const QuicPacketSequenceNumber kNoSequenceNumber = kuint64max;
 QuicFecGroup::QuicFecGroup()
     : min_protected_packet_(kNoSequenceNumber),
       max_protected_packet_(kNoSequenceNumber),
-      payload_parity_len_(0) {
+      payload_parity_len_(0),
+      effective_encryption_level_(NUM_ENCRYPTION_LEVELS) {
 }
 
 QuicFecGroup::~QuicFecGroup() {}
 
-bool QuicFecGroup::Update(const QuicPacketHeader& header,
+bool QuicFecGroup::Update(EncryptionLevel encryption_level,
+                          const QuicPacketHeader& header,
                           StringPiece decrypted_payload) {
   if (received_packets_.count(header.packet_sequence_number) != 0) {
     return false;
@@ -44,10 +46,14 @@ bool QuicFecGroup::Update(const QuicPacketHeader& header,
     return false;
   }
   received_packets_.insert(header.packet_sequence_number);
+  if (encryption_level < effective_encryption_level_) {
+    effective_encryption_level_ = encryption_level;
+  }
   return true;
 }
 
 bool QuicFecGroup::UpdateFec(
+    EncryptionLevel encryption_level,
     QuicPacketSequenceNumber fec_packet_sequence_number,
     const QuicFecData& fec) {
   if (min_protected_packet_ != kNoSequenceNumber) {
@@ -66,6 +72,9 @@ bool QuicFecGroup::UpdateFec(
   }
   min_protected_packet_ = fec.fec_group;
   max_protected_packet_ = fec_packet_sequence_number - 1;
+  if (encryption_level < effective_encryption_level_) {
+    effective_encryption_level_ = encryption_level;
+  }
   return true;
 }
 

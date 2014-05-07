@@ -176,6 +176,11 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   QuicEncryptedPacket* SerializeVersionNegotiationPacket(
       const QuicVersionVector& supported_versions);
 
+  // Sets the encryption level that will be applied to new packets.
+  void set_encryption_level(EncryptionLevel level) {
+    encryption_level_ = level;
+  }
+
   // Sequence number of the last created packet, or 0 if no packets have been
   // created.
   QuicPacketSequenceNumber sequence_number() const {
@@ -214,6 +219,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
 
   Options options_;
   QuicConnectionId connection_id_;
+  EncryptionLevel encryption_level_;
   QuicFramer* framer_;
   scoped_ptr<QuicRandomBoolSource> random_bool_source_;
   QuicPacketSequenceNumber sequence_number_;

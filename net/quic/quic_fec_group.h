@@ -9,8 +9,6 @@
 #ifndef NET_QUIC_QUIC_FEC_GROUP_H_
 #define NET_QUIC_QUIC_FEC_GROUP_H_
 
-#include <set>
-
 #include "base/strings/string_piece.h"
 #include "net/quic/quic_protocol.h"
 
@@ -21,16 +19,19 @@ class NET_EXPORT_PRIVATE QuicFecGroup {
   QuicFecGroup();
   ~QuicFecGroup();
 
-  // Updates the FEC group based on the delivery of a data packet.
-  // Returns false if this packet has already been seen, true otherwise.
-  bool Update(const QuicPacketHeader& header,
+  // Updates the FEC group based on the delivery of a data packet decrypted at
+  // |encryption_level|. Returns false if this packet has already been seen,
+  // true otherwise.
+  bool Update(EncryptionLevel encryption_level,
+              const QuicPacketHeader& header,
               base::StringPiece decrypted_payload);
 
-  // Updates the FEC group based on the delivery of an FEC packet.
-  // Returns false if this packet has already been seen or if it does
-  // not claim to protect all the packets previously seen in this group.
-  //   |fec_packet_entropy|: XOR of entropy of all packets in the fec group.
-  bool UpdateFec(QuicPacketSequenceNumber fec_packet_sequence_number,
+  // Updates the FEC group based on the delivery of an FEC packet decrypted at
+  // |encryption_level|. Returns false if this packet has already been seen or
+  // if it does not claim to protect all the packets previously seen in this
+  // group.
+  bool UpdateFec(EncryptionLevel encryption_level,
+                 QuicPacketSequenceNumber fec_packet_sequence_number,
                  const QuicFecData& fec);
 
   // Returns true if a packet can be revived from this FEC group.
@@ -64,6 +65,11 @@ class NET_EXPORT_PRIVATE QuicFecGroup {
     return received_packets_.size();
   }
 
+  // Returns the effective encryption level of the FEC group.
+  EncryptionLevel effective_encryption_level() const {
+    return effective_encryption_level_;
+  }
+
  private:
   bool UpdateParity(base::StringPiece payload);
   // Returns the number of missing packets, or size_t max if the number
@@ -83,6 +89,9 @@ class NET_EXPORT_PRIVATE QuicFecGroup {
   // The cumulative parity calculation of all received packets.
   char payload_parity_[kMaxPacketSize];
   size_t payload_parity_len_;
+  // The effective encryption level, which is the lowest encryption level of
+  // the data and FEC in the group.
+  EncryptionLevel effective_encryption_level_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicFecGroup);
 };

@@ -306,7 +306,7 @@ int QuicStreamFactory::Job::DoConnect() {
     return ERR_QUIC_PROTOCOL_ERROR;
   }
   bool require_confirmation =
-      factory_->require_confirmation() || server_id_.is_https() || is_post_ ||
+      factory_->require_confirmation() || is_post_ ||
       was_alternate_protocol_recently_broken_;
   rv = session_->CryptoConnect(
       require_confirmation,
