@@ -43,7 +43,6 @@ class DevToolsAndroidBridge
  public:
   typedef base::Callback<void(int result,
                               const std::string& response)> Callback;
-  typedef base::Callback<void(DevToolsTargetImpl*)> TargetCallback;
 
   class Wrapper : public KeyedService {
    public:
@@ -102,6 +101,15 @@ class DevToolsAndroidBridge
     DISALLOW_COPY_AND_ASSIGN(AndroidWebSocket);
   };
 
+  class RemotePage {
+   public:
+    virtual ~RemotePage() {}
+    virtual DevToolsTargetImpl* GetTarget() = 0;
+    virtual std::string GetFrontendURL() = 0;
+  };
+
+  typedef base::Callback<void(RemotePage*)> RemotePageCallback;
+
   class RemoteBrowser : public base::RefCounted<RemoteBrowser> {
    public:
     RemoteBrowser(
@@ -123,7 +131,7 @@ class DevToolsAndroidBridge
     typedef std::vector<int> ParsedVersion;
     ParsedVersion GetParsedVersion() const;
 
-    std::vector<DevToolsTargetImpl*> CreatePageTargets();
+    std::vector<RemotePage*> CreatePages();
     void SetPageDescriptors(const base::ListValue&);
 
     typedef base::Callback<void(int, const std::string&)> JsonRequestCallback;
@@ -135,7 +143,7 @@ class DevToolsAndroidBridge
                              const base::Closure callback);
 
     void Open(const std::string& url,
-              const TargetCallback& callback);
+              const RemotePageCallback& callback);
 
     scoped_refptr<AndroidWebSocket> CreateWebSocket(
         const std::string& url,
@@ -158,7 +166,7 @@ class DevToolsAndroidBridge
         const std::string& url);
 
     void RespondToOpenOnUIThread(
-        const DevToolsAndroidBridge::TargetCallback& callback,
+        const DevToolsAndroidBridge::RemotePageCallback& callback,
         int result,
         const std::string& response);
 

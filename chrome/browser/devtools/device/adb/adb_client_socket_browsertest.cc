@@ -92,24 +92,26 @@ class AdbClientSocketTest : public InProcessBrowserTest,
     ASSERT_EQ("31.0.1599.0", chrome_beta->version());
     ASSERT_EQ("4.0", webview->version());
 
-    std::vector<DevToolsTargetImpl*> chrome_pages =
-        chrome->CreatePageTargets();
-    std::vector<DevToolsTargetImpl*> chrome_beta_pages =
-        chrome_beta->CreatePageTargets();
-    std::vector<DevToolsTargetImpl*> webview_pages =
-        webview->CreatePageTargets();
+    std::vector<DevToolsAndroidBridge::RemotePage*> chrome_pages =
+        chrome->CreatePages();
+    std::vector<DevToolsAndroidBridge::RemotePage*> chrome_beta_pages =
+        chrome_beta->CreatePages();
+    std::vector<DevToolsAndroidBridge::RemotePage*> webview_pages =
+        webview->CreatePages();
 
     ASSERT_EQ(1U, chrome_pages.size());
     ASSERT_EQ(0U, chrome_beta_pages.size());
     ASSERT_EQ(2U, webview_pages.size());
 
     // Check that we have non-empty description for webview pages.
-    ASSERT_EQ(0U, chrome_pages[0]->GetDescription().size());
-    ASSERT_NE(0U, webview_pages[0]->GetDescription().size());
-    ASSERT_NE(0U, webview_pages[1]->GetDescription().size());
+    ASSERT_EQ(0U, chrome_pages[0]->GetTarget()->GetDescription().size());
+    ASSERT_NE(0U, webview_pages[0]->GetTarget()->GetDescription().size());
+    ASSERT_NE(0U, webview_pages[1]->GetTarget()->GetDescription().size());
 
-    ASSERT_EQ(GURL("http://www.chromium.org/"), chrome_pages[0]->GetURL());
-    ASSERT_EQ("The Chromium Projects", chrome_pages[0]->GetTitle());
+    ASSERT_EQ(GURL("http://www.chromium.org/"),
+                   chrome_pages[0]->GetTarget()->GetURL());
+    ASSERT_EQ("The Chromium Projects",
+              chrome_pages[0]->GetTarget()->GetTitle());
 
     STLDeleteElements(&chrome_pages);
     STLDeleteElements(&webview_pages);

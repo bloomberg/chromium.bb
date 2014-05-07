@@ -372,13 +372,20 @@ AdbTargetsUIHandler::~AdbTargetsUIHandler() {
     android_bridge->RemoveDeviceListListener(this);
 }
 
+static void CallOnTarget(
+    const DevToolsTargetsUIHandler::TargetCallback& callback,
+    DevToolsAndroidBridge::RemotePage* page) {
+  scoped_ptr<DevToolsAndroidBridge::RemotePage> my_page(page);
+  callback.Run(my_page ? my_page->GetTarget() : NULL);
+}
+
 void AdbTargetsUIHandler::Open(
     const std::string& browser_id,
     const std::string& url,
     const DevToolsTargetsUIHandler::TargetCallback& callback) {
   RemoteBrowsers::iterator it = remote_browsers_.find(browser_id);
   if (it !=  remote_browsers_.end())
-    it->second->Open(url, callback);
+    it->second->Open(url, base::Bind(&CallOnTarget, callback));
 }
 
 void AdbTargetsUIHandler::DeviceListChanged(
@@ -443,10 +450,12 @@ void AdbTargetsUIHandler::DeviceListChanged(
       base::ListValue* page_list = new base::ListValue();
       remote_browsers_[browser_id] = browser;
             browser_data->Set(kAdbPagesList, page_list);
-      DevToolsTargetImpl::List pages = browser->CreatePageTargets();
-      for (DevToolsTargetImpl::List::iterator it =
+      std::vector<DevToolsAndroidBridge::RemotePage*> pages =
+          browser->CreatePages();
+      for (std::vector<DevToolsAndroidBridge::RemotePage*>::iterator it =
           pages.begin(); it != pages.end(); ++it) {
-        DevToolsTargetImpl* target =  *it;
+        DevToolsAndroidBridge::RemotePage* page =  *it;
+        DevToolsTargetImpl* target = page->GetTarget();
         base::DictionaryValue* target_data = Serialize(*target);
         target_data->SetBoolean(
             kAdbAttachedForeignField,

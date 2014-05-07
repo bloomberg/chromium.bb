@@ -816,18 +816,21 @@ void AgentHostDelegate::OnSocketClosed(bool closed_by_device) {
 
 //// RemotePageTarget ----------------------------------------------
 
-class RemotePageTarget : public DevToolsTargetImpl {
+class RemotePageTarget : public DevToolsTargetImpl,
+                         public DevToolsAndroidBridge::RemotePage {
  public:
   RemotePageTarget(scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser,
                    const base::DictionaryValue& value);
   virtual ~RemotePageTarget();
 
-  // content::DevToolsTarget overrides:
+  // DevToolsAndroidBridge::RemotePage implementation.
+  virtual DevToolsTargetImpl* GetTarget() OVERRIDE;
+  virtual std::string GetFrontendURL() OVERRIDE;
+
+  // DevToolsTargetImpl overrides.
   virtual bool IsAttached() const OVERRIDE;
   virtual bool Activate() const OVERRIDE;
   virtual bool Close() const OVERRIDE;
-
-  // DevToolsTargetImpl overrides:
   virtual void Inspect(Profile* profile) const OVERRIDE;
   virtual void Reload() const OVERRIDE;
 
@@ -891,6 +894,14 @@ RemotePageTarget::RemotePageTarget(
 }
 
 RemotePageTarget::~RemotePageTarget() {
+}
+
+DevToolsTargetImpl* RemotePageTarget::GetTarget() {
+  return this;
+}
+
+std::string RemotePageTarget::GetFrontendURL() {
+  return frontend_url_;
 }
 
 bool RemotePageTarget::IsAttached() const {
@@ -963,9 +974,9 @@ DevToolsAndroidBridge::RemoteBrowser::GetParsedVersion() const {
   return result;
 }
 
-std::vector<DevToolsTargetImpl*>
-DevToolsAndroidBridge::RemoteBrowser::CreatePageTargets() {
-  std::vector<DevToolsTargetImpl*> result;
+std::vector<DevToolsAndroidBridge::RemotePage*>
+DevToolsAndroidBridge::RemoteBrowser::CreatePages() {
+  std::vector<DevToolsAndroidBridge::RemotePage*> result;
   for (size_t i = 0; i < page_descriptors_->GetSize(); ++i) {
     base::Value* item;
     page_descriptors_->Get(i, &item);
@@ -1018,14 +1029,14 @@ void DevToolsAndroidBridge::RemoteBrowser::SendProtocolCommand(
 
 void DevToolsAndroidBridge::RemoteBrowser::Open(
     const std::string& url,
-    const DevToolsAndroidBridge::TargetCallback& callback) {
+    const DevToolsAndroidBridge::RemotePageCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   InnerOpen(url, base::Bind(&RemoteBrowser::RespondToOpenOnUIThread,
                             this, callback));
 }
 
 void DevToolsAndroidBridge::RemoteBrowser::RespondToOpenOnUIThread(
-    const DevToolsAndroidBridge::TargetCallback& callback,
+    const DevToolsAndroidBridge::RemotePageCallback& callback,
     int result,
     const std::string& response) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1036,8 +1047,8 @@ void DevToolsAndroidBridge::RemoteBrowser::RespondToOpenOnUIThread(
   scoped_ptr<base::Value> value(base::JSONReader::Read(response));
   base::DictionaryValue* dict;
   if (value && value->GetAsDictionary(&dict)) {
-    RemotePageTarget new_page(this, *dict);
-    callback.Run(&new_page);
+    RemotePageTarget* new_page = new RemotePageTarget(this, *dict);
+    callback.Run(new_page);
   }
 }
 
