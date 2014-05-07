@@ -46,7 +46,8 @@
       "mojo_public_system_unittests",
       "mojo_public_utility_unittests",
       "mojo_service_manager_unittests",
-      "mojo_system_unittests"
+      "mojo_system_unittests",
+      "nacl_loader_unittests"
     ]
   },
   "Linux Trusty (dbg)": {
@@ -96,7 +97,8 @@
       "mojo_public_system_unittests",
       "mojo_public_utility_unittests",
       "mojo_service_manager_unittests",
-      "mojo_system_unittests"
+      "mojo_system_unittests",
+      "nacl_loader_unittests"
     ]
   },
   "Linux Trusty (32)": {
@@ -146,7 +148,8 @@
       "mojo_public_system_unittests",
       "mojo_public_utility_unittests",
       "mojo_service_manager_unittests",
-      "mojo_system_unittests"
+      "mojo_system_unittests",
+      "nacl_loader_unittests"
     ]
   },
   "Linux Trusty (dbg)(32)": {
@@ -196,7 +199,8 @@
       "mojo_public_system_unittests",
       "mojo_public_utility_unittests",
       "mojo_service_manager_unittests",
-      "mojo_system_unittests"
+      "mojo_system_unittests",
+      "nacl_loader_unittests"
     ]
   }
 }
