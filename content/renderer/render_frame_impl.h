@@ -356,9 +356,9 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual blink::WebUserMediaClient* userMediaClient();
   virtual blink::WebMIDIClient* webMIDIClient();
   virtual bool willCheckAndDispatchMessageEvent(
-      blink::WebLocalFrame* sourceFrame,
-      blink::WebFrame* targetFrame,
-      blink::WebSecurityOrigin targetOrigin,
+      blink::WebLocalFrame* source_frame,
+      blink::WebFrame* target_frame,
+      blink::WebSecurityOrigin target_origin,
       blink::WebDOMMessageEvent event);
   virtual blink::WebString userAgentOverride(blink::WebLocalFrame* frame,
                                              const blink::WebURL& url);

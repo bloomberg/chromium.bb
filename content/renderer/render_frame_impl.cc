@@ -25,6 +25,7 @@
 #include "content/child/service_worker/service_worker_network_provider.h"
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
 #include "content/child/web_socket_stream_handle_impl.h"
+#include "content/child/webmessageportchannel_impl.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
@@ -2682,15 +2683,48 @@ blink::WebMIDIClient* RenderFrameImpl::webMIDIClient() {
 }
 
 bool RenderFrameImpl::willCheckAndDispatchMessageEvent(
-    blink::WebLocalFrame* sourceFrame,
-    blink::WebFrame* targetFrame,
-    blink::WebSecurityOrigin targetOrigin,
+    blink::WebLocalFrame* source_frame,
+    blink::WebFrame* target_frame,
+    blink::WebSecurityOrigin target_origin,
     blink::WebDOMMessageEvent event) {
-  DCHECK(!frame_ || frame_ == targetFrame);
-  // TODO(nasko): Move implementation here. Needed state:
-  // * is_swapped_out_
-  return render_view_->willCheckAndDispatchMessageEvent(
-      sourceFrame, targetFrame, targetOrigin, event);
+  DCHECK(!frame_ || frame_ == target_frame);
+
+  if (!render_view_->is_swapped_out_)
+    return false;
+
+  ViewMsg_PostMessage_Params params;
+  params.data = event.data().toString();
+  params.source_origin = event.origin();
+  if (!target_origin.isNull())
+    params.target_origin = target_origin.toString();
+
+  blink::WebMessagePortChannelArray channels = event.releaseChannels();
+  if (!channels.isEmpty()) {
+    std::vector<int> message_port_ids(channels.size());
+     // Extract the port IDs from the channel array.
+     for (size_t i = 0; i < channels.size(); ++i) {
+       WebMessagePortChannelImpl* webchannel =
+           static_cast<WebMessagePortChannelImpl*>(channels[i]);
+       message_port_ids[i] = webchannel->message_port_id();
+       webchannel->QueueMessages();
+       DCHECK_NE(message_port_ids[i], MSG_ROUTING_NONE);
+     }
+     params.message_port_ids = message_port_ids;
+  }
+
+  // Include the routing ID for the source frame (if one exists), which the
+  // browser process will translate into the routing ID for the equivalent
+  // frame in the target process.
+  params.source_routing_id = MSG_ROUTING_NONE;
+  if (source_frame) {
+    RenderViewImpl* source_view =
+        RenderViewImpl::FromWebView(source_frame->view());
+    if (source_view)
+      params.source_routing_id = source_view->routing_id();
+  }
+
+  Send(new ViewHostMsg_RouteMessageEvent(render_view_->routing_id_, params));
+  return true;
 }
 
 blink::WebString RenderFrameImpl::userAgentOverride(blink::WebLocalFrame* frame,
