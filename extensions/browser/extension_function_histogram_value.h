@@ -813,6 +813,8 @@ enum HistogramValue {
   BROWSER_OPENTAB,
   MANAGEMENT_CREATEAPPSHORTCUT,
   WEBVIEW_SHOWCONTEXTMENU,
+  WEBRTCLOGGINGPRIVATE_STARTRTPDUMP,
+  WEBRTCLOGGINGPRIVATE_STOPRTPDUMP,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms/histograms.xml.
   ENUM_BOUNDARY

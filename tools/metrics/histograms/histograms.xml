@@ -33967,6 +33967,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="752" label="BROWSER_OPENTAB"/>
   <int value="753" label="MANAGEMENT_CREATEAPPSHORTCUT"/>
   <int value="754" label="WEBVIEW_SHOWCONTEXTMENU"/>
+  <int value="755" label="WEBRTCLOGGINGPRIVATE_STARTRTPDUMP"/>
+  <int value="756" label="WEBRTCLOGGINGPRIVATE_STOPRTPDUMP"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

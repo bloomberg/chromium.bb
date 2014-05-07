@@ -57,7 +57,8 @@
                      DOMString securityOrigin,
                      GenericDoneCallback callback);
 
-    // Uploads the log. Logging must be stopped before this function is called.
+    // Uploads the log and the RTP dumps, if they exist. Logging and RTP dumping
+    // must be stopped before this function is called.
     static void upload(long tabId,
                        DOMString securityOrigin,
                        UploadDoneCallback callback);
@@ -66,5 +67,22 @@
     static void discard(long tabId,
                         DOMString securityOrigin,
                         GenericDoneCallback callback);
+
+    // Starts RTP dumping. If it has already been started for this render
+    // process, the call will be ignored.
+    static void startRtpDump(long tabId,
+                             DOMString securityOrigin,
+                             boolean incoming,
+                             boolean outgoing,
+                             GenericDoneCallback callback);
+
+    // Stops RTP dumping. After stop has finished, the dumps will be
+    // uploaded with the log if upload is called. Otherwise, the dumps will be
+    // discarded.
+    static void stopRtpDump(long tabId,
+                            DOMString securityOrigin,
+                            boolean incoming,
+                            boolean outgoing,
+                            GenericDoneCallback callback);
   };
 };

@@ -29,6 +29,8 @@ namespace SetUploadOnRenderClose =
 namespace Stop = api::webrtc_logging_private::Stop;
 namespace Upload = api::webrtc_logging_private::Upload;
 namespace Discard = api::webrtc_logging_private::Discard;
+namespace StartRtpDump = api::webrtc_logging_private::StartRtpDump;
+namespace StopRtpDump = api::webrtc_logging_private::StopRtpDump;
 
 using api::webrtc_logging_private::MetaDataEntry;
 
@@ -261,6 +263,88 @@ bool WebrtcLoggingPrivateDiscardFunction::RunAsync() {
 
 void WebrtcLoggingPrivateDiscardFunction::DiscardCallback(
     bool success, const std::string& error_message) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!success)
+    SetError(error_message);
+  SendResponse(success);
+}
+
+WebrtcLoggingPrivateStartRtpDumpFunction::
+    WebrtcLoggingPrivateStartRtpDumpFunction() {}
+
+WebrtcLoggingPrivateStartRtpDumpFunction::
+    ~WebrtcLoggingPrivateStartRtpDumpFunction() {}
+
+bool WebrtcLoggingPrivateStartRtpDumpFunction::RunAsync() {
+  scoped_ptr<StartRtpDump::Params> params(StartRtpDump::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  content::RenderProcessHost* host =
+      RphFromTabIdAndSecurityOrigin(params->tab_id, params->security_origin);
+  if (!host)
+    return false;
+
+  scoped_refptr<WebRtcLoggingHandlerHost> webrtc_logging_handler_host(
+      base::UserDataAdapter<WebRtcLoggingHandlerHost>::Get(host, host));
+
+  WebRtcLoggingHandlerHost::GenericDoneCallback callback = base::Bind(
+      &WebrtcLoggingPrivateStartRtpDumpFunction::StartRtpDumpCallback, this);
+
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(&WebRtcLoggingHandlerHost::StartRtpDump,
+                                     webrtc_logging_handler_host,
+                                     params->incoming,
+                                     params->outgoing,
+                                     callback));
+
+  return true;
+}
+
+void WebrtcLoggingPrivateStartRtpDumpFunction::StartRtpDumpCallback(
+    bool success,
+    const std::string& error_message) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!success)
+    SetError(error_message);
+  SendResponse(success);
+}
+
+WebrtcLoggingPrivateStopRtpDumpFunction::
+    WebrtcLoggingPrivateStopRtpDumpFunction() {}
+
+WebrtcLoggingPrivateStopRtpDumpFunction::
+    ~WebrtcLoggingPrivateStopRtpDumpFunction() {}
+
+bool WebrtcLoggingPrivateStopRtpDumpFunction::RunAsync() {
+  scoped_ptr<StopRtpDump::Params> params(StopRtpDump::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  content::RenderProcessHost* host =
+      RphFromTabIdAndSecurityOrigin(params->tab_id, params->security_origin);
+  if (!host)
+    return false;
+
+  scoped_refptr<WebRtcLoggingHandlerHost> webrtc_logging_handler_host(
+      base::UserDataAdapter<WebRtcLoggingHandlerHost>::Get(host, host));
+
+  WebRtcLoggingHandlerHost::GenericDoneCallback callback = base::Bind(
+      &WebrtcLoggingPrivateStopRtpDumpFunction::StopRtpDumpCallback, this);
+
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(&WebRtcLoggingHandlerHost::StopRtpDump,
+                                     webrtc_logging_handler_host,
+                                     params->incoming,
+                                     params->outgoing,
+                                     callback));
+
+  return true;
+}
+
+void WebrtcLoggingPrivateStopRtpDumpFunction::StopRtpDumpCallback(
+    bool success,
+    const std::string& error_message) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!success)
     SetError(error_message);

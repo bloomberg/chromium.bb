@@ -95,4 +95,42 @@ bool WebrtcLoggingPrivateDiscardFunction::RunAsync() {
 void WebrtcLoggingPrivateDiscardFunction::DiscardCallback(
     bool success, const std::string& error_message) {}
 
+WebrtcLoggingPrivateStartRtpDumpFunction::
+    WebrtcLoggingPrivateStartRtpDumpFunction() {
+}
+
+WebrtcLoggingPrivateStartRtpDumpFunction::
+    ~WebrtcLoggingPrivateStartRtpDumpFunction() {
+}
+
+bool WebrtcLoggingPrivateStartRtpDumpFunction::RunAsync() {
+  SetError(kErrorNotSupported);
+  SendResponse(false);
+  return false;
+}
+
+void WebrtcLoggingPrivateStartRtpDumpFunction::StartRtpDumpCallback(
+    bool success,
+    const std::string& error_message) {
+}
+
+WebrtcLoggingPrivateStopRtpDumpFunction::
+    WebrtcLoggingPrivateStopRtpDumpFunction() {
+}
+
+WebrtcLoggingPrivateStopRtpDumpFunction::
+    ~WebrtcLoggingPrivateStopRtpDumpFunction() {
+}
+
+bool WebrtcLoggingPrivateStopRtpDumpFunction::RunAsync() {
+  SetError(kErrorNotSupported);
+  SendResponse(false);
+  return false;
+}
+
+void WebrtcLoggingPrivateStopRtpDumpFunction::StopRtpDumpCallback(
+    bool success,
+    const std::string& error_message) {
+}
+
 }  // namespace extensions

@@ -73,6 +73,22 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
     upload_log_on_render_close_ = should_upload;
   }
 
+  // Starts dumping the RTP headers for the specified direction. Must be called
+  // on the IO thread. |incoming| and |outgoing| specifies which direction(s) of
+  // RTP packets should be dumped. |callback| will be called when starting the
+  // dump is done.
+  void StartRtpDump(bool incoming,
+                    bool outgoing,
+                    const GenericDoneCallback& callback);
+
+  // Stops dumping the RTP headers for the specified direction. Must be called
+  // on the IO thread. |incoming| and |outgoing| specifies which direction(s) of
+  // RTP packet dumping should be stopped. |callback| will be called when
+  // stopping the dump is done.
+  void StopRtpDump(bool incoming,
+                   bool outgoing,
+                   const GenericDoneCallback& callback);
+
  private:
   // States used for protecting from function calls made at non-allowed points
   // in time. For example, StartLogging() is only allowed in CLOSED state.

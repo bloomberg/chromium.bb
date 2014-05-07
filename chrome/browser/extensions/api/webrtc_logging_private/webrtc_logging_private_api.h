@@ -125,6 +125,40 @@ class WebrtcLoggingPrivateDiscardFunction
   void DiscardCallback(bool success, const std::string& error_message);
 };
 
+class WebrtcLoggingPrivateStartRtpDumpFunction
+    : public WebrtcLoggingPrivateTabIdFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webrtcLoggingPrivate.startRtpDump",
+                             WEBRTCLOGGINGPRIVATE_STARTRTPDUMP)
+  WebrtcLoggingPrivateStartRtpDumpFunction();
+
+ private:
+  virtual ~WebrtcLoggingPrivateStartRtpDumpFunction();
+
+  // ExtensionFunction overrides.
+  virtual bool RunAsync() OVERRIDE;
+
+  // Must be called on UI thread.
+  void StartRtpDumpCallback(bool success, const std::string& error_message);
+};
+
+class WebrtcLoggingPrivateStopRtpDumpFunction
+    : public WebrtcLoggingPrivateTabIdFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webrtcLoggingPrivate.stopRtpDump",
+                             WEBRTCLOGGINGPRIVATE_STOPRTPDUMP)
+  WebrtcLoggingPrivateStopRtpDumpFunction();
+
+ private:
+  virtual ~WebrtcLoggingPrivateStopRtpDumpFunction();
+
+  // ExtensionFunction overrides.
+  virtual bool RunAsync() OVERRIDE;
+
+  // Must be called on UI thread.
+  void StopRtpDumpCallback(bool success, const std::string& error_message);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_WEBRTC_LOGGING_PRIVATE_WEBRTC_LOGGING_PRIVATE_API_H_

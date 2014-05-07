@@ -225,6 +225,20 @@ void WebRtcLoggingHandlerHost::LogMessage(const std::string& message) {
           WebRtcLoggingMessageData(base::Time::Now(), message)));
 }
 
+void WebRtcLoggingHandlerHost::StartRtpDump(
+    bool incoming,
+    bool outgoing,
+    const GenericDoneCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+void WebRtcLoggingHandlerHost::StopRtpDump(
+    bool incoming,
+    bool outgoing,
+    const GenericDoneCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
 void WebRtcLoggingHandlerHost::OnChannelClosing() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (logging_state_ == STARTED || logging_state_ == STOPPED) {
