@@ -24,6 +24,7 @@
         'schema_files': [
           'dns.idl',
           'extensions_manifest_types.json',
+          'runtime.json',
           'socket.idl',
           'sockets_tcp.idl',
           'sockets_tcp_server.idl',

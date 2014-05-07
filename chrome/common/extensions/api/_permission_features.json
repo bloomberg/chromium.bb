@@ -752,12 +752,6 @@
       "312745D9BF916161191143F6490085EEA0434997"   // Google Talk debug
     ]
   },
-  // Note: runtime is not actually a permission, but some systems check these
-  // values to verify restrictions.
-  "runtime": {
-    "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
-  },
   "screenlockPrivate": {
     "channel": "stable",
     "extension_types": ["platform_app"],

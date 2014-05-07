@@ -1,21 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_RUNTIME_RUNTIME_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_RUNTIME_RUNTIME_API_H_
+#ifndef EXTENSIONS_BROWSER_API_RUNTIME_RUNTIME_API_H_
+#define EXTENSIONS_BROWSER_API_RUNTIME_RUNTIME_API_H_
 
 #include <string>
 
-#include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chrome/common/extensions/api/runtime.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/api/runtime/runtime_api_delegate.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_function.h"
 #include "extensions/browser/process_manager_observer.h"
 #include "extensions/browser/update_observer.h"
-
-class Profile;
+#include "extensions/common/api/runtime.h"
 
 namespace base {
 class Version;
@@ -26,6 +25,13 @@ class BrowserContext;
 }
 
 namespace extensions {
+
+namespace core_api {
+namespace runtime {
+struct PlatformInfo;
+}
+}
+
 class Extension;
 class ExtensionHost;
 
@@ -47,7 +53,12 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  void MaybeReloadExtension(const std::string& extension_id);
+  void ReloadExtension(const std::string& extension_id);
+  bool CheckForUpdates(const std::string& extension_id,
+                       const RuntimeAPIDelegate::UpdateCheckCallback& callback);
+  void OpenURL(const GURL& uninstall_url);
+  bool GetPlatformInfo(core_api::runtime::PlatformInfo* info);
+  bool RestartDevice(std::string* error_message);
 
  private:
   friend class BrowserContextKeyedAPIFactory<RuntimeAPI>;
@@ -70,22 +81,15 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
   // ProcessManagerObserver implementation:
   virtual void OnBackgroundHostStartup(const Extension* extension) OVERRIDE;
 
+  scoped_ptr<RuntimeAPIDelegate> delegate_;
+
   content::BrowserContext* browser_context_;
 
   // True if we should dispatch the chrome.runtime.onInstalled event with
   // reason "chrome_update" upon loading each extension.
   bool dispatch_chrome_updated_event_;
 
-  // Whether the API registered with the ExtensionService to receive
-  // update notifications.
-  bool registered_for_updates_;
-
   content::NotificationRegistrar registrar_;
-
-  // Map to prevent extensions from getting stuck in reload loops. Maps
-  // extension id to the last time it was reloaded and the number of times
-  // it was reloaded with not enough time in between reloads.
-  std::map<std::string, std::pair<base::TimeTicks, int> > last_reload_time_;
 
   DISALLOW_COPY_AND_ASSIGN(RuntimeAPI);
 };
@@ -104,108 +108,99 @@ class RuntimeEventRouter {
 
   // Dispatches the onUpdateAvailable event to the given extension.
   static void DispatchOnUpdateAvailableEvent(
-      Profile* profile,
+      content::BrowserContext* context,
       const std::string& extension_id,
       const base::DictionaryValue* manifest);
 
   // Dispatches the onBrowserUpdateAvailable event to all extensions.
-  static void DispatchOnBrowserUpdateAvailableEvent(Profile* profile);
+  static void DispatchOnBrowserUpdateAvailableEvent(
+      content::BrowserContext* context);
 
   // Dispatches the onRestartRequired event to the given app.
   static void DispatchOnRestartRequiredEvent(
-      Profile* profile,
+      content::BrowserContext* context,
       const std::string& app_id,
-      api::runtime::OnRestartRequired::Reason reason);
+      core_api::runtime::OnRestartRequired::Reason reason);
 
   // Does any work needed at extension uninstall (e.g. load uninstall url).
-  static void OnExtensionUninstalled(Profile* profile,
+  static void OnExtensionUninstalled(content::BrowserContext* context,
                                      const std::string& extension_id);
 };
 
-class RuntimeGetBackgroundPageFunction : public ChromeAsyncExtensionFunction {
+class RuntimeGetBackgroundPageFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.getBackgroundPage",
                              RUNTIME_GETBACKGROUNDPAGE)
 
  protected:
   virtual ~RuntimeGetBackgroundPageFunction() {}
-  virtual bool RunAsync() OVERRIDE;
+  virtual ResponseAction Run() OVERRIDE;
 
  private:
   void OnPageLoaded(ExtensionHost*);
 };
 
-class RuntimeSetUninstallURLFunction : public ChromeSyncExtensionFunction {
+class RuntimeSetUninstallURLFunction : public UIThreadExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("runtime.setUninstallURL",
-                             RUNTIME_SETUNINSTALLURL)
+  DECLARE_EXTENSION_FUNCTION("runtime.setUninstallURL", RUNTIME_SETUNINSTALLURL)
 
  protected:
   virtual ~RuntimeSetUninstallURLFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual ResponseAction Run() OVERRIDE;
 };
 
-class RuntimeReloadFunction : public ChromeSyncExtensionFunction {
+class RuntimeReloadFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.reload", RUNTIME_RELOAD)
 
  protected:
   virtual ~RuntimeReloadFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual ResponseAction Run() OVERRIDE;
 };
 
-class RuntimeRequestUpdateCheckFunction : public ChromeAsyncExtensionFunction,
-                                          public content::NotificationObserver {
+class RuntimeRequestUpdateCheckFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.requestUpdateCheck",
                              RUNTIME_REQUESTUPDATECHECK)
 
-  RuntimeRequestUpdateCheckFunction();
  protected:
   virtual ~RuntimeRequestUpdateCheckFunction() {}
-  virtual bool RunAsync() OVERRIDE;
+  virtual ResponseAction Run() OVERRIDE;
 
-  // Implements content::NotificationObserver interface.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
  private:
-  void CheckComplete();
-  void ReplyUpdateFound(const std::string& version);
-
-  content::NotificationRegistrar registrar_;
-  bool did_reply_;
+  void CheckComplete(const RuntimeAPIDelegate::UpdateCheckResult& result);
 };
 
-class RuntimeRestartFunction : public ChromeSyncExtensionFunction {
+class RuntimeRestartFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.restart", RUNTIME_RESTART)
 
  protected:
   virtual ~RuntimeRestartFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual ResponseAction Run() OVERRIDE;
 };
 
-class RuntimeGetPlatformInfoFunction : public ChromeSyncExtensionFunction {
+class RuntimeGetPlatformInfoFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.getPlatformInfo",
                              RUNTIME_GETPLATFORMINFO);
+
  protected:
   virtual ~RuntimeGetPlatformInfoFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual ResponseAction Run() OVERRIDE;
 };
 
 class RuntimeGetPackageDirectoryEntryFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.getPackageDirectoryEntry",
                              RUNTIME_GETPACKAGEDIRECTORYENTRY)
 
  protected:
   virtual ~RuntimeGetPackageDirectoryEntryFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual ResponseAction Run() OVERRIDE;
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_RUNTIME_RUNTIME_API_H_
+#endif  // EXTENSIONS_BROWSER_API_RUNTIME_RUNTIME_API_H_

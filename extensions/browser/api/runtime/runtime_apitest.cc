@@ -1,15 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/api/management/management_api.h"
-#include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/api/runtime/runtime_api.h"
 #include "extensions/browser/extension_registry.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -34,9 +34,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeUnprivileged) {
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeUninstallURL) {
   // Auto-confirm the uninstall dialog.
   extensions::ManagementUninstallFunction::SetAutoConfirmForTest(true);
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("runtime").AppendASCII("uninstall_url").
-          AppendASCII("sets_uninstall_url")));
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("runtime")
+                                .AppendASCII("uninstall_url")
+                                .AppendASCII("sets_uninstall_url")));
   ASSERT_TRUE(RunExtensionTest("runtime/uninstall_url")) << message_;
 }
 
@@ -45,9 +45,7 @@ namespace extensions {
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeGetPlatformInfo) {
   scoped_ptr<base::Value> result(
       extension_function_test_utils::RunFunctionAndReturnSingleResult(
-          new RuntimeGetPlatformInfoFunction(),
-          "[]",
-          browser()));
+          new RuntimeGetPlatformInfoFunction(), "[]", browser()));
   ASSERT_TRUE(result.get() != NULL);
   base::DictionaryValue* dict =
       extension_function_test_utils::ToDictionary(result.get());

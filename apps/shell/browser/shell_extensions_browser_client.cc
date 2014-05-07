@@ -7,6 +7,7 @@
 #include "apps/shell/browser/shell_app_sorting.h"
 #include "apps/shell/browser/shell_extension_system_factory.h"
 #include "apps/shell/browser/shell_extension_web_contents_observer.h"
+#include "apps/shell/browser/shell_runtime_api_delegate.h"
 #include "apps/shell/common/api/generated_api.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_factory.h"
@@ -233,6 +234,12 @@ void ShellExtensionsBrowserClient::RegisterExtensionFunctions(
 
   // Register chrome.shell APIs.
   apps::shell_api::GeneratedFunctionRegistry::RegisterAll(registry);
+}
+
+scoped_ptr<RuntimeAPIDelegate>
+ShellExtensionsBrowserClient::CreateRuntimeAPIDelegate(
+    content::BrowserContext* context) const {
+  return scoped_ptr<RuntimeAPIDelegate>(new apps::ShellRuntimeAPIDelegate());
 }
 
 }  // namespace extensions

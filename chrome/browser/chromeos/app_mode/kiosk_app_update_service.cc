@@ -10,11 +10,11 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
-#include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "extensions/browser/api/runtime/runtime_api.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -82,22 +82,22 @@ void KioskAppUpdateService::OnAppUpdateAvailable(
   extensions::RuntimeEventRouter::DispatchOnRestartRequiredEvent(
       profile_,
       app_id_,
-      extensions::api::runtime::OnRestartRequired::REASON_APP_UPDATE);
+      extensions::core_api::runtime::OnRestartRequired::REASON_APP_UPDATE);
 
   StartAppUpdateRestartTimer();
 }
 
 void KioskAppUpdateService::OnRebootScheduled(Reason reason) {
-  extensions::api::runtime::OnRestartRequired::Reason restart_reason =
-      extensions::api::runtime::OnRestartRequired::REASON_NONE;
+  extensions::core_api::runtime::OnRestartRequired::Reason restart_reason =
+      extensions::core_api::runtime::OnRestartRequired::REASON_NONE;
   switch (reason) {
     case REBOOT_REASON_OS_UPDATE:
       restart_reason =
-          extensions::api::runtime::OnRestartRequired::REASON_OS_UPDATE;
+          extensions::core_api::runtime::OnRestartRequired::REASON_OS_UPDATE;
       break;
     case REBOOT_REASON_PERIODIC:
       restart_reason =
-          extensions::api::runtime::OnRestartRequired::REASON_PERIODIC;
+          extensions::core_api::runtime::OnRestartRequired::REASON_PERIODIC;
       break;
     default:
       NOTREACHED() << "Unknown reboot reason=" << reason;

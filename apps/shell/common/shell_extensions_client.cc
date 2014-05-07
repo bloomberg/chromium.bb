@@ -24,7 +24,6 @@
 #include "extensions/common/permissions/permissions_provider.h"
 #include "extensions/common/url_pattern_set.h"
 #include "grit/app_shell_resources.h"
-#include "grit/common_resources.h"
 #include "grit/extensions_resources.h"
 
 using extensions::APIPermissionInfo;
@@ -129,18 +128,14 @@ scoped_ptr<FeatureProvider> ShellExtensionsClient::CreateFeatureProvider(
   if (name == "api") {
     source.LoadJSON(IDR_EXTENSION_API_FEATURES);
     source.LoadJSON(IDR_SHELL_EXTENSION_API_FEATURES);
-    // TODO(yoz): Don't include Chrome resources.
-    source.LoadJSON(IDR_CHROME_EXTENSION_API_FEATURES);
     return scoped_ptr<FeatureProvider>(new BaseFeatureProvider(
         source.dictionary(), CreateFeature<extensions::APIFeature>));
   } else if (name == "manifest") {
     source.LoadJSON(IDR_EXTENSION_MANIFEST_FEATURES);
-    source.LoadJSON(IDR_CHROME_EXTENSION_MANIFEST_FEATURES);
     return scoped_ptr<FeatureProvider>(new BaseFeatureProvider(
         source.dictionary(), CreateFeature<extensions::ManifestFeature>));
   } else if (name == "permission") {
     source.LoadJSON(IDR_EXTENSION_PERMISSION_FEATURES);
-    source.LoadJSON(IDR_CHROME_EXTENSION_PERMISSION_FEATURES);
     return scoped_ptr<FeatureProvider>(new BaseFeatureProvider(
         source.dictionary(), CreateFeature<extensions::PermissionFeature>));
   } else {

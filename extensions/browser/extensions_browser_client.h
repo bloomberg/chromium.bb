@@ -40,6 +40,7 @@ class ExtensionPrefsObserver;
 class ExtensionSystem;
 class ExtensionSystemProvider;
 class InfoMap;
+class RuntimeAPIDelegate;
 
 // Interface to allow the extensions module to make browser-process-specific
 // queries of the embedder. Should be Set() once in the browser process.
@@ -165,6 +166,12 @@ class ExtensionsBrowserClient {
   // Registers extension functions not belonging to the core extensions APIs.
   virtual void RegisterExtensionFunctions(
       ExtensionFunctionRegistry* registry) const = 0;
+
+  // Creates a RuntimeAPIDelegate responsible for handling extensions
+  // management-related events such as update and installation on behalf of the
+  // core runtime API implementation.
+  virtual scoped_ptr<RuntimeAPIDelegate> CreateRuntimeAPIDelegate(
+      content::BrowserContext* context) const = 0;
 
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();

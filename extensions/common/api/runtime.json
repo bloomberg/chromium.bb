@@ -1,7 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Note: Many of these functions and events are implemented by hand and should
+// not elicit any code generation from the schema compiler. These items are
+// marked "nocompile."
 [
   {
     "namespace": "runtime",
@@ -29,12 +32,35 @@
       {
         "id": "MessageSender",
         "type": "object",
+        "nocompile": true,
         "description": "An object containing information about the script context that sent a message or request.",
         "properties": {
           "tab": {"$ref": "tabs.Tab", "optional": true, "description": "The $(ref:tabs.Tab) which opened the connection, if any. This property will <strong>only</strong> be present when the connection was opened from a tab (including content scripts), and <strong>only</strong> if the receiver is an extension, not an app."},
           "id": {"type": "string", "optional": true, "description": "The ID of the extension or app that opened the connection, if any."},
           "url": {"type": "string", "optional": true, "description": "The URL of the page or frame that opened the connection, if any. This property will <strong>only</strong> be present when the connection was opened from a tab or content script."},
           "tlsChannelId": {"type": "string", "optional": true, "description": "The TLS channel ID of the web page that opened the connection, if requested by the extension or app, and if available."}
+        }
+      },
+      {
+        "id": "PlatformInfo",
+        "type": "object",
+        "description": "An object containing information about the current platform.",
+        "properties": {
+          "os": {
+            "type": "string",
+            "description": "The operating system chrome is running on.",
+            "enum": ["mac", "win", "android", "cros", "linux", "openbsd"]
+          },
+          "arch": {
+            "type": "string",
+            "enum": ["arm", "x86-32", "x86-64"],
+            "description": "The machine's processor architecture."
+          },
+          "nacl_arch" : {
+            "description": "The native client architecture. This may be different from arch on some platforms.",
+            "type": "string",
+            "enum": ["arm", "x86-32", "x86-64"]
+          }
         }
       }
     ],
@@ -283,24 +309,7 @@
             "parameters": [
               {
                 "name": "platformInfo",
-                "type": "object",
-                "properties": {
-                  "os": {
-                    "type": "string",
-                    "description": "The operating system chrome is running on.",
-                    "enum": ["mac", "win", "android", "cros", "linux", "openbsd"]
-                  },
-                  "arch": {
-                    "type": "string",
-                    "enum": ["arm", "x86-32", "x86-64"],
-                    "description": "The machine's processor architecture."
-                  },
-                  "nacl_arch" : {
-                    "description": "The native client architecture. This may be different from arch on some platforms.",
-                    "type": "string",
-                    "enum": ["arm", "x86-32", "x86-64"]
-                  }
-                }
+                "$ref": "PlatformInfo"
               }
             ]
           }
@@ -423,6 +432,7 @@
         "options": {
           "unmanaged": true
         },
+        "nocompile": true,
         "description": "Fired when a message is sent from either an extension process or a content script.",
         "parameters": [
           {"name": "message", "type": "any", "optional": true, "description": "The message sent by the calling script."},
@@ -441,6 +451,7 @@
         "options": {
           "unmanaged": true
         },
+        "nocompile": true,
         "description": "Fired when a message is sent from another extension/app. Cannot be used in a content script.",
         "parameters": [
           {"name": "message", "type": "any", "optional": true, "description": "The message sent by the calling script."},

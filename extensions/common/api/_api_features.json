@@ -14,6 +14,49 @@
     "dependencies": ["permission:dns"],
     "contexts": ["blessed_extension"]
   },
+  "runtime": {
+    "channel": "stable",
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
+    "contexts": ["blessed_extension"]
+  },
+  "runtime.getManifest": {
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+  },
+  "runtime.connect": {
+    "contexts": "all",
+    "matches": ["<all_urls>"]
+  },
+  "runtime.getURL": {
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+  },
+  "runtime.id": {
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+  },
+  "runtime.lastError": {
+    "contexts": "all",
+    "extension_types": "all",
+    "matches": ["<all_urls>"]
+  },
+  "runtime.onConnect": {
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+  },
+  "runtime.onMessage": {
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+  },
+  "runtime.reload": {
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+  },
+  "runtime.requestUpdateCheck": {
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+  },
+  "runtime.sendMessage": {
+    "contexts": "all",
+    "matches": ["<all_urls>"]
+  },
+  "runtime.setUninstallURL": {
+    "channel": "dev",
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+  },
   "socket": {
     "dependencies": ["permission:socket"],
     "contexts": ["blessed_extension"]
@@ -39,6 +82,16 @@
     "channel": "stable",
     "extension_types": "all",
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+  },
+  "types": {
+    "channel": "stable",
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
+    "contexts": ["blessed_extension"]
+  },
+  "types.private": {
+    "channel": "dev",
+    "extension_types": ["extension"],
+    "location": "component"
   },
   "usb": {
     "dependencies": ["permission:usb"],

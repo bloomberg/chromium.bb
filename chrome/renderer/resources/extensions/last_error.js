@@ -28,7 +28,7 @@ function set(name, message, stack, targetChrome) {
   clear(targetChrome);  // in case somebody has set a sneaky getter/setter
 
   var errorObject = { message: message };
-  if (GetAvailability('extension.lastError').is_available)
+  if (targetChrome && targetChrome.extension)
     targetChrome.extension.lastError = errorObject;
 
   assertRuntimeIsAvailable();
@@ -64,8 +64,8 @@ function clear(targetChrome) {
   if (!targetChrome)
     throw new Error('No target chrome to clear error');
 
-  if (GetAvailability('extension.lastError').is_available)
-    delete targetChrome.extension.lastError;
+  if (targetChrome && targetChrome.extension)
+   delete targetChrome.extension.lastError;
 
   assertRuntimeIsAvailable();
   delete targetChrome.runtime.lastError;

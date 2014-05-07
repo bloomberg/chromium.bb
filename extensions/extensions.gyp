@@ -255,6 +255,10 @@
         'browser/api/dns/host_resolver_wrapper.h',
         'browser/api/extensions_api_client.cc',
         'browser/api/extensions_api_client.h',
+        'browser/api/runtime/runtime_api.cc',
+        'browser/api/runtime/runtime_api.h',
+        'browser/api/runtime/runtime_api_delegate.cc',
+        'browser/api/runtime/runtime_api_delegate.h',
         'browser/api/socket/socket.cc',
         'browser/api/socket/socket.h',
         'browser/api/socket/socket_api.cc',
@@ -407,6 +411,8 @@
           # when enable_extensions==0.
           'sources/': [
             ['exclude', '^browser/api/'],
+            ['include', '^browser/api/runtime/runtime_api.cc'],
+            ['include', '^browser/api/runtime/runtime_api_delegate.cc'],
           ],
           'sources!': [
             'browser/browser_context_keyed_service_factories.cc',
@@ -549,17 +555,21 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
+        'common/api/api.gyp:extensions_api',
         'extensions_browser',
         'extensions_common',
       ],
       'include_dirs': [
         '..',
+        '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'sources': [
         'browser/test_extensions_browser_client.cc',
         'browser/test_extensions_browser_client.h',
         'browser/test_management_policy.cc',
         'browser/test_management_policy.h',
+        'browser/test_runtime_api_delegate.cc',
+        'browser/test_runtime_api_delegate.h',
         'common/extension_builder.cc',
         'common/extension_builder.h',
         'common/test_util.cc',

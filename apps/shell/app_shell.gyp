@@ -130,6 +130,8 @@
         'browser/shell_extensions_browser_client.h',
         'browser/shell_network_controller_chromeos.cc',
         'browser/shell_network_controller_chromeos.h',
+        'browser/shell_runtime_api_delegate.cc',
+        'browser/shell_runtime_api_delegate.h',
         'common/shell_app_runtime.cc',
         'common/shell_app_runtime.h',
         'common/shell_content_client.cc',
@@ -149,6 +151,7 @@
       'conditions': [
         ['chromeos==1', {
           'dependencies': [
+            '<(DEPTH)/chromeos/chromeos.gyp:chromeos',
             '<(DEPTH)/ui/chromeos/ui_chromeos.gyp:ui_chromeos',
           ],
         }],

@@ -26,16 +26,21 @@ specific_include_rules = {
 
     # Temporarily allowed testing includes.  See above.
     # TODO(jamescook): Remove these. http://crbug.com/162530
+    "+chrome/browser/apps/app_browsertest_util.h",
+    "+chrome/browser/extensions/api/management/management_api.h",
     "+chrome/browser/extensions/api/permissions/permissions_api.h",
     "+chrome/browser/extensions/extension_api_unittest.h",
     "+chrome/browser/extensions/extension_apitest.h",
+    "+chrome/browser/extensions/extension_function_test_utils.h",
     "+chrome/browser/extensions/extension_service_unittest.h",
+    "+chrome/browser/extensions/test_extension_dir.h",
     "+chrome/browser/extensions/test_extension_system.h",
     "+chrome/browser/ui/browser.h",
     "+chrome/common/chrome_paths.h",
     "+chrome/common/extensions/features/feature_channel.h",
     "+chrome/common/extensions/manifest_tests/extension_manifest_test.h",
     "+chrome/test/base/testing_profile.h",
+    "+chrome/test/base/ui_test_utils.h",
   ],
   "(simple|complex)_feature_unittest\.cc|base_feature_provider_unittest\.cc": [
     "+chrome/common/extensions/features/chrome_channel_feature_filter.h",

@@ -5,6 +5,7 @@
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 
 #include "extensions/browser/api/api_resource_manager.h"
+#include "extensions/browser/api/runtime/runtime_api.h"
 #include "extensions/browser/api/socket/socket.h"
 #include "extensions/browser/api/socket/tcp_socket.h"
 #include "extensions/browser/api/socket/udp_socket.h"
@@ -26,9 +27,10 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   core_api::TCPServerSocketEventDispatcher::GetFactoryInstance();
   core_api::TCPSocketEventDispatcher::GetFactoryInstance();
   core_api::UDPSocketEventDispatcher::GetFactoryInstance();
-  extensions::ExtensionPrefsFactory::GetInstance();
-  extensions::RendererStartupHelperFactory::GetInstance();
-  extensions::StorageFrontend::GetFactoryInstance();
+  ExtensionPrefsFactory::GetInstance();
+  RendererStartupHelperFactory::GetInstance();
+  RuntimeAPI::GetFactoryInstance();
+  StorageFrontend::GetFactoryInstance();
 }
 
 }  // namespace extensions

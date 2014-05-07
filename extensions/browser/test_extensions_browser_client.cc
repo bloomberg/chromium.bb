@@ -7,6 +7,7 @@
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_host_delegate.h"
+#include "extensions/browser/test_runtime_api_delegate.h"
 
 using content::BrowserContext;
 
@@ -154,5 +155,11 @@ TestExtensionsBrowserClient::GetExtensionSystemFactory() {
 
 void TestExtensionsBrowserClient::RegisterExtensionFunctions(
     ExtensionFunctionRegistry* registry) const {}
+
+scoped_ptr<RuntimeAPIDelegate>
+TestExtensionsBrowserClient::CreateRuntimeAPIDelegate(
+    content::BrowserContext* context) const {
+  return scoped_ptr<RuntimeAPIDelegate>(new TestRuntimeAPIDelegate());
+}
 
 }  // namespace extensions
