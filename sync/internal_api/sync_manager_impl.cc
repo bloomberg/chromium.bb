@@ -1126,6 +1126,25 @@ ScopedVector<syncer::ProtocolEvent>
   return protocol_event_buffer_.GetBufferedProtocolEvents();
 }
 
+void SyncManagerImpl::RegisterDirectoryTypeDebugInfoObserver(
+    syncer::TypeDebugInfoObserver* observer) {
+  model_type_registry_->RegisterDirectoryTypeDebugInfoObserver(observer);
+}
+
+void SyncManagerImpl::UnregisterDirectoryTypeDebugInfoObserver(
+    syncer::TypeDebugInfoObserver* observer) {
+  model_type_registry_->UnregisterDirectoryTypeDebugInfoObserver(observer);
+}
+
+bool SyncManagerImpl::HasDirectoryTypeDebugInfoObserver(
+    syncer::TypeDebugInfoObserver* observer) {
+  return model_type_registry_->HasDirectoryTypeDebugInfoObserver(observer);
+}
+
+void SyncManagerImpl::RequestEmitDebugInfo() {
+  model_type_registry_->RequestEmitDebugInfo();
+}
+
 // static.
 int SyncManagerImpl::GetDefaultNudgeDelay() {
   return kDefaultNudgeDelayMilliseconds;

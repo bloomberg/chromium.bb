@@ -16,6 +16,9 @@ namespace syncer {
 class DataTypeDebugInfoListener;
 class JsBackend;
 class ProtocolEvent;
+struct CommitCounters;
+struct StatusCounters;
+struct UpdateCounters;
 }  // namespace syncer
 
 namespace sync_pb {
@@ -61,6 +64,30 @@ class SyncFrontend {
   // It's disabld by default to avoid copying data across threads when no one
   // is listening for it.
   virtual void OnProtocolEvent(const syncer::ProtocolEvent& event) = 0;
+
+  // Called when we receive an updated commit counter for a directory type.
+  //
+  // Disabled by default.  Enable by calling
+  // EnableDirectoryTypeDebugInfoForwarding() on the backend.
+  virtual void OnDirectoryTypeCommitCounterUpdated(
+      syncer::ModelType type,
+      const syncer::CommitCounters& counters) = 0;
+
+  // Called when we receive an updated update counter for a directory type.
+  //
+  // Disabled by default.  Enable by calling
+  // EnableDirectoryTypeDebugInfoForwarding() on the backend.
+  virtual void OnDirectoryTypeUpdateCounterUpdated(
+      syncer::ModelType type,
+      const syncer::UpdateCounters& counters) = 0;
+
+  // Called when we receive an updated status counter for a directory type.
+  //
+  // Disabled by default.  Enable by calling
+  // EnableDirectoryTypeDebugInfoForwarding() on the backend.
+  virtual void OnDirectoryTypeStatusCounterUpdated(
+      syncer::ModelType type,
+      const syncer::StatusCounters& counters) = 0;
 
   // The status of the connection to the sync server has changed.
   virtual void OnConnectionStatusChange(

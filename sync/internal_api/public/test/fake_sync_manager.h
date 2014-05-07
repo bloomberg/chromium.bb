@@ -130,6 +130,13 @@ class FakeSyncManager : public SyncManager {
   virtual scoped_ptr<base::ListValue> GetAllNodesForType(
       syncer::ModelType type) OVERRIDE;
   virtual void RefreshTypes(ModelTypeSet types) OVERRIDE;
+  virtual void RegisterDirectoryTypeDebugInfoObserver(
+      syncer::TypeDebugInfoObserver* observer) OVERRIDE;
+  virtual void UnregisterDirectoryTypeDebugInfoObserver(
+      syncer::TypeDebugInfoObserver* observer) OVERRIDE;
+  virtual bool HasDirectoryTypeDebugInfoObserver(
+      syncer::TypeDebugInfoObserver* observer) OVERRIDE;
+  virtual void RequestEmitDebugInfo() OVERRIDE;
 
  private:
   scoped_refptr<base::SequencedTaskRunner> sync_task_runner_;

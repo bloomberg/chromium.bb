@@ -118,6 +118,10 @@ void SyncBackendHostMock::RequestBufferedProtocolEventsAndEnableForwarding() {}
 
 void SyncBackendHostMock::DisableProtocolEventForwarding() {}
 
+void SyncBackendHostMock::EnableDirectoryTypeDebugInfoForwarding() {}
+
+void SyncBackendHostMock::DisableDirectoryTypeDebugInfoForwarding() {}
+
 void SyncBackendHostMock::GetAllNodesForTypes(
     syncer::ModelTypeSet types,
     base::Callback<void(const std::vector<syncer::ModelType>& type,

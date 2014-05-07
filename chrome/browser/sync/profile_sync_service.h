@@ -72,7 +72,10 @@ class SyncSessionSnapshot;
 namespace syncer {
 class BaseTransaction;
 class NetworkResources;
+struct CommitCounters;
+struct StatusCounters;
 struct SyncCredentials;
+struct UpdateCounters;
 struct UserShare;
 }  // namespace syncer
 
@@ -276,6 +279,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   void RemoveProtocolEventObserver(
       browser_sync::ProtocolEventObserver* observer);
 
+  void AddTypeDebugInfoObserver(syncer::TypeDebugInfoObserver* observer);
+  void RemoveTypeDebugInfoObserver(syncer::TypeDebugInfoObserver* observer);
+
   // Asynchronously fetches base::Value representations of all sync nodes and
   // returns them to the specified callback on this thread.
   //
@@ -385,6 +391,15 @@ class ProfileSyncService : public ProfileSyncServiceBase,
       bool success) OVERRIDE;
   virtual void OnSyncCycleCompleted() OVERRIDE;
   virtual void OnProtocolEvent(const syncer::ProtocolEvent& event) OVERRIDE;
+  virtual void OnDirectoryTypeCommitCounterUpdated(
+      syncer::ModelType type,
+      const syncer::CommitCounters& counters) OVERRIDE;
+  virtual void OnDirectoryTypeUpdateCounterUpdated(
+      syncer::ModelType type,
+      const syncer::UpdateCounters& counters) OVERRIDE;
+  virtual void OnDirectoryTypeStatusCounterUpdated(
+      syncer::ModelType type,
+      const syncer::StatusCounters& counters) OVERRIDE;
   virtual void OnSyncConfigureRetry() OVERRIDE;
   virtual void OnConnectionStatusChange(
       syncer::ConnectionStatus status) OVERRIDE;
@@ -950,6 +965,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   ObserverList<ProfileSyncServiceBase::Observer> observers_;
   ObserverList<browser_sync::ProtocolEventObserver> protocol_event_observers_;
+  ObserverList<syncer::TypeDebugInfoObserver> type_debug_info_observers_;
 
   syncer::SyncJsController sync_js_controller_;
 

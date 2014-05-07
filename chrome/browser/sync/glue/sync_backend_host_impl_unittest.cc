@@ -32,6 +32,9 @@
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/http_bridge_network_resources.h"
 #include "sync/internal_api/public/network_resources.h"
+#include "sync/internal_api/public/sessions/commit_counters.h"
+#include "sync/internal_api/public/sessions/status_counters.h"
+#include "sync/internal_api/public/sessions/update_counters.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
 #include "sync/internal_api/public/test/fake_sync_manager.h"
 #include "sync/internal_api/public/util/experiments.h"
@@ -87,6 +90,12 @@ class MockSyncFrontend : public SyncFrontend {
   MOCK_METHOD0(OnEncryptionComplete, void());
   MOCK_METHOD1(OnMigrationNeededForTypes, void(syncer::ModelTypeSet));
   MOCK_METHOD1(OnProtocolEvent, void(const syncer::ProtocolEvent&));
+  MOCK_METHOD2(OnDirectoryTypeCommitCounterUpdated,
+               void(syncer::ModelType, const syncer::CommitCounters&));
+  MOCK_METHOD2(OnDirectoryTypeUpdateCounterUpdated,
+               void(syncer::ModelType, const syncer::UpdateCounters&));
+  MOCK_METHOD2(OnDirectoryTypeStatusCounterUpdated,
+               void(syncer::ModelType, const syncer::StatusCounters&));
   MOCK_METHOD1(OnExperimentsChanged,
       void(const syncer::Experiments&));
   MOCK_METHOD1(OnActionableError,

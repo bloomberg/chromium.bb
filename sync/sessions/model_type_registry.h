@@ -73,6 +73,14 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry {
   CommitContributorMap* commit_contributor_map();
   DirectoryTypeDebugInfoEmitterMap* directory_type_debug_info_emitter_map();
 
+  void RegisterDirectoryTypeDebugInfoObserver(
+      syncer::TypeDebugInfoObserver* observer);
+  void UnregisterDirectoryTypeDebugInfoObserver(
+      syncer::TypeDebugInfoObserver* observer);
+  bool HasDirectoryTypeDebugInfoObserver(
+      syncer::TypeDebugInfoObserver* observer);
+  void RequestEmitDebugInfo();
+
  private:
   ModelTypeSet GetEnabledNonBlockingTypes() const;
   ModelTypeSet GetEnabledDirectoryTypes() const;

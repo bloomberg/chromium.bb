@@ -15,7 +15,10 @@
 #include "sync/internal_api/public/events/protocol_event.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/internal_components_factory.h"
+#include "sync/internal_api/public/sessions/commit_counters.h"
+#include "sync/internal_api/public/sessions/status_counters.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
+#include "sync/internal_api/public/sessions/update_counters.h"
 #include "sync/internal_api/public/sync_core_proxy.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
@@ -300,6 +303,33 @@ void SyncBackendHostCore::OnPassphraseTypeChanged(
       type, passphrase_time);
 }
 
+void SyncBackendHostCore::OnCommitCountersUpdated(
+    syncer::ModelType type,
+    const syncer::CommitCounters& counters) {
+  host_.Call(
+      FROM_HERE,
+      &SyncBackendHostImpl::HandleDirectoryCommitCountersUpdatedOnFrontendLoop,
+      type, counters);
+}
+
+void SyncBackendHostCore::OnUpdateCountersUpdated(
+    syncer::ModelType type,
+    const syncer::UpdateCounters& counters) {
+  host_.Call(
+      FROM_HERE,
+      &SyncBackendHostImpl::HandleDirectoryUpdateCountersUpdatedOnFrontendLoop,
+      type, counters);
+}
+
+void SyncBackendHostCore::OnStatusCountersUpdated(
+    syncer::ModelType type,
+    const syncer::StatusCounters& counters) {
+  host_.Call(
+      FROM_HERE,
+      &SyncBackendHostImpl::HandleDirectoryStatusCountersUpdatedOnFrontendLoop,
+      type, counters);
+}
+
 void SyncBackendHostCore::OnActionableError(
     const syncer::SyncProtocolError& sync_error) {
   if (!sync_loop_)
@@ -548,6 +578,7 @@ void SyncBackendHostCore::DoDestroySyncManager() {
   DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   if (sync_manager_) {
     save_changes_timer_.reset();
+    DisableDirectoryTypeDebugInfoForwarding();
     sync_manager_->RemoveObserver(this);
     sync_manager_->ShutdownOnSyncThread();
     sync_manager_.reset();
@@ -634,6 +665,19 @@ void SyncBackendHostCore::SendBufferedProtocolEventsAndEnableForwarding() {
 
 void SyncBackendHostCore::DisableProtocolEventForwarding() {
   forward_protocol_events_ = false;
+}
+
+void SyncBackendHostCore::EnableDirectoryTypeDebugInfoForwarding() {
+  DCHECK(sync_manager_);
+  if (!sync_manager_->HasDirectoryTypeDebugInfoObserver(this))
+    sync_manager_->RegisterDirectoryTypeDebugInfoObserver(this);
+  sync_manager_->RequestEmitDebugInfo();
+}
+
+void SyncBackendHostCore::DisableDirectoryTypeDebugInfoForwarding() {
+  DCHECK(sync_manager_);
+  if (sync_manager_->HasDirectoryTypeDebugInfoObserver(this))
+    sync_manager_->UnregisterDirectoryTypeDebugInfoObserver(this);
 }
 
 void SyncBackendHostCore::DeleteSyncDataFolder() {

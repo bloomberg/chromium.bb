@@ -500,6 +500,24 @@ void SyncBackendHostImpl::DisableProtocolEventForwarding() {
           core_));
 }
 
+void SyncBackendHostImpl::EnableDirectoryTypeDebugInfoForwarding() {
+  DCHECK(initialized());
+  registrar_->sync_thread()->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &SyncBackendHostCore::EnableDirectoryTypeDebugInfoForwarding,
+          core_));
+}
+
+void SyncBackendHostImpl::DisableDirectoryTypeDebugInfoForwarding() {
+  DCHECK(initialized());
+  registrar_->sync_thread()->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &SyncBackendHostCore::DisableDirectoryTypeDebugInfoForwarding,
+          core_));
+}
+
 void SyncBackendHostImpl::GetAllNodesForTypes(
     syncer::ModelTypeSet types,
     base::Callback<void(const std::vector<syncer::ModelType>&,
@@ -794,6 +812,30 @@ void SyncBackendHostImpl::HandleProtocolEventOnFrontendLoop(
   if (!frontend_)
     return;
   frontend_->OnProtocolEvent(*scoped_event);
+}
+
+void SyncBackendHostImpl::HandleDirectoryCommitCountersUpdatedOnFrontendLoop(
+    syncer::ModelType type,
+    const syncer::CommitCounters& counters) {
+  if (!frontend_)
+    return;
+  frontend_->OnDirectoryTypeCommitCounterUpdated(type, counters);
+}
+
+void SyncBackendHostImpl::HandleDirectoryUpdateCountersUpdatedOnFrontendLoop(
+    syncer::ModelType type,
+    const syncer::UpdateCounters& counters) {
+  if (!frontend_)
+    return;
+  frontend_->OnDirectoryTypeUpdateCounterUpdated(type, counters);
+}
+
+void SyncBackendHostImpl::HandleDirectoryStatusCountersUpdatedOnFrontendLoop(
+    syncer::ModelType type,
+    const syncer::StatusCounters& counters) {
+  if (!frontend_)
+    return;
+  frontend_->OnDirectoryTypeStatusCounterUpdated(type, counters);
 }
 
 base::MessageLoop* SyncBackendHostImpl::GetSyncLoopForTesting() {

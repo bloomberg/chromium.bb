@@ -48,6 +48,14 @@ class SYNC_EXPORT_PRIVATE SyncBackupManager : public SyncRollbackManagerBase {
       const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
       syncable::BaseTransaction* trans) OVERRIDE;
 
+  virtual void RegisterDirectoryTypeDebugInfoObserver(
+      syncer::TypeDebugInfoObserver* observer) OVERRIDE;
+  virtual void UnregisterDirectoryTypeDebugInfoObserver(
+      syncer::TypeDebugInfoObserver* observer) OVERRIDE;
+  virtual bool HasDirectoryTypeDebugInfoObserver(
+      syncer::TypeDebugInfoObserver* observer) OVERRIDE;
+  virtual void RequestEmitDebugInfo() OVERRIDE;
+
  private:
   // Replaces local IDs with server IDs and clear unsynced bit of modified
   // entries.

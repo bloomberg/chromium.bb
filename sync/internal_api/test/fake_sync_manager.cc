@@ -253,6 +253,19 @@ void FakeSyncManager::RefreshTypes(ModelTypeSet types) {
   last_refresh_request_types_ = types;
 }
 
+void FakeSyncManager::RegisterDirectoryTypeDebugInfoObserver(
+    syncer::TypeDebugInfoObserver* observer) {}
+
+void FakeSyncManager::UnregisterDirectoryTypeDebugInfoObserver(
+    syncer::TypeDebugInfoObserver* observer) {}
+
+bool FakeSyncManager::HasDirectoryTypeDebugInfoObserver(
+    syncer::TypeDebugInfoObserver* observer) {
+  return false;
+}
+
+void FakeSyncManager::RequestEmitDebugInfo() {}
+
 void FakeSyncManager::OnIncomingInvalidation(
       const ObjectIdInvalidationMap& invalidation_map) {
   // Do nothing.

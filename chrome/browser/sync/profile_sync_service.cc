@@ -77,6 +77,7 @@
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/http_bridge_network_resources.h"
 #include "sync/internal_api/public/network_resources.h"
+#include "sync/internal_api/public/sessions/type_debug_info_observer.h"
 #include "sync/internal_api/public/sync_core_proxy.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/internal_api/public/util/experiments.h"
@@ -554,6 +555,30 @@ void ProfileSyncService::OnProtocolEvent(
                     OnProtocolEvent(event));
 }
 
+void ProfileSyncService::OnDirectoryTypeCommitCounterUpdated(
+    syncer::ModelType type,
+    const syncer::CommitCounters& counters) {
+  FOR_EACH_OBSERVER(syncer::TypeDebugInfoObserver,
+                    type_debug_info_observers_,
+                    OnCommitCountersUpdated(type, counters));
+}
+
+void ProfileSyncService::OnDirectoryTypeUpdateCounterUpdated(
+    syncer::ModelType type,
+    const syncer::UpdateCounters& counters) {
+  FOR_EACH_OBSERVER(syncer::TypeDebugInfoObserver,
+                    type_debug_info_observers_,
+                    OnUpdateCountersUpdated(type, counters));
+}
+
+void ProfileSyncService::OnDirectoryTypeStatusCounterUpdated(
+    syncer::ModelType type,
+    const syncer::StatusCounters& counters) {
+  FOR_EACH_OBSERVER(syncer::TypeDebugInfoObserver,
+                    type_debug_info_observers_,
+                    OnStatusCountersUpdated(type, counters));
+}
+
 void ProfileSyncService::OnDataTypeRequestsSyncStartup(
     syncer::ModelType type) {
   DCHECK(syncer::UserTypes().Has(type));
@@ -934,6 +959,10 @@ void ProfileSyncService::OnBackendInitialized(
 
   non_blocking_data_type_manager_.ConnectSyncBackend(
       backend_->GetSyncCoreProxy());
+
+  if (type_debug_info_observers_.might_have_observers()) {
+    backend_->EnableDirectoryTypeDebugInfoForwarding();
+  }
 
   // If we have a cached passphrase use it to decrypt/encrypt data now that the
   // backend is initialized. We want to call this before notifying observers in
@@ -2103,6 +2132,22 @@ void ProfileSyncService::RemoveProtocolEventObserver(
   protocol_event_observers_.RemoveObserver(observer);
   if (backend_ && !protocol_event_observers_.might_have_observers()) {
     backend_->DisableProtocolEventForwarding();
+  }
+}
+
+void ProfileSyncService::AddTypeDebugInfoObserver(
+    syncer::TypeDebugInfoObserver* type_debug_info_observer) {
+  type_debug_info_observers_.AddObserver(type_debug_info_observer);
+  if (type_debug_info_observers_.might_have_observers() && backend_) {
+    backend_->EnableDirectoryTypeDebugInfoForwarding();
+  }
+}
+
+void ProfileSyncService::RemoveTypeDebugInfoObserver(
+    syncer::TypeDebugInfoObserver* type_debug_info_observer) {
+  type_debug_info_observers_.RemoveObserver(type_debug_info_observer);
+  if (!type_debug_info_observers_.might_have_observers() && backend_) {
+    backend_->DisableDirectoryTypeDebugInfoForwarding();
   }
 }
 

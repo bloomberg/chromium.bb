@@ -109,4 +109,15 @@ void SyncBackupManager::NormalizeEntries() {
   unsynced_.clear();
 }
 
+void SyncBackupManager::RegisterDirectoryTypeDebugInfoObserver(
+    syncer::TypeDebugInfoObserver* observer) {}
+
+void SyncBackupManager::UnregisterDirectoryTypeDebugInfoObserver(
+    syncer::TypeDebugInfoObserver* observer) {}
+
+bool SyncBackupManager::HasDirectoryTypeDebugInfoObserver(
+    syncer::TypeDebugInfoObserver* observer) { return false; }
+
+void SyncBackupManager::RequestEmitDebugInfo() {}
+
 }  // namespace syncer

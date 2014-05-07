@@ -319,4 +319,15 @@ void SyncRollbackManagerBase::InitBookmarkFolder(const std::string& folder) {
   entry.PutSpecifics(specifics);
 }
 
+void SyncRollbackManagerBase::RegisterDirectoryTypeDebugInfoObserver(
+    syncer::TypeDebugInfoObserver* observer) {}
+
+void SyncRollbackManagerBase::UnregisterDirectoryTypeDebugInfoObserver(
+    syncer::TypeDebugInfoObserver* observer) {}
+
+bool SyncRollbackManagerBase::HasDirectoryTypeDebugInfoObserver(
+    syncer::TypeDebugInfoObserver* observer) { return false; }
+
+void SyncRollbackManagerBase::RequestEmitDebugInfo() {}
+
 }  // namespace syncer

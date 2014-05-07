@@ -21,6 +21,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
+#include "sync/internal_api/public/sessions/type_debug_info_observer.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
@@ -127,6 +128,8 @@ class SyncBackendHostImpl
   virtual SyncedDeviceTracker* GetSyncedDeviceTracker() const OVERRIDE;
   virtual void RequestBufferedProtocolEventsAndEnableForwarding() OVERRIDE;
   virtual void DisableProtocolEventForwarding() OVERRIDE;
+  virtual void EnableDirectoryTypeDebugInfoForwarding() OVERRIDE;
+  virtual void DisableDirectoryTypeDebugInfoForwarding() OVERRIDE;
   virtual void GetAllNodesForTypes(
       syncer::ModelTypeSet types,
       base::Callback<void(const std::vector<syncer::ModelType>&,
@@ -182,6 +185,27 @@ class SyncBackendHostImpl
   // call to SetForwardProtocolEvents() explicitly requested that we start
   // forwarding these events.
   void HandleProtocolEventOnFrontendLoop(syncer::ProtocolEvent* event);
+
+  // Forwards a directory commit counter update to the frontend loop.  Will not
+  // be called unless a call to EnableDirectoryTypeDebugInfoForwarding()
+  // explicitly requested that we start forwarding these events.
+  void HandleDirectoryCommitCountersUpdatedOnFrontendLoop(
+      syncer::ModelType type,
+      const syncer::CommitCounters& counters);
+
+  // Forwards a directory update counter update to the frontend loop.  Will not
+  // be called unless a call to EnableDirectoryTypeDebugInfoForwarding()
+  // explicitly requested that we start forwarding these events.
+  void HandleDirectoryUpdateCountersUpdatedOnFrontendLoop(
+      syncer::ModelType type,
+      const syncer::UpdateCounters& counters);
+
+  // Forwards a directory status counter update to the frontend loop.  Will not
+  // be called unless a call to EnableDirectoryTypeDebugInfoForwarding()
+  // explicitly requested that we start forwarding these events.
+  void HandleDirectoryStatusCountersUpdatedOnFrontendLoop(
+      syncer::ModelType type,
+      const syncer::StatusCounters& counters);
 
   SyncFrontend* frontend() { return frontend_; }
 

@@ -98,6 +98,9 @@ class SyncBackendHostMock : public SyncBackendHost {
   virtual void RequestBufferedProtocolEventsAndEnableForwarding() OVERRIDE;
   virtual void DisableProtocolEventForwarding() OVERRIDE;
 
+  virtual void EnableDirectoryTypeDebugInfoForwarding() OVERRIDE;
+  virtual void DisableDirectoryTypeDebugInfoForwarding() OVERRIDE;
+
   virtual void GetAllNodesForTypes(
       syncer::ModelTypeSet types,
       base::Callback<void(const std::vector<syncer::ModelType>& type,

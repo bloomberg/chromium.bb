@@ -215,6 +215,14 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
       base::Callback<void(const std::vector<syncer::ModelType>&,
                           ScopedVector<base::ListValue>)> type) = 0;
 
+  // Enables the sending of directory type debug counters.  Also, for every
+  // time it is called, it makes an explicit request that updates to an update
+  // for all counters be emitted.
+  virtual void EnableDirectoryTypeDebugInfoForwarding() = 0;
+
+  // Disables the sending of directory type debug counters.
+  virtual void DisableDirectoryTypeDebugInfoForwarding() = 0;
+
   virtual base::MessageLoop* GetSyncLoopForTesting() = 0;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);

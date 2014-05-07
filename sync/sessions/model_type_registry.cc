@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/observer_list.h"
 #include "sync/engine/directory_commit_contributor.h"
 #include "sync/engine/directory_update_handler.h"
 #include "sync/engine/non_blocking_type_processor_core.h"
@@ -162,6 +163,32 @@ CommitContributorMap* ModelTypeRegistry::commit_contributor_map() {
 DirectoryTypeDebugInfoEmitterMap*
 ModelTypeRegistry::directory_type_debug_info_emitter_map() {
   return &directory_type_debug_info_emitter_map_;
+}
+
+void ModelTypeRegistry::RegisterDirectoryTypeDebugInfoObserver(
+    syncer::TypeDebugInfoObserver* observer) {
+  if (!type_debug_info_observers_.HasObserver(observer))
+    type_debug_info_observers_.AddObserver(observer);
+}
+
+void ModelTypeRegistry::UnregisterDirectoryTypeDebugInfoObserver(
+    syncer::TypeDebugInfoObserver* observer) {
+  type_debug_info_observers_.RemoveObserver(observer);
+}
+
+bool ModelTypeRegistry::HasDirectoryTypeDebugInfoObserver(
+    syncer::TypeDebugInfoObserver* observer) {
+  return type_debug_info_observers_.HasObserver(observer);
+}
+
+void ModelTypeRegistry::RequestEmitDebugInfo() {
+  for (DirectoryTypeDebugInfoEmitterMap::iterator it =
+       directory_type_debug_info_emitter_map_.begin();
+       it != directory_type_debug_info_emitter_map_.end(); ++it) {
+    it->second->EmitCommitCountersUpdate();
+    it->second->EmitUpdateCountersUpdate();
+    it->second->EmitStatusCountersUpdate();
+  }
 }
 
 ModelTypeSet ModelTypeRegistry::GetEnabledDirectoryTypes() const {

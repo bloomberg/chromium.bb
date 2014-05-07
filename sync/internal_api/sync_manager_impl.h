@@ -35,6 +35,7 @@ namespace syncer {
 class ModelTypeRegistry;
 class SyncAPIServerConnectionManager;
 class SyncCore;
+class TypeDebugInfoObserver;
 class WriteNode;
 class WriteTransaction;
 
@@ -121,6 +122,13 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
       GetBufferedProtocolEvents() OVERRIDE;
   virtual scoped_ptr<base::ListValue> GetAllNodesForType(
       syncer::ModelType type) OVERRIDE;
+  virtual void RegisterDirectoryTypeDebugInfoObserver(
+      syncer::TypeDebugInfoObserver* observer) OVERRIDE;
+  virtual void UnregisterDirectoryTypeDebugInfoObserver(
+      syncer::TypeDebugInfoObserver* observer) OVERRIDE;
+  virtual bool HasDirectoryTypeDebugInfoObserver(
+      syncer::TypeDebugInfoObserver* observer) OVERRIDE;
+  virtual void RequestEmitDebugInfo() OVERRIDE;
 
   // SyncEncryptionHandler::Observer implementation.
   virtual void OnPassphraseRequired(
