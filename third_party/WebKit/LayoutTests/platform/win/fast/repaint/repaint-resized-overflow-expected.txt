@@ -1,9 +1,3 @@
-BUG ID: Bugzilla bug 6770 REGRESSION: Incomplete repaint when block with clipping grows
-
-TEST PASS: There should be a white square with a blue border below, and no line running through the middle of the square.
-
-TEST FAIL: The white square will have a blue border and a blue horizontal line running through its middle.
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

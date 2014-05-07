@@ -1,12 +1,4 @@
 CONSOLE MESSAGE: line 37: here
-The color of this text in the reflection should be green
-
-The color of this text in the reflection should be green
-
-The color of this text in the reflection should be green
-
-The color of this text in the reflection should be green
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

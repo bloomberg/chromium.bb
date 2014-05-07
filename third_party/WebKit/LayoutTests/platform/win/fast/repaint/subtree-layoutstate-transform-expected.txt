@@ -1,5 +1,3 @@
-Tests repaint after layout of a subtree, inside a transformed element. You should see a large green square below.
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

@@ -1,10 +1,3 @@
-BUG ID: Bugzilla bug 6274Text repainting does not account for glyphs which draw outside the typographic bounds of the font.
-
-TEST PASS: The text will entirely disappear.
-
-TEST FAIL: Most of the text will be gone, but some artifacts will be left behind at the top of the page.
-
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

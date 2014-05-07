@@ -1,6 +1,3 @@
-This test checks that moving a positioned element with positioned children invalidates correctly.
-The image below should be completely invalidated.
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

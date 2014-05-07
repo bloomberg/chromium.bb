@@ -1,7 +1,3 @@
-Bug 111000: Selection gaps don't repaint correctly with transforms
-This tests that absolute elements that get flipped are invalidated correctly. The box will be competely green if the selected area was invalidated correctly.
-
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

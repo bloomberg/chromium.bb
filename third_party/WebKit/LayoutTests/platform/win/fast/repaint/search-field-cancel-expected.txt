@@ -1,6 +1,3 @@
-Test for https://bugs.webkit.org/show_bug.cgi?id=23093. The cancel button in a search field fails to redraw.
-
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

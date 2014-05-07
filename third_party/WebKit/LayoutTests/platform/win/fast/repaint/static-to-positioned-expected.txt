@@ -1,5 +1,3 @@
-Repaint test for http://bugzilla.opendarwin.org/show_bug.cgi?id=9334 Incomplete repaint when changing block from non-positioned to positioned.
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

@@ -1,6 +1,3 @@
-This tests to see if selection gaps are removed when the selection is deleted. Nothing should be selected below. A caret should be inside the red div.
-
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1
