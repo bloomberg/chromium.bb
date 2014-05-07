@@ -274,19 +274,15 @@ bool BMPImageReader::readInfoHeader()
         m_infoHeader.biClrUsed = readUint32(32);
 
     // Windows V4+ can safely read the four bitmasks from 40-56 bytes in, so do
-    // that here.  If the bit depth is less than 16, these values will be
-    // ignored by the image data decoders.  If the bit depth is at least 16 but
-    // the compression format isn't BITFIELDS, these values will be ignored and
-    // overwritten* in processBitmasks().
-    // NOTE: We allow alpha here.  Microsoft doesn't really document this well,
-    // but some BMPs appear to use it.
+    // that here. If the bit depth is less than 16, these values will be ignored
+    // by the image data decoders. If the bit depth is at least 16 but the
+    // compression format isn't BITFIELDS, the RGB bitmasks will be ignored and
+    // overwritten in processBitmasks(). (The alpha bitmask will never be
+    // overwritten: images that actually want alpha have to specify a valid
+    // alpha mask. See comments in processBitmasks().)
     //
     // For non-Windows V4+, m_bitMasks[] et. al will be initialized later
     // during processBitmasks().
-    //
-    // *Except the alpha channel.  Bizarrely, some RGB bitmaps expect decoders
-    // to pay attention to the alpha mask here, so there's a special case in
-    // processBitmasks() that doesn't always overwrite that value.
     if (isWindowsV4Plus()) {
         m_bitMasks[0] = readUint32(40);
         m_bitMasks[1] = readUint32(44);
@@ -406,7 +402,7 @@ bool BMPImageReader::isInfoHeaderValid() const
 
 bool BMPImageReader::processBitmasks()
 {
-    // Create m_bitMasks[] values.
+    // Create m_bitMasks[] values for R/G/B.
     if (m_infoHeader.biCompression != BITFIELDS) {
         // The format doesn't actually use bitmasks.  To simplify the decode
         // logic later, create bitmasks for the RGB data.  For Windows V4+,
@@ -417,13 +413,6 @@ bool BMPImageReader::processBitmasks()
         const int numBits = (m_infoHeader.biBitCount == 16) ? 5 : 8;
         for (int i = 0; i <= 2; ++i)
             m_bitMasks[i] = ((static_cast<uint32_t>(1) << (numBits * (3 - i))) - 1) ^ ((static_cast<uint32_t>(1) << (numBits * (2 - i))) - 1);
-
-        // For Windows V4+ 32-bit RGB, don't overwrite the alpha mask from the
-        // header (see note in readInfoHeader()).
-        if (m_infoHeader.biBitCount < 32)
-            m_bitMasks[3] = 0;
-        else if (!isWindowsV4Plus())
-            m_bitMasks[3] = static_cast<uint32_t>(0xff000000);
     } else if (!isWindowsV4Plus()) {
         // For Windows V4+ BITFIELDS mode bitmaps, this was already done when
         // we read the info header.
@@ -439,11 +428,41 @@ bool BMPImageReader::processBitmasks()
         m_bitMasks[0] = readUint32(0);
         m_bitMasks[1] = readUint32(4);
         m_bitMasks[2] = readUint32(8);
-        // No alpha in anything other than Windows V4+.
-        m_bitMasks[3] = 0;
 
         m_decodedOffset += SIZEOF_BITMASKS;
     }
+
+    // Alpha is a poorly-documented and inconsistently-used feature.
+    //
+    // Windows V4+ has an alpha bitmask in the info header. Unlike the R/G/B
+    // bitmasks, the MSDN docs don't indicate that it is only valid for the
+    // BITFIELDS compression format, so we respect it at all times.
+    //
+    // To complicate things, Windows V3 BMPs, which lack this mask, can specify
+    // 32bpp format, which to any sane reader would imply an 8-bit alpha
+    // channel -- and indeed, there exist BMPs in this format which clearly
+    // expect the alpha channel to be respected. However, there are many other
+    // BMPs which, for example, fill this channel with all 0s, yet clearly
+    // expect to not be displayed as a fully-transparent rectangle.
+    //
+    // If these were the only two types of Windows V3, 32bpp BMPs in the wild,
+    // we could distinguish between them by scanning the alpha channel in the
+    // image, looking for nonzero values, and only enabling alpha if we found
+    // some. (It turns out we have to do this anyway, because, crazily, there
+    // are also Windows V4+ BMPs with an explicit, non-zero alpha mask, which
+    // then zero-fill their alpha channels! See comments in
+    // processNonRLEData().)
+    //
+    // Unfortunately there are also V3 BMPs -- indeed, probably more than the
+    // number of 32bpp, V3 BMPs which intentionally use alpha -- which specify
+    // 32bpp format, use nonzero (and non-255) alpha values, and yet expect to
+    // be rendered fully-opaque. And other browsers do so.
+    //
+    // So it's impossible to display every BMP in the way its creators intended,
+    // and we have to choose what to break. Given the paragraph above, we match
+    // other browsers and ignore alpha in Windows V3 BMPs.
+    if (!isWindowsV4Plus())
+        m_bitMasks[3] = 0;
 
     // We've now decoded all the non-image data we care about.  Skip anything
     // else before the actual raster data.
