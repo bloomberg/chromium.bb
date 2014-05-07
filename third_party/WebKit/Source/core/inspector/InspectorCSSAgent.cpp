@@ -729,7 +729,7 @@ void InspectorCSSAgent::getComputedStyleForNode(ErrorString* errorString, int no
     if (!node)
         return;
 
-    RefPtr<CSSComputedStyleDeclaration> computedStyleInfo = CSSComputedStyleDeclaration::create(node, true);
+    RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyleInfo = CSSComputedStyleDeclaration::create(node, true);
     RefPtr<InspectorStyle> inspectorStyle = InspectorStyle::create(InspectorCSSId(), computedStyleInfo, 0);
     style = inspectorStyle->buildArrayForComputedStyle();
 }
@@ -759,7 +759,7 @@ void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int no
     if (!node)
         return;
 
-    RefPtr<CSSComputedStyleDeclaration> computedStyleInfo = CSSComputedStyleDeclaration::create(node, true);
+    RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyleInfo = CSSComputedStyleDeclaration::create(node, true);
     *cssFamilyName = computedStyleInfo->getPropertyValue(CSSPropertyFontFamily);
 
     Vector<Node*> textNodes;

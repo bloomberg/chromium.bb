@@ -20,7 +20,8 @@
 
 // Introduced in DOM Level 2:
 [
-    DependentLifetime
+    DependentLifetime,
+    WillBeGarbageCollected
 ] interface CSSStyleDeclaration {
              [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, RaisesException=Setter] attribute DOMString        cssText;
 

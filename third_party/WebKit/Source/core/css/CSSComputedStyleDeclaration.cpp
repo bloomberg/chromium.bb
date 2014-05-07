@@ -1111,7 +1111,9 @@ static PassRefPtrWillBeRawPtr<CSSValue> createLineBoxContainValue(unsigned lineB
 CSSComputedStyleDeclaration::CSSComputedStyleDeclaration(PassRefPtr<Node> n, bool allowVisitedStyle, const String& pseudoElementName)
     : m_node(n)
     , m_allowVisitedStyle(allowVisitedStyle)
+#if !ENABLE(OILPAN)
     , m_refCount(1)
+#endif
 {
     unsigned nameWithoutColonsStart = pseudoElementName[0] == ':' ? (pseudoElementName[1] == ':' ? 2 : 1) : 0;
     m_pseudoElementSpecifier = CSSSelector::pseudoId(CSSSelector::parsePseudoType(
@@ -1122,6 +1124,7 @@ CSSComputedStyleDeclaration::~CSSComputedStyleDeclaration()
 {
 }
 
+#if !ENABLE(OILPAN)
 void CSSComputedStyleDeclaration::ref()
 {
     ++m_refCount;
@@ -1133,6 +1136,7 @@ void CSSComputedStyleDeclaration::deref()
     if (!--m_refCount)
         delete this;
 }
+#endif
 
 String CSSComputedStyleDeclaration::cssText() const
 {

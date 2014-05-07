@@ -47,9 +47,10 @@ CSSStyleRule::CSSStyleRule(StyleRule* styleRule, CSSStyleSheet* parent)
 
 CSSStyleRule::~CSSStyleRule()
 {
+#if !ENABLE(OILPAN)
     if (m_propertiesCSSOMWrapper)
         m_propertiesCSSOMWrapper->clearParentRule();
-
+#endif
     if (hasCachedSelectorText()) {
         selectorTextCache().remove(this);
         setHasCachedSelectorText(false);
@@ -132,6 +133,7 @@ void CSSStyleRule::reattach(StyleRuleBase* rule)
 void CSSStyleRule::trace(Visitor* visitor)
 {
     visitor->trace(m_styleRule);
+    visitor->trace(m_propertiesCSSOMWrapper);
     CSSRule::trace(visitor);
 }
 

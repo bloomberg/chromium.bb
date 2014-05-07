@@ -544,7 +544,7 @@ CSSStyleDeclaration* MutableStylePropertySet::ensureCSSStyleDeclaration()
         ASSERT(!m_cssomWrapper->parentElement());
         return m_cssomWrapper.get();
     }
-    m_cssomWrapper = adoptPtr(new PropertySetCSSStyleDeclaration(*this));
+    m_cssomWrapper = adoptPtrWillBeNoop(new PropertySetCSSStyleDeclaration(*this));
     return m_cssomWrapper.get();
 }
 
@@ -567,6 +567,7 @@ int MutableStylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
 
 void MutableStylePropertySet::traceAfterDispatch(Visitor* visitor)
 {
+    visitor->trace(m_cssomWrapper);
     visitor->trace(m_propertyVector);
     StylePropertySet::traceAfterDispatch(visitor);
 }

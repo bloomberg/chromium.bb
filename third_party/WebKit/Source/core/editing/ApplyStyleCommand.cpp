@@ -1502,7 +1502,7 @@ float ApplyStyleCommand::computedFontSize(Node* node)
     if (!node)
         return 0;
 
-    RefPtr<CSSComputedStyleDeclaration> style = CSSComputedStyleDeclaration::create(node);
+    RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> style = CSSComputedStyleDeclaration::create(node);
     if (!style)
         return 0;
 

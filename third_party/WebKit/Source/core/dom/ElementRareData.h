@@ -127,6 +127,7 @@ public:
         // to the ElementShadow when that has been moved
         // to the oilpan heap.
         visitor->trace(m_shadow);
+        visitor->trace(m_cssomWrapper);
     }
 
 private:
@@ -140,7 +141,8 @@ private:
     OwnPtr<NamedNodeMap> m_attributeMap;
     OwnPtr<InputMethodContext> m_inputMethodContext;
     OwnPtrWillBePersistent<ActiveAnimations> m_activeAnimations;
-    OwnPtr<InlineCSSStyleDeclaration> m_cssomWrapper;
+    GC_PLUGIN_IGNORE("http://crbug.com/370453")
+    OwnPtrWillBeMember<InlineCSSStyleDeclaration> m_cssomWrapper;
 
     RefPtr<RenderStyle> m_computedStyle;
     RefPtr<CustomElementDefinition> m_customElementDefinition;

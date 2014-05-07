@@ -60,7 +60,7 @@ private:
     String generateSelectorText() const;
 
     RefPtrWillBeMember<StyleRule> m_styleRule;
-    mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+    mutable RefPtrWillBeMember<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSStyleRule, STYLE_RULE);

@@ -238,7 +238,7 @@ private:
 
     bool removeShorthandProperty(CSSPropertyID);
     CSSProperty* findCSSPropertyWithID(CSSPropertyID);
-    OwnPtr<PropertySetCSSStyleDeclaration> m_cssomWrapper;
+    OwnPtrWillBeMember<PropertySetCSSStyleDeclaration> m_cssomWrapper;
 
     friend class StylePropertySet;
 

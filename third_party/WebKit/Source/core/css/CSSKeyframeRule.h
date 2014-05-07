@@ -93,7 +93,7 @@ private:
     CSSKeyframeRule(StyleKeyframe*, CSSKeyframesRule* parent);
 
     RefPtrWillBeMember<StyleKeyframe> m_keyframe;
-    mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+    mutable RefPtrWillBeMember<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 
     friend class CSSKeyframesRule;
 };

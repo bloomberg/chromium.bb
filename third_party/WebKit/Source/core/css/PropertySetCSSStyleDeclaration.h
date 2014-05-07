@@ -43,8 +43,9 @@ class StyleSheetContents;
 class AbstractPropertySetCSSStyleDeclaration : public CSSStyleDeclaration {
 public:
     virtual Element* parentElement() const { return 0; }
-    virtual void clearParentElement() { ASSERT_NOT_REACHED(); }
     StyleSheetContents* contextStyleSheet() const;
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     virtual CSSRule* parentRule() const OVERRIDE { return 0; }
@@ -74,36 +75,44 @@ protected:
     virtual void didMutate(MutationType) { }
     virtual MutableStylePropertySet& propertySet() const = 0;
 
-    OwnPtrWillBePersistent<WillBeHeapHashMap<CSSValue*, RefPtrWillBeMember<CSSValue> > > m_cssomCSSValueClones;
+    OwnPtrWillBeMember<WillBeHeapHashMap<RawPtrWillBeMember<CSSValue>, RefPtrWillBeMember<CSSValue> > > m_cssomCSSValueClones;
 };
 
 class PropertySetCSSStyleDeclaration : public AbstractPropertySetCSSStyleDeclaration {
 public:
     PropertySetCSSStyleDeclaration(MutableStylePropertySet& propertySet) : m_propertySet(&propertySet) { }
 
+#if !ENABLE(OILPAN)
     virtual void ref() OVERRIDE;
     virtual void deref() OVERRIDE;
+#endif
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 protected:
     virtual MutableStylePropertySet& propertySet() const OVERRIDE FINAL { ASSERT(m_propertySet); return *m_propertySet; }
 
-    MutableStylePropertySet* m_propertySet; // Cannot be null
+    RawPtrWillBeMember<MutableStylePropertySet> m_propertySet; // Cannot be null
 };
 
 class StyleRuleCSSStyleDeclaration FINAL : public PropertySetCSSStyleDeclaration
 {
 public:
-    static PassRefPtr<StyleRuleCSSStyleDeclaration> create(MutableStylePropertySet& propertySet, CSSRule* parentRule)
+    static PassRefPtrWillBeRawPtr<StyleRuleCSSStyleDeclaration> create(MutableStylePropertySet& propertySet, CSSRule* parentRule)
     {
-        return adoptRef(new StyleRuleCSSStyleDeclaration(propertySet, parentRule));
+        return adoptRefWillBeNoop(new StyleRuleCSSStyleDeclaration(propertySet, parentRule));
     }
 
-    void clearParentRule() { m_parentRule = 0; }
+#if !ENABLE(OILPAN)
+    void clearParentRule() { m_parentRule = nullptr; }
 
     virtual void ref() OVERRIDE;
     virtual void deref() OVERRIDE;
+#endif
 
     void reattach(MutableStylePropertySet&);
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     StyleRuleCSSStyleDeclaration(MutableStylePropertySet&, CSSRule*);
@@ -116,8 +125,10 @@ private:
     virtual void willMutate() OVERRIDE;
     virtual void didMutate(MutationType) OVERRIDE;
 
+#if !ENABLE(OILPAN)
     unsigned m_refCount;
-    CSSRule* m_parentRule;
+#endif
+    RawPtrWillBeMember<CSSRule> m_parentRule;
 };
 
 class InlineCSSStyleDeclaration FINAL : public AbstractPropertySetCSSStyleDeclaration
@@ -128,17 +139,20 @@ public:
     {
     }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     virtual MutableStylePropertySet& propertySet() const OVERRIDE;
+#if !ENABLE(OILPAN)
     virtual void ref() OVERRIDE;
     virtual void deref() OVERRIDE;
+#endif
     virtual CSSStyleSheet* parentStyleSheet() const OVERRIDE;
     virtual Element* parentElement() const OVERRIDE { return m_parentElement; }
-    virtual void clearParentElement() OVERRIDE { m_parentElement = 0; }
 
     virtual void didMutate(MutationType) OVERRIDE;
 
-    Element* m_parentElement;
+    RawPtrWillBeMember<Element> m_parentElement;
 };
 
 } // namespace WebCore

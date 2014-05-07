@@ -49,14 +49,16 @@ enum EUpdateLayout { DoNotUpdateLayout = false, UpdateLayout = true };
 
 class CSSComputedStyleDeclaration FINAL : public CSSStyleDeclaration {
 public:
-    static PassRefPtr<CSSComputedStyleDeclaration> create(PassRefPtr<Node> node, bool allowVisitedStyle = false, const String& pseudoElementName = String())
+    static PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> create(PassRefPtr<Node> node, bool allowVisitedStyle = false, const String& pseudoElementName = String())
     {
-        return adoptRef(new CSSComputedStyleDeclaration(node, allowVisitedStyle, pseudoElementName));
+        return adoptRefWillBeNoop(new CSSComputedStyleDeclaration(node, allowVisitedStyle, pseudoElementName));
     }
     virtual ~CSSComputedStyleDeclaration();
 
+#if !ENABLE(OILPAN)
     virtual void ref() OVERRIDE;
     virtual void deref() OVERRIDE;
+#endif
 
     PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(CSSPropertyID) const;
     String getPropertyValue(CSSPropertyID) const;
@@ -70,6 +72,8 @@ public:
     PassRefPtrWillBeRawPtr<CSSValue> getSVGPropertyCSSValue(CSSPropertyID, EUpdateLayout) const;
 
     PassRefPtrWillBeRawPtr<MutableStylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
+
+    virtual void trace(Visitor* visitor) { CSSStyleDeclaration::trace(visitor); }
 
 private:
     CSSComputedStyleDeclaration(PassRefPtr<Node>, bool allowVisitedStyle, const String&);
@@ -116,7 +120,9 @@ private:
     RefPtr<Node> m_node;
     PseudoId m_pseudoElementSpecifier;
     bool m_allowVisitedStyle;
+#if !ENABLE(OILPAN)
     unsigned m_refCount;
+#endif
 };
 
 } // namespace WebCore

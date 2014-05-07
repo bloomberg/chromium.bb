@@ -285,7 +285,7 @@ Element* Position::element() const
     return toElement(n);
 }
 
-PassRefPtr<CSSComputedStyleDeclaration> Position::computedStyle() const
+PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> Position::computedStyle() const
 {
     Element* elem = element();
     if (!elem)

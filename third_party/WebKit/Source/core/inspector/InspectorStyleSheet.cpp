@@ -503,12 +503,12 @@ static PassRefPtrWillBeRawPtr<CSSRuleList> asCSSRuleList(CSSRule* rule)
     return nullptr;
 }
 
-PassRefPtr<InspectorStyle> InspectorStyle::create(const InspectorCSSId& styleId, PassRefPtr<CSSStyleDeclaration> style, InspectorStyleSheetBase* parentStyleSheet)
+PassRefPtr<InspectorStyle> InspectorStyle::create(const InspectorCSSId& styleId, PassRefPtrWillBeRawPtr<CSSStyleDeclaration> style, InspectorStyleSheetBase* parentStyleSheet)
 {
     return adoptRef(new InspectorStyle(styleId, style, parentStyleSheet));
 }
 
-InspectorStyle::InspectorStyle(const InspectorCSSId& styleId, PassRefPtr<CSSStyleDeclaration> style, InspectorStyleSheetBase* parentStyleSheet)
+InspectorStyle::InspectorStyle(const InspectorCSSId& styleId, PassRefPtrWillBeRawPtr<CSSStyleDeclaration> style, InspectorStyleSheetBase* parentStyleSheet)
     : m_styleId(styleId)
     , m_style(style)
     , m_parentStyleSheet(parentStyleSheet)

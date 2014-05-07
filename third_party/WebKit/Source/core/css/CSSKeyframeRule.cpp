@@ -146,8 +146,10 @@ CSSKeyframeRule::CSSKeyframeRule(StyleKeyframe* keyframe, CSSKeyframesRule* pare
 
 CSSKeyframeRule::~CSSKeyframeRule()
 {
+#if !ENABLE(OILPAN)
     if (m_propertiesCSSOMWrapper)
         m_propertiesCSSOMWrapper->clearParentRule();
+#endif
 }
 
 CSSStyleDeclaration* CSSKeyframeRule::style() const
@@ -166,6 +168,7 @@ void CSSKeyframeRule::reattach(StyleRuleBase*)
 void CSSKeyframeRule::trace(Visitor* visitor)
 {
     visitor->trace(m_keyframe);
+    visitor->trace(m_propertiesCSSOMWrapper);
     CSSRule::trace(visitor);
 }
 

@@ -126,6 +126,7 @@ bool StyleAttributeMutationScope::s_shouldDeliver = false;
 
 } // namespace
 
+#if !ENABLE(OILPAN)
 void PropertySetCSSStyleDeclaration::ref()
 {
     m_propertySet->ref();
@@ -134,6 +135,13 @@ void PropertySetCSSStyleDeclaration::ref()
 void PropertySetCSSStyleDeclaration::deref()
 {
     m_propertySet->deref();
+}
+#endif
+
+void PropertySetCSSStyleDeclaration::trace(Visitor* visitor)
+{
+    visitor->trace(m_propertySet);
+    AbstractPropertySetCSSStyleDeclaration::trace(visitor);
 }
 
 unsigned AbstractPropertySetCSSStyleDeclaration::length() const
@@ -272,7 +280,7 @@ CSSValue* AbstractPropertySetCSSStyleDeclaration::cloneAndCacheForCSSOM(CSSValue
     // The map is here to maintain the object identity of the CSSValues over multiple invocations.
     // FIXME: It is likely that the identity is not important for web compatibility and this code should be removed.
     if (!m_cssomCSSValueClones)
-        m_cssomCSSValueClones = adoptPtrWillBeNoop(new WillBeHeapHashMap<CSSValue*, RefPtrWillBeMember<CSSValue> >);
+        m_cssomCSSValueClones = adoptPtrWillBeNoop(new WillBeHeapHashMap<RawPtrWillBeMember<CSSValue>, RefPtrWillBeMember<CSSValue> >);
 
     RefPtrWillBeMember<CSSValue>& clonedValue = m_cssomCSSValueClones->add(internalValue, RefPtrWillBeMember<CSSValue>()).storedValue->value;
     if (!clonedValue)
@@ -296,19 +304,34 @@ bool AbstractPropertySetCSSStyleDeclaration::cssPropertyMatches(CSSPropertyID pr
     return propertySet().propertyMatches(propertyID, propertyValue);
 }
 
+void AbstractPropertySetCSSStyleDeclaration::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_cssomCSSValueClones);
+#endif
+    CSSStyleDeclaration::trace(visitor);
+}
+
 StyleRuleCSSStyleDeclaration::StyleRuleCSSStyleDeclaration(MutableStylePropertySet& propertySetArg, CSSRule* parentRule)
     : PropertySetCSSStyleDeclaration(propertySetArg)
+#if !ENABLE(OILPAN)
     , m_refCount(1)
+#endif
     , m_parentRule(parentRule)
 {
+#if !ENABLE(OILPAN)
     m_propertySet->ref();
+#endif
 }
 
 StyleRuleCSSStyleDeclaration::~StyleRuleCSSStyleDeclaration()
 {
+#if !ENABLE(OILPAN)
     m_propertySet->deref();
+#endif
 }
 
+#if !ENABLE(OILPAN)
 void StyleRuleCSSStyleDeclaration::ref()
 {
     ++m_refCount;
@@ -320,6 +343,7 @@ void StyleRuleCSSStyleDeclaration::deref()
     if (!--m_refCount)
         delete this;
 }
+#endif
 
 void StyleRuleCSSStyleDeclaration::willMutate()
 {
@@ -344,9 +368,19 @@ CSSStyleSheet* StyleRuleCSSStyleDeclaration::parentStyleSheet() const
 
 void StyleRuleCSSStyleDeclaration::reattach(MutableStylePropertySet& propertySet)
 {
+#if !ENABLE(OILPAN)
     m_propertySet->deref();
+#endif
     m_propertySet = &propertySet;
+#if !ENABLE(OILPAN)
     m_propertySet->ref();
+#endif
+}
+
+void StyleRuleCSSStyleDeclaration::trace(Visitor* visitor)
+{
+    visitor->trace(m_parentRule);
+    PropertySetCSSStyleDeclaration::trace(visitor);
 }
 
 MutableStylePropertySet& InlineCSSStyleDeclaration::propertySet() const
@@ -375,6 +409,7 @@ CSSStyleSheet* InlineCSSStyleDeclaration::parentStyleSheet() const
     return m_parentElement ? &m_parentElement->document().elementSheet() : 0;
 }
 
+#if !ENABLE(OILPAN)
 void InlineCSSStyleDeclaration::ref()
 {
     m_parentElement->ref();
@@ -383,6 +418,13 @@ void InlineCSSStyleDeclaration::ref()
 void InlineCSSStyleDeclaration::deref()
 {
     m_parentElement->deref();
+}
+#endif
+
+void InlineCSSStyleDeclaration::trace(Visitor* visitor)
+{
+    visitor->trace(m_parentElement);
+    AbstractPropertySetCSSStyleDeclaration::trace(visitor);
 }
 
 } // namespace WebCore
