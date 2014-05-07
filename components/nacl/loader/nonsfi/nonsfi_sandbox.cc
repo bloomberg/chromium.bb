@@ -203,13 +203,8 @@ void RunSandboxSanityChecks() {
 
 }  // namespace
 
-ErrorCode NaClNonSfiBPFSandboxPolicy::EvaluateSyscall(
-    SandboxBPF* sb, int sysno) const {
-  return EvaluateSyscallImpl(sb, sysno, NULL);
-}
-
-ErrorCode NaClNonSfiBPFSandboxPolicy::EvaluateSyscallImpl(
-    SandboxBPF* sb, int sysno, void*) {
+ErrorCode NaClNonSfiBPFSandboxPolicy::EvaluateSyscall(SandboxBPF* sb,
+                                                      int sysno) const {
   switch (sysno) {
     // Allowed syscalls.
 #if defined(__i386__) || defined(__arm__)

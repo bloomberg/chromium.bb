@@ -27,15 +27,15 @@ namespace sandbox {
       test_case_name, test_name, DEATH_SUCCESS(), bpf_policy_class_name)
 
 // Identical to BPF_TEST_C but allows to specify the nature of death.
-#define BPF_DEATH_TEST_C(                                          \
-    test_case_name, test_name, death, bpf_policy_class_name)       \
-  void BPF_TEST_C_##test_name();                                   \
-  TEST(test_case_name, DISABLE_ON_TSAN(test_name)) {               \
-    sandbox::SandboxBPFTestRunner bpf_test_runner(                 \
-        new BPFTesterSimpleDelegate<bpf_policy_class_name>(        \
-            BPF_TEST_C_##test_name));                              \
-    sandbox::UnitTests::RunTestInProcess(&bpf_test_runner, death); \
-  }                                                                \
+#define BPF_DEATH_TEST_C(                                            \
+    test_case_name, test_name, death, bpf_policy_class_name)         \
+  void BPF_TEST_C_##test_name();                                     \
+  TEST(test_case_name, DISABLE_ON_TSAN(test_name)) {                 \
+    sandbox::SandboxBPFTestRunner bpf_test_runner(                   \
+        new sandbox::BPFTesterSimpleDelegate<bpf_policy_class_name>( \
+            BPF_TEST_C_##test_name));                                \
+    sandbox::UnitTests::RunTestInProcess(&bpf_test_runner, death);   \
+  }                                                                  \
   void BPF_TEST_C_##test_name()
 
 // This form of BPF_TEST is a little verbose and should be reserved for complex

@@ -22,9 +22,6 @@ class NaClNonSfiBPFSandboxPolicy : public sandbox::SandboxBPFPolicy {
   virtual sandbox::ErrorCode EvaluateSyscall(sandbox::SandboxBPF* sb,
                                              int sysno) const OVERRIDE;
 
-  static sandbox::ErrorCode EvaluateSyscallImpl(sandbox::SandboxBPF* sb,
-                                                int sysno, void*);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(NaClNonSfiBPFSandboxPolicy);
 };
