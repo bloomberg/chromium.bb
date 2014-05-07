@@ -1427,7 +1427,7 @@ def DoPresubmitChecks(change,
 
 def ScanSubDirs(mask, recursive):
   if not recursive:
-    return [x for x in glob.glob(mask) if '.svn' not in x and '.git' not in x]
+    return [x for x in glob.glob(mask) if x not in ('.svn', '.git')]
   else:
     results = []
     for root, dirs, files in os.walk('.'):
