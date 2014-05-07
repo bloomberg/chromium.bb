@@ -154,8 +154,8 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
             if (!context.element->isInShadowTree() || !context.element->isInsertionPoint())
                 return SelectorFailsLocally;
         } else if (context.selector->isShadowPseudoElement()) {
-            if (!context.element->isInShadowTree())
-                return SelectorFailsLocally;
+            if (!context.element->isInShadowTree() || !context.previousElement)
+                return SelectorFailsCompletely;
         } else {
             if ((!context.elementStyle && m_mode == ResolvingStyle) || m_mode == QueryingRules)
                 return SelectorFailsLocally;
@@ -305,6 +305,10 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             return match(nextContext, siblingTraversalStrategy, result);
         }
     case CSSSelector::DirectAdjacent:
+        // Shadow roots can't have sibling elements
+        if (selectorMatchesShadowRoot(nextContext.selector))
+            return SelectorFailsCompletely;
+
         if (m_mode == ResolvingStyle) {
             if (ContainerNode* parent = context.element->parentElementOrShadowRoot())
                 parent->setChildrenAffectedByDirectAdjacentRules();
@@ -317,6 +321,10 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         return match(nextContext, siblingTraversalStrategy, result);
 
     case CSSSelector::IndirectAdjacent:
+        // Shadow roots can't have sibling elements
+        if (selectorMatchesShadowRoot(nextContext.selector))
+            return SelectorFailsCompletely;
+
         if (m_mode == ResolvingStyle) {
             if (ContainerNode* parent = context.element->parentElementOrShadowRoot())
                 parent->setChildrenAffectedByIndirectAdjacentRules();
