@@ -70,10 +70,6 @@ echo @@@BUILD_STEP compile_toolchain@@@
 (
   cd tools
   make -j8 buildbot-build-with-glibc
-  ../mingw/msys/bin/sh.exe -c "export PATH=/mingw/bin:/bin:\$PATH &&
-    export TOOLCHAINLOC=${TOOLCHAINLOC} &&
-    export TOOLCHAINNAME=${TOOLCHAINNAME} &&
-    make -j8 gdb 2>&1"
   rm "${TOOL_TOOLCHAIN}/tmp"
 )
 
