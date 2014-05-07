@@ -7,6 +7,7 @@
 
 """A git-command for integrating reviews on Rietveld."""
 
+import datetime
 from distutils.version import LooseVersion
 import glob
 import json
@@ -18,6 +19,7 @@ import re
 import stat
 import sys
 import textwrap
+import time
 import threading
 import urllib2
 import urlparse
@@ -1758,7 +1760,7 @@ def IsSubmoduleMergeCommit(ref):
 
 
 def SendUpstream(parser, args, cmd):
-  """Common code for CmdPush and CmdDCommit
+  """Common code for CMDland and CmdDCommit
 
   Squashes branch into a single commit.
   Updates changelog with metadata (e.g. pointer to review).
@@ -2017,13 +2019,34 @@ will instead be silently ignored."""
 
 
 @subcommand.usage('[upstream branch to apply against]')
-def CMDpush(parser, args):
+def CMDland(parser, args):
   """Commits the current changelist via git."""
   if settings.GetIsGitSvn():
     print('This appears to be an SVN repository.')
     print('Are you sure you didn\'t mean \'git cl dcommit\'?')
     ask_for_data('[Press enter to push or ctrl-C to quit]')
   return SendUpstream(parser, args, 'push')
+
+
+@subcommand.usage('[upstream branch to apply against]')
+def CMDpush(parser, args):
+  """Temporary alias for 'land'.
+  """
+  print(
+    "\n=======\n"
+    "'git cl push' has been renamed to 'git cl land'.\n"
+    "Currently they are treated as synonyms, but 'git cl push' will stop\n"
+    "working after 2014/07/01.\n"
+    "=======\n")
+  now = datetime.datetime.utcfromtimestamp(time.time())
+  if now > datetime.datetime(2014, 7, 1):
+    print('******\nReally, you should not use this command anymore... \n'
+    'Pausing 10 sec to help you remember :-)')
+    for n in xrange(10):
+      time.sleep(1)
+      print('%s seconds...' % (n+1))
+    print('******')
+  return CMDland(parser, args)
 
 
 @subcommand.usage('<patch url or issue id>')
