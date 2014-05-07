@@ -242,6 +242,9 @@ net::URLRequestJob* MaybeCreateURLRequestResourceBundleJob(
 bool IsWebViewRequest(net::URLRequest* request) {
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
+  // |info| can be NULL sometimes: http://crbug.com/370070.
+  if (!info)
+    return false;
   ExtensionRendererState* renderer_state =
       ExtensionRendererState::GetInstance();
   ExtensionRendererState::WebViewInfo webview_info;
