@@ -150,8 +150,7 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
   if (visible_content_rect.IsEmpty())
     return;
 
-  SharedQuadState* shared_quad_state =
-      quad_sink->UseSharedQuadState(SharedQuadState::Create());
+  SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
   shared_quad_state->SetAll(draw_transform,
                             content_rect_.size(),
                             content_rect_,

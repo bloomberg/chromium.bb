@@ -67,8 +67,7 @@ class TiledLayerImplTest : public testing::Test {
     return layer.Pass();
   }
 
-  void GetQuads(QuadList* quads,
-                SharedQuadStateList* shared_states,
+  void GetQuads(RenderPass* render_pass,
                 const gfx::Size& tile_size,
                 const gfx::Size& layer_size,
                 LayerTilingData::BorderTexelOption border_texel_option,
@@ -78,7 +77,7 @@ class TiledLayerImplTest : public testing::Test {
     layer->draw_properties().visible_content_rect = visible_content_rect;
     layer->SetBounds(layer_size);
 
-    MockQuadCuller quad_culler(quads, shared_states);
+    MockQuadCuller quad_culler(render_pass);
     AppendQuadsData data;
     layer->AppendQuads(&quad_culler, &data);
   }
@@ -200,15 +199,14 @@ class TiledLayerImplBorderTest : public TiledLayerImplTest {
   void CoverageVisibleRectOnTileBoundaries(
       LayerTilingData::BorderTexelOption borders) {
     gfx::Size layer_size(1000, 1000);
-    QuadList quads;
-    SharedQuadStateList shared_states;
-    GetQuads(&quads,
-             &shared_states,
+    scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+    GetQuads(render_pass.get(),
              gfx::Size(100, 100),
              layer_size,
              borders,
              gfx::Rect(layer_size));
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(quads, gfx::Rect(layer_size));
+    LayerTestCommon::VerifyQuadsExactlyCoverRect(render_pass->quad_list,
+                                                 gfx::Rect(layer_size));
   }
 
   void CoverageVisibleRectIntersectsTiles(
@@ -219,30 +217,28 @@ class TiledLayerImplBorderTest : public TiledLayerImplTest {
     gfx::Rect visible_content_rect = gfx::BoundingRect(top_left, bottom_right);
 
     gfx::Size layer_size(250, 250);
-    QuadList quads;
-    SharedQuadStateList shared_states;
-    GetQuads(&quads,
-             &shared_states,
+    scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+    GetQuads(render_pass.get(),
              gfx::Size(50, 50),
              gfx::Size(250, 250),
              LayerTilingData::NO_BORDER_TEXELS,
              visible_content_rect);
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(quads, visible_content_rect);
+    LayerTestCommon::VerifyQuadsExactlyCoverRect(render_pass->quad_list,
+                                                 visible_content_rect);
   }
 
   void CoverageVisibleRectIntersectsBounds(
       LayerTilingData::BorderTexelOption borders) {
     gfx::Size layer_size(220, 210);
     gfx::Rect visible_content_rect(layer_size);
-    QuadList quads;
-    SharedQuadStateList shared_states;
-    GetQuads(&quads,
-             &shared_states,
+    scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+    GetQuads(render_pass.get(),
              gfx::Size(100, 100),
              layer_size,
              LayerTilingData::NO_BORDER_TEXELS,
              visible_content_rect);
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(quads, visible_content_rect);
+    LayerTestCommon::VerifyQuadsExactlyCoverRect(render_pass->quad_list,
+                                                 visible_content_rect);
   }
 };
 WITH_AND_WITHOUT_BORDER_TEST(CoverageVisibleRectOnTileBoundaries);
@@ -254,17 +250,16 @@ WITH_AND_WITHOUT_BORDER_TEST(CoverageVisibleRectIntersectsBounds);
 TEST_F(TiledLayerImplTest, TextureInfoForLayerNoBorders) {
   gfx::Size tile_size(50, 50);
   gfx::Size layer_size(250, 250);
-  QuadList quads;
-  SharedQuadStateList shared_states;
-  GetQuads(&quads,
-           &shared_states,
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  GetQuads(render_pass.get(),
            tile_size,
            layer_size,
            LayerTilingData::NO_BORDER_TEXELS,
            gfx::Rect(layer_size));
 
-  for (size_t i = 0; i < quads.size(); ++i) {
-    const TileDrawQuad* quad = TileDrawQuad::MaterialCast(quads[i]);
+  for (size_t i = 0; i < render_pass->quad_list.size(); ++i) {
+    const TileDrawQuad* quad =
+        TileDrawQuad::MaterialCast(render_pass->quad_list[i]);
 
     EXPECT_NE(0u, quad->resource_id) << LayerTestCommon::quad_string << i;
     EXPECT_EQ(gfx::RectF(gfx::PointF(), tile_size), quad->tex_coord_rect)

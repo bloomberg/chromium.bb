@@ -541,9 +541,8 @@ class DelegatedRendererLayerImplTestTransform
           RenderPass::Id(10, 7),
           child_pass_rect,
           gfx::Transform());
-      MockQuadCuller quad_sink(&pass->quad_list, &pass->shared_quad_state_list);
-      SharedQuadState* shared_quad_state = quad_sink.UseSharedQuadState(
-          SharedQuadState::Create());
+      MockQuadCuller quad_sink(pass);
+      SharedQuadState* shared_quad_state = quad_sink.CreateSharedQuadState();
       shared_quad_state->SetAll(child_pass_transform,
                                 child_pass_content_bounds,
                                 child_pass_rect,
@@ -583,9 +582,8 @@ class DelegatedRendererLayerImplTestTransform
         RenderPass::Id(9, 6),
         root_pass_rect,
         gfx::Transform());
-    MockQuadCuller quad_sink(&pass->quad_list, &pass->shared_quad_state_list);
-    SharedQuadState* shared_quad_state =
-        quad_sink.UseSharedQuadState(SharedQuadState::Create());
+    MockQuadCuller quad_sink(pass);
+    SharedQuadState* shared_quad_state = quad_sink.CreateSharedQuadState();
     shared_quad_state->SetAll(root_pass_transform,
                               root_pass_content_bounds,
                               root_pass_rect,
@@ -972,9 +970,8 @@ class DelegatedRendererLayerImplTestClip
           RenderPass::Id(10, 7),
           child_pass_rect,
           gfx::Transform());
-      MockQuadCuller quad_sink(&pass->quad_list, &pass->shared_quad_state_list);
-      SharedQuadState* shared_quad_state =
-          quad_sink.UseSharedQuadState(SharedQuadState::Create());
+      MockQuadCuller quad_sink(pass);
+      SharedQuadState* shared_quad_state = quad_sink.CreateSharedQuadState();
       shared_quad_state->SetAll(child_pass_transform,
                                 child_pass_content_bounds,
                                 child_pass_rect,
@@ -1012,9 +1009,8 @@ class DelegatedRendererLayerImplTestClip
         RenderPass::Id(9, 6),
         root_pass_rect,
         gfx::Transform());
-    MockQuadCuller quad_sink(&pass->quad_list, &pass->shared_quad_state_list);
-    SharedQuadState* shared_quad_state =
-        quad_sink.UseSharedQuadState(SharedQuadState::Create());
+    MockQuadCuller quad_sink(pass);
+    SharedQuadState* shared_quad_state = quad_sink.CreateSharedQuadState();
     shared_quad_state->SetAll(root_pass_transform,
                               root_pass_content_bounds,
                               root_pass_rect,

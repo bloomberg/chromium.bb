@@ -143,8 +143,9 @@ void TextureLayerImpl::AppendQuads(QuadSink* quad_sink,
                                    AppendQuadsData* append_quads_data) {
   DCHECK(external_texture_resource_ || valid_texture_copy_);
 
-  SharedQuadState* shared_quad_state =
-      quad_sink->UseSharedQuadState(CreateSharedQuadState());
+  SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
+  PopulateSharedQuadState(shared_quad_state);
+
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
   SkColor bg_color = blend_background_color_ ?

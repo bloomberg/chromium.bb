@@ -37,8 +37,9 @@ void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
 void SurfaceLayerImpl::AppendQuads(QuadSink* quad_sink,
                                    AppendQuadsData* append_quads_data) {
-  SharedQuadState* shared_quad_state =
-      quad_sink->UseSharedQuadState(CreateSharedQuadState());
+  SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
+  PopulateSharedQuadState(shared_quad_state);
+
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
   if (!surface_id_)

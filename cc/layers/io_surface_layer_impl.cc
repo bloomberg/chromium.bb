@@ -66,8 +66,9 @@ bool IOSurfaceLayerImpl::WillDraw(DrawMode draw_mode,
 
 void IOSurfaceLayerImpl::AppendQuads(QuadSink* quad_sink,
                                      AppendQuadsData* append_quads_data) {
-  SharedQuadState* shared_quad_state =
-      quad_sink->UseSharedQuadState(CreateSharedQuadState());
+  SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
+  PopulateSharedQuadState(shared_quad_state);
+
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
   gfx::Rect quad_rect(content_bounds());

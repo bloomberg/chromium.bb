@@ -16,23 +16,17 @@
 
 namespace cc {
 
-QuadCuller::QuadCuller(QuadList* quad_list,
-                       SharedQuadStateList* shared_quad_state_list,
+QuadCuller::QuadCuller(RenderPass* render_pass,
                        const LayerImpl* layer,
                        const OcclusionTracker<LayerImpl>& occlusion_tracker)
-    : quad_list_(quad_list),
-      shared_quad_state_list_(shared_quad_state_list),
+    : render_pass_(render_pass),
       layer_(layer),
       occlusion_tracker_(occlusion_tracker),
       current_shared_quad_state_(NULL) {
 }
 
-SharedQuadState* QuadCuller::UseSharedQuadState(
-    scoped_ptr<SharedQuadState> shared_quad_state) {
-  // TODO(danakj): If all quads are culled for the shared_quad_state, we can
-  // drop it from the list.
-  current_shared_quad_state_ = shared_quad_state.get();
-  shared_quad_state_list_->push_back(shared_quad_state.Pass());
+SharedQuadState* QuadCuller::CreateSharedQuadState() {
+  current_shared_quad_state_ = render_pass_->CreateAndAppendSharedQuadState();
   return current_shared_quad_state_;
 }
 
@@ -52,11 +46,12 @@ gfx::Rect QuadCuller::UnoccludedContributingSurfaceContentRect(
 
 void QuadCuller::Append(scoped_ptr<DrawQuad> draw_quad) {
   DCHECK(draw_quad->shared_quad_state == current_shared_quad_state_);
-  DCHECK(!shared_quad_state_list_->empty());
-  DCHECK(shared_quad_state_list_->back() == current_shared_quad_state_);
+  DCHECK(!render_pass_->shared_quad_state_list.empty());
+  DCHECK(render_pass_->shared_quad_state_list.back() ==
+         current_shared_quad_state_);
   DCHECK(!draw_quad->rect.IsEmpty());
   DCHECK(!draw_quad->visible_rect.IsEmpty());
-  quad_list_->push_back(draw_quad.Pass());
+  render_pass_->quad_list.push_back(draw_quad.Pass());
 }
 
 }  // namespace cc

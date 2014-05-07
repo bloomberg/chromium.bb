@@ -158,7 +158,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   LayerTreeImpl* layer_tree_impl() const { return layer_tree_impl_; }
 
-  scoped_ptr<SharedQuadState> CreateSharedQuadState() const;
+  void PopulateSharedQuadState(SharedQuadState* state) const;
   // WillDraw must be called before AppendQuads. If WillDraw returns false,
   // AppendQuads and DidDraw will not be called. If WillDraw returns true,
   // DidDraw is guaranteed to be called before another WillDraw or before

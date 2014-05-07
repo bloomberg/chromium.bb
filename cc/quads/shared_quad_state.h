@@ -28,6 +28,7 @@ class CC_EXPORT SharedQuadState {
   ~SharedQuadState();
 
   scoped_ptr<SharedQuadState> Copy() const;
+  void CopyFrom(const SharedQuadState* other);
 
   void SetAll(const gfx::Transform& content_to_target_transform,
               const gfx::Size& content_bounds,

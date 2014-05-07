@@ -131,10 +131,12 @@ void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
 }
 
 void SurfaceAggregator::CopySharedQuadState(
-    const SharedQuadState& source_sqs,
+    const SharedQuadState* source_sqs,
     const gfx::Transform& content_to_target_transform,
-    SharedQuadStateList* dest_sqs_list) {
-  scoped_ptr<SharedQuadState> copy_shared_quad_state = source_sqs.Copy();
+    RenderPass* dest_render_pass) {
+  SharedQuadState* copy_shared_quad_state =
+      dest_render_pass->CreateAndAppendSharedQuadState();
+  copy_shared_quad_state->CopyFrom(source_sqs);
   // content_to_target_transform contains any transformation that may exist
   // between the context that these quads are being copied from (i.e. the
   // surface's draw transform when aggregated from within a surface) to the
@@ -143,7 +145,6 @@ void SurfaceAggregator::CopySharedQuadState(
   // transform is not identity.
   copy_shared_quad_state->content_to_target_transform.ConcatTransform(
       content_to_target_transform);
-  dest_sqs_list->push_back(copy_shared_quad_state.Pass());
 }
 
 void SurfaceAggregator::CopyQuadsToPass(
@@ -167,9 +168,8 @@ void SurfaceAggregator::CopyQuadsToPass(
       HandleSurfaceQuad(surface_quad, dest_pass);
     } else {
       if (quad->shared_quad_state != last_copied_source_shared_quad_state) {
-        CopySharedQuadState(*quad->shared_quad_state,
-                            content_to_target_transform,
-                            &dest_pass->shared_quad_state_list);
+        CopySharedQuadState(
+            quad->shared_quad_state, content_to_target_transform, dest_pass);
         last_copied_source_shared_quad_state = quad->shared_quad_state;
       }
       if (quad->material == DrawQuad::RENDER_PASS) {

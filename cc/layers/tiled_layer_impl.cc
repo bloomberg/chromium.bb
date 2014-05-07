@@ -158,8 +158,9 @@ void TiledLayerImpl::AppendQuads(QuadSink* quad_sink,
   DCHECK(!visible_content_rect().IsEmpty());
 
   gfx::Rect content_rect = visible_content_rect();
-  SharedQuadState* shared_quad_state =
-      quad_sink->UseSharedQuadState(CreateSharedQuadState());
+  SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
+  PopulateSharedQuadState(shared_quad_state);
+
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
   int left, top, right, bottom;

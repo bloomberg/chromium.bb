@@ -319,8 +319,8 @@ void DelegatedRendererLayerImpl::AppendRainbowDebugBorder(
   if (!ShowDebugBorders())
     return;
 
-  SharedQuadState* shared_quad_state =
-      quad_sink->UseSharedQuadState(CreateSharedQuadState());
+  SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
+  PopulateSharedQuadState(shared_quad_state);
 
   SkColor color;
   float border_width;
@@ -407,8 +407,8 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
 
     if (delegated_quad->shared_quad_state != delegated_shared_quad_state) {
       delegated_shared_quad_state = delegated_quad->shared_quad_state;
-      output_shared_quad_state = quad_sink->UseSharedQuadState(
-          delegated_shared_quad_state->Copy());
+      output_shared_quad_state = quad_sink->CreateSharedQuadState();
+      output_shared_quad_state->CopyFrom(delegated_shared_quad_state);
 
       bool is_root_delegated_render_pass =
           delegated_render_pass == render_passes_in_draw_order_.back();

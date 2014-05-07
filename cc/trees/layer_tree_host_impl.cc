@@ -589,10 +589,7 @@ static void AppendQuadsForLayer(
     LayerImpl* layer,
     const OcclusionTracker<LayerImpl>& occlusion_tracker,
     AppendQuadsData* append_quads_data) {
-  QuadCuller quad_culler(&target_render_pass->quad_list,
-                         &target_render_pass->shared_quad_state_list,
-                         layer,
-                         occlusion_tracker);
+  QuadCuller quad_culler(target_render_pass, layer, occlusion_tracker);
   layer->AppendQuads(&quad_culler, append_quads_data);
 }
 
@@ -602,10 +599,7 @@ static void AppendQuadsForRenderSurfaceLayer(
     const RenderPass* contributing_render_pass,
     const OcclusionTracker<LayerImpl>& occlusion_tracker,
     AppendQuadsData* append_quads_data) {
-  QuadCuller quad_culler(&target_render_pass->quad_list,
-                         &target_render_pass->shared_quad_state_list,
-                         layer,
-                         occlusion_tracker);
+  QuadCuller quad_culler(target_render_pass, layer, occlusion_tracker);
 
   bool is_replica = false;
   layer->render_surface()->AppendQuads(&quad_culler,
@@ -648,10 +642,7 @@ static void AppendQuadsToFillScreen(
     screen_background_color_region.Intersect(root_scroll_layer_rect);
   }
 
-  QuadCuller quad_culler(&target_render_pass->quad_list,
-                         &target_render_pass->shared_quad_state_list,
-                         root_layer,
-                         occlusion_tracker);
+  QuadCuller quad_culler(target_render_pass, root_layer, occlusion_tracker);
 
   // Manually create the quad state for the gutter quads, as the root layer
   // doesn't have any bounds and so can't generate this itself.
@@ -660,8 +651,7 @@ static void AppendQuadsToFillScreen(
 
   gfx::Rect root_target_rect = root_layer->render_surface()->content_rect();
   float opacity = 1.f;
-  SharedQuadState* shared_quad_state =
-      quad_culler.UseSharedQuadState(SharedQuadState::Create());
+  SharedQuadState* shared_quad_state = quad_culler.CreateSharedQuadState();
   shared_quad_state->SetAll(gfx::Transform(),
                             root_target_rect.size(),
                             root_target_rect,

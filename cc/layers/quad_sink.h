@@ -24,10 +24,9 @@ class CC_EXPORT QuadSink {
   virtual ~QuadSink() {}
 
   // Call this to add a SharedQuadState before appending quads that refer to it.
-  // Returns a pointer to the given SharedQuadState for convenience, that can be
-  // set on the quads to append.
-  virtual SharedQuadState* UseSharedQuadState(
-      scoped_ptr<SharedQuadState> shared_quad_state) = 0;
+  // Returns a pointer to the given SharedQuadState, that can be set on the
+  // quads to append.
+  virtual SharedQuadState* CreateSharedQuadState() = 0;
 
   virtual gfx::Rect UnoccludedContentRect(
       const gfx::Rect& content_rect,

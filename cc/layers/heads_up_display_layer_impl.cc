@@ -110,8 +110,8 @@ void HeadsUpDisplayLayerImpl::AppendQuads(QuadSink* quad_sink,
   if (!hud_resource_->id())
     return;
 
-  SharedQuadState* shared_quad_state =
-      quad_sink->UseSharedQuadState(CreateSharedQuadState());
+  SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
+  PopulateSharedQuadState(shared_quad_state);
 
   gfx::Rect quad_rect(content_bounds());
   gfx::Rect opaque_rect(contents_opaque() ? quad_rect : gfx::Rect());

@@ -79,8 +79,9 @@ void RenderPass::CopyAll(const ScopedPtrVector<RenderPass>& in,
                       source->transform_to_root_target,
                       source->has_transparent_background);
     for (size_t i = 0; i < source->shared_quad_state_list.size(); ++i) {
-      copy_pass->shared_quad_state_list.push_back(
-          source->shared_quad_state_list[i]->Copy());
+      SharedQuadState* copy_shared_quad_state =
+          copy_pass->CreateAndAppendSharedQuadState();
+      copy_shared_quad_state->CopyFrom(source->shared_quad_state_list[i]);
     }
     for (size_t i = 0, sqs_i = 0; i < source->quad_list.size(); ++i) {
       while (source->quad_list[i]->shared_quad_state !=
@@ -166,6 +167,11 @@ scoped_ptr<base::Value> RenderPass::AsValue() const {
       TRACE_DISABLED_BY_DEFAULT("cc.debug.quads"),
       value.get(), "cc::RenderPass", id.AsTracingId());
   return value.PassAs<base::Value>();
+}
+
+SharedQuadState* RenderPass::CreateAndAppendSharedQuadState() {
+  shared_quad_state_list.push_back(SharedQuadState::Create());
+  return shared_quad_state_list.back();
 }
 
 }  // namespace cc

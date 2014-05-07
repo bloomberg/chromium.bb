@@ -138,8 +138,8 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
   gfx::Rect rect(visible_content_rect());
   gfx::Rect content_rect(content_bounds());
 
-  SharedQuadState* shared_quad_state =
-      quad_sink->UseSharedQuadState(CreateSharedQuadState());
+  SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
+  PopulateSharedQuadState(shared_quad_state);
 
   if (current_draw_mode_ == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     AppendDebugBorderQuad(

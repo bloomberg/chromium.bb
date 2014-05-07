@@ -27,6 +27,10 @@ scoped_ptr<SharedQuadState> SharedQuadState::Copy() const {
   return make_scoped_ptr(new SharedQuadState(*this));
 }
 
+void SharedQuadState::CopyFrom(const SharedQuadState* other) {
+  *this = *other;
+}
+
 void SharedQuadState::SetAll(const gfx::Transform& content_to_target_transform,
                              const gfx::Size& content_bounds,
                              const gfx::Rect& visible_content_rect,

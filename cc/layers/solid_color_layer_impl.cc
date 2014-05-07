@@ -24,8 +24,9 @@ scoped_ptr<LayerImpl> SolidColorLayerImpl::CreateLayerImpl(
 
 void SolidColorLayerImpl::AppendQuads(QuadSink* quad_sink,
                                       AppendQuadsData* append_quads_data) {
-  SharedQuadState* shared_quad_state =
-      quad_sink->UseSharedQuadState(CreateSharedQuadState());
+  SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
+  PopulateSharedQuadState(shared_quad_state);
+
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
   // We create a series of smaller quads instead of just one large one so that

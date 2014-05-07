@@ -54,10 +54,9 @@ void AddTestSurfaceQuad(TestRenderPass* pass,
 }
 void AddTestRenderPassQuad(TestRenderPass* pass,
                            RenderPass::Id render_pass_id) {
-  MockQuadCuller quad_sink(&pass->quad_list, &pass->shared_quad_state_list);
+  MockQuadCuller quad_sink(pass);
   gfx::Rect output_rect = gfx::Rect(0, 0, 5, 5);
-  SharedQuadState* shared_state =
-      quad_sink.UseSharedQuadState(SharedQuadState::Create());
+  SharedQuadState* shared_state = quad_sink.CreateSharedQuadState();
   shared_state->SetAll(gfx::Transform(),
                        output_rect.size(),
                        output_rect,

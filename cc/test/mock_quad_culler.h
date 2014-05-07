@@ -17,12 +17,10 @@ class MockQuadCuller : public QuadSink {
   MockQuadCuller();
   virtual ~MockQuadCuller();
 
-  MockQuadCuller(QuadList* external_quad_list,
-                 SharedQuadStateList* external_shared_quad_state_list);
+  explicit MockQuadCuller(RenderPass* external_render_pass);
 
   // QuadSink interface.
-  virtual SharedQuadState* UseSharedQuadState(
-      scoped_ptr<SharedQuadState> shared_quad_state) OVERRIDE;
+  virtual SharedQuadState* CreateSharedQuadState() OVERRIDE;
   virtual gfx::Rect UnoccludedContentRect(const gfx::Rect& content_rect,
                                           const gfx::Transform& draw_transform)
       OVERRIDE;
@@ -31,9 +29,9 @@ class MockQuadCuller : public QuadSink {
       const gfx::Transform& draw_transform) OVERRIDE;
   virtual void Append(scoped_ptr<DrawQuad> draw_quad) OVERRIDE;
 
-  const QuadList& quad_list() const { return *active_quad_list_; }
+  const QuadList& quad_list() const { return active_render_pass_->quad_list; }
   const SharedQuadStateList& shared_quad_state_list() const {
-    return *active_shared_quad_state_list_;
+    return active_render_pass_->shared_quad_state_list;
   }
 
   void set_occluded_target_rect(const gfx::Rect& occluded) {
@@ -46,15 +44,13 @@ class MockQuadCuller : public QuadSink {
   }
 
   void clear_lists() {
-    active_quad_list_->clear();
-    active_shared_quad_state_list_->clear();
+    active_render_pass_->quad_list.clear();
+    active_render_pass_->shared_quad_state_list.clear();
   }
 
  private:
-  QuadList* active_quad_list_;
-  QuadList quad_list_storage_;
-  SharedQuadStateList* active_shared_quad_state_list_;
-  SharedQuadStateList shared_quad_state_storage_;
+  scoped_ptr<RenderPass> render_pass_storage_;
+  RenderPass* active_render_pass_;
   gfx::Rect occluded_target_rect_;
   gfx::Rect occluded_target_rect_for_contributing_surface_;
 };

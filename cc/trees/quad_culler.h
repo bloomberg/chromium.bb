@@ -7,25 +7,23 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/layers/quad_sink.h"
-#include "cc/quads/render_pass.h"
 
 namespace cc {
 class LayerImpl;
+class RenderPass;
 class RenderSurfaceImpl;
 template <typename LayerType>
 class OcclusionTracker;
 
 class CC_EXPORT QuadCuller : public QuadSink {
  public:
-  QuadCuller(QuadList* quad_list,
-             SharedQuadStateList* shared_quad_state_list,
+  QuadCuller(RenderPass* render_pass,
              const LayerImpl* layer,
              const OcclusionTracker<LayerImpl>& occlusion_tracker);
   virtual ~QuadCuller() {}
 
   // QuadSink implementation.
-  virtual SharedQuadState* UseSharedQuadState(
-      scoped_ptr<SharedQuadState> shared_quad_state) OVERRIDE;
+  virtual SharedQuadState* CreateSharedQuadState() OVERRIDE;
   virtual gfx::Rect UnoccludedContentRect(const gfx::Rect& content_rect,
                                           const gfx::Transform& draw_transform)
       OVERRIDE;
@@ -35,8 +33,7 @@ class CC_EXPORT QuadCuller : public QuadSink {
   virtual void Append(scoped_ptr<DrawQuad> draw_quad) OVERRIDE;
 
  private:
-  QuadList* quad_list_;
-  SharedQuadStateList* shared_quad_state_list_;
+  RenderPass* render_pass_;
   const LayerImpl* layer_;
   const OcclusionTracker<LayerImpl>& occlusion_tracker_;
 

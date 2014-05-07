@@ -243,8 +243,7 @@ void LayerImpl::ClearRenderSurfaceLayerList() {
     draw_properties_.render_surface->layer_list().clear();
 }
 
-scoped_ptr<SharedQuadState> LayerImpl::CreateSharedQuadState() const {
-  scoped_ptr<SharedQuadState> state = SharedQuadState::Create();
+void LayerImpl::PopulateSharedQuadState(SharedQuadState* state) const {
   state->SetAll(draw_properties_.target_space_transform,
                 draw_properties_.content_bounds,
                 draw_properties_.visible_content_rect,
@@ -252,7 +251,6 @@ scoped_ptr<SharedQuadState> LayerImpl::CreateSharedQuadState() const {
                 draw_properties_.is_clipped,
                 draw_properties_.opacity,
                 blend_mode_);
-  return state.Pass();
 }
 
 bool LayerImpl::WillDraw(DrawMode draw_mode,

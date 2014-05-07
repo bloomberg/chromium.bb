@@ -107,17 +107,16 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   render_surface->SetClipRect(clip_rect);
   render_surface->SetDrawOpacity(1.f);
 
-  QuadList quad_list;
-  SharedQuadStateList shared_state_list;
-  MockQuadCuller mock_quad_culler(&quad_list, &shared_state_list);
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  MockQuadCuller mock_quad_culler(render_pass.get());
   AppendQuadsData append_quads_data;
 
   bool for_replica = false;
   render_surface->AppendQuads(
       &mock_quad_culler, &append_quads_data, for_replica, RenderPass::Id(2, 0));
 
-  ASSERT_EQ(1u, shared_state_list.size());
-  SharedQuadState* shared_quad_state = shared_state_list[0];
+  ASSERT_EQ(1u, render_pass->shared_quad_state_list.size());
+  SharedQuadState* shared_quad_state = render_pass->shared_quad_state_list[0];
 
   EXPECT_EQ(
       30.0,

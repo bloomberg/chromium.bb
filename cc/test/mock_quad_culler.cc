@@ -9,23 +9,19 @@
 
 namespace cc {
 
-MockQuadCuller::MockQuadCuller()
-    : active_quad_list_(&quad_list_storage_),
-      active_shared_quad_state_list_(&shared_quad_state_storage_) {}
+MockQuadCuller::MockQuadCuller() {
+  render_pass_storage_ = RenderPass::Create();
+  active_render_pass_ = render_pass_storage_.get();
+}
 
-MockQuadCuller::MockQuadCuller(
-    QuadList* external_quad_list,
-    SharedQuadStateList* external_shared_quad_state_list)
-    : active_quad_list_(external_quad_list),
-      active_shared_quad_state_list_(external_shared_quad_state_list) {}
+MockQuadCuller::MockQuadCuller(RenderPass* external_render_pass)
+    : active_render_pass_(external_render_pass) {
+}
 
 MockQuadCuller::~MockQuadCuller() {}
 
-SharedQuadState* MockQuadCuller::UseSharedQuadState(
-    scoped_ptr<SharedQuadState> shared_quad_state) {
-  SharedQuadState* raw_ptr = shared_quad_state.get();
-  active_shared_quad_state_list_->push_back(shared_quad_state.Pass());
-  return raw_ptr;
+SharedQuadState* MockQuadCuller::CreateSharedQuadState() {
+  return active_render_pass_->CreateAndAppendSharedQuadState();
 }
 
 gfx::Rect MockQuadCuller::UnoccludedContentRect(
@@ -63,7 +59,7 @@ gfx::Rect MockQuadCuller::UnoccludedContributingSurfaceContentRect(
 void MockQuadCuller::Append(scoped_ptr<DrawQuad> draw_quad) {
   DCHECK(!draw_quad->rect.IsEmpty());
   DCHECK(!draw_quad->visible_rect.IsEmpty());
-  active_quad_list_->push_back(draw_quad.Pass());
+  active_render_pass_->quad_list.push_back(draw_quad.Pass());
 }
 
 }  // namespace cc
