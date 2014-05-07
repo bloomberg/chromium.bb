@@ -351,7 +351,7 @@ bool GraphicsContext::getTransformedClipBounds(FloatRect* bounds) const
     SkIRect skIBounds;
     if (!m_canvas->getClipDeviceBounds(&skIBounds))
         return false;
-    SkRect skBounds = SkRect::MakeFromIRect(skIBounds);
+    SkRect skBounds = SkRect::Make(skIBounds);
     *bounds = FloatRect(skBounds);
     return true;
 }

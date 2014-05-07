@@ -34,6 +34,7 @@
 #define SkiaUtils_h
 
 #include "SkMatrix.h"
+#include "SkPaint.h"
 #include "SkPath.h"
 #include "SkXfermode.h"
 #include "platform/PlatformExport.h"
@@ -55,6 +56,13 @@ PassRefPtr<SkXfermode> WebCoreCompositeToSkiaComposite(CompositeOperator, blink:
 
 // move this guy into SkColor.h
 SkColor SkPMColorToColor(SkPMColor);
+
+inline SkPaint::FilterLevel WebCoreInterpolationQualityToSkFilterLevel(InterpolationQuality quality)
+{
+    // FIXME: this reflects existing client mappings, but should probably
+    // be expanded to map higher level interpolations more accurately.
+    return quality != InterpolationNone ? SkPaint::kLow_FilterLevel : SkPaint::kNone_FilterLevel;
+}
 
 // Skia has problems when passed infinite, etc floats, filter them to 0.
 inline SkScalar WebCoreFloatToSkScalar(float f)

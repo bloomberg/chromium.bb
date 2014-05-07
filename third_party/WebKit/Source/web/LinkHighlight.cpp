@@ -126,7 +126,7 @@ RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
     CompositedLayerMappingPtr compositedLayerMapping = renderLayer->compositingState() == PaintsIntoGroupedBacking ? renderLayer->groupedMapping() : renderLayer->compositedLayerMapping();
     GraphicsLayer* newGraphicsLayer = renderLayer->compositingState() == PaintsIntoGroupedBacking ? compositedLayerMapping->squashingLayer() : compositedLayerMapping->mainGraphicsLayer();
 
-    m_clipLayer->setTransform(SkMatrix44());
+    m_clipLayer->setTransform(SkMatrix44(SkMatrix44::kIdentity_Constructor));
 
     if (!newGraphicsLayer->drawsContent()) {
         if (renderLayer->scrollableArea() && renderLayer->scrollableArea()->usesCompositedScrolling()) {

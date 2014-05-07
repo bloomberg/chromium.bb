@@ -5,6 +5,8 @@
 #include "config.h"
 #include "platform/graphics/GraphicsContextState.h"
 
+#include "platform/graphics/skia/SkiaUtils.h"
+
 namespace WebCore {
 
 GraphicsContextState::GraphicsContextState()
@@ -27,10 +29,10 @@ GraphicsContextState::GraphicsContextState()
     m_strokePaint.setStrokeCap(SkPaint::kDefault_Cap);
     m_strokePaint.setStrokeJoin(SkPaint::kDefault_Join);
     m_strokePaint.setStrokeMiter(SkFloatToScalar(m_strokeData.miterLimit()));
-    m_strokePaint.setFilterBitmap(m_interpolationQuality != InterpolationNone);
+    m_strokePaint.setFilterLevel(WebCoreInterpolationQualityToSkFilterLevel(m_interpolationQuality));
     m_strokePaint.setAntiAlias(m_shouldAntialias);
     m_fillPaint.setColor(applyAlpha(m_fillColor.rgb()));
-    m_fillPaint.setFilterBitmap(m_interpolationQuality != InterpolationNone);
+    m_fillPaint.setFilterLevel(WebCoreInterpolationQualityToSkFilterLevel(m_interpolationQuality));
     m_fillPaint.setAntiAlias(m_shouldAntialias);
 }
 
@@ -235,8 +237,8 @@ void GraphicsContextState::setCompositeOperation(CompositeOperator compositeOper
 void GraphicsContextState::setInterpolationQuality(InterpolationQuality quality)
 {
     m_interpolationQuality = quality;
-    m_strokePaint.setFilterBitmap(quality != InterpolationNone);
-    m_fillPaint.setFilterBitmap(quality != InterpolationNone);
+    m_strokePaint.setFilterLevel(WebCoreInterpolationQualityToSkFilterLevel(quality));
+    m_fillPaint.setFilterLevel(WebCoreInterpolationQualityToSkFilterLevel(quality));
 }
 
 void GraphicsContextState::setShouldAntialias(bool shouldAntialias)
