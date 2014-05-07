@@ -794,10 +794,11 @@ void AwContents::OnDetachedFromWindow(JNIEnv* env, jobject obj) {
 }
 
 void AwContents::ReleaseHardwareDrawOnRenderThread() {
-  DCHECK(hardware_renderer_);
-  DCHECK(shared_renderer_state_.IsHardwareInitialized());
   // No point in running any other commands if we released hardware already.
   shared_renderer_state_.ClearClosureQueue();
+  if (!shared_renderer_state_.IsHardwareInitialized())
+    return;
+
   hardware_renderer_.reset();
   shared_renderer_state_.SetHardwareInitialized(false);
 }

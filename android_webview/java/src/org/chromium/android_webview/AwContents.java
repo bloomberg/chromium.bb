@@ -1582,6 +1582,10 @@ public class AwContents {
      */
     public void onAttachedToWindow() {
         if (mNativeAwContents == 0) return;
+        if (mIsAttachedToWindow) {
+            Log.w(TAG, "onAttachedToWindow called when already attached. Ignoring");
+            return;
+        }
         mIsAttachedToWindow = true;
 
         mContentViewCore.onAttachedToWindow();
@@ -1599,6 +1603,10 @@ public class AwContents {
      */
     @SuppressLint("MissingSuperCall")
     public void onDetachedFromWindow() {
+        if (!mIsAttachedToWindow) {
+            Log.w(TAG, "onDetachedFromWindow called when already detached. Ignoring");
+            return;
+        }
         mIsAttachedToWindow = false;
         hideAutofillPopup();
         if (mNativeAwContents != 0) {
