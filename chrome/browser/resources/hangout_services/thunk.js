@@ -181,11 +181,13 @@ function onProcessCpu(port) {
     if (!tabProcess) {
       return;
     }
-    var pluginProcessCpu = 0, browserProcessCpu = 0;
+    var pluginProcessCpu = 0, browserProcessCpu = 0, gpuProcessCpu = 0;
     for (var pid in processes) {
       var process = processes[pid];
       if (process.type == 'browser') {
         browserProcessCpu = process.cpu;
+      } else if (process.type == 'gpu') {
+        gpuProcessCpu = process.cpu;
       } else if ((process.type == 'plugin' || process.type == 'nacl') &&
                  process.title.toLowerCase().indexOf('hangouts') > 0) {
         pluginProcessCpu = process.cpu;
@@ -195,6 +197,7 @@ function onProcessCpu(port) {
     port.postMessage({
       'tabCpuUsage': tabProcess.cpu,
       'browserCpuUsage': browserProcessCpu,
+      'gpuCpuUsage': gpuProcessCpu,
       'pluginCpuUsage': pluginProcessCpu
     });
   }
