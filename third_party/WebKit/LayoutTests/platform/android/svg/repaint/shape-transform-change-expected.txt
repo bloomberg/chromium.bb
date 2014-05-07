@@ -1,3 +1,7 @@
+Test if applying a transform to a <rect> properly repaints the <rect>.
+
+Pass if there's a green 200x200 (px) rectangle below, and no red visible.
+
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1
