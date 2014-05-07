@@ -48,7 +48,7 @@ enum MergeType {
 // It supports editing, selection and cursor manipulation.
 class VIEWS_EXPORT TextfieldModel {
  public:
-  // Delegate interface implemented by the textfield view class to provided
+  // Delegate interface implemented by the textfield view class to provide
   // additional functionalities required by the model.
   class VIEWS_EXPORT Delegate {
    public:
@@ -123,11 +123,9 @@ class VIEWS_EXPORT TextfieldModel {
                   gfx::VisualCursorDirection direction,
                   bool select);
 
-  // Moves the selection to the specified selection in |selection|.
-  // If there is composition text, it will be confirmed, which will update the
-  // selection range, and it overrides the selection_start to which the
-  // selection will move to.
-  bool MoveCursorTo(const gfx::SelectionModel& selection);
+  // Updates the cursor to the specified selection model. Any composition text
+  // will be confirmed, which may alter the specified selection range start.
+  bool MoveCursorTo(const gfx::SelectionModel& cursor);
 
   // Helper function to call MoveCursorTo on the TextfieldModel.
   bool MoveCursorTo(const gfx::Point& point, bool select);

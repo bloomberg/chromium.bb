@@ -1488,7 +1488,7 @@ void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {
     cursor_visible_ = true;
     RepaintCursor();
     if (cursor_repaint_timer_.IsRunning())
-    cursor_repaint_timer_.Reset();
+      cursor_repaint_timer_.Reset();
     if (!text_changed) {
       // TEXT_CHANGED implies SELECTION_CHANGED, so we only need to fire
       // this if only the selection changed.

@@ -398,24 +398,27 @@ void TextfieldModel::MoveCursor(gfx::BreakType break_type,
   render_text_->MoveCursor(break_type, direction, select);
 }
 
-bool TextfieldModel::MoveCursorTo(const gfx::SelectionModel& model) {
+bool TextfieldModel::MoveCursorTo(const gfx::SelectionModel& cursor) {
   if (HasCompositionText()) {
     ConfirmCompositionText();
     // ConfirmCompositionText() updates cursor position. Need to reflect it in
     // the SelectionModel parameter of MoveCursorTo().
-    gfx::Range range(render_text_->selection().start(), model.caret_pos());
+    gfx::Range range(render_text_->selection().start(), cursor.caret_pos());
     if (!range.is_empty())
       return render_text_->SelectRange(range);
     return render_text_->MoveCursorTo(
-        gfx::SelectionModel(model.caret_pos(), model.caret_affinity()));
+        gfx::SelectionModel(cursor.caret_pos(), cursor.caret_affinity()));
   }
-  return render_text_->MoveCursorTo(model);
+  return render_text_->MoveCursorTo(cursor);
 }
 
 bool TextfieldModel::MoveCursorTo(const gfx::Point& point, bool select) {
   if (HasCompositionText())
     ConfirmCompositionText();
-  return render_text_->MoveCursorTo(point, select);
+  gfx::SelectionModel cursor = render_text_->FindCursorPosition(point);
+  if (select)
+    cursor.set_selection_start(render_text_->selection().start());
+  return render_text_->MoveCursorTo(cursor);
 }
 
 base::string16 TextfieldModel::GetSelectedText() const {

@@ -539,13 +539,6 @@ bool RenderText::MoveCursorTo(const SelectionModel& model) {
   return changed;
 }
 
-bool RenderText::MoveCursorTo(const Point& point, bool select) {
-  SelectionModel position = FindCursorPosition(point);
-  if (select)
-    position.set_selection_start(selection().start());
-  return MoveCursorTo(position);
-}
-
 bool RenderText::SelectRange(const Range& range) {
   Range sel(std::min(range.start(), text().length()),
             std::min(range.end(), text().length()));

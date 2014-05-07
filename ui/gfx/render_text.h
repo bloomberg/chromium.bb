@@ -289,11 +289,6 @@ class GFX_EXPORT RenderText {
   // grapheme boundary), it is a no-op and returns false.
   bool MoveCursorTo(const SelectionModel& selection_model);
 
-  // Move the cursor to the position associated with the clicked point.
-  // If |select| is false, the selection start is moved to the same position.
-  // Returns true if the cursor position or selection range changed.
-  bool MoveCursorTo(const Point& point, bool select);
-
   // Set the selection_model_ based on |range|.
   // If the |range| start or end is greater than text length, it is modified
   // to be the text length.

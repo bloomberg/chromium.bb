@@ -73,19 +73,16 @@ class GFX_EXPORT SelectionModel {
   size_t caret_pos() const { return selection_.end(); }
   LogicalCursorDirection caret_affinity() const { return caret_affinity_; }
 
+  // WARNING: Generally the selection start should not be changed without
+  // considering the effect on the caret affinity.
+  void set_selection_start(size_t pos) { selection_.set_start(pos); }
+
   bool operator==(const SelectionModel& sel) const;
   bool operator!=(const SelectionModel& sel) const { return !(*this == sel); }
 
   std::string ToString() const;
 
  private:
-  friend class RenderText;
-
-  // TODO(benrg): Generally the selection start should not be changed without
-  // considering the effect on the caret affinity. This setter is exposed only
-  // to RenderText to discourage misuse, and should probably be removed.
-  void set_selection_start(size_t pos) { selection_.set_start(pos); }
-
   // Logical selection. The logical caret position is the end of the selection.
   Range selection_;
 
