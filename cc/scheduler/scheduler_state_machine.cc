@@ -784,8 +784,10 @@ void SchedulerStateMachine::UpdateStateOnDraw(bool did_request_swap) {
     forced_redraw_state_ = FORCED_REDRAW_STATE_IDLE;
   }
 
-  if (commit_state_ == COMMIT_STATE_WAITING_FOR_FIRST_DRAW)
+  if (!has_pending_tree_ &&
+      commit_state_ == COMMIT_STATE_WAITING_FOR_FIRST_DRAW) {
     commit_state_ = COMMIT_STATE_IDLE;
+  }
 
   needs_redraw_ = false;
   active_tree_needs_first_draw_ = false;

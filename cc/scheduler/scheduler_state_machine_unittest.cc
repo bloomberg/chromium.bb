@@ -226,18 +226,32 @@ TEST(SchedulerStateMachineTest, MainFrameBeforeDrawDisabled) {
   state.OnBeginImplFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
+  // Make sure that a draw of the active tree doesn't spuriously advance
+  // the commit state and unblock the next commit.
+  state.SetNeedsRedraw(true);
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  EXPECT_EQ(state.CommitState(),
+            SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW);
+  EXPECT_TRUE(state.has_pending_tree());
+
   // Verify NotifyReadyToActivate unblocks activation, draw, and
   // commit in that order.
+  state.OnBeginImplFrame(BeginFrameArgs::CreateForTesting());
+
   state.NotifyReadyToActivate();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   EXPECT_EQ(state.CommitState(),
             SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW);
 
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineEarly());
   state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
   EXPECT_EQ(state.CommitState(), SchedulerStateMachine::COMMIT_STATE_IDLE);
