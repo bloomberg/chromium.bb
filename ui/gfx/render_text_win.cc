@@ -836,7 +836,7 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
       for (size_t k = glyph_range.start(); k < glyph_range.end(); ++k) {
         pos[k - glyph_range.start()].set(
             SkIntToScalar(text_offset.x() + run->offsets[k].du + segment_x),
-            SkIntToScalar(text_offset.y() + run->offsets[k].dv));
+            SkIntToScalar(text_offset.y() - run->offsets[k].dv));
         segment_x += run->advance_widths[k];
       }
       pos.back().set(SkIntToScalar(text_offset.x() + segment_x),
