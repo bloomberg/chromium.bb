@@ -49,6 +49,7 @@ class PnaclTranslateThread {
                     ErrorInfo* error_info,
                     PnaclResources* resources,
                     PP_PNaClOptions* pnacl_options,
+                    const nacl::string &architecture_attributes,
                     PnaclCoordinator* coordinator,
                     Plugin* plugin);
 
@@ -120,6 +121,7 @@ class PnaclTranslateThread {
   ErrorInfo* coordinator_error_info_;
   PnaclResources* resources_;
   PP_PNaClOptions* pnacl_options_;
+  nacl::string architecture_attributes_;
   PnaclCoordinator* coordinator_;
   Plugin* plugin_;
  private:

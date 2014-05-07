@@ -7,6 +7,7 @@
 #include <iterator>
 
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "ppapi/cpp/var.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
 #include "ppapi/native_client/src/trusted/plugin/pnacl_resources.h"
@@ -17,20 +18,36 @@
 namespace plugin {
 namespace {
 
-nacl::string GetOptCommandLine(int32_t opt_level, bool is_debug) {
-  nacl::string str;
+template <typename Val>
+nacl::string MakeCommandLineArg(const char* key, const Val val) {
   nacl::stringstream ss;
-  ss << "-O" << opt_level;
-  str = ss.str();
-  str += '\x00';
+  ss << key << val;
+  return ss.str();
+}
 
-  // Debug info is only available in LLVM format pexes,
-  // not in PNaCl format pexes.
-  if (is_debug) {
-    str += "-bitcode-format=llvm";
-    str += '\x00';
+void GetLlcCommandLine(Plugin* plugin,
+                       std::vector<char>* split_args,
+                       size_t obj_files_size,
+                       int32_t opt_level,
+                       bool is_debug,
+                       const nacl::string &architecture_attributes) {
+  typedef std::vector<nacl::string> Args;
+  Args args;
+
+  // TODO(dschuff): This CL override is ugly. Change llc to default to
+  // using the number of modules specified in the first param, and
+  // ignore multiple uses of -split-module
+  args.push_back(MakeCommandLineArg("-split-module=", obj_files_size));
+  args.push_back(MakeCommandLineArg("-O=", opt_level));
+  if (is_debug)
+    args.push_back("-bitcode-format=llvm");
+  if (!architecture_attributes.empty())
+    args.push_back("-mattr=" + architecture_attributes);
+
+  for (Args::const_iterator arg(args.begin()); arg != args.end(); ++arg) {
+    std::copy(arg->begin(), arg->end(), std::back_inserter(*split_args));
+    split_args->push_back('\x00');
   }
-  return str;
 }
 
 }  // namespace
@@ -60,6 +77,7 @@ void PnaclTranslateThread::RunTranslate(
     ErrorInfo* error_info,
     PnaclResources* resources,
     PP_PNaClOptions* pnacl_options,
+    const nacl::string &architecture_attributes,
     PnaclCoordinator* coordinator,
     Plugin* plugin) {
   PLUGIN_PRINTF(("PnaclStreamingTranslateThread::RunTranslate)\n"));
@@ -70,6 +88,7 @@ void PnaclTranslateThread::RunTranslate(
   coordinator_error_info_ = error_info;
   resources_ = resources;
   pnacl_options_ = pnacl_options;
+  architecture_attributes_ = architecture_attributes;
   coordinator_ = coordinator;
   plugin_ = plugin;
 
@@ -198,17 +217,12 @@ void PnaclTranslateThread::DoTranslate() {
   bool init_success;
 
   std::vector<char> split_args;
-  nacl::stringstream ss;
-  // TODO(dschuff): This CL override is ugly. Change llc to default to using
-  // the number of modules specified in the first param, and ignore multiple
-  // uses of -split-module
-  ss << "-split-module=" << obj_files_->size();
-  nacl::string split_arg = ss.str();
-  std::copy(split_arg.begin(), split_arg.end(), std::back_inserter(split_args));
-  split_args.push_back('\x00');
-  nacl::string options = GetOptCommandLine(pnacl_options_->opt_level,
-                                           pnacl_options_->is_debug);
-  std::copy(options.begin(), options.end(), std::back_inserter(split_args));
+  GetLlcCommandLine(plugin_,
+                    &split_args,
+                    obj_files_->size(),
+                    pnacl_options_->opt_level,
+                    pnacl_options_->is_debug,
+                    architecture_attributes_);
   init_success = llc_subprocess_->InvokeSrpcMethod(
       "StreamInitWithSplit",
       "ihhhhhhhhhhhhhhhhC",

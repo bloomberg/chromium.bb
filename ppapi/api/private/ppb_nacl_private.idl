@@ -440,4 +440,10 @@ interface PPB_NaCl_Private {
                                [in] str_t filename,
                                [out] PP_Var llc_tool_name,
                                [out] PP_Var ld_tool_name);
+
+  // PP_Var string of attributes describing the CPU features supported
+  // by the current architecture. The string is a comma-delimited list
+  // of attributes supported by LLVM in its -mattr= option:
+  //   http://llvm.org/docs/CommandGuide/llc.html#cmdoption-mattr
+  PP_Var GetCpuFeatureAttrs();
 };

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Mon May  5 13:49:42 2014. */
+/* From private/ppb_nacl_private.idl modified Tue May  6 21:29:20 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -430,6 +430,11 @@ struct PPB_NaCl_Private_1_0 {
                                   const char* filename,
                                   struct PP_Var* llc_tool_name,
                                   struct PP_Var* ld_tool_name);
+  /* PP_Var string of attributes describing the CPU features supported
+   * by the current architecture. The string is a comma-delimited list
+   * of attributes supported by LLVM in its -mattr= option:
+   *   http://llvm.org/docs/CommandGuide/llc.html#cmdoption-mattr */
+  struct PP_Var (*GetCpuFeatureAttrs)(void);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

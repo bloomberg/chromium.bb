@@ -100,6 +100,12 @@ void HistogramOptLevel(pp::UMAPrivate& uma, int8_t opt_level) {
                            opt_level, kOptUnknown+1);
 }
 
+nacl::string GetArchitectureAttributes(Plugin* plugin) {
+  pp::Var attrs_var(pp::PASS_REF,
+                    plugin->nacl_interface()->GetCpuFeatureAttrs());
+  return attrs_var.AsString();
+}
+
 }  // namespace
 
 
@@ -151,6 +157,7 @@ PnaclCoordinator::PnaclCoordinator(
         GetNaClInterface()->CreatePnaclManifest(plugin->pp_instance())),
     pexe_url_(pexe_url),
     pnacl_options_(pnacl_options),
+    architecture_attributes_(GetArchitectureAttributes(plugin)),
     split_module_count_(1),
     num_object_files_opened_(0),
     is_cache_hit_(PP_FALSE),
@@ -421,7 +428,7 @@ void PnaclCoordinator::ResourcesDidLoad(int32_t pp_error) {
           1,
           pnacl_options_.opt_level,
           headers.c_str(),
-          "", // No extra compile flags yet.
+          architecture_attributes_.c_str(), // Extra compile flags.
           &is_cache_hit_,
           temp_nexe_file_->existing_handle(),
           cb.pp_completion_callback());
@@ -619,6 +626,7 @@ void PnaclCoordinator::RunTranslate(int32_t pp_error) {
                                   &error_info_,
                                   resources_.get(),
                                   &pnacl_options_,
+                                  architecture_attributes_,
                                   this,
                                   plugin_);
 }

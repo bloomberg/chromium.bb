@@ -211,6 +211,10 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   nacl::string pexe_url_;
   // Options for translation.
   PP_PNaClOptions pnacl_options_;
+  // Architecture-specific attributes used for translation. These are
+  // supplied by Chrome, not the developer, and are therefore different
+  // from PNaCl options.
+  nacl::string architecture_attributes_;
 
   // Object file, produced by the translator and consumed by the linker.
   std::vector<TempFile*> obj_files_;
