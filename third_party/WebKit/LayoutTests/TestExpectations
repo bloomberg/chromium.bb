@@ -122,18 +122,6 @@ crbug.com/250514 virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrol
 
 crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign-0-seconds.html [ Failure Pass ]
 
-crbug.com/369609 svg/zoom/page/zoom-svg-through-object-with-auto-size.html [ NeedsRebaseline ]
-crbug.com/369609 svg/zoom/page/zoom-svg-through-object-with-huge-size.xhtml [ NeedsRebaseline ]
-crbug.com/369609 svg/zoom/page/zoom-svg-through-object-with-override-size.html [ NeedsRebaseline ]
-crbug.com/369609 svg/zoom/page/zoom-svg-through-object-with-percentage-size.xhtml [ NeedsRebaseline ]
-crbug.com/369609 [ Linux Win ] svg/zoom/page/zoom-zoom-coords.xhtml [ NeedsRebaseline ]
-crbug.com/369609 svg/zoom/text/zoom-hixie-mixed-008.xml [ NeedsRebaseline ]
-crbug.com/369609 svg/zoom/text/zoom-hixie-mixed-009.xml [ NeedsRebaseline ]
-crbug.com/369609 svg/zoom/text/zoom-hixie-rendering-model-004.xhtml [ NeedsRebaseline ]
-crbug.com/369609 svg/zoom/text/zoom-svg-float-border-padding.xml [ NeedsRebaseline ]
-crbug.com/369609 virtual/softwarecompositing/repaint/scroll-fixed-layer-no-content.html [ NeedsRebaseline ]
-crbug.com/369609 virtual/softwarecompositing/repaint/scroll-fixed-layer-out-of-view.html [ NeedsRebaseline ]
-
 crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass Timeout ]
 
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]
