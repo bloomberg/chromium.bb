@@ -18,6 +18,8 @@ namespace domain_reliability {
 
 namespace {
 
+const char* kJsonMimeType = "application/json; charset=utf-8";
+
 class UploadUserData : public base::SupportsUserData::Data {
  public:
   static net::URLFetcher::CreateDataCallback CreateCreateDataCallback() {
@@ -61,7 +63,7 @@ class DomainReliabilityUploaderImpl
     fetcher->SetRequestContext(url_request_context_getter_);
     fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                           net::LOAD_DO_NOT_SAVE_COOKIES);
-    fetcher->SetUploadData("text/json", report_json);
+    fetcher->SetUploadData(kJsonMimeType, report_json);
     fetcher->SetAutomaticallyRetryOn5xx(false);
     fetcher->SetURLRequestUserData(
         UploadUserData::kUserDataKey,
