@@ -634,8 +634,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
         testing::UnitTest::GetInstance()->current_test_info();
 
     // SpeechRecognition test specific SetUp.
-    return !strcmp(test_info->name(), "SpeechRecognition") ||
-           !strcmp(test_info->name(),
+    return !strcmp(test_info->name(),
                    "SpeechRecognitionAPI_HasPermissionAllow");
   }
 
@@ -1672,25 +1671,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ScreenCoordinates) {
   ASSERT_TRUE(RunPlatformAppTestWithArg(
       "platform_apps/web_view/common", "screen_coordinates"))
           << message_;
-}
-
-// crbug/360448
-IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_SpeechRecognition) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
-  content::WebContents* guest_web_contents = LoadGuest(
-      "/extensions/platform_apps/web_view/speech/guest.html",
-      "web_view/speech");
-  ASSERT_TRUE(guest_web_contents);
-
-  // Click on the guest (center of the WebContents), the guest is rendered in a
-  // way that this will trigger clicking on speech recognition input mic.
-  SimulateMouseClick(guest_web_contents, 0, blink::WebMouseEvent::ButtonLeft);
-
-  base::string16 expected_title(base::ASCIIToUTF16("PASSED"));
-  base::string16 error_title(base::ASCIIToUTF16("FAILED"));
-  content::TitleWatcher title_watcher(guest_web_contents, expected_title);
-  title_watcher.AlsoWaitForTitle(error_title);
-  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
 #if defined(OS_CHROMEOS)
