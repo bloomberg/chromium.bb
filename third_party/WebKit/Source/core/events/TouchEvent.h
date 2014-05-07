@@ -70,6 +70,8 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
+    virtual void preventDefault() OVERRIDE;
+
     virtual void trace(Visitor*) OVERRIDE;
 
 private:

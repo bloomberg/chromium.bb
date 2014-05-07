@@ -29,6 +29,8 @@
 #include "core/events/TouchEvent.h"
 
 #include "core/events/EventDispatcher.h"
+#include "core/frame/FrameConsole.h"
+#include "core/frame/LocalFrame.h"
 
 namespace WebCore {
 
@@ -91,6 +93,18 @@ bool TouchEvent::isTouchEvent() const
     return true;
 }
 
+void TouchEvent::preventDefault()
+{
+    MouseRelatedEvent::preventDefault();
+
+    // A common developer error is to wait too long before attempting to stop
+    // scrolling by consuming a touchmove event. Generate a warning if this
+    // event is uncancelable.
+    if (!cancelable() && view() && view()->frame()) {
+        view()->frame()->console().addMessage(JSMessageSource, WarningMessageLevel,
+            "Ignored attempt to cancel a " + type() + " event with cancelable=false, for example because scrolling is in progress and cannot be interrupted.");
+    }
+}
 void TouchEvent::trace(Visitor* visitor)
 {
     visitor->trace(m_touches);

@@ -159,7 +159,7 @@ public:
     bool immediatePropagationStopped() const { return m_immediatePropagationStopped; }
 
     bool defaultPrevented() const { return m_defaultPrevented; }
-    void preventDefault()
+    virtual void preventDefault()
     {
         if (m_cancelable)
             m_defaultPrevented = true;

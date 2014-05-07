@@ -13,6 +13,7 @@ document.addEventListener('touchmove', function(event) {
     gotTouchMove = true;
     touchEvent = event;
     shouldBeFalse('touchEvent.defaultPrevented');
+    console.log('Calling preventDefault on TouchEvent with cancelable=' + event.cancelable);
     touchEvent.preventDefault();
 }, false);
 
