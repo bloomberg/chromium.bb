@@ -1,4 +1,4 @@
-LIBRARY liblouis
+LIBRARY liblouis-2
 
 EXPORTS
 	lou_getProgramPath
