@@ -30565,11 +30565,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Windows.Tablet" enum="BooleanTablet">
-  <owner>zturner@chromium.org</owner>
-  <summary>Count of browser launches from a Windows tablet pc.</summary>
-</histogram>
-
 <histogram name="WinTimeTicks.FailedToChangeCores" enum="WindowsVersion">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -31427,11 +31422,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanTabDiscard" type="int">
   <int value="0" label="Memory OK, no discards"/>
   <int value="1" label="Memory low, tabs discarded"/>
-</enum>
-
-<enum name="BooleanTablet" type="int">
-  <int value="0" label="Non tablet"/>
-  <int value="1" label="Tablet"/>
 </enum>
 
 <enum name="BooleanUsage" type="int">

@@ -183,18 +183,6 @@
             ],
           },
         }],
-        ['OS == "win"', {
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'DelayLoadDLLs': [
-                'powrprof.dll',
-              ],
-              'AdditionalDependencies': [
-                'powrprof.lib',
-              ],
-            },
-          },
-        }],
         ['OS != "win" and OS != "ios"', {
             'dependencies': ['../third_party/libevent/libevent.gyp:libevent'],
         },],

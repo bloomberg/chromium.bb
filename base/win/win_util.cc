@@ -6,7 +6,6 @@
 
 #include <aclapi.h>
 #include <lm.h>
-#include <powrprof.h>
 #include <shellapi.h>
 #include <shlobj.h>
 #include <shobjidl.h>  // Must be before propkey.
@@ -230,32 +229,6 @@ bool IsTouchEnabledDevice() {
   if ((sm & kMultiTouch) == kMultiTouch) {
     return true;
   }
-  return false;
-}
-
-bool IsTabletDevice() {
-  if (GetSystemMetrics(SM_MAXIMUMTOUCHES) == 0)
-    return false;
-
-  base::win::Version version = base::win::GetVersion();
-  if (version == base::win::VERSION_XP)
-    return (GetSystemMetrics(SM_TABLETPC) != 0);
-
-  // If the device is docked, the user is treating the device as a PC.
-  if (GetSystemMetrics(SM_SYSTEMDOCKED) != 0)
-    return false;
-
-  // PlatformRoleSlate was only added in Windows 8, but prior to Win8 it is
-  // still possible to check for a mobile power profile.
-  POWER_PLATFORM_ROLE role = PowerDeterminePlatformRole();
-  bool mobile_power_profile = (role == PlatformRoleMobile);
-  bool slate_power_profile = false;
-  if (version >= base::win::VERSION_WIN8)
-    slate_power_profile = (role == PlatformRoleSlate);
-
-  if (mobile_power_profile || slate_power_profile)
-    return (GetSystemMetrics(SM_CONVERTIBLESLATEMODE) == 0);
-
   return false;
 }
 

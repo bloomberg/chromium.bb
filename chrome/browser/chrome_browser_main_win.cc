@@ -14,13 +14,11 @@
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/metro.h"
-#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/browser_util_win.h"
@@ -246,8 +244,6 @@ void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
 
 void ChromeBrowserMainPartsWin::PostBrowserStart() {
   ChromeBrowserMainParts::PostBrowserStart();
-
-  UMA_HISTOGRAM_BOOLEAN("Windows.Tablet", base::win::IsTabletDevice());
 
   // Set up a task to verify installed modules in the current process. Use a
   // delay to reduce the impact on startup time.
