@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -39,7 +40,14 @@ namespace chromeos {
 // Spoken feedback tests in a normal browser window.
 //
 
-class SpokenFeedbackTest : public InProcessBrowserTest {
+enum SpokenFeedbackTestVariant {
+  kTestAsNormalUser,
+  kTestAsGuestUser
+};
+
+class SpokenFeedbackTest
+    : public InProcessBrowserTest,
+      public ::testing::WithParamInterface<SpokenFeedbackTestVariant> {
  protected:
   SpokenFeedbackTest() {}
   virtual ~SpokenFeedbackTest() {}
@@ -52,12 +60,29 @@ class SpokenFeedbackTest : public InProcessBrowserTest {
     AccessibilityManager::SetBrailleControllerForTest(NULL);
   }
 
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    if (GetParam() == kTestAsGuestUser) {
+      command_line->AppendSwitch(chromeos::switches::kGuestSession);
+      command_line->AppendSwitch(::switches::kIncognito);
+      command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
+                                      "user");
+      command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
+                                      chromeos::UserManager::kGuestUserName);
+    }
+  }
+
  private:
   StubBrailleController braille_controller_;
   DISALLOW_COPY_AND_ASSIGN(SpokenFeedbackTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SpokenFeedbackTest, EnableSpokenFeedback) {
+INSTANTIATE_TEST_CASE_P(
+    TestAsNormalAndGuestUser,
+    SpokenFeedbackTest,
+    ::testing::Values(kTestAsNormalUser,
+                      kTestAsGuestUser));
+
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, EnableSpokenFeedback) {
   EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
   SpeechMonitor monitor;
@@ -66,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(SpokenFeedbackTest, EnableSpokenFeedback) {
   EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
 }
 
-IN_PROC_BROWSER_TEST_F(SpokenFeedbackTest, FocusToolbar) {
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusToolbar) {
   EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
   SpeechMonitor monitor;
@@ -81,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(SpokenFeedbackTest, FocusToolbar) {
   EXPECT_EQ("button", monitor.GetNextUtterance());
 }
 
-IN_PROC_BROWSER_TEST_F(SpokenFeedbackTest, TypeInOmnibox) {
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TypeInOmnibox) {
   EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
   SpeechMonitor monitor;
