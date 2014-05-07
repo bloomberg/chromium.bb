@@ -195,7 +195,8 @@ public:
 
     CSSParserValue* valueAt(unsigned i) { return i < m_values.size() ? &m_values[i] : 0; }
 
-    void clear() { m_values.clear(); m_current = 0;}
+    void clearAndLeakValues() { m_values.clear(); m_current = 0;}
+    void destroyAndClear();
 
 private:
     unsigned m_current;

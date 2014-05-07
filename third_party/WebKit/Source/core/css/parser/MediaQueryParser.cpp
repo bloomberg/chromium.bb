@@ -214,7 +214,7 @@ void MediaQueryData::clear()
     m_mediaType = MediaTypeNames::all;
     m_mediaTypeSet = false;
     m_mediaFeature = String();
-    m_valueList.clear();
+    m_valueList.destroyAndClear();
     m_expressions = adoptPtrWillBeNoop(new ExpressionHeapVector);
 }
 
@@ -230,7 +230,7 @@ bool MediaQueryData::addExpression()
     OwnPtrWillBeRawPtr<MediaQueryExp> expression = MediaQueryExp::createIfValid(m_mediaFeature, &m_valueList);
     bool isValid = !!expression;
     m_expressions->append(expression.release());
-    m_valueList.clear();
+    m_valueList.destroyAndClear();
     return isValid;
 }
 

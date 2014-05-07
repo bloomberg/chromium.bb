@@ -29,15 +29,26 @@ namespace WebCore {
 
 using namespace WTF;
 
+static void destroy(Vector<CSSParserValue, 4>& values)
+{
+    size_t numValues = values.size();
+    for (size_t i = 0; i < numValues; i++) {
+        if (values[i].unit == CSSParserValue::Function)
+            delete values[i].function;
+        else if (values[i].unit == CSSParserValue::ValueList)
+            delete values[i].valueList;
+    }
+}
+
+void CSSParserValueList::destroyAndClear()
+{
+    destroy(m_values);
+    clearAndLeakValues();
+}
+
 CSSParserValueList::~CSSParserValueList()
 {
-    size_t numValues = m_values.size();
-    for (size_t i = 0; i < numValues; i++) {
-        if (m_values[i].unit == CSSParserValue::Function)
-            delete m_values[i].function;
-        else if (m_values[i].unit == CSSParserValue::ValueList)
-            delete m_values[i].valueList;
-    }
+    destroy(m_values);
 }
 
 void CSSParserValueList::addValue(const CSSParserValue& v)
@@ -54,7 +65,7 @@ void CSSParserValueList::stealValues(CSSParserValueList& valueList)
 {
     for (unsigned i = 0; i < valueList.size(); ++i)
         m_values.append(*(valueList.valueAt(i)));
-    valueList.clear();
+    valueList.clearAndLeakValues();
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSParserValue::createCSSValue()

@@ -92,7 +92,7 @@ TEST(CSSParserValuesTest, CSSParserValuelistClear)
         value.setFromNumber(3);
         list.addValue(value);
     }
-    list.clear();
+    list.clearAndLeakValues();
     ASSERT_FALSE(list.size());
     ASSERT_FALSE(list.currentIndex());
 }
