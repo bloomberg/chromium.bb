@@ -154,6 +154,7 @@ class JniParams(object):
   _package = ''
   _inner_classes = []
   _remappings = []
+  _implicit_imports = []
 
   @staticmethod
   def SetFullyQualifiedClass(fully_qualified_class):
@@ -201,6 +202,7 @@ class JniParams(object):
         'Ljava/lang/String',
         'Ljava/lang/Class',
     ]
+
     prefix = ''
     # Array?
     while param[-2:] == '[]':
@@ -254,9 +256,31 @@ class JniParams(object):
                         (param, JniParams._package.replace('/', '.'),
                          outer.replace('/', '.')))
 
+    JniParams._CheckImplicitImports(param)
+
     # Type not found, falling back to same package as this class.
     return (prefix + 'L' +
             JniParams.RemapClassName(JniParams._package + '/' + param) + ';')
+
+  @staticmethod
+  def _CheckImplicitImports(param):
+    # Ensure implicit imports, such as java.lang.*, are not being treated
+    # as being in the same package.
+    if not JniParams._implicit_imports:
+      # This file was generated from android.jar and lists
+      # all classes that are implicitly imported.
+      with file(os.path.join(os.path.dirname(sys.argv[0]),
+                             'android_jar.classes'), 'r') as f:
+        JniParams._implicit_imports = f.readlines()
+    for implicit_import in JniParams._implicit_imports:
+      implicit_import = implicit_import.strip().replace('.class', '')
+      implicit_import = implicit_import.replace('/', '.')
+      if implicit_import.endswith('.' + param):
+        raise SyntaxError('Ambiguous class (%s) can not be used directly '
+                          'by JNI.\nPlease import it, probably:\n\n'
+                          'import %s;' %
+                          (param, implicit_import))
+
 
   @staticmethod
   def Signature(params, returns, wrap):

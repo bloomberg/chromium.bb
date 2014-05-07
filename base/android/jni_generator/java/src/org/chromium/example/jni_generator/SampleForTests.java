@@ -71,6 +71,21 @@ import java.util.List;
 // directly call methods on the other side. It's much simpler than trying to amalgamate
 // java and stl containers.
 //
+// An important note about qualified class name resolution:
+// The generator doesn't compile the class and have little context about the
+// classes being passed through the JNI layers. It adds a few simple rules:
+//
+// - all classes are either explicitly imported, or they are assumed to be in
+// the same package.
+//
+// - Inner class needs to be done through an import and usage of the
+// outer class, so that the generator knows how to qualify it:
+// import foo.bar.Zoo;
+// void call(Zoo.Inner);
+//
+// - implicitly imported classes aren't supported, so in order to pass
+// things like Runnable, please import java.lang.Runnable;
+//
 // This JNINamespace annotation indicates that all native methods should be
 // generated inside this namespace, including the native class that this
 // object binds to.
