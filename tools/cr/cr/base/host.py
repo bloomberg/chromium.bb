@@ -14,6 +14,13 @@ import cr
 # Controls what verbosity level turns on command trail logging
 _TRAIL_VERBOSITY = 2
 
+def PrintTrail(trail):
+  print 'Command expanded the following variables:'
+  for key, value in trail:
+    if value == None:
+      value = ''
+    print '   ', key, '=', value
+
 
 class Host(cr.Plugin, cr.Plugin.Type):
   """Base class for implementing cr hosts.
@@ -75,9 +82,7 @@ class Host(cr.Plugin, cr.Plugin.Type):
     if cr.context.verbose:
       print ' '.join(command)
       if cr.context.verbose >= _TRAIL_VERBOSITY:
-        print 'Command expanded the following variables:'
-        for key, value in trail:
-          print '   ', key, '=', value
+        PrintTrail(trail)
     if ignore_dry_run or not cr.context.dry_run:
       out = None
       if capture:
@@ -93,9 +98,7 @@ class Host(cr.Plugin, cr.Plugin.Type):
         print 'Failed to exec', command
         # Don't log the trail if we already have
         if cr.context.verbose < _TRAIL_VERBOSITY:
-          print 'Variables used to build the command were:'
-          for key, value in trail:
-            print '   ', key, '=', value
+          PrintTrail(trail)
         exit(1)
       try:
         if ignore_interrupt_signal:

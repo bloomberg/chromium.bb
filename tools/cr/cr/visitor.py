@@ -239,10 +239,13 @@ class Node(object):
   def Get(self, key, raise_errors=False):
     search = SearchVisitor(key).VisitNode(self)
     if not search.found:
-      raise KeyError(key)
+      self.Missing(key)
     if search.error and raise_errors:
       raise search.error  # bad type inference pylint: disable=raising-bad-type
     return search.value
+
+  def Missing(self, key):
+    raise KeyError(key)
 
   def Resolve(self, visitor, key, value):
     _ = visitor, key
