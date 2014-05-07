@@ -37,11 +37,11 @@ class FakeMidiManager : public MidiManager {
   }
 
   size_t GetClientCount() const {
-    return get_clients_size_for_testing();
+    return clients_size_for_testing();
   }
 
   size_t GetPendingClientCount() const {
-    return get_pending_clients_size_for_testing();
+    return pending_clients_size_for_testing();
   }
 
   bool start_initialization_is_called_;
@@ -70,8 +70,8 @@ class FakeMidiManagerClient : public MidiManagerClient {
                                size_t size, double timestamp) OVERRIDE {}
   virtual void AccumulateMidiBytesSent(size_t size) OVERRIDE {}
 
-  int get_client_id() const { return client_id_; }
-  MidiResult get_result() const { return result_; }
+  int client_id() const { return client_id_; }
+  MidiResult result() const { return result_; }
 
   MidiResult WaitForResult() {
     base::RunLoop run_loop;
@@ -79,7 +79,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
     // thread. Protection for |wait_for_result_| is not needed.
     while (wait_for_result_)
       run_loop.RunUntilIdle();
-    return get_result();
+    return result();
   }
 
  private:
@@ -102,7 +102,7 @@ class MidiManagerTest : public ::testing::Test {
     EXPECT_FALSE(manager_->start_initialization_is_called_);
     EXPECT_EQ(0U, manager_->GetClientCount());
     EXPECT_EQ(0U, manager_->GetPendingClientCount());
-    manager_->StartSession(client, client->get_client_id());
+    manager_->StartSession(client, client->client_id());
     EXPECT_EQ(0U, manager_->GetClientCount());
     EXPECT_EQ(1U, manager_->GetPendingClientCount());
     EXPECT_TRUE(manager_->start_initialization_is_called_);
@@ -119,7 +119,7 @@ class MidiManagerTest : public ::testing::Test {
     // StartInitialization() should not be called for the second and later
     // sessions.
     manager_->start_initialization_is_called_ = false;
-    manager_->StartSession(client, client->get_client_id());
+    manager_->StartSession(client, client->client_id());
     EXPECT_EQ(nth == 1, manager_->start_initialization_is_called_);
     manager_->start_initialization_is_called_ = true;
   }
@@ -197,14 +197,14 @@ TEST_F(MidiManagerTest, TooManyPendingSessions) {
       new FakeMidiManagerClient(MidiManager::kMaxPendingClientCount));
   manager_->start_initialization_is_called_ = false;
   manager_->StartSession(additional_client.get(),
-                         additional_client->get_client_id());
+                         additional_client->client_id());
   EXPECT_FALSE(manager_->start_initialization_is_called_);
-  EXPECT_EQ(MIDI_INITIALIZATION_ERROR, additional_client->get_result());
+  EXPECT_EQ(MIDI_INITIALIZATION_ERROR, additional_client->result());
 
   // Other clients still should not receive a result.
   RunLoopUntilIdle();
   for (size_t i = 0; i < many_existing_clients.size(); ++i)
-    EXPECT_EQ(MIDI_NOT_SUPPORTED, many_existing_clients[i]->get_result());
+    EXPECT_EQ(MIDI_NOT_SUPPORTED, many_existing_clients[i]->result());
 
   // The result MIDI_OK should be distributed to other clients.
   CompleteInitialization(MIDI_OK);
@@ -222,8 +222,10 @@ TEST_F(MidiManagerTest, CreateMidiManager) {
   client.reset(new FakeMidiManagerClient(0));
 
   scoped_ptr<MidiManager> manager(MidiManager::Create());
-  manager->StartSession(client.get(), client->get_client_id());
-  // This #ifdef needs to be identical to the one in media/midi/midi_manager.cc
+  manager->StartSession(client.get(), client->client_id());
+
+  // This #ifdef needs to be identical to the one in media/midi/midi_manager.cc.
+  // Do not change the condition for disabling this test.
 #if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(USE_ALSA) && \
     !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   EXPECT_EQ(MIDI_NOT_SUPPORTED, client->WaitForResult());

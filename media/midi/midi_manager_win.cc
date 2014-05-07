@@ -516,7 +516,7 @@ void MidiManagerWin::StartInitialization() {
         base::WideToUTF8(caps.szPname),
         base::IntToString(static_cast<int>(caps.vDriverVersion)));
     AddInputPort(info);
-    in_device->set_port_index(input_ports_.size() - 1);
+    in_device->set_port_index(input_ports().size() - 1);
     in_devices_.push_back(in_device.Pass());
   }
 
@@ -548,14 +548,12 @@ void MidiManagerWin::StartInitialization() {
 MidiManagerWin::~MidiManagerWin() {
   // Cleanup order is important. |send_thread_| must be stopped before
   // |out_devices_| is cleared.
-  for (size_t i = 0; i < output_ports_.size(); ++i)
+  for (size_t i = 0; i < output_ports().size(); ++i)
     out_devices_[i]->Quit();
   send_thread_.Stop();
 
   out_devices_.clear();
-  output_ports_.clear();
   in_devices_.clear();
-  input_ports_.clear();
 }
 
 void MidiManagerWin::DispatchSendMidiData(MidiManagerClient* client,
