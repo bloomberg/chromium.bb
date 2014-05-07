@@ -21,8 +21,9 @@ NACL_DIR = os.path.dirname(BUILD_DIR)
 TOOLCHAIN_REV_DIR = os.path.join(NACL_DIR, 'toolchain_revisions')
 PKG_VER = os.path.join(BUILD_DIR, 'package_version', 'package_version.py')
 
-PNACL_PKG = 'pnacl_newlib'
-PNACL_REV_FILE = os.path.join(TOOLCHAIN_REV_DIR, '%s.json' % PNACL_PKG)
+PKGS = ['pnacl_newlib', 'pnacl_translator']
+REV_FILES = [os.path.join(TOOLCHAIN_REV_DIR, '%s.json' % package)
+             for package in PKGS]
 
 
 def ParseArgs(args):
@@ -32,9 +33,9 @@ def ParseArgs(args):
 
 LLVM and other projects are checked-in to the NaCl repository, but their
 head isn't necessarily the one that we currently use in PNaCl. The
-pnacl_newlib.json file points at subversion revisions to use for tools such
-as LLVM. Our build process then downloads pre-built tool tarballs from
-the toolchain build waterfall.
+pnacl_newlib.json and pnacl_translator.json files point at subversion
+revisions to use for tools such as LLVM. Our build process then
+downloads pre-built tool tarballs from the toolchain build waterfall.
 
 git repository before running this script:
          ______________________
@@ -42,13 +43,13 @@ git repository before running this script:
          v                    |
   ...----A------B------C------D------ NaCl HEAD
          ^      ^      ^      ^
-         |      |      |      |__ Latest pnacl_newlib.json update.
+         |      |      |      |__ Latest pnacl_{newlib,translator}.json update.
          |      |      |
          |      |      |__ A newer LLVM change (LLVM repository HEAD).
          |      |
          |      |__ Oldest LLVM change since this PNaCl version.
          |
-         |__ pnacl_newlib.json points at an older LLVM change.
+         |__ pnacl_{newlib,translator}.json points at an older LLVM change.
 
 git repository after running this script:
                        _______________
@@ -92,18 +93,23 @@ def ExecCommand(command):
     raise
 
 
-def GetCurrentPNaClRevision():
-  return ExecCommand([sys.executable, PKG_VER,
-                      'getrevision',
-                      '--revision-package', PNACL_PKG]).strip()
+def GetCurrentRevision():
+  return [ExecCommand([sys.executable, PKG_VER,
+                       'getrevision',
+                       '--revision-package', package]).strip()
+          for package in PKGS]
 
 
-def SetCurrentPNaClRevision(revision_num):
-  ExecCommand([sys.executable, PKG_VER,
-               '--cloud-bucket', 'nativeclient-archive2/pnacl_buildsh',
-               'setrevision',
-               '--revision-package', PNACL_PKG,
-               '--revision', str(revision_num)])
+def SetCurrentRevision(revision_num):
+  for package in PKGS:
+    ExecCommand([sys.executable, PKG_VER] +
+                # TODO(dschuff) pnacl_newlib shouldn't use cloud-bucket
+                #               once we switch fully to toolchain_build.
+                (['--cloud-bucket', 'nativeclient-archive2/pnacl_buildsh'] if
+                 package == 'pnacl_newlib' else []) +
+                ['setrevision',
+                 '--revision-package', package,
+                 '--revision', str(revision_num)]])
 
 
 def GitCurrentBranch():
@@ -365,7 +371,7 @@ def Main():
     # The current revision file points at a specific PNaCl LLVM
     # version. LLVM is checked-in to the NaCl repository, but its head
     # isn't necessarily the one that we currently use in PNaCl.
-    pnacl_revision = GetCurrentPNaClRevision()
+    (pnacl_revision, translator_revision) = GetCurrentRevision()
     tr_points_at['git svn id'] = pnacl_revision
     tr_points_at['hash'] = FindCommitWithGitSvnId(tr_points_at['git svn id'])
     tr_points_at['date'] = GitCommitInfo(
@@ -431,8 +437,9 @@ def Main():
     if args.dry_run:
       DryRun("Would update PNaCl revision to: %s" % new_pnacl_revision)
     else:
-      SetCurrentPNaClRevision(new_pnacl_revision)
-      GitAdd(PNACL_REV_FILE)
+      SetCurrentRevision(new_pnacl_revision)
+      for f in REV_FILES:
+        GitAdd(f)
       GitCommit(FmtOut(tr_points_at, pnacl_changes))
 
       upload_res = UploadChanges()
