@@ -37,7 +37,7 @@ enum ViewportErrorCode {
 
 class HTMLMetaElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLMetaElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLMetaElement> create(Document&);
 
     const AtomicString& content() const;
     const AtomicString& httpEquiv() const;

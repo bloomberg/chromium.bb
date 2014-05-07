@@ -32,7 +32,7 @@ class HTMLSelectElement;
 
 class HTMLOptGroupElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLOptGroupElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLOptGroupElement> create(Document&);
 
     virtual bool isDisabledFormControl() const OVERRIDE;
     HTMLSelectElement* ownerSelectElement() const;

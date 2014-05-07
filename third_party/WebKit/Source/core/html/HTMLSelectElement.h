@@ -39,8 +39,8 @@ class HTMLOptionElement;
 
 class HTMLSelectElement FINAL : public HTMLFormControlElementWithState, public TypeAheadDataSource {
 public:
-    static PassRefPtr<HTMLSelectElement> create(Document&);
-    static PassRefPtr<HTMLSelectElement> create(Document&, HTMLFormElement*);
+    static PassRefPtrWillBeRawPtr<HTMLSelectElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLSelectElement> create(Document&, HTMLFormElement*);
 
     int selectedIndex() const;
     void setSelectedIndex(int);

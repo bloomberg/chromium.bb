@@ -29,7 +29,7 @@ namespace WebCore {
 
 class HTMLHRElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLHRElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLHRElement> create(Document&);
 
     virtual bool canContainRangeEndPoint() const OVERRIDE { return hasChildren(); }
 

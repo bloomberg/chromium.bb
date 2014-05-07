@@ -38,9 +38,9 @@ inline HTMLTableCaptionElement::HTMLTableCaptionElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLTableCaptionElement> HTMLTableCaptionElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLTableCaptionElement> HTMLTableCaptionElement::create(Document& document)
 {
-    return adoptRef(new HTMLTableCaptionElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLTableCaptionElement(document));
 }
 
 void HTMLTableCaptionElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)

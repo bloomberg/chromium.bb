@@ -36,9 +36,9 @@ namespace WebCore {
 
 class HTMLUnknownElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLUnknownElement> create(const QualifiedName& tagName, Document& document)
+    static PassRefPtrWillBeRawPtr<HTMLUnknownElement> create(const QualifiedName& tagName, Document& document)
     {
-        return adoptRef(new HTMLUnknownElement(tagName, document));
+        return adoptRefWillBeRefCountedGarbageCollected(new HTMLUnknownElement(tagName, document));
     }
 
     virtual bool isHTMLUnknownElement() const OVERRIDE { return true; }

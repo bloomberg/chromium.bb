@@ -32,9 +32,9 @@ namespace WebCore {
 
 class MediaDocument FINAL : public HTMLDocument {
 public:
-    static PassRefPtr<MediaDocument> create(const DocumentInit& initializer = DocumentInit())
+    static PassRefPtrWillBeRawPtr<MediaDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRef(new MediaDocument(initializer));
+        return adoptRefWillBeRefCountedGarbageCollected(new MediaDocument(initializer));
     }
 
 private:

@@ -140,9 +140,9 @@ inline HTMLLinkElement::HTMLLinkElement(Document& document, bool createdByParser
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLLinkElement> HTMLLinkElement::create(Document& document, bool createdByParser)
+PassRefPtrWillBeRawPtr<HTMLLinkElement> HTMLLinkElement::create(Document& document, bool createdByParser)
 {
-    return adoptRef(new HTMLLinkElement(document, createdByParser));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLLinkElement(document, createdByParser));
 }
 
 HTMLLinkElement::~HTMLLinkElement()

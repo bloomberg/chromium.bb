@@ -34,7 +34,7 @@ class Path;
 
 class HTMLAreaElement FINAL : public HTMLAnchorElement {
 public:
-    static PassRefPtr<HTMLAreaElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLAreaElement> create(Document&);
 
     bool isDefault() const { return m_shape == Default; }
 

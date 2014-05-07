@@ -38,9 +38,9 @@ HTMLBRElement::HTMLBRElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLBRElement> HTMLBRElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLBRElement> HTMLBRElement::create(Document& document)
 {
-    return adoptRef(new HTMLBRElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLBRElement(document));
 }
 
 bool HTMLBRElement::isPresentationAttribute(const QualifiedName& name) const

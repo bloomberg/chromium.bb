@@ -37,9 +37,9 @@ inline HTMLParagraphElement::HTMLParagraphElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLParagraphElement> HTMLParagraphElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLParagraphElement> HTMLParagraphElement::create(Document& document)
 {
-    return adoptRef(new HTMLParagraphElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLParagraphElement(document));
 }
 
 void HTMLParagraphElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)

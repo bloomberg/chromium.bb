@@ -98,9 +98,9 @@ HTMLDialogElement::HTMLDialogElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLDialogElement> HTMLDialogElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLDialogElement> HTMLDialogElement::create(Document& document)
 {
-    return adoptRef(new HTMLDialogElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLDialogElement(document));
 }
 
 void HTMLDialogElement::close(const String& returnValue, ExceptionState& exceptionState)

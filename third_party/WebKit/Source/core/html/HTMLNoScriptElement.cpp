@@ -44,9 +44,9 @@ HTMLNoScriptElement::HTMLNoScriptElement(Document& document)
 {
 }
 
-PassRefPtr<HTMLNoScriptElement> HTMLNoScriptElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLNoScriptElement> HTMLNoScriptElement::create(Document& document)
 {
-    return adoptRef(new HTMLNoScriptElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLNoScriptElement(document));
 }
 
 bool HTMLNoScriptElement::rendererIsNeeded(const RenderStyle& style)

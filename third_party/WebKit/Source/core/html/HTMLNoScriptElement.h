@@ -39,7 +39,7 @@ namespace WebCore {
 // so HTMLElement's rendererIsNeeded doesn't need to know about it.
 class HTMLNoScriptElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLNoScriptElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLNoScriptElement> create(Document&);
 
 private:
     explicit HTMLNoScriptElement(Document&);

@@ -32,7 +32,7 @@ class HTMLImageElement;
 
 class HTMLMapElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLMapElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLMapElement> create(Document&);
     virtual ~HTMLMapElement();
 
     const AtomicString& getName() const { return m_name; }

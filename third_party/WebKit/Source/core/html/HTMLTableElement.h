@@ -38,7 +38,7 @@ class HTMLTableSectionElement;
 
 class HTMLTableElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLTableElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLTableElement> create(Document&);
 
     HTMLTableCaptionElement* caption() const;
     void setCaption(PassRefPtr<HTMLTableCaptionElement>, ExceptionState&);
@@ -49,14 +49,14 @@ public:
     HTMLTableSectionElement* tFoot() const;
     void setTFoot(PassRefPtr<HTMLTableSectionElement>, ExceptionState&);
 
-    PassRefPtr<HTMLElement> createTHead();
+    PassRefPtrWillBeRawPtr<HTMLElement> createTHead();
     void deleteTHead();
-    PassRefPtr<HTMLElement> createTFoot();
+    PassRefPtrWillBeRawPtr<HTMLElement> createTFoot();
     void deleteTFoot();
-    PassRefPtr<HTMLElement> createTBody();
-    PassRefPtr<HTMLElement> createCaption();
+    PassRefPtrWillBeRawPtr<HTMLElement> createTBody();
+    PassRefPtrWillBeRawPtr<HTMLElement> createCaption();
     void deleteCaption();
-    PassRefPtr<HTMLElement> insertRow(int index, ExceptionState&);
+    PassRefPtrWillBeRawPtr<HTMLElement> insertRow(int index, ExceptionState&);
     void deleteRow(int index, ExceptionState&);
 
     PassRefPtr<HTMLCollection> rows();
@@ -67,6 +67,8 @@ public:
 
     const StylePropertySet* additionalCellStyle();
     const StylePropertySet* additionalGroupStyle(bool rows);
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     explicit HTMLTableElement(Document&);
@@ -86,7 +88,7 @@ private:
 
     CellBorders cellBorders() const;
 
-    PassRefPtr<StylePropertySet> createSharedCellStyle();
+    PassRefPtrWillBeRawPtr<StylePropertySet> createSharedCellStyle();
 
     HTMLTableSectionElement* lastBody() const;
 
@@ -99,7 +101,7 @@ private:
                                 // are present, to none otherwise).
 
     unsigned short m_padding;
-    RefPtr<StylePropertySet> m_sharedCellStyle;
+    RefPtrWillBeMember<StylePropertySet> m_sharedCellStyle;
 };
 
 } //namespace

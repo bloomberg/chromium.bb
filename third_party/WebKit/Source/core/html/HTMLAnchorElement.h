@@ -56,7 +56,7 @@ enum {
 
 class HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
 public:
-    static PassRefPtr<HTMLAnchorElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLAnchorElement> create(Document&);
 
     virtual ~HTMLAnchorElement();
 

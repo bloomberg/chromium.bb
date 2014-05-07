@@ -36,7 +36,7 @@ class QualifiedName;
 
 class HTMLDialogElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLDialogElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLDialogElement> create(Document&);
 
     void close(const String& returnValue, ExceptionState&);
     void closeDialog(const String& returnValue = String());

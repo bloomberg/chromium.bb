@@ -39,9 +39,9 @@ HTMLLIElement::HTMLLIElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLLIElement> HTMLLIElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLLIElement> HTMLLIElement::create(Document& document)
 {
-    return adoptRef(new HTMLLIElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLLIElement(document));
 }
 
 bool HTMLLIElement::isPresentationAttribute(const QualifiedName& name) const

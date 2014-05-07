@@ -34,7 +34,7 @@ public:
     static const double IndeterminatePosition;
     static const double InvalidPosition;
 
-    static PassRefPtr<HTMLProgressElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLProgressElement> create(Document&);
 
     double value() const;
     void setValue(double);

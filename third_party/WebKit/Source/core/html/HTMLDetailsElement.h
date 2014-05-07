@@ -30,7 +30,7 @@ typedef EventSender<HTMLDetailsElement> DetailsEventSender;
 
 class HTMLDetailsElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLDetailsElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLDetailsElement> create(Document&);
     void toggleOpen();
     virtual ~HTMLDetailsElement();
 

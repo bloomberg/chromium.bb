@@ -44,9 +44,9 @@ HTMLNoEmbedElement::HTMLNoEmbedElement(Document& document)
 {
 }
 
-PassRefPtr<HTMLNoEmbedElement> HTMLNoEmbedElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLNoEmbedElement> HTMLNoEmbedElement::create(Document& document)
 {
-    return adoptRef(new HTMLNoEmbedElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLNoEmbedElement(document));
 }
 
 bool HTMLNoEmbedElement::rendererIsNeeded(const RenderStyle& style)

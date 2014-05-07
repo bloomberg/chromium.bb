@@ -35,9 +35,9 @@ inline HTMLDirectoryElement::HTMLDirectoryElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLDirectoryElement> HTMLDirectoryElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLDirectoryElement> HTMLDirectoryElement::create(Document& document)
 {
-    return adoptRef(new HTMLDirectoryElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLDirectoryElement(document));
 }
 
 }

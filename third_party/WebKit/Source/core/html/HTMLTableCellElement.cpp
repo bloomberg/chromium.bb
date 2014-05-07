@@ -48,9 +48,9 @@ inline HTMLTableCellElement::HTMLTableCellElement(const QualifiedName& tagName, 
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLTableCellElement> HTMLTableCellElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtrWillBeRawPtr<HTMLTableCellElement> HTMLTableCellElement::create(const QualifiedName& tagName, Document& document)
 {
-    return adoptRef(new HTMLTableCellElement(tagName, document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLTableCellElement(tagName, document));
 }
 
 int HTMLTableCellElement::colSpan() const

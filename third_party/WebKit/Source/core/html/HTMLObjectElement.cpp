@@ -63,9 +63,9 @@ inline HTMLObjectElement::~HTMLObjectElement()
 #endif
 }
 
-PassRefPtr<HTMLObjectElement> HTMLObjectElement::create(Document& document, HTMLFormElement* form, bool createdByParser)
+PassRefPtrWillBeRawPtr<HTMLObjectElement> HTMLObjectElement::create(Document& document, HTMLFormElement* form, bool createdByParser)
 {
-    RefPtr<HTMLObjectElement> element = adoptRef(new HTMLObjectElement(document, form, createdByParser));
+    RefPtrWillBeRawPtr<HTMLObjectElement> element = adoptRefWillBeRefCountedGarbageCollected(new HTMLObjectElement(document, form, createdByParser));
     element->ensureUserAgentShadowRoot();
     return element.release();
 }

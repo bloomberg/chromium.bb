@@ -54,9 +54,9 @@ const QualifiedName& HTMLTableRowElement::subResourceAttributeName() const
     return backgroundAttr;
 }
 
-PassRefPtr<HTMLTableRowElement> HTMLTableRowElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLTableRowElement> HTMLTableRowElement::create(Document& document)
 {
-    return adoptRef(new HTMLTableRowElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLTableRowElement(document));
 }
 
 int HTMLTableRowElement::rowIndex() const
@@ -119,13 +119,13 @@ int HTMLTableRowElement::sectionRowIndex() const
     return rIndex;
 }
 
-PassRefPtr<HTMLElement> HTMLTableRowElement::insertCell(ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableRowElement::insertCell(ExceptionState& exceptionState)
 {
     // The default 'index' argument value is -1.
     return insertCell(-1, exceptionState);
 }
 
-PassRefPtr<HTMLElement> HTMLTableRowElement::insertCell(int index, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableRowElement::insertCell(int index, ExceptionState& exceptionState)
 {
     RefPtr<HTMLCollection> children = cells();
     int numCells = children ? children->length() : 0;
@@ -134,7 +134,7 @@ PassRefPtr<HTMLElement> HTMLTableRowElement::insertCell(int index, ExceptionStat
         return nullptr;
     }
 
-    RefPtr<HTMLTableCellElement> cell = HTMLTableCellElement::create(tdTag, document());
+    RefPtrWillBeRawPtr<HTMLTableCellElement> cell = HTMLTableCellElement::create(tdTag, document());
     if (numCells == index || index == -1)
         appendChild(cell, exceptionState);
     else
@@ -149,7 +149,7 @@ void HTMLTableRowElement::deleteCell(int index, ExceptionState& exceptionState)
     if (index == -1)
         index = numCells-1;
     if (index >= 0 && index < numCells) {
-        RefPtr<Element> cell = children->item(index);
+        RefPtrWillBeRawPtr<Element> cell = children->item(index);
         HTMLElement::removeChild(cell.get(), exceptionState);
     } else {
         exceptionState.throwDOMException(IndexSizeError, "The value provided (" + String::number(index) + ") is outside the range [0, " + String::number(numCells) + ").");

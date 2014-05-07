@@ -35,9 +35,9 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-PassRefPtr<HTMLSummaryElement> HTMLSummaryElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLSummaryElement> HTMLSummaryElement::create(Document& document)
 {
-    RefPtr<HTMLSummaryElement> summary = adoptRef(new HTMLSummaryElement(document));
+    RefPtrWillBeRawPtr<HTMLSummaryElement> summary = adoptRefWillBeRefCountedGarbageCollected(new HTMLSummaryElement(document));
     summary->ensureUserAgentShadowRoot();
     return summary.release();
 }

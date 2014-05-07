@@ -50,9 +50,9 @@ HTMLProgressElement::~HTMLProgressElement()
 {
 }
 
-PassRefPtr<HTMLProgressElement> HTMLProgressElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLProgressElement> HTMLProgressElement::create(Document& document)
 {
-    RefPtr<HTMLProgressElement> progress = adoptRef(new HTMLProgressElement(document));
+    RefPtrWillBeRawPtr<HTMLProgressElement> progress = adoptRefWillBeRefCountedGarbageCollected(new HTMLProgressElement(document));
     progress->ensureUserAgentShadowRoot();
     return progress.release();
 }

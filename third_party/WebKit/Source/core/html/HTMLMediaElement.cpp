@@ -2542,8 +2542,8 @@ bool HTMLMediaElement::havePotentialSourceChild()
 {
     // Stash the current <source> node and next nodes so we can restore them after checking
     // to see there is another potential.
-    RefPtr<HTMLSourceElement> currentSourceNode = m_currentSourceNode;
-    RefPtr<Node> nextNode = m_nextChildNodeToConsider;
+    RefPtrWillBeRawPtr<HTMLSourceElement> currentSourceNode = m_currentSourceNode;
+    RefPtrWillBeRawPtr<Node> nextNode = m_nextChildNodeToConsider;
 
     KURL nextURL = selectNextSourceChild(0, 0, DoNothing);
 
@@ -3612,6 +3612,8 @@ bool HTMLMediaElement::isInteractiveContent() const
 
 void HTMLMediaElement::trace(Visitor* visitor)
 {
+    visitor->trace(m_currentSourceNode);
+    visitor->trace(m_nextChildNodeToConsider);
     visitor->trace(m_textTracks);
     visitor->trace(m_textTracksWhenResourceSelectionBegan);
     WillBeHeapSupplementable<HTMLMediaElement>::trace(visitor);

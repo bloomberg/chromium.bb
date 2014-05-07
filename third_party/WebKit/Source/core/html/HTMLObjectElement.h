@@ -32,7 +32,7 @@ class HTMLFormElement;
 
 class HTMLObjectElement FINAL : public HTMLPlugInElement, public FormAssociatedElement {
 public:
-    static PassRefPtr<HTMLObjectElement> create(Document&, HTMLFormElement*, bool createdByParser);
+    static PassRefPtrWillBeRawPtr<HTMLObjectElement> create(Document&, HTMLFormElement*, bool createdByParser);
     virtual ~HTMLObjectElement();
 
     const String& classId() const { return m_classId; }

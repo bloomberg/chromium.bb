@@ -38,9 +38,9 @@ HTMLSpanElement::HTMLSpanElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLSpanElement> HTMLSpanElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLSpanElement> HTMLSpanElement::create(Document& document)
 {
-    return adoptRef(new HTMLSpanElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLSpanElement(document));
 }
 
 }

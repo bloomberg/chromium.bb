@@ -46,9 +46,9 @@ inline HTMLButtonElement::HTMLButtonElement(Document& document, HTMLFormElement*
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLButtonElement> HTMLButtonElement::create(Document& document, HTMLFormElement* form)
+PassRefPtrWillBeRawPtr<HTMLButtonElement> HTMLButtonElement::create(Document& document, HTMLFormElement* form)
 {
-    return adoptRef(new HTMLButtonElement(document, form));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLButtonElement(document, form));
 }
 
 void HTMLButtonElement::setType(const AtomicString& type)

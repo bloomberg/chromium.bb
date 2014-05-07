@@ -32,9 +32,9 @@ class HTMLSelectElement;
 
 class HTMLKeygenElement FINAL : public HTMLFormControlElementWithState {
 public:
-    static PassRefPtr<HTMLKeygenElement> create(Document& document, HTMLFormElement* form)
+    static PassRefPtrWillBeRawPtr<HTMLKeygenElement> create(Document& document, HTMLFormElement* form)
     {
-        return adoptRef(new HTMLKeygenElement(document, form));
+        return adoptRefWillBeRefCountedGarbageCollected(new HTMLKeygenElement(document, form));
     }
 
     virtual bool willValidate() const OVERRIDE { return false; }

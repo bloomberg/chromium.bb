@@ -40,9 +40,9 @@ inline HTMLFrameElement::HTMLFrameElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLFrameElement> HTMLFrameElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLFrameElement> HTMLFrameElement::create(Document& document)
 {
-    return adoptRef(new HTMLFrameElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLFrameElement(document));
 }
 
 bool HTMLFrameElement::rendererIsNeeded(const RenderStyle&)

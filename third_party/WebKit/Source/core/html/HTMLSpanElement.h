@@ -32,7 +32,7 @@ namespace WebCore {
 
 class HTMLSpanElement : public HTMLElement {
 public:
-    static PassRefPtr<HTMLSpanElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLSpanElement> create(Document&);
 
 protected:
     explicit HTMLSpanElement(Document&);

@@ -84,12 +84,12 @@ void PluginDocumentParser::createDocumentStructure()
     if (!frame->settings() || !frame->loader().allowPlugins(NotAboutToInstantiatePlugin))
         return;
 
-    RefPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(*document());
+    RefPtrWillBeRawPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(*document());
     rootElement->insertedByParser();
     document()->appendChild(rootElement);
     frame->loader().dispatchDocumentElementAvailable();
 
-    RefPtr<HTMLBodyElement> body = HTMLBodyElement::create(*document());
+    RefPtrWillBeRawPtr<HTMLBodyElement> body = HTMLBodyElement::create(*document());
     body->setAttribute(marginwidthAttr, "0");
     body->setAttribute(marginheightAttr, "0");
     body->setAttribute(styleAttr, "background-color: rgb(38,38,38)");
@@ -180,6 +180,12 @@ void PluginDocument::detach(const AttachContext& context)
     // Release the plugin node so that we don't have a circular reference.
     m_pluginNode = nullptr;
     HTMLDocument::detach(context);
+}
+
+void PluginDocument::trace(Visitor* visitor)
+{
+    visitor->trace(m_pluginNode);
+    HTMLDocument::trace(visitor);
 }
 
 }

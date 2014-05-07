@@ -37,7 +37,7 @@ typedef EventSender<HTMLStyleElement> StyleEventSender;
 class HTMLStyleElement FINAL : public HTMLElement, private StyleElement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLStyleElement);
 public:
-    static PassRefPtr<HTMLStyleElement> create(Document&, bool createdByParser);
+    static PassRefPtrWillBeRawPtr<HTMLStyleElement> create(Document&, bool createdByParser);
     virtual ~HTMLStyleElement();
 
     void setType(const AtomicString&);

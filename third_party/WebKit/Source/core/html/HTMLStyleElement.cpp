@@ -65,9 +65,9 @@ HTMLStyleElement::~HTMLStyleElement()
     styleLoadEventSender().cancelEvent(this);
 }
 
-PassRefPtr<HTMLStyleElement> HTMLStyleElement::create(Document& document, bool createdByParser)
+PassRefPtrWillBeRawPtr<HTMLStyleElement> HTMLStyleElement::create(Document& document, bool createdByParser)
 {
-    return adoptRef(new HTMLStyleElement(document, createdByParser));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLStyleElement(document, createdByParser));
 }
 
 void HTMLStyleElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

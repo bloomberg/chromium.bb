@@ -29,7 +29,7 @@ namespace WebCore {
 
 class HTMLOListElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLOListElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLOListElement> create(Document&);
 
     int start() const { return m_hasExplicitStart ? m_start : (m_isReversed ? itemCount() : 1); }
     void setStart(int);

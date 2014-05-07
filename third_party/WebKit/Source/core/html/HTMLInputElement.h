@@ -46,7 +46,7 @@ struct DateTimeChooserParameters;
 
 class HTMLInputElement : public HTMLTextFormControlElement {
 public:
-    static PassRefPtr<HTMLInputElement> create(Document&, HTMLFormElement*, bool createdByParser);
+    static PassRefPtrWillBeRawPtr<HTMLInputElement> create(Document&, HTMLFormElement*, bool createdByParser);
     virtual ~HTMLInputElement();
     virtual void trace(Visitor*) OVERRIDE;
 

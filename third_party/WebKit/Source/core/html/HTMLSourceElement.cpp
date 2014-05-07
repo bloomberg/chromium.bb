@@ -50,9 +50,9 @@ inline HTMLSourceElement::HTMLSourceElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLSourceElement> HTMLSourceElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLSourceElement> HTMLSourceElement::create(Document& document)
 {
-    return adoptRef(new HTMLSourceElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLSourceElement(document));
 }
 
 HTMLSourceElement::~HTMLSourceElement()

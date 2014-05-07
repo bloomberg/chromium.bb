@@ -44,9 +44,9 @@ inline HTMLTitleElement::HTMLTitleElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLTitleElement> HTMLTitleElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLTitleElement> HTMLTitleElement::create(Document& document)
 {
-    return adoptRef(new HTMLTitleElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLTitleElement(document));
 }
 
 Node::InsertionNotificationRequest HTMLTitleElement::insertedInto(ContainerNode* insertionPoint)

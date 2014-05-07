@@ -47,7 +47,7 @@ class HTMLInputElement;
 
 class HTMLFormElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLFormElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLFormElement> create(Document&);
     virtual ~HTMLFormElement();
 
     PassRefPtr<HTMLCollection> elements();

@@ -44,9 +44,9 @@ HTMLFontElement::HTMLFontElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLFontElement> HTMLFontElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLFontElement> HTMLFontElement::create(Document& document)
 {
-    return adoptRef(new HTMLFontElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLFontElement(document));
 }
 
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/rendering.html#fonts-and-colors

@@ -29,7 +29,7 @@ namespace WebCore {
 
 class HTMLUListElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLUListElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLUListElement> create(Document&);
 
 private:
     explicit HTMLUListElement(Document&);

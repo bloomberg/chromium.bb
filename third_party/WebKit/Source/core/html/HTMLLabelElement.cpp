@@ -51,9 +51,9 @@ inline HTMLLabelElement::HTMLLabelElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLLabelElement> HTMLLabelElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLLabelElement> HTMLLabelElement::create(Document& document)
 {
-    return adoptRef(new HTMLLabelElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLLabelElement(document));
 }
 
 bool HTMLLabelElement::rendererIsFocusable() const
@@ -143,7 +143,7 @@ void HTMLLabelElement::defaultEventHandler(Event* evt)
         if (document().frame()->selection().selection().isRange())
             return;
 
-        RefPtr<HTMLElement> element = control();
+        RefPtrWillBeRawPtr<HTMLElement> element = control();
 
         // If we can't find a control or if the control received the click
         // event, then there's no need for us to do anything.

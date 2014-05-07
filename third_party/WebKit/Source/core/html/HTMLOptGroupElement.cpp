@@ -42,9 +42,9 @@ inline HTMLOptGroupElement::HTMLOptGroupElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLOptGroupElement> HTMLOptGroupElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLOptGroupElement> HTMLOptGroupElement::create(Document& document)
 {
-    return adoptRef(new HTMLOptGroupElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLOptGroupElement(document));
 }
 
 bool HTMLOptGroupElement::isDisabledFormControl() const

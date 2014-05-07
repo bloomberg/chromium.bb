@@ -43,9 +43,9 @@ inline HTMLScriptElement::HTMLScriptElement(Document& document, bool wasInserted
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLScriptElement> HTMLScriptElement::create(Document& document, bool wasInsertedByParser, bool alreadyStarted)
+PassRefPtrWillBeRawPtr<HTMLScriptElement> HTMLScriptElement::create(Document& document, bool wasInsertedByParser, bool alreadyStarted)
 {
-    return adoptRef(new HTMLScriptElement(document, wasInsertedByParser, alreadyStarted));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLScriptElement(document, wasInsertedByParser, alreadyStarted));
 }
 
 bool HTMLScriptElement::isURLAttribute(const Attribute& attribute) const

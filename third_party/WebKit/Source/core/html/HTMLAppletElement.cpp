@@ -49,9 +49,9 @@ HTMLAppletElement::HTMLAppletElement(Document& document, bool createdByParser)
     m_serviceType = "application/x-java-applet";
 }
 
-PassRefPtr<HTMLAppletElement> HTMLAppletElement::create(Document& document, bool createdByParser)
+PassRefPtrWillBeRawPtr<HTMLAppletElement> HTMLAppletElement::create(Document& document, bool createdByParser)
 {
-    RefPtr<HTMLAppletElement> element = adoptRef(new HTMLAppletElement(document, createdByParser));
+    RefPtrWillBeRawPtr<HTMLAppletElement> element = adoptRefWillBeRefCountedGarbageCollected(new HTMLAppletElement(document, createdByParser));
     element->ensureUserAgentShadowRoot();
     return element.release();
 }

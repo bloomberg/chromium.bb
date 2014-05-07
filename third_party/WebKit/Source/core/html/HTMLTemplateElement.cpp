@@ -51,9 +51,9 @@ HTMLTemplateElement::~HTMLTemplateElement()
         m_content->clearHost();
 }
 
-PassRefPtr<HTMLTemplateElement> HTMLTemplateElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLTemplateElement> HTMLTemplateElement::create(Document& document)
 {
-    return adoptRef(new HTMLTemplateElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLTemplateElement(document));
 }
 
 DocumentFragment* HTMLTemplateElement::content() const

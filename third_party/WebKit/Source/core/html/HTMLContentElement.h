@@ -38,7 +38,7 @@ namespace WebCore {
 
 class HTMLContentElement FINAL : public InsertionPoint {
 public:
-    static PassRefPtr<HTMLContentElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLContentElement> create(Document&);
 
     virtual ~HTMLContentElement();
 

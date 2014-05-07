@@ -35,12 +35,14 @@ class HTMLToken;
 
 class HTMLViewSourceDocument FINAL : public HTMLDocument {
 public:
-    static PassRefPtr<HTMLViewSourceDocument> create(const DocumentInit& initializer, const String& mimeType)
+    static PassRefPtrWillBeRawPtr<HTMLViewSourceDocument> create(const DocumentInit& initializer, const String& mimeType)
     {
-        return adoptRef(new HTMLViewSourceDocument(initializer, mimeType));
+        return adoptRefWillBeRefCountedGarbageCollected(new HTMLViewSourceDocument(initializer, mimeType));
     }
 
     void addSource(const String&, HTMLToken&);
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     HTMLViewSourceDocument(const DocumentInit&, const String& mimeType);
@@ -63,9 +65,9 @@ private:
     PassRefPtr<Element> addBase(const AtomicString& href);
 
     String m_type;
-    RefPtr<Element> m_current;
-    RefPtr<HTMLTableSectionElement> m_tbody;
-    RefPtr<HTMLTableCellElement> m_td;
+    RefPtrWillBeMember<Element> m_current;
+    RefPtrWillBeMember<HTMLTableSectionElement> m_tbody;
+    RefPtrWillBeMember<HTMLTableCellElement> m_td;
     int m_lineNumber;
 };
 

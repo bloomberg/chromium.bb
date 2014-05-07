@@ -42,9 +42,9 @@ HTMLHtmlElement::HTMLHtmlElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLHtmlElement> HTMLHtmlElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLHtmlElement> HTMLHtmlElement::create(Document& document)
 {
-    return adoptRef(new HTMLHtmlElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLHtmlElement(document));
 }
 
 bool HTMLHtmlElement::isURLAttribute(const Attribute& attribute) const

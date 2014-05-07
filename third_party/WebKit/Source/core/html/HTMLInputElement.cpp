@@ -129,9 +129,9 @@ HTMLInputElement::HTMLInputElement(Document& document, HTMLFormElement* form, bo
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLInputElement> HTMLInputElement::create(Document& document, HTMLFormElement* form, bool createdByParser)
+PassRefPtrWillBeRawPtr<HTMLInputElement> HTMLInputElement::create(Document& document, HTMLFormElement* form, bool createdByParser)
 {
-    RefPtr<HTMLInputElement> inputElement = adoptRef(new HTMLInputElement(document, form, createdByParser));
+    RefPtrWillBeRawPtr<HTMLInputElement> inputElement = adoptRefWillBeRefCountedGarbageCollected(new HTMLInputElement(document, form, createdByParser));
     inputElement->ensureUserAgentShadowRoot();
     return inputElement.release();
 }
@@ -835,7 +835,7 @@ void HTMLInputElement::setChecked(bool nowChecked, TextFieldEventBehavior eventB
     if (checked() == nowChecked)
         return;
 
-    RefPtr<HTMLInputElement> protector(this);
+    RefPtrWillBeRawPtr<HTMLInputElement> protector(this);
     m_reflectsCheckedAttribute = false;
     m_isChecked = nowChecked;
     setNeedsStyleRecalc(SubtreeStyleChange);
@@ -992,7 +992,7 @@ void HTMLInputElement::setValue(const String& value, TextFieldEventBehavior even
     if (!m_inputType->canSetValue(value))
         return;
 
-    RefPtr<HTMLInputElement> protector(this);
+    RefPtrWillBeRawPtr<HTMLInputElement> protector(this);
     EventQueueScope scope;
     String sanitizedValue = sanitizeValue(value);
     bool valueChanged = sanitizedValue != this->value();

@@ -79,14 +79,14 @@ HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
     setHasCustomStyleCallbacks();
 }
 
-PassRefPtr<HTMLSelectElement> HTMLSelectElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLSelectElement> HTMLSelectElement::create(Document& document)
 {
-    return adoptRef(new HTMLSelectElement(document, 0));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLSelectElement(document, 0));
 }
 
-PassRefPtr<HTMLSelectElement> HTMLSelectElement::create(Document& document, HTMLFormElement* form)
+PassRefPtrWillBeRawPtr<HTMLSelectElement> HTMLSelectElement::create(Document& document, HTMLFormElement* form)
 {
-    return adoptRef(new HTMLSelectElement(document, form));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLSelectElement(document, form));
 }
 
 const AtomicString& HTMLSelectElement::formControlType() const

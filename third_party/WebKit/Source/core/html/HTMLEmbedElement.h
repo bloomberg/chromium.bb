@@ -29,7 +29,7 @@ namespace WebCore {
 
 class HTMLEmbedElement FINAL : public HTMLPlugInElement {
 public:
-    static PassRefPtr<HTMLEmbedElement> create(Document&, bool createdByParser = false);
+    static PassRefPtrWillBeRawPtr<HTMLEmbedElement> create(Document&, bool createdByParser = false);
 
     bool isExposed() const;
 

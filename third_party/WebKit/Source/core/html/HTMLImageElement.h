@@ -36,9 +36,9 @@ class HTMLFormElement;
 
 class HTMLImageElement FINAL : public HTMLElement, public CanvasImageSource {
 public:
-    static PassRefPtr<HTMLImageElement> create(Document&);
-    static PassRefPtr<HTMLImageElement> create(Document&, HTMLFormElement*);
-    static PassRefPtr<HTMLImageElement> createForJSConstructor(Document&, int width, int height);
+    static PassRefPtrWillBeRawPtr<HTMLImageElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLImageElement> create(Document&, HTMLFormElement*);
+    static PassRefPtrWillBeRawPtr<HTMLImageElement> createForJSConstructor(Document&, int width, int height);
 
     virtual ~HTMLImageElement();
 

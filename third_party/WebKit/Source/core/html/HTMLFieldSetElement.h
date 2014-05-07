@@ -33,7 +33,7 @@ class HTMLCollection;
 
 class HTMLFieldSetElement FINAL : public HTMLFormControlElement {
 public:
-    static PassRefPtr<HTMLFieldSetElement> create(Document&, HTMLFormElement*);
+    static PassRefPtrWillBeRawPtr<HTMLFieldSetElement> create(Document&, HTMLFormElement*);
     HTMLLegendElement* legend() const;
 
     PassRefPtr<HTMLCollection> elements();

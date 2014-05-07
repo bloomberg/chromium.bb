@@ -35,9 +35,9 @@ inline HTMLMenuElement::HTMLMenuElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLMenuElement> HTMLMenuElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLMenuElement> HTMLMenuElement::create(Document& document)
 {
-    return adoptRef(new HTMLMenuElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLMenuElement(document));
 }
 
 }

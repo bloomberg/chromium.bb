@@ -66,9 +66,9 @@ HTMLTrackElement::~HTMLTrackElement()
 #endif
 }
 
-PassRefPtr<HTMLTrackElement> HTMLTrackElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLTrackElement> HTMLTrackElement::create(Document& document)
 {
-    return adoptRef(new HTMLTrackElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLTrackElement(document));
 }
 
 Node::InsertionNotificationRequest HTMLTrackElement::insertedInto(ContainerNode* insertionPoint)

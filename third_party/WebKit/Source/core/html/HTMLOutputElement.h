@@ -38,7 +38,7 @@ namespace WebCore {
 
 class HTMLOutputElement FINAL : public HTMLFormControlElement {
 public:
-    static PassRefPtr<HTMLOutputElement> create(Document&, HTMLFormElement*);
+    static PassRefPtrWillBeRawPtr<HTMLOutputElement> create(Document&, HTMLFormElement*);
 
     virtual bool willValidate() const OVERRIDE { return false; }
 

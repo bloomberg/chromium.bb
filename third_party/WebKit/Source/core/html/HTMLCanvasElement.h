@@ -66,7 +66,7 @@ public:
 class HTMLCanvasElement FINAL : public HTMLElement, public DocumentVisibilityObserver, public CanvasImageSource, public ImageBufferClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLCanvasElement);
 public:
-    static PassRefPtr<HTMLCanvasElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLCanvasElement> create(Document&);
     virtual ~HTMLCanvasElement();
 
     void addObserver(CanvasObserver*);

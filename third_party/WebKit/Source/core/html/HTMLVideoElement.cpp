@@ -52,9 +52,9 @@ inline HTMLVideoElement::HTMLVideoElement(Document& document)
         m_defaultPosterURL = AtomicString(document.settings()->defaultVideoPosterURL());
 }
 
-PassRefPtr<HTMLVideoElement> HTMLVideoElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLVideoElement> HTMLVideoElement::create(Document& document)
 {
-    RefPtr<HTMLVideoElement> videoElement(adoptRef(new HTMLVideoElement(document)));
+    RefPtrWillBeRawPtr<HTMLVideoElement> videoElement(adoptRefWillBeRefCountedGarbageCollected(new HTMLVideoElement(document)));
     videoElement->suspendIfNeeded();
     return videoElement.release();
 }

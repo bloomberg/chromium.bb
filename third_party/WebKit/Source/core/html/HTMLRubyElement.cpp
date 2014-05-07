@@ -17,9 +17,9 @@ HTMLRubyElement::HTMLRubyElement(Document& document)
 {
 }
 
-PassRefPtr<HTMLRubyElement> HTMLRubyElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLRubyElement> HTMLRubyElement::create(Document& document)
 {
-    return adoptRef(new HTMLRubyElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLRubyElement(document));
 }
 
 RenderObject* HTMLRubyElement::createRenderer(RenderStyle* style)

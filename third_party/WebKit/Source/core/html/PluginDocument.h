@@ -34,9 +34,9 @@ class Widget;
 
 class PluginDocument FINAL : public HTMLDocument {
 public:
-    static PassRefPtr<PluginDocument> create(const DocumentInit& initializer = DocumentInit())
+    static PassRefPtrWillBeRawPtr<PluginDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRef(new PluginDocument(initializer));
+        return adoptRefWillBeRefCountedGarbageCollected(new PluginDocument(initializer));
     }
 
     void setPluginNode(Node* pluginNode) { m_pluginNode = pluginNode; }
@@ -48,15 +48,17 @@ public:
 
     bool shouldLoadPluginManually() { return m_shouldLoadPluginManually; }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
-    PluginDocument(const DocumentInit&);
+    explicit PluginDocument(const DocumentInit&);
 
     virtual PassRefPtr<DocumentParser> createParser() OVERRIDE;
 
     void setShouldLoadPluginManually(bool loadManually) { m_shouldLoadPluginManually = loadManually; }
 
     bool m_shouldLoadPluginManually;
-    RefPtr<Node> m_pluginNode;
+    RefPtrWillBeMember<Node> m_pluginNode;
 };
 
 DEFINE_DOCUMENT_TYPE_CASTS(PluginDocument);

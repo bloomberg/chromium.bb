@@ -40,7 +40,7 @@ class HTMLImageLoader;
 
 class HTMLVideoElement FINAL : public HTMLMediaElement, public CanvasImageSource {
 public:
-    static PassRefPtr<HTMLVideoElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLVideoElement> create(Document&);
 
     unsigned videoWidth() const;
     unsigned videoHeight() const;

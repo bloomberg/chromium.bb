@@ -31,7 +31,7 @@ class KURL;
 
 class HTMLAppletElement FINAL : public HTMLPlugInElement {
 public:
-    static PassRefPtr<HTMLAppletElement> create(Document&, bool createdByParser);
+    static PassRefPtrWillBeRawPtr<HTMLAppletElement> create(Document&, bool createdByParser);
 
 protected:
     virtual RenderWidget* renderWidgetForJSBindings() const OVERRIDE;

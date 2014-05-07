@@ -40,9 +40,9 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-PassRefPtr<HTMLContentElement> HTMLContentElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLContentElement> HTMLContentElement::create(Document& document)
 {
-    return adoptRef(new HTMLContentElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLContentElement(document));
 }
 
 HTMLContentElement::HTMLContentElement(Document& document)

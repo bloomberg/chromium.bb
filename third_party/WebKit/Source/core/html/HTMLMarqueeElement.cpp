@@ -41,9 +41,9 @@ inline HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLMarqueeElement> HTMLMarqueeElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLMarqueeElement> HTMLMarqueeElement::create(Document& document)
 {
-    RefPtr<HTMLMarqueeElement> marqueeElement(adoptRef(new HTMLMarqueeElement(document)));
+    RefPtrWillBeRawPtr<HTMLMarqueeElement> marqueeElement(adoptRefWillBeRefCountedGarbageCollected(new HTMLMarqueeElement(document)));
     marqueeElement->suspendIfNeeded();
     return marqueeElement.release();
 }

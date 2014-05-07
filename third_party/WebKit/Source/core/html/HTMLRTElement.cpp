@@ -17,9 +17,9 @@ HTMLRTElement::HTMLRTElement(Document& document)
 {
 }
 
-PassRefPtr<HTMLRTElement> HTMLRTElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLRTElement> HTMLRTElement::create(Document& document)
 {
-    return adoptRef(new HTMLRTElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLRTElement(document));
 }
 
 RenderObject* HTMLRTElement::createRenderer(RenderStyle* style)

@@ -47,9 +47,9 @@ HTMLBodyElement::HTMLBodyElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLBodyElement> HTMLBodyElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLBodyElement> HTMLBodyElement::create(Document& document)
 {
-    return adoptRef(new HTMLBodyElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLBodyElement(document));
 }
 
 HTMLBodyElement::~HTMLBodyElement()

@@ -35,9 +35,9 @@ class HTMLElement;
 
 class HTMLDocument : public Document, public ResourceClient {
 public:
-    static PassRefPtr<HTMLDocument> create(const DocumentInit& initializer = DocumentInit())
+    static PassRefPtrWillBeRawPtr<HTMLDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRef(new HTMLDocument(initializer));
+        return adoptRefWillBeRefCountedGarbageCollected(new HTMLDocument(initializer));
     }
     virtual ~HTMLDocument();
 

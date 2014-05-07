@@ -29,7 +29,7 @@ namespace WebCore {
 
 class HTMLHeadingElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLHeadingElement> create(const QualifiedName&, Document&);
+    static PassRefPtrWillBeRawPtr<HTMLHeadingElement> create(const QualifiedName&, Document&);
 
 private:
     HTMLHeadingElement(const QualifiedName&, Document&);

@@ -36,7 +36,7 @@ typedef EventSender<HTMLSourceElement> SourceEventSender;
 
 class HTMLSourceElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLSourceElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLSourceElement> create(Document&);
     virtual ~HTMLSourceElement();
 
     const AtomicString& type() const;

@@ -29,7 +29,7 @@ namespace WebCore {
 
 class HTMLParamElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLParamElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLParamElement> create(Document&);
 
     const AtomicString& name() const;
     const AtomicString& value() const;

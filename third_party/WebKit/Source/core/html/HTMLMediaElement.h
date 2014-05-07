@@ -451,8 +451,8 @@ private:
     // Loading state.
     enum LoadState { WaitingForSource, LoadingFromSrcAttr, LoadingFromSourceElement };
     LoadState m_loadState;
-    RefPtr<HTMLSourceElement> m_currentSourceNode;
-    RefPtr<Node> m_nextChildNodeToConsider;
+    RefPtrWillBeMember<HTMLSourceElement> m_currentSourceNode;
+    RefPtrWillBeMember<Node> m_nextChildNodeToConsider;
 
     OwnPtr<MediaPlayer> m_player;
     blink::WebLayer* m_webLayer;

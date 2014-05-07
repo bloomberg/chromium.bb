@@ -40,7 +40,7 @@ class TemplateContentDocumentFragment;
 
 class HTMLTemplateElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLTemplateElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLTemplateElement> create(Document&);
     virtual ~HTMLTemplateElement();
 
     DocumentFragment* content() const;

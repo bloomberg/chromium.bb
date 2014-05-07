@@ -84,9 +84,9 @@ HTMLCanvasElement::HTMLCanvasElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLCanvasElement> HTMLCanvasElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLCanvasElement> HTMLCanvasElement::create(Document& document)
 {
-    return adoptRef(new HTMLCanvasElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLCanvasElement(document));
 }
 
 HTMLCanvasElement::~HTMLCanvasElement()

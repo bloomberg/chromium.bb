@@ -61,14 +61,14 @@ HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form)
     }
 }
 
-PassRefPtr<HTMLImageElement> HTMLImageElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::create(Document& document)
 {
-    return adoptRef(new HTMLImageElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLImageElement(document));
 }
 
-PassRefPtr<HTMLImageElement> HTMLImageElement::create(Document& document, HTMLFormElement* form)
+PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::create(Document& document, HTMLFormElement* form)
 {
-    return adoptRef(new HTMLImageElement(document, form));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLImageElement(document, form));
 }
 
 HTMLImageElement::~HTMLImageElement()
@@ -77,9 +77,9 @@ HTMLImageElement::~HTMLImageElement()
         m_form->disassociate(*this);
 }
 
-PassRefPtr<HTMLImageElement> HTMLImageElement::createForJSConstructor(Document& document, int width, int height)
+PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::createForJSConstructor(Document& document, int width, int height)
 {
-    RefPtr<HTMLImageElement> image = adoptRef(new HTMLImageElement(document));
+    RefPtrWillBeRawPtr<HTMLImageElement> image = adoptRefWillBeRefCountedGarbageCollected(new HTMLImageElement(document));
     if (width)
         image->setWidth(width);
     if (height)

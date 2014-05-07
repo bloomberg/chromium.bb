@@ -35,9 +35,9 @@ inline HTMLModElement::HTMLModElement(const QualifiedName& tagName, Document& do
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLModElement> HTMLModElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtrWillBeRawPtr<HTMLModElement> HTMLModElement::create(const QualifiedName& tagName, Document& document)
 {
-    return adoptRef(new HTMLModElement(tagName, document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLModElement(tagName, document));
 }
 
 bool HTMLModElement::isURLAttribute(const Attribute& attribute) const

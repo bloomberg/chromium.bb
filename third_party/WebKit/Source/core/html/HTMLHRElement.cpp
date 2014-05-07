@@ -39,9 +39,9 @@ HTMLHRElement::HTMLHRElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLHRElement> HTMLHRElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLHRElement> HTMLHRElement::create(Document& document)
 {
-    return adoptRef(new HTMLHRElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLHRElement(document));
 }
 
 bool HTMLHRElement::isPresentationAttribute(const QualifiedName& name) const

@@ -30,7 +30,7 @@ namespace WebCore {
 
 class HTMLButtonElement FINAL : public HTMLFormControlElement {
 public:
-    static PassRefPtr<HTMLButtonElement> create(Document&, HTMLFormElement*);
+    static PassRefPtrWillBeRawPtr<HTMLButtonElement> create(Document&, HTMLFormElement*);
 
     void setType(const AtomicString&);
 

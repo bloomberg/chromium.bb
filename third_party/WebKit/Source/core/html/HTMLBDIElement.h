@@ -27,9 +27,9 @@ namespace WebCore {
 
 class HTMLBDIElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLBDIElement> create(Document& document)
+    static PassRefPtrWillBeRawPtr<HTMLBDIElement> create(Document& document)
     {
-        return adoptRef(new HTMLBDIElement(document));
+        return adoptRefWillBeRefCountedGarbageCollected(new HTMLBDIElement(document));
     }
 
 private:

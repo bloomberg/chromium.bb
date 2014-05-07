@@ -43,9 +43,9 @@ HTMLWBRElement::HTMLWBRElement(Document& document)
 {
 }
 
-PassRefPtr<HTMLWBRElement> HTMLWBRElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLWBRElement> HTMLWBRElement::create(Document& document)
 {
-    return adoptRef(new HTMLWBRElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLWBRElement(document));
 }
 
 RenderObject* HTMLWBRElement::createRenderer(RenderStyle* style)

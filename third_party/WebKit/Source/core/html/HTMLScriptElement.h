@@ -33,7 +33,7 @@ class ScriptLoader;
 
 class HTMLScriptElement FINAL : public HTMLElement, public ScriptLoaderClient {
 public:
-    static PassRefPtr<HTMLScriptElement> create(Document&, bool wasInsertedByParser, bool alreadyStarted = false);
+    static PassRefPtrWillBeRawPtr<HTMLScriptElement> create(Document&, bool wasInsertedByParser, bool alreadyStarted = false);
 
     String text() { return textFromChildren(); }
     void setText(const String&);

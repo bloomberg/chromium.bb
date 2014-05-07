@@ -51,9 +51,9 @@ inline HTMLMetaElement::HTMLMetaElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLMetaElement> HTMLMetaElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLMetaElement> HTMLMetaElement::create(Document& document)
 {
-    return adoptRef(new HTMLMetaElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLMetaElement(document));
 }
 
 static bool isInvalidSeparator(UChar c)

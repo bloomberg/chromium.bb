@@ -121,7 +121,7 @@ private:
 
 class HTMLLinkElement FINAL : public HTMLElement, public LinkLoaderClient {
 public:
-    static PassRefPtr<HTMLLinkElement> create(Document&, bool createdByParser);
+    static PassRefPtrWillBeRawPtr<HTMLLinkElement> create(Document&, bool createdByParser);
     virtual ~HTMLLinkElement();
 
     KURL href() const;

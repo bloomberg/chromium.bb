@@ -44,9 +44,9 @@ inline HTMLFieldSetElement::HTMLFieldSetElement(Document& document, HTMLFormElem
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLFieldSetElement> HTMLFieldSetElement::create(Document& document, HTMLFormElement* form)
+PassRefPtrWillBeRawPtr<HTMLFieldSetElement> HTMLFieldSetElement::create(Document& document, HTMLFormElement* form)
 {
-    return adoptRef(new HTMLFieldSetElement(document, form));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLFieldSetElement(document, form));
 }
 
 void HTMLFieldSetElement::invalidateDisabledStateUnder(Element& base)

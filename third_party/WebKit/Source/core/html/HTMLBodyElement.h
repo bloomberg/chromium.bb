@@ -32,7 +32,7 @@ class Document;
 
 class HTMLBodyElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLBodyElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLBodyElement> create(Document&);
     virtual ~HTMLBodyElement();
 
     DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(blur);

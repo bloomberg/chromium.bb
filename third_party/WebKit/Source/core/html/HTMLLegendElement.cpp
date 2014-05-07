@@ -41,9 +41,9 @@ inline HTMLLegendElement::HTMLLegendElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLLegendElement> HTMLLegendElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLLegendElement> HTMLLegendElement::create(Document& document)
 {
-    return adoptRef(new HTMLLegendElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLLegendElement(document));
 }
 
 HTMLFormControlElement* HTMLLegendElement::associatedControl()

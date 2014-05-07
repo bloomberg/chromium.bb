@@ -51,7 +51,7 @@ PassRefPtrWillBeRawPtr<HTMLMeterElement> HTMLMeterElement::create(Document& docu
 {
     RefPtrWillBeRawPtr<HTMLMeterElement> meter = adoptRefWillBeRefCountedGarbageCollected(new HTMLMeterElement(document));
     meter->ensureUserAgentShadowRoot();
-    return meter;
+    return meter.release();
 }
 
 RenderObject* HTMLMeterElement::createRenderer(RenderStyle* style)

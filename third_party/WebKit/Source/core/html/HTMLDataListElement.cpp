@@ -44,10 +44,10 @@ inline HTMLDataListElement::HTMLDataListElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLDataListElement> HTMLDataListElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLDataListElement> HTMLDataListElement::create(Document& document)
 {
     UseCounter::count(document, UseCounter::DataListElement);
-    return adoptRef(new HTMLDataListElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLDataListElement(document));
 }
 
 PassRefPtr<HTMLCollection> HTMLDataListElement::options()

@@ -75,10 +75,10 @@ HTMLFormElement::HTMLFormElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLFormElement> HTMLFormElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLFormElement> HTMLFormElement::create(Document& document)
 {
     UseCounter::count(document, UseCounter::FormElement);
-    return adoptRef(new HTMLFormElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLFormElement(document));
 }
 
 HTMLFormElement::~HTMLFormElement()

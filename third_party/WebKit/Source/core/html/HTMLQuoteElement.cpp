@@ -38,9 +38,9 @@ inline HTMLQuoteElement::HTMLQuoteElement(const QualifiedName& tagName, Document
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLQuoteElement> HTMLQuoteElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtrWillBeRawPtr<HTMLQuoteElement> HTMLQuoteElement::create(const QualifiedName& tagName, Document& document)
 {
-    return adoptRef(new HTMLQuoteElement(tagName, document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLQuoteElement(tagName, document));
 }
 
 bool HTMLQuoteElement::isURLAttribute(const Attribute& attribute) const

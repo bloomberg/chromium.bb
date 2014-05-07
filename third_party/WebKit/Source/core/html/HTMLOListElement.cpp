@@ -43,9 +43,9 @@ HTMLOListElement::HTMLOListElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLOListElement> HTMLOListElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLOListElement> HTMLOListElement::create(Document& document)
 {
-    return adoptRef(new HTMLOListElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLOListElement(document));
 }
 
 bool HTMLOListElement::isPresentationAttribute(const QualifiedName& name) const

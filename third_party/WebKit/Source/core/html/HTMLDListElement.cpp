@@ -35,9 +35,9 @@ inline HTMLDListElement::HTMLDListElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLDListElement> HTMLDListElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLDListElement> HTMLDListElement::create(Document& document)
 {
-    return adoptRef(new HTMLDListElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLDListElement(document));
 }
 
 }

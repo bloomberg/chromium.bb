@@ -180,20 +180,20 @@ PassRefPtr<DocumentParser> ImageDocument::createParser()
 
 void ImageDocument::createDocumentStructure()
 {
-    RefPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(*this);
+    RefPtrWillBeRawPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(*this);
     appendChild(rootElement);
     rootElement->insertedByParser();
 
     if (frame())
         frame()->loader().dispatchDocumentElementAvailable();
 
-    RefPtr<HTMLHeadElement> head = HTMLHeadElement::create(*this);
-    RefPtr<HTMLMetaElement> meta = HTMLMetaElement::create(*this);
+    RefPtrWillBeRawPtr<HTMLHeadElement> head = HTMLHeadElement::create(*this);
+    RefPtrWillBeRawPtr<HTMLMetaElement> meta = HTMLMetaElement::create(*this);
     meta->setAttribute(nameAttr, "viewport");
     meta->setAttribute(contentAttr, "width=device-width, minimum-scale=0.1");
     head->appendChild(meta);
 
-    RefPtr<HTMLBodyElement> body = HTMLBodyElement::create(*this);
+    RefPtrWillBeRawPtr<HTMLBodyElement> body = HTMLBodyElement::create(*this);
     body->setAttribute(styleAttr, "margin: 0px;");
 
     m_imageElement = HTMLImageElement::create(*this);
@@ -369,6 +369,12 @@ void ImageDocument::dispose()
 {
     m_imageElement = nullptr;
     HTMLDocument::dispose();
+}
+
+void ImageDocument::trace(Visitor* visitor)
+{
+    visitor->trace(m_imageElement);
+    HTMLDocument::trace(visitor);
 }
 
 // --------

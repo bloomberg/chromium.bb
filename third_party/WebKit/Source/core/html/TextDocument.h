@@ -31,9 +31,9 @@ namespace WebCore {
 
 class TextDocument FINAL : public HTMLDocument {
 public:
-    static PassRefPtr<TextDocument> create(const DocumentInit& initializer = DocumentInit())
+    static PassRefPtrWillBeRawPtr<TextDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRef(new TextDocument(initializer));
+        return adoptRefWillBeRefCountedGarbageCollected(new TextDocument(initializer));
     }
 
 private:

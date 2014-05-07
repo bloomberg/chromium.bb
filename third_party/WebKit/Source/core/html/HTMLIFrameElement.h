@@ -30,7 +30,7 @@ namespace WebCore {
 
 class HTMLIFrameElement FINAL : public HTMLFrameElementBase {
 public:
-    static PassRefPtr<HTMLIFrameElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLIFrameElement> create(Document&);
 
 private:
     explicit HTMLIFrameElement(Document&);

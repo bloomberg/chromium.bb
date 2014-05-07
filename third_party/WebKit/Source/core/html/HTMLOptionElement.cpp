@@ -54,15 +54,15 @@ HTMLOptionElement::HTMLOptionElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLOptionElement> HTMLOptionElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLOptionElement> HTMLOptionElement::create(Document& document)
 {
-    return adoptRef(new HTMLOptionElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLOptionElement(document));
 }
 
-PassRefPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document& document, const String& data, const AtomicString& value,
+PassRefPtrWillBeRawPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document& document, const String& data, const AtomicString& value,
     bool defaultSelected, bool selected, ExceptionState& exceptionState)
 {
-    RefPtr<HTMLOptionElement> element = adoptRef(new HTMLOptionElement(document));
+    RefPtrWillBeRawPtr<HTMLOptionElement> element = adoptRefWillBeRefCountedGarbageCollected(new HTMLOptionElement(document));
 
     RefPtr<Text> text = Text::create(document, data.isNull() ? "" : data);
 
@@ -129,7 +129,7 @@ void HTMLOptionElement::setText(const String &text, ExceptionState& exceptionSta
     // Changing the text causes a recalc of a select's items, which will reset the selected
     // index to the first item if the select is single selection with a menu list. We attempt to
     // preserve the selected item.
-    RefPtr<HTMLSelectElement> select = ownerSelectElement();
+    RefPtrWillBeRawPtr<HTMLSelectElement> select = ownerSelectElement();
     bool selectIsMenuList = select && select->usesMenuList();
     int oldSelectedIndex = selectIsMenuList ? select->selectedIndex() : -1;
 

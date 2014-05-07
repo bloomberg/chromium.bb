@@ -42,9 +42,9 @@ HTMLMapElement::HTMLMapElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLMapElement> HTMLMapElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLMapElement> HTMLMapElement::create(Document& document)
 {
-    return adoptRef(new HTMLMapElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLMapElement(document));
 }
 
 HTMLMapElement::~HTMLMapElement()

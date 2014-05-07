@@ -34,14 +34,14 @@ class ExceptionState;
 
 class HTMLTableRowElement FINAL : public HTMLTablePartElement {
 public:
-    static PassRefPtr<HTMLTableRowElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLTableRowElement> create(Document&);
 
     int rowIndex() const;
 
     int sectionRowIndex() const;
 
-    PassRefPtr<HTMLElement> insertCell(ExceptionState&);
-    PassRefPtr<HTMLElement> insertCell(int index, ExceptionState&);
+    PassRefPtrWillBeRawPtr<HTMLElement> insertCell(ExceptionState&);
+    PassRefPtrWillBeRawPtr<HTMLElement> insertCell(int index, ExceptionState&);
     void deleteCell(int index, ExceptionState&);
 
     PassRefPtr<HTMLCollection> cells();

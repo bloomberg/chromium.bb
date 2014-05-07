@@ -45,9 +45,9 @@ inline HTMLOutputElement::HTMLOutputElement(Document& document, HTMLFormElement*
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLOutputElement> HTMLOutputElement::create(Document& document, HTMLFormElement* form)
+PassRefPtrWillBeRawPtr<HTMLOutputElement> HTMLOutputElement::create(Document& document, HTMLFormElement* form)
 {
-    return adoptRef(new HTMLOutputElement(document, form));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLOutputElement(document, form));
 }
 
 const AtomicString& HTMLOutputElement::formControlType() const

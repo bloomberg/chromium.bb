@@ -39,9 +39,9 @@ inline HTMLPreElement::HTMLPreElement(const QualifiedName& tagName, Document& do
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLPreElement> HTMLPreElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtrWillBeRawPtr<HTMLPreElement> HTMLPreElement::create(const QualifiedName& tagName, Document& document)
 {
-    return adoptRef(new HTMLPreElement(tagName, document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLPreElement(tagName, document));
 }
 
 bool HTMLPreElement::isPresentationAttribute(const QualifiedName& name) const

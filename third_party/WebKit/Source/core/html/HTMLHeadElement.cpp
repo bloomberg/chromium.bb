@@ -36,9 +36,9 @@ HTMLHeadElement::HTMLHeadElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLHeadElement> HTMLHeadElement::create(Document& document)
+PassRefPtrWillBeRawPtr<HTMLHeadElement> HTMLHeadElement::create(Document& document)
 {
-    return adoptRef(new HTMLHeadElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLHeadElement(document));
 }
 
 }

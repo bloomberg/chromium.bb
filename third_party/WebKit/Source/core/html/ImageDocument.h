@@ -35,9 +35,9 @@ class HTMLImageElement;
 
 class ImageDocument FINAL : public HTMLDocument {
 public:
-    static PassRefPtr<ImageDocument> create(const DocumentInit& initializer = DocumentInit())
+    static PassRefPtrWillBeRawPtr<ImageDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRef(new ImageDocument(initializer));
+        return adoptRefWillBeRefCountedGarbageCollected(new ImageDocument(initializer));
     }
 
     ImageResource* cachedImage();
@@ -47,8 +47,10 @@ public:
     void imageUpdated();
     void imageClicked(int x, int y);
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
-    ImageDocument(const DocumentInit&);
+    explicit ImageDocument(const DocumentInit&);
 
     virtual PassRefPtr<DocumentParser> createParser() OVERRIDE;
     virtual void dispose() OVERRIDE;
@@ -60,7 +62,7 @@ private:
     bool shouldShrinkToFit() const;
     float scale() const;
 
-    RefPtr<HTMLImageElement> m_imageElement;
+    RefPtrWillBeMember<HTMLImageElement> m_imageElement;
 
     // Whether enough of the image has been loaded to determine its size
     bool m_imageSizeIsKnown;
