@@ -36,7 +36,7 @@ class DateTimeAMPMFieldElement FINAL : public DateTimeSymbolicFieldElement {
     WTF_MAKE_NONCOPYABLE(DateTimeAMPMFieldElement);
 
 public:
-    static PassRefPtr<DateTimeAMPMFieldElement> create(Document&, FieldOwner&, const Vector<String>&);
+    static PassRefPtrWillBeRawPtr<DateTimeAMPMFieldElement> create(Document&, FieldOwner&, const Vector<String>&);
 
 private:
     DateTimeAMPMFieldElement(Document&, FieldOwner&, const Vector<String>&);
@@ -51,7 +51,7 @@ class DateTimeDayFieldElement FINAL : public DateTimeNumericFieldElement {
     WTF_MAKE_NONCOPYABLE(DateTimeDayFieldElement);
 
 public:
-    static PassRefPtr<DateTimeDayFieldElement> create(Document&, FieldOwner&, const String& placeholder, const Range&);
+    static PassRefPtrWillBeRawPtr<DateTimeDayFieldElement> create(Document&, FieldOwner&, const String& placeholder, const Range&);
 
 private:
     DateTimeDayFieldElement(Document&, FieldOwner&, const String& placeholder, const Range&);
@@ -79,7 +79,7 @@ class DateTimeHour11FieldElement FINAL : public DateTimeHourFieldElementBase {
     WTF_MAKE_NONCOPYABLE(DateTimeHour11FieldElement);
 
 public:
-    static PassRefPtr<DateTimeHour11FieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
+    static PassRefPtrWillBeRawPtr<DateTimeHour11FieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
     DateTimeHour11FieldElement(Document&, FieldOwner&, const Range& hour23Range, const Step&);
@@ -93,7 +93,7 @@ class DateTimeHour12FieldElement FINAL : public DateTimeHourFieldElementBase {
     WTF_MAKE_NONCOPYABLE(DateTimeHour12FieldElement);
 
 public:
-    static PassRefPtr<DateTimeHour12FieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
+    static PassRefPtrWillBeRawPtr<DateTimeHour12FieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
     DateTimeHour12FieldElement(Document&, FieldOwner&, const Range& hour23Range, const Step&);
@@ -107,7 +107,7 @@ class DateTimeHour23FieldElement FINAL : public DateTimeHourFieldElementBase {
     WTF_MAKE_NONCOPYABLE(DateTimeHour23FieldElement);
 
 public:
-    static PassRefPtr<DateTimeHour23FieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
+    static PassRefPtrWillBeRawPtr<DateTimeHour23FieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
     DateTimeHour23FieldElement(Document&, FieldOwner&, const Range& hour23Range, const Step&);
@@ -121,7 +121,7 @@ class DateTimeHour24FieldElement FINAL : public DateTimeHourFieldElementBase {
     WTF_MAKE_NONCOPYABLE(DateTimeHour24FieldElement);
 
 public:
-    static PassRefPtr<DateTimeHour24FieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
+    static PassRefPtrWillBeRawPtr<DateTimeHour24FieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
     DateTimeHour24FieldElement(Document&, FieldOwner&, const Range& hour23Range, const Step&);
@@ -135,7 +135,7 @@ class DateTimeMillisecondFieldElement FINAL : public DateTimeNumericFieldElement
     WTF_MAKE_NONCOPYABLE(DateTimeMillisecondFieldElement);
 
 public:
-    static PassRefPtr<DateTimeMillisecondFieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
+    static PassRefPtrWillBeRawPtr<DateTimeMillisecondFieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
     DateTimeMillisecondFieldElement(Document&, FieldOwner&, const Range&, const Step&);
@@ -150,7 +150,7 @@ class DateTimeMinuteFieldElement FINAL : public DateTimeNumericFieldElement {
     WTF_MAKE_NONCOPYABLE(DateTimeMinuteFieldElement);
 
 public:
-    static PassRefPtr<DateTimeMinuteFieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
+    static PassRefPtrWillBeRawPtr<DateTimeMinuteFieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
     DateTimeMinuteFieldElement(Document&, FieldOwner&, const Range&, const Step&);
@@ -165,7 +165,7 @@ class DateTimeMonthFieldElement FINAL : public DateTimeNumericFieldElement {
     WTF_MAKE_NONCOPYABLE(DateTimeMonthFieldElement);
 
 public:
-    static PassRefPtr<DateTimeMonthFieldElement> create(Document&, FieldOwner&, const String& placeholder, const Range&);
+    static PassRefPtrWillBeRawPtr<DateTimeMonthFieldElement> create(Document&, FieldOwner&, const String& placeholder, const Range&);
 
 private:
     DateTimeMonthFieldElement(Document&, FieldOwner&, const String& placeholder, const Range&);
@@ -180,7 +180,7 @@ class DateTimeSecondFieldElement FINAL : public DateTimeNumericFieldElement {
     WTF_MAKE_NONCOPYABLE(DateTimeSecondFieldElement);
 
 public:
-    static PassRefPtr<DateTimeSecondFieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
+    static PassRefPtrWillBeRawPtr<DateTimeSecondFieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
     DateTimeSecondFieldElement(Document&, FieldOwner&, const Range&, const Step&);
@@ -195,7 +195,7 @@ class DateTimeSymbolicMonthFieldElement FINAL : public DateTimeSymbolicFieldElem
     WTF_MAKE_NONCOPYABLE(DateTimeSymbolicMonthFieldElement);
 
 public:
-    static PassRefPtr<DateTimeSymbolicMonthFieldElement> create(Document&, FieldOwner&, const Vector<String>&, int minimum, int maximum);
+    static PassRefPtrWillBeRawPtr<DateTimeSymbolicMonthFieldElement> create(Document&, FieldOwner&, const Vector<String>&, int minimum, int maximum);
 
 private:
     DateTimeSymbolicMonthFieldElement(Document&, FieldOwner&, const Vector<String>&, int minimum, int maximum);
@@ -210,7 +210,7 @@ class DateTimeWeekFieldElement FINAL : public DateTimeNumericFieldElement {
     WTF_MAKE_NONCOPYABLE(DateTimeWeekFieldElement);
 
 public:
-    static PassRefPtr<DateTimeWeekFieldElement> create(Document&, FieldOwner&, const Range&);
+    static PassRefPtrWillBeRawPtr<DateTimeWeekFieldElement> create(Document&, FieldOwner&, const Range&);
 
 private:
     DateTimeWeekFieldElement(Document&, FieldOwner&, const Range&);
@@ -241,7 +241,7 @@ public:
         }
     };
 
-    static PassRefPtr<DateTimeYearFieldElement> create(Document&, FieldOwner&, const Parameters&);
+    static PassRefPtrWillBeRawPtr<DateTimeYearFieldElement> create(Document&, FieldOwner&, const Parameters&);
 
 private:
     DateTimeYearFieldElement(Document&, FieldOwner&, const Parameters&);

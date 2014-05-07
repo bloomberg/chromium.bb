@@ -52,6 +52,12 @@ DateTimeFieldElement::DateTimeFieldElement(Document& document, FieldOwner& field
 {
 }
 
+void DateTimeFieldElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_fieldOwner);
+    HTMLSpanElement::trace(visitor);
+}
+
 void DateTimeFieldElement::defaultEventHandler(Event* event)
 {
     if (event->isKeyboardEvent()) {

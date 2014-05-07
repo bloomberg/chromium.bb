@@ -48,7 +48,7 @@ public:
 
     // FieldOwner implementer must call removeEventHandler when
     // it doesn't handle event, e.g. at destruction.
-    class FieldOwner {
+    class FieldOwner : public WillBeGarbageCollectedMixin {
     public:
         virtual ~FieldOwner();
         virtual void didBlurFromField() = 0;
@@ -67,7 +67,7 @@ public:
     bool isDisabled() const;
     virtual float maximumWidth(const Font&);
     virtual void populateDateTimeFieldsState(DateTimeFieldsState&) = 0;
-    void removeEventHandler() { m_fieldOwner = 0; }
+    void removeEventHandler() { m_fieldOwner = nullptr; }
     void setDisabled();
     virtual void setEmptyValue(EventBehavior = DispatchNoEvent) = 0;
     virtual void setValueAsDate(const DateComponents&) = 0;
@@ -77,6 +77,7 @@ public:
     virtual void stepUp() = 0;
     virtual String value() const = 0;
     virtual String visibleValue() const = 0;
+    virtual void trace(Visitor*) OVERRIDE;
 
 protected:
     DateTimeFieldElement(Document&, FieldOwner&);
@@ -99,7 +100,7 @@ private:
     bool isFieldOwnerReadOnly() const;
     virtual bool supportsFocus() const OVERRIDE FINAL;
 
-    FieldOwner* m_fieldOwner;
+    RawPtrWillBeWeakMember<FieldOwner> m_fieldOwner;
 };
 
 } // namespace WebCore
