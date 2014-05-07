@@ -530,7 +530,7 @@ append(char *s1, const char *s2)
 static void
 keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *key, struct input *input, enum wl_pointer_button_state state)
 {
-	const char *label;
+	const char *label = NULL;
 
 	switch(keyboard->state) {
 	case KEYBOARD_STATE_DEFAULT :
