@@ -441,6 +441,24 @@
       ],
     },
     {
+      'target_name': 'ppapi_example_video_decode',
+      'dependencies': [
+        'ppapi_example_skeleton',
+        'ppapi.gyp:ppapi_cpp',
+        'ppapi.gyp:ppapi_gles2',
+      ],
+      'include_dirs': [
+        'lib/gl/include',
+      ],
+      'sources': [
+        # TODO(bbudge) Change to new example when implementation lands.
+        'examples/video_decode/video_decode_dev.cc',
+        'examples/video_decode/testdata.h',
+      ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
+    },
+    {
       'target_name': 'ppapi_example_video_decode_dev',
       'dependencies': [
         'ppapi_example_skeleton',
