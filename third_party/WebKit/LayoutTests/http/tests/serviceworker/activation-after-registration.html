@@ -2,13 +2,17 @@
 <title>Service Worker: Activation occurs after registration</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="resources/testutils.js"></script>
+<script src="resources/test-helpers.js"></script>
 <body>
 <script>
 var t = async_test('activation occurs after registration');
 t.step(function() {
     var scope = 'resources/blank.html';
-    navigator.serviceWorker.unregister(scope).then(doTest, doTest);
+    navigator.serviceWorker.unregister(scope).then(
+        doTest,
+        unreached_rejection(t, 'Unregister should not fail')
+    );
+
     function doTest() {
         navigator.serviceWorker.register(
             'resources/worker-no-op.js', {scope: scope}

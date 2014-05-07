@@ -2,24 +2,31 @@
 <title>Service Worker: postMessage</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
 <script>
 var test = async_test('postMessage to a ServiceWorker (and back via MessagePort)');
 test.step(function() {
+    var scope = 'resources/blank.html';
+    navigator.serviceWorker.unregister(scope).then(
+        doTest,
+        unreached_rejection(test, 'Unregister should not fail')
+    );
 
-    navigator.serviceWorker.register('resources/postmessage-worker.js').then(
-        test.step_func(function(worker) {
-            var messageChannel = new MessageChannel();
-            messageChannel.port1.onmessage = test.step_func(onMessage);
+    function doTest() {
+      navigator.serviceWorker.register('resources/postmessage-worker.js',
+                                       {scope: scope}).then(
+          test.step_func(function(worker) {
+              var messageChannel = new MessageChannel();
+              messageChannel.port1.onmessage = test.step_func(onMessage);
 
-            worker.postMessage({port: messageChannel.port2}, [messageChannel.port2]);
+              worker.postMessage({port: messageChannel.port2}, [messageChannel.port2]);
 
-            worker.postMessage({value: 1});
-            worker.postMessage({value: 2});
-            worker.postMessage({done: true});
-        }),
-        test.step_func(function(reason) {
-            assert_unreached('Registration should succeed, but failed: ' + reason.name);
-        }));
+              worker.postMessage({value: 1});
+              worker.postMessage({value: 2});
+              worker.postMessage({done: true});
+          }),
+          unreached_rejection(test, 'Registration should succeed, but failed'));
+    };
 
     var result = [];
     var expected = [

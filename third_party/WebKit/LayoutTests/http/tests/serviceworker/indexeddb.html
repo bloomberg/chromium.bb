@@ -2,20 +2,27 @@
 <title>Service Worker: Indexed DB</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
 <script>
 var test = async_test('Verify Indexed DB operation in a Service Worker');
 test.step(function() {
+    var scope = 'resources/blank.html';
+    navigator.serviceWorker.unregister(scope).then(
+        doTest,
+        unreached_rejection(test, 'Unregister should not fail')
+    );
 
-    navigator.serviceWorker.register('resources/indexeddb-worker.js').then(
-        test.step_func(function(worker) {
-            var messageChannel = new MessageChannel();
-            messageChannel.port1.onmessage = test.step_func(onMessage);
+    function doTest() {
+      navigator.serviceWorker.register('resources/indexeddb-worker.js',
+                                      {scope: scope}).then(
+          test.step_func(function(worker) {
+              var messageChannel = new MessageChannel();
+              messageChannel.port1.onmessage = test.step_func(onMessage);
 
-            worker.postMessage({port: messageChannel.port2}, [messageChannel.port2]);
-        }),
-        test.step_func(function(reason) {
-            assert_unreached('Registration should succeed, but failed: ' + reason.name);
-        }));
+              worker.postMessage({port: messageChannel.port2}, [messageChannel.port2]);
+          }),
+          unreached_rejection(test, 'Registration should succeed, but failed'));
+    }
 
     function onMessage() {
         var openRequest = indexedDB.open('db');

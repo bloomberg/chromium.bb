@@ -10,9 +10,7 @@ t.step(function() {
     // This always tests fresh registration, so unregister it first.
     navigator.serviceWorker.unregister('/in-scope/*').then(
         t.step_func(doRegister),
-        t.step_func(function(reason) {
-            assert_unreached('unregister failed: ' + reason.message);
-        })
+        unreached_rejection(t, 'Unregister should not fail')
     );
 
     function doRegister() {

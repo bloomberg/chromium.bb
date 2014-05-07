@@ -4,7 +4,7 @@ function service_worker_test(url, description) {
     var t = async_test(description);
     t.step(function() {
 
-        navigator.serviceWorker.register(url).then(
+        navigator.serviceWorker.register(url, {scope:'nonexistent'}).then(
             t.step_func(function(worker) {
                 var messageChannel = new MessageChannel();
                 messageChannel.port1.onmessage = t.step_func(onMessage);
@@ -29,5 +29,12 @@ function service_worker_test(url, description) {
 function unreached_func(test, desc) {
     return test.step_func(function() {
         assert_unreached(desc);
+    });
+}
+
+// Rejection-specific helper that provides more details
+function unreached_rejection(test, prefix) {
+    return test.step_func(function(reason) {
+        assert_unreached(prefix + ': ' + reason.name);
     });
 }
