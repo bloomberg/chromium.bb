@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
 
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller_mock.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon.h"
+#include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_view_test.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "grit/generated_resources.h"

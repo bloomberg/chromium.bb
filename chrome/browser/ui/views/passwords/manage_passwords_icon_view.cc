@@ -6,7 +6,7 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
+#include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "components/password_manager/core/common/password_manager_ui.h"

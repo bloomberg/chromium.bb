@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_UI_CONTROLLER_H_
-#define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_UI_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
+#define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -20,12 +20,12 @@ class WebContents;
 class ManagePasswordsIcon;
 
 // Per-tab class to control the Omnibox password icon and bubble.
-class ManagePasswordsBubbleUIController
+class ManagePasswordsUIController
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<ManagePasswordsBubbleUIController>,
+      public content::WebContentsUserData<ManagePasswordsUIController>,
       public password_manager::PasswordStore::Observer {
  public:
-  virtual ~ManagePasswordsBubbleUIController();
+  virtual ~ManagePasswordsUIController();
 
   // Called when the user submits a form containing login information, so we
   // can handle later requests to save or blacklist that login information.
@@ -86,13 +86,13 @@ class ManagePasswordsBubbleUIController
   const GURL& origin() const { return origin_; }
 
  protected:
-  explicit ManagePasswordsBubbleUIController(
+  explicit ManagePasswordsUIController(
       content::WebContents* web_contents);
 
   // All previously stored credentials for a specific site. Set by
   // OnPasswordSubmitted(), OnPasswordAutofilled(), or
   // OnBlacklistBlockedAutofill(). Protected, not private, so we can mess with
-  // the value in ManagePasswordsBubbleUIControllerMock.
+  // the value in ManagePasswordsUIControllerMock.
   autofill::PasswordFormMap password_form_map_;
 
   // The current state of the password manager. Protected so we can manipulate
@@ -100,7 +100,7 @@ class ManagePasswordsBubbleUIController
   password_manager::ui::State state_;
 
  private:
-  friend class content::WebContentsUserData<ManagePasswordsBubbleUIController>;
+  friend class content::WebContentsUserData<ManagePasswordsUIController>;
 
   // Shows the password bubble without user interaction. The controller MUST
   // be in PENDING_PASSWORD_AND_BUBBLE_STATE.
@@ -133,7 +133,7 @@ class ManagePasswordsBubbleUIController
   // |password_form_map_|.
   GURL origin_;
 
-  DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleUIController);
+  DISALLOW_COPY_AND_ASSIGN(ManagePasswordsUIController);
 };
 
-#endif  // CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_UI_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_

@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
+#include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_item_view.h"
@@ -122,8 +122,8 @@ void AddTitleRow(views::GridLayout* layout, ManagePasswordsBubbleModel* model) {
 namespace chrome {
 
 void ShowManagePasswordsBubble(content::WebContents* web_contents) {
-  ManagePasswordsBubbleUIController* controller =
-      ManagePasswordsBubbleUIController::FromWebContents(web_contents);
+  ManagePasswordsUIController* controller =
+      ManagePasswordsUIController::FromWebContents(web_contents);
   ManagePasswordsBubbleView::ShowBubble(
       web_contents,
       controller->state() ==

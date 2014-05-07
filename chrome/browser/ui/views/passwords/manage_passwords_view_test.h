@@ -11,11 +11,11 @@
 #include "components/autofill/core/common/password_form.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class ManagePasswordsBubbleUIControllerMock;
+class ManagePasswordsUIControllerMock;
 class ManagePasswordsIconView;
 
 // Test class for the various password management view bits and pieces. Sets
-// up a ManagePasswordsBubbleUIControllerMock, and provides some helper methods
+// up a ManagePasswordsUIControllerMock, and provides some helper methods
 // to poke at the bubble, icon, and controller's state.
 class ManagePasswordsViewTest : public InProcessBrowserTest {
  public:
@@ -25,7 +25,7 @@ class ManagePasswordsViewTest : public InProcessBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE;
 
   // Get the mock UI controller for the current WebContents.
-  ManagePasswordsBubbleUIControllerMock* controller();
+  ManagePasswordsUIControllerMock* controller();
 
   // Get the icon view for the current WebContents.
   ManagePasswordsIconView* view();

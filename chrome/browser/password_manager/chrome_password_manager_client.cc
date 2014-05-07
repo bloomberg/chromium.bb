@@ -15,7 +15,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_controller_impl.h"
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
+#include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "components/autofill/content/common/autofill_messages.h"
@@ -86,10 +86,10 @@ bool ChromePasswordManagerClient::IsAutomaticPasswordSavingEnabled() const {
 void ChromePasswordManagerClient::PromptUserToSavePassword(
     password_manager::PasswordFormManager* form_to_save) {
   if (IsTheHotNewBubbleUIEnabled()) {
-    ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
-        ManagePasswordsBubbleUIController::FromWebContents(web_contents());
-    if (manage_passwords_bubble_ui_controller) {
-      manage_passwords_bubble_ui_controller->OnPasswordSubmitted(form_to_save);
+    ManagePasswordsUIController* manage_passwords_ui_controller =
+        ManagePasswordsUIController::FromWebContents(web_contents());
+    if (manage_passwords_ui_controller) {
+      manage_passwords_ui_controller->OnPasswordSubmitted(form_to_save);
     } else {
       delete form_to_save;
     }
@@ -105,16 +105,16 @@ void ChromePasswordManagerClient::PromptUserToSavePassword(
 
 void ChromePasswordManagerClient::PasswordWasAutofilled(
     const autofill::PasswordFormMap& best_matches) const {
-  ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
-      ManagePasswordsBubbleUIController::FromWebContents(web_contents());
-  if (manage_passwords_bubble_ui_controller && IsTheHotNewBubbleUIEnabled())
-    manage_passwords_bubble_ui_controller->OnPasswordAutofilled(best_matches);
+  ManagePasswordsUIController* manage_passwords_ui_controller =
+      ManagePasswordsUIController::FromWebContents(web_contents());
+  if (manage_passwords_ui_controller && IsTheHotNewBubbleUIEnabled())
+    manage_passwords_ui_controller->OnPasswordAutofilled(best_matches);
 }
 
 void ChromePasswordManagerClient::PasswordAutofillWasBlocked(
     const autofill::PasswordFormMap& best_matches) const {
-  ManagePasswordsBubbleUIController* controller =
-      ManagePasswordsBubbleUIController::FromWebContents(web_contents());
+  ManagePasswordsUIController* controller =
+      ManagePasswordsUIController::FromWebContents(web_contents());
   if (controller && IsTheHotNewBubbleUIEnabled())
     controller->OnBlacklistBlockedAutofill(best_matches);
 }

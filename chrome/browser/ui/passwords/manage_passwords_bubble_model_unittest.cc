@@ -8,7 +8,7 @@
 #include "base/test/statistics_delta_reader.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller_mock.h"
+#include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
@@ -28,7 +28,7 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     // Create the test UIController here so that it's bound to
     // |test_web_contents_| and therefore accessible to the model.
-    new ManagePasswordsBubbleUIControllerMock(test_web_contents_.get());
+    new ManagePasswordsUIControllerMock(test_web_contents_.get());
 
     model_.reset(new ManagePasswordsBubbleModel(test_web_contents_.get()));
   }
@@ -62,9 +62,9 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
     controller()->SetState(password_manager::ui::BLACKLIST_STATE);
   }
 
-  ManagePasswordsBubbleUIControllerMock* controller() {
-    return reinterpret_cast<ManagePasswordsBubbleUIControllerMock*>(
-        ManagePasswordsBubbleUIController::FromWebContents(
+  ManagePasswordsUIControllerMock* controller() {
+    return static_cast<ManagePasswordsUIControllerMock*>(
+        ManagePasswordsUIController::FromWebContents(
             test_web_contents_.get()));
   }
 

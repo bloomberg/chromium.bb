@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_UI_CONTROLLER_MOCK_H_
-#define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_UI_CONTROLLER_MOCK_H_
+#ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_MOCK_H_
+#define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_MOCK_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
+#include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 
 namespace content {
@@ -16,12 +16,12 @@ class WebContents;
 // This mock is used in tests to ensure that we're just testing the controller
 // behavior, and not the behavior of the bits and pieces it relies upon (like
 // FormManager).
-class ManagePasswordsBubbleUIControllerMock
-    : public ManagePasswordsBubbleUIController {
+class ManagePasswordsUIControllerMock
+    : public ManagePasswordsUIController {
  public:
-  explicit ManagePasswordsBubbleUIControllerMock(
+  explicit ManagePasswordsUIControllerMock(
       content::WebContents* contents);
-  virtual ~ManagePasswordsBubbleUIControllerMock();
+  virtual ~ManagePasswordsUIControllerMock();
 
   // Navigation, surprisingly, is platform-specific; Android's settings page
   // is native UI and therefore isn't available in a tab for unit tests.
@@ -57,7 +57,7 @@ class ManagePasswordsBubbleUIControllerMock
 
   autofill::PasswordForm pending_credentials_;
 
-  DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleUIControllerMock);
+  DISALLOW_COPY_AND_ASSIGN(ManagePasswordsUIControllerMock);
 };
 
-#endif  // CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_UI_CONTROLLER_MOCK_H_
+#endif  // CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_MOCK_H_

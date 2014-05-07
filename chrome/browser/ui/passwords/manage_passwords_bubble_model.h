@@ -31,7 +31,7 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   // Creates a ManagePasswordsBubbleModel, which holds a raw pointer to the
   // WebContents in which it lives. Defaults to a display disposition of
   // AUTOMATIC_WITH_PASSWORD_PENDING, and a dismissal reason of NOT_DISPLAYED.
-  // The bubble's state is updated from the ManagePasswordsBubbleUIController
+  // The bubble's state is updated from the ManagePasswordsUIController
   // associated with |web_contents| upon creation.
   explicit ManagePasswordsBubbleModel(content::WebContents* web_contents);
   virtual ~ManagePasswordsBubbleModel();

@@ -46,7 +46,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 #include "chrome/browser/thumbnails/thumbnail_tab_helper.h"
 #include "chrome/browser/ui/hung_plugin_tab_helper.h"
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
+#include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/pdf/pdf_tab_helper.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
@@ -154,7 +154,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       web_contents);
   extensions::WebNavigationTabObserver::CreateForWebContents(web_contents);
   HungPluginTabHelper::CreateForWebContents(web_contents);
-  ManagePasswordsBubbleUIController::CreateForWebContents(web_contents);
+  ManagePasswordsUIController::CreateForWebContents(web_contents);
   NavigationTimeHelper::CreateForWebContents(web_contents);
   PDFTabHelper::CreateForWebContents(web_contents);
   PermissionBubbleManager::CreateForWebContents(web_contents);

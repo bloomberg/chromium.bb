@@ -8,8 +8,8 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller_mock.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon.h"
+#include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
@@ -28,13 +28,13 @@
 void ManagePasswordsViewTest::SetUpOnMainThread() {
   // Create the test UIController here so that it's bound to the currently
   // active WebContents.
-  new ManagePasswordsBubbleUIControllerMock(
+  new ManagePasswordsUIControllerMock(
       browser()->tab_strip_model()->GetActiveWebContents());
 }
 
-ManagePasswordsBubbleUIControllerMock* ManagePasswordsViewTest::controller() {
-  return static_cast<ManagePasswordsBubbleUIControllerMock*>(
-      ManagePasswordsBubbleUIController::FromWebContents(
+ManagePasswordsUIControllerMock* ManagePasswordsViewTest::controller() {
+  return static_cast<ManagePasswordsUIControllerMock*>(
+      ManagePasswordsUIController::FromWebContents(
           browser()->tab_strip_model()->GetActiveWebContents()));
 }
 
