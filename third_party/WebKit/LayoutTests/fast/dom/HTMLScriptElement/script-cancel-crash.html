@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<body>
+<script src="../../../resources/js-test.js"></script>
+<script>
+window.jsTestIsAsync = true;
+
+function requestAndCancel() {
+    var element = document.createElement('script');
+    document.body.appendChild(element);
+    element.setAttribute('src', 'nosuch');
+    document.body.removeChild(element);
+}
+
+function makePressure() {
+    p = [];
+    q = Array(1000).join(unescape('xxxxxx'));
+    for (var i = 0; i < 12501; i++) {
+        p.push(new String(q));
+    }
+}
+
+for (var i = 0; i < 500; i++)
+    requestAndCancel();
+
+setTimeout(function() {
+    makePressure();
+    gc();
+    debug('PASS unless crash.');
+    finishJSTest();
+}, 0);
+</script>
+</body>

@@ -77,9 +77,9 @@ private:
     void executePendingScriptAndDispatchEvent(PendingScript&, PendingScriptType);
     void executeParsingBlockingScripts();
 
-    void requestParsingBlockingScript(Element*);
-    void requestDeferredScript(Element*);
-    bool requestPendingScript(PendingScript&, Element*) const;
+    void requestParsingBlockingScript(const ResourcePtr<ScriptResource>&, Element*);
+    void requestDeferredScript(const ResourcePtr<ScriptResource>&, Element*);
+    bool requestPendingScript(const ResourcePtr<ScriptResource>&, PendingScript&, Element*) const;
 
     void runScript(Element*, const TextPosition& scriptStartPosition);
 

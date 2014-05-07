@@ -46,20 +46,22 @@ public:
 
 protected:
     ResourceOwner();
-    ResourceOwner(const ResourceOwner& other) { setResource(other.resource()); }
+    ResourceOwner(const ResourceOwner& other) { setResource(other.resource(), other.m_subscribing); }
     explicit ResourceOwner(const ResourcePtr<ResourceType>&);
 
-    void setResource(const ResourcePtr<ResourceType>&);
+    void setResource(const ResourcePtr<ResourceType>&, bool subscribing = true);
     void clearResource();
 
     ResourceOwner& operator=(const ResourceOwner& other);
 
 private:
     ResourcePtr<ResourceType> m_resource;
+    bool m_subscribing;
 };
 
 template<class R, class C>
 inline ResourceOwner<R, C>::ResourceOwner()
+    : m_subscribing(false)
 {
 }
 
@@ -78,7 +80,7 @@ inline ResourceOwner<R, C>::ResourceOwner(const ResourcePtr<R>& resource)
 }
 
 template<class R, class C>
-inline void ResourceOwner<R, C>::setResource(const ResourcePtr<R>& newResource)
+inline void ResourceOwner<R, C>::setResource(const ResourcePtr<R>& newResource, bool subscribe)
 {
     if (newResource == m_resource)
         return;
@@ -87,12 +89,15 @@ inline void ResourceOwner<R, C>::setResource(const ResourcePtr<R>& newResource)
     // we need to prevent double removal.
     if (ResourcePtr<ResourceType> oldResource = m_resource) {
         m_resource.clear();
-        oldResource->removeClient(this);
+        if (m_subscribing)
+            oldResource->removeClient(this);
     }
 
     if (newResource) {
+        m_subscribing = subscribe;
         m_resource = newResource;
-        m_resource->addClient(this);
+        if (m_subscribing)
+            m_resource->addClient(this);
     }
 }
 

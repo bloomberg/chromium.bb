@@ -22,7 +22,9 @@
 #define ScriptLoader_h
 
 #include "core/fetch/ResourceClient.h"
+#include "core/fetch/ResourceOwner.h"
 #include "core/fetch/ResourcePtr.h"
+#include "core/fetch/ScriptResource.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
 
@@ -33,10 +35,31 @@ class ContainerNode;
 class Document;
 class Element;
 class ScriptLoaderClient;
+class ScriptRunner;
 class ScriptSourceCode;
 
+class ScriptPrep FINAL {
+public:
+    ScriptPrep(bool succeeded, const ResourcePtr<ScriptResource>& resource)
+        : m_succeeded(succeeded)
+        , m_resource(resource)
+    { }
 
-class ScriptLoader FINAL : private ResourceClient {
+    bool succeeded() const { return m_succeeded; }
+    ScriptResource* resource() const { return m_resource.get(); }
+
+    static ScriptPrep failed() { return ScriptPrep(); }
+
+private:
+    ScriptPrep()
+        : m_succeeded(false)
+    { }
+
+    bool m_succeeded;
+    ResourcePtr<ScriptResource> m_resource;
+};
+
+class ScriptLoader FINAL : public ResourceOwner<ScriptResource> {
 public:
     static PassOwnPtr<ScriptLoader> create(Element*, bool createdByParser, bool isEvaluated);
     virtual ~ScriptLoader();
@@ -44,7 +67,7 @@ public:
     Element* element() const { return m_element; }
 
     enum LegacyTypeSupport { DisallowLegacyTypeInTypeAttribute, AllowLegacyTypeInTypeAttribute };
-    bool prepareScript(const TextPosition& scriptStartPosition = TextPosition::minimumPosition(), LegacyTypeSupport = DisallowLegacyTypeInTypeAttribute);
+    ScriptPrep prepareScript(const TextPosition& scriptStartPosition = TextPosition::minimumPosition(), LegacyTypeSupport = DisallowLegacyTypeInTypeAttribute);
 
     String scriptCharset() const { return m_characterEncoding; }
     String scriptContent() const;
@@ -60,7 +83,6 @@ public:
     bool willBeParserExecuted() const { return m_willBeParserExecuted; }
     bool readyToBeParserExecuted() const { return m_readyToBeParserExecuted; }
     bool willExecuteWhenDocumentFinishedParsing() const { return m_willExecuteWhenDocumentFinishedParsing; }
-    ResourcePtr<ScriptResource> resource() { return m_resource; }
 
     void setHaveFiredLoadEvent(bool haveFiredLoad) { m_haveFiredLoad = haveFiredLoad; }
     bool isParserInserted() const { return m_parserInserted; }
@@ -80,8 +102,7 @@ private:
     bool ignoresLoadRequest() const;
     bool isScriptForEventSupported() const;
 
-    bool fetchScript(const String& sourceUrl);
-    void stopLoadRequest();
+    ResourcePtr<ScriptResource> fetchScript(const String& sourceUrl);
 
     ScriptLoaderClient* client() const;
 
@@ -95,9 +116,9 @@ private:
     };
 
     void finishLoading(Document* contextDocument, FinishType);
+    void notifyRunnerFinishLoading(ScriptRunner*, FinishType);
 
     Element* m_element;
-    ResourcePtr<ScriptResource> m_resource;
     WTF::OrdinalNumber m_startLineNumber;
     bool m_parserInserted : 1;
     bool m_isExternalScript : 1;

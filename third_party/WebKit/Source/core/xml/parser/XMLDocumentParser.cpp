@@ -1036,14 +1036,15 @@ void XMLDocumentParser::endElementNs()
     ASSERT(!m_pendingScript);
     m_requestingScript = true;
 
-    if (scriptLoader->prepareScript(m_scriptStartPosition, ScriptLoader::AllowLegacyTypeInTypeAttribute)) {
+    ScriptPrep prep = scriptLoader->prepareScript(m_scriptStartPosition, ScriptLoader::AllowLegacyTypeInTypeAttribute);
+    if (prep.succeeded()) {
         // FIXME: Script execution should be shared between
         // the libxml2 and Qt XMLDocumentParser implementations.
 
         if (scriptLoader->readyToBeParserExecuted()) {
             scriptLoader->executeScript(ScriptSourceCode(scriptLoader->scriptContent(), document()->url(), m_scriptStartPosition));
         } else if (scriptLoader->willBeParserExecuted()) {
-            m_pendingScript = scriptLoader->resource();
+            m_pendingScript = prep.resource();
             m_scriptElement = element;
             m_pendingScript->addClient(this);
 
