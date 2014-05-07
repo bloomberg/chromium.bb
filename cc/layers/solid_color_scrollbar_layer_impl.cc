@@ -57,7 +57,9 @@ SolidColorScrollbarLayerImpl::SolidColorScrollbarLayerImpl(
                              is_overlay),
       thumb_thickness_(thumb_thickness),
       track_start_(track_start),
-      color_(tree_impl->settings().solid_color_scrollbar_color) {}
+      color_(tree_impl->settings().solid_color_scrollbar_color) {
+  SetOpacity(0.f);
+}
 
 void SolidColorScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   ScrollbarLayerImplBase::PushPropertiesTo(layer);

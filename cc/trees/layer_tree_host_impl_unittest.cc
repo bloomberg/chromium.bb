@@ -1367,6 +1367,7 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
   scoped_ptr<SolidColorScrollbarLayerImpl> scrollbar =                        \
       SolidColorScrollbarLayerImpl::Create(                                   \
           host_impl_->active_tree(), 4, VERTICAL, 10, 0, false, true);        \
+  EXPECT_FLOAT_EQ(0.f, scrollbar->opacity());                                 \
   scrollbar->SetScrollLayerById(2);                                           \
   scrollbar->SetClipLayerById(1);                                             \
                                                                               \
