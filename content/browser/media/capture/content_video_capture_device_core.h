@@ -13,9 +13,11 @@
 #include "base/threading/thread_checker.h"
 #include "content/browser/media/capture/video_capture_oracle.h"
 #include "content/common/content_export.h"
+#include "media/base/video_frame.h"
 #include "media/video/capture/video_capture_device.h"
 
 namespace media {
+class VideoCaptureParams;
 class VideoFrame;
 }  // namespace media
 
@@ -52,11 +54,12 @@ class ThreadSafeCaptureOracle
                           const media::VideoCaptureParams& params);
 
   // Called when a captured frame is available or an error has occurred.
-  // If |success| is true then the frame provided is valid and |timestamp|
-  // indicates when the frame was painted.
-  // If |success| is false, both the frame provided and |timestamp| are invalid.
-  typedef base::Callback<void(base::TimeTicks timestamp, bool success)>
-      CaptureFrameCallback;
+  // If |success| is true then |frame| is valid and |timestamp| indicates when
+  // the frame was painted.
+  // If |success| is false, all other parameters are invalid.
+  typedef base::Callback<void(const scoped_refptr<media::VideoFrame>& frame,
+                              base::TimeTicks timestamp,
+                              bool success)> CaptureFrameCallback;
 
   bool ObserveEventAndDecideCapture(VideoCaptureOracle::Event event,
                                     base::TimeTicks event_time,
@@ -86,9 +89,9 @@ class ThreadSafeCaptureOracle
 
   // Callback invoked on completion of all captures.
   void DidCaptureFrame(
+      int frame_number,
       const scoped_refptr<media::VideoCaptureDevice::Client::Buffer>& buffer,
       const scoped_refptr<media::VideoFrame>& frame,
-      int frame_number,
       base::TimeTicks timestamp,
       bool success);
 
@@ -102,14 +105,13 @@ class ThreadSafeCaptureOracle
   const scoped_ptr<VideoCaptureOracle> oracle_;
 
   // The video capture parameters used to construct the oracle proxy.
-  const media::VideoCaptureParams params_;
+  media::VideoCaptureParams params_;
 
   // Indicates if capture size has been updated after construction.
   bool capture_size_updated_;
 
-  // The current capturing resolution and frame rate.
-  gfx::Size capture_size_;
-  int frame_rate_;
+  // The current capturing format, as a media::VideoFrame::Format.
+  media::VideoFrame::Format video_frame_format_;
 };
 
 // Keeps track of the video capture source frames and executes copying on the
@@ -124,8 +126,8 @@ class VideoCaptureMachine {
 
   // Starts capturing. Returns true if succeeded.
   // Must be run on the UI BrowserThread.
-  virtual bool Start(
-      const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy) = 0;
+  virtual bool Start(const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy,
+                     const media::VideoCaptureParams& params) = 0;
 
   // Stops capturing. Must be run on the UI BrowserThread.
   // |callback| is invoked after the capturing has stopped.
