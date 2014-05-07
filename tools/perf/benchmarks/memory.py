@@ -6,6 +6,7 @@ from telemetry import test
 from measurements import memory
 
 
+@test.Disabled('android')  # crbug.com/370977
 class MemoryMobile(test.Test):
   test = memory.Memory
   page_set = 'page_sets/mobile_memory.py'
