@@ -53,7 +53,7 @@
               # A stamp file representing the contents of pnacl_translator.
               '<(SHARED_INTERMEDIATE_DIR)/<(OS)_x86/pnacl_translator/pnacl_translator.json',
               '<(DEPTH)/native_client/pnacl/driver/pnacl_info_template.json',
-              '<(DEPTH)/native_client/TOOL_REVISIONS',
+              '<(DEPTH)/native_client/toolchain_revisions/pnacl_newlib.json',
             ],
             'conditions': [
                 # On windows we need both ia32 and x64.
@@ -184,7 +184,8 @@
               '--target_arch=<(target_arch)',
               '--info_template_path=<(DEPTH)/native_client/pnacl/driver/pnacl_info_template.json',
               '--pnacl_translator_path=<(SHARED_INTERMEDIATE_DIR)/<(OS)_x86/pnacl_translator',
-              '--tool_revisions_path=<(DEPTH)/native_client/TOOL_REVISIONS',
+              '--package_version_path=<(DEPTH)/native_client/build/package_version/package_version.py',
+              '--pnacl_package_name=pnacl_newlib',
               # ABI Version Number.
               '1',
             ],

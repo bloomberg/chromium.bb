@@ -18,6 +18,7 @@ import os
 import platform
 import re
 import shutil
+import subprocess
 import sys
 
 J = os.path.join
@@ -63,34 +64,6 @@ def StandardArch(arch):
 
 ######################################################################
 
-def GetNaClRoot():
-  """ Find the native_client path, relative to this script.
-      This script is in ppapi/... and native_client is a sibling of ppapi.
-  """
-  script_file = os.path.abspath(__file__)
-  def SearchForNaCl(cur_dir):
-    if cur_dir.endswith('ppapi'):
-      parent = os.path.dirname(cur_dir)
-      sibling = os.path.join(parent, 'native_client')
-      if not os.path.isdir(sibling):
-        raise Exception('Could not find native_client relative to %s' %
-                        script_file)
-      return sibling
-    # Detect when we've the root (linux is /, but windows is not...)
-    next_dir = os.path.dirname(cur_dir)
-    if cur_dir == next_dir:
-      raise Exception('Could not find native_client relative to %s' %
-                      script_file)
-    return SearchForNaCl(next_dir)
-
-  return SearchForNaCl(script_file)
-
-
-NACL_ROOT = GetNaClRoot()
-
-
-######################################################################
-
 # Normalize the platform name to be the way SCons finds chrome binaries.
 # This is based on the platform "building" the extension.
 
@@ -130,7 +103,8 @@ class PnaclPackaging(object):
 
   # File paths that are set from the command line.
   pnacl_template = None
-  tool_revisions = None
+  package_version_path = None
+  pnacl_package = 'pnacl_newlib'
 
   # Agreed-upon name for pnacl-specific info.
   pnacl_json = 'pnacl.json'
@@ -140,25 +114,29 @@ class PnaclPackaging(object):
     PnaclPackaging.pnacl_template = path
 
   @staticmethod
-  def SetToolsRevisionPath(path):
-    PnaclPackaging.tool_revisions = path
+  def SetPackageVersionPath(path):
+    PnaclPackaging.package_version_path = path
+
+  @staticmethod
+  def SetPnaclPackageName(name):
+    PnaclPackaging.pnacl_package = name
 
   @staticmethod
   def PnaclToolsRevision():
-    with open(PnaclPackaging.tool_revisions, 'r') as f:
-      for line in f.read().splitlines():
-        if line.startswith('PNACL_VERSION'):
-          _, version = line.split('=')
-          # CWS happens to use version quads, so make it a quad too.
-          # However, each component of the quad is limited to 64K max.
-          # Try to handle a bit more.
-          max_version = 2 ** 16
-          version = int(version)
-          version_more = version / max_version
-          version = version % max_version
-          return '0.1.%d.%d' % (version_more, version)
-    raise Exception('Cannot find PNACL_VERSION in TOOL_REVISIONS file: %s' %
-                    PnaclPackaging.tool_revisions)
+    pkg_ver_cmd = [sys.executable, PnaclPackaging.package_version_path,
+                   'getrevision',
+                   '--revision-package', PnaclPackaging.pnacl_package]
+
+    version = subprocess.check_output(pkg_ver_cmd).strip()
+
+    # CWS happens to use version quads, so make it a quad too.
+    # However, each component of the quad is limited to 64K max.
+    # Try to handle a bit more.
+    max_version = 2 ** 16
+    version = int(version)
+    version_more = version / max_version
+    version = version % max_version
+    return '0.1.%d.%d' % (version_more, version)
 
   @staticmethod
   def GeneratePnaclInfo(target_dir, abi_version, arch):
@@ -334,8 +312,10 @@ def Main():
   parser.add_option('--info_template_path',
                     dest='info_template_path', default=None,
                     help='Path of the info template file')
-  parser.add_option('--tool_revisions_path', dest='tool_revisions_path',
-                    default=None, help='Location of NaCl TOOL_REVISIONS file.')
+  parser.add_option('--package_version_path', dest='package_version_path',
+                    default=None, help='Path to package_version.py script.')
+  parser.add_option('--pnacl_package_name', dest='pnacl_package_name',
+                    default=None, help='Name of PNaCl package.')
   parser.add_option('--pnacl_translator_path', dest='pnacl_translator_path',
                     default=None, help='Location of PNaCl translator.')
   parser.add_option('-v', '--verbose', dest='verbose', default=False,
@@ -365,8 +345,13 @@ def Main():
   if options.info_template_path:
     PnaclPackaging.SetPnaclInfoTemplatePath(options.info_template_path)
 
-  if options.tool_revisions_path:
-    PnaclPackaging.SetToolsRevisionPath(options.tool_revisions_path)
+  if options.package_version_path:
+    PnaclPackaging.SetPackageVersionPath(options.package_version_path)
+  else:
+    raise Exception('Package verison script must be specified.')
+
+  if options.pnacl_package_name:
+    PnaclPackaging.SetPnaclPackageName(options.pnacl_package_name)
 
   lib_overrides = {}
   for o in options.lib_overrides:
