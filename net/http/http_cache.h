@@ -60,7 +60,6 @@ class ViewCacheHelper;
 struct HttpRequestInfo;
 
 class NET_EXPORT HttpCache : public HttpTransactionFactory,
-                             public base::SupportsWeakPtr<HttpCache>,
                              NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   // The cache mode of operation.
@@ -194,6 +193,8 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
                                 scoped_ptr<HttpTransaction>* trans) OVERRIDE;
   virtual HttpCache* GetCache() OVERRIDE;
   virtual HttpNetworkSession* GetSession() OVERRIDE;
+
+  base::WeakPtr<HttpCache> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
 
   // Resets the network layer to allow for tests that probe
   // network changes (e.g. host unreachable).  The old network layer is
@@ -405,6 +406,8 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   PendingOpsMap pending_ops_;
 
   scoped_ptr<PlaybackCacheMap> playback_cache_map_;
+
+  base::WeakPtrFactory<HttpCache> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpCache);
 };

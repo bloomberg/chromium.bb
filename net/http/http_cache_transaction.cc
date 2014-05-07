@@ -187,7 +187,7 @@ HttpCache::Transaction::Transaction(
     : next_state_(STATE_NONE),
       request_(NULL),
       priority_(priority),
-      cache_(cache->AsWeakPtr()),
+      cache_(cache->GetWeakPtr()),
       entry_(NULL),
       new_entry_(NULL),
       new_response_(NULL),
