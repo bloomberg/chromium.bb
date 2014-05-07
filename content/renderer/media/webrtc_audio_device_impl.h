@@ -321,8 +321,8 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   virtual int32_t StereoRecordingIsAvailable(bool* available) const OVERRIDE;
   virtual int32_t PlayoutDelay(uint16_t* delay_ms) const OVERRIDE;
   virtual int32_t RecordingDelay(uint16_t* delay_ms) const OVERRIDE;
-  virtual int32_t RecordingSampleRate(uint32_t* samples_per_sec) const OVERRIDE;
-  virtual int32_t PlayoutSampleRate(uint32_t* samples_per_sec) const OVERRIDE;
+  virtual int32_t RecordingSampleRate(uint32_t* sample_rate) const OVERRIDE;
+  virtual int32_t PlayoutSampleRate(uint32_t* sample_rate) const OVERRIDE;
 
   // Sets the |renderer_|, returns false if |renderer_| already exists.
   // Called on the main renderer thread.
@@ -387,7 +387,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
 
   // WebRtcAudioRendererSource implementation.
 
-  // Called on the AudioInputDevice worker thread.
+  // Called on the AudioOutputDevice worker thread.
   virtual void RenderData(media::AudioBus* audio_bus,
                           int sample_rate,
                           int audio_delay_milliseconds) OVERRIDE;
@@ -452,6 +452,9 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
 
   // Used for start the Aec dump on the default capturer.
   base::File aec_dump_file_;
+
+  // Flag to tell if audio processing is enabled in MediaStreamAudioProcessor.
+  const bool is_audio_track_processing_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioDeviceImpl);
 };

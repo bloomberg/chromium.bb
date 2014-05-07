@@ -8,6 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/win/windows_version.h"
+#include "content/renderer/media/media_stream_audio_processor.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_audio_renderer.h"
 #include "content/renderer/render_thread_impl.h"
@@ -27,7 +28,9 @@ WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
       initialized_(false),
       playing_(false),
       recording_(false),
-      microphone_volume_(0) {
+      microphone_volume_(0),
+      is_audio_track_processing_enabled_(
+          MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled()) {
   DVLOG(1) << "WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()";
 }
 
@@ -73,13 +76,13 @@ int WebRtcAudioDeviceImpl::OnData(const int16* audio_data,
     DVLOG(2) << "total delay: " << input_delay_ms_ + output_delay_ms_;
   }
 
-  // Write audio samples in blocks of 10 milliseconds to the registered
+  // Write audio frames in blocks of 10 milliseconds to the registered
   // webrtc::AudioTransport sink. Keep writing until our internal byte
   // buffer is empty.
   const int16* audio_buffer = audio_data;
-  const int samples_per_10_msec = (sample_rate / 100);
-  CHECK_EQ(number_of_frames % samples_per_10_msec, 0);
-  int accumulated_audio_samples = 0;
+  const int frames_per_10_ms = (sample_rate / 100);
+  CHECK_EQ(number_of_frames % frames_per_10_ms, 0);
+  int accumulated_audio_frames = 0;
   uint32_t new_volume = 0;
 
   // The lock here is to protect a race in the resampler inside webrtc when
@@ -91,7 +94,7 @@ int WebRtcAudioDeviceImpl::OnData(const int16* audio_data,
   // webrtc::AudioProcessing module to Chrome. See http://crbug/264611 for
   // details.
   base::AutoLock auto_lock(capture_callback_lock_);
-  while (accumulated_audio_samples < number_of_frames) {
+  while (accumulated_audio_frames < number_of_frames) {
     // Deliver 10ms of recorded 16-bit linear PCM audio.
     int new_mic_level = audio_transport_callback_->OnDataAvailable(
         &channels[0],
@@ -99,14 +102,14 @@ int WebRtcAudioDeviceImpl::OnData(const int16* audio_data,
         audio_buffer,
         sample_rate,
         number_of_channels,
-        samples_per_10_msec,
+        frames_per_10_ms,
         total_delay_ms,
         current_volume,
         key_pressed,
         need_audio_processing);
 
-    accumulated_audio_samples += samples_per_10_msec;
-    audio_buffer += samples_per_10_msec * number_of_channels;
+    accumulated_audio_frames += frames_per_10_ms;
+    audio_buffer += frames_per_10_ms * number_of_channels;
 
     // The latest non-zero new microphone level will be returned.
     if (new_mic_level)
@@ -133,28 +136,45 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
     output_delay_ms_ = audio_delay_milliseconds;
   }
 
-  int samples_per_10_msec = (sample_rate / 100);
+  int frames_per_10_ms = (sample_rate / 100);
   int bytes_per_sample = sizeof(render_buffer_[0]);
-  const int bytes_per_10_msec =
-      audio_bus->channels() * samples_per_10_msec * bytes_per_sample;
-  DCHECK_EQ(audio_bus->frames() % samples_per_10_msec, 0);
+  const int bytes_per_10_ms =
+      audio_bus->channels() * frames_per_10_ms * bytes_per_sample;
+  DCHECK_EQ(audio_bus->frames() % frames_per_10_ms, 0);
 
-  // Get audio samples in blocks of 10 milliseconds from the registered
+  // Get audio frames in blocks of 10 milliseconds from the registered
   // webrtc::AudioTransport source. Keep reading until our internal buffer
   // is full.
-  uint32_t num_audio_samples = 0;
-  int accumulated_audio_samples = 0;
+  uint32_t num_audio_frames = 0;
+  int accumulated_audio_frames = 0;
   int16* audio_data = &render_buffer_[0];
-  while (accumulated_audio_samples < audio_bus->frames()) {
+  while (accumulated_audio_frames < audio_bus->frames()) {
     // Get 10ms and append output to temporary byte buffer.
-    audio_transport_callback_->NeedMorePlayData(samples_per_10_msec,
-                                                bytes_per_sample,
-                                                audio_bus->channels(),
+    if (is_audio_track_processing_enabled_) {
+      // When audio processing is enabled in the audio track, we use
+      // PullRenderData() instead of NeedMorePlayData() to avoid passing the
+      // render data to the APM in WebRTC as reference signal for echo
+      // cancellation.
+      static const int kBitsPerByte = 8;
+      audio_transport_callback_->PullRenderData(bytes_per_sample * kBitsPerByte,
                                                 sample_rate,
-                                                audio_data,
-                                                num_audio_samples);
-    accumulated_audio_samples += num_audio_samples;
-    audio_data += bytes_per_10_msec;
+                                                audio_bus->channels(),
+                                                frames_per_10_ms,
+                                                audio_data);
+      accumulated_audio_frames += frames_per_10_ms;
+    } else {
+      // TODO(xians): Remove the following code after the APM in WebRTC is
+      // deprecated.
+      audio_transport_callback_->NeedMorePlayData(frames_per_10_ms,
+                                                  bytes_per_sample,
+                                                  audio_bus->channels(),
+                                                  sample_rate,
+                                                  audio_data,
+                                                  num_audio_frames);
+      accumulated_audio_frames += num_audio_frames;
+    }
+
+    audio_data += bytes_per_10_ms;
   }
 
   // De-interleave each channel and convert to 32-bit floating-point
@@ -395,20 +415,20 @@ int32_t WebRtcAudioDeviceImpl::RecordingDelay(uint16_t* delay_ms) const {
 }
 
 int32_t WebRtcAudioDeviceImpl::RecordingSampleRate(
-    uint32_t* samples_per_sec) const {
+    uint32_t* sample_rate) const {
   // We use the default capturer as the recording sample rate.
   scoped_refptr<WebRtcAudioCapturer> capturer(GetDefaultCapturer());
   if (!capturer.get())
     return -1;
 
-  *samples_per_sec = static_cast<uint32_t>(
+  *sample_rate = static_cast<uint32_t>(
       capturer->source_audio_parameters().sample_rate());
   return 0;
 }
 
 int32_t WebRtcAudioDeviceImpl::PlayoutSampleRate(
-    uint32_t* samples_per_sec) const {
-  *samples_per_sec = renderer_ ? renderer_->sample_rate() : 0;
+    uint32_t* sample_rate) const {
+  *sample_rate = renderer_ ? renderer_->sample_rate() : 0;
   return 0;
 }
 
