@@ -68,16 +68,18 @@ def main():
 
     task_name = common.unique_task_name()
     common.note('Running %s on %s' % (isolated_sha1, options.swarming))
-    common.run(
-        [
-          'swarming.py',
-          'run',
-          '--swarming', options.swarming,
-          '--isolate-server', options.isolate_server,
-          '--dimension', 'os', options.swarming_os,
-          '--task-name', task_name,
-          isolated_sha1,
-        ], options.verbose)
+    cmd = [
+      'swarming.py',
+      'run',
+      '--swarming', options.swarming,
+      '--isolate-server', options.isolate_server,
+      '--dimension', 'os', options.swarming_os,
+      '--task-name', task_name,
+      isolated_sha1,
+    ]
+    if options.priority is not None:
+      cmd.extend(('--priority', str(options.priority)))
+    common.run(cmd, options.verbose)
     return 0
   except subprocess.CalledProcessError as e:
     print e.returncode or 1

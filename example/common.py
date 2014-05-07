@@ -24,14 +24,6 @@ CHROMIUM_SWARMING_OSES = {
 }
 
 
-ISOLATE_OSES = {
-    'darwin': 'mac',
-    'cygwin': 'win',
-    'linux2': 'linux',
-    'win32': 'win',
-}
-
-
 def parse_args(use_isolate_server, use_swarming):
   """Process arguments for the example scripts."""
   os.chdir(ROOT_DIR)
@@ -54,6 +46,8 @@ def parse_args(use_isolate_server, use_swarming):
              'sys.platform values like darwin, linux2 or win32 default: '
              '%default.')
   parser.add_option('-v', '--verbose', action='count', default=0)
+  parser.add_option(
+      '--priority', metavar='INT', type='int', help='Priority to use')
   options, args = parser.parse_args()
 
   if args:
@@ -63,7 +57,6 @@ def parse_args(use_isolate_server, use_swarming):
   if use_swarming:
     if not options.swarming:
       parser.error('--swarming is required.')
-    options.isolate_os = ISOLATE_OSES[options.os]
     options.swarming_os = CHROMIUM_SWARMING_OSES[options.os]
     del options.os
 

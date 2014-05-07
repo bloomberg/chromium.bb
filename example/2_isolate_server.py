@@ -39,7 +39,6 @@ def main():
 
     common.note('Archiving to %s' % options.isolate_server)
     # TODO(maruel): Parse the output from run() to get 'isolated_sha1'.
-    # Note that --config-variable OS is not specified and nobody cares.
     common.run(
         [
           'isolate.py',
@@ -47,6 +46,7 @@ def main():
           '--isolate', os.path.join('payload', 'hello_world.isolate'),
           '--isolated', isolated,
           '--isolate-server', options.isolate_server,
+          '--config-variable', 'OS', 'Yours',
         ], options.verbose)
 
     common.note(

@@ -42,7 +42,7 @@ def main():
           'check',
           '--isolate', os.path.join('payload', 'hello_world.isolate'),
           '--isolated', isolated,
-          '--config-variable', 'OS', options.isolate_os,
+          '--config-variable', 'OS', options.swarming_os,
         ], options.verbose)
 
     common.note(
@@ -50,16 +50,18 @@ def main():
         ' - archives to %s\n'
         ' - runs and collect results via %s' %
         (options.isolate_server, options.swarming))
-    common.run(
-        [
-          'swarming.py',
-          'run',
-          '--swarming', options.swarming,
-          '--isolate-server', options.isolate_server,
-          '--dimension', 'os', options.swarming_os,
-          '--task-name', task_name,
-          isolated,
-        ], options.verbose)
+    cmd = [
+      'swarming.py',
+      'run',
+      '--swarming', options.swarming,
+      '--isolate-server', options.isolate_server,
+      '--dimension', 'os', options.swarming_os,
+      '--task-name', task_name,
+      isolated,
+    ]
+    if options.priority is not None:
+      cmd.extend(('--priority', str(options.priority)))
+    common.run(cmd, options.verbose)
     return 0
   except subprocess.CalledProcessError as e:
     return e.returncode

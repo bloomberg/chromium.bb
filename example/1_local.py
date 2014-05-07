@@ -48,6 +48,7 @@ def main():
           '--isolate', os.path.join('payload', 'hello_world.isolate'),
           '--isolated', isolated,
           '--outdir', hashtabledir,
+          '--config-variable', 'OS', 'Yours',
         ], options.verbose)
 
     common.note(
@@ -58,7 +59,7 @@ def main():
         [
           'run_isolated.py',
           '--cache', cachedir,
-          '--isolate-server', hashtabledir,
+          '--indir', hashtabledir,
           '--hash', isolated_sha1,
           # TODO(maruel): Should not require this.
           '--namespace', 'default',
