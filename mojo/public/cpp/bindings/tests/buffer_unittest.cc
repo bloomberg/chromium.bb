@@ -121,7 +121,7 @@ TEST(FixedBufferTest, Leak) {
 
     ptr = buf.Allocate(8);
     ASSERT_TRUE(ptr);
-    void* buf_ptr = buf.Leak();
+    buf_ptr = buf.Leak();
 
     // The buffer should point to the first element allocated.
     // TODO(mpcomplete): Is this a reasonable expectation?
