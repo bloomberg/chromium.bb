@@ -72,9 +72,9 @@ static bool isValidColorString(const String& value)
     return color.setFromString(value) && !color.hasAlpha();
 }
 
-PassRefPtr<InputType> ColorInputType::create(HTMLInputElement& element)
+PassRefPtrWillBeRawPtr<InputType> ColorInputType::create(HTMLInputElement& element)
 {
-    return adoptRef(new ColorInputType(element));
+    return adoptRefWillBeNoop(new ColorInputType(element));
 }
 
 ColorInputType::~ColorInputType()

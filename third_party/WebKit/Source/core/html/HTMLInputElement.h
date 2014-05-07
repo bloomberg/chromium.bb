@@ -48,6 +48,7 @@ class HTMLInputElement : public HTMLTextFormControlElement {
 public:
     static PassRefPtr<HTMLInputElement> create(Document&, HTMLFormElement*, bool createdByParser);
     virtual ~HTMLInputElement();
+    virtual void trace(Visitor*) OVERRIDE;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitspeechchange);
 
@@ -392,8 +393,8 @@ private:
     bool m_hasTouchEventHandler : 1;
     bool m_shouldRevealPassword : 1;
     bool m_needsToUpdateViewValue : 1;
-    RefPtr<InputType> m_inputType;
-    RefPtr<InputTypeView> m_inputTypeView;
+    RefPtrWillBeMember<InputType> m_inputType;
+    RefPtrWillBeMember<InputTypeView> m_inputTypeView;
     // The ImageLoader must be owned by this element because the loader code assumes
     // that it lives as long as its owning element lives. If we move the loader into
     // the ImageInput object we may delete the loader while this element lives on.

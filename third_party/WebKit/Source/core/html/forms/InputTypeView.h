@@ -34,6 +34,7 @@
 #define InputTypeView_h
 
 #include "core/page/FocusType.h"
+#include "platform/heap/Handle.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -65,13 +66,14 @@ public:
 // An InputTypeView object represents the UI-specific part of an
 // HTMLInputElement. Do not expose instances of InputTypeView and classes
 // derived from it to classes other than HTMLInputElement.
-class InputTypeView : public RefCounted<InputTypeView> {
+class InputTypeView : public RefCountedWillBeGarbageCollectedFinalized<InputTypeView> {
     WTF_MAKE_NONCOPYABLE(InputTypeView);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 
 public:
-    static PassRefPtr<InputTypeView> create(HTMLInputElement&);
+    static PassRefPtrWillBeRawPtr<InputTypeView> create(HTMLInputElement&);
     virtual ~InputTypeView();
+    virtual void trace(Visitor*);
 
     virtual bool sizeShouldIncludeDecoration(int defaultSize, int& preferredSize) const;
     virtual void handleClickEvent(MouseEvent*);
@@ -114,13 +116,13 @@ public:
     virtual void updatePlaceholderText();
 
 protected:
-    InputTypeView(HTMLInputElement& element) : m_element(element) { }
-    HTMLInputElement& element() const { return m_element; }
+    InputTypeView(HTMLInputElement& element) : m_element(&element) { }
+    HTMLInputElement& element() const { return *m_element; }
 
 private:
     // Not a RefPtr because the HTMLInputElement object owns this InputTypeView
     // object.
-    HTMLInputElement& m_element;
+    RawPtrWillBeMember<HTMLInputElement> m_element;
 };
 
 } // namespace WebCore

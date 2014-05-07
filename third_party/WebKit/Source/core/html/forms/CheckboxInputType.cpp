@@ -40,9 +40,9 @@
 
 namespace WebCore {
 
-PassRefPtr<InputType> CheckboxInputType::create(HTMLInputElement& element)
+PassRefPtrWillBeRawPtr<InputType> CheckboxInputType::create(HTMLInputElement& element)
 {
-    return adoptRef(new CheckboxInputType(element));
+    return adoptRefWillBeNoop(new CheckboxInputType(element));
 }
 
 const AtomicString& CheckboxInputType::formControlType() const

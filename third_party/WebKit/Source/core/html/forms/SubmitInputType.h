@@ -37,7 +37,7 @@ namespace WebCore {
 
 class SubmitInputType FINAL : public BaseButtonInputType {
 public:
-    static PassRefPtr<InputType> create(HTMLInputElement&);
+    static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
 
 private:
     SubmitInputType(HTMLInputElement& element) : BaseButtonInputType(element) { }

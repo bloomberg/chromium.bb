@@ -50,9 +50,9 @@ static const int dateTimeLocalDefaultStep = 60;
 static const int dateTimeLocalDefaultStepBase = 0;
 static const int dateTimeLocalStepScaleFactor = 1000;
 
-PassRefPtr<InputType> DateTimeLocalInputType::create(HTMLInputElement& element)
+PassRefPtrWillBeRawPtr<InputType> DateTimeLocalInputType::create(HTMLInputElement& element)
 {
-    return adoptRef(new DateTimeLocalInputType(element));
+    return adoptRefWillBeNoop(new DateTimeLocalInputType(element));
 }
 
 void DateTimeLocalInputType::countUsage()

@@ -39,7 +39,7 @@ class ExceptionState;
 
 class NumberInputType FINAL : public TextFieldInputType {
 public:
-    static PassRefPtr<InputType> create(HTMLInputElement&);
+    static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
 
 private:
     NumberInputType(HTMLInputElement& element) : TextFieldInputType(element) { }

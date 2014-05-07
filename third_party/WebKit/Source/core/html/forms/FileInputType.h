@@ -44,7 +44,8 @@ class FileList;
 
 class FileInputType FINAL : public BaseClickableWithKeyInputType, private FileChooserClient {
 public:
-    static PassRefPtr<InputType> create(HTMLInputElement&);
+    static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
+    virtual void trace(Visitor*) OVERRIDE;
     static Vector<FileChooserFileInfo> filesFromFormControlState(const FormControlState&);
 
 private:
@@ -77,7 +78,7 @@ private:
     PassRefPtrWillBeRawPtr<FileList> createFileList(const Vector<FileChooserFileInfo>& files) const;
     void receiveDropForDirectoryUpload(const Vector<String>&);
 
-    RefPtrWillBePersistent<FileList> m_fileList;
+    RefPtrWillBeMember<FileList> m_fileList;
 
     String m_droppedFileSystemId;
 };

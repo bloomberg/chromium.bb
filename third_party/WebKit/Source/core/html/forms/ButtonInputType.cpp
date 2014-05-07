@@ -36,9 +36,9 @@
 
 namespace WebCore {
 
-PassRefPtr<InputType> ButtonInputType::create(HTMLInputElement& element)
+PassRefPtrWillBeRawPtr<InputType> ButtonInputType::create(HTMLInputElement& element)
 {
-    return adoptRef(new ButtonInputType(element));
+    return adoptRefWillBeNoop(new ButtonInputType(element));
 }
 
 const AtomicString& ButtonInputType::formControlType() const

@@ -48,9 +48,9 @@ static const int weekDefaultStepBase = -259200000; // The first day of 1970-W01.
 static const int weekDefaultStep = 1;
 static const int weekStepScaleFactor = 604800000;
 
-PassRefPtr<InputType> WeekInputType::create(HTMLInputElement& element)
+PassRefPtrWillBeRawPtr<InputType> WeekInputType::create(HTMLInputElement& element)
 {
-    return adoptRef(new WeekInputType(element));
+    return adoptRefWillBeNoop(new WeekInputType(element));
 }
 
 void WeekInputType::countUsage()

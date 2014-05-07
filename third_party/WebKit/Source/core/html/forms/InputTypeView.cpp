@@ -35,13 +35,18 @@
 
 namespace WebCore {
 
-PassRefPtr<InputTypeView> InputTypeView::create(HTMLInputElement& input)
+PassRefPtrWillBeRawPtr<InputTypeView> InputTypeView::create(HTMLInputElement& input)
 {
-    return adoptRef(new InputTypeView(input));
+    return adoptRefWillBeNoop(new InputTypeView(input));
 }
 
 InputTypeView::~InputTypeView()
 {
+}
+
+void InputTypeView::trace(Visitor* visitor)
+{
+    visitor->trace(m_element);
 }
 
 bool InputTypeView::sizeShouldIncludeDecoration(int, int& preferredSize) const

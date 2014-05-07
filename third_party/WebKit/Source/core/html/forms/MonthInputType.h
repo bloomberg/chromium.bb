@@ -44,7 +44,7 @@ typedef BaseChooserOnlyDateAndTimeInputType BaseMonthInputType;
 
 class MonthInputType FINAL : public BaseMonthInputType {
 public:
-    static PassRefPtr<InputType> create(HTMLInputElement&);
+    static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
 
 private:
     MonthInputType(HTMLInputElement& element) : BaseMonthInputType(element) { }

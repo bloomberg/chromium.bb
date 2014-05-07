@@ -54,9 +54,15 @@ inline FileInputType::FileInputType(HTMLInputElement& element)
 {
 }
 
-PassRefPtr<InputType> FileInputType::create(HTMLInputElement& element)
+PassRefPtrWillBeRawPtr<InputType> FileInputType::create(HTMLInputElement& element)
 {
-    return adoptRef(new FileInputType(element));
+    return adoptRefWillBeNoop(new FileInputType(element));
+}
+
+void FileInputType::trace(Visitor* visitor)
+{
+    visitor->trace(m_fileList);
+    BaseClickableWithKeyInputType::trace(visitor);
 }
 
 Vector<FileChooserFileInfo> FileInputType::filesFromFormControlState(const FormControlState& state)

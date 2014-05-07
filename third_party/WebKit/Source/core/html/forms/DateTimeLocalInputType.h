@@ -46,7 +46,7 @@ typedef BaseChooserOnlyDateAndTimeInputType BaseDateTimeLocalInputType;
 
 class DateTimeLocalInputType FINAL : public BaseDateTimeLocalInputType {
 public:
-    static PassRefPtr<InputType> create(HTMLInputElement&);
+    static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
 
 private:
     DateTimeLocalInputType(HTMLInputElement& element) : BaseDateTimeLocalInputType(element) { }

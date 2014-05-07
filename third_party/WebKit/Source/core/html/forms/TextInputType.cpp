@@ -39,9 +39,9 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-PassRefPtr<InputType> TextInputType::create(HTMLInputElement& element)
+PassRefPtrWillBeRawPtr<InputType> TextInputType::create(HTMLInputElement& element)
 {
-    return adoptRef(new TextInputType(element));
+    return adoptRefWillBeNoop(new TextInputType(element));
 }
 
 void TextInputType::countUsage()

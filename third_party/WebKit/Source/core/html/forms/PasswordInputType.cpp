@@ -47,9 +47,9 @@
 
 namespace WebCore {
 
-PassRefPtr<InputType> PasswordInputType::create(HTMLInputElement& element)
+PassRefPtrWillBeRawPtr<InputType> PasswordInputType::create(HTMLInputElement& element)
 {
-    return adoptRef(new PasswordInputType(element));
+    return adoptRefWillBeNoop(new PasswordInputType(element));
 }
 
 void PasswordInputType::countUsage()

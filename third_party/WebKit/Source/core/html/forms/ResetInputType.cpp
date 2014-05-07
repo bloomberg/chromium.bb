@@ -41,9 +41,9 @@
 
 namespace WebCore {
 
-PassRefPtr<InputType> ResetInputType::create(HTMLInputElement& element)
+PassRefPtrWillBeRawPtr<InputType> ResetInputType::create(HTMLInputElement& element)
 {
-    return adoptRef(new ResetInputType(element));
+    return adoptRefWillBeNoop(new ResetInputType(element));
 }
 
 const AtomicString& ResetInputType::formControlType() const

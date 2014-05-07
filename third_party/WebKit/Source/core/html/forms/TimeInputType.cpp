@@ -56,9 +56,9 @@ TimeInputType::TimeInputType(HTMLInputElement& element)
 {
 }
 
-PassRefPtr<InputType> TimeInputType::create(HTMLInputElement& element)
+PassRefPtrWillBeRawPtr<InputType> TimeInputType::create(HTMLInputElement& element)
 {
-    return adoptRef(new TimeInputType(element));
+    return adoptRefWillBeNoop(new TimeInputType(element));
 }
 
 void TimeInputType::countUsage()

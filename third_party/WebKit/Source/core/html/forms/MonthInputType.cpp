@@ -51,9 +51,9 @@ static const int monthDefaultStep = 1;
 static const int monthDefaultStepBase = 0;
 static const int monthStepScaleFactor = 1;
 
-PassRefPtr<InputType> MonthInputType::create(HTMLInputElement& element)
+PassRefPtrWillBeRawPtr<InputType> MonthInputType::create(HTMLInputElement& element)
 {
-    return adoptRef(new MonthInputType(element));
+    return adoptRefWillBeNoop(new MonthInputType(element));
 }
 
 void MonthInputType::countUsage()

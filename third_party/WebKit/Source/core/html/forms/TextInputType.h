@@ -37,7 +37,7 @@ namespace WebCore {
 
 class TextInputType FINAL : public BaseTextInputType {
 public:
-    static PassRefPtr<InputType> create(HTMLInputElement&);
+    static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
 
 private:
     TextInputType(HTMLInputElement& element) : BaseTextInputType(element) { }

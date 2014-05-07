@@ -36,9 +36,9 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-PassRefPtr<InputType> RadioInputType::create(HTMLInputElement& element)
+PassRefPtrWillBeRawPtr<InputType> RadioInputType::create(HTMLInputElement& element)
 {
-    return adoptRef(new RadioInputType(element));
+    return adoptRefWillBeNoop(new RadioInputType(element));
 }
 
 const AtomicString& RadioInputType::formControlType() const

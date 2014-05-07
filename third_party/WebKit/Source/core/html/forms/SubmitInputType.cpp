@@ -42,9 +42,9 @@
 
 namespace WebCore {
 
-PassRefPtr<InputType> SubmitInputType::create(HTMLInputElement& element)
+PassRefPtrWillBeRawPtr<InputType> SubmitInputType::create(HTMLInputElement& element)
 {
-    return adoptRef(new SubmitInputType(element));
+    return adoptRefWillBeNoop(new SubmitInputType(element));
 }
 
 const AtomicString& SubmitInputType::formControlType() const

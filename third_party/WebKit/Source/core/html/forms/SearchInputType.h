@@ -41,7 +41,7 @@ class SearchFieldDecorationElement;
 
 class SearchInputType FINAL : public BaseTextInputType {
 public:
-    static PassRefPtr<InputType> create(HTMLInputElement&);
+    static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
 
     void stopSearchEventTimer();
 

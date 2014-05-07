@@ -136,6 +136,13 @@ PassRefPtr<HTMLInputElement> HTMLInputElement::create(Document& document, HTMLFo
     return inputElement.release();
 }
 
+void HTMLInputElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_inputType);
+    visitor->trace(m_inputTypeView);
+    HTMLTextFormControlElement::trace(visitor);
+}
+
 HTMLImageLoader* HTMLInputElement::imageLoader()
 {
     if (!m_imageLoader)
@@ -404,7 +411,7 @@ void HTMLInputElement::updateType()
     if (m_inputType->formControlType() == newTypeName)
         return;
 
-    RefPtr<InputType> newType = InputType::create(*this, newTypeName);
+    RefPtrWillBeRawPtr<InputType> newType = InputType::create(*this, newTypeName);
     removeFromRadioButtonGroup();
 
     bool didStoreValue = m_inputType->storesValueSeparateFromAttribute();

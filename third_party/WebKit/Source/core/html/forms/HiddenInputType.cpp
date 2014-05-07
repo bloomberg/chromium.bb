@@ -43,9 +43,9 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-PassRefPtr<InputType> HiddenInputType::create(HTMLInputElement& element)
+PassRefPtrWillBeRawPtr<InputType> HiddenInputType::create(HTMLInputElement& element)
 {
-    return adoptRef(new HiddenInputType(element));
+    return adoptRefWillBeNoop(new HiddenInputType(element));
 }
 
 const AtomicString& HiddenInputType::formControlType() const

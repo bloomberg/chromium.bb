@@ -52,9 +52,9 @@ inline SearchInputType::SearchInputType(HTMLInputElement& element)
 {
 }
 
-PassRefPtr<InputType> SearchInputType::create(HTMLInputElement& element)
+PassRefPtrWillBeRawPtr<InputType> SearchInputType::create(HTMLInputElement& element)
 {
-    return adoptRef(new SearchInputType(element));
+    return adoptRefWillBeNoop(new SearchInputType(element));
 }
 
 void SearchInputType::countUsage()
