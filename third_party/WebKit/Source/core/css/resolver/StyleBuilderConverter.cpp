@@ -287,6 +287,15 @@ float StyleBuilderConverter::convertSpacing(StyleResolverState& state, CSSValue*
     return primitiveValue->computeLength<float>(state.cssToLengthConversionData());
 }
 
+Color StyleBuilderConverter::convertSVGColor(StyleResolverState& state, CSSValue* value)
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue->isRGBColor())
+        return primitiveValue->getRGBA32Value();
+    ASSERT(primitiveValue->getValueID() == CSSValueCurrentcolor);
+    return state.style()->color();
+}
+
 PassRefPtr<SVGLength> StyleBuilderConverter::convertSVGLength(StyleResolverState&, CSSValue* value)
 {
     return SVGLength::fromCSSPrimitiveValue(toCSSPrimitiveValue(value));

@@ -947,6 +947,14 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitPerspectiveOrigin(StyleRe
     ASSERT_NOT_REACHED();
 }
 
+void StyleBuilderFunctions::applyValueCSSPropertyWebkitTapHighlightColor(StyleResolverState& state, CSSValue* value)
+{
+    if (!value->isPrimitiveValue())
+        return;
+    Color color = state.document().textLinkColors().colorFromPrimitiveValue(toCSSPrimitiveValue(value), state.style()->color());
+    state.style()->setTapHighlightColor(color);
+}
+
 void StyleBuilderFunctions::applyInitialCSSPropertyWebkitTextEmphasisStyle(StyleResolverState& state)
 {
     state.style()->setTextEmphasisFill(RenderStyle::initialTextEmphasisFill());
@@ -1492,15 +1500,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
             state.style()->setPerspective(perspectiveValue);
         return;
     }
-    case CSSPropertyWebkitTapHighlightColor: {
-        HANDLE_INHERIT_AND_INITIAL(tapHighlightColor, TapHighlightColor);
-        if (!primitiveValue)
-            break;
-
-        Color col = state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->color());
-        state.style()->setTapHighlightColor(col);
-        return;
-    }
     case CSSPropertyInternalCallback: {
         if (isInherit || isInitial)
             return;
@@ -1943,6 +1942,10 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyStrokeMiterlimit:
     case CSSPropertyStrokeOpacity:
     case CSSPropertyStrokeWidth:
+    case CSSPropertyStopColor:
+    case CSSPropertyLightingColor:
+    case CSSPropertyFloodColor:
+    case CSSPropertyWebkitTapHighlightColor:
         ASSERT_NOT_REACHED();
         return;
     // Only used in @viewport rules
@@ -2039,33 +2042,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         }
 
         state.style()->accessSVGStyle()->setStrokeDashArray(array.release());
-        break;
-    }
-    case CSSPropertyStopColor:
-    {
-        HANDLE_SVG_INHERIT_AND_INITIAL(stopColor, StopColor);
-        if (primitiveValue->isRGBColor())
-            state.style()->accessSVGStyle()->setStopColor(primitiveValue->getRGBA32Value());
-        else if (primitiveValue->getValueID() == CSSValueCurrentcolor)
-            state.style()->accessSVGStyle()->setStopColor(state.style()->color());
-        break;
-    }
-    case CSSPropertyLightingColor:
-    {
-        HANDLE_SVG_INHERIT_AND_INITIAL(lightingColor, LightingColor);
-        if (primitiveValue->isRGBColor())
-            state.style()->accessSVGStyle()->setLightingColor(primitiveValue->getRGBA32Value());
-        else if (primitiveValue->getValueID() == CSSValueCurrentcolor)
-            state.style()->accessSVGStyle()->setLightingColor(state.style()->color());
-        break;
-    }
-    case CSSPropertyFloodColor:
-    {
-        HANDLE_SVG_INHERIT_AND_INITIAL(floodColor, FloodColor);
-        if (primitiveValue->isRGBColor())
-            state.style()->accessSVGStyle()->setFloodColor(primitiveValue->getRGBA32Value());
-        else if (primitiveValue->getValueID() == CSSValueCurrentcolor)
-            state.style()->accessSVGStyle()->setFloodColor(state.style()->color());
         break;
     }
     case CSSPropertyGlyphOrientationHorizontal:
