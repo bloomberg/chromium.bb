@@ -10,11 +10,10 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/activity_log/ad_network_database.h"
+#include "chrome/browser/extensions/activity_log/hashed_ad_network_database.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
-#include "grit/browser_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -45,53 +44,31 @@ const size_t kChecksumSize = 32u;
 // hashes.
 const size_t kDataResourceSize = kChecksumSize + kAdNetworkHostHashesTotalSize;
 
-// The MockResourceDelegate handles the call to get the data for the ad networks
-// file, which is constructed to contain hashes for the hosts in
-// |kAdNetworkHosts|.
-class MockResourceDelegate : public ui::ResourceBundle::Delegate {
- public:
-  MockResourceDelegate();
-  virtual ~MockResourceDelegate();
+}  // namespace
+
+class HashedAdNetworkDatabaseUnitTest : public testing::Test {
+ protected:
+  virtual void SetUp() OVERRIDE;
 
  private:
-  // Populate |data_resource_| with fake data for ad network url hashes.
-  void MakeMockResourceData();
-
-  // ResourceBundle::Delegate implementation. We actually only care about
-  // LoadDataResourceBytes(), but they're all pure virtual, so no choice but
-  // to have them all.
-  virtual base::FilePath GetPathForResourcePack(
-        const base::FilePath& pack_path, ui::ScaleFactor scale_factor) OVERRIDE;
-  virtual base::FilePath GetPathForLocalePack(
-        const base::FilePath& pack_path,
-        const std::string& locale) OVERRIDE;
-  virtual gfx::Image GetImageNamed(int resource_id) OVERRIDE;
-  virtual gfx::Image GetNativeImageNamed(
-      int resource_id, ui::ResourceBundle::ImageRTL rtl) OVERRIDE;
-  virtual base::RefCountedStaticMemory* LoadDataResourceBytes(
-        int resource_id, ui::ScaleFactor scale_factor) OVERRIDE;
-  virtual bool GetRawDataResource(int resource_id,
-                                  ui::ScaleFactor scale_factor,
-                                  base::StringPiece* value) OVERRIDE;
-  virtual bool GetLocalizedString(int message_id, base::string16* value)
-      OVERRIDE;
-  virtual scoped_ptr<gfx::Font> GetFont(ResourceBundle::FontStyle style)
-      OVERRIDE;
+  // Generate a piece of memory with a hash structure identical to the real one,
+  // but with only mock data.
+  void GenerateMockMemory();
 
   // The raw bits of the mocked-up data resource.
   char raw_data_[kDataResourceSize];
 
   // The RefCountedStaticMemory wrapper around |raw_data_|.
-  scoped_refptr<base::RefCountedStaticMemory> data_resource_;
+  scoped_refptr<base::RefCountedStaticMemory> memory_;
 };
 
-MockResourceDelegate::MockResourceDelegate() {
-  MakeMockResourceData();
+void HashedAdNetworkDatabaseUnitTest::SetUp() {
+  GenerateMockMemory();
+  AdNetworkDatabase::SetForTesting(
+      scoped_ptr<AdNetworkDatabase>(new HashedAdNetworkDatabase(memory_)));
 }
 
-MockResourceDelegate::~MockResourceDelegate() {}
-
-void MockResourceDelegate::MakeMockResourceData() {
+void HashedAdNetworkDatabaseUnitTest::GenerateMockMemory() {
   int64 host_hashes[kNumAdNetworkHosts];
 
   for (size_t i = 0; i < kNumAdNetworkHosts; ++i) {
@@ -114,73 +91,10 @@ void MockResourceDelegate::MakeMockResourceData() {
   // Copy the hashes.
   memcpy(raw_data_ + kChecksumSize, host_hashes, kAdNetworkHostHashesTotalSize);
 
-  data_resource_ =
-      new base::RefCountedStaticMemory(raw_data_, kDataResourceSize);
+  memory_ = new base::RefCountedStaticMemory(raw_data_, kDataResourceSize);
 };
 
-base::FilePath MockResourceDelegate::GetPathForResourcePack(
-        const base::FilePath& pack_path, ui::ScaleFactor scale_factor) {
-  return base::FilePath();
-}
-
-base::FilePath MockResourceDelegate::GetPathForLocalePack(
-        const base::FilePath& pack_path,
-        const std::string& locale) {
-  return base::FilePath();
-}
-
-gfx::Image MockResourceDelegate::GetImageNamed(int resource_id) {
-  return gfx::Image();
-}
-
-gfx::Image MockResourceDelegate::GetNativeImageNamed(
-    int resource_id, ui::ResourceBundle::ImageRTL rtl) {
-  return gfx::Image();
-}
-
-base::RefCountedStaticMemory* MockResourceDelegate::LoadDataResourceBytes(
-        int resource_id, ui::ScaleFactor scale_factor) {
-  if (resource_id != IDR_AD_NETWORK_HASHES)
-    return NULL;
-  return data_resource_;
-}
-
-bool MockResourceDelegate::GetRawDataResource(int resource_id,
-                                              ui::ScaleFactor scale_factor,
-                                              base::StringPiece* value) {
-  return false;
-}
-
-bool MockResourceDelegate::GetLocalizedString(int message_id,
-                                              base::string16* value) {
-  return false;
-}
-
-scoped_ptr<gfx::Font> MockResourceDelegate::GetFont(
-    ResourceBundle::FontStyle style) {
-  return scoped_ptr<gfx::Font>();
-}
-
-}  // namespace
-
-class AdNetworkDatabaseUnitTest : public testing::Test {
- protected:
-  virtual void SetUp() OVERRIDE;
-
- private:
-  scoped_ptr<MockResourceDelegate> mock_resource_delegate_;
-};
-
-void AdNetworkDatabaseUnitTest::SetUp() {
-  // Clear the current resource bundle, and replace it with one with our own
-  // Delegate.
-  mock_resource_delegate_.reset(new MockResourceDelegate);
-  ui::ResourceBundle::CleanupSharedInstance();
-  ui::ResourceBundle::InitSharedInstanceWithLocale(
-      "en-US", mock_resource_delegate_.get());
-}
-
-TEST_F(AdNetworkDatabaseUnitTest, DISABLED_AdNetworkDatabaseTest) {
+TEST_F(HashedAdNetworkDatabaseUnitTest, HashedAdNetworkDatabaseTest) {
   const AdNetworkDatabase* database = AdNetworkDatabase::Get();
   ASSERT_TRUE(database);
 
