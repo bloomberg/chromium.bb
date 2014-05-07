@@ -31,6 +31,9 @@ var whitelistedExtensionIds = [
   'ljoammodoonkhnehlncldjelhidljdpi', // GetHelp app.
   'ljacajndfccfgnfohlgkdphmbnpkjflk', // Chrome Remote Desktop Dev
   'gbchcmhmhahfdphkhkmpfmihenigjmpp', // Chrome Remote Desktop Stable
+  'odkaodonbgfohohmklejpjiejmcipmib', // Chrome Remote Desktop QA
+  'dokpleeekgeeiehdhmdkeimnkmoifgdd', // Chrome Remote Desktop QA backup
+  'ajoainacpilcemgiakehflpbkbfipojk', // Chrome Remote Desktop Apps V2
 ];
 
 /**
