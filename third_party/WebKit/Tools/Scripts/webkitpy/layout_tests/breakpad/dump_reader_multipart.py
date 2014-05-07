@@ -122,19 +122,7 @@ class DumpReaderMultipart(DumpReader):
         return self._host.filesystem.join(self._build_dir, 'content_shell.syms')
 
     def _generate_breakpad_symbols_if_necessary(self):
-        if self._host.filesystem.exists(self._symbols_dir()):
-            needs_update = False
-            symbols_mtime = self._host.filesystem.mtime(self._symbols_dir())
-            for binary in self._binaries_to_symbolize():
-                full_path = self._host.filesystem.join(self._build_dir, binary)
-                if self._host.filesystem.mtime(full_path) >= symbols_mtime:
-                    needs_update = True
-            if not needs_update:
-                return
-
-        _log.debug("Regenerating breakpad symbols")
-        self._host.filesystem.rmtree(self._symbols_dir())
-
+        _log.debug("Generating breakpad symbols")
         for binary in self._binaries_to_symbolize():
             full_path = self._host.filesystem.join(self._build_dir, binary)
             cmd = [
