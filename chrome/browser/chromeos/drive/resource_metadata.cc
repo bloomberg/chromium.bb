@@ -84,9 +84,21 @@ FileError ResourceMetadata::Reset() {
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_LOCAL_SPACE;
 
-  if (!storage_->SetLargestChangestamp(0) ||
-      !RemoveEntryRecursively(util::kDriveGrandRootLocalId) ||
-      !SetUpDefaultEntries())
+  if (!storage_->SetLargestChangestamp(0))
+    return FILE_ERROR_FAILED;
+
+  // Remove all root entries.
+  scoped_ptr<Iterator> it = GetIterator();
+  for (; !it->IsAtEnd(); it->Advance()) {
+    if (it->GetValue().parent_local_id().empty()) {
+      if (!RemoveEntryRecursively(it->GetID()))
+        return FILE_ERROR_FAILED;
+    }
+  }
+  if (it->HasError())
+    return FILE_ERROR_FAILED;
+
+  if (!SetUpDefaultEntries())
     return FILE_ERROR_FAILED;
 
   return FILE_ERROR_OK;
