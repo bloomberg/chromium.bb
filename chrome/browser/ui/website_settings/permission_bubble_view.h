@@ -39,6 +39,8 @@ class PermissionBubbleView {
   // called with mostly-identical contents to the existing contents. This can
   // happen, for instance, if a new permission is requested and
   // CanAcceptRequestUpdate() is true.
+  // Important: the view must not store any of the request objects it receives
+  // in this call.
   virtual void Show(
       const std::vector<PermissionBubbleRequest*>& requests,
       const std::vector<bool>& accept_state,

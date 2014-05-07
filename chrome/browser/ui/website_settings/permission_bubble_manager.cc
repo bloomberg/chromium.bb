@@ -11,6 +11,53 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 
+namespace {
+
+class CancelledRequest : public PermissionBubbleRequest {
+ public:
+  explicit CancelledRequest(PermissionBubbleRequest* cancelled)
+      : icon_(cancelled->GetIconID()),
+        message_text_(cancelled->GetMessageText()),
+        message_fragment_(cancelled->GetMessageTextFragment()),
+        user_gesture_(cancelled->HasUserGesture()),
+        hostname_(cancelled->GetRequestingHostname()) {}
+  virtual ~CancelledRequest() {}
+
+  virtual int GetIconID() const OVERRIDE {
+    return icon_;
+  }
+  virtual base::string16 GetMessageText() const OVERRIDE {
+    return message_text_;
+  }
+  virtual base::string16 GetMessageTextFragment() const OVERRIDE {
+    return message_fragment_;
+  }
+  virtual bool HasUserGesture() const OVERRIDE {
+    return user_gesture_;
+  }
+  virtual GURL GetRequestingHostname() const OVERRIDE {
+    return hostname_;
+  }
+
+  // These are all no-ops since the placeholder is non-forwarding.
+  virtual void PermissionGranted() OVERRIDE {}
+  virtual void PermissionDenied() OVERRIDE {}
+  virtual void Cancelled() OVERRIDE {}
+
+  virtual void RequestFinished() OVERRIDE {
+    delete this;
+  }
+
+ private:
+  int icon_;
+  base::string16 message_text_;
+  base::string16 message_fragment_;
+  bool user_gesture_;
+  GURL hostname_;
+};
+
+}  // namespace
+
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PermissionBubbleManager);
 
 // static
@@ -97,14 +144,54 @@ void PermissionBubbleManager::AddRequest(PermissionBubbleRequest* request) {
 }
 
 void PermissionBubbleManager::CancelRequest(PermissionBubbleRequest* request) {
-  // TODO(gbillock): implement
-  NOTREACHED();
+  // First look in the queued requests, where we can simply delete the request
+  // and go on.
+  std::vector<PermissionBubbleRequest*>::iterator requests_iter;
+  for (requests_iter = queued_requests_.begin();
+       requests_iter != queued_requests_.end();
+       requests_iter++) {
+    if (*requests_iter == request) {
+      (*requests_iter)->RequestFinished();
+      queued_requests_.erase(requests_iter);
+      return;
+    }
+  }
+
+  std::vector<bool>::iterator accepts_iter = accept_states_.begin();
+  for (requests_iter = requests_.begin(), accepts_iter = accept_states_.begin();
+       requests_iter != requests_.end();
+       requests_iter++, accepts_iter++) {
+    if (*requests_iter != request)
+      continue;
+
+    // We can simply erase the current entry in the request table if we aren't
+    // showing the dialog, or if we are showing it and it can accept the update.
+    bool can_erase = !bubble_showing_ ||
+                     !view_ || view_->CanAcceptRequestUpdate();
+    if (can_erase) {
+      (*requests_iter)->RequestFinished();
+      requests_.erase(requests_iter);
+      accept_states_.erase(accepts_iter);
+      ShowBubble();  // Will redraw the bubble if it is being shown.
+      return;
+    }
+
+    // Cancel the existing request and replace it with a dummy.
+    PermissionBubbleRequest* cancelled_request =
+        new CancelledRequest(*requests_iter);
+    (*requests_iter)->RequestFinished();
+    *requests_iter = cancelled_request;
+    return;
+  }
+
+  NOTREACHED();  // Callers should not cancel requests that are not pending.
 }
 
 void PermissionBubbleManager::SetView(PermissionBubbleView* view) {
   if (view == view_)
     return;
 
+  // Disengage from the existing view if there is one.
   if (view_ != NULL) {
     view_->SetDelegate(NULL);
     view_->Hide();
@@ -112,11 +199,10 @@ void PermissionBubbleManager::SetView(PermissionBubbleView* view) {
   }
 
   view_ = view;
-  if (view_)
-    view_->SetDelegate(this);
-  else
+  if (!view)
     return;
 
+  view->SetDelegate(this);
   ShowBubble();
 }
 
@@ -136,8 +222,12 @@ void PermissionBubbleManager::DocumentOnLoadCompletedInMainFrame() {
 
 void PermissionBubbleManager::NavigationEntryCommitted(
     const content::LoadCommittedDetails& details) {
-  if (!request_url_.is_empty() &&
-      request_url_ != web_contents()->GetLastCommittedURL()) {
+  // No permissions requests pending.
+  if (request_url_.is_empty())
+    return;
+
+  // If we have navigated to a new url...
+  if (request_url_ != web_contents()->GetLastCommittedURL()) {
     // Kill off existing bubble and cancel any pending requests.
     CancelPendingQueue();
     FinalizeBubble();
@@ -146,8 +236,7 @@ void PermissionBubbleManager::NavigationEntryCommitted(
 
 void PermissionBubbleManager::WebContentsDestroyed(
     content::WebContents* web_contents) {
-  // If the web contents has been destroyed, do not attempt to notify
-  // the requests of any changes - simply close the bubble.
+  // If the web contents has been destroyed, treat the bubble as cancelled.
   CancelPendingQueue();
   FinalizeBubble();
 
@@ -204,14 +293,21 @@ void PermissionBubbleManager::Closing() {
   FinalizeBubble();
 }
 
+// TODO(gbillock): find a better name for this method.
 void PermissionBubbleManager::ShowBubble() {
-  if (view_ && !bubble_showing_ && request_url_has_loaded_ &&
-      requests_.size()) {
-    // Note: this should appear above Show() for testing, since in that
-    // case we may do in-line calling of finalization.
-    bubble_showing_ = true;
-    view_->Show(requests_, accept_states_, customization_mode_);
-  }
+  if (!view_)
+    return;
+  if (requests_.empty())
+    return;
+  if (bubble_showing_)
+    return;
+  if (!request_url_has_loaded_)
+    return;
+
+  // Note: this should appear above Show() for testing, since in that
+  // case we may do in-line calling of finalization.
+  bubble_showing_ = true;
+  view_->Show(requests_, accept_states_, customization_mode_);
 }
 
 void PermissionBubbleManager::FinalizeBubble() {
