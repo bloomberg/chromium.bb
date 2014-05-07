@@ -38,7 +38,7 @@ from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
 
-BIONIC_VERSION = '17f8f59d2fbdcd72a57e94ffaeff465601d68450'
+BIONIC_VERSION = 'fb8703c7e8b5949aee9f55bf595ba2f848709c44'
 ARCHES = ['arm']
 TOOLCHAIN_BUILD_SRC = os.path.join(TOOLCHAIN_BUILD, 'src')
 TOOLCHAIN_BUILD_OUT = os.path.join(TOOLCHAIN_BUILD, 'out')
@@ -118,7 +118,8 @@ def Clobber(fast=False):
 
 
 def FetchAndBuild_gcc_libs():
-  tc_args = ['-y', '--no-use-remote-cache', 'gcc_libs_arm']
+  tc_args = ['-y', '--no-use-cached-results', '--no-use-remote-cache',
+             'gcc_libs_arm']
   # Call toolchain_build to build the gcc libs. We do not need to fill in
   # any package targets since we are using toolchain_build as an
   # intermediate step.
