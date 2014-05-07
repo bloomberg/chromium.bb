@@ -1,15 +1,3 @@
-SVG 1.1 dynamic update tests
-
-Tests dynamic updates of the 'specularExponent' attribute of the SVGFESpotLightElement object
-
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
-PASS spotLightElement.getAttribute('specularExponent') is "20"
-PASS spotLightElement.getAttribute('specularExponent') is "1"
-PASS successfullyParsed is true
-
-TEST COMPLETE
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1
