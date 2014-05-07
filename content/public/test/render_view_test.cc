@@ -341,6 +341,7 @@ void RenderViewTest::Reload(const GURL& url) {
   params.navigation_type = FrameMsg_Navigate_Type::RELOAD;
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->main_render_frame()->OnNavigate(params);
+  FrameLoadWaiter(impl->main_render_frame()).Wait();
 }
 
 uint32 RenderViewTest::GetNavigationIPCType() {
