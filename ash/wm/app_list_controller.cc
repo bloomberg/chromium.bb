@@ -114,9 +114,11 @@ gfx::Vector2d GetAnchorPositionOffsetToShelf(
   }
 }
 
-// Gets the point at the center of the screen, excluding the virtual keyboard.
-gfx::Point GetScreenCenter() {
-  gfx::Rect bounds = Shell::GetScreen()->GetPrimaryDisplay().bounds();
+// Gets the point at the center of the display that a particular view is on.
+// This calculation excludes the virtual keyboard area.
+gfx::Point GetCenterOfDisplayForView(const views::View* view) {
+  gfx::Rect bounds = Shell::GetScreen()->GetDisplayNearestWindow(
+      view->GetWidget()->GetNativeView()).bounds();
 
   // If the virtual keyboard is active, subtract it from the display bounds, so
   // that the app list is centered in the non-keyboard area of the display.
@@ -183,18 +185,21 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
     aura::Window* root_window = window->GetRootWindow();
     aura::Window* container = GetRootWindowController(root_window)->
         GetContainer(kShellWindowId_AppListContainer);
+    views::View* applist_button =
+        Shelf::ForWindow(container)->GetAppListButtonView();
     is_centered_ = view->ShouldCenterWindow();
     if (is_centered_) {
-      // The experimental app list is centered over the primary display.
+      // The experimental app list is centered over the display of the app list
+      // button that was pressed (if triggered via keyboard, this is the display
+      // with the currently focused window).
       view->InitAsBubbleAtFixedLocation(
           NULL,
           pagination_model_.get(),
-          GetScreenCenter(),
+          GetCenterOfDisplayForView(applist_button),
           views::BubbleBorder::FLOAT,
           true /* border_accepts_events */);
     } else {
-      gfx::Rect applist_button_bounds = Shelf::ForWindow(container)->
-          GetAppListButtonView()->GetBoundsInScreen();
+      gfx::Rect applist_button_bounds = applist_button->GetBoundsInScreen();
       // We need the location of the button within the local screen.
       applist_button_bounds = ScreenUtil::ConvertRectFromScreen(
           root_window,
@@ -335,7 +340,7 @@ void AppListController::UpdateBounds() {
   view_->UpdateBounds();
 
   if (is_centered_)
-    view_->SetAnchorPoint(GetScreenCenter());
+    view_->SetAnchorPoint(GetCenterOfDisplayForView(view_));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
