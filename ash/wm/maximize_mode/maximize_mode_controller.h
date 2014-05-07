@@ -48,6 +48,14 @@ class ASH_EXPORT MaximizeModeController : public AccelerometerObserver {
   // screen.
   void HandleScreenRotation(const gfx::Vector3dF& lid);
 
+  // Enables MaximizeModeWindowManager, and determines the current state of
+  // rotation lock.
+  void EnterMaximizeMode();
+
+  // Removes MaximizeModeWindowManager and resets the display rotation if there
+  // is no rotation lock.
+  void LeaveMaximizeMode();
+
   // An event handler which traps mouse and keyboard events while maximize
   // mode is engaged.
   scoped_ptr<MaximizeModeEventBlocker> event_blocker_;

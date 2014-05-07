@@ -148,7 +148,7 @@ TEST_F(MaximizeModeControllerTest, EnterExitThresholds) {
 // Tests that when the hinge is nearly vertically aligned, the current state
 // persists as the computed angle is highly inaccurate in this orientation.
 TEST_F(MaximizeModeControllerTest, HingeAligned) {
-   // Laptop in normal orientation lid open 90 degrees.
+  // Laptop in normal orientation lid open 90 degrees.
   TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, 1.0f),
                              gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
   EXPECT_FALSE(IsMaximizeModeStarted());
@@ -309,7 +309,7 @@ TEST_F(MaximizeModeControllerTest, BlocksKeyboard) {
   EXPECT_EQ(0u, counter.event_count());
   counter.reset();
 
- // Touch should not be blocked.
+  // Touch should not be blocked.
   event_generator.PressTouch();
   event_generator.ReleaseTouch();
   EXPECT_GT(counter.event_count(), 0u);
@@ -331,7 +331,7 @@ TEST_F(MaximizeModeControllerTest, LaptopTest) {
   // Feeds in sample accelerometer data and verifies that there are no
   // transitions into touchview / maximize mode while shaking the device around
   // with the hinge at less than 180 degrees.
-  ASSERT_TRUE(kAccelerometerLaptopModeTestDataLength % 6 == 0);
+  ASSERT_EQ(0u, kAccelerometerLaptopModeTestDataLength % 6);
   for (size_t i = 0; i < kAccelerometerLaptopModeTestDataLength / 6; ++i) {
     gfx::Vector3dF base(kAccelerometerLaptopModeTestData[i * 6],
                         kAccelerometerLaptopModeTestData[i * 6 + 1],
@@ -355,7 +355,7 @@ TEST_F(MaximizeModeControllerTest, MaximizeModeTest) {
   // Feeds in sample accelerometer data and verifies that there are no
   // transitions out of touchview / maximize mode while shaking the device
   // around.
-  ASSERT_TRUE(kAccelerometerFullyOpenTestDataLength % 6 == 0);
+  ASSERT_EQ(0u, kAccelerometerFullyOpenTestDataLength % 6);
   for (size_t i = 0; i < kAccelerometerFullyOpenTestDataLength / 6; ++i) {
     gfx::Vector3dF base(kAccelerometerFullyOpenTestData[i * 6],
                         kAccelerometerFullyOpenTestData[i * 6 + 1],
@@ -394,26 +394,27 @@ TEST_F(MaximizeModeControllerTest, RotationLockPreventsRotation) {
   EXPECT_EQ(gfx::Display::ROTATE_90, GetInternalDisplayRotation());
 }
 
-// Tests that when MaximizeModeController turns off MaximizeMode that on the
-// next accelerometer update the rotation lock is cleared.
-TEST_F(MaximizeModeControllerTest, ExitingMaximizeModeClearRotationLock) {
-  // The base remains steady.
-  gfx::Vector3dF base(0.0f, 0.0f, 1.0f);
+// Tests that if the display was rotated before entering maximize mode that
+// rotation becomes locked.
+TEST_F(MaximizeModeControllerTest,
+    RotatedDisplayLocksRotationUponEnteringMaximizeMode) {
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  display_manager->SetDisplayRotation(gfx::Display::InternalDisplayId(),
+      gfx::Display::ROTATE_90);
+
+  // Trigger a non-maximize mode accelerometer update. Ensure that the display
+  // does not rotate.
+  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, 1.0f),
+                             gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_EQ(gfx::Display::ROTATE_90, GetInternalDisplayRotation());
 
   // Trigger maximize mode by opening to 270.
   TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, -1.0f),
                              gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
   ASSERT_TRUE(IsMaximizeModeStarted());
-
-  maximize_mode_controller()->set_rotation_locked(true);
-
-  // Open 90 degrees.
-  TriggerAccelerometerUpdate(base, gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
-  EXPECT_FALSE(IsMaximizeModeStarted());
-
-  // Send an update that would not relaunch MaximizeMode. 90 degrees.
-  TriggerAccelerometerUpdate(base, gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
-  EXPECT_FALSE(maximize_mode_controller()->rotation_locked());
+  EXPECT_TRUE(maximize_mode_controller()->rotation_locked());
+  EXPECT_EQ(gfx::Display::ROTATE_90, GetInternalDisplayRotation());
 }
 
 }  // namespace ash
