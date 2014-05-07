@@ -106,7 +106,7 @@ public:
 #if OS(ANDROID)
     virtual void paintCompositedDeprecated(WebCanvas*, const WebRect&) OVERRIDE;
 #endif
-    virtual bool compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) OVERRIDE;
+    virtual void compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) OVERRIDE;
     virtual bool isTrackingRepaints() const OVERRIDE;
     virtual void themeChanged() OVERRIDE;
     virtual bool handleInputEvent(const WebInputEvent&) OVERRIDE;

@@ -1823,12 +1823,10 @@ void WebViewImpl::paintCompositedDeprecated(WebCanvas* canvas, const WebRect& re
 }
 #endif
 
-bool WebViewImpl::compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback* callback)
+void WebViewImpl::compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback* callback)
 {
-    if (!isAcceleratedCompositingActive())
-        return false;
+    ASSERT(isAcceleratedCompositingActive());
     m_layerTreeView->compositeAndReadbackAsync(callback);
-    return true;
 }
 
 bool WebViewImpl::isTrackingRepaints() const

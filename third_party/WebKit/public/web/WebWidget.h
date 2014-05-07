@@ -125,8 +125,9 @@ public:
     virtual void paintCompositedDeprecated(WebCanvas*, const WebRect&) { }
 
     // The caller is responsible for keeping the WebCompositeAndReadbackAsyncCallback
-    // object alive until it is called.
-    virtual bool compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) { return false; }
+    // object alive until it is called. This should only be called when
+    // isAcceleratedCompositingActive() is true.
+    virtual void compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) { }
 
     // Returns true if we've started tracking repaint rectangles.
     virtual bool isTrackingRepaints() const { return false; }
