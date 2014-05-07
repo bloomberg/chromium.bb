@@ -1242,7 +1242,8 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_OFFLINE_LOAD_STALE_NAME,
     IDS_FLAGS_ENABLE_OFFLINE_LOAD_STALE_DESCRIPTION,
     kOsLinux | kOsMac | kOsWin | kOsAndroid,
-    SINGLE_VALUE_TYPE(switches::kEnableOfflineLoadStaleCache)
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableOfflineLoadStaleCache,
+                              switches::kDisableOfflineLoadStaleCache)
   },
   {
     "default-tile-width",
