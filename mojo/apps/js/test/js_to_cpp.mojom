@@ -19,6 +19,8 @@ struct EchoArgs {
   double double_nan;
   string name;
   string[] string_array;
+  handle<message_pipe> message_handle;
+  handle<data_pipe_consumer> data_handle;
 };
 
 [Peer=JsSide]
