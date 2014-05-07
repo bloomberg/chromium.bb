@@ -945,13 +945,14 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         </message>
       </if>
 
-      <message name="IDS_OPTIONS_PASSWORDS_MAC_WARNING" desc="The warning for OS X that passwords are shared across profiles in the keychain.">
-        On Mac, passwords are saved to your Keychain and may be accessed or synced by other Chromium users sharing this OS X account.
-      </message>
-
-      <message name="IDS_AUTOFILL_ADDRESS_BOOK_PROMPT_DESCRIPTION" desc="Text to show in dialog requesting permission to access the user's Address Book contents.">
-        Details from your contacts can help you fill out forms more quickly in Chromium.
-      </message>
+      <if expr="is_macosx">
+        <message name="IDS_OPTIONS_PASSWORDS_MAC_WARNING" desc="The warning for OS X that passwords are shared across profiles in the keychain.">
+          On Mac, passwords are saved to your Keychain and may be accessed or synced by other Chromium users sharing this OS X account.
+        </message>
+        <message name="IDS_AUTOFILL_ADDRESS_BOOK_PROMPT_DESCRIPTION" desc="Text to show in dialog requesting permission to access the user's Address Book contents.">
+          Details from your contacts can help you fill out forms more quickly in Chromium.
+        </message>
+      </if>
       <message name="IDS_AUTOFILL_CC_INFOBAR_TEXT" desc="Text to show in the Autofill credit card request infobar.">
         Do you want Chromium to save this credit card information for completing web forms?
       </message>
