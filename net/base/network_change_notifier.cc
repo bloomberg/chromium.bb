@@ -14,6 +14,12 @@
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
+#if defined(OS_ANDROID)
+#include "base/metrics/sparse_histogram.h"
+#include "base/strings/string_number_conversions.h"
+#include "net/android/network_library.h"
+#endif
+
 #if defined(OS_WIN)
 #include "net/base/network_change_notifier_win.h"
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -228,6 +234,24 @@ class HistogramWatcher
     } else {
       UMA_HISTOGRAM_MEDIUM_TIMES("NCN.OfflineChange", state_duration);
     }
+
+#if defined(OS_ANDROID)
+    // On a connection type change to 2/3/4G, log the network operator MCC/MNC.
+    // Log zero in other cases.
+    unsigned mcc_mnc = 0;
+    if (type == NetworkChangeNotifier::CONNECTION_2G ||
+        type == NetworkChangeNotifier::CONNECTION_3G ||
+        type == NetworkChangeNotifier::CONNECTION_4G) {
+      // Log zero if not perfectly converted.
+      if (!base::StringToUint(
+          net::android::GetTelephonyNetworkOperator(), &mcc_mnc)) {
+        mcc_mnc = 0;
+      }
+    }
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "NCN.NetworkOperatorMCCMNC_ConnectionChange", mcc_mnc);
+#endif
+
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "NCN.IPAddressChangeToConnectionTypeChange",
         now - last_ip_address_change_);
