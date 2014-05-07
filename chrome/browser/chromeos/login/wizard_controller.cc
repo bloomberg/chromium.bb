@@ -393,6 +393,8 @@ void WizardController::ShowEulaScreen() {
 }
 
 void WizardController::ShowEnrollmentScreen() {
+  VLOG(1) << "Showing enrollment screen.";
+
   SetStatusAreaVisible(true);
 
   bool is_auto_enrollment = false;
@@ -470,10 +472,15 @@ void WizardController::ShowHIDDetectionScreen() {
 
 void WizardController::SkipToLoginForTesting(
     const LoginScreenContext& context) {
+  VLOG(1) << "SkipToLoginForTesting.";
   StartupUtils::MarkEulaAccepted();
   PerformPostEulaActions();
   PerformOOBECompletedActions();
-  ShowLoginScreen(context);
+  if (ShouldAutoStartEnrollment()) {
+    ShowEnrollmentScreen();
+  } else {
+    ShowLoginScreen(context);
+  }
 }
 
 void WizardController::AddObserver(Observer* observer) {

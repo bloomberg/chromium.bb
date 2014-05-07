@@ -255,6 +255,14 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * Skip to login screen for telemetry.
+   */
+  Oobe.skipToLoginForTesting = function() {
+    Oobe.disableSigninUI();
+    chrome.send('skipToLoginForTesting');
+  };
+
+  /**
    * Login for telemetry.
    * @param {string} username Login username.
    * @param {string} password Login password.
@@ -269,8 +277,7 @@ cr.define('cr.ui', function() {
    * Guest login for telemetry.
    */
   Oobe.guestLoginForTesting = function() {
-    Oobe.disableSigninUI();
-    chrome.send('skipToLoginForTesting');
+    Oobe.skipToLoginForTesting();
     chrome.send('launchIncognito');
   };
 
@@ -288,17 +295,23 @@ cr.define('cr.ui', function() {
    * Gaia login screen for telemetry.
    */
   Oobe.addUserForTesting = function() {
-    chrome.send('skipToLoginForTesting');
+    Oobe.skipToLoginForTesting();
     chrome.send('addUser');
   };
 
   /**
-   * Chromebox requisition for telemetry.
+   * Hotrod requisition for telemetry.
    */
-  Oobe.chromeboxRequisitionForTesting = function() {
+  Oobe.remoraRequisitionForTesting = function() {
     chrome.send('setDeviceRequisition', ['remora']);
   };
 
+  /**
+   * Finish enterprise enrollment for telemetry.
+   */
+  Oobe.enterpriseEnrollmentDone = function() {
+    chrome.send('oauthEnrollClose', ['done']);
+  };
 
   /**
    * Shows/hides login UI control bar with buttons like [Shut down].
