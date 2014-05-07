@@ -340,7 +340,13 @@ void ExternalInstallDialogDelegate::InstallUIProceed() {
 
 void ExternalInstallDialogDelegate::InstallUIAbort(bool user_initiated) {
   const Extension* extension = NULL;
-  if (service_weak_.get() &&
+
+  // Uninstall the extension if the abort was user initiated (and not, e.g., the
+  // result of the window closing).
+  // Otherwise, the extension will remain installed, but unacknowledged, so it
+  // will be prompted again.
+  if (user_initiated &&
+      service_weak_.get() &&
       (extension = service_weak_->GetInstalledExtension(extension_id_))) {
     service_weak_->UninstallExtension(extension_id_, false, NULL);
   }
