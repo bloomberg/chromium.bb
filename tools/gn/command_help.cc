@@ -43,8 +43,6 @@ void PrintToplevelHelp() {
   PrintShortHelp(
       "-q: Quiet mode, don't print anything on success.");
   PrintShortHelp(
-      "--output: Directory for build output (relative to source root).");
-  PrintShortHelp(
       "--root: Specifies source root (overrides .gn file).");
   PrintShortHelp(
       "--time: Outputs a summary of how long everything took.");
