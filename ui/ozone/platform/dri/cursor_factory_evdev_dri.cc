@@ -14,9 +14,7 @@ CursorFactoryEvdevDri::CursorFactoryEvdevDri(DriSurfaceFactory* dri)
   // TODO(dnicoara) Assume the first widget since at this point there are no
   // widgets initialized.
   cursor_window_ = DriSurfaceFactory::kDefaultWidgetHandle;
-  cursor_bounds_ = gfx::RectF(0, 0, 2560, 1700);  // TODO(spang): Argh!
-  cursor_location_ =
-      gfx::PointF(cursor_bounds_.width() / 2, cursor_bounds_.height() / 2);
+  cursor_location_ = gfx::PointF(2560 / 2, 1700 / 2);  // TODO(spang): Argh!
 
   // The DRI cursor is invisible unless explicitly set. Therefore, set the
   // pointer cursor on initialization.
@@ -31,6 +29,7 @@ void CursorFactoryEvdevDri::SetBitmapCursor(
     scoped_refptr<BitmapCursorOzone> cursor) {
   if (cursor_ == cursor)
     return;
+
   cursor_ = cursor;
   if (cursor_)
     dri_->SetHardwareCursor(
@@ -41,12 +40,16 @@ void CursorFactoryEvdevDri::SetBitmapCursor(
 
 void CursorFactoryEvdevDri::MoveCursorTo(gfx::AcceleratedWidget widget,
                                          const gfx::PointF& location) {
+  if (widget != cursor_window_)
+    dri_->UnsetHardwareCursor(cursor_window_);
+
   cursor_window_ = widget;
   cursor_location_ = location;
-  cursor_location_.SetToMax(
-      gfx::PointF(cursor_bounds_.x(), cursor_bounds_.y()));
-  cursor_location_.SetToMin(
-      gfx::PointF(cursor_bounds_.right(), cursor_bounds_.bottom()));
+
+  gfx::Size size = dri_->GetWidgetSize(cursor_window_);
+  cursor_location_.SetToMax(gfx::PointF(0, 0));
+  cursor_location_.SetToMin(gfx::PointF(size.width(), size.height()));
+
   if (cursor_)
     dri_->MoveHardwareCursor(cursor_window_, bitmap_location());
 }
@@ -55,7 +58,7 @@ void CursorFactoryEvdevDri::MoveCursor(const gfx::Vector2dF& delta) {
   MoveCursorTo(cursor_window_, cursor_location_ + delta);
 }
 
-gfx::AcceleratedWidget CursorFactoryEvdevDri::window() {
+gfx::AcceleratedWidget CursorFactoryEvdevDri::GetCursorWindow() {
   return cursor_window_;
 }
 

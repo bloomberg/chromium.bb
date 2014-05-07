@@ -47,4 +47,9 @@ void CursorFactoryOzone::SetCursor(gfx::AcceleratedWidget widget,
   NOTIMPLEMENTED();
 }
 
+gfx::AcceleratedWidget CursorFactoryOzone::GetCursorWindow() {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 }  // namespace ui

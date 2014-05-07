@@ -40,8 +40,9 @@ WindowTreeHostOzone::~WindowTreeHostOzone() {
 bool WindowTreeHostOzone::CanDispatchEvent(const ui::PlatformEvent& ne) {
   CHECK(ne);
   ui::Event* event = static_cast<ui::Event*>(ne);
-  if (event->IsMouseEvent() || event->IsScrollEvent() || event->IsTouchEvent())
-    return bounds_.Contains(static_cast<ui::LocatedEvent*>(event)->location());
+  if (event->IsMouseEvent() || event->IsScrollEvent())
+    return ui::CursorFactoryOzone::GetInstance()->GetCursorWindow() == widget_;
+
   return true;
 }
 

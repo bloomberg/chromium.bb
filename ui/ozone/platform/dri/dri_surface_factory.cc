@@ -315,6 +315,16 @@ bool DriSurfaceFactory::DisableHardwareDisplayController(uint32_t crtc) {
   return drm_->DisableCrtc(crtc);
 }
 
+gfx::Size DriSurfaceFactory::GetWidgetSize(gfx::AcceleratedWidget w) {
+  if (IsWidgetValid(w)) {
+    HardwareDisplayController* controller = GetControllerForWidget(w);
+    return gfx::Size(controller->get_mode().hdisplay,
+                     controller->get_mode().vdisplay);
+  }
+
+  return gfx::Size(0, 0);
+}
+
 void DriSurfaceFactory::SetHardwareCursor(gfx::AcceleratedWidget window,
                                           const SkBitmap& image,
                                           const gfx::Point& location) {

@@ -54,6 +54,8 @@ class OZONE_EXPORT DriSurfaceFactory : public gfx::SurfaceFactoryOzone {
   virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider(
       gfx::AcceleratedWidget w);
 
+  gfx::Size GetWidgetSize(gfx::AcceleratedWidget w);
+
   void SetHardwareCursor(gfx::AcceleratedWidget window,
                          const SkBitmap& image,
                          const gfx::Point& location);

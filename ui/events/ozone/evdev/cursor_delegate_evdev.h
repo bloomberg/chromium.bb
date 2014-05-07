@@ -22,8 +22,7 @@ class EVENTS_EXPORT CursorDelegateEvdev {
   virtual void MoveCursorTo(gfx::AcceleratedWidget widget,
                             const gfx::PointF& location) = 0;
 
-  // Window under cursor & location in window.
-  virtual gfx::AcceleratedWidget window() = 0;
+  // Location in window.
   virtual gfx::PointF location() = 0;
 };
 

@@ -25,6 +25,7 @@ class CursorFactoryEvdevDri : public BitmapCursorFactoryOzone,
   virtual ~CursorFactoryEvdevDri();
 
   // BitmapCursorFactoryOzone:
+  virtual gfx::AcceleratedWidget GetCursorWindow() OVERRIDE;
   virtual void SetBitmapCursor(gfx::AcceleratedWidget widget,
                                scoped_refptr<BitmapCursorOzone> cursor)
       OVERRIDE;
@@ -33,7 +34,6 @@ class CursorFactoryEvdevDri : public BitmapCursorFactoryOzone,
   virtual void MoveCursorTo(gfx::AcceleratedWidget widget,
                             const gfx::PointF& location) OVERRIDE;
   virtual void MoveCursor(const gfx::Vector2dF& delta) OVERRIDE;
-  virtual gfx::AcceleratedWidget window() OVERRIDE;
   virtual gfx::PointF location() OVERRIDE;
 
  private:
@@ -48,9 +48,6 @@ class CursorFactoryEvdevDri : public BitmapCursorFactoryOzone,
 
   // The window under the cursor.
   gfx::AcceleratedWidget cursor_window_;
-
-  // The bounds of the window under the cursor.
-  gfx::RectF cursor_bounds_;
 
   // The location of the cursor within the window.
   gfx::PointF cursor_location_;
