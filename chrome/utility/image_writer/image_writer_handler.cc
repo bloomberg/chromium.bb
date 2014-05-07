@@ -8,19 +8,9 @@
 #include "chrome/utility/image_writer/image_writer_handler.h"
 #include "content/public/utility/utility_thread.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#include <setupapi.h>
-#include <winioctl.h>
-#endif
-
 namespace image_writer {
 
-#if defined(OS_WIN)
-const size_t kStorageQueryBufferSize = 1024;
-#endif
-
-ImageWriterHandler::ImageWriterHandler() : image_writer_(this) {}
+ImageWriterHandler::ImageWriterHandler() {}
 ImageWriterHandler::~ImageWriterHandler() {}
 
 void ImageWriterHandler::SendSucceeded() {
@@ -59,93 +49,55 @@ bool ImageWriterHandler::OnMessageReceived(const IPC::Message& message) {
 
 void ImageWriterHandler::OnWriteStart(const base::FilePath& image,
                                       const base::FilePath& device) {
-  if (!IsValidDevice(device)) {
-    Send(new ChromeUtilityHostMsg_ImageWriter_Failed(error::kInvalidDevice));
+  if (!image_writer_.get() || image != image_writer_->GetImagePath() ||
+      device != image_writer_->GetDevicePath()) {
+    image_writer_.reset(new ImageWriter(this, image, device));
+  }
+
+  if (image_writer_->IsRunning()) {
+    SendFailed(error::kOperationAlreadyInProgress);
     return;
   }
 
-  if (image_writer_.IsRunning()) {
-    Send(new ChromeUtilityHostMsg_ImageWriter_Failed(
-        error::kOperationAlreadyInProgress));
+  if (!image_writer_->IsValidDevice()) {
+    SendFailed(error::kInvalidDevice);
     return;
   }
-  image_writer_.Write(image, device);
+
+  if (!image_writer_->UnmountVolumes()) {
+    SendFailed(error::kUnmountVolumes);
+    return;
+  }
+
+  image_writer_->Write();
 }
 
 void ImageWriterHandler::OnVerifyStart(const base::FilePath& image,
                                        const base::FilePath& device) {
-  if (!IsValidDevice(device)) {
-    Send(new ChromeUtilityHostMsg_ImageWriter_Failed(error::kInvalidDevice));
+  if (!image_writer_.get() || image != image_writer_->GetImagePath() ||
+      device != image_writer_->GetDevicePath()) {
+    image_writer_.reset(new ImageWriter(this, image, device));
+  }
+
+  if (image_writer_->IsRunning()) {
+    SendFailed(error::kOperationAlreadyInProgress);
     return;
   }
 
-  if (image_writer_.IsRunning()) {
-    Send(new ChromeUtilityHostMsg_ImageWriter_Failed(
-        error::kOperationAlreadyInProgress));
+  if (!image_writer_->IsValidDevice()) {
+    SendFailed(error::kInvalidDevice);
     return;
   }
-  image_writer_.Verify(image, device);
+
+  image_writer_->Verify();
 }
 
 void ImageWriterHandler::OnCancel() {
-  if (image_writer_.IsRunning()) {
-    image_writer_.Cancel();
+  if (image_writer_.get()) {
+    image_writer_->Cancel();
   } else {
     SendCancelled();
   }
-}
-
-bool ImageWriterHandler::IsValidDevice(const base::FilePath& device) {
-#if defined(OS_WIN)
-  base::win::ScopedHandle device_handle(
-      CreateFile(device.value().c_str(),
-                 // Desired access, which is none as we only need metadata.
-                 0,
-                 // Required to be read + write for devices.
-                 FILE_SHARE_READ | FILE_SHARE_WRITE,
-                 NULL,           // Optional security attributes.
-                 OPEN_EXISTING,  // Devices already exist.
-                 0,              // No optional flags.
-                 NULL));         // No template file.
-
-  if (!device_handle) {
-    PLOG(ERROR) << "Opening device handle failed.";
-    return false;
-  }
-
-  STORAGE_PROPERTY_QUERY query = STORAGE_PROPERTY_QUERY();
-  query.PropertyId = StorageDeviceProperty;
-  query.QueryType = PropertyStandardQuery;
-  DWORD bytes_returned;
-
-  scoped_ptr<char[]> output_buf(new char[kStorageQueryBufferSize]);
-  BOOL status = DeviceIoControl(
-      device_handle,                   // Device handle.
-      IOCTL_STORAGE_QUERY_PROPERTY,    // Flag to request device properties.
-      &query,                          // Query parameters.
-      sizeof(STORAGE_PROPERTY_QUERY),  // query parameters size.
-      output_buf.get(),                // output buffer.
-      kStorageQueryBufferSize,         // Size of buffer.
-      &bytes_returned,                 // Number of bytes returned.
-                                       // Must not be null.
-      NULL);                           // Optional unused overlapped perameter.
-
-  if (status == FALSE) {
-    PLOG(ERROR) << "Storage property query failed.";
-    return false;
-  }
-
-  STORAGE_DEVICE_DESCRIPTOR* device_descriptor =
-      reinterpret_cast<STORAGE_DEVICE_DESCRIPTOR*>(output_buf.get());
-
-  if (device_descriptor->RemovableMedia)
-    return true;
-
-#else
-  // Other platforms will have to be added as they are supported.
-  NOTIMPLEMENTED();
-#endif
-  return false;
 }
 
 }  // namespace image_writer

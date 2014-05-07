@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
@@ -59,11 +61,38 @@ class MockHandler : public ImageWriterHandler {
   MOCK_METHOD1(OnMessageReceived, bool(const IPC::Message& message));
 };
 
+// This Mock has the additional feature that it will start verification when
+// the write completes.
+class VerifyingHandler : public MockHandler {
+ public:
+  VerifyingHandler() : image_writer_(NULL), verified_(false) {}
+
+  virtual void SendSucceeded() OVERRIDE {
+    MockHandler::SendSucceeded();
+    if (!verified_) {
+      image_writer_->Verify();
+      verified_ = true;
+    }
+  }
+  ImageWriter* image_writer_;
+
+ private:
+  bool verified_;
+};
+
 }  // namespace
+
+TEST_F(ImageWriterUtilityTest, Getters) {
+  MockHandler mock_handler;
+  ImageWriter image_writer(&mock_handler, image_path_, device_path_);
+
+  EXPECT_EQ(image_path_, image_writer.GetImagePath());
+  EXPECT_EQ(device_path_, image_writer.GetDevicePath());
+}
 
 TEST_F(ImageWriterUtilityTest, WriteSuccessful) {
   MockHandler mock_handler;
-  ImageWriter image_writer(&mock_handler);
+  ImageWriter image_writer(&mock_handler, image_path_, device_path_);
 
   EXPECT_CALL(mock_handler, SendProgress(_)).Times(AnyNumber());
   EXPECT_CALL(mock_handler, SendProgress(kTestFileSize)).Times(1);
@@ -72,39 +101,39 @@ TEST_F(ImageWriterUtilityTest, WriteSuccessful) {
   EXPECT_CALL(mock_handler, SendFailed(_)).Times(0);
 
   FillDefault(image_path_);
-  image_writer.Write(image_path_, device_path_);
+  image_writer.Write();
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ImageWriterUtilityTest, WriteInvalidImageFile) {
   MockHandler mock_handler;
-  ImageWriter image_writer(&mock_handler);
+  ImageWriter image_writer(&mock_handler, image_path_, device_path_);
 
   EXPECT_CALL(mock_handler, SendProgress(_)).Times(0);
   EXPECT_CALL(mock_handler, SendSucceeded()).Times(0);
   EXPECT_CALL(mock_handler, SendFailed(error::kOpenImage)).Times(1);
 
   ASSERT_TRUE(base::DeleteFile(image_path_, false));
-  image_writer.Write(image_path_, device_path_);
+  image_writer.Write();
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ImageWriterUtilityTest, WriteInvalidDeviceFile) {
   MockHandler mock_handler;
-  ImageWriter image_writer(&mock_handler);
+  ImageWriter image_writer(&mock_handler, image_path_, device_path_);
 
   EXPECT_CALL(mock_handler, SendProgress(_)).Times(0);
   EXPECT_CALL(mock_handler, SendSucceeded()).Times(0);
   EXPECT_CALL(mock_handler, SendFailed(error::kOpenDevice)).Times(1);
 
   ASSERT_TRUE(base::DeleteFile(device_path_, false));
-  image_writer.Write(image_path_, device_path_);
+  image_writer.Write();
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ImageWriterUtilityTest, VerifySuccessful) {
   MockHandler mock_handler;
-  ImageWriter image_writer(&mock_handler);
+  ImageWriter image_writer(&mock_handler, image_path_, device_path_);
 
   EXPECT_CALL(mock_handler, SendProgress(_)).Times(AnyNumber());
   EXPECT_CALL(mock_handler, SendProgress(kTestFileSize)).Times(1);
@@ -115,14 +144,14 @@ TEST_F(ImageWriterUtilityTest, VerifySuccessful) {
   FillDefault(image_path_);
   FillDefault(device_path_);
 
-  image_writer.Verify(image_path_, device_path_);
+  image_writer.Verify();
 
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ImageWriterUtilityTest, VerifyInvalidImageFile) {
   MockHandler mock_handler;
-  ImageWriter image_writer(&mock_handler);
+  ImageWriter image_writer(&mock_handler, image_path_, device_path_);
 
   EXPECT_CALL(mock_handler, SendProgress(_)).Times(0);
   EXPECT_CALL(mock_handler, SendSucceeded()).Times(0);
@@ -130,14 +159,14 @@ TEST_F(ImageWriterUtilityTest, VerifyInvalidImageFile) {
 
   ASSERT_TRUE(base::DeleteFile(image_path_, false));
 
-  image_writer.Verify(image_path_, device_path_);
+  image_writer.Verify();
 
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ImageWriterUtilityTest, VerifyInvalidDeviceFile) {
   MockHandler mock_handler;
-  ImageWriter image_writer(&mock_handler);
+  ImageWriter image_writer(&mock_handler, image_path_, device_path_);
 
   EXPECT_CALL(mock_handler, SendProgress(_)).Times(0);
   EXPECT_CALL(mock_handler, SendSucceeded()).Times(0);
@@ -145,28 +174,28 @@ TEST_F(ImageWriterUtilityTest, VerifyInvalidDeviceFile) {
 
   ASSERT_TRUE(base::DeleteFile(device_path_, false));
 
-  image_writer.Verify(image_path_, device_path_);
+  image_writer.Verify();
 
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ImageWriterUtilityTest, VerifyEmptyDevice) {
   MockHandler mock_handler;
-  ImageWriter image_writer(&mock_handler);
+  ImageWriter image_writer(&mock_handler, image_path_, device_path_);
 
   EXPECT_CALL(mock_handler, SendProgress(_)).Times(AnyNumber());
   EXPECT_CALL(mock_handler, SendSucceeded()).Times(0);
   EXPECT_CALL(mock_handler, SendFailed(error::kReadDevice)).Times(1);
 
   FillDefault(image_path_);
-  image_writer.Verify(image_path_, device_path_);
+  image_writer.Verify();
 
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ImageWriterUtilityTest, VerifyFailed) {
   MockHandler mock_handler;
-  ImageWriter image_writer(&mock_handler);
+  ImageWriter image_writer(&mock_handler, image_path_, device_path_);
 
   EXPECT_CALL(mock_handler, SendProgress(_)).Times(AnyNumber());
   EXPECT_CALL(mock_handler, SendSucceeded()).Times(0);
@@ -174,24 +203,26 @@ TEST_F(ImageWriterUtilityTest, VerifyFailed) {
 
   FillDefault(image_path_);
   FillFile(device_path_, ~kTestPattern);
-  image_writer.Verify(image_path_, device_path_);
+  image_writer.Verify();
 
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ImageWriterUtilityTest, WriteThenVerify) {
-  MockHandler mock_handler;
-  ImageWriter image_writer(&mock_handler);
+TEST_F(ImageWriterUtilityTest, WriteWithVerifySuccessful) {
+  VerifyingHandler mock_handler;
+  ImageWriter image_writer(&mock_handler, image_path_, device_path_);
+
+  mock_handler.image_writer_ = &image_writer;
 
   EXPECT_CALL(mock_handler, SendProgress(_)).Times(AnyNumber());
+  EXPECT_CALL(mock_handler, SendProgress(kTestFileSize)).Times(2);
+  EXPECT_CALL(mock_handler, SendProgress(0)).Times(2);
   EXPECT_CALL(mock_handler, SendSucceeded()).Times(2);
   EXPECT_CALL(mock_handler, SendFailed(_)).Times(0);
 
-  image_writer.Write(image_path_, device_path_);
+  FillDefault(image_path_);
 
-  base::RunLoop().RunUntilIdle();
-
-  image_writer.Verify(image_path_, device_path_);
+  image_writer.Write();
 
   base::RunLoop().RunUntilIdle();
 }

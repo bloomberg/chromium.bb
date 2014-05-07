@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/utility/image_writer/image_writer.h"
-
+#include "base/memory/aligned_memory.h"
 #include "chrome/utility/image_writer/error_messages.h"
+#include "chrome/utility/image_writer/image_writer.h"
 #include "chrome/utility/image_writer/image_writer_handler.h"
 #include "content/public/utility/utility_thread.h"
 
@@ -12,112 +12,56 @@ namespace image_writer {
 
 // Since block devices like large sequential access and IPC is expensive we're
 // doing work in 1MB chunks.
-const int kBurningBlockSize = 1 << 20;
+const int kBurningBlockSize = 1 << 20;  // 1 MB
+const int kMemoryAlignment = 4096;
 
-ImageWriter::ImageWriter(ImageWriterHandler* handler)
-    : bytes_processed_(0),
+ImageWriter::ImageWriter(ImageWriterHandler* handler,
+                         const base::FilePath& image_path,
+                         const base::FilePath& device_path)
+    : image_path_(image_path),
+      device_path_(device_path),
+      bytes_processed_(0),
+      running_(false),
       handler_(handler) {}
 
 ImageWriter::~ImageWriter() {
-  CleanUp();
-}
-
-void ImageWriter::Write(const base::FilePath& image_path,
-                        const base::FilePath& device_path) {
-  if (IsRunning()) {
-    handler_->SendFailed(error::kOperationAlreadyInProgress);
-    return;
-  }
-
-  image_path_ = image_path;
-  device_path_ = device_path;
-  bytes_processed_ = 0;
-
-  image_file_.Initialize(image_path_,
-                         base::File::FLAG_OPEN | base::File::FLAG_READ);
-
-  if (!image_file_.IsValid()) {
-    DLOG(ERROR) << "Unable to open file for read: " << image_path_.value();
-    Error(error::kOpenImage);
-    return;
-  }
-
 #if defined(OS_WIN)
-  // Windows requires that device files be opened with FILE_FLAG_NO_BUFFERING
-  // and FILE_FLAG_WRITE_THROUGH.  These two flags are not part of base::File.
-  device_file_ =
-      base::File(CreateFile(device_path.value().c_str(),
-                            GENERIC_WRITE,
-                            FILE_SHARE_WRITE,
-                            NULL,
-                            OPEN_EXISTING,
-                            FILE_FLAG_NO_BUFFERING | FILE_FLAG_WRITE_THROUGH,
-                            NULL));
-
-  if (!device_file_.IsValid()) {
-    Error(error::kOpenDevice);
-    return;
-  }
-#else
-  device_file_.Initialize(device_path_,
-                          base::File::FLAG_OPEN | base::File::FLAG_WRITE);
-
-  if (!device_file_.IsValid()) {
-    DLOG(ERROR) << "Unable to open file for write(" <<
-                   device_file_.error_details() << "): " <<
-                   device_path_.value();
-    Error(error::kOpenDevice);
-    return;
+  for (std::vector<HANDLE>::const_iterator it = volume_handles_.begin();
+       it != volume_handles_.end();
+       ++it) {
+    CloseHandle(*it);
   }
 #endif
+}
+
+void ImageWriter::Write() {
+  if (!InitializeFiles()) {
+    return;
+  }
 
   PostProgress(0);
-
   PostTask(base::Bind(&ImageWriter::WriteChunk, AsWeakPtr()));
 }
 
-void ImageWriter::Verify(const base::FilePath& image_path,
-                         const base::FilePath& device_path) {
-  if (IsRunning()) {
-    handler_->SendFailed(error::kOperationAlreadyInProgress);
-    return;
-  }
-
-  image_path_ = image_path;
-  device_path_ = device_path;
-  bytes_processed_ = 0;
-
-  image_file_.Initialize(image_path_,
-                         base::File::FLAG_OPEN | base::File::FLAG_READ);
-
-  if (!image_file_.IsValid()) {
-    DLOG(ERROR) << "Unable to open file for read: " << image_path_.value();
-    Error(error::kOpenImage);
-    return;
-  }
-
-  device_file_.Initialize(device_path_,
-                          base::File::FLAG_OPEN | base::File::FLAG_READ);
-
-  if (!device_file_.IsValid()) {
-    DLOG(ERROR) << "Unable to open file for read: " << device_path_.value();
-    Error(error::kOpenDevice);
+void ImageWriter::Verify() {
+  if (!InitializeFiles()) {
     return;
   }
 
   PostProgress(0);
-
   PostTask(base::Bind(&ImageWriter::VerifyChunk, AsWeakPtr()));
 }
 
 void ImageWriter::Cancel() {
-  CleanUp();
+  running_ = false;
   handler_->SendCancelled();
 }
 
-bool ImageWriter::IsRunning() const {
-  return image_file_.IsValid() || device_file_.IsValid();
-}
+bool ImageWriter::IsRunning() const { return running_; }
+
+const base::FilePath& ImageWriter::GetImagePath() { return image_path_; }
+
+const base::FilePath& ImageWriter::GetDevicePath() { return device_path_; }
 
 void ImageWriter::PostTask(const base::Closure& task) {
   base::MessageLoop::current()->PostTask(FROM_HERE, task);
@@ -128,8 +72,51 @@ void ImageWriter::PostProgress(int64 progress) {
 }
 
 void ImageWriter::Error(const std::string& message) {
-  CleanUp();
+  running_ = false;
   handler_->SendFailed(message);
+}
+
+bool ImageWriter::InitializeFiles() {
+  if (!image_file_.IsValid()) {
+    image_file_.Initialize(image_path_,
+                           base::File::FLAG_OPEN | base::File::FLAG_READ |
+                               base::File::FLAG_EXCLUSIVE_READ);
+
+    if (!image_file_.IsValid()) {
+      DLOG(ERROR) << "Unable to open file for read: " << image_path_.value();
+      Error(error::kOpenImage);
+      return false;
+    }
+  }
+
+  if (!device_file_.IsValid()) {
+#if defined(OS_WIN)
+    // Windows requires that device files be opened with FILE_FLAG_NO_BUFFERING
+    // and FILE_FLAG_WRITE_THROUGH.  These two flags are not part of base::File.
+    device_file_ =
+        base::File(CreateFile(device_path_.value().c_str(),
+                              GENERIC_READ | GENERIC_WRITE,
+                              FILE_SHARE_READ | FILE_SHARE_WRITE,
+                              NULL,
+                              OPEN_EXISTING,
+                              FILE_FLAG_NO_BUFFERING | FILE_FLAG_WRITE_THROUGH,
+                              NULL));
+#else
+    device_file_.Initialize(
+        device_path_,
+        base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_WRITE |
+            base::File::FLAG_EXCLUSIVE_READ | base::File::FLAG_EXCLUSIVE_WRITE);
+#endif
+    if (!device_file_.IsValid()) {
+      Error(error::kOpenDevice);
+      return false;
+    }
+  }
+
+  bytes_processed_ = 0;
+  running_ = true;
+
+  return true;
 }
 
 void ImageWriter::WriteChunk() {
@@ -137,17 +124,21 @@ void ImageWriter::WriteChunk() {
     return;
   }
 
-  scoped_ptr<char[]> buffer(new char[kBurningBlockSize]);
+  // DASD buffers require memory alignment on some systems.
+  scoped_ptr<char, base::AlignedFreeDeleter> buffer(static_cast<char*>(
+      base::AlignedAlloc(kBurningBlockSize, kMemoryAlignment)));
   memset(buffer.get(), 0, kBurningBlockSize);
 
   int bytes_read = image_file_.Read(bytes_processed_, buffer.get(),
                                     kBurningBlockSize);
 
   if (bytes_read > 0) {
-    // Always attempt to write a whole block, as Windows requires 512-byte
+    // Always attempt to write a whole block, as writing DASD requires sector-
     // aligned writes to devices.
-    int bytes_written = device_file_.Write(bytes_processed_, buffer.get(),
-                                           kBurningBlockSize);
+    int bytes_to_write = bytes_read + (kMemoryAlignment - 1) -
+                         (bytes_read - 1) % kMemoryAlignment;
+    int bytes_written =
+        device_file_.Write(bytes_processed_, buffer.get(), bytes_to_write);
 
     if (bytes_written < bytes_read) {
       Error(error::kWriteImage);
@@ -161,7 +152,7 @@ void ImageWriter::WriteChunk() {
   } else if (bytes_read == 0) {
     // End of file.
     device_file_.Flush();
-    CleanUp();
+    running_ = false;
     handler_->SendSucceeded();
   } else {
     // Unable to read entire file.
@@ -175,7 +166,9 @@ void ImageWriter::VerifyChunk() {
   }
 
   scoped_ptr<char[]> image_buffer(new char[kBurningBlockSize]);
-  scoped_ptr<char[]> device_buffer(new char[kBurningBlockSize]);
+  // DASD buffers require memory alignment on some systems.
+  scoped_ptr<char, base::AlignedFreeDeleter> device_buffer(static_cast<char*>(
+      base::AlignedAlloc(kBurningBlockSize, kMemoryAlignment)));
 
   int bytes_read = image_file_.Read(bytes_processed_, image_buffer.get(),
                                     kBurningBlockSize);
@@ -184,7 +177,7 @@ void ImageWriter::VerifyChunk() {
     if (device_file_.Read(bytes_processed_,
                           device_buffer.get(),
                           kBurningBlockSize) < bytes_read) {
-      LOG(ERROR) << "Failed to read " << kBurningBlockSize << " bytes of "
+      LOG(ERROR) << "Failed to read " << bytes_read << " bytes of "
                  << "device at offset " << bytes_processed_;
       Error(error::kReadDevice);
       return;
@@ -203,19 +196,14 @@ void ImageWriter::VerifyChunk() {
     PostTask(base::Bind(&ImageWriter::VerifyChunk, AsWeakPtr()));
   } else if (bytes_read == 0) {
     // End of file.
-    CleanUp();
     handler_->SendSucceeded();
+    running_ = false;
   } else {
     // Unable to read entire file.
     LOG(ERROR) << "Failed to read " << kBurningBlockSize << " bytes of image "
                << "at offset " << bytes_processed_;
     Error(error::kReadImage);
   }
-}
-
-void ImageWriter::CleanUp() {
-  image_file_.Close();
-  device_file_.Close();
 }
 
 }  // namespace image_writer

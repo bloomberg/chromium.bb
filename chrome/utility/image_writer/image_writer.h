@@ -5,6 +5,13 @@
 #ifndef CHROME_UTILITY_IMAGE_WRITER_IMAGE_WRITER_H_
 #define CHROME_UTILITY_IMAGE_WRITER_IMAGE_WRITER_H_
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file.h"
@@ -20,21 +27,32 @@ class ImageWriterHandler;
 // messages.
 class ImageWriter : public base::SupportsWeakPtr<ImageWriter> {
  public:
-  explicit ImageWriter(ImageWriterHandler* handler);
+  explicit ImageWriter(ImageWriterHandler* handler,
+                       const base::FilePath& image_path,
+                       const base::FilePath& device_path);
   virtual ~ImageWriter();
 
-  // Starts a write from |image_path| to |device_path|.
-  void Write(const base::FilePath& image_path,
-             const base::FilePath& device_path);
-  // Starts verifying that |image_path| and |device_path| have the same size and
-  // contents.
-  void Verify(const base::FilePath& image_path,
-              const base::FilePath& device_path);
+  // Starts a write from |image_path_| to |device_path_|.
+  void Write();
+  // Starts verifying that |image_path_| and |device_path_| have the same size
+  // and contents.
+  void Verify();
   // Cancels any pending writes or verifications.
   void Cancel();
 
   // Returns whether an operation is in progress.
   bool IsRunning() const;
+  // Checks if a path is a valid target device.
+  // This method has OS-specific implementations.
+  bool IsValidDevice();
+  // Unmounts all volumes on the target device.
+  // This method has OS-specific implementations.
+  bool UnmountVolumes();
+
+  // Return the current image path.
+  const base::FilePath& GetImagePath();
+  // Return the current device path.
+  const base::FilePath& GetDevicePath();
 
  private:
   // Convenience wrappers.
@@ -42,12 +60,12 @@ class ImageWriter : public base::SupportsWeakPtr<ImageWriter> {
   void PostProgress(int64 progress);
   void Error(const std::string& message);
 
+  // Initializes the files.
+  bool InitializeFiles();
+
   // Work loops.
   void WriteChunk();
   void VerifyChunk();
-
-  // Cleans up file handles.
-  void CleanUp();
 
   base::FilePath image_path_;
   base::FilePath device_path_;
@@ -55,6 +73,11 @@ class ImageWriter : public base::SupportsWeakPtr<ImageWriter> {
   base::File image_file_;
   base::File device_file_;
   int64 bytes_processed_;
+  bool running_;
+
+#if defined(OS_WIN)
+  std::vector<HANDLE> volume_handles_;
+#endif
 
   ImageWriterHandler* handler_;
 };

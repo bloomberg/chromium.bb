@@ -274,6 +274,7 @@
             'utility/image_writer/image_writer.h',
             'utility/image_writer/image_writer_handler.cc',
             'utility/image_writer/image_writer_handler.h',
+            'utility/image_writer/image_writer_win.cc',
             'utility/importer/bookmark_html_reader.cc',
             'utility/importer/bookmark_html_reader.h',
             'utility/importer/bookmarks_file_importer.cc',
@@ -371,6 +372,11 @@
               'sources': [
                 'utility/local_discovery/service_discovery_message_handler.cc',
                 'utility/local_discovery/service_discovery_message_handler.h',
+              ]
+            }],
+            ['OS!="win"', {
+              'sources': [
+                'utility/image_writer/image_writer_stub.cc',
               ]
             }],
           ],

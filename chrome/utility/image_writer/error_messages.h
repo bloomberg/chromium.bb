@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_ERROR_MESSAGES_H_
-#define CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_ERROR_MESSAGES_H_
+#ifndef CHROME_UTILITY_IMAGE_WRITER_ERROR_MESSAGES_H_
+#define CHROME_UTILITY_IMAGE_WRITER_ERROR_MESSAGES_H_
 
 namespace image_writer {
 namespace error {
@@ -19,9 +19,10 @@ extern const char kOperationAlreadyInProgress[];
 extern const char kReadDevice[];
 extern const char kReadImage[];
 extern const char kWriteImage[];
+extern const char kUnmountVolumes[];
 extern const char kVerificationFailed[];
 
 }  // namespace error
 }  // namespace image_writer
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_ERROR_MESSAGES_H_
+#endif  // CHROME_UTILITY_IMAGE_WRITER_ERROR_MESSAGES_H_

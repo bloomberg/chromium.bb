@@ -5,6 +5,8 @@
 #ifndef CHROME_UTILITY_IMAGE_WRITER_IMAGE_WRITER_HANDLER_H_
 #define CHROME_UTILITY_IMAGE_WRITER_IMAGE_WRITER_HANDLER_H_
 
+#include <string>
+
 #include "chrome/utility/image_writer/image_writer.h"
 #include "chrome/utility/utility_message_handler.h"
 #include "ipc/ipc_message.h"
@@ -40,10 +42,7 @@ class ImageWriterHandler : public chrome::UtilityMessageHandler {
   void OnVerifyStart(const base::FilePath& image, const base::FilePath& device);
   void OnCancel();
 
-  // Checks if a path is a valid target device.
-  bool IsValidDevice(const base::FilePath& device);
-
-  ImageWriter image_writer_;
+  scoped_ptr<ImageWriter> image_writer_;
 };
 
 }  // namespace image_writer
