@@ -637,23 +637,7 @@
         'content_shell',
       ],
     },
-    {
-      'target_name': 'layout_test_helper',
-      'type': 'executable',
-      'sources': [
-        'shell/renderer/test_runner/helper/layout_test_helper_mac.mm',
-        'shell/renderer/test_runner/helper/layout_test_helper_win.cc',
-      ],
-      'conditions': [
-        ['OS=="mac"', {
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/AppKit.framework',
-            ],
-          },
-        }],
-      ],
-    },
+
     {
       'target_name': 'test_netscape_plugin',
       'type': 'loadable_module',
@@ -759,6 +743,27 @@
     }
   ],
   'conditions': [
+    ['OS=="mac" or OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'layout_test_helper',
+          'type': 'executable',
+          'sources': [
+            'shell/renderer/test_runner/helper/layout_test_helper_mac.mm',
+            'shell/renderer/test_runner/helper/layout_test_helper_win.cc',
+          ],
+          'conditions': [
+            ['OS=="mac"', {
+              'link_settings': {
+                'libraries': [
+                  '$(SDKROOT)/System/Library/Frameworks/AppKit.framework',
+                ],
+              },
+            }],
+          ],
+        },
+      ],
+    }],  # OS=="mac" or OS=="win"
     ['OS=="mac"', {
       'targets': [
         {
