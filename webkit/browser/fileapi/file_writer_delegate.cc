@@ -21,9 +21,11 @@ namespace fileapi {
 static const int kReadBufSize = 32768;
 
 FileWriterDelegate::FileWriterDelegate(
-    scoped_ptr<FileStreamWriter> file_stream_writer)
+    scoped_ptr<FileStreamWriter> file_stream_writer,
+    FlushPolicy flush_policy)
     : file_stream_writer_(file_stream_writer.Pass()),
       writing_started_(false),
+      flush_policy_(flush_policy),
       bytes_written_backlog_(0),
       bytes_written_(0),
       bytes_read_(0),
@@ -175,7 +177,7 @@ void FileWriterDelegate::OnError(base::File::Error error) {
   }
 
   if (writing_started_)
-    FlushForCompletion(error, 0, ERROR_WRITE_STARTED);
+    MaybeFlushForCompletion(error, 0, ERROR_WRITE_STARTED);
   else
     write_callback_.Run(error, 0, ERROR_WRITE_NOT_STARTED);
 }
@@ -192,8 +194,8 @@ void FileWriterDelegate::OnProgress(int bytes_written, bool done) {
     bytes_written_backlog_ = 0;
 
     if (done) {
-      FlushForCompletion(base::File::FILE_OK, bytes_written,
-                         SUCCESS_COMPLETED);
+      MaybeFlushForCompletion(base::File::FILE_OK, bytes_written,
+                              SUCCESS_COMPLETED);
     } else {
       write_callback_.Run(base::File::FILE_OK, bytes_written,
                           SUCCESS_IO_PENDING);
@@ -208,10 +210,16 @@ void FileWriterDelegate::OnWriteCancelled(int status) {
                       GetCompletionStatusOnError());
 }
 
-void FileWriterDelegate::FlushForCompletion(
+void FileWriterDelegate::MaybeFlushForCompletion(
     base::File::Error error,
     int bytes_written,
     WriteProgressStatus progress_status) {
+  if (flush_policy_ == NO_FLUSH_ON_COMPLETION) {
+    write_callback_.Run(error, bytes_written, progress_status);
+    return;
+  }
+  DCHECK_EQ(FLUSH_ON_COMPLETION, flush_policy_);
+
   int flush_error = file_stream_writer_->Flush(
       base::Bind(&FileWriterDelegate::OnFlushed, weak_factory_.GetWeakPtr(),
                  error, bytes_written, progress_status));

@@ -121,7 +121,8 @@ class FileWriterDelegateTest : public PlatformTest {
             *file_system_context_->GetUpdateObservers(kFileSystemType));
     writer->set_default_quota(allowed_growth);
     return new FileWriterDelegate(
-        scoped_ptr<fileapi::FileStreamWriter>(writer));
+        scoped_ptr<fileapi::FileStreamWriter>(writer),
+        FileWriterDelegate::FLUSH_ON_COMPLETION);
   }
 
   FileWriterDelegate::DelegateWriteCallback GetWriteCallback(Result* result) {

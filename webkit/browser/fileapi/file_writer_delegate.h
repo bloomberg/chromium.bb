@@ -22,6 +22,11 @@ class FileStreamWriter;
 class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileWriterDelegate
     : public net::URLRequest::Delegate {
  public:
+  enum FlushPolicy {
+    FLUSH_ON_COMPLETION,
+    NO_FLUSH_ON_COMPLETION,
+  };
+
   enum WriteProgressStatus {
     SUCCESS_IO_PENDING,
     SUCCESS_COMPLETED,
@@ -34,7 +39,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileWriterDelegate
                               WriteProgressStatus write_status)>
       DelegateWriteCallback;
 
-  explicit FileWriterDelegate(scoped_ptr<FileStreamWriter> file_writer);
+  FileWriterDelegate(scoped_ptr<FileStreamWriter> file_writer,
+                     FlushPolicy flush_policy);
   virtual ~FileWriterDelegate();
 
   void Start(scoped_ptr<net::URLRequest> request,
@@ -72,9 +78,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileWriterDelegate
   void OnError(base::File::Error error);
   void OnProgress(int bytes_read, bool done);
   void OnWriteCancelled(int status);
-  void FlushForCompletion(base::File::Error error,
-                          int bytes_written,
-                          WriteProgressStatus progress_status);
+  void MaybeFlushForCompletion(base::File::Error error,
+                               int bytes_written,
+                               WriteProgressStatus progress_status);
   void OnFlushed(base::File::Error error,
                  int bytes_written,
                  WriteProgressStatus progress_status,
@@ -86,6 +92,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileWriterDelegate
   scoped_ptr<FileStreamWriter> file_stream_writer_;
   base::Time last_progress_event_time_;
   bool writing_started_;
+  FlushPolicy flush_policy_;
   int bytes_written_backlog_;
   int bytes_written_;
   int bytes_read_;

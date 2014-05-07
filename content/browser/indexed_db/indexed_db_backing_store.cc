@@ -1972,7 +1972,8 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
             task_runner_, file_path, 0,
             fileapi::FileStreamWriter::CREATE_NEW_FILE));
     scoped_ptr<FileWriterDelegate> delegate(
-        new FileWriterDelegate(writer.Pass()));
+        new FileWriterDelegate(writer.Pass(),
+                               FileWriterDelegate::FLUSH_ON_COMPLETION));
 
     DCHECK(blob_url.is_valid());
     scoped_ptr<net::URLRequest> blob_request(request_context->CreateRequest(
