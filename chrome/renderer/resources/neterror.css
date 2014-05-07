@@ -2,6 +2,13 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+/*******************************************************************************
+ *
+ * Note:  This is also used by a file in chrome/browser/resources/ssl.  When
+ *        updating this file, make sure nothing in that directory regresses.
+ *
+ ******************************************************************************/
+
 body {
   background-color: #E6E6E6;
   font-family: Helvetica, Arial, sans-serif;
