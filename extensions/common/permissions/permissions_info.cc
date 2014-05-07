@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "extensions/common/extensions_client.h"
 
 namespace extensions {
 
@@ -20,8 +19,15 @@ PermissionsInfo* PermissionsInfo::GetInstance() {
   return g_permissions_info.Pointer();
 }
 
-PermissionsInfo::~PermissionsInfo() {
-  STLDeleteContainerPairSecondPointers(id_map_.begin(), id_map_.end());
+void PermissionsInfo::AddProvider(const PermissionsProvider& provider) {
+  std::vector<APIPermissionInfo*> permissions = provider.GetAllPermissions();
+  std::vector<PermissionsProvider::AliasInfo> aliases =
+      provider.GetAllAliases();
+
+  for (size_t i = 0; i < permissions.size(); ++i)
+    RegisterPermission(permissions[i]);
+  for (size_t i = 0; i < aliases.size(); ++i)
+    RegisterAlias(aliases[i].name, aliases[i].alias);
 }
 
 const APIPermissionInfo* PermissionsInfo::GetByID(
@@ -64,19 +70,10 @@ bool PermissionsInfo::HasChildPermissions(const std::string& name) const {
 PermissionsInfo::PermissionsInfo()
     : hosted_app_permission_count_(0),
       permission_count_(0) {
-  InitializeWithProvider(ExtensionsClient::Get()->GetPermissionsProvider());
 }
 
-void PermissionsInfo::InitializeWithProvider(
-    const PermissionsProvider& provider) {
-  std::vector<APIPermissionInfo*> permissions = provider.GetAllPermissions();
-  std::vector<PermissionsProvider::AliasInfo> aliases =
-      provider.GetAllAliases();
-
-  for (size_t i = 0; i < permissions.size(); ++i)
-    RegisterPermission(permissions[i]);
-  for (size_t i = 0; i < aliases.size(); ++i)
-    RegisterAlias(aliases[i].name, aliases[i].alias);
+PermissionsInfo::~PermissionsInfo() {
+  STLDeleteContainerPairSecondPointers(id_map_.begin(), id_map_.end());
 }
 
 void PermissionsInfo::RegisterAlias(

@@ -153,6 +153,8 @@
         'common/permissions/api_permission_set.cc',
         'common/permissions/api_permission_set.h',
         'common/permissions/base_set_operators.h',
+        'common/permissions/extensions_api_permissions.cc',
+        'common/permissions/extensions_api_permissions.h',
         'common/permissions/manifest_permission.cc',
         'common/permissions/manifest_permission.h',
         'common/permissions/manifest_permission_set.cc',

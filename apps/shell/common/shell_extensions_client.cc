@@ -5,6 +5,7 @@
 #include "apps/shell/common/shell_extensions_client.h"
 
 #include "apps/shell/common/api/generated_schemas.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/common/extensions/permissions/chrome_api_permissions.h"
@@ -19,6 +20,7 @@
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/permissions/permission_message_provider.h"
+#include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/permissions/permissions_provider.h"
 #include "extensions/common/url_pattern_set.h"
 #include "grit/app_shell_resources.h"
@@ -46,7 +48,7 @@ extensions::SimpleFeature* CreateFeature() {
 }
 
 // TODO(jamescook): Refactor ChromePermissionsMessageProvider so we can share
-// code.
+// code. For now, this implementation does nothing.
 class ShellPermissionMessageProvider
     : public extensions::PermissionMessageProvider {
  public:
@@ -85,9 +87,14 @@ class ShellPermissionMessageProvider
   DISALLOW_COPY_AND_ASSIGN(ShellPermissionMessageProvider);
 };
 
+base::LazyInstance<ShellPermissionMessageProvider>
+    g_permission_message_provider = LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
-ShellExtensionsClient::ShellExtensionsClient() {
+ShellExtensionsClient::ShellExtensionsClient()
+    : chrome_api_permissions_(extensions::ChromeAPIPermissions()),
+      extensions_api_permissions_(extensions::ExtensionsAPIPermissions()) {
 }
 
 ShellExtensionsClient::~ShellExtensionsClient() {
@@ -103,30 +110,17 @@ void ShellExtensionsClient::Initialize() {
 
   extensions::ManifestHandler::FinalizeRegistration();
   // TODO(jamescook): Do we need to whitelist any extensions?
-}
 
-const extensions::PermissionsProvider&
-ShellExtensionsClient::GetPermissionsProvider() const {
-  // TODO(jamescook): app_shell needs a way to use a subset of the Chrome
-  // extension Features and Permissions. In particular, the lists of Features
-  // (including API features, manifest features and permission features) are
-  // listed in JSON files from c/c/e/api that are included into Chrome's
-  // resources.pak (_api_features.json and _permission_features.json). The
-  // PermissionsProvider must match the set of permissions used by the features
-  // in those files.  We either need to make app_shell (and hence the extensions
-  // module) know about all possible permissions, or create a mechanism whereby
-  // we can build our own JSON files with only a subset of the data. For now,
-  // just provide all permissions Chrome knows about. Fixing this issue is
-  // http://crbug.com/339301
-  static extensions::ChromeAPIPermissions provider;
-  return provider;
+  extensions::PermissionsInfo::GetInstance()->AddProvider(
+      chrome_api_permissions_);
+  extensions::PermissionsInfo::GetInstance()->AddProvider(
+      extensions_api_permissions_);
 }
 
 const extensions::PermissionMessageProvider&
 ShellExtensionsClient::GetPermissionMessageProvider() const {
   NOTIMPLEMENTED();
-  static ShellPermissionMessageProvider provider;
-  return provider;
+  return g_permission_message_provider.Get();
 }
 
 scoped_ptr<FeatureProvider> ShellExtensionsClient::CreateFeatureProvider(

@@ -11,8 +11,9 @@ namespace extensions {
 
 class APIPermissionInfo;
 
-// The PermissionsProvider creates the APIPermissions instances. It is only
-// needed at startup time.
+// The PermissionsProvider creates APIPermissions instances. It is only
+// needed at startup time. Typically, ExtensionsClient will register
+// its PermissionsProviders with the global PermissionsInfo at startup.
 class PermissionsProvider {
  public:
   // An alias for a given permission |name|.

@@ -27,6 +27,7 @@
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/permission_message.h"
+#include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
@@ -56,7 +57,8 @@ static base::LazyInstance<ChromeExtensionsClient> g_client =
     LAZY_INSTANCE_INITIALIZER;
 
 ChromeExtensionsClient::ChromeExtensionsClient()
-    :  chrome_api_permissions_(ChromeAPIPermissions()) {
+    : chrome_api_permissions_(ChromeAPIPermissions()),
+      extensions_api_permissions_(ExtensionsAPIPermissions()) {
 }
 
 ChromeExtensionsClient::~ChromeExtensionsClient() {
@@ -71,6 +73,10 @@ void ChromeExtensionsClient::Initialize() {
     ManifestHandler::FinalizeRegistration();
   }
 
+  // Set up permissions.
+  PermissionsInfo::GetInstance()->AddProvider(chrome_api_permissions_);
+  PermissionsInfo::GetInstance()->AddProvider(extensions_api_permissions_);
+
   // Set up the scripting whitelist.
   // Whitelist ChromeVox, an accessibility extension from Google that needs
   // the ability to script webui pages. This is temporary and is not
@@ -84,11 +90,6 @@ void ChromeExtensionsClient::Initialize() {
   // online courses and will be needed while the online educational programs
   // are in place.
   scripting_whitelist_.push_back("angkfkebojeancgemegoedelbnjgcgme");
-}
-
-const PermissionsProvider&
-ChromeExtensionsClient::GetPermissionsProvider() const {
-  return chrome_api_permissions_;
 }
 
 const PermissionMessageProvider&

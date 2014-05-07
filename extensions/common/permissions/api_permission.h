@@ -322,17 +322,25 @@ class APIPermissionInfo {
  private:
   // Instances should only be constructed from within a PermissionsProvider.
   friend class ChromeAPIPermissions;
+  friend class ExtensionsAPIPermissions;
   // Implementations of APIPermission will want to get the permission message,
   // but this class's implementation should be hidden from everyone else.
   friend class APIPermission;
 
-  explicit APIPermissionInfo(
-      APIPermission::ID id,
-      const char* name,
-      int l10n_message_id,
-      PermissionMessage::ID message_id,
-      int flags,
-      APIPermissionConstructor api_permission_constructor);
+  // This exists to allow aggregate initialization, so that default values
+  // for flags, etc. can be omitted.
+  // TODO(yoz): Simplify the way initialization is done. APIPermissionInfo
+  // should be the simple data struct.
+  struct InitInfo {
+    APIPermission::ID id;
+    const char* name;
+    int flags;
+    int l10n_message_id;
+    PermissionMessage::ID message_id;
+    APIPermissionInfo::APIPermissionConstructor constructor;
+  };
+
+  explicit APIPermissionInfo(const InitInfo& info);
 
   // Returns the localized permission message associated with this api.
   // Use GetMessage_ to avoid name conflict with macro GetMessage on Windows.

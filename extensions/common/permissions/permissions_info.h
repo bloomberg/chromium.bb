@@ -24,7 +24,8 @@ class PermissionsInfo {
  public:
   static PermissionsInfo* GetInstance();
 
-  virtual ~PermissionsInfo();
+  // Initializes the permissions from the provider.
+  void AddProvider(const PermissionsProvider& provider);
 
   // Returns the permission with the given |id|, and NULL if it doesn't exist.
   const APIPermissionInfo* GetByID(APIPermission::ID id) const;
@@ -52,8 +53,7 @@ class PermissionsInfo {
 
   PermissionsInfo();
 
-  // Initializes the permissions from the provider.
-  void InitializeWithProvider(const PermissionsProvider& provider);
+  virtual ~PermissionsInfo();
 
   // Registers an |alias| for a given permission |name|.
   void RegisterAlias(const char* name, const char* alias);

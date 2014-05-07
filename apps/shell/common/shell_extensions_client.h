@@ -7,7 +7,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "extensions/common/extensions_client.h"
+#include "extensions/common/permissions/extensions_api_permissions.h"
 
 namespace apps {
 
@@ -19,8 +21,6 @@ class ShellExtensionsClient : public extensions::ExtensionsClient {
 
   // extensions::ExtensionsClient overrides:
   virtual void Initialize() OVERRIDE;
-  virtual const extensions::PermissionsProvider& GetPermissionsProvider() const
-      OVERRIDE;
   virtual const extensions::PermissionMessageProvider&
       GetPermissionMessageProvider() const OVERRIDE;
   virtual scoped_ptr<extensions::FeatureProvider> CreateFeatureProvider(
@@ -43,6 +43,10 @@ class ShellExtensionsClient : public extensions::ExtensionsClient {
   virtual bool ShouldSuppressFatalErrors() const OVERRIDE;
 
  private:
+  // TODO(yoz): Don't include Chrome permissions.
+  const extensions::ChromeAPIPermissions chrome_api_permissions_;
+  const extensions::ExtensionsAPIPermissions extensions_api_permissions_;
+
   ScriptingWhitelist scripting_whitelist_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellExtensionsClient);

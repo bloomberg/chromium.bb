@@ -11,6 +11,7 @@
 #include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
 #include "extensions/common/extensions_client.h"
+#include "extensions/common/permissions/extensions_api_permissions.h"
 
 namespace extensions {
 
@@ -23,7 +24,6 @@ class ChromeExtensionsClient : public ExtensionsClient {
 
   virtual void Initialize() OVERRIDE;
 
-  virtual const PermissionsProvider& GetPermissionsProvider() const OVERRIDE;
   virtual const PermissionMessageProvider& GetPermissionMessageProvider() const
       OVERRIDE;
   virtual scoped_ptr<FeatureProvider> CreateFeatureProvider(
@@ -50,6 +50,7 @@ class ChromeExtensionsClient : public ExtensionsClient {
 
  private:
   const ChromeAPIPermissions chrome_api_permissions_;
+  const ExtensionsAPIPermissions extensions_api_permissions_;
   const ChromePermissionMessageProvider permission_message_provider_;
 
   // A whitelist of extensions that can script anywhere. Do not add to this

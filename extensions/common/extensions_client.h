@@ -39,9 +39,6 @@ class ExtensionsClient {
   // in-process.
   virtual void Initialize() = 0;
 
-  // Returns a PermissionsProvider to initialize the permissions system.
-  virtual const PermissionsProvider& GetPermissionsProvider() const = 0;
-
   // Returns the global PermissionMessageProvider to use to provide permission
   // warning strings.
   virtual const PermissionMessageProvider& GetPermissionMessageProvider()
