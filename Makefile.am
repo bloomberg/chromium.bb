@@ -927,10 +927,10 @@ buffer_count_weston_LDADD = libtest-client.la $(EGL_TESTS_LIBS)
 endif
 
 if ENABLE_XWAYLAND_TEST
-weston_tests +=	xwayland.weston
-xwayland_weston_SOURCES = tests/xwayland-test.c
-xwayland_weston_CFLAGS = $(GCC_CFLAGS) $(XWAYLAND_TEST_CFLAGS)
-xwayland_weston_LDADD = libtest-client.la $(XWAYLAND_TEST_LIBS)
+weston_tests +=	xwayland-test.weston
+xwayland_test_weston_SOURCES = tests/xwayland-test.c
+xwayland_test_weston_CFLAGS = $(GCC_CFLAGS) $(XWAYLAND_TEST_CFLAGS)
+xwayland_test_weston_LDADD = libtest-client.la $(XWAYLAND_TEST_LIBS)
 endif
 
 matrix_test_SOURCES =				\
