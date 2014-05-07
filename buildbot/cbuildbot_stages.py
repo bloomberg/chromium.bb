@@ -2646,7 +2646,7 @@ class ChromeSDKStage(BoardSpecificBuilderStage, ArchivingStageMixin):
     self._VerifySDKEnvironment()
     sdk_cmd.Ninja()
 
-  def _TestDeploy(self, sdk_cmd, target_tc, toolchain_url):
+  def _TestDeploy(self, sdk_cmd):
     """Test SDK deployment."""
     with osutils.TempDir(prefix='chrome-sdk-stage') as tempdir:
       # Use the TOT deploy_chrome.
@@ -2654,8 +2654,7 @@ class ChromeSDKStage(BoardSpecificBuilderStage, ArchivingStageMixin):
           self._build_root, constants.CHROMITE_BIN_SUBDIR, 'deploy_chrome')
       sdk_cmd.Run([script_path, '--build-dir',
                    os.path.join(self.out_board_dir, 'Release'),
-                   '--staging-only', '--staging-dir', tempdir,
-                   '--target-tc', target_tc, '--toolchain-url', toolchain_url])
+                   '--staging-only', '--staging-dir', tempdir])
       self._VerifyChromeDeployed(tempdir)
 
   def _GenerateAndUploadMetadata(self):
@@ -2663,9 +2662,6 @@ class ChromeSDKStage(BoardSpecificBuilderStage, ArchivingStageMixin):
                         filename=constants.PARTIAL_METADATA_JSON)
 
   def PerformStage(self):
-    metadata = self._run.attrs.metadata.GetDict()
-    target_tc = metadata['toolchain-tuple'][0]
-    toolchain_url = metadata['toolchain-url']
     if platform.dist()[-1] == 'lucid':
       # Chrome no longer builds on Lucid. See crbug.com/276311
       print 'Ubuntu lucid is no longer supported.'
@@ -2686,11 +2682,9 @@ class ChromeSDKStage(BoardSpecificBuilderStage, ArchivingStageMixin):
           sdk_cmd = commands.ChromeSDK(
               self._build_root, self._current_board, chrome_src=self.chrome_src,
               goma=self._run.config.chrome_sdk_goma,
-              extra_args=extra_args, cache_dir=cache_dir,
-              target_tc=target_tc,
-              toolchain_url=toolchain_url)
+              extra_args=extra_args, cache_dir=cache_dir)
           self._BuildChrome(sdk_cmd)
-          self._TestDeploy(sdk_cmd, target_tc, toolchain_url)
+          self._TestDeploy(sdk_cmd)
 
 
 class BuildImageStage(BuildPackagesStage):
