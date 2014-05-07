@@ -17,6 +17,7 @@
   ],
   "externally_connectable": {
     "matches": [
+      "https://login.corp.google.com/*",
       "https://accounts.google.com/*",
       "https://security.google.com/*"
     ],
