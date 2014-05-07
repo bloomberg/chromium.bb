@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/debug/trace_event.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "content/public/browser/tracing_controller.h"
 #include "jni/TracingControllerAndroid_jni.h"
@@ -74,6 +75,31 @@ void TracingControllerAndroid::OnTracingStopped(
   base::android::ScopedJavaLocalRef<jobject> obj = weak_java_object_.get(env);
   if (obj.obj())
     Java_TracingControllerAndroid_onTracingStopped(env, obj.obj());
+}
+
+bool TracingControllerAndroid::GetKnownCategoryGroupsAsync(JNIEnv* env,
+                                                           jobject obj) {
+  if (!TracingController::GetInstance()->GetCategories(
+          base::Bind(&TracingControllerAndroid::OnKnownCategoriesReceived,
+                     weak_factory_.GetWeakPtr()))) {
+    return false;
+  }
+  return true;
+}
+
+void TracingControllerAndroid::OnKnownCategoriesReceived(
+    const std::set<std::string>& categories_received) {
+  scoped_ptr<base::ListValue> category_list(new base::ListValue());
+  for (std::set<std::string>::const_iterator it = categories_received.begin();
+       it != categories_received.end();
+       ++it) {
+    category_list->AppendString(*it);
+  }
+  std::string received_category_list;
+  base::JSONWriter::Write(category_list.get(), &received_category_list);
+
+  // This log is required by adb_profile_chrome.py.
+  LOG(WARNING) << "{\"traceCategoriesList\": " << received_category_list << "}";
 }
 
 static jstring GetDefaultCategories(JNIEnv* env, jobject obj) {

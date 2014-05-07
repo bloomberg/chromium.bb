@@ -5,6 +5,7 @@
 # found in the LICENSE file.
 
 import gzip
+import json
 import logging
 import optparse
 import os
@@ -52,6 +53,28 @@ class ChromeTracingController(object):
 
   def __str__(self):
     return 'chrome trace'
+
+  @staticmethod
+  def GetCategories(device, package_info):
+    device.old_interface.BroadcastIntent(
+        package_info.package, 'GPU_PROFILER_LIST_CATEGORIES')
+    try:
+      json_category_list = device.old_interface.WaitForLogMatch(
+          re.compile(r'{"traceCategoriesList(.*)'), None, timeout=5).group(0)
+    except pexpect.TIMEOUT:
+      raise RuntimeError('Performance trace category list marker not found. '
+                         'Is the correct version of the browser running?')
+
+    record_categories = []
+    disabled_by_default_categories = []
+    json_data = json.loads(json_category_list)['traceCategoriesList']
+    for item in json_data:
+      if item.startswith('disabled-by-default'):
+        disabled_by_default_categories.append(item)
+      else:
+        record_categories.append(item)
+
+    return record_categories, disabled_by_default_categories
 
   def StartTracing(self, interval):
     self._trace_interval = interval
@@ -324,7 +347,8 @@ def main():
                         'categories with comma-delimited wildcards, '
                         'e.g., "*", "cat1*,-cat1a". Omit this option to trace '
                         'Chrome\'s default categories. Chrome tracing can be '
-                        'disabled with "--categories=\'\'".',
+                        'disabled with "--categories=\'\'". Use "list" to see '
+                        'the available categories.',
                         metavar='CHROME_CATEGORIES', dest='chrome_categories',
                         default=_DEFAULT_CHROME_CATEGORIES)
   categories.add_option('-s', '--systrace', help='Capture a systrace with the '
@@ -383,6 +407,25 @@ When in doubt, just try out --trace-frame-viewer.
   if len(devices) != 1:
     parser.error('Exactly 1 device much be attached.')
   device = device_utils.DeviceUtils(devices[0])
+  package_info = _GetSupportedBrowsers()[options.browser]
+
+  if options.chrome_categories in ['list', 'help']:
+    _PrintMessage('Collecting record categories list...', eol='')
+    record_categories = []
+    disabled_by_default_categories = []
+    record_categories, disabled_by_default_categories = \
+        ChromeTracingController.GetCategories(device, package_info)
+
+    _PrintMessage('done')
+    _PrintMessage('Record Categories:')
+    _PrintMessage('\n'.join('\t%s' % item \
+        for item in sorted(record_categories)))
+
+    _PrintMessage('\nDisabled by Default Categories:')
+    _PrintMessage('\n'.join('\t%s' % item \
+        for item in sorted(disabled_by_default_categories)))
+
+    return 0
 
   if options.systrace_categories in ['list', 'help']:
     _PrintMessage('\n'.join(SystraceController.GetCategories(device)))
@@ -394,7 +437,6 @@ When in doubt, just try out --trace-frame-viewer.
 
   chrome_categories = _ComputeChromeCategories(options)
   systrace_categories = _ComputeSystraceCategories(options)
-  package_info = _GetSupportedBrowsers()[options.browser]
 
   if chrome_categories and 'webview' in systrace_categories:
     logging.warning('Using the "webview" category in systrace together with '

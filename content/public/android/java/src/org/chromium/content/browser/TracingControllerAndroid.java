@@ -46,6 +46,7 @@ public class TracingControllerAndroid {
 
     private static final String ACTION_START = "GPU_PROFILER_START";
     private static final String ACTION_STOP = "GPU_PROFILER_STOP";
+    private static final String ACTION_LIST_CATEGORIES = "GPU_PROFILER_LIST_CATEGORIES";
     private static final String FILE_EXTRA = "file";
     private static final String CATEGORIES_EXTRA = "categories";
     private static final String RECORD_CONTINUOUSLY_EXTRA = "continuous";
@@ -152,6 +153,12 @@ public class TracingControllerAndroid {
         return startTracing(filePath, showToasts, categories, recordContinuously);
     }
 
+    private void initializeNativeControllerIfNeeded() {
+        if (mNativeTracingControllerAndroid == 0) {
+            mNativeTracingControllerAndroid = nativeInit();
+        }
+    }
+
     /**
      * Start profiling to the specified file. Returns true on success.
      *
@@ -177,9 +184,7 @@ public class TracingControllerAndroid {
             return false;
         }
         // Lazy initialize the native side, to allow construction before the library is loaded.
-        if (mNativeTracingControllerAndroid == 0) {
-            mNativeTracingControllerAndroid = nativeInit();
-        }
+        initializeNativeControllerIfNeeded();
         if (!nativeStartTracing(mNativeTracingControllerAndroid, categories,
                 recordContinuously)) {
             logAndToastError(mContext.getString(R.string.profiler_error_toast));
@@ -218,6 +223,17 @@ public class TracingControllerAndroid {
         mFilename = null;
     }
 
+    /**
+     * Get known category groups.
+     */
+    public void getCategoryGroups() {
+        // Lazy initialize the native side, to allow construction before the library is loaded.
+        initializeNativeControllerIfNeeded();
+        if (!nativeGetKnownCategoryGroupsAsync(mNativeTracingControllerAndroid)) {
+            Log.e(TAG, "Unable to fetch tracing record groups list.");
+        }
+    }
+
     @Override
     protected void finalize() {
         if (mNativeTracingControllerAndroid != 0) {
@@ -240,6 +256,7 @@ public class TracingControllerAndroid {
         TracingIntentFilter(Context context) {
             addAction(context.getPackageName() + "." + ACTION_START);
             addAction(context.getPackageName() + "." + ACTION_STOP);
+            addAction(context.getPackageName() + "." + ACTION_LIST_CATEGORIES);
         }
     }
 
@@ -264,6 +281,8 @@ public class TracingControllerAndroid {
                 }
             } else if (intent.getAction().endsWith(ACTION_STOP)) {
                 stopTracing();
+            } else if (intent.getAction().endsWith(ACTION_LIST_CATEGORIES)) {
+                getCategoryGroups();
             } else {
                 Log.e(TAG, "Unexpected intent: " + intent);
             }
@@ -276,5 +295,6 @@ public class TracingControllerAndroid {
     private native boolean nativeStartTracing(
             long nativeTracingControllerAndroid, String categories, boolean recordContinuously);
     private native void nativeStopTracing(long nativeTracingControllerAndroid, String filename);
+    private native boolean nativeGetKnownCategoryGroupsAsync(long nativeTracingControllerAndroid);
     private native String nativeGetDefaultCategories();
 }
