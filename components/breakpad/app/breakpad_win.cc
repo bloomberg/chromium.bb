@@ -25,6 +25,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "base/win/metro.h"
 #include "base/win/pe_image.h"
 #include "base/win/registry.h"
@@ -86,13 +87,16 @@ typedef NTSTATUS (WINAPI* NtTerminateProcessPtr)(HANDLE ProcessHandle,
                                                  NTSTATUS ExitStatus);
 char* g_real_terminate_process_stub = NULL;
 
-static size_t g_dynamic_keys_offset = 0;
+base::Lock* g_dynamic_entries_lock = NULL;
+// Under *g_dynamic_entries_lock.
+size_t g_dynamic_keys_offset = 0;
 typedef std::map<std::wstring, google_breakpad::CustomInfoEntry*>
     DynamicEntriesMap;
+// Under *g_dynamic_entries_lock.
 DynamicEntriesMap* g_dynamic_entries = NULL;
-// Allow for 128 entries. POSIX uses 64 entries of 256 bytes, so Windows needs
-// 256 entries of 64 bytes to match. See CustomInfoEntry::kValueMaxLength in
-// Breakpad.
+
+// Allow for 256 dynamic entries in addition to the fixed set of entries
+// set up in this file.
 const size_t kMaxDynamicEntries = 256;
 
 // Maximum length for plugin path to include in plugin crash reports.
@@ -149,32 +153,6 @@ extern "C" HANDLE __declspec(dllexport) __cdecl
 InjectDumpForHangDebugging(HANDLE process) {
   return CreateRemoteThread(process, NULL, 0, DumpForHangDebuggingThread,
                             0, 0, NULL);
-}
-
-extern "C" void DumpProcessAbnormalSignature() {
-  if (!g_breakpad)
-    return;
-  g_custom_entries->push_back(
-      google_breakpad::CustomInfoEntry(L"unusual-crash-signature", L""));
-  g_breakpad->WriteMinidump();
-}
-
-// Reduces the size of the string |str| to a max of 64 chars. Required because
-// breakpad's CustomInfoEntry raises an invalid_parameter error if the string
-// we want to set is longer.
-std::wstring TrimToBreakpadMax(const std::wstring& str) {
-  std::wstring shorter(str);
-  return shorter.substr(0,
-      google_breakpad::CustomInfoEntry::kValueMaxLength - 1);
-}
-
-static void SetIntegerValue(size_t offset, int value) {
-  if (!g_custom_entries)
-    return;
-
-  base::wcslcpy((*g_custom_entries)[offset].value,
-                base::StringPrintf(L"%d", value).c_str(),
-                google_breakpad::CustomInfoEntry::kValueMaxLength);
 }
 
 // Appends the plugin path to |g_custom_entries|.
@@ -318,6 +296,8 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
     g_custom_entries->push_back(
         google_breakpad::CustomInfoEntry(L"unspecified-crash-key", L""));
   }
+
+  g_dynamic_entries_lock = new base::Lock;
   g_dynamic_entries = new DynamicEntriesMap;
 
   static google_breakpad::CustomClientInfo custom_client_info;
@@ -436,6 +416,9 @@ extern "C" void __declspec(dllexport) __cdecl SetCrashKeyValueImpl(
   // If we already have a value for this key, update it; otherwise, insert
   // the new value if we have not exhausted the pre-allocated slots for dynamic
   // entries.
+  DCHECK(g_dynamic_entries_lock);
+  base::AutoLock lock(*g_dynamic_entries_lock);
+
   DynamicEntriesMap::iterator it = g_dynamic_entries->find(safe_key);
   google_breakpad::CustomInfoEntry* entry = NULL;
   if (it == g_dynamic_entries->end()) {
@@ -455,6 +438,9 @@ extern "C" void __declspec(dllexport) __cdecl ClearCrashKeyValueImpl(
   if (!g_dynamic_entries)
     return;
 
+  DCHECK(g_dynamic_entries_lock);
+  base::AutoLock lock(*g_dynamic_entries_lock);
+
   std::wstring key_string(key);
   DynamicEntriesMap::iterator it = g_dynamic_entries->find(key_string);
   if (it == g_dynamic_entries->end())
@@ -465,8 +451,8 @@ extern "C" void __declspec(dllexport) __cdecl ClearCrashKeyValueImpl(
 
 }  // namespace
 
-bool WrapMessageBoxWithSEH(const wchar_t* text, const wchar_t* caption,
-                           UINT flags, bool* exit_now) {
+static bool WrapMessageBoxWithSEH(const wchar_t* text, const wchar_t* caption,
+                                  UINT flags, bool* exit_now) {
   // We wrap the call to MessageBoxW with a SEH handler because it some
   // machines with CursorXP, PeaDict or with FontExplorer installed it crashes
   // uncontrollably here. Being this a best effort deal we better go away.
@@ -534,8 +520,8 @@ extern "C" int __declspec(dllexport) CrashForException(
   return EXCEPTION_CONTINUE_SEARCH;
 }
 
-NTSTATUS WINAPI HookNtTerminateProcess(HANDLE ProcessHandle,
-                                       NTSTATUS ExitStatus) {
+static NTSTATUS WINAPI HookNtTerminateProcess(HANDLE ProcessHandle,
+                                              NTSTATUS ExitStatus) {
   if (g_breakpad &&
       (ProcessHandle == ::GetCurrentProcess() || ProcessHandle == NULL)) {
     NT_TIB* tib = reinterpret_cast<NT_TIB*>(NtCurrentTeb());
