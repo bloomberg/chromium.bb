@@ -57,9 +57,10 @@ void SuggestionsSource::StartDataRequest(
   SuggestionsService* suggestions_service(
       suggestions_service_factory->GetForProfile(profile_));
 
-  // If SuggestionsService is unavailable, then SuggestionsSource should not
-  // have been instantiated in the first place.
-  DCHECK(suggestions_service != NULL);
+  if (!suggestions_service) {
+    callback.Run(NULL);
+    return;
+  }
 
   suggestions_service->FetchSuggestionsData(
       base::Bind(&SuggestionsSource::OnSuggestionsAvailable,

@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_NTP_THUMBNAIL_LIST_SOURCE_H_
-#define CHROME_BROWSER_UI_WEBUI_NTP_THUMBNAIL_LIST_SOURCE_H_
+#ifndef CHROME_BROWSER_THUMBNAILS_THUMBNAIL_LIST_SOURCE_H_
+#define CHROME_BROWSER_THUMBNAILS_THUMBNAIL_LIST_SOURCE_H_
 
 #include <string>
 
@@ -43,6 +43,7 @@ class ThumbnailListSource : public content::URLDataSource {
       const std::string& path) const OVERRIDE;
   virtual bool ShouldServiceRequest(
       const net::URLRequest* request) const OVERRIDE;
+  virtual bool ShouldReplaceExistingSource() const OVERRIDE;
 
  private:
   virtual ~ThumbnailListSource();
@@ -64,4 +65,4 @@ class ThumbnailListSource : public content::URLDataSource {
 };
 
 
-#endif  // CHROME_BROWSER_UI_WEBUI_NTP_THUMBNAIL_LIST_SOURCE_H_
+#endif  // CHROME_BROWSER_THUMBNAILS_THUMBNAIL_LIST_SOURCE_H_

@@ -2485,6 +2485,8 @@
         'browser/thumbnails/content_based_thumbnailing_algorithm.h',
         'browser/thumbnails/simple_thumbnail_crop.cc',
         'browser/thumbnails/simple_thumbnail_crop.h',
+        'browser/thumbnails/thumbnail_list_source.cc',
+        'browser/thumbnails/thumbnail_list_source.h',
         'browser/thumbnails/thumbnail_service.h',
         'browser/thumbnails/thumbnail_service_factory.cc',
         'browser/thumbnails/thumbnail_service_factory.h',

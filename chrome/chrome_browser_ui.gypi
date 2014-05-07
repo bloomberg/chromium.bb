@@ -2226,8 +2226,6 @@
         'browser/ui/webui/ntp/suggestions_source.h',
         'browser/ui/webui/ntp/suggestions_source_top_sites.cc',
         'browser/ui/webui/ntp/suggestions_source_top_sites.h',
-        'browser/ui/webui/ntp/thumbnail_list_source.cc',
-        'browser/ui/webui/ntp/thumbnail_list_source.h',
         'browser/ui/webui/ntp/thumbnail_source.cc',
         'browser/ui/webui/ntp/thumbnail_source.h',
         'browser/ui/webui/omnibox/omnibox_ui.cc',

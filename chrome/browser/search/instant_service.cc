@@ -20,7 +20,6 @@
 #include "chrome/browser/search/local_ntp_source.h"
 #include "chrome/browser/search/most_visited_iframe_source.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/search/suggestions/suggestions_service.h"
 #include "chrome/browser/search/suggestions/suggestions_source.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -28,8 +27,8 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/thumbnails/thumbnail_list_source.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
-#include "chrome/browser/ui/webui/ntp/thumbnail_list_source.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/pref_names.h"
@@ -121,10 +120,8 @@ InstantService::InstantService(Profile* profile)
       profile_, new FaviconSource(profile_, FaviconSource::FAVICON));
   content::URLDataSource::Add(profile_, new LocalNtpSource(profile_));
   content::URLDataSource::Add(profile_, new MostVisitedIframeSource());
-  if (suggestions::SuggestionsService::IsEnabled()) {
-    content::URLDataSource::Add(
-        profile_, new suggestions::SuggestionsSource(profile_));
-  }
+  content::URLDataSource::Add(
+      profile_, new suggestions::SuggestionsSource(profile_));
 
   profile_pref_registrar_.Init(profile_->GetPrefs());
   profile_pref_registrar_.Add(

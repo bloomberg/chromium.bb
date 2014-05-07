@@ -17,8 +17,11 @@
 #include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
 #include "chrome/browser/search/suggestions/suggestions_service.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
+#include "chrome/browser/search/suggestions/suggestions_source.h"
+#include "chrome/browser/thumbnails/thumbnail_list_source.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/url_data_source.h"
 #include "jni/MostVisitedSites_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -124,6 +127,11 @@ void GetUrlThumbnailTask(
 
 MostVisitedSites::MostVisitedSites(Profile* profile)
     : profile_(profile), num_sites_(0), weak_ptr_factory_(this) {
+  // Register the debugging page for the Suggestions Service and the thumbnails
+  // debugging page.
+  content::URLDataSource::Add(profile_,
+                              new suggestions::SuggestionsSource(profile_));
+  content::URLDataSource::Add(profile_, new ThumbnailListSource(profile_));
 }
 
 MostVisitedSites::~MostVisitedSites() {
