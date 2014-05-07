@@ -154,6 +154,8 @@ bool ToAudioSenderConfig(const CastRtpParams& params,
   config->incoming_feedback_ssrc = params.payload.feedback_ssrc;
   config->rtp_config.payload_type = params.payload.payload_type;
   config->rtp_config.max_delay_ms = params.payload.max_latency_ms;
+  config->rtp_config.aes_key = params.payload.aes_key;
+  config->rtp_config.aes_iv_mask = params.payload.aes_iv_mask;
   config->use_external_encoder = false;
   config->frequency = params.payload.clock_rate;
   config->channels = params.payload.channels;
@@ -172,6 +174,8 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
   config->incoming_feedback_ssrc = params.payload.feedback_ssrc;
   config->rtp_config.payload_type = params.payload.payload_type;
   config->rtp_config.max_delay_ms = params.payload.max_latency_ms;
+  config->rtp_config.aes_key = params.payload.aes_key;
+  config->rtp_config.aes_iv_mask = params.payload.aes_iv_mask;
   config->use_external_encoder = false;
   config->width = params.payload.width;
   config->height = params.payload.height;

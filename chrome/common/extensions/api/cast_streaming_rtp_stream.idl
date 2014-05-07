@@ -48,10 +48,10 @@ namespace cast.streaming.rtpStream {
     // Video height in pixels.
     long? height;
 
-    // 16 bytes AES key encoded in Base64.
+    // 32 bytes hex-encoded AES key.
     DOMString? aesKey;
 
-    // 16 bytes AES IV (Initialization vector) mask encoded in Base64.
+    // 32 bytes hex-encoded AES IV (Initialization vector) mask.
     DOMString? aesIvMask;
 
     // A list of codec specific params.
