@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_COMMON_URL_CONSTANTS_H_
 
 #include "content/common/content_export.h"
+#include "url/url_constants.h"
 
 // Contains constants for known URLs and portions thereof.
 
@@ -23,8 +24,6 @@ CONTENT_EXPORT extern const char kFileScheme[];
 CONTENT_EXPORT extern const char kFileSystemScheme[];
 CONTENT_EXPORT extern const char kFtpScheme[];
 CONTENT_EXPORT extern const char kGuestScheme[];
-CONTENT_EXPORT extern const char kHttpScheme[];
-CONTENT_EXPORT extern const char kHttpsScheme[];
 CONTENT_EXPORT extern const char kJavaScriptScheme[];
 CONTENT_EXPORT extern const char kMailToScheme[];
 CONTENT_EXPORT extern const char kMetadataScheme[];

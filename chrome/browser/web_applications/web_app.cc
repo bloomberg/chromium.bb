@@ -442,8 +442,8 @@ bool IsValidUrl(const GURL& url) {
       content::kFileScheme,
       content::kFileSystemScheme,
       content::kFtpScheme,
-      content::kHttpScheme,
-      content::kHttpsScheme,
+      url::kHttpScheme,
+      url::kHttpsScheme,
       extensions::kExtensionScheme,
   };
 

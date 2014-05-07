@@ -55,7 +55,7 @@ base::string16 GenerateKeywordFromNavigationEntry(
   // If we relax the path constraint, we need to be sure to sanitize the path
   // elements and update AutocompletePopup to look for keywords using the path.
   // See http://b/issue?id=863583.
-  if (!url.SchemeIs(content::kHttpScheme) || (url.path().length() > 1))
+  if (!url.SchemeIs(url::kHttpScheme) || (url.path().length() > 1))
     return base::string16();
 
   return TemplateURLService::GenerateKeyword(url);

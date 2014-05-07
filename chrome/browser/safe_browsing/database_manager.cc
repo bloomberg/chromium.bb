@@ -222,8 +222,8 @@ SafeBrowsingDatabaseManager::~SafeBrowsingDatabaseManager() {
 
 bool SafeBrowsingDatabaseManager::CanCheckUrl(const GURL& url) const {
   return url.SchemeIs(content::kFtpScheme) ||
-         url.SchemeIs(content::kHttpScheme) ||
-         url.SchemeIs(content::kHttpsScheme);
+         url.SchemeIs(url::kHttpScheme) ||
+         url.SchemeIs(url::kHttpsScheme);
 }
 
 bool SafeBrowsingDatabaseManager::CheckDownloadUrl(

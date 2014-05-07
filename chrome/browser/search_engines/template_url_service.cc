@@ -518,9 +518,9 @@ base::string16 TemplateURLService::CleanUserInputKeyword(
     // type a web address, but rather an FTP, file:, or other scheme URL, or a
     // search query with some sort of initial operator (e.g. "site:").
     if (result.compare(0, scheme_component.end(),
-                       base::ASCIIToUTF16(content::kHttpScheme)) &&
+                       base::ASCIIToUTF16(url::kHttpScheme)) &&
         result.compare(0, scheme_component.end(),
-                       base::ASCIIToUTF16(content::kHttpsScheme)))
+                       base::ASCIIToUTF16(url::kHttpsScheme)))
       return base::string16();
 
     // Include trailing ':'.

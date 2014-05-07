@@ -90,7 +90,7 @@ bool WebserviceSearchProvider::IsSensitiveInput(const base::string16& query) {
   // Don't send anything for https except the hostname. Hostnames are OK
   // because they are visible when the TCP connection is established, but the
   // specific path may reveal private information.
-  if (LowerCaseEqualsASCII(query_as_url.scheme(), content::kHttpsScheme) &&
+  if (LowerCaseEqualsASCII(query_as_url.scheme(), url::kHttpsScheme) &&
       !query_as_url.path().empty() && query_as_url.path() != "/") {
     return true;
   }

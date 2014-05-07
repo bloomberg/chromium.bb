@@ -72,8 +72,8 @@ bool HasWebRequestScheme(const GURL& url) {
           url.SchemeIs(content::kFileScheme) ||
           url.SchemeIs(content::kFileSystemScheme) ||
           url.SchemeIs(content::kFtpScheme) ||
-          url.SchemeIs(content::kHttpScheme) ||
-          url.SchemeIs(content::kHttpsScheme) ||
+          url.SchemeIs(url::kHttpScheme) ||
+          url.SchemeIs(url::kHttpsScheme) ||
           url.SchemeIs(extensions::kExtensionScheme));
 }
 

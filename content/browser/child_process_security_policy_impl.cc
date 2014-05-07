@@ -308,8 +308,8 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
 
 ChildProcessSecurityPolicyImpl::ChildProcessSecurityPolicyImpl() {
   // We know about these schemes and believe them to be safe.
-  RegisterWebSafeScheme(kHttpScheme);
-  RegisterWebSafeScheme(kHttpsScheme);
+  RegisterWebSafeScheme(url::kHttpScheme);
+  RegisterWebSafeScheme(url::kHttpsScheme);
   RegisterWebSafeScheme(kFtpScheme);
   RegisterWebSafeScheme(kDataScheme);
   RegisterWebSafeScheme("feed");

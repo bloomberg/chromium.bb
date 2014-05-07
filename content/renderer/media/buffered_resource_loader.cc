@@ -389,7 +389,7 @@ void BufferedResourceLoader::didReceiveResponse(
   // received a response from HTTP/HTTPS protocol or the request was
   // successful (in particular range request). So we only verify the partial
   // response for HTTP and HTTPS protocol.
-  if (url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme)) {
+  if (url_.SchemeIs(url::kHttpScheme) || url_.SchemeIs(url::kHttpsScheme)) {
     bool partial_response = (response.httpStatusCode() == kHttpPartialContent);
     bool ok_response = (response.httpStatusCode() == kHttpOK);
 

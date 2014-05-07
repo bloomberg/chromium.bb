@@ -109,7 +109,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     }
 
     // For phishing we only classify HTTP pages.
-    if (!params_.url.SchemeIs(content::kHttpScheme)) {
+    if (!params_.url.SchemeIs(url::kHttpScheme)) {
       VLOG(1) << "Skipping phishing classification for URL: " << params_.url
               << " because it is not HTTP: "
               << params_.socket_address.host();

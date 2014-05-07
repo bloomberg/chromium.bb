@@ -424,7 +424,7 @@ std::string SegmentURLInternal(std::string* text, url::Parsed* parts) {
       // Couldn't determine the scheme, so just pick one.
       parts->scheme.reset();
       scheme = StartsWithASCII(*text, "ftp.", false) ?
-          content::kFtpScheme : content::kHttpScheme;
+          content::kFtpScheme : url::kHttpScheme;
     }
   }
 

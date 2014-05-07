@@ -96,8 +96,8 @@ bool AwContentRendererClient::HandleNavigation(
   // For HTTP schemes, only top-level navigations can be overridden. Similarly,
   // WebView Classic lets app override only top level about:blank navigations.
   // So we filter out non-top about:blank navigations here.
-  if (frame->parent() && (gurl.SchemeIs(content::kHttpScheme) ||
-                          gurl.SchemeIs(content::kHttpsScheme) ||
+  if (frame->parent() && (gurl.SchemeIs(url::kHttpScheme) ||
+                          gurl.SchemeIs(url::kHttpsScheme) ||
                           gurl.SchemeIs(content::kAboutScheme)))
     return false;
 

@@ -405,8 +405,8 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
       !is_keyword_generated) {
     const GURL& origin_url(has_redirects ?
         request.redirects[0] : request.url);
-    if (origin_url.SchemeIs(content::kHttpScheme) ||
-        origin_url.SchemeIs(content::kHttpsScheme) ||
+    if (origin_url.SchemeIs(url::kHttpScheme) ||
+        origin_url.SchemeIs(url::kHttpsScheme) ||
         origin_url.SchemeIs(content::kFtpScheme)) {
       std::string host(origin_url.host());
       size_t registry_length =

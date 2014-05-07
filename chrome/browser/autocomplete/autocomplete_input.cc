@@ -175,8 +175,8 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   // (e.g. "ftp" or "view-source") but I'll wait to spend the effort on that
   // until I run into some cases that really need it.
   if (parts->scheme.is_nonempty() &&
-      !LowerCaseEqualsASCII(parsed_scheme, content::kHttpScheme) &&
-      !LowerCaseEqualsASCII(parsed_scheme, content::kHttpsScheme)) {
+      !LowerCaseEqualsASCII(parsed_scheme, url::kHttpScheme) &&
+      !LowerCaseEqualsASCII(parsed_scheme, url::kHttpsScheme)) {
     // See if we know how to handle the URL internally.  There are some schemes
     // that we convert to other things before they reach the renderer or else
     // the renderer handles internally without reaching the net::URLRequest
@@ -213,7 +213,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
         // We don't know about this scheme.  It might be that the user typed a
         // URL of the form "username:password@foo.com".
         const base::string16 http_scheme_prefix =
-            base::ASCIIToUTF16(std::string(content::kHttpScheme) +
+            base::ASCIIToUTF16(std::string(url::kHttpScheme) +
                                content::kStandardSchemeSeparator);
         url::Parsed http_parts;
         base::string16 http_scheme;
@@ -221,7 +221,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
         Type http_type = Parse(http_scheme_prefix + text, desired_tld,
                                &http_parts, &http_scheme,
                                &http_canonicalized_url);
-        DCHECK_EQ(std::string(content::kHttpScheme),
+        DCHECK_EQ(std::string(url::kHttpScheme),
                   base::UTF16ToUTF8(http_scheme));
 
         if ((http_type == URL) && http_parts.username.is_nonempty() &&
@@ -504,7 +504,7 @@ bool AutocompleteInput::HasHTTPScheme(const base::string16& input) {
                                 &scheme)) {
     utf8_input.erase(0, scheme.end() + 1);
   }
-  return url::FindAndCompareScheme(utf8_input, content::kHttpScheme, NULL);
+  return url::FindAndCompareScheme(utf8_input, url::kHttpScheme, NULL);
 }
 
 void AutocompleteInput::UpdateText(const base::string16& text,

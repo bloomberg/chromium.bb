@@ -204,7 +204,7 @@ class TransferHttpsRedirectsContentBrowserClient
       content::ResourceContext* resource_context,
       const GURL& current_url,
       const GURL& new_url) OVERRIDE {
-    return new_url.SchemeIs(content::kHttpsScheme);
+    return new_url.SchemeIs(url::kHttpsScheme);
   }
 };
 
@@ -1119,7 +1119,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttp) {
 
   ASSERT_TRUE(test_server()->Start());
   GURL http_url(test_server()->GetURL(std::string()));
-  ASSERT_TRUE(http_url.SchemeIs(content::kHttpScheme));
+  ASSERT_TRUE(http_url.SchemeIs(url::kHttpScheme));
   ui_test_utils::NavigateToURL(browser(), http_url);
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
 }
@@ -1133,7 +1133,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttps) {
                                      base::FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
   GURL https_url(test_server.GetURL("/"));
-  ASSERT_TRUE(https_url.SchemeIs(content::kHttpsScheme));
+  ASSERT_TRUE(https_url.SchemeIs(url::kHttpsScheme));
   ui_test_utils::NavigateToURL(browser(), https_url);
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
 }
@@ -1179,7 +1179,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutInvalid) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ConvertTabToAppShortcut) {
   ASSERT_TRUE(test_server()->Start());
   GURL http_url(test_server()->GetURL(std::string()));
-  ASSERT_TRUE(http_url.SchemeIs(content::kHttpScheme));
+  ASSERT_TRUE(http_url.SchemeIs(url::kHttpScheme));
 
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
   WebContents* initial_tab = browser()->tab_strip_model()->GetWebContentsAt(0);

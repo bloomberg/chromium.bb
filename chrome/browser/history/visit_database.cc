@@ -490,8 +490,8 @@ bool VisitDatabase::GetRedirectToVisit(VisitID to_visit,
 bool VisitDatabase::GetVisibleVisitCountToHost(const GURL& url,
                                                int* count,
                                                base::Time* first_visit) {
-  if (!url.SchemeIs(content::kHttpScheme) &&
-      !url.SchemeIs(content::kHttpsScheme))
+  if (!url.SchemeIs(url::kHttpScheme) &&
+      !url.SchemeIs(url::kHttpsScheme))
     return false;
 
   // We need to search for URLs with a matching host/port. One way to query for

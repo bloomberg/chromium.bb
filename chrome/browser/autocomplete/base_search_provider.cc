@@ -542,7 +542,7 @@ bool BaseSearchProvider::ZeroSuggestEnabled(
 
   // Make sure we are sending the suggest request through HTTPS to prevent
   // exposing the current page URL or personalized results without encryption.
-  if (!suggest_url.SchemeIs(content::kHttpsScheme))
+  if (!suggest_url.SchemeIs(url::kHttpsScheme))
     return false;
 
   // Don't show zero suggest on the NTP.
@@ -589,8 +589,8 @@ bool BaseSearchProvider::CanSendURL(
 
   // Only allow HTTP URLs or HTTPS URLs for the same domain as the search
   // provider.
-  if ((current_page_url.scheme() != content::kHttpScheme) &&
-      ((current_page_url.scheme() != content::kHttpsScheme) ||
+  if ((current_page_url.scheme() != url::kHttpScheme) &&
+      ((current_page_url.scheme() != url::kHttpsScheme) ||
        !net::registry_controlled_domains::SameDomainOrHost(
            current_page_url, suggest_url,
            net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES)))

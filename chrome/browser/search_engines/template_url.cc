@@ -835,7 +835,7 @@ std::string TemplateURLRef::HandleReplacements(
           search_terms_args_without_aqs.assisted_query_stats.clear();
           GURL base_url(ReplaceSearchTermsUsingTermsData(
               search_terms_args_without_aqs, search_terms_data, NULL));
-          if (base_url.SchemeIs(content::kHttpsScheme)) {
+          if (base_url.SchemeIs(url::kHttpsScheme)) {
             HandleReplacement(
                 "aqs", search_terms_args.assisted_query_stats, *i, &url);
           }

@@ -468,8 +468,8 @@ void IEImporter::ImportFavorites() {
 }
 
 void IEImporter::ImportHistory() {
-  const std::string kSchemes[] = {content::kHttpScheme,
-                                  content::kHttpsScheme,
+  const std::string kSchemes[] = {url::kHttpScheme,
+                                  url::kHttpsScheme,
                                   content::kFtpScheme,
                                   content::kFileScheme};
   int total_schemes = arraysize(kSchemes);
@@ -602,8 +602,8 @@ void IEImporter::ImportPasswordsIE6() {
       continue;
 
     GURL url(ac_list[i].key.c_str());
-    if (!(LowerCaseEqualsASCII(url.scheme(), content::kHttpScheme) ||
-        LowerCaseEqualsASCII(url.scheme(), content::kHttpsScheme))) {
+    if (!(LowerCaseEqualsASCII(url.scheme(), url::kHttpScheme) ||
+          LowerCaseEqualsASCII(url.scheme(), url::kHttpsScheme))) {
       continue;
     }
 

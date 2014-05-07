@@ -794,8 +794,11 @@ void Dispatcher::UpdateOriginPermissions(
   for (URLPatternSet::const_iterator i = origins.begin(); i != origins.end();
        ++i) {
     const char* schemes[] = {
-        content::kHttpScheme,     content::kHttpsScheme, content::kFileScheme,
-        content::kChromeUIScheme, content::kFtpScheme,
+        url::kHttpScheme,
+        url::kHttpsScheme,
+        content::kFileScheme,
+        content::kChromeUIScheme,
+        content::kFtpScheme,
     };
     for (size_t j = 0; j < arraysize(schemes); ++j) {
       if (i->MatchesScheme(schemes[j])) {

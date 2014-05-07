@@ -13,8 +13,8 @@ namespace content {
 namespace {
 
 const char* const kDefaultSavableSchemes[] = {
-  kHttpScheme,
-  kHttpsScheme,
+  url::kHttpScheme,
+  url::kHttpsScheme,
   kFileScheme,
   kFileSystemScheme,
   kFtpScheme,

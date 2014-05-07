@@ -445,9 +445,9 @@ void PlatformVerificationFlow::RecordDomainConsent(
          ->WithPathWildcard();
   if (!url.port().empty())
     builder->WithPort(url.port());
-  else if (url.SchemeIs(content::kHttpsScheme))
+  else if (url.SchemeIs(url::kHttpsScheme))
     builder->WithPort(kDefaultHttpsPort);
-  else if (url.SchemeIs(content::kHttpScheme))
+  else if (url.SchemeIs(url::kHttpScheme))
     builder->WithPortWildcard();
   ContentSettingsPattern pattern = builder->Build();
   if (pattern.IsValid()) {

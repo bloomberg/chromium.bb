@@ -280,7 +280,7 @@ void AutofillAgent::didRequestAutocomplete(
   GURL url(form.document().url());
   content::SSLStatus ssl_status =
       render_view()->GetSSLStatusOfFrame(form.document().frame());
-  bool is_safe = url.SchemeIs(content::kHttpsScheme) &&
+  bool is_safe = url.SchemeIs(url::kHttpsScheme) &&
       !net::IsCertStatusError(ssl_status.cert_status);
   bool allow_unsafe = CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kReduceSecurityForTesting);

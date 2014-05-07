@@ -47,7 +47,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/url_util.h"
 
-
 // Helpers --------------------------------------------------------------------
 
 namespace {
@@ -559,8 +558,8 @@ bool SearchProvider::IsQuerySuitableForSuggest() const {
   // and happens to currently be invalid -- in which case we again want to run
   // our checks below.  Other QUERY cases are less likely to be URLs and thus we
   // assume we're OK.
-  if (!LowerCaseEqualsASCII(input_.scheme(), content::kHttpScheme) &&
-      !LowerCaseEqualsASCII(input_.scheme(), content::kHttpsScheme) &&
+  if (!LowerCaseEqualsASCII(input_.scheme(), url::kHttpScheme) &&
+      !LowerCaseEqualsASCII(input_.scheme(), url::kHttpsScheme) &&
       !LowerCaseEqualsASCII(input_.scheme(), content::kFtpScheme))
     return (input_.type() == AutocompleteInput::QUERY);
 
@@ -582,7 +581,7 @@ bool SearchProvider::IsQuerySuitableForSuggest() const {
   // Don't send anything for https except the hostname.  Hostnames are OK
   // because they are visible when the TCP connection is established, but the
   // specific path may reveal private information.
-  if (LowerCaseEqualsASCII(input_.scheme(), content::kHttpsScheme) &&
+  if (LowerCaseEqualsASCII(input_.scheme(), url::kHttpsScheme) &&
       parts.path.is_nonempty())
     return false;
 

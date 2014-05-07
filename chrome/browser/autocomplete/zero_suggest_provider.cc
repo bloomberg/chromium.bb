@@ -385,8 +385,8 @@ bool ZeroSuggestProvider::CanShowZeroSuggestWithoutSendingURL(
   // with other schemes (e.g. chrome://). That may require improvements to
   // the formatting of the verbatim result returned by MatchForCurrentURL().
   if (!current_page_url.is_valid() ||
-      ((current_page_url.scheme() != content::kHttpScheme) &&
-      (current_page_url.scheme() != content::kHttpsScheme)))
+      ((current_page_url.scheme() != url::kHttpScheme) &&
+      (current_page_url.scheme() != url::kHttpsScheme)))
     return false;
 
   return true;

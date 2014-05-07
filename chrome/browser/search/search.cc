@@ -532,7 +532,7 @@ GURL GetInstantURL(Profile* profile, int start_margin,
   if (!instant_url.SchemeIsSecure() &&
       !google_util::StartsWithCommandLineGoogleBaseURL(instant_url)) {
     GURL::Replacements replacements;
-    const std::string secure_scheme(content::kHttpsScheme);
+    const std::string secure_scheme(url::kHttpsScheme);
     replacements.SetSchemeStr(secure_scheme);
     instant_url = instant_url.ReplaceComponents(replacements);
   }

@@ -43,9 +43,9 @@ COMPILE_ASSERT(arraysize(kContentSettingNames) <=
 
 // TODO(bauerb): Move this someplace where it can be reused.
 std::string GetDefaultPort(const std::string& scheme) {
-  if (scheme == content::kHttpScheme)
+  if (scheme == url::kHttpScheme)
     return "80";
-  if (scheme == content::kHttpsScheme)
+  if (scheme == url::kHttpsScheme)
     return "443";
   NOTREACHED();
   return std::string();

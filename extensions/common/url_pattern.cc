@@ -20,13 +20,13 @@ namespace {
 // TODO(aa): What about more obscure schemes like data: and javascript: ?
 // Note: keep this array in sync with kValidSchemeMasks.
 const char* kValidSchemes[] = {
-  content::kHttpScheme,
-  content::kHttpsScheme,
-  content::kFileScheme,
-  content::kFtpScheme,
-  content::kChromeUIScheme,
-  extensions::kExtensionScheme,
-  content::kFileSystemScheme,
+    url::kHttpScheme,
+    url::kHttpsScheme,
+    content::kFileScheme,
+    content::kFtpScheme,
+    content::kChromeUIScheme,
+    extensions::kExtensionScheme,
+    content::kFileSystemScheme,
 };
 
 const int kValidSchemeMasks[] = {
@@ -365,7 +365,7 @@ bool URLPattern::MatchesScheme(const std::string& test) const {
 }
 
 bool URLPattern::MatchesHost(const std::string& host) const {
-  std::string test(content::kHttpScheme);
+  std::string test(url::kHttpScheme);
   test += content::kStandardSchemeSeparator;
   test += host;
   test += "/";

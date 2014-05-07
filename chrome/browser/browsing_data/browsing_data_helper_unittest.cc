@@ -58,8 +58,8 @@ class BrowsingDataHelperTest : public testing::Test {
 };
 
 TEST_F(BrowsingDataHelperTest, WebSafeSchemesAreWebSafe) {
-  EXPECT_TRUE(IsWebScheme(content::kHttpScheme));
-  EXPECT_TRUE(IsWebScheme(content::kHttpsScheme));
+  EXPECT_TRUE(IsWebScheme(url::kHttpScheme));
+  EXPECT_TRUE(IsWebScheme(url::kHttpsScheme));
   EXPECT_TRUE(IsWebScheme(content::kFtpScheme));
   EXPECT_TRUE(IsWebScheme(content::kDataScheme));
   EXPECT_TRUE(IsWebScheme("feed"));
@@ -81,8 +81,8 @@ TEST_F(BrowsingDataHelperTest, ChromeSchemesAreNotWebSafe) {
 }
 
 TEST_F(BrowsingDataHelperTest, WebSafeSchemesAreNotExtensions) {
-  EXPECT_FALSE(IsExtensionScheme(content::kHttpScheme));
-  EXPECT_FALSE(IsExtensionScheme(content::kHttpsScheme));
+  EXPECT_FALSE(IsExtensionScheme(url::kHttpScheme));
+  EXPECT_FALSE(IsExtensionScheme(url::kHttpsScheme));
   EXPECT_FALSE(IsExtensionScheme(content::kFtpScheme));
   EXPECT_FALSE(IsExtensionScheme(content::kDataScheme));
   EXPECT_FALSE(IsExtensionScheme("feed"));

@@ -132,7 +132,8 @@ class BufferedDataSourceTest : public testing::Test {
             &BufferedDataSourceTest::OnInitialize, base::Unretained(this)));
     message_loop_.RunUntilIdle();
 
-    bool is_http = gurl.SchemeIs(kHttpScheme) || gurl.SchemeIs(kHttpsScheme);
+    bool is_http =
+        gurl.SchemeIs(url::kHttpScheme) || gurl.SchemeIs(url::kHttpsScheme);
     EXPECT_EQ(data_source_->downloading(), is_http);
   }
 

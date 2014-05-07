@@ -140,7 +140,7 @@ void BufferedDataSource::Initialize(
 
   init_cb_ = init_cb;
 
-  if (url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme)) {
+  if (url_.SchemeIs(url::kHttpScheme) || url_.SchemeIs(url::kHttpsScheme)) {
     // Do an unbounded range request starting at the beginning.  If the server
     // responds with 200 instead of 206 we'll fall back into a streaming mode.
     loader_.reset(CreateResourceLoader(0, kPositionNotSpecified));

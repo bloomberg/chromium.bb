@@ -14,8 +14,8 @@ bool MatchesOrigin(const GURL& my_url, const GURL& other_url) {
   return my_url.host() == other_url.host() &&
          my_url.port() == other_url.port() &&
          (my_url.scheme() == other_url.scheme() ||
-          (my_url.SchemeIs(content::kHttpsScheme) &&
-           other_url.SchemeIs(content::kHttpScheme)));
+          (my_url.SchemeIs(url::kHttpsScheme) &&
+           other_url.SchemeIs(url::kHttpScheme)));
 }
 }  // namespace
 

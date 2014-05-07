@@ -265,7 +265,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
 
 bool SafeBrowsingBlockingPage::CanShowMalwareDetailsOption() {
   return (!web_contents_->GetBrowserContext()->IsOffTheRecord() &&
-          web_contents_->GetURL().SchemeIs(content::kHttpScheme));
+          web_contents_->GetURL().SchemeIs(url::kHttpScheme));
 }
 
 SafeBrowsingBlockingPage::~SafeBrowsingBlockingPage() {

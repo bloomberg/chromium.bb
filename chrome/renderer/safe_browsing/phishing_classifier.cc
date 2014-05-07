@@ -118,7 +118,7 @@ void PhishingClassifier::BeginFeatureExtraction() {
   // Check whether the URL is one that we should classify.
   // Currently, we only classify http: URLs that are GET requests.
   GURL url(frame->document().url());
-  if (!url.SchemeIs(content::kHttpScheme)) {
+  if (!url.SchemeIs(url::kHttpScheme)) {
     RunFailureCallback();
     return;
   }
