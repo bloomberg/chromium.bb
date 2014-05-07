@@ -21,7 +21,11 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
 from testing_support.fake_repos import join, write
-from testing_support.fake_repos import FakeReposTestBase, FakeRepoTransitive
+from testing_support.fake_repos import FakeReposTestBase, FakeRepoTransitive, \
+                                       FakeRepoSkiaDEPS
+
+import gclient_utils
+import scm as gclient_scm
 
 import subprocess2
 
@@ -761,6 +765,21 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.checkBlock(res[0],
                     ['running', 'running', 'running'])
 
+  def testUnversionedRepository(self):
+    # Check that gclient automatically deletes crippled SVN repositories.
+    if not self.enabled:
+      return
+    self.gclient(['config', self.svn_base + 'trunk/src/'])
+    cmd = ['sync', '--jobs', '1', '--delete_unversioned_trees', '--reset']
+    self.assertEquals(0, self.gclient(cmd)[-1])
+    third_party = join(self.root_dir, 'src', 'third_party')
+    subprocess2.check_call(['svn', 'propset', '-q', 'svn:ignore', 'foo', '.'],
+                           cwd=third_party)
+
+    # Cripple src/third_party/foo and make sure gclient still succeeds.
+    gclient_utils.rmtree(join(third_party, 'foo', '.svn'))
+    self.assertEquals(0, self.gclient(cmd)[-1])
+
 
 class GClientSmokeSVNTransitive(GClientSmokeBase):
   FAKE_REPOS_CLASS = FakeRepoTransitive
@@ -1321,6 +1340,159 @@ class GClientSmokeBoth(GClientSmokeBase):
                 for (scm, url, path) in expected_source]
 
     self.assertEquals(sorted(entries), sorted(expected))
+
+
+class SkiaDEPSTransitionSmokeTest(GClientSmokeBase):
+  """Simulate the behavior of bisect bots as they transition across the Skia
+  DEPS change."""
+
+  FAKE_REPOS_CLASS = FakeRepoSkiaDEPS
+
+  def setUp(self):
+    super(SkiaDEPSTransitionSmokeTest, self).setUp()
+    self.enabled = self.FAKE_REPOS.set_up_git() and self.FAKE_REPOS.set_up_svn()
+
+  def testSkiaDEPSChangeSVN(self):
+    if not self.enabled:
+      return
+
+    # Create an initial checkout:
+    # - Single checkout at the root.
+    # - Multiple checkouts in a shared subdirectory.
+    self.gclient(['config', '--spec',
+        'solutions=['
+        '{"name": "src",'
+        ' "url": "' + self.svn_base + 'trunk/src/",'
+        '}]'])
+
+    checkout_path = os.path.join(self.root_dir, 'src')
+    skia = os.path.join(checkout_path, 'third_party', 'skia')
+    skia_gyp = os.path.join(skia, 'gyp')
+    skia_include = os.path.join(skia, 'include')
+    skia_src = os.path.join(skia, 'src')
+
+    gyp_svn_url = self.svn_base + 'skia/gyp'
+    include_svn_url = self.svn_base + 'skia/include'
+    src_svn_url = self.svn_base + 'skia/src'
+    skia_git_url = self.git_base + 'repo_1'
+
+    # Initial sync. Verify that we get the expected checkout.
+    res = self.gclient(['sync', '--deps', 'mac', '--revision', 'src@2'])
+    self.assertEqual(res[2], 0, 'Initial sync failed.')
+    self.assertEqual(gclient_scm.SVN.CaptureLocalInfo([], skia_gyp)['URL'],
+                     gyp_svn_url)
+    self.assertEqual(gclient_scm.SVN.CaptureLocalInfo([], skia_include)['URL'],
+                     include_svn_url)
+    self.assertEqual(gclient_scm.SVN.CaptureLocalInfo([], skia_src)['URL'],
+                     src_svn_url)
+
+    # Verify that the sync succeeds. Verify that we have the  expected merged
+    # checkout.
+    res = self.gclient(['sync', '--deps', 'mac', '--revision', 'src@3'])
+    self.assertEqual(res[2], 0, 'DEPS change sync failed.')
+    self.assertEqual(gclient_scm.GIT.Capture(['config', 'remote.origin.url'],
+                                             skia), skia_git_url)
+
+    # Sync again. Verify that we still have the expected merged checkout.
+    res = self.gclient(['sync', '--deps', 'mac', '--revision', 'src@3'])
+    self.assertEqual(res[2], 0, 'Subsequent sync failed.')
+    self.assertEqual(gclient_scm.GIT.Capture(['config', 'remote.origin.url'],
+                                             skia), skia_git_url)
+
+    # Sync back to the original DEPS. Verify that we get the original structure.
+    res = self.gclient(['sync', '--deps', 'mac', '--revision', 'src@2'])
+    self.assertEqual(res[2], 0, 'Reverse sync failed.')
+    self.assertEqual(gclient_scm.SVN.CaptureLocalInfo([], skia_gyp)['URL'],
+                     gyp_svn_url)
+    self.assertEqual(gclient_scm.SVN.CaptureLocalInfo([], skia_include)['URL'],
+                     include_svn_url)
+    self.assertEqual(gclient_scm.SVN.CaptureLocalInfo([], skia_src)['URL'],
+                     src_svn_url)
+
+    # Sync again. Verify that we still have the original structure.
+    res = self.gclient(['sync', '--deps', 'mac', '--revision', 'src@2'])
+    self.assertEqual(res[2], 0, 'Subsequent sync #2 failed.')
+    self.assertEqual(gclient_scm.SVN.CaptureLocalInfo([], skia_gyp)['URL'],
+                     gyp_svn_url)
+    self.assertEqual(gclient_scm.SVN.CaptureLocalInfo([], skia_include)['URL'],
+                     include_svn_url)
+    self.assertEqual(gclient_scm.SVN.CaptureLocalInfo([], skia_src)['URL'],
+                     src_svn_url)
+
+  def testSkiaDEPSChangeGit(self):
+    if not self.enabled:
+      return
+
+    # Create an initial checkout:
+    # - Single checkout at the root.
+    # - Multiple checkouts in a shared subdirectory.
+    self.gclient(['config', '--spec',
+        'solutions=['
+        '{"name": "src",'
+        ' "url": "' + self.git_base + 'repo_2",'
+        '}]'])
+
+    checkout_path = os.path.join(self.root_dir, 'src')
+    skia = os.path.join(checkout_path, 'third_party', 'skia')
+    skia_gyp = os.path.join(skia, 'gyp')
+    skia_include = os.path.join(skia, 'include')
+    skia_src = os.path.join(skia, 'src')
+
+    gyp_git_url = self.git_base + 'repo_3'
+    include_git_url = self.git_base + 'repo_4'
+    src_git_url = self.git_base + 'repo_5'
+    skia_git_url = self.FAKE_REPOS.git_base + 'repo_1'
+
+    pre_hash = self.githash('repo_2', 1)
+    post_hash = self.githash('repo_2', 2)
+
+    # Initial sync. Verify that we get the expected checkout.
+    res = self.gclient(['sync', '--deps', 'mac', '--revision',
+                        'src@%s' % pre_hash])
+    self.assertEqual(res[2], 0, 'Initial sync failed.')
+    self.assertEqual(gclient_scm.GIT.Capture(['config', 'remote.origin.url'],
+                                             skia_gyp), gyp_git_url)
+    self.assertEqual(gclient_scm.GIT.Capture(['config', 'remote.origin.url'],
+                                             skia_include), include_git_url)
+    self.assertEqual(gclient_scm.GIT.Capture(['config', 'remote.origin.url'],
+                                             skia_src), src_git_url)
+
+    # Verify that the sync succeeds. Verify that we have the  expected merged
+    # checkout.
+    res = self.gclient(['sync', '--deps', 'mac', '--revision',
+                        'src@%s' % post_hash])
+    self.assertEqual(res[2], 0, 'DEPS change sync failed.')
+    self.assertEqual(gclient_scm.GIT.Capture(['config', 'remote.origin.url'],
+                                             skia), skia_git_url)
+
+    # Sync again. Verify that we still have the expected merged checkout.
+    res = self.gclient(['sync', '--deps', 'mac', '--revision',
+                        'src@%s' % post_hash])
+    self.assertEqual(res[2], 0, 'Subsequent sync failed.')
+    self.assertEqual(gclient_scm.GIT.Capture(['config', 'remote.origin.url'],
+                                             skia), skia_git_url)
+
+    # Sync back to the original DEPS. Verify that we get the original structure.
+    res = self.gclient(['sync', '--deps', 'mac', '--revision',
+                        'src@%s' % pre_hash])
+    self.assertEqual(res[2], 0, 'Reverse sync failed.')
+    self.assertEqual(gclient_scm.GIT.Capture(['config', 'remote.origin.url'],
+                                             skia_gyp), gyp_git_url)
+    self.assertEqual(gclient_scm.GIT.Capture(['config', 'remote.origin.url'],
+                                             skia_include), include_git_url)
+    self.assertEqual(gclient_scm.GIT.Capture(['config', 'remote.origin.url'],
+                                             skia_src), src_git_url)
+
+    # Sync again. Verify that we still have the original structure.
+    res = self.gclient(['sync', '--deps', 'mac', '--revision',
+                        'src@%s' % pre_hash])
+    self.assertEqual(res[2], 0, 'Subsequent sync #2 failed.')
+    self.assertEqual(gclient_scm.GIT.Capture(['config', 'remote.origin.url'],
+                                             skia_gyp), gyp_git_url)
+    self.assertEqual(gclient_scm.GIT.Capture(['config', 'remote.origin.url'],
+                                             skia_include), include_git_url)
+    self.assertEqual(gclient_scm.GIT.Capture(['config', 'remote.origin.url'],
+                                             skia_src), src_git_url)
 
 
 class GClientSmokeFromCheckout(GClientSmokeBase):

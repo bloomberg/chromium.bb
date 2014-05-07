@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import errno
 import logging
 import os
 import posixpath
@@ -20,6 +21,7 @@ import download_from_google_storage
 import gclient_utils
 import git_cache
 import scm
+import shutil
 import subprocess2
 
 
@@ -196,21 +198,36 @@ class SCMWrapper(object):
       # valid git or svn checkout.
       return False
 
-  # TODO(borenet): Remove this once SCMWrapper._DeleteOrMove is enabled.
-  # pylint: disable=R0201
   def _DeleteOrMove(self, force):
     """Delete the checkout directory or move it out of the way.
 
     Args:
         force: bool; if True, delete the directory. Otherwise, just move it.
     """
-    gclient_utils.AddWarning('WARNING: Upcoming change in '
-                             'https://codereview.chromium.org/225403015 would '
-                             'cause %s to be deleted or moved to the side. '
-                             'This is intended to ease changes to DEPS in the '
-                             'future. If you are seeing this warning and '
-                             'haven\'t changed the DEPS file, please contact '
-                             'borenet@ immediately.' % self.checkout_path)
+    if force and os.environ.get('CHROME_HEADLESS') == '1':
+      self.Print('_____ Conflicting directory found in %s. Removing.'
+                 % self.checkout_path)
+      gclient_utils.AddWarning('Conflicting directory %s deleted.'
+                               % self.checkout_path)
+      gclient_utils.rmtree(self.checkout_path)
+    else:
+      bad_scm_dir = os.path.join(self._root_dir, '_bad_scm',
+                                 os.path.dirname(self.relpath))
+
+      try:
+        os.makedirs(bad_scm_dir)
+      except OSError as e:
+        if e.errno != errno.EEXIST:
+          raise
+
+      dest_path = tempfile.mkdtemp(
+          prefix=os.path.basename(self.relpath),
+          dir=bad_scm_dir)
+      self.Print('_____ Conflicting directory found in %s. Moving to %s.'
+                 % (self.checkout_path, dest_path))
+      gclient_utils.AddWarning('Conflicting directory %s moved to %s.'
+                               % (self.checkout_path, dest_path))
+      shutil.move(self.checkout_path, dest_path)
 
 
 class GitWrapper(SCMWrapper):
@@ -1092,8 +1109,8 @@ class SVNWrapper(SCMWrapper):
                                       'svn-remote.svn.url'],
                                      cwd=self.checkout_path).rstrip()
         if remote_url.rstrip('/') == base_url.rstrip('/'):
-          print('\n_____ %s looks like a git-svn checkout. Skipping.'
-                % self.relpath)
+          self.Print('\n_____ %s looks like a git-svn checkout. Skipping.'
+                     % self.relpath)
           return # TODO(borenet): Get the svn revision number?
 
     # Get the existing scm url and the revision number of the current checkout.

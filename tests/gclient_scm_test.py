@@ -646,6 +646,18 @@ class SVNWrapperTestCase(BaseTestCase):
         1, 'cmd', '/cwd', 'stdout', 'stderr')
     gclient_scm.scm.SVN._CaptureInfo([], self.base_path+'/.').AndRaise(error)
 
+    bad_scm_path = os.path.join(self.root_dir, '_bad_scm',
+                                os.path.dirname(self.relpath))
+    gclient_scm.os.makedirs(bad_scm_path)
+    dest_path = os.path.join(bad_scm_path,
+                             os.path.basename(self.relpath) + 'ABCD')
+    self.mox.StubOutWithMock(gclient_scm.tempfile, 'mkdtemp', True)
+    gclient_scm.tempfile.mkdtemp(
+        prefix=os.path.basename(self.relpath),
+        dir=os.path.join(self.root_dir, '_bad_scm',
+                         os.path.dirname(self.relpath))).AndReturn(dest_path)
+    self.mox.StubOutWithMock(gclient_scm.shutil, 'move', True)
+    gclient_scm.shutil.move(self.base_path, dest_path)
     gclient_scm.os.path.exists(self.root_dir).AndReturn(True)
     gclient_scm.scm.SVN.Capture(['--version', '--quiet'], None
         ).AndReturn('1.5.1')
@@ -662,34 +674,45 @@ class SVNWrapperTestCase(BaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     scm.update(options, None, [])
+    self.checkstdout('_____ Conflicting directory found in %s. Moving to %s.\n'
+                     % (self.base_path, dest_path))
 
   def testUpdateGitForce(self):
     options = self.Options(verbose=True, force=True)
-    file_path = gclient_scm.os.path.join(self.root_dir, self.relpath, '.hg')
-    gclient_scm.os.path.exists(file_path).AndReturn(False)
-    gclient_scm.os.path.exists(self.base_path).AndReturn(True)
-    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
-    gclient_scm.scm.GIT.IsGitSvn(self.base_path).AndReturn(False)
-    error = gclient_scm.subprocess2.CalledProcessError(
-        1, 'cmd', '/cwd', 'stdout', 'stderr')
-    gclient_scm.scm.SVN._CaptureInfo([], self.base_path+'/.').AndRaise(error)
-    gclient_scm.os.path.exists(self.root_dir).AndReturn(True)
-    gclient_scm.scm.SVN.Capture(['--version', '--quiet'], None
-        ).AndReturn('1.5.1')
-    gclient_scm.scm.SVN.RunAndGetFileList(
-        options.verbose,
-        ['checkout', self.url, self.base_path, '--force', '--ignore-externals'],
-        cwd=self.root_dir,
-        file_list=[])
-
-    gclient_scm.scm.SVN._CaptureInfo([], self.base_path+'/.'
-        ).AndReturn({'Revision': 100})
-
-    self.mox.ReplayAll()
-    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
-                            relpath=self.relpath)
-    file_list = []
-    scm.update(options, None, file_list)
+    old_environ = dict(gclient_scm.os.environ)
+    gclient_scm.os.environ['CHROME_HEADLESS'] = '1'
+    try:
+      file_path = gclient_scm.os.path.join(self.root_dir, self.relpath, '.hg')
+      gclient_scm.os.path.exists(file_path).AndReturn(False)
+      gclient_scm.os.path.exists(self.base_path).AndReturn(True)
+      self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
+      gclient_scm.scm.GIT.IsGitSvn(self.base_path).AndReturn(False)
+      error = gclient_scm.subprocess2.CalledProcessError(
+          1, 'cmd', '/cwd', 'stdout', 'stderr')
+      gclient_scm.scm.SVN._CaptureInfo([], self.base_path+'/.').AndRaise(error)
+      gclient_scm.gclient_utils.rmtree(self.base_path)
+      gclient_scm.os.path.exists(self.root_dir).AndReturn(True)
+      gclient_scm.scm.SVN.Capture(['--version', '--quiet'], None
+          ).AndReturn('1.5.1')
+      gclient_scm.scm.SVN.RunAndGetFileList(
+          options.verbose,
+          ['checkout', self.url, self.base_path, '--force',
+           '--ignore-externals'],
+          cwd=self.root_dir,
+          file_list=[])
+  
+      gclient_scm.scm.SVN._CaptureInfo([], self.base_path+'/.'
+          ).AndReturn({'Revision': 100})
+  
+      self.mox.ReplayAll()
+      scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                              relpath=self.relpath)
+      file_list = []
+      scm.update(options, None, file_list)
+      self.checkstdout('_____ Conflicting directory found in %s. Removing.\n'
+                       % self.base_path)
+    finally:
+      gclient_scm.os.environ = old_environ
 
   def testUpdateGitSvn(self):
     options = self.Options(verbose=True)
@@ -1297,7 +1320,6 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.os.path.exists(os.path.join(self.base_path, '.git')
                                ).AndReturn(False)
-
     self.mox.StubOutWithMock(gclient_scm.GitWrapper, '_Clone', True)
     # pylint: disable=E1120
     gclient_scm.GitWrapper._Clone('refs/remotes/origin/master', self.url,
@@ -1326,7 +1348,6 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.os.path.exists(os.path.join(self.base_path, '.git')
                                ).AndReturn(False)
-
     self.mox.StubOutWithMock(gclient_scm.GitWrapper, '_Clone', True)
     # pylint: disable=E1120
     gclient_scm.GitWrapper._Clone(
