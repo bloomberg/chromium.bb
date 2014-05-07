@@ -39,22 +39,22 @@ class NotificationController FINAL : public Supplement<LocalFrame> {
 public:
     virtual ~NotificationController();
 
-    static PassOwnPtr<NotificationController> create(NotificationClient*);
+    static PassOwnPtr<NotificationController> create(PassOwnPtr<NotificationClient>);
     static const char* supplementName();
     static NotificationController* from(LocalFrame* frame) { return static_cast<NotificationController*>(Supplement<LocalFrame>::from(frame, supplementName())); }
     static NotificationClient* clientFrom(LocalFrame*);
 
-    NotificationClient* client() { return m_client; }
+    NotificationClient* client() { return m_client.get(); }
 
     virtual void trace(Visitor*) OVERRIDE { }
 
 private:
-    explicit NotificationController(NotificationClient*);
+    explicit NotificationController(PassOwnPtr<NotificationClient>);
 
-    NotificationClient* m_client;
+    OwnPtr<NotificationClient> m_client;
 };
 
-void provideNotification(LocalFrame&, NotificationClient*);
+void provideNotification(LocalFrame&, PassOwnPtr<NotificationClient>);
 
 } // namespace WebCore
 

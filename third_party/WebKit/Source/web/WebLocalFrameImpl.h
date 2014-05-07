@@ -326,9 +326,6 @@ private:
 
     WebPlugin* focusedPluginIfInputMethodSupported();
 
-    // Returns the provider of desktop notifications.
-    NotificationPresenterImpl* notificationPresenterImpl();
-
     FrameLoaderClientImpl m_frameLoaderClientImpl;
 
     // The embedder retains a reference to the WebCore LocalFrame while it is active in the DOM. This
@@ -354,9 +351,6 @@ private:
     // Stores the additional input events offset and scale when device metrics emulation is enabled.
     WebCore::IntSize m_inputEventsOffsetForEmulation;
     float m_inputEventsScaleFactorForEmulation;
-
-    // The provider of desktop notifications;
-    NotificationPresenterImpl m_notificationPresenter;
 
     UserMediaClientImpl m_userMediaClientImpl;
 };

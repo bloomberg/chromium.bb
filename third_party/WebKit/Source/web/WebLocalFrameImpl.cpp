@@ -1311,13 +1311,6 @@ WebPlugin* WebLocalFrameImpl::focusedPluginIfInputMethodSupported()
     return 0;
 }
 
-NotificationPresenterImpl* WebLocalFrameImpl::notificationPresenterImpl()
-{
-    if (!m_notificationPresenter.isInitialized() && m_client)
-        m_notificationPresenter.initialize(m_client->notificationPresenter());
-    return &m_notificationPresenter;
-}
-
 int WebLocalFrameImpl::printBegin(const WebPrintParams& printParams, const WebNode& constrainToNode)
 {
     ASSERT(!frame()->document()->isFrameSet());
@@ -1600,7 +1593,11 @@ void WebLocalFrameImpl::setWebCoreFrame(PassRefPtr<WebCore::LocalFrame> frame)
 
     // FIXME: we shouldn't add overhead to every frame by registering these objects when they're not used.
     if (m_frame) {
-        provideNotification(*m_frame, notificationPresenterImpl());
+        OwnPtr<NotificationPresenterImpl> notificationPresenter = adoptPtr(new NotificationPresenterImpl());
+        if (m_client)
+            notificationPresenter->initialize(m_client->notificationPresenter());
+
+        provideNotification(*m_frame, notificationPresenter.release());
         provideUserMediaTo(*m_frame, &m_userMediaClientImpl);
     }
 }

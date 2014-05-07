@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-NotificationController::NotificationController(NotificationClient* client)
+NotificationController::NotificationController(PassOwnPtr<NotificationClient> client)
     : m_client(client)
 {
 }
@@ -40,7 +40,7 @@ NotificationController::~NotificationController()
 {
 }
 
-PassOwnPtr<NotificationController> NotificationController::create(NotificationClient* client)
+PassOwnPtr<NotificationController> NotificationController::create(PassOwnPtr<NotificationClient> client)
 {
     return adoptPtr(new NotificationController(client));
 }
@@ -57,7 +57,7 @@ const char* NotificationController::supplementName()
     return "NotificationController";
 }
 
-void provideNotification(LocalFrame& frame, NotificationClient* client)
+void provideNotification(LocalFrame& frame, PassOwnPtr<NotificationClient> client)
 {
     NotificationController::provideTo(frame, NotificationController::supplementName(), NotificationController::create(client));
 }
