@@ -5,7 +5,7 @@
       (bounds 800.00 600.00)
       (contentsOpaque 1)
       (drawsContent 1)
-      (children 8
+      (children 2
         (GraphicsLayer
           (position 60.00 0.00)
           (bounds 50.00 50.00)
@@ -15,48 +15,6 @@
         )
         (GraphicsLayer
           (position 120.00 0.00)
-          (bounds 50.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #008000)
-        )
-        (GraphicsLayer
-          (position 180.00 0.00)
-          (bounds 50.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #008000)
-        )
-        (GraphicsLayer
-          (position 240.00 0.00)
-          (bounds 50.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #008000)
-        )
-        (GraphicsLayer
-          (position 0.00 60.00)
-          (bounds 50.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #008000)
-        )
-        (GraphicsLayer
-          (position 60.00 60.00)
-          (bounds 50.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #008000)
-        )
-        (GraphicsLayer
-          (position 120.00 60.00)
-          (bounds 50.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #008000)
-        )
-        (GraphicsLayer
-          (position 180.00 60.00)
           (bounds 50.00 50.00)
           (contentsOpaque 1)
           (drawsContent 1)
