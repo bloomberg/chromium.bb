@@ -308,6 +308,24 @@ namespace WTF {
         static bool isEmptyOrDeletedBucket(const Value& value) { return isEmptyBucket(value) || isDeletedBucket(value); }
     };
 
+    template<typename HashTranslator, typename KeyTraits, bool safeToCompareToEmptyOrDeleted>
+    struct HashTableKeyChecker {
+        // There's no simple generic way to make this check if safeToCompareToEmptyOrDeleted is false,
+        // so the check always passes.
+        template <typename T>
+        static bool checkKey(const T&) { return true; }
+    };
+
+    template<typename HashTranslator, typename KeyTraits>
+    struct HashTableKeyChecker<HashTranslator, KeyTraits, true> {
+        template <typename T>
+        static bool checkKey(const T& key)
+        {
+            // FIXME : Check also equality to the deleted value.
+            return !HashTranslator::equal(KeyTraits::emptyValue(), key);
+        }
+    };
+
     // Don't declare a destructor for HeapAllocated hash tables.
     template<typename Derived, bool isGarbageCollected>
     class HashTableDestructorBase;
@@ -321,6 +339,8 @@ namespace WTF {
         ~HashTableDestructorBase() { static_cast<Derived*>(this)->finalize(); }
     };
 
+    // Note: empty or deleted key values are not allowed, using them may lead to undefined behavior.
+    // For pointer keys this means that null pointers are not allowed unless you supply custom key traits.
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     class HashTable : public HashTableDestructorBase<HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>, Allocator::isGarbageCollected> {
     public:
@@ -569,7 +589,6 @@ namespace WTF {
     {
     }
 
-
     inline unsigned doubleHash(unsigned key)
     {
         key = ~key + (key >> 23);
@@ -591,6 +610,7 @@ namespace WTF {
     template<typename HashTranslator, typename T>
     inline const Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::lookup(T key) const
     {
+        ASSERT((HashTableKeyChecker<HashTranslator, KeyTraits, HashFunctions::safeToCompareToEmptyOrDeleted>::checkKey(key)));
         const ValueType* table = m_table;
         if (!table)
             return 0;
@@ -786,6 +806,7 @@ namespace WTF {
         }
 
         HashTranslator::translate(*entry, key, extra);
+        ASSERT(!isEmptyOrDeletedBucket(*entry));
 
         ++m_keyCount;
 
@@ -819,6 +840,8 @@ namespace WTF {
         }
 
         HashTranslator::translate(*entry, key, extra, h);
+        ASSERT(!isEmptyOrDeletedBucket(*entry));
+
         ++m_keyCount;
         if (shouldExpand())
             entry = expand(entry);

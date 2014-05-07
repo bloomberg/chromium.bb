@@ -31,7 +31,8 @@ namespace WTF {
     template<typename T, typename U, typename V, typename W> class HashSet;
     template<typename T, typename U, typename V, typename W>
     void deleteAllValues(const HashSet<T, U, V, W>&);
-
+    // Note: empty or deleted values are not allowed, using them may lead to undefined behavior.
+    // For pointer valuess this means that null pointers are not allowed unless you supply custom traits.
     template<
         typename ValueArg,
         typename HashArg = typename DefaultHash<ValueArg>::Hash,

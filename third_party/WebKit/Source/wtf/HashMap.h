@@ -40,6 +40,8 @@ namespace WTF {
         static const typename T::KeyType& extract(const T& p) { return p.key; }
     };
 
+    // Note: empty or deleted key values are not allowed, using them may lead to undefined behavior.
+    // For pointer keys this means that null pointers are not allowed unless you supply custom key traits.
     template<
         typename KeyArg,
         typename MappedArg,
