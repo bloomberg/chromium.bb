@@ -24,6 +24,11 @@ autoinstall.cache.d
 *.vcxproj.filters
 Source/core/make_core_generated.xml
 
+# Ignore Eclipse project files
+.project
+.cproject
+/.settings
+
 # Ignore common tool auto-generated files.
 .gdb_history
 tags
