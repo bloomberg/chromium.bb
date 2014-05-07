@@ -5,55 +5,55 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_BPF_TESTS_H__
 #define SANDBOX_LINUX_SECCOMP_BPF_BPF_TESTS_H__
 
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-
-#include "base/debug/leak_annotations.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/basictypes.h"
 #include "build/build_config.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf_compatibility_policy.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf_test_runner.h"
-#include "sandbox/linux/tests/sandbox_test_runner.h"
+#include "sandbox/linux/seccomp-bpf/bpf_tester_compatibility_delegate.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
 namespace sandbox {
 
-// A BPF_DEATH_TEST is just the same as a BPF_TEST, but it assumes that the
-// test will fail with a particular known error condition. Use the DEATH_XXX()
-// macros from unit_tests.h to specify the expected error condition.
-// A BPF_DEATH_TEST is always disabled under ThreadSanitizer, see
-// crbug.com/243968.
-#define BPF_DEATH_TEST(test_case_name, test_name, death, policy, aux...) \
-  void BPF_TEST_##test_name(                                             \
-      sandbox::BPFTesterSimpleDelegate<aux>::AuxType* BPF_AUX);          \
-  TEST(test_case_name, DISABLE_ON_TSAN(test_name)) {                     \
-    sandbox::SandboxBPFTestRunner bpf_test_runner(                       \
-        new sandbox::BPFTesterSimpleDelegate<aux>(BPF_TEST_##test_name,  \
-                                                  policy));              \
-    sandbox::UnitTests::RunTestInProcess(&bpf_test_runner, death);       \
-  }                                                                      \
-  void BPF_TEST_##test_name(                                             \
-      sandbox::BPFTesterSimpleDelegate<aux>::AuxType* BPF_AUX)
+// BPF_TEST_C() is a special version of SANDBOX_TEST(). It runs a test function
+// in a sub-process, under a seccomp-bpf policy specified in
+// |bpf_policy_class_name| without failing on configurations that are allowed
+// to not support seccomp-bpf in their kernels.
+// This is the preferred format for new BPF tests. |bpf_policy_class_name| is a
+// class name  (which will be default-constructed) that implements the
+// SandboxBPFPolicy interface.
+// The test function's body can simply follow. Test functions should use
+// the BPF_ASSERT macros defined below, not GTEST's macros. The use of
+// CHECK* macros is supported but less robust.
+#define BPF_TEST_C(test_case_name, test_name, bpf_policy_class_name)     \
+  BPF_DEATH_TEST_C(                                                      \
+      test_case_name, test_name, DEATH_SUCCESS(), bpf_policy_class_name)
 
-// BPF_TEST() is a special version of SANDBOX_TEST(). It turns into a no-op,
-// if the host does not have kernel support for running BPF filters.
-// Also, it takes advantage of the Die class to avoid calling LOG(FATAL), from
-// inside our tests, as we don't need or even want all the error handling that
-// LOG(FATAL) would do.
-// BPF_TEST() takes a C++ data type as an optional fourth parameter. If
-// present, this sets up a variable that can be accessed as "BPF_AUX". This
-// variable will be passed as an argument to the "policy" function. Policies
-// would typically use it as an argument to SandboxBPF::Trap(), if they want to
-// communicate data between the BPF_TEST() and a Trap() function. The life-time
-// of this object is the same as the life-time of the process.
-// The type specified in |aux| and the last parameter of the policy function
-// must be compatible. If |aux| is not specified, the policy function must
-// take a void* as its last parameter (that is, must have the EvaluateSyscall
-// type).
-#define BPF_TEST(test_case_name, test_name, policy, aux...) \
-  BPF_DEATH_TEST(test_case_name, test_name, DEATH_SUCCESS(), policy, aux)
+// Identical to BPF_TEST_C but allows to specify the nature of death.
+#define BPF_DEATH_TEST_C(                                          \
+    test_case_name, test_name, death, bpf_policy_class_name)       \
+  void BPF_TEST_C_##test_name();                                   \
+  TEST(test_case_name, DISABLE_ON_TSAN(test_name)) {               \
+    sandbox::SandboxBPFTestRunner bpf_test_runner(                 \
+        new BPFTesterSimpleDelegate<bpf_policy_class_name>(        \
+            BPF_TEST_C_##test_name));                              \
+    sandbox::UnitTests::RunTestInProcess(&bpf_test_runner, death); \
+  }                                                                \
+  void BPF_TEST_C_##test_name()
+
+// This form of BPF_TEST is a little verbose and should be reserved for complex
+// tests where a lot of control is required.
+// |bpf_tester_delegate_class| must be a classname implementing the
+// BPFTesterDelegate interface.
+#define BPF_TEST_D(test_case_name, test_name, bpf_tester_delegate_class)     \
+  BPF_DEATH_TEST_D(                                                          \
+      test_case_name, test_name, DEATH_SUCCESS(), bpf_tester_delegate_class)
+
+// Identical to BPF_TEST_D but allows to specify the nature of death.
+#define BPF_DEATH_TEST_D(                                          \
+    test_case_name, test_name, death, bpf_tester_delegate_class)   \
+  TEST(test_case_name, DISABLE_ON_TSAN(test_name)) {               \
+    sandbox::SandboxBPFTestRunner bpf_test_runner(                 \
+        new bpf_tester_delegate_class());                          \
+    sandbox::UnitTests::RunTestInProcess(&bpf_test_runner, death); \
+  }
 
 // Assertions are handled exactly the same as with a normal SANDBOX_TEST()
 #define BPF_ASSERT SANDBOX_ASSERT
@@ -64,55 +64,62 @@ namespace sandbox {
 #define BPF_ASSERT_LE(x, y) BPF_ASSERT((x) <= (y))
 #define BPF_ASSERT_GE(x, y) BPF_ASSERT((x) >= (y))
 
-template <class Aux = void>
+// This form of BPF_TEST is now discouraged (but still allowed) in favor of
+// BPF_TEST_D and BPF_TEST_C.
+// The |policy| parameter should be a SyscallEvaluator function pointer
+// (which is now a deprecated way of expressing policies).
+// BPF_TEST() takes a C++ data type as an optional fourth parameter. If
+// present, this sets up a variable that can be accessed as "BPF_AUX". This
+// variable will be passed as an argument to the "policy" function. Policies
+// would typically use it as an argument to SandboxBPF::Trap(), if they want to
+// communicate data between the BPF_TEST() and a Trap() function. The life-time
+// of this object is the same as the life-time of the process running under the
+// seccomp-bpf policy.
+// The type specified in |aux| and the last parameter of the policy function
+// must be compatible. If |aux| is not specified, the policy function must
+// take a void* as its last parameter (that is, must have the EvaluateSyscall
+// type).
+#define BPF_TEST(test_case_name, test_name, policy, aux...)               \
+  BPF_DEATH_TEST(test_case_name, test_name, DEATH_SUCCESS(), policy, aux)
+
+// A BPF_DEATH_TEST is just the same as a BPF_TEST, but it assumes that the
+// test will fail with a particular known error condition. Use the DEATH_XXX()
+// macros from unit_tests.h to specify the expected error condition.
+#define BPF_DEATH_TEST(test_case_name, test_name, death, policy, aux...)       \
+  void BPF_TEST_##test_name(                                                   \
+      sandbox::BPFTesterCompatibilityDelegate<aux>::AuxType* BPF_AUX);         \
+  TEST(test_case_name, DISABLE_ON_TSAN(test_name)) {                           \
+    sandbox::SandboxBPFTestRunner bpf_test_runner(                             \
+        new sandbox::BPFTesterCompatibilityDelegate<aux>(BPF_TEST_##test_name, \
+                                                         policy));             \
+    sandbox::UnitTests::RunTestInProcess(&bpf_test_runner, death);             \
+  }                                                                            \
+  void BPF_TEST_##test_name(                                                   \
+      sandbox::BPFTesterCompatibilityDelegate<aux>::AuxType* BPF_AUX)
+
+// This class takes a simple function pointer as a constructor parameter and a
+// class name as a template parameter to implement the BPFTesterDelegate
+// interface which can be used to build BPF unittests with
+// the SandboxBPFTestRunner class.
+template <class PolicyClass>
 class BPFTesterSimpleDelegate : public BPFTesterDelegate {
  public:
-  typedef Aux AuxType;
-  BPFTesterSimpleDelegate(
-      void (*test_function)(AuxType*),
-      typename CompatibilityPolicy<AuxType>::SyscallEvaluator policy_function)
-      : aux_pointer_for_policy_(NULL),
-        test_function_(test_function),
-        policy_function_(policy_function) {
-    // This will be NULL iff AuxType is void.
-    aux_pointer_for_policy_ = NewAux();
-  }
-
-  virtual ~BPFTesterSimpleDelegate() { DeleteAux(aux_pointer_for_policy_); }
+  explicit BPFTesterSimpleDelegate(void (*test_function)(void))
+      : test_function_(test_function) {}
+  virtual ~BPFTesterSimpleDelegate() {}
 
   virtual scoped_ptr<SandboxBPFPolicy> GetSandboxBPFPolicy() OVERRIDE {
-    // The current method is guaranteed to only run in the child process
-    // running the test. In this process, the current object is guaranteed
-    // to live forever. So it's ok to pass aux_pointer_for_policy_ to
-    // the policy, which could in turn pass it to the kernel via Trap().
-    return scoped_ptr<SandboxBPFPolicy>(new CompatibilityPolicy<AuxType>(
-        policy_function_, aux_pointer_for_policy_));
+    return scoped_ptr<SandboxBPFPolicy>(new PolicyClass());
   }
-
   virtual void RunTestFunction() OVERRIDE {
-    // Run the actual test.
-    // The current object is guaranteed to live forever in the child process
-    // where this will run.
-    test_function_(aux_pointer_for_policy_);
+    DCHECK(test_function_);
+    test_function_();
   }
 
  private:
-  // Allocate an object of type Aux. This is specialized to return NULL when
-  // trying to allocate a void.
-  static Aux* NewAux() { return new Aux(); }
-  static void DeleteAux(Aux* aux) { delete aux; }
-
-  AuxType* aux_pointer_for_policy_;
-  void (*test_function_)(AuxType*);
-  typename CompatibilityPolicy<AuxType>::SyscallEvaluator policy_function_;
+  void (*test_function_)(void);
   DISALLOW_COPY_AND_ASSIGN(BPFTesterSimpleDelegate);
 };
-
-// Specialization of NewAux that returns NULL;
-template <>
-void* BPFTesterSimpleDelegate<void>::NewAux();
-template <>
-void BPFTesterSimpleDelegate<void>::DeleteAux(void* aux);
 
 }  // namespace sandbox
 
