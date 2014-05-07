@@ -13,11 +13,11 @@ string「あ、変っ！」。
 string「あ、変っ！」。
 
 width=214
-width=214
+width=213.8125
 width=25
 width=25
 width=214
-width=214
+width=213.8125
 width=25
 width=25
 

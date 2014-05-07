@@ -371,16 +371,6 @@ crbug.com/248938 [ Debug ] virtual/threaded/animations/animation-hit-test-transf
 crbug.com/364640 animations/compositor-start-event-timing.html [ Pass Failure ]
 
 crbug.com/360889 virtual/softwarecompositing/iframes/scrolling-iframe.html [ NeedsManualRebaseline ]
-crbug.com/360889 editing/selection/drag-start-event-client-x-y.html [ NeedsRebaseline ]
-crbug.com/360889 editing/selection/mixed-editability-10.html [ NeedsRebaseline ]
-crbug.com/360889 editing/selection/vertical-rl-ltr-extend-line-backward-wrap.html [ NeedsRebaseline ]
-crbug.com/360889 editing/selection/vertical-rl-ltr-extend-line-forward-wrap.html [ NeedsRebaseline ]
-crbug.com/360889 fast/forms/basic-buttons.html [ NeedsRebaseline ]
-crbug.com/360889 fast/forms/suggestion-picker/date-suggestion-picker-appearance-with-scroll-bar.html [ NeedsRebaseline ]
-crbug.com/360889 fast/forms/suggestion-picker/month-suggestion-picker-appearance-with-scroll-bar.html [ NeedsRebaseline ]
-crbug.com/360889 fast/forms/suggestion-picker/week-suggestion-picker-appearance-with-scroll-bar.html [ NeedsRebaseline ]
-crbug.com/360889 fast/sub-pixel/inline-block-with-padding.html [ NeedsRebaseline ]
-crbug.com/360889 virtual/windows-directwrite/fast/text/international/vertical-text-metrics-test.html [ NeedsRebaseline ]
 
 crbug.com/320477 [ Debug ] inspector/sources/debugger/debugger-pause-in-internal.html [ Pass Crash ]
 crbug.com/347484 [ Debug ] inspector/profiler/canvas2d/canvas-replay-log-grid.html [ Timeout ]
