@@ -359,8 +359,9 @@
       "channel": "stable",
       "whitelist": [
         "F29716B08705C9D3C12CDFE3F638BAE709570C31",  // browser_tests
-        "53041A2FA309EECED01FFC751E7399186E860B2C",  // hangouts
-        "312745D9BF916161191143F6490085EEA0434997",  // hangouts beta
+        // See crbug.com/245730 for details on the Hangouts whitelist.
+        "53041A2FA309EECED01FFC751E7399186E860B2C",  // Hangouts
+        "312745D9BF916161191143F6490085EEA0434997",  // Hangouts beta
         "A74A4D44C7CFCD8844830E6140C8D763E12DD8F3",  // Hangouts alpha
         "E7E2461CE072DF036CF9592740196159E2D7C089",  // Hangouts debug
         "49DA0B9CCEEA299186C6E7226FD66922D57543DC"   // Hangouts dev
