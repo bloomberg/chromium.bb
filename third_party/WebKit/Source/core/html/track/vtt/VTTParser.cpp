@@ -503,7 +503,7 @@ void VTTTreeBuilder::constructTreeFromToken(Document& document)
         if (nodeType == VTTNodeTypeRubyText && currentType != VTTNodeTypeRuby)
             break;
 
-        RefPtr<VTTElement> child = VTTElement::create(nodeType, &document);
+        RefPtrWillBeRawPtr<VTTElement> child = VTTElement::create(nodeType, &document);
         if (!m_token.classes().isEmpty())
             child->setAttribute(classAttr, m_token.classes());
 

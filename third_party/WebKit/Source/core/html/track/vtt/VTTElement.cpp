@@ -71,16 +71,16 @@ VTTElement::VTTElement(VTTNodeType nodeType, Document* document)
 {
 }
 
-PassRefPtr<VTTElement> VTTElement::create(VTTNodeType nodeType, Document* document)
+PassRefPtrWillBeRawPtr<VTTElement> VTTElement::create(VTTNodeType nodeType, Document* document)
 {
-    return adoptRef(new VTTElement(nodeType, document));
+    return adoptRefWillBeRefCountedGarbageCollected(new VTTElement(nodeType, document));
 }
 
 PassRefPtr<Element> VTTElement::cloneElementWithoutAttributesAndChildren()
 {
-    RefPtr<VTTElement> clone = create(static_cast<VTTNodeType>(m_webVTTNodeType), &document());
+    RefPtrWillBeRawPtr<VTTElement> clone = create(static_cast<VTTNodeType>(m_webVTTNodeType), &document());
     clone->setLanguage(m_language);
-    return clone;
+    return clone.release();
 }
 
 PassRefPtr<HTMLElement> VTTElement::createEquivalentHTMLElement(Document& document)

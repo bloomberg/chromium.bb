@@ -91,7 +91,7 @@ public:
 
     PassRefPtr<HTMLDivElement> getDisplayTree(Document&);
 
-    void appendVTTCueBox(PassRefPtr<VTTCueBox>);
+    void appendVTTCueBox(PassRefPtrWillBeRawPtr<VTTCueBox>);
     void displayLastVTTCueBox();
     void willRemoveVTTCueBox(VTTCueBox*);
 
@@ -133,8 +133,8 @@ private:
 
     // The cue container is the container that is scrolled up to obtain the
     // effect of scrolling cues when this is enabled for the regions.
-    RefPtr<HTMLDivElement> m_cueContainer;
-    RefPtr<HTMLDivElement> m_regionDisplayTree;
+    RefPtrWillBeMember<HTMLDivElement> m_cueContainer;
+    RefPtrWillBeMember<HTMLDivElement> m_regionDisplayTree;
 
     // The member variable track can be a raw pointer as it will never
     // reference a destroyed TextTrack, as this member variable

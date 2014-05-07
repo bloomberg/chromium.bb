@@ -41,8 +41,8 @@ enum VTTNodeType {
 
 class VTTElement FINAL : public Element {
 public:
-    static PassRefPtr<VTTElement> create(const VTTNodeType, Document*);
-    static PassRefPtr<VTTElement> create(const QualifiedName&, Document*);
+    static PassRefPtrWillBeRawPtr<VTTElement> create(const VTTNodeType, Document*);
+    static PassRefPtrWillBeRawPtr<VTTElement> create(const QualifiedName&, Document*);
     PassRefPtr<HTMLElement> createEquivalentHTMLElement(Document&);
 
     virtual PassRefPtr<Element> cloneElementWithoutAttributesAndChildren() OVERRIDE;

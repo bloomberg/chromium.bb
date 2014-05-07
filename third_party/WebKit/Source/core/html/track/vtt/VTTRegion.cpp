@@ -341,7 +341,7 @@ void VTTRegion::willRemoveVTTCueBox(VTTCueBox* box)
     m_cueContainer->setInlineStyleProperty(CSSPropertyTop, m_currentTop, CSSPrimitiveValue::CSS_PX);
 }
 
-void VTTRegion::appendVTTCueBox(PassRefPtr<VTTCueBox> displayBox)
+void VTTRegion::appendVTTCueBox(PassRefPtrWillBeRawPtr<VTTCueBox> displayBox)
 {
     ASSERT(m_cueContainer);
 
@@ -469,6 +469,8 @@ void VTTRegion::scrollTimerFired(Timer<VTTRegion>*)
 
 void VTTRegion::trace(Visitor* visitor)
 {
+    visitor->trace(m_cueContainer);
+    visitor->trace(m_regionDisplayTree);
     visitor->trace(m_track);
 }
 

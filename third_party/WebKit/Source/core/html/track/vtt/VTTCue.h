@@ -43,23 +43,22 @@ class VTTScanner;
 
 class VTTCueBox FINAL : public HTMLDivElement {
 public:
-    static PassRefPtr<VTTCueBox> create(Document& document, VTTCue* cue)
+    static PassRefPtrWillBeRawPtr<VTTCueBox> create(Document& document, VTTCue* cue)
     {
-        return adoptRef(new VTTCueBox(document, cue));
+        return adoptRefWillBeRefCountedGarbageCollected(new VTTCueBox(document, cue));
     }
 
     VTTCue* getCue() const { return m_cue; }
     void applyCSSProperties(const IntSize& videoSize);
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     VTTCueBox(Document&, VTTCue*);
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
-    // FIXME: Oilpan: once Node has been moved onto the heap fully,
-    // drop the raw pointer for a Member (and vice versa from
-    // VTTCue.)
-    VTTCue* m_cue;
+    RawPtrWillBeMember<VTTCue> m_cue;
 };
 
 class VTTCue FINAL : public TextTrackCue, public ScriptWrappable {
@@ -149,7 +148,7 @@ private:
     Document& document() const;
 
     VTTCueBox& ensureDisplayTree();
-    PassRefPtr<VTTCueBox> getDisplayTree(const IntSize& videoSize);
+    PassRefPtrWillBeRawPtr<VTTCueBox> getDisplayTree(const IntSize& videoSize);
 
     virtual void cueDidChange() OVERRIDE;
 
@@ -180,9 +179,9 @@ private:
     CueAlignment m_cueAlignment;
     String m_regionId;
 
-    RefPtr<DocumentFragment> m_vttNodeTree;
-    RefPtr<HTMLDivElement> m_cueBackgroundBox;
-    RefPtr<VTTCueBox> m_displayTree;
+    RefPtrWillBeMember<DocumentFragment> m_vttNodeTree;
+    RefPtrWillBeMember<HTMLDivElement> m_cueBackgroundBox;
+    RefPtrWillBeMember<VTTCueBox> m_displayTree;
 
     CSSValueID m_displayDirection;
     int m_displaySize;
