@@ -33,6 +33,9 @@ class OriginChipInfo {
   // Returns the label to be displayed by the origin chip.
   const base::string16& label() const { return label_; }
 
+  // Returns the tooltip to be used for the origin chip.
+  base::string16 Tooltip() const;
+
   // Returns the ID of the icon to be displayed by the origin chip. Note that
   // if |owner_|'s OnExtensionIconImageChanged() method was called with
   // anything else than NULL, that icon has precedence over whatever this method

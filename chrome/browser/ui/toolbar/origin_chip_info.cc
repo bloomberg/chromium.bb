@@ -144,6 +144,10 @@ bool OriginChipInfo::Update(const content::WebContents* web_contents,
   return true;
 }
 
+base::string16 OriginChipInfo::Tooltip() const {
+  return base::UTF8ToUTF16(displayed_url_.spec());
+}
+
 // static
 bool OriginChip::IsMalware(const GURL& url, const content::WebContents* tab) {
   DCHECK(tab);

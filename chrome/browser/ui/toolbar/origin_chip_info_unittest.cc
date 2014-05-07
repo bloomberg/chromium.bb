@@ -108,6 +108,7 @@ TEST_F(OriginChipInfoTest, NormalOrigin) {
   SetURL(kExampleUrl, true);
 
   EXPECT_EQ(base::ASCIIToUTF16("example.com"), info()->label());
+  EXPECT_EQ(base::ASCIIToUTF16(kExampleUrl), info()->Tooltip());
   EXPECT_EQ(url(), info()->displayed_url());
   EXPECT_EQ(ToolbarModel::NONE, info()->security_level());
 }
@@ -118,22 +119,27 @@ TEST_F(OriginChipInfoTest, EVSecureOrigin) {
   SetURL(kExampleUrlSecure, true);
 
   EXPECT_EQ(base::ASCIIToUTF16("Example [US] example.com"), info()->label());
+  EXPECT_EQ(base::ASCIIToUTF16(kExampleUrlSecure), info()->Tooltip());
   EXPECT_EQ(url(), info()->displayed_url());
   EXPECT_EQ(ToolbarModel::EV_SECURE, info()->security_level());
 }
 
 TEST_F(OriginChipInfoTest, ChromeOrigin) {
-  SetURL("chrome://version", true);
+  const char kChromeOrigin1[] = "chrome://version/";
+  SetURL(kChromeOrigin1, true);
 
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_TITLE),
             info()->label());
+  EXPECT_EQ(base::ASCIIToUTF16(kChromeOrigin1), info()->Tooltip());
   EXPECT_EQ(url(), info()->displayed_url());
   EXPECT_EQ(IDR_PRODUCT_LOGO_16, info()->icon());
 
   // chrome://flags has no title, so the title should be the product name.
-  SetURL("chrome://flags", true);
+  const char kChromeOrigin2[] = "chrome://flags/";
+  SetURL(kChromeOrigin2, true);
 
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME), info()->label());
+  EXPECT_EQ(base::ASCIIToUTF16(kChromeOrigin2), info()->Tooltip());
   EXPECT_EQ(url(), info()->displayed_url());
   EXPECT_EQ(IDR_PRODUCT_LOGO_16, info()->icon());
 
@@ -167,9 +173,12 @@ TEST_F(OriginChipInfoTest, ExtensionOrigin) {
   const extensions::IconImage* null_image = NULL;
 
   // Navigate to a URL from that extension.
-  SetURL(base::StringPrintf("chrome-extension://%s/index.html", kFooId), true);
+  const std::string extension_origin =
+      base::StringPrintf("chrome-extension://%s/index.html", kFooId);
+  SetURL(extension_origin, true);
   EXPECT_NE(null_image, icon_image());
   EXPECT_EQ(base::ASCIIToUTF16(kFooName), info()->label());
+  EXPECT_EQ(base::ASCIIToUTF16(extension_origin), info()->Tooltip());
 
   SetURL(kExampleUrl, true);
   EXPECT_EQ(null_image, icon_image());

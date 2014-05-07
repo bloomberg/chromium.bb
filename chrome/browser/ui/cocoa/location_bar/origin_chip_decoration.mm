@@ -186,7 +186,7 @@ void OriginChipDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
 }
 
 NSString* OriginChipDecoration::GetToolTip() {
-  return label_.get();
+  return base::SysUTF16ToNSString(info_.Tooltip());
 }
 
 bool OriginChipDecoration::OnMousePressed(NSRect frame) {
