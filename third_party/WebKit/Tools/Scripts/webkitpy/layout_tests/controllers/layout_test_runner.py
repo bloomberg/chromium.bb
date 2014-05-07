@@ -97,7 +97,9 @@ class LayoutTestRunner(object):
             run_results.add(result, expected=True, test_is_slow=self._test_is_slow(test_name))
 
         self._printer.write_update('Sharding tests ...')
-        locked_shards, unlocked_shards = self._sharder.shard_tests(test_inputs, int(self._options.child_processes), self._options.fully_parallel)
+        locked_shards, unlocked_shards = self._sharder.shard_tests(test_inputs,
+            int(self._options.child_processes), self._options.fully_parallel,
+            self._options.run_singly or (self._options.batch_size == 1))
 
         # We don't have a good way to coordinate the workers so that they don't
         # try to run the shards that need a lock. The easiest solution is to
@@ -360,7 +362,7 @@ class Sharder(object):
         self._split = test_split_fn
         self._max_locked_shards = max_locked_shards
 
-    def shard_tests(self, test_inputs, num_workers, fully_parallel):
+    def shard_tests(self, test_inputs, num_workers, fully_parallel, run_singly):
         """Groups tests into batches.
         This helps ensure that tests that depend on each other (aka bad tests!)
         continue to run together as most cross-tests dependencies tend to
@@ -376,7 +378,7 @@ class Sharder(object):
         if num_workers == 1:
             return self._shard_in_two(test_inputs)
         elif fully_parallel:
-            return self._shard_every_file(test_inputs)
+            return self._shard_every_file(test_inputs, run_singly)
         return self._shard_by_directory(test_inputs)
 
     def _shard_in_two(self, test_inputs):
@@ -400,7 +402,7 @@ class Sharder(object):
 
         return locked_shards, unlocked_shards
 
-    def _shard_every_file(self, test_inputs):
+    def _shard_every_file(self, test_inputs, run_singly):
         """Returns two lists of shards, each shard containing a single test file.
 
         This mode gets maximal parallelism at the cost of much higher flakiness."""
@@ -414,7 +416,7 @@ class Sharder(object):
             # which would be really redundant.
             if test_input.requires_lock:
                 locked_shards.append(TestShard('.', [test_input]))
-            elif test_input.test_name.startswith('virtual'):
+            elif test_input.test_name.startswith('virtual') and not run_singly:
                 # This violates the spirit of sharding every file, but in practice, since the
                 # virtual test suites require a different commandline flag and thus a restart
                 # of content_shell, it's too slow to shard them fully.
