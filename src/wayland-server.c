@@ -789,6 +789,15 @@ bind_display(struct wl_client *client,
 				       destroy_client_display_resource);
 }
 
+/** Create Wayland display object.
+ *
+ * \param None
+ * \return The Wayland display object. Null if failed to create
+ *
+ * This creates the wl_display object.
+ *
+ * \memberof wl_display
+ */
 WL_EXPORT struct wl_display *
 wl_display_create(void)
 {
