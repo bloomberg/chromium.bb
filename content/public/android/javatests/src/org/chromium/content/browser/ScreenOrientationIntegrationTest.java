@@ -4,8 +4,7 @@
 
 package org.chromium.content.browser;
 
-import android.test.suitebuilder.annotation.SmallTest;
-
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
@@ -66,13 +65,23 @@ public class ScreenOrientationIntegrationTest extends ContentShellTestBase {
         mContentViewCore = activity.getActiveContentViewCore();
     }
 
-    @SmallTest
+    /*
+     * Broken by http://src.chromium.org/viewvc/blink?revision=173532&view=revision
+     * crbug.com/371144
+     * @SmallTest
+     */
+    @DisabledTest
     @Feature({"ScreenOrientation"})
     public void testNoOp() throws Throwable {
         assertEquals(0, getWindowOrientationChangeCount());
     }
 
-    @SmallTest
+    /*
+     * Broken by http://src.chromium.org/viewvc/blink?revision=173532&view=revision
+     * crbug.com/371144
+     * @SmallTest
+     */
+    @DisabledTest
     @Feature({"ScreenOrientation"})
     public void testExpectedValues() throws Throwable {
         int[] values = { 90, -90, 180, 0, 90 };
@@ -89,7 +98,12 @@ public class ScreenOrientationIntegrationTest extends ContentShellTestBase {
 
     // We can't test unexpected value because it is branching to a NOTREACHED().
 
-    @SmallTest
+    /*
+     * Broken by http://src.chromium.org/viewvc/blink?revision=173532&view=revision
+     * crbug.com/371144
+     * @SmallTest
+     */
+    @DisabledTest
     @Feature({"ScreenOrientation"})
     public void testNoChange() throws Throwable {
         // The target angle for that test should depend on the current orientation.
