@@ -95,7 +95,7 @@ void RecordIncomingMessageStatus(IncomingMessageStatus status) {
 
 void RecordOutgoingMessageStatus(OutgoingMessageStatus status) {
   UMA_HISTOGRAM_ENUMERATION(kOutgoingMessageStatusHistogram,
-                            MESSAGE_DISCARDED,
+                            status,
                             OUTGOING_MESSAGE_STATUS_COUNT);
 }
 
