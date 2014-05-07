@@ -109,7 +109,7 @@ def SetCurrentRevision(revision_num):
                  package == 'pnacl_newlib' else []) +
                 ['setrevision',
                  '--revision-package', package,
-                 '--revision', str(revision_num)]])
+                 '--revision', str(revision_num)])
 
 
 def GitCurrentBranch():
