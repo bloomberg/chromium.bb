@@ -14,6 +14,8 @@
 
 #include "base/android/jni_generator/jni_generator_helper.h"
 
+#include "base/android/jni_int_wrapper.h"
+
 // Step 1: forward declarations.
 namespace {
 const char kTestJniClassPath[] = "org/chromium/TestJni";
@@ -29,7 +31,7 @@ jclass g_InfoBar_clazz = NULL;
 
 static base::subtle::AtomicWord g_TestJni_showConfirmInfoBar = 0;
 static base::android::ScopedJavaLocalRef<jobject>
-    Java_TestJni_showConfirmInfoBar(JNIEnv* env, jobject obj, jint
+    Java_TestJni_showConfirmInfoBar(JNIEnv* env, jobject obj, JniIntWrapper
     nativeInfoBar,
     jstring buttonOk,
     jstring buttonCancel,
@@ -56,14 +58,15 @@ static base::android::ScopedJavaLocalRef<jobject>
 
   jobject ret =
       env->CallObjectMethod(obj,
-          method_id, nativeInfoBar, buttonOk, buttonCancel, title, icon);
+          method_id, as_jint(nativeInfoBar), buttonOk, buttonCancel, title,
+              icon);
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 static base::subtle::AtomicWord g_TestJni_showAutoLoginInfoBar = 0;
 static base::android::ScopedJavaLocalRef<jobject>
-    Java_TestJni_showAutoLoginInfoBar(JNIEnv* env, jobject obj, jint
+    Java_TestJni_showAutoLoginInfoBar(JNIEnv* env, jobject obj, JniIntWrapper
     nativeInfoBar,
     jstring realm,
     jstring account,
@@ -88,7 +91,7 @@ static base::android::ScopedJavaLocalRef<jobject>
 
   jobject ret =
       env->CallObjectMethod(obj,
-          method_id, nativeInfoBar, realm, account, args);
+          method_id, as_jint(nativeInfoBar), realm, account, args);
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jobject>(env, ret);
 }
@@ -173,10 +176,10 @@ static base::android::ScopedJavaLocalRef<jobject> Java_TestJni_openUrl(JNIEnv*
 static base::subtle::AtomicWord g_TestJni_activateHardwareAcceleration = 0;
 static void Java_TestJni_activateHardwareAcceleration(JNIEnv* env, jobject obj,
     jboolean activated,
-    jint iPid,
-    jint iType,
-    jint iPrimaryID,
-    jint iSecondaryID) {
+    JniIntWrapper iPid,
+    JniIntWrapper iType,
+    JniIntWrapper iPrimaryID,
+    JniIntWrapper iSecondaryID) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_TestJni_clazz);
@@ -197,13 +200,15 @@ static void Java_TestJni_activateHardwareAcceleration(JNIEnv* env, jobject obj,
       &g_TestJni_activateHardwareAcceleration);
 
      env->CallVoidMethod(obj,
-          method_id, activated, iPid, iType, iPrimaryID, iSecondaryID);
+          method_id, activated, as_jint(iPid), as_jint(iType),
+              as_jint(iPrimaryID), as_jint(iSecondaryID));
   jni_generator::CheckException(env);
 
 }
 
 static base::subtle::AtomicWord g_TestJni_uncheckedCall = 0;
-static void Java_TestJni_uncheckedCall(JNIEnv* env, jobject obj, jint iParam) {
+static void Java_TestJni_uncheckedCall(JNIEnv* env, jobject obj, JniIntWrapper
+    iParam) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_TestJni_clazz);
@@ -220,7 +225,7 @@ static void Java_TestJni_uncheckedCall(JNIEnv* env, jobject obj, jint iParam) {
       &g_TestJni_uncheckedCall);
 
      env->CallVoidMethod(obj,
-          method_id, iParam);
+          method_id, as_jint(iParam));
 
 }
 

@@ -14,6 +14,8 @@
 
 #include "base/android/jni_generator/jni_generator_helper.h"
 
+#include "base/android/jni_int_wrapper.h"
+
 // Step 1: forward declarations.
 namespace {
 const char kInnerStructAClassPath[] =
@@ -92,8 +94,9 @@ static jstring ReturnAString(JNIEnv* env, jobject jcaller,
 }
 
 static base::subtle::AtomicWord g_SampleForTests_javaMethod = 0;
-static jint Java_SampleForTests_javaMethod(JNIEnv* env, jobject obj, jint foo,
-    jint bar) {
+static jint Java_SampleForTests_javaMethod(JNIEnv* env, jobject obj,
+    JniIntWrapper foo,
+    JniIntWrapper bar) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_SampleForTests_clazz, 0);
@@ -112,7 +115,7 @@ static jint Java_SampleForTests_javaMethod(JNIEnv* env, jobject obj, jint foo,
 
   jint ret =
       env->CallIntMethod(obj,
-          method_id, foo, bar);
+          method_id, as_jint(foo), as_jint(bar));
   jni_generator::CheckException(env);
   return ret;
 }
@@ -188,7 +191,7 @@ static void Java_SampleForTests_methodThatThrowsException(JNIEnv* env, jobject
 static base::subtle::AtomicWord g_InnerStructA_create = 0;
 static base::android::ScopedJavaLocalRef<jobject>
     Java_InnerStructA_create(JNIEnv* env, jlong l,
-    jint i,
+    JniIntWrapper i,
     jstring s) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, g_InnerStructA_clazz,
@@ -209,7 +212,7 @@ static base::android::ScopedJavaLocalRef<jobject>
 
   jobject ret =
       env->CallStaticObjectMethod(g_InnerStructA_clazz,
-          method_id, l, i, s);
+          method_id, l, as_jint(i), s);
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jobject>(env, ret);
 }

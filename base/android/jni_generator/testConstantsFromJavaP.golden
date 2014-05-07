@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,8 @@
 #include <jni.h>
 
 #include "base/android/jni_generator/jni_generator_helper.h"
+
+#include "base/android/jni_int_wrapper.h"
 
 // Step 1: forward declarations.
 namespace {
@@ -136,34 +138,34 @@ static base::android::ScopedJavaLocalRef<jobject>
     Java_MotionEvent_obtainAVME_J_J_I_I_LAVMEPP_LAVMEPC_I_I_F_F_I_I_I_I(JNIEnv*
     env, jlong p0,
     jlong p1,
-    jint p2,
-    jint p3,
+    JniIntWrapper p2,
+    JniIntWrapper p3,
     jobjectArray p4,
     jobjectArray p5,
-    jint p6,
-    jint p7,
+    JniIntWrapper p6,
+    JniIntWrapper p7,
     jfloat p8,
     jfloat p9,
-    jint p10,
-    jint p11,
-    jint p12,
-    jint p13) __attribute__ ((unused));
+    JniIntWrapper p10,
+    JniIntWrapper p11,
+    JniIntWrapper p12,
+    JniIntWrapper p13) __attribute__ ((unused));
 static base::android::ScopedJavaLocalRef<jobject>
     Java_MotionEvent_obtainAVME_J_J_I_I_LAVMEPP_LAVMEPC_I_I_F_F_I_I_I_I(JNIEnv*
     env, jlong p0,
     jlong p1,
-    jint p2,
-    jint p3,
+    JniIntWrapper p2,
+    JniIntWrapper p3,
     jobjectArray p4,
     jobjectArray p5,
-    jint p6,
-    jint p7,
+    JniIntWrapper p6,
+    JniIntWrapper p7,
     jfloat p8,
     jfloat p9,
-    jint p10,
-    jint p11,
-    jint p12,
-    jint p13) {
+    JniIntWrapper p10,
+    JniIntWrapper p11,
+    JniIntWrapper p12,
+    JniIntWrapper p13) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, g_MotionEvent_clazz,
       g_MotionEvent_clazz, NULL);
@@ -177,8 +179,9 @@ static base::android::ScopedJavaLocalRef<jobject>
 
   jobject ret =
       env->CallStaticObjectMethod(g_MotionEvent_clazz,
-          method_id, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12,
-              p13);
+          method_id, p0, p1, as_jint(p2), as_jint(p3), p4, p5, as_jint(p6),
+              as_jint(p7), p8, p9, as_jint(p10), as_jint(p11), as_jint(p12),
+              as_jint(p13));
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jobject>(env, ret);
 }
@@ -189,32 +192,32 @@ static base::android::ScopedJavaLocalRef<jobject>
     Java_MotionEvent_obtainAVME_J_J_I_I_AI_LAVMEPC_I_F_F_I_I_I_I(JNIEnv* env,
     jlong p0,
     jlong p1,
-    jint p2,
-    jint p3,
+    JniIntWrapper p2,
+    JniIntWrapper p3,
     jintArray p4,
     jobjectArray p5,
-    jint p6,
+    JniIntWrapper p6,
     jfloat p7,
     jfloat p8,
-    jint p9,
-    jint p10,
-    jint p11,
-    jint p12) __attribute__ ((unused));
+    JniIntWrapper p9,
+    JniIntWrapper p10,
+    JniIntWrapper p11,
+    JniIntWrapper p12) __attribute__ ((unused));
 static base::android::ScopedJavaLocalRef<jobject>
     Java_MotionEvent_obtainAVME_J_J_I_I_AI_LAVMEPC_I_F_F_I_I_I_I(JNIEnv* env,
     jlong p0,
     jlong p1,
-    jint p2,
-    jint p3,
+    JniIntWrapper p2,
+    JniIntWrapper p3,
     jintArray p4,
     jobjectArray p5,
-    jint p6,
+    JniIntWrapper p6,
     jfloat p7,
     jfloat p8,
-    jint p9,
-    jint p10,
-    jint p11,
-    jint p12) {
+    JniIntWrapper p9,
+    JniIntWrapper p10,
+    JniIntWrapper p11,
+    JniIntWrapper p12) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, g_MotionEvent_clazz,
       g_MotionEvent_clazz, NULL);
@@ -228,7 +231,8 @@ static base::android::ScopedJavaLocalRef<jobject>
 
   jobject ret =
       env->CallStaticObjectMethod(g_MotionEvent_clazz,
-          method_id, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12);
+          method_id, p0, p1, as_jint(p2), as_jint(p3), p4, p5, as_jint(p6), p7,
+              p8, as_jint(p9), as_jint(p10), as_jint(p11), as_jint(p12));
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jobject>(env, ret);
 }
@@ -238,29 +242,29 @@ static base::subtle::AtomicWord g_MotionEvent_obtainAVME_J_J_I_F_F_F_F_I_F_F_I_I
 static base::android::ScopedJavaLocalRef<jobject>
     Java_MotionEvent_obtainAVME_J_J_I_F_F_F_F_I_F_F_I_I(JNIEnv* env, jlong p0,
     jlong p1,
-    jint p2,
+    JniIntWrapper p2,
     jfloat p3,
     jfloat p4,
     jfloat p5,
     jfloat p6,
-    jint p7,
+    JniIntWrapper p7,
     jfloat p8,
     jfloat p9,
-    jint p10,
-    jint p11) __attribute__ ((unused));
+    JniIntWrapper p10,
+    JniIntWrapper p11) __attribute__ ((unused));
 static base::android::ScopedJavaLocalRef<jobject>
     Java_MotionEvent_obtainAVME_J_J_I_F_F_F_F_I_F_F_I_I(JNIEnv* env, jlong p0,
     jlong p1,
-    jint p2,
+    JniIntWrapper p2,
     jfloat p3,
     jfloat p4,
     jfloat p5,
     jfloat p6,
-    jint p7,
+    JniIntWrapper p7,
     jfloat p8,
     jfloat p9,
-    jint p10,
-    jint p11) {
+    JniIntWrapper p10,
+    JniIntWrapper p11) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, g_MotionEvent_clazz,
       g_MotionEvent_clazz, NULL);
@@ -274,7 +278,8 @@ static base::android::ScopedJavaLocalRef<jobject>
 
   jobject ret =
       env->CallStaticObjectMethod(g_MotionEvent_clazz,
-          method_id, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11);
+          method_id, p0, p1, as_jint(p2), p3, p4, p5, p6, as_jint(p7), p8, p9,
+              as_jint(p10), as_jint(p11));
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jobject>(env, ret);
 }
@@ -284,31 +289,31 @@ static base::subtle::AtomicWord
 static base::android::ScopedJavaLocalRef<jobject>
     Java_MotionEvent_obtainAVME_J_J_I_I_F_F_F_F_I_F_F_I_I(JNIEnv* env, jlong p0,
     jlong p1,
-    jint p2,
-    jint p3,
+    JniIntWrapper p2,
+    JniIntWrapper p3,
     jfloat p4,
     jfloat p5,
     jfloat p6,
     jfloat p7,
-    jint p8,
+    JniIntWrapper p8,
     jfloat p9,
     jfloat p10,
-    jint p11,
-    jint p12) __attribute__ ((unused));
+    JniIntWrapper p11,
+    JniIntWrapper p12) __attribute__ ((unused));
 static base::android::ScopedJavaLocalRef<jobject>
     Java_MotionEvent_obtainAVME_J_J_I_I_F_F_F_F_I_F_F_I_I(JNIEnv* env, jlong p0,
     jlong p1,
-    jint p2,
-    jint p3,
+    JniIntWrapper p2,
+    JniIntWrapper p3,
     jfloat p4,
     jfloat p5,
     jfloat p6,
     jfloat p7,
-    jint p8,
+    JniIntWrapper p8,
     jfloat p9,
     jfloat p10,
-    jint p11,
-    jint p12) {
+    JniIntWrapper p11,
+    JniIntWrapper p12) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, g_MotionEvent_clazz,
       g_MotionEvent_clazz, NULL);
@@ -322,7 +327,8 @@ static base::android::ScopedJavaLocalRef<jobject>
 
   jobject ret =
       env->CallStaticObjectMethod(g_MotionEvent_clazz,
-          method_id, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12);
+          method_id, p0, p1, as_jint(p2), as_jint(p3), p4, p5, p6, p7,
+              as_jint(p8), p9, p10, as_jint(p11), as_jint(p12));
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jobject>(env, ret);
 }
@@ -331,17 +337,17 @@ static base::subtle::AtomicWord g_MotionEvent_obtainAVME_J_J_I_F_F_I = 0;
 static base::android::ScopedJavaLocalRef<jobject>
     Java_MotionEvent_obtainAVME_J_J_I_F_F_I(JNIEnv* env, jlong p0,
     jlong p1,
-    jint p2,
+    JniIntWrapper p2,
     jfloat p3,
     jfloat p4,
-    jint p5) __attribute__ ((unused));
+    JniIntWrapper p5) __attribute__ ((unused));
 static base::android::ScopedJavaLocalRef<jobject>
     Java_MotionEvent_obtainAVME_J_J_I_F_F_I(JNIEnv* env, jlong p0,
     jlong p1,
-    jint p2,
+    JniIntWrapper p2,
     jfloat p3,
     jfloat p4,
-    jint p5) {
+    JniIntWrapper p5) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, g_MotionEvent_clazz,
       g_MotionEvent_clazz, NULL);
@@ -355,7 +361,7 @@ static base::android::ScopedJavaLocalRef<jobject>
 
   jobject ret =
       env->CallStaticObjectMethod(g_MotionEvent_clazz,
-          method_id, p0, p1, p2, p3, p4, p5);
+          method_id, p0, p1, as_jint(p2), p3, p4, as_jint(p5));
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jobject>(env, ret);
 }
@@ -474,9 +480,10 @@ static jint Java_MotionEvent_getSource(JNIEnv* env, jobject obj) {
 }
 
 static base::subtle::AtomicWord g_MotionEvent_setSource = 0;
-static void Java_MotionEvent_setSource(JNIEnv* env, jobject obj, jint p0)
-    __attribute__ ((unused));
-static void Java_MotionEvent_setSource(JNIEnv* env, jobject obj, jint p0) {
+static void Java_MotionEvent_setSource(JNIEnv* env, jobject obj, JniIntWrapper
+    p0) __attribute__ ((unused));
+static void Java_MotionEvent_setSource(JNIEnv* env, jobject obj, JniIntWrapper
+    p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz);
@@ -489,7 +496,7 @@ static void Java_MotionEvent_setSource(JNIEnv* env, jobject obj, jint p0) {
       &g_MotionEvent_setSource);
 
      env->CallVoidMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
 
 }
@@ -825,10 +832,10 @@ static jfloat Java_MotionEvent_getOrientationF(JNIEnv* env, jobject obj) {
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getAxisValueF_I = 0;
-static jfloat Java_MotionEvent_getAxisValueF_I(JNIEnv* env, jobject obj, jint
-    p0) __attribute__ ((unused));
-static jfloat Java_MotionEvent_getAxisValueF_I(JNIEnv* env, jobject obj, jint
-    p0) {
+static jfloat Java_MotionEvent_getAxisValueF_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) __attribute__ ((unused));
+static jfloat Java_MotionEvent_getAxisValueF_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -842,7 +849,7 @@ static jfloat Java_MotionEvent_getAxisValueF_I(JNIEnv* env, jobject obj, jint
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
@@ -870,9 +877,10 @@ static jint Java_MotionEvent_getPointerCount(JNIEnv* env, jobject obj) {
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getPointerId = 0;
-static jint Java_MotionEvent_getPointerId(JNIEnv* env, jobject obj, jint p0)
-    __attribute__ ((unused));
-static jint Java_MotionEvent_getPointerId(JNIEnv* env, jobject obj, jint p0) {
+static jint Java_MotionEvent_getPointerId(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) __attribute__ ((unused));
+static jint Java_MotionEvent_getPointerId(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -886,15 +894,16 @@ static jint Java_MotionEvent_getPointerId(JNIEnv* env, jobject obj, jint p0) {
 
   jint ret =
       env->CallIntMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getToolType = 0;
-static jint Java_MotionEvent_getToolType(JNIEnv* env, jobject obj, jint p0)
-    __attribute__ ((unused));
-static jint Java_MotionEvent_getToolType(JNIEnv* env, jobject obj, jint p0) {
+static jint Java_MotionEvent_getToolType(JNIEnv* env, jobject obj, JniIntWrapper
+    p0) __attribute__ ((unused));
+static jint Java_MotionEvent_getToolType(JNIEnv* env, jobject obj, JniIntWrapper
+    p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -908,16 +917,16 @@ static jint Java_MotionEvent_getToolType(JNIEnv* env, jobject obj, jint p0) {
 
   jint ret =
       env->CallIntMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_findPointerIndex = 0;
-static jint Java_MotionEvent_findPointerIndex(JNIEnv* env, jobject obj, jint p0)
-    __attribute__ ((unused));
-static jint Java_MotionEvent_findPointerIndex(JNIEnv* env, jobject obj, jint p0)
-    {
+static jint Java_MotionEvent_findPointerIndex(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) __attribute__ ((unused));
+static jint Java_MotionEvent_findPointerIndex(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -931,15 +940,16 @@ static jint Java_MotionEvent_findPointerIndex(JNIEnv* env, jobject obj, jint p0)
 
   jint ret =
       env->CallIntMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getXF_I = 0;
-static jfloat Java_MotionEvent_getXF_I(JNIEnv* env, jobject obj, jint p0)
-    __attribute__ ((unused));
-static jfloat Java_MotionEvent_getXF_I(JNIEnv* env, jobject obj, jint p0) {
+static jfloat Java_MotionEvent_getXF_I(JNIEnv* env, jobject obj, JniIntWrapper
+    p0) __attribute__ ((unused));
+static jfloat Java_MotionEvent_getXF_I(JNIEnv* env, jobject obj, JniIntWrapper
+    p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -953,15 +963,16 @@ static jfloat Java_MotionEvent_getXF_I(JNIEnv* env, jobject obj, jint p0) {
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getYF_I = 0;
-static jfloat Java_MotionEvent_getYF_I(JNIEnv* env, jobject obj, jint p0)
-    __attribute__ ((unused));
-static jfloat Java_MotionEvent_getYF_I(JNIEnv* env, jobject obj, jint p0) {
+static jfloat Java_MotionEvent_getYF_I(JNIEnv* env, jobject obj, JniIntWrapper
+    p0) __attribute__ ((unused));
+static jfloat Java_MotionEvent_getYF_I(JNIEnv* env, jobject obj, JniIntWrapper
+    p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -975,16 +986,16 @@ static jfloat Java_MotionEvent_getYF_I(JNIEnv* env, jobject obj, jint p0) {
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getPressureF_I = 0;
-static jfloat Java_MotionEvent_getPressureF_I(JNIEnv* env, jobject obj, jint p0)
-    __attribute__ ((unused));
-static jfloat Java_MotionEvent_getPressureF_I(JNIEnv* env, jobject obj, jint p0)
-    {
+static jfloat Java_MotionEvent_getPressureF_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) __attribute__ ((unused));
+static jfloat Java_MotionEvent_getPressureF_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -998,15 +1009,16 @@ static jfloat Java_MotionEvent_getPressureF_I(JNIEnv* env, jobject obj, jint p0)
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getSizeF_I = 0;
-static jfloat Java_MotionEvent_getSizeF_I(JNIEnv* env, jobject obj, jint p0)
-    __attribute__ ((unused));
-static jfloat Java_MotionEvent_getSizeF_I(JNIEnv* env, jobject obj, jint p0) {
+static jfloat Java_MotionEvent_getSizeF_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) __attribute__ ((unused));
+static jfloat Java_MotionEvent_getSizeF_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1020,16 +1032,16 @@ static jfloat Java_MotionEvent_getSizeF_I(JNIEnv* env, jobject obj, jint p0) {
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getTouchMajorF_I = 0;
-static jfloat Java_MotionEvent_getTouchMajorF_I(JNIEnv* env, jobject obj, jint
-    p0) __attribute__ ((unused));
-static jfloat Java_MotionEvent_getTouchMajorF_I(JNIEnv* env, jobject obj, jint
-    p0) {
+static jfloat Java_MotionEvent_getTouchMajorF_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) __attribute__ ((unused));
+static jfloat Java_MotionEvent_getTouchMajorF_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1043,16 +1055,16 @@ static jfloat Java_MotionEvent_getTouchMajorF_I(JNIEnv* env, jobject obj, jint
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getTouchMinorF_I = 0;
-static jfloat Java_MotionEvent_getTouchMinorF_I(JNIEnv* env, jobject obj, jint
-    p0) __attribute__ ((unused));
-static jfloat Java_MotionEvent_getTouchMinorF_I(JNIEnv* env, jobject obj, jint
-    p0) {
+static jfloat Java_MotionEvent_getTouchMinorF_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) __attribute__ ((unused));
+static jfloat Java_MotionEvent_getTouchMinorF_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1066,16 +1078,16 @@ static jfloat Java_MotionEvent_getTouchMinorF_I(JNIEnv* env, jobject obj, jint
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getToolMajorF_I = 0;
-static jfloat Java_MotionEvent_getToolMajorF_I(JNIEnv* env, jobject obj, jint
-    p0) __attribute__ ((unused));
-static jfloat Java_MotionEvent_getToolMajorF_I(JNIEnv* env, jobject obj, jint
-    p0) {
+static jfloat Java_MotionEvent_getToolMajorF_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) __attribute__ ((unused));
+static jfloat Java_MotionEvent_getToolMajorF_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1089,16 +1101,16 @@ static jfloat Java_MotionEvent_getToolMajorF_I(JNIEnv* env, jobject obj, jint
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getToolMinorF_I = 0;
-static jfloat Java_MotionEvent_getToolMinorF_I(JNIEnv* env, jobject obj, jint
-    p0) __attribute__ ((unused));
-static jfloat Java_MotionEvent_getToolMinorF_I(JNIEnv* env, jobject obj, jint
-    p0) {
+static jfloat Java_MotionEvent_getToolMinorF_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) __attribute__ ((unused));
+static jfloat Java_MotionEvent_getToolMinorF_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1112,16 +1124,16 @@ static jfloat Java_MotionEvent_getToolMinorF_I(JNIEnv* env, jobject obj, jint
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getOrientationF_I = 0;
-static jfloat Java_MotionEvent_getOrientationF_I(JNIEnv* env, jobject obj, jint
-    p0) __attribute__ ((unused));
-static jfloat Java_MotionEvent_getOrientationF_I(JNIEnv* env, jobject obj, jint
-    p0) {
+static jfloat Java_MotionEvent_getOrientationF_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) __attribute__ ((unused));
+static jfloat Java_MotionEvent_getOrientationF_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1135,18 +1147,18 @@ static jfloat Java_MotionEvent_getOrientationF_I(JNIEnv* env, jobject obj, jint
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getAxisValueF_I_I = 0;
-static jfloat Java_MotionEvent_getAxisValueF_I_I(JNIEnv* env, jobject obj, jint
-    p0,
-    jint p1) __attribute__ ((unused));
-static jfloat Java_MotionEvent_getAxisValueF_I_I(JNIEnv* env, jobject obj, jint
-    p0,
-    jint p1) {
+static jfloat Java_MotionEvent_getAxisValueF_I_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0,
+    JniIntWrapper p1) __attribute__ ((unused));
+static jfloat Java_MotionEvent_getAxisValueF_I_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0,
+    JniIntWrapper p1) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1160,15 +1172,17 @@ static jfloat Java_MotionEvent_getAxisValueF_I_I(JNIEnv* env, jobject obj, jint
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0, p1);
+          method_id, as_jint(p0), as_jint(p1));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getPointerCoords = 0;
-static void Java_MotionEvent_getPointerCoords(JNIEnv* env, jobject obj, jint p0,
+static void Java_MotionEvent_getPointerCoords(JNIEnv* env, jobject obj,
+    JniIntWrapper p0,
     jobject p1) __attribute__ ((unused));
-static void Java_MotionEvent_getPointerCoords(JNIEnv* env, jobject obj, jint p0,
+static void Java_MotionEvent_getPointerCoords(JNIEnv* env, jobject obj,
+    JniIntWrapper p0,
     jobject p1) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
@@ -1182,17 +1196,17 @@ static void Java_MotionEvent_getPointerCoords(JNIEnv* env, jobject obj, jint p0,
       &g_MotionEvent_getPointerCoords);
 
      env->CallVoidMethod(obj,
-          method_id, p0, p1);
+          method_id, as_jint(p0), p1);
   jni_generator::CheckException(env);
 
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getPointerProperties = 0;
-static void Java_MotionEvent_getPointerProperties(JNIEnv* env, jobject obj, jint
-    p0,
+static void Java_MotionEvent_getPointerProperties(JNIEnv* env, jobject obj,
+    JniIntWrapper p0,
     jobject p1) __attribute__ ((unused));
-static void Java_MotionEvent_getPointerProperties(JNIEnv* env, jobject obj, jint
-    p0,
+static void Java_MotionEvent_getPointerProperties(JNIEnv* env, jobject obj,
+    JniIntWrapper p0,
     jobject p1) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
@@ -1206,7 +1220,7 @@ static void Java_MotionEvent_getPointerProperties(JNIEnv* env, jobject obj, jint
       &g_MotionEvent_getPointerProperties);
 
      env->CallVoidMethod(obj,
-          method_id, p0, p1);
+          method_id, as_jint(p0), p1);
   jni_generator::CheckException(env);
 
 }
@@ -1367,9 +1381,9 @@ static jint Java_MotionEvent_getHistorySize(JNIEnv* env, jobject obj) {
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalEventTime = 0;
 static jlong Java_MotionEvent_getHistoricalEventTime(JNIEnv* env, jobject obj,
-    jint p0) __attribute__ ((unused));
+    JniIntWrapper p0) __attribute__ ((unused));
 static jlong Java_MotionEvent_getHistoricalEventTime(JNIEnv* env, jobject obj,
-    jint p0) {
+    JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1383,16 +1397,16 @@ static jlong Java_MotionEvent_getHistoricalEventTime(JNIEnv* env, jobject obj,
 
   jlong ret =
       env->CallLongMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalXF_I = 0;
-static jfloat Java_MotionEvent_getHistoricalXF_I(JNIEnv* env, jobject obj, jint
-    p0) __attribute__ ((unused));
-static jfloat Java_MotionEvent_getHistoricalXF_I(JNIEnv* env, jobject obj, jint
-    p0) {
+static jfloat Java_MotionEvent_getHistoricalXF_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) __attribute__ ((unused));
+static jfloat Java_MotionEvent_getHistoricalXF_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1406,16 +1420,16 @@ static jfloat Java_MotionEvent_getHistoricalXF_I(JNIEnv* env, jobject obj, jint
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalYF_I = 0;
-static jfloat Java_MotionEvent_getHistoricalYF_I(JNIEnv* env, jobject obj, jint
-    p0) __attribute__ ((unused));
-static jfloat Java_MotionEvent_getHistoricalYF_I(JNIEnv* env, jobject obj, jint
-    p0) {
+static jfloat Java_MotionEvent_getHistoricalYF_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) __attribute__ ((unused));
+static jfloat Java_MotionEvent_getHistoricalYF_I(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1429,16 +1443,16 @@ static jfloat Java_MotionEvent_getHistoricalYF_I(JNIEnv* env, jobject obj, jint
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalPressureF_I = 0;
 static jfloat Java_MotionEvent_getHistoricalPressureF_I(JNIEnv* env, jobject
-    obj, jint p0) __attribute__ ((unused));
+    obj, JniIntWrapper p0) __attribute__ ((unused));
 static jfloat Java_MotionEvent_getHistoricalPressureF_I(JNIEnv* env, jobject
-    obj, jint p0) {
+    obj, JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1452,16 +1466,16 @@ static jfloat Java_MotionEvent_getHistoricalPressureF_I(JNIEnv* env, jobject
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalSizeF_I = 0;
 static jfloat Java_MotionEvent_getHistoricalSizeF_I(JNIEnv* env, jobject obj,
-    jint p0) __attribute__ ((unused));
+    JniIntWrapper p0) __attribute__ ((unused));
 static jfloat Java_MotionEvent_getHistoricalSizeF_I(JNIEnv* env, jobject obj,
-    jint p0) {
+    JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1475,16 +1489,16 @@ static jfloat Java_MotionEvent_getHistoricalSizeF_I(JNIEnv* env, jobject obj,
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalTouchMajorF_I = 0;
 static jfloat Java_MotionEvent_getHistoricalTouchMajorF_I(JNIEnv* env, jobject
-    obj, jint p0) __attribute__ ((unused));
+    obj, JniIntWrapper p0) __attribute__ ((unused));
 static jfloat Java_MotionEvent_getHistoricalTouchMajorF_I(JNIEnv* env, jobject
-    obj, jint p0) {
+    obj, JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1498,16 +1512,16 @@ static jfloat Java_MotionEvent_getHistoricalTouchMajorF_I(JNIEnv* env, jobject
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalTouchMinorF_I = 0;
 static jfloat Java_MotionEvent_getHistoricalTouchMinorF_I(JNIEnv* env, jobject
-    obj, jint p0) __attribute__ ((unused));
+    obj, JniIntWrapper p0) __attribute__ ((unused));
 static jfloat Java_MotionEvent_getHistoricalTouchMinorF_I(JNIEnv* env, jobject
-    obj, jint p0) {
+    obj, JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1521,16 +1535,16 @@ static jfloat Java_MotionEvent_getHistoricalTouchMinorF_I(JNIEnv* env, jobject
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalToolMajorF_I = 0;
 static jfloat Java_MotionEvent_getHistoricalToolMajorF_I(JNIEnv* env, jobject
-    obj, jint p0) __attribute__ ((unused));
+    obj, JniIntWrapper p0) __attribute__ ((unused));
 static jfloat Java_MotionEvent_getHistoricalToolMajorF_I(JNIEnv* env, jobject
-    obj, jint p0) {
+    obj, JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1544,16 +1558,16 @@ static jfloat Java_MotionEvent_getHistoricalToolMajorF_I(JNIEnv* env, jobject
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalToolMinorF_I = 0;
 static jfloat Java_MotionEvent_getHistoricalToolMinorF_I(JNIEnv* env, jobject
-    obj, jint p0) __attribute__ ((unused));
+    obj, JniIntWrapper p0) __attribute__ ((unused));
 static jfloat Java_MotionEvent_getHistoricalToolMinorF_I(JNIEnv* env, jobject
-    obj, jint p0) {
+    obj, JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1567,16 +1581,16 @@ static jfloat Java_MotionEvent_getHistoricalToolMinorF_I(JNIEnv* env, jobject
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalOrientationF_I = 0;
 static jfloat Java_MotionEvent_getHistoricalOrientationF_I(JNIEnv* env, jobject
-    obj, jint p0) __attribute__ ((unused));
+    obj, JniIntWrapper p0) __attribute__ ((unused));
 static jfloat Java_MotionEvent_getHistoricalOrientationF_I(JNIEnv* env, jobject
-    obj, jint p0) {
+    obj, JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1590,18 +1604,18 @@ static jfloat Java_MotionEvent_getHistoricalOrientationF_I(JNIEnv* env, jobject
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalAxisValueF_I_I = 0;
 static jfloat Java_MotionEvent_getHistoricalAxisValueF_I_I(JNIEnv* env, jobject
-    obj, jint p0,
-    jint p1) __attribute__ ((unused));
+    obj, JniIntWrapper p0,
+    JniIntWrapper p1) __attribute__ ((unused));
 static jfloat Java_MotionEvent_getHistoricalAxisValueF_I_I(JNIEnv* env, jobject
-    obj, jint p0,
-    jint p1) {
+    obj, JniIntWrapper p0,
+    JniIntWrapper p1) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1615,18 +1629,18 @@ static jfloat Java_MotionEvent_getHistoricalAxisValueF_I_I(JNIEnv* env, jobject
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0, p1);
+          method_id, as_jint(p0), as_jint(p1));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalXF_I_I = 0;
 static jfloat Java_MotionEvent_getHistoricalXF_I_I(JNIEnv* env, jobject obj,
-    jint p0,
-    jint p1) __attribute__ ((unused));
+    JniIntWrapper p0,
+    JniIntWrapper p1) __attribute__ ((unused));
 static jfloat Java_MotionEvent_getHistoricalXF_I_I(JNIEnv* env, jobject obj,
-    jint p0,
-    jint p1) {
+    JniIntWrapper p0,
+    JniIntWrapper p1) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1640,18 +1654,18 @@ static jfloat Java_MotionEvent_getHistoricalXF_I_I(JNIEnv* env, jobject obj,
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0, p1);
+          method_id, as_jint(p0), as_jint(p1));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalYF_I_I = 0;
 static jfloat Java_MotionEvent_getHistoricalYF_I_I(JNIEnv* env, jobject obj,
-    jint p0,
-    jint p1) __attribute__ ((unused));
+    JniIntWrapper p0,
+    JniIntWrapper p1) __attribute__ ((unused));
 static jfloat Java_MotionEvent_getHistoricalYF_I_I(JNIEnv* env, jobject obj,
-    jint p0,
-    jint p1) {
+    JniIntWrapper p0,
+    JniIntWrapper p1) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1665,18 +1679,18 @@ static jfloat Java_MotionEvent_getHistoricalYF_I_I(JNIEnv* env, jobject obj,
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0, p1);
+          method_id, as_jint(p0), as_jint(p1));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalPressureF_I_I = 0;
 static jfloat Java_MotionEvent_getHistoricalPressureF_I_I(JNIEnv* env, jobject
-    obj, jint p0,
-    jint p1) __attribute__ ((unused));
+    obj, JniIntWrapper p0,
+    JniIntWrapper p1) __attribute__ ((unused));
 static jfloat Java_MotionEvent_getHistoricalPressureF_I_I(JNIEnv* env, jobject
-    obj, jint p0,
-    jint p1) {
+    obj, JniIntWrapper p0,
+    JniIntWrapper p1) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1690,18 +1704,18 @@ static jfloat Java_MotionEvent_getHistoricalPressureF_I_I(JNIEnv* env, jobject
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0, p1);
+          method_id, as_jint(p0), as_jint(p1));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalSizeF_I_I = 0;
 static jfloat Java_MotionEvent_getHistoricalSizeF_I_I(JNIEnv* env, jobject obj,
-    jint p0,
-    jint p1) __attribute__ ((unused));
+    JniIntWrapper p0,
+    JniIntWrapper p1) __attribute__ ((unused));
 static jfloat Java_MotionEvent_getHistoricalSizeF_I_I(JNIEnv* env, jobject obj,
-    jint p0,
-    jint p1) {
+    JniIntWrapper p0,
+    JniIntWrapper p1) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1715,18 +1729,18 @@ static jfloat Java_MotionEvent_getHistoricalSizeF_I_I(JNIEnv* env, jobject obj,
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0, p1);
+          method_id, as_jint(p0), as_jint(p1));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalTouchMajorF_I_I = 0;
 static jfloat Java_MotionEvent_getHistoricalTouchMajorF_I_I(JNIEnv* env, jobject
-    obj, jint p0,
-    jint p1) __attribute__ ((unused));
+    obj, JniIntWrapper p0,
+    JniIntWrapper p1) __attribute__ ((unused));
 static jfloat Java_MotionEvent_getHistoricalTouchMajorF_I_I(JNIEnv* env, jobject
-    obj, jint p0,
-    jint p1) {
+    obj, JniIntWrapper p0,
+    JniIntWrapper p1) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1740,18 +1754,18 @@ static jfloat Java_MotionEvent_getHistoricalTouchMajorF_I_I(JNIEnv* env, jobject
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0, p1);
+          method_id, as_jint(p0), as_jint(p1));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalTouchMinorF_I_I = 0;
 static jfloat Java_MotionEvent_getHistoricalTouchMinorF_I_I(JNIEnv* env, jobject
-    obj, jint p0,
-    jint p1) __attribute__ ((unused));
+    obj, JniIntWrapper p0,
+    JniIntWrapper p1) __attribute__ ((unused));
 static jfloat Java_MotionEvent_getHistoricalTouchMinorF_I_I(JNIEnv* env, jobject
-    obj, jint p0,
-    jint p1) {
+    obj, JniIntWrapper p0,
+    JniIntWrapper p1) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1765,18 +1779,18 @@ static jfloat Java_MotionEvent_getHistoricalTouchMinorF_I_I(JNIEnv* env, jobject
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0, p1);
+          method_id, as_jint(p0), as_jint(p1));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalToolMajorF_I_I = 0;
 static jfloat Java_MotionEvent_getHistoricalToolMajorF_I_I(JNIEnv* env, jobject
-    obj, jint p0,
-    jint p1) __attribute__ ((unused));
+    obj, JniIntWrapper p0,
+    JniIntWrapper p1) __attribute__ ((unused));
 static jfloat Java_MotionEvent_getHistoricalToolMajorF_I_I(JNIEnv* env, jobject
-    obj, jint p0,
-    jint p1) {
+    obj, JniIntWrapper p0,
+    JniIntWrapper p1) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1790,18 +1804,18 @@ static jfloat Java_MotionEvent_getHistoricalToolMajorF_I_I(JNIEnv* env, jobject
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0, p1);
+          method_id, as_jint(p0), as_jint(p1));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalToolMinorF_I_I = 0;
 static jfloat Java_MotionEvent_getHistoricalToolMinorF_I_I(JNIEnv* env, jobject
-    obj, jint p0,
-    jint p1) __attribute__ ((unused));
+    obj, JniIntWrapper p0,
+    JniIntWrapper p1) __attribute__ ((unused));
 static jfloat Java_MotionEvent_getHistoricalToolMinorF_I_I(JNIEnv* env, jobject
-    obj, jint p0,
-    jint p1) {
+    obj, JniIntWrapper p0,
+    JniIntWrapper p1) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1815,18 +1829,18 @@ static jfloat Java_MotionEvent_getHistoricalToolMinorF_I_I(JNIEnv* env, jobject
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0, p1);
+          method_id, as_jint(p0), as_jint(p1));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalOrientationF_I_I = 0;
 static jfloat Java_MotionEvent_getHistoricalOrientationF_I_I(JNIEnv* env,
-    jobject obj, jint p0,
-    jint p1) __attribute__ ((unused));
+    jobject obj, JniIntWrapper p0,
+    JniIntWrapper p1) __attribute__ ((unused));
 static jfloat Java_MotionEvent_getHistoricalOrientationF_I_I(JNIEnv* env,
-    jobject obj, jint p0,
-    jint p1) {
+    jobject obj, JniIntWrapper p0,
+    JniIntWrapper p1) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1840,20 +1854,20 @@ static jfloat Java_MotionEvent_getHistoricalOrientationF_I_I(JNIEnv* env,
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0, p1);
+          method_id, as_jint(p0), as_jint(p1));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalAxisValueF_I_I_I = 0;
 static jfloat Java_MotionEvent_getHistoricalAxisValueF_I_I_I(JNIEnv* env,
-    jobject obj, jint p0,
-    jint p1,
-    jint p2) __attribute__ ((unused));
+    jobject obj, JniIntWrapper p0,
+    JniIntWrapper p1,
+    JniIntWrapper p2) __attribute__ ((unused));
 static jfloat Java_MotionEvent_getHistoricalAxisValueF_I_I_I(JNIEnv* env,
-    jobject obj, jint p0,
-    jint p1,
-    jint p2) {
+    jobject obj, JniIntWrapper p0,
+    JniIntWrapper p1,
+    JniIntWrapper p2) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz, 0);
@@ -1867,19 +1881,19 @@ static jfloat Java_MotionEvent_getHistoricalAxisValueF_I_I_I(JNIEnv* env,
 
   jfloat ret =
       env->CallFloatMethod(obj,
-          method_id, p0, p1, p2);
+          method_id, as_jint(p0), as_jint(p1), as_jint(p2));
   jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_MotionEvent_getHistoricalPointerCoords = 0;
 static void Java_MotionEvent_getHistoricalPointerCoords(JNIEnv* env, jobject
-    obj, jint p0,
-    jint p1,
+    obj, JniIntWrapper p0,
+    JniIntWrapper p1,
     jobject p2) __attribute__ ((unused));
 static void Java_MotionEvent_getHistoricalPointerCoords(JNIEnv* env, jobject
-    obj, jint p0,
-    jint p1,
+    obj, JniIntWrapper p0,
+    JniIntWrapper p1,
     jobject p2) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
@@ -1893,7 +1907,7 @@ static void Java_MotionEvent_getHistoricalPointerCoords(JNIEnv* env, jobject
       &g_MotionEvent_getHistoricalPointerCoords);
 
      env->CallVoidMethod(obj,
-          method_id, p0, p1, p2);
+          method_id, as_jint(p0), as_jint(p1), p2);
   jni_generator::CheckException(env);
 
 }
@@ -1921,9 +1935,10 @@ static jint Java_MotionEvent_getEdgeFlags(JNIEnv* env, jobject obj) {
 }
 
 static base::subtle::AtomicWord g_MotionEvent_setEdgeFlags = 0;
-static void Java_MotionEvent_setEdgeFlags(JNIEnv* env, jobject obj, jint p0)
-    __attribute__ ((unused));
-static void Java_MotionEvent_setEdgeFlags(JNIEnv* env, jobject obj, jint p0) {
+static void Java_MotionEvent_setEdgeFlags(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) __attribute__ ((unused));
+static void Java_MotionEvent_setEdgeFlags(JNIEnv* env, jobject obj,
+    JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz);
@@ -1936,15 +1951,16 @@ static void Java_MotionEvent_setEdgeFlags(JNIEnv* env, jobject obj, jint p0) {
       &g_MotionEvent_setEdgeFlags);
 
      env->CallVoidMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
 
 }
 
 static base::subtle::AtomicWord g_MotionEvent_setAction = 0;
-static void Java_MotionEvent_setAction(JNIEnv* env, jobject obj, jint p0)
-    __attribute__ ((unused));
-static void Java_MotionEvent_setAction(JNIEnv* env, jobject obj, jint p0) {
+static void Java_MotionEvent_setAction(JNIEnv* env, jobject obj, JniIntWrapper
+    p0) __attribute__ ((unused));
+static void Java_MotionEvent_setAction(JNIEnv* env, jobject obj, JniIntWrapper
+    p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz);
@@ -1957,7 +1973,7 @@ static void Java_MotionEvent_setAction(JNIEnv* env, jobject obj, jint p0) {
       &g_MotionEvent_setAction);
 
      env->CallVoidMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
 
 }
@@ -2034,14 +2050,14 @@ static void Java_MotionEvent_addBatchV_J_F_F_F_F_I(JNIEnv* env, jobject obj,
     jfloat p2,
     jfloat p3,
     jfloat p4,
-    jint p5) __attribute__ ((unused));
+    JniIntWrapper p5) __attribute__ ((unused));
 static void Java_MotionEvent_addBatchV_J_F_F_F_F_I(JNIEnv* env, jobject obj,
     jlong p0,
     jfloat p1,
     jfloat p2,
     jfloat p3,
     jfloat p4,
-    jint p5) {
+    JniIntWrapper p5) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz);
@@ -2054,7 +2070,7 @@ static void Java_MotionEvent_addBatchV_J_F_F_F_F_I(JNIEnv* env, jobject obj,
       &g_MotionEvent_addBatchV_J_F_F_F_F_I);
 
      env->CallVoidMethod(obj,
-          method_id, p0, p1, p2, p3, p4, p5);
+          method_id, p0, p1, p2, p3, p4, as_jint(p5));
   jni_generator::CheckException(env);
 
 }
@@ -2063,11 +2079,11 @@ static base::subtle::AtomicWord g_MotionEvent_addBatchV_J_LAVMEPC_I = 0;
 static void Java_MotionEvent_addBatchV_J_LAVMEPC_I(JNIEnv* env, jobject obj,
     jlong p0,
     jobjectArray p1,
-    jint p2) __attribute__ ((unused));
+    JniIntWrapper p2) __attribute__ ((unused));
 static void Java_MotionEvent_addBatchV_J_LAVMEPC_I(JNIEnv* env, jobject obj,
     jlong p0,
     jobjectArray p1,
-    jint p2) {
+    JniIntWrapper p2) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz);
@@ -2080,7 +2096,7 @@ static void Java_MotionEvent_addBatchV_J_LAVMEPC_I(JNIEnv* env, jobject obj,
       &g_MotionEvent_addBatchV_J_LAVMEPC_I);
 
      env->CallVoidMethod(obj,
-          method_id, p0, p1, p2);
+          method_id, p0, p1, as_jint(p2));
   jni_generator::CheckException(env);
 
 }
@@ -2111,10 +2127,10 @@ static base::android::ScopedJavaLocalRef<jstring>
 
 static base::subtle::AtomicWord g_MotionEvent_actionToString = 0;
 static base::android::ScopedJavaLocalRef<jstring>
-    Java_MotionEvent_actionToString(JNIEnv* env, jint p0) __attribute__
+    Java_MotionEvent_actionToString(JNIEnv* env, JniIntWrapper p0) __attribute__
     ((unused));
 static base::android::ScopedJavaLocalRef<jstring>
-    Java_MotionEvent_actionToString(JNIEnv* env, jint p0) {
+    Java_MotionEvent_actionToString(JNIEnv* env, JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, g_MotionEvent_clazz,
       g_MotionEvent_clazz, NULL);
@@ -2128,17 +2144,17 @@ static base::android::ScopedJavaLocalRef<jstring>
 
   jstring ret =
       static_cast<jstring>(env->CallStaticObjectMethod(g_MotionEvent_clazz,
-          method_id, p0));
+          method_id, as_jint(p0)));
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jstring>(env, ret);
 }
 
 static base::subtle::AtomicWord g_MotionEvent_axisToString = 0;
 static base::android::ScopedJavaLocalRef<jstring>
-    Java_MotionEvent_axisToString(JNIEnv* env, jint p0) __attribute__
+    Java_MotionEvent_axisToString(JNIEnv* env, JniIntWrapper p0) __attribute__
     ((unused));
 static base::android::ScopedJavaLocalRef<jstring>
-    Java_MotionEvent_axisToString(JNIEnv* env, jint p0) {
+    Java_MotionEvent_axisToString(JNIEnv* env, JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, g_MotionEvent_clazz,
       g_MotionEvent_clazz, NULL);
@@ -2152,7 +2168,7 @@ static base::android::ScopedJavaLocalRef<jstring>
 
   jstring ret =
       static_cast<jstring>(env->CallStaticObjectMethod(g_MotionEvent_clazz,
-          method_id, p0));
+          method_id, as_jint(p0)));
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jstring>(env, ret);
 }
@@ -2181,9 +2197,9 @@ static jint Java_MotionEvent_axisFromString(JNIEnv* env, jstring p0) {
 
 static base::subtle::AtomicWord g_MotionEvent_writeToParcel = 0;
 static void Java_MotionEvent_writeToParcel(JNIEnv* env, jobject obj, jobject p0,
-    jint p1) __attribute__ ((unused));
+    JniIntWrapper p1) __attribute__ ((unused));
 static void Java_MotionEvent_writeToParcel(JNIEnv* env, jobject obj, jobject p0,
-    jint p1) {
+    JniIntWrapper p1) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_MotionEvent_clazz);
@@ -2196,7 +2212,7 @@ static void Java_MotionEvent_writeToParcel(JNIEnv* env, jobject obj, jobject p0,
       &g_MotionEvent_writeToParcel);
 
      env->CallVoidMethod(obj,
-          method_id, p0, p1);
+          method_id, p0, as_jint(p1));
   jni_generator::CheckException(env);
 
 }

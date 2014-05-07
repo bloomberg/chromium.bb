@@ -14,6 +14,8 @@
 
 #include "base/android/jni_generator/jni_generator_helper.h"
 
+#include "base/android/jni_int_wrapper.h"
+
 // Step 1: forward declarations.
 namespace {
 const char kInputStreamClassPath[] = "java/io/InputStream";
@@ -70,9 +72,9 @@ static void Java_InputStream_close(JNIEnv* env, jobject obj) {
 }
 
 static base::subtle::AtomicWord g_InputStream_mark = 0;
-static void Java_InputStream_mark(JNIEnv* env, jobject obj, jint p0)
+static void Java_InputStream_mark(JNIEnv* env, jobject obj, JniIntWrapper p0)
     __attribute__ ((unused));
-static void Java_InputStream_mark(JNIEnv* env, jobject obj, jint p0) {
+static void Java_InputStream_mark(JNIEnv* env, jobject obj, JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_InputStream_clazz);
@@ -85,7 +87,7 @@ static void Java_InputStream_mark(JNIEnv* env, jobject obj, jint p0) {
       &g_InputStream_mark);
 
      env->CallVoidMethod(obj,
-          method_id, p0);
+          method_id, as_jint(p0));
   jni_generator::CheckException(env);
 
 }
@@ -159,12 +161,12 @@ static jint Java_InputStream_readI_AB(JNIEnv* env, jobject obj, jbyteArray p0) {
 static base::subtle::AtomicWord g_InputStream_readI_AB_I_I = 0;
 static jint Java_InputStream_readI_AB_I_I(JNIEnv* env, jobject obj, jbyteArray
     p0,
-    jint p1,
-    jint p2) __attribute__ ((unused));
+    JniIntWrapper p1,
+    JniIntWrapper p2) __attribute__ ((unused));
 static jint Java_InputStream_readI_AB_I_I(JNIEnv* env, jobject obj, jbyteArray
     p0,
-    jint p1,
-    jint p2) {
+    JniIntWrapper p1,
+    JniIntWrapper p2) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       g_InputStream_clazz, 0);
@@ -178,7 +180,7 @@ static jint Java_InputStream_readI_AB_I_I(JNIEnv* env, jobject obj, jbyteArray
 
   jint ret =
       env->CallIntMethod(obj,
-          method_id, p0, p1, p2);
+          method_id, p0, as_jint(p1), as_jint(p2));
   jni_generator::CheckException(env);
   return ret;
 }

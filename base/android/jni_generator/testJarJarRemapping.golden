@@ -14,6 +14,8 @@
 
 #include "base/android/jni_generator/jni_generator_helper.h"
 
+#include "base/android/jni_int_wrapper.h"
+
 // Step 1: forward declarations.
 namespace {
 const char kExampleClassPath[] = "com/test/jni_generator/Example";

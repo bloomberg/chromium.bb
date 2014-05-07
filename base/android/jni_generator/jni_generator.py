@@ -124,6 +124,14 @@ def JavaDataTypeToC(java_type):
     return 'jobject'
 
 
+def JavaDataTypeToCForCalledByNativeParam(java_type):
+  """Returns a C datatype to be when calling from native."""
+  if java_type == 'int':
+    return 'JniIntWrapper'
+  else:
+    return JavaDataTypeToC(java_type)
+
+
 def JavaReturnValueToC(java_type):
   """Returns a valid C return value for the given java type."""
   java_pod_type_map = {
@@ -672,6 +680,8 @@ class InlHeaderFileGenerator(object):
 
 ${INCLUDES}
 
+#include "base/android/jni_int_wrapper.h"
+
 // Step 1: forward declarations.
 namespace {
 $CLASS_PATH_DEFINITIONS
@@ -932,9 +942,10 @@ Java_${FULLY_QUALIFIED_CLASS}_${INIT_NATIVE_NAME}(JNIEnv* env, jclass clazz) {
                            for param in native.params])
 
   def GetCalledByNativeParamsInDeclaration(self, called_by_native):
-    return ',\n    '.join([JavaDataTypeToC(param.datatype) + ' ' +
-                           param.name
-                           for param in called_by_native.params])
+    return ',\n    '.join([
+        JavaDataTypeToCForCalledByNativeParam(param.datatype) + ' ' +
+        param.name
+        for param in called_by_native.params])
 
   def GetForwardDeclaration(self, native):
     template = Template("""
@@ -978,6 +989,14 @@ static ${RETURN} ${NAME}(JNIEnv* env, ${PARAMS_IN_DECLARATION}) {
     }
     return template.substitute(values)
 
+  def GetArgument(self, param):
+    return ('as_jint(' + param.name + ')'
+            if param.datatype == 'int' else param.name)
+
+  def GetArgumentsInCall(self, params):
+    """Return a string of arguments to call from native into Java"""
+    return [self.GetArgument(p) for p in params]
+
   def GetCalledByNativeValues(self, called_by_native):
     """Fills in necessary values for the CalledByNative methods."""
     if called_by_native.static or called_by_native.is_constructor:
@@ -992,7 +1011,7 @@ static ${RETURN} ${NAME}(JNIEnv* env, ${PARAMS_IN_DECLARATION}) {
         called_by_native)
     if params_in_declaration:
       params_in_declaration = ', ' + params_in_declaration
-    params_in_call = ', '.join(param.name for param in called_by_native.params)
+    params_in_call = ', '.join(self.GetArgumentsInCall(called_by_native.params))
     if params_in_call:
       params_in_call = ', ' + params_in_call
     pre_call = ''

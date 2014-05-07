@@ -127,7 +127,8 @@ void ContentVideoView::UpdateMediaMetadata() {
   if (player && player->IsPlayerReady()) {
     Java_ContentVideoView_onUpdateMediaMetadata(
         env, content_video_view.obj(), player->GetVideoWidth(),
-        player->GetVideoHeight(), player->GetDuration().InMilliseconds(),
+        player->GetVideoHeight(),
+        static_cast<int>(player->GetDuration().InMilliseconds()),
         player->CanPause(),player->CanSeekForward(), player->CanSeekBackward());
   }
 }

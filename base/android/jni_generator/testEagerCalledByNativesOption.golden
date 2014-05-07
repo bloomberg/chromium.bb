@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,8 @@
 #include <jni.h>
 
 #include "base/android/jni_generator/jni_generator_helper.h"
+
+#include "base/android/jni_int_wrapper.h"
 
 // Step 1: forward declarations.
 namespace {
@@ -36,15 +38,16 @@ static jint Method(JNIEnv* env, jobject jcaller,
 
 namespace {
 
-static void testMethodWithParam(JNIEnv* env, jobject obj, jint iParam) {
+static void testMethodWithParam(JNIEnv* env, jobject obj, JniIntWrapper iParam)
+    {
   env->CallVoidMethod(obj,
-      g_Test_testMethodWithParam, iParam);
+      g_Test_testMethodWithParam, as_jint(iParam));
 
 }
 
-static jint testStaticMethodWithParam(JNIEnv* env, jint iParam) {
+static jint testStaticMethodWithParam(JNIEnv* env, JniIntWrapper iParam) {
   jint ret = env->CallStaticIntMethod(g_Test_clazz,
-      g_Test_testStaticMethodWithParam, iParam);
+      g_Test_testStaticMethodWithParam, as_jint(iParam));
   return ret;
 }
 
