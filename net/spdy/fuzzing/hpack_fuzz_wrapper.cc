@@ -33,6 +33,12 @@ int main(int argc, char** argv) {
   }
   string file_to_parse = command_line.GetSwitchValueASCII(kFileToParse);
 
+  // ClusterFuzz may invoke as --file-to-parse="". Don't crash in this case.
+  if (file_to_parse.empty()) {
+    LOG(WARNING) << "Empty file to parse given. Doing nothing.";
+    return 0;
+  }
+
   DVLOG(1) << "Reading input from " << file_to_parse;
   HpackFuzzUtil::Input input;
   CHECK(base::ReadFileToString(base::FilePath::FromUTF8Unsafe(file_to_parse),
