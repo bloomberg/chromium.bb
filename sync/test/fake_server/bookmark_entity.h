@@ -36,13 +36,6 @@ class BookmarkEntity : public FakeServerEntity {
       FakeServerEntity* current_server_entity,
       const std::string& parent_id);
 
-  // FakeServerEntity implementation.
-  virtual std::string GetParentId() const OVERRIDE;
-  virtual sync_pb::SyncEntity* SerializeAsProto() OVERRIDE;
-  virtual bool IsDeleted() const OVERRIDE;
-  virtual bool IsFolder() const OVERRIDE;
-
- private:
   BookmarkEntity(const std::string& id,
                  const syncer::ModelType& model_type,
                  int64 version,
@@ -56,6 +49,13 @@ class BookmarkEntity : public FakeServerEntity {
                  int64 creation_time,
                  int64 last_modified_time);
 
+  // FakeServerEntity implementation.
+  virtual std::string GetParentId() const OVERRIDE;
+  virtual sync_pb::SyncEntity* SerializeAsProto() OVERRIDE;
+  virtual bool IsDeleted() const OVERRIDE;
+  virtual bool IsFolder() const OVERRIDE;
+
+ private:
   // All member values have equivalent fields in SyncEntity.
   std::string originator_cache_guid_;
   std::string originator_client_item_id_;

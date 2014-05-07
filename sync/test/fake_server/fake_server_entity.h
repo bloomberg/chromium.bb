@@ -17,6 +17,15 @@ namespace fake_server {
 // The representation of a Sync entity for the fake server.
 class FakeServerEntity {
  public:
+  // Creates an ID of the form <type><separator><inner-id> where
+  // <type> is the EntitySpecifics field number for |model_type|, <separator>
+  // is kIdSeparator, and <inner-id> is |inner_id|.
+  //
+  // If |inner_id| is globally unique, then the returned ID will also be
+  // globally unique.
+  static std::string CreateId(const syncer::ModelType& model_type,
+                              const std::string& inner_id);
+
   virtual ~FakeServerEntity();
   const std::string& GetId() const;
   syncer::ModelType GetModelType() const;
@@ -31,15 +40,6 @@ class FakeServerEntity {
   virtual bool IsFolder() const = 0;
 
  protected:
-  // Creates an ID of the form <type><separator><inner-id> where
-  // <type> is the EntitySpecifics field number for |model_type|, <separator>
-  // is kIdSeparator, and <inner-id> is |inner_id|.
-  //
-  // If |inner_id| is globally unique, then the returned ID will also be
-  // globally unique.
-  static std::string CreateId(const syncer::ModelType& model_type,
-                              const std::string& inner_id);
-
   // Extracts the ModelType from |id|. If |id| is malformed or does not contain
   // a valid ModelType, UNSPECIFIED is returned.
   static syncer::ModelType GetModelTypeFromId(const std::string& id);

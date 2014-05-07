@@ -10,11 +10,14 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/bookmarks/core/browser/bookmark_model.h"
 #include "components/bookmarks/core/browser/bookmark_service.h"
+#include "sync/test/fake_server/bookmark_entity_builder.h"
+#include "sync/test/fake_server/entity_builder_factory.h"
 #include "sync/test/fake_server/fake_server_verifier.h"
 #include "ui/base/layout.h"
 
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::AddURL;
+using bookmarks_helper::CountBookmarksWithTitlesMatching;
 using bookmarks_helper::Create1xFaviconFromPNGFile;
 using bookmarks_helper::GetBookmarkBarNode;
 using bookmarks_helper::GetBookmarkModel;
@@ -181,6 +184,21 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
   // proven stable.
   if (GetFakeServer())
     VerifyBookmarkModelMatchesFakeServer(0);
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, InjectedBookmark) {
+  std::string title = "Montreal Canadiens";
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  scoped_ptr<fake_server::FakeServerEntity> entity =
+      entity_builder_factory.NewBookmarkEntityBuilder(
+          title, GURL("http://canadiens.nhl.com")).Build();
+  fake_server_->InjectEntity(entity.Pass());
+
+  DisableVerifier();
+  ASSERT_TRUE(SetupClients());
+  ASSERT_TRUE(SetupSync());
+
+  ASSERT_EQ(1, CountBookmarksWithTitlesMatching(0, base::UTF8ToWide(title)));
 }
 
 // Test that a client doesn't mutate the favicon data in the process

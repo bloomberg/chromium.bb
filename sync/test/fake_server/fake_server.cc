@@ -97,21 +97,6 @@ class UpdateSieve {
     return min_version_;
   }
 
-  // Returns the data type IDs of types being synced for the first time.
-  vector<ModelType> GetFirstTimeTypes(
-      ModelTypeSet created_permanent_entity_types) const {
-    vector<ModelType> types;
-
-    ModelTypeToVersionMap::const_iterator it;
-    for (it = request_from_version_.begin(); it != request_from_version_.end();
-         ++it) {
-      if (it->second == 0 && !created_permanent_entity_types.Has(it->first))
-        types.push_back(it->first);
-    }
-
-    return types;
-  }
-
  private:
   typedef std::map<ModelType, int64> ModelTypeToVersionMap;
 
@@ -162,26 +147,17 @@ scoped_ptr<UpdateSieve> UpdateSieve::Create(
 
 FakeServer::FakeServer() : version_(0), birthday_(kDefaultBirthday) {
   keystore_keys_.push_back(kDefaultKeystoreKey);
+  CHECK(CreateDefaultPermanentItems());
 }
 
 FakeServer::~FakeServer() {
   STLDeleteContainerPairSecondPointers(entities_.begin(), entities_.end());
 }
 
-bool FakeServer::CreateDefaultPermanentItems(
-    const vector<ModelType>& first_time_types) {
-  for (vector<ModelType>::const_iterator it = first_time_types.begin();
-       it != first_time_types.end(); ++it) {
-    if (!ModelTypeSet::All().Has(*it)) {
-      NOTREACHED() << "An unexpected ModelType was encountered.";
-    }
-
-    ModelType model_type = *it;
-    if (created_permanent_entity_types_.Has(model_type)) {
-      // Do not create an entity for the type if it has already been created.
-      continue;
-    }
-
+bool FakeServer::CreateDefaultPermanentItems() {
+  ModelTypeSet all_types = syncer::ProtocolTypes();
+  for (ModelTypeSet::Iterator it = all_types.First(); it.Good(); it.Inc()) {
+    ModelType model_type = it.Get();
     FakeServerEntity* top_level_entity =
         PermanentEntity::CreateTopLevel(model_type);
     if (top_level_entity == NULL) {
@@ -210,8 +186,6 @@ bool FakeServer::CreateDefaultPermanentItems(
       }
       SaveEntity(other_bookmarks_entity);
     }
-
-    created_permanent_entity_types_.Put(model_type);
   }
 
   return true;
@@ -280,11 +254,7 @@ bool FakeServer::HandleGetUpdatesRequest(
   response->set_changes_remaining(0);
 
   scoped_ptr<UpdateSieve> sieve = UpdateSieve::Create(get_updates);
-  vector<ModelType> first_time_types = sieve->GetFirstTimeTypes(
-      created_permanent_entity_types_);
-  if (!CreateDefaultPermanentItems(first_time_types)) {
-    return false;
-  }
+
   if (get_updates.create_mobile_bookmarks_folder() &&
       !CreateMobileBookmarksPermanentItem()) {
     return false;
@@ -494,6 +464,10 @@ scoped_ptr<base::DictionaryValue> FakeServer::GetEntitiesAsDictionaryValue() {
   }
 
   return dictionary.Pass();
+}
+
+void FakeServer::InjectEntity(scoped_ptr<FakeServerEntity> entity) {
+  SaveEntity(entity.release());
 }
 
 void FakeServer::AddObserver(Observer* observer) {

@@ -50,6 +50,11 @@ class FakeServer {
   // names.
   scoped_ptr<base::DictionaryValue> GetEntitiesAsDictionaryValue();
 
+  // Adds the FakeServerEntity* owned by |entity| to the server's collection
+  // of entities. This method makes no guarantees that the added entity will
+  // result in successful server operations.
+  void InjectEntity(scoped_ptr<FakeServerEntity> entity);
+
   // Adds |observer| to FakeServer's observer list. This should be called
   // before the Profile associated with |observer| is connected to the server.
   void AddObserver(Observer* observer);
@@ -69,9 +74,8 @@ class FakeServer {
   bool HandleCommitRequest(const sync_pb::CommitMessage& commit,
                            sync_pb::CommitResponse* response);
 
-  // Inserts the appropriate permanent items in |entities_|.
-  bool CreateDefaultPermanentItems(
-      const std::vector<syncer::ModelType>& first_time_types);
+  // Inserts the default permanent items in |entities_|.
+  bool CreateDefaultPermanentItems();
 
   // Inserts the mobile bookmarks folder entity in |entities_|.
   bool CreateMobileBookmarksPermanentItem();
@@ -117,11 +121,6 @@ class FakeServer {
 
   // All Keystore keys known to the server.
   std::vector<std::string> keystore_keys_;
-
-  // All ModelTypes for which permanent entities have been created. These types
-  // are kept track of so that permanent entities are not recreated for new
-  // clients.
-  syncer::ModelTypeSet created_permanent_entity_types_;
 
   // FakeServer's observers.
   ObserverList<Observer, true> observers_;
