@@ -34,7 +34,8 @@ PassRefPtr<MediaValues> MediaValuesCached::create(LocalFrame* frame)
 {
     // FIXME - Added an assert here so we can better understand when a frame is present without its view().
     ASSERT(!frame || frame->view());
-    if (!frame || !frame->view())
+    // FIXME - Because of crbug.com/371084, document()->renderView() may be null here.
+    if (!frame || !frame->view() || !frame->document() || !frame->document()->renderView())
         return adoptRef(new MediaValuesCached());
     return adoptRef(new MediaValuesCached(frame));
 }
