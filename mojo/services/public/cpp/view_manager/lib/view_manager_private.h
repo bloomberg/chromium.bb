@@ -13,7 +13,6 @@ namespace mojo {
 namespace services {
 namespace view_manager {
 
-class ViewManagerObserver;
 class ViewManagerSynchronizer;
 
 class ViewManagerPrivate {
@@ -26,20 +25,10 @@ class ViewManagerPrivate {
   }
   Shell* shell() { return manager_->shell_; }
 
-  void set_tree(ViewTreeNode* root) { manager_->tree_.reset(root); }
+  void SetRoot(ViewTreeNode* root);
 
   // Returns true if the ViewManager's synchronizer is connected to the service.
   bool connected() { return manager_->synchronizer_->connected(); }
-
-  void AddObserver(ViewManagerObserver* observer) {
-    manager_->AddObserver(observer);
-  }
-  void RemoveObserver(ViewManagerObserver* observer) {
-    manager_->RemoveObserver(observer);
-  }
-  ObserverList<ViewManagerObserver>* observers() {
-    return &manager_->observers_;
-  }
 
  private:
   ViewManager* manager_;

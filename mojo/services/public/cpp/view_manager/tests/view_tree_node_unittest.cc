@@ -5,6 +5,7 @@
 #include "mojo/services/public/cpp/view_manager/view_tree_node.h"
 
 #include "base/logging.h"
+#include "mojo/services/public/cpp/view_manager/lib/view_tree_node_private.h"
 #include "mojo/services/public/cpp/view_manager/view_tree_node_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,6 +56,21 @@ TEST_F(ViewTreeNodeTest, Contains) {
   ViewTreeNode* v111 = new ViewTreeNode;
   v11->AddChild(v111);
   EXPECT_TRUE(v1.Contains(v111));
+}
+
+TEST_F(ViewTreeNodeTest, GetChildById) {
+  ViewTreeNode v1;
+  ViewTreeNodePrivate(&v1).set_id(1);
+  ViewTreeNode v11;
+  ViewTreeNodePrivate(&v11).set_id(11);
+  v1.AddChild(&v11);
+  ViewTreeNode v111;
+  ViewTreeNodePrivate(&v111).set_id(111);
+  v11.AddChild(&v111);
+
+  // Find direct & indirect descendents.
+  EXPECT_EQ(&v11, v1.GetChildById(v11.id()));
+  EXPECT_EQ(&v111, v1.GetChildById(v111.id()));
 }
 
 // ViewTreeNodeObserver --------------------------------------------------------

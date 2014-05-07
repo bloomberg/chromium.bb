@@ -150,6 +150,19 @@ bool ViewTreeNode::Contains(ViewTreeNode* child) const {
   return false;
 }
 
+ViewTreeNode* ViewTreeNode::GetChildById(TransportNodeId id) {
+  if (id == id_)
+    return this;
+  // TODO(beng): this could be improved depending on how we decide to own nodes.
+  Children::const_iterator it = children_.begin();
+  for (; it != children_.end(); ++it) {
+    ViewTreeNode* node = (*it)->GetChildById(id);
+    if (node)
+      return node;
+  }
+  return NULL;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ViewTreeNode, private:
 

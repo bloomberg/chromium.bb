@@ -46,6 +46,8 @@ class ViewTreeNode {
 
   bool Contains(ViewTreeNode* child) const;
 
+  ViewTreeNode* GetChildById(TransportNodeId id);
+
  private:
   friend class ViewTreeNodePrivate;
 

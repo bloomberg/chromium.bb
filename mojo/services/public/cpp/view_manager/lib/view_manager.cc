@@ -11,20 +11,12 @@ namespace services {
 namespace view_manager {
 
 ViewManager::ViewManager(Shell* shell)
-    : shell_(shell),
-      synchronizer_(new ViewManagerSynchronizer(this)) {}
+    : shell_(shell) {}
+
 ViewManager::~ViewManager() {}
 
-void ViewManager::BuildNodeTree(const mojo::Callback<void()>& callback) {
-  synchronizer_->BuildNodeTree(callback);
-}
-
-void ViewManager::AddObserver(ViewManagerObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void ViewManager::RemoveObserver(ViewManagerObserver* observer) {
-  observers_.RemoveObserver(observer);
+void ViewManager::Init() {
+  synchronizer_.reset(new ViewManagerSynchronizer(this));
 }
 
 }  // namespace view_manager

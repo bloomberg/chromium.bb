@@ -12,6 +12,10 @@ ViewManagerPrivate::ViewManagerPrivate(ViewManager* manager)
     : manager_(manager) {}
 ViewManagerPrivate::~ViewManagerPrivate() {}
 
+void ViewManagerPrivate::SetRoot(ViewTreeNode* root) {
+  manager_->tree_.reset(root);
+}
+
 }  // namespace view_manager
 }  // namespace services
 }  // namespace mojo

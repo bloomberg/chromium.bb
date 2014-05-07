@@ -9,7 +9,6 @@
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/interfaces/shell/shell.mojom.h"
-#include "mojo/services/public/cpp/view_manager/lib/view_manager_observer.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_tree_node_private.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
@@ -30,7 +29,6 @@ class ViewManagerTransaction {
   void Commit() {
     DCHECK(!committed_);
     DoCommit();
-    synchronizer_->NotifyCommit();
     committed_ = true;
   }
 
@@ -41,7 +39,6 @@ class ViewManagerTransaction {
   void OnActionCompleted(bool success) {
     DCHECK(success);
     DoActionCompleted(success);
-    synchronizer_->NotifyCommitResponse(success);
     synchronizer_->RemoveFromPendingQueue(this);
   }
 
@@ -196,6 +193,10 @@ ViewManagerSynchronizer::ViewManagerSynchronizer(ViewManager* view_manager)
   ViewManagerPrivate(view_manager_).shell()->Connect(
       "mojo:mojo_view_manager", view_manager_pipe.handle_to_peer.Pass());
   service_.reset(view_manager_pipe.handle_to_self.Pass(), this);
+  service_->GetNodeTree(
+      1,
+      base::Bind(&ViewManagerSynchronizer::OnRootTreeReceived,
+                 base::Unretained(this)));
   base::RunLoop loop;
   init_loop_ = &loop;
   init_loop_->Run();
@@ -242,16 +243,6 @@ void ViewManagerSynchronizer::RemoveChild(TransportNodeId child_id,
   ScheduleSync();
 }
 
-void ViewManagerSynchronizer::BuildNodeTree(
-    const Callback<void()>& callback) {
-  DCHECK(connected_);
-  service_->GetNodeTree(
-      1,
-      base::Bind(&ViewManagerSynchronizer::OnTreeReceived,
-                 base::Unretained(this),
-                 callback));
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerSynchronizer, IViewManagerClient implementation:
 
@@ -259,16 +250,31 @@ void ViewManagerSynchronizer::OnConnectionEstablished(uint16 connection_id) {
   connected_ = true;
   connection_id_ = connection_id;
   ScheduleSync();
-  if (init_loop_)
-    init_loop_->Quit();
 }
 
-void ViewManagerSynchronizer::OnNodeHierarchyChanged(uint32_t node,
-                                                     uint32_t new_parent,
-                                                     uint32_t old_parent,
+void ViewManagerSynchronizer::OnNodeHierarchyChanged(uint32_t node_id,
+                                                     uint32_t new_parent_id,
+                                                     uint32_t old_parent_id,
                                                      uint32_t change_id) {
   if (change_id == 0) {
-    // TODO(beng): Apply changes from another client.
+    ViewTreeNode* new_parent =
+        view_manager_->tree()->GetChildById(new_parent_id);
+    ViewTreeNode* old_parent =
+        view_manager_->tree()->GetChildById(old_parent_id);
+    ViewTreeNode* node = NULL;
+    if (old_parent) {
+      // Existing node, mapped in this connection's tree.
+      // TODO(beng): verify this is actually true.
+      node = view_manager_->tree()->GetChildById(node_id);
+      DCHECK_EQ(node->parent(), old_parent);
+    } else {
+      // New node, originating from another connection.
+      node = new ViewTreeNode;
+      ViewTreeNodePrivate private_node(node);
+      private_node.set_view_manager(view_manager_);
+      private_node.set_id(node_id);
+    }
+    ViewTreeNodePrivate(new_parent).LocalAddChild(node);
   }
 }
 
@@ -310,26 +316,13 @@ uint32_t ViewManagerSynchronizer::GetNextChangeId() {
   return next_change_id_;
 }
 
-void ViewManagerSynchronizer::NotifyCommit() {
-  FOR_EACH_OBSERVER(ViewManagerObserver,
-                    *ViewManagerPrivate(view_manager_).observers(),
-                    OnCommit(view_manager_));
-}
-
-void ViewManagerSynchronizer::NotifyCommitResponse(bool success) {
-  FOR_EACH_OBSERVER(ViewManagerObserver,
-                    *ViewManagerPrivate(view_manager_).observers(),
-                    OnCommitResponse(view_manager_, success));
-}
-
 void ViewManagerSynchronizer::RemoveFromPendingQueue(
     ViewManagerTransaction* transaction) {
   DCHECK_EQ(transaction, pending_transactions_.front());
   pending_transactions_.erase(pending_transactions_.begin());
 }
 
-void ViewManagerSynchronizer::OnTreeReceived(
-    const Callback<void()>& callback,
+void ViewManagerSynchronizer::OnRootTreeReceived(
     const Array<INode>& nodes) {
   std::vector<ViewTreeNode*> parents;
   ViewTreeNode* root = NULL;
@@ -353,8 +346,9 @@ void ViewManagerSynchronizer::OnTreeReceived(
       root = node;
     last_node = node;
   }
-  ViewManagerPrivate(view_manager_).set_tree(root);
-  callback.Run();
+  ViewManagerPrivate(view_manager_).SetRoot(root);
+  if (init_loop_)
+    init_loop_->Quit();
 }
 
 }  // namespace view_manager

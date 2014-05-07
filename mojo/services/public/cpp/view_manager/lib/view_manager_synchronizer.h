@@ -41,17 +41,15 @@ class ViewManagerSynchronizer : public IViewManagerClient {
   void AddChild(TransportNodeId child_id, TransportNodeId parent_id);
   void RemoveChild(TransportNodeId child_id, TransportNodeId parent_id);
 
-  void BuildNodeTree(const Callback<void()>& callback);
-
  private:
   friend class ViewManagerTransaction;
   typedef ScopedVector<ViewManagerTransaction> Transactions;
 
   // Overridden from IViewManagerClient:
   virtual void OnConnectionEstablished(uint16 connection_id) OVERRIDE;
-  virtual void OnNodeHierarchyChanged(uint32 node,
-                                      uint32 new_parent,
-                                      uint32 old_parent,
+  virtual void OnNodeHierarchyChanged(uint32 node_id,
+                                      uint32 new_parent_id,
+                                      uint32 old_parent_id,
                                       uint32 change_id) OVERRIDE;
   virtual void OnNodeViewReplaced(uint32_t node,
                                   uint32_t new_view_id,
@@ -72,17 +70,11 @@ class ViewManagerSynchronizer : public IViewManagerClient {
   //             the queue?
   uint32_t GetNextChangeId();
 
-  // Called from transactions to notify when a commit is made to the service and
-  // when a response is received.
-  void NotifyCommit();
-  void NotifyCommitResponse(bool success);
-
   // Removes |transaction| from the pending queue. |transaction| must be at the
   // front of the queue.
   void RemoveFromPendingQueue(ViewManagerTransaction* transaction);
 
-  void OnTreeReceived(const Callback<void()>& callback,
-                      const Array<INode>& data);
+  void OnRootTreeReceived(const Array<INode>& data);
 
   ViewManager* view_manager_;
   bool connected_;

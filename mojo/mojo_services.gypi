@@ -154,7 +154,6 @@
       'sources': [
         'services/public/cpp/view_manager/lib/view.cc',
         'services/public/cpp/view_manager/lib/view_manager.cc',
-        'services/public/cpp/view_manager/lib/view_manager_observer.h',
         'services/public/cpp/view_manager/lib/view_manager_private.cc',
         'services/public/cpp/view_manager/lib/view_manager_private.h',
         'services/public/cpp/view_manager/lib/view_manager_synchronizer.cc',
