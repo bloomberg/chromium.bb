@@ -1381,7 +1381,7 @@ void Gtk2UI::ClearAllThemeData() {
 void Gtk2UI::OnStyleSet(GtkWidget* widget, GtkStyle* previous_style) {
   ClearAllThemeData();
   LoadGtkValues();
-  NativeThemeGtk2::instance()->NotifyNativeThemeObservers();
+  NativeThemeGtk2::instance()->NotifyObservers();
 }
 
 }  // namespace libgtk2ui

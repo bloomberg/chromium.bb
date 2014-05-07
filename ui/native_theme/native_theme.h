@@ -320,10 +320,10 @@ class NATIVE_THEME_EXPORT NativeTheme {
   void AddObserver(NativeThemeObserver* observer);
   void RemoveObserver(NativeThemeObserver* observer);
 
- protected:
   // Notify observers of native theme changes.
   void NotifyObservers();
 
+ protected:
   NativeTheme();
   virtual ~NativeTheme();
 

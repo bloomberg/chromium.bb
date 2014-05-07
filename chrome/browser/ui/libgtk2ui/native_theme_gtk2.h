@@ -33,9 +33,6 @@ class NativeThemeGtk2 : public ui::NativeThemeBase {
       const gfx::Rect& rect,
       const MenuListExtraParams& menu_list) const OVERRIDE;
 
-  // A public helper to notify observers of native theme changes.
-  void NotifyNativeThemeObservers();
-
  private:
   NativeThemeGtk2();
   virtual ~NativeThemeGtk2();

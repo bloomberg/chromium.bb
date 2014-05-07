@@ -1356,8 +1356,15 @@ View* Widget::GetFocusTraversableParentView() {
 // Widget, ui::NativeThemeObserver implementation:
 
 void Widget::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
-  DCHECK_EQ(observed_theme, GetNativeTheme());
-  root_view_->PropagateNativeThemeChanged(GetNativeTheme());
+  DCHECK(observer_manager_.IsObserving(observed_theme));
+
+  ui::NativeTheme* current_native_theme = GetNativeTheme();
+  if (!observer_manager_.IsObserving(current_native_theme)) {
+    observer_manager_.RemoveAll();
+    observer_manager_.Add(current_native_theme);
+  }
+
+  root_view_->PropagateNativeThemeChanged(current_native_theme);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
