@@ -3642,6 +3642,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ = ROLE_SYSTEM_CLIENT;
       ia2_role_ = IA2_ROLE_SCROLL_PANE;
       ia_state_ |= STATE_SYSTEM_READONLY;
+      ia2_state_ &= ~(IA2_STATE_EDITABLE);
       break;
     case ui::AX_ROLE_SCROLL_BAR:
       ia_role_ = ROLE_SYSTEM_SCROLLBAR;
