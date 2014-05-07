@@ -8,7 +8,7 @@ function waitAndTest(tests)
     {
         var options = tests.shift();
         if (!options)
-            return setTimeout(function() { finishJSTest(); }, 0);
+            return requestAnimationFrame(function() { finishJSTest(); }, 0);
         return runSingleTest(options);
     }
 

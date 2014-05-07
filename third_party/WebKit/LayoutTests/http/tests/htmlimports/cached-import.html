@@ -8,7 +8,7 @@ description("HTML Imports should work with cached resources.");
 window.jsTestIsAsync = true;
 if (window.location.search.toString() == "?reloaded") {
     debug("PASS");
-    window.setTimeout(finishJSTest, 0);
+    window.requestAnimationFrame(finishJSTest, 0);
 } else {
     // This need to be async so that js-test-post.js is executed.
     window.setTimeout(function() {

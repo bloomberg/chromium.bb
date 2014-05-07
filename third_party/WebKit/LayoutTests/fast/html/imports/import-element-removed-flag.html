@@ -66,7 +66,7 @@ function testDynamicImportRemovingEagerly()
         document.head.appendChild(dynamicImportEager);
         shouldBeNonNull("dynamicImportEager.import");
 
-        setTimeout(function() { finishJSTest(); }, 0);
+        window.requestAnimationFrame(function() { finishJSTest(); }, 0);
     }
 
     window.setTimeout(check, 0);
