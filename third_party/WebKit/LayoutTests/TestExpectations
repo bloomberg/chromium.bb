@@ -970,3 +970,5 @@ crbug.com/370490 fast/html/imports/rel-import-to-style.html [ Pass Failure ]
 crbug.com/370789 fast/dom/document-contentType-data-uri.html [ Failure ]
 
 crbug.com/370814 fast/html/imports/import-custom-element-in-grandchild.html [ Pass Failure ]
+
+crbug.com/370906 fast/dom/StyleSheet/gc-declaration-parent-rule.html [ Failure ]
