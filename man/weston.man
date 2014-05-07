@@ -130,6 +130,12 @@ suite. The file is searched for in
 .IR "__weston_modules_dir__" ,
 or you can pass an absolute path.
 .TP
+.BR \-\-no-config
+Do not read
+.I weston.ini
+for the compositor. Avoids e.g. loading compositor modules via the
+configuration file, which is useful for unit tests.
+.TP
 \fB\-\^S\fR\fIname\fR, \fB\-\-socket\fR=\fIname\fR
 Weston will listen in the Wayland socket called
 .IR name .

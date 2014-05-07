@@ -4042,6 +4042,7 @@ usage(int error_code)
 		"  -i, --idle-time=SECS\tIdle time in seconds\n"
 		"  --modules\t\tLoad the comma-separated list of modules\n"
 		"  --log==FILE\t\tLog to the given file\n"
+		"  --no-config\t\tDo not read weston.ini\n"
 		"  -h, --help\t\tThis help message\n\n");
 
 	fprintf(stderr,
@@ -4152,7 +4153,8 @@ int main(int argc, char *argv[])
 	int32_t help = 0;
 	char *socket_name = "wayland-0";
 	int32_t version = 0;
-	struct weston_config *config;
+	int32_t noconfig = 0;
+	struct weston_config *config = NULL;
 	struct weston_config_section *section;
 	struct wl_client *primary_client;
 	struct wl_listener primary_client_destroyed;
@@ -4166,6 +4168,7 @@ int main(int argc, char *argv[])
 		{ WESTON_OPTION_STRING, "log", 0, &log },
 		{ WESTON_OPTION_BOOLEAN, "help", 'h', &help },
 		{ WESTON_OPTION_BOOLEAN, "version", 0, &version },
+		{ WESTON_OPTION_BOOLEAN, "no-config", 0, &noconfig },
 	};
 
 	parse_options(core_options, ARRAY_LENGTH(core_options), &argc, argv);
@@ -4204,7 +4207,8 @@ int main(int argc, char *argv[])
 	signals[3] = wl_event_loop_add_signal(loop, SIGCHLD, sigchld_handler,
 					      NULL);
 
-	config = weston_config_parse("weston.ini");
+	if (noconfig == 0)
+		config = weston_config_parse("weston.ini");
 	if (config != NULL) {
 		weston_log("Using config file '%s'\n",
 			   weston_config_get_full_path(config));
