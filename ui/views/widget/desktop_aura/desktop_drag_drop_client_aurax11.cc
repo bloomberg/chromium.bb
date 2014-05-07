@@ -71,6 +71,11 @@ const char* kAtomsToCache[] = {
 // mouse button before ending the move loop.
 const int kEndMoveLoopTimeoutMs = 1000;
 
+// The time to wait since sending the last XdndPosition message before
+// reprocessing the most recent mouse move event in case that the window
+// stacking order has changed and |source_current_window_| needs to be updated.
+const int kRepeatMouseMoveTimeoutMs = 350;
+
 static base::LazyInstance<
     std::map< ::Window, views::DesktopDragDropClientAuraX11*> >::Leaky
         g_live_client_map = LAZY_INSTANCE_INITIALIZER;
@@ -376,6 +381,7 @@ DesktopDragDropClientAuraX11::DesktopDragDropClientAuraX11(
       atom_cache_(xdisplay_, kAtomsToCache),
       target_window_(NULL),
       waiting_on_status_(false),
+      status_received_since_enter_(false),
       source_provider_(NULL),
       source_current_window_(None),
       source_state_(SOURCE_STATE_OTHER),
@@ -478,6 +484,7 @@ void DesktopDragDropClientAuraX11::OnXdndStatus(
   }
 
   waiting_on_status_ = false;
+  status_received_since_enter_ = true;
 
   if (event.data.l[1] & 1) {
     ::Atom atom_operation = event.data.l[4];
@@ -519,10 +526,10 @@ void DesktopDragDropClientAuraX11::OnXdndStatus(
     // We were waiting on the status message so we could send off the next
     // position message we queued up.
     gfx::Point p = next_position_message_->first;
-    unsigned long time = next_position_message_->second;
+    unsigned long event_time = next_position_message_->second;
     next_position_message_.reset();
 
-    SendXdndPosition(source_window, p, time);
+    SendXdndPosition(source_window, p, event_time);
   }
 }
 
@@ -595,6 +602,7 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
   g_current_drag_drop_client = this;
   waiting_on_status_ = false;
   next_position_message_.reset();
+  status_received_since_enter_ = false;
   source_state_ = SOURCE_STATE_OTHER;
   drag_operation_ = operation;
   negotiated_operation_ = ui::DragDropTypes::DRAG_NONE;
@@ -667,40 +675,13 @@ void DesktopDragDropClientAuraX11::OnWindowDestroyed(aura::Window* window) {
 }
 
 void DesktopDragDropClientAuraX11::OnMouseMovement(XMotionEvent* event) {
-  gfx::Point screen_point(event->x_root, event->y_root);
-
-  if (source_state_ != SOURCE_STATE_OTHER)
-    return;
-
-  // Find the current window the cursor is over.
-  ::Window mouse_window = None;
-  ::Window dest_window = None;
-  FindWindowFor(screen_point, &mouse_window, &dest_window);
-
-  if (source_current_window_ != dest_window) {
-    if (source_current_window_ != None)
-      SendXdndLeave(source_current_window_);
-
-    source_current_window_ = dest_window;
-    waiting_on_status_ = false;
-    next_position_message_.reset();
-    negotiated_operation_ = ui::DragDropTypes::DRAG_NONE;
-
-    if (source_current_window_ != None)
-      SendXdndEnter(source_current_window_);
-  }
-
-  if (source_current_window_ != None) {
-    if (waiting_on_status_) {
-      next_position_message_.reset(
-          new std::pair<gfx::Point, unsigned long>(screen_point, event->time));
-    } else {
-      SendXdndPosition(dest_window, screen_point, event->time);
-    }
-  }
+  repeat_mouse_move_timer_.Stop();
+  ProcessMouseMove(gfx::Point(event->x_root, event->y_root), event->time);
 }
 
 void DesktopDragDropClientAuraX11::OnMouseReleased() {
+  repeat_mouse_move_timer_.Stop();
+
   if (source_state_ != SOURCE_STATE_OTHER) {
     // The user has previously released the mouse and is clicking in
     // frustration.
@@ -710,13 +691,18 @@ void DesktopDragDropClientAuraX11::OnMouseReleased() {
 
   if (source_current_window_ != None) {
     if (waiting_on_status_) {
-      // If we are waiting for an XdndStatus message, we need to wait for it to
-      // complete.
-      source_state_ = SOURCE_STATE_PENDING_DROP;
+      if (status_received_since_enter_) {
+        // If we are waiting for an XdndStatus message, we need to wait for it
+        // to complete.
+        source_state_ = SOURCE_STATE_PENDING_DROP;
 
-      // Start timer to end the move loop if the target takes too long to send
-      // the XdndStatus and XdndFinished messages.
-      StartEndMoveLoopTimer();
+        // Start timer to end the move loop if the target takes too long to send
+        // the XdndStatus and XdndFinished messages.
+        StartEndMoveLoopTimer();
+        return;
+      }
+
+      move_loop_.EndMoveLoop();
       return;
     }
 
@@ -741,7 +727,43 @@ void DesktopDragDropClientAuraX11::OnMoveLoopEnded() {
     source_current_window_ = None;
   }
   target_current_context_.reset();
+  repeat_mouse_move_timer_.Stop();
   end_move_loop_timer_.Stop();
+}
+
+void DesktopDragDropClientAuraX11::ProcessMouseMove(
+    const gfx::Point& screen_point,
+    unsigned long event_time) {
+  if (source_state_ != SOURCE_STATE_OTHER)
+    return;
+
+  // Find the current window the cursor is over.
+  ::Window mouse_window = None;
+  ::Window dest_window = None;
+  FindWindowFor(screen_point, &mouse_window, &dest_window);
+
+  if (source_current_window_ != dest_window) {
+    if (source_current_window_ != None)
+      SendXdndLeave(source_current_window_);
+
+    source_current_window_ = dest_window;
+    waiting_on_status_ = false;
+    next_position_message_.reset();
+    status_received_since_enter_ = false;
+    negotiated_operation_ = ui::DragDropTypes::DRAG_NONE;
+
+    if (source_current_window_ != None)
+      SendXdndEnter(source_current_window_);
+  }
+
+  if (source_current_window_ != None) {
+    if (waiting_on_status_) {
+      next_position_message_.reset(
+          new std::pair<gfx::Point, unsigned long>(screen_point, event_time));
+    } else {
+      SendXdndPosition(dest_window, screen_point, event_time);
+    }
+  }
 }
 
 void DesktopDragDropClientAuraX11::StartEndMoveLoopTimer() {
@@ -925,7 +947,7 @@ void DesktopDragDropClientAuraX11::SendXdndLeave(::Window dest_window) {
 void DesktopDragDropClientAuraX11::SendXdndPosition(
     ::Window dest_window,
     const gfx::Point& screen_point,
-    unsigned long time) {
+    unsigned long event_time) {
   waiting_on_status_ = true;
 
   XEvent xev;
@@ -936,9 +958,20 @@ void DesktopDragDropClientAuraX11::SendXdndPosition(
   xev.xclient.data.l[0] = xwindow_;
   xev.xclient.data.l[1] = 0;
   xev.xclient.data.l[2] = (screen_point.x() << 16) | screen_point.y();
-  xev.xclient.data.l[3] = time;
+  xev.xclient.data.l[3] = event_time;
   xev.xclient.data.l[4] = DragOperationToAtom(drag_operation_);
   SendXClientEvent(dest_window, &xev);
+
+  // http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html and
+  // the Xdnd protocol both recommend that drag events should be sent
+  // periodically.
+  repeat_mouse_move_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kRepeatMouseMoveTimeoutMs),
+      base::Bind(&DesktopDragDropClientAuraX11::ProcessMouseMove,
+                 base::Unretained(this),
+                 screen_point,
+                 event_time));
 }
 
 void DesktopDragDropClientAuraX11::SendXdndDrop(::Window dest_window) {

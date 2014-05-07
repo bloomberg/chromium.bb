@@ -113,6 +113,10 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
     SOURCE_STATE_OTHER,
   };
 
+  // Processes a mouse move at |screen_point|.
+  void ProcessMouseMove(const gfx::Point& screen_point,
+                        unsigned long event_time);
+
   // Start timer to end the move loop if the target is too slow to respond after
   // the mouse is released.
   void StartEndMoveLoopTimer();
@@ -159,7 +163,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   void SendXdndLeave(::Window dest_window);
   void SendXdndPosition(::Window dest_window,
                         const gfx::Point& screen_point,
-                        unsigned long time);
+                        unsigned long event_time);
   void SendXdndDrop(::Window dest_window);
 
   // Sends |xev| to |xid|, optionally short circuiting the round trip to the X
@@ -201,6 +205,16 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // If we would send an XdndPosition message while we're waiting for an
   // XdndStatus response, we need to cache the latest details we'd send.
   scoped_ptr<std::pair<gfx::Point, unsigned long> > next_position_message_;
+
+  // Reprocesses the most recent mouse move event if the mouse has not moved
+  // in a while in case the window stacking order has changed and
+  // |source_current_window_| needs to be updated.
+  base::OneShotTimer<DesktopDragDropClientAuraX11> repeat_mouse_move_timer_;
+
+  // When the mouse is released, we need to wait for the last XdndStatus message
+  // only if we have previously received a status message from
+  // |source_current_window_|.
+  bool status_received_since_enter_;
 
   // Source side information.
   ui::OSExchangeDataProviderAuraX11 const* source_provider_;
