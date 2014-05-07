@@ -184,7 +184,7 @@ GCMStatsRecorder::RecordedActivities::RecordedActivities() {
 GCMStatsRecorder::RecordedActivities::~RecordedActivities() {
 }
 
-GCMStatsRecorder::GCMStatsRecorder() : is_recording_(false) {
+GCMStatsRecorder::GCMStatsRecorder() : is_recording_(false), delegate_(NULL) {
 }
 
 GCMStatsRecorder::~GCMStatsRecorder() {
@@ -192,6 +192,10 @@ GCMStatsRecorder::~GCMStatsRecorder() {
 
 void GCMStatsRecorder::SetRecording(bool recording) {
   is_recording_ = recording;
+}
+
+void GCMStatsRecorder::SetDelegate(Delegate* delegate) {
+  delegate_ = delegate;
 }
 
 void GCMStatsRecorder::Clear() {
@@ -202,6 +206,11 @@ void GCMStatsRecorder::Clear() {
   sending_activities_.clear();
 }
 
+void GCMStatsRecorder::NotifyActivityRecorded() {
+  if (delegate_)
+    delegate_->OnActivityRecorded();
+}
+
 void GCMStatsRecorder::RecordCheckin(
     const std::string& event,
     const std::string& details) {
@@ -210,6 +219,7 @@ void GCMStatsRecorder::RecordCheckin(
       &checkin_activities_, data);
   inserted_data->event = event;
   inserted_data->details = details;
+  NotifyActivityRecorded();
 }
 
 void GCMStatsRecorder::RecordCheckinInitiated(uint64 android_id) {
@@ -251,6 +261,7 @@ void GCMStatsRecorder::RecordConnection(
       &connection_activities_, data);
   inserted_data->event = event;
   inserted_data->details = details;
+  NotifyActivityRecorded();
 }
 
 void GCMStatsRecorder::RecordConnectionInitiated(const std::string& host) {
@@ -300,6 +311,7 @@ void GCMStatsRecorder::RecordRegistration(
   inserted_data->sender_ids = sender_ids;
   inserted_data->event = event;
   inserted_data->details = details;
+  NotifyActivityRecorded();
 }
 
 void GCMStatsRecorder::RecordRegistrationSent(
@@ -378,6 +390,7 @@ void GCMStatsRecorder::RecordReceiving(
   inserted_data->message_byte_size = message_byte_size;
   inserted_data->event = event;
   inserted_data->details = details;
+  NotifyActivityRecorded();
 }
 
 void GCMStatsRecorder::RecordDataMessageReceived(
@@ -447,6 +460,7 @@ void GCMStatsRecorder::RecordSending(const std::string& app_id,
   inserted_data->message_id = message_id;
   inserted_data->event = event;
   inserted_data->details = details;
+  NotifyActivityRecorded();
 }
 
 void GCMStatsRecorder::RecordDataSentToWire(

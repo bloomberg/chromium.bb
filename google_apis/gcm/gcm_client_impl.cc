@@ -176,7 +176,7 @@ void GCMClientImpl::Initialize(
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter,
-    Delegate* delegate) {
+    GCMClient::Delegate* delegate) {
   DCHECK_EQ(UNINITIALIZED, state_);
   DCHECK(url_request_context_getter);
   DCHECK(delegate);
@@ -194,6 +194,8 @@ void GCMClientImpl::Initialize(
   gcm_store_.reset(new GCMStoreImpl(path, blocking_task_runner));
 
   delegate_ = delegate;
+
+  recorder_.SetDelegate(this);
 
   state_ = INITIALIZED;
 }
@@ -625,6 +627,10 @@ GCMClient::GCMStatistics GCMClientImpl::GetStatistics() const {
     stats.registered_app_ids.push_back(it->first);
   }
   return stats;
+}
+
+void GCMClientImpl::OnActivityRecorded() {
+  delegate_->OnActivityRecorded();
 }
 
 void GCMClientImpl::OnMessageReceivedFromMCS(const gcm::MCSMessage& message) {
