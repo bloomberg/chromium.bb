@@ -40,6 +40,15 @@ const int kTopPadding = 20;
 const int kIconTitleSpacing = 7;
 const int kProgressBarHorizontalPadding = 12;
 
+// The font is different on each platform. The font size is adjusted on some
+// platforms to keep a consistent look.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// Reducing the font size by 2 makes it the same as the Windows font size.
+const int kFontSizeDelta = -2;
+#else
+const int kFontSizeDelta = 0;
+#endif
+
 // Radius of the folder dropping preview circle.
 const int kFolderPreviewRadius = 40;
 
@@ -72,7 +81,8 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   title_->SetBackgroundColor(0);
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetEnabledColor(kGridTitleColor);
-  title_->SetFontList(rb.GetFontList(kItemTextFontStyle));
+  title_->SetFontList(
+      rb.GetFontList(kItemTextFontStyle).DeriveWithSizeDelta(kFontSizeDelta));
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_->SetVisible(!item_->is_installing());
   title_->Invalidate();
