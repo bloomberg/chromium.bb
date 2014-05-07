@@ -51,19 +51,14 @@ void V8MutationCallback::call(const WillBeHeapVector<RefPtrWillBeMember<Mutation
         return;
 
     v8::Isolate* isolate = m_scriptState->isolate();
-    v8::HandleScope handleScope(isolate);
 
-    v8::Handle<v8::Context> v8Context = m_scriptState->context();
-    if (v8Context.IsEmpty())
+    if (m_scriptState->contextIsEmpty())
         return;
+    ScriptState::Scope scope(m_scriptState.get());
 
-    v8::Context::Scope scope(v8Context);
-
-    v8::Handle<v8::Function> callback = m_callback.newLocal(isolate);
-    if (callback.IsEmpty())
+    if (m_callback.isEmpty())
         return;
-
-    v8::Handle<v8::Value> observerHandle = toV8(observer, v8::Handle<v8::Object>(), isolate);
+    v8::Handle<v8::Value> observerHandle = toV8(observer, m_scriptState->context()->Global(), isolate);
     if (observerHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
@@ -78,7 +73,7 @@ void V8MutationCallback::call(const WillBeHeapVector<RefPtrWillBeMember<Mutation
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunction(executionContext(), callback, thisObject, 2, argv, isolate);
+    ScriptController::callFunction(executionContext(), m_callback.newLocal(isolate), thisObject, WTF_ARRAY_LENGTH(argv), argv, isolate);
 }
 
 void V8MutationCallback::setWeakCallback(const v8::WeakCallbackData<v8::Function, V8MutationCallback>& data)
