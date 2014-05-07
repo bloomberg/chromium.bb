@@ -1,5 +1,4 @@
-This should be a 100×100px green square with a black border:
- (GraphicsLayer
+(GraphicsLayer
   (bounds 800.00 600.00)
   (children 1
     (GraphicsLayer

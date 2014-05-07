@@ -1,7 +1,3 @@
-This test checks that grid items correctly repaint when 'z-index' changes.
-
-For this test to pass, there should be no red below.
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

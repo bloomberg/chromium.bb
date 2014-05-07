@@ -1,10 +1,3 @@
-BUG ID: Bugzilla bug 6301 REGRESSION: Border repaint glitch
-
-TEST PASS: The boxes will resize, maintaining their solid red rectangular borders.
-
-TEST FAIL: The boxes will resize, but the borders will break. The first box will be missing small segments from either side of its bottom border. The second box will have small red horizontal segments protruding inwards from both sides of the border, where the bottom border was before.
-
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

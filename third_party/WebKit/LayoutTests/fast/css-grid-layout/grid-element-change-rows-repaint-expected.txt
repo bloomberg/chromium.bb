@@ -1,4 +1,3 @@
-This test checks that changing the grid-template-rows lead to a repaint. The final grid element should be 100px * 150px, the grid item should be 100px * 100px. No trace of the elements before the grid-template-rows change should be seen.
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

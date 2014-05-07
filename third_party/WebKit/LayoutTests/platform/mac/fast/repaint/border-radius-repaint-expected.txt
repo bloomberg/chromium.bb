@@ -1,6 +1,3 @@
-Repaint test for http://bugs.webkit.org/show_bug.cgi?id=10699 div with border-radius does not redraw properly if element inside div is resized.
-
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

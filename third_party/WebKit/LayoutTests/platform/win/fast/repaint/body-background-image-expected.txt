@@ -1,5 +1,3 @@
-Repaint test for http://bugs.webkit.org/show_bug.cgi?id=15157 Image defined in background-position: top center gets unexpectedly truncated.
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

@@ -1,6 +1,3 @@
-This test checks that shifting an abspos container will properly repaint its descendants.
-The images below should be correctly repainted.
-  
 (GraphicsLayer
   (bounds 1250.00 585.00)
   (children 1

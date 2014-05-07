@@ -1,5 +1,3 @@
-Tests that setting an outline or a border of 0 on an element without a border or outline doesn't repaint.
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

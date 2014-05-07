@@ -1,5 +1,3 @@
-Tests the repainting of box shadows when boxes are resized.
-
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1

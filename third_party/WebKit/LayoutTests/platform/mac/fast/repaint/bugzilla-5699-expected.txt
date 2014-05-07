@@ -1,11 +1,3 @@
-BUG ID: Bugzilla bug 5699 REGRESSION: incomplete repaint
-
-TEST PASS: The word “Hello” will move down.
-
-TEST FAIL: Another copy of the word “Hello” will appear.
-
- 
-Hello
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1
