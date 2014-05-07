@@ -731,7 +731,7 @@ restore_focus_state(struct desktop_shell *shell, struct workspace *ws)
 	wl_list_for_each_safe(seat, next_seat, &pending_seat_list, link) {
 		wl_list_insert(&shell->compositor->seat_list, &seat->link);
 
-		if (state->seat->keyboard == NULL)
+		if (seat->keyboard == NULL)
 			continue;
 
 		weston_keyboard_set_focus(seat->keyboard, NULL);
