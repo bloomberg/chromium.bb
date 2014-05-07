@@ -133,8 +133,7 @@ private:
     bool m_contextStopped;
     RefPtrWillBeMember<DOMError> m_error;
 
-    // FIXME: Oilpan: We should use HeapListHashSet if it is available.
-    ListHashSet<RefPtrWillBeMember<IDBRequest> > m_requestList;
+    WillBeHeapListHashSet<RefPtrWillBeMember<IDBRequest> > m_requestList;
 
     typedef WillBeHeapHashMap<String, RefPtrWillBeMember<IDBObjectStore> > IDBObjectStoreMap;
     IDBObjectStoreMap m_objectStoreMap;
