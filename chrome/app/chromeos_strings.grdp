@@ -1422,8 +1422,14 @@ Press any key to continue exploring.
   <message name="IDS_LOGIN_CONFIRM_PASSWORD_ERROR_TEXT" desc="Error text to show when the password typed by the user could not be verified.">
     Sorry, your password could not be verified. Please try again.
   </message>
-  <message name="IDS_LOGIN_FATAL_ERROR_MESSAGE" desc="Message to show when the authentication could not be completed.">
-    Something went wrong with signing in.<ph name="LINE_BREAK">&lt;br&gt;</ph>Please contact your administrator or try again.
+  <message name="IDS_LOGIN_FATAL_ERROR_TEXT_GENERIC" desc="Message to show when the authentication could not be completed due to an unspecified error.">
+    Something went wrong with signing in.
+  </message>
+  <message name="IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL" desc="Message to show when the authentication could not be completed because a redirect to an insecure URL was detected and blocked.">
+    Oops, couldn't sign you in. Sign-in failed because it was configured to use a non-secure URL (<ph name="BLOCKED_URL">$1<ex>http://www.example.com/login.html</ex></ph>).
+  </message>
+  <message name="IDS_LOGIN_FATAL_ERROR_INSTRUCTIONS" desc="Instructions shown below the error message when authentication could not be completed.">
+    Please contact your administrator or try again.
   </message>
   <message name="IDS_LOGIN_OFFLINE_EMAIL" desc="Email field text on the offline login screen. Note: should by the same as the one used on the Gaia sign-in page.">
     Email

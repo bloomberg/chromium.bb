@@ -211,7 +211,7 @@ cr.define('cr.login', function() {
 
     /**
      * Sets insecureContentBlockedCallback_.
-     * @type {function()}
+     * @type {function(string)}
      */
     set insecureContentBlockedCallback(callback) {
       this.insecureContentBlockedCallback_ = callback;
@@ -389,7 +389,7 @@ cr.define('cr.login', function() {
 
       if (msg.method == 'insecureContentBlocked') {
         if (this.insecureContentBlockedCallback_) {
-          this.insecureContentBlockedCallback_();
+          this.insecureContentBlockedCallback_(msg.url);
         } else {
           console.error(
               'GaiaAuthHost: Invalid insecureContentBlockedCallback_.');

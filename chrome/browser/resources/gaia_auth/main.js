@@ -275,10 +275,13 @@ Authenticator.prototype = {
   /**
    * Invoked when the background page sends an 'onInsecureContentBlocked'
    * message.
+   * @param {!Object} msg Details sent with the message.
    */
-  onInsecureContentBlocked_: function() {
-    window.parent.postMessage({'method': 'insecureContentBlocked'},
-                              this.parentPage_);
+  onInsecureContentBlocked_: function(msg) {
+    window.parent.postMessage({
+      'method': 'insecureContentBlocked',
+      'url': msg.url
+    }, this.parentPage_);
   },
 
   /**

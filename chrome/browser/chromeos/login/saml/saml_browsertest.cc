@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -583,6 +584,9 @@ IN_PROC_BROWSER_TEST_F(SamlTest, HTTPRedirectDisallowed) {
   GetLoginDisplay()->ShowSigninScreenForCreds(kHTTPSAMLUserEmail, "");
 
   OobeScreenWaiter(OobeDisplay::SCREEN_FATAL_ERROR).Wait();
+  JsExpect(base::StringPrintf(
+      "$('fatal-error-message').textContent.indexOf('%s') != -1",
+      embedded_test_server()->base_url().Resolve("/SAML").spec().c_str()));
 }
 
 // Verifies that when GAIA attempts to redirect to a page served over http, not

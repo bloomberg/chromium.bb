@@ -57,11 +57,13 @@ login.createScreen('FatalErrorScreen', 'fatal-error', function() { return {
     },
 
     /**
-     * Shows the no password warning screen.
+     * Shows the fatal error string screen.
+     * @param {string} message The error message to show.
      * @param {function()} callback The callback to be invoked when the
      *     screen is dismissed.
      */
-    show: function(callback) {
+    show: function(message, callback) {
+      $('fatal-error-message').textContent = message;
       this.callback_ = callback;
       Oobe.showScreen({id: SCREEN_FATAL_ERROR});
     }

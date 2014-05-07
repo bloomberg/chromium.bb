@@ -457,16 +457,22 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * served over an unencrypted connection was detected. Shows a fatal error.
      * This method is only called on Chrome OS, where the entire authentication
      * flow is required to be encrypted.
+     * @param {string} url The URL that was blocked.
      */
-    onInsecureContentBlocked_: function() {
-      this.showFatalAuthError();
+    onInsecureContentBlocked_: function(url) {
+      this.showFatalAuthError(loadTimeData.getStringF(
+          'fatalErrorMessageInsecureURL',
+          url));
     },
 
     /**
      * Shows the fatal auth error.
+     * @param {string} message The error message to show.
      */
-    showFatalAuthError: function() {
-      login.FatalErrorScreen.show(Oobe.showSigninUI);
+    showFatalAuthError: function(message) {
+      if (!message)
+        message = loadTimeData.getString('fatalErrorMessageGeneric');
+      login.FatalErrorScreen.show(message, Oobe.showSigninUI);
     },
 
     /**

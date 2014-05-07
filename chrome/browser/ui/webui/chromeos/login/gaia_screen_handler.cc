@@ -182,8 +182,11 @@ void GaiaScreenHandler::DeclareLocalizedValues(
   builder->Add("createManagedUserFeatureName",
                IDS_CREATE_LOCALLY_MANAGED_USER_FEATURE_NAME);
 
-  // Strings used by no password warning dialog.
-  builder->Add("fatalErrorMessage", IDS_LOGIN_FATAL_ERROR_MESSAGE);
+  // Strings used by the fatal error dialog.
+  builder->Add("fatalErrorMessageGeneric", IDS_LOGIN_FATAL_ERROR_TEXT_GENERIC);
+  builder->Add("fatalErrorMessageInsecureURL",
+               IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL);
+  builder->Add("fatalErrorInstructions", IDS_LOGIN_FATAL_ERROR_INSTRUCTIONS);
   builder->Add("fatalErrorDismissButton", IDS_OK);
 }
 
