@@ -136,8 +136,7 @@ void VideoCaptureImpl::StopCapture(int client_id) {
   // that client list and don't have to run the other following RemoveClient().
   if (!RemoveClient(client_id, &clients_pending_on_filter_)) {
     if (!RemoveClient(client_id, &clients_pending_on_restart_)) {
-      bool removed = RemoveClient(client_id, &clients_);
-      DCHECK(removed) << "Removing a non-existent client.";
+      RemoveClient(client_id, &clients_);
     }
   }
 

@@ -95,6 +95,10 @@ class VideoCaptureImplTest : public ::testing::Test {
       OnDeviceFormatsInUseReceived(media::VideoCaptureFormats());
     }
 
+    void ReceiveStateChangeMessage(VideoCaptureState state) {
+      OnStateChanged(state);
+    }
+
     const media::VideoCaptureParams& capture_params() const {
       return capture_params_;
     }
@@ -275,6 +279,34 @@ TEST_F(VideoCaptureImplTest, AlreadyStarted) {
   DCHECK(video_capture_impl_->capture_params().requested_format
             .frame_size ==
          params_small_.requested_format.frame_size);
+}
+
+TEST_F(VideoCaptureImplTest, EndedBeforeStop) {
+   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED));
+   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED));
+
+   Init();
+   StartCapture(0, params_small_);
+
+   // Receive state change message from browser.
+   video_capture_impl_->ReceiveStateChangeMessage(VIDEO_CAPTURE_STATE_ENDED);
+
+   StopCapture(0);
+   DeInit();
+}
+
+TEST_F(VideoCaptureImplTest, ErrorBeforeStop) {
+   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED));
+   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_ERROR));
+
+   Init();
+   StartCapture(0, params_small_);
+
+   // Receive state change message from browser.
+   video_capture_impl_->ReceiveStateChangeMessage(VIDEO_CAPTURE_STATE_ERROR);
+
+   StopCapture(0);
+   DeInit();
 }
 
 }  // namespace content
