@@ -68,7 +68,7 @@ public:
     // |startOffset| points to the start of the BMP within the file.
     // |buffer| points at an empty ImageFrame that we'll initialize and
     // fill with decoded data.
-    BMPImageReader(ImageDecoder* parent, size_t decodedAndHeaderOffset, size_t imgDataOffset, bool usesAndMask);
+    BMPImageReader(ImageDecoder* parent, size_t decodedAndHeaderOffset, size_t imgDataOffset, bool m_isInICO);
 
     void setBuffer(ImageFrame* buffer) { m_buffer = buffer; }
     void setData(SharedBuffer* data) { m_data = data; }
@@ -93,11 +93,6 @@ private:
         // OS/2 2.x-only
         HUFFMAN1D,  // Stored in file as 3
         RLE24,      // Stored in file as 4
-    };
-    enum AndMaskState {
-        None,
-        NotYetDecoded,
-        Decoding,
     };
     enum ProcessingResult {
         Success,
@@ -343,11 +338,15 @@ private:
     bool m_seenNonZeroAlphaPixel;
     bool m_seenZeroAlphaPixel;
 
+    // BMPs-in-ICOs have a few differences from standalone BMPs, so we need to
+    // know if we're in an ICO container.
+    bool m_isInICO;
+
     // ICOs store a 1bpp "mask" immediately after the main bitmap image data
     // (and, confusingly, add its height to the biHeight value in the info
-    // header, thus doubling it).  This variable tracks whether we have such
-    // a mask and if we've started decoding it yet.
-    AndMaskState m_andMaskState;
+    // header, thus doubling it). If |m_isInICO| is true, this variable tracks
+    // whether we've begun decoding this mask yet.
+    bool m_decodingAndMask;
 };
 
 } // namespace WebCore

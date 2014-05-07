@@ -66,7 +66,7 @@ const uint8_t nBitTo8BitlookupTable[] = {
 
 namespace WebCore {
 
-BMPImageReader::BMPImageReader(ImageDecoder* parent, size_t decodedAndHeaderOffset, size_t imgDataOffset, bool usesAndMask)
+BMPImageReader::BMPImageReader(ImageDecoder* parent, size_t decodedAndHeaderOffset, size_t imgDataOffset, bool isInICO)
     : m_parent(parent)
     , m_buffer(0)
     , m_decodedOffset(decodedAndHeaderOffset)
@@ -79,7 +79,8 @@ BMPImageReader::BMPImageReader(ImageDecoder* parent, size_t decodedAndHeaderOffs
     , m_needToProcessColorTable(false)
     , m_seenNonZeroAlphaPixel(false)
     , m_seenZeroAlphaPixel(false)
-    , m_andMaskState(usesAndMask ? NotYetDecoded : None)
+    , m_isInICO(isInICO)
+    , m_decodingAndMask(false)
 {
     // Clue-in decodeBMP() that we need to detect the correct info header size.
     memset(&m_infoHeader, 0, sizeof(m_infoHeader));
@@ -126,7 +127,7 @@ bool BMPImageReader::decodeBMP(bool onlySize)
     }
 
     // Decode the data.
-    if ((m_andMaskState != Decoding) && !pastEndOfImage(0)) {
+    if (!m_decodingAndMask && !pastEndOfImage(0)) {
         if ((m_infoHeader.biCompression != RLE4) && (m_infoHeader.biCompression != RLE8) && (m_infoHeader.biCompression != RLE24)) {
             const ProcessingResult result = processNonRLEData(false, 0);
             if (result != Success)
@@ -137,7 +138,7 @@ bool BMPImageReader::decodeBMP(bool onlySize)
 
     // If the image has an AND mask and there was no alpha data, process the
     // mask.
-    if ((m_andMaskState == NotYetDecoded) && !m_buffer->hasAlpha()) {
+    if (m_isInICO && !m_decodingAndMask && !m_buffer->hasAlpha()) {
         // Reset decoding coordinates to start of image.
         m_coord.setX(0);
         m_coord.setY(m_isTopDown ? 0 : (m_parent->size().height() - 1));
@@ -145,9 +146,9 @@ bool BMPImageReader::decodeBMP(bool onlySize)
         // The AND mask is stored as 1-bit data.
         m_infoHeader.biBitCount = 1;
 
-        m_andMaskState = Decoding;
+        m_decodingAndMask = true;
     }
-    if (m_andMaskState == Decoding) {
+    if (m_decodingAndMask) {
         const ProcessingResult result = processNonRLEData(false, 0);
         if (result != Success)
             return (result == Failure) ? m_parent->setFailed() : false;
@@ -241,14 +242,14 @@ bool BMPImageReader::readInfoHeader()
     if (m_isOS21x) {
         m_infoHeader.biWidth = readUint16(4);
         m_infoHeader.biHeight = readUint16(6);
-        ASSERT(m_andMaskState == None);  // ICO is a Windows format, not OS/2!
+        ASSERT(!m_isInICO); // ICO is a Windows format, not OS/2!
         m_infoHeader.biBitCount = readUint16(10);
         return true;
     }
 
     m_infoHeader.biWidth = readUint32(4);
     m_infoHeader.biHeight = readUint32(8);
-    if (m_andMaskState != None)
+    if (m_isInICO)
         m_infoHeader.biHeight /= 2;
     m_infoHeader.biBitCount = readUint16(14);
 
@@ -440,7 +441,8 @@ bool BMPImageReader::processBitmasks()
     //
     // To complicate things, Windows V3 BMPs, which lack this mask, can specify
     // 32bpp format, which to any sane reader would imply an 8-bit alpha
-    // channel -- and indeed, there exist BMPs in this format which clearly
+    // channel -- and for BMPs-in-ICOs, that's precisely what's intended to
+    // happen. There also exist standalone BMPs in this format which clearly
     // expect the alpha channel to be respected. However, there are many other
     // BMPs which, for example, fill this channel with all 0s, yet clearly
     // expect to not be displayed as a fully-transparent rectangle.
@@ -460,9 +462,10 @@ bool BMPImageReader::processBitmasks()
     //
     // So it's impossible to display every BMP in the way its creators intended,
     // and we have to choose what to break. Given the paragraph above, we match
-    // other browsers and ignore alpha in Windows V3 BMPs.
+    // other browsers and ignore alpha in Windows V3 BMPs except inside ICO
+    // files.
     if (!isWindowsV4Plus())
-        m_bitMasks[3] = 0;
+        m_bitMasks[3] = (m_isInICO && (m_infoHeader.biCompression != BITFIELDS) && (m_infoHeader.biBitCount == 32)) ? static_cast<uint32_t>(0xff000000) : 0;
 
     // We've now decoded all the non-image data we care about.  Skip anything
     // else before the actual raster data.
@@ -726,7 +729,7 @@ BMPImageReader::ProcessingResult BMPImageReader::processNonRLEData(bool inRLE, i
                 uint8_t pixelData = m_data->data()[m_decodedOffset + byte];
                 for (size_t pixel = 0; (pixel < pixelsPerByte) && (m_coord.x() < endX); ++pixel) {
                     const size_t colorIndex = (pixelData >> (8 - m_infoHeader.biBitCount)) & mask;
-                    if (m_andMaskState == Decoding) {
+                    if (m_decodingAndMask) {
                         // There's no way to accurately represent an AND + XOR
                         // operation as an RGBA image, so where the AND values
                         // are 1, we simply set the framebuffer pixels to fully
