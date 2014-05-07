@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_toolbar_model_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -32,17 +31,17 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/one_shot_event.h"
 
 namespace extensions {
 
 bool ExtensionToolbarModel::Observer::BrowserActionShowPopup(
-    const extensions::Extension* extension) {
+    const Extension* extension) {
   return false;
 }
 
-ExtensionToolbarModel::ExtensionToolbarModel(
-    Profile* profile,
-    extensions::ExtensionPrefs* extension_prefs)
+ExtensionToolbarModel::ExtensionToolbarModel(Profile* profile,
+                                             ExtensionPrefs* extension_prefs)
     : profile_(profile),
       extension_prefs_(extension_prefs),
       prefs_(profile_->GetPrefs()),
@@ -50,24 +49,16 @@ ExtensionToolbarModel::ExtensionToolbarModel(
       is_highlighting_(false),
       extension_registry_observer_(this),
       weak_ptr_factory_(this) {
-  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
-
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(
-      this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
-      content::Source<extensions::ExtensionPrefs>(extension_prefs_));
-
-  visible_icon_count_ = prefs_->GetInteger(
-      extensions::pref_names::kToolbarSize);
+  ExtensionSystem::Get(profile_)->ready().Post(
+      FROM_HERE,
+      base::Bind(&ExtensionToolbarModel::OnReady,
+                 weak_ptr_factory_.GetWeakPtr()));
+  visible_icon_count_ = prefs_->GetInteger(pref_names::kToolbarSize);
   pref_change_registrar_.Init(prefs_);
   pref_change_callback_ =
       base::Bind(&ExtensionToolbarModel::OnExtensionToolbarPrefChange,
                  base::Unretained(this));
-  pref_change_registrar_.Add(extensions::pref_names::kToolbar,
-                             pref_change_callback_);
+  pref_change_registrar_.Add(pref_names::kToolbar, pref_change_callback_);
 }
 
 ExtensionToolbarModel::~ExtensionToolbarModel() {
@@ -138,22 +129,21 @@ ExtensionToolbarModel::Action ExtensionToolbarModel::ExecuteBrowserAction(
     bool should_grant) {
   content::WebContents* web_contents = NULL;
   int tab_id = 0;
-  if (!extensions::ExtensionTabUtil::GetDefaultTab(
-          browser, &web_contents, &tab_id)) {
+  if (!ExtensionTabUtil::GetDefaultTab(browser, &web_contents, &tab_id)) {
     return ACTION_NONE;
   }
 
   ExtensionAction* browser_action =
-      extensions::ExtensionActionManager::Get(profile_)->
-      GetBrowserAction(*extension);
+      ExtensionActionManager::Get(profile_)->GetBrowserAction(*extension);
 
   // For browser actions, visibility == enabledness.
   if (!browser_action->GetIsVisible(tab_id))
     return ACTION_NONE;
 
   if (should_grant) {
-    extensions::TabHelper::FromWebContents(web_contents)->
-        active_tab_permission_granter()->GrantIfRequested(extension);
+    TabHelper::FromWebContents(web_contents)
+        ->active_tab_permission_granter()
+        ->GrantIfRequested(extension);
   }
 
   if (browser_action->HasPopup(tab_id)) {
@@ -162,7 +152,7 @@ ExtensionToolbarModel::Action ExtensionToolbarModel::ExecuteBrowserAction(
     return ACTION_SHOW_POPUP;
   }
 
-  extensions::ExtensionActionAPI::BrowserActionExecuted(
+  ExtensionActionAPI::BrowserActionExecuted(
       browser->profile(), *browser_action, web_contents);
   return ACTION_NONE;
 }
@@ -174,8 +164,7 @@ void ExtensionToolbarModel::SetVisibleIconCount(int count) {
   // designed to be a transitory state, and should not persist across browser
   // restarts (though it may be re-entered).
   if (!is_highlighting_) {
-    prefs_->SetInteger(extensions::pref_names::kToolbarSize,
-                       visible_icon_count_);
+    prefs_->SetInteger(pref_names::kToolbarSize, visible_icon_count_);
   }
 }
 
@@ -206,16 +195,7 @@ void ExtensionToolbarModel::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(profile_)->extension_service();
-  DCHECK(extension_service);
-  if (!extension_service->is_ready())
-    return;
-
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSIONS_READY:
-      InitializeExtensionList(extension_service);
-      break;
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
@@ -223,8 +203,10 @@ void ExtensionToolbarModel::Observe(
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED: {
-      const Extension* extension = extension_service->GetExtensionById(
-          *content::Details<const std::string>(details).ptr(), true);
+      const Extension* extension =
+          ExtensionRegistry::Get(profile_)->GetExtensionById(
+              *content::Details<const std::string>(details).ptr(),
+              ExtensionRegistry::EVERYTHING);
       if (ExtensionActionAPI::GetBrowserActionVisibility(extension_prefs_,
                                                          extension->id())) {
         AddExtension(extension);
@@ -236,6 +218,22 @@ void ExtensionToolbarModel::Observe(
     default:
       NOTREACHED() << "Received unexpected notification";
   }
+}
+
+void ExtensionToolbarModel::OnReady() {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
+  InitializeExtensionList(registry->enabled_extensions());
+  // Wait until the extension system is ready before observing any further
+  // changes so that the toolbar buttons can be shown in their stable ordering
+  // taken from prefs.
+  extension_registry_observer_.Add(registry);
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
+      content::Source<ExtensionPrefs>(extension_prefs_));
 }
 
 size_t ExtensionToolbarModel::FindNewPositionFromLastKnownGood(
@@ -341,25 +339,23 @@ void ExtensionToolbarModel::UninstalledExtension(const Extension* extension) {
 }
 
 // Combine the currently enabled extensions that have browser actions (which
-// we get from the ExtensionService) with the ordering we get from the
+// we get from the ExtensionRegistry) with the ordering we get from the
 // pref service. For robustness we use a somewhat inefficient process:
 // 1. Create a vector of extensions sorted by their pref values. This vector may
 // have holes.
 // 2. Create a vector of extensions that did not have a pref value.
 // 3. Remove holes from the sorted vector and append the unsorted vector.
-void ExtensionToolbarModel::InitializeExtensionList(ExtensionService* service) {
-  DCHECK(service->is_ready());
-
+void ExtensionToolbarModel::InitializeExtensionList(
+    const ExtensionSet& extensions) {
   last_known_positions_ = extension_prefs_->GetToolbarOrder();
-  Populate(last_known_positions_, service);
+  Populate(last_known_positions_, extensions);
 
   extensions_initialized_ = true;
   FOR_EACH_OBSERVER(Observer, observers_, VisibleCountChanged());
 }
 
-void ExtensionToolbarModel::Populate(
-    const ExtensionIdList& positions,
-    ExtensionService* service) {
+void ExtensionToolbarModel::Populate(const ExtensionIdList& positions,
+                                     const ExtensionSet& extensions) {
   // Items that have explicit positions.
   ExtensionList sorted;
   sorted.resize(positions.size(), NULL);
@@ -371,9 +367,9 @@ void ExtensionToolbarModel::Populate(
 
   // Create the lists.
   int hidden = 0;
-  for (extensions::ExtensionSet::const_iterator it =
-           service->extensions()->begin();
-       it != service->extensions()->end(); ++it) {
+  for (ExtensionSet::const_iterator it = extensions.begin();
+       it != extensions.end();
+       ++it) {
     const Extension* extension = it->get();
     if (!extension_action_manager->GetBrowserAction(*extension))
       continue;
@@ -492,7 +488,7 @@ void ExtensionToolbarModel::OnExtensionToolbarPrefChange() {
 
   // Re-populate.
   Populate(last_known_positions_,
-           ExtensionSystem::Get(profile_)->extension_service());
+           ExtensionRegistry::Get(profile_)->enabled_extensions());
 
   if (last_known_positions_.size() > pref_position_size) {
     // Need to update pref because we have extra icons. But can't call
