@@ -121,18 +121,31 @@ BrowserPluginGuest* BrowserPluginGuestManager::CreateGuest(
       extra_params.Pass());
 }
 
-BrowserPluginGuest* BrowserPluginGuestManager::GetGuestByInstanceID(
+static void BrowserPluginGuestByInstanceIDCallback(
+    const BrowserPluginGuestManager::GuestByInstanceIDCallback& callback,
+    WebContents* guest_web_contents) {
+  if (!guest_web_contents) {
+    callback.Run(NULL);
+    return;
+  }
+  callback.Run(static_cast<WebContentsImpl*>(guest_web_contents)->
+                   GetBrowserPluginGuest());
+}
+
+void BrowserPluginGuestManager::MaybeGetGuestByInstanceIDOrKill(
     int instance_id,
-    int embedder_render_process_id) const {
-  if (!GetDelegate())
-    return NULL;
+    int embedder_render_process_id,
+    const GuestByInstanceIDCallback& callback) const {
+  if (!GetDelegate()) {
+    callback.Run(NULL);
+    return;
+  }
 
-  WebContentsImpl* guest_web_contents = static_cast<WebContentsImpl*>(
-      GetDelegate()->GetGuestByInstanceID(instance_id,
-                                          embedder_render_process_id));
-
-  return guest_web_contents ?
-      guest_web_contents->GetBrowserPluginGuest() : NULL;
+  GetDelegate()->MaybeGetGuestByInstanceIDOrKill(
+      instance_id,
+      embedder_render_process_id,
+      base::Bind(&BrowserPluginGuestByInstanceIDCallback,
+                 callback));
 }
 
 void BrowserPluginGuestManager::AddGuest(int instance_id,
@@ -148,14 +161,11 @@ void BrowserPluginGuestManager::RemoveGuest(int instance_id) {
   GetDelegate()->RemoveGuest(instance_id);
 }
 
-bool BrowserPluginGuestManager::CanEmbedderAccessInstanceIDMaybeKill(
-    int embedder_render_process_id,
-    int instance_id) const {
-  if (!GetDelegate())
-    return false;
-
-  return GetDelegate()->CanEmbedderAccessInstanceIDMaybeKill(
-      embedder_render_process_id, instance_id);
+static void BrowserPluginGuestMessageCallback(const IPC::Message& message,
+                                              BrowserPluginGuest* guest) {
+  if (!guest)
+    return;
+  guest->OnMessageReceivedFromEmbedder(message);
 }
 
 void BrowserPluginGuestManager::OnMessageReceived(const IPC::Message& message,
@@ -166,11 +176,10 @@ void BrowserPluginGuestManager::OnMessageReceived(const IPC::Message& message,
   PickleIterator iter(message);
   bool success = iter.ReadInt(&instance_id);
   DCHECK(success);
-  BrowserPluginGuest* guest =
-      GetGuestByInstanceID(instance_id, render_process_id);
-  if (!guest)
-    return;
-  guest->OnMessageReceivedFromEmbedder(message);
+  MaybeGetGuestByInstanceIDOrKill(instance_id,
+                                  render_process_id,
+                                  base::Bind(&BrowserPluginGuestMessageCallback,
+                                             message));
 }
 
 SiteInstance* BrowserPluginGuestManager::GetGuestSiteInstance(

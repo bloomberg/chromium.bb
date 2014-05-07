@@ -37,24 +37,17 @@ class CONTENT_EXPORT BrowserPluginGuestManagerDelegate {
   // moves outside of content, this API will be unnecessary.
   virtual void RemoveGuest(int guest_instance_id) {}
 
-  // Returns a Webcontents given a |guest_instance_id|. Returns NULL if the
-  // guest wasn't found.  If the embedder is not permitted to access the given
-  // |guest_instance_id|, the embedder is killed, and NULL is returned.
-  virtual WebContents* GetGuestByInstanceID(int guest_instance_id,
-                                            int embedder_render_process_id);
-
-  // Returns whether the specified embedder is permitted to access the given
-  // |guest_instance_id|.
-  // TODO(fsamuel): Remove this.
-  virtual bool CanEmbedderAccessInstanceID(int embedder_render_process_id,
-                                           int guest_instance_id);
-
-  // Returns whether the specified embedder is permitted to access the given
-  // |guest_instance_id|, and kills the embedder if not.
-  // TODO(fsamuel): Remove this.
-  virtual bool CanEmbedderAccessInstanceIDMaybeKill(
+  typedef base::Callback<void(WebContents*)> GuestByInstanceIDCallback;
+  // Requests a guest WebContents associated with the provided
+  // |guest_instance_id|. If a guest associated with the provided ID
+  // does not exist, then the |callback| will be called with a NULL
+  // WebContents. If the provided |embedder_render_process_id| does
+  // not own the requested guest, then the embedder will be killed,
+  // and the |callback| will not be called.
+  virtual void MaybeGetGuestByInstanceIDOrKill(
+      int guest_instance_id,
       int embedder_render_process_id,
-      int guest_instance_id);
+      const GuestByInstanceIDCallback& callback) {}
 
   // Returns an existing SiteInstance if the current profile has a guest of the
   // given |guest_site|.

@@ -71,13 +71,6 @@ class CONTENT_EXPORT BrowserPluginGuestManager :
       const BrowserPluginHostMsg_Attach_Params& params,
       scoped_ptr<base::DictionaryValue> extra_params);
 
-  // Returns a BrowserPluginGuest given an |instance_id|. Returns NULL if the
-  // guest wasn't found.  If the embedder is not permitted to access the given
-  // |instance_id|, the embedder is killed, and NULL is returned.
-  BrowserPluginGuest* GetGuestByInstanceID(
-      int instance_id,
-      int embedder_render_process_id) const;
-
   // Adds a new |guest_web_contents| to the embedder (overridable in test).
   virtual void AddGuest(int instance_id, WebContents* guest_web_contents);
 
@@ -85,10 +78,11 @@ class CONTENT_EXPORT BrowserPluginGuestManager :
   // BrowserPluginGuestManager.
   void RemoveGuest(int instance_id);
 
-  // Returns whether the specified embedder is permitted to access the given
-  // |instance_id|, and kills the embedder if not.
-  bool CanEmbedderAccessInstanceIDMaybeKill(int embedder_render_process_id,
-                                            int instance_id) const;
+  typedef base::Callback<void(BrowserPluginGuest*)> GuestByInstanceIDCallback;
+  void MaybeGetGuestByInstanceIDOrKill(
+       int instance_id,
+       int embedder_render_process_id,
+       const GuestByInstanceIDCallback& callback) const;
 
   typedef base::Callback<bool(BrowserPluginGuest*)> GuestCallback;
   bool ForEachGuest(WebContents* embedder_web_contents,
@@ -110,6 +104,11 @@ class CONTENT_EXPORT BrowserPluginGuestManager :
 
   // The BrowserContext in which this manager this stored.
   BrowserContext* context_;
+
+  // Contains guests' WebContents, mapping from their instance ids.
+  typedef std::map<int, WebContents*> GuestInstanceMap;
+  GuestInstanceMap guest_web_contents_by_instance_id_;
+  int next_instance_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginGuestManager);
 };

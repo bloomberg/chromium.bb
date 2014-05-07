@@ -25,14 +25,10 @@ class TestGuestManagerDelegate : public BrowserPluginGuestManagerDelegate {
   virtual void AddGuest(int guest_instance_id,
                         WebContents* guest_web_contents) OVERRIDE;
   virtual void RemoveGuest(int guest_instance_id) OVERRIDE;
-  virtual WebContents* GetGuestByInstanceID(
+  virtual void MaybeGetGuestByInstanceIDOrKill(
       int guest_instance_id,
-      int embedder_render_process_id) OVERRIDE;
-  virtual bool CanEmbedderAccessInstanceIDMaybeKill(
       int embedder_render_process_id,
-      int guest_instance_id) OVERRIDE;
-  virtual bool CanEmbedderAccessInstanceID(int embedder_render_process_id,
-                                           int guest_instance_id) OVERRIDE;
+      const GuestByInstanceIDCallback& callback) OVERRIDE;
   virtual SiteInstance* GetGuestSiteInstance(
       const GURL& guest_site) OVERRIDE;
   virtual bool ForEachGuest(WebContents* embedder_web_contents,

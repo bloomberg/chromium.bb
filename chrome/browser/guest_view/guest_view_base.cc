@@ -87,7 +87,7 @@ GuestViewBase* GuestViewBase::From(int embedder_process_id,
 
   content::WebContents* guest_web_contents =
       GuestViewManager::FromBrowserContext(host->GetBrowserContext())->
-          GetGuestByInstanceID(guest_instance_id, embedder_process_id);
+          GetGuestByInstanceIDSafely(guest_instance_id, embedder_process_id);
   if (!guest_web_contents)
     return NULL;
 

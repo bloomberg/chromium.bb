@@ -10,24 +10,6 @@ int BrowserPluginGuestManagerDelegate::GetNextInstanceID() {
   return 0;
 }
 
-WebContents* BrowserPluginGuestManagerDelegate::GetGuestByInstanceID(
-    int guest_instance_id,
-    int embedder_render_process_id) {
-  return NULL;
-}
-
-bool BrowserPluginGuestManagerDelegate::CanEmbedderAccessInstanceIDMaybeKill(
-    int embedder_render_process_id,
-    int guest_instance_id) {
-  return false;
-}
-
-bool BrowserPluginGuestManagerDelegate::CanEmbedderAccessInstanceID(
-    int embedder_render_process_id,
-    int guest_instance_id) {
-  return false;
-}
-
 content::SiteInstance* BrowserPluginGuestManagerDelegate::GetGuestSiteInstance(
     const GURL& guest_site) {
   return NULL;

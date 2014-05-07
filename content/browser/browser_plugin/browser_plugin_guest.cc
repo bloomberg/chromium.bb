@@ -98,8 +98,20 @@ class BrowserPluginGuest::NewWindowRequest : public PermissionRequest {
                            const std::string& user_input) OVERRIDE {
     int embedder_render_process_id =
         guest_->embedder_web_contents()->GetRenderProcessHost()->GetID();
-    BrowserPluginGuest* guest = guest_->GetBrowserPluginGuestManager()->
-        GetGuestByInstanceID(instance_id_, embedder_render_process_id);
+    guest_->GetBrowserPluginGuestManager()->
+        MaybeGetGuestByInstanceIDOrKill(
+            instance_id_,
+            embedder_render_process_id,
+            base::Bind(&BrowserPluginGuest::NewWindowRequest::RespondInternal,
+                       base::Unretained(this),
+                       should_allow));
+  }
+
+ private:
+  virtual ~NewWindowRequest() {}
+
+  void RespondInternal(bool should_allow,
+                       BrowserPluginGuest* guest) {
     if (!guest) {
       VLOG(0) << "Guest not found. Instance ID: " << instance_id_;
       return;
@@ -110,8 +122,6 @@ class BrowserPluginGuest::NewWindowRequest : public PermissionRequest {
       guest->Destroy();
   }
 
- private:
-  virtual ~NewWindowRequest() {}
   int instance_id_;
 };
 

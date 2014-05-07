@@ -43,26 +43,17 @@ void TestGuestManagerDelegate::RemoveGuest(
   guest_web_contents_by_instance_id_.erase(it);
 }
 
-WebContents* TestGuestManagerDelegate::GetGuestByInstanceID(
-  int guest_instance_id,
-  int embedder_render_process_id) {
+void TestGuestManagerDelegate::MaybeGetGuestByInstanceIDOrKill(
+    int guest_instance_id,
+    int embedder_render_process_id,
+    const GuestByInstanceIDCallback& callback) {
   GuestInstanceMap::const_iterator it =
       guest_web_contents_by_instance_id_.find(guest_instance_id);
-  if (it == guest_web_contents_by_instance_id_.end())
-    return NULL;
-  return it->second;
-}
-
-bool TestGuestManagerDelegate::CanEmbedderAccessInstanceIDMaybeKill(
-  int embedder_render_process_id,
-  int guest_instance_id) {
-  return true;
-}
-
-bool TestGuestManagerDelegate::CanEmbedderAccessInstanceID(
-    int embedder_render_process_id,
-    int guest_instance_id) {
-  return true;
+  if (it == guest_web_contents_by_instance_id_.end()) {
+    callback.Run(NULL);
+    return;
+  }
+  callback.Run(it->second);
 }
 
 SiteInstance* TestGuestManagerDelegate::GetGuestSiteInstance(

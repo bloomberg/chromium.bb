@@ -81,9 +81,11 @@ bool BrowserPluginEmbedder::DidSendScreenRectsCallback(
 }
 
 void BrowserPluginEmbedder::DidSendScreenRects() {
-  GetBrowserPluginGuestManager()->ForEachGuest(GetWebContents(), base::Bind(
-      &BrowserPluginEmbedder::DidSendScreenRectsCallback,
-      base::Unretained(this)));
+  BrowserPluginGuestManager::FromBrowserContext(
+      GetWebContents()->GetBrowserContext())->ForEachGuest(
+          GetWebContents(), base::Bind(
+              &BrowserPluginEmbedder::DidSendScreenRectsCallback,
+              base::Unretained(this)));
 }
 
 bool BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback(
@@ -166,19 +168,12 @@ void BrowserPluginEmbedder::OnAllocateInstanceID(int request_id) {
       routing_id(), request_id, instance_id));
 }
 
-void BrowserPluginEmbedder::OnAttach(
+void BrowserPluginEmbedder::OnGuestCallback(
     int instance_id,
     const BrowserPluginHostMsg_Attach_Params& params,
-    const base::DictionaryValue& extra_params) {
+    const base::DictionaryValue* extra_params,
+    BrowserPluginGuest* guest) {
   BrowserPluginGuestManager* guest_manager = GetBrowserPluginGuestManager();
-  if (!guest_manager->CanEmbedderAccessInstanceIDMaybeKill(
-          GetWebContents()->GetRenderProcessHost()->GetID(), instance_id))
-    return;
-
-  BrowserPluginGuest* guest =
-      guest_manager->GetGuestByInstanceID(
-          instance_id, GetWebContents()->GetRenderProcessHost()->GetID());
-
   if (guest) {
     // There is an implicit order expectation here:
     // 1. The content embedder is made aware of the attachment.
@@ -188,12 +183,12 @@ void BrowserPluginEmbedder::OnAttach(
     GetContentClient()->browser()->GuestWebContentsAttached(
         guest->GetWebContents(),
         GetWebContents(),
-        extra_params);
-    guest->Attach(GetWebContents(), params, extra_params);
+        *extra_params);
+    guest->Attach(GetWebContents(), params, *extra_params);
     return;
   }
 
-  scoped_ptr<base::DictionaryValue> copy_extra_params(extra_params.DeepCopy());
+  scoped_ptr<base::DictionaryValue> copy_extra_params(extra_params->DeepCopy());
   guest = guest_manager->CreateGuest(
       GetWebContents()->GetSiteInstance(),
       instance_id, params,
@@ -202,9 +197,22 @@ void BrowserPluginEmbedder::OnAttach(
     GetContentClient()->browser()->GuestWebContentsAttached(
         guest->GetWebContents(),
         GetWebContents(),
-        extra_params);
+        *extra_params);
     guest->Initialize(params, GetWebContents());
   }
+}
+
+void BrowserPluginEmbedder::OnAttach(
+    int instance_id,
+    const BrowserPluginHostMsg_Attach_Params& params,
+    const base::DictionaryValue& extra_params) {
+  GetBrowserPluginGuestManager()->MaybeGetGuestByInstanceIDOrKill(
+      instance_id, GetWebContents()->GetRenderProcessHost()->GetID(),
+      base::Bind(&BrowserPluginEmbedder::OnGuestCallback,
+                 base::Unretained(this),
+                 instance_id,
+                 params,
+                 &extra_params));
 }
 
 }  // namespace content
