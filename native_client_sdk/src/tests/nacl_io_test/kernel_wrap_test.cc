@@ -15,6 +15,7 @@
 #include "mock_kernel_proxy.h"
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_wrap.h"
+#include "nacl_io/kernel_wrap_real.h"
 #include "nacl_io/osmman.h"
 #include "nacl_io/ossocket.h"
 #include "nacl_io/ostermios.h"
@@ -30,7 +31,9 @@ int utimes(const char *filename, const struct timeval times[2]);
 using namespace nacl_io;
 
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::DoAll;
+using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::StrEq;
 
@@ -121,6 +124,13 @@ class KernelWrapTest : public ::testing::Test {
 
     ASSERT_EQ(0, ki_push_state_for_testing());
     ASSERT_EQ(0, ki_init(&mock));
+
+    // We allow write to be called any number of times, and it forwards to
+    // _real_write. This prevents an infinite loop writing output if there is a
+    // failure.
+    ON_CALL(mock, write(_, _, _))
+        .WillByDefault(Invoke(this, &KernelWrapTest::DefaultWrite));
+    EXPECT_CALL(mock, write(_, _, _)).Times(AnyNumber());
   }
 
   void TearDown() {
@@ -129,8 +139,19 @@ class KernelWrapTest : public ::testing::Test {
     ki_uninit();
   }
 
-
   MockKernelProxy mock;
+
+ private:
+  ssize_t DefaultWrite(int fd, const void* buf, size_t count) {
+   assert(fd <= 2);
+   size_t nwrote;
+   int rtn = _real_write(fd, buf, count, &nwrote);
+   if (rtn != 0) {
+     errno = rtn;
+     return -1;
+   }
+   return nwrote;
+  }
 };
 
 }  // namespace
