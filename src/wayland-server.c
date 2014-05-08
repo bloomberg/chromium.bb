@@ -1083,12 +1083,6 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 	if (s == NULL)
 		return -1;
 
-	s->fd = wl_os_socket_cloexec(PF_LOCAL, SOCK_STREAM, 0);
-	if (s->fd < 0) {
-		wl_socket_destroy(s);
-		return -1;
-	}
-
 	if (name == NULL)
 		name = getenv("WAYLAND_DISPLAY");
 	if (name == NULL)
@@ -1111,6 +1105,12 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 
 	s->fd_lock = get_socket_lock(s);
 	if (s->fd_lock < 0) {
+		wl_socket_destroy(s);
+		return -1;
+	}
+
+	s->fd = wl_os_socket_cloexec(PF_LOCAL, SOCK_STREAM, 0);
+	if (s->fd < 0) {
 		wl_socket_destroy(s);
 		return -1;
 	}
