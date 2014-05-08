@@ -633,21 +633,33 @@ bool NaClProcessHost::LaunchSelLdr() {
 
 bool NaClProcessHost::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(NaClProcessHost, msg)
-    IPC_MESSAGE_HANDLER(NaClProcessMsg_QueryKnownToValidate,
-                        OnQueryKnownToValidate)
-    IPC_MESSAGE_HANDLER(NaClProcessMsg_SetKnownToValidate,
-                        OnSetKnownToValidate)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(NaClProcessMsg_ResolveFileToken,
-                                    OnResolveFileToken)
+  if (uses_nonsfi_mode_) {
+    // IPC messages relating to NaCl's validation cache must not be exposed
+    // in Non-SFI Mode, otherwise a Non-SFI nexe could use
+    // SetKnownToValidate to create a hole in the SFI sandbox.
+    IPC_BEGIN_MESSAGE_MAP(NaClProcessHost, msg)
+      IPC_MESSAGE_HANDLER(NaClProcessHostMsg_PpapiChannelsCreated,
+                          OnPpapiChannelsCreated)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+  } else {
+    IPC_BEGIN_MESSAGE_MAP(NaClProcessHost, msg)
+      IPC_MESSAGE_HANDLER(NaClProcessMsg_QueryKnownToValidate,
+                          OnQueryKnownToValidate)
+      IPC_MESSAGE_HANDLER(NaClProcessMsg_SetKnownToValidate,
+                          OnSetKnownToValidate)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(NaClProcessMsg_ResolveFileToken,
+                                      OnResolveFileToken)
 #if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(NaClProcessMsg_AttachDebugExceptionHandler,
-                                    OnAttachDebugExceptionHandler)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(
+          NaClProcessMsg_AttachDebugExceptionHandler,
+          OnAttachDebugExceptionHandler)
 #endif
-    IPC_MESSAGE_HANDLER(NaClProcessHostMsg_PpapiChannelsCreated,
-                        OnPpapiChannelsCreated)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
+      IPC_MESSAGE_HANDLER(NaClProcessHostMsg_PpapiChannelsCreated,
+                          OnPpapiChannelsCreated)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+  }
   return handled;
 }
 
@@ -944,11 +956,13 @@ bool NaClProcessHost::StartWithLaunchedProcess() {
 
 void NaClProcessHost::OnQueryKnownToValidate(const std::string& signature,
                                              bool* result) {
+  CHECK(!uses_nonsfi_mode_);
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
   *result = nacl_browser->QueryKnownToValidate(signature, off_the_record_);
 }
 
 void NaClProcessHost::OnSetKnownToValidate(const std::string& signature) {
+  CHECK(!uses_nonsfi_mode_);
   NaClBrowser::GetInstance()->SetKnownToValidate(
       signature, off_the_record_);
 }
@@ -1000,6 +1014,7 @@ void NaClProcessHost::OnResolveFileToken(uint64 file_token_lo,
   //
   // TODO(ncbray): track behavior with UMA. If entries are getting evicted or
   // bogus keys are getting queried, this would be good to know.
+  CHECK(!uses_nonsfi_mode_);
   base::FilePath file_path;
   if (!NaClBrowser::GetInstance()->GetFilePath(
         file_token_lo, file_token_hi, &file_path)) {
@@ -1031,6 +1046,7 @@ void NaClProcessHost::OnResolveFileToken(uint64 file_token_lo,
 #if defined(OS_WIN)
 void NaClProcessHost::OnAttachDebugExceptionHandler(const std::string& info,
                                                     IPC::Message* reply_msg) {
+  CHECK(!uses_nonsfi_mode_);
   if (!AttachDebugExceptionHandler(info, reply_msg)) {
     // Send failure message.
     NaClProcessMsg_AttachDebugExceptionHandler::WriteReplyParams(reply_msg,
