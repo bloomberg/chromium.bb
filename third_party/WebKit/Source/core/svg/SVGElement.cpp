@@ -42,7 +42,6 @@
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGCursorElement.h"
 #include "core/svg/SVGDocumentExtensions.h"
-#include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGElementRareData.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGSVGElement.h"
@@ -528,28 +527,27 @@ SVGDocumentExtensions& SVGElement::accessDocumentSVGExtensions()
     return document().accessSVGExtensions();
 }
 
-void SVGElement::mapInstanceToElement(SVGElementInstance* instance)
+void SVGElement::mapInstanceToElement(SVGElement* instance)
 {
     ASSERT(instance);
+    ASSERT(instance->inUseShadowTree());
 
     HashSet<SVGElement*>& instances = ensureSVGRareData()->elementInstances();
-    ASSERT(!instances.contains(instance->shadowTreeElement()));
+    ASSERT(!instances.contains(instance));
 
-    instances.add(instance->shadowTreeElement());
+    instances.add(instance);
 }
 
-void SVGElement::removeInstanceMapping(SVGElementInstance* instance)
+void SVGElement::removeInstanceMapping(SVGElement* instance)
 {
     ASSERT(instance);
+    ASSERT(instance->inUseShadowTree());
     ASSERT(hasSVGRareData());
 
-    if (!instance->shadowTreeElement())
-        return;
-
     HashSet<SVGElement*>& instances = svgRareData()->elementInstances();
-    ASSERT(instances.contains(instance->shadowTreeElement()));
+    ASSERT(instances.contains(instance));
 
-    instances.remove(instance->shadowTreeElement());
+    instances.remove(instance);
 }
 
 const HashSet<SVGElement*>& SVGElement::instancesForElement() const

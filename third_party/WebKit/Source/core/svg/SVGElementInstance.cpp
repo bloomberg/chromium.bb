@@ -139,7 +139,7 @@ void SVGElementInstance::detach()
 
     // Deregister as instance for passed element, if we haven't already.
     if (shadowTreeElement() && m_element->instancesForElement().contains(shadowTreeElement()))
-        m_element->removeInstanceMapping(this);
+        m_element->removeInstanceMapping(shadowTreeElement());
     // DO NOT clear ref to m_element because JavaScriptCore uses it for garbage collection
 
     m_shadowTreeElement = nullptr;
@@ -157,7 +157,7 @@ void SVGElementInstance::setShadowTreeElement(SVGElement* element)
     ASSERT(element);
     m_shadowTreeElement = element;
     // Register as instance for passed element.
-    m_element->mapInstanceToElement(this);
+    m_element->mapInstanceToElement(shadowTreeElement());
 
 }
 

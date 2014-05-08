@@ -40,7 +40,6 @@ class SVGAnimatedPropertyBase;
 class SubtreeLayoutScope;
 class SVGCursorElement;
 class SVGDocumentExtensions;
-class SVGElementInstance;
 class SVGElementRareData;
 class SVGFitToViewBox;
 class SVGSVGElement;
@@ -109,6 +108,8 @@ public:
     void invalidateSVGPresentationAttributeStyle() { ensureUniqueElementData().m_presentationAttributeStyleIsDirty = true; }
 
     const HashSet<SVGElement*>& instancesForElement() const;
+    void mapInstanceToElement(SVGElement*);
+    void removeInstanceMapping(SVGElement*);
 
     bool getBoundingBox(FloatRect&);
 
@@ -210,8 +211,6 @@ protected:
     bool hasFocusEventListeners() const;
 
 private:
-    friend class SVGElementInstance;
-
     // FIXME: Author shadows should be allowed
     // https://bugs.webkit.org/show_bug.cgi?id=77938
     virtual bool areAuthorShadowsAllowed() const OVERRIDE FINAL { return false; }
@@ -221,9 +220,6 @@ private:
     virtual void willRecalcStyle(StyleRecalcChange) OVERRIDE;
 
     void buildPendingResourcesIfNeeded();
-
-    void mapInstanceToElement(SVGElementInstance*);
-    void removeInstanceMapping(SVGElementInstance*);
 
     bool supportsSpatialNavigationFocus() const;
 

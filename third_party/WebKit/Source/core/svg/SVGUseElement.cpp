@@ -324,14 +324,14 @@ void SVGUseElement::scheduleShadowTreeRecreation()
 
 void SVGUseElement::clearResourceReferences()
 {
-    // FIXME: We should try to optimize this, to at least allow partial reclones.
-    if (ShadowRoot* shadowTreeRootElement = userAgentShadowRoot())
-        shadowTreeRootElement->removeChildren();
-
     if (m_targetElementInstance) {
         m_targetElementInstance->detach();
         m_targetElementInstance = nullptr;
     }
+
+    // FIXME: We should try to optimize this, to at least allow partial reclones.
+    if (ShadowRoot* shadowTreeRootElement = userAgentShadowRoot())
+        shadowTreeRootElement->removeChildren();
 
     m_needsShadowTreeRecreation = false;
     document().unscheduleUseShadowTreeUpdate(*this);
