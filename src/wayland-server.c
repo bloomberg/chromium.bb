@@ -1021,27 +1021,27 @@ socket_data(int fd, uint32_t mask, void *data)
 }
 
 static int
-get_socket_lock(struct wl_socket *socket)
+wl_socket_lock(struct wl_socket *socket)
 {
 	struct stat socket_stat;
-	int fd_lock;
 
 	snprintf(socket->lock_addr, sizeof socket->lock_addr,
 		 "%s%s", socket->addr.sun_path, LOCK_SUFFIX);
 
-	fd_lock = open(socket->lock_addr, O_CREAT | O_CLOEXEC,
-	               (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
+	socket->fd_lock = open(socket->lock_addr, O_CREAT | O_CLOEXEC,
+			       (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
 
-	if (fd_lock < 0) {
+	if (socket->fd_lock < 0) {
 		wl_log("unable to open lockfile %s check permissions\n",
 			socket->lock_addr);
 		return -1;
 	}
 
-	if (flock(fd_lock, LOCK_EX | LOCK_NB) < 0) {
+	if (flock(socket->fd_lock, LOCK_EX | LOCK_NB) < 0) {
 		wl_log("unable to lock lockfile %s, maybe another compositor is running\n",
 			socket->lock_addr);
-		close(fd_lock);
+		close(socket->fd_lock);
+		socket->fd_lock = -1;
 		return -1;
 	}
 
@@ -1049,7 +1049,8 @@ get_socket_lock(struct wl_socket *socket)
 		if (errno != ENOENT) {
 			wl_log("did not manage to stat file %s\n",
 				socket->addr.sun_path);
-			close(fd_lock);
+			close(socket->fd_lock);
+			socket->fd_lock = -1;
 			return -1;
 		}
 	} else if (socket_stat.st_mode & S_IWUSR ||
@@ -1057,7 +1058,7 @@ get_socket_lock(struct wl_socket *socket)
 		unlink(socket->addr.sun_path);
 	}
 
-	return fd_lock;
+	return 0;
 }
 
 static int
@@ -1114,8 +1115,7 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 		return -1;
 	}
 
-	s->fd_lock = get_socket_lock(s);
-	if (s->fd_lock < 0) {
+	if (wl_socket_lock(s) < 0) {
 		wl_socket_destroy(s);
 		return -1;
 	}
