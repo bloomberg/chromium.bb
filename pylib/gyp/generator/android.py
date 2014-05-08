@@ -302,6 +302,7 @@ class AndroidMkWriter(object):
       # writing duplicate dummy rules for those outputs.
       main_output = make.QuoteSpaces(self.LocalPathify(outputs[0]))
       self.WriteLn('%s: gyp_local_path := $(LOCAL_PATH)' % main_output)
+      self.WriteLn('%s: gyp_var_prefix := $(GYP_VAR_PREFIX)' % main_output)
       self.WriteLn('%s: gyp_intermediate_dir := '
                    '$(abspath $(gyp_intermediate_dir))' % main_output)
       self.WriteLn('%s: gyp_shared_intermediate_dir := '
@@ -399,6 +400,7 @@ class AndroidMkWriter(object):
         outputs = map(self.LocalPathify, outputs)
         main_output = outputs[0]
         self.WriteLn('%s: gyp_local_path := $(LOCAL_PATH)' % main_output)
+        self.WriteLn('%s: gyp_var_prefix := $(GYP_VAR_PREFIX)' % main_output)
         self.WriteLn('%s: gyp_intermediate_dir := '
                      '$(abspath $(gyp_intermediate_dir))' % main_output)
         self.WriteLn('%s: gyp_shared_intermediate_dir := '
