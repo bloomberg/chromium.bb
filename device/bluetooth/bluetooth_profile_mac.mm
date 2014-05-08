@@ -18,10 +18,21 @@
 #include "device/bluetooth/bluetooth_device_mac.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
 
+// Replicate specific 10.7 SDK declarations for building with prior SDKs.
+#if !defined(MAC_OS_X_VERSION_10_7) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+
+@interface IOBluetoothDevice (LionSDKDeclarations)
+- (IOReturn)performSDPQuery:(id)target uuids:(NSArray*)uuids;
+@end
+
+#endif  // MAC_OS_X_VERSION_10_7
+
 namespace device {
 namespace {
 
 const char kNoConnectionCallback[] = "Connection callback not set";
+const char kSDPQueryFailed[] = "SDP query failed";
 const char kProfileNotFound[] = "Profile not found";
 
 // It's safe to use 0 to represent an unregistered service, as implied by the
@@ -29,22 +40,22 @@ const char kProfileNotFound[] = "Profile not found";
 const BluetoothSDPServiceRecordHandle kInvalidServiceRecordHandle = 0;
 
 // Converts |uuid| to a IOBluetoothSDPUUID instance.
-//
-// |uuid| must be in the format of XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX.
-IOBluetoothSDPUUID* GetIOBluetoothSDPUUID(const std::string& uuid) {
-  DCHECK(uuid.size() == 36);
-  DCHECK(uuid[8] == '-');
-  DCHECK(uuid[13] == '-');
-  DCHECK(uuid[18] == '-');
-  DCHECK(uuid[23] == '-');
-  std::string numbers_only = uuid;
+IOBluetoothSDPUUID* GetIOBluetoothSDPUUID(const BluetoothUUID& uuid) {
+  // The canonical UUID format is XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX.
+  const std::string uuid_str = uuid.canonical_value();
+  DCHECK_EQ(uuid_str.size(), 36U);
+  DCHECK_EQ(uuid_str[8], '-');
+  DCHECK_EQ(uuid_str[13], '-');
+  DCHECK_EQ(uuid_str[18], '-');
+  DCHECK_EQ(uuid_str[23], '-');
+  std::string numbers_only = uuid_str;
   numbers_only.erase(23, 1);
   numbers_only.erase(18, 1);
   numbers_only.erase(13, 1);
   numbers_only.erase(8, 1);
   std::vector<uint8> uuid_bytes_vector;
   base::HexStringToBytes(numbers_only, &uuid_bytes_vector);
-  DCHECK(uuid_bytes_vector.size() == 16);
+  DCHECK_EQ(uuid_bytes_vector.size(), 16U);
 
   return [IOBluetoothSDPUUID uuidWithBytes:&uuid_bytes_vector.front()
                                     length:uuid_bytes_vector.size()];
@@ -100,7 +111,7 @@ NSDictionary* BuildServiceDefinition(const BluetoothUUID& uuid,
                          forKey:IntToNSString(kServiceNameKey)];
 
   const int kUUIDsKey = kBluetoothSDPAttributeIdentifierServiceClassIDList;
-  NSArray* uuids = @[GetIOBluetoothSDPUUID(uuid.canonical_value())];
+  NSArray* uuids = @[GetIOBluetoothSDPUUID(uuid)];
   [service_definition setObject:uuids forKey:IntToNSString(kUUIDsKey)];
 
   const int kProtocolDefinitionsKey =
@@ -159,9 +170,67 @@ BluetoothSDPServiceRecordHandle RegisterService(
 }  // namespace
 }  // namespace device
 
-// A simple helper class that forwards system notifications to its wrapped
-// |profile_|.
-@interface BluetoothProfileMacHelper : NSObject {
+using device::BluetoothProfile;
+using device::BluetoothProfileMac;
+using device::BluetoothSocket;
+
+// A simple helper class that forwards SDP query completed notifications to its
+// wrapped |profile_|.
+@interface SDPQueryListener : NSObject {
+ @private
+  // The profile that registered for notifications.
+  base::WeakPtr<BluetoothProfileMac> profile_;
+
+  // Callbacks associated with the connect request that triggered this SDP
+  // query.
+  BluetoothProfile::ConnectionCallback connection_callback_;
+  base::Closure success_callback_;
+  BluetoothSocket::ErrorCompletionCallback error_callback_;
+
+  // The device being queried.
+  IOBluetoothDevice* device_;  // weak
+}
+
+- (id)initWithProfile:(base::WeakPtr<BluetoothProfileMac>)profile
+               device:(IOBluetoothDevice*)device
+  connection_callback:(BluetoothProfile::ConnectionCallback)connection_callback
+     success_callback:(base::Closure)success_callback
+       error_callback:(BluetoothSocket::ErrorCompletionCallback)error_callback;
+- (void)sdpQueryComplete:(IOBluetoothDevice*)device status:(IOReturn)status;
+
+@end
+
+@implementation SDPQueryListener
+
+- (id)initWithProfile:(base::WeakPtr<BluetoothProfileMac>)profile
+               device:(IOBluetoothDevice*)device
+  connection_callback:(BluetoothProfile::ConnectionCallback)connection_callback
+     success_callback:(base::Closure)success_callback
+       error_callback:(BluetoothSocket::ErrorCompletionCallback)error_callback {
+  if ((self = [super init])) {
+    profile_ = profile;
+    device_ = device;
+    connection_callback_ = connection_callback;
+    success_callback_ = success_callback;
+    error_callback_ = error_callback;
+  }
+
+  return self;
+}
+
+- (void)sdpQueryComplete:(IOBluetoothDevice*)device status:(IOReturn)status {
+  DCHECK_EQ(device, device_);
+  if (profile_) {
+    profile_->OnSDPQueryComplete(status, device, connection_callback_,
+                                 success_callback_, error_callback_);
+  }
+}
+
+@end
+
+// A simple helper class that forwards RFCOMM channel opened notifications to
+// its wrapped |profile_|.
+@interface RFCOMMConnectionListener : NSObject {
  @private
   // The profile that owns |self|.
   device::BluetoothProfileMac* profile_;  // weak
@@ -178,7 +247,7 @@ BluetoothSDPServiceRecordHandle RegisterService(
 
 @end
 
-@implementation BluetoothProfileMacHelper
+@implementation RFCOMMConnectionListener
 
 - (id)initWithProfile:(device::BluetoothProfileMac*)profile
             channelID:(BluetoothRFCOMMChannelID)channelID {
@@ -208,10 +277,10 @@ BluetoothSDPServiceRecordHandle RegisterService(
                     channel:(IOBluetoothRFCOMMChannel*)rfcommChannel {
   if (notification != rfcommNewChannelNotification_) {
     // This case is reachable if there are pre-existing RFCOMM channels open at
-    // the time that the helper is created. In that case, each existing channel
-    // calls into this method with a different notification than the one this
-    // class registered with. Ignore those; this class is only interested in
-    // channels that have opened since it registered for notifications.
+    // the time that the listener is created. In that case, each existing
+    // channel calls into this method with a different notification than the one
+    // this class registered with. Ignore those; this class is only interested
+    // in channels that have opened since it registered for notifications.
     return;
   }
 
@@ -232,10 +301,11 @@ BluetoothProfileMac::BluetoothProfileMac(const BluetoothUUID& uuid,
                                          const Options& options)
     : uuid_(uuid),
       rfcomm_channel_id_(options.channel),
-      helper_([[BluetoothProfileMacHelper alloc]
-                initWithProfile:this
-                      channelID:rfcomm_channel_id_]),
-      service_record_handle_(RegisterService(uuid, options)) {
+      rfcomm_connection_listener_([[RFCOMMConnectionListener alloc]
+                                    initWithProfile:this
+                                          channelID:rfcomm_channel_id_]),
+      service_record_handle_(RegisterService(uuid, options)),
+      weak_ptr_factory_(this) {
   // TODO(isherman): What should happen if there was an error registering the
   // service, i.e. if |service_record_handle_| is |kInvalidServiceRecordHandle|?
   // http://crbug.com/367290
@@ -264,8 +334,32 @@ void BluetoothProfileMac::Connect(
     return;
   }
 
+  // Perform an SDP query on the |device| to refresh the cache, in case the
+  // services that the |device| advertises have changed since the previous
+  // query.
+  SDPQueryListener* listener =
+      [[SDPQueryListener alloc] initWithProfile:weak_ptr_factory_.GetWeakPtr()
+                                         device:device
+                            connection_callback:connection_callback_
+                               success_callback:success_callback
+                                 error_callback:error_callback];
+  [device performSDPQuery:[listener autorelease]
+                    uuids:@[GetIOBluetoothSDPUUID(uuid_)]];
+}
+
+void BluetoothProfileMac::OnSDPQueryComplete(
+    IOReturn status,
+    IOBluetoothDevice* device,
+    const ConnectionCallback& connection_callback,
+    const base::Closure& success_callback,
+    const BluetoothSocket::ErrorCompletionCallback& error_callback) {
+  if (status != kIOReturnSuccess) {
+    error_callback.Run(kSDPQueryFailed);
+    return;
+  }
+
   IOBluetoothSDPServiceRecord* record = [device
-      getServiceRecordForUUID:GetIOBluetoothSDPUUID(uuid_.canonical_value())];
+      getServiceRecordForUUID:GetIOBluetoothSDPUUID(uuid_)];
   if (record == nil) {
     error_callback.Run(kProfileNotFound);
     return;
@@ -276,7 +370,7 @@ void BluetoothProfileMac::Connect(
       record,
       base::Bind(OnConnectSuccess,
                  success_callback,
-                 connection_callback_,
+                 connection_callback,
                  device_address),
       error_callback);
 }

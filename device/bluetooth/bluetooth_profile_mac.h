@@ -12,12 +12,13 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "device/bluetooth/bluetooth_profile.h"
 #include "device/bluetooth/bluetooth_socket.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
-@class BluetoothProfileMacHelper;
+@class RFCOMMConnectionListener;
 @class IOBluetoothDevice;
 @class IOBluetoothRFCOMMChannel;
 
@@ -37,6 +38,16 @@ class BluetoothProfileMac : public BluetoothProfile {
                const base::Closure& success_callback,
                const BluetoothSocket::ErrorCompletionCallback& error_callback);
 
+  // Callback that is invoked when the OS completes an SDP query.
+  // |status| is the returned status from the SDP query. The remaining
+  // parameters are those from |Connect()|.
+  void OnSDPQueryComplete(
+      IOReturn status,
+      IOBluetoothDevice* device,
+      const ConnectionCallback& connection_callback,
+      const base::Closure& success_callback,
+      const BluetoothSocket::ErrorCompletionCallback& error_callback);
+
   // Callback that is invoked when the OS detects a new incoming RFCOMM channel
   // connection. |rfcomm_channel| is the newly opened channel.
   void OnRFCOMMChannelOpened(IOBluetoothRFCOMMChannel* rfcomm_channel);
@@ -54,11 +65,17 @@ class BluetoothProfileMac : public BluetoothProfile {
 
   // A simple helper that registers for OS notifications and forwards them to
   // |this| profile.
-  base::scoped_nsobject<BluetoothProfileMacHelper> helper_;
+  base::scoped_nsobject<RFCOMMConnectionListener> rfcomm_connection_listener_;
 
   // A handle to the service record registered in the system SDP server.
   // Used to eventually unregister the service.
   const BluetoothSDPServiceRecordHandle service_record_handle_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<BluetoothProfileMac> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothProfileMac);
 };
 
 }  // namespace device
