@@ -1097,11 +1097,82 @@ wl_socket_init_for_display_name(struct wl_socket *s, const char *name)
 	return 0;
 }
 
+static int
+_wl_display_add_socket(struct wl_display *display, struct wl_socket *s)
+{
+	socklen_t size;
+
+	s->fd = wl_os_socket_cloexec(PF_LOCAL, SOCK_STREAM, 0);
+	if (s->fd < 0) {
+		return -1;
+	}
+
+	size = offsetof (struct sockaddr_un, sun_path) + strlen(s->addr.sun_path);
+	if (bind(s->fd, (struct sockaddr *) &s->addr, size) < 0) {
+		wl_log("bind() failed with error: %m\n");
+		return -1;
+	}
+
+	if (listen(s->fd, 1) < 0) {
+		wl_log("listen() failed with error: %m\n");
+		return -1;
+	}
+
+	s->source = wl_event_loop_add_fd(display->loop, s->fd,
+					 WL_EVENT_READABLE,
+					 socket_data, display);
+	if (s->source == NULL) {
+		return -1;
+	}
+
+	wl_list_insert(display->socket_list.prev, &s->link);
+	return 0;
+}
+
+WL_EXPORT const char *
+wl_display_add_socket_auto(struct wl_display *display)
+{
+	struct wl_socket *s;
+	int displayno = 0;
+	char display_name[16] = "";
+
+	/* A reasonable number of maximum default sockets. If
+	 * you need more than this, use the explicit add_socket API. */
+	const int MAX_DISPLAYNO = 32;
+
+	s = malloc(sizeof *s);
+	memset(s, 0, sizeof *s);
+	if (s == NULL)
+		return NULL;
+
+	do {
+		snprintf(display_name, sizeof display_name, "wayland-%d", displayno);
+		if (wl_socket_init_for_display_name(s, display_name) < 0) {
+			wl_socket_destroy(s);
+			return NULL;
+		}
+
+		if (wl_socket_lock(s) < 0)
+			continue;
+
+		if (_wl_display_add_socket(display, s) < 0) {
+			wl_socket_destroy(s);
+			return NULL;
+		}
+
+		return s->display_name;
+	} while (displayno++ < MAX_DISPLAYNO);
+
+	/* Ran out of display names. */
+	wl_socket_destroy(s);
+	errno = EINVAL;
+	return NULL;
+}
+
 WL_EXPORT int
 wl_display_add_socket(struct wl_display *display, const char *name)
 {
 	struct wl_socket *s;
-	socklen_t size;
 
 	s = malloc(sizeof *s);
 	memset(s, 0, sizeof *s);
@@ -1123,33 +1194,10 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 		return -1;
 	}
 
-	s->fd = wl_os_socket_cloexec(PF_LOCAL, SOCK_STREAM, 0);
-	if (s->fd < 0) {
+	if (_wl_display_add_socket(display, s) < 0) {
 		wl_socket_destroy(s);
 		return -1;
 	}
-
-	size = offsetof (struct sockaddr_un, sun_path) + strlen(s->addr.sun_path);
-	if (bind(s->fd, (struct sockaddr *) &s->addr, size) < 0) {
-		wl_log("bind() failed with error: %m\n");
-		wl_socket_destroy(s);
-		return -1;
-	}
-
-	if (listen(s->fd, 1) < 0) {
-		wl_log("listen() failed with error: %m\n");
-		wl_socket_destroy(s);
-		return -1;
-	}
-
-	s->source = wl_event_loop_add_fd(display->loop, s->fd,
-					 WL_EVENT_READABLE,
-					 socket_data, display);
-	if (s->source == NULL) {
-		wl_socket_destroy(s);
-		return -1;
-	}
-	wl_list_insert(display->socket_list.prev, &s->link);
 
 	return 0;
 }
