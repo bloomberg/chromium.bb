@@ -216,6 +216,7 @@ crbug.com/361729 [ Mac ] fast/text/word-break.html [ NeedsRebaseline ]
 crbug.com/361729 [ Mac ] fast/writing-mode/fieldsets.html [ NeedsRebaseline ]
 
 crbug.com/361729 [ Mac ] virtual/mac-antialiasedtext/fast/text/decorations-transformed.html [ NeedsRebaseline ]
+crbug.com/361729 [ Mac ] virtual/mac-antialiasedtext/fast/text/selection-rect-rounding.html [ NeedsRebaseline ]
 
 # Pixel tests for RTL iframe scrollbar is erroneous. Cannot observe on actual browser.
 # Temporarily marking the flaky set below as NeedsManualRebaseline, so we can grab results
