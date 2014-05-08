@@ -70,6 +70,12 @@ PassRefPtrWillBeRawPtr<HTMLObjectElement> HTMLObjectElement::create(Document& do
     return element.release();
 }
 
+void HTMLObjectElement::trace(Visitor* visitor)
+{
+    FormAssociatedElement::trace(visitor);
+    HTMLPlugInElement::trace(visitor);
+}
+
 RenderWidget* HTMLObjectElement::existingRenderWidget() const
 {
     return renderPart(); // This will return 0 if the renderer is not a RenderPart.

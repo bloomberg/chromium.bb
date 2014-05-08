@@ -31,9 +31,12 @@ namespace WebCore {
 class HTMLFormElement;
 
 class HTMLObjectElement FINAL : public HTMLPlugInElement, public FormAssociatedElement {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLObjectElement);
+
 public:
     static PassRefPtrWillBeRawPtr<HTMLObjectElement> create(Document&, HTMLFormElement*, bool createdByParser);
     virtual ~HTMLObjectElement();
+    virtual void trace(Visitor*) OVERRIDE;
 
     const String& classId() const { return m_classId; }
 
@@ -103,8 +106,10 @@ private:
 
     void reloadPluginOnAttributeChange(const QualifiedName&);
 
+#if !ENABLE(OILPAN)
     virtual void refFormAssociatedElement() OVERRIDE { ref(); }
     virtual void derefFormAssociatedElement() OVERRIDE { deref(); }
+#endif
 
     virtual bool shouldRegisterAsNamedItem() const OVERRIDE { return true; }
     virtual bool shouldRegisterAsExtraNamedItem() const OVERRIDE { return true; }

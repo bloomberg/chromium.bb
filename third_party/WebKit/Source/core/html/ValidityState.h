@@ -30,16 +30,20 @@
 
 namespace WebCore {
 
-class ValidityState : public ScriptWrappable {
-    WTF_MAKE_NONCOPYABLE(ValidityState); WTF_MAKE_FAST_ALLOCATED;
+class ValidityState : public NoBaseWillBeGarbageCollectedFinalized<ValidityState>, public ScriptWrappable {
+    WTF_MAKE_NONCOPYABLE(ValidityState);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<ValidityState> create(FormAssociatedElement* control)
+    static PassOwnPtrWillBeRawPtr<ValidityState> create(FormAssociatedElement* control)
     {
-        return adoptPtr(new ValidityState(control));
+        return adoptPtrWillBeNoop(new ValidityState(control));
     }
+    void trace(Visitor* visitor) { visitor->trace(m_control); }
 
+#if !ENABLE(OILPAN)
     void ref() { m_control->ref(); }
     void deref() { m_control->deref(); }
+#endif
 
     String validationMessage() const;
 
@@ -57,12 +61,12 @@ public:
     bool valid() const;
 
 private:
-    ValidityState(FormAssociatedElement* control) : m_control(control)
+    explicit ValidityState(FormAssociatedElement* control) : m_control(control)
     {
         ScriptWrappable::init(this);
     }
 
-    FormAssociatedElement* m_control;
+    RawPtrWillBeMember<FormAssociatedElement> m_control;
 };
 
 } // namespace WebCore

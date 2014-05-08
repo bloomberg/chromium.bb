@@ -147,7 +147,7 @@ private:
     // Validates each of the controls, and stores controls of which 'invalid'
     // event was not canceled to the specified vector. Returns true if there
     // are any invalid controls in this form.
-    bool checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<FormAssociatedElement> >*);
+    bool checkInvalidControlsAndCollectUnhandled(WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement> >*);
 
     Element* elementFromPastNamesMap(const AtomicString&);
     void addToPastNamesMap(Element*, const AtomicString& pastName);
@@ -161,6 +161,7 @@ private:
     RadioButtonGroupScope m_radioButtonGroupScope;
 
     // Do not access m_associatedElements directly. Use associatedElements() instead.
+    // FIXME: Oilpan: m_associatedElements should be HeapVector<Member<>>.
     Vector<FormAssociatedElement*> m_associatedElements;
     // Do not access m_imageElements directly. Use imageElements() instead.
     Vector<HTMLImageElement*> m_imageElements;

@@ -24,6 +24,7 @@
 #ifndef FormAssociatedElement_h
 #define FormAssociatedElement_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/WeakPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -40,12 +41,14 @@ class ValidationMessage;
 class ValidityState;
 class VisibleSelection;
 
-class FormAssociatedElement {
+class FormAssociatedElement : public WillBeGarbageCollectedMixin {
 public:
     virtual ~FormAssociatedElement();
 
+#if !ENABLE(OILPAN)
     void ref() { refFormAssociatedElement(); }
     void deref() { derefFormAssociatedElement(); }
+#endif
 
     static HTMLFormElement* findAssociatedForm(const HTMLElement*);
     HTMLFormElement* form() const { return m_form.get(); }
@@ -90,6 +93,7 @@ public:
 protected:
     FormAssociatedElement();
 
+    void trace(Visitor*);
     void insertedInto(ContainerNode*);
     void removedFrom(ContainerNode*);
     void didMoveToNewDocument(Document& oldDocument);
@@ -109,16 +113,21 @@ protected:
     String customValidationMessage() const;
 
 private:
+#if !ENABLE(OILPAN)
     virtual void refFormAssociatedElement() = 0;
     virtual void derefFormAssociatedElement() = 0;
+#endif
 
     void setFormAttributeTargetObserver(PassOwnPtr<FormAttributeTargetObserver>);
     void resetFormAttributeTargetObserver();
 
     OwnPtr<FormAttributeTargetObserver> m_formAttributeTargetObserver;
-    // m_form should be a strong reference in Oilpan.
+#if ENABLE(OILPAN)
+    Member<HTMLFormElement> m_form;
+#else
     WeakPtr<HTMLFormElement> m_form;
-    OwnPtr<ValidityState> m_validityState;
+#endif
+    OwnPtrWillBeMember<ValidityState> m_validityState;
     String m_customValidationMessage;
     bool m_formWasSetByParser;
 };

@@ -40,8 +40,11 @@ class ValidityState;
 // and form-associated element implementations should use HTMLFormControlElement
 // unless there is a special reason.
 class HTMLFormControlElement : public LabelableElement, public FormAssociatedElement {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLFormControlElement);
+
 public:
     virtual ~HTMLFormControlElement();
+    virtual void trace(Visitor*) OVERRIDE;
 
     String formEnctype() const;
     void setFormEnctype(const AtomicString&);
@@ -87,7 +90,7 @@ public:
     virtual bool willValidate() const OVERRIDE;
     void updateVisibleValidationMessage();
     void hideVisibleValidationMessage();
-    bool checkValidity(Vector<RefPtr<FormAssociatedElement> >* unhandledInvalidControls = 0);
+    bool checkValidity(WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement> >* unhandledInvalidControls = 0);
     // This must be called when a validation constraint or control value is changed.
     void setNeedsValidityCheck();
     virtual void setCustomValidity(const String&) OVERRIDE FINAL;
@@ -138,8 +141,10 @@ protected:
     virtual bool supportsAutofocus() const;
 
 private:
+#if !ENABLE(OILPAN)
     virtual void refFormAssociatedElement() OVERRIDE FINAL { ref(); }
     virtual void derefFormAssociatedElement() OVERRIDE FINAL { deref(); }
+#endif
 
     virtual bool isFormControlElement() const OVERRIDE FINAL { return true; }
     virtual bool alwaysCreateUserAgentShadowRoot() const OVERRIDE { return true; }

@@ -69,6 +69,12 @@ HTMLFormControlElement::~HTMLFormControlElement()
 #endif
 }
 
+void HTMLFormControlElement::trace(Visitor* visitor)
+{
+    FormAssociatedElement::trace(visitor);
+    LabelableElement::trace(visitor);
+}
+
 String HTMLFormControlElement::formEnctype() const
 {
     const AtomicString& formEnctypeAttr = fastGetAttribute(formenctypeAttr);
@@ -418,7 +424,7 @@ void HTMLFormControlElement::hideVisibleValidationMessage()
         m_validationMessage->requestToHideMessage();
 }
 
-bool HTMLFormControlElement::checkValidity(Vector<RefPtr<FormAssociatedElement> >* unhandledInvalidControls)
+bool HTMLFormControlElement::checkValidity(WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement> >* unhandledInvalidControls)
 {
     if (!willValidate() || isValidFormControlElement())
         return true;

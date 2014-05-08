@@ -58,6 +58,12 @@ FormAssociatedElement::~FormAssociatedElement()
     // We can't call setForm here because it contains virtual calls.
 }
 
+void FormAssociatedElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_form);
+    visitor->trace(m_validityState);
+}
+
 ValidityState* FormAssociatedElement::validity()
 {
     if (!m_validityState)
@@ -142,10 +148,18 @@ void FormAssociatedElement::setForm(HTMLFormElement* newForm)
     if (m_form)
         m_form->disassociate(*this);
     if (newForm) {
+#if ENABLE(OILPAN)
+        m_form = newForm;
+#else
         m_form = newForm->createWeakPtr();
+#endif
         m_form->associate(*this);
     } else {
+#if ENABLE(OILPAN)
+        m_form = nullptr;
+#else
         m_form = WeakPtr<HTMLFormElement>();
+#endif
     }
     didChangeForm();
 }
