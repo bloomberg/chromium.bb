@@ -13,7 +13,6 @@
 #include "content/browser/renderer_host/java/java_bound_object.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host.h"
 #include "content/common/android/hash_set.h"
-#include "content/common/java_bridge_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
@@ -21,13 +20,9 @@
 namespace content {
 
 JavaBridgeDispatcherHostManager::JavaBridgeDispatcherHostManager(
-    WebContents* web_contents,
-    jobject retained_object_set)
+    WebContents* web_contents)
     : WebContentsObserver(web_contents),
-      retained_object_set_(base::android::AttachCurrentThread(),
-                           retained_object_set),
       allow_object_contents_inspection_(true) {
-  DCHECK(retained_object_set);
 }
 
 JavaBridgeDispatcherHostManager::~JavaBridgeDispatcherHostManager() {
@@ -53,6 +48,27 @@ void JavaBridgeDispatcherHostManager::AddNamedObject(const base::string16& name,
   }
 }
 
+void JavaBridgeDispatcherHostManager::SetRetainedObjectSet(
+    const JavaObjectWeakGlobalRef& retained_object_set) {
+  // It's an error to replace the retained_object_set_ after it's been set,
+  // so we check that it hasn't already been here.
+  // TODO(benm): It'd be better to pass the set in the constructor to avoid
+  // the chance of this happening; but that's tricky as this get's constructed
+  // before ContentViewCore (which owns the set). Best solution may be to move
+  // ownership of the JavaBridgerDispatchHostManager from WebContents to
+  // ContentViewCore?
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jobject> new_retained_object_set =
+      retained_object_set.get(env);
+  base::android::ScopedJavaLocalRef<jobject> current_retained_object_set =
+      retained_object_set_.get(env);
+  if (!env->IsSameObject(new_retained_object_set.obj(),
+                         current_retained_object_set.obj())) {
+    DCHECK(current_retained_object_set.is_null());
+    retained_object_set_ = retained_object_set;
+  }
+}
+
 void JavaBridgeDispatcherHostManager::RemoveNamedObject(
     const base::string16& name) {
   ObjectMap::iterator iter = objects_.find(name);
@@ -67,6 +83,11 @@ void JavaBridgeDispatcherHostManager::RemoveNamedObject(
       iter != instances_.end(); ++iter) {
     iter->second->RemoveNamedObject(name);
   }
+}
+
+void JavaBridgeDispatcherHostManager::OnGetChannelHandle(
+    RenderFrameHost* render_frame_host, IPC::Message* reply_msg) {
+  instances_[render_frame_host]->OnGetChannelHandle(reply_msg);
 }
 
 void JavaBridgeDispatcherHostManager::RenderFrameCreated(
@@ -109,25 +130,6 @@ void JavaBridgeDispatcherHostManager::DocumentAvailableInMainFrame() {
                            JavaBoundObject::GetJavaObject(it->second));
     }
   }
-}
-
-bool JavaBridgeDispatcherHostManager::OnMessageReceived(
-    const IPC::Message& message,
-    RenderFrameHost* render_frame_host) {
-  DCHECK(render_frame_host);
-  if (!instances_.count(render_frame_host))
-    return false;
-  scoped_refptr<JavaBridgeDispatcherHost> instance =
-      instances_[render_frame_host];
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(JavaBridgeDispatcherHostManager, message)
-    IPC_MESSAGE_FORWARD_DELAY_REPLY(
-        JavaBridgeHostMsg_GetChannelHandle,
-        instance.get(),
-        JavaBridgeDispatcherHost::OnGetChannelHandle)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 void JavaBridgeDispatcherHostManager::JavaBoundObjectCreated(

@@ -331,10 +331,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   virtual void AccessibilityEventReceived(
       const std::vector<AXEventNotificationDetails>& details) {}
 
-  // Invoked if an IPC message is coming from a specific RenderFrameHost.
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 RenderFrameHost* render_frame_host);
-
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 

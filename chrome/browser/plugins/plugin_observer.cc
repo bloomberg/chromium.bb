@@ -329,25 +329,12 @@ void PluginObserver::PluginCrashed(const base::FilePath& plugin_path,
       infobar_text);
 }
 
-bool PluginObserver::OnMessageReceived(
-      const IPC::Message& message,
-      content::RenderFrameHost* render_frame_host) {
+bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(PluginObserver, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_BlockedOutdatedPlugin,
                         OnBlockedOutdatedPlugin)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_BlockedUnauthorizedPlugin,
                         OnBlockedUnauthorizedPlugin)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_NPAPINotSupported,
-                        OnNPAPINotSupported)
-
-    IPC_MESSAGE_UNHANDLED(return false)
-  IPC_END_MESSAGE_MAP()
-
-  return true;
-}
-
-bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
-  IPC_BEGIN_MESSAGE_MAP(PluginObserver, message)
 #if defined(ENABLE_PLUGIN_INSTALLATION)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FindMissingPlugin,
                         OnFindMissingPlugin)
@@ -358,6 +345,8 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
                         OnOpenAboutPlugins)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CouldNotLoadPlugin,
                         OnCouldNotLoadPlugin)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_NPAPINotSupported,
+                        OnNPAPINotSupported)
 
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()

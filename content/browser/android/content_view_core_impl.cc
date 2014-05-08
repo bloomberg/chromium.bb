@@ -210,13 +210,11 @@ ContentViewCore* ContentViewCore::GetNativeContentViewCore(JNIEnv* env,
       Java_ContentViewCore_getNativeContentViewCore(env, obj));
 }
 
-ContentViewCoreImpl::ContentViewCoreImpl(
-    JNIEnv* env,
-    jobject obj,
-    WebContents* web_contents,
-    ui::ViewAndroid* view_android,
-    ui::WindowAndroid* window_android,
-    jobject java_bridge_retained_object_set)
+ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env,
+                                         jobject obj,
+                                         WebContents* web_contents,
+                                         ui::ViewAndroid* view_android,
+                                         ui::WindowAndroid* window_android)
     : WebContentsObserver(web_contents),
       java_ref_(env, obj),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
@@ -245,10 +243,6 @@ ContentViewCoreImpl::ContentViewCoreImpl(
   std::string spoofed_ua =
       BuildUserAgentFromOSAndProduct(kLinuxInfoStr, product);
   web_contents->SetUserAgentOverride(spoofed_ua);
-
-  java_bridge_dispatcher_host_manager_.reset(
-      new JavaBridgeDispatcherHostManager(web_contents,
-                                          java_bridge_retained_object_set));
 
   InitWebContents();
 }
@@ -1281,7 +1275,8 @@ void ContentViewCoreImpl::SetAllowJavascriptInterfacesInspection(
     JNIEnv* env,
     jobject obj,
     jboolean allow) {
-  java_bridge_dispatcher_host_manager_->SetAllowObjectContentsInspection(allow);
+  web_contents_->java_bridge_dispatcher_host_manager()
+      ->SetAllowObjectContentsInspection(allow);
 }
 
 void ContentViewCoreImpl::AddJavascriptInterface(
@@ -1289,26 +1284,31 @@ void ContentViewCoreImpl::AddJavascriptInterface(
     jobject /* obj */,
     jobject object,
     jstring name,
-    jclass safe_annotation_clazz) {
+    jclass safe_annotation_clazz,
+    jobject retained_object_set) {
   ScopedJavaLocalRef<jobject> scoped_object(env, object);
   ScopedJavaLocalRef<jclass> scoped_clazz(env, safe_annotation_clazz);
+  JavaObjectWeakGlobalRef weak_retained_object_set(env, retained_object_set);
 
   // JavaBoundObject creates the NPObject with a ref count of 1, and
   // JavaBridgeDispatcherHostManager takes its own ref.
-  NPObject* bound_object = JavaBoundObject::Create(
-      scoped_object,
-      scoped_clazz,
-      java_bridge_dispatcher_host_manager_->AsWeakPtr(),
-      java_bridge_dispatcher_host_manager_->GetAllowObjectContentsInspection());
-  java_bridge_dispatcher_host_manager_->AddNamedObject(
-      ConvertJavaStringToUTF16(env, name), bound_object);
+  JavaBridgeDispatcherHostManager* java_bridge =
+      web_contents_->java_bridge_dispatcher_host_manager();
+  java_bridge->SetRetainedObjectSet(weak_retained_object_set);
+  NPObject* bound_object =
+      JavaBoundObject::Create(scoped_object,
+                              scoped_clazz,
+                              java_bridge->AsWeakPtr(),
+                              java_bridge->GetAllowObjectContentsInspection());
+  java_bridge->AddNamedObject(ConvertJavaStringToUTF16(env, name),
+                              bound_object);
   blink::WebBindings::releaseObject(bound_object);
 }
 
 void ContentViewCoreImpl::RemoveJavascriptInterface(JNIEnv* env,
                                                     jobject /* obj */,
                                                     jstring name) {
-  java_bridge_dispatcher_host_manager_->RemoveNamedObject(
+  web_contents_->java_bridge_dispatcher_host_manager()->RemoveNamedObject(
       ConvertJavaStringToUTF16(env, name));
 }
 
@@ -1680,14 +1680,12 @@ jlong Init(JNIEnv* env,
            jobject obj,
            jlong native_web_contents,
            jlong view_android,
-           jlong window_android,
-           jobject retained_objects_set) {
+           jlong window_android) {
   ContentViewCoreImpl* view = new ContentViewCoreImpl(
       env, obj,
       reinterpret_cast<WebContents*>(native_web_contents),
       reinterpret_cast<ui::ViewAndroid*>(view_android),
-      reinterpret_cast<ui::WindowAndroid*>(window_android),
-      retained_objects_set);
+      reinterpret_cast<ui::WindowAndroid*>(window_android));
   return reinterpret_cast<intptr_t>(view);
 }
 

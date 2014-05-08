@@ -130,16 +130,6 @@ class UIThreadExtensionFunction::RenderHostTracker
     function_->SetRenderFrameHost(NULL);
   }
 
-  virtual bool OnMessageReceived(
-      const IPC::Message& message,
-      content::RenderFrameHost* render_frame_host) OVERRIDE {
-    DCHECK(render_frame_host);
-    if (render_frame_host == function_->render_frame_host())
-      return function_->OnMessageReceived(message);
-    else
-      return false;
-  }
-
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     return function_->OnMessageReceived(message);
   }

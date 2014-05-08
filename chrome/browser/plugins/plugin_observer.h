@@ -41,9 +41,6 @@ class PluginObserver : public content::WebContentsObserver,
       content::RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void PluginCrashed(const base::FilePath& plugin_path,
                              base::ProcessId plugin_pid) OVERRIDE;
-  virtual bool OnMessageReceived(
-      const IPC::Message& message,
-      content::RenderFrameHost* render_frame_host) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:

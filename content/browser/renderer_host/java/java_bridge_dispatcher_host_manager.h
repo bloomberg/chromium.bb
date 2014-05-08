@@ -28,8 +28,7 @@ class JavaBridgeDispatcherHostManager
     : public WebContentsObserver,
       public base::SupportsWeakPtr<JavaBridgeDispatcherHostManager> {
  public:
-  JavaBridgeDispatcherHostManager(WebContents* web_contents,
-                                  jobject retained_object_set);
+  explicit JavaBridgeDispatcherHostManager(WebContents* web_contents);
   virtual ~JavaBridgeDispatcherHostManager();
 
   // These methods add or remove the object to each JavaBridgeDispatcherHost.
@@ -38,12 +37,21 @@ class JavaBridgeDispatcherHostManager
   void AddNamedObject(const base::string16& name, NPObject* object);
   void RemoveNamedObject(const base::string16& name);
 
+  void OnGetChannelHandle(RenderFrameHost* render_frame_host,
+                          IPC::Message* reply_msg);
+
+  // Every time a JavaBoundObject backed by a real Java object is
+  // created/destroyed, we insert/remove a strong ref to that Java object into
+  // this set so that it doesn't get garbage collected while it's still
+  // potentially in use. Although the set is managed native side, it's owned
+  // and defined in Java so that pushing refs into it does not create new GC
+  // roots that would prevent ContentViewCore from being garbage collected.
+  void SetRetainedObjectSet(const JavaObjectWeakGlobalRef& retained_object_set);
+
   // WebContentsObserver overrides
   virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void DocumentAvailableInMainFrame() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 RenderFrameHost* render_frame_host) OVERRIDE;
 
   void JavaBoundObjectCreated(const base::android::JavaRef<jobject>& object);
   void JavaBoundObjectDestroyed(const base::android::JavaRef<jobject>& object);
@@ -59,12 +67,6 @@ class JavaBridgeDispatcherHostManager
   InstanceMap instances_;
   typedef std::map<base::string16, NPObject*> ObjectMap;
   ObjectMap objects_;
-  // Every time a JavaBoundObject backed by a real Java object is
-  // created/destroyed, we insert/remove a strong ref to that Java object into
-  // this set so that it doesn't get garbage collected while it's still
-  // potentially in use. Although the set is managed native side, it's owned
-  // and defined in Java so that pushing refs into it does not create new GC
-  // roots that would prevent ContentViewCore from being garbage collected.
   JavaObjectWeakGlobalRef retained_object_set_;
   bool allow_object_contents_inspection_;
 

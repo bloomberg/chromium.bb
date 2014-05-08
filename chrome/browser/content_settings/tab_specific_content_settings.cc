@@ -639,8 +639,7 @@ void TabSpecificContentSettings::RenderFrameForInterstitialPageCreated(
 }
 
 bool TabSpecificContentSettings::OnMessageReceived(
-    const IPC::Message& message,
-    content::RenderFrameHost* render_frame_host) {
+    const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TabSpecificContentSettings, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ContentBlocked, OnContentBlocked)

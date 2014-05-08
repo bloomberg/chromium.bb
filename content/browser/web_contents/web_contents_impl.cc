@@ -96,7 +96,9 @@
 #if defined(OS_ANDROID)
 #include "content/browser/android/date_time_chooser_android.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
+#include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 #include "content/browser/web_contents/web_contents_android.h"
+#include "content/common/java_bridge_messages.h"
 #include "content/public/browser/android/content_view_core.h"
 #endif
 
@@ -479,15 +481,9 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
 
   ObserverListBase<WebContentsObserver>::Iterator it(observers_);
   WebContentsObserver* observer;
-  if (render_frame_host) {
-    while ((observer = it.GetNext()) != NULL)
-      if (observer->OnMessageReceived(message, render_frame_host))
-        return true;
-  } else {
-    while ((observer = it.GetNext()) != NULL)
-      if (observer->OnMessageReceived(message))
-        return true;
-  }
+  while ((observer = it.GetNext()) != NULL)
+    if (observer->OnMessageReceived(message))
+      return true;
 
   // Message handlers should be aware of which
   // RenderViewHost/RenderFrameHost sent the message, which is temporarily
@@ -557,6 +553,8 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnFindMatchRectsReply)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenDateTimeDialog,
                         OnOpenDateTimeDialog)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(JavaBridgeHostMsg_GetChannelHandle,
+                                    OnJavaBridgeGetChannelHandle)
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -1101,6 +1099,8 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
                  NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
                  NotificationService::AllBrowserContextsAndSources());
 #if defined(OS_ANDROID)
+  java_bridge_dispatcher_host_manager_.reset(
+      new JavaBridgeDispatcherHostManager(this));
   date_time_chooser_.reset(new DateTimeChooserAndroid());
 #endif
 }
@@ -2703,6 +2703,11 @@ void WebContentsImpl::OnOpenDateTimeDialog(
                                  value.maximum,
                                  value.step,
                                  value.suggestions);
+}
+
+void WebContentsImpl::OnJavaBridgeGetChannelHandle(IPC::Message* reply_msg) {
+  java_bridge_dispatcher_host_manager_->OnGetChannelHandle(
+      render_frame_message_source_, reply_msg);
 }
 
 #endif

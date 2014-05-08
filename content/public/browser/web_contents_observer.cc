@@ -41,12 +41,6 @@ void WebContentsObserver::Observe(WebContents* web_contents) {
   }
 }
 
-bool WebContentsObserver::OnMessageReceived(
-    const IPC::Message& message,
-    RenderFrameHost* render_frame_host) {
-  return false;
-}
-
 bool WebContentsObserver::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
