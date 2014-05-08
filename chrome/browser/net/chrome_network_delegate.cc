@@ -275,7 +275,6 @@ void RecordContentLengthHistograms(
     int64 received_content_length,
     int64 original_content_length,
     const base::TimeDelta& freshness_lifetime) {
-#if defined(OS_ANDROID)
   // Add the current resource to these histograms only when a valid
   // X-Original-Content-Length header is present.
   if (original_content_length >= 0) {
@@ -313,7 +312,6 @@ void RecordContentLengthHistograms(
     return;
   UMA_HISTOGRAM_COUNTS("Net.HttpContentLengthCacheable24Hours",
                        received_content_length);
-#endif  // defined(OS_ANDROID)
 }
 
 #if defined(OS_ANDROID)

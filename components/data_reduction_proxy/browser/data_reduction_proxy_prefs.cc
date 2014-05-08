@@ -35,7 +35,6 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
       prefs::kHttpReceivedContentLength, 0);
   registry->RegisterInt64Pref(
       prefs::kHttpOriginalContentLength, 0);
-#if defined(OS_ANDROID) || defined(OS_IOS)
   registry->RegisterListPref(
       prefs::kDailyHttpOriginalContentLength);
   registry->RegisterListPref(
@@ -58,7 +57,6 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
       prefs::kDailyContentLengthViaDataReductionProxy);
   registry->RegisterInt64Pref(
       prefs::kDailyHttpContentLengthLastUpdateDate, 0L);
-#endif
 }
 
 }  // namespace data_reduction_proxy

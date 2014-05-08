@@ -545,9 +545,9 @@
       # Platform sends memory pressure signals natively.
       'native_memory_pressure_signals%': 0,
 
-      'data_reduction_fallback_host%' : '',
+      'data_reduction_fallback_host%' : 'http://compress.googlezip.net:80/',
       'data_reduction_dev_host%' : '',
-      'spdy_proxy_auth_origin%' : '',
+      'spdy_proxy_auth_origin%' : 'https://proxy.googlezip.net:443/',
       'spdy_proxy_auth_property%' : '',
       'spdy_proxy_auth_value%' : '',
       'data_reduction_proxy_probe_url%' : '',

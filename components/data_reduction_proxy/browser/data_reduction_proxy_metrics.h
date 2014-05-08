@@ -39,8 +39,6 @@ int64 GetAdjustedOriginalContentLength(
     int64 original_content_length,
     int64 received_content_length);
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
-// TODO(bengr): Remove platform-specific ifdefs.
 // This is only exposed for testing. It is normally called by
 // UpdateContentLengthPrefs.
 void UpdateContentLengthPrefsForDataReductionProxy(
@@ -49,7 +47,6 @@ void UpdateContentLengthPrefsForDataReductionProxy(
     bool with_data_reduction_proxy_enabled,
     DataReductionProxyRequestType request_type,
     base::Time now, PrefService* prefs);
-#endif
 
 // Records daily data savings statistics to prefs and reports data savings UMA.
 void UpdateContentLengthPrefs(
