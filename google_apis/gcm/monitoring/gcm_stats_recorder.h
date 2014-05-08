@@ -95,15 +95,6 @@ class GCM_EXPORT GCMStatsRecorder {
     std::vector<GCMStatsRecorder::SendingActivity> sending_activities;
   };
 
-  // A delegate interface that allows the GCMStatsRecorder instance to interact
-  // with its container.
-  class Delegate {
-   public:
-    // Called when the GCMStatsRecorder is recording activities and a new
-    // activity has just been recorded.
-    virtual void OnActivityRecorded() = 0;
-  };
-
   GCMStatsRecorder();
   virtual ~GCMStatsRecorder();
 
@@ -114,9 +105,6 @@ class GCM_EXPORT GCMStatsRecorder {
 
   // Turns recording on/off.
   void SetRecording(bool recording);
-
-  // Set a delegate to receive callback from the recorder.
-  void SetDelegate(Delegate* delegate);
 
   // Clear all recorded activities.
   void Clear();
@@ -231,27 +219,19 @@ class GCM_EXPORT GCMStatsRecorder {
   }
 
  protected:
-  // Notify the recorder delegate, if it exists, that an activity has been
-  // recorded.
-  void NotifyActivityRecorded();
-
   void RecordCheckin(const std::string& event,
                      const std::string& details);
-
   void RecordConnection(const std::string& event,
                         const std::string& details);
-
   void RecordRegistration(const std::string& app_id,
                           const std::string& sender_id,
                           const std::string& event,
                           const std::string& details);
-
   void RecordReceiving(const std::string& app_id,
                        const std::string& from,
                        int message_byte_size,
                        const std::string& event,
                        const std::string& details);
-
   void RecordSending(const std::string& app_id,
                      const std::string& receiver_id,
                      const std::string& message_id,
@@ -259,7 +239,6 @@ class GCM_EXPORT GCMStatsRecorder {
                      const std::string& details);
 
   bool is_recording_;
-  Delegate* delegate_;
 
   std::deque<CheckinActivity> checkin_activities_;
   std::deque<ConnectionActivity> connection_activities_;

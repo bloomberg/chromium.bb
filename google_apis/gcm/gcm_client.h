@@ -156,10 +156,6 @@ class GCM_EXPORT GCMClient {
     // finished loading from the GCM store and retrieved the device check-in
     // from the server if it hadn't yet.
     virtual void OnGCMReady() = 0;
-
-    // Called when activities are being recorded and a new activity has just
-    // been recorded.
-    virtual void OnActivityRecorded() = 0;
   };
 
   GCMClient();

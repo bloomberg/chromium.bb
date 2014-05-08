@@ -250,7 +250,6 @@ class GCMClientImplTest : public testing::Test,
       const std::string& app_id,
       const gcm::GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
   virtual void OnGCMReady() OVERRIDE;
-  virtual void OnActivityRecorded() OVERRIDE {}
 
   GCMClientImpl* gcm_client() const { return gcm_client_.get(); }
   FakeMCSClient* mcs_client() const {

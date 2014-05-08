@@ -73,8 +73,7 @@ class GCM_EXPORT GCMInternalsBuilder {
 // with MCS) and other pieces of GCM infrastructure like Registration and
 // Checkins. It also allows for registering user delegates that host
 // applications that send and receive messages.
-class GCM_EXPORT GCMClientImpl
-    : public GCMClient, public GCMStatsRecorder::Delegate {
+class GCM_EXPORT GCMClientImpl : public GCMClient {
  public:
   explicit GCMClientImpl(scoped_ptr<GCMInternalsBuilder> internals_builder);
   virtual ~GCMClientImpl();
@@ -87,7 +86,7 @@ class GCM_EXPORT GCMClientImpl
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
       const scoped_refptr<net::URLRequestContextGetter>&
           url_request_context_getter,
-      GCMClient::Delegate* delegate) OVERRIDE;
+      Delegate* delegate) OVERRIDE;
   virtual void Load() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void CheckOut() OVERRIDE;
@@ -100,7 +99,6 @@ class GCM_EXPORT GCMClientImpl
   virtual void SetRecording(bool recording) OVERRIDE;
   virtual void ClearActivityLogs() OVERRIDE;
   virtual GCMStatistics GetStatistics() const OVERRIDE;
-  virtual void OnActivityRecorded() OVERRIDE;
 
  private:
   // State representation of the GCMClient.
@@ -237,7 +235,7 @@ class GCM_EXPORT GCMClientImpl
   // State of the GCM Client Implementation.
   State state_;
 
-  GCMClient::Delegate* delegate_;
+  Delegate* delegate_;
 
   // Device checkin info (android ID and security token used by device).
   CheckinInfo device_checkin_info_;

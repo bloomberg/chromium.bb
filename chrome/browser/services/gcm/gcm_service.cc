@@ -146,7 +146,6 @@ class GCMService::IOWorker : public GCMClient::Delegate {
       const std::string& app_id,
       const GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
   virtual void OnGCMReady() OVERRIDE;
-  virtual void OnActivityRecorded() OVERRIDE;
 
   // Called on IO thread.
   void Initialize(scoped_ptr<GCMClientFactory> gcm_client_factory,
@@ -295,13 +294,6 @@ void GCMService::IOWorker::OnGCMReady() {
                                    FROM_HERE,
                                    base::Bind(&GCMService::GCMClientReady,
                                               service_));
-}
-
-void GCMService::IOWorker::OnActivityRecorded() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  // When an activity is recorded, get all the stats and refresh the UI of
-  // gcm-internals page.
-  GetGCMStatistics(false);
 }
 
 void GCMService::IOWorker::Load(const base::WeakPtr<GCMService>& service) {
