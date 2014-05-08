@@ -65,7 +65,7 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_4000) {
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);
 
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
-  render_pass->shared_quad_state_list.push_back(SharedQuadState::Create());
+  render_pass->CreateAndAppendSharedQuadState();
   for (int i = 0; i < 4000; ++i) {
     render_pass->quad_list.push_back(
         PictureDrawQuad::Create().PassAs<DrawQuad>());
@@ -83,7 +83,7 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_100000) {
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);
 
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
-  render_pass->shared_quad_state_list.push_back(SharedQuadState::Create());
+  render_pass->CreateAndAppendSharedQuadState();
   for (int i = 0; i < 100000; ++i) {
     render_pass->quad_list.push_back(
         PictureDrawQuad::Create().PassAs<DrawQuad>());
@@ -102,7 +102,7 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_4000_4000) {
 
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   for (int i = 0; i < 4000; ++i) {
-    render_pass->shared_quad_state_list.push_back(SharedQuadState::Create());
+    render_pass->CreateAndAppendSharedQuadState();
     render_pass->quad_list.push_back(
         PictureDrawQuad::Create().PassAs<DrawQuad>());
     render_pass->quad_list.back()->shared_quad_state =
@@ -120,7 +120,7 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_100000_100000) {
 
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   for (int i = 0; i < 100000; ++i) {
-    render_pass->shared_quad_state_list.push_back(SharedQuadState::Create());
+    render_pass->CreateAndAppendSharedQuadState();
     render_pass->quad_list.push_back(
         PictureDrawQuad::Create().PassAs<DrawQuad>());
     render_pass->quad_list.back()->shared_quad_state =
@@ -141,7 +141,7 @@ TEST_F(CCMessagesPerfTest,
   for (int i = 0; i < 1000; ++i) {
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
     for (int j = 0; j < 100; ++j) {
-      render_pass->shared_quad_state_list.push_back(SharedQuadState::Create());
+      render_pass->CreateAndAppendSharedQuadState();
       render_pass->quad_list.push_back(
           PictureDrawQuad::Create().PassAs<DrawQuad>());
       render_pass->quad_list.back()->shared_quad_state =

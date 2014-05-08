@@ -418,7 +418,7 @@ void AddSolidColorQuadWithBlendMode(const gfx::Size& size,
   float opacity = 1.f;
 
   bool force_anti_aliasing_off = false;
-  scoped_ptr<SharedQuadState> sqs = SharedQuadState::Create();
+  SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
   sqs->SetAll(content_to_target_transform,
               content_bounds,
               visible_content_rect,
@@ -426,7 +426,6 @@ void AddSolidColorQuadWithBlendMode(const gfx::Size& size,
               is_clipped,
               opacity,
               blend_mode);
-  pass->shared_quad_state_list.push_back(sqs.Pass());
 
   scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
   color_quad->SetNew(pass->shared_quad_state_list.back(),

@@ -23,7 +23,8 @@ class SurfacesPixelTest : public RendererPixelTest<GLRenderer> {
   SurfaceManager manager_;
 };
 
-scoped_ptr<SharedQuadState> CreateTestSharedQuadState(
+SharedQuadState* CreateAndAppendTestSharedQuadState(
+    RenderPass* render_pass,
     const gfx::Transform& transform,
     const gfx::Size& size) {
   const gfx::Size content_bounds = size;
@@ -32,7 +33,7 @@ scoped_ptr<SharedQuadState> CreateTestSharedQuadState(
   bool is_clipped = false;
   float opacity = 1.f;
   const SkXfermode::Mode blend_mode = SkXfermode::kSrcOver_Mode;
-  scoped_ptr<SharedQuadState> shared_state = SharedQuadState::Create();
+  SharedQuadState* shared_state = render_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(transform,
                        content_bounds,
                        visible_content_rect,
@@ -40,7 +41,7 @@ scoped_ptr<SharedQuadState> CreateTestSharedQuadState(
                        is_clipped,
                        opacity,
                        blend_mode);
-  return shared_state.Pass();
+  return shared_state;
 }
 
 // Draws a very simple frame with no surface references.
@@ -50,8 +51,8 @@ TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
   scoped_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetNew(id, rect, rect, gfx::Transform());
 
-  pass->shared_quad_state_list.push_back(
-      CreateTestSharedQuadState(gfx::Transform(), device_viewport_size_));
+  CreateAndAppendTestSharedQuadState(
+      pass.get(), gfx::Transform(), device_viewport_size_);
 
   scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
   bool force_anti_aliasing_off = false;
@@ -96,8 +97,8 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
     scoped_ptr<RenderPass> pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
-    pass->shared_quad_state_list.push_back(
-        CreateTestSharedQuadState(gfx::Transform(), device_viewport_size_));
+    CreateAndAppendTestSharedQuadState(
+        pass.get(), gfx::Transform(), device_viewport_size_);
 
     scoped_ptr<SurfaceDrawQuad> surface_quad = SurfaceDrawQuad::Create();
     surface_quad->SetNew(pass->shared_quad_state_list.back(),
@@ -130,8 +131,8 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
     scoped_ptr<RenderPass> pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
-    pass->shared_quad_state_list.push_back(
-        CreateTestSharedQuadState(gfx::Transform(), child_size));
+    CreateAndAppendTestSharedQuadState(
+        pass.get(), gfx::Transform(), child_size);
 
     scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
     bool force_anti_aliasing_off = false;
@@ -186,8 +187,8 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
     pass->SetNew(id, rect, rect, gfx::Transform());
 
     gfx::Transform surface_transform;
-    pass->shared_quad_state_list.push_back(
-        CreateTestSharedQuadState(surface_transform, device_viewport_size_));
+    CreateAndAppendTestSharedQuadState(
+        pass.get(), surface_transform, device_viewport_size_);
 
     scoped_ptr<SurfaceDrawQuad> left_surface_quad = SurfaceDrawQuad::Create();
     left_surface_quad->SetNew(pass->shared_quad_state_list.back(),
@@ -197,8 +198,8 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
     pass->quad_list.push_back(left_surface_quad.PassAs<DrawQuad>());
 
     surface_transform.Translate(100, 0);
-    pass->shared_quad_state_list.push_back(
-        CreateTestSharedQuadState(surface_transform, device_viewport_size_));
+    CreateAndAppendTestSharedQuadState(
+        pass.get(), surface_transform, device_viewport_size_);
 
     scoped_ptr<SurfaceDrawQuad> right_surface_quad = SurfaceDrawQuad::Create();
     right_surface_quad->SetNew(pass->shared_quad_state_list.back(),
@@ -222,8 +223,8 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
     scoped_ptr<RenderPass> pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
-    pass->shared_quad_state_list.push_back(
-        CreateTestSharedQuadState(gfx::Transform(), child_size));
+    CreateAndAppendTestSharedQuadState(
+        pass.get(), gfx::Transform(), child_size);
 
     scoped_ptr<SolidColorDrawQuad> top_color_quad =
         SolidColorDrawQuad::Create();
@@ -259,8 +260,8 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
     scoped_ptr<RenderPass> pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
-    pass->shared_quad_state_list.push_back(
-        CreateTestSharedQuadState(gfx::Transform(), child_size));
+    CreateAndAppendTestSharedQuadState(
+        pass.get(), gfx::Transform(), child_size);
 
     scoped_ptr<SolidColorDrawQuad> top_color_quad =
         SolidColorDrawQuad::Create();

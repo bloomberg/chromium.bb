@@ -99,7 +99,8 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
                       root_damage_rect,
                       gfx::Transform());
 
-    scoped_ptr<SharedQuadState> shared_quad_state = SharedQuadState::Create();
+    SharedQuadState* shared_quad_state =
+        root_pass->CreateAndAppendSharedQuadState();
 
     gfx::Rect rect = root_output_rect;
     gfx::Rect opaque_rect = root_output_rect;
@@ -114,7 +115,7 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
     bool flipped = false;
 
     scoped_ptr<TextureDrawQuad> invalid_draw_quad = TextureDrawQuad::Create();
-    invalid_draw_quad->SetNew(shared_quad_state.get(),
+    invalid_draw_quad->SetNew(shared_quad_state,
                               rect,
                               opaque_rect,
                               visible_rect,
@@ -126,8 +127,6 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
                               vertex_opacity,
                               flipped);
     root_pass->quad_list.push_back(invalid_draw_quad.PassAs<DrawQuad>());
-
-    root_pass->shared_quad_state_list.push_back(shared_quad_state.Pass());
 
     frame->render_pass_list.push_back(root_pass.Pass());
     return frame.Pass();
@@ -148,10 +147,11 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
 
   void AddTextureQuad(DelegatedFrameData* frame,
                       ResourceProvider::ResourceId resource_id) {
-    scoped_ptr<SharedQuadState> sqs = SharedQuadState::Create();
+    SharedQuadState* sqs =
+        frame->render_pass_list[0]->CreateAndAppendSharedQuadState();
     scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
     float vertex_opacity[4] = { 1.f, 1.f, 1.f, 1.f };
-    quad->SetNew(sqs.get(),
+    quad->SetNew(sqs,
                  gfx::Rect(0, 0, 10, 10),
                  gfx::Rect(0, 0, 10, 10),
                  gfx::Rect(0, 0, 10, 10),
@@ -162,7 +162,6 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
                  false);
-    frame->render_pass_list[0]->shared_quad_state_list.push_back(sqs.Pass());
     frame->render_pass_list[0]->quad_list.push_back(quad.PassAs<DrawQuad>());
   }
 
@@ -182,10 +181,11 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
                  gfx::Transform());
     frame->render_pass_list.push_back(pass.Pass());
 
-    scoped_ptr<SharedQuadState> sqs = SharedQuadState::Create();
+    SharedQuadState* sqs =
+        frame->render_pass_list[0]->CreateAndAppendSharedQuadState();
     scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
 
-    quad->SetNew(sqs.get(),
+    quad->SetNew(sqs,
                  output_rect,
                  output_rect,
                  id,
@@ -195,7 +195,6 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
                  gfx::Rect(0, 0, 1, 1),  // mask_uv_rect
                  filters,
                  background_filters);
-    frame->render_pass_list[0]->shared_quad_state_list.push_back(sqs.Pass());
     frame->render_pass_list[0]->quad_list.push_back(quad.PassAs<DrawQuad>());
   }
 

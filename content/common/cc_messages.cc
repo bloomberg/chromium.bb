@@ -504,10 +504,9 @@ bool ParamTraits<cc::RenderPass>::Read(
 
     // If the quad has a new shared quad state, read it in.
     if (last_shared_quad_state_index != shared_quad_state_index) {
-      scoped_ptr<cc::SharedQuadState> state(cc::SharedQuadState::Create());
-      if (!ReadParam(m, iter, state.get()))
+      cc::SharedQuadState* state = p->CreateAndAppendSharedQuadState();
+      if (!ReadParam(m, iter, state))
         return false;
-      p->shared_quad_state_list.push_back(state.Pass());
       last_shared_quad_state_index = shared_quad_state_index;
     }
 

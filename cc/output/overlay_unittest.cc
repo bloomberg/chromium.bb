@@ -111,9 +111,8 @@ scoped_ptr<RenderPass> CreateRenderPass() {
                gfx::Transform(),
                has_transparent_background);
 
-  scoped_ptr<SharedQuadState> shared_state = SharedQuadState::Create();
+  SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
   shared_state->opacity = 1.f;
-  pass->shared_quad_state_list.push_back(shared_state.Pass());
   return pass.Pass();
 }
 

@@ -20,7 +20,6 @@ class TestRenderPass : public RenderPass {
   }
 
   void AppendQuad(scoped_ptr<DrawQuad> quad);
-  void AppendSharedQuadState(scoped_ptr<SharedQuadState> state);
 
   void AppendOneOfEveryQuadType(ResourceProvider* resource_provider,
                                 RenderPass::Id child_pass);

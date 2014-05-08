@@ -34,7 +34,7 @@ void AddTestSurfaceQuad(TestRenderPass* pass,
   float opacity = 1.0;
   SkXfermode::Mode blend_mode = SkXfermode::kSrcOver_Mode;
 
-  scoped_ptr<SharedQuadState> shared_quad_state = SharedQuadState::Create();
+  SharedQuadState* shared_quad_state = pass->CreateAndAppendSharedQuadState();
   shared_quad_state->SetAll(content_to_target_transform,
                             content_bounds,
                             visible_content_rect,
@@ -42,7 +42,6 @@ void AddTestSurfaceQuad(TestRenderPass* pass,
                             is_clipped,
                             opacity,
                             blend_mode);
-  pass->shared_quad_state_list.push_back(shared_quad_state.Pass());
 
   scoped_ptr<SurfaceDrawQuad> surface_quad = SurfaceDrawQuad::Create();
   gfx::Rect quad_rect = gfx::Rect(surface_size);
