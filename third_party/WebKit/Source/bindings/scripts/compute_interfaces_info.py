@@ -173,11 +173,16 @@ def compute_individual_info(idl_filename):
     # If not a partial interface, the basename is the interface name
     interface_name, _ = os.path.splitext(os.path.basename(idl_filename))
 
+    # 'implements' statements can be included in either the file for the
+    # implement*ing* interface (lhs of 'implements') or implement*ed* interface
+    # (rhs of 'implements'). Store both for now, then merge to implement*ing*
+    # interface later.
     left_interfaces, right_interfaces = get_implements_from_idl(idl_file_contents, interface_name)
 
     interfaces_info[interface_name] = {
         'full_path': full_path,
         'implemented_as': implemented_as,
+        'implemented_by_interfaces': left_interfaces,  # private, merged to next
         'implements_interfaces': right_interfaces,
         'include_path': this_include_path,
         # FIXME: temporary private field, while removing old treatement of
@@ -192,10 +197,6 @@ def compute_individual_info(idl_filename):
         # should be minimized; currently only targets of [PutForwards].
         'referenced_interfaces': get_put_forward_interfaces_from_idl(idl_file_contents),
     }
-
-    for left_interface_name in left_interfaces:
-        interface_info = interfaces_info[left_interface_name]
-        interface_info['implements_interfaces'].append(interface_name)
 
     # Record inheritance information
     inherited_extended_attributes_by_interface[interface_name] = dict(
@@ -246,6 +247,15 @@ def compute_interfaces_info(idl_files):
         compute_inheritance_info(interface_name)
 
     # Compute dependencies
+    # Move implements info from implement*ed* interface (rhs of 'implements')
+    # to implement*ing* interface (lhs of 'implements').
+    # Note that moving an 'implements' statement between implementing and
+    # implemented files does not change the info (or hence cause a rebuild)!
+    for right_interface_name, interface_info in interfaces_info.iteritems():
+        for left_interface_name in interface_info['implemented_by_interfaces']:
+            interfaces_info[left_interface_name]['implements_interfaces'].append(right_interface_name)
+        del interface_info['implemented_by_interfaces']
+
     # An IDL file's dependencies are partial interface files that extend it,
     # and files for other interfaces that this interfaces implements.
     for interface_name, interface_info in interfaces_info.iteritems():

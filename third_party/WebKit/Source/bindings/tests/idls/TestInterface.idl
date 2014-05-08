@@ -72,5 +72,5 @@
 };
 
 TestInterface implements TestImplements;
-TestInterface implements TestImplements2;
+// TestInterface implements TestImplements2; // at implement*ed* interface
 TestInterface implements TestImplements3;

@@ -37,3 +37,5 @@
     attribute DOMString implements2StringAttribute;
     void implements2VoidMethod();
 };
+
+TestInterface implements TestImplements2;

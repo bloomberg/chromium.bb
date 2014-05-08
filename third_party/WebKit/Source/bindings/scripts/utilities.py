@@ -59,27 +59,38 @@ def get_partial_interface_name_from_idl(file_contents):
 
 
 def get_implements_from_idl(file_contents, interface_name):
-    # Rule is: identifier-A implements identifier-B;
-    # http://www.w3.org/TR/WebIDL/#idl-implements-statements
-    # Returns two lists of interfaces that contain identifier-As and identifier-Bs.
-    # The 'implements' statements are supported in both identifier-A IDL and identifier-B IDL
-    # to avoid potential layering violation.
+    """Returns lists of implementing and implemented interfaces.
+
+    Rule is: identifier-A implements identifier-B;
+    i.e., implement*ing* implements implement*ed*;
+    http://www.w3.org/TR/WebIDL/#idl-implements-statements
+
+    Returns two lists of interfaces: identifier-As and identifier-Bs.
+    An 'implements' statements can be present in the IDL file for either the
+    implementing or the implemented interface, but not other files.
+    """
     implements_re = (r'^\s*'
                      r'(\w+)\s+'
                      r'implements\s+'
                      r'(\w+)\s*'
                      r';')
     implements_matches = re.finditer(implements_re, file_contents, re.MULTILINE)
-    implements_pairs = [(match.group(1), match.group(2))
-                        for match in implements_matches]
-    A_interfaces = []
-    B_interfaces = []
-    for left, right in implements_pairs:
-        if left == interface_name:
-            B_interfaces.append(right)
-        elif right == interface_name:
-            A_interfaces.append(left)
-    return (A_interfaces, B_interfaces)
+    implements_pairs = [match.groups() for match in implements_matches]
+
+    foreign_implements = [pair for pair in implements_pairs
+                          if interface_name not in pair]
+    if foreign_implements:
+        left, right = foreign_implements.pop()
+        raise IdlBadFilenameError(
+                'implements statement found in unrelated IDL file.\n'
+                'Statement is:\n'
+                '    %s implements %s;\n'
+                'but filename is unrelated "%s.idl"' %
+                (left, right, interface_name))
+
+    return (
+        [left for left, right in implements_pairs if right == interface_name],
+        [right for left, right in implements_pairs if left == interface_name])
 
 
 def is_callback_interface_from_idl(file_contents):
