@@ -35,6 +35,16 @@ const char kEventPageIdleTime[] = "event-page-idle-time";
 // notified of its impending unload and that unload happening.
 const char kEventPageSuspendingTime[] = "event-page-unloading-time";
 
+// Values for the kExtensionContentVerification flag. See ContentVerifier::Mode
+// for more explanation.
+const char kExtensionContentVerificationBootstrap[] = "bootstrap";
+const char kExtensionContentVerificationEnforceStrict[] = "enforce_strict";
+const char kExtensionContentVerificationEnforce[] = "enforce";
+
+// Name of the command line flag to force content verification to be on in one
+// of various modes.
+const char kExtensionContentVerification[] = "extension-content-verification";
+
 // Marks a renderer as extension process.
 const char kExtensionProcess[] = "extension-process";
 

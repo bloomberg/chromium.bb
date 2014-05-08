@@ -32,8 +32,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/features/feature_channel.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
+#include "extensions/browser/content_verifier.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_pref_store.h"
 #include "extensions/browser/extension_pref_value_map.h"
@@ -137,6 +139,12 @@ void ExtensionSystemImpl::Shared::RegisterManagementPolicyProviders() {
 #endif  // defined(ENABLE_EXTENSIONS)
 }
 
+static bool ShouldVerifyExtensionContent(const Extension* extension) {
+  return ((extension->is_extension() || extension->is_legacy_packaged_app()) &&
+          ManifestURL::UpdatesFromGallery(extension) &&
+          Manifest::IsAutoUpdateableLocation(extension->location()));
+}
+
 void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
@@ -171,6 +179,11 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
     install_verifier_.reset(
         new InstallVerifier(ExtensionPrefs::Get(profile_), profile_));
     install_verifier_->Init();
+    ContentVerifierFilter filter = base::Bind(&ShouldVerifyExtensionContent);
+    content_verifier_ = new ContentVerifier(profile_, filter);
+    content_verifier_->AddObserver(extension_service_.get());
+    content_verifier_->Start();
+    info_map()->SetContentVerifier(content_verifier_.get());
 
     management_policy_.reset(new ManagementPolicy);
     RegisterManagementPolicyProviders();
@@ -243,6 +256,12 @@ void ExtensionSystemImpl::Shared::Shutdown() {
     extension_warning_service_->RemoveObserver(
         extension_warning_badge_service_.get());
   }
+  if (content_verifier_) {
+    if (extension_service_)
+      content_verifier_->RemoveObserver(extension_service_.get());
+    content_verifier_->Shutdown();
+  }
+
   if (extension_service_)
     extension_service_->Shutdown();
 }
@@ -304,6 +323,10 @@ InstallVerifier* ExtensionSystemImpl::Shared::install_verifier() {
 
 QuotaService* ExtensionSystemImpl::Shared::quota_service() {
   return quota_service_.get();
+}
+
+ContentVerifier* ExtensionSystemImpl::Shared::content_verifier() {
+  return content_verifier_.get();
 }
 
 //
@@ -401,6 +424,10 @@ InstallVerifier* ExtensionSystemImpl::install_verifier() {
 
 QuotaService* ExtensionSystemImpl::quota_service() {
   return shared_->quota_service();
+}
+
+ContentVerifier* ExtensionSystemImpl::content_verifier() {
+  return shared_->content_verifier();
 }
 
 void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(

@@ -5,6 +5,7 @@
 #include "extensions/browser/info_map.h"
 
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/content_verifier.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -205,6 +206,10 @@ bool InfoMap::AreNotificationsDisabled(
   if (iter != extra_data_.end())
     return iter->second.notifications_disabled;
   return false;
+}
+
+void InfoMap::SetContentVerifier(ContentVerifier* verifier) {
+  content_verifier_ = verifier;
 }
 
 InfoMap::~InfoMap() {

@@ -183,6 +183,10 @@ const OneShotEvent& TestExtensionSystem::ready() const {
   return ready_;
 }
 
+ContentVerifier* TestExtensionSystem::content_verifier() {
+  return NULL;
+}
+
 // static
 KeyedService* TestExtensionSystem::Build(content::BrowserContext* profile) {
   return new TestExtensionSystem(static_cast<Profile*>(profile));

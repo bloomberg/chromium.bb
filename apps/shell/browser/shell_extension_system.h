@@ -67,6 +67,7 @@ class ShellExtensionSystem : public ExtensionSystem {
       const std::string& extension_id,
       const UnloadedExtensionInfo::Reason reason) OVERRIDE;
   virtual const OneShotEvent& ready() const OVERRIDE;
+  virtual ContentVerifier* content_verifier() OVERRIDE;
 
  private:
   content::BrowserContext* browser_context_;  // Not owned.

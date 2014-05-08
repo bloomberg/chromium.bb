@@ -19,7 +19,9 @@
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "extensions/browser/content_verifier.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/message_bundle.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -148,12 +150,13 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
 
 void UserScriptMaster::ScriptReloader::StartLoad(
     const UserScriptList& user_scripts,
-    const ExtensionsInfo& extensions_info_) {
+    const ExtensionsInfo& extensions_info) {
   // Add a reference to ourselves to keep ourselves alive while we're running.
   // Balanced by NotifyMaster().
   AddRef();
 
-  this->extensions_info_ = extensions_info_;
+  verifier_ = master_->content_verifier();
+  this->extensions_info_ = extensions_info;
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(
@@ -175,8 +178,24 @@ void UserScriptMaster::ScriptReloader::NotifyMaster(
   Release();
 }
 
-static bool LoadScriptContent(UserScript::File* script_file,
-                              const SubstitutionMap* localization_messages) {
+static void VerifyContent(ContentVerifier* verifier,
+                          const std::string& extension_id,
+                          const base::FilePath& extension_root,
+                          const base::FilePath& relative_path,
+                          const std::string& content) {
+  scoped_refptr<ContentVerifyJob> job(
+      verifier->CreateJobFor(extension_id, extension_root, relative_path));
+  if (job.get()) {
+    job->Start();
+    job->BytesRead(content.size(), content.data());
+    job->DoneReading();
+  }
+}
+
+static bool LoadScriptContent(const std::string& extension_id,
+                              UserScript::File* script_file,
+                              const SubstitutionMap* localization_messages,
+                              ContentVerifier* verifier) {
   std::string content;
   const base::FilePath& path = ExtensionResource::GetFilePath(
       script_file->extension_root(), script_file->relative_path(),
@@ -198,6 +217,13 @@ static bool LoadScriptContent(UserScript::File* script_file,
     if (!base::ReadFileToString(path, &content)) {
       LOG(WARNING) << "Failed to load user script file: " << path.value();
       return false;
+    }
+    if (verifier) {
+      VerifyContent(verifier,
+                    extension_id,
+                    script_file->extension_root(),
+                    script_file->relative_path(),
+                    content);
     }
   }
 
@@ -231,12 +257,16 @@ void UserScriptMaster::ScriptReloader::LoadUserScripts(
     for (size_t k = 0; k < script.js_scripts().size(); ++k) {
       UserScript::File& script_file = script.js_scripts()[k];
       if (script_file.GetContent().empty())
-        LoadScriptContent(&script_file, NULL);
+        LoadScriptContent(
+            script.extension_id(), &script_file, NULL, verifier_.get());
     }
     for (size_t k = 0; k < script.css_scripts().size(); ++k) {
       UserScript::File& script_file = script.css_scripts()[k];
       if (script_file.GetContent().empty())
-        LoadScriptContent(&script_file, localization_messages.get());
+        LoadScriptContent(script.extension_id(),
+                          &script_file,
+                          localization_messages.get(),
+                          verifier_.get());
     }
   }
 }
@@ -368,6 +398,11 @@ void UserScriptMaster::NewScriptsAvailable(base::SharedMemory* handle) {
         content::Source<Profile>(profile_),
         content::Details<base::SharedMemory>(handle));
   }
+}
+
+ContentVerifier* UserScriptMaster::content_verifier() {
+  ExtensionSystem* system = ExtensionSystem::Get(profile_);
+  return system->content_verifier();
 }
 
 void UserScriptMaster::OnExtensionLoaded(

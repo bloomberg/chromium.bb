@@ -26,6 +26,7 @@ class BrowserContext;
 namespace extensions {
 
 class Blacklist;
+class ContentVerifier;
 class ErrorConsole;
 class EventRouter;
 class Extension;
@@ -124,6 +125,9 @@ class ExtensionSystem : public KeyedService {
 
   // Signaled when the extension system has completed its startup tasks.
   virtual const OneShotEvent& ready() const = 0;
+
+  // Returns the content verifier, if any.
+  virtual ContentVerifier* content_verifier() = 0;
 };
 
 }  // namespace extensions

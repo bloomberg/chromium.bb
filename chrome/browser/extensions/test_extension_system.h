@@ -77,6 +77,7 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual InstallVerifier* install_verifier() OVERRIDE;
   virtual QuotaService* quota_service() OVERRIDE;
   virtual const OneShotEvent& ready() const OVERRIDE;
+  virtual ContentVerifier* content_verifier() OVERRIDE;
 
   void SetReady() {
     LOG(INFO) << "SetReady()";

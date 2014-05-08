@@ -55,6 +55,8 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
  protected:
   virtual ~URLRequestFileJob();
 
+  int64 remaining_bytes() const { return remaining_bytes_; }
+
   // The OS-specific full path name of the file
   base::FilePath file_path_;
 

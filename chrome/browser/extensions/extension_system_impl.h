@@ -12,6 +12,7 @@ class Profile;
 
 namespace extensions {
 
+class ContentVerifier;
 class ExtensionSystemSharedFactory;
 class ExtensionWarningBadgeService;
 class NavigationObserver;
@@ -57,6 +58,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
       const UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
   virtual const OneShotEvent& ready() const OVERRIDE;
+  virtual ContentVerifier* content_verifier() OVERRIDE;  // shared
 
  private:
   friend class ExtensionSystemSharedFactory;
@@ -92,6 +94,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     InstallVerifier* install_verifier();
     QuotaService* quota_service();
     const OneShotEvent& ready() const { return ready_; }
+    ContentVerifier* content_verifier();
 
    private:
     Profile* profile_;
@@ -121,6 +124,9 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_ptr<ErrorConsole> error_console_;
     scoped_ptr<InstallVerifier> install_verifier_;
     scoped_ptr<QuotaService> quota_service_;
+
+    // For verifying the contents of extensions read from disk.
+    scoped_refptr<ContentVerifier> content_verifier_;
 
 #if defined(OS_CHROMEOS)
     scoped_ptr<chromeos::DeviceLocalAccountManagementPolicyProvider>

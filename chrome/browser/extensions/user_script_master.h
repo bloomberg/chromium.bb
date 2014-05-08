@@ -27,6 +27,7 @@ class Profile;
 
 namespace extensions {
 
+class ContentVerifier;
 class ExtensionRegistry;
 
 typedef std::map<std::string, ExtensionSet::ExtensionPathAndDefaultLocale>
@@ -55,6 +56,9 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
   // Return true if we have any scripts ready.
   bool ScriptsReady() const { return shared_memory_.get() != NULL; }
 
+  // Returns the content verifier for our browser context.
+  ContentVerifier* content_verifier();
+
  protected:
   friend class base::RefCountedThreadSafe<UserScriptMaster>;
 
@@ -79,7 +83,7 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
     // Start loading of scripts.
     // Will always send a message to the master upon completion.
     void StartLoad(const UserScriptList& external_scripts,
-                   const ExtensionsInfo& extension_info_);
+                   const ExtensionsInfo& extensions_info);
 
     // The master is going away; don't call it back.
     void DisownMaster() {
@@ -125,6 +129,8 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
     // The message loop to call our master back on.
     // Expected to always outlive us.
     content::BrowserThread::ID master_thread_id_;
+
+    scoped_refptr<ContentVerifier> verifier_;
 
     DISALLOW_COPY_AND_ASSIGN(ScriptReloader);
   };

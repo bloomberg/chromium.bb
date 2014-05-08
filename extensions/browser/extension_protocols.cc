@@ -33,6 +33,8 @@
 #include "content/public/browser/resource_request_info.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
+#include "extensions/browser/content_verifier.h"
+#include "extensions/browser/content_verify_job.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
@@ -165,13 +167,15 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
                          const base::FilePath& relative_path,
                          const std::string& content_security_policy,
                          bool send_cors_header,
-                         bool follow_symlinks_anywhere)
+                         bool follow_symlinks_anywhere,
+                         ContentVerifyJob* verify_job)
       : net::URLRequestFileJob(
             request,
             network_delegate,
             base::FilePath(),
             BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
                 base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
+        verify_job_(verify_job),
         seek_position_(0),
         bytes_read_(0),
         directory_path_(directory_path),
@@ -183,13 +187,6 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
         weak_factory_(this) {
     if (follow_symlinks_anywhere) {
       resource_.set_follow_symlinks_anywhere();
-    }
-    const std::string& group =
-        base::FieldTrialList::FindFullName("ExtensionContentHashMeasurement");
-    if (group == "Yes") {
-      base::ElapsedTimer timer;
-      hash_.reset(crypto::SecureHash::Create(crypto::SecureHash::SHA256));
-      hashing_time_ = timer.Elapsed();
     }
   }
 
@@ -214,9 +211,25 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
     DCHECK(posted);
   }
 
+  virtual void SetExtraRequestHeaders(
+      const net::HttpRequestHeaders& headers) OVERRIDE {
+    // TODO(asargent) - we'll need to add proper support for range headers.
+    // crbug.com/369895.
+    std::string range_header;
+    if (headers.GetHeader(net::HttpRequestHeaders::kRange, &range_header)) {
+      if (verify_job_)
+        verify_job_ = NULL;
+    }
+    URLRequestFileJob::SetExtraRequestHeaders(headers);
+  }
+
   virtual void OnSeekComplete(int64 result) OVERRIDE {
     DCHECK_EQ(seek_position_, 0);
     seek_position_ = result;
+    // TODO(asargent) - we'll need to add proper support for range headers.
+    // crbug.com/369895.
+    if (result > 0 && verify_job_)
+      verify_job_ = NULL;
   }
 
   virtual void OnReadComplete(net::IOBuffer* buffer, int result) OVERRIDE {
@@ -227,23 +240,16 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
                                   -result);
     if (result > 0) {
       bytes_read_ += result;
-      if (hash_.get()) {
-        base::ElapsedTimer timer;
-        hash_->Update(buffer->data(), result);
-        hashing_time_ += timer.Elapsed();
+      if (verify_job_) {
+        verify_job_->BytesRead(result, buffer->data());
+        if (!remaining_bytes())
+          verify_job_->DoneReading();
       }
     }
   }
 
  private:
   virtual ~URLRequestExtensionJob() {
-    if (hash_.get()) {
-      base::ElapsedTimer timer;
-      std::string hash_bytes(crypto::kSHA256Length, 0);
-      hash_->Finish(string_as_array(&hash_bytes), hash_bytes.size());
-      hashing_time_ += timer.Elapsed();
-      UMA_HISTOGRAM_TIMES("ExtensionUrlRequest.HashTimeMs", hashing_time_);
-    }
     UMA_HISTOGRAM_COUNTS("ExtensionUrlRequest.TotalKbRead", bytes_read_ / 1024);
     UMA_HISTOGRAM_COUNTS("ExtensionUrlRequest.SeekPosition", seek_position_);
   }
@@ -258,17 +264,13 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
     URLRequestFileJob::Start();
   }
 
-  // A hash of the contents we've read from the file.
-  scoped_ptr<crypto::SecureHash> hash_;
+  scoped_refptr<ContentVerifyJob> verify_job_;
 
   // The position we seeked to in the file.
   int64 seek_position_;
 
   // The number of bytes of content we read from the file.
   int bytes_read_;
-
-  // Used to count the total time it takes to do hashing operations.
-  base::TimeDelta hashing_time_;
 
   net::HttpResponseInfo response_info_;
   base::FilePath directory_path_;
@@ -499,6 +501,14 @@ ExtensionProtocolHandler::MaybeCreateJob(
       return NULL;
     }
   }
+  ContentVerifyJob* verify_job = NULL;
+  ContentVerifier* verifier = extension_info_map_->content_verifier();
+  if (verifier) {
+    verify_job =
+        verifier->CreateJobFor(extension_id, directory_path, relative_path);
+    if (verify_job)
+      verify_job->Start();
+  }
 
   return new URLRequestExtensionJob(request,
                                     network_delegate,
@@ -507,7 +517,8 @@ ExtensionProtocolHandler::MaybeCreateJob(
                                     relative_path,
                                     content_security_policy,
                                     send_cors_header,
-                                    follow_symlinks_anywhere);
+                                    follow_symlinks_anywhere,
+                                    verify_job);
 }
 
 }  // namespace

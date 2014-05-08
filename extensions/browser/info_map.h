@@ -16,6 +16,7 @@
 #include "extensions/common/extension_set.h"
 
 namespace extensions {
+class ContentVerifier;
 class Extension;
 
 // Contains extension data that needs to be accessed on the IO thread. It can
@@ -103,6 +104,9 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
                                 bool notifications_disabled);
   bool AreNotificationsDisabled(const std::string& extension_id) const;
 
+  void SetContentVerifier(ContentVerifier* verifier);
+  ContentVerifier* content_verifier() { return content_verifier_; }
+
  private:
   friend class base::RefCountedThreadSafe<InfoMap>;
 
@@ -131,6 +135,8 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
   extensions::ProcessMap worker_process_map_;
 
   int signin_process_id_;
+
+  scoped_refptr<ContentVerifier> content_verifier_;
 };
 
 }  // namespace extensions

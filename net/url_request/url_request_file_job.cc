@@ -294,18 +294,20 @@ void URLRequestFileJob::DidSeek(int64 result) {
 }
 
 void URLRequestFileJob::DidRead(scoped_refptr<net::IOBuffer> buf, int result) {
-  OnReadComplete(buf.get(), result);
-  buf = NULL;
   if (result > 0) {
     SetStatus(URLRequestStatus());  // Clear the IO_PENDING status
-  } else if (result == 0) {
-    NotifyDone(URLRequestStatus());
-  } else {
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, result));
+    remaining_bytes_ -= result;
+    DCHECK_GE(remaining_bytes_, 0);
   }
 
-  remaining_bytes_ -= result;
-  DCHECK_GE(remaining_bytes_, 0);
+  OnReadComplete(buf.get(), result);
+  buf = NULL;
+
+  if (result == 0) {
+    NotifyDone(URLRequestStatus());
+  } else if (result < 0) {
+    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, result));
+  }
 
   NotifyReadComplete(result);
 }

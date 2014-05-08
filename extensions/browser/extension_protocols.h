@@ -33,7 +33,7 @@ net::HttpResponseHeaders* BuildHttpHeaders(
 // profiles.
 net::URLRequestJobFactory::ProtocolHandler* CreateExtensionProtocolHandler(
     bool is_incognito,
-    extensions::InfoMap* extension_info_map);
+    InfoMap* extension_info_map);
 
 }  // namespace extensions
 
