@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_view_devtools_agent_host.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
@@ -94,7 +93,11 @@ RenderFrameHostManager::~RenderFrameHostManager() {
   render_frame_host_.reset();
 
   // Delete any swapped out RenderFrameHosts.
-  STLDeleteValues(&proxy_hosts_);
+  for (RenderFrameProxyHostMap::iterator iter = proxy_hosts_.begin();
+       iter != proxy_hosts_.end();
+       ++iter) {
+    delete iter->second;
+  }
 }
 
 void RenderFrameHostManager::Init(BrowserContext* browser_context,
@@ -1354,6 +1357,36 @@ void RenderFrameHostManager::CancelPending() {
 
   pending_web_ui_.reset();
   pending_and_current_web_ui_.reset();
+}
+
+void RenderFrameHostManager::RenderViewDeleted(RenderViewHost* rvh) {
+  // We are doing this in order to work around and to track a crasher
+  // (http://crbug.com/23411) where it seems that pending_render_frame_host_ is
+  // deleted (not sure from where) but not NULLed.
+  if (pending_render_frame_host_ &&
+      rvh == pending_render_frame_host_->render_view_host()) {
+    // If you hit this NOTREACHED, please report it in the following bug
+    // http://crbug.com/23411 Make sure to include what you were doing when it
+    // happened  (navigating to a new page, closing a tab...) and if you can
+    // reproduce.
+    NOTREACHED();
+    pending_render_frame_host_.reset();
+  }
+
+  // Make sure deleted RVHs are not kept in the swapped out list while we are
+  // still alive.  (If render_frame_host_ is null, we're already being deleted.)
+  if (!render_frame_host_)
+    return;
+
+  // We can't look it up by SiteInstance ID, which may no longer be valid.
+  for (RenderFrameProxyHostMap::iterator iter = proxy_hosts_.begin();
+       iter != proxy_hosts_.end();
+       ++iter) {
+    if (iter->second->render_view_host() == rvh) {
+      proxy_hosts_.erase(iter);
+      break;
+    }
+  }
 }
 
 bool RenderFrameHostManager::IsRVHOnSwappedOutList(
