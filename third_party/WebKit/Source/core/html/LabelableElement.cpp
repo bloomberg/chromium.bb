@@ -47,4 +47,9 @@ PassRefPtr<NodeList> LabelableElement::labels()
     return ensureRareData().ensureNodeLists().addCache<LabelsNodeList>(*this, LabelsNodeListType);
 }
 
+void LabelableElement::trace(Visitor* visitor)
+{
+    HTMLElement::trace(visitor);
+}
+
 } // namespace Webcore

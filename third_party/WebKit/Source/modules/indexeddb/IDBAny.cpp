@@ -146,7 +146,7 @@ int64_t IDBAny::integer() const
     return m_integer;
 }
 
-IDBAny::IDBAny(PassRefPtr<DOMStringList> value)
+IDBAny::IDBAny(PassRefPtrWillBeRawPtr<DOMStringList> value)
     : m_type(DOMStringListType)
     , m_domStringList(value)
     , m_integer(0)
@@ -235,6 +235,7 @@ IDBAny::IDBAny(int64_t value)
 
 void IDBAny::trace(Visitor* visitor)
 {
+    visitor->trace(m_domStringList);
     visitor->trace(m_idbCursor);
     visitor->trace(m_idbDatabase);
     visitor->trace(m_idbIndex);

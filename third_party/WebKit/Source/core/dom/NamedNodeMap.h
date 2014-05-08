@@ -26,6 +26,7 @@
 #define NamedNodeMap_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "core/dom/Element.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
@@ -33,20 +34,21 @@
 namespace WebCore {
 
 class Node;
-class Element;
 class ExceptionState;
 
-class NamedNodeMap : public ScriptWrappable {
-    WTF_MAKE_FAST_ALLOCATED;
+class NamedNodeMap FINAL : public NoBaseWillBeGarbageCollectedFinalized<NamedNodeMap>, public ScriptWrappable {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
     friend class Element;
 public:
-    static PassOwnPtr<NamedNodeMap> create(Element* element)
+    static PassOwnPtrWillBeRawPtr<NamedNodeMap> create(Element* element)
     {
-        return adoptPtr(new NamedNodeMap(element));
+        return adoptPtrWillBeNoop(new NamedNodeMap(element));
     }
 
+#if !ENABLE(OILPAN)
     void ref();
     void deref();
+#endif
 
     // Public DOM interface.
 
@@ -64,6 +66,8 @@ public:
 
     Element* element() const { return m_element; }
 
+    void trace(Visitor*);
+
 private:
     explicit NamedNodeMap(Element* element)
         : m_element(element)
@@ -73,7 +77,7 @@ private:
         ScriptWrappable::init(this);
     }
 
-    Element* m_element;
+    RawPtrWillBeMember<Element> m_element;
 };
 
 } // namespace WebCore

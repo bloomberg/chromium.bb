@@ -20,6 +20,7 @@
 
 [
     SetWrapperReferenceFrom=element,
+    WillBeGarbageCollected,
 ] interface NamedNodeMap {
 
     [MeasureAs=NamedNodeMapGetNamedItem] Node getNamedItem([Default=Undefined] optional DOMString name);

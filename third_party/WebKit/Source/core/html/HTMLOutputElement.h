@@ -51,6 +51,8 @@ public:
 
     virtual bool canContainRangeEndPoint() const OVERRIDE { return false; }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     HTMLOutputElement(Document&, HTMLFormElement*);
 
@@ -64,7 +66,7 @@ private:
 
     bool m_isDefaultValueMode;
     String m_defaultValue;
-    RefPtr<DOMSettableTokenList> m_tokens;
+    RefPtrWillBeMember<DOMSettableTokenList> m_tokens;
 };
 
 } // namespace

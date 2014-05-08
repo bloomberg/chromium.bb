@@ -78,10 +78,10 @@ ScriptValue IDBObjectStore::keyPath(ScriptState* scriptState) const
     return idbAnyToScriptValue(scriptState, IDBAny::create(m_metadata.keyPath));
 }
 
-PassRefPtr<DOMStringList> IDBObjectStore::indexNames() const
+PassRefPtrWillBeRawPtr<DOMStringList> IDBObjectStore::indexNames() const
 {
     IDB_TRACE("IDBObjectStore::indexNames");
-    RefPtr<DOMStringList> indexNames = DOMStringList::create();
+    RefPtrWillBeRawPtr<DOMStringList> indexNames = DOMStringList::create();
     for (IDBObjectStoreMetadata::IndexMap::const_iterator it = m_metadata.indexes.begin(); it != m_metadata.indexes.end(); ++it)
         indexNames->append(it->value.name);
     indexNames->sort();

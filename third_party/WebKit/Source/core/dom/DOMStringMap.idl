@@ -26,6 +26,7 @@
 [
     OverrideBuiltins,
     SetWrapperReferenceFrom=element,
+    WillBeGarbageCollected,
 ] interface DOMStringMap {
     [NotEnumerable] getter DOMString (unsigned long index);
     [RaisesException] setter DOMString (unsigned long index, DOMString value);

@@ -72,11 +72,11 @@ public:
     // Implement the IDL
     const String& name() const { return m_metadata.name; }
     ScriptValue version(ScriptState*) const;
-    PassRefPtr<DOMStringList> objectStoreNames() const;
+    PassRefPtrWillBeRawPtr<DOMStringList> objectStoreNames() const;
 
     PassRefPtrWillBeRawPtr<IDBObjectStore> createObjectStore(const String& name, const Dictionary&, ExceptionState&);
     PassRefPtrWillBeRawPtr<IDBObjectStore> createObjectStore(const String& name, const IDBKeyPath&, bool autoIncrement, ExceptionState&);
-    PassRefPtrWillBeRawPtr<IDBTransaction> transaction(ExecutionContext* context, PassRefPtr<DOMStringList> scope, const String& mode, ExceptionState& exceptionState) { return transaction(context, *scope, mode, exceptionState); }
+    PassRefPtrWillBeRawPtr<IDBTransaction> transaction(ExecutionContext* context, PassRefPtrWillBeRawPtr<DOMStringList> scope, const String& mode, ExceptionState& exceptionState) { return transaction(context, *scope, mode, exceptionState); }
     PassRefPtrWillBeRawPtr<IDBTransaction> transaction(ExecutionContext*, const Vector<String>&, const String& mode, ExceptionState&);
     PassRefPtrWillBeRawPtr<IDBTransaction> transaction(ExecutionContext*, const String&, const String& mode, ExceptionState&);
     void deleteObjectStore(const String& name, ExceptionState&);

@@ -27,6 +27,7 @@
 
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/SpaceSplitString.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/AtomicString.h"
 
@@ -34,17 +35,24 @@ namespace WebCore {
 
 class ExceptionState;
 
-class DOMSettableTokenList FINAL : public DOMTokenList, public RefCounted<DOMSettableTokenList> {
-    WTF_MAKE_FAST_ALLOCATED;
-public:
-    static PassRefPtr<DOMSettableTokenList> create()
+class DOMSettableTokenList FINAL
+    : public DOMTokenList
+#if !ENABLE(OILPAN)
+    , public RefCounted<DOMSettableTokenList>
+#endif
     {
-        return adoptRef(new DOMSettableTokenList());
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+public:
+    static PassRefPtrWillBeRawPtr<DOMSettableTokenList> create()
+    {
+        return adoptRefWillBeNoop(new DOMSettableTokenList());
     }
     virtual ~DOMSettableTokenList();
 
+#if !ENABLE(OILPAN)
     virtual void ref() OVERRIDE { RefCounted<DOMSettableTokenList>::ref(); }
     virtual void deref() OVERRIDE { RefCounted<DOMSettableTokenList>::deref(); }
+#endif
 
     virtual unsigned length() const OVERRIDE { return m_tokens.size(); }
     virtual const AtomicString item(unsigned index) const OVERRIDE;

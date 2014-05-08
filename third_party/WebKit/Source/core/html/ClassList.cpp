@@ -32,6 +32,7 @@ using namespace HTMLNames;
 
 ClassList::ClassList(Element* element) : m_element(element) { }
 
+#if !ENABLE(OILPAN)
 void ClassList::ref()
 {
     m_element->ref();
@@ -41,6 +42,7 @@ void ClassList::deref()
 {
     m_element->deref();
 }
+#endif
 
 unsigned ClassList::length() const
 {
@@ -68,6 +70,12 @@ const SpaceSplitString& ClassList::classNames() const
         return *m_classNamesForQuirksMode.get();
     }
     return m_element->elementData()->classNames();
+}
+
+void ClassList::trace(Visitor* visitor)
+{
+    visitor->trace(m_element);
+    DOMTokenList::trace(visitor);
 }
 
 } // namespace WebCore

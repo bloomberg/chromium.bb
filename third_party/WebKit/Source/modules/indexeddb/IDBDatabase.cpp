@@ -182,9 +182,9 @@ void IDBDatabase::onComplete(int64_t transactionId)
     m_transactions.get(transactionId)->onComplete();
 }
 
-PassRefPtr<DOMStringList> IDBDatabase::objectStoreNames() const
+PassRefPtrWillBeRawPtr<DOMStringList> IDBDatabase::objectStoreNames() const
 {
-    RefPtr<DOMStringList> objectStoreNames = DOMStringList::create();
+    RefPtrWillBeRawPtr<DOMStringList> objectStoreNames = DOMStringList::create();
     for (IDBDatabaseMetadata::ObjectStoreMap::const_iterator it = m_metadata.objectStores.begin(); it != m_metadata.objectStores.end(); ++it)
         objectStoreNames->append(it->value.name);
     objectStoreNames->sort();
@@ -346,7 +346,7 @@ PassRefPtrWillBeRawPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext
 
 PassRefPtrWillBeRawPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext* context, const String& storeName, const String& mode, ExceptionState& exceptionState)
 {
-    RefPtr<DOMStringList> storeNames = DOMStringList::create();
+    RefPtrWillBeRawPtr<DOMStringList> storeNames = DOMStringList::create();
     storeNames->append(storeName);
     return transaction(context, storeNames, mode, exceptionState);
 }

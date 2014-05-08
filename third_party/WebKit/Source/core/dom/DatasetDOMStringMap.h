@@ -36,13 +36,15 @@ class ExceptionState;
 
 class DatasetDOMStringMap FINAL : public DOMStringMap {
 public:
-    static PassOwnPtr<DatasetDOMStringMap> create(Element* element)
+    static PassOwnPtrWillBeRawPtr<DatasetDOMStringMap> create(Element* element)
     {
-        return adoptPtr(new DatasetDOMStringMap(element));
+        return adoptPtrWillBeNoop(new DatasetDOMStringMap(element));
     }
 
+#if !ENABLE(OILPAN)
     virtual void ref() OVERRIDE;
     virtual void deref() OVERRIDE;
+#endif
 
     virtual void getNames(Vector<String>&) OVERRIDE;
     virtual String item(const String& name) OVERRIDE;
@@ -52,13 +54,15 @@ public:
 
     virtual Element* element() OVERRIDE { return m_element; }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     explicit DatasetDOMStringMap(Element* element)
         : m_element(element)
     {
     }
 
-    Element* m_element;
+    RawPtrWillBeMember<Element> m_element;
 };
 
 } // namespace WebCore

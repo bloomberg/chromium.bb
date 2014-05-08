@@ -117,7 +117,7 @@ public:
             return;
         }
 
-        RefPtr<DOMStringList> databaseNamesList = requestResult->domStringList();
+        RefPtrWillBeRawPtr<DOMStringList> databaseNamesList = requestResult->domStringList();
         RefPtr<TypeBuilder::Array<String> > databaseNames = TypeBuilder::Array<String>::create();
         for (size_t i = 0; i < databaseNamesList->length(); ++i)
             databaseNames->addItem(databaseNamesList->item(i));

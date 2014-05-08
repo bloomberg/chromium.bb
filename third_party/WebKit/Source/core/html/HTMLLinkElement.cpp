@@ -422,6 +422,7 @@ DOMSettableTokenList* HTMLLinkElement::sizes() const
 void HTMLLinkElement::trace(Visitor* visitor)
 {
     visitor->trace(m_link);
+    visitor->trace(m_sizes);
     HTMLElement::trace(visitor);
 }
 

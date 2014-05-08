@@ -40,13 +40,15 @@ typedef int ExceptionCode;
 
 class ClassList FINAL : public DOMTokenList {
 public:
-    static PassOwnPtr<ClassList> create(Element* element)
+    static PassOwnPtrWillBeRawPtr<ClassList> create(Element* element)
     {
-        return adoptPtr(new ClassList(element));
+        return adoptPtrWillBeNoop(new ClassList(element));
     }
 
+#if !ENABLE(OILPAN)
     virtual void ref() OVERRIDE;
     virtual void deref() OVERRIDE;
+#endif
 
     virtual unsigned length() const OVERRIDE;
     virtual const AtomicString item(unsigned index) const OVERRIDE;
@@ -55,8 +57,10 @@ public:
 
     void clearValueForQuirksMode() { m_classNamesForQuirksMode = nullptr; }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
-    ClassList(Element*);
+    explicit ClassList(Element*);
 
     virtual bool containsInternal(const AtomicString&) const OVERRIDE;
 
@@ -65,7 +69,7 @@ private:
     virtual const AtomicString& value() const OVERRIDE { return m_element->getAttribute(HTMLNames::classAttr); }
     virtual void setValue(const AtomicString& value) OVERRIDE { m_element->setAttribute(HTMLNames::classAttr, value); }
 
-    Element* m_element;
+    RawPtrWillBeMember<Element> m_element;
     mutable OwnPtr<SpaceSplitString> m_classNamesForQuirksMode;
 };
 

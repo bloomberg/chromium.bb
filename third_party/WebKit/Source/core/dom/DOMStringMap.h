@@ -29,6 +29,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "bindings/v8/V8Binding.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -37,13 +38,16 @@ namespace WebCore {
 
 class Element;
 
-class DOMStringMap : public ScriptWrappable {
-    WTF_MAKE_NONCOPYABLE(DOMStringMap); WTF_MAKE_FAST_ALLOCATED;
+class DOMStringMap : public NoBaseWillBeGarbageCollectedFinalized<DOMStringMap>, public ScriptWrappable {
+    WTF_MAKE_NONCOPYABLE(DOMStringMap);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     virtual ~DOMStringMap();
 
+#if !ENABLE(OILPAN)
     virtual void ref() = 0;
     virtual void deref() = 0;
+#endif
 
     virtual void getNames(Vector<String>&) = 0;
     virtual String item(const String& name) = 0;
@@ -80,6 +84,8 @@ public:
     }
 
     virtual Element* element() = 0;
+
+    virtual void trace(Visitor*) { }
 
 protected:
     DOMStringMap()

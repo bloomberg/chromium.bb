@@ -26,6 +26,7 @@
 #define DOMTokenList_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 
@@ -34,17 +35,20 @@ namespace WebCore {
 class Element;
 class ExceptionState;
 
-class DOMTokenList : public ScriptWrappable {
-    WTF_MAKE_NONCOPYABLE(DOMTokenList); WTF_MAKE_FAST_ALLOCATED;
+class DOMTokenList : public NoBaseWillBeGarbageCollectedFinalized<DOMTokenList>, public ScriptWrappable {
+    WTF_MAKE_NONCOPYABLE(DOMTokenList);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     DOMTokenList()
     {
         ScriptWrappable::init(this);
     }
-    virtual ~DOMTokenList() { };
+    virtual ~DOMTokenList() { }
 
+#if !ENABLE(OILPAN)
     virtual void ref() = 0;
     virtual void deref() = 0;
+#endif
 
     virtual unsigned length() const = 0;
     virtual const AtomicString item(unsigned index) const = 0;
@@ -60,6 +64,8 @@ public:
     const AtomicString& toString() const { return value(); }
 
     virtual Element* element() { return 0; }
+
+    virtual void trace(Visitor*) { }
 
 protected:
     virtual const AtomicString& value() const = 0;

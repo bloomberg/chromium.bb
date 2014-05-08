@@ -27,6 +27,7 @@
 #define DOMStringList_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -36,11 +37,11 @@ namespace WebCore {
 
 // FIXME: Some consumers of this class may benefit from lazily fetching items rather
 //        than creating the list statically as is currently the only option.
-class DOMStringList : public ScriptWrappable, public RefCounted<DOMStringList> {
+class DOMStringList FINAL : public RefCountedWillBeGarbageCollectedFinalized<DOMStringList>, public ScriptWrappable {
 public:
-    static PassRefPtr<DOMStringList> create()
+    static PassRefPtrWillBeRawPtr<DOMStringList> create()
     {
-        return adoptRef(new DOMStringList());
+        return adoptRefWillBeNoop(new DOMStringList());
     }
 
     bool isEmpty() const { return m_strings.isEmpty(); }
@@ -54,6 +55,8 @@ public:
     bool contains(const String& str) const;
 
     operator const Vector<String>&() const { return m_strings; }
+
+    void trace(Visitor*) { }
 
 private:
     DOMStringList()

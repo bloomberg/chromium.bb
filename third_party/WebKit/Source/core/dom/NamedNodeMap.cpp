@@ -35,6 +35,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
+#if !ENABLE(OILPAN)
 void NamedNodeMap::ref()
 {
     m_element->ref();
@@ -44,6 +45,7 @@ void NamedNodeMap::deref()
 {
     m_element->deref();
 }
+#endif
 
 PassRefPtr<Node> NamedNodeMap::getNamedItem(const AtomicString& name) const
 {
@@ -108,6 +110,11 @@ size_t NamedNodeMap::length() const
     if (!m_element->hasAttributes())
         return 0;
     return m_element->attributeCount();
+}
+
+void NamedNodeMap::trace(Visitor* visitor)
+{
+    visitor->trace(m_element);
 }
 
 } // namespace WebCore

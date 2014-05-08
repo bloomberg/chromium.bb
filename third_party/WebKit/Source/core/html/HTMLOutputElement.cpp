@@ -128,4 +128,11 @@ void HTMLOutputElement::setDefaultValue(const String& value)
         setTextContent(value);
 }
 
+
+void HTMLOutputElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_tokens);
+    HTMLFormControlElement::trace(visitor);
+}
+
 } // namespace

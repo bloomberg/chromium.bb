@@ -43,6 +43,8 @@ public:
     PassRefPtr<NodeList> labels();
     virtual bool supportLabels() const { return false; }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 protected:
     LabelableElement(const QualifiedName& tagName, Document&);
 

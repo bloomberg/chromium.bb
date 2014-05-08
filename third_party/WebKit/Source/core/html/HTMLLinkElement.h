@@ -206,7 +206,7 @@ private:
 
     String m_type;
     String m_media;
-    RefPtr<DOMSettableTokenList> m_sizes;
+    RefPtrWillBeMember<DOMSettableTokenList> m_sizes;
     Vector<IntSize> m_iconSizes;
     LinkRelAttribute m_relAttribute;
 

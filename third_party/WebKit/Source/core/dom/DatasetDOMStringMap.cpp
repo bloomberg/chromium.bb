@@ -140,6 +140,7 @@ static AtomicString convertPropertyNameToAttributeName(const String& name)
     return builder.toAtomicString();
 }
 
+#if !ENABLE(OILPAN)
 void DatasetDOMStringMap::ref()
 {
     m_element->ref();
@@ -149,6 +150,7 @@ void DatasetDOMStringMap::deref()
 {
     m_element->deref();
 }
+#endif
 
 void DatasetDOMStringMap::getNames(Vector<String>& names)
 {
@@ -213,6 +215,12 @@ bool DatasetDOMStringMap::deleteItem(const String& name)
         }
     }
     return false;
+}
+
+void DatasetDOMStringMap::trace(Visitor* visitor)
+{
+    visitor->trace(m_element);
+    DOMStringMap::trace(visitor);
 }
 
 } // namespace WebCore

@@ -73,7 +73,7 @@ public:
     String hash() const;
     String origin() const;
 
-    PassRefPtr<DOMStringList> ancestorOrigins() const;
+    PassRefPtrWillBeRawPtr<DOMStringList> ancestorOrigins() const;
 
     void trace(Visitor*) { }
 
