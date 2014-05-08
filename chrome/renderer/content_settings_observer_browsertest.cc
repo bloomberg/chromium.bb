@@ -121,7 +121,7 @@ TEST_F(ChromeRenderViewTest, JSBlockSentAfterPageLoad) {
   ProcessPendingMessages();
 
   // 4. Verify that the notification that javascript was blocked is sent after
-  //    the navigation notifiction is sent.
+  //    the navigation notification is sent.
   int navigation_index = -1;
   int block_index = -1;
   for (size_t i = 0; i < render_thread_->sink().message_count(); ++i) {

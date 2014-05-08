@@ -56,7 +56,7 @@ const int kBackButtonSize = 16;
 // Step 1: hide all notifications pending removal with fade-out animation.
 - (void)hideNotificationsPendingRemoval;
 
-// Step 2: move up all remaining notfications to take over the available space
+// Step 2: move up all remaining notifications to take over the available space
 // due to hiding notifications. The scroll view and the window remain unchanged.
 - (void)moveUpRemainingNotifications;
 
@@ -67,7 +67,7 @@ const int kBackButtonSize = 16;
 // "Clear All" is clicked.
 - (void)clearOneNotification;
 
-// When all visible notificatons slide out, re-enable controls and remove
+// When all visible notifications slide out, re-enable controls and remove
 // notifications from the message center.
 - (void)finalizeClearAll;
 
