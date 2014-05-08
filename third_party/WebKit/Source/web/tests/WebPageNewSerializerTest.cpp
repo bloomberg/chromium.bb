@@ -96,6 +96,26 @@ private:
     size_t* m_counter;
 };
 
+class FrameDataWebPageSerializerClient : public WebPageSerializerClient {
+public:
+    FrameDataWebPageSerializerClient(const WebURL& frameURL, WebString* serializationData)
+        : m_frameURL(frameURL)
+        , m_serializationData(serializationData)
+    {
+    }
+
+    virtual void didSerializeDataForFrame(const WebURL& frameURL, const WebCString& data, PageSerializationStatus status)
+    {
+        if (frameURL != m_frameURL)
+            return;
+        *m_serializationData = data.utf16();
+    }
+
+private:
+    WebURL m_frameURL;
+    WebString* m_serializationData;
+};
+
 class WebPageNewSerializeTest : public testing::Test {
 public:
     WebPageNewSerializeTest()
@@ -412,6 +432,44 @@ TEST_F(WebPageNewSerializeTest, NamespaceElementsDontCrash)
     WebPageSerializer::serialize(webView()->mainFrame()->toWebLocalFrame(), true, &client, localLinks, localPaths, WebString(""));
 
     EXPECT_GT(counter, 0U);
+}
+
+TEST_F(WebPageNewSerializeTest, SubFrameSerialization)
+{
+    WebURL pageUrl = toKURL("http://www.test.com");
+    registerMockedURLLoad(pageUrl, WebString::fromUTF8("top_frame.html"), WebString::fromUTF8("pageserializer/"), htmlMimeType());
+    registerMockedURLLoad(toKURL("http://www.test.com/iframe.html"), WebString::fromUTF8("iframe.html"), WebString::fromUTF8("pageserializer/"), htmlMimeType());
+    registerMockedURLLoad(toKURL("http://www.test.com/iframe2.html"), WebString::fromUTF8("iframe2.html"), WebString::fromUTF8("pageserializer/"), htmlMimeType());
+    registerMockedURLLoad(toKURL("http://www.test.com/red_background.png"), WebString::fromUTF8("red_background.png"), WebString::fromUTF8("pageserializer/"), pngMimeType());
+    registerMockedURLLoad(toKURL("http://www.test.com/green_background.png"), WebString::fromUTF8("green_background.png"), WebString::fromUTF8("pageserializer/"), pngMimeType());
+    registerMockedURLLoad(toKURL("http://www.test.com/blue_background.png"), WebString::fromUTF8("blue_background.png"), WebString::fromUTF8("pageserializer/"), pngMimeType());
+
+    loadURLInTopFrame(pageUrl);
+
+    // OBJECT/EMBED have some delay to start to load their content. The first
+    // serveAsynchronousMockedRequests call in loadURLInTopFrame() finishes
+    // before the start.
+    RefPtrWillBeRawPtr<Document> document = static_cast<PassRefPtrWillBeRawPtr<Document> >(webView()->mainFrame()->document());
+    document->updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasksSynchronously);
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+
+    WebVector<WebURL> localLinks(static_cast<size_t>(2));
+    WebVector<WebString> localPaths(static_cast<size_t>(2));
+    localLinks[0] = pageUrl;
+    localPaths[0] = WebString("/");
+    localLinks[1] = toKURL("http://www.test.com/iframe.html");
+    localPaths[1] = WebString("SavedFiles/iframe.html");
+
+    WebString serializedData;
+    FrameDataWebPageSerializerClient client(pageUrl, &serializedData);
+
+    // We just want to make sure nothing crazy happens, namely that no
+    // assertions are hit. As a sanity check, we also make sure that some data
+    // was returned.
+    WebPageSerializer::serialize(webView()->mainFrame()->toWebLocalFrame(), true, &client, localLinks, localPaths, WebString(""));
+
+    // Subframe src
+    EXPECT_TRUE(static_cast<String>(serializedData).contains("src=\"SavedFiles/iframe.html\""));
 }
 
 }
