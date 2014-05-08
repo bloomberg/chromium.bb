@@ -8,7 +8,6 @@
 #include "base/strings/string16.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/widget/native_widget.h"
 
 namespace gfx {
@@ -18,12 +17,14 @@ class Rect;
 }
 
 namespace ui {
+class InputMethod;
 class NativeTheme;
 class OSExchangeData;
 }
 
 namespace views {
 class InputMethod;
+class InputMethodDelegate;
 class TooltipManager;
 namespace internal {
 
@@ -145,6 +146,10 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   // Returns the InputMethodDelegate for this native widget.
   virtual InputMethodDelegate* GetInputMethodDelegate() = 0;
 
+  // Returns the ui::InputMethod for this native widget.
+  // TODO(yukishiino): Rename this method to GetInputMethod once we remove
+  // views::InputMethod.
+  virtual ui::InputMethod* GetHostInputMethod() = 0;
 
   // Centers the window and sizes it to the specified size.
   virtual void CenterWindow(const gfx::Size& size) = 0;

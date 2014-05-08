@@ -182,12 +182,13 @@ void X11DesktopHandler::OnActiveWindowChanged(::Window xid) {
   if (old_host)
     old_host->HandleNativeWidgetActivationChanged(false);
 
+  // Update the current window ID to effectively change the active widget.
+  current_window_ = xid;
+
   DesktopWindowTreeHostX11* new_host =
       views::DesktopWindowTreeHostX11::GetHostForXID(xid);
   if (new_host)
     new_host->HandleNativeWidgetActivationChanged(true);
-
-  current_window_ = xid;
 }
 
 }  // namespace views

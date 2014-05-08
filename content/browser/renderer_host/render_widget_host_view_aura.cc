@@ -646,6 +646,10 @@ gfx::NativeViewAccessible RenderWidgetHostViewAura::GetNativeViewAccessible() {
   return static_cast<gfx::NativeViewAccessible>(NULL);
 }
 
+ui::TextInputClient* RenderWidgetHostViewAura::GetTextInputClient() {
+  return this;
+}
+
 void RenderWidgetHostViewAura::SetKeyboardFocus() {
 #if defined(OS_WIN)
   if (CanFocus()) {

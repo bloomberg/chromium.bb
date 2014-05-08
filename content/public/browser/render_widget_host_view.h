@@ -21,6 +21,10 @@ class Rect;
 class Size;
 }
 
+namespace ui {
+class TextInputClient;
+}
+
 namespace content {
 
 class RenderWidgetHost;
@@ -62,6 +66,13 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual gfx::NativeView GetNativeView() const = 0;
   virtual gfx::NativeViewId GetNativeViewId() const = 0;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() = 0;
+
+  // Returns a ui::TextInputClient to support text input or NULL if this RWHV
+  // doesn't support text input.
+  // Note: Not all the platforms use ui::InputMethod and ui::TextInputClient for
+  // text input.  Some platforms (Mac and Android for example) use their own
+  // text input system.
+  virtual ui::TextInputClient* GetTextInputClient() = 0;
 
   // Set focus to the associated View component.
   virtual void Focus() = 0;

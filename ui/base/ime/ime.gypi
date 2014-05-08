@@ -61,6 +61,8 @@
     'remote_input_method_win.h',
     'text_input_client.cc',
     'text_input_client.h',
+    'text_input_focus_manager.cc',
+    'text_input_focus_manager.h',
     'text_input_type.h',
     'win/imm32_manager.cc',
     'win/imm32_manager.h',

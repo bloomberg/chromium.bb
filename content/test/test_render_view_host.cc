@@ -68,6 +68,10 @@ gfx::NativeViewAccessible TestRenderWidgetHostView::GetNativeViewAccessible() {
   return NULL;
 }
 
+ui::TextInputClient* TestRenderWidgetHostView::GetTextInputClient() {
+  return &text_input_client_;
+}
+
 bool TestRenderWidgetHostView::HasFocus() const {
   return true;
 }

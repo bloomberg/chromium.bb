@@ -17,6 +17,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
@@ -26,6 +27,7 @@
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/ime/input_method_bridge.h"
+#include "ui/views/ime/null_input_method.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/native_widget_delegate.h"
@@ -270,6 +272,10 @@ bool NativeWidgetAura::HasCapture() const {
 InputMethod* NativeWidgetAura::CreateInputMethod() {
   if (!window_)
     return NULL;
+
+  if (switches::IsTextInputFocusManagerEnabled())
+    return new NullInputMethod();
+
   aura::Window* root_window = window_->GetRootWindow();
   ui::InputMethod* host =
       root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
@@ -278,6 +284,11 @@ InputMethod* NativeWidgetAura::CreateInputMethod() {
 
 internal::InputMethodDelegate* NativeWidgetAura::GetInputMethodDelegate() {
   return this;
+}
+
+ui::InputMethod* NativeWidgetAura::GetHostInputMethod() {
+  aura::Window* root_window = window_->GetRootWindow();
+  return root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
 }
 
 void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
@@ -821,6 +832,12 @@ void NativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
   if (!window_->IsVisible())
     return;
   GetWidget()->GetInputMethod()->DispatchKeyEvent(*event);
+  if (switches::IsTextInputFocusManagerEnabled()) {
+    FocusManager* focus_manager = GetWidget()->GetFocusManager();
+    delegate_->OnKeyEvent(event);
+    if (!event->handled() && focus_manager)
+      focus_manager->OnKeyEvent(*event);
+  }
   event->SetHandled();
 }
 

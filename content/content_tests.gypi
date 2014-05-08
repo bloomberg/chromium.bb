@@ -50,6 +50,7 @@
         '../testing/gtest.gyp:gtest',
         '../ui/accessibility/accessibility.gyp:ax_gen',
         '../ui/base/ui_base.gyp:ui_base',
+        '../ui/base/ui_base.gyp:ui_base_test_support',
         '../ui/events/events.gyp:dom4_keycode_converter',
         '../ui/events/events.gyp:events_base',
         '../ui/events/events.gyp:events_test_support',

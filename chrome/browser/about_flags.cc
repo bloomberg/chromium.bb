@@ -1858,6 +1858,16 @@ const Experiment kExperiments[] = {
     kOsAll,
     MULTI_VALUE_TYPE(kDistanceFieldTextChoices)
   },
+#if defined(USE_AURA)
+  {
+    "text-input-focus-manager",
+    IDS_FLAGS_TEXT_INPUT_FOCUS_MANAGER_NAME,
+    IDS_FLAGS_TEXT_INPUT_FOCUS_MANAGER_DESCRIPTION,
+    kOsCrOS | kOsLinux | kOsWin,
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableTextInputFocusManager,
+                              switches::kDisableTextInputFocusManager)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

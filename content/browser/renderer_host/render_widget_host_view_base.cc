@@ -414,6 +414,11 @@ void RenderWidgetHostViewBase::SelectionChanged(const base::string16& text,
   selection_range_.set_end(range.end());
 }
 
+ui::TextInputClient* RenderWidgetHostViewBase::GetTextInputClient() {
+  NOTREACHED();
+  return NULL;
+}
+
 bool RenderWidgetHostViewBase::IsShowingContextMenu() const {
   return showing_context_menu_;
 }

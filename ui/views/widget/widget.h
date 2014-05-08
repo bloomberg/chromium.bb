@@ -47,6 +47,7 @@ namespace ui {
 class Accelerator;
 class Compositor;
 class DefaultThemeProvider;
+class InputMethod;
 class Layer;
 class NativeTheme;
 class OSExchangeData;
@@ -540,6 +541,11 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Note that all widgets in a widget hierarchy share the same input method.
   InputMethod* GetInputMethod();
   const InputMethod* GetInputMethod() const;
+
+  // Returns the ui::InputMethod for this widget.
+  // TODO(yukishiino): Rename this method to GetInputMethod once we remove
+  // views::InputMethod.
+  ui::InputMethod* GetHostInputMethod();
 
   // Starts a drag operation for the specified view. This blocks until the drag
   // operation completes. |view| can be NULL.

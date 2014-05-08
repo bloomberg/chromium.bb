@@ -6587,6 +6587,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_APPS_FILE_ASSOCIATIONS_DESCRIPTION" desc="Description for a flag to enable file associations for Chrome Apps.">
         Enable OS integration of file associations for Chrome Apps.
       </message>
+      <message name="IDS_FLAGS_TEXT_INPUT_FOCUS_MANAGER_NAME" desc="Title for the flag to enable the new text input focus manager.">
+        Experimental text input focus manager.
+      </message>
+      <message name="IDS_FLAGS_TEXT_INPUT_FOCUS_MANAGER_DESCRIPTION" desc="Description for the flag to enable the new text input focus manager.">
+        Enable an experimental focus manager to track text input clients.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

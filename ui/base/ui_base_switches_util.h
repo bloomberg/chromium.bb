@@ -5,11 +5,11 @@
 #ifndef UI_BASE_UI_BASE_SWITCHES_UTIL_H_
 #define UI_BASE_UI_BASE_SWITCHES_UTIL_H_
 
-#include "base/compiler_specific.h"
 #include "ui/base/ui_base_export.h"
 
 namespace switches {
 
+UI_BASE_EXPORT bool IsTextInputFocusManagerEnabled();
 UI_BASE_EXPORT bool IsTouchDragDropEnabled();
 UI_BASE_EXPORT bool IsTouchEditingEnabled();
 

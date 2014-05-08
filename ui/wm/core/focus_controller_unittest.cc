@@ -16,6 +16,8 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/base/ime/dummy_text_input_client.h"
+#include "ui/base/ime/text_input_focus_manager.h"
 #include "ui/events/event_handler.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/wm_state.h"
@@ -252,6 +254,25 @@ class ScopedTargetFocusNotificationObserver : public FocusNotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(ScopedTargetFocusNotificationObserver);
 };
 
+class ScopedFocusedTextInputClientChanger
+    : public ScopedFocusNotificationObserver {
+ public:
+  ScopedFocusedTextInputClientChanger(aura::Window* root_window,
+                                      ui::TextInputClient* text_input_client)
+      : ScopedFocusNotificationObserver(root_window),
+        text_input_client_(text_input_client) {}
+
+ private:
+  // Overridden from aura::client::FocusChangeObserver:
+  virtual void OnWindowFocused(aura::Window* gained_focus,
+                               aura::Window* lost_focus) OVERRIDE {
+    ui::TextInputFocusManager::GetInstance()->FocusTextInputClient(
+        text_input_client_);
+  }
+
+  ui::TextInputClient* text_input_client_;
+};
+
 class FocusShiftingActivationObserver
     : public aura::client::ActivationChangeObserver {
  public:
@@ -442,6 +463,7 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
   virtual void NoFocusChangeOnClickOnCaptureWindow() {}
   virtual void ChangeFocusWhenNothingFocusedAndCaptured() {}
   virtual void DontPassDeletedWindow() {}
+  virtual void FocusedTextInputClient() {}
 
  private:
   scoped_ptr<FocusController> focus_controller_;
@@ -793,6 +815,41 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
       EXPECT_EQ(to_delete, observer1.GetDeletedWindow());
       EXPECT_FALSE(observer2.was_notified_with_deleted_window());
     }
+  }
+
+  // Verifies if the focused text input client is cleared when a window gains
+  // or loses the focus.
+  virtual void FocusedTextInputClient() OVERRIDE {
+    ui::TextInputFocusManager* text_input_focus_manager =
+        ui::TextInputFocusManager::GetInstance();
+    ui::DummyTextInputClient text_input_client;
+    ui::TextInputClient* null_text_input_client = NULL;
+
+    EXPECT_EQ(null_text_input_client,
+              text_input_focus_manager->GetFocusedTextInputClient());
+
+    text_input_focus_manager->FocusTextInputClient(&text_input_client);
+    EXPECT_EQ(&text_input_client,
+              text_input_focus_manager->GetFocusedTextInputClient());
+    FocusWindowById(1);
+    // The focused text input client gets cleared when a window gets focused
+    // unless any of observers sets the focused text input client.
+    EXPECT_EQ(null_text_input_client,
+              text_input_focus_manager->GetFocusedTextInputClient());
+
+    ScopedFocusedTextInputClientChanger text_input_focus_changer(
+        root_window(), &text_input_client);
+    EXPECT_EQ(null_text_input_client,
+              text_input_focus_manager->GetFocusedTextInputClient());
+    FocusWindowById(2);
+    // |text_input_focus_changer| sets the focused text input client.
+    EXPECT_EQ(&text_input_client,
+              text_input_focus_manager->GetFocusedTextInputClient());
+
+    FocusWindow(NULL);
+    // The focused text input client gets cleared when a window loses the focus.
+    EXPECT_EQ(null_text_input_client,
+              text_input_focus_manager->GetFocusedTextInputClient());
   }
 
  private:
@@ -1180,5 +1237,9 @@ FOCUS_CONTROLLER_TEST(FocusControllerApiTest,
 
 // See description above DontPassDeletedWindow() for details.
 FOCUS_CONTROLLER_TEST(FocusControllerApiTest, DontPassDeletedWindow);
+
+// - Verifies that the focused text input client is cleard when the window focus
+//   changes.
+ALL_FOCUS_TESTS(FocusedTextInputClient);
 
 }  // namespace wm

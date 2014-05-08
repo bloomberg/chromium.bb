@@ -72,8 +72,8 @@
 // is FocusTraversable.
 
 namespace ui {
-class AcceleratorTarget;
 class AcceleratorManager;
+class AcceleratorTarget;
 class EventHandler;
 class KeyEvent;
 }
@@ -212,6 +212,15 @@ class VIEWS_EXPORT FocusManager {
 
   // Returns true if in the process of changing the focused view.
   bool is_changing_focus() const { return is_changing_focus_; }
+
+  // Changes the text input focus to |view->GetTextInputClient()| iff |view|
+  // is focused.  Views must call this method when their internal
+  // TextInputClient instance changes.
+  void OnTextInputClientChanged(View* view);
+
+  // Moves the text input focus into/out from |view|.
+  void FocusTextInputClient(View* view);
+  void BlurTextInputClient(View* view);
 
   // Disable shortcut handling.
   static void set_shortcut_handling_suspended(bool suspended) {

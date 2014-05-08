@@ -65,6 +65,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // RenderWidgetHostView implementation.
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
   virtual const SkBitmap& GetBackground() OVERRIDE;
+  virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
   virtual bool IsShowingContextMenu() const OVERRIDE;
   virtual void SetShowingContextMenu(bool showing_menu) OVERRIDE;
   virtual base::string16 GetSelectedText() const OVERRIDE;

@@ -121,6 +121,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   virtual bool HasCapture() const OVERRIDE;
   virtual InputMethod* CreateInputMethod() OVERRIDE;
   virtual internal::InputMethodDelegate* GetInputMethodDelegate() OVERRIDE;
+  virtual ui::InputMethod* GetHostInputMethod() OVERRIDE;
   virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
   virtual void GetWindowPlacement(
       gfx::Rect* bounds,
@@ -295,7 +296,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   scoped_ptr<wm::WindowModalityController>
       window_modality_controller_;
 
-  // See comments in OnLostActive().
   bool restore_focus_on_activate_;
 
   gfx::NativeCursor cursor_;
