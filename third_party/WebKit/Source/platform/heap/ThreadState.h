@@ -359,7 +359,7 @@ public:
     //
 
     // Request all other threads to stop. Must only be called if the current thread is at safepoint.
-    static void stopThreads();
+    static bool stopThreads();
     static void resumeThreads();
 
     // Check if GC is requested by another thread and pause this thread if this is the case.

@@ -301,6 +301,7 @@ public:
     explicit GCScope(ThreadState::StackState stackState)
         : m_state(ThreadState::current())
         , m_safePointScope(stackState)
+        , m_parkedAllThreads(false)
     {
         TRACE_EVENT0("Blink", "Heap::GCScope");
         const char* samplingState = TRACE_EVENT_GET_SAMPLING_STATE();
@@ -314,23 +315,31 @@ public:
         // a row.
         RELEASE_ASSERT(!m_state->isInGC());
         RELEASE_ASSERT(!m_state->isSweepInProgress());
-        ThreadState::stopThreads();
-        m_state->enterGC();
-
+        if (LIKELY(ThreadState::stopThreads())) {
+            m_parkedAllThreads = true;
+            m_state->enterGC();
+        }
         if (m_state->isMainThread())
             TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(samplingState);
     }
 
+    bool allThreadsParked() { return m_parkedAllThreads; }
+
     ~GCScope()
     {
-        m_state->leaveGC();
-        ASSERT(!m_state->isInGC());
-        ThreadState::resumeThreads();
+        // Only cleanup if we parked all threads in which case the GC happened
+        // and we need to resume the other threads.
+        if (LIKELY(m_parkedAllThreads)) {
+            m_state->leaveGC();
+            ASSERT(!m_state->isInGC());
+            ThreadState::resumeThreads();
+        }
     }
 
 private:
     ThreadState* m_state;
     ThreadState::SafePointScope m_safePointScope;
+    bool m_parkedAllThreads; // False if we fail to park all threads
 };
 
 NO_SANITIZE_ADDRESS
@@ -1600,10 +1609,13 @@ void Heap::collectGarbage(ThreadState::StackState stackState)
     state->clearGCRequested();
 
     GCScope gcScope(stackState);
-
+    // Check if we successfully parked the other threads. If not we bail out of the GC.
+    if (!gcScope.allThreadsParked()) {
+        ThreadState::current()->setGCRequested();
+        return;
+    }
     TRACE_EVENT0("Blink", "Heap::collectGarbage");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BlinkGC");
-
 #if ENABLE(GC_TRACING)
     static_cast<MarkingVisitor*>(s_markingVisitor)->objectGraph().clear();
 #endif

@@ -36,11 +36,12 @@
 #include "wtf/MainThread.h"
 #include "wtf/WTF.h"
 #include <base/test/test_suite.h>
+#include <base/time/time.h>
 #include <string.h>
 
 static double CurrentTime()
 {
-    return 0.0;
+    return base::Time::Now().ToDoubleT();
 }
 
 static void AlwaysZeroNumberSource(unsigned char* buf, size_t len)

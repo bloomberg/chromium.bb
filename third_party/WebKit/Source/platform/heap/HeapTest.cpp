@@ -36,6 +36,7 @@
 #include "platform/heap/HeapTerminatedArrayBuilder.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
+#include "public/platform/Platform.h"
 #include "wtf/HashTraits.h"
 #include "wtf/LinkedHashSet.h"
 
@@ -99,28 +100,39 @@ public:
     explicit TestGCScope(ThreadState::StackState state)
         : m_state(ThreadState::current())
         , m_safePointScope(state)
+        , m_parkedAllThreads(false)
     {
         m_state->checkThread();
         EXPECT_FALSE(m_state->isInGC());
-        ThreadState::stopThreads();
-        m_state->enterGC();
+        if (LIKELY(ThreadState::stopThreads())) {
+            m_state->enterGC();
+            m_parkedAllThreads = true;
+        }
     }
+
+    bool allThreadsParked() { return m_parkedAllThreads; }
 
     ~TestGCScope()
     {
-        m_state->leaveGC();
-        EXPECT_FALSE(m_state->isInGC());
-        ThreadState::resumeThreads();
+        // Only cleanup if we parked all threads in which case the GC happened
+        // and we need to resume the other threads.
+        if (LIKELY(m_parkedAllThreads)) {
+            m_state->leaveGC();
+            EXPECT_FALSE(m_state->isInGC());
+            ThreadState::resumeThreads();
+        }
     }
 
 private:
     ThreadState* m_state;
     ThreadState::SafePointScope m_safePointScope;
+    bool m_parkedAllThreads; // False if we fail to park all threads
 };
 
 static void getHeapStats(HeapStats* stats)
 {
     TestGCScope scope(ThreadState::NoHeapPointersOnStack);
+    EXPECT_TRUE(scope.allThreadsParked());
     Heap::getStats(stats);
 }
 
@@ -350,7 +362,7 @@ protected:
         for (int i = 0; i < numberOfThreads; i++)
             createThread(&threadFunc, tester, "testing thread");
         while (tester->m_threadsToFinish) {
-            ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
+            ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
             yield();
         }
         delete tester;
@@ -408,8 +420,8 @@ protected:
                     wrapper = IntWrapper::create(0x0bbac0de);
                     if (!(i % 10)) {
                         globalPersistent = adoptPtr(new GlobalIntWrapperPersistent(IntWrapper::create(0x0ed0cabb)));
-                        ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
                     }
+                    ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
                     yield();
                 }
 
@@ -423,6 +435,7 @@ protected:
                 EXPECT_EQ(wrapper->value(), 0x0bbac0de);
                 EXPECT_EQ((*globalPersistent)->value(), 0x0ed0cabb);
             }
+            ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
             yield();
         }
         ThreadState::detach();
@@ -452,9 +465,7 @@ private:
                 for (int i = 0; i < numberOfAllocations; i++) {
                     weakMap->add(static_cast<unsigned>(i), IntWrapper::create(0));
                     weakMap2.add(static_cast<unsigned>(i), IntWrapper::create(0));
-                    if (!(i % 10)) {
-                        ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
-                    }
+                    ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
                     yield();
                 }
 
@@ -468,6 +479,7 @@ private:
                 EXPECT_TRUE(weakMap->isEmpty());
                 EXPECT_TRUE(weakMap2.isEmpty());
             }
+            ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
             yield();
         }
         ThreadState::detach();
@@ -3273,6 +3285,7 @@ TEST(HeapTest, CheckAndMarkPointer)
     // checkAndMarkPointer tests.
     {
         TestGCScope scope(ThreadState::HeapPointersOnStack);
+        EXPECT_TRUE(scope.allThreadsParked()); // Fail the test if we could not park all threads.
         Heap::makeConsistentForGC();
         for (size_t i = 0; i < objectAddresses.size(); i++) {
             EXPECT_TRUE(Heap::checkAndMarkPointer(&visitor, objectAddresses[i]));
@@ -3291,6 +3304,7 @@ TEST(HeapTest, CheckAndMarkPointer)
     clearOutOldGarbage(&initialHeapStats);
     {
         TestGCScope scope(ThreadState::HeapPointersOnStack);
+        EXPECT_TRUE(scope.allThreadsParked());
         Heap::makeConsistentForGC();
         for (size_t i = 0; i < objectAddresses.size(); i++) {
             EXPECT_FALSE(Heap::checkAndMarkPointer(&visitor, objectAddresses[i]));
@@ -3878,6 +3892,66 @@ TEST(HeapTest, MultipleMixins)
     }
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(3, IntWrapper::s_destructorCalls);
+}
+
+class GCParkingThreadTester {
+public:
+    static void test()
+    {
+        createThread(&sleeperMainFunc, 0, "SleepingThread");
+
+        // Wait for the sleeper to run.
+        while (!s_sleeperRunning) {
+            yield();
+        }
+
+        {
+            // Expect the first attempt to park the sleeping thread to fail
+            TestGCScope scope(ThreadState::NoHeapPointersOnStack);
+            EXPECT_FALSE(scope.allThreadsParked());
+        }
+
+        s_sleeperDone = true;
+
+        // Wait for the sleeper to finish.
+        while (s_sleeperRunning) {
+            // We enter the safepoint here since the sleeper thread will detach
+            // causing it to GC.
+            ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
+            yield();
+        }
+        {
+            // Since the sleeper thread has detached this is the only thread.
+            TestGCScope scope(ThreadState::NoHeapPointersOnStack);
+            EXPECT_TRUE(scope.allThreadsParked());
+        }
+    }
+
+private:
+    static void sleeperMainFunc(void* data)
+    {
+        ThreadState::attach();
+        s_sleeperRunning = true;
+
+        // Simulate a long running op that is not entering a safepoint.
+        while (!s_sleeperDone) {
+            yield();
+        }
+
+        ThreadState::detach();
+        s_sleeperRunning = false;
+    }
+
+    static volatile bool s_sleeperRunning;
+    static volatile bool s_sleeperDone;
+};
+
+volatile bool GCParkingThreadTester::s_sleeperRunning = false;
+volatile bool GCParkingThreadTester::s_sleeperDone = false;
+
+TEST(HeapTest, GCParkingTimeout)
+{
+    GCParkingThreadTester::test();
 }
 
 } // WebCore namespace

@@ -97,6 +97,13 @@ static Mutex& threadAttachMutex()
     return mutex;
 }
 
+static double lockingTimeout()
+{
+    // Wait time for parking all threads is at most 500 MS.
+    return 0.100;
+}
+
+
 typedef void (*PushAllRegistersCallback)(SafePointBarrier*, ThreadState*, intptr_t*);
 extern "C" void pushAllRegisters(SafePointBarrier*, ThreadState*, PushAllRegistersCallback);
 
@@ -106,7 +113,7 @@ public:
     ~SafePointBarrier() { }
 
     // Request other attached threads that are not at safe points to park themselves on safepoints.
-    void parkOthers()
+    bool parkOthers()
     {
         ASSERT(ThreadState::current()->isAtSafePoint());
 
@@ -129,16 +136,30 @@ public:
                 interruptors[i]->requestInterrupt();
         }
 
-        while (acquireLoad(&m_unparkedThreadCount) > 0)
-            m_parked.wait(m_mutex);
+        while (acquireLoad(&m_unparkedThreadCount) > 0) {
+            double expirationTime = currentTime() + lockingTimeout();
+            if (!m_parked.timedWait(m_mutex, expirationTime)) {
+                // One of the other threads did not return to a safepoint within the maximum
+                // time we allow for threads to be parked. Abandon the GC and resume the
+                // currently parked threads.
+                resumeOthers(true);
+                return false;
+            }
+        }
+        return true;
     }
 
-    void resumeOthers()
+    void resumeOthers(bool barrierLocked = false)
     {
         ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
         atomicSubtract(&m_unparkedThreadCount, threads.size());
         releaseStore(&m_canResume, 1);
-        {
+
+        // FIXME: Resumed threads will all contend for m_mutex just to unlock it
+        // later which is a waste of resources.
+        if (UNLIKELY(barrierLocked)) {
+            m_resume.broadcast();
+        } else {
             // FIXME: Resumed threads will all contend for
             // m_mutex just to unlock it later which is a waste of
             // resources.
@@ -160,6 +181,28 @@ public:
         ASSERT(ThreadState::current()->isAtSafePoint());
     }
 
+    void checkAndPark(ThreadState* state)
+    {
+        ASSERT(!state->isSweepInProgress());
+        if (!acquireLoad(&m_canResume)) {
+            pushAllRegisters(this, state, parkAfterPushRegisters);
+            state->performPendingSweep();
+        }
+    }
+
+    void enterSafePoint(ThreadState* state)
+    {
+        ASSERT(!state->isSweepInProgress());
+        pushAllRegisters(this, state, enterSafePointAfterPushRegisters);
+    }
+
+    void leaveSafePoint(ThreadState* state)
+    {
+        if (atomicIncrement(&m_unparkedThreadCount) > 0)
+            checkAndPark(state);
+    }
+
+private:
     void doPark(ThreadState* state, intptr_t* stackEnd)
     {
         state->recordStackEnd(stackEnd);
@@ -171,13 +214,9 @@ public:
         atomicIncrement(&m_unparkedThreadCount);
     }
 
-    void checkAndPark(ThreadState* state)
+    static void parkAfterPushRegisters(SafePointBarrier* barrier, ThreadState* state, intptr_t* stackEnd)
     {
-        ASSERT(!state->isSweepInProgress());
-        if (!acquireLoad(&m_canResume)) {
-            pushAllRegisters(this, state, parkAfterPushRegisters);
-            state->performPendingSweep();
-        }
+        barrier->doPark(state, stackEnd);
     }
 
     void doEnterSafePoint(ThreadState* state, intptr_t* stackEnd)
@@ -196,24 +235,6 @@ public:
             MutexLocker locker(m_mutex);
             m_parked.signal(); // Safe point reached.
         }
-    }
-
-    void enterSafePoint(ThreadState* state)
-    {
-        ASSERT(!state->isSweepInProgress());
-        pushAllRegisters(this, state, enterSafePointAfterPushRegisters);
-    }
-
-    void leaveSafePoint(ThreadState* state)
-    {
-        if (atomicIncrement(&m_unparkedThreadCount) > 0)
-            checkAndPark(state);
-    }
-
-private:
-    static void parkAfterPushRegisters(SafePointBarrier* barrier, ThreadState* state, intptr_t* stackEnd)
-    {
-        barrier->doPark(state, stackEnd);
     }
 
     static void enterSafePointAfterPushRegisters(SafePointBarrier* barrier, ThreadState* state, intptr_t* stackEnd)
@@ -702,9 +723,9 @@ void ThreadState::getStats(HeapStats& stats)
 #endif
 }
 
-void ThreadState::stopThreads()
+bool ThreadState::stopThreads()
 {
-    s_safePointBarrier->parkOthers();
+    return s_safePointBarrier->parkOthers();
 }
 
 void ThreadState::resumeThreads()
