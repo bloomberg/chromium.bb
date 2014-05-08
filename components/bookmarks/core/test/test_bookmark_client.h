@@ -21,21 +21,11 @@ class TestBookmarkClient : public BookmarkClient {
   // BookmarkModel* is owned by the caller.
   scoped_ptr<BookmarkModel> CreateModel(bool index_urls);
 
+ private:
   // BookmarkClient:
   virtual bool PreferTouchIcon() OVERRIDE;
-  virtual base::CancelableTaskTracker::TaskId GetFaviconImageForURL(
-      const GURL& page_url,
-      int icon_types,
-      int desired_size_in_dip,
-      const FaviconImageCallback& callback,
-      base::CancelableTaskTracker* tracker) OVERRIDE;
-  virtual bool SupportsTypedCountForNodes() OVERRIDE;
-  virtual void GetTypedCountForNodes(
-      const NodeSet& nodes,
-      NodeTypedCountPairs* node_typed_count_pairs) OVERRIDE;
   virtual void RecordAction(const base::UserMetricsAction& action) OVERRIDE;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(TestBookmarkClient);
 };
 

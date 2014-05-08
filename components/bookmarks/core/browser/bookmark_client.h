@@ -50,16 +50,16 @@ class BookmarkClient {
       int icon_types,
       int desired_size_in_dip,
       const FaviconImageCallback& callback,
-      base::CancelableTaskTracker* tracker) = 0;
+      base::CancelableTaskTracker* tracker);
 
   // Returns true if the embedder supports typed count for URL.
-  virtual bool SupportsTypedCountForNodes() = 0;
+  virtual bool SupportsTypedCountForNodes();
 
   // Retrieves the number of time each BookmarkNode URL has been typed in
   // the Omnibox by the user.
   virtual void GetTypedCountForNodes(
       const NodeSet& nodes,
-      NodeTypedCountPairs* node_typed_count_pairs) = 0;
+      NodeTypedCountPairs* node_typed_count_pairs);
 
   // Wrapper around RecordAction defined in base/metrics/user_metrics.h
   // that ensure that the action is posted from the correct thread.

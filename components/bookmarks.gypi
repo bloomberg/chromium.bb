@@ -27,6 +27,7 @@
       'sources': [
         'bookmarks/core/browser/base_bookmark_model_observer.cc',
         'bookmarks/core/browser/base_bookmark_model_observer.h',
+        'bookmarks/core/browser/bookmark_client.cc',
         'bookmarks/core/browser/bookmark_client.h',
         'bookmarks/core/browser/bookmark_codec.cc',
         'bookmarks/core/browser/bookmark_codec.h',
