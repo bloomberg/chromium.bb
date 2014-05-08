@@ -51,6 +51,9 @@ struct GraphicsLayerPaintInfo {
     // known, then we can trivially convert this offset to m_squashingLayer's space.
     LayoutSize offsetFromSquashingCLM;
 
+    // The clip rect to apply, in the local coordinate space of the squashed layer, when painting it.
+    IntRect localClipRectForSquashedLayer;
+
     // Offset describing where this squashed RenderLayer paints into the shared GraphicsLayer backing.
     IntSize offsetFromRenderer;
     LayoutSize subpixelAccumulation;
@@ -205,6 +208,9 @@ public:
         return m_squashingLayerOffsetFromTransformedAncestor;
     }
 
+    // If there is a squashed layer painting into this CLM that is an ancestor of the given RenderObject, return it. Otherwise return 0.
+    const GraphicsLayerPaintInfo* containingSquashedLayer(const RenderObject*) const;
+
 private:
     void createPrimaryGraphicsLayer();
     void destroyGraphicsLayers();
@@ -274,6 +280,13 @@ private:
     void paintsIntoCompositedAncestorChanged();
 
     void doPaintTask(GraphicsLayerPaintInfo&, GraphicsContext*, const IntRect& clip);
+
+    // Computes the background clip rect for the given squashed layer, up to any containing layer that is squashed into the
+    // same squashing layer and contains this squashed layer's clipping ancestor.
+    // The clip rect is returned in the coordinate space of the given squashed layer.
+    // If there is no such containing layer, returns the infinite rect.
+    // FIXME: unify this code with the code that sets up m_ancestorClippingLayer. They are doing very similar things.
+    IntRect localClipRectForSquashedLayer(const GraphicsLayerPaintInfo&) const;
 
     RenderLayer& m_owningLayer;
 

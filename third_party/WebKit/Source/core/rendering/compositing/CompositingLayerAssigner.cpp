@@ -130,8 +130,10 @@ bool CompositingLayerAssigner::canSquashIntoCurrentSquashingOwner(const RenderLa
     ASSERT(squashingState.hasMostRecentMapping);
     const RenderLayer& squashingLayer = squashingState.mostRecentMapping->owningLayer();
 
-    if (layer->renderer()->clippingContainer() != squashingLayer.renderer()->clippingContainer())
-        return false;
+    if (layer->renderer()->clippingContainer() != squashingLayer.renderer()->clippingContainer()) {
+        if (!squashingLayer.compositedLayerMapping()->containingSquashedLayer(layer->renderer()->clippingContainer()))
+            return false;
+    }
 
     // Composited descendants need to be clipped by a child contianment graphics layer, which would not be available if the layer is
     if (m_compositor->clipsCompositingDescendants(layer))

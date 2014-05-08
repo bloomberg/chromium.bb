@@ -595,7 +595,11 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const IntPoint& delta)
         // FIXME: find a better design to avoid this redundant value - most likely it will make
         // sense to move the paint task info into RenderLayer's m_compositingProperties.
         m_squashedLayers[i].renderLayer->setOffsetFromSquashingLayerOrigin(m_squashedLayers[i].offsetFromRenderer);
+
     }
+
+    for (size_t i = 0; i < m_squashedLayers.size(); ++i)
+        m_squashedLayers[i].localClipRectForSquashedLayer = localClipRectForSquashedLayer(m_squashedLayers[i]);
 }
 
 void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::UpdateType updateType, const RenderLayer* compositingContainer)
@@ -1825,6 +1829,40 @@ void CompositedLayerMapping::setContentsNeedDisplayInRect(const IntRect& r)
     ApplyToGraphicsLayers(this, functor, ApplyToContentLayers);
 }
 
+const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(const RenderObject* renderObject) const
+{
+    for (size_t i = 0; i < m_squashedLayers.size(); ++i) {
+        if (renderObject->isDescendantOf(m_squashedLayers[i].renderLayer->renderer())) {
+            return &m_squashedLayers[i];
+            break;
+        }
+    }
+    return 0;
+}
+
+IntRect CompositedLayerMapping::localClipRectForSquashedLayer(const GraphicsLayerPaintInfo& paintInfo) const
+{
+    const RenderObject* clippingContainer = paintInfo.renderLayer->renderer()->clippingContainer();
+    if (clippingContainer == m_owningLayer.renderer()->clippingContainer())
+        return PaintInfo::infiniteRect();
+
+    ASSERT(clippingContainer);
+
+    const GraphicsLayerPaintInfo* ancestorPaintInfo = containingSquashedLayer(clippingContainer);
+    // Must be there, otherwise CompositingLayerAssigner::canSquashIntoCurrentSquashingOwner would have disallowed squashing.
+    ASSERT(ancestorPaintInfo);
+
+    // FIXME: this is a potential performance issue. We shoudl consider caching these clip rects or otherwise optimizing.
+    ClipRectsContext clipRectsContext(ancestorPaintInfo->renderLayer, TemporaryClipRects);
+    IntRect parentClipRect = pixelSnappedIntRect(paintInfo.renderLayer->clipper().backgroundClipRect(clipRectsContext).rect());
+    ASSERT(parentClipRect != PaintInfo::infiniteRect());
+
+    // Convert from ancestor to local coordinates.
+    IntSize ancestorToLocalOffset = paintInfo.offsetFromRenderer - ancestorPaintInfo->offsetFromRenderer;
+    parentClipRect.move(ancestorToLocalOffset);
+    return parentClipRect;
+}
+
 void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, GraphicsContext* context,
     const IntRect& clip) // In the coords of rootLayer.
 {
@@ -1893,10 +1931,10 @@ void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, Grap
         LayerPaintingInfo paintingInfo(paintInfo.renderLayer, dirtyRect, PaintBehaviorNormal, paintInfo.renderLayer->subpixelAccumulation());
 
         // RenderLayer::paintLayer assumes that the caller clips to the passed rect. Squashed layers need to do this clipping in software,
-        // since there is no graphics layer to clip them precisely.
-        // FIXME: in some cases this clip is not necessary. For example if the dirty rect is not the same as the bounds of the layer,
-        // RenderLayer will clip it (see RenderLayer::clipToRect). Put in more work if this becomes a performance issue.
+        // since there is no graphics layer to clip them precisely. Furthermore, in some cases we squash layers that need clipping in software
+        // from clipping ancestors (see CompositedLayerMapping::localClipRectForSquashedLayer()).
         context->save();
+        dirtyRect.intersect(paintInfo.localClipRectForSquashedLayer);
         context->clip(dirtyRect);
         paintInfo.renderLayer->paintLayer(context, paintingInfo, paintFlags);
         context->restore();
