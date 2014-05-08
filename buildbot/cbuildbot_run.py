@@ -157,7 +157,6 @@ class RunAttributes(object):
       'breakpad_symbols_generated', # Set by DebugSymbolsStage.
       'debug_tarball_generated',    # Set by DebugSymbolsStage.
       'images_generated',           # Set by BuildImageStage.
-      'instruction_urls_per_channel', # Set by ArchiveStage
   ))
 
   # Attributes that need to be set by stages that can run in parallel
