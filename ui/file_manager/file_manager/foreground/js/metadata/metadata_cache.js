@@ -325,7 +325,9 @@ MetadataCache.prototype.getOne = function(entry, type, callback) {
  * @return {Object} The metadata or null.
  */
 MetadataCache.prototype.getCached = function(entry, type) {
-  var entryURL = entry.toURL();
+  // Entry.cachedUrl may be set in DirectoryContents.onNewEntries_().
+  // See the comment there for detail.
+  var entryURL = entry.cachedUrl || entry.toURL();
   var cache = this.cache_[entryURL];
   return cache ? (cache.properties[type] || null) : null;
 };

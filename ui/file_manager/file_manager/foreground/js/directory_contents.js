@@ -638,6 +638,11 @@ DirectoryContents.prototype.onNewEntries_ = function(entries) {
   var entriesFiltered = [].filter.call(
       entries, this.context_.fileFilter.filter.bind(this.context_.fileFilter));
 
+  // Caching URL to reduce a number of calls of toURL in sort.
+  // This is a temporary solution. We need to fix a root cause of slow toURL.
+  // See crbug.com/370908 for detail.
+  entriesFiltered.forEach(function(entry) { entry.cachedUrl = entry.toURL(); });
+
   // Update the filelist without waiting the metadata.
   this.fileList_.push.apply(this.fileList_, entriesFiltered);
   cr.dispatchSimpleEvent(this, 'scan-updated');
