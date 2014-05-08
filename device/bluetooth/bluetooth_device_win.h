@@ -68,6 +68,10 @@ class BluetoothDeviceWin : public BluetoothDevice {
       device::BluetoothProfile* profile,
       const base::Closure& callback,
       const ConnectToProfileErrorCallback& error_callback) OVERRIDE;
+  virtual void ConnectToService(
+      const BluetoothUUID& uuid,
+      const ConnectToServiceCallback& callback,
+      const ConnectToServiceErrorCallback& error_callback) OVERRIDE;
   virtual void SetOutOfBandPairingData(
       const BluetoothOutOfBandPairingData& data,
       const base::Closure& callback,

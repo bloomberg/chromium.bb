@@ -62,6 +62,10 @@ class BluetoothDeviceMac : public BluetoothDevice {
       BluetoothProfile* profile,
       const base::Closure& callback,
       const ConnectToProfileErrorCallback& error_callback) OVERRIDE;
+  virtual void ConnectToService(
+      const BluetoothUUID& uuid,
+      const ConnectToServiceCallback& callback,
+      const ConnectToServiceErrorCallback& error_callback) OVERRIDE;
   virtual void SetOutOfBandPairingData(
       const BluetoothOutOfBandPairingData& data,
       const base::Closure& callback,

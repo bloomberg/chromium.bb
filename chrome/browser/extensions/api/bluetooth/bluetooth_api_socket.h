@@ -38,6 +38,13 @@ class BluetoothApiSocket : public ApiResource {
                      const device::BluetoothUUID& uuid);
   virtual ~BluetoothApiSocket();
 
+  // Adopts a socket |socket| connected to a device with address
+  // |device_address| using the service with UUID |uuid|.
+  virtual void AdoptConnectedSocket(
+      scoped_refptr<device::BluetoothSocket> socket,
+      const std::string& device_address,
+      const device::BluetoothUUID& uuid);
+
   // Closes the underlying connection. This is a best effort, and never fails.
   virtual void Disconnect(const base::Closure& success_callback);
 

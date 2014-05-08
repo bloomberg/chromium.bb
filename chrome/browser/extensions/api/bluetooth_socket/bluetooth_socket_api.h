@@ -12,10 +12,15 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_socket.h"
 #include "chrome/common/extensions/api/bluetooth_socket.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
+
+namespace device {
+class BluetoothSocket;
+}
 
 namespace net {
 class IOBuffer;
@@ -151,16 +156,27 @@ class BluetoothSocketListenUsingL2capFunction : public AsyncExtensionFunction {
   virtual bool RunAsync() OVERRIDE;
 };
 
-class BluetoothSocketConnectFunction : public AsyncExtensionFunction {
+class BluetoothSocketConnectFunction : public BluetoothSocketAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothSocket.connect",
                              BLUETOOTHSOCKET_CONNECT);
 
- protected:
-  virtual ~BluetoothSocketConnectFunction() {}
+  BluetoothSocketConnectFunction();
 
-  // AsyncExtensionFunction override:
-  virtual bool RunAsync() OVERRIDE;
+ protected:
+  virtual ~BluetoothSocketConnectFunction();
+
+  // BluetoothSocketAsyncApiFunction:
+  virtual bool Prepare() OVERRIDE;
+  virtual void AsyncWorkStart() OVERRIDE;
+
+ private:
+  virtual void OnGetAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
+  virtual void OnConnect(scoped_refptr<device::BluetoothSocket> socket);
+  virtual void OnConnectError(const std::string& message);
+
+  scoped_ptr<bluetooth_socket::Connect::Params> params_;
+  BluetoothSocketEventDispatcher* socket_event_dispatcher_;
 };
 
 class BluetoothSocketDisconnectFunction

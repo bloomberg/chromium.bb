@@ -1,0 +1,16 @@
+{
+  "manifest_version": 2,
+  "name": "Test Bluetooth Socket Connect Function",
+  "version": "1.0",
+  "description": "Tests chrome.bluetoothSocket.connect Function",
+  "app": {
+    "background": {
+      "scripts": ["runtest.js"]
+    }
+  },
+  "bluetooth": {
+    "uuids": [
+      "8e3ad063-db38-4289-aa8f-b30e4223cf40"
+    ]
+  }
+}

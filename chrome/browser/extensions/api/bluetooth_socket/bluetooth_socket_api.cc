@@ -6,8 +6,14 @@
 
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_socket.h"
 #include "chrome/browser/extensions/api/bluetooth_socket/bluetooth_socket_event_dispatcher.h"
+#include "chrome/common/extensions/api/bluetooth/bluetooth_manifest_data.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_socket.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "net/base/io_buffer.h"
 
 using content::BrowserThread;
@@ -17,6 +23,9 @@ using extensions::api::bluetooth_socket::SocketProperties;
 
 namespace {
 
+const char kDeviceNotFoundError[] = "Device not found";
+const char kInvalidUuidError[] = "Invalid UUID";
+const char kPermissionDeniedError[] = "Permission denied";
 const char kSocketNotFoundError[] = "Socket not found";
 
 linked_ptr<SocketInfo> CreateSocketInfo(int socket_id,
@@ -57,6 +66,18 @@ void SetSocketProperties(BluetoothApiSocket* socket,
     // on the socket.
     socket->set_buffer_size(*properties->buffer_size.get());
   }
+}
+
+extensions::api::BluetoothSocketEventDispatcher* GetSocketEventDispatcher(
+    content::BrowserContext* browser_context) {
+  extensions::api::BluetoothSocketEventDispatcher* socket_event_dispatcher =
+      extensions::api::BluetoothSocketEventDispatcher::Get(browser_context);
+  DCHECK(socket_event_dispatcher)
+      << "There is no socket event dispatcher. "
+         "If this assertion is failing during a test, then it is likely that "
+         "TestExtensionSystem is failing to provide an instance of "
+         "BluetoothSocketEventDispatcher.";
+  return socket_event_dispatcher;
 }
 
 }  // namespace
@@ -180,13 +201,7 @@ bool BluetoothSocketSetPausedFunction::Prepare() {
   params_ = bluetooth_socket::SetPaused::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
-  socket_event_dispatcher_ =
-      BluetoothSocketEventDispatcher::Get(browser_context());
-  DCHECK(socket_event_dispatcher_)
-      << "There is no socket event dispatcher. "
-         "If this assertion is failing during a test, then it is likely that "
-         "TestExtensionSystem is failing to provide an instance of "
-         "BluetoothSocketEventDispatcher.";
+  socket_event_dispatcher_ = GetSocketEventDispatcher(browser_context());
   return socket_event_dispatcher_ != NULL;
 }
 
@@ -226,10 +241,91 @@ bool BluetoothSocketListenUsingL2capFunction::RunAsync() {
   return false;
 }
 
-bool BluetoothSocketConnectFunction::RunAsync() {
-  // TODO(keybuk): Implement.
-  SetError("Not yet implemented.");
-  return false;
+BluetoothSocketConnectFunction::BluetoothSocketConnectFunction() {}
+
+BluetoothSocketConnectFunction::~BluetoothSocketConnectFunction() {}
+
+bool BluetoothSocketConnectFunction::Prepare() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  params_ = bluetooth_socket::Connect::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+
+  socket_event_dispatcher_ = GetSocketEventDispatcher(browser_context());
+  return socket_event_dispatcher_ != NULL;
+}
+
+void BluetoothSocketConnectFunction::AsyncWorkStart() {
+  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+  device::BluetoothAdapterFactory::GetAdapter(
+      base::Bind(&BluetoothSocketConnectFunction::OnGetAdapter, this));
+}
+
+void BluetoothSocketConnectFunction::OnGetAdapter(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+  BluetoothApiSocket* socket = GetSocket(params_->socket_id);
+  if (!socket) {
+    error_ = kSocketNotFoundError;
+    AsyncWorkCompleted();
+    return;
+  }
+
+  device::BluetoothDevice* device = adapter->GetDevice(params_->address);
+  if (!device) {
+    error_ = kDeviceNotFoundError;
+    AsyncWorkCompleted();
+    return;
+  }
+
+  device::BluetoothUUID uuid(params_->uuid);
+  if (!uuid.IsValid()) {
+    error_ = kInvalidUuidError;
+    AsyncWorkCompleted();
+    return;
+  }
+
+  BluetoothPermissionRequest param(params_->uuid);
+  if (!BluetoothManifestData::CheckRequest(GetExtension(), param)) {
+    error_ = kPermissionDeniedError;
+    AsyncWorkCompleted();
+    return;
+  }
+
+  device->ConnectToService(
+      uuid,
+      base::Bind(&BluetoothSocketConnectFunction::OnConnect, this),
+      base::Bind(&BluetoothSocketConnectFunction::OnConnectError, this));
+}
+
+void BluetoothSocketConnectFunction::OnConnect(
+    scoped_refptr<device::BluetoothSocket> socket) {
+  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+
+  // Fetch the socket again since this is not a reference-counted object, and
+  // it may have gone away in the meantime (we check earlier to avoid making
+  // a connection in the case of an obvious programming error).
+  BluetoothApiSocket* api_socket = GetSocket(params_->socket_id);
+  if (!api_socket) {
+    error_ = kSocketNotFoundError;
+    AsyncWorkCompleted();
+    return;
+  }
+
+  api_socket->AdoptConnectedSocket(socket,
+                                   params_->address,
+                                   device::BluetoothUUID(params_->uuid));
+  socket_event_dispatcher_->OnSocketConnect(extension_id(),
+                                            params_->socket_id);
+
+  results_ = bluetooth_socket::Connect::Results::Create();
+  AsyncWorkCompleted();
+}
+
+void BluetoothSocketConnectFunction::OnConnectError(
+    const std::string& message) {
+  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+  error_ = message;
+  AsyncWorkCompleted();
 }
 
 BluetoothSocketDisconnectFunction::BluetoothSocketDisconnectFunction() {}
@@ -248,6 +344,7 @@ void BluetoothSocketDisconnectFunction::AsyncWorkStart() {
   BluetoothApiSocket* socket = GetSocket(params_->socket_id);
   if (!socket) {
     error_ = kSocketNotFoundError;
+    AsyncWorkCompleted();
     return;
   }
 

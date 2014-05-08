@@ -22,11 +22,14 @@
 #include "device/bluetooth/bluetooth_profile_chromeos.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_chromeos.h"
 #include "device/bluetooth/bluetooth_socket.h"
+#include "device/bluetooth/bluetooth_socket_chromeos.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using device::BluetoothDevice;
 using device::BluetoothSocket;
+using device::BluetoothUUID;
 
 namespace {
 
@@ -431,6 +434,14 @@ void BluetoothDeviceChromeOS::ConnectToProfile(
               weak_ptr_factory_.GetWeakPtr(),
               profile,
               error_callback));
+}
+
+void BluetoothDeviceChromeOS::ConnectToService(
+    const BluetoothUUID& uuid,
+    const ConnectToServiceCallback& callback,
+    const ConnectToServiceErrorCallback& error_callback) {
+  // TODO(keybuk): implement
+  NOTIMPLEMENTED();
 }
 
 void BluetoothDeviceChromeOS::SetOutOfBandPairingData(

@@ -17,6 +17,7 @@
 #include "device/bluetooth/bluetooth_socket_thread.h"
 #include "device/bluetooth/bluetooth_socket_win.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 
 namespace {
 
@@ -210,6 +211,14 @@ void BluetoothDeviceWin::ConnectToProfile(
                                                       net_log_source_,
                                                       callback,
                                                       error_callback);
+}
+
+void BluetoothDeviceWin::ConnectToService(
+    const BluetoothUUID& uuid,
+    const ConnectToServiceCallback& callback,
+    const ConnectToServiceErrorCallback& error_callback) {
+  // TODO(keybuk): implement
+  NOTIMPLEMENTED();
 }
 
 void BluetoothDeviceWin::SetOutOfBandPairingData(

@@ -1008,6 +1008,7 @@
         'browser/extensions/api/bluetooth/bluetooth_apitest.cc',
         'browser/extensions/api/bluetooth/bluetooth_private_apitest.cc',
         'browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_apitest.cc',
+        'browser/extensions/api/bluetooth_socket/bluetooth_socket_apitest.cc',
         'browser/extensions/api/bookmark_manager_private/bookmark_manager_private_apitest.cc',
         'browser/extensions/api/braille_display_private/braille_display_private_apitest.cc',
         'browser/extensions/api/braille_display_private/mock_braille_controller.cc',

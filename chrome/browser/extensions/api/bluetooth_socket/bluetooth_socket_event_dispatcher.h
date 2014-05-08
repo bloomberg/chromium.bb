@@ -30,6 +30,9 @@ class BluetoothSocketEventDispatcher
   explicit BluetoothSocketEventDispatcher(content::BrowserContext* context);
   virtual ~BluetoothSocketEventDispatcher();
 
+  // Socket is active, start receiving data from it.
+  void OnSocketConnect(const std::string& extension_id, int socket_id);
+
   // Socket is active again, start receiving data from it.
   void OnSocketResume(const std::string& extension_id, int socket_id);
 
@@ -62,6 +65,7 @@ class BluetoothSocketEventDispatcher
   };
 
   // Start a receive and register a callback.
+  void StartSocketReceive(const std::string& extension_id, int socket_id);
   static void StartReceive(const ReceiveParams& params);
 
   // Called when socket receive data.

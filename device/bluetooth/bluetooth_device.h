@@ -21,6 +21,7 @@ namespace device {
 class BluetoothGattService;
 class BluetoothProfile;
 class BluetoothSocket;
+class BluetoothUUID;
 
 struct BluetoothOutOfBandPairingData;
 
@@ -304,12 +305,6 @@ class BluetoothDevice {
   // confirmation of a displayed passkey.
   virtual bool ExpectingConfirmation() const = 0;
 
-  // SocketCallback is used by ConnectToService to return a BluetoothSocket to
-  // the caller, or NULL if there was an error.  The socket will remain open
-  // until the last reference to the returned BluetoothSocket is released.
-  typedef base::Callback<void(scoped_refptr<BluetoothSocket>)>
-      SocketCallback;
-
   // Initiates a connection to the device, pairing first if necessary.
   //
   // Method calls will be made on the supplied object |pairing_delegate|
@@ -379,6 +374,22 @@ class BluetoothDevice {
       BluetoothProfile* profile,
       const base::Closure& callback,
       const ConnectToProfileErrorCallback& error_callback) = 0;
+
+  // Attempts to initiate an outgoing L2CAP or RFCOMM connection to the
+  // advertised service on this device matching |uuid|, performing an SDP lookup
+  // if necessary to determine the correct protocol and channel for the
+  // connection. |callback| will be called on a successful connection with a
+  // BluetoothSocket instance that is to be owned by the receiver.
+  // |error_callback| will be called on failure with a message indicating the
+  // cause.
+  typedef base::Callback<void(scoped_refptr<BluetoothSocket>)>
+      ConnectToServiceCallback;
+  typedef base::Callback<void(const std::string& message)>
+      ConnectToServiceErrorCallback;
+  virtual void ConnectToService(
+      const BluetoothUUID& uuid,
+      const ConnectToServiceCallback& callback,
+      const ConnectToServiceErrorCallback& error_callback) = 0;
 
   // Sets the Out Of Band pairing data for this device to |data|.  Exactly one
   // of |callback| or |error_callback| will be run.

@@ -28,6 +28,11 @@ class BluetoothAdapterFactory {
   // use.
   static void GetAdapter(const AdapterCallback& callback);
 
+  // Sets the shared instance of the default adapter for testing purposes only,
+  // no reference is retained after completion of the call, removing the last
+  // reference will reset the factory.
+  static void SetAdapterForTesting(scoped_refptr<BluetoothAdapter> adapter);
+
   // Returns true iff the implementation has a (non-NULL) shared instance of the
   // adapter. Exposed for testing.
   static bool HasSharedInstanceForTesting();

@@ -54,6 +54,10 @@ void RunAdapterCallbacks() {
 
 // static
 bool BluetoothAdapterFactory::IsBluetoothAdapterAvailable() {
+  // SetAdapterForTesting() may be used to provide a test or mock adapter
+  // instance even on platforms that would otherwise not support it.
+  if (default_adapter.Get())
+    return true;
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
   return true;
 #elif defined(OS_MACOSX)
@@ -71,10 +75,11 @@ void BluetoothAdapterFactory::GetAdapter(const AdapterCallback& callback) {
   if (!default_adapter.Get()) {
     default_adapter.Get() =
         BluetoothAdapter::CreateAdapter(base::Bind(&RunAdapterCallbacks));
+    DCHECK(!default_adapter.Get()->IsInitialized());
   }
 
-  DCHECK(!default_adapter.Get()->IsInitialized());
-  adapter_callbacks.Get().push_back(callback);
+  if (!default_adapter.Get()->IsInitialized())
+    adapter_callbacks.Get().push_back(callback);
 #else  // !defined(OS_WIN)
   if (!default_adapter.Get()) {
     default_adapter.Get() =
@@ -82,8 +87,17 @@ void BluetoothAdapterFactory::GetAdapter(const AdapterCallback& callback) {
   }
 
   DCHECK(default_adapter.Get()->IsInitialized());
-  callback.Run(scoped_refptr<BluetoothAdapter>(default_adapter.Get().get()));
 #endif  // defined(OS_WIN)
+
+  if (default_adapter.Get()->IsInitialized())
+    callback.Run(scoped_refptr<BluetoothAdapter>(default_adapter.Get().get()));
+
+}
+
+// static
+void BluetoothAdapterFactory::SetAdapterForTesting(
+    scoped_refptr<BluetoothAdapter> adapter) {
+  default_adapter.Get() = adapter->GetWeakPtrForTesting();
 }
 
 // static

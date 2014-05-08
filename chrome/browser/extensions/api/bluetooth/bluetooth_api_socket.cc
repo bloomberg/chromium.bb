@@ -58,6 +58,21 @@ BluetoothApiSocket::~BluetoothApiSocket() {
     socket_->Close();
 }
 
+void BluetoothApiSocket::AdoptConnectedSocket(
+    scoped_refptr<device::BluetoothSocket> socket,
+    const std::string& device_address,
+    const device::BluetoothUUID& uuid) {
+  DCHECK(content::BrowserThread::CurrentlyOn(kThreadId));
+
+  if (socket_.get())
+    socket_->Close();
+
+  socket_ = socket;
+  device_address_ = device_address;
+  uuid_ = uuid;
+  connected_ = true;
+}
+
 void BluetoothApiSocket::Disconnect(const base::Closure& success_callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(kThreadId));
 

@@ -28,6 +28,10 @@ BluetoothAdapter::~BluetoothAdapter() {
   STLDeleteValues(&devices_);
 }
 
+base::WeakPtr<BluetoothAdapter> BluetoothAdapter::GetWeakPtrForTesting() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 void BluetoothAdapter::StartDiscoverySession(
     const DiscoverySessionCallback& callback,
     const ErrorCallback& error_callback) {

@@ -17,6 +17,7 @@
 #include "device/bluetooth/bluetooth_profile_mac.h"
 #include "device/bluetooth/bluetooth_service_record_mac.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 
 // Replicate specific 10.7 SDK declarations for building with prior SDKs.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
@@ -198,6 +199,14 @@ void BluetoothDeviceMac::ConnectToProfile(
     const ConnectToProfileErrorCallback& error_callback) {
   static_cast<BluetoothProfileMac*>(profile)
       ->Connect(device_, callback, error_callback);
+}
+
+void BluetoothDeviceMac::ConnectToService(
+    const BluetoothUUID& uuid,
+    const ConnectToServiceCallback& callback,
+    const ConnectToServiceErrorCallback& error_callback) {
+  // TODO(keybuk): implement
+  NOTIMPLEMENTED();
 }
 
 void BluetoothDeviceMac::SetOutOfBandPairingData(

@@ -101,6 +101,9 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   static base::WeakPtr<BluetoothAdapter> CreateAdapter(
       const InitCallback& init_callback);
 
+  // Returns a weak pointer to an existing adapter for testing purposes only.
+  base::WeakPtr<BluetoothAdapter> GetWeakPtrForTesting();
+
   // Adds and removes observers for events on this bluetooth adapter. If
   // monitoring multiple adapters, check the |adapter| parameter of observer
   // methods to determine which adapter is issuing the event.

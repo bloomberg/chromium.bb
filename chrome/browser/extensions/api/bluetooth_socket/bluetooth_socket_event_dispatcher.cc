@@ -82,7 +82,23 @@ BluetoothSocketEventDispatcher::ReceiveParams::ReceiveParams() {}
 
 BluetoothSocketEventDispatcher::ReceiveParams::~ReceiveParams() {}
 
+void BluetoothSocketEventDispatcher::OnSocketConnect(
+    const std::string& extension_id,
+    int socket_id) {
+  DCHECK(BrowserThread::CurrentlyOn(thread_id_));
+
+  StartSocketReceive(extension_id, socket_id);
+}
+
 void BluetoothSocketEventDispatcher::OnSocketResume(
+    const std::string& extension_id,
+    int socket_id) {
+  DCHECK(BrowserThread::CurrentlyOn(thread_id_));
+
+  StartSocketReceive(extension_id, socket_id);
+}
+
+void BluetoothSocketEventDispatcher::StartSocketReceive(
     const std::string& extension_id,
     int socket_id) {
   DCHECK(BrowserThread::CurrentlyOn(thread_id_));

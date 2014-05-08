@@ -67,6 +67,10 @@ class MockBluetoothDevice : public BluetoothDevice {
                void(BluetoothProfile* profile,
                     const base::Closure& callback,
                     const ConnectToProfileErrorCallback& error_callback));
+  MOCK_METHOD3(ConnectToService,
+               void(const BluetoothUUID& uuid,
+                    const ConnectToServiceCallback& callback,
+                    const ConnectToServiceErrorCallback& error_callback));
 
   MOCK_METHOD3(SetOutOfBandPairingData,
       void(const BluetoothOutOfBandPairingData& data,
