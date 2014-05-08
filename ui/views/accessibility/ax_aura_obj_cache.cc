@@ -5,6 +5,7 @@
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "ui/aura/window.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 #include "ui/views/accessibility/ax_view_obj_wrapper.h"

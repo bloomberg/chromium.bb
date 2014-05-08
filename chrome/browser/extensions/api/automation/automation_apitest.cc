@@ -99,26 +99,33 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TestRendererAccessibilityEnabled) {
 #endif  // defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_SanityCheck) {
   StartEmbeddedTestServer();
-  ASSERT_TRUE(RunExtensionSubtest("automation/tests", "sanity_check.html"))
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "sanity_check.html"))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, Events) {
   LoadPage();
-  ASSERT_TRUE(RunExtensionSubtest("automation/tests", "events.html"))
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "events.html"))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, Actions) {
   LoadPage();
-  ASSERT_TRUE(RunExtensionSubtest("automation/tests", "actions.html"))
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "actions.html"))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, Location) {
   LoadPage();
-  ASSERT_TRUE(RunExtensionSubtest("automation/tests", "location.html"))
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "location.html"))
       << message_;
 }
+
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, Desktop) {
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop", "desktop.html"))
+      << message_;
+}
+#endif
 
 }  // namespace extensions

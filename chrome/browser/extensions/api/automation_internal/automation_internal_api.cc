@@ -19,6 +19,10 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/ash/accessibility/automation_manager_views.h"
+#endif
+
 namespace extensions {
 class AutomationWebContentsObserver;
 }  // namespace extensions
@@ -121,6 +125,21 @@ bool AutomationInternalPerformActionFunction::RunAsync() {
     default:
       NOTREACHED();
   }
+  return true;
+}
+
+bool AutomationInternalEnableDesktopFunction::RunAsync() {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAutomationAPI)) {
+    return false;
+  }
+
+#if defined(OS_CHROMEOS)
+  AutomationManagerViews::GetInstance()->Enable(browser_context());
+#else
+  error_ = "getDesktop is unsupported by this platform";
+#endif
+
   return true;
 }
 

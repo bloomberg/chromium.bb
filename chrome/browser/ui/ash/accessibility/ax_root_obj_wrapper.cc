@@ -27,6 +27,9 @@ views::AXAuraObjWrapper* AXRootObjWrapper::GetParent() {
 
 void AXRootObjWrapper::GetChildren(
     std::vector<views::AXAuraObjWrapper*>* out_children) {
+  if (!ash::Shell::HasInstance())
+    return;
+
   // Only on ash is there a notion of a root with children.
   aura::Window::Windows children =
       ash::Shell::GetInstance()->GetAllRootWindows();

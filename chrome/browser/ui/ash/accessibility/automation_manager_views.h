@@ -13,7 +13,9 @@
 
 template <typename T> struct DefaultSingletonTraits;
 
-class Profile;
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace views {
 class AXAuraObjWrapper;
@@ -27,13 +29,15 @@ class AutomationManagerViews {
   static AutomationManagerViews* GetInstance();
 
   // Enable automation support for views.
-  void Enable();
+  void Enable(content::BrowserContext* context);
 
   // Disable automation support for views.
   void Disable();
 
   // Handle an event fired upon a |View|.
-  void HandleEvent(Profile* profile, views::View* view, ui::AXEvent event_type);
+  void HandleEvent(content::BrowserContext* context,
+                   views::View* view,
+                   ui::AXEvent event_type);
 
  private:
   friend struct DefaultSingletonTraits<AutomationManagerViews>;
@@ -41,7 +45,14 @@ class AutomationManagerViews {
   AutomationManagerViews();
   ~AutomationManagerViews();
 
-  // Whether Views-based automation is enabled.
+    // Reset all state in this manager.
+  void Reset();
+
+  void SendEvent(content::BrowserContext* context,
+                 views::AXAuraObjWrapper* aura_obj,
+                 ui::AXEvent event_type);
+
+  // Whether automation support for views is enabled.
   bool enabled_;
 
   // Holds the active views-based accessibility tree. A tree currently consists

@@ -95,5 +95,8 @@
     // loaded (the previous root node reference will stop working at or before
     // this point).
     [nocompile] static void getTree(RootCallback callback);
+
+    // Get the automation tree for the desktop.
+    [nocompile] static void getDesktop(RootCallback callback);
   };
 };

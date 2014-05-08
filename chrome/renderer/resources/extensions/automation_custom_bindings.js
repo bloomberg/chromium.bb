@@ -52,6 +52,20 @@ automation.registerCustomHook(function(bindingsAPI) {
       }
     });
   });
+
+  var desktopTree = null;
+  apiFunctions.setHandleRequest('getDesktop', function(callback) {
+    var id = createAutomationTreeID(0, 0);
+    desktopTree = idToAutomationTree[id];
+    if (!desktopTree) {
+      desktopTree = new AutomationTree(0, 0);
+      idToAutomationTree[id] = desktopTree;
+      // TODO(dtseng): Disable desktop tree once desktop object goes out of
+      // scope.
+      automationInternal.enableDesktop();
+    }
+    window.setTimeout(function() { callback(desktopTree); }, 0);
+  });
 });
 
 // Listen to the automationInternal.onaccessibilityEvent event, which is
@@ -70,7 +84,6 @@ automationInternal.onAccessibilityEvent.addListener(function(data) {
     idToAutomationTree[id] = targetTree;
   }
   privates(targetTree).impl.update(data);
-
   var eventType = data.eventType;
   if (eventType == 'load_complete' || eventType == 'layout_complete') {
     // If the tree wasn't available when getTree() was called, the callback will

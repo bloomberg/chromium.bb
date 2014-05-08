@@ -417,8 +417,13 @@ void AXTreeSerializer<AXSourceNode>::SerializeChangedNodes(
   out_update->nodes.push_back(AXNodeData());
   AXNodeData* serialized_node = &out_update->nodes.back();
   tree_->SerializeNode(node, serialized_node);
-  if (serialized_node->id == client_root_->id)
+  // TODO(dmazzoni/dtseng): Make the serializer not depend on roles to identify
+  // the root.
+  if (serialized_node->id == client_root_->id &&
+      (serialized_node->role != AX_ROLE_ROOT_WEB_AREA &&
+       serialized_node->role != AX_ROLE_DESKTOP)) {
     serialized_node->role = AX_ROLE_ROOT_WEB_AREA;
+  }
   serialized_node->child_ids.clear();
 
   // Iterate over the children, make note of the ones that are new

@@ -40,6 +40,16 @@ class AutomationInternalPerformActionFunction
   virtual bool RunAsync() OVERRIDE;
 };
 
+class AutomationInternalEnableDesktopFunction
+    : public ChromeAsyncExtensionFunction {
+  DECLARE_EXTENSION_FUNCTION("automationInternal.enableDesktop",
+                             AUTOMATIONINTERNAL_ENABLEDESKTOP)
+ protected:
+  virtual ~AutomationInternalEnableDesktopFunction() {}
+
+  virtual bool RunAsync() OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_AUTOMATION_INTERNAL_AUTOMATION_INTERNAL_API_H_
