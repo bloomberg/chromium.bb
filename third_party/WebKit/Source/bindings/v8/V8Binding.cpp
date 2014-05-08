@@ -50,10 +50,12 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/BindingVisitors.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/xml/XPathNSResolver.h"
+#include "platform/EventTracer.h"
 #include "platform/JSONValues.h"
 #include "wtf/ArrayBufferContents.h"
 #include "wtf/MainThread.h"
@@ -743,6 +745,30 @@ V8ExecutionScope::V8ExecutionScope(v8::Isolate* isolate)
 V8ExecutionScope::~V8ExecutionScope()
 {
     m_scriptState->disposePerContextData();
+}
+
+void GetDevToolsFunctionInfo(v8::Handle<v8::Function> function, v8::Isolate* isolate, int& scriptId, String& resourceName, int& lineNumber)
+{
+    v8::Handle<v8::Function> originalFunction = getBoundFunction(function);
+    scriptId = originalFunction->ScriptId();
+    v8::ScriptOrigin origin = originalFunction->GetScriptOrigin();
+    if (!origin.ResourceName().IsEmpty()) {
+        resourceName = NativeValueTraits<String>::nativeValue(origin.ResourceName(), isolate);
+        lineNumber = originalFunction->GetScriptLineNumber() + 1;
+    }
+    if (resourceName.isEmpty()) {
+        resourceName = "undefined";
+        lineNumber = 1;
+    }
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(ExecutionContext* context, v8::Handle<v8::Function> function, v8::Isolate* isolate)
+{
+    int scriptId = 0;
+    String resourceName;
+    int lineNumber = 1;
+    GetDevToolsFunctionInfo(function, isolate, scriptId, resourceName, lineNumber);
+    return InspectorFunctionCallEvent::data(context, scriptId, resourceName, lineNumber);
 }
 
 } // namespace WebCore

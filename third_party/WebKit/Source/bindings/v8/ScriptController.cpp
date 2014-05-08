@@ -144,29 +144,18 @@ v8::Local<v8::Value> ScriptController::callFunction(v8::Handle<v8::Function> fun
     return ScriptController::callFunction(m_frame->document(), function, receiver, argc, info, m_isolate);
 }
 
-static bool resourceInfo(const v8::Handle<v8::Function> function, String& resourceName, int& lineNumber)
-{
-    v8::ScriptOrigin origin = function->GetScriptOrigin();
-    if (origin.ResourceName().IsEmpty()) {
-        resourceName = "undefined";
-        lineNumber = 1;
-    } else {
-        TOSTRING_DEFAULT(V8StringResource<>, stringResourceName, origin.ResourceName(), false);
-        resourceName = stringResourceName;
-        lineNumber = function->GetScriptLineNumber() + 1;
-    }
-    return true;
-}
-
 v8::Local<v8::Value> ScriptController::callFunction(ExecutionContext* context, v8::Handle<v8::Function> function, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> info[], v8::Isolate* isolate)
 {
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "FunctionCall", "data", devToolsTraceEventData(context, function, isolate));
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
+    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie;
     if (InspectorInstrumentation::timelineAgentEnabled(context)) {
+        int scriptId = 0;
         String resourceName;
-        int lineNumber;
-        if (!resourceInfo(getBoundFunction(function), resourceName, lineNumber))
-            return v8::Local<v8::Value>();
-        cookie = InspectorInstrumentation::willCallFunction(context, function->ScriptId(), resourceName, lineNumber);
+        int lineNumber = 1;
+        GetDevToolsFunctionInfo(function, isolate, scriptId, resourceName, lineNumber);
+        cookie = InspectorInstrumentation::willCallFunction(context, scriptId, resourceName, lineNumber);
     }
 
     v8::Local<v8::Value> result = V8ScriptRunner::callFunction(function, context, receiver, argc, info, isolate);

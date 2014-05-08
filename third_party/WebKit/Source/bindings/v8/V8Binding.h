@@ -57,6 +57,10 @@ class NodeFilter;
 class ScriptWrappable;
 class XPathNSResolver;
 
+namespace TraceEvent {
+class ConvertableToTraceFormat;
+}
+
 const int kMaxRecursionDepth = 22;
 
 // Schedule a JavaScript error to be thrown.
@@ -934,6 +938,10 @@ private:
     v8::Context::Scope m_contextScope;
     RefPtr<ScriptState> m_scriptState;
 };
+
+void GetDevToolsFunctionInfo(v8::Handle<v8::Function>, v8::Isolate*, int& scriptId, String& resourceName, int& lineNumber);
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(ExecutionContext*, v8::Handle<v8::Function>, v8::Isolate*);
+
 
 } // namespace WebCore
 
