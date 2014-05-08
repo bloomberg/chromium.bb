@@ -1043,6 +1043,8 @@ const char kConnectProfile[] = "ConnectProfile";
 const char kDisconnectProfile[] = "DisconnectProfile";
 const char kPair[] = "Pair";
 const char kCancelPairing[] = "CancelPairing";
+const char kStartConnectionMonitor[] = "StartConnectionMonitor";
+const char kStopConnectionMonitor[] = "StopConnectionMonitor";
 
 // Bluetooth Device properties.
 const char kAddressProperty[] = "Address";
@@ -1060,6 +1062,9 @@ const char kAdapterProperty[] = "Adapter";
 const char kLegacyPairingProperty[] = "LegacyPairing";
 const char kModaliasProperty[] = "Modalias";
 const char kRSSIProperty[] = "RSSI";
+const char kConnectionRSSI[] = "ConnectionRSSI";
+const char kConnectionTXPower[] = "ConnectionTXPower";
+const char kConnectionTXPowerMax[] = "ConnectionTXPowerMax";
 
 // Bluetooth Device errors.
 const char kErrorNotReady[] = "org.bluez.Error.NotReady";
