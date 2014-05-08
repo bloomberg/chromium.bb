@@ -833,6 +833,10 @@ crbug.com/353827 virtual/gpu/compositedscrolling/overflow/do-not-repaint-if-scro
 crbug.com/324369 compositing/video/video-reflection.html [ Failure ]
 crbug.com/324369 virtual/softwarecompositing/video/video-reflection.html [ Failure ]
 
+# Deferred image decoding tests needs rebaseline after adjusting filter choice.
+crbug.com/368078 virtual/deferred/fast/images/exif-orientation-height-image-document.html [ NeedsRebaseline ]
+crbug.com/368078 virtual/deferred/fast/images/exif-orientation-image-document.html [ NeedsRebaseline ]
+
 crbug.com/328234 fast/css/mask-missing-image-crash.html [ Pass Failure ]
 
 crbug.com/331576 [ Mac ] fullscreen/parent-flow-inline-with-block-child.html [ Pass ImageOnlyFailure Crash ]

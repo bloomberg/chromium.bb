@@ -375,11 +375,15 @@ void NativeImageSkia::draw(GraphicsContext* context, const SkRect& srcRect, cons
     paint.setLooper(context->drawLooper());
     paint.setAntiAlias(shouldDrawAntiAliased(context, destRect));
 
+    bool isLazyDecoded = DeferredImageDecoder::isLazyDecoded(bitmap());
+
     ResamplingMode resampling;
     if (context->isAccelerated()) {
         resampling = LinearResampling;
     } else if (context->printing()) {
         resampling = NoResampling;
+    } else if (isLazyDecoded) {
+        resampling = AwesomeResampling;
     } else {
         // Take into account scale applied to the canvas when computing sampling mode (e.g. CSS scale or page scale).
         SkRect destRectTarget = destRect;
@@ -400,7 +404,6 @@ void NativeImageSkia::draw(GraphicsContext* context, const SkRect& srcRect, cons
     }
     resampling = limitResamplingMode(context, resampling);
 
-    bool isLazyDecoded = DeferredImageDecoder::isLazyDecoded(bitmap());
     // FIXME: Bicubic filtering in Skia is only applied to defer-decoded images
     // as an experiment. Once this filtering code path becomes stable we should
     // turn this on for all cases, including non-defer-decoded images.
@@ -469,10 +472,14 @@ void NativeImageSkia::drawPattern(
     float destBitmapWidth = SkScalarToFloat(destRectTarget.width());
     float destBitmapHeight = SkScalarToFloat(destRectTarget.height());
 
+    bool isLazyDecoded = DeferredImageDecoder::isLazyDecoded(bitmap());
+
     // Compute the resampling mode.
     ResamplingMode resampling;
     if (context->isAccelerated() || context->printing())
         resampling = LinearResampling;
+    else if (isLazyDecoded)
+        resampling = AwesomeResampling;
     else
         resampling = computeResamplingMode(totalMatrix, normSrcRect.width(), normSrcRect.height(), destBitmapWidth, destBitmapHeight);
     resampling = limitResamplingMode(context, resampling);
@@ -480,7 +487,6 @@ void NativeImageSkia::drawPattern(
     SkMatrix shaderTransform;
     RefPtr<SkShader> shader;
 
-    bool isLazyDecoded = DeferredImageDecoder::isLazyDecoded(bitmap());
     // Bicubic filter is only applied to defer-decoded images, see
     // NativeImageSkia::draw for details.
     bool useBicubicFilter = resampling == AwesomeResampling && isLazyDecoded;
