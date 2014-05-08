@@ -534,7 +534,7 @@ IntRect RenderView::selectionBounds(bool clipToVisibleContent) const
         RenderSelectionInfo* info = i->value.get();
         // RenderSelectionInfo::rect() is in the coordinates of the repaintContainer, so map to page coordinates.
         LayoutRect currRect = info->rect();
-        if (RenderLayerModelObject* repaintContainer = info->repaintContainer()) {
+        if (const RenderLayerModelObject* repaintContainer = info->repaintContainer()) {
             FloatQuad absQuad = repaintContainer->localToAbsoluteQuad(FloatRect(currRect));
             currRect = absQuad.enclosingBoundingBox();
         }

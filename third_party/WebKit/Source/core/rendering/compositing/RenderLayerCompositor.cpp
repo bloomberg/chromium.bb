@@ -627,7 +627,7 @@ void RenderLayerCompositor::repaintOnCompositingChange(RenderLayer* layer)
     if (layer->renderer() != &m_renderView && !layer->renderer()->parent())
         return;
 
-    RenderLayerModelObject* repaintContainer = layer->renderer()->containerForRepaint();
+    const RenderLayerModelObject* repaintContainer = layer->renderer()->containerForRepaint();
     ASSERT(repaintContainer);
     layer->repainter().repaintIncludingNonCompositingDescendants(repaintContainer);
 }

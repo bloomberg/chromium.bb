@@ -813,7 +813,7 @@ public:
     // Return the RenderLayerModelObject in the container chain which is responsible for painting this object, or 0
     // if painting is root-relative. This is the container that should be passed to the 'forRepaint'
     // methods.
-    RenderLayerModelObject* containerForRepaint() const;
+    const RenderLayerModelObject* containerForRepaint() const;
 
     // Actually do the repaint of rect r for this object which has been computed in the coordinate space
     // of repaintContainer. If repaintContainer is 0, repaint via the view.

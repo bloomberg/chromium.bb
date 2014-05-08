@@ -1335,12 +1335,12 @@ void RenderObject::paint(PaintInfo&, const LayoutPoint&)
 {
 }
 
-RenderLayerModelObject* RenderObject::containerForRepaint() const
+const RenderLayerModelObject* RenderObject::containerForRepaint() const
 {
     if (!isRooted())
         return 0;
 
-    RenderLayerModelObject* repaintContainer = 0;
+    const RenderLayerModelObject* repaintContainer = 0;
 
     RenderView* renderView = view();
     if (renderView->usesCompositing()) {
@@ -1449,7 +1449,7 @@ void RenderObject::repaint() const
     // FIXME: really, we're in the repaint phase here, and the following queries are legal.
     // Until those states are fully fledged, I'll just disable the ASSERTS.
     DisableCompositingQueryAsserts disabler;
-    RenderLayerModelObject* repaintContainer = containerForRepaint();
+    const RenderLayerModelObject* repaintContainer = containerForRepaint();
     repaintUsingContainer(repaintContainer, pixelSnappedIntRect(clippedOverflowRectForRepaint(repaintContainer)), InvalidationRepaint);
 }
 
@@ -1469,7 +1469,7 @@ void RenderObject::repaintRectangle(const LayoutRect& r) const
         dirtyRect.move(view()->layoutDelta());
     }
 
-    RenderLayerModelObject* repaintContainer = containerForRepaint();
+    const RenderLayerModelObject* repaintContainer = containerForRepaint();
     computeRectForRepaint(repaintContainer, dirtyRect);
     repaintUsingContainer(repaintContainer, pixelSnappedIntRect(dirtyRect), InvalidationRepaintRectangle);
 }

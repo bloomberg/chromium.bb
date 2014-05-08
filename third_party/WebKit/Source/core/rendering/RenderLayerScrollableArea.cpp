@@ -380,7 +380,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
         updateCompositingLayersAfterScroll();
     }
 
-    RenderLayerModelObject* repaintContainer = box().containerForRepaint();
+    const RenderLayerModelObject* repaintContainer = box().containerForRepaint();
     // The caret rect needs to be invalidated after scrolling
     frame->selection().setCaretRectNeedsUpdate();
 

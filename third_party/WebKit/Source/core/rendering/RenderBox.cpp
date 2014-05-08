@@ -1563,7 +1563,7 @@ void RenderBox::repaintTreeAfterLayout()
 
     const LayoutRect oldRepaintRect = previousRepaintRect();
     const LayoutPoint oldPositionFromRepaintContainer = previousPositionFromRepaintContainer();
-    RenderLayerModelObject* repaintContainer = containerForRepaint();
+    const RenderLayerModelObject* repaintContainer = containerForRepaint();
     setPreviousRepaintRect(clippedOverflowRectForRepaint(repaintContainer));
     setPreviousPositionFromRepaintContainer(positionFromRepaintContainer(repaintContainer));
 

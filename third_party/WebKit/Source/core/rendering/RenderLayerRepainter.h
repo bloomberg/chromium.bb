@@ -70,7 +70,7 @@ public:
     LayoutRect repaintRectIncludingNonCompositingDescendants() const;
 
     void repaintAfterLayout(bool shouldCheckForRepaint);
-    void repaintIncludingNonCompositingDescendants(RenderLayerModelObject* repaintContainer);
+    void repaintIncludingNonCompositingDescendants(const RenderLayerModelObject* repaintContainer);
 
     void setRepaintStatus(RepaintStatus status) { m_repaintStatus = status; }
 

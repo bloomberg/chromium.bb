@@ -73,7 +73,7 @@ void RenderLayerRepainter::repaintAfterLayout(bool shouldCheckForRepaint)
         // LayoutState outside the layout() phase and use it here.
         ASSERT(!view->layoutStateEnabled());
 
-        RenderLayerModelObject* repaintContainer = m_renderer.containerForRepaint();
+        const RenderLayerModelObject* repaintContainer = m_renderer.containerForRepaint();
         LayoutRect oldRepaintRect = m_repaintRect;
         LayoutPoint oldOffset = m_offset;
         computeRepaintRects(repaintContainer);
@@ -143,7 +143,7 @@ inline bool RenderLayerRepainter::shouldRepaintLayer() const
 }
 
 // Since we're only painting non-composited layers, we know that they all share the same repaintContainer.
-void RenderLayerRepainter::repaintIncludingNonCompositingDescendants(RenderLayerModelObject* repaintContainer)
+void RenderLayerRepainter::repaintIncludingNonCompositingDescendants(const RenderLayerModelObject* repaintContainer)
 {
     m_renderer.repaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_renderer.clippedOverflowRectForRepaint(repaintContainer)), InvalidationLayer);
 
