@@ -14,6 +14,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "public/web/WebScriptSource.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebViewClient.h"
 #include "web/WebLocalFrameImpl.h"
@@ -26,6 +27,12 @@
     do { \
         EXPECT_FLOAT_EQ((expected).x(), (actual).x()); \
         EXPECT_FLOAT_EQ((expected).y(), (actual).y()); \
+    } while (false)
+
+#define EXPECT_POINT_EQ(expected, actual) \
+    do { \
+        EXPECT_EQ((expected).x(), (actual).x()); \
+        EXPECT_EQ((expected).y(), (actual).y()); \
     } while (false)
 
 #define EXPECT_SIZE_EQ(expected, actual) \
@@ -45,6 +52,7 @@
 
 using namespace WebCore;
 using namespace blink;
+using blink::FrameTestHelpers::runPendingTasks;
 
 namespace {
 
@@ -86,6 +94,12 @@ public:
     void registerMockedHttpURLLoad(const std::string& fileName)
     {
         URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8(fileName.c_str()));
+    }
+
+    void executeScript(const WebString& code)
+    {
+        webViewImpl()->mainFrame()->executeScript(WebScriptSource(code));
+        runPendingTasks();
     }
 
     WebLayer* getRootScrollLayer()
@@ -428,6 +442,40 @@ TEST_F(PinchViewportTest, TestPinchViewportGetsSizeInAutoSizeMode)
     navigateTo(m_baseURL + "200-by-300.html");
 
     EXPECT_SIZE_EQ(IntSize(200, 300), frame()->page()->frameHost().pinchViewport().size());
+}
+
+// Test that the text selection handle's position accounts for the pinch viewport.
+TEST_F(PinchViewportTest, TestTextSelectionHandles)
+{
+    initializeWithDesktopSettings();
+    webViewImpl()->resize(IntSize(500, 800));
+
+    registerMockedHttpURLLoad("pinch-viewport-input-field.html");
+    navigateTo(m_baseURL + "pinch-viewport-input-field.html");
+
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+    webViewImpl()->setInitialFocus(false);
+
+    WebRect originalAnchor;
+    WebRect originalFocus;
+    webViewImpl()->selectionBounds(originalAnchor, originalFocus);
+
+    webViewImpl()->setPageScaleFactor(2);
+    pinchViewport.setLocation(FloatPoint(100, 400));
+
+    WebRect anchor;
+    WebRect focus;
+    webViewImpl()->selectionBounds(anchor, focus);
+
+    IntPoint expected(IntRect(originalAnchor).location());
+    expected.moveBy(-flooredIntPoint(pinchViewport.visibleRect().location()));
+    expected.scale(pinchViewport.scale(), pinchViewport.scale());
+
+    EXPECT_POINT_EQ(expected, IntRect(anchor).location());
+    EXPECT_POINT_EQ(expected, IntRect(focus).location());
+
+    // FIXME(bokan) - http://crbug.com/364154 - Figure out how to test text selection
+    // as well rather than just carret.
 }
 
 } // namespace

@@ -2261,6 +2261,14 @@ bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
 
     IntRect scaledAnchor(frame->view()->contentsToWindow(anchor));
     IntRect scaledFocus(frame->view()->contentsToWindow(focus));
+
+    if (pinchVirtualViewportEnabled()) {
+        IntPoint pinchViewportOffset =
+            roundedIntPoint(page()->frameHost().pinchViewport().visibleRect().location());
+        scaledAnchor.moveBy(-pinchViewportOffset);
+        scaledFocus.moveBy(-pinchViewportOffset);
+    }
+
     scaledAnchor.scale(pageScaleFactor());
     scaledFocus.scale(pageScaleFactor());
     anchor = scaledAnchor;
