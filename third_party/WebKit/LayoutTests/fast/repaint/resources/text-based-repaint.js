@@ -33,7 +33,6 @@ function runRepaintTest()
 function runRepaintAndPixelTest()
 {
     window.enablePixelTesting = true;
-    window.outputRepaintRects = false;
     runRepaintTest();
 }
 

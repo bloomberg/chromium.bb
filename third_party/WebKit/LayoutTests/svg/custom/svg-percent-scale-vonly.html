@@ -4,6 +4,7 @@
   <title>Test for https://bugs.webkit.org/show_bug.cgi?id=79490</title>
   <script src="../../fast/repaint/resources/text-based-repaint.js"></script>
   <script>
+    window.outputRepaintRects = false;
     function repaintTest()
     {
       document.getElementById('resize-target').style.height = '200px';

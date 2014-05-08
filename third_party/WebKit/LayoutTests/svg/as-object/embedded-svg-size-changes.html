@@ -7,6 +7,7 @@
 <body style="margin: 0px" onload="runRepaintAndPixelTest()">
 
 <script type="text/javascript">
+    window.outputRepaintRects = false;
     function test1() {
         object1 = document.getElementsByTagName("object")[0];
         debug("Check initial &lt;object&gt; size, before external resource loaded");

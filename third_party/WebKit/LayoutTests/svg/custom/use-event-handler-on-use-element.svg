@@ -5,6 +5,7 @@
 
    <script type="text/ecmascript">
     <![CDATA[
+    window.outputRepaintRects = false;
     function repaintTest() {
         if (window.eventSender) {
             testRunner.waitUntilDone();
