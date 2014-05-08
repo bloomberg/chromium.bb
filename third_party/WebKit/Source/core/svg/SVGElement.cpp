@@ -532,7 +532,7 @@ void SVGElement::mapInstanceToElement(SVGElement* instance)
     ASSERT(instance);
     ASSERT(instance->inUseShadowTree());
 
-    HashSet<SVGElement*>& instances = ensureSVGRareData()->elementInstances();
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instances = ensureSVGRareData()->elementInstances();
     ASSERT(!instances.contains(instance));
 
     instances.add(instance);
@@ -544,18 +544,27 @@ void SVGElement::removeInstanceMapping(SVGElement* instance)
     ASSERT(instance->inUseShadowTree());
     ASSERT(hasSVGRareData());
 
-    HashSet<SVGElement*>& instances = svgRareData()->elementInstances();
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instances = svgRareData()->elementInstances();
     ASSERT(instances.contains(instance));
 
     instances.remove(instance);
 }
 
-const HashSet<SVGElement*>& SVGElement::instancesForElement() const
+static WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& emptyInstances()
 {
-    if (!hasSVGRareData()) {
-        DEFINE_STATIC_LOCAL(HashSet<SVGElement*>, emptyInstances, ());
-        return emptyInstances;
-    }
+#if ENABLE(OILPAN)
+    DEFINE_STATIC_LOCAL(Persistent<HeapHashSet<WeakMember<SVGElement> > >, emptyInstances, (new HeapHashSet<WeakMember<SVGElement> >));
+    return *emptyInstances;
+#else
+    DEFINE_STATIC_LOCAL(HashSet<RawPtr<SVGElement> >, emptyInstances, ());
+    return emptyInstances;
+#endif
+}
+
+const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& SVGElement::instancesForElement() const
+{
+    if (!hasSVGRareData())
+        return emptyInstances();
     return svgRareData()->elementInstances();
 }
 
@@ -783,7 +792,7 @@ bool SVGElement::haveLoadedRequiredResources()
     return true;
 }
 
-static inline void collectInstancesForSVGElement(SVGElement* element, HashSet<SVGElement*>& instances)
+static inline void collectInstancesForSVGElement(SVGElement* element, WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instances)
 {
     ASSERT(element);
     if (element->containingShadowRoot())
@@ -803,10 +812,10 @@ bool SVGElement::addEventListener(const AtomicString& eventType, PassRefPtr<Even
         return false;
 
     // Add event listener to all shadow tree DOM element instances
-    HashSet<SVGElement*> instances;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > instances;
     collectInstancesForSVGElement(this, instances);
-    const HashSet<SVGElement*>::const_iterator end = instances.end();
-    for (HashSet<SVGElement*>::const_iterator it = instances.begin(); it != end; ++it) {
+    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator end = instances.end();
+    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator it = instances.begin(); it != end; ++it) {
         bool result = (*it)->Node::addEventListener(eventType, listener, useCapture);
         ASSERT_UNUSED(result, result);
     }
@@ -816,7 +825,7 @@ bool SVGElement::addEventListener(const AtomicString& eventType, PassRefPtr<Even
 
 bool SVGElement::removeEventListener(const AtomicString& eventType, EventListener* listener, bool useCapture)
 {
-    HashSet<SVGElement*> instances;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > instances;
     collectInstancesForSVGElement(this, instances);
     if (instances.isEmpty())
         return Node::removeEventListener(eventType, listener, useCapture);
@@ -833,8 +842,8 @@ bool SVGElement::removeEventListener(const AtomicString& eventType, EventListene
         return false;
 
     // Remove event listener from all shadow tree DOM element instances
-    const HashSet<SVGElement*>::const_iterator end = instances.end();
-    for (HashSet<SVGElement*>::const_iterator it = instances.begin(); it != end; ++it) {
+    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator end = instances.end();
+    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator it = instances.begin(); it != end; ++it) {
         SVGElement* shadowTreeElement = *it;
         ASSERT(shadowTreeElement);
 
@@ -1039,13 +1048,13 @@ void SVGElement::invalidateInstances()
     if (instanceUpdatesBlocked())
         return;
 
-    const HashSet<SVGElement*>& set = instancesForElement();
+    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& set = instancesForElement();
     if (set.isEmpty())
         return;
 
     // Mark all use elements referencing 'element' for rebuilding
-    const HashSet<SVGElement*>::const_iterator end = set.end();
-    for (HashSet<SVGElement*>::const_iterator it = set.begin(); it != end; ++it) {
+    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator end = set.end();
+    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator it = set.begin(); it != end; ++it) {
         (*it)->setCorrespondingElement(0);
 
         if (SVGUseElement* element = (*it)->correspondingUseElement()) {

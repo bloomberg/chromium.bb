@@ -55,6 +55,8 @@ public:
 
     virtual void buildPendingResource() OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     SVGUseElement(Document&, bool wasInsertedByParser);
 
@@ -113,7 +115,7 @@ private:
     bool m_wasInsertedByParser;
     bool m_haveFiredLoadEvent;
     bool m_needsShadowTreeRecreation;
-    RefPtr<SVGElementInstance> m_targetElementInstance;
+    RefPtrWillBeMember<SVGElementInstance> m_targetElementInstance;
     ResourcePtr<DocumentResource> m_resource;
     Timer<SVGElement> m_svgLoadEventTimer;
 };

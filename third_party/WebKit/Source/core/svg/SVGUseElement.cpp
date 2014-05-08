@@ -822,9 +822,9 @@ void SVGUseElement::invalidateShadowTree()
 void SVGUseElement::invalidateDependentShadowTrees()
 {
     // Recursively invalidate dependent <use> shadow trees
-    const HashSet<SVGElement*>& instances = instancesForElement();
-    const HashSet<SVGElement*>::const_iterator end = instances.end();
-    for (HashSet<SVGElement*>::const_iterator it = instances.begin(); it != end; ++it) {
+    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instances = instancesForElement();
+    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator end = instances.end();
+    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator it = instances.begin(); it != end; ++it) {
         if (SVGUseElement* element = (*it)->correspondingUseElement()) {
             ASSERT(element->inDocument());
             element->invalidateShadowTree();
@@ -924,6 +924,12 @@ void SVGUseElement::setDocumentResource(ResourcePtr<DocumentResource> resource)
     m_resource = resource;
     if (m_resource)
         m_resource->addClient(this);
+}
+
+void SVGUseElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_targetElementInstance);
+    SVGGraphicsElement::trace(visitor);
 }
 
 }

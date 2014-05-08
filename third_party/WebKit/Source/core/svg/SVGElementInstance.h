@@ -126,7 +126,11 @@ private:
 
     SVGElementInstance(SVGUseElement*, SVGUseElement*, PassRefPtr<SVGElement> originalElement);
 
+
+#if !ENABLE(OILPAN)
     void removedLastRef();
+#endif
+
     bool hasTreeSharedParent() const { return !!m_parentInstance; }
 
     virtual Node* toNode() OVERRIDE;
@@ -137,11 +141,13 @@ private:
     template<class GenericNode, class GenericNodeContainer>
     friend void appendChildToContainer(GenericNode& child, GenericNodeContainer&);
 
+#if !ENABLE(OILPAN)
     template<class GenericNode, class GenericNodeContainer>
     friend void removeDetachedChildrenInContainer(GenericNodeContainer&);
 
     template<class GenericNode, class GenericNodeContainer>
     friend void Private::addChildNodesToDeletionQueue(GenericNode*& head, GenericNode*& tail, GenericNodeContainer&);
+#endif
 
     bool hasChildren() const { return m_firstChild; }
 
@@ -156,8 +162,8 @@ private:
 
     RawPtrWillBeMember<SVGElementInstance> m_parentInstance;
 
-    SVGUseElement* m_correspondingUseElement;
-    SVGUseElement* m_directUseElement;
+    RawPtrWillBeMember<SVGUseElement> m_correspondingUseElement;
+    RawPtrWillBeMember<SVGUseElement> m_directUseElement;
     RefPtrWillBeMember<SVGElement> m_element;
     RefPtrWillBeMember<SVGElement> m_shadowTreeElement;
 

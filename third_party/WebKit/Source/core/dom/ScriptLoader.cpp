@@ -256,7 +256,7 @@ ResourcePtr<ScriptResource> ScriptLoader::fetchScript(const String& sourceUrl)
 {
     ASSERT(m_element);
 
-    RefPtr<Document> elementDocument(m_element->document());
+    RefPtrWillBeRawPtr<Document> elementDocument(m_element->document());
     if (!m_element->inDocument() || m_element->document() != elementDocument)
         return ResourcePtr<ScriptResource>();
 

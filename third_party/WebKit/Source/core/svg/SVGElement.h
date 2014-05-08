@@ -107,7 +107,7 @@ public:
     void invalidateSVGAttributes() { ensureUniqueElementData().m_animatedSVGAttributesAreDirty = true; }
     void invalidateSVGPresentationAttributeStyle() { ensureUniqueElementData().m_presentationAttributeStyleIsDirty = true; }
 
-    const HashSet<SVGElement*>& instancesForElement() const;
+    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instancesForElement() const;
     void mapInstanceToElement(SVGElement*);
     void removeInstanceMapping(SVGElement*);
 
@@ -115,6 +115,7 @@ public:
 
     void setCursorElement(SVGCursorElement*);
     void setCursorImageValue(CSSCursorImageValue*);
+
 #if !ENABLE(OILPAN)
     void cursorElementRemoved();
     void cursorImageValueRemoved();

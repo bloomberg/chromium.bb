@@ -1321,6 +1321,7 @@ private:
 
     RenderView* m_renderView;
 
+    // FIXME: Oilpan: We should use a real weak pointer here.
     WeakPtrFactory<Document> m_weakFactory;
     WeakPtr<Document> m_contextDocument;
 
@@ -1373,7 +1374,10 @@ private:
     CompositorPendingAnimations m_compositorPendingAnimations;
 
     RefPtrWillBeMember<Document> m_templateDocument;
-    RawPtrWillBeMember<Document> m_templateDocumentHost; // Manually managed weakref (backpointer from m_templateDocument).
+    // With Oilpan the templateDocument and the templateDocumentHost
+    // live and die together. Without Oilpan, the templateDocumentHost
+    // is a manually managed backpointer from m_templateDocument.
+    RawPtrWillBeMember<Document> m_templateDocumentHost;
 
     Timer<Document> m_didAssociateFormControlsTimer;
     WillBeHeapHashSet<RefPtrWillBeMember<Element> > m_associatedFormControls;

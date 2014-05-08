@@ -311,9 +311,9 @@ void SVGAnimateMotionElement::applyResultsToTarget()
         return;
 
     // ...except in case where we have additional instances in <use> trees.
-    const HashSet<SVGElement*>& instances = targetElement->instancesForElement();
-    const HashSet<SVGElement*>::const_iterator end = instances.end();
-    for (HashSet<SVGElement*>::const_iterator it = instances.begin(); it != end; ++it) {
+    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instances = targetElement->instancesForElement();
+    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator end = instances.end();
+    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator it = instances.begin(); it != end; ++it) {
         SVGElement* shadowTreeElement = *it;
         ASSERT(shadowTreeElement);
         AffineTransform* transform = shadowTreeElement->supplementalTransform();

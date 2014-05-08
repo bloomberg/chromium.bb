@@ -163,6 +163,7 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::Shadow
     return *m_shadowRoots.head();
 }
 
+#if !ENABLE(OILPAN)
 void ElementShadow::removeDetachedShadowRoots()
 {
     // Dont protect this ref count.
@@ -179,6 +180,7 @@ void ElementShadow::removeDetachedShadowRoots()
         oldRoot->setNext(0);
     }
 }
+#endif
 
 void ElementShadow::attach(const Node::AttachContext& context)
 {

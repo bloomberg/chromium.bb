@@ -119,15 +119,15 @@ SVGElementInstance::~SVGElementInstance()
 
 // It's important not to inline removedLastRef, because we don't want to inline the code to
 // delete an SVGElementInstance at each deref call site.
+#if !ENABLE(OILPAN)
 void SVGElementInstance::removedLastRef()
 {
-#if !ENABLE(OILPAN)
 #if SECURITY_ASSERT_ENABLED
     m_deletionHasBegun = true;
 #endif
     delete this;
-#endif
 }
+#endif
 
 void SVGElementInstance::detach()
 {
@@ -140,12 +140,11 @@ void SVGElementInstance::detach()
     // Deregister as instance for passed element, if we haven't already.
     if (shadowTreeElement() && m_element->instancesForElement().contains(shadowTreeElement()))
         m_element->removeInstanceMapping(shadowTreeElement());
-    // DO NOT clear ref to m_element because JavaScriptCore uses it for garbage collection
 
     m_shadowTreeElement = nullptr;
 
-    m_directUseElement = 0;
-    m_correspondingUseElement = 0;
+    m_directUseElement = nullptr;
+    m_correspondingUseElement = nullptr;
 
 #if !ENABLE(OILPAN)
     removeDetachedChildrenInContainer<SVGElementInstance, SVGElementInstance>(*this);
@@ -227,6 +226,8 @@ EventTargetData& SVGElementInstance::ensureEventTargetData()
 void SVGElementInstance::trace(Visitor* visitor)
 {
     visitor->trace(m_parentInstance);
+    visitor->trace(m_correspondingUseElement);
+    visitor->trace(m_directUseElement);
     visitor->trace(m_element);
     visitor->trace(m_shadowTreeElement);
     visitor->trace(m_previousSibling);

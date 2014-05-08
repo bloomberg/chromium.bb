@@ -65,7 +65,6 @@ HTMLFormControlElement::~HTMLFormControlElement()
 {
 #if !ENABLE(OILPAN)
     setForm(0);
-    hideVisibleValidationMessage();
 #endif
 }
 
@@ -429,8 +428,8 @@ bool HTMLFormControlElement::checkValidity(WillBeHeapVector<RefPtrWillBeMember<F
     if (!willValidate() || isValidFormControlElement())
         return true;
     // An event handler can deref this object.
-    RefPtr<HTMLFormControlElement> protector(this);
-    RefPtr<Document> originalDocument(document());
+    RefPtrWillBeRawPtr<HTMLFormControlElement> protector(this);
+    RefPtrWillBeRawPtr<Document> originalDocument(document());
     bool needsDefaultAction = dispatchEvent(Event::createCancelable(EventTypeNames::invalid));
     if (needsDefaultAction && unhandledInvalidControls && inDocument() && originalDocument == document())
         unhandledInvalidControls->append(this);

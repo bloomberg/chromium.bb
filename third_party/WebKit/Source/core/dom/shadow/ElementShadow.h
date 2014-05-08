@@ -76,7 +76,9 @@ public:
 private:
     ElementShadow();
 
+#if !ENABLE(OILPAN)
     void removeDetachedShadowRoots();
+#endif
 
     void distribute();
     void clearDistribution();

@@ -144,7 +144,10 @@ protected:
     TreeScope(Document&);
     virtual ~TreeScope();
 
+#if !ENABLE(OILPAN)
     void destroyTreeScopeData();
+#endif
+
     void setDocument(Document& document) { m_document = &document; }
     void setParentTreeScope(TreeScope&);
 
@@ -159,14 +162,14 @@ private:
 
 #if !ENABLE(OILPAN)
     int refCount() const;
-#endif
 
-#if SECURITY_ASSERT_ENABLED && !ENABLE(OILPAN)
+#if SECURITY_ASSERT_ENABLED
     bool deletionHasBegun();
     void beginDeletion();
 #else
     bool deletionHasBegun() { return false; }
     void beginDeletion() { }
+#endif
 #endif
 
     bool rootNodeHasTreeSharedParent() const;

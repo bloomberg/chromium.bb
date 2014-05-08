@@ -64,8 +64,8 @@ public:
         return rareDataMap().get(element);
     }
 
-    HashSet<SVGElement*>& elementInstances() { return m_elementInstances; }
-    const HashSet<SVGElement*>& elementInstances() const { return m_elementInstances; }
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& elementInstances() { return m_elementInstances; }
+    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& elementInstances() const { return m_elementInstances; }
 
     bool instanceUpdatesBlocked() const { return m_instancesUpdatesBlocked; }
     void setInstanceUpdatesBlocked(bool value) { m_instancesUpdatesBlocked = value; }
@@ -108,6 +108,7 @@ public:
     void trace(Visitor* visitor)
     {
         visitor->trace(m_animatedSMILStyleProperties);
+        visitor->trace(m_elementInstances);
         visitor->registerWeakMembers<SVGElementRareData, &SVGElementRareData::processWeakMembers>(this);
     }
 
@@ -145,7 +146,7 @@ public:
 
 private:
     RawPtrWillBeWeakMember<SVGElement> m_owner;
-    HashSet<SVGElement*> m_elementInstances;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > m_elementInstances;
     RawPtrWillBeWeakMember<SVGCursorElement> m_cursorElement;
     RawPtrWillBeWeakMember<CSSCursorImageValue> m_cursorImageValue;
     SVGElement* m_correspondingElement;

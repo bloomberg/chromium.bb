@@ -106,7 +106,7 @@ inline Document* StyleEngine::master()
 {
     if (isMaster())
         return m_document;
-    HTMLImportsController* import = m_document->importsController();
+    HTMLImportsController* import = document().importsController();
     if (!import) // Document::import() can return null while executing its destructor.
         return 0;
     return import->master();
@@ -202,16 +202,16 @@ void StyleEngine::updateInjectedStyleSheetCache() const
     m_injectedStyleSheetCacheValid = true;
     m_injectedAuthorStyleSheets.clear();
 
-    Page* owningPage = m_document->page();
+    Page* owningPage = document().page();
     if (!owningPage)
         return;
 
     const InjectedStyleSheetEntryVector& entries = InjectedStyleSheets::instance().entries();
     for (unsigned i = 0; i < entries.size(); ++i) {
         const InjectedStyleSheetEntry* entry = entries[i].get();
-        if (entry->injectedFrames() == InjectStyleInTopFrameOnly && m_document->ownerElement())
+        if (entry->injectedFrames() == InjectStyleInTopFrameOnly && document().ownerElement())
             continue;
-        if (!URLPatternMatcher::matchesPatterns(m_document->url(), entry->whitelist()))
+        if (!URLPatternMatcher::matchesPatterns(document().url(), entry->whitelist()))
             continue;
         RefPtrWillBeRawPtr<CSSStyleSheet> groupSheet = CSSStyleSheet::createInline(m_document, KURL());
         m_injectedAuthorStyleSheets.append(groupSheet);
@@ -225,13 +225,13 @@ void StyleEngine::invalidateInjectedStyleSheetCache()
     markDocumentDirty();
     // FIXME: updateInjectedStyleSheetCache is called inside StyleSheetCollection::updateActiveStyleSheets
     // and batch updates lots of sheets so we can't call addedStyleSheet() or removedStyleSheet().
-    m_document->styleResolverChanged(RecalcStyleDeferred);
+    document().styleResolverChanged(RecalcStyleDeferred);
 }
 
 void StyleEngine::addAuthorSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> authorSheet)
 {
     m_authorStyleSheets.append(CSSStyleSheet::create(authorSheet, m_document));
-    m_document->addedStyleSheet(m_authorStyleSheets.last().get(), RecalcStyleImmediately);
+    document().addedStyleSheet(m_authorStyleSheets.last().get(), RecalcStyleImmediately);
     markDocumentDirty();
 }
 
@@ -255,13 +255,13 @@ void StyleEngine::removePendingSheet(Node* styleSheetCandidateNode, RemovePendin
         return;
 
     if (notification == RemovePendingSheetNotifyLater) {
-        m_document->setNeedsNotifyRemoveAllPendingStylesheet();
+        document().setNeedsNotifyRemoveAllPendingStylesheet();
         return;
     }
 
     // FIXME: We can't call addedStyleSheet or removedStyleSheet here because we don't know
     // what's new. We should track that to tell the style system what changed.
-    m_document->didRemoveAllPendingStylesheet();
+    document().didRemoveAllPendingStylesheet();
 }
 
 void StyleEngine::modifiedStyleSheet(StyleSheet* sheet)
@@ -358,9 +358,9 @@ void StyleEngine::updateStyleSheetsInImport(DocumentStyleSheetCollector& parentC
 bool StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
 {
     ASSERT(isMaster());
-    ASSERT(!m_document->inStyleRecalc());
+    ASSERT(!document().inStyleRecalc());
 
-    if (!m_document->isActive())
+    if (!document().isActive())
         return false;
 
     bool requiresFullStyleRecalc = false;
@@ -444,7 +444,7 @@ void StyleEngine::createResolver()
     // which is not in a frame. Code which hits this should have checked
     // Document::isActive() before calling into code which could get here.
 
-    ASSERT(m_document->frame());
+    ASSERT(document().frame());
     ASSERT(m_fontSelector);
 
     m_resolver = adoptPtrWillBeNoop(new StyleResolver(*m_document));
@@ -455,11 +455,11 @@ void StyleEngine::createResolver()
 
 void StyleEngine::clearResolver()
 {
-    ASSERT(!m_document->inStyleRecalc());
+    ASSERT(!document().inStyleRecalc());
     ASSERT(isMaster() || !m_resolver);
     ASSERT(m_fontSelector || !m_resolver);
     if (m_resolver) {
-        m_document->updateStyleInvalidationIfNeeded();
+        document().updateStyleInvalidationIfNeeded();
 #if !ENABLE(OILPAN)
         m_fontSelector->unregisterForInvalidationCallbacks(m_resolver.get());
 #endif
@@ -500,13 +500,13 @@ StyleResolverChange StyleEngine::resolverChanged(RecalcStyleTime time, StyleReso
 
     // Don't bother updating, since we haven't loaded all our style info yet
     // and haven't calculated the style selector for the first time.
-    if (!m_document->isActive() || shouldClearResolver()) {
+    if (!document().isActive() || shouldClearResolver()) {
         clearResolver();
         return change;
     }
 
     m_didCalculateResolver = true;
-    if (m_document->didLayoutWithPendingStylesheets() && !hasPendingSheets())
+    if (document().didLayoutWithPendingStylesheets() && !hasPendingSheets())
         change.setNeedsRepaint();
 
     if (updateActiveStyleSheets(mode))
@@ -559,8 +559,8 @@ void StyleEngine::markTreeScopeDirty(TreeScope& scope)
 void StyleEngine::markDocumentDirty()
 {
     m_documentScopeDirty = true;
-    if (m_document->importLoader())
-        m_document->importsController()->master()->styleEngine()->markDocumentDirty();
+    if (document().importLoader())
+        document().importsController()->master()->styleEngine()->markDocumentDirty();
 }
 
 static bool isCacheableForStyleElement(const StyleSheetContents& contents)

@@ -92,12 +92,12 @@ ShadowRoot::~ShadowRoot()
 #endif
 }
 
+#if !ENABLE(OILPAN)
 void ShadowRoot::dispose()
 {
-#if !ENABLE(OILPAN)
     removeDetachedChildren();
-#endif
 }
+#endif
 
 ShadowRoot* ShadowRoot::olderShadowRootForBindings() const
 {

@@ -128,7 +128,10 @@ private:
     ShadowRoot(Document&, ShadowRootType);
     virtual ~ShadowRoot();
 
+#if !ENABLE(OILPAN)
     virtual void dispose() OVERRIDE;
+#endif
+
     virtual void childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta) OVERRIDE;
 
     ShadowRootRareData* ensureShadowRootRareData();

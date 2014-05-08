@@ -122,12 +122,14 @@ bool TreeScope::rootNodeHasTreeSharedParent() const
     return rootNode().hasTreeSharedParent();
 }
 
+#if !ENABLE(OILPAN)
 void TreeScope::destroyTreeScopeData()
 {
     m_elementsById.clear();
     m_imageMapsByName.clear();
     m_labelsByForAttribute.clear();
 }
+#endif
 
 void TreeScope::setParentTreeScope(TreeScope& newParentScope)
 {

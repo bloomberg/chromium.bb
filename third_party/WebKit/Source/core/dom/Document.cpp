@@ -2248,6 +2248,12 @@ void Document::detach(const AttachContext& context)
     lifecycleNotifier().notifyDocumentWasDetached();
     m_lifecycle.advanceTo(DocumentLifecycle::Stopped);
 #if ENABLE(OILPAN)
+    // FIXME: Oilpan: With Oilpan dispose should not be needed. At
+    // this point we still have dispose in order to clear out some
+    // RefPtrs that would otherwise cause leaks. However, when the
+    // Document is detached the document can still be alive, so we
+    // really shouldn't clear anything at this point. It should just
+    // die with the document when the document is no longer reachable.
     dispose();
 #endif
 }

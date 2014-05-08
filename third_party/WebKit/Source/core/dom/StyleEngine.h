@@ -203,6 +203,7 @@ private:
 
     bool isMaster() const { return m_isMaster; }
     Document* master();
+    Document& document() const { return *m_document; }
 
     typedef ListHashSet<TreeScope*, 16> TreeScopeSet;
     static void insertTreeScopeInDocumentOrder(TreeScopeSet&, TreeScope*);
