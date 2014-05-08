@@ -5165,7 +5165,7 @@ debugHook ()
 
 static void defaultLogCallback(int level, const char *message)
 {
-  lou_logPrint(message);
+  lou_logPrint("%s", message); // lou_logPrint takes formatting, protect against % in message
 }
 
 static logcallback logCallbackFunction = defaultLogCallback;
