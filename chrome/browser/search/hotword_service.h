@@ -12,6 +12,7 @@
 #include "content/public/browser/notification_registrar.h"
 
 class ExtensionService;
+class HotwordClient;
 class Profile;
 
 namespace hotword_internal {
@@ -72,12 +73,19 @@ class HotwordService : public content::NotificationObserver,
   // turns it off via the settings menu.
   void OnHotwordSearchEnabledChanged(const std::string& pref_name);
 
+  // Called to handle the hotword session from |client|.
+  void RequestHotwordSession(HotwordClient* client);
+  void StopHotwordSession(HotwordClient* client);
+  HotwordClient* client() { return client_; }
+
  private:
   Profile* profile_;
 
   PrefChangeRegistrar pref_registrar_;
 
   content::NotificationRegistrar registrar_;
+
+  HotwordClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(HotwordService);
 };

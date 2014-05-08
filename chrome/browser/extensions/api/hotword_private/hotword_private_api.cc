@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/hotword_client.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -51,17 +52,23 @@ const char* HotwordPrivateEventService::service_name() {
 void HotwordPrivateEventService::OnEnabledChanged(
     const std::string& pref_name) {
   DCHECK_EQ(pref_name, std::string(prefs::kHotwordSearchEnabled));
-  SignalEvent();
+  SignalEvent(OnEnabledChanged::kEventName);
 }
 
-void HotwordPrivateEventService::SignalEvent() {
-  using OnEnabledChanged::kEventName;
+void HotwordPrivateEventService::OnHotwordSessionRequested() {
+  SignalEvent(api::hotword_private::OnHotwordSessionRequested::kEventName);
+}
 
+void HotwordPrivateEventService::OnHotwordSessionStopped() {
+  SignalEvent(api::hotword_private::OnHotwordSessionStopped::kEventName);
+}
+
+void HotwordPrivateEventService::SignalEvent(const std::string& event_name) {
   EventRouter* router = EventRouter::Get(profile_);
-  if (!router || !router->HasEventListener(kEventName))
+  if (!router || !router->HasEventListener(event_name))
     return;
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  scoped_ptr<Event> event(new Event(kEventName, args.Pass()));
+  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
   router->BroadcastEvent(event.Pass());
 }
 
@@ -103,6 +110,26 @@ bool HotwordPrivateGetStatusFunction::RunSync() {
     result.audio_logging_enabled = hotword_service->IsOptedIntoAudioLogging();
 
   SetResult(result.ToValue().release());
+  return true;
+}
+
+bool HotwordPrivateSetHotwordSessionStateFunction::RunSync() {
+  scoped_ptr<api::hotword_private::SetHotwordSessionState::Params> params(
+      api::hotword_private::SetHotwordSessionState::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  HotwordService* hotword_service =
+      HotwordServiceFactory::GetForProfile(GetProfile());
+  if (hotword_service && hotword_service->client())
+    hotword_service->client()->OnHotwordStateChanged(params->started);
+  return true;
+}
+
+bool HotwordPrivateNotifyHotwordRecognitionFunction::RunSync() {
+  HotwordService* hotword_service =
+      HotwordServiceFactory::GetForProfile(GetProfile());
+  if (hotword_service && hotword_service->client())
+    hotword_service->client()->OnHotwordRecognized();
   return true;
 }
 

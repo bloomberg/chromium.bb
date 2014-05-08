@@ -16,6 +16,8 @@
 #include "chrome/browser/feedback/feedback_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/search/hotword_service.h"
+#include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
@@ -146,6 +148,24 @@ AppListViewDelegate::~AppListViewDelegate() {
 
   // Ensure search controller is released prior to speech_ui_.
   search_controller_.reset();
+}
+
+void AppListViewDelegate::OnHotwordStateChanged(bool started) {
+  if (started) {
+    if (speech_ui_->state() == app_list::SPEECH_RECOGNITION_READY) {
+      OnSpeechRecognitionStateChanged(
+          app_list::SPEECH_RECOGNITION_HOTWORD_LISTENING);
+    }
+  } else {
+    if (speech_ui_->state() == app_list::SPEECH_RECOGNITION_HOTWORD_LISTENING)
+      OnSpeechRecognitionStateChanged(app_list::SPEECH_RECOGNITION_READY);
+  }
+}
+
+void AppListViewDelegate::OnHotwordRecognized() {
+  DCHECK_EQ(app_list::SPEECH_RECOGNITION_HOTWORD_LISTENING,
+            speech_ui_->state());
+  ToggleSpeechRecognition();
 }
 
 void AppListViewDelegate::SigninManagerCreated(SigninManagerBase* manager) {
@@ -295,8 +315,15 @@ void AppListViewDelegate::AutoLaunchCanceled() {
 void AppListViewDelegate::ViewInitialized() {
   app_list::StartPageService* service =
       app_list::StartPageService::Get(profile_);
-  if (service)
+  if (service) {
     service->AppListShown();
+    if (service->HotwordEnabled()) {
+      HotwordService* hotword_service =
+          HotwordServiceFactory::GetForProfile(profile_);
+      if (hotword_service)
+        hotword_service->RequestHotwordSession(this);
+    }
+  }
 }
 
 void AppListViewDelegate::Dismiss()  {
@@ -308,8 +335,15 @@ void AppListViewDelegate::ViewClosing() {
 
   app_list::StartPageService* service =
       app_list::StartPageService::Get(profile_);
-  if (service)
+  if (service) {
     service->AppListHidden();
+    if (service->HotwordEnabled()) {
+      HotwordService* hotword_service =
+          HotwordServiceFactory::GetForProfile(profile_);
+      if (hotword_service)
+        hotword_service->StopHotwordSession(this);
+    }
+  }
 }
 
 gfx::ImageSkia AppListViewDelegate::GetWindowIcon() {

@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/search/hotword_client.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/app_list/chrome_signin_delegate.h"
 #include "chrome/browser/ui/app_list/start_page_observer.h"
@@ -42,6 +43,7 @@ class AppSyncUIStateWatcher;
 
 class AppListViewDelegate : public app_list::AppListViewDelegate,
                             public app_list::StartPageObserver,
+                            public HotwordClient,
                             public ProfileInfoCacheObserver,
                             public SigninManagerBase::Observer,
                             public SigninManagerFactory::Observer {
@@ -98,6 +100,10 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   virtual void OnSpeechSoundLevelChanged(int16 level) OVERRIDE;
   virtual void OnSpeechRecognitionStateChanged(
       app_list::SpeechRecognitionState new_state) OVERRIDE;
+
+  // Overridden from HotwordClient:
+  virtual void OnHotwordStateChanged(bool started) OVERRIDE;
+  virtual void OnHotwordRecognized() OVERRIDE;
 
   // Overridden from SigninManagerFactory::Observer:
   virtual void SigninManagerCreated(SigninManagerBase* manager) OVERRIDE;

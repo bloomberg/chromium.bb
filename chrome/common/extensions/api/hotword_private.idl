@@ -28,13 +28,18 @@
     boolean audioLoggingEnabled;
   };
 
+  // The type of the recognized hotword. Right now it only has 'search' but
+  // could be expanded to other types of actions in the future.
+  enum HotwordType { search };
+
   callback GenericDoneCallback = void ();
   callback StatusDetailsCallback = void(StatusDetails result);
 
   interface Functions {
     // Sets the current enabled state of hotword search.
     // True: enable hotword search. False: disable hotword search.
-    static void setEnabled(boolean state, optional GenericDoneCallback callback);
+    static void setEnabled(boolean state,
+                           optional GenericDoneCallback callback);
 
     // Retrieves the current state of hotword search.
     // The result is put into a StatusDetails object.
@@ -42,11 +47,27 @@
 
     // Sets the current enabled state of audio logging in the extension.
     // True: logging enabled. False: no logging.
-    static void setAudioLoggingEnabled(boolean state, optional GenericDoneCallback callback);
+    static void setAudioLoggingEnabled(boolean state,
+                                       optional GenericDoneCallback callback);
+
+    // Sets the current state of the browser-requested hotword session.
+    static void setHotwordSessionState(boolean started,
+                                       optional GenericDoneCallback callback);
+
+    // Notifies that a hotword has been recognized in the browser-requested
+    // hotword session.
+    static void notifyHotwordRecognition(HotwordType type,
+                                         optional GenericDoneCallback callback);
   };
 
   interface Events {
     // Fired when the hotword search enabled preference is changed.
     static void onEnabledChanged();
+
+    // Fired when the browser wants to start a hotword session.
+    static void onHotwordSessionRequested();
+
+    // Fired when the browser wants to stop the requested hotword session.
+    static void onHotwordSessionStopped();
   };
 };

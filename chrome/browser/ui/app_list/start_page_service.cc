@@ -13,7 +13,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/ui/app_list/recommended_apps.h"
 #include "chrome/browser/ui/app_list/start_page_observer.h"
@@ -104,14 +103,6 @@ StartPageService::StartPageService(Profile* profile)
       state_(app_list::SPEECH_RECOGNITION_OFF),
       speech_button_toggled_manually_(false),
       speech_result_obtained_(false) {
-#if defined(OS_CHROMEOS)
-  // Updates the default state to hotword listening, because this is
-  // the default behavior. This will be updated when the page is loaded and
-  // the nacl module is loaded.
-  if (app_list::switches::IsVoiceSearchEnabled())
-    state_ = app_list::SPEECH_RECOGNITION_HOTWORD_LISTENING;
-#endif
-
   if (app_list::switches::IsExperimentalAppListEnabled())
     LoadContents();
 }
@@ -151,24 +142,8 @@ void StartPageService::ToggleSpeechRecognition() {
 
 bool StartPageService::HotwordEnabled() {
 #if defined(OS_CHROMEOS)
-  if (!HotwordService::DoesHotwordSupportLanguage(profile_))
-    return false;
-
-  const PrefService::Preference* preference =
-      profile_->GetPrefs()->FindPreference(prefs::kHotwordSearchEnabled);
-  if (!preference)
-    return false;
-
-  if (!HotwordServiceFactory::IsServiceAvailable(profile_))
-    return false;
-
-  // kHotwordSearchEnabled is off by default, but app-list is on by default.
-  // To achieve this, we'll return true if it's in the default status.
-  if (preference->IsDefaultValue())
-    return true;
-
-  bool isEnabled = false;
-  return preference->GetValue()->GetAsBoolean(&isEnabled) && isEnabled;
+  return HotwordServiceFactory::IsServiceAvailable(profile_) &&
+      profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled);
 #else
   return false;
 #endif
