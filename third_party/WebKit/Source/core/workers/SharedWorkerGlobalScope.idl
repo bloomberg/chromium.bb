@@ -29,7 +29,8 @@
  */
 
 [
-    Exposed=SharedWorker
+    Exposed=SharedWorker,
+    Global=Worker&SharedWorker
 ] interface SharedWorkerGlobalScope : WorkerGlobalScope {
     readonly attribute DOMString name;
              attribute EventHandler onconnect;

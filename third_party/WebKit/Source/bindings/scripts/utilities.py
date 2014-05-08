@@ -93,6 +93,13 @@ def get_parent_interface(file_contents):
 
 
 def get_interface_extended_attributes_from_idl(file_contents):
+    # Strip comments
+    # re.compile needed b/c Python 2.6 doesn't support flags in re.sub
+    single_line_comment_re = re.compile(r'//.*$', flags=re.MULTILINE)
+    block_comment_re = re.compile(r'/\*.*?\*/', flags=re.MULTILINE | re.DOTALL)
+    file_contents = re.sub(single_line_comment_re, '', file_contents)
+    file_contents = re.sub(block_comment_re, '', file_contents)
+
     match = re.search(r'\[(.*)\]\s*'
                       r'((callback|partial)\s+)?'
                       r'(interface|exception)\s+'
@@ -102,12 +109,8 @@ def get_interface_extended_attributes_from_idl(file_contents):
                       file_contents, flags=re.DOTALL)
     if not match:
         return {}
-    # Strip comments
-    # re.compile needed b/c Python 2.6 doesn't support flags in re.sub
-    single_line_comment_re = re.compile(r'//.*$', flags=re.MULTILINE)
-    block_comment_re = re.compile(r'/\*.*?\*/', flags=re.MULTILINE | re.DOTALL)
-    extended_attributes_string = re.sub(single_line_comment_re, '', match.group(1))
-    extended_attributes_string = re.sub(block_comment_re, '', extended_attributes_string)
+
+    extended_attributes_string = match.group(1)
     extended_attributes = {}
     # FIXME: this splitting is WRONG: it fails on ExtendedAttributeArgList like
     # 'NamedConstructor=Foo(a, b)'

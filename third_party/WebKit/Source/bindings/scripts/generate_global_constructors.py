@@ -17,14 +17,17 @@ http://heycam.github.io/webidl/#Exposed
 Design document: http://www.chromium.org/developers/design-documents/idl-build
 """
 
+import itertools
 import optparse
 import os
 import re
 import sys
 
+from collections import defaultdict
 from utilities import get_file_contents, write_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl
 
-global_objects = {}
+interface_name_to_global_names = defaultdict(list)
+global_name_to_constructors = defaultdict(list)
 
 
 HEADER_FORMAT = """
@@ -49,13 +52,35 @@ def parse_options():
     return options, args
 
 
-# Global name: http://heycam.github.io/webidl/#dfn-global-name
-# FIXME: We should add support for [Global=xx] extended attribute instead of
-# hard-coding this mapping.
-def global_name_to_interface_name(global_name):
-    if global_name.endswith('Worker'):
-        return global_name + 'GlobalScope'
-    return global_name
+def interface_to_global_names(interface_name, extended_attributes):
+    """Returns global names, if any, for an interface name.
+
+    If the [Global] or [PrimaryGlobal] extended attribute is declared with an
+    identifier list argument, then those identifiers are the interface's global
+    names; otherwise, the interface has a single global name, which is the
+    interface's identifier (http://heycam.github.io/webidl/#Global).
+    """
+    for key in ['Global', 'PrimaryGlobal']:
+        if key not in extended_attributes:
+            continue
+        global_value = extended_attributes[key]
+        if global_value:
+            # FIXME: In spec names are comma-separated, but that makes parsing very
+            # difficult (https://www.w3.org/Bugs/Public/show_bug.cgi?id=24959).
+            return global_value.split('&')
+        return [interface_name]
+    return []
+
+
+def flatten_list(iterable):
+    return list(itertools.chain.from_iterable(iterable))
+
+
+def interface_name_to_constructors(interface_name):
+    """Returns constructors for an interface."""
+    global_names = interface_name_to_global_names[interface_name]
+    return flatten_list(global_name_to_constructors[global_name]
+                        for global_name in global_names)
 
 
 def record_global_constructors(idl_filename):
@@ -73,13 +98,20 @@ def record_global_constructors(idl_filename):
         'NoInterfaceObject' in extended_attributes):
         return
 
+    # Check if interface has [Global] / [PrimaryGlobal] extended attributes.
+    interface_name_to_global_names[interface_name] = interface_to_global_names(interface_name, extended_attributes)
+
+    # The [Exposed] extended attribute MUST take an identifier list. Each
+    # identifier in the list MUST be a global name. An interface or interface
+    # member the extended attribute applies to will be exposed only on objects
+    # associated with ECMAScript global environments whose global object
+    # implements an interface that has a matching global name.
     # FIXME: In spec names are comma-separated, but that makes parsing very
     # difficult (https://www.w3.org/Bugs/Public/show_bug.cgi?id=24959).
-    global_names = extended_attributes.get('Exposed', 'Window').split('&')
+    exposed_global_names = extended_attributes.get('Exposed', 'Window').split('&')
     new_constructors_list = generate_global_constructors_list(interface_name, extended_attributes)
-    for global_name in global_names:
-        interface_name = global_name_to_interface_name(global_name)
-        global_objects[interface_name]['constructors'].extend(new_constructors_list)
+    for exposed_global_name in exposed_global_names:
+        global_name_to_constructors[exposed_global_name].extend(new_constructors_list)
 
 
 def generate_global_constructors_list(interface_name, extended_attributes):
@@ -141,21 +173,27 @@ def main():
     # These are passed as pairs of GlobalObjectName, GlobalObject.idl
     interface_name_idl_filename = [(args[i], args[i + 1])
                                    for i in range(0, len(args), 2)]
-    global_objects.update(
-        (interface_name, {
-            'idl_filename': idl_filename,
-            'constructors': [],
-        })
-        for interface_name, idl_filename in interface_name_idl_filename)
 
     for idl_filename in idl_files:
         record_global_constructors(idl_filename)
 
-    for interface_name, global_object in global_objects.iteritems():
+    # Check for [Exposed] / [Global] mismatch.
+    known_global_names = set(itertools.chain.from_iterable(interface_name_to_global_names.values()))
+    unknown_global_names = set(global_name_to_constructors).difference(known_global_names)
+    if unknown_global_names:
+        raise ValueError('The following global names were used in '
+                         '[Exposed=xxx] but do not match any [Global] / '
+                         '[PrimaryGlobal] interface: %s'
+                         % list(unknown_global_names))
+
+    # Write partial interfaces containing constructor attributes for each
+    # global interface.
+    for interface_name, idl_filename in interface_name_idl_filename:
+        constructors = interface_name_to_constructors(interface_name)
         write_global_constructors_partial_interface(
             interface_name,
-            global_object['idl_filename'],
-            global_object['constructors'],
+            idl_filename,
+            constructors,
             options.write_file_only_if_changed)
 
 

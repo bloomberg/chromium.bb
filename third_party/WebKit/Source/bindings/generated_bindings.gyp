@@ -105,7 +105,6 @@
 
     'generated_global_constructors_idl_files': [
       '<(blink_output_dir)/WindowConstructors.idl',
-      '<(blink_output_dir)/WorkerGlobalScopeConstructors.idl',
       '<(blink_output_dir)/SharedWorkerGlobalScopeConstructors.idl',
       '<(blink_output_dir)/DedicatedWorkerGlobalScopeConstructors.idl',
       '<(blink_output_dir)/ServiceWorkerGlobalScopeConstructors.idl',
@@ -113,7 +112,6 @@
 
     'generated_global_constructors_header_files': [
       '<(blink_output_dir)/WindowConstructors.h',
-      '<(blink_output_dir)/WorkerGlobalScopeConstructors.h',
       '<(blink_output_dir)/SharedWorkerGlobalScopeConstructors.h',
       '<(blink_output_dir)/DedicatedWorkerGlobalScopeConstructors.h',
       '<(blink_output_dir)/ServiceWorkerGlobalScopeConstructors.h',
@@ -197,8 +195,6 @@
         '--',
         'Window',
         '<(blink_output_dir)/WindowConstructors.idl',
-        'WorkerGlobalScope',
-        '<(blink_output_dir)/WorkerGlobalScopeConstructors.idl',
         'SharedWorkerGlobalScope',
         '<(blink_output_dir)/SharedWorkerGlobalScopeConstructors.idl',
         'DedicatedWorkerGlobalScope',

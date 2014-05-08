@@ -29,7 +29,8 @@
  */
 
 [
-    Exposed=DedicatedWorker
+    Exposed=DedicatedWorker,
+    Global=Worker&DedicatedWorker
 ] interface DedicatedWorkerGlobalScope : WorkerGlobalScope {
     [Custom, RaisesException] void postMessage(any message, optional MessagePort[] messagePorts);
     attribute EventHandler onmessage;
