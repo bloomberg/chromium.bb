@@ -53,18 +53,18 @@ WebPlugin* WebPluginDocument::plugin()
 }
 
 
-WebPluginDocument::WebPluginDocument(const PassRefPtr<PluginDocument>& elem)
+WebPluginDocument::WebPluginDocument(const PassRefPtrWillBeRawPtr<PluginDocument>& elem)
     : WebDocument(elem)
 {
 }
 
-WebPluginDocument& WebPluginDocument::operator=(const PassRefPtr<PluginDocument>& elem)
+WebPluginDocument& WebPluginDocument::operator=(const PassRefPtrWillBeRawPtr<PluginDocument>& elem)
 {
     m_private = elem;
     return *this;
 }
 
-WebPluginDocument::operator PassRefPtr<PluginDocument>() const
+WebPluginDocument::operator PassRefPtrWillBeRawPtr<PluginDocument>() const
 {
     return static_cast<PluginDocument*>(m_private.get());
 }

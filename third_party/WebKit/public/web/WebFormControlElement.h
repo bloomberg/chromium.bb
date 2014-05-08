@@ -116,9 +116,9 @@ public:
     BLINK_EXPORT WebFormElement form() const;
 
 #if BLINK_IMPLEMENTATION
-    WebFormControlElement(const WTF::PassRefPtr<WebCore::HTMLFormControlElement>&);
-    WebFormControlElement& operator=(const WTF::PassRefPtr<WebCore::HTMLFormControlElement>&);
-    operator WTF::PassRefPtr<WebCore::HTMLFormControlElement>() const;
+    WebFormControlElement(const PassRefPtrWillBeRawPtr<WebCore::HTMLFormControlElement>&);
+    WebFormControlElement& operator=(const PassRefPtrWillBeRawPtr<WebCore::HTMLFormControlElement>&);
+    operator PassRefPtrWillBeRawPtr<WebCore::HTMLFormControlElement>() const;
 #endif
 };
 

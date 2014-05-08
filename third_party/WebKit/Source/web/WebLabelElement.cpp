@@ -45,18 +45,18 @@ WebElement WebLabelElement::correspondingControl()
     return WebElement(unwrap<HTMLLabelElement>()->control());
 }
 
-WebLabelElement::WebLabelElement(const PassRefPtr<HTMLLabelElement>& elem)
+WebLabelElement::WebLabelElement(const PassRefPtrWillBeRawPtr<HTMLLabelElement>& elem)
     : WebElement(elem)
 {
 }
 
-WebLabelElement& WebLabelElement::operator=(const PassRefPtr<HTMLLabelElement>& elem)
+WebLabelElement& WebLabelElement::operator=(const PassRefPtrWillBeRawPtr<HTMLLabelElement>& elem)
 {
     m_private = elem;
     return *this;
 }
 
-WebLabelElement::operator PassRefPtr<HTMLLabelElement>() const
+WebLabelElement::operator PassRefPtrWillBeRawPtr<HTMLLabelElement>() const
 {
     return toHTMLLabelElement(m_private.get());
 }

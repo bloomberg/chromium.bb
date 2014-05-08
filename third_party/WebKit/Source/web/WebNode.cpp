@@ -204,8 +204,15 @@ WebElement WebNode::querySelector(const WebString& tag, WebExceptionCode& ec) co
 {
     TrackExceptionState exceptionState;
     WebElement element;
-    if (m_private->isContainerNode())
+    if (m_private->isContainerNode()) {
+#if ENABLE(OILPAN)
+        // FIXME: ContainerNode::querySelector should return an Element raw
+        // pointer.
+        element = toContainerNode(m_private.get())->querySelector(tag, exceptionState).get();
+#else
         element = toContainerNode(m_private.get())->querySelector(tag, exceptionState);
+#endif
+    }
     ec = exceptionState.code();
     return element;
 }
@@ -257,18 +264,18 @@ WebElement WebNode::shadowHost() const
     return WebElement(coreNode->shadowHost());
 }
 
-WebNode::WebNode(const PassRefPtr<Node>& node)
+WebNode::WebNode(const PassRefPtrWillBeRawPtr<Node>& node)
     : m_private(node)
 {
 }
 
-WebNode& WebNode::operator=(const PassRefPtr<Node>& node)
+WebNode& WebNode::operator=(const PassRefPtrWillBeRawPtr<Node>& node)
 {
     m_private = node;
     return *this;
 }
 
-WebNode::operator PassRefPtr<Node>() const
+WebNode::operator PassRefPtrWillBeRawPtr<Node>() const
 {
     return m_private.get();
 }

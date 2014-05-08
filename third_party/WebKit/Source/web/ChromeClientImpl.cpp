@@ -852,7 +852,7 @@ void ChromeClientImpl::didAssociateFormControls(const Vector<RefPtr<Element> >& 
     WebVector<WebNode> elementVector(static_cast<size_t>(elements.size()));
     size_t elementsCount = elements.size();
     for (size_t i = 0; i < elementsCount; ++i)
-        elementVector[i] = elements[i];
+        elementVector[i] = elements[i].get();
     m_webView->autofillClient()->didAssociateFormControls(elementVector);
 }
 

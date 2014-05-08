@@ -133,7 +133,7 @@ void TouchActionTest::runTouchActionTest(std::string file)
 
     WebView* webView = setupTest(file, client);
 
-    RefPtr<WebCore::Document> document = static_cast<PassRefPtr<WebCore::Document> >(webView->mainFrame()->document());
+    RefPtrWillBeRawPtr<WebCore::Document> document = static_cast<PassRefPtrWillBeRawPtr<WebCore::Document> >(webView->mainFrame()->document());
     runTestOnTree(document.get(), webView, client);
 
     m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
@@ -146,7 +146,7 @@ void TouchActionTest::runShadowDOMTest(std::string file)
     WebView* webView = setupTest(file, client);
 
     WebCore::TrackExceptionState es;
-    RefPtr<WebCore::Document> document = static_cast<PassRefPtr<WebCore::Document> >(webView->mainFrame()->document());
+    RefPtrWillBeRawPtr<WebCore::Document> document = static_cast<PassRefPtrWillBeRawPtr<WebCore::Document> >(webView->mainFrame()->document());
     RefPtr<WebCore::NodeList> hostNodes = document->querySelectorAll("[shadow-host]", es);
     ASSERT_FALSE(es.hadException());
     ASSERT_GE(hostNodes->length(), 1u);
@@ -173,7 +173,7 @@ WebView* TouchActionTest::setupTest(std::string file, TouchActionTrackingWebView
 
     // Scroll to verify the code properly transforms windows to client co-ords.
     const int kScrollOffset = 100;
-    RefPtr<WebCore::Document> document = static_cast<PassRefPtr<WebCore::Document> >(webView->mainFrame()->document());
+    RefPtrWillBeRawPtr<WebCore::Document> document = static_cast<PassRefPtrWillBeRawPtr<WebCore::Document> >(webView->mainFrame()->document());
     document->frame()->view()->setScrollOffset(WebCore::IntPoint(0, kScrollOffset));
 
     return webView;

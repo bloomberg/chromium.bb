@@ -254,7 +254,12 @@ WebReferrerPolicy WebDocument::referrerPolicy() const
 WebElement WebDocument::createElement(const WebString& tagName)
 {
     TrackExceptionState exceptionState;
+#if ENABLE(OILPAN)
+    // FIXME: Document::createElement should return a raw pointer.
+    WebElement element(unwrap<Document>()->createElement(tagName, exceptionState).get());
+#else
     WebElement element(unwrap<Document>()->createElement(tagName, exceptionState));
+#endif
     if (exceptionState.hadException())
         return WebElement();
     return element;
@@ -301,18 +306,18 @@ v8::Handle<v8::Value> WebDocument::registerEmbedderCustomElement(const WebString
     return constructor.v8Value();
 }
 
-WebDocument::WebDocument(const PassRefPtr<Document>& elem)
+WebDocument::WebDocument(const PassRefPtrWillBeRawPtr<Document>& elem)
     : WebNode(elem)
 {
 }
 
-WebDocument& WebDocument::operator=(const PassRefPtr<Document>& elem)
+WebDocument& WebDocument::operator=(const PassRefPtrWillBeRawPtr<Document>& elem)
 {
     m_private = elem;
     return *this;
 }
 
-WebDocument::operator PassRefPtr<Document>() const
+WebDocument::operator PassRefPtrWillBeRawPtr<Document>() const
 {
     return toDocument(m_private.get());
 }

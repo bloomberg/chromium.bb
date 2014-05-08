@@ -89,9 +89,9 @@ struct WebRect;
         BLINK_EXPORT WebImage imageContents();
 
 #if BLINK_IMPLEMENTATION
-        WebElement(const WTF::PassRefPtr<WebCore::Element>&);
-        WebElement& operator=(const WTF::PassRefPtr<WebCore::Element>&);
-        operator WTF::PassRefPtr<WebCore::Element>() const;
+        WebElement(const PassRefPtrWillBeRawPtr<WebCore::Element>&);
+        WebElement& operator=(const PassRefPtrWillBeRawPtr<WebCore::Element>&);
+        operator PassRefPtrWillBeRawPtr<WebCore::Element>() const;
 #endif
     };
 

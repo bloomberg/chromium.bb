@@ -202,7 +202,7 @@ TEST_F(WebPageNewSerializeTest, PageWithFrames)
     // OBJECT/EMBED have some delay to start to load their content. The first
     // serveAsynchronousMockedRequests call in loadURLInTopFrame() finishes
     // before the start.
-    RefPtr<Document> document = static_cast<PassRefPtr<Document> >(webView()->mainFrame()->document());
+    RefPtrWillBeRawPtr<Document> document = static_cast<PassRefPtrWillBeRawPtr<Document> >(webView()->mainFrame()->document());
     document->updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasksSynchronously);
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
 

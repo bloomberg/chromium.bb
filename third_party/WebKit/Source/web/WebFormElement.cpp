@@ -80,13 +80,23 @@ void WebFormElement::getNamedElements(const WebString& name,
 {
     Vector<RefPtr<Element> > tempVector;
     unwrap<HTMLFormElement>()->getNamedElements(name, tempVector);
+#if ENABLE(OILPAN)
+    // FIXME: The second argument of HTMLFormElement::getNamedElements should be
+    // HeapVector<Member<Element>>.
+    Vector<WebNode> tempVector2;
+    tempVector2.reserveCapacity(tempVector.size());
+    for (size_t i = 0; i < tempVector.size(); ++i)
+        tempVector2.append(WebNode(tempVector[i].get()));
+    result.assign(tempVector2);
+#else
     result.assign(tempVector);
+#endif
 }
 
 void WebFormElement::getFormControlElements(WebVector<WebFormControlElement>& result) const
 {
     const HTMLFormElement* form = constUnwrap<HTMLFormElement>();
-    Vector<RefPtr<HTMLFormControlElement> > formControlElements;
+    Vector<WebFormControlElement> formControlElements;
 
     const Vector<FormAssociatedElement*>& associatedElements = form->associatedElements();
     for (Vector<FormAssociatedElement*>::const_iterator it = associatedElements.begin(); it != associatedElements.end(); ++it) {
@@ -106,18 +116,18 @@ void WebFormElement::finishRequestAutocomplete(WebFormElement::AutocompleteResul
     unwrap<HTMLFormElement>()->finishRequestAutocomplete(static_cast<HTMLFormElement::AutocompleteResult>(result));
 }
 
-WebFormElement::WebFormElement(const PassRefPtr<HTMLFormElement>& e)
+WebFormElement::WebFormElement(const PassRefPtrWillBeRawPtr<HTMLFormElement>& e)
     : WebElement(e)
 {
 }
 
-WebFormElement& WebFormElement::operator=(const PassRefPtr<HTMLFormElement>& e)
+WebFormElement& WebFormElement::operator=(const PassRefPtrWillBeRawPtr<HTMLFormElement>& e)
 {
     m_private = e;
     return *this;
 }
 
-WebFormElement::operator PassRefPtr<HTMLFormElement>() const
+WebFormElement::operator PassRefPtrWillBeRawPtr<HTMLFormElement>() const
 {
     return toHTMLFormElement(m_private.get());
 }

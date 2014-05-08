@@ -473,7 +473,7 @@ WebLocalFrame* WebLocalFrame::frameForContext(v8::Handle<v8::Context> context)
 
 WebLocalFrame* WebLocalFrame::fromFrameOwnerElement(const WebElement& element)
 {
-    return WebLocalFrameImpl::fromFrameOwnerElement(PassRefPtr<Element>(element).get());
+    return WebLocalFrameImpl::fromFrameOwnerElement(PassRefPtrWillBeRawPtr<Element>(element).get());
 }
 
 bool WebLocalFrameImpl::isWebLocalFrame() const

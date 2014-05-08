@@ -34,7 +34,7 @@ protected:
 
 private:
     FrameTestHelpers::WebViewHelper m_webViewHelper;
-    RefPtr<Document> m_document;
+    RefPtrWillBePersistent<Document> m_document;
     TextFinder* m_textFinder;
 };
 
@@ -43,7 +43,7 @@ void TextFinderTest::SetUp()
     m_webViewHelper.initialize();
     WebLocalFrameImpl& frameImpl = *m_webViewHelper.webViewImpl()->mainFrameImpl();
     frameImpl.viewImpl()->resize(WebSize(640, 480));
-    m_document = PassRefPtr<Document>(frameImpl.document());
+    m_document = PassRefPtrWillBeRawPtr<Document>(frameImpl.document());
     m_textFinder = &frameImpl.ensureTextFinder();
 }
 

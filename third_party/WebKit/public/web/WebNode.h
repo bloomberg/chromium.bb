@@ -141,9 +141,9 @@ public:
     }
 
 #if BLINK_IMPLEMENTATION
-    WebNode(const WTF::PassRefPtr<WebCore::Node>&);
-    WebNode& operator=(const WTF::PassRefPtr<WebCore::Node>&);
-    operator WTF::PassRefPtr<WebCore::Node>() const;
+    WebNode(const PassRefPtrWillBeRawPtr<WebCore::Node>&);
+    WebNode& operator=(const PassRefPtrWillBeRawPtr<WebCore::Node>&);
+    operator PassRefPtrWillBeRawPtr<WebCore::Node>() const;
 #endif
 
 #if BLINK_IMPLEMENTATION

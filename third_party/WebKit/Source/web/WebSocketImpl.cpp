@@ -51,7 +51,7 @@ WebSocketImpl::WebSocketImpl(const WebDocument& document, WebSocketClient* clien
     : m_client(client)
     , m_binaryType(BinaryTypeBlob)
 {
-    RefPtr<Document> coreDocument = PassRefPtr<Document>(document);
+    RefPtrWillBeRawPtr<Document> coreDocument = PassRefPtrWillBeRawPtr<Document>(document);
     if (RuntimeEnabledFeatures::experimentalWebSocketEnabled()) {
         m_private = NewWebSocketChannelImpl::create(coreDocument.get(), this);
     } else {

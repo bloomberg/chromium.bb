@@ -81,9 +81,9 @@ namespace blink {
         BLINK_EXPORT void finishRequestAutocomplete(WebFormElement::AutocompleteResult);
 
 #if BLINK_IMPLEMENTATION
-        WebFormElement(const WTF::PassRefPtr<WebCore::HTMLFormElement>&);
-        WebFormElement& operator=(const WTF::PassRefPtr<WebCore::HTMLFormElement>&);
-        operator WTF::PassRefPtr<WebCore::HTMLFormElement>() const;
+        WebFormElement(const PassRefPtrWillBeRawPtr<WebCore::HTMLFormElement>&);
+        WebFormElement& operator=(const PassRefPtrWillBeRawPtr<WebCore::HTMLFormElement>&);
+        operator PassRefPtrWillBeRawPtr<WebCore::HTMLFormElement>() const;
 #endif
     };
 

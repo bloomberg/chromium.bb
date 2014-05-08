@@ -82,7 +82,7 @@ void WebLeakDetectorImpl::collectGarbageAndGetDOMCounts(WebLocalFrame* frame)
     memoryCache()->evictResources();
 
     {
-        RefPtr<Document> document = PassRefPtr<Document>(frame->document());
+        RefPtrWillBeRawPtr<Document> document = PassRefPtrWillBeRawPtr<Document>(frame->document());
         if (ResourceFetcher* fetcher = document->fetcher())
             fetcher->garbageCollectDocumentResources();
     }

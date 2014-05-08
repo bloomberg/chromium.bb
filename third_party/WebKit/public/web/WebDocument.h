@@ -137,9 +137,9 @@ public:
     BLINK_EXPORT v8::Handle<v8::Value> registerEmbedderCustomElement(const WebString& name, v8::Handle<v8::Value> options, WebExceptionCode&);
 
 #if BLINK_IMPLEMENTATION
-    WebDocument(const WTF::PassRefPtr<WebCore::Document>&);
-    WebDocument& operator=(const WTF::PassRefPtr<WebCore::Document>&);
-    operator WTF::PassRefPtr<WebCore::Document>() const;
+    WebDocument(const PassRefPtrWillBeRawPtr<WebCore::Document>&);
+    WebDocument& operator=(const PassRefPtrWillBeRawPtr<WebCore::Document>&);
+    operator PassRefPtrWillBeRawPtr<WebCore::Document>() const;
 #endif
 };
 

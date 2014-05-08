@@ -150,18 +150,18 @@ void WebInputElement::setShouldRevealPassword(bool value)
     unwrap<HTMLInputElement>()->setShouldRevealPassword(value);
 }
 
-WebInputElement::WebInputElement(const PassRefPtr<HTMLInputElement>& elem)
+WebInputElement::WebInputElement(const PassRefPtrWillBeRawPtr<HTMLInputElement>& elem)
     : WebFormControlElement(elem)
 {
 }
 
-WebInputElement& WebInputElement::operator=(const PassRefPtr<HTMLInputElement>& elem)
+WebInputElement& WebInputElement::operator=(const PassRefPtrWillBeRawPtr<HTMLInputElement>& elem)
 {
     m_private = elem;
     return *this;
 }
 
-WebInputElement::operator PassRefPtr<HTMLInputElement>() const
+WebInputElement::operator PassRefPtrWillBeRawPtr<HTMLInputElement>() const
 {
     return toHTMLInputElement(m_private.get());
 }

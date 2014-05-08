@@ -57,9 +57,9 @@ public:
     BLINK_EXPORT WebElement correspondingControl();
 
 #if BLINK_IMPLEMENTATION
-    WebLabelElement(const WTF::PassRefPtr<WebCore::HTMLLabelElement>&);
-    WebLabelElement& operator=(const WTF::PassRefPtr<WebCore::HTMLLabelElement>&);
-    operator WTF::PassRefPtr<WebCore::HTMLLabelElement>() const;
+    WebLabelElement(const PassRefPtrWillBeRawPtr<WebCore::HTMLLabelElement>&);
+    WebLabelElement& operator=(const PassRefPtrWillBeRawPtr<WebCore::HTMLLabelElement>&);
+    operator PassRefPtrWillBeRawPtr<WebCore::HTMLLabelElement>() const;
 #endif
 };
 

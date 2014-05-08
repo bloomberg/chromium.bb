@@ -188,18 +188,18 @@ WebFormElement WebFormControlElement::form() const
     return WebFormElement(constUnwrap<HTMLFormControlElement>()->form());
 }
 
-WebFormControlElement::WebFormControlElement(const PassRefPtr<HTMLFormControlElement>& elem)
+WebFormControlElement::WebFormControlElement(const PassRefPtrWillBeRawPtr<HTMLFormControlElement>& elem)
     : WebElement(elem)
 {
 }
 
-WebFormControlElement& WebFormControlElement::operator=(const PassRefPtr<HTMLFormControlElement>& elem)
+WebFormControlElement& WebFormControlElement::operator=(const PassRefPtrWillBeRawPtr<HTMLFormControlElement>& elem)
 {
     m_private = elem;
     return *this;
 }
 
-WebFormControlElement::operator PassRefPtr<HTMLFormControlElement>() const
+WebFormControlElement::operator PassRefPtrWillBeRawPtr<HTMLFormControlElement>() const
 {
     return toHTMLFormControlElement(m_private.get());
 }

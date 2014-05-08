@@ -72,18 +72,18 @@ bool WebOptionElement::isEnabled() const
     return !(constUnwrap<HTMLOptionElement>()->isDisabledFormControl());
 }
 
-WebOptionElement::WebOptionElement(const PassRefPtr<HTMLOptionElement>& elem)
+WebOptionElement::WebOptionElement(const PassRefPtrWillBeRawPtr<HTMLOptionElement>& elem)
     : WebElement(elem)
 {
 }
 
-WebOptionElement& WebOptionElement::operator=(const PassRefPtr<HTMLOptionElement>& elem)
+WebOptionElement& WebOptionElement::operator=(const PassRefPtrWillBeRawPtr<HTMLOptionElement>& elem)
 {
     m_private = elem;
     return *this;
 }
 
-WebOptionElement::operator PassRefPtr<HTMLOptionElement>() const
+WebOptionElement::operator PassRefPtrWillBeRawPtr<HTMLOptionElement>() const
 {
     return toHTMLOptionElement(m_private.get());
 }

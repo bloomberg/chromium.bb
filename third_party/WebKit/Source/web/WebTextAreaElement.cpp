@@ -40,18 +40,18 @@ using namespace WebCore;
 
 namespace blink {
 
-WebTextAreaElement::WebTextAreaElement(const PassRefPtr<HTMLTextAreaElement>& element)
+WebTextAreaElement::WebTextAreaElement(const PassRefPtrWillBeRawPtr<HTMLTextAreaElement>& element)
     : WebFormControlElement(element)
 {
 }
 
-WebTextAreaElement& WebTextAreaElement::operator=(const PassRefPtr<HTMLTextAreaElement>& element)
+WebTextAreaElement& WebTextAreaElement::operator=(const PassRefPtrWillBeRawPtr<HTMLTextAreaElement>& element)
 {
     m_private = element;
     return *this;
 }
 
-WebTextAreaElement::operator PassRefPtr<HTMLTextAreaElement>() const
+WebTextAreaElement::operator PassRefPtrWillBeRawPtr<HTMLTextAreaElement>() const
 {
     return toHTMLTextAreaElement(m_private.get());
 }

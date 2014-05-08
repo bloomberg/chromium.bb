@@ -44,18 +44,18 @@ WebString WebDocumentType::name() const
     return WebString(constUnwrap<DocumentType>()->name());
 }
 
-WebDocumentType::WebDocumentType(const PassRefPtr<DocumentType>& elem)
+WebDocumentType::WebDocumentType(const PassRefPtrWillBeRawPtr<DocumentType>& elem)
     : WebNode(elem)
 {
 }
 
-WebDocumentType& WebDocumentType::operator=(const PassRefPtr<DocumentType>& elem)
+WebDocumentType& WebDocumentType::operator=(const PassRefPtrWillBeRawPtr<DocumentType>& elem)
 {
     m_private = elem;
     return *this;
 }
 
-WebDocumentType::operator PassRefPtr<DocumentType>() const
+WebDocumentType::operator PassRefPtrWillBeRawPtr<DocumentType>() const
 {
     return toDocumentType(m_private.get());
 }

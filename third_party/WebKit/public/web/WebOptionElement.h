@@ -62,9 +62,9 @@ public:
     BLINK_EXPORT bool isEnabled() const;
 
 #if BLINK_IMPLEMENTATION
-    WebOptionElement(const WTF::PassRefPtr<WebCore::HTMLOptionElement>&);
-    WebOptionElement& operator=(const WTF::PassRefPtr<WebCore::HTMLOptionElement>&);
-    operator WTF::PassRefPtr<WebCore::HTMLOptionElement>() const;
+    WebOptionElement(const PassRefPtrWillBeRawPtr<WebCore::HTMLOptionElement>&);
+    WebOptionElement& operator=(const PassRefPtrWillBeRawPtr<WebCore::HTMLOptionElement>&);
+    operator PassRefPtrWillBeRawPtr<WebCore::HTMLOptionElement>() const;
 #endif
 };
 

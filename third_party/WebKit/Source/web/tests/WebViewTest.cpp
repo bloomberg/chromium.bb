@@ -810,7 +810,7 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
     EXPECT_EQ(116, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(84, webViewImpl->mainFrame()->scrollOffset().height);
 
-    RefPtr<WebCore::Element> element = static_cast<PassRefPtr<WebCore::Element> >(webViewImpl->mainFrame()->document().body());
+    RefPtrWillBeRawPtr<WebCore::Element> element = static_cast<PassRefPtrWillBeRawPtr<WebCore::Element> >(webViewImpl->mainFrame()->document().body());
     webViewImpl->enterFullScreenForElement(element.get());
     webViewImpl->willEnterFullScreen();
     webViewImpl->didEnterFullScreen();
@@ -820,7 +820,7 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
     EXPECT_EQ(1.0f, webViewImpl->pageScaleFactor());
 
     // Make sure fullscreen nesting doesn't disrupt scroll/scale saving.
-    RefPtr<WebCore::Element> otherElement = static_cast<PassRefPtr<WebCore::Element> >(webViewImpl->mainFrame()->document().head());
+    RefPtrWillBeRawPtr<WebCore::Element> otherElement = static_cast<PassRefPtrWillBeRawPtr<WebCore::Element> >(webViewImpl->mainFrame()->document().head());
     webViewImpl->enterFullScreenForElement(otherElement.get());
 
     // Confirm that exiting fullscreen restores the parameters.
@@ -923,7 +923,7 @@ private:
 static bool tapElementById(WebView* webView, WebInputEvent::Type type, const WebString& id)
 {
     ASSERT(webView);
-    RefPtr<WebCore::Element> element = static_cast<PassRefPtr<WebCore::Element> >(webView->mainFrame()->document().getElementById(id));
+    RefPtrWillBeRawPtr<WebCore::Element> element = static_cast<PassRefPtrWillBeRawPtr<WebCore::Element> >(webView->mainFrame()->document().getElementById(id));
     if (!element)
         return false;
 

@@ -90,9 +90,9 @@ namespace blink {
         BLINK_EXPORT void setShouldRevealPassword(bool value);
 
 #if BLINK_IMPLEMENTATION
-        WebInputElement(const WTF::PassRefPtr<WebCore::HTMLInputElement>&);
-        WebInputElement& operator=(const WTF::PassRefPtr<WebCore::HTMLInputElement>&);
-        operator WTF::PassRefPtr<WebCore::HTMLInputElement>() const;
+        WebInputElement(const PassRefPtrWillBeRawPtr<WebCore::HTMLInputElement>&);
+        WebInputElement& operator=(const PassRefPtrWillBeRawPtr<WebCore::HTMLInputElement>&);
+        operator PassRefPtrWillBeRawPtr<WebCore::HTMLInputElement>() const;
 #endif
     };
 

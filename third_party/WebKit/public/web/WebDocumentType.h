@@ -57,9 +57,9 @@ public:
     BLINK_EXPORT WebString name() const;
 
 #if BLINK_IMPLEMENTATION
-    WebDocumentType(const WTF::PassRefPtr<WebCore::DocumentType>&);
-    WebDocumentType& operator=(const WTF::PassRefPtr<WebCore::DocumentType>&);
-    operator WTF::PassRefPtr<WebCore::DocumentType>() const;
+    WebDocumentType(const PassRefPtrWillBeRawPtr<WebCore::DocumentType>&);
+    WebDocumentType& operator=(const PassRefPtrWillBeRawPtr<WebCore::DocumentType>&);
+    operator PassRefPtrWillBeRawPtr<WebCore::DocumentType>() const;
 #endif
 };
 
