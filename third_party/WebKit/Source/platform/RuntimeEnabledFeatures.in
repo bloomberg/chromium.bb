@@ -145,7 +145,7 @@ WebAudio condition=WEB_AUDIO, status=stable
 WebGLDraftExtensions status=experimental
 WebMIDI status=test
 WebVTTRegions depends_on=Media, status=experimental
-WOFF2 status=experimental
+WOFF2 status=stable
 XSLT status=stable
 
 PseudoClassesInMatchingCriteriaInAuthorShadowTrees status=test
