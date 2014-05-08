@@ -2249,6 +2249,9 @@ def check_using_std(clean_lines, line_number, file_state, error):
         return
 
     method_name = using_std_match.group('method_name')
+    # Exception for the established idiom for swapping objects in generic code.
+    if method_name == 'swap':
+        return
     error(line_number, 'build/using_std', 4,
           "Use 'using namespace std;' instead of 'using std::%s;'." % method_name)
 

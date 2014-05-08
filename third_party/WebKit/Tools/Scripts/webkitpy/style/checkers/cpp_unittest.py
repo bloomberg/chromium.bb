@@ -4806,6 +4806,12 @@ class WebKitStyleTest(CppStyleTestBase):
             "  [build/using_std] [4]",
             'foo.cpp')
 
+    def test_using_std_swap_ignored(self):
+        self.assert_lint(
+            'using std::swap;',
+            '',
+            'foo.cpp')
+
     def test_max_macro(self):
         self.assert_lint(
             'int i = MAX(0, 1);',
