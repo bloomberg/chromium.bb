@@ -2998,7 +2998,8 @@ void Document::didLoadAllImports()
 {
     if (!haveStylesheetsLoaded())
         return;
-    setNeedsStyleRecalc(SubtreeStyleChange);
+    if (!importLoader())
+        styleResolverMayHaveChanged();
     didLoadAllScriptBlockingResources();
 }
 
@@ -3006,11 +3007,11 @@ void Document::didRemoveAllPendingStylesheet()
 {
     m_needsNotifyRemoveAllPendingStylesheet = false;
 
-    styleResolverChanged(RecalcStyleDeferred, hasNodesWithPlaceholderStyle() ? FullStyleUpdate : AnalyzedStyleUpdate);
+    styleResolverMayHaveChanged();
 
+    // Only imports on master documents can trigger rendering.
     if (HTMLImportLoader* import = importLoader())
         import->didRemoveAllPendingStylesheet();
-
     if (!haveImportsLoaded())
         return;
     didLoadAllScriptBlockingResources();
@@ -3463,6 +3464,11 @@ void Document::styleResolverChanged(RecalcStyleTime updateTime, StyleResolverUpd
 
     if (updateTime == RecalcStyleImmediately)
         updateRenderTreeIfNeeded();
+}
+
+void Document::styleResolverMayHaveChanged()
+{
+    styleResolverChanged(RecalcStyleDeferred, hasNodesWithPlaceholderStyle() ? FullStyleUpdate : AnalyzedStyleUpdate);
 }
 
 void Document::setHoverNode(PassRefPtr<Node> newHoverNode)

@@ -3,7 +3,11 @@
 if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
-    setTimeout(function() { testRunner.notifyDone(); }, 500);
+    window.addEventListener("load", function() {
+        if (null == document.querySelector("link").import)
+            console.log("FAIL");
+        requestAnimationFrame(testRunner.notifyDone.bind(testRunner));
+    });
 }
 </script>
 <link href="resources/import-link-with-media-query.html" rel=import>

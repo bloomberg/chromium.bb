@@ -442,6 +442,7 @@ public:
 
     // Called when one or more stylesheets in the document may have been added, removed, or changed.
     void styleResolverChanged(RecalcStyleTime, StyleResolverUpdateMode = FullStyleUpdate);
+    void styleResolverMayHaveChanged();
 
     // FIXME: Switch all callers of styleResolverChanged to these or better ones and then make them
     // do something smarter.
