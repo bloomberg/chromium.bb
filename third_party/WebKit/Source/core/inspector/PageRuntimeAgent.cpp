@@ -77,7 +77,7 @@ void PageRuntimeAgent::enable(ErrorString* errorString)
         reportExecutionContextCreation();
 }
 
-void PageRuntimeAgent::didClearWindowObjectInMainWorld(LocalFrame* frame)
+void PageRuntimeAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 {
     m_mainWorldContextCreated = true;
 

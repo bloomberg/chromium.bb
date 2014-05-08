@@ -307,7 +307,7 @@ void FrameLoader::receivedFirstData()
 
     InspectorInstrumentation::didCommitLoad(m_frame, m_documentLoader.get());
     m_frame->page()->didCommitLoad(m_frame);
-    dispatchDidClearWindowObjectsInAllWorlds();
+    dispatchDidClearDocumentOfWindowObject();
 }
 
 static void didFailContentSecurityPolicyCheck(FrameLoader* loader)
@@ -335,7 +335,7 @@ void FrameLoader::didBeginDocument(bool dispatch)
         m_frame->domWindow()->statePopped(m_provisionalItem->stateObject());
 
     if (dispatch)
-        dispatchDidClearWindowObjectsInAllWorlds();
+        dispatchDidClearDocumentOfWindowObject();
 
     m_frame->document()->initContentSecurityPolicy(m_documentLoader ? ContentSecurityPolicyResponseHeaders(m_documentLoader->response()) : ContentSecurityPolicyResponseHeaders());
 
@@ -1377,27 +1377,28 @@ void FrameLoader::dispatchDocumentElementAvailable()
     m_client->documentElementAvailable();
 }
 
-void FrameLoader::dispatchDidClearWindowObjectsInAllWorlds()
+void FrameLoader::dispatchDidClearDocumentOfWindowObject()
 {
     if (!m_frame->script().canExecuteScripts(NotAboutToExecuteScript))
         return;
 
     if (Page* page = m_frame->page())
-        page->inspectorController().didClearWindowObjectInMainWorld(m_frame);
-    InspectorInstrumentation::didClearWindowObjectInMainWorld(m_frame);
+        page->inspectorController().didClearDocumentOfWindowObject(m_frame);
+    InspectorInstrumentation::didClearDocumentOfWindowObject(m_frame);
 
-    Vector<RefPtr<DOMWrapperWorld> > worlds;
-    DOMWrapperWorld::allWorldsInMainThread(worlds);
-    for (size_t i = 0; i < worlds.size(); ++i)
-        m_client->dispatchDidClearWindowObjectInWorld(*worlds[i]);
+    // We just cleared the document, not the entire window object, but for the
+    // embedder that's close enough.
+    m_client->dispatchDidClearWindowObjectInMainWorld();
 }
 
-void FrameLoader::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld& world)
+void FrameLoader::dispatchDidClearWindowObjectInMainWorld()
 {
-    if (!m_frame->script().canExecuteScripts(NotAboutToExecuteScript) || !m_frame->script().existingWindowShell(world))
+    if (!m_frame->script().canExecuteScripts(NotAboutToExecuteScript))
         return;
 
-    m_client->dispatchDidClearWindowObjectInWorld(world);
+    // FIXME: Why isn't the inspector notified of this?
+
+    m_client->dispatchDidClearWindowObjectInMainWorld();
 }
 
 SandboxFlags FrameLoader::effectiveSandboxFlags() const

@@ -829,7 +829,7 @@ void InspectorPageAgent::setScriptExecutionDisabled(ErrorString*, bool value)
     }
 }
 
-void InspectorPageAgent::didClearWindowObjectInMainWorld(LocalFrame* frame)
+void InspectorPageAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 {
     if (frame == m_page->mainFrame())
         m_injectedScriptManager->discardInjectedScripts();

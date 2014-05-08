@@ -226,6 +226,9 @@ public:
     // The window object for the frame has been cleared of any extra
     // properties that may have been set by script from the previously
     // loaded document.
+    virtual void didClearWindowObject(WebLocalFrame* frame) { didClearWindowObject(frame, 0); }
+
+    // Deprecated.
     virtual void didClearWindowObject(WebLocalFrame* frame, int worldId) { }
 
     // The document element has been created.

@@ -84,7 +84,7 @@ public:
     void registerModuleAgent(PassOwnPtr<InspectorAgent>);
 
     void setInspectorFrontendClient(PassOwnPtr<InspectorFrontendClient>);
-    void didClearWindowObjectInMainWorld(LocalFrame*);
+    void didClearDocumentOfWindowObject(LocalFrame*);
     void setInjectedScriptForOrigin(const String& origin, const String& source);
 
     void dispatchMessageFromFrontend(const String& message);

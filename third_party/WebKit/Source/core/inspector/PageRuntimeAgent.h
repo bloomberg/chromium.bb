@@ -51,7 +51,7 @@ public:
     virtual void init() OVERRIDE;
     virtual void enable(ErrorString*) OVERRIDE;
 
-    void didClearWindowObjectInMainWorld(LocalFrame*);
+    void didClearDocumentOfWindowObject(LocalFrame*);
     void didCreateIsolatedContext(LocalFrame*, ScriptState*, SecurityOrigin*);
     void frameWindowDiscarded(DOMWindow*);
 

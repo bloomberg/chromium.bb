@@ -146,8 +146,8 @@ public:
 
     String userAgent(const KURL&) const;
 
-    void dispatchDidClearWindowObjectInWorld(DOMWrapperWorld&);
-    void dispatchDidClearWindowObjectsInAllWorlds();
+    void dispatchDidClearWindowObjectInMainWorld();
+    void dispatchDidClearDocumentOfWindowObject();
     void dispatchDocumentElementAvailable();
 
     // The following sandbox flags will be forced, regardless of changes to

@@ -67,7 +67,7 @@ public:
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
     virtual void clearFrontend() OVERRIDE;
 
-    void didClearWindowObjectInMainWorld(LocalFrame*);
+    void didClearDocumentOfWindowObject(LocalFrame*);
 
     void domContentLoadedEventFired(LocalFrame*);
 

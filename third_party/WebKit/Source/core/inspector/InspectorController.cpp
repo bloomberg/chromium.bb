@@ -199,7 +199,7 @@ void InspectorController::setInspectorFrontendClient(PassOwnPtr<InspectorFronten
     m_inspectorFrontendClient = inspectorFrontendClient;
 }
 
-void InspectorController::didClearWindowObjectInMainWorld(LocalFrame* frame)
+void InspectorController::didClearDocumentOfWindowObject(LocalFrame* frame)
 {
     // If the page is supposed to serve as InspectorFrontend notify inspector frontend
     // client that it's cleared so that the client can expose inspector bindings.

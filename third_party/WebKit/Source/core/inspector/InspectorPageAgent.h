@@ -118,7 +118,7 @@ public:
     virtual void setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid) OVERRIDE;
 
     // InspectorInstrumentation API
-    void didClearWindowObjectInMainWorld(LocalFrame*);
+    void didClearDocumentOfWindowObject(LocalFrame*);
     void domContentLoadedEventFired(LocalFrame*);
     void loadEventFired(LocalFrame*);
     void didCommitLoad(LocalFrame*, DocumentLoader*);

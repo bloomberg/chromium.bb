@@ -238,8 +238,8 @@ V8WindowShell* ScriptController::windowShell(DOMWrapperWorld& world)
             m_isolatedWorlds.set(world.worldId(), isolatedWorldShell.release());
         }
     }
-    if (!shell->isContextInitialized() && shell->initializeIfNeeded())
-        m_frame->loader().dispatchDidClearWindowObjectInWorld(world);
+    if (!shell->isContextInitialized() && shell->initializeIfNeeded() && world.isMainWorld())
+        m_frame->loader().dispatchDidClearWindowObjectInMainWorld();
     return shell;
 }
 

@@ -66,7 +66,7 @@ InspectorInspectorAgent::~InspectorInspectorAgent()
     m_instrumentingAgents->setInspectorInspectorAgent(0);
 }
 
-void InspectorInspectorAgent::didClearWindowObjectInMainWorld(LocalFrame* frame)
+void InspectorInspectorAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 {
     if (m_injectedScriptForOrigin.isEmpty())
         return;
