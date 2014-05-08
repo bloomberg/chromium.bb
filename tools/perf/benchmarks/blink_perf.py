@@ -110,15 +110,3 @@ class BlinkPerfAnimation(test.Test):
     path = os.path.join(util.GetChromiumSrcDir(),
         'third_party', 'WebKit', 'PerformanceTests', 'Animation')
     return _CreatePageSetFromPath(path)
-
-class BlinkPerfWebAnimations(test.Test):
-  tag = 'web_animations'
-  test = _BlinkPerfMeasurement
-
-  def CreatePageSet(self, options):
-    path = os.path.join(util.GetChromiumSrcDir(),
-        'third_party', 'WebKit', 'PerformanceTests', 'Animation')
-    return _CreatePageSetFromPath(path)
-
-  def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs('--enable-web-animations-css')
