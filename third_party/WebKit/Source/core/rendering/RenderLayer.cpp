@@ -3428,7 +3428,12 @@ LayoutRect RenderLayer::boundingBoxForCompositing(const RenderLayer* ancestorLay
 
     RenderLayerStackingNodeIterator iterator(*m_stackingNode.get(), AllChildren);
     while (RenderLayerStackingNode* node = iterator.next()) {
-        if (node->layer()->hasCompositedLayerMapping() && options != ApplyBoundsChickenEggHacks)
+        // Here we exclude both directly composted layers and squashing layers
+        // because those RenderLayers don't paint into the graphics layer
+        // for this RenderLayer. For example, the bounds of squashed RenderLayers
+        // will be included in the computation of the appropriate squashing
+        // GraphicsLayer.
+        if (options != ApplyBoundsChickenEggHacks && node->layer()->compositingState() != NotComposited)
             continue;
         result.unite(node->layer()->boundingBoxForCompositing(this, options));
     }

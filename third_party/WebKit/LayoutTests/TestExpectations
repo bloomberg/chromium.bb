@@ -1022,6 +1022,8 @@ crbug.com/308992 css2.1/20110323/replaced-intrinsic-002.htm [ Failure ]
 crbug.com/366387 [ Debug ] svg/as-object/deep-nested-embedded-svg-size-changes-no-layout-triggers-1.html [ Crash ]
 crbug.com/366387 [ Debug ] svg/as-object/deep-nested-embedded-svg-size-changes-no-layout-triggers-2.html [ Crash ]
 
+crbug.com/370667 virtual/gpu/compositedscrolling/overflow/nested-render-surfaces.html [ NeedsRebaseline ]
+
 # Disabling this for now since Chromium CL changes output. Will re-enable once Chromium side lands.
 Bug(simonhatch) http/tests/loading/promote-img-in-viewport-priority.html [ Skip ]
 

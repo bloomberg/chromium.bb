@@ -66,8 +66,8 @@ After:
               (transform ...)
             )
             (GraphicsLayer
-              (position 46.00 230.00)
-              (bounds 146.00 452.00)
+              (position 58.00 230.00)
+              (bounds 122.00 452.00)
               (drawsContent 1)
             )
           )
