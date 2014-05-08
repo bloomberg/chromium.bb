@@ -232,7 +232,6 @@ void FileWriter::didFail(blink::WebFileError code)
         completeAbort();
         return;
     }
-    ASSERT(static_cast<FileError::ErrorCode>(code) != FileError::ABORT_ERR);
     ASSERT(m_queuedOperation == OperationNone);
     ASSERT(m_readyState == WRITING);
     m_blobBeingWritten.clear();
