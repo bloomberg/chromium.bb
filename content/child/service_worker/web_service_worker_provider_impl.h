@@ -18,13 +18,16 @@ class WebServiceWorkerProviderClient;
 namespace content {
 
 class ServiceWorkerDispatcher;
+class ServiceWorkerProviderContext;
 class ThreadSafeSender;
 
+// This class corresponds to one ServiceWorkerContainer interface in
+// JS context (i.e. navigator.serviceWorker).
 class WebServiceWorkerProviderImpl
     : NON_EXPORTED_BASE(public blink::WebServiceWorkerProvider) {
  public:
   WebServiceWorkerProviderImpl(ThreadSafeSender* thread_safe_sender,
-                               int provider_id);
+                               ServiceWorkerProviderContext* context);
   virtual ~WebServiceWorkerProviderImpl();
 
   virtual void setClient(blink::WebServiceWorkerProviderClient* client);
@@ -36,11 +39,14 @@ class WebServiceWorkerProviderImpl
   virtual void unregisterServiceWorker(const blink::WebURL& pattern,
                                        WebServiceWorkerCallbacks*);
 
+  ServiceWorkerProviderContext* context() { return context_.get(); }
+
  private:
   void RemoveScriptClient();
   ServiceWorkerDispatcher* GetDispatcher();
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+  scoped_refptr<ServiceWorkerProviderContext> context_;
   const int provider_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerProviderImpl);

@@ -1383,11 +1383,9 @@ blink::WebServiceWorkerProvider* RenderFrameImpl::createServiceWorkerProvider(
   ServiceWorkerNetworkProvider* provider =
       ServiceWorkerNetworkProvider::FromDocumentState(
           DocumentState::FromDataSource(frame->dataSource()));
-  int provider_id = provider ?
-      provider->provider_id() :
-      kInvalidServiceWorkerProviderId;
   return new WebServiceWorkerProviderImpl(
-      ChildThread::current()->thread_safe_sender(), provider_id);
+      ChildThread::current()->thread_safe_sender(),
+      provider ? provider->context() : NULL);
 }
 
 void RenderFrameImpl::didAccessInitialDocument(blink::WebLocalFrame* frame) {

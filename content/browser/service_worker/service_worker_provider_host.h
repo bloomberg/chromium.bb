@@ -42,9 +42,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   int process_id() const { return process_id_; }
   int provider_id() const { return provider_id_; }
-  const std::set<int>& script_client_thread_ids() const {
-    return script_client_thread_ids_;
-  }
 
   bool IsHostToRunningServiceWorker() {
     return running_hosted_version_ != NULL;
@@ -71,12 +68,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void set_document_url(const GURL& url) { document_url_ = url; }
   const GURL& document_url() const { return document_url_; }
 
-  // Adds and removes script client thread ID, who is listening events
-  // dispatched from ServiceWorker to the document (and any of its dedicated
-  // workers) corresponding to this provider.
-  void AddScriptClient(int thread_id);
-  void RemoveScriptClient(int thread_id);
-
   // Associate |version| to this provider as its '.active' or '.pending'
   // version.
   // Giving NULL to this method will unset the corresponding field.
@@ -96,7 +87,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   const int process_id_;
   const int provider_id_;
   GURL document_url_;
-  std::set<int> script_client_thread_ids_;
   scoped_refptr<ServiceWorkerVersion> active_version_;
   scoped_refptr<ServiceWorkerVersion> pending_version_;
   scoped_refptr<ServiceWorkerVersion> running_hosted_version_;

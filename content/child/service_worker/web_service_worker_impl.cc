@@ -5,6 +5,7 @@
 #include "content/child/service_worker/web_service_worker_impl.h"
 
 #include "content/child/service_worker/service_worker_dispatcher.h"
+#include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
@@ -21,27 +22,38 @@ namespace content {
 WebServiceWorkerImpl::WebServiceWorkerImpl(
     const ServiceWorkerObjectInfo& info,
     ThreadSafeSender* thread_safe_sender)
-    : handle_id_(info.handle_id),
-      scope_(info.scope),
-      url_(info.url),
-      state_(info.state),
+    : handle_ref_(
+          ServiceWorkerHandleReference::CreateForDeleter(info,
+                                                         thread_safe_sender)),
+      state_(handle_ref_->state()),
       thread_safe_sender_(thread_safe_sender),
       proxy_(NULL) {
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
   DCHECK(dispatcher);
-  dispatcher->AddServiceWorker(handle_id_, this);
+  dispatcher->AddServiceWorker(handle_ref_->handle_id(), this);
+}
+
+WebServiceWorkerImpl::WebServiceWorkerImpl(
+    scoped_ptr<ServiceWorkerHandleReference> handle_ref,
+    ThreadSafeSender* thread_safe_sender)
+    : handle_ref_(handle_ref.Pass()),
+      state_(handle_ref_->state()),
+      thread_safe_sender_(thread_safe_sender),
+      proxy_(NULL) {
+  ServiceWorkerDispatcher* dispatcher =
+      ServiceWorkerDispatcher::GetThreadSpecificInstance();
+  DCHECK(dispatcher);
+  dispatcher->AddServiceWorker(handle_ref_->handle_id(), this);
 }
 
 WebServiceWorkerImpl::~WebServiceWorkerImpl() {
-  if (handle_id_ == kInvalidServiceWorkerHandleId)
+  if (handle_ref_->handle_id() == kInvalidServiceWorkerHandleId)
     return;
-  thread_safe_sender_->Send(
-      new ServiceWorkerHostMsg_ServiceWorkerObjectDestroyed(handle_id_));
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
   if (dispatcher)
-    dispatcher->RemoveServiceWorker(handle_id_);
+    dispatcher->RemoveServiceWorker(handle_ref_->handle_id());
 }
 
 void WebServiceWorkerImpl::OnStateChanged(
@@ -70,11 +82,11 @@ void WebServiceWorkerImpl::proxyReadyChanged() {
 }
 
 blink::WebURL WebServiceWorkerImpl::scope() const {
-  return scope_;
+  return handle_ref_->scope();
 }
 
 blink::WebURL WebServiceWorkerImpl::url() const {
-  return url_;
+  return handle_ref_->url();
 }
 
 blink::WebServiceWorkerState WebServiceWorkerImpl::state() const {
@@ -84,7 +96,7 @@ blink::WebServiceWorkerState WebServiceWorkerImpl::state() const {
 void WebServiceWorkerImpl::postMessage(const WebString& message,
                                        WebMessagePortChannelArray* channels) {
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_PostMessage(
-      handle_id_,
+      handle_ref_->handle_id(),
       message,
       WebMessagePortChannelImpl::ExtractMessagePortIDs(channels)));
 }

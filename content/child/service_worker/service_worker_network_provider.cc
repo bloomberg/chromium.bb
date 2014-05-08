@@ -6,6 +6,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "content/child/child_thread.h"
+#include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/common/service_worker/service_worker_messages.h"
 
 namespace content {
@@ -35,7 +36,8 @@ ServiceWorkerNetworkProvider* ServiceWorkerNetworkProvider::FromDocumentState(
 }
 
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider()
-    : provider_id_(GetNextProviderId()) {
+    : provider_id_(GetNextProviderId()),
+      context_(new ServiceWorkerProviderContext(provider_id_)) {
   if (!ChildThread::current())
     return;  // May be null in some tests.
   ChildThread::current()->Send(

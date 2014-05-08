@@ -71,11 +71,16 @@ class CONTENT_EXPORT ServiceWorkerHandle
   ServiceWorkerVersion* version() { return version_.get(); }
   int handle_id() const { return handle_id_; }
 
+  bool HasNoRefCount() const { return ref_count_ <= 0; }
+  void IncrementRefCount();
+  void DecrementRefCount();
+
  private:
   base::WeakPtr<ServiceWorkerContextCore> context_;
   IPC::Sender* sender_;  // Not owned, it should always outlive this.
   const int thread_id_;
   const int handle_id_;
+  int ref_count_;  // Created with 1.
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
 

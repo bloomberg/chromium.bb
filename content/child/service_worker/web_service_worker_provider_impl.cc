@@ -8,7 +8,12 @@
 #include "base/logging.h"
 #include "content/child/child_thread.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
+#include "content/child/service_worker/service_worker_handle_reference.h"
+#include "content/child/service_worker/service_worker_provider_context.h"
+#include "content/child/service_worker/web_service_worker_impl.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/common/service_worker/service_worker_messages.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerProviderClient.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
 using blink::WebURL;
@@ -17,9 +22,10 @@ namespace content {
 
 WebServiceWorkerProviderImpl::WebServiceWorkerProviderImpl(
     ThreadSafeSender* thread_safe_sender,
-    int provider_id)
+    ServiceWorkerProviderContext* context)
     : thread_safe_sender_(thread_safe_sender),
-      provider_id_(provider_id) {
+      context_(context),
+      provider_id_(context->provider_id()) {
 }
 
 WebServiceWorkerProviderImpl::~WebServiceWorkerProviderImpl() {
@@ -29,10 +35,28 @@ WebServiceWorkerProviderImpl::~WebServiceWorkerProviderImpl() {
 
 void WebServiceWorkerProviderImpl::setClient(
     blink::WebServiceWorkerProviderClient* client) {
-  if (client)
-    GetDispatcher()->AddScriptClient(provider_id_, client);
-  else
+  if (!client) {
     RemoveScriptClient();
+    return;
+  }
+
+  // TODO(kinuko): Here we could also register the current thread ID
+  // on the provider context so that multiple WebServiceWorkerProviderImpl
+  // (e.g. on document and on dedicated workers) can properly share
+  // the single provider context across threads. (http://crbug.com/366538
+  // for more context)
+  scoped_ptr<ServiceWorkerHandleReference> current =
+      context_->GetCurrentServiceWorkerHandle();
+  GetDispatcher()->AddScriptClient(provider_id_, client);
+  if (!current)
+    return;
+
+  int handle_id = current->info().handle_id;
+  if (handle_id != kInvalidServiceWorkerHandleId) {
+    scoped_ptr<WebServiceWorkerImpl> worker(
+        new WebServiceWorkerImpl(current.Pass(), thread_safe_sender_));
+    client->setCurrentServiceWorker(worker.release());
+  }
 }
 
 void WebServiceWorkerProviderImpl::registerServiceWorker(

@@ -98,10 +98,6 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnProviderCreated)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ProviderDestroyed,
                         OnProviderDestroyed)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_AddScriptClient,
-                        OnAddScriptClient)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_RemoveScriptClient,
-                        OnRemoveScriptClient)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SetVersionId,
                         OnSetHostedVersionId)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessage,
@@ -118,8 +114,10 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnReportException)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_ReportConsoleMessage,
                         OnReportConsoleMessage)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ServiceWorkerObjectDestroyed,
-                        OnServiceWorkerObjectDestroyed)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount,
+                        OnIncrementServiceWorkerRefCount)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount,
+                        OnDecrementServiceWorkerRefCount)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -276,28 +274,6 @@ void ServiceWorkerDispatcherHost::OnProviderDestroyed(int provider_id) {
   context_->RemoveProviderHost(render_process_id_, provider_id);
 }
 
-void ServiceWorkerDispatcherHost::OnAddScriptClient(
-    int thread_id, int provider_id) {
-  if (!context_)
-    return;
-  ServiceWorkerProviderHost* provider_host =
-      context_->GetProviderHost(render_process_id_, provider_id);
-  if (!provider_host)
-    return;
-  provider_host->AddScriptClient(thread_id);
-}
-
-void ServiceWorkerDispatcherHost::OnRemoveScriptClient(
-    int thread_id, int provider_id) {
-  if (!context_)
-    return;
-  ServiceWorkerProviderHost* provider_host =
-      context_->GetProviderHost(render_process_id_, provider_id);
-  if (!provider_host)
-    return;
-  provider_host->RemoveScriptClient(thread_id);
-}
-
 void ServiceWorkerDispatcherHost::OnSetHostedVersionId(
     int provider_id, int64 version_id) {
   if (!context_)
@@ -393,9 +369,26 @@ void ServiceWorkerDispatcherHost::OnReportConsoleMessage(
       params.source_url);
 }
 
-void ServiceWorkerDispatcherHost::OnServiceWorkerObjectDestroyed(
+void ServiceWorkerDispatcherHost::OnIncrementServiceWorkerRefCount(
     int handle_id) {
-  handles_.Remove(handle_id);
+  ServiceWorkerHandle* handle = handles_.Lookup(handle_id);
+  if (!handle) {
+    BadMessageReceived();
+    return;
+  }
+  handle->IncrementRefCount();
+}
+
+void ServiceWorkerDispatcherHost::OnDecrementServiceWorkerRefCount(
+    int handle_id) {
+  ServiceWorkerHandle* handle = handles_.Lookup(handle_id);
+  if (!handle) {
+    BadMessageReceived();
+    return;
+  }
+  handle->DecrementRefCount();
+  if (handle->HasNoRefCount())
+    handles_.Remove(handle_id);
 }
 
 void ServiceWorkerDispatcherHost::UnregistrationComplete(

@@ -23,7 +23,7 @@ void SendServiceWorkerObjectDestroyed(
   if (handle_id == kInvalidServiceWorkerHandleId)
     return;
   sender->Send(
-      new ServiceWorkerHostMsg_ServiceWorkerObjectDestroyed(handle_id));
+      new ServiceWorkerHostMsg_DecrementServiceWorkerRefCount(handle_id));
 }
 
 }  // namespace

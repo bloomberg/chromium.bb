@@ -81,8 +81,12 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderCreated,
 IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderDestroyed,
                      int /* provider_id */)
 
-// Informs the browser of a ServiceWorker object being destroyed.
-IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ServiceWorkerObjectDestroyed,
+// Increments and decrements the ServiceWorker object's reference
+// counting in the browser side. The ServiceWorker object is created
+// with ref-count==1 initially.
+IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount,
+                     int /* handle_id */)
+IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount,
                      int /* handle_id */)
 
 // Informs the browser that |provider_id| is associated
@@ -91,16 +95,6 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ServiceWorkerObjectDestroyed,
 IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_SetVersionId,
                      int /* provider_id */,
                      int64 /* version_id */)
-
-// Informs the browser of a new scriptable API client in the child process.
-IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_AddScriptClient,
-                     int /* thread_id */,
-                     int /* provider_id */)
-
-// Informs the browser that the scriptable API client is unregistered.
-IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_RemoveScriptClient,
-                     int /* thread_id */,
-                     int /* provider_id */)
 
 // Informs the browser that event handling has finished.
 // Routed to the target ServiceWorkerVersion.

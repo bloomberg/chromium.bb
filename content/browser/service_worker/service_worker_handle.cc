@@ -63,6 +63,7 @@ ServiceWorkerHandle::ServiceWorkerHandle(
       sender_(sender),
       thread_id_(thread_id),
       handle_id_(context.get() ? context->GetNewServiceWorkerHandleId() : -1),
+      ref_count_(1),
       registration_(registration),
       version_(version) {
   version_->AddListener(this);
@@ -110,6 +111,16 @@ ServiceWorkerObjectInfo ServiceWorkerHandle::GetObjectInfo() {
   info.url = registration_->script_url();
   info.state = GetWebServiceWorkerState(version_);
   return info;
+}
+
+void ServiceWorkerHandle::IncrementRefCount() {
+  DCHECK_GT(ref_count_, 0);
+  ++ref_count_;
+}
+
+void ServiceWorkerHandle::DecrementRefCount() {
+  DCHECK_GE(ref_count_, 0);
+  --ref_count_;
 }
 
 }  // namespace content

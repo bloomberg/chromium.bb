@@ -29,6 +29,7 @@ namespace content {
 
 class ServiceWorkerMessageFilter;
 struct ServiceWorkerObjectInfo;
+class ServiceWorkerProviderContext;
 class ThreadSafeSender;
 class WebServiceWorkerImpl;
 
@@ -55,6 +56,13 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
       const GURL& pattern,
       blink::WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks);
 
+  // Called when a new provider context for a document is created. Usually
+  // this happens when a new document is being loaded, and is called much
+  // earlier than AddScriptClient.
+  // (This is attached only to the document thread's ServiceWorkerDispatcher)
+  void AddProviderContext(ServiceWorkerProviderContext* provider_context);
+  void RemoveProviderContext(ServiceWorkerProviderContext* provider_context);
+
   // Called when navigator.serviceWorker is instantiated or detached
   // for a document whose provider can be identified by |provider_id|.
   void AddScriptClient(int provider_id,
@@ -74,7 +82,9 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   typedef IDMap<blink::WebServiceWorkerProvider::WebServiceWorkerCallbacks,
       IDMapOwnPointer> CallbackMap;
   typedef std::map<int, blink::WebServiceWorkerProviderClient*> ScriptClientMap;
-  typedef std::map<int, WebServiceWorkerImpl*> ServiceWorkerMap;
+  typedef std::map<int, ServiceWorkerProviderContext*> ProviderContextMap;
+  typedef std::map<int, WebServiceWorkerImpl*> WorkerObjectMap;
+  typedef std::map<int, ServiceWorkerProviderContext*> WorkerToProviderMap;
 
   friend class WebServiceWorkerImpl;
 
@@ -103,7 +113,12 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
 
   CallbackMap pending_callbacks_;
   ScriptClientMap script_clients_;
-  ServiceWorkerMap service_workers_;
+  ProviderContextMap provider_contexts_;
+  WorkerObjectMap service_workers_;
+
+  // A map for ServiceWorkers that are associated to a particular document
+  // (e.g. as .current).
+  WorkerToProviderMap worker_to_provider_;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
