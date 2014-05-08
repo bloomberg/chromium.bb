@@ -33,7 +33,6 @@
 
 #include "V8InspectorFrontendHost.h"
 #include "bindings/v8/ScriptController.h"
-#include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorFrontendHost.h"
 #include "core/page/Page.h"
@@ -111,6 +110,7 @@ void InspectorFrontendClientImpl::windowObjectCleared()
             "     ['closeWindow', 0],"
             "     ['indexPath', 2],"
             "     ['inspectElementCompleted', 0],"
+            "     ['inspectedURLChanged', 1],"
             "     ['moveWindowBy', 2],"
             "     ['openInNewTab', 1],"
             "     ['openUrlOnRemoteDeviceAndInspect', 2],"
@@ -145,11 +145,6 @@ void InspectorFrontendClientImpl::windowObjectCleared()
             "InspectorFrontendHost.close = function(url) { };";
         scriptController->executeScriptInMainWorld(installAdditionalAPI, ScriptController::ExecuteScriptWhenScriptsDisabled);
     }
-}
-
-void InspectorFrontendClientImpl::inspectedURLChanged(const String& url)
-{
-    m_frontendPage->mainFrame()->document()->setTitle("Developer Tools - " + url);
 }
 
 void InspectorFrontendClientImpl::sendMessageToBackend(const String& message)

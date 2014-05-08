@@ -53,8 +53,6 @@ public:
     // InspectorFrontendClient methods:
     virtual void windowObjectCleared() OVERRIDE;
 
-    virtual void inspectedURLChanged(const WTF::String&) OVERRIDE;
-
     virtual void sendMessageToBackend(const WTF::String&) OVERRIDE;
 
     virtual void sendMessageToEmbedder(const WTF::String&) OVERRIDE;

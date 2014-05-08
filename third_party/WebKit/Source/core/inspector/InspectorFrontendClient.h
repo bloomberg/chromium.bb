@@ -42,8 +42,6 @@ public:
 
     virtual void windowObjectCleared() = 0;
 
-    virtual void inspectedURLChanged(const String&) = 0;
-
     virtual void sendMessageToBackend(const String&) = 0;
 
     virtual void sendMessageToEmbedder(const String&) = 0;

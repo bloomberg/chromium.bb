@@ -144,12 +144,6 @@ float InspectorFrontendHost::zoomFactor()
     return m_frontendPage->mainFrame()->pageZoomFactor();
 }
 
-void InspectorFrontendHost::inspectedURLChanged(const String& newURL)
-{
-    if (m_client)
-        m_client->inspectedURLChanged(newURL);
-}
-
 void InspectorFrontendHost::setInjectedScriptForOrigin(const String& origin, const String& script)
 {
     m_frontendPage->inspectorController().setInjectedScriptForOrigin(origin, script);
