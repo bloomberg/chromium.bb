@@ -36,6 +36,7 @@
 #include "components/nacl/loader/nacl_listener.h"
 #include "components/nacl/loader/nonsfi/irt_exception_handling.h"
 #include "components/nacl/loader/sandbox_linux/nacl_sandbox_linux.h"
+#include "content/public/common/child_process_sandbox_support_linux.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "crypto/nss_util.h"
@@ -114,41 +115,24 @@ void ChildNaClLoaderInit(ScopedVector<base::ScopedFD> child_fds,
                          bool uses_nonsfi_mode,
                          nacl::NaClSandbox* nacl_sandbox,
                          const std::string& channel_id) {
-  bool validack = false;
-  base::ProcessId real_pid;
-  // Wait until the parent process has discovered our PID.  We
-  // should not fork any child processes (which the seccomp
-  // sandbox does) until then, because that can interfere with the
-  // parent's discovery of our PID.
-  const ssize_t nread = HANDLE_EINTR(
-      read(child_fds[content::ZygoteForkDelegate::kParentFDIndex]->get(),
-           &real_pid,
-           sizeof(real_pid)));
-  if (static_cast<size_t>(nread) == sizeof(real_pid)) {
-    // Make sure the parent didn't accidentally send us our real PID.
-    // We don't want it to be discoverable anywhere in our address space
-    // when we start running untrusted code.
-    CHECK(real_pid == 0);
+  DCHECK(child_fds.size() >
+         std::max(content::ZygoteForkDelegate::kPIDOracleFDIndex,
+                  content::ZygoteForkDelegate::kBrowserFDIndex));
 
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kProcessChannelID, channel_id);
-    validack = true;
-  } else {
-    if (nread < 0)
-      perror("read");
-    LOG(ERROR) << "read returned " << nread;
-  }
+  // Ping the PID oracle socket.
+  CHECK(content::SendZygoteChildPing(
+      child_fds[content::ZygoteForkDelegate::kPIDOracleFDIndex]->get()));
 
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kProcessChannelID, channel_id);
+
+  // Save the browser socket and close the rest.
   base::ScopedFD browser_fd(
       child_fds[content::ZygoteForkDelegate::kBrowserFDIndex]->Pass());
   child_fds.clear();
 
-  if (validack) {
-    BecomeNaClLoader(
-        browser_fd.Pass(), system_info, uses_nonsfi_mode, nacl_sandbox);
-  } else {
-    LOG(ERROR) << "Failed to synch with zygote";
-  }
+  BecomeNaClLoader(
+      browser_fd.Pass(), system_info, uses_nonsfi_mode, nacl_sandbox);
   _exit(1);
 }
 

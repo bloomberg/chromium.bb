@@ -294,6 +294,12 @@ pid_t ZygoteHostImpl::ForkRequest(
   DCHECK(init_);
   Pickle pickle;
 
+  int raw_socks[2];
+  PCHECK(0 == socketpair(AF_UNIX, SOCK_SEQPACKET, 0, raw_socks));
+  base::ScopedFD my_sock(raw_socks[0]);
+  base::ScopedFD peer_sock(raw_socks[1]);
+  CHECK(UnixDomainSocket::EnableReceiveProcessId(my_sock.get()));
+
   pickle.WriteInt(kZygoteCommandFork);
   pickle.WriteString(process_type);
   pickle.WriteInt(argv.size());
@@ -301,12 +307,19 @@ pid_t ZygoteHostImpl::ForkRequest(
        i = argv.begin(); i != argv.end(); ++i)
     pickle.WriteString(*i);
 
-  pickle.WriteInt(mapping.size());
+  // Fork requests contain one file descriptor for the PID oracle, and one
+  // more for each file descriptor mapping for the child process.
+  const size_t num_fds_to_send = 1 + mapping.size();
+  pickle.WriteInt(num_fds_to_send);
 
   std::vector<int> fds;
-  // Scoped pointers cannot be stored in containers, so we have to use a
-  // linked_ptr.
-  std::vector<linked_ptr<base::ScopedFD> > autodelete_fds;
+  ScopedVector<base::ScopedFD> autoclose_fds;
+
+  // First FD to send is peer_sock.
+  fds.push_back(peer_sock.get());
+  autoclose_fds.push_back(new base::ScopedFD(peer_sock.Pass()));
+
+  // The rest come from mapping.
   for (std::vector<FileDescriptorInfo>::const_iterator
        i = mapping.begin(); i != mapping.end(); ++i) {
     pickle.WriteUInt32(i->id);
@@ -314,16 +327,46 @@ pid_t ZygoteHostImpl::ForkRequest(
     if (i->fd.auto_close) {
       // Auto-close means we need to close the FDs after they have been passed
       // to the other process.
-      linked_ptr<base::ScopedFD> ptr(new base::ScopedFD(fds.back()));
-      autodelete_fds.push_back(ptr);
+      autoclose_fds.push_back(new base::ScopedFD(i->fd.fd));
     }
   }
+
+  // Sanity check that we've populated |fds| correctly.
+  DCHECK_EQ(num_fds_to_send, fds.size());
 
   pid_t pid;
   {
     base::AutoLock lock(control_lock_);
     if (!SendMessage(pickle, &fds))
       return base::kNullProcessHandle;
+    autoclose_fds.clear();
+
+    {
+      char buf[sizeof(kZygoteChildPingMessage) + 1];
+      ScopedVector<base::ScopedFD> recv_fds;
+      base::ProcessId real_pid;
+
+      ssize_t n = UnixDomainSocket::RecvMsgWithPid(
+          my_sock.get(), buf, sizeof(buf), &recv_fds, &real_pid);
+      if (n != sizeof(kZygoteChildPingMessage) ||
+          0 != memcmp(buf,
+                      kZygoteChildPingMessage,
+                      sizeof(kZygoteChildPingMessage))) {
+        // Zygote children should still be trustworthy when they're supposed to
+        // ping us, so something's broken if we don't receive a valid ping.
+        LOG(ERROR) << "Did not receive ping from zygote child";
+        NOTREACHED();
+        real_pid = -1;
+      }
+      my_sock.reset();
+
+      // Always send PID back to zygote.
+      Pickle pid_pickle;
+      pid_pickle.WriteInt(kZygoteCommandForkRealPID);
+      pid_pickle.WriteInt(real_pid);
+      if (!SendMessage(pid_pickle, NULL))
+        return base::kNullProcessHandle;
+    }
 
     // Read the reply, which pickles the PID and an optional UMA enumeration.
     static const unsigned kMaxReplyLength = 2048;

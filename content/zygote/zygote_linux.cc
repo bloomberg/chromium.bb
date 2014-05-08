@@ -50,6 +50,30 @@ int LookUpFd(const base::GlobalDescriptors::Mapping& fd_mapping, uint32_t key) {
   return -1;
 }
 
+void CreatePipe(base::ScopedFD* read_pipe, base::ScopedFD* write_pipe) {
+  int raw_pipe[2];
+  PCHECK(0 == pipe(raw_pipe));
+  read_pipe->reset(raw_pipe[0]);
+  write_pipe->reset(raw_pipe[1]);
+}
+
+void KillAndReap(pid_t pid, bool use_helper) {
+  if (use_helper) {
+    // Helper children may be forked in another PID namespace, so |pid| might
+    // be meaningless to us; or we just might not be able to directly send it
+    // signals.  So we can't kill it.
+    // Additionally, we're not its parent, so we can't reap it anyway.
+    // TODO(mdempsky): Extend the ZygoteForkDelegate API to handle this.
+    LOG(WARNING) << "Unable to kill or reap helper children";
+    return;
+  }
+
+  // Kill the child process in case it's not already dead, so we can safely
+  // perform a blocking wait.
+  PCHECK(0 == kill(pid, SIGKILL));
+  PCHECK(pid == HANDLE_EINTR(waitpid(pid, NULL, 0)));
+}
+
 }  // namespace
 
 Zygote::Zygote(int sandbox_flags,
@@ -160,6 +184,13 @@ bool Zygote::HandleRequestFromBrowser(int fd) {
         return false;
       case kZygoteCommandGetSandboxStatus:
         HandleGetSandboxStatus(fd, pickle, iter);
+        return false;
+      case kZygoteCommandForkRealPID:
+        // This shouldn't happen in practice, but some failure paths in
+        // HandleForkRequest (e.g., if ReadArgsAndFork fails during depickling)
+        // could leave this command pending on the socket.
+        LOG(ERROR) << "Unexpected real PID message from browser";
+        NOTREACHED();
         return false;
       default:
         NOTREACHED();
@@ -295,6 +326,7 @@ void Zygote::HandleGetTerminationStatus(int fd,
 int Zygote::ForkWithRealPid(const std::string& process_type,
                             const base::GlobalDescriptors::Mapping& fd_mapping,
                             const std::string& channel_id,
+                            base::ScopedFD pid_oracle,
                             std::string* uma_name,
                             int* uma_sample,
                             int* uma_boundary_value) {
@@ -302,50 +334,38 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
                                                        uma_name,
                                                        uma_sample,
                                                        uma_boundary_value));
-  int dummy_fd;
-  ino_t dummy_inode;
-  int pipe_fds[2] = { -1, -1 };
+
+  base::ScopedFD read_pipe, write_pipe;
   base::ProcessId pid = 0;
-
-  dummy_fd = socket(PF_UNIX, SOCK_DGRAM, 0);
-  if (dummy_fd < 0) {
-    LOG(ERROR) << "Failed to create dummy FD";
-    goto error;
-  }
-  if (!base::FileDescriptorGetInode(&dummy_inode, dummy_fd)) {
-    LOG(ERROR) << "Failed to get inode for dummy FD";
-    goto error;
-  }
-  if (pipe(pipe_fds) != 0) {
-    LOG(ERROR) << "Failed to create pipe";
-    goto error;
-  }
-
   if (use_helper) {
-    std::vector<int> fds;
     int ipc_channel_fd = LookUpFd(fd_mapping, kPrimaryIPCChannel);
     if (ipc_channel_fd < 0) {
       DLOG(ERROR) << "Failed to find kPrimaryIPCChannel in FD mapping";
-      goto error;
+      return -1;
     }
+    std::vector<int> fds;
     fds.push_back(ipc_channel_fd);  // kBrowserFDIndex
-    fds.push_back(dummy_fd);  // kDummyFDIndex
-    fds.push_back(pipe_fds[0]);  // kParentFDIndex
+    fds.push_back(pid_oracle.get());  // kPIDOracleFDIndex
     pid = helper_->Fork(process_type, fds, channel_id);
+
+    // Helpers should never return in the child process.
+    CHECK_NE(pid, 0);
   } else {
+    CreatePipe(&read_pipe, &write_pipe);
     pid = fork();
   }
-  if (pid < 0) {
-    goto error;
-  } else if (pid == 0) {
+
+  if (pid == 0) {
     // In the child process.
-    close(pipe_fds[1]);
+    write_pipe.reset();
+
+    // Ping the PID oracle socket so the browser can find our PID.
+    CHECK(SendZygoteChildPing(pid_oracle.get()));
+
+    // Now read back our real PID from the zygote.
     base::ProcessId real_pid;
-    // Wait until the parent process has discovered our PID.  We
-    // should not fork any child processes (which the seccomp
-    // sandbox does) until then, because that can interfere with the
-    // parent's discovery of our PID.
-    if (!base::ReadFromFD(pipe_fds[0], reinterpret_cast<char*>(&real_pid),
+    if (!base::ReadFromFD(read_pipe.get(),
+                          reinterpret_cast<char*>(&real_pid),
                           sizeof(real_pid))) {
       LOG(FATAL) << "Failed to synchronise with parent zygote process";
     }
@@ -361,78 +381,64 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
     base::debug::TraceLog::GetInstance()->SetProcessID(
         static_cast<int>(real_pid));
 #endif
-    close(pipe_fds[0]);
-    close(dummy_fd);
     return 0;
-  } else {
-    // In the parent process.
-    close(dummy_fd);
-    dummy_fd = -1;
-    close(pipe_fds[0]);
-    pipe_fds[0] = -1;
-    base::ProcessId real_pid;
-    if (UsingSUIDSandbox()) {
-      uint8_t reply_buf[512];
-      Pickle request;
-      request.WriteInt(LinuxSandbox::METHOD_GET_CHILD_WITH_INODE);
-      request.WriteUInt64(dummy_inode);
+  }
 
-      const ssize_t r = UnixDomainSocket::SendRecvMsg(
-          GetSandboxFD(), reply_buf, sizeof(reply_buf), NULL,
-          request);
-      if (r == -1) {
-        LOG(ERROR) << "Failed to get child process's real PID";
-        goto error;
-      }
+  // In the parent process.
+  read_pipe.reset();
+  pid_oracle.reset();
 
-      Pickle reply(reinterpret_cast<char*>(reply_buf), r);
-      PickleIterator iter(reply);
-      if (!reply.ReadInt(&iter, &real_pid))
-        goto error;
-      if (real_pid <= 0) {
-        // METHOD_GET_CHILD_WITH_INODE failed. Did the child die already?
-        LOG(ERROR) << "METHOD_GET_CHILD_WITH_INODE failed";
-        goto error;
-      }
-    } else {
-      // If no SUID sandbox is involved then no pid translation is
-      // necessary.
-      real_pid = pid;
-    }
+  // Always receive a real PID from the zygote host, though it might
+  // be invalid (see below).
+  base::ProcessId real_pid;
+  {
+    ScopedVector<base::ScopedFD> recv_fds;
+    char buf[kZygoteMaxMessageLength];
+    const ssize_t len = UnixDomainSocket::RecvMsg(
+        kZygoteSocketPairFd, buf, sizeof(buf), &recv_fds);
+    CHECK_GT(len, 0);
+    CHECK(recv_fds.empty());
 
-    // Now set-up this process to be tracked by the Zygote.
-    if (process_info_map_.find(real_pid) != process_info_map_.end()) {
-      LOG(ERROR) << "Already tracking PID " << real_pid;
-      NOTREACHED();
-    }
-    process_info_map_[real_pid].internal_pid = pid;
-    process_info_map_[real_pid].started_from_helper = use_helper;
+    Pickle pickle(buf, len);
+    PickleIterator iter(pickle);
 
-    // If we're using a helper, we still need to let the child process know
-    // we've discovered its real PID, but we don't actually reveal the PID.
-    const base::ProcessId pid_for_child = use_helper ? 0 : real_pid;
+    int kind;
+    CHECK(pickle.ReadInt(&iter, &kind));
+    CHECK(kind == kZygoteCommandForkRealPID);
+    CHECK(pickle.ReadInt(&iter, &real_pid));
+  }
+
+  // Fork failed.
+  if (pid < 0) {
+    return -1;
+  }
+
+  // If we successfully forked a child, but it crashed without sending
+  // a message to the browser, the browser won't have found its PID.
+  if (real_pid < 0) {
+    KillAndReap(pid, use_helper);
+    return -1;
+  }
+
+  // If we're not using a helper, send the PID back to the child process.
+  if (!use_helper) {
     ssize_t written =
-        HANDLE_EINTR(write(pipe_fds[1], &pid_for_child, sizeof(pid_for_child)));
-    if (written != sizeof(pid_for_child)) {
-      LOG(ERROR) << "Failed to synchronise with child process";
-      goto error;
+        HANDLE_EINTR(write(write_pipe.get(), &real_pid, sizeof(real_pid)));
+    if (written != sizeof(real_pid)) {
+      KillAndReap(pid, use_helper);
+      return -1;
     }
-    close(pipe_fds[1]);
-    return real_pid;
   }
 
- error:
-  if (pid > 0) {
-    if (waitpid(pid, NULL, WNOHANG) == -1)
-      LOG(ERROR) << "Failed to wait for process";
+  // Now set-up this process to be tracked by the Zygote.
+  if (process_info_map_.find(real_pid) != process_info_map_.end()) {
+    LOG(ERROR) << "Already tracking PID " << real_pid;
+    NOTREACHED();
   }
-  if (dummy_fd >= 0)
-    close(dummy_fd);
-  if (pipe_fds[0] >= 0)
-    close(pipe_fds[0]);
-  if (pipe_fds[1] >= 0)
-    close(pipe_fds[1]);
-  return -1;
+  process_info_map_[real_pid].internal_pid = pid;
+  process_info_map_[real_pid].started_from_helper = use_helper;
+
+  return real_pid;
 }
 
 base::ProcessId Zygote::ReadArgsAndFork(const Pickle& pickle,
@@ -469,7 +475,13 @@ base::ProcessId Zygote::ReadArgsAndFork(const Pickle& pickle,
   if (numfds != static_cast<int>(fds.size()))
     return -1;
 
-  for (int i = 0; i < numfds; ++i) {
+  // First FD is the PID oracle socket.
+  if (fds.size() < 1)
+    return -1;
+  base::ScopedFD pid_oracle(fds[0]->Pass());
+
+  // Remaining FDs are for the global descriptor mapping.
+  for (int i = 1; i < numfds; ++i) {
     base::GlobalDescriptors::Key key;
     if (!pickle.ReadUInt32(&iter, &key))
       return -1;
@@ -480,8 +492,12 @@ base::ProcessId Zygote::ReadArgsAndFork(const Pickle& pickle,
       static_cast<uint32_t>(kSandboxIPCChannel), GetSandboxFD()));
 
   // Returns twice, once per process.
-  base::ProcessId child_pid = ForkWithRealPid(process_type, mapping, channel_id,
-                                              uma_name, uma_sample,
+  base::ProcessId child_pid = ForkWithRealPid(process_type,
+                                              mapping,
+                                              channel_id,
+                                              pid_oracle.Pass(),
+                                              uma_name,
+                                              uma_sample,
                                               uma_boundary_value);
   if (!child_pid) {
     // This is the child process.

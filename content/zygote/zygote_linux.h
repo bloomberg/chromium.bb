@@ -75,12 +75,16 @@ class Zygote {
 
   // This is equivalent to fork(), except that, when using the SUID sandbox, it
   // returns the real PID of the child process as it appears outside the
-  // sandbox, rather than returning the PID inside the sandbox. Optionally, it
-  // fills in uma_name et al with a report the helper wants to make via
-  // UMA_HISTOGRAM_ENUMERATION.
+  // sandbox, rather than returning the PID inside the sandbox.  The child's
+  // real PID is determined by having it call content::SendZygoteChildPing(int)
+  // using the |pid_oracle| descriptor.
+  // Finally, when using a ZygoteForkDelegate helper, |uma_name|, |uma_sample|,
+  // and |uma_boundary_value| may be set if the helper wants to make a UMA
+  // report via UMA_HISTOGRAM_ENUMERATION.
   int ForkWithRealPid(const std::string& process_type,
                       const base::GlobalDescriptors::Mapping& fd_mapping,
                       const std::string& channel_id,
+                      base::ScopedFD pid_oracle,
                       std::string* uma_name,
                       int* uma_sample,
                       int* uma_boundary_value);

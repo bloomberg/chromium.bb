@@ -18,6 +18,10 @@ static const char kZygoteBootMessage[] = "ZYGOTE_BOOT";
 // is ready to go.
 static const char kZygoteHelloMessage[] = "ZYGOTE_OK";
 
+// Message sent by zygote children to the browser so the browser can discover
+// the sending child's process ID.
+static const char kZygoteChildPingMessage[] = "CHILD_PING";
+
 // Maximum allowable length for messages sent to the zygote.
 const size_t kZygoteMaxMessageLength = 8192;
 
@@ -38,7 +42,11 @@ enum {
   kZygoteCommandGetTerminationStatus = 2,
 
   // Read a bitmask of kSandboxLinux*
-  kZygoteCommandGetSandboxStatus = 3
+  kZygoteCommandGetSandboxStatus = 3,
+
+  // Not a real zygote command, but a subcommand used during the zygote fork
+  // protocol.  Sends the child's PID as seen from the browser process.
+  kZygoteCommandForkRealPID = 4
 };
 
 }  // namespace content

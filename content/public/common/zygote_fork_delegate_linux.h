@@ -49,11 +49,11 @@ class ZygoteForkDelegate {
   enum {
     // Used to pass in the descriptor for talking to the Browser
     kBrowserFDIndex,
-    // The next two are used in the protocol for discovering the
-    // child processes real PID from within the SUID sandbox. See
-    // http://code.google.com/p/chromium/wiki/LinuxZygote
-    kDummyFDIndex,
-    kParentFDIndex,
+    // The PID oracle is used in the protocol for discovering the
+    // child process's real PID from within the SUID sandbox.
+    // The child process is required to write to the socket after
+    // successfully forking.
+    kPIDOracleFDIndex,
     kNumPassedFDs  // Number of FDs in the vector passed to Fork().
   };
 
