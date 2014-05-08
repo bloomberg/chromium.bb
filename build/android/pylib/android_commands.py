@@ -1160,25 +1160,33 @@ class AndroidCommands(object):
 
     This is less efficient than SetFileContents.
     """
+    # TODO(skyostil): Remove this once it has been through all the bots.
+    for file_name in (AndroidCommands._TEMP_FILE_BASE_FMT,
+                      AndroidCommands._TEMP_SCRIPT_FILE_BASE_FMT):
+      self.RunShellCommand('rm ' + self.GetExternalStorage() + '/' +
+                           file_name.replace('%d', '*'))
+
     temp_file = self._GetDeviceTempFileName(AndroidCommands._TEMP_FILE_BASE_FMT)
     temp_script = self._GetDeviceTempFileName(
         AndroidCommands._TEMP_SCRIPT_FILE_BASE_FMT)
 
-    # Put the contents in a temporary file
-    self.SetFileContents(temp_file, contents)
-    # Create a script to copy the file contents to its final destination
-    self.SetFileContents(temp_script, 'cat %s > %s' % (temp_file, filename))
+    try:
+      # Put the contents in a temporary file
+      self.SetFileContents(temp_file, contents)
+      # Create a script to copy the file contents to its final destination
+      self.SetFileContents(temp_script, 'cat %s > %s' % (temp_file, filename))
 
-    command = 'sh %s' % temp_script
-    command_runner = self._GetProtectedFileCommandRunner()
-    if command_runner:
-      command_runner(command)
-    else:
-      logging.warning('Could not set contents of protected file: %s' % filename)
-
-    # And remove the temporary files
-    self.RunShellCommand('rm ' + temp_file)
-    self.RunShellCommand('rm ' + temp_script)
+      command = 'sh %s' % temp_script
+      command_runner = self._GetProtectedFileCommandRunner()
+      if command_runner:
+        return command_runner(command)
+      else:
+        logging.warning(
+            'Could not set contents of protected file: %s' % filename)
+    finally:
+      # And remove the temporary files
+      self.RunShellCommand('rm ' + temp_file)
+      self.RunShellCommand('rm ' + temp_script)
 
   def RemovePushedFiles(self):
     """Removes all files pushed with PushIfNeeded() from the device."""
@@ -1891,17 +1899,21 @@ class AndroidCommands(object):
                                     'android',
                                     'pylib',
                                     'efficient_android_directory_copy.sh')
-    self._adb.Push(host_script_path, temp_script_file)
-    self.EnableAdbRoot
-    out = self.RunShellCommand('sh %s %s %s' % (temp_script_file, source, dest),
-                               timeout_time=120)
-    if self._device:
-      device_repr = self._device[-4:]
-    else:
-      device_repr = '????'
-    for line in out:
-      logging.info('[%s]> %s', device_repr, line)
-    self.RunShellCommand('rm %s' % temp_script_file)
+    try:
+      self._adb.Push(host_script_path, temp_script_file)
+      self.EnableAdbRoot()
+      out = self.RunShellCommand('sh %s %s %s' % (temp_script_file,
+                                                  source,
+                                                  dest),
+                                 timeout_time=120)
+      if self._device:
+        device_repr = self._device[-4:]
+      else:
+        device_repr = '????'
+      for line in out:
+        logging.info('[%s]> %s', device_repr, line)
+    finally:
+      self.RunShellCommand('rm %s' % temp_script_file)
 
   def _GetControlUsbChargingCommand(self):
     if self._control_usb_charging_command['cached']:
