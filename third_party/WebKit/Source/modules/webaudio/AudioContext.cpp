@@ -275,32 +275,7 @@ bool AudioContext::hasPendingActivity() const
 
 PassRefPtr<AudioBuffer> AudioContext::createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState& exceptionState)
 {
-    RefPtr<AudioBuffer> audioBuffer = AudioBuffer::create(numberOfChannels, numberOfFrames, sampleRate);
-    if (!audioBuffer.get()) {
-        if (numberOfChannels > AudioContext::maxNumberOfChannels()) {
-            exceptionState.throwDOMException(
-                NotSupportedError,
-                "requested number of channels (" + String::number(numberOfChannels) + ") exceeds maximum (" + String::number(AudioContext::maxNumberOfChannels()) + ")");
-        } else if (sampleRate < AudioBuffer::minAllowedSampleRate() || sampleRate > AudioBuffer::maxAllowedSampleRate()) {
-            exceptionState.throwDOMException(
-                NotSupportedError,
-                "requested sample rate (" + String::number(sampleRate)
-                + ") does not lie in the allowed range of "
-                + String::number(AudioBuffer::minAllowedSampleRate())
-                + "-" + String::number(AudioBuffer::maxAllowedSampleRate()) + " Hz");
-        } else if (!numberOfFrames) {
-            exceptionState.throwDOMException(
-                NotSupportedError,
-                "number of frames must be greater than 0.");
-        } else {
-            exceptionState.throwDOMException(
-                NotSupportedError,
-                "unable to create buffer of " + String::number(numberOfChannels)
-                + " channel(s) of " + String::number(numberOfFrames)
-                + " frames each.");
-        }
-        return nullptr;
-    }
+    RefPtr<AudioBuffer> audioBuffer = AudioBuffer::create(numberOfChannels, numberOfFrames, sampleRate, exceptionState);
 
     return audioBuffer;
 }

@@ -44,6 +44,7 @@ class ExceptionState;
 class AudioBuffer : public ScriptWrappable, public RefCounted<AudioBuffer> {
 public:
     static PassRefPtr<AudioBuffer> create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
+    static PassRefPtr<AudioBuffer> create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
 
     // Returns 0 if data is not a valid audio file.
     static PassRefPtr<AudioBuffer> createFromAudioFileData(const void* data, size_t dataSize, bool mixToMono, float sampleRate);

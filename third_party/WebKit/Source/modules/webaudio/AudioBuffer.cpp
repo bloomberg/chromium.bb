@@ -32,6 +32,7 @@
 
 #include "modules/webaudio/AudioBuffer.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/audio/AudioBus.h"
@@ -54,7 +55,7 @@ float AudioBuffer::maxAllowedSampleRate()
 
 PassRefPtr<AudioBuffer> AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate)
 {
-    if (sampleRate < minAllowedSampleRate() || sampleRate > maxAllowedSampleRate() || numberOfChannels > AudioContext::maxNumberOfChannels() || !numberOfFrames)
+    if (sampleRate < minAllowedSampleRate() || sampleRate > maxAllowedSampleRate() || numberOfChannels > AudioContext::maxNumberOfChannels() || !numberOfChannels || !numberOfFrames)
         return nullptr;
 
     RefPtr<AudioBuffer> buffer = adoptRef(new AudioBuffer(numberOfChannels, numberOfFrames, sampleRate));
@@ -62,6 +63,59 @@ PassRefPtr<AudioBuffer> AudioBuffer::create(unsigned numberOfChannels, size_t nu
     if (!buffer->createdSuccessfully(numberOfChannels))
         return nullptr;
     return buffer;
+}
+
+PassRefPtr<AudioBuffer> AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState& exceptionState)
+{
+    if (!numberOfChannels || numberOfChannels > AudioContext::maxNumberOfChannels()) {
+        exceptionState.throwDOMException(
+            NotSupportedError,
+            ExceptionMessages::indexOutsideRange(
+                "number of channels",
+                numberOfChannels,
+                1u,
+                ExceptionMessages::InclusiveBound,
+                AudioContext::maxNumberOfChannels(),
+                ExceptionMessages::InclusiveBound));
+        return nullptr;
+    }
+
+    if (sampleRate < AudioBuffer::minAllowedSampleRate() || sampleRate > AudioBuffer::maxAllowedSampleRate()) {
+        exceptionState.throwDOMException(
+            NotSupportedError,
+            ExceptionMessages::indexOutsideRange(
+                "sample rate",
+                sampleRate,
+                AudioBuffer::minAllowedSampleRate(),
+                ExceptionMessages::InclusiveBound,
+                AudioBuffer::maxAllowedSampleRate(),
+                ExceptionMessages::InclusiveBound));
+        return nullptr;
+    }
+
+    if (!numberOfFrames) {
+        exceptionState.throwDOMException(
+            NotSupportedError,
+            ExceptionMessages::indexExceedsMinimumBound(
+                "number of frames",
+                numberOfFrames,
+                static_cast<size_t>(0)));
+        return nullptr;
+    }
+
+    RefPtr<AudioBuffer> audioBuffer = create(numberOfChannels, numberOfFrames, sampleRate);
+
+    if (!audioBuffer.get()) {
+        exceptionState.throwDOMException(
+            NotSupportedError,
+            "createBuffer("
+            + String::number(numberOfChannels) + ", "
+            + String::number(numberOfFrames) + ", "
+            + String::number(sampleRate)
+            + ") failed.");
+    }
+
+    return audioBuffer;
 }
 
 PassRefPtr<AudioBuffer> AudioBuffer::createFromAudioFileData(const void* data, size_t dataSize, bool mixToMono, float sampleRate)

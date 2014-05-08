@@ -32,6 +32,7 @@ function runTest() {
 
     // Invalid number of channels: NotSupportedError
     shouldThrow("context.createBuffer(99, 1, context.sampleRate)");
+    shouldThrow("context.createBuffer(0, 1, context.sampleRate)");
     // Invalid sample rate: NotSupportedError
     shouldThrow("context.createBuffer(1, 1, 1)");
     shouldThrow("context.createBuffer(1, 1, 1e6)");
