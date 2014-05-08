@@ -12,7 +12,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_factory.h"
 #include "base/prefs/testing_pref_store.h"
-#include "chrome/common/extensions/api/generated_api.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -227,10 +226,6 @@ void ShellExtensionsBrowserClient::RegisterExtensionFunctions(
     ExtensionFunctionRegistry* registry) const {
   // Register core extension-system APIs.
   extensions::core_api::GeneratedFunctionRegistry::RegisterAll(registry);
-
-  // TODO(rockot): Remove dependency on src/chrome once we have some core APIs
-  // moved out. Also clean up the comment below. See http://crbug.com/349042.
-  extensions::api::GeneratedFunctionRegistry::RegisterAll(registry);
 
   // Register chrome.shell APIs.
   apps::shell_api::GeneratedFunctionRegistry::RegisterAll(registry);

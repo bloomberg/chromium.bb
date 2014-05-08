@@ -7,8 +7,6 @@
 #include "apps/shell/common/api/generated_schemas.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "chrome/common/extensions/api/generated_schemas.h"
-#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "extensions/common/api/generated_schemas.h"
 #include "extensions/common/api/sockets/sockets_manifest_handler.h"
 #include "extensions/common/common_manifest_handlers.h"
@@ -92,8 +90,7 @@ base::LazyInstance<ShellPermissionMessageProvider>
 }  // namespace
 
 ShellExtensionsClient::ShellExtensionsClient()
-    : chrome_api_permissions_(extensions::ChromeAPIPermissions()),
-      extensions_api_permissions_(extensions::ExtensionsAPIPermissions()) {
+    : extensions_api_permissions_(extensions::ExtensionsAPIPermissions()) {
 }
 
 ShellExtensionsClient::~ShellExtensionsClient() {
@@ -110,8 +107,6 @@ void ShellExtensionsClient::Initialize() {
   extensions::ManifestHandler::FinalizeRegistration();
   // TODO(jamescook): Do we need to whitelist any extensions?
 
-  extensions::PermissionsInfo::GetInstance()->AddProvider(
-      chrome_api_permissions_);
   extensions::PermissionsInfo::GetInstance()->AddProvider(
       extensions_api_permissions_);
 }
@@ -181,18 +176,12 @@ bool ShellExtensionsClient::IsAPISchemaGenerated(
   // moved out. See http://crbug.com/349042.
   // Special-case our simplified app.runtime implementation because we don't
   // have the Chrome app APIs available.
-  return extensions::api::GeneratedSchemas::IsGenerated(name) ||
-         extensions::core_api::GeneratedSchemas::IsGenerated(name) ||
+  return extensions::core_api::GeneratedSchemas::IsGenerated(name) ||
          apps::shell_api::GeneratedSchemas::IsGenerated(name);
 }
 
 base::StringPiece ShellExtensionsClient::GetAPISchema(
     const std::string& name) const {
-  // TODO(rockot): Remove dependency on src/chrome once we have some core APIs
-  // moved out. See http://crbug.com/349042.
-  if (extensions::api::GeneratedSchemas::IsGenerated(name))
-    return extensions::api::GeneratedSchemas::Get(name);
-
   // Schema for chrome.shell APIs.
   if (apps::shell_api::GeneratedSchemas::IsGenerated(name))
     return apps::shell_api::GeneratedSchemas::Get(name);

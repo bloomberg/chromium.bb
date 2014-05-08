@@ -67,17 +67,6 @@
       'type': 'static_library',
       'defines!': ['CONTENT_IMPLEMENTATION'],
       'dependencies': [
-        '<(DEPTH)/chrome/chrome.gyp:browser',
-        '<(DEPTH)/chrome/chrome.gyp:browser_extensions',
-        '<(DEPTH)/chrome/chrome.gyp:debugger',
-        '<(DEPTH)/chrome/chrome.gyp:plugin',
-        '<(DEPTH)/chrome/chrome.gyp:renderer',
-        '<(DEPTH)/chrome/chrome.gyp:utility',
-        '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
-        '<(DEPTH)/chrome/common/extensions/api/api.gyp:chrome_api',
-        '<(DEPTH)/third_party/WebKit/public/blink_devtools.gyp:blink_devtools_frontend_resources',
-        # TODO(rockot): Dependencies above this line are temporary.
-        # See http://crbug.com/359656.
         'app_shell_pak',
         '<(DEPTH)/apps/shell/common/api/api.gyp:shell_api',
         '<(DEPTH)/base/base.gyp:base',
@@ -153,6 +142,7 @@
           'dependencies': [
             '<(DEPTH)/chromeos/chromeos.gyp:chromeos',
             '<(DEPTH)/ui/chromeos/ui_chromeos.gyp:ui_chromeos',
+            '<(DEPTH)/ui/display/display.gyp:display',
           ],
         }],
       ],

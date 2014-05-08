@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/permissions/extensions_api_permissions.h"
 
@@ -43,8 +42,6 @@ class ShellExtensionsClient : public extensions::ExtensionsClient {
   virtual bool ShouldSuppressFatalErrors() const OVERRIDE;
 
  private:
-  // TODO(yoz): Don't include Chrome permissions.
-  const extensions::ChromeAPIPermissions chrome_api_permissions_;
   const extensions::ExtensionsAPIPermissions extensions_api_permissions_;
 
   ScriptingWhitelist scripting_whitelist_;

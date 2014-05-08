@@ -31,6 +31,13 @@
       'usb_service/usb_interface.h',
       'usb_service/usb_service.h',
       'usb_service/usb_service_impl.cc',
+    ],
+    'conditions': [
+      ['OS == "linux"', {
+        'dependencies': [
+          '../build/linux/system.gyp:udev',
+        ],
+      }]
     ]
   }],
 }
