@@ -1350,14 +1350,10 @@ camera.views.Camera.prototype.takePictureImmediately_ = function(opt_callback) {
   // Lock refreshing for smoother experience.
   this.taking_ = true;
 
-  // Show flashing animation with the shutter sound.
-  document.body.classList.add('show-shutter');
   var albumButton = document.querySelector('#toolbar #album-enter');
   camera.util.setAnimationClass(albumButton, albumButton, 'flash');
-  setTimeout(function() {
-    document.body.classList.remove('show-shutter');
-  }.bind(this), 200);
 
+  // Play a shutter sound.
   this.shutterSound_.currentTime = 0;
   this.shutterSound_.play();
 
