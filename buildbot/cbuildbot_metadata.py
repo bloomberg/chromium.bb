@@ -85,31 +85,6 @@ class CBuildbotMetadata(object):
 
     return self
 
-  def UpdateKeyDictWithDict(self, key, key_metadata_dict):
-    """Update metadata for the given key with values supplied in |metadata_dict|
-
-    This method merges the dictionary for the given key with the given key
-    metadata dictionary (allowing them to be effectively updated from any
-    stage). This may not be multiprocess safe if two processes attempt to
-    modify a dictionary with the same key.
-
-    Args:
-      key: The key name (e.g. 'version' or 'status')
-      key_metadata_dict: A dictionary of key-value pairs to be added this
-                     metadata key. Keys should be strings, values
-                     should be json-able.
-
-    Returns:
-      self
-    """
-    # If the key already exists, then use its dictionary
-    metadata_dict = self._metadata_dict.copy()
-    update_dict = metadata_dict.pop(key, {})
-    update_dict.update(key_metadata_dict)
-    self._metadata_dict[key] = update_dict
-
-    return self
-
   def GetDict(self):
     """Returns a dictionary representation of metadata."""
     # CL actions are be stored in self._cl_action_list instead of
@@ -162,7 +137,7 @@ class CBuildbotMetadata(object):
              'internal': change.internal}
 
   @staticmethod
-  def GetReportMetadataDict(builder_run, get_changes_from_pool,
+  def GetReportMetadataDict(builder_run, build_root, get_changes_from_pool,
                             get_statuses_from_slaves, config=None, stage=None,
                             final_status=None, sync_instance=None,
                             completion_instance=None):
@@ -176,6 +151,7 @@ class CBuildbotMetadata(object):
 
     Args:
       builder_run: BuilderRun instance for this run.
+      build_root: Path to build root for this run.
       get_changes_from_pool: If True, information about patches in the
                              sync_instance.pool will be recorded.
       get_statuses_from_slaves: If True, status information of slave
@@ -199,12 +175,17 @@ class CBuildbotMetadata(object):
        A metadata dictionary suitable to be json-serialized.
     """
     config = config or builder_run.config
+
     start_time = results_lib.Results.start_time
     current_time = datetime.datetime.now()
     start_time_stamp = cros_build_lib.UserDateTimeFormat(timeval=start_time)
     current_time_stamp = cros_build_lib.UserDateTimeFormat(timeval=current_time)
     duration = '%s' % (current_time - start_time,)
 
+    verinfo = builder_run.GetVersionInfo(build_root)
+    platform_tag = getattr(builder_run.attrs, 'release_tag')
+    if not platform_tag:
+      platform_tag = verinfo.VersionString()
     metadata = {
         'status': {
             'current-time': current_time_stamp,
@@ -215,7 +196,13 @@ class CBuildbotMetadata(object):
             'start': start_time_stamp,
             'finish': current_time_stamp if final_status else '',
             'duration': duration,
-        }
+        },
+        'version': {
+            'chrome': builder_run.attrs.chrome_version,
+            'full': builder_run.GetVersion(),
+            'milestone': verinfo.chrome_branch,
+            'platform': platform_tag,
+        },
     }
     metadata['results'] = []
     for entry in results_lib.Results.Get():

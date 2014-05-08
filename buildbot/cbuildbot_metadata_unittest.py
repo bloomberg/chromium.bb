@@ -41,20 +41,12 @@ class MetadataTest(cros_test_lib.TestCase):
   def testMultiprocessSafety(self):
     m = multiprocessing.Manager()
     metadata = cbuildbot_metadata.CBuildbotMetadata(multiprocess_manager=m)
-    key_dict = {'key1': 1, 'key2': 2}
     starting_dict = {'key1' : 1,
                      'key2' : '2',
-                     'key3' : key_dict,
                      'cl_actions' : [('a', 1), ('b', 2)]}
 
     # Test that UpdateWithDict is process-safe
     parallel.RunParallelSteps([lambda: metadata.UpdateWithDict(starting_dict)])
-    ending_dict = metadata.GetDict()
-    self.assertEqual(starting_dict, ending_dict)
-
-    # Test that UpdateKeyDictWithDict is process-safe
-    parallel.RunParallelSteps([lambda: metadata.UpdateKeyDictWithDict(
-        'key3', key_dict)])
     ending_dict = metadata.GetDict()
     self.assertEqual(starting_dict, ending_dict)
 
