@@ -320,9 +320,17 @@ void FastTextAutosizer::destroy(const RenderBlock* block)
 {
     if (!m_pageInfo.m_settingEnabled)
         return;
+
     ASSERT(!m_blocksThatHaveBegunLayout.contains(block));
 
-    m_fingerprintMapper.remove(block);
+    if (m_fingerprintMapper.remove(block) && m_firstBlockToBeginLayout) {
+        // RenderBlock with a fingerprint was destroyed during layout.
+        // Clear the cluster stack and the supercluster map to avoid stale pointers.
+        // Speculative fix for http://crbug.com/369485.
+        m_firstBlockToBeginLayout = 0;
+        m_clusterStack.clear();
+        m_superclusters.clear();
+    }
 }
 
 FastTextAutosizer::BeginLayoutBehavior FastTextAutosizer::prepareForLayout(const RenderBlock* block)
@@ -1060,15 +1068,15 @@ void FastTextAutosizer::FingerprintMapper::addTentativeClusterRoot(const RenderB
 #endif
 }
 
-void FastTextAutosizer::FingerprintMapper::remove(const RenderObject* renderer)
+bool FastTextAutosizer::FingerprintMapper::remove(const RenderObject* renderer)
 {
     Fingerprint fingerprint = m_fingerprints.take(renderer);
     if (!fingerprint || !renderer->isRenderBlock())
-        return;
+        return false;
 
     ReverseFingerprintMap::iterator blocksIter = m_blocksForFingerprint.find(fingerprint);
     if (blocksIter == m_blocksForFingerprint.end())
-        return;
+        return false;
 
     BlockSet& blocks = *blocksIter->value;
     blocks.remove(toRenderBlock(renderer));
@@ -1077,6 +1085,7 @@ void FastTextAutosizer::FingerprintMapper::remove(const RenderObject* renderer)
 #ifndef NDEBUG
     assertMapsAreConsistent();
 #endif
+    return true;
 }
 
 FastTextAutosizer::Fingerprint FastTextAutosizer::FingerprintMapper::get(const RenderObject* renderer)

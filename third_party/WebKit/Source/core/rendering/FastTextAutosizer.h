@@ -201,7 +201,8 @@ private:
     public:
         void add(const RenderObject*, Fingerprint);
         void addTentativeClusterRoot(const RenderBlock*, Fingerprint);
-        void remove(const RenderObject*);
+        // Returns true if any BlockSet was modified or freed by the removal.
+        bool remove(const RenderObject*);
         Fingerprint get(const RenderObject*);
         BlockSet& getTentativeClusterRoots(Fingerprint);
     private:
