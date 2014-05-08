@@ -90,10 +90,10 @@ public:
 
 private:
     GestureToken()
-        : m_consumableGestures(0),
-        m_timestamp(0),
-        m_outOfProcess(false),
-        m_javascriptPrompt(false)
+        : m_consumableGestures(0)
+        , m_timestamp(0)
+        , m_outOfProcess(false)
+        , m_javascriptPrompt(false)
     {
     }
 
