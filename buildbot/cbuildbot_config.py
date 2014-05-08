@@ -1595,12 +1595,6 @@ internal_paladin.add_config('x86-alex-paladin',
   upload_hw_test_artifacts=True,
 )
 
-internal_paladin.add_config('bayleybay-paladin',
-  boards=['bayleybay'],
-  paladin_builder_name='bayleybay paladin',
-  important=False,
-)
-
 internal_paladin.add_config('beltino-paladin',
   boards=['beltino'],
   paladin_builder_name='beltino paladin',
