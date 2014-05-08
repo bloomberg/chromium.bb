@@ -45,7 +45,7 @@ class PickerIndicatorElement FINAL : public HTMLDivElement, public DateTimeChoos
 public:
     // PickerIndicatorOwner implementer must call removePickerIndicatorOwner when
     // it doesn't handle event, e.g. at destruction.
-    class PickerIndicatorOwner {
+    class PickerIndicatorOwner : public WillBeGarbageCollectedMixin {
     public:
         virtual ~PickerIndicatorOwner() { }
         virtual bool isPickerIndicatorOwnerDisabledOrReadOnly() const = 0;
@@ -55,12 +55,14 @@ public:
         virtual bool setupDateTimeChooserParameters(DateTimeChooserParameters&) = 0;
     };
 
-    static PassRefPtr<PickerIndicatorElement> create(Document&, PickerIndicatorOwner&);
+    static PassRefPtrWillBeRawPtr<PickerIndicatorElement> create(Document&, PickerIndicatorOwner&);
     virtual ~PickerIndicatorElement();
+    virtual void trace(Visitor*) OVERRIDE;
+
     void openPopup();
     void closePopup();
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
-    void removePickerIndicatorOwner() { m_pickerIndicatorOwner = 0; }
+    void removePickerIndicatorOwner() { m_pickerIndicatorOwner = nullptr; }
 
     // DateTimeChooserClient implementation.
     virtual void didChooseValue(const String&) OVERRIDE;
@@ -76,7 +78,7 @@ private:
 
     HTMLInputElement* hostInput();
 
-    PickerIndicatorOwner* m_pickerIndicatorOwner;
+    RawPtrWillBeMember<PickerIndicatorOwner> m_pickerIndicatorOwner;
     RefPtr<DateTimeChooser> m_chooser;
 };
 

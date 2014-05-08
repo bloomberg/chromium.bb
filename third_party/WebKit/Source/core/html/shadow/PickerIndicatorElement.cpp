@@ -50,9 +50,9 @@ inline PickerIndicatorElement::PickerIndicatorElement(Document& document, Picker
 {
 }
 
-PassRefPtr<PickerIndicatorElement> PickerIndicatorElement::create(Document& document, PickerIndicatorOwner& pickerIndicatorOwner)
+PassRefPtrWillBeRawPtr<PickerIndicatorElement> PickerIndicatorElement::create(Document& document, PickerIndicatorOwner& pickerIndicatorOwner)
 {
-    RefPtr<PickerIndicatorElement> element = adoptRef(new PickerIndicatorElement(document, pickerIndicatorOwner));
+    RefPtrWillBeRawPtr<PickerIndicatorElement> element = adoptRefWillBeRefCountedGarbageCollected(new PickerIndicatorElement(document, pickerIndicatorOwner));
     element->setShadowPseudoId(AtomicString("-webkit-calendar-picker-indicator", AtomicString::ConstructFromLiteral));
     element->setAttribute(idAttr, ShadowElementNames::pickerIndicator());
     return element.release();
@@ -141,6 +141,12 @@ void PickerIndicatorElement::detach(const AttachContext& context)
 bool PickerIndicatorElement::isPickerIndicatorElement() const
 {
     return true;
+}
+
+void PickerIndicatorElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_pickerIndicatorOwner);
+    HTMLDivElement::trace(visitor);
 }
 
 }
