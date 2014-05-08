@@ -6,8 +6,40 @@
 #include "public/web/WebFrame.h"
 
 #include "web/OpenedFrameTracker.h"
+#include <algorithm>
+
 
 namespace blink {
+
+void WebFrame::swap(WebFrame* frame)
+{
+    using std::swap;
+
+    if (m_parent) {
+        if (m_parent->m_firstChild == this)
+            m_parent->m_firstChild = frame;
+        if (m_parent->m_lastChild == this)
+            m_parent->m_lastChild = frame;
+        swap(m_parent, frame->m_parent);
+    }
+    if (m_previousSibling) {
+        m_previousSibling->m_nextSibling = frame;
+        swap(m_previousSibling, frame->m_previousSibling);
+    }
+    if (m_nextSibling) {
+        m_nextSibling->m_previousSibling = frame;
+        swap(m_nextSibling, frame->m_nextSibling);
+    }
+    if (m_opener) {
+        m_opener->m_openedFrameTracker->remove(this);
+        m_opener->m_openedFrameTracker->add(frame);
+        swap(m_opener, frame->m_opener);
+    }
+    if (!m_openedFrameTracker->isEmpty()) {
+        m_openedFrameTracker->updateOpener(frame);
+        frame->m_openedFrameTracker.reset(m_openedFrameTracker.release());
+    }
+}
 
 WebFrame* WebFrame::opener() const
 {

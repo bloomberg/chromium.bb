@@ -114,6 +114,8 @@ public:
     virtual bool isWebRemoteFrame() const = 0;
     virtual WebRemoteFrame* toWebRemoteFrame() = 0;
 
+    BLINK_EXPORT void swap(WebFrame*);
+
     // This method closes and deletes the WebFrame.
     virtual void close() = 0;
 

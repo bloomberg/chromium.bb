@@ -15,9 +15,12 @@ OpenedFrameTracker::OpenedFrameTracker()
 
 OpenedFrameTracker::~OpenedFrameTracker()
 {
-    HashSet<WebFrame*>::iterator end = m_openedFrames.end();
-    for (HashSet<WebFrame*>::iterator it = m_openedFrames.begin(); it != end; ++it)
-        (*it)->m_opener = 0;
+    updateOpener(0);
+}
+
+bool OpenedFrameTracker::isEmpty() const
+{
+    return m_openedFrames.isEmpty();
 }
 
 void OpenedFrameTracker::add(WebFrame* frame)
@@ -28,6 +31,13 @@ void OpenedFrameTracker::add(WebFrame* frame)
 void OpenedFrameTracker::remove(WebFrame* frame)
 {
     m_openedFrames.remove(frame);
+}
+
+void OpenedFrameTracker::updateOpener(WebFrame* frame)
+{
+    HashSet<WebFrame*>::iterator end = m_openedFrames.end();
+    for (HashSet<WebFrame*>::iterator it = m_openedFrames.begin(); it != end; ++it)
+        (*it)->m_opener = frame;
 }
 
 } // namespace blink

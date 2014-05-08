@@ -21,8 +21,12 @@ public:
     OpenedFrameTracker();
     ~OpenedFrameTracker();
 
+    bool isEmpty() const;
     void add(WebFrame*);
     void remove(WebFrame*);
+
+    // Updates the opener for all tracked frames.
+    void updateOpener(WebFrame*);
 
 private:
     WTF::HashSet<WebFrame*> m_openedFrames;
