@@ -63,6 +63,7 @@ struct wl_socket {
 	char lock_addr[UNIX_PATH_MAX + LOCK_SUFFIXLEN];
 	struct wl_list link;
 	struct wl_event_source *source;
+	char *display_name;
 };
 
 struct wl_client {
@@ -1080,6 +1081,8 @@ wl_socket_init_for_display_name(struct wl_socket *s, const char *name)
 	s->addr.sun_family = AF_LOCAL;
 	name_size = snprintf(s->addr.sun_path, sizeof s->addr.sun_path,
 			     "%s/%s", runtime_dir, name) + 1;
+
+	s->display_name = (s->addr.sun_path + name_size - 1) - strlen(name);
 
 	assert(name_size > 0);
 	if (name_size > (int)sizeof s->addr.sun_path) {
