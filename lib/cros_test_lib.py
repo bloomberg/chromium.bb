@@ -1189,8 +1189,20 @@ class GerritTestCase(MockTempDirTestCase):
     return self._CloneProject(name, path)
 
   @classmethod
-  def _CreateCommit(cls, clone_path, fn=None, msg=None, text=None):
-    """Create a commit in the given git checkout."""
+  def _CreateCommit(cls, clone_path, fn=None, msg=None, text=None, amend=False):
+    """Create a commit in the given git checkout.
+
+    Args:
+      clone_path: The directory on disk of the git clone.
+      fn: The name of the file to write. Optional.
+      msg: The commit message. Optional.
+      text: The text to append to the file. Optional.
+      amend: Whether to amend an existing patch. If set, we will amend the
+        HEAD commit in the checkout and upload that patch.
+
+    Returns:
+      (sha1, changeid) of the new commit.
+    """
     if not fn:
       fn = 'test-file.txt'
     if not msg:
@@ -1200,14 +1212,25 @@ class GerritTestCase(MockTempDirTestCase):
     fpath = os.path.join(clone_path, fn)
     osutils.WriteFile(fpath, '%s\n' % text, mode='a')
     cros_build_lib.RunCommand(['git', 'add', fn], cwd=clone_path, quiet=True)
-    cros_build_lib.RunCommand(
-        ['git', 'commit', '-m', msg], cwd=clone_path, quiet=True)
+    cmd = ['git', 'commit']
+    cmd += ['--amend', '-C', 'HEAD'] if amend else ['-m', msg]
+    cros_build_lib.RunCommand(cmd, cwd=clone_path, quiet=True)
     return cls._GetCommit(clone_path)
 
-  def createCommit(self, clone_path, fn=None, msg=None, text=None):
-    """Create a commit in the given git checkout."""
+  def createCommit(self, clone_path, fn=None, msg=None, text=None,
+                   amend=False):
+    """Create a commit in the given git checkout.
+
+    Args:
+      clone_path: The directory on disk of the git clone.
+      fn: The name of the file to write. Optional.
+      msg: The commit message. Optional.
+      text: The text to append to the file. Optional.
+      amend: Whether to amend an existing patch. If set, we will amend the
+        HEAD commit in the checkout and upload that patch.
+    """
     clone_path = os.path.join(self.tempdir, clone_path)
-    return self._CreateCommit(clone_path, fn, msg, text)
+    return self._CreateCommit(clone_path, fn, msg, text, amend)
 
   @staticmethod
   def _GetCommit(clone_path, ref='HEAD'):

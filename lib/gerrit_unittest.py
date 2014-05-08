@@ -6,6 +6,7 @@
 """Unittests for GerritHelper."""
 
 import getpass
+import httplib
 import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
@@ -26,6 +27,26 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
 
   def _GetHelper(self, remote=constants.EXTERNAL_REMOTE):
     return gerrit.GetGerritHelper(remote)
+
+  def createPatch(self, clone_path, project, amend=False):
+    """Create a patch in the given git checkout and upload it to gerrit.
+
+    Args:
+      clone_path: The directory on disk of the git clone.
+      project: The associated project.
+      amend: Whether to amend an existing patch. If set, we will amend the
+        HEAD commit in the checkout and upload that patch.
+
+    Returns:
+      A GerritPatch object.
+    """
+    (revision, changeid) = self.createCommit(clone_path, amend=amend)
+    self.uploadChange(clone_path)
+    gpatch = self._GetHelper().QuerySingleRecord(
+        change=changeid, project=project, branch='master')
+    self.assertEqual(gpatch.change_id, changeid)
+    self.assertEqual(gpatch.revision, revision)
+    return gpatch
 
   @cros_test_lib.NetworkTest()
   def test001SimpleQuery(self):
@@ -79,21 +100,13 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     """Tests that we can parse a json to check if a change is committed."""
     project = self.createProject('test003')
     clone_path = self.cloneProject(project)
-    (_, changeid) = self.createCommit(clone_path)
-    self.uploadChange(clone_path)
+    gpatch = self.createPatch(clone_path, project)
     helper = self._GetHelper()
-    gpatch = helper.QuerySingleRecord(
-        change=changeid, project=project, branch='master')
-    self.assertEqual(gpatch.change_id, changeid)
     helper.SetReview(gpatch.gerrit_number, labels={'Code-Review':'+2'})
     helper.SubmitChange(gpatch)
     self.assertTrue(helper.IsChangeCommitted(gpatch.gerrit_number))
 
-    (_, changeid) = self.createCommit(clone_path)
-    self.uploadChange(clone_path)
-    gpatch = helper.QuerySingleRecord(
-        change=changeid, project=project, branch='master')
-    self.assertEqual(gpatch.change_id, changeid)
+    gpatch = self.createPatch(clone_path, project)
     self.assertFalse(helper.IsChangeCommitted(gpatch.gerrit_number))
 
   @cros_test_lib.NetworkTest()
@@ -127,12 +140,7 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     """Verify that we can set reviewers on a CL."""
     project = self.createProject('test005')
     clone_path = self.cloneProject(project)
-    (_, changeid) = self.createCommit(clone_path)
-    self.uploadChange(clone_path)
-    helper = self._GetHelper()
-    gpatch = helper.QuerySingleRecord(
-        change=changeid, project=project, branch='master')
-    self.assertEqual(gpatch.change_id, changeid)
+    gpatch = self.createPatch(clone_path, project)
     emails = self._ChooseReviewers()
     helper = self._GetHelper()
     helper.SetReviewers(gpatch.gerrit_number, add=(
@@ -186,25 +194,23 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     """Verify assorted query operations."""
     project = self.createProject('test008')
     clone_path = self.cloneProject(project)
-    (sha1, changeid) = self.createCommit(clone_path)
-    self.uploadChange(clone_path, 'master')
+    gpatch = self.createPatch(clone_path, project)
     helper = self._GetHelper()
-    gpatch = helper.QuerySingleRecord(
-        change=changeid, project=project, branch='master')
-    self.assertEqual(gpatch.change_id, changeid)
 
     # Multi-queries with one valid and one invalid term should raise.
+    invalid_change_id = 'I1234567890123456789012345678901234567890'
     self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
-                      ['I1234567890123456789012345678901234567890', changeid])
+                      [invalid_change_id, gpatch.change_id])
     self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
-                      [changeid, 'I1234567890123456789012345678901234567890'])
+                      [gpatch.change_id, invalid_change_id])
     self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
                       ['12345', gpatch.gerrit_number])
     self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
                       [gpatch.gerrit_number, '12345'])
 
     # Simple query by project/changeid/sha1.
-    patch_info = helper.GrabPatchFromGerrit(project, changeid, sha1)
+    patch_info = helper.GrabPatchFromGerrit(gpatch.project, gpatch.change_id,
+                                            gpatch.sha1)
     self.assertEqual(patch_info.gerrit_number, gpatch.gerrit_number)
     self.assertEqual(patch_info.remote, constants.EXTERNAL_REMOTE)
 
@@ -233,6 +239,33 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     self.assertEqual(len(patch_info), 1)
     self.assertEqual(patch_info[0].gerrit_number, gpatch.gerrit_number)
     self.assertEqual(patch_info[0].remote, constants.INTERNAL_REMOTE)
+
+  @cros_test_lib.NetworkTest()
+  def test009SubmitOutdatedCommit(self):
+    """Tests that we can parse a json to check if a change is committed."""
+    project = self.createProject('test009')
+    clone_path = self.cloneProject(project)
+
+    # Create a change.
+    gpatch1 = self.createPatch(clone_path, project)
+
+    # Update the change.
+    gpatch2 = self.createPatch(clone_path, project, amend=True)
+
+    # Make sure we're talking about the same change.
+    self.assertEqual(gpatch1.change_id, gpatch2.change_id)
+
+    # Try submitting the out-of-date change.
+    helper = self._GetHelper()
+    helper.SetReview(gpatch1.gerrit_number, labels={'Code-Review':'+2'})
+    with self.assertRaises(gob_util.GOBError) as ex:
+      helper.SubmitChange(gpatch1)
+    self.assertEqual(ex.exception.http_status, httplib.CONFLICT)
+    self.assertFalse(helper.IsChangeCommitted(gpatch1.gerrit_number))
+
+    # Try submitting the up-to-date change.
+    helper.SubmitChange(gpatch2)
+    self.assertTrue(helper.IsChangeCommitted(gpatch2.gerrit_number))
 
 
 if __name__ == '__main__':

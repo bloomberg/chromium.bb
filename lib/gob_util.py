@@ -348,9 +348,9 @@ def DeleteDraft(host, change, msg=''):
         % change)
 
 
-def SubmitChange(host, change, wait_for_merge=True):
+def SubmitChange(host, change, revision='current', wait_for_merge=True):
   """Submits a gerrit change via Gerrit."""
-  path = '%s/submit' % _GetChangePath(change)
+  path = '%s/revisions/%s/submit' % (_GetChangePath(change), revision)
   body = {'wait_for_merge': wait_for_merge}
   return FetchUrlJson(host, path, reqtype='POST', body=body, ignore_404=False)
 

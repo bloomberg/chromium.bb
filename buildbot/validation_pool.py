@@ -146,8 +146,9 @@ class PatchConflict(cros_patch.PatchException):
   """Raised if a patch needs to be rebased."""
 
   def ShortExplanation(self):
-    return ('no longer applies cleanly to tip of tree. Please rebase '
-            'and re-upload your patch.')
+    return ('could not be submitted because Gerrit reported a conflict. Did '
+            'you modify your patch during the CQ run? Or do you just need to '
+            'rebase?')
 
 
 class PatchSubmittedWithoutDeps(cros_patch.DependencyError):

@@ -291,6 +291,9 @@ class GerritHelper(object):
     or an instance of GerritPatch, in which case its gerrit number will be
     returned.
     """
+    # TODO(davidjames): Deprecate the ability to pass in strings to these
+    # functions -- API users should just pass in a GerritPatch instead or use
+    # the gob_util APIs directly.
     if isinstance(change, cros_patch.GerritPatch):
       return change.gerrit_number
 
@@ -333,7 +336,7 @@ class GerritHelper(object):
     if dryrun:
       cros_build_lib.Info('Would have submitted change %s', change)
       return
-    gob_util.SubmitChange(self.host, self._to_changenum(change))
+    gob_util.SubmitChange(self.host, change.gerrit_number, revision=change.sha1)
 
   def AbandonChange(self, change, dryrun=False):
     """Mark a gerrit change as 'Abandoned'."""
