@@ -514,23 +514,6 @@ body:not(.has-error) #toolbar.expanded {
   -webkit-transform: translateY(52px);
 }
 
-#shutter {
-  background: white;
-  bottom: 0;
-  left: 0;
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  top: 0;
-  transition: opacity 50ms linear;
-  z-index: 1;
-}
-
-body.show-shutter #shutter {
-  opacity: 1;
-}
-
 #picture-preview {
   bottom: 25%;
   left: 25%;
