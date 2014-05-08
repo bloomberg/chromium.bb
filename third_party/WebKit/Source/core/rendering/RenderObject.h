@@ -1102,6 +1102,8 @@ private:
 #endif
     const char* invalidationReasonToString(InvalidationReason) const;
 
+    static bool isAllowedToModifyRenderTreeStructure(Document&);
+
     RefPtr<RenderStyle> m_style;
 
     Node* m_node;
@@ -1273,6 +1275,18 @@ private:
     // This stores the position in the repaint container's coordinate.
     // It is used to detect renderer shifts that forces a full invalidation.
     LayoutPoint m_previousPositionFromRepaintContainer;
+};
+
+// FIXME: remove this once the render object lifecycle ASSERTS are no longer hit.
+class DeprecatedDisableModifyRenderTreeStructureAsserts {
+    WTF_MAKE_NONCOPYABLE(DeprecatedDisableModifyRenderTreeStructureAsserts);
+public:
+    DeprecatedDisableModifyRenderTreeStructureAsserts();
+
+    static bool canModifyRenderTreeStateInAnyState();
+
+private:
+    TemporaryChange<bool> m_disabler;
 };
 
 // Allow equality comparisons of RenderObject's by reference or pointer, interchangeably.

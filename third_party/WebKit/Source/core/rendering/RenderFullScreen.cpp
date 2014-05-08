@@ -110,6 +110,10 @@ static PassRefPtr<RenderStyle> createFullScreenStyle()
 
 RenderObject* RenderFullScreen::wrapRenderer(RenderObject* object, RenderObject* parent, Document* document)
 {
+    // FIXME: We should not modify the structure of the render tree during
+    // layout. crbug.com/370459
+    DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
+
     RenderFullScreen* fullscreenRenderer = RenderFullScreen::createAnonymous(document);
     fullscreenRenderer->setStyle(createFullScreenStyle());
     if (parent && !parent->isChildAllowed(fullscreenRenderer, fullscreenRenderer->style())) {
@@ -146,6 +150,10 @@ RenderObject* RenderFullScreen::wrapRenderer(RenderObject* object, RenderObject*
 
 void RenderFullScreen::unwrapRenderer()
 {
+    // FIXME: We should not modify the structure of the render tree during
+    // layout. crbug.com/370459
+    DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
+
     if (parent()) {
         RenderObject* child;
         while ((child = firstChild())) {

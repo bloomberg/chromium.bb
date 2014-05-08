@@ -96,6 +96,12 @@ using namespace std;
 
 namespace WebCore {
 
+namespace {
+
+static bool gModifyRenderTreeStructureAnyState = false;
+
+} // namespace
+
 using namespace HTMLNames;
 
 #ifndef NDEBUG
@@ -143,6 +149,8 @@ void RenderObject::operator delete(void* ptr)
 
 RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
 {
+    ASSERT(isAllowedToModifyRenderTreeStructure(element->document()));
+
     // Minimal support for content properties replacing an entire element.
     // Works only if we have exactly one piece of content and it's a URL.
     // Otherwise acts as if we didn't support this feature.
@@ -296,6 +304,8 @@ bool RenderObject::requiresAnonymousTableWrappers(const RenderObject* newChild) 
 
 void RenderObject::addChild(RenderObject* newChild, RenderObject* beforeChild)
 {
+    ASSERT(isAllowedToModifyRenderTreeStructure(document()));
+
     RenderObjectChildList* children = virtualChildren();
     ASSERT(children);
     if (!children)
@@ -334,6 +344,8 @@ void RenderObject::addChild(RenderObject* newChild, RenderObject* beforeChild)
 
 void RenderObject::removeChild(RenderObject* oldChild)
 {
+    ASSERT(isAllowedToModifyRenderTreeStructure(document()));
+
     RenderObjectChildList* children = virtualChildren();
     ASSERT(children);
     if (!children)
@@ -3409,6 +3421,22 @@ void RenderObject::clearRepaintState()
     setShouldRepaintOverflow(false);
     setLayoutDidGetCalled(false);
     setMayNeedInvalidation(false);
+}
+
+bool RenderObject::isAllowedToModifyRenderTreeStructure(Document& document)
+{
+    return DeprecatedDisableModifyRenderTreeStructureAsserts::canModifyRenderTreeStateInAnyState()
+        || document.lifecycle().stateAllowsRenderTreeMutations();
+}
+
+DeprecatedDisableModifyRenderTreeStructureAsserts::DeprecatedDisableModifyRenderTreeStructureAsserts()
+    : m_disabler(gModifyRenderTreeStructureAnyState, true)
+{
+}
+
+bool DeprecatedDisableModifyRenderTreeStructureAsserts::canModifyRenderTreeStateInAnyState()
+{
+    return gModifyRenderTreeStructureAnyState;
 }
 
 } // namespace WebCore

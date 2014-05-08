@@ -995,6 +995,8 @@ bool Node::inDetach() const
 
 void Node::detach(const AttachContext& context)
 {
+    DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
+
 #ifndef NDEBUG
     ASSERT(!detachingNode);
     detachingNode = this;

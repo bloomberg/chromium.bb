@@ -287,6 +287,10 @@ void RenderListItem::updateMarkerLocation()
         }
 
         if (markerParent != lineBoxParent || m_marker->preferredLogicalWidthsDirty()) {
+            // FIXME: We should not modify the structure of the render tree
+            // during layout. crbug.com/370461
+            DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
+
             // Removing and adding the marker can trigger repainting in
             // containers other than ourselves, so we need to disable LayoutState.
             LayoutStateDisabler layoutStateDisabler(*this);

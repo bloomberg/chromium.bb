@@ -99,6 +99,7 @@ public:
     State state() const { return m_state; }
 
     bool stateAllowsTreeMutations() const;
+    bool stateAllowsRenderTreeMutations() const;
 
     void advanceTo(State);
     void ensureStateAtMost(State);
@@ -119,6 +120,11 @@ inline bool DocumentLifecycle::stateAllowsTreeMutations() const
     return m_state != InStyleRecalc
         && m_state != InPerformLayout
         && m_state != InCompositingUpdate;
+}
+
+inline bool DocumentLifecycle::stateAllowsRenderTreeMutations() const
+{
+    return m_state == InStyleRecalc;
 }
 
 }

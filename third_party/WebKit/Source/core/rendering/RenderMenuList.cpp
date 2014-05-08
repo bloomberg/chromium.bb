@@ -235,6 +235,9 @@ void RenderMenuList::setText(const String& s)
 {
     if (s.isEmpty()) {
         if (!m_buttonText || !m_buttonText->isBR()) {
+            // FIXME: We should not modify the structure of the render tree
+            // during layout. crbug.com/370462
+            DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
             if (m_buttonText)
                 m_buttonText->destroy();
             m_buttonText = new RenderBR(&document());
@@ -245,6 +248,9 @@ void RenderMenuList::setText(const String& s)
         if (m_buttonText && !m_buttonText->isBR())
             m_buttonText->setText(s.impl(), true);
         else {
+            // FIXME: We should not modify the structure of the render tree
+            // during layout. crbug.com/370462
+            DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
             if (m_buttonText)
                 m_buttonText->destroy();
             m_buttonText = new RenderText(&document(), s.impl());

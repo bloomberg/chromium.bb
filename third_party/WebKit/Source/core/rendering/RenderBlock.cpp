@@ -4019,8 +4019,12 @@ void RenderBlock::createFirstLetterRenderer(RenderObject* firstLetterBlock, Rend
     else
         firstLetter = RenderBlockFlow::createAnonymous(&document());
     firstLetter->setStyle(pseudoStyle);
-    firstLetterContainer->addChild(firstLetter, currentChild);
 
+    // FIXME: The first letter code should not modify the render tree during
+    // layout. crbug.com/370458
+    DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
+
+    firstLetterContainer->addChild(firstLetter, currentChild);
     RenderText* textObj = toRenderText(currentChild);
 
     // The original string is going to be either a generated content string or a DOM node's

@@ -92,6 +92,10 @@ void RenderTextFragment::setText(PassRefPtr<StringImpl> text, bool force)
     m_start = 0;
     m_end = textLength();
     if (m_firstLetter) {
+        // FIXME: We should not modify the structure of the render tree during
+        // layout. crbug.com/370458
+        DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
+
         ASSERT(!m_contentString);
         m_firstLetter->destroy();
         m_firstLetter = 0;
