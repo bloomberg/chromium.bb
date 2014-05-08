@@ -32984,6 +32984,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
       label="Enable the use of relay servers by the remote access host"/>
   <int value="264"
       label="Restrict the UDP port range used by the remote access host"/>
+  <int value="265" label="Enables the old web-based signin flows"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

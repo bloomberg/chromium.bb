@@ -19,7 +19,11 @@
 #include "components/policy/core/common/async_policy_provider.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/signin/core/common/signin_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "policy/policy_constants.h"
@@ -93,6 +97,8 @@ void ChromeBrowserPolicyConnector::Init(
 
   BrowserPolicyConnector::Init(
       local_state, request_context, device_management_service.Pass());
+
+  AppendExtraFlagPerPolicy();
 }
 
 ConfigurationPolicyProvider*
@@ -124,6 +130,20 @@ ConfigurationPolicyProvider*
 #else
   return NULL;
 #endif
+}
+
+void ChromeBrowserPolicyConnector::AppendExtraFlagPerPolicy() {
+  PolicyService* policy_service = GetPolicyService();
+  PolicyNamespace chrome_ns = PolicyNamespace(POLICY_DOMAIN_CHROME, "");
+  const PolicyMap& chrome_policy = policy_service->GetPolicies(chrome_ns);
+  const base::Value* policy_value =
+      chrome_policy.GetValue(key::kEnableWebBasedSignin);
+  bool enabled = false;
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (policy_value && policy_value->GetAsBoolean(&enabled) && enabled &&
+      !command_line->HasSwitch(switches::kEnableWebBasedSignin)) {
+    command_line->AppendSwitch(switches::kEnableWebBasedSignin);
+  }
 }
 
 }  // namespace policy

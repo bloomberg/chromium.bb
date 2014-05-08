@@ -1625,6 +1625,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableNetBenchmarking,
       switches::kEnableStreamlinedHostedApps,
       switches::kEnableWatchdog,
+      switches::kEnableWebBasedSignin,
       switches::kMemoryProfiling,
       switches::kMessageLoopHistogrammer,
       switches::kNoJsRandomness,
