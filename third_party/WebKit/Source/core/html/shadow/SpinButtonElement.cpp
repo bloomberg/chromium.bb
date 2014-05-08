@@ -257,4 +257,10 @@ bool SpinButtonElement::shouldRespondToMouseEvents()
     return !m_spinButtonOwner || m_spinButtonOwner->shouldSpinButtonRespondToMouseEvents();
 }
 
+void SpinButtonElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_spinButtonOwner);
+    HTMLDivElement::trace(visitor);
+}
+
 }

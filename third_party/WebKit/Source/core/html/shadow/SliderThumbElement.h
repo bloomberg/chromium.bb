@@ -46,7 +46,7 @@ class FloatPoint;
 
 class SliderThumbElement FINAL : public HTMLDivElement {
 public:
-    static PassRefPtr<SliderThumbElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<SliderThumbElement> create(Document&);
 
     void setPositionFromValue();
 
@@ -96,7 +96,7 @@ private:
 
 class SliderContainerElement FINAL : public HTMLDivElement {
 public:
-    static PassRefPtr<SliderContainerElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<SliderContainerElement> create(Document&);
 
 private:
     SliderContainerElement(Document&);

@@ -43,9 +43,9 @@ inline ClearButtonElement::ClearButtonElement(Document& document, ClearButtonOwn
 {
 }
 
-PassRefPtr<ClearButtonElement> ClearButtonElement::create(Document& document, ClearButtonOwner& clearButtonOwner)
+PassRefPtrWillBeRawPtr<ClearButtonElement> ClearButtonElement::create(Document& document, ClearButtonOwner& clearButtonOwner)
 {
-    RefPtr<ClearButtonElement> element = adoptRef(new ClearButtonElement(document, clearButtonOwner));
+    RefPtrWillBeRawPtr<ClearButtonElement> element = adoptRefWillBeRefCountedGarbageCollected(new ClearButtonElement(document, clearButtonOwner));
     element->setShadowPseudoId(AtomicString("-webkit-clear-button", AtomicString::ConstructFromLiteral));
     element->setAttribute(idAttr, ShadowElementNames::clearButton());
     return element.release();
@@ -115,6 +115,12 @@ void ClearButtonElement::defaultEventHandler(Event* event)
 bool ClearButtonElement::isClearButtonElement() const
 {
     return true;
+}
+
+void ClearButtonElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_clearButtonOwner);
+    HTMLDivElement::trace(visitor);
 }
 
 }

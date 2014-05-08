@@ -53,9 +53,9 @@ PasswordGeneratorButtonElement::PasswordGeneratorButtonElement(Document& documen
     setHasCustomStyleCallbacks();
 }
 
-PassRefPtr<PasswordGeneratorButtonElement> PasswordGeneratorButtonElement::create(Document& document)
+PassRefPtrWillBeRawPtr<PasswordGeneratorButtonElement> PasswordGeneratorButtonElement::create(Document& document)
 {
-    RefPtr<PasswordGeneratorButtonElement> element = adoptRef(new PasswordGeneratorButtonElement(document));
+    RefPtrWillBeRawPtr<PasswordGeneratorButtonElement> element = adoptRefWillBeRefCountedGarbageCollected(new PasswordGeneratorButtonElement(document));
     element->setAttribute(idAttr, ShadowElementNames::passwordGenerator());
     return element.release();
 }

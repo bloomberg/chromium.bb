@@ -85,7 +85,7 @@ void PasswordInputType::createShadowSubtree()
     BaseTextInputType::createShadowSubtree();
     if (!isPasswordGenerationEnabled())
         return;
-    RefPtr<PasswordGeneratorButtonElement> generatorButton = PasswordGeneratorButtonElement::create(element().document());
+    RefPtrWillBeRawPtr<PasswordGeneratorButtonElement> generatorButton = PasswordGeneratorButtonElement::create(element().document());
     if (!isPasswordGenerationDecorationEnabled())
         generatorButton->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
     containerElement()->appendChild(generatorButton.release());

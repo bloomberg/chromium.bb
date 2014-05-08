@@ -42,7 +42,7 @@ class ShadowRoot;
 
 class PasswordGeneratorButtonElement FINAL : public HTMLDivElement {
 public:
-    static PassRefPtr<PasswordGeneratorButtonElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<PasswordGeneratorButtonElement> create(Document&);
 
     void decorate(HTMLInputElement*);
 

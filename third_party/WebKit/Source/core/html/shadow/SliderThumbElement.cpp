@@ -205,9 +205,9 @@ inline SliderThumbElement::SliderThumbElement(Document& document)
 {
 }
 
-PassRefPtr<SliderThumbElement> SliderThumbElement::create(Document& document)
+PassRefPtrWillBeRawPtr<SliderThumbElement> SliderThumbElement::create(Document& document)
 {
-    RefPtr<SliderThumbElement> element = adoptRef(new SliderThumbElement(document));
+    RefPtrWillBeRawPtr<SliderThumbElement> element = adoptRefWillBeRefCountedGarbageCollected(new SliderThumbElement(document));
     element->setAttribute(idAttr, ShadowElementNames::sliderThumb());
     return element.release();
 }
@@ -444,9 +444,9 @@ inline SliderContainerElement::SliderContainerElement(Document& document)
 {
 }
 
-PassRefPtr<SliderContainerElement> SliderContainerElement::create(Document& document)
+PassRefPtrWillBeRawPtr<SliderContainerElement> SliderContainerElement::create(Document& document)
 {
-    return adoptRef(new SliderContainerElement(document));
+    return adoptRefWillBeRefCountedGarbageCollected(new SliderContainerElement(document));
 }
 
 RenderObject* SliderContainerElement::createRenderer(RenderStyle*)

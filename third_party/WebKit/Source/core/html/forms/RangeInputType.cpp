@@ -250,7 +250,7 @@ void RangeInputType::createShadowSubtree()
     track->setShadowPseudoId(AtomicString("-webkit-slider-runnable-track", AtomicString::ConstructFromLiteral));
     track->setAttribute(idAttr, ShadowElementNames::sliderTrack());
     track->appendChild(SliderThumbElement::create(document));
-    RefPtr<HTMLElement> container = SliderContainerElement::create(document);
+    RefPtrWillBeRawPtr<HTMLElement> container = SliderContainerElement::create(document);
     container->appendChild(track.release());
     element().userAgentShadowRoot()->appendChild(container.release());
 }
