@@ -2800,7 +2800,7 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
     }
 
     if (oldValue != newValue) {
-        if (inActiveDocument())
+        if (inActiveDocument() && document().styleResolver() && styleChangeType() < SubtreeStyleChange)
             document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForAttributeChange(name, *this);
 
         if (isUpgradedCustomElement())

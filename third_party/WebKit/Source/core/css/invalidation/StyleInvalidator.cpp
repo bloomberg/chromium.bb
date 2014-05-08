@@ -28,6 +28,8 @@ void StyleInvalidator::invalidate(Document& document)
 
 void StyleInvalidator::scheduleInvalidation(PassRefPtr<DescendantInvalidationSet> invalidationSet, Element& element)
 {
+    ASSERT(element.inActiveDocument());
+    ASSERT(element.styleChangeType() < SubtreeStyleChange);
     InvalidationList& list = ensurePendingInvalidationList(element);
     // If we're already going to invalidate the whole subtree we don't need to store any new sets.
     if (!list.isEmpty() && list.last()->wholeSubtreeInvalid())
@@ -51,8 +53,6 @@ void StyleInvalidator::clearInvalidation(Node& node)
 {
     if (node.isElementNode() && node.needsStyleInvalidation())
         m_pendingInvalidationMap.remove(toElement(&node));
-    node.clearChildNeedsStyleInvalidation();
-    node.clearNeedsStyleInvalidation();
 }
 
 void StyleInvalidator::clearPendingInvalidations()

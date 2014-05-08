@@ -829,12 +829,14 @@ void ContainerNode::focusStateChanged()
     if (!renderer())
         return;
 
-    if (renderStyle()->affectedByFocus() && renderStyle()->hasPseudoStyle(FIRST_LETTER))
-        setNeedsStyleRecalc(SubtreeStyleChange);
-    else if (isElementNode() && toElement(this)->childrenAffectedByFocus())
-        document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoFocus, *toElement(this));
-    else if (renderStyle()->affectedByFocus())
-        setNeedsStyleRecalc(LocalStyleChange);
+    if (styleChangeType() < SubtreeStyleChange) {
+        if (renderStyle()->affectedByFocus() && renderStyle()->hasPseudoStyle(FIRST_LETTER))
+            setNeedsStyleRecalc(SubtreeStyleChange);
+        else if (isElementNode() && toElement(this)->childrenAffectedByFocus())
+            document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoFocus, *toElement(this));
+        else if (renderStyle()->affectedByFocus())
+            setNeedsStyleRecalc(LocalStyleChange);
+    }
 
     if (renderer() && renderer()->style()->hasAppearance())
         RenderTheme::theme().stateChanged(renderer(), FocusState);
@@ -853,7 +855,7 @@ void ContainerNode::setFocus(bool received)
         return;
 
     // If :focus sets display: none, we lose focus but still need to recalc our style.
-    if (isElementNode() && toElement(this)->childrenAffectedByFocus())
+    if (isElementNode() && toElement(this)->childrenAffectedByFocus() && styleChangeType() < SubtreeStyleChange)
         document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoFocus, *toElement(this));
     else
         setNeedsStyleRecalc(LocalStyleChange);
@@ -868,12 +870,14 @@ void ContainerNode::setActive(bool down)
 
     // FIXME: Why does this not need to handle the display: none transition like :hover does?
     if (renderer()) {
-        if (renderStyle()->affectedByActive() && renderStyle()->hasPseudoStyle(FIRST_LETTER))
-            setNeedsStyleRecalc(SubtreeStyleChange);
-        else if (isElementNode() && toElement(this)->childrenAffectedByActive())
-            document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoActive, *toElement(this));
-        else if (renderStyle()->affectedByActive())
-            setNeedsStyleRecalc(LocalStyleChange);
+        if (styleChangeType() < SubtreeStyleChange) {
+            if (renderStyle()->affectedByActive() && renderStyle()->hasPseudoStyle(FIRST_LETTER))
+                setNeedsStyleRecalc(SubtreeStyleChange);
+            else if (isElementNode() && toElement(this)->childrenAffectedByActive())
+                document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoActive, *toElement(this));
+            else if (renderStyle()->affectedByActive())
+                setNeedsStyleRecalc(LocalStyleChange);
+        }
 
         if (renderStyle()->hasAppearance())
             RenderTheme::theme().stateChanged(renderer(), PressedState);
@@ -891,19 +895,21 @@ void ContainerNode::setHovered(bool over)
     if (!renderer()) {
         if (over)
             return;
-        if (isElementNode() && toElement(this)->childrenAffectedByHover())
+        if (isElementNode() && toElement(this)->childrenAffectedByHover() && styleChangeType() < SubtreeStyleChange)
             document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoHover, *toElement(this));
         else
             setNeedsStyleRecalc(LocalStyleChange);
         return;
     }
 
-    if (renderStyle()->affectedByHover() && renderStyle()->hasPseudoStyle(FIRST_LETTER))
-        setNeedsStyleRecalc(SubtreeStyleChange);
-    else if (isElementNode() && toElement(this)->childrenAffectedByHover())
-        document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoHover, *toElement(this));
-    else if (renderStyle()->affectedByHover())
-        setNeedsStyleRecalc(LocalStyleChange);
+    if (styleChangeType() < SubtreeStyleChange) {
+        if (renderStyle()->affectedByHover() && renderStyle()->hasPseudoStyle(FIRST_LETTER))
+            setNeedsStyleRecalc(SubtreeStyleChange);
+        else if (isElementNode() && toElement(this)->childrenAffectedByHover())
+            document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoHover, *toElement(this));
+        else if (renderStyle()->affectedByHover())
+            setNeedsStyleRecalc(LocalStyleChange);
+    }
 
     if (renderer()->style()->hasAppearance())
         RenderTheme::theme().stateChanged(renderer(), HoverState);
