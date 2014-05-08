@@ -1172,7 +1172,7 @@ class AndroidCommands(object):
     command = 'sh %s' % temp_script
     command_runner = self._GetProtectedFileCommandRunner()
     if command_runner:
-      return command_runner(command)
+      command_runner(command)
     else:
       logging.warning('Could not set contents of protected file: %s' % filename)
 
