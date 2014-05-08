@@ -1530,6 +1530,8 @@ class Port(object):
                               ['--force-compositing-mode']),
             PhysicalTestSuite('css',
                               ['--force-compositing-mode']),
+            PhysicalTestSuite('editing',
+                              ['--force-compositing-mode']),
             PhysicalTestSuite('fast',
                               ['--force-compositing-mode']),
             ]
