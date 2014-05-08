@@ -125,7 +125,8 @@ TESTS =						\
 	socket-test				\
 	queue-test				\
 	signal-test				\
-	resources-test
+	resources-test				\
+	message-test
 
 check_PROGRAMS =				\
 	$(TESTS)				\
@@ -173,6 +174,8 @@ signal_test_SOURCES = tests/signal-test.c
 signal_test_LDADD = libtest-runner.la
 resources_test_SOURCES = tests/resources-test.c
 resources_test_LDADD = libtest-runner.la
+message_test_SOURCES = tests/message-test.c
+message_test_LDADD = libtest-runner.la
 
 fixed_benchmark_SOURCES = tests/fixed-benchmark.c
 fixed_benchmark_LDADD = libtest-runner.la
