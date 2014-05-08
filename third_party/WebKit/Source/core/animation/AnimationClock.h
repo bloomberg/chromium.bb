@@ -33,31 +33,38 @@
 
 #include "wtf/CurrentTime.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 
+// FIXME: This value is used to suppress updates when time is required outside of a frame.
+// The purpose of allowing the clock to update during such periods is to allow animations
+// to have an appropriate start time and for getComputedStyle to attempt to catch-up to a
+// compositor animation. However a more accurate system might be to attempt to phase-lock
+// with the frame clock.
+const double minTimeBeforeUnsynchronizedAnimationClockTick = 0.005;
+
 class AnimationClock {
-    WTF_MAKE_NONCOPYABLE(AnimationClock);
 public:
-    explicit AnimationClock(WTF::TimeFunction monotonicallyIncreasingTime = WTF::monotonicallyIncreasingTime)
-        : m_monotonicallyIncreasingTime(monotonicallyIncreasingTime)
-        , m_time(0)
-        , m_currentTask(0)
+    static PassOwnPtr<AnimationClock> create(WTF::TimeFunction monotonicallyIncreasingTime = WTF::monotonicallyIncreasingTime)
     {
+        return adoptPtr(new AnimationClock(monotonicallyIncreasingTime));
     }
 
     void updateTime(double time);
     double currentTime();
-    void resetTimeForTesting();
-
-    static void notifyTaskStart() { ++s_currentTask; }
+    void unfreeze() { m_frozen = false; }
+    void resetTimeForTesting() { m_time = 0; m_frozen = true; }
 
 private:
+    AnimationClock(WTF::TimeFunction monotonicallyIncreasingTime)
+        : m_monotonicallyIncreasingTime(monotonicallyIncreasingTime)
+        , m_time(0)
+        , m_frozen(false)
+    {
+    }
     WTF::TimeFunction m_monotonicallyIncreasingTime;
     double m_time;
-    unsigned m_currentTask;
-    static unsigned s_currentTask;
+    bool m_frozen;
 };
 
 } // namespace WebCore

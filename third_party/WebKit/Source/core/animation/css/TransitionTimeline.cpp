@@ -45,6 +45,7 @@ TransitionTimeline::TransitionTimeline(Document* document, PassOwnPtr<PlatformTi
     : DocumentTimeline(document, timing)
 {
     setZeroTime(document->animationClock().currentTime());
+    document->animationClock().unfreeze();
 }
 
 } // namespace WebCore
