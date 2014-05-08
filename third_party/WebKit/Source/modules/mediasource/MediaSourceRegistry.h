@@ -54,7 +54,7 @@ public:
 
 private:
     MediaSourceRegistry();
-    WillBePersistentHeapHashMap<String, RefPtrWillBeMember<MediaSourceBase> > m_mediaSources;
+    PersistentHeapHashMap<String, Member<MediaSourceBase> > m_mediaSources;
 };
 
 } // namespace WebCore
