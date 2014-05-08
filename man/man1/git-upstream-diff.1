@@ -2,12 +2,12 @@
 .\"     Title: git-upstream-diff
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 04/10/2014
+.\"      Date: 05/07/2014
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 68b1017
+.\"    Source: depot_tools cab11c5
 .\"  Language: English
 .\"
-.TH "GIT\-UPSTREAM\-DIFF" "1" "04/10/2014" "depot_tools 68b1017" "Chromium depot_tools Manual"
+.TH "GIT\-UPSTREAM\-DIFF" "1" "05/07/2014" "depot_tools cab11c5" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -79,6 +79,14 @@ normally takes\&.
 This is particularly useful to show
 \fIwhich\fR
 files have been changed in comparison to the upstream branch\&.
+.RE
+.PP
+\-\-staged
+.RS 4
+Diff against the staged (cached) changes, instead of against the working directory\&. This is
+\fIsubstantially\fR
+faster on large repos, but doesn\(cqt take into account unstaged changes (i\&.e\&. changes in your working copy which you haven\(cqt staged with
+git add)\&.
 .RE
 .PP
 \-\- <filename patterns>*

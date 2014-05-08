@@ -49,6 +49,11 @@ OPTIONS
 `--stat`;;
   This is particularly useful to show 'which' files have been changed in
   comparison to the upstream branch.
+`--staged`;;
+  Diff against the staged (cached) changes, instead of against the working
+  directory. This is 'substantially' faster on large repos, but doesn't take
+  into account unstaged changes (i.e. changes in your working copy which you
+  haven't staged with `git add`).
 `-- <filename patterns>*`;;
   Restrict the diff to only show the diff for given files compared to the
   upstream.

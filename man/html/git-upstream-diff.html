@@ -825,6 +825,17 @@ so it is disabled by default.</p></div>
 </p>
 </dd>
 <dt class="hdlist1">
+<code>--staged</code>
+</dt>
+<dd>
+<p>
+  Diff against the staged (cached) changes, instead of against the working
+  directory. This is <em>substantially</em> faster on large repos, but doesn&#8217;t take
+  into account unstaged changes (i.e. changes in your working copy which you
+  haven&#8217;t staged with <code>git add</code>).
+</p>
+</dd>
+<dt class="hdlist1">
 <code>-- &lt;filename patterns&gt;*</code>
 </dt>
 <dd>
@@ -880,7 +891,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-04-10 14:23:11 PDT
+Last updated 2014-05-07 00:44:20 PDT
 </div>
 </div>
 </body>
