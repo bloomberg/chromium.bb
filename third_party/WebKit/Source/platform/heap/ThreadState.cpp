@@ -739,7 +739,7 @@ NO_SANITIZE_ADDRESS static void* adjustScopeMarkerForAdressSanitizer(void* scope
 
     // 256 is as good an approximation as any else.
     const size_t bytesToCopy = sizeof(Address) * 256;
-    if (start - end < bytesToCopy)
+    if (static_cast<size_t>(start - end) < bytesToCopy)
         return start;
 
     return end + bytesToCopy;
