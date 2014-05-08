@@ -69,8 +69,8 @@ class SignerResultsStageTest(generic_stages_unittest.AbstractStageTest):
       mock_gs_ctx.Cat.return_value.output = self.signer_result
 
       stage = self.ConstructStage()
-      stage.archive_stage._push_image_status_queue.put(
-          self.insns_urls_per_channel)
+      stage.board_runattrs.SetParallel(
+          'instruction_urls_per_channel', self.insns_urls_per_channel)
 
       stage.PerformStage()
       for result in results:
@@ -88,12 +88,26 @@ class SignerResultsStageTest(generic_stages_unittest.AbstractStageTest):
       mock_gs_ctx.Cat.return_value.output = self.signer_result
 
       stage = self.ConstructStage()
-      stage.archive_stage._push_image_status_queue.put({})
+      stage.board_runattrs.SetParallel('instruction_urls_per_channel', {})
 
       stage.PerformStage()
       self.assertFalse(mock_gs_ctx.Cat.called)
       self.assertEqual(stage.archive_stage.WaitForChannelSigning(),
                        stages.SignerResultsStage.FINISHED)
+
+  def testPerformStageInstructionUrlsTimeout(self):
+    """Test that SignerResultsStage passes when there are no signed images."""
+    with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
+      mock_gs_ctx = mock_gs_ctx_init.return_value
+      mock_gs_ctx.Cat.return_value.output = self.signer_result
+
+      stage = self.ConstructStage()
+
+      # Shorten the timeout so the tests finish in a reasonable period of time.
+      stage.PUSHIMAGE_TIMEOUT = 0.01
+
+      self.assertRaises(stages.MissingInstructionException, stage.PerformStage)
+      self.assertFalse(mock_gs_ctx.Cat.called)
 
   def testPerformStageFailure(self):
     """Test that SignerResultsStage errors when the signers report an error."""
@@ -104,9 +118,8 @@ class SignerResultsStageTest(generic_stages_unittest.AbstractStageTest):
             "keyset": "link-mp-v4", "type": "recovery", "channel": "stable" }
           """
       stage = self.ConstructStage()
-      stage.archive_stage._push_image_status_queue.put({
-          'chan1': ['chan1_uri1'],
-      })
+      stage.board_runattrs.SetParallel('instruction_urls_per_channel',
+          {'chan1': ['chan1_uri1']})
       self.assertRaises(stages.SignerFailure, stage.PerformStage)
 
   def testPerformStageMalformedJson(self):
@@ -116,9 +129,9 @@ class SignerResultsStageTest(generic_stages_unittest.AbstractStageTest):
       mock_gs_ctx.Cat.return_value.output = "{"
 
       stage = self.ConstructStage()
-      stage.archive_stage._push_image_status_queue.put({
-          'chan1': ['chan1_uri1'],
-      })
+      stage.board_runattrs.SetParallel('instruction_urls_per_channel',
+          {'chan1': ['chan1_uri1']})
+
       self.assertRaises(stages.MalformedResultsException, stage.PerformStage)
 
   def testPerformStageTimeout(self):
@@ -127,9 +140,8 @@ class SignerResultsStageTest(generic_stages_unittest.AbstractStageTest):
       mock_wait.side_effect = timeout_util.TimeoutError
 
       stage = self.ConstructStage()
-      stage.archive_stage._push_image_status_queue.put({
-          'chan1': ['chan1_uri1'],
-      })
+      stage.board_runattrs.SetParallel('instruction_urls_per_channel',
+          {'chan1': ['chan1_uri1']})
       self.assertRaises(stages.SignerResultsTimeout, stage.PerformStage)
 
   def testCheckForResultsSuccess(self):

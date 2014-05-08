@@ -9,6 +9,7 @@ import logging
 import os
 
 from chromite.buildbot import cbuildbot_commands as commands
+from chromite.buildbot import cbuildbot_run
 from chromite.buildbot.stages import artifact_stages
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
@@ -66,6 +67,9 @@ class SignerResultsStage(artifact_stages.ArchivingStage):
 
   # Poll for new results every 30 seconds.
   SIGNING_PERIOD = 30
+
+  # Timeout for PushImage to finish uploading images. 1 hour in seconds.
+  PUSHIMAGE_TIMEOUT = 60 * 60
 
   # Abort, if the signing takes longer than 2 hours.
   #   2 hours * 60 minutes * 60 seconds
@@ -181,7 +185,13 @@ class SignerResultsStage(artifact_stages.ArchivingStage):
     """
     # These results are expected to contain:
     # { 'channel': ['gs://instruction_uri1', 'gs://signer_instruction_uri2'] }
-    instruction_urls_per_channel = self.archive_stage.WaitForPushImage()
+    try:
+      instruction_urls_per_channel = self.board_runattrs.GetParallel(
+          'instruction_urls_per_channel', timeout=self.PUSHIMAGE_TIMEOUT)
+    except cbuildbot_run.AttrTimeoutError:
+      instruction_urls_per_channel = None
+
+    # If push_image errors out or if we timeout, we end up with None.
     if instruction_urls_per_channel is None:
       raise MissingInstructionException('PushImage results not available.')
 
