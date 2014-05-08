@@ -30,6 +30,7 @@
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptValue.h"
+#include "core/animation/AnimationClock.h"
 #include "core/animation/CompositorPendingAnimations.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/DocumentEncodingData.h"
@@ -64,7 +65,6 @@
 namespace WebCore {
 
 class AXObjectCache;
-class AnimationClock;
 class Attr;
 class CDATASection;
 class CSSFontSelector;
@@ -1021,7 +1021,7 @@ public:
     // Return a Locale for the default locale if the argument is null or empty.
     Locale& getCachedLocale(const AtomicString& locale = nullAtom);
 
-    AnimationClock& animationClock() { return *m_animationClock; }
+    AnimationClock& animationClock() { return m_animationClock; }
     DocumentTimeline& timeline() const { return *m_timeline; }
     DocumentTimeline& transitionTimeline() const { return *m_transitionTimeline; }
     CompositorPendingAnimations& compositorPendingAnimations() { return m_compositorPendingAnimations; }
@@ -1367,7 +1367,7 @@ private:
     typedef HashMap<AtomicString, OwnPtr<Locale> > LocaleIdentifierToLocaleMap;
     LocaleIdentifierToLocaleMap m_localeCache;
 
-    OwnPtr<AnimationClock> m_animationClock;
+    AnimationClock m_animationClock;
     RefPtr<DocumentTimeline> m_timeline;
     RefPtr<DocumentTimeline> m_transitionTimeline;
     CompositorPendingAnimations m_compositorPendingAnimations;

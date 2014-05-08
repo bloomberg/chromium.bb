@@ -2,25 +2,66 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<body>
-    <div id='element'></div>
-</body>
-
 <script>
-var element = document.getElementById('element');
-var duration = 1;
-
-var animation = new Animation(element,
-    [{opacity: '1', offset: 0},
-    {opacity: '0', offset: 1}],
-    duration);
-
 test(function() {
-    var startTime = document.timeline.currentTime;
-    var player = document.timeline.play(animation);
-    player.finish();
-    var finishTime = document.timeline.currentTime;
-    assert_greater_than_equal(startTime, 0);
-    assert_equals(startTime, finishTime);
+  var startTime = document.timeline.currentTime;
+  assert_greater_than_equal(startTime, 0);
+  var start = performance.now();
+  while (performance.now() < start + 250)
+    /* wait */;
+  assert_equals(document.timeline.currentTime, startTime);
 }, 'document.timeline.currentTime should not change within a script block.');
+
+(function() {
+  var timeoutTest = async_test('document.timeline.currentTime time should change after a script timeout');
+  var startTime = document.timeline.currentTime;
+
+  setTimeout(function() {
+    timeoutTest.step(function() {
+      assert_greater_than(document.timeline.currentTime, startTime);
+    });
+    timeoutTest.done();
+  }, 100);
+})();
+
+(function() {
+  var rafTest = async_test('document.timeline.currentTime time should be the same for all RAF callbacks in a frame');
+  var startTime = document.timeline.currentTime;
+  var firstRafTime;
+
+  requestAnimationFrame(function() {
+    rafTest.step(function() {
+      assert_greater_than(document.timeline.currentTime, startTime);
+      firstRafTime = document.timeline.currentTime;
+    });
+  });
+
+  requestAnimationFrame(function() {
+    rafTest.step(function() {
+      assert_equals(document.timeline.currentTime, firstRafTime);
+    });
+    rafTest.done();
+  });
+})();
+
+(function() {
+  var rafTest = async_test('document.timeline.currentTime time should be consistent with the time value passed to RAF callbacks');
+  var firstRafTime;
+  var firstRafDelta;
+
+  requestAnimationFrame(function(t) {
+    rafTest.step(function() {
+      firstRafTime = document.timeline.currentTime;
+      firstRafDelta = document.timeline.currentTime - t;
+    });
+
+    requestAnimationFrame(function(t) {
+      rafTest.step(function() {
+        assert_greater_than(document.timeline.currentTime, firstRafTime);
+        assert_equals(document.timeline.currentTime - t, firstRafDelta);
+      });
+      rafTest.done();
+    });
+  });
+})();
 </script>
