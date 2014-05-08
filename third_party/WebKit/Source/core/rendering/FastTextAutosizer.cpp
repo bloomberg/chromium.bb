@@ -921,8 +921,10 @@ const RenderBlock* FastTextAutosizer::deepestBlockContainingAllText(const Render
     // its text node's lowest common ancestor as isAutosizingCluster would have made them into their
     // own independent cluster.
     const RenderBlock* containingBlock = firstNode->containingBlock();
-    ASSERT(containingBlock->isDescendantOf(root));
+    if (!containingBlock)
+        return root;
 
+    ASSERT(containingBlock->isDescendantOf(root));
     return containingBlock;
 }
 
