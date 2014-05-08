@@ -355,4 +355,9 @@ bool MockPeerConnectionImpl::AddIceCandidate(
   return candidate->ToString(&ice_sdp_);
 }
 
+void MockPeerConnectionImpl::RegisterUMAObserver(
+    webrtc::UMAObserver* observer) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace content

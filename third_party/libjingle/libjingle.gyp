@@ -365,6 +365,7 @@
             '<(libjingle_source)/talk/app/webrtc/statscollector.h',
             '<(libjingle_source)/talk/app/webrtc/statstypes.h',
             '<(libjingle_source)/talk/app/webrtc/streamcollection.h',
+            '<(libjingle_source)/talk/app/webrtc/umametrics.h',
             '<(libjingle_source)/talk/app/webrtc/videosource.cc',
             '<(libjingle_source)/talk/app/webrtc/videosource.h',
             '<(libjingle_source)/talk/app/webrtc/videosourceinterface.h',

@@ -98,6 +98,7 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
       const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
   virtual bool AddIceCandidate(
       const webrtc::IceCandidateInterface* candidate) OVERRIDE;
+  virtual void RegisterUMAObserver(webrtc::UMAObserver* observer) OVERRIDE;
 
   void AddRemoteStream(webrtc::MediaStreamInterface* stream);
 
