@@ -362,6 +362,8 @@
           '_CRT_SECURE_NO_DEPRECATE',
           '_CRT_NONSTDC_NO_WARNINGS',
           '_CRT_NONSTDC_NO_DEPRECATE',
+          # This is required for ATL to use XP-safe versions of its functions.
+          '_USING_V110_SDK71_',
         ],
         'msvs_disabled_warnings': [4800],
         'msvs_settings': {
@@ -401,6 +403,7 @@
         'abstract': 1,
         'msvs_settings': {
           'VCLinkerTool': {
+            'MinimumRequiredVersion': '5.01',  # XP.
             'TargetMachine': '1',
           },
         },
