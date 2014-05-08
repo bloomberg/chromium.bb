@@ -58,15 +58,12 @@ def get_partial_interface_name_from_idl(file_contents):
     return match and match.group(1)
 
 
-def get_implemented_interfaces_from_idl(file_contents, interface_name):
+def get_implements_from_idl(file_contents, interface_name):
     # Rule is: identifier-A implements identifier-B;
     # http://www.w3.org/TR/WebIDL/#idl-implements-statements
-    def get_implemented(left_identifier, right_identifier):
-        # identifier-A must be the current interface
-        if left_identifier != interface_name:
-            raise IdlBadFilenameError("Identifier on the left of the 'implements' statement should be %s in %s.idl, but found %s" % (interface_name, interface_name, left_identifier))
-        return right_identifier
-
+    # Returns two lists of interfaces that contain identifier-As and identifier-Bs.
+    # The 'implements' statements are supported in both identifier-A IDL and identifier-B IDL
+    # to avoid potential layering violation.
     implements_re = (r'^\s*'
                      r'(\w+)\s+'
                      r'implements\s+'
@@ -75,7 +72,14 @@ def get_implemented_interfaces_from_idl(file_contents, interface_name):
     implements_matches = re.finditer(implements_re, file_contents, re.MULTILINE)
     implements_pairs = [(match.group(1), match.group(2))
                         for match in implements_matches]
-    return [get_implemented(left, right) for left, right in implements_pairs]
+    A_interfaces = []
+    B_interfaces = []
+    for left, right in implements_pairs:
+        if left == interface_name:
+            B_interfaces.append(right)
+        elif right == interface_name:
+            A_interfaces.append(left)
+    return (A_interfaces, B_interfaces)
 
 
 def is_callback_interface_from_idl(file_contents):

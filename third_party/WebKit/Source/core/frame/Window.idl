@@ -214,7 +214,6 @@
 };
 
 Window implements GlobalEventHandlers;
-Window implements ImageBitmapFactories;
 Window implements WindowBase64;
 Window implements WindowEventHandlers;
 Window implements WindowTimers;

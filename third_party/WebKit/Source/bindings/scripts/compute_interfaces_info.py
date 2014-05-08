@@ -82,7 +82,7 @@ import os
 import posixpath
 import sys
 
-from utilities import get_file_contents, write_pickle_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl, get_partial_interface_name_from_idl, get_implemented_interfaces_from_idl, get_parent_interface, get_put_forward_interfaces_from_idl
+from utilities import get_file_contents, write_pickle_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl, get_partial_interface_name_from_idl, get_implements_from_idl, get_parent_interface, get_put_forward_interfaces_from_idl
 
 module_path = os.path.dirname(__file__)
 source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir))
@@ -173,10 +173,12 @@ def compute_individual_info(idl_filename):
     # If not a partial interface, the basename is the interface name
     interface_name, _ = os.path.splitext(os.path.basename(idl_filename))
 
+    left_interfaces, right_interfaces = get_implements_from_idl(idl_file_contents, interface_name)
+
     interfaces_info[interface_name] = {
         'full_path': full_path,
         'implemented_as': implemented_as,
-        'implements_interfaces': get_implemented_interfaces_from_idl(idl_file_contents, interface_name),
+        'implements_interfaces': right_interfaces,
         'include_path': this_include_path,
         # FIXME: temporary private field, while removing old treatement of
         # 'implements': http://crbug.com/360435
@@ -190,6 +192,10 @@ def compute_individual_info(idl_filename):
         # should be minimized; currently only targets of [PutForwards].
         'referenced_interfaces': get_put_forward_interfaces_from_idl(idl_file_contents),
     }
+
+    for left_interface_name in left_interfaces:
+        interface_info = interfaces_info[left_interface_name]
+        interface_info['implements_interfaces'].append(interface_name)
 
     # Record inheritance information
     inherited_extended_attributes_by_interface[interface_name] = dict(

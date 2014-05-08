@@ -55,3 +55,7 @@ typedef (// HTMLImageElement or
     [RaisesException] Promise createImageBitmap(ImageBitmap bitmap);
     [RaisesException] Promise createImageBitmap(ImageBitmap bitmap, long sx, long sy, long sw, long sh);
 };
+
+Window implements ImageBitmapFactories;
+WorkerGlobalScope implements ImageBitmapFactories;
+
