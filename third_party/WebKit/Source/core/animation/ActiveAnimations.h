@@ -53,7 +53,6 @@ public:
     }
 
     ~ActiveAnimations();
-    void dispose();
 
     // Animations that are currently active for this element, their effects will be applied
     // during a style recalc. CSS Transitions are included in this stack.
@@ -93,6 +92,16 @@ private:
     // This is to avoid a reference cycle that keeps Elements alive and
     // won't be needed once Element and Animation are moved to Oilpan.
     Vector<Animation*> m_animations;
+
+#if ENABLE(OILPAN)
+    // Keep a back reference to the target Element, so that this object
+    // will be finalized during the same GC sweep as the target (as the
+    // Element keeps a reference in the other direction via its
+    // rare data.) This is done so that we can accurately notify the
+    // the Element as destroyed to the above vector of Animations in
+    // the ActiveAnimations finalizer.
+    Member<Element> m_target;
+#endif
 
     // CSSAnimations checks if a style change is due to animation.
     friend class CSSAnimations;

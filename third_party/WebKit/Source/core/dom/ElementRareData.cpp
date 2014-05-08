@@ -39,7 +39,7 @@ struct SameSizeAsElementRareData : NodeRareData {
     short indices[2];
     IntSize scrollOffset;
     void* pointers[11];
-    OwnPtrWillBePersistent<ActiveAnimations> activeAnimations;
+    OwnPtrWillBeMember<ActiveAnimations> activeAnimations;
 };
 
 CSSStyleDeclaration& ElementRareData::ensureInlineCSSStyleDeclaration(Element* ownerElement)
@@ -49,6 +49,13 @@ CSSStyleDeclaration& ElementRareData::ensureInlineCSSStyleDeclaration(Element* o
     return *m_cssomWrapper;
 }
 
+void ElementRareData::traceAfterDispatch(Visitor* visitor)
+{
+    visitor->trace(m_shadow);
+    visitor->trace(m_cssomWrapper);
+    visitor->trace(m_activeAnimations);
+    NodeRareData::traceAfterDispatch(visitor);
+}
 
 COMPILE_ASSERT(sizeof(ElementRareData) == sizeof(SameSizeAsElementRareData), ElementRareDataShouldStaySmall);
 

@@ -785,9 +785,9 @@ protected:
 
     NodeRareData* rareData() const;
     NodeRareData& ensureRareData();
+#if !ENABLE(OILPAN)
     void clearRareData();
 
-#if !ENABLE(OILPAN)
     void clearEventTargetData();
 #endif
 

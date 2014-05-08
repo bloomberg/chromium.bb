@@ -70,7 +70,9 @@ MutationObserver::MutationObserver(PassOwnPtr<MutationCallback> callback)
 
 MutationObserver::~MutationObserver()
 {
+#if !ENABLE(OILPAN)
     ASSERT(m_registrations.isEmpty());
+#endif
     if (!m_records.isEmpty())
         InspectorInstrumentation::didClearAllMutationRecords(m_callback->executionContext(), this);
 }

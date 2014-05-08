@@ -54,7 +54,7 @@ typedef unsigned char MutationObserverOptions;
 typedef unsigned char MutationRecordDeliveryOptions;
 
 typedef WillBeHeapHashSet<RefPtrWillBeMember<MutationObserver> > MutationObserverSet;
-typedef WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> > MutationObserverRegistrationSet;
+typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<MutationObserverRegistration> > MutationObserverRegistrationSet;
 typedef WillBeHeapVector<RefPtrWillBeMember<MutationObserver> > MutationObserverVector;
 typedef WillBeHeapVector<RefPtrWillBeMember<MutationRecord> > MutationRecordVector;
 

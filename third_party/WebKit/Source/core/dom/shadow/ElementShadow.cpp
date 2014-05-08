@@ -122,9 +122,9 @@ inline void DistributionPool::detachNonDistributedNodes()
     }
 }
 
-PassOwnPtr<ElementShadow> ElementShadow::create()
+PassOwnPtrWillBeRawPtr<ElementShadow> ElementShadow::create()
 {
-    return adoptPtr(new ElementShadow());
+    return adoptPtrWillBeNoop(new ElementShadow());
 }
 
 ElementShadow::ElementShadow()
@@ -178,7 +178,6 @@ void ElementShadow::removeDetachedShadowRoots()
         oldRoot->setPrev(0);
         oldRoot->setNext(0);
     }
-
 }
 
 void ElementShadow::attach(const Node::AttachContext& context)

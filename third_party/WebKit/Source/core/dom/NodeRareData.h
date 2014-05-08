@@ -232,15 +232,14 @@ private:
     NodeMutationObserverData() { }
 };
 
-class NodeRareData : public NodeRareDataBase {
-    WTF_MAKE_NONCOPYABLE(NodeRareData); WTF_MAKE_FAST_ALLOCATED;
+class NodeRareData : public NoBaseWillBeGarbageCollectedFinalized<NodeRareData>, public NodeRareDataBase {
+    WTF_MAKE_NONCOPYABLE(NodeRareData);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<NodeRareData> create(RenderObject* renderer)
+    static NodeRareData* create(RenderObject* renderer)
     {
-        return adoptPtr(new NodeRareData(renderer));
+        return new NodeRareData(renderer);
     }
-
-    void dispose();
 
     void clearNodeLists() { m_nodeLists.clear(); }
     NodeListsNodeData* nodeLists() const { return m_nodeLists.get(); }
@@ -284,21 +283,29 @@ public:
         ConnectedFrameCountBits = 10, // Must fit Page::maxNumberOfFrames.
     };
 
+    void trace(Visitor*);
+
+    void traceAfterDispatch(Visitor*);
+    void finalizeGarbageCollectedObject();
+
 protected:
     NodeRareData(RenderObject* renderer)
         : NodeRareDataBase(renderer)
         , m_connectedFrameCount(0)
         , m_elementFlags(0)
         , m_restyleFlags(0)
+        , m_isElementRareData(false)
     { }
 
 private:
     OwnPtr<NodeListsNodeData> m_nodeLists;
-    OwnPtrWillBePersistent<NodeMutationObserverData> m_mutationObserverData;
+    OwnPtrWillBeMember<NodeMutationObserverData> m_mutationObserverData;
 
     unsigned m_connectedFrameCount : ConnectedFrameCountBits;
     unsigned m_elementFlags : NumberOfElementFlags;
     unsigned m_restyleFlags : NumberOfDynamicRestyleFlags;
+protected:
+    unsigned m_isElementRareData : 1;
 };
 
 inline bool NodeListsNodeData::deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(Node& ownerNode)

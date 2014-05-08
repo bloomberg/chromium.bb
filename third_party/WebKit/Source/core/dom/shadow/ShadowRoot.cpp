@@ -84,12 +84,12 @@ ShadowRoot::~ShadowRoot()
     // runs so we don't go through TreeScopeAdopter for each child with a
     // destructed tree scope in each descendant.
     removeDetachedChildren();
-#endif
 
     // We must call clearRareData() here since a ShadowRoot class inherits TreeScope
     // as well as Node. See a comment on TreeScope.h for the reason.
     if (hasRareData())
         clearRareData();
+#endif
 }
 
 void ShadowRoot::dispose()

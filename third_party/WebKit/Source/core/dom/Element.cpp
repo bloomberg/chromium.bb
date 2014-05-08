@@ -168,11 +168,10 @@ Element::~Element()
 {
     ASSERT(needsAttach());
 
+#if !ENABLE(OILPAN)
     if (hasRareData())
         elementRareData()->clearShadow();
-
-    if (hasActiveAnimations())
-        activeAnimations()->dispose();
+#endif
 
     if (isCustomElement())
         CustomElement::wasDestroyed(this);
@@ -1431,7 +1430,7 @@ void Element::detach(const AttachContext& context)
 
         if (ActiveAnimations* activeAnimations = data->activeAnimations()) {
             if (context.performingReattach) {
-                // FIXME: We call detach from withing style recalc, so compositingState is not up to date.
+                // FIXME: We call detach from within style recalc, so compositingState is not up to date.
                 // https://code.google.com/p/chromium/issues/detail?id=339847
                 DisableCompositingQueryAsserts disabler;
 

@@ -266,12 +266,12 @@ Node::~Node()
     liveNodeSet.remove(this);
 #endif
 
+#if !ENABLE(OILPAN)
     if (hasRareData())
         clearRareData();
 
     RELEASE_ASSERT(!renderer());
 
-#if !ENABLE(OILPAN)
     if (!isContainerNode())
         willBeDeletedFromDocument();
 
@@ -282,6 +282,10 @@ Node::~Node()
 
     if (m_treeScope)
         m_treeScope->guardDeref();
+#else
+    // With Oilpan, the rare data finalizer also asserts for
+    // this condition (we cannot directly access it here.)
+    RELEASE_ASSERT(hasRareData() || !renderer());
 #endif
 
     InspectorCounters::decrementCounter(InspectorCounters::NodeCounter);
@@ -324,36 +328,32 @@ NodeRareData& Node::ensureRareData()
     if (hasRareData())
         return *rareData();
 
-    NodeRareData* data;
     if (isElementNode())
-        data = ElementRareData::create(m_data.m_renderer).leakPtr();
+        m_data.m_rareData = ElementRareData::create(m_data.m_renderer);
     else
-        data = NodeRareData::create(m_data.m_renderer).leakPtr();
-    ASSERT(data);
+        m_data.m_rareData = NodeRareData::create(m_data.m_renderer);
 
-    m_data.m_rareData = data;
+    ASSERT(m_data.m_rareData);
+
     setFlag(HasRareDataFlag);
-    return *data;
+    return *rareData();
 }
 
+#if !ENABLE(OILPAN)
 void Node::clearRareData()
 {
     ASSERT(hasRareData());
     ASSERT(!transientMutationObserverRegistry() || transientMutationObserverRegistry()->isEmpty());
 
     RenderObject* renderer = m_data.m_rareData->renderer();
-    if (isElementNode()) {
-        ElementRareData* rareData = static_cast<ElementRareData*>(m_data.m_rareData);
-        rareData->dispose();
-        delete rareData;
-    } else {
-        NodeRareData* rareData = static_cast<NodeRareData*>(m_data.m_rareData);
-        rareData->dispose();
-        delete rareData;
-    }
+    if (isElementNode())
+        delete static_cast<ElementRareData*>(m_data.m_rareData);
+    else
+        delete static_cast<NodeRareData*>(m_data.m_rareData);
     m_data.m_renderer = renderer;
     clearFlag(HasRareDataFlag);
 }
+#endif
 
 Node* Node::toNode()
 {
@@ -2136,7 +2136,7 @@ void Node::registerMutationObserver(MutationObserver& observer, MutationObserver
     }
 
     if (!registration) {
-        registry.append(MutationObserverRegistration::create(observer, *this, options, attributeFilter));
+        registry.append(MutationObserverRegistration::create(observer, this, options, attributeFilter));
         registration = registry.last().get();
     }
 
@@ -2159,9 +2159,11 @@ void Node::unregisterMutationObserver(MutationObserverRegistration* registration
     // before that, in case |this| is destroyed (see MutationObserverRegistration::m_registrationNodeKeepAlive).
     // FIXME: Simplify the registration/transient registration logic to make this understandable by humans.
     RefPtr<Node> protect(this);
-    // The explicit dispose() is motivated by Oilpan; the registration
-    // object needs to unregister itself promptly.
+#if ENABLE(OILPAN)
+    // The explicit dispose() is needed to have the registration
+    // object unregister itself promptly.
     registration->dispose();
+#endif
     registry->remove(index);
 }
 
@@ -2565,6 +2567,9 @@ void Node::trace(Visitor* visitor)
     visitor->trace(m_parentOrShadowHostNode);
     visitor->trace(m_previous);
     visitor->trace(m_next);
+    if (hasRareData())
+        visitor->trace(rareData());
+
     visitor->trace(m_treeScope);
 }
 

@@ -30,6 +30,7 @@
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/SelectRuleFeatureSet.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "platform/heap/Handle.h"
 #include "wtf/DoublyLinkedList.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -39,10 +40,11 @@
 
 namespace WebCore {
 
-class ElementShadow FINAL {
-    WTF_MAKE_NONCOPYABLE(ElementShadow); WTF_MAKE_FAST_ALLOCATED;
+class ElementShadow FINAL : public NoBaseWillBeGarbageCollectedFinalized<ElementShadow> {
+    WTF_MAKE_NONCOPYABLE(ElementShadow);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<ElementShadow> create();
+    static PassOwnPtrWillBeRawPtr<ElementShadow> create();
     ~ElementShadow();
 
     Element* host() const;
@@ -89,6 +91,7 @@ private:
     NodeToDestinationInsertionPoints m_nodeToInsertionPoints;
 
     SelectRuleFeatureSet m_selectFeatures;
+    // FIXME: Oilpan: add a heap-based version of DoublyLinkedList<>.
     DoublyLinkedList<ShadowRoot> m_shadowRoots;
     bool m_needsDistributionRecalc;
     bool m_needsSelectFeatureSet;

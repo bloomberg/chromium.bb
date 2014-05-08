@@ -31,13 +31,14 @@
 #include "config.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/Element.h"
+#include "core/dom/ElementRareData.h"
 #include "platform/heap/Handle.h"
 
 namespace WebCore {
 
 struct SameSizeAsNodeRareData {
     void* m_pointer[2];
-    OwnPtrWillBePersistent<NodeMutationObserverData> m_mutationObserverData;
+    OwnPtrWillBeMember<NodeMutationObserverData> m_mutationObserverData;
     unsigned m_bitfields;
 };
 
@@ -57,13 +58,26 @@ void NodeListsNodeData::invalidateCaches(const QualifiedName* attrName)
         it->value->invalidateCache();
 }
 
-void NodeRareData::dispose()
+void NodeRareData::traceAfterDispatch(Visitor* visitor)
 {
-    if (m_mutationObserverData) {
-        for (unsigned i = 0; i < m_mutationObserverData->registry.size(); i++)
-            m_mutationObserverData->registry.at(i)->dispose();
-        m_mutationObserverData.clear();
-    }
+    visitor->trace(m_mutationObserverData);
+}
+
+void NodeRareData::trace(Visitor* visitor)
+{
+    if (m_isElementRareData)
+        static_cast<ElementRareData*>(this)->traceAfterDispatch(visitor);
+    else
+        traceAfterDispatch(visitor);
+}
+
+void NodeRareData::finalizeGarbageCollectedObject()
+{
+    RELEASE_ASSERT(!renderer());
+    if (m_isElementRareData)
+        static_cast<ElementRareData*>(this)->~ElementRareData();
+    else
+        this->~NodeRareData();
 }
 
 // Ensure the 10 bits reserved for the m_connectedFrameCount cannot overflow

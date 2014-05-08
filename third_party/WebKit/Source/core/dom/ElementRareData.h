@@ -32,6 +32,7 @@
 #include "core/html/ClassList.h"
 #include "core/html/ime/InputMethodContext.h"
 #include "core/rendering/style/StyleInheritedData.h"
+#include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {
@@ -40,9 +41,9 @@ class HTMLElement;
 
 class ElementRareData : public NodeRareData {
 public:
-    static PassOwnPtr<ElementRareData> create(RenderObject* renderer)
+    static ElementRareData* create(RenderObject* renderer)
     {
-        return adoptPtr(new ElementRareData(renderer));
+        return new ElementRareData(renderer);
     }
 
     ~ElementRareData();
@@ -119,16 +120,7 @@ public:
     void setCustomElementDefinition(PassRefPtr<CustomElementDefinition> definition) { m_customElementDefinition = definition; }
     CustomElementDefinition* customElementDefinition() const { return m_customElementDefinition.get(); }
 
-    void trace(Visitor* visitor)
-    {
-        // FIXME: Oilpan: Implement real tracing of the
-        // ElementRareData when it has been moved to the
-        // oilpan heap and move the ElementShadow tracing
-        // to the ElementShadow when that has been moved
-        // to the oilpan heap.
-        visitor->trace(m_shadow);
-        visitor->trace(m_cssomWrapper);
-    }
+    void traceAfterDispatch(Visitor*);
 
 private:
     short m_tabindex;
@@ -137,11 +129,10 @@ private:
 
     OwnPtr<DatasetDOMStringMap> m_dataset;
     OwnPtr<ClassList> m_classList;
-    OwnPtr<ElementShadow> m_shadow;
+    OwnPtrWillBeMember<ElementShadow> m_shadow;
     OwnPtr<NamedNodeMap> m_attributeMap;
     OwnPtr<InputMethodContext> m_inputMethodContext;
-    OwnPtrWillBePersistent<ActiveAnimations> m_activeAnimations;
-    GC_PLUGIN_IGNORE("http://crbug.com/370453")
+    OwnPtrWillBeMember<ActiveAnimations> m_activeAnimations;
     OwnPtrWillBeMember<InlineCSSStyleDeclaration> m_cssomWrapper;
 
     RefPtr<RenderStyle> m_computedStyle;
@@ -158,11 +149,14 @@ inline ElementRareData::ElementRareData(RenderObject* renderer)
     : NodeRareData(renderer)
     , m_tabindex(0)
 {
+    m_isElementRareData = true;
 }
 
 inline ElementRareData::~ElementRareData()
 {
+#if !ENABLE(OILPAN)
     ASSERT(!m_shadow);
+#endif
     ASSERT(!m_generatedBefore);
     ASSERT(!m_generatedAfter);
     ASSERT(!m_backdrop);
