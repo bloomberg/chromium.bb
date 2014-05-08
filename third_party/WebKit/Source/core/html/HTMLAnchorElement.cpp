@@ -337,16 +337,6 @@ AtomicString HTMLAnchorElement::target() const
     return getAttribute(targetAttr);
 }
 
-void HTMLAnchorElement::setText(const String& text)
-{
-    setTextContent(text);
-}
-
-String HTMLAnchorElement::text()
-{
-    return innerText();
-}
-
 bool HTMLAnchorElement::isLiveLink() const
 {
     return isLink() && !rendererIsEditable();
