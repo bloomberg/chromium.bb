@@ -204,6 +204,10 @@
           'conditions': [
             ['OS=="linux"', {
               'sources': [
+                # TODO(mazda): Move this to browser_tests once we have
+                # established a way to run browser_tests on ARM Chrome OS
+                # devices (http://crbug.com/364729).
+                'nacl/loader/nonsfi/irt_icache_unittest.cc',
                 # TODO(hamaji): Currently, we build them twice. Stop building
                 # them for components_unittests. See crbug.com/364751
                 'nacl/loader/nonsfi/nonsfi_sandbox_unittest.cc',
@@ -265,6 +269,7 @@
                 'nacl/loader/nonsfi/irt_exception_handling.cc',
                 'nacl/loader/nonsfi/irt_fdio.cc',
                 'nacl/loader/nonsfi/irt_futex.cc',
+                'nacl/loader/nonsfi/irt_icache.cc',
                 'nacl/loader/nonsfi/irt_interfaces.cc',
                 'nacl/loader/nonsfi/irt_interfaces.h',
                 'nacl/loader/nonsfi/irt_memory.cc',

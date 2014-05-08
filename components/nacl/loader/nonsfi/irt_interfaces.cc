@@ -33,6 +33,9 @@ const NaClInterfaceTable kIrtInterfaces[] = {
   NACL_INTERFACE_TABLE(NACL_IRT_RESOURCE_OPEN_v0_1, kIrtResourceOpen),
   NACL_INTERFACE_TABLE(NACL_IRT_RANDOM_v0_1, kIrtRandom),
   NACL_INTERFACE_TABLE(NACL_IRT_EXCEPTION_HANDLING_v0_1, kIrtExceptionHandling),
+#if defined(__arm__)
+  NACL_INTERFACE_TABLE(NACL_IRT_ICACHE_v0_1, kIrtIcache),
+#endif
 };
 #undef NACL_INTERFACE_TABLE
 
