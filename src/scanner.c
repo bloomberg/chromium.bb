@@ -579,6 +579,18 @@ emit_opcodes(struct wl_list *message_list, struct interface *interface)
 }
 
 static void
+emit_opcode_versions(struct wl_list *message_list, struct interface *interface)
+{
+	struct message *m;
+
+	wl_list_for_each(m, message_list, link)
+		printf("#define %s_%s_SINCE_VERSION\t%d\n",
+		       interface->uppercase_name, m->uppercase_name, m->since);
+
+	printf("\n");
+}
+
+static void
 emit_type(struct arg *a)
 {
 	switch (a->type) {
@@ -1004,6 +1016,7 @@ emit_header(struct protocol *protocol, int server)
 		if (server) {
 			emit_structs(&i->request_list, i);
 			emit_opcodes(&i->event_list, i);
+			emit_opcode_versions(&i->event_list, i);
 			emit_event_wrappers(&i->event_list, i);
 		} else {
 			emit_structs(&i->event_list, i);
