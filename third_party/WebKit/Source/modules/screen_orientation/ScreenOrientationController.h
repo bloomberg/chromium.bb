@@ -25,8 +25,6 @@ public:
     static ScreenOrientationController& from(Document&);
     static const char* supplementName();
 
-    virtual void trace(Visitor* visitor) OVERRIDE { DocumentSupplement::trace(visitor); }
-
 private:
     explicit ScreenOrientationController(Document&);
 

@@ -52,8 +52,6 @@ public:
     virtual void didAddEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
     virtual void didRemoveEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
 
-    virtual void trace(Visitor* visitor) OVERRIDE { DocumentSupplement::trace(visitor); }
-
 private:
     explicit WheelController(Document&);
 

@@ -47,8 +47,6 @@ public:
 
     void didChangeDeviceMotion(DeviceMotionData*);
 
-    virtual void trace(Visitor* visitor) OVERRIDE { DocumentSupplement::trace(visitor); }
-
 private:
     explicit DeviceMotionController(Document&);
     virtual void registerWithDispatcher() OVERRIDE;

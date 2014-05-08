@@ -91,8 +91,6 @@ public:
 
     void validateAgainst(Document*);
 
-    virtual void trace(Visitor* visitor) OVERRIDE { DocumentSupplement::trace(visitor); }
-
 private:
     String m_domain;
     Entry m_entries[ContextFeatures::FeatureTypeSize];
