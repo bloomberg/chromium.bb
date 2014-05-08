@@ -878,7 +878,7 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
     return;
 
   blink::WebDocument document = main_frame->document();
-  // <object> with id="pdf-viewer" is created in
+  // <object>/<iframe> with id="pdf-viewer" is created in
   // chrome/browser/resources/print_preview/print_preview.js
   blink::WebElement pdf_element = document.getElementById("pdf-viewer");
   if (pdf_element.isNull()) {
@@ -886,12 +886,29 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
     return;
   }
 
+  // The out-of-process plugin element is nested within a frame.
+  blink::WebLocalFrame* plugin_frame = pdf_element.document().frame();
+  blink::WebElement plugin_element = pdf_element;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kOutOfProcessPdf)) {
+    if (!pdf_element.hasTagName("iframe")) {
+      NOTREACHED();
+      return;
+    }
+    plugin_frame = blink::WebLocalFrame::fromFrameOwnerElement(pdf_element);
+    // <object> with id="plugin" is created in
+    // chrome/browser/resources/pdf/pdf.js.
+    plugin_element = plugin_frame->document().getElementById("plugin");
+    if (plugin_element.isNull()) {
+      NOTREACHED();
+      return;
+    }
+  }
+
   // Set |print_for_preview_| flag and autoreset it to back to original
   // on return.
   base::AutoReset<bool> set_printing_flag(&print_for_preview_, true);
 
-  blink::WebLocalFrame* pdf_frame = pdf_element.document().frame();
-  if (!UpdatePrintSettings(pdf_frame, pdf_element, job_settings)) {
+  if (!UpdatePrintSettings(plugin_frame, plugin_element, job_settings)) {
     LOG(ERROR) << "UpdatePrintSettings failed";
     DidFinishPrinting(FAIL_PRINT);
     return;
@@ -910,7 +927,7 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
   print_params.printable_area = gfx::Rect(print_params.page_size);
 
   // Render Pages for printing.
-  if (!RenderPagesForPrint(pdf_frame, pdf_element)) {
+  if (!RenderPagesForPrint(plugin_frame, plugin_element)) {
     LOG(ERROR) << "RenderPagesForPrint failed";
     DidFinishPrinting(FAIL_PRINT);
   }

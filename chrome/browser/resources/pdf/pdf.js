@@ -52,6 +52,8 @@ function PDFViewer() {
   // positioning, acting as a viewport. The plugin renders into this viewport
   // according to the scroll position of the window.
   this.plugin_ = document.createElement('object');
+  // NOTE: The plugin's 'id' field must be set to 'plugin' since
+  // chrome/renderer/printing/print_web_view_helper.cc actually references it.
   this.plugin_.id = 'plugin';
   this.plugin_.type = 'application/x-google-chrome-pdf';
   this.plugin_.addEventListener('message', this.handleMessage_.bind(this),
