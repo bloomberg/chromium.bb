@@ -14,6 +14,7 @@ import logging
 import optparse
 import os
 import random
+import re
 import string
 import sys
 import time
@@ -53,7 +54,9 @@ def print_results(results, columns, buckets):
     print('\n'.join('  %s' % i for i in failures))
 
 
-def trigger_task(swarming_url, dimensions, progress, unique, timeout, index):
+def trigger_task(
+    swarming_url, dimensions, number_shards, sleep_time, output_size, progress,
+    unique, timeout, index):
   """Triggers a Swarming job and collects results.
 
   Returns the total amount of time to run a task remotely, including all the
@@ -69,7 +72,7 @@ def trigger_task(swarming_url, dimensions, progress, unique, timeout, index):
     isolated_hash=1,
     task_name=name,
     extra_args=[],
-    shards=1,
+    shards=number_shards,
     env={},
     dimensions=dimensions,
     working_dir=None,
@@ -77,41 +80,45 @@ def trigger_task(swarming_url, dimensions, progress, unique, timeout, index):
     verbose=False,
     profile=False,
     priority=100)
-  # TODO(maruel): Make output size configurable.
-  # TODO(maruel): Make number of shards configurable.
-  output_size = 100
-  cmd = ['python', '-c', 'print(\'1\'*%s)' % output_size]
+  cmd = [
+    'python',
+    '-c',
+    'import time; print(\'1\'*%s); time.sleep(%d); print(\'Back\')' %
+    (output_size, sleep_time)
+  ]
   manifest.add_task('echo stuff', cmd)
   data = {'request': manifest.to_json()}
   response = net.url_open(swarming_url + '/test', data=data)
   if not response:
     # Failed to trigger. Return a failure.
     return 'failed_trigger'
+
   result = json.load(response)
-  test_key = result['test_keys'][0].pop('test_key')
-  assert test_key
+  # Old API uses harcoded config name. New API doesn't have concept of config
+  # name so it uses the task name. Ignore this detail.
+  test_keys = []
+  for key in result['test_keys']:
+    key.pop('config_name')
+    test_keys.append(key.pop('test_key'))
+    assert re.match('[0-9a-f]+-1', test_keys[-1]), test_keys
   expected = {
-    'test_case_name': name,
-    'test_keys': [
+    u'test_case_name': unicode(name),
+    u'test_keys': [
       {
-        # Old API uses harcoded config name.
-        'config_name': 'isolated',
-        'num_instances': 1,
-        'instance_index': 0,
-      },
+        u'num_instances': number_shards,
+        u'instance_index': i,
+      } for i in xrange(number_shards)
     ],
   }
-  if result != expected:
-    # New API doesn't have concept of config name so it uses the task name.
-    expected['test_keys'][0]['config_name'] = name
-    assert result == expected, '%s\n%s' % (result, expected)
+  assert result == expected, '\n%s\n%s' % (result, expected)
+
   progress.update_item('%5d' % index, processing=1)
   try:
     logging.info('collect')
-    test_keys = swarming.get_task_keys(swarming_url, name)
-    if not test_keys:
+    new_test_keys = swarming.get_task_keys(swarming_url, name)
+    if not new_test_keys:
       return 'no_test_keys'
-    assert test_keys == [test_key], test_keys
+    assert test_keys == new_test_keys, test_keys
     out = [
       output
       for _index, output in swarming.yield_results(
@@ -119,17 +126,19 @@ def trigger_task(swarming_url, dimensions, progress, unique, timeout, index):
     ]
     if not out:
       return 'no_result'
-    out[0].pop('machine_tag')
-    out[0].pop('machine_id')
-    # TODO(maruel): Assert output even when run on a real bot.
-    _out_actual = out[0].pop('output')
-    # assert out_actual == swarming_load_test_bot.TASK_OUTPUT, out_actual
+    for item in out:
+      item.pop('machine_tag')
+      item.pop('machine_id')
+      # TODO(maruel): Assert output even when run on a real bot.
+      _out_actual = item.pop('output')
+      # assert out_actual == swarming_load_test_bot.TASK_OUTPUT, out_actual
+    out.sort(key=lambda x: x['config_instance_index'])
     expected = [
       {
-        u'config_instance_index': 0,
+        u'config_instance_index': i,
         u'exit_codes': u'0',
-        u'num_config_instances': 1,
-      },
+        u'num_config_instances': number_shards,
+      } for i in xrange(number_shards)
     ]
     assert out == expected, '\n%s\n%s' % (out, expected)
     return time.time() - start
@@ -161,6 +170,16 @@ def main():
   group.add_option(
       '-t', '--timeout', type='float', default=3600., metavar='N',
       help='Timeout to get results, default: %default')
+  group.add_option(
+      '-o', '--output-size', type='int', default=100, metavar='N',
+      help='Bytes sent to stdout, default: %default')
+  group.add_option(
+      '--sleep', type='int', default=60, metavar='N',
+      help='Amount of time the bot should sleep, e.g. faking work, '
+           'default: %default')
+  group.add_option(
+      '-n', '--shards', type='int', default=1, metavar='N',
+      help='Number of shards per request, default: %default')
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, 'Display options')
@@ -216,6 +235,9 @@ def main():
               trigger_task,
               options.swarming,
               options.dimensions,
+              options.shards,
+              options.sleep,
+              options.output_size,
               progress,
               unique,
               options.timeout,
