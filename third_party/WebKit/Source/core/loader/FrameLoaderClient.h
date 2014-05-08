@@ -229,6 +229,8 @@ namespace WebCore {
 
         virtual void didStopAllLoaders() { }
 
+        virtual void dispatchDidChangeManifest() { }
+
         virtual bool isFrameLoaderClientImpl() const { return false; }
     };
 

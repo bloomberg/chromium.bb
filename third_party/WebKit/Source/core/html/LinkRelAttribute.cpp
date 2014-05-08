@@ -46,6 +46,7 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
     , m_isLinkPrerender(false)
     , m_isLinkNext(false)
     , m_isImport(false)
+    , m_isManifest(false)
 {
     if (rel.isEmpty())
         return;
@@ -84,6 +85,8 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
         } else if (equalIgnoringCase(*it, "apple-touch-icon-precomposed")) {
             if (RuntimeEnabledFeatures::touchIconLoadingEnabled())
                 m_iconType = TouchPrecomposedIcon;
+        } else if (equalIgnoringCase(*it, "manifest")) {
+            m_isManifest = true;
         }
     }
 }

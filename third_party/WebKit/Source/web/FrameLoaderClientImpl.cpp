@@ -809,4 +809,10 @@ void FrameLoaderClientImpl::didStopAllLoaders()
         m_webFrame->client()->didAbortLoading(m_webFrame);
 }
 
+void FrameLoaderClientImpl::dispatchDidChangeManifest()
+{
+    if (m_webFrame->client())
+        m_webFrame->client()->didChangeManifest(m_webFrame);
+}
+
 } // namespace blink

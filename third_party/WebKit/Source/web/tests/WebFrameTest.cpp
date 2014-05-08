@@ -5403,4 +5403,29 @@ TEST_F(WebFrameTest, HasVisibleContentOnHiddenFrames)
     }
 }
 
+class ManifestChangeWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+public:
+    ManifestChangeWebFrameClient() : m_manifestChangeCount(0) { }
+    virtual void didChangeManifest(WebLocalFrame*) OVERRIDE
+    {
+        ++m_manifestChangeCount;
+    }
+
+    int manifestChangeCount() { return m_manifestChangeCount; }
+
+private:
+    int m_manifestChangeCount;
+};
+
+TEST_F(WebFrameTest, NotifyManifestChange)
+{
+    registerMockedHttpURLLoad("link-manifest-change.html");
+
+    ManifestChangeWebFrameClient webFrameClient;
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "link-manifest-change.html", true, &webFrameClient);
+
+    EXPECT_EQ(14, webFrameClient.manifestChangeCount());
+}
+
 } // namespace

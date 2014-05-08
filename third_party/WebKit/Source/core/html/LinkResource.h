@@ -45,7 +45,8 @@ class LinkResource : public NoBaseWillBeGarbageCollectedFinalized<LinkResource> 
 public:
     enum Type {
         Style,
-        Import
+        Import,
+        Manifest
     };
 
     explicit LinkResource(HTMLLinkElement*);

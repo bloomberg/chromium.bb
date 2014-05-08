@@ -43,6 +43,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/html/LinkManifest.h"
 #include "core/html/imports/LinkImport.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -206,9 +207,11 @@ LinkResource* HTMLLinkElement::linkResourceToProcess()
     }
 
     if (!m_link) {
-        if (m_relAttribute.isImport() && RuntimeEnabledFeatures::htmlImportsEnabled())
+        if (m_relAttribute.isImport() && RuntimeEnabledFeatures::htmlImportsEnabled()) {
             m_link = LinkImport::create(this);
-        else {
+        } else if (m_relAttribute.isManifest() && RuntimeEnabledFeatures::manifestEnabled()) {
+            m_link = LinkManifest::create(this);
+        } else {
             OwnPtrWillBeRawPtr<LinkStyle> link = LinkStyle::create(this);
             if (fastHasAttribute(disabledAttr))
                 link->setDisabledState(true);

@@ -262,6 +262,10 @@ public:
     // WARNING: This method may be called very frequently.
     virtual void didUpdateCurrentHistoryItem(WebLocalFrame*) { }
 
+    // The frame's manifest has changed.
+    virtual void didChangeManifest(WebLocalFrame*) { }
+
+
     // Misc ----------------------------------------------------------------
 
     // Called to retrieve the provider of desktop notifications.

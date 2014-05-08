@@ -72,6 +72,7 @@ LangAttributeAwareFormControlUI
 LayerSquashing status=test
 PrefixedEncryptedMedia status=stable
 LocalStorage status=stable
+Manifest status=test
 Media status=stable
 MediaController depends_on=Media, status=experimental
 MediaQueryParser status=test

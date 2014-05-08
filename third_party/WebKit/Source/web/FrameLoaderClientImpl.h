@@ -159,6 +159,8 @@ public:
 
     virtual void didStopAllLoaders() OVERRIDE;
 
+    virtual void dispatchDidChangeManifest() OVERRIDE;
+
 private:
     virtual bool isFrameLoaderClientImpl() const OVERRIDE { return true; }
 
