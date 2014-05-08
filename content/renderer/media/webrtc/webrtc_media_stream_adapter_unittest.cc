@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "content/child/child_process.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_video_source.h"
@@ -22,6 +23,7 @@ namespace content {
 class WebRtcMediaStreamAdapterTest : public ::testing::Test {
  public:
   virtual void SetUp() {
+    child_process_.reset(new ChildProcess());
     dependency_factory_.reset(new MockMediaStreamDependencyFactory());
   }
 
@@ -89,6 +91,7 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
   }
 
  protected:
+  scoped_ptr<ChildProcess> child_process_;
   scoped_ptr<MockMediaStreamDependencyFactory> dependency_factory_;
   scoped_ptr<WebRtcMediaStreamAdapter> adapter_;
 };

@@ -13,11 +13,15 @@ MockMediaStreamVideoSink::MockMediaStreamVideoSink()
       state_(blink::WebMediaStreamSource::ReadyStateLive) {
 }
 
+MockMediaStreamVideoSink::~MockMediaStreamVideoSink() {
+}
+
 void MockMediaStreamVideoSink::OnVideoFrame(
     const scoped_refptr<media::VideoFrame>& frame) {
   ++number_of_frames_;
   format_ = frame->format();
   frame_size_ = frame->natural_size();
+  OnVideoFrame();
 }
 
 void MockMediaStreamVideoSink::OnReadyStateChanged(

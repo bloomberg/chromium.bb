@@ -5,10 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_MEDIA_STREAM_REMOTE_VIDEO_SOURCE_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_MEDIA_STREAM_REMOTE_VIDEO_SOURCE_H_
 
-#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/media_stream_video_source.h"
-#include "media/base/video_frame_pool.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 
@@ -20,9 +18,7 @@ namespace content {
 // a local source and a video track where the source is a remote video track.
 class CONTENT_EXPORT MediaStreamRemoteVideoSource
      : public MediaStreamVideoSource,
-       NON_EXPORTED_BASE(public webrtc::VideoRendererInterface),
-       NON_EXPORTED_BASE(public webrtc::ObserverInterface),
-       public base::SupportsWeakPtr<MediaStreamRemoteVideoSource> {
+       NON_EXPORTED_BASE(public webrtc::ObserverInterface) {
  public:
   explicit MediaStreamRemoteVideoSource(
       webrtc::VideoTrackInterface* remote_track);
@@ -32,37 +28,33 @@ class CONTENT_EXPORT MediaStreamRemoteVideoSource
   // Implements MediaStreamVideoSource.
   virtual void GetCurrentSupportedFormats(
       int max_requested_width,
-      int max_requested_height) OVERRIDE;
+      int max_requested_height,
+      const VideoCaptureDeviceFormatsCB& callback) OVERRIDE;
 
   virtual void StartSourceImpl(
-      const media::VideoCaptureParams& params) OVERRIDE;
+      const media::VideoCaptureParams& params,
+      const VideoCaptureDeliverFrameCB& frame_callback) OVERRIDE;
 
   virtual void StopSourceImpl() OVERRIDE;
 
-  // Implements webrtc::VideoRendererInterface used for receiving video frames
-  // from the PeerConnection video track. May be called on
-  // a different thread.
-  virtual void SetSize(int width, int height) OVERRIDE;
-  virtual void RenderFrame(const cricket::VideoFrame* frame) OVERRIDE;
+  // Used by tests to test that a frame can be received and that the
+  // MediaStreamRemoteVideoSource behaves as expected.
+  webrtc::VideoRendererInterface* RenderInterfaceForTest();
 
+ private:
   // webrtc::ObserverInterface implementation.
   virtual void OnChanged() OVERRIDE;
 
- private:
-  void FrameFormatOnMainThread(const media::VideoCaptureFormat& format);
-  void DoRenderFrameOnMainThread(scoped_refptr<media::VideoFrame> video_frame);
-
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   scoped_refptr<webrtc::VideoTrackInterface> remote_track_;
   webrtc::MediaStreamTrackInterface::TrackState last_state_;
 
-  // |first_frame_received_| and |frame_pool_| are only accessed on whatever
-  // thread webrtc::VideoRendererInterface::RenderFrame is called on.
-  bool first_frame_received_;
-  media::VideoFramePool frame_pool_;
+  // Internal class used for receiving frames from the webrtc track on a
+  // libjingle thread and forward it to the IO-thread.
+  class RemoteVideoSourceDelegate;
+  scoped_refptr<RemoteVideoSourceDelegate> delegate_;
 
-  // |format_| is the format currently received by this source.
-  media::VideoCaptureFormat format_;
+  // Bound to the render thread.
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamRemoteVideoSource);
 };

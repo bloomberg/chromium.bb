@@ -5,12 +5,16 @@
 #ifndef CONTENT_RENDERER_MEDIA_MEDIA_STREAM_VIDEO_SOURCE_H_
 #define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_VIDEO_SOURCE_H_
 
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
+#include "content/common/media/video_capture.h"
 #include "content/renderer/media/media_stream_source.h"
+#include "content/renderer/media/video_frame_deliverer.h"
 #include "media/base/video_frame.h"
 #include "media/video/capture/video_capture_types.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
@@ -49,12 +53,16 @@ class CONTENT_EXPORT MediaStreamVideoSource
 
   // Puts |track| in the registered tracks list.
   void AddTrack(MediaStreamVideoTrack* track,
+                const VideoCaptureDeliverFrameCB& frame_callback,
                 const blink::WebMediaConstraints& constraints,
                 const ConstraintsCallback& callback);
   void RemoveTrack(MediaStreamVideoTrack* track);
 
   // Return true if |name| is a constraint supported by MediaStreamVideoSource.
   static bool IsConstraintSupported(const std::string& name);
+
+  // Returns the MessageLoopProxy where video frames will be delivered on.
+  const scoped_refptr<base::MessageLoopProxy>& io_message_loop() const;
 
   // Constraint keys used by a video source.
   // Specified by draft-alvestrand-constraints-resolution-00b
@@ -79,30 +87,26 @@ class CONTENT_EXPORT MediaStreamVideoSource
   // Sets ready state and notifies the ready state to all registered tracks.
   virtual void SetReadyState(blink::WebMediaStreamSource::ReadyState state);
 
-  // Delivers |frame| to registered tracks according to their constraints.
-  // Note: current implementation assumes |frame| be contiguous layout of image
-  // planes and I420.
-  // |format| contains extra information like the frame rate of this source.
-  virtual void DeliverVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
-                                 const media::VideoCaptureFormat& format);
-
   // An implementation must fetch the formats that can currently be used by
   // the source and call OnSupportedFormats when done.
   // |max_requested_height| and |max_requested_width| is the max height and
   // width set as a mandatory constraint if set when calling
   // MediaStreamVideoSource::AddTrack. If max height and max width is not set
   // |max_requested_height| and |max_requested_width| are 0.
-  virtual void GetCurrentSupportedFormats(int max_requested_width,
-                                          int max_requested_height) = 0;
-  void OnSupportedFormats(const media::VideoCaptureFormats& formats);
+  virtual void GetCurrentSupportedFormats(
+      int max_requested_width,
+      int max_requested_height,
+      const VideoCaptureDeviceFormatsCB& callback) = 0;
 
   // An implementation must start capture frames using the resolution in
   // |params|. When the source has started or the source failed to start
   // OnStartDone must be called. An implementation must call
-  // DeliverVideoFrame with the captured frames.
+  // invoke |frame_callback| on the IO thread with the captured frames.
   // TODO(perkj): pass a VideoCaptureFormats instead of VideoCaptureParams for
   // subclasses to customize.
-  virtual void StartSourceImpl(const media::VideoCaptureParams& params) = 0;
+  virtual void StartSourceImpl(
+      const media::VideoCaptureParams& params,
+      const VideoCaptureDeliverFrameCB& frame_callback) = 0;
   void OnStartDone(bool success);
 
   // An implementation must immediately stop capture video frames and must not
@@ -120,8 +124,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
   State state() const { return state_; }
 
  private:
-  // Creates a webrtc::VideoSourceInterface used by libjingle.
-  void InitAdapter();
+  void OnSupportedFormats(const media::VideoCaptureFormats& formats);
 
   // Finds the first constraints in |requested_constraints_| that can be
   // fulfilled. |best_format| is set to the video resolution that can be
@@ -152,10 +155,14 @@ class CONTENT_EXPORT MediaStreamVideoSource
   gfx::Size max_frame_output_size_;
 
   struct RequestedConstraints {
-    RequestedConstraints(const blink::WebMediaConstraints& constraints,
+    RequestedConstraints(MediaStreamVideoTrack* track,
+                         const VideoCaptureDeliverFrameCB& frame_callback,
+                         const blink::WebMediaConstraints& constraints,
                          const ConstraintsCallback& callback);
     ~RequestedConstraints();
 
+    MediaStreamVideoTrack* track;
+    VideoCaptureDeliverFrameCB frame_callback;
     blink::WebMediaConstraints constraints;
     ConstraintsCallback callback;
   };
@@ -163,8 +170,16 @@ class CONTENT_EXPORT MediaStreamVideoSource
 
   media::VideoCaptureFormats supported_formats_;
 
+  // |FrameDeliverer| is an internal helper object used for delivering video
+  // frames using callbacks to all registered tracks on the IO thread.
+  class FrameDeliverer;
+  scoped_refptr<FrameDeliverer> frame_deliverer_;
+
   // Tracks that currently are receiving video frames.
   std::vector<MediaStreamVideoTrack*> tracks_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<MediaStreamVideoSource> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoSource);
 };

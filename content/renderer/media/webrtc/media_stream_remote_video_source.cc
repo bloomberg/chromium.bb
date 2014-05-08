@@ -5,59 +5,71 @@
 #include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/renderer/media/native_handle_impl.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_frame_pool.h"
 #include "media/base/video_util.h"
 #include "third_party/libjingle/source/talk/media/base/videoframe.h"
 
 namespace content {
 
-MediaStreamRemoteVideoSource::MediaStreamRemoteVideoSource(
-    webrtc::VideoTrackInterface* remote_track)
-    : MediaStreamVideoSource(),
-      message_loop_proxy_(base::MessageLoopProxy::current()),
-      remote_track_(remote_track),
-      last_state_(remote_track_->state()),
-      first_frame_received_(false) {
-  remote_track_->AddRenderer(this);
-  remote_track_->RegisterObserver(this);
+// Internal class used for receiving frames from the webrtc track on a
+// libjingle thread and forward it to the IO-thread.
+class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
+    : public base::RefCountedThreadSafe<RemoteVideoSourceDelegate>,
+      public webrtc::VideoRendererInterface {
+ public:
+  RemoteVideoSourceDelegate(
+      const scoped_refptr<base::MessageLoopProxy>& io_message_loop,
+      const VideoCaptureDeliverFrameCB& new_frame_callback);
+
+ protected:
+  friend class base::RefCountedThreadSafe<RemoteVideoSourceDelegate>;
+  virtual ~RemoteVideoSourceDelegate();
+
+  // Implements webrtc::VideoRendererInterface used for receiving video frames
+  // from the PeerConnection video track. May be called on a libjingle internal
+  // thread.
+  virtual void SetSize(int width, int height) OVERRIDE;
+  virtual void RenderFrame(const cricket::VideoFrame* frame) OVERRIDE;
+
+  void DoRenderFrameOnIOThread(scoped_refptr<media::VideoFrame> video_frame,
+                               const media::VideoCaptureFormat& format);
+ private:
+  // Bound to the render thread.
+  base::ThreadChecker thread_checker_;
+
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  // |frame_pool_| is only accessed on whatever
+  // thread webrtc::VideoRendererInterface::RenderFrame is called on.
+  media::VideoFramePool frame_pool_;
+
+  // |frame_callback_| is accessed on the IO thread.
+  VideoCaptureDeliverFrameCB frame_callback_;
+};
+
+MediaStreamRemoteVideoSource::
+RemoteVideoSourceDelegate::RemoteVideoSourceDelegate(
+    const scoped_refptr<base::MessageLoopProxy>& io_message_loop,
+    const VideoCaptureDeliverFrameCB& new_frame_callback)
+    : io_message_loop_(io_message_loop),
+      frame_callback_(new_frame_callback) {
 }
 
-MediaStreamRemoteVideoSource::~MediaStreamRemoteVideoSource() {
-  StopSourceImpl();
+MediaStreamRemoteVideoSource::
+RemoteVideoSourceDelegate::~RemoteVideoSourceDelegate() {
 }
 
-void MediaStreamRemoteVideoSource::GetCurrentSupportedFormats(
-    int max_requested_width,
-    int max_requested_height) {
-  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-  if (format_.IsValid()) {
-    media::VideoCaptureFormats formats;
-    formats.push_back(format_);
-    OnSupportedFormats(formats);
-  }
+void MediaStreamRemoteVideoSource::
+RemoteVideoSourceDelegate::SetSize(int width, int height) {
 }
 
-void MediaStreamRemoteVideoSource::StartSourceImpl(
-    const media::VideoCaptureParams& params) {
-  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-  OnStartDone(true);
-}
-
-void MediaStreamRemoteVideoSource::StopSourceImpl() {
-  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-  if (state() != MediaStreamVideoSource::ENDED) {
-    remote_track_->RemoveRenderer(this);
-    remote_track_->UnregisterObserver(this);
-  }
-}
-
-void MediaStreamRemoteVideoSource::SetSize(int width, int height) {
-}
-
-void MediaStreamRemoteVideoSource::RenderFrame(
+void MediaStreamRemoteVideoSource::
+RemoteVideoSourceDelegate::RenderFrame(
     const cricket::VideoFrame* frame) {
   base::TimeDelta timestamp = base::TimeDelta::FromMilliseconds(
       frame->GetTimeStamp() / talk_base::kNumNanosecsPerMillisec);
@@ -87,32 +99,75 @@ void MediaStreamRemoteVideoSource::RenderFrame(
         frame->GetVPlane(), frame->GetVPitch(), uv_rows, video_frame.get());
   }
 
-  if (!first_frame_received_) {
-    first_frame_received_ = true;
-    media::VideoPixelFormat pixel_format = (
-        video_frame->format() == media::VideoFrame::YV12) ?
-            media::PIXEL_FORMAT_YV12 : media::PIXEL_FORMAT_TEXTURE;
-    media::VideoCaptureFormat format(
-        gfx::Size(video_frame->natural_size().width(),
-                  video_frame->natural_size().height()),
-        MediaStreamVideoSource::kDefaultFrameRate,
-        pixel_format);
-    message_loop_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(&MediaStreamRemoteVideoSource::FrameFormatOnMainThread,
-                   AsWeakPtr(), format));
-  }
+  media::VideoPixelFormat pixel_format =
+      (video_frame->format() == media::VideoFrame::YV12) ?
+          media::PIXEL_FORMAT_YV12 : media::PIXEL_FORMAT_TEXTURE;
 
-  // TODO(perkj): Consider delivering the frame on whatever thread the frame is
-  // delivered on once crbug/335327 is fixed.
-  message_loop_proxy_->PostTask(
+  media::VideoCaptureFormat format(
+      gfx::Size(video_frame->natural_size().width(),
+                video_frame->natural_size().height()),
+                MediaStreamVideoSource::kDefaultFrameRate,
+                pixel_format);
+
+  io_message_loop_->PostTask(
       FROM_HERE,
-      base::Bind(&MediaStreamRemoteVideoSource::DoRenderFrameOnMainThread,
-                 AsWeakPtr(), video_frame));
+      base::Bind(&RemoteVideoSourceDelegate::DoRenderFrameOnIOThread,
+                 this, video_frame, format));
+}
+
+void MediaStreamRemoteVideoSource::
+RemoteVideoSourceDelegate::DoRenderFrameOnIOThread(
+    scoped_refptr<media::VideoFrame> video_frame,
+    const media::VideoCaptureFormat& format) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  frame_callback_.Run(video_frame, format);
+}
+
+MediaStreamRemoteVideoSource::MediaStreamRemoteVideoSource(
+    webrtc::VideoTrackInterface* remote_track)
+    : remote_track_(remote_track),
+      last_state_(remote_track->state()) {
+  remote_track_->RegisterObserver(this);
+}
+
+MediaStreamRemoteVideoSource::~MediaStreamRemoteVideoSource() {
+  remote_track_->UnregisterObserver(this);
+}
+
+void MediaStreamRemoteVideoSource::GetCurrentSupportedFormats(
+    int max_requested_width,
+    int max_requested_height,
+    const VideoCaptureDeviceFormatsCB& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  media::VideoCaptureFormats formats;
+  // Since the remote end is free to change the resolution at any point in time
+  // the supported formats are unknown.
+  callback.Run(formats);
+}
+
+void MediaStreamRemoteVideoSource::StartSourceImpl(
+    const media::VideoCaptureParams& params,
+    const VideoCaptureDeliverFrameCB& frame_callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!delegate_);
+  delegate_ = new RemoteVideoSourceDelegate(io_message_loop(), frame_callback);
+  remote_track_->AddRenderer(delegate_);
+  OnStartDone(true);
+}
+
+void MediaStreamRemoteVideoSource::StopSourceImpl() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(state() != MediaStreamVideoSource::ENDED);
+  remote_track_->RemoveRenderer(delegate_);
+}
+
+webrtc::VideoRendererInterface*
+MediaStreamRemoteVideoSource::RenderInterfaceForTest() {
+  return delegate_;
 }
 
 void MediaStreamRemoteVideoSource::OnChanged() {
-  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   webrtc::MediaStreamTrackInterface::TrackState state = remote_track_->state();
   if (state != last_state_) {
     last_state_ = state;
@@ -132,24 +187,6 @@ void MediaStreamRemoteVideoSource::OnChanged() {
         break;
     }
   }
-}
-
-void MediaStreamRemoteVideoSource::FrameFormatOnMainThread(
-    const media::VideoCaptureFormat& format) {
-  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-  format_ = format;
-  if (state() == RETRIEVING_CAPABILITIES) {
-    media::VideoCaptureFormats formats;
-    formats.push_back(format);
-    OnSupportedFormats(formats);
-  }
-}
-
-void MediaStreamRemoteVideoSource::DoRenderFrameOnMainThread(
-    scoped_refptr<media::VideoFrame> video_frame) {
-  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-  if (state() == STARTED)
-    DeliverVideoFrame(video_frame, format_);
 }
 
 }  // namespace content

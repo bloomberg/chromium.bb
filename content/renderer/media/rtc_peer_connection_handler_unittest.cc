@@ -6,8 +6,10 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/child/child_process.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_source.h"
@@ -198,6 +200,7 @@ class RTCPeerConnectionHandlerUnderTest : public RTCPeerConnectionHandler {
 class RTCPeerConnectionHandlerTest : public ::testing::Test {
  public:
   RTCPeerConnectionHandlerTest() : mock_peer_connection_(NULL) {
+    child_process_.reset(new ChildProcess());
   }
 
   virtual void SetUp() {
@@ -284,7 +287,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     return stream;
   }
 
-  base::MessageLoop message_loop_;
+  scoped_ptr<ChildProcess> child_process_;
   scoped_ptr<MockWebRTCPeerConnectionHandlerClient> mock_client_;
   scoped_ptr<MockMediaStreamDependencyFactory> mock_dependency_factory_;
   scoped_ptr<NiceMock<MockPeerConnectionTracker> > mock_tracker_;

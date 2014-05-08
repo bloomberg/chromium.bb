@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/child/child_process.h"
 #include "content/renderer/media/media_stream_video_capturer_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_constraint_factory.h"
@@ -29,6 +30,11 @@ class MockVideoCapturerDelegate : public VideoCapturerDelegate {
 
 class MediaStreamVideoCapturerSourceTest : public testing::Test {
  public:
+  MediaStreamVideoCapturerSourceTest()
+     : child_process_(new ChildProcess()),
+       source_(NULL) {
+  }
+
   void InitWithDeviceInfo(const StreamDeviceInfo& device_info) {
     delegate_ = new MockVideoCapturerDelegate(device_info);
     source_ = new MediaStreamVideoCapturerSource(
@@ -58,6 +64,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
   void OnConstraintsApplied(MediaStreamSource* source, bool success) {
   }
 
+  scoped_ptr<ChildProcess> child_process_;
   blink::WebMediaStreamSource webkit_source_;
   MediaStreamVideoCapturerSource* source_;  // owned by webkit_source.
   scoped_refptr<MockVideoCapturerDelegate> delegate_;

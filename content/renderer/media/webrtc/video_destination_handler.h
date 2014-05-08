@@ -49,17 +49,20 @@ class CONTENT_EXPORT PpFrameWriter
                         int64 time_stamp_ns) OVERRIDE;
  protected:
   // MediaStreamVideoSource implementation.
-  virtual void GetCurrentSupportedFormats(int max_requested_width,
-                                          int max_requested_height) OVERRIDE;
+  virtual void GetCurrentSupportedFormats(
+      int max_requested_width,
+      int max_requested_height,
+      const VideoCaptureDeviceFormatsCB& callback) OVERRIDE;
   virtual void StartSourceImpl(
-      const media::VideoCaptureParams& params) OVERRIDE;
+      const media::VideoCaptureParams& params,
+      const VideoCaptureDeliverFrameCB& frame_callback) OVERRIDE;
   virtual void StopSourceImpl() OVERRIDE;
 
  private:
-  // |format_| is the format currently received by this source.
-  media::VideoCaptureFormat format_;
-  bool first_frame_received_;
   media::VideoFramePool frame_pool_;
+
+  class FrameWriterDelegate;
+  scoped_refptr<FrameWriterDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(PpFrameWriter);
 };

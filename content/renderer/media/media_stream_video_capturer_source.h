@@ -54,9 +54,6 @@ class CONTENT_EXPORT VideoCapturerDelegate
 
   virtual ~VideoCapturerDelegate();
 
-  void OnFrameReadyOnRenderThread(
-      const scoped_refptr<media::VideoFrame>& frame,
-      const media::VideoCaptureFormat& format);
   void OnStateUpdateOnRenderThread(VideoCaptureState state);
   void OnDeviceFormatsInUseReceived(const media::VideoCaptureFormats& formats);
   void OnDeviceSupportedFormatsEnumerated(
@@ -71,11 +68,8 @@ class CONTENT_EXPORT VideoCapturerDelegate
   bool is_screen_cast_;
   bool got_first_frame_;
 
-  // |new_frame_callback_| is provided to this class in StartToDeliver and must
-  // be valid until StopDeliver is called.
-  VideoCaptureDeliverFrameCB new_frame_callback_;
-  // |started_callback| is provided to this class in StartToDeliver and must be
-  // valid until StopDeliver is called.
+  // |started_callback| is provided to this class in StartCapture and must be
+  // valid until StopCapture is called.
   StartedCallback started_callback_;
 
   VideoCaptureDeviceFormatsCB source_formats_callback_;
@@ -104,10 +98,12 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
   // Implements MediaStreamVideoSource.
   virtual void GetCurrentSupportedFormats(
       int max_requested_width,
-      int max_requested_height) OVERRIDE;
+      int max_requested_height,
+      const VideoCaptureDeviceFormatsCB& callback) OVERRIDE;
 
   virtual void StartSourceImpl(
-      const media::VideoCaptureParams& params) OVERRIDE;
+      const media::VideoCaptureParams& params,
+      const VideoCaptureDeliverFrameCB& frame_callback) OVERRIDE;
 
   virtual void StopSourceImpl() OVERRIDE;
 

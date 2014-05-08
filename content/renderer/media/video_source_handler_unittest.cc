@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
+#include "content/child/child_process.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_registry_interface.h"
@@ -14,7 +15,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-
 
 namespace content {
 
@@ -40,13 +40,16 @@ class FakeFrameReader : public FrameReaderInterface {
 
 class VideoSourceHandlerTest : public ::testing::Test {
  public:
-  VideoSourceHandlerTest() : registry_() {
+  VideoSourceHandlerTest()
+       : child_process_(new ChildProcess()),
+         registry_() {
     handler_.reset(new VideoSourceHandler(&registry_));
     registry_.Init(kTestStreamUrl);
     registry_.AddVideoTrack(kTestVideoTrackId);
   }
 
  protected:
+  scoped_ptr<ChildProcess> child_process_;
   scoped_ptr<VideoSourceHandler> handler_;
   MockMediaStreamRegistry registry_;
 };

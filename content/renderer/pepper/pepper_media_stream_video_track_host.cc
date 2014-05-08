@@ -176,6 +176,57 @@ void ConvertFromMediaVideoFrame(const scoped_refptr<media::VideoFrame>& src,
 
 namespace content {
 
+// Internal class used for delivering video frames on the IO-thread to
+// the MediaStreamVideoSource implementation.
+class PepperMediaStreamVideoTrackHost::FrameDeliverer
+    : public base::RefCountedThreadSafe<FrameDeliverer> {
+ public:
+  FrameDeliverer(
+      const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy,
+      const VideoCaptureDeliverFrameCB& new_frame_callback);
+
+  void DeliverVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
+                         const media::VideoCaptureFormat& format);
+
+ private:
+  friend class base::RefCountedThreadSafe<FrameDeliverer>;
+  virtual ~FrameDeliverer();
+
+  void DeliverFrameOnIO(const scoped_refptr<media::VideoFrame>& frame,
+                        const media::VideoCaptureFormat& format);
+
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  VideoCaptureDeliverFrameCB new_frame_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
+};
+
+PepperMediaStreamVideoTrackHost::FrameDeliverer::FrameDeliverer(
+    const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy,
+    const VideoCaptureDeliverFrameCB& new_frame_callback)
+    : io_message_loop_(io_message_loop_proxy),
+      new_frame_callback_(new_frame_callback) {
+}
+
+PepperMediaStreamVideoTrackHost::FrameDeliverer::~FrameDeliverer() {
+}
+
+void PepperMediaStreamVideoTrackHost::FrameDeliverer::DeliverVideoFrame(
+    const scoped_refptr<media::VideoFrame>& frame,
+    const media::VideoCaptureFormat& format) {
+  io_message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&FrameDeliverer::DeliverFrameOnIO,
+                 this, frame, format));
+}
+
+void PepperMediaStreamVideoTrackHost::FrameDeliverer::DeliverFrameOnIO(
+     const scoped_refptr<media::VideoFrame>& frame,
+     const media::VideoCaptureFormat& format) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  new_frame_callback_.Run(frame, format);
+}
+
 PepperMediaStreamVideoTrackHost::PepperMediaStreamVideoTrackHost(
     RendererPpapiHost* host,
     PP_Instance instance,
@@ -312,10 +363,11 @@ int32_t PepperMediaStreamVideoTrackHost::SendFrameToTrack(int32_t index) {
         base::TimeDelta::FromMilliseconds(ts_ms),
         base::Closure());
 
-    DeliverVideoFrame(frame, media::VideoCaptureFormat(
-                                 plugin_frame_size_,
-                                 kDefaultOutputFrameRate,
-                                 ToPixelFormat(plugin_frame_format_)));
+    frame_deliverer_->DeliverVideoFrame(
+        frame,
+        media::VideoCaptureFormat(plugin_frame_size_,
+                                  kDefaultOutputFrameRate,
+                                  ToPixelFormat(plugin_frame_format_)));
   }
 
   // Makes the frame available again for plugin.
@@ -365,9 +417,11 @@ void PepperMediaStreamVideoTrackHost::OnVideoFrame(
 }
 
 void PepperMediaStreamVideoTrackHost::GetCurrentSupportedFormats(
-    int max_requested_width, int max_requested_height) {
+    int max_requested_width, int max_requested_height,
+    const VideoCaptureDeviceFormatsCB& callback) {
   if (type_ != kWrite) {
     DVLOG(1) << "GetCurrentSupportedFormats is only supported in output mode.";
+    callback.Run(media::VideoCaptureFormats());
     return;
   }
 
@@ -376,16 +430,19 @@ void PepperMediaStreamVideoTrackHost::GetCurrentSupportedFormats(
       media::VideoCaptureFormat(plugin_frame_size_,
                                 kDefaultOutputFrameRate,
                                 ToPixelFormat(plugin_frame_format_)));
-  OnSupportedFormats(formats);
+  callback.Run(formats);
 }
 
 void PepperMediaStreamVideoTrackHost::StartSourceImpl(
-    const media::VideoCaptureParams& params) {
+    const media::VideoCaptureParams& params,
+    const VideoCaptureDeliverFrameCB& frame_callback) {
   output_started_ = true;
+  frame_deliverer_ = new FrameDeliverer(io_message_loop(), frame_callback);
 }
 
 void PepperMediaStreamVideoTrackHost::StopSourceImpl() {
   output_started_ = false;
+  frame_deliverer_ = NULL;
 }
 
 void PepperMediaStreamVideoTrackHost::DidConnectPendingHostToResource() {

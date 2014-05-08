@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/renderer/media_stream_video_sink.h"
+#include "content/child/child_process.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
+#include "content/renderer/media/mock_media_stream_video_sink.h"
 #include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -13,30 +16,9 @@
 
 namespace content {
 
-class MockVideoSink : public MediaStreamVideoSink {
- public:
-  MockVideoSink()
-      : number_of_frames_(0),
-        state_(blink::WebMediaStreamSource::ReadyStateLive) {
-  }
-
-  virtual void OnVideoFrame(
-      const scoped_refptr<media::VideoFrame>& frame) OVERRIDE {
-    ++number_of_frames_;
-  }
-
-  virtual void OnReadyStateChanged(
-      blink::WebMediaStreamSource::ReadyState state) OVERRIDE {
-    state_ = state;
-  }
-
-  int number_of_frames() const { return number_of_frames_; }
-  blink::WebMediaStreamSource::ReadyState state() const { return state_; }
-
- private:
-  int number_of_frames_;
-  blink::WebMediaStreamSource::ReadyState state_;
-};
+ACTION_P(RunClosure, closure) {
+  closure.Run();
+}
 
 class MediaStreamRemoteVideoSourceUnderTest
     : public MediaStreamRemoteVideoSource {
@@ -44,14 +26,15 @@ class MediaStreamRemoteVideoSourceUnderTest
   MediaStreamRemoteVideoSourceUnderTest(webrtc::VideoTrackInterface* track)
       : MediaStreamRemoteVideoSource(track) {
   }
-  using MediaStreamRemoteVideoSource::RenderFrame;
+ using MediaStreamRemoteVideoSource::RenderInterfaceForTest;
 };
 
 class MediaStreamRemoteVideoSourceTest
     : public ::testing::Test {
  public:
   MediaStreamRemoteVideoSourceTest()
-      : mock_factory_(new MockMediaStreamDependencyFactory()),
+      : child_process_(new ChildProcess()),
+        mock_factory_(new MockMediaStreamDependencyFactory()),
         webrtc_video_track_(
             mock_factory_->CreateLocalVideoTrack(
                 "test",
@@ -65,7 +48,6 @@ class MediaStreamRemoteVideoSourceTest
                               base::UTF8ToUTF16("dummy_source_name"));
     webkit_source_.setExtraData(remote_source_);
   }
-  virtual ~MediaStreamRemoteVideoSourceTest() {}
 
   MediaStreamRemoteVideoSourceUnderTest* source() {
     return remote_source_;
@@ -97,8 +79,6 @@ class MediaStreamRemoteVideoSourceTest
         webrtc::MediaStreamTrackInterface::kEnded);
   }
 
-  base::MessageLoop* message_loop() { return &message_loop_; }
-
   const blink::WebMediaStreamSource& webkit_source() const {
     return  webkit_source_;
   }
@@ -112,7 +92,8 @@ class MediaStreamRemoteVideoSourceTest
       ++number_of_failed_constraints_applied_;
   }
 
-  base::MessageLoop message_loop_;
+  scoped_ptr<ChildProcess> child_process_;
+  base::MessageLoopForUI message_loop_;
   scoped_ptr<MockMediaStreamDependencyFactory> mock_factory_;
   scoped_refptr<webrtc::VideoTrackInterface> webrtc_video_track_;
   // |remote_source_| is owned by |webkit_source_|.
@@ -124,17 +105,22 @@ class MediaStreamRemoteVideoSourceTest
 
 TEST_F(MediaStreamRemoteVideoSourceTest, StartTrack) {
   scoped_ptr<MediaStreamVideoTrack> track(CreateTrack());
-  EXPECT_EQ(0, NumberOfSuccessConstraintsCallbacks());
+  EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
 
-  MockVideoSink sink;
+  MockMediaStreamVideoSink sink;
   track->AddSink(&sink);
 
+
+
+  base::RunLoop run_loop;
+  base::Closure quit_closure = run_loop.QuitClosure();
+  EXPECT_CALL(sink, OnVideoFrame()).WillOnce(
+      RunClosure(quit_closure));
   cricket::WebRtcVideoFrame webrtc_frame;
   webrtc_frame.InitToBlack(320, 240, 1, 1, 0, 1);
-  source()->RenderFrame(&webrtc_frame);
-  message_loop()->RunUntilIdle();
+  source()->RenderInterfaceForTest()->RenderFrame(&webrtc_frame);
+  run_loop.Run();
 
-  EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
   EXPECT_EQ(1, sink.number_of_frames());
   track->RemoveSink(&sink);
 }
@@ -142,7 +128,7 @@ TEST_F(MediaStreamRemoteVideoSourceTest, StartTrack) {
 TEST_F(MediaStreamRemoteVideoSourceTest, RemoteTrackStop) {
   scoped_ptr<MediaStreamVideoTrack> track(CreateTrack());
 
-  MockVideoSink sink;
+  MockMediaStreamVideoSink sink;
   track->AddSink(&sink);
 
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive, sink.state());

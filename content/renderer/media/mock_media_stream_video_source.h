@@ -9,10 +9,9 @@
 
 namespace content {
 
-class MockMediaStreamVideoSource
-    : public MediaStreamVideoSource {
+class MockMediaStreamVideoSource : public MediaStreamVideoSource {
  public:
-  MockMediaStreamVideoSource(bool manual_get_supported_formats);
+  explicit MockMediaStreamVideoSource(bool manual_get_supported_formats);
   virtual ~MockMediaStreamVideoSource();
 
   // Simulate that the underlying source start successfully.
@@ -29,21 +28,30 @@ class MockMediaStreamVideoSource
     supported_formats_ = formats;
   }
 
+  // Delivers |frame| to all registered tracks on the IO thread. Its up to the
+  // call to make sure MockMediaStreamVideoSource is not destroyed before the
+  // frame has been delivered.
+  void DeliverVideoFrame(const scoped_refptr<media::VideoFrame>& frame);
+
   void CompleteGetSupportedFormats();
 
   const media::VideoCaptureParams& start_params() const { return params_; }
   int max_requested_height() const { return max_requested_height_; }
   int max_requested_width() const { return max_requested_width_; }
 
-  using MediaStreamVideoSource::DeliverVideoFrame;
-
  protected:
+  void DeliverVideoFrameOnIO(const scoped_refptr<media::VideoFrame>& frame,
+                             media::VideoCaptureFormat format,
+                             const VideoCaptureDeliverFrameCB& frame_callback);
+
   // Implements MediaStreamVideoSource.
   virtual void GetCurrentSupportedFormats(
       int max_requested_height,
-      int max_requested_width) OVERRIDE;
+      int max_requested_width,
+      const VideoCaptureDeviceFormatsCB& callback) OVERRIDE;
   virtual void StartSourceImpl(
-      const media::VideoCaptureParams& params) OVERRIDE;
+      const media::VideoCaptureParams& params,
+      const VideoCaptureDeliverFrameCB& frame_callback) OVERRIDE;
   virtual void StopSourceImpl() OVERRIDE;
 
  private:
@@ -53,6 +61,10 @@ class MockMediaStreamVideoSource
   int max_requested_height_;
   int max_requested_width_;
   bool attempted_to_start_;
+  VideoCaptureDeviceFormatsCB formats_callback_;
+  VideoCaptureDeliverFrameCB frame_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockMediaStreamVideoSource);
 };
 
 }  // namespace content

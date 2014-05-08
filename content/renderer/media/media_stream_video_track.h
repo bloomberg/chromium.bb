@@ -47,13 +47,21 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
        const MediaStreamVideoSource::ConstraintsCallback& callback,
        bool enabled);
   virtual ~MediaStreamVideoTrack();
+
+  // Add |sink| to receive state changes and video frames on the main render
+  // thread.
   virtual void AddSink(MediaStreamVideoSink* sink);
   virtual void RemoveSink(MediaStreamVideoSink* sink);
+
+  // Add |sink| to receive state changes on the main render thread and video
+  // frames in the |callback| method on the IO-thread.
+  virtual void AddSink(MediaStreamSink* sink,
+                       const VideoCaptureDeliverFrameCB& callback);
+  virtual void RemoveSink(MediaStreamSink* sink);
 
   virtual void SetEnabled(bool enabled) OVERRIDE;
   virtual void Stop() OVERRIDE;
 
-  void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame);
   void OnReadyStateChanged(blink::WebMediaStreamSource::ReadyState state);
 
   const blink::WebMediaConstraints& constraints() const {
@@ -65,8 +73,11 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   base::ThreadChecker thread_checker_;
 
  private:
-  bool enabled_;
-  std::vector<MediaStreamVideoSink*> sinks_;
+  // |FrameDeliverer| is an internal helper object used for delivering video
+  // frames on the IO-thread using callbacks to all registered tracks.
+  class FrameDeliverer;
+  scoped_refptr<FrameDeliverer> frame_deliverer_;
+
   blink::WebMediaConstraints constraints_;
 
   // Weak ref to the source this tracks is connected to.  |source_| is owned

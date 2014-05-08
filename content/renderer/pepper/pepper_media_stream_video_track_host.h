@@ -59,10 +59,14 @@ class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
       OVERRIDE;
 
   // MediaStreamVideoSource overrides:
-  virtual void GetCurrentSupportedFormats(int max_requested_width,
-                                          int max_requested_height) OVERRIDE;
+  virtual void GetCurrentSupportedFormats(
+      int max_requested_width,
+      int max_requested_height,
+      const VideoCaptureDeviceFormatsCB& callback) OVERRIDE;
+
   virtual void StartSourceImpl(
-      const media::VideoCaptureParams& params) OVERRIDE;
+      const media::VideoCaptureParams& params,
+      const VideoCaptureDeliverFrameCB& frame_callback) OVERRIDE;
 
   virtual void StopSourceImpl() OVERRIDE;
 
@@ -109,6 +113,11 @@ class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
   // into 2 classes for read and write.
   TrackType type_;
   bool output_started_;
+
+  // Internal class used for delivering video frames on the IO-thread to
+  // the MediaStreamVideoSource implementation.
+  class FrameDeliverer;
+  scoped_refptr<FrameDeliverer> frame_deliverer_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperMediaStreamVideoTrackHost);
 };

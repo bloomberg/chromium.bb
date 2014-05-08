@@ -4,6 +4,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/child/child_process.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_impl.h"
 #include "content/renderer/media/media_stream_track.h"
@@ -106,6 +107,7 @@ class MediaStreamImplTest : public ::testing::Test {
  public:
   virtual void SetUp() {
     // Create our test object.
+    child_process_.reset(new ChildProcess());
     ms_dispatcher_.reset(new MockMediaStreamDispatcher());
     dependency_factory_.reset(new MockMediaStreamDependencyFactory());
     ms_impl_.reset(new MediaStreamImplUnderTest(ms_dispatcher_.get(),
@@ -165,6 +167,7 @@ class MediaStreamImplTest : public ::testing::Test {
   }
 
  protected:
+  scoped_ptr<ChildProcess> child_process_;
   scoped_ptr<MockMediaStreamDispatcher> ms_dispatcher_;
   scoped_ptr<MediaStreamImplUnderTest> ms_impl_;
   scoped_ptr<MockMediaStreamDependencyFactory> dependency_factory_;

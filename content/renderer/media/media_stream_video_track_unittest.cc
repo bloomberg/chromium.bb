@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/child/child_process.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_stream_video_sink.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
@@ -11,10 +14,15 @@
 
 namespace content {
 
+ACTION_P(RunClosure, closure) {
+  closure.Run();
+}
+
 class MediaStreamVideoTrackTest : public ::testing::Test {
  public:
   MediaStreamVideoTrackTest()
-      : mock_source_(new MockMediaStreamVideoSource(false)),
+      : child_process_(new ChildProcess()),
+        mock_source_(new MockMediaStreamVideoSource(false)),
         source_started_(false) {
     blink_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
                               blink::WebMediaStreamSource::TypeVideo,
@@ -22,7 +30,27 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
     blink_source_.setExtraData(mock_source_);
   }
 
+  virtual ~MediaStreamVideoTrackTest() {
+  }
+
+  void DeliverVideoFrameAndWaitForRenderer(MockMediaStreamVideoSink* sink) {
+    base::RunLoop run_loop;
+    base::Closure quit_closure = run_loop.QuitClosure();
+    EXPECT_CALL(*sink, OnVideoFrame()).WillOnce(
+        RunClosure(quit_closure));
+    scoped_refptr<media::VideoFrame> frame =
+        media::VideoFrame::CreateBlackFrame(
+            gfx::Size(MediaStreamVideoSource::kDefaultWidth,
+                      MediaStreamVideoSource::kDefaultHeight));
+    mock_source()->DeliverVideoFrame(frame);
+    run_loop.Run();
+  }
+
  protected:
+  base::MessageLoop* io_message_loop() const {
+    return child_process_->io_message_loop();
+  }
+
   // Create a track that's associated with |mock_source_|.
   blink::WebMediaStreamTrack CreateTrack() {
     blink::WebMediaConstraints constraints;
@@ -45,6 +73,8 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
   }
 
  private:
+  scoped_ptr<ChildProcess> child_process_;
+  base::MessageLoopForUI message_loop_;
   blink::WebMediaStreamSource blink_source_;
   // |mock_source_| is owned by |webkit_source_|.
   MockMediaStreamVideoSource* mock_source_;
@@ -56,19 +86,20 @@ TEST_F(MediaStreamVideoTrackTest, AddAndRemoveSink) {
   blink::WebMediaStreamTrack track = CreateTrack();
   MediaStreamVideoSink::AddToVideoTrack(&sink, track);
 
-  MediaStreamVideoTrack* video_track =
-        MediaStreamVideoTrack::GetVideoTrack(track);
+  DeliverVideoFrameAndWaitForRenderer(&sink);
+  EXPECT_EQ(1, sink.number_of_frames());
+
+  DeliverVideoFrameAndWaitForRenderer(&sink);
+
+  MediaStreamVideoSink::RemoveFromVideoTrack(&sink, track);
+
   scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::CreateBlackFrame(
           gfx::Size(MediaStreamVideoSource::kDefaultWidth,
                     MediaStreamVideoSource::kDefaultHeight));
-  video_track->OnVideoFrame(frame);
-  EXPECT_EQ(1, sink.number_of_frames());
-  video_track->OnVideoFrame(frame);
-  EXPECT_EQ(2, sink.number_of_frames());
-
-  MediaStreamVideoSink::RemoveFromVideoTrack(&sink, track);
-  video_track->OnVideoFrame(frame);
+  mock_source()->DeliverVideoFrame(frame);
+  // Wait for the IO thread to complete delivering frames.
+  io_message_loop()->RunUntilIdle();
   EXPECT_EQ(2, sink.number_of_frames());
 }
 
@@ -79,21 +110,26 @@ TEST_F(MediaStreamVideoTrackTest, SetEnabled) {
 
   MediaStreamVideoTrack* video_track =
       MediaStreamVideoTrack::GetVideoTrack(track);
-  scoped_refptr<media::VideoFrame> frame =
-      media::VideoFrame::CreateBlackFrame(
-          gfx::Size(MediaStreamVideoSource::kDefaultWidth,
-                    MediaStreamVideoSource::kDefaultHeight));
-  video_track->OnVideoFrame(frame);
+
+  DeliverVideoFrameAndWaitForRenderer(&sink);
   EXPECT_EQ(1, sink.number_of_frames());
 
   video_track->SetEnabled(false);
   EXPECT_FALSE(sink.enabled());
-  video_track->OnVideoFrame(frame);
+
+  scoped_refptr<media::VideoFrame> frame =
+      media::VideoFrame::CreateBlackFrame(
+          gfx::Size(MediaStreamVideoSource::kDefaultWidth,
+                    MediaStreamVideoSource::kDefaultHeight));
+  mock_source()->DeliverVideoFrame(frame);
+  // Wait for the IO thread to complete delivering frames.
+  io_message_loop()->RunUntilIdle();
   EXPECT_EQ(1, sink.number_of_frames());
 
   video_track->SetEnabled(true);
   EXPECT_TRUE(sink.enabled());
-  video_track->OnVideoFrame(frame);
+  mock_source()->DeliverVideoFrame(frame);
+  DeliverVideoFrameAndWaitForRenderer(&sink);
   EXPECT_EQ(2, sink.number_of_frames());
   MediaStreamVideoSink::RemoveFromVideoTrack(&sink, track);
 }

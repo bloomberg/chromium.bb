@@ -24,8 +24,53 @@
 
 namespace content {
 
-PpFrameWriter::PpFrameWriter()
-    : MediaStreamVideoSource(), first_frame_received_(false) {
+class PpFrameWriter::FrameWriterDelegate
+    : public base::RefCountedThreadSafe<FrameWriterDelegate> {
+ public:
+  FrameWriterDelegate(
+      const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy,
+      const VideoCaptureDeliverFrameCB& new_frame_callback);
+
+  void DeliverFrame(const scoped_refptr<media::VideoFrame>& frame,
+                    const media::VideoCaptureFormat& format);
+ private:
+  friend class base::RefCountedThreadSafe<FrameWriterDelegate>;
+  virtual ~FrameWriterDelegate();
+
+  void DeliverFrameOnIO(const scoped_refptr<media::VideoFrame>& frame,
+                        const media::VideoCaptureFormat& format);
+
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  VideoCaptureDeliverFrameCB new_frame_callback_;
+};
+
+PpFrameWriter::FrameWriterDelegate::FrameWriterDelegate(
+    const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy,
+    const VideoCaptureDeliverFrameCB& new_frame_callback)
+    : io_message_loop_(io_message_loop_proxy),
+      new_frame_callback_(new_frame_callback) {
+}
+
+PpFrameWriter::FrameWriterDelegate::~FrameWriterDelegate() {
+}
+
+void PpFrameWriter::FrameWriterDelegate::DeliverFrame(
+    const scoped_refptr<media::VideoFrame>& frame,
+    const media::VideoCaptureFormat& format) {
+  io_message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&FrameWriterDelegate::DeliverFrameOnIO,
+                 this, frame, format));
+}
+
+void PpFrameWriter::FrameWriterDelegate::DeliverFrameOnIO(
+     const scoped_refptr<media::VideoFrame>& frame,
+     const media::VideoCaptureFormat& format) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  new_frame_callback_.Run(frame, format);
+}
+
+PpFrameWriter::PpFrameWriter() {
   DVLOG(3) << "PpFrameWriter ctor";
 }
 
@@ -33,21 +78,25 @@ PpFrameWriter::~PpFrameWriter() {
   DVLOG(3) << "PpFrameWriter dtor";
 }
 
-void PpFrameWriter::GetCurrentSupportedFormats(int max_requested_width,
-                                               int max_requested_height) {
+void PpFrameWriter::GetCurrentSupportedFormats(
+    int max_requested_width,
+    int max_requested_height,
+    const VideoCaptureDeviceFormatsCB& callback) {
   DCHECK(CalledOnValidThread());
   DVLOG(3) << "PpFrameWriter::GetCurrentSupportedFormats()";
-  if (format_.IsValid()) {
-    media::VideoCaptureFormats formats;
-    formats.push_back(format_);
-    OnSupportedFormats(formats);
-  }
+  // Since the input is free to change the resolution at any point in time
+  // the supported formats are unknown.
+  media::VideoCaptureFormats formats;
+  callback.Run(formats);
 }
 
 void PpFrameWriter::StartSourceImpl(
-    const media::VideoCaptureParams& params) {
+    const media::VideoCaptureParams& params,
+    const VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK(CalledOnValidThread());
+  DCHECK(!delegate_);
   DVLOG(3) << "PpFrameWriter::StartSourceImpl()";
+  delegate_ = new FrameWriterDelegate(io_message_loop(), frame_callback);
   OnStartDone(true);
 }
 
@@ -79,19 +128,6 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
 
   const gfx::Size frame_size(bitmap->width(), bitmap->height());
 
-  if (!first_frame_received_) {
-    first_frame_received_ = true;
-    format_ = media::VideoCaptureFormat(
-        frame_size,
-        MediaStreamVideoSource::kDefaultFrameRate,
-        media::PIXEL_FORMAT_YV12);
-    if (state() == MediaStreamVideoSource::RETRIEVING_CAPABILITIES) {
-      media::VideoCaptureFormats formats;
-      formats.push_back(format_);
-      OnSupportedFormats(formats);
-    }
-  }
-
   if (state() != MediaStreamVideoSource::STARTED)
     return;
 
@@ -105,6 +141,10 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
   scoped_refptr<media::VideoFrame> new_frame =
       frame_pool_.CreateFrame(media::VideoFrame::YV12, frame_size,
                               gfx::Rect(frame_size), frame_size, timestamp);
+  media::VideoCaptureFormat format(
+      frame_size,
+      MediaStreamVideoSource::kDefaultFrameRate,
+      media::PIXEL_FORMAT_YV12);
 
   libyuv::BGRAToI420(reinterpret_cast<uint8*>(bitmap->getPixels()),
                      bitmap->rowBytes(),
@@ -116,7 +156,7 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
                      new_frame->stride(media::VideoFrame::kVPlane),
                      frame_size.width(), frame_size.height());
 
-  DeliverVideoFrame(new_frame, format_);
+  delegate_->DeliverFrame(new_frame, format);
 }
 
 // PpFrameWriterProxy is a helper class to make sure the user won't use
@@ -167,6 +207,7 @@ bool VideoDestinationHandler::Open(
   // theoretically it's possible we can get an id that's duplicated with the
   // existing sources.
   base::Base64Encode(base::RandBytesAsString(64), &track_id);
+
   PpFrameWriter* writer = new PpFrameWriter();
 
   // Create a new webkit video track.

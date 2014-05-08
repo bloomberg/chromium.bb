@@ -22,26 +22,76 @@ bool ConstraintKeyExists(const blink::WebMediaConstraints& constraints,
 
 namespace content {
 
+// Simple help class used for receiving video frames on the IO-thread from
+// a MediaStreamVideoTrack and forward the frames to a
+// WebRtcVideoCapturerAdapter that implements a video capturer for libjingle.
+class WebRtcVideoTrackAdapter::WebRtcVideoSourceAdapter
+    : public base::RefCountedThreadSafe<WebRtcVideoSourceAdapter> {
+ public:
+  WebRtcVideoSourceAdapter(
+      const scoped_refptr<webrtc::VideoSourceInterface>& source,
+      WebRtcVideoCapturerAdapter* capture_adapter);
+
+  void OnVideoFrameOnIO(const scoped_refptr<media::VideoFrame>& frame,
+                        const media::VideoCaptureFormat& format);
+
+ private:
+  friend class base::RefCountedThreadSafe<WebRtcVideoSourceAdapter>;
+  virtual ~WebRtcVideoSourceAdapter();
+
+  // Used to DCHECK that frames are called on the IO-thread.
+  base::ThreadChecker io_thread_checker_;
+  scoped_refptr<webrtc::VideoSourceInterface> video_source_;
+  // |capture_adapter_| is owned by |video_source_|
+  WebRtcVideoCapturerAdapter* capture_adapter_;
+};
+
+WebRtcVideoTrackAdapter::WebRtcVideoSourceAdapter::WebRtcVideoSourceAdapter(
+    const scoped_refptr<webrtc::VideoSourceInterface>& source,
+    WebRtcVideoCapturerAdapter* capture_adapter)
+    : video_source_(source),
+      capture_adapter_(capture_adapter) {
+  io_thread_checker_.DetachFromThread();
+}
+
+WebRtcVideoTrackAdapter::WebRtcVideoSourceAdapter::~WebRtcVideoSourceAdapter() {
+}
+
+void WebRtcVideoTrackAdapter::WebRtcVideoSourceAdapter::OnVideoFrameOnIO(
+    const scoped_refptr<media::VideoFrame>& frame,
+    const media::VideoCaptureFormat& format) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  capture_adapter_->OnFrameCaptured(frame);
+}
+
 WebRtcVideoTrackAdapter::WebRtcVideoTrackAdapter(
     const blink::WebMediaStreamTrack& track,
     MediaStreamDependencyFactory* factory)
     : web_track_(track) {
-  MediaStreamVideoSink::AddToVideoTrack(this, web_track_);
-
   const blink::WebMediaConstraints& constraints =
       MediaStreamVideoTrack::GetVideoTrack(track)->constraints();
 
   bool is_screencast = ConstraintKeyExists(
       constraints, base::UTF8ToUTF16(kMediaStreamSource));
-  capture_adapter_ = factory->CreateVideoCapturer(is_screencast);
+  WebRtcVideoCapturerAdapter* capture_adapter =
+      factory->CreateVideoCapturer(is_screencast);
 
   // |video_source| owns |capture_adapter|
-  video_source_ = factory->CreateVideoSource(capture_adapter_,
-                                             track.source().constraints());
+  scoped_refptr<webrtc::VideoSourceInterface> video_source(
+      factory->CreateVideoSource(capture_adapter,
+                                 track.source().constraints()));
 
   video_track_ = factory->CreateLocalVideoTrack(web_track_.id().utf8(),
-                                                video_source_);
+                                                video_source.get());
+
   video_track_->set_enabled(web_track_.isEnabled());
+
+  source_adapter_ = new WebRtcVideoSourceAdapter(video_source,
+                                                 capture_adapter);
+
+  MediaStreamVideoTrack::GetVideoTrack(track)->AddSink(
+      this, base::Bind(&WebRtcVideoSourceAdapter::OnVideoFrameOnIO,
+                       source_adapter_));
 
   DVLOG(3) << "WebRtcVideoTrackAdapter ctor() : is_screencast "
            << is_screencast;
@@ -50,18 +100,12 @@ WebRtcVideoTrackAdapter::WebRtcVideoTrackAdapter(
 WebRtcVideoTrackAdapter::~WebRtcVideoTrackAdapter() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(3) << "WebRtcVideoTrackAdapter dtor().";
-  MediaStreamVideoSink::RemoveFromVideoTrack(this, web_track_);
+  MediaStreamVideoTrack::GetVideoTrack(web_track_)->RemoveSink(this);
 }
 
 void WebRtcVideoTrackAdapter::OnEnabledChanged(bool enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
   video_track_->set_enabled(enabled);
-}
-
-void WebRtcVideoTrackAdapter::OnVideoFrame(
-    const scoped_refptr<media::VideoFrame>& frame) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  capture_adapter_->OnFrameCaptured(frame);
 }
 
 }  // namespace content

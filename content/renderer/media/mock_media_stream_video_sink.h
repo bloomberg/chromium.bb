@@ -8,18 +8,24 @@
 #include "content/public/renderer/media_stream_video_sink.h"
 
 #include "media/base/video_frame.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
 
 class MockMediaStreamVideoSink : public MediaStreamVideoSink {
  public:
   MockMediaStreamVideoSink();
+  virtual ~MockMediaStreamVideoSink();
 
   virtual void OnVideoFrame(
       const scoped_refptr<media::VideoFrame>& frame) OVERRIDE;
   virtual void OnReadyStateChanged(
         blink::WebMediaStreamSource::ReadyState state) OVERRIDE;
   virtual void OnEnabledChanged(bool enabled) OVERRIDE;
+
+  // Triggered when OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame)
+  // is called.
+  MOCK_METHOD0(OnVideoFrame,  void());
 
   int number_of_frames() const { return number_of_frames_; }
   media::VideoFrame::Format format() const { return format_; }
