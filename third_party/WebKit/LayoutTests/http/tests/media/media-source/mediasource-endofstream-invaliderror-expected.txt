@@ -1,5 +1,8 @@
  
 PASS Test MediaSource.endOfStream() with invalid non-empty error string. 
 PASS Test MediaSource.endOfStream() with invalid empty error string. 
+PASS Test MediaSource.endOfStream() with when readyState is ended. 
+PASS Test MediaSource.endOfStream(decode) with when readyState is ended. 
+PASS Test MediaSource.endOfStream(network) with when readyState is ended. 
 PASS Test MediaSource.endOfStream() with invalid null error parameter. 
 

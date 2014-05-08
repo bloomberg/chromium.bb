@@ -30,6 +30,9 @@
               'video/webm;codecs="',
               'video/webm;codecs=""',
               'video/webm;codecs=","',
+              'unsupported_mediatype',
+              '',
+              null,
           ], false, 'Test invalid MIME format');
 
           test_type_support([
@@ -59,6 +62,7 @@
               'video/webm;codecs="vp8,vorbis"',
               'video/webm;codecs="vorbis, vp8"',
               'audio/webm;codecs="vorbis"',
+              'AUDIO/WEBM;CODECS="vorbis"',
           ], true, 'Test valid WebM type');
 
           test_type_support([

@@ -40,6 +40,54 @@
               test.failOnEvent(mediaElement, 'error');
               assert_equals(mediaSource.readyState, 'open');
 
+              test.expectEvent(mediaSource, 'sourceend');
+              mediaSource.endOfStream();
+
+              assert_equals(mediaSource.readyState, 'ended');
+              assert_throws("InvalidStateError",
+                  function() {  mediaSource.endOfStream(); },
+                  "endofStream() threw an exception when in ended state");
+             
+              test.done();
+          }, 'Test MediaSource.endOfStream() with when readyState is ended.');
+          
+          mediasource_test(function(test, mediaElement, mediaSource)
+          {
+              test.failOnEvent(mediaElement, 'error');
+              assert_equals(mediaSource.readyState, 'open');
+
+              test.expectEvent(mediaSource, 'sourceend');
+              mediaSource.endOfStream();
+
+              assert_equals(mediaSource.readyState, 'ended');
+              assert_throws("InvalidStateError",
+                  function() {  mediaSource.endOfStream("decode"); },
+                  "endofStream() threw an exception when in ended state");
+   
+              test.done();
+          }, 'Test MediaSource.endOfStream(decode) with when readyState is ended.');
+
+          mediasource_test(function(test, mediaElement, mediaSource)
+          {
+              test.failOnEvent(mediaElement, 'error');
+              assert_equals(mediaSource.readyState, 'open');
+
+              test.expectEvent(mediaSource, 'sourceend');
+              mediaSource.endOfStream();
+
+              assert_equals(mediaSource.readyState, 'ended');
+              assert_throws("InvalidStateError",
+                  function() {  mediaSource.endOfStream("network"); },
+                  "endofStream() threw an exception when in ended state");
+              
+              test.done();
+          }, 'Test MediaSource.endOfStream(network) with when readyState is ended.');
+                              
+          mediasource_test(function(test, mediaElement, mediaSource)
+          {
+              test.failOnEvent(mediaElement, 'error');
+              assert_equals(mediaSource.readyState, 'open');
+
               assert_throws(new TypeError(),
                   function() { mediaSource.endOfStream(null); },
                   'endOfStream(null) throws TypeError');

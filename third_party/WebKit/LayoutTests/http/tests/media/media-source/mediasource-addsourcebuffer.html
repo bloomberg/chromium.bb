@@ -26,7 +26,15 @@
                           "addSourceBuffer() threw an exception when passed an empty string.");
               test.done();
           }, "Test addSourceBuffer() with empty type");
-
+          
+          mediasource_test(function(test, mediaElement, mediaSource)
+          {
+              assert_throws("NotSupportedError",
+                          function() { mediaSource.addSourceBuffer(null); },
+                          "addSourceBuffer() threw an exception when passed null.");
+              test.done();
+          }, "Test addSourceBuffer() with null");
+          
           mediasource_test(function(test, mediaElement, mediaSource)
           {
               assert_throws("NotSupportedError",
@@ -47,7 +55,7 @@
               assert_equals(mediaSource.activeSourceBuffers[0], sourceBuffer, "SourceBuffer is in mediaSource.activeSourceBuffers");
               test.done();
           }, "Test addSourceBuffer() with Vorbis and VP8");
-
+        
           mediasource_test(function(test, mediaElement, mediaSource)
           {
               var videoMimetype = 'video/webm;codecs="vp8"';
@@ -64,6 +72,32 @@
               assert_equals(mediaSource.activeSourceBuffers[1], sourceBufferB, "sourceBufferB is in mediaSource.activeSourceBuffers");
               test.done();
           }, "Test addSourceBuffer() with Vorbis and VP8 in separate SourceBuffers");
+
+          mediasource_test(function(test, mediaElement, mediaSource)
+          {
+              var mimetype = MediaSourceUtil.VIDEO_ONLY_TYPE;
+
+              assert_true(MediaSource.isTypeSupported(mimetype), mimetype + " is supported");
+
+              var sourceBuffer = mediaSource.addSourceBuffer(mimetype);
+              assert_true(sourceBuffer != null, "New SourceBuffer returned");
+              assert_equals(mediaSource.sourceBuffers[0], sourceBuffer, "SourceBuffer is in mediaSource.sourceBuffers");
+              assert_equals(mediaSource.activeSourceBuffers[0], sourceBuffer, "SourceBuffer is in mediaSource.activeSourceBuffers");
+              test.done();
+          }, "Test addSourceBuffer() video only");
+          
+          mediasource_test(function(test, mediaElement, mediaSource)
+          {
+              var mimetype = MediaSourceUtil.AUDIO_ONLY_TYPE;
+
+              assert_true(MediaSource.isTypeSupported(mimetype), mimetype + " is supported");
+
+              var sourceBuffer = mediaSource.addSourceBuffer(mimetype);
+              assert_true(sourceBuffer != null, "New SourceBuffer returned");
+              assert_equals(mediaSource.sourceBuffers[0], sourceBuffer, "SourceBuffer is in mediaSource.sourceBuffers");
+              assert_equals(mediaSource.activeSourceBuffers[0], sourceBuffer, "SourceBuffer is in mediaSource.activeSourceBuffers");
+              test.done();
+          }, "Test addSourceBuffer() audio only");
 
           mediasource_test(function(test, mediaElement, mediaSource)
           {
