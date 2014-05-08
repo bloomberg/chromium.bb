@@ -18,7 +18,8 @@ class ICOImageDecoderTest : public ImageDecoderTest {
   }
 };
 
-TEST_F(ICOImageDecoderTest, Decoding) {
+// crbug.com/371332
+TEST_F(ICOImageDecoderTest, DISABLED_Decoding) {
   TestDecoding();
 }
 
