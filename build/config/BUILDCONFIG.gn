@@ -31,7 +31,12 @@ declare_args() {
   # to configure warnings.
   is_clang = false
 
-  # Various build configuration
+  # These are not used by NativeClient, but added for compatiblity with
+  # Chrome build files.
+  is_android = false
+  is_chrome_branded = false
+  is_chromeos = false
+
   is_asan = false
   is_lsan = false
   is_msan = false

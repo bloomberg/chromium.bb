@@ -2,12 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/toolchain/goma.gni")
+import("//native_client/build/config/win/visual_studio_version.gni")
+import("//native_client/build/toolchain/goma.gni")
 
 # Should only be running on Windows.
 assert(is_win)
-
-import("//build/config/win/visual_studio_version.gni")
 
 # Setup the Visual Studio state.
 #
@@ -22,11 +21,6 @@ exec_script("setup_toolchain.py",
 
 stamp_command = "$python_path gyp-win-tool stamp \$out"
 copy_command = "$python_path gyp-win-tool recursive-mirror \$in \$out"
-
-if (use_goma) {
-  # Add the Goma compiler prefixes to the GYP file.
-  gyp_header = "'make_global_settings': [ $make_goma_global_settings ],"
-}
 
 # 32-bit toolchain -------------------------------------------------------------
 

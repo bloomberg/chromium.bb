@@ -2,15 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//native_client/build/config/sysroot.gni")
 import("//native_client/build/toolchain/clang.gni")
 import("//native_client/build/toolchain/gcc_toolchain.gni")
-import("//native_client//build/toolchain/goma.gni")
+import("//native_client/build/toolchain/goma.gni")
 
 gcc_toolchain("arm") {
   cc = "arm-linux-gnueabi-gcc"
   cxx = "arm-linux-gnueabi-g++"
   ar = "arm-linux-gnueabi-ar"
   ld = cxx
+
+  toolchain_cpu_arch = "arm"
+  toolchain_os = "linux"
 }
 
 gcc_toolchain("x86") {
@@ -31,6 +35,9 @@ gcc_toolchain("x86") {
 
   ar = "ar"
   ld = cxx
+
+  toolchain_cpu_arch = "x86"
+  toolchain_os = "linux"
 }
 
 gcc_toolchain("x64") {
@@ -48,8 +55,12 @@ gcc_toolchain("x64") {
     cc = "gcc"
     cxx = "g++"
   }
+
   ar = "ar"
   ld = cxx
+
+  toolchain_cpu_arch = "x64"
+  toolchain_os = "linux"
 }
 
 gcc_toolchain("mipsel") {
@@ -57,4 +68,7 @@ gcc_toolchain("mipsel") {
   cxx = "mipsel-linux-gnu-g++"
   ar = "mipsel-linux-gnu-ar"
   ld = cxx
+
+  toolchain_cpu_arch = "mipsel"
+  toolchain_os = "linux"
 }

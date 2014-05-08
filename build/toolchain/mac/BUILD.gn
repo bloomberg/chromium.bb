@@ -19,30 +19,6 @@ if (is_clang) {
                    root_build_dir)
   cxx = rebase_path("//third_party/llvm-build/Release+Asserts/bin/clang++",
                     root_build_dir)
-
-  # Set the GYP header for all toolchains when running under Clang.
-  if (is_gyp) {
-    make_global_settings = make_clang_global_settings
-
-    if (use_goma) {
-      # There is a TODO(yyanagisawa) in common.gypi about the make generator not
-      # supporting CC_wrapper without CC. As a result, we must add a condition
-      # when on the generator when we're not explicitly setting the variables
-      # above (which happens when gyp_header is empty at this point).
-      #
-      # GYP will interpret the file once for each generator, so we have to write
-      # this condition into the GYP file since the user could have more than one
-      # generator set.
-      gyp_header =
-        "'conditions':" +
-        "[['\"<(GENERATOR)\"==\"ninja\"', { 'make_global_settings': [" +
-        make_global_settings +
-        make_goma_global_settings +
-        "]}]],"
-    } else {
-      gyp_header = "'make_global_settings': [" + make_global_settings + "],"
-    }
-  }
 } else {
   cc = "gcc"
   cxx = "g++"
@@ -59,6 +35,22 @@ exec_script("setup_toolchain.py", [ gyp_mac_tool_source ], "value")
 # build args in this definition.
 template("mac_clang_toolchain") {
   toolchain(target_name) {
+    assert(defined(invoker.cc),
+           "mac_clang_toolchain() must specify a \"cc\" value")
+    assert(defined(invoker.cxx),
+           "mac_clang_toolchain() must specify a \"cxx\" value")
+    assert(defined(invoker.ld),
+           "mac_clang_toolchain() must specify a \"ld\" value")
+    assert(defined(invoker.toolchain_os),
+           "mac_clang_toolchain() must specify a \"toolchain_os\"")
+
+    # We can't do string interpolation ($ in strings) on things with dots in
+    # them. To allow us to use $cc below, for example, we create copies of
+    # these values in our scope.
+    cc = invoker.cc
+    cxx = invoker.cxx
+    ld = invoker.ld
+
     # Make these apply to all tools below.
     lib_prefix = "-l"
     lib_dir_prefix="-L"
@@ -124,7 +116,7 @@ template("mac_clang_toolchain") {
     }
 
     toolchain_args() {
-      os = toolchain_os
+      os = invoker.toolchain_os
     }
   }
 }
