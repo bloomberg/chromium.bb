@@ -12,6 +12,29 @@
 
 namespace content {
 
+namespace {
+
+talk_base::AdapterType ConvertConnectionTypeToAdapterType(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  switch (type) {
+    case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
+        return talk_base::ADAPTER_TYPE_UNKNOWN;
+    case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
+        return talk_base::ADAPTER_TYPE_ETHERNET;
+    case net::NetworkChangeNotifier::CONNECTION_WIFI:
+        return talk_base::ADAPTER_TYPE_WIFI;
+    case net::NetworkChangeNotifier::CONNECTION_2G:
+    case net::NetworkChangeNotifier::CONNECTION_3G:
+    case net::NetworkChangeNotifier::CONNECTION_4G:
+        return talk_base::ADAPTER_TYPE_CELLULAR;
+    default:
+        return talk_base::ADAPTER_TYPE_UNKNOWN;
+  }
+  return talk_base::ADAPTER_TYPE_UNKNOWN;
+}
+
+}  // namespace
+
 IpcNetworkManager::IpcNetworkManager(P2PSocketDispatcher* socket_dispatcher)
     : socket_dispatcher_(socket_dispatcher),
       start_count_(0),
@@ -60,7 +83,8 @@ void IpcNetworkManager::OnNetworkListChanged(
       memcpy(&address, &it->address[0], sizeof(uint32));
       address = talk_base::NetworkToHost32(address);
       talk_base::Network* network = new talk_base::Network(
-          it->name, it->name, talk_base::IPAddress(address), 32);
+          it->name, it->name, talk_base::IPAddress(address), 32,
+          ConvertConnectionTypeToAdapterType(it->type));
       network->AddIP(talk_base::IPAddress(address));
       networks.push_back(network);
     } else if (it->address.size() == net::kIPv6AddressSize) {
@@ -69,7 +93,8 @@ void IpcNetworkManager::OnNetworkListChanged(
       talk_base::IPAddress ip6_addr(address);
       if (!talk_base::IPIsPrivate(ip6_addr)) {
         talk_base::Network* network = new talk_base::Network(
-            it->name, it->name, ip6_addr, 64);
+            it->name, it->name, ip6_addr, 64,
+            ConvertConnectionTypeToAdapterType(it->type));
         network->AddIP(ip6_addr);
         networks.push_back(network);
       }
@@ -81,14 +106,14 @@ void IpcNetworkManager::OnNetworkListChanged(
     std::string name_v4("loopback_ipv4");
     talk_base::IPAddress ip_address_v4(INADDR_LOOPBACK);
     talk_base::Network* network_v4 = new talk_base::Network(
-        name_v4, name_v4, ip_address_v4, 32);
+        name_v4, name_v4, ip_address_v4, 32, talk_base::ADAPTER_TYPE_UNKNOWN);
     network_v4->AddIP(ip_address_v4);
     networks.push_back(network_v4);
 
     std::string name_v6("loopback_ipv6");
     talk_base::IPAddress ip_address_v6(in6addr_loopback);
     talk_base::Network* network_v6 = new talk_base::Network(
-        name_v6, name_v6, ip_address_v6, 64);
+        name_v6, name_v6, ip_address_v6, 64, talk_base::ADAPTER_TYPE_UNKNOWN);
     network_v6->AddIP(ip_address_v6);
     networks.push_back(network_v6);
   }
