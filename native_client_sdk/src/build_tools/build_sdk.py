@@ -909,9 +909,12 @@ def main(args):
     options.bionic = True
     toolchain_build = os.path.join(options.nacl_tree_path, 'toolchain_build')
     print 'WARNING: Building bionic toolchain from NaCl checkout.'
-    print 'This option builds bionic in a NativeClient checkout and uses the'
-    print 'results instead of downloading a toolchain from the builder.'
-    print 'This may result in a NaCl SDK that can not run on ToT chrome.'
+    print 'This option builds bionic from the sources currently in the'
+    print 'provided NativeClient checkout, and the results instead of '
+    print 'downloading a toolchain from the builder. This may result in a'
+    print 'NaCl SDK that can not run on ToT chrome.'
+    print 'NOTE:  To clobber you will need to run toolchain_build_bionic.py'
+    print 'directly from the NativeClient checkout.'
     print ''
     response = raw_input("Type 'y' and hit enter to continue.\n")
     if response != 'y' and response != 'Y':
@@ -920,7 +923,7 @@ def main(args):
 
     # Get head version of NativeClient tree
     buildbot_common.BuildStep('Build bionic toolchain.')
-    buildbot_common.Run([sys.executable, 'toolchain_build_bionic.py'],
+    buildbot_common.Run([sys.executable, 'toolchain_build_bionic.py', '-f'],
                         cwd=toolchain_build)
   else:
     toolchain_build = None
