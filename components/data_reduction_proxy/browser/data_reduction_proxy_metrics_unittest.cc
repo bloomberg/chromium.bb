@@ -15,6 +15,7 @@
 
 namespace {
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
 const size_t kNumDaysInHistory = 60;
 
 int64 GetListPrefInt64Value(
@@ -26,6 +27,8 @@ int64 GetListPrefInt64Value(
   EXPECT_TRUE(base::StringToInt64(string_value, &value));
   return value;
 }
+
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 }  // namespace
 
@@ -43,6 +46,7 @@ class ChromeNetworkDataSavingMetricsTest : public testing::Test {
     registry->RegisterInt64Pref(
         data_reduction_proxy::prefs::kHttpOriginalContentLength, 0);
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
     registry->RegisterListPref(data_reduction_proxy::prefs::
                                    kDailyHttpOriginalContentLength);
     registry->RegisterListPref(data_reduction_proxy::prefs::
@@ -74,6 +78,7 @@ class ChromeNetworkDataSavingMetricsTest : public testing::Test {
     registry->RegisterInt64Pref(
         data_reduction_proxy::prefs::
             kDailyHttpContentLengthLastUpdateDate, 0L);
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
   }
 
   TestingPrefServiceSimple pref_service_;
@@ -104,6 +109,8 @@ TEST_F(ChromeNetworkDataSavingMetricsTest, TotalLengths) {
             pref_service_.GetInt64(
                 data_reduction_proxy::prefs::kHttpOriginalContentLength));
 }
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
 
 // The initial last update time used in test. There is no leap second a few
 // days around this time used in the test.
@@ -672,5 +679,6 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, BackwardTwoDays) {
       original, 1, received, 1,
       original, 1, received, 1);
 }
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 }  // namespace data_reduction_proxy

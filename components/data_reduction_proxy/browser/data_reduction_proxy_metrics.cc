@@ -24,6 +24,8 @@ namespace {
 // A bypass delay more than this is treated as a long delay.
 const int kLongBypassDelayInSeconds = 30 * 60;
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
+
 // Increments an int64, stored as a string, in a ListPref at the specified
 // index.  The value must already exist and be a string representation of a
 // number.
@@ -296,11 +298,14 @@ class DailyDataSavingUpdate {
   DailyContentLengthUpdate received_;
 };
 
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+
 // Returns true if the request is bypassed by all configured data reduction
 // proxies. It returns the bypass delay in delay_seconds (if not NULL). If
 // the request is bypassed by more than one proxy, delay_seconds returns
 // shortest delay.
 bool IsBypassRequest(const net::URLRequest* request, int64* delay_seconds) {
+#if defined(OS_ANDROID) || defined(OS_IOS)
   DataReductionProxySettings::DataReductionProxyList proxies =
       DataReductionProxySettings::GetDataReductionProxies();
   if (proxies.size() == 0)
@@ -335,6 +340,9 @@ bool IsBypassRequest(const net::URLRequest* request, int64* delay_seconds) {
   if (delay_seconds != NULL)
     *delay_seconds = shortest_delay;
   return true;
+#else
+  return false;
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 }
 
 }  // namespace
@@ -352,10 +360,12 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
     return (bypass_delay > kLongBypassDelayInSeconds) ?
       LONG_BYPASS : SHORT_BYPASS;
   }
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
   if (request->response_info().headers &&
       request->response_info().headers->IsDataReductionProxyResponse()) {
     return VIA_DATA_REDUCTION_PROXY;
   }
+#endif
   return UNKNOWN_TYPE;
 }
 
@@ -372,6 +382,7 @@ int64 GetAdjustedOriginalContentLength(
   return original_content_length;
 }
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
 void UpdateContentLengthPrefsForDataReductionProxy(
     int received_content_length,
     int original_content_length,
@@ -392,20 +403,10 @@ void UpdateContentLengthPrefsForDataReductionProxy(
   // Determine how many days it has been since the last update.
   int64 then_internal = prefs->GetInt64(
       data_reduction_proxy::prefs::kDailyHttpContentLengthLastUpdateDate);
-
-#if defined(OS_WIN)
-  base::Time then_midnight = base::Time::FromInternalValue(then_internal);
-  base::Time midnight =
-      base::Time::FromInternalValue(
-          (now.ToInternalValue() / base::Time::kMicrosecondsPerDay) *
-              base::Time::kMicrosecondsPerDay);
-#else
   // Local midnight could have been shifted due to time zone change.
   base::Time then_midnight =
       base::Time::FromInternalValue(then_internal).LocalMidnight();
   base::Time midnight = now.LocalMidnight();
-#endif
-
   int days_since_last_update = (midnight - then_midnight).InDays();
 
   // Each day, we calculate the total number of bytes received and the total
@@ -510,6 +511,7 @@ void UpdateContentLengthPrefsForDataReductionProxy(
     }
   }
 }
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 void UpdateContentLengthPrefs(
     int received_content_length,
@@ -528,6 +530,7 @@ void UpdateContentLengthPrefs(
   prefs->SetInt64(data_reduction_proxy::prefs::kHttpOriginalContentLength,
                   total_original);
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
   UpdateContentLengthPrefsForDataReductionProxy(
       received_content_length,
       original_content_length,
@@ -535,6 +538,8 @@ void UpdateContentLengthPrefs(
       request_type,
       base::Time::Now(),
       prefs);
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+
 }
 
 }  // namespace data_reduction_proxy
