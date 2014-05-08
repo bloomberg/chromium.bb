@@ -20,6 +20,7 @@
 
 [
     SetWrapperReferenceFrom=document,
+    WillBeGarbageCollected,
 ] interface DOMImplementation {
 
     // DOM Level 1

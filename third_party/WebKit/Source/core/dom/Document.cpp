@@ -5677,6 +5677,7 @@ void Document::clearWeakMembers(Visitor* visitor)
 void Document::trace(Visitor* visitor)
 {
     visitor->trace(m_docType);
+    visitor->trace(m_implementation);
     visitor->trace(m_autofocusElement);
     visitor->trace(m_focusedElement);
     visitor->trace(m_hoverNode);

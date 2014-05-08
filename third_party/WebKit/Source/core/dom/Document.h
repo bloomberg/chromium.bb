@@ -1212,7 +1212,7 @@ private:
     AtomicString m_mimeType;
 
     RefPtrWillBeMember<DocumentType> m_docType;
-    OwnPtr<DOMImplementation> m_implementation;
+    OwnPtrWillBeMember<DOMImplementation> m_implementation;
 
     RefPtrWillBeMember<CSSStyleSheet> m_elemSheet;
 

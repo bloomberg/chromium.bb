@@ -40,14 +40,19 @@ class HTMLDocument;
 class KURL;
 class XMLDocument;
 
-class DOMImplementation : public ScriptWrappable {
-    WTF_MAKE_FAST_ALLOCATED;
+class DOMImplementation FINAL : public NoBaseWillBeGarbageCollectedFinalized<DOMImplementation>, public ScriptWrappable {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<DOMImplementation> create(Document& document) { return adoptPtr(new DOMImplementation(document)); }
+    static PassOwnPtrWillBeRawPtr<DOMImplementation> create(Document& document)
+    {
+        return adoptPtrWillBeNoop(new DOMImplementation(document));
+    }
 
-    void ref() { m_document.ref(); }
-    void deref() { m_document.deref(); }
-    Document& document() const { return m_document; }
+#if !ENABLE(OILPAN)
+    void ref() { m_document->ref(); }
+    void deref() { m_document->deref(); }
+#endif
+    Document& document() const { return *m_document.get(); }
 
     // DOM methods & attributes for DOMImplementation
     static bool hasFeature(const String& feature, const String& version);
@@ -66,10 +71,12 @@ public:
     static bool isTextMIMEType(const String&);
     static bool isJSONMIMEType(const String&);
 
+    void trace(Visitor*);
+
 private:
     explicit DOMImplementation(Document&);
 
-    Document& m_document;
+    RawPtrWillBeMember<Document> m_document;
 };
 
 } // namespace WebCore
