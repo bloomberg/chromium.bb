@@ -404,12 +404,14 @@ start_element(void *data, const char *element_name, const char **atts)
 			if (errno == EINVAL || end == since || *end != '\0')
 				fail(&ctx->loc,
 				     "invalid integer (%s)\n", since);
-			if (version < ctx->interface->since)
-				fail(&ctx->loc, "since version not increasing\n");
-			ctx->interface->since = version;
+		} else {
+			version = 1;
 		}
 
-		message->since = ctx->interface->since;
+		if (version < ctx->interface->since)
+			fail(&ctx->loc, "since version not increasing\n");
+		ctx->interface->since = version;
+		message->since = version;
 
 		if (strcmp(name, "destroy") == 0 && !message->destructor)
 			fail(&ctx->loc, "destroy request should be destructor type");
