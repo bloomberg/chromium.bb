@@ -151,7 +151,7 @@ private:
     virtual void fieldDidChangeValueByKeyboard() OVERRIDE;
 
     WillBeHeapVector<RawPtrWillBeMember<DateTimeFieldElement>, maximumNumberOfFields> m_fields;
-    RawPtrWillBeWeakMember<EditControlOwner> m_editControlOwner;
+    RawPtrWillBeMember<EditControlOwner> m_editControlOwner;
 };
 
 DEFINE_TYPE_CASTS(DateTimeEditElement, Element, element, element->isDateTimeEditElement(), element.isDateTimeEditElement());

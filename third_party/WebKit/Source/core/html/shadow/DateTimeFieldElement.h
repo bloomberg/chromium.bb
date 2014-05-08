@@ -100,7 +100,7 @@ private:
     bool isFieldOwnerReadOnly() const;
     virtual bool supportsFocus() const OVERRIDE FINAL;
 
-    RawPtrWillBeWeakMember<FieldOwner> m_fieldOwner;
+    RawPtrWillBeMember<FieldOwner> m_fieldOwner;
 };
 
 } // namespace WebCore
