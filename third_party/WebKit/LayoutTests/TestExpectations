@@ -258,7 +258,6 @@ crbug.com/369609 svg/zoom/text/zoom-foreignObject.svg [ NeedsRebaseline ]
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
 
-crbug.com/361729 [ Mac ] virtual/mac-antialiasedtext/fast/text/decorations-transformed.html [ NeedsRebaseline ]
 crbug.com/361729 [ Mac ] virtual/mac-antialiasedtext/fast/text/selection-rect-rounding.html [ NeedsRebaseline ]
 
 # Pixel tests for RTL iframe scrollbar is erroneous. Cannot observe on actual browser.
