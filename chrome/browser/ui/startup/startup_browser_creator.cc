@@ -425,8 +425,11 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
     // This call can (in rare circumstances) block the UI thread.
     // Allow it until this bug is fixed.
     //  http://code.google.com/p/chromium/issues/detail?id=60641
-    GURL url;
-    {
+    GURL url = GURL(param.MaybeAsASCII());
+    // http://crbug.com/371030: Only use URLFixerUpper if we don't have a valid
+    // URL, otherwise we will look in the current directory for a file named
+    // 'about' if the browser was started with a about:foo argument.
+    if (!url.is_valid()) {
       base::ThreadRestrictions::ScopedAllowIO allow_io;
       url = URLFixerUpper::FixupRelativeFile(cur_dir, param);
     }
