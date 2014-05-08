@@ -14,8 +14,6 @@ import sys
 import tempfile
 import unittest
 
-from cStringIO import StringIO
-
 
 def git_hash_data(data, typ='blob'):
   """Calculate the git-style SHA1 for some data.
@@ -395,13 +393,17 @@ class GitRepo(object):
     stdout = sys.stdout
     stderr = sys.stderr
     try:
-      sys.stdout = StringIO()
-      sys.stderr = StringIO()
-      try:
-        self.run(fn, *args, **kwargs)
-      except SystemExit:
-        pass
-      return sys.stdout.getvalue(), sys.stderr.getvalue()
+      # "multiple statements on a line" pylint: disable=C0321
+      with tempfile.TemporaryFile() as out, tempfile.TemporaryFile() as err:
+        sys.stdout = out
+        sys.stderr = err
+        try:
+          self.run(fn, *args, **kwargs)
+        except SystemExit:
+          pass
+        out.seek(0)
+        err.seek(0)
+        return out.read(), err.read()
     finally:
       sys.stdout = stdout
       sys.stderr = stderr

@@ -64,10 +64,8 @@ def fetch_remotes(branch_tree):
   if not fetch_args:  # pragma: no cover
     print 'Nothing to fetch.'
   else:
-    out, err = git.run_with_stderr('fetch', *fetch_args)
-    for data, stream in zip((out, err), (sys.stdout, sys.stderr)):
-      if data:
-        print >> stream, data
+    git.run_with_stderr('fetch', *fetch_args, stdout=sys.stdout,
+                        stderr=sys.stderr)
 
 
 def remove_empty_branches(branch_tree):
