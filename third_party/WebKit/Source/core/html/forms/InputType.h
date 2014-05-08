@@ -172,6 +172,7 @@ public:
     // Should return true if the given DragData has more than one dropped files.
     virtual bool receiveDroppedFiles(const DragData*);
     virtual String droppedFileSystemId();
+    virtual void copyNonAttributeProperties(const HTMLInputElement&);
     // Should return true if the corresponding renderer for a type can display a suggested value.
     virtual bool canSetSuggestedValue();
     virtual bool shouldSendChangeEventAfterCheckedChanged();

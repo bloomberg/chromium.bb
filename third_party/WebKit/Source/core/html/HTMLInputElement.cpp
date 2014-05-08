@@ -901,6 +901,7 @@ void HTMLInputElement::copyNonAttributePropertiesFromElement(const Element& sour
     setChecked(sourceElement.m_isChecked);
     m_reflectsCheckedAttribute = sourceElement.m_reflectsCheckedAttribute;
     m_isIndeterminate = sourceElement.m_isIndeterminate;
+    m_inputType->copyNonAttributeProperties(sourceElement);
 
     HTMLTextFormControlElement::copyNonAttributePropertiesFromElement(source);
 
@@ -1313,7 +1314,7 @@ KURL HTMLInputElement::src() const
     return document().completeURL(fastGetAttribute(srcAttr));
 }
 
-FileList* HTMLInputElement::files()
+FileList* HTMLInputElement::files() const
 {
     return m_inputType->files();
 }

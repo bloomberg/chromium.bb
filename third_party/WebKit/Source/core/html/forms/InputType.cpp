@@ -603,6 +603,10 @@ String InputType::droppedFileSystemId()
     return String();
 }
 
+void InputType::copyNonAttributeProperties(const HTMLInputElement&)
+{
+}
+
 bool InputType::shouldRespectListAttribute()
 {
     return false;
