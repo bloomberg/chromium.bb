@@ -34,18 +34,19 @@ namespace WebCore {
 
 class TextControlInnerContainer FINAL : public HTMLDivElement {
 public:
-    static PassRefPtr<TextControlInnerContainer> create(Document&);
+    static PassRefPtrWillBeRawPtr<TextControlInnerContainer> create(Document&);
+
 protected:
-    TextControlInnerContainer(Document&);
+    explicit TextControlInnerContainer(Document&);
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 };
 
 class EditingViewPortElement FINAL : public HTMLDivElement {
 public:
-    static PassRefPtr<EditingViewPortElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<EditingViewPortElement> create(Document&);
 
 protected:
-    EditingViewPortElement(Document&);
+    explicit EditingViewPortElement(Document&);
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
 
 private:
@@ -54,12 +55,12 @@ private:
 
 class TextControlInnerTextElement FINAL : public HTMLDivElement {
 public:
-    static PassRefPtr<TextControlInnerTextElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<TextControlInnerTextElement> create(Document&);
 
     virtual void defaultEventHandler(Event*) OVERRIDE;
 
 private:
-    TextControlInnerTextElement(Document&);
+    explicit TextControlInnerTextElement(Document&);
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
     virtual bool supportsFocus() const OVERRIDE { return false; }
@@ -67,26 +68,26 @@ private:
 
 class SearchFieldDecorationElement FINAL : public HTMLDivElement {
 public:
-    static PassRefPtr<SearchFieldDecorationElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<SearchFieldDecorationElement> create(Document&);
 
     virtual void defaultEventHandler(Event*) OVERRIDE;
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
 
 private:
-    SearchFieldDecorationElement(Document&);
+    explicit SearchFieldDecorationElement(Document&);
     virtual const AtomicString& shadowPseudoId() const OVERRIDE;
     virtual bool supportsFocus() const OVERRIDE { return false; }
 };
 
 class SearchFieldCancelButtonElement FINAL : public HTMLDivElement {
 public:
-    static PassRefPtr<SearchFieldCancelButtonElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<SearchFieldCancelButtonElement> create(Document&);
 
     virtual void defaultEventHandler(Event*) OVERRIDE;
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
 
 private:
-    SearchFieldCancelButtonElement(Document&);
+    explicit SearchFieldCancelButtonElement(Document&);
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual bool supportsFocus() const OVERRIDE { return false; }
 

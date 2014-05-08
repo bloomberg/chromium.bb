@@ -50,9 +50,9 @@ TextControlInnerContainer::TextControlInnerContainer(Document& document)
 {
 }
 
-PassRefPtr<TextControlInnerContainer> TextControlInnerContainer::create(Document& document)
+PassRefPtrWillBeRawPtr<TextControlInnerContainer> TextControlInnerContainer::create(Document& document)
 {
-    RefPtr<TextControlInnerContainer> element = adoptRef(new TextControlInnerContainer(document));
+    RefPtrWillBeRawPtr<TextControlInnerContainer> element = adoptRefWillBeRefCountedGarbageCollected(new TextControlInnerContainer(document));
     element->setAttribute(idAttr, ShadowElementNames::textFieldContainer());
     return element.release();
 }
@@ -70,9 +70,9 @@ EditingViewPortElement::EditingViewPortElement(Document& document)
     setHasCustomStyleCallbacks();
 }
 
-PassRefPtr<EditingViewPortElement> EditingViewPortElement::create(Document& document)
+PassRefPtrWillBeRawPtr<EditingViewPortElement> EditingViewPortElement::create(Document& document)
 {
-    RefPtr<EditingViewPortElement> element = adoptRef(new EditingViewPortElement(document));
+    RefPtrWillBeRawPtr<EditingViewPortElement> element = adoptRefWillBeRefCountedGarbageCollected(new EditingViewPortElement(document));
     element->setAttribute(idAttr, ShadowElementNames::editingViewPort());
     return element.release();
 }
@@ -104,9 +104,9 @@ inline TextControlInnerTextElement::TextControlInnerTextElement(Document& docume
     setHasCustomStyleCallbacks();
 }
 
-PassRefPtr<TextControlInnerTextElement> TextControlInnerTextElement::create(Document& document)
+PassRefPtrWillBeRawPtr<TextControlInnerTextElement> TextControlInnerTextElement::create(Document& document)
 {
-    RefPtr<TextControlInnerTextElement> element = adoptRef(new TextControlInnerTextElement(document));
+    RefPtrWillBeRawPtr<TextControlInnerTextElement> element = adoptRefWillBeRefCountedGarbageCollected(new TextControlInnerTextElement(document));
     element->setAttribute(idAttr, ShadowElementNames::innerEditor());
     return element.release();
 }
@@ -151,9 +151,9 @@ inline SearchFieldDecorationElement::SearchFieldDecorationElement(Document& docu
 {
 }
 
-PassRefPtr<SearchFieldDecorationElement> SearchFieldDecorationElement::create(Document& document)
+PassRefPtrWillBeRawPtr<SearchFieldDecorationElement> SearchFieldDecorationElement::create(Document& document)
 {
-    RefPtr<SearchFieldDecorationElement> element = adoptRef(new SearchFieldDecorationElement(document));
+    RefPtrWillBeRawPtr<SearchFieldDecorationElement> element = adoptRefWillBeRefCountedGarbageCollected(new SearchFieldDecorationElement(document));
     element->setAttribute(idAttr, ShadowElementNames::searchDecoration());
     return element.release();
 }
@@ -200,9 +200,9 @@ inline SearchFieldCancelButtonElement::SearchFieldCancelButtonElement(Document& 
 {
 }
 
-PassRefPtr<SearchFieldCancelButtonElement> SearchFieldCancelButtonElement::create(Document& document)
+PassRefPtrWillBeRawPtr<SearchFieldCancelButtonElement> SearchFieldCancelButtonElement::create(Document& document)
 {
-    RefPtr<SearchFieldCancelButtonElement> element = adoptRef(new SearchFieldCancelButtonElement(document));
+    RefPtrWillBeRawPtr<SearchFieldCancelButtonElement> element = adoptRefWillBeRefCountedGarbageCollected(new SearchFieldCancelButtonElement(document));
     element->setShadowPseudoId(AtomicString("-webkit-search-cancel-button", AtomicString::ConstructFromLiteral));
     element->setAttribute(idAttr, ShadowElementNames::clearButton());
     return element.release();

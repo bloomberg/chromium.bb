@@ -287,17 +287,17 @@ void TextFieldInputType::createShadowSubtree()
     bool shouldHaveDataListIndicator = element().hasValidDataListOptions();
     bool createsContainer = shouldHaveSpinButton || shouldHaveDataListIndicator || needsContainer();
 
-    RefPtr<TextControlInnerTextElement> innerEditor = TextControlInnerTextElement::create(document);
+    RefPtrWillBeRawPtr<TextControlInnerTextElement> innerEditor = TextControlInnerTextElement::create(document);
     if (!createsContainer) {
         shadowRoot->appendChild(innerEditor.release());
         return;
     }
 
-    RefPtr<TextControlInnerContainer> container = TextControlInnerContainer::create(document);
+    RefPtrWillBeRawPtr<TextControlInnerContainer> container = TextControlInnerContainer::create(document);
     container->setShadowPseudoId(AtomicString("-webkit-textfield-decoration-container", AtomicString::ConstructFromLiteral));
     shadowRoot->appendChild(container);
 
-    RefPtr<EditingViewPortElement> editingViewPort = EditingViewPortElement::create(document);
+    RefPtrWillBeRawPtr<EditingViewPortElement> editingViewPort = EditingViewPortElement::create(document);
     editingViewPort->appendChild(innerEditor.release());
     container->appendChild(editingViewPort.release());
 
@@ -339,11 +339,11 @@ void TextFieldInputType::listAttributeTargetChanged()
             // FIXME: The following code is similar to createShadowSubtree(),
             // but they are different. We should simplify the code by making
             // containerElement mandatory.
-            RefPtr<Element> rpContainer = TextControlInnerContainer::create(document);
+            RefPtrWillBeRawPtr<Element> rpContainer = TextControlInnerContainer::create(document);
             rpContainer->setShadowPseudoId(AtomicString("-webkit-textfield-decoration-container", AtomicString::ConstructFromLiteral));
-            RefPtr<Element> innerEditor = element().innerTextElement();
+            RefPtrWillBeRawPtr<Element> innerEditor = element().innerTextElement();
             innerEditor->parentNode()->replaceChild(rpContainer.get(), innerEditor.get());
-            RefPtr<Element> editingViewPort = EditingViewPortElement::create(document);
+            RefPtrWillBeRawPtr<Element> editingViewPort = EditingViewPortElement::create(document);
             editingViewPort->appendChild(innerEditor.release());
             rpContainer->appendChild(editingViewPort.release());
             rpContainer->appendChild(DataListIndicatorElement::create(document));
