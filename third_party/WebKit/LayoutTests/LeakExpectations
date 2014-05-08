@@ -26,6 +26,10 @@ crbug.com/366043 [ Debug ] fast/history/history-traversal-is-asynchronous.html [
 # FIXME: html imports tests are flaky from extra navigation from leak detector
 crbug.com/366477 http/tests/htmlimports/redirect.html [ Failure Pass ]
 
+crbug.com/371264 inspector/sources/debugger/callstack-placards-discarded.html [ Timeout ]
+crbug.com/371264 virtual/deferred/inspector/timeline/timeline-window-filter.html [ Timeout ]
+crbug.com/371264 virtual/implsidepainting/inspector/timeline/timeline-window-filter.html [ Timeout ]
+
 # -----------------------------------------------------------------
 # Untriaged but known real leaks.
 # -----------------------------------------------------------------
