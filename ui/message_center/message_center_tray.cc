@@ -233,7 +233,8 @@ void MessageCenterTray::OnNotificationButtonClicked(
 }
 
 void MessageCenterTray::OnNotificationDisplayed(
-    const std::string& notification_id) {
+    const std::string& notification_id,
+    const DisplaySource source) {
   NotifyMessageCenterTrayChanged();
 }
 

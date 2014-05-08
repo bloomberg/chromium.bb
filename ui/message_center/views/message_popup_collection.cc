@@ -186,7 +186,8 @@ void MessagePopupCollection::UpdateWidgets() {
           toast, ui::AX_EVENT_ALERT);
     }
 
-    message_center_->DisplayedNotification((*iter)->id());
+    message_center_->DisplayedNotification(
+        (*iter)->id(), message_center::DISPLAY_SOURCE_POPUP);
   }
 }
 

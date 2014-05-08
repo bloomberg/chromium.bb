@@ -60,7 +60,8 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
 #endif
       settings_provider_(settings_provider.Pass()),
       system_observer_(this),
-      stats_collector_(message_center) {
+      stats_collector_(message_center),
+      google_now_stats_collector_(message_center) {
 #if defined(OS_WIN)
   first_run_pref_.Init(prefs::kMessageCenterShowedFirstRunBalloon, local_state);
 #endif

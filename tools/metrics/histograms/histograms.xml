@@ -7336,6 +7336,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Events in Google Now component extension.</summary>
 </histogram>
 
+<histogram name="GoogleNow.MessageCenter.Displayed.NotificationsVisible"
+    units="count">
+  <owner>robliao@chromium.org</owner>
+  <owner>skare@chromium.org</owner>
+  <summary>
+    Count of the number of Google Now notifications visible when the message
+    center/notification center is shown.
+  </summary>
+</histogram>
+
 <histogram name="GoogleUpdate.EffectivePolicy" enum="UpdatePolicy">
   <owner>gab@chromium.org</owner>
   <summary>

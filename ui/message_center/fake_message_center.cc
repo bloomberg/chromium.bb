@@ -106,7 +106,9 @@ void FakeMessageCenter::MarkSinglePopupAsShown(const std::string& id,
                                                bool mark_notification_as_read) {
 }
 
-void FakeMessageCenter::DisplayedNotification(const std::string& id) {
+void FakeMessageCenter::DisplayedNotification(
+    const std::string& id,
+    const DisplaySource source) {
 }
 
 void FakeMessageCenter::SetNotifierSettingsProvider(

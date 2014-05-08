@@ -56,7 +56,9 @@ class FakeMessageCenter : public MessageCenter {
                                          int button_index) OVERRIDE;
   virtual void MarkSinglePopupAsShown(const std::string& id,
                                       bool mark_notification_as_read) OVERRIDE;
-  virtual void DisplayedNotification(const std::string& id) OVERRIDE;
+  virtual void DisplayedNotification(
+      const std::string& id,
+      const DisplaySource source) OVERRIDE;
   virtual void SetNotifierSettingsProvider(
       NotifierSettingsProvider* provider) OVERRIDE;
   virtual NotifierSettingsProvider* GetNotifierSettingsProvider() OVERRIDE;

@@ -105,7 +105,8 @@ TEST_F(MessageCenterNotificationManagerTest, SetupNotificationManager) {
 TEST_F(MessageCenterNotificationManagerTest, FirstRunShown) {
   TestingProfile profile;
   notification_manager()->Add(GetANotification("test"), &profile);
-  message_center()->DisplayedNotification("test");
+  message_center()->DisplayedNotification(
+      "test", message_center::DISPLAY_SOURCE_MESSAGE_CENTER);
   message_center()->MarkSinglePopupAsShown("test", false);
 
   run_loop()->Run();
@@ -119,7 +120,8 @@ TEST_F(MessageCenterNotificationManagerTest,
        FirstRunNotShownWithPopupsVisible) {
   TestingProfile profile;
   notification_manager()->Add(GetANotification("test"), &profile);
-  message_center()->DisplayedNotification("test");
+  message_center()->DisplayedNotification(
+      "test", message_center::DISPLAY_SOURCE_MESSAGE_CENTER);
   run_loop()->RunUntilIdle();
   EXPECT_FALSE(delegate()->displayed_first_run_balloon());
   EXPECT_FALSE(notification_manager()->FirstRunTimerIsActive());

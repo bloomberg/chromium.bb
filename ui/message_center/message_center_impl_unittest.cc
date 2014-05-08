@@ -743,7 +743,8 @@ TEST_F(MessageCenterImplTest, CachedUnreadCount) {
       message_center()->GetVisibleNotifications();
   for (NotificationList::Notifications::const_iterator iter =
            notifications.begin(); iter != notifications.end(); ++iter) {
-    message_center()->DisplayedNotification((*iter)->id());
+    message_center()->DisplayedNotification(
+        (*iter)->id(), message_center::DISPLAY_SOURCE_MESSAGE_CENTER);
   }
   EXPECT_EQ(0u, message_center()->UnreadNotificationCount());
 

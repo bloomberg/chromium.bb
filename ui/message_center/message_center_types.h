@@ -13,7 +13,15 @@ enum Visibility {
   // When the message center view is being displayed.
   VISIBILITY_MESSAGE_CENTER,
   // When the settings view is being displayed.
-  VISIBILITY_SETTINGS
+  VISIBILITY_SETTINGS,
+};
+
+// Identifies the source of a displayed notification.
+enum DisplaySource {
+  // Displayed from the message center.
+  DISPLAY_SOURCE_MESSAGE_CENTER = 0,
+  // Displayed as a popup.
+  DISPLAY_SOURCE_POPUP,
 };
 
 }  // namespace message_center

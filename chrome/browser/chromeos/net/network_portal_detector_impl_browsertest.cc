@@ -69,7 +69,9 @@ class TestObserver : public MessageCenterObserver {
     run_loop_.reset(new base::RunLoop());
   }
 
-  virtual void OnNotificationDisplayed(const std::string& notification_id)
+  virtual void OnNotificationDisplayed(
+      const std::string& notification_id,
+      const message_center::DisplaySource source)
       OVERRIDE {
     if (notification_id == kNotificationId)
       MessageLoop::current()->PostTask(FROM_HERE, run_loop_->QuitClosure());

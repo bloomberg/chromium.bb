@@ -73,7 +73,8 @@ class MessageCenterStatsCollector
   virtual void OnNotificationButtonClicked(const std::string& notification_id,
                                            int button_index) OVERRIDE;
   virtual void OnNotificationDisplayed(
-      const std::string& notification_id) OVERRIDE;
+      const std::string& notification_id,
+      const message_center::DisplaySource source) OVERRIDE;
   virtual void OnCenterVisibilityChanged(
       message_center::Visibility visibility) OVERRIDE;
   virtual void OnQuietModeChanged(bool in_quiet_mode) OVERRIDE;

@@ -1349,6 +1349,8 @@
         'browser/notifications/desktop_notification_service_factory.h',
         'browser/notifications/extension_welcome_notification.cc',
         'browser/notifications/extension_welcome_notification.h',
+        'browser/notifications/google_now_notification_stats_collector.cc',
+        'browser/notifications/google_now_notification_stats_collector.h',
         'browser/notifications/message_center_notification_manager.cc',
         'browser/notifications/message_center_notification_manager.h',
         'browser/notifications/message_center_notification_manager_win.cc',

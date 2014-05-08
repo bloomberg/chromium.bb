@@ -354,7 +354,9 @@ void PopupTimersController::TimerFinished(const std::string& id) {
   message_center_->MarkSinglePopupAsShown(id, false);
 }
 
-void PopupTimersController::OnNotificationDisplayed(const std::string& id) {
+void PopupTimersController::OnNotificationDisplayed(
+    const std::string& id,
+    const DisplaySource source) {
   OnNotificationUpdated(id);
 }
 
@@ -804,7 +806,9 @@ void MessageCenterImpl::MarkSinglePopupAsShown(const std::string& id,
       MessageCenterObserver, observer_list_, OnNotificationUpdated(id));
 }
 
-void MessageCenterImpl::DisplayedNotification(const std::string& id) {
+void MessageCenterImpl::DisplayedNotification(
+    const std::string& id,
+    const DisplaySource source) {
   if (!HasNotification(id))
     return;
 
@@ -816,7 +820,9 @@ void MessageCenterImpl::DisplayedNotification(const std::string& id) {
   if (delegate.get())
     delegate->Display();
   FOR_EACH_OBSERVER(
-      MessageCenterObserver, observer_list_, OnNotificationDisplayed(id));
+      MessageCenterObserver,
+      observer_list_,
+      OnNotificationDisplayed(id, source));
 }
 
 void MessageCenterImpl::SetNotifierSettingsProvider(

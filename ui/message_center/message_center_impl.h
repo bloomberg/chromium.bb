@@ -85,7 +85,9 @@ class MESSAGE_CENTER_EXPORT PopupTimersController
   virtual ~PopupTimersController();
 
   // MessageCenterObserver implementation.
-  virtual void OnNotificationDisplayed(const std::string& id) OVERRIDE;
+  virtual void OnNotificationDisplayed(
+      const std::string& id,
+      const DisplaySource source) OVERRIDE;
   virtual void OnNotificationUpdated(const std::string& id) OVERRIDE;
   virtual void OnNotificationRemoved(const std::string& id, bool by_user)
       OVERRIDE;
@@ -177,7 +179,9 @@ class MessageCenterImpl : public MessageCenter,
                                          int button_index) OVERRIDE;
   virtual void MarkSinglePopupAsShown(const std::string& id,
                                       bool mark_notification_as_read) OVERRIDE;
-  virtual void DisplayedNotification(const std::string& id) OVERRIDE;
+  virtual void DisplayedNotification(
+      const std::string& id,
+      const DisplaySource source) OVERRIDE;
   virtual void SetNotifierSettingsProvider(
       NotifierSettingsProvider* provider) OVERRIDE;
   virtual NotifierSettingsProvider* GetNotifierSettingsProvider() OVERRIDE;

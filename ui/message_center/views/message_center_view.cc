@@ -620,7 +620,8 @@ void MessageCenterView::SetNotifications(
            notifications.begin(); iter != notifications.end(); ++iter) {
     AddNotificationAt(*(*iter), index++);
 
-    message_center_->DisplayedNotification((*iter)->id());
+    message_center_->DisplayedNotification(
+        (*iter)->id(), message_center::DISPLAY_SOURCE_MESSAGE_CENTER);
     if (notification_views_.size() >= kMaxVisibleMessageCenterNotifications)
       break;
   }

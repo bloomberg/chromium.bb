@@ -108,7 +108,8 @@ void MessageCenterStatsCollector::OnNotificationButtonClicked(
 }
 
 void MessageCenterStatsCollector::OnNotificationDisplayed(
-    const std::string& notification_id) {
+    const std::string& notification_id,
+    const message_center::DisplaySource source) {
   StatsCollection::iterator iter = stats_.find(notification_id);
   if (iter == stats_.end())
     return;

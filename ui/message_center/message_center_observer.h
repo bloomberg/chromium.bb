@@ -42,7 +42,9 @@ class MESSAGE_CENTER_EXPORT MessageCenterObserver {
 
   // Called when the notification associated with |notification_id| is actually
   // displayed.
-  virtual void OnNotificationDisplayed(const std::string& notification_id) {}
+  virtual void OnNotificationDisplayed(
+      const std::string& notification_id,
+      const DisplaySource source) {}
 
   // Called when the notification center is shown or hidden.
   virtual void OnCenterVisibilityChanged(Visibility visibility) {}
