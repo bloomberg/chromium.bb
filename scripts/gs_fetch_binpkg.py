@@ -29,15 +29,17 @@ def GetParser():
   parser.add_argument('filename', help='Location to store the file.')
   return parser
 
+
 def Copy(ctx, uri, filename):
   """Run the copy using a temp file."""
   temp_path = '%s.tmp' % filename
   osutils.SafeUnlink(temp_path)
   try:
-    ctx.Copy(uri, temp_path, log_output=True)
+    ctx.Copy(uri, temp_path)
     shutil.move(temp_path, filename)
   finally:
     osutils.SafeUnlink(temp_path)
+
 
 def main(argv):
   parser = GetParser()
