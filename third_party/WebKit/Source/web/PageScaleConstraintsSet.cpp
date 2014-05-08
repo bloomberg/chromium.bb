@@ -54,9 +54,9 @@ PageScaleConstraints PageScaleConstraintsSet::defaultConstraints() const
     return PageScaleConstraints(-1, defaultMinimumScale, defaultMaximumScale);
 }
 
-void PageScaleConstraintsSet::updatePageDefinedConstraints(const ViewportDescription& description, IntSize viewSize, Length legacyFallbackWidth)
+void PageScaleConstraintsSet::updatePageDefinedConstraints(const ViewportDescription& description, Length legacyFallbackWidth)
 {
-    m_pageDefinedConstraints = description.resolve(viewSize, legacyFallbackWidth);
+    m_pageDefinedConstraints = description.resolve(m_viewSize, legacyFallbackWidth);
 
     m_constraintsDirty = true;
 }
@@ -82,9 +82,9 @@ void PageScaleConstraintsSet::computeFinalConstraints()
     m_constraintsDirty = false;
 }
 
-void PageScaleConstraintsSet::adjustFinalConstraintsToContentsSize(IntSize viewSize, IntSize contentsSize, int nonOverlayScrollbarWidth)
+void PageScaleConstraintsSet::adjustFinalConstraintsToContentsSize(IntSize contentsSize, int nonOverlayScrollbarWidth)
 {
-    m_finalConstraints.fitToContentsWidth(contentsSize.width(), viewSize.width() - nonOverlayScrollbarWidth);
+    m_finalConstraints.fitToContentsWidth(contentsSize.width(), m_viewSize.width() - nonOverlayScrollbarWidth);
 }
 
 void PageScaleConstraintsSet::setNeedsReset(bool needsReset)
@@ -135,24 +135,33 @@ static float computeHeightByAspectRatio(float width, const FloatSize& deviceSize
     return width * (deviceSize.height() / deviceSize.width());
 }
 
-IntSize PageScaleConstraintsSet::mainFrameSize(const IntSize& viewportSize, const IntSize& contentsSize) const
+void PageScaleConstraintsSet::didChangeViewSize(const IntSize& size)
+{
+    if (m_viewSize == size)
+        return;
+
+    m_viewSize = size;
+    m_constraintsDirty = true;
+}
+
+IntSize PageScaleConstraintsSet::mainFrameSize(const IntSize& contentsSize) const
 {
     // If there's no explicit minimum scale factor set, size the frame so that its width == content width
     // so there's no horizontal scrolling at the minimum scale.
     if (m_pageDefinedConstraints.minimumScale < finalConstraints().minimumScale
         && m_userAgentConstraints.minimumScale < finalConstraints().minimumScale
         && contentsSize.width()
-        && viewportSize.width())
-        return IntSize(contentsSize.width(), computeHeightByAspectRatio(contentsSize.width(), viewportSize));
+        && m_viewSize.width())
+        return IntSize(contentsSize.width(), computeHeightByAspectRatio(contentsSize.width(), m_viewSize));
 
     // If there is a minimum scale (or there's no content size yet), the frame size should match the viewport
     // size at minimum scale, since the viewport must always be contained by the frame.
-    IntSize frameSize(viewportSize);
+    IntSize frameSize(m_viewSize);
     frameSize.scale(1 / finalConstraints().minimumScale);
     return frameSize;
 }
 
-void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescription& description, IntSize viewSize, int layoutFallbackWidth, float deviceScaleFactor, bool supportTargetDensityDPI, bool wideViewportQuirkEnabled, bool useWideViewport, bool loadWithOverviewMode, bool nonUserScalableQuirkEnabled)
+void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescription& description, int layoutFallbackWidth, float deviceScaleFactor, bool supportTargetDensityDPI, bool wideViewportQuirkEnabled, bool useWideViewport, bool loadWithOverviewMode, bool nonUserScalableQuirkEnabled)
 {
     if (!supportTargetDensityDPI && !wideViewportQuirkEnabled && loadWithOverviewMode && !nonUserScalableQuirkEnabled)
         return;
@@ -191,16 +200,16 @@ void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescri
     if (wideViewportQuirkEnabled) {
         if (useWideViewport && (description.maxWidth.isAuto() || description.maxWidth.type() == ExtendToZoom) && description.zoom != 1.0f) {
             adjustedLayoutSizeWidth = layoutFallbackWidth;
-            adjustedLayoutSizeHeight = computeHeightByAspectRatio(adjustedLayoutSizeWidth, viewSize);
+            adjustedLayoutSizeHeight = computeHeightByAspectRatio(adjustedLayoutSizeWidth, m_viewSize);
         } else if (!useWideViewport) {
             const float nonWideScale = description.zoom < 1 && description.maxWidth.type() != DeviceWidth && description.maxWidth.type() != DeviceHeight ? -1 : oldInitialScale;
-            adjustedLayoutSizeWidth = getLayoutWidthForNonWideViewport(viewSize, nonWideScale) / targetDensityDPIFactor;
+            adjustedLayoutSizeWidth = getLayoutWidthForNonWideViewport(m_viewSize, nonWideScale) / targetDensityDPIFactor;
             float newInitialScale = targetDensityDPIFactor;
             if (m_userAgentConstraints.initialScale != -1 && (description.maxWidth.type() == DeviceWidth || ((description.maxWidth.isAuto() || description.maxWidth.type() == ExtendToZoom) && description.zoom == -1))) {
                 adjustedLayoutSizeWidth /= m_userAgentConstraints.initialScale;
                 newInitialScale = m_userAgentConstraints.initialScale;
             }
-            adjustedLayoutSizeHeight = computeHeightByAspectRatio(adjustedLayoutSizeWidth, viewSize);
+            adjustedLayoutSizeHeight = computeHeightByAspectRatio(adjustedLayoutSizeWidth, m_viewSize);
             if (description.zoom < 1) {
                 m_pageDefinedConstraints.initialScale = newInitialScale;
                 if (m_pageDefinedConstraints.minimumScale != -1)
@@ -216,8 +225,8 @@ void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescri
         m_pageDefinedConstraints.minimumScale = m_pageDefinedConstraints.initialScale;
         m_pageDefinedConstraints.maximumScale = m_pageDefinedConstraints.initialScale;
         if (description.maxWidth.isAuto() || description.maxWidth.type() == ExtendToZoom || description.maxWidth.type() == DeviceWidth) {
-            adjustedLayoutSizeWidth = viewSize.width() / targetDensityDPIFactor;
-            adjustedLayoutSizeHeight = computeHeightByAspectRatio(adjustedLayoutSizeWidth, viewSize);
+            adjustedLayoutSizeWidth = m_viewSize.width() / targetDensityDPIFactor;
+            adjustedLayoutSizeHeight = computeHeightByAspectRatio(adjustedLayoutSizeWidth, m_viewSize);
         }
     }
 
