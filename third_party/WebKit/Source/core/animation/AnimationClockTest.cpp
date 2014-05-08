@@ -119,4 +119,17 @@ TEST_F(AnimationAnimationClockTest, UpdateTimeIsMonotonic)
     EXPECT_GE(150, animationClock.currentTime());
 }
 
+TEST_F(AnimationAnimationClockTest, CurrentTimeUpdatesTask)
+{
+    animationClock.updateTime(100);
+    EXPECT_EQ(100, animationClock.currentTime());
+
+    mockTime = 100;
+    AnimationClock::notifyTaskStart();
+    EXPECT_EQ(100, animationClock.currentTime());
+
+    mockTime = 150;
+    EXPECT_EQ(100, animationClock.currentTime());
+}
+
 }

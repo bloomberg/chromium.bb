@@ -31,7 +31,7 @@ test(function() {
 
   requestAnimationFrame(function() {
     rafTest.step(function() {
-      assert_greater_than(document.timeline.currentTime, startTime);
+      assert_greater_than_equal(document.timeline.currentTime, startTime);
       firstRafTime = document.timeline.currentTime;
     });
   });
@@ -41,27 +41,6 @@ test(function() {
       assert_equals(document.timeline.currentTime, firstRafTime);
     });
     rafTest.done();
-  });
-})();
-
-(function() {
-  var rafTest = async_test('document.timeline.currentTime time should be consistent with the time value passed to RAF callbacks');
-  var firstRafTime;
-  var firstRafDelta;
-
-  requestAnimationFrame(function(t) {
-    rafTest.step(function() {
-      firstRafTime = document.timeline.currentTime;
-      firstRafDelta = document.timeline.currentTime - t;
-    });
-
-    requestAnimationFrame(function(t) {
-      rafTest.step(function() {
-        assert_greater_than(document.timeline.currentTime, firstRafTime);
-        assert_equals(document.timeline.currentTime - t, firstRafDelta);
-      });
-      rafTest.done();
-    });
   });
 })();
 </script>

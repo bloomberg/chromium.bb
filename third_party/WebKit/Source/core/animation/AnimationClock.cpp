@@ -64,6 +64,8 @@ double AnimationClock::currentTime()
             ASSERT(newTime >= currentTime);
             ASSERT(newTime <= currentTime + approximateFrameTime);
             updateTime(newTime);
+        } else {
+            m_currentTask = s_currentTask;
         }
     }
     return m_time;
