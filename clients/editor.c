@@ -1011,7 +1011,17 @@ text_entry_draw_cursor(struct text_entry *entry, cairo_t *cr)
 	cairo_stroke(cr);
 }
 
-static const int text_offset_left = 10;
+static int
+text_offset_left(struct rectangle *allocation)
+{
+	return 10;
+}
+
+static int
+text_offset_top(struct rectangle *allocation)
+{
+	return allocation->height / 2;
+}
 
 static void
 text_entry_redraw_handler(struct widget *widget, void *data)
@@ -1048,7 +1058,9 @@ text_entry_redraw_handler(struct widget *widget, void *data)
 
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
 
-	cairo_translate(cr, text_offset_left, allocation.height / 2);
+	cairo_translate(cr,
+			text_offset_left(&allocation),
+			text_offset_top(&allocation));
 
 	if (!entry->layout)
 		entry->layout = pango_cairo_create_layout(cr);
@@ -1075,6 +1087,7 @@ text_entry_motion_handler(struct widget *widget,
 {
 	struct text_entry *entry = data;
 	struct rectangle allocation;
+	int tx, ty;
 
 	if (!entry->button_pressed) {
 		return CURSOR_IBEAM;
@@ -1082,10 +1095,10 @@ text_entry_motion_handler(struct widget *widget,
 
 	widget_get_allocation(entry->widget, &allocation);
 
-	text_entry_set_cursor_position(entry,
-				       x - allocation.x - text_offset_left,
-				       y - allocation.y - text_offset_left,
-				       false);
+	tx = x - allocation.x - text_offset_left(&allocation);
+	ty = y - allocation.y - text_offset_top(&allocation);
+
+	text_entry_set_cursor_position(entry, tx, ty, false);
 
 	return CURSOR_IBEAM;
 }
@@ -1105,8 +1118,8 @@ text_entry_button_handler(struct widget *widget,
 	widget_get_allocation(entry->widget, &allocation);
 	input_get_position(input, &x, &y);
 
-	x -= allocation.x + text_offset_left;
-	y -= allocation.y + text_offset_left;
+	x -= allocation.x + text_offset_left(&allocation);
+	y -= allocation.y + text_offset_top(&allocation);
 
 	editor = window_get_user_data(entry->window);
 
@@ -1149,8 +1162,8 @@ text_entry_touch_handler(struct widget *widget, struct input *input,
 
 	widget_get_allocation(entry->widget, &allocation);
 
-	x = tx - (allocation.x + text_offset_left);
-	y = ty - (allocation.y + text_offset_left);
+	x = tx - (allocation.x + text_offset_left(&allocation));
+	y = ty - (allocation.y + text_offset_top(&allocation));
 
 	editor = window_get_user_data(entry->window);
 	text_entry_activate(entry, seat);
