@@ -1093,6 +1093,10 @@ class ValidationFailedMessage(object):
         return False
     return True
 
+  def IsInfrastructureFailure(self):
+    """Check if all of the failures are infrastructure failures."""
+    return self._MatchesFailureType(results_lib.InfrastructureFailure)
+
   def IsPackageBuildFailure(self):
     """Check if all of the failures are package build failures."""
     return self._MatchesFailureType(results_lib.PackageBuildFailure)
@@ -1206,7 +1210,6 @@ class CalculateSuspects(object):
         messages: A list of build failure messages, of type
                   ValidationFailedMessage or of type NoneType.
     """
-
     suspects = set()
 
     # If there were no internal failures, only kick out external changes.
@@ -2275,10 +2278,8 @@ class ValidationPool(object):
     Args:
       changes: A list of cros_patch.GerritPatch instances to mark as failed.
         By default, mark all of the changes as failed.
-      sanity: A boolean indicating whether the build was considered sane by
-              any relevant sanity check builders (True = sane). If not sane,
-              none of the changes will have their CommitReady bit modified.
-
+      sanity: A boolean indicating whether the build was considered sane. If
+        not sane, none of the changes will have their CommitReady bit modified.
     """
     if changes is None:
       changes = self.changes
@@ -2292,8 +2293,8 @@ class ValidationPool(object):
               'commit as ready. Your change will then get automatically '
               'retried.')
     else:
-      msg += ('The sanity check builder in this run failed, so no changes '
-              'will be blamed for the failure.')
+      msg += ('The build failure may have been caused by infrastructure '
+              'issues, so no changes will be blamed for the failure.')
 
     for change in changes:
       logging.info('Validation timed out for change %s.', change)
@@ -2350,9 +2351,8 @@ class ValidationPool(object):
       change: The change we want to create a message for.
       suspects: The set of suspect changes that we think broke the build.
       messages: A list of build failure messages from supporting builders.
-      sanity: A boolean indicating whether the build was considered sane by
-              any relevant sanity check builders (True = sane). If not sane,
-              none of the changes will have their CommitReady bit modified.
+      sanity: A boolean indicating whether the build was considered sane. If
+        not sane, none of the changes will have their CommitReady bit modified.
     """
     # Build a list of error messages. We don't want to build a ridiculously
     # long comment, as Gerrit will reject it. See http://crbug.com/236831
@@ -2396,7 +2396,7 @@ class ValidationPool(object):
       if len(suspects) == 1:
         msg.append('This failure was probably caused by %s'
                    % other_suspects_str)
-      else:
+      elif len(suspects) > 0:
         msg.append('One of the following changes is probably at fault: %s'
                    % other_suspects_str)
 
@@ -2416,9 +2416,8 @@ class ValidationPool(object):
       messages: A list of build failure messages from supporting builders.
           These must be ValidationFailedMessage objects.
       suspects: The list of changes that are suspected of breaking the build.
-      sanity: A boolean indicating whether the build was considered sane by
-              any relevant sanity check builders (True = sane). If not sane,
-              none of the changes will have their CommitReady bit modified.
+      sanity: A boolean indicating whether the build was considered sane. If
+        not sane, none of the changes will have their CommitReady bit modified.
     """
     msg = self._CreateValidationFailureMessage(self.pre_cq, change, suspects,
                                                messages, sanity)
@@ -2445,9 +2444,8 @@ class ValidationPool(object):
           These must be ValidationFailedMessage objects or NoneType objects.
       changes: A list of cros_patch.GerritPatch instances to mark as failed.
         By default, mark all of the changes as failed.
-      sanity: A boolean indicating whether the build was considered sane by
-              any relevant sanity check builders (True = sane). If not sane,
-              none of the changes will have their CommitReady bit modified.
+      sanity: A boolean indicating whether the build was considered sane. If
+        not sane, none of the changes will have their CommitReady bit modified.
     """
     if changes is None:
       changes = self.changes
@@ -2459,8 +2457,11 @@ class ValidationPool(object):
         continue
       candidates.append(change)
 
-    # First, calculate which changes are likely at fault for the failure.
-    suspects = CalculateSuspects.FindSuspects(candidates, messages)
+    suspects = ()
+    if sanity:
+      # If the build was sane, calculate which changes are likely at
+      # fault for the failure.
+      suspects = CalculateSuspects.FindSuspects(candidates, messages)
 
     # Send out failure notifications for each change.
     inputs = [[change, messages, suspects, sanity] for change in candidates]

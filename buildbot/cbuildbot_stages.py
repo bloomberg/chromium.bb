@@ -1521,19 +1521,39 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
           rejected = self.sync_stage.pool.SubmitPartialPool(tracebacks)
           self.sync_stage.pool.changes = rejected
 
-      sanity = self._WasBuildSane(
+      sanity_slave_failed = self._SanitySlaveFailed(
           self._run.config.sanity_check_slaves, self._slave_statuses)
-      if not sanity:
-        logging.info('Detected that a sanity-check builder failed. Will not '
-                     'reject patches.')
+      infrastructure_failed = self._OnlyInfrastructureFailures(messages)
+      if sanity_slave_failed:
+        logging.warning('Detected that a sanity-check builder failed. Will not '
+                        'reject patches.')
+      if infrastructure_failed:
+        logging.warning('The build failed purely due to infrastructure '
+                        'issue(s). Will not reject patches')
+
+      sanity = not (sanity_slave_failed or infrastructure_failed)
+
       if failing:
         self.sync_stage.pool.HandleValidationFailure(messages, sanity=sanity)
       elif inflight:
         self.sync_stage.pool.HandleValidationTimeout(sanity=sanity)
 
   @staticmethod
-  def _WasBuildSane(sanity_check_slaves, slave_statuses):
-    """Determines whether any of the sanity check slaves failed.
+  def _OnlyInfrastructureFailures(messages):
+    """Returns true if all failures are infrasctructure failures.
+
+    Args:
+      messages: A list of ValidationFailedMessage objects from the
+        failed slaves.
+
+    Returns:
+      True if all failures are of the results_lib.InfrastructureFailure type.
+    """
+    return all([x.IsInfrastructureFailure() for x in messages])
+
+  @staticmethod
+  def _SanitySlaveFailed(sanity_check_slaves, slave_statuses):
+    """Returns true if any sanity check slaves failed.
 
     Args:
       sanity_check_slaves: Names of slave builders that are "sanity check"
@@ -1544,8 +1564,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       True if no sanity builders ran and failed.
     """
     sanity_check_slaves = sanity_check_slaves or []
-    return not any([x in slave_statuses and slave_statuses[x].Failed()
-                    for x in sanity_check_slaves])
+    return any([x in slave_statuses and slave_statuses[x].Failed() for
+                x in sanity_check_slaves])
 
   def PerformStage(self):
     # - If the build failed, and the builder was important, fetch a message

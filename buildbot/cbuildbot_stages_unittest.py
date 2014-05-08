@@ -553,7 +553,7 @@ class CommitQueueCompletionStageTest(cros_test_lib.TestCase):
   """Test partial functionality of CommitQueueCompletionStage."""
 
   def testSanityDetection(self):
-    """Test the _WasBuildSane function."""
+    """Test the _SanitySalveFailed function."""
     sanity_slaves = ['sanity_1', 'sanity_2', 'sanity_3']
 
     passed = manifest_version.BuilderStatus(
@@ -568,9 +568,9 @@ class CommitQueueCompletionStageTest(cros_test_lib.TestCase):
                       'sanity_1' : missing,
                       'sanity_2' : passed,
                       'sanity_3' : failed}
-    self.assertFalse(
-        stages.CommitQueueCompletionStage._WasBuildSane(sanity_slaves,
-                                                        slave_statuses))
+    self.assertTrue(
+        stages.CommitQueueCompletionStage._SanitySlaveFailed(sanity_slaves,
+                                                             slave_statuses))
 
     # If some sanity builders did not report a status but the others passed,
     # then build was sane.
@@ -578,18 +578,18 @@ class CommitQueueCompletionStageTest(cros_test_lib.TestCase):
                       'sanity_1' : missing,
                       'sanity_2' : passed}
 
-    self.assertTrue(
-        stages.CommitQueueCompletionStage._WasBuildSane(sanity_slaves,
-                                                        slave_statuses))
+    self.assertFalse(
+        stages.CommitQueueCompletionStage._SanitySlaveFailed(sanity_slaves,
+                                                             slave_statuses))
 
     # If all sanity builders passed, build was sane.
     slave_statuses = {'builder_a': failed,
                       'sanity_1' : passed,
                       'sanity_2' : passed,
                       'sanity_3' : passed}
-    self.assertTrue(
-        stages.CommitQueueCompletionStage._WasBuildSane(sanity_slaves,
-                                                        slave_statuses))
+    self.assertFalse(
+        stages.CommitQueueCompletionStage._SanitySlaveFailed(sanity_slaves,
+                                                             slave_statuses))
 
 
 class MasterSlaveSyncCompletionStage(AbstractStageTest):
