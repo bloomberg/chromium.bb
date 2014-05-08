@@ -832,8 +832,6 @@ void DesktopWindowTreeHostX11::SetBounds(const gfx::Rect& bounds) {
   if (size_changed) {
     OnHostResized(bounds.size());
     ResetWindowRegion();
-  } else {
-    compositor()->ScheduleRedrawRect(gfx::Rect(bounds.size()));
   }
 }
 
