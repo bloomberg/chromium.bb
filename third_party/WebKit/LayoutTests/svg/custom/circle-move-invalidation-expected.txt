@@ -1,2 +1,15 @@
- 
-The circle should not be (partially or fully)visible at the original position after moving it.
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 46.00 46.00 76.00 76.00)
+        (rect 196.00 196.00 76.00 76.00)
+      )
+    )
+  )
+)
+

@@ -1,1 +1,14 @@
-There should be 2 green squares above this (when run under DumpRenderTree)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 10.00 214.00 102.00)
+      )
+    )
+  )
+)
+

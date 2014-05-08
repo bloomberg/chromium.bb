@@ -1,3 +1,0 @@
-The svg image contained in the div element (red box) should not change its appearance when width is resized to be larger
-
-

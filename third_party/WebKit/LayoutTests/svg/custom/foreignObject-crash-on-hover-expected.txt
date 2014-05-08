@@ -1,3 +1,11 @@
-Absolute Lineto
-<path d="M50,80 L250,80 150,280 z" style="fill:red; stroke:blue;"/>
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+    )
+  )
+)
 

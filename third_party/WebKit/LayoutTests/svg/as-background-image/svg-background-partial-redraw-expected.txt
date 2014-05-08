@@ -1,3 +1,0 @@
-You should continue see a full blue circle when part of the element is redrawn (hover to test interactively).
-
-
