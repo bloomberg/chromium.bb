@@ -228,7 +228,6 @@ timer_update_callback_2(void *data)
 TEST(event_loop_timer_updates)
 {
 	struct wl_event_loop *loop = wl_event_loop_create();
-	struct wl_event_source *source;
 	struct timer_update_context context;
 	struct timeval start_time, end_time, interval;
 
