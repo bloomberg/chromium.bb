@@ -7,6 +7,7 @@
 #include <jni.h>
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
@@ -23,6 +24,7 @@
 #include "jni/FaviconHelper_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 
@@ -44,6 +46,32 @@ void OnLocalFaviconAvailable(
   ScopedJavaLocalRef<jstring> j_icon_url =
       ConvertUTF8ToJavaString(env, favicon_image_result.icon_url.spec());
   SkBitmap favicon_bitmap = favicon_image_result.image.AsBitmap();
+  ScopedJavaLocalRef<jobject> j_favicon_bitmap;
+  if (!favicon_bitmap.isNull())
+    j_favicon_bitmap = gfx::ConvertToJavaBitmap(&favicon_bitmap);
+
+  // Call java side OnLocalFaviconAvailable method.
+  Java_FaviconImageCallback_onFaviconAvailable(env,
+                                               j_favicon_image_callback->obj(),
+                                               j_favicon_bitmap.obj(),
+                                               j_icon_url.obj());
+}
+
+void OnFaviconBitmapResultAvailable(
+    ScopedJavaGlobalRef<jobject>* j_favicon_image_callback,
+    const favicon_base::FaviconBitmapResult& favicon_bitmap_result) {
+  JNIEnv* env = AttachCurrentThread();
+
+  // Convert favicon_image_result to java objects.
+  ScopedJavaLocalRef<jstring> j_icon_url =
+      ConvertUTF8ToJavaString(env, favicon_bitmap_result.icon_url.spec());
+
+  SkBitmap favicon_bitmap;
+  if (favicon_bitmap_result.is_valid()) {
+    gfx::PNGCodec::Decode(favicon_bitmap_result.bitmap_data->front(),
+                          favicon_bitmap_result.bitmap_data->size(),
+                          &favicon_bitmap);
+  }
   ScopedJavaLocalRef<jobject> j_favicon_bitmap;
   if (!favicon_bitmap.isNull())
     j_favicon_bitmap = gfx::ConvertToJavaBitmap(&favicon_bitmap);
@@ -107,6 +135,43 @@ jboolean FaviconHelper::GetLocalFaviconImageForURL(
   return true;
 }
 
+void FaviconHelper::GetLargestRawFaviconForUrl(
+    JNIEnv* env,
+    jobject obj,
+    jobject j_profile,
+    jstring j_page_url,
+    jintArray j_icon_types,
+    jint j_min_size_threshold_px,
+    jobject j_favicon_image_callback) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  DCHECK(profile);
+  if (!profile)
+    return;
+
+  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+      profile, Profile::EXPLICIT_ACCESS);
+  DCHECK(favicon_service);
+  if (!favicon_service)
+    return;
+
+  std::vector<int> icon_types;
+  base::android::JavaIntArrayToIntVector(env, j_icon_types, &icon_types);
+
+  ScopedJavaGlobalRef<jobject>* j_scoped_favicon_callback =
+      new ScopedJavaGlobalRef<jobject>();
+  j_scoped_favicon_callback->Reset(env, j_favicon_image_callback);
+
+  FaviconService::FaviconRawCallback callback_runner = base::Bind(
+      &OnFaviconBitmapResultAvailable, base::Owned(j_scoped_favicon_callback));
+  favicon_service->GetLargestRawFaviconForURL(
+      profile,
+      GURL(ConvertJavaStringToUTF16(env, j_page_url)),
+      icon_types,
+      static_cast<int>(j_min_size_threshold_px),
+      callback_runner,
+      cancelable_task_tracker_.get());
+}
+
 ScopedJavaLocalRef<jobject> FaviconHelper::GetSyncedFaviconImageForURL(
     JNIEnv* env,
     jobject obj,
@@ -129,7 +194,7 @@ ScopedJavaLocalRef<jobject> FaviconHelper::GetSyncedFaviconImageForURL(
   if (!open_tabs->GetSyncedFaviconForPageURL(page_url, &favicon_png))
     return ScopedJavaLocalRef<jobject>();
 
-    // Convert favicon_image_result to java objects.
+  // Convert favicon_image_result to java objects.
   gfx::Image favicon_image = gfx::Image::CreateFrom1xPNGBytes(favicon_png);
   SkBitmap favicon_bitmap = favicon_image.AsBitmap();
 
