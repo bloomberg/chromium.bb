@@ -615,6 +615,7 @@ const char kOpenVPNClientCertSlotProperty[] = "OpenVPN.Pkcs11.Slot";
 const char kOpenVPNCipherProperty[] = "OpenVPN.Cipher";
 const char kOpenVPNCompLZOProperty[] = "OpenVPN.CompLZO";
 const char kOpenVPNCompNoAdaptProperty[] = "OpenVPN.CompNoAdapt";
+const char kOpenVPNIgnoreDefaultRouteProperty[] = "OpenVPN.IgnoreDefaultRoute";
 const char kOpenVPNKeyDirectionProperty[] = "OpenVPN.KeyDirection";
 const char kOpenVPNMgmtEnableProperty[] = "OpenVPN.Mgmt.Enable";
 const char kOpenVPNNsCertTypeProperty[] = "OpenVPN.NsCertType";
