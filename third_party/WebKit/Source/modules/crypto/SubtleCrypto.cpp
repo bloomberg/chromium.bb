@@ -46,10 +46,9 @@ namespace {
 
 // Seems like the generated bindings should take care of these however it
 // currently doesn't. See also http://crbug.com/264520
-template <typename T>
-bool ensureNotNull(T* x, const char* paramName, CryptoResult* result)
+bool ensureNotNull(const ArrayPiece& x, const char* paramName, CryptoResult* result)
 {
-    if (!x) {
+    if (x.isNull()) {
         String message = String("Invalid ") + paramName + String(" argument");
         result->completeWithError(blink::WebCryptoErrorTypeType, blink::WebString(message));
         return false;
@@ -57,7 +56,17 @@ bool ensureNotNull(T* x, const char* paramName, CryptoResult* result)
     return true;
 }
 
-ScriptPromise startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, AlgorithmOperation operationType, ArrayBufferView* signature, ArrayBufferView* dataBuffer)
+bool ensureNotNull(Key* key, const char* paramName, CryptoResult* result)
+{
+    if (!key) {
+        String message = String("Invalid ") + paramName + String(" argument");
+        result->completeWithError(blink::WebCryptoErrorTypeType, blink::WebString(message));
+        return false;
+    }
+    return true;
+}
+
+ScriptPromise startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, AlgorithmOperation operationType, const ArrayPiece& signature, const ArrayPiece& dataBuffer)
 {
     RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
     ScriptPromise promise = result->promise();
@@ -78,8 +87,8 @@ ScriptPromise startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, Alg
     if (requiresKey && !key->canBeUsedForAlgorithm(algorithm, operationType, result.get()))
         return promise;
 
-    const unsigned char* data = static_cast<const unsigned char*>(dataBuffer->baseAddress());
-    unsigned dataSize = dataBuffer->byteLength();
+    const unsigned char* data = dataBuffer.bytes();
+    unsigned dataSize = dataBuffer.byteLength();
 
     switch (operationType) {
     case Encrypt:
@@ -92,7 +101,7 @@ ScriptPromise startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, Alg
         blink::Platform::current()->crypto()->sign(algorithm, key->key(), data, dataSize, result->result());
         break;
     case Verify:
-        blink::Platform::current()->crypto()->verifySignature(algorithm, key->key(), reinterpret_cast<const unsigned char*>(signature->baseAddress()), signature->byteLength(), data, dataSize, result->result());
+        blink::Platform::current()->crypto()->verifySignature(algorithm, key->key(), signature.bytes(), signature.byteLength(), data, dataSize, result->result());
         break;
     case Digest:
         blink::Platform::current()->crypto()->digest(algorithm, data, dataSize, result->result());
@@ -112,29 +121,29 @@ SubtleCrypto::SubtleCrypto()
     ScriptWrappable::init(this);
 }
 
-ScriptPromise SubtleCrypto::encrypt(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* data)
+ScriptPromise SubtleCrypto::encrypt(const Dictionary& rawAlgorithm, Key* key, const ArrayPiece& data)
 {
-    return startCryptoOperation(rawAlgorithm, key, Encrypt, 0, data);
+    return startCryptoOperation(rawAlgorithm, key, Encrypt, ArrayPiece(), data);
 }
 
-ScriptPromise SubtleCrypto::decrypt(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* data)
+ScriptPromise SubtleCrypto::decrypt(const Dictionary& rawAlgorithm, Key* key, const ArrayPiece& data)
 {
-    return startCryptoOperation(rawAlgorithm, key, Decrypt, 0, data);
+    return startCryptoOperation(rawAlgorithm, key, Decrypt, ArrayPiece(), data);
 }
 
-ScriptPromise SubtleCrypto::sign(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* data)
+ScriptPromise SubtleCrypto::sign(const Dictionary& rawAlgorithm, Key* key, const ArrayPiece& data)
 {
-    return startCryptoOperation(rawAlgorithm, key, Sign, 0, data);
+    return startCryptoOperation(rawAlgorithm, key, Sign, ArrayPiece(), data);
 }
 
-ScriptPromise SubtleCrypto::verifySignature(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* signature, ArrayBufferView* data)
+ScriptPromise SubtleCrypto::verifySignature(const Dictionary& rawAlgorithm, Key* key, const ArrayPiece& signature, const ArrayPiece& data)
 {
     return startCryptoOperation(rawAlgorithm, key, Verify, signature, data);
 }
 
-ScriptPromise SubtleCrypto::digest(const Dictionary& rawAlgorithm, ArrayBufferView* data)
+ScriptPromise SubtleCrypto::digest(const Dictionary& rawAlgorithm, const ArrayPiece& data)
 {
-    return startCryptoOperation(rawAlgorithm, 0, Digest, 0, data);
+    return startCryptoOperation(rawAlgorithm, 0, Digest, ArrayPiece(), data);
 }
 
 ScriptPromise SubtleCrypto::generateKey(const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
@@ -154,7 +163,7 @@ ScriptPromise SubtleCrypto::generateKey(const Dictionary& rawAlgorithm, bool ext
     return promise;
 }
 
-ScriptPromise SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* keyData, const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
+ScriptPromise SubtleCrypto::importKey(const String& rawFormat, const ArrayPiece& keyData, const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
 {
     RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
     ScriptPromise promise = result->promise();
@@ -174,9 +183,7 @@ ScriptPromise SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* 
     if (!parseAlgorithm(rawAlgorithm, ImportKey, algorithm, result.get()))
         return promise;
 
-    const unsigned char* keyDataBytes = static_cast<unsigned char*>(keyData->baseAddress());
-
-    blink::Platform::current()->crypto()->importKey(format, keyDataBytes, keyData->byteLength(), algorithm, extractable, keyUsages, result->result());
+    blink::Platform::current()->crypto()->importKey(format, keyData.bytes(), keyData.byteLength(), algorithm, extractable, keyUsages, result->result());
     return promise;
 }
 
@@ -232,7 +239,7 @@ ScriptPromise SubtleCrypto::wrapKey(const String& rawFormat, Key* key, Key* wrap
     return promise;
 }
 
-ScriptPromise SubtleCrypto::unwrapKey(const String& rawFormat, ArrayBufferView* wrappedKey, Key* unwrappingKey, const Dictionary& rawUnwrapAlgorithm, const Dictionary& rawUnwrappedKeyAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
+ScriptPromise SubtleCrypto::unwrapKey(const String& rawFormat, const ArrayPiece& wrappedKey, Key* unwrappingKey, const Dictionary& rawUnwrapAlgorithm, const Dictionary& rawUnwrappedKeyAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
 {
     RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
     ScriptPromise promise = result->promise();
@@ -261,10 +268,7 @@ ScriptPromise SubtleCrypto::unwrapKey(const String& rawFormat, ArrayBufferView* 
     if (!unwrappingKey->canBeUsedForAlgorithm(unwrapAlgorithm, UnwrapKey, result.get()))
         return promise;
 
-    const unsigned char* wrappedKeyData = static_cast<const unsigned char*>(wrappedKey->baseAddress());
-    unsigned wrappedKeyDataSize = wrappedKey->byteLength();
-
-    blink::Platform::current()->crypto()->unwrapKey(format, wrappedKeyData, wrappedKeyDataSize, unwrappingKey->key(), unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages, result->result());
+    blink::Platform::current()->crypto()->unwrapKey(format, wrappedKey.bytes(), wrappedKey.byteLength(), unwrappingKey->key(), unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages, result->result());
     return promise;
 }
 

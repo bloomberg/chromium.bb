@@ -33,16 +33,32 @@
     NoInterfaceObject
 ] interface SubtleCrypto {
     Promise encrypt(Dictionary algorithm, Key key, ArrayBufferView data);
+    Promise encrypt(Dictionary algorithm, Key key, ArrayBuffer data);
+
     Promise decrypt(Dictionary algorithm, Key key, ArrayBufferView data);
+    Promise decrypt(Dictionary algorithm, Key key, ArrayBuffer data);
+
     Promise sign(Dictionary algorithm, Key key, ArrayBufferView data);
+    Promise sign(Dictionary algorithm, Key key, ArrayBuffer data);
+
     [ImplementedAs=verifySignature] Promise verify(Dictionary algorithm, Key key, ArrayBufferView signature, ArrayBufferView data);
+    [ImplementedAs=verifySignature] Promise verify(Dictionary algorithm, Key key, ArrayBufferView signature, ArrayBuffer data);
+    [ImplementedAs=verifySignature] Promise verify(Dictionary algorithm, Key key, ArrayBuffer signature, ArrayBuffer data);
+    [ImplementedAs=verifySignature] Promise verify(Dictionary algorithm, Key key, ArrayBuffer signature, ArrayBufferView data);
+
     Promise digest(Dictionary algorithm, ArrayBufferView data);
+    Promise digest(Dictionary algorithm, ArrayBuffer data);
 
     Promise generateKey(Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
+
     Promise importKey(DOMString format, ArrayBufferView keyData, Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
+    Promise importKey(DOMString format, ArrayBuffer keyData, Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
+
     Promise exportKey(DOMString format, Key key);
 
     Promise wrapKey(DOMString format, Key key, Key wrappingKey, Dictionary wrapAlgorithm);
+
     Promise unwrapKey(DOMString format, ArrayBufferView wrappedKey, Key unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, DOMString[] keyUsages);
+    Promise unwrapKey(DOMString format, ArrayBuffer wrappedKey, Key unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, DOMString[] keyUsages);
 };
 

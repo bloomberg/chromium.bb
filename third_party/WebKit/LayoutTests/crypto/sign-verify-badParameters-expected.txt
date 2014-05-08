@@ -3,9 +3,9 @@ Tests calling cypto.subtle.sign and crypto.subtle.verify with incorrect inputs
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-error is: DataError: Invalid signature argument
-error is: DataError: Invalid signature argument
-error is: DataError: Invalid signature argument
+error is: TypeError: Failed to execute 'verify' on 'SubtleCrypto': No function was found that matched the signature provided.
+error is: TypeError: Failed to execute 'verify' on 'SubtleCrypto': No function was found that matched the signature provided.
+error is: TypeError: Failed to execute 'verify' on 'SubtleCrypto': No function was found that matched the signature provided.
 error is: NotSupportedError: SHA-1: Unsupported operation: sign
 error is: NotSupportedError: RSAES-PKCS1-v1_5: Unsupported operation: sign
 PASS successfullyParsed is true

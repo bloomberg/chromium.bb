@@ -13,6 +13,8 @@
             'ArrayBufferDeallocationObserver.h',
             'ArrayBufferView.cpp',
             'ArrayBufferView.h',
+            'ArrayPiece.cpp',
+            'ArrayPiece.h',
             'Assertions.cpp',
             'Assertions.h',
             'Atomics.h',
