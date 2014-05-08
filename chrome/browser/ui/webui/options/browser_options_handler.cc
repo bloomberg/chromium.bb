@@ -305,7 +305,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "startupRestoreLastSession", IDS_OPTIONS_STARTUP_RESTORE_LAST_SESSION },
     { "settingsTitle", IDS_SETTINGS_TITLE },
     { "showAdvancedSettings", IDS_SETTINGS_SHOW_ADVANCED_SETTINGS },
-    { "sslCheckRevocation", IDS_OPTIONS_SSL_CHECKREVOCATION },
     { "startupSetPages", IDS_OPTIONS_STARTUP_SET_PAGES },
     { "startupShowNewTab", IDS_OPTIONS_STARTUP_SHOW_NEWTAB },
     { "startupShowPages", IDS_OPTIONS_STARTUP_SHOW_PAGES },

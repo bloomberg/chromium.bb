@@ -265,7 +265,12 @@ void SSLConfigServiceManagerPref::OnPreferenceChanged(
 
 void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
     net::SSLConfig* config) {
-  config->rev_checking_enabled = rev_checking_enabled_.GetValue();
+  // rev_checking_enabled was formerly a user-settable preference, but now
+  // it is managed-only.
+  if (rev_checking_enabled_.IsManaged())
+    config->rev_checking_enabled = rev_checking_enabled_.GetValue();
+  else
+    config->rev_checking_enabled = false;
   config->rev_checking_required_local_anchors =
       rev_checking_required_local_anchors_.GetValue();
   std::string version_min_str = ssl_version_min_.GetValue();
