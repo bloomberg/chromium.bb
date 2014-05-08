@@ -465,7 +465,10 @@ class BuildData(object):
 
   @property
   def chrome_version(self):
-    return self['version']['chrome']
+    try:
+      return self['version']['chrome']
+    except KeyError:
+      return None
 
   @property
   def bot_id(self):
