@@ -277,8 +277,16 @@ private:
         : m_reserved(reserved)
         , m_writable(writable)
     {
-        // Leak Sanitizer runs before the shutdown sequence runs, and thus PageMemory objects
-        // are reported as leaking. So we annotate to let the Leak Sanitizer ignore PageMemory objects.
+        // This annotation is for letting the LeakSanitizer ignore PageMemory objects.
+        //
+        // - The LeakSanitizer runs before the shutdown sequence and reports unreachable memory blocks.
+        // - The LeakSanitizer only recognizes memory blocks allocated through malloc/new,
+        //   and we need special handling for mapped regions.
+        // - The PageMemory object is only referenced by a HeapPage<Header> object, which is
+        //   located inside the mapped region, which is not released until the shutdown sequence.
+        //
+        // Given the above, we need to explicitly annotate that the LeakSanitizer should ignore
+        // PageMemory objects.
         WTF_ANNOTATE_LEAKING_OBJECT_PTR(this);
 
         ASSERT(reserved.contains(writable));
