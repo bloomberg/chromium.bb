@@ -704,8 +704,12 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
     # will kill us if we go silent for too long.
     wait_minutes = DEDUPE_NOTIFY_TIMEOUT
     while storage_notify_proc.is_alive() and wait_minutes > 0:
-      cros_build_lib.Info('waiting up to %i minutes for ~%i notifications',
-                          wait_minutes, dedupe_queue.qsize())
+      if dedupe_queue:
+        qsize = str(dedupe_queue.qsize())
+      else:
+        qsize = '[None]'
+      cros_build_lib.Info('waiting up to %i minutes for ~%s notifications',
+                          wait_minutes, qsize)
       storage_notify_proc.join(60)
       wait_minutes -= 1
 

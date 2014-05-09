@@ -12,6 +12,7 @@ import logging
 import multiprocessing
 import os
 import sys
+import time
 import urllib2
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -192,6 +193,15 @@ class UploadSymbolsTest(cros_test_lib.MockTempDirTestCase):
           dedupe_namespace='inva!id name$pace')
       self.assertEqual(ret, 0)
       # This test normally passes by not hanging.
+
+  def testSlowDedupeSystem(self):
+    """Verify a slow-to-join process doesn't break things when dedupe is off"""
+    # The sleep value here is inherently a little racy, but seems to be good
+    # enough to trigger the bug on a semi-regular basis on developer systems.
+    self.PatchObject(upload_symbols, 'SymbolDeduplicatorNotify',
+                     side_effect=lambda *args: time.sleep(1))
+    # Test passing means the code didn't throw an exception.
+    upload_symbols.UploadSymbols(sym_paths=[self.tempdir])
 
 
 class SymbolDeduplicatorNotifyTest(cros_test_lib.MockTestCase):
