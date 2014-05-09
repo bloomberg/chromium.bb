@@ -82,11 +82,13 @@ class CC_EXPORT PictureLayerTiling {
     gfx::Rect visible_rect_in_content_space_;
     gfx::Rect skewport_in_content_space_;
     gfx::Rect eventually_rect_in_content_space_;
+    gfx::Rect soon_border_rect_in_content_space_;
     WhichTree tree_;
 
     Tile* current_tile_;
     TilingData::Iterator visible_iterator_;
     TilingData::SpiralDifferenceIterator spiral_iterator_;
+    bool skewport_processed_;
   };
 
   class CC_EXPORT TilingEvictionTileIterator {
@@ -299,6 +301,7 @@ class CC_EXPORT PictureLayerTiling {
   gfx::Rect current_visible_rect_in_content_space_;
   gfx::Rect current_skewport_;
   gfx::Rect current_eventually_rect_;
+  gfx::Rect current_soon_border_rect_;
 
   std::vector<Tile*> eviction_tiles_cache_;
   bool eviction_tiles_cache_valid_;

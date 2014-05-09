@@ -20,6 +20,8 @@
 namespace cc {
 namespace {
 
+const float kSoonBorderDistanceInScreenPixels = 312.f;
+
 class TileEvictionOrder {
  public:
   explicit TileEvictionOrder(TreePriority tree_priority)
@@ -532,6 +534,25 @@ void PictureLayerTiling::UpdateTilePriorities(
         resolution_, TilePriority::EVENTUALLY, distance_to_visible);
     tile->SetPriority(tree, priority);
   }
+
+  // Upgrade the priority on border tiles to be SOON.
+  current_soon_border_rect_ = visible_rect_in_content_space;
+  float border = kSoonBorderDistanceInScreenPixels / content_to_screen_scale;
+  current_soon_border_rect_.Inset(-border, -border, -border, -border);
+  for (TilingData::DifferenceIterator iter(
+           &tiling_data_, current_soon_border_rect_, skewport);
+       iter;
+       ++iter) {
+    TileMap::iterator find = tiles_.find(iter.index());
+    if (find == tiles_.end())
+      continue;
+    Tile* tile = find->second.get();
+
+    TilePriority priority(resolution_,
+                          TilePriority::SOON,
+                          tile->priority(tree).distance_to_visible);
+    tile->SetPriority(tree, priority);
+  }
 }
 
 void PictureLayerTiling::SetLiveTilesRect(
@@ -800,6 +821,7 @@ PictureLayerTiling::TilingRasterTileIterator::TilingRasterTileIterator(
           tiling_->current_visible_rect_in_content_space_),
       skewport_in_content_space_(tiling_->current_skewport_),
       eventually_rect_in_content_space_(tiling_->current_eventually_rect_),
+      soon_border_rect_in_content_space_(tiling_->current_soon_border_rect_),
       tree_(tree),
       current_tile_(NULL),
       visible_iterator_(&tiling->tiling_data_,
@@ -808,7 +830,8 @@ PictureLayerTiling::TilingRasterTileIterator::TilingRasterTileIterator(
       spiral_iterator_(&tiling->tiling_data_,
                        skewport_in_content_space_,
                        visible_rect_in_content_space_,
-                       visible_rect_in_content_space_) {
+                       visible_rect_in_content_space_),
+      skewport_processed_(false) {
   if (!visible_iterator_) {
     AdvancePhase();
     return;
@@ -866,8 +889,20 @@ operator++() {
       case TilePriority::SOON:
         ++spiral_iterator_;
         if (!spiral_iterator_) {
-          AdvancePhase();
-          return *this;
+          if (skewport_processed_) {
+            AdvancePhase();
+            return *this;
+          }
+          skewport_processed_ = true;
+          spiral_iterator_ = TilingData::SpiralDifferenceIterator(
+              &tiling_->tiling_data_,
+              soon_border_rect_in_content_space_,
+              skewport_in_content_space_,
+              visible_rect_in_content_space_);
+          if (!spiral_iterator_) {
+            AdvancePhase();
+            return *this;
+          }
         }
         next_index = spiral_iterator_.index();
         break;

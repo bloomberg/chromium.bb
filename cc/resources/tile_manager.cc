@@ -338,13 +338,10 @@ const ManagedTileBin kBinIsActiveMap[2][NUM_BINS] = {
 // Determine bin based on three categories of tiles: things we need now,
 // things we need soon, and eventually.
 inline ManagedTileBin BinFromTilePriority(const TilePriority& prio) {
-  const float kBackflingGuardDistancePixels = 314.0f;
-
   if (prio.priority_bin == TilePriority::NOW)
     return NOW_BIN;
 
-  if (prio.priority_bin == TilePriority::SOON ||
-      prio.distance_to_visible < kBackflingGuardDistancePixels)
+  if (prio.priority_bin == TilePriority::SOON)
     return SOON_BIN;
 
   if (prio.distance_to_visible == std::numeric_limits<float>::infinity())
