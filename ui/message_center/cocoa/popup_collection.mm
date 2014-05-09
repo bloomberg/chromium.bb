@@ -202,9 +202,11 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
 }
 
 - (void)updateNotification:(const std::string&)notificationID {
-  // The notification may not be on screen.
-  if ([self indexOfPopupWithNotificationID:notificationID] == NSNotFound)
+  // The notification may not be on screen. Create it if needed.
+  if ([self indexOfPopupWithNotificationID:notificationID] == NSNotFound) {
+    [self layoutNewNotifications];
     return;
+  }
 
   // Don't bother with the update if the notification is going to be removed.
   if (pendingRemoveNotificationIDs_.find(notificationID) !=

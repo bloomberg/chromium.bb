@@ -313,6 +313,43 @@ TEST_F(PopupCollectionTest, UpdateIconAndBody) {
   EXPECT_EQ("3", [[popups objectAtIndex:2] notificationID]);
 }
 
+TEST_F(PopupCollectionTest, UpdatePriority) {
+  scoped_ptr<message_center::Notification> notification;
+  notification.reset(new message_center::Notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      "1",
+      ASCIIToUTF16("One"),
+      ASCIIToUTF16("This notification should not yet toast."),
+      gfx::Image(),
+      base::string16(),
+      DummyNotifierId(),
+      message_center::RichNotificationData(),
+      NULL));
+  notification->set_priority(-1);
+
+  center_->AddNotification(notification.Pass());
+  WaitForAnimationEnded();
+  NSArray* popups = [collection_ popups];
+  EXPECT_EQ(0u, [popups count]);
+
+  // Raise priority -1 to 1. Notification should display.
+  notification.reset(new message_center::Notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      "1",
+      ASCIIToUTF16("One"),
+      ASCIIToUTF16("This notification should now toast"),
+      gfx::Image(),
+      base::string16(),
+      DummyNotifierId(),
+      message_center::RichNotificationData(),
+      NULL));
+  notification->set_priority(1);
+
+  center_->UpdateNotification("1", notification.Pass());
+  WaitForAnimationEnded();
+  EXPECT_EQ(1u, [popups count]);
+}
+
 TEST_F(PopupCollectionTest, CloseCollectionBeforeNewPopupAnimationEnds) {
   // Add a notification and don't wait for the animation to finish.
   scoped_ptr<message_center::Notification> notification;
