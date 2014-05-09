@@ -18,19 +18,21 @@ namespace view_manager {
 class ViewManager;
 class ViewTreeNodeObserver;
 
+// ViewTreeNodes are owned by the ViewManager.
+// TODO(beng): Right now, you'll have to implement a ViewTreeNodeObserver to
+//             track destruction and NULL any pointers you have.
+//             Investigate some kind of smart pointer or weak pointer for these.
 class ViewTreeNode {
  public:
   typedef std::vector<ViewTreeNode*> Children;
 
-  explicit ViewTreeNode(ViewManager* manager);
-  ViewTreeNode();  // Used for tests.
-  ~ViewTreeNode();
+  static ViewTreeNode* Create(ViewManager* view_manager);
+
+  // Destroys this node and all its children.
+  void Destroy();
 
   // Configuration.
   TransportNodeId id() const { return id_; }
-  void set_owned_by_parent(bool owned_by_parent) {
-    owned_by_parent_ = owned_by_parent;
-  }
 
   // Observation.
   void AddObserver(ViewTreeNodeObserver* observer);
@@ -48,15 +50,22 @@ class ViewTreeNode {
 
   ViewTreeNode* GetChildById(TransportNodeId id);
 
+ protected:
+  // This class is subclassed only by test classes that provide a public ctor.
+  ViewTreeNode();
+  ~ViewTreeNode();
+
  private:
   friend class ViewTreeNodePrivate;
 
+  explicit ViewTreeNode(ViewManager* manager);
+
+  void LocalDestroy();
   void LocalAddChild(ViewTreeNode* child);
   void LocalRemoveChild(ViewTreeNode* child);
 
   ViewManager* manager_;
   TransportNodeId id_;
-  bool owned_by_parent_;
   ViewTreeNode* parent_;
   Children children_;
 

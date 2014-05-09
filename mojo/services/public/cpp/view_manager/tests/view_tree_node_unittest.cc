@@ -17,54 +17,64 @@ namespace view_manager {
 
 typedef testing::Test ViewTreeNodeTest;
 
+// Subclass with public ctor/dtor.
+class TestViewTreeNode : public ViewTreeNode {
+ public:
+  TestViewTreeNode() {}
+  ~TestViewTreeNode() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestViewTreeNode);
+};
+
 TEST_F(ViewTreeNodeTest, AddChild) {
-  ViewTreeNode v1;
-  ViewTreeNode* v11 = new ViewTreeNode;
-  v1.AddChild(v11);
+  TestViewTreeNode v1;
+  TestViewTreeNode v11;
+  v1.AddChild(&v11);
   EXPECT_EQ(1U, v1.children().size());
 }
 
 TEST_F(ViewTreeNodeTest, RemoveChild) {
-  ViewTreeNode v1;
-  ViewTreeNode* v11 = new ViewTreeNode;
-  v1.AddChild(v11);
+  TestViewTreeNode v1;
+  TestViewTreeNode v11;
+  v1.AddChild(&v11);
   EXPECT_EQ(1U, v1.children().size());
-  v1.RemoveChild(v11);
+  v1.RemoveChild(&v11);
   EXPECT_EQ(0U, v1.children().size());
 }
 
 TEST_F(ViewTreeNodeTest, Reparent) {
-  ViewTreeNode v1;
-  ViewTreeNode v2;
-  ViewTreeNode* v11 = new ViewTreeNode;
-  v1.AddChild(v11);
+  TestViewTreeNode v1;
+  TestViewTreeNode v2;
+  TestViewTreeNode v11;
+  v1.AddChild(&v11);
   EXPECT_EQ(1U, v1.children().size());
-  v2.AddChild(v11);
+  v2.AddChild(&v11);
   EXPECT_EQ(1U, v2.children().size());
   EXPECT_EQ(0U, v1.children().size());
 }
 
 TEST_F(ViewTreeNodeTest, Contains) {
-  ViewTreeNode v1;
+  TestViewTreeNode v1;
 
   // Direct descendant.
-  ViewTreeNode* v11 = new ViewTreeNode;
-  v1.AddChild(v11);
-  EXPECT_TRUE(v1.Contains(v11));
+  TestViewTreeNode v11;
+  v1.AddChild(&v11);
+  EXPECT_TRUE(v1.Contains(&v11));
 
   // Indirect descendant.
-  ViewTreeNode* v111 = new ViewTreeNode;
-  v11->AddChild(v111);
-  EXPECT_TRUE(v1.Contains(v111));
+  TestViewTreeNode v111;
+  v11.AddChild(&v111);
+  EXPECT_TRUE(v1.Contains(&v111));
 }
 
 TEST_F(ViewTreeNodeTest, GetChildById) {
-  ViewTreeNode v1;
+  TestViewTreeNode v1;
   ViewTreeNodePrivate(&v1).set_id(1);
-  ViewTreeNode v11;
+  TestViewTreeNode v11;
   ViewTreeNodePrivate(&v11).set_id(11);
   v1.AddChild(&v11);
-  ViewTreeNode v111;
+  TestViewTreeNode v111;
   ViewTreeNodePrivate(&v111).set_id(111);
   v11.AddChild(&v111);
 
@@ -115,12 +125,11 @@ class TreeChangeObserver : public ViewTreeNodeObserver {
 
 // Adds/Removes v11 to v1.
 TEST_F(ViewTreeNodeObserverTest, TreeChange_SimpleAddRemove) {
-  ViewTreeNode v1;
+  TestViewTreeNode v1;
   TreeChangeObserver o1(&v1);
   EXPECT_TRUE(o1.received_params().empty());
 
-  ViewTreeNode v11;
-  v11.set_owned_by_parent(false);
+  TestViewTreeNode v11;
   TreeChangeObserver o11(&v11);
   EXPECT_TRUE(o11.received_params().empty());
 
@@ -178,17 +187,13 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_SimpleAddRemove) {
 //  +- v1112
 // Then adds/removes v111 from v11.
 TEST_F(ViewTreeNodeObserverTest, TreeChange_NestedAddRemove) {
-  ViewTreeNode v1, v11, v111, v1111, v1112;
+  TestViewTreeNode v1, v11, v111, v1111, v1112;
 
   // Root tree.
-  v11.set_owned_by_parent(false);
   v1.AddChild(&v11);
 
   // Tree to be attached.
-  v111.set_owned_by_parent(false);
-  v1111.set_owned_by_parent(false);
   v111.AddChild(&v1111);
-  v1112.set_owned_by_parent(false);
   v111.AddChild(&v1112);
 
   TreeChangeObserver o1(&v1), o11(&v11), o111(&v111), o1111(&v1111),
@@ -289,10 +294,7 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_NestedAddRemove) {
 }
 
 TEST_F(ViewTreeNodeObserverTest, TreeChange_Reparent) {
-  ViewTreeNode v1, v11, v12, v111;
-  v11.set_owned_by_parent(false);
-  v111.set_owned_by_parent(false);
-  v12.set_owned_by_parent(false);
+  TestViewTreeNode v1, v11, v12, v111;
   v1.AddChild(&v11);
   v1.AddChild(&v12);
   v11.AddChild(&v111);

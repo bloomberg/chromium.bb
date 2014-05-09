@@ -15,6 +15,11 @@ ViewTreeNodePrivate::ViewTreeNodePrivate(ViewTreeNode* node)
 ViewTreeNodePrivate::~ViewTreeNodePrivate() {
 }
 
+// static
+ViewTreeNode* ViewTreeNodePrivate::LocalCreate() {
+  return new ViewTreeNode;
+}
+
 }  // namespace view_manager
 }  // namespace services
 }  // namespace mojo

@@ -31,6 +31,9 @@ void QuitRunLoop() {
 
 // ViewManager -----------------------------------------------------------------
 
+// These tests model synchronization of two peer connections to the view manager
+// service, that are given access to some root node.
+
 class ViewManagerTest : public testing::Test {
  public:
   ViewManagerTest() : commit_count_(0) {}
@@ -39,11 +42,15 @@ class ViewManagerTest : public testing::Test {
   ViewManager* view_manager_1() { return view_manager_1_.get(); }
   ViewManager* view_manager_2() { return view_manager_2_.get(); }
 
-  scoped_ptr<ViewTreeNode> CreateNodeInParent(ViewTreeNode* parent) {
+  ViewTreeNode* CreateNodeInParent(ViewTreeNode* parent) {
     ViewManager* parent_manager = ViewTreeNodePrivate(parent).view_manager();
-    scoped_ptr<ViewTreeNode> node(new ViewTreeNode(parent_manager));
-    parent->AddChild(node.get());
-    return node.Pass();
+    ViewTreeNode* node = ViewTreeNode::Create(parent_manager);
+    parent->AddChild(node);
+    return node;
+  }
+
+  void DestroyViewManager1() {
+    view_manager_1_.reset();
   }
 
  private:
@@ -85,8 +92,6 @@ class TreeObserverBase : public ViewTreeNodeObserver {
  private:
   // Overridden from ViewTreeNodeObserver:
   virtual void OnTreeChange(const TreeChangeParams& params) OVERRIDE {
-    if (params.phase != ViewTreeNodeObserver::DISPOSITION_CHANGED)
-      return;
     if (ShouldQuitRunLoop(params))
       QuitRunLoop();
   }
@@ -109,6 +114,8 @@ class TreeSizeMatchesWaiter : public TreeObserverBase {
  private:
   // Overridden from TreeObserverBase:
   virtual bool ShouldQuitRunLoop(const TreeChangeParams& params) OVERRIDE {
+    if (params.phase != ViewTreeNodeObserver::DISPOSITION_CHANGED)
+      return false;
     return CountNodes(view_manager()->tree()) == tree_size_;
   }
 
@@ -134,6 +141,8 @@ class HierarchyChanged_NodeCreatedObserver : public TreeObserverBase {
  private:
   // Overridden from TreeObserverBase:
   virtual bool ShouldQuitRunLoop(const TreeChangeParams& params) OVERRIDE {
+    if (params.phase != ViewTreeNodeObserver::DISPOSITION_CHANGED)
+      return false;
     return params.receiver == view_manager()->tree() &&
         !params.old_parent &&
         params.new_parent == view_manager()->tree();
@@ -144,8 +153,8 @@ class HierarchyChanged_NodeCreatedObserver : public TreeObserverBase {
 
 TEST_F(ViewManagerTest, HierarchyChanged_NodeCreated) {
   HierarchyChanged_NodeCreatedObserver observer(view_manager_2());
-  scoped_ptr<ViewTreeNode> node1(new ViewTreeNode(view_manager_1()));
-  view_manager_1()->tree()->AddChild(node1.get());
+  ViewTreeNode* node1 = ViewTreeNode::Create(view_manager_1());
+  view_manager_1()->tree()->AddChild(node1);
   DoRunLoop();
 
   EXPECT_EQ(view_manager_2()->tree()->children().front()->id(), node1->id());
@@ -166,6 +175,8 @@ class HierarchyChanged_NodeMovedObserver : public TreeObserverBase {
  private:
   // Overridden from TreeObserverBase:
   virtual bool ShouldQuitRunLoop(const TreeChangeParams& params) OVERRIDE {
+    if (params.phase != ViewTreeNodeObserver::DISPOSITION_CHANGED)
+      return false;
     return params.receiver == view_manager()->tree() &&
         params.old_parent->id() == old_parent_id_&&
         params.new_parent->id() == new_parent_id_;
@@ -178,16 +189,16 @@ class HierarchyChanged_NodeMovedObserver : public TreeObserverBase {
 };
 
 TEST_F(ViewManagerTest, HierarchyChanged_NodeMoved) {
-  scoped_ptr<ViewTreeNode> node1(CreateNodeInParent(view_manager_1()->tree()));
-  scoped_ptr<ViewTreeNode> node2(CreateNodeInParent(view_manager_1()->tree()));
-  scoped_ptr<ViewTreeNode> node21(CreateNodeInParent(node2.get()));
+  ViewTreeNode* node1 = CreateNodeInParent(view_manager_1()->tree());
+  ViewTreeNode* node2 = CreateNodeInParent(view_manager_1()->tree());
+  ViewTreeNode* node21 = CreateNodeInParent(node2);
   TreeSizeMatchesWaiter waiter(view_manager_2(), 4);
 
   HierarchyChanged_NodeMovedObserver observer(view_manager_2(),
                                               node2->id(),
                                               node1->id());
 
-  node1->AddChild(node21.get());
+  node1->AddChild(node21);
   DoRunLoop();
 
   ViewTreeNode* tree2 = view_manager_2()->tree();
@@ -201,7 +212,89 @@ TEST_F(ViewManagerTest, HierarchyChanged_NodeMoved) {
   EXPECT_EQ(tree2_node21->parent(), tree2_node1);
 }
 
-// TODO(beng): node destruction
+class HierarchyChanged_NodeRemovedObserver : public TreeObserverBase {
+ public:
+  HierarchyChanged_NodeRemovedObserver(ViewManager* view_manager)
+      : TreeObserverBase(view_manager) {}
+  virtual ~HierarchyChanged_NodeRemovedObserver() {}
+
+ private:
+  // Overridden from TreeObserverBase:
+  virtual bool ShouldQuitRunLoop(const TreeChangeParams& params) OVERRIDE {
+    if (params.phase != ViewTreeNodeObserver::DISPOSITION_CHANGING)
+      return false;
+    return params.receiver == view_manager()->tree() &&
+        params.old_parent->id() == params.receiver->id() &&
+        params.new_parent == 0;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(HierarchyChanged_NodeRemovedObserver);
+};
+
+TEST_F(ViewManagerTest, HierarchyChanged_NodeRemoved) {
+  ViewTreeNode* node1 = CreateNodeInParent(view_manager_1()->tree());
+  TreeSizeMatchesWaiter waiter(view_manager_2(), 2);
+
+  HierarchyChanged_NodeRemovedObserver observer(view_manager_2());
+
+  view_manager_1()->tree()->RemoveChild(node1);
+  DoRunLoop();
+
+  ViewTreeNode* tree2 = view_manager_2()->tree();
+
+  EXPECT_TRUE(tree2->children().empty());
+}
+
+class NodeDestroyed_Waiter : public ViewTreeNodeObserver {
+ public:
+  NodeDestroyed_Waiter(ViewManager* view_manager, TransportNodeId id)
+      : view_manager_(view_manager),
+        id_(id) {
+    view_manager_->GetNodeById(id)->AddObserver(this);
+    DoRunLoop();
+  }
+  virtual ~NodeDestroyed_Waiter() {
+  }
+
+ private:
+  // Overridden from TreeObserverBase:
+  virtual void OnNodeDestroy(ViewTreeNode* node,
+                             DispositionChangePhase phase) OVERRIDE {
+    if (phase != DISPOSITION_CHANGED)
+      return;
+    if (node->id() == id_)
+      QuitRunLoop();
+  }
+
+  TransportNodeId id_;
+  ViewManager* view_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(NodeDestroyed_Waiter);
+};
+
+TEST_F(ViewManagerTest, NodeDestroyed) {
+  ViewTreeNode* node1 = CreateNodeInParent(view_manager_1()->tree());
+  TreeSizeMatchesWaiter init_waiter(view_manager_2(), 2);
+
+  // |node1| will be deleted after calling Destroy() below.
+  TransportNodeId id = node1->id();
+  node1->Destroy();
+  NodeDestroyed_Waiter destroyed_waiter(view_manager_2(), id);
+
+  EXPECT_TRUE(view_manager_2()->tree()->children().empty());
+}
+
+TEST_F(ViewManagerTest, ViewManagerDestroyed) {
+  ViewTreeNode* node1 = CreateNodeInParent(view_manager_1()->tree());
+  TreeSizeMatchesWaiter init_waiter(view_manager_2(), 2);
+
+  TransportNodeId id = node1->id();
+  DestroyViewManager1();
+  NodeDestroyed_Waiter destroyed_waiter(view_manager_2(), id);
+
+  // tree() should still be valid, since it's owned by neither connection.
+  EXPECT_TRUE(view_manager_2()->tree()->children().empty());
+}
 
 }  // namespace view_manager
 }  // namespace services

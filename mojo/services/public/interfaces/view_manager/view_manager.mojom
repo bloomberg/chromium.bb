@@ -80,6 +80,9 @@ interface IViewManagerClient {
                      uint32 new_view_id,
                      uint32 old_view_id,
                      uint32 change_id);
+
+  // Invoked when a node is deleted.
+  OnNodeDeleted(uint32 node, uint32 change_id);
 };
 
 }

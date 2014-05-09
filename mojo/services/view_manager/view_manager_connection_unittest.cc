@@ -223,6 +223,14 @@ class ViewManagerClientImpl : public IViewManagerClient {
             NodeIdToString(old_view_id).c_str()));
     QuitIfNecessary();
   }
+  virtual void OnNodeDeleted(TransportNodeId node,
+                             TransportChangeId change_id) OVERRIDE {
+    changes_.push_back(
+        base::StringPrintf(
+            "change_id=%d node=%s deleted",
+            static_cast<int>(change_id), NodeIdToString(node).c_str()));
+    QuitIfNecessary();
+  }
 
   void QuitIfNecessary() {
     if (quit_count_ > 0 && --quit_count_ == 0)
@@ -445,11 +453,12 @@ TEST_F(ViewManagerConnectionTest, DeleteNode) {
                            CreateNodeId(client_.id(), 1),
                            121));
     Changes changes(client_.GetAndClearChanges());
-    ASSERT_EQ(2u, changes.size());
+    ASSERT_EQ(3u, changes.size());
     EXPECT_EQ("change_id=121 node=1,1 new_parent=null old_parent=0,1",
               changes[0]);
     EXPECT_EQ("change_id=121 node=1,2 new_parent=null old_parent=1,1",
               changes[1]);
+    EXPECT_EQ("change_id=121 node=1,1 deleted", changes[2]);
   }
 }
 
@@ -507,9 +516,10 @@ TEST_F(ViewManagerConnectionTest, DeleteNodeWithView) {
                            CreateNodeId(client_.id(), 1),
                            121));
     Changes changes(client_.GetAndClearChanges());
-    ASSERT_EQ(1u, changes.size());
+    ASSERT_EQ(2u, changes.size());
     EXPECT_EQ("change_id=121 node=1,1 new_view=null old_view=1,11",
               changes[0]);
+    EXPECT_EQ("change_id=121 node=1,1 deleted", changes[1]);
   }
 
   // Set view 11 on node 2.
