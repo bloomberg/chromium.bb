@@ -1,0 +1,15 @@
+<!--
+@MAC-ALLOW:AXFocused='1'
+-->
+<html>
+<body>
+  <div id="parent" aria-label="parent node" aria-activedescendant="active" tabindex="0">
+    <div id="inactive">Inactive descendant</div>
+    <div id="active">Active descendant</div>
+    <div id="alsoinactive">Inactive descendant #2</div>
+  </div>
+  <script>
+    document.querySelector('#parent').focus();
+  </script>
+</body>
+</html>

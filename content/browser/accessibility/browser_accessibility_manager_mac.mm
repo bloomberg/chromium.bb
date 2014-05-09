@@ -40,6 +40,12 @@ ui::AXTreeUpdate BrowserAccessibilityManagerMac::GetEmptyDocument() {
   return update;
 }
 
+BrowserAccessibility* BrowserAccessibilityManagerMac::GetFocus(
+    BrowserAccessibility* root) {
+  BrowserAccessibility* node = GetActiveDescendantFocus(root);
+  return node;
+}
+
 void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
     ui::AXEvent event_type,
     BrowserAccessibility* node) {
@@ -50,10 +56,16 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
   NSString* event_id = @"";
   switch (event_type) {
     case ui::AX_EVENT_ACTIVEDESCENDANTCHANGED:
-      if (node->GetRole() == ui::AX_ROLE_TREE)
+      if (node->GetRole() == ui::AX_ROLE_TREE) {
         event_id = NSAccessibilitySelectedRowsChangedNotification;
-      else
+      } else {
         event_id = NSAccessibilityFocusedUIElementChangedNotification;
+        BrowserAccessibility* active_descendant_focus =
+            GetActiveDescendantFocus(GetRoot());
+        if (active_descendant_focus)
+          node = active_descendant_focus;
+      }
+
       break;
     case ui::AX_EVENT_ALERT:
       // Not used on Mac.

@@ -222,6 +222,23 @@ void BrowserAccessibilityManager::OnLocationChanges(
   }
 }
 
+BrowserAccessibility* BrowserAccessibilityManager::GetActiveDescendantFocus(
+    BrowserAccessibility* root) {
+  BrowserAccessibility* node = BrowserAccessibilityManager::GetFocus(root);
+  if (!node)
+    return NULL;
+
+  int active_descendant_id;
+  if (node->GetIntAttribute(ui::AX_ATTR_ACTIVEDESCENDANT_ID,
+                            &active_descendant_id)) {
+    BrowserAccessibility* active_descendant =
+        node->manager()->GetFromID(active_descendant_id);
+    if (active_descendant)
+      return active_descendant;
+  }
+  return node;
+}
+
 BrowserAccessibility* BrowserAccessibilityManager::GetFocus(
     BrowserAccessibility* root) {
   if (focus_ && (!root || focus_->IsDescendantOf(root->node())))

@@ -22,6 +22,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
 
   static ui::AXTreeUpdate GetEmptyDocument();
 
+  virtual BrowserAccessibility* GetFocus(BrowserAccessibility* root) OVERRIDE;
+
   // Implementation of BrowserAccessibilityManager.
   virtual void NotifyAccessibilityEvent(
       ui::AXEvent event_type, BrowserAccessibility* node) OVERRIDE;

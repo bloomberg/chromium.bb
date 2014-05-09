@@ -519,4 +519,9 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityWbr) {
   RunTest(FILE_PATH_LITERAL("wbr.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaActivedescendant) {
+  RunTest(FILE_PATH_LITERAL("aria-activedescendant.html"));
+}
+
 }  // namespace content
