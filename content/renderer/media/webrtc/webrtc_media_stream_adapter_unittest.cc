@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_source.h"
@@ -93,7 +92,6 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
 
  protected:
   scoped_ptr<ChildProcess> child_process_;
-  base::MessageLoopForUI message_loop_;
   scoped_ptr<MockMediaStreamDependencyFactory> dependency_factory_;
   scoped_ptr<WebRtcMediaStreamAdapter> adapter_;
 };

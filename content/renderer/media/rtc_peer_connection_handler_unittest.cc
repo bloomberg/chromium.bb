@@ -288,7 +288,6 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   }
 
   scoped_ptr<ChildProcess> child_process_;
-  base::MessageLoopForUI message_loop_;
   scoped_ptr<MockWebRTCPeerConnectionHandlerClient> mock_client_;
   scoped_ptr<MockMediaStreamDependencyFactory> mock_dependency_factory_;
   scoped_ptr<NiceMock<MockPeerConnectionTracker> > mock_tracker_;
