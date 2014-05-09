@@ -29,14 +29,11 @@ PASS Labels for: windows-1258
 PASS Labels for: x-mac-cyrillic 
 PASS Labels for: gbk 
 PASS Labels for: gb18030 
-PASS Labels for: hz-gb-2312 
-FAIL Labels for: big5 assert_equals: expected "big5" but got "big5-hkscs"
+PASS Labels for: big5 
 PASS Labels for: euc-jp 
 PASS Labels for: iso-2022-jp 
 PASS Labels for: shift_jis 
 PASS Labels for: euc-kr 
-PASS Labels for: iso-2022-kr 
-FAIL Labels for: replacement assert_equals: expected "replacement" but got "iso-2022-cn"
 PASS Labels for: utf-16be 
 PASS Labels for: utf-16le 
 PASS Labels for: x-user-defined 

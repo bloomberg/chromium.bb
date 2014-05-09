@@ -1,8 +1,21 @@
-// Only these encodings are supported for encoding (vs. decoding)
-utf_encodings = ["utf-8", "utf-16le", "utf-16be"];
+// This file is based on non-normative encodings.json resource referenced by
+// http://encoding.spec.whatwg.org/ - a reference copy is saved in this
+// directory and can be updated via:
+//      curl -O http://encoding.spec.whatwg.org/encodings.json
+//
+// Changes made to this file are:
+//   * whitespace
+//   * encodings.json data assigned to `encodings_table` (for tests)
+//   * UTF encodings listed in `utf_encodings` (for tests)
+//   * 'ibm866' not yet supported - crbug.com/277023
+//   * 'gb18030' distinct from 'gbk' - crbug.com/339862
+//   * 'big5-hkscs' distinct from 'big5' - crbug.com/277040
+//   * 'hz-gb-2312' is replacement label - w3.org/Bugs/Public/show_bug.cgi?id=25339
 
-// From non-normative encodings.json resource referenced by http://encoding.spec.whatwg.org/
-encodings_table = [
+// Only these encodings are supported for encoding (vs. decoding)
+var utf_encodings = ["utf-8", "utf-16le", "utf-16be"];
+
+var encodings_table = [
     {
         "encodings": [
             {
@@ -346,17 +359,12 @@ encodings_table = [
                 ],
                 "name": "gbk"
             },
+            // 'gb18030' separate from 'gbk': crbug.com/339862
             {
                 "labels": [
                     "gb18030"
                 ],
                 "name": "gb18030"
-            },
-            {
-                "labels": [
-                    "hz-gb-2312"
-                ],
-                "name": "hz-gb-2312"
             }
         ],
         "heading": "Legacy multi-byte Chinese (simplified) encodings"
@@ -366,7 +374,7 @@ encodings_table = [
             {
                 "labels": [
                     "big5",
-                    "big5-hkscs",
+                    // "big5-hkscs", see crbug.com/277040
                     "cn-big5",
                     "csbig5",
                     "x-x-big5"
@@ -424,13 +432,6 @@ encodings_table = [
                     "windows-949"
                 ],
                 "name": "euc-kr"
-            },
-            {
-                "labels": [
-                    "csiso2022kr",
-                    "iso-2022-kr"
-                ],
-                "name": "iso-2022-kr"
             }
         ],
         "heading": "Legacy multi-byte Korean encodings"
@@ -439,8 +440,12 @@ encodings_table = [
         "encodings": [
             {
                 "labels": [
+                    "csiso2022kr",
+                    // 'hz-gb-2312' added: w3.org/Bugs/Public/show_bug.cgi?id=25339
+                    "hz-gb-2312",
                     "iso-2022-cn",
-                    "iso-2022-cn-ext"
+                    "iso-2022-cn-ext",
+                    "iso-2022-kr"
                 ],
                 "name": "replacement"
             },

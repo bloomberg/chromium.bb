@@ -56,7 +56,7 @@ public:
     void trace(Visitor*) { }
 
 private:
-    TextEncoder(const String& encoding);
+    TextEncoder(const WTF::TextEncoding&);
 
     WTF::TextEncoding m_encoding;
     OwnPtr<WTF::TextCodec> m_codec;

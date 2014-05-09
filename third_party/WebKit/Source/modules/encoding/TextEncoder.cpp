@@ -55,12 +55,12 @@ TextEncoder* TextEncoder::create(const String& utfLabel, ExceptionState& excepti
         return 0;
     }
 
-    return new TextEncoder(encoding.name());
+    return new TextEncoder(encoding);
 }
 
-TextEncoder::TextEncoder(const String& encoding)
+TextEncoder::TextEncoder(const WTF::TextEncoding& encoding)
     : m_encoding(encoding)
-    , m_codec(newTextCodec(m_encoding))
+    , m_codec(newTextCodec(encoding))
 {
 }
 

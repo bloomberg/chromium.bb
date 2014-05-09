@@ -29,13 +29,11 @@ PASS Non-UTF encodings supported only for decode, not encode: windows-1258
 PASS Non-UTF encodings supported only for decode, not encode: x-mac-cyrillic 
 PASS Non-UTF encodings supported only for decode, not encode: gbk 
 PASS Non-UTF encodings supported only for decode, not encode: gb18030 
-PASS Non-UTF encodings supported only for decode, not encode: hz-gb-2312 
 PASS Non-UTF encodings supported only for decode, not encode: big5 
 PASS Non-UTF encodings supported only for decode, not encode: euc-jp 
 PASS Non-UTF encodings supported only for decode, not encode: iso-2022-jp 
 PASS Non-UTF encodings supported only for decode, not encode: shift_jis 
 PASS Non-UTF encodings supported only for decode, not encode: euc-kr 
-PASS Non-UTF encodings supported only for decode, not encode: iso-2022-kr 
 PASS UTF encodings are supported for encode and decode: utf-16be 
 PASS UTF encodings are supported for encode and decode: utf-16le 
 PASS Non-UTF encodings supported only for decode, not encode: x-user-defined 

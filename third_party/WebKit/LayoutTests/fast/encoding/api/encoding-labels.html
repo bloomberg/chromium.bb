@@ -6,7 +6,9 @@
 <script>
 
 encodings_table.forEach(function(section) {
-    section.encodings.forEach(function(encoding) {
+    section.encodings.filter(function(encoding) {
+        return encoding.name !== 'replacement';
+    }).forEach(function(encoding) {
         var name = encoding.name;
         test(function(){
             encoding.labels.forEach(function(label) {

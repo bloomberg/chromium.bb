@@ -51,13 +51,13 @@ TextDecoder* TextDecoder::create(const String& label, const Dictionary& options,
     bool fatal = false;
     options.get("fatal", fatal);
 
-    return new TextDecoder(encoding.name(), fatal);
+    return new TextDecoder(encoding, fatal);
 }
 
 
-TextDecoder::TextDecoder(const String& encoding, bool fatal)
+TextDecoder::TextDecoder(const WTF::TextEncoding& encoding, bool fatal)
     : m_encoding(encoding)
-    , m_codec(newTextCodec(m_encoding))
+    , m_codec(newTextCodec(encoding))
     , m_fatal(fatal)
     , m_bomSeen(false)
 {
