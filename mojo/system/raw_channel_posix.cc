@@ -33,8 +33,11 @@ class RawChannelPosix : public RawChannel,
   RawChannelPosix(embedder::ScopedPlatformHandle handle);
   virtual ~RawChannelPosix();
 
+  // |RawChannel| public methods:
+  virtual size_t GetSerializedPlatformHandleSize() const OVERRIDE;
+
  private:
-  // |RawChannel| implementation:
+  // |RawChannel| protected methods:
   virtual IOResult Read(size_t* bytes_read) OVERRIDE;
   virtual IOResult ScheduleRead() OVERRIDE;
   virtual IOResult WriteNoLock(size_t* bytes_written) OVERRIDE;
@@ -91,6 +94,11 @@ RawChannelPosix::~RawChannelPosix() {
   // These must have been shut down/destroyed on the I/O thread.
   DCHECK(!read_watcher_.get());
   DCHECK(!write_watcher_.get());
+}
+
+size_t RawChannelPosix::GetSerializedPlatformHandleSize() const {
+  // We don't actually need any space on POSIX (since we just send FDs).
+  return 0;
 }
 
 RawChannel::IOResult RawChannelPosix::Read(size_t* bytes_read) {

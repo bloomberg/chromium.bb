@@ -8,27 +8,43 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "mojo/system/channel.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/message_in_transit.h"
 
 namespace mojo {
 namespace system {
 
+// The maximum amount of space needed per platform handle.
+// (|{Channel,RawChannel}::GetSerializedPlatformHandleSize()| should always
+// return a value which is at most this. This is only used to calculate
+// |TransportData::kMaxBufferSize|. This value should be a multiple of the
+// alignment in order to simplify calculations, even though the actual amount of
+// space needed need not be a multiple of the alignment.
+const size_t kMaxSizePerPlatformHandle = 8;
+COMPILE_ASSERT(kMaxSizePerPlatformHandle %
+                   MessageInTransit::kMessageAlignment == 0,
+               kMaxSizePerPlatformHandle_not_a_multiple_of_alignment);
+
 STATIC_CONST_MEMBER_DEFINITION const size_t
     TransportData::kMaxSerializedDispatcherSize;
 STATIC_CONST_MEMBER_DEFINITION const size_t
     TransportData::kMaxSerializedDispatcherPlatformHandles;
 
-// In additional to the header, for each attached (Mojo) handle there'll be a
-// handle table entry and serialized dispatcher data.
-// static
-const size_t TransportData::kMaxBufferSize =
-    sizeof(Header) + kMaxMessageNumHandles * (sizeof(HandleTableEntry) +
-                                              kMaxSerializedDispatcherSize);
-
 // static
 const size_t TransportData::kMaxPlatformHandles =
     kMaxMessageNumHandles * kMaxSerializedDispatcherPlatformHandles;
+
+// In additional to the header, for each attached (Mojo) handle there'll be a
+// handle table entry and serialized dispatcher data.
+// Note: This definition must follow the one for |kMaxPlatformHandles|;
+// otherwise, we get a static initializer with gcc (but not clang).
+// static
+const size_t TransportData::kMaxBufferSize =
+    sizeof(Header) +
+    kMaxMessageNumHandles * (sizeof(HandleTableEntry) +
+                                 kMaxSerializedDispatcherSize) +
+    kMaxPlatformHandles * kMaxSizePerPlatformHandle;
 
 struct TransportData::PrivateStructForCompileAsserts {
   // The size of |Header| must be a multiple of the alignment.
@@ -63,7 +79,7 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
   // The estimated size of the secondary buffer. We compute this estimate below.
   // It must be at least as big as the (eventual) actual size.
   size_t estimated_size = serialized_dispatcher_start_offset;
-  size_t num_platform_handles = 0;
+  size_t estimated_num_platform_handles = 0;
 #if DCHECK_IS_ON
   std::vector<size_t> all_max_sizes(num_handles);
   std::vector<size_t> all_max_platform_handles(num_handles);
@@ -81,14 +97,23 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
 
       DCHECK_LE(max_platform_handles,
                 kMaxSerializedDispatcherPlatformHandles);
-      num_platform_handles += max_platform_handles;
-      DCHECK_LE(num_platform_handles, kMaxPlatformHandles);
+      estimated_num_platform_handles += max_platform_handles;
+      DCHECK_LE(estimated_num_platform_handles, kMaxPlatformHandles);
 
 #if DCHECK_IS_ON
       all_max_sizes[i] = max_size;
       all_max_platform_handles[i] = max_platform_handles;
 #endif
     }
+  }
+
+  size_t size_per_platform_handle = 0;
+  if (estimated_num_platform_handles > 0) {
+    size_per_platform_handle = channel->GetSerializedPlatformHandleSize();
+    DCHECK_LE(size_per_platform_handle, kMaxSizePerPlatformHandle);
+    estimated_size += estimated_num_platform_handles * size_per_platform_handle;
+    estimated_size = MessageInTransit::RoundUpMessageAlignment(estimated_size);
+    DCHECK_LE(estimated_size, kMaxBufferSize);
   }
 
   buffer_.reset(static_cast<char*>(
@@ -98,15 +123,15 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
   // serialize).
   memset(buffer_.get(), 0, estimated_size);
 
-  if (num_platform_handles > 0) {
+  if (estimated_num_platform_handles > 0) {
     DCHECK(!platform_handles_);
     platform_handles_.reset(new std::vector<embedder::PlatformHandle>());
   }
 
   Header* header = reinterpret_cast<Header*>(buffer_.get());
   header->num_handles = static_cast<uint32_t>(num_handles);
-  // TODO(vtl): platform_handle_table_offset and num_platform_handles
-  // (Okay to not set |unused| since we cleared the entire buffer.)
+  // (Okay to leave |platform_handle_table_offset|, |num_platform_handles|, and
+  // |unused| be zero; we'll set the former two later if necessary.)
 
   HandleTableEntry* handle_table = reinterpret_cast<HandleTableEntry*>(
       buffer_.get() + handle_table_start_offset);
@@ -149,7 +174,16 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
     current_offset += MessageInTransit::RoundUpMessageAlignment(actual_size);
     DCHECK_LE(current_offset, estimated_size);
     DCHECK_LE(platform_handles_ ? platform_handles_->size() : 0,
-              num_platform_handles);
+              estimated_num_platform_handles);
+  }
+
+  if (platform_handles_ && platform_handles_->size() > 0) {
+    header->platform_handle_table_offset =
+        static_cast<uint32_t>(current_offset);
+    header->num_platform_handles =
+        static_cast<uint32_t>(platform_handles_->size());
+    current_offset += platform_handles_->size() * size_per_platform_handle;
+    current_offset = MessageInTransit::RoundUpMessageAlignment(current_offset);
   }
 
   // There's no aligned realloc, so it's no good way to release unused space (if
