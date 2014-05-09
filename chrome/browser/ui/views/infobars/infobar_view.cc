@@ -399,6 +399,7 @@ void InfoBarView::GetAccessibleState(ui::AXViewState* state) {
        infobars::InfoBarDelegate::WARNING_TYPE) ?
           IDS_ACCNAME_INFOBAR_WARNING : IDS_ACCNAME_INFOBAR_PAGE_ACTION);
   state->role = ui::AX_ROLE_ALERT;
+  state->keyboard_shortcut = base::ASCIIToUTF16("Alt+Shift+A");
 }
 
 gfx::Size InfoBarView::GetPreferredSize() {
