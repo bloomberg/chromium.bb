@@ -5,7 +5,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/invalidation/invalidation_service.h"
+#include "components/invalidation/invalidation_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "sync/notifier/p2p_invalidator.h"
 

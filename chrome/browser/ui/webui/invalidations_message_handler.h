@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/invalidation/invalidation_logger_observer.h"
+#include "components/invalidation/invalidation_logger_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "sync/notifier/invalidation_util.h"
 

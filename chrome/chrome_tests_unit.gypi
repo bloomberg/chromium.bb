@@ -1029,7 +1029,6 @@
         'browser/install_verification/win/module_verification_test.cc',
         'browser/install_verification/win/module_verification_test.h',
         'browser/invalidation/gcm_invalidation_bridge_unittest.cc',
-        'browser/invalidation/invalidation_logger_unittest.cc',
         'browser/invalidation/invalidation_service_android_unittest.cc',
         'browser/invalidation/invalidation_service_test_template.cc',
         'browser/invalidation/invalidation_service_test_template.h',

@@ -1,0 +1,10 @@
+include_rules = [
+  "-content",
+
+  "+components/keyed_service",
+
+  "+google/cacheinvalidation",
+
+  "+sync/internal_api/public/base",
+  "+sync/notifier",
+]

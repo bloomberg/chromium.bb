@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/invalidation/ticl_settings_provider.h"
+#include "components/invalidation/ticl_settings_provider.h"
 
 namespace invalidation {
 

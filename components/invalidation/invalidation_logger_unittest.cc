@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/invalidation/invalidation_logger.h"
-#include "chrome/browser/invalidation/invalidation_logger_observer.h"
+#include "components/invalidation/invalidation_logger.h"
+#include "components/invalidation/invalidation_logger_observer.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

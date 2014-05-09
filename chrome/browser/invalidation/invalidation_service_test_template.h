@@ -73,7 +73,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/invalidation/invalidation_service.h"
+#include "components/invalidation/invalidation_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/types.pb.h"

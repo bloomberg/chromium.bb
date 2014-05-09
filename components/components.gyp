@@ -69,10 +69,11 @@
       ]
     }],
     ['android_webview_build == 0', {
-      # Android WebView fails to build if a dependency on sync.gyp:sync is
+      # Android WebView fails to build if a dependency on these targets is
       # introduced.
       'includes': [
         'sync_driver.gypi',
+        'invalidation.gypi',
       ],
     }],
   ],

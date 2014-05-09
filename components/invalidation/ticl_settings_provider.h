@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INVALIDATION_TICL_SETTINGS_PROVIDER_H_
-#define CHROME_BROWSER_INVALIDATION_TICL_SETTINGS_PROVIDER_H_
+#ifndef COMPONENTS_INVALIDATION_TICL_SETTINGS_PROVIDER_H_
+#define COMPONENTS_INVALIDATION_TICL_SETTINGS_PROVIDER_H_
 
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -41,4 +41,4 @@ class TiclSettingsProvider {
 
 }  // namespace invalidation
 
-#endif  // CHROME_BROWSER_INVALIDATION_TICL_SETTINGS_PROVIDER_H_
+#endif  // COMPONENTS_INVALIDATION_TICL_SETTINGS_PROVIDER_H_

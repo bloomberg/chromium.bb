@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/webui/invalidations_message_handler.h"
 
 #include "base/bind.h"
-#include "chrome/browser/invalidation/invalidation_logger.h"
-#include "chrome/browser/invalidation/invalidation_service.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/invalidation/invalidation_logger.h"
+#include "components/invalidation/invalidation_service.h"
 #include "content/public/browser/web_ui.h"
 #include "sync/notifier/invalidation_handler.h"
 

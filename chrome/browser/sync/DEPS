@@ -16,5 +16,7 @@ include_rules = [
   # Used by autofill tests, which should use the public sync API instead.
   "+sync/test/engine/test_id_factory.h",
   # TODO(zea): Needed for bookmark title comparison.
-  "+sync/internal_api/syncapi_internal.h"
+  "+sync/internal_api/syncapi_internal.h",
+
+  "+components/invalidation",
 ]

@@ -10,6 +10,7 @@ include_rules = [
   "-content",
   "+chrome/browser/policy",
   "+chrome/browser/policy/cloud",
+  "+components/invalidation",
 ]
 
 specific_include_rules = {
@@ -44,11 +45,6 @@ specific_include_rules = {
 
   r"cloud_policy_invalidator.h": [
     "+sync/internal_api/public/base/invalidation.h",
-  ],
-
-  # TODO(joaodasilva): remove these exceptions.
-  r"cloud_policy_invalidator\.cc": [
-    "+chrome/browser/invalidation/invalidation_service.h",
   ],
 
   r"cloud_policy_invalidator_unittest\.cc": [

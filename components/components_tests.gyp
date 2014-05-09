@@ -93,6 +93,7 @@
             'domain_reliability/uploader_unittest.cc',
             'domain_reliability/util_unittest.cc',
             'feedback/feedback_uploader_unittest.cc',
+            'invalidation/invalidation_logger_unittest.cc',
             'json_schema/json_schema_validator_unittest.cc',
             'json_schema/json_schema_validator_unittest_base.cc',
             'json_schema/json_schema_validator_unittest_base.h',
@@ -228,6 +229,9 @@
             # Dependencies of feedback
             'components.gyp:feedback_component',
 
+            # Dependencies of invalidation
+            'components.gyp:invalidation',
+
             # Dependencies of json_schema
             'components.gyp:json_schema',
 
@@ -336,6 +340,7 @@
                 ['include', '^bookmarks/'],
                 ['include', '^data_reduction_proxy/'],
                 ['include', '^dom_distiller/'],
+                ['include', '^invalidation/'],
                 ['include', '^json_schema/'],
                 ['include', '^keyed_service/core/'],
                 ['include', '^language_usage_metrics/'],
