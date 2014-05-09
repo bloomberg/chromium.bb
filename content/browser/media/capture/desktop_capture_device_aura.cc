@@ -14,6 +14,7 @@
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/public/browser/browser_thread.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/video_util.h"
 #include "media/video/capture/video_capture_types.h"
 #include "skia/ext/image_operations.h"
@@ -304,9 +305,13 @@ void CopyOutputFinishedForVideo(
 
 void RunSingleReleaseCallback(scoped_ptr<cc::SingleReleaseCallback> cb,
                               const std::vector<uint32>& sync_points) {
-  // TODO(hshi): handle release of multiple sync points.
-  DCHECK_EQ(1u, sync_points.size());
-  cb->Run(sync_points[0], false);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
+  DCHECK(gl_helper);
+  for (unsigned i = 0; i < sync_points.size(); i++)
+    gl_helper->WaitSyncPoint(sync_points[i]);
+  uint32 new_sync_point = gl_helper->InsertSyncPoint();
+  cb->Run(new_sync_point, false);
 }
 
 void DesktopVideoCaptureMachine::DidCopyOutput(
@@ -343,6 +348,7 @@ bool DesktopVideoCaptureMachine::ProcessCopyOutputResponse(
     base::TimeTicks start_time,
     const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
     scoped_ptr<cc::CopyOutputResult> result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (result->IsEmpty() || result->size().IsEmpty() || !desktop_layer_)
     return false;
 
@@ -359,7 +365,8 @@ bool DesktopVideoCaptureMachine::ProcessCopyOutputResponse(
         make_scoped_ptr(new gpu::MailboxHolder(texture_mailbox.mailbox(),
                                                texture_mailbox.target(),
                                                texture_mailbox.sync_point())),
-        base::Bind(&RunSingleReleaseCallback, base::Passed(&release_callback)),
+        media::BindToCurrentLoop(base::Bind(&RunSingleReleaseCallback,
+                                            base::Passed(&release_callback))),
         result->size(),
         gfx::Rect(result->size()),
         result->size(),
