@@ -132,22 +132,15 @@ base::string16 NtpOverriddenBubbleDelegate::GetLearnMoreLabel() const {
 }
 
 GURL NtpOverriddenBubbleDelegate::GetLearnMoreUrl() const {
-  // TODO(finnur): Rename the const when things settle down (since it is used in
-  // more places than for the Settings API bubble now).
-  return GURL(chrome::kSettingsApiLearnMoreURL);
+  return GURL(chrome::kExtensionControlledSettingLearnMoreURL);
 }
 
 base::string16 NtpOverriddenBubbleDelegate::GetActionButtonLabel() const {
-  // TODO(finnur): Rename the const when things settle down (since it is used in
-  // more places than for the Settings API bubble now).
-  return l10n_util::GetStringUTF16(
-      IDS_EXTENSIONS_SETTINGS_API_RESTORE_SETTINGS);
+  return l10n_util::GetStringUTF16(IDS_EXTENSION_CONTROLLED_RESTORE_SETTINGS);
 }
 
 base::string16 NtpOverriddenBubbleDelegate::GetDismissButtonLabel() const {
-  // TODO(finnur): Rename the const when things settle down (since it is used in
-  // more places than for the Settings API bubble now).
-  return l10n_util::GetStringUTF16(IDS_EXTENSIONS_SETTINGS_API_KEEP_CHANGES);
+  return l10n_util::GetStringUTF16(IDS_EXTENSION_CONTROLLED_KEEP_CHANGES);
 }
 
 bool NtpOverriddenBubbleDelegate::ShouldShowExtensionList() const {

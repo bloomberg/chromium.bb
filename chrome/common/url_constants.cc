@@ -354,7 +354,7 @@ const char kPasswordManagerLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_password";
 #endif
 
-const char kSettingsApiLearnMoreURL[] =
+const char kExtensionControlledSettingLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ui_settings_api_extension";
 
 const char kChromeHelpViaKeyboardURL[] =

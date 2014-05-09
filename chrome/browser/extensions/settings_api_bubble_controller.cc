@@ -227,16 +227,15 @@ base::string16 SettingsApiBubbleDelegate::GetLearnMoreLabel() const {
 }
 
 GURL SettingsApiBubbleDelegate::GetLearnMoreUrl() const {
-  return GURL(chrome::kSettingsApiLearnMoreURL);
+  return GURL(chrome::kExtensionControlledSettingLearnMoreURL);
 }
 
 base::string16 SettingsApiBubbleDelegate::GetActionButtonLabel() const {
-  return l10n_util::GetStringUTF16(
-      IDS_EXTENSIONS_SETTINGS_API_RESTORE_SETTINGS);
+  return l10n_util::GetStringUTF16(IDS_EXTENSION_CONTROLLED_RESTORE_SETTINGS);
 }
 
 base::string16 SettingsApiBubbleDelegate::GetDismissButtonLabel() const {
-  return l10n_util::GetStringUTF16(IDS_EXTENSIONS_SETTINGS_API_KEEP_CHANGES);
+  return l10n_util::GetStringUTF16(IDS_EXTENSION_CONTROLLED_KEEP_CHANGES);
 }
 
 bool SettingsApiBubbleDelegate::ShouldShowExtensionList() const {

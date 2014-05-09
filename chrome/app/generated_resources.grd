@@ -5228,10 +5228,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         ''' If you didn't want these changes, you can restore your previous settings.'''
       </message>
 
-      <message name="IDS_EXTENSIONS_SETTINGS_API_RESTORE_SETTINGS" desc="The button in the Settings API bubble that reverts the settings changes made by the extension and restores what the user had before.">
+      <message name="IDS_EXTENSION_CONTROLLED_RESTORE_SETTINGS" desc="The button in the extension controlled bubbles that reverts the settings changes made by the extension and restores what the user had before.">
         Restore settings
       </message>
-      <message name="IDS_EXTENSIONS_SETTINGS_API_KEEP_CHANGES" desc="The button in the Settings API bubble that cancels the bubble without action.">
+      <message name="IDS_EXTENSION_CONTROLLED_KEEP_CHANGES" desc="The button in the extension controlled bubbles that cancels the bubble without action.">
         Keep changes
       </message>
 
