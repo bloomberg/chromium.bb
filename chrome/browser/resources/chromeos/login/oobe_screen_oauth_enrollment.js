@@ -306,8 +306,11 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         this.classList.toggle('saml', msg.isSAML);
       }
 
-      if (msg.method == 'insecureContentBlocked')
-        this.showError(loadTimeData.getString('fatalEnrollmentError'), false);
+      if (msg.method == 'insecureContentBlocked') {
+        this.showError(
+            loadTimeData.getStringF('insecureURLEnrollmentError', msg.url),
+            false);
+      }
     }
   };
 });

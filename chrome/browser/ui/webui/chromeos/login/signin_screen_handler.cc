@@ -437,6 +437,8 @@ void SigninScreenHandler::DeclareLocalizedValues(
 
   builder->Add("fatalEnrollmentError",
                IDS_ENTERPRISE_ENROLLMENT_AUTH_FATAL_ERROR);
+  builder->Add("insecureURLEnrollmentError",
+               IDS_ENTERPRISE_ENROLLMENT_AUTH_INSECURE_URL_ERROR);
 
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
     builder->Add("demoLoginMessage", IDS_KIOSK_MODE_LOGIN_MESSAGE);

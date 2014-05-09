@@ -5216,6 +5216,9 @@ All users must sign out to continue.
   <message name="IDS_ENTERPRISE_ENROLLMENT_AUTH_NETWORK_ERROR" desc="Error message to show when there is a network problem when authenticating for enrollment.">
     Oops!  A network communication problem occurred during authentication.  Please check your network connection and try again.
   </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_AUTH_INSECURE_URL_ERROR" desc="Error message to show when a redirect to an insecure URL was detected and blocked when authenticating for enrollment.">
+    Oops!  Authentication failed because it was configured to use a non-secure URL (<ph name="BLOCKED_URL">$1<ex>http://www.example.com/login.html</ex></ph>).  Please contact your administrator.
+  </message>
   <message name="IDS_ENTERPRISE_AUTO_ENROLLMENT_BAD_MODE" desc="Error message to show when auto-enrollment is not supported for the enrollment mode supplied by the DMServer.">
     Oops!  Something went wrong while auto-enrolling this device.  Please try again from the sign-in screen using the Ctrl-Alt-E key combination, or contact your support representative.
   </message>
