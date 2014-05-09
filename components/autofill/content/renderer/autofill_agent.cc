@@ -260,7 +260,7 @@ void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
   element_ = *element;
 }
 
-void AutofillAgent::OrientationChangeEvent(int orientation) {
+void AutofillAgent::OrientationChangeEvent() {
   HidePopup();
 }
 

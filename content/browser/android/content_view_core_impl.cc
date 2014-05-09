@@ -1606,13 +1606,9 @@ void ContentViewCoreImpl::SendOrientationChangeEventInternal() {
   if (rwhv)
     rwhv->UpdateScreenInfo(GetViewAndroid());
 
-  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
-      web_contents_->GetRenderViewHost());
-  rvhi->SendOrientationChangeEvent(device_orientation_);
-
   // TODO(mlamouri): temporary plumbing for Screen Orientation, this will change
-  // in the future. It might leave ContentViewCoreImpl or simply replace the
-  // SendOrientationChangeEvent call above.
+  // in the future. The OnResize IPC message sent from UpdateScreenInfo() will
+  // propagate the information.
   blink::WebScreenOrientationType orientation =
       blink::WebScreenOrientationPortraitPrimary;
 

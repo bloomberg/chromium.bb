@@ -105,7 +105,7 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   // These match incoming IPCs.
   virtual void Navigate(const GURL& url) {}
   virtual void ClosePage() {}
-  virtual void OrientationChangeEvent(int orientation) {}
+  virtual void OrientationChangeEvent() {}
 
   virtual void OnStop() {}
 

@@ -396,9 +396,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void DidCancelPopupMenu();
 #endif
 
-  // User rotated the screen. Calls the "onorientationchange" Javascript hook.
-  void SendOrientationChangeEvent(int orientation);
-
   int main_frame_routing_id() const {
     return main_frame_routing_id_;
   }

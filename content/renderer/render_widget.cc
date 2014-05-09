@@ -749,11 +749,17 @@ void RenderWidget::OnResize(const ViewMsg_Resize_Params& params) {
     return;
   }
 
+  bool orientation_changed =
+      screen_info_.orientationAngle != params.screen_info.orientationAngle;
+
   screen_info_ = params.screen_info;
   SetDeviceScaleFactor(screen_info_.deviceScaleFactor);
   Resize(params.new_size, params.physical_backing_size,
          params.overdraw_bottom_height, params.visible_viewport_size,
          params.resizer_rect, params.is_fullscreen, SEND_RESIZE_ACK);
+
+  if (orientation_changed)
+    OnOrientationChange();
 }
 
 void RenderWidget::OnChangeResizeRect(const gfx::Rect& resizer_rect) {
@@ -1666,6 +1672,9 @@ void RenderWidget::SetDeviceScaleFactor(float device_scale_factor) {
   } else {
     scheduleComposite();
   }
+}
+
+void RenderWidget::OnOrientationChange() {
 }
 
 gfx::Vector2d RenderWidget::GetScrollOffset() {
