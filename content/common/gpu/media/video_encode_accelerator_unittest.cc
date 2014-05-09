@@ -53,6 +53,8 @@ const double kBitrateTolerance = 0.1;
 // Minimum required FPS throughput for the basic performance test.
 const uint32 kMinPerfFPS = 30;
 
+// The syntax of multiple test streams is:
+//  test-stream1;test-stream2;test-stream3
 // The syntax of each test stream is:
 // "in_filename:width:height:out_filename:requested_bitrate:requested_framerate
 //  :requested_subsequent_bitrate:requested_subsequent_framerate"
@@ -93,46 +95,102 @@ struct TestStream {
   unsigned int requested_subsequent_framerate;
 };
 
+// Parse |data| into its constituent parts, set the various output fields
+// accordingly, read in video stream, and store them to |test_streams|.
 static void ParseAndReadTestStreamData(const base::FilePath::StringType& data,
-                                       TestStream* test_stream) {
-  std::vector<base::FilePath::StringType> fields;
-  base::SplitString(data, ':', &fields);
-  CHECK_GE(fields.size(), 4U) << data;
-  CHECK_LE(fields.size(), 9U) << data;
+                                       ScopedVector<TestStream>* test_streams) {
+  // Split the string to individual test stream data.
+  std::vector<base::FilePath::StringType> test_streams_data;
+  base::SplitString(data, ';', &test_streams_data);
+  CHECK_GE(test_streams_data.size(), 1U) << data;
 
-  base::FilePath::StringType filename = fields[0];
-  int width, height;
-  CHECK(base::StringToInt(fields[1], &width));
-  CHECK(base::StringToInt(fields[2], &height));
-  test_stream->size = gfx::Size(width, height);
-  CHECK(!test_stream->size.IsEmpty());
-  int profile;
-  CHECK(base::StringToInt(fields[3], &profile));
-  CHECK_GT(profile, media::VIDEO_CODEC_PROFILE_UNKNOWN);
-  CHECK_LE(profile, media::VIDEO_CODEC_PROFILE_MAX);
-  test_stream->requested_profile =
-      static_cast<media::VideoCodecProfile>(profile);
+  // Parse each test stream data and read the input file.
+  for (size_t index = 0; index < test_streams_data.size(); ++index) {
+    std::vector<base::FilePath::StringType> fields;
+    base::SplitString(test_streams_data[index], ':', &fields);
+    CHECK_GE(fields.size(), 4U) << data;
+    CHECK_LE(fields.size(), 9U) << data;
+    TestStream* test_stream = new TestStream();
 
-  if (fields.size() >= 5 && !fields[4].empty())
-    test_stream->out_filename = fields[4];
+    base::FilePath::StringType filename = fields[0];
+    int width, height;
+    CHECK(base::StringToInt(fields[1], &width));
+    CHECK(base::StringToInt(fields[2], &height));
+    test_stream->size = gfx::Size(width, height);
+    CHECK(!test_stream->size.IsEmpty());
+    int profile;
+    CHECK(base::StringToInt(fields[3], &profile));
+    CHECK_GT(profile, media::VIDEO_CODEC_PROFILE_UNKNOWN);
+    CHECK_LE(profile, media::VIDEO_CODEC_PROFILE_MAX);
+    test_stream->requested_profile =
+        static_cast<media::VideoCodecProfile>(profile);
 
-  if (fields.size() >= 6 && !fields[5].empty())
-    CHECK(base::StringToUint(fields[5], &test_stream->requested_bitrate));
+    if (fields.size() >= 5 && !fields[4].empty())
+      test_stream->out_filename = fields[4];
 
-  if (fields.size() >= 7 && !fields[6].empty())
-    CHECK(base::StringToUint(fields[6], &test_stream->requested_framerate));
+    if (fields.size() >= 6 && !fields[5].empty())
+      CHECK(base::StringToUint(fields[5], &test_stream->requested_bitrate));
 
-  if (fields.size() >= 8 && !fields[7].empty()) {
-    CHECK(base::StringToUint(fields[7],
-                             &test_stream->requested_subsequent_bitrate));
+    if (fields.size() >= 7 && !fields[6].empty())
+      CHECK(base::StringToUint(fields[6], &test_stream->requested_framerate));
+
+    if (fields.size() >= 8 && !fields[7].empty()) {
+      CHECK(base::StringToUint(fields[7],
+                               &test_stream->requested_subsequent_bitrate));
+    }
+
+    if (fields.size() >= 9 && !fields[8].empty()) {
+      CHECK(base::StringToUint(fields[8],
+                               &test_stream->requested_subsequent_framerate));
+    }
+
+    CHECK(test_stream->input_file.Initialize(base::FilePath(filename)));
+    test_streams->push_back(test_stream);
   }
+}
 
-  if (fields.size() >= 9 && !fields[8].empty()) {
-    CHECK(base::StringToUint(fields[8],
-                             &test_stream->requested_subsequent_framerate));
+// Set default parameters of |test_streams| and update the parameters according
+// to |mid_stream_bitrate_switch| and |mid_stream_framerate_switch|.
+static void UpdateTestStreamData(bool mid_stream_bitrate_switch,
+                                 bool mid_stream_framerate_switch,
+                                 ScopedVector<TestStream>* test_streams) {
+  for (size_t i = 0; i < test_streams->size(); i++) {
+    TestStream* test_stream = (*test_streams)[i];
+    // Use defaults for bitrate/framerate if they are not provided.
+    if (test_stream->requested_bitrate == 0)
+      test_stream->requested_bitrate = kDefaultBitrate;
+
+    if (test_stream->requested_framerate == 0)
+      test_stream->requested_framerate = kDefaultFramerate;
+
+    // If bitrate/framerate switch is requested, use the subsequent values if
+    // provided, or, if not, calculate them from their initial values using
+    // the default ratios.
+    // Otherwise, if a switch is not requested, keep the initial values.
+    if (mid_stream_bitrate_switch) {
+      if (test_stream->requested_subsequent_bitrate == 0) {
+        test_stream->requested_subsequent_bitrate =
+            test_stream->requested_bitrate * kDefaultSubsequentBitrateRatio;
+      }
+    } else {
+      test_stream->requested_subsequent_bitrate =
+          test_stream->requested_bitrate;
+    }
+    if (test_stream->requested_subsequent_bitrate == 0)
+      test_stream->requested_subsequent_bitrate = 1;
+
+    if (mid_stream_framerate_switch) {
+      if (test_stream->requested_subsequent_framerate == 0) {
+        test_stream->requested_subsequent_framerate =
+            test_stream->requested_framerate * kDefaultSubsequentFramerateRatio;
+      }
+    } else {
+      test_stream->requested_subsequent_framerate =
+          test_stream->requested_framerate;
+    }
+    if (test_stream->requested_subsequent_framerate == 0)
+      test_stream->requested_subsequent_framerate = 1;
   }
-
-  CHECK(test_stream->input_file.Initialize(base::FilePath(filename)));
 }
 
 enum ClientState {
@@ -348,6 +406,7 @@ class VEAClient : public VideoEncodeAccelerator::Client {
   scoped_ptr<VideoEncodeAccelerator> encoder_;
 
   const TestStream& test_stream_;
+  // Used to notify another thread about the state. VEAClient does not own this.
   ClientStateNotification<ClientState>* note_;
 
   // Ids assigned to VideoFrames (start at 1 for easy comparison with
@@ -794,6 +853,7 @@ void VEAClient::VerifyStreamProperties() {
 }
 
 // Test parameters:
+// - Number of concurrent encoders.
 // - If true, save output to file (provided an output filename was supplied).
 // - Force a keyframe every n frames.
 // - Force bitrate; the actual required value is provided as a property
@@ -803,122 +863,114 @@ void VEAClient::VerifyStreamProperties() {
 // - If true, switch framerate mid-stream.
 class VideoEncodeAcceleratorTest
     : public ::testing::TestWithParam<
-         Tuple6<bool, int, bool, bool, bool, bool> > {};
+          Tuple7<int, bool, int, bool, bool, bool, bool> > {};
 
 TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
-  const unsigned int keyframe_period = GetParam().b;
-  const bool force_bitrate = GetParam().c;
-  const bool test_perf = GetParam().d;
-  const bool mid_stream_bitrate_switch = GetParam().e;
-  const bool mid_stream_framerate_switch = GetParam().f;
+  const int num_concurrent_encoders = GetParam().a;
+  const bool save_to_file = GetParam().b;
+  const unsigned int keyframe_period = GetParam().c;
+  const bool force_bitrate = GetParam().d;
+  const bool test_perf = GetParam().e;
+  const bool mid_stream_bitrate_switch = GetParam().f;
+  const bool mid_stream_framerate_switch = GetParam().g;
 
-  TestStream test_stream;
-  ParseAndReadTestStreamData(*g_test_stream_data, &test_stream);
+  // Initialize the test streams.
+  ScopedVector<TestStream> test_streams;
+  ParseAndReadTestStreamData(*g_test_stream_data, &test_streams);
+  UpdateTestStreamData(
+      mid_stream_bitrate_switch, mid_stream_framerate_switch, &test_streams);
 
-  // Disregard save_to_file if we didn't get an output filename.
-  const bool save_to_file = GetParam().a && !test_stream.out_filename.empty();
+  ScopedVector<ClientStateNotification<ClientState> > notes;
+  // The clients can only be deleted after the encoder threads are stopped.
+  ScopedVector<VEAClient> clients;
+  ScopedVector<base::Thread> encoder_threads;
 
-  // Use defaults for bitrate/framerate if they are not provided.
-  if (test_stream.requested_bitrate == 0)
-    test_stream.requested_bitrate = kDefaultBitrate;
+  // Create all the encoders.
+  for (int i = 0; i < num_concurrent_encoders; i++) {
+    int test_stream_index = i % test_streams.size();
+    // Disregard save_to_file if we didn't get an output filename.
+    bool encoder_save_to_file =
+        (save_to_file &&
+         !test_streams[test_stream_index]->out_filename.empty());
 
-  if (test_stream.requested_framerate == 0)
-    test_stream.requested_framerate = kDefaultFramerate;
+    notes.push_back(new ClientStateNotification<ClientState>());
+    clients.push_back(new VEAClient(*test_streams[test_stream_index],
+                                    notes.back(),
+                                    encoder_save_to_file,
+                                    keyframe_period,
+                                    force_bitrate,
+                                    test_perf));
 
-  // If bitrate/framerate switch is requested, use the subsequent values if
-  // provided, or, if not, calculate them from their initial values using
-  // the default ratios.
-  // Otherwise, if a switch is not requested, keep the initial values.
-  if (mid_stream_bitrate_switch) {
-    if (test_stream.requested_subsequent_bitrate == 0) {
-      test_stream.requested_subsequent_bitrate =
-          test_stream.requested_bitrate * kDefaultSubsequentBitrateRatio;
-    }
-  } else {
-    test_stream.requested_subsequent_bitrate = test_stream.requested_bitrate;
+    // Initialize the encoder thread.
+    char thread_name[32];
+    sprintf(thread_name, "EncoderThread%d", i);
+    base::Thread* encoder_thread = new base::Thread(thread_name);
+    encoder_thread->Start();
+    encoder_thread->message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&VEAClient::CreateEncoder,
+                   base::Unretained(clients.back())));
+    encoder_threads.push_back(encoder_thread);
   }
-  if (test_stream.requested_subsequent_bitrate == 0)
-    test_stream.requested_subsequent_bitrate = 1;
 
-  if (mid_stream_framerate_switch) {
-    if (test_stream.requested_subsequent_framerate == 0) {
-      test_stream.requested_subsequent_framerate =
-          test_stream.requested_framerate * kDefaultSubsequentFramerateRatio;
-    }
-  } else {
-    test_stream.requested_subsequent_framerate =
-        test_stream.requested_framerate;
+  // Wait all the encoders to finish.
+  for (int i = 0; i < num_concurrent_encoders; i++) {
+    ASSERT_EQ(notes[i]->Wait(), CS_ENCODER_SET);
+    ASSERT_EQ(notes[i]->Wait(), CS_INITIALIZED);
+    ASSERT_EQ(notes[i]->Wait(), CS_ENCODING);
+    ASSERT_EQ(notes[i]->Wait(), CS_FINISHING);
+    ASSERT_EQ(notes[i]->Wait(), CS_FINISHED);
+    encoder_threads[i]->message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&VEAClient::DestroyEncoder, base::Unretained(clients[i])));
+    encoder_threads[i]->Stop();
   }
-  if (test_stream.requested_subsequent_framerate == 0)
-    test_stream.requested_subsequent_framerate = 1;
-
-  base::Thread encoder_thread("EncoderThread");
-  encoder_thread.Start();
-
-  ClientStateNotification<ClientState> note;
-  scoped_ptr<VEAClient> client(new VEAClient(test_stream,
-                                             &note,
-                                             save_to_file,
-                                             keyframe_period,
-                                             force_bitrate,
-                                             test_perf));
-
-  encoder_thread.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&VEAClient::CreateEncoder, base::Unretained(client.get())));
-
-  ASSERT_EQ(note.Wait(), CS_ENCODER_SET);
-  ASSERT_EQ(note.Wait(), CS_INITIALIZED);
-  ASSERT_EQ(note.Wait(), CS_ENCODING);
-  ASSERT_EQ(note.Wait(), CS_FINISHING);
-  ASSERT_EQ(note.Wait(), CS_FINISHED);
-
-  encoder_thread.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&VEAClient::DestroyEncoder, base::Unretained(client.get())));
-
-  encoder_thread.Stop();
 }
 
-INSTANTIATE_TEST_CASE_P(SimpleEncode,
-                        VideoEncodeAcceleratorTest,
-                        ::testing::Values(MakeTuple(
-                            true, 0, false, false, false, false)));
+INSTANTIATE_TEST_CASE_P(
+    SimpleEncode,
+    VideoEncodeAcceleratorTest,
+    ::testing::Values(MakeTuple(1, true, 0, false, false, false, false)));
 
-INSTANTIATE_TEST_CASE_P(EncoderPerf,
-                        VideoEncodeAcceleratorTest,
-                        ::testing::Values(MakeTuple(
-                            false, 0, false, true, false, false)));
+INSTANTIATE_TEST_CASE_P(
+    EncoderPerf,
+    VideoEncodeAcceleratorTest,
+    ::testing::Values(MakeTuple(1, false, 0, false, true, false, false)));
 
-INSTANTIATE_TEST_CASE_P(ForceKeyframes,
-                        VideoEncodeAcceleratorTest,
-                        ::testing::Values(MakeTuple(
-                            false, 10, false, false, false, false)));
+INSTANTIATE_TEST_CASE_P(
+    ForceKeyframes,
+    VideoEncodeAcceleratorTest,
+    ::testing::Values(MakeTuple(1, false, 10, false, false, false, false)));
 
-INSTANTIATE_TEST_CASE_P(ForceBitrate,
-                        VideoEncodeAcceleratorTest,
-                        ::testing::Values(MakeTuple(
-                            false, 0, true, false, false, false)));
+INSTANTIATE_TEST_CASE_P(
+    ForceBitrate,
+    VideoEncodeAcceleratorTest,
+    ::testing::Values(MakeTuple(1, false, 0, true, false, false, false)));
 
-INSTANTIATE_TEST_CASE_P(MidStreamParamSwitchBitrate,
-                        VideoEncodeAcceleratorTest,
-                        ::testing::Values(MakeTuple(
-                            false, 0, true, false, true, false)));
+INSTANTIATE_TEST_CASE_P(
+    MidStreamParamSwitchBitrate,
+    VideoEncodeAcceleratorTest,
+    ::testing::Values(MakeTuple(1, false, 0, true, false, true, false)));
 
-INSTANTIATE_TEST_CASE_P(MidStreamParamSwitchFPS,
-                        VideoEncodeAcceleratorTest,
-                        ::testing::Values(MakeTuple(
-                            false, 0, true, false, false, true)));
+INSTANTIATE_TEST_CASE_P(
+    MidStreamParamSwitchFPS,
+    VideoEncodeAcceleratorTest,
+    ::testing::Values(MakeTuple(1, false, 0, true, false, false, true)));
 
-INSTANTIATE_TEST_CASE_P(MidStreamParamSwitchBitrateAndFPS,
-                        VideoEncodeAcceleratorTest,
-                        ::testing::Values(MakeTuple(
-                            false, 0, true, false, true, true)));
+INSTANTIATE_TEST_CASE_P(
+    MidStreamParamSwitchBitrateAndFPS,
+    VideoEncodeAcceleratorTest,
+    ::testing::Values(MakeTuple(1, false, 0, true, false, true, true)));
+
+INSTANTIATE_TEST_CASE_P(
+    MultipleEncoders,
+    VideoEncodeAcceleratorTest,
+    ::testing::Values(MakeTuple(3, false, 0, false, false, false, false),
+                      MakeTuple(3, false, 0, true, false, true, true)));
 
 // TODO(posciak): more tests:
 // - async FeedEncoderWithOutput
 // - out-of-order return of outputs to encoder
-// - multiple encoders
 // - multiple encoders + decoders
 // - mid-stream encoder_->Destroy()
 
