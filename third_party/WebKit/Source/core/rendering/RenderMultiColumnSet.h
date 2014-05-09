@@ -67,6 +67,8 @@ public:
 
     LayoutUnit logicalBottomInFlowThread() const { return isHorizontalWritingMode() ? flowThreadPortionRect().maxY() : flowThreadPortionRect().maxX(); }
 
+    LayoutUnit logicalHeightInFlowThread() const { return isHorizontalWritingMode() ? flowThreadPortionRect().height() : flowThreadPortionRect().width(); }
+
     unsigned computedColumnCount() const { return m_computedColumnCount; }
     LayoutUnit computedColumnWidth() const { return m_computedColumnWidth; }
     LayoutUnit computedColumnHeight() const { return m_computedColumnHeight; }
@@ -112,6 +114,7 @@ public:
 private:
     RenderMultiColumnSet(RenderFlowThread*);
 
+    virtual void layout() OVERRIDE;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
 
     virtual void paintObject(PaintInfo&, const LayoutPoint& paintOffset) OVERRIDE;
@@ -121,8 +124,7 @@ private:
 
     virtual LayoutUnit pageLogicalTopForOffset(LayoutUnit offset) const OVERRIDE;
 
-    // FIXME: This will change once we have column sets constrained by enclosing pages, etc.
-    virtual LayoutUnit logicalHeightOfAllFlowThreadContent() const OVERRIDE { return m_computedColumnHeight; }
+    virtual LayoutUnit logicalHeightOfAllFlowThreadContent() const OVERRIDE { return logicalHeightInFlowThread(); }
 
     virtual void repaintFlowThreadContent(const LayoutRect& repaintRect) const OVERRIDE;
 

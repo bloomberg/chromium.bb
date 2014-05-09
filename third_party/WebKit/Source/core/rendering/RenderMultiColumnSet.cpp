@@ -302,6 +302,16 @@ void RenderMultiColumnSet::expandToEncompassFlowThreadContentsIfNeeded()
     setFlowThreadPortionRect(LayoutRect(rect.x(), rect.y(), isHorizontal ? rect.width() : logicalHeightWithOverflow, isHorizontal ? logicalHeightWithOverflow : rect.height()));
 }
 
+void RenderMultiColumnSet::layout()
+{
+    RenderRegion::layout();
+
+    if (!nextSiblingMultiColumnSet()) {
+        // This is the last set, i.e. the last region. Seize the opportunity to validate them.
+        multiColumnFlowThread()->validateRegions();
+    }
+}
+
 void RenderMultiColumnSet::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
 {
     computedValues.m_extent = m_computedColumnHeight;

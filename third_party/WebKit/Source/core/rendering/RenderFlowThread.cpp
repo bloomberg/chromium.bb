@@ -128,8 +128,6 @@ void RenderFlowThread::layout()
 {
     m_pageLogicalSizeChanged = m_regionsInvalidated && everHadLayout();
 
-    validateRegions();
-
     CurrentRenderFlowThreadMaintainer currentFlowThreadSetter(this);
     RenderBlockFlow::layout();
 
