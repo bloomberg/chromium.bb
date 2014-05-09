@@ -95,8 +95,8 @@ def WipeDeviceData(device):
   After wiping data on a device that has been authorized, adb can still
   communicate with the device, but after reboot the device will need to be
   re-authorized because the adb keys file is stored in /data/misc/adb/.
-  Thus, before reboot the adb_keys file is rewritten so the device does not need
-  to be re-authorized.
+  Thus, adb_keys file is rewritten so the device does not need to be
+  re-authorized.
 
   Arguments:
     device: the device to wipe
@@ -105,15 +105,17 @@ def WipeDeviceData(device):
       constants.ADB_KEYS_FILE)
   if device_authorized:
     adb_keys = device.old_interface.RunShellCommandWithSU(
-      'cat %s' % constants.ADB_KEYS_FILE)[0]
+      'cat %s' % constants.ADB_KEYS_FILE)
   device.old_interface.RunShellCommandWithSU('wipe data')
   if device_authorized:
     path_list = constants.ADB_KEYS_FILE.split('/')
     dir_path = '/'.join(path_list[:len(path_list)-1])
     device.old_interface.RunShellCommandWithSU('mkdir -p %s' % dir_path)
-    adb_keys = device.old_interface.RunShellCommand(
-      'echo %s > %s' % (adb_keys, constants.ADB_KEYS_FILE))
-  device.old_interface.Reboot()
+    device.old_interface.RunShellCommand('echo %s > %s' %
+                                         (adb_keys[0], constants.ADB_KEYS_FILE))
+    for adb_key in adb_keys[1:]:
+      device.old_interface.RunShellCommand(
+        'echo %s >> %s' % (adb_key, constants.ADB_KEYS_FILE))
 
 
 def ProvisionDevices(options):
@@ -152,6 +154,8 @@ def main(argv):
   logging.basicConfig(level=logging.INFO)
 
   parser = optparse.OptionParser()
+  parser.add_option('-w', '--wipe', action='store_true',
+                    help='Wipe device data from all attached devices.')
   parser.add_option('-d', '--device',
                     help='The serial number of the device to be provisioned')
   parser.add_option('-t', '--target', default='Debug', help='The build target')
@@ -165,7 +169,14 @@ def main(argv):
     print >> sys.stderr, 'Unused args %s' % args
     return 1
 
-  ProvisionDevices(options)
+  if options.wipe:
+    devices = android_commands.GetAttachedDevices()
+    for device_serial in devices:
+      device = device_utils.DeviceUtils(device_serial)
+      WipeDeviceData(device)
+    device_utils.RebootDevices()
+  else:
+    ProvisionDevices(options)
 
 
 if __name__ == '__main__':

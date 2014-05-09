@@ -7,7 +7,6 @@ import collections
 import glob
 import hashlib
 import json
-import multiprocessing
 import os
 import random
 import re
@@ -27,10 +26,6 @@ from pylib.gtest import gtest_config
 CHROME_SRC_DIR = bb_utils.CHROME_SRC
 DIR_BUILD_ROOT = os.path.dirname(CHROME_SRC_DIR)
 CHROME_OUT_DIR = bb_utils.CHROME_OUT_DIR
-sys.path.append(os.path.join(
-    CHROME_SRC_DIR, 'third_party', 'android_testrunner'))
-import errors
-
 
 SLAVE_SCRIPTS_DIR = os.path.join(bb_utils.BB_BUILD_DIR, 'scripts', 'slave')
 LOGCAT_DIR = os.path.join(bb_utils.CHROME_OUT_DIR, 'logcat')
@@ -99,37 +94,6 @@ def _GetRevision(options):
   if not revision:
     revision = options.build_properties.get('revision', 'testing')
   return revision
-
-
-# multiprocessing map_async requires a top-level function for pickle library.
-def RebootDeviceSafe(device):
-  """Reboot a device, wait for it to start, and squelch timeout exceptions."""
-  try:
-    device_utils.DeviceUtils(device).old_interface.Reboot(True)
-  except errors.DeviceUnresponsiveError as e:
-    return e
-
-
-def RebootDevices():
-  """Reboot all attached and online devices."""
-  # Early return here to avoid presubmit dependence on adb,
-  # which might not exist in this checkout.
-  if bb_utils.TESTING:
-    return
-  devices = android_commands.GetAttachedDevices()
-  print 'Rebooting: %s' % devices
-  if devices:
-    pool = multiprocessing.Pool(len(devices))
-    results = pool.map_async(RebootDeviceSafe, devices).get(99999)
-
-    for device, result in zip(devices, results):
-      if result:
-        print '%s failed to startup.' % device
-
-    if any(results):
-      bb_annotations.PrintWarning()
-    else:
-      print 'Reboots complete.'
 
 
 def RunTestSuites(options, suites):
@@ -434,9 +398,6 @@ def ProvisionDevices(options):
     # Restart adb to work around bugs, sleep to wait for usb discovery.
     device_utils.DeviceUtils(None).old_interface.RestartAdbServer()
     RunCmd(['sleep', '1'])
-
-  if not options.no_reboot:
-    RebootDevices()
   provision_cmd = ['build/android/provision_devices.py', '-t', options.target]
   if options.auto_reconnect:
     provision_cmd.append('--auto-reconnect')
