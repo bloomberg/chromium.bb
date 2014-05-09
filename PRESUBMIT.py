@@ -1306,6 +1306,7 @@ def GetTryServerMasterForBot(bot):
   Assumes that most Try Servers are on the tryserver.chromium master."""
   non_default_master_map = {
       'linux_gpu': 'tryserver.chromium.gpu',
+      'mac_gpu': 'tryserver.chromium.gpu',
       'win_gpu': 'tryserver.chromium.gpu',
   }
   return non_default_master_map.get(bot, 'tryserver.chromium')
@@ -1389,6 +1390,7 @@ def GetDefaultTryConfigs(bots=None):
       ],
       'mac_chromium_compile_dbg': ['defaulttests'],
       'mac_chromium_rel': ['defaulttests'],
+      'mac_gpu': ['defaulttests'],
       'mac_nacl_sdk_build': ['compile'],
       'mac_rel': [
           'telemetry_perf_unittests',
@@ -1517,6 +1519,7 @@ def GetPreferredTryMasters(project, change):
       'linux_gpu',
       'mac_chromium_compile_dbg',
       'mac_chromium_rel',
+      'mac_gpu',
       'win_chromium_compile_dbg',
       'win_chromium_rel',
       'win_chromium_x64_rel',
