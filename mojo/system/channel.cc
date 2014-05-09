@@ -263,10 +263,6 @@ void Channel::DetachMessagePipeEndpoint(
   }
 }
 
-size_t Channel::GetSerializedPlatformHandleSize() const {
-  return raw_channel_->GetSerializedPlatformHandleSize();
-}
-
 Channel::~Channel() {
   // The channel should have been shut down first.
   DCHECK(!is_running_no_lock());

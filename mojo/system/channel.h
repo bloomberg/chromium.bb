@@ -111,9 +111,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   void DetachMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
                                  MessageInTransit::EndpointId remote_id);
 
-  // See |RawChannel::GetSerializedPlatformHandleSize()|.
-  size_t GetSerializedPlatformHandleSize() const;
-
  private:
   struct EndpointInfo {
     enum State {

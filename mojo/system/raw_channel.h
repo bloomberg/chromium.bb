@@ -96,11 +96,6 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // becomes empty (or something like that).
   bool IsWriteBufferEmpty();
 
-  // Returns the amount of space needed in the |MessageInTransit|'s
-  // |TransportData|'s "platform handle table" per platform handle (to be
-  // attached to a message). (This amount may be zero.)
-  virtual size_t GetSerializedPlatformHandleSize() const = 0;
-
  protected:
   // Return values of |[Schedule]Read()| and |[Schedule]WriteNoLock()|.
   enum IOResult {

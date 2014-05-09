@@ -74,9 +74,6 @@ class RawChannelWin : public RawChannel {
   RawChannelWin(embedder::ScopedPlatformHandle handle);
   virtual ~RawChannelWin();
 
-  // |RawChannel| public methods:
-  virtual size_t GetSerializedPlatformHandleSize() const OVERRIDE;
-
  private:
   // RawChannelIOHandler receives OS notifications for I/O completion. It must
   // be created on the I/O thread.
@@ -159,7 +156,7 @@ class RawChannelWin : public RawChannel {
     DISALLOW_COPY_AND_ASSIGN(RawChannelIOHandler);
   };
 
-  // |RawChannel| private methods:
+  // |RawChannel| implementation:
   virtual IOResult Read(size_t* bytes_read) OVERRIDE;
   virtual IOResult ScheduleRead() OVERRIDE;
   virtual IOResult WriteNoLock(size_t* bytes_written) OVERRIDE;
@@ -347,11 +344,6 @@ RawChannelWin::RawChannelWin(embedder::ScopedPlatformHandle handle)
 
 RawChannelWin::~RawChannelWin() {
   DCHECK(!io_handler_);
-}
-
-size_t RawChannelWin::GetSerializedPlatformHandleSize() const {
-  // TODO(vtl): Implement.
-  return 0;
 }
 
 RawChannel::IOResult RawChannelWin::Read(size_t* bytes_read) {

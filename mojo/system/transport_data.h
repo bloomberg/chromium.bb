@@ -35,7 +35,7 @@ namespace system {
 //     detached from the dispatchers and attached to the |TransportData|.
 //   - Before sending the |MessageInTransit|, including its main buffer and the
 //     |TransportData|'s buffer, the |Channel| sends any |PlatformHandle|s (in a
-//     platform-, and possibly sandbox-situation-, specific way) first. In doing
+//     platform-, and possibly sandobx-situation-, specific way) first. In doing
 //     so, it appends a "platform handle table" to the |TransportData|
 //     containing information about how to deserialize these |PlatformHandle|s.
 //   - Finally, at this point, to send the |MessageInTransit|, there only
