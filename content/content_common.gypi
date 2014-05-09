@@ -175,7 +175,6 @@
     'common/cursors/webcursor_aurax11.cc',
     'common/cursors/webcursor_mac.mm',
     'common/cursors/webcursor_ozone.cc',
-    'common/cursors/webcursor_win.cc',
     'common/database_messages.h',
     'common/date_time_suggestion.h',
     'common/desktop_notification_messages.h',
@@ -469,7 +468,6 @@
     ['use_aura==1', {
       'sources!': [
         'common/cursors/webcursor_mac.mm',
-        'common/cursors/webcursor_win.cc',
       ],
     }],
     ['OS=="ios"', {
