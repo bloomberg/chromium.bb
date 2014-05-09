@@ -2263,6 +2263,9 @@ bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
     IntRect scaledFocus(frame->view()->contentsToWindow(focus));
 
     if (pinchVirtualViewportEnabled()) {
+        // FIXME(http://crbug.com/371902) - We shouldn't have to do this
+        // manually, the contentsToWindow methods above should be fixed to do
+        // this.
         IntPoint pinchViewportOffset =
             roundedIntPoint(page()->frameHost().pinchViewport().visibleRect().location());
         scaledAnchor.moveBy(-pinchViewportOffset);
@@ -2561,12 +2564,6 @@ void WebViewImpl::clearFocusedElement()
     // keystrokes get eaten as a result.
     if (oldFocusedElement->isContentEditable() || oldFocusedElement->isTextFormControl())
         localFrame->selection().clear();
-}
-
-void WebViewImpl::scrollFocusedNodeIntoView()
-{
-    if (Element* element = focusedElement())
-        element->scrollIntoViewIfNeeded(true);
 }
 
 void WebViewImpl::scrollFocusedNodeIntoRect(const WebRect& rect)

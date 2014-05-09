@@ -75,6 +75,7 @@ public:
     // Sets the location of the inner viewport relative to the outer viewport. The
     // coordinates are in partial CSS pixels.
     void setLocation(const FloatPoint&);
+    void move(const FloatPoint&);
 
     // Sets the size of the inner viewport when unscaled in CSS pixels.
     // This will be clamped to the size of the outer viewport (the main frame).

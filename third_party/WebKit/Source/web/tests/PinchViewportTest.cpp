@@ -551,4 +551,47 @@ TEST_F(PinchViewportTest, TestRestoredFromLegacyHistoryItem)
     EXPECT_FLOAT_POINT_EQ(FloatPoint(20, 30), pinchViewport.visibleRect().location());
 }
 
+// Test that the scrollFocusedNodeIntoRect method works with the pinch viewport.
+TEST_F(PinchViewportTest, TestScrollFocusedNodeIntoRect)
+{
+    initializeWithDesktopSettings();
+    webViewImpl()->resize(IntSize(500, 300));
+
+    registerMockedHttpURLLoad("pinch-viewport-input-field.html");
+    navigateTo(m_baseURL + "pinch-viewport-input-field.html");
+
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+    webViewImpl()->resizePinchViewport(IntSize(200, 100));
+    webViewImpl()->setInitialFocus(false);
+    webViewImpl()->scrollFocusedNodeIntoRect(IntRect(0, 0, 500, 200));
+
+    EXPECT_POINT_EQ(IntPoint(0, frame()->view()->maximumScrollPosition().y()),
+        frame()->view()->scrollPosition());
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(150, 200), pinchViewport.visibleRect().location());
+
+    // Try it again but with the page zoomed in
+    frame()->view()->notifyScrollPositionChanged(IntPoint(0, 0));
+    webViewImpl()->resizePinchViewport(IntSize(500, 300));
+    pinchViewport.setLocation(FloatPoint(0, 0));
+
+    webViewImpl()->setPageScaleFactor(2);
+    webViewImpl()->scrollFocusedNodeIntoRect(IntRect(0, 0, 500, 200));
+    EXPECT_POINT_EQ(IntPoint(0, frame()->view()->maximumScrollPosition().y()),
+        frame()->view()->scrollPosition());
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(125, 150), pinchViewport.visibleRect().location());
+
+    // Once more but make sure that we don't move the pinch viewport unless necessary.
+    registerMockedHttpURLLoad("pinch-viewport-input-field-long-and-wide.html");
+    navigateTo(m_baseURL + "pinch-viewport-input-field-long-and-wide.html");
+    webViewImpl()->setInitialFocus(false);
+    frame()->view()->notifyScrollPositionChanged(IntPoint(0, 0));
+    webViewImpl()->resizePinchViewport(IntSize(500, 300));
+    pinchViewport.setLocation(FloatPoint(30, 50));
+
+    webViewImpl()->setPageScaleFactor(2);
+    webViewImpl()->scrollFocusedNodeIntoRect(IntRect(0, 0, 500, 200));
+    EXPECT_POINT_EQ(IntPoint(200-30-75, 600-50-65), frame()->view()->scrollPosition());
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(30, 50), pinchViewport.visibleRect().location());
+}
+
 } // namespace

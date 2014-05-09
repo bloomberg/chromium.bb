@@ -130,6 +130,11 @@ void PinchViewport::setLocation(const FloatPoint& newLocation)
     mainFrame()->loader().saveScrollState();
 }
 
+void PinchViewport::move(const FloatPoint& delta)
+{
+    setLocation(m_offset + delta);
+}
+
 void PinchViewport::setScale(float scale)
 {
     if (scale == m_scale)

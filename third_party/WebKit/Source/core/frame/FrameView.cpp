@@ -1572,12 +1572,36 @@ void FrameView::maintainScrollPositionAtAnchor(Node* anchorNode)
 
 void FrameView::scrollElementToRect(Element* element, const IntRect& rect)
 {
+    // FIXME(http://crbug.com/371896) - This method shouldn't be manually doing
+    // coordinate transformations to the PinchViewport.
+    IntRect targetRect(rect);
+
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
 
+    bool pinchVirtualViewportEnabled = m_frame->settings()->pinchVirtualViewportEnabled();
+
+    if (pinchVirtualViewportEnabled) {
+        PinchViewport& pinchViewport = m_frame->page()->frameHost().pinchViewport();
+
+        IntSize pinchViewportSize = expandedIntSize(pinchViewport.visibleRect().size());
+        targetRect.moveBy(ceiledIntPoint(pinchViewport.visibleRect().location()));
+        targetRect.setSize(pinchViewportSize.shrunkTo(targetRect.size()));
+    }
+
     LayoutRect bounds = element->boundingBox();
-    int centeringOffsetX = (rect.width() - bounds.width()) / 2;
-    int centeringOffsetY = (rect.height() - bounds.height()) / 2;
-    setScrollPosition(IntPoint(bounds.x() - centeringOffsetX - rect.x(), bounds.y() - centeringOffsetY - rect.y()));
+    int centeringOffsetX = (targetRect.width() - bounds.width()) / 2;
+    int centeringOffsetY = (targetRect.height() - bounds.height()) / 2;
+
+    IntPoint targetOffset(
+        bounds.x() - centeringOffsetX - targetRect.x(),
+        bounds.y() - centeringOffsetY - targetRect.y());
+
+    setScrollPosition(targetOffset);
+
+    if (pinchVirtualViewportEnabled) {
+        IntPoint remainder = IntPoint(targetOffset - scrollPosition());
+        m_frame->page()->frameHost().pinchViewport().move(remainder);
+    }
 }
 
 void FrameView::setScrollPosition(const IntPoint& scrollPoint)
