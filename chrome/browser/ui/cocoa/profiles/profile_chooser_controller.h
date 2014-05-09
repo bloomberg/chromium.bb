@@ -52,7 +52,7 @@ class WebContents;
 
   // The id for the account that the user has requested to remove from the
   // current profile. It is set in |showAccountRemovalView| and used in
-  // |removeAccountAndRelaunch|.
+  // |removeAccount|.
   std::string accountIdToRemove_;
 
   // Active view mode.
@@ -114,8 +114,8 @@ class WebContents;
 // account from the active profile if possible.
 - (IBAction)showAccountRemovalView:(id)sender;
 
-// Removes the current account |accountIdToRemove_| and relaunches the browser.
-- (IBAction)removeAccountAndRelaunch:(id)sender;
+// Removes the current account |accountIdToRemove_|.
+- (IBAction)removeAccount:(id)sender;
 
 // Reset the WebContents used by the Gaia embedded view.
 - (void)cleanUpEmbeddedViewContents;

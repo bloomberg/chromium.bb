@@ -236,7 +236,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
   views::ImageButton* gaia_signin_cancel_button_;
 
   // Links and buttons displayed in the account removal view.
-  views::LabelButton* remove_account_and_relaunch_button_;
+  views::LabelButton* remove_account_button_;
   views::ImageButton* account_removal_cancel_button_;
 
   // Links and buttons displayed in the end-preview view.

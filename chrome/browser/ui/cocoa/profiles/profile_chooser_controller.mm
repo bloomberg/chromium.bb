@@ -794,12 +794,13 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [self initMenuContentsWithView:BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL];
 }
 
-- (IBAction)removeAccountAndRelaunch:(id)sender {
+- (IBAction)removeAccount:(id)sender {
   DCHECK(!accountIdToRemove_.empty());
   ProfileOAuth2TokenServiceFactory::GetPlatformSpecificForProfile(
       browser_->profile())->RevokeCredentials(accountIdToRemove_);
   accountIdToRemove_.clear();
-  chrome::AttemptRestart();
+
+  [self initMenuContentsWithView:BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
 }
 
 - (IBAction)openTutorialLearnMoreURL:(id)sender {
@@ -1410,22 +1411,22 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       browser_->profile())->GetAuthenticatedUsername();
   bool isPrimaryAccount = primaryAccount == accountIdToRemove_;
 
-  // Adds "remove and relaunch" button at the bottom if needed.
+  // Adds "remove account" button at the bottom if needed.
   if (!isPrimaryAccount) {
-    base::scoped_nsobject<NSButton> removeAndRelaunchButton(
+    base::scoped_nsobject<NSButton> removeAccountButton(
         [[BlueLabelButton alloc] initWithFrame:NSZeroRect]);
-    [removeAndRelaunchButton setTitle:l10n_util::GetNSString(
+    [removeAccountButton setTitle:l10n_util::GetNSString(
         IDS_PROFILES_ACCOUNT_REMOVAL_BUTTON)];
-    [removeAndRelaunchButton setTarget:self];
-    [removeAndRelaunchButton setAction:@selector(removeAccountAndRelaunch:)];
-    [removeAndRelaunchButton sizeToFit];
-    [removeAndRelaunchButton setAlignment:NSCenterTextAlignment];
+    [removeAccountButton setTarget:self];
+    [removeAccountButton setAction:@selector(removeAccount:)];
+    [removeAccountButton sizeToFit];
+    [removeAccountButton setAlignment:NSCenterTextAlignment];
     CGFloat xOffset = (kFixedAccountRemovalViewWidth -
-        NSWidth([removeAndRelaunchButton frame])) / 2;
-    [removeAndRelaunchButton setFrameOrigin:NSMakePoint(xOffset, yOffset)];
-    [container addSubview:removeAndRelaunchButton];
+        NSWidth([removeAccountButton frame])) / 2;
+    [removeAccountButton setFrameOrigin:NSMakePoint(xOffset, yOffset)];
+    [container addSubview:removeAccountButton];
 
-    yOffset = NSMaxY([removeAndRelaunchButton frame]) + kVerticalSpacing;
+    yOffset = NSMaxY([removeAccountButton frame]) + kVerticalSpacing;
   }
 
   NSView* contentView;

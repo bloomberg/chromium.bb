@@ -843,7 +843,7 @@ For Chromium, processes used to display diagnostics information (such as this "a
 
       <!-- Account removal view in the avatar menu bubble -->
       <message name="IDS_PROFILES_ACCOUNT_REMOVAL_TEXT" desc="Main text of the account removal view when removing a secondary account.">
-        To remove your account, Chromium needs to restart. Make sure you've saved any open work before continuing.
+        After removing your account from Chromium, you may need to reload your open tabs to take effect.
       </message>
       <message name="IDS_PROFILES_PRIMARY_ACCOUNT_REMOVAL_TEXT" desc="Main text of the account removal view when removing a primary account.">
         You're using <ph name="PROFILE_EMAIL">$1<ex>jessica@gmail.com</ex></ph> to sync your Chromium stuff. To update your sync preference or to use Chromium without a Google account, visit <ph name="SETTINGS_LINK">$2<ex>settings</ex></ph>.
