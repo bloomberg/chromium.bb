@@ -238,14 +238,6 @@
           }
         ]
       }
-    ],
-    "events": [
-      {
-        "name": "onRequestEnableSurpriseMe",
-        "type": "function",
-        "description": "Fired to request enabling surprise me mode for new profiles.",
-        "parameters": []
-      }
     ]
   }
 ]

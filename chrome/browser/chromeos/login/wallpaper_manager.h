@@ -333,9 +333,6 @@ class WallpaperManager: public content::NotificationObserver {
                        const std::string& user_id,
                        scoped_ptr<std::string> data);
 
-  // Enable surprise me wallpaper mode.
-  void EnableSurpriseMe();
-
   // This is called from CustomizationDocument.
   // |resized_directory| is the directory where resized versions are stored and
   // must be writable.
