@@ -144,8 +144,10 @@ class MEDIA_EXPORT VideoRendererImpl
   typedef std::deque<scoped_refptr<VideoFrame> > VideoFrameQueue;
   VideoFrameQueue ready_frames_;
 
-  // Keeps track of whether we received the end of stream buffer.
+  // Keeps track of whether we received the end of stream buffer and finished
+  // rendering.
   bool received_end_of_stream_;
+  bool rendered_end_of_stream_;
 
   // Used to signal |thread_| as frames are added to |frames_|.  Rule of thumb:
   // always check |state_| to see if it was set to STOPPED after waking up!
@@ -168,10 +170,7 @@ class MEDIA_EXPORT VideoRendererImpl
   //   |          |                Pause()          ^
   //   |          V Play()                          |
   //   |       [kPlaying]---------------------------|
-  //   |          |                Pause()          ^
-  //   |          V Receive EOF frame.              | Pause()
-  //   |       [kEnded]-----------------------------+
-  //   |                                            ^
+  //   |                           Pause()          ^ Pause()
   //   |                                            |
   //   +-----> [kStopped]                 [Any state other than]
   //                                      [kUninitialized/kError]
@@ -186,7 +185,6 @@ class MEDIA_EXPORT VideoRendererImpl
     kFlushed,
     kPrerolling,
     kPlaying,
-    kEnded,
     kStopped,
     kError,
   };

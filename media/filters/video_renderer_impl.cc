@@ -28,6 +28,7 @@ VideoRendererImpl::VideoRendererImpl(
       video_frame_stream_(task_runner, decoders.Pass(), set_decryptor_ready_cb),
       low_delay_(false),
       received_end_of_stream_(false),
+      rendered_end_of_stream_(false),
       frame_available_(&lock_),
       state_(kUninitialized),
       thread_(),
@@ -75,6 +76,7 @@ void VideoRendererImpl::Flush(const base::Closure& callback) {
   // stream and needs to drain it before flushing it.
   ready_frames_.clear();
   received_end_of_stream_ = false;
+  rendered_end_of_stream_ = false;
   video_frame_stream_.Reset(
       base::Bind(&VideoRendererImpl::OnVideoFrameStreamResetDone,
                  weak_factory_.GetWeakPtr()));
@@ -253,12 +255,9 @@ void VideoRendererImpl::ThreadMain() {
 
     // Remain idle until we have the next frame ready for rendering.
     if (ready_frames_.empty()) {
-      if (received_end_of_stream_) {
-        state_ = kEnded;
+      if (received_end_of_stream_ && !rendered_end_of_stream_) {
+        rendered_end_of_stream_ = true;
         ended_cb_.Run();
-
-        // No need to sleep here as we idle when |state_ != kPlaying|.
-        continue;
       }
 
       UpdateStatsAndWait_Locked(kIdleTimeDelta);
@@ -468,7 +467,6 @@ void VideoRendererImpl::AttemptRead_Locked() {
     case kInitializing:
     case kFlushing:
     case kFlushed:
-    case kEnded:
     case kStopped:
     case kError:
       return;
@@ -484,6 +482,7 @@ void VideoRendererImpl::OnVideoFrameStreamResetDone() {
   DCHECK(!pending_read_);
   DCHECK(ready_frames_.empty());
   DCHECK(!received_end_of_stream_);
+  DCHECK(!rendered_end_of_stream_);
 
   state_ = kFlushed;
   last_timestamp_ = kNoTimestamp();
