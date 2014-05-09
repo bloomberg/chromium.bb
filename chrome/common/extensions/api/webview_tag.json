@@ -30,17 +30,10 @@
         "description": "A set of data types. Missing properties are interpreted as <code>false</code>.",
         "properties": {
           "appcache": { "type": "boolean", "optional": true, "description": "Websites' appcaches." },
-          "cache": { "type": "boolean", "optional": true, "description": "The partition's cache. Note: This clears the entire cache regardless of the age passed to <code>clearData</code>." },
           "cookies": { "type": "boolean", "optional": true, "description": "The partition's cookies." },
-          "downloads": { "type": "boolean", "optional": true, "description": "The partition's download list." },
           "fileSystems": { "type": "boolean", "optional": true, "description": "Websites' filesystems." },
-          "formData": { "type": "boolean", "optional": true, "description": "The partition's stored form data." },
-          "history": { "type": "boolean", "optional": true, "description": "The partition's history." },
           "indexedDB": { "type": "boolean", "optional": true, "description": "Websites' IndexedDB data." },
           "localStorage": { "type": "boolean", "optional": true, "description": "Websites' local storage data." },
-          "serverBoundCertificates": { "type": "boolean", "optional": true, "description": "Server-bound certificates." },
-          "pluginData": { "type": "boolean", "optional": true, "description": "Plugins' data." },
-          "passwords": { "type": "boolean", "optional": true, "description": "Stored passwords." },
           "webSQL": { "type": "boolean", "optional": true, "description": "Websites' WebSQL data." }
         }
       },
