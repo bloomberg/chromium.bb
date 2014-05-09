@@ -93,8 +93,8 @@ crbug.com/318434 [ Mac ] virtual/gpu/compositedscrolling/scrollbars/custom-scrol
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
 
-crbug.com/371916 [ Linux Debug ] http/tests/security/contentSecurityPolicy/xsl-unaffected-by-style-src-2.php [ Pass Crash ]
-crbug.com/371916 [ Linux Debug ] http/tests/security/contentSecurityPolicy/xsl-allowed.php [ Pass Crash ]
+crbug.com/371916 [ Debug ] http/tests/security/contentSecurityPolicy/xsl-unaffected-by-style-src-2.php [ Crash ]
+crbug.com/371916 [ Debug ] http/tests/security/contentSecurityPolicy/xsl-allowed.php [ Crash ]
 crbug.com/361729 [ Mac ] fullscreen/full-screen-stacking-context.html [ NeedsRebaseline ]
 crbug.com/361729 [ Mac ] http/tests/media/video-buffered-range-contains-currentTime.html [ NeedsRebaseline ]
 crbug.com/361729 [ Mac ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ NeedsRebaseline ]
