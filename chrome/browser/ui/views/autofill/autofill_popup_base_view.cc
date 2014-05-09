@@ -43,9 +43,9 @@ AutofillPopupBaseView::~AutofillPopupBaseView() {
 }
 
 void AutofillPopupBaseView::DoShow() {
-  if (!GetWidget()) {
+  const bool initialize_widget = !GetWidget();
+  if (initialize_widget) {
     observing_widget_->AddObserver(this);
-    views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
 
     views::FocusManager* focus_manager = observing_widget_->GetFocusManager();
     focus_manager->RegisterAccelerator(
@@ -77,6 +77,11 @@ void AutofillPopupBaseView::DoShow() {
 
   DoUpdateBoundsAndRedrawPopup();
   GetWidget()->Show();
+
+  // Showing the widget can change native focus (which would result in an
+  // immediate hiding of the popup). Only start observing after shown.
+  if (initialize_widget)
+    views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
 }
 
 void AutofillPopupBaseView::DoHide() {

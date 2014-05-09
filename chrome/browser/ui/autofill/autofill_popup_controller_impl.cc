@@ -177,8 +177,8 @@ void AutofillPopupControllerImpl::Show(
     UpdateBoundsAndRedrawPopup();
   }
 
-  delegate_->OnPopupShown();
   controller_common_->RegisterKeyPressCallback();
+  delegate_->OnPopupShown();
 }
 
 void AutofillPopupControllerImpl::UpdateDataListValues(
