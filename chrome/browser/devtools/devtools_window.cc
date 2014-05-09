@@ -1019,6 +1019,13 @@ InfoBarService* DevToolsWindow::GetInfoBarService() {
       InfoBarService::FromWebContents(web_contents_);
 }
 
+void DevToolsWindow::RenderProcessGone() {
+  // Docked DevToolsWindow owns its web_contents_ and must delete it.
+  // Undocked web_contents_ are owned and handled by browser.
+  if (is_docked_)
+    CloseContents(web_contents_);
+}
+
 void DevToolsWindow::OnLoadCompleted() {
   // First seed inspected tab id for extension APIs.
   WebContents* inspected_web_contents = GetInspectedWebContents();

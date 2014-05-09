@@ -195,6 +195,7 @@ class DefaultBindingsDelegate : public DevToolsUIBindings::Delegate {
   virtual void InspectedContentsClosing() OVERRIDE;
   virtual void OnLoadCompleted() OVERRIDE {}
   virtual InfoBarService* GetInfoBarService() OVERRIDE;
+  virtual void RenderProcessGone() OVERRIDE {}
 
   content::WebContents* web_contents_;
   DISALLOW_COPY_AND_ASSIGN(DefaultBindingsDelegate);
@@ -233,6 +234,7 @@ class DevToolsUIBindings::FrontendWebContentsObserver
 
  private:
   // contents::WebContentsObserver:
+  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual void AboutToNavigateRenderView(
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DocumentOnLoadCompletedInMainFrame() OVERRIDE;
@@ -249,6 +251,11 @@ DevToolsUIBindings::FrontendWebContentsObserver::FrontendWebContentsObserver(
 
 DevToolsUIBindings::FrontendWebContentsObserver::
     ~FrontendWebContentsObserver() {
+}
+
+void DevToolsUIBindings::FrontendWebContentsObserver::RenderProcessGone(
+    base::TerminationStatus status) {
+  devtools_bindings_->delegate_->RenderProcessGone();
 }
 
 void DevToolsUIBindings::FrontendWebContentsObserver::AboutToNavigateRenderView(

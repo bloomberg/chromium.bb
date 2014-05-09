@@ -282,6 +282,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   virtual void InspectedContentsClosing() OVERRIDE;
   virtual void OnLoadCompleted() OVERRIDE;
   virtual InfoBarService* GetInfoBarService() OVERRIDE;
+  virtual void RenderProcessGone() OVERRIDE;
 
   void CreateDevToolsBrowser();
   BrowserWindow* GetInspectedBrowserWindow();
