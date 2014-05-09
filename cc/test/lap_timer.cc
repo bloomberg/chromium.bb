@@ -8,6 +8,16 @@
 
 namespace cc {
 
+namespace {
+
+base::TimeTicks Now() {
+  return base::TimeTicks::IsThreadNowSupported()
+             ? base::TimeTicks::ThreadNow()
+             : base::TimeTicks::HighResNow();
+}
+
+}  // namespace
+
 LapTimer::LapTimer(int warmup_laps,
                    base::TimeDelta time_limit,
                    int check_interval)
@@ -28,7 +38,9 @@ void LapTimer::Reset() {
   Start();
 }
 
-void LapTimer::Start() { start_time_ = base::TimeTicks::HighResNow(); }
+void LapTimer::Start() {
+  start_time_ = Now();
+}
 
 bool LapTimer::IsWarmedUp() { return remaining_warmups_ <= 0; }
 
@@ -43,7 +55,7 @@ void LapTimer::NextLap() {
   ++num_laps_;
   --remaining_no_check_laps_;
   if (!remaining_no_check_laps_) {
-    base::TimeTicks now = base::TimeTicks::HighResNow();
+    base::TimeTicks now = Now();
     accumulator_ += now - start_time_;
     start_time_ = now;
     remaining_no_check_laps_ = check_interval_;

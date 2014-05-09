@@ -10,6 +10,7 @@
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/impl_side_painting_settings.h"
+#include "cc/test/lap_timer.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,11 +26,13 @@ static const int kTimeCheckInterval = 10;
 class PictureLayerImplPerfTest : public testing::Test {
  public:
   PictureLayerImplPerfTest()
-      : num_runs_(0),
-        proxy_(base::MessageLoopProxy::current()),
+      : proxy_(base::MessageLoopProxy::current()),
         host_impl_(ImplSidePaintingSettings(),
                    &proxy_,
-                   &shared_bitmap_manager_) {}
+                   &shared_bitmap_manager_),
+        timer_(kWarmupRuns,
+               base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
+               kTimeCheckInterval) {}
 
   virtual void SetUp() OVERRIDE {
     host_impl_.InitializeRenderer(
@@ -54,32 +57,13 @@ class PictureLayerImplPerfTest : public testing::Test {
     pending_layer_->DoPostCommitInitializationIfNeeded();
   }
 
-  void EndTest() { elapsed_ = base::TimeTicks::HighResNow() - start_time_; }
-
-  bool DidRun() {
-    ++num_runs_;
-    if (num_runs_ == kWarmupRuns)
-      start_time_ = base::TimeTicks::HighResNow();
-
-    if (!start_time_.is_null() && (num_runs_ % kTimeCheckInterval) == 0) {
-      base::TimeDelta elapsed = base::TimeTicks::HighResNow() - start_time_;
-      if (elapsed >= base::TimeDelta::FromMilliseconds(kTimeLimitMillis)) {
-        elapsed_ = elapsed;
-        return false;
-      }
-    }
-    return true;
-  }
-
   void RunLayerRasterTileIteratorTest(const std::string& test_name,
                                       int num_tiles,
                                       const gfx::Size& viewport_size) {
-    start_time_ = base::TimeTicks();
-    num_runs_ = 0;
-
     host_impl_.SetViewportSize(viewport_size);
     host_impl_.pending_tree()->UpdateDrawProperties();
 
+    timer_.Reset();
     do {
       int count = num_tiles;
       for (PictureLayerImpl::LayerRasterTileIterator it(pending_layer_, false);
@@ -87,25 +71,23 @@ class PictureLayerImplPerfTest : public testing::Test {
            ++it) {
         --count;
       }
-    } while (DidRun());
+      timer_.NextLap();
+    } while (!timer_.HasTimeLimitExpired());
 
     perf_test::PrintResult("layer_raster_tile_iterator",
                            "",
                            test_name,
-                           num_runs_ / elapsed_.InSecondsF(),
+                           timer_.LapsPerSecond(),
                            "runs/s",
                            true);
   }
 
  protected:
-  base::TimeTicks start_time_;
-  base::TimeDelta elapsed_;
-  int num_runs_;
-
   TestSharedBitmapManager shared_bitmap_manager_;
   FakeImplProxy proxy_;
   FakeLayerTreeHostImpl host_impl_;
   FakePictureLayerImpl* pending_layer_;
+  LapTimer timer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PictureLayerImplPerfTest);

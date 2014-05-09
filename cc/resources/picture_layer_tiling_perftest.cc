@@ -4,6 +4,7 @@
 
 #include "cc/resources/picture_layer_tiling.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
+#include "cc/test/lap_timer.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -18,7 +19,10 @@ static const int kTimeCheckInterval = 10;
 
 class PictureLayerTilingPerfTest : public testing::Test {
  public:
-  PictureLayerTilingPerfTest() : num_runs_(0) {}
+  PictureLayerTilingPerfTest()
+      : timer_(kWarmupRuns,
+               base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
+               kTimeCheckInterval) {}
 
   virtual void SetUp() OVERRIDE {
     picture_layer_tiling_client_.SetTileSize(gfx::Size(256, 256));
@@ -32,60 +36,38 @@ class PictureLayerTilingPerfTest : public testing::Test {
     picture_layer_tiling_.reset(NULL);
   }
 
-  void EndTest() {
-    elapsed_ = base::TimeTicks::HighResNow() - start_time_;
-  }
-
-  bool DidRun() {
-    ++num_runs_;
-    if (num_runs_ == kWarmupRuns)
-      start_time_ = base::TimeTicks::HighResNow();
-
-    if (!start_time_.is_null() && (num_runs_ % kTimeCheckInterval) == 0) {
-      base::TimeDelta elapsed = base::TimeTicks::HighResNow() - start_time_;
-      if (elapsed >= base::TimeDelta::FromMilliseconds(kTimeLimitMillis)) {
-        elapsed_ = elapsed;
-        return false;
-      }
-    }
-    return true;
-  }
-
   void RunInvalidateTest(const std::string& test_name, const Region& region) {
-    start_time_ = base::TimeTicks();
-    num_runs_ = 0;
+    timer_.Reset();
     do {
       picture_layer_tiling_->Invalidate(region);
-    } while (DidRun());
+      timer_.NextLap();
+    } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("invalidation", "", test_name,
-                           num_runs_ / elapsed_.InSecondsF(), "runs/s", true);
+    perf_test::PrintResult(
+        "invalidation", "", test_name, timer_.LapsPerSecond(), "runs/s", true);
   }
 
   void RunUpdateTilePrioritiesStationaryTest(const std::string& test_name,
                                              const gfx::Transform& transform) {
-    start_time_ = base::TimeTicks();
-    num_runs_ = 0;
-
     gfx::Rect viewport_rect(0, 0, 1024, 768);
+
+    timer_.Reset();
     do {
       picture_layer_tiling_->UpdateTilePriorities(
-          ACTIVE_TREE, viewport_rect, 1.f, num_runs_ + 1);
-    } while (DidRun());
+          ACTIVE_TREE, viewport_rect, 1.f, timer_.NumLaps() + 1);
+      timer_.NextLap();
+    } while (!timer_.HasTimeLimitExpired());
 
     perf_test::PrintResult("update_tile_priorities_stationary",
                            "",
                            test_name,
-                           num_runs_ / elapsed_.InSecondsF(),
+                           timer_.LapsPerSecond(),
                            "runs/s",
                            true);
   }
 
   void RunUpdateTilePrioritiesScrollingTest(const std::string& test_name,
                                             const gfx::Transform& transform) {
-    start_time_ = base::TimeTicks();
-    num_runs_ = 0;
-
     gfx::Size viewport_size(1024, 768);
     gfx::Rect viewport_rect(viewport_size);
     int xoffsets[] = {10, 0, -10, 0};
@@ -93,9 +75,11 @@ class PictureLayerTilingPerfTest : public testing::Test {
     int offsetIndex = 0;
     int offsetCount = 0;
     const int maxOffsetCount = 1000;
+
+    timer_.Reset();
     do {
       picture_layer_tiling_->UpdateTilePriorities(
-          ACTIVE_TREE, viewport_rect, 1.f, num_runs_ + 1);
+          ACTIVE_TREE, viewport_rect, 1.f, timer_.NumLaps() + 1);
 
       viewport_rect = gfx::Rect(viewport_rect.x() + xoffsets[offsetIndex],
                                 viewport_rect.y() + yoffsets[offsetIndex],
@@ -106,12 +90,13 @@ class PictureLayerTilingPerfTest : public testing::Test {
         offsetCount = 0;
         offsetIndex = (offsetIndex + 1) % 4;
       }
-    } while (DidRun());
+      timer_.NextLap();
+    } while (!timer_.HasTimeLimitExpired());
 
     perf_test::PrintResult("update_tile_priorities_scrolling",
                            "",
                            test_name,
-                           num_runs_ / elapsed_.InSecondsF(),
+                           timer_.LapsPerSecond(),
                            "runs/s",
                            true);
   }
@@ -119,14 +104,13 @@ class PictureLayerTilingPerfTest : public testing::Test {
   void RunTilingRasterTileIteratorTest(const std::string& test_name,
                                        int num_tiles,
                                        const gfx::Rect& viewport) {
-    start_time_ = base::TimeTicks();
-    num_runs_ = 0;
-
     gfx::Size bounds(10000, 10000);
     picture_layer_tiling_ =
         PictureLayerTiling::Create(1, bounds, &picture_layer_tiling_client_);
     picture_layer_tiling_->UpdateTilePriorities(
         ACTIVE_TREE, viewport, 1.0f, 1.0);
+
+    timer_.Reset();
     do {
       int count = num_tiles;
       for (PictureLayerTiling::TilingRasterTileIterator it(
@@ -135,12 +119,13 @@ class PictureLayerTilingPerfTest : public testing::Test {
            ++it) {
         --count;
       }
-    } while (DidRun());
+      timer_.NextLap();
+    } while (!timer_.HasTimeLimitExpired());
 
     perf_test::PrintResult("tiling_raster_tile_iterator",
                            "",
                            test_name,
-                           num_runs_ / elapsed_.InSecondsF(),
+                           timer_.LapsPerSecond(),
                            "runs/s",
                            true);
   }
@@ -149,9 +134,7 @@ class PictureLayerTilingPerfTest : public testing::Test {
   FakePictureLayerTilingClient picture_layer_tiling_client_;
   scoped_ptr<PictureLayerTiling> picture_layer_tiling_;
 
-  base::TimeTicks start_time_;
-  base::TimeDelta elapsed_;
-  int num_runs_;
+  LapTimer timer_;
 };
 
 TEST_F(PictureLayerTilingPerfTest, Invalidate) {
