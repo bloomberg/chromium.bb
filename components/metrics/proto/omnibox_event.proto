@@ -185,27 +185,32 @@ message OmniboxEventProto {
       SEARCH_HISTORY = 8;         // A past search (with the default engine)
                                   // containing the input
       SEARCH_SUGGEST = 9;         // A suggested search (with the default
-                                  // engine) query that doesn't fall into one of
-                                  // the more specific suggestion categories
-                                  // below.
+                                  // engine) for a query.
       SEARCH_OTHER_ENGINE = 10;   // A search with a non-default engine
       EXTENSION_APP = 11;         // An Extension App with a title/url that
                                   // contains the input
-      CONTACT = 12;               // DEPRECATED. One of the user's contacts
+      CONTACT = 12;               // One of the user's contacts
       BOOKMARK_TITLE = 13;        // A bookmark whose title contains the input.
       SEARCH_SUGGEST_ENTITY = 14; // A suggested search for an entity.
       SEARCH_SUGGEST_INFINITE = 15; // A suggested search to complete the tail
                                     // of the query.
       SEARCH_SUGGEST_PERSONALIZED = 16; // A personalized suggested search.
-      SEARCH_SUGGEST_PROFILE = 17; // A personalized suggested search for a
-                                   // Google+ profile.      
-      APP_RESULT = 18;             // Result from an installed app
-                                   // (eg: a gmail email).
-                                   // Used by Android GSA for on-device
-                                   // suggestion logging.
-      APP = 19;                    // An app result (eg: the gmail app).
-                                   // Used by Android GSA for on-device
-                                   // suggestion logging.
+      SEARCH_SUGGEST_PROFILE = 17;  // A personalized suggested search for a
+                                    // Google+ profile.
+      APP_RESULT = 18;              // Result from an installed app
+                                    // (eg: a gmail email).
+                                    // Used by Android GSA for on-device
+                                    // suggestion logging.
+      APP = 19;                     // An app result (eg: the gmail app).
+                                    // Used by Android GSA for on-device
+                                    // suggestion logging.
+      LEGACY_ON_DEVICE = 20;        // An on-device result from a legacy
+                                    // provider. That is, this result is not
+                                    // from the on-device suggestion provider
+                                    // (go/icing). This field is
+                                    // used by Android GSA for on-device
+                                    // suggestion logging.
+      NAVSUGGEST_PERSONALIZED = 21; // A personalized url.
     }
     optional ResultType result_type = 2;
 

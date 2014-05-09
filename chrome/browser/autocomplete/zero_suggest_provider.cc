@@ -280,7 +280,7 @@ void ZeroSuggestProvider::AddSuggestResultsToMap(
 AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
     const NavigationResult& navigation) {
   AutocompleteMatch match(this, navigation.relevance(), false,
-                          AutocompleteMatchType::NAVSUGGEST);
+                          navigation.type());
   match.destination_url = navigation.url();
 
   // Zero suggest results should always omit protocols and never appear bold.
@@ -354,7 +354,7 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
   const int num_nav_results = results_.navigation_results.size();
   const int num_results = num_query_results + num_nav_results;
   UMA_HISTOGRAM_COUNTS("ZeroSuggest.QueryResults", num_query_results);
-  UMA_HISTOGRAM_COUNTS("ZeroSuggest.URLResults",  num_nav_results);
+  UMA_HISTOGRAM_COUNTS("ZeroSuggest.URLResults", num_nav_results);
   UMA_HISTOGRAM_COUNTS("ZeroSuggest.AllResults", num_results);
 
   // Show Most Visited results after ZeroSuggest response is received.
@@ -374,7 +374,8 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
         profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
     for (size_t i = 0; i < most_visited_urls_.size(); i++) {
       const history::MostVisitedURL& url = most_visited_urls_[i];
-      NavigationResult nav(*this, url.url, url.title, false, relevance, true,
+      NavigationResult nav(*this, url.url, AutocompleteMatchType::NAVSUGGEST,
+          url.title, std::string(), false, relevance, true,
           current_query_string16, languages);
       matches_.push_back(NavigationToMatch(nav));
       --relevance;

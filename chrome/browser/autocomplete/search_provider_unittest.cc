@@ -2325,8 +2325,9 @@ TEST_F(SearchProviderTest, NavigationInline) {
     QueryForInput(ASCIIToUTF16(cases[i].input), false, false);
     AutocompleteMatch match(
         provider_->NavigationToMatch(SearchProvider::NavigationResult(
-            *provider_.get(), GURL(cases[i].url), base::string16(), false, 0,
-            false, ASCIIToUTF16(cases[i].input), std::string())));
+            *provider_.get(), GURL(cases[i].url),
+            AutocompleteMatchType::NAVSUGGEST, base::string16(), std::string(),
+            false, 0, false, ASCIIToUTF16(cases[i].input), std::string())));
     EXPECT_EQ(ASCIIToUTF16(cases[i].inline_autocompletion),
               match.inline_autocompletion);
     EXPECT_EQ(ASCIIToUTF16(cases[i].fill_into_edit), match.fill_into_edit);
@@ -2337,8 +2338,9 @@ TEST_F(SearchProviderTest, NavigationInline) {
     QueryForInput(ASCIIToUTF16(cases[i].input), true, false);
     AutocompleteMatch match_prevent_inline(
         provider_->NavigationToMatch(SearchProvider::NavigationResult(
-            *provider_.get(), GURL(cases[i].url), base::string16(), false, 0,
-            false, ASCIIToUTF16(cases[i].input), std::string())));
+            *provider_.get(), GURL(cases[i].url),
+            AutocompleteMatchType::NAVSUGGEST, base::string16(), std::string(),
+            false, 0, false, ASCIIToUTF16(cases[i].input), std::string())));
     EXPECT_EQ(ASCIIToUTF16(cases[i].inline_autocompletion),
               match_prevent_inline.inline_autocompletion);
     EXPECT_EQ(ASCIIToUTF16(cases[i].fill_into_edit),
@@ -2353,8 +2355,8 @@ TEST_F(SearchProviderTest, NavigationInlineSchemeSubstring) {
   const base::string16 input(ASCIIToUTF16("ht"));
   const base::string16 url(ASCIIToUTF16("http://a.com"));
   const SearchProvider::NavigationResult result(
-      *provider_.get(), GURL(url), base::string16(), false, 0, false,
-      input, std::string());
+      *provider_.get(), GURL(url), AutocompleteMatchType::NAVSUGGEST,
+      base::string16(), std::string(), false, 0, false, input, std::string());
 
   // Check the offset and strings when inline autocompletion is allowed.
   QueryForInput(input, false, false);
@@ -2377,8 +2379,9 @@ TEST_F(SearchProviderTest, NavigationInlineDomainClassify) {
   QueryForInput(ASCIIToUTF16("w"), false, false);
   AutocompleteMatch match(
       provider_->NavigationToMatch(SearchProvider::NavigationResult(
-          *provider_.get(), GURL("http://www.wow.com"), base::string16(), false,
-          0, false, ASCIIToUTF16("w"), std::string())));
+          *provider_.get(), GURL("http://www.wow.com"),
+          AutocompleteMatchType::NAVSUGGEST, base::string16(), std::string(),
+          false, 0, false, ASCIIToUTF16("w"), std::string())));
   EXPECT_EQ(ASCIIToUTF16("ow.com"), match.inline_autocompletion);
   EXPECT_TRUE(match.allowed_to_be_default_match);
   EXPECT_EQ(ASCIIToUTF16("www.wow.com"), match.fill_into_edit);
@@ -2747,7 +2750,7 @@ TEST_F(SearchProviderTest, XSSIGuardedJSONParsing_ValidResponses) {
 }
 
 // Test that deletion url gets set on an AutocompleteMatch when available for a
-// personalized query.
+// personalized query or a personalized URL.
 TEST_F(SearchProviderTest, ParseDeletionUrl) {
    struct Match {
      std::string contents;
@@ -2759,38 +2762,66 @@ TEST_F(SearchProviderTest, ParseDeletionUrl) {
        kNotApplicable, "", AutocompleteMatchType::NUM_TYPES
    };
 
-   const char url[] = "https://www.google.com/complete/deleteitems"
-       "?delq=ab&client=chrome&deltok=xsrf123";
+   const char* url[] = {
+    "http://defaultturl/complete/deleteitems"
+       "?delq=ab&client=chrome&deltok=xsrf124",
+    "http://defaultturl/complete/deleteitems"
+       "?delq=www.amazon.com&client=chrome&deltok=xsrf123",
+     };
 
    struct {
        const std::string input_text;
        const std::string response_json;
-       const Match matches[4];
+       const Match matches[5];
      } cases[] = {
        // A deletion URL on a personalized query should be reflected in the
        // resulting AutocompleteMatch.
        { "a",
-         "[\"a\",[\"ab\", \"ac\"],[],[],"
-         "{\"google:suggesttype\":[\"PERSONALIZED_QUERY\",\"QUERY\"],"
-         "\"google:suggestrelevance\":[1, 2],"
+         "[\"a\",[\"ab\", \"ac\",\"www.amazon.com\"],[],[],"
+         "{\"google:suggesttype\":[\"PERSONALIZED_QUERY\",\"QUERY\","
+          "\"PERSONALIZED_NAVIGATION\"],"
+         "\"google:suggestrelevance\":[3, 2, 1],"
          "\"google:suggestdetail\":[{\"du\":"
-         "\"https://www.google.com/complete/deleteitems?delq=ab&client=chrome"
-         "&deltok=xsrf123\"}, {}]}]",
+         "\"/complete/deleteitems?delq=ab&client=chrome"
+          "&deltok=xsrf124\"}, {}, {\"du\":"
+         "\"/complete/deleteitems?delq=www.amazon.com&"
+         "client=chrome&deltok=xsrf123\"}]}]",
          { { "a", "", AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED },
+           { "ab", url[0], AutocompleteMatchType::SEARCH_SUGGEST },
            { "ac", "", AutocompleteMatchType::SEARCH_SUGGEST },
-           { "ab", url, AutocompleteMatchType::SEARCH_SUGGEST },
+           { "www.amazon.com", url[1],
+              AutocompleteMatchType::NAVSUGGEST_PERSONALIZED },
            kEmptyMatch,
          },
        },
-       // Personalized queries without deletion URLs shouldn't cause errors.
+       // Personalized queries or a personalized URL without deletion URLs
+       // shouldn't cause errors.
        { "a",
          "[\"a\",[\"ab\", \"ac\"],[],[],"
-         "{\"google:suggesttype\":[\"PERSONALIZED_QUERY\",\"QUERY\"],"
+         "{\"google:suggesttype\":[\"PERSONALIZED_QUERY\",\"QUERY\","
+         "\"PERSONALIZED_NAVIGATION\"],"
          "\"google:suggestrelevance\":[1, 2],"
          "\"google:suggestdetail\":[{}, {}]}]",
          { { "a", "", AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED },
            { "ac", "", AutocompleteMatchType::SEARCH_SUGGEST },
            { "ab", "", AutocompleteMatchType::SEARCH_SUGGEST },
+           { "www.amazon.com", "",
+              AutocompleteMatchType::NAVSUGGEST_PERSONALIZED },
+           kEmptyMatch,
+         },
+       },
+       // Personalized queries or a personalized URL without
+       // google:suggestdetail shouldn't cause errors.
+       { "a",
+         "[\"a\",[\"ab\", \"ac\"],[],[],"
+         "{\"google:suggesttype\":[\"PERSONALIZED_QUERY\",\"QUERY\","
+         "\"PERSONALIZED_NAVIGATION\"],"
+         "\"google:suggestrelevance\":[1, 2]}]",
+         { { "a", "", AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED },
+           { "ac", "", AutocompleteMatchType::SEARCH_SUGGEST },
+           { "ab", "", AutocompleteMatchType::SEARCH_SUGGEST },
+           { "www.amazon.com", "",
+              AutocompleteMatchType::NAVSUGGEST_PERSONALIZED },
            kEmptyMatch,
          },
        },

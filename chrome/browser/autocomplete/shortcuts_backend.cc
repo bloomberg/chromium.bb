@@ -53,6 +53,7 @@ AutocompleteMatch::Type GetTypeForShortcut(AutocompleteMatch::Type type) {
   switch (type) {
     case AutocompleteMatchType::URL_WHAT_YOU_TYPED:
     case AutocompleteMatchType::NAVSUGGEST:
+    case AutocompleteMatchType::NAVSUGGEST_PERSONALIZED:
       return AutocompleteMatchType::HISTORY_URL;
 
     case AutocompleteMatchType::SEARCH_OTHER_ENGINE:

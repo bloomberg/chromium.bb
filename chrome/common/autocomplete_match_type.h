@@ -33,11 +33,14 @@ struct AutocompleteMatchType {
     SEARCH_SUGGEST_PERSONALIZED = 11,  // A personalized suggested search.
     SEARCH_SUGGEST_PROFILE      = 12,  // A personalized suggested search for a
                                        // Google+ profile.
-    SEARCH_OTHER_ENGINE    = 13,  // A search with a non-default engine.
-    EXTENSION_APP          = 14,  // An Extension App with a title/url that
-                                  // contains the input.
-    CONTACT_DEPRECATED     = 15,  // One of the user's contacts (deprecated).
-    BOOKMARK_TITLE         = 16,  // A bookmark whose title contains the input.
+    SEARCH_OTHER_ENGINE         = 13,  // A search with a non-default engine.
+    EXTENSION_APP               = 14,  // An Extension App with a title/url that
+                                       // contains the input.
+    CONTACT_DEPRECATED          = 15,  // One of the user's contacts
+                                       // (deprecated).
+    BOOKMARK_TITLE              = 16,  // A bookmark whose title contains the
+                                       // input.
+    NAVSUGGEST_PERSONALIZED     = 17,  // A personalized suggestion URL.
     NUM_TYPES,
   };
 

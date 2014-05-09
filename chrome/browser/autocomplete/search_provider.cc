@@ -806,7 +806,8 @@ bool SearchProvider::IsTopMatchSearchWithURLInput() const {
   return (input_.type() == AutocompleteInput::URL) &&
       (first_match != matches_.end()) &&
       (first_match->relevance > CalculateRelevanceForVerbatim()) &&
-      (first_match->type != AutocompleteMatchType::NAVSUGGEST);
+      (first_match->type != AutocompleteMatchType::NAVSUGGEST) &&
+      (first_match->type != AutocompleteMatchType::NAVSUGGEST_PERSONALIZED);
 }
 
 void SearchProvider::AddNavigationResultsToMatches(
@@ -1062,9 +1063,9 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
           keyword_input_.text() : input_.text(),
       base::TRIM_TRAILING, &input) != base::TRIM_NONE;
   AutocompleteMatch match(this, navigation.relevance(), false,
-                          AutocompleteMatchType::NAVSUGGEST);
+                          navigation.type());
   match.destination_url = navigation.url();
-
+  BaseSearchProvider::SetDeletionURL(navigation.deletion_url(), &match);
   // First look for the user's input inside the formatted url as it would be
   // without trimming the scheme, so we can find matches at the beginning of the
   // scheme.
@@ -1109,7 +1110,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   match.allowed_to_be_default_match = navigation.IsInlineable(input) &&
       (providers_.GetKeywordProviderURL() == NULL) &&
       (match.inline_autocompletion.empty() ||
-       (!input_.prevent_inline_autocomplete() && !trimmed_whitespace));
+      (!input_.prevent_inline_autocomplete() && !trimmed_whitespace));
 
   match.contents = navigation.match_contents();
   match.contents_class = navigation.match_contents_class();

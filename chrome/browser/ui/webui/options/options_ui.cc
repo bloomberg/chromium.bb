@@ -377,8 +377,10 @@ void OptionsUI::ProcessAutocompleteSuggestions(
         type != AutocompleteMatchType::HISTORY_TITLE &&
         type != AutocompleteMatchType::HISTORY_BODY &&
         type != AutocompleteMatchType::HISTORY_KEYWORD &&
-        type != AutocompleteMatchType::NAVSUGGEST)
+        type != AutocompleteMatchType::NAVSUGGEST &&
+        type != AutocompleteMatchType::NAVSUGGEST_PERSONALIZED) {
       continue;
+    }
     base::DictionaryValue* entry = new base::DictionaryValue();
     entry->SetString("title", match.description);
     entry->SetString("displayURL", match.contents);

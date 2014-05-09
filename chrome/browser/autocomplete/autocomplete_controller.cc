@@ -117,6 +117,10 @@ void AutocompleteMatchToAssistedQuery(
       *subtype = 65;
       return;
     }
+    case AutocompleteMatchType::NAVSUGGEST_PERSONALIZED: {
+      *subtype = 39;
+      return;
+    }
     default: {
       // This value indicates a native chrome suggestion with no named subtype
       // (yet).

@@ -109,7 +109,9 @@ class BaseSearchProvider : public AutocompleteProvider,
    public:
     Result(bool from_keyword_provider,
            int relevance,
-           bool relevance_from_server);
+           bool relevance_from_server,
+           AutocompleteMatchType::Type type,
+           const std::string& deletion_url);
     virtual ~Result();
 
     bool from_keyword_provider() const { return from_keyword_provider_; }
@@ -119,6 +121,7 @@ class BaseSearchProvider : public AutocompleteProvider,
       return match_contents_class_;
     }
 
+    AutocompleteMatchType::Type type() const { return type_; }
     int relevance() const { return relevance_; }
     void set_relevance(int relevance) { relevance_ = relevance; }
 
@@ -126,6 +129,8 @@ class BaseSearchProvider : public AutocompleteProvider,
     void set_relevance_from_server(bool relevance_from_server) {
       relevance_from_server_ = relevance_from_server;
     }
+
+    const std::string& deletion_url() const { return deletion_url_; }
 
     // Returns if this result is inlineable against the current input |input|.
     // Non-inlineable results are stale.
@@ -146,6 +151,8 @@ class BaseSearchProvider : public AutocompleteProvider,
     // True if the result came from the keyword provider.
     bool from_keyword_provider_;
 
+    AutocompleteMatchType::Type type_;
+
     // The relevance score.
     int relevance_;
 
@@ -156,6 +163,11 @@ class BaseSearchProvider : public AutocompleteProvider,
     // SearchProvider::ConvertResultsToAutocompleteMatches(), see comments
     // there.
     bool relevance_from_server_;
+
+    // Optional deletion URL provided with suggestions. Fetching this URL
+    // should result in some reasonable deletion behaviour on the server,
+    // e.g. deleting this term out of a user's server-side search history.
+    std::string deletion_url_;
   };
 
   class SuggestResult : public Result {
@@ -175,7 +187,6 @@ class BaseSearchProvider : public AutocompleteProvider,
     virtual ~SuggestResult();
 
     const base::string16& suggestion() const { return suggestion_; }
-    AutocompleteMatchType::Type type() const { return type_; }
     const base::string16& match_contents_prefix() const {
       return match_contents_prefix_;
     }
@@ -183,7 +194,6 @@ class BaseSearchProvider : public AutocompleteProvider,
     const std::string& suggest_query_params() const {
       return suggest_query_params_;
     }
-    const std::string& deletion_url() const { return deletion_url_; }
     bool should_prefetch() const { return should_prefetch_; }
 
     // Fills in |match_contents_class_| to reflect how |match_contents_| should
@@ -203,8 +213,6 @@ class BaseSearchProvider : public AutocompleteProvider,
     // The search terms to be used for this suggestion.
     base::string16 suggestion_;
 
-    AutocompleteMatchType::Type type_;
-
     // The contents to be displayed as prefix of match contents.
     // Used for postfix suggestions to display a leading ellipsis (or some
     // equivalent character) to indicate omitted text.
@@ -219,11 +227,6 @@ class BaseSearchProvider : public AutocompleteProvider,
     // Optional additional parameters to be added to the search URL.
     std::string suggest_query_params_;
 
-    // Optional deletion URL provided with suggestions. Fetching this URL
-    // should result in some reasonable deletion behaviour on the server,
-    // e.g. deleting this term out of a user's server-side search history.
-    std::string deletion_url_;
-
     // Should this result be prefetched?
     bool should_prefetch_;
   };
@@ -234,7 +237,9 @@ class BaseSearchProvider : public AutocompleteProvider,
     // compute |formatted_url_|.
     NavigationResult(const AutocompleteProvider& provider,
                      const GURL& url,
+                     AutocompleteMatchType::Type type,
                      const base::string16& description,
+                     const std::string& deletion_url,
                      bool from_keyword_provider,
                      int relevance,
                      bool relevance_from_server,
@@ -387,6 +392,12 @@ class BaseSearchProvider : public AutocompleteProvider,
 
   // net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+
+  // If the |deletion_url| is valid, then set |match.deletable| to true and
+  // save the |deletion_url| into the |match|'s additional info under
+  // the key |kDeletionUrlKey|.
+  void SetDeletionURL(const std::string& deletion_url,
+                      AutocompleteMatch* match);
 
   // Creates an AutocompleteMatch from |result| to search for the query in
   // |result|. Adds the created match to |map|; if such a match

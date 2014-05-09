@@ -26,6 +26,7 @@ std::string AutocompleteMatchType::ToString(AutocompleteMatchType::Type type) {
     "extension-app",
     "contact",
     "bookmark-title",
+    "navsuggest-personalized",
   };
   COMPILE_ASSERT(arraysize(strings) == AutocompleteMatchType::NUM_TYPES,
                  strings_array_must_match_type_enum);
