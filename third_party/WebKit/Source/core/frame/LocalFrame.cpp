@@ -62,6 +62,7 @@
 #include "platform/DragImage.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/text/TextStream.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
 
@@ -405,7 +406,26 @@ void LocalFrame::countObjectsNeedingLayout(unsigned& needsLayoutObjects, unsigne
     }
 }
 
-String LocalFrame::layerTreeAsText(unsigned flags) const
+String LocalFrame::layerTreeAsText(LayerTreeFlags flags) const
+{
+    TextStream textStream;
+    textStream << localLayerTreeAsText(flags);
+
+    for (LocalFrame* child = tree().firstChild(); child; child = child->tree().traverseNext(this)) {
+        String childLayerTree = child->localLayerTreeAsText(flags);
+        if (!childLayerTree.length())
+            continue;
+
+        textStream << "\n\n--------\nFrame: '";
+        textStream << child->tree().uniqueName();
+        textStream << "'\n--------\n";
+        textStream << childLayerTree;
+    }
+
+    return textStream.release();
+}
+
+String LocalFrame::localLayerTreeAsText(unsigned flags) const
 {
     if (!contentRenderer())
         return String();

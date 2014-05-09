@@ -154,6 +154,8 @@ namespace WebCore {
     private:
         LocalFrame(FrameLoaderClient*, FrameHost*, HTMLFrameOwnerElement*);
 
+        String localLayerTreeAsText(unsigned flags) const;
+
         mutable FrameTree m_treeNode;
         mutable FrameLoader m_loader;
         mutable NavigationScheduler m_navigationScheduler;
