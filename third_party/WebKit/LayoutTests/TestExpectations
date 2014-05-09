@@ -377,6 +377,8 @@ crbug.com/290411 [ Win Mac ] fast/text/sub-pixel/text-scaling-rtl.html [ Skip ]
 crbug.com/290411 [ Win Mac ] fast/text/sub-pixel/text-scaling-vertical.html [ Skip ]
 crbug.com/290411 [ Win Mac ] fast/text/sub-pixel/text-scaling-webfont.html [ Skip ]
 
+crbug.com/371725 http/tests/webfont/slow-loading.html [ Pass ImageOnlyFailure Timeout ]
+
 # Issues on the mac-antialiased fonts virtual test suite.
 # crbug.com/367074 [ Mac ] virtual/mac-antialiasedtext/fast/text/sub-pixel/text-scaling-pixel.html [ Skip ]
 crbug.com/334269 [ Mac ] virtual/mac-antialiasedtext/fast/text/font-variant-ligatures.html [ ImageOnlyFailure ]
